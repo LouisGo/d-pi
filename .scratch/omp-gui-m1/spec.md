@@ -42,7 +42,7 @@ status: in-progress
 - 本里程碑以一个窗口、一个项目和一个活动会话为边界。正常恢复最近一次已持久化会话即可，不建设跨项目会话库。退出后恢复与窗口刷新重连是不同动作。
 - 正式运行沿用本机配置及登录。缺少模型／登录时解释启动失败并指向现有 OMP 配置入口；不建设 GUI 登录和模型配置编辑器。
 - 内置工具由 OMP 执行，未知工具名称使用通用卡片显示。自定义 TUI 渲染不在兼容承诺内，不为了展示而替换工具或默许确认请求。
-- 按 V1 已定技术栈使用 React、TypeScript、Zustand、TanStack Query、Tailwind CSS、shadcn/ui、Zod、electron-vite、pnpm、electron-builder。保持单应用结构，首阶段不预建后续功能目录或重型编辑器。
+- 按 V1 已定技术栈使用 React、TypeScript、Zustand、TanStack Query、Tailwind CSS、自有组件层、Zod、electron-vite、pnpm、electron-builder。shadcn/ui 用作源码与组织参考，Radix 等底层交互按需选用；具体候选与现有 Base UI 存量见 [前端选型记录](../../docs/prototype/frontend-library-radar.md)。保持单应用结构，首阶段不预建后续功能目录或重型编辑器。
 
 ### 进程与通信
 

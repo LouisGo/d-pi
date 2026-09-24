@@ -22,7 +22,7 @@
 | 前端       | **React + TypeScript**                          | 输入、对话、工具卡片、详情与设置界面                           |
 | 客户端状态    | **Zustand**                                     | 会话展示镜像、界面状态、局部订阅                             |
 | 异步查询     | **`@tanstack/react-query`**                     | 模型列表、会话目录、配置状态等查询与缓存                         |
-| 样式与组件    | **Tailwind CSS + shadcn/ui**                    | 设计变量、布局、基础交互组件                               |
+| 样式与组件    | **Tailwind CSS + 自有组件层**                     | 自己定义设计变量、组件 API 与视觉；按需借用 Radix 等底层交互              |
 | 数据校验     | **Zod**                                         | 跨进程消息、配置、外部数据的运行时校验                          |
 | 构建       | **electron-vite + Vite**                        | Main、preload、Renderer、utility process 的开发与构建 |
 | 包管理      | **pnpm**                                        | 依赖管理、锁文件与统一脚本                                |
@@ -32,6 +32,8 @@
 | Agent 接入 | **本机 OMP + stdio RPC**                          | 复用完整 OMP，优先验证并使用 `rpc-ui`                    |
 
 这里将你说的 `@tanstack/query` 落到 React 对应的包 **`@tanstack/react-query`**。electron-vite 已提供 utility process 独立入口的构建支持，不需要自行搭建多进程打包系统。([TanStack][1])
+
+自有组件层以 shadcn/ui 的源码与组织方式为参考，Beautiful UI 作为重要视觉与交互参考并可选择性复用素材。Base UI 不作为后续默认组件底座；已存在的使用属于存量代码。候选库的理由、上游入口与接入条件见 [前端选型记录](frontend-library-radar.md)。
 
 **编辑器、Diff、虚拟列表、复杂 Markdown 渲染方案继续待定。**先建立组件边界和真实测试样本，不提前选库，也不先写自研替代品。
 
@@ -77,7 +79,7 @@ src/
       conversation/
       settings/
     components/
-      ui/                   shadcn 基础组件
+      ui/                   自有基础组件，可按需使用底层交互 primitive
     stores/                 Zustand
     queries/                TanStack Query
     client/                 preload / MessagePort 客户端
@@ -434,7 +436,7 @@ OMP 当前 RPC 在 stdin 关闭后会处理待请求、释放会话并退出，�
 
 - 选择与引用、文件入口、常用工具的针对性卡片、详情面板及更完整的输入／阅读体验。
 - 从真实输出、长历史与并发任务中建立固定回归样本，测量 Host 内存、消息传输与 Renderer 响应，再选择具体优化。
-- 编辑器、Diff、虚拟列表和复杂 Markdown 库按草案约定在真实样本基础上选型，采用前与用户确认。选择“现阶段不需要专门库”也可成立，不为技术清单凑实现。
+- 编辑器、Diff、虚拟列表和复杂 Markdown 库按 [前端选型记录](frontend-library-radar.md)与真实样本选择；若改变 OMP 所有权、产品行为或引入商业许可承诺，再与用户对齐。选择“现阶段不需要专门库”也可成立，不为技术清单凑实现。
 
 **完成标准：**用户用 GUI 完成代表性的实际开发任务，输入、查阅输出、引用和回答问题不需要回到 TUI；长输出和并发下能够正常编辑与停止，输出可追溯、资源不无限增长。记录测试样本和观察／测量结果，不用“流畅”二字代替证据。
 
