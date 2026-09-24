@@ -21,9 +21,11 @@ status: complete
 
 ## Comments
 
-本轮轻量验证完成，最终 9 项检查通过。结论为有条件可行，不等于完整 TUI 能力对等已完成。详见 [能力矩阵与接口缺口](../../docs/prototype/runtime-feasibility.md)、[机器结果](result.json)及 [探针](probe.cjs)。指定子 Agent 的直接运行中控制、完整随包应用验收与其他记忆后端明确保留为未验证项。
+本轮轻量验证完成，最终 9 项检查通过。结论为有条件可行，不等于完整 TUI 能力对等已完成。详见 [能力矩阵与接口缺口](../../docs/validation/runtime-feasibility.md)、[机器结果](result.json)及 [探针](probe.cjs)。指定子 Agent 的直接运行中控制、完整随包应用验收与其他记忆后端明确保留为未验证项。
 
 - 2026-09-24：用户明确先验证 Runtime 能力，要求轻量验证、复用历史结论、持久记录，避免重复工作；随包 OMP 是产品目标。
 - 2026-09-24：已执行固定模型传输下的真实 OMP 实验并核对固定版本源码；范围内结论已交付，未扩展正式 GUI 或全量验收。
-- 2026-09-24 后续澄清：用户需要 GUI 配置子 Agent 类型的模型/思考档位，由主 Agent 原生调度，暂不需要复杂的指定运行实例控制；Settings 由原生接口提供数据、GUI 自行展示。补测 6 项通过，见 [设置验证](../../docs/prototype/settings-feasibility.md)及 [机器结果](settings-result.json)。
-- 2026-09-24 最终收束：用户授权最小随包验证，通过后文档化并 commit。Electron 44.4.5 + OMP 18.3.0 的最小 `.app` 通过协议往返、模型回合与退出检查；旧 9+6 项同时复跑通过，见 [随包证据](../../docs/prototype/packaged-runtime-evidence.md)。未做正式 UI/前端基建，后续等待需求与技术选型。
+- 2026-09-24 后续澄清：用户需要 GUI 配置子 Agent 类型的模型/思考档位，由主 Agent 原生调度，暂不需要复杂的指定运行实例控制；Settings 由原生接口提供数据、GUI 自行展示。补测 6 项通过，见 [设置验证](../../docs/validation/settings-feasibility.md)及 [机器结果](settings-result.json)。
+- 2026-09-24 最终收束：用户授权最小随包验证，通过后文档化并 commit。Electron 44.4.5 + OMP 18.3.0 的最小 `.app` 通过协议往返、模型回合与退出检查；旧 9+6 项同时复跑通过，见 [随包证据](../../docs/validation/packaged-runtime-evidence.md)。未做正式 UI/前端基建，后续等待需求与技术选型。
+
+- 2026-09-24 工作区清理：移除早期产品原型及前端选型配置；本目录只保留独立验证探针与结果，不能作为生产实现直接延续。

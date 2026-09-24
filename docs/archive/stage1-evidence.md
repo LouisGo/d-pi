@@ -1,3 +1,5 @@
+> 历史证据：以下内容对应清理前的单会话 GUI 原型，不代表当前代码、下一阶段需求或待完成任务。原型与旧实验已于 2026-09-24 移除；完整源码和原始结果可从 Git 提交 `6fab3ef` 查阅，例如 `git show 6fab3ef:.scratch/omp-gui-m1/prototype/result.json`。当前结论见 [Runtime 验证](../validation/runtime-feasibility.md)。
+
 # 阶段 1 运行证据与限制
 
 日期：2026-09-24；本机 macOS arm64，Electron 44.4.5，OMP 18.3.0，真实已配置模型 `openai-codex/gpt-6-sol`。测试项目为一次性目录 `/private/tmp/d-pi-stage1-e2e`。下面区分协议实验与可见 GUI 实验；协议实验使用 localhost 固定模型，不能代替真实模型验收。

@@ -8,6 +8,6 @@ Issues and specs are tracked as local Markdown files under `.scratch/<feature>/`
 
 Single-context layout: root `CONTEXT.md` and `docs/adr/`. See `docs/agents/domain.md`.
 
-### Frontend selection
+### Current stage
 
-For UI components or frontend libraries, read `docs/prototype/frontend-library-radar.md` before adding a dependency or copying component source. It records the self-owned component policy, upstream entry points, and adoption conditions.
+Runtime feasibility validation is complete. See `README.md` and `docs/validation/`. Product requirements and frontend technology selection are pending; do not treat archived prototypes or experiment dependencies as approved product choices. Scripts under `.scratch/omp-runtime-feasibility/` are standalone experiments, not production infrastructure.

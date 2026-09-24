@@ -4,7 +4,7 @@
 
 ## 范围与实际结果
 
-环境：macOS arm64；Electron **44.4.5**，与仓库声明版本一致；官方独立 OMP **18.3.0**。
+环境：macOS arm64；Electron **44.4.5**，沿用清理前原型的实验版本，不约束后续技术选型；官方独立 OMP **18.3.0**。
 
 使用 Electron 官方发行 ZIP 组装一个最小 `.app`：脚本位于 `Contents/Resources/app`，OMP 位于 `Contents/Resources/runtime/omp`。更名可执行文件并同步 `CFBundleExecutable` 后，将完整应用移动到含空格的新目录，经 `open -n -W`（macOS LaunchServices）启动，不用开发服务器或项目路径启动 Electron。
 
@@ -38,15 +38,15 @@ node .scratch/omp-runtime-feasibility/packaged/run.cjs \
 
 ## 不覆盖的事项
 
-- 使用 `Resources/app` 明文目录，没有验证 ASAR、electron-builder 的正式资源配置或现有产品 GUI。
+- 使用 `Resources/app` 明文目录，没有验证 ASAR、electron-builder 的正式资源配置或产品 GUI。
 - 经 LaunchServices 启动，不声称已经手动点击 Finder；没有验证 Gatekeeper、签名、公证、安装器及首次下载体验。
 - 开发机器上的 macOS arm64 实验，不是干净机器、Intel、Windows 或 Linux 兼容认证。
 - 模型为 localhost 固定响应，没有验证真实供应商认证、模型理解质量或 UI 流畅度。
-- 正式应用仍有外部 OMP 发现逻辑。本次证明随包方案可行，没有提前实施产品级迁移。
+- 早期依赖外部 OMP 的应用实现已移除。本次证明随包方案可行，仓库目前没有产品级实现。
 
 ## 本阶段收束与提交条件
 
-本次提交前已复跑并通过：
+可行性验证提交 `6fab3ef` 前已复跑并通过：
 
 1. [核心能力探针](../../.scratch/omp-runtime-feasibility/result.json)：9 项。
 2. [Settings 补测](../../.scratch/omp-runtime-feasibility/settings-result.json)：6 项。
