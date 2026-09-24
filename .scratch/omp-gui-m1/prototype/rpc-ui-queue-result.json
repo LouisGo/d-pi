@@ -1,0 +1,172 @@
+{
+  "scenario": "queue",
+  "version": "18.3.0",
+  "firstAck": {
+    "id": "prompt-1790241653018-w6fb",
+    "type": "response",
+    "command": "prompt",
+    "success": true
+  },
+  "root": "/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-rpc-ui-KWWdQH",
+  "followA": {
+    "id": "prompt-1790241653065-u625",
+    "type": "response",
+    "command": "prompt",
+    "success": true
+  },
+  "followB": {
+    "id": "prompt-1790241653081-wkm9",
+    "type": "response",
+    "command": "prompt",
+    "success": true
+  },
+  "steer": {
+    "id": "prompt-1790241653097-p5p6",
+    "type": "response",
+    "command": "prompt",
+    "success": true
+  },
+  "before": {
+    "streaming": true,
+    "queued": 3
+  },
+  "after": {
+    "streaming": false,
+    "queued": 0
+  },
+  "requests": [
+    [
+      "First request."
+    ],
+    [
+      "First request.",
+      "Steer C"
+    ],
+    [
+      "First request.",
+      "Steer C",
+      "Follow up A"
+    ],
+    [
+      "First request.",
+      "Steer C",
+      "Follow up A",
+      "Follow up B"
+    ]
+  ],
+  "frames": [
+    {
+      "type": "extension_ui_request",
+      "id": "158bfb44418c455a",
+      "method": "setWidget"
+    },
+    {
+      "type": "response",
+      "command": "negotiate_protocol",
+      "success": true
+    },
+    {
+      "type": "response",
+      "command": "prompt",
+      "success": true
+    },
+    {
+      "type": "agent_start"
+    },
+    {
+      "type": "turn_start"
+    },
+    {
+      "type": "message_end",
+      "role": "user"
+    },
+    {
+      "type": "response",
+      "command": "prompt",
+      "success": true
+    },
+    {
+      "type": "response",
+      "command": "prompt",
+      "success": true
+    },
+    {
+      "type": "response",
+      "command": "prompt",
+      "success": true
+    },
+    {
+      "type": "response",
+      "command": "get_state",
+      "success": true
+    },
+    {
+      "type": "message_end",
+      "role": "assistant"
+    },
+    {
+      "type": "turn_end",
+      "role": "assistant"
+    },
+    {
+      "type": "turn_start"
+    },
+    {
+      "type": "message_end",
+      "role": "user"
+    },
+    {
+      "type": "message_end",
+      "role": "assistant"
+    },
+    {
+      "type": "turn_end",
+      "role": "assistant"
+    },
+    {
+      "type": "turn_start"
+    },
+    {
+      "type": "message_end",
+      "role": "user"
+    },
+    {
+      "type": "message_end",
+      "role": "assistant"
+    },
+    {
+      "type": "turn_end",
+      "role": "assistant"
+    },
+    {
+      "type": "turn_start"
+    },
+    {
+      "type": "message_end",
+      "role": "user"
+    },
+    {
+      "type": "message_end",
+      "role": "assistant"
+    },
+    {
+      "type": "turn_end",
+      "role": "assistant"
+    },
+    {
+      "type": "extension_ui_request",
+      "id": "158bfb446e8c455c",
+      "method": "setWidget"
+    },
+    {
+      "type": "agent_end",
+      "isTerminal": true
+    },
+    {
+      "type": "response",
+      "command": "get_state",
+      "success": true
+    }
+  ],
+  "stderr": ""
+}

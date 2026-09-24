@@ -1,0 +1,116 @@
+{
+  "scenario": "interaction-approve",
+  "version": "18.3.0",
+  "firstAck": {
+    "id": "prompt-1790241653032-pvy0",
+    "type": "response",
+    "command": "prompt",
+    "success": true
+  },
+  "root": "/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-rpc-ui-SW1iaY",
+  "uiRequest": {
+    "type": "extension_ui_request",
+    "id": "158bfb4457c92f7f",
+    "method": "select",
+    "title": "Allow tool: bash\nCommand: printf builtin-rpc-ui-probe",
+    "options": [
+      "Approve",
+      "Deny"
+    ]
+  },
+  "state": {
+    "streaming": false,
+    "queued": 0
+  },
+  "requests": [
+    [
+      "Run printf builtin-rpc-ui-probe with bash."
+    ],
+    [
+      "Run printf builtin-rpc-ui-probe with bash."
+    ]
+  ],
+  "frames": [
+    {
+      "type": "extension_ui_request",
+      "id": "158bfb4445492f7d",
+      "method": "setWidget"
+    },
+    {
+      "type": "response",
+      "command": "negotiate_protocol",
+      "success": true
+    },
+    {
+      "type": "response",
+      "command": "prompt",
+      "success": true
+    },
+    {
+      "type": "agent_start"
+    },
+    {
+      "type": "turn_start"
+    },
+    {
+      "type": "message_end",
+      "role": "user"
+    },
+    {
+      "type": "message_end",
+      "role": "assistant"
+    },
+    {
+      "type": "extension_ui_request",
+      "id": "158bfb4457c92f7f",
+      "method": "select",
+      "title": "Allow tool: bash\nCommand: printf builtin-rpc-ui-probe",
+      "options": [
+        "Approve",
+        "Deny"
+      ]
+    },
+    {
+      "type": "message_end",
+      "role": "toolResult",
+      "toolName": "bash",
+      "content": [
+        {
+          "type": "text",
+          "text": "builtin-rpc-ui-probe\n\nWall time: 0.01 seconds"
+        }
+      ],
+      "isError": false
+    },
+    {
+      "type": "turn_end",
+      "role": "assistant"
+    },
+    {
+      "type": "turn_start"
+    },
+    {
+      "type": "message_end",
+      "role": "assistant"
+    },
+    {
+      "type": "turn_end",
+      "role": "assistant"
+    },
+    {
+      "type": "extension_ui_request",
+      "id": "158bfb4465492f80",
+      "method": "setWidget"
+    },
+    {
+      "type": "agent_end",
+      "isTerminal": true
+    },
+    {
+      "type": "response",
+      "command": "get_state",
+      "success": true
+    }
+  ],
+  "stderr": ""
+}
