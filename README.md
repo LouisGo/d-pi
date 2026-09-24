@@ -1,5 +1,11 @@
 # OMP Desktop
 
+当前优先级是验证 **OMP Runtime 能力能否由 Electron GUI 复用**，再投入产品化与交互打磨。多会话、子 Agent、记忆、设置及随包运行基础的最新结论见 [Runtime 可行性验证](docs/prototype/runtime-feasibility.md)。产品目标是应用携带 OMP，用户无需另行安装；下面描述的是当前仍使用外部 OMP 的单会话实现。
+
+配置策略沿用 OpenCode 的原则：默认共享 OMP 原生配置，桌面偏好单独保存；详见 [ADR-0002](docs/adr/0002-share-native-omp-config.md)。
+
+本轮可行性验证已收束：[最小随包 `.app` 验证通过](docs/prototype/packaged-runtime-evidence.md)。这不代表下述正式应用已经改为内置 OMP，也不代表发行验收完成；下一阶段先讨论需求与技术选型。
+
 OMP 18.3.0 的本机桌面会话客户端。阶段 1 面向已有 OMP 配置的 macOS 用户，在一个项目中使用一个活动会话。Electron Main 管窗口和进程，utility SessionHost 使用 `rpc-ui` stdio RPC 连接 OMP，React 负责界面。
 
 ## 本地运行

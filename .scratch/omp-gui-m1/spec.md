@@ -6,6 +6,8 @@ status: in-progress
 
 > 2026-09-24：已按 [V1 分阶段计划](../../docs/prototype/v1-architecture-draft.md) 修订为阶段 1 实施规格。完整 V1 的多会话、全 GUI 初始化和对外交付仍按后续阶段兑现。
 
+> 同日后续优先级调整：用户要求先验证 OMP 能力可复用性，再决定产品化投入。本规格保留为已有实现和历史验收基线，不要求立即关闭全部验收；当前入口见 [Runtime 可行性验证](../../docs/prototype/runtime-feasibility.md)。
+
 ## Problem Statement
 
 用户希望通过熟悉的 GUI 完成日常 OMP 开发任务，获得自然的输入编辑、输出阅读与后续操作体验。首阶段需要一个能真实工作的桌面会话客户端，而不是再次设计 Agent Runtime，或仅演示一句话输入输出。

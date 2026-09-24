@@ -1,0 +1,304 @@
+{
+  "date": "2026-09-24T13:48:04.723Z",
+  "upstreamTag": "v18.3.0",
+  "upstreamCommit": "62bc57be1b03ef0802a33cf7f5f530e534527531",
+  "releaseAsset": "omp-darwin-arm64",
+  "binarySha256": "d61fb411f24146bed48dd901b13b5912a297d899ee691dda69c4b5b7ab8c35dc",
+  "root": "/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-feasibility-ZpKXn7",
+  "checks": [
+    {
+      "name": "native_settings_catalog_and_model_choices",
+      "passed": true,
+      "evidence": {
+        "settingCount": 503,
+        "sample": {
+          "task.agentModelOverrides": {
+            "value": {},
+            "type": "record",
+            "description": ""
+          },
+          "task.enableEffort": {
+            "value": true,
+            "type": "boolean",
+            "description": "Expose the optional effort parameter on task spawns, allowing callers to override each subagent's thinking level"
+          },
+          "task.maxConcurrency": {
+            "value": 2,
+            "type": "number",
+            "description": "Maximum number of subagents running concurrently"
+          },
+          "defaultThinkingLevel": {
+            "value": "high",
+            "type": "enum",
+            "description": "Reasoning depth for thinking-capable models"
+          },
+          "memory.backend": {
+            "value": "local",
+            "type": "enum",
+            "description": "Off, local summary pipeline, Mnemopi SQLite, Hindsight remote memory, or Sharpshooter"
+          }
+        },
+        "modelIds": [
+          "openai/codex-mini-latest",
+          "openai/daybreak-blue-latest",
+          "openai/daybreak-red-latest",
+          "openai/gpt-4",
+          "openai/gpt-4-turbo",
+          "openai/gpt-4.1",
+          "openai/gpt-4.1-mini",
+          "openai/gpt-4.1-nano",
+          "openai/gpt-4o",
+          "openai/gpt-4o-2024-05-13",
+          "openai/gpt-4o-2024-08-06",
+          "openai/gpt-4o-2024-11-20",
+          "openai/gpt-4o-mini",
+          "openai/gpt-5",
+          "openai/gpt-5-chat-latest",
+          "openai/gpt-5-codex",
+          "openai/gpt-5-mini",
+          "openai/gpt-5-nano",
+          "openai/gpt-5-pro",
+          "openai/gpt-5.1",
+          "openai/gpt-5.1-chat-latest",
+          "openai/gpt-5.1-codex",
+          "openai/gpt-5.1-codex-max",
+          "openai/gpt-5.1-codex-mini",
+          "openai/gpt-5.2",
+          "openai/gpt-5.2-chat-latest",
+          "openai/gpt-5.2-codex",
+          "openai/gpt-5.2-pro",
+          "openai/gpt-5.3-chat-latest",
+          "openai/gpt-5.3-codex",
+          "openai/gpt-5.3-codex-spark",
+          "openai/gpt-5.4",
+          "openai/gpt-5.4-mini",
+          "openai/gpt-5.4-nano",
+          "openai/gpt-5.4-pro",
+          "openai/gpt-5.5",
+          "openai/gpt-5.5-pro",
+          "openai/gpt-5.6",
+          "openai/gpt-5.6-cyber",
+          "openai/gpt-5.6-luna",
+          "openai/gpt-5.6-luna-pro",
+          "openai/gpt-5.6-sol",
+          "openai/gpt-5.6-sol-pro",
+          "openai/gpt-5.6-terra",
+          "openai/gpt-5.6-terra-pro",
+          "openai/gpt-6-astra",
+          "openai/gpt-6-luna",
+          "openai/gpt-6-sol",
+          "openai/gpt-realtime-2.1",
+          "openai/o1",
+          "openai/o1-pro",
+          "openai/o3",
+          "openai/o3-deep-research",
+          "openai/o3-mini",
+          "openai/o3-pro",
+          "openai/o4-mini",
+          "openai/o4-mini-deep-research",
+          "probe/probe",
+          "probe/alternate"
+        ],
+        "currentModelLevels": {
+          "levels": [
+            "off",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ]
+        },
+        "note": "Catalog has values/types/descriptions; inspect sample for absent enums/defaults/groups."
+      }
+    },
+    {
+      "name": "child_uses_agent_definition_before_override",
+      "passed": true,
+      "evidence": {
+        "model": "probe/probe",
+        "thinking": "low",
+        "modelRequests": [
+          {
+            "model": "probe",
+            "effort": "low"
+          },
+          {
+            "model": "probe",
+            "effort": "minimal"
+          },
+          {
+            "model": "probe",
+            "effort": "low"
+          },
+          {
+            "model": "probe",
+            "effort": "low"
+          },
+          {
+            "model": "probe",
+            "effort": "low"
+          },
+          {
+            "model": "probe",
+            "effort": "low"
+          },
+          {
+            "model": "probe",
+            "effort": "low"
+          }
+        ]
+      }
+    },
+    {
+      "name": "native_config_write_applies_to_next_spawn_in_same_main_process",
+      "passed": true,
+      "evidence": {
+        "saved": {
+          "probe-low": "probe/alternate:high"
+        },
+        "mainPid": 74219,
+        "child": {
+          "model": "probe/alternate",
+          "thinking": "high",
+          "modelRequests": [
+            {
+              "model": "probe",
+              "effort": "low"
+            },
+            {
+              "model": "probe",
+              "effort": "minimal"
+            },
+            {
+              "model": "alternate",
+              "effort": "high"
+            },
+            {
+              "model": "alternate",
+              "effort": "high"
+            },
+            {
+              "model": "alternate",
+              "effort": "high"
+            },
+            {
+              "model": "alternate",
+              "effort": "high"
+            },
+            {
+              "model": "probe",
+              "effort": "low"
+            }
+          ]
+        },
+        "effect": "Next spawn; same running main process, no restart or RPC reload."
+      }
+    },
+    {
+      "name": "explicit_task_effort_overrides_configured_thinking",
+      "passed": true,
+      "evidence": {
+        "child": {
+          "model": "probe/alternate",
+          "thinking": "minimal",
+          "modelRequests": [
+            {
+              "model": "probe",
+              "effort": "low"
+            },
+            {
+              "model": "probe",
+              "effort": "minimal"
+            },
+            {
+              "model": "alternate",
+              "effort": "minimal"
+            },
+            {
+              "model": "alternate",
+              "effort": "minimal"
+            },
+            {
+              "model": "alternate",
+              "effort": "minimal"
+            },
+            {
+              "model": "alternate",
+              "effort": "minimal"
+            },
+            {
+              "model": "probe",
+              "effort": "low"
+            }
+          ]
+        },
+        "note": "task.enableEffort=true allows the main agent to supply lo/med/hi; lo overrides configured high."
+      }
+    },
+    {
+      "name": "native_reset_restores_agent_default_for_next_spawn",
+      "passed": true,
+      "evidence": {
+        "overrides": {},
+        "child": {
+          "model": "probe/probe",
+          "thinking": "low",
+          "modelRequests": [
+            {
+              "model": "probe",
+              "effort": "low"
+            },
+            {
+              "model": "probe",
+              "effort": "minimal"
+            },
+            {
+              "model": "probe",
+              "effort": "low"
+            },
+            {
+              "model": "probe",
+              "effort": "low"
+            },
+            {
+              "model": "probe",
+              "effort": "low"
+            },
+            {
+              "model": "probe",
+              "effort": "low"
+            },
+            {
+              "model": "probe",
+              "effort": "low"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "native_enum_validation_rejects_invalid_setting",
+      "passed": true,
+      "evidence": {
+        "rejected": true,
+        "previousValuePreserved": true,
+        "error": "Error: Invalid value: not-a-level. Valid values: minimal, low, medium, high, xhigh, max, auto\n"
+      }
+    }
+  ],
+  "processes": [
+    {
+      "label": "Settings",
+      "pid": 74219,
+      "exitCode": 0,
+      "signal": null,
+      "stderr": ""
+    }
+  ],
+  "limitations": [
+    "Deterministic localhost provider, not model intelligence or real provider compatibility.",
+    "Direct RPC probes reuse previous Electron transport evidence; no new GUI or packaged app validation.",
+    "No load test or claim of complete TUI parity."
+  ]
+}

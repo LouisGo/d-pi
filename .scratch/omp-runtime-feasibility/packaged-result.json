@@ -1,0 +1,47 @@
+{
+  "passed": true,
+  "electron": "44.4.5",
+  "packaged": true,
+  "execPath": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-bundle-vBowoI/Moved App With Spaces/OMP Bundle Probe.app/Contents/MacOS/OMP Bundle Probe",
+  "resourcesPath": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-bundle-vBowoI/Moved App With Spaces/OMP Bundle Probe.app/Contents/Resources",
+  "checks": [
+    "Packaged app resolves and executes bundled OMP 18.3.0 with PATH=/usr/bin:/bin",
+    "Packaged preload MessagePort → utility SessionHost → OMP RPC v2 → renderer",
+    "Real bundled OMP completes a model turn; renderer receives BUNDLED_OMP_OK",
+    "OMP and utility SessionHost exit normally after stdio EOF"
+  ],
+  "ompPath": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-bundle-vBowoI/Moved App With Spaces/OMP Bundle Probe.app/Contents/Resources/runtime/omp",
+  "ompSha256": "d61fb411f24146bed48dd901b13b5912a297d899ee691dda69c4b5b7ab8c35dc",
+  "rendererURL": "file:///private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-bundle-vBowoI/Moved%20App%20With%20Spaces/OMP%20Bundle%20Probe.app/Contents/Resources/app/index.html",
+  "ompVersion": "omp/18.3.0",
+  "mainPid": 74285,
+  "hostPid": 74295,
+  "ompPid": 74299,
+  "modelRequests": 1,
+  "diagnostics": [
+    {
+      "source": "host",
+      "type": "omp-exit",
+      "code": 0,
+      "signal": null
+    },
+    {
+      "source": "main",
+      "type": "host-exit",
+      "code": 0
+    }
+  ],
+  "launch": {
+    "method": "macOS open -n -W (LaunchServices)",
+    "relocatedBundle": "/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-bundle-vBowoI/Moved App With Spaces/OMP Bundle Probe.app",
+    "appAsar": false,
+    "electronZipSha256": "a212eee63ba2f45fd83bd28f77a3e3313a336ad17a4c25adf617942eef5e0e2c"
+  },
+  "processesStopped": true,
+  "limitations": [
+    "Hidden renderer, no product UI validation.",
+    "Unpacked Resources/app, not production ASAR or electron-builder configuration.",
+    "Local fixture provider; no authentication or real provider verification.",
+    "No clean-machine, Gatekeeper, signing/notarization, Windows or Intel validation."
+  ]
+}

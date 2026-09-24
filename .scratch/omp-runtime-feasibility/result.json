@@ -1,0 +1,246 @@
+{
+  "date": "2026-09-24T13:47:59.445Z",
+  "upstreamTag": "v18.3.0",
+  "upstreamCommit": "62bc57be1b03ef0802a33cf7f5f530e534527531",
+  "releaseAsset": "omp-darwin-arm64",
+  "binarySha256": "d61fb411f24146bed48dd901b13b5912a297d899ee691dda69c4b5b7ab8c35dc",
+  "root": "/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-feasibility-bDE938",
+  "checks": [
+    {
+      "name": "standalone_runtime_and_two_sessions",
+      "passed": true,
+      "evidence": {
+        "distinctSessionIds": true,
+        "isolatedHistories": true,
+        "peakModelRequests": 2,
+        "path": "/usr/bin:/bin",
+        "version": "omp/18.3.0"
+      }
+    },
+    {
+      "name": "model_and_thinking_settings_are_session_scoped",
+      "passed": true,
+      "evidence": {
+        "a": {
+          "model": "alternate",
+          "thinking": "high"
+        },
+        "b": {
+          "model": "probe",
+          "thinking": "low"
+        }
+      }
+    },
+    {
+      "name": "image_reaches_model_transport",
+      "passed": true,
+      "evidence": {
+        "imageAtLocalProvider": true,
+        "note": "OMP may transcode PNG to WebP before transport.",
+        "visualUnderstandingTested": false
+      }
+    },
+    {
+      "name": "host_tool_roundtrip",
+      "passed": true,
+      "evidence": {
+        "callback": true,
+        "toolResultReturned": true
+      }
+    },
+    {
+      "name": "subagents_events_and_transcripts",
+      "passed": true,
+      "evidence": {
+        "activeCount": 2,
+        "completedListCount": 0,
+        "agents": [
+          {
+            "id": "ProbeLow",
+            "agent": "probe-low",
+            "parentToolCallId": "call_0",
+            "detached": false,
+            "agentSource": "project",
+            "status": "started",
+            "sessionFile": "/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-feasibility-bDE938/sessions/2026-09-24T13-47-53-969Z_01a0d3ac-36f1-7660-867d-aa9cefdbb6d8/ProbeLow.jsonl",
+            "index": 0
+          },
+          {
+            "id": "ProbeHigh",
+            "agent": "probe-high",
+            "parentToolCallId": "call_0",
+            "detached": false,
+            "agentSource": "project",
+            "status": "started",
+            "sessionFile": "/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-feasibility-bDE938/sessions/2026-09-24T13-47-53-969Z_01a0d3ac-36f1-7660-867d-aa9cefdbb6d8/ProbeHigh.jsonl",
+            "index": 1
+          }
+        ],
+        "eventTypes": [
+          "subagent_lifecycle",
+          "subagent_event",
+          "subagent_progress"
+        ],
+        "transcriptMessages": 8,
+        "resolvedSettings": [
+          {
+            "id": "ProbeLow",
+            "model": "probe/probe",
+            "thinking": "minimal",
+            "exitCode": 0
+          },
+          {
+            "id": "ProbeHigh",
+            "model": "probe/probe",
+            "thinking": "xhigh",
+            "exitCode": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "cross_thread_message_via_host_tool_adapter",
+      "passed": true,
+      "evidence": {
+        "deliveredToIndependentSession": true,
+        "resultReturnedToSender": true,
+        "ownership": "Test host routes a host-owned tool to another OMP process; not a built-in cross-thread API."
+      }
+    },
+    {
+      "name": "local_memory_learn_then_new_session_injection",
+      "passed": true,
+      "evidence": {
+        "learnedThroughNativeTool": true,
+        "injectedIntoNewSession": true,
+        "absentInOtherProject": true
+      }
+    },
+    {
+      "name": "headless_settings_and_memory_commands",
+      "passed": true,
+      "evidence": [
+        {
+          "message": "/settings",
+          "response": {
+            "id": "065a9351-4dc3-433d-97a1-a6f8f202764d",
+            "type": "response",
+            "command": "prompt",
+            "success": true
+          },
+          "reachedModel": true,
+          "output": []
+        },
+        {
+          "message": "/memory view",
+          "response": {
+            "id": "5549019f-e4e0-49c7-98de-fcec237a5f37",
+            "type": "response",
+            "command": "prompt",
+            "success": true,
+            "data": {
+              "agentInvoked": false
+            }
+          },
+          "reachedModel": false,
+          "output": [
+            "Memory payload is empty."
+          ]
+        },
+        {
+          "message": "/memory stats",
+          "response": {
+            "id": "7700f7ce-9ddc-46e9-a191-38bb4f6af4a5",
+            "type": "response",
+            "command": "prompt",
+            "success": true,
+            "data": {
+              "agentInvoked": false
+            }
+          },
+          "reachedModel": false,
+          "output": [
+            "Memory stats is not available for the local backend."
+          ]
+        }
+      ]
+    },
+    {
+      "name": "native_config_cli_and_provider_request_limit",
+      "passed": true,
+      "evidence": {
+        "set": {
+          "key": "providers.maxInFlightRequests",
+          "value": {
+            "probe": 1
+          }
+        },
+        "get": {
+          "key": "providers.maxInFlightRequests",
+          "value": {
+            "probe": 1
+          },
+          "type": "record",
+          "description": "Maximum concurrent LLM requests per provider id (for example \"openai\" or \"anthropic\"), shared across local OMP processes with this config root. Omitted providers are unlimited."
+        },
+        "taskConcurrency": {
+          "key": "task.maxConcurrency",
+          "value": 2,
+          "type": "number",
+          "description": "Maximum number of subagents running concurrently"
+        },
+        "peakModelRequestsAcrossTwoProcesses": 1,
+        "scope": "same isolated config root; read by fresh processes; live reload not tested"
+      }
+    }
+  ],
+  "processes": [
+    {
+      "label": "A",
+      "pid": 74218,
+      "exitCode": 0,
+      "signal": null,
+      "stderr": ""
+    },
+    {
+      "label": "B",
+      "pid": 74221,
+      "exitCode": 0,
+      "signal": null,
+      "stderr": ""
+    },
+    {
+      "label": "C",
+      "pid": 74227,
+      "exitCode": 0,
+      "signal": null,
+      "stderr": ""
+    },
+    {
+      "label": "D",
+      "pid": 74228,
+      "exitCode": 0,
+      "signal": null,
+      "stderr": ""
+    },
+    {
+      "label": "E",
+      "pid": 74234,
+      "exitCode": 0,
+      "signal": null,
+      "stderr": ""
+    },
+    {
+      "label": "F",
+      "pid": 74235,
+      "exitCode": 0,
+      "signal": null,
+      "stderr": ""
+    }
+  ],
+  "limitations": [
+    "Deterministic localhost provider, not model intelligence or real provider compatibility.",
+    "Direct RPC probes reuse previous Electron transport evidence; no new GUI or packaged app validation.",
+    "No load test or claim of complete TUI parity."
+  ]
+}
