@@ -1,0 +1,195 @@
+{
+  "scenario": "stop",
+  "version": "18.3.0",
+  "firstAck": {
+    "id": "prompt-1790241653158-hr6i",
+    "type": "response",
+    "command": "prompt",
+    "success": true
+  },
+  "root": "/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-rpc-ui-jA3rlm",
+  "followA": {
+    "id": "prompt-1790241653206-wtii",
+    "type": "response",
+    "command": "prompt",
+    "success": true
+  },
+  "followB": {
+    "id": "prompt-1790241653222-o8r8",
+    "type": "response",
+    "command": "prompt",
+    "success": true
+  },
+  "steer": {
+    "id": "prompt-1790241653238-dd8a",
+    "type": "response",
+    "command": "prompt",
+    "success": true
+  },
+  "before": {
+    "streaming": true,
+    "queued": 3
+  },
+  "abort": {
+    "id": "abort-1790241653271-47w6",
+    "type": "response",
+    "command": "abort",
+    "success": true
+  },
+  "after": {
+    "streaming": false,
+    "queued": 0
+  },
+  "requests": [
+    [
+      "First request."
+    ],
+    [
+      "First request.",
+      "Steer C"
+    ],
+    [
+      "First request.",
+      "Steer C",
+      "Follow up A"
+    ],
+    [
+      "First request.",
+      "Steer C",
+      "Follow up A",
+      "Follow up B"
+    ]
+  ],
+  "frames": [
+    {
+      "type": "extension_ui_request",
+      "id": "158bfb446293caac",
+      "method": "setWidget"
+    },
+    {
+      "type": "response",
+      "command": "negotiate_protocol",
+      "success": true
+    },
+    {
+      "type": "response",
+      "command": "prompt",
+      "success": true
+    },
+    {
+      "type": "agent_start"
+    },
+    {
+      "type": "turn_start"
+    },
+    {
+      "type": "message_end",
+      "role": "user"
+    },
+    {
+      "type": "response",
+      "command": "prompt",
+      "success": true
+    },
+    {
+      "type": "response",
+      "command": "prompt",
+      "success": true
+    },
+    {
+      "type": "response",
+      "command": "prompt",
+      "success": true
+    },
+    {
+      "type": "response",
+      "command": "get_state",
+      "success": true
+    },
+    {
+      "type": "message_end",
+      "role": "assistant"
+    },
+    {
+      "type": "turn_end",
+      "role": "assistant"
+    },
+    {
+      "type": "agent_end",
+      "isTerminal": true
+    },
+    {
+      "type": "extension_ui_request",
+      "id": "158bfb448713caae",
+      "method": "setWidget"
+    },
+    {
+      "type": "response",
+      "command": "abort",
+      "success": true
+    },
+    {
+      "type": "agent_start"
+    },
+    {
+      "type": "turn_start"
+    },
+    {
+      "type": "message_end",
+      "role": "user"
+    },
+    {
+      "type": "message_end",
+      "role": "assistant"
+    },
+    {
+      "type": "turn_end",
+      "role": "assistant"
+    },
+    {
+      "type": "turn_start"
+    },
+    {
+      "type": "message_end",
+      "role": "user"
+    },
+    {
+      "type": "message_end",
+      "role": "assistant"
+    },
+    {
+      "type": "turn_end",
+      "role": "assistant"
+    },
+    {
+      "type": "turn_start"
+    },
+    {
+      "type": "message_end",
+      "role": "user"
+    },
+    {
+      "type": "message_end",
+      "role": "assistant"
+    },
+    {
+      "type": "turn_end",
+      "role": "assistant"
+    },
+    {
+      "type": "agent_end",
+      "isTerminal": true
+    },
+    {
+      "type": "extension_ui_request",
+      "id": "158bfb448fd3caaf",
+      "method": "setWidget"
+    },
+    {
+      "type": "response",
+      "command": "get_state",
+      "success": true
+    }
+  ],
+  "stderr": ""
+}

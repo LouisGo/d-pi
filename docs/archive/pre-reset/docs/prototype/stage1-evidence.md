@@ -1,5 +1,3 @@
-> 历史证据：以下内容对应清理前的单会话 GUI，不代表当前代码或全部验收通过。旧应用、测试和原型结果现已[完整归档](pre-reset/README.md)，来源为 Git 提交 `6fab3ef`；用户选择保留旧基线并逐项复用。当前接入结论见 [Runtime 验证](../validation/runtime-feasibility.md)，新需求取代关系见[整理后的架构](../prototype/v1-architecture-draft.md)。
-
 # 阶段 1 运行证据与限制
 
 日期：2026-09-24；本机 macOS arm64，Electron 44.4.5，OMP 18.3.0，真实已配置模型 `openai-codex/gpt-6-sol`。测试项目为一次性目录 `/private/tmp/d-pi-stage1-e2e`。下面区分协议实验与可见 GUI 实验；协议实验使用 localhost 固定模型，不能代替真实模型验收。

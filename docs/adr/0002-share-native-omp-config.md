@@ -27,3 +27,15 @@ status: accepted
 - [桌面 store.ts](https://github.com/anomalyco/opencode/blob/v1.18.32/packages/desktop/src/main/store.ts)：桌面 store 位于 Electron userData。**不能据此推断 OpenCode 的全部状态目录都与 CLI 完全相同。**
 
 只沿用“Runtime 原生配置共享、客户端偏好分离”的产品策略；不复制 OpenCode 的 HTTP Server、文件格式或全部服务架构。最小随包方案已验证，见 [随包证据](../validation/packaged-runtime-evidence.md)；早期应用实现已移除，本 ADR 约束后续产品接入，不表示产品发行已经实现。
+
+## 2026-09-25 初始化与模型范围补充
+
+用户明确：已有可用原生 OMP 配置时免重复配置直接进入；没有配置时以 GUI 分步引导完成初始化，参照 OMP TUI 实际流程改善体验。检查配置可用性，不将“找到 CLI 可执行文件”当作配置就绪，也不因未安装 CLI 而忽略已有原生配置。使用的执行文件仍来自随包 Runtime。局部缺失或失效时补齐必要部分，不覆盖既有配置。
+
+模型选择不人为设置品牌白名单（首版新增认证入口由下节 D-23 调整）。界面承接随包兼容 OMP 与原生配置提供的模型、供应商及自定义能力，展示认证和模型能力的真实状态；不自建品牌白名单。GUI 初始化的各认证分支仍需接入验证，这一决定不代表全部登录路径已经实现。
+
+## 2026-09-25 七项答复后的范围调整（D-23）
+
+首版 GUI 新增/修复认证仅覆盖 OpenAI GPT 账户登录（OMP openai-codex）与 DeepSeek API key，用于验证登录和配置复用。取代前文“不限制首批认证适配”的范围；已有其他 provider/model 的可用原生配置仍直接复用，最终覆盖目标不删减。登录与 API key 不混称，其他 provider 不视为已验收。
+
+配置上下文识别、Finder 环境差异、版本兼容/并发写入、认证桥接边界统一见[基础契约 §3](../architecture/foundation-contracts.md#3-配置与首版认证b3)。正常路径零配置；异常允许 GUI 选择/修复，不覆盖未知格式、不暗建另一套配置、不自研 OAuth 或长期 fork Runtime。
