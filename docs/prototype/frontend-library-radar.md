@@ -54,7 +54,7 @@
 
 - **入口：**[官网 Gallery](https://www.beautifului.dev/)、[公开源码](https://github.com/slev12397/beautiful-ui)、[组件 registry 索引](https://www.beautifului.dev/r/registry.json)、[MIT 许可证](https://www.beautifului.dev/license)。可直接查看 [Tool Chips](https://www.beautifului.dev/r/tool-chips.json)、[Task Rows](https://www.beautifului.dev/r/task-rows.json)、[Prompt Bar](https://www.beautifului.dev/r/prompt-bar.json) 的组件包。这是逐件选择与改造的源码素材，并非需要整包接入的 npm 组件框架。
 - **接入位置与理由：**Tool Chips、Task Rows、Prompt Bar、思考状态与卡片层次可启发自有组件的视觉和动效。优先选择能改善 OMP 工作过程可读性的部分，保持项目自己的信息密度、文案、键盘行为与主题。
-- **采用条件：**其 [StreamingText](https://github.com/slev12397/beautiful-ui/blob/main/components/primitives/StreamingText.tsx) 和 [ToolChips](https://github.com/slev12397/beautiful-ui/blob/main/components/primitives/ToolChips.tsx)包含按计时器推进的演示行为；接入真实客户端时由 OMP 事件驱动。[ApprovalCard](https://github.com/slev12397/beautiful-ui/blob/main/components/primitives/ApprovalCard.tsx)现有问答形态也不能直接覆盖全部 `rpc-ui` 请求。逐件检查共享 CSS／主题依赖，保留复制源码所需的 MIT 声明；其仓库 README 提醒整仓安装涉及付费 `@central-icons-react`，可在选用相关组件时替换图标。Beautiful UI 的逐词播放不替代 Streamdown 的 Markdown 处理。
+- **采用条件：**其 [StreamingText](https://github.com/slev12397/beautiful-ui/blob/main/components/primitives/StreamingText.tsx) 和 [ToolChips](https://github.com/slev12397/beautiful-ui/blob/main/components/primitives/ToolChips.tsx)包含按计时器推进的演示行为；接入真实客户端时由 OMP 事件驱动。[ApprovalCard](https://github.com/slev12397/beautiful-ui/blob/main/components/primitives/ApprovalCard.tsx)现有问答形态也不能直接覆盖全部 `rpc-ui` 请求。逐件检查共享 CSS／主题依赖，保留复制源码所需的 MIT 声明；其仓库 README 提醒整仓安装涉及付费 `@central-icons-react`，选用相关组件时将应用自有图标迁为 D-31 的 Icon Layer，不安装该付费图标包。Beautiful UI 的逐词播放不替代 Streamdown 的 Markdown 处理。
 
 ## 组件质量与动效
 
@@ -111,3 +111,7 @@
 2. 查看候选的官方文档、源码、当前版本和许可证。Beautiful UI／Tool UI 按组件审查源码、样式和传递依赖；不得将演示数据、计时器或第三方运行时所有权直接复制进正式流程。
 3. 用真实 OMP 或保真协议样本验证上述采用条件，并记录相较现有实现的具体收益与代价。性能候选需要可复用的长输出／长历史样本。
 4. 采用后写明包名、固定版本、实际入口文件、验证证据和剩余限制，更新本页状态与锁文件。尚未采用的候选保持可查，不预装依赖。
+
+## 图标来源（D-31，2026-09-25）
+
+Hugeicons 免费 Stroke Rounded 已由用户选定，替代 Lucide 候选；使用 `@hugeicons/react` + `@hugeicons/core-free-icons` 和自有语义封装。详见[图标合同与验收](../architecture/icon-system.md)。图标属于视图层，不进入无头功能、IPC 或持久数据；复制外部 UI 源码时同步适配图标，不延续示例的多库依赖。

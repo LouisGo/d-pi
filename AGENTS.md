@@ -48,3 +48,7 @@ Runtime feasibility validation is complete. Read `docs/prototype/handoff.md`, `d
 
 - 七项答复已收敛为 D-23–D-27 与 `docs/architecture/foundation-contracts.md`。开发任务先读取该合同，按 G1 / M1 / M2 / M3 区分接口验证、内部闭环、首版验收和后续能力；不把“设计就绪”写成接口/性能已验收。本次文档任务不启动实现，后续明确开发指令可直接按此推进，不重开泛化选型问卷。
 - 首版新增认证只做 OpenAI 账户登录（OMP openai-codex）和 DeepSeek API key，已有其他可用配置继续复用。权限信任不是工具沙箱；不知道的提交结果不能自动重发。数值预算为工程目标，不能冒充用户逐项指定或测量结果。
+
+### GUI icons
+
+遵守 D-31 与[图标方案](docs/architecture/icon-system.md)：Hugeicons 免费 Stroke Rounded 经自有 Icon Layer 接入，取代 Lucide；业务视图不直引供应商或私有 SVG。图标/React 类型不进入无头功能与 IPC 合同；外部 UI 源码接入时同步迁移图标。按 GUI 切片实现与视觉/裁剪验收，不提前铺全图库；纯图标/样式任务也需遵守此合同。

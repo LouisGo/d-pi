@@ -11,6 +11,7 @@ description: "用于 d-pi 的功能规划、任务拆分、功能模块与 React
 
 - 从本 skill 所在目录向上三级得到仓库根，勿把调用时 cwd 当作 skill 目录。
 - 读取[决定登记](../../../docs/decisions.md)、[无头功能合同](../../../docs/architecture/headless-features.md)及该功能 spec。阶段范围按[首版方案](../../../.scratch/product-requirements/foundation-plan.md)，行为按[基础契约](../../../docs/architecture/foundation-contracts.md)相关节；已读且未变化的文档不重复加载。
+- 涉及 GUI 图标或引入外部 UI 源码时，读取 D-31 的[图标合同](../../../docs/architecture/icon-system.md)；图标只留在视图层，不能进入无头功能/IPC。纯图标任务遵守合同即可，不启动整套功能流程。
 - 标明受影响决定及状态，复用对应版本已有证据。只调查会改变当前实现的未知，不重开整个技术选型。
 
 ## 设计或实现

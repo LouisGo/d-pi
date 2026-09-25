@@ -20,7 +20,7 @@
 
 ## 2. UI、输入与内容组件
 
-- 恢复既有自有组件层方向：React + Tailwind CSS，自有设计变量与组件 API；[shadcn/ui](https://ui.shadcn.com/docs)提供源码与组织参考，Radix 按需提供底层交互，React Aria 用于复杂交互对照，Base UI 不作为默认底座。Beautiful UI 是重要视觉参考，Tool UI 是工具结果交互参考；入口及采用条件见库雷达。图标继续优先评估 [Lucide](https://lucide.dev/guide/)。不采用外部 UI 自带的 Agent 状态作为 OMP 协议。
+- 恢复既有自有组件层方向：React + Tailwind CSS，自有设计变量与组件 API；[shadcn/ui](https://ui.shadcn.com/docs)提供源码与组织参考，Radix 按需提供底层交互，React Aria 用于复杂交互对照，Base UI 不作为默认底座。Beautiful UI 是重要视觉参考，Tool UI 是工具结果交互参考；入口及采用条件见库雷达。图标由 D-31 确认采用 Hugeicons 免费 Stroke Rounded，经自有 Icon Layer 接入，取代此前优先评估 Lucide 的提议；边界与验收见[图标方案](../../docs/architecture/icon-system.md)。不采用外部 UI 自带的 Agent 状态作为 OMP 协议。
 - Composer 改为优先研究直接 ProseMirror 自建业务输入层，仅在具体集成问题触发后对照最小 Tiptap；Lexical 保留历史候选，未定案。详见下节。
 - Markdown 推荐改为 [Streamdown](https://github.com/vercel/streamdown)与基于 Shiki 的 code 插件，统一主对话、Side Chat 与静态内容渲染入口，不再维护另一套业务直接使用的 react-markdown 渲染链。Streamdown 官方定位为面向 AI 流式内容的替代实现，支持不完整 Markdown 与代码高亮；内部是否依赖 react-markdown 随版本核实，不人为排除传递依赖。Shiki 负责高亮，不替代 Markdown 解析。仍需验收复制原文、选择稳定性及长消息体验。
 - PNG 导出优先评估受控页面排版后使用 Electron [capturePage](https://www.electronjs.org/docs/latest/api/web-contents#contentscapturepagerect-opts)；长内容必须先分页或逐段渲染，不能假设一次截图捕获整个长页面。

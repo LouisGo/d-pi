@@ -35,14 +35,13 @@
 | D-13 | VSCode 式底部交互终端，Command + ` 唤起 | 不自动扩成接管 Agent 命令 |
 | D-14 | Diff 是跨场景组件；Git Panel 自建 OMP 业务 GUI，Git 机制复用 | 09-25 不建设完整通用 Git 客户端，20/80 非工时承诺 |
 | D-15 | 从设计起点预留 Agent Changes / Run Changes / Review / Revert | 具体归属、Run 和 Revert 语义未确认，不能先绑定命令 |
-| D-16 | Codex 式常规布局，暂不分屏；统一图标；基础复制和段落 PNG 导出 | 具体图标库与导出实现未定；PNG 不是 AI 绘图 |
+| D-16 | Codex 式常规布局，暂不分屏；统一图标；基础复制和段落 PNG 导出 | 图标库随后由 D-31 确认；导出实现未定，PNG 不是 AI 绘图 |
 | D-17 | Biome 替代 ESLint/Prettier；仅 @shadcn/lint 配套 Oxlint | 不覆盖用户项目的格式化约定 |
 | D-18 | 完整保留旧基线，逐项复用，不把旧 UI 直接恢复为当前产品 | 用户明确选择；[49 文件归档](archive/pre-reset/README.md)不可当现行构建 |
 | D-19 | 前期方案先收敛、记录清楚，再开始动手 | 09-25 最新指令；本轮限设计与调查，不开产品实现或交互原型。之后按用户明确阶段授权推进，不由 AI 自行认定已批准 |
 | D-20 | 首版 Diff 交付 Git 当前差异 + 有原生证据的工具修改，明确标注来源；完整 Run Changes 和逐次修改归属后续接入 | 09-25 用户明确回复“接受，先保证差异来源准确”；由 P-03 转为已确认，不将全部工作区变化冒称 AI 改动 |
 | D-21 | 从开发开始覆盖 Electron 各层的结构化日志、跨层关联和基础监控；日常无感，排查时易于读取/筛选/导出 | 09-25 用户明确要求并补充轻量边界：不追求 DeepSeek Harness 式极致体系，专用日志界面后续可做；OMP 内部不改。见[诊断设计](architecture/diagnostics.md)，具体工程参数未验收 |
 | D-22 | 统一跨进程 trace ID 追踪 Renderer/Main/utility 实际操作链；类型化异常、错误处理分工及基于证据的归因 | 09-25 用户补充：须能快速定位应用与 OMP 暴露的问题；保留未知根因，不能把 OMP 返回错误直接判为 OMP bug。扩展 D-21，轻量不等于省略关联合同；见[诊断设计 §4](architecture/diagnostics.md#4-跨进程-trace-与结构化合同d-22) |
-
 | D-23 | 首版 GUI 新增认证只做 OpenAI GPT 账户登录与 DeepSeek API key | 09-25 七项答复第 3 项；替代 D-04 的首批认证入口不限制策略，已有其他可用配置/模型仍复用；OMP 账户入口为 openai-codex，不混同 OpenAI API key |
 | D-24 | 采纳稳定身份/恢复、提交结果未知和冻结内容管线方案 | 七项答复第 1/2/4 项；[基础契约](architecture/foundation-contracts.md)为工程细化，持久收据不等于 OMP 幂等 |
 | D-25 | 权限先简单，提供项目执行信任、完全访问及必要基础选项 | 七项答复第 5 项授权工程确定；项目执行与 App 文件访问范围分开表达（见下方 09-25 修订），不能把项目信任冒充工具沙箱 |
@@ -51,6 +50,7 @@
 | D-28 | 每个功能先验证、再交付无头功能、最后接入正式 GUI；组件化包含功能模块 | 09-25 用户确认；最小交互实验可前置，不等到全产品逻辑完成才做 GUI；细化 D-26，不更改 M1/M2 验收范围 |
 | D-29 | 功能规则独立于 React/视图，以明确契约组合；应用生命周期不依赖页面或 hook 挂载 | 09-25 用户确认；区分规则、协调/外部接入、投影/查询、React 接入与视图；延续 D-02，详见[无头功能合同](architecture/headless-features.md) |
 | D-30 | 不引入 XState | 09-25 用户明确排除；采用 TypeScript 显式状态转换与局部协调，不自研通用状态机框架 |
+| D-31 | GUI 主图标采用 Hugeicons，替代 Lucide 提议，建立自有 Icon Layer | 09-25 用户明确选库；免费 Stroke Rounded 与组件边界见[图标方案](architecture/icon-system.md)，原稿经审查修订，不代表已实现/验收 |
 
 ## 沿用基线与提议
 
@@ -63,7 +63,7 @@
 | P-01 | 已收敛 | 用户授权划分阶段，具体首版按 D-26 / foundation；不代表全部依赖或性能已验收 |
 | P-02 | 提议 | 直接 ProseMirror 定制 Composer，最小 Tiptap 只在必要时对照；未做原型，不标记已采用 |
 | P-03 | 已转为确认 | 2026-09-25 用户接受交付顺序，见 D-20；保留此编号追溯原提议 |
-| P-04 | 提议 | Node/TypeScript 宿主、不自研第二后端语言；WebContentsView、xterm.js/node-pty、Lucide、PNG capturePage 等见[技术评估](../.scratch/product-requirements/technical-evaluation.md) |
+| P-04 | 提议 | Node/TypeScript 宿主、不自研第二后端语言；WebContentsView、xterm.js/node-pty、PNG capturePage 等；原 Lucide 提议已由 D-31 取代，其他提议状态不变，见[技术评估](../.scratch/product-requirements/technical-evaluation.md) |
 
 ## 已取代或撤回的方向
 
@@ -76,6 +76,7 @@
 | 找到完整 Git GUI 大库后再做 Git | D-14、D-15 |
 | 自由分屏作为当前要求 | D-16 |
 | ESLint + Prettier | D-17 |
+| 优先评估 Lucide 作为图标库 | D-31：用户选择 Hugeicons；原方向仅为候选，无需保留双轨 |
 | 清理实现等于清空既有选型/原型/证据 | D-18 |
 
 ## 本轮交接检查
@@ -91,3 +92,7 @@
 ## 2026-09-25 无头功能与应用生命周期共识
 
 用户明确排除 XState，认可先验证、再建立可组合功能、最后接入正式 GUI，并强调组件化不局限于 UI、中间层需要职责划分，应用不能按页面生命周期管理。登记 D-28–D-30；取代对话中 XState 可作为候选的建议，以及正式 UI/高保真必须先于无头功能的安排。保留功能内的最小交互实验和分层性能验收，不取代现有进程边界、OMP 所有权及渐进交付目标。详细合同只维护在[无头功能文档](architecture/headless-features.md)，执行流程由[仓库 skill](../.agents/skills/d-pi-headless-features/SKILL.md)引用；本次仅文档与 skill，不构成产品开工授权。
+
+## 2026-09-25 图标方案审查
+
+用户明确选择 Hugeicons 替代 Lucide，并要求独立审查所附 Icon System、同步文档和记忆。登记 D-31，补充 D-16，取代 P-04 的图标候选部分；不改变其他候选和 D-28–D-30。采纳免费统一风格、自有语义 API 与私有 SVG，修正无头边界、可访问性、Run 示例、工厂裁剪假设及 Web 路由式 Gallery。详见[图标方案](architecture/icon-system.md)。本次仅文档，未安装依赖、构建组件或进行 GUI 验收；历史归档保持原样。
