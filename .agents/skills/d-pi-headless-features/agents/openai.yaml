@@ -1,0 +1,4 @@
+interface:
+  display_name: "d-pi 无头功能交付"
+  short_description: "验证先行，按功能划分职责与生命周期，再通过薄 React 接入正式 GUI"
+  default_prompt: "使用 $d-pi-headless-features 按当前授权阶段推进本功能，明确契约、生命周期与验收证据。"

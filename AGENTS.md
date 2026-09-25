@@ -9,6 +9,10 @@
 
 ## Agent skills
 
+### Feature architecture
+
+功能规划、拆票、模块实现及架构评审使用仓库 skill [d-pi-headless-features](.agents/skills/d-pi-headless-features/SKILL.md)。遵守 D-28–D-30 与 [无头功能合同](docs/architecture/headless-features.md)：按功能先验证、再无头逻辑、最后正式 GUI；不引入 XState；业务生命周期独立于 React 挂载。纯文字或纯样式修正不额外触发整套架构流程。
+
 ### Issue tracker
 
 Issues and specs are tracked as local Markdown files under `.scratch/<feature>/`. See `docs/agents/issue-tracker.md`.

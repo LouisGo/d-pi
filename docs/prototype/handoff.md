@@ -44,3 +44,5 @@
 2026-09-25 补充 D-21：[日志/监控](../architecture/diagnostics.md)是每层从开始具备的横切基础，轻量、结构化、可追溯、日常无感；专用日志界面后续可做，不要求先建完整观测平台。
 
 2026-09-25 七项答复更新：D-23 首版新增认证仅 OpenAI 账户登录 / DeepSeek API key；已有其他配置仍复用。D-24–26 补齐身份、提交、附件、权限、性能和 G1/M1/M2/M3 边界，D-27 补回既有子 Agent 默认设置。审查 A1–A3 已同步，B1–B7 设计闭合，接口与性能验收按基础契约分切片执行，未实测项不可标通过。
+
+2026-09-25 后续共识：D-28–D-30 与[无头功能合同](../architecture/headless-features.md)成为功能开发入口；按功能验证→无头功能→正式 GUI，不引入 XState，业务生命周期独立于 React。后续任务按 [仓库 skill](../../.agents/skills/d-pi-headless-features/SKILL.md)执行，不先做整套 UI 或把所有功能放进 hooks。

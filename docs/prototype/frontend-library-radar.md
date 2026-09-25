@@ -11,6 +11,8 @@
 - 2026-09-25：编辑器选定 Monaco；Composer 优先研究直接 ProseMirror，仅在具体集成问题触发后对照最小 Tiptap；Git Panel 自建业务 UI 并复用成熟 Git 实现。内置浏览器、终端等增量评估，见[增量技术评估](../../.scratch/product-requirements/technical-evaluation.md)。Monaco 是用户已选定项但未完成集成；Composer 仍未定案。
 - 当前没有产品依赖清单；历史实现链接指向固定 Git 提交，不意味着被引用代码仍在工作区。旧 M1 范围只作历史依据，当前产品范围以[需求文档](../../.scratch/product-requirements/spec.md)为准。
 
+2026-09-25 D-28–D-30：组件化不限于以下 UI 候选，功能模块/契约先于正式 GUI。Zustand/Query/hooks 的职责与生命周期见[无头功能合同](../architecture/headless-features.md)；不引入 XState，不因追求无头架构新增全局框架。
+
 ## 先读：组件与 Runtime 的边界
 
 1. **组件库由本项目自己写。**React + TypeScript + Tailwind CSS 是基础；我们定义自己的设计变量、视觉语言、组件 API 和状态展示规则。`src/renderer/src/components/ui/` 是自有组件层，不以外部组件库的 API 作为应用契约。shadcn/ui 提供可参考的源码与组织方式；Radix 可按需提供焦点、弹层、键盘等底层交互。复杂控件可对照 React Aria，不因选了某种 primitive 而采用它的视觉样式。
