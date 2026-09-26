@@ -1,16 +1,18 @@
 # OMP Desktop
 
-当前先读：[决定登记](docs/decisions.md)与[三项基础方案](.scratch/product-requirements/foundation-plan.md)。基础方案已按七项答复收敛，可进入分阶段技术验证与开发；本轮只交付文档，尚未启动实现。先看[开发基础契约](docs/architecture/foundation-contracts.md)和[审查关闭记录](.scratch/product-requirements/preflight-review.md)。
 以 Electron GUI 复用 OMP Runtime，改善需求输入、执行观察和结果阅读。应用将内置 OMP，用户无需另行安装 CLI。
 
-**当前状态：Runtime 可行性验证完成，产品需求已收敛到渐进交付，正在整合既有选型与新需求。** 旧应用实现曾被移除，现已完整归档；用户已选择保留完整旧基线、后续逐项复用，不直接恢复旧应用为当前产品。既有架构、组件方向与实验记录继续保留，不将删除代码等同于取消所有技术决策。
+**当前状态（2026-09-26）：Runtime 可行性已有限定范围证据，需求和基础方案已收敛到分阶段验证与交付，当前产品尚未开始实现。** 旧应用已完整归档，后续逐项复用；删除实现不代表取消既有技术决定。设计就绪不等于接口、性能或首版已验收。
+
+从 [文档导航](docs/README.md) 按任务找到依据；全局审计可按其中的底层到顶层顺序阅读。设计与开发以 [决定登记](docs/decisions.md)、[基础方案](.scratch/product-requirements/foundation-plan.md)和相关 [基础契约](docs/architecture/foundation-contracts.md)为准。具体任务按用户授权推进，不重复开启已收敛的选型。
 
 ## 设计与历史入口
 
 - [当前交接与证据索引](docs/prototype/handoff.md)
 - [整理后的架构与交付](docs/prototype/v1-architecture-draft.md)
 - [既有前端库雷达](docs/prototype/frontend-library-radar.md)：保留候选、理由、参考和采用条件。
-- [技术选型审议：现代 TypeScript 生态中的复用与取舍](docs/architecture/technology-selection-review.md)：覆盖 UI、类型、状态、存储与宿主基础；调整建议不自动取代现行决定。
+- [技术选型与采纳记录](docs/architecture/technology-selection-review.md)：D-32–D-35 已确认 Base UI、最小 Tiptap、SQLite、应用级 ts-pattern 与 Zod v4，其他工具仍按候选状态。
+- [TypeScript 范式](docs/architecture/typescript.md)：严格类型、schema 推导、穷尽业务分支与边界验收；对应 [项目 skill](.agents/skills/d-pi-typescript/SKILL.md)按任务调用。
 - [当前需求](.scratch/product-requirements/spec.md)与[增量选型评估](.scratch/product-requirements/technical-evaluation.md)：本轮确认与待验证项。
 - [清理前完整归档](docs/archive/pre-reset/README.md)：原型、机器结果、源码、测试及构建文件，附固定提交与哈希清单。
 

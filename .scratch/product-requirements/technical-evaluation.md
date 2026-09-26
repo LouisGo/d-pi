@@ -1,6 +1,6 @@
 # 技术选型初步评估
 
-日期：2026-09-24；2026-09-25 增量更新。状态：除明确标记用户已选定项外，均为研究建议，未安装依赖、未实现产品、未完成集成验证。现有 Electron / utility SessionHost / 独立 OMP 与配置边界继续遵循 ADR；以下新候选不等于已接受的 ADR。上游文档基于本日读取，版本锁定需在接入前完成。OMP 源码核对固定 v18.3.0。
+日期：2026-09-24；2026-09-26 按 D-32–D-35 更新已确认选型。状态：除明确标记用户已选定项外，均为研究建议，未安装依赖、未实现产品、未完成集成验证。现有 Electron / utility SessionHost / 独立 OMP 与配置边界继续遵循 ADR；以下新候选不等于已接受的 ADR。上游文档基于本日读取，版本锁定需在接入前完成。OMP 源码核对固定 v18.3.0。
 
 ## 既有选型与证据的衔接
 
@@ -14,14 +14,14 @@
 
 - [React 文档](https://react.dev/learn/creating-a-react-app)允许特殊约束下使用 Vite 等构建工具；[electron-vite](https://electron-vite.org/guide/)面向 Electron 工程。
 - 展示状态沿用旧方向 [Zustand](https://github.com/pmndrs/zustand)：采用按会话选择订阅的展示镜像，局部表单保留局部状态。OMP 仍是会话与执行事实的所有者，不把整个 Runtime 状态复制成第二份权威存储。
-- 恢复旧稿 TanStack Query 的查询职责：模型列表、配置摘要、历史目录等请求缓存，与 Zustand 实时镜像分工，不复制第二份可写消息正文；Zod、pnpm、测试与打包工具的既有方向见架构页。
-- App 偏好与草稿按现有 ADR 单独持久化；初期优先简单文件方案，是否需要数据库取决于实际查询与恢复要求，不因选用状态库就把全部历史序列化到它的持久化插件。
+- 恢复旧稿 TanStack Query 的查询职责：模型列表、配置摘要、历史目录等请求缓存，与 Zustand 实时镜像分工，不复制第二份可写消息正文；Zod v4 与应用级 ts-pattern 按 D-35 和 [TypeScript 合同](../../docs/architecture/typescript.md)执行，pnpm、测试与打包工具继续沿用。
+- D-34 已确认 SQLite 承载 App 偏好、草稿、提交收据与其他结构化元数据，由 Main 集中拥有；附件文件和 OMP 原生记录仍分离。取代“初期文件、不足再数据库”的方案，不把状态库持久化插件当业务存储。
 - 待验证：流式更新下输入响应、跨 Thread 状态隔离、重连恢复、打包后的资源与 worker 路径。Vue/Svelte 未做同条件性能对比，当前推荐基于组件组合与接入路径。
 
 ## 2. UI、输入与内容组件
 
-- 恢复既有自有组件层方向：React + Tailwind CSS，自有设计变量与组件 API；[shadcn/ui](https://ui.shadcn.com/docs)提供源码与组织参考，Radix 按需提供底层交互，React Aria 用于复杂交互对照，Base UI 不作为默认底座。Beautiful UI 是重要视觉参考，Tool UI 是工具结果交互参考；入口及采用条件见库雷达。图标由 D-31 确认采用 Hugeicons 免费 Stroke Rounded，经自有 Icon Layer 接入，取代此前优先评估 Lucide 的提议；边界与验收见[图标方案](../../docs/architecture/icon-system.md)。不采用外部 UI 自带的 Agent 状态作为 OMP 协议。
-- Composer 改为优先研究直接 ProseMirror 自建业务输入层，仅在具体集成问题触发后对照最小 Tiptap；Lexical 保留历史候选，未定案。详见下节。
+- 恢复既有自有组件层方向：React + Tailwind CSS，自有设计变量与组件 API；D-32 确认 Base UI 为默认交互基础，积极复用 [shadcn/ui](https://ui.shadcn.com/docs)源码，再按产品需要调整；React Aria 保留复杂交互对照，Radix 只在实际适配需要时局部评估。Beautiful UI 是重要视觉参考，Tool UI 是工具结果交互参考；入口及采用条件见库雷达。图标由 D-31 确认采用 Hugeicons 免费 Stroke Rounded，经自有 Icon Layer 接入，取代此前优先评估 Lucide 的提议；边界与验收见[图标方案](../../docs/architecture/icon-system.md)。不采用外部 UI 自带的 Agent 状态作为 OMP 协议。
+- Composer 已按 D-33 选定最小 Tiptap 与业务扩展；必要时使用底层 ProseMirror 能力，Lexical 与直接 ProseMirror 独立路线保留为历史研究。详见下节。
 - Markdown 推荐改为 [Streamdown](https://github.com/vercel/streamdown)与基于 Shiki 的 code 插件，统一主对话、Side Chat 与静态内容渲染入口，不再维护另一套业务直接使用的 react-markdown 渲染链。Streamdown 官方定位为面向 AI 流式内容的替代实现，支持不完整 Markdown 与代码高亮；内部是否依赖 react-markdown 随版本核实，不人为排除传递依赖。Shiki 负责高亮，不替代 Markdown 解析。仍需验收复制原文、选择稳定性及长消息体验。
 - PNG 导出优先评估受控页面排版后使用 Electron [capturePage](https://www.electronjs.org/docs/latest/api/web-contents#contentscapturepagerect-opts)；长内容必须先分页或逐段渲染，不能假设一次截图捕获整个长页面。
 - 附件只记录元数据与内容引用，预览和提交管线分开；PDF 被接受不等于模型已读取。具体提取/转换优先核实 OMP 原生能力，尚未选择 PDF 解析依赖。
@@ -29,7 +29,7 @@
 
 ### Composer 能力与验收
 
-2026-09-25 用户提出直接 ProseMirror 路线。补充[研究](composer-research.md)建议优先验证直接 ProseMirror 自建 Composer，仅在具体集成问题触发后对照最小 Tiptap，不从零写编辑引擎。Tiptap 基于 ProseMirror 且暴露底层 API，不能断言无法深度定制；Codex App 使用何种包装未找到可靠证据。尚未运行原型或最终选型。
+2026-09-26 用户确认 D-33，取代 09-25 的直接 ProseMirror 优先提议：[研究](composer-research.md)保留原理由，当前直接在最小 Tiptap 上实现业务扩展并验证输入。Tiptap 基于 ProseMirror 且暴露底层 API；Codex App 使用何种包装仍无可靠证据，不作为采用依据。选型已定，原型和集成尚未执行。
 
 保留验收要求：中文 IME、引用节点编辑、附件混合粘贴、撤销重做、Thread 草稿隔离与恢复、失败重试、长输入和可访问性。附件管线、引用快照时机和 OMP 提交转换是业务职责，不由编辑器框架自动解决。
 

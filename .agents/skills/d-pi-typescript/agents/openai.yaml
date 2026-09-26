@@ -1,0 +1,4 @@
+interface:
+  display_name: "d-pi TypeScript 范式"
+  short_description: "以 ts-pattern、Zod v4 与明确数据边界落实应用 TypeScript 规范"
+  default_prompt: "使用 $d-pi-typescript 按当前任务落实项目 TypeScript 合同，检查业务分支、数据边界与实际验证。"

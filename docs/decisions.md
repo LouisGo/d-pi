@@ -1,12 +1,12 @@
 # 产品与技术决定登记
 
-更新：2026-09-25。目的：让新的 AI/开发者能够分清用户决定、历史工程基线、提议和证据，防止无记录地推翻方向。本文件是索引，不复制完整规格；行为细节以链接目标为准。有矛盾不得用文件更新时间或措辞强弱擅自决定。
+更新：2026-09-26。目的：让新的 AI/开发者能够分清用户决定、历史工程基线、提议和证据，防止无记录地推翻方向。本文件是索引，不复制完整规格；行为细节以链接目标为准。有矛盾不得用文件更新时间或措辞强弱擅自决定。
 
 ## 状态与变更规则
 
 - **已确认**：源于用户明确决定或 accepted ADR；实施必须遵循。
 - **沿用基线**：历史记录中已有工程方向，本轮恢复保留；不是每一项都由用户逐包确认。按需接入与复核版本，不能整套清零。
-- **提议**：助手推荐或未验收设计，不因写进文档就成为用户决定。
+- **提议**：助手推荐或尚未确认的方案，不因写进文档就成为用户决定。已确认但尚未实测的合同仍然有效，不能降为提议；验收状态单独记录。
 - **已取代**：留存旧理由与新决定引用，不删除历史。
 - **已验证**是证据属性，不是产品批准状态；必须写清版本、场景与未覆盖项。
 
@@ -16,7 +16,7 @@
 
 ## 已确认决定
 
-来源为 2026-09-24 至 09-25 本任务的用户逐项确认，除下表另有说明。完整产品表见[需求](../.scratch/product-requirements/spec.md)。
+来源为 2026-09-24 至 09-26 本任务的用户逐项确认，除下表另有说明。完整产品表见[需求](../.scratch/product-requirements/spec.md)。
 
 | ID | 决定 | 依据/边界 |
 | --- | --- | --- |
@@ -51,19 +51,24 @@
 | D-29 | 功能规则独立于 React/视图，以明确契约组合；应用生命周期不依赖页面或 hook 挂载 | 09-25 用户确认；区分规则、协调/外部接入、投影/查询、React 接入与视图；延续 D-02，详见[无头功能合同](architecture/headless-features.md) |
 | D-30 | 不引入 XState | 09-25 用户明确排除；采用 TypeScript 显式状态转换与局部协调，不自研通用状态机框架 |
 | D-31 | GUI 主图标采用 Hugeicons，替代 Lucide 提议，建立自有 Icon Layer | 09-25 用户明确选库；免费 Stroke Rounded 与组件边界见[图标方案](architecture/icon-system.md)，原稿经审查修订，不代表已实现/验收 |
+| D-32 | 采用 Base UI 作为默认基础交互，积极复用 shadcn/ui 源码 | 09-26 用户确认，取代 B-02 的否定结论；自有组件 API/设计变量、Hugeicons 和 OMP 所有权不变，Radix 不再是并列默认 |
+| D-33 | Composer 采用最小 Tiptap 与项目业务扩展 | 09-26 用户确认，取代 P-02 的直接 ProseMirror 优先路线；按需使用底层 ProseMirror，不预装整套富文本产品，真实输入体验仍须验收 |
+| D-34 | App 自有结构化数据采用 SQLite | 09-26 用户确认，取代“文件方案起步、不足再评估数据库”；Main 集中拥有持久化，事务不覆盖附件文件或 OMP 接受，驱动与 Drizzle 分别判断，见[基础契约 §1](architecture/foundation-contracts.md#1-身份持久化与生命周期b1) |
+| D-35 | ts-pattern 为应用业务分支默认范式，Zod v4 标准版为数据边界标准 | 09-26 用户要求强化 TypeScript 范式；判别联合、穷尽处理、schema 推导、严格类型与窄接口，具体规则见[TypeScript 合同](architecture/typescript.md)与[项目 skill](../.agents/skills/d-pi-typescript/SKILL.md)，不以类型技巧或无意义包装代替清晰业务模型 |
 
 ## 沿用基线与提议
 
 | ID | 状态 | 内容与出处 |
 | --- | --- | --- |
-| B-01 | 沿用基线 | React/TS/electron-vite/pnpm/Tailwind、自有组件 API/设计变量、Zustand/Query/Zod、Vitest/RTL/Playwright/electron-builder，见[架构](prototype/v1-architecture-draft.md)；按需使用，不预装全部 |
-| B-02 | 沿用基线 | shadcn/ui 源码参考、Radix 按需、React Aria 对照、Beautiful UI 视觉参考、Tool UI 工具交互参考；Base UI 不是默认底座，见[库雷达](prototype/frontend-library-radar.md) |
+| B-01 | 沿用基线，部分细化 | React/TS/electron-vite/pnpm/Tailwind、自有组件 API/设计变量、Zustand/Query、Vitest/RTL/Playwright/electron-builder 继续沿用；Zod 明确为 v4 标准版、ts-pattern 升为应用范式，见 D-35；按功能接入，不预装全部 |
+| B-02 | 部分被 D-32 取代 | 旧版“Base UI 不是默认底座、Radix 按需”的组合被 D-32 取代为 Base UI 默认交互基础与 shadcn/ui 源码复用；自有组件 API/设计变量、React Aria 对照、Beautiful UI/Tool UI 参考继续有效，见[库雷达](prototype/frontend-library-radar.md) |
 | B-03 | 沿用基线 | Streamdown + Shiki 统一渲染方向，撤回业务 react-markdown 第二入口；集成验收未完成 |
 | B-04 | 沿用基线 | 关窗继续、重开接回、真正退出协调及 Renderer 刷新不重启任务，来源为历史决定与[GUI 证据](archive/stage1-evidence.md) |
 | P-01 | 已收敛 | 用户授权划分阶段，具体首版按 D-26 / foundation；不代表全部依赖或性能已验收 |
-| P-02 | 提议 | 直接 ProseMirror 定制 Composer，最小 Tiptap 只在必要时对照；未做原型，不标记已采用 |
+| P-02 | 已被 D-33 取代 | 原提议优先直接 ProseMirror、最小 Tiptap 仅在具体问题触发后对照；2026-09-26 用户确认最小 Tiptap 为实施路线，保留旧研究理由，不再作为待定或备用默认 |
 | P-03 | 已转为确认 | 2026-09-25 用户接受交付顺序，见 D-20；保留此编号追溯原提议 |
 | P-04 | 提议 | Node/TypeScript 宿主、不自研第二后端语言；WebContentsView、xterm.js/node-pty、PNG capturePage 等；原 Lucide 提议已由 D-31 取代，其他提议状态不变，见[技术评估](../.scratch/product-requirements/technical-evaluation.md) |
+| P-05 | 部分已确认 | 2026-09-26 [技术选型审议](architecture/technology-selection-review.md)中的 Base UI、最小 Tiptap、SQLite 已由 D-32–D-34 确认，ts-pattern/Zod v4 由 D-35 提升为应用规范；Drizzle、Effect、Pino/electron-log、Execa 等仍按各自候选状态，不因局部采纳变成整套批准 |
 
 ## 已取代或撤回的方向
 
@@ -72,7 +77,10 @@
 | 依赖用户外装 OMP，默认独立 GUI Runtime 配置 | D-03 |
 | 第一阶段不含文件查看/专属 Diff | D-06 |
 | 默认完整 VSCode 服务层/工作台继续并列选型 | D-07；历史比较保留，不能自动重新开题 |
-| 默认 Lexical；仅在 Lexical/Tiptap 间选择 | P-02 研究加入直接 ProseMirror，仍非最终采用 |
+| 默认 Lexical；直接 ProseMirror 优先、Tiptap 仅作对照 | P-02 保留历史；现由 D-33 确认最小 Tiptap，底层 ProseMirror 用于必要扩展 |
+| Base UI 非默认底座 | D-32：Base UI 为默认基础交互，保留自有视觉/API 与源码复用 |
+| App 元数据先用文件，不足再评估 SQLite | D-34：直接采用 SQLite 管结构化数据；附件文件与 OMP 原生数据仍各归其主 |
+| ts-pattern 仅在复杂到 switch 不足时考虑 | D-35：作为业务分支默认范式，Zod v4 负责数据边界 |
 | 找到完整 Git GUI 大库后再做 Git | D-14、D-15 |
 | 自由分屏作为当前要求 | D-16 |
 | ESLint + Prettier | D-17 |
@@ -96,3 +104,13 @@
 ## 2026-09-25 图标方案审查
 
 用户明确选择 Hugeicons 替代 Lucide，并要求独立审查所附 Icon System、同步文档和记忆。登记 D-31，补充 D-16，取代 P-04 的图标候选部分；不改变其他候选和 D-28–D-30。采纳免费统一风格、自有语义 API 与私有 SVG，修正无头边界、可访问性、Run 示例、工厂裁剪假设及 Web 路由式 Gallery。详见[图标方案](architecture/icon-system.md)。本次仅文档，未安装依赖、构建组件或进行 GUI 验收；历史归档保持原样。
+
+## 2026-09-26 文档与 skill 审计
+
+用户要求自底向上审查全部文档及项目 skill，并按 OpenAI Astra 官方建议检查 AI 入口。D-01–D-31、B-01–B-04 与 P-02 的状态均不改变；补登记既有技术审议为 P-05，不代表采纳。统一阅读路由，消除旧阶段/权限表述，明确授权延续；基础契约补回历史不可信内容边界，并依据已归档的输入分帧与模型兼容说明细化现有 G1 门槛，不宣称新增运行证据。范围、依据与检查结果见[审计记录](../.scratch/documentation-audit/spec.md)。本次不实现产品、安装依赖或提交/推送；此前任务的 commit 授权不自动用于本次。
+
+## 2026-09-26 技术选型确认与 TypeScript 范式
+
+用户在上述审计后明确确认 Base UI、最小 Tiptap 和 SQLite，取代之前的待定/否定结论，并要求 ts-pattern 尽用于应用分支、用好 Zod v4，使 TypeScript 成为项目长期质量标准。登记 D-32–D-35：同步 B-01/B-02、P-02/P-05、基础方案、Composer 研究、架构、库雷达与基础契约；原比较理由和此前审计状态保留为历史。SQLite 的事务、schema 校验和模式匹配都不改变 OMP 执行所有权、unknown 禁止自动重发及既有验收门槛。
+
+本次授权为文档/skill 更新、检查后 commit 并 push，包含此前尚未提交的文档审计结果；未要求启动产品实现或安装依赖。选型已确认不等于集成/性能通过，相关版本与驱动在对应功能接入时验证，不重开库名投票。

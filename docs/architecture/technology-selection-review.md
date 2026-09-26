@@ -1,6 +1,6 @@
 # d-pi 技术选型：现代 TypeScript 生态中的复用与取舍
 
-日期：2026-09-26。性质：经再次核对项目合同与上游资料的技术选型审议稿。本文提出推荐及理由，不新增已确认决定，也不代表依赖已安装或集成已通过。现行约束仍见[决定登记](../decisions.md)、[首版方案](../../.scratch/product-requirements/foundation-plan.md)和[基础契约](foundation-contracts.md)。
+日期：2026-09-26。性质：技术选型审议与采纳记录。用户已确认 **D-32–D-35：Base UI、最小 Tiptap、SQLite、应用级 ts-pattern 与 Zod v4**，取代相关旧结论；P-05 其余工具建议仍为候选。已确认不代表依赖已安装或集成已通过。现行约束仍见[决定登记](../decisions.md)、[首版方案](../../.scratch/product-requirements/foundation-plan.md)和[基础契约](foundation-contracts.md)。
 
 d-pi 的基础方向是合理的：Electron 承载桌面应用，OMP 拥有 Agent 执行，React 和 TypeScript 组织交互，Tailwind 控制视觉，Zustand 与 TanStack Query 分担展示状态和异步查询。值得重新审视的部分，集中在如何复用成熟能力：自有组件是否需要大量自写，深度定制是否必须直接使用最底层引擎，减少依赖是否反而导致维护一套自己的基础设施。
 
@@ -20,21 +20,21 @@ d-pi 的基础方向是合理的：Electron 承载桌面应用，OMP 拥有 Agen
 
 ## 2. 推荐组合与当前状态
 
-以下是推荐顺序，不是需要一次安装的依赖清单。“建议调整”明确表示与当前基线或提议存在差异；相关决定的对应关系列在文末。
+下表区分已确认路线、沿用基线和候选，不是一次安装的依赖清单。2026-09-26 用户已确认的调整直接进入对应功能的接入验证，不再重开选型；取代关系列在文末。
 
 | 层面 | 推荐方向 | 本文态度 |
 | --- | --- | --- |
 | 桌面与工程 | Electron、React、TypeScript、electron-vite、pnpm | 沿用基础，不增加第二套应用后端 |
-| 视觉与基础控件 | Tailwind、shadcn/ui 源码、Base UI、自有设计变量 | 建议调整 B-02 的复用程度与默认底座倾向 |
+| 视觉与基础控件 | Tailwind、shadcn/ui 源码、Base UI、自有设计变量 | D-32 已确认；Base UI 为默认交互基础，取代 B-02 相关旧结论 |
 | 客户端状态与查询 | Zustand、TanStack Query | 保留，按数据拥有者分工 |
-| 数据校验 | Zod 4 标准版 | 保留，并优先统一真实数据边界 |
-| Composer | 最小 Tiptap，加项目业务扩展 | 建议调整 P-02 的验证顺序；直接 ProseMirror 保留为替代路线 |
+| 数据校验 | Zod v4 标准版 | D-35 已确认；边界解析、schema 推导与版本策略按 TypeScript 合同 |
+| Composer | 最小 Tiptap，加项目业务扩展 | D-33 已确认，取代 P-02；底层 ProseMirror 按需使用 |
 | 内容与代码 | Streamdown + Shiki；Monaco 文件与 Diff | 沿用；内容阅读与编辑各用适合的工具 |
 | 图标与质量工具 | Hugeicons、自有 Icon Layer；Biome、Vitest、RTL、Playwright | 遵守既有决定，随功能使用 |
-| 复杂联合类型分支 | ts-pattern | 提高候选优先级，局部使用 |
+| 应用业务分支 | ts-pattern | D-35 已确认；判别联合与穷尽匹配为默认范式，覆盖各应用层 |
 | 短生命周期命令 | Execa | Git 与辅助命令的优先候选 |
 | 日志输出 | Pino | 优先评估结构化输出与异步落盘，尚未锁定整套设施 |
-| App 自有结构化数据 | SQLite；需要类型化 schema、查询和迁移时配合 Drizzle | 提前评估事务收益，尚未替换文件方案 |
+| App 自有结构化数据 | SQLite；Drizzle 分别评估 | D-34 已确认 SQLite，取代文件元数据起步方案；驱动/ORM 未锁定 |
 | 命令面板与区域尺寸 | cmdk、react-resizable-panels | 对应功能进入实现时优先考虑 |
 | 内部 RPC | birpc | 只在请求关联代码明显重复时引入 |
 | 异步与资源管理 | 原生 Promise / AbortSignal 起步；Effect 为 Host 候选 | 按可替代的自写机制决定，不设为全项目默认 |
@@ -43,11 +43,11 @@ d-pi 的基础方向是合理的：Electron 承载桌面应用，OMP 拥有 Agen
 
 ### Tailwind + shadcn/ui + Base UI
 
-当前[库雷达](../prototype/frontend-library-radar.md)将 shadcn/ui 定位为源码参考，允许 Radix 按需使用，同时明确 Base UI 不作为默认底座。本文建议重审这项组合。
+2026-09-26 用户确认 D-32：[库雷达](../prototype/frontend-library-radar.md)以 Base UI 为默认交互基础，积极复用 shadcn/ui 组件源码，再按产品需要调整设计变量、密度和组合；取代旧 B-02 的 Base UI 否定结论。
 
 shadcn/ui 在 2026 年 7 月将 Base UI 设为新项目默认，并继续支持 Radix；这说明 Base UI 已进入主流组件生态，但不构成它全面优于 Radix 的证明。Base UI 自身无样式、可组合，允许直接控制组件各部分，与 Tailwind 的路线相容。[shadcn 公告](https://ui.shadcn.com/docs/changelog/2026-07-base-ui-default)、[Base UI 介绍](https://base-ui.com/react/overview/about)
 
-d-pi 目前没有需要迁移的正式组件实现。此时采用上游完整组件源码，再调整设计变量、密度和业务组合，比把所有控件都降为“参考后自己写”更有吸引力。建议将 Base UI 作为基础交互的优先候选，并保留 Radix 解决具体组件适配问题的空间。
+d-pi 目前没有需要迁移的正式组件实现。此时采用上游完整组件源码，再调整设计变量、密度和业务组合，比把所有控件都降为“参考后自己写”更有吸引力。Base UI 已是实施方向；Radix 只在具体适配或已有依赖需要时局部评估，不并列建设两套默认底座。
 
 自有组件层应拥有视觉语言、必要的语义 API 和业务组合。普通按钮、菜单、弹层可以直接基于上游源码修改；Composer、工具结果和待回答交互则体现自己的产品模型。没有项目语义或统一样式需求时，不必再加一层只转发 props 的包装。
 
@@ -55,15 +55,15 @@ d-pi 目前没有需要迁移的正式组件实现。此时采用上游完整组
 
 Beautiful UI 与 Tool UI 继续作为视觉和工具结果表达的参考。AI Elements 也可以参考具体组件，但其默认接入文档围绕 Next.js 和 AI SDK；只有能独立复用的呈现部分值得带入本项目，不为组件示例增加第二套 Agent 状态模型。[AI Elements 接入说明](https://elements.ai-sdk.dev/docs/setup)
 
-### Composer：优先验证最小 Tiptap
+### Composer：已确认最小 Tiptap
 
-当前 P-02 优先直接 ProseMirror，再在具体问题出现时对照最小 Tiptap。本文建议交换这一验证顺序。
+D-33 已取代 P-02：Composer 采用最小 Tiptap 与项目业务扩展，不再先做直接 ProseMirror 再决定是否采用 Tiptap。旧路线希望直接控制 schema/事务/输入节点，其理由保留；本次选择以复用扩展组织和框架接入降低通用胶水维护。
 
 Tiptap 建立在 ProseMirror 上，提供扩展组织与框架接入，也允许访问底层能力。它的无头和模块化设计支持专用输入器，不要求使用完整富文本文档产品。[Tiptap 介绍](https://tiptap.dev/docs/editor/getting-started/overview)、[ProseMirror 接入](https://tiptap.dev/docs/editor/core-concepts/prosemirror)
 
 d-pi 的独特工作主要是引用节点、附件交互、草稿与提交衔接。可以优先复用 React 集成和扩展机制，把自己的代码集中在这些业务上。最小路线只组合实际需要的文档、文本、换行、历史与业务节点，不因 StarterKit 或商业套件存在就整体采用。
 
-Tiptap 的成本也应计入：需要理解两层 API，扩展默认行为可能与专用输入冲突，React NodeView 的使用方式会影响更新成本。如果实现主要是在绕过这些抽象，直接 ProseMirror 就可能更清楚。当前推荐是维护成本上的判断，尚无本项目实测支持任何一方在性能或输入法行为上胜出。
+Tiptap 的成本也应计入：需要理解两层 API，扩展默认行为可能与专用输入冲突，React NodeView 的使用方式会影响更新成本。必要的底层定制先使用其 ProseMirror 接口；若真实验证证明选定路线不能满足合同，再按决定变更规则处理，不预建两套 Composer。用户确认了路线，尚无本项目实测支持任何一方在性能或输入法行为上胜出。
 
 后续只做一套优先路线，用中文 IME、引用节点边界、混合粘贴、撤销和 Thread 切换这些真实行为判断；不为选库先建两套完整 Composer。编辑器状态和历史由编辑器管理，附件任务与提交记录仍由 App 功能负责。
 
@@ -77,9 +77,9 @@ Streamdown + Shiki 适合流式 Markdown 和代码阅读。`@streamdown/code` �
 
 ### Zod 负责数据边界
 
-建议保留 Zod 4 标准版。它以 TypeScript 类型系统为设计基础，提供完整的 schema 组合、推导和解析体验；当前桌面应用没有需要优先改用 Mini 的明确体积约束。[Zod 文档](https://zod.dev/packages/zod)
+D-35 明确采用 Zod v4 标准版。它以 TypeScript 类型系统为设计基础，提供完整的 schema 组合、推导和解析体验；当前桌面应用没有需要优先改用 Mini 的明确体积约束。[Zod 文档](https://zod.dev/packages/zod)
 
-Zod 适合配置、持久记录、跨进程消息和外部 OMP 数据。能够从 schema 推导的类型，不再手写一份平行 interface。内部已经校验并明确归属的数据，直接使用类型，不因经过一个 service 或 hook 就再次解析。
+Zod 适合配置、持久记录、跨进程消息和外部 OMP 数据。能够从 schema 推导的类型，不再手写一份平行 interface。内部已经校验并明确归属的数据，直接使用类型，不因经过一个 service 或 hook 就再次解析。具体的 strict 配置、判别联合、未知字段/版本、错误及转换规则统一见[TypeScript 合同](typescript.md)，不在本文复制一套标准。
 
 “内部不重复校验”也不能取消可信宿主对 Renderer 请求的校验与授权。前端类型帮助开发，宿主检查负责实际边界；检查请求形状和检查资源访问权是两件事。对高频增量定义窄 schema，避免每次更新重新解析整个会话。
 
@@ -101,7 +101,7 @@ Query 的查询函数可以直接使用 IPC Promise，无需增加 HTTP 服务�
 
 ### ts-pattern 与错误表达
 
-[ts-pattern](https://github.com/gvergnaud/ts-pattern) 值得提高优先级。OMP 事件、工具结果、提交状态都存在有意义的联合类型；穷尽匹配可以让新增分支时的遗漏变得明显。简单判断继续使用 `if` 或 `switch`，不追求所有代码统一成某种语法。
+D-35 将 [ts-pattern](https://github.com/gvergnaud/ts-pattern) 提升为应用业务分支的默认范式：OMP 事件、命令、工具结果、提交状态、错误及视图映射使用判别联合与穷尽匹配，不再等到 switch 不足才考虑。简单布尔/空值提前返回保持直白；封闭业务集合不使用兜底分支掩盖遗漏。详见[TypeScript 合同](typescript.md)。
 
 预期业务失败可以由明确的联合类型表达；本地意外异常保留 Error 与 cause，跨 IPC 转成已有的可序列化错误合同。不为了“类型化错误”先增加一套全局 Result 框架、异常继承树或插件式处理器。若后续采用 Effect，则应重新统一对应模块的错误处理方式。
 
@@ -109,13 +109,13 @@ Query 的查询函数可以直接使用 IPC Promise，无需增加 HTTP 服务�
 
 ### SQLite 与 Drizzle 分别判断
 
-当前 D-24 的工程方案以 Main 集中写文件为起点，已经要求复核跨文件原子更新。这个要求本身合理；值得调整的是评估 SQLite 的时机。
+D-34 已确认 SQLite 承载 App 结构化元数据，取代 D-24 工程细化中的“先文件、不足再数据库”。Main 集中拥有持久化职责和版本/恢复合同继续保留，具体见[基础契约 §1](foundation-contracts.md#1-身份持久化与生命周期b1)。
 
-少量偏好设置可以继续使用文件。但草稿 revision、提交回执和内容引用如果需要一起更新，SQLite 的事务就是直接收益。应在设计持久化操作时比较它与文件实现的代码量和恢复流程，而不是先写出复杂的文件协调逻辑，再因为维护困难迁移。
+App 桌面偏好、草稿 revision、提交收据和内容引用统一通过宿主持久化入口，其中需要一起生效的结构化更新放进 SQLite 事务。采用数据库以减少自写跨文件协调和查询逻辑；不同时维护 JSON 元数据主库与 SQLite 主库，也不将 OMP 原生设置搬入 App 数据库。
 
 Drizzle 是这一方向下的优先候选：用 TypeScript 定义 schema、组织查询和迁移，并通过 SQLite 驱动实际访问数据库。**选择 SQLite 不自动等于必须采用 ORM。** 如果只是少量稳定 SQL，驱动与清楚的类型也可能足够；当表结构和查询持续增长，Drizzle 的价值会更明显。[Drizzle SQLite 接入](https://orm.drizzle.team/docs/sqlite/get-started-sqlite)、[事务 API](https://orm.drizzle.team/docs/transactions)
 
-建议边界是 App 结构化元数据进入数据库，附件原件仍放文件，OMP 原生记录仍由 OMP 管理。数据库由既定宿主集中拥有；同步驱动不应让长查询阻塞 Main 的窗口与生命周期处理。驱动选择要和实际 Electron 内置 Node、打包产物一起确定，不能把开发机 Node 的能力直接当成 Electron 能力。本次查阅的 Drizzle SQLite 指南含 `@rc` 安装示例，本文不据此推荐预发布版本。
+既定边界是 App 结构化元数据进入数据库，附件原件仍放文件，OMP 原生记录仍由 OMP 管理。数据库由既定宿主集中拥有；同步驱动不应让长查询阻塞 Main 的窗口与生命周期处理。驱动选择要和实际 Electron 内置 Node、打包产物一起确定，不能把开发机 Node 的能力直接当成 Electron 能力。本次查阅的 Drizzle SQLite 指南含 `@rc` 安装示例，本文不据此推荐预发布版本。
 
 SQLite 只能处理数据库事务。附件文件落盘、数据库更新和 OMP 接收仍有不同的成功时点，提交结果未知的行为继续保留。当前没有明确的跨设备同步需求，因此 LiveStore 不进入近期优先项，也不为采用本地数据库增加第二份 Agent 执行历史。
 
@@ -159,20 +159,20 @@ Effect 的学习成本真实存在，但不能因此先自研一套不完整的�
 
 两个额外组件与已知产品方向直接对应：[cmdk](https://github.com/dip/cmdk) 可以支撑命令面板、项目与 Thread 搜索入口；[react-resizable-panels](https://github.com/bvaughn/react-resizable-panels) 可以处理现有侧栏和底部区域的尺寸、折叠。后者并不引入自由分屏需求。两者在对应功能进入实现时接入即可，不作为首个功能的前置工程。
 
-近期最有价值的工作顺序是：沿用 TypeScript、Tailwind、Zod、Zustand、Query 的基础；在首个 GUI 切片中提高基础控件的源码复用；为 Composer 重新选择优先验证路线；在持久化设计中直接比较 SQLite 的收益；随 Git、诊断和事件处理功能引入能删除重复代码的工具。
+近期按已确认路线推进：业务类型与边界遵守 D-35；宿主持久化采用 SQLite；Composer 验证最小 Tiptap；首个 GUI 切片复用 Base UI/shadcn 源码并接入自有设计变量与 Hugeicons。其余 Git、诊断等工具按具体功能评估。本轮是文档和 skill 更新，不启动产品实现；后续获得功能实现授权后可直接按这些选择工作。
 
 每个新增依赖都应能说明：它替代哪段工作，在哪个进程使用，会把什么成本带进构建与维护。小范围工具按实际功能决定，影响组件底座、持久化或整个执行模型的选择再记录取舍。无需先建立一个容纳所有库的通用平台。
 
 ## 8. 与现有决定的对应关系
 
-本文的文档交付不自动变更以下状态；接受具体调整后，再同步对应的基线或合同，保留旧理由与取代关系。
+2026-09-26 用户明确确认以下部分调整，已同步登记和合同；此前推荐理由保留，未被点名采纳的工具不连带批准。
 
 | 决定 | 当前有效内容 | 本文建议及影响 |
 | --- | --- | --- |
-| B-01 | React / TS / Tailwind / Zustand / Query / Zod 等工程基线 | 保留；补充校验、状态归属与本地查询的使用建议 |
-| B-02 | shadcn 源码参考、Radix 按需，Base UI 非默认 | 建议提高源码复用程度并优先评估 Base UI；若采纳，需要更新库雷达和架构基线 |
-| P-02 | 提议优先直接 ProseMirror，最小 Tiptap 有条件对照 | 建议优先最小 Tiptap；若采纳，需要同步首版方案和 Composer 研究，不声称已有性能胜者 |
-| D-24 | 提交、冻结内容与恢复合同；文件方案为工程起点 | 提前比较 SQLite；若切换，只调整 App 持久化实现及恢复顺序，不改变接受证据与 unknown 语义 |
+| B-01 / D-35 | React / TS / Tailwind / Zustand / Query 沿用；Zod v4、ts-pattern 已确认 | 强化应用 TypeScript 范式，不改变状态拥有者 |
+| B-02 → D-32 | Base UI 默认交互基础、shadcn 源码复用、自有设计/API | 取代 Base UI 非默认的旧组合，保留参考体系与图标边界 |
+| P-02 → D-33 | 最小 Tiptap 与业务扩展 | 取代直接 ProseMirror 优先路线，集成/IME/性能仍待验证 |
+| D-24 / D-34 | SQLite 管 App 结构化数据，Main 集中拥有 | 取代文件元数据起点，保留提交/冻结/unknown 合同；Drizzle 仍为候选 |
 | D-21 / D-22 | 轻量结构化诊断、跨进程关联、错误归属 | Pino 为优先候选，electron-log 为桌面对照；不新增观测平台或默认远程服务 |
 | D-28 / D-29 / D-30 | 无头功能、独立业务生命周期、不引入 XState | 保留；Effect 仅为有收益时的 Host 候选，不重建 Agent Runtime |
 | D-02 / D-03、D-07、D-16 / D-31、D-17、B-03 | 进程与配置归属、Monaco、布局与图标、Biome、内容渲染方向 | 保留，不因推荐其他库而重开已确认范围 |

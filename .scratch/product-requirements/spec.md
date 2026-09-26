@@ -13,7 +13,7 @@ status: design-ready-validation-pending
 - 已有可用 OMP 配置的用户直接进入应用并复用配置，无须重复初始化；没有原生配置的新用户使用 GUI 分步引导，参照 OMP TUI 的实际流程改善呈现。判定依据是原生配置/认证是否可用，不只是 PATH 中有没有 omp；不复制另一套凭据和配置规则。配置缺失、失效或版本不兼容时只引导补齐受影响部分，不覆盖已有配置。
 - 应用仍使用随包 OMP，不因本机安装了 CLI 就切换到外部可执行文件；初始化具体步骤需在实施前核对固定 OMP 版本，不把建议步骤冒充既有 TUI 步骤。
 - 编辑器已选定 Monaco；首版只读与 Diff，后续达到既定 B 档。Code-OSS / OpenVSCode / monaco-vscode-api 不再作为当前并列路线，保留研究历史。
-- Composer 重新研究直接 ProseMirror、自有业务实现与最小 Tiptap 的取舍；尚未最终选定，不将 Lexical/Tiptap 判为已证实不可行。见[研究](composer-research.md)。
+- Composer 曾研究直接 ProseMirror 与最小 Tiptap；2026-09-26 已由 D-33 确认最小 Tiptap，取代此处原待定状态。比较理由保留在[研究](composer-research.md)，不把已选路线写成性能已验收。
 - Git Panel 围绕 OMP 工作流自建 GUI，Git 数据和操作复用成熟实现；“20% / 80%”表示职责取舍，不是工作量保证。不建设完整通用 Git 客户端，也不以寻找大型可嵌入 Git GUI 作为前提。原 B 档操作作为按场景渐进覆盖的能力清单保留，不以此扩张通用客户端范围。
 - 从设计起点为 Agent Changes / Run Changes / Review / Revert 保留结构与能力接入位置，不要求首版显示不可用按钮。名称还不是完整领域契约：Run 范围、改动归属、Review 状态、Revert 的对象/基线/并发处理需在相应阶段确认。Revert 不自动等于 git revert、丢弃工作区修改或 OMP 会话回退；此前原生会话回退决定仍有效。
 - 未回答的后续阶段问题保持待决，本轮不追加默认选择。
@@ -30,7 +30,7 @@ D-22：同一次操作在 Renderer、Main、utility 等实际经过的应用层�
 
 - 用户接受先只读、后编辑的渐进方式。首阶段围绕“打开项目 → 提交需求 → 观察执行并回答交互 → 查看结果与代码差异 → 继续或恢复会话”形成可用流程。
 - 文件查看与 Diff 作为首阶段能力；不要求第一版完成 B 档代码编辑与语言服务。终端、浏览器、完整 Git 操作及其他最终能力可后续逐项接入，不据此移出最终目标。
-- 本节确定交付方向，尚非逐项验收清单；输入格式、OMP 原生交互覆盖等具体批次需在阶段方案中明确，不能默认为首版全量完成。
+- 具体批次已由 D-26 和[基础契约 §8](../../docs/architecture/foundation-contracts.md#8-开发入口里程碑与门槛b7)明确：M1 内部闭环包含文字/选区及基本交互，M2 首版包含全部指定输入与 V1-00–10 验收集合；其余原生能力按 M3 渐进覆盖。不能把 M1 可运行当作 M2 或 TUI 全集已完成。
 - 六组技术选型的初步评估见 [技术选型评估](technical-evaluation.md)，建议与待验证项分开记录，未安装依赖或建设产品应用。
 
 ## OMP TUI 全量承接与组件建设
@@ -74,7 +74,7 @@ D-22：同一次操作在 Renderer、Main、utility 等实际经过的应用层�
 ## 首批语言支持与宿主语言评估
 
 - 工程质量工具已确认采用 Biome 取代 ESLint + Prettier；仅在搭配 @shadcn/lint 时引入 Oxlint。该选择约束应用自有代码，不修改用户打开项目的格式化约定。
-- 用户要求重新审视 Markdown、VSCode 复用与复杂 composer 选型：技术评估已改为 Streamdown/Shiki 单一渲染入口、Monaco 已选定，以及直接 ProseMirror 与最小 Tiptap 的真实输入场景验证。上述方向不代表已完成集成验收。
+- 用户要求重新审视 Markdown、VSCode 复用与复杂 composer 选型：技术评估已改为 Streamdown/Shiki 单一渲染入口、Monaco 已选定，以及现按 D-33 采用最小 Tiptap 的真实输入场景验证。上述方向不代表已完成集成验收。
 
 - 已确认首批重点是 TypeScript、JavaScript 与 Node.js 项目；Node.js 在这里是目标运行环境，不是另一种编程语言。编辑器应围绕这类真实项目验证补全、跳转、引用、诊断与格式化。
 - 助手评估建议（尚非用户确认的最终选型）：应用自有桌面逻辑采用 TypeScript，宿主服务运行在 Electron 提供的 Node.js 环境中；当前没有足够理由再引入 Rust、Go、Python 等自研后端语言或独立 HTTP 服务。
@@ -127,7 +127,7 @@ D-22：同一次操作在 Renderer、Main、utility 等实际经过的应用层�
 
 终端按常见集成终端的交互目标处理，不因 Agent 的命令执行能力而假定已有完整终端面板，也不将 AI 命令接管扩展为已确认需求。
 
-编辑器、浏览器、Side Chat、Diff、Git 与终端的主要能力范围已记录；当前不做分屏。继续补齐关键使用流程与尚未确定的产品边界，再划分阶段和选择技术。
+编辑器、浏览器、Side Chat、Diff、Git 与终端的主要能力范围已记录；当前不做分屏。G1/M1/M2/M3 已确定，后续按当前任务授权推进相应切片，只补会影响该切片的接口和产品边界，不重开全局阶段划分或已确认选型。2026-09-26 的技术建议 P-05 已部分转为 D-32–D-35，Base UI、最小 Tiptap、SQLite 与 TypeScript 范式按新决定执行，其他候选状态不变。
 
 ## OMP 工作目录能力核实（2026-09-24）
 
@@ -193,3 +193,7 @@ D-22：同一次操作在 Renderer、Main、utility 等实际经过的应用层�
 ### 2026-09-25 图标选择补充
 
 用户选择 Hugeicons 替代 Lucide，记录 D-31；此前“本轮未选择图标库”为历史讨论状态，现已取代。使用自有语义图标组件，供应商类型不进入无头功能合同；正式 GUI 阶段按[图标方案](../../docs/architecture/icon-system.md)实施与验收。
+
+### 2026-09-26 技术选型确认
+
+用户确认 Base UI、最小 Tiptap 和 SQLite，取代此前相关待定/否定结论，并要求 ts-pattern 尽用于应用业务分支、用好 Zod v4。登记 D-32–D-35，工程细则见[TypeScript 合同](../../docs/architecture/typescript.md)。只改变技术路线与写法标准，不改变首版范围、OMP 所有权或真实验收要求。

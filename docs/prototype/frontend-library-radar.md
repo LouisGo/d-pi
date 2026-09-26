@@ -2,25 +2,25 @@
 
 本页从清理前记录恢复并结合当前需求整理。旧稿来源为 `6fab3ef`，不是本轮重新发明的候选；[逐字原稿](../archive/pre-reset/docs/prototype/frontend-library-radar.md)保留完整出处。外部库的历史版本、许可证与状态需在实际接入时复核，本次没有重跑所有候选 PoC。
 
-2026-09-26：[技术选型审议](../architecture/technology-selection-review.md)重新评估 UI 底座与 Composer，并扩展到类型、状态、存储和宿主基础。该文是建议及取舍分析，未将 Base UI、Tiptap、SQLite 等调整提议登记为已采用；本页现行基线保持有效。
+2026-09-26：用户确认 [D-32–D-35](../decisions.md)，采用 Base UI、最小 Tiptap、SQLite，ts-pattern 升为应用范式，Zod 明确为 v4 标准版。取代此前相关否定/待定结论；[技术审议](../architecture/technology-selection-review.md)保留理由与其他候选，已选库的接入验收仍待对应功能完成。
 
 ## 当前状态与变化
 
-- 延续既有方向：React + TypeScript + Tailwind CSS、自有组件 API 与设计变量；shadcn/ui 是源码和组织参考，Radix 按需提供底层行为，React Aria 是复杂交互对照；Base UI 不作为默认底座。
+- React + TypeScript + Tailwind CSS、自有组件 API 与设计变量继续沿用；Base UI 为默认基础交互，积极复用 shadcn/ui 源码。React Aria 是复杂交互对照，Radix 仅在具体适配需要时局部评估。
 - 保留 Beautiful UI 的重要视觉参考地位，以及 Tool UI 的工具结果表达参考；两者都不替换 OMP 状态所有权。
 - 当前修订：Biome 取代 ESLint + Prettier；只有 @shadcn/lint 才引入 Oxlint。Streamdown + Shiki 统一内容渲染，不额外维护业务 react-markdown 入口。
-- 继续保留 Virtua / React Virtuoso / TanStack Virtual、Motion、ts-pattern、Pacer、birpc、LiveStore 等候选及采用条件；保留候选不等于预装依赖。
-- 2026-09-25：编辑器选定 Monaco；Composer 优先研究直接 ProseMirror，仅在具体集成问题触发后对照最小 Tiptap；Git Panel 自建业务 UI 并复用成熟 Git 实现。内置浏览器、终端等增量评估，见[增量技术评估](../../.scratch/product-requirements/technical-evaluation.md)。Monaco 是用户已选定项但未完成集成；Composer 仍未定案。
+- 继续保留 Virtua / React Virtuoso / TanStack Virtual、Motion、Pacer、birpc、LiveStore 等候选及采用条件；保留候选不等于预装依赖。
+- Monaco 已定；Composer 由 D-33 确认最小 Tiptap 与业务扩展。SQLite 用于 App 结构化存储，ts-pattern/Zod v4 按[TypeScript 合同](../architecture/typescript.md)执行。Git Panel、内置浏览器与终端的范围不变，见[增量技术评估](../../.scratch/product-requirements/technical-evaluation.md)。选型确认不等于集成通过。
 - 当前没有产品依赖清单；历史实现链接指向固定 Git 提交，不意味着被引用代码仍在工作区。旧 M1 范围只作历史依据，当前产品范围以[需求文档](../../.scratch/product-requirements/spec.md)为准。
 
 2026-09-25 D-28–D-30：组件化不限于以下 UI 候选，功能模块/契约先于正式 GUI。Zustand/Query/hooks 的职责与生命周期见[无头功能合同](../architecture/headless-features.md)；不引入 XState，不因追求无头架构新增全局框架。
 
 ## 先读：组件与 Runtime 的边界
 
-1. **组件库由本项目自己写。**React + TypeScript + Tailwind CSS 是基础；我们定义自己的设计变量、视觉语言、组件 API 和状态展示规则。`src/renderer/src/components/ui/` 是自有组件层，不以外部组件库的 API 作为应用契约。shadcn/ui 提供可参考的源码与组织方式；Radix 可按需提供焦点、弹层、键盘等底层交互。复杂控件可对照 React Aria，不因选了某种 primitive 而采用它的视觉样式。
+1. **项目拥有组件表达，成熟基础能力优先复用。**React + TypeScript + Tailwind CSS 是基础；我们定义设计变量、视觉语言、稳定组件 API 和状态展示规则，优先改造 shadcn/ui 源码并使用 Base UI 交互能力。自有组件层不要求从零重写控件或给每个 primitive 机械加壳；外部 API 不进入无头业务合同。复杂控件可对照 React Aria。
 2. **Beautiful UI 是重要的视觉与交互参考。**允许在核对依赖和许可证后选取、改造部分源码或素材，统一纳入自有组件 API 与设计变量。Tool UI 主要用于学习工具结果的结构化表达、校验和操作回执。两者都不拥有 OMP 执行状态。
 3. **OMP 拥有 Agent 执行、工具、排队、干预、停止和原生会话。**SessionHost 维护[会话镜像](../../CONTEXT.md)与同步；Renderer 负责展示和提交用户操作。任何 UI 组件都必须以真实 OMP 事件和交互请求为输入，按请求 ID、连接世代及过期状态回传回答，不以动画计时器推断任务进度。详见 [ADR-0001](../adr/0001-omp-session-client.md)。
-4. **Base UI 不作为后续默认组件底座。**历史 [Button](https://github.com/LouisGo/d-pi/blob/6fab3efd0526d2d716d7939b75202a88f857078a/src/renderer/src/components/ui/button.tsx) 曾引用 `@base-ui/react`，[components.json](https://github.com/LouisGo/d-pi/blob/6fab3efd0526d2d716d7939b75202a88f857078a/components.json) 曾是 `base-nova`；这是清理前代码状态，不代表新的视觉和组件决策。后续触及该组件时按自有组件策略收敛，无须为本选型文档立即改界面。
+4. **D-32 确认 Base UI 为默认交互基础。**取代先前“不作为默认底座”的结论。历史 [Button](https://github.com/LouisGo/d-pi/blob/6fab3efd0526d2d716d7939b75202a88f857078a/src/renderer/src/components/ui/button.tsx) 与 [components.json](https://github.com/LouisGo/d-pi/blob/6fab3efd0526d2d716d7939b75202a88f857078a/components.json)仍只证明旧依赖；当前采用依据是 09-26 用户确认，不直接恢复旧主题、旧组件或旧锁文件。引入 UI 源码时继续按 D-31 迁移 Hugeicons 并验收交互。
 
 候选分为“内容与性能”“Agent 交互与视觉”“组件质量与动效”“代码与进程通信”“长期数据层”。前两类与产品体验最接近，也仍需真实样本。采用某项候选时，查阅当天的上游文档与许可、在对应层做小范围验证、提交精确版本及锁文件，并将本页状态更新为“已采用”或记录放弃原因。这些采用条件指导后续评估，不额外扩大任务授权；与当前需求或既有决策发生无法确定的冲突时，必须先向用户确认。
 
@@ -32,7 +32,7 @@
 - **接入位置与理由：**[历史对话渲染](https://github.com/LouisGo/d-pi/blob/6fab3efd0526d2d716d7939b75202a88f857078a/src/renderer/src/main.tsx)曾在流式阶段显示纯文本，完成后用 `react-markdown`。需要在生成过程中稳定显示 Markdown 时，评估 Streamdown 对未闭合代码围栏、列表、表格和增量更新的处理。
 - **采用条件：**用真实 OMP 输出对照当前方案，检查不可信链接、中文、长代码块、CPU／内存、阅读旧消息时的滚动稳定性和终态内容一致性。它解决内容渲染；Host 的积压上限与消息顺序仍由本项目负责。
 
-### Shiki · 代码高亮候选
+### Shiki · 沿用的代码高亮方向，独立接入按需
 
 - **入口：**[Shiki 安装与 API](https://shiki.style/guide/install)、[性能建议](https://shiki.style/guide/best-performance)；独立包为 `shiki`。[`@streamdown/code`](https://streamdown.ai/docs/plugins/code) 已用 Shiki 实现 Streamdown 代码块高亮。
 - **接入位置与理由：**代码块阅读、复制与主题适配。优先评估与 Streamdown 共用的高亮链路；只有独立代码／Diff 视图确有需要时再直接引入 Shiki。
@@ -74,11 +74,11 @@
 
 ## 代码与进程通信
 
-### ts-pattern · 复杂联合状态的穷尽处理
+### ts-pattern · 已确认的应用业务分支范式
 
 - **入口：**[源码和 `.exhaustive()` 用法](https://github.com/gvergnaud/ts-pattern)；包为 `ts-pattern`。
-- **接入位置与理由：**[共享协议](https://github.com/LouisGo/d-pi/blob/6fab3efd0526d2d716d7939b75202a88f857078a/src/shared/protocol.ts)或 Host／Renderer 的状态组合变复杂时，编译期检查漏掉的分支。
-- **采用条件：**先比较清楚的 TypeScript `switch` 与 `assertNever` 是否足够；只在模式匹配显著提高可读性时接入。
+- **接入位置与理由：**D-35 要求各应用层的事件、命令、结果、状态与视图映射优先使用判别联合和穷尽匹配，让新增分支暴露遗漏。
+- **使用边界：**已经确认，不再先论证 switch 是否足够；封闭联合不用 catch-all 掩盖漏项，简单布尔/空值提前返回保持直接。Zod v4 先校验边界，ts-pattern 消费可信类型；细则见[TypeScript 合同](../architecture/typescript.md)。
 
 ### TanStack Pacer · 限速与批处理工具
 
@@ -97,12 +97,12 @@
 ### LiveStore · App 自有数据的长期候选
 
 - **入口：**[项目源码和架构介绍](https://github.com/livestorejs/livestore)、[React 入门](https://docs.livestore.dev/getting-started/react-web/)、[变更记录](https://docs.livestore.dev/changelog/)；相关包包括 `@livestore/livestore`、`@livestore/react` 及平台 adapter，须按同一版本的官方指南选择。
-- **接入位置与理由：**将来若 App 自有的多会话元数据、草稿或跨设备同步发展到需要响应式本地数据库，再评估其 SQLite 与事件同步模型。
+- **接入位置与理由：**App 结构化存储已按 D-34 采用 SQLite；LiveStore 只在后续确有响应式数据库/跨设备同步需求时再评估，不是采用 SQLite 的前置。
 - **采用条件：**先划清 App 元数据和 OMP 原生会话的所有权，定义故障恢复、迁移及跨进程存取方式。旧记录评估时 LiveStore 处于 1.0 前，采用前须重新核实版本与破坏性变更；不为会话镜像建立第二份会话真相；当前产品最终支持多 Thread。
 
 ## 备选与未来接口
 
-- **基础交互：**[Radix Primitives](https://www.radix-ui.com/primitives)用于自有组件的底层行为；[React Aria Components](https://react-aria.adobe.com/)是复杂选择、焦点与键盘体验的对照。shadcn/ui [同时支持 Radix 与 Base UI](https://ui.shadcn.com/docs/changelog/2026-07-base-ui-default)，其默认值不决定本项目组件底座。
+- **基础交互：**默认使用 D-32 的 Base UI；[Radix Primitives](https://www.radix-ui.com/primitives)保留具体适配/依赖需要时的选项，[React Aria Components](https://react-aria.adobe.com/)用于复杂交互对照。上游默认值不能代替本项目已记录的用户决定。
 - **长列表：**[React Virtuoso](https://virtuoso.dev/) 和 [TanStack Virtual](https://tanstack.com/virtual/latest/docs/framework/react/react-virtual)与 Virtua 在同一真实样本上比较；记录专用 Message List 的商业许可。
 - **工具自带 UI：**[MCP Apps](https://apps.extensions.modelcontextprotocol.io/api/documents/overview.html)值得保留兼容思路。只有 OMP 实际暴露相应 UI 资源、宿主能力与安全约束明确后才设计接入；普通 OMP 工具卡片不依赖它。
 - **Agent UI 框架／协议：**[assistant-ui](https://www.assistant-ui.com/docs/runtimes/custom/external-store) 与 [AG-UI](https://docs.ag-ui.com/)可研究消息转换和事件词汇；目前的 OMP 会话与 SessionHost 同步边界继续作为事实来源。

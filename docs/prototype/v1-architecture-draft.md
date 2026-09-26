@@ -48,7 +48,8 @@ D-22 进一步要求类型化异常与明确处理职责：发现层、错误报
 | 单项目单会话 M1 排除项 | 是旧里程碑限制，不是最终产品限制；多 Thread、附件、浏览器、Side Chat、Git 都保留在最终目标 |
 | 分屏 | 当前暂缓，采用常规三栏布局 |
 | 固定 Bun ConfigHelper | 仅为历史候选，先复用已验证原生配置/RPC；有实际认证接口缺口再评估助手，未验证就不建常驻实体 |
-| Base UI 历史依赖 | 原应用已移除，不因此改变自有组件层方向或重新默认采用 Base UI |
+| Base UI 非默认底座 | 2026-09-26 D-32 确认为默认基础交互；自有 API/视觉继续保留，不直接恢复旧实现 |
+| Composer 优先直接 ProseMirror；文件元数据起步 | D-33/D-34 分别取代为最小 Tiptap、SQLite；原行为与所有权合同保留 |
 
 新用户全 GUI 认证/模型配置仍是旧方案中的体验目标，Runtime 随包不等于登录流程全部完成。2026-09-25 模型选择不设置供应商白名单；随后 D-23 将首版新增认证限于 OpenAI 账户登录与 DeepSeek API key：已有可用原生配置直接进入，无配置用户使用 GUI 分步初始化；秘密输入、OAuth 等原生认证分支、取消与重试仍需验证，不能宣称已有通用认证助手。
 
@@ -56,7 +57,7 @@ D-22 进一步要求类型化异常与明确处理职责：发现层、错误报
 
 第一阶段围绕打开项目、输入需求、观察执行、回答交互、只读代码/Diff 检查和继续/恢复会话交付可用成果。编辑、语言服务、浏览器、终端、OMP Git Panel、Side Chat 等按依赖逐项加入，不要求先做全集；具体验收清单以[当前需求](../../.scratch/product-requirements/spec.md)和后续阶段规格为准。
 
-技术组件采用成熟实现，业务组件承接 OMP 真实信息；自有组件 API 和设计变量保持一致。历史库雷达中的候选继续可查，不预装全部依赖，不先搭空泛平台。Monaco 集成与直接 ProseMirror Composer 是重点验证项；最小 Tiptap 只在具体问题触发时对照，见[技术评估](../../.scratch/product-requirements/technical-evaluation.md)。
+技术组件采用成熟实现，业务组件承接 OMP 真实信息；自有组件 API 和设计变量保持一致。历史库雷达中的候选继续可查，不预装全部依赖，不先搭空泛平台。Monaco 与最小 Tiptap Composer 按已确认方向集成验证，见[技术评估](../../.scratch/product-requirements/technical-evaluation.md)。
 
 ## 验证与已知缺口
 
@@ -70,8 +71,12 @@ Monaco 已选定，保持只读先行和最终 B 档；语言服务优先复用�
 
 ## 基础契约继承与闭合
 
-[基础契约](../architecture/foundation-contracts.md)集中定义稳定 Thread/原生会话/工作目录/进程身份、单写、提交收据、内容冻结、配置上下文、权限、背压恢复与阶段验收。恢复旧稿有效约束：浏览历史不启动 Runtime，排队/待交互/后台任务不能按空闲回收；App 元数据版本化集中原子写；Finder 环境差异显式处理；等待退出仍可答交互；Renderer 禁用 Node 并启用隔离/sandbox；不可重读输出保留必要补充及缺口。不是建立第二套 OMP 执行事实。
+[基础契约](../architecture/foundation-contracts.md)集中定义稳定 Thread/原生会话/工作目录/进程身份、单写、提交收据、内容冻结、配置上下文、权限、背压恢复与阶段验收。恢复旧稿有效约束：浏览历史不启动 Runtime，排队/待交互/后台任务不能按空闲回收；App 结构化元数据按 D-34 使用 SQLite 集中事务写入、版本化迁移和恢复；Finder 环境差异显式处理；等待退出仍可答交互；Renderer 禁用 Node 并启用隔离/sandbox；不可重读输出保留必要补充及缺口。不是建立第二套 OMP 执行事实。
 
 ## 无头功能与全局应用（D-28–D-30）
 
 2026-09-25 用户确认按功能先验证、再无头功能、最后正式 GUI，组件化涵盖规则与流程。中间层区分业务规则、协调/接入、状态投影/查询及薄 React 接入；应用、Thread、Renderer 连接和具体视图各有生命周期，组件卸载不停止后台任务。**不引入 XState。** 职责、组合方式与验证标准统一见[无头功能合同](../architecture/headless-features.md)，不将所有逻辑装进 hooks，也不迁移 Main/Host/OMP 所有权。
+
+## 2026-09-26 选型与类型范式
+
+D-32–D-35 确认 Base UI、最小 Tiptap、SQLite、应用级 ts-pattern 与 Zod v4。Base UI/Tiptap 留在视图接入，SQLite 由 Main 集中拥有，供应商类型不进入业务 DTO。类型、安全解析、穷尽分支与验证要求统一见[TypeScript 合同](../architecture/typescript.md)；不改变 OMP 所有权或 unknown 恢复规则。
