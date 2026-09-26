@@ -10,6 +10,7 @@
 - [当前交接与证据索引](docs/prototype/handoff.md)
 - [整理后的架构与交付](docs/prototype/v1-architecture-draft.md)
 - [既有前端库雷达](docs/prototype/frontend-library-radar.md)：保留候选、理由、参考和采用条件。
+- [技术选型审议：现代 TypeScript 生态中的复用与取舍](docs/architecture/technology-selection-review.md)：覆盖 UI、类型、状态、存储与宿主基础；调整建议不自动取代现行决定。
 - [当前需求](.scratch/product-requirements/spec.md)与[增量选型评估](.scratch/product-requirements/technical-evaluation.md)：本轮确认与待验证项。
 - [清理前完整归档](docs/archive/pre-reset/README.md)：原型、机器结果、源码、测试及构建文件，附固定提交与哈希清单。
 

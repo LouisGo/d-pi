@@ -2,6 +2,8 @@
 
 本页从清理前记录恢复并结合当前需求整理。旧稿来源为 `6fab3ef`，不是本轮重新发明的候选；[逐字原稿](../archive/pre-reset/docs/prototype/frontend-library-radar.md)保留完整出处。外部库的历史版本、许可证与状态需在实际接入时复核，本次没有重跑所有候选 PoC。
 
+2026-09-26：[技术选型审议](../architecture/technology-selection-review.md)重新评估 UI 底座与 Composer，并扩展到类型、状态、存储和宿主基础。该文是建议及取舍分析，未将 Base UI、Tiptap、SQLite 等调整提议登记为已采用；本页现行基线保持有效。
+
 ## 当前状态与变化
 
 - 延续既有方向：React + TypeScript + Tailwind CSS、自有组件 API 与设计变量；shadcn/ui 是源码和组织参考，Radix 按需提供底层行为，React Aria 是复杂交互对照；Base UI 不作为默认底座。
