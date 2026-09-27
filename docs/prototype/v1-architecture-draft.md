@@ -2,6 +2,8 @@
 
 本页整合 `6fab3ef` 的[原架构稿](../archive/pre-reset/docs/prototype/v1-architecture-draft.md)与本轮需求。已确认决策、待验证方案和历史实现分开记录；当前工作区没有产品应用，不将历史验收冒充当前应用验收。
 
+2026-09-27：具体功能责任已整理为[模块地图](../architecture/modules/README.md)及[交接时序](../architecture/modules/flows.md)，近期实施按[M1 开发准备](../../.scratch/development-foundation/spec.md)。本页继续维护整体架构和历史取舍，模块页维护局部交接，不复制两套合同。
+
 ## 继续沿用的架构与工程方向
 
 - Electron Main 管窗口、系统集成与进程监督；utility SessionHost 管 OMP 连接、请求关联、会话镜像与同步；OMP 管执行、工具和原生会话；Renderer 管交互。依据 [ADR-0001](../adr/0001-omp-session-client.md)。

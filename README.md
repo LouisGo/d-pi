@@ -2,12 +2,14 @@
 
 以 Electron GUI 复用 OMP Runtime，改善需求输入、执行观察和结果阅读。应用将内置 OMP，用户无需另行安装 CLI。
 
-**当前状态（2026-09-26）：Runtime 可行性已有限定范围证据，需求和基础方案已收敛到分阶段验证与交付，当前产品尚未开始实现。** 旧应用已完整归档，后续逐项复用；删除实现不代表取消既有技术决定。设计就绪不等于接口、性能或首版已验收。
+**当前状态（2026-09-27）：模块边界、关键交接图和 M1 切片计划已准备，Runtime 可行性有既有限定范围证据，当前产品尚未开始实现。** 旧应用已完整归档，后续逐项复用；删除实现不代表取消既有技术决定。设计就绪不等于接口、性能或首版已验收。
 
 从 [文档导航](docs/README.md) 按任务找到依据；全局审计可按其中的底层到顶层顺序阅读。设计与开发以 [决定登记](docs/decisions.md)、[基础方案](.scratch/product-requirements/foundation-plan.md)和相关 [基础契约](docs/architecture/foundation-contracts.md)为准。具体任务按用户授权推进，不重复开启已收敛的选型。
 
 ## 设计与历史入口
 
+- [模块地图与职责](docs/architecture/modules/README.md)：12 个模块的所有权、依赖和验收入口；[关键交接图](docs/architecture/modules/flows.md)串起提交与恢复。
+- [M1 开发准备与切片计划](.scratch/development-foundation/spec.md)：G1 缺口、近期交付、跨模块场景和首版需求覆盖。
 - [当前交接与证据索引](docs/prototype/handoff.md)
 - [整理后的架构与交付](docs/prototype/v1-architecture-draft.md)
 - [既有前端库雷达](docs/prototype/frontend-library-radar.md)：保留候选、理由、参考和采用条件。
