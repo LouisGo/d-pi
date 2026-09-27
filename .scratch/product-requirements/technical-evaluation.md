@@ -8,7 +8,7 @@
 
 ## 1. 前端基础与状态
 
-已确认：使用 [Biome](https://biomejs.dev/guides/getting-started/)负责自有代码 lint 与格式化，不采用 ESLint + Prettier。仅在搭配 [@shadcn/lint](https://github.com/shadcn-ui/lint)时引入 Oxlint，用于设计系统规则，不重复开启通用 lint。使用 shadcn/ui 不等于必须采用 @shadcn/lint。TypeScript 类型检查仍独立执行；应用自己的格式化工具不覆盖用户打开项目的格式化配置。
+已确认：使用 [Biome](https://biomejs.dev/guides/getting-started/)负责自有代码 lint 与格式化，不采用 ESLint + Prettier。2026-09-27 用户明确要求 S1 正式 GUI 接入 [@shadcn/lint](https://github.com/shadcn-ui/lint)与 Oxlint，用于设计系统规则，不重复开启通用 lint；取代此前条件接入的时机，详见[设计系统合同](../../docs/architecture/design-system.md)。TypeScript 类型检查仍独立执行；应用自己的格式化工具不覆盖用户打开项目的格式化配置。
 
 延续旧稿已有的 TypeScript + React + electron-vite 工程方向。应用是本机交互客户端，目前不需要 SSR 或独立 Web 后端。React 用于组合复杂业务视图，electron-vite 管理 Main、preload、Renderer 的开发构建。该选择是针对当前产品的工程判断，不是对其他框架性能的排名。
 

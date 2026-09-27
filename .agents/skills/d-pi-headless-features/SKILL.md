@@ -17,9 +17,13 @@ description: "用于 d-pi 功能规划与拆票、功能模块或 React 接入�
 | 功能职责、拥有者、生命周期、React 接入与分层验收 | [无头功能合同](../../../docs/architecture/headless-features.md) |
 | 身份/恢复、提交、认证、附件、权限、输出及 G1/M1/M2/M3 | [基础契约](../../../docs/architecture/foundation-contracts.md)相关节；诊断行为再查[诊断合同](../../../docs/architecture/diagnostics.md) |
 | 应用 TypeScript 类型、分支与边界实现 | [TypeScript 合同](../../../docs/architecture/typescript.md)相关节；D-35 的 ts-pattern/Zod v4 不改变业务所有权 |
+| GUI 组件、样式、主题与密度 | [设计系统合同](../../../docs/architecture/design-system.md)：S1 起 token 与设计 lint，新增组件验证全局主题/密度传播 |
 | 拆票、GUI 图标或外部 UI 源码 | 分别查[本地任务约定](../../../docs/agents/issue-tracker.md)、[图标合同](../../../docs/architecture/icon-system.md)，无关任务不加载 |
 
 ## 交付判断
+
+开始或接手切片时遵守根 AGENTS.md 的用户参与规则，并读取当前 spec 的推进与交接状态。Spec 中重要的新产品判断先对齐，Ticket 与常规工程拆分自行完成；可操作体验逐段交付试用，不把工程验证当作用户认可。记录要求见[本地任务约定](../../../docs/agents/issue-tracker.md#spec-对齐与跨会话交接)。
+
 
 围绕当前用户场景明确操作与结果、状态/资源拥有者和释放条件，在现有任务说明中记录即可。优先验证会改变该切片路线的未知；已有适用证据直接复用，最小 IME/焦点/滚动实验可前置，不先建设整套页面或全产品框架。
 

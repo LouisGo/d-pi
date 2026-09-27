@@ -17,10 +17,10 @@
 | --- | --- | --- |
 | [宿主与 OMP 接入](runtime-host.md) | 进程监督、受限通道、协议解码、原生请求关联、实例恢复 | M1 核心；不重建 OMP 执行循环 |
 | [App 存储与内容](app-storage.md) | SQLite 写入、迁移恢复、私有内容文件及引用一致性 | M1 核心；驱动和具体表结构在持久化切片确定 |
-| [配置、模型与认证](configuration.md) | 原生配置复用、配置上下文、模型能力、新用户认证 | M1 已有配置；两条新增认证在 M2 |
+| [配置、模型与认证](configuration.md) | 原生配置复用、配置上下文、模型能力、新用户认证 | M1 已有配置；M2 两条新增认证与子 Agent Thread 配置覆盖 |
 | [项目、工作目录与 Thread](threads.md) | 稳定身份、目录关系、执行准入、原生记录绑定与恢复入口 | M1 数据模型；M2 多 Thread 界面 |
 | [输入与上下文](input-context.md) | 编辑接入、草稿、引用、内容准备与冻结 | M1 文字/选区；M2 全部指定输入 |
-| [提交与执行交互](execution.md) | 提交收据、接受证据、排队/干预/停止和待答交互 | M1 核心 |
+| [提交与执行交互](execution.md) | 提交收据、接受证据、排队/干预/停止和待答交互 | M1 核心；M2 完整队列管理 |
 | [执行记录与阅读](conversation.md) | 会话投影、实时尾部、历史分页、工具/子 Agent 展示、复制 | M1 主链路；M2 长输出；M3 PNG 导出等 |
 | [文件与编辑器](files-editor.md) | 授权读取、文件版本、Monaco 和选区；后续编辑/语言服务 | M1 只读；M3 编辑 |
 | [变化记录与 Git](changes-git.md) | Git 状态与对比基线、工具修改证据、Diff 业务输入 | M1 只读；M3 Git 写入与完整变化管理 |
@@ -76,7 +76,7 @@ flowchart TB
 | 权限与信任 | [基础契约 §5](../foundation-contracts.md#5-最小权限与信任b5) | Thread 管授权记录；文件/启动/配置等操作入口各自执行所需检查。App 读取与项目执行为两个独立设置 |
 | 类型与数据边界 | [TypeScript 合同](../typescript.md) | 公开业务 DTO 可序列化，schema 推导类型；边界用 Zod v4，可信内部不重复 parse；业务分支用 ts-pattern 穷尽处理 |
 | 错误与诊断 | [诊断合同](../diagnostics.md) | Main 管设施；操作拥有者决定恢复；实际跨进程路径传同一 traceId，日志失败不改业务结果 |
-| UI 组合 | Base UI / 自有组件 API、[图标合同](../icon-system.md) | 薄绑定组合功能，Tiptap/Monaco 留在所属适配层；布局、焦点和面板不拥有后台任务 |
+| UI 组合 | Base UI / 自有组件 API、[图标合同](../icon-system.md) | 薄绑定组合功能，Tiptap/Monaco 留在所属适配层；按[设计系统合同](../design-system.md)统一 token、主题/密度与组件覆盖边界，S1 起设计 lint；布局、焦点和面板不拥有后台任务 |
 | 构建与质量检查 | [M1 计划](../../../.scratch/development-foundation/spec.md) | 单应用，按切片接入严格 TS、Biome、行为检查与 macOS 包验证，不先搭通用框架 |
 
 ## 设计完成到什么程度

@@ -10,6 +10,7 @@
 | [决定登记](decisions.md)与[相关 ADR](adr/) | 已确认 `D-*`、沿用 `B-*`、提议 `P-*` 及取代关系；提议未确认前不能覆盖现行方向 |
 | [产品需求](../.scratch/product-requirements/spec.md)与[基础方案](../.scratch/product-requirements/foundation-plan.md) | 用户目标、范围和交付阶段；未交付不等于被删除 |
 | [基础契约](architecture/foundation-contracts.md)、[无头功能](architecture/headless-features.md)、[诊断](architecture/diagnostics.md)、[图标](architecture/icon-system.md) | 各自负责行为与工程边界；细节集中维护，不在每个入口复制 |
+| [设计系统合同](architecture/design-system.md) | D-17/D-32 的 token、主题/密度、组件覆盖边界及 S1 起设计 lint 与 GUI 验收要求；[开源依据](architecture/design-system-references.md)记录固定源码和适配限制，适用于纯样式任务 |
 | [TypeScript 合同](architecture/typescript.md) | D-35 的应用写法与验收标准：严格类型、ts-pattern、Zod v4；库版本与实际集成在接入时验证 |
 | [模块地图与各模块方案](architecture/modules/README.md)、[交接图](architecture/modules/flows.md) | 现有合同的工程分工：所有权、生命周期、输入输出与模块组合；不重复定义产品范围或上游协议 |
 | [M1 开发准备](../.scratch/development-foundation/spec.md) | 近期 G1 缺口、实施切片、跨模块验收及 V1-00–10 责任覆盖；不是实现通过记录 |

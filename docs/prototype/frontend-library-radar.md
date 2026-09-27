@@ -8,7 +8,7 @@
 
 - React + TypeScript + Tailwind CSS、自有组件 API 与设计变量继续沿用；Base UI 为默认基础交互，积极复用 shadcn/ui 源码。React Aria 是复杂交互对照，Radix 仅在具体适配需要时局部评估。
 - 保留 Beautiful UI 的重要视觉参考地位，以及 Tool UI 的工具结果表达参考；两者都不替换 OMP 状态所有权。
-- 当前修订：Biome 取代 ESLint + Prettier；只有 @shadcn/lint 才引入 Oxlint。Streamdown + Shiki 统一内容渲染，不额外维护业务 react-markdown 入口。
+- 当前修订：Biome 取代 ESLint + Prettier；S1 接入 @shadcn/lint 与限定设计检查范围的 Oxlint。Streamdown + Shiki 统一内容渲染，不额外维护业务 react-markdown 入口。
 - 继续保留 Virtua / React Virtuoso / TanStack Virtual、Motion、Pacer、birpc、LiveStore 等候选及采用条件；保留候选不等于预装依赖。
 - Monaco 已定；Composer 由 D-33 确认最小 Tiptap 与业务扩展。SQLite 用于 App 结构化存储，ts-pattern/Zod v4 按[TypeScript 合同](../architecture/typescript.md)执行。Git Panel、内置浏览器与终端的范围不变，见[增量技术评估](../../.scratch/product-requirements/technical-evaluation.md)。选型确认不等于集成通过。
 - 当前没有产品依赖清单；历史实现链接指向固定 Git 提交，不意味着被引用代码仍在工作区。旧 M1 范围只作历史依据，当前产品范围以[需求文档](../../.scratch/product-requirements/spec.md)为准。
@@ -62,9 +62,9 @@
 
 ### shadcn/lint · 自有设计系统的守护规则
 
-- **入口：**[官方说明与设置](https://github.com/shadcn-ui/lint)；包为 `@shadcn/lint`，支持多种 lint 接入；本项目已确定 Biome 为主，仅在采用 @shadcn/lint 时搭配 Oxlint，不引入 ESLint，且可用于非 shadcn 的 Tailwind 组件。
+- **入口：**[官方说明与设置](https://github.com/shadcn-ui/lint)；包为 `@shadcn/lint`，支持多种 lint 接入；本项目以 Biome 为主，09-27 用户已要求 S1 正式 GUI 接入 @shadcn/lint 与限定范围的 Oxlint，不引入 ESLint，且可用于非 shadcn 的 Tailwind 组件。
 - **接入位置与理由：**自有组件的设计变量、变体和可覆盖范围明确后，帮助后续 AI 生成的页面遵守这些约束。
-- **采用条件：**先确定组件 API、主题变量与例外规则，再按规则逐条启用，避免把仍在探索的视觉选择误判为违规。它检查代码约束，不能替代可见 GUI 的视觉与可访问性验证。
+- **接入门槛：**09-27 用户明确早期必需；S1 确定最小组件 API、主题/密度 token 与窄范围例外，并以正反例验证规则。详见[设计系统合同](../architecture/design-system.md)。它检查代码约束，不能替代可见 GUI 的视觉与可访问性验证。
 
 ### Motion · 有意义的状态过渡
 
