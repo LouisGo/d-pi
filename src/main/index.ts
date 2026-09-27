@@ -17,6 +17,26 @@ let window: BrowserWindow | null = null;
 let store: DraftStorage | undefined;
 let service: DraftService | undefined;
 let startupCauseCode: string | undefined;
+function initializeStorage(): void {
+  if (service) return;
+  try {
+    const data = app.getPath("userData");
+    mkdirSync(data, { recursive: true, mode: 0o700 });
+    store = new DraftStorage(join(data, "drafts.sqlite"));
+    service = new DraftService(store, async () => {
+      if (!window) return null;
+      const result = await dialog.showOpenDialog(window, {
+        title: "选择项目并创建草稿",
+        properties: ["openDirectory"],
+      });
+      return result.canceled ? null : (result.filePaths[0] ?? null);
+    });
+    startupCauseCode = undefined;
+  } catch (error) {
+    startupCauseCode = diagnosticCode(error);
+    // Keep the original database; a later restore may retry opening it.
+  }
+}
 let diagnostics: Diagnostics | undefined;
 let loggingNoticeShown = false;
 function reportLoggingFailure(): void {
@@ -145,22 +165,7 @@ else {
   });
   app.whenReady().then(() => {
     const data = app.getPath("userData");
-    mkdirSync(data, { recursive: true, mode: 0o700 });
     diagnostics = new Diagnostics(join(data, "logs"), reportLoggingFailure);
-    try {
-      store = new DraftStorage(join(data, "drafts.sqlite"));
-      service = new DraftService(store, async () => {
-        if (!window) return null;
-        const result = await dialog.showOpenDialog(window, {
-          title: "选择项目并创建草稿",
-          properties: ["openDirectory"],
-        });
-        return result.canceled ? null : (result.filePaths[0] ?? null);
-      });
-    } catch (error) {
-      startupCauseCode = diagnosticCode(error);
-      /* Fail closed; restore returns a typed error without rebuilding the database. */
-    }
     ipcMain.handle("draft:request", async (event, raw: unknown) => {
       const fallbackTrace = randomUUID();
       if (!sourceValid(event))
@@ -182,6 +187,9 @@ else {
       };
       diagnostics?.record({ ...context, stage: "received" });
       const started = performance.now();
+      // Initial restore and the explicit "重新检查" action share this path.
+      // Other commands must not reopen storage or retry an uncertain write.
+      if (command.kind === "restore") initializeStorage();
       const reply = service
         ? await service.execute(command)
         : failure(

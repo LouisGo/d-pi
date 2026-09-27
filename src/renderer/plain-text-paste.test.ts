@@ -1,11 +1,12 @@
 import { readFileSync } from "node:fs";
-import { getSchema } from "@tiptap/core";
+import { Editor, getSchema } from "@tiptap/core";
 import Document from "@tiptap/extension-document";
 import Paragraph from "@tiptap/extension-paragraph";
 import Text from "@tiptap/extension-text";
 import { history, redo, undo } from "@tiptap/pm/history";
 import { EditorState, TextSelection } from "@tiptap/pm/state";
 import { describe, expect, it } from "vitest";
+import { plainTextEditorOptions } from "./plain-text-editor";
 import { textPasteTransaction } from "./plain-text-paste";
 
 const schema = getSchema([Document, Paragraph, Text]);
@@ -20,6 +21,49 @@ function plain(state: EditorState): string {
   ).join("\n");
 }
 describe("S1 literal text paste", () => {
+  it("copies and cuts source lines without changing blank lines, including a partial selection", () => {
+    const original = `${source}\n\n`;
+    const pasted = EditorState.create({ schema });
+    const editor = new Editor({
+      ...plainTextEditorOptions,
+      element: null,
+      content: pasted
+        .apply(textPasteTransaction(pasted, original))
+        .doc.toJSON(),
+    });
+    try {
+      const plugin = editor.extensionManager.plugins.find(
+        (value) => value.props.clipboardTextSerializer,
+      );
+      if (!plugin?.props.clipboardTextSerializer)
+        throw new Error("Missing editor clipboard serializer");
+      const copy = () =>
+        plugin.props.clipboardTextSerializer?.call(
+          plugin,
+          editor.state.selection.content(),
+          editor.view,
+        );
+      editor.commands.selectAll();
+      const copied = copy();
+      expect(copied).toBe(original);
+      if (copied === undefined) throw new Error("Missing copied source");
+      // Cut uses the same serializer before deleting the selection.
+      editor.commands.deleteSelection();
+      editor.view.dispatch(textPasteTransaction(editor.state, copied));
+      expect(editor.getText({ blockSeparator: "\n" })).toBe(original);
+      editor.commands.setContent({
+        type: "doc",
+        content: ["before first", "  second after"].map((text) => ({
+          type: "paragraph",
+          content: [{ type: "text", text }],
+        })),
+      });
+      editor.commands.setTextSelection({ from: 8, to: 23 });
+      expect(copy()).toBe("first\n  second");
+    } finally {
+      editor.destroy();
+    }
+  });
   it("preserves the reported Markdown source, blank lines and trailing newline in one undoable edit", () => {
     let state = EditorState.create({ schema, plugins: [history()] });
     state = state.apply(textPasteTransaction(state, source + "\n"));

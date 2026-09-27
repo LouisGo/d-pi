@@ -62,6 +62,8 @@ status: delivered-awaiting-user-trial
 
 ## S1 工程落点
 
+2026-09-27 后续用户授权修复 commit 复审发现并本地提交：多行复制/剪切保留原文、启动存储失败后“重新检查”真正重试，已完成针对性测试及隔离 Electron 操作；架构核对与本轮证据见 [review-fixes.md](review-fixes.md)。当前源码包含修复，旧 0.1.0-s1.3 试用包未替换，用户认可仍待反馈；不扩展 S2、不推送。
+
 唯一视觉值入口为 `src/renderer/styles/tokens.css`；CSS 总入口 `styles/app.css`，组件导入 `@/components/ui`，图标从 `@/components/icons/common` 使用语义组件。Main 用内置 node:sqlite 的 WAL/FULL；S1 一个前台 Thread，初次选择目录创建身份，重开恢复。300ms 合并自动保存、单写序列和 CAS；失败不清稿，关窗先冻结编辑并确认落盘。输入法候选未结束时保留窗口，不能强行截断候选。
 
 ## 2026-09-27 验证投入与提交授权调整

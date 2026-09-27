@@ -1,7 +1,3 @@
-import Document from "@tiptap/extension-document";
-import Paragraph from "@tiptap/extension-paragraph";
-import Text from "@tiptap/extension-text";
-import { UndoRedo } from "@tiptap/extensions";
 import { EditorContent, useEditor } from "@tiptap/react";
 import { useEffect, useSyncExternalStore } from "react";
 import { match } from "ts-pattern";
@@ -9,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import type { DraftController } from "../features/draft/controller";
 import type { Draft } from "../shared/contracts";
 import type { AppModel } from "./model";
+import { plainTextEditorOptions } from "./plain-text-editor";
 import { handlePlainTextPaste } from "./plain-text-paste";
 export function Composer({
   draft,
@@ -25,7 +22,7 @@ export function Composer({
   );
   const editor = useEditor(
     {
-      extensions: [Document, Paragraph, Text, UndoRedo],
+      ...plainTextEditorOptions,
       content: {
         type: "doc",
         content: draft.text.split("\n").map((text) => ({
