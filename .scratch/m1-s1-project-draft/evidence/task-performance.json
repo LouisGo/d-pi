@@ -1,0 +1,62 @@
+{
+  "machine": "Apple M1 Pro",
+  "os": "27.2.0",
+  "arch": "arm64",
+  "electron": "44.4.5",
+  "node": "24.21.0",
+  "chars": 20989,
+  "intervalMs": 16,
+  "edits": 32,
+  "results": [
+    {
+      "run": 1,
+      "mode": "off",
+      "durationMs": 843.2539999999999
+    },
+    {
+      "run": 2,
+      "mode": "on",
+      "durationMs": 832.042625
+    },
+    {
+      "run": 3,
+      "mode": "on",
+      "durationMs": 827.4541250000002
+    },
+    {
+      "run": 4,
+      "mode": "off",
+      "durationMs": 838.7613339999998
+    },
+    {
+      "run": 5,
+      "mode": "off",
+      "durationMs": 827.4133339999998
+    },
+    {
+      "run": 6,
+      "mode": "on",
+      "durationMs": 825.5974580000002
+    },
+    {
+      "run": 7,
+      "mode": "on",
+      "durationMs": 832.8694580000001
+    },
+    {
+      "run": 8,
+      "mode": "off",
+      "durationMs": 832.9382500000002
+    },
+    {
+      "run": 9,
+      "mode": "off",
+      "durationMs": 835.0380000000005
+    },
+    {
+      "run": 10,
+      "mode": "on",
+      "durationMs": 838.5284580000007
+    }
+  ]
+}

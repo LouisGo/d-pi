@@ -1,11 +1,11 @@
 ---
 title: M1 S1 项目与持久输入起点
-status: ready-for-validation
+status: delivered-awaiting-user-trial
 ---
 
 # M1 S1 项目与持久输入起点
 
-日期：2026-09-27。本轮准入审查新增的近期实施入口；所有实现任务均未开始。依据[开发计划](../development-foundation/spec.md)、[基础契约](../../docs/architecture/foundation-contracts.md)、[Thread](../../docs/architecture/modules/threads.md)、[存储](../../docs/architecture/modules/app-storage.md)、[输入](../../docs/architecture/modules/input-context.md)、[设计系统](../../docs/architecture/design-system.md)。
+日期：2026-09-27。近期实施入口；2026-09-27 用户已明确授权正式实施 S1，当前 01–05 工程交付完成，用户反馈的原文粘贴问题已修复待复试。依据[开发计划](../development-foundation/spec.md)、[基础契约](../../docs/architecture/foundation-contracts.md)、[Thread](../../docs/architecture/modules/threads.md)、[存储](../../docs/architecture/modules/app-storage.md)、[输入](../../docs/architecture/modules/input-context.md)、[设计系统](../../docs/architecture/design-system.md)。
 
 ## 用户得到什么
 
@@ -39,6 +39,10 @@ status: ready-for-validation
 
 票是按可验证结果拆分，不按全产品 store/hooks/pages 拆分。01 内的独立调查可以分别推进；某项失败只阻止依赖该项的接入，不要求无关工作等待。
 
+## 用户反馈修复
+
+[05 Markdown原文粘贴](issues/05-markdown-source-paste.md)：S1保留剪贴板text/plain中的Markdown标记、编号、链接原文、缩进及连续空行，CRLF/CR统一为LF；存在HTML副本时不让默认HTML解析覆盖已有文字原文。此修复不承诺从HTML重建Markdown，不取代M2已确认的富内容粘贴规则，也不加入输入框所见即所得排版。
+
 ## 验收
 
 1. 正常目录与新 Thread 关联正确；取消目录选择不产生错误关联，目录失效不自动换到别处。仅浏览没有项目代码执行。
@@ -50,8 +54,16 @@ status: ready-for-validation
 
 ## 推进与交接
 
-- 当前范围与授权：本轮仅审查、补文档/任务并 commit；产品实现和依赖安装未开始。后续明确要求实施 S1 时包含必要验证、无头、GUI 与修复，无需逐层重复批准。
+- 当前范围与授权：2026-09-27 用户明确授权 S1 必要依赖安装、验证、无头功能、正式 GUI、组合验收及修复；不扩展 S2，不自动推送。重要新增产品判断先对齐，常规工程选择自主处理。
 - 产品判断：沿用已确认范围，目前无阻止开始 S1 验证的未决重要产品选择。开发若发现新的重要体验/数据行为选择，先记录并按根 AGENTS.md 对齐；不以本文“ready”覆盖新问题。
-- 工程状态：01–04 全部 open；驱动/ABI、真实 IME、lint 兼容和主题/密度联动待实测。S2 的 OMP 接受、S3 的停止/恢复、M2 的认证/附件/完整队列缺口不阻塞 S1。
-- 用户试用：尚不可试用。工程验收完成后标“已交付待试用”，附实际构建和操作步骤；用户反馈另记，不自动标认可。
-- 继续边界：下一步从 01 开始，完成必要的第一条链路；不连带批准整个 M1 或自举迁入。
+- 工程状态：01–05 resolved；0.1.0-s1.3 完成组合工程验收、约 2.2 万字符编辑与恢复、原生 UI 复验和 S1 诊断负载测量，证据见 validation.md/handoff.md。S2 的 OMP 接受、S3 的停止/恢复、M2 的认证/附件/完整队列缺口不阻塞 S1。
+- 用户试用：已收到Markdown粘贴丢失反馈，0.1.0-s1.3修复后已交付待复试，尚无用户认可。Agent GUI 检查和自动测试不能替代体验认可；路径和步骤见 handoff.md。
+- 继续边界：按用户试用反馈继续 S1 必要修复，不连带批准 S2、整个 M1 或自举迁入。锁屏阻碍已解除，无待对齐的重要产品判断；未进行自动提交或推送。
+
+## S1 工程落点
+
+唯一视觉值入口为 `src/renderer/styles/tokens.css`；CSS 总入口 `styles/app.css`，组件导入 `@/components/ui`，图标从 `@/components/icons/common` 使用语义组件。Main 用内置 node:sqlite 的 WAL/FULL；S1 一个前台 Thread，初次选择目录创建身份，重开恢复。300ms 合并自动保存、单写序列和 CAS；失败不清稿，关窗先冻结编辑并确认落盘。输入法候选未结束时保留窗口，不能强行截断候选。
+
+## 2026-09-27 验证投入与提交授权调整
+
+用户认为前期验证过重，要求优先使用OMP官方文档或仓库证据，只有特殊重点才做必要前置实验，并要求文档调整后完整本地commit。按D-28最新细化执行：当前S1证据保留，不重跑无关基线；后续普通改动针对性检查，不默认再做独立探针、全套故障矩阵或多轮性能A/B。产品合同、用户试用和重要判断对齐要求不变。当前完整提交包含S1实现、反馈修复、必要测试/验证资料及本轮文档；不推送、不启动S2。

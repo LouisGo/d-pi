@@ -1,0 +1,15 @@
+appId: local.d-pi.desktop
+productName: d-pi
+asar: true
+npmRebuild: false
+files:
+  - out/main/**
+  - out/preload/**
+  - out/renderer/**
+  - THIRD_PARTY_NOTICES.md
+  - '!node_modules/**'
+directories:
+  output: dist
+mac:
+  identity: null
+  category: public.app-category.developer-tools

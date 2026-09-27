@@ -1,0 +1,184 @@
+@import "./tokens.css";
+@import "../components/ui/button.css";
+@layer base {
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: system-ui, sans-serif;
+    font-size: var(--text-body);
+  }
+  button {
+    font: inherit;
+  }
+  h1,
+  h2,
+  p {
+    margin: 0;
+  }
+}
+@layer components {
+  .app-shell {
+    display: flex;
+    min-height: 100vh;
+  }
+  .sidebar {
+    width: var(--sidebar-width);
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    padding: var(--panel-padding);
+    gap: var(--layout-gap);
+    background: var(--muted);
+    border-right: 1px solid var(--border);
+  }
+  .brand {
+    font-size: var(--text-title);
+    font-weight: 600;
+    display: flex;
+    align-items: baseline;
+    gap: var(--layout-gap);
+  }
+  .brand span,
+  .sidebar-label {
+    color: var(--muted-foreground);
+    font-size: var(--text-small);
+  }
+  .sidebar-label {
+    margin-top: var(--panel-padding);
+  }
+  .project-item {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--layout-gap) / 2);
+    overflow-wrap: anywhere;
+  }
+  .sidebar-bottom {
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--text-small);
+  }
+  .workspace {
+    min-width: 0;
+    flex: 1;
+  }
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--layout-gap) var(--panel-padding);
+    border-bottom: 1px solid var(--border);
+  }
+  .work-content {
+    width: 100%;
+    max-width: var(--content-width);
+    margin-inline: auto;
+    padding: var(--panel-padding);
+  }
+  .draft-intro {
+    margin-block: var(--intro-space) var(--panel-padding);
+  }
+  h1 {
+    font-size: var(--text-heading);
+    line-height: 1.3;
+    font-weight: 550;
+  }
+  .draft-intro p {
+    margin-top: var(--layout-gap);
+  }
+  .directory-info {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--layout-gap) / 2);
+    overflow-wrap: anywhere;
+    margin-block: var(--panel-padding);
+    font-size: var(--text-small);
+  }
+  .directory-info svg {
+    flex-shrink: 0;
+  }
+  .composer {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .composer-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--layout-gap) var(--panel-padding);
+    border-bottom: 1px solid var(--border);
+  }
+  h2 {
+    font-size: var(--text-body);
+    font-weight: 500;
+  }
+  .save-status {
+    color: var(--muted-foreground);
+    font-size: var(--text-small);
+  }
+  .tiptap {
+    padding: var(--panel-padding);
+    min-height: var(--editor-height);
+    max-height: max(var(--editor-height), var(--editor-max-height));
+    overflow-y: auto;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    outline: none;
+  }
+  .tiptap p {
+    margin: 0;
+  }
+  .tiptap:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--primary);
+  }
+  .composer-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--layout-gap);
+    padding: var(--layout-gap) var(--panel-padding);
+    color: var(--muted-foreground);
+    font-size: var(--text-small);
+  }
+  .muted {
+    color: var(--muted-foreground);
+  }
+  .thread-identity {
+    color: var(--muted-foreground);
+    font-size: var(--text-small);
+    margin-top: var(--layout-gap);
+    overflow-wrap: anywhere;
+  }
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--panel-padding);
+    margin-top: var(--intro-space);
+  }
+  .empty-note {
+    color: var(--muted-foreground);
+    font-size: var(--text-small);
+  }
+  .failure {
+    color: var(--destructive);
+  }
+  .composer .failure {
+    padding: var(--panel-padding);
+    display: grid;
+    gap: var(--layout-gap);
+  }
+  .trace {
+    overflow-wrap: anywhere;
+    font-size: var(--text-small);
+  }
+  .notice {
+    margin: var(--panel-padding);
+  }
+  .startup {
+    padding: var(--panel-padding);
+    display: grid;
+    gap: var(--layout-gap);
+  }
+}

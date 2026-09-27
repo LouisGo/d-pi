@@ -1,10 +1,23 @@
-# OMP Desktop
+# d-pi
 
 以 Electron GUI 复用 OMP Runtime，改善需求输入、执行观察和结果阅读。应用将内置 OMP，用户无需另行安装 CLI。
 
-**当前状态（2026-09-27）：模块边界、关键交接图和 M1 切片计划已准备，Runtime 可行性有既有限定范围证据，当前产品尚未开始实现。** 旧应用已完整归档，后续逐项复用；删除实现不代表取消既有技术决定。设计就绪不等于接口、性能或首版已验收。
+**当前状态（2026-09-27）：M1 S1 工程交付完成：项目选择、持久草稿、正式 GUI 与组合检查已完成，0.1.0-s1.3 已修复用户反馈的Markdown原文粘贴问题，待复试，尚未体验认可。** 旧应用已完整归档，后续逐项复用；删除实现不代表取消既有技术决定。设计就绪不等于接口、性能或首版已验收。
 
 从 [文档导航](docs/README.md) 按任务找到依据；全局审计可按其中的底层到顶层顺序阅读。设计与开发以 [决定登记](docs/decisions.md)、[基础方案](.scratch/product-requirements/foundation-plan.md)和相关 [基础契约](docs/architecture/foundation-contracts.md)为准。具体任务按用户授权推进，不重复开启已收敛的选型。
+
+## S1 运行与检查
+
+```sh
+pnpm install --frozen-lockfile
+pnpm dev
+pnpm check
+pnpm package:mac
+```
+
+S1 仅做项目目录与本地文字草稿，不启动 OMP 或请求模型。打包产物默认在 `dist/mac-arm64/d-pi.app`。需要隔离数据时，启动命令前设置 `D_PI_DATA_DIR=/绝对路径`；常规启动数据保存在 Electron 的 d-pi userData 目录，草稿 `drafts.sqlite`，诊断 `logs/main.jsonl`。不删除数据库来解决启动或迁移失败。
+
+本轮构建、试用步骤、实际验证与剩余项见 [S1 交接](.scratch/m1-s1-project-draft/handoff.md)。包仅用于本机开发验证，尚未签名/公证。
 
 ## 设计与历史入口
 
@@ -18,7 +31,7 @@
 - [当前需求](.scratch/product-requirements/spec.md)与[增量选型评估](.scratch/product-requirements/technical-evaluation.md)：本轮确认与待验证项。
 - [清理前完整归档](docs/archive/pre-reset/README.md)：原型、机器结果、源码、测试及构建文件，附固定提交与哈希清单。
 
-功能开发遵守 [验证 → 无头功能 → 正式 GUI](docs/architecture/headless-features.md)（D-28–D-30）；组件化包括非 UI 逻辑，应用生命周期独立于 React，不引入 XState。对应 [仓库 skill](.agents/skills/d-pi-headless-features/SKILL.md)随本仓库维护。
+功能开发遵守 [证据优先 → 无头功能 → 正式 GUI](docs/architecture/headless-features.md)（D-28–D-30）：常规能力查官方文档/固定版本源码后实现，仅关键未知前置最小实验，不逐切片重跑全套；组件化包括非 UI 逻辑，应用生命周期独立于 React，不引入 XState。对应 [仓库 skill](.agents/skills/d-pi-headless-features/SKILL.md)随本仓库维护。
 
 ## 已确认的基础
 

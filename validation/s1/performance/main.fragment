@@ -1,0 +1,27 @@
+    // Validation-only handlers; absent from product source and package.
+    const { writeFile, realpath } = await import('node:fs/promises');
+    const modes = ['off','on','off','on','on','off','off','on','on','off','off','on'];
+    const results: unknown[] = [];
+    let run = -1;
+    let startRSS = 0;
+    const rss = () => app.getAppMetrics().reduce((n,p) => n+p.memory.workingSetSize,0)/1024;
+    ipcMain.handle('s1:begin', async (event) => {
+      if (!sourceValid(event) || !store || run >= modes.length-1) return;
+      await diagnostics?.close();
+      run++;
+      diagnostics = modes[run] === 'on' ? new Diagnostics(join(data, 'perf-logs')) : undefined;
+      const draft = store.active() ?? store.create(await realpath(data));
+      const text = Array.from({length:100},(_,i) => `${String(i).padStart(3,'0')}: ${'S1 draft selection persistence response. '.repeat(5)}`).join('\n');
+      store.save(draft.threadId,draft.revision,text);
+      startRSS = rss();
+      window?.reload();
+    });
+    ipcMain.handle('s1:state', () => ({run:run+1,mode:modes[run]??'idle'}));
+    ipcMain.handle('s1:finish', async (event, samples: unknown) => {
+      if (!sourceValid(event) || run<0) return;
+      const parsed = z.array(z.number().nonnegative()).max(1000).parse(samples);
+      const row = {run:run+1,mode:modes[run],warmup:run<2,samples:parsed,rssMiB:rss(),startRSSMiB:startRSS};
+      results.push(row);
+      await writeFile(join(data,'input-results.json'),JSON.stringify({electron:process.versions.electron,chromium:process.versions.chrome,node:process.versions.node,results},null,2));
+      return {samples:parsed.length,runs:results.length};
+    });

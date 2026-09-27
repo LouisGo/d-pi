@@ -1,0 +1,17 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+    "includes": [
+      "src/**",
+      "validation/**",
+      "*.json",
+      "*.ts",
+      "!pnpm-lock.yaml",
+      "!validation/**/fixtures"
+    ]
+  },
+  "formatter": { "indentStyle": "space" },
+  "linter": { "enabled": true, "rules": { "preset": "none" } },
+  "css": { "parser": { "tailwindDirectives": true } }
+}

@@ -1,0 +1,53 @@
+@import "tailwindcss";
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+}
+:root {
+  color-scheme: light;
+  --background: #fafafa;
+  --foreground: #202124;
+  --primary: #315cba;
+  --primary-foreground: #ffffff;
+  --muted: #f0f0f0;
+  --muted-foreground: #62656a;
+  --border: #d9dadd;
+  --destructive: #b3261e;
+  --control-height: 2.25rem;
+  --control-padding: 0.875rem;
+  --panel-padding: 1.5rem;
+  --layout-gap: 1rem;
+  --radius: 0.625rem;
+  --text-title: 1.125rem;
+  --text-heading: 1.5rem;
+  --intro-space: 3rem;
+  --text-body: 0.875rem;
+  --text-small: 0.75rem;
+  --sidebar-width: 15rem;
+  --content-width: 50rem;
+  --editor-height: 14rem;
+  --editor-max-height: 45vh;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #202124;
+  --foreground: #f1f2f3;
+  --primary: #a8c1ff;
+  --primary-foreground: #162649;
+  --muted: #292b2f;
+  --muted-foreground: #aaaeb6;
+  --border: #41434a;
+  --destructive: #ffb4ab;
+}
+:root[data-density="compact"] {
+  --control-height: 2rem;
+  --control-padding: 0.625rem;
+  --panel-padding: 1rem;
+  --layout-gap: 0.625rem;
+}

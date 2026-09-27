@@ -1,0 +1,11 @@
+{
+  "version": "0.1.0-s1.3",
+  "phase": "saved-and-reopened",
+  "threadId": "268bac97-f999-4eac-91d4-6730cb4a8db1",
+  "revision": 1,
+  "chars": 475,
+  "equalsFixture": true,
+  "bodySHA256": "c40164f715dce64d2a36db09ff0024cbace63bc0292d34cd7d3c47c39715200a",
+  "nativeUndoRedo": true,
+  "nativeClipboardPlainEqualsFixture": true
+}

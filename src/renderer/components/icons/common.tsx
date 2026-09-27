@@ -1,0 +1,49 @@
+import {
+  Folder01Icon,
+  Moon02Icon,
+  Sun03Icon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+export interface IconProps {
+  size?: 16 | 18 | 20 | 24;
+  className?: string;
+}
+export function FolderIcon({ size = 16, className }: IconProps) {
+  return (
+    <HugeiconsIcon
+      icon={Folder01Icon}
+      size={size}
+      className={className}
+      strokeWidth={1.5}
+      color="currentColor"
+      aria-hidden={true}
+      focusable={false}
+    />
+  );
+}
+export function LightThemeIcon({ size = 16, className }: IconProps) {
+  return (
+    <HugeiconsIcon
+      icon={Sun03Icon}
+      size={size}
+      className={className}
+      strokeWidth={1.5}
+      color="currentColor"
+      aria-hidden={true}
+      focusable={false}
+    />
+  );
+}
+export function DarkThemeIcon({ size = 16, className }: IconProps) {
+  return (
+    <HugeiconsIcon
+      icon={Moon02Icon}
+      size={size}
+      className={className}
+      strokeWidth={1.5}
+      color="currentColor"
+      aria-hidden={true}
+      focusable={false}
+    />
+  );
+}

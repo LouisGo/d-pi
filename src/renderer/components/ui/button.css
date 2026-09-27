@@ -1,0 +1,35 @@
+@layer components {
+  .ui-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--layout-gap) / 2);
+    height: var(--control-height);
+    padding-inline: var(--control-padding);
+    border-radius: var(--radius);
+    font-size: var(--text-body);
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .ui-button-primary {
+    color: var(--primary-foreground);
+    background: var(--primary);
+  }
+  .ui-button-ghost {
+    color: var(--foreground);
+    background: transparent;
+  }
+  .ui-button-ghost:hover {
+    background: var(--muted);
+  }
+  .ui-button:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+  .ui-button:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}

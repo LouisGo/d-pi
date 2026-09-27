@@ -1,0 +1,27 @@
+// Passive trusted native input -> rAF + next task, a post-frame feedback proxy.
+// This is not an IME correctness test or a display-photon measurement.
+const samples: number[] = [];
+window.addEventListener('beforeinput', (event) => {
+  if (!event.isTrusted || !(event.target instanceof HTMLElement) || !event.target.closest('.tiptap')) return;
+  const started = performance.now();
+  requestAnimationFrame(() => setTimeout(() => samples.push(performance.now()-started),0));
+},true);
+window.addEventListener('DOMContentLoaded', async () => {
+  const bar = document.createElement('aside');
+  bar.style.cssText = 'position:fixed;bottom:0;left:0;z-index:9999;background:var(--background);color:var(--foreground);padding:var(--layout-gap);border:1px solid var(--border)';
+  const state = await ipcRenderer.invoke('s1:state');
+  const label = document.createElement('span');
+  label.textContent = `Validation only · run ${state.run}/12 · logs ${state.mode} `;
+  const begin = document.createElement('button');
+  begin.textContent = '下一轮固定负载';
+  begin.onclick = () => void ipcRenderer.invoke('s1:begin');
+  const finish = document.createElement('button');
+  finish.textContent = '记录本轮输入';
+  finish.onclick = async () => {
+    const result = await ipcRenderer.invoke('s1:finish',samples);
+    label.textContent = `Recorded ${result.samples} samples · ${result.runs} runs `;
+    finish.disabled = true;
+  };
+  bar.append(label,begin,finish);
+  document.body.append(bar);
+});

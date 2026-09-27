@@ -31,6 +31,6 @@ Main 拥有窗口、Host 监督及受限通道建立；一个 utility SessionHos
 
 先建立包内 OMP → Host → Renderer 的一条真实链路及实例诊断，再接一个 Thread。测试不依赖生产 React 页面来启动或监督进程。
 
-复用[Runtime 证据](../../validation/runtime-feasibility.md)、[随包证据](../../validation/packaged-runtime-evidence.md)与[历史停止实验](../../archive/stage1-evidence.md)，核实版本和适用条件。补验证拆帧/迟到响应、OMP 与 Host 分别崩溃、窗口重连、停止后队列和单写恢复；具体门槛见 [G1 清单](../../../.scratch/development-foundation/spec.md#需要补齐的-g1-证据)。
+复用[Runtime 证据](../../validation/runtime-feasibility.md)、[随包证据](../../validation/packaged-runtime-evidence.md)与[历史停止实验](../../archive/stage1-evidence.md)，核实版本和适用条件。补验证拆帧/迟到响应、OMP 与 Host 分别崩溃、窗口重连、停止后队列和单写恢复；具体门槛见 [G1 清单](../../../.scratch/development-foundation/spec.md#按需补齐的关键-g1-证据)。
 
 通过标准：故障范围正确、旧连接不能污染新连接、关闭窗口仍消费输出；开发态和包内资源路径均有证据。原生接受关联或单写条件无法证明时，只限制相应发送/恢复能力，不伪造 ready。
