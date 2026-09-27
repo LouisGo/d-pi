@@ -118,3 +118,9 @@
 ## 2026-09-27 模块设计与开发准备
 
 用户授权先交付文档、图和必要交接内容，要求模块可独立理解又能组合，避免过度设计；检查后全量 commit 并 push，供异地 review。本次落实 D-02–D-16、D-20–D-35 和沿用基线，形成[模块地图与职责](architecture/modules/README.md)、[关键时序](architecture/modules/flows.md)及[M1 计划](../.scratch/development-foundation/spec.md)。没有改变已有产品决定，不为常规工程分工另造一组用户决定 ID；未写产品代码或宣称新增接口/性能实测。远期模块保留边界，当前 G1 只约束受影响切片。
+
+## 2026-09-27 合同收束
+
+用户要求收束本轮工作区改动并检查后 commit。保留 D-20/D-24/D-26 下的记录与卡片分离、文件/Diff 引用来源及按需同步，细化现有验收，不改变选型、所有权或阶段范围。详见[基础契约 §4/§6](architecture/foundation-contracts.md)和[M1 计划](../.scratch/development-foundation/spec.md)。
+
+本轮未提交稿中的精确执行目标要求、固定订阅机制和额外 G1 门槛已撤回；D-11 继续复用 OMP 行为，工作接续时的干预/停止作为 S3 接入样本。此次为文档收束，无新增原生能力或实测结论。
