@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   DraftSchema,
   type Failure,
@@ -27,6 +27,37 @@ const error: Failure = {
   safeMessage: "failed",
 };
 describe("draft save coordination", () => {
+  it("automatically saves the latest edit after the idle interval without a manual flush", async () => {
+    vi.useFakeTimers();
+    const persisted: string[] = [];
+    const controller = new DraftController(
+      draft,
+      async (revision, text) => {
+        persisted.push(text);
+        return {
+          kind: "saved",
+          threadId: draft.threadId,
+          revision: revision + 1,
+        };
+      },
+      () => error,
+    );
+    try {
+      controller.edit("first");
+      await vi.advanceTimersByTimeAsync(200);
+      controller.edit("latest");
+      await vi.advanceTimersByTimeAsync(299);
+      expect(persisted).toEqual([]);
+      expect(controller.getSnapshot().kind).toBe("dirty");
+      await vi.advanceTimersByTimeAsync(1);
+      expect(persisted).toEqual(["latest"]);
+      expect(controller.getSnapshot().kind).toBe("saved");
+    } finally {
+      controller.dispose();
+      vi.useRealTimers();
+    }
+  });
+
   it("late receipt cannot mark newer text saved; close waits for both versions", async () => {
     const waiting: Array<(reply: SaveReply) => void> = [];
     const sent: Array<{ revision: number; text: string }> = [];

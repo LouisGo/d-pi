@@ -1,0 +1,156 @@
+import { match } from "ts-pattern";
+import { afterEach, expect, it, vi } from "vitest";
+import type { DraftController } from "../features/draft/controller";
+import { failure } from "../main/draft-service";
+import {
+  type Command,
+  type DesktopBridge,
+  DraftSchema,
+  type SaveReply,
+} from "../shared/contracts";
+import { AppModel } from "./model";
+
+function deferredReceipt() {
+  let resolve: (reply: SaveReply) => void = () => {
+    throw new Error("Receipt not initialized");
+  };
+  const promise = new Promise<SaveReply>((accept) => {
+    resolve = accept;
+  });
+  return { promise, resolve };
+}
+
+type SaveCommand = Extract<Command, { kind: "save" }>;
+const draft = DraftSchema.parse({
+  schemaVersion: 1,
+  threadId: crypto.randomUUID(),
+  workspaceId: crypto.randomUUID(),
+  directory: "/fixture",
+  revision: 0,
+  text: "saved source",
+});
+const controllers: DraftController[] = [];
+afterEach(() => {
+  for (const controller of controllers.splice(0)) controller.dispose();
+  vi.unstubAllGlobals();
+});
+async function setup(save: (command: SaveCommand) => Promise<SaveReply>) {
+  // Only the document theme surface and the process boundary are substituted;
+  // AppModel and DraftController collaborate without React or native UI.
+  vi.stubGlobal("document", { documentElement: { dataset: {} } });
+  const bridge: DesktopBridge = {
+    request: (command) =>
+      match(command)
+        .with({ kind: "restore" }, async () => ({
+          kind: "ready" as const,
+          draft,
+          directoryAvailable: true,
+          preferences: { theme: "light" as const, density: "normal" as const },
+        }))
+        .with({ kind: "save" }, save)
+        .with({ kind: "choose-project" }, { kind: "preferences" }, () => {
+          throw new Error("Unexpected command in close scenario");
+        })
+        .exhaustive(),
+    onCloseRequest: () => () => {},
+    onCloseCancelled: () => () => {},
+    completeClose: () => {},
+  };
+  const model = new AppModel(bridge);
+  await model.start();
+  const controller = model.controller;
+  if (!controller) throw new Error("Draft not restored");
+  controllers.push(controller);
+  let composing = false;
+  let editable = true;
+  model.editorBoundary = {
+    freeze: () => {
+      if (composing) return false;
+      editable = false;
+      return true;
+    },
+    release: () => {
+      editable = true;
+    },
+  };
+  return {
+    model,
+    controller,
+    isEditable: () => editable,
+    compose: (value: boolean) => {
+      composing = value;
+    },
+  };
+}
+const saved = (revision: number): SaveReply => ({
+  kind: "saved",
+  threadId: draft.threadId,
+  revision,
+});
+
+it("refuses close during IME composition, then freezes editing until the draft is confirmed", async () => {
+  const receipt = deferredReceipt();
+  const input = await setup(() => receipt.promise);
+  input.controller.edit("unconfirmed source");
+  input.compose(true);
+  const composingClose = input.model.prepareClose();
+  await Promise.resolve();
+  expect(input.controller.getSnapshot().kind).toBe("dirty");
+  expect(await composingClose).toBe(false);
+  expect(input.isEditable()).toBe(true);
+  input.compose(false);
+  let closed = false;
+  const closing = input.model.prepareClose().then((result) => {
+    closed = result;
+    return result;
+  });
+  await Promise.resolve();
+  expect(input.isEditable()).toBe(false);
+  expect(closed).toBe(false);
+  receipt.resolve(saved(1));
+  expect(await closing).toBe(true);
+  expect(input.controller.getSnapshot().kind).toBe("saved");
+});
+
+it("failed close releases editing and explicit retry saves the latest text", async () => {
+  let fail = true;
+  let persisted = draft.text;
+  const input = await setup(async (command) => {
+    if (fail) return failure(command.traceId, "storage-unavailable", "locked");
+    persisted = command.text;
+    return saved(command.expectedRevision + 1);
+  });
+  input.controller.edit("first edit");
+  expect(await input.model.prepareClose()).toBe(false);
+  expect(input.isEditable()).toBe(true);
+  expect(persisted).toBe("saved source");
+  input.controller.edit("latest edit after failure");
+  fail = false;
+  expect(await input.controller.retry()).toBe(true);
+  expect(persisted).toBe("latest edit after failure");
+  expect(await input.model.prepareClose()).toBe(true);
+});
+
+it("cancelling a pending close releases editing and preserves edits made before its late receipt", async () => {
+  const receipt = deferredReceipt();
+  const persisted: string[] = [];
+  const input = await setup(async (command) => {
+    const result =
+      command.expectedRevision === 0
+        ? await receipt.promise
+        : saved(command.expectedRevision + 1);
+    persisted.push(command.text);
+    return result;
+  });
+  input.controller.edit("before timeout");
+  const closing = input.model.prepareClose();
+  expect(input.isEditable()).toBe(false);
+  input.model.cancelClose();
+  expect(input.isEditable()).toBe(true);
+  input.controller.edit("after timeout");
+  receipt.resolve(saved(1));
+  await closing;
+  expect(input.isEditable()).toBe(true);
+  expect(persisted).toEqual(["before timeout", "after timeout"]);
+  expect(input.controller.getSnapshot().kind).toBe("saved");
+});

@@ -11,9 +11,13 @@ import { DraftStorage } from "./storage";
 const shell = vi.hoisted(() => ({
   directory: "",
   handlers: new Map<string, (event: unknown, raw: unknown) => unknown>(),
+  listeners: new Map<string, (event: unknown, raw: unknown) => void>(),
+  windowEvents: new Map<string, (event: unknown) => void>(),
+  close: vi.fn(),
   events: new Map<string, (event: unknown) => void>(),
   contents: {
     mainFrame: {},
+    send: vi.fn<(channel: string, ...args: unknown[]) => void>(),
     setWindowOpenHandler: vi.fn(),
     on: vi.fn(),
     session: { setPermissionRequestHandler: vi.fn() },
@@ -34,7 +38,9 @@ vi.mock("electron", () => ({
   BrowserWindow: class {
     webContents = shell.contents;
     once = vi.fn();
-    on = vi.fn();
+    on = (name: string, listener: (event: unknown) => void) =>
+      shell.windowEvents.set(name, listener);
+    close = shell.close;
     loadURL = vi.fn();
     loadFile = vi.fn();
   },
@@ -43,7 +49,8 @@ vi.mock("electron", () => ({
       name: string,
       listener: (event: unknown, raw: unknown) => unknown,
     ) => shell.handlers.set(name, listener),
-    on: vi.fn(),
+    on: (name: string, listener: (event: unknown, raw: unknown) => void) =>
+      shell.listeners.set(name, listener),
   },
   dialog: { showMessageBox: vi.fn(), showOpenDialog: vi.fn() },
   Menu: { buildFromTemplate: vi.fn(), setApplicationMenu: vi.fn() },
@@ -104,6 +111,59 @@ it("retries a failed initial restore after the lock clears, preserving the same 
     locker.close();
     shell.events.get("will-quit")?.({ preventDefault: vi.fn() });
     await vi.waitFor(() => expect(shell.quit).toHaveBeenCalled());
+    rmSync(shell.directory, { recursive: true, force: true });
+  }
+});
+
+it("a timed-out close receipt cannot close a later attempt, and failed saves retain the window", async () => {
+  vi.resetModules();
+  shell.handlers.clear();
+  shell.events.clear();
+  shell.windowEvents.clear();
+  shell.listeners.clear();
+  shell.contents.send.mockClear();
+  shell.close.mockClear();
+  shell.quit.mockClear();
+  shell.directory = mkdtempSync(join(tmpdir(), "d-pi-close-"));
+  vi.useFakeTimers();
+  try {
+    await import("./index");
+    const result = shell.listeners.get("draft:close-result");
+    const close = shell.windowEvents.get("close");
+    if (!result || !close) throw new Error("Missing close protocol");
+    const event = {
+      sender: shell.contents,
+      senderFrame: shell.contents.mainFrame,
+    };
+    const requestClose = () => {
+      const preventDefault = vi.fn();
+      close({ preventDefault });
+      expect(preventDefault).toHaveBeenCalled();
+      const message = shell.contents.send.mock.calls.findLast(
+        ([channel]) => channel === "draft:close-request",
+      );
+      const token = message?.[1];
+      if (typeof token !== "string") throw new Error("Missing close token");
+      return token;
+    };
+    const expired = requestClose();
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(shell.contents.send).toHaveBeenCalledWith("draft:close-cancelled");
+    expect(shell.close).not.toHaveBeenCalled();
+    const current = requestClose();
+    expect(current).not.toBe(expired);
+    result(event, { token: expired, saved: true });
+    expect(shell.close).not.toHaveBeenCalled();
+    result(event, { token: current, saved: false });
+    expect(shell.close).not.toHaveBeenCalled();
+    const final = requestClose();
+    result(event, { token: final, saved: true });
+    expect(shell.close).toHaveBeenCalledTimes(1);
+    expect(shell.quit).not.toHaveBeenCalled();
+  } finally {
+    shell.events.get("will-quit")?.({ preventDefault: vi.fn() });
+    await vi.runAllTimersAsync();
+    vi.useRealTimers();
     rmSync(shell.directory, { recursive: true, force: true });
   }
 });

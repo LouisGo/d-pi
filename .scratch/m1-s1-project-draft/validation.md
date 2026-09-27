@@ -77,3 +77,17 @@ Apple M1 Pro / macOS Darwin27.2 arm64 / Electron44.4.5 / Node24.21.0，Chromium�
 - 正式0.1.0-s1.3包在 `/tmp/d-pi-s1-paste-roundtrip` 通过原生目录选择创建Thread，原生粘贴后SQLite正文与fixture严格相等（475字符，revision1）；Quit后重开界面保留Markdown标记与列表，状态已保存。正文hash/身份见 `evidence/markdown-paste.json`。
 - 验证窗口与产品试用目录分开；旧用户试用窗口正常保存退出后更新包，重新打开原 `$HOME/Library/Application Support/d-pi-s1-trial`，没有替换用户草稿。旧版已丢失的标记不能靠升级恢复，需要重新粘贴原文。
 - 当前包SHA256 `ff4d7fa70735ba7cb6458760e2666176205bbf13ad799d018d71c3a142f81fde`；未添加依赖、未推送。用户已反馈但修复效果尚未认可，05 resolved只代表修复验证及交付。
+
+## 2026-09-28 自动化回归补齐
+
+按用户最新策略补齐既有正确行为的回归测试，没有为制造 TDD 红灯修改产品行为：
+
+- 自动保存：连续编辑重置 300ms 空闲窗口，最终自动落最新正文，不依赖测试主动 flush。
+- AppModel + 真实 DraftController：输入法候选拒绝关闭；候选结束后冻结编辑并等待保存确认；保存失败恢复编辑且明确重试保存最新正文；取消关闭后新输入不被迟到回执遗漏。编辑边界替身不冒称原生 IME 已复测。
+- Main 实际关闭协议：5 秒超时保留窗口；旧 token 的成功回执不能批准新一轮关闭；失败回执保留窗口，当前成功回执才允许关窗，关窗不调用 quit。仅替换 Electron 外壳，使用虚拟时钟，无真实窗口。
+
+新增 5 项，合计 7 文件/20 项；`pnpm check`（类型、Biome、设计规则及反例、导入/token 边界、Vitest）通过。四个临时变异分别移除 IME 关闭保护、取消关闭后的编辑释放、Main token 校验、自动保存调用，均被新增测试以断言失败拦截；随后全部恢复，产品源码无改动。这是回归敏感性验证，不是历史 TDD 开发记录。
+
+项目三个 skills 已引用同一 TDD/自动化策略。skill-creator 的 Python 校验器因系统缺 PyYAML 无法运行；没有为此安装依赖，已替代检查 frontmatter 与原版完全相同、无模板占位符、本地引用路径存在，并人工核对与用户最终边界一致。
+
+本轮未使用 Computer use，未重复 IME、视觉、打包或性能验收；不改变此前用户体验待认可状态。本次只更新策略、自动化测试及交接，旧试用包未替换。
