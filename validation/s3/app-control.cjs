@@ -6,6 +6,10 @@ const { pathToFileURL } = require("node:url");
 const { createServer } = require("node:http");
 const { DatabaseSync } = require("node:sqlite");
 const requests = [];
+const evidenceDirectory = resolve(
+  process.env.D_PI_VALIDATION_EVIDENCE_DIR ??
+    ".scratch/m1-s3-control-recovery/evidence",
+);
 const server = createServer(async (req, res) => {
   let body = "";
   for await (const bytes of req) body += bytes.toString();
@@ -185,6 +189,26 @@ export default function(pi) { pi.registerCommand('s3ask', { description: 'Fixtur
   );
   await input("/s3ask");
   await click("发送");
+  await wait(async () => (await body()).includes("确认测试操作？"));
+  await wait(() =>
+    js("document.querySelector('[contenteditable=true]').textContent === ''"),
+  );
+  await input("PRESERVED_DURING_DIALOG");
+  const blocked =
+    await js(`Array.from(document.querySelectorAll('.composer button'))
+    .filter(b => ['发送','排队发送','干预当前执行'].includes(b.textContent.trim()))
+    .every(b => b.disabled)`);
+  if (!blocked) throw Error("Submission enabled during native dialog");
+  window.webContents.sendInputEvent({ type: "keyDown", keyCode: "Return" });
+  window.webContents.sendInputEvent({ type: "keyUp", keyCode: "Return" });
+  await new Promise((r) => setTimeout(r, 150));
+  const duringDialog = new DatabaseSync(join(root, "app", "drafts.sqlite"));
+  if (
+    duringDialog.prepare("SELECT count(*) AS total FROM submission").get()
+      .total !== 3
+  )
+    throw Error("Keyboard submission bypassed dialog admission");
+  duringDialog.close();
   await click("确认");
   await click("选项乙");
   await wait(() =>
@@ -211,11 +235,11 @@ export default function(pi) { pi.registerCommand('s3ask', { description: 'Fixtur
   await js(
     "new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))",
   );
-  mkdirSync(resolve(".scratch/m1-s3-control-recovery/evidence"), {
+  mkdirSync(evidenceDirectory, {
     recursive: true,
   });
   writeFileSync(
-    resolve(".scratch/m1-s3-control-recovery/evidence/s3-dark.png"),
+    join(evidenceDirectory, "s3-dark.png"),
     (await window.webContents.capturePage()).toPNG(),
   );
   await click("正常密度");
@@ -229,7 +253,7 @@ export default function(pi) { pi.registerCommand('s3ask', { description: 'Fixtur
     "new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))",
   );
   writeFileSync(
-    resolve(".scratch/m1-s3-control-recovery/evidence/s3-light.png"),
+    join(evidenceDirectory, "s3-light.png"),
     (await window.webContents.capturePage()).toPNG(),
   );
   await click("提交回答");
@@ -259,6 +283,15 @@ export default function(pi) { pi.registerCommand('s3ask', { description: 'Fixtur
     js(
       "Array.from(document.querySelectorAll('button')).some(b => b.textContent === '发送' && !b.disabled) && document.querySelector('[aria-label=项目执行]').textContent.includes('OMP 已就绪')",
     ),
+  );
+  if (
+    !(
+      await js("document.querySelector('[contenteditable=true]').textContent")
+    ).includes("PRESERVED_DURING_DIALOG")
+  )
+    throw Error("Blocked submission lost the draft");
+  console.log(
+    "PASS: dialog blocks buttons and Enter without freezing a receipt; draft survives and send re-enables",
   );
   // A last dialog answer may precede the native idle frame. Select the normal
   // wait intent if Quit races that frame; never bypass the product exit guard.

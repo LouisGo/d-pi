@@ -234,12 +234,13 @@ export function createSessionHost(
       send({
         kind: "submission",
         event: {
-          kind: "disconnected",
+          kind: "rejected",
           submissionId: value.submissionId,
           requestId: value.requestId,
           target: value.target,
         },
       });
+      void refresh();
       return;
     }
     const timer = setTimeout(() => {
@@ -339,7 +340,16 @@ export function createSessionHost(
           command.kind === "stop" ? "d_pi_stop" : "d_pi_continue",
           { traceId: command.traceId },
         );
-        if (reply.success !== true) throw Error("Control failed");
+        if (reply.success !== true) {
+          send({
+            kind: "operation-result",
+            traceId: command.traceId,
+            generation: command.generation,
+            operation: command.kind,
+            status: "failed",
+          });
+          return;
+        }
         const control = ControlStateSchema.parse(reply.data);
         paused = control.paused;
         send({

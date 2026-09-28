@@ -477,3 +477,244 @@ it("settles an acknowledged submission when native admission clears after the id
     f.store.submissions.submission(prepared.receipt.submissionId)?.outcome,
   ).not.toBe("unknown");
 });
+
+it("blocks prepare and dispatch during native interactions, then admits normal follow-up", async () => {
+  const f = await running(false, true);
+  const prepared = await f.prepare();
+  if (prepared.kind !== "receipt") throw Error("prepare failed");
+  const generation = prepared.receipt.target.connectionGeneration;
+  const interactions = {
+    generation,
+    unsupported: false,
+    items: [
+      {
+        id: "dialog",
+        method: "confirm",
+        title: "Confirm",
+        status: "pending",
+        expiresAt: null,
+      },
+    ],
+  };
+  f.host.emit("message", { kind: "interactions", view: interactions });
+  expect(await f.dispatch()).toMatchObject({
+    kind: "receipt",
+    receipt: { state: "rejected" },
+  });
+  expect(
+    f.postMessage.mock.calls
+      .map(([raw]) => HostCommandSchema.parse(raw))
+      .filter((c) => c.kind === "dispatch"),
+  ).toHaveLength(0);
+  f.store.drafts.save(f.draft.threadId, 1, "B");
+  const next = {
+    kind: "prepare" as const,
+    threadId: f.draft.threadId,
+    submissionId: SubmissionIdSchema.parse(crypto.randomUUID()),
+    traceId: TraceIdSchema.parse(crypto.randomUUID()),
+    revision: 2,
+    text: "B",
+  };
+  expect(await f.runtime.submit(next)).toMatchObject({
+    kind: "failed",
+    code: "not-ready",
+  });
+  f.host.emit("message", {
+    kind: "interactions",
+    view: { ...interactions, items: [], unsupported: true },
+  });
+  expect(await f.runtime.submit(next)).toMatchObject({
+    kind: "failed",
+    code: "not-ready",
+  });
+  f.host.emit("message", {
+    kind: "interactions",
+    view: { ...interactions, items: [] },
+  });
+  expect(await f.runtime.submit(next)).toMatchObject({
+    kind: "receipt",
+    receipt: { state: "prepared" },
+  });
+  expect(
+    await f.runtime.submit({
+      kind: "dispatch",
+      threadId: f.draft.threadId,
+      submissionId: next.submissionId,
+    }),
+  ).toMatchObject({
+    kind: "receipt",
+    receipt: { state: "dispatching" },
+  });
+});
+
+it("persists Host non-dispatch without consuming the draft and permits an explicit new send", async () => {
+  const f = await running();
+  const p = await f.prepare();
+  if (p.kind !== "receipt") throw Error("prepare failed");
+  await f.dispatch();
+  f.host.emit("message", {
+    kind: "submission",
+    event: {
+      kind: "rejected",
+      submissionId: p.receipt.submissionId,
+      requestId: p.receipt.requestId,
+      target: p.receipt.target,
+    },
+  });
+  expect(f.store.submissions.submission(p.receipt.submissionId)?.state).toBe(
+    "rejected",
+  );
+  expect(f.store.drafts.read(f.draft.threadId).text).toBe("A");
+  f.host.emit("message", {
+    kind: "control",
+    generation: p.receipt.target.connectionGeneration,
+    state: {
+      paused: false,
+      stopping: false,
+      streaming: false,
+      compacting: false,
+      queued: 0,
+      queue: [],
+      background: 0,
+      pendingAsync: false,
+      admitted: false,
+    },
+  });
+  expect(f.runtime.hasActiveWork()).toBe(false);
+  const submissionId = SubmissionIdSchema.parse(crypto.randomUUID());
+  expect(
+    await f.runtime.submit({
+      kind: "prepare",
+      threadId: f.draft.threadId,
+      submissionId,
+      traceId: TraceIdSchema.parse(crypto.randomUUID()),
+      revision: 1,
+      text: "A",
+    }),
+  ).toMatchObject({ kind: "receipt", receipt: { state: "prepared" } });
+  expect(
+    await f.runtime.submit({
+      kind: "dispatch",
+      threadId: f.draft.threadId,
+      submissionId,
+    }),
+  ).toMatchObject({ kind: "receipt", receipt: { state: "dispatching" } });
+  expect(
+    f.postMessage.mock.calls
+      .map(([raw]) => HostCommandSchema.parse(raw))
+      .filter((c) => c.kind === "dispatch"),
+  ).toHaveLength(2);
+});
+
+it("a control rejection preserves the same session for explicit continue and does not mask real disconnection", async () => {
+  const f = await running();
+  const view = await f.act("inspect");
+  if (!view.generation) throw Error("generation missing");
+  const traceId = TraceIdSchema.parse(crypto.randomUUID());
+  f.host.emit("message", {
+    kind: "operation-result",
+    generation: view.generation,
+    traceId,
+    operation: "continue",
+    status: "failed",
+  });
+  expect(await f.act("inspect")).toMatchObject({
+    phase: "ready",
+    message: expect.stringContaining("未完成"),
+  });
+  await f.runtime.execute({
+    kind: "continue",
+    threadId: f.draft.threadId,
+    generation: view.generation,
+    traceId,
+  });
+  expect(
+    f.postMessage.mock.calls.map(([raw]) => HostCommandSchema.parse(raw)),
+  ).toContainEqual(
+    expect.objectContaining({
+      kind: "control",
+      command: expect.objectContaining({ kind: "continue" }),
+    }),
+  );
+  f.host.emit("message", { kind: "interrupted", reason: "exit" });
+  expect((await f.act("inspect")).phase).toBe("interrupted");
+});
+
+it.each(["error", "disconnected"] as const)(
+  "settles %s only with adequate evidence, including a result arriving after idle",
+  async (kind) => {
+    const f = await running();
+    const p = await f.prepare();
+    if (p.kind !== "receipt") throw Error("prepare failed");
+    await f.dispatch();
+    const state = {
+      paused: false,
+      stopping: false,
+      streaming: false,
+      compacting: false,
+      queued: 0,
+      queue: [],
+      background: 0,
+      pendingAsync: false,
+      admitted: false,
+    };
+    const control = (background: number) =>
+      f.host.emit("message", {
+        kind: "control",
+        generation: p.receipt.target.connectionGeneration,
+        state: { ...state, background },
+      });
+    control(0);
+    expect(f.runtime.hasActiveWork()).toBe(true); // Idle alone cannot resolve an unacknowledged request.
+    control(1);
+    f.host.emit("message", {
+      kind: "submission",
+      event: {
+        kind,
+        submissionId: p.receipt.submissionId,
+        requestId: p.receipt.requestId,
+        target: p.receipt.target,
+      },
+    });
+    expect(f.runtime.hasActiveWork()).toBe(true); // Failure alone cannot dismiss native background work.
+    control(0);
+    expect(f.runtime.hasActiveWork()).toBe(kind === "disconnected");
+    expect(f.store.drafts.read(f.draft.threadId).text).toBe("A");
+  },
+);
+
+it("settles a late failure after the last idle snapshot without waiting for another native state change", async () => {
+  const f = await running();
+  const p = await f.prepare();
+  if (p.kind !== "receipt") throw Error("prepare failed");
+  await f.dispatch();
+  f.host.emit("message", {
+    kind: "control",
+    generation: p.receipt.target.connectionGeneration,
+    state: {
+      paused: false,
+      stopping: false,
+      streaming: false,
+      compacting: false,
+      queued: 0,
+      queue: [],
+      background: 0,
+      pendingAsync: false,
+      admitted: false,
+    },
+  });
+  f.host.emit("message", {
+    kind: "submission",
+    event: {
+      kind: "error",
+      submissionId: p.receipt.submissionId,
+      requestId: p.receipt.requestId,
+      target: p.receipt.target,
+    },
+  });
+  expect(f.runtime.hasActiveWork()).toBe(false);
+  f.host.emit("exit");
+  expect(f.store.submissions.submission(p.receipt.submissionId)?.outcome).toBe(
+    "failed",
+  );
+});

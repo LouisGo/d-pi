@@ -50,7 +50,7 @@ export class SubmissionRepository {
       } else {
         const sameRevision = this.db
           .prepare(
-            "SELECT id FROM submission WHERE thread_id=? AND json_extract(receipt, '$.revision')=? LIMIT 1",
+            "SELECT id FROM submission WHERE thread_id=? AND json_extract(receipt, '$.revision')=? AND json_extract(receipt, '$.state') != 'rejected' LIMIT 1",
           )
           .get(value.threadId, value.revision);
         if (sameRevision)
@@ -132,10 +132,33 @@ export class SubmissionRepository {
         receipt.submissionId,
       );
   }
+  // Main before dispatch or Host before its native write can prove non-dispatch.
+  rejectSubmission(id: string): void {
+    this.database.transaction(() => {
+      const receipt = this.submission(id);
+      if (
+        !receipt ||
+        (receipt.state !== "prepared" &&
+          receipt.state !== "dispatching" &&
+          receipt.state !== "unknown")
+      )
+        return;
+      this.writeReceipt({
+        ...receipt,
+        state: "rejected",
+        outcome: "unobserved",
+      });
+    });
+  }
   unknownSubmission(id: string): void {
     this.database.transaction(() => {
       const receipt = this.submission(id);
-      if (!receipt || receipt.state === "prepared") return;
+      if (
+        !receipt ||
+        receipt.state === "prepared" ||
+        receipt.state === "rejected"
+      )
+        return;
       this.writeReceipt({
         ...receipt,
         state: receipt.state === "acknowledged" ? "acknowledged" : "unknown",
@@ -146,7 +169,12 @@ export class SubmissionRepository {
   failSubmission(id: string): void {
     this.database.transaction(() => {
       const receipt = this.submission(id);
-      if (!receipt || receipt.state === "prepared") return;
+      if (
+        !receipt ||
+        receipt.state === "prepared" ||
+        receipt.state === "rejected"
+      )
+        return;
       this.writeReceipt({
         ...receipt,
         state: receipt.state === "acknowledged" ? "acknowledged" : "unknown",

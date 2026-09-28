@@ -6,6 +6,7 @@ const native = vi.hoisted(() => ({
   observe: (_event: NativeObservation) => {},
   write: vi.fn(),
   close: vi.fn(),
+  rejectContinue: false,
 }));
 vi.mock("./native-session", () => ({
   NativeSession: class {
@@ -16,7 +17,9 @@ vi.mock("./native-session", () => ({
       native.observe = observe;
     }
     async start() {}
-    async request() {
+    async request(command: string) {
+      if (command === "d_pi_continue" && native.rejectContinue)
+        return { success: false };
       return {
         success: true,
         data: {
@@ -46,6 +49,7 @@ afterEach(() => {
   if (originalParent)
     Object.defineProperty(process, "parentPort", originalParent);
   else Reflect.deleteProperty(process, "parentPort");
+  native.rejectContinue = false;
   vi.clearAllMocks();
   vi.resetModules();
 });
@@ -222,4 +226,66 @@ it("reports answer transport result under the original trace and generation with
     operation: "answer",
     status: "acknowledged",
   });
+});
+
+it("reports a known non-dispatch when an interaction arrives after Main admission", async () => {
+  const { messages, dispatch } = await running();
+  native.observe({
+    kind: "frame",
+    frame: {
+      type: "extension_ui_request",
+      id: "dialog",
+      method: "confirm",
+      title: "Confirm",
+    },
+  });
+  dispatch();
+  expect(native.write).not.toHaveBeenCalled();
+  expect(messages).toContainEqual(
+    expect.objectContaining({
+      kind: "submission",
+      event: expect.objectContaining({ kind: "rejected" }),
+    }),
+  );
+  native.observe({
+    kind: "frame",
+    frame: {
+      type: "extension_ui_request",
+      method: "cancel",
+      targetId: "dialog",
+    },
+  });
+  dispatch();
+  expect(native.write).toHaveBeenCalledTimes(1);
+});
+
+it("a superseded continue reports rejection without invalidating the live connection", async () => {
+  const { messages, parent, threadId, target, dispatch } = await running();
+  native.rejectContinue = true;
+  const traceId = crypto.randomUUID();
+  parent.emit("message", {
+    data: {
+      kind: "control",
+      command: {
+        kind: "continue",
+        threadId,
+        traceId,
+        generation: target.connectionGeneration,
+      },
+    },
+    ports: [],
+  });
+  await tick();
+  expect(messages).toContainEqual({
+    kind: "operation-result",
+    traceId,
+    generation: target.connectionGeneration,
+    operation: "continue",
+    status: "failed",
+  });
+  expect(messages).not.toContainEqual(
+    expect.objectContaining({ kind: "failed" }),
+  );
+  dispatch();
+  expect(native.write).toHaveBeenCalledTimes(1);
 });

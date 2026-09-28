@@ -14,6 +14,7 @@ export interface SubmissionStore {
   dispatchSubmission(id: string): boolean;
   acknowledgeSubmission(id: string): boolean;
   failSubmission(id: string): void;
+  rejectSubmission(id: string): void;
   unknownSubmission(id: string): void;
 }
 export interface NativeSubmissionPort {
@@ -88,8 +89,12 @@ export class SubmissionCoordinator {
       if (
         !this.native.isCurrentTarget(receipt.target) ||
         !this.native.canDispatch(receipt.target)
-      )
-        return this.failure("not-ready", context);
+      ) {
+        // Admission can change after prepare. No transport write has occurred,
+        // so finish this attempt explicitly instead of stranding the revision.
+        this.store.rejectSubmission(id);
+        return this.result(id);
+      }
       const frame = frameFor(receipt);
       if (draftByteLength(frame) > SUBMISSION_FRAME_BUDGET)
         return this.failure("content-too-large", context);
@@ -120,6 +125,9 @@ export class SubmissionCoordinator {
       match(event.kind)
         .with("ack", () => {
           this.store.acknowledgeSubmission(receipt.submissionId);
+        })
+        .with("rejected", () => {
+          this.store.rejectSubmission(receipt.submissionId);
         })
         .with("error", () => {
           this.store.failSubmission(receipt.submissionId);
@@ -155,7 +163,10 @@ export class SubmissionCoordinator {
         threadId: receipt.threadId,
         nativeProcessInstanceId: receipt.target.processInstanceId,
         operation: "submit",
-        stage: receipt.outcome === "failed" ? "failed" : receipt.state,
+        stage:
+          receipt.outcome === "failed" || receipt.state === "rejected"
+            ? "failed"
+            : receipt.state,
       });
     } catch {
       /* Diagnostic failure cannot alter submission persistence or dispatch. */

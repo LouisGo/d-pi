@@ -4,6 +4,7 @@ import { match } from "ts-pattern";
 import { Button } from "@/components/ui/button";
 import type { Draft } from "../features/draft/contracts";
 import type { DraftController } from "../features/draft/controller";
+import { canSubmit } from "../features/runtime/submission-admission";
 import { shouldSend } from "../features/submission/shortcut";
 import type { AppModel } from "./model";
 import { plainTextEditorOptions, replaceDraftText } from "./plain-text-editor";
@@ -55,14 +56,7 @@ export function Composer({
             return false;
           event.preventDefault();
           const runtime = model.runtime?.getSnapshot();
-          if (
-            runtime?.phase === "ready" &&
-            runtime.trusted &&
-            !runtime.control?.paused &&
-            !runtime.control?.stopping &&
-            runtime.model
-          )
-            void model.submission?.send();
+          if (canSubmit(runtime)) void model.submission?.send();
           return true;
         },
         handleDOMEvents: {
@@ -246,14 +240,7 @@ function SendButton({
   return (
     <div className="flex gap-2">
       <Button
-        disabled={
-          send.sending ||
-          state?.phase !== "ready" ||
-          !state.trusted ||
-          state.control?.paused ||
-          state.control?.stopping ||
-          !state.model
-        }
+        disabled={send.sending || !canSubmit(state)}
         onMouseDown={(event) => event.preventDefault()}
         onClick={() => {
           if (canSend()) void submission.send();
@@ -264,13 +251,7 @@ function SendButton({
       {state?.busy && (
         <Button
           variant="ghost"
-          disabled={
-            send.sending ||
-            !state.trusted ||
-            state.phase !== "ready" ||
-            state.control?.paused ||
-            state.control?.stopping
-          }
+          disabled={send.sending || !canSubmit(state)}
           onMouseDown={(event) => event.preventDefault()}
           onClick={() => {
             if (canSend()) void submission.send("steer");

@@ -104,13 +104,15 @@ export function Submissions({ model }: { model: SubmissionModel }) {
         {state.receipts.map((receipt) => (
           <article className="message" key={receipt.submissionId}>
             <p>
-              {receipt.state === "acknowledged"
-                ? "已收到调用回执"
-                : receipt.state === "prepared"
-                  ? "已保存，未派发"
-                  : receipt.state === "dispatching"
-                    ? "已派发，等待回执"
-                    : "结果未知"}
+              {receipt.state === "rejected"
+                ? "未派发到 OMP，原文保留；可处理阻塞后重新发送"
+                : receipt.state === "acknowledged"
+                  ? "已收到调用回执"
+                  : receipt.state === "prepared"
+                    ? "已保存，未派发"
+                    : receipt.state === "dispatching"
+                      ? "已派发，等待回执"
+                      : "结果未知"}
               {receipt.outcome === "failed"
                 ? " · 原生返回失败"
                 : receipt.outcome === "unknown"

@@ -227,3 +227,42 @@ it("an explicit resend retains source identity and never consumes the newer draf
       store.close();
     }
   }));
+
+it("non-dispatched receipts cannot consume a draft and remain terminal across restart", () =>
+  fixture((path) => {
+    let store = new AppStorage(path);
+    try {
+      const a = frozen(store);
+      store.submissions.prepareSubmission(a);
+      expect(store.submissions.acknowledgeSubmission(a.submissionId)).toBe(
+        false,
+      );
+      store.submissions.rejectSubmission(a.submissionId);
+      store.submissions.unknownSubmission(a.submissionId);
+      expect(store.submissions.acknowledgeSubmission(a.submissionId)).toBe(
+        false,
+      );
+      store.close();
+      store = new AppStorage(path);
+      expect(store.submissions.submission(a.submissionId)).toMatchObject({
+        state: "rejected",
+        outcome: "unobserved",
+      });
+      expect(store.drafts.read(a.threadId).text).toBe("A");
+      const b = {
+        ...a,
+        submissionId: FrozenSubmissionSchema.shape.submissionId.parse(
+          randomUUID(),
+        ),
+        requestId: randomUUID(),
+      };
+      store.submissions.prepareSubmission(b);
+      store.submissions.dispatchSubmission(b.submissionId);
+      expect(store.submissions.acknowledgeSubmission(b.submissionId)).toBe(
+        true,
+      );
+      expect(store.drafts.read(a.threadId).text).toBe("");
+    } finally {
+      store.close();
+    }
+  }));

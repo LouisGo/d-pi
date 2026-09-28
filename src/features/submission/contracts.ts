@@ -22,7 +22,13 @@ export const FrozenSubmissionSchema = z.strictObject({
 });
 export type FrozenSubmission = z.infer<typeof FrozenSubmissionSchema>;
 export const SubmissionReceiptSchema = FrozenSubmissionSchema.extend({
-  state: z.enum(["prepared", "dispatching", "acknowledged", "unknown"]),
+  state: z.enum([
+    "prepared",
+    "dispatching",
+    "acknowledged",
+    "unknown",
+    "rejected",
+  ]),
   acknowledgedAt: z.string().nullable(),
   // An asynchronous error is not proof of rejection before business acceptance.
   outcome: z.enum(["unobserved", "failed", "unknown"]),
@@ -52,7 +58,7 @@ export const SubmissionFailureSchema = z.strictObject({
 });
 export type SubmissionFailure = z.infer<typeof SubmissionFailureSchema>;
 export const SubmissionEventSchema = z.strictObject({
-  kind: z.enum(["ack", "error", "disconnected"]),
+  kind: z.enum(["ack", "error", "disconnected", "rejected"]),
   submissionId: SubmissionIdSchema,
   requestId: z.uuid(),
   target: SubmissionTargetSchema,

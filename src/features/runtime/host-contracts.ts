@@ -63,7 +63,7 @@ export const HostMessageSchema = z.discriminatedUnion("kind", [
     traceId: z.uuid(),
     generation: z.uuid(),
     operation: z.enum(["answer", "stop", "continue"]),
-    status: z.enum(["acknowledged", "unknown"]),
+    status: z.enum(["acknowledged", "failed", "unknown"]),
   }),
   z.object({ kind: z.literal("interactions"), view: InteractionViewSchema }),
   z.object({

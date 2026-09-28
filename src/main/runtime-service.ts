@@ -11,6 +11,7 @@ import type {
   RuntimeView,
 } from "../features/runtime/contracts";
 import type { HostMessage } from "../features/runtime/host-contracts";
+import { canSubmit } from "../features/runtime/submission-admission";
 import {
   type FrozenSubmission,
   type SubmissionCommand,
@@ -65,11 +66,7 @@ export class RuntimeService {
           ),
         canDispatch: (target) =>
           this.target?.processInstanceId === target.processInstanceId &&
-          this.view?.phase === "ready" &&
-          this.view.trusted &&
-          !this.view.control?.paused &&
-          !this.view.control?.stopping &&
-          !!this.view.model &&
+          canSubmit(this.view) &&
           this.connection.connected,
         write: (value) => {
           if (!this.connection.connected) throw Error("Host unavailable");
@@ -224,15 +221,17 @@ export class RuntimeService {
       )
     )
       return;
-    if (
-      [...this.executingIds].every((id) => {
-        const receipt = this.store.submissions.submission(id);
-        return (
-          receipt?.state === "acknowledged" && receipt.outcome !== "unknown"
-        );
-      })
-    )
-      this.executingIds.clear();
+    // Resolve each receipt independently. Idle is necessary but never enough
+    // for a request whose dispatch/result is still genuinely unknown.
+    for (const id of this.executingIds) {
+      const receipt = this.store.submissions.submission(id);
+      if (
+        receipt?.state === "rejected" ||
+        receipt?.outcome === "failed" ||
+        (receipt?.state === "acknowledged" && receipt.outcome !== "unknown")
+      )
+        this.executingIds.delete(id);
+    }
   }
   private receive(message: Exclude<HostMessage, { kind: "ready" }>): void {
     match(message)
@@ -240,6 +239,11 @@ export class RuntimeService {
         { kind: "operation-result" },
         ({ traceId, generation, operation, status }) => {
           if (generation !== this.currentGeneration) return;
+          if (status === "failed")
+            this.update({
+              traceId,
+              message: "控制请求未完成，请核对当前原生状态；不会自动重试。",
+            });
           this.record({
             traceId,
             requestId: traceId,
@@ -277,6 +281,7 @@ export class RuntimeService {
       })
       .with({ kind: "submission" }, ({ event }) => {
         this.publishSubmission(this.coordinator.receive(event));
+        this.settleIdleSubmissions();
       })
       .with({ kind: "state" }, ({ state, busy, pendingInteraction }) => {
         const model = state.model;

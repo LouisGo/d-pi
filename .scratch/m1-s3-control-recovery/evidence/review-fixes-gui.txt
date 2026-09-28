@@ -1,0 +1,17 @@
+click 选择项目并创建草稿
+click 允许项目执行
+click 启动 OMP
+click 发送
+click 排队发送
+click 停止并暂缓队列
+click 明确继续
+PASS: real GUI queue → stop → reload → explicit continue, no replay
+click 发送
+click 确认
+click 选项乙
+click 提交回答
+click 紧凑密度
+click 正常密度
+click 提交回答
+PASS: official extension confirm/select/input/editor receive GUI answers
+PASS: dialog blocks buttons and Enter without freezing a receipt; draft survives and send re-enables
