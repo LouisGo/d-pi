@@ -196,7 +196,7 @@ export class RuntimeService {
       phase: "interrupted",
       busy: uncertain,
       message:
-        "原生连接已中断。草稿保留，不自动重发；执行恢复将在后续阶段提供。",
+        "原生连接已中断。草稿与原文保留，不自动重发。无法确认原生会话的执行全周期独占，当前只读历史，禁止强占恢复。",
     });
   }
   private receive(message: Exclude<HostMessage, { kind: "ready" }>): void {
@@ -255,7 +255,7 @@ export class RuntimeService {
         busy: false,
         model: null,
         message: previous
-          ? "此 Thread 已有关联的原生会话。当前阶段仅保留记录，不自动启动新会话替代；恢复执行将在后续阶段提供。"
+          ? "此 Thread 已有关联的原生会话。无法确认原生会话的执行全周期独占，当前只读历史；不会强占或新建会话替代。关闭外部 CLI 也不等于已经获得独占证明。"
           : "启动前会再次核对目录。项目执行不等于文件沙箱，OMP 可使用当前系统用户的权限。",
       };
     }

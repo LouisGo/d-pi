@@ -217,3 +217,30 @@ it("a fork failure before any Host exists still allows an explicit start retry",
   await fixture.act("start");
   expect((await fixture.act("inspect")).phase).toBe("ready");
 });
+
+it("restart exposes the unproven execution lock and never substitutes a new session", async () => {
+  const fixture = await running();
+  const binding = fixture.store.threads.nativeSession(fixture.draft.threadId);
+  const forks = electron.fork.mock.calls.length;
+  const restored = new RuntimeService(
+    fixture.store,
+    fixture.root,
+    fixture.root,
+    {},
+    () => {},
+  );
+  for (const kind of ["inspect", "allow", "start"] as const) {
+    const view = await restored.execute({
+      kind,
+      threadId: fixture.draft.threadId,
+      traceId: TraceIdSchema.parse(crypto.randomUUID()),
+    });
+    expect(view.phase).toBe("interrupted");
+    expect(view.message).toContain("无法确认原生会话的执行全周期独占");
+  }
+  expect(electron.fork.mock.calls).toHaveLength(forks);
+  expect(fixture.store.threads.nativeSession(fixture.draft.threadId)).toEqual(
+    binding,
+  );
+  expect(fixture.store.drafts.read(fixture.draft.threadId)?.text).toBe("A");
+});
