@@ -116,13 +116,12 @@ export function createSessionHost(
       if (defaultAnswerTimers.has(id)) continue;
       // Answer ahead of a native expiry: once native deletes the request our
       // write would be silently dropped and the dialog only shows expired.
+      // A native timeout is honored as given; the 120s App fallback applies
+      // only when native carries no timeout field (2026-09-28 decision).
       const latest =
         dialog.expiresAt === null
           ? Date.now() + APP_DEFAULT_ANSWER_MS
-          : Math.min(
-              dialog.expiresAt - NATIVE_EXPIRY_MARGIN_MS,
-              Date.now() + APP_DEFAULT_ANSWER_MS,
-            );
+          : dialog.expiresAt - NATIVE_EXPIRY_MARGIN_MS;
       const delay = Math.max(0, latest - Date.now());
       const timer = setTimeout(
         () => {
@@ -308,6 +307,7 @@ export function createSessionHost(
           !!(control && activeControl(control));
         if (control && start) {
           paused = control.paused;
+          lastControl = control;
           send({
             kind: "control",
             generation: start.connectionGeneration,
@@ -533,7 +533,13 @@ export function createSessionHost(
           return;
         }
         const control = ControlStateSchema.parse(reply.data);
-        if (version === observationVersion) paused = control.paused;
+        // Keep the last known control fresh: the close-idle fallback without
+        // a live query reads it, so a stale active value would refuse an idle
+        // close (and vice versa) after stop/continue changed the state.
+        if (version === observationVersion) {
+          paused = control.paused;
+          lastControl = control;
+        }
         send({
           kind: "operation-result",
           traceId: command.traceId,

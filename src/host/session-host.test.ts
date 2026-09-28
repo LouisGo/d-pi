@@ -4,7 +4,9 @@ import type {
   HostStart,
 } from "../features/runtime/host-contracts";
 import { FrozenSubmissionSchema } from "../features/submission/contracts";
+import { ThreadIdSchema } from "../shared/identity";
 import type { NativeObservation, NativeSessionOptions } from "./native-session";
+import { NativeSession } from "./native-session";
 import { createSessionHost } from "./session-host";
 
 const native = vi.hoisted(() => ({
@@ -216,6 +218,162 @@ it("answers timed-out questions with the timeout default while confirm dialogs k
     );
   } finally {
     vi.useRealTimers();
+  }
+});
+
+it("fires the default just before a short native timeout", async () => {
+  vi.useFakeTimers();
+  try {
+    const messages: HostMessage[] = [];
+    const exit = vi.fn();
+    const host = createSessionHost((message) => messages.push(message), exit);
+    await host.handle({
+      kind: "start",
+      threadId: crypto.randomUUID(),
+      traceId: crypto.randomUUID(),
+      processInstanceId: crypto.randomUUID(),
+      connectionGeneration: crypto.randomUUID(),
+      configContextId: "fixture",
+      binary: "/fixture/omp",
+      identity: { directory: "/project", device: "1", inode: "2" },
+      environment: {},
+      sessionDirectory: "/sessions",
+    });
+    native.observers[0]?.({
+      kind: "frame",
+      frame: {
+        type: "extension_ui_request",
+        method: "select",
+        id: "quick",
+        title: "Pick one",
+        options: ["first", "second"],
+        timeout: 5_000,
+      },
+    });
+    await vi.advanceTimersByTimeAsync(4_100);
+    expect(native.writes.map((frame) => JSON.parse(frame))).toContainEqual({
+      type: "extension_ui_response",
+      id: "quick",
+      value: "first",
+    });
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+it("honors a long native timeout instead of answering at the 120s fallback", async () => {
+  vi.useFakeTimers();
+  try {
+    const messages: HostMessage[] = [];
+    const exit = vi.fn();
+    const host = createSessionHost((message) => messages.push(message), exit);
+    await host.handle({
+      kind: "start",
+      threadId: crypto.randomUUID(),
+      traceId: crypto.randomUUID(),
+      processInstanceId: crypto.randomUUID(),
+      connectionGeneration: crypto.randomUUID(),
+      configContextId: "fixture",
+      binary: "/fixture/omp",
+      identity: { directory: "/project", device: "1", inode: "2" },
+      environment: {},
+      sessionDirectory: "/sessions",
+    });
+    native.observers[0]?.({
+      kind: "frame",
+      frame: {
+        type: "extension_ui_request",
+        method: "input",
+        id: "slow",
+        title: "Details",
+        prefill: "draft",
+        timeout: 3_600_000,
+      },
+    });
+    // The 120s App fallback must not fire while native still allows an hour.
+    await vi.advanceTimersByTimeAsync(120_000);
+    expect(native.writes).toHaveLength(0);
+    await vi.advanceTimersByTimeAsync(3_600_000 - 120_000 - 900);
+    expect(native.writes.map((frame) => JSON.parse(frame))).toContainEqual({
+      type: "extension_ui_response",
+      id: "slow",
+      value: "draft",
+    });
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+it("refreshes the last known control from stop/continue replies so close-idle unblocks", async () => {
+  const idle = {
+    paused: false,
+    stopping: false,
+    pendingAsync: false,
+    admitted: false,
+    streaming: false,
+    compacting: false,
+    queued: 0,
+    background: 0,
+    queue: [],
+  };
+  const request = vi
+    .spyOn(NativeSession.prototype, "request")
+    .mockImplementation(async (command: string) => {
+      if (command === "d_pi_stop" || command === "d_pi_continue")
+        return { success: true, data: idle };
+      if (command === "d_pi_state") return native.controlRequest();
+      return {
+        success: true,
+        data: {
+          sessionId: "session",
+          sessionFile: "/sessions/session.jsonl",
+          model: { id: "model", provider: "fixture" },
+          isStreaming: false,
+          isCompacting: false,
+          queuedMessageCount: 0,
+        },
+      };
+    });
+  try {
+    const messages: HostMessage[] = [];
+    const exit = vi.fn();
+    const host = createSessionHost((message) => messages.push(message), exit);
+    const threadId = ThreadIdSchema.parse(crypto.randomUUID());
+    const generation = crypto.randomUUID();
+    await host.handle({
+      kind: "start",
+      threadId,
+      traceId: crypto.randomUUID(),
+      processInstanceId: crypto.randomUUID(),
+      connectionGeneration: generation,
+      configContextId: "fixture",
+      binary: "/fixture/omp",
+      identity: { directory: "/project", device: "1", inode: "2" },
+      environment: {},
+      sessionDirectory: "/sessions",
+    });
+    native.observers[0]?.({
+      kind: "frame",
+      frame: { type: "d_pi_control_state", data: { ...idle, background: 1 } },
+    });
+    // Stale active control still refuses without a fresh query.
+    await host.handle({ kind: "close-idle" });
+    expect(native.close).not.toHaveBeenCalled();
+    // A continue reply carrying idle state refreshes the fallback evidence.
+    await host.handle({
+      kind: "control",
+      command: {
+        kind: "continue",
+        threadId,
+        traceId: crypto.randomUUID(),
+        generation,
+      },
+    });
+    await host.handle({ kind: "close-idle" });
+    expect(native.close).toHaveBeenCalled();
+    expect(exit).toHaveBeenCalledWith(0);
+  } finally {
+    request.mockRestore();
   }
 });
 
