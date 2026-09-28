@@ -10,6 +10,7 @@ import {
   type NativeState,
   NativeStateSchema,
 } from "../features/runtime/host-contracts";
+import { changesManagedSession } from "../features/runtime/native-command-policy";
 import type { FrozenSubmission } from "../features/submission/contracts";
 import { identifyDirectory } from "../shared/node/directory";
 import { PendingInteractions } from "./interactions";
@@ -219,6 +220,7 @@ export function createSessionHost(
     if (prompts.has(value.requestId)) return;
     if (
       !native ||
+      changesManagedSession(value.text) ||
       !start ||
       !state ||
       !state.model ||

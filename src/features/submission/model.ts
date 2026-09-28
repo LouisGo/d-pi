@@ -1,3 +1,4 @@
+import { match } from "ts-pattern";
 import type { ThreadId } from "../../shared/identity";
 import type { CapturedDraft, DraftController } from "../draft/controller";
 import {
@@ -11,6 +12,41 @@ interface View {
   sending: boolean;
   receipts: SubmissionReceipt[];
   message: string | null;
+}
+// Receipt facts advance independently: a late ACK can resolve call confirmation,
+// but cannot erase an observed failure/uncertain outcome. Millisecond wall-clock
+// timestamps are display metadata, not a causal ordering of IPC replies/events.
+function mergeReceipt(
+  old: SubmissionReceipt,
+  next: SubmissionReceipt,
+): SubmissionReceipt {
+  if (old.state === "rejected") return old;
+  const state = match(old.state)
+    .with("acknowledged", () => "acknowledged" as const)
+    .with("unknown", () =>
+      next.state === "prepared" || next.state === "dispatching"
+        ? ("unknown" as const)
+        : next.state,
+    )
+    .with("dispatching", () =>
+      next.state === "prepared" ? ("dispatching" as const) : next.state,
+    )
+    .with("prepared", () => next.state)
+    .exhaustive();
+  return {
+    ...next,
+    state,
+    acknowledgedAt: old.acknowledgedAt ?? next.acknowledgedAt,
+    outcome:
+      state === "rejected"
+        ? "unobserved"
+        : old.outcome === "failed" || next.outcome === "failed"
+          ? "failed"
+          : old.outcome === "unknown" || next.outcome === "unknown"
+            ? "unknown"
+            : "unobserved",
+    updatedAt: old.updatedAt > next.updatedAt ? old.updatedAt : next.updatedAt,
+  };
 }
 export class SubmissionModel {
   private view: View = { sending: false, receipts: [], message: null };
@@ -47,14 +83,10 @@ export class SubmissionModel {
     for (const receipt of receipts)
       if (receipt.threadId === this.threadId) {
         const old = values.get(receipt.submissionId);
-        // A delayed request reply cannot roll an observed ACK or failure backwards.
-        if (
-          old &&
-          (old.updatedAt > receipt.updatedAt ||
-            (old.acknowledgedAt && !receipt.acknowledgedAt))
-        )
-          continue;
-        values.set(receipt.submissionId, receipt);
+        values.set(
+          receipt.submissionId,
+          old ? mergeReceipt(old, receipt) : receipt,
+        );
       }
     this.publish({
       receipts: [...values.values()]
@@ -65,12 +97,18 @@ export class SubmissionModel {
   }
   consume(): void {
     const captured = this.captured;
-    if (!captured || !this.replace) return;
+    if (!captured) return;
     const receipt = this.view.receipts.find(
       (r) => r.submissionId === captured.submissionId,
     );
+    if (receipt?.state === "rejected") {
+      this.draft.releaseRejectedSubmission(captured.submissionId);
+      this.captured = null;
+      return;
+    }
     if (
       receipt?.acknowledgedAt &&
+      this.replace &&
       this.draft.consumeSubmission(captured, this.replace)
     )
       this.captured = null;

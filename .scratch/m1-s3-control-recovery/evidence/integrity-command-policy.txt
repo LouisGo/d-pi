@@ -1,0 +1,1 @@
+PASS: 15 command policy cases agree with pinned official parser/aliases/headless registry; no handlers executed

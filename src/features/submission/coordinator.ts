@@ -1,5 +1,6 @@
 import { match } from "ts-pattern";
 import { draftByteLength } from "../../shared/draft-text";
+import { changesManagedSession } from "../runtime/native-command-policy";
 import {
   type FrozenSubmission,
   FrozenSubmissionSchema,
@@ -63,6 +64,8 @@ export class SubmissionCoordinator {
   ) {}
   prepare(value: FrozenSubmission): SubmissionResult {
     try {
+      if (changesManagedSession(value.text))
+        return this.failure("unsupported-native-command", value);
       if (draftByteLength(frameFor(value)) > SUBMISSION_FRAME_BUDGET)
         return this.failure("content-too-large", value);
       if (!this.native.canDispatch(value.target))
@@ -87,6 +90,7 @@ export class SubmissionCoordinator {
       if (!receipt) return this.failure("unknown-submission", context);
       if (receipt.state !== "prepared") return { kind: "receipt", receipt };
       if (
+        changesManagedSession(receipt.text) ||
         !this.native.isCurrentTarget(receipt.target) ||
         !this.native.canDispatch(receipt.target)
       ) {
@@ -182,6 +186,11 @@ export class SubmissionCoordinator {
         () => "提交记录暂时无法保存。请保留原文并核对状态，不要重复发送。",
       )
       .with("not-ready", () => "当前执行环境尚未就绪，原文已保留。")
+      .with(
+        "unsupported-native-command",
+        () =>
+          "未发送：当前不支持通过原生命令迁移或删除 App 管理的会话，原文已保留。",
+      )
       .with("content-too-large", () => "正文编码后超过发送上限，原文未截断。")
       .with("unknown-submission", () => "找不到该次提交记录。")
       .with("stale-event", () => "已忽略不属于当前实例的回执。")

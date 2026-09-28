@@ -164,7 +164,10 @@ it("a prepared submission cannot cross the instance directory boundary even if a
     ...(await identifyDirectory(fixture.project)),
     workspaceId: fixture.draft.workspaceId,
   });
-  await expect(fixture.dispatch()).rejects.toThrow();
+  expect(await fixture.dispatch()).toMatchObject({
+    kind: "receipt",
+    receipt: { state: "rejected" },
+  });
   expect(
     fixture.postMessage.mock.calls.filter(
       ([raw]) => HostCommandSchema.parse(raw).kind === "dispatch",
@@ -718,3 +721,38 @@ it("settles a late failure after the last idle snapshot without waiting for anot
     "failed",
   );
 });
+
+it.each(["revoke", "missing-directory"] as const)(
+  "finishes a prepared attempt rejected after %s before dispatch",
+  async (cause) => {
+    const f = await running();
+    const prepared = await f.prepare();
+    if (prepared.kind !== "receipt") throw Error("prepare failed");
+    if (cause === "revoke") await f.act("revoke");
+    else renameSync(f.project, join(f.root, "temporarily-moved"));
+    expect(await f.dispatch()).toMatchObject({
+      kind: "receipt",
+      receipt: { state: "rejected" },
+    });
+    expect(
+      f.postMessage.mock.calls
+        .map(([raw]) => HostCommandSchema.parse(raw))
+        .filter((c) => c.kind === "dispatch"),
+    ).toHaveLength(0);
+    expect(f.store.drafts.read(f.draft.threadId).text).toBe("A");
+    if (cause === "missing-directory")
+      renameSync(join(f.root, "temporarily-moved"), f.project);
+    await f.act("allow");
+    const submissionId = SubmissionIdSchema.parse(crypto.randomUUID());
+    expect(
+      await f.runtime.submit({
+        kind: "prepare",
+        threadId: f.draft.threadId,
+        submissionId,
+        traceId: TraceIdSchema.parse(crypto.randomUUID()),
+        revision: 1,
+        text: "A",
+      }),
+    ).toMatchObject({ kind: "receipt", receipt: { state: "prepared" } });
+  },
+);

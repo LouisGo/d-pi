@@ -48,6 +48,7 @@ export const SubmissionFailureSchema = z.strictObject({
     "unknown-submission",
     "stale-event",
     "revision-conflict",
+    "unsupported-native-command",
   ]),
   observedAt: z.literal("main"),
   reportedBy: z.literal("app"),

@@ -303,6 +303,9 @@ export class DraftController {
     });
     return result;
   }
+  releaseRejectedSubmission(submissionId: string): void {
+    if (this.captured?.submissionId === submissionId) this.captured = null;
+  }
   consumeSubmission(value: CapturedDraft, replace: () => boolean): boolean {
     if (
       this.disposed ||

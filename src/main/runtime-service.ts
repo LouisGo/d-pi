@@ -280,6 +280,13 @@ export class RuntimeService {
         this.settleIdleSubmissions();
       })
       .with({ kind: "submission" }, ({ event }) => {
+        // Host retains correlations for late replies, not execution ownership.
+        // Only Main's in-flight set determines which attempts a disconnect affects.
+        if (
+          event.kind === "disconnected" &&
+          !this.executingIds.has(event.submissionId)
+        )
+          return;
         this.publishSubmission(this.coordinator.receive(event));
         this.settleIdleSubmissions();
       })
@@ -488,21 +495,28 @@ export class RuntimeService {
     }
     if (command.kind === "dispatch" && existing?.state !== "prepared")
       return this.coordinator.dispatch(command.submissionId);
-    const identity = await identifyDirectory(thread.directory);
-    const grant = this.store.threads.executionGrant(thread.workspaceId);
-    if (
-      !grant ||
-      grant.directory !== identity.directory ||
-      grant.device !== identity.device ||
-      grant.inode !== identity.inode ||
-      !this.instanceDirectory ||
-      !sameDirectoryIdentity(this.instanceDirectory, identity)
-    ) {
+    try {
+      const identity = await identifyDirectory(thread.directory);
+      const grant = this.store.threads.executionGrant(thread.workspaceId);
+      if (
+        !grant ||
+        grant.directory !== identity.directory ||
+        grant.device !== identity.device ||
+        grant.inode !== identity.inode ||
+        !this.instanceDirectory ||
+        !sameDirectoryIdentity(this.instanceDirectory, identity)
+      )
+        throw Error("Execution grant invalid");
+    } catch (error) {
       this.update({
         trusted: false,
-        message: "目录身份或执行授权已变化，已阻止发送。",
+        message: "目录身份或执行授权无法确认，已阻止发送。",
       });
-      throw Error("Execution grant invalid");
+      // This validation precedes every transport write. Re-read in the coordinator
+      // so a concurrent dispatch cannot be relabelled as never dispatched.
+      if (existing?.state === "prepared" && command.kind !== "prepare")
+        return this.coordinator.dispatch(existing.submissionId);
+      throw error;
     }
     if (command.kind === "resend") {
       if (existing) return this.coordinator.dispatch(existing.submissionId);

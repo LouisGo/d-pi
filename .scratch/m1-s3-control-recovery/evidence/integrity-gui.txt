@@ -1,0 +1,1 @@
+PASS: formal GUI/Main/Host/official SDK rejects move, wt/worktree and session delete; draft/history/binding unchanged; next ordinary input acknowledged in same session
