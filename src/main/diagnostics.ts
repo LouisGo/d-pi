@@ -8,12 +8,21 @@ import {
   unlink,
 } from "node:fs/promises";
 import { join } from "node:path";
+import { BUILD_INFO } from "../shared/build-info";
 export interface DiagnosticEvent {
   traceId: string;
   requestId: string;
   connectionId: string;
   operation: string;
-  stage: "received" | "completed" | "failed" | "renderer-gone";
+  stage:
+    | "received"
+    | "completed"
+    | "failed"
+    | "renderer-gone"
+    | "initiated"
+    | "confirmed"
+    | "acknowledgement-failed";
+  observedAt?: "preload";
   durationMs?: number;
   errorId?: string;
   code?: string;
@@ -44,6 +53,7 @@ export class Diagnostics {
         time: new Date().toISOString(),
         process: "main",
         processInstanceId: this.processInstanceId,
+        build: BUILD_INFO,
         ...event,
       }) + "\n";
     if (

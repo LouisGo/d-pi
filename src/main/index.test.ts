@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
@@ -106,6 +106,24 @@ it("retries a failed initial restore after the lock clears, preserving the same 
     };
     expect(await restore()).toMatchObject(ready);
     expect(await restore()).toMatchObject(ready);
+    const oversizedTrace = crypto.randomUUID();
+    expect(
+      await request({
+        kind: "save",
+        traceId: oversizedTrace,
+        threadId: draft.threadId,
+        expectedRevision: 1,
+        text: "中".repeat(1_500_000),
+      }),
+    ).toMatchObject({
+      kind: "failed",
+      error: {
+        traceId: oversizedTrace,
+        code: "content-too-large",
+        recovery: "user_action",
+      },
+    });
+    expect(await restore()).toMatchObject(ready);
   } finally {
     if (locked) locker.exec("ROLLBACK");
     locker.close();
@@ -164,6 +182,48 @@ it("a timed-out close receipt cannot close a later attempt, and failed saves ret
     shell.events.get("will-quit")?.({ preventDefault: vi.fn() });
     await vi.runAllTimersAsync();
     vi.useRealTimers();
+    rmSync(shell.directory, { recursive: true, force: true });
+  }
+});
+
+it("accepts only bounded bridge diagnostics from the active frame", async () => {
+  vi.resetModules();
+  shell.listeners.clear();
+  shell.events.clear();
+  shell.quit.mockClear();
+  shell.directory = mkdtempSync(join(tmpdir(), "d-pi-bridge-logs-"));
+  try {
+    await import("./index");
+    const receive = shell.listeners.get("draft:diagnostic");
+    expect(receive).toBeTypeOf("function");
+    const event = {
+      sender: shell.contents,
+      senderFrame: shell.contents.mainFrame,
+    };
+    const record = {
+      traceId: crypto.randomUUID(),
+      requestId: crypto.randomUUID(),
+      connectionId: crypto.randomUUID(),
+      operation: "save",
+      stage: "acknowledgement-failed",
+      code: "invalid-reply",
+    };
+    receive?.(event, { ...record, text: "PRIVATE BODY" });
+    receive?.({ ...event, senderFrame: {} }, record);
+    receive?.(event, record);
+    shell.events.get("will-quit")?.({ preventDefault: vi.fn() });
+    await vi.waitFor(() => expect(shell.quit).toHaveBeenCalled());
+    const lines = readFileSync(join(shell.directory, "logs/main.jsonl"), "utf8")
+      .trim()
+      .split("\n");
+    expect(lines).toHaveLength(1);
+    expect(JSON.parse(lines[0] ?? "")).toMatchObject({
+      ...record,
+      observedAt: "preload",
+    });
+    expect(lines.join()).not.toContain("PRIVATE BODY");
+  } finally {
+    shell.events.get("will-quit")?.({ preventDefault: vi.fn() });
     rmSync(shell.directory, { recursive: true, force: true });
   }
 });

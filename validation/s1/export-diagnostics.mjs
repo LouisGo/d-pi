@@ -21,6 +21,8 @@ const fields = [
   "errorId",
   "code",
   "causeCode",
+  "observedAt",
+  "build",
 ];
 let malformed = 0;
 for (const name of readdirSync(directory)

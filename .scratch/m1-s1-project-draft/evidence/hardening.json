@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "build": "0.1.0-s1.3 · e9d256fa-dirty-8b99dc32",
+  "scenario": "production Renderer/preload + actual storage/service, deliberately corrupted receipt, explicit conflict recovery",
+  "visualCapture": "unavailable",
+  "layout": "layout.json",
+  "revision": 4,
+  "sqlite": {
+    "electron": "44.4.5",
+    "node": "24.21.0",
+    "scenario": "WAL snapshot with old reader; backup contains revision 2 and committed body; integrity_check ok",
+    "status": "passed"
+  },
+  "automatedChecks": {
+    "files": 8,
+    "tests": 33,
+    "check": "passed",
+    "build": "passed"
+  },
+  "limits": [
+    "Electron shell is mocked in Main unit tests.",
+    "Isolated Electron integration uses production Renderer/preload and actual storage/service with a deliberately altered IPC reply; it is not the full production Main lifecycle.",
+    "DOM-driven input is not native IME or clipboard evidence.",
+    "capturePage returned UnknownVizError; no new visual screenshots or user acceptance.",
+    "Existing trial package was not replaced."
+  ]
+}

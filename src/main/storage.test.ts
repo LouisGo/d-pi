@@ -15,6 +15,39 @@ function fixture(
     .finally(() => rmSync(dir, { recursive: true, force: true }));
 }
 describe("real SQLite and directory service", () => {
+  it("migration backup includes committed WAL records while an old reader holds a snapshot", () =>
+    fixture((path) => {
+      const writer = new DatabaseSync(path);
+      writer.exec(
+        "PRAGMA journal_mode=WAL; CREATE TABLE precious(revision INTEGER, body TEXT); INSERT INTO precious VALUES(1,'old'); PRAGMA wal_checkpoint(TRUNCATE)",
+      );
+      const reader = new DatabaseSync(path);
+      reader.exec("BEGIN");
+      reader.prepare("SELECT * FROM precious").all();
+      writer.exec("UPDATE precious SET revision=2,body='最新已提交正文'");
+      let store: DraftStorage | undefined;
+      try {
+        store = new DraftStorage(path);
+        const backup = new DatabaseSync(`${path}.before-v1`, {
+          readOnly: true,
+        });
+        try {
+          expect(
+            backup.prepare("SELECT revision,body FROM precious").get(),
+          ).toEqual({ revision: 2, body: "最新已提交正文" });
+          expect(
+            backup.prepare("PRAGMA user_version").get()?.user_version,
+          ).toBe(0);
+        } finally {
+          backup.close();
+        }
+      } finally {
+        reader.exec("ROLLBACK");
+        reader.close();
+        writer.close();
+        store?.close();
+      }
+    }));
   it("stable identities, two threads, CAS and restart", () =>
     fixture((path) => {
       let store = new DraftStorage(path);

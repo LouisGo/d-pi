@@ -1,4 +1,11 @@
 import { z } from "zod";
+import { DRAFT_MAX_BYTES, draftByteLength } from "./draft-text";
+export const DraftTextSchema = z
+  .string()
+  .refine(
+    (text) => draftByteLength(text) <= DRAFT_MAX_BYTES,
+    "草稿正文超过 UTF-8 4 MiB",
+  );
 export const ThreadIdSchema = z.uuid().brand<"ThreadId">();
 export const WorkspaceIdSchema = z.uuid().brand<"WorkspaceId">();
 export const TraceIdSchema = z.uuid();
@@ -25,6 +32,7 @@ export const FailureSchema = z.strictObject({
     "directory-unavailable",
     "revision-conflict",
     "transport-unavailable",
+    "content-too-large",
   ]),
   category: z.enum(["storage", "validation", "permission", "transport"]),
   observedAt: z.enum(["main", "renderer"]),
@@ -44,7 +52,7 @@ export const CommandSchema = z.discriminatedUnion("kind", [
     traceId: TraceIdSchema,
     threadId: ThreadIdSchema,
     expectedRevision: z.number().int().nonnegative(),
-    text: z.string().max(4 * 1024 * 1024),
+    text: DraftTextSchema,
   }),
   z.strictObject({
     kind: z.literal("preferences"),
@@ -86,3 +94,12 @@ export const EnvelopeSchema = z.strictObject({
   requestId: z.uuid(),
   command: CommandSchema,
 });
+export const BridgeDiagnosticSchema = z.strictObject({
+  traceId: TraceIdSchema,
+  requestId: z.uuid(),
+  connectionId: z.uuid(),
+  operation: z.enum(["restore", "choose-project", "save", "preferences"]),
+  stage: z.enum(["initiated", "confirmed", "acknowledgement-failed"]),
+  code: z.enum(["invalid-reply", "transport-unavailable"]).optional(),
+});
+export type BridgeDiagnostic = z.infer<typeof BridgeDiagnosticSchema>;

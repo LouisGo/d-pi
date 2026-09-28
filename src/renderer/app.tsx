@@ -6,6 +6,7 @@ import {
   LightThemeIcon,
 } from "@/components/icons/common";
 import { Button } from "@/components/ui/button";
+import { BUILD_INFO } from "../shared/build-info";
 import { Composer } from "./composer";
 import type { AppModel } from "./model";
 export function App({ model }: { model: AppModel }) {
@@ -21,6 +22,7 @@ export function App({ model }: { model: AppModel }) {
         <h1>本地数据暂不可用</h1>
         <p>{error.safeMessage}</p>
         <p className="trace">追踪：{error.traceId}</p>
+        <p className="trace">构建 {BUILD_INFO.id}</p>
         <Button onClick={() => void model.start()}>重新检查</Button>
       </main>
     ))
@@ -44,6 +46,9 @@ export function App({ model }: { model: AppModel }) {
             <div className="sidebar-bottom">
               <span className="muted">本地草稿</span>
               <span className="muted">仅浏览</span>
+              <span className="trace muted" title={BUILD_INFO.commit}>
+                {BUILD_INFO.version} · {BUILD_INFO.id}
+              </span>
             </div>
           </aside>
           <main className="workspace">

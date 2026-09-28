@@ -30,7 +30,7 @@ export function transportFailure(traceId: string): Failure {
     handlingOwner: "draft",
     recovery: "reconcile_first",
     safeMessage:
-      "连接中断，保存结果未确认。请保留并复制当前输入，重新打开前核对落盘状态。",
+      "连接中断，保存结果未确认。当前输入已保留，请核对保存状态后继续。",
   };
 }
 export class AppModel {
@@ -46,6 +46,33 @@ export class AppModel {
   }
   cancelClose(): void {
     this.editorBoundary?.release();
+  }
+  async reconcileDraft(): Promise<void> {
+    const traceId = crypto.randomUUID();
+    await this.controller?.reconcile(async () => {
+      try {
+        const reply = await this.bridge.request({ kind: "restore", traceId });
+        return match(reply)
+          .with({ kind: "ready" }, ({ draft }) =>
+            draft
+              ? { kind: "snapshot" as const, draft }
+              : { kind: "failed" as const, error: transportFailure(traceId) },
+          )
+          .with({ kind: "failed" }, (value) => value)
+          .with(
+            { kind: "saved" },
+            { kind: "preferences-saved" },
+            { kind: "cancelled" },
+            () => ({
+              kind: "failed" as const,
+              error: transportFailure(traceId),
+            }),
+          )
+          .exhaustive();
+      } catch {
+        return { kind: "failed", error: transportFailure(traceId) };
+      }
+    });
   }
   constructor(private readonly bridge: DesktopBridge) {}
   getSnapshot = (): ViewState => this.state;

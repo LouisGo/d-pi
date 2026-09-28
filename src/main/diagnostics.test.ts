@@ -22,6 +22,11 @@ it("flood remains bounded and persisted lines retain correlation", async () => {
     .split("\n");
   expect(lines.length).toBeLessThanOrEqual(1000);
   expect(JSON.parse(lines[0] ?? "")).toMatchObject(context);
+  expect(JSON.parse(lines[0] ?? "").build).toMatchObject({
+    id: expect.any(String),
+    commit: expect.any(String),
+    version: expect.any(String),
+  });
   rmSync(directory, { recursive: true, force: true });
 });
 it("writer failure is visible, bounded and does not reject business flow", async () => {

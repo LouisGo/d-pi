@@ -3,7 +3,11 @@ import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { app, BrowserWindow, dialog, ipcMain, Menu } from "electron";
 import { z } from "zod";
-import { EnvelopeSchema } from "../shared/contracts";
+import {
+  BridgeDiagnosticSchema,
+  EnvelopeSchema,
+  TraceIdSchema,
+} from "../shared/contracts";
 import { diagnosticCode } from "./diagnostic-code";
 import { Diagnostics } from "./diagnostics";
 import { DraftService, failure } from "./draft-service";
@@ -59,6 +63,9 @@ let approved = false;
 let closing: { token: string; timer: ReturnType<typeof setTimeout> } | null =
   null;
 const closeResult = z.strictObject({ token: z.uuid(), saved: z.boolean() });
+const traceContext = z.object({
+  command: z.object({ traceId: TraceIdSchema }),
+});
 function sourceValid(
   event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent,
 ): boolean {
@@ -166,18 +173,38 @@ else {
   app.whenReady().then(() => {
     const data = app.getPath("userData");
     diagnostics = new Diagnostics(join(data, "logs"), reportLoggingFailure);
+    ipcMain.on("draft:diagnostic", (event, raw: unknown) => {
+      if (!sourceValid(event)) return;
+      const parsed = BridgeDiagnosticSchema.safeParse(raw);
+      if (parsed.success) {
+        const { code, ...context } = parsed.data;
+        diagnostics?.record({
+          ...context,
+          observedAt: "preload",
+          ...(code ? { code } : {}),
+        });
+      }
+    });
     ipcMain.handle("draft:request", async (event, raw: unknown) => {
       const fallbackTrace = randomUUID();
       if (!sourceValid(event))
         return failure(fallbackTrace, "invalid-request", "请求来源无效。");
       // Validate shape and bound body before passing it to the domain service.
       const parsed = EnvelopeSchema.safeParse(raw);
-      if (!parsed.success)
-        return failure(
-          fallbackTrace,
-          "invalid-request",
-          "请求格式或内容大小不受支持，输入未被截断。",
+      if (!parsed.success) {
+        const identity = traceContext.safeParse(raw);
+        const oversized = parsed.error.issues.some(
+          (issue) =>
+            issue.code === "custom" && issue.path.join(".") === "command.text",
         );
+        return failure(
+          identity.success ? identity.data.command.traceId : fallbackTrace,
+          oversized ? "content-too-large" : "invalid-request",
+          oversized
+            ? "正文超过 UTF-8 4 MiB，输入未被截断，请缩减后保存。"
+            : "请求格式不受支持，输入未被截断。",
+        );
+      }
       const { command, connectionId, requestId } = parsed.data;
       const context = {
         traceId: command.traceId,

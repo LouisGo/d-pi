@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { copyFileSync, existsSync } from "node:fs";
+import { renameSync, rmSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 import {
   type Draft,
@@ -13,15 +13,24 @@ export class DraftStorage {
   constructor(path: string) {
     this.db = new DatabaseSync(path);
     try {
-      this.db.exec("PRAGMA foreign_keys=ON; PRAGMA busy_timeout=250;");
+      this.db.exec(
+        "PRAGMA foreign_keys=ON; PRAGMA busy_timeout=250; PRAGMA synchronous=FULL;",
+      );
       const version = this.db
         .prepare("PRAGMA user_version")
         .get()?.user_version;
       if (version !== 0 && version !== 1)
         throw new Error("Unsupported schema version");
       if (version === 0) {
-        this.db.exec("PRAGMA wal_checkpoint(TRUNCATE)");
-        if (existsSync(path)) copyFileSync(path, `${path}.before-v1`);
+        // SQLite snapshots include committed WAL pages even with old readers.
+        // Publish only a completed backup; an interrupted attempt cannot replace it.
+        const temporary = `${path}.before-v1.${randomUUID()}.tmp`;
+        try {
+          this.db.prepare("VACUUM INTO ?").run(temporary);
+          renameSync(temporary, `${path}.before-v1`);
+        } finally {
+          rmSync(temporary, { force: true });
+        }
         this.transaction(() => {
           this.db.exec(`
             CREATE TABLE workspace(id TEXT PRIMARY KEY, directory TEXT NOT NULL UNIQUE, execution_trust TEXT NOT NULL CHECK(execution_trust='browse'));

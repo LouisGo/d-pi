@@ -117,7 +117,7 @@ export class DraftService {
               ? failure(
                   traceId,
                   "revision-conflict",
-                  "草稿版本冲突。当前输入已保留，请复制后重新打开核对。",
+                  "草稿版本冲突。当前输入已保留，请核对保存状态后选择要保留的内容。",
                 )
               : { kind: "saved" as const, threadId, revision };
           },

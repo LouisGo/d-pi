@@ -6,7 +6,7 @@ import Text from "@tiptap/extension-text";
 import { history, redo, undo } from "@tiptap/pm/history";
 import { EditorState, TextSelection } from "@tiptap/pm/state";
 import { describe, expect, it } from "vitest";
-import { plainTextEditorOptions } from "./plain-text-editor";
+import { plainTextEditorOptions, replaceDraftText } from "./plain-text-editor";
 import { textPasteTransaction } from "./plain-text-paste";
 
 const schema = getSchema([Document, Paragraph, Text]);
@@ -21,6 +21,35 @@ function plain(state: EditorState): string {
   ).join("\n");
 }
 describe("S1 literal text paste", () => {
+  it("loading a stored draft is a single undoable replacement, preserving source blank lines", () => {
+    const editor = new Editor({
+      ...plainTextEditorOptions,
+      element: null,
+      content: {
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "local words" }],
+          },
+        ],
+      },
+    });
+    // Headless Tiptap skips view creation, where extensions normally install plugins.
+    editor.view.updateState(
+      editor.state.reconfigure({ plugins: editor.extensionManager.plugins }),
+    );
+    try {
+      expect(replaceDraftText(editor, "stored\n\n  text\n")).toBe(true);
+      expect(editor.getText({ blockSeparator: "\n" })).toBe(
+        "stored\n\n  text\n",
+      );
+      expect(editor.commands.undo()).toBe(true);
+      expect(editor.getText({ blockSeparator: "\n" })).toBe("local words");
+    } finally {
+      editor.destroy();
+    }
+  });
   it("copies and cuts source lines without changing blank lines, including a partial selection", () => {
     const original = `${source}\n\n`;
     const pasted = EditorState.create({ schema });

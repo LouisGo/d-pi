@@ -57,7 +57,12 @@
     margin-top: auto;
     display: flex;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: calc(var(--layout-gap) / 2);
     font-size: var(--text-small);
+  }
+  .sidebar-bottom .trace {
+    flex-basis: 100%;
   }
   .workspace {
     min-width: 0;
@@ -172,6 +177,19 @@
   .trace {
     overflow-wrap: anywhere;
     font-size: var(--text-small);
+  }
+  .draft-comparison {
+    display: block;
+    width: 100%;
+    min-height: var(--editor-height);
+    padding: var(--layout-gap);
+    margin-block: var(--layout-gap);
+    color: var(--foreground);
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font: inherit;
+    resize: vertical;
   }
   .notice {
     margin: var(--panel-padding);

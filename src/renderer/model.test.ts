@@ -5,6 +5,7 @@ import { failure } from "../main/draft-service";
 import {
   type Command,
   type DesktopBridge,
+  type Draft,
   DraftSchema,
   type SaveReply,
 } from "../shared/contracts";
@@ -34,7 +35,10 @@ afterEach(() => {
   for (const controller of controllers.splice(0)) controller.dispose();
   vi.unstubAllGlobals();
 });
-async function setup(save: (command: SaveCommand) => Promise<SaveReply>) {
+async function setup(
+  save: (command: SaveCommand) => Promise<SaveReply>,
+  restored: () => Draft = () => draft,
+) {
   // Only the document theme surface and the process boundary are substituted;
   // AppModel and DraftController collaborate without React or native UI.
   vi.stubGlobal("document", { documentElement: { dataset: {} } });
@@ -43,7 +47,7 @@ async function setup(save: (command: SaveCommand) => Promise<SaveReply>) {
       match(command)
         .with({ kind: "restore" }, async () => ({
           kind: "ready" as const,
-          draft,
+          draft: restored(),
           directoryAvailable: true,
           preferences: { theme: "light" as const, density: "normal" as const },
         }))
@@ -86,6 +90,28 @@ const saved = (revision: number): SaveReply => ({
   kind: "saved",
   threadId: draft.threadId,
   revision,
+});
+
+it("the recovery action reads storage without replacing local editor content and permits close after saving new input", async () => {
+  let stored = draft;
+  let loseReply = true;
+  const input = await setup(
+    async (command) => {
+      expect(command.expectedRevision).toBe(stored.revision);
+      stored = { ...stored, revision: stored.revision + 1, text: command.text };
+      if (loseReply) throw Error("lost receipt");
+      return saved(stored.revision);
+    },
+    () => stored,
+  );
+  input.controller.edit("committed");
+  expect(await input.model.prepareClose()).toBe(false);
+  input.controller.edit("new local words");
+  loseReply = false;
+  await input.model.reconcileDraft();
+  expect(input.model.controller).toBe(input.controller);
+  expect(stored.text).toBe("new local words");
+  expect(await input.model.prepareClose()).toBe(true);
 });
 
 it("refuses close during IME composition, then freezes editing until the draft is confirmed", async () => {
