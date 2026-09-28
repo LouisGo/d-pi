@@ -19,8 +19,10 @@ export class PendingInteractions {
   disconnect(): void {
     this.dispose();
     for (const [id, dialog] of this.dialogs)
-      if (dialog.status === "pending")
+      if (dialog.status === "pending") {
         this.dialogs.set(id, { ...dialog, status: "unknown" });
+        this.ids.delete(id);
+      }
     this.changed();
   }
   private expire(): void {
@@ -68,6 +70,7 @@ export class PendingInteractions {
         `${JSON.stringify({ type: "extension_ui_response", id, ...fields })}\n`,
       );
     } catch {
+      this.ids.delete(id);
       return false;
     }
     this.dialogs.set(id, { ...dialog, status: "sent" });
@@ -90,7 +93,19 @@ export class PendingInteractions {
       (frame.type === "host_tool_cancel" || frame.type === "host_uri_cancel") &&
       typeof frame.id === "string"
     ) {
-      this.ids.delete(frame.id);
+      const had = this.ids.delete(frame.id);
+      const timer = this.timers.get(frame.id);
+      if (timer) {
+        clearTimeout(timer);
+        this.timers.delete(frame.id);
+      }
+      const dialog = this.dialogs.get(frame.id);
+      if (dialog && dialog.status === "pending") {
+        this.dialogs.set(frame.id, { ...dialog, status: "cancelled" });
+        this.changed();
+      } else if (had || timer) {
+        this.changed();
+      }
       return;
     }
     if (

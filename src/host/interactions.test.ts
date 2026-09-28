@@ -125,3 +125,81 @@ it("expires native timed dialogs and never retries a response after a write fail
   ).toBe(false);
   expect(frames).toHaveLength(0);
 });
+
+it("releases the pending answer marker after a write failure while keeping the dialog unknown", () => {
+  const interaction = new PendingInteractions();
+  interaction.update({
+    type: "extension_ui_request",
+    method: "input",
+    id: "write-failed",
+    title: "Input",
+  });
+  expect(interaction.pending).toBe(true);
+  expect(
+    interaction.answer(
+      "write-failed",
+      { kind: "value", value: "answer" },
+      () => {
+        throw Error("closed");
+      },
+    ),
+  ).toBe(false);
+  expect(interaction.pending).toBe(false);
+  expect(interaction.snapshot()).toMatchObject([
+    { id: "write-failed", status: "unknown" },
+  ]);
+  const frames: string[] = [];
+  expect(
+    interaction.answer(
+      "write-failed",
+      { kind: "value", value: "answer" },
+      (f) => frames.push(f),
+    ),
+  ).toBe(false);
+  expect(frames).toHaveLength(0);
+});
+
+it("marks host-cancelled dialogs cancelled instead of leaving them pending", () => {
+  let changed = 0;
+  const interaction = new PendingInteractions(() => {
+    changed++;
+  });
+  interaction.update({
+    type: "extension_ui_request",
+    method: "input",
+    id: "host-cancelled",
+    title: "Input",
+  });
+  expect(interaction.pending).toBe(true);
+  interaction.update({ type: "host_tool_cancel", id: "host-cancelled" });
+  expect(interaction.snapshot()).toMatchObject([
+    { id: "host-cancelled", status: "cancelled" },
+  ]);
+  expect(interaction.pending).toBe(false);
+  expect(changed).toBeGreaterThan(0);
+  const frames: string[] = [];
+  expect(
+    interaction.answer(
+      "host-cancelled",
+      { kind: "value", value: "late" },
+      (f: string) => frames.push(f),
+    ),
+  ).toBe(false);
+  expect(frames).toHaveLength(0);
+});
+
+it("converges pending markers on disconnect while keeping interrupted dialogs unknown", () => {
+  const interaction = new PendingInteractions();
+  interaction.update({
+    type: "extension_ui_request",
+    method: "confirm",
+    id: "disconnected",
+    title: "Confirm",
+  });
+  expect(interaction.pending).toBe(true);
+  interaction.disconnect();
+  expect(interaction.pending).toBe(false);
+  expect(interaction.snapshot()).toMatchObject([
+    { id: "disconnected", status: "unknown" },
+  ]);
+});

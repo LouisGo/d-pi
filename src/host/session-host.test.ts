@@ -116,6 +116,43 @@ it("does not close from an idle query overtaken by observed background activity"
   native.observers[0]?.({ kind: "exited" });
 });
 
+it("without a fresh state query refuses close-idle while last known control shows background activity", async () => {
+  const messages: HostMessage[] = [];
+  const exit = vi.fn();
+  const host = createSessionHost((message) => messages.push(message), exit);
+  const idle = {
+    paused: false,
+    stopping: false,
+    pendingAsync: false,
+    admitted: false,
+    streaming: false,
+    compacting: false,
+    queued: 0,
+    background: 0,
+    queue: [],
+  };
+  await host.handle({
+    kind: "start",
+    threadId: crypto.randomUUID(),
+    traceId: crypto.randomUUID(),
+    processInstanceId: crypto.randomUUID(),
+    connectionGeneration: crypto.randomUUID(),
+    configContextId: "fixture",
+    binary: "/fixture/omp",
+    identity: { directory: "/project", device: "1", inode: "2" },
+    environment: {},
+    sessionDirectory: "/sessions",
+  });
+  native.observers[0]?.({
+    kind: "frame",
+    frame: { type: "d_pi_control_state", data: { ...idle, background: 1 } },
+  });
+  await host.handle({ kind: "close-idle" });
+  expect(native.close).not.toHaveBeenCalled();
+  expect(exit).not.toHaveBeenCalled();
+  expect(messages).toContainEqual({ kind: "failed", code: "active-work" });
+});
+
 it("independent Host owners isolate native output, prompt timers and idle disposal", async () => {
   vi.useFakeTimers();
   function fixture() {

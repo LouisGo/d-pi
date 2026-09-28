@@ -38,6 +38,7 @@ export function createSessionHost(
   let state: NativeState | null = null;
   let busy = false;
   let paused = false;
+  let lastControl: ControlState | null = null;
   let observationVersion = 0;
   let lastDispatchId: string | null = null;
   let disconnected = false;
@@ -128,6 +129,7 @@ export function createSessionHost(
       if (control.success) {
         observationVersion++;
         paused = control.data.paused;
+        lastControl = control.data;
         send({
           kind: "control",
           generation: start.connectionGeneration,
@@ -496,7 +498,12 @@ export function createSessionHost(
             return;
           }
         }
-        if (busy || interactions.pending || starting) {
+        if (
+          busy ||
+          interactions.pending ||
+          starting ||
+          (lastControl ? activeControl(lastControl) : false)
+        ) {
           send({ kind: "failed", code: "active-work" });
           return;
         }
