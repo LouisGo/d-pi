@@ -166,3 +166,35 @@ it("consumption clears once through the existing save lane, preserving new B dur
     c.dispose();
   }
 });
+
+it("restores only the matching saved draft capture and protects edits made after recovery", () => {
+  const c = new DraftController(
+    { ...draft, text: "A", revision: 1 },
+    async (revision) => ({
+      kind: "saved",
+      threadId: draft.threadId,
+      revision: revision + 1,
+    }),
+    () => failure,
+  );
+  const value = { submissionId: crypto.randomUUID(), revision: 1, text: "A" };
+  try {
+    expect(c.restorePreparedSubmission({ ...value, revision: 2 })).toBeNull();
+    expect(c.restorePreparedSubmission({ ...value, text: "B" })).toBeNull();
+    const captured = c.restorePreparedSubmission(value);
+    expect(captured).toMatchObject({ ...value, sequence: 0 });
+    c.edit("B");
+    expect(c.restorePreparedSubmission(value)).toBeNull();
+    let cleared = false;
+    expect(
+      captured &&
+        c.consumeSubmission(captured, () => {
+          cleared = true;
+          return true;
+        }),
+    ).toBe(false);
+    expect(cleared).toBe(false);
+  } finally {
+    c.dispose();
+  }
+});

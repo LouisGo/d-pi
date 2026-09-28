@@ -10,6 +10,8 @@ import { createSessionHost } from "./session-host";
 const native = vi.hoisted(() => ({
   observers: [] as ((event: NativeObservation) => void)[],
   writes: [] as string[],
+  close: vi.fn(),
+  controlRequest: vi.fn(),
 }));
 vi.mock("./native-session", () => ({
   NativeSession: class {
@@ -20,11 +22,14 @@ vi.mock("./native-session", () => ({
       native.observers.push(observe);
     }
     async start() {}
-    async close() {}
+    async close() {
+      native.close();
+    }
     write(frame: string) {
       native.writes.push(frame);
     }
-    async request() {
+    async request(command: string) {
+      if (command === "d_pi_state") return native.controlRequest();
       return {
         success: true,
         data: {
@@ -50,6 +55,65 @@ afterEach(() => {
   vi.useRealTimers();
   native.observers.length = 0;
   native.writes.length = 0;
+  native.close.mockReset();
+  native.controlRequest.mockReset();
+});
+
+it("does not close from an idle query overtaken by observed background activity", async () => {
+  const messages: HostMessage[] = [];
+  const exit = vi.fn();
+  const host = createSessionHost((message) => messages.push(message), exit);
+  const idle = {
+    paused: false,
+    stopping: false,
+    pendingAsync: false,
+    admitted: false,
+    streaming: false,
+    compacting: false,
+    queued: 0,
+    background: 0,
+    queue: [],
+  };
+  native.controlRequest.mockResolvedValue({ success: true, data: idle });
+  await host.handle({
+    kind: "start",
+    threadId: crypto.randomUUID(),
+    traceId: crypto.randomUUID(),
+    processInstanceId: crypto.randomUUID(),
+    connectionGeneration: crypto.randomUUID(),
+    configContextId: "fixture",
+    binary: "/fixture/bun",
+    sdkEntry: "/fixture/host.mjs",
+    identity: { directory: "/project", device: "1", inode: "2" },
+    environment: {},
+    sessionDirectory: "/sessions",
+  });
+  expect(messages.some((message) => message.kind === "ready")).toBe(true);
+  expect(native.close).not.toHaveBeenCalled();
+  let reply: (value: unknown) => void = () => {};
+  native.controlRequest.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        reply = resolve;
+      }),
+  );
+  native.controlRequest.mockResolvedValue({
+    success: true,
+    data: { ...idle, background: 1 },
+  });
+  const closing = host.handle({ kind: "close-idle" });
+  // Match the decoder's synchronous batch: resolve old query, then observe new
+  // activity before the awaiting close continuation gets a microtask turn.
+  reply({ success: true, data: idle });
+  native.observers[0]?.({
+    kind: "frame",
+    frame: { type: "d_pi_control_state", data: { ...idle, background: 1 } },
+  });
+  await closing;
+  expect(native.close).not.toHaveBeenCalled();
+  expect(exit).not.toHaveBeenCalled();
+  expect(messages).toContainEqual({ kind: "failed", code: "active-work" });
+  native.observers[0]?.({ kind: "exited" });
 });
 
 it("independent Host owners isolate native output, prompt timers and idle disposal", async () => {

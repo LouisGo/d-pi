@@ -200,3 +200,8 @@
 ## 2026-09-28 S3 官方 SDK 薄宿主
 
 用户明确选择“使用官方 SDK 薄宿主路线，开始推进 S3”。沿用 D-02/D-03/D-11/D-24，官方 OMP 源码保持未修改；以官方 SDK 的原生消费前钩子落实停止与明确继续，不以 App 本地自动续发模拟队列。此接入取代 S2 仅依赖官方二进制 RPC 的实现限制，不改变原生执行所有权、unknown 不自动重发及无单写证明只读的恢复边界。范围与验收见 [S3 spec](../.scratch/m1-s3-control-recovery/spec.md)，不扩展 S4/M2，不推送。
+
+
+## 2026-09-28：D-24 prepared 窗口恢复出口
+
+用户明确选择“显式继续发送”：Main/原生仍存活、Renderer 重建后，已持久 prepared 由用户明确操作复用原 submission ID，并重新核验目标和准入；不得自动派发。草稿清稿关联仅恢复匹配的原编辑，新输入与 retryOf 的当前草稿不消费。此选择不改变 unknown 不自动重发、同版本防重复和冷恢复无单写证明只读的边界。实施与证据见 [S3 因果与恢复复核](../.scratch/m1-s3-control-recovery/causality-recovery-review.md)。

@@ -7,6 +7,7 @@ const native = vi.hoisted(() => ({
   write: vi.fn(),
   close: vi.fn(),
   rejectContinue: false,
+  busy: false,
 }));
 vi.mock("./native-session", () => ({
   NativeSession: class {
@@ -26,7 +27,7 @@ vi.mock("./native-session", () => ({
           sessionId: "native",
           sessionFile: "/sessions/native.jsonl",
           model: { id: "model", provider: "fixture" },
-          isStreaming: false,
+          isStreaming: native.busy,
           isCompacting: false,
           queuedMessageCount: 0,
         },
@@ -50,6 +51,7 @@ afterEach(() => {
     Object.defineProperty(process, "parentPort", originalParent);
   else Reflect.deleteProperty(process, "parentPort");
   native.rejectContinue = false;
+  native.busy = false;
   vi.clearAllMocks();
   vi.resetModules();
 });
@@ -142,6 +144,7 @@ it.each([undefined, { agentInvoked: true }])(
   async (data) => {
     const { messages, dispatch, parent } = await running();
     const id = dispatch();
+    native.busy = true;
     native.observe({
       kind: "frame",
       frame: { type: "response", command: "prompt", id, success: true, data },

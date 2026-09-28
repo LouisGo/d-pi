@@ -133,6 +133,21 @@ async function running(
     dispatch,
     postMessage,
     host,
+    confirmIdle: () => {
+      const latest = postMessage.mock.calls
+        .map(([raw]) => HostCommandSchema.parse(raw))
+        .findLast((c) => c.kind === "dispatch");
+      const start = postMessage.mock.calls
+        .map(([raw]) => HostCommandSchema.parse(raw))
+        .find((c) => c.kind === "start");
+      if (!start || start.kind !== "start") throw Error("missing start");
+      host.emit("message", {
+        kind: "idle-confirmed",
+        generation: start.connectionGeneration,
+        afterSubmissionId:
+          latest?.kind === "dispatch" ? latest.value.submissionId : null,
+      });
+    },
   };
 }
 
@@ -474,6 +489,8 @@ it("settles an acknowledged submission when native admission clears after the id
     generation: start.connectionGeneration,
     state: { ...state, admitted: false },
   });
+  expect(f.runtime.hasActiveWork()).toBe(true); // Bare samples cannot prove current work drained.
+  f.confirmIdle();
   f.host.emit("exit");
   expect(f.runtime.hasActiveWork()).toBe(false);
   expect(
@@ -583,6 +600,7 @@ it("persists Host non-dispatch without consuming the draft and permits an explic
       admitted: false,
     },
   });
+  f.confirmIdle();
   expect(f.runtime.hasActiveWork()).toBe(false);
   const submissionId = SubmissionIdSchema.parse(crypto.randomUUID());
   expect(
@@ -681,6 +699,7 @@ it.each(["error", "disconnected"] as const)(
     });
     expect(f.runtime.hasActiveWork()).toBe(true); // Failure alone cannot dismiss native background work.
     control(0);
+    f.confirmIdle();
     expect(f.runtime.hasActiveWork()).toBe(kind === "disconnected");
     expect(f.store.drafts.read(f.draft.threadId).text).toBe("A");
   },
@@ -706,6 +725,7 @@ it("settles a late failure after the last idle snapshot without waiting for anot
       admitted: false,
     },
   });
+  f.confirmIdle();
   f.host.emit("message", {
     kind: "submission",
     event: {

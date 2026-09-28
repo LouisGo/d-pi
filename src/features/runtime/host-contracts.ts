@@ -59,6 +59,11 @@ export type NativeBinding = z.infer<typeof NativeBindingSchema>;
 export type HostCommand = z.infer<typeof HostCommandSchema>;
 export const HostMessageSchema = z.discriminatedUnion("kind", [
   z.object({
+    kind: z.literal("idle-confirmed"),
+    generation: z.uuid(),
+    afterSubmissionId: z.uuid().nullable(),
+  }),
+  z.object({
     kind: z.literal("operation-result"),
     traceId: z.uuid(),
     generation: z.uuid(),

@@ -1,0 +1,1 @@
+PASS: formal GUI reload retains prepared without dispatch; explicit continue uses same ID and consumes only original draft; idle native exit permits normal App quit

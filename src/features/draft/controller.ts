@@ -306,6 +306,23 @@ export class DraftController {
   releaseRejectedSubmission(submissionId: string): void {
     if (this.captured?.submissionId === submissionId) this.captured = null;
   }
+  restorePreparedSubmission(
+    value: Omit<CapturedDraft, "sequence">,
+  ): CapturedDraft | null {
+    if (
+      this.disposed ||
+      this.capture ||
+      this.state.kind !== "saved" ||
+      this.pending ||
+      this.confirmed !== this.sequence ||
+      this.revision !== value.revision ||
+      this.baselineText !== value.text ||
+      (this.captured && this.captured.submissionId !== value.submissionId)
+    )
+      return null;
+    this.captured = { ...value, sequence: this.sequence };
+    return this.captured;
+  }
   consumeSubmission(value: CapturedDraft, replace: () => boolean): boolean {
     if (
       this.disposed ||

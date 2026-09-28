@@ -184,6 +184,41 @@ export class SubmissionModel {
       this.publish({ sending: false });
     }
   }
+  async continuePrepared(
+    submissionId: SubmissionReceipt["submissionId"],
+  ): Promise<void> {
+    if (this.view.sending || this.disposed) return;
+    const receipt = this.view.receipts.find(
+      (value) => value.submissionId === submissionId,
+    );
+    if (receipt?.state !== "prepared") return;
+    this.publish({ sending: true, message: null });
+    // The explicit action sends the persisted original. Only reattach draft
+    // consumption when it still denotes that exact saved edit; later B is independent.
+    const captured = receipt.retryOf
+      ? null
+      : this.draft.restorePreparedSubmission({
+          submissionId,
+          revision: receipt.revision,
+          text: receipt.text,
+        });
+    if (captured) this.captured = captured;
+    try {
+      this.accept(
+        await this.bridge.request({
+          kind: "dispatch",
+          threadId: this.threadId,
+          submissionId,
+        }),
+      );
+    } catch {
+      this.publish({
+        message: "继续发送的结果无法确认，请核对提交状态；不会自动重发。",
+      });
+    } finally {
+      this.publish({ sending: false });
+    }
+  }
   dispose(): void {
     this.disposed = true;
     this.remove();

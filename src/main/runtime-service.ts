@@ -31,6 +31,8 @@ import type { AppStorage } from "./storage/app-storage";
 
 export class RuntimeService {
   private readonly executingIds = new Set<string>();
+  private lastDispatchId: string | null = null;
+  private idleConfirmed = false;
   private target: FrozenSubmission["target"] | null = null;
   private coordinator: SubmissionCoordinator;
   private readonly connection: HostConnection;
@@ -71,6 +73,8 @@ export class RuntimeService {
         write: (value) => {
           if (!this.connection.connected) throw Error("Host unavailable");
           this.executingIds.add(value.submissionId);
+          this.lastDispatchId = value.submissionId;
+          this.idleConfirmed = false;
           this.update({ busy: true, message: "正在处理输入…" });
           this.connection.send({ kind: "dispatch", value });
         },
@@ -207,6 +211,7 @@ export class RuntimeService {
     const control = this.view?.control;
     const interactions = this.view?.interactions;
     if (
+      !this.idleConfirmed ||
       this.view?.busy ||
       control?.stopping ||
       control?.streaming ||
@@ -235,6 +240,15 @@ export class RuntimeService {
   }
   private receive(message: Exclude<HostMessage, { kind: "ready" }>): void {
     match(message)
+      .with({ kind: "idle-confirmed" }, ({ generation, afterSubmissionId }) => {
+        if (
+          generation !== this.currentGeneration ||
+          afterSubmissionId !== this.lastDispatchId
+        )
+          return;
+        this.idleConfirmed = true;
+        this.settleIdleSubmissions();
+      })
       .with(
         { kind: "operation-result" },
         ({ traceId, generation, operation, status }) => {
@@ -258,11 +272,29 @@ export class RuntimeService {
         },
       )
       .with({ kind: "interactions" }, ({ view }) => {
-        if (view.generation === this.currentGeneration)
+        if (view.generation === this.currentGeneration) {
+          if (
+            view.unsupported ||
+            view.items.some(
+              (item) => item.status === "pending" || item.status === "unknown",
+            )
+          )
+            this.idleConfirmed = false;
           this.update({ interactions: view });
+        }
       })
       .with({ kind: "control" }, ({ generation, state }) => {
         if (generation !== this.currentGeneration) return;
+        if (
+          state.streaming ||
+          state.compacting ||
+          state.stopping ||
+          state.queued ||
+          state.background ||
+          state.pendingAsync ||
+          state.admitted
+        )
+          this.idleConfirmed = false;
         this.update({
           generation,
           control: state,
@@ -291,6 +323,7 @@ export class RuntimeService {
         this.settleIdleSubmissions();
       })
       .with({ kind: "state" }, ({ state, busy, pendingInteraction }) => {
+        if (busy || pendingInteraction) this.idleConfirmed = false;
         const model = state.model;
         this.update({
           busy: busy || pendingInteraction,

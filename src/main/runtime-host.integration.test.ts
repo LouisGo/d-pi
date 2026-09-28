@@ -44,7 +44,22 @@ vi.mock("../host/native-session", () => ({
     write(frame: string) {
       transport.writes.push(frame);
     }
-    async request() {
+    async request(command: string) {
+      if (command === "d_pi_state")
+        return {
+          success: true,
+          data: {
+            paused: false,
+            stopping: false,
+            streaming: false,
+            compacting: false,
+            queued: 0,
+            queue: [],
+            background: 0,
+            pendingAsync: false,
+            admitted: false,
+          },
+        };
       return {
         success: true,
         data: {

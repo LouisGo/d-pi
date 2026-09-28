@@ -123,6 +123,21 @@ export function Submissions({ model }: { model: SubmissionModel }) {
             {receipt.retryOf && (
               <p className="trace">显式再次发送，来源：{receipt.retryOf}</p>
             )}
+            {receipt.state === "prepared" && (
+              <>
+                <p className="muted">
+                  此次输入尚未派发。继续发送使用上方已保存的原文，并重新核验执行授权；编辑区中后来的内容保持不变。
+                </p>
+                <Button
+                  disabled={state.sending}
+                  onClick={() =>
+                    void model.continuePrepared(receipt.submissionId)
+                  }
+                >
+                  继续发送
+                </Button>
+              </>
+            )}
             {(receipt.state === "unknown" ||
               receipt.outcome === "unknown" ||
               receipt.outcome === "failed") && (

@@ -21,6 +21,7 @@ export interface NativeSessionOptions {
 }
 export type NativeObservation =
   | { kind: "frame"; frame: NativeFrame }
+  | { kind: "exited" }
   | { kind: "disconnected"; reason: "spawn" | "protocol" | "exit" | "write" };
 interface Pending {
   command: string;
@@ -66,6 +67,9 @@ export class NativeSession {
     this.closePromise = new Promise<void>((resolve) =>
       child.once("close", () => {
         this.disconnect("exit");
+        // Transport failure can precede process death. Always publish the distinct
+        // close evidence, even when disconnect() has already closed the transport.
+        this.observe({ kind: "exited" });
         resolve();
       }),
     );
