@@ -30,14 +30,16 @@
 
 每次用户提交分配 `submissionId`，绑定 threadId、草稿 revision、冻结内容包、模式（普通/排队/干预），traceId 只用于追踪。Main 管最小持久收据，Host 负责 RPC 关联，OMP 负责接受后的真实执行/队列。
 
-状态：`preparing → prepared → dispatching → accepted`；明确拒绝为 `rejected`，本地准备中取消为 `cancelled`；发送后断链/超时/宿主崩溃且缺可靠证据为 `unknown`。accepted 不是 started/completed。Host 必须等 prepared 与 dispatching 收据落盘确认后才写 OMP；只有经固定版本、具体命令验证的业务接受证据持久化后，才通知 Renderer 清除对应草稿版本；首个 RPC success 不自动等于该证据。持久收据失败不推进发送，回执保存失败保留 unknown。
+2026-09-28 用户明确选择“保留官方 OMP”，采用持久发送记录保护原文；取代此前“仅业务接受证据持久化后才能清稿”的条件。原决定沿革见 D-24，具体 S2 方案见 [S2 spec](../../.scratch/m1-s2-submit-read/spec.md)。这项变化不把通信成功重新定义为业务接受。
 
-- 通信回执、业务接受和执行结果分别处理。v18.3.0 的 prompt 分支可先返回 success，再以同一请求 ID 报异步失败（源码依据见 §9）；不能统一套用“Promise resolve 即清理请求关联”。关联保留/释放时点与接受证据在 G1 按命令核实，并保持有界；未能确认接受时保留待确认状态，断链或超时按 unknown 处理。
-- 后续失败必须关联回原提交；只有明确的接受前拒绝才标 rejected，执行开始后的错误不能倒写为“从未接受”。事件顺序不能使失败被迟到 success 覆盖。失败内容保留为可恢复、可编辑的提交记录，不强行覆盖用户的新草稿，也不自动重发。覆盖 success 后异步失败、超时后迟到回执、旧代次回执、提交中继续编辑及重启恢复。
-- ACK 丢失不能凭相同文本、队列长度或时间相近认定已接受；只在原生明确关联证据存在时解除 unknown。App submissionId 不能创造 OMP exactly-once 保证。
-- unknown 保留冻结内容与“接收结果无法确认”标记；用户可查看历史/队列并显式重新发送，产生新 submissionId、关联原提交并提示可能重复。禁止自动重试，未确认接受前不静默清空原输入；提交期间新编辑版本始终保留。
-- 同一 submissionId 的本地重复点击/重复 IPC 只能返回已知状态，不重复派发。重启发现 dispatching 按 unknown 恢复；prepared 可由用户继续提交。
-- 收据保存身份、状态、时间、原生关联证据与内容包引用，不另记模型执行历史。accepted 内容在原生持久化和引用可恢复性已确认后可解除临时保留；unknown 内容不能被普通缓存 GC 清掉。
+交接主路径：`preparing → prepared → dispatching → acknowledged`。`acknowledged` 仅表示与本次原生命令、实例准确关联的成功调用回执已经持久化；`accepted` 是需要额外原生证据的业务接受事实，S2 不依赖它清稿，二者都不是 started/completed。明确接受前拒绝为 `rejected`，本地准备中取消为 `cancelled`；派发后尚未持久确认 ACK 且断链/超时/崩溃为 `unknown`。
+
+- Host 必须等 prepared（含冻结内容）与 dispatching 分别落盘后才写 OMP。Main 收到有效调用 ACK 后，在同一事务保存 acknowledged 与对应草稿 revision 的消费标记，成功后才通知 Renderer 腾空仍对应本次提交的输入。事务不另改草稿正文或推进 revision；输入继续沿原保存序列工作。新编辑始终保留，通知丢失时由持久标记恢复有效草稿。
+- 通信确认、业务接受和执行结果分别记录。v18.3.0 prompt 可先 success 后同 ID 异步失败；首次 success 可以证明调用确认，不能证明业务接受、原生历史持久化或任务完成，也不能立即删除全部关联。请求映射按命令有界保留，并保留有限迟到回执识别；超出识别窗口时明确关联缺口，不按文本或时间猜测归属。
+- 后续错误/执行中断与已持久确认的 ACK 分开：保留 acknowledged 事实及冻结原文，独立显示失败或执行结果未知，不倒写成从未发送、不因迟到 success 擦除错误。只有可靠证据证明接受前拒绝才标注该拒绝；一般异步错误不能推断失败阶段。没有逐提交身份的原生流只归属 Thread/会话。
+- 准备/派发前持久化失败不发命令；ACK 与消费标记事务失败不清稿，保留 unknown。若库不可写，重启将残留 dispatching 解释为 unknown。ACK 已持久化后发生故障不撤销消费标记、不强行把旧内容盖回新稿。
+- ACK 丢失不能凭相同文本、队列长度或时间相近认定已确认；未知不自动重发。用户显式重新发送产生新 submissionId、关联原提交并提示可能重复；App ID 不创造 OMP exactly-once。重复点击/IPC 对同一 submissionId 只返回已知状态，不重复派发。重启 prepared 也不自动发送。
+- 冻结原文以可查看、复制的持久发送记录保留；不能依赖原生历史已保存它。S2 不回收这份唯一可靠副本。后续只有原生持久化及引用可恢复性已确认后才可解除临时保留，unknown 不受普通缓存 GC 影响。收据不另造模型执行历史。
 
 ### 排队内容管理（2026-09-27 用户补充，D-11）
 
