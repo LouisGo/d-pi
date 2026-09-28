@@ -1,4 +1,5 @@
 import type { ThreadId } from "../../shared/identity";
+import type { Answer } from "../control/interactions";
 import { ConversationModel } from "../conversation/model";
 import type { RuntimeBridge, RuntimeCommand, RuntimeView } from "./contracts";
 export class RuntimeModel {
@@ -37,7 +38,9 @@ export class RuntimeModel {
     this.generation++;
     void this.act("inspect");
   }
-  async act(kind: RuntimeCommand["kind"]): Promise<void> {
+  async act(
+    kind: Exclude<RuntimeCommand["kind"], "stop" | "continue" | "answer">,
+  ): Promise<void> {
     const threadId = this.thread;
     if (!threadId) return;
     const generation = this.generation;
@@ -59,6 +62,46 @@ export class RuntimeModel {
         model: this.view?.model ?? null,
         message: "连接状态无法确认。草稿仍保留，请重新检查状态；不会自动发送。",
       });
+    }
+  }
+  async control(kind: "stop" | "continue"): Promise<void> {
+    const current = this.view;
+    if (!current?.generation || !this.thread) return;
+    try {
+      const view = await this.bridge.request({
+        kind,
+        threadId: this.thread,
+        traceId: crypto.randomUUID(),
+        generation: current.generation,
+      });
+      if (this.thread === view.threadId) this.publish(view);
+    } catch {
+      if (this.view === current)
+        this.publish({
+          ...current,
+          message: "控制结果未知。请检查状态，不会自动重试。",
+        });
+    }
+  }
+  async answer(id: string, answer: Answer): Promise<void> {
+    const current = this.view;
+    if (!current?.interactions || !this.thread) return;
+    try {
+      const view = await this.bridge.request({
+        kind: "answer",
+        threadId: this.thread,
+        traceId: crypto.randomUUID(),
+        generation: current.interactions.generation,
+        id,
+        answer,
+      });
+      if (this.thread === view.threadId) this.publish(view);
+    } catch {
+      if (this.view === current)
+        this.publish({
+          ...current,
+          message: "回答结果未知，请核对原生交互；不会自动重答。",
+        });
     }
   }
   dispose(): void {

@@ -57,6 +57,7 @@ it("failed dispatch persistence writes nothing; duplicate dispatch writes once a
       id: a.requestId,
       type: "prompt",
       message: "A",
+      streamingBehavior: "followUp",
     });
     const event = {
       submissionId: a.submissionId,

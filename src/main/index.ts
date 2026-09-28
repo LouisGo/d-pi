@@ -10,6 +10,7 @@ import {
   MessageChannelMain,
 } from "electron";
 import { z } from "zod";
+import { QuitCoordinator } from "../features/control/quit";
 import { HistoryRequestSchema } from "../features/history/contracts";
 import { RuntimeCommandSchema } from "../features/runtime/contracts";
 import { SubmissionCommandSchema } from "../features/submission/contracts";
@@ -264,7 +265,11 @@ else {
           stage:
             view.phase === "failed" || view.phase === "interrupted"
               ? "failed"
-              : "completed",
+              : command.kind === "stop" ||
+                  command.kind === "continue" ||
+                  command.kind === "answer"
+                ? "dispatching"
+                : "completed",
         });
         return view;
       } catch {
@@ -390,20 +395,41 @@ else {
   app.on("window-all-closed", () => {
     // Window lifetime is separate from Main; explicit Quit owns application shutdown.
   });
+  const quitCoordinator = new QuitCoordinator(
+    () => runtime?.hasActiveWork() ?? false,
+    async () => {
+      await runtime?.requestStop();
+    },
+    () => app.quit(),
+  );
+  let quitDialogOpen = false;
   app.on("before-quit", (event) => {
     if (runtime?.hasActiveWork()) {
       event.preventDefault();
       quitting = false;
       if (!window) createWindow();
       else window.show();
-      if (window)
-        void dialog.showMessageBox(window, {
-          type: "warning",
-          message: "仍有原生工作或状态尚未确认",
-          detail:
-            "应用会保留运行中的任务。当前阶段尚未提供完整停止后退出；请等待任务结束后再退出。",
-          buttons: ["保留应用"],
-        });
+      if (window && !quitDialogOpen) {
+        quitDialogOpen = true;
+        void dialog
+          .showMessageBox(window, {
+            type: "warning",
+            message: "仍有原生工作或状态尚未确认",
+            detail:
+              "等待会在工作结束且草稿保存后退出。停止会中断当前执行并暂缓队列；如仍有队列、交互或后台活动，应用会继续保留，请处理后退出。未知状态不会被强行终止。",
+            buttons: ["等待结束后退出", "请求停止后退出", "取消退出"],
+            cancelId: 2,
+            defaultId: 2,
+          })
+          .then(({ response }) => {
+            quitCoordinator.request(
+              response === 0 ? "wait" : response === 1 ? "stop" : "cancel",
+            );
+          })
+          .finally(() => {
+            quitDialogOpen = false;
+          });
+      }
       return;
     }
     if (window && !approved) {
@@ -415,6 +441,7 @@ else {
   let drained = false;
   app.on("will-quit", (event) => {
     if (drained) return;
+    quitCoordinator.dispose();
     event.preventDefault();
     void (async () => {
       await runtime?.closeIdle();

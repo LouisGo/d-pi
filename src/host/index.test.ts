@@ -104,7 +104,7 @@ async function running() {
     });
     return requestId;
   };
-  return { messages, dispatch, parent };
+  return { messages, dispatch, parent, threadId, target };
 }
 it("local-only prompt ACK refreshes idle state and permits the next submission", async () => {
   const { messages, dispatch } = await running();
@@ -136,7 +136,7 @@ it("local-only prompt ACK refreshes idle state and permits the next submission",
 it.each([undefined, { agentInvoked: true }])(
   "an ordinary ACK with data=%j is not execution completion",
   async (data) => {
-    const { messages, dispatch } = await running();
+    const { messages, dispatch, parent } = await running();
     const id = dispatch();
     native.observe({
       kind: "frame",
@@ -147,7 +147,13 @@ it.each([undefined, { agentInvoked: true }])(
       expect.objectContaining({ kind: "state", busy: false }),
     );
     dispatch();
-    expect(native.write).toHaveBeenCalledTimes(1);
+    expect(native.write).toHaveBeenCalledTimes(2);
+    expect(
+      JSON.parse(native.write.mock.calls[1]?.[0] ?? "").streamingBehavior,
+    ).toBe("followUp");
+    parent.emit("message", { data: { kind: "close-idle" }, ports: [] });
+    await tick();
+    expect(native.close).not.toHaveBeenCalled();
   },
 );
 
@@ -180,4 +186,40 @@ it("a surviving Host serves retained output through a new port after native disc
     }),
   );
   expect(native.write).not.toHaveBeenCalled();
+});
+
+it("reports answer transport result under the original trace and generation without text", async () => {
+  const { messages, parent, threadId, target } = await running();
+  native.observe({
+    kind: "frame",
+    frame: {
+      type: "extension_ui_request",
+      method: "confirm",
+      id: "dialog",
+      title: "PRIVATE TITLE",
+    },
+  });
+  const traceId = crypto.randomUUID();
+  parent.emit("message", {
+    data: {
+      kind: "answer",
+      command: {
+        kind: "answer",
+        threadId,
+        generation: target.connectionGeneration,
+        traceId,
+        id: "dialog",
+        answer: { kind: "confirm", confirmed: true },
+      },
+    },
+    ports: [],
+  });
+  await tick();
+  expect(messages).toContainEqual({
+    kind: "operation-result",
+    traceId,
+    generation: target.connectionGeneration,
+    operation: "answer",
+    status: "acknowledged",
+  });
 });

@@ -1,7 +1,7 @@
 # 05 集成与试用交接
 
-Status: open
-Blocked by: 01, 02, 03, 04
+Status: resolved
+Blocked by: none
 
 阶段：M1/S3。范围、决定与产品待决项以 [spec](../spec.md) 为准。
 
@@ -12,3 +12,5 @@ Blocked by: 01, 02, 03, 04
 ## Comments
 
 2026-09-28：依据用户本轮 S3 授权建票。
+
+2026-09-28：Q1 确认后在同一实施轮领取并完成。统一检查、SDK/GUI/随包验证完成；试用交接已写。工程完成，用户体验待试用；本地实现提交见 Git 历史，不推送。 详见 [证据](../evidence.md) 与 [交接](../handoff.md)。

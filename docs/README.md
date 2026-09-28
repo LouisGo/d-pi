@@ -1,6 +1,6 @@
 # 文档导航与事实来源
 
-更新：2026-09-27。S1 项目与持久草稿已实现，工程验证及待用户试用状态见 [S1 规格](../.scratch/m1-s1-project-draft/spec.md)；其余按切片推进，历史原型和 Runtime 验证不能冒充当前产品验收。先按任务选择材料，只有全局审计才需要通读下列各层。路径里的 `prototype`、`draft` 或 `.scratch` 不决定文档是否有效。
+更新：2026-09-28。S1/S2 工程已交付，当前 S3 官方 SDK 薄宿主、控制与交互已完成工程验证并交付待试用，见 [S3 规格](../.scratch/m1-s3-control-recovery/spec.md) 与 [试用交接](../.scratch/m1-s3-control-recovery/handoff.md)。恢复缺执行全周期单写证明时保持只读，不进入 S4/M2。历史原型与旧切片证据不冒充当前产品验收；先按任务选择材料。路径里的 `prototype`、`draft` 或 `.scratch` 不决定文档是否有效。
 
 ## 各类文档负责什么
 

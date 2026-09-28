@@ -4,6 +4,8 @@
   "files": {
     "includes": [
       "src/**",
+      "runtime/**/*.mjs",
+      "scripts/prepare-sdk.mjs",
       "validation/**",
       "*.json",
       "*.ts",

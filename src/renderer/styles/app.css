@@ -186,7 +186,8 @@
     overflow-wrap: anywhere;
     font-size: var(--text-small);
   }
-  .draft-comparison {
+  .draft-comparison,
+  .native-answer {
     display: block;
     width: 100%;
     min-height: var(--editor-height);
@@ -212,6 +213,7 @@
 @source "../../../node_modules/streamdown/dist/*.js";
 @source "../../../node_modules/@streamdown/code/dist/*.js";
 @layer components {
+  .native-interactions,
   .conversation,
   .submission-records,
   .history {

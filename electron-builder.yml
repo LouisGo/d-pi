@@ -9,12 +9,10 @@ files:
   - THIRD_PARTY_NOTICES.md
   - '!node_modules/**'
 extraResources:
-  - from: resources/omp
-    to: omp
-    filter:
-      - omp
-      - manifest.json
-      - LICENSE
+  - from: resources/sdk
+    to: sdk
+  - from: resources/sdk/node_modules
+    to: sdk/node_modules
 directories:
   output: dist
 mac:

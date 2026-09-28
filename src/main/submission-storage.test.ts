@@ -197,3 +197,33 @@ it("rejects a second intent for the same frozen revision", () =>
       store.close();
     }
   }));
+it("an explicit resend retains source identity and never consumes the newer draft", () =>
+  fixture((path) => {
+    const store = new AppStorage(path);
+    try {
+      const original = frozen(store);
+      store.submissions.prepareSubmission(original);
+      store.submissions.dispatchSubmission(original.submissionId);
+      store.submissions.unknownSubmission(original.submissionId);
+      store.drafts.save(original.threadId, 1, "B");
+      const retry = FrozenSubmissionSchema.parse({
+        ...original,
+        submissionId: randomUUID(),
+        requestId: randomUUID(),
+        traceId: randomUUID(),
+        retryOf: original.submissionId,
+      });
+      store.submissions.prepareSubmission(retry);
+      store.submissions.dispatchSubmission(retry.submissionId);
+      store.submissions.acknowledgeSubmission(retry.submissionId);
+      expect(store.drafts.read(original.threadId).text).toBe("B");
+      expect(store.submissions.submission(original.submissionId)?.state).toBe(
+        "unknown",
+      );
+      expect(store.submissions.submission(retry.submissionId)?.retryOf).toBe(
+        original.submissionId,
+      );
+    } finally {
+      store.close();
+    }
+  }));

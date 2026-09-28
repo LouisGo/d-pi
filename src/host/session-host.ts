@@ -1,6 +1,7 @@
 import { isAbsolute, relative } from "node:path";
 import { match } from "ts-pattern";
 import { z } from "zod";
+import { ControlStateSchema } from "../features/control/contracts";
 import { ConversationProjection } from "../features/conversation/projection";
 import {
   type HostCommand,
@@ -36,7 +37,19 @@ export function createSessionHost(
   let start: HostStart | null = null;
   let state: NativeState | null = null;
   let busy = false;
-  const interactions = new PendingInteractions();
+  let paused = false;
+  const interactions = new PendingInteractions(publishInteractions);
+  function publishInteractions(): void {
+    if (start)
+      send({
+        kind: "interactions",
+        view: {
+          generation: start.connectionGeneration,
+          items: interactions.snapshot(),
+          unsupported: interactions.unsupported,
+        },
+      });
+  }
   let closing = false;
   let starting = false;
   const prompts = new Map<
@@ -69,11 +82,23 @@ export function createSessionHost(
           },
         });
       clearPrompts();
+      interactions.disconnect();
       send({ kind: "interrupted", reason: event.reason });
       return;
     }
     const frame = event.frame;
-    projection?.accept(frame);
+    if (frame.type === "d_pi_control_state" && start) {
+      const control = ControlStateSchema.safeParse(frame.data);
+      if (control.success) {
+        paused = control.data.paused;
+        send({
+          kind: "control",
+          generation: start.connectionGeneration,
+          state: control.data,
+        });
+      }
+    }
+    if (frame.type !== "d_pi_control_state") projection?.accept(frame);
     if (frame.type === "agent_start") busy = true;
     if (frame.type === "agent_end" && frame.isTerminal !== false) {
       busy = false;
@@ -81,6 +106,8 @@ export function createSessionHost(
     }
     const hadInteraction = interactions.pending;
     interactions.update(frame);
+    if (frame.type === "extension_ui_request" || frame.type.startsWith("host_"))
+      publishInteractions();
     if (hadInteraction !== interactions.pending && state)
       send({
         kind: "state",
@@ -164,6 +191,7 @@ export function createSessionHost(
       native = new NativeSession(
         {
           binary: value.binary,
+          ...(value.sdkEntry ? { entry: value.sdkEntry } : {}),
           directory: identity.directory,
           environment: value.environment,
           sessionDirectory: value.sessionDirectory,
@@ -194,7 +222,7 @@ export function createSessionHost(
       !start ||
       !state ||
       !state.model ||
-      busy ||
+      paused ||
       interactions.pending ||
       value.threadId !== start.threadId ||
       value.target.processInstanceId !== start.processInstanceId ||
@@ -252,7 +280,7 @@ export function createSessionHost(
     busy = true;
     try {
       native.write(
-        `${JSON.stringify({ id: value.requestId, type: "prompt", message: value.text })}\n`,
+        `${JSON.stringify({ id: value.requestId, type: "prompt", message: value.text, streamingBehavior: value.delivery ?? "followUp" })}\n`,
       );
     } catch {
       observe({ kind: "disconnected", reason: "write" });
@@ -276,8 +304,81 @@ export function createSessionHost(
         dispatch(value);
         return Promise.resolve();
       })
+      .with({ kind: "answer" }, async ({ command }) => {
+        if (
+          !native ||
+          !start ||
+          command.threadId !== start.threadId ||
+          command.generation !== start.connectionGeneration
+        )
+          return;
+        const written = interactions.answer(
+          command.id,
+          command.answer,
+          (frame) => native?.write(frame),
+        );
+        publishInteractions();
+        send({
+          kind: "operation-result",
+          traceId: command.traceId,
+          generation: command.generation,
+          operation: "answer",
+          status: written ? "acknowledged" : "unknown",
+        });
+        await refresh();
+      })
+      .with({ kind: "control" }, async ({ command }) => {
+        if (
+          !native ||
+          !start ||
+          command.threadId !== start.threadId ||
+          command.generation !== start.connectionGeneration
+        )
+          return;
+        const reply = await native.request(
+          command.kind === "stop" ? "d_pi_stop" : "d_pi_continue",
+          { traceId: command.traceId },
+        );
+        if (reply.success !== true) throw Error("Control failed");
+        const control = ControlStateSchema.parse(reply.data);
+        paused = control.paused;
+        send({
+          kind: "operation-result",
+          traceId: command.traceId,
+          generation: command.generation,
+          operation: command.kind,
+          status: "acknowledged",
+        });
+        send({
+          kind: "control",
+          generation: start.connectionGeneration,
+          state: control,
+        });
+      })
       .with({ kind: "state" }, () => refresh())
       .with({ kind: "close-idle" }, async () => {
+        if (start?.sdkEntry && native) {
+          const latest = await native.request("d_pi_state");
+          if (latest.success !== true) throw Error("Cannot verify shutdown");
+          const actual = ControlStateSchema.parse(latest.data);
+          if (
+            actual.streaming ||
+            actual.compacting ||
+            actual.stopping ||
+            actual.queued ||
+            actual.background ||
+            actual.pendingAsync ||
+            actual.admitted
+          ) {
+            send({
+              kind: "control",
+              generation: start.connectionGeneration,
+              state: actual,
+            });
+            send({ kind: "failed", code: "active-work" });
+            return;
+          }
+        }
         if (busy || interactions.pending || starting) {
           send({ kind: "failed", code: "active-work" });
           return;
@@ -285,17 +386,27 @@ export function createSessionHost(
         closing = true;
         await native?.close();
         clearPrompts();
+        interactions.dispose();
         projection?.dispose();
         readingPort?.close();
         exit(0);
       })
       .exhaustive()
       .catch(async () => {
+        if (command.kind === "answer" || command.kind === "control")
+          send({
+            kind: "operation-result",
+            traceId: command.command.traceId,
+            generation: command.command.generation,
+            operation: command.command.kind,
+            status: "unknown",
+          });
         send({ kind: "failed", code: "runtime-unavailable" });
         if (command.kind === "start") {
           closing = true;
           await native?.close();
           clearPrompts();
+          interactions.dispose();
           projection?.dispose();
           readingPort?.close();
           exit(1);

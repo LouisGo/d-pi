@@ -21,6 +21,12 @@ vi.mock("./runtime-resource", async (original) => ({
   ...(await original<typeof import("./runtime-resource")>()),
   managedRuntime: async () => "/fixture/omp",
 }));
+vi.mock("./sdk-resource", () => ({
+  managedSdkRuntime: async () => ({
+    binary: "/fixture/bun",
+    entry: "/fixture/host.mjs",
+  }),
+}));
 const cleanup: (() => void)[] = [];
 afterEach(() => {
   for (const close of cleanup.splice(0)) close();
@@ -126,6 +132,7 @@ async function running(
     prepare,
     dispatch,
     postMessage,
+    host,
   };
 }
 
@@ -243,4 +250,230 @@ it("restart exposes the unproven execution lock and never substitutes a new sess
     binding,
   );
   expect(fixture.store.drafts.read(fixture.draft.threadId)?.text).toBe("A");
+});
+
+it("busy native sessions accept a frozen follow-up without an App auto-send queue", async () => {
+  const fixture = await running(false, true);
+  expect(await fixture.prepare()).toMatchObject({
+    kind: "receipt",
+    receipt: { state: "prepared" },
+  });
+  expect(await fixture.dispatch()).toMatchObject({
+    kind: "receipt",
+    receipt: { state: "dispatching" },
+  });
+  expect(
+    fixture.postMessage.mock.calls.filter(
+      ([raw]) => HostCommandSchema.parse(raw).kind === "dispatch",
+    ),
+  ).toHaveLength(1);
+});
+
+it("Host exit marks every in-flight queued submission unknown without replay", async () => {
+  const fixture = await running();
+  await fixture.prepare();
+  await fixture.dispatch();
+  fixture.store.drafts.save(fixture.draft.threadId, 1, "B");
+  const submissionId = SubmissionIdSchema.parse(crypto.randomUUID());
+  await fixture.runtime.submit({
+    kind: "prepare",
+    threadId: fixture.draft.threadId,
+    submissionId,
+    traceId: TraceIdSchema.parse(crypto.randomUUID()),
+    revision: 2,
+    text: "B",
+  });
+  await fixture.runtime.submit({
+    kind: "dispatch",
+    threadId: fixture.draft.threadId,
+    submissionId,
+  });
+  const start = fixture.postMessage.mock.calls
+    .map(([raw]) => HostCommandSchema.parse(raw))
+    .find((c) => c.kind === "start");
+  if (!start || start.kind !== "start") throw Error("Missing start");
+  fixture.host.emit("message", {
+    kind: "control",
+    generation: start.connectionGeneration,
+    state: {
+      paused: true,
+      stopping: false,
+      streaming: false,
+      compacting: false,
+      queued: 1,
+      queue: [],
+      background: 0,
+      pendingAsync: false,
+      admitted: false,
+    },
+  });
+  fixture.host.emit("message", {
+    kind: "state",
+    busy: false,
+    pendingInteraction: false,
+    state: {
+      sessionId: "native",
+      isStreaming: false,
+      isCompacting: false,
+      queuedMessageCount: 0,
+    },
+  });
+  fixture.host.emit("exit");
+  expect(
+    fixture.store.submissions.list(fixture.draft.threadId).map((r) => r.state),
+  ).toEqual(["unknown", "unknown"]);
+  expect(
+    fixture.postMessage.mock.calls.filter(
+      ([raw]) => HostCommandSchema.parse(raw).kind === "dispatch",
+    ),
+  ).toHaveLength(2);
+});
+
+it("control and answers reject stale generations and revoked grants while allowing cancellation", async () => {
+  const f = await running();
+  const start = f.postMessage.mock.calls
+    .map(([raw]) => HostCommandSchema.parse(raw))
+    .find((c) => c.kind === "start");
+  if (!start || start.kind !== "start") throw Error("start missing");
+  const base = {
+    threadId: f.draft.threadId,
+    traceId: TraceIdSchema.parse(crypto.randomUUID()),
+    generation: start.connectionGeneration,
+  };
+  await expect(
+    f.runtime.execute({
+      ...base,
+      kind: "continue",
+      generation: crypto.randomUUID(),
+    }),
+  ).rejects.toThrow("Stale control");
+  await expect(
+    f.runtime.execute({
+      ...base,
+      kind: "answer",
+      generation: crypto.randomUUID(),
+      id: "request",
+      answer: { kind: "cancel" },
+    }),
+  ).rejects.toThrow("Stale answer");
+  await f.act("revoke");
+  await expect(
+    f.runtime.execute({ ...base, kind: "continue" }),
+  ).rejects.toThrow("Execution grant");
+  await expect(
+    f.runtime.execute({
+      ...base,
+      kind: "answer",
+      id: "request",
+      answer: { kind: "confirm", confirmed: true },
+    }),
+  ).rejects.toThrow("Execution grant");
+  await f.runtime.execute({
+    ...base,
+    kind: "answer",
+    id: "request",
+    answer: { kind: "cancel" },
+  });
+  expect(
+    f.postMessage.mock.calls.filter(
+      ([raw]) => HostCommandSchema.parse(raw).kind === "answer",
+    ),
+  ).toHaveLength(1);
+});
+
+it("background-only work prevents quit even after a stale idle poll and ignores old control snapshots", async () => {
+  const f = await running();
+  const start = f.postMessage.mock.calls
+    .map(([raw]) => HostCommandSchema.parse(raw))
+    .find((c) => c.kind === "start");
+  if (!start || start.kind !== "start") throw Error("start missing");
+  const state = {
+    paused: false,
+    stopping: false,
+    streaming: false,
+    compacting: false,
+    queued: 0,
+    queue: [],
+    background: 1,
+    pendingAsync: false,
+    admitted: false,
+  };
+  f.host.emit("message", {
+    kind: "control",
+    generation: start.connectionGeneration,
+    state,
+  });
+  f.host.emit("message", {
+    kind: "state",
+    busy: false,
+    pendingInteraction: false,
+    state: {
+      sessionId: "native",
+      isStreaming: false,
+      isCompacting: false,
+      queuedMessageCount: 0,
+    },
+  });
+  expect(f.runtime.hasActiveWork()).toBe(true);
+  f.host.emit("message", {
+    kind: "control",
+    generation: crypto.randomUUID(),
+    state: { ...state, background: 0 },
+  });
+  expect(f.runtime.hasActiveWork()).toBe(true);
+  f.host.emit("message", {
+    kind: "control",
+    generation: start.connectionGeneration,
+    state: { ...state, background: 0 },
+  });
+  expect(f.runtime.hasActiveWork()).toBe(false);
+});
+
+it("settles an acknowledged submission when native admission clears after the idle RPC reply", async () => {
+  const f = await running();
+  const prepared = await f.prepare();
+  if (prepared.kind !== "receipt") throw Error("prepare failed");
+  await f.dispatch();
+  f.store.submissions.acknowledgeSubmission(prepared.receipt.submissionId);
+  const start = f.postMessage.mock.calls
+    .map(([raw]) => HostCommandSchema.parse(raw))
+    .find((c) => c.kind === "start");
+  if (!start || start.kind !== "start") throw Error("start missing");
+  const state = {
+    paused: false,
+    stopping: false,
+    streaming: false,
+    compacting: false,
+    queued: 0,
+    queue: [],
+    background: 0,
+    pendingAsync: false,
+    admitted: true,
+  };
+  f.host.emit("message", {
+    kind: "control",
+    generation: start.connectionGeneration,
+    state,
+  });
+  f.host.emit("message", {
+    kind: "state",
+    busy: false,
+    pendingInteraction: false,
+    state: {
+      sessionId: "native",
+      isStreaming: false,
+      isCompacting: false,
+      queuedMessageCount: 0,
+    },
+  });
+  f.host.emit("message", {
+    kind: "control",
+    generation: start.connectionGeneration,
+    state: { ...state, admitted: false },
+  });
+  f.host.emit("exit");
+  expect(f.runtime.hasActiveWork()).toBe(false);
+  expect(
+    f.store.submissions.submission(prepared.receipt.submissionId)?.outcome,
+  ).not.toBe("unknown");
 });

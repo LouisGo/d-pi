@@ -16,21 +16,20 @@ import {
   type SubmissionCommand,
   type SubmissionReply,
 } from "../features/submission/contracts";
-import {
-  SubmissionCoordinator,
-  type SubmissionDiagnostic,
-} from "../features/submission/coordinator";
+import { SubmissionCoordinator } from "../features/submission/coordinator";
 import type {
   DirectoryIdentity,
   ThreadContext,
 } from "../features/threads/contracts";
 import { identifyDirectory } from "../shared/node/directory";
+import type { DiagnosticEvent } from "./diagnostics";
 import { HostConnection } from "./host-connection";
-import { managedRuntime, RuntimeResourceError } from "./runtime-resource";
+import { RuntimeResourceError } from "./runtime-resource";
+import { managedSdkRuntime } from "./sdk-resource";
 import type { AppStorage } from "./storage/app-storage";
 
 export class RuntimeService {
-  private executingId: string | null = null;
+  private readonly executingIds = new Set<string>();
   private target: FrozenSubmission["target"] | null = null;
   private coordinator: SubmissionCoordinator;
   private readonly connection: HostConnection;
@@ -39,6 +38,7 @@ export class RuntimeService {
   private readonly environment: Record<string, string>;
   private launchGeneration = 0;
   private sessionStarted = false;
+  private currentGeneration: string | null = null;
   private instanceDirectory: DirectoryIdentity | undefined;
   constructor(
     private readonly store: Pick<AppStorage, "threads" | "submissions">,
@@ -49,7 +49,7 @@ export class RuntimeService {
     private readonly publishSubmission: (
       reply: SubmissionReply,
     ) => void = () => {},
-    record: (event: SubmissionDiagnostic) => void = () => {},
+    private readonly record: (event: DiagnosticEvent) => void = () => {},
   ) {
     this.connection = new HostConnection(
       (message) => this.receive(message),
@@ -67,12 +67,13 @@ export class RuntimeService {
           this.target?.processInstanceId === target.processInstanceId &&
           this.view?.phase === "ready" &&
           this.view.trusted &&
-          !this.view.busy &&
+          !this.view.control?.paused &&
+          !this.view.control?.stopping &&
           !!this.view.model &&
           this.connection.connected,
         write: (value) => {
           if (!this.connection.connected) throw Error("Host unavailable");
-          this.executingId = value.submissionId;
+          this.executingIds.add(value.submissionId);
           this.update({ busy: true, message: "正在处理输入…" });
           this.connection.send({ kind: "dispatch", value });
         },
@@ -96,8 +97,11 @@ export class RuntimeService {
   ): Promise<void> {
     const generation = this.launchGeneration;
     let binary: string;
+    let sdkEntry: string;
     try {
-      binary = await managedRuntime(this.resources);
+      const resource = await managedSdkRuntime(this.resources);
+      binary = resource.binary;
+      sdkEntry = resource.entry;
     } catch (error) {
       this.update({
         phase: "failed",
@@ -126,9 +130,11 @@ export class RuntimeService {
     )
       throw Error("Execution grant changed");
     if (this.connection.connected || this.sessionStarted)
-      throw Error("Native recovery requires S3");
+      throw Error("Native recovery requires lifetime single-writer evidence");
     const processInstanceId = randomUUID();
     const connectionGeneration = randomUUID();
+    this.currentGeneration = connectionGeneration;
+    this.update({ generation: connectionGeneration });
     const context = createHash("sha256")
       .update(JSON.stringify({ cwd: thread.directory, env: this.environment }))
       .digest("hex");
@@ -141,6 +147,7 @@ export class RuntimeService {
         connectionGeneration,
         configContextId: context,
         binary,
+        sdkEntry,
         identity: current,
         environment: this.environment,
         sessionDirectory,
@@ -182,11 +189,11 @@ export class RuntimeService {
     await starting;
   }
   private onExit(): void {
-    const uncertain = !!this.executingId;
-    if (this.executingId) {
+    const uncertain = this.executingIds.size > 0;
+    for (const submissionId of this.executingIds) {
       try {
-        this.store.submissions.unknownSubmission(this.executingId);
-        const receipt = this.store.submissions.submission(this.executingId);
+        this.store.submissions.unknownSubmission(submissionId);
+        const receipt = this.store.submissions.submission(submissionId);
         if (receipt) this.publishSubmission({ kind: "receipt", receipt });
       } catch {
         /* Recovered as unknown on restart if still dispatching. */
@@ -199,23 +206,90 @@ export class RuntimeService {
         "原生连接已中断。草稿与原文保留，不自动重发。无法确认原生会话的执行全周期独占，当前只读历史，禁止强占恢复。",
     });
   }
+  private settleIdleSubmissions(): void {
+    const control = this.view?.control;
+    const interactions = this.view?.interactions;
+    if (
+      this.view?.busy ||
+      control?.stopping ||
+      control?.streaming ||
+      control?.compacting ||
+      control?.queued ||
+      control?.background ||
+      control?.pendingAsync ||
+      control?.admitted ||
+      interactions?.unsupported ||
+      interactions?.items.some(
+        (item) => item.status === "pending" || item.status === "unknown",
+      )
+    )
+      return;
+    if (
+      [...this.executingIds].every((id) => {
+        const receipt = this.store.submissions.submission(id);
+        return (
+          receipt?.state === "acknowledged" && receipt.outcome !== "unknown"
+        );
+      })
+    )
+      this.executingIds.clear();
+  }
   private receive(message: Exclude<HostMessage, { kind: "ready" }>): void {
     match(message)
+      .with(
+        { kind: "operation-result" },
+        ({ traceId, generation, operation, status }) => {
+          if (generation !== this.currentGeneration) return;
+          this.record({
+            traceId,
+            requestId: traceId,
+            connectionId: generation,
+            operation: `runtime:${operation}`,
+            stage: status,
+            ...(this.view ? { threadId: this.view.threadId } : {}),
+            ...(this.target
+              ? { nativeProcessInstanceId: this.target.processInstanceId }
+              : {}),
+          });
+        },
+      )
+      .with({ kind: "interactions" }, ({ view }) => {
+        if (view.generation === this.currentGeneration)
+          this.update({ interactions: view });
+      })
+      .with({ kind: "control" }, ({ generation, state }) => {
+        if (generation !== this.currentGeneration) return;
+        this.update({
+          generation,
+          control: state,
+          busy:
+            state.streaming ||
+            state.compacting ||
+            state.queued > 0 ||
+            state.background > 0 ||
+            state.pendingAsync ||
+            state.admitted,
+          message: state.paused
+            ? "已暂缓队列；明确继续后恢复消费。后台活动仍按实际状态显示。"
+            : "原生队列与控制状态已更新。",
+        });
+        this.settleIdleSubmissions();
+      })
       .with({ kind: "submission" }, ({ event }) => {
         this.publishSubmission(this.coordinator.receive(event));
       })
       .with({ kind: "state" }, ({ state, busy, pendingInteraction }) => {
-        if (!busy && !pendingInteraction) this.executingId = null;
         const model = state.model;
         this.update({
           busy: busy || pendingInteraction,
           model: model ? `${model.provider}/${model.id}` : null,
           message: pendingInteraction
-            ? "OMP 正在等待交互；回答控件尚未接入。"
+            ? "OMP 正在等待交互，请查看原生交互面板。"
             : busy
               ? "OMP 正在处理…"
               : "OMP 已空闲，可继续发送。",
         });
+        this.settleIdleSubmissions();
       })
       .with({ kind: "failed" }, { kind: "interrupted" }, () => {
         this.update({
@@ -259,6 +333,50 @@ export class RuntimeService {
           : "启动前会再次核对目录。项目执行不等于文件沙箱，OMP 可使用当前系统用户的权限。",
       };
     }
+    if (command.kind === "answer") {
+      if (
+        !this.connection.connected ||
+        command.generation !== this.currentGeneration
+      )
+        throw Error("Stale answer target");
+      if (command.answer.kind !== "cancel") {
+        const identity = await identifyDirectory(thread.directory);
+        const grant = this.store.threads.executionGrant(thread.workspaceId);
+        if (
+          !grant ||
+          !this.instanceDirectory ||
+          !sameDirectoryIdentity(grant, identity) ||
+          !sameDirectoryIdentity(this.instanceDirectory, identity)
+        )
+          throw Error("Execution grant invalid");
+      }
+      this.connection.send({ kind: "answer", command });
+      return this.view;
+    }
+    if (command.kind === "stop" || command.kind === "continue") {
+      if (
+        !this.connection.connected ||
+        command.generation !== this.currentGeneration
+      )
+        throw Error("Stale control target");
+      if (command.kind === "continue") {
+        const identity = await identifyDirectory(thread.directory);
+        const grant = this.store.threads.executionGrant(thread.workspaceId);
+        if (
+          !grant ||
+          !this.instanceDirectory ||
+          !sameDirectoryIdentity(grant, identity) ||
+          !sameDirectoryIdentity(this.instanceDirectory, identity)
+        )
+          throw Error("Execution grant invalid");
+      }
+      this.connection.send({ kind: "control", command });
+      this.update({
+        traceId: command.traceId,
+        message: "控制请求已派发，等待原生状态；不会自动重试。",
+      });
+      return this.view;
+    }
     await match(command.kind)
       .with("inspect", async () => {})
       .with("allow", async () => {
@@ -293,13 +411,23 @@ export class RuntimeService {
       .with("revoke", async () => {
         this.launchGeneration++;
         this.admission.revoke(command.threadId);
+        if (this.connection.connected && this.currentGeneration)
+          this.connection.send({
+            kind: "control",
+            command: {
+              kind: "stop",
+              threadId: command.threadId,
+              traceId: command.traceId,
+              generation: this.currentGeneration,
+            },
+          });
         this.update({
           trusted: false,
           phase: this.connection.connected
             ? (this.view?.phase ?? "interrupted")
             : "browse",
           message: this.connection.connected
-            ? "已阻止新操作。现有原生实例仍保留，不能据此视为已停止。"
+            ? "已阻止新操作并请求停止。现有实例仍保留，待原生状态确认；不能据此视为已停止。"
             : "当前项目仅浏览。",
         });
       })
@@ -347,7 +475,8 @@ export class RuntimeService {
     if (command.kind === "prepare" && existing) {
       if (
         existing.text !== command.text ||
-        existing.revision !== command.revision
+        existing.revision !== command.revision ||
+        existing.delivery !== command.delivery
       )
         throw Error("Submission identity conflict");
       return { kind: "receipt", receipt: existing };
@@ -370,6 +499,26 @@ export class RuntimeService {
       });
       throw Error("Execution grant invalid");
     }
+    if (command.kind === "resend") {
+      if (existing) return this.coordinator.dispatch(existing.submissionId);
+      const source = this.store.submissions.submission(command.originalId);
+      if (!source || source.threadId !== command.threadId || !this.target)
+        throw Error("Resend source unavailable");
+      const prepared = this.coordinator.prepare({
+        submissionId: command.submissionId,
+        threadId: command.threadId,
+        traceId: command.traceId,
+        revision: source.revision,
+        text: source.text,
+        retryOf: source.submissionId,
+        ...(source.delivery ? { delivery: source.delivery } : {}),
+        target: this.target,
+        requestId: randomUUID(),
+      });
+      return prepared.kind === "receipt"
+        ? this.coordinator.dispatch(command.submissionId)
+        : prepared;
+    }
     if (command.kind === "dispatch")
       return this.coordinator.dispatch(command.submissionId);
     if (!this.target) throw Error("Native target unavailable");
@@ -383,8 +532,38 @@ export class RuntimeService {
   attach(port: Electron.MessagePortMain): void {
     this.connection.attach(port);
   }
+  async requestStop(): Promise<void> {
+    if (!this.view || !this.currentGeneration)
+      throw Error("No current native target");
+    await this.execute({
+      kind: "stop",
+      threadId: this.view.threadId,
+      traceId: randomUUID(),
+      generation: this.currentGeneration,
+    });
+  }
   hasActiveWork(): boolean {
+    const control = this.view?.control;
+    const pending = this.view?.interactions;
     return (
+      this.executingIds.size > 0 ||
+      !!(
+        control &&
+        (control.stopping ||
+          control.streaming ||
+          control.compacting ||
+          control.queued ||
+          control.background ||
+          control.pendingAsync ||
+          control.admitted)
+      ) ||
+      !!(
+        pending &&
+        (pending.unsupported ||
+          pending.items.some(
+            (item) => item.status === "pending" || item.status === "unknown",
+          ))
+      ) ||
       this.view?.phase === "starting" ||
       (this.view?.phase === "interrupted" && this.view.busy) ||
       (this.connection.connected &&

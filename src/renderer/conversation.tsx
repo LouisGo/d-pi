@@ -118,6 +118,25 @@ export function Submissions({ model }: { model: SubmissionModel }) {
                   : ""}
             </p>
             <pre>{receipt.text}</pre>
+            {receipt.retryOf && (
+              <p className="trace">显式再次发送，来源：{receipt.retryOf}</p>
+            )}
+            {(receipt.state === "unknown" ||
+              receipt.outcome === "unknown" ||
+              receipt.outcome === "failed") && (
+              <details>
+                <summary>作为新提交再次发送</summary>
+                <p role="alert">
+                  原提交可能已经执行，再次发送可能产生重复操作。请先核对原生历史；新草稿保持不变。恢复只读或队列暂停时不会派发。
+                </p>
+                <Button
+                  disabled={state.sending}
+                  onClick={() => void model.resend(receipt.submissionId)}
+                >
+                  确认可能重复，重新发送
+                </Button>
+              </details>
+            )}
             <Button
               variant="ghost"
               onClick={() => void navigator.clipboard.writeText(receipt.text)}

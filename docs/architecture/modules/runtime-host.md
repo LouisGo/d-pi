@@ -34,3 +34,9 @@ Main 拥有窗口、Host 监督及受限通道建立；一个 utility SessionHos
 复用[Runtime 证据](../../validation/runtime-feasibility.md)、[随包证据](../../validation/packaged-runtime-evidence.md)与[历史停止实验](../../archive/stage1-evidence.md)，核实版本和适用条件。补验证拆帧/迟到响应、OMP 与 Host 分别崩溃、窗口重连、停止后队列和单写恢复；具体门槛见 [G1 清单](../../../.scratch/development-foundation/spec.md#按需补齐的关键-g1-证据)。
 
 通过标准：故障范围正确、旧连接不能污染新连接、关闭窗口仍消费输出；开发态和包内资源路径均有证据。原生接受关联或单写条件无法证明时，只限制相应发送/恢复能力，不伪造 ready。
+
+## S3 当前实现（2026-09-28）
+
+固定官方 SDK 18.3.0 在随包 Bun 1.3.14 中运行；`runtime/host.mjs` 是 App 自有薄适配，不修改官方模块。正式 Host 使用该入口，原生 RPC driver 继续拥有标准命令和扩展 UI；仅增加消费前钩子、控制帧与有界状态观察。资源准备由 `scripts/prepare-sdk.mjs` 复制锁定依赖，打包显式保留 node_modules。控制和回答沿 Main 信任检查、Host 当前代次及 traceId 返回运输结果，正文不记诊断日志。
+
+原生 session 放入 Main 指定目录；新启动与冷恢复分开，已有绑定缺执行全周期独占证据则只读。停止/退出的实际验收和限制以 [S3 交接](../../../.scratch/m1-s3-control-recovery/handoff.md) 为准。

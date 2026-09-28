@@ -11,3 +11,5 @@ dist/
 # Managed official Runtime binary; reproducible through scripts/fetch-runtime.mjs.
 /resources/omp/omp
 /resources/omp/omp.download
+
+/resources/sdk/

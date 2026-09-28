@@ -58,7 +58,8 @@ export function Composer({
           if (
             runtime?.phase === "ready" &&
             runtime.trusted &&
-            !runtime.busy &&
+            !runtime.control?.paused &&
+            !runtime.control?.stopping &&
             runtime.model
           )
             void model.submission?.send();
@@ -243,20 +244,41 @@ function SendButton({
   );
   const state = useSyncExternalStore(runtime.subscribe, runtime.getSnapshot);
   return (
-    <Button
-      disabled={
-        send.sending ||
-        state?.phase !== "ready" ||
-        !state.trusted ||
-        state.busy ||
-        !state.model
-      }
-      onMouseDown={(event) => event.preventDefault()}
-      onClick={() => {
-        if (canSend()) void submission.send();
-      }}
-    >
-      发送
-    </Button>
+    <div className="flex gap-2">
+      <Button
+        disabled={
+          send.sending ||
+          state?.phase !== "ready" ||
+          !state.trusted ||
+          state.control?.paused ||
+          state.control?.stopping ||
+          !state.model
+        }
+        onMouseDown={(event) => event.preventDefault()}
+        onClick={() => {
+          if (canSend()) void submission.send();
+        }}
+      >
+        {state?.busy ? "排队发送" : "发送"}
+      </Button>
+      {state?.busy && (
+        <Button
+          variant="ghost"
+          disabled={
+            send.sending ||
+            !state.trusted ||
+            state.phase !== "ready" ||
+            state.control?.paused ||
+            state.control?.stopping
+          }
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() => {
+            if (canSend()) void submission.send("steer");
+          }}
+        >
+          干预当前执行
+        </Button>
+      )}
+    </div>
   );
 }

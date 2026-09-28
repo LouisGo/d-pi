@@ -1,0 +1,12 @@
+Native idle observation {
+  paused: false,
+  stopping: false,
+  pendingAsync: false,
+  admitted: false,
+  streaming: false,
+  compacting: false,
+  queued: 0,
+  background: 0,
+  queue: []
+}
+PASS: official SDK stop retains native queue; explicit continue consumes the same session exactly once

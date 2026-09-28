@@ -12,6 +12,7 @@ const ResponseSchema = z.looseObject({
 });
 export interface NativeSessionOptions {
   binary: string;
+  entry?: string;
   directory: string;
   environment: NodeJS.ProcessEnv;
   sessionDirectory: string;
@@ -49,7 +50,9 @@ export class NativeSession {
     const decoder = new FrameDecoder((frame) => this.frame(frame));
     const child = spawn(
       this.options.binary,
-      ["--mode", "rpc-ui", "--no-title", ...(this.options.extraArgs ?? [])],
+      this.options.entry
+        ? [this.options.entry]
+        : ["--mode", "rpc-ui", "--no-title", ...(this.options.extraArgs ?? [])],
       {
         cwd: this.options.directory,
         env: {

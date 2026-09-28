@@ -24,6 +24,8 @@ export class SubmissionRepository {
           existing.traceId !== value.traceId ||
           existing.revision !== value.revision ||
           existing.text !== value.text ||
+          existing.delivery !== value.delivery ||
+          existing.retryOf !== value.retryOf ||
           existing.requestId !== value.requestId ||
           existing.target.processInstanceId !==
             value.target.processInstanceId ||
@@ -35,19 +37,32 @@ export class SubmissionRepository {
           throw new SubmissionConflict("Submission identity conflict");
         return existing;
       }
-      const sameRevision = this.db
-        .prepare(
-          "SELECT id FROM submission WHERE thread_id=? AND json_extract(receipt, '$.revision')=? LIMIT 1",
+      if (value.retryOf) {
+        const source = this.submission(value.retryOf);
+        if (
+          !source ||
+          source.threadId !== value.threadId ||
+          source.text !== value.text ||
+          source.revision !== value.revision ||
+          source.delivery !== value.delivery
         )
-        .get(value.threadId, value.revision);
-      if (sameRevision) throw new SubmissionConflict("Revision already frozen");
-      const draft = this.drafts.read(value.threadId);
-      if (
-        draft.revision !== value.revision ||
-        draft.text !== value.text ||
-        draft.consumedBy
-      )
-        throw new SubmissionConflict("Submission draft revision conflict");
+          throw new SubmissionConflict("Invalid resend source");
+      } else {
+        const sameRevision = this.db
+          .prepare(
+            "SELECT id FROM submission WHERE thread_id=? AND json_extract(receipt, '$.revision')=? LIMIT 1",
+          )
+          .get(value.threadId, value.revision);
+        if (sameRevision)
+          throw new SubmissionConflict("Revision already frozen");
+        const draft = this.drafts.read(value.threadId);
+        if (
+          draft.revision !== value.revision ||
+          draft.text !== value.text ||
+          draft.consumedBy
+        )
+          throw new SubmissionConflict("Submission draft revision conflict");
+      }
       const now = new Date().toISOString();
       const receipt: SubmissionReceipt = {
         ...value,
@@ -83,9 +98,10 @@ export class SubmissionRepository {
         state: "acknowledged",
         acknowledgedAt: new Date().toISOString(),
       });
-      this.db
-        .prepare("INSERT INTO draft_consumption VALUES(?,?,?)")
-        .run(receipt.threadId, receipt.revision, receipt.submissionId);
+      if (!receipt.retryOf)
+        this.db
+          .prepare("INSERT INTO draft_consumption VALUES(?,?,?)")
+          .run(receipt.threadId, receipt.revision, receipt.submissionId);
       return true;
     });
   }

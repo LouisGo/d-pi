@@ -1,6 +1,6 @@
 # 03 恢复准入与只读解释
 
-Status: open
+Status: resolved
 Blocked by: none
 
 阶段：M1/S3。范围、决定与产品待决项以 [spec](../spec.md) 为准。
@@ -12,3 +12,5 @@ Main 核对已有会话身份、目录、配置、占用与原拥有者释放。
 ## Comments
 
 2026-09-28：依据用户本轮 S3 授权建票。
+
+2026-09-28：Q1 确认后在同一实施轮领取并完成。持续单写门槛继续拒绝写恢复，当前实例/目录/信任重新核对；已有绑定反复 inspect/allow/start 不 fork、不换绑定、不覆盖草稿。无单写证明，禁止强占。 详见 [证据](../evidence.md) 与 [交接](../handoff.md)。

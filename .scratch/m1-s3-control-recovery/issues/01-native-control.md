@@ -1,6 +1,6 @@
 # 01 原生队列门控与控制接入
 
-Status: open
+Status: resolved
 Blocked by: none
 
 阶段：M1/S3。范围、决定与产品待决项以 [spec](../spec.md) 为准。
@@ -12,3 +12,7 @@ Blocked by: none
 ## Comments
 
 2026-09-28：依据用户本轮 S3 授权建票。
+
+2026-09-28：用户确认官方 SDK 薄宿主，Q1 解除，开始实施。
+
+2026-09-28：Q1 确认后在同一实施轮领取并完成。官方 SDK 薄宿主与锁定资源完成；原生 hook 门控、重复停止/继续竞争和同会话队列保留通过真实 SDK fixture。 详见 [证据](../evidence.md) 与 [交接](../handoff.md)。

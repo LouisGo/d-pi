@@ -1,6 +1,7 @@
-import { useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { match } from "ts-pattern";
 import { Button } from "@/components/ui/button";
+import type { Interaction } from "../features/control/interactions";
 import type { RuntimeModel } from "../features/runtime/model";
 export function RuntimePanel({ model }: { model: RuntimeModel }) {
   const state = useSyncExternalStore(model.subscribe, model.getSnapshot);
@@ -24,6 +25,87 @@ export function RuntimePanel({ model }: { model: RuntimeModel }) {
       <span className="muted">{state.configuration}</span>
       {state.model && <span>模型：{state.model}</span>}
       <p className="muted">{state.message}</p>
+      {state.control && (
+        <div role="status">
+          <p>
+            {state.control.paused ? "队列已暂缓" : "原生队列"}：
+            {state.control.queued} 条；后台活动：{state.control.background}
+          </p>
+          {state.control.queue.map((item, index) => (
+            <p key={`${item.kind}-${index}`}>
+              <strong>{item.kind === "steering" ? "干预" : "待处理"}：</strong>
+              {item.text}
+            </p>
+          ))}
+          <div className="flex gap-2">
+            <Button
+              disabled={state.control.stopping || state.phase !== "ready"}
+              onClick={() => void model.control("stop")}
+            >
+              {state.control.stopping ? "正在请求停止…" : "停止并暂缓队列"}
+            </Button>
+            {state.control.paused && (
+              <Button
+                disabled={
+                  !state.trusted ||
+                  state.control.stopping ||
+                  state.phase !== "ready"
+                }
+                onClick={() => void model.control("continue")}
+              >
+                明确继续
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+      {state.interactions && (
+        <section aria-label="原生交互" className="native-interactions">
+          {state.interactions.unsupported && (
+            <p role="alert">
+              存在尚不支持或超出显示预算的原生交互，未自动回答。
+            </p>
+          )}
+          {state.interactions.items
+            .filter(
+              (item) => item.status === "pending" || item.status === "unknown",
+            )
+            .map((item) => (
+              <NativeDialog
+                key={`${state.interactions?.generation}-${item.id}`}
+                item={item}
+                trusted={state.trusted}
+                model={model}
+                available={
+                  state.phase !== "interrupted" && state.phase !== "failed"
+                }
+              />
+            ))}
+          {state.interactions.items.some(
+            (item) => item.status !== "pending" && item.status !== "unknown",
+          ) && (
+            <details>
+              <summary>交互记录</summary>
+              <div className="native-interactions">
+                {state.interactions.items
+                  .filter(
+                    (item) =>
+                      item.status !== "pending" && item.status !== "unknown",
+                  )
+                  .map((item) => (
+                    <NativeDialog
+                      key={item.id}
+                      item={item}
+                      trusted={state.trusted}
+                      model={model}
+                      available={false}
+                    />
+                  ))}
+              </div>
+            </details>
+          )}
+        </section>
+      )}
       <div className="flex gap-2">
         {!state.trusted && (
           <Button
@@ -47,5 +129,106 @@ export function RuntimePanel({ model }: { model: RuntimeModel }) {
         </Button>
       </div>
     </section>
+  );
+}
+
+function NativeDialog({
+  item,
+  model,
+  available,
+  trusted,
+}: {
+  item: Interaction;
+  model: RuntimeModel;
+  available: boolean;
+  trusted: boolean;
+}) {
+  const [value, setValue] = useState(item.prefill ?? "");
+  const [sent, setSent] = useState(false);
+  const enabled = available && item.status === "pending" && !sent;
+  const answer = (response: Parameters<RuntimeModel["answer"]>[1]) => {
+    if (!enabled || (!trusted && response.kind !== "cancel")) return;
+    setSent(true);
+    void model.answer(item.id, response);
+  };
+  return (
+    <article className="message" aria-label={item.title}>
+      <strong>{item.title}</strong>
+      {item.message && <p>{item.message}</p>}
+      {item.status === "pending" && !sent ? (
+        <>
+          {item.method === "confirm" ? (
+            <div className="flex gap-2">
+              <Button
+                disabled={!enabled || !trusted}
+                onClick={() => answer({ kind: "confirm", confirmed: true })}
+              >
+                确认
+              </Button>
+              <Button
+                variant="ghost"
+                disabled={!enabled || !trusted}
+                onClick={() => answer({ kind: "confirm", confirmed: false })}
+              >
+                拒绝
+              </Button>
+            </div>
+          ) : item.method === "select" ? (
+            <div className="flex flex-col gap-2">
+              {item.options?.map((option, index) => (
+                <div key={`${index}-${option}`}>
+                  <Button
+                    disabled={!enabled || !trusted}
+                    onClick={() => answer({ kind: "value", value: option })}
+                  >
+                    {option}
+                  </Button>
+                  {item.optionDetails?.[index]?.description && (
+                    <p>{item.optionDetails[index]?.description}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div>
+              <textarea
+                className="native-answer"
+                aria-label={item.title}
+                disabled={!enabled || !trusted}
+                value={value}
+                placeholder={item.placeholder}
+                maxLength={16384}
+                onChange={(event) => setValue(event.target.value)}
+              />
+              <Button
+                disabled={!enabled || !trusted}
+                onClick={() => answer({ kind: "value", value })}
+              >
+                提交回答
+              </Button>
+            </div>
+          )}
+          <Button
+            variant="ghost"
+            disabled={!enabled}
+            onClick={() => answer({ kind: "cancel" })}
+          >
+            取消交互
+          </Button>
+        </>
+      ) : (
+        <p role="status">
+          {item.status === "expired"
+            ? "请求已超时"
+            : item.status === "cancelled"
+              ? "原生已取消"
+              : item.status === "unknown"
+                ? "回答结果未知，不自动重答"
+                : item.status === "pending"
+                  ? "回答已提交，结果尚未确认；不会自动重答"
+                  : "回答已写出，等待原生后续结果；不代表任务完成"}
+        </p>
+      )}
+    </article>
   );
 }

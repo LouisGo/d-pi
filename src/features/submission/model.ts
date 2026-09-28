@@ -84,7 +84,7 @@ export class SubmissionModel {
       this.publish({ message: "提交状态尚未核对。请保留原文，不要重复发送。" });
     }
   }
-  async send(): Promise<void> {
+  async send(delivery: "followUp" | "steer" = "followUp"): Promise<void> {
     if (this.view.sending || this.disposed) return;
     this.publish({ sending: true, message: null });
     const submissionId = SubmissionIdSchema.parse(crypto.randomUUID());
@@ -100,6 +100,7 @@ export class SubmissionModel {
             traceId: crypto.randomUUID(),
             revision: value.revision,
             text: value.text,
+            delivery,
           });
           this.accept(reply);
           return reply.kind === "receipt" && reply.receipt.state === "prepared";
@@ -122,6 +123,25 @@ export class SubmissionModel {
       this.publish({
         message: "发送结果无法确认。原文与提交记录保留，不会自动重发。",
       });
+    } finally {
+      this.publish({ sending: false });
+    }
+  }
+  async resend(originalId: SubmissionReceipt["submissionId"]): Promise<void> {
+    if (this.view.sending || this.disposed) return;
+    this.publish({ sending: true, message: null });
+    try {
+      this.accept(
+        await this.bridge.request({
+          kind: "resend",
+          threadId: this.threadId,
+          submissionId: SubmissionIdSchema.parse(crypto.randomUUID()),
+          traceId: crypto.randomUUID(),
+          originalId,
+        }),
+      );
+    } catch {
+      this.publish({ message: "再次发送的结果未知，原文保留，不自动重发。" });
     } finally {
       this.publish({ sending: false });
     }

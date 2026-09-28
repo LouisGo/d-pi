@@ -34,7 +34,7 @@ export function App({ model }: { model: AppModel }) {
         <div className="app-shell">
           <aside className="sidebar">
             <div className="brand">
-              d-pi <span>S2</span>
+              d-pi <span>S3</span>
             </div>
             <div className="sidebar-label">项目</div>
             {draft ? (

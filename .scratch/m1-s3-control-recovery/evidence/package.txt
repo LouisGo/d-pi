@@ -1,0 +1,6 @@
+(node:3209) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+DevTools listening on ws://127.0.0.1:63075/devtools/browser/d504def6-d0a4-4a33-9515-ab2d80187027
+PASS: relocated formal package, bundled official SDK, v1 migration, two turns/same session, ACK consumption, direct reading/history. Evidence: /private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s3-package-tVzFbI
+package exit 0 null

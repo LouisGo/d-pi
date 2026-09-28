@@ -41,7 +41,7 @@ export interface SubmissionDiagnostic {
 // Conservative v18.3.0 physical-frame budget; not an observed native input limit.
 export const SUBMISSION_FRAME_BUDGET = 1024 * 1024;
 function frameFor(value: FrozenSubmission): string {
-  return `${JSON.stringify({ id: value.requestId, type: "prompt", message: value.text })}\n`;
+  return `${JSON.stringify({ id: value.requestId, type: "prompt", message: value.text, streamingBehavior: value.delivery ?? "followUp" })}\n`;
 }
 function sameTarget(
   a: FrozenSubmission["target"],

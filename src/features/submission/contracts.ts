@@ -15,8 +15,10 @@ export const FrozenSubmissionSchema = z.strictObject({
   traceId: TraceIdSchema,
   revision: z.number().int().nonnegative(),
   text: DraftTextSchema,
+  delivery: z.enum(["followUp", "steer"]).optional(),
   target: SubmissionTargetSchema,
   requestId: z.uuid(),
+  retryOf: SubmissionIdSchema.optional(),
 });
 export type FrozenSubmission = z.infer<typeof FrozenSubmissionSchema>;
 export const SubmissionReceiptSchema = FrozenSubmissionSchema.extend({
@@ -59,12 +61,20 @@ export type SubmissionEvent = z.infer<typeof SubmissionEventSchema>;
 
 export const SubmissionCommandSchema = z.discriminatedUnion("kind", [
   z.strictObject({
+    kind: z.literal("resend"),
+    threadId: ThreadIdSchema,
+    submissionId: SubmissionIdSchema,
+    traceId: TraceIdSchema,
+    originalId: SubmissionIdSchema,
+  }),
+  z.strictObject({
     kind: z.literal("prepare"),
     threadId: ThreadIdSchema,
     submissionId: SubmissionIdSchema,
     traceId: TraceIdSchema,
     revision: z.number().int().nonnegative(),
     text: DraftTextSchema,
+    delivery: z.enum(["followUp", "steer"]).optional(),
   }),
   z.strictObject({
     kind: z.literal("dispatch"),

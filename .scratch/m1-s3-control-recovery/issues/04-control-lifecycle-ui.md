@@ -1,7 +1,7 @@
 # 04 控制与退出交互
 
-Status: open
-Blocked by: 01
+Status: resolved
+Blocked by: none
 
 阶段：M1/S3。范围、决定与产品待决项以 [spec](../spec.md) 为准。
 
@@ -12,3 +12,5 @@ Blocked by: 01
 ## Comments
 
 2026-09-28：依据用户本轮 S3 授权建票。
+
+2026-09-28：Q1 确认后在同一实施轮领取并完成。正式控制、队列预览、交互、退出和显式再次发送已接入；SQLite 重发不消耗新草稿。真实 GUI 通过刷新接回/明确继续、主题/密度、交互及正常退出。 详见 [证据](../evidence.md) 与 [交接](../handoff.md)。

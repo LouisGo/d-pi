@@ -1,0 +1,34 @@
+
+ RUN  v5.0.2 /Users/lou/Learn/d-pi
+
+(node:2698) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/main/runtime-service.test.ts (12 tests | 1 failed) 105ms
+   × settles an acknowledged submission when native admission clears after the idle RPC reply 11ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/runtime-service.test.ts > settles an acknowledged submission when native admission clears after the idle RPC reply
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/main/runtime-service.test.ts:445:37
+    443|   f.host.emit("message", {kind: "control", generation: start.connectio…
+    444|   f.host.emit("exit");
+    445|   expect(f.runtime.hasActiveWork()).toBe(false);
+       |                                     ^
+    446|   expect(f.store.submissions.submission(prepared.receipt.submissionId)…
+    447| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 11 passed (12)
+   Start at  16:36:26
+   Duration  320ms (tests 40%, transform 39%, import 20%, worker 1%)

@@ -30,7 +30,7 @@ SOFTWARE.
 
 ## Bundled dependencies
 
-License files from the locked production dependency graph; no development tools are shipped.
+License files from the locked UI dependency graph. S3 also ships the official OMP SDK dependency closure and Bun runtime; their original license files are retained in `Contents/Resources/sdk/node_modules` and `Contents/Resources/sdk/BUN-LICENSE.md`.
 
 ### @babel/runtime@7.29.7
 
@@ -5080,9 +5080,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ```
 
-## Official OMP executable
+## Official OMP SDK and prior CLI evidence
 
-Unmodified oh-my-pi v18.3.0, commit 62bc57be1b03ef0802a33cf7f5f530e534527531. Source and checksum: resources/omp/manifest.json. Upstream license:
+Unmodified oh-my-pi SDK v18.3.0, commit 62bc57be1b03ef0802a33cf7f5f530e534527531, installed through pnpm-lock.yaml and shipped with its original dependencies. The S2 CLI resource remains in the workspace as historical evidence; S3 executes the SDK through an App-owned adapter and pinned Bun 1.3.14. Upstream OMP license:
 
 ```text
 MIT License

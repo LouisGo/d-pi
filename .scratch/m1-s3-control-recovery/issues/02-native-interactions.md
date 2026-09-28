@@ -1,6 +1,6 @@
 # 02 原生交互回答闭环
 
-Status: open
+Status: resolved
 Blocked by: none
 
 阶段：M1/S3。范围、决定与产品待决项以 [spec](../spec.md) 为准。
@@ -12,3 +12,5 @@ Host 拥有当前请求；提供 confirm/select/input/editor 回答和取消、�
 ## Comments
 
 2026-09-28：依据用户本轮 S3 授权建票。
+
+2026-09-28：Q1 确认后在同一实施轮领取并完成。待答快照、四类回答/取消、超时与断链未知已完成；正式 Electron GUI 的官方扩展收到了四类回答。 详见 [证据](../evidence.md) 与 [交接](../handoff.md)。
