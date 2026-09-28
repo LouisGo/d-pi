@@ -228,6 +228,63 @@ it("an explicit resend retains source identity and never consumes the newer draf
     }
   }));
 
+it("free-text follow-ups bypass the draft gates and never consume the editor", () =>
+  fixture((path) => {
+    const store = new AppStorage(path);
+    try {
+      const draft = store.drafts.create("/fixture");
+      store.drafts.save(draft.threadId, 0, "editor content");
+      const free = (text: string) =>
+        FrozenSubmissionSchema.parse({
+          submissionId: randomUUID(),
+          threadId: draft.threadId,
+          traceId: randomUUID(),
+          revision: 0,
+          text,
+          delivery: "steer",
+          origin: "free",
+          requestId: randomUUID(),
+          target: {
+            processInstanceId: randomUUID(),
+            connectionGeneration: randomUUID(),
+            configContextId: "isolated",
+            nativeSessionRef: "managed-session",
+          },
+        });
+      // First and second free texts share revision 0 but carry unique IDs:
+      // neither the draft-content gate nor the same-revision gate applies.
+      const first = free("late answer one");
+      const second = free("late answer two");
+      expect(store.submissions.prepareSubmission(first).state).toBe("prepared");
+      expect(store.submissions.prepareSubmission(second).state).toBe(
+        "prepared",
+      );
+      expect(store.submissions.dispatchSubmission(first.submissionId)).toBe(
+        true,
+      );
+      expect(store.submissions.acknowledgeSubmission(first.submissionId)).toBe(
+        true,
+      );
+      // ACK of a free-text receipt leaves the editor draft untouched.
+      expect(store.drafts.read(draft.threadId)).toMatchObject({
+        text: "editor content",
+        revision: 1,
+      });
+      // The draft lane itself still enforces its own gates.
+      expect(() =>
+        store.submissions.prepareSubmission({
+          ...first,
+          submissionId: FrozenSubmissionSchema.shape.submissionId.parse(
+            randomUUID(),
+          ),
+          origin: "draft",
+        }),
+      ).toThrow();
+    } finally {
+      store.close();
+    }
+  }));
+
 it("non-dispatched receipts cannot consume a draft and remain terminal across restart", () =>
   fixture((path) => {
     let store = new AppStorage(path);

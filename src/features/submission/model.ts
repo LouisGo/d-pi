@@ -167,14 +167,16 @@ export class SubmissionModel {
   }
   // Follow-up text that does not come from the draft (e.g. a late answer to
   // an already default-answered dialog). It travels the same prepare/dispatch
-  // pipeline and command policy, but never captures the draft: revision 0
-  // marks the non-draft origin and ACK never consumes the editor content.
+  // pipeline and command policy, but never captures the draft: origin "free"
+  // marks the non-draft provenance (no draft/revision gate, no editor
+  // consumption on ACK). The result is reported honestly so the caller can
+  // distinguish "queued for dispatch" from queue-full/not-ready/unknown.
   async sendText(
     text: string,
     delivery: "followUp" | "steer" = "followUp",
-  ): Promise<void> {
-    if (this.view.sending || this.disposed) return;
-    if (!text.trim()) return;
+  ): Promise<{ ok: boolean; message: string | null }> {
+    if (this.view.sending || this.disposed) return { ok: false, message: null };
+    if (!text.trim()) return { ok: false, message: null };
     this.publish({ sending: true, message: null });
     const submissionId = SubmissionIdSchema.parse(crypto.randomUUID());
     try {
@@ -186,21 +188,26 @@ export class SubmissionModel {
         revision: 0,
         text,
         delivery,
+        origin: "free",
       });
       this.accept(prepared);
       if (prepared.kind !== "receipt" || prepared.receipt.state !== "prepared")
-        return;
-      this.accept(
-        await this.bridge.request({
-          kind: "dispatch",
-          threadId: this.threadId,
-          submissionId,
-        }),
-      );
+        return { ok: false, message: this.view.message };
+      const dispatched = await this.bridge.request({
+        kind: "dispatch",
+        threadId: this.threadId,
+        submissionId,
+      });
+      this.accept(dispatched);
+      const ok =
+        dispatched.kind === "receipt" &&
+        dispatched.receipt.state === "dispatching";
+      return { ok, message: ok ? null : this.view.message };
     } catch {
       this.publish({
         message: "追发结果无法确认。原文与提交记录保留，不会自动重发。",
       });
+      return { ok: false, message: this.view.message };
     } finally {
       this.publish({ sending: false });
     }

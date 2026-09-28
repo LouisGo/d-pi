@@ -26,6 +26,7 @@ export class SubmissionRepository {
           existing.text !== value.text ||
           existing.delivery !== value.delivery ||
           existing.retryOf !== value.retryOf ||
+          (existing.origin ?? "draft") !== (value.origin ?? "draft") ||
           existing.requestId !== value.requestId ||
           existing.target.processInstanceId !==
             value.target.processInstanceId ||
@@ -47,6 +48,10 @@ export class SubmissionRepository {
           source.delivery !== value.delivery
         )
           throw new SubmissionConflict("Invalid resend source");
+      } else if (value.origin === "free") {
+        // Free text has no draft revision to bind: uniqueness is carried by
+        // the submissionId primary key, so neither the same-revision gate
+        // nor the draft-content gate applies.
       } else {
         const sameRevision = this.db
           .prepare(
@@ -98,7 +103,9 @@ export class SubmissionRepository {
         state: "acknowledged",
         acknowledgedAt: new Date().toISOString(),
       });
-      if (!receipt.retryOf)
+      // Only draft-bound submissions consume editor content. Free-text
+      // follow-ups (origin "free") never mark a draft revision consumed.
+      if (!receipt.retryOf && receipt.origin !== "free")
         this.db
           .prepare("INSERT INTO draft_consumption VALUES(?,?,?)")
           .run(receipt.threadId, receipt.revision, receipt.submissionId);

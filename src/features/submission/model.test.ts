@@ -1,4 +1,5 @@
 import { expect, it } from "vitest";
+import { ThreadIdSchema } from "../../shared/identity";
 import { DraftSchema } from "../draft/contracts";
 import { DraftController } from "../draft/controller";
 import { SubmissionReceiptSchema, type SubmissionReply } from "./contracts";
@@ -144,6 +145,7 @@ it("sends follow-up text without capturing or consuming the draft", async () => 
       kind: "prepare",
       text: "late answer",
       delivery: "followUp",
+      origin: "free",
     }),
   );
   expect(requests).toContainEqual(
@@ -155,6 +157,97 @@ it("sends follow-up text without capturing or consuming the draft", async () => 
   expect(requests).toHaveLength(3);
   m.dispose();
   c.dispose();
+});
+
+it("reports follow-up honesty: success only after dispatch, failure message otherwise", async () => {
+  const threadId = ThreadIdSchema.parse(crypto.randomUUID());
+  const replies: unknown[] = [];
+  const controller = new DraftController(
+    DraftSchema.parse({
+      schemaVersion: 1,
+      threadId,
+      workspaceId: crypto.randomUUID(),
+      directory: "/p",
+      revision: 1,
+      text: "B",
+    }),
+    async (revision) => ({
+      kind: "saved",
+      threadId,
+      revision: revision + 1,
+    }),
+    () => {
+      throw Error("save failed");
+    },
+  );
+  const m = new SubmissionModel(
+    {
+      subscribe() {
+        return () => {};
+      },
+      async request(command) {
+        if (command.kind === "list") return { kind: "list", receipts: [] };
+        if (command.kind === "prepare") {
+          if (command.text === "overflow")
+            return {
+              kind: "failed",
+              code: "queue-full",
+              error: {
+                errorId: crypto.randomUUID(),
+                traceId: command.traceId,
+                code: "queue-full",
+                observedAt: "main",
+                reportedBy: "app",
+                attribution: "unknown",
+                handlingOwner: "submission",
+                recovery: "user_action",
+                safeMessage: "排队已满。",
+              },
+            };
+          const { kind: _kind, ...value } = command;
+          const prepared = SubmissionReceiptSchema.parse({
+            ...value,
+            target: {
+              processInstanceId: crypto.randomUUID(),
+              connectionGeneration: crypto.randomUUID(),
+              configContextId: "cfg",
+              nativeSessionRef: "s",
+            },
+            requestId: crypto.randomUUID(),
+            state: "prepared",
+            acknowledgedAt: null,
+            outcome: "unobserved",
+            createdAt: "now",
+            updatedAt: "now",
+          });
+          replies.push(prepared);
+          return { kind: "receipt", receipt: prepared };
+        }
+        const prepared = replies.at(-1) as ReturnType<
+          typeof SubmissionReceiptSchema.parse
+        >;
+        return {
+          kind: "receipt",
+          receipt: { ...prepared, state: "dispatching" },
+        };
+      },
+    },
+    threadId,
+    controller,
+  );
+  expect(await m.sendText("late answer", "steer")).toEqual({
+    ok: true,
+    message: null,
+  });
+  const refused = await m.sendText("overflow", "steer");
+  expect(refused.ok).toBe(false);
+  expect(refused.message).toContain("排队已满");
+  expect(await m.sendText("   ", "steer")).toEqual({
+    ok: false,
+    message: null,
+  });
+  m.dispose();
+  controller.dispose();
 });
 
 it("releases only the rejected capture so unchanged text can be explicitly sent with a new identity", async () => {

@@ -16,6 +16,12 @@ export const FrozenSubmissionSchema = z.strictObject({
   revision: z.number().int().nonnegative(),
   text: DraftTextSchema,
   delivery: z.enum(["followUp", "steer"]).optional(),
+  // Provenance of the frozen text. Draft-bound submissions must match a saved
+  // draft revision (same-revision and draft gates apply). Free text (e.g. a
+  // late answer to an already default-answered dialog) has no draft revision:
+  // identity is carried by the submissionId primary key alone, and ACK never
+  // consumes editor content. Absent means "draft" for pre-existing rows.
+  origin: z.enum(["draft", "free"]).optional(),
   target: SubmissionTargetSchema,
   requestId: z.uuid(),
   retryOf: SubmissionIdSchema.optional(),
@@ -83,6 +89,7 @@ export const SubmissionCommandSchema = z.discriminatedUnion("kind", [
     revision: z.number().int().nonnegative(),
     text: DraftTextSchema,
     delivery: z.enum(["followUp", "steer"]).optional(),
+    origin: z.enum(["draft", "free"]).optional(),
   }),
   z.strictObject({
     kind: z.literal("dispatch"),
