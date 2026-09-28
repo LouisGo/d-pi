@@ -1,6 +1,9 @@
 import { z } from "zod";
-export const NativeFrameSchema = z.looseObject({ type: z.string().min(1) });
-export type NativeFrame = z.infer<typeof NativeFrameSchema>;
+import {
+  type NativeFrame,
+  NativeFrameSchema,
+} from "../features/runtime/native-protocol";
+
 const ChunkSchema = z.object({
   type: z.literal("rpc_chunk"),
   chunkId: z.string().min(1),

@@ -1,6 +1,6 @@
 import { match } from "ts-pattern";
-import type { Draft, Failure, SaveReply } from "../../shared/contracts";
 import { DRAFT_MAX_BYTES, draftByteLength } from "../../shared/draft-text";
+import type { Draft, Failure, SaveReply } from "./contracts";
 export type SaveState =
   | { kind: "saved" }
   | { kind: "dirty" }

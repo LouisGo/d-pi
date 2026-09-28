@@ -1,5 +1,5 @@
 import { createRoot } from "react-dom/client";
-import type { DesktopBridge } from "../shared/contracts";
+import type { DesktopBridge } from "../shared/desktop-bridge";
 import { App } from "./app";
 import { AppModel } from "./model";
 import "./styles/app.css";

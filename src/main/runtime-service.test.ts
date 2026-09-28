@@ -11,9 +11,9 @@ import { join } from "node:path";
 import { afterEach, expect, it, vi } from "vitest";
 import { HostCommandSchema } from "../features/runtime/host-contracts";
 import { SubmissionIdSchema } from "../features/submission/contracts";
-import { TraceIdSchema } from "../shared/contracts";
+import { TraceIdSchema } from "../shared/identity";
 import { RuntimeService } from "./runtime-service";
-import { DraftStorage } from "./storage";
+import { AppStorage } from "./storage/app-storage";
 
 const electron = vi.hoisted(() => ({ fork: vi.fn() }));
 vi.mock("electron", () => ({ utilityProcess: { fork: electron.fork } }));
@@ -26,20 +26,24 @@ afterEach(() => {
   for (const close of cleanup.splice(0)) close();
 });
 
-async function running() {
+async function running(
+  withoutDraft = false,
+  busyAfterReady = false,
+  failFirstFork = false,
+) {
   const root = realpathSync(
     mkdtempSync(join(tmpdir(), "d-pi-runtime-service-")),
   );
   const project = join(root, "project");
   mkdirSync(project);
-  const store = new DraftStorage(join(root, "app.sqlite"));
-  const draft = store.create(project);
-  store.save(draft.threadId, 0, "A");
+  const store = new AppStorage(join(root, "app.sqlite"));
+  const draft = store.drafts.create(project);
+  store.drafts.save(draft.threadId, 0, "A");
   const host = new EventEmitter();
   const postMessage = vi.fn((raw: unknown) => {
     const command = HostCommandSchema.parse(raw);
     if (command.kind === "start")
-      queueMicrotask(() =>
+      queueMicrotask(() => {
         host.emit("message", {
           kind: "ready",
           processInstanceId: command.processInstanceId,
@@ -52,10 +56,36 @@ async function running() {
             isCompacting: false,
             queuedMessageCount: 0,
           },
-        }),
-      );
+        });
+        if (busyAfterReady)
+          host.emit("message", {
+            kind: "state",
+            busy: true,
+            pendingInteraction: false,
+            state: {
+              sessionId: "native",
+              sessionFile: join(root, "native.jsonl"),
+              model: { id: "model", provider: "fixture" },
+              isStreaming: true,
+              isCompacting: false,
+              queuedMessageCount: 0,
+            },
+          });
+      });
   });
   electron.fork.mockReturnValue(Object.assign(host, { postMessage }));
+  if (failFirstFork)
+    electron.fork.mockImplementationOnce(() => {
+      throw Error("fork failed");
+    });
+  if (withoutDraft) {
+    vi.spyOn(store.drafts, "active").mockImplementation(() => {
+      throw Error("Draft unavailable");
+    });
+    vi.spyOn(store.drafts, "read").mockImplementation(() => {
+      throw Error("Draft unavailable");
+    });
+  }
   const runtime = new RuntimeService(store, root, root, {}, () => {});
   const act = (kind: "allow" | "start" | "revoke" | "inspect") =>
     runtime.execute({
@@ -122,8 +152,8 @@ it("a prepared submission cannot cross the instance directory boundary even if a
   });
   renameSync(fixture.project, join(fixture.root, "old-project"));
   mkdirSync(fixture.project);
-  const { identifyDirectory } = await import("./runtime-resource");
-  fixture.store.grantExecution({
+  const { identifyDirectory } = await import("../shared/node/directory");
+  fixture.store.threads.grantExecution({
     ...(await identifyDirectory(fixture.project)),
     workspaceId: fixture.draft.workspaceId,
   });
@@ -157,4 +187,33 @@ it("regranting the unchanged directory preserves normal submission and idle shut
       ([raw]) => HostCommandSchema.parse(raw).kind === "dispatch",
     ),
   ).toHaveLength(1);
+});
+
+it("execution admission and inspection do not require loading a draft body", async () => {
+  const fixture = await running(true);
+  expect(await fixture.act("inspect")).toMatchObject({
+    phase: "ready",
+    trusted: true,
+  });
+  await fixture.act("revoke");
+  expect(await fixture.act("allow")).toMatchObject({
+    phase: "ready",
+    trusted: true,
+  });
+});
+
+it("state observed immediately after ready is not overwritten by handshake completion", async () => {
+  const fixture = await running(false, true);
+  expect(await fixture.act("inspect")).toMatchObject({
+    phase: "ready",
+    busy: true,
+  });
+  expect(fixture.runtime.hasActiveWork()).toBe(true);
+});
+
+it("a fork failure before any Host exists still allows an explicit start retry", async () => {
+  const fixture = await running(false, false, true);
+  expect((await fixture.act("inspect")).phase).not.toBe("ready");
+  await fixture.act("start");
+  expect((await fixture.act("inspect")).phase).toBe("ready");
 });

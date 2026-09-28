@@ -1,6 +1,6 @@
 import { beforeEach, expect, it, vi } from "vitest";
-import type { DesktopBridge } from "../shared/contracts";
-import { ThreadIdSchema } from "../shared/contracts";
+import type { DesktopBridge } from "../shared/desktop-bridge";
+import { ThreadIdSchema } from "../shared/identity";
 
 const shell = vi.hoisted(() => ({
   expose: vi.fn<(name: string, bridge: DesktopBridge) => void>(),

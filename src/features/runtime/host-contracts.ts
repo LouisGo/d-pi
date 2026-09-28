@@ -1,6 +1,9 @@
 import { z } from "zod";
-import { FrozenSubmissionSchema } from "../submission/contracts";
-import { DirectoryIdentitySchema } from "./admission";
+import {
+  FrozenSubmissionSchema,
+  SubmissionEventSchema,
+} from "../submission/contracts";
+import { DirectoryIdentitySchema } from "../threads/contracts";
 export const HostStartSchema = z.strictObject({
   kind: z.literal("start"),
   threadId: z.uuid(),
@@ -44,3 +47,23 @@ export const NativeBindingSchema = z.strictObject({
   sessionId: z.string().min(1),
 });
 export type NativeBinding = z.infer<typeof NativeBindingSchema>;
+
+export type HostCommand = z.infer<typeof HostCommandSchema>;
+export const HostMessageSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("submission"), event: SubmissionEventSchema }),
+  z.object({
+    kind: z.literal("ready"),
+    state: NativeStateSchema,
+    processInstanceId: z.uuid(),
+    connectionGeneration: z.uuid(),
+  }),
+  z.object({
+    kind: z.literal("state"),
+    state: NativeStateSchema,
+    busy: z.boolean(),
+    pendingInteraction: z.boolean(),
+  }),
+  z.object({ kind: z.literal("failed"), code: z.string() }),
+  z.object({ kind: z.literal("interrupted"), reason: z.string() }),
+]);
+export type HostMessage = z.infer<typeof HostMessageSchema>;

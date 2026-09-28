@@ -1,4 +1,4 @@
-import type { Draft } from "../../shared/contracts";
+import type { ThreadId } from "../../shared/identity";
 import type { CapturedDraft, DraftController } from "../draft/controller";
 import {
   type SubmissionBridge,
@@ -21,7 +21,7 @@ export class SubmissionModel {
   replace: (() => boolean) | null = null;
   constructor(
     private readonly bridge: SubmissionBridge,
-    private readonly threadId: Draft["threadId"],
+    private readonly threadId: ThreadId,
     private readonly draft: DraftController,
   ) {
     this.remove = bridge.subscribe((reply) => this.accept(reply));

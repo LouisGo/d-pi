@@ -1,4 +1,4 @@
-import type { NativeFrame } from "./frame-decoder";
+import type { NativeFrame } from "../features/runtime/native-protocol";
 export class PendingInteractions {
   private readonly ids = new Set<string>();
   private overflow = false;

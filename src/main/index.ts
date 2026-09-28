@@ -16,21 +16,21 @@ import { SubmissionCommandSchema } from "../features/submission/contracts";
 import {
   BridgeDiagnosticSchema,
   EnvelopeSchema,
-  TraceIdSchema,
-} from "../shared/contracts";
+} from "../shared/desktop-bridge";
+import { TraceIdSchema } from "../shared/identity";
 import { diagnosticCode } from "./diagnostic-code";
 import { Diagnostics } from "./diagnostics";
 import { DraftService, failure } from "./draft-service";
 import { readNativeHistory } from "./native-history";
 import { RuntimeService } from "./runtime-service";
-import { DraftStorage } from "./storage";
+import { AppStorage } from "./storage/app-storage";
 
 if (process.env.D_PI_DATA_DIR)
   app.setPath("userData", process.env.D_PI_DATA_DIR);
 app.setName("d-pi");
 const locked = app.requestSingleInstanceLock();
 let window: BrowserWindow | null = null;
-let store: DraftStorage | undefined;
+let store: AppStorage | undefined;
 let service: DraftService | undefined;
 let runtime: RuntimeService | undefined;
 let startupCauseCode: string | undefined;
@@ -39,7 +39,7 @@ function initializeStorage(): void {
   try {
     const data = app.getPath("userData");
     mkdirSync(data, { recursive: true, mode: 0o700 });
-    store = new DraftStorage(join(data, "drafts.sqlite"));
+    store = new AppStorage(join(data, "drafts.sqlite"));
     service = new DraftService(store, async () => {
       if (!window) return null;
       const result = await dialog.showOpenDialog(window, {
@@ -212,7 +212,11 @@ else {
     ipcMain.on("runtime:connect", (event, raw: unknown) => {
       if (!sourceValid(event) || !runtime) return;
       const parsed = z.uuid().safeParse(raw);
-      if (!parsed.success || store?.active()?.threadId !== parsed.data) return;
+      if (
+        !parsed.success ||
+        store?.threads.activeThread()?.threadId !== parsed.data
+      )
+        return;
       const { port1, port2 } = new MessageChannelMain();
       runtime.attach(port1);
       event.senderFrame?.postMessage(
@@ -224,8 +228,9 @@ else {
     ipcMain.handle("history:read", async (event, raw: unknown) => {
       if (!sourceValid(event) || !store) throw Error("Invalid history source");
       const { threadId, cursor } = HistoryRequestSchema.parse(raw);
-      if (store.active()?.threadId !== threadId) throw Error("Foreign Thread");
-      const binding = store.nativeSession(threadId);
+      if (store.threads.activeThread()?.threadId !== threadId)
+        throw Error("Foreign Thread");
+      const binding = store.threads.nativeSession(threadId);
       return binding
         ? readNativeHistory(
             join(app.getPath("userData"), "native-sessions"),

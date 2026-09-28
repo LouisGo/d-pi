@@ -1,7 +1,8 @@
 import { type ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
-import { FrameDecoder, type NativeFrame } from "./frame-decoder";
+import type { NativeFrame } from "../features/runtime/native-protocol";
+import { FrameDecoder } from "./frame-decoder";
 
 const ResponseSchema = z.looseObject({
   type: z.literal("response"),

@@ -29,3 +29,10 @@ export const ConversationEventSchema = z.discriminatedUnion("kind", [
   ConversationUpdateSchema,
 ]);
 export type ConversationEvent = z.infer<typeof ConversationEventSchema>;
+
+export interface ConversationPort {
+  connect(
+    threadId: string,
+    listener: (event: ConversationEvent) => void,
+  ): () => void;
+}

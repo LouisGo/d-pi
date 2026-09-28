@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { DraftSchema } from "../../shared/contracts";
+import { DraftSchema } from "../draft/contracts";
 import { DraftController } from "../draft/controller";
 import { SubmissionReceiptSchema, type SubmissionReply } from "./contracts";
 import { SubmissionModel } from "./model";

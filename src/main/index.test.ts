@@ -3,8 +3,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { expect, it, vi } from "vitest";
-import { type Command, ReplySchema } from "../shared/contracts";
-import { DraftStorage } from "./storage";
+import { type Command, ReplySchema } from "../shared/desktop-bridge";
+import { AppStorage } from "./storage/app-storage";
 
 // Exercise the production IPC handler with real SQLite; only Electron's shell
 // is replaced so this test never opens a window or touches user data.
@@ -59,9 +59,9 @@ vi.mock("electron", () => ({
 it("retries a failed initial restore after the lock clears, preserving the same draft", async () => {
   shell.directory = mkdtempSync(join(tmpdir(), "d-pi-startup-"));
   const path = join(shell.directory, "drafts.sqlite");
-  const original = new DraftStorage(path);
-  const draft = original.create(shell.directory);
-  original.save(draft.threadId, 0, "keep this\n\n原文");
+  const original = new AppStorage(path);
+  const draft = original.drafts.create(shell.directory);
+  original.drafts.save(draft.threadId, 0, "keep this\n\n原文");
   original.close();
   const locker = new DatabaseSync(path);
   locker.exec("PRAGMA journal_mode=DELETE; BEGIN EXCLUSIVE");
@@ -234,8 +234,8 @@ it("runtime inspection is read-only, rejects foreign frames, and explicit allowa
   shell.events.clear();
   shell.quit.mockClear();
   shell.directory = mkdtempSync(join(tmpdir(), "d-pi-runtime-ipc-"));
-  const storage = new DraftStorage(join(shell.directory, "drafts.sqlite"));
-  const draft = storage.create(realpathSync(shell.directory));
+  const storage = new AppStorage(join(shell.directory, "drafts.sqlite"));
+  const draft = storage.drafts.create(realpathSync(shell.directory));
   storage.close();
   try {
     await import("./index");

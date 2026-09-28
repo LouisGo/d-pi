@@ -1,54 +1,15 @@
 import { z } from "zod";
+import {
+  DraftFailureReplySchema,
+  DraftSchema,
+  DraftTextSchema,
+  SavedDraftSchema,
+} from "../features/draft/contracts";
 import type { HistoryBridge } from "../features/history/contracts";
 import type { RuntimeBridge } from "../features/runtime/contracts";
 import type { SubmissionBridge } from "../features/submission/contracts";
-import { DRAFT_MAX_BYTES, draftByteLength } from "./draft-text";
-export const DraftTextSchema = z
-  .string()
-  .refine(
-    (text) => draftByteLength(text) <= DRAFT_MAX_BYTES,
-    "草稿正文超过 UTF-8 4 MiB",
-  );
-export const ThreadIdSchema = z.uuid().brand<"ThreadId">();
-export const WorkspaceIdSchema = z.uuid().brand<"WorkspaceId">();
-export const TraceIdSchema = z.uuid();
-export const PreferencesSchema = z.strictObject({
-  theme: z.enum(["light", "dark"]),
-  density: z.enum(["normal", "compact"]),
-  sendKey: z.enum(["enter-send", "enter-newline"]).optional(),
-});
-export type Preferences = z.infer<typeof PreferencesSchema>;
-export const DraftSchema = z.strictObject({
-  schemaVersion: z.literal(1),
-  threadId: ThreadIdSchema,
-  workspaceId: WorkspaceIdSchema,
-  directory: z.string().min(1),
-  revision: z.number().int().nonnegative(),
-  text: z.string(),
-  consumedBy: z.uuid().optional(),
-});
-export type Draft = z.infer<typeof DraftSchema>;
-export const FailureSchema = z.strictObject({
-  errorId: z.uuid(),
-  traceId: TraceIdSchema,
-  code: z.enum([
-    "storage-unavailable",
-    "invalid-request",
-    "directory-unavailable",
-    "revision-conflict",
-    "transport-unavailable",
-    "content-too-large",
-  ]),
-  category: z.enum(["storage", "validation", "permission", "transport"]),
-  observedAt: z.enum(["main", "renderer"]),
-  reportedBy: z.enum(["app", "unknown"]),
-  attribution: z.literal("unknown"),
-  handlingOwner: z.literal("draft"),
-  recovery: z.enum(["retry_safe", "reconcile_first", "user_action"]),
-  safeMessage: z.string(),
-  causeCode: z.string().max(80).optional(),
-});
-export type Failure = z.infer<typeof FailureSchema>;
+import { ThreadIdSchema, TraceIdSchema } from "./identity";
+import { PreferencesSchema } from "./preferences";
 export const CommandSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("restore"), traceId: TraceIdSchema }),
   z.strictObject({ kind: z.literal("choose-project"), traceId: TraceIdSchema }),
@@ -73,20 +34,15 @@ export const ReplySchema = z.discriminatedUnion("kind", [
     directoryAvailable: z.boolean(),
     preferences: PreferencesSchema,
   }),
-  z.strictObject({
-    kind: z.literal("saved"),
-    threadId: ThreadIdSchema,
-    revision: z.number().int().nonnegative(),
-  }),
+  SavedDraftSchema,
   z.strictObject({
     kind: z.literal("preferences-saved"),
     value: PreferencesSchema,
   }),
   z.strictObject({ kind: z.literal("cancelled") }),
-  z.strictObject({ kind: z.literal("failed"), error: FailureSchema }),
+  DraftFailureReplySchema,
 ]);
 export type Reply = z.infer<typeof ReplySchema>;
-export type SaveReply = Extract<Reply, { kind: "saved" | "failed" }>;
 export interface DesktopBridge {
   history?: HistoryBridge;
   submission?: SubmissionBridge;

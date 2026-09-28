@@ -1,9 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import {
-  DraftSchema,
-  type Failure,
-  type SaveReply,
-} from "../../shared/contracts";
+import { DraftSchema, type Failure, type SaveReply } from "./contracts";
 import { DraftController } from "./controller";
 
 const draft = DraftSchema.parse({

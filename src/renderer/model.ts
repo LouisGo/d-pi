@@ -1,14 +1,10 @@
 import { match } from "ts-pattern";
+import type { Draft, Failure } from "../features/draft/contracts";
 import { DraftController } from "../features/draft/controller";
 import { RuntimeModel } from "../features/runtime/model";
 import { SubmissionModel } from "../features/submission/model";
-import type {
-  DesktopBridge,
-  Draft,
-  Failure,
-  Preferences,
-  Reply,
-} from "../shared/contracts";
+import type { DesktopBridge, Reply } from "../shared/desktop-bridge";
+import type { Preferences } from "../shared/preferences";
 export type ViewState =
   | { kind: "loading" }
   | { kind: "failed"; error: Failure }

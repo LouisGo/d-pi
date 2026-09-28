@@ -1,6 +1,7 @@
 import { expect, it } from "vitest";
-import { DraftSchema } from "../../shared/contracts";
-import { RuntimeAdmission, type RuntimeGrant } from "./admission";
+import { DraftSchema } from "../draft/contracts";
+import type { RuntimeGrant } from "../threads/contracts";
+import { RuntimeAdmission } from "./admission";
 
 it("browse never starts; an explicit grant starts only the same physical directory", async () => {
   const draft = DraftSchema.parse({
@@ -16,7 +17,7 @@ it("browse never starts; an explicit grant starts only the same physical directo
   let starts = 0;
   const admission = new RuntimeAdmission(
     {
-      read: () => draft,
+      threadContext: () => draft,
       executionGrant: () => grant,
       grantExecution: (value) => {
         grant = value;

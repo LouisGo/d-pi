@@ -1,10 +1,4 @@
-import type { ConversationEvent, ConversationSnapshot } from "./contracts";
-export interface ConversationPort {
-  connect(
-    threadId: string,
-    listener: (event: ConversationEvent) => void,
-  ): () => void;
-}
+import type { ConversationPort, ConversationSnapshot } from "./contracts";
 export class ConversationModel {
   private view: ConversationSnapshot | null = null;
   private readonly listeners = new Set<() => void>();

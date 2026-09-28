@@ -4,18 +4,18 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { expect, it } from "vitest";
-import { DraftStorage } from "../../main/storage";
+import { AppStorage } from "../../main/storage/app-storage";
 import { FrozenSubmissionSchema } from "./contracts";
 import { SubmissionCoordinator } from "./coordinator";
 
 it("failed dispatch persistence writes nothing; duplicate dispatch writes once and late error keeps ACK", () => {
   const dir = mkdtempSync(join(tmpdir(), "d-pi-send-"));
   const path = join(dir, "app.sqlite");
-  const store = new DraftStorage(path);
+  const store = new AppStorage(path);
   const lock = new DatabaseSync(path);
   try {
-    const d = store.create(dir);
-    store.save(d.threadId, 0, "A");
+    const d = store.drafts.create(dir);
+    store.drafts.save(d.threadId, 0, "A");
     const a = FrozenSubmissionSchema.parse({
       submissionId: randomUUID(),
       threadId: d.threadId,
@@ -31,7 +31,7 @@ it("failed dispatch persistence writes nothing; duplicate dispatch writes once a
       },
     });
     const writes: string[] = [];
-    const c = new SubmissionCoordinator(store, {
+    const c = new SubmissionCoordinator(store.submissions, {
       isCurrentTarget: () => true,
       canDispatch: () => true,
       write: (value, frame) => {
@@ -72,8 +72,10 @@ it("failed dispatch persistence writes nothing; duplicate dispatch writes once a
       receipt: { state: "acknowledged", outcome: "failed" },
     });
     c.receive({ ...event, kind: "ack" });
-    expect(store.submission(a.submissionId)?.outcome).toBe("failed");
-    expect(store.read(d.threadId).text).toBe("");
+    expect(store.submissions.submission(a.submissionId)?.outcome).toBe(
+      "failed",
+    );
+    expect(store.drafts.read(d.threadId).text).toBe("");
   } finally {
     lock.close();
     store.close();
@@ -83,10 +85,10 @@ it("failed dispatch persistence writes nothing; duplicate dispatch writes once a
 
 it("old instances cannot ACK; a failed write becomes unknown and an encoded oversized draft is retained", () => {
   const dir = mkdtempSync(join(tmpdir(), "d-pi-send-errors-"));
-  const store = new DraftStorage(join(dir, "app.sqlite"));
+  const store = new AppStorage(join(dir, "app.sqlite"));
   try {
-    const d = store.create(dir);
-    store.save(d.threadId, 0, "A");
+    const d = store.drafts.create(dir);
+    store.drafts.save(d.threadId, 0, "A");
     const a = FrozenSubmissionSchema.parse({
       submissionId: randomUUID(),
       threadId: d.threadId,
@@ -103,7 +105,7 @@ it("old instances cannot ACK; a failed write becomes unknown and an encoded over
     });
     let current = true;
     let writes = 0;
-    const c = new SubmissionCoordinator(store, {
+    const c = new SubmissionCoordinator(store.submissions, {
       isCurrentTarget: () => current,
       canDispatch: () => true,
       write: () => {
@@ -127,9 +129,9 @@ it("old instances cannot ACK; a failed write becomes unknown and an encoded over
         target: a.target,
       }),
     ).toMatchObject({ kind: "failed", code: "stale-event" });
-    expect(store.read(d.threadId).text).toBe("A");
+    expect(store.drafts.read(d.threadId).text).toBe("A");
     const large = "\\".repeat(600_000);
-    store.save(d.threadId, 1, large);
+    store.drafts.save(d.threadId, 1, large);
     expect(
       c.prepare({
         ...a,
@@ -140,7 +142,7 @@ it("old instances cannot ACK; a failed write becomes unknown and an encoded over
         text: large,
       }),
     ).toMatchObject({ kind: "failed", code: "content-too-large" });
-    expect(store.read(d.threadId).text).toBe(large);
+    expect(store.drafts.read(d.threadId).text).toBe(large);
     expect(writes).toBe(1);
   } finally {
     store.close();
@@ -150,10 +152,10 @@ it("old instances cannot ACK; a failed write becomes unknown and an encoded over
 
 it("reports correlated safe stages and typed failures without logging frozen text", () => {
   const dir = mkdtempSync(join(tmpdir(), "d-pi-send-trace-"));
-  const store = new DraftStorage(join(dir, "app.sqlite"));
+  const store = new AppStorage(join(dir, "app.sqlite"));
   try {
-    const d = store.create(dir);
-    store.save(d.threadId, 0, "secret body");
+    const d = store.drafts.create(dir);
+    store.drafts.save(d.threadId, 0, "secret body");
     const a = FrozenSubmissionSchema.parse({
       submissionId: randomUUID(),
       threadId: d.threadId,
@@ -170,7 +172,7 @@ it("reports correlated safe stages and typed failures without logging frozen tex
     });
     const events: unknown[] = [];
     const c = new SubmissionCoordinator(
-      store,
+      store.submissions,
       { isCurrentTarget: () => true, canDispatch: () => true, write: () => {} },
       (event) => {
         events.push(event);

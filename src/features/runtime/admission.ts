@@ -1,11 +1,8 @@
-import { z } from "zod";
-import type { Draft } from "../../shared/contracts";
-export const DirectoryIdentitySchema = z.strictObject({
-  directory: z.string().min(1),
-  device: z.string().min(1),
-  inode: z.string().min(1),
-});
-export type DirectoryIdentity = z.infer<typeof DirectoryIdentitySchema>;
+import {
+  type DirectoryIdentity,
+  type RuntimeGrant,
+  type ThreadContext,
+} from "../threads/contracts";
 export function sameDirectoryIdentity(
   a: DirectoryIdentity,
   b: DirectoryIdentity,
@@ -14,12 +11,8 @@ export function sameDirectoryIdentity(
     a.directory === b.directory && a.device === b.device && a.inode === b.inode
   );
 }
-export const RuntimeGrantSchema = DirectoryIdentitySchema.extend({
-  workspaceId: z.uuid(),
-});
-export type RuntimeGrant = z.infer<typeof RuntimeGrantSchema>;
 export interface AdmissionStore {
-  read(threadId: string): Draft;
+  threadContext(threadId: string): ThreadContext;
   executionGrant(workspaceId: string): RuntimeGrant | null;
   grantExecution(grant: RuntimeGrant): void;
   revokeExecution(workspaceId: string): void;
@@ -35,7 +28,7 @@ export class RuntimeAdmission {
       directory: string,
     ) => Promise<DirectoryIdentity>,
     private readonly launch: (
-      draft: Draft,
+      thread: ThreadContext,
       identity: DirectoryIdentity,
     ) => Promise<void>,
   ) {}
@@ -46,10 +39,10 @@ export class RuntimeAdmission {
   ): Promise<AdmissionResult> {
     const generation = this.generation;
     try {
-      const draft = this.store.read(threadId);
-      const identity = await this.identify(draft.directory);
+      const thread = this.store.threadContext(threadId);
+      const identity = await this.identify(thread.directory);
       if (
-        identity.directory !== draft.directory ||
+        identity.directory !== thread.directory ||
         (boundDirectory && !sameDirectoryIdentity(boundDirectory, identity))
       )
         return { kind: "denied", reason: "directory-changed" };
@@ -57,7 +50,7 @@ export class RuntimeAdmission {
         return { kind: "denied", reason: "browse" };
       this.store.grantExecution({
         ...identity,
-        workspaceId: draft.workspaceId,
+        workspaceId: thread.workspaceId,
       });
       return { kind: "allowed" };
     } catch {
@@ -67,23 +60,23 @@ export class RuntimeAdmission {
   async start(threadId: string): Promise<AdmissionResult> {
     const generation = this.generation;
     try {
-      const draft = this.store.read(threadId);
-      const grant = this.store.executionGrant(draft.workspaceId);
+      const thread = this.store.threadContext(threadId);
+      const grant = this.store.executionGrant(thread.workspaceId);
       if (!grant) return { kind: "denied", reason: "browse" };
-      const identity = await this.identify(draft.directory);
+      const identity = await this.identify(thread.directory);
       if (
         grant.directory !== identity.directory ||
-        identity.directory !== draft.directory ||
+        identity.directory !== thread.directory ||
         grant.device !== identity.device ||
         grant.inode !== identity.inode
       )
         return { kind: "denied", reason: "directory-changed" };
       if (
         generation !== this.generation ||
-        !this.store.executionGrant(draft.workspaceId)
+        !this.store.executionGrant(thread.workspaceId)
       )
         return { kind: "denied", reason: "browse" };
-      await this.launch(draft, identity);
+      await this.launch(thread, identity);
       return { kind: "started" };
     } catch {
       return { kind: "denied", reason: "unavailable" };
@@ -91,6 +84,6 @@ export class RuntimeAdmission {
   }
   revoke(threadId: string): void {
     this.generation++;
-    this.store.revokeExecution(this.store.read(threadId).workspaceId);
+    this.store.revokeExecution(this.store.threadContext(threadId).workspaceId);
   }
 }

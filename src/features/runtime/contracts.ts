@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { ThreadIdSchema, TraceIdSchema } from "../../shared/contracts";
-import type { ConversationPort } from "../conversation/model";
+import { ThreadIdSchema, TraceIdSchema } from "../../shared/identity";
+import type { ConversationPort } from "../conversation/contracts";
 export const RuntimeCommandSchema = z.strictObject({
   kind: z.enum(["inspect", "allow", "start", "revoke"]),
   threadId: ThreadIdSchema,

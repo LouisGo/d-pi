@@ -19,7 +19,7 @@ import {
   type DesktopBridge,
   type Reply,
   ReplySchema,
-} from "../shared/contracts";
+} from "../shared/desktop-bridge";
 
 const connectionId = crypto.randomUUID();
 function report(event: BridgeDiagnostic): void {

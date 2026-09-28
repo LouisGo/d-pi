@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join, normalize } from "node:path";
 
 function files(directory) {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) =>
@@ -11,6 +11,27 @@ function files(directory) {
 }
 for (const path of files("src")) {
   const text = readFileSync(path, "utf8");
+  if (/\.[cm]?tsx?$/.test(path) && !path.endsWith(".test.ts")) {
+    for (const [, specifier] of text.matchAll(
+      /(?:from\s*|import\s*\(\s*)["']([^"']+)["']/g,
+    )) {
+      const target = specifier.startsWith(".")
+        ? normalize(join(dirname(path), specifier))
+        : specifier;
+      if (path.startsWith("src/features/"))
+        assert.ok(
+          !/^(?:node:|electron$|src\/(?:main|host|preload|renderer)\/|src\/shared\/node\/)/.test(
+            target,
+          ),
+          `platform implementation imported by feature: ${path} -> ${target}`,
+        );
+      if (path.startsWith("src/host/"))
+        assert.ok(
+          !target.startsWith("src/main/"),
+          `Host imported Main implementation: ${path} -> ${target}`,
+        );
+    }
+  }
   if (path.endsWith(".css") && !path.endsWith("/tokens.css")) {
     assert.ok(
       !/#[\da-f]{3,8}\b|\b(?:rgb|hsl|oklch)\(/i.test(text),
@@ -37,5 +58,5 @@ for (const path of files("src")) {
     );
 }
 console.log(
-  "PASS: token source and icon/domain import boundaries (narrow source checks; not a full CSS linter).",
+  "PASS: token source, icon/domain and feature/platform import boundaries (narrow source checks; not a full dependency or CSS analyzer).",
 );

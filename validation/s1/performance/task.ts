@@ -7,7 +7,7 @@ import { setTimeout as delay } from "node:timers/promises";
 import { DraftController } from "../../../src/features/draft/controller";
 import { Diagnostics } from "../../../src/main/diagnostics";
 import { DraftService, failure } from "../../../src/main/draft-service";
-import { DraftStorage } from "../../../src/main/storage";
+import { AppStorage } from "../../../src/main/storage/app-storage";
 
 const directory = realpathSync(
   mkdtempSync(join(tmpdir(), "d-pi-s1-task-perf-")),
@@ -20,8 +20,8 @@ const results: unknown[] = [];
 const modes = ["off", "on", "on", "off", "off", "on", "on", "off", "off", "on"];
 // Two unreported warmups are fixed in advance; no measured run is discarded.
 for (const [index, mode] of ["off", "on", ...modes].entries()) {
-  const store = new DraftStorage(join(directory, `task-${index}.sqlite`));
-  const draft = store.create(directory);
+  const store = new AppStorage(join(directory, `task-${index}.sqlite`));
+  const draft = store.drafts.create(directory);
   const service = new DraftService(store, async () => directory);
   const logger =
     mode === "on" ? new Diagnostics(join(directory, `logs-${index}`)) : null;
@@ -72,7 +72,7 @@ for (const [index, mode] of ["off", "on", ...modes].entries()) {
   }
   await saved;
   const durationMs = performance.now() - started;
-  if (store.active()?.text !== body + "12345678901234567890123456789012")
+  if (store.drafts.active()?.text !== body + "12345678901234567890123456789012")
     throw new Error("Body mismatch");
   if (index >= 2) results.push({ run: index - 1, mode, durationMs });
   controller.dispose();

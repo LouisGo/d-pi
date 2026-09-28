@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { CommandSchema, EnvelopeSchema } from "./contracts";
+import { CommandSchema, EnvelopeSchema } from "./desktop-bridge";
 
 it("bounds draft UTF-8 bytes rather than UTF-16 string length", () => {
   const command = {

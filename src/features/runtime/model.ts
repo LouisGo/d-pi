@@ -1,10 +1,10 @@
-import type { Draft } from "../../shared/contracts";
+import type { ThreadId } from "../../shared/identity";
 import { ConversationModel } from "../conversation/model";
 import type { RuntimeBridge, RuntimeCommand, RuntimeView } from "./contracts";
 export class RuntimeModel {
   private view: RuntimeView | null = null;
   private readonly listeners = new Set<() => void>();
-  private thread: Draft["threadId"] | null = null;
+  private thread: ThreadId | null = null;
   private generation = 0;
   readonly reading: ConversationModel | null;
   private readonly unsubscribe: () => void;
@@ -31,7 +31,7 @@ export class RuntimeModel {
     if (connectReading) this.reading?.connect(view.threadId);
     for (const listener of this.listeners) listener();
   }
-  bind(thread: Draft["threadId"]): void {
+  bind(thread: ThreadId): void {
     if (this.thread === thread) return;
     this.thread = thread;
     this.generation++;

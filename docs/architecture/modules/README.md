@@ -1,8 +1,22 @@
 # 模块地图与设计入口
 
-日期：2026-09-27。状态：模块职责设计；S1 项目与持久草稿已实现，工程验证与用户试用状态见 [S1 交接](../../../.scratch/m1-s1-project-draft/handoff.md)，其余模块按切片推进。模块边界可随有证据的实现反馈调整，变更已确认决定仍按[决定登记](../../decisions.md)处理。依据 D-02–D-16、D-20–D-35；全量目标和阶段以[基础方案](../../../.scratch/product-requirements/foundation-plan.md)为准。
+日期：2026-09-28。状态：S1 项目与持久草稿、S2 闲时提交与阅读已实现，用户试用仍待反馈；工程证据见 [S2 交接](../../../.scratch/m1-s2-submit-read/handoff.md)与[领域边界巩固](../../../.scratch/s2-boundary-hardening/spec.md)。其余模块按切片推进。模块边界可随有证据的实现反馈调整，变更已确认决定仍按[决定登记](../../decisions.md)处理。依据 D-02–D-16、D-20–D-35；全量目标和阶段以[基础方案](../../../.scratch/product-requirements/foundation-plan.md)为准。
 
 本目录把已有合同落实到模块：谁拥有状态、向谁请求能力、怎样交接、失败后由谁恢复。它不另建一套产品规格，也不要求一个模块对应一个包、类或进程。近期深入 M1，M3 模块只确定能独立理解的边界及启动条件。
+
+## S2 当前代码落点
+
+| 目录或入口 | 职责 |
+| --- | --- |
+| `src/features/<feature>/contracts.ts` | 各领域的公开数据合同；Thread 上下文独立于 Draft；规则、协调器与投影在各 feature 内，不依赖进程实现或 React |
+| `src/features/runtime/host-contracts.ts`、`native-protocol.ts` | Host 通道与受限原生帧合同，供适配层和投影消费 |
+| `src/main/storage/` | 单一数据库/迁移入口及按业务拆分的仓储；`AppStorage` 组装，共用事务能力 |
+| `src/main/runtime-service.ts`、`host-connection.ts` | 前者协调执行准入、会话绑定、提交；后者拥有 utility process、握手与传输 |
+| `src/host/index.ts`、`session-host.ts`、`native-session.ts` | 薄进程入口、每实例 Host 资源所有者、原生进程/RPC 适配；阅读通过端口直接到 Renderer |
+| `src/shared/identity.ts`、`preferences.ts`、`desktop-bridge.ts` | 明确命名的共享数据及桌面协议组合；`shared/node/` 专供 Node 适配层，不进入无头 feature |
+| `src/preload/`、`src/renderer/` | 受限桥接、React 绑定与界面，后台业务生命周期不由组件挂载拥有 |
+
+这是按功能与进程边界共同组织的单应用结构。SQLite v4 的 Thread 表仍保存草稿字段，不因代码职责拆分而进行无收益的物理表迁移；S3 新增恢复/控制行为时再按实际合同演进。
 
 ## 从哪里开始
 

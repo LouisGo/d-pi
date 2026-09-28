@@ -1,6 +1,6 @@
 import { z } from "zod";
-import type { NativeFrame } from "../../host/frame-decoder";
 import { draftByteLength } from "../../shared/draft-text";
+import type { NativeFrame } from "../runtime/native-protocol";
 import type {
   ConversationItem,
   ConversationSnapshot,

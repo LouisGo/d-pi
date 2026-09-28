@@ -1,0 +1,141 @@
+import {
+  type FrozenSubmission,
+  SubmissionConflict,
+  type SubmissionReceipt,
+  SubmissionReceiptSchema,
+} from "../../features/submission/contracts";
+import type { AppDatabase } from "./database";
+import type { DraftRepository } from "./drafts";
+export class SubmissionRepository {
+  constructor(
+    private readonly database: AppDatabase,
+    private readonly drafts: Pick<DraftRepository, "read">,
+  ) {}
+  private get db() {
+    return this.database.connection;
+  }
+  prepareSubmission(value: FrozenSubmission): SubmissionReceipt {
+    return this.database.transaction(() => {
+      const existing = this.submission(value.submissionId);
+      if (existing) {
+        // Identity reuse cannot replace the frozen content or route it elsewhere.
+        if (
+          existing.threadId !== value.threadId ||
+          existing.traceId !== value.traceId ||
+          existing.revision !== value.revision ||
+          existing.text !== value.text ||
+          existing.requestId !== value.requestId ||
+          existing.target.processInstanceId !==
+            value.target.processInstanceId ||
+          existing.target.connectionGeneration !==
+            value.target.connectionGeneration ||
+          existing.target.configContextId !== value.target.configContextId ||
+          existing.target.nativeSessionRef !== value.target.nativeSessionRef
+        )
+          throw new SubmissionConflict("Submission identity conflict");
+        return existing;
+      }
+      const sameRevision = this.db
+        .prepare(
+          "SELECT id FROM submission WHERE thread_id=? AND json_extract(receipt, '$.revision')=? LIMIT 1",
+        )
+        .get(value.threadId, value.revision);
+      if (sameRevision) throw new SubmissionConflict("Revision already frozen");
+      const draft = this.drafts.read(value.threadId);
+      if (
+        draft.revision !== value.revision ||
+        draft.text !== value.text ||
+        draft.consumedBy
+      )
+        throw new SubmissionConflict("Submission draft revision conflict");
+      const now = new Date().toISOString();
+      const receipt: SubmissionReceipt = {
+        ...value,
+        state: "prepared",
+        acknowledgedAt: null,
+        outcome: "unobserved",
+        createdAt: now,
+        updatedAt: now,
+      };
+      this.db
+        .prepare("INSERT INTO submission VALUES(?,?,?)")
+        .run(value.submissionId, value.threadId, JSON.stringify(receipt));
+      return receipt;
+    });
+  }
+  dispatchSubmission(id: string): boolean {
+    return this.database.transaction(() => {
+      const receipt = this.submission(id);
+      if (!receipt || receipt.state !== "prepared") return false;
+      this.writeReceipt({ ...receipt, state: "dispatching" });
+      return true;
+    });
+  }
+  acknowledgeSubmission(id: string): boolean {
+    return this.database.transaction(() => {
+      const receipt = this.submission(id);
+      if (!receipt) return false;
+      if (receipt.state === "acknowledged") return true;
+      if (receipt.state !== "dispatching" && receipt.state !== "unknown")
+        return false;
+      this.writeReceipt({
+        ...receipt,
+        state: "acknowledged",
+        acknowledgedAt: new Date().toISOString(),
+      });
+      this.db
+        .prepare("INSERT INTO draft_consumption VALUES(?,?,?)")
+        .run(receipt.threadId, receipt.revision, receipt.submissionId);
+      return true;
+    });
+  }
+  submission(id: string): SubmissionReceipt | null {
+    const row = this.db
+      .prepare("SELECT receipt FROM submission WHERE id=?")
+      .get(id);
+    if (!row) return null;
+    if (typeof row.receipt !== "string")
+      throw new Error("Invalid submission receipt");
+    return SubmissionReceiptSchema.parse(JSON.parse(row.receipt));
+  }
+  list(threadId: string): SubmissionReceipt[] {
+    return this.db
+      .prepare(
+        "SELECT receipt FROM submission WHERE thread_id=? ORDER BY rowid DESC LIMIT 100",
+      )
+      .all(threadId)
+      .map((row) =>
+        SubmissionReceiptSchema.parse(JSON.parse(String(row.receipt))),
+      );
+  }
+  private writeReceipt(receipt: SubmissionReceipt): void {
+    this.db
+      .prepare("UPDATE submission SET receipt=? WHERE id=?")
+      .run(
+        JSON.stringify({ ...receipt, updatedAt: new Date().toISOString() }),
+        receipt.submissionId,
+      );
+  }
+  unknownSubmission(id: string): void {
+    this.database.transaction(() => {
+      const receipt = this.submission(id);
+      if (!receipt || receipt.state === "prepared") return;
+      this.writeReceipt({
+        ...receipt,
+        state: receipt.state === "acknowledged" ? "acknowledged" : "unknown",
+        outcome: receipt.outcome === "failed" ? "failed" : "unknown",
+      });
+    });
+  }
+  failSubmission(id: string): void {
+    this.database.transaction(() => {
+      const receipt = this.submission(id);
+      if (!receipt || receipt.state === "prepared") return;
+      this.writeReceipt({
+        ...receipt,
+        state: receipt.state === "acknowledged" ? "acknowledged" : "unknown",
+        outcome: "failed",
+      });
+    });
+  }
+}

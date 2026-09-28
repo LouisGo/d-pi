@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { ThreadIdSchema } from "../../shared/contracts";
+import { ThreadIdSchema } from "../../shared/identity";
 import type { RuntimeView } from "./contracts";
 import { RuntimeModel } from "./model";
 

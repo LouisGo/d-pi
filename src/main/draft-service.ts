@@ -2,9 +2,10 @@ import { randomUUID } from "node:crypto";
 import { constants } from "node:fs";
 import { access, realpath, stat } from "node:fs/promises";
 import { match } from "ts-pattern";
-import { type Command, type Failure, type Reply } from "../shared/contracts";
+import { type Failure } from "../features/draft/contracts";
+import { type Command, type Reply } from "../shared/desktop-bridge";
 import { diagnosticCode } from "./diagnostic-code";
-import type { DraftStorage } from "./storage";
+import type { AppStorage } from "./storage/app-storage";
 export function failure(
   traceId: string,
   code: Failure["code"],
@@ -43,14 +44,14 @@ export async function resolveDirectory(path: string): Promise<string> {
 export class DraftService {
   private choosing = false;
   constructor(
-    private readonly storage: DraftStorage,
+    private readonly storage: Pick<AppStorage, "drafts" | "preferences">,
     private readonly choose: () => Promise<string | null>,
   ) {}
   async execute(command: Command): Promise<Reply> {
     try {
       return await match(command)
         .with({ kind: "restore" }, async () => {
-          const draft = this.storage.active();
+          const draft = this.storage.drafts.active();
           let directoryAvailable = true;
           if (draft) {
             try {
@@ -64,12 +65,12 @@ export class DraftService {
             kind: "ready" as const,
             draft,
             directoryAvailable,
-            preferences: this.storage.preferences(),
+            preferences: this.storage.preferences.read(),
           };
         })
         .with({ kind: "choose-project" }, async ({ traceId }) => {
           // S1 has one foreground draft; no implicit switch to an unreachable old draft.
-          if (this.choosing || this.storage.active())
+          if (this.choosing || this.storage.drafts.active())
             return failure(
               traceId,
               "invalid-request",
@@ -91,9 +92,9 @@ export class DraftService {
             }
             return {
               kind: "ready" as const,
-              draft: this.storage.create(directory),
+              draft: this.storage.drafts.create(directory),
               directoryAvailable: true,
-              preferences: this.storage.preferences(),
+              preferences: this.storage.preferences.read(),
             };
           } finally {
             this.choosing = false;
@@ -102,13 +103,13 @@ export class DraftService {
         .with(
           { kind: "save" },
           ({ traceId, threadId, expectedRevision, text }) => {
-            if (this.storage.active()?.threadId !== threadId)
+            if (this.storage.drafts.active()?.threadId !== threadId)
               return failure(
                 traceId,
                 "invalid-request",
                 "草稿身份不匹配，已阻止写入。",
               );
-            const revision = this.storage.save(
+            const revision = this.storage.drafts.save(
               threadId,
               expectedRevision,
               text,
@@ -123,7 +124,7 @@ export class DraftService {
           },
         )
         .with({ kind: "preferences" }, ({ value }) => {
-          this.storage.setPreferences(value);
+          this.storage.preferences.save(value);
           return { kind: "preferences-saved" as const, value };
         })
         .exhaustive();

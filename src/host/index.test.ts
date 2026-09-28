@@ -33,7 +33,7 @@ vi.mock("./native-session", () => ({
     close = native.close;
   },
 }));
-vi.mock("../main/runtime-resource", () => ({
+vi.mock("../shared/node/directory", () => ({
   identifyDirectory: async () => ({
     directory: "/project",
     device: "1",
