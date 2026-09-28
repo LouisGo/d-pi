@@ -11,7 +11,10 @@ import type {
   RuntimeView,
 } from "../features/runtime/contracts";
 import type { HostMessage } from "../features/runtime/host-contracts";
-import { canSubmit, QUEUE_CAP } from "../features/runtime/submission-admission";
+import {
+  canSubmit,
+  queueCapped,
+} from "../features/runtime/submission-admission";
 import {
   type FrozenSubmission,
   type SubmissionCommand,
@@ -519,19 +522,19 @@ export class RuntimeService {
       throw Error("Foreign submission");
     // Queue cap (2026-09-28 user decision): only commands that add a new
     // queue entry are gated. Dispatching an already counted prepared entry
-    // keeps the count unchanged and must stay possible at the cap.
+    // keeps the count unchanged and must stay possible at the cap. The count
+    // shares submission-admission.queueCapped with the Renderer hint so the
+    // two cannot diverge.
     if (
       (command.kind === "prepare" || command.kind === "resend") &&
       !existing
     ) {
-      const queued =
-        this.store.submissions
-          .list(command.threadId)
-          .filter(
-            (receipt) =>
-              receipt.state === "prepared" || receipt.state === "dispatching",
-          ).length + (this.view?.control?.queue.length ?? 0);
-      if (queued >= QUEUE_CAP)
+      if (
+        queueCapped(
+          this.store.submissions.list(command.threadId),
+          this.view?.control?.queue.length ?? 0,
+        )
+      )
         return {
           kind: "failed",
           code: "queue-full",
@@ -596,6 +599,7 @@ export class RuntimeService {
         text: source.text,
         retryOf: source.submissionId,
         ...(source.delivery ? { delivery: source.delivery } : {}),
+        ...(source.origin ? { origin: source.origin } : {}),
         target: this.target,
         requestId: randomUUID(),
       });

@@ -61,7 +61,13 @@ export function Composer({
             return false;
           event.preventDefault();
           const runtime = model.runtime?.getSnapshot();
-          if (canSubmit(runtime)) void model.submission?.send();
+          const receipts = model.submission?.getSnapshot().receipts ?? [];
+          if (
+            runtime &&
+            !queueCapped(receipts, runtime.control?.queue.length ?? 0) &&
+            canSubmit(runtime)
+          )
+            void model.submission?.send();
           return true;
         },
         handleDOMEvents: {

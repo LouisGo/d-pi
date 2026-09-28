@@ -112,8 +112,13 @@ export function App({ model }: { model: AppModel }) {
                   {model.runtime && (
                     <RuntimePanel
                       model={model.runtime}
-                      onFollowUp={(text) =>
-                        void model.submission?.sendText(text, "followUp")
+                      // Post-default user answers become a new steering
+                      // instruction (2026-09-28 decision), not a follow-up.
+                      onFollowUp={
+                        model.submission
+                          ? (text: string) =>
+                              model.submission!.sendText(text, "steer")
+                          : undefined
                       }
                     />
                   )}

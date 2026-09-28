@@ -8,7 +8,9 @@ export function RuntimePanel({
   onFollowUp,
 }: {
   model: RuntimeModel;
-  onFollowUp?: (text: string) => void;
+  onFollowUp:
+    | ((text: string) => Promise<{ ok: boolean; message: string | null }>)
+    | undefined;
 }) {
   const state = useSyncExternalStore(model.subscribe, model.getSnapshot);
   if (!state)
@@ -165,17 +167,36 @@ function NativeDialog({
   model: RuntimeModel;
   available: boolean;
   trusted: boolean;
-  onFollowUp: ((text: string) => void) | undefined;
+  onFollowUp:
+    | ((text: string) => Promise<{ ok: boolean; message: string | null }>)
+    | undefined;
 }) {
   const [value, setValue] = useState(item.prefill ?? "");
   const [sent, setSent] = useState(false);
   const [followedUp, setFollowedUp] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [followUpError, setFollowUpError] = useState<string | null>(null);
   const enabled = available && item.status === "pending" && !sent;
   const defaulted = item.status === "sent" && item.defaultAnswered;
   const followUp = () => {
-    if (!available || !trusted || !onFollowUp || !value.trim()) return;
-    setFollowedUp(true);
-    onFollowUp(value);
+    if (
+      !available ||
+      !trusted ||
+      !onFollowUp ||
+      !value.trim() ||
+      sending ||
+      followedUp
+    )
+      return;
+    // Report honestly: "sent" shows only after prepare+dispatch accept the
+    // text. Failures (queue-full, not-ready, unknown) keep the text editable.
+    setSending(true);
+    setFollowUpError(null);
+    void onFollowUp(value).then((result) => {
+      setSending(false);
+      if (result.ok) setFollowedUp(true);
+      else setFollowUpError(result.message ?? "追发失败，原文保留在输入框。");
+    });
   };
   const answer = (response: Parameters<RuntimeModel["answer"]>[1]) => {
     if (!enabled || (!trusted && response.kind !== "cancel")) return;
@@ -259,20 +280,27 @@ function NativeDialog({
             <textarea
               className="native-answer"
               aria-label={`${item.title}的继续作答`}
-              disabled={!available || !trusted || followedUp}
+              disabled={!available || !trusted || followedUp || sending}
               value={value}
               placeholder={item.placeholder}
               maxLength={16384}
               onChange={(event) => setValue(event.target.value)}
             />
             <Button
-              disabled={!available || !trusted || followedUp || !value.trim()}
+              disabled={
+                !available || !trusted || followedUp || sending || !value.trim()
+              }
               onClick={followUp}
             >
-              作为追发消息发送
+              {sending ? "正在追发…" : "作为追发消息发送"}
             </Button>
           </div>
           {followedUp && <p role="status">已作为追发消息发送。</p>}
+          {followUpError && (
+            <p role="alert" className="failure">
+              {followUpError}
+            </p>
+          )}
         </>
       ) : (
         <p role="status">
