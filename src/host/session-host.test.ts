@@ -153,6 +153,72 @@ it("without a fresh state query refuses close-idle while last known control show
   expect(messages).toContainEqual({ kind: "failed", code: "active-work" });
 });
 
+it("answers timed-out questions with the timeout default while confirm dialogs keep blocking", async () => {
+  vi.useFakeTimers();
+  try {
+    const messages: HostMessage[] = [];
+    const exit = vi.fn();
+    const host = createSessionHost((message) => messages.push(message), exit);
+    const threadId = crypto.randomUUID();
+    const generation = crypto.randomUUID();
+    await host.handle({
+      kind: "start",
+      threadId,
+      traceId: crypto.randomUUID(),
+      processInstanceId: crypto.randomUUID(),
+      connectionGeneration: generation,
+      configContextId: "fixture",
+      binary: "/fixture/omp",
+      identity: { directory: "/project", device: "1", inode: "2" },
+      environment: {},
+      sessionDirectory: "/sessions",
+    });
+    native.observers[0]?.({
+      kind: "frame",
+      frame: {
+        type: "extension_ui_request",
+        method: "select",
+        id: "question",
+        title: "Pick one",
+        options: ["first", "second"],
+      },
+    });
+    native.observers[0]?.({
+      kind: "frame",
+      frame: {
+        type: "extension_ui_request",
+        method: "confirm",
+        id: "approval",
+        title: "Approve?",
+      },
+    });
+    expect(native.writes).toHaveLength(0);
+    await vi.advanceTimersByTimeAsync(120_000);
+    const responses = native.writes.map((frame) => JSON.parse(frame));
+    expect(responses).toContainEqual({
+      type: "extension_ui_response",
+      id: "question",
+      value: "first",
+    });
+    expect(
+      responses.some(
+        (response) =>
+          response.type === "extension_ui_response" &&
+          response.id === "approval",
+      ),
+    ).toBe(false);
+    expect(messages).toContainEqual(
+      expect.objectContaining({
+        kind: "operation-result",
+        operation: "answer",
+        status: "acknowledged",
+      }),
+    );
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
 it("independent Host owners isolate native output, prompt timers and idle disposal", async () => {
   vi.useFakeTimers();
   function fixture() {

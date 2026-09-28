@@ -75,6 +75,88 @@ it("freezes A before dispatch, consumes only its unchanged edit sequence, and de
   c.dispose();
 });
 
+it("sends follow-up text without capturing or consuming the draft", async () => {
+  const draft = DraftSchema.parse({
+    schemaVersion: 1,
+    threadId: crypto.randomUUID(),
+    workspaceId: crypto.randomUUID(),
+    directory: "/p",
+    revision: 1,
+    text: "B",
+  });
+  const c = new DraftController(
+    draft,
+    async (revision) => ({
+      kind: "saved",
+      threadId: draft.threadId,
+      revision: revision + 1,
+    }),
+    () => {
+      throw Error("save failed");
+    },
+  );
+  const requests: unknown[] = [];
+  let prepared: ReturnType<typeof SubmissionReceiptSchema.parse> | null = null;
+  const m = new SubmissionModel(
+    {
+      subscribe() {
+        return () => {};
+      },
+      async request(command) {
+        requests.push(command);
+        if (command.kind === "list") return { kind: "list", receipts: [] };
+        if (command.kind === "prepare") {
+          const { kind: _kind, ...value } = command;
+          prepared = SubmissionReceiptSchema.parse({
+            ...value,
+            target: {
+              processInstanceId: crypto.randomUUID(),
+              connectionGeneration: crypto.randomUUID(),
+              configContextId: "cfg",
+              nativeSessionRef: "s",
+            },
+            requestId: crypto.randomUUID(),
+            state: "prepared",
+            acknowledgedAt: null,
+            outcome: "unobserved",
+            createdAt: "now",
+            updatedAt: "now",
+          });
+          return { kind: "receipt", receipt: prepared };
+        }
+        return {
+          kind: "receipt",
+          receipt: { ...prepared!, state: "dispatching" },
+        };
+      },
+    },
+    draft.threadId,
+    c,
+  );
+  let clears = 0;
+  m.replace = () => {
+    clears++;
+    return true;
+  };
+  await m.sendText("late answer", "followUp");
+  expect(requests).toContainEqual(
+    expect.objectContaining({
+      kind: "prepare",
+      text: "late answer",
+      delivery: "followUp",
+    }),
+  );
+  expect(requests).toContainEqual(
+    expect.objectContaining({ kind: "dispatch" }),
+  );
+  expect(m.getSnapshot().receipts[0]?.text).toBe("late answer");
+  expect(clears).toBe(0);
+  await m.sendText("   ");
+  expect(requests).toHaveLength(3);
+  m.dispose();
+  c.dispose();
+});
+
 it("releases only the rejected capture so unchanged text can be explicitly sent with a new identity", async () => {
   const draft = DraftSchema.parse({
     schemaVersion: 1,

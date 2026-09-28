@@ -11,7 +11,7 @@ import type {
   RuntimeView,
 } from "../features/runtime/contracts";
 import type { HostMessage } from "../features/runtime/host-contracts";
-import { canSubmit } from "../features/runtime/submission-admission";
+import { canSubmit, QUEUE_CAP } from "../features/runtime/submission-admission";
 import {
   type FrozenSubmission,
   type SubmissionCommand,
@@ -517,6 +517,38 @@ export class RuntimeService {
     const existing = this.store.submissions.submission(command.submissionId);
     if (existing && existing.threadId !== command.threadId)
       throw Error("Foreign submission");
+    // Queue cap (2026-09-28 user decision): only commands that add a new
+    // queue entry are gated. Dispatching an already counted prepared entry
+    // keeps the count unchanged and must stay possible at the cap.
+    if (
+      (command.kind === "prepare" || command.kind === "resend") &&
+      !existing
+    ) {
+      const queued =
+        this.store.submissions
+          .list(command.threadId)
+          .filter(
+            (receipt) =>
+              receipt.state === "prepared" || receipt.state === "dispatching",
+          ).length + (this.view?.control?.queue.length ?? 0);
+      if (queued >= QUEUE_CAP)
+        return {
+          kind: "failed",
+          code: "queue-full",
+          error: {
+            errorId: randomUUID(),
+            traceId: command.traceId,
+            code: "queue-full",
+            observedAt: "main",
+            reportedBy: "app",
+            attribution: "unknown",
+            handlingOwner: "submission",
+            recovery: "user_action",
+            safeMessage:
+              "排队已满（20 条），请等待消费后再发送；原文已保留，不会自动重发。",
+          },
+        };
+    }
     if (command.kind === "prepare" && existing) {
       if (
         existing.text !== command.text ||

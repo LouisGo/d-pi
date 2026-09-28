@@ -17,6 +17,7 @@ export const DialogSchema = z.object({
 export const InteractionSchema = DialogSchema.extend({
   status: z.enum(["pending", "sent", "cancelled", "expired", "unknown"]),
   expiresAt: z.number().nullable(),
+  defaultAnswered: z.boolean().optional(),
 });
 export type Interaction = z.infer<typeof InteractionSchema>;
 export const AnswerSchema = z.discriminatedUnion("kind", [
@@ -38,3 +39,22 @@ export const InteractionViewSchema = z.object({
   items: z.array(InteractionSchema).max(32),
   unsupported: z.boolean(),
 });
+
+// Timeout default answers (2026-09-28 user decision): confirm must block and
+// never auto-answer; select takes the first option, input/editor take the
+// prefill when present and cancel otherwise. Returns null when no default
+// may be sent.
+export function defaultAnswerFor(
+  dialog: Pick<Interaction, "method" | "options" | "prefill">,
+): Answer | null {
+  if (dialog.method === "confirm") return null;
+  if (dialog.method === "select") {
+    const first = dialog.options?.[0];
+    return first === undefined
+      ? { kind: "cancel" }
+      : { kind: "value", value: first };
+  }
+  return dialog.prefill === undefined
+    ? { kind: "cancel" }
+    : { kind: "value", value: dialog.prefill };
+}

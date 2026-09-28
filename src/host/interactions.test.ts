@@ -188,6 +188,29 @@ it("marks host-cancelled dialogs cancelled instead of leaving them pending", () 
   expect(frames).toHaveLength(0);
 });
 
+it("marks sent dialogs as default-answered for timeout follow-up display", () => {
+  const interaction = new PendingInteractions();
+  interaction.update({
+    type: "extension_ui_request",
+    method: "select",
+    id: "defaulted",
+    title: "Pick",
+    options: ["a", "b"],
+  });
+  expect(interaction.markDefaultAnswered("defaulted")).toBe(false);
+  const frames: string[] = [];
+  expect(
+    interaction.answer("defaulted", { kind: "value", value: "a" }, (f) =>
+      frames.push(f),
+    ),
+  ).toBe(true);
+  expect(interaction.markDefaultAnswered("defaulted")).toBe(true);
+  expect(interaction.snapshot()).toMatchObject([
+    { id: "defaulted", status: "sent", defaultAnswered: true },
+  ]);
+  expect(interaction.markDefaultAnswered("missing")).toBe(false);
+});
+
 it("converges pending markers on disconnect while keeping interrupted dialogs unknown", () => {
   const interaction = new PendingInteractions();
   interaction.update({

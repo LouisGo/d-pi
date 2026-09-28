@@ -198,6 +198,11 @@ export class SubmissionCoordinator {
         "revision-conflict",
         () => "提交身份或草稿版本已变化，请核对当前内容。",
       )
+      .with(
+        "queue-full",
+        () =>
+          "排队已满（20 条），请等待消费后再发送；原文已保留，不会自动重发。",
+      )
       .exhaustive();
     return {
       kind: "failed",

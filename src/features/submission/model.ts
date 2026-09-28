@@ -165,6 +165,46 @@ export class SubmissionModel {
       this.publish({ sending: false });
     }
   }
+  // Follow-up text that does not come from the draft (e.g. a late answer to
+  // an already default-answered dialog). It travels the same prepare/dispatch
+  // pipeline and command policy, but never captures the draft: revision 0
+  // marks the non-draft origin and ACK never consumes the editor content.
+  async sendText(
+    text: string,
+    delivery: "followUp" | "steer" = "followUp",
+  ): Promise<void> {
+    if (this.view.sending || this.disposed) return;
+    if (!text.trim()) return;
+    this.publish({ sending: true, message: null });
+    const submissionId = SubmissionIdSchema.parse(crypto.randomUUID());
+    try {
+      const prepared = await this.bridge.request({
+        kind: "prepare",
+        threadId: this.threadId,
+        submissionId,
+        traceId: crypto.randomUUID(),
+        revision: 0,
+        text,
+        delivery,
+      });
+      this.accept(prepared);
+      if (prepared.kind !== "receipt" || prepared.receipt.state !== "prepared")
+        return;
+      this.accept(
+        await this.bridge.request({
+          kind: "dispatch",
+          threadId: this.threadId,
+          submissionId,
+        }),
+      );
+    } catch {
+      this.publish({
+        message: "追发结果无法确认。原文与提交记录保留，不会自动重发。",
+      });
+    } finally {
+      this.publish({ sending: false });
+    }
+  }
   async resend(originalId: SubmissionReceipt["submissionId"]): Promise<void> {
     if (this.view.sending || this.disposed) return;
     this.publish({ sending: true, message: null });

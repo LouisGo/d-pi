@@ -109,7 +109,14 @@ export function App({ model }: { model: AppModel }) {
                       项目目录已失效。草稿仍可编辑；应用不会自动换到其他目录。
                     </p>
                   )}
-                  {model.runtime && <RuntimePanel model={model.runtime} />}
+                  {model.runtime && (
+                    <RuntimePanel
+                      model={model.runtime}
+                      onFollowUp={(text) =>
+                        void model.submission?.sendText(text, "followUp")
+                      }
+                    />
+                  )}
                   {model.runtime?.reading && (
                     <Conversation model={model.runtime.reading} />
                   )}

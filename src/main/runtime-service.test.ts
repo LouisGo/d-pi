@@ -287,6 +287,53 @@ it("busy native sessions accept a frozen follow-up without an App auto-send queu
   ).toHaveLength(1);
 });
 
+it("refuses new queue entries beyond twenty while still dispatching counted ones", async () => {
+  const fixture = await running();
+  for (let index = 0; index < 20; index++) {
+    fixture.store.drafts.save(
+      fixture.draft.threadId,
+      1 + index,
+      `queued ${index}`,
+    );
+    const submissionId = SubmissionIdSchema.parse(crypto.randomUUID());
+    const prepared = await fixture.runtime.submit({
+      kind: "prepare",
+      threadId: fixture.draft.threadId,
+      submissionId,
+      traceId: TraceIdSchema.parse(crypto.randomUUID()),
+      revision: 2 + index,
+      text: `queued ${index}`,
+    });
+    expect(prepared).toMatchObject({
+      kind: "receipt",
+      receipt: { state: "prepared" },
+    });
+  }
+  const overflowId = SubmissionIdSchema.parse(crypto.randomUUID());
+  expect(
+    await fixture.runtime.submit({
+      kind: "prepare",
+      threadId: fixture.draft.threadId,
+      submissionId: overflowId,
+      traceId: TraceIdSchema.parse(crypto.randomUUID()),
+      revision: 20,
+      text: "overflow",
+    }),
+  ).toMatchObject({ kind: "failed", code: "queue-full" });
+  const first = fixture.store.submissions.list(fixture.draft.threadId)[0];
+  if (!first) throw Error("missing prepared receipt");
+  expect(
+    await fixture.runtime.submit({
+      kind: "dispatch",
+      threadId: fixture.draft.threadId,
+      submissionId: first.submissionId,
+    }),
+  ).toMatchObject({
+    kind: "receipt",
+    receipt: { state: "dispatching" },
+  });
+});
+
 it("Host exit marks every in-flight queued submission unknown without replay", async () => {
   const fixture = await running();
   await fixture.prepare();

@@ -49,6 +49,7 @@ export const SubmissionFailureSchema = z.strictObject({
     "stale-event",
     "revision-conflict",
     "unsupported-native-command",
+    "queue-full",
   ]),
   observedAt: z.literal("main"),
   reportedBy: z.literal("app"),

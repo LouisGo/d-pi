@@ -1,5 +1,5 @@
-# 05 退出健壮性与 GUI 出口文案
+# 05 超时默认作答与队列上限（已对齐，拆分为 05a/05b/05c）
 
-Status: open
+Status: resolved
 
-对应审计 A2/B6/B7/C3/C6/C7/G1/G4/G5 及产品待决 1/2/5。quit 等待超时与进度、失败重试、closeIdle 残留引用、sent/unknown 重试入口、对话框焦点与 aria、密度/焦点可见补齐，均需产品对齐或视觉验收，另批实施。
+本票为索引，实施见 05a（主机默认作答）、05b（队列上限 20）、05c（默认标识与追发）。用户追答与原生约束见决定登记；quit 非空队列放弃仍仅记录（07 票）。验证：`pnpm check` 142 passed/1 skipped，`pnpm build` 通过（仅既有大 chunk 提示）。

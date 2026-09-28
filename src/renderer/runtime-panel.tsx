@@ -3,7 +3,13 @@ import { match } from "ts-pattern";
 import { Button } from "@/components/ui/button";
 import type { Interaction } from "../features/control/interactions";
 import type { RuntimeModel } from "../features/runtime/model";
-export function RuntimePanel({ model }: { model: RuntimeModel }) {
+export function RuntimePanel({
+  model,
+  onFollowUp,
+}: {
+  model: RuntimeModel;
+  onFollowUp?: (text: string) => void;
+}) {
   const state = useSyncExternalStore(model.subscribe, model.getSnapshot);
   if (!state)
     return (
@@ -68,7 +74,10 @@ export function RuntimePanel({ model }: { model: RuntimeModel }) {
           )}
           {state.interactions.items
             .filter(
-              (item) => item.status === "pending" || item.status === "unknown",
+              (item) =>
+                item.status === "pending" ||
+                item.status === "unknown" ||
+                (item.status === "sent" && item.defaultAnswered),
             )
             .map((item) => (
               <NativeDialog
@@ -76,13 +85,17 @@ export function RuntimePanel({ model }: { model: RuntimeModel }) {
                 item={item}
                 trusted={state.trusted}
                 model={model}
+                onFollowUp={onFollowUp}
                 available={
                   state.phase !== "interrupted" && state.phase !== "failed"
                 }
               />
             ))}
           {state.interactions.items.some(
-            (item) => item.status !== "pending" && item.status !== "unknown",
+            (item) =>
+              item.status !== "pending" &&
+              item.status !== "unknown" &&
+              !(item.status === "sent" && item.defaultAnswered),
           ) && (
             <details>
               <summary>交互记录</summary>
@@ -90,7 +103,9 @@ export function RuntimePanel({ model }: { model: RuntimeModel }) {
                 {state.interactions.items
                   .filter(
                     (item) =>
-                      item.status !== "pending" && item.status !== "unknown",
+                      item.status !== "pending" &&
+                      item.status !== "unknown" &&
+                      !(item.status === "sent" && item.defaultAnswered),
                   )
                   .map((item) => (
                     <NativeDialog
@@ -98,6 +113,7 @@ export function RuntimePanel({ model }: { model: RuntimeModel }) {
                       item={item}
                       trusted={state.trusted}
                       model={model}
+                      onFollowUp={undefined}
                       available={false}
                     />
                   ))}
@@ -132,20 +148,35 @@ export function RuntimePanel({ model }: { model: RuntimeModel }) {
   );
 }
 
+function defaultAnswerText(item: Interaction): string {
+  if (item.method === "select") return item.options?.[0] ?? "已取消";
+  if (item.prefill !== undefined) return item.prefill || "（空）";
+  return "已取消";
+}
+
 function NativeDialog({
   item,
   model,
   available,
   trusted,
+  onFollowUp,
 }: {
   item: Interaction;
   model: RuntimeModel;
   available: boolean;
   trusted: boolean;
+  onFollowUp: ((text: string) => void) | undefined;
 }) {
   const [value, setValue] = useState(item.prefill ?? "");
   const [sent, setSent] = useState(false);
+  const [followedUp, setFollowedUp] = useState(false);
   const enabled = available && item.status === "pending" && !sent;
+  const defaulted = item.status === "sent" && item.defaultAnswered;
+  const followUp = () => {
+    if (!available || !trusted || !onFollowUp || !value.trim()) return;
+    setFollowedUp(true);
+    onFollowUp(value);
+  };
   const answer = (response: Parameters<RuntimeModel["answer"]>[1]) => {
     if (!enabled || (!trusted && response.kind !== "cancel")) return;
     setSent(true);
@@ -155,6 +186,12 @@ function NativeDialog({
     <article className="message" aria-label={item.title}>
       <strong>{item.title}</strong>
       {item.message && <p>{item.message}</p>}
+      {defaulted && (
+        <p role="status">
+          已按默认作答：{defaultAnswerText(item)}
+          （超时自动作答，避免任务阻塞）。你仍可继续作答，将作为新的追发消息送达。
+        </p>
+      )}
       {item.status === "pending" && !sent ? (
         <>
           {item.method === "confirm" ? (
@@ -215,6 +252,27 @@ function NativeDialog({
           >
             取消交互
           </Button>
+        </>
+      ) : defaulted ? (
+        <>
+          <div>
+            <textarea
+              className="native-answer"
+              aria-label={`${item.title}的继续作答`}
+              disabled={!available || !trusted || followedUp}
+              value={value}
+              placeholder={item.placeholder}
+              maxLength={16384}
+              onChange={(event) => setValue(event.target.value)}
+            />
+            <Button
+              disabled={!available || !trusted || followedUp || !value.trim()}
+              onClick={followUp}
+            >
+              作为追发消息发送
+            </Button>
+          </div>
+          {followedUp && <p role="status">已作为追发消息发送。</p>}
         </>
       ) : (
         <p role="status">

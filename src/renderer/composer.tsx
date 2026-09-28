@@ -4,7 +4,12 @@ import { match } from "ts-pattern";
 import { Button } from "@/components/ui/button";
 import type { Draft } from "../features/draft/contracts";
 import type { DraftController } from "../features/draft/controller";
-import { canSubmit } from "../features/runtime/submission-admission";
+import {
+  canSubmit,
+  QUEUE_CAP,
+  queueCapped,
+  queueCount,
+} from "../features/runtime/submission-admission";
 import { shouldSend } from "../features/submission/shortcut";
 import type { AppModel } from "./model";
 import { plainTextEditorOptions, replaceDraftText } from "./plain-text-editor";
@@ -237,10 +242,12 @@ function SendButton({
     submission.getSnapshot,
   );
   const state = useSyncExternalStore(runtime.subscribe, runtime.getSnapshot);
+  const capped = queueCapped(send.receipts, state?.control?.queue.length ?? 0);
+  const queued = queueCount(send.receipts, state?.control?.queue.length ?? 0);
   return (
     <div className="flex gap-2">
       <Button
-        disabled={send.sending || !canSubmit(state)}
+        disabled={send.sending || capped || !canSubmit(state)}
         onMouseDown={(event) => event.preventDefault()}
         onClick={() => {
           if (canSend()) void submission.send();
@@ -251,7 +258,7 @@ function SendButton({
       {state?.busy && (
         <Button
           variant="ghost"
-          disabled={send.sending || !canSubmit(state)}
+          disabled={send.sending || capped || !canSubmit(state)}
           onMouseDown={(event) => event.preventDefault()}
           onClick={() => {
             if (canSend()) void submission.send("steer");
@@ -259,6 +266,11 @@ function SendButton({
         >
           干预当前执行
         </Button>
+      )}
+      {capped && (
+        <p role="status" className="muted">
+          排队已满（{queued}/{QUEUE_CAP}），请等待消费后再发送；草稿已保留。
+        </p>
       )}
     </div>
   );

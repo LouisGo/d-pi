@@ -1,3 +1,4 @@
+import type { SubmissionReceipt } from "../submission/contracts";
 import type { RuntimeView } from "./contracts";
 
 // Busy execution accepts native follow-ups; unresolved interaction does not.
@@ -14,4 +15,28 @@ export function canSubmit(view: RuntimeView | null | undefined): boolean {
       (item) => item.status === "pending" || item.status === "unknown",
     )
   );
+}
+
+// Queue cap (2026-09-28 user decision): at most QUEUE_CAP pending entries.
+// Counts prepared/dispatching receipts plus the native queue preview length;
+// acknowledged/unknown/rejected receipts are terminal or fate-unknown and do
+// not occupy queue slots. The native preview can briefly mirror a dispatching
+// receipt, so the count is conservative by at most that overlap.
+export const QUEUE_CAP = 20;
+export function queueCount(
+  receipts: SubmissionReceipt[],
+  queueLength: number,
+): number {
+  return (
+    receipts.filter(
+      (receipt) =>
+        receipt.state === "prepared" || receipt.state === "dispatching",
+    ).length + Math.max(0, queueLength)
+  );
+}
+export function queueCapped(
+  receipts: SubmissionReceipt[],
+  queueLength: number,
+): boolean {
+  return queueCount(receipts, queueLength) >= QUEUE_CAP;
 }

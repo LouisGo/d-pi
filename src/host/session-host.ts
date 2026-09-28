@@ -1,9 +1,11 @@
+import { randomUUID } from "node:crypto";
 import { isAbsolute, relative } from "node:path";
 import { match } from "ts-pattern";
 import {
   type ControlState,
   ControlStateSchema,
 } from "../features/control/contracts";
+import { defaultAnswerFor } from "../features/control/interactions";
 import { ConversationProjection } from "../features/conversation/projection";
 import {
   type HostCommand,
@@ -55,6 +57,84 @@ export function createSessionHost(
     );
 
   const interactions = new PendingInteractions(publishInteractions);
+  // Timeout default answers (2026-09-28 user decision): confirm dialogs never
+  // auto-answer; select/input/editor fall back to the product default so the
+  // task keeps flowing. The native side honors the first response per id and
+  // silently drops later ones, so a default once written cannot be withdrawn.
+  const APP_DEFAULT_ANSWER_MS = 120_000;
+  const NATIVE_EXPIRY_MARGIN_MS = 1_000;
+  const defaultAnswerTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  function clearDefaultAnswerTimer(id: string): void {
+    const timer = defaultAnswerTimers.get(id);
+    if (timer) {
+      clearTimeout(timer);
+      defaultAnswerTimers.delete(id);
+    }
+  }
+  function clearDefaultAnswerTimers(): void {
+    for (const timer of defaultAnswerTimers.values()) clearTimeout(timer);
+    defaultAnswerTimers.clear();
+  }
+  async function fireDefaultAnswer(id: string): Promise<void> {
+    if (closing || disconnected || !native || !start) return;
+    const dialog = interactions.snapshot().find((item) => item.id === id);
+    if (!dialog || dialog.status !== "pending" || dialog.method === "confirm")
+      return;
+    const answer = defaultAnswerFor(dialog);
+    if (!answer) return;
+    const traceId = randomUUID();
+    const written = interactions.answer(id, answer, (frame) =>
+      native?.write(frame),
+    );
+    publishInteractions();
+    if (written) interactions.markDefaultAnswered(id);
+    send({
+      kind: "operation-result",
+      traceId,
+      generation: start.connectionGeneration,
+      operation: "answer",
+      status: written ? "acknowledged" : "unknown",
+    });
+    await refresh();
+  }
+  function reconcileDefaultAnswerTimers(): void {
+    if (closing || disconnected || !native || !start) {
+      clearDefaultAnswerTimers();
+      return;
+    }
+    const pending = new Map(
+      interactions
+        .snapshot()
+        .filter(
+          (item) => item.status === "pending" && item.method !== "confirm",
+        )
+        .map((item) => [item.id, item] as const),
+    );
+    for (const id of [...defaultAnswerTimers.keys()])
+      if (!pending.has(id)) clearDefaultAnswerTimer(id);
+    for (const [id, dialog] of pending) {
+      if (defaultAnswerTimers.has(id)) continue;
+      // Answer ahead of a native expiry: once native deletes the request our
+      // write would be silently dropped and the dialog only shows expired.
+      const latest =
+        dialog.expiresAt === null
+          ? Date.now() + APP_DEFAULT_ANSWER_MS
+          : Math.min(
+              dialog.expiresAt - NATIVE_EXPIRY_MARGIN_MS,
+              Date.now() + APP_DEFAULT_ANSWER_MS,
+            );
+      const delay = Math.max(0, latest - Date.now());
+      const timer = setTimeout(
+        () => {
+          defaultAnswerTimers.delete(id);
+          void fireDefaultAnswer(id);
+        },
+        Math.min(delay, 2147483647),
+      );
+      timer.unref();
+      defaultAnswerTimers.set(id, timer);
+    }
+  }
   function publishInteractions(): void {
     observationVersion++;
     if (start)
@@ -87,6 +167,7 @@ export function createSessionHost(
   }
   function disposeHost(): void {
     clearPrompts();
+    clearDefaultAnswerTimers();
     interactions.dispose();
     projection?.dispose();
     readingPort?.close();
@@ -119,6 +200,7 @@ export function createSessionHost(
         });
       clearPrompts();
       interactions.disconnect();
+      clearDefaultAnswerTimers();
       send({ kind: "interrupted", reason: event.reason });
       return;
     }
@@ -152,6 +234,7 @@ export function createSessionHost(
     interactions.update(frame);
     if (frame.type === "extension_ui_request" || frame.type.startsWith("host_"))
       publishInteractions();
+    reconcileDefaultAnswerTimers();
     if (hadInteraction !== interactions.pending && state)
       send({
         kind: "state",
@@ -414,6 +497,7 @@ export function createSessionHost(
           command.answer,
           (frame) => native?.write(frame),
         );
+        clearDefaultAnswerTimer(command.id);
         publishInteractions();
         send({
           kind: "operation-result",
@@ -510,6 +594,7 @@ export function createSessionHost(
         closing = true;
         await native?.close();
         clearPrompts();
+        clearDefaultAnswerTimers();
         interactions.dispose();
         projection?.dispose();
         readingPort?.close();

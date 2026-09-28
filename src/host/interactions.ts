@@ -42,6 +42,13 @@ export class PendingInteractions {
     this.expire();
     return [...this.dialogs.values()];
   }
+  markDefaultAnswered(id: string): boolean {
+    const dialog = this.dialogs.get(id);
+    if (!dialog || dialog.status !== "sent") return false;
+    this.dialogs.set(id, { ...dialog, defaultAnswered: true });
+    this.changed();
+    return true;
+  }
   answer(id: string, answer: Answer, write: (frame: string) => void): boolean {
     this.expire();
     const dialog = this.dialogs.get(id);
