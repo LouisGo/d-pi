@@ -1,0 +1,43 @@
+
+> d-pi@0.1.0-s2.0 check /Users/lou/Learn/d-pi
+> pnpm typecheck && pnpm lint && pnpm lint:design && pnpm validate:design && node validation/s1/source-boundaries.mjs && pnpm test
+
+
+> d-pi@0.1.0-s2.0 typecheck /Users/lou/Learn/d-pi
+> tsc --noEmit
+
+
+> d-pi@0.1.0-s2.0 lint /Users/lou/Learn/d-pi
+> biome check .
+
+Checked 102 files in 17ms. No fixes applied.
+
+> d-pi@0.1.0-s2.0 lint:design /Users/lou/Learn/d-pi
+> oxlint -c .oxlintrc.json src/renderer
+
+
+> d-pi@0.1.0-s2.0 validate:design /Users/lou/Learn/d-pi
+> node validation/s1/design-check.mjs
+
+PASS: CSS Modules, clsx/cva, shared variable accepted; six invalid design patterns rejected.
+PASS: token source and icon/domain import boundaries (narrow source checks; not a full CSS linter).
+
+> d-pi@0.1.0-s2.0 test /Users/lou/Learn/d-pi
+> vitest run
+
+
+ RUN  v5.0.2 /Users/lou/Learn/d-pi
+
+(node:83901) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:83898) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:83896) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:83899) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  23 passed | 1 skipped (24)
+      Tests  63 passed | 1 skipped (64)
+   Start at  13:53:04
+   Duration  1.08s (tests 56%, import 22%, transform 20%, worker 2%)

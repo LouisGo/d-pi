@@ -1,6 +1,6 @@
 # 04 — 不启动 Agent 的受管理历史浏览
 
-Status: open
+Status: resolved
 Type: task
 Stage: M1 S2
 Blocked by: none
@@ -10,7 +10,7 @@ Labels: ready-for-agent
 
 仅浏览项目时，可读取本 Thread 已绑定的原生历史；文件不可读、不完整或版本不支持时明确显示原因。独立 reader 及可复用阅读数据合同先交付，正式页面接入归 05。
 
-受影响决定：D-21/22/24/26/35。共同依据：[S2 spec](../spec.md)、[确认方案](../acceptance-decision.md)、[固定版本证据](../evidence.md)、[基础契约](../../../docs/architecture/foundation-contracts.md)。授权与用户试用状态以 spec 为准；本轮只拆票，未开始实现。
+受影响决定：D-21/22/24/26/35。共同依据：[S2 spec](../spec.md)、[确认方案](../acceptance-decision.md)、[固定版本证据](../evidence.md)、[基础契约](../../../docs/architecture/foundation-contracts.md)。授权与用户试用状态以 spec 为准；历史拆票阶段未实现；当前工程状态见下方 Answer。
 
 ## 交付与所有权
 
@@ -37,3 +37,10 @@ Labels: ready-for-agent
 ### 2026-09-28
 
 依据用户“保留官方 OMP。开始同步规格并推进 to-tickets”创建。本票尚未领取、实现或验收。
+
+
+## Answer — 2026-09-28
+
+按 Main 持久绑定读取受管理 v3 原生记录，字节有界分页、父记录身份、半尾行、文件变化、缺失/不支持和取消释放均有明确结果；不 spawn、不写回。reader fixtures 及产品只读查询/原生历史集成通过。
+
+具体检查、来源范围和限制：[S2 交接](../handoff.md)。工程 resolved 不代表用户体验认可。依赖状态在持续实施期间未及时逐票同步，本次按真实交付补齐；不把未做的用户试用补记成已完成。

@@ -1,6 +1,6 @@
 # 05 — 正式输入与同 Thread 两轮真实发送
 
-Status: open
+Status: resolved
 Type: task
 Stage: M1 S2
 Blocked by: 02, 03, 04
@@ -10,7 +10,7 @@ Labels: ready-for-agent
 
 串联准入、持久交接与阅读：用户在现有 Thread 发送 A，看到持久发送记录和流式结果，再在同一原生会话发送第二轮；实现正式 Composer 交互并交付可操作体验。
 
-受影响决定：D-11/17/21–26/28–35。共同依据：[S2 spec](../spec.md)、[确认方案](../acceptance-decision.md)、[固定版本证据](../evidence.md)、[基础契约](../../../docs/architecture/foundation-contracts.md)。授权与用户试用状态以 spec 为准；本轮只拆票，未开始实现。
+受影响决定：D-11/17/21–26/28–35。共同依据：[S2 spec](../spec.md)、[确认方案](../acceptance-decision.md)、[固定版本证据](../evidence.md)、[基础契约](../../../docs/architecture/foundation-contracts.md)。授权与用户试用状态以 spec 为准；历史拆票阶段未实现；当前工程状态见下方 Answer。
 
 ## 交付与所有权
 
@@ -40,3 +40,10 @@ Labels: ready-for-agent
 ### 2026-09-28
 
 依据用户“保留官方 OMP。开始同步规格并推进 to-tickets”创建。本票尚未领取、实现或验收。
+
+
+## Answer — 2026-09-28
+
+官方普通 prompt 两轮连续发送已通过真实产品 GUI 验证，第二轮携带首轮上下文；ACK 清 A/B 保留、来源分开的提交/原生输出、快捷键/展开/合成 IME 和本地 GitHub/通用图标已接入。HTTP 400 显示为会话失败，不伪造逐提交关联。已交付待用户试用。
+
+具体检查、来源范围和限制：[S2 交接](../handoff.md)。工程 resolved 不代表用户体验认可。依赖状态在持续实施期间未及时逐票同步，本次按真实交付补齐；不把未做的用户试用补记成已完成。

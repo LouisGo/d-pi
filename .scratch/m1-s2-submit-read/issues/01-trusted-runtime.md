@@ -1,6 +1,6 @@
 # 01 — 允许执行后启动官方 Runtime
 
-Status: open
+Status: resolved
 Type: task
 Stage: M1 S2
 Blocked by: none
@@ -10,7 +10,7 @@ Labels: ready-for-agent
 
 用户可看清项目目录与已有配置来源，明确允许执行后进入原生就绪状态；仅浏览时不启动 Agent。交付最小准入界面及其无头逻辑，不发送草稿。
 
-受影响决定：D-02–05、D-21/22/25/26、D-34/35。共同依据：[S2 spec](../spec.md)、[确认方案](../acceptance-decision.md)、[固定版本证据](../evidence.md)、[基础契约](../../../docs/architecture/foundation-contracts.md)。授权与用户试用状态以 spec 为准；本轮只拆票，未开始实现。
+受影响决定：D-02–05、D-21/22/25/26、D-34/35。共同依据：[S2 spec](../spec.md)、[确认方案](../acceptance-decision.md)、[固定版本证据](../evidence.md)、[基础契约](../../../docs/architecture/foundation-contracts.md)。授权与用户试用状态以 spec 为准；历史拆票阶段未实现；当前工程状态见下方 Answer。
 
 ## 交付与所有权
 
@@ -37,3 +37,10 @@ Labels: ready-for-agent
 ### 2026-09-28
 
 依据用户“保留官方 OMP。开始同步规格并推进 to-tickets”创建。本票尚未领取、实现或验收。
+
+
+## Answer — 2026-09-28
+
+Main 持久目录授权、启动/发送重新核对身份，官方 Runtime 校验与 utility Host 协议已接入。准入/decoder/NativeSession 单测、真实启动及 sentinel、失败启动释放与活动退出验证通过。资源故障准确分类；原生未提供足够配置错误细节时保留 unknown，不推测根因。
+
+具体检查、来源范围和限制：[S2 交接](../handoff.md)。工程 resolved 不代表用户体验认可。依赖状态在持续实施期间未及时逐票同步，本次按真实交付补齐；不把未做的用户试用补记成已完成。

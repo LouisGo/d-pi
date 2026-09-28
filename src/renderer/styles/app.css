@@ -18,6 +18,14 @@
   }
 }
 @layer components {
+  .runtime-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--layout-gap);
+    padding: var(--panel-padding);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
   .app-shell {
     display: flex;
     min-height: 100vh;
@@ -198,5 +206,51 @@
     padding: var(--panel-padding);
     display: grid;
     gap: var(--layout-gap);
+  }
+}
+
+@source "../../../node_modules/streamdown/dist/*.js";
+@source "../../../node_modules/@streamdown/code/dist/*.js";
+@layer components {
+  .conversation,
+  .submission-records,
+  .history {
+    display: flex;
+    flex-direction: column;
+    gap: var(--layout-gap);
+  }
+  .message {
+    padding: var(--panel-padding);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow-wrap: anywhere;
+  }
+  .message-heading {
+    display: flex;
+    align-items: center;
+    gap: var(--layout-gap);
+    margin-bottom: var(--layout-gap);
+  }
+  .message pre {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    max-height: var(--editor-max-height);
+    overflow: auto;
+  }
+  .composer[data-expanded="true"] .tiptap {
+    min-height: var(--editor-max-height);
+  }
+}
+
+@layer components {
+  .url-icon {
+    display: inline-flex;
+    vertical-align: middle;
+    margin-inline-end: calc(var(--layout-gap) / 4);
+    user-select: none;
+  }
+  .source-url {
+    text-decoration: underline;
+    text-decoration-color: var(--muted-foreground);
   }
 }

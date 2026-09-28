@@ -8,6 +8,12 @@ export type SaveState =
   | { kind: "checking" }
   | { kind: "conflict"; stored: Draft; localText: string }
   | { kind: "failed"; error: Failure };
+export interface CapturedDraft {
+  submissionId: string;
+  sequence: number;
+  revision: number;
+  text: string;
+}
 type SavePort = (expectedRevision: number, text: string) => Promise<SaveReply>;
 // Only pending immutable snapshots live here. Tiptap remains the editable-body owner.
 export class DraftController {
@@ -21,6 +27,14 @@ export class DraftController {
   private timer: ReturnType<typeof setTimeout> | undefined;
   private disposed = false;
   private baselineText: string;
+  private capture: {
+    submissionId: string;
+    sequence: number;
+    text: string;
+    prepare: (value: CapturedDraft) => Promise<boolean>;
+    finish: (value: CapturedDraft | null) => void;
+  } | null = null;
+  private captured: CapturedDraft | null = null;
   private attempted: {
     revision: number;
     sequence: number;
@@ -77,7 +91,14 @@ export class DraftController {
   }
   flush(): Promise<boolean> {
     clearTimeout(this.timer);
-    if (this.flight) return this.flight;
+    if (this.flight)
+      return this.flight.then((saved) => {
+        // A consumer may edit after drain returns but before its finally clears flight.
+        // A close/submit flush must also cover that edit, not report an old success.
+        return saved && this.pending && this.confirmed < this.sequence
+          ? this.flush()
+          : saved;
+      });
     if (
       this.state.kind === "failed" ||
       this.state.kind === "checking" ||
@@ -90,8 +111,27 @@ export class DraftController {
     return this.flight;
   }
   private async drain(): Promise<boolean> {
-    while (this.pending && this.confirmed < this.sequence) {
-      const snapshot = this.pending;
+    while (this.capture || (this.pending && this.confirmed < this.sequence)) {
+      const capture = this.capture;
+      if (capture && this.confirmed === capture.sequence) {
+        const value: CapturedDraft = {
+          submissionId: capture.submissionId,
+          sequence: capture.sequence,
+          revision: this.revision,
+          text: capture.text,
+        };
+        try {
+          const prepared = await capture.prepare(value);
+          if (prepared) this.captured = value;
+          capture.finish(prepared ? value : null);
+        } catch {
+          capture.finish(null);
+        }
+        this.capture = null;
+        continue;
+      }
+      const snapshot = capture ?? this.pending;
+      if (!snapshot) break;
       if (!this.checkSize(snapshot.text)) return false;
       this.publish({ kind: "saving" });
       this.attempted = { ...snapshot, revision: this.revision };
@@ -121,7 +161,11 @@ export class DraftController {
           return false;
         })
         .exhaustive();
-      if (!saved) return false;
+      if (!saved) {
+        this.capture?.finish(null);
+        this.capture = null;
+        return false;
+      }
     }
     this.pending = null;
     this.publish({ kind: "saved" });
@@ -160,8 +204,15 @@ export class DraftController {
         attempt &&
         stored.revision === attempt.revision + 1 &&
         stored.text === attempt.text;
+      const consumedBaseline =
+        this.captured &&
+        stored.consumedBy === this.captured.submissionId &&
+        stored.revision === this.captured.revision &&
+        stored.text === "" &&
+        this.baselineText === this.captured.text;
       const unchanged =
-        stored.revision === this.revision && stored.text === this.baselineText;
+        stored.revision === this.revision &&
+        (stored.text === this.baselineText || consumedBaseline);
       if (!committed && !unchanged) {
         this.publish({
           kind: "conflict",
@@ -222,8 +273,52 @@ export class DraftController {
     });
     return false;
   }
+  captureSubmission(
+    id: string,
+    prepare: (value: CapturedDraft) => Promise<boolean>,
+  ): Promise<CapturedDraft | null> {
+    if (
+      this.disposed ||
+      this.capture ||
+      this.captured?.sequence === this.sequence ||
+      this.state.kind === "failed" ||
+      this.state.kind === "checking" ||
+      this.state.kind === "conflict"
+    )
+      return Promise.resolve(null);
+    const text = this.pending?.text ?? this.baselineText;
+    if (!this.checkSize(text)) return Promise.resolve(null);
+    const result = new Promise<CapturedDraft | null>((finish) => {
+      this.capture = {
+        submissionId: id,
+        sequence: this.sequence,
+        text,
+        prepare,
+        finish,
+      };
+    });
+    // Join the same save lane. Preparing the frozen record is a barrier before B saves.
+    void this.flush().then(() => {
+      if (this.capture && !this.disposed) void this.flush();
+    });
+    return result;
+  }
+  consumeSubmission(value: CapturedDraft, replace: () => boolean): boolean {
+    if (
+      this.disposed ||
+      this.captured?.submissionId !== value.submissionId ||
+      this.sequence !== this.captured.sequence
+    )
+      return false;
+    // The editor adapter returns false while IME composition prevents replacement.
+    if (!replace()) return false;
+    this.edit("");
+    return true;
+  }
   dispose(): void {
     this.disposed = true;
+    this.capture?.finish(null);
+    this.capture = null;
     clearTimeout(this.timer);
     this.listeners.clear();
   }

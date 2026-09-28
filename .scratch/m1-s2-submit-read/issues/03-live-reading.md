@@ -1,6 +1,6 @@
 # 03 — 有界流式阅读与窗口重连
 
-Status: open
+Status: resolved
 Type: task
 Stage: M1 S2
 Blocked by: 01
@@ -10,7 +10,7 @@ Labels: ready-for-agent
 
 用户能看到原生文字、代码和必要工具状态，关窗重开后接回当前投影；交付无头阅读投影及正式阅读组件，以受控事件流验证，不等待发送 GUI。
 
-受影响决定：D-21/22/26/28–32/35。共同依据：[S2 spec](../spec.md)、[确认方案](../acceptance-decision.md)、[固定版本证据](../evidence.md)、[基础契约](../../../docs/architecture/foundation-contracts.md)。授权与用户试用状态以 spec 为准；本轮只拆票，未开始实现。
+受影响决定：D-21/22/26/28–32/35。共同依据：[S2 spec](../spec.md)、[确认方案](../acceptance-decision.md)、[固定版本证据](../evidence.md)、[基础契约](../../../docs/architecture/foundation-contracts.md)。授权与用户试用状态以 spec 为准；历史拆票阶段未实现；当前工程状态见下方 Answer。
 
 ## 交付与所有权
 
@@ -38,3 +38,10 @@ Labels: ready-for-agent
 ### 2026-09-28
 
 依据用户“保留官方 OMP。开始同步规格并推进 to-tickets”创建。本票尚未领取、实现或验收。
+
+
+## Answer — 2026-09-28
+
+Host 有界投影、seq 快照水位、重连前增量屏障和 Renderer 直接 MessagePort 已实现；工具/终态刷新、超预算缺口、Streamdown/Shiki 阅读和未识别事件说明接入。单测与流式关窗重开真实验证通过。
+
+具体检查、来源范围和限制：[S2 交接](../handoff.md)。工程 resolved 不代表用户体验认可。依赖状态在持续实施期间未及时逐票同步，本次按真实交付补齐；不把未做的用户试用补记成已完成。

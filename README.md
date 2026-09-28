@@ -2,22 +2,25 @@
 
 以 Electron GUI 复用 OMP Runtime，改善需求输入、执行观察和结果阅读。应用将内置 OMP，用户无需另行安装 CLI。
 
-**当前状态（2026-09-27）：M1 S1 工程交付完成：项目选择、持久草稿、正式 GUI 与组合检查已完成，0.1.0-s1.3 已修复用户反馈的Markdown原文粘贴问题，待复试，尚未体验认可。** 旧应用已完整归档，后续逐项复用；删除实现不代表取消既有技术决定。设计就绪不等于接口、性能或首版已验收。
+**当前状态（2026-09-28）：M1 S2 文字发送与阅读主流程已交付待试用。** `0.1.0-s2.0` 使用未修改的官方 OMP v18.3.0，支持同一存活会话两轮发送、持久提交原文、流式阅读、只读历史和关窗重连。S2 基线的真实 macOS 包定向检查已通过；独立 review 的 3 项修复已进入源码，当前 72 项自动化测试通过，不等于用户体验或真实供应商配置已验收。S1 旧包保留。
 
 从 [文档导航](docs/README.md) 按任务找到依据；全局审计可按其中的底层到顶层顺序阅读。设计与开发以 [决定登记](docs/decisions.md)、[基础方案](.scratch/product-requirements/foundation-plan.md)和相关 [基础契约](docs/architecture/foundation-contracts.md)为准。具体任务按用户授权推进，不重复开启已收敛的选型。
 
-## S1 运行与检查
+## 运行与检查
 
 ```sh
 pnpm install --frozen-lockfile
+pnpm runtime:fetch
 pnpm dev
 pnpm check
 pnpm package:mac
 ```
 
-S1 仅做项目目录与本地文字草稿，不启动 OMP 或请求模型。打包产物默认在 `dist/mac-arm64/d-pi.app`。需要隔离数据时，启动命令前设置 `D_PI_DATA_DIR=/绝对路径`；常规启动数据保存在 Electron 的 d-pi userData 目录，草稿 `drafts.sqlite`，诊断 `logs/main.jsonl`。不删除数据库来解决启动或迁移失败。
+项目默认仅浏览；明确允许执行并启动后才加载原生项目配置/扩展。`pnpm runtime:fetch` 下载固定版本并校验 SHA-256，不使用全局 OMP。常规打包产物在 `dist/mac-arm64/d-pi.app`；历史试用包在 `dist/s2-candidate/mac-arm64/d-pi.app`，尚不包含独立 review 修复；当前源码用 `pnpm dev` 启动，详见交接。
 
-本轮构建、试用步骤、实际验证与剩余项见 [S1 交接](.scratch/m1-s1-project-draft/handoff.md)。包仅用于本机开发验证，尚未签名/公证。
+通过 `D_PI_DATA_DIR=/绝对路径` 隔离 App 的 SQLite/日志；这**不会隔离原生 OMP 配置**。正常退出后执行恢复、排队/干预/停止和完整待交互回答属于 S3，当前不会自动新建原生会话替代已有 Thread。不要删除数据库来解决启动或迁移失败。
+
+启动命令、试用步骤、构建标识和明确限制见 [S2 交接](.scratch/m1-s2-submit-read/handoff.md)。包限本机 macOS arm64，未签名/公证，旧 [S1 交接](.scratch/m1-s1-project-draft/handoff.md)保留为历史证据。
 
 ## 设计与历史入口
 

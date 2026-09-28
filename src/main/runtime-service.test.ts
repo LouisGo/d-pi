@@ -1,0 +1,160 @@
+import { EventEmitter } from "node:events";
+import {
+  mkdirSync,
+  mkdtempSync,
+  realpathSync,
+  renameSync,
+  rmSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { afterEach, expect, it, vi } from "vitest";
+import { HostCommandSchema } from "../features/runtime/host-contracts";
+import { SubmissionIdSchema } from "../features/submission/contracts";
+import { TraceIdSchema } from "../shared/contracts";
+import { RuntimeService } from "./runtime-service";
+import { DraftStorage } from "./storage";
+
+const electron = vi.hoisted(() => ({ fork: vi.fn() }));
+vi.mock("electron", () => ({ utilityProcess: { fork: electron.fork } }));
+vi.mock("./runtime-resource", async (original) => ({
+  ...(await original<typeof import("./runtime-resource")>()),
+  managedRuntime: async () => "/fixture/omp",
+}));
+const cleanup: (() => void)[] = [];
+afterEach(() => {
+  for (const close of cleanup.splice(0)) close();
+});
+
+async function running() {
+  const root = realpathSync(
+    mkdtempSync(join(tmpdir(), "d-pi-runtime-service-")),
+  );
+  const project = join(root, "project");
+  mkdirSync(project);
+  const store = new DraftStorage(join(root, "app.sqlite"));
+  const draft = store.create(project);
+  store.save(draft.threadId, 0, "A");
+  const host = new EventEmitter();
+  const postMessage = vi.fn((raw: unknown) => {
+    const command = HostCommandSchema.parse(raw);
+    if (command.kind === "start")
+      queueMicrotask(() =>
+        host.emit("message", {
+          kind: "ready",
+          processInstanceId: command.processInstanceId,
+          connectionGeneration: command.connectionGeneration,
+          state: {
+            sessionId: "native",
+            sessionFile: join(root, "native.jsonl"),
+            model: { id: "model", provider: "fixture" },
+            isStreaming: false,
+            isCompacting: false,
+            queuedMessageCount: 0,
+          },
+        }),
+      );
+  });
+  electron.fork.mockReturnValue(Object.assign(host, { postMessage }));
+  const runtime = new RuntimeService(store, root, root, {}, () => {});
+  const act = (kind: "allow" | "start" | "revoke" | "inspect") =>
+    runtime.execute({
+      kind,
+      threadId: draft.threadId,
+      traceId: TraceIdSchema.parse(crypto.randomUUID()),
+    });
+  cleanup.push(() => {
+    host.emit("exit");
+    store.close();
+    rmSync(root, { recursive: true, force: true });
+  });
+  await act("allow");
+  await act("start");
+  const submissionId = SubmissionIdSchema.parse(crypto.randomUUID());
+  const prepare = () =>
+    runtime.submit({
+      kind: "prepare",
+      threadId: draft.threadId,
+      submissionId,
+      traceId: TraceIdSchema.parse(crypto.randomUUID()),
+      revision: 1,
+      text: "A",
+    });
+  const dispatch = () =>
+    runtime.submit({
+      kind: "dispatch",
+      threadId: draft.threadId,
+      submissionId,
+    });
+  return {
+    root,
+    project,
+    store,
+    draft,
+    runtime,
+    act,
+    prepare,
+    dispatch,
+    postMessage,
+  };
+}
+
+it("never dispatches to the old instance after replacing and reauthorizing its directory", async () => {
+  const fixture = await running();
+  renameSync(fixture.project, join(fixture.root, "old-project"));
+  mkdirSync(fixture.project);
+  await expect(fixture.prepare()).rejects.toThrow();
+  await fixture.act("allow");
+  await expect(fixture.prepare()).rejects.toThrow();
+  expect(
+    fixture.postMessage.mock.calls.filter(
+      ([raw]) => HostCommandSchema.parse(raw).kind === "dispatch",
+    ),
+  ).toHaveLength(0);
+  expect(fixture.runtime.hasActiveWork()).toBe(false);
+});
+
+it("a prepared submission cannot cross the instance directory boundary even if a new grant exists", async () => {
+  const fixture = await running();
+  expect(await fixture.prepare()).toMatchObject({
+    kind: "receipt",
+    receipt: { state: "prepared" },
+  });
+  renameSync(fixture.project, join(fixture.root, "old-project"));
+  mkdirSync(fixture.project);
+  const { identifyDirectory } = await import("./runtime-resource");
+  fixture.store.grantExecution({
+    ...(await identifyDirectory(fixture.project)),
+    workspaceId: fixture.draft.workspaceId,
+  });
+  await expect(fixture.dispatch()).rejects.toThrow();
+  expect(
+    fixture.postMessage.mock.calls.filter(
+      ([raw]) => HostCommandSchema.parse(raw).kind === "dispatch",
+    ),
+  ).toHaveLength(0);
+});
+
+it("regranting the unchanged directory preserves normal submission and idle shutdown", async () => {
+  const fixture = await running();
+  await fixture.act("revoke");
+  expect(await fixture.act("allow")).toMatchObject({
+    trusted: true,
+    phase: "ready",
+    busy: false,
+  });
+  expect(fixture.runtime.hasActiveWork()).toBe(false);
+  expect(await fixture.prepare()).toMatchObject({
+    kind: "receipt",
+    receipt: { state: "prepared" },
+  });
+  expect(await fixture.dispatch()).toMatchObject({
+    kind: "receipt",
+    receipt: { state: "dispatching" },
+  });
+  expect(
+    fixture.postMessage.mock.calls.filter(
+      ([raw]) => HostCommandSchema.parse(raw).kind === "dispatch",
+    ),
+  ).toHaveLength(1);
+});

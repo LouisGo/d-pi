@@ -1,5 +1,7 @@
 import { match } from "ts-pattern";
 import { DraftController } from "../features/draft/controller";
+import { RuntimeModel } from "../features/runtime/model";
+import { SubmissionModel } from "../features/submission/model";
 import type {
   DesktopBridge,
   Draft,
@@ -37,6 +39,7 @@ export class AppModel {
   private state: ViewState = { kind: "loading" };
   private listeners = new Set<() => void>();
   controller: DraftController | null = null;
+  submission: SubmissionModel | null = null;
   editorBoundary: { freeze: () => boolean; release: () => void } | null = null;
   async prepareClose(): Promise<boolean> {
     if (this.editorBoundary && !this.editorBoundary.freeze()) return false;
@@ -74,7 +77,13 @@ export class AppModel {
       }
     });
   }
-  constructor(private readonly bridge: DesktopBridge) {}
+  readonly runtime: RuntimeModel | null;
+  get history() {
+    return this.bridge.history;
+  }
+  constructor(private readonly bridge: DesktopBridge) {
+    this.runtime = bridge.runtime ? new RuntimeModel(bridge.runtime) : null;
+  }
   getSnapshot = (): ViewState => this.state;
   subscribe = (listener: () => void): (() => void) => {
     this.listeners.add(listener);
@@ -87,6 +96,7 @@ export class AppModel {
   private accept(reply: Reply): void {
     match(reply)
       .with({ kind: "ready" }, ({ draft, directoryAvailable, preferences }) => {
+        if (draft) this.runtime?.bind(draft.threadId);
         if (draft && !this.controller)
           this.controller = new DraftController(
             draft,
@@ -119,6 +129,17 @@ export class AppModel {
                 .exhaustive();
             },
             () => transportFailure(crypto.randomUUID()),
+          );
+        if (
+          draft &&
+          this.controller &&
+          this.bridge.submission &&
+          !this.submission
+        )
+          this.submission = new SubmissionModel(
+            this.bridge.submission,
+            draft.threadId,
+            this.controller,
           );
         document.documentElement.dataset.theme = preferences.theme;
         document.documentElement.dataset.density = preferences.density;
@@ -183,6 +204,13 @@ export class AppModel {
         ...current,
         theme:
           current.theme === "dark" ? ("light" as const) : ("dark" as const),
+      }))
+      .with("sendKey", () => ({
+        ...current,
+        sendKey:
+          current.sendKey === "enter-newline"
+            ? ("enter-send" as const)
+            : ("enter-newline" as const),
       }))
       .with("density", () => ({
         ...current,

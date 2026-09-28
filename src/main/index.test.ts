@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, realpathSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
@@ -224,6 +224,51 @@ it("accepts only bounded bridge diagnostics from the active frame", async () => 
     expect(lines.join()).not.toContain("PRIVATE BODY");
   } finally {
     shell.events.get("will-quit")?.({ preventDefault: vi.fn() });
+    rmSync(shell.directory, { recursive: true, force: true });
+  }
+});
+
+it("runtime inspection is read-only, rejects foreign frames, and explicit allowance persists without starting OMP", async () => {
+  vi.resetModules();
+  shell.handlers.clear();
+  shell.events.clear();
+  shell.quit.mockClear();
+  shell.directory = mkdtempSync(join(tmpdir(), "d-pi-runtime-ipc-"));
+  const storage = new DraftStorage(join(shell.directory, "drafts.sqlite"));
+  const draft = storage.create(realpathSync(shell.directory));
+  storage.close();
+  try {
+    await import("./index");
+    const handler = shell.handlers.get("runtime:request");
+    expect(handler).toBeDefined();
+    if (!handler) return;
+    const event = {
+      sender: shell.contents,
+      senderFrame: shell.contents.mainFrame,
+    };
+    const request = {
+      kind: "inspect",
+      threadId: draft.threadId,
+      traceId: crypto.randomUUID(),
+    };
+    await expect(
+      handler({ sender: {}, senderFrame: {} }, request),
+    ).rejects.toThrow();
+    expect(await handler(event, request)).toMatchObject({
+      phase: "browse",
+      trusted: false,
+    });
+    expect(await handler(event, { ...request, kind: "allow" })).toMatchObject({
+      phase: "allowed",
+      trusted: true,
+    });
+    expect(await handler(event, { ...request, kind: "revoke" })).toMatchObject({
+      phase: "browse",
+      trusted: false,
+    });
+  } finally {
+    shell.events.get("will-quit")?.({ preventDefault: vi.fn() });
+    await vi.waitFor(() => expect(shell.quit).toHaveBeenCalled());
     rmSync(shell.directory, { recursive: true, force: true });
   }
 });

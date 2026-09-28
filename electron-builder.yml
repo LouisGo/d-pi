@@ -8,6 +8,13 @@ files:
   - out/renderer/**
   - THIRD_PARTY_NOTICES.md
   - '!node_modules/**'
+extraResources:
+  - from: resources/omp
+    to: omp
+    filter:
+      - omp
+      - manifest.json
+      - LICENSE
 directories:
   output: dist
 mac:

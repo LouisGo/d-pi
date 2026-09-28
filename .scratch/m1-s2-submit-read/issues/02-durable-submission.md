@@ -1,6 +1,6 @@
 # 02 — 冻结提交、持久调用确认与草稿保护
 
-Status: open
+Status: resolved
 Type: task
 Stage: M1 S2
 Blocked by: none
@@ -10,7 +10,7 @@ Labels: ready-for-agent
 
 独立完成可执行的发送交接功能：捕获 A，先保存再派发，持久 ACK 后只消费 A，B 不丢，故障后冻结记录仍可读取。通过可替换 NativePort 验收；真实 Runtime/GUI 接线由 05 完成。
 
-受影响决定：D-21/22/24/34/35。共同依据：[S2 spec](../spec.md)、[确认方案](../acceptance-decision.md)、[固定版本证据](../evidence.md)、[基础契约](../../../docs/architecture/foundation-contracts.md)。授权与用户试用状态以 spec 为准；本轮只拆票，未开始实现。
+受影响决定：D-21/22/24/34/35。共同依据：[S2 spec](../spec.md)、[确认方案](../acceptance-decision.md)、[固定版本证据](../evidence.md)、[基础契约](../../../docs/architecture/foundation-contracts.md)。授权与用户试用状态以 spec 为准；历史拆票阶段未实现；当前工程状态见下方 Answer。
 
 ## 交付与所有权
 
@@ -39,3 +39,18 @@ Labels: ready-for-agent
 ### 2026-09-28
 
 依据用户“保留官方 OMP。开始同步规格并推进 to-tickets”创建。本票尚未领取、实现或验收。
+
+### 开发开始
+
+文档基线已提交为 `3288baf`。先按 TDD 落实真实 SQLite 冻结收据与消费事务，再接输入保存协调和可替换 NativePort；未接真实 OMP/GUI前不记整票完成。
+
+### 首段实现与检查
+
+已落地冻结收据与消费事务、备份迁移、重启 unknown、输入保存序列捕获/消费、可替换 NativePort 协调。目标行为经历红→绿；回归总计 11 文件 / 42 测试通过，类型/lint/设计边界与构建通过。具体进度见 spec 最新交接。尚未完成宿主诊断/类型化失败接入与剩余边界整合，不标 resolved；真实 OMP 和 GUI 属后续接线验收，当前没有对应通过证据。
+
+
+## Answer — 2026-09-28
+
+冻结 A、prepared/dispatching 事务、ACK+消费标记同事务、B/IME/同文编辑保护、持久原文、重复派发与重启 unknown 已实现。真实 SQLite、协议对象严格校验与跨进程真实 ACK 均已验证，未把 ACK 改称 accepted。
+
+具体检查、来源范围和限制：[S2 交接](../handoff.md)。工程 resolved 不代表用户体验认可。依赖状态在持续实施期间未及时逐票同步，本次按真实交付补齐；不把未做的用户试用补记成已完成。

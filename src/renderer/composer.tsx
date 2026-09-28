@@ -1,12 +1,14 @@
 import { EditorContent, useEditor } from "@tiptap/react";
-import { useEffect, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { match } from "ts-pattern";
 import { Button } from "@/components/ui/button";
 import type { DraftController } from "../features/draft/controller";
+import { shouldSend } from "../features/submission/shortcut";
 import type { Draft } from "../shared/contracts";
 import type { AppModel } from "./model";
 import { plainTextEditorOptions, replaceDraftText } from "./plain-text-editor";
 import { handlePlainTextPaste } from "./plain-text-paste";
+import { UrlDecoration } from "./url-decoration";
 export function Composer({
   draft,
   controller,
@@ -20,9 +22,18 @@ export function Composer({
     controller.subscribe,
     controller.getSnapshot,
   );
+  const [expanded, setExpanded] = useState(false);
+  const appState = useSyncExternalStore(model.subscribe, model.getSnapshot);
+  const preference =
+    appState.kind === "ready"
+      ? (appState.preferences.sendKey ?? "enter-send")
+      : "enter-send";
+  const inputOptions = useRef({ expanded, preference });
+  inputOptions.current = { expanded, preference };
   const editor = useEditor(
     {
       ...plainTextEditorOptions,
+      extensions: [...plainTextEditorOptions.extensions, UrlDecoration],
       content: {
         type: "doc",
         content: draft.text.split("\n").map((text) => ({
@@ -32,6 +43,33 @@ export function Composer({
       },
       editorProps: {
         handlePaste: handlePlainTextPaste,
+        handleKeyDown: (view, event) => {
+          if (view.composing) return false;
+          if (
+            !shouldSend(
+              event,
+              inputOptions.current.preference,
+              inputOptions.current.expanded,
+            )
+          )
+            return false;
+          event.preventDefault();
+          const runtime = model.runtime?.getSnapshot();
+          if (
+            runtime?.phase === "ready" &&
+            runtime.trusted &&
+            !runtime.busy &&
+            runtime.model
+          )
+            void model.submission?.send();
+          return true;
+        },
+        handleDOMEvents: {
+          compositionend: () => {
+            setTimeout(() => model.submission?.consume(), 0);
+            return false;
+          },
+        },
         attributes: {
           role: "textbox",
           "aria-label": "草稿正文",
@@ -55,8 +93,14 @@ export function Composer({
       release: () => editor.setEditable(true, false),
     };
     model.editorBoundary = boundary;
+    const submission = model.submission;
+    if (submission) {
+      submission.replace = () => replaceDraftText(editor, "");
+      submission.consume();
+    }
     return () => {
       if (model.editorBoundary === boundary) model.editorBoundary = null;
+      if (submission) submission.replace = null;
     };
   }, [editor, model]);
   const status = match(state)
@@ -68,7 +112,11 @@ export function Composer({
     .with({ kind: "failed" }, () => "尚未保存")
     .exhaustive();
   return (
-    <section className="composer" aria-label="持久文字草稿">
+    <section
+      className="composer"
+      data-expanded={expanded}
+      aria-label="持久文字草稿"
+    >
       <div className="composer-heading">
         <h2>草稿</h2>
         <span role="status" className="save-status">
@@ -77,8 +125,35 @@ export function Composer({
       </div>
       <EditorContent editor={editor} />
       <div className="composer-footer">
-        <span>Enter 换行 · ⌘Z 撤销</span>
-        <span>仅本地起草</span>
+        <span>
+          {expanded || preference === "enter-newline"
+            ? "Enter 换行 · ⌘Enter 发送"
+            : "Enter 发送 · Shift+Enter 换行"}{" "}
+          · ⌘Z 撤销
+        </span>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="ghost"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => setExpanded((value) => !value)}
+          >
+            {expanded ? "收起编辑区" : "展开编辑区"}
+          </Button>
+          <Button
+            variant="ghost"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => void model.preference("sendKey")}
+          >
+            切换发送快捷键
+          </Button>
+          {model.submission && model.runtime && (
+            <SendButton
+              canSend={() => !!editor && !editor.view.composing}
+              submission={model.submission}
+              runtime={model.runtime}
+            />
+          )}
+        </div>
       </div>
       {state.kind === "conflict" && (
         <div className="failure" role="alert">
@@ -150,5 +225,38 @@ export function Composer({
         </div>
       )}
     </section>
+  );
+}
+
+function SendButton({
+  canSend,
+  submission,
+  runtime,
+}: {
+  canSend: () => boolean;
+  submission: NonNullable<AppModel["submission"]>;
+  runtime: NonNullable<AppModel["runtime"]>;
+}) {
+  const send = useSyncExternalStore(
+    submission.subscribe,
+    submission.getSnapshot,
+  );
+  const state = useSyncExternalStore(runtime.subscribe, runtime.getSnapshot);
+  return (
+    <Button
+      disabled={
+        send.sending ||
+        state?.phase !== "ready" ||
+        !state.trusted ||
+        state.busy ||
+        !state.model
+      }
+      onMouseDown={(event) => event.preventDefault()}
+      onClick={() => {
+        if (canSend()) void submission.send();
+      }}
+    >
+      发送
+    </Button>
   );
 }

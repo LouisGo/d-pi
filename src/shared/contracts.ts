@@ -1,4 +1,7 @@
 import { z } from "zod";
+import type { HistoryBridge } from "../features/history/contracts";
+import type { RuntimeBridge } from "../features/runtime/contracts";
+import type { SubmissionBridge } from "../features/submission/contracts";
 import { DRAFT_MAX_BYTES, draftByteLength } from "./draft-text";
 export const DraftTextSchema = z
   .string()
@@ -12,6 +15,7 @@ export const TraceIdSchema = z.uuid();
 export const PreferencesSchema = z.strictObject({
   theme: z.enum(["light", "dark"]),
   density: z.enum(["normal", "compact"]),
+  sendKey: z.enum(["enter-send", "enter-newline"]).optional(),
 });
 export type Preferences = z.infer<typeof PreferencesSchema>;
 export const DraftSchema = z.strictObject({
@@ -21,6 +25,7 @@ export const DraftSchema = z.strictObject({
   directory: z.string().min(1),
   revision: z.number().int().nonnegative(),
   text: z.string(),
+  consumedBy: z.uuid().optional(),
 });
 export type Draft = z.infer<typeof DraftSchema>;
 export const FailureSchema = z.strictObject({
@@ -83,6 +88,9 @@ export const ReplySchema = z.discriminatedUnion("kind", [
 export type Reply = z.infer<typeof ReplySchema>;
 export type SaveReply = Extract<Reply, { kind: "saved" | "failed" }>;
 export interface DesktopBridge {
+  history?: HistoryBridge;
+  submission?: SubmissionBridge;
+  runtime?: RuntimeBridge;
   request(command: Command): Promise<Reply>;
   onCloseRequest(listener: (token: string) => void): () => void;
   onCloseCancelled(listener: () => void): () => void;

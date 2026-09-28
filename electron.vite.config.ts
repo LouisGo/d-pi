@@ -31,7 +31,18 @@ export default defineConfig(({ command }) => {
   };
   const define = { __D_PI_BUILD__: JSON.stringify(build) };
   return {
-    main: { define, build: { externalizeDeps: false } },
+    main: {
+      define,
+      build: {
+        externalizeDeps: false,
+        rollupOptions: {
+          input: {
+            index: resolve("src/main/index.ts"),
+            "session-host": resolve("src/host/index.ts"),
+          },
+        },
+      },
+    },
     preload: {
       define,
       build: {

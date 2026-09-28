@@ -14,7 +14,14 @@ export interface DiagnosticEvent {
   requestId: string;
   connectionId: string;
   operation: string;
+  submissionId?: string;
+  threadId?: string;
+  nativeProcessInstanceId?: string;
   stage:
+    | "prepared"
+    | "dispatching"
+    | "acknowledged"
+    | "unknown"
     | "received"
     | "completed"
     | "failed"

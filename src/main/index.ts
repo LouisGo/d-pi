@@ -1,8 +1,18 @@
 import { randomUUID } from "node:crypto";
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { app, BrowserWindow, dialog, ipcMain, Menu } from "electron";
+import {
+  app,
+  BrowserWindow,
+  dialog,
+  ipcMain,
+  Menu,
+  MessageChannelMain,
+} from "electron";
 import { z } from "zod";
+import { HistoryRequestSchema } from "../features/history/contracts";
+import { RuntimeCommandSchema } from "../features/runtime/contracts";
+import { SubmissionCommandSchema } from "../features/submission/contracts";
 import {
   BridgeDiagnosticSchema,
   EnvelopeSchema,
@@ -11,6 +21,8 @@ import {
 import { diagnosticCode } from "./diagnostic-code";
 import { Diagnostics } from "./diagnostics";
 import { DraftService, failure } from "./draft-service";
+import { readNativeHistory } from "./native-history";
+import { RuntimeService } from "./runtime-service";
 import { DraftStorage } from "./storage";
 
 if (process.env.D_PI_DATA_DIR)
@@ -20,6 +32,7 @@ const locked = app.requestSingleInstanceLock();
 let window: BrowserWindow | null = null;
 let store: DraftStorage | undefined;
 let service: DraftService | undefined;
+let runtime: RuntimeService | undefined;
 let startupCauseCode: string | undefined;
 function initializeStorage(): void {
   if (service) return;
@@ -35,6 +48,17 @@ function initializeStorage(): void {
       });
       return result.canceled ? null : (result.filePaths[0] ?? null);
     });
+    runtime = new RuntimeService(
+      store,
+      app.isPackaged
+        ? process.resourcesPath
+        : join(import.meta.dirname, "../../resources"),
+      data,
+      process.env,
+      (view) => window?.webContents.send("runtime:state", view),
+      (reply) => window?.webContents.send("submission:state", reply),
+      (event) => diagnostics?.record(event),
+    );
     startupCauseCode = undefined;
   } catch (error) {
     startupCauseCode = diagnosticCode(error);
@@ -185,6 +209,68 @@ else {
         });
       }
     });
+    ipcMain.on("runtime:connect", (event, raw: unknown) => {
+      if (!sourceValid(event) || !runtime) return;
+      const parsed = z.uuid().safeParse(raw);
+      if (!parsed.success || store?.active()?.threadId !== parsed.data) return;
+      const { port1, port2 } = new MessageChannelMain();
+      runtime.attach(port1);
+      event.senderFrame?.postMessage(
+        "runtime:port",
+        { threadId: parsed.data },
+        [port2],
+      );
+    });
+    ipcMain.handle("history:read", async (event, raw: unknown) => {
+      if (!sourceValid(event) || !store) throw Error("Invalid history source");
+      const { threadId, cursor } = HistoryRequestSchema.parse(raw);
+      if (store.active()?.threadId !== threadId) throw Error("Foreign Thread");
+      const binding = store.nativeSession(threadId);
+      return binding
+        ? readNativeHistory(
+            join(app.getPath("userData"), "native-sessions"),
+            binding,
+            cursor,
+          )
+        : { kind: "unavailable", reason: "missing" };
+    });
+    ipcMain.handle("submission:request", async (event, raw: unknown) => {
+      if (!sourceValid(event) || !runtime)
+        throw Error("Invalid submission source");
+      return runtime.submit(SubmissionCommandSchema.parse(raw));
+    });
+    ipcMain.handle("runtime:request", async (event, raw: unknown) => {
+      if (!sourceValid(event))
+        throw new Error("Invalid runtime request source");
+      const command = RuntimeCommandSchema.parse(raw);
+      if (command.kind === "inspect") initializeStorage();
+      if (!runtime) throw new Error("Runtime storage unavailable");
+      const context = {
+        traceId: command.traceId,
+        requestId: randomUUID(),
+        connectionId: diagnostics?.processInstanceId ?? randomUUID(),
+        operation: `runtime:${command.kind}`,
+      };
+      diagnostics?.record({ ...context, stage: "received" });
+      try {
+        const view = await runtime.execute(command);
+        diagnostics?.record({
+          ...context,
+          stage:
+            view.phase === "failed" || view.phase === "interrupted"
+              ? "failed"
+              : "completed",
+        });
+        return view;
+      } catch {
+        diagnostics?.record({
+          ...context,
+          stage: "failed",
+          code: "runtime-unavailable",
+        });
+        throw new Error("Runtime operation unavailable");
+      }
+    });
     ipcMain.handle("draft:request", async (event, raw: unknown) => {
       const fallbackTrace = randomUUID();
       if (!sourceValid(event))
@@ -300,6 +386,21 @@ else {
     // Window lifetime is separate from Main; explicit Quit owns application shutdown.
   });
   app.on("before-quit", (event) => {
+    if (runtime?.hasActiveWork()) {
+      event.preventDefault();
+      quitting = false;
+      if (!window) createWindow();
+      else window.show();
+      if (window)
+        void dialog.showMessageBox(window, {
+          type: "warning",
+          message: "仍有原生工作或状态尚未确认",
+          detail:
+            "应用会保留运行中的任务。当前阶段尚未提供完整停止后退出；请等待任务结束后再退出。",
+          buttons: ["保留应用"],
+        });
+      return;
+    }
     if (window && !approved) {
       event.preventDefault();
       quitting = true;
@@ -310,11 +411,21 @@ else {
   app.on("will-quit", (event) => {
     if (drained) return;
     event.preventDefault();
-    void diagnostics?.close().finally(() => {
-      drained = true;
-      store?.close();
-      // Let Electron unwind the prevented will-quit event before retrying Quit.
-      setImmediate(() => app.quit());
-    });
+    void (async () => {
+      await runtime?.closeIdle();
+      await diagnostics?.close();
+    })()
+      .then(() => {
+        drained = true;
+        store?.close();
+        // Let Electron unwind the prevented will-quit event before retrying Quit.
+        setImmediate(() => app.quit());
+      })
+      .catch(() => {
+        quitting = false;
+        approved = false;
+        if (!window) createWindow();
+        window?.webContents.send("draft:close-cancelled");
+      });
   });
 }

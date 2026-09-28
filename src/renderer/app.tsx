@@ -8,7 +8,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { BUILD_INFO } from "../shared/build-info";
 import { Composer } from "./composer";
+import { Conversation, History, Submissions } from "./conversation";
 import type { AppModel } from "./model";
+import { RuntimePanel } from "./runtime-panel";
 export function App({ model }: { model: AppModel }) {
   const state = useSyncExternalStore(model.subscribe, model.getSnapshot);
   return match(state)
@@ -32,7 +34,7 @@ export function App({ model }: { model: AppModel }) {
         <div className="app-shell">
           <aside className="sidebar">
             <div className="brand">
-              d-pi <span>S1</span>
+              d-pi <span>S2</span>
             </div>
             <div className="sidebar-label">项目</div>
             {draft ? (
@@ -45,7 +47,7 @@ export function App({ model }: { model: AppModel }) {
             )}
             <div className="sidebar-bottom">
               <span className="muted">本地草稿</span>
-              <span className="muted">仅浏览</span>
+              <span className="muted">项目执行需授权</span>
               <span className="trace muted" title={BUILD_INFO.commit}>
                 {BUILD_INFO.version} · {BUILD_INFO.id}
               </span>
@@ -100,18 +102,26 @@ export function App({ model }: { model: AppModel }) {
                   <div className="directory-info">
                     <FolderIcon />
                     <span>{draft.directory}</span>
-                    <span className="muted">仅浏览</span>
+                    <span className="muted">项目执行需授权</span>
                   </div>
                   {!directoryAvailable && (
                     <p className="failure" role="alert">
                       项目目录已失效。草稿仍可编辑；应用不会自动换到其他目录。
                     </p>
                   )}
+                  {model.runtime && <RuntimePanel model={model.runtime} />}
+                  {model.runtime?.reading && (
+                    <Conversation model={model.runtime.reading} />
+                  )}
                   <Composer
                     draft={draft}
                     controller={model.controller}
                     model={model}
                   />
+                  {model.submission && <Submissions model={model.submission} />}
+                  {model.history && (
+                    <History bridge={model.history} threadId={draft.threadId} />
+                  )}
                 </>
               ) : (
                 <div className="empty-state">

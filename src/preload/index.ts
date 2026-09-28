@@ -1,5 +1,18 @@
 import { contextBridge, ipcRenderer } from "electron";
 import { match } from "ts-pattern";
+import { ConversationEventSchema } from "../features/conversation/contracts";
+import {
+  HistoryPageSchema,
+  HistoryRequestSchema,
+} from "../features/history/contracts";
+import {
+  RuntimeCommandSchema,
+  RuntimeViewSchema,
+} from "../features/runtime/contracts";
+import {
+  SubmissionCommandSchema,
+  SubmissionReplySchema,
+} from "../features/submission/contracts";
 import {
   type BridgeDiagnostic,
   type Command,
@@ -41,6 +54,81 @@ function matchesRequest(command: Command, reply: Reply): boolean {
     .exhaustive();
 }
 const bridge: DesktopBridge = {
+  history: {
+    async read(threadId, cursor) {
+      return HistoryPageSchema.parse(
+        await ipcRenderer.invoke(
+          "history:read",
+          HistoryRequestSchema.parse({ threadId, cursor }),
+        ),
+      );
+    },
+  },
+  submission: {
+    async request(command) {
+      return SubmissionReplySchema.parse(
+        await ipcRenderer.invoke(
+          "submission:request",
+          SubmissionCommandSchema.parse(command),
+        ),
+      );
+    },
+    subscribe(listener) {
+      const handler = (_event: Electron.IpcRendererEvent, raw: unknown) => {
+        const result = SubmissionReplySchema.safeParse(raw);
+        if (result.success) listener(result.data);
+      };
+      ipcRenderer.on("submission:state", handler);
+      return () => ipcRenderer.removeListener("submission:state", handler);
+    },
+  },
+  runtime: {
+    conversation: {
+      connect(threadId, listener) {
+        let port: MessagePort | null = null;
+        const handler = (event: Electron.IpcRendererEvent, data: unknown) => {
+          if (
+            typeof data !== "object" ||
+            data === null ||
+            !("threadId" in data) ||
+            data.threadId !== threadId
+          )
+            return;
+          port?.close();
+          port = event.ports[0] ?? null;
+          if (!port) return;
+          port.onmessage = (message) => {
+            const parsed = ConversationEventSchema.safeParse(message.data);
+            if (parsed.success) listener(parsed.data);
+          };
+          port.start();
+        };
+        ipcRenderer.on("runtime:port", handler);
+        ipcRenderer.send("runtime:connect", threadId);
+        return () => {
+          ipcRenderer.removeListener("runtime:port", handler);
+          port?.close();
+        };
+      },
+    },
+    async request(command) {
+      const value = RuntimeCommandSchema.parse(command);
+      const reply = RuntimeViewSchema.parse(
+        await ipcRenderer.invoke("runtime:request", value),
+      );
+      if (reply.threadId !== value.threadId)
+        throw Error("Foreign runtime reply");
+      return reply;
+    },
+    subscribe(listener) {
+      const handler = (_event: Electron.IpcRendererEvent, raw: unknown) => {
+        const parsed = RuntimeViewSchema.safeParse(raw);
+        if (parsed.success) listener(parsed.data);
+      };
+      ipcRenderer.on("runtime:state", handler);
+      return () => ipcRenderer.removeListener("runtime:state", handler);
+    },
+  },
   async request(command: Command) {
     const requestId = crypto.randomUUID();
     const context = {
