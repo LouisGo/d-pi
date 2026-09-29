@@ -13,10 +13,10 @@ import { tmpdir } from "node:os";
 import { test } from "node:test";
 import { build } from "vite";
 import tailwindcss from "@tailwindcss/vite";
+import { runOxlint } from "../../scripts/architecture/oxlint-runner.mjs";
 
 const repositoryRoot = resolve(import.meta.dirname, "../..");
 const checker = join(repositoryRoot, "scripts/check-i18n-copy.mjs");
-const designChecker = join(repositoryRoot, "scripts/lint-design.mjs");
 
 function fixture(contents, baseDirectory = tmpdir()) {
   const directory = mkdtempSync(join(baseDirectory, "d-pi-tooling-coverage-"));
@@ -55,28 +55,24 @@ test("design lint executes against a migrated module Renderer root", () => {
     "src/modules/files/renderer/invalid.tsx":
       'export function Invalid() { return <div style={{ color: "red" }} />; }\n',
   });
-  const nodeBin = join(repositoryRoot, "node_modules/.bin");
-  const result = spawnSync(
-    process.execPath,
-    [
-      designChecker,
-      "--root",
-      directory,
-      "--config",
+  const result = runOxlint({
+    args: [
+      "-c",
       join(repositoryRoot, ".oxlintrc.json"),
+      join(directory, "src/modules/files/renderer"),
     ],
-    {
-      cwd: repositoryRoot,
-      encoding: "utf8",
-      env: {
-        ...process.env,
-        PATH: `${nodeBin}:${process.env.PATH ?? ""}`,
-      },
-    },
-  );
+    cwd: repositoryRoot,
+  });
   rmSync(directory, { recursive: true, force: true });
+  // A crashed or missing oxlint exits non-zero with no output, which would
+  // otherwise satisfy "the gate failed". The tool must actually have run.
+  assert.equal(
+    result.kind,
+    "ran",
+    `design lint did not run (${result.kind}: ${result.reason ?? ""})`,
+  );
   assert.notEqual(result.status, 0);
-  assert.match(`${result.stdout}\n${result.stderr}`, /no-inline-styles/);
+  assert.match(result.output, /no-inline-styles/);
 });
 
 test("Tailwind emits a utility used only by a module Renderer", async () => {

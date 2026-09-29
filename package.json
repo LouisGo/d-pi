@@ -6,6 +6,9 @@
   "description": "d-pi desktop client",
   "main": "out/main/index.js",
   "packageManager": "pnpm@10.5.2",
+  "engines": {
+    "node": ">=22.19.0"
+  },
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",

@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { spawnSync } from "node:child_process";
+import { reportOxlintResult, runOxlint } from "./architecture/oxlint-runner.mjs";
 
 function parseOptions(argv) {
   const rootIndex = argv.indexOf("--root");
@@ -26,8 +26,6 @@ if (existsSync(modulesRoot)) {
   }
 }
 
-const result = spawnSync("oxlint", ["-c", config, ...roots], {
-  stdio: "inherit",
-});
-if (result.error) throw result.error;
-process.exitCode = result.status ?? 1;
+process.exitCode = reportOxlintResult(
+  runOxlint({ args: ["-c", config, ...roots], cwd: root }),
+);

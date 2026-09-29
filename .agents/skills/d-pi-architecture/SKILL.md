@@ -29,3 +29,11 @@ pnpm test
 ```
 
 受影响的构建、GUI 或原生系统交互另行验证，并在交接中区分自动化证据、Agent 检查和用户试用。目录迁移完成后同步模块地图、模块 `AGENTS.md`、切片 spec/交接；不把 commit 当成 push，也不把工程通过当成用户认可。
+
+## 运行环境
+
+设计 lint 经 oxlint 的 JS 插件（`@shadcn/lint`）执行。**oxlint 的 JS 插件在 Node 24.17.x 上会以 SIGTRAP 崩溃且不产生任何输出**；此时 `lint:design` 显式报 "design lint crashed" 并失败，不会伪装成"没有违规"。
+
+- 跑 `pnpm check` / `pnpm lint:design` 前确认 `node -v` 属于 JS 插件可用版本；`package.json` 的 `engines` 声明 `>=22.19.0`，本机已在 24.21.0 验证可用。
+- 见到 "design lint crashed" 先换 Node，不要去查规则或样式，也不要放宽或绕过门禁。
+
