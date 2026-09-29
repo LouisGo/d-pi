@@ -43,6 +43,7 @@
 | --- | --- |
 | 功能规划、拆票、模块实现或架构评审 | 使用 [d-pi-headless-features](.agents/skills/d-pi-headless-features/SKILL.md)，按需读取 [无头功能合同](docs/architecture/headless-features.md)与 [基础契约](docs/architecture/foundation-contracts.md)相关节；普通文档审计、skill 审计、纯文字或纯样式任务不触发该 skill |
 | 模块归属、跨模块接入与近期开发 | 从[模块地图](docs/architecture/modules/README.md)读目标模块及直接依赖，跨模块再读[交接图](docs/architecture/modules/flows.md)；[M1 计划](.scratch/development-foundation/spec.md)记录 G1 缺口、切片与验收，不要求日常任务通读全部模块 |
+| 领域归属、目录迁移与结构门禁 | 使用 [d-pi-architecture](.agents/skills/d-pi-architecture/SKILL.md)，读取 `architecture/modules.json`、模块 `AGENTS.md` 及相关模块页；迁移不改变行为、事务、恢复顺序或 OMP 所有权 |
 | 应用 TypeScript 实现、重构、类型/数据边界设计或相关代码评审 | 使用 [d-pi-typescript](.agents/skills/d-pi-typescript/SKILL.md)，按需读取 [TypeScript 合同](docs/architecture/typescript.md)；文档审计和纯样式任务不触发 |
 | 本地需求与任务记录 | [issue 约定](docs/agents/issue-tracker.md)，文件放在 `.scratch/<feature>/` |
 | 领域术语或架构决定 | [领域文档约定](docs/agents/domain.md)、根 `CONTEXT.md` 与相关 `docs/adr/` |

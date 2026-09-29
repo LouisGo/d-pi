@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["version", "root", "modules"],
+  "properties": {
+    "version": { "const": 1 },
+    "root": { "type": "string", "minLength": 1 },
+    "modules": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["root", "environments", "public", "dependsOn"],
+        "properties": {
+          "root": { "type": "string", "minLength": 1 },
+          "environments": { "type": "array", "items": { "enum": ["contracts", "core", "main", "host", "renderer"] } },
+          "public": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+          "dependsOn": {
+            "type": "object",
+            "additionalProperties": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+          },
+          "materialized": { "type": "boolean" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

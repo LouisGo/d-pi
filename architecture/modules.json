@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "root": "src/modules",
+  "modules": {
+    "files": {
+      "root": "src/modules/files",
+      "environments": ["contracts", "core", "main", "renderer"],
+      "public": [
+        "contracts/public.ts",
+        "core/public.ts",
+        "main/public.ts",
+        "renderer/public.ts"
+      ],
+      "dependsOn": {},
+      "materialized": true
+    },
+    "input": {
+      "root": "src/modules/input",
+      "environments": ["contracts", "core", "renderer"],
+      "public": ["contracts/public.ts", "core/public.ts", "renderer/public.ts"],
+      "dependsOn": {
+        "core": ["files"],
+        "renderer": ["files"]
+      },
+      "materialized": true
+    },
+    "changes": {
+      "root": "src/modules/changes",
+      "environments": ["contracts", "main"],
+      "public": ["contracts/public.ts", "main/public.ts"],
+      "dependsOn": {
+        "contracts": ["files"],
+        "main": ["files"]
+      },
+      "materialized": true
+    }
+  }
+}
