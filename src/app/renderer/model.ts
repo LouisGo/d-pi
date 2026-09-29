@@ -32,6 +32,10 @@ const appInitial: StateCreator<
 const createAppStore = () =>
   createStore<ViewState>()(subscribeWithSelector(appInitial));
 export type AppStore = ReturnType<typeof createAppStore>;
+export type AppStateStore = Pick<
+  AppStore,
+  "getState" | "getInitialState" | "subscribe"
+>;
 export function transportFailure(traceId: string): Failure {
   return {
     errorId: crypto.randomUUID(),
@@ -47,9 +51,10 @@ export function transportFailure(traceId: string): Failure {
   };
 }
 export class AppModel {
-  // Vanilla store, no React binding: the renderer reads it through
-  // `getSnapshot`/`subscribe`, exactly as it did with the listener set.
+  // Vanilla store, no React binding. React receives the read-only store API
+  // through `stateStore` and binds it with Zustand's official `useStore` hook.
   private readonly store: AppStore = createAppStore();
+  readonly stateStore: AppStateStore = this.store;
   private disposed = false;
   controller: DraftController | null = null;
   submission: SubmissionModel | null = null;
@@ -125,7 +130,12 @@ export class AppModel {
       this.reading.connect(view.threadId);
   };
   dispose(): void {
+    if (this.disposed) return;
     this.disposed = true;
+    this.submission?.dispose();
+    this.submission = null;
+    this.controller?.dispose();
+    this.controller = null;
     this.runtimeReadingUnsubscribe?.();
     this.reading?.dispose();
     this.runtime?.dispose();
@@ -161,6 +171,7 @@ export class AppModel {
     this.store.setState(state, true);
   }
   private accept(reply: Reply): void {
+    if (this.disposed) return;
     match(reply)
       .with({ kind: "ready" }, ({ draft, directoryAvailable, preferences }) => {
         if (draft) this.runtime?.bind(draft.threadId);
@@ -243,15 +254,23 @@ export class AppModel {
       .exhaustive();
   }
   async start(): Promise<void> {
+    if (this.disposed) return;
     const traceId = crypto.randomUUID();
     try {
-      this.accept(await this.bridge.request({ kind: "restore", traceId }));
+      const reply = await this.bridge.request({ kind: "restore", traceId });
+      if (!this.disposed) this.accept(reply);
     } catch {
-      this.accept({ kind: "failed", error: transportFailure(traceId) });
+      if (!this.disposed)
+        this.accept({ kind: "failed", error: transportFailure(traceId) });
     }
   }
   async choose(): Promise<void> {
-    if (this.state.kind !== "ready" || this.state.busy || this.state.draft)
+    if (
+      this.disposed ||
+      this.state.kind !== "ready" ||
+      this.state.busy ||
+      this.state.draft
+    )
       return;
     this.publish({ ...this.state, busy: true, notice: null });
     const traceId = crypto.randomUUID();
@@ -264,7 +283,7 @@ export class AppModel {
     }
   }
   async preference(key: Exclude<keyof Preferences, "locale">): Promise<void> {
-    if (this.state.kind !== "ready" || this.state.busy) return;
+    if (this.disposed || this.state.kind !== "ready" || this.state.busy) return;
     const current = this.state.preferences;
     const value = match(key)
       .with("theme", () => ({

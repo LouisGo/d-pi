@@ -1,5 +1,6 @@
-import { type ComponentType, useState, useSyncExternalStore } from "react";
+import { type ComponentType, useState } from "react";
 import { match } from "ts-pattern";
+import { useStore } from "zustand";
 import {
   DarkThemeIcon,
   FolderIcon,
@@ -30,7 +31,7 @@ export function App({
 }) {
   const { t, formatMessage, preference, setPreference, persistenceFailed } =
     useI18n();
-  const state = useSyncExternalStore(model.subscribe, model.getSnapshot);
+  const state = useStore(model.stateStore);
   const [selectionAttachment, setSelectionAttachment] = useState<{
     id: string;
     threadId: string;

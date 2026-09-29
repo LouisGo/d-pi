@@ -1,5 +1,6 @@
 export {
   gitKeys,
+  gitQueryOptions,
   readChanges,
   readDiff,
   refreshGit,

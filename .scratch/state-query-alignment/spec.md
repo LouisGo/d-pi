@@ -49,10 +49,10 @@
 
 | 查询 | key 形态 | 数据来源 | 新鲜度与失效 |
 | --- | --- | --- | --- |
-| 目录列表 | `["files","list",threadId,path]` | `files.request({kind:"list"})` | 显式刷新与目录内文件变化事件触发失效；不做定时轮询 |
-| 文件内容 | `["files","read",threadId,path]` | `files.request({kind:"read"})` | 打开时取得，切换路径按 key 复用；显式刷新重新采样 |
-| Git 当前变化 | `["git","changes",threadId]` | `git.request({kind:"list"})` | 显式刷新；原生记录变化可失效 |
-| 单文件 Diff | `["git","diff",threadId,scope,path]` | `git.request({kind:"diff",...})` | 与变化列表同源刷新 |
+| 目录列表 | `["files",threadId,"list",path]` | `files.request({kind:"list"})` | 显式刷新与目录内文件变化事件触发失效；不做定时轮询 |
+| 文件内容 | `["files",threadId,"read",path]` | `files.request({kind:"read"})` | 打开时取得，切换路径按 key 复用；显式刷新重新采样 |
+| Git 当前变化 | `["git",threadId,"changes"]` | `git.request({kind:"list"})` | 显式刷新；原生记录变化可失效 |
+| 单文件 Diff | `["git",threadId,"diff",scope,path]` | `git.request({kind:"diff",...})` | 与变化列表同源刷新 |
 
 - **本地 IPC 的 `networkMode: 'always'`**：这些查询不依赖网络，必须按[技术选型审议](../../docs/architecture/technology-selection-review.md)的要求显式声明，避免 Query 判断离线时暂停本地读取。
 - **重试**：这些查询都是幂等只读采样，允许 Query 默认重试以吸收瞬时失败；返回值中的 `unavailable`（缺失/拒绝/非 Git/二进制/超限/变化中）是**业务结论**，不得当作可重试错误。发送、回答、停止、恢复、保存等副作用继续**不进 Query 重试**，未知结果不自动重发（D-24）。

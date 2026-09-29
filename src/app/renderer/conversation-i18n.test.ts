@@ -28,21 +28,25 @@ vi.mock("@/components/ui/button", () => ({
 }));
 
 const originalText = "Keep this user-authored 原文";
+const submissionState = {
+  sending: false,
+  sendingText: false,
+  message: null,
+  receipts: [
+    {
+      submissionId: "receipt-1",
+      state: "prepared" as const,
+      outcome: "unobserved" as const,
+      text: originalText,
+    },
+  ],
+};
 const model = {
-  subscribe: () => () => {},
-  getSnapshot: () => ({
-    sending: false,
-    sendingText: false,
-    message: null,
-    receipts: [
-      {
-        submissionId: "receipt-1",
-        state: "prepared",
-        outcome: "unobserved",
-        text: originalText,
-      },
-    ],
-  }),
+  stateStore: {
+    getState: () => submissionState,
+    getInitialState: () => submissionState,
+    subscribe: () => () => {},
+  },
 } as unknown as SubmissionModel;
 
 describe("submission copy", () => {

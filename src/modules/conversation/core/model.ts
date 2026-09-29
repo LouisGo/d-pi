@@ -5,7 +5,7 @@ import type {
   ConversationSnapshot,
 } from "../contracts/public";
 
-interface ConversationState {
+export interface ConversationState {
   view: ConversationSnapshot | null;
   threadId: string | null;
   epoch: number;
@@ -25,11 +25,17 @@ const initial: StateCreator<
 
 const createConversationStore = () =>
   createStore<ConversationState>()(subscribeWithSelector(initial));
+export type ConversationStore = ReturnType<typeof createConversationStore>;
+export type ConversationStateStore = Pick<
+  ConversationStore,
+  "getState" | "getInitialState" | "subscribe"
+>;
 
 export class ConversationModel {
-  private readonly store: ReturnType<typeof createConversationStore> =
-    createConversationStore();
+  private readonly store: ConversationStore = createConversationStore();
+  readonly stateStore: ConversationStateStore = this.store;
   private remove: (() => void) | null = null;
+  private disposed = false;
   constructor(private readonly port: ConversationPort) {}
   getSnapshot = (): ConversationSnapshot | null => this.store.getState().view;
   subscribe = (listener: () => void): (() => void) =>
@@ -48,7 +54,9 @@ export class ConversationModel {
     return this.store.subscribe(selector, () => listener());
   }
   connect(threadId: string): void {
+    if (this.disposed) return;
     this.remove?.();
+    this.remove = null;
     const epoch = this.store.getState().epoch + 1;
     let synchronized = false;
     this.store.setState({ threadId, epoch, resyncing: false });
@@ -91,7 +99,10 @@ export class ConversationModel {
     });
   }
   dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
     this.store.setState({ epoch: this.store.getState().epoch + 1 });
     this.remove?.();
+    this.remove = null;
   }
 }

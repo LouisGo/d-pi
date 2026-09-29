@@ -11,10 +11,10 @@ Renderer 的只读查询由 Query 拥有缓存与失效，替代 [file-workspace
 
 | 查询 | key | 调用 |
 | --- | --- | --- |
-| 目录列表 | `["files","list",threadId,path]` | `files.request({kind:"list"})` |
-| 文件内容 | `["files","read",threadId,path]` | `files.request({kind:"read"})` |
-| Git 当前变化 | `["git","changes",threadId]` | `git.request({kind:"list"})` |
-| 单文件 Diff | `["git","diff",threadId,scope,path]` | `git.request({kind:"diff",...})` |
+| 目录列表 | `["files",threadId,"list",path]` | `files.request({kind:"list"})` |
+| 文件内容 | `["files",threadId,"read",path]` | `files.request({kind:"read"})` |
+| Git 当前变化 | `["git",threadId,"changes"]` | `git.request({kind:"list"})` |
+| 单文件 Diff | `["git",threadId,"diff",scope,path]` | `git.request({kind:"diff",...})` |
 
 要求：
 

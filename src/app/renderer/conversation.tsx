@@ -1,7 +1,9 @@
 import { code } from "@streamdown/code";
-import { useState, useSyncExternalStore } from "react";
+import { useState } from "react";
 import { Streamdown } from "streamdown";
 import { match } from "ts-pattern";
+import { useStore } from "zustand";
+import { useShallow } from "zustand/react/shallow";
 import { WebsiteIcon } from "@/components/icons/common";
 import { Button } from "@/components/ui/button";
 import type {
@@ -51,142 +53,182 @@ function Markdown({
   );
 }
 export function Conversation({ model }: { model: ConversationModel }) {
-  const { t, formatMessage } = useI18n();
-  const state = useSyncExternalStore(model.subscribe, model.getSnapshot);
+  const { t } = useI18n();
+  const itemIds = useStore(
+    model.stateStore,
+    useShallow((state) => state.view?.items.map((item) => item.id) ?? []),
+  );
+  const gap = useStore(model.stateStore, (state) => state.view?.gap ?? false);
   return (
     <section
       className="conversation"
       aria-label={t("ui.conversation.sectionLabel")}
     >
       <h2>{t("ui.conversation.heading")}</h2>
-      {!state?.items.length && (
-        <p className="muted">{t("ui.conversation.empty")}</p>
-      )}
-      {state?.gap && <p role="status">{t("ui.conversation.gap")}</p>}
-      {state?.items.map((item) => (
-        <article className="message" key={item.id}>
-          <div className="message-heading">
-            <strong>
-              {item.label.kind === "literal"
-                ? item.label.text
-                : formatMessage(item.label.value)}
-            </strong>
-            <span>
-              {item.state === "streaming"
-                ? t("ui.conversation.streaming")
-                : item.state === "failed"
-                  ? t("ui.conversation.failed")
-                  : ""}
-            </span>
-            <Button
-              variant="ghost"
-              onClick={() => void navigator.clipboard.writeText(item.text)}
-            >
-              {t("ui.conversation.copy")}
-            </Button>
-          </div>
-          {item.notice ? (
-            <p>{formatMessage(item.notice)}</p>
-          ) : item.role === "tool" ? (
-            <details>
-              <summary>{t("ui.conversation.toolOutput")}</summary>
-              <pre>{item.text || t("ui.conversation.waitingResult")}</pre>
-            </details>
-          ) : (
-            <Markdown text={item.text} streaming={item.state === "streaming"} />
-          )}
-          {item.truncated && (
-            <p role="status">
-              {formatMessage({ code: "conversation.truncated" })}
-            </p>
-          )}
-        </article>
+      {!itemIds.length && <p className="muted">{t("ui.conversation.empty")}</p>}
+      {gap && <p role="status">{t("ui.conversation.gap")}</p>}
+      {itemIds.map((id) => (
+        <ConversationMessage key={id} id={id} model={model} />
       ))}
     </section>
   );
 }
+
+function ConversationMessage({
+  id,
+  model,
+}: {
+  id: number;
+  model: ConversationModel;
+}) {
+  const { t, formatMessage } = useI18n();
+  const item = useStore(model.stateStore, (state) =>
+    state.view?.items.find((entry) => entry.id === id),
+  );
+  if (!item) return null;
+  return (
+    <article className="message">
+      <div className="message-heading">
+        <strong>
+          {item.label.kind === "literal"
+            ? item.label.text
+            : formatMessage(item.label.value)}
+        </strong>
+        <span>
+          {item.state === "streaming"
+            ? t("ui.conversation.streaming")
+            : item.state === "failed"
+              ? t("ui.conversation.failed")
+              : ""}
+        </span>
+        <Button
+          variant="ghost"
+          onClick={() => void navigator.clipboard.writeText(item.text)}
+        >
+          {t("ui.conversation.copy")}
+        </Button>
+      </div>
+      {item.notice ? (
+        <p>{formatMessage(item.notice)}</p>
+      ) : item.role === "tool" ? (
+        <details>
+          <summary>{t("ui.conversation.toolOutput")}</summary>
+          <pre>{item.text || t("ui.conversation.waitingResult")}</pre>
+        </details>
+      ) : (
+        <Markdown text={item.text} streaming={item.state === "streaming"} />
+      )}
+      {item.truncated && (
+        <p role="status">{formatMessage({ code: "conversation.truncated" })}</p>
+      )}
+    </article>
+  );
+}
+
 export function Submissions({ model }: { model: SubmissionModel }) {
   const { t, formatMessage } = useI18n();
-  const state = useSyncExternalStore(model.subscribe, model.getSnapshot);
+  const message = useStore(model.stateStore, (state) => state.message);
+  const receiptIds = useStore(
+    model.stateStore,
+    useShallow((state) =>
+      state.receipts.map((receipt) => receipt.submissionId),
+    ),
+  );
   return (
     <section
       className="submission-records"
       aria-label={t("ui.submissions.sectionLabel")}
     >
-      {state.message && (
+      {message && (
         <p role="alert" className="failure">
-          {formatMessage(state.message)}
+          {formatMessage(message)}
         </p>
       )}
       <details>
         <summary>
-          {t("ui.submissions.summary", { count: state.receipts.length })}
+          {t("ui.submissions.summary", { count: receiptIds.length })}
         </summary>
         <p className="muted">{t("ui.submissions.warning")}</p>
         <Button variant="ghost" onClick={() => void model.refresh()}>
           {t("ui.submissions.checkStatus")}
         </Button>
-        {state.receipts.map((receipt) => (
-          <article className="message" key={receipt.submissionId}>
-            <p>
-              {receipt.state === "rejected"
-                ? t("ui.submissions.rejected")
-                : receipt.state === "acknowledged"
-                  ? t("ui.submissions.acknowledged")
-                  : receipt.state === "prepared"
-                    ? t("ui.submissions.prepared")
-                    : receipt.state === "dispatching"
-                      ? t("ui.submissions.dispatching")
-                      : t("ui.submissions.unknown")}
-              {receipt.outcome === "failed"
-                ? t("ui.submissions.outcomeFailed")
-                : receipt.outcome === "unknown"
-                  ? t("ui.submissions.outcomeUnknown")
-                  : ""}
-            </p>
-            <pre>{receipt.text}</pre>
-            {receipt.retryOf && (
-              <p className="trace">
-                {t("ui.submissions.retryOf", { id: receipt.retryOf })}
-              </p>
-            )}
-            {receipt.state === "prepared" && (
-              <>
-                <p className="muted">{t("ui.submissions.preparedWarning")}</p>
-                <Button
-                  disabled={state.sending}
-                  onClick={() =>
-                    void model.continuePrepared(receipt.submissionId)
-                  }
-                >
-                  {t("ui.submissions.continue")}
-                </Button>
-              </>
-            )}
-            {(receipt.state === "unknown" ||
-              receipt.outcome === "unknown" ||
-              receipt.outcome === "failed") && (
-              <details>
-                <summary>{t("ui.submissions.resendTitle")}</summary>
-                <p role="alert">{t("ui.submissions.resendWarning")}</p>
-                <Button
-                  disabled={state.sending}
-                  onClick={() => void model.resend(receipt.submissionId)}
-                >
-                  {t("ui.submissions.resendConfirm")}
-                </Button>
-              </details>
-            )}
-            <Button
-              variant="ghost"
-              onClick={() => void navigator.clipboard.writeText(receipt.text)}
-            >
-              {t("ui.submissions.copyOriginal")}
-            </Button>
-          </article>
+        {receiptIds.map((id) => (
+          <SubmissionRecord key={id} id={id} model={model} />
         ))}
       </details>
     </section>
+  );
+}
+
+function SubmissionRecord({
+  id,
+  model,
+}: {
+  id: string;
+  model: SubmissionModel;
+}) {
+  const { t } = useI18n();
+  const receipt = useStore(model.stateStore, (state) =>
+    state.receipts.find((entry) => entry.submissionId === id),
+  );
+  const sending = useStore(model.stateStore, (state) => state.sending);
+  if (!receipt) return null;
+  return (
+    <article className="message">
+      <p>
+        {receipt.state === "rejected"
+          ? t("ui.submissions.rejected")
+          : receipt.state === "acknowledged"
+            ? t("ui.submissions.acknowledged")
+            : receipt.state === "prepared"
+              ? t("ui.submissions.prepared")
+              : receipt.state === "dispatching"
+                ? t("ui.submissions.dispatching")
+                : t("ui.submissions.unknown")}
+        {receipt.outcome === "failed"
+          ? t("ui.submissions.outcomeFailed")
+          : receipt.outcome === "unknown"
+            ? t("ui.submissions.outcomeUnknown")
+            : ""}
+      </p>
+      <pre>{receipt.text}</pre>
+      {receipt.retryOf && (
+        <p className="trace">
+          {t("ui.submissions.retryOf", { id: receipt.retryOf })}
+        </p>
+      )}
+      {receipt.state === "prepared" && (
+        <>
+          <p className="muted">{t("ui.submissions.preparedWarning")}</p>
+          <Button
+            disabled={sending}
+            onClick={() => void model.continuePrepared(receipt.submissionId)}
+          >
+            {t("ui.submissions.continue")}
+          </Button>
+        </>
+      )}
+      {(receipt.state === "unknown" ||
+        receipt.outcome === "unknown" ||
+        receipt.outcome === "failed") && (
+        <details>
+          <summary>{t("ui.submissions.resendTitle")}</summary>
+          <p role="alert">{t("ui.submissions.resendWarning")}</p>
+          <Button
+            disabled={sending}
+            onClick={() => void model.resend(receipt.submissionId)}
+          >
+            {t("ui.submissions.resendConfirm")}
+          </Button>
+        </details>
+      )}
+      <Button
+        variant="ghost"
+        onClick={() => void navigator.clipboard.writeText(receipt.text)}
+      >
+        {t("ui.submissions.copyOriginal")}
+      </Button>
+    </article>
   );
 }
 

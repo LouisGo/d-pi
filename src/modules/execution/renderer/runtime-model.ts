@@ -26,10 +26,15 @@ const initial: StateCreator<
 
 const createRuntimeStore = () =>
   createStore<RuntimeState>()(subscribeWithSelector(initial));
+export type RuntimeStore = ReturnType<typeof createRuntimeStore>;
+export type RuntimeStateStore = Pick<
+  RuntimeStore,
+  "getState" | "getInitialState" | "subscribe"
+>;
 
 export class RuntimeModel {
-  private readonly store: ReturnType<typeof createRuntimeStore> =
-    createRuntimeStore();
+  private readonly store: RuntimeStore = createRuntimeStore();
+  readonly stateStore: RuntimeStateStore = this.store;
   private readonly unsubscribe: () => void;
   constructor(private readonly bridge: RuntimeBridge) {
     this.unsubscribe = bridge.subscribe((view) => {
@@ -80,7 +85,7 @@ export class RuntimeModel {
   }
   bind(thread: ThreadId): void {
     const state = this.store.getState();
-    if (state.thread === thread) return;
+    if (state.disposed || state.thread === thread) return;
     this.store.setState({ thread, generation: state.generation + 1 });
     void this.act("inspect");
   }
@@ -91,6 +96,7 @@ export class RuntimeModel {
     >,
   ): Promise<void> {
     const state = this.store.getState();
+    if (state.disposed) return;
     const threadId = state.thread;
     if (!threadId) return;
     const generation = state.generation;
@@ -129,8 +135,10 @@ export class RuntimeModel {
     }
   }
   async control(kind: "stop" | "continue"): Promise<void> {
-    const current = this.store.getState().view;
-    const thread = this.store.getState().thread;
+    const state = this.store.getState();
+    if (state.disposed) return;
+    const current = state.view;
+    const thread = state.thread;
     if (!current?.generation || !thread) return;
     const traceId = crypto.randomUUID();
     await this.request(
@@ -140,8 +148,10 @@ export class RuntimeModel {
     );
   }
   async answer(id: string, answer: Answer): Promise<void> {
-    const current = this.store.getState().view;
-    const thread = this.store.getState().thread;
+    const state = this.store.getState();
+    if (state.disposed) return;
+    const current = state.view;
+    const thread = state.thread;
     if (!current?.interactions || !thread) return;
     const traceId = crypto.randomUUID();
     await this.request(
@@ -158,8 +168,10 @@ export class RuntimeModel {
     );
   }
   async dismiss(id: string): Promise<void> {
-    const current = this.store.getState().view;
-    const thread = this.store.getState().thread;
+    const state = this.store.getState();
+    if (state.disposed) return;
+    const current = state.view;
+    const thread = state.thread;
     if (!current?.interactions || !thread) return;
     const traceId = crypto.randomUUID();
     await this.request(
@@ -185,6 +197,7 @@ export class RuntimeModel {
     current: RuntimeView,
     unknownMessage: UiMessage,
   ): Promise<void> {
+    if (this.store.getState().disposed) return;
     const generation = this.store.getState().generation + 1;
     this.store.setState({ generation });
     try {
@@ -217,6 +230,7 @@ export class RuntimeModel {
   }
   dispose(): void {
     const state = this.store.getState();
+    if (state.disposed) return;
     this.store.setState({ generation: state.generation + 1, disposed: true });
     this.unsubscribe();
   }

@@ -63,9 +63,13 @@ const state: ViewState = {
 };
 
 function renderApp() {
-  const model = {
+  const stateStore = {
+    getState: () => state,
+    getInitialState: () => state,
     subscribe: () => () => {},
-    getSnapshot: () => state,
+  };
+  const model = {
+    stateStore,
   } as unknown as AppModel;
   // The file and Git panels read through TanStack Query, so this render needs
   // the same query client the renderer entry installs.

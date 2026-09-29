@@ -1,5 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { useQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 import type { FileBridge } from "../contracts/public";
 
 /**
@@ -48,6 +48,31 @@ export function refreshFiles(client: QueryClient, threadId: string): void {
  */
 const localRead = { networkMode: "always" } as const;
 
+/**
+ * The single source of truth for each file query. Hooks and imperative
+ * consumers share the same key, enabled rule, and local-read policy.
+ */
+export const fileQueryOptions = {
+  listing(files: FileBridge, threadId: string, path: string | undefined) {
+    const resolvedPath = path ?? "";
+    return queryOptions({
+      queryKey: fileKeys.listing(threadId, resolvedPath),
+      queryFn: () => listDirectory(files, threadId, resolvedPath),
+      enabled: path !== undefined,
+      ...localRead,
+    });
+  },
+  content(files: FileBridge, threadId: string, path: string | undefined) {
+    const resolvedPath = path ?? "";
+    return queryOptions({
+      queryKey: fileKeys.content(threadId, resolvedPath),
+      queryFn: () => readFile(files, threadId, resolvedPath),
+      enabled: path !== undefined,
+      ...localRead,
+    });
+  },
+} as const;
+
 export function useDirectoryListing({
   files,
   threadId,
@@ -57,12 +82,7 @@ export function useDirectoryListing({
   threadId: string;
   path: string | undefined;
 }) {
-  return useQuery({
-    queryKey: fileKeys.listing(threadId, path ?? ""),
-    queryFn: () => listDirectory(files, threadId, path ?? ""),
-    enabled: path !== undefined,
-    ...localRead,
-  });
+  return useQuery(fileQueryOptions.listing(files, threadId, path));
 }
 
 export function useFileContent({
@@ -74,10 +94,5 @@ export function useFileContent({
   threadId: string;
   path: string | undefined;
 }) {
-  return useQuery({
-    queryKey: fileKeys.content(threadId, path ?? ""),
-    queryFn: () => readFile(files, threadId, path ?? ""),
-    enabled: path !== undefined,
-    ...localRead,
-  });
+  return useQuery(fileQueryOptions.content(files, threadId, path));
 }

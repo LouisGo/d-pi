@@ -1,1 +1,6 @@
-export { ConversationModel } from "./model";
+export {
+  ConversationModel,
+  type ConversationState,
+  type ConversationStateStore,
+  type ConversationStore,
+} from "./model";

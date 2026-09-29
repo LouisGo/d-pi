@@ -1,5 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { useQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 import type { ChangeScope, GitBridge } from "../contracts/public";
 
 /**
@@ -40,6 +40,34 @@ export function refreshGit(client: QueryClient, threadId: string): void {
 /** Git reads sample the local repository, not the network. */
 const localRead = { networkMode: "always" } as const;
 
+/**
+ * The single source of truth for each Git query. Hooks and imperative
+ * consumers share the same key and local-read policy.
+ */
+export const gitQueryOptions = {
+  changes(git: GitBridge, threadId: string) {
+    return queryOptions({
+      queryKey: gitKeys.changes(threadId),
+      queryFn: () => readChanges(git, threadId),
+      ...localRead,
+    });
+  },
+  diff(
+    git: GitBridge,
+    threadId: string,
+    scope: ChangeScope,
+    path: string | undefined,
+  ) {
+    const resolvedPath = path ?? "";
+    return queryOptions({
+      queryKey: gitKeys.diff(threadId, scope, resolvedPath),
+      queryFn: () => readDiff(git, threadId, scope, resolvedPath),
+      enabled: path !== undefined,
+      ...localRead,
+    });
+  },
+} as const;
+
 export function useChanges({
   git,
   threadId,
@@ -47,11 +75,7 @@ export function useChanges({
   git: GitBridge;
   threadId: string;
 }) {
-  return useQuery({
-    queryKey: gitKeys.changes(threadId),
-    queryFn: () => readChanges(git, threadId),
-    ...localRead,
-  });
+  return useQuery(gitQueryOptions.changes(git, threadId));
 }
 
 export function useDiff({
@@ -65,10 +89,5 @@ export function useDiff({
   scope: ChangeScope;
   path: string | undefined;
 }) {
-  return useQuery({
-    queryKey: gitKeys.diff(threadId, scope, path ?? ""),
-    queryFn: () => readDiff(git, threadId, scope, path ?? ""),
-    enabled: path !== undefined,
-    ...localRead,
-  });
+  return useQuery(gitQueryOptions.diff(git, threadId, scope, path));
 }

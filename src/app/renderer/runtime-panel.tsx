@@ -1,5 +1,7 @@
-import { useState, useSyncExternalStore } from "react";
+import { useState } from "react";
 import { match } from "ts-pattern";
+import { useStore } from "zustand";
+import { createStore } from "zustand/vanilla";
 import { Button } from "@/components/ui/button";
 import type {
   Interaction,
@@ -8,6 +10,7 @@ import type {
 import type {
   RuntimeModel,
   SubmissionModel,
+  SubmissionView,
 } from "../../modules/execution/renderer/public";
 import { useI18n } from "../../modules/preferences/renderer/public";
 import type { UiMessage } from "../../shared/messages/contracts";
@@ -17,13 +20,12 @@ export type FollowUpResult = {
   message: UiMessage | null;
   submissionId: string | null;
 };
-const emptySubmissionSubscribe = () => () => {};
-const emptySubmissionSnapshot: SubmissionModel["getSnapshot"] = () => ({
+const emptySubmissionStore = createStore<SubmissionView>()(() => ({
   sending: false as const,
   sendingText: false as const,
   receipts: [] as SubmissionReceipt[],
   message: null,
-});
+}));
 export function RuntimePanel({
   model,
   submission,
@@ -34,12 +36,11 @@ export function RuntimePanel({
   onFollowUp: ((text: string) => Promise<FollowUpResult>) | undefined;
 }) {
   const { t, formatMessage } = useI18n();
-  const state = useSyncExternalStore(model.subscribe, model.getSnapshot);
-  // subscribe/getSnapshot references are stable (instance methods or module
-  // constants); null->model flips once when submission becomes available.
-  const submissions = useSyncExternalStore(
-    submission?.subscribe ?? emptySubmissionSubscribe,
-    submission?.getSnapshot ?? emptySubmissionSnapshot,
+  const state = useStore(model.stateStore, (value) => value.view);
+  const submissionStore = submission?.stateStore ?? emptySubmissionStore;
+  const submissionReceipts = useStore(
+    submissionStore,
+    (value) => value.receipts,
   );
   // Follow-up identities live here, keyed by dialog id, so a generation
   // change (remount) neither loses the success indicator nor allows a silent
@@ -162,7 +163,7 @@ export function RuntimePanel({
                 model={model}
                 onFollowUp={onFollowUp ? handleFollowUp(item.id) : undefined}
                 onContinueFollowUp={handleContinueFollowUp}
-                submissionReceipts={submissions.receipts}
+                submissionReceipts={submissionReceipts}
                 followUpIds={followUps[item.id] ?? []}
                 available={
                   state.phase !== "interrupted" && state.phase !== "failed"

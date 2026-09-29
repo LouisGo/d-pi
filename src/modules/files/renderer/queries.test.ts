@@ -1,7 +1,11 @@
-import { QueryClient, QueryObserver } from "@tanstack/react-query";
+import {
+  onlineManager,
+  QueryClient,
+  QueryObserver,
+} from "@tanstack/react-query";
 import { expect, it } from "vitest";
 import type { FileBridge, FileReply } from "../contracts/public";
-import { fileKeys, listDirectory, readFile, refreshFiles } from "./queries";
+import { fileKeys, fileQueryOptions, refreshFiles } from "./queries";
 
 const threadId = crypto.randomUUID();
 
@@ -41,14 +45,14 @@ it("keeps concurrent paths in separate cache entries so a late reply cannot over
           })
         : Promise.resolve(text(path, "fast")),
   };
-  const fast = new QueryObserver(client_, {
-    queryKey: fileKeys.content(threadId, "fast.ts"),
-    queryFn: () => readFile(bridge, threadId, "fast.ts"),
-  });
-  const slow = new QueryObserver(client_, {
-    queryKey: fileKeys.content(threadId, "slow.ts"),
-    queryFn: () => readFile(bridge, threadId, "slow.ts"),
-  });
+  const fast = new QueryObserver(
+    client_,
+    fileQueryOptions.content(bridge, threadId, "fast.ts"),
+  );
+  const slow = new QueryObserver(
+    client_,
+    fileQueryOptions.content(bridge, threadId, "slow.ts"),
+  );
   const releaseFast = fast.subscribe(() => {});
   const releaseSlow = slow.subscribe(() => {});
   await fast.refetch();
@@ -74,10 +78,10 @@ it("treats a business unavailable reply as data rather than a retryable failure"
       return Promise.resolve({ kind: "unavailable", reason: "missing" });
     },
   };
-  const observer = new QueryObserver(client_, {
-    queryKey: fileKeys.content(threadId, "gone.ts"),
-    queryFn: () => readFile(bridge, threadId, "gone.ts"),
-  });
+  const observer = new QueryObserver(
+    client_,
+    fileQueryOptions.content(bridge, threadId, "gone.ts"),
+  );
   const release = observer.subscribe(() => {});
   await observer.refetch();
   const result = observer.getCurrentResult();
@@ -101,10 +105,10 @@ it("invalidating the thread scope makes an active query sample the source again"
       return Promise.resolve(reply);
     },
   };
-  const observer = new QueryObserver(client_, {
-    queryKey: fileKeys.listing(threadId, ""),
-    queryFn: () => listDirectory(bridge, threadId, ""),
-  });
+  const observer = new QueryObserver(
+    client_,
+    fileQueryOptions.listing(bridge, threadId, ""),
+  );
   const release = observer.subscribe(() => {});
   await observer.refetch();
   expect(observer.getCurrentResult().data).toMatchObject({
@@ -125,14 +129,14 @@ it("does not serve a cached listing from another thread", async () => {
     request: ({ threadId: requested }) =>
       Promise.resolve(entries([requested === threadId ? "1.ts" : "2.ts"])),
   };
-  const first = new QueryObserver(client_, {
-    queryKey: fileKeys.listing(threadId, ""),
-    queryFn: () => listDirectory(bridge, threadId, ""),
-  });
-  const second = new QueryObserver(client_, {
-    queryKey: fileKeys.listing(other, ""),
-    queryFn: () => listDirectory(bridge, other, ""),
-  });
+  const first = new QueryObserver(
+    client_,
+    fileQueryOptions.listing(bridge, threadId, ""),
+  );
+  const second = new QueryObserver(
+    client_,
+    fileQueryOptions.listing(bridge, other, ""),
+  );
   const releaseFirst = first.subscribe(() => {});
   const releaseSecond = second.subscribe(() => {});
   await first.refetch();
@@ -146,4 +150,31 @@ it("does not serve a cached listing from another thread", async () => {
   releaseFirst();
   releaseSecond();
   client_.clear();
+});
+
+it("runs local file reads while Query reports the renderer offline", async () => {
+  const client_ = client();
+  let requests = 0;
+  const bridge: FileBridge = {
+    request: () => {
+      requests += 1;
+      return Promise.resolve(entries(["offline.ts"]));
+    },
+  };
+  const wasOnline = onlineManager.isOnline();
+  onlineManager.setOnline(false);
+  try {
+    const observer = new QueryObserver(
+      client_,
+      fileQueryOptions.listing(bridge, threadId, ""),
+    );
+    const release = observer.subscribe(() => {});
+    await observer.refetch();
+    expect(requests).toBe(1);
+    expect(observer.getCurrentResult().isSuccess).toBe(true);
+    release();
+  } finally {
+    onlineManager.setOnline(wasOnline);
+    client_.clear();
+  }
 });

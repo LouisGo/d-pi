@@ -7,6 +7,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import { match } from "ts-pattern";
+import { useStore } from "zustand";
 import { Button } from "@/components/ui/button";
 import {
   canSubmit,
@@ -51,11 +52,11 @@ export function Composer({
     controller.getSnapshot,
   );
   const [expanded, setExpanded] = useState(false);
-  const appState = useSyncExternalStore(model.subscribe, model.getSnapshot);
-  const preference =
+  const preference = useStore(model.stateStore, (appState) =>
     appState.kind === "ready"
       ? (appState.preferences.sendKey ?? "enter-send")
-      : "enter-send";
+      : "enter-send",
+  );
   const inputOptions = useRef({ expanded, preference });
   inputOptions.current = { expanded, preference };
   const editor = useEditor(
@@ -76,8 +77,9 @@ export function Composer({
           )
             return false;
           event.preventDefault();
-          const runtime = model.runtime?.getSnapshot();
-          const receipts = model.submission?.getSnapshot().receipts ?? [];
+          const runtime = model.runtime?.stateStore.getState().view;
+          const receipts =
+            model.submission?.stateStore.getState().receipts ?? [];
           if (
             runtime &&
             !queueCapped(receipts, runtime.control?.queue.length ?? 0) &&
@@ -294,17 +296,15 @@ function SendButton({
   runtime: NonNullable<AppModel["runtime"]>;
 }) {
   const { t } = useI18n();
-  const send = useSyncExternalStore(
-    submission.subscribe,
-    submission.getSnapshot,
-  );
-  const state = useSyncExternalStore(runtime.subscribe, runtime.getSnapshot);
-  const capped = queueCapped(send.receipts, state?.control?.queue.length ?? 0);
-  const queued = queueCount(send.receipts, state?.control?.queue.length ?? 0);
+  const sending = useStore(submission.stateStore, (value) => value.sending);
+  const receipts = useStore(submission.stateStore, (value) => value.receipts);
+  const state = useStore(runtime.stateStore, (value) => value.view);
+  const capped = queueCapped(receipts, state?.control?.queue.length ?? 0);
+  const queued = queueCount(receipts, state?.control?.queue.length ?? 0);
   return (
     <div className="flex gap-2">
       <Button
-        disabled={send.sending || capped || !canSubmit(state)}
+        disabled={sending || capped || !canSubmit(state)}
         onMouseDown={(event) => event.preventDefault()}
         onClick={() => {
           if (canSend()) void submission.send();
@@ -315,7 +315,7 @@ function SendButton({
       {state?.busy && (
         <Button
           variant="ghost"
-          disabled={send.sending || capped || !canSubmit(state)}
+          disabled={sending || capped || !canSubmit(state)}
           onMouseDown={(event) => event.preventDefault()}
           onClick={() => {
             if (canSend()) void submission.send("steer");

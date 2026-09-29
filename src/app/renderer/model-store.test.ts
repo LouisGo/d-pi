@@ -1,4 +1,5 @@
 import { afterEach, expect, it, vi } from "vitest";
+import { DraftSchema } from "../../modules/input/contracts/public";
 import type {
   Command,
   DesktopBridge,
@@ -8,9 +9,8 @@ import { AppModel } from "./model";
 
 // The AppModel state container must keep the publication contract the hand
 // written listener set had: one notification per published state, exact
-// replacement of that state, a cached snapshot, stable subscribe/getSnapshot
-// references (both go straight into useSyncExternalStore) and no publication
-// once the model is disposed.
+// replacement of that state, a cached snapshot, stable store references for
+// headless reads and the React binding, and no publication once disposed.
 const ready = (theme: "light" | "dark" = "light"): Reply => ({
   kind: "ready",
   draft: null,
@@ -135,6 +135,74 @@ it("does not publish a late reply after dispose", async () => {
   await started;
   expect(model.getSnapshot()).toEqual({ kind: "loading" });
   expect(changes).toBe(0);
+});
+
+it("releases submission state and ignores a restore that finishes after dispose", async () => {
+  vi.stubGlobal("document", { documentElement: { dataset: {} } });
+  const restore = deferred();
+  const restoredDraft = DraftSchema.parse({
+    schemaVersion: 1,
+    threadId: crypto.randomUUID(),
+    workspaceId: crypto.randomUUID(),
+    directory: "/fixture",
+    revision: 0,
+    text: "saved source",
+  });
+  let subscribed = 0;
+  let released = 0;
+  const bridge: DesktopBridge = {
+    request: (command) => {
+      if (command.kind === "restore") return restore.promise;
+      throw Error(`unexpected ${command.kind}`);
+    },
+    submission: {
+      request: async () => ({ kind: "list", receipts: [] }),
+      subscribe: () => {
+        subscribed += 1;
+        return () => {
+          released += 1;
+        };
+      },
+    },
+    onCloseRequest: () => () => {},
+    onCloseCancelled: () => () => {},
+    completeClose: () => {},
+  };
+  const model = new AppModel(bridge);
+  const started = model.start();
+  model.dispose();
+  restore.resolve({
+    kind: "ready",
+    draft: restoredDraft,
+    directoryAvailable: true,
+    preferences: { theme: "light", density: "normal", locale: "system" },
+  });
+  await started;
+  expect(subscribed).toBe(0);
+  expect(released).toBe(0);
+
+  const active = new AppModel({
+    ...bridge,
+    request: async (command) => {
+      if (command.kind === "restore")
+        return {
+          kind: "ready" as const,
+          draft: restoredDraft,
+          directoryAvailable: true,
+          preferences: {
+            theme: "light" as const,
+            density: "normal" as const,
+            locale: "system" as const,
+          },
+        };
+      throw Error(`unexpected ${command.kind}`);
+    },
+  });
+  await active.start();
+  expect(subscribed).toBe(1);
+  active.dispose();
+  expect(released).toBe(1);
+  expect(active.controller).toBeNull();
 });
 
 it("replaces the published state so a retry cannot keep failure fields", async () => {
