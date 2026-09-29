@@ -148,3 +148,44 @@ it("does not carry a stale reason onto an acknowledgement", () => {
     }
   });
 });
+
+it("keeps a rejected receipt terminal so its cause cannot go stale", () => {
+  fixture((path, dir) => {
+    const store = new AppStorage(path);
+    store.initialize();
+    try {
+      const draft = store.drafts.create(dir);
+      store.drafts.save(draft.threadId, 0, "queued work");
+      const value = prepared(draft.threadId);
+      const coordinator = new SubmissionCoordinator(store.submissions, {
+        isCurrentTarget: () => true,
+        canDispatch: () => true,
+        write: () => {},
+      });
+      coordinator.prepare(value);
+      coordinator.dispatch(value.submissionId);
+      coordinator.receive({
+        kind: "rejected",
+        submissionId: value.submissionId,
+        requestId: value.requestId,
+        target: value.target,
+        reason: "native-unavailable",
+      });
+      // Later events are later evidence about a decision already made, so the
+      // first proven cause stands rather than being rewritten or dropped.
+      for (const kind of ["disconnected", "ack", "error"] as const)
+        coordinator.receive({
+          kind,
+          submissionId: value.submissionId,
+          requestId: value.requestId,
+          target: value.target,
+        });
+      expect(store.submissions.submission(value.submissionId)).toMatchObject({
+        state: "rejected",
+        rejectionReason: "native-unavailable",
+      });
+    } finally {
+      store.close();
+    }
+  });
+});
