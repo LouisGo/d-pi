@@ -1,12 +1,13 @@
 # 项目、工作目录与 Thread
 
+日期：2026-09-27。深度：M1 身份和恢复设计；M2 多 Thread 界面；M3 worktree 管理和历史操作。依据 D-08/D-11/D-24/D-25；[领域术语](../../../CONTEXT.md)、[基础契约 §1](../foundation-contracts.md#1-身份持久化与生命周期b1)及[权限 §5](../foundation-contracts.md#5-最小权限与信任b5)。返回[模块地图](README.md)。
+
 ## 当前工程落点（领域目录治理，2026-09-29）
 
 - Thread/目录/执行信任合同在 `src/modules/workspace/contracts/public.ts`，仓储和项目选择协调在 `src/modules/workspace/main/`。
 - `src/app/main/wiring/desktop-command-service.ts` 只组合 restore/choose-project/save/preferences；选择项目的并发和真实路径归 `WorkspaceService`，不会把选择逻辑继续堆回桌面入口。
 - OMP session binding 仍是 workspace 的关联事实，执行许可在每次操作前由 execution/Host 重新核对，不因缓存的 Renderer 状态获得权限。
 
-日期：2026-09-27。深度：M1 身份和恢复设计；M2 多 Thread 界面；M3 worktree 管理和历史操作。依据 D-08/D-11/D-24/D-25；[领域术语](../../../CONTEXT.md)、[基础契约 §1](../foundation-contracts.md#1-身份持久化与生命周期b1)及[权限 §5](../foundation-contracts.md#5-最小权限与信任b5)。返回[模块地图](README.md)。
 
 ## 范围与拥有者
 

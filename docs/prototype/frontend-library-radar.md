@@ -11,7 +11,7 @@
 - 当前修订：Biome 取代 ESLint + Prettier；S1 接入 @shadcn/lint 与限定设计检查范围的 Oxlint。Streamdown + Shiki 统一内容渲染，不额外维护业务 react-markdown 入口。
 - 继续保留 Virtua / React Virtuoso / TanStack Virtual、Motion、Pacer、birpc、LiveStore 等候选及采用条件；保留候选不等于预装依赖。
 - Monaco 已定；Composer 由 D-33 确认最小 Tiptap 与业务扩展。SQLite 用于 App 结构化存储，ts-pattern/Zod v4 按[TypeScript 合同](../architecture/typescript.md)执行。Git Panel、内置浏览器与终端的范围不变，见[增量技术评估](../../.scratch/product-requirements/technical-evaluation.md)。选型确认不等于集成通过。
-- 当前没有产品依赖清单；历史实现链接指向固定 Git 提交，不意味着被引用代码仍在工作区。旧 M1 范围只作历史依据，当前产品范围以[需求文档](../../.scratch/product-requirements/spec.md)为准。
+- 产品依赖清单以 `package.json` 为准；历史实现链接指向固定 Git 提交，不意味着被引用代码仍在工作区。旧 M1 范围只作历史依据，当前产品范围以[需求文档](../../.scratch/product-requirements/spec.md)为准。
 
 2026-09-25 D-28–D-30：组件化不限于以下 UI 候选，功能模块/契约先于正式 GUI。Zustand/Query/hooks 的职责与生命周期见[无头功能合同](../architecture/headless-features.md)；不引入 XState，不因追求无头架构新增全局框架。
 
@@ -26,11 +26,12 @@
 
 ## 内容与性能
 
-### Streamdown · 当前推荐的 Markdown 统一入口
+### Streamdown · 已采用（Markdown 统一入口）
 
+- **采用状态：**已采用。`streamdown@2.6.0` 与 `@streamdown/code@1.1.1` 已在 `package.json`，入口在 `src/app/renderer/conversation.tsx`；代码块高亮由 `@streamdown/code` 提供，未单独引入 `shiki`。
 - **入口：**[官方用法](https://streamdown.ai/docs/usage)、[安装与 Tailwind 配置](https://streamdown.ai/docs/getting-started)、[源码](https://github.com/vercel/streamdown)；包为 `streamdown`，组件入口为 `Streamdown`。
 - **接入位置与理由：**[历史对话渲染](https://github.com/LouisGo/d-pi/blob/6fab3efd0526d2d716d7939b75202a88f857078a/src/renderer/src/main.tsx)曾在流式阶段显示纯文本，完成后用 `react-markdown`。需要在生成过程中稳定显示 Markdown 时，评估 Streamdown 对未闭合代码围栏、列表、表格和增量更新的处理。
-- **采用条件：**用真实 OMP 输出对照当前方案，检查不可信链接、中文、长代码块、CPU／内存、阅读旧消息时的滚动稳定性和终态内容一致性。它解决内容渲染；Host 的积压上限与消息顺序仍由本项目负责。
+- **采用后仍需检查：**用真实 OMP 输出对照当前方案，检查不可信链接、中文、长代码块、CPU／内存、阅读旧消息时的滚动稳定性和终态内容一致性。它解决内容渲染；Host 的积压上限与消息顺序仍由本项目负责。
 
 ### Shiki · 沿用的代码高亮方向，独立接入按需
 

@@ -20,7 +20,7 @@
 | `src/platform/` | SQLite、诊断、真实路径、OMP 协议/资源和消费门控等技术适配；不承载产品用例 |
 | `src/shared/` | 稳定身份、消息 DTO、i18n formatter/catalog 和纯文本基础；Node 文件系统能力已归 `platform/node` |
 
-这是按功能与进程边界共同组织的单应用结构。机器边界单源为 [`architecture/modules.json`](../../../architecture/modules.json)，规则入口为 `pnpm check:architecture`；结构报告只提供维护提示，不把行数变成硬门槛。SQLite v4 的 Thread 表仍保存草稿字段，不因代码职责拆分而进行无收益的物理表迁移；恢复/控制行为继续按 S3 合同演进。`architecture/modules.json` 同时声明领域模块、`src/app`、`src/platform`、`src/shared` 和 `runtime` 的源码归属；报告应显示 `checked=all-source-files`、`unowned=0`。
+这是按功能与进程边界共同组织的单应用结构。机器边界单源为 [`architecture/modules.json`](../../../architecture/modules.json)，规则入口为 `pnpm check:architecture`；结构报告只提供维护提示，不把行数变成硬门槛。SQLite v4 的 Thread 表仍保存草稿字段，不因代码职责拆分而进行无收益的物理表迁移；恢复/控制行为继续按 S3 合同演进。`architecture/modules.json` 同时声明领域模块、`src/app`、`src/platform`、`src/shared` 和 `runtime` 的源码归属；报告应显示 `ownership=all-source-files`、`unowned=0`，以及 `checked=configured-module-files`、`owned-only=0`，例外清单为空。
 
 P1 的三条实际路径是 `files → input`（选区冻结与引用）和 `files → changes`（Git Diff 只读来源），应用级 Composer/FileWorkspace 留在 `src/app/renderer/workbench`。新增普通内部文件不要求修改清单；只有公开面、环境或跨模块依赖变化才更新机器配置。
 
@@ -33,7 +33,7 @@ P1 的三条实际路径是 `files → input`（选区冻结与引用）和 `fil
 - `changes.contracts → files/shared`、`changes.main → files`、`changes.renderer → shared`；`workspace.contracts → shared`、`workspace.main → platform`；`preferences.contracts → shared`、`preferences.main → platform`、`preferences.renderer → shared`。
 - `conversation.contracts → shared`、`conversation.core` 无跨模块依赖、`conversation.host → platform/shared`、`conversation.main → workspace`；`execution.contracts → input/shared/workspace`、`execution.core → input/shared/workspace`、`execution.host → platform/shared`、`execution.main → input/platform/shared/workspace`、`execution.renderer → input/shared`。
 
-`execution.testDependsOn → app` 仍保留，因为 `submission-coordinator.test.ts` 有真实的测试消费者；它不属于生产依赖矩阵。`app/host` 负责组合 execution 与 conversation 的 Host 作用域；`app` 只做按环境的组合，`platform` 只依赖 `shared`；平台能力不冒充领域依赖，跨模块消费必须经公开入口。
+`app/host` 负责组合 execution 与 conversation 的 Host 作用域；`app` 只做按环境的组合，`platform` 只依赖 `shared`；平台能力不冒充领域依赖，跨模块消费必须经公开入口。跨模块测试依赖一律放在 `tests/integration/`，不占用 `testDependsOn`（该声明只在模块根内确有测试消费者时才登记）。
 
 ## 从哪里开始
 
@@ -45,20 +45,22 @@ P1 的三条实际路径是 `files → input`（选区冻结与引用）和 `fil
 
 ## 模块清单
 
-| 模块 | 本模块负责 | 当前设计深度 / 下一阶段 |
-| --- | --- | --- |
-| [宿主与 OMP 接入](runtime-host.md) | 进程监督、受限通道、协议解码、原生请求关联、实例恢复 | M1 核心；不重建 OMP 执行循环 |
-| [App 存储与内容](app-storage.md) | SQLite 写入、迁移恢复、私有内容文件及引用一致性 | M1 核心；驱动和具体表结构在持久化切片确定 |
-| [配置、模型与认证](configuration.md) | 原生配置复用、配置上下文、模型能力、新用户认证 | M1 已有配置；M2 两条新增认证与子 Agent Thread 配置覆盖 |
-| [项目、工作目录与 Thread](threads.md) | 稳定身份、目录关系、执行准入、原生记录绑定与恢复入口 | M1 数据模型；M2 多 Thread 界面 |
-| [输入与上下文](input-context.md) | 编辑接入、草稿、引用、内容准备与冻结 | M1 文字/选区；M2 全部指定输入 |
-| [提交与执行交互](execution.md) | 提交收据、接受证据、排队/干预/停止和待答交互 | M1 核心；M2 完整队列管理 |
-| [执行记录与阅读](conversation.md) | 会话投影、实时尾部、历史分页、工具/子 Agent 展示、复制 | M1 主链路；M2 长输出；M3 PNG 导出等 |
-| [文件与编辑器](files-editor.md) | 授权读取、文件版本、Monaco 和选区；后续编辑/语言服务 | M1 只读；M3 编辑 |
-| [变化记录与 Git](changes-git.md) | Git 状态与对比基线、工具修改证据、Diff 业务输入 | M1 只读；M3 Git 写入与完整变化管理 |
-| [Side Chat](side-chat.md) | 独立问答、上下文快照、只读工具、显式同步和回送 | M3 边界；实际只读能力需先验证 |
-| [内置浏览器](browser.md) | 预览、标签页、共享持久登录与后续 AI 操作 | M3 边界；不阻塞首版登录 |
-| [集成终端](terminal.md) | 用户终端会话、进程、输入输出和释放 | M3 边界；不接管 OMP 工具命令 |
+| 模块页 | 源码落点 | 本模块负责 | 当前设计深度 / 下一阶段 |
+| --- | --- | --- | --- |
+| [宿主与 OMP 接入](runtime-host.md) | `runtime/host.mjs`、`src/modules/execution/host`、`src/platform/omp`、`src/app/host` | 进程监督、受限通道、协议解码、原生请求关联、实例恢复 | M1 核心；不重建 OMP 执行循环 |
+| [App 存储与内容](app-storage.md) | `src/platform/main/storage`、`src/app/main/wiring` | SQLite 写入、迁移恢复、私有内容文件及引用一致性 | M1 核心；驱动和具体表结构在持久化切片确定 |
+| [配置、模型与认证](configuration.md) | `runtime/host.mjs`（OMP profile）、`src/platform/omp/resources`、`src/modules/execution/main`；App 偏好归 `src/modules/preferences` | 原生配置复用、配置上下文、模型能力、新用户认证 | M1 已有配置；M2 两条新增认证与子 Agent Thread 配置覆盖；GUI 认证入口尚未实现 |
+| [项目、工作目录与 Thread](threads.md) | `src/modules/workspace` | 稳定身份、目录关系、执行准入、原生记录绑定与恢复入口 | M1 数据模型；M2 多 Thread 界面 |
+| [输入与上下文](input-context.md) | `src/modules/input`、`src/app/renderer/workbench`（应用级组合） | 编辑接入、草稿、引用、内容准备与冻结 | M1 文字/选区；M2 全部指定输入 |
+| [提交与执行交互](execution.md) | `src/modules/execution` | 提交收据、接受证据、排队/干预/停止和待答交互 | M1 核心；M2 完整队列管理 |
+| [执行记录与阅读](conversation.md) | `src/modules/conversation` | 会话投影、实时尾部、历史分页、工具/子 Agent 展示、复制 | M1 主链路；M2 长输出；M3 PNG 导出等 |
+| [文件与编辑器](files-editor.md) | `src/modules/files` | 授权读取、文件版本、Monaco 和选区；后续编辑/语言服务 | M1 只读；M3 编辑 |
+| [变化记录与 Git](changes-git.md) | `src/modules/changes` | Git 状态与对比基线、工具修改证据、Diff 业务输入 | M1 只读；M3 Git 写入与完整变化管理 |
+| [Side Chat](side-chat.md) | 无（M3 设计，未登记模块） | 独立问答、上下文快照、只读工具、显式同步和回送 | M3 边界；实际只读能力需先验证 |
+| [内置浏览器](browser.md) | 无（M3 设计，未登记模块） | 预览、标签页、共享持久登录与后续 AI 操作 | M3 边界；不阻塞首版登录 |
+| [集成终端](terminal.md) | 无（M3 设计，未登记模块） | 用户终端会话、进程、输入输出和释放 | M3 边界；不接管 OMP 工具命令 |
+
+模块页名是能力名，不等于 `architecture/modules.json` 的领域模块名，也不一一对应源码目录：`threads`→`workspace`、`files-editor`→`files`、`input-context`→`input`、`changes-git`→`changes` 是同一领域的不同称呼；`runtime-host` 与 `app-storage` 跨 `runtime`/`execution`/`platform`/`app` 组合；`configuration`、`side-chat`、`browser`、`terminal` 在机器清单中没有同名模块。领域模块与环境依赖的机器单源始终是 [`architecture/modules.json`](../../../architecture/modules.json)。
 
 所有模块都遵守[无头功能合同](../headless-features.md)：规则、协调、查询投影、React 绑定和视图按实际需要分工。模块的业务逻辑不因页面卸载而结束，DOM/编辑器等视图资源则应及时释放。
 

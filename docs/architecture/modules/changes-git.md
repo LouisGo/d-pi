@@ -2,6 +2,11 @@
 
 日期：2026-09-27。深度：M1 只读差异与工具证据；M3 Git 写操作及完整变化管理。依据 D-14/D-15/D-20；[基础方案 §3](../../../.scratch/product-requirements/foundation-plan.md#3-变化记录先明确证据再展示-diff)为基线和归属的详细合同。返回[模块地图](README.md)。
 
+## 当前工程落点（领域目录治理，2026-09-29）
+
+- Git 只读合同在 `src/modules/changes/contracts/`，读取实现在 `src/modules/changes/main/project-git.ts`，Renderer 查询面在 `src/modules/changes/renderer/`。
+- 复用 files 的公开读取能力，不写工作区或 Git index，也不推断作者；查询与缓存规则见本页"读路径的查询与缓存"。
+
 ## 范围与拥有者
 
 Main 的变化功能通过成熟 Git 机制查询仓库，消费原生工具证据，为自有 Git Panel 提供明确来源的差异。Git 当前状态和工具报告是不同事实，不能合并成“全部 AI 改动”。

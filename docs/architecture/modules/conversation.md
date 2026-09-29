@@ -1,12 +1,13 @@
 # 执行记录与阅读
 
+日期：2026-09-27。深度：M1 投影与恢复主干，M2 完整阅读验收，M3 PNG 分享。依据 D-01/D-16/D-24/D-26、B-03；[基础契约 §6](../foundation-contracts.md#6-有界事件与恢复b6)。返回[模块地图](README.md)。
+
 ## 当前工程落点（领域目录治理，2026-09-29）
 
 - 合同和历史页在 `src/modules/conversation/contracts/`，无平台阅读客户端在 `core/`，Host 投影在 `host/`，原生历史读取在 `main/`。
 - `src/app/renderer/conversation.tsx` 只组合阅读模型、历史桥和执行收据显示；`ConversationModel` 不启动后台执行，窗口卸载只释放订阅。
 - `ConversationProjection` 由 `conversation/host` 的独立 Host scope 创建并通过公开 `ConversationPort` 输出；`app/host` 将其与 execution Host 组合。OMP 原生历史仍是来源，App 不建立第二套持久历史。
 
-日期：2026-09-27。深度：M1 投影与恢复主干，M2 完整阅读验收，M3 PNG 分享。依据 D-01/D-16/D-24/D-26、B-03；[基础契约 §6](../foundation-contracts.md#6-有界事件与恢复b6)。返回[模块地图](README.md)。
 
 ## 范围与拥有者
 

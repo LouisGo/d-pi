@@ -1,6 +1,6 @@
 # 文档导航与事实来源
 
-更新：2026-09-29。S1/S2 工程已交付，S3 官方 SDK 薄宿主、控制与交互已完成工程验证并交付待试用，见 [S3 规格](../.scratch/m1-s3-control-recovery/spec.md) 与 [试用交接](../.scratch/m1-s3-control-recovery/handoff.md)；S4 前国际化基础见[切片规格](../.scratch/i18n-foundation/spec.md)。恢复缺执行全周期单写证明时保持只读，S4/M2 尚未实施。历史原型与旧切片证据不冒充当前产品验收；先按任务选择材料。路径里的 `prototype`、`draft` 或 `.scratch` 不决定文档是否有效。
+更新：2026-09-30。阶段状态不在此重复维护，单源是各切片的 `spec.md`/`handoff.md`：S1–S4 均已工程交付待试用，i18n 基础 `0.1.0-i18n.0` 源码完成待试用，领域目录治理 P0–P4 与 D-37 状态/查询库迁移已完成；恢复缺执行全周期单写证明时保持只读。历史原型与旧切片证据不冒充当前产品验收；先按任务选择材料。路径里的 `prototype`、`draft` 或 `.scratch` 不决定文档是否有效。
 
 ## 各类文档负责什么
 
@@ -18,7 +18,7 @@
 | [CONTEXT.md](../CONTEXT.md) | 领域概念和统一用语；技术字段、传输与持久化细节以合同为准 |
 | [验证记录](validation/)、[历史 GUI 证据](archive/stage1-evidence.md)及机器结果 | 支持特定版本、平台和场景的事实；验证通过不决定产品范围，也不证明未来集成已通过 |
 | [技术审议](architecture/technology-selection-review.md)、[增量评估](../.scratch/product-requirements/technical-evaluation.md)、[Composer 研究](../.scratch/product-requirements/composer-research.md) | 候选、比较和待验证问题；建议按决定登记辨别状态 |
-| [无头功能 skill](../.agents/skills/d-pi-headless-features/SKILL.md)、[TypeScript skill](../.agents/skills/d-pi-typescript/SKILL.md)与[任务约定](agents/issue-tracker.md) | 在当前授权范围内组织工作，按需引用合同；不自行扩大范围或批准候选 |
+| [各项目 skill](../.agents/skills/)（架构、设计系统、无头功能、TypeScript）与[任务约定](agents/issue-tracker.md) | 在当前授权范围内组织工作，按需引用合同；不自行扩大范围或批准候选。skill 的触发范围以其 frontmatter 为准 |
 | [历史归档](archive/pre-reset/README.md) | 来源提交、决策、研究与机器结果；只作历史证据，不作为当前构建或执行指令。旧源码与同名构建文件已于 2026-09-30 裁剪，`pruned` 段记录其哈希与取回方式 |
 
 文档冲突先查决定的日期、状态与明确取代关系，不按文件新旧、目录名或措辞强弱猜测。代码/观测与文档不符时，应分别报告实现事实、既定要求和证据缺口；不能以当前行为自动改写规格。
@@ -42,4 +42,4 @@
 2. 从[模块地图](architecture/modules/README.md)选择目标模块及直接依赖，按受影响场景查对应合同和已有证据；跨模块接入补读交接图。功能任务需要哪一项 G1 就验证哪一项，不等待全产品 G1；证据版本或适用条件变化时才补验证。
 3. 在当前任务记录结果、实际验证和剩余缺口。已确认方向不重开选型；改变决定时同步登记、规格与取代记录，不把普通实现细节升级成用户问卷。
 
-旧 `.scratch/omp-gui-m1` / 归档中的 **M1** 指历史原型阶段；当前 **M1** 指基础契约定义的内部闭环，两者不能互换。归档中失效的临时路径或旧命令保留原貌；复用时核实当前资源与版本。当前 `docs/prototype/` 三份文档是整理后的有效交接、架构与候选索引，不因目录名而失效。
+旧 `.scratch/omp-gui-m1`（现已归档在 `docs/archive/pre-reset/`）/ 归档中的 **M1** 指历史原型阶段；当前 **M1** 指基础契约定义的内部闭环，两者不能互换。归档中失效的临时路径或旧命令保留原貌；复用时核实当前资源与版本。当前 `docs/prototype/` 三份文档是整理后的有效交接、架构与候选索引，不因目录名而失效。

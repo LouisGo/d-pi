@@ -2,6 +2,11 @@
 
 日期：2026-09-27。深度：M1 文字/选区主干，M2 全部指定输入。依据 D-10/D-24/D-33；[Composer 方案](../../../.scratch/product-requirements/foundation-plan.md#2-composer最小-tiptap-与项目业务扩展)、[基础契约 §4](../foundation-contracts.md#4-内容包与附件b4)。返回[模块地图](README.md)。
 
+## 当前工程落点（领域目录治理，2026-09-29）
+
+- 草稿合同与状态在 `src/modules/input/contracts/`，控制器与引用序列化在 `src/modules/input/core/`，草稿仓储与服务在 `src/modules/input/main/`，编辑器适配在 `src/modules/input/renderer/`。
+- 应用级 Composer 组合留在 `src/app/renderer/workbench/`，不复制草稿真相；提交收据与 OMP 消费仍归 execution。
+
 ## 范围与拥有者
 
 Renderer 的最小 Tiptap 实例拥有文字、引用节点、选区和撤销；Main 的输入功能协调持久草稿、附件准备与内容冻结。[存储](app-storage.md)提供事务/私有文件能力，[执行](execution.md)拥有提交结果。编辑器内部 JSON 不成为全应用或 OMP 的永久协议。

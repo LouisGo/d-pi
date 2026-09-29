@@ -1,6 +1,6 @@
 # TypeScript 范式与数据边界
 
-日期：2026-09-26。状态：D-35 已确认；适用于 d-pi 应用自有 TypeScript，包括 Main、Host、preload、Renderer、共享合同和测试。用户要求 ts-pattern 尽用于应用业务分支、用好 Zod v4；本文件把方向落实为写法和验收依据。当前尚无产品源码，下面是接入标准，不是已经通过的工程检查。
+日期：2026-09-26。状态：D-35 已确认；适用于 d-pi 应用自有 TypeScript，包括 Main、Host、preload、Renderer、共享合同和测试。用户要求 ts-pattern 尽用于应用业务分支、用好 Zod v4；本文件把方向落实为写法和验收依据。应用自有 TypeScript 已落地（`src/` 179 个源文件，strict、noUncheckedIndexedAccess、exactOptionalPropertyTypes、verbatimModuleSyntax 等见 `tsconfig.json`，`zod` 4.6.5 与 `ts-pattern` 5.9.0 已安装）；本文是写法标准，具体集成验收仍按切片记录，有代码不等于已验收。
 
 ## 1. 让正确性体现在类型里
 
@@ -83,6 +83,6 @@ export function readLabel(payload: unknown): LabelResult {
 
 类型、schema 与模式匹配帮助落实已有[基础契约](foundation-contracts.md)、[无头功能](headless-features.md)和[诊断合同](diagnostics.md)，不新建第二套状态/异常/持久化框架。Base UI/Tiptap 类型留在 Renderer 接入层，SQLite 行/驱动留在宿主存储适配层，共享 DTO 不依赖这些供应商类型。数据库约束与版本检查仍要执行，Zod 不是事务，事务也不是 OMP 已接受的证明。
 
-建立产品工程后，改动按影响完成类型检查、Biome 与必要行为测试；边界变化覆盖合法值、非法值、未知版本/事件及授权失败，业务变化覆盖相应失败与恢复路径。有防错价值时加编译期反例，例如新增联合分支必须补处理、不同业务 ID 不能误传；不为每个类型制造快照或重复实现的测试。公开提交实际运行的命令和结果，不能把本规范或静态示例当作通过证据。
+改动按影响完成类型检查（`pnpm typecheck`）、Biome（`pnpm lint`）与必要行为测试（`pnpm test`）；边界变化覆盖合法值、非法值、未知版本/事件及授权失败，业务变化覆盖相应失败与恢复路径。有防错价值时加编译期反例，例如新增联合分支必须补处理、不同业务 ID 不能误传；不为每个类型制造快照或重复实现的测试。公开提交实际运行的命令和结果，不能把本规范或静态示例当作通过证据。
 
 质量标准是：类型能指出遗漏，外部坏数据被明确处理，业务状态/副作用归属易读，修改一个合同能追到受影响位置。库使用数量、泛型层数和链式写法本身都不是质量指标。

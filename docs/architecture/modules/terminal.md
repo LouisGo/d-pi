@@ -2,6 +2,10 @@
 
 日期：2026-09-27。深度：M3 边界设计，终端适配与多会话细节待定。依据 D-13/D-25；[最终需求](../../../.scratch/product-requirements/spec.md)、[生命周期合同](../foundation-contracts.md#1-身份持久化与生命周期b1)。返回[模块地图](README.md)。
 
+## 当前工程落点（领域目录治理，2026-09-29）
+
+- 无。本页是 M3 边界设计，尚未在 [`architecture/modules.json`](../../../architecture/modules.json) 登记模块，也没有对应源码目录；接入时先按[模块地图](README.md)确定领域归属与环境。
+
 ## 用户场景与所有权
 
 用户通过 Command + ` 打开底部终端，直接输入命令并运行程序。Main 的终端功能拥有 PTY/进程和工作目录关联，Renderer 的终端适配拥有显示、选择和键盘绑定。具体终端库和 PTY 实现到切片验证，不因存在候选而提前引入。

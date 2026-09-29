@@ -2,6 +2,11 @@
 
 日期：2026-09-27。深度：M1 只读与选区；M3 编辑及 TS/JS/Node 语言服务。依据 D-06/D-07/D-10/D-25；[基础契约 §5](../foundation-contracts.md#5-最小权限与信任b5)。返回[模块地图](README.md)。
 
+## 当前工程落点（领域目录治理，2026-09-29）
+
+- 文件合同与选区在 `src/modules/files/contracts/` 与 `core/`，授权只读读取在 `src/modules/files/main/`，Monaco 只读适配在 `src/modules/files/renderer/`。
+- Renderer 的 Query key 与 hooks 由 `src/modules/files/renderer/public.ts` 暴露；`networkMode: 'always'` 与 `unavailable` 语义见本页"读路径的查询、缓存与编辑器边界"。
+
 ## 范围与拥有者
 
 Main 的文件功能在授权范围内读取实际文件，返回来源、版本和内容。Renderer 的 Monaco 适配管理文件模型、选区和视图资源，不直读 Node 文件系统。工作目录及授权记录由 [Thread](threads.md)提供，实际打开文件时由文件功能复核。

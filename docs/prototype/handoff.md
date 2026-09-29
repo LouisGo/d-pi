@@ -1,9 +1,9 @@
 # 当前交接：保留历史依据，按新需求渐进交付
 
-本页汇总历史工作与复用边界；当前状态和按任务阅读入口见 [README](../../README.md)与[文档导航](../README.md)。阶段范围已收敛为[基础契约](../architecture/foundation-contracts.md)中的 G1/M1/M2/M3，当前 S1 项目与持久草稿已实现，最新工程/试用状态见 [S1 交接](../../.scratch/m1-s1-project-draft/handoff.md)，其余切片尚未交付。
-清理提交 `a56ea59` 移除了应用实现，也误删了仍有用的选型与原型记录。此次先完整归档被删文件，包括源码、测试和构建配置；用户已选择保留完整旧基线、逐项复用，不恢复为根目录可运行应用。没有运行旧原型。用户本意是整理优化，不是清空已有研究。
+本页汇总历史工作与复用边界；当前状态和按任务阅读入口见 [README](../../README.md)与[文档导航](../README.md)，本页不维护阶段状态。阶段范围已收敛为[基础契约](../architecture/foundation-contracts.md)中的 G1/M1/M2/M3；S1–S4、i18n 基础与领域目录治理均已工程交付待试用，各自状态见对应切片的 `spec.md`/`handoff.md`。
+清理提交 `a56ea59` 移除了应用实现，也误删了仍有用的选型与原型记录。其后先完整归档被删文件，2026-09-30 再按用户决定精准瘦身：移除旧应用源码、与当前真实配置同名的构建文件和不可运行的原型脚本，保留决策、研究快照与机器结果。用户本意是整理优化，不是清空已有研究；归档只作历史证据，不恢复为根目录可运行应用。
 
-原始证据的固定提交、49 份逐字归档及哈希见[原始记录与清单](../archive/pre-reset/README.md)。产品要求、工程合同与提议的职责由文档导航统一说明，本页不另设一套必读顺序。
+原始证据的固定提交与逐字保留的 26 个文件及其哈希见[原始记录与清单](../archive/pre-reset/README.md)；被裁剪的 23 个文件的哈希与 `git show 6fab3ef:<原路径>` 取回方式记在同一 manifest 的 `pruned` 段。产品要求、工程合同与提议的职责由文档导航统一说明，本页不另设一套必读顺序。
 
 ## 已做过的工作，不重新当成未知项
 
@@ -28,9 +28,9 @@
 | Renderer 与 GUI 记录 | 已跑通的交互流程、真实模型操作证据 | 按 D-32 的 Base UI、自有组件层和 Streamdown 迁入；复核版本与 Hugeicons，旧主题/组件不直接恢复 |
 | 构建配置与锁文件 | 可追溯的旧构建环境和入口组织 | 结合随包 Runtime 与 Biome 更新；旧锁文件不是当前版本选择 |
 
-## 当前下一步
+## 复用入口与下一步
 
-2026-09-27：从[模块地图](../architecture/modules/README.md)定位责任和依赖，按[交接图](../architecture/modules/flows.md)检查提交/恢复，再按[M1 切片计划](../../.scratch/development-foundation/spec.md)选择当前功能。模块设计已准备，原生/GUI 验收仍待后续开发；不要求重读全仓或重开已定选型。
+从[模块地图](../architecture/modules/README.md)定位责任和依赖，按[交接图](../architecture/modules/flows.md)检查提交/恢复，再到对应切片的 `spec.md`/`handoff.md` 读当前功能与状态。模块与目录设计已完成并有机器门禁；不要求重读全仓或重开已定选型。
 
 先只读代码与 Diff，后续编辑，渐进交付；OMP TUI 全集是最终覆盖目标。保留既有自有组件层和状态归属，编辑器已选定 Monaco，重点完成其集成与 D-33 最小 Tiptap Composer 验证，不重新从零列一套冲突技术栈。
 
@@ -44,6 +44,6 @@
 
 2026-09-25 后续共识：D-28–D-30 与[无头功能合同](../architecture/headless-features.md)成为功能开发入口；按功能验证→无头功能→正式 GUI，不引入 XState，业务生命周期独立于 React。功能规划、拆票、实现与架构评审使用 [仓库 skill](../../.agents/skills/d-pi-headless-features/SKILL.md)；普通文档或 skill 审计不因此触发整套功能流程。
 
-2026-09-25 图标选择：D-31 确认 Hugeicons 取代 Lucide 提议；[图标方案](../architecture/icon-system.md)规定视图层语义封装、免费统一风格及 GUI 阶段验收。未安装图标依赖或创建产品组件。
+2026-09-25 图标选择：D-31 确认 Hugeicons 取代 Lucide 提议；[图标方案](../architecture/icon-system.md)规定视图层语义封装、免费统一风格及 GUI 阶段验收。未安装图标依赖或创建产品组件。（2026-09-30 更正：两个依赖与视图层 Icon Layer 其后已按 S1 切片接入并验收，见[图标合同](../architecture/icon-system.md)的当前状态与 S1 验证记录。）
 
 2026-09-26：用户确认 D-32–D-35，Base UI、最小 Tiptap、SQLite 已定；ts-pattern 为应用业务分支默认范式，Zod v4 为边界校验标准。按[TypeScript 合同](../architecture/typescript.md)及相关 skill 推进，不再把这些库当作待选项；具体集成与性能仍待验证。

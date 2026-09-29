@@ -42,7 +42,7 @@ node .scratch/omp-runtime-feasibility/packaged/run.cjs \
 - 经 LaunchServices 启动，不声称已经手动点击 Finder；没有验证 Gatekeeper、签名、公证、安装器及首次下载体验。
 - 开发机器上的 macOS arm64 实验，不是干净机器、Intel、Windows 或 Linux 兼容认证。
 - 模型为 localhost 固定响应，没有验证真实供应商认证、模型理解质量或 UI 流畅度。
-- 早期依赖外部 OMP 的应用实现已移除。本次证明随包方案可行，仓库目前没有产品级实现。
+- 早期依赖外部 OMP 的应用实现已移除。本次证明随包方案可行；结论限随包机制与当时产物，产品级实现与发行验收不在本次范围。
 
 ## 本阶段收束与提交条件
 

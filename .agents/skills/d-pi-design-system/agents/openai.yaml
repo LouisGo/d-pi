@@ -1,0 +1,4 @@
+interface:
+  display_name: "d-pi 样式与组件"
+  short_description: "沿用 shadcn/Base UI 模式统一 token 与组件契约，按主题与密度合同验收样式改动"
+  default_prompt: "使用 $d-pi-design-system 按设计系统合同处理当前样式或组件任务，并在收尾运行设计 lint。"

@@ -192,7 +192,6 @@
         "main": ["input", "platform", "shared", "workspace"],
         "renderer": ["input", "shared"]
       },
-      "testDependsOn": ["app"],
       "materialized": true
     },
     "runtime": {

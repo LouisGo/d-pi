@@ -2,6 +2,13 @@
 
 日期：2026-09-27。深度：M1 配置复用设计；M2 两条认证与子 Agent Thread 覆盖接入待验证。依据 D-03/D-04/D-23/D-27；[配置 ADR](../../adr/0002-share-native-omp-config.md)、[基础契约 §3](../foundation-contracts.md#3-配置与首版认证b3)。返回[模块地图](README.md)。
 
+## 当前工程落点（领域目录治理，2026-09-29）
+
+- OMP profile 复用发生在 `runtime/host.mjs` 的 `resolveProfileEnv`/`setProfile`；随包资源与固定版本清单在 `src/platform/omp/resources/`。
+- 执行侧配置上下文 `configContextId` 由 `src/modules/execution/main/runtime-service.ts` 按规范化目录与环境派生，不是第二份原生配置。
+- App 自有的主题、密度与 locale 偏好归 `src/modules/preferences/`，该模块不拥有 OMP 配置。
+- D-23 的两条 GUI 认证入口（OpenAI 账户、DeepSeek API key）尚未实现，本页其余部分仍是设计合同而非已交付能力。
+
 ## 范围与拥有者
 
 复用 OMP 原生配置读取、合并、认证与保存。配置模块负责桌面接入和摘要，不维护第二套模型目录、默认值或凭据库。App 窗口偏好属于 App 存储，项目执行信任与文件授权属于 [Thread](threads.md)。

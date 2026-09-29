@@ -8,7 +8,7 @@
 
 2026-09-29 用户随后正式开启 S4：只读项目文件、准确文件选区附入输入、来源与覆盖明确的 Git 当前差异及原生工具修改证据；非 Git、缺失和并发变化如实呈现，工作区变化不归为 Agent 修改。范围及工程/试用状态以 [S4 spec](.scratch/m1-s4-files-diff/spec.md) 和[交接](.scratch/m1-s4-files-diff/handoff.md)为准。`0.1.0-s4.0` 源码、自动化、开发态与 macOS 包内 GUI 检查已完成，工程交付用户试用；原生工具结果缺真实样本，用户体验未认可，不据此开启 S5/M2。S3 试用及冷恢复只读限制继续有效。
 
-2026-09-29 用户正式开启领域目录治理第二版：P0 最小门禁、P1 文件→选区→输入完整切片完成后，继续完成 P2–P4；遵循 TDD、必要回归/构建/受影响 GUI 验证，分波本地 commit，不 push、不扩展 S5/M2。当前源码按 `src/app`、`src/modules`、`src/platform`、`src/shared` 和 `runtime` 归属；机器门禁见 `architecture/modules.json`，入口为 `pnpm check:architecture`、`pnpm test:architecture`、`pnpm report:structure`。迁移不得改变行为、事务原子性、恢复顺序或 OMP 所有权；公开入口、环境依赖和到期例外必须同步规则与地图，行数只作审查提示。
+2026-09-29 用户正式开启领域目录治理第二版：P0 最小门禁、P1 文件→选区→输入完整切片完成后，继续完成 P2–P4；遵循 TDD、必要回归/构建/受影响 GUI 验证，分波本地 commit，不 push、不扩展 S5/M2。当前源码按 `src/app`、`src/modules`、`src/platform`、`src/shared` 和 `runtime` 归属；机器门禁见 `architecture/modules.json`，入口为 `pnpm check:architecture`、`pnpm test:architecture`、`pnpm report:structure`。迁移不得改变行为、事务原子性、恢复顺序或 OMP 所有权；公开入口、环境依赖和到期例外必须同步规则与地图，行数只作审查提示。**P0–P4 及独立 review 的补修波次均已完成工程交付并分波本地提交**，用户试用仍待进行，见[治理交接](.scratch/domain-directory-governance/handoff.md)。
 
 2026-09-29 用户指出重构后 Zustand 与 `@tanstack/react-query` 只存在于文档和归档、没有实现，明确"不能接受不在这两个库的基础上做全局状态管理，包括异步状态管理"，并选择先落决定与规格、再按 TDD 迁移且保留现有外部行为。D-37 据此把两库锁为基础依赖，取代 09-28 加固轮次追加的"不为名录补齐状态库"规则（该句未经决定变更流程）。四个展示状态模型已迁移到 Zustand vanilla store、文件与 Git 读路径已接入 Query（`networkMode: 'always'`、显式刷新、`unavailable` 非重试错误）；`pnpm check` 与 `pnpm build` 通过，真实 GUI 核对因会话环境 `ELECTRON_RUN_AS_NODE=1` 无法执行，试用未交付。范围与状态以 [对齐切片](.scratch/state-query-alignment/spec.md)与[交接](.scratch/state-query-alignment/handoff.md)为准；历史模型/历史分页等异步查询仍按功能接入，不扩展 S5/M2。
 

@@ -2,7 +2,7 @@
 
 以 Electron GUI 复用 OMP Runtime，改善需求输入、执行观察和结果阅读。应用将内置 OMP，用户无需另行安装 CLI。
 
-**当前状态（2026-09-28）：M1 S2 文字发送与阅读主流程已交付待试用。** `0.1.0-s2.0` 使用未修改的官方 OMP v18.3.0，支持同一存活会话两轮发送、持久提交原文、流式阅读、只读历史和关窗重连。S2 基线的真实 macOS 包定向检查已通过；独立 review 的 3 项修复已进入源码，当前 72 项自动化测试通过，不等于用户体验或真实供应商配置已验收。S1 旧包保留。
+**当前状态（2026-09-30）：`0.1.0-s4.0`，S1–S4 四段工程均已交付待用户试用。** i18n 基础 `0.1.0-i18n.0` 源码完成待试用；领域目录治理 P0–P4 与 D-37 状态/查询库迁移已完成。真实供应商配置与用户体验均未获认可，工程交付不等于试用通过。状态单源是各切片的 `spec.md`/`handoff.md`，最近的是 [S4 交接](.scratch/m1-s4-files-diff/handoff.md)、[i18n 交接](.scratch/i18n-foundation/handoff.md)与[状态/查询对齐交接](.scratch/state-query-alignment/handoff.md)；本文件不重复维护阶段状态。
 
 从 [文档导航](docs/README.md) 按任务找到依据；全局审计可按其中的底层到顶层顺序阅读。设计与开发以 [决定登记](docs/decisions.md)、[基础方案](.scratch/product-requirements/foundation-plan.md)和相关 [基础契约](docs/architecture/foundation-contracts.md)为准。具体任务按用户授权推进，不重复开启已收敛的选型。
 
@@ -16,11 +16,11 @@ pnpm check
 pnpm package:mac
 ```
 
-项目默认仅浏览；明确允许执行并启动后才加载原生项目配置/扩展。`pnpm runtime:fetch` 下载固定版本并校验 SHA-256，不使用全局 OMP。常规打包产物在 `dist/mac-arm64/d-pi.app`；历史试用包在 `dist/s2-candidate/mac-arm64/d-pi.app`，尚不包含独立 review 修复；当前源码用 `pnpm dev` 启动，详见交接。
+项目默认仅浏览；明确允许执行并启动后才加载原生项目配置/扩展。`pnpm runtime:fetch` 下载固定版本并校验 SHA-256，不使用全局 OMP。打包产物落在 `dist/<名称>/mac-arm64/d-pi.app`；`dist/` 不纳入版本控制，各机器按需自行构建，具体构建标识见对应切片交接。当前源码用 `pnpm dev` 启动。
 
-通过 `D_PI_DATA_DIR=/绝对路径` 隔离 App 的 SQLite/日志；这**不会隔离原生 OMP 配置**。正常退出后执行恢复、排队/干预/停止和完整待交互回答属于 S3，当前不会自动新建原生会话替代已有 Thread。不要删除数据库来解决启动或迁移失败。
+通过 `D_PI_DATA_DIR=/绝对路径` 隔离 App 的 SQLite/日志；这**不会隔离原生 OMP 配置**。正常退出后执行恢复、排队/干预/停止和完整待交互回答已由 S3 交付待试用；冷恢复缺全周期单写证明时保持只读，不会自动新建原生会话替代已有 Thread。不要删除数据库来解决启动或迁移失败。
 
-启动命令、试用步骤、构建标识和明确限制见 [S2 交接](.scratch/m1-s2-submit-read/handoff.md)。包限本机 macOS arm64，未签名/公证，旧 [S1 交接](.scratch/m1-s1-project-draft/handoff.md)保留为历史证据。
+启动命令、试用步骤、构建标识和明确限制见 [S4 交接](.scratch/m1-s4-files-diff/handoff.md)；[S3](.scratch/m1-s3-control-recovery/handoff.md)、[i18n](.scratch/i18n-foundation/handoff.md)与[状态/查询对齐](.scratch/state-query-alignment/handoff.md)各有独立交接。包限本机 macOS arm64，未签名/公证；[S1](.scratch/m1-s1-project-draft/handoff.md)、[S2](.scratch/m1-s2-submit-read/handoff.md)交接保留为历史证据。
 
 ## 设计与历史入口
 

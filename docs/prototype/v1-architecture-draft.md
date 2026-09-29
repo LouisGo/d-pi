@@ -1,6 +1,6 @@
 # OMP Desktop 架构与渐进交付
 
-本页整合 `6fab3ef` 的[原架构稿](../archive/pre-reset/docs/prototype/v1-architecture-draft.md)与本轮需求。已确认决策、待验证方案和历史实现分开记录；当前工作区没有产品应用，不将历史验收冒充当前应用验收。
+本页整合 `6fab3ef` 的[原架构稿](../archive/pre-reset/docs/prototype/v1-architecture-draft.md)与本轮需求。已确认决策、待验证方案和历史实现分开记录；当前工作区已有产品实现（`src/` 179 个源文件，按 `src/app`、`src/modules`、`src/platform`、`src/shared` 与 `runtime` 归属，见[模块地图](../architecture/modules/README.md)），但历史验收仍不冒充当前应用验收。
 
 2026-09-27：具体功能责任已整理为[模块地图](../architecture/modules/README.md)及[交接时序](../architecture/modules/flows.md)，近期实施按[M1 开发准备](../../.scratch/development-foundation/spec.md)。本页继续维护整体架构和历史取舍，模块页维护局部交接，不复制两套合同。
 
@@ -65,7 +65,7 @@ D-22 进一步要求类型化异常与明确处理职责：发现层、错误报
 
 保留真实客户端验证的旧约定：协议 fixture 验证边界，真实 OMP/可见 GUI 验证用户路径，两者不能互相冒充。优先核实变更所影响的契约，不无理由重复所有已通过实验。
 
-历史存在开发态与打包 GUI 实测、9 项 Runtime 检查、6 项 Settings 补测及最小随包实验；目前无产品源码，故这些是复用设计的依据，不是新实现通过证明。真实中文 IME、长输出/背压、大帧端到端及部分审批/故障路径尚未完成；原验收清单保存在[旧 M1 规格](../archive/pre-reset/.scratch/omp-gui-m1/spec.md)。
+历史存在开发态与打包 GUI 实测、9 项 Runtime 检查、6 项 Settings 补测及最小随包实验；这些是复用设计的依据，不是当前实现的通过证明。真实中文 IME、长输出/背压、大帧端到端及部分审批/故障路径尚未完成；原验收清单保存在[旧 M1 规格](../archive/pre-reset/.scratch/omp-gui-m1/spec.md)。
 
 ## 2026-09-25 接入方向修订
 

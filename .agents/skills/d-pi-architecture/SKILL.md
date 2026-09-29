@@ -1,11 +1,18 @@
+---
+name: d-pi-architecture
+description: "用于 d-pi 领域归属、目录迁移、公开面、跨模块依赖与结构门禁相关任务；以 architecture/modules.json 为机器单源，保证迁移不改变行为、事务原子性、恢复顺序或 OMP 所有权。不用于全局文档/skill 审计、纯文字或纯样式修正。"
+---
+
 # d-pi Architecture
 
 用于领域归属、目录迁移、跨模块依赖和架构门禁相关任务。它补充而不替代 `d-pi-headless-features`、`d-pi-typescript` 与设计系统规则。
 
+以下路径相对仓库根，不相对调用时的 cwd。
+
 ## 开始前
 
 1. 读取当前切片 spec/交接、`docs/decisions.md`、`docs/architecture/modules/README.md`，跨模块再读 `flows.md` 和相关模块页。
-2. 先判断业务事实的唯一拥有者，再选择 `contracts`、`core`、`main`、`host` 或 `renderer`。只有应用级装配才进入 `src/app`，纯平台能力才进入 `src/platform`；不能因目录看起来整齐而创建空抽象。
+2. 先判断业务事实的唯一拥有者，再选择环境目录：领域模块用 `contracts`、`core`、`main`、`host`、`renderer`；`src/app` 另有 `preload`；`src/platform` 用 `main`、`node`、`omp`；`src/shared` 自身即一层。完整取值以 `architecture/modules.json` 的 `environments` 为准，不在本文手写第二份清单。只有应用级装配才进入 `src/app`，纯平台能力才进入 `src/platform`；不能因目录看起来整齐而创建空抽象。
 3. 检查 `architecture/modules.json` 中的公开面和环境依赖。普通内部文件不登记；公开面、新跨模块依赖或环境变化才更新清单。
 
 ## 实施规则

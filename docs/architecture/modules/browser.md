@@ -2,6 +2,10 @@
 
 日期：2026-09-27。深度：M3 边界设计，嵌入与 AI 操作接入待定。依据 D-12；[最终需求](../../../.scratch/product-requirements/spec.md)、[不可信内容边界](../foundation-contracts.md#5-最小权限与信任b5)。返回[模块地图](README.md)。
 
+## 当前工程落点（领域目录治理，2026-09-29）
+
+- 无。本页是 M3 边界设计，尚未在 [`architecture/modules.json`](../../../architecture/modules.json) 登记模块，也没有对应源码目录；接入时先按[模块地图](README.md)确定领域归属与环境。
+
 ## 用户场景与所有权
 
 支持本地项目预览、外部浏览和登录。应用内使用共享的持久登录环境，不按项目划分账号空间；页面与项目关联不改变该规则。Main 管浏览资源及其生命周期，Renderer 管标签页和导航展示。

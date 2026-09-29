@@ -1,0 +1,4 @@
+interface:
+  display_name: "d-pi 领域与目录治理"
+  short_description: "按机器清单判断领域归属、公开面与跨模块依赖，保证迁移不改变行为与 OMP 所有权"
+  default_prompt: "使用 $d-pi-architecture 按当前任务确认领域归属与依赖边界，迁移后运行架构门禁并同步模块地图。"

@@ -2,8 +2,6 @@
 
 用途：为 M1 规格验证进程链路，不是应用实现。需要 macOS arm64、本机 OMP 18.3.0 和 Electron 42.11.1。
 
-> 2026-09-30：本目录原型脚本（`main.cjs`、`host.cjs`、`preload.cjs`、`rpc-ui-probe.cjs`、`interaction.ts`）已随精准瘦身移出工作区，见[归档说明](../../../README.md)。下面的命令是当时的运行记录，现已不可直接执行；机器结果证据仍保留在 `*-result.json`。
-
 本次运行命令（Electron 是本机缓存解压的运行时）：
 
 ```sh
