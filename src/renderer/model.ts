@@ -27,8 +27,7 @@ export function transportFailure(traceId: string): Failure {
     attribution: "unknown",
     handlingOwner: "draft",
     recovery: "reconcile_first",
-    safeMessage:
-      "连接中断，保存结果未确认。当前输入已保留，请核对保存状态后继续。",
+    message: { code: "draft.transportUnknown" },
   };
 }
 export class AppModel {
@@ -192,7 +191,7 @@ export class AppModel {
       this.accept({ kind: "failed", error: transportFailure(traceId) });
     }
   }
-  async preference(key: keyof Preferences): Promise<void> {
+  async preference(key: Exclude<keyof Preferences, "locale">): Promise<void> {
     if (this.state.kind !== "ready" || this.state.busy) return;
     const current = this.state.preferences;
     const value = match(key)

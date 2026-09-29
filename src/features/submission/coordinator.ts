@@ -1,5 +1,6 @@
 import { match } from "ts-pattern";
 import { draftByteLength } from "../../shared/draft-text";
+import { uiMessage } from "../localization/contracts";
 import { changesManagedSession } from "../runtime/native-command-policy";
 import {
   type FrozenSubmission,
@@ -180,29 +181,21 @@ export class SubmissionCoordinator {
     code: SubmissionFailure["code"],
     context?: FrozenSubmission,
   ): SubmissionResult {
-    const safeMessage = match(code)
+    const messageCode = match(code)
       .with(
         "storage-unavailable",
-        () => "提交记录暂时无法保存。请保留原文并核对状态，不要重复发送。",
+        () => "submission.storageUnavailable" as const,
       )
-      .with("not-ready", () => "当前执行环境尚未就绪，原文已保留。")
+      .with("not-ready", () => "submission.notReady" as const)
       .with(
         "unsupported-native-command",
-        () =>
-          "未发送：当前不支持通过原生命令迁移或删除 App 管理的会话，原文已保留。",
+        () => "submission.unsupportedNativeCommand" as const,
       )
-      .with("content-too-large", () => "正文编码后超过发送上限，原文未截断。")
-      .with("unknown-submission", () => "找不到该次提交记录。")
-      .with("stale-event", () => "已忽略不属于当前实例的回执。")
-      .with(
-        "revision-conflict",
-        () => "提交身份或草稿版本已变化，请核对当前内容。",
-      )
-      .with(
-        "queue-full",
-        () =>
-          "排队已满（20 条），请等待消费后再发送；原文已保留，不会自动重发。",
-      )
+      .with("content-too-large", () => "submission.contentTooLarge" as const)
+      .with("unknown-submission", () => "submission.unknownSubmission" as const)
+      .with("stale-event", () => "submission.staleEvent" as const)
+      .with("revision-conflict", () => "submission.revisionConflict" as const)
+      .with("queue-full", () => "submission.queueFull" as const)
       .exhaustive();
     return {
       kind: "failed",
@@ -217,7 +210,7 @@ export class SubmissionCoordinator {
         handlingOwner: "submission",
         recovery:
           code === "storage-unavailable" ? "reconcile_first" : "user_action",
-        safeMessage,
+        message: uiMessage(messageCode),
       },
     };
   }

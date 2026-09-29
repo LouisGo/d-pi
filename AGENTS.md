@@ -4,6 +4,8 @@
 
 2026-09-28 后续用户已正式开启 S3：核对固定官方 OMP 的原生队列控制与恢复单写门槛，完善规格、拆票并按 TDD 实施，验证后交付试用及本地 commit，不推送。当前范围、待决产品取舍与工程状态以 [S3 spec](.scratch/m1-s3-control-recovery/spec.md) 为准；不扩展 S4/M2。此前 S2 文档中的“不启动 S3”只描述历史授权。用户随后确认官方 SDK 薄宿主路线；S3 `0.1.0-s3.0` 工程已交付待试用，见 [S3 交接](.scratch/m1-s3-control-recovery/handoff.md)。官方 SDK 未修改、unknown 不自动重发、缺单写证据只读；不把试用交付视为用户认可。
 
+2026-09-29 用户明确要求在 S4 前落地引用对话的完整 i18n 方案，先盘点写死语言，再按当前流程与 TDD 开发。D-36 及[国际化架构](docs/architecture/internationalization.md)为基准；当前 `0.1.0-i18n.0` 源码工程完成、待用户试用，见[切片规格](.scratch/i18n-foundation/spec.md)与[交接](.scratch/i18n-foundation/handoff.md)。不因本轮授权自动实施 S4/M2，S3 用户试用和恢复单写门槛仍保持原状态。
+
 ## 决定连续性
 
 - 产品设计、技术选型或实现前，读取 [决定登记](docs/decisions.md)、[基础方案](.scratch/product-requirements/foundation-plan.md)及相关需求/ADR；识别受影响决定的 ID 与状态。其他任务只读相关材料，已读且未变化的内容不重复加载。
@@ -43,6 +45,7 @@
 | 本地需求与任务记录 | [issue 约定](docs/agents/issue-tracker.md)，文件放在 `.scratch/<feature>/` |
 | 领域术语或架构决定 | [领域文档约定](docs/agents/domain.md)、根 `CONTEXT.md` 与相关 `docs/adr/` |
 | 跨进程操作、错误或性能 | [诊断合同](docs/architecture/diagnostics.md)；D-21/D-22 从每个功能开始落实，不作为末期补项 |
+| 产品界面文案、语言偏好及跨层展示消息 | [国际化架构](docs/architecture/internationalization.md)与[产品术语](docs/product-terminology.md)；只翻译 d-pi 自有文案，Main/Renderer 共用解析语言，SessionHost/OMP 不格式化 |
 | GUI 样式、组件、主题或密度 | 使用 [d-pi-design-system](.agents/skills/d-pi-design-system/SKILL.md)，读取[设计系统合同](docs/architecture/design-system.md)及相关源码依据；纯样式任务也适用。S1 起接入 token 与 `@shadcn/lint` + Oxlint，遵守全局主题/密度和组件覆盖边界 |
 | GUI 图标或外部 UI 源码接入 | [图标合同](docs/architecture/icon-system.md)；纯图标/样式任务也适用 |
 | 重新评估已有技术方向或复用旧实现 | [交接](docs/prototype/handoff.md)、[架构](docs/prototype/v1-architecture-draft.md)、[库雷达](docs/prototype/frontend-library-radar.md)的相关部分；保留理由与证据，不从零重选 |

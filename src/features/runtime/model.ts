@@ -1,6 +1,7 @@
 import type { ThreadId } from "../../shared/identity";
 import type { Answer } from "../control/interactions";
 import { ConversationModel } from "../conversation/model";
+import { uiMessage } from "../localization/contracts";
 import type { RuntimeBridge, RuntimeCommand, RuntimeView } from "./contracts";
 export class RuntimeModel {
   private view: RuntimeView | null = null;
@@ -57,13 +58,14 @@ export class RuntimeModel {
       this.publish({
         threadId,
         traceId,
-        configuration: this.view?.configuration ?? "配置来源尚未确认",
+        configuration:
+          this.view?.configuration ?? uiMessage("runtime.configUnknown"),
         revision: this.view?.revision ?? 0,
         phase: "interrupted",
         trusted: this.view?.trusted ?? false,
         busy: kind === "start" || (this.view?.busy ?? false),
         model: this.view?.model ?? null,
-        message: "连接状态无法确认。草稿仍保留，请重新检查状态；不会自动发送。",
+        message: uiMessage("runtime.connectionUnknown"),
       });
     }
   }
@@ -82,7 +84,7 @@ export class RuntimeModel {
       if (this.view === current)
         this.publish({
           ...current,
-          message: "控制结果未知。请检查状态，不会自动重试。",
+          message: uiMessage("runtime.controlUnknown"),
         });
     }
   }
@@ -103,7 +105,7 @@ export class RuntimeModel {
       if (this.view === current)
         this.publish({
           ...current,
-          message: "回答结果未知，请核对原生交互；不会自动重答。",
+          message: uiMessage("runtime.answerUnknown"),
         });
     }
   }
@@ -123,7 +125,7 @@ export class RuntimeModel {
       if (this.view === current)
         this.publish({
           ...current,
-          message: "关闭未知交互失败，请核对原生交互后重试。",
+          message: uiMessage("runtime.dismissUnknown"),
         });
     }
   }

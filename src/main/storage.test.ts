@@ -15,6 +15,54 @@ function fixture(
     .finally(() => rmSync(dir, { recursive: true, force: true }));
 }
 describe("real SQLite and directory service", () => {
+  it("migrates existing v4 preferences to system locale without changing other settings", () =>
+    fixture((path) => {
+      const db = new DatabaseSync(path);
+      db.exec(`
+        CREATE TABLE desktop(id INTEGER PRIMARY KEY CHECK(id=1), active_thread TEXT, theme TEXT NOT NULL, density TEXT NOT NULL, send_key TEXT);
+        INSERT INTO desktop VALUES(1,NULL,'dark','compact','enter-newline');
+        CREATE TABLE submission(id TEXT PRIMARY KEY, receipt TEXT NOT NULL);
+        PRAGMA user_version=4;
+      `);
+      db.close();
+      const store = new AppStorage(path);
+      expect(store.preferences.read()).toEqual({
+        theme: "dark",
+        density: "compact",
+        sendKey: "enter-newline",
+        locale: "system",
+      });
+      store.preferences.saveLocale("en-US");
+      expect(
+        store.preferences.save({
+          theme: "dark",
+          density: "compact",
+          sendKey: "enter-newline",
+          locale: "zh-CN",
+        }),
+      ).toBeUndefined();
+      store.close();
+      const reopened = new AppStorage(path);
+      expect(reopened.preferences.read().locale).toBe("en-US");
+      reopened.close();
+      const migrated = new DatabaseSync(path, { readOnly: true });
+      expect(migrated.prepare("PRAGMA user_version").get()?.user_version).toBe(
+        5,
+      );
+      migrated.close();
+      const backup = new DatabaseSync(`${path}.before-v5`, { readOnly: true });
+      expect(backup.prepare("PRAGMA user_version").get()?.user_version).toBe(4);
+      expect(
+        backup
+          .prepare("SELECT theme,density,send_key FROM desktop WHERE id=1")
+          .get(),
+      ).toEqual({
+        theme: "dark",
+        density: "compact",
+        send_key: "enter-newline",
+      });
+      backup.close();
+    }));
   it("migration backup includes committed WAL records while an old reader holds a snapshot", () =>
     fixture((path) => {
       const writer = new DatabaseSync(path);

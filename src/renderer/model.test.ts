@@ -48,7 +48,11 @@ async function setup(
           kind: "ready" as const,
           draft: restored(),
           directoryAvailable: true,
-          preferences: { theme: "light" as const, density: "normal" as const },
+          preferences: {
+            theme: "light" as const,
+            density: "normal" as const,
+            locale: "system" as const,
+          },
         }))
         .with({ kind: "save" }, save)
         .with({ kind: "choose-project" }, { kind: "preferences" }, () => {
@@ -141,7 +145,12 @@ it("failed close releases editing and explicit retry saves the latest text", asy
   let fail = true;
   let persisted = draft.text;
   const input = await setup(async (command) => {
-    if (fail) return failure(command.traceId, "storage-unavailable", "locked");
+    if (fail)
+      return failure(
+        command.traceId,
+        "storage-unavailable",
+        "draft.storageUnavailable",
+      );
     persisted = command.text;
     return saved(command.expectedRevision + 1);
   });

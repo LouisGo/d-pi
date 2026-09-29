@@ -1,6 +1,7 @@
 import { match } from "ts-pattern";
 import type { ThreadId } from "../../shared/identity";
 import type { CapturedDraft, DraftController } from "../draft/controller";
+import { type UiMessage, uiMessage } from "../localization/contracts";
 import {
   type SubmissionBridge,
   SubmissionIdSchema,
@@ -12,7 +13,7 @@ interface View {
   sending: boolean;
   sendingText: boolean;
   receipts: SubmissionReceipt[];
-  message: string | null;
+  message: UiMessage | null;
 }
 // Receipt facts advance independently: a late ACK can resolve call confirmation,
 // but cannot erase an observed failure/uncertain outcome. Millisecond wall-clock
@@ -82,7 +83,7 @@ export class SubmissionModel {
   }
   private accept(reply: SubmissionReply): void {
     if (reply.kind === "failed") {
-      this.publish({ message: reply.error.safeMessage });
+      this.publish({ message: reply.error.message });
       return;
     }
     const receipts = reply.kind === "list" ? reply.receipts : [reply.receipt];
@@ -126,7 +127,7 @@ export class SubmissionModel {
         await this.bridge.request({ kind: "list", threadId: this.threadId }),
       );
     } catch {
-      this.publish({ message: "提交状态尚未核对。请保留原文，不要重复发送。" });
+      this.publish({ message: uiMessage("submission.stateUnverified") });
     }
   }
   async send(delivery: "followUp" | "steer" = "followUp"): Promise<void> {
@@ -153,7 +154,7 @@ export class SubmissionModel {
       );
       if (!captured) {
         if (!this.view.message)
-          this.publish({ message: "未发送：请检查正文与草稿保存状态。" });
+          this.publish({ message: uiMessage("submission.unsentDraft") });
         return;
       }
       this.captured = captured;
@@ -166,7 +167,7 @@ export class SubmissionModel {
       );
     } catch {
       this.publish({
-        message: "发送结果无法确认。原文与提交记录保留，不会自动重发。",
+        message: uiMessage("submission.sendUnknown"),
       });
     } finally {
       this.publish({ sending: false });
@@ -183,14 +184,18 @@ export class SubmissionModel {
     delivery: "followUp" | "steer" = "followUp",
   ): Promise<{
     ok: boolean;
-    message: string | null;
+    message: UiMessage | null;
     submissionId: string | null;
   }> {
     // Free-text channel has its own in-flight flag so a draft send does not
     // misleadingly fail a card follow-up (and vice versa). Different
     // submissionIds are independent in Main/Host; the queue cap still gates.
     if (this.view.sendingText || this.disposed)
-      return { ok: false, message: "正在追发，请稍后。", submissionId: null };
+      return {
+        ok: false,
+        message: uiMessage("submission.followUpPending"),
+        submissionId: null,
+      };
     if (!text.trim()) return { ok: false, message: null, submissionId: null };
     this.publish({ sendingText: true, message: null });
     const submissionId = SubmissionIdSchema.parse(crypto.randomUUID());
@@ -231,7 +236,7 @@ export class SubmissionModel {
       };
     } catch {
       this.publish({
-        message: "追发结果无法确认。原文与提交记录保留，不会自动重发。",
+        message: uiMessage("submission.followUpUnknown"),
       });
       return {
         ok: false,
@@ -256,7 +261,7 @@ export class SubmissionModel {
         }),
       );
     } catch {
-      this.publish({ message: "再次发送的结果未知，原文保留，不自动重发。" });
+      this.publish({ message: uiMessage("submission.resendUnknown") });
     } finally {
       this.publish({ sending: false });
     }
@@ -290,7 +295,7 @@ export class SubmissionModel {
       );
     } catch {
       this.publish({
-        message: "继续发送的结果无法确认，请核对提交状态；不会自动重发。",
+        message: uiMessage("submission.continueUnknown"),
       });
     } finally {
       this.publish({ sending: false });

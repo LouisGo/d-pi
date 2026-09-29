@@ -21,16 +21,16 @@ it("late inspect results cannot replace a newer native state; releasing the view
     },
   });
   model.bind(thread);
-  const ready = {
+  const ready: RuntimeView = {
     threadId: thread,
     traceId: crypto.randomUUID(),
-    configuration: "fixture",
+    configuration: { code: "runtime.configDefault" },
     revision: 2,
     phase: "ready" as const,
     trusted: true,
     busy: false,
     model: "fixture",
-    message: "ready",
+    message: { code: "runtime.readyToSend" },
   };
   deliver(ready);
   finish({ ...ready, phase: "allowed", revision: 1 });
@@ -49,13 +49,13 @@ it("a reopened window reads the retained projection while execution is interrupt
     request: async () => ({
       threadId,
       traceId: crypto.randomUUID(),
-      configuration: "fixture",
+      configuration: { code: "runtime.configDefault" },
       revision: 3,
       phase: "interrupted",
       trusted: true,
       busy: true,
       model: "fixture",
-      message: "Native disconnected",
+      message: { code: "runtime.disconnected" },
     }),
     conversation: {
       connect: (_thread, listener) => {
@@ -69,7 +69,7 @@ it("a reopened window reads the retained projection while execution is interrupt
             {
               id: 1,
               role: "assistant",
-              label: "OMP",
+              label: { kind: "literal", text: "OMP" },
               text: "Retained output",
               state: "streaming",
             },
@@ -100,13 +100,13 @@ it("retries reading once when the initial browse subscription preceded Host star
   const browse: RuntimeView = {
     threadId,
     traceId: crypto.randomUUID(),
-    configuration: "fixture",
+    configuration: { code: "runtime.configDefault" },
     revision: 0,
     phase: "browse",
     trusted: false,
     busy: false,
     model: null,
-    message: "browse",
+    message: { code: "runtime.browseOnly" },
   };
   const model = new RuntimeModel({
     subscribe: (listener) => {
@@ -137,4 +137,20 @@ it("retries reading once when the initial browse subscription preceded Host star
   } finally {
     model.dispose();
   }
+});
+
+it("keeps a failed request as a semantic status for display in the current locale", async () => {
+  const threadId = ThreadIdSchema.parse(crypto.randomUUID());
+  const model = new RuntimeModel({
+    subscribe: () => () => {},
+    request: async () => {
+      throw Error("IPC unavailable");
+    },
+  });
+  model.bind(threadId);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  expect(model.getSnapshot()?.message).toEqual({
+    code: "runtime.connectionUnknown",
+  });
+  model.dispose();
 });

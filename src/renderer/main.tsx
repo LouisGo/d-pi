@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import type { DesktopBridge } from "../shared/desktop-bridge";
 import { App } from "./app";
+import { browserLocaleFallback, I18nProvider } from "./i18n/i18n-provider";
 import { AppModel } from "./model";
 import "./styles/app.css";
 
@@ -17,5 +18,16 @@ window.desktop.onCloseRequest((token) => {
 });
 window.desktop.onCloseCancelled(() => model.cancelClose());
 const root = document.getElementById("root");
-if (root) createRoot(root).render(<App model={model} />);
+const initialLocale = await window.desktop.locale
+  ?.snapshot()
+  .catch(browserLocaleFallback);
+if (root)
+  createRoot(root).render(
+    <I18nProvider
+      bridge={window.desktop.locale}
+      initialSnapshot={initialLocale ?? browserLocaleFallback()}
+    >
+      <App model={model} />
+    </I18nProvider>,
+  );
 void model.start();

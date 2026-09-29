@@ -267,8 +267,7 @@ export class DraftController {
         attribution: "unknown",
         handlingOwner: "draft",
         recovery: "user_action",
-        safeMessage:
-          "正文超过 UTF-8 4 MiB，尚未保存。内容仍保留在编辑区，请复制备份或缩减后继续保存。",
+        message: { code: "draft.contentTooLarge" },
       },
     });
     return false;

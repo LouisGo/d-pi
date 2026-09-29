@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { draftByteLength } from "../../shared/draft-text";
+import { uiMessage } from "../localization/contracts";
 import type { NativeFrame } from "../runtime/native-protocol";
 import type {
   ConversationItem,
@@ -75,7 +76,14 @@ export class ConversationProjection {
               ? "complete"
               : "streaming",
         label:
-          role === "tool" ? "工具结果" : role === "user" ? "原生输入" : "OMP",
+          role === "tool"
+            ? { kind: "message", value: uiMessage("conversation.toolResult") }
+            : role === "user"
+              ? {
+                  kind: "message",
+                  value: uiMessage("conversation.nativeInput"),
+                }
+              : { kind: "literal", text: "OMP" },
       });
       if (frame.type === "message_end") {
         if (role === "assistant") this.active = null;
@@ -94,7 +102,7 @@ export class ConversationProjection {
       this.put({
         id,
         role: "assistant",
-        label: "OMP",
+        label: { kind: "literal", text: "OMP" },
         state: "streaming",
         text: (item?.text ?? "") + delta.data.delta,
       });
@@ -119,7 +127,7 @@ export class ConversationProjection {
       this.put({
         id,
         role: "tool",
-        label: parsed.data.toolName.slice(0, 120),
+        label: { kind: "literal", text: parsed.data.toolName.slice(0, 120) },
         state: parsed.data.isError
           ? "failed"
           : frame.type === "tool_execution_end"
@@ -161,8 +169,15 @@ export class ConversationProjection {
         id: this.nextId++,
         role: "notice",
         state: "complete",
-        label: "原生事件",
-        text: `收到 ${frame.type.slice(0, 120)}。此类事件的完整交互尚未接入。`,
+        label: {
+          kind: "message",
+          value: uiMessage("conversation.nativeEvent"),
+        },
+        text: "",
+        notice: {
+          code: "conversation.unsupportedNativeEvent",
+          params: { eventType: frame.type.slice(0, 120) },
+        },
       });
       this.flush();
     }
@@ -176,9 +191,8 @@ export class ConversationProjection {
       do {
         item = {
           ...item,
-          text:
-            new TextDecoder().decode(bytes.subarray(0, limit)) +
-            "\n[显示已截断；可读取原生记录核对]",
+          text: new TextDecoder().decode(bytes.subarray(0, limit)),
+          truncated: true,
         };
         size = draftByteLength(JSON.stringify(item)) + 1;
         limit = Math.floor(limit / 2);

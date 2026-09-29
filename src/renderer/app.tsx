@@ -9,23 +9,26 @@ import { Button } from "@/components/ui/button";
 import { BUILD_INFO } from "../shared/build-info";
 import { Composer } from "./composer";
 import { Conversation, History, Submissions } from "./conversation";
+import { useI18n } from "./i18n/i18n-provider";
 import type { AppModel } from "./model";
 import { RuntimePanel } from "./runtime-panel";
 export function App({ model }: { model: AppModel }) {
+  const { t, formatMessage, preference, setPreference, persistenceFailed } =
+    useI18n();
   const state = useSyncExternalStore(model.subscribe, model.getSnapshot);
   return match(state)
     .with({ kind: "loading" }, () => (
       <main className="startup" role="status">
-        正在恢复本地草稿…
+        {t("app.loading")}
       </main>
     ))
     .with({ kind: "failed" }, ({ error }) => (
       <main className="startup failure">
-        <h1>本地数据暂不可用</h1>
-        <p>{error.safeMessage}</p>
-        <p className="trace">追踪：{error.traceId}</p>
-        <p className="trace">构建 {BUILD_INFO.id}</p>
-        <Button onClick={() => void model.start()}>重新检查</Button>
+        <h1>{t("app.failure.title")}</h1>
+        <p>{formatMessage(error.message)}</p>
+        <p className="trace">{t("app.trace", { traceId: error.traceId })}</p>
+        <p className="trace">{t("app.build", { buildId: BUILD_INFO.id })}</p>
+        <Button onClick={() => void model.start()}>{t("app.retry")}</Button>
       </main>
     ))
     .with(
@@ -34,20 +37,21 @@ export function App({ model }: { model: AppModel }) {
         <div className="app-shell">
           <aside className="sidebar">
             <div className="brand">
+              {/* i18n-ignore: product brand and release marker */}
               d-pi <span>S3</span>
             </div>
-            <div className="sidebar-label">项目</div>
+            <div className="sidebar-label">{t("app.sidebar.projects")}</div>
             {draft ? (
               <div className="project-item">
                 <FolderIcon />
                 <span>{draft.directory.split("/").filter(Boolean).at(-1)}</span>
               </div>
             ) : (
-              <p className="muted">尚未选择项目</p>
+              <p className="muted">{t("app.sidebar.noProject")}</p>
             )}
             <div className="sidebar-bottom">
-              <span className="muted">本地草稿</span>
-              <span className="muted">项目执行需授权</span>
+              <span className="muted">{t("app.sidebar.localDraft")}</span>
+              <span className="muted">{t("app.executionNeedsApproval")}</span>
               <span className="trace muted" title={BUILD_INFO.commit}>
                 {BUILD_INFO.version} · {BUILD_INFO.id}
               </span>
@@ -55,15 +59,42 @@ export function App({ model }: { model: AppModel }) {
           </aside>
           <main className="workspace">
             <header className="toolbar">
-              <span className="muted">{draft ? "新的 Thread" : "开始"}</span>
+              <span className="muted">
+                {draft ? t("app.toolbar.newThread") : t("app.toolbar.start")}
+              </span>
               <div className="flex gap-2">
+                <select
+                  aria-label={t("app.toolbar.language")}
+                  value={preference}
+                  disabled={busy}
+                  onChange={(event) => {
+                    const value = event.currentTarget.value;
+                    if (
+                      value === "system" ||
+                      value === "zh-CN" ||
+                      value === "en-US"
+                    )
+                      void setPreference(value);
+                  }}
+                >
+                  <option value="system">
+                    {t("app.toolbar.systemLanguage")}
+                  </option>
+                  <option value="zh-CN">{t("app.toolbar.chinese")}</option>
+                  <option value="en-US">{t("app.toolbar.english")}</option>
+                </select>
+                {persistenceFailed && (
+                  <span role="alert" className="failure">
+                    {t("app.language.saveFailed")}
+                  </span>
+                )}
                 <Button
                   variant="ghost"
                   disabled={busy}
                   aria-label={
                     preferences.theme === "light"
-                      ? "切换为深色主题"
-                      : "切换为浅色主题"
+                      ? t("app.toolbar.darkTheme")
+                      : t("app.toolbar.lightTheme")
                   }
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => void model.preference("theme")}
@@ -80,13 +111,15 @@ export function App({ model }: { model: AppModel }) {
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => void model.preference("density")}
                 >
-                  {preferences.density === "normal" ? "紧凑密度" : "正常密度"}
+                  {preferences.density === "normal"
+                    ? t("app.toolbar.compactDensity")
+                    : t("app.toolbar.normalDensity")}
                 </Button>
               </div>
             </header>
             {notice && (
               <div role="alert" className="notice failure">
-                {notice.safeMessage}
+                {formatMessage(notice.message)}
                 <span className="trace"> {notice.traceId}</span>
               </div>
             )}
@@ -94,19 +127,19 @@ export function App({ model }: { model: AppModel }) {
               {draft && model.controller ? (
                 <>
                   <div className="draft-intro">
-                    <h1>从一个想法开始</h1>
-                    <p className="muted">
-                      文字会保存到此设备，下次打开可继续编辑。
-                    </p>
+                    <h1>{t("app.draft.title")}</h1>
+                    <p className="muted">{t("app.draft.description")}</p>
                   </div>
                   <div className="directory-info">
                     <FolderIcon />
                     <span>{draft.directory}</span>
-                    <span className="muted">项目执行需授权</span>
+                    <span className="muted">
+                      {t("app.executionNeedsApproval")}
+                    </span>
                   </div>
                   {!directoryAvailable && (
                     <p className="failure" role="alert">
-                      项目目录已失效。草稿仍可编辑；应用不会自动换到其他目录。
+                      {t("app.draft.directoryUnavailable")}
                     </p>
                   )}
                   {model.runtime && (
@@ -138,13 +171,13 @@ export function App({ model }: { model: AppModel }) {
                 </>
               ) : (
                 <div className="empty-state">
-                  <h1>在项目里，写下第一步</h1>
-                  <p className="muted">选择目录，创建一份可恢复的文字草稿。</p>
+                  <h1>{t("app.empty.title")}</h1>
+                  <p className="muted">{t("app.empty.description")}</p>
                   <Button disabled={busy} onClick={() => void model.choose()}>
                     <FolderIcon />
-                    选择项目并创建草稿
+                    {t("app.empty.choose")}
                   </Button>
-                  <p className="empty-note">目录默认仅浏览，不运行项目代码。</p>
+                  <p className="empty-note">{t("app.empty.note")}</p>
                 </div>
               )}
             </div>

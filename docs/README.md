@@ -1,6 +1,6 @@
 # 文档导航与事实来源
 
-更新：2026-09-28。S1/S2 工程已交付，当前 S3 官方 SDK 薄宿主、控制与交互已完成工程验证并交付待试用，见 [S3 规格](../.scratch/m1-s3-control-recovery/spec.md) 与 [试用交接](../.scratch/m1-s3-control-recovery/handoff.md)。恢复缺执行全周期单写证明时保持只读，不进入 S4/M2。历史原型与旧切片证据不冒充当前产品验收；先按任务选择材料。路径里的 `prototype`、`draft` 或 `.scratch` 不决定文档是否有效。
+更新：2026-09-29。S1/S2 工程已交付，S3 官方 SDK 薄宿主、控制与交互已完成工程验证并交付待试用，见 [S3 规格](../.scratch/m1-s3-control-recovery/spec.md) 与 [试用交接](../.scratch/m1-s3-control-recovery/handoff.md)；S4 前国际化基础见[切片规格](../.scratch/i18n-foundation/spec.md)。恢复缺执行全周期单写证明时保持只读，S4/M2 尚未实施。历史原型与旧切片证据不冒充当前产品验收；先按任务选择材料。路径里的 `prototype`、`draft` 或 `.scratch` 不决定文档是否有效。
 
 ## 各类文档负责什么
 
@@ -12,6 +12,7 @@
 | [基础契约](architecture/foundation-contracts.md)、[无头功能](architecture/headless-features.md)、[诊断](architecture/diagnostics.md)、[图标](architecture/icon-system.md) | 各自负责行为与工程边界；细节集中维护，不在每个入口复制 |
 | [设计系统合同](architecture/design-system.md) | D-17/D-32 的 token、主题/密度、组件覆盖边界及 S1 起设计 lint 与 GUI 验收要求；[开源依据](architecture/design-system-references.md)记录固定源码和适配限制，适用于纯样式任务 |
 | [TypeScript 合同](architecture/typescript.md) | D-35 的应用写法与验收标准：严格类型、ts-pattern、Zod v4；库版本与实际集成在接入时验证 |
+| [国际化架构](architecture/internationalization.md)与[产品术语](product-terminology.md) | S4 前 i18n 的产品文案边界、locale 偏好、Main/Renderer 共用核心及英文/中文术语；实施状态见[切片规格](../.scratch/i18n-foundation/spec.md) |
 | [模块地图与各模块方案](architecture/modules/README.md)、[交接图](architecture/modules/flows.md) | 现有合同的工程分工：所有权、生命周期、输入输出与模块组合；不重复定义产品范围或上游协议 |
 | [M1 开发准备](../.scratch/development-foundation/spec.md) | 近期 G1 缺口、实施切片、跨模块验收及 V1-00–10 责任覆盖；不是实现通过记录 |
 | [CONTEXT.md](../CONTEXT.md) | 领域概念和统一用语；技术字段、传输与持久化细节以合同为准 |

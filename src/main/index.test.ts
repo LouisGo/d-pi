@@ -23,6 +23,7 @@ const shell = vi.hoisted(() => ({
     session: { setPermissionRequestHandler: vi.fn() },
   },
   quit: vi.fn(),
+  systemLocale: "en-US",
 }));
 vi.mock("electron", () => ({
   app: {
@@ -31,6 +32,7 @@ vi.mock("electron", () => ({
     requestSingleInstanceLock: () => true,
     whenReady: () => Promise.resolve(),
     getPath: () => shell.directory,
+    getLocale: () => shell.systemLocale,
     on: (name: string, listener: (event: unknown) => void) =>
       shell.events.set(name, listener),
     quit: shell.quit,
@@ -53,10 +55,144 @@ vi.mock("electron", () => ({
       shell.listeners.set(name, listener),
   },
   dialog: { showMessageBox: vi.fn(), showOpenDialog: vi.fn() },
-  Menu: { buildFromTemplate: vi.fn(), setApplicationMenu: vi.fn() },
+  Menu: {
+    buildFromTemplate: vi.fn((template) => template),
+    setApplicationMenu: vi.fn(),
+  },
 }));
 
+it("starts with system locale, rebuilds the native menu on interaction, and keeps a failed locale save visible", async () => {
+  vi.resetModules();
+  shell.handlers.clear();
+  shell.events.clear();
+  shell.listeners.clear();
+  shell.windowEvents.clear();
+  shell.contents.send.mockClear();
+  shell.directory = mkdtempSync(join(tmpdir(), "d-pi-locale-"));
+  shell.systemLocale = "en-US";
+  const { Menu, dialog } = await import("electron");
+  vi.mocked(Menu.buildFromTemplate).mockClear();
+  vi.mocked(dialog.showMessageBox).mockClear();
+  try {
+    await import("./index");
+    const snapshot = shell.handlers.get("locale:snapshot");
+    const set = shell.handlers.get("locale:set-preference");
+    if (!snapshot || !set) throw Error("Missing locale IPC handlers");
+    const event = {
+      sender: shell.contents,
+      senderFrame: shell.contents.mainFrame,
+    };
+    expect(await snapshot(event, undefined)).toEqual({
+      preference: "system",
+      resolvedLocale: "en-US",
+    });
+    expect(
+      JSON.stringify(vi.mocked(Menu.buildFromTemplate).mock.lastCall?.[0]),
+    ).toContain("Edit");
+    expect(await set(event, "zh-CN")).toEqual({
+      preference: "zh-CN",
+      resolvedLocale: "zh-CN",
+      persisted: true,
+    });
+    expect(
+      JSON.stringify(vi.mocked(Menu.buildFromTemplate).mock.lastCall?.[0]),
+    ).toContain("编辑");
+    expect(shell.contents.send).toHaveBeenCalledWith("locale:changed", {
+      preference: "zh-CN",
+      resolvedLocale: "zh-CN",
+    });
+    const db = new DatabaseSync(join(shell.directory, "drafts.sqlite"));
+    expect(
+      db.prepare("SELECT locale FROM desktop WHERE id=1").get()?.locale,
+    ).toBe("zh-CN");
+    db.exec("BEGIN IMMEDIATE");
+    expect(await set(event, "en-US")).toEqual({
+      preference: "en-US",
+      resolvedLocale: "en-US",
+      persisted: false,
+    });
+    expect(await snapshot(event, undefined)).toEqual({
+      preference: "en-US",
+      resolvedLocale: "en-US",
+    });
+    expect(
+      JSON.stringify(vi.mocked(Menu.buildFromTemplate).mock.lastCall?.[0]),
+    ).toContain("Edit");
+    db.exec("ROLLBACK");
+    db.close();
+    const close = shell.windowEvents.get("close");
+    const closeResult = shell.listeners.get("draft:close-result");
+    if (!close || !closeResult) throw Error("Missing close protocol");
+    close({ preventDefault: vi.fn() });
+    const closeToken = shell.contents.send.mock.calls.findLast(
+      ([channel]) => channel === "draft:close-request",
+    )?.[1];
+    closeResult(event, { token: closeToken, saved: false });
+    expect(
+      JSON.stringify(vi.mocked(dialog.showMessageBox).mock.lastCall),
+    ).toContain("The draft has not been saved; the window remains open");
+    await expect(
+      set({ sender: {}, senderFrame: {} }, "zh-CN"),
+    ).rejects.toThrow();
+  } finally {
+    shell.events.get("will-quit")?.({ preventDefault: vi.fn() });
+    await vi.waitFor(() => expect(shell.quit).toHaveBeenCalled());
+    const events = readFileSync(
+      join(shell.directory, "logs/main.jsonl"),
+      "utf8",
+    )
+      .trim()
+      .split("\n")
+      .map((line) => JSON.parse(line));
+    expect(events).toContainEqual(
+      expect.objectContaining({
+        operation: "locale:set-preference",
+        stage: "failed",
+        code: "locale-save-failed",
+      }),
+    );
+    rmSync(shell.directory, { recursive: true, force: true });
+  }
+});
+
+it("restores the saved language before building the native menu", async () => {
+  vi.resetModules();
+  shell.handlers.clear();
+  shell.events.clear();
+  shell.quit.mockClear();
+  shell.directory = mkdtempSync(join(tmpdir(), "d-pi-locale-restart-"));
+  shell.systemLocale = "en-US";
+  const path = join(shell.directory, "drafts.sqlite");
+  const prior = new AppStorage(path);
+  prior.preferences.saveLocale("zh-CN");
+  prior.close();
+  const { Menu } = await import("electron");
+  vi.mocked(Menu.buildFromTemplate).mockClear();
+  try {
+    await import("./index");
+    const snapshot = shell.handlers.get("locale:snapshot");
+    if (!snapshot) throw Error("Missing locale snapshot handler");
+    expect(
+      await snapshot(
+        { sender: shell.contents, senderFrame: shell.contents.mainFrame },
+        undefined,
+      ),
+    ).toEqual({ preference: "zh-CN", resolvedLocale: "zh-CN" });
+    expect(
+      JSON.stringify(vi.mocked(Menu.buildFromTemplate).mock.lastCall?.[0]),
+    ).toContain("编辑");
+  } finally {
+    shell.events.get("will-quit")?.({ preventDefault: vi.fn() });
+    await vi.waitFor(() => expect(shell.quit).toHaveBeenCalled());
+    rmSync(shell.directory, { recursive: true, force: true });
+  }
+});
+
 it("retries a failed initial restore after the lock clears, preserving the same draft", async () => {
+  vi.resetModules();
+  shell.handlers.clear();
+  shell.events.clear();
+  shell.quit.mockClear();
   shell.directory = mkdtempSync(join(tmpdir(), "d-pi-startup-"));
   const path = join(shell.directory, "drafts.sqlite");
   const original = new AppStorage(path);

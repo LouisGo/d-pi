@@ -1,6 +1,6 @@
 {
   "name": "d-pi",
-  "version": "0.1.0-s3.0",
+  "version": "0.1.0-i18n.0",
   "private": true,
   "type": "module",
   "description": "d-pi desktop client",
@@ -12,18 +12,20 @@
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "lint:design": "oxlint -c .oxlintrc.json src/renderer",
+    "lint:i18n": "node scripts/check-i18n-copy.mjs",
     "test": "vitest run",
     "validate:sqlite": "electron validation/s1/sqlite.cjs && node validation/s1/crash-check.mjs",
     "validate:design": "node validation/s1/design-check.mjs",
     "validate:editor:web": "vite validation/s1/editor --config validation/s1/editor/vite.config.ts --host 127.0.0.1 --port 5178 --strictPort",
     "validate:editor": "electron validation/s1/editor/main.cjs",
-    "check": "pnpm typecheck && pnpm lint && pnpm lint:design && pnpm validate:design && node validation/s1/source-boundaries.mjs && pnpm test",
+    "check": "pnpm typecheck && pnpm lint && pnpm lint:design && pnpm lint:i18n && pnpm validate:design && node validation/s1/source-boundaries.mjs && pnpm test",
     "package:mac": "pnpm runtime:sdk && pnpm build && electron-builder --mac --dir --config.electronDist=node_modules/electron/dist",
     "runtime:fetch": "node scripts/fetch-runtime.mjs",
     "runtime:sdk": "node scripts/prepare-sdk.mjs"
   },
   "dependencies": {
     "@base-ui/react": "1.8.0",
+    "@formatjs/intl": "6.1.2",
     "@hugeicons/core-free-icons": "4.3.5",
     "@hugeicons/react": "1.1.10",
     "@streamdown/code": "1.1.1",
@@ -44,6 +46,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
+    "@formatjs/icu-messageformat-parser": "3.5.20",
     "@oh-my-pi/pi-coding-agent": "18.3.0",
     "@oh-my-pi/pi-utils": "18.3.0",
     "@shadcn/lint": "0.2.0",

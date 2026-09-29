@@ -11,7 +11,7 @@ export class PreferenceRepository {
   private preferenceRow() {
     const row = this.db
       .prepare(
-        "SELECT theme,density,send_key AS sendKey FROM desktop WHERE id=1",
+        "SELECT theme,density,send_key AS sendKey,locale FROM desktop WHERE id=1",
       )
       .get();
     return row ? { ...row, sendKey: row.sendKey ?? undefined } : row;
@@ -20,5 +20,8 @@ export class PreferenceRepository {
     this.db
       .prepare("UPDATE desktop SET theme=?,density=?,send_key=? WHERE id=1")
       .run(value.theme, value.density, value.sendKey ?? null);
+  }
+  saveLocale(locale: Preferences["locale"]): void {
+    this.db.prepare("UPDATE desktop SET locale=? WHERE id=1").run(locale);
   }
 }

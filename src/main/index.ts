@@ -18,6 +18,13 @@ import {
   BridgeDiagnosticSchema,
   EnvelopeSchema,
 } from "../shared/desktop-bridge";
+import { createI18n } from "../shared/i18n/create-i18n";
+import {
+  type LocalePreference,
+  LocalePreferenceSchema,
+  type LocaleSnapshot,
+  resolveLocale,
+} from "../shared/i18n/locale";
 import { TraceIdSchema } from "../shared/identity";
 import { diagnosticCode } from "./diagnostic-code";
 import { Diagnostics } from "./diagnostics";
@@ -35,16 +42,75 @@ let store: AppStorage | undefined;
 let service: DraftService | undefined;
 let runtime: RuntimeService | undefined;
 let startupCauseCode: string | undefined;
+let localeSnapshot: LocaleSnapshot = {
+  preference: "system",
+  resolvedLocale: "en-US",
+};
+let localeInteracted = false;
+function currentT() {
+  return createI18n(localeSnapshot.resolvedLocale).t;
+}
+function buildMenu(): void {
+  const t = currentT();
+  Menu.setApplicationMenu(
+    Menu.buildFromTemplate([
+      {
+        label: "d-pi",
+        submenu: [
+          { role: "about", label: t("main.menu.about") },
+          { type: "separator" },
+          { role: "quit", label: t("main.menu.quit") },
+        ],
+      },
+      {
+        label: t("main.menu.edit"),
+        submenu: [
+          { role: "undo", label: t("main.menu.undo") },
+          { role: "redo", label: t("main.menu.redo") },
+          { type: "separator" },
+          { role: "cut", label: t("main.menu.cut") },
+          { role: "copy", label: t("main.menu.copy") },
+          { role: "paste", label: t("main.menu.paste") },
+          { role: "selectAll", label: t("main.menu.selectAll") },
+        ],
+      },
+      {
+        label: t("main.menu.window"),
+        submenu: [
+          { role: "minimize", label: t("main.menu.minimize") },
+          { role: "zoom", label: t("main.menu.zoom") },
+          { role: "close", label: t("main.menu.close") },
+        ],
+      },
+    ]),
+  );
+}
+function applyLocale(preference: LocalePreference, announce: boolean): void {
+  const next: LocaleSnapshot = {
+    preference,
+    resolvedLocale: resolveLocale(preference, app.getLocale()),
+  };
+  const changed =
+    next.preference !== localeSnapshot.preference ||
+    next.resolvedLocale !== localeSnapshot.resolvedLocale;
+  localeSnapshot = next;
+  if (changed && announce) {
+    buildMenu();
+    window?.webContents.send("locale:changed", next);
+  }
+}
 function initializeStorage(): void {
   if (service) return;
   try {
     const data = app.getPath("userData");
     mkdirSync(data, { recursive: true, mode: 0o700 });
     store = new AppStorage(join(data, "drafts.sqlite"));
+    if (!localeInteracted)
+      applyLocale(store.preferences.read().locale, window !== null);
     service = new DraftService(store, async () => {
       if (!window) return null;
       const result = await dialog.showOpenDialog(window, {
-        title: "选择项目并创建草稿",
+        title: currentT()("main.chooseProject.title"),
         properties: ["openDirectory"],
       });
       return result.canceled ? null : (result.filePaths[0] ?? null);
@@ -71,13 +137,13 @@ let loggingNoticeShown = false;
 function reportLoggingFailure(): void {
   if (!window || loggingNoticeShown) return;
   loggingNoticeShown = true;
+  const t = currentT();
   void dialog
     .showMessageBox(window, {
       type: "warning",
-      message: "诊断日志暂时无法写入",
-      detail:
-        "排查记录可能不完整。草稿是否保存仍以编辑区的保存状态为准。请检查应用数据目录的可写性。",
-      buttons: ["知道了"],
+      message: t("main.loggingFailure.message"),
+      detail: t("main.loggingFailure.detail"),
+      buttons: [t("main.loggingFailure.acknowledge")],
     })
     .catch(() => {
       /* The window may have closed while reporting. */
@@ -107,13 +173,15 @@ function requestClose(): void {
     closing = null;
     quitting = false;
     window?.webContents.send("draft:close-cancelled");
-    if (window)
+    if (window) {
+      const t = currentT();
       void dialog.showMessageBox(window, {
         type: "warning",
-        message: "未能确认草稿已保存",
-        detail: "窗口保持打开。请检查当前输入与保存状态，再尝试关闭。",
-        buttons: ["保留窗口"],
+        message: t("main.closeUnconfirmed.message"),
+        detail: t("main.closeUnconfirmed.detail"),
+        buttons: [t("main.closeUnconfirmed.keepWindow")],
       });
+    }
   }, 5000);
   closing = { token, timer };
   window.webContents.send("draft:close-request", token);
@@ -169,12 +237,13 @@ function createWindow(): void {
       code: details.reason,
     });
     // Confirmed drafts survive; do not misrepresent recovery of the lost in-memory tail.
+    const t = currentT();
     void dialog
       .showMessageBox(current, {
         type: "error",
-        message: "输入窗口已中断",
-        detail: "重新打开会恢复最后已确认保存的草稿；未保存的输入可能丢失。",
-        buttons: ["重新打开"],
+        message: t("main.rendererGone.message"),
+        detail: t("main.rendererGone.detail"),
+        buttons: [t("main.rendererGone.reopen")],
       })
       .then(() => {
         approved = true;
@@ -198,6 +267,43 @@ else {
   app.whenReady().then(() => {
     const data = app.getPath("userData");
     diagnostics = new Diagnostics(join(data, "logs"), reportLoggingFailure);
+    applyLocale("system", false);
+    initializeStorage();
+    ipcMain.handle("locale:snapshot", (event) => {
+      if (!sourceValid(event)) throw Error("Invalid locale source");
+      return localeSnapshot;
+    });
+    ipcMain.handle("locale:set-preference", async (event, raw: unknown) => {
+      if (!sourceValid(event)) throw Error("Invalid locale source");
+      const preference = LocalePreferenceSchema.parse(raw);
+      const traceId = randomUUID();
+      const context = {
+        traceId,
+        requestId: traceId,
+        connectionId: diagnostics?.processInstanceId ?? randomUUID(),
+        operation: "locale:set-preference",
+      };
+      diagnostics?.record({ ...context, stage: "received" });
+      localeInteracted = true;
+      applyLocale(preference, true);
+      let persisted = false;
+      try {
+        if (!store) initializeStorage();
+        if (!store) throw Error("Locale storage unavailable");
+        store.preferences.saveLocale(preference);
+        persisted = true;
+        diagnostics?.record({ ...context, stage: "completed" });
+      } catch (error) {
+        const causeCode = diagnosticCode(error);
+        diagnostics?.record({
+          ...context,
+          stage: "failed",
+          code: "locale-save-failed",
+          ...(causeCode ? { causeCode } : {}),
+        });
+      }
+      return { ...localeSnapshot, persisted };
+    });
     ipcMain.on("draft:diagnostic", (event, raw: unknown) => {
       if (!sourceValid(event)) return;
       const parsed = BridgeDiagnosticSchema.safeParse(raw);
@@ -284,7 +390,7 @@ else {
     ipcMain.handle("draft:request", async (event, raw: unknown) => {
       const fallbackTrace = randomUUID();
       if (!sourceValid(event))
-        return failure(fallbackTrace, "invalid-request", "请求来源无效。");
+        return failure(fallbackTrace, "invalid-request", "draft.invalidSource");
       // Validate shape and bound body before passing it to the domain service.
       const parsed = EnvelopeSchema.safeParse(raw);
       if (!parsed.success) {
@@ -296,9 +402,7 @@ else {
         return failure(
           identity.success ? identity.data.command.traceId : fallbackTrace,
           oversized ? "content-too-large" : "invalid-request",
-          oversized
-            ? "正文超过 UTF-8 4 MiB，输入未被截断，请缩减后保存。"
-            : "请求格式不受支持，输入未被截断。",
+          oversized ? "draft.contentTooLarge" : "draft.invalidRequest",
         );
       }
       const { command, connectionId, requestId } = parsed.data;
@@ -318,7 +422,7 @@ else {
         : failure(
             command.traceId,
             "storage-unavailable",
-            "本地数据库无法打开。未重置数据，请检查日志与数据库备份。",
+            "draft.storageOpenFailed",
             startupCauseCode,
           );
       if (reply.kind === "failed")
@@ -349,43 +453,22 @@ else {
       if (!parsed.data.saved) {
         quitting = false;
         window?.webContents.send("draft:close-cancelled");
-        if (window)
+        if (window) {
+          const t = currentT();
           void dialog.showMessageBox(window, {
             type: "warning",
-            message: "草稿尚未保存，窗口已保留",
-            detail: "请先确认输入法候选，或处理界面中的保存失败后再关闭。",
-            buttons: ["继续编辑"],
+            message: t("main.closeUnsaved.message"),
+            detail: t("main.closeUnsaved.detail"),
+            buttons: [t("main.closeUnsaved.continueEditing")],
           });
+        }
         return;
       }
       approved = true;
       if (quitting) app.quit();
       else window?.close();
     });
-    Menu.setApplicationMenu(
-      Menu.buildFromTemplate([
-        {
-          label: "d-pi",
-          submenu: [{ role: "about" }, { type: "separator" }, { role: "quit" }],
-        },
-        {
-          label: "编辑",
-          submenu: [
-            { role: "undo" },
-            { role: "redo" },
-            { type: "separator" },
-            { role: "cut" },
-            { role: "copy" },
-            { role: "paste" },
-            { role: "selectAll" },
-          ],
-        },
-        {
-          label: "窗口",
-          submenu: [{ role: "minimize" }, { role: "zoom" }, { role: "close" }],
-        },
-      ]),
-    );
+    buildMenu();
     createWindow();
   });
   app.on("activate", () => {
@@ -411,13 +494,17 @@ else {
       else window.show();
       if (window && !quitDialogOpen) {
         quitDialogOpen = true;
+        const t = currentT();
         void dialog
           .showMessageBox(window, {
             type: "warning",
-            message: "仍有原生工作或状态尚未确认",
-            detail:
-              "等待会在工作结束且草稿保存后退出。停止会中断当前执行并暂缓队列；如仍有队列、交互或后台活动，应用会继续保留，请处理后退出。未知状态不会被强行终止。",
-            buttons: ["等待结束后退出", "请求停止后退出", "取消退出"],
+            message: t("main.quitActive.message"),
+            detail: t("main.quitActive.detail"),
+            buttons: [
+              t("main.quitActive.wait"),
+              t("main.quitActive.stop"),
+              t("main.quitActive.cancel"),
+            ],
             cancelId: 2,
             defaultId: 2,
           })

@@ -3,13 +3,17 @@ import { constants } from "node:fs";
 import { access, realpath, stat } from "node:fs/promises";
 import { match } from "ts-pattern";
 import { type Failure } from "../features/draft/contracts";
+import {
+  type PlainUiMessageCode,
+  uiMessage,
+} from "../features/localization/contracts";
 import { type Command, type Reply } from "../shared/desktop-bridge";
 import { diagnosticCode } from "./diagnostic-code";
 import type { AppStorage } from "./storage/app-storage";
 export function failure(
   traceId: string,
   code: Failure["code"],
-  safeMessage: string,
+  messageCode: PlainUiMessageCode,
   causeCode?: string,
 ): Extract<Reply, { kind: "failed" }> {
   return {
@@ -30,7 +34,7 @@ export function failure(
       handlingOwner: "draft",
       recovery:
         code === "revision-conflict" ? "reconcile_first" : "user_action",
-      safeMessage,
+      message: uiMessage(messageCode),
       ...(causeCode ? { causeCode } : {}),
     },
   };
@@ -71,11 +75,7 @@ export class DraftService {
         .with({ kind: "choose-project" }, async ({ traceId }) => {
           // S1 has one foreground draft; no implicit switch to an unreachable old draft.
           if (this.choosing || this.storage.drafts.active())
-            return failure(
-              traceId,
-              "invalid-request",
-              "当前已有草稿，请继续当前项目。",
-            );
+            return failure(traceId, "invalid-request", "draft.alreadyActive");
           this.choosing = true;
           try {
             const path = await this.choose();
@@ -87,7 +87,7 @@ export class DraftService {
               return failure(
                 traceId,
                 "directory-unavailable",
-                "目录不存在或无法读取，请重新选择。",
+                "draft.directoryUnavailable",
               );
             }
             return {
@@ -107,7 +107,7 @@ export class DraftService {
               return failure(
                 traceId,
                 "invalid-request",
-                "草稿身份不匹配，已阻止写入。",
+                "draft.identityMismatch",
               );
             const revision = this.storage.drafts.save(
               threadId,
@@ -115,11 +115,7 @@ export class DraftService {
               text,
             );
             return revision === null
-              ? failure(
-                  traceId,
-                  "revision-conflict",
-                  "草稿版本冲突。当前输入已保留，请核对保存状态后选择要保留的内容。",
-                )
+              ? failure(traceId, "revision-conflict", "draft.revisionConflict")
               : { kind: "saved" as const, threadId, revision };
           },
         )
@@ -132,7 +128,7 @@ export class DraftService {
       return failure(
         command.traceId,
         "storage-unavailable",
-        "无法读取或保存本地数据；未删除数据库，请保留当前输入后重试。",
+        "draft.storageUnavailable",
         diagnosticCode(error),
       );
     }

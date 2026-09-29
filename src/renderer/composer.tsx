@@ -11,6 +11,7 @@ import {
   queueCount,
 } from "../features/runtime/submission-admission";
 import { shouldSend } from "../features/submission/shortcut";
+import { useI18n } from "./i18n/i18n-provider";
 import type { AppModel } from "./model";
 import { plainTextEditorOptions, replaceDraftText } from "./plain-text-editor";
 import { handlePlainTextPaste } from "./plain-text-paste";
@@ -24,6 +25,7 @@ export function Composer({
   controller: DraftController;
   model: AppModel;
 }) {
+  const { locale, t, formatMessage } = useI18n();
   const state = useSyncExternalStore(
     controller.subscribe,
     controller.getSnapshot,
@@ -78,7 +80,7 @@ export function Composer({
         },
         attributes: {
           role: "textbox",
-          "aria-label": "草稿正文",
+          "aria-label": t("composer.editorLabel"),
           "aria-multiline": "true",
           spellcheck: "false",
         },
@@ -88,6 +90,18 @@ export function Composer({
     },
     [controller],
   );
+  useEffect(() => {
+    if (!editor) return;
+    editor.setOptions({
+      editorProps: {
+        ...editor.options.editorProps,
+        attributes: {
+          ...editor.options.editorProps?.attributes,
+          "aria-label": t("composer.editorLabel"),
+        },
+      },
+    });
+  }, [editor, locale, t]);
   useEffect(() => {
     if (!editor) return;
     const boundary = {
@@ -110,21 +124,21 @@ export function Composer({
     };
   }, [editor, model]);
   const status = match(state)
-    .with({ kind: "saved" }, () => "已保存到此设备")
-    .with({ kind: "dirty" }, () => "等待保存…")
-    .with({ kind: "saving" }, () => "正在保存…")
-    .with({ kind: "checking" }, () => "正在核对已保存版本…")
-    .with({ kind: "conflict" }, () => "版本不同，请选择保留内容")
-    .with({ kind: "failed" }, () => "尚未保存")
+    .with({ kind: "saved" }, () => t("composer.status.saved"))
+    .with({ kind: "dirty" }, () => t("composer.status.dirty"))
+    .with({ kind: "saving" }, () => t("composer.status.saving"))
+    .with({ kind: "checking" }, () => t("composer.status.checking"))
+    .with({ kind: "conflict" }, () => t("composer.status.conflict"))
+    .with({ kind: "failed" }, () => t("composer.status.failed"))
     .exhaustive();
   return (
     <section
       className="composer"
       data-expanded={expanded}
-      aria-label="持久文字草稿"
+      aria-label={t("composer.sectionLabel")}
     >
       <div className="composer-heading">
-        <h2>草稿</h2>
+        <h2>{t("composer.heading")}</h2>
         <span role="status" className="save-status">
           {status}
         </span>
@@ -133,9 +147,9 @@ export function Composer({
       <div className="composer-footer">
         <span>
           {expanded || preference === "enter-newline"
-            ? "Enter 换行 · ⌘Enter 发送"
-            : "Enter 发送 · Shift+Enter 换行"}{" "}
-          · ⌘Z 撤销
+            ? t("composer.shortcut.newline")
+            : t("composer.shortcut.send")}{" "}
+          {t("composer.shortcut.undo")}
         </span>
         <div className="flex flex-wrap gap-2">
           <Button
@@ -143,14 +157,14 @@ export function Composer({
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => setExpanded((value) => !value)}
           >
-            {expanded ? "收起编辑区" : "展开编辑区"}
+            {expanded ? t("composer.collapse") : t("composer.expand")}
           </Button>
           <Button
             variant="ghost"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => void model.preference("sendKey")}
           >
-            切换发送快捷键
+            {t("composer.switchShortcut")}
           </Button>
           {model.submission && model.runtime && (
             <SendButton
@@ -163,13 +177,11 @@ export function Composer({
       </div>
       {state.kind === "conflict" && (
         <div className="failure" role="alert">
-          <p>
-            已保存版本与当前输入不同。选择前不会覆盖任何一份；可先复制备份。
-          </p>
+          <p>{t("composer.conflict.description")}</p>
           <details>
-            <summary>对照两份正文</summary>
+            <summary>{t("composer.conflict.compare")}</summary>
             <label>
-              当前输入
+              {t("composer.conflict.current")}
               <textarea
                 className="draft-comparison"
                 readOnly
@@ -177,7 +189,7 @@ export function Composer({
               />
             </label>
             <label>
-              已保存正文
+              {t("composer.conflict.saved")}
               <textarea
                 className="draft-comparison"
                 readOnly
@@ -187,7 +199,7 @@ export function Composer({
           </details>
           <div className="flex flex-wrap gap-2">
             <Button onClick={() => void controller.keepLocal()}>
-              保留当前输入并保存
+              {t("composer.conflict.keepCurrent")}
             </Button>
             <Button
               variant="ghost"
@@ -197,25 +209,27 @@ export function Composer({
                 })
               }
             >
-              载入已保存版本
+              {t("composer.conflict.loadSaved")}
             </Button>
           </div>
-          <p>
-            载入会替换编辑区正文，可用 ⌘Z 撤销。输入法候选期间请先完成选字。
-          </p>
+          <p>{t("composer.conflict.loadWarning")}</p>
         </div>
       )}
       {state.kind === "failed" && (
         <div className="failure" role="alert">
-          <p>{state.error.safeMessage}</p>
-          <p className="trace">追踪：{state.error.traceId}</p>
+          <p>{formatMessage(state.error.message)}</p>
+          <p className="trace">
+            {t("app.trace", { traceId: state.error.traceId })}
+          </p>
           <div className="flex gap-2">
             {state.error.recovery !== "reconcile_first" && (
-              <Button onClick={() => void controller.retry()}>重试保存</Button>
+              <Button onClick={() => void controller.retry()}>
+                {t("composer.retrySave")}
+              </Button>
             )}
             {state.error.recovery === "reconcile_first" && (
               <Button onClick={() => void model.reconcileDraft()}>
-                核对保存状态
+                {t("composer.checkSave")}
               </Button>
             )}
             <Button
@@ -225,7 +239,7 @@ export function Composer({
                 editor?.commands.focus();
               }}
             >
-              全选以复制
+              {t("composer.selectAll")}
             </Button>
           </div>
         </div>
@@ -243,6 +257,7 @@ function SendButton({
   submission: NonNullable<AppModel["submission"]>;
   runtime: NonNullable<AppModel["runtime"]>;
 }) {
+  const { t } = useI18n();
   const send = useSyncExternalStore(
     submission.subscribe,
     submission.getSnapshot,
@@ -259,7 +274,7 @@ function SendButton({
           if (canSend()) void submission.send();
         }}
       >
-        {state?.busy ? "排队发送" : "发送"}
+        {state?.busy ? t("composer.queueSend") : t("composer.send")}
       </Button>
       {state?.busy && (
         <Button
@@ -270,12 +285,12 @@ function SendButton({
             if (canSend()) void submission.send("steer");
           }}
         >
-          干预当前执行
+          {t("composer.steer")}
         </Button>
       )}
       {capped && (
         <p role="status" className="muted">
-          排队已满（{queued}/{QUEUE_CAP}），请等待消费后再发送；草稿已保留。
+          {t("composer.queueFull", { queued, cap: QUEUE_CAP })}
         </p>
       )}
     </div>

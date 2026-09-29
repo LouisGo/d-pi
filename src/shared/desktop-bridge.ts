@@ -8,8 +8,22 @@ import {
 import type { HistoryBridge } from "../features/history/contracts";
 import type { RuntimeBridge } from "../features/runtime/contracts";
 import type { SubmissionBridge } from "../features/submission/contracts";
+import { LocalePreferenceSchema, LocaleSnapshotSchema } from "./i18n/locale";
 import { ThreadIdSchema, TraceIdSchema } from "./identity";
 import { PreferencesSchema } from "./preferences";
+export const LocaleSetResultSchema = LocaleSnapshotSchema.extend({
+  persisted: z.boolean(),
+});
+export type LocaleSetResult = z.infer<typeof LocaleSetResultSchema>;
+export interface LocaleBridge {
+  snapshot(): Promise<z.infer<typeof LocaleSnapshotSchema>>;
+  subscribe(
+    listener: (snapshot: z.infer<typeof LocaleSnapshotSchema>) => void,
+  ): () => void;
+  setPreference(
+    preference: z.infer<typeof LocalePreferenceSchema>,
+  ): Promise<LocaleSetResult>;
+}
 export const CommandSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("restore"), traceId: TraceIdSchema }),
   z.strictObject({ kind: z.literal("choose-project"), traceId: TraceIdSchema }),
@@ -44,6 +58,7 @@ export const ReplySchema = z.discriminatedUnion("kind", [
 ]);
 export type Reply = z.infer<typeof ReplySchema>;
 export interface DesktopBridge {
+  locale?: LocaleBridge;
   history?: HistoryBridge;
   submission?: SubmissionBridge;
   runtime?: RuntimeBridge;

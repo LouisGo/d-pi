@@ -9,6 +9,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, expect, it, vi } from "vitest";
+import { RuntimeViewSchema } from "../features/runtime/contracts";
 import { HostCommandSchema } from "../features/runtime/host-contracts";
 import { SubmissionIdSchema } from "../features/submission/contracts";
 import { TraceIdSchema } from "../shared/identity";
@@ -214,6 +215,14 @@ it("regranting the unchanged directory preserves normal submission and idle shut
   ).toHaveLength(1);
 });
 
+it("publishes runtime status as a valid semantic IPC value", async () => {
+  const fixture = await running();
+  const view = RuntimeViewSchema.parse(await fixture.act("inspect"));
+  expect(view.configuration).toEqual({ code: "runtime.configDefault" });
+  expect(view.message).toEqual({ code: "runtime.readyToSend" });
+  expect(JSON.stringify(view)).not.toContain("可发送文字");
+});
+
 it("execution admission and inspection do not require loading a draft body", async () => {
   const fixture = await running(true);
   expect(await fixture.act("inspect")).toMatchObject({
@@ -261,7 +270,7 @@ it("restart exposes the unproven execution lock and never substitutes a new sess
       traceId: TraceIdSchema.parse(crypto.randomUUID()),
     });
     expect(view.phase).toBe("interrupted");
-    expect(view.message).toContain("无法确认原生会话的执行全周期独占");
+    expect(view.message).toEqual({ code: "runtime.previousSessionReadOnly" });
   }
   expect(electron.fork.mock.calls).toHaveLength(forks);
   expect(fixture.store.threads.nativeSession(fixture.draft.threadId)).toEqual(
@@ -731,7 +740,7 @@ it("a control rejection preserves the same session for explicit continue and doe
   });
   expect(await f.act("inspect")).toMatchObject({
     phase: "ready",
-    message: expect.stringContaining("未完成"),
+    message: { code: "runtime.controlFailed" },
   });
   await f.runtime.execute({
     kind: "continue",

@@ -1,6 +1,6 @@
 # 产品与技术决定登记
 
-更新：2026-09-27。目的：让新的 AI/开发者能够分清用户决定、历史工程基线、提议和证据，防止无记录地推翻方向。本文件是索引，不复制完整规格；行为细节以链接目标为准。有矛盾不得用文件更新时间或措辞强弱擅自决定。
+更新：2026-09-29。目的：让新的 AI/开发者能够分清用户决定、历史工程基线、提议和证据，防止无记录地推翻方向。本文件是索引，不复制完整规格；行为细节以链接目标为准。有矛盾不得用文件更新时间或措辞强弱擅自决定。
 
 ## 状态与变更规则
 
@@ -55,6 +55,7 @@
 | D-33 | Composer 采用最小 Tiptap 与项目业务扩展 | 09-26 用户确认，取代 P-02 的直接 ProseMirror 优先路线；按需使用底层 ProseMirror，不预装整套富文本产品，真实输入体验仍须验收 |
 | D-34 | App 自有结构化数据采用 SQLite | 09-26 用户确认，取代“文件方案起步、不足再评估数据库”；Main 集中拥有持久化，事务不覆盖附件文件或 OMP 接受，驱动与 Drizzle 分别判断，见[基础契约 §1](architecture/foundation-contracts.md#1-身份持久化与生命周期b1) |
 | D-35 | ts-pattern 为应用业务分支默认范式，Zod v4 标准版为数据边界标准 | 09-26 用户要求强化 TypeScript 范式；判别联合、穷尽处理、schema 推导、严格类型与窄接口，具体规则见[TypeScript 合同](architecture/typescript.md)与[项目 skill](../.agents/skills/d-pi-typescript/SKILL.md)，不以类型技巧或无意义包装代替清晰业务模型 |
+| D-36 | S4 前落地 d-pi 国际化架构：Desktop 保留 `system`/`zh-CN`/`en-US` 偏好，Main 解析并与 Renderer 共用 locale，只翻译 d-pi 自有展示文案 | 09-29 用户明确指定引用对话的完整[国际化架构](architecture/internationalization.md)为项目基准并授权按 TDD 开发；UI 语言不进入 OMP/SessionHost/Agent 请求，原生及用户内容保持原文；实施与试用状态见[切片规格](../.scratch/i18n-foundation/spec.md) |
 
 ## 沿用基线与提议
 

@@ -2,6 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { match } from "ts-pattern";
+import { uiMessage } from "../features/localization/contracts";
 import {
   RuntimeAdmission,
   sameDirectoryIdentity,
@@ -31,6 +32,20 @@ import { HostConnection } from "./host-connection";
 import { RuntimeResourceError } from "./runtime-resource";
 import { managedSdkRuntime } from "./sdk-resource";
 import type { AppStorage } from "./storage/app-storage";
+
+function boundedDisplayValue(value: string, maxLength: number): string {
+  return value.length > maxLength ? `${value.slice(0, maxLength - 1)}…` : value;
+}
+
+function resourceMessage(error: RuntimeResourceError) {
+  return match(error.code)
+    .with("resource-missing", () => uiMessage("runtime.resourceMissing"))
+    .with("resource-unreadable", () => uiMessage("runtime.resourceUnreadable"))
+    .with("resource-incompatible", () =>
+      uiMessage("runtime.resourceIncompatible"),
+    )
+    .exhaustive();
+}
 
 export class RuntimeService {
   private readonly executingIds = new Set<string>();
@@ -78,7 +93,10 @@ export class RuntimeService {
           this.executingIds.add(value.submissionId);
           this.lastDispatchId = value.submissionId;
           this.idleConfirmed = false;
-          this.update({ busy: true, message: "正在处理输入…" });
+          this.update({
+            busy: true,
+            message: uiMessage("runtime.processingInput"),
+          });
           this.connection.send({ kind: "dispatch", value });
         },
       },
@@ -112,8 +130,8 @@ export class RuntimeService {
         busy: false,
         message:
           error instanceof RuntimeResourceError
-            ? error.message
-            : "Runtime 资源无法确认。",
+            ? resourceMessage(error)
+            : uiMessage("runtime.resourceUnknown"),
       });
       throw error;
     }
@@ -183,8 +201,8 @@ export class RuntimeService {
             message.state.queuedMessageCount > 0,
           model: model ? `${model.provider}/${model.id}` : null,
           message: model
-            ? "OMP 已就绪，可发送文字。"
-            : "没有可用模型，请先补齐原生 OMP 配置。",
+            ? uiMessage("runtime.readyToSend")
+            : uiMessage("runtime.noModel"),
         });
       },
     );
@@ -206,8 +224,7 @@ export class RuntimeService {
     this.update({
       phase: "interrupted",
       busy: uncertain,
-      message:
-        "原生连接已中断。草稿与原文保留，不自动重发。无法确认原生会话的执行全周期独占，当前只读历史，禁止强占恢复。",
+      message: uiMessage("runtime.disconnected"),
     });
   }
   private settleIdleSubmissions(): void {
@@ -259,7 +276,7 @@ export class RuntimeService {
           if (status === "failed")
             this.update({
               traceId,
-              message: "控制请求未完成，请核对当前原生状态；不会自动重试。",
+              message: uiMessage("runtime.controlFailed"),
             });
           this.record({
             traceId,
@@ -309,8 +326,8 @@ export class RuntimeService {
             state.pendingAsync ||
             state.admitted,
           message: state.paused
-            ? "已暂缓队列；明确继续后恢复消费。后台活动仍按实际状态显示。"
-            : "原生队列与控制状态已更新。",
+            ? uiMessage("runtime.queuePaused")
+            : uiMessage("runtime.controlUpdated"),
         });
         this.settleIdleSubmissions();
       })
@@ -332,10 +349,10 @@ export class RuntimeService {
           busy: busy || pendingInteraction,
           model: model ? `${model.provider}/${model.id}` : null,
           message: pendingInteraction
-            ? "OMP 正在等待交互，请查看原生交互面板。"
+            ? uiMessage("runtime.pendingInteraction")
             : busy
-              ? "OMP 正在处理…"
-              : "OMP 已空闲，可继续发送。",
+              ? uiMessage("runtime.processing")
+              : uiMessage("runtime.idle"),
         });
         this.settleIdleSubmissions();
       })
@@ -343,8 +360,7 @@ export class RuntimeService {
         this.update({
           phase: "interrupted",
           busy: true,
-          message:
-            "OMP 状态无法确认。请检查原生配置，应用不会自动重发或强行结束任务。",
+          message: uiMessage("runtime.statusUnknown"),
         });
       })
       .exhaustive();
@@ -361,14 +377,28 @@ export class RuntimeService {
     if (!this.view) {
       const trusted = !!this.store.threads.executionGrant(thread.workspaceId);
       const previous = this.store.threads.nativeSession(thread.threadId);
+      const profile = (
+        this.environment.OMP_PROFILE ??
+        this.environment.PI_PROFILE ??
+        ""
+      ).trim();
       this.view = {
-        configuration: (
-          this.environment.OMP_PROFILE ?? this.environment.PI_PROFILE
-        )?.trim()
-          ? `OMP profile：${(this.environment.OMP_PROFILE ?? this.environment.PI_PROFILE)?.trim()}（沿用原生发现规则）`
+        configuration: profile
+          ? {
+              code: "runtime.configProfile",
+              params: { profile: boundedDisplayValue(profile, 120) },
+            }
           : this.environment.PI_CODING_AGENT_DIR
-            ? `原生配置目录：${this.environment.PI_CODING_AGENT_DIR}`
-            : "沿用 OMP 默认配置发现规则与应用启动环境",
+            ? {
+                code: "runtime.configDirectory",
+                params: {
+                  directory: boundedDisplayValue(
+                    this.environment.PI_CODING_AGENT_DIR,
+                    2048,
+                  ),
+                },
+              }
+            : uiMessage("runtime.configDefault"),
         revision: 0,
         threadId: thread.threadId,
         traceId: command.traceId,
@@ -377,8 +407,8 @@ export class RuntimeService {
         busy: false,
         model: null,
         message: previous
-          ? "此 Thread 已有关联的原生会话。无法确认原生会话的执行全周期独占，当前只读历史；不会强占或新建会话替代。关闭外部 CLI 也不等于已经获得独占证明。"
-          : "启动前会再次核对目录。项目执行不等于文件沙箱，OMP 可使用当前系统用户的权限。",
+          ? uiMessage("runtime.previousSessionReadOnly")
+          : uiMessage("runtime.preStartTrust"),
       };
     }
     if (command.kind === "answer") {
@@ -432,7 +462,7 @@ export class RuntimeService {
       this.connection.send({ kind: "control", command });
       this.update({
         traceId: command.traceId,
-        message: "控制请求已派发，等待原生状态；不会自动重试。",
+        message: uiMessage("runtime.controlDispatched"),
       });
       return this.view;
     }
@@ -462,8 +492,8 @@ export class RuntimeService {
                 message:
                   result.kind === "denied" &&
                   result.reason === "directory-changed"
-                    ? "目录身份已变化，当前原生实例不能复用。已阻止新提交，现有工作不会因此停止。"
-                    : "未能保存执行授权，请检查目录和本地存储。",
+                    ? uiMessage("runtime.directoryChanged")
+                    : uiMessage("runtime.grantSaveFailed"),
               },
         );
       })
@@ -486,8 +516,8 @@ export class RuntimeService {
             ? (this.view?.phase ?? "interrupted")
             : "browse",
           message: this.connection.connected
-            ? "已阻止新操作并请求停止。现有实例仍保留，待原生状态确认；不能据此视为已停止。"
-            : "当前项目仅浏览。",
+            ? uiMessage("runtime.revokedStopRequested")
+            : uiMessage("runtime.browseOnly"),
         });
       })
       .with("start", async () => {
@@ -502,7 +532,7 @@ export class RuntimeService {
           phase: "starting",
           traceId: command.traceId,
           busy: true,
-          message: "正在校验官方 Runtime 并启动原生会话…",
+          message: uiMessage("runtime.starting"),
         });
         const result = await this.admission.start(command.threadId);
         if (result.kind !== "started")
@@ -512,7 +542,7 @@ export class RuntimeService {
             message:
               this.view?.phase === "failed"
                 ? this.view.message
-                : "OMP 未能就绪。请检查目录授权与原生配置；当前证据无法确定配置缺失、不可读或格式不兼容。",
+                : uiMessage("runtime.notReady"),
           });
       })
       .exhaustive();
@@ -558,8 +588,7 @@ export class RuntimeService {
             attribution: "unknown",
             handlingOwner: "submission",
             recovery: "user_action",
-            safeMessage:
-              "排队已满（20 条），请等待消费后再发送；原文已保留，不会自动重发。",
+            message: uiMessage("submission.queueFull"),
           },
         };
     }
@@ -594,7 +623,7 @@ export class RuntimeService {
     } catch (error) {
       this.update({
         trusted: false,
-        message: "目录身份或执行授权无法确认，已阻止发送。",
+        message: uiMessage("runtime.grantInvalid"),
       });
       // This validation precedes every transport write. Re-read in the coordinator
       // so a concurrent dispatch cannot be relabelled as never dispatched.

@@ -20,7 +20,7 @@ const error: Failure = {
   attribution: "unknown",
   handlingOwner: "draft",
   recovery: "user_action",
-  safeMessage: "failed",
+  message: { code: "draft.storageUnavailable" },
 };
 describe("draft save coordination", () => {
   it("a failed or foreign reconciliation never releases the write guard; edits during checking survive", async () => {

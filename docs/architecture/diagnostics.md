@@ -98,7 +98,7 @@ type DiagnosticFailure = {
   causeErrorId?: string;
   handlingOwner: string;
   recovery: 'none' | 'retry_safe' | 'reconcile_first' | 'user_action';
-  safeMessage: string;
+  message: { code: string; params?: Record<string, string | number> };
 };
 
 type OperationResult<T> =
@@ -108,7 +108,7 @@ type OperationResult<T> =
   | { status: 'unknown'; error: DiagnosticFailure }; // 如写操作超时，副作用是否发生未知
 ```
 
-error code、eventName、component 和结构化 attributes 在实现中由类型目录约束；外部未知异常先用 unknown 接收、校验和归一化，保留有界/脱敏的原始码、异常类型、堆栈、退出状态及证据引用。归因判断必须带证据，不能根据错误文案关键词直接定责。后续修正归因追加新事件引用原 errorId，不抹掉原始观察。
+error code、eventName、component 和结构化 attributes 在实现中由类型目录约束；`message.code` 是应用自有提示的稳定语义码，参数按具体码限制来源与长度，由展示层按当前语言翻译，不将已翻译文案作为 IPC 或状态合同。外部未知异常先用 unknown 接收、校验和归一化，保留有界/脱敏的原始码、异常类型、堆栈、退出状态及证据引用；OMP、工具与用户原文另存且原样显示，不作为应用词条。归因判断必须带证据，不能根据错误文案关键词直接定责。后续修正归因追加新事件引用原 errorId，不抹掉原始观察。
 
 | 观测 | 初始分类/归因 | 不应得出的结论 |
 | --- | --- | --- |

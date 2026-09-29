@@ -83,6 +83,18 @@
     padding: var(--layout-gap) var(--panel-padding);
     border-bottom: 1px solid var(--border);
   }
+  .toolbar select {
+    min-height: var(--control-height);
+    padding-inline: calc(var(--control-padding) / 2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--background);
+    color: var(--foreground);
+  }
+  .toolbar select:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
   .work-content {
     width: 100%;
     max-width: var(--content-width);

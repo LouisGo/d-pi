@@ -34,6 +34,64 @@ it("close cancellation strips privileged event arguments and unsubscribes its wr
   expect(shell.remove).toHaveBeenCalledWith("draft:close-cancelled", handler);
 });
 
+it("locale bridge validates snapshots, forwards only valid changes, and rejects malformed set replies", async () => {
+  await import("./index");
+  const bridge = shell.expose.mock.calls.at(-1)?.[1];
+  if (!bridge?.locale) throw new Error("locale bridge not exposed");
+  const snapshot = {
+    preference: "system" as const,
+    resolvedLocale: "en-US" as const,
+  };
+  shell.invoke.mockResolvedValueOnce(snapshot);
+  await expect(bridge.locale.snapshot()).resolves.toEqual(snapshot);
+  expect(shell.invoke).toHaveBeenLastCalledWith("locale:snapshot");
+
+  const listener = vi.fn();
+  const unsubscribe = bridge.locale.subscribe(listener);
+  const handler = shell.on.mock.calls.at(-1)?.[1];
+  if (!handler) throw new Error("locale listener not registered");
+  handler({ sender: "privileged" }, { ...snapshot, extra: "untrusted" });
+  handler({ sender: "privileged" }, snapshot);
+  expect(listener.mock.calls).toEqual([[snapshot]]);
+  unsubscribe();
+  expect(shell.remove).toHaveBeenLastCalledWith("locale:changed", handler);
+
+  shell.invoke.mockResolvedValueOnce({ ...snapshot, persisted: true });
+  await expect(bridge.locale.setPreference("system")).resolves.toEqual({
+    ...snapshot,
+    persisted: true,
+  });
+  expect(shell.invoke).toHaveBeenLastCalledWith(
+    "locale:set-preference",
+    "system",
+  );
+  shell.invoke.mockResolvedValueOnce({ ...snapshot, persisted: "yes" });
+  await expect(bridge.locale.setPreference("system")).rejects.toThrow();
+});
+
+it("rejects a preferences receipt that changes the requested send key", async () => {
+  await import("./index");
+  const bridge = shell.expose.mock.calls.at(-1)?.[1];
+  if (!bridge) throw Error("bridge not exposed");
+  const value = {
+    theme: "light" as const,
+    density: "normal" as const,
+    sendKey: "enter-send" as const,
+    locale: "system" as const,
+  };
+  shell.invoke.mockResolvedValueOnce({
+    kind: "preferences-saved",
+    value: { ...value, sendKey: "enter-newline" },
+  });
+  await expect(
+    bridge.request({
+      kind: "preferences",
+      traceId: crypto.randomUUID(),
+      value,
+    }),
+  ).rejects.toThrow();
+});
+
 it("traces a rejected receipt with the original request identity without logging body or raw errors", async () => {
   await import("./index");
   const bridge = shell.expose.mock.calls[0]?.[1];

@@ -17,9 +17,14 @@ import {
   type BridgeDiagnostic,
   type Command,
   type DesktopBridge,
+  LocaleSetResultSchema,
   type Reply,
   ReplySchema,
 } from "../shared/desktop-bridge";
+import {
+  LocalePreferenceSchema,
+  LocaleSnapshotSchema,
+} from "../shared/i18n/locale";
 
 const connectionId = crypto.randomUUID();
 function report(event: BridgeDiagnostic): void {
@@ -49,11 +54,35 @@ function matchesRequest(command: Command, reply: Reply): boolean {
       ({ value }) =>
         reply.kind === "preferences-saved" &&
         reply.value.theme === value.theme &&
-        reply.value.density === value.density,
+        reply.value.density === value.density &&
+        reply.value.sendKey === value.sendKey,
     )
     .exhaustive();
 }
 const bridge: DesktopBridge = {
+  locale: {
+    async snapshot() {
+      return LocaleSnapshotSchema.parse(
+        await ipcRenderer.invoke("locale:snapshot"),
+      );
+    },
+    subscribe(listener) {
+      const handler = (_event: Electron.IpcRendererEvent, raw: unknown) => {
+        const parsed = LocaleSnapshotSchema.safeParse(raw);
+        if (parsed.success) listener(parsed.data);
+      };
+      ipcRenderer.on("locale:changed", handler);
+      return () => ipcRenderer.removeListener("locale:changed", handler);
+    },
+    async setPreference(preference) {
+      return LocaleSetResultSchema.parse(
+        await ipcRenderer.invoke(
+          "locale:set-preference",
+          LocalePreferenceSchema.parse(preference),
+        ),
+      );
+    },
+  },
   history: {
     async read(threadId, cursor) {
       return HistoryPageSchema.parse(

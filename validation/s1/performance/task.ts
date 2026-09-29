@@ -53,7 +53,7 @@ for (const [index, mode] of ["off", "on", ...modes].entries()) {
       return reply;
     },
     () =>
-      failure(randomUUID(), "transport-unavailable", "measurement failure")
+      failure(randomUUID(), "transport-unavailable", "draft.transportUnknown")
         .error,
   );
   let resolveSaved: () => void = () => {};

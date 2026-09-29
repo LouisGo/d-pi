@@ -32,7 +32,12 @@ it("merges streamed text into a bounded message and keeps tools/results distinct
   });
   expect(p.snapshot().items).toMatchObject([
     { role: "assistant", text: "hello world", state: "complete" },
-    { role: "tool", text: "not found", state: "failed", label: "read" },
+    {
+      role: "tool",
+      text: "not found",
+      state: "failed",
+      label: { kind: "literal", text: "read" },
+    },
   ]);
 });
 
@@ -61,5 +66,39 @@ it("accounts for JSON escaping when bounding one enormous message", () => {
     new TextEncoder().encode(JSON.stringify(snapshot.items)).length,
   ).toBeLessThanOrEqual(4096);
   expect(snapshot.gap).toBe(true);
+  expect(snapshot.items[0]?.truncated).toBe(true);
+  expect(snapshot.items[0]?.text).not.toContain("显示已截断");
+  p.dispose();
+});
+
+it("keeps native text verbatim and exposes product notices as semantic data", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {});
+  p.accept({
+    type: "message_end",
+    message: { role: "user", content: "原样保留 [显示已截断]" },
+  });
+  p.accept({ type: "future_native_event" });
+  const [native, notice] = p.snapshot().items;
+  expect(native?.text).toBe("原样保留 [显示已截断]");
+  expect(native?.label).toEqual({
+    kind: "message",
+    value: { code: "conversation.nativeInput" },
+  });
+  expect(notice?.text).toBe("");
+  expect(notice?.notice).toEqual({
+    code: "conversation.unsupportedNativeEvent",
+    params: { eventType: "future_native_event" },
+  });
+  p.dispose();
+});
+
+it("bounds the external event type without changing the native source", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {});
+  p.accept({ type: `future_${"x".repeat(1000)}` });
+  const notice = p.snapshot().items[0]?.notice;
+  expect(notice?.code).toBe("conversation.unsupportedNativeEvent");
+  if (notice?.code === "conversation.unsupportedNativeEvent") {
+    expect(notice.params.eventType.length).toBeLessThanOrEqual(120);
+  }
   p.dispose();
 });

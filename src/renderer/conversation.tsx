@@ -1,6 +1,7 @@
 import { code } from "@streamdown/code";
 import { useState, useSyncExternalStore } from "react";
 import { Streamdown } from "streamdown";
+import { match } from "ts-pattern";
 import { WebsiteIcon } from "@/components/icons/common";
 import { Button } from "@/components/ui/button";
 import type { ConversationModel } from "../features/conversation/model";
@@ -10,6 +11,7 @@ import type {
   HistoryPage,
 } from "../features/history/contracts";
 import type { SubmissionModel } from "../features/submission/model";
+import { useI18n } from "./i18n/i18n-provider";
 import { urlBrand } from "./url-display";
 
 // Keep remote resources inert. Native text can be copied; only an explicit app action may open a URL.
@@ -20,6 +22,7 @@ function Markdown({
   text: string;
   streaming?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <Streamdown
       plugins={{ code }}
@@ -27,7 +30,13 @@ function Markdown({
       mode={streaming ? "streaming" : "static"}
       isAnimating={streaming}
       components={{
-        img: ({ alt }) => <span>[图片：{alt ?? "未加载"}]</span>,
+        img: ({ alt }) => (
+          <span>
+            {t("ui.conversation.image", {
+              alt: alt ?? t("ui.conversation.imageNotLoaded"),
+            })}
+          </span>
+        ),
         a: ({ children, href }) => (
           <span title={href}>
             <WebsiteIcon brand={urlBrand(href ?? "")} />
@@ -41,41 +50,54 @@ function Markdown({
   );
 }
 export function Conversation({ model }: { model: ConversationModel }) {
+  const { t, formatMessage } = useI18n();
   const state = useSyncExternalStore(model.subscribe, model.getSnapshot);
   return (
-    <section className="conversation" aria-label="会话阅读">
-      <h2>会话</h2>
+    <section
+      className="conversation"
+      aria-label={t("ui.conversation.sectionLabel")}
+    >
+      <h2>{t("ui.conversation.heading")}</h2>
       {!state?.items.length && (
-        <p className="muted">发送后，OMP 的回复和工具结果会显示在这里。</p>
+        <p className="muted">{t("ui.conversation.empty")}</p>
       )}
-      {state?.gap && (
-        <p role="status">当前显示有缺口，可在下方读取原生记录核对。</p>
-      )}
+      {state?.gap && <p role="status">{t("ui.conversation.gap")}</p>}
       {state?.items.map((item) => (
         <article className="message" key={item.id}>
           <div className="message-heading">
-            <strong>{item.label}</strong>
+            <strong>
+              {item.label.kind === "literal"
+                ? item.label.text
+                : formatMessage(item.label.value)}
+            </strong>
             <span>
               {item.state === "streaming"
-                ? "进行中"
+                ? t("ui.conversation.streaming")
                 : item.state === "failed"
-                  ? "失败"
+                  ? t("ui.conversation.failed")
                   : ""}
             </span>
             <Button
               variant="ghost"
               onClick={() => void navigator.clipboard.writeText(item.text)}
             >
-              复制
+              {t("ui.conversation.copy")}
             </Button>
           </div>
-          {item.role === "tool" ? (
+          {item.notice ? (
+            <p>{formatMessage(item.notice)}</p>
+          ) : item.role === "tool" ? (
             <details>
-              <summary>查看工具输出</summary>
-              <pre>{item.text || "等待结果…"}</pre>
+              <summary>{t("ui.conversation.toolOutput")}</summary>
+              <pre>{item.text || t("ui.conversation.waitingResult")}</pre>
             </details>
           ) : (
             <Markdown text={item.text} streaming={item.state === "streaming"} />
+          )}
+          {item.truncated && (
+            <p role="status">
+              {formatMessage({ code: "conversation.truncated" })}
+            </p>
           )}
         </article>
       ))}
@@ -83,58 +105,60 @@ export function Conversation({ model }: { model: ConversationModel }) {
   );
 }
 export function Submissions({ model }: { model: SubmissionModel }) {
+  const { t, formatMessage } = useI18n();
   const state = useSyncExternalStore(model.subscribe, model.getSnapshot);
   return (
-    <section className="submission-records" aria-label="提交记录">
+    <section
+      className="submission-records"
+      aria-label={t("ui.submissions.sectionLabel")}
+    >
       {state.message && (
         <p role="alert" className="failure">
-          {state.message}
+          {formatMessage(state.message)}
         </p>
       )}
       <details>
         <summary>
-          本地提交原文（{state.receipts.length}，最多显示最近 100 条）
+          {t("ui.submissions.summary", { count: state.receipts.length })}
         </summary>
-        <p className="muted">
-          调用回执不代表业务已接受或任务已完成。结果未知时请先核对，不要重复发送。
-        </p>
+        <p className="muted">{t("ui.submissions.warning")}</p>
         <Button variant="ghost" onClick={() => void model.refresh()}>
-          核对提交状态
+          {t("ui.submissions.checkStatus")}
         </Button>
         {state.receipts.map((receipt) => (
           <article className="message" key={receipt.submissionId}>
             <p>
               {receipt.state === "rejected"
-                ? "未派发到 OMP，原文保留；可处理阻塞后重新发送"
+                ? t("ui.submissions.rejected")
                 : receipt.state === "acknowledged"
-                  ? "已收到调用回执"
+                  ? t("ui.submissions.acknowledged")
                   : receipt.state === "prepared"
-                    ? "已保存，未派发"
+                    ? t("ui.submissions.prepared")
                     : receipt.state === "dispatching"
-                      ? "已派发，等待回执"
-                      : "结果未知"}
+                      ? t("ui.submissions.dispatching")
+                      : t("ui.submissions.unknown")}
               {receipt.outcome === "failed"
-                ? " · 原生返回失败"
+                ? t("ui.submissions.outcomeFailed")
                 : receipt.outcome === "unknown"
-                  ? " · 后续结果未知"
+                  ? t("ui.submissions.outcomeUnknown")
                   : ""}
             </p>
             <pre>{receipt.text}</pre>
             {receipt.retryOf && (
-              <p className="trace">显式再次发送，来源：{receipt.retryOf}</p>
+              <p className="trace">
+                {t("ui.submissions.retryOf", { id: receipt.retryOf })}
+              </p>
             )}
             {receipt.state === "prepared" && (
               <>
-                <p className="muted">
-                  此次输入尚未派发。继续发送使用上方已保存的原文，并重新核验执行授权；编辑区中后来的内容保持不变。
-                </p>
+                <p className="muted">{t("ui.submissions.preparedWarning")}</p>
                 <Button
                   disabled={state.sending}
                   onClick={() =>
                     void model.continuePrepared(receipt.submissionId)
                   }
                 >
-                  继续发送
+                  {t("ui.submissions.continue")}
                 </Button>
               </>
             )}
@@ -142,15 +166,13 @@ export function Submissions({ model }: { model: SubmissionModel }) {
               receipt.outcome === "unknown" ||
               receipt.outcome === "failed") && (
               <details>
-                <summary>作为新提交再次发送</summary>
-                <p role="alert">
-                  原提交可能已经执行，再次发送可能产生重复操作。请先核对原生历史；新草稿保持不变。恢复只读或队列暂停时不会派发。
-                </p>
+                <summary>{t("ui.submissions.resendTitle")}</summary>
+                <p role="alert">{t("ui.submissions.resendWarning")}</p>
                 <Button
                   disabled={state.sending}
                   onClick={() => void model.resend(receipt.submissionId)}
                 >
-                  确认可能重复，重新发送
+                  {t("ui.submissions.resendConfirm")}
                 </Button>
               </details>
             )}
@@ -158,7 +180,7 @@ export function Submissions({ model }: { model: SubmissionModel }) {
               variant="ghost"
               onClick={() => void navigator.clipboard.writeText(receipt.text)}
             >
-              复制提交原文
+              {t("ui.submissions.copyOriginal")}
             </Button>
           </article>
         ))}
@@ -173,6 +195,7 @@ export function History({
   bridge: HistoryBridge;
   threadId: string;
 }) {
+  const { t } = useI18n();
   const [page, setPage] = useState<HistoryPage | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
@@ -189,44 +212,59 @@ export function History({
     }
   }
   return (
-    <section className="history" aria-label="只读原生历史">
+    <section className="history" aria-label={t("ui.history.sectionLabel")}>
       <details>
-        <summary>只读原生历史</summary>
-        <p className="muted">
-          按文件追加顺序分页显示文字，保留记录分支标识；不等于当前模型上下文。读取不会启动
-          OMP。
-        </p>
+        <summary>{t("ui.history.sectionLabel")}</summary>
+        <p className="muted">{t("ui.history.description")}</p>
         <Button variant="ghost" disabled={busy} onClick={() => void read(null)}>
-          读取原生记录
+          {t("ui.history.read")}
         </Button>
-        {error && <p role="alert">读取连接失败，可重新读取。</p>}
+        {error && <p role="alert">{t("ui.history.readFailed")}</p>}
         {page?.kind === "unavailable" && (
           <p role="status">
-            记录暂不可读：{page.reason}。不会用空列表代替故障。
+            {t("ui.history.unavailable", {
+              reason: match(page.reason)
+                .with("missing", () => t("ui.history.reason.missing"))
+                .with("denied", () => t("ui.history.reason.denied"))
+                .with("changed", () => t("ui.history.reason.changed"))
+                .with("unsupported", () => t("ui.history.reason.unsupported"))
+                .with("invalid", () => t("ui.history.reason.invalid"))
+                .with("cancelled", () => t("ui.history.reason.cancelled"))
+                .exhaustive(),
+            })}
           </p>
         )}
         {page?.kind === "page" && (
           <>
-            {page.incompleteTail && <p>文件末尾尚未写完，仅显示完整记录。</p>}
+            {page.incompleteTail && <p>{t("ui.history.incompleteTail")}</p>}
             {page.omitted > 0 && (
-              <p>本页另有 {page.omitted} 条非消息记录，未作为正文显示。</p>
+              <p>{t("ui.history.omitted", { count: page.omitted })}</p>
             )}
             {page.entries.map((entry) => (
               <article className="message" key={entry.id}>
-                <strong>{entry.role}</strong>
+                <strong>
+                  {match(entry.role)
+                    .with("user", () => t("ui.history.role.user"))
+                    .with("assistant", () => t("ui.history.role.assistant"))
+                    .with("tool", () => t("ui.history.role.tool"))
+                    .otherwise(() => entry.role)}
+                </strong>
                 <p className="trace">
-                  {entry.id} ← {entry.parentId ?? "根"}
+                  {t("ui.history.parent", {
+                    id: entry.id,
+                    parentId: entry.parentId ?? t("ui.history.root"),
+                  })}
                 </p>
                 <Markdown text={entry.text} />
               </article>
             ))}
             {page.next && (
               <Button disabled={busy} onClick={() => void read(page.next)}>
-                下一页
+                {t("ui.history.next")}
               </Button>
             )}
             {!page.entries.length && !page.next && (
-              <p>没有可显示的完整文字消息。</p>
+              <p>{t("ui.history.empty")}</p>
             )}
           </>
         )}

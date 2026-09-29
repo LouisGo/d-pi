@@ -1,12 +1,13 @@
 import { z } from "zod";
 import { DRAFT_MAX_BYTES, draftByteLength } from "../../shared/draft-text";
 import { ThreadIdSchema, TraceIdSchema } from "../../shared/identity";
+import { UiMessageSchema } from "../localization/contracts";
 import { ThreadContextSchema } from "../threads/contracts";
 export const DraftTextSchema = z
   .string()
   .refine(
     (text) => draftByteLength(text) <= DRAFT_MAX_BYTES,
-    "草稿正文超过 UTF-8 4 MiB",
+    "content-too-large",
   );
 export const DraftSchema = ThreadContextSchema.extend({
   schemaVersion: z.literal(1),
@@ -32,7 +33,7 @@ export const FailureSchema = z.strictObject({
   attribution: z.literal("unknown"),
   handlingOwner: z.literal("draft"),
   recovery: z.enum(["retry_safe", "reconcile_first", "user_action"]),
-  safeMessage: z.string(),
+  message: UiMessageSchema,
   causeCode: z.string().max(80).optional(),
 });
 export type Failure = z.infer<typeof FailureSchema>;

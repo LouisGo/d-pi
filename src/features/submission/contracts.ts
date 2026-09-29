@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { ThreadIdSchema, TraceIdSchema } from "../../shared/identity";
 import { DraftTextSchema } from "../draft/contracts";
+import { UiMessageSchema } from "../localization/contracts";
 
 export const SubmissionIdSchema = z.uuid().brand<"SubmissionId">();
 export const SubmissionTargetSchema = z.strictObject({
@@ -62,7 +63,7 @@ export const SubmissionFailureSchema = z.strictObject({
   attribution: z.literal("unknown"),
   handlingOwner: z.literal("submission"),
   recovery: z.enum(["user_action", "reconcile_first"]),
-  safeMessage: z.string(),
+  message: UiMessageSchema,
 });
 export type SubmissionFailure = z.infer<typeof SubmissionFailureSchema>;
 export const SubmissionEventSchema = z.strictObject({

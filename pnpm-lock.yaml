@@ -11,6 +11,9 @@ importers:
       '@base-ui/react':
         specifier: 1.8.0
         version: 1.8.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@formatjs/intl':
+        specifier: 6.1.2
+        version: 6.1.2
       '@hugeicons/core-free-icons':
         specifier: 4.3.5
         version: 4.3.5
@@ -66,6 +69,9 @@ importers:
       '@biomejs/biome':
         specifier: 2.5.14
         version: 2.5.14
+      '@formatjs/icu-messageformat-parser':
+        specifier: 3.5.20
+        version: 3.5.20
       '@oh-my-pi/pi-coding-agent':
         specifier: 18.3.0
         version: 18.3.0(@types/node@24.19.0)
@@ -665,6 +671,18 @@ packages:
 
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
+
+  '@formatjs/fast-memoize@3.1.7':
+    resolution: {integrity: sha512-zXfhLpvA6T7+efdt9JLbBwZ00tT7NsBMDVnDu8rpHeNNv8KfRZAMo2gkG0k9lK/Nzc//3kJ9pImsfuJxk3KhUA==}
+
+  '@formatjs/icu-messageformat-parser@3.5.20':
+    resolution: {integrity: sha512-DUzCb2iskGDKvLU7P+nz/rjpmN59luoTRbWHFFNYNnZTxWCKvwPI94rNll99TGZaI6XoTbDF0QGegk21GFrQZQ==}
+
+  '@formatjs/icu-skeleton-parser@2.1.12':
+    resolution: {integrity: sha512-ca7tZMLpfHX3sUD7hP6gE/qr6Iq89EDd3ZLeRhbsB7r0UD55DGJq+tmFLzrGrnx5StahUevQmQQVtbDRHsfDHA==}
+
+  '@formatjs/intl@6.1.2':
+    resolution: {integrity: sha512-YH3Ldfa2vmavWgBlCyrT9WiobphTXlNHnHxhhB6nLSUOxmitJ6Bzqzg61uBcnc6yhKTU+YRo8hLhEatOZrVJUg==}
 
   '@hugeicons/core-free-icons@4.3.5':
     resolution: {integrity: sha512-Sv+NjHRPnQk+yZsGCMcGznCHdTfJR9PMMOEKcJYAQU4gy90dmlc9PwdtvYOImBZIjiheMsTLL5eMn2DmHxUiUg==}
@@ -2636,6 +2654,9 @@ packages:
   inline-style-parser@0.2.7:
     resolution: {integrity: sha512-Nb2ctOyNR8DqQoR0OwRG95uNWIC0C1lCgf5Naz5H6Ji72KZ8OcFZLz2P5sNgwlyoJ8Yif11oMuYs5pBQa86csA==}
 
+  intl-messageformat@12.1.2:
+    resolution: {integrity: sha512-Y7ZnMtT/04nVJnjf1/x/AkfP5we/iN0AhckDdlFPtnetk6/VTuj2OPW5SE7steMd3UNaOtky4KJJY6jwyvWfJg==}
+
   is-alphabetical@2.0.1:
     resolution: {integrity: sha512-FWyyY60MeTNyeSRpkM2Iry0G9hpr7/9kD40mD/cGQEuilcZYS4okz8SN2Q6rLCJ8gbCt6fN+rC+6tMGS99LaxQ==}
 
@@ -4290,6 +4311,20 @@ snapshots:
       react-dom: 19.3.0(react@19.3.0)
 
   '@floating-ui/utils@0.2.12': {}
+
+  '@formatjs/fast-memoize@3.1.7': {}
+
+  '@formatjs/icu-messageformat-parser@3.5.20':
+    dependencies:
+      '@formatjs/icu-skeleton-parser': 2.1.12
+
+  '@formatjs/icu-skeleton-parser@2.1.12': {}
+
+  '@formatjs/intl@6.1.2':
+    dependencies:
+      '@formatjs/fast-memoize': 3.1.7
+      '@formatjs/icu-messageformat-parser': 3.5.20
+      intl-messageformat: 12.1.2
 
   '@hugeicons/core-free-icons@4.3.5': {}
 
@@ -6225,6 +6260,11 @@ snapshots:
   inherits@2.0.4: {}
 
   inline-style-parser@0.2.7: {}
+
+  intl-messageformat@12.1.2:
+    dependencies:
+      '@formatjs/fast-memoize': 3.1.7
+      '@formatjs/icu-messageformat-parser': 3.5.20
 
   is-alphabetical@2.0.1: {}
 

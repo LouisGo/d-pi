@@ -2,20 +2,22 @@ import { useState, useSyncExternalStore } from "react";
 import { match } from "ts-pattern";
 import { Button } from "@/components/ui/button";
 import type { Interaction } from "../features/control/interactions";
+import type { UiMessage } from "../features/localization/contracts";
 import type { RuntimeModel } from "../features/runtime/model";
 import type { SubmissionReceipt } from "../features/submission/contracts";
 import type { SubmissionModel } from "../features/submission/model";
+import { useI18n } from "./i18n/i18n-provider";
 export type FollowUpResult = {
   ok: boolean;
-  message: string | null;
+  message: UiMessage | null;
   submissionId: string | null;
 };
 const emptySubmissionSubscribe = () => () => {};
-const emptySubmissionSnapshot = () => ({
+const emptySubmissionSnapshot: SubmissionModel["getSnapshot"] = () => ({
   sending: false as const,
   sendingText: false as const,
   receipts: [] as SubmissionReceipt[],
-  message: null as string | null,
+  message: null,
 });
 export function RuntimePanel({
   model,
@@ -26,6 +28,7 @@ export function RuntimePanel({
   submission?: SubmissionModel | null;
   onFollowUp: ((text: string) => Promise<FollowUpResult>) | undefined;
 }) {
+  const { t, formatMessage } = useI18n();
   const state = useSyncExternalStore(model.subscribe, model.getSnapshot);
   // subscribe/getSnapshot references are stable (instance methods or module
   // constants); null->model flips once when submission becomes available.
@@ -59,32 +62,51 @@ export function RuntimePanel({
   if (!state)
     return (
       <p className="muted" role="status">
-        正在读取项目执行状态…
+        {t("ui.runtime.loading")}
       </p>
     );
   const label = match(state.phase)
-    .with("browse", () => "仅浏览")
-    .with("allowed", () => "已允许项目执行")
-    .with("starting", () => "正在启动 OMP")
-    .with("ready", () => (state.busy ? "OMP 正在工作" : "OMP 已就绪"))
-    .with("interrupted", () => "原生状态待确认")
-    .with("failed", () => "OMP 尚未就绪")
+    .with("browse", () => t("ui.runtime.phase.browse"))
+    .with("allowed", () => t("ui.runtime.phase.allowed"))
+    .with("starting", () => t("ui.runtime.phase.starting"))
+    .with("ready", () =>
+      state.busy ? t("ui.runtime.phase.busy") : t("ui.runtime.phase.ready"),
+    )
+    .with("interrupted", () => t("ui.runtime.phase.interrupted"))
+    .with("failed", () => t("ui.runtime.phase.failed"))
     .exhaustive();
   return (
-    <section className="runtime-panel" aria-label="项目执行">
+    <section
+      className="runtime-panel"
+      aria-label={t("ui.runtime.sectionLabel")}
+    >
       <strong role="status">{label}</strong>
-      <span className="muted">{state.configuration}</span>
-      {state.model && <span>模型：{state.model}</span>}
-      <p className="muted">{state.message}</p>
+      <span className="muted">{formatMessage(state.configuration)}</span>
+      {state.model && (
+        <span>{t("ui.runtime.model", { model: state.model })}</span>
+      )}
+      <p className="muted">{formatMessage(state.message)}</p>
       {state.control && (
         <div role="status">
           <p>
-            {state.control.paused ? "队列已暂缓" : "原生队列"}：
-            {state.control.queued} 条；后台活动：{state.control.background}
+            {state.control.paused
+              ? t("ui.runtime.queuePaused", {
+                  queued: state.control.queued,
+                  background: state.control.background,
+                })
+              : t("ui.runtime.queueActive", {
+                  queued: state.control.queued,
+                  background: state.control.background,
+                })}
           </p>
           {state.control.queue.map((item, index) => (
             <p key={`${item.kind}-${index}`}>
-              <strong>{item.kind === "steering" ? "干预" : "待处理"}：</strong>
+              <strong>
+                {item.kind === "steering"
+                  ? t("ui.runtime.steering")
+                  : t("ui.runtime.pending")}
+                ：
+              </strong>
               {item.text}
             </p>
           ))}
@@ -93,7 +115,9 @@ export function RuntimePanel({
               disabled={state.control.stopping || state.phase !== "ready"}
               onClick={() => void model.control("stop")}
             >
-              {state.control.stopping ? "正在请求停止…" : "停止并暂缓队列"}
+              {state.control.stopping
+                ? t("ui.runtime.stopping")
+                : t("ui.runtime.stop")}
             </Button>
             {state.control.paused && (
               <Button
@@ -104,18 +128,19 @@ export function RuntimePanel({
                 }
                 onClick={() => void model.control("continue")}
               >
-                明确继续
+                {t("ui.runtime.continue")}
               </Button>
             )}
           </div>
         </div>
       )}
       {state.interactions && (
-        <section aria-label="原生交互" className="native-interactions">
+        <section
+          aria-label={t("ui.runtime.interactionsLabel")}
+          className="native-interactions"
+        >
           {state.interactions.unsupported && (
-            <p role="alert">
-              存在尚不支持或超出显示预算的原生交互，未自动回答。
-            </p>
+            <p role="alert">{t("ui.runtime.unsupportedInteraction")}</p>
           )}
           {state.interactions.items
             .filter(
@@ -146,7 +171,7 @@ export function RuntimePanel({
               !(item.status === "sent" && item.defaultAnswered),
           ) && (
             <details>
-              <summary>交互记录</summary>
+              <summary>{t("ui.runtime.interactionRecords")}</summary>
               <div className="native-interactions">
                 {state.interactions.items
                   .filter(
@@ -179,30 +204,37 @@ export function RuntimePanel({
             disabled={state.phase === "starting"}
             onClick={() => void model.act("allow")}
           >
-            允许项目执行
+            {t("ui.runtime.allow")}
           </Button>
         )}
         {state.trusted &&
           (state.phase === "allowed" || state.phase === "failed") && (
-            <Button onClick={() => void model.act("start")}>启动 OMP</Button>
+            <Button onClick={() => void model.act("start")}>
+              {t("ui.runtime.start")}
+            </Button>
           )}
         {state.trusted && (
           <Button variant="ghost" onClick={() => void model.act("revoke")}>
-            撤销执行授权
+            {t("ui.runtime.revoke")}
           </Button>
         )}
         <Button variant="ghost" onClick={() => void model.act("inspect")}>
-          检查状态
+          {t("ui.runtime.inspect")}
         </Button>
       </div>
     </section>
   );
 }
 
-function defaultAnswerText(item: Interaction): string {
-  if (item.method === "select") return item.options?.[0] ?? "已取消";
-  if (item.prefill !== undefined) return item.prefill || "（空）";
-  return "已取消";
+function defaultAnswerText(
+  item: Interaction,
+  t: ReturnType<typeof useI18n>["t"],
+): string {
+  if (item.method === "select")
+    return item.options?.[0] ?? t("ui.interaction.cancelled");
+  if (item.prefill !== undefined)
+    return item.prefill || t("ui.interaction.empty");
+  return t("ui.interaction.cancelled");
 }
 
 function NativeDialog({
@@ -226,10 +258,13 @@ function NativeDialog({
   submissionReceipts: SubmissionReceipt[];
   followUpIds: string[];
 }) {
+  const { t, formatMessage } = useI18n();
   const [value, setValue] = useState(item.prefill ?? "");
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
-  const [followUpError, setFollowUpError] = useState<string | null>(null);
+  const [followUpError, setFollowUpError] = useState<
+    UiMessage | "fallback" | null
+  >(null);
   const enabled = available && item.status === "pending" && !sent;
   const defaulted = item.status === "sent" && item.defaultAnswered;
   const followUpReceipts = followUpIds
@@ -264,7 +299,7 @@ function NativeDialog({
       // Identity is appended by the parent (survives remount); failures with
       // a formal receipt are still tracked via that identity.
       if (!result.ok || !result.submissionId)
-        setFollowUpError(result.message ?? "追发失败，原文保留在输入框。");
+        setFollowUpError(result.message ?? "fallback");
     });
   };
   const answer = (response: Parameters<RuntimeModel["answer"]>[1]) => {
@@ -278,8 +313,9 @@ function NativeDialog({
       {item.message && <p>{item.message}</p>}
       {defaulted && (
         <p role="status">
-          已按默认作答：{defaultAnswerText(item)}
-          （超时自动作答，避免任务阻塞）。你仍可继续作答，将作为新的追发消息送达。
+          {t("ui.interaction.defaultAnswered", {
+            answer: defaultAnswerText(item, t),
+          })}
         </p>
       )}
       {item.status === "pending" && !sent ? (
@@ -290,14 +326,14 @@ function NativeDialog({
                 disabled={!enabled || !trusted}
                 onClick={() => answer({ kind: "confirm", confirmed: true })}
               >
-                确认
+                {t("ui.interaction.confirm")}
               </Button>
               <Button
                 variant="ghost"
                 disabled={!enabled || !trusted}
                 onClick={() => answer({ kind: "confirm", confirmed: false })}
               >
-                拒绝
+                {t("ui.interaction.reject")}
               </Button>
             </div>
           ) : item.method === "select" ? (
@@ -331,7 +367,7 @@ function NativeDialog({
                 disabled={!enabled || !trusted}
                 onClick={() => answer({ kind: "value", value })}
               >
-                提交回答
+                {t("ui.interaction.submit")}
               </Button>
             </div>
           )}
@@ -340,7 +376,7 @@ function NativeDialog({
             disabled={!enabled}
             onClick={() => answer({ kind: "cancel" })}
           >
-            取消交互
+            {t("ui.interaction.cancel")}
           </Button>
         </>
       ) : defaulted ? (
@@ -348,7 +384,9 @@ function NativeDialog({
           <div>
             <textarea
               className="native-answer"
-              aria-label={`${item.title}的继续作答`}
+              aria-label={t("ui.interaction.continueAnswerLabel", {
+                title: item.title,
+              })}
               disabled={!available || !trusted || followUpInFlight || sending}
               value={value}
               placeholder={item.placeholder}
@@ -365,7 +403,9 @@ function NativeDialog({
               }
               onClick={followUp}
             >
-              {sending ? "正在追发…" : "作为追发消息发送"}
+              {sending
+                ? t("ui.interaction.sendingFollowUp")
+                : t("ui.interaction.sendFollowUp")}
             </Button>
           </div>
           {followUpReceipts.map((receipt) => (
@@ -391,12 +431,14 @@ function NativeDialog({
                 {receipt.state === "acknowledged" &&
                 receipt.outcome !== "failed" &&
                 receipt.outcome !== "unknown"
-                  ? "已作为追发消息发送（调用已确认，可继续追发纠正）。"
+                  ? t("ui.interaction.followUpAcknowledged")
                   : receipt.state === "prepared"
-                    ? "已保存，未派发（发送中断留下的草稿，可继续派发复用，不会多占一条排队）。"
+                    ? t("ui.interaction.followUpPrepared")
                     : receipt.state === "dispatching"
-                      ? "已派发，等待原生调用确认；不是任务完成。"
-                      : `追发${receipt.state === "rejected" ? "被拒绝" : "结果未知"}，原文保留，可修改后再次发送；以提交记录为准。`}
+                      ? t("ui.interaction.followUpDispatching")
+                      : receipt.state === "rejected"
+                        ? t("ui.interaction.followUpRejected")
+                        : t("ui.interaction.followUpUnknown")}
               </p>
               {receipt.state === "prepared" && onContinueFollowUp && (
                 <Button
@@ -404,14 +446,16 @@ function NativeDialog({
                   disabled={!available || !trusted}
                   onClick={() => onContinueFollowUp(receipt.submissionId)}
                 >
-                  继续派发此条
+                  {t("ui.interaction.continueDispatch")}
                 </Button>
               )}
             </div>
           ))}
           {followUpError && (
             <p role="alert" className="failure">
-              {followUpError}
+              {followUpError === "fallback"
+                ? t("ui.interaction.followUpFailed")
+                : formatMessage(followUpError)}
             </p>
           )}
         </>
@@ -419,16 +463,16 @@ function NativeDialog({
         <>
           <p role="status">
             {item.status === "expired"
-              ? "请求已超时"
+              ? t("ui.interaction.expired")
               : item.status === "cancelled"
                 ? item.dismissed
-                  ? "已确认未知并关闭（仅解除本地阻塞，原生可能仍在工作；不是原生已取消）"
-                  : "原生已取消"
+                  ? t("ui.interaction.dismissed")
+                  : t("ui.interaction.nativeCancelled")
                 : item.status === "unknown"
-                  ? "回答结果未知，不自动重答"
+                  ? t("ui.interaction.answerUnknown")
                   : item.status === "pending"
-                    ? "回答已提交，结果尚未确认；不会自动重答"
-                    : "回答已写出，等待原生后续结果；不代表任务完成"}
+                    ? t("ui.interaction.answerSubmitted")
+                    : t("ui.interaction.answerWritten")}
           </p>
           {item.status === "unknown" && (
             <>
@@ -436,11 +480,9 @@ function NativeDialog({
                 variant="ghost"
                 onClick={() => void model.dismiss(item.id)}
               >
-                确认未知并关闭
+                {t("ui.interaction.dismissUnknown")}
               </Button>
-              <p className="muted">
-                仅解除本地阻塞，原生可能已收到默认答案并继续工作；不代表杀掉原生，请先核对原生历史再重发。
-              </p>
+              <p className="muted">{t("ui.interaction.dismissWarning")}</p>
             </>
           )}
         </>

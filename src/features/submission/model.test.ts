@@ -257,7 +257,7 @@ it("reports follow-up honesty: success only after dispatch, failure message othe
                 attribution: "unknown",
                 handlingOwner: "submission",
                 recovery: "user_action",
-                safeMessage: "排队已满。",
+                message: { code: "submission.queueFull" },
               },
             };
           const { kind: _kind, ...value } = command;
@@ -298,7 +298,7 @@ it("reports follow-up honesty: success only after dispatch, failure message othe
   expect(m.getSnapshot().receipts[0]?.submissionId).toBe(sent.submissionId);
   const refused = await m.sendText("overflow", "steer");
   expect(refused.ok).toBe(false);
-  expect(refused.message).toContain("排队已满");
+  expect(refused.message).toEqual({ code: "submission.queueFull" });
   expect(refused.submissionId).toBeNull();
   expect(await m.sendText("   ", "steer")).toEqual({
     ok: false,

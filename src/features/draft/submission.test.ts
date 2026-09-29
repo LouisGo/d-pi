@@ -20,7 +20,7 @@ const failure: Failure = {
   attribution: "unknown",
   handlingOwner: "draft",
   recovery: "reconcile_first",
-  safeMessage: "unknown",
+  message: { code: "runtime.connectionUnknown" },
 };
 function deferred<T>() {
   let resolve: (value: T) => void = () => {};

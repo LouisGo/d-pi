@@ -212,7 +212,7 @@ it.each(["/move:/tmp", "/wt branch", "/worktree:branch", "/session:DELETE\t"])(
     expect(await f.runtime.submit(command)).toMatchObject({
       kind: "failed",
       code: "unsupported-native-command",
-      error: { safeMessage: expect.stringContaining("未发送") },
+      error: { message: { code: "submission.unsupportedNativeCommand" } },
     });
     expect(f.store.drafts.read(f.draft.threadId).text).toBe(text);
     expect(transport.writes).toEqual([]);

@@ -31,7 +31,7 @@ it("resynchronizes sequence gaps and ignores events from the detached port", asy
       role: "assistant",
       text: "B",
       state: "complete",
-      label: "OMP",
+      label: { kind: "literal", text: "OMP" },
     },
   });
   expect(model.getSnapshot()?.gap).toBe(true);
@@ -48,7 +48,7 @@ it("resynchronizes sequence gaps and ignores events from the detached port", asy
       role: "assistant",
       text: "pending",
       state: "streaming",
-      label: "OMP",
+      label: { kind: "literal", text: "OMP" },
     },
   });
   await Promise.resolve();

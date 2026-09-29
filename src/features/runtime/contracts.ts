@@ -7,6 +7,7 @@ import {
   InteractionViewSchema,
 } from "../control/interactions";
 import type { ConversationPort } from "../conversation/contracts";
+import { UiMessageSchema } from "../localization/contracts";
 export const RuntimeCommandSchema = z.union([
   z.strictObject({
     kind: z.enum(["inspect", "allow", "start", "revoke"]),
@@ -21,7 +22,7 @@ export type RuntimeCommand = z.infer<typeof RuntimeCommandSchema>;
 export const RuntimeViewSchema = z.strictObject({
   threadId: ThreadIdSchema,
   traceId: TraceIdSchema,
-  configuration: z.string(),
+  configuration: UiMessageSchema,
   generation: z.uuid().optional(),
   control: ControlStateSchema.optional(),
   interactions: InteractionViewSchema.optional(),
@@ -37,7 +38,7 @@ export const RuntimeViewSchema = z.strictObject({
   trusted: z.boolean(),
   busy: z.boolean(),
   model: z.string().nullable(),
-  message: z.string(),
+  message: UiMessageSchema,
 });
 export type RuntimeView = z.infer<typeof RuntimeViewSchema>;
 export interface RuntimeBridge {

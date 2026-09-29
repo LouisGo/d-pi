@@ -17,7 +17,8 @@ export class AppDatabase {
         version !== 1 &&
         version !== 2 &&
         version !== 3 &&
-        version !== 4
+        version !== 4 &&
+        version !== 5
       )
         throw new Error("Unsupported schema version");
       if (version === 0) {
@@ -56,7 +57,7 @@ export class AppDatabase {
           `);
         });
       }
-      if (version !== 3 && version !== 4) {
+      if (version !== 3 && version !== 4 && version !== 5) {
         const temporary = `${path}.before-v3.${randomUUID()}.tmp`;
         try {
           this.connection.prepare("VACUUM INTO ?").run(temporary);
@@ -78,7 +79,7 @@ export class AppDatabase {
           "UPDATE submission SET receipt=json_set(receipt,'$.state','unknown','$.outcome','unknown','$.updatedAt',?) WHERE json_extract(receipt,'$.state')='dispatching'",
         )
         .run(new Date().toISOString());
-      if (version !== 4) {
+      if (version !== 4 && version !== 5) {
         const temporary = `${path}.before-v4.${randomUUID()}.tmp`;
         try {
           this.connection.prepare("VACUUM INTO ?").run(temporary);
@@ -89,6 +90,20 @@ export class AppDatabase {
         this.transaction(() =>
           this.connection.exec(
             "ALTER TABLE desktop ADD COLUMN send_key TEXT; PRAGMA user_version=4;",
+          ),
+        );
+      }
+      if (version !== 5) {
+        const temporary = `${path}.before-v5.${randomUUID()}.tmp`;
+        try {
+          this.connection.prepare("VACUUM INTO ?").run(temporary);
+          renameSync(temporary, `${path}.before-v5`);
+        } finally {
+          rmSync(temporary, { force: true });
+        }
+        this.transaction(() =>
+          this.connection.exec(
+            "ALTER TABLE desktop ADD COLUMN locale TEXT NOT NULL DEFAULT 'system' CHECK(locale IN ('system','en-US','zh-CN')); PRAGMA user_version=5;",
           ),
         );
       }

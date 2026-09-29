@@ -1,10 +1,17 @@
 import { z } from "zod";
+import { UiMessageSchema } from "../localization/contracts";
+export const ConversationLabelSchema = z.discriminatedUnion("kind", [
+  z.strictObject({ kind: z.literal("literal"), text: z.string() }),
+  z.strictObject({ kind: z.literal("message"), value: UiMessageSchema }),
+]);
 export const ConversationItemSchema = z.strictObject({
   id: z.number().int().nonnegative(),
   role: z.enum(["user", "assistant", "tool", "notice"]),
   text: z.string(),
   state: z.enum(["streaming", "complete", "failed"]),
-  label: z.string(),
+  label: ConversationLabelSchema,
+  notice: UiMessageSchema.optional(),
+  truncated: z.boolean().optional(),
 });
 export type ConversationItem = z.infer<typeof ConversationItemSchema>;
 export const ConversationSnapshotSchema = z.strictObject({
