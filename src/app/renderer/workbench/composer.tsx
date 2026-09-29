@@ -7,8 +7,8 @@ import {
   QUEUE_CAP,
   queueCapped,
   queueCount,
-} from "../../../features/runtime/submission-admission";
-import { shouldSend } from "../../../features/submission/shortcut";
+} from "../../../modules/execution/core/public";
+import { shouldSend } from "../../../modules/execution/renderer/public";
 import type { FrozenSelection } from "../../../modules/files/core/public";
 import type { Draft } from "../../../modules/input/contracts/public";
 import type { DraftController } from "../../../modules/input/core/public";
@@ -19,9 +19,9 @@ import {
   plainTextEditorOptions,
   replaceDraftText,
 } from "../../../modules/input/renderer/public";
-import { useI18n } from "../../../renderer/i18n/i18n-provider";
-import type { AppModel } from "../../../renderer/model";
-import { UrlDecoration } from "../../../renderer/url-decoration";
+import { useI18n } from "../../../modules/preferences/renderer/public";
+import type { AppModel } from "../model";
+import { UrlDecoration } from "../url-decoration";
 export function Composer({
   draft,
   controller,

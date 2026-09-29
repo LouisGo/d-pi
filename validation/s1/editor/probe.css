@@ -1,4 +1,4 @@
-@import "../../../src/renderer/styles/tokens.css";
+@import "../../../src/app/renderer/styles/tokens.css";
 @layer components {
   body {
     font-family: system-ui;

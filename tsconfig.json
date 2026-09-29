@@ -15,7 +15,7 @@
     "noEmit": true,
     "types": ["node", "vite/client"],
     "paths": {
-      "@/*": ["./src/renderer/*"]
+      "@/*": ["./src/app/renderer/*"]
     },
     "resolveJsonModule": true
   },

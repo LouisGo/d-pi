@@ -72,7 +72,7 @@ execFileSync(
   bun,
   [
     "build",
-    "src/features/control/consumption-gate.ts",
+    "src/platform/omp/consumption-gate.ts",
     "--target=bun",
     `--outfile=${join(root, "gate.js")}`,
   ],

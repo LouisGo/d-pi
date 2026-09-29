@@ -1,6 +1,6 @@
 import { parse } from "@formatjs/icu-messageformat-parser";
 import { describe, expect, it } from "vitest";
-import { PlainUiMessageCodeSchema } from "../../features/localization/contracts";
+import { PlainUiMessageCodeSchema } from "../messages/contracts";
 import { enUSMessages, zhCNMessages } from "./catalog";
 
 describe("product message catalogs", () => {

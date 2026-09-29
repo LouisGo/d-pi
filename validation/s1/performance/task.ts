@@ -4,9 +4,10 @@ import { mkdtempSync, realpathSync, writeFileSync } from "node:fs";
 import { cpus, release, tmpdir } from "node:os";
 import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
-import { Diagnostics } from "../../../src/main/diagnostics";
-import { DraftService, failure } from "../../../src/main/draft-service";
-import { AppStorage } from "../../../src/main/storage/app-storage";
+import { Diagnostics } from "../../../src/platform/main/diagnostics/public";
+import { DesktopCommandService } from "../../../src/app/main/wiring/desktop-command-service";
+import { failure } from "../../../src/app/contracts/failure";
+import { AppStorage } from "../../../src/app/main/wiring/app-storage";
 import { DraftController } from "../../../src/modules/input/core/public";
 
 const directory = realpathSync(
@@ -22,7 +23,7 @@ const modes = ["off", "on", "on", "off", "off", "on", "on", "off", "off", "on"];
 for (const [index, mode] of ["off", "on", ...modes].entries()) {
   const store = new AppStorage(join(directory, `task-${index}.sqlite`));
   const draft = store.drafts.create(directory);
-  const service = new DraftService(store, async () => directory);
+  const service = new DesktopCommandService(store, async () => directory);
   const logger =
     mode === "on" ? new Diagnostics(join(directory, `logs-${index}`)) : null;
   const controller = new DraftController(

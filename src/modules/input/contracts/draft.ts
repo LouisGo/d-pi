@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { UiMessageSchema } from "../../../features/localization/contracts";
-import { ThreadContextSchema } from "../../../features/threads/contracts";
+import { UiMessageSchema } from "../../../shared/messages/contracts";
+import { ThreadContextSchema } from "../../workspace/contracts/public";
 import { DRAFT_MAX_BYTES, draftByteLength } from "../../../shared/draft-text";
 import { ThreadIdSchema, TraceIdSchema } from "../../../shared/identity";
 export const DraftTextSchema = z
@@ -16,6 +16,11 @@ export const DraftSchema = ThreadContextSchema.extend({
   consumedBy: z.uuid().optional(),
 });
 export type Draft = z.infer<typeof DraftSchema>;
+export interface DraftReader {
+  active(): Draft | null;
+  read(id: string): Draft;
+  save(id: string, expectedRevision: number, text: string): number | null;
+}
 export const FailureSchema = z.strictObject({
   errorId: z.uuid(),
   traceId: TraceIdSchema,

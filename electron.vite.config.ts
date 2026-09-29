@@ -37,8 +37,8 @@ export default defineConfig(({ command }) => {
         externalizeDeps: false,
         rollupOptions: {
           input: {
-            index: resolve("src/main/index.ts"),
-            "session-host": resolve("src/host/index.ts"),
+            index: resolve("src/app/main/index.ts"),
+            "session-host": resolve("src/app/host/index.ts"),
           },
         },
       },
@@ -48,15 +48,22 @@ export default defineConfig(({ command }) => {
       build: {
         externalizeDeps: false,
         rollupOptions: {
+          input: resolve("src/app/preload/index.ts"),
           output: { format: "cjs", entryFileNames: "index.cjs" },
         },
       },
     },
     renderer: {
+      root: resolve("src/app/renderer"),
       define,
-      resolve: { alias: { "@": resolve("src/renderer") } },
+      resolve: { alias: { "@": resolve("src/app/renderer") } },
       html: command === "serve" ? { cspNonce: nonce } : {},
-      build: { minify: true },
+      build: {
+        minify: true,
+        rollupOptions: {
+          input: { index: resolve("src/app/renderer/index.html") },
+        },
+      },
       plugins: [
         react(),
         tailwindcss(),

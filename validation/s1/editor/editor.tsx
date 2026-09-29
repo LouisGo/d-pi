@@ -11,7 +11,7 @@ import {
   DarkThemeIcon,
   FolderIcon,
   LightThemeIcon,
-} from "../../../src/renderer/components/icons/common";
+} from "../../../src/app/renderer/components/icons/common";
 import pasteSample from "../paste/sample.md?raw";
 import styles from "./sample.module.css";
 

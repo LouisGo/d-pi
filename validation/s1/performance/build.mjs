@@ -11,7 +11,7 @@ await mkdir(output, { recursive: true });
 await cp("out/renderer", `${output}/renderer`, { recursive: true });
 await mkdir(`${output}/main`, { recursive: true });
 await mkdir(`${output}/preload`, { recursive: true });
-let main = await readFile("src/main/index.ts", "utf8");
+let main = await readFile("src/app/main/index.ts", "utf8");
 const helper = await readFile(
   "validation/s1/performance/main.fragment",
   "utf8",
@@ -35,7 +35,7 @@ await build({
   stdin: {
     loader: "ts",
     contents: main,
-    resolveDir: resolve("src/main"),
+    resolveDir: resolve("src/app/main"),
     sourcefile: "s1-main.ts",
   },
   bundle: true,
@@ -44,7 +44,7 @@ await build({
   external: ["electron"],
   outfile: `${output}/main/index.js`,
 });
-const preload = await readFile("src/preload/index.ts", "utf8");
+const preload = await readFile("src/app/preload/index.ts", "utf8");
 const probe = await readFile(
   "validation/s1/performance/preload.fragment",
   "utf8",
@@ -53,7 +53,7 @@ await build({
   stdin: {
     loader: "ts",
     contents: preload + "\n" + probe,
-    resolveDir: resolve("src/preload"),
+    resolveDir: resolve("src/app/preload"),
     sourcefile: "s1-preload.ts",
   },
   bundle: true,

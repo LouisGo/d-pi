@@ -1,7 +1,7 @@
 import { z } from "zod";
-import type { HistoryBridge } from "../../features/history/contracts";
-import type { RuntimeBridge } from "../../features/runtime/contracts";
-import type { SubmissionBridge } from "../../features/submission/contracts";
+import type { HistoryBridge } from "../../modules/conversation/contracts/public";
+import type { RuntimeBridge } from "../../modules/execution/contracts/public";
+import type { SubmissionBridge } from "../../modules/execution/contracts/public";
 import type { GitBridge } from "../../modules/changes/contracts/public";
 import type { FileBridge } from "../../modules/files/contracts/public";
 import {
@@ -10,25 +10,14 @@ import {
   DraftTextSchema,
   SavedDraftSchema,
 } from "../../modules/input/contracts/public";
-import {
-  LocalePreferenceSchema,
-  LocaleSnapshotSchema,
-} from "../../shared/i18n/locale";
 import { ThreadIdSchema, TraceIdSchema } from "../../shared/identity";
-import { PreferencesSchema } from "../../shared/preferences";
-export const LocaleSetResultSchema = LocaleSnapshotSchema.extend({
-  persisted: z.boolean(),
-});
-export type LocaleSetResult = z.infer<typeof LocaleSetResultSchema>;
-export interface LocaleBridge {
-  snapshot(): Promise<z.infer<typeof LocaleSnapshotSchema>>;
-  subscribe(
-    listener: (snapshot: z.infer<typeof LocaleSnapshotSchema>) => void,
-  ): () => void;
-  setPreference(
-    preference: z.infer<typeof LocalePreferenceSchema>,
-  ): Promise<LocaleSetResult>;
-}
+import { PreferencesSchema } from "../../modules/preferences/contracts/public";
+import type { LocaleBridge } from "../../modules/preferences/contracts/public";
+export {
+  LocaleSetResultSchema,
+  type LocaleBridge,
+  type LocaleSetResult,
+} from "../../modules/preferences/contracts/public";
 export const CommandSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("restore"), traceId: TraceIdSchema }),
   z.strictObject({ kind: z.literal("choose-project"), traceId: TraceIdSchema }),

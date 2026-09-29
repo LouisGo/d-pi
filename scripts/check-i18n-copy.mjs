@@ -2,7 +2,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const root = new URL("../src/renderer/", import.meta.url);
+const root = new URL("../src/app/renderer/", import.meta.url);
 const failures = [];
 
 function scan(directory) {

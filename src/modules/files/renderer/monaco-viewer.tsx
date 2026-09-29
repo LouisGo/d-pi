@@ -6,7 +6,7 @@ import "monaco-editor/languages/definitions/html/register";
 import "monaco-editor/languages/definitions/markdown/register";
 import editorWorker from "monaco-editor/editor/editor.worker?worker";
 import { useEffect, useRef, useState } from "react";
-import { useI18n } from "../../../renderer/i18n/i18n-provider";
+import { useI18n } from "../../preferences/renderer/public";
 import type {
   CodeViewModel,
   FrozenSelection,

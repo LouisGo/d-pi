@@ -5,7 +5,7 @@ import {
   parseSlashCommand,
   parseSubcommand,
 } from "@oh-my-pi/pi-coding-agent/slash-commands/helpers/parse";
-import { changesManagedSession } from "../../src/features/runtime/native-command-policy.ts";
+import { changesManagedSession } from "../../src/modules/execution/core/native-command-policy.ts";
 
 const cases = [
   ["/move /tmp", true, "move"],

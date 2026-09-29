@@ -6,7 +6,7 @@ import { build } from "vite";
 mkdirSync("out/icon-probe", { recursive: true });
 writeFileSync(
   "out/icon-probe/entry.ts",
-  "export {FolderIcon} from '../../src/renderer/components/icons/common';",
+  "export {FolderIcon} from '../../src/app/renderer/components/icons/common';",
 );
 let retained = [];
 await build({

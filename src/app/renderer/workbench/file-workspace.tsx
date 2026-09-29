@@ -15,7 +15,7 @@ import {
   isDiffViewTooLarge,
 } from "../../../modules/files/core/public";
 import type { CodeView } from "../../../modules/files/renderer/public";
-import { useI18n } from "../../../renderer/i18n/i18n-provider";
+import { useI18n } from "../../../modules/preferences/renderer/public";
 
 const MonacoViewer = lazy(() =>
   import("../../../modules/files/renderer/public").then(({ MonacoViewer }) => ({

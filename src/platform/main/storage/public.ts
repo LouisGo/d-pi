@@ -1,0 +1,1 @@
+export { AppDatabase } from "./database";
