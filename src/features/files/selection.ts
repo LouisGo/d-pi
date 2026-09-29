@@ -23,6 +23,33 @@ export type FrozenSelection =
       endColumn: number;
     };
 const MAX_SELECTION_BYTES = 64 * 1024;
+/** Per-pane Monaco diff budget. Full file reads allow 5 MiB, but running the
+ * diff algorithm on two multi-megabyte panes hangs the renderer. Sides above
+ * this limit stay readable as versions/sources; only the visual compare waits. */
+export const MAX_DIFF_PANE_CHARS = 512 * 1024;
+export interface CodePane {
+  text: string;
+  source: SelectionSource;
+}
+export type CodeViewModel =
+  | { kind: "file"; text: string; source: SelectionSource }
+  | { kind: "diff"; left: CodePane; right: CodePane };
+/** Stable editor identity: locale display strings must not recreate Monaco. */
+export function codeViewIdentity(view: CodeViewModel): string {
+  if (view.kind === "file")
+    return `file|${view.source.path}|${view.source.version}|${view.text.length}`;
+  return (
+    `diff|${view.left.source.path}|${view.left.source.version}|${view.left.text.length}` +
+    `|${view.right.source.path}|${view.right.source.version}|${view.right.text.length}`
+  );
+}
+export function isDiffViewTooLarge(view: CodeViewModel): boolean {
+  return (
+    view.kind === "diff" &&
+    (view.left.text.length > MAX_DIFF_PANE_CHARS ||
+      view.right.text.length > MAX_DIFF_PANE_CHARS)
+  );
+}
 export function captureSelection(
   text: string,
   range: TextRange,

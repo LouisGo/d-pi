@@ -211,6 +211,9 @@ export const ui = {
   "ui.files.selectionTooLarge": "选区超过 64 KiB 上限，请缩小范围。",
   "ui.files.transportFailed": "读取连接失败；可刷新重试。",
   "ui.files.loadingEditor": "正在打开代码查看器…",
+  "ui.files.diffTooLarge":
+    "双侧文本过大（左 {left} 字，右 {right} 字），为避免界面卡顿未加载 Monaco 比对；两侧来源与版本见上方，仍可用命令行比对对应版本。",
+
   "ui.files.workerFailed": "Monaco worker 不可用；请检查当前构建资源。",
   "ui.files.reason.missing": "文件或差异已不存在。",
   "ui.files.reason.denied": "路径超出项目范围或访问被拒绝。",

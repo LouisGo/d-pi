@@ -8,6 +8,7 @@ import type {
 } from "../features/changes/contracts";
 import type { FileBridge, FileReply } from "../features/files/contracts";
 import type { FrozenSelection } from "../features/files/selection";
+import { isDiffViewTooLarge } from "../features/files/selection";
 import { useI18n } from "./i18n/i18n-provider";
 import type { CodeView } from "./monaco-viewer";
 
@@ -308,7 +309,15 @@ export function FileWorkspace({
             )}
         </>
       )}
-      {view && (
+      {view?.kind === "diff" && isDiffViewTooLarge(view) ? (
+        <p role="status">
+          {t("ui.files.diffTooLarge", {
+            left: view.left.text.length,
+            right: view.right.text.length,
+          })}
+        </p>
+      ) : null}
+      {view && !(view.kind === "diff" && isDiffViewTooLarge(view)) && (
         <>
           <Suspense
             fallback={<p role="status">{t("ui.files.loadingEditor")}</p>}
@@ -333,6 +342,9 @@ export function FileWorkspace({
                     : t("ui.files.selectionEmpty")
                 : t("ui.files.selectionFrozen")}
             </span>
+            {selected?.kind === "selection" && (
+              <span className="file-meta">{`${selected.path}:${selected.startLine}:${selected.startColumn}-${selected.endLine}:${selected.endColumn} · ${selected.source}`}</span>
+            )}
           </div>
         </>
       )}

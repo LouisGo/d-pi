@@ -7,10 +7,14 @@ import "monaco-editor/languages/definitions/markdown/register";
 import editorWorker from "monaco-editor/editor/editor.worker?worker";
 import { useEffect, useRef, useState } from "react";
 import type {
+  CodeViewModel,
   FrozenSelection,
   SelectionSource,
 } from "../features/files/selection";
-import { captureSelection } from "../features/files/selection";
+import {
+  captureSelection,
+  codeViewIdentity,
+} from "../features/files/selection";
 import { useI18n } from "./i18n/i18n-provider";
 
 Object.assign(globalThis, {
@@ -21,13 +25,7 @@ Object.assign(globalThis, {
   },
 });
 
-export type CodeView =
-  | { kind: "file"; text: string; source: SelectionSource }
-  | {
-      kind: "diff";
-      left: { text: string; source: SelectionSource };
-      right: { text: string; source: SelectionSource };
-    };
+export type CodeView = CodeViewModel;
 
 function language(path: string): string {
   if (/\.(ts|tsx|mts|cts)$/.test(path)) return "typescript";
@@ -71,10 +69,16 @@ export function MonacoViewer({
   const container = useRef<HTMLDivElement>(null);
   const selectionHandler = useRef(onSelection);
   selectionHandler.current = onSelection;
+  const viewRef = useRef(view);
+  viewRef.current = view;
+  // Locale display strings must not destroy the editor and its selection.
+  const identity = codeViewIdentity(view);
   const [workerFailed, setWorkerFailed] = useState(false);
   useEffect(() => {
     const onError = (event: ErrorEvent) => {
-      if (event.message.includes("worker") || event.filename.includes("worker"))
+      const message = event.message ?? "";
+      const filename = event.filename ?? "";
+      if (message.includes("worker") || filename.includes("worker"))
         setWorkerFailed(true);
     };
     window.addEventListener("error", onError);
@@ -109,16 +113,22 @@ export function MonacoViewer({
       models.push(created);
       return created;
     };
+    const sourceOf = (side: "file" | "left" | "right"): SelectionSource => {
+      const current = viewRef.current;
+      if (current.kind === "file") return current.source;
+      if (side === "left") return current.left.source;
+      return current.right.source;
+    };
     const watch = (
       code: monaco.editor.IStandaloneCodeEditor,
-      source: SelectionSource,
+      side: "file" | "left" | "right",
     ) => {
       disposables.push(
         code.onDidChangeCursorSelection(({ selection }) => {
           const current = code.getModel();
           if (current)
             selectionHandler.current(
-              captureSelection(current.getValue(), selection, source),
+              captureSelection(current.getValue(), selection, sourceOf(side)),
             );
         }),
       );
@@ -134,7 +144,7 @@ export function MonacoViewer({
         theme: "d-pi",
       });
       editor = code;
-      watch(code, view.source);
+      watch(code, "file");
     } else {
       const diff = monaco.editor.createDiffEditor(container.current, {
         readOnly: true,
@@ -151,8 +161,8 @@ export function MonacoViewer({
         modified: model(view.right.text, view.right.source),
       });
       editor = diff;
-      watch(diff.getOriginalEditor(), view.left.source);
-      watch(diff.getModifiedEditor(), view.right.source);
+      watch(diff.getOriginalEditor(), "left");
+      watch(diff.getModifiedEditor(), "right");
     }
     return () => {
       observer.disconnect();
@@ -161,7 +171,7 @@ export function MonacoViewer({
       editor.dispose();
       for (const item of models) item.dispose();
     };
-  }, [view]);
+  }, [identity]);
   return (
     <>
       <div className="monaco-readonly" ref={container} />

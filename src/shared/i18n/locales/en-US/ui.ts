@@ -231,6 +231,9 @@ export const ui = {
     "The selection exceeds 64 KiB. Select a smaller range.",
   "ui.files.transportFailed": "Read connection failed. Refresh to retry.",
   "ui.files.loadingEditor": "Opening code viewer…",
+  "ui.files.diffTooLarge":
+    "Both sides are too large to compare visually (left {left} chars, right {right} chars); the Monaco compare was skipped to keep the UI responsive. Sources and versions are listed above and remain comparable from the command line.",
+
   "ui.files.workerFailed":
     "Monaco worker unavailable. Check the current build resources.",
   "ui.files.reason.missing": "The file or change no longer exists.",

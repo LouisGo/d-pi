@@ -1,5 +1,10 @@
 import { expect, test } from "vitest";
-import { captureSelection } from "./selection";
+import {
+  captureSelection,
+  codeViewIdentity,
+  isDiffViewTooLarge,
+  MAX_DIFF_PANE_CHARS,
+} from "./selection";
 
 test("captures exact UTF-16 Monaco range and keeps source version", () => {
   const text = "first😀\nsecond line\n";
@@ -35,6 +40,59 @@ test("CRLF view text keeps Monaco columns aligned with the raw slice", () => {
       source,
     ),
   ).toMatchObject({ kind: "selection", text: "ab\r\nc" });
+});
+
+test("editor identity ignores locale display strings", () => {
+  const pane = (source: string) => ({
+    text: "const a = 1\n",
+    source: { path: "src/a.ts", source, version: "sha256:abc" },
+  });
+  const left = pane("工作区文件 · 2026");
+  const right = pane("Working tree file · 2026");
+  expect(codeViewIdentity({ kind: "file", ...left })).toBe(
+    codeViewIdentity({ kind: "file", ...right }),
+  );
+  const diff = (suffix: string) => ({
+    kind: "diff" as const,
+    left: pane(`left ${suffix}`),
+    right: pane(`right ${suffix}`),
+  });
+  expect(codeViewIdentity(diff("甲"))).toBe(codeViewIdentity(diff("A")));
+  expect(codeViewIdentity(diff("甲"))).not.toBe(
+    codeViewIdentity({
+      kind: "diff",
+      left: pane("甲"),
+      right: { ...pane("甲"), text: "changed\n" },
+    }),
+  );
+});
+
+test("oversized diff panes defer the visual compare", () => {
+  const pane = (length: number) => ({
+    text: "x".repeat(length),
+    source: { path: "src/a.ts", source: "index", version: "v" },
+  });
+  expect(
+    isDiffViewTooLarge({
+      kind: "diff",
+      left: pane(MAX_DIFF_PANE_CHARS),
+      right: pane(MAX_DIFF_PANE_CHARS),
+    }),
+  ).toBe(false);
+  expect(
+    isDiffViewTooLarge({
+      kind: "diff",
+      left: pane(MAX_DIFF_PANE_CHARS + 1),
+      right: pane(10),
+    }),
+  ).toBe(true);
+  expect(
+    isDiffViewTooLarge({
+      kind: "file",
+      text: "x".repeat(MAX_DIFF_PANE_CHARS + 1),
+      source: { path: "src/a.ts", source: "working tree", version: "v" },
+    }),
+  ).toBe(false);
 });
 
 test("empty or out-of-range selections do not become references", () => {

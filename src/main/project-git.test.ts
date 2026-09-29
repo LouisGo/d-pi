@@ -227,7 +227,10 @@ test("lists changes for a project reached through a symlinked parent directory",
   await git(root, "add", "linked.txt");
   await git(root, "commit", "-qm", "init");
   await writeFile(join(root, "linked.txt"), "edited");
-  const alias = join(tmpdir(), `d-pi-s4-git-alias-${process.pid}-${Date.now()}`);
+  const alias = join(
+    tmpdir(),
+    `d-pi-s4-git-alias-${process.pid}-${Date.now()}`,
+  );
   await symlink(root, alias);
   roots.push(alias);
   try {
