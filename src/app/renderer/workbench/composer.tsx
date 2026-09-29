@@ -1,5 +1,11 @@
 import { EditorContent, useEditor } from "@tiptap/react";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { match } from "ts-pattern";
 import { Button } from "@/components/ui/button";
 import {
@@ -133,7 +139,7 @@ export function Composer({
       },
     });
   }, [editor, locale, t]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!editor) return;
     const boundary = {
       freeze: () => {
@@ -145,13 +151,12 @@ export function Composer({
     };
     model.editorBoundary = boundary;
     const submission = model.submission;
-    if (submission) {
-      submission.replace = () => replaceDraftText(editor, "");
-      submission.consume();
-    }
+    const detachEditor = submission?.attachEditor(() =>
+      replaceDraftText(editor, ""),
+    );
     return () => {
       if (model.editorBoundary === boundary) model.editorBoundary = null;
-      if (submission) submission.replace = null;
+      detachEditor?.();
     };
   }, [editor, model]);
   const status = match(state)

@@ -1,4 +1,4 @@
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
 import { ThreadIdSchema } from "../../../shared/identity";
 import { DraftSchema } from "../../input/contracts/public";
 import { DraftController } from "../../input/core/public";
@@ -133,6 +133,231 @@ it("freezes A before dispatch, consumes only its unchanged edit sequence, and de
   expect(m.getSnapshot().receipts[0]?.text).toBe("A");
   m.dispose();
   c.dispose();
+});
+
+it("consumes an acknowledged draft after the editor adapter attaches", async () => {
+  const draft = DraftSchema.parse({
+    schemaVersion: 1,
+    threadId: crypto.randomUUID(),
+    workspaceId: crypto.randomUUID(),
+    directory: "/fixture",
+    revision: 1,
+    text: "A",
+  });
+  const controller = new DraftController(
+    draft,
+    async (revision) => ({
+      kind: "saved",
+      threadId: draft.threadId,
+      revision: revision + 1,
+    }),
+    () => {
+      throw Error("unexpected save failure");
+    },
+  );
+  let receive: (reply: SubmissionReply) => void = () => {};
+  let prepared: ReturnType<typeof SubmissionReceiptSchema.parse> | undefined;
+  const model = new SubmissionModel(
+    {
+      subscribe(listener) {
+        receive = listener;
+        return () => {};
+      },
+      async request(command) {
+        if (command.kind === "list") return { kind: "list", receipts: [] };
+        if (command.kind === "prepare") {
+          const { kind: _kind, ...value } = command;
+          prepared = SubmissionReceiptSchema.parse({
+            ...value,
+            target: {
+              processInstanceId: crypto.randomUUID(),
+              connectionGeneration: crypto.randomUUID(),
+              configContextId: "cfg",
+              nativeSessionRef: "s",
+            },
+            requestId: crypto.randomUUID(),
+            state: "prepared",
+            acknowledgedAt: null,
+            outcome: "unobserved",
+            createdAt: "now",
+            updatedAt: "now",
+          });
+          return { kind: "receipt", receipt: prepared };
+        }
+        if (!prepared) throw Error("missing prepared receipt");
+        return {
+          kind: "receipt",
+          receipt: { ...prepared, state: "dispatching" },
+        };
+      },
+    },
+    draft.threadId,
+    controller,
+  );
+  const replace = vi.fn(() => true);
+
+  try {
+    await model.send();
+    if (!prepared) throw Error("missing prepared receipt");
+    receive({
+      kind: "receipt",
+      receipt: {
+        ...prepared,
+        state: "acknowledged",
+        acknowledgedAt: "later",
+      },
+    });
+    expect(replace).not.toHaveBeenCalled();
+
+    const detach = model.attachEditor(replace);
+    expect(replace).toHaveBeenCalledTimes(1);
+    detach();
+  } finally {
+    model.dispose();
+    controller.dispose();
+  }
+});
+
+function submissionFixture() {
+  const draft = DraftSchema.parse({
+    schemaVersion: 1,
+    threadId: crypto.randomUUID(),
+    workspaceId: crypto.randomUUID(),
+    directory: "/fixture",
+    revision: 1,
+    text: "A",
+  });
+  const saves: string[] = [];
+  const controller = new DraftController(
+    draft,
+    async (revision, text) => {
+      saves.push(text);
+      return {
+        kind: "saved" as const,
+        threadId: draft.threadId,
+        revision: revision + 1,
+      };
+    },
+    () => {
+      throw Error("unexpected save failure");
+    },
+  );
+  let receive: (reply: SubmissionReply) => void = () => {};
+  let prepared: ReturnType<typeof SubmissionReceiptSchema.parse> | undefined;
+  const model = new SubmissionModel(
+    {
+      subscribe(listener) {
+        receive = listener;
+        return () => {};
+      },
+      async request(command) {
+        if (command.kind === "list") return { kind: "list", receipts: [] };
+        if (command.kind === "prepare") {
+          const { kind: _kind, ...value } = command;
+          prepared = SubmissionReceiptSchema.parse({
+            ...value,
+            target: {
+              processInstanceId: crypto.randomUUID(),
+              connectionGeneration: crypto.randomUUID(),
+              configContextId: "cfg",
+              nativeSessionRef: "s",
+            },
+            requestId: crypto.randomUUID(),
+            state: "prepared",
+            acknowledgedAt: null,
+            outcome: "unobserved",
+            createdAt: "now",
+            updatedAt: "now",
+          });
+          return { kind: "receipt", receipt: prepared };
+        }
+        if (!prepared) throw Error("missing prepared receipt");
+        return {
+          kind: "receipt",
+          receipt: { ...prepared, state: "dispatching" },
+        };
+      },
+    },
+    draft.threadId,
+    controller,
+  );
+  return {
+    controller,
+    model,
+    saves,
+    getPrepared: () => prepared,
+    receive: (reply: SubmissionReply) => receive(reply),
+  };
+}
+
+it("does not let an older editor cleanup detach the current adapter", async () => {
+  const fixture = submissionFixture();
+  const first = vi.fn(() => true);
+  const second = vi.fn(() => true);
+  const detachFirst = fixture.model.attachEditor(first);
+  const detachSecond = fixture.model.attachEditor(second);
+
+  try {
+    detachFirst();
+    await fixture.model.send();
+    const prepared = fixture.getPrepared();
+    if (!prepared) throw Error("missing prepared receipt");
+    fixture.receive({
+      kind: "receipt",
+      receipt: {
+        ...prepared,
+        state: "acknowledged",
+        acknowledgedAt: "later",
+      },
+    });
+    expect(first).not.toHaveBeenCalled();
+    expect(second).toHaveBeenCalledTimes(1);
+  } finally {
+    detachSecond();
+    fixture.model.dispose();
+    fixture.controller.dispose();
+  }
+});
+
+it("does not consume an acknowledged capture after a newer edit and releases rejection", async () => {
+  const fixture = submissionFixture();
+  const replace = vi.fn(() => true);
+
+  try {
+    await fixture.model.send();
+    const prepared = fixture.getPrepared();
+    if (!prepared) throw Error("missing prepared receipt");
+    const detach = fixture.model.attachEditor(replace);
+    detach();
+    fixture.receive({
+      kind: "receipt",
+      receipt: {
+        ...prepared,
+        state: "acknowledged",
+        acknowledgedAt: "later",
+      },
+    });
+    fixture.controller.edit("B");
+    const reattach = fixture.model.attachEditor(replace);
+    expect(replace).not.toHaveBeenCalled();
+
+    fixture.receive({
+      kind: "receipt",
+      receipt: {
+        ...prepared,
+        state: "rejected",
+        acknowledgedAt: null,
+        outcome: "unobserved",
+      },
+    });
+    expect(replace).not.toHaveBeenCalled();
+    await fixture.controller.flush();
+    expect(fixture.saves).toEqual(["B"]);
+    reattach();
+  } finally {
+    fixture.model.dispose();
+    fixture.controller.dispose();
+  }
 });
 
 it("sends follow-up text without capturing or consuming the draft", async () => {

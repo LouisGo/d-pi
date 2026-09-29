@@ -62,6 +62,8 @@ export class SubmissionModel {
   private captured: CapturedDraft | null = null;
   private remove: () => void;
   private disposed = false;
+  private editorAdapter: { replace: () => boolean } | null = null;
+  // Kept for existing non-React recovery fixtures; Composer uses attachEditor.
   replace: (() => boolean) | null = null;
   constructor(
     private readonly bridge: SubmissionBridge,
@@ -103,7 +105,17 @@ export class SubmissionModel {
     });
     this.consume();
   }
+  attachEditor(replace: () => boolean): () => void {
+    if (this.disposed) return () => {};
+    const adapter = { replace };
+    this.editorAdapter = adapter;
+    this.consume();
+    return () => {
+      if (this.editorAdapter === adapter) this.editorAdapter = null;
+    };
+  }
   consume(): void {
+    if (this.disposed) return;
     const captured = this.captured;
     if (!captured) return;
     const receipt = this.view.receipts.find(
@@ -114,10 +126,11 @@ export class SubmissionModel {
       this.captured = null;
       return;
     }
+    const replace = this.editorAdapter?.replace ?? this.replace;
     if (
       receipt?.acknowledgedAt &&
-      this.replace &&
-      this.draft.consumeSubmission(captured, this.replace)
+      replace &&
+      this.draft.consumeSubmission(captured, replace)
     )
       this.captured = null;
   }
@@ -305,6 +318,7 @@ export class SubmissionModel {
     this.disposed = true;
     this.remove();
     this.listeners.clear();
+    this.editorAdapter = null;
     this.replace = null;
   }
 }
