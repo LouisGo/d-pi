@@ -18,6 +18,25 @@ test("captures exact UTF-16 Monaco range and keeps source version", () => {
   });
 });
 
+test("CRLF view text keeps Monaco columns aligned with the raw slice", () => {
+  const text = "ab\r\ncd";
+  const source = { path: "a.txt", source: "working tree", version: "v" };
+  expect(
+    captureSelection(
+      text,
+      { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 3 },
+      source,
+    ),
+  ).toMatchObject({ kind: "selection", text: "ab" });
+  expect(
+    captureSelection(
+      text,
+      { startLineNumber: 1, startColumn: 1, endLineNumber: 2, endColumn: 2 },
+      source,
+    ),
+  ).toMatchObject({ kind: "selection", text: "ab\r\nc" });
+});
+
 test("empty or out-of-range selections do not become references", () => {
   const source = { path: "a", source: "index", version: "v" };
   expect(

@@ -166,6 +166,40 @@ test("scopes a parent repository to the selected project subdirectory", async ()
   });
 });
 
+test("reads a staged rename through the project subdirectory", async () => {
+  const root = await fixture();
+  const project = join(root, "package");
+  await mkdir(project);
+  await git(root, "init", "-q");
+  await git(root, "config", "user.name", "Fixture");
+  await git(root, "config", "user.email", "fixture@example.invalid");
+  await writeFile(join(project, "old.txt"), "content\n");
+  await git(root, "add", ".");
+  await git(root, "commit", "-qm", "init");
+  await git(root, "mv", "package/old.txt", "package/new.txt");
+  await git(root, "add", "-A");
+  const changes = await listGitChanges(project);
+  expect(changes.kind).toBe("changes");
+  if (changes.kind !== "changes") return;
+  expect(changes.entries).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        scope: "head-index",
+        path: "new.txt",
+        previousPath: "old.txt",
+        status: "renamed",
+      }),
+    ]),
+  );
+  expect(await readGitChange(project, "head-index", "new.txt")).toMatchObject({
+    kind: "diff",
+    path: "new.txt",
+    previousPath: "old.txt",
+    left: { text: "content\n" },
+    right: { text: "content\n" },
+  });
+});
+
 test("does not compare a symlink target as if it were the link's Git content", async () => {
   const root = await fixture();
   await git(root, "init", "-q");
