@@ -16,6 +16,11 @@ function fixture(run: (path: string) => void): void {
     rmSync(dir, { recursive: true, force: true });
   }
 }
+function openStorage(path: string): AppStorage {
+  const store = new AppStorage(path);
+  store.initialize();
+  return store;
+}
 function frozen(store: AppStorage) {
   const draft = store.drafts.create("/fixture");
   store.drafts.save(draft.threadId, 0, "A");
@@ -35,6 +40,93 @@ function frozen(store: AppStorage) {
   });
 }
 describe("persistent submission handoff", () => {
+  it("separates opening from ordered, idempotent initialization", () =>
+    fixture((path) => {
+      let store = new AppStorage(path);
+      const value = frozen(store);
+      store.submissions.prepareSubmission(value);
+      expect(store.submissions.dispatchSubmission(value.submissionId)).toBe(
+        true,
+      );
+      store.close();
+
+      store = new AppStorage(path);
+      const before = new DatabaseSync(path, { readOnly: true });
+      expect(
+        before
+          .prepare(
+            "SELECT json_extract(receipt,'$.state') AS state FROM submission WHERE id=?",
+          )
+          .get(value.submissionId),
+      ).toEqual({ state: "dispatching" });
+      expect(before.prepare("PRAGMA user_version").get()?.user_version).toBe(3);
+      before.close();
+
+      const order: string[] = [];
+      const originalRecovery =
+        store.submissions.recoverInterruptedSubmissions.bind(store.submissions);
+      const recover = vi
+        .spyOn(store.submissions, "recoverInterruptedSubmissions")
+        .mockImplementation(() => {
+          order.push("recovery");
+          return originalRecovery();
+        });
+      const originalMigration = AppDatabase.prototype.completeSchemaMigrations;
+      const migrate = vi
+        .spyOn(AppDatabase.prototype, "completeSchemaMigrations")
+        .mockImplementation(function (this: AppDatabase) {
+          order.push("schema");
+          return originalMigration.call(this);
+        });
+      try {
+        store.initialize();
+        store.initialize();
+        expect(order).toEqual(["recovery", "schema"]);
+        expect(store.submissions.submission(value.submissionId)?.state).toBe(
+          "unknown",
+        );
+        const after = new DatabaseSync(path, { readOnly: true });
+        expect(after.prepare("PRAGMA user_version").get()?.user_version).toBe(
+          5,
+        );
+        after.close();
+      } finally {
+        migrate.mockRestore();
+        recover.mockRestore();
+        store.close();
+      }
+    }));
+
+  it("closes the connection when explicit initialization fails", () =>
+    fixture((path) => {
+      const database = new DatabaseSync(path);
+      database.exec(`
+        CREATE TABLE desktop(
+          id INTEGER PRIMARY KEY CHECK(id=1),
+          active_thread TEXT,
+          theme TEXT NOT NULL,
+          density TEXT NOT NULL,
+          send_key TEXT,
+          locale TEXT NOT NULL DEFAULT 'system'
+        );
+        INSERT INTO desktop VALUES(1,NULL,'light','normal','enter','system');
+        CREATE TABLE submission(id TEXT PRIMARY KEY, receipt TEXT NOT NULL);
+        PRAGMA user_version=4;
+      `);
+      database.close();
+
+      const store = new AppStorage(path);
+      expect(() => store.initialize()).toThrow();
+      expect(() => store.preferences.read()).toThrow();
+      store.close();
+
+      const reopened = new DatabaseSync(path, { readOnly: true });
+      expect(reopened.prepare("PRAGMA user_version").get()?.user_version).toBe(
+        4,
+      );
+      reopened.close();
+    }));
+
   it("leaves interrupted receipts untouched until the explicit execution recovery step", () =>
     fixture((path) => {
       let store = new AppStorage(path);
@@ -57,6 +149,10 @@ describe("persistent submission handoff", () => {
 
       store = new AppStorage(path);
       expect(store.submissions.submission(value.submissionId)?.state).toBe(
+        "dispatching",
+      );
+      store.initialize();
+      expect(store.submissions.submission(value.submissionId)?.state).toBe(
         "unknown",
       );
       store.close();
@@ -64,7 +160,7 @@ describe("persistent submission handoff", () => {
 
   it("ACK consumes only A without advancing the draft CAS baseline; original survives restart", () =>
     fixture((path) => {
-      let store = new AppStorage(path);
+      let store = openStorage(path);
       const a = frozen(store);
       store.submissions.prepareSubmission(a);
       expect(store.submissions.dispatchSubmission(a.submissionId)).toBe(true);
@@ -76,7 +172,7 @@ describe("persistent submission handoff", () => {
         revision: 1,
       });
       store.close();
-      store = new AppStorage(path);
+      store = openStorage(path);
       try {
         expect(store.drafts.read(a.threadId)).toMatchObject({
           text: "",
@@ -98,7 +194,7 @@ describe("persistent submission handoff", () => {
 
   it("delegates draft consumption through the input writer boundary", () =>
     fixture((path) => {
-      const store = new AppStorage(path);
+      const store = openStorage(path);
       const value = frozen(store);
       store.submissions.prepareSubmission(value);
       store.submissions.dispatchSubmission(value.submissionId);
@@ -118,7 +214,7 @@ describe("persistent submission handoff", () => {
 
 it("ACK transaction rolls back entirely on marker failure; B saved before ACK remains recoverable", () =>
   fixture((path) => {
-    const store = new AppStorage(path);
+    const store = openStorage(path);
     const a = frozen(store);
     store.submissions.prepareSubmission(a);
     store.submissions.dispatchSubmission(a.submissionId);
@@ -146,7 +242,7 @@ it("ACK transaction rolls back entirely on marker failure; B saved before ACK re
   }));
 it("restart makes dispatch uncertain while ACK survives later failure; duplicate ID cannot dispatch twice", () =>
   fixture((path) => {
-    let store = new AppStorage(path);
+    let store = openStorage(path);
     const a = frozen(store);
     const prepared = store.submissions.prepareSubmission(a);
     expect(store.submissions.prepareSubmission(a)).toEqual(prepared);
@@ -156,7 +252,7 @@ it("restart makes dispatch uncertain while ACK survives later failure; duplicate
     expect(store.submissions.dispatchSubmission(a.submissionId)).toBe(true);
     expect(store.submissions.dispatchSubmission(a.submissionId)).toBe(false);
     store.close();
-    store = new AppStorage(path);
+    store = openStorage(path);
     try {
       expect(store.submissions.submission(a.submissionId)?.state).toBe(
         "unknown",
@@ -177,7 +273,7 @@ it("restart makes dispatch uncertain while ACK survives later failure; duplicate
 
 it("execution trust survives restart for the exact workspace and can be revoked without touching drafts", () =>
   fixture((path) => {
-    let store = new AppStorage(path);
+    let store = openStorage(path);
     const d = store.drafts.create("/project");
     store.drafts.save(d.threadId, 0, "draft");
     expect(store.threads.executionGrant(d.workspaceId)).toBeNull();
@@ -189,7 +285,7 @@ it("execution trust survives restart for the exact workspace and can be revoked 
     };
     store.threads.grantExecution(grant);
     store.close();
-    store = new AppStorage(path);
+    store = openStorage(path);
     try {
       expect(store.threads.executionGrant(d.workspaceId)).toEqual(grant);
       store.threads.revokeExecution(d.workspaceId);
@@ -202,7 +298,7 @@ it("execution trust survives restart for the exact workspace and can be revoked 
 
 it("native session binding survives restart and cannot be silently replaced", () =>
   fixture((path) => {
-    let store = new AppStorage(path);
+    let store = openStorage(path);
     const draft = store.drafts.create("/project");
     const binding = {
       threadId: draft.threadId,
@@ -212,7 +308,7 @@ it("native session binding survives restart and cannot be silently replaced", ()
     };
     store.threads.bindNativeSession(binding);
     store.close();
-    store = new AppStorage(path);
+    store = openStorage(path);
     try {
       expect(store.threads.nativeSession(draft.threadId)).toEqual(binding);
       expect(() =>
@@ -228,7 +324,7 @@ it("native session binding survives restart and cannot be silently replaced", ()
   }));
 it("rejects a second intent for the same frozen revision", () =>
   fixture((path) => {
-    const store = new AppStorage(path);
+    const store = openStorage(path);
     try {
       const a = frozen(store);
       store.submissions.prepareSubmission(a);
@@ -246,7 +342,7 @@ it("rejects a second intent for the same frozen revision", () =>
   }));
 it("an explicit resend retains source identity and never consumes the newer draft", () =>
   fixture((path) => {
-    const store = new AppStorage(path);
+    const store = openStorage(path);
     try {
       const original = frozen(store);
       store.submissions.prepareSubmission(original);
@@ -277,7 +373,7 @@ it("an explicit resend retains source identity and never consumes the newer draf
 
 it("free-text follow-ups bypass the draft gates and never consume the editor", () =>
   fixture((path) => {
-    const store = new AppStorage(path);
+    const store = openStorage(path);
     try {
       const draft = store.drafts.create("/fixture");
       store.drafts.save(draft.threadId, 0, "editor content");
@@ -334,7 +430,7 @@ it("free-text follow-ups bypass the draft gates and never consume the editor", (
 
 it("non-dispatched receipts cannot consume a draft and remain terminal across restart", () =>
   fixture((path) => {
-    let store = new AppStorage(path);
+    let store = openStorage(path);
     try {
       const a = frozen(store);
       store.submissions.prepareSubmission(a);
@@ -347,7 +443,7 @@ it("non-dispatched receipts cannot consume a draft and remain terminal across re
         false,
       );
       store.close();
-      store = new AppStorage(path);
+      store = openStorage(path);
       expect(store.submissions.submission(a.submissionId)).toMatchObject({
         state: "rejected",
         outcome: "unobserved",

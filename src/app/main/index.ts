@@ -125,6 +125,7 @@ function initializeStorage(): void {
     const data = app.getPath("userData");
     mkdirSync(data, { recursive: true, mode: 0o700 });
     store = new AppStorage(join(data, "drafts.sqlite"));
+    store.initialize();
     if (!localeInteracted)
       applyLocale(store.preferences.read().locale, window !== null);
     service = new DesktopCommandService(store, async () => {

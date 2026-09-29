@@ -20,6 +20,7 @@ it("shows the SDK recovery command when managed SDK resources are missing", asyn
   const project = join(root, "project");
   mkdirSync(project);
   const store = new AppStorage(join(root, "app.sqlite"));
+  store.initialize();
   try {
     const draft = store.drafts.create(project);
     const runtime = new RuntimeService(

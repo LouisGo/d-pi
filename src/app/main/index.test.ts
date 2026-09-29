@@ -204,6 +204,7 @@ it("restores the saved language before building the native menu", async () => {
   shell.systemLocale = "en-US";
   const path = join(shell.directory, "drafts.sqlite");
   const prior = new AppStorage(path);
+  prior.initialize();
   prior.preferences.saveLocale("zh-CN");
   prior.close();
   const { Menu } = await import("electron");
@@ -236,6 +237,7 @@ it("retries a failed initial restore after the lock clears, preserving the same 
   shell.directory = mkdtempSync(join(tmpdir(), "d-pi-startup-"));
   const path = join(shell.directory, "drafts.sqlite");
   const original = new AppStorage(path);
+  original.initialize();
   const draft = original.drafts.create(shell.directory);
   original.drafts.save(draft.threadId, 0, "keep this\n\n原文");
   original.close();
@@ -411,6 +413,7 @@ it("runtime inspection is read-only, rejects foreign frames, and explicit allowa
   shell.quit.mockClear();
   shell.directory = mkdtempSync(join(tmpdir(), "d-pi-runtime-ipc-"));
   const storage = new AppStorage(join(shell.directory, "drafts.sqlite"));
+  storage.initialize();
   const draft = storage.drafts.create(realpathSync(shell.directory));
   storage.close();
   try {

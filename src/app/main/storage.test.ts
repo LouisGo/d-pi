@@ -14,6 +14,11 @@ function fixture(
     .then(() => run(join(dir, "app.sqlite"), dir))
     .finally(() => rmSync(dir, { recursive: true, force: true }));
 }
+function openStorage(path: string): AppStorage {
+  const store = new AppStorage(path);
+  store.initialize();
+  return store;
+}
 describe("real SQLite and directory service", () => {
   it("migrates existing v4 preferences to system locale without changing other settings", () =>
     fixture((path) => {
@@ -25,7 +30,7 @@ describe("real SQLite and directory service", () => {
         PRAGMA user_version=4;
       `);
       db.close();
-      const store = new AppStorage(path);
+      const store = openStorage(path);
       expect(store.preferences.read()).toEqual({
         theme: "dark",
         density: "compact",
@@ -42,7 +47,7 @@ describe("real SQLite and directory service", () => {
         }),
       ).toBeUndefined();
       store.close();
-      const reopened = new AppStorage(path);
+      const reopened = openStorage(path);
       expect(reopened.preferences.read().locale).toBe("en-US");
       reopened.close();
       const migrated = new DatabaseSync(path, { readOnly: true });
@@ -75,7 +80,7 @@ describe("real SQLite and directory service", () => {
       writer.exec("UPDATE precious SET revision=2,body='最新已提交正文'");
       let store: AppStorage | undefined;
       try {
-        store = new AppStorage(path);
+        store = openStorage(path);
         const backup = new DatabaseSync(`${path}.before-v1`, {
           readOnly: true,
         });
@@ -98,7 +103,7 @@ describe("real SQLite and directory service", () => {
     }));
   it("stable identities, two threads, CAS and restart", () =>
     fixture((path) => {
-      let store = new AppStorage(path);
+      let store = openStorage(path);
       const a = store.drafts.create("/a");
       const b = store.drafts.create("/a");
       expect(a.threadId).not.toBe(b.threadId);
@@ -107,7 +112,7 @@ describe("real SQLite and directory service", () => {
       expect(store.drafts.save(a.threadId, 0, "stale")).toBeNull();
       expect(store.drafts.read(b.threadId).text).toBe("");
       store.close();
-      store = new AppStorage(path);
+      store = openStorage(path);
       expect(store.drafts.read(a.threadId)).toEqual({
         ...a,
         revision: 1,
@@ -118,7 +123,7 @@ describe("real SQLite and directory service", () => {
     }));
   it("cancel/invalid directory does not associate a thread; foreign ID cannot write", () =>
     fixture(async (path, dir) => {
-      const store = new AppStorage(path);
+      const store = openStorage(path);
       let selected: string | null = null;
       const service = new DesktopCommandService(store, async () => selected);
       const traceId = crypto.randomUUID();
@@ -178,7 +183,7 @@ describe("real SQLite and directory service", () => {
     }));
   it("locked writer reports failure without overwriting draft", () =>
     fixture(async (path) => {
-      const store = new AppStorage(path);
+      const store = openStorage(path);
       const draft = store.drafts.create("/fixture");
       const locker = new DatabaseSync(path);
       locker.exec("BEGIN IMMEDIATE");
@@ -200,7 +205,7 @@ describe("real SQLite and directory service", () => {
 
 it("overlapping project requests open one dialog and create one foreground identity", () =>
   fixture(async (path, dir) => {
-    const store = new AppStorage(path);
+    const store = openStorage(path);
     let finish: ((path: string) => void) | undefined;
     const service = new DesktopCommandService(
       store,
