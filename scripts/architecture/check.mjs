@@ -38,7 +38,9 @@ const ALLOWED_CROSS_MODULE = {
   shared: new Set(["shared"]),
 };
 const BUILTINS = new Set(builtinModules.flatMap((value) => [value, `node:${value}`]));
-const HEADLESS_VENDOR = /^(?:electron|react(?:$|\/)|react-dom(?:$|\/)|@tiptap\/|@base-ui\/|@hugeicons\/|monaco-editor(?:$|\/))/;
+const UI_VENDOR = /^(?:electron|react(?:$|\/)|react-dom(?:$|\/)|@tiptap\/|@base-ui\/|@hugeicons\/|monaco-editor(?:$|\/))/;
+const OMP_VENDOR = /^@oh-my-pi(?:$|\/)/;
+const PLATFORM_INDEPENDENT_ENVIRONMENTS = new Set(["contracts", "core", "shared"]);
 const ELECTRON_VENDOR = /^(?:electron)(?:$|\/)/;
 const LEGACY_ROOTS = [
   "src/features/",
@@ -233,6 +235,17 @@ function isAllowedUnresolved(config, specifier) {
   return (config.unresolved?.allowed ?? []).some((value) => new RegExp(value).test(specifier));
 }
 
+function externalEnvironmentViolation(environment, specifier) {
+  if (
+    PLATFORM_INDEPENDENT_ENVIRONMENTS.has(environment) &&
+    (BUILTINS.has(specifier) || UI_VENDOR.test(specifier) || OMP_VENDOR.test(specifier))
+  )
+    return true;
+  if (environment === "omp" && UI_VENDOR.test(specifier)) return true;
+  if (["host", "node"].includes(environment) && ELECTRON_VENDOR.test(specifier)) return true;
+  return false;
+}
+
 function main() {
   const { root, config: configPath } = parseArgs(process.argv.slice(2));
   const config = readJson(configPath);
@@ -302,12 +315,8 @@ function main() {
       report(id, message, sourceRelative);
     }
     for (const { specifier } of parsed.imports) {
-      const headless = (BUILTINS.has(specifier) || HEADLESS_VENDOR.test(specifier)) && ["contracts", "core"].includes(sourceInfo.environment);
       const rendererProcess = sourceInfo.environment === "renderer" && (BUILTINS.has(specifier) || specifier === "electron");
-      const utilityCannotUseElectron =
-        ELECTRON_VENDOR.test(specifier) &&
-        ["contracts", "core", "host", "node", "omp", "shared"].includes(sourceInfo.environment);
-      if (!sourceTest && (headless || rendererProcess || utilityCannotUseElectron)) report("ARCH-ENVIRONMENT", `${sourceRelative} imports ${specifier}`, sourceRelative, specifier);
+      if (!sourceTest && (externalEnvironmentViolation(sourceInfo.environment, specifier) || rendererProcess)) report("ARCH-ENVIRONMENT", `${sourceRelative} imports ${specifier}`, sourceRelative, specifier);
       const target = resolveSpecifier(specifier, sourcePath, root);
       if (!target) {
         if (specifier.startsWith(".") || specifier.startsWith("src/") || specifier.startsWith("@/") || specifier.startsWith("@modules/")) {

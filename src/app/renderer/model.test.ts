@@ -1,5 +1,6 @@
 import { match } from "ts-pattern";
 import { afterEach, expect, it, vi } from "vitest";
+import type { ConversationEvent } from "../../modules/conversation/contracts/public";
 import type { RuntimeView } from "../../modules/execution/contracts/public";
 import {
   type Draft,
@@ -192,6 +193,7 @@ it("cancelling a pending close releases editing and preserves edits made before 
 });
 
 it("keeps conversation projection lifecycle in the AppModel", async () => {
+  vi.stubGlobal("document", { documentElement: { dataset: {} } });
   const threadId = ThreadIdSchema.parse(crypto.randomUUID());
   const generation = crypto.randomUUID();
   const view: RuntimeView = {
@@ -214,7 +216,10 @@ it("keeps conversation projection lifecycle in the AppModel", async () => {
     model: "fixture",
     message: { code: "runtime.readyToSend" as const },
   };
-  let publishRuntime: ((value: RuntimeView) => void) | undefined;
+  const runtimeListeners: ((value: RuntimeView) => void)[] = [];
+  const conversationListeners: ((event: ConversationEvent) => void)[] = [];
+  let runtimeUnsubscriptions = 0;
+  let conversationUnsubscriptions = 0;
   let conversationConnections = 0;
   const bridge: DesktopBridge = {
     request: async (command) => {
@@ -240,14 +245,17 @@ it("keeps conversation projection lifecycle in the AppModel", async () => {
     runtime: {
       request: () => new Promise<RuntimeView>(() => {}),
       subscribe: (listener) => {
-        publishRuntime = listener;
-        return () => {};
+        runtimeListeners.push(listener);
+        return () => {
+          runtimeUnsubscriptions += 1;
+        };
       },
     },
     conversation: {
       connect: (connectedThread, listener) => {
         expect(connectedThread).toBe(threadId);
         conversationConnections += 1;
+        conversationListeners.push(listener);
         listener({
           kind: "snapshot",
           generation,
@@ -255,7 +263,9 @@ it("keeps conversation projection lifecycle in the AppModel", async () => {
           items: [],
           gap: false,
         });
-        return () => {};
+        return () => {
+          conversationUnsubscriptions += 1;
+        };
       },
     },
     onCloseRequest: () => () => {},
@@ -264,10 +274,32 @@ it("keeps conversation projection lifecycle in the AppModel", async () => {
   };
   const model = new AppModel(bridge);
   await model.start();
-  publishRuntime?.(view);
+  expect(model.getSnapshot().kind).toBe("ready");
+  runtimeListeners[0]?.(view);
   expect(conversationConnections).toBe(1);
-  publishRuntime?.(ready);
+  runtimeListeners[0]?.(ready);
   expect(conversationConnections).toBe(2);
   expect(model.reading?.getSnapshot()?.generation).toBe(generation);
+  const readingBeforeDispose = model.reading?.getSnapshot();
   model.dispose();
+  expect(runtimeUnsubscriptions).toBe(1);
+  expect(conversationUnsubscriptions).toBe(2);
+
+  runtimeListeners[0]?.({ ...ready, revision: 2 });
+  conversationListeners[1]?.({
+    kind: "update",
+    generation,
+    seq: 1,
+    droppedBefore: 0,
+    gap: false,
+    item: {
+      id: 1,
+      role: "assistant",
+      text: "late",
+      state: "complete",
+      label: { kind: "literal", text: "Assistant" },
+    },
+  });
+  expect(conversationConnections).toBe(2);
+  expect(model.reading?.getSnapshot()).toEqual(readingBeforeDispose);
 });

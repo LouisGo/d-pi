@@ -1,9 +1,32 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { join, resolve } from "node:path";
 import { test } from "node:test";
 
 const repositoryRoot = resolve(import.meta.dirname, "../..");
+
+function runTypecheck(configName, source) {
+  const directory = mkdtempSync(join(repositoryRoot, ".scratch", "typecheck-environment-"));
+  const configPath = join(directory, "tsconfig.json");
+  writeFileSync(join(directory, "fixture.ts"), source);
+  writeFileSync(
+    configPath,
+    JSON.stringify({
+      extends: resolve(repositoryRoot, configName),
+      include: ["fixture.ts"],
+    }),
+  );
+  try {
+    return spawnSync(
+      process.execPath,
+      [resolve(repositoryRoot, "node_modules/typescript/bin/tsc"), "--noEmit", "-p", configPath],
+      { encoding: "utf8" },
+    );
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+}
 
 test("core has a dedicated typecheck without DOM or Node ambient types", () => {
   const config = JSON.parse(
@@ -33,4 +56,13 @@ test("process-specific typechecks declare their ambient environment explicitly",
     assert.deepEqual(config.compilerOptions.lib, values.lib, name);
     assert.deepEqual(config.compilerOptions.types, values.types, name);
   }
+});
+
+test("the real core typecheck rejects DOM globals", () => {
+  const result = runTypecheck(
+    "tsconfig.core.json",
+    "export const root = document.documentElement;\n",
+  );
+  assert.notEqual(result.status, 0);
+  assert.match(`${result.stdout}\n${result.stderr}`, /document/);
 });

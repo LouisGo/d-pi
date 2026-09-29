@@ -135,6 +135,103 @@ test("checks the runtime module and rejects Electron in the OMP environment", ()
   assert.match(`${result.stdout}\n${result.stderr}`, /ARCH-ENVIRONMENT/);
 });
 
+test("rejects forbidden external dependencies in shared, core and OMP environments", () => {
+  const cases = [
+    {
+      name: "shared-node",
+      files: {
+        "src/shared/public.ts": 'import "node:fs";\nexport const value = true;\n',
+      },
+      modules: {
+        shared: {
+          root: "src/shared",
+          environments: ["shared"],
+          defaultEnvironment: "shared",
+          public: ["public.ts"],
+          dependsOn: [],
+        },
+      },
+      expected: "node:fs",
+    },
+    {
+      name: "core-omp-sdk",
+      files: {
+        "src/modules/alpha/core/public.ts":
+          'import "@oh-my-pi/pi-coding-agent";\nexport const value = true;\n',
+      },
+      modules: {
+        alpha: {
+          root: "src/modules/alpha",
+          environments: ["core"],
+          public: ["core/public.ts"],
+          dependsOn: { core: [] },
+        },
+      },
+      expected: "@oh-my-pi/pi-coding-agent",
+    },
+    {
+      name: "omp-ui",
+      files: {
+        "runtime/host.mjs": 'import "react";\nconsole.log("invalid");\n',
+      },
+      modules: {
+        runtime: {
+          root: "runtime",
+          environments: ["omp"],
+          defaultEnvironment: "omp",
+          public: ["host.mjs"],
+          dependsOn: [],
+        },
+      },
+      options: { sourceRoots: ["runtime"] },
+      expected: "react",
+    },
+  ];
+
+  for (const { name, files, modules, options, expected } of cases) {
+    const directory = fixture(name, files, modules, options);
+    const result = run(directory);
+    rmSync(directory, { recursive: true, force: true });
+    assert.notEqual(result.status, 0, `${name} unexpectedly passed`);
+    assert.match(`${result.stdout}\n${result.stderr}`, /ARCH-ENVIRONMENT/);
+    assert.match(`${result.stdout}\n${result.stderr}`, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  }
+});
+
+test("allows supported external packages in platform-independent environments", () => {
+  const directory = fixture("valid-platform-packages", {
+    "src/shared/public.ts":
+      'import { createIntl } from "@formatjs/intl";\nimport { z } from "zod";\nexport const shared = [createIntl, z.string()];\n',
+    "src/modules/alpha/core/public.ts":
+      'import { z } from "zod";\nexport const alpha = z.string();\n',
+    "src/modules/beta/contracts/public.ts":
+      'import { createIntl } from "@formatjs/intl";\nexport const beta = createIntl;\n',
+  }, {
+    shared: {
+      root: "src/shared",
+      environments: ["shared"],
+      defaultEnvironment: "shared",
+      public: ["public.ts"],
+      dependsOn: [],
+    },
+    alpha: {
+      root: "src/modules/alpha",
+      environments: ["core"],
+      public: ["core/public.ts"],
+      dependsOn: { core: [] },
+    },
+    beta: {
+      root: "src/modules/beta",
+      environments: ["contracts"],
+      public: ["contracts/public.ts"],
+      dependsOn: { contracts: [] },
+    },
+  });
+  const result = run(directory);
+  rmSync(directory, { recursive: true, force: true });
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+});
+
 test("rejects a core import of a Node runtime and a file cycle", () => {
   const environment = fixture("environment", { "src/modules/alpha/core/public.ts": 'import "node:fs";\nexport const value = 1;\n' }, modules({ betaDependencies: [] }));
   const environmentResult = run(environment);
