@@ -26,6 +26,7 @@ import { SubmissionCoordinator } from "../core/public";
 import { canSubmit, queueCapped } from "../core/submission-admission";
 import { HostConnection } from "./host-connection";
 import type { SubmissionRepository } from "./submission-repository";
+import { sameSubmissionTarget } from "./target";
 
 type RuntimeStore = {
   threads: Pick<
@@ -89,10 +90,7 @@ export class RuntimeService {
       store.submissions,
       {
         isCurrentTarget: (target) =>
-          this.target !== null &&
-          Object.entries(this.target).every(
-            ([key, value]) => Reflect.get(target, key) === value,
-          ),
+          this.target !== null && sameSubmissionTarget(this.target, target),
         canDispatch: (target) =>
           this.target?.processInstanceId === target.processInstanceId &&
           canSubmit(this.view) &&
