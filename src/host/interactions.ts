@@ -49,6 +49,49 @@ export class PendingInteractions {
     this.changed();
     return true;
   }
+  answerDefault(
+    id: string,
+    answer: Answer,
+    write: (frame: string) => void,
+  ): boolean {
+    // Atomic default write: status and defaultAnswered land in one mutation
+    // so callers publish a single snapshot. Success shows sent+defaultAnswered
+    // (stays in the active group); failure leaves unknown without the flag.
+    // No changed() here; the caller publishes once.
+    this.expire();
+    const dialog = this.dialogs.get(id);
+    if (!dialog || dialog.status !== "pending" || !this.ids.has(id))
+      return false;
+    if (
+      answer.kind !== "cancel" &&
+      (dialog.method === "confirm") !== (answer.kind === "confirm")
+    )
+      return false;
+    if (
+      dialog.method === "select" &&
+      answer.kind === "value" &&
+      !dialog.options?.includes(answer.value)
+    )
+      return false;
+    const fields =
+      answer.kind === "cancel"
+        ? { cancelled: true }
+        : answer.kind === "confirm"
+          ? { confirmed: answer.confirmed }
+          : { value: answer.value };
+    this.dialogs.set(id, { ...dialog, status: "unknown" });
+    try {
+      write(
+        `${JSON.stringify({ type: "extension_ui_response", id, ...fields })}\n`,
+      );
+    } catch {
+      this.ids.delete(id);
+      return false;
+    }
+    this.dialogs.set(id, { ...dialog, status: "sent", defaultAnswered: true });
+    this.ids.delete(id);
+    return true;
+  }
   answer(id: string, answer: Answer, write: (frame: string) => void): boolean {
     this.expire();
     const dialog = this.dialogs.get(id);

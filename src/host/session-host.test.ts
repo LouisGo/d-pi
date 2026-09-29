@@ -261,6 +261,100 @@ it("fires the default just before a short native timeout", async () => {
   }
 });
 
+it("publishes the timeout default as one sent+flagged snapshot", async () => {
+  vi.useFakeTimers();
+  try {
+    const messages: HostMessage[] = [];
+    const exit = vi.fn();
+    const host = createSessionHost((message) => messages.push(message), exit);
+    await host.handle({
+      kind: "start",
+      threadId: crypto.randomUUID(),
+      traceId: crypto.randomUUID(),
+      processInstanceId: crypto.randomUUID(),
+      connectionGeneration: crypto.randomUUID(),
+      configContextId: "fixture",
+      binary: "/fixture/omp",
+      identity: { directory: "/project", device: "1", inode: "2" },
+      environment: {},
+      sessionDirectory: "/sessions",
+    });
+    native.observers[0]?.({
+      kind: "frame",
+      frame: {
+        type: "extension_ui_request",
+        method: "input",
+        id: "single",
+        title: "Details",
+        prefill: "draft",
+        timeout: 5_000,
+      },
+    });
+    const before = messages.filter(
+      (message) => message.kind === "interactions",
+    ).length;
+    await vi.advanceTimersByTimeAsync(4_100);
+    const views = messages.filter((message) => message.kind === "interactions");
+    const fresh = views.slice(before);
+    // One visible interactions snapshot for the default, already flagged.
+    expect(fresh).toHaveLength(1);
+    expect(fresh[0]).toMatchObject({
+      kind: "interactions",
+      view: {
+        items: [{ id: "single", status: "sent", defaultAnswered: true }],
+      },
+    });
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+it("never auto-answers confirm with a native timeout; expiry is shown truthfully", async () => {
+  vi.useFakeTimers();
+  try {
+    const messages: HostMessage[] = [];
+    const exit = vi.fn();
+    const host = createSessionHost((message) => messages.push(message), exit);
+    await host.handle({
+      kind: "start",
+      threadId: crypto.randomUUID(),
+      traceId: crypto.randomUUID(),
+      processInstanceId: crypto.randomUUID(),
+      connectionGeneration: crypto.randomUUID(),
+      configContextId: "fixture",
+      binary: "/fixture/omp",
+      identity: { directory: "/project", device: "1", inode: "2" },
+      environment: {},
+      sessionDirectory: "/sessions",
+    });
+    native.observers[0]?.({
+      kind: "frame",
+      frame: {
+        type: "extension_ui_request",
+        method: "confirm",
+        id: "confirm-timeout",
+        title: "Approve?",
+        timeout: 5_000,
+      },
+    });
+    await vi.advanceTimersByTimeAsync(6_000);
+    // App never writes a default answer for confirm.
+    expect(
+      native.writes.some((frame) => frame.includes('"id":"confirm-timeout"')),
+    ).toBe(false);
+    // Native timeout ends the request; App reflects expired instead of
+    // pretending eternal pending. Eternal block requires no native timeout.
+    const views = messages.filter((message) => message.kind === "interactions");
+    const last = views.at(-1);
+    expect(last).toMatchObject({
+      kind: "interactions",
+      view: { items: [{ id: "confirm-timeout", status: "expired" }] },
+    });
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
 it("honors a long native timeout instead of answering at the 120s fallback", async () => {
   vi.useFakeTimers();
   try {

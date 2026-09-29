@@ -235,16 +235,19 @@ it("reports follow-up honesty: success only after dispatch, failure message othe
     threadId,
     controller,
   );
-  expect(await m.sendText("late answer", "steer")).toEqual({
-    ok: true,
-    message: null,
-  });
+  const sent = await m.sendText("late answer", "steer");
+  expect(sent.ok).toBe(true);
+  expect(sent.message).toBeNull();
+  expect(sent.submissionId).toEqual(expect.any(String));
+  expect(m.getSnapshot().receipts[0]?.submissionId).toBe(sent.submissionId);
   const refused = await m.sendText("overflow", "steer");
   expect(refused.ok).toBe(false);
   expect(refused.message).toContain("排队已满");
+  expect(refused.submissionId).toBeNull();
   expect(await m.sendText("   ", "steer")).toEqual({
     ok: false,
     message: null,
+    submissionId: null,
   });
   m.dispose();
   controller.dispose();

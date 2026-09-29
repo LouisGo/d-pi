@@ -174,9 +174,14 @@ export class SubmissionModel {
   async sendText(
     text: string,
     delivery: "followUp" | "steer" = "followUp",
-  ): Promise<{ ok: boolean; message: string | null }> {
-    if (this.view.sending || this.disposed) return { ok: false, message: null };
-    if (!text.trim()) return { ok: false, message: null };
+  ): Promise<{
+    ok: boolean;
+    message: string | null;
+    submissionId: string | null;
+  }> {
+    if (this.view.sending || this.disposed)
+      return { ok: false, message: null, submissionId: null };
+    if (!text.trim()) return { ok: false, message: null, submissionId: null };
     this.publish({ sending: true, message: null });
     const submissionId = SubmissionIdSchema.parse(crypto.randomUUID());
     try {
@@ -192,7 +197,7 @@ export class SubmissionModel {
       });
       this.accept(prepared);
       if (prepared.kind !== "receipt" || prepared.receipt.state !== "prepared")
-        return { ok: false, message: this.view.message };
+        return { ok: false, message: this.view.message, submissionId: null };
       const dispatched = await this.bridge.request({
         kind: "dispatch",
         threadId: this.threadId,
@@ -202,12 +207,20 @@ export class SubmissionModel {
       const ok =
         dispatched.kind === "receipt" &&
         dispatched.receipt.state === "dispatching";
-      return { ok, message: ok ? null : this.view.message };
+      // The receipt identity is returned so the caller renders the formal
+      // pipeline (dispatching/acknowledged/rejected/unknown) instead of a
+      // local boolean. dispatching is not acceptance; late Host events update
+      // the same receipt via subscription.
+      return {
+        ok,
+        message: ok ? null : this.view.message,
+        submissionId: ok ? submissionId : null,
+      };
     } catch {
       this.publish({
         message: "追发结果无法确认。原文与提交记录保留，不会自动重发。",
       });
-      return { ok: false, message: this.view.message };
+      return { ok: false, message: this.view.message, submissionId: null };
     } finally {
       this.publish({ sending: false });
     }

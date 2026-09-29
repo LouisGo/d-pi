@@ -40,10 +40,12 @@ export const InteractionViewSchema = z.object({
   unsupported: z.boolean(),
 });
 
-// Timeout default answers (2026-09-28 user decision): confirm must block and
-// never auto-answer; select takes the first option, input/editor take the
-// prefill when present and cancel otherwise. Returns null when no default
-// may be sent.
+// Timeout default answers (2026-09-28 user decision, clarified 2026-09-29):
+// App never auto-answers confirm; select takes the first option, input/editor
+// take the prefill when present and cancel otherwise. Returns null when no
+// default may be sent. If an extension supplies its own native timeout for
+// confirm, native still ends it as false per official SDK; App shows expired
+// truthfully instead of pretending eternal pending.
 export function defaultAnswerFor(
   dialog: Pick<Interaction, "method" | "options" | "prefill">,
 ): Answer | null {

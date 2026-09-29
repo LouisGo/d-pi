@@ -2,4 +2,4 @@
 
 Status: open
 
-对应审计 A9/A12/A15/A16。需变更：Main `submit()` 对 dispatch 快返路径同样先过目录/授权校验；Host `dispatch` 复核目录身份（Host 合同加字段）；stop/continue 操作关联派发 ID 或等价因果；control `operation-result:acknowledged` 与版本守卫对齐。面大且涉跨进程合同，另批实施，本轮只记录。
+对应审计 A9/A12/A15/A16。2026-09-29 复核：A12 快返与 A9 ack 超车为误报，撤回施工要求（见审计复核结论）；A13 为表述不准，不实施。剩余 A15 Host 目录复核与 A16 停续 idle 归属需先拿出真实反例（TOCTOU 可达路径 / 误收束提交 ID）才实施，不为消 P0 标签改正确代码。面大且涉跨进程合同，另批实施，本轮只记录。

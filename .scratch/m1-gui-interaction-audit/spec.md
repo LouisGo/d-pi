@@ -19,6 +19,20 @@
 - `c97ee19`：因果观测与 prepared 恢复。observationVersion + idle-confirmed 匹配派发 ID/代次、prepared 重建后显式继续（复用原 ID、重核验、不自动派发）、原生 close 与传输断链分离、close-idle 旧观察保护。
 - 共同漏因：终点早于真实点击链、替身合并故障路径、未穷举改变事实入口、未查邻接转移、结论强于证据；边界高一层、收束前提未反向审计、持久不等于可操作、进程层级被合并。
 
+## 复核结论（2026-09-29，不改历史原文，只标施工效力）
+
+经 `2008d59 → 548da1c` 后代码复核，以下条目为误报或论据不成立，**不得作为施工依据**；历史原文保留，仅此处标注效力：
+
+- A3 误报：`mergeReceipt` 的 `state` 按单调规则合并，`updatedAt` 取大仅展示元数据；Coordinator 另核 `requestId`/目标/实例。不能据此新建因果系统。
+- A5 误报：`captureSubmission` 拦截的是在途 `capture` 或同编辑 `captured.sequence===sequence`（防重），新编辑推进 `sequence` 后可正常捕获。不能据此改多槽 Map。
+- A9 误报：`operation-result:acknowledged` 确认的是原生已处理调用，`observationVersion` 守的是回复携带状态是否新鲜。两者是不同事实；超车后仍确认调用为真，状态另行刷新。
+- A12 误报：`dispatch` 非 `prepared` 快返只返回既有收据（`coordinator.ts:91`），无原生写入；`prepare` 同 ID 复用亦无新副作用。执行授权管新副作用，不阻止核对已发生事实。
+- A13 表述不准：目录失败后 `canSubmit(trusted=false)` 已使 `coordinator` 走 `reject`，不先写 `dispatching`；Main/Host 两段准入出现 `dispatching→rejected` 是诚实不确定性，不是抖动。
+- A16 待证实：`settleIdle` 仅删除已终态（rejected/failed/acknowledged 非 unknown）ID，非终态不因 idle 收束；stop/continue 无派发 ID 不改变此条件。需反例才实施。
+- “confirm 必须卡住”澄清：指 App 永不自动作答 confirm；扩展自带原生 timeout 仍按官方以 false 结束，App 如实展示 expired（见 decisions 2026-09-29 澄清）。不据此要求 App 隐藏原生超时。
+
+B1/B2 等已在 `ae3c5fa` 修复的真问题保持有效。本审计其余 P0/P1 仍需在各自票内复核源码为准，误报不得转入 hardening 施工清单。
+
 ## 发现清单
 
 严重度：P0=不可逆/丢数据/卡死；P1=用户下一步走不通或误导；P2=缺口但有绕行或待产品确认。

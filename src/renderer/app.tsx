@@ -112,6 +112,7 @@ export function App({ model }: { model: AppModel }) {
                   {model.runtime && (
                     <RuntimePanel
                       model={model.runtime}
+                      submission={model.submission}
                       // Post-default user answers become a new steering
                       // instruction (2026-09-28 decision), not a follow-up.
                       onFollowUp={

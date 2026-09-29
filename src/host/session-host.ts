@@ -83,11 +83,13 @@ export function createSessionHost(
     const answer = defaultAnswerFor(dialog);
     if (!answer) return;
     const traceId = randomUUID();
-    const written = interactions.answer(id, answer, (frame) =>
+    // Single visible transition: sent+defaultAnswered together. Publishing an
+    // intermediate sent without the flag would move the card to history and
+    // unmount the editor, losing half-typed input on the next snapshot.
+    const written = interactions.answerDefault(id, answer, (frame) =>
       native?.write(frame),
     );
     publishInteractions();
-    if (written) interactions.markDefaultAnswered(id);
     send({
       kind: "operation-result",
       traceId,

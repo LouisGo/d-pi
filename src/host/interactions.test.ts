@@ -211,6 +211,59 @@ it("marks sent dialogs as default-answered for timeout follow-up display", () =>
   expect(interaction.markDefaultAnswered("missing")).toBe(false);
 });
 
+it("writes the timeout default atomically without an intermediate sent snapshot", () => {
+  let changed = 0;
+  const interaction = new PendingInteractions(() => {
+    changed++;
+  });
+  interaction.update({
+    type: "extension_ui_request",
+    method: "input",
+    id: "atomic",
+    title: "Details",
+    prefill: "draft",
+  });
+  const frames: string[] = [];
+  expect(
+    interaction.answerDefault(
+      "atomic",
+      { kind: "value", value: "draft" },
+      (f) => frames.push(f),
+    ),
+  ).toBe(true);
+  // No changed() inside the mutation; caller publishes once.
+  expect(changed).toBe(0);
+  expect(interaction.snapshot()).toMatchObject([
+    { id: "atomic", status: "sent", defaultAnswered: true },
+  ]);
+  expect(frames.map((f) => JSON.parse(f))).toEqual([
+    { type: "extension_ui_response", id: "atomic", value: "draft" },
+  ]);
+  // Failure leaves unknown without the flag and releases pending.
+  interaction.update({
+    type: "extension_ui_request",
+    method: "input",
+    id: "atomic-fail",
+    title: "Details",
+  });
+  expect(
+    interaction.answerDefault(
+      "atomic-fail",
+      { kind: "value", value: "x" },
+      () => {
+        throw Error("closed");
+      },
+    ),
+  ).toBe(false);
+  expect(
+    interaction.snapshot().find((item) => item.id === "atomic-fail"),
+  ).toMatchObject({ id: "atomic-fail", status: "unknown" });
+  expect(
+    interaction.snapshot().find((item) => item.id === "atomic-fail")
+      ?.defaultAnswered,
+  ).toBeUndefined();
+});
+
 it("converges pending markers on disconnect while keeping interrupted dialogs unknown", () => {
   const interaction = new PendingInteractions();
   interaction.update({

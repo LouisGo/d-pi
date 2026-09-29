@@ -3,16 +3,33 @@ import { match } from "ts-pattern";
 import { Button } from "@/components/ui/button";
 import type { Interaction } from "../features/control/interactions";
 import type { RuntimeModel } from "../features/runtime/model";
+import type { SubmissionReceipt } from "../features/submission/contracts";
+import type { SubmissionModel } from "../features/submission/model";
+export type FollowUpResult = {
+  ok: boolean;
+  message: string | null;
+  submissionId: string | null;
+};
+const emptySubmissionSubscribe = () => () => {};
+const emptySubmissionSnapshot = () => ({
+  sending: false as const,
+  receipts: [] as SubmissionReceipt[],
+  message: null as string | null,
+});
 export function RuntimePanel({
   model,
+  submission,
   onFollowUp,
 }: {
   model: RuntimeModel;
-  onFollowUp:
-    | ((text: string) => Promise<{ ok: boolean; message: string | null }>)
-    | undefined;
+  submission?: SubmissionModel | null;
+  onFollowUp: ((text: string) => Promise<FollowUpResult>) | undefined;
 }) {
   const state = useSyncExternalStore(model.subscribe, model.getSnapshot);
+  const submissions = useSyncExternalStore(
+    submission?.subscribe ?? emptySubmissionSubscribe,
+    submission?.getSnapshot ?? emptySubmissionSnapshot,
+  );
   if (!state)
     return (
       <p className="muted" role="status">
@@ -88,6 +105,7 @@ export function RuntimePanel({
                 trusted={state.trusted}
                 model={model}
                 onFollowUp={onFollowUp}
+                submissionReceipts={submissions.receipts}
                 available={
                   state.phase !== "interrupted" && state.phase !== "failed"
                 }
@@ -116,6 +134,7 @@ export function RuntimePanel({
                       trusted={state.trusted}
                       model={model}
                       onFollowUp={undefined}
+                      submissionReceipts={[]}
                       available={false}
                     />
                   ))}
@@ -162,22 +181,37 @@ function NativeDialog({
   available,
   trusted,
   onFollowUp,
+  submissionReceipts,
 }: {
   item: Interaction;
   model: RuntimeModel;
   available: boolean;
   trusted: boolean;
-  onFollowUp:
-    | ((text: string) => Promise<{ ok: boolean; message: string | null }>)
-    | undefined;
+  onFollowUp: ((text: string) => Promise<FollowUpResult>) | undefined;
+  submissionReceipts: SubmissionReceipt[];
 }) {
   const [value, setValue] = useState(item.prefill ?? "");
   const [sent, setSent] = useState(false);
-  const [followedUp, setFollowedUp] = useState(false);
+  const [followUpId, setFollowUpId] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [followUpError, setFollowUpError] = useState<string | null>(null);
   const enabled = available && item.status === "pending" && !sent;
   const defaulted = item.status === "sent" && item.defaultAnswered;
+  const followUpReceipt = followUpId
+    ? (submissionReceipts.find(
+        (receipt) => receipt.submissionId === followUpId,
+      ) ?? null)
+    : null;
+  // The formal receipt owns the result. dispatching/prepared is not success;
+  // only acknowledged owns "sent". Rejected/unknown/failed release the lock so
+  // the text stays editable and retry creates a new submission identity.
+  const followUpLocked =
+    followUpReceipt !== null &&
+    (followUpReceipt.state === "prepared" ||
+      followUpReceipt.state === "dispatching" ||
+      (followUpReceipt.state === "acknowledged" &&
+        followUpReceipt.outcome !== "failed" &&
+        followUpReceipt.outcome !== "unknown"));
   const followUp = () => {
     if (
       !available ||
@@ -185,16 +219,14 @@ function NativeDialog({
       !onFollowUp ||
       !value.trim() ||
       sending ||
-      followedUp
+      followUpLocked
     )
       return;
-    // Report honestly: "sent" shows only after prepare+dispatch accept the
-    // text. Failures (queue-full, not-ready, unknown) keep the text editable.
     setSending(true);
     setFollowUpError(null);
     void onFollowUp(value).then((result) => {
       setSending(false);
-      if (result.ok) setFollowedUp(true);
+      if (result.ok && result.submissionId) setFollowUpId(result.submissionId);
       else setFollowUpError(result.message ?? "追发失败，原文保留在输入框。");
     });
   };
@@ -280,7 +312,7 @@ function NativeDialog({
             <textarea
               className="native-answer"
               aria-label={`${item.title}的继续作答`}
-              disabled={!available || !trusted || followedUp || sending}
+              disabled={!available || !trusted || followUpLocked || sending}
               value={value}
               placeholder={item.placeholder}
               maxLength={16384}
@@ -288,14 +320,37 @@ function NativeDialog({
             />
             <Button
               disabled={
-                !available || !trusted || followedUp || sending || !value.trim()
+                !available ||
+                !trusted ||
+                followUpLocked ||
+                sending ||
+                !value.trim()
               }
               onClick={followUp}
             >
               {sending ? "正在追发…" : "作为追发消息发送"}
             </Button>
           </div>
-          {followedUp && <p role="status">已作为追发消息发送。</p>}
+          {followUpReceipt?.state === "acknowledged" &&
+            followUpReceipt.outcome !== "failed" &&
+            followUpReceipt.outcome !== "unknown" && (
+              <p role="status">已作为追发消息发送（调用已确认）。</p>
+            )}
+          {(followUpReceipt?.state === "prepared" ||
+            followUpReceipt?.state === "dispatching") && (
+            <p role="status">已派发，等待原生调用确认；不是任务完成。</p>
+          )}
+          {followUpReceipt &&
+            (followUpReceipt.state === "rejected" ||
+              followUpReceipt.state === "unknown" ||
+              followUpReceipt.outcome === "failed" ||
+              followUpReceipt.outcome === "unknown") && (
+              <p role="alert" className="failure">
+                追发
+                {followUpReceipt.state === "rejected" ? "被拒绝" : "结果未知"}
+                ，原文保留在输入框，可修改后再次发送；以提交记录为准，不会自动重发。
+              </p>
+            )}
           {followUpError && (
             <p role="alert" className="failure">
               {followUpError}
