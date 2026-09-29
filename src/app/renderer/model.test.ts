@@ -1,11 +1,13 @@
 import { match } from "ts-pattern";
 import { afterEach, expect, it, vi } from "vitest";
+import type { RuntimeView } from "../../modules/execution/contracts/public";
 import {
   type Draft,
   DraftSchema,
   type SaveReply,
 } from "../../modules/input/contracts/public";
 import type { DraftController } from "../../modules/input/core/public";
+import { ThreadIdSchema } from "../../shared/identity";
 import { type Command, type DesktopBridge } from "../contracts/desktop-bridge";
 import { failure } from "../contracts/failure";
 import { AppModel } from "./model";
@@ -187,4 +189,85 @@ it("cancelling a pending close releases editing and preserves edits made before 
   expect(input.isEditable()).toBe(true);
   expect(persisted).toEqual(["before timeout", "after timeout"]);
   expect(input.controller.getSnapshot().kind).toBe("saved");
+});
+
+it("keeps conversation projection lifecycle in the AppModel", async () => {
+  const threadId = ThreadIdSchema.parse(crypto.randomUUID());
+  const generation = crypto.randomUUID();
+  const view: RuntimeView = {
+    threadId,
+    traceId: crypto.randomUUID(),
+    configuration: { code: "runtime.configDefault" },
+    generation,
+    revision: 0,
+    phase: "browse",
+    trusted: false,
+    busy: false,
+    model: null,
+    message: { code: "runtime.browseOnly" },
+  };
+  const ready = {
+    ...view,
+    revision: 1,
+    phase: "ready" as const,
+    trusted: true,
+    model: "fixture",
+    message: { code: "runtime.readyToSend" as const },
+  };
+  let publishRuntime: ((value: RuntimeView) => void) | undefined;
+  let conversationConnections = 0;
+  const bridge: DesktopBridge = {
+    request: async (command) => {
+      if (command.kind !== "restore") throw Error("unexpected command");
+      return {
+        kind: "ready" as const,
+        draft: DraftSchema.parse({
+          schemaVersion: 1,
+          threadId,
+          workspaceId: crypto.randomUUID(),
+          directory: "/fixture",
+          revision: 0,
+          text: "saved source",
+        }),
+        directoryAvailable: true,
+        preferences: {
+          theme: "light" as const,
+          density: "normal" as const,
+          locale: "system" as const,
+        },
+      };
+    },
+    runtime: {
+      request: () => new Promise<RuntimeView>(() => {}),
+      subscribe: (listener) => {
+        publishRuntime = listener;
+        return () => {};
+      },
+    },
+    conversation: {
+      connect: (connectedThread, listener) => {
+        expect(connectedThread).toBe(threadId);
+        conversationConnections += 1;
+        listener({
+          kind: "snapshot",
+          generation,
+          seq: 0,
+          items: [],
+          gap: false,
+        });
+        return () => {};
+      },
+    },
+    onCloseRequest: () => () => {},
+    onCloseCancelled: () => () => {},
+    completeClose: () => {},
+  };
+  const model = new AppModel(bridge);
+  await model.start();
+  publishRuntime?.(view);
+  expect(conversationConnections).toBe(1);
+  publishRuntime?.(ready);
+  expect(conversationConnections).toBe(2);
+  expect(model.reading?.getSnapshot()?.generation).toBe(generation);
+  model.dispose();
 });

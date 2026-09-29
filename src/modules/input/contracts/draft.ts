@@ -21,6 +21,13 @@ export interface DraftReader {
   read(id: string): Draft;
   save(id: string, expectedRevision: number, text: string): number | null;
 }
+export interface DraftConsumptionWriter {
+  /**
+   * Records that a submitted draft revision has been acknowledged. The caller
+   * may include this write in its surrounding transaction.
+   */
+  consume(threadId: string, revision: number, submissionId: string): void;
+}
 export const FailureSchema = z.strictObject({
   errorId: z.uuid(),
   traceId: TraceIdSchema,

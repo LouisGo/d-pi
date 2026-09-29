@@ -1,6 +1,5 @@
 import type { ThreadId } from "../../../shared/identity";
 import { uiMessage } from "../../../shared/messages/contracts";
-import { ConversationModel } from "../../conversation/core/public";
 import type { Answer } from "../contracts/interactions";
 import type {
   RuntimeBridge,
@@ -12,12 +11,8 @@ export class RuntimeModel {
   private readonly listeners = new Set<() => void>();
   private thread: ThreadId | null = null;
   private generation = 0;
-  readonly reading: ConversationModel | null;
   private readonly unsubscribe: () => void;
   constructor(private readonly bridge: RuntimeBridge) {
-    this.reading = bridge.conversation
-      ? new ConversationModel(bridge.conversation)
-      : null;
     this.unsubscribe = bridge.subscribe((view) => {
       if (view.threadId === this.thread) this.publish(view);
     });
@@ -29,12 +24,7 @@ export class RuntimeModel {
   };
   private publish(view: RuntimeView): void {
     if (this.view && view.revision < this.view.revision) return;
-    // A surviving Host can serve its projection even after OMP disconnects.
-    // Retry on ready because the initial browse connection may precede Host startup.
-    const connectReading =
-      !this.view || (view.phase === "ready" && this.view.phase !== "ready");
     this.view = view;
-    if (connectReading) this.reading?.connect(view.threadId);
     for (const listener of this.listeners) listener();
   }
   bind(thread: ThreadId): void {
@@ -136,7 +126,6 @@ export class RuntimeModel {
   dispose(): void {
     this.generation++;
     this.unsubscribe();
-    this.reading?.dispose();
     this.listeners.clear();
   }
 }

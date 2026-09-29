@@ -1,5 +1,8 @@
 import type { AppDatabase } from "../../../platform/main/storage/public";
-import type { DraftReader } from "../../input/contracts/public";
+import type {
+  DraftConsumptionWriter,
+  DraftReader,
+} from "../../input/contracts/public";
 import {
   type FrozenSubmission,
   SubmissionConflict,
@@ -9,7 +12,7 @@ import {
 export class SubmissionRepository {
   constructor(
     private readonly database: AppDatabase,
-    private readonly drafts: Pick<DraftReader, "read">,
+    private readonly drafts: Pick<DraftReader, "read"> & DraftConsumptionWriter,
   ) {}
   private get db() {
     return this.database.connection;
@@ -114,9 +117,11 @@ export class SubmissionRepository {
       // Only draft-bound submissions consume editor content. Free-text
       // follow-ups (origin "free") never mark a draft revision consumed.
       if (!receipt.retryOf && receipt.origin !== "free")
-        this.db
-          .prepare("INSERT INTO draft_consumption VALUES(?,?,?)")
-          .run(receipt.threadId, receipt.revision, receipt.submissionId);
+        this.drafts.consume(
+          receipt.threadId,
+          receipt.revision,
+          receipt.submissionId,
+        );
       return true;
     });
   }

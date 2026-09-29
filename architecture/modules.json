@@ -2,7 +2,8 @@
   "version": 1,
   "root": "src/modules",
   "sourceRoots": ["src", "runtime"],
-  "ownedRoots": ["src/app", "src/platform", "src/shared", "runtime"],
+  "ownedRoots": ["src/app", "src/platform", "src/shared"],
+  "unresolved": { "allowed": ["^\\.\\/gate\\.js$"] },
   "modules": {
     "app": {
       "root": "src/app",
@@ -36,7 +37,7 @@
           "shared",
           "workspace"
         ],
-        "host": ["execution"],
+        "host": ["conversation", "execution"],
         "preload": [
           "changes",
           "conversation",
@@ -78,6 +79,7 @@
         "build-info.ts",
         "draft-text.ts",
         "identity.ts",
+        "text/utf8.ts",
         "i18n/create-i18n.ts",
         "i18n/locale.ts",
         "messages/contracts.ts"
@@ -181,13 +183,21 @@
         "renderer/public.ts"
       ],
       "dependsOn": {
-        "contracts": ["conversation", "input", "shared", "workspace"],
+        "contracts": ["input", "shared", "workspace"],
         "core": ["input", "shared", "workspace"],
-        "host": ["conversation", "platform", "shared"],
+        "host": ["platform", "shared"],
         "main": ["input", "platform", "shared", "workspace"],
-        "renderer": ["conversation", "input", "shared", "preferences"]
+        "renderer": ["input", "shared", "preferences"]
       },
       "testDependsOn": ["app"],
+      "materialized": true
+    },
+    "runtime": {
+      "root": "runtime",
+      "environments": ["omp"],
+      "defaultEnvironment": "omp",
+      "public": ["host.mjs"],
+      "dependsOn": [],
       "materialized": true
     }
   }

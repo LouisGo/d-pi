@@ -1,6 +1,9 @@
 import { z } from "zod";
 import type { GitBridge } from "../../modules/changes/contracts/public";
-import type { HistoryBridge } from "../../modules/conversation/contracts/public";
+import type {
+  ConversationPort,
+  HistoryBridge,
+} from "../../modules/conversation/contracts/public";
 import type {
   RuntimeBridge,
   SubmissionBridge,
@@ -60,6 +63,7 @@ export interface DesktopBridge {
   files?: FileBridge;
   git?: GitBridge;
   submission?: SubmissionBridge;
+  conversation?: ConversationPort;
   runtime?: RuntimeBridge;
   request(command: Command): Promise<Reply>;
   onCloseRequest(listener: (token: string) => void): () => void;

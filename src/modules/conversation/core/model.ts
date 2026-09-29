@@ -38,7 +38,7 @@ export class ConversationModel {
           this.view = { ...this.view, gap: true };
           if (!this.resyncing) {
             this.resyncing = true;
-            queueMicrotask(() => {
+            void Promise.resolve().then(() => {
               if (epoch === this.epoch && this.threadId)
                 this.connect(this.threadId);
             });

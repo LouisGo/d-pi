@@ -1,6 +1,6 @@
 # 模块地图与设计入口
 
-日期：2026-09-29。状态：领域目录治理 P0–P4 工程切片已在本地工作区完成，验证和本地提交记录见[领域治理交接](../../../.scratch/domain-directory-governance/handoff.md)；用户试用状态仍独立记录，未因目录迁移而认可产品体验。模块边界可随有证据的实现反馈调整，变更已确认决定仍按[决定登记](../../decisions.md)处理。依据 D-02–D-16、D-20–D-36；全量目标和阶段以[基础方案](../../../.scratch/product-requirements/foundation-plan.md)为准。
+日期：2026-09-29。状态：领域目录治理 P0–P4 原交付经独立 review 补齐边界并完成验证，交接记录见[领域治理交接](../../../.scratch/domain-directory-governance/handoff.md)；用户试用状态仍独立记录，未因目录迁移或修复而认可产品体验。模块边界可随有证据的实现反馈调整，变更已确认决定仍按[决定登记](../../decisions.md)处理。依据 D-02–D-16、D-20–D-36；全量目标和阶段以[基础方案](../../../.scratch/product-requirements/foundation-plan.md)为准。
 
 本目录把已有合同落实到模块：谁拥有状态、向谁请求能力、怎样交接、失败后由谁恢复。它不另建一套产品规格，也不要求一个模块对应一个包、类或进程。近期深入 M1，M3 模块只确定能独立理解的边界及启动条件。
 
@@ -14,17 +14,17 @@
 | `src/modules/changes/` | Git 只读合同和读取实现；复用 files 的公开读取能力，不推断作者或写 Git |
 | `src/modules/workspace/` | Thread、目录身份、项目选择、执行信任和原生记录绑定；`main/public.ts` 提供应用组合入口 |
 | `src/modules/preferences/` | App 主题、密度、发送方式和 locale 合同/仓储/Renderer provider；不拥有 OMP 配置 |
-| `src/modules/conversation/` | 实时阅读合同、核心订阅模型、Host 投影和原生历史读取；不启动或恢复执行 |
-| `src/modules/execution/` | 提交收据、准入、控制、交互、Host/OMP 适配和 Renderer 镜像；不复制 OMP 队列或历史 |
+| `src/modules/conversation/` | 实时阅读合同、核心订阅模型、Host 投影/端口作用域和原生历史读取；不启动或恢复执行 |
+| `src/modules/execution/` | 提交收据、准入、控制、交互、Host/OMP 适配和 Renderer 镜像；不复制 OMP 队列或历史，也不构造阅读模型 |
 | `src/app/` | Main/Host/Preload/Renderer 入口、跨域事务组合、桌面桥和 workbench；不复制领域真相 |
 | `src/platform/` | SQLite、诊断、真实路径、OMP 协议/资源和消费门控等技术适配；不承载产品用例 |
 | `src/shared/` | 稳定身份、消息 DTO、i18n formatter/catalog 和纯文本基础；Node 文件系统能力已归 `platform/node` |
 
-这是按功能与进程边界共同组织的单应用结构。机器边界单源为 [`architecture/modules.json`](../../../architecture/modules.json)，规则入口为 `pnpm check:architecture`；结构报告只提供维护提示，不把行数变成硬门槛。SQLite v4 的 Thread 表仍保存草稿字段，不因代码职责拆分而进行无收益的物理表迁移；恢复/控制行为继续按 S3 合同演进。`architecture/modules.json` 同时声明领域模块、`src/app`、`src/platform` 和 `src/shared` 的源码归属；`runtime/` 是包内官方宿主资源的 owned root，报告应显示 `unowned=0`。
+这是按功能与进程边界共同组织的单应用结构。机器边界单源为 [`architecture/modules.json`](../../../architecture/modules.json)，规则入口为 `pnpm check:architecture`；结构报告只提供维护提示，不把行数变成硬门槛。SQLite v4 的 Thread 表仍保存草稿字段，不因代码职责拆分而进行无收益的物理表迁移；恢复/控制行为继续按 S3 合同演进。`architecture/modules.json` 同时声明领域模块、`src/app`、`src/platform`、`src/shared` 和 `runtime` 的源码归属；报告应显示 `checked=all-source-files`、`unowned=0`。
 
 P1 的三条实际路径是 `files → input`（选区冻结与引用）和 `files → changes`（Git Diff 只读来源），应用级 Composer/FileWorkspace 留在 `src/app/renderer/workbench`。新增普通内部文件不要求修改清单；只有公开面、环境或跨模块依赖变化才更新机器配置。
 
-当前代码清单中的环境依赖已经随 P2–P4 实际迁移校准：`files` 的合同依赖 `shared`，Renderer 依赖 `preferences`；`input.contracts → shared/workspace`、`input.core → files/shared`、`input.main → platform/workspace`、`input.renderer → files`；`changes → files/shared`；`workspace.contracts → shared`、`workspace.main → platform`；`preferences.contracts → shared`、`preferences.main → platform`、`preferences.renderer → shared`；`conversation.contracts/core → shared`、`conversation.host → platform/shared`、`conversation.main → platform/shared/workspace`；`execution.contracts → conversation/input/shared/workspace`、`execution.core → input/shared/workspace`、`execution.host → conversation/platform/shared`、`execution.main → input/platform/shared/workspace`、`execution.renderer → conversation/input/shared/preferences`。`app` 只做按环境的组合，`platform` 只依赖 `shared`；平台能力不冒充领域依赖，跨模块消费必须经公开入口。
+当前代码清单中的环境依赖已经随 review follow-up 校准：`files` 的合同依赖 `shared`，Renderer 依赖 `preferences`；`input.contracts → shared/workspace`、`input.core → files/shared`、`input.main → platform/workspace`、`input.renderer → files`；`changes → files/shared`；`workspace.contracts → shared`、`workspace.main → platform`；`preferences.contracts → shared`、`preferences.main → platform`、`preferences.renderer → shared`；`conversation.contracts/core → shared`、`conversation.host → platform/shared`、`conversation.main → platform/shared/workspace`；`execution.contracts → input/shared/workspace`、`execution.core → input/shared/workspace`、`execution.host → platform/shared`、`execution.main → input/platform/shared/workspace`、`execution.renderer → input/shared/preferences`。`app/host` 负责组合 execution 与 conversation 的 Host 作用域；`app` 只做按环境的组合，`platform` 只依赖 `shared`；平台能力不冒充领域依赖，跨模块消费必须经公开入口。
 
 ## 从哪里开始
 

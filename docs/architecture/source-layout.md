@@ -1,6 +1,6 @@
 # 源码目录与依赖边界
 
-状态：2026-09-29，P0–P4 工程门禁与目录收口已完成。机器配置见 [`architecture/modules.json`](../../architecture/modules.json)，临时过渡边见 [`architecture/exceptions.json`](../../architecture/exceptions.json)。本页只说明稳定规则，不复制各模块的业务合同。
+状态：2026-09-29，P0–P4 原交付经独立 review 补齐环境、生命周期、事务端口和工具扫描边界。机器配置见 [`architecture/modules.json`](../../architecture/modules.json)，临时过渡边见 [`architecture/exceptions.json`](../../architecture/exceptions.json)。本页只说明稳定规则，不复制各模块的业务合同。
 
 ## 目录
 
@@ -29,4 +29,4 @@ pnpm report:structure
 
 `check:architecture` 是失败即阻断的边界检查；`test:architecture` 运行真实 CLI 的正/负例；`report:structure` 只提示覆盖和规模热点，不以行数制造抽象或失败。行为、事务、恢复顺序、OMP 所有权仍由领域测试和切片验收负责。
 
-当前源码扫描范围为 `src` 与 `runtime`：`src/modules` 由领域清单登记，`src/app`、`src/platform`、`src/shared` 与 `runtime` 由 `ownedRoots` 明确归属；结构报告应保持生产源码 `unowned=0`，例外清单为空。新增模块、环境或跨模块依赖必须同步更新机器清单及对应模块 AI 规则，不得通过扩大路径例外绕过门禁。
+当前源码扫描范围为 `src` 与 `runtime`：`src/modules`、`src/app`、`src/platform`、`src/shared` 与 `runtime` 均由领域清单登记；结构报告应保持生产源码 `unowned=0`，例外清单为空。Renderer 的 i18n、设计 lint 和 Tailwind source 扫描均显式覆盖 `src/modules/*/renderer`。新增模块、环境或跨模块依赖必须同步更新机器清单及对应模块 AI 规则，不得通过扩大路径例外绕过门禁。

@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { isAbsolute, relative } from "node:path";
 import { match } from "ts-pattern";
 import { identifyDirectory } from "../../../platform/node/filesystem/public";
-import { ConversationProjection } from "../../conversation/host/public";
+import type { NativeFrame } from "../../../platform/omp/protocol/public";
 import { type ControlState, ControlStateSchema } from "../contracts/control";
 import { defaultAnswerFor } from "../contracts/interactions";
 import type { FrozenSubmission } from "../contracts/public";
@@ -17,21 +17,26 @@ import { changesManagedSession } from "../core/public";
 import { PendingInteractions } from "./interactions";
 import { type NativeObservation, NativeSession } from "./native-session";
 
-export interface ReadingPort {
+export interface HostMessagePort {
   start(): void;
   close(): void;
   postMessage(event: unknown): void;
 }
+export interface SessionHostOptions {
+  onStart?: (value: HostStart) => void;
+  onNativeFrame?: (frame: NativeFrame) => void;
+  onAttach?: (port?: HostMessagePort) => void;
+  onDispose?: () => void;
+}
 export interface SessionHost {
-  handle(command: HostCommand, port?: ReadingPort): Promise<void>;
+  handle(command: HostCommand, port?: HostMessagePort): Promise<void>;
 }
 // One owner per utility instance. Merely importing this module creates no processes or listeners.
 export function createSessionHost(
   send: (message: HostMessage) => void,
   exit: (code: number) => void,
+  options: SessionHostOptions = {},
 ): SessionHost {
-  let readingPort: ReadingPort | null = null;
-  let projection: ConversationProjection | null = null;
   let native: NativeSession | null = null;
   let start: HostStart | null = null;
   let state: NativeState | null = null;
@@ -170,8 +175,7 @@ export function createSessionHost(
     clearPrompts();
     clearDefaultAnswerTimers();
     interactions.dispose();
-    projection?.dispose();
-    readingPort?.close();
+    options.onDispose?.();
   }
   function observe(event: NativeObservation): void {
     if (event.kind === "exited") {
@@ -221,7 +225,7 @@ export function createSessionHost(
         if (!activeControl(control.data)) void refresh();
       }
     }
-    if (frame.type !== "d_pi_control_state") projection?.accept(frame);
+    if (frame.type !== "d_pi_control_state") options.onNativeFrame?.(frame);
     if (frame.type === "agent_start") {
       observationVersion++;
       busy = true;
@@ -352,17 +356,7 @@ export function createSessionHost(
       )
         throw Error("Directory changed before spawn");
       start = value;
-      projection = new ConversationProjection(
-        value.connectionGeneration,
-        (event) => {
-          try {
-            readingPort?.postMessage(event);
-          } catch {
-            readingPort?.close();
-            readingPort = null;
-          }
-        },
-      );
+      options.onStart?.(value);
       native = new NativeSession(
         {
           binary: value.binary,
@@ -438,7 +432,7 @@ export function createSessionHost(
         });
       if (entry) clearTimeout(entry.acknowledgementTimer);
       prompts.delete(value.requestId);
-      projection?.accept({ type: "submission_correlation_expired" });
+      options.onNativeFrame?.({ type: "submission_correlation_expired" });
     }, 15 * 60_000);
     const acknowledgementTimer = setTimeout(() => {
       const entry = prompts.get(value.requestId);
@@ -471,14 +465,11 @@ export function createSessionHost(
 
   async function handle(
     command: HostCommand,
-    port?: ReadingPort,
+    port?: HostMessagePort,
   ): Promise<void> {
     await match(command)
       .with({ kind: "attach" }, () => {
-        readingPort?.close();
-        readingPort = port ?? null;
-        readingPort?.start();
-        if (projection) readingPort?.postMessage(projection.snapshot());
+        options.onAttach?.(port);
         return Promise.resolve();
       })
       .with({ kind: "start" }, (value) => launch(value))
@@ -623,11 +614,7 @@ export function createSessionHost(
         }
         closing = true;
         await native?.close();
-        clearPrompts();
-        clearDefaultAnswerTimers();
-        interactions.dispose();
-        projection?.dispose();
-        readingPort?.close();
+        disposeHost();
         exit(0);
       })
       .exhaustive()
@@ -649,10 +636,7 @@ export function createSessionHost(
         if (command.kind === "start") {
           closing = true;
           await native?.close();
-          clearPrompts();
-          interactions.dispose();
-          projection?.dispose();
-          readingPort?.close();
+          disposeHost();
           exit(1);
         }
       });

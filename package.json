@@ -9,12 +9,12 @@
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && pnpm typecheck:core && pnpm typecheck:renderer && pnpm typecheck:main && pnpm typecheck:host && pnpm typecheck:preload",
     "lint": "biome check .",
-    "lint:design": "oxlint -c .oxlintrc.json src/app/renderer",
+    "lint:design": "node scripts/lint-design.mjs",
     "lint:i18n": "node scripts/check-i18n-copy.mjs",
     "test": "vitest run",
-    "test:architecture": "node --test tests/architecture/check-architecture.test.mjs",
+    "test:architecture": "node --test tests/architecture/*.test.mjs",
     "check:architecture": "node scripts/architecture/check.mjs",
     "report:structure": "node scripts/architecture/report.mjs",
     "validate:sqlite": "electron validation/s1/sqlite.cjs && node validation/s1/crash-check.mjs",
@@ -24,6 +24,11 @@
     "check": "pnpm typecheck && pnpm lint && pnpm lint:design && pnpm lint:i18n && pnpm validate:design && node validation/s1/source-boundaries.mjs && pnpm check:architecture && pnpm test:architecture && pnpm test",
     "package:mac": "pnpm runtime:sdk && pnpm build && electron-builder --mac --dir --config.electronDist=node_modules/electron/dist",
     "runtime:fetch": "node scripts/fetch-runtime.mjs",
+    "typecheck:core": "tsc --noEmit -p tsconfig.core.json",
+    "typecheck:renderer": "tsc --noEmit -p tsconfig.renderer.json",
+    "typecheck:main": "tsc --noEmit -p tsconfig.main.json",
+    "typecheck:host": "tsc --noEmit -p tsconfig.host.json",
+    "typecheck:preload": "tsc --noEmit -p tsconfig.preload.json",
     "runtime:sdk": "node scripts/prepare-sdk.mjs"
   },
   "dependencies": {

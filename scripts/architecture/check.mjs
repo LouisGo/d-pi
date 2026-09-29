@@ -26,8 +26,20 @@ const ALLOWED_SAME_MODULE = {
   omp: new Set(["omp"]),
   shared: new Set(["shared"]),
 };
+const ALLOWED_CROSS_MODULE = {
+  contracts: new Set(["contracts", "shared"]),
+  core: new Set(["contracts", "core", "shared"]),
+  main: new Set(["contracts", "core", "main", "shared", "node", "omp"]),
+  host: new Set(["contracts", "core", "host", "shared", "node", "omp"]),
+  renderer: new Set(["contracts", "core", "renderer", "shared"]),
+  preload: new Set(["contracts", "preload", "shared"]),
+  node: new Set(["node", "shared"]),
+  omp: new Set(["omp", "shared"]),
+  shared: new Set(["shared"]),
+};
 const BUILTINS = new Set(builtinModules.flatMap((value) => [value, `node:${value}`]));
 const HEADLESS_VENDOR = /^(?:electron|react(?:$|\/)|react-dom(?:$|\/)|@tiptap\/|@base-ui\/|@hugeicons\/|monaco-editor(?:$|\/))/;
+const ELECTRON_VENDOR = /^(?:electron)(?:$|\/)/;
 const LEGACY_ROOTS = [
   "src/features/",
   "src/main/",
@@ -292,7 +304,10 @@ function main() {
     for (const { specifier } of parsed.imports) {
       const headless = (BUILTINS.has(specifier) || HEADLESS_VENDOR.test(specifier)) && ["contracts", "core"].includes(sourceInfo.environment);
       const rendererProcess = sourceInfo.environment === "renderer" && (BUILTINS.has(specifier) || specifier === "electron");
-      if (!sourceTest && (headless || rendererProcess)) report("ARCH-ENVIRONMENT", `${sourceRelative} imports ${specifier}`, sourceRelative, specifier);
+      const utilityCannotUseElectron =
+        ELECTRON_VENDOR.test(specifier) &&
+        ["contracts", "core", "host", "node", "omp", "shared"].includes(sourceInfo.environment);
+      if (!sourceTest && (headless || rendererProcess || utilityCannotUseElectron)) report("ARCH-ENVIRONMENT", `${sourceRelative} imports ${specifier}`, sourceRelative, specifier);
       const target = resolveSpecifier(specifier, sourcePath, root);
       if (!target) {
         if (specifier.startsWith(".") || specifier.startsWith("src/") || specifier.startsWith("@/") || specifier.startsWith("@modules/")) {
@@ -312,6 +327,7 @@ function main() {
         if (!ALLOWED_SAME_MODULE[sourceInfo.environment]?.has(targetInfo.environment)) report("ARCH-ENVIRONMENT", `${sourceRelative} imports ${targetRelative} across ${sourceInfo.environment} -> ${targetInfo.environment}`, sourceRelative, targetRelative);
         continue;
       }
+      if (!sourceTest && !ALLOWED_CROSS_MODULE[sourceInfo.environment]?.has(targetInfo.environment)) report("ARCH-ENVIRONMENT", `${sourceRelative} imports ${targetRelative} across ${sourceInfo.environment} -> ${targetInfo.environment}`, sourceRelative, targetRelative);
       if (!allowedDependencies(sourceInfo.module, sourceInfo.environment, sourceTest).has(targetInfo.module.name)) report("ARCH-DEPENDENCY", `${sourceInfo.module.name}/${sourceInfo.environment} cannot depend on ${targetInfo.module.name}: ${sourceRelative} -> ${targetRelative}`, sourceRelative, targetRelative);
       const targetPublic = [...targetInfo.module.public].some((path) => path === target) || (sourceTest && [...targetInfo.module.testPublic].some((path) => path === target));
       if (!targetPublic) report("ARCH-PRIVATE-IMPORT", `${sourceRelative} imports private ${targetRelative}`, sourceRelative, targetRelative);

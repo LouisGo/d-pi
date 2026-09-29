@@ -1,4 +1,6 @@
 import { match } from "ts-pattern";
+import { ConversationModel } from "../../modules/conversation/core/public";
+import type { RuntimeView } from "../../modules/execution/contracts/public";
 import {
   RuntimeModel,
   SubmissionModel,
@@ -75,6 +77,9 @@ export class AppModel {
     });
   }
   readonly runtime: RuntimeModel | null;
+  readonly reading: ConversationModel | null;
+  private previousRuntimeView: RuntimeView | null = null;
+  private readonly runtimeReadingUnsubscribe: (() => void) | null;
   get history() {
     return this.bridge.history;
   }
@@ -86,6 +91,29 @@ export class AppModel {
   }
   constructor(private readonly bridge: DesktopBridge) {
     this.runtime = bridge.runtime ? new RuntimeModel(bridge.runtime) : null;
+    this.reading = bridge.conversation
+      ? new ConversationModel(bridge.conversation)
+      : null;
+    this.runtimeReadingUnsubscribe =
+      this.runtime?.subscribe(this.syncReading) ?? null;
+  }
+  private syncReading = (): void => {
+    const view = this.runtime?.getSnapshot();
+    if (!view) return;
+    const previous = this.previousRuntimeView;
+    this.previousRuntimeView = view;
+    if (
+      this.reading &&
+      (!previous ||
+        previous.threadId !== view.threadId ||
+        (view.phase === "ready" && previous.phase !== "ready"))
+    )
+      this.reading.connect(view.threadId);
+  };
+  dispose(): void {
+    this.runtimeReadingUnsubscribe?.();
+    this.reading?.dispose();
+    this.runtime?.dispose();
   }
   getSnapshot = (): ViewState => this.state;
   subscribe = (listener: () => void): (() => void) => {

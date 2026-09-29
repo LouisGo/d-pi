@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { utf8ByteLength } from "../../../../shared/text/utf8";
 import type { FrozenSelection } from "../../../files/core/public";
 
 type Selection = Extract<FrozenSelection, { kind: "selection" }>;
@@ -66,7 +67,7 @@ function readReference(
   const next = contentEnd + SUFFIX.length;
   if (next < body.length && body[next] !== "\n") return null;
   const text = body.slice(contentStart, contentEnd);
-  if (new TextEncoder().encode(text).length > 64 * 1024) return null;
+  if (utf8ByteLength(text) > 64 * 1024) return null;
   const {
     schemaVersion: _schemaVersion,
     textLength: _textLength,

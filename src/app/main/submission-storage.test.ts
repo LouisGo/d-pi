@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { FrozenSubmissionSchema } from "../../modules/execution/contracts/public";
 import { AppDatabase } from "../../platform/main/storage/public";
 import { AppStorage } from "./wiring/app-storage";
@@ -94,6 +94,25 @@ describe("persistent submission handoff", () => {
       } finally {
         store.close();
       }
+    }));
+
+  it("delegates draft consumption through the input writer boundary", () =>
+    fixture((path) => {
+      const store = new AppStorage(path);
+      const value = frozen(store);
+      store.submissions.prepareSubmission(value);
+      store.submissions.dispatchSubmission(value.submissionId);
+      const consume = vi.spyOn(store.drafts, "consume");
+
+      expect(store.submissions.acknowledgeSubmission(value.submissionId)).toBe(
+        true,
+      );
+      expect(consume).toHaveBeenCalledWith(
+        value.threadId,
+        value.revision,
+        value.submissionId,
+      );
+      store.close();
     }));
 });
 

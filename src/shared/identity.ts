@@ -5,6 +5,14 @@ export const TraceIdSchema = z.uuid();
 export type ThreadId = z.infer<typeof ThreadIdSchema>;
 export type WorkspaceId = z.infer<typeof WorkspaceIdSchema>;
 
+type RuntimeCrypto = { randomUUID?: () => string };
+export function createId(): string {
+  const runtime = globalThis as typeof globalThis & { crypto?: RuntimeCrypto };
+  const id = runtime.crypto?.randomUUID?.();
+  if (!id) throw new Error("UUID generation unavailable");
+  return id;
+}
+
 export const DirectoryIdentitySchema = z.strictObject({
   directory: z.string().min(1),
   device: z.string().min(1),

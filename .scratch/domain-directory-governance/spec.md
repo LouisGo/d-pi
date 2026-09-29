@@ -1,8 +1,8 @@
 # d-pi 领域、目录与 AI Coding 治理方案
 
-日期：2026-09-29。版本：第二版（独立复核后完整修订）。状态：**P0–P4 工程切片已完成并分波本地提交；当前交付待用户试用，未 push**。
+日期：2026-09-29。版本：第二版（独立复核后完整修订）。状态：**原 P0–P4 工程切片已交付；本次独立 review 发现的收口缺口已补修，当前交付待用户试用**。
 
-历史方案授权仅覆盖文档，已被 2026-09-29 用户后续指令覆盖：正式启动领域重构，先完成 P0 最小门禁和 P1 完整切片，按实际成本校准后继续 P2–P4；遵循 TDD、必要回归/构建/受影响 GUI 验证，分波本地 commit，不 push，不扩展 S5/M2。文档或工程通过不等于用户试用认可。
+历史方案授权仅覆盖文档，已被 2026-09-29 用户后续指令覆盖：正式启动领域重构，先完成 P0 最小门禁和 P1 完整切片，按实际成本校准后继续 P2–P4；遵循 TDD、必要回归/构建/受影响 GUI 验证，不扩展 S5/M2。针对本次 review，用户进一步明确授权在修复完成后 commit 并 push；文档或工程通过不等于用户试用认可。
 
 当前交接：第一版的共享 formatter 与启动恢复落点已补齐；行数由硬门槛改为维护信号；P0 缩至最小有效边界，P1 增加开发成本验收。后续明确开启重构后，按本方案拆近期工作包；常规结构调整由 Agent 自主完成，只有影响既有产品决定的变化才需对齐。
 
@@ -20,7 +20,7 @@
 
 ### 2.1 调查基线
 
-- 当前提交：`1e46bb9c534621584d3780c500847436f9e2cd64`；调查开始时工作树干净。
+- review 固定基线：`7ea1d2336afa7c16b946e56e60fa772868dd06ba`；修复前工作树干净。
 - `package.json`：`0.1.0-s4.0`，单应用；Electron + React + TypeScript，固定 OMP SDK `18.3.0`。
 - 已读取决定登记、基础方案、领域词汇、模块地图/交接、无头合同、任务约定、S4 spec/交接、关键入口/协调器/视图/存储及检查配置。
 - S4 文档记录工程已交付、用户试用未认可；S3 冷恢复仍受单写证据约束。本次没有运行应用、重跑业务测试或验证历史验收结论。
@@ -47,7 +47,7 @@
 | `renderer/runtime-panel.tsx` 492 行；`file-workspace.tsx` 354 行；`conversation.tsx` 308 行 | 一个文件承载多个交互或展示能力；文件/Git 查询协调与 JSX 混在一起 |
 | `main/project-git.ts` 480 行 | 命令执行策略、状态解析、采样和 Diff 查询可以按责任划分；必须保持 filter 中和等已有效果 |
 | `DraftService` 处理 restore/choose-project/save/preferences；桌面桥 `Command` 也混合这些命令 | 早期 S1 用例组合被命名为草稿服务；命名和真实职责逐渐脱节 |
-| `RuntimeModel` 创建 `ConversationModel`；阅读投影引用 runtime 原生帧类型；submission 与 runtime 双向引用 | 模块级依赖方向不清。这里包括 type-only 依赖，不等同已证实运行时循环或缺陷 |
+| `RuntimeModel` 创建 `ConversationModel`；阅读投影引用 runtime 原生帧类型；submission 与 runtime 双向引用 | review 已确认原生命周期归属不清；修复后由 `AppModel` 持有 Renderer 阅读模型，`app/host` 组合独立的 conversation Host scope |
 | `main/storage/database.ts` 在构造时将 dispatching 收据更新为 unknown，且位于 v3 与 v4/v5 schema 升级之间 | 执行恢复策略藏在存储基础设施；仅搬文件和 import 检查无法消除职责越界，必须显式拆出并保留顺序 |
 | 模块地图仍标 S2；交接图仍描述旧 stdio RPC 接入，当前已存在官方 SDK 薄宿主 | 文档的当前代码导航与实现演进脱节，AI 容易沿旧落点继续追加 |
 
@@ -57,7 +57,8 @@
 
 - `validation/s1/source-boundaries.mjs` 自述为 narrow source checks；通过正则处理部分 import，限制 feature→平台和 Host→Main 等方向。没有模块公开入口、跨领域依赖图、循环或新目录归属检查。
 - 此脚本对 feature/platform 检查跳过 `.test.ts`，不构成统一测试边界策略；side-effect import、别名/重导出等也不能依赖现有正则完整覆盖。
-- `tsconfig.json` 把 DOM 和 Node 类型放入同一程序，缺少浏览器、无头、Node 的独立环境约束。
+- `tsconfig.json` 把 DOM 和 Node 类型放入同一程序，缺少浏览器、无头、Node 的独立环境约束；review follow-up 已补齐 core/renderer/main/host/preload 专用 typecheck。
+- i18n 与设计 lint 只扫 `src/app/renderer`，Tailwind source 也只从 App root 推导；review follow-up 已显式覆盖模块 Renderer 根目录。
 - Biome `preset: none`，有格式检查但没有启用完整通用 lint 规则集；Oxlint 当前集中于设计系统。这不表示 lint 无效，但不能把它当领域架构检查。
 - 当前 checkout 无 `.github/`，没有可见的仓库 CI 工作流。远端是否另有保护规则本轮未查询。
 - 没有模块公开入口清单、结构例外跟踪或“新增硬规则必须接入 check”的自动验收；也没有用于识别热点增长的规模报告。规模报告与强制边界检查的作用不同。
@@ -166,8 +167,7 @@ src/
                                # Main/Renderer 共用 formatter，无 React/DOM/Node
     text/                      # 有明确语义的纯文本原语
     build-info.ts
-runtime/
-  omp/                         # 独立 Bun/官方 SDK 薄宿主的打包源
+runtime/                       # 已登记的 omp 环境官方 SDK 薄宿主源码
     host.mjs
     BUN-LICENSE.md
 tests/
@@ -233,7 +233,7 @@ modules/input/
 | `main/draft-service.ts` | 保存草稿留 input/main；选项目归 workspace；偏好归 preferences；启动恢复聚合回复由 app 用例组合；不得顺手改变 S1 单前台草稿行为 |
 | `main/runtime-service.ts` | execution/main 的 session-controller、submission-dispatch、control-service；app 组装 HostConnection 与仓储，不把所有原字段复制到三个对象 |
 | `main/host-connection.ts` | execution/main 的 Host 连接适配；通用 utility 创建能力可留 platform，实例身份/启动许可仍由 execution 管 |
-| `host/session-host.ts` | `app/host/bootstrap.ts` 组装；execution/host 管派发/交互/控制；conversation/host 管阅读订阅/投影。退出由单一 Host scope 按顺序释放资源 |
+| `host/session-host.ts` | `app/host` 组装；execution/host 管派发/交互/控制，通过 `SessionHostOptions` 交出原生帧、端口附着和释放；conversation/host 管阅读订阅/投影。退出由单一 Host 组合按顺序释放资源 |
 | `host/native-session.ts`、frame-decoder | execution/host 原生 session 适配与 platform/omp/protocol 解码；业务投影不直读未经归一的供应商帧 |
 | `features/submission`、runtime、control | execution 内按 submission/session/control 收拢；`control/quit` 迁 app/main/lifecycle，不把 App 退出归为 Agent 控制 |
 | `features/conversation`、history、native-history | conversation/core、contracts、main、renderer；实时/历史保持独立来源和覆盖标识 |
@@ -248,7 +248,7 @@ modules/input/
 | `shared/i18n/*`、localization 合同、Renderer provider | formatter/catalog/locales/locale 留 shared/i18n；语义消息 DTO/code 归 shared/messages；LocaleBridge 归 preferences/contracts；provider 连同偏好同步留 preferences/renderer，不复制 formatter，也不引入 platform→业务的反向依赖 |
 | `shared/desktop-bridge.ts` | app/contracts 聚合；draft/preferences/workspace 等命令归各自合同。先保持现有 IPC envelope 和回复语义，内部拆分不等于协议升级 |
 | `renderer/styles/app.css` | 布局归 shell/workbench，能力样式跟模块，通用组件样式跟 ui；token 保持唯一源 |
-| `runtime/host.mjs`、prepare-sdk | runtime/omp 下保留独立 SDK 启动环境；脚本更新 consumption-gate 构建源、资源复制/哈希路径；官方 SDK 文件不改 |
+| `runtime/host.mjs`、prepare-sdk | runtime 作为 `omp` 环境模块登记并保留独立 SDK 启动环境；脚本更新 consumption-gate 构建源、资源复制/哈希路径；官方 SDK 文件不改 |
 
 **跨域事务特例不能丢：**App 收据与草稿消费标记必须仍由同一 SQLite 连接、同一事务提交。execution 的提交持久端口表达这项原子操作，`app/main/wiring` 组合 execution/input 仓储实现；input 仓储提供参与已有事务的窄接口，不另开事务/连接。禁止迁成两个先后独立提交的服务调用。现有相关测试随迁移保留并验证写失败的回滚。
 
@@ -319,7 +319,7 @@ Renderer 面补充两条已知正常复用：各业务视图可通过 preference
 | platform | shared、同环境技术设施 | 业务 modules/app；业务专用适配必须退回所属模块 |
 | app 各环境 | 同环境公开实现、公开合同、对应 platform | 跨环境实现；业务规则/SQL/原生协议解析堆入入口 |
 | app/contracts | shared、modules 的公开合同 | 环境实现或业务执行 |
-| runtime/omp | 官方 SDK 和显式列出的无头控制入口 | Electron、React、应用数据库/窗口生命周期 |
+| runtime（omp 环境） | 官方 SDK 和显式列出的无头控制入口 | Electron、React、应用数据库/窗口生命周期 |
 
 shared 子能力仍有使用边界：Host、runtime、core/contracts 只使用无头消息 DTO 等必要基础，不引入 UI formatter/catalog；Main 和 Renderer 可调用 formatter。把文件放入 shared 不表示每种环境都应该消费它。
 
@@ -377,7 +377,7 @@ pnpm check:docs           # 后续有实际需要才增加：链接/生成区新
 
 依赖扫描必须解析相对路径、别名、re-export、静态动态 import 和 Node 内置包的两种写法；非字面量动态加载在应用自有源码中要求精确登记，不能悄悄跳过。CSS/worker/资源导入按明确分类处理。不要 `exclude` 整个 runtime 或整个测试树消除报错。
 
-随受影响模块迁移逐步新增 `tsconfig.core.json`（无 DOM/Node）、`tsconfig.renderer.json`（DOM，无 Node ambient）、`tsconfig.main.json`、`tsconfig.host.json`、`tsconfig.preload.json` 及测试配置；P0 先通过 import 门禁落实试点环境边界，不前置完成全仓编译项目拆分。P1 为迁入的 core/Renderer 提供适配环境检查，其余随对应波次接入。核心类型能力按现有需要显式提供，不用全开 `@types/node` 解决计时器/crypto 报错。TS 环境隔离不是安全沙箱；import 门禁仍需拦住显式 Node 引用。
+已提供 `tsconfig.core.json`（无 DOM/Node）、`tsconfig.renderer.json`（DOM、无 Node ambient）、`tsconfig.main.json`、`tsconfig.host.json`、`tsconfig.preload.json`，并由 `pnpm typecheck` 串联；核心类型能力按现有需要显式提供，不用全开 `@types/node` 解决计时器/crypto 报错。TS 环境隔离不是安全沙箱；import 门禁仍需拦住显式 Node 引用。
 
 现有 token/Icon/i18n 规则迁移路径时必须同步。`@/components/ui`、electron-vite 入口、Vitest include、Biome includes、Monaco worker、SDK 复制/构建路径都纳入迁移清单。稳定设计规则从 `validation/s1` 转为正式检查，历史实验保留引用。
 
@@ -466,7 +466,7 @@ P1 不满足时先修改规则或结构，完成同一切片的重新核对再�
 
 测试默认与本模块代码就近；跨进程/跨域事务的 integration 测试迁 `tests/integration/`，更新 Vitest include，防止“测试移动后不再运行而全绿”。编辑器/样式文件移动触及视觉和资源时，补必要 GUI 证据；不逐步重演已被自动化证明的全部逻辑。
 
-回退以各波次变更集为单位，保留数据格式和持久文件位置不变；不删除用户 SQLite/OMP 数据，不把代码回退等同数据恢复。本轮仅授权方案本地 commit；实施提交与推送范围按后续开工指令执行。
+回退以各波次变更集为单位，保留数据格式和持久文件位置不变；不删除用户 SQLite/OMP 数据，不把代码回退等同数据恢复。原方案阶段仅授权本地文档 commit；本次 review follow-up 的实施提交与推送以用户当前明确指令为准。
 
 ## 10. 完成标准与决定关系
 
@@ -504,13 +504,13 @@ P1 不满足时先修改规则或结构，完成同一切片的重新核对再�
 ### 12.2 以实际成本校准后的规则
 
 - P1 实际迁移证明：机器清单只需登记模块根、公开面、环境和跨模块依赖；普通内部移动不改清单，合法复用不按调用点申请例外。
-- P2–P4 扩展门禁覆盖 `src` 与 `runtime`：领域模块由 `architecture/modules.json` 登记，`src/app`、`src/platform`、`src/shared` 和 `runtime` 由 `ownedRoots` 归属；当前报告以 `unowned=0` 为全量覆盖证据，例外清单为空。
-- 文件规模只保留报告提示。`RuntimeService`、`SessionHost` 仍是具有紧密生命周期状态的协调器；实际有独立责任的准入、提交协调、Host 连接、待答交互、阅读投影和原生会话已分别落在明确入口，不为目录或行数制造 `part`/通用 Manager。
-- 恢复、跨域事务和 OMP 所有权没有因迁移改变：App 收据与草稿消费仍共用既有 SQLite 事务；`unknown` 不自动重发；官方 SDK 文件未改。
+- P2–P4 扩展门禁覆盖 `src` 与 `runtime`：所有生产源码（含 runtime）由 `architecture/modules.json` 登记；环境门禁按 source environment 校验跨模块公开入口，报告以 `checked=all-source-files`、`unowned=0` 为全量覆盖证据，例外清单为空。
+- 文件规模只保留报告提示。`RuntimeService`、`SessionHost` 仍是具有紧密执行生命周期状态的协调器；阅读投影由 `conversation/host` 独立持有，Renderer 对话模型由 `AppModel` 持有，app Host 负责组合，不为目录或行数制造 `part`/通用 Manager。
+- 恢复、跨域事务和 OMP 所有权没有因迁移改变：`DraftConsumptionWriter` 由 input 持有，execution 在既有 SQLite 事务内调用；`unknown` 不自动重发；官方 SDK 文件未改。
 
 ### 12.3 当前验证和交付边界
 
-- 自动化：架构检查及正负例、`typecheck`、完整 Vitest、`build`、Biome、设计 lint、i18n、设计检查和 source-boundaries 均已在本波验证；具体最新数字以交接文档为准。
+- 自动化：架构检查及正负例、环境专用 `typecheck`、完整 Vitest、`build`、Biome、覆盖模块 Renderer 的设计 lint/i18n/Tailwind source、设计检查和 source-boundaries 均在 review closeout 验证；具体最新数字以交接文档为准。
 - GUI：已对受影响的 Editor 验证页做 macOS 原生窗口检查，覆盖输入、多行渲染、Undo/Redo、主题和密度切换；这只证明 Agent 可观察到的路径，不替代用户试用。
 - 构建中的既有 Zod 注释位置和 Renderer chunk 体积 warning 不影响成功结论，未新增为本次门禁例外。
-- 本地 commit 已完成，未 push；S5/M2 未启动。用户试用、体验认可及 S3 冷恢复单写结论保持原状态。
+- 本次 review closeout 按用户明确授权 commit 并 push；S5/M2 未启动。用户试用、体验认可及 S3 冷恢复单写结论保持原状态。

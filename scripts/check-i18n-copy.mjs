@@ -1,8 +1,12 @@
-import { readFileSync, readdirSync } from "node:fs";
-import { join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { join, resolve } from "node:path";
 
-const root = new URL("../src/app/renderer/", import.meta.url);
+function parseRoot(argv) {
+  const index = argv.indexOf("--root");
+  return resolve(index === -1 ? resolve(import.meta.dirname, "..") : argv[index + 1]);
+}
+
+const root = parseRoot(process.argv.slice(2));
 const failures = [];
 
 function scan(directory) {
@@ -36,7 +40,14 @@ function scan(directory) {
   }
 }
 
-scan(fileURLToPath(root));
+const rendererRoots = [join(root, "src/app/renderer")];
+const modulesRoot = join(root, "src/modules");
+if (existsSync(modulesRoot)) {
+  for (const entry of readdirSync(modulesRoot, { withFileTypes: true })) {
+    if (entry.isDirectory()) rendererRoots.push(join(modulesRoot, entry.name, "renderer"));
+  }
+}
+for (const rendererRoot of rendererRoots) if (existsSync(rendererRoot)) scan(rendererRoot);
 if (failures.length) {
   console.error(`Obvious hardcoded UI copy:\n${failures.join("\n")}`);
   process.exitCode = 1;

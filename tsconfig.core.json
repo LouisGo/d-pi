@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2023"],
+    "types": [],
+    "paths": {}
+  },
+  "include": [
+    "src/shared/**/*.ts",
+    "src/modules/*/contracts/**/*.ts",
+    "src/modules/*/core/**/*.ts"
+  ],
+  "exclude": ["**/*.test.ts", "**/*.test.tsx"]
+}

@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { ThreadIdSchema, TraceIdSchema } from "../../../shared/identity";
 import { UiMessageSchema } from "../../../shared/messages/contracts";
-import type { ConversationPort } from "../../conversation/contracts/public";
 import { ControlCommandSchema, ControlStateSchema } from "./control";
 import {
   AnswerCommandSchema,
@@ -42,7 +41,6 @@ export const RuntimeViewSchema = z.strictObject({
 });
 export type RuntimeView = z.infer<typeof RuntimeViewSchema>;
 export interface RuntimeBridge {
-  conversation?: ConversationPort;
   request(command: RuntimeCommand): Promise<RuntimeView>;
   subscribe(listener: (view: RuntimeView) => void): () => void;
 }

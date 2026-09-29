@@ -604,7 +604,28 @@ it("independent Host owners isolate native output, prompt timers and idle dispos
   function fixture() {
     const messages: HostMessage[] = [];
     const exit = vi.fn();
-    const host = createSessionHost((message) => messages.push(message), exit);
+    let attached: {
+      start(): void;
+      close(): void;
+      postMessage(event: unknown): void;
+    } | null = null;
+    const host = createSessionHost((message) => messages.push(message), exit, {
+      onNativeFrame: (frame) => {
+        if (frame.type === "message_end")
+          attached?.postMessage({
+            item: { text: (frame.message as { content?: string }).content },
+          });
+      },
+      onAttach: (port) => {
+        attached?.close();
+        attached = port ?? null;
+        attached?.start();
+      },
+      onDispose: () => {
+        attached?.close();
+        attached = null;
+      },
+    });
     const start: HostStart = {
       kind: "start",
       threadId: crypto.randomUUID(),

@@ -1,6 +1,6 @@
 # 模块交接与关键时序
 
-日期：2026-09-29。状态：P0–P4 目录、公开面、恢复入口和执行/阅读落点已与当前代码对齐。图说明现有合同如何组合，不定义新的 OMP 协议；官方 SDK 仍由薄宿主接入，OMP 保持原生执行和历史所有权。术语和拥有者见[模块地图](README.md)；验收见[领域治理交接](../../../.scratch/domain-directory-governance/handoff.md)及各切片记录。
+日期：2026-09-29。状态：P0–P4 目录、公开面、恢复入口和执行/阅读落点已与当前代码对齐；review follow-up 进一步由 `app/host` 组合 execution 与 conversation Host scope。图说明现有合同如何组合，不定义新的 OMP 协议；官方 SDK 仍由薄宿主接入，OMP 保持原生执行和历史所有权。术语和拥有者见[模块地图](README.md)；验收见[领域治理交接](../../../.scratch/domain-directory-governance/handoff.md)及各切片记录。
 
 ## 运行位置与通道
 

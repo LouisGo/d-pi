@@ -3,7 +3,7 @@
 ## 当前工程落点（领域目录治理，2026-09-29）
 
 - 合同在 `src/modules/execution/contracts/`，准入、提交 admission/coordinator 和原生命令策略在 `core/`；它们不拥有 Node/Electron 或 OMP 进程。
-- `host/` 由 `SessionHost`、`PendingInteractions` 和 `NativeSession` 共同持有单个 Host scope；`conversation/host` 只负责阅读投影，不能从显示事件推断提交接受。
+- `host/` 由 `SessionHost`、`PendingInteractions` 和 `NativeSession` 共同持有单个执行 Host scope；它通过 `SessionHostOptions` 把原生帧、端口附着和释放交给 `app/host` 组合的 `conversation/host`，不能从显示事件推断提交接受。
 - `main/` 的 `RuntimeService` 是保留同一生命周期状态的执行协调器，复用 `RuntimeAdmission`、`SubmissionCoordinator`、`HostConnection` 和 `SubmissionRepository`；没有按行数复制状态或制造第二个队列。
 - `renderer/` 只保存当前执行镜像和提交客户端；应用组合与 SQLite 初始化在 `src/app/main/wiring/`，恢复由 `SubmissionRepository.recoverInterruptedSubmissions()` 显式调用。
 - OMP 队列、原生历史和执行事实仍由 OMP 所有；`unknown` 不自动重发，ACK 与草稿消费标记继续在同一 SQLite 事务中完成。

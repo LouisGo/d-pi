@@ -5,6 +5,7 @@ export {
 } from "./native-session";
 export {
   createSessionHost,
-  type ReadingPort,
+  type HostMessagePort,
   type SessionHost,
+  type SessionHostOptions,
 } from "./session-host";

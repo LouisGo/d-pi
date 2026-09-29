@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["vite/client"],
+    "paths": {
+      "@/*": ["./src/app/renderer/*"]
+    }
+  },
+  "include": [
+    "src/shared/**/*.ts",
+    "src/app/contracts/**/*.ts",
+    "src/app/renderer/**/*.ts",
+    "src/app/renderer/**/*.tsx",
+    "src/modules/*/contracts/**/*.ts",
+    "src/modules/*/renderer/**/*.ts",
+    "src/modules/*/renderer/**/*.tsx"
+  ],
+  "exclude": ["**/*.test.ts", "**/*.test.tsx"]
+}

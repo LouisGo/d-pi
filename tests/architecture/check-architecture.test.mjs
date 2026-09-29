@@ -8,14 +8,28 @@ import { test } from "node:test";
 const repositoryRoot = resolve(import.meta.dirname, "../..");
 const checker = join(repositoryRoot, "scripts/architecture/check.mjs");
 
-function fixture(name, files, modules) {
+function fixture(name, files, modules, options = {}) {
   const directory = mkdtempSync(join(tmpdir(), `d-pi-architecture-${name}-`));
   for (const [relativePath, contents] of Object.entries(files)) {
     const path = join(directory, relativePath);
     mkdirSync(resolve(path, ".."), { recursive: true });
     writeFileSync(path, contents);
   }
-  writeFileSync(join(directory, "modules.json"), JSON.stringify({ version: 1, sourceRoot: "src", modules }, null, 2));
+  writeFileSync(
+    join(directory, "modules.json"),
+    JSON.stringify(
+      {
+        version: 1,
+        root: "src/modules",
+        sourceRoots: ["src"],
+        ownedRoots: [],
+        ...options,
+        modules,
+      },
+      null,
+      2,
+    ),
+  );
   return directory;
 }
 
@@ -63,6 +77,62 @@ test("rejects an unregistered cross-module dependency", () => {
   rmSync(directory, { recursive: true, force: true });
   assert.notEqual(result.status, 0);
   assert.match(`${result.stdout}\n${result.stderr}`, /ARCH-DEPENDENCY/);
+});
+
+test("rejects a public cross-module entry from the wrong environment", () => {
+  const directory = fixture(
+    "cross-environment",
+    {
+      "src/modules/alpha/core/public.ts":
+        'import { value } from "../../beta/main/public";\nexport { value };\n',
+      "src/modules/alpha/renderer/public.ts":
+        'import { value } from "../../beta/main/public";\nexport { value };\n',
+      "src/modules/beta/contracts/public.ts": "export type Contract = true;\n",
+      "src/modules/beta/main/public.ts": "export const value = 1;\n",
+    },
+    {
+      alpha: {
+        root: "src/modules/alpha",
+        environments: ["core", "renderer"],
+        public: ["core/public.ts", "renderer/public.ts"],
+        dependsOn: { core: ["beta"], renderer: ["beta"] },
+      },
+      beta: {
+        root: "src/modules/beta",
+        environments: ["contracts", "main"],
+        public: ["contracts/public.ts", "main/public.ts"],
+        dependsOn: { contracts: [], main: [] },
+      },
+    },
+  );
+  const result = run(directory);
+  rmSync(directory, { recursive: true, force: true });
+  assert.notEqual(result.status, 0);
+  assert.equal(
+    `${result.stdout}\n${result.stderr}`.match(/ARCH-ENVIRONMENT/g)?.length,
+    2,
+  );
+});
+
+test("checks the runtime module and rejects Electron in the OMP environment", () => {
+  const directory = fixture(
+    "runtime-environment",
+    { "runtime/host.mjs": 'import { app } from "electron";\nconsole.log(app);\n' },
+    {
+      runtime: {
+        root: "runtime",
+        environments: ["omp"],
+        defaultEnvironment: "omp",
+        public: ["host.mjs"],
+        dependsOn: [],
+      },
+    },
+    { sourceRoots: ["runtime"] },
+  );
+  const result = run(directory);
+  rmSync(directory, { recursive: true, force: true });
+  assert.notEqual(result.status, 0);
+  assert.match(`${result.stdout}\n${result.stderr}`, /ARCH-ENVIRONMENT/);
 });
 
 test("rejects a core import of a Node runtime and a file cycle", () => {

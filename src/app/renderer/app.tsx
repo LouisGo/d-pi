@@ -163,9 +163,7 @@ export function App({ model }: { model: AppModel }) {
                       }
                     />
                   )}
-                  {model.runtime?.reading && (
-                    <Conversation model={model.runtime.reading} />
-                  )}
+                  {model.reading && <Conversation model={model.reading} />}
                   <Composer
                     draft={draft}
                     controller={model.controller}

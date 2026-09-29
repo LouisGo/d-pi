@@ -14,6 +14,7 @@ declare global {
   }
 }
 const model = new AppModel(window.desktop);
+window.addEventListener("unload", () => model.dispose(), { once: true });
 window.desktop.onCloseRequest((token) => {
   void model
     .prepareClose()

@@ -1,5 +1,6 @@
 import { match } from "ts-pattern";
 import { draftByteLength } from "../../../shared/draft-text";
+import { createId } from "../../../shared/identity";
 import { uiMessage } from "../../../shared/messages/contracts";
 import {
   type FrozenSubmission,
@@ -201,8 +202,8 @@ export class SubmissionCoordinator {
       kind: "failed",
       code,
       error: {
-        errorId: crypto.randomUUID(),
-        traceId: context?.traceId ?? crypto.randomUUID(),
+        errorId: createId(),
+        traceId: context?.traceId ?? createId(),
         code,
         observedAt: "main",
         reportedBy: "app",

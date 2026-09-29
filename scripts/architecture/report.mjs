@@ -55,10 +55,15 @@ const sourceRoots = (config.sourceRoots ?? ["src"]).map((path) => resolve(projec
 const ownedRoots = (config.ownedRoots ?? []).map((path) => resolve(projectRoot, path));
 const allSource = [...new Set(sourceRoots.flatMap((sourceRoot) => sourceFiles(sourceRoot)))];
 const moduleRoots = rows.map((row) => resolve(projectRoot, row.root));
-const coveredSource = allSource.filter((path) =>
-  moduleRoots.some((moduleRoot) => isWithin(moduleRoot, path)) ||
-  ownedRoots.some((ownedRoot) => isWithin(ownedRoot, path)),
+const checkedSource = allSource.filter((path) =>
+  moduleRoots.some((moduleRoot) => isWithin(moduleRoot, path)),
 );
+const ownedOnlySource = allSource.filter(
+  (path) =>
+    !checkedSource.includes(path) &&
+    ownedRoots.some((ownedRoot) => isWithin(ownedRoot, path)),
+);
+const coveredSource = [...new Set([...checkedSource, ...ownedOnlySource])];
 const unownedSource = allSource
   .filter((path) => !coveredSource.includes(path))
   .map((path) => relative(projectRoot, path).replaceAll("\\", "/"))
@@ -89,7 +94,8 @@ for (const row of rows) {
   for (const entry of row.publicEntries) console.log(`  ${entry.exists ? "ok" : "missing"}\t${entry.path}`);
   for (const entry of row.testPublicEntries) console.log(`  ${entry.exists ? "ok" : "missing"}\ttest-only ${entry.path}`);
 }
-console.log(`coverage\t${coveredSource.length}/${allSource.length}\tconfigured-source-files\tunowned=${unownedSource.length}`);
+console.log(`ownership\t${coveredSource.length}/${allSource.length}\tall-source-files\tunowned=${unownedSource.length}`);
+console.log(`checked\t${checkedSource.length}/${allSource.length}\tconfigured-module-files\towned-only=${ownedOnlySource.length}`);
 console.log(`exceptions\t${exceptions.length}\tarchitecture/exceptions.json`);
 if (exceptions.length > 0) {
   for (const exception of exceptions) console.log(`  transition\t${exception.removeBy}\t${exception.from} -> ${exception.to}`);
@@ -97,6 +103,10 @@ if (exceptions.length > 0) {
 if (unownedSource.length > 0) {
   console.log("unowned-source:");
   for (const path of unownedSource) console.log(`  ${path}`);
+}
+if (ownedOnlySource.length > 0) {
+  console.log("owned-only-source:");
+  for (const path of ownedOnlySource.map((value) => relative(projectRoot, value).replaceAll("\\", "/")).sort()) console.log(`  ${path}`);
 }
 if (hints.length > 0) {
   console.log("size-hints:");

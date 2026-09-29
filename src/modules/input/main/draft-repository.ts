@@ -1,7 +1,12 @@
 import type { AppDatabase } from "../../../platform/main/storage/public";
 import type { ThreadRepository } from "../../workspace/main/public";
-import { type Draft, type DraftReader, DraftSchema } from "../contracts/public";
-export class DraftRepository implements DraftReader {
+import {
+  type Draft,
+  type DraftConsumptionWriter,
+  type DraftReader,
+  DraftSchema,
+} from "../contracts/public";
+export class DraftRepository implements DraftReader, DraftConsumptionWriter {
   constructor(
     private readonly database: AppDatabase,
     private readonly threads: ThreadRepository,
@@ -43,5 +48,10 @@ export class DraftRepository implements DraftReader {
       )
       .run(text, id, expectedRevision);
     return result.changes === 1 ? expectedRevision + 1 : null;
+  }
+  consume(threadId: string, revision: number, submissionId: string): void {
+    this.db
+      .prepare("INSERT INTO draft_consumption VALUES(?,?,?)")
+      .run(threadId, revision, submissionId);
   }
 }

@@ -5,6 +5,16 @@
   "properties": {
     "version": { "const": 1 },
     "root": { "type": "string", "minLength": 1 },
+    "sourceRoots": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "ownedRoots": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "unresolved": {
+      "type": "object",
+      "properties": {
+        "allowed": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "dynamicImports": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      },
+      "additionalProperties": false
+    },
     "modules": {
       "type": "object",
       "minProperties": 1,
@@ -13,13 +23,16 @@
         "required": ["root", "environments", "public", "dependsOn"],
         "properties": {
           "root": { "type": "string", "minLength": 1 },
-          "environments": { "type": "array", "items": { "enum": ["contracts", "core", "main", "host", "renderer"] } },
+        "environments": { "type": "array", "items": { "enum": ["contracts", "core", "main", "host", "renderer", "preload", "node", "omp", "shared"] } },
           "public": { "type": "array", "items": { "type": "string", "minLength": 1 } },
           "dependsOn": {
             "type": "object",
             "additionalProperties": { "type": "array", "items": { "type": "string", "minLength": 1 } }
           },
-          "materialized": { "type": "boolean" }
+        "materialized": { "type": "boolean" },
+        "defaultEnvironment": { "type": "string" },
+        "testPublic": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "testDependsOn": { "type": "array", "items": { "type": "string", "minLength": 1 } }
         },
         "additionalProperties": false
       }

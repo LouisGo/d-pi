@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["node", "vite/client"],
+    "paths": {}
+  },
+  "include": [
+    "src/shared/**/*.ts",
+    "src/app/contracts/**/*.ts",
+    "src/app/preload/**/*.ts",
+    "src/modules/*/contracts/**/*.ts"
+  ],
+  "exclude": ["**/*.test.ts", "**/*.test.tsx"]
+}

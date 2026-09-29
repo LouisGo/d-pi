@@ -1,3 +1,5 @@
+import { utf8ByteLength } from "../../../shared/text/utf8";
+
 export interface TextRange {
   startLineNumber: number;
   startColumn: number;
@@ -86,7 +88,7 @@ export function captureSelection(
     offset(endLine, endColumn),
   );
   if (!selected) return { kind: "invalid", reason: "empty" };
-  if (new TextEncoder().encode(selected).length > MAX_SELECTION_BYTES)
+  if (utf8ByteLength(selected) > MAX_SELECTION_BYTES)
     return { kind: "invalid", reason: "too-large" };
   return {
     kind: "selection",

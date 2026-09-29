@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2023"],
+    "types": ["node"],
+    "paths": {}
+  },
+  "include": [
+    "src/shared/**/*.ts",
+    "src/app/contracts/**/*.ts",
+    "src/app/host/**/*.ts",
+    "src/modules/*/contracts/**/*.ts",
+    "src/modules/*/core/**/*.ts",
+    "src/modules/*/host/**/*.ts",
+    "src/platform/node/**/*.ts",
+    "src/platform/omp/**/*.ts"
+  ],
+  "exclude": ["**/*.test.ts", "**/*.test.tsx"]
+}

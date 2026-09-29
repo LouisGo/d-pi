@@ -1,5 +1,6 @@
 import { match } from "ts-pattern";
 import { DRAFT_MAX_BYTES, draftByteLength } from "../../../shared/draft-text";
+import { createId } from "../../../shared/identity";
 import type { Draft, Failure, SaveReply } from "../contracts/draft";
 export type SaveState =
   | { kind: "saved" }
@@ -15,6 +16,11 @@ export interface CapturedDraft {
   text: string;
 }
 type SavePort = (expectedRevision: number, text: string) => Promise<SaveReply>;
+type TimerHost = {
+  setTimeout(callback: () => void, delay: number): unknown;
+  clearTimeout(handle: unknown): void;
+};
+const timerHost = globalThis as typeof globalThis & TimerHost;
 // Only pending immutable snapshots live here. Tiptap remains the editable-body owner.
 export class DraftController {
   private state: SaveState = { kind: "saved" };
@@ -24,7 +30,7 @@ export class DraftController {
   private confirmed = 0;
   private pending: { sequence: number; text: string } | null = null;
   private flight: Promise<boolean> | null = null;
-  private timer: ReturnType<typeof setTimeout> | undefined;
+  private timer: unknown;
   private disposed = false;
   private baselineText: string;
   private capture: {
@@ -73,8 +79,8 @@ export class DraftController {
       return;
     if (!this.checkSize(text)) return;
     this.publish({ kind: "dirty" });
-    clearTimeout(this.timer);
-    this.timer = setTimeout(() => {
+    timerHost.clearTimeout(this.timer);
+    this.timer = timerHost.setTimeout(() => {
       void this.flush();
     }, 300);
   }
@@ -90,7 +96,7 @@ export class DraftController {
     return this.flush();
   }
   flush(): Promise<boolean> {
-    clearTimeout(this.timer);
+    timerHost.clearTimeout(this.timer);
     if (this.flight)
       return this.flight.then((saved) => {
         // A consumer may edit after drain returns but before its finally clears flight.
@@ -178,7 +184,7 @@ export class DraftController {
   ): Promise<void> {
     if (this.flight || this.disposed || this.state.kind !== "failed") return;
     const previous = this.state;
-    clearTimeout(this.timer);
+    timerHost.clearTimeout(this.timer);
     this.publish({ kind: "checking" });
     try {
       const reply = await read();
@@ -254,12 +260,12 @@ export class DraftController {
   }
   private checkSize(text: string): boolean {
     if (draftByteLength(text) <= DRAFT_MAX_BYTES) return true;
-    clearTimeout(this.timer);
+    timerHost.clearTimeout(this.timer);
     this.publish({
       kind: "failed",
       error: {
-        errorId: crypto.randomUUID(),
-        traceId: crypto.randomUUID(),
+        errorId: createId(),
+        traceId: createId(),
         code: "content-too-large",
         category: "validation",
         observedAt: "renderer",
@@ -338,7 +344,7 @@ export class DraftController {
     this.disposed = true;
     this.capture?.finish(null);
     this.capture = null;
-    clearTimeout(this.timer);
+    timerHost.clearTimeout(this.timer);
     this.listeners.clear();
   }
 }
