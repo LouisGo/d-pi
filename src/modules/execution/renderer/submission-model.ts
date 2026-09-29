@@ -1,10 +1,7 @@
 import { match } from "ts-pattern";
-import type {
-  CapturedDraft,
-  DraftController,
-} from "../../input/core/public";
 import type { ThreadId } from "../../../shared/identity";
 import { type UiMessage, uiMessage } from "../../../shared/messages/contracts";
+import type { CapturedDraft, DraftController } from "../../input/core/public";
 import {
   type SubmissionBridge,
   SubmissionIdSchema,

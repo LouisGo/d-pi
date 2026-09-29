@@ -1,16 +1,14 @@
 import { randomUUID } from "node:crypto";
+import type { AppDatabase } from "../../../platform/main/storage/public";
 import {
   type NativeBinding,
   NativeBindingSchema,
-} from "../contracts/public";
-import {
   type RuntimeGrant,
   RuntimeGrantSchema,
   type ThreadContext,
   ThreadContextSchema,
   type ThreadReader,
 } from "../contracts/public";
-import type { AppDatabase } from "../../../platform/main/storage/public";
 export class ThreadRepository implements ThreadReader {
   constructor(private readonly database: AppDatabase) {}
   private get db() {

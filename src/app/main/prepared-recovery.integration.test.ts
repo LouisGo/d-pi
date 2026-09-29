@@ -3,18 +3,18 @@ import { mkdirSync, mkdtempSync, realpathSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, expect, it, vi } from "vitest";
-import {
-  type HostCommand,
-  HostCommandSchema,
-} from "../../modules/execution/contracts/public";
 import type {
   SubmissionBridge,
   SubmissionReply,
 } from "../../modules/execution/contracts/public";
+import {
+  type HostCommand,
+  HostCommandSchema,
+} from "../../modules/execution/contracts/public";
+import { RuntimeService } from "../../modules/execution/main/public";
 import { SubmissionModel } from "../../modules/execution/renderer/public";
 import { DraftController } from "../../modules/input/core/public";
 import { TraceIdSchema } from "../../shared/identity";
-import { RuntimeService } from "../../modules/execution/main/public";
 import { AppStorage } from "./wiring/app-storage";
 
 const electron = vi.hoisted(() => ({ fork: vi.fn() }));

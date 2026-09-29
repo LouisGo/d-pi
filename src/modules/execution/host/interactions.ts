@@ -1,9 +1,9 @@
+import type { NativeFrame } from "../../../platform/omp/protocol/public";
 import {
   type Answer,
   DialogSchema,
   type Interaction,
 } from "../contracts/interactions";
-import type { NativeFrame } from "../../../platform/omp/protocol/public";
 export class PendingInteractions {
   private readonly ids = new Set<string>();
   private overflow = false;

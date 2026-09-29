@@ -3,12 +3,12 @@ import { constants } from "node:fs";
 import { open, realpath } from "node:fs/promises";
 import { isAbsolute, relative, sep } from "node:path";
 import { z } from "zod";
+import type { NativeBinding } from "../../workspace/contracts/public";
 import type {
   HistoryCursor,
   HistoryEntry,
   HistoryPage,
 } from "../contracts/history";
-import type { NativeBinding } from "../../workspace/contracts/public";
 
 const HeaderSchema = z.object({
   type: z.literal("session"),

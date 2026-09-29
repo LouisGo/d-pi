@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { DraftTextSchema } from "../../input/contracts/public";
 import { ThreadIdSchema, TraceIdSchema } from "../../../shared/identity";
 import { UiMessageSchema } from "../../../shared/messages/contracts";
+import { DraftTextSchema } from "../../input/contracts/public";
 
 export const SubmissionIdSchema = z.uuid().brand<"SubmissionId">();
 export const SubmissionTargetSchema = z.strictObject({

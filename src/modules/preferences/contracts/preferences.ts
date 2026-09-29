@@ -1,9 +1,9 @@
 import { z } from "zod";
 import {
-  LocalePreferenceSchema,
-  LocaleSnapshotSchema,
   type LocalePreference,
+  LocalePreferenceSchema,
   type LocaleSnapshot,
+  LocaleSnapshotSchema,
 } from "../../../shared/i18n/locale";
 export const PreferencesSchema = z.strictObject({
   theme: z.enum(["light", "dark"]),

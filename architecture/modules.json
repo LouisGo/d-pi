@@ -1,7 +1,89 @@
 {
   "version": 1,
   "root": "src/modules",
+  "sourceRoots": ["src", "runtime"],
+  "ownedRoots": ["src/app", "src/platform", "src/shared", "runtime"],
   "modules": {
+    "app": {
+      "root": "src/app",
+      "environments": ["contracts", "main", "host", "preload", "renderer"],
+      "public": [
+        "contracts/desktop-bridge.ts",
+        "main/index.ts",
+        "host/index.ts",
+        "preload/index.ts",
+        "renderer/main.tsx"
+      ],
+      "testPublic": ["main/wiring/app-storage.ts"],
+      "dependsOn": {
+        "contracts": [
+          "changes",
+          "conversation",
+          "execution",
+          "files",
+          "input",
+          "preferences",
+          "shared"
+        ],
+        "main": [
+          "changes",
+          "conversation",
+          "execution",
+          "files",
+          "input",
+          "platform",
+          "preferences",
+          "shared",
+          "workspace"
+        ],
+        "host": ["execution"],
+        "preload": [
+          "changes",
+          "conversation",
+          "execution",
+          "files",
+          "input",
+          "preferences",
+          "shared"
+        ],
+        "renderer": [
+          "changes",
+          "conversation",
+          "execution",
+          "files",
+          "input",
+          "preferences",
+          "shared"
+        ]
+      }
+    },
+    "platform": {
+      "root": "src/platform",
+      "environments": ["main", "node", "omp"],
+      "public": [
+        "main/storage/public.ts",
+        "main/diagnostics/public.ts",
+        "node/filesystem/public.ts",
+        "omp/consumption-gate.ts",
+        "omp/protocol/public.ts",
+        "omp/resources/public.ts"
+      ],
+      "dependsOn": ["shared"]
+    },
+    "shared": {
+      "root": "src/shared",
+      "environments": ["shared"],
+      "defaultEnvironment": "shared",
+      "public": [
+        "build-info.ts",
+        "draft-text.ts",
+        "identity.ts",
+        "i18n/create-i18n.ts",
+        "i18n/locale.ts",
+        "messages/contracts.ts"
+      ],
+      "dependsOn": []
+    },
     "files": {
       "root": "src/modules/files",
       "environments": ["contracts", "core", "main", "renderer"],
@@ -11,15 +93,27 @@
         "main/public.ts",
         "renderer/public.ts"
       ],
-      "dependsOn": {},
+      "dependsOn": {
+        "contracts": ["shared"],
+        "core": ["shared"],
+        "main": ["shared"],
+        "renderer": ["preferences"]
+      },
       "materialized": true
     },
     "input": {
       "root": "src/modules/input",
-      "environments": ["contracts", "core", "renderer"],
-      "public": ["contracts/public.ts", "core/public.ts", "renderer/public.ts"],
+      "environments": ["contracts", "core", "main", "renderer"],
+      "public": [
+        "contracts/public.ts",
+        "core/public.ts",
+        "main/public.ts",
+        "renderer/public.ts"
+      ],
       "dependsOn": {
-        "core": ["files"],
+        "contracts": ["shared", "workspace"],
+        "core": ["files", "shared"],
+        "main": ["platform", "workspace"],
         "renderer": ["files"]
       },
       "materialized": true
@@ -29,9 +123,71 @@
       "environments": ["contracts", "main"],
       "public": ["contracts/public.ts", "main/public.ts"],
       "dependsOn": {
-        "contracts": ["files"],
-        "main": ["files"]
+        "contracts": ["files", "shared"],
+        "main": ["files", "shared"]
       },
+      "materialized": true
+    },
+    "workspace": {
+      "root": "src/modules/workspace",
+      "environments": ["contracts", "main"],
+      "public": ["contracts/public.ts", "main/public.ts"],
+      "dependsOn": {
+        "contracts": ["shared"],
+        "main": ["platform"]
+      },
+      "materialized": true
+    },
+    "preferences": {
+      "root": "src/modules/preferences",
+      "environments": ["contracts", "main", "renderer"],
+      "public": [
+        "contracts/public.ts",
+        "main/public.ts",
+        "renderer/public.ts"
+      ],
+      "dependsOn": {
+        "contracts": ["shared"],
+        "main": ["platform"],
+        "renderer": ["shared"]
+      },
+      "materialized": true
+    },
+    "conversation": {
+      "root": "src/modules/conversation",
+      "environments": ["contracts", "core", "host", "main"],
+      "public": [
+        "contracts/public.ts",
+        "core/public.ts",
+        "host/public.ts",
+        "main/public.ts"
+      ],
+      "dependsOn": {
+        "contracts": ["shared"],
+        "core": ["shared"],
+        "host": ["platform", "shared"],
+        "main": ["platform", "shared", "workspace"]
+      },
+      "materialized": true
+    },
+    "execution": {
+      "root": "src/modules/execution",
+      "environments": ["contracts", "core", "host", "main", "renderer"],
+      "public": [
+        "contracts/public.ts",
+        "core/public.ts",
+        "host/public.ts",
+        "main/public.ts",
+        "renderer/public.ts"
+      ],
+      "dependsOn": {
+        "contracts": ["conversation", "input", "shared", "workspace"],
+        "core": ["input", "shared", "workspace"],
+        "host": ["conversation", "platform", "shared"],
+        "main": ["input", "platform", "shared", "workspace"],
+        "renderer": ["conversation", "input", "shared", "preferences"]
+      },
+      "testDependsOn": ["app"],
       "materialized": true
     }
   }

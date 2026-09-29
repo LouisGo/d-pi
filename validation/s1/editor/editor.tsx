@@ -6,12 +6,12 @@ import { EditorContent, useEditor } from "@tiptap/react";
 import { useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./probe.css";
-import { handlePlainTextPaste } from "../../../src/modules/input/renderer/public";
 import {
   DarkThemeIcon,
   FolderIcon,
   LightThemeIcon,
 } from "../../../src/app/renderer/components/icons/common";
+import { handlePlainTextPaste } from "../../../src/modules/input/renderer/public";
 import pasteSample from "../paste/sample.md?raw";
 import styles from "./sample.module.css";
 

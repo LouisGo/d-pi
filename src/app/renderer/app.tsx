@@ -6,14 +6,14 @@ import {
   LightThemeIcon,
 } from "@/components/icons/common";
 import { Button } from "@/components/ui/button";
-import { Composer } from "./workbench/composer";
-import { FileWorkspace } from "./workbench/file-workspace";
 import type { FrozenSelection } from "../../modules/files/core/public";
+import { useI18n } from "../../modules/preferences/renderer/public";
 import { BUILD_INFO } from "../../shared/build-info";
 import { Conversation, History, Submissions } from "./conversation";
-import { useI18n } from "../../modules/preferences/renderer/public";
 import type { AppModel } from "./model";
 import { RuntimePanel } from "./runtime-panel";
+import { Composer } from "./workbench/composer";
+import { FileWorkspace } from "./workbench/file-workspace";
 export function App({ model }: { model: AppModel }) {
   const { t, formatMessage, preference, setPreference, persistenceFailed } =
     useI18n();

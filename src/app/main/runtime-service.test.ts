@@ -9,11 +9,13 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, expect, it, vi } from "vitest";
-import { RuntimeViewSchema } from "../../modules/execution/contracts/public";
-import { HostCommandSchema } from "../../modules/execution/contracts/public";
-import { SubmissionIdSchema } from "../../modules/execution/contracts/public";
-import { TraceIdSchema } from "../../shared/identity";
+import {
+  HostCommandSchema,
+  RuntimeViewSchema,
+  SubmissionIdSchema,
+} from "../../modules/execution/contracts/public";
 import { RuntimeService } from "../../modules/execution/main/public";
+import { TraceIdSchema } from "../../shared/identity";
 import { AppStorage } from "./wiring/app-storage";
 
 const electron = vi.hoisted(() => ({ fork: vi.fn() }));
@@ -173,7 +175,7 @@ it("a prepared submission cannot cross the instance directory boundary even if a
   renameSync(fixture.project, join(fixture.root, "old-project"));
   mkdirSync(fixture.project);
   const { identifyDirectory } = await import(
-    "../../platform/node/filesystem/public",
+    "../../platform/node/filesystem/public"
   );
   fixture.store.threads.grantExecution({
     ...(await identifyDirectory(fixture.project)),

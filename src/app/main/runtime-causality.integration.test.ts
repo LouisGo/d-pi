@@ -4,11 +4,13 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { PassThrough, Writable } from "node:stream";
 import { afterEach, expect, it, vi } from "vitest";
-import { HostCommandSchema } from "../../modules/execution/contracts/public";
-import { SubmissionIdSchema } from "../../modules/execution/contracts/public";
+import {
+  HostCommandSchema,
+  SubmissionIdSchema,
+} from "../../modules/execution/contracts/public";
 import { createSessionHost } from "../../modules/execution/host/public";
-import { TraceIdSchema } from "../../shared/identity";
 import { RuntimeService } from "../../modules/execution/main/public";
+import { TraceIdSchema } from "../../shared/identity";
 import { AppStorage } from "./wiring/app-storage";
 
 const adapters = vi.hoisted(() => ({ fork: vi.fn(), spawn: vi.fn() }));

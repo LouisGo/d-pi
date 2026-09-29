@@ -1,6 +1,6 @@
 # 模块交接与关键时序
 
-日期：2026-09-29。状态：M1 合同与 P1 文件/选区/输入代码落点已对齐；P2–P4 的执行、恢复与持久化拆分仍按对应切片推进。图说明现有合同如何组合，不定义新的 OMP 协议。术语和拥有者见[模块地图](README.md)；验收见[领域治理交接](../../../.scratch/domain-directory-governance/handoff.md)及各切片记录。
+日期：2026-09-29。状态：P0–P4 目录、公开面、恢复入口和执行/阅读落点已与当前代码对齐。图说明现有合同如何组合，不定义新的 OMP 协议；官方 SDK 仍由薄宿主接入，OMP 保持原生执行和历史所有权。术语和拥有者见[模块地图](README.md)；验收见[领域治理交接](../../../.scratch/domain-directory-governance/handoff.md)及各切片记录。
 
 ## 运行位置与通道
 
@@ -12,7 +12,7 @@ flowchart TB
   R -->|MessagePort：订阅 / 控制| H
   H -->|投影、快照、控制结果| R
   M --> S[("App SQLite<br/>私有内容文件")]
-  H -->|stdio RPC| O[独立 OMP 实例]
+  H -->|受限 JSONL/stdio 通道| O[官方 SDK 薄宿主与 OMP]
   O -->|回执与原生事件| H
   O --> N[("OMP 原生数据<br/>历史 / 配置 / 记忆")]
 ```

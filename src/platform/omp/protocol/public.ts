@@ -1,5 +1,5 @@
 export { FrameDecoder } from "./frame-decoder";
 export {
-  NativeFrameSchema,
   type NativeFrame,
+  NativeFrameSchema,
 } from "./native-frame";

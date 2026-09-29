@@ -5,8 +5,8 @@ import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { describe, expect, it } from "vitest";
 import { FrozenSubmissionSchema } from "../../modules/execution/contracts/public";
-import { AppStorage } from "./wiring/app-storage";
 import { AppDatabase } from "../../platform/main/storage/public";
+import { AppStorage } from "./wiring/app-storage";
 
 function fixture(run: (path: string) => void): void {
   const dir = mkdtempSync(join(tmpdir(), "d-pi-submission-"));

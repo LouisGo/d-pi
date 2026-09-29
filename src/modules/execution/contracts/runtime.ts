@@ -1,13 +1,13 @@
 import { z } from "zod";
 import { ThreadIdSchema, TraceIdSchema } from "../../../shared/identity";
+import { UiMessageSchema } from "../../../shared/messages/contracts";
+import type { ConversationPort } from "../../conversation/contracts/public";
 import { ControlCommandSchema, ControlStateSchema } from "./control";
 import {
   AnswerCommandSchema,
   DismissCommandSchema,
   InteractionViewSchema,
 } from "./interactions";
-import type { ConversationPort } from "../../conversation/contracts/public";
-import { UiMessageSchema } from "../../../shared/messages/contracts";
 export const RuntimeCommandSchema = z.union([
   z.strictObject({
     kind: z.enum(["inspect", "allow", "start", "revoke"]),

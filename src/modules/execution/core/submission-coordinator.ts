@@ -1,7 +1,6 @@
 import { match } from "ts-pattern";
 import { draftByteLength } from "../../../shared/draft-text";
 import { uiMessage } from "../../../shared/messages/contracts";
-import { changesManagedSession } from "./native-command-policy";
 import {
   type FrozenSubmission,
   FrozenSubmissionSchema,
@@ -10,6 +9,7 @@ import {
   type SubmissionFailure,
   type SubmissionReceipt,
 } from "../contracts/public";
+import { changesManagedSession } from "./native-command-policy";
 export interface SubmissionStore {
   prepareSubmission(value: FrozenSubmission): SubmissionReceipt;
   submission(id: string): SubmissionReceipt | null;

@@ -1,5 +1,5 @@
 export { ThreadRepository } from "./thread-repository";
 export {
-  WorkspaceService,
   type ChooseProjectResult,
+  WorkspaceService,
 } from "./workspace-service";

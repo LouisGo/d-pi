@@ -1,5 +1,5 @@
-import { type Preferences, PreferencesSchema } from "../contracts/public";
 import type { AppDatabase } from "../../../platform/main/storage/public";
+import { type Preferences, PreferencesSchema } from "../contracts/public";
 export class PreferenceRepository {
   constructor(private readonly database: AppDatabase) {}
   private get db() {

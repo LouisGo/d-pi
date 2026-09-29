@@ -4,12 +4,12 @@ import { Streamdown } from "streamdown";
 import { match } from "ts-pattern";
 import { WebsiteIcon } from "@/components/icons/common";
 import { Button } from "@/components/ui/button";
-import type { ConversationModel } from "../../modules/conversation/core/public";
 import type {
   HistoryBridge,
   HistoryCursor,
   HistoryPage,
 } from "../../modules/conversation/contracts/public";
+import type { ConversationModel } from "../../modules/conversation/core/public";
 import type { SubmissionModel } from "../../modules/execution/renderer/public";
 import { useI18n } from "../../modules/preferences/renderer/public";
 import { urlBrand } from "./url-display";

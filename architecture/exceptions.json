@@ -1,27 +1,5 @@
 {
   "$schema": "./exceptions.schema.json",
   "version": 1,
-  "exceptions": [
-    {
-      "from": "^src/modules/files/renderer/monaco-viewer\\.tsx$",
-      "to": "^src/renderer/i18n/i18n-provider\\.tsx$",
-      "rules": ["ARCH-LEGACY-IMPORT"],
-      "reason": "P1 Monaco viewer consumes the existing application locale provider; move the provider boundary with the P2 app/shared split.",
-      "removeBy": "P2"
-    },
-    {
-      "from": "^src/modules/input/contracts/draft\\.ts$",
-      "to": "^src/features/localization/contracts\\.ts$",
-      "rules": ["ARCH-LEGACY-IMPORT"],
-      "reason": "P1 preserves the existing UI message contract until shared formatter/provider ownership is split in P2.",
-      "removeBy": "P2"
-    },
-    {
-      "from": "^src/modules/input/contracts/draft\\.ts$",
-      "to": "^src/features/threads/contracts\\.ts$",
-      "rules": ["ARCH-LEGACY-IMPORT"],
-      "reason": "P1 reuses the existing ThreadContext contract; workspace/thread ownership moves in P2.",
-      "removeBy": "P2"
-    }
-  ]
+  "exceptions": []
 }

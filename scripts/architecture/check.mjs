@@ -4,13 +4,27 @@ import { dirname, extname, relative, resolve, sep } from "node:path";
 import { createScanner, LanguageVariant, SyntaxKind } from "typescript/unstable/ast";
 
 const SOURCE_EXTENSIONS = new Set([".cjs", ".cts", ".js", ".jsx", ".mjs", ".mts", ".ts", ".tsx"]);
-const ENVIRONMENTS = new Set(["contracts", "core", "main", "host", "renderer"]);
+const ENVIRONMENTS = new Set([
+  "contracts",
+  "core",
+  "main",
+  "host",
+  "renderer",
+  "preload",
+  "node",
+  "omp",
+  "shared",
+]);
 const ALLOWED_SAME_MODULE = {
   contracts: new Set(["contracts"]),
   core: new Set(["contracts", "core"]),
   main: new Set(["contracts", "core", "main"]),
   host: new Set(["contracts", "core", "host"]),
   renderer: new Set(["contracts", "core", "renderer"]),
+  preload: new Set(["contracts", "preload"]),
+  node: new Set(["node"]),
+  omp: new Set(["omp"]),
+  shared: new Set(["shared"]),
 };
 const BUILTINS = new Set(builtinModules.flatMap((value) => [value, `node:${value}`]));
 const HEADLESS_VENDOR = /^(?:electron|react(?:$|\/)|react-dom(?:$|\/)|@tiptap\/|@base-ui\/|@hugeicons\/|monaco-editor(?:$|\/))/;
@@ -19,6 +33,7 @@ const LEGACY_ROOTS = [
   "src/main/",
   "src/host/",
   "src/renderer/",
+  "src/preload/",
 ];
 
 function usage(message) {
@@ -88,7 +103,7 @@ function resolveSpecifier(specifier, importer, root) {
   const clean = specifier.split("?")[0];
   if (clean.startsWith(".")) return resolveFile(resolve(dirname(importer), clean));
   if (clean.startsWith("src/")) return resolveFile(resolve(root, clean));
-  if (clean.startsWith("@/")) return resolveFile(resolve(root, "src/renderer", clean.slice(2)));
+  if (clean.startsWith("@/")) return resolveFile(resolve(root, "src/app/renderer", clean.slice(2)));
   if (clean.startsWith("@modules/")) return resolveFile(resolve(root, "src/modules", clean.slice("@modules/".length)));
   return null;
 }
@@ -182,15 +197,24 @@ function configuredModules(root, config) {
       name,
       root: moduleRoot,
       environments: new Set(value.environments ?? []),
+      defaultEnvironment: value.defaultEnvironment,
       public: new Set((value.public ?? []).map((path) => resolve(moduleRoot, path))),
+      testPublic: new Set((value.testPublic ?? []).map((path) => resolve(moduleRoot, path))),
       dependsOn: value.dependsOn ?? [],
+      testDependsOn: value.testDependsOn ?? [],
     };
   });
 }
 
-function allowedDependencies(module, environment) {
-  if (Array.isArray(module.dependsOn)) return new Set(module.dependsOn);
-  return new Set(module.dependsOn?.[environment] ?? []);
+function allowedDependencies(module, environment, sourceTest) {
+  const values = [];
+  const add = (dependencies) => {
+    if (Array.isArray(dependencies)) values.push(...dependencies);
+    else values.push(...(dependencies?.[environment] ?? []));
+  };
+  add(module.dependsOn);
+  if (sourceTest) add(module.testDependsOn);
+  return new Set(values);
 }
 
 function isAllowedUnresolved(config, specifier) {
@@ -203,6 +227,8 @@ function main() {
   const exceptionsPath = resolve(root, config.exceptions ?? "architecture/exceptions.json");
   const exceptions = existsSync(exceptionsPath) ? readJson(exceptionsPath) : { exceptions: [] };
   const modules = configuredModules(root, config);
+  const sourceRoots = (config.sourceRoots ?? ["src"]).map((path) => resolve(root, path));
+  const ownedRoots = (config.ownedRoots ?? []).map((path) => resolve(root, path));
   const errors = [];
   const files = new Map();
   const graph = new Map();
@@ -217,17 +243,36 @@ function main() {
   for (const module of modules) {
     if (!existsSync(module.root)) report("ARCH-MANIFEST", `${module.name} root is missing: ${relativePath(root, module.root)}`);
     if (module.environments.size === 0 || [...module.environments].some((value) => !ENVIRONMENTS.has(value))) report("ARCH-MANIFEST", `${module.name} has invalid environments`);
+    if (module.defaultEnvironment && !module.environments.has(module.defaultEnvironment)) report("ARCH-MANIFEST", `${module.name} has invalid default environment`);
     for (const publicPath of module.public) {
       if (!isWithin(publicPath, module.root) || !existsSync(publicPath)) report("ARCH-PUBLIC-ENTRY", `${module.name} public entry is missing: ${relativePath(root, publicPath)}`);
     }
-    const dependencies = Array.isArray(module.dependsOn) ? module.dependsOn : Object.values(module.dependsOn).flat();
+    for (const publicPath of module.testPublic) {
+      if (!isWithin(publicPath, module.root) || !existsSync(publicPath)) report("ARCH-TEST-PUBLIC-ENTRY", `${module.name} test public entry is missing: ${relativePath(root, publicPath)}`);
+    }
+    const dependencies = [
+      ...(Array.isArray(module.dependsOn) ? module.dependsOn : Object.values(module.dependsOn).flat()),
+      ...(Array.isArray(module.testDependsOn) ? module.testDependsOn : Object.values(module.testDependsOn).flat()),
+    ];
     for (const dependency of new Set(dependencies)) {
       if (!modules.some((candidate) => candidate.name === dependency)) report("ARCH-MODULE-CONFIG", `${module.name} depends on unknown module ${dependency}`);
     }
     for (const path of sourceFiles(module.root)) {
-      files.set(path, { module, environment: relativePath(module.root, path).split("/")[0] });
+      const firstSegment = relativePath(module.root, path).split("/")[0];
+      files.set(path, {
+        module,
+        environment: module.environments.has(firstSegment)
+          ? firstSegment
+          : module.defaultEnvironment ?? firstSegment,
+      });
       graph.set(path, []);
     }
+  }
+
+  for (const sourcePath of new Set(sourceRoots.flatMap((sourceRoot) => sourceFiles(sourceRoot)))) {
+    if (files.has(sourcePath) || ownedRoots.some((ownedRoot) => isWithin(sourcePath, ownedRoot))) continue;
+    const sourceRelative = relativePath(root, sourcePath);
+    report("ARCH-UNOWNED", `${sourceRelative} is outside configured modules and owned roots`, sourceRelative);
   }
 
   for (const [sourcePath, sourceInfo] of files) {
@@ -267,8 +312,8 @@ function main() {
         if (!ALLOWED_SAME_MODULE[sourceInfo.environment]?.has(targetInfo.environment)) report("ARCH-ENVIRONMENT", `${sourceRelative} imports ${targetRelative} across ${sourceInfo.environment} -> ${targetInfo.environment}`, sourceRelative, targetRelative);
         continue;
       }
-      if (!allowedDependencies(sourceInfo.module, sourceInfo.environment).has(targetInfo.module.name)) report("ARCH-DEPENDENCY", `${sourceInfo.module.name}/${sourceInfo.environment} cannot depend on ${targetInfo.module.name}: ${sourceRelative} -> ${targetRelative}`, sourceRelative, targetRelative);
-      const targetPublic = [...targetInfo.module.public].some((path) => path === target);
+      if (!allowedDependencies(sourceInfo.module, sourceInfo.environment, sourceTest).has(targetInfo.module.name)) report("ARCH-DEPENDENCY", `${sourceInfo.module.name}/${sourceInfo.environment} cannot depend on ${targetInfo.module.name}: ${sourceRelative} -> ${targetRelative}`, sourceRelative, targetRelative);
+      const targetPublic = [...targetInfo.module.public].some((path) => path === target) || (sourceTest && [...targetInfo.module.testPublic].some((path) => path === target));
       if (!targetPublic) report("ARCH-PRIVATE-IMPORT", `${sourceRelative} imports private ${targetRelative}`, sourceRelative, targetRelative);
     }
   }

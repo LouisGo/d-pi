@@ -93,3 +93,42 @@ test("rejects production test-helper imports and non-literal dynamic imports", (
   assert.match(`${result.stdout}\n${result.stderr}`, /ARCH-TEST-IMPORT/);
   assert.match(`${result.stdout}\n${result.stderr}`, /ARCH-NONLITERAL-IMPORT/);
 });
+
+test("supports flat shared roots and explicit test-only public entries", () => {
+  const directory = fixture("flat-root", {
+    "src/shared/identity.ts": "export type Identity = { id: string };\n",
+    "src/shared/test-fixture.ts": "export const fixture = true;\n",
+    "src/modules/alpha/core/public.ts": 'import type { Identity } from "../../../shared/identity";\nexport type Alpha = Identity;\n',
+    "src/modules/alpha/core/consumer.test.ts": 'import { fixture } from "../../../shared/test-fixture";\nexport { fixture };\n',
+  }, {
+    shared: {
+      root: "src/shared",
+      environments: ["shared"],
+      defaultEnvironment: "shared",
+      public: ["identity.ts"],
+      testPublic: ["test-fixture.ts"],
+      dependsOn: [],
+    },
+    alpha: {
+      root: "src/modules/alpha",
+      environments: ["core"],
+      public: ["core/public.ts"],
+      dependsOn: { core: ["shared"] },
+      testDependsOn: ["shared"],
+    },
+  });
+  const result = run(directory);
+  rmSync(directory, { recursive: true, force: true });
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+});
+
+test("rejects source files outside configured modules and owned roots", () => {
+  const directory = fixture("unowned-source", {
+    "src/modules/alpha/core/public.ts": "export const alpha = true;\n",
+    "src/other/value.ts": "export const value = true;\n",
+  }, { alpha: { root: "src/modules/alpha", environments: ["core"], public: ["core/public.ts"], dependsOn: { core: [] } } });
+  const result = run(directory);
+  rmSync(directory, { recursive: true, force: true });
+  assert.notEqual(result.status, 0);
+  assert.match(`${result.stdout}\n${result.stderr}`, /ARCH-UNOWNED/);
+});

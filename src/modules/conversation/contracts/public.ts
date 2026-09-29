@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { UiMessageSchema } from "../../../shared/messages/contracts";
+
 export * from "./history";
 export const ConversationLabelSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("literal"), text: z.string() }),

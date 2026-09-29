@@ -1,11 +1,11 @@
 import { match } from "ts-pattern";
-import type { Command, Reply } from "../../contracts/desktop-bridge";
 import { saveDraft } from "../../../modules/input/main/public";
 import { WorkspaceService } from "../../../modules/workspace/main/public";
-import { resolveDirectory } from "../../../platform/node/filesystem/public";
-import type { AppStorage } from "./app-storage";
 import { diagnosticCode } from "../../../platform/main/diagnostics/public";
+import { resolveDirectory } from "../../../platform/node/filesystem/public";
+import type { Command, Reply } from "../../contracts/desktop-bridge";
 import { failure } from "../../contracts/failure";
+import type { AppStorage } from "./app-storage";
 
 export class DesktopCommandService {
   private readonly workspace: WorkspaceService;

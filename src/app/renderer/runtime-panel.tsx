@@ -1,12 +1,16 @@
 import { useState, useSyncExternalStore } from "react";
 import { match } from "ts-pattern";
 import { Button } from "@/components/ui/button";
-import type { Interaction } from "../../modules/execution/contracts/public";
-import type { UiMessage } from "../../shared/messages/contracts";
-import type { RuntimeModel } from "../../modules/execution/renderer/public";
-import type { SubmissionReceipt } from "../../modules/execution/contracts/public";
-import type { SubmissionModel } from "../../modules/execution/renderer/public";
+import type {
+  Interaction,
+  SubmissionReceipt,
+} from "../../modules/execution/contracts/public";
+import type {
+  RuntimeModel,
+  SubmissionModel,
+} from "../../modules/execution/renderer/public";
 import { useI18n } from "../../modules/preferences/renderer/public";
+import type { UiMessage } from "../../shared/messages/contracts";
 export type FollowUpResult = {
   ok: boolean;
   message: UiMessage | null;

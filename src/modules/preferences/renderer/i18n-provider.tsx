@@ -6,14 +6,14 @@ import {
   useMemo,
   useState,
 } from "react";
-import type { LocaleBridge } from "../contracts/public";
-import type { UiMessage } from "../../../shared/messages/contracts";
 import { createI18n, type I18n } from "../../../shared/i18n/create-i18n";
 import {
   type LocalePreference,
   type LocaleSnapshot,
   resolveLocale,
 } from "../../../shared/i18n/locale";
+import type { UiMessage } from "../../../shared/messages/contracts";
+import type { LocaleBridge } from "../contracts/public";
 
 interface I18nContextValue extends I18n {
   readonly preference: LocalePreference;

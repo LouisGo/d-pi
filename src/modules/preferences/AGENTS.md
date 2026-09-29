@@ -1,6 +1,5 @@
 # preferences 模块
 
-- App 的主题、密度、发送方式和 locale 偏好归 preferences；OMP 配置、模型和凭据不归这里。
-- `contracts/public.ts` 提供偏好与 LocaleBridge 合同，`renderer/public.ts` 提供 provider；formatter/catalog 继续由 `src/shared/i18n` 唯一维护。
-- 偏好保存失败必须保留当前 UI 状态并如实回传；不要把 React provider 变成后台生命周期拥有者。
-- 依据 `docs/architecture/internationalization.md`、`docs/architecture/design-system.md` 和 `architecture/modules.json`。
+- 拥有 App theme、density、sendKey 和 locale 偏好，以及 Renderer 的 i18n provider；不拥有 OMP 配置、凭据或模型参数。
+- Main 只读写 App SQLite 偏好，Renderer 通过 `contracts/public.ts` 的 `LocaleBridge` 接收解析后的快照。
+- 文案解析复用 `shared/i18n`；不把 locale 传入 OMP 或 SessionHost 请求。

@@ -1,10 +1,7 @@
 import { afterEach, expect, it, vi } from "vitest";
-import type {
-  HostMessage,
-  HostStart,
-} from "../contracts/public";
-import { FrozenSubmissionSchema } from "../contracts/public";
 import { ThreadIdSchema } from "../../../shared/identity";
+import type { HostMessage, HostStart } from "../contracts/public";
+import { FrozenSubmissionSchema } from "../contracts/public";
 import type { NativeObservation, NativeSessionOptions } from "./native-session";
 import { NativeSession } from "./native-session";
 import { createSessionHost } from "./session-host";

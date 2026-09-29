@@ -1,11 +1,11 @@
+import type { AppDatabase } from "../../../platform/main/storage/public";
+import type { DraftReader } from "../../input/contracts/public";
 import {
   type FrozenSubmission,
   SubmissionConflict,
   type SubmissionReceipt,
   SubmissionReceiptSchema,
 } from "../contracts/public";
-import type { DraftReader } from "../../input/contracts/public";
-import type { AppDatabase } from "../../../platform/main/storage/public";
 export class SubmissionRepository {
   constructor(
     private readonly database: AppDatabase,

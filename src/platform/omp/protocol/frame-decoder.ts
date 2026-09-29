@@ -1,8 +1,5 @@
 import { z } from "zod";
-import {
-  type NativeFrame,
-  NativeFrameSchema,
-} from "./native-frame";
+import { type NativeFrame, NativeFrameSchema } from "./native-frame";
 
 const ChunkSchema = z.object({
   type: z.literal("rpc_chunk"),

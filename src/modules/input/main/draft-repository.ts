@@ -1,6 +1,6 @@
-import { type Draft, DraftSchema, type DraftReader } from "../contracts/public";
 import type { AppDatabase } from "../../../platform/main/storage/public";
 import type { ThreadRepository } from "../../workspace/main/public";
+import { type Draft, type DraftReader, DraftSchema } from "../contracts/public";
 export class DraftRepository implements DraftReader {
   constructor(
     private readonly database: AppDatabase,

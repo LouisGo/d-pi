@@ -1,30 +1,20 @@
 import { contextBridge, ipcRenderer } from "electron";
 import { match } from "ts-pattern";
 import {
-  type BridgeDiagnostic,
-  type Command,
-  type DesktopBridge,
-  LocaleSetResultSchema,
-  type Reply,
-  ReplySchema,
-} from "../contracts/desktop-bridge";
-import { ConversationEventSchema } from "../../modules/conversation/contracts/public";
+  GitReplySchema,
+  GitRequestSchema,
+} from "../../modules/changes/contracts/public";
 import {
+  ConversationEventSchema,
   HistoryPageSchema,
   HistoryRequestSchema,
 } from "../../modules/conversation/contracts/public";
 import {
   RuntimeCommandSchema,
   RuntimeViewSchema,
-} from "../../modules/execution/contracts/public";
-import {
   SubmissionCommandSchema,
   SubmissionReplySchema,
 } from "../../modules/execution/contracts/public";
-import {
-  GitReplySchema,
-  GitRequestSchema,
-} from "../../modules/changes/contracts/public";
 import {
   FileReplySchema,
   FileRequestSchema,
@@ -33,6 +23,14 @@ import {
   LocalePreferenceSchema,
   LocaleSnapshotSchema,
 } from "../../shared/i18n/locale";
+import {
+  type BridgeDiagnostic,
+  type Command,
+  type DesktopBridge,
+  LocaleSetResultSchema,
+  type Reply,
+  ReplySchema,
+} from "../contracts/desktop-bridge";
 
 const connectionId = crypto.randomUUID();
 function report(event: BridgeDiagnostic): void {

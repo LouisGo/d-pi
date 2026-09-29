@@ -4,41 +4,60 @@
 
 ## 当前波次
 
-- P0 已由本地 commit `fa2f34a` 落地：`architecture/modules.json`、结构例外、TypeScript 7 scanner 门禁、真实 CLI 正/负例、结构报告、架构 skill 与 AI 路由。
-- P1 文件→选区→输入完整切片已在当前工作树形成待提交变更：`files`、`input`、`changes` 实际代码归入 `src/modules`；桌面桥和 Composer/FileWorkspace 的跨域组合归入 `src/app`；旧路径消费者已切到公开入口。
-- P2–P4 尚未在本交接点声称完成；下一波继续迁移 workspace/preferences/platform/app/execution/conversation，并在恢复拆分时保持既有顺序。
+P0–P4 已完成工程交付并分波本地提交，当前工作区应保持干净；用户试用仍待进行。
 
-## P1 实际成本校准
+- P0：`fa2f34a chore: add domain architecture gates`
+- P1：`de48359 feat: migrate files input and changes domains`
+- P2 恢复顺序：`2f81069 refactor: make execution recovery explicit`
+- P2/P3 领域迁移：`06b5031 refactor: complete domain module migration`
+- P4 收口：当前 HEAD 的 `chore: close domain architecture governance`，包含全量归属门禁、例外清理、文档和 AI 规则同步。
 
-| 检查点 | 实际观察 | 结论 |
-| --- | --- | --- |
-| 定位能力 | 三个实际模块有机器清单和就近 `AGENTS.md`；合同、core/main/renderer 入口与测试可按领域直达。跨域组合集中在 `src/app/renderer/workbench`。 | 目录比旧 `features/main/renderer` 更直接；保留模块地图作人工导航，不生成第二套文档。 |
-| 普通内部修改 | 迁移后的内部文件和测试移动不需要修改 `modules.json`；只有公开入口、环境和依赖变化登记。 | 清单粒度可接受。 |
-| 合法复用 | `input` 通过一次 `files` 依赖复用选区公开能力；`changes` 通过 `files/main/public` 复用只读文件读取。 | 不需要逐调用点例外或额外工厂。 |
-| 纯转发层 | 新增的 `public.ts` 只承担环境公开面；没有新增 service/manager/part 来迎合目录或行数。 | 公开入口属于门禁契约，未发现无意义业务包装。 |
-| 门禁反馈 | 当前门禁输出来源、目标和规则；真实 fixture 覆盖公开入口、私有跨域、未登记依赖、Node/环境、循环、生产测试引用和非字面动态加载。 | P0 反馈可用，报告只作提示，不把行数变硬门槛。 |
-| 工具选择 | `dependency-cruiser@18.4.0` 在当前 TypeScript `7.0.2` 下不识别 TS 7（实际扫描为 0 模块），未保留死依赖；改用 TypeScript 7 `typescript/unstable/ast` 的 scanner，零新增运行时依赖。 | 这是当前仓库的兼容性校准，不把 dependency-cruiser 宣称为已验证门禁。 |
-| 过渡维护 | `architecture/exceptions.json` 目前只记录 Monaco→旧 i18n provider、input contract→旧 localization/threads contract 三条 P2 过渡边，均有原因和 `removeBy`。 | 过渡边可追踪，P2 清除；不扩大为宽路径豁免。 |
+本次迁移没有改变 SQLite schema、IPC 外部语义、持久身份或官方 SDK。`AppStorage` 保持 `v3 + WAL → execution recovery → v4/v5 → publish`；App 收据与草稿消费标记仍沿用同一 SQLite 事务；`unknown` 不自动重发；OMP 继续拥有原生执行、队列、工具、原生历史与记忆。
+
+## 实际落点
+
+- `src/modules/files`、`input`、`changes` 保留 P1 文件/选区/输入路径。
+- `src/modules/workspace`、`preferences`、`conversation`、`execution` 完成合同与环境分层；`src/app` 承担入口、跨域组合和桌面桥。
+- `src/platform` 承担 SQLite、诊断、真实路径、OMP 协议/资源与消费门控；`src/shared` 只保留稳定纯基础；`runtime` 保持官方 SDK 薄宿主。
+- `RuntimeService`、`SessionHost` 没有按行数切成空壳；准入、提交协调、Host 连接、待答交互、阅读投影和原生会话等有独立责任的边界已通过公开入口落地。目录与结构报告不构成新的业务真相。
+
+## P1 成本校准结论
+
+| 检查点 | 实际结果 |
+| --- | --- |
+| 定位能力 | 模块目录、环境入口、测试和就近 `AGENTS.md` 可按领域定位；跨域 UI 仍集中在 `src/app/renderer/workbench`。 |
+| 普通内部修改 | 不需要为普通文件移动或内部补测修改 `modules.json`；只有公开面、环境或跨模块依赖变化才登记。 |
+| 合法复用 | `input → files`、`changes → files` 通过公开入口复用，不需要逐调用点例外或包装工厂。 |
+| 结构成本 | 139 文件迁移后，仍保留必要的生命周期协调器；没有为目录/行数引入 `part`、通用 Manager 或第二套执行模型。 |
+| 门禁成本 | TypeScript 7 scanner 兼容当前仓库；真实 CLI 正/负例能指出来源、目标和规则；结构报告只提示规模，不阻断合理长文件。 |
+| 例外维护 | P1 过渡边已在 P2–P4 清除，当前 `architecture/exceptions.json` 为空。 |
 
 ## 自动化证据
 
-已运行并通过：
+以下命令在最终收口波次通过：
 
-- `pnpm check:architecture`
-- `pnpm test:architecture`（5 组真实 CLI 正/负例）
-- `pnpm typecheck`
-- `pnpm test`（47 个测试文件通过、211 个测试通过、1 个既有 skip）
-- `pnpm build`
-- `pnpm lint`、`pnpm lint:design`、`pnpm lint:i18n`
-- `pnpm validate:design`、`node validation/s1/source-boundaries.mjs`
-- `pnpm report:structure`
+```text
+pnpm check:architecture
+pnpm test:architecture
+pnpm report:structure
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm lint
+pnpm lint:design
+pnpm lint:i18n
+pnpm validate:design
+node validation/s1/source-boundaries.mjs
+```
 
-构建仍有既有 Zod 注释位置 warning；未见应用源码构建失败。P1 触及编辑器、Monaco、文件/Git 与 Composer，完整 GUI/原生交互证据需单独记录；Agent 检查不替代用户试用。
+关键结果：结构报告覆盖 `160/160`，`unowned=0`，例外为 `0`；Vitest 为 `47` 个测试文件通过、`212` 个测试通过、`1` 个既有 skip。构建仍有既有 Zod 注释位置与 Renderer chunk 体积 warning，但成功完成。
+
+## 受影响 GUI 证据
+
+已用 macOS 原生 Electron 验证页检查本次触及的 Editor 路径：输入 `第一行\nsecond-line` 后，AX 可见 textarea 与渲染行；Cmd+Z 清空、Shift+Cmd+Z 恢复；主题和密度切换后截图可见深色界面、文本、图标、textarea 与控件。一次 ScreenCaptureKit 瞬态错误不影响随后 AX 对 Undo 的确认。该证据是 Agent 验证，不替代用户试用或产品认可。
 
 ## 继续边界
 
-- P2 必须先把偏好/共享 formatter/provider、workspace、存储基础和显式 execution 恢复步骤收拢；打开连接→v3 迁移→WAL→execution 恢复→v4/v5 迁移→组装发布的顺序不可改。
-- ACK 与草稿消费标记继续由同一 SQLite 连接/事务提交；`unknown` 不自动重发，OMP 原生执行/队列/历史所有权不迁入 App。
-- P3 再拆 RuntimeService/SessionHost 与 conversation；P4 收口剩余生产源码归属、环境检查、过渡边、文档和 CI。
-- 不删除用户 SQLite/OMP 数据，不修改持久身份、IPC 外部语义或官方 SDK；不 push，不启动 S5/M2。
-
+- 不推送，不启动 S5/M2，不把本次工程交付写成用户已认可。
+- S3 冷恢复单写限制和用户试用状态保持原记录；本次只保证目录迁移没有改变既有恢复顺序和所有权。
+- 后续若发现行为缺陷，先按 TDD 写出失败测试，再做最小修复和必要回归；不因结构已收口而扩大范围。

@@ -3,20 +3,20 @@ import { mkdirSync, mkdtempSync, realpathSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, expect, it, vi } from "vitest";
-import { HostCommandSchema } from "../../modules/execution/contracts/public";
 import {
+  HostCommandSchema,
   SubmissionIdSchema,
   type SubmissionReply,
 } from "../../modules/execution/contracts/public";
-import { SubmissionModel } from "../../modules/execution/renderer/public";
 import type {
   NativeObservation,
   NativeSessionOptions,
 } from "../../modules/execution/host/public";
 import { createSessionHost } from "../../modules/execution/host/public";
+import { RuntimeService } from "../../modules/execution/main/public";
+import { SubmissionModel } from "../../modules/execution/renderer/public";
 import { DraftController } from "../../modules/input/core/public";
 import { TraceIdSchema } from "../../shared/identity";
-import { RuntimeService } from "../../modules/execution/main/public";
 import { AppStorage } from "./wiring/app-storage";
 
 const transport = vi.hoisted(() => ({

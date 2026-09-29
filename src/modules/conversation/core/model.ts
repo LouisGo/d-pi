@@ -1,4 +1,7 @@
-import type { ConversationPort, ConversationSnapshot } from "../contracts/public";
+import type {
+  ConversationPort,
+  ConversationSnapshot,
+} from "../contracts/public";
 export class ConversationModel {
   private view: ConversationSnapshot | null = null;
   private readonly listeners = new Set<() => void>();

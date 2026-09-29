@@ -18,17 +18,26 @@ for (const path of files("src")) {
       const target = specifier.startsWith(".")
         ? normalize(join(dirname(path), specifier))
         : specifier;
-      if (path.startsWith("src/features/"))
+      const normalized = path.replaceAll("\\\\", "/");
+      const environment = normalized.startsWith("src/modules/")
+        ? normalized.split("/")[3]
+        : normalized.startsWith("src/app/") ||
+            normalized.startsWith("src/platform/")
+          ? normalized.split("/")[2]
+          : normalized.startsWith("src/shared/")
+            ? "shared"
+            : undefined;
+      if (environment === "contracts" || environment === "core")
         assert.ok(
-          !/^(?:node:|electron$|src\/(?:main|host|preload|renderer)\/|src\/shared\/node\/)/.test(
+          !/^(?:node:|electron$|(?:react|react-dom)(?:\/|$)|@tiptap\/|@base-ui\/|@hugeicons\/)/.test(
             target,
           ),
-          `platform implementation imported by feature: ${path} -> ${target}`,
+          `platform or GUI implementation imported by ${environment}: ${path} -> ${target}`,
         );
-      if (path.startsWith("src/host/"))
+      if (environment === "renderer")
         assert.ok(
-          !target.startsWith("src/main/"),
-          `Host imported Main implementation: ${path} -> ${target}`,
+          !/^(?:node:|electron$)/.test(target),
+          `Node/Electron implementation imported by Renderer: ${path} -> ${target}`,
         );
     }
   }
@@ -51,12 +60,14 @@ for (const path of files("src")) {
       !/from\s+['"]@hugeicons\//.test(text),
       `vendor icon outside adapter: ${path}`,
     );
-  if (path.includes("/shared/") || path.includes("/features/"))
+  if (path.includes("/shared/"))
     assert.ok(
-      !/from\s+['"](?:react|@tiptap|@base-ui|@hugeicons)/.test(text),
-      `GUI type crossing domain boundary: ${path}`,
+      !/from\s+['"](?:node:|electron$|react|react-dom|@tiptap|@base-ui|@hugeicons)/.test(
+        text,
+      ),
+      `GUI/runtime type crossing shared boundary: ${path}`,
     );
 }
 console.log(
-  "PASS: token source, icon/domain and feature/platform import boundaries (narrow source checks; not a full dependency or CSS analyzer).",
+  "PASS: token source, icon/domain and module environment boundaries (narrow source checks; architecture gate is authoritative for dependency graph).",
 );

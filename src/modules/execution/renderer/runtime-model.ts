@@ -1,8 +1,12 @@
 import type { ThreadId } from "../../../shared/identity";
-import type { Answer } from "../contracts/interactions";
-import { ConversationModel } from "../../conversation/core/public";
 import { uiMessage } from "../../../shared/messages/contracts";
-import type { RuntimeBridge, RuntimeCommand, RuntimeView } from "../contracts/public";
+import { ConversationModel } from "../../conversation/core/public";
+import type { Answer } from "../contracts/interactions";
+import type {
+  RuntimeBridge,
+  RuntimeCommand,
+  RuntimeView,
+} from "../contracts/public";
 export class RuntimeModel {
   private view: RuntimeView | null = null;
   private readonly listeners = new Set<() => void>();

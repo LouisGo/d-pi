@@ -35,6 +35,8 @@ const rows = Object.entries(config.modules ?? {}).map(([name, module]) => {
   return {
     name,
     root: module.root,
+    environments: module.environments ?? [],
+    defaultEnvironment: module.defaultEnvironment,
     materialized: module.materialized !== false,
     files: files.length,
     lines: files.reduce((total, path) => total + lineCount(path), 0),
@@ -42,14 +44,20 @@ const rows = Object.entries(config.modules ?? {}).map(([name, module]) => {
       path: `${module.root}/${entry}`,
       exists: existsSync(resolve(root, entry)),
     })),
+    testPublicEntries: (module.testPublic ?? []).map((entry) => ({
+      path: `${module.root}/${entry}`,
+      exists: existsSync(resolve(root, entry)),
+    })),
   };
 });
 
-const sourceRoot = resolve(projectRoot, config.sourceRoot ?? "src");
-const allSource = sourceFiles(sourceRoot);
+const sourceRoots = (config.sourceRoots ?? ["src"]).map((path) => resolve(projectRoot, path));
+const ownedRoots = (config.ownedRoots ?? []).map((path) => resolve(projectRoot, path));
+const allSource = [...new Set(sourceRoots.flatMap((sourceRoot) => sourceFiles(sourceRoot)))];
 const moduleRoots = rows.map((row) => resolve(projectRoot, row.root));
 const coveredSource = allSource.filter((path) =>
-  moduleRoots.some((moduleRoot) => isWithin(moduleRoot, path)),
+  moduleRoots.some((moduleRoot) => isWithin(moduleRoot, path)) ||
+  ownedRoots.some((ownedRoot) => isWithin(ownedRoot, path)),
 );
 const unownedSource = allSource
   .filter((path) => !coveredSource.includes(path))
@@ -64,7 +72,10 @@ const hints = [];
 for (const row of rows) {
   const moduleRoot = resolve(projectRoot, row.root);
   for (const path of sourceFiles(moduleRoot)) {
-    const environment = relative(moduleRoot, path).split(/[\\/]/)[0] ?? "unknown";
+    const firstSegment = relative(moduleRoot, path).split(/[\\/]/)[0] ?? "unknown";
+    const environment = row.environments.includes(firstSegment)
+      ? firstSegment
+      : row.defaultEnvironment ?? firstSegment;
     const limit = isTestFile(path) ? 800 : environment === "main" || environment === "host" ? 300 : 300;
     const lines = lineCount(path);
     if (lines > limit) hints.push(`${relative(projectRoot, path).replaceAll("\\", "/")}: ${lines} lines (hint ${limit})`);
@@ -76,6 +87,7 @@ for (const row of rows) {
   const state = row.materialized ? "materialized" : "planned";
   console.log(`${row.name}\t${state}\t${row.files} files\t${row.lines} lines\t${row.root}`);
   for (const entry of row.publicEntries) console.log(`  ${entry.exists ? "ok" : "missing"}\t${entry.path}`);
+  for (const entry of row.testPublicEntries) console.log(`  ${entry.exists ? "ok" : "missing"}\ttest-only ${entry.path}`);
 }
 console.log(`coverage\t${coveredSource.length}/${allSource.length}\tconfigured-source-files\tunowned=${unownedSource.length}`);
 console.log(`exceptions\t${exceptions.length}\tarchitecture/exceptions.json`);

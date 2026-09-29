@@ -1,8 +1,11 @@
 import { expect, it } from "vitest";
+import { ThreadIdSchema } from "../../../shared/identity";
 import { DraftSchema } from "../../input/contracts/public";
 import { DraftController } from "../../input/core/public";
-import { ThreadIdSchema } from "../../../shared/identity";
-import { SubmissionReceiptSchema, type SubmissionReply } from "../contracts/public";
+import {
+  SubmissionReceiptSchema,
+  type SubmissionReply,
+} from "../contracts/public";
 import { mergeReceipt, SubmissionModel } from "./submission-model";
 
 it("merges receipts monotonically: wall-clock never reorders causal facts (A3 lock)", () => {

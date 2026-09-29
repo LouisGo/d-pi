@@ -1,7 +1,7 @@
 export {
-  LocaleSetResultSchema,
   type LocaleBridge,
   type LocaleSetResult,
-  PreferencesSchema,
+  LocaleSetResultSchema,
   type Preferences,
+  PreferencesSchema,
 } from "./preferences";

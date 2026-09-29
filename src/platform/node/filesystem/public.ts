@@ -1,2 +1,1 @@
-export { resolveDirectory } from "./directory";
-export { identifyDirectory } from "./directory";
+export { identifyDirectory, resolveDirectory } from "./directory";

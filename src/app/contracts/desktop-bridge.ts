@@ -1,8 +1,10 @@
 import { z } from "zod";
-import type { HistoryBridge } from "../../modules/conversation/contracts/public";
-import type { RuntimeBridge } from "../../modules/execution/contracts/public";
-import type { SubmissionBridge } from "../../modules/execution/contracts/public";
 import type { GitBridge } from "../../modules/changes/contracts/public";
+import type { HistoryBridge } from "../../modules/conversation/contracts/public";
+import type {
+  RuntimeBridge,
+  SubmissionBridge,
+} from "../../modules/execution/contracts/public";
 import type { FileBridge } from "../../modules/files/contracts/public";
 import {
   DraftFailureReplySchema,
@@ -10,13 +12,14 @@ import {
   DraftTextSchema,
   SavedDraftSchema,
 } from "../../modules/input/contracts/public";
-import { ThreadIdSchema, TraceIdSchema } from "../../shared/identity";
-import { PreferencesSchema } from "../../modules/preferences/contracts/public";
 import type { LocaleBridge } from "../../modules/preferences/contracts/public";
+import { PreferencesSchema } from "../../modules/preferences/contracts/public";
+import { ThreadIdSchema, TraceIdSchema } from "../../shared/identity";
+
 export {
-  LocaleSetResultSchema,
   type LocaleBridge,
   type LocaleSetResult,
+  LocaleSetResultSchema,
 } from "../../modules/preferences/contracts/public";
 export const CommandSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("restore"), traceId: TraceIdSchema }),

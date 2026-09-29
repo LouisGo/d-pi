@@ -2,9 +2,9 @@ import { mkdirSync, mkdtempSync, realpathSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, it, vi } from "vitest";
+import { RuntimeService } from "../../modules/execution/main/public";
 import { createI18n } from "../../shared/i18n/create-i18n";
 import { TraceIdSchema } from "../../shared/identity";
-import { RuntimeService } from "../../modules/execution/main/public";
 import { AppStorage } from "./wiring/app-storage";
 
 vi.mock("electron", () => ({

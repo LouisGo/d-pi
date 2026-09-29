@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { UiMessageSchema } from "../../../shared/messages/contracts";
-import { ThreadContextSchema } from "../../workspace/contracts/public";
 import { DRAFT_MAX_BYTES, draftByteLength } from "../../../shared/draft-text";
 import { ThreadIdSchema, TraceIdSchema } from "../../../shared/identity";
+import { UiMessageSchema } from "../../../shared/messages/contracts";
+import { ThreadContextSchema } from "../../workspace/contracts/public";
 export const DraftTextSchema = z
   .string()
   .refine(

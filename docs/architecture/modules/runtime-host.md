@@ -1,5 +1,11 @@
 # 宿主与 OMP 接入
 
+## 当前工程落点（领域目录治理，2026-09-29）
+
+- `src/app/host/index.ts` 只做 utility 入口；执行 Host 实现在 `src/modules/execution/host/`，连接监督在 `src/modules/execution/main/host-connection.ts`。
+- `src/platform/omp/protocol/` 持有原生帧合同和 decoder，`src/platform/omp/resources/` 持有 Runtime/官方 SDK 资源校验；`runtime/host.mjs` 只加载官方 SDK 并接入已确认的消费门控。
+- 阅读事件在 `src/modules/conversation/host/projection.ts` 归一化，Host 不把未经归一的 OMP 帧交给 Renderer；关闭 scope 时仍按原顺序释放投影、交互、NativeSession 和阅读端口。
+
 日期：2026-09-27。深度：M1 核心设计，接入待验证。依据 D-02/D-03/D-24/D-26；[进程 ADR](../../adr/0001-omp-session-client.md)、[基础契约 §1](../foundation-contracts.md#1-身份持久化与生命周期b1)。返回[模块地图](README.md)。
 
 ## 范围与拥有者

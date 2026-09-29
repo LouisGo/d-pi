@@ -1,6 +1,6 @@
+import { resolveDirectory } from "../../../platform/node/filesystem/public";
 import type { ThreadContext } from "../contracts/public";
 import type { ThreadRepository } from "./thread-repository";
-import { resolveDirectory } from "../../../platform/node/filesystem/public";
 
 export type ChooseProjectResult =
   | { kind: "already-active" }

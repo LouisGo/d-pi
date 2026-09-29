@@ -1,10 +1,10 @@
 import { createRoot } from "react-dom/client";
-import type { DesktopBridge } from "../contracts/desktop-bridge";
-import { App } from "./app";
 import {
   browserLocaleFallback,
   I18nProvider,
 } from "../../modules/preferences/renderer/public";
+import type { DesktopBridge } from "../contracts/desktop-bridge";
+import { App } from "./app";
 import { AppModel } from "./model";
 import "./styles/app.css";
 

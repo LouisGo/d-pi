@@ -3,8 +3,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { describe, expect, it } from "vitest";
-import { DesktopCommandService } from "./wiring/desktop-command-service";
 import { AppStorage } from "./wiring/app-storage";
+import { DesktopCommandService } from "./wiring/desktop-command-service";
 
 function fixture(
   run: (path: string, dir: string) => void | Promise<void>,

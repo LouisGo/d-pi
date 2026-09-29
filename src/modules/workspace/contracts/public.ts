@@ -4,9 +4,10 @@ import {
   ThreadIdSchema,
   WorkspaceIdSchema,
 } from "../../../shared/identity";
+
 export {
-  DirectoryIdentitySchema,
   type DirectoryIdentity,
+  DirectoryIdentitySchema,
 } from "../../../shared/identity";
 
 export const NativeBindingSchema = z.strictObject({

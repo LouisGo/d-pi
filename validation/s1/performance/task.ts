@@ -4,11 +4,11 @@ import { mkdtempSync, realpathSync, writeFileSync } from "node:fs";
 import { cpus, release, tmpdir } from "node:os";
 import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
-import { Diagnostics } from "../../../src/platform/main/diagnostics/public";
-import { DesktopCommandService } from "../../../src/app/main/wiring/desktop-command-service";
 import { failure } from "../../../src/app/contracts/failure";
 import { AppStorage } from "../../../src/app/main/wiring/app-storage";
+import { DesktopCommandService } from "../../../src/app/main/wiring/desktop-command-service";
 import { DraftController } from "../../../src/modules/input/core/public";
+import { Diagnostics } from "../../../src/platform/main/diagnostics/public";
 
 const directory = realpathSync(
   mkdtempSync(join(tmpdir(), "d-pi-s1-task-perf-")),

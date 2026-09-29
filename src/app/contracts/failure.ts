@@ -1,9 +1,9 @@
-import type { Reply } from "./desktop-bridge";
+import type { Failure } from "../../modules/input/contracts/public";
 import {
   type PlainUiMessageCode,
   uiMessage,
 } from "../../shared/messages/contracts";
-import type { Failure } from "../../modules/input/contracts/public";
+import type { Reply } from "./desktop-bridge";
 
 export function failure(
   traceId: string,

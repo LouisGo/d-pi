@@ -1,12 +1,11 @@
 import { randomUUID } from "node:crypto";
 import { isAbsolute, relative } from "node:path";
 import { match } from "ts-pattern";
-import {
-  type ControlState,
-  ControlStateSchema,
-} from "../contracts/control";
-import { defaultAnswerFor } from "../contracts/interactions";
+import { identifyDirectory } from "../../../platform/node/filesystem/public";
 import { ConversationProjection } from "../../conversation/host/public";
+import { type ControlState, ControlStateSchema } from "../contracts/control";
+import { defaultAnswerFor } from "../contracts/interactions";
+import type { FrozenSubmission } from "../contracts/public";
 import {
   type HostCommand,
   type HostMessage,
@@ -15,8 +14,6 @@ import {
   NativeStateSchema,
 } from "../contracts/public";
 import { changesManagedSession } from "../core/public";
-import type { FrozenSubmission } from "../contracts/public";
-import { identifyDirectory } from "../../../platform/node/filesystem/public";
 import { PendingInteractions } from "./interactions";
 import { type NativeObservation, NativeSession } from "./native-session";
 

@@ -1,15 +1,12 @@
 import { z } from "zod";
+import { DirectoryIdentitySchema } from "../../workspace/contracts/public";
 import { ControlCommandSchema, ControlStateSchema } from "./control";
 import {
   AnswerCommandSchema,
   DismissCommandSchema,
   InteractionViewSchema,
 } from "./interactions";
-import {
-  FrozenSubmissionSchema,
-  SubmissionEventSchema,
-} from "./submission";
-import { DirectoryIdentitySchema } from "../../workspace/contracts/public";
+import { FrozenSubmissionSchema, SubmissionEventSchema } from "./submission";
 export const HostStartSchema = z.strictObject({
   kind: z.literal("start"),
   threadId: z.uuid(),

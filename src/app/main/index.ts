@@ -10,21 +10,27 @@ import {
   MessageChannelMain,
 } from "electron";
 import { z } from "zod";
-import {
-  BridgeDiagnosticSchema,
-  EnvelopeSchema,
-} from "../contracts/desktop-bridge";
-import { QuitCoordinator } from "./lifecycle/quit";
-import { HistoryRequestSchema } from "../../modules/conversation/contracts/public";
-import { RuntimeCommandSchema } from "../../modules/execution/contracts/public";
-import { SubmissionCommandSchema } from "../../modules/execution/contracts/public";
 import { GitRequestSchema } from "../../modules/changes/contracts/public";
-import { listGitChanges, readGitChange } from "../../modules/changes/main/public";
+import {
+  listGitChanges,
+  readGitChange,
+} from "../../modules/changes/main/public";
+import { HistoryRequestSchema } from "../../modules/conversation/contracts/public";
+import { readNativeHistory } from "../../modules/conversation/main/public";
+import {
+  RuntimeCommandSchema,
+  SubmissionCommandSchema,
+} from "../../modules/execution/contracts/public";
+import { RuntimeService } from "../../modules/execution/main/public";
 import { FileRequestSchema } from "../../modules/files/contracts/public";
 import {
   listProjectFiles,
   readProjectFile,
 } from "../../modules/files/main/public";
+import {
+  Diagnostics,
+  diagnosticCode,
+} from "../../platform/main/diagnostics/public";
 import { createI18n } from "../../shared/i18n/create-i18n";
 import {
   type LocalePreference,
@@ -34,14 +40,13 @@ import {
 } from "../../shared/i18n/locale";
 import { TraceIdSchema } from "../../shared/identity";
 import {
-  Diagnostics,
-  diagnosticCode,
-} from "../../platform/main/diagnostics/public";
-import { DesktopCommandService } from "./wiring/desktop-command-service";
+  BridgeDiagnosticSchema,
+  EnvelopeSchema,
+} from "../contracts/desktop-bridge";
 import { failure } from "../contracts/failure";
-import { readNativeHistory } from "../../modules/conversation/main/public";
-import { RuntimeService } from "../../modules/execution/main/public";
+import { QuitCoordinator } from "./lifecycle/quit";
 import { AppStorage } from "./wiring/app-storage";
+import { DesktopCommandService } from "./wiring/desktop-command-service";
 
 if (process.env.D_PI_DATA_DIR)
   app.setPath("userData", process.env.D_PI_DATA_DIR);

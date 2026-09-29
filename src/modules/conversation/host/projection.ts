@@ -1,7 +1,7 @@
 import { z } from "zod";
+import type { NativeFrame } from "../../../platform/omp/protocol/public";
 import { draftByteLength } from "../../../shared/draft-text";
 import { uiMessage } from "../../../shared/messages/contracts";
-import type { NativeFrame } from "../../../platform/omp/protocol/public";
 import type {
   ConversationItem,
   ConversationSnapshot,
