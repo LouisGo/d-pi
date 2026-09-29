@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { DraftSchema } from "../draft/contracts";
+import { DraftSchema } from "../../modules/input/contracts/public";
 import type { RuntimeGrant } from "../threads/contracts";
 import { RuntimeAdmission } from "./admission";
 

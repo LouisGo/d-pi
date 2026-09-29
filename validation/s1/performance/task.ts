@@ -4,10 +4,10 @@ import { mkdtempSync, realpathSync, writeFileSync } from "node:fs";
 import { cpus, release, tmpdir } from "node:os";
 import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
-import { DraftController } from "../../../src/features/draft/controller";
 import { Diagnostics } from "../../../src/main/diagnostics";
 import { DraftService, failure } from "../../../src/main/draft-service";
 import { AppStorage } from "../../../src/main/storage/app-storage";
+import { DraftController } from "../../../src/modules/input/core/public";
 
 const directory = realpathSync(
   mkdtempSync(join(tmpdir(), "d-pi-s1-task-perf-")),

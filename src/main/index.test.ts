@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { expect, it, vi } from "vitest";
-import { type Command, ReplySchema } from "../shared/desktop-bridge";
+import { type Command, ReplySchema } from "../app/contracts/desktop-bridge";
 import { AppStorage } from "./storage/app-storage";
 
 // Exercise the production IPC handler with real SQLite; only Electron's shell

@@ -10,16 +10,21 @@ import {
   MessageChannelMain,
 } from "electron";
 import { z } from "zod";
-import { GitRequestSchema } from "../features/changes/contracts";
-import { QuitCoordinator } from "../features/control/quit";
-import { FileRequestSchema } from "../features/files/contracts";
-import { HistoryRequestSchema } from "../features/history/contracts";
-import { RuntimeCommandSchema } from "../features/runtime/contracts";
-import { SubmissionCommandSchema } from "../features/submission/contracts";
 import {
   BridgeDiagnosticSchema,
   EnvelopeSchema,
-} from "../shared/desktop-bridge";
+} from "../app/contracts/desktop-bridge";
+import { QuitCoordinator } from "../features/control/quit";
+import { HistoryRequestSchema } from "../features/history/contracts";
+import { RuntimeCommandSchema } from "../features/runtime/contracts";
+import { SubmissionCommandSchema } from "../features/submission/contracts";
+import { GitRequestSchema } from "../modules/changes/contracts/public";
+import { listGitChanges, readGitChange } from "../modules/changes/main/public";
+import { FileRequestSchema } from "../modules/files/contracts/public";
+import {
+  listProjectFiles,
+  readProjectFile,
+} from "../modules/files/main/public";
 import { createI18n } from "../shared/i18n/create-i18n";
 import {
   type LocalePreference,
@@ -32,8 +37,6 @@ import { diagnosticCode } from "./diagnostic-code";
 import { Diagnostics } from "./diagnostics";
 import { DraftService, failure } from "./draft-service";
 import { readNativeHistory } from "./native-history";
-import { listProjectFiles, readProjectFile } from "./project-files";
-import { listGitChanges, readGitChange } from "./project-git";
 import { RuntimeService } from "./runtime-service";
 import { AppStorage } from "./storage/app-storage";
 

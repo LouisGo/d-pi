@@ -1,7 +1,7 @@
 import { expect, it } from "vitest";
+import { DraftSchema } from "../../modules/input/contracts/public";
+import { DraftController } from "../../modules/input/core/public";
 import { ThreadIdSchema } from "../../shared/identity";
-import { DraftSchema } from "../draft/contracts";
-import { DraftController } from "../draft/controller";
 import { SubmissionReceiptSchema, type SubmissionReply } from "./contracts";
 import { mergeReceipt, SubmissionModel } from "./model";
 

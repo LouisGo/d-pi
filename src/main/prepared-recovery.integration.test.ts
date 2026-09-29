@@ -3,7 +3,6 @@ import { mkdirSync, mkdtempSync, realpathSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, expect, it, vi } from "vitest";
-import { DraftController } from "../features/draft/controller";
 import {
   type HostCommand,
   HostCommandSchema,
@@ -13,6 +12,7 @@ import type {
   SubmissionReply,
 } from "../features/submission/contracts";
 import { SubmissionModel } from "../features/submission/model";
+import { DraftController } from "../modules/input/core/public";
 import { TraceIdSchema } from "../shared/identity";
 import { RuntimeService } from "./runtime-service";
 import { AppStorage } from "./storage/app-storage";

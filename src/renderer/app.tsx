@@ -6,11 +6,11 @@ import {
   LightThemeIcon,
 } from "@/components/icons/common";
 import { Button } from "@/components/ui/button";
-import type { FrozenSelection } from "../features/files/selection";
+import { Composer } from "../app/renderer/workbench/composer";
+import { FileWorkspace } from "../app/renderer/workbench/file-workspace";
+import type { FrozenSelection } from "../modules/files/core/public";
 import { BUILD_INFO } from "../shared/build-info";
-import { Composer } from "./composer";
 import { Conversation, History, Submissions } from "./conversation";
-import { FileWorkspace } from "./file-workspace";
 import { useI18n } from "./i18n/i18n-provider";
 import type { AppModel } from "./model";
 import { RuntimePanel } from "./runtime-panel";

@@ -1,4 +1,4 @@
-import { type Draft, DraftSchema } from "../../features/draft/contracts";
+import { type Draft, DraftSchema } from "../../modules/input/contracts/public";
 import type { AppDatabase } from "./database";
 import type { ThreadRepository } from "./threads";
 export class DraftRepository {

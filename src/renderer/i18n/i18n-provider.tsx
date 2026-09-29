@@ -6,8 +6,8 @@ import {
   useMemo,
   useState,
 } from "react";
+import type { LocaleBridge } from "../../app/contracts/desktop-bridge";
 import type { UiMessage } from "../../features/localization/contracts";
-import type { LocaleBridge } from "../../shared/desktop-bridge";
 import { createI18n, type I18n } from "../../shared/i18n/create-i18n";
 import {
   type LocalePreference,

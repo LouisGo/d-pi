@@ -27,7 +27,7 @@ vi.mock("./i18n/i18n-provider", async () => {
   };
 });
 
-vi.mock("./composer", () => ({ Composer: () => null }));
+vi.mock("../app/renderer/workbench/composer", () => ({ Composer: () => null }));
 vi.mock("./conversation", () => ({
   Conversation: () => null,
   History: () => null,

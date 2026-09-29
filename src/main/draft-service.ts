@@ -2,12 +2,12 @@ import { randomUUID } from "node:crypto";
 import { constants } from "node:fs";
 import { access, realpath, stat } from "node:fs/promises";
 import { match } from "ts-pattern";
-import { type Failure } from "../features/draft/contracts";
+import { type Command, type Reply } from "../app/contracts/desktop-bridge";
 import {
   type PlainUiMessageCode,
   uiMessage,
 } from "../features/localization/contracts";
-import { type Command, type Reply } from "../shared/desktop-bridge";
+import { type Failure } from "../modules/input/contracts/public";
 import { diagnosticCode } from "./diagnostic-code";
 import type { AppStorage } from "./storage/app-storage";
 export function failure(

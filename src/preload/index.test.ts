@@ -1,5 +1,5 @@
 import { beforeEach, expect, it, vi } from "vitest";
-import type { DesktopBridge } from "../shared/desktop-bridge";
+import type { DesktopBridge } from "../app/contracts/desktop-bridge";
 import { ThreadIdSchema } from "../shared/identity";
 
 const shell = vi.hoisted(() => ({

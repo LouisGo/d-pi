@@ -1,14 +1,14 @@
 import { contextBridge, ipcRenderer } from "electron";
 import { match } from "ts-pattern";
 import {
-  GitReplySchema,
-  GitRequestSchema,
-} from "../features/changes/contracts";
+  type BridgeDiagnostic,
+  type Command,
+  type DesktopBridge,
+  LocaleSetResultSchema,
+  type Reply,
+  ReplySchema,
+} from "../app/contracts/desktop-bridge";
 import { ConversationEventSchema } from "../features/conversation/contracts";
-import {
-  FileReplySchema,
-  FileRequestSchema,
-} from "../features/files/contracts";
 import {
   HistoryPageSchema,
   HistoryRequestSchema,
@@ -22,13 +22,13 @@ import {
   SubmissionReplySchema,
 } from "../features/submission/contracts";
 import {
-  type BridgeDiagnostic,
-  type Command,
-  type DesktopBridge,
-  LocaleSetResultSchema,
-  type Reply,
-  ReplySchema,
-} from "../shared/desktop-bridge";
+  GitReplySchema,
+  GitRequestSchema,
+} from "../modules/changes/contracts/public";
+import {
+  FileReplySchema,
+  FileRequestSchema,
+} from "../modules/files/contracts/public";
 import {
   LocalePreferenceSchema,
   LocaleSnapshotSchema,

@@ -1,22 +1,30 @@
 # 模块地图与设计入口
 
-日期：2026-09-28。状态：S1 项目与持久草稿、S2 闲时提交与阅读已实现，用户试用仍待反馈；工程证据见 [S2 交接](../../../.scratch/m1-s2-submit-read/handoff.md)与[领域边界巩固](../../../.scratch/s2-boundary-hardening/spec.md)。其余模块按切片推进。模块边界可随有证据的实现反馈调整，变更已确认决定仍按[决定登记](../../decisions.md)处理。依据 D-02–D-16、D-20–D-35；全量目标和阶段以[基础方案](../../../.scratch/product-requirements/foundation-plan.md)为准。
+日期：2026-09-29。状态：领域目录治理 P0 门禁与 P1 文件→选区→输入切片已落地，P1 工程证据与用户试用交接见[领域治理交接](../../../.scratch/domain-directory-governance/handoff.md)；P2–P4 按同一授权继续推进。模块边界可随有证据的实现反馈调整，变更已确认决定仍按[决定登记](../../decisions.md)处理。依据 D-02–D-16、D-20–D-35；全量目标和阶段以[基础方案](../../../.scratch/product-requirements/foundation-plan.md)为准。
 
 本目录把已有合同落实到模块：谁拥有状态、向谁请求能力、怎样交接、失败后由谁恢复。它不另建一套产品规格，也不要求一个模块对应一个包、类或进程。近期深入 M1，M3 模块只确定能独立理解的边界及启动条件。
 
-## S2 当前代码落点
+## 当前代码落点
 
 | 目录或入口 | 职责 |
 | --- | --- |
-| `src/features/<feature>/contracts.ts` | 各领域的公开数据合同；Thread 上下文独立于 Draft；规则、协调器与投影在各 feature 内，不依赖进程实现或 React |
+| `src/modules/<domain>/<environment>/` | 已迁移领域按 `contracts`、`core`、`main`、`host`、`renderer` 放置；跨模块只消费对应环境的 `public.ts` |
+| `src/modules/files/` | 文件合同、选区/代码视图、授权只读读取与 Monaco 只读适配；不写工作区或 Git index |
+| `src/modules/input/` | 草稿合同、草稿控制器、冻结引用序列化与输入编辑器适配；提交收据和 OMP 消费仍归 execution |
+| `src/modules/changes/` | Git 只读合同和读取实现；复用 files 的公开读取能力，不推断作者或写 Git |
+| `src/app/contracts/desktop-bridge.ts` | 应用级桌面桥接组合合同；只组合各模块的窄合同，不成为业务状态拥有者 |
+| `src/app/renderer/workbench/` | Composer 与 FileWorkspace 的应用级 Renderer 组合；模块能力通过公开入口接入 |
+| `src/features/<feature>/` | 尚未迁移的既有模块继续保留；迁入模块不得新增对旧实现的依赖，临时边见 `architecture/exceptions.json` |
 | `src/features/runtime/host-contracts.ts`、`native-protocol.ts` | Host 通道与受限原生帧合同，供适配层和投影消费 |
 | `src/main/storage/` | 单一数据库/迁移入口及按业务拆分的仓储；`AppStorage` 组装，共用事务能力 |
 | `src/main/runtime-service.ts`、`host-connection.ts` | 前者协调执行准入、会话绑定、提交；后者拥有 utility process、握手与传输 |
 | `src/host/index.ts`、`session-host.ts`、`native-session.ts` | 薄进程入口、每实例 Host 资源所有者、原生进程/RPC 适配；阅读通过端口直接到 Renderer |
-| `src/shared/identity.ts`、`preferences.ts`、`desktop-bridge.ts` | 明确命名的共享数据及桌面协议组合；`shared/node/` 专供 Node 适配层，不进入无头 feature |
+| `src/shared/identity.ts`、`preferences.ts` | 明确命名的跨域值对象和偏好合同；桌面桥接组合已移至 `src/app/contracts/` |
 | `src/preload/`、`src/renderer/` | 受限桥接、React 绑定与界面，后台业务生命周期不由组件挂载拥有 |
 
-这是按功能与进程边界共同组织的单应用结构。SQLite v4 的 Thread 表仍保存草稿字段，不因代码职责拆分而进行无收益的物理表迁移；S3 新增恢复/控制行为时再按实际合同演进。
+这是按功能与进程边界共同组织的单应用结构。机器边界单源为 [`architecture/modules.json`](../../../architecture/modules.json)，规则入口为 `pnpm check:architecture`；结构报告只提供维护提示，不把行数变成硬门槛。SQLite v4 的 Thread 表仍保存草稿字段，不因代码职责拆分而进行无收益的物理表迁移；恢复/控制行为继续按 S3 合同演进。
+
+P1 的三条实际路径是 `files → input`（选区冻结与引用）和 `files → changes`（Git Diff 只读来源），应用级 Composer/FileWorkspace 留在 `src/app/renderer/workbench`。新增普通内部文件不要求修改清单；只有公开面、环境或跨模块依赖变化才更新机器配置。
 
 ## 从哪里开始
 

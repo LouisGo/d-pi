@@ -1,9 +1,9 @@
 import { match } from "ts-pattern";
-import type { Draft, Failure } from "../features/draft/contracts";
-import { DraftController } from "../features/draft/controller";
+import type { DesktopBridge, Reply } from "../app/contracts/desktop-bridge";
 import { RuntimeModel } from "../features/runtime/model";
 import { SubmissionModel } from "../features/submission/model";
-import type { DesktopBridge, Reply } from "../shared/desktop-bridge";
+import type { Draft, Failure } from "../modules/input/contracts/public";
+import { DraftController } from "../modules/input/core/public";
 import type { Preferences } from "../shared/preferences";
 export type ViewState =
   | { kind: "loading" }

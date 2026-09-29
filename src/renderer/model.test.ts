@@ -1,13 +1,16 @@
 import { match } from "ts-pattern";
 import { afterEach, expect, it, vi } from "vitest";
 import {
+  type Command,
+  type DesktopBridge,
+} from "../app/contracts/desktop-bridge";
+import { failure } from "../main/draft-service";
+import {
   type Draft,
   DraftSchema,
   type SaveReply,
-} from "../features/draft/contracts";
-import type { DraftController } from "../features/draft/controller";
-import { failure } from "../main/draft-service";
-import { type Command, type DesktopBridge } from "../shared/desktop-bridge";
+} from "../modules/input/contracts/public";
+import type { DraftController } from "../modules/input/core/public";
 import { AppModel } from "./model";
 
 function deferredReceipt() {
