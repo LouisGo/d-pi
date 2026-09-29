@@ -246,7 +246,7 @@ export function History({
                   {match(entry.role)
                     .with("user", () => t("ui.history.role.user"))
                     .with("assistant", () => t("ui.history.role.assistant"))
-                    .with("tool", () => t("ui.history.role.tool"))
+                    .with("tool", "toolResult", () => t("ui.history.role.tool"))
                     .otherwise(() => entry.role)}
                 </strong>
                 <p className="trace">
@@ -255,6 +255,40 @@ export function History({
                     parentId: entry.parentId ?? t("ui.history.root"),
                   })}
                 </p>
+                {entry.toolEvidence && (
+                  <div className="file-meta">
+                    <strong>{t("ui.history.nativeToolEvidence")}</strong>
+                    <p>
+                      {t("ui.history.toolCall", {
+                        toolName: entry.toolEvidence.toolName,
+                        toolCallId: entry.toolEvidence.toolCallId,
+                        recordId: entry.id,
+                      })}
+                    </p>
+                    <p>
+                      {entry.toolEvidence.isError === true
+                        ? t("ui.history.toolFailed")
+                        : entry.toolEvidence.isError === false &&
+                            [
+                              "write",
+                              "edit",
+                              "delete",
+                              "apply_patch",
+                              "ast_edit",
+                            ].includes(entry.toolEvidence.toolName)
+                          ? t("ui.history.toolReportedWrite")
+                          : entry.toolEvidence.isError === false
+                            ? t("ui.history.toolSuccessNoWrite")
+                            : t("ui.history.toolUnknown")}
+                    </p>
+                    <p>
+                      {t("ui.history.toolCoverage", {
+                        count: entry.toolEvidence.nonTextParts,
+                        source: page.source.slice(0, 16),
+                      })}
+                    </p>
+                  </div>
+                )}
                 <Markdown text={entry.text} />
               </article>
             ))}

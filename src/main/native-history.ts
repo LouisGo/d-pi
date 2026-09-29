@@ -22,6 +22,9 @@ const EntrySchema = z.object({
   message: z.object({
     role: z.string(),
     content: z.union([z.string(), z.array(z.unknown())]),
+    toolCallId: z.string().max(256).optional(),
+    toolName: z.string().max(120).optional(),
+    isError: z.boolean().optional(),
   }),
 });
 const TextPartSchema = z.object({ type: z.literal("text"), text: z.string() });
@@ -109,7 +112,29 @@ export async function readNativeHistory(
                   return text.success ? [text.data.text] : [];
                 })
                 .join("\n");
-        entries.push({ id, parentId, role: message.role, text });
+        const toolEvidence =
+          message.role === "toolResult" &&
+          message.toolCallId &&
+          message.toolName
+            ? {
+                toolCallId: message.toolCallId,
+                toolName: message.toolName,
+                isError: message.isError ?? null,
+                coverage: "text-parts-only" as const,
+                nonTextParts: Array.isArray(message.content)
+                  ? message.content.filter(
+                      (part) => !TextPartSchema.safeParse(part).success,
+                    ).length
+                  : 0,
+              }
+            : undefined;
+        entries.push({
+          id,
+          parentId,
+          role: message.role,
+          text,
+          ...(toolEvidence ? { toolEvidence } : {}),
+        });
       }
       signal?.throwIfAborted();
       const after = await file.stat();

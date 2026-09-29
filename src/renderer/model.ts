@@ -76,6 +76,12 @@ export class AppModel {
   get history() {
     return this.bridge.history;
   }
+  get files() {
+    return this.bridge.files;
+  }
+  get git() {
+    return this.bridge.git;
+  }
   constructor(private readonly bridge: DesktopBridge) {
     this.runtime = bridge.runtime ? new RuntimeModel(bridge.runtime) : null;
   }

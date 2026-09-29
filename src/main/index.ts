@@ -10,7 +10,9 @@ import {
   MessageChannelMain,
 } from "electron";
 import { z } from "zod";
+import { GitRequestSchema } from "../features/changes/contracts";
 import { QuitCoordinator } from "../features/control/quit";
+import { FileRequestSchema } from "../features/files/contracts";
 import { HistoryRequestSchema } from "../features/history/contracts";
 import { RuntimeCommandSchema } from "../features/runtime/contracts";
 import { SubmissionCommandSchema } from "../features/submission/contracts";
@@ -30,6 +32,8 @@ import { diagnosticCode } from "./diagnostic-code";
 import { Diagnostics } from "./diagnostics";
 import { DraftService, failure } from "./draft-service";
 import { readNativeHistory } from "./native-history";
+import { listProjectFiles, readProjectFile } from "./project-files";
+import { listGitChanges, readGitChange } from "./project-git";
 import { RuntimeService } from "./runtime-service";
 import { AppStorage } from "./storage/app-storage";
 
@@ -347,6 +351,54 @@ else {
             cursor,
           )
         : { kind: "unavailable", reason: "missing" };
+    });
+    ipcMain.handle("files:request", async (event, raw: unknown) => {
+      if (!sourceValid(event) || !store) throw Error("Invalid file source");
+      const command = FileRequestSchema.parse(raw);
+      const thread = store.threads.activeThread();
+      if (!thread || thread.threadId !== command.threadId)
+        throw Error("Foreign Thread");
+      const context = {
+        traceId: command.traceId,
+        requestId: randomUUID(),
+        connectionId: diagnostics?.processInstanceId ?? randomUUID(),
+        operation: `files:${command.kind}`,
+      };
+      diagnostics?.record({ ...context, stage: "received" });
+      const reply =
+        command.kind === "list"
+          ? await listProjectFiles(thread.directory, command.path)
+          : await readProjectFile(thread.directory, command.path);
+      diagnostics?.record({
+        ...context,
+        stage: reply.kind === "unavailable" ? "failed" : "completed",
+        ...(reply.kind === "unavailable" ? { code: reply.reason } : {}),
+      });
+      return reply;
+    });
+    ipcMain.handle("git:request", async (event, raw: unknown) => {
+      if (!sourceValid(event) || !store) throw Error("Invalid Git source");
+      const command = GitRequestSchema.parse(raw);
+      const thread = store.threads.activeThread();
+      if (!thread || thread.threadId !== command.threadId)
+        throw Error("Foreign Thread");
+      const context = {
+        traceId: command.traceId,
+        requestId: randomUUID(),
+        connectionId: diagnostics?.processInstanceId ?? randomUUID(),
+        operation: `git:${command.kind}`,
+      };
+      diagnostics?.record({ ...context, stage: "received" });
+      const reply =
+        command.kind === "list"
+          ? await listGitChanges(thread.directory)
+          : await readGitChange(thread.directory, command.scope, command.path);
+      diagnostics?.record({
+        ...context,
+        stage: reply.kind === "unavailable" ? "failed" : "completed",
+        ...(reply.kind === "unavailable" ? { code: reply.reason } : {}),
+      });
+      return reply;
     });
     ipcMain.handle("submission:request", async (event, raw: unknown) => {
       if (!sourceValid(event) || !runtime)

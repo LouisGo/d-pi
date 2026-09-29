@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { match } from "ts-pattern";
 import {
   DarkThemeIcon,
@@ -6,9 +6,11 @@ import {
   LightThemeIcon,
 } from "@/components/icons/common";
 import { Button } from "@/components/ui/button";
+import type { FrozenSelection } from "../features/files/selection";
 import { BUILD_INFO } from "../shared/build-info";
 import { Composer } from "./composer";
 import { Conversation, History, Submissions } from "./conversation";
+import { FileWorkspace } from "./file-workspace";
 import { useI18n } from "./i18n/i18n-provider";
 import type { AppModel } from "./model";
 import { RuntimePanel } from "./runtime-panel";
@@ -16,6 +18,11 @@ export function App({ model }: { model: AppModel }) {
   const { t, formatMessage, preference, setPreference, persistenceFailed } =
     useI18n();
   const state = useSyncExternalStore(model.subscribe, model.getSnapshot);
+  const [selectionAttachment, setSelectionAttachment] = useState<{
+    id: string;
+    threadId: string;
+    selection: Extract<FrozenSelection, { kind: "selection" }>;
+  } | null>(null);
   return match(state)
     .with({ kind: "loading" }, () => (
       <main className="startup" role="status">
@@ -38,7 +45,7 @@ export function App({ model }: { model: AppModel }) {
           <aside className="sidebar">
             <div className="brand">
               {/* i18n-ignore: product brand and release marker */}
-              d-pi <span>S3</span>
+              d-pi <span>S4</span>
             </div>
             <div className="sidebar-label">{t("app.sidebar.projects")}</div>
             {draft ? (
@@ -163,7 +170,28 @@ export function App({ model }: { model: AppModel }) {
                     draft={draft}
                     controller={model.controller}
                     model={model}
+                    selectionAttachment={selectionAttachment}
+                    onAttachmentApplied={(id) =>
+                      setSelectionAttachment((current) =>
+                        current?.id === id ? null : current,
+                      )
+                    }
                   />
+                  {model.files && model.git && (
+                    <FileWorkspace
+                      key={draft.threadId}
+                      threadId={draft.threadId}
+                      files={model.files}
+                      git={model.git}
+                      onAttach={(selection) =>
+                        setSelectionAttachment({
+                          id: crypto.randomUUID(),
+                          threadId: draft.threadId,
+                          selection,
+                        })
+                      }
+                    />
+                  )}
                   {model.submission && <Submissions model={model.submission} />}
                   {model.history && (
                     <History bridge={model.history} threadId={draft.threadId} />

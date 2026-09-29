@@ -187,4 +187,78 @@ export const ui = {
   "ui.interaction.dismissUnknown": "Acknowledge unknown result and close",
   "ui.interaction.dismissWarning":
     "This only clears the local block. The native process may have received the default answer and continued; it is not stopped. Check native history before resending.",
+  "ui.files.section": "Read-only files and current changes",
+  "ui.files.readOnly":
+    "Reading files does not run project code. The view shows a complete text snapshot from its capture time.",
+  "ui.files.tree": "Project files",
+  "ui.files.refresh": "Refresh",
+  "ui.files.up": "Up",
+  "ui.files.truncatedTree":
+    "This directory exceeds the display limit; showing the first 500 entries.",
+  "ui.files.gitHeading": "Current Git changes",
+  "ui.files.gitDisclaimer":
+    "This shows repository state, not who made the changes. Untracked files follow Git ignore rules. Sides are sampled now; files are not captured atomically.",
+  "ui.files.notGit":
+    "No readable Git repository. Files and native tool results remain available.",
+  "ui.files.gitUnavailable":
+    "Git is unavailable on this system. Project files and native tool results remain available.",
+  "ui.files.unborn": "no commit yet",
+  "ui.files.projectSample": "current project-path sample",
+  "ui.files.singleFileSample": "current single-file sample",
+  "ui.files.sameText":
+    "Text is identical on both sides. Git may be reporting a rename, mode change, or other metadata difference.",
+  "ui.files.headIndex": "HEAD → index",
+  "ui.files.indexWorktree": "index → working tree",
+  "ui.files.untracked": "Untracked",
+  "ui.files.status.added": "Added",
+  "ui.files.status.modified": "Modified",
+  "ui.files.status.deleted": "Deleted",
+  "ui.files.status.renamed": "Renamed",
+  "ui.files.status.unmerged": "Unmerged",
+  "ui.files.status.other": "Other change",
+  "ui.files.noChanges": "No changes found in this sample.",
+  "ui.files.truncatedChanges":
+    "Changes exceed the display limit; showing the first 1000 entries.",
+  "ui.files.workingTree": "Working tree file",
+  "ui.files.complete": "complete text",
+  "ui.files.attachSelection": "Attach selection to input",
+  "ui.files.selectionFrozen":
+    "Attach as one reference with exact text, range and source version. Later disk changes do not rewrite it.",
+  "ui.files.selectionEmpty": "Select a nonempty file range.",
+  "ui.files.selectionRangeInvalid":
+    "The selection range is no longer valid. Select it again.",
+  "ui.files.selectionTooLarge":
+    "The selection exceeds 64 KiB. Select a smaller range.",
+  "ui.files.transportFailed": "Read connection failed. Refresh to retry.",
+  "ui.files.loadingEditor": "Opening code viewer…",
+  "ui.files.workerFailed":
+    "Monaco worker unavailable. Check the current build resources.",
+  "ui.files.reason.missing": "The file or change no longer exists.",
+  "ui.files.reason.denied":
+    "The path is outside the project or access was denied.",
+  "ui.files.reason.binary":
+    "Binary content cannot be viewed as text or a text diff.",
+  "ui.files.reason.encoding": "The file is not valid UTF-8 text.",
+  "ui.files.reason.large":
+    "Content exceeds the read-only view or selection limit; it was not silently truncated.",
+  "ui.files.reason.changed":
+    "Content changed during the read. Refresh and retry.",
+  "ui.files.reason.unmerged":
+    "Unresolved conflicts prevent an ordinary two-sided diff.",
+  "ui.files.reason.unsupported":
+    "This change involves a symlink or submodule and is not shown as an ordinary text diff.",
+  "ui.files.reason.notFile": "The target is not a regular file or directory.",
+  "ui.files.reason.failed": "Read failed; no empty result was assumed.",
+  "ui.history.nativeToolEvidence": "Native tool result evidence",
+  "ui.history.toolCall":
+    "Tool {toolName} · call {toolCallId} · native record {recordId}",
+  "ui.history.toolReportedWrite":
+    "The native file-change tool reported success. No reliable full before and after text is available, so no operation diff is shown.",
+  "ui.history.toolFailed":
+    "The native tool reported failure; this is not proof of a modification.",
+  "ui.history.toolSuccessNoWrite":
+    "The native tool reported success; this result does not prove a file modification.",
+  "ui.history.toolUnknown": "The native result has no explicit success marker.",
+  "ui.history.toolCoverage":
+    "Covers text parts in the native record only; {count} non-text parts are omitted. Session source {source}.",
 } as const;

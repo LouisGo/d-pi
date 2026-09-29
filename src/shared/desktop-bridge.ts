@@ -1,10 +1,12 @@
 import { z } from "zod";
+import type { GitBridge } from "../features/changes/contracts";
 import {
   DraftFailureReplySchema,
   DraftSchema,
   DraftTextSchema,
   SavedDraftSchema,
 } from "../features/draft/contracts";
+import type { FileBridge } from "../features/files/contracts";
 import type { HistoryBridge } from "../features/history/contracts";
 import type { RuntimeBridge } from "../features/runtime/contracts";
 import type { SubmissionBridge } from "../features/submission/contracts";
@@ -60,6 +62,8 @@ export type Reply = z.infer<typeof ReplySchema>;
 export interface DesktopBridge {
   locale?: LocaleBridge;
   history?: HistoryBridge;
+  files?: FileBridge;
+  git?: GitBridge;
   submission?: SubmissionBridge;
   runtime?: RuntimeBridge;
   request(command: Command): Promise<Reply>;

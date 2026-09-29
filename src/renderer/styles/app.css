@@ -155,6 +155,28 @@
   .tiptap p {
     margin: 0;
   }
+  .tiptap .file-reference {
+    display: grid;
+    gap: calc(var(--layout-gap) / 2);
+    padding: var(--layout-gap);
+    margin-block: var(--layout-gap);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--muted);
+    white-space: normal;
+  }
+  .tiptap .file-reference strong,
+  .tiptap .file-reference small {
+    overflow-wrap: anywhere;
+  }
+  .tiptap .file-reference small {
+    color: var(--muted-foreground);
+  }
+  .tiptap .file-reference pre {
+    margin: 0;
+    overflow-x: auto;
+    white-space: pre;
+  }
   .tiptap:focus-visible {
     box-shadow: inset 0 0 0 2px var(--primary);
   }
@@ -266,5 +288,43 @@
   .source-url {
     text-decoration: underline;
     text-decoration-color: var(--muted-foreground);
+  }
+}
+
+@layer components {
+  .file-workspace,
+  .file-browser,
+  .git-panel {
+    display: grid;
+    gap: var(--layout-gap);
+    margin-block: var(--panel-padding);
+  }
+  .file-workspace {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--panel-padding);
+  }
+  .file-list,
+  .change-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(var(--layout-gap) / 2);
+  }
+  .file-meta {
+    color: var(--muted-foreground);
+    font-size: var(--text-small);
+    overflow-wrap: anywhere;
+  }
+  .monaco-readonly {
+    width: 100%;
+    height: 45vh;
+    min-height: var(--editor-height);
+    border: 1px solid var(--border);
+  }
+  .diff-sources {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--layout-gap);
+    overflow-wrap: anywhere;
   }
 }

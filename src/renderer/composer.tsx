@@ -4,6 +4,7 @@ import { match } from "ts-pattern";
 import { Button } from "@/components/ui/button";
 import type { Draft } from "../features/draft/contracts";
 import type { DraftController } from "../features/draft/controller";
+import type { FrozenSelection } from "../features/files/selection";
 import {
   canSubmit,
   QUEUE_CAP,
@@ -13,17 +14,30 @@ import {
 import { shouldSend } from "../features/submission/shortcut";
 import { useI18n } from "./i18n/i18n-provider";
 import type { AppModel } from "./model";
-import { plainTextEditorOptions, replaceDraftText } from "./plain-text-editor";
+import {
+  draftDocument,
+  plainTextEditorOptions,
+  replaceDraftText,
+} from "./plain-text-editor";
 import { handlePlainTextPaste } from "./plain-text-paste";
+import { appendSelectionReference } from "./selection-insert";
 import { UrlDecoration } from "./url-decoration";
 export function Composer({
   draft,
   controller,
   model,
+  selectionAttachment,
+  onAttachmentApplied,
 }: {
   draft: Draft;
   controller: DraftController;
   model: AppModel;
+  selectionAttachment?: {
+    id: string;
+    threadId: string;
+    selection: Extract<FrozenSelection, { kind: "selection" }>;
+  } | null;
+  onAttachmentApplied?: (id: string) => void;
 }) {
   const { locale, t, formatMessage } = useI18n();
   const state = useSyncExternalStore(
@@ -42,13 +56,7 @@ export function Composer({
     {
       ...plainTextEditorOptions,
       extensions: [...plainTextEditorOptions.extensions, UrlDecoration],
-      content: {
-        type: "doc",
-        content: draft.text.split("\n").map((text) => ({
-          type: "paragraph",
-          content: text ? [{ type: "text", text }] : [],
-        })),
-      },
+      content: draftDocument(draft.text),
       editorProps: {
         handlePaste: handlePlainTextPaste,
         handleKeyDown: (view, event) => {
@@ -90,6 +98,29 @@ export function Composer({
     },
     [controller],
   );
+  const lastAttachment = useRef<string | null>(null);
+  useEffect(() => {
+    if (
+      !editor ||
+      !selectionAttachment ||
+      selectionAttachment.threadId !== draft.threadId ||
+      lastAttachment.current === selectionAttachment.id
+    )
+      return;
+    const apply = () => {
+      if (editor.view.composing) return;
+      editor.view.dispatch(
+        appendSelectionReference(editor.state, selectionAttachment.selection),
+      );
+      lastAttachment.current = selectionAttachment.id;
+      editor.commands.focus("end");
+      onAttachmentApplied?.(selectionAttachment.id);
+    };
+    if (editor.view.composing)
+      editor.view.dom.addEventListener("compositionend", apply, { once: true });
+    else apply();
+    return () => editor.view.dom.removeEventListener("compositionend", apply);
+  }, [editor, selectionAttachment, draft.threadId, onAttachmentApplied]);
   useEffect(() => {
     if (!editor) return;
     editor.setOptions({

@@ -10,6 +10,15 @@ export const HistoryEntrySchema = z.strictObject({
   parentId: z.string().nullable(),
   role: z.string(),
   text: z.string(),
+  toolEvidence: z
+    .strictObject({
+      toolCallId: z.string().max(256),
+      toolName: z.string().max(120),
+      isError: z.boolean().nullable(),
+      coverage: z.literal("text-parts-only"),
+      nonTextParts: z.number().int().nonnegative(),
+    })
+    .optional(),
 });
 export type HistoryEntry = z.infer<typeof HistoryEntrySchema>;
 export const HistoryPageSchema = z.discriminatedUnion("kind", [

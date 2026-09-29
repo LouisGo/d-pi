@@ -6,6 +6,8 @@
 
 2026-09-29 用户明确要求在 S4 前落地引用对话的完整 i18n 方案，先盘点写死语言，再按当前流程与 TDD 开发。D-36 及[国际化架构](docs/architecture/internationalization.md)为基准；当前 `0.1.0-i18n.0` 源码工程完成、待用户试用，见[切片规格](.scratch/i18n-foundation/spec.md)与[交接](.scratch/i18n-foundation/handoff.md)。不因本轮授权自动实施 S4/M2，S3 用户试用和恢复单写门槛仍保持原状态。
 
+2026-09-29 用户随后正式开启 S4：只读项目文件、准确文件选区附入输入、来源与覆盖明确的 Git 当前差异及原生工具修改证据；非 Git、缺失和并发变化如实呈现，工作区变化不归为 Agent 修改。范围及工程/试用状态以 [S4 spec](.scratch/m1-s4-files-diff/spec.md) 和[交接](.scratch/m1-s4-files-diff/handoff.md)为准。`0.1.0-s4.0` 源码、自动化、开发态与 macOS 包内 GUI 检查已完成，工程交付用户试用；原生工具结果缺真实样本，用户体验未认可，不据此开启 S5/M2。S3 试用及冷恢复只读限制继续有效。
+
 ## 决定连续性
 
 - 产品设计、技术选型或实现前，读取 [决定登记](docs/decisions.md)、[基础方案](.scratch/product-requirements/foundation-plan.md)及相关需求/ADR；识别受影响决定的 ID 与状态。其他任务只读相关材料，已读且未变化的内容不重复加载。

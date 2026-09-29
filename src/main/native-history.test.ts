@@ -47,6 +47,21 @@ it("reads bound native v3 history without modifying it, retaining branch identit
           content: [{ type: "text", text: "answer" }],
         },
       },
+      {
+        type: "message",
+        id: "c",
+        parentId: "b",
+        message: {
+          role: "toolResult",
+          toolCallId: "call-1",
+          toolName: "write",
+          isError: false,
+          content: [
+            { type: "text", text: "Wrote src/a.ts" },
+            { type: "image", data: "ignored" },
+          ],
+        },
+      },
     ]
       .map((x) => JSON.stringify(x))
       .join("\n") + '\n{"type":';
@@ -57,6 +72,18 @@ it("reads bound native v3 history without modifying it, retaining branch identit
       entries: [
         { id: "a", parentId: null, role: "user", text: "A" },
         { id: "b", parentId: "a", role: "assistant", text: "answer" },
+        {
+          id: "c",
+          role: "toolResult",
+          text: "Wrote src/a.ts",
+          toolEvidence: {
+            toolCallId: "call-1",
+            toolName: "write",
+            isError: false,
+            coverage: "text-parts-only",
+            nonTextParts: 1,
+          },
+        },
       ],
       incompleteTail: true,
       coverage: "append-order",

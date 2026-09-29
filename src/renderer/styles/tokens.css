@@ -20,6 +20,9 @@
   --muted-foreground: #62656a;
   --border: #d9dadd;
   --destructive: #b3261e;
+  --code-selection: #c5d5f8;
+  --diff-added-background: #d6f0df;
+  --diff-removed-background: #f6d9d6;
   --control-height: 2.25rem;
   --control-padding: 0.875rem;
   --panel-padding: 1.5rem;
@@ -45,6 +48,9 @@
   --muted-foreground: #aaaeb6;
   --border: #41434a;
   --destructive: #ffb4ab;
+  --code-selection: #34538d;
+  --diff-added-background: #244636;
+  --diff-removed-background: #593530;
 }
 :root[data-density="compact"] {
   --control-height: 2rem;

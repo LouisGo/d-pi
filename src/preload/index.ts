@@ -1,6 +1,14 @@
 import { contextBridge, ipcRenderer } from "electron";
 import { match } from "ts-pattern";
+import {
+  GitReplySchema,
+  GitRequestSchema,
+} from "../features/changes/contracts";
 import { ConversationEventSchema } from "../features/conversation/contracts";
+import {
+  FileReplySchema,
+  FileRequestSchema,
+} from "../features/files/contracts";
 import {
   HistoryPageSchema,
   HistoryRequestSchema,
@@ -90,6 +98,22 @@ const bridge: DesktopBridge = {
           "history:read",
           HistoryRequestSchema.parse({ threadId, cursor }),
         ),
+      );
+    },
+  },
+  files: {
+    async request(command) {
+      const value = FileRequestSchema.parse(command);
+      return FileReplySchema.parse(
+        await ipcRenderer.invoke("files:request", value),
+      );
+    },
+  },
+  git: {
+    async request(command) {
+      const value = GitRequestSchema.parse(command);
+      return GitReplySchema.parse(
+        await ipcRenderer.invoke("git:request", value),
       );
     },
   },
