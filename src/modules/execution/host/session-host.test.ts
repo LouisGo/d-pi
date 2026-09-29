@@ -778,3 +778,201 @@ it("dismisses an unknown dialog locally and reports acknowledged without a nativ
     }),
   );
 });
+
+it("keeps correlation expiry out of conversation frames while retaining submission uncertainty", async () => {
+  vi.useFakeTimers();
+  try {
+    const messages: HostMessage[] = [];
+    const nativeFrames: unknown[] = [];
+    const supervisionEvents: unknown[] = [];
+    const exit = vi.fn();
+    const host = createSessionHost((message) => messages.push(message), exit, {
+      onNativeFrame: (frame) => nativeFrames.push(frame),
+      onSupervisionEvent: (event) => supervisionEvents.push(event),
+    });
+    const start: HostStart = {
+      kind: "start",
+      threadId: ThreadIdSchema.parse(crypto.randomUUID()),
+      traceId: crypto.randomUUID(),
+      processInstanceId: crypto.randomUUID(),
+      connectionGeneration: crypto.randomUUID(),
+      configContextId: "fixture",
+      binary: "/fixture/omp",
+      identity: { directory: "/project", device: "1", inode: "2" },
+      environment: {},
+      sessionDirectory: "/sessions",
+    };
+    await host.handle(start);
+    const submission = FrozenSubmissionSchema.parse({
+      submissionId: crypto.randomUUID(),
+      threadId: start.threadId,
+      traceId: crypto.randomUUID(),
+      requestId: crypto.randomUUID(),
+      revision: 1,
+      text: "A",
+      target: {
+        processInstanceId: start.processInstanceId,
+        connectionGeneration: start.connectionGeneration,
+        configContextId: start.configContextId,
+        nativeSessionRef: "/sessions/session.jsonl",
+      },
+    });
+    await host.handle({ kind: "dispatch", value: submission });
+
+    await vi.advanceTimersByTimeAsync(15 * 60_000);
+
+    expect(nativeFrames).toEqual([]);
+    expect(supervisionEvents).toContainEqual({
+      kind: "submission-correlation-expired",
+      submissionId: submission.submissionId,
+      requestId: submission.requestId,
+      traceId: submission.traceId,
+    });
+    expect(messages).toContainEqual({
+      kind: "submission",
+      event: {
+        kind: "disconnected",
+        submissionId: submission.submissionId,
+        requestId: submission.requestId,
+        target: submission.target,
+      },
+    });
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+it("labels a rejected submission with a stable host reason", async () => {
+  const messages: HostMessage[] = [];
+  const exit = vi.fn();
+  const host = createSessionHost((message) => messages.push(message), exit);
+  const start: HostStart = {
+    kind: "start",
+    threadId: ThreadIdSchema.parse(crypto.randomUUID()),
+    traceId: crypto.randomUUID(),
+    processInstanceId: crypto.randomUUID(),
+    connectionGeneration: crypto.randomUUID(),
+    configContextId: "fixture",
+    binary: "/fixture/omp",
+    identity: { directory: "/project", device: "1", inode: "2" },
+    environment: {},
+    sessionDirectory: "/sessions",
+  };
+  await host.handle(start);
+  await host.handle({
+    kind: "dispatch",
+    value: FrozenSubmissionSchema.parse({
+      submissionId: crypto.randomUUID(),
+      threadId: start.threadId,
+      traceId: crypto.randomUUID(),
+      requestId: crypto.randomUUID(),
+      revision: 1,
+      text: "/move",
+      target: {
+        processInstanceId: start.processInstanceId,
+        connectionGeneration: start.connectionGeneration,
+        configContextId: start.configContextId,
+        nativeSessionRef: "/sessions/session.jsonl",
+      },
+    }),
+  });
+
+  expect(messages).toContainEqual(
+    expect.objectContaining({
+      kind: "submission",
+      event: expect.objectContaining({
+        kind: "rejected",
+        reason: "unsupported-native-command",
+      }),
+    }),
+  );
+});
+
+it.each([
+  ["not-ready", "not-ready"],
+  ["native-unavailable", "native-unavailable"],
+  ["paused", "paused"],
+  ["interaction-pending", "interaction-pending"],
+  ["stale-target", "stale-target"],
+  ["correlation-limit", "correlation-limit"],
+] as const)("reports the %s dispatch gate", async (gate, reason) => {
+  if (gate === "correlation-limit") vi.useFakeTimers();
+  const messages: HostMessage[] = [];
+  const exit = vi.fn();
+  const host = createSessionHost((message) => messages.push(message), exit);
+  const start: HostStart = {
+    kind: "start",
+    threadId: ThreadIdSchema.parse(crypto.randomUUID()),
+    traceId: crypto.randomUUID(),
+    processInstanceId: crypto.randomUUID(),
+    connectionGeneration: crypto.randomUUID(),
+    configContextId: "fixture",
+    binary: "/fixture/omp",
+    identity: { directory: "/project", device: "1", inode: "2" },
+    environment: {},
+    sessionDirectory: "/sessions",
+  };
+  if (gate !== "not-ready") {
+    await host.handle(start);
+    if (gate === "native-unavailable")
+      native.observers[0]?.({ kind: "disconnected", reason: "write" });
+    if (gate === "paused")
+      native.observers[0]?.({
+        kind: "frame",
+        frame: {
+          type: "d_pi_control_state",
+          data: {
+            paused: true,
+            stopping: false,
+            pendingAsync: false,
+            admitted: false,
+            streaming: false,
+            compacting: false,
+            queued: 0,
+            background: 0,
+            queue: [],
+          },
+        },
+      });
+    if (gate === "interaction-pending")
+      native.observers[0]?.({
+        kind: "frame",
+        frame: {
+          type: "extension_ui_request",
+          method: "confirm",
+          id: "pending",
+          title: "Confirm",
+        },
+      });
+  }
+  const target = {
+    processInstanceId:
+      gate === "stale-target" ? crypto.randomUUID() : start.processInstanceId,
+    connectionGeneration: start.connectionGeneration,
+    configContextId: start.configContextId,
+    nativeSessionRef: "/sessions/session.jsonl",
+  };
+  const dispatch = (index: number) =>
+    host.handle({
+      kind: "dispatch",
+      value: FrozenSubmissionSchema.parse({
+        submissionId: crypto.randomUUID(),
+        threadId: start.threadId,
+        traceId: crypto.randomUUID(),
+        requestId: crypto.randomUUID(),
+        revision: index,
+        text: "A",
+        target,
+      }),
+    });
+  if (gate === "correlation-limit")
+    for (let index = 0; index < 128; index++) await dispatch(index);
+  await dispatch(129);
+
+  expect(messages).toContainEqual(
+    expect.objectContaining({
+      kind: "submission",
+      event: expect.objectContaining({ kind: "rejected", reason }),
+    }),
+  );
+});

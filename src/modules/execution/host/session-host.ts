@@ -10,6 +10,7 @@ import {
   type HostCommand,
   type HostMessage,
   type HostStart,
+  type HostSubmissionRejectionReason,
   type NativeState,
   NativeStateSchema,
 } from "../contracts/public";
@@ -22,9 +23,16 @@ export interface HostMessagePort {
   close(): void;
   postMessage(event: unknown): void;
 }
+export interface SessionHostSupervisionEvent {
+  kind: "submission-correlation-expired";
+  submissionId: FrozenSubmission["submissionId"];
+  requestId: FrozenSubmission["requestId"];
+  traceId: FrozenSubmission["traceId"];
+}
 export interface SessionHostOptions {
   onStart?: (value: HostStart) => void;
   onNativeFrame?: (frame: NativeFrame) => void;
+  onSupervisionEvent?: (event: SessionHostSupervisionEvent) => void;
   onAttach?: (port?: HostMessagePort) => void;
   onDispose?: () => void;
 }
@@ -384,28 +392,32 @@ export function createSessionHost(
       starting = false;
     }
   }
+  function dispatchRejectionReason(
+    value: FrozenSubmission,
+  ): HostSubmissionRejectionReason | null {
+    if (!start || !state || !state.model) return "not-ready";
+    if (!native || disconnected || closing) return "native-unavailable";
+    if (changesManagedSession(value.text)) return "unsupported-native-command";
+    if (paused) return "paused";
+    if (interactions.blocked) return "interaction-pending";
+    if (
+      value.threadId !== start.threadId ||
+      value.target.processInstanceId !== start.processInstanceId ||
+      value.target.connectionGeneration !== start.connectionGeneration ||
+      value.target.configContextId !== start.configContextId ||
+      value.target.nativeSessionRef !== state.sessionFile
+    )
+      return "stale-target";
+    if (prompts.size >= 128) return "correlation-limit";
+    return null;
+  }
   function dispatch(value: FrozenSubmission): void {
     if (prompts.has(value.requestId)) return;
     observationVersion++;
     if (value.target.connectionGeneration === start?.connectionGeneration)
       lastDispatchId = value.submissionId;
-    if (
-      !native ||
-      disconnected ||
-      closing ||
-      changesManagedSession(value.text) ||
-      !start ||
-      !state ||
-      !state.model ||
-      paused ||
-      interactions.blocked ||
-      value.threadId !== start.threadId ||
-      value.target.processInstanceId !== start.processInstanceId ||
-      value.target.connectionGeneration !== start.connectionGeneration ||
-      value.target.configContextId !== start.configContextId ||
-      value.target.nativeSessionRef !== state.sessionFile ||
-      prompts.size >= 128
-    ) {
+    const rejectionReason = dispatchRejectionReason(value);
+    if (rejectionReason) {
       send({
         kind: "submission",
         event: {
@@ -413,11 +425,13 @@ export function createSessionHost(
           submissionId: value.submissionId,
           requestId: value.requestId,
           target: value.target,
+          reason: rejectionReason,
         },
       });
       void refresh();
       return;
     }
+    if (!native) return;
     const timer = setTimeout(() => {
       const entry = prompts.get(value.requestId);
       if (entry && !entry.responded)
@@ -432,7 +446,12 @@ export function createSessionHost(
         });
       if (entry) clearTimeout(entry.acknowledgementTimer);
       prompts.delete(value.requestId);
-      options.onNativeFrame?.({ type: "submission_correlation_expired" });
+      options.onSupervisionEvent?.({
+        kind: "submission-correlation-expired",
+        submissionId: value.submissionId,
+        requestId: value.requestId,
+        traceId: value.traceId,
+      });
     }, 15 * 60_000);
     const acknowledgementTimer = setTimeout(() => {
       const entry = prompts.get(value.requestId);

@@ -47,6 +47,27 @@ export const NativeStateSchema = z.object({
 });
 export type NativeState = z.infer<typeof NativeStateSchema>;
 
+export const HostSubmissionRejectionReasonSchema = z.enum([
+  "not-ready",
+  "native-unavailable",
+  "unsupported-native-command",
+  "paused",
+  "interaction-pending",
+  "stale-target",
+  "correlation-limit",
+]);
+export type HostSubmissionRejectionReason = z.infer<
+  typeof HostSubmissionRejectionReasonSchema
+>;
+const HostSubmissionEventSchema = z.union([
+  // Keep accepting the pre-reason shape while Host producers roll forward.
+  SubmissionEventSchema,
+  SubmissionEventSchema.extend({
+    kind: z.literal("rejected"),
+    reason: HostSubmissionRejectionReasonSchema,
+  }),
+]);
+
 export type HostCommand = z.infer<typeof HostCommandSchema>;
 export const HostMessageSchema = z.discriminatedUnion("kind", [
   z.object({
@@ -67,7 +88,7 @@ export const HostMessageSchema = z.discriminatedUnion("kind", [
     generation: z.uuid(),
     state: ControlStateSchema,
   }),
-  z.object({ kind: z.literal("submission"), event: SubmissionEventSchema }),
+  z.object({ kind: z.literal("submission"), event: HostSubmissionEventSchema }),
   z.object({
     kind: z.literal("ready"),
     state: NativeStateSchema,
