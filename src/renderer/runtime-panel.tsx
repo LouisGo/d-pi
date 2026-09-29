@@ -48,6 +48,14 @@ export function RuntimePanel({
       }));
     return result;
   };
+  // Reuse an orphaned prepared follow-up instead of accumulating new ids:
+  // a failed dispatch transport leaves its prepared receipt occupying a queue
+  // slot with no other exit. continuePrepared dispatches the same identity.
+  const handleContinueFollowUp = (
+    submissionId: SubmissionReceipt["submissionId"],
+  ) => {
+    void submission?.continuePrepared(submissionId);
+  };
   if (!state)
     return (
       <p className="muted" role="status">
@@ -123,6 +131,7 @@ export function RuntimePanel({
                 trusted={state.trusted}
                 model={model}
                 onFollowUp={onFollowUp ? handleFollowUp(item.id) : undefined}
+                onContinueFollowUp={handleContinueFollowUp}
                 submissionReceipts={submissions.receipts}
                 followUpIds={followUps[item.id] ?? []}
                 available={
@@ -153,6 +162,7 @@ export function RuntimePanel({
                       trusted={state.trusted}
                       model={model}
                       onFollowUp={undefined}
+                      onContinueFollowUp={undefined}
                       submissionReceipts={[]}
                       followUpIds={[]}
                       available={false}
@@ -201,6 +211,7 @@ function NativeDialog({
   available,
   trusted,
   onFollowUp,
+  onContinueFollowUp,
   submissionReceipts,
   followUpIds,
 }: {
@@ -209,6 +220,9 @@ function NativeDialog({
   available: boolean;
   trusted: boolean;
   onFollowUp: ((text: string) => Promise<FollowUpResult>) | undefined;
+  onContinueFollowUp:
+    | ((submissionId: SubmissionReceipt["submissionId"]) => void)
+    | undefined;
   submissionReceipts: SubmissionReceipt[];
   followUpIds: string[];
 }) {
@@ -355,34 +369,45 @@ function NativeDialog({
             </Button>
           </div>
           {followUpReceipts.map((receipt) => (
-            <p
-              key={receipt.submissionId}
-              role={
-                receipt.state === "rejected" ||
-                receipt.state === "unknown" ||
-                receipt.outcome === "failed" ||
-                receipt.outcome === "unknown"
-                  ? "alert"
-                  : "status"
-              }
-              className={
-                receipt.state === "rejected" ||
-                receipt.state === "unknown" ||
-                receipt.outcome === "failed" ||
-                receipt.outcome === "unknown"
-                  ? "failure"
-                  : undefined
-              }
-            >
-              {receipt.state === "acknowledged" &&
-              receipt.outcome !== "failed" &&
-              receipt.outcome !== "unknown"
-                ? "已作为追发消息发送（调用已确认，可继续追发纠正）。"
-                : receipt.state === "prepared" ||
-                    receipt.state === "dispatching"
-                  ? "已派发，等待原生调用确认；不是任务完成。"
-                  : `追发${receipt.state === "rejected" ? "被拒绝" : "结果未知"}，原文保留，可修改后再次发送；以提交记录为准。`}
-            </p>
+            <div key={receipt.submissionId}>
+              <p
+                role={
+                  receipt.state === "rejected" ||
+                  receipt.state === "unknown" ||
+                  receipt.outcome === "failed" ||
+                  receipt.outcome === "unknown"
+                    ? "alert"
+                    : "status"
+                }
+                className={
+                  receipt.state === "rejected" ||
+                  receipt.state === "unknown" ||
+                  receipt.outcome === "failed" ||
+                  receipt.outcome === "unknown"
+                    ? "failure"
+                    : undefined
+                }
+              >
+                {receipt.state === "acknowledged" &&
+                receipt.outcome !== "failed" &&
+                receipt.outcome !== "unknown"
+                  ? "已作为追发消息发送（调用已确认，可继续追发纠正）。"
+                  : receipt.state === "prepared"
+                    ? "已保存，未派发（发送中断留下的草稿，可继续派发复用，不会多占一条排队）。"
+                    : receipt.state === "dispatching"
+                      ? "已派发，等待原生调用确认；不是任务完成。"
+                      : `追发${receipt.state === "rejected" ? "被拒绝" : "结果未知"}，原文保留，可修改后再次发送；以提交记录为准。`}
+              </p>
+              {receipt.state === "prepared" && onContinueFollowUp && (
+                <Button
+                  variant="ghost"
+                  disabled={!available || !trusted}
+                  onClick={() => onContinueFollowUp(receipt.submissionId)}
+                >
+                  继续派发此条
+                </Button>
+              )}
+            </div>
           ))}
           {followUpError && (
             <p role="alert" className="failure">
@@ -396,7 +421,9 @@ function NativeDialog({
             {item.status === "expired"
               ? "请求已超时"
               : item.status === "cancelled"
-                ? "原生已取消"
+                ? item.dismissed
+                  ? "已确认未知并关闭（仅解除本地阻塞，原生可能仍在工作；不是原生已取消）"
+                  : "原生已取消"
                 : item.status === "unknown"
                   ? "回答结果未知，不自动重答"
                   : item.status === "pending"
@@ -404,9 +431,17 @@ function NativeDialog({
                     : "回答已写出，等待原生后续结果；不代表任务完成"}
           </p>
           {item.status === "unknown" && (
-            <Button variant="ghost" onClick={() => void model.dismiss(item.id)}>
-              确认未知并关闭
-            </Button>
+            <>
+              <Button
+                variant="ghost"
+                onClick={() => void model.dismiss(item.id)}
+              >
+                确认未知并关闭
+              </Button>
+              <p className="muted">
+                仅解除本地阻塞，原生可能已收到默认答案并继续工作；不代表杀掉原生，请先核对原生历史再重发。
+              </p>
+            </>
           )}
         </>
       )}

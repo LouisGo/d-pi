@@ -750,7 +750,11 @@ it("dismisses an unknown dialog locally and reports acknowledged without a nativ
       kind: "interactions",
       view: expect.objectContaining({
         items: expect.arrayContaining([
-          expect.objectContaining({ id: "wedged", status: "cancelled" }),
+          expect.objectContaining({
+            id: "wedged",
+            status: "cancelled",
+            dismissed: true,
+          }),
         ]),
       }),
     }),

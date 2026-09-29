@@ -212,7 +212,7 @@ it("dismisses unknown dialogs locally to release the submit block", () => {
   expect(changed).toBeGreaterThan(0);
   expect(
     interaction.snapshot().find((item) => item.id === "stuck"),
-  ).toMatchObject({ status: "cancelled" });
+  ).toMatchObject({ status: "cancelled", dismissed: true });
   expect(interaction.pending).toBe(false);
   expect(interaction.dismiss("stuck")).toBe(false);
   expect(interaction.dismiss("missing")).toBe(false);

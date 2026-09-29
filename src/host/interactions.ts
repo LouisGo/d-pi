@@ -25,17 +25,21 @@ export class PendingInteractions {
       }
     this.changed();
   }
-  private expire(): void {
+  private expire(): boolean {
+    let done = false;
     for (const [id, dialog] of this.dialogs) {
       if (
         dialog.status === "pending" &&
         dialog.expiresAt !== null &&
         dialog.expiresAt <= Date.now()
       ) {
+        this.clearTimer(id);
         this.dialogs.set(id, { ...dialog, status: "expired" });
         this.ids.delete(id);
+        done = true;
       }
     }
+    return done;
   }
   private readonly dialogs = new Map<string, Interaction>();
   snapshot(): Interaction[] {
@@ -74,14 +78,16 @@ export class PendingInteractions {
   }
   /** User acknowledges an unknown/expired dialog locally. Clears the
    * canSubmit block without claiming a native write. Pending dialogs must use
-   * answer(cancel) with a real write, not this path. */
+   * answer(cancel) with a real write, not this path. The result is marked
+   * dismissed so renderers never display it as a native cancellation: native
+   * may already have received an answer and still be working. */
   dismiss(id: string): boolean {
     const dialog = this.dialogs.get(id);
     if (!dialog || (dialog.status !== "unknown" && dialog.status !== "expired"))
       return false;
     this.clearTimer(id);
     this.ids.delete(id);
-    this.dialogs.set(id, { ...dialog, status: "cancelled" });
+    this.dialogs.set(id, { ...dialog, status: "cancelled", dismissed: true });
     this.changed();
     return true;
   }
@@ -211,8 +217,10 @@ export class PendingInteractions {
         const timer = setTimeout(
           () => {
             this.timers.delete(dialog.data.id);
-            this.expire();
-            this.changed();
+            // Notify only when this deadline actually expired something;
+            // a snapshot may already have expired it (timer cleared above) or
+            // an answer/dismiss may have resolved it first.
+            if (this.expire()) this.changed();
           },
           Math.min(dialog.data.timeout, 2147483647),
         );

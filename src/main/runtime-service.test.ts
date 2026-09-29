@@ -334,6 +334,49 @@ it("refuses new queue entries beyond twenty while still dispatching counted ones
   });
 });
 
+it("returns a historical non-prepared receipt without a native write after the grant is revoked (A12 Main lock)", async () => {
+  const fixture = await running();
+  const submissionId = SubmissionIdSchema.parse(crypto.randomUUID());
+  await fixture.runtime.submit({
+    kind: "prepare",
+    threadId: fixture.draft.threadId,
+    submissionId,
+    traceId: TraceIdSchema.parse(crypto.randomUUID()),
+    revision: 1,
+    text: "A",
+  });
+  await fixture.runtime.submit({
+    kind: "dispatch",
+    threadId: fixture.draft.threadId,
+    submissionId,
+  });
+  expect(fixture.store.submissions.acknowledgeSubmission(submissionId)).toBe(
+    true,
+  );
+  const dispatchesBefore = fixture.postMessage.mock.calls.filter(
+    ([raw]) => HostCommandSchema.parse(raw).kind === "dispatch",
+  ).length;
+  // Revoke the execution grant: new side effects are blocked from here on.
+  fixture.store.threads.revokeExecution(fixture.draft.workspaceId);
+  // Historical read of a non-prepared receipt must not throw and must not
+  // produce a second native write. Execution permission gates new side
+  // effects, never the lookup of what already happened.
+  const reply = await fixture.runtime.submit({
+    kind: "dispatch",
+    threadId: fixture.draft.threadId,
+    submissionId,
+  });
+  expect(reply).toMatchObject({
+    kind: "receipt",
+    receipt: { submissionId, state: "acknowledged" },
+  });
+  expect(
+    fixture.postMessage.mock.calls.filter(
+      ([raw]) => HostCommandSchema.parse(raw).kind === "dispatch",
+    ),
+  ).toHaveLength(dispatchesBefore);
+});
+
 it("Host exit marks every in-flight queued submission unknown without replay", async () => {
   const fixture = await running();
   await fixture.prepare();

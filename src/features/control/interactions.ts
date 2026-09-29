@@ -18,6 +18,10 @@ export const InteractionSchema = DialogSchema.extend({
   status: z.enum(["pending", "sent", "cancelled", "expired", "unknown"]),
   expiresAt: z.number().nullable(),
   defaultAnswered: z.boolean().optional(),
+  // Local-only cleanup marker. cancelled+ dismissed means the App stopped
+  // waiting and released its gates; native never cancelled. Never set by
+  // native cancel frames. Renderers must not display it as "原生已取消".
+  dismissed: z.boolean().optional(),
 });
 export type Interaction = z.infer<typeof InteractionSchema>;
 export const AnswerSchema = z.discriminatedUnion("kind", [
