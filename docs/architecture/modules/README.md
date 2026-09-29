@@ -41,6 +41,7 @@ P1 落地的跨模块路径有两条：`files → input`（选区冻结与引用
 - 开发一个模块：读该模块页、它列出的合同与直接依赖；无需通读全部模块。
 - 接跨模块功能：再读[交接与时序](flows.md)，确认交接方、结果和失败归属。
 - 开始基建和 M1：读[开发准备与切片计划](../../../.scratch/development-foundation/spec.md)，从当前切片的未知项和可用证据开始。
+- 写展示状态、store 订阅或只读查询：用 [d-pi-state-query](../../../.agents/skills/d-pi-state-query/SKILL.md)，按场景取用其中的写法与反例，不另立一套状态风格。
 - 评审本次设计：先看本页的所有权表，再看提交/重连时序，最后按切片验收检查对应模块。图是文档中的 Mermaid 源码，GitHub 可直接渲染；表格保留相同语义。
 - 领域目录迁移、公开面和依赖门禁：先读 `.agents/skills/d-pi-architecture/SKILL.md`，再运行 `pnpm check:architecture`、`pnpm test:architecture` 和 `pnpm report:structure`。
 

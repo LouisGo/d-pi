@@ -38,3 +38,9 @@ TanStack Query：
 - Query 缓存不跨窗口恢复，也没有持久化与后台重取；刷新是显式动作。
 - 视图刷新失败时保留上次成功内容并显示传输错误（旧实现先清空）。这是可感知差异，试用时请确认。
 - 冷恢复只读、停止/继续门槛、未知结果不自动重发等 S3/S4 边界未改变，也不因本次迁移放宽。
+
+## 范式固化（2026-09-30）
+
+用户要求把本轮的 Zustand 与 TanStack Query 结论固化成按需加载的范式，避免每个 AI 各写一套。新增项目 skill [d-pi-state-query](../../.agents/skills/d-pi-state-query/SKILL.md)：按"新建 store / 视图接线与逐行订阅 / 新增只读查询 / 副作用归属 / 评审"五个场景渐进给出写法、反例与检查项，规则单源仍指向[无头功能合同 §4](../../docs/architecture/headless-features.md)。已接入三处发现路径：根的[按任务读取](../../AGENTS.md)表、[文档导航](../../docs/README.md)、[模块地图](../../docs/architecture/modules/README.md)；D-37 登记同步指向该 skill。skill 不复制所有权与验收标准，只写"怎么写代码"。
+
+后续实现与评审要求：新增 store、给视图接线、写查询 hook 或评审这类改动，先加载该 skill 并按场景取用，不再另起一套状态风格；合同与 skill 冲突时以合同为准，并回改 skill。

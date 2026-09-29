@@ -9,6 +9,7 @@
 - 重要产品待决：无。本次不新增用户可见功能，不改变任何既有行为；Query 缓存"新鲜度"只影响何时重新读取，不改变显示内容与失败归属。
 - 工程状态：01–03 工程票完成。`zustand@5.0.15` 与 `@tanstack/react-query@5.104.0` 精确锁定；四个展示状态模型（`AppModel`、`RuntimeModel`、`SubmissionModel`、`ConversationModel`）迁移到 Zustand vanilla store 并新增按实体选择器订阅；`files.renderer` 与新增的 `changes.renderer` 提供 Query key 与 hooks，文件/Git 面板改用 `useQuery`（`networkMode: 'always'`、显式刷新、`unavailable` 视为业务结论而非重试错误），Monaco 改为按需加载入口以脱离静态导入面。`pnpm check` 全项通过（类型、Biome、设计 lint、i18n、边界、架构、测试 285 通过 / 1 可选跳过），`pnpm build` 通过且 Monaco 已独立分包。真实原生工具结果样本与打包矩阵不在本次范围。
 - 2026-09-30 后续（Codex `1e615fb` 之后的对齐修复）：查询层把 `unavailable("failed")` 转成可重试错误（其余 reason 仍是终局结论，见合同 §4）；工作台在重新采样期间显示状态并禁用刷新按钮，禁用查询不计入"进行中"；列表查询不再用 `enabled` 门控以免"未选中"与根目录共用 key；模型释放不再置空视图依赖的实例；`*StateStore` 不再进入模块公开面。`pnpm check` 296 测试通过 / 1 既有跳过，`pnpm build` 通过。
+- 范式固化：形态结论已收进按需加载的项目 skill [d-pi-state-query](../../.agents/skills/d-pi-state-query/SKILL.md)（按场景给写法、反例与检查项，规则单源仍指合同 §4），并接入根 `AGENTS.md` 的按任务读取表、[文档导航](../../docs/README.md)、[模块地图](../../docs/architecture/modules/README.md) 与 D-37 登记；后续实现与评审按该 skill 取用，不另立第二套状态风格。
 - 用户试用：**尚未交付**。本会话环境存在 `ELECTRON_RUN_AS_NODE=1`（由 DSH 桌面 harness 注入），Electron 二进制被当作纯 Node 运行，`pnpm dev` 无法启动 GUI；干净基线与本次改动表现一致，属环境限制而非本次缺陷。需在你的终端按 04 票核对受影响路径。
 - 继续边界：可在本授权内继续修复本切片回归、补充验证与本地提交；不扩展 S5/M2、不新增用户功能、不推送、不改 `docs/archive/pre-reset/`、不改官方 OMP。
 

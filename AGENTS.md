@@ -51,6 +51,7 @@
 | 模块归属、跨模块接入与近期开发 | 从[模块地图](docs/architecture/modules/README.md)读目标模块及直接依赖，跨模块再读[交接图](docs/architecture/modules/flows.md)；[M1 计划](.scratch/development-foundation/spec.md)记录 G1 缺口、切片与验收，不要求日常任务通读全部模块 |
 | 领域归属、目录迁移与结构门禁 | 使用 [d-pi-architecture](.agents/skills/d-pi-architecture/SKILL.md)，读取 `architecture/modules.json`、模块 `AGENTS.md` 及相关模块页；迁移不改变行为、事务、恢复顺序或 OMP 所有权 |
 | 应用 TypeScript 实现、重构、类型/数据边界设计或相关代码评审 | 使用 [d-pi-typescript](.agents/skills/d-pi-typescript/SKILL.md)，按需读取 [TypeScript 合同](docs/architecture/typescript.md)；文档审计和纯样式任务不触发 |
+| 展示状态、store 订阅、React 绑定或只读异步查询的实现与评审 | 使用 [d-pi-state-query](.agents/skills/d-pi-state-query/SKILL.md)，按需读取[无头功能合同 §4](docs/architecture/headless-features.md)与目标模块页；新增 store、写查询 hook、给视图接线或评审这类改动时触发，不另立一套状态风格 |
 | 本地需求与任务记录 | [issue 约定](docs/agents/issue-tracker.md)，文件放在 `.scratch/<feature>/` |
 | 领域术语或架构决定 | [领域文档约定](docs/agents/domain.md)、根 `CONTEXT.md` 与相关 `docs/adr/` |
 | 跨进程操作、错误或性能 | [诊断合同](docs/architecture/diagnostics.md)；D-21/D-22 从每个功能开始落实，不作为末期补项 |
