@@ -120,11 +120,16 @@
     },
     "changes": {
       "root": "src/modules/changes",
-      "environments": ["contracts", "main"],
-      "public": ["contracts/public.ts", "main/public.ts"],
+      "environments": ["contracts", "main", "renderer"],
+      "public": [
+        "contracts/public.ts",
+        "main/public.ts",
+        "renderer/public.ts"
+      ],
       "dependsOn": {
         "contracts": ["files", "shared"],
-        "main": ["files"]
+        "main": ["files"],
+        "renderer": ["shared"]
       },
       "materialized": true
     },

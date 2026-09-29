@@ -56,12 +56,13 @@
 | D-34 | App 自有结构化数据采用 SQLite | 09-26 用户确认，取代“文件方案起步、不足再评估数据库”；Main 集中拥有持久化，事务不覆盖附件文件或 OMP 接受，驱动与 Drizzle 分别判断，见[基础契约 §1](architecture/foundation-contracts.md#1-身份持久化与生命周期b1) |
 | D-35 | ts-pattern 为应用业务分支默认范式，Zod v4 标准版为数据边界标准 | 09-26 用户要求强化 TypeScript 范式；判别联合、穷尽处理、schema 推导、严格类型与窄接口，具体规则见[TypeScript 合同](architecture/typescript.md)与[项目 skill](../.agents/skills/d-pi-typescript/SKILL.md)，不以类型技巧或无意义包装代替清晰业务模型 |
 | D-36 | S4 前落地 d-pi 国际化架构：Desktop 保留 `system`/`zh-CN`/`en-US` 偏好，Main 解析并与 Renderer 共用 locale，只翻译 d-pi 自有展示文案 | 09-29 用户明确指定引用对话的完整[国际化架构](architecture/internationalization.md)为项目基准并授权按 TDD 开发；UI 语言不进入 OMP/SessionHost/Agent 请求，原生及用户内容保持原文；实施与试用状态见[切片规格](../.scratch/i18n-foundation/spec.md) |
+| D-37 | 状态与查询基础库为锁定依赖：Zustand 管 Renderer 展示状态与细粒度订阅，`@tanstack/react-query` 管异步查询缓存；两库基础设施属于本层接入，不作为逐功能可选补齐 | 09-29 用户明确"不能接受不在这两个库的基础上做全局状态管理，包括异步状态管理"，并确认既有"自写 model + 直接 IPC"是实现跟进缺口而非技术取舍、本切片迁移到两库且保留现有外部行为。取代 [development-foundation spec](../.scratch/development-foundation/spec.md)中 09-28 的"不为名录补齐状态库"规则（`3faea9d` 工程侧写法，未经决定变更流程、未获用户确认）。所有权不变：不成为 OMP 执行、队列或原生历史的权威拥有者；继续遵守 D-24 未知结果不自动重发与 D-29 业务生命周期独立于 React。版本、订阅粒度与接入范围见[对齐切片](../.scratch/state-query-alignment/spec.md) |
 
 ## 沿用基线与提议
 
 | ID | 状态 | 内容与出处 |
 | --- | --- | --- |
-| B-01 | 沿用基线，部分细化 | React/TS/electron-vite/pnpm/Tailwind、自有组件 API/设计变量、Zustand/Query、Vitest/RTL/Playwright/electron-builder 继续沿用；Zod 明确为 v4 标准版、ts-pattern 升为应用范式，见 D-35；按功能接入，不预装全部 |
+| B-01 | 沿用基线，部分细化 | React/TS/electron-vite/pnpm/Tailwind、自有组件 API/设计变量、Zustand/Query、Vitest/RTL/Playwright/electron-builder 继续沿用；Zod 明确为 v4 标准版、ts-pattern 升为应用范式，见 D-35；原"按功能接入，不预装全部"中**状态与查询两库**的部分由 D-37 取代，其基础设施先锁定接入；"按功能接入"只继续约束各业务域的投影与缓存实例，不约束这两库本身 |
 | B-02 | 部分被 D-32 取代 | 旧版“Base UI 不是默认底座、Radix 按需”的组合被 D-32 取代为 Base UI 默认交互基础与 shadcn/ui 源码复用；自有组件 API/设计变量、React Aria 对照、Beautiful UI/Tool UI 参考继续有效，见[库雷达](prototype/frontend-library-radar.md) |
 | B-03 | 沿用基线 | Streamdown + Shiki 统一渲染方向，撤回业务 react-markdown 第二入口；集成验收未完成 |
 | B-04 | 沿用基线 | 关窗继续、重开接回、真正退出协调及 Renderer 刷新不重启任务，来源为历史决定与[GUI 证据](archive/stage1-evidence.md) |
@@ -75,6 +76,7 @@
 
 | 旧方向 | 当前决定/原因 |
 | --- | --- |
+| 不为名录补齐状态库；状态与查询库按功能逐步接入、基础设施可无限推迟 | D-37：Zustand 与 TanStack Query 是全局状态与异步状态的基础设施，先锁定接入；09-28 该句属工程侧写法，不是用户取舍 |
 | 依赖用户外装 OMP，默认独立 GUI Runtime 配置 | D-03 |
 | 第一阶段不含文件查看/专属 Diff | D-06 |
 | 默认完整 VSCode 服务层/工作台继续并列选型 | D-07；历史比较保留，不能自动重新开题 |
@@ -222,3 +224,11 @@
 原生约束（固定 SDK 18.3.0 dist/cli.js 已核实，未改官方源码）：首个 `extension_ui_response` 生效，重复/迟到回答被原生静默丢弃；`DialogSchema` 请求无推荐默认字段；原生超时删请求不发 cancel。因此默认选项须由 App 产品定义，超时默认作答由 App 在到期前主动写出；一旦默认已发出，原生层面不可撤回，超时后用户作答只能转为新的追发指示，覆盖方案待对齐。
 
 2026-09-28 追答（数字与安全边界已对齐）：confirm 不进入 App 超时默认作答判定，只有 select/input/editor 提问类走超时默认；select 取首选项、input/editor 取预填值、无预填则取消；原生无超时字段时 App 等 120 秒（原生给了就按原生的，须抢在原生删除前写出）；队列上限 20 条，达限提示上限并禁用输入框、有空位恢复；默认发出后用户再答转为新的追发指示（steer）。问答卡片须标识已默认采取的选项。澄清（2026-09-29，不改官方 OMP）：“confirm 卡住”指 App 永不对 confirm 自动作答；若扩展自带原生 timeout，原生仍按官方语义以 false 结束并删请求，App 如实展示 expired，不伪装永远等待。永远等待需扩展不带 timeout；不为此私改官方 SDK。
+
+## 2026-09-29：D-37 状态与查询基础库恢复接入
+
+用户发现重构后 Zustand 与 `@tanstack/react-query` 既不在当前依赖中，也没有实现，只以历史归档形式存在；核对确认属实，且文档侧（B-01、[无头功能合同](architecture/headless-features.md)、[技术选型审议](architecture/technology-selection-review.md)）一直把两库当作沿用方向。用户明确"这两个库对我的状态管理非常非常重要，我不能接受不在这两个库的基础上去做全局的状态管理，包括异步状态的管理"，选择先落决定与规格、再按 TDD 实施迁移，并保留现有外部行为与测试。
+
+事实与归因（均已核对到提交与文件）：`a56ea59`（2026-09-24）删除全部早期应用、`package.json` 与锁文件，理由写为"解除提前选择的前端依赖与构建方案"；`4386b7d`（2026-09-25）按用户原意恢复完整归档，并确认归档不直接作为当前应用；S1–S4 切片重建时选择了自写 `state + listeners + getSnapshot/subscribe` 与组件内直接 IPC，未再安装这两库。此前未被记录为技术取舍的唯一相关文字是 [development-foundation spec](../.scratch/development-foundation/spec.md) 中 2026-09-28 加固轮次追加的"不为名录补齐状态库"，它没有进入本登记、没有日期依据与用户确认，却实际停掉了依赖接入；归档原型里 Query 也确实只有 `QueryClientProvider`，没有查询实现，因此"归档不是成熟 Query 实现"成立，但这不构成否定两库的证据。
+
+本条不改变运行所有权与恢复规则：OMP 仍是执行、队列与原生历史的事实所有者，Query 缓存与 Zustand 镜像都不是第二份权威存储；发送类未知结果继续禁止自动重发（D-24）；业务生命周期继续独立于 React 挂载（D-29），vanilla store 与 React 绑定分离。迁移范围、版本锁定、订阅粒度与验收见[对齐切片](../.scratch/state-query-alignment/spec.md)；`docs/archive/pre-reset/` 保持原样不动。

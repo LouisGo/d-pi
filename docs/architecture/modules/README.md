@@ -11,7 +11,7 @@
 | `src/modules/<domain>/<environment>/` | 已迁移领域按 `contracts`、`core`、`main`、`host`、`renderer` 放置；跨模块只消费对应环境的 `public.ts` |
 | `src/modules/files/` | 文件合同、选区/代码视图、授权只读读取与 Monaco 只读适配；不写工作区或 Git index |
 | `src/modules/input/` | 草稿合同、草稿控制器、冻结引用序列化与输入编辑器适配；提交收据和 OMP 消费仍归 execution |
-| `src/modules/changes/` | Git 只读合同和读取实现；复用 files 的公开读取能力，不推断作者或写 Git |
+| `src/modules/changes/` | Git 只读合同、读取实现与 Renderer 查询面；复用 files 的公开读取能力，不推断作者或写 Git |
 | `src/modules/workspace/` | Thread、目录身份、项目选择、执行信任和原生记录绑定；`main/public.ts` 提供应用组合入口 |
 | `src/modules/preferences/` | App 主题、密度、发送方式和 locale 合同/仓储/Renderer provider；不拥有 OMP 配置 |
 | `src/modules/conversation/` | 实时阅读合同、核心订阅模型、Host 投影/端口作用域和原生历史读取；不启动或恢复执行 |
@@ -30,7 +30,7 @@ P1 的三条实际路径是 `files → input`（选区冻结与引用）和 `fil
 - `platform → shared`；`shared` 和 `runtime` 无跨模块依赖。
 - `files.contracts/core → shared`；`files.main` 无跨模块依赖；`files.renderer → preferences`。
 - `input.contracts → shared/workspace`、`input.core → files/shared`、`input.main → platform/workspace`、`input.renderer → files`。
-- `changes.contracts → files/shared`、`changes.main → files`；`workspace.contracts → shared`、`workspace.main → platform`；`preferences.contracts → shared`、`preferences.main → platform`、`preferences.renderer → shared`。
+- `changes.contracts → files/shared`、`changes.main → files`、`changes.renderer → shared`；`workspace.contracts → shared`、`workspace.main → platform`；`preferences.contracts → shared`、`preferences.main → platform`、`preferences.renderer → shared`。
 - `conversation.contracts → shared`、`conversation.core` 无跨模块依赖、`conversation.host → platform/shared`、`conversation.main → workspace`；`execution.contracts → input/shared/workspace`、`execution.core → input/shared/workspace`、`execution.host → platform/shared`、`execution.main → input/platform/shared/workspace`、`execution.renderer → input/shared`。
 
 `execution.testDependsOn → app` 仍保留，因为 `submission-coordinator.test.ts` 有真实的测试消费者；它不属于生产依赖矩阵。`app/host` 负责组合 execution 与 conversation 的 Host 作用域；`app` 只做按环境的组合，`platform` 只依赖 `shared`；平台能力不冒充领域依赖，跨模块消费必须经公开入口。
@@ -107,6 +107,7 @@ flowchart TB
 | --- | --- | --- |
 | 权限与信任 | [基础契约 §5](../foundation-contracts.md#5-最小权限与信任b5) | Thread 管授权记录；文件/启动/配置等操作入口各自执行所需检查。App 读取与项目执行为两个独立设置 |
 | 类型与数据边界 | [TypeScript 合同](../typescript.md) | 公开业务 DTO 可序列化，schema 推导类型；边界用 Zod v4，可信内部不重复 parse；业务分支用 ts-pattern 穷尽处理 |
+| 状态与异步查询 | [无头功能合同 §4](../headless-features.md)、D-37 | 展示状态用 Zustand vanilla store（`core` 不引入 React，React 绑定只在 `renderer`），按实体选择器订阅；只读异步查询用 TanStack Query，本地 IPC 显式 `networkMode: 'always'`；Query 单例与 provider 由 `src/app/renderer/query-client.tsx` 持有，视图只读缓存与失效；发送类副作用不进 Query 重试 |
 | 错误与诊断 | [诊断合同](../diagnostics.md) | Main 管设施；操作拥有者决定恢复；实际跨进程路径传同一 traceId，日志失败不改业务结果 |
 | UI 组合 | Base UI / 自有组件 API、[图标合同](../icon-system.md) | 薄绑定组合功能，Tiptap/Monaco 留在所属适配层；按[设计系统合同](../design-system.md)统一 token、主题/密度与组件覆盖边界，S1 起设计 lint；布局、焦点和面板不拥有后台任务 |
 | 构建与质量检查 | [M1 计划](../../../.scratch/development-foundation/spec.md) | 单应用，按切片接入严格 TS、Biome、行为检查与 macOS 包验证，不先搭通用框架 |
