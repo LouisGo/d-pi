@@ -2,15 +2,16 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { extname, relative, resolve } from "node:path";
 
 const sourceExtensions = new Set([".cjs", ".cts", ".js", ".jsx", ".mjs", ".mts", ".ts", ".tsx"]);
+const sizeHintExtensions = new Set([...sourceExtensions, ".css"]);
 const projectRoot = process.cwd();
 const config = JSON.parse(readFileSync(resolve(projectRoot, "architecture/modules.json"), "utf8"));
 
-function sourceFiles(directory) {
+function sourceFiles(directory, extensions = sourceExtensions) {
   if (!existsSync(directory)) return [];
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const path = resolve(directory, entry.name);
-    if (entry.isDirectory()) return sourceFiles(path);
-    return sourceExtensions.has(extname(entry.name)) ? [path] : [];
+    if (entry.isDirectory()) return sourceFiles(path, extensions);
+    return extensions.has(extname(entry.name)) ? [path] : [];
   });
 }
 
@@ -27,6 +28,18 @@ function isWithin(parent, child) {
 function isTestFile(path) {
   return /(?:\.test|\.spec)\.[cm]?[jt]sx?$/.test(path) ||
     /(?:^|[/\\])tests?(?:[/\\]|$)/.test(path);
+}
+
+function isProcessEntry(path) {
+  const relativePath = relative(projectRoot, path).replaceAll("\\", "/");
+  return /^(?:src\/app\/(?:main|host|preload)\/index|src\/app\/renderer\/main)\.(?:[cm])?(?:js|jsx|ts|tsx)$/.test(relativePath);
+}
+
+function sizeHintFor(path) {
+  if (isTestFile(path)) return { category: "test", limit: 800 };
+  if (extname(path) === ".css") return { category: "css", limit: 500 };
+  if (isProcessEntry(path)) return { category: "entry", limit: 150 };
+  return { category: "production", limit: 300 };
 }
 
 const rows = Object.entries(config.modules ?? {}).map(([name, module]) => {
@@ -76,14 +89,12 @@ const hints = [];
 
 for (const row of rows) {
   const moduleRoot = resolve(projectRoot, row.root);
-  for (const path of sourceFiles(moduleRoot)) {
-    const firstSegment = relative(moduleRoot, path).split(/[\\/]/)[0] ?? "unknown";
-    const environment = row.environments.includes(firstSegment)
-      ? firstSegment
-      : row.defaultEnvironment ?? firstSegment;
-    const limit = isTestFile(path) ? 800 : environment === "main" || environment === "host" ? 300 : 300;
+  for (const path of sourceFiles(moduleRoot, sizeHintExtensions)) {
+    const { category, limit } = sizeHintFor(path);
     const lines = lineCount(path);
-    if (lines > limit) hints.push(`${relative(projectRoot, path).replaceAll("\\", "/")}: ${lines} lines (hint ${limit})`);
+    if (lines > limit) {
+      hints.push(`${relative(projectRoot, path).replaceAll("\\", "/")}: ${lines} lines (${category} hint ${limit})`);
+    }
   }
 }
 

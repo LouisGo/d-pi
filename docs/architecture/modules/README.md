@@ -24,7 +24,16 @@
 
 P1 的三条实际路径是 `files → input`（选区冻结与引用）和 `files → changes`（Git Diff 只读来源），应用级 Composer/FileWorkspace 留在 `src/app/renderer/workbench`。新增普通内部文件不要求修改清单；只有公开面、环境或跨模块依赖变化才更新机器配置。
 
-当前代码清单中的环境依赖已经随 review follow-up 校准：`files` 的合同依赖 `shared`，Renderer 依赖 `preferences`；`input.contracts → shared/workspace`、`input.core → files/shared`、`input.main → platform/workspace`、`input.renderer → files`；`changes → files/shared`；`workspace.contracts → shared`、`workspace.main → platform`；`preferences.contracts → shared`、`preferences.main → platform`、`preferences.renderer → shared`；`conversation.contracts/core → shared`、`conversation.host → platform/shared`、`conversation.main → platform/shared/workspace`；`execution.contracts → input/shared/workspace`、`execution.core → input/shared/workspace`、`execution.host → platform/shared`、`execution.main → input/platform/shared/workspace`、`execution.renderer → input/shared/preferences`。`app/host` 负责组合 execution 与 conversation 的 Host 作用域；`app` 只做按环境的组合，`platform` 只依赖 `shared`；平台能力不冒充领域依赖，跨模块消费必须经公开入口。
+当前代码清单中的环境依赖已经随 review follow-up 校准；下列是机器配置中按环境保留的跨模块声明：
+
+- `app.contracts → changes/conversation/execution/files/input/preferences/shared`；`app.main → changes/conversation/execution/files/input/platform/preferences/shared/workspace`；`app.host → conversation/execution`；`app.preload → changes/conversation/execution/files/shared`；`app.renderer → changes/conversation/execution/files/input/preferences/shared`。
+- `platform → shared`；`shared` 和 `runtime` 无跨模块依赖。
+- `files.contracts/core → shared`；`files.main` 无跨模块依赖；`files.renderer → preferences`。
+- `input.contracts → shared/workspace`、`input.core → files/shared`、`input.main → platform/workspace`、`input.renderer → files`。
+- `changes.contracts → files/shared`、`changes.main → files`；`workspace.contracts → shared`、`workspace.main → platform`；`preferences.contracts → shared`、`preferences.main → platform`、`preferences.renderer → shared`。
+- `conversation.contracts → shared`、`conversation.core` 无跨模块依赖、`conversation.host → platform/shared`、`conversation.main → workspace`；`execution.contracts → input/shared/workspace`、`execution.core → input/shared/workspace`、`execution.host → platform/shared`、`execution.main → input/platform/shared/workspace`、`execution.renderer → input/shared`。
+
+`execution.testDependsOn → app` 仍保留，因为 `submission-coordinator.test.ts` 有真实的测试消费者；它不属于生产依赖矩阵。`app/host` 负责组合 execution 与 conversation 的 Host 作用域；`app` 只做按环境的组合，`platform` 只依赖 `shared`；平台能力不冒充领域依赖，跨模块消费必须经公开入口。
 
 ## 从哪里开始
 

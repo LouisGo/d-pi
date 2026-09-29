@@ -43,8 +43,6 @@
           "conversation",
           "execution",
           "files",
-          "input",
-          "preferences",
           "shared"
         ],
         "renderer": [
@@ -98,7 +96,7 @@
       "dependsOn": {
         "contracts": ["shared"],
         "core": ["shared"],
-        "main": ["shared"],
+        "main": [],
         "renderer": ["preferences"]
       },
       "materialized": true
@@ -126,7 +124,7 @@
       "public": ["contracts/public.ts", "main/public.ts"],
       "dependsOn": {
         "contracts": ["files", "shared"],
-        "main": ["files", "shared"]
+        "main": ["files"]
       },
       "materialized": true
     },
@@ -166,9 +164,9 @@
       ],
       "dependsOn": {
         "contracts": ["shared"],
-        "core": ["shared"],
+        "core": [],
         "host": ["platform", "shared"],
-        "main": ["platform", "shared", "workspace"]
+        "main": ["workspace"]
       },
       "materialized": true
     },
@@ -187,7 +185,7 @@
         "core": ["input", "shared", "workspace"],
         "host": ["platform", "shared"],
         "main": ["input", "platform", "shared", "workspace"],
-        "renderer": ["input", "shared", "preferences"]
+        "renderer": ["input", "shared"]
       },
       "testDependsOn": ["app"],
       "materialized": true
