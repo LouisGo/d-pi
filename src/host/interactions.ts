@@ -42,10 +42,46 @@ export class PendingInteractions {
     this.expire();
     return [...this.dialogs.values()];
   }
-  markDefaultAnswered(id: string): boolean {
+  private clearTimer(id: string): void {
+    const timer = this.timers.get(id);
+    if (timer) {
+      clearTimeout(timer);
+      this.timers.delete(id);
+    }
+  }
+  private validateAnswer(dialog: Interaction, answer: Answer): boolean {
+    if (
+      answer.kind !== "cancel" &&
+      (dialog.method === "confirm") !== (answer.kind === "confirm")
+    )
+      return false;
+    if (
+      dialog.method === "select" &&
+      answer.kind === "value" &&
+      !dialog.options?.includes(answer.value)
+    )
+      return false;
+    return true;
+  }
+  private frameForAnswer(id: string, answer: Answer): string {
+    const fields =
+      answer.kind === "cancel"
+        ? { cancelled: true }
+        : answer.kind === "confirm"
+          ? { confirmed: answer.confirmed }
+          : { value: answer.value };
+    return `${JSON.stringify({ type: "extension_ui_response", id, ...fields })}\n`;
+  }
+  /** User acknowledges an unknown/expired dialog locally. Clears the
+   * canSubmit block without claiming a native write. Pending dialogs must use
+   * answer(cancel) with a real write, not this path. */
+  dismiss(id: string): boolean {
     const dialog = this.dialogs.get(id);
-    if (!dialog || dialog.status !== "sent") return false;
-    this.dialogs.set(id, { ...dialog, defaultAnswered: true });
+    if (!dialog || (dialog.status !== "unknown" && dialog.status !== "expired"))
+      return false;
+    this.clearTimer(id);
+    this.ids.delete(id);
+    this.dialogs.set(id, { ...dialog, status: "cancelled" });
     this.changed();
     return true;
   }
@@ -57,37 +93,22 @@ export class PendingInteractions {
     // Atomic default write: status and defaultAnswered land in one mutation
     // so callers publish a single snapshot. Success shows sent+defaultAnswered
     // (stays in the active group); failure leaves unknown without the flag.
-    // No changed() here; the caller publishes once.
+    // No changed() here; the caller publishes once. Timers are cleared on both
+    // paths so the native expiry timer cannot publish a second snapshot.
     this.expire();
     const dialog = this.dialogs.get(id);
     if (!dialog || dialog.status !== "pending" || !this.ids.has(id))
       return false;
-    if (
-      answer.kind !== "cancel" &&
-      (dialog.method === "confirm") !== (answer.kind === "confirm")
-    )
-      return false;
-    if (
-      dialog.method === "select" &&
-      answer.kind === "value" &&
-      !dialog.options?.includes(answer.value)
-    )
-      return false;
-    const fields =
-      answer.kind === "cancel"
-        ? { cancelled: true }
-        : answer.kind === "confirm"
-          ? { confirmed: answer.confirmed }
-          : { value: answer.value };
+    if (!this.validateAnswer(dialog, answer)) return false;
     this.dialogs.set(id, { ...dialog, status: "unknown" });
     try {
-      write(
-        `${JSON.stringify({ type: "extension_ui_response", id, ...fields })}\n`,
-      );
+      write(this.frameForAnswer(id, answer));
     } catch {
+      this.clearTimer(id);
       this.ids.delete(id);
       return false;
     }
+    this.clearTimer(id);
     this.dialogs.set(id, { ...dialog, status: "sent", defaultAnswered: true });
     this.ids.delete(id);
     return true;
@@ -97,32 +118,16 @@ export class PendingInteractions {
     const dialog = this.dialogs.get(id);
     if (!dialog || dialog.status !== "pending" || !this.ids.has(id))
       return false;
-    if (
-      answer.kind !== "cancel" &&
-      (dialog.method === "confirm") !== (answer.kind === "confirm")
-    )
-      return false;
-    if (
-      dialog.method === "select" &&
-      answer.kind === "value" &&
-      !dialog.options?.includes(answer.value)
-    )
-      return false;
-    const fields =
-      answer.kind === "cancel"
-        ? { cancelled: true }
-        : answer.kind === "confirm"
-          ? { confirmed: answer.confirmed }
-          : { value: answer.value };
+    if (!this.validateAnswer(dialog, answer)) return false;
     this.dialogs.set(id, { ...dialog, status: "unknown" });
     try {
-      write(
-        `${JSON.stringify({ type: "extension_ui_response", id, ...fields })}\n`,
-      );
+      write(this.frameForAnswer(id, answer));
     } catch {
+      this.clearTimer(id);
       this.ids.delete(id);
       return false;
     }
+    this.clearTimer(id);
     this.dialogs.set(id, { ...dialog, status: "sent" });
     this.ids.delete(id);
     return true;
@@ -133,6 +138,7 @@ export class PendingInteractions {
       frame.method === "cancel" &&
       typeof frame.targetId === "string"
     ) {
+      this.clearTimer(frame.targetId);
       this.ids.delete(frame.targetId);
       const dialog = this.dialogs.get(frame.targetId);
       if (dialog)
@@ -217,5 +223,13 @@ export class PendingInteractions {
   }
   get pending(): boolean {
     return this.overflow || this.ids.size > 0;
+  }
+  /** Unresolved gates Main prepare, Host dispatch and quit alike. Expired and
+   * cancelled are terminal and never block; unknown blocks until dismissed. */
+  get blocked(): boolean {
+    if (this.pending) return true;
+    for (const dialog of this.dialogs.values())
+      if (dialog.status === "unknown") return true;
+    return false;
   }
 }

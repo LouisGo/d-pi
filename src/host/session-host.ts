@@ -90,6 +90,9 @@ export function createSessionHost(
       native?.write(frame),
     );
     publishInteractions();
+    // "acknowledged" here means written to the native pipe without a throw,
+    // not native-confirmed (extension_ui_response has no ACK). Kept for
+    // backward compatibility; do not expand this meaning to receipts.
     send({
       kind: "operation-result",
       traceId,
@@ -404,7 +407,7 @@ export function createSessionHost(
       !state ||
       !state.model ||
       paused ||
-      interactions.pending ||
+      interactions.blocked ||
       value.threadId !== start.threadId ||
       value.target.processInstanceId !== start.processInstanceId ||
       value.target.connectionGeneration !== start.connectionGeneration ||
@@ -510,6 +513,28 @@ export function createSessionHost(
         });
         await refresh();
       })
+      .with({ kind: "dismiss" }, ({ command }) => {
+        // Local cleanup for unknown/expired dialogs. No native write is
+        // claimed; it only releases the canSubmit/dispatch/quit block so one
+        // failed default cannot wedge the session. Works while disconnected.
+        if (
+          !start ||
+          command.threadId !== start.threadId ||
+          command.generation !== start.connectionGeneration
+        )
+          return Promise.resolve();
+        const dismissed = interactions.dismiss(command.id);
+        clearDefaultAnswerTimer(command.id);
+        publishInteractions();
+        send({
+          kind: "operation-result",
+          traceId: command.traceId,
+          generation: command.generation,
+          operation: "dismiss",
+          status: dismissed ? "acknowledged" : "unknown",
+        });
+        return refresh();
+      })
       .with({ kind: "control" }, async ({ command }) => {
         if (
           !native ||
@@ -592,7 +617,7 @@ export function createSessionHost(
         }
         if (
           busy ||
-          interactions.pending ||
+          interactions.blocked ||
           starting ||
           (lastControl ? activeControl(lastControl) : false)
         ) {
@@ -611,7 +636,11 @@ export function createSessionHost(
       .exhaustive()
       .catch(async () => {
         if (closing || disconnected) return;
-        if (command.kind === "answer" || command.kind === "control")
+        if (
+          command.kind === "answer" ||
+          command.kind === "dismiss" ||
+          command.kind === "control"
+        )
           send({
             kind: "operation-result",
             traceId: command.command.traceId,

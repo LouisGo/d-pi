@@ -39,7 +39,10 @@ export class RuntimeModel {
     void this.act("inspect");
   }
   async act(
-    kind: Exclude<RuntimeCommand["kind"], "stop" | "continue" | "answer">,
+    kind: Exclude<
+      RuntimeCommand["kind"],
+      "stop" | "continue" | "answer" | "dismiss"
+    >,
   ): Promise<void> {
     const threadId = this.thread;
     if (!threadId) return;
@@ -101,6 +104,26 @@ export class RuntimeModel {
         this.publish({
           ...current,
           message: "回答结果未知，请核对原生交互；不会自动重答。",
+        });
+    }
+  }
+  async dismiss(id: string): Promise<void> {
+    const current = this.view;
+    if (!current?.interactions || !this.thread) return;
+    try {
+      const view = await this.bridge.request({
+        kind: "dismiss",
+        threadId: this.thread,
+        traceId: crypto.randomUUID(),
+        generation: current.interactions.generation,
+        id,
+      });
+      if (this.thread === view.threadId) this.publish(view);
+    } catch {
+      if (this.view === current)
+        this.publish({
+          ...current,
+          message: "关闭未知交互失败，请核对原生交互后重试。",
         });
     }
   }

@@ -401,6 +401,17 @@ export class RuntimeService {
       this.connection.send({ kind: "answer", command });
       return this.view;
     }
+    if (command.kind === "dismiss") {
+      // Local unknown cleanup: no directory grant needed (no native write),
+      // only the generation check to avoid dismissing a new connection's view.
+      if (
+        !this.connection.connected ||
+        command.generation !== this.currentGeneration
+      )
+        throw Error("Stale dismiss target");
+      this.connection.send({ kind: "dismiss", command });
+      return this.view;
+    }
     if (command.kind === "stop" || command.kind === "continue") {
       if (
         !this.connection.connected ||
@@ -561,6 +572,11 @@ export class RuntimeService {
         throw Error("Submission identity conflict");
       return { kind: "receipt", receipt: existing };
     }
+    // Historical read before directory/grant recheck (A12 lock): non-prepared
+    // dispatch returns the persisted receipt without a native write (see
+    // coordinator.dispatch fast return). Execution permission gates new side
+    // effects, never the lookup of what already happened, so revoking the
+    // grant must not turn a status check into an error.
     if (command.kind === "dispatch" && existing?.state !== "prepared")
       return this.coordinator.dispatch(command.submissionId);
     try {

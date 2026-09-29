@@ -39,6 +39,14 @@ export const InteractionViewSchema = z.object({
   items: z.array(InteractionSchema).max(32),
   unsupported: z.boolean(),
 });
+export const DismissCommandSchema = z.strictObject({
+  kind: z.literal("dismiss"),
+  threadId: ThreadIdSchema,
+  traceId: TraceIdSchema,
+  generation: z.uuid(),
+  id: z.string().min(1).max(256),
+});
+export type DismissCommand = z.infer<typeof DismissCommandSchema>;
 
 // Timeout default answers (2026-09-28 user decision, clarified 2026-09-29):
 // App never auto-answers confirm; select takes the first option, input/editor

@@ -188,27 +188,34 @@ it("marks host-cancelled dialogs cancelled instead of leaving them pending", () 
   expect(frames).toHaveLength(0);
 });
 
-it("marks sent dialogs as default-answered for timeout follow-up display", () => {
-  const interaction = new PendingInteractions();
+it("dismisses unknown dialogs locally to release the submit block", () => {
+  let changed = 0;
+  const interaction = new PendingInteractions(() => {
+    changed++;
+  });
   interaction.update({
     type: "extension_ui_request",
-    method: "select",
-    id: "defaulted",
-    title: "Pick",
-    options: ["a", "b"],
+    method: "input",
+    id: "stuck",
+    title: "Details",
   });
-  expect(interaction.markDefaultAnswered("defaulted")).toBe(false);
   const frames: string[] = [];
   expect(
-    interaction.answer("defaulted", { kind: "value", value: "a" }, (f) =>
-      frames.push(f),
-    ),
-  ).toBe(true);
-  expect(interaction.markDefaultAnswered("defaulted")).toBe(true);
-  expect(interaction.snapshot()).toMatchObject([
-    { id: "defaulted", status: "sent", defaultAnswered: true },
-  ]);
-  expect(interaction.markDefaultAnswered("missing")).toBe(false);
+    interaction.answer("stuck", { kind: "value", value: "a" }, () => {
+      throw Error("closed");
+    }),
+  ).toBe(false);
+  expect(
+    interaction.snapshot().find((item) => item.id === "stuck"),
+  ).toMatchObject({ status: "unknown" });
+  expect(interaction.dismiss("stuck")).toBe(true);
+  expect(changed).toBeGreaterThan(0);
+  expect(
+    interaction.snapshot().find((item) => item.id === "stuck"),
+  ).toMatchObject({ status: "cancelled" });
+  expect(interaction.pending).toBe(false);
+  expect(interaction.dismiss("stuck")).toBe(false);
+  expect(interaction.dismiss("missing")).toBe(false);
 });
 
 it("writes the timeout default atomically without an intermediate sent snapshot", () => {
@@ -278,4 +285,35 @@ it("converges pending markers on disconnect while keeping interrupted dialogs un
   expect(interaction.snapshot()).toMatchObject([
     { id: "disconnected", status: "unknown" },
   ]);
+});
+
+it("clears the native expiry timer on answer so no second publish fires", () => {
+  let changed = 0;
+  const interaction = new PendingInteractions(() => {
+    changed++;
+  });
+  interaction.update({
+    type: "extension_ui_request",
+    method: "input",
+    id: "timed",
+    title: "Details",
+    timeout: 50,
+  });
+  const frames: string[] = [];
+  expect(
+    interaction.answer("timed", { kind: "value", value: "v" }, (f) =>
+      frames.push(f),
+    ),
+  ).toBe(true);
+  const afterAnswer = changed;
+  return new Promise<void>((resolve) => {
+    setTimeout(() => {
+      // Timer was cleared: no extra changed() after the natural expiry point.
+      expect(changed).toBe(afterAnswer);
+      expect(
+        interaction.snapshot().find((item) => item.id === "timed"),
+      ).toMatchObject({ status: "sent" });
+      resolve();
+    }, 80);
+  });
 });

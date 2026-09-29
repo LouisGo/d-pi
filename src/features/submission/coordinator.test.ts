@@ -151,6 +151,68 @@ it("old instances cannot ACK; a failed write becomes unknown and an encoded over
   }
 });
 
+it("returns historical receipts without a native write (A12 lock)", () => {
+  const dir = mkdtempSync(join(tmpdir(), "d-pi-fast-return-"));
+  const store = new AppStorage(join(dir, "app.sqlite"));
+  try {
+    const d = store.drafts.create(dir);
+    store.drafts.save(d.threadId, 0, "A");
+    const target = {
+      processInstanceId: randomUUID(),
+      connectionGeneration: randomUUID(),
+      configContextId: "test",
+      nativeSessionRef: "managed",
+    };
+    const a = FrozenSubmissionSchema.parse({
+      submissionId: randomUUID(),
+      threadId: d.threadId,
+      traceId: randomUUID(),
+      revision: 1,
+      text: "A",
+      requestId: randomUUID(),
+      target,
+    });
+    let writes = 0;
+    const c = new SubmissionCoordinator(store.submissions, {
+      isCurrentTarget: () => true,
+      canDispatch: () => true,
+      write: () => {
+        writes++;
+      },
+    });
+    expect(c.prepare(a).kind).toBe("receipt");
+    expect(c.dispatch(a.submissionId)).toMatchObject({
+      kind: "receipt",
+      receipt: { state: "dispatching" },
+    });
+    expect(writes).toBe(1);
+    c.receive({
+      kind: "ack",
+      submissionId: a.submissionId,
+      requestId: a.requestId,
+      target,
+    });
+    // Non-prepared fast return: historical read, no second native write even
+    // when admission would now fail. Execution permission gates new side
+    // effects, never the lookup of what already happened.
+    const strict = new SubmissionCoordinator(store.submissions, {
+      isCurrentTarget: () => false,
+      canDispatch: () => false,
+      write: () => {
+        writes++;
+      },
+    });
+    expect(strict.dispatch(a.submissionId)).toMatchObject({
+      kind: "receipt",
+      receipt: { state: "acknowledged" },
+    });
+    expect(writes).toBe(1);
+  } finally {
+    store.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 it("reports correlated safe stages and typed failures without logging frozen text", () => {
   const dir = mkdtempSync(join(tmpdir(), "d-pi-send-trace-"));
   const store = new AppStorage(join(dir, "app.sqlite"));

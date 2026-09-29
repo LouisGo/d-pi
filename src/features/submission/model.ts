@@ -10,13 +10,15 @@ import {
 
 interface View {
   sending: boolean;
+  sendingText: boolean;
   receipts: SubmissionReceipt[];
   message: string | null;
 }
 // Receipt facts advance independently: a late ACK can resolve call confirmation,
 // but cannot erase an observed failure/uncertain outcome. Millisecond wall-clock
 // timestamps are display metadata, not a causal ordering of IPC replies/events.
-function mergeReceipt(
+// Exported for the monotonic transition lock (A3 audit rebuttal).
+export function mergeReceipt(
   old: SubmissionReceipt,
   next: SubmissionReceipt,
 ): SubmissionReceipt {
@@ -49,7 +51,12 @@ function mergeReceipt(
   };
 }
 export class SubmissionModel {
-  private view: View = { sending: false, receipts: [], message: null };
+  private view: View = {
+    sending: false,
+    sendingText: false,
+    receipts: [],
+    message: null,
+  };
   private listeners = new Set<() => void>();
   private captured: CapturedDraft | null = null;
   private remove: () => void;
@@ -179,11 +186,15 @@ export class SubmissionModel {
     message: string | null;
     submissionId: string | null;
   }> {
-    if (this.view.sending || this.disposed)
-      return { ok: false, message: null, submissionId: null };
+    // Free-text channel has its own in-flight flag so a draft send does not
+    // misleadingly fail a card follow-up (and vice versa). Different
+    // submissionIds are independent in Main/Host; the queue cap still gates.
+    if (this.view.sendingText || this.disposed)
+      return { ok: false, message: "正在追发，请稍后。", submissionId: null };
     if (!text.trim()) return { ok: false, message: null, submissionId: null };
-    this.publish({ sending: true, message: null });
+    this.publish({ sendingText: true, message: null });
     const submissionId = SubmissionIdSchema.parse(crypto.randomUUID());
+    let preparedOk = false;
     try {
       const prepared = await this.bridge.request({
         kind: "prepare",
@@ -198,6 +209,7 @@ export class SubmissionModel {
       this.accept(prepared);
       if (prepared.kind !== "receipt" || prepared.receipt.state !== "prepared")
         return { ok: false, message: this.view.message, submissionId: null };
+      preparedOk = true;
       const dispatched = await this.bridge.request({
         kind: "dispatch",
         threadId: this.threadId,
@@ -207,22 +219,27 @@ export class SubmissionModel {
       const ok =
         dispatched.kind === "receipt" &&
         dispatched.receipt.state === "dispatching";
-      // The receipt identity is returned so the caller renders the formal
-      // pipeline (dispatching/acknowledged/rejected/unknown) instead of a
-      // local boolean. dispatching is not acceptance; late Host events update
-      // the same receipt via subscription.
+      // The receipt identity is returned whenever prepare succeeded so the
+      // caller renders the formal pipeline (dispatching/acknowledged/
+      // rejected/unknown) instead of a local boolean. dispatching is not
+      // acceptance; late Host events update the same receipt via subscription.
+      // Only prepare-stage failures (no receipt) return null.
       return {
         ok,
         message: ok ? null : this.view.message,
-        submissionId: ok ? submissionId : null,
+        submissionId,
       };
     } catch {
       this.publish({
         message: "追发结果无法确认。原文与提交记录保留，不会自动重发。",
       });
-      return { ok: false, message: this.view.message, submissionId: null };
+      return {
+        ok: false,
+        message: this.view.message,
+        submissionId: preparedOk ? submissionId : null,
+      };
     } finally {
-      this.publish({ sending: false });
+      this.publish({ sendingText: false });
     }
   }
   async resend(originalId: SubmissionReceipt["submissionId"]): Promise<void> {

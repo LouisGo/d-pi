@@ -304,6 +304,12 @@ it("publishes the timeout default as one sent+flagged snapshot", async () => {
         items: [{ id: "single", status: "sent", defaultAnswered: true }],
       },
     });
+    // The native expiry timer was cleared on write: passing the original
+    // 5s deadline must not publish a second snapshot.
+    await vi.advanceTimersByTimeAsync(2_000);
+    expect(
+      messages.filter((message) => message.kind === "interactions").length,
+    ).toBe(before + 1);
   } finally {
     vi.useRealTimers();
   }
@@ -349,6 +355,48 @@ it("never auto-answers confirm with a native timeout; expiry is shown truthfully
     expect(last).toMatchObject({
       kind: "interactions",
       view: { items: [{ id: "confirm-timeout", status: "expired" }] },
+    });
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+it("keeps a confirm without native timeout pending past the 120s fallback", async () => {
+  vi.useFakeTimers();
+  try {
+    const messages: HostMessage[] = [];
+    const exit = vi.fn();
+    const host = createSessionHost((message) => messages.push(message), exit);
+    await host.handle({
+      kind: "start",
+      threadId: crypto.randomUUID(),
+      traceId: crypto.randomUUID(),
+      processInstanceId: crypto.randomUUID(),
+      connectionGeneration: crypto.randomUUID(),
+      configContextId: "fixture",
+      binary: "/fixture/omp",
+      identity: { directory: "/project", device: "1", inode: "2" },
+      environment: {},
+      sessionDirectory: "/sessions",
+    });
+    native.observers[0]?.({
+      kind: "frame",
+      frame: {
+        type: "extension_ui_request",
+        method: "confirm",
+        id: "confirm-eternal",
+        title: "Approve?",
+      },
+    });
+    await vi.advanceTimersByTimeAsync(180_000);
+    expect(
+      native.writes.some((frame) => frame.includes('"id":"confirm-eternal"')),
+    ).toBe(false);
+    const views = messages.filter((message) => message.kind === "interactions");
+    const last = views.at(-1);
+    expect(last).toMatchObject({
+      kind: "interactions",
+      view: { items: [{ id: "confirm-eternal", status: "pending" }] },
     });
   } finally {
     vi.useRealTimers();
@@ -471,6 +519,89 @@ it("refreshes the last known control from stop/continue replies so close-idle un
   }
 });
 
+it("acknowledges a superseded control call without applying its stale state (A9 lock)", async () => {
+  const idle = {
+    paused: false,
+    stopping: false,
+    pendingAsync: false,
+    admitted: false,
+    streaming: false,
+    compacting: false,
+    queued: 0,
+    background: 0,
+    queue: [],
+  };
+  let releaseControl!: (value: { success: boolean; data: unknown }) => void;
+  const gate = new Promise<{ success: boolean; data: unknown }>((resolve) => {
+    releaseControl = resolve;
+  });
+  const request = vi
+    .spyOn(NativeSession.prototype, "request")
+    .mockImplementation(async (command: string) => {
+      if (command === "d_pi_continue") return gate;
+      if (command === "d_pi_state") return native.controlRequest();
+      return {
+        success: true,
+        data: {
+          sessionId: "session",
+          sessionFile: "/sessions/session.jsonl",
+          model: { id: "model", provider: "fixture" },
+          isStreaming: false,
+          isCompacting: false,
+          queuedMessageCount: 0,
+        },
+      };
+    });
+  try {
+    const messages: HostMessage[] = [];
+    const exit = vi.fn();
+    const host = createSessionHost((message) => messages.push(message), exit);
+    const threadId = ThreadIdSchema.parse(crypto.randomUUID());
+    const generation = crypto.randomUUID();
+    await host.handle({
+      kind: "start",
+      threadId,
+      traceId: crypto.randomUUID(),
+      processInstanceId: crypto.randomUUID(),
+      connectionGeneration: generation,
+      configContextId: "fixture",
+      binary: "/fixture/omp",
+      identity: { directory: "/project", device: "1", inode: "2" },
+      environment: {},
+      sessionDirectory: "/sessions",
+    });
+    const traceId = crypto.randomUUID();
+    const pending = host.handle({
+      kind: "control",
+      command: { kind: "continue", threadId, traceId, generation },
+    });
+    // A newer native observation lands while the control reply is in flight.
+    native.observers[0]?.({
+      kind: "frame",
+      frame: {
+        type: "d_pi_control_state",
+        data: { ...idle, paused: true },
+      },
+    });
+    releaseControl({ success: true, data: { ...idle, paused: false } });
+    await pending;
+    // The call was processed natively: acknowledged. The stale idle state
+    // carried by the reply is not applied over the newer paused observation.
+    expect(messages).toContainEqual(
+      expect.objectContaining({
+        kind: "operation-result",
+        traceId,
+        operation: "continue",
+        status: "acknowledged",
+      }),
+    );
+    const controls = messages.filter((message) => message.kind === "control");
+    expect(controls.at(-1)).toMatchObject({ state: { paused: true } });
+  } finally {
+    request.mockRestore();
+  }
+});
+
 it("independent Host owners isolate native output, prompt timers and idle disposal", async () => {
   vi.useFakeTimers();
   function fixture() {
@@ -563,4 +694,65 @@ it("independent Host owners isolate native output, prompt timers and idle dispos
     }),
   );
   native.observers[1]?.({ kind: "disconnected", reason: "exit" });
+});
+
+it("dismisses an unknown dialog locally and reports acknowledged without a native write", async () => {
+  const messages: HostMessage[] = [];
+  const exit = vi.fn();
+  const host = createSessionHost((message) => messages.push(message), exit);
+  const threadId = crypto.randomUUID();
+  const generation = crypto.randomUUID();
+  await host.handle({
+    kind: "start",
+    threadId,
+    traceId: crypto.randomUUID(),
+    processInstanceId: crypto.randomUUID(),
+    connectionGeneration: generation,
+    configContextId: "fixture",
+    binary: "/fixture/omp",
+    identity: { directory: "/project", device: "1", inode: "2" },
+    environment: {},
+    sessionDirectory: "/sessions",
+  });
+  native.observers[0]?.({
+    kind: "frame",
+    frame: {
+      type: "extension_ui_request",
+      method: "input",
+      id: "wedged",
+      title: "Details",
+    },
+  });
+  // Production unknown path: transport loss converts pending to unknown.
+  native.observers[0]?.({ kind: "disconnected", reason: "write" });
+  const writesBefore = native.writes.length;
+  await host.handle({
+    kind: "dismiss",
+    command: {
+      kind: "dismiss",
+      threadId: ThreadIdSchema.parse(threadId),
+      traceId: crypto.randomUUID(),
+      generation,
+      id: "wedged",
+    },
+  });
+  // Local cleanup claims no native write; the block is released.
+  expect(native.writes).toHaveLength(writesBefore);
+  expect(messages).toContainEqual(
+    expect.objectContaining({
+      kind: "operation-result",
+      operation: "dismiss",
+      status: "acknowledged",
+    }),
+  );
+  expect(messages).toContainEqual(
+    expect.objectContaining({
+      kind: "interactions",
+      view: expect.objectContaining({
+        items: expect.arrayContaining([
+          expect.objectContaining({ id: "wedged", status: "cancelled" }),
+        ]),
+      }),
+    }),
+  );
 });

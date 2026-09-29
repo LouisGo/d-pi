@@ -3,6 +3,7 @@ import { ThreadIdSchema, TraceIdSchema } from "../../shared/identity";
 import { ControlCommandSchema, ControlStateSchema } from "../control/contracts";
 import {
   AnswerCommandSchema,
+  DismissCommandSchema,
   InteractionViewSchema,
 } from "../control/interactions";
 import type { ConversationPort } from "../conversation/contracts";
@@ -14,6 +15,7 @@ export const RuntimeCommandSchema = z.union([
   }),
   ControlCommandSchema,
   AnswerCommandSchema,
+  DismissCommandSchema,
 ]);
 export type RuntimeCommand = z.infer<typeof RuntimeCommandSchema>;
 export const RuntimeViewSchema = z.strictObject({

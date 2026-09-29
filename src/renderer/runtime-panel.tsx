@@ -13,6 +13,7 @@ export type FollowUpResult = {
 const emptySubmissionSubscribe = () => () => {};
 const emptySubmissionSnapshot = () => ({
   sending: false as const,
+  sendingText: false as const,
   receipts: [] as SubmissionReceipt[],
   message: null as string | null,
 });
@@ -26,10 +27,27 @@ export function RuntimePanel({
   onFollowUp: ((text: string) => Promise<FollowUpResult>) | undefined;
 }) {
   const state = useSyncExternalStore(model.subscribe, model.getSnapshot);
+  // subscribe/getSnapshot references are stable (instance methods or module
+  // constants); null->model flips once when submission becomes available.
   const submissions = useSyncExternalStore(
     submission?.subscribe ?? emptySubmissionSubscribe,
     submission?.getSnapshot ?? emptySubmissionSnapshot,
   );
+  // Follow-up identities live here, keyed by dialog id, so a generation
+  // change (remount) neither loses the success indicator nor allows a silent
+  // duplicate steer. Multiple entries per dialog are allowed: ack is call
+  // confirmation, not task completion.
+  const [followUps, setFollowUps] = useState<Record<string, string[]>>({});
+  const handleFollowUp = (dialogId: string) => async (text: string) => {
+    if (!onFollowUp) return { ok: false, message: null, submissionId: null };
+    const result = await onFollowUp(text);
+    if (result.submissionId)
+      setFollowUps((prev) => ({
+        ...prev,
+        [dialogId]: [...(prev[dialogId] ?? []), result.submissionId as string],
+      }));
+    return result;
+  };
   if (!state)
     return (
       <p className="muted" role="status">
@@ -104,8 +122,9 @@ export function RuntimePanel({
                 item={item}
                 trusted={state.trusted}
                 model={model}
-                onFollowUp={onFollowUp}
+                onFollowUp={onFollowUp ? handleFollowUp(item.id) : undefined}
                 submissionReceipts={submissions.receipts}
+                followUpIds={followUps[item.id] ?? []}
                 available={
                   state.phase !== "interrupted" && state.phase !== "failed"
                 }
@@ -135,6 +154,7 @@ export function RuntimePanel({
                       model={model}
                       onFollowUp={undefined}
                       submissionReceipts={[]}
+                      followUpIds={[]}
                       available={false}
                     />
                   ))}
@@ -182,6 +202,7 @@ function NativeDialog({
   trusted,
   onFollowUp,
   submissionReceipts,
+  followUpIds,
 }: {
   item: Interaction;
   model: RuntimeModel;
@@ -189,29 +210,29 @@ function NativeDialog({
   trusted: boolean;
   onFollowUp: ((text: string) => Promise<FollowUpResult>) | undefined;
   submissionReceipts: SubmissionReceipt[];
+  followUpIds: string[];
 }) {
   const [value, setValue] = useState(item.prefill ?? "");
   const [sent, setSent] = useState(false);
-  const [followUpId, setFollowUpId] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [followUpError, setFollowUpError] = useState<string | null>(null);
   const enabled = available && item.status === "pending" && !sent;
   const defaulted = item.status === "sent" && item.defaultAnswered;
-  const followUpReceipt = followUpId
-    ? (submissionReceipts.find(
-        (receipt) => receipt.submissionId === followUpId,
-      ) ?? null)
-    : null;
-  // The formal receipt owns the result. dispatching/prepared is not success;
-  // only acknowledged owns "sent". Rejected/unknown/failed release the lock so
-  // the text stays editable and retry creates a new submission identity.
-  const followUpLocked =
-    followUpReceipt !== null &&
-    (followUpReceipt.state === "prepared" ||
-      followUpReceipt.state === "dispatching" ||
-      (followUpReceipt.state === "acknowledged" &&
-        followUpReceipt.outcome !== "failed" &&
-        followUpReceipt.outcome !== "unknown"));
+  const followUpReceipts = followUpIds
+    .map(
+      (id) =>
+        submissionReceipts.find((receipt) => receipt.submissionId === id) ??
+        null,
+    )
+    .filter((receipt) => receipt !== null);
+  // The formal receipts own the results. An in-flight prepared/dispatching
+  // entry pauses further sends for this card; terminal entries never lock:
+  // acknowledged is call confirmation, not task completion, so a typo can be
+  // corrected with a new steer. Rejected/unknown stay visible with retry.
+  const followUpInFlight = followUpReceipts.some(
+    (receipt) =>
+      receipt.state === "prepared" || receipt.state === "dispatching",
+  );
   const followUp = () => {
     if (
       !available ||
@@ -219,15 +240,17 @@ function NativeDialog({
       !onFollowUp ||
       !value.trim() ||
       sending ||
-      followUpLocked
+      followUpInFlight
     )
       return;
     setSending(true);
     setFollowUpError(null);
     void onFollowUp(value).then((result) => {
       setSending(false);
-      if (result.ok && result.submissionId) setFollowUpId(result.submissionId);
-      else setFollowUpError(result.message ?? "追发失败，原文保留在输入框。");
+      // Identity is appended by the parent (survives remount); failures with
+      // a formal receipt are still tracked via that identity.
+      if (!result.ok || !result.submissionId)
+        setFollowUpError(result.message ?? "追发失败，原文保留在输入框。");
     });
   };
   const answer = (response: Parameters<RuntimeModel["answer"]>[1]) => {
@@ -312,7 +335,7 @@ function NativeDialog({
             <textarea
               className="native-answer"
               aria-label={`${item.title}的继续作答`}
-              disabled={!available || !trusted || followUpLocked || sending}
+              disabled={!available || !trusted || followUpInFlight || sending}
               value={value}
               placeholder={item.placeholder}
               maxLength={16384}
@@ -322,7 +345,7 @@ function NativeDialog({
               disabled={
                 !available ||
                 !trusted ||
-                followUpLocked ||
+                followUpInFlight ||
                 sending ||
                 !value.trim()
               }
@@ -331,26 +354,36 @@ function NativeDialog({
               {sending ? "正在追发…" : "作为追发消息发送"}
             </Button>
           </div>
-          {followUpReceipt?.state === "acknowledged" &&
-            followUpReceipt.outcome !== "failed" &&
-            followUpReceipt.outcome !== "unknown" && (
-              <p role="status">已作为追发消息发送（调用已确认）。</p>
-            )}
-          {(followUpReceipt?.state === "prepared" ||
-            followUpReceipt?.state === "dispatching") && (
-            <p role="status">已派发，等待原生调用确认；不是任务完成。</p>
-          )}
-          {followUpReceipt &&
-            (followUpReceipt.state === "rejected" ||
-              followUpReceipt.state === "unknown" ||
-              followUpReceipt.outcome === "failed" ||
-              followUpReceipt.outcome === "unknown") && (
-              <p role="alert" className="failure">
-                追发
-                {followUpReceipt.state === "rejected" ? "被拒绝" : "结果未知"}
-                ，原文保留在输入框，可修改后再次发送；以提交记录为准，不会自动重发。
-              </p>
-            )}
+          {followUpReceipts.map((receipt) => (
+            <p
+              key={receipt.submissionId}
+              role={
+                receipt.state === "rejected" ||
+                receipt.state === "unknown" ||
+                receipt.outcome === "failed" ||
+                receipt.outcome === "unknown"
+                  ? "alert"
+                  : "status"
+              }
+              className={
+                receipt.state === "rejected" ||
+                receipt.state === "unknown" ||
+                receipt.outcome === "failed" ||
+                receipt.outcome === "unknown"
+                  ? "failure"
+                  : undefined
+              }
+            >
+              {receipt.state === "acknowledged" &&
+              receipt.outcome !== "failed" &&
+              receipt.outcome !== "unknown"
+                ? "已作为追发消息发送（调用已确认，可继续追发纠正）。"
+                : receipt.state === "prepared" ||
+                    receipt.state === "dispatching"
+                  ? "已派发，等待原生调用确认；不是任务完成。"
+                  : `追发${receipt.state === "rejected" ? "被拒绝" : "结果未知"}，原文保留，可修改后再次发送；以提交记录为准。`}
+            </p>
+          ))}
           {followUpError && (
             <p role="alert" className="failure">
               {followUpError}
@@ -358,17 +391,24 @@ function NativeDialog({
           )}
         </>
       ) : (
-        <p role="status">
-          {item.status === "expired"
-            ? "请求已超时"
-            : item.status === "cancelled"
-              ? "原生已取消"
-              : item.status === "unknown"
-                ? "回答结果未知，不自动重答"
-                : item.status === "pending"
-                  ? "回答已提交，结果尚未确认；不会自动重答"
-                  : "回答已写出，等待原生后续结果；不代表任务完成"}
-        </p>
+        <>
+          <p role="status">
+            {item.status === "expired"
+              ? "请求已超时"
+              : item.status === "cancelled"
+                ? "原生已取消"
+                : item.status === "unknown"
+                  ? "回答结果未知，不自动重答"
+                  : item.status === "pending"
+                    ? "回答已提交，结果尚未确认；不会自动重答"
+                    : "回答已写出，等待原生后续结果；不代表任务完成"}
+          </p>
+          {item.status === "unknown" && (
+            <Button variant="ghost" onClick={() => void model.dismiss(item.id)}>
+              确认未知并关闭
+            </Button>
+          )}
+        </>
       )}
     </article>
   );

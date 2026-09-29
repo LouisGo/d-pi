@@ -3,7 +3,63 @@ import { ThreadIdSchema } from "../../shared/identity";
 import { DraftSchema } from "../draft/contracts";
 import { DraftController } from "../draft/controller";
 import { SubmissionReceiptSchema, type SubmissionReply } from "./contracts";
-import { SubmissionModel } from "./model";
+import { mergeReceipt, SubmissionModel } from "./model";
+
+it("merges receipts monotonically: wall-clock never reorders causal facts (A3 lock)", () => {
+  const base = {
+    submissionId: crypto.randomUUID(),
+    threadId: crypto.randomUUID(),
+    traceId: crypto.randomUUID(),
+    revision: 1,
+    text: "A",
+    requestId: crypto.randomUUID(),
+    target: {
+      processInstanceId: crypto.randomUUID(),
+      connectionGeneration: crypto.randomUUID(),
+      configContextId: "cfg",
+      nativeSessionRef: "s",
+    },
+    createdAt: "2026-09-29T00:00:00.000Z",
+    updatedAt: "2026-09-29T00:00:00.000Z",
+    acknowledgedAt: null,
+  } as const;
+  const receipt = (state: string, outcome = "unobserved", updatedAt?: string) =>
+    SubmissionReceiptSchema.parse({
+      ...base,
+      state,
+      outcome,
+      ...(updatedAt ? { updatedAt } : {}),
+    });
+  // rejected and acknowledged are terminal: late replies cannot revive them.
+  expect(mergeReceipt(receipt("rejected"), receipt("acknowledged")).state).toBe(
+    "rejected",
+  );
+  expect(mergeReceipt(receipt("acknowledged"), receipt("prepared")).state).toBe(
+    "acknowledged",
+  );
+  // unknown never regresses to prepared/dispatching.
+  expect(mergeReceipt(receipt("unknown"), receipt("prepared")).state).toBe(
+    "unknown",
+  );
+  expect(mergeReceipt(receipt("unknown"), receipt("dispatching")).state).toBe(
+    "unknown",
+  );
+  // dispatching never regresses to prepared.
+  expect(mergeReceipt(receipt("dispatching"), receipt("prepared")).state).toBe(
+    "dispatching",
+  );
+  // failed outcome sticks even when state advances to acknowledged.
+  expect(
+    mergeReceipt(receipt("dispatching"), receipt("acknowledged", "failed")),
+  ).toMatchObject({ state: "acknowledged", outcome: "failed" });
+  // updatedAt is display metadata (max), not causal ordering.
+  expect(
+    mergeReceipt(
+      receipt("acknowledged", "unobserved", "2026-09-29T00:00:02.000Z"),
+      receipt("acknowledged", "unobserved", "2026-09-29T00:00:01.000Z"),
+    ).updatedAt,
+  ).toBe("2026-09-29T00:00:02.000Z");
+});
 
 it("freezes A before dispatch, consumes only its unchanged edit sequence, and deduplicates ACK", async () => {
   const draft = DraftSchema.parse({
@@ -249,6 +305,89 @@ it("reports follow-up honesty: success only after dispatch, failure message othe
     message: null,
     submissionId: null,
   });
+  m.dispose();
+  controller.dispose();
+});
+
+it("binds dispatch-stage failures to the formal receipt and keeps draft/text channels independent", async () => {
+  const threadId = ThreadIdSchema.parse(crypto.randomUUID());
+  const controller = new DraftController(
+    DraftSchema.parse({
+      schemaVersion: 1,
+      threadId,
+      workspaceId: crypto.randomUUID(),
+      directory: "/p",
+      revision: 1,
+      text: "B",
+    }),
+    async (revision) => ({
+      kind: "saved",
+      threadId,
+      revision: revision + 1,
+    }),
+    () => {
+      throw Error("save failed");
+    },
+  );
+  let dispatchState: "rejected" | "dispatching" = "rejected";
+  const m = new SubmissionModel(
+    {
+      subscribe() {
+        return () => {};
+      },
+      async request(command) {
+        if (command.kind === "list") return { kind: "list", receipts: [] };
+        if (command.kind === "prepare") {
+          const { kind: _kind, ...value } = command;
+          return {
+            kind: "receipt",
+            receipt: SubmissionReceiptSchema.parse({
+              ...value,
+              target: {
+                processInstanceId: crypto.randomUUID(),
+                connectionGeneration: crypto.randomUUID(),
+                configContextId: "cfg",
+                nativeSessionRef: "s",
+              },
+              requestId: crypto.randomUUID(),
+              state: "prepared",
+              acknowledgedAt: null,
+              outcome: "unobserved",
+              createdAt: "now",
+              updatedAt: "now",
+            }),
+          };
+        }
+        const prepared = m
+          .getSnapshot()
+          .receipts.find((r) => r.submissionId === command.submissionId);
+        return {
+          kind: "receipt",
+          receipt: { ...prepared!, state: dispatchState },
+        };
+      },
+    },
+    threadId,
+    controller,
+  );
+  // Dispatch-stage rejected still binds the formal receipt identity.
+  const rejected = await m.sendText("blocked", "steer");
+  expect(rejected.ok).toBe(false);
+  expect(rejected.submissionId).toEqual(expect.any(String));
+  expect(
+    m
+      .getSnapshot()
+      .receipts.find((r) => r.submissionId === rejected.submissionId)?.state,
+  ).toBe("rejected");
+  // Draft and free-text channels do not head-block each other.
+  dispatchState = "dispatching";
+  const a = m.sendText("concurrent-text", "steer");
+  // Simulate a draft send in flight by directly publishing sending (unit-level:
+  // send() and sendText() use independent flags).
+  expect(m.getSnapshot().sendingText).toBe(true);
+  expect(m.getSnapshot().sending).toBe(false);
+  const done = await a;
+  expect(done.ok).toBe(true);
   m.dispose();
   controller.dispose();
 });

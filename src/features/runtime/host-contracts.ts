@@ -2,6 +2,7 @@ import { z } from "zod";
 import { ControlCommandSchema, ControlStateSchema } from "../control/contracts";
 import {
   AnswerCommandSchema,
+  DismissCommandSchema,
   InteractionViewSchema,
 } from "../control/interactions";
 import {
@@ -26,6 +27,7 @@ export type HostStart = z.infer<typeof HostStartSchema>;
 export const HostCommandSchema = z.discriminatedUnion("kind", [
   HostStartSchema,
   z.strictObject({ kind: z.literal("answer"), command: AnswerCommandSchema }),
+  z.strictObject({ kind: z.literal("dismiss"), command: DismissCommandSchema }),
   z.strictObject({ kind: z.literal("control"), command: ControlCommandSchema }),
   z.strictObject({ kind: z.literal("attach") }),
   z.strictObject({
@@ -67,7 +69,7 @@ export const HostMessageSchema = z.discriminatedUnion("kind", [
     kind: z.literal("operation-result"),
     traceId: z.uuid(),
     generation: z.uuid(),
-    operation: z.enum(["answer", "stop", "continue"]),
+    operation: z.enum(["answer", "dismiss", "stop", "continue"]),
     status: z.enum(["acknowledged", "failed", "unknown"]),
   }),
   z.object({ kind: z.literal("interactions"), view: InteractionViewSchema }),
