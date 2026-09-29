@@ -19,6 +19,7 @@ import { HistoryRequestSchema } from "../../modules/conversation/contracts/publi
 import { readNativeHistory } from "../../modules/conversation/main/public";
 import {
   RuntimeCommandSchema,
+  RuntimeFailureSchema,
   SubmissionCommandSchema,
 } from "../../modules/execution/contracts/public";
 import { RuntimeService } from "../../modules/execution/main/public";
@@ -31,6 +32,7 @@ import {
   Diagnostics,
   diagnosticCode,
 } from "../../platform/main/diagnostics/public";
+import { RuntimeResourceError } from "../../platform/omp/resources/public";
 import { createI18n } from "../../shared/i18n/create-i18n";
 import {
   type LocalePreference,
@@ -39,6 +41,7 @@ import {
   resolveLocale,
 } from "../../shared/i18n/locale";
 import { TraceIdSchema } from "../../shared/identity";
+import { uiMessage } from "../../shared/messages/contracts";
 import {
   BridgeDiagnosticSchema,
   EnvelopeSchema,
@@ -174,6 +177,22 @@ const closeResult = z.strictObject({ token: z.uuid(), saved: z.boolean() });
 const traceContext = z.object({
   command: z.object({ traceId: TraceIdSchema }),
 });
+function runtimeFailure(
+  traceId: string,
+  error: unknown,
+): ReturnType<typeof RuntimeFailureSchema.parse> {
+  const resource = error instanceof RuntimeResourceError;
+  return RuntimeFailureSchema.parse({
+    traceId,
+    code: resource
+      ? error.code
+      : (diagnosticCode(error) ?? "runtime-unavailable"),
+    category: resource ? "resource" : "unknown",
+    message: resource
+      ? uiMessage("runtime.sdkResourcesUnavailable")
+      : uiMessage("runtime.connectionUnknown"),
+  });
+}
 function sourceValid(
   event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent,
 ): boolean {
@@ -421,7 +440,6 @@ else {
         throw new Error("Invalid runtime request source");
       const command = RuntimeCommandSchema.parse(raw);
       if (command.kind === "inspect") initializeStorage();
-      if (!runtime) throw new Error("Runtime storage unavailable");
       const context = {
         traceId: command.traceId,
         requestId: randomUUID(),
@@ -429,6 +447,18 @@ else {
         operation: `runtime:${command.kind}`,
       };
       diagnostics?.record({ ...context, stage: "received" });
+      if (!runtime) {
+        const failure = runtimeFailure(
+          command.traceId,
+          Error("Runtime storage unavailable"),
+        );
+        diagnostics?.record({
+          ...context,
+          stage: "failed",
+          code: failure.code,
+        });
+        return { kind: "failed", error: failure };
+      }
       try {
         const view = await runtime.execute(command);
         diagnostics?.record({
@@ -442,14 +472,17 @@ else {
                 ? "dispatching"
                 : "completed",
         });
-        return view;
-      } catch {
+        return { kind: "view", view };
+      } catch (error) {
+        const failure = runtimeFailure(command.traceId, error);
+        const causeCode = diagnosticCode(error);
         diagnostics?.record({
           ...context,
           stage: "failed",
-          code: "runtime-unavailable",
+          code: failure.code,
+          ...(causeCode ? { causeCode } : {}),
         });
-        throw new Error("Runtime operation unavailable");
+        return { kind: "failed", error: failure };
       }
     });
     ipcMain.handle("draft:request", async (event, raw: unknown) => {

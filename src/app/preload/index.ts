@@ -11,6 +11,7 @@ import {
 } from "../../modules/conversation/contracts/public";
 import {
   RuntimeCommandSchema,
+  RuntimeReplySchema,
   RuntimeViewSchema,
   SubmissionCommandSchema,
   SubmissionReplySchema,
@@ -164,10 +165,15 @@ const bridge: DesktopBridge = {
   runtime: {
     async request(command) {
       const value = RuntimeCommandSchema.parse(command);
-      const reply = RuntimeViewSchema.parse(
+      const reply = RuntimeReplySchema.parse(
         await ipcRenderer.invoke("runtime:request", value),
       );
-      if (reply.threadId !== value.threadId)
+      if (reply.kind === "failed") {
+        if (reply.error.traceId !== value.traceId)
+          throw Error("Mismatched runtime failure");
+        return reply;
+      }
+      if (reply.view.threadId !== value.threadId)
         throw Error("Foreign runtime reply");
       return reply;
     },

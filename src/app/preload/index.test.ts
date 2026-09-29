@@ -69,6 +69,34 @@ it("locale bridge validates snapshots, forwards only valid changes, and rejects 
   await expect(bridge.locale.setPreference("system")).rejects.toThrow();
 });
 
+it("returns a schema-validated runtime failure with its semantic message", async () => {
+  await import("./index");
+  const bridge = shell.expose.mock.calls.at(-1)?.[1];
+  if (!bridge?.runtime) throw Error("runtime bridge not exposed");
+  const command = {
+    kind: "inspect" as const,
+    threadId: ThreadIdSchema.parse(crypto.randomUUID()),
+    traceId: crypto.randomUUID(),
+  };
+  shell.invoke.mockResolvedValueOnce({
+    kind: "failed",
+    error: {
+      traceId: command.traceId,
+      code: "resource-missing",
+      category: "resource",
+      message: { code: "runtime.sdkResourcesUnavailable" },
+    },
+  });
+  await expect(bridge.runtime.request(command)).resolves.toMatchObject({
+    kind: "failed",
+    error: {
+      code: "resource-missing",
+      category: "resource",
+      message: { code: "runtime.sdkResourcesUnavailable" },
+    },
+  });
+});
+
 it("rejects a preferences receipt that changes the requested send key", async () => {
   await import("./index");
   const bridge = shell.expose.mock.calls.at(-1)?.[1];

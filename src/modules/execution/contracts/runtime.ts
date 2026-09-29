@@ -40,7 +40,19 @@ export const RuntimeViewSchema = z.strictObject({
   message: UiMessageSchema,
 });
 export type RuntimeView = z.infer<typeof RuntimeViewSchema>;
+export const RuntimeFailureSchema = z.strictObject({
+  traceId: TraceIdSchema,
+  code: z.string().regex(/^[A-Za-z0-9._:-]{1,64}$/),
+  category: z.enum(["resource", "transport", "unknown"]),
+  message: UiMessageSchema,
+});
+export type RuntimeFailure = z.infer<typeof RuntimeFailureSchema>;
+export const RuntimeReplySchema = z.discriminatedUnion("kind", [
+  z.strictObject({ kind: z.literal("view"), view: RuntimeViewSchema }),
+  z.strictObject({ kind: z.literal("failed"), error: RuntimeFailureSchema }),
+]);
+export type RuntimeReply = z.infer<typeof RuntimeReplySchema>;
 export interface RuntimeBridge {
-  request(command: RuntimeCommand): Promise<RuntimeView>;
+  request(command: RuntimeCommand): Promise<RuntimeReply>;
   subscribe(listener: (view: RuntimeView) => void): () => void;
 }

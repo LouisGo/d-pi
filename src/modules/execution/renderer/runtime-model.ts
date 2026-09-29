@@ -4,6 +4,7 @@ import type { Answer } from "../contracts/interactions";
 import type {
   RuntimeBridge,
   RuntimeCommand,
+  RuntimeFailure,
   RuntimeView,
 } from "../contracts/public";
 export class RuntimeModel {
@@ -27,6 +28,25 @@ export class RuntimeModel {
     this.view = view;
     for (const listener of this.listeners) listener();
   }
+  private failureView(
+    threadId: ThreadId,
+    traceId: string,
+    message: RuntimeFailure["message"],
+    busy: boolean,
+  ): RuntimeView {
+    return {
+      threadId,
+      traceId,
+      configuration:
+        this.view?.configuration ?? uiMessage("runtime.configUnknown"),
+      revision: this.view?.revision ?? 0,
+      phase: "interrupted",
+      trusted: this.view?.trusted ?? false,
+      busy,
+      model: this.view?.model ?? null,
+      message,
+    };
+  }
   bind(thread: ThreadId): void {
     if (this.thread === thread) return;
     this.thread = thread;
@@ -44,36 +64,56 @@ export class RuntimeModel {
     const generation = this.generation;
     const traceId = crypto.randomUUID();
     try {
-      const view = await this.bridge.request({ kind, threadId, traceId });
-      if (generation === this.generation && view.threadId === threadId)
-        this.publish(view);
+      const reply = await this.bridge.request({ kind, threadId, traceId });
+      if (generation !== this.generation) return;
+      if (reply.kind === "view" && reply.view.threadId === threadId) {
+        this.publish(reply.view);
+        return;
+      }
+      if (reply.kind === "failed" && reply.error.traceId === traceId)
+        this.publish(
+          this.failureView(
+            threadId,
+            traceId,
+            reply.error.message,
+            kind === "start" || (this.view?.busy ?? false),
+          ),
+        );
+      else if (reply.kind === "failed")
+        throw Error("Mismatched runtime failure");
+      else throw Error("Foreign runtime reply");
     } catch {
       if (generation !== this.generation) return;
-      this.publish({
-        threadId,
-        traceId,
-        configuration:
-          this.view?.configuration ?? uiMessage("runtime.configUnknown"),
-        revision: this.view?.revision ?? 0,
-        phase: "interrupted",
-        trusted: this.view?.trusted ?? false,
-        busy: kind === "start" || (this.view?.busy ?? false),
-        model: this.view?.model ?? null,
-        message: uiMessage("runtime.connectionUnknown"),
-      });
+      this.publish(
+        this.failureView(
+          threadId,
+          traceId,
+          uiMessage("runtime.connectionUnknown"),
+          kind === "start" || (this.view?.busy ?? false),
+        ),
+      );
     }
   }
   async control(kind: "stop" | "continue"): Promise<void> {
     const current = this.view;
     if (!current?.generation || !this.thread) return;
+    const traceId = crypto.randomUUID();
     try {
-      const view = await this.bridge.request({
+      const reply = await this.bridge.request({
         kind,
         threadId: this.thread,
-        traceId: crypto.randomUUID(),
+        traceId,
         generation: current.generation,
       });
-      if (this.thread === view.threadId) this.publish(view);
+      if (reply.kind === "view" && this.thread === reply.view.threadId)
+        this.publish(reply.view);
+      else if (
+        reply.kind === "failed" &&
+        reply.error.traceId === traceId &&
+        this.view === current
+      )
+        this.publish({ ...current, traceId, message: reply.error.message });
+      else throw Error("Mismatched runtime reply");
     } catch {
       if (this.view === current)
         this.publish({
@@ -85,16 +125,25 @@ export class RuntimeModel {
   async answer(id: string, answer: Answer): Promise<void> {
     const current = this.view;
     if (!current?.interactions || !this.thread) return;
+    const traceId = crypto.randomUUID();
     try {
-      const view = await this.bridge.request({
+      const reply = await this.bridge.request({
         kind: "answer",
         threadId: this.thread,
-        traceId: crypto.randomUUID(),
+        traceId,
         generation: current.interactions.generation,
         id,
         answer,
       });
-      if (this.thread === view.threadId) this.publish(view);
+      if (reply.kind === "view" && this.thread === reply.view.threadId)
+        this.publish(reply.view);
+      else if (
+        reply.kind === "failed" &&
+        reply.error.traceId === traceId &&
+        this.view === current
+      )
+        this.publish({ ...current, traceId, message: reply.error.message });
+      else throw Error("Mismatched runtime reply");
     } catch {
       if (this.view === current)
         this.publish({
@@ -106,15 +155,24 @@ export class RuntimeModel {
   async dismiss(id: string): Promise<void> {
     const current = this.view;
     if (!current?.interactions || !this.thread) return;
+    const traceId = crypto.randomUUID();
     try {
-      const view = await this.bridge.request({
+      const reply = await this.bridge.request({
         kind: "dismiss",
         threadId: this.thread,
-        traceId: crypto.randomUUID(),
+        traceId,
         generation: current.interactions.generation,
         id,
       });
-      if (this.thread === view.threadId) this.publish(view);
+      if (reply.kind === "view" && this.thread === reply.view.threadId)
+        this.publish(reply.view);
+      else if (
+        reply.kind === "failed" &&
+        reply.error.traceId === traceId &&
+        this.view === current
+      )
+        this.publish({ ...current, traceId, message: reply.error.message });
+      else throw Error("Mismatched runtime reply");
     } catch {
       if (this.view === current)
         this.publish({

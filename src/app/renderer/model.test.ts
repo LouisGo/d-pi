@@ -243,7 +243,7 @@ it("keeps conversation projection lifecycle in the AppModel", async () => {
       };
     },
     runtime: {
-      request: () => new Promise<RuntimeView>(() => {}),
+      request: () => new Promise<{ kind: "view"; view: RuntimeView }>(() => {}),
       subscribe: (listener) => {
         runtimeListeners.push(listener);
         return () => {

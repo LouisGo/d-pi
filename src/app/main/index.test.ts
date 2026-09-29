@@ -431,16 +431,19 @@ it("runtime inspection is read-only, rejects foreign frames, and explicit allowa
       handler({ sender: {}, senderFrame: {} }, request),
     ).rejects.toThrow();
     expect(await handler(event, request)).toMatchObject({
-      phase: "browse",
-      trusted: false,
+      kind: "view",
+      view: {
+        phase: "browse",
+        trusted: false,
+      },
     });
     expect(await handler(event, { ...request, kind: "allow" })).toMatchObject({
-      phase: "allowed",
-      trusted: true,
+      kind: "view",
+      view: { phase: "allowed", trusted: true },
     });
     expect(await handler(event, { ...request, kind: "revoke" })).toMatchObject({
-      phase: "browse",
-      trusted: false,
+      kind: "view",
+      view: { phase: "browse", trusted: false },
     });
   } finally {
     shell.events.get("will-quit")?.({ preventDefault: vi.fn() });
