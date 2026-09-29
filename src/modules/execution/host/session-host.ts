@@ -14,9 +14,9 @@ import {
   type HostCommand,
   type HostMessage,
   type HostStart,
-  type HostSubmissionRejectionReason,
   type NativeState,
   NativeStateSchema,
+  type SubmissionRejectionReason,
 } from "../contracts/public";
 import { changesManagedSession } from "../core/public";
 import { PendingInteractions } from "./interactions";
@@ -414,7 +414,7 @@ export function createSessionHost(
   }
   function dispatchRejectionReason(
     value: FrozenSubmission,
-  ): HostSubmissionRejectionReason | null {
+  ): SubmissionRejectionReason | null {
     if (!start || !state || !state.model) return "not-ready";
     if (!native || disconnected || closing) return "native-unavailable";
     if (changesManagedSession(value.text)) return "unsupported-native-command";

@@ -2,6 +2,8 @@ import { createIntl, createIntlCache } from "@formatjs/intl";
 import { enUSMessages, type MessageKey, zhCNMessages } from "./catalog";
 import type { SupportedLocale } from "./locale";
 
+export type { MessageKey };
+
 export type MessageValues = Record<string, string | number | Date>;
 export interface I18n {
   readonly locale: SupportedLocale;

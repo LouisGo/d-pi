@@ -11,6 +11,7 @@ import type {
 } from "../../modules/execution/renderer/public";
 import { useI18n } from "../../modules/preferences/renderer/public";
 import type { UiMessage } from "../../shared/messages/contracts";
+import { receiptNeedsAttention, receiptStatusKey } from "./receipt-status";
 export type FollowUpResult = {
   ok: boolean;
   message: UiMessage | null;
@@ -412,49 +413,28 @@ function NativeDialog({
                 : t("ui.interaction.sendFollowUp")}
             </Button>
           </div>
-          {followUpReceipts.map((receipt) => (
-            <div key={receipt.submissionId}>
-              <p
-                role={
-                  receipt.state === "rejected" ||
-                  receipt.state === "unknown" ||
-                  receipt.outcome === "failed" ||
-                  receipt.outcome === "unknown"
-                    ? "alert"
-                    : "status"
-                }
-                className={
-                  receipt.state === "rejected" ||
-                  receipt.state === "unknown" ||
-                  receipt.outcome === "failed" ||
-                  receipt.outcome === "unknown"
-                    ? "failure"
-                    : undefined
-                }
-              >
-                {receipt.state === "acknowledged" &&
-                receipt.outcome !== "failed" &&
-                receipt.outcome !== "unknown"
-                  ? t("ui.interaction.followUpAcknowledged")
-                  : receipt.state === "prepared"
-                    ? t("ui.interaction.followUpPrepared")
-                    : receipt.state === "dispatching"
-                      ? t("ui.interaction.followUpDispatching")
-                      : receipt.state === "rejected"
-                        ? t("ui.interaction.followUpRejected")
-                        : t("ui.interaction.followUpUnknown")}
-              </p>
-              {receipt.state === "prepared" && onContinueFollowUp && (
-                <Button
-                  variant="ghost"
-                  disabled={!available || !trusted}
-                  onClick={() => onContinueFollowUp(receipt.submissionId)}
+          {followUpReceipts.map((receipt) => {
+            const trouble = receiptNeedsAttention(receipt);
+            return (
+              <div key={receipt.submissionId}>
+                <p
+                  role={trouble ? "alert" : "status"}
+                  className={trouble ? "failure" : undefined}
                 >
-                  {t("ui.interaction.continueDispatch")}
-                </Button>
-              )}
-            </div>
-          ))}
+                  {t(receiptStatusKey(receipt))}
+                </p>
+                {receipt.state === "prepared" && onContinueFollowUp && (
+                  <Button
+                    variant="ghost"
+                    disabled={!available || !trusted}
+                    onClick={() => onContinueFollowUp(receipt.submissionId)}
+                  >
+                    {t("ui.interaction.continueDispatch")}
+                  </Button>
+                )}
+              </div>
+            );
+          })}
           {followUpError && (
             <p role="alert" className="failure">
               {followUpError === "fallback"

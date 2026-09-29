@@ -171,6 +171,20 @@ export const ui = {
     "Dispatched, awaiting native call confirmation; the task is not complete.",
   "ui.interaction.followUpRejected":
     "Follow-up rejected. The original text is preserved; you can edit and resend. Check submission records.",
+  "ui.interaction.rejected.notReady":
+    "Follow-up not sent: the session has no ready model yet. Start or wait for the session, then send again.",
+  "ui.interaction.rejected.nativeUnavailable":
+    "Follow-up not sent: the native session is not connected. Reconnect, then send again.",
+  "ui.interaction.rejected.unsupportedNativeCommand":
+    "Follow-up not sent: this text is a managed native command and cannot go through the composer.",
+  "ui.interaction.rejected.paused":
+    "Follow-up not sent: the native queue is paused. Continue the queue, then send again.",
+  "ui.interaction.rejected.interactionPending":
+    "Follow-up not sent: a native dialog is waiting for an answer. Answer or dismiss it first.",
+  "ui.interaction.rejected.staleTarget":
+    "Follow-up not sent: it targeted an older session instance. Send it again on the current session.",
+  "ui.interaction.rejected.correlationLimit":
+    "Follow-up not sent: too many dispatches are still unconfirmed. Wait for their results, then send again.",
   "ui.interaction.followUpUnknown":
     "Follow-up result unknown. The original text is preserved; you can edit and resend. Check submission records.",
   "ui.interaction.continueDispatch": "Continue dispatching this item",

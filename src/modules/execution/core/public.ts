@@ -19,3 +19,4 @@ export {
   type SubmissionResult,
   type SubmissionStore,
 } from "./submission-coordinator";
+export { sameSubmissionTarget } from "./target";

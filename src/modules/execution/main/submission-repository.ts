@@ -8,6 +8,7 @@ import {
   SubmissionConflict,
   type SubmissionReceipt,
   SubmissionReceiptSchema,
+  type SubmissionRejectionReason,
 } from "../contracts/public";
 export class SubmissionRepository {
   constructor(
@@ -153,7 +154,7 @@ export class SubmissionRepository {
       );
   }
   // Main before dispatch or Host before its native write can prove non-dispatch.
-  rejectSubmission(id: string): void {
+  rejectSubmission(id: string, reason?: SubmissionRejectionReason): void {
     this.database.transaction(() => {
       const receipt = this.submission(id);
       if (
@@ -163,10 +164,12 @@ export class SubmissionRepository {
           receipt.state !== "unknown")
       )
         return;
+      const { rejectionReason: _previous, ...rest } = receipt;
       this.writeReceipt({
-        ...receipt,
+        ...rest,
         state: "rejected",
         outcome: "unobserved",
+        ...(reason ? { rejectionReason: reason } : {}),
       });
     });
   }

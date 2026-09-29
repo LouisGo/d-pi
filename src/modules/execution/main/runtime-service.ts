@@ -22,11 +22,10 @@ import {
 } from "../contracts/public";
 import type { RuntimeCommand, RuntimeView } from "../contracts/runtime";
 import { RuntimeAdmission, sameDirectoryIdentity } from "../core/admission";
-import { SubmissionCoordinator } from "../core/public";
+import { SubmissionCoordinator, sameSubmissionTarget } from "../core/public";
 import { canSubmit, queueCapped } from "../core/submission-admission";
 import { HostConnection } from "./host-connection";
 import type { SubmissionRepository } from "./submission-repository";
-import { sameSubmissionTarget } from "./target";
 
 type RuntimeStore = {
   threads: Pick<

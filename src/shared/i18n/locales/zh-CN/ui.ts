@@ -158,6 +158,20 @@ export const ui = {
     "已派发，等待原生调用确认；不是任务完成。",
   "ui.interaction.followUpRejected":
     "追发被拒绝，原文保留，可修改后再次发送；以提交记录为准。",
+  "ui.interaction.rejected.notReady":
+    "追发未发出：会话尚未就绪（没有可用模型）。请先启动或等待会话就绪，再发送一次。",
+  "ui.interaction.rejected.nativeUnavailable":
+    "追发未发出：原生会话未连接。请先重新连接，再发送一次。",
+  "ui.interaction.rejected.unsupportedNativeCommand":
+    "追发未发出：该文本属于应用托管的原生命令，不能经输入框发送。",
+  "ui.interaction.rejected.paused":
+    "追发未发出：原生队列已暂停。请先恢复队列，再发送一次。",
+  "ui.interaction.rejected.interactionPending":
+    "追发未发出：有原生对话框等待回答。请先回答或关闭它。",
+  "ui.interaction.rejected.staleTarget":
+    "追发未发出：它指向的是旧的原生会话实例。请对当前会话重新发送。",
+  "ui.interaction.rejected.correlationLimit":
+    "追发未发出：未确认的派发过多。请等待这些结果返回后再发送。",
   "ui.interaction.followUpUnknown":
     "追发结果未知，原文保留，可修改后再次发送；以提交记录为准。",
   "ui.interaction.continueDispatch": "继续派发此条",

@@ -28,6 +28,19 @@ export const FrozenSubmissionSchema = z.strictObject({
   retryOf: SubmissionIdSchema.optional(),
 });
 export type FrozenSubmission = z.infer<typeof FrozenSubmissionSchema>;
+export const SubmissionRejectionReasonSchema = z.enum([
+  "not-ready",
+  "native-unavailable",
+  "unsupported-native-command",
+  "paused",
+  "interaction-pending",
+  "stale-target",
+  "correlation-limit",
+]);
+export type SubmissionRejectionReason = z.infer<
+  typeof SubmissionRejectionReasonSchema
+>;
+
 export const SubmissionReceiptSchema = FrozenSubmissionSchema.extend({
   state: z.enum([
     "prepared",
@@ -39,6 +52,10 @@ export const SubmissionReceiptSchema = FrozenSubmissionSchema.extend({
   acknowledgedAt: z.string().nullable(),
   // An asynchronous error is not proof of rejection before business acceptance.
   outcome: z.enum(["unobserved", "failed", "unknown"]),
+  // Why the native side refused the dispatch. Only a `rejected` receipt can
+  // carry one; it is what lets the Renderer report the real cause instead of
+  // collapsing every refusal into "rejected".
+  rejectionReason: SubmissionRejectionReasonSchema.optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -71,6 +88,9 @@ export const SubmissionEventSchema = z.strictObject({
   submissionId: SubmissionIdSchema,
   requestId: z.uuid(),
   target: SubmissionTargetSchema,
+  // Present only on `rejected`. Optional so the persisted event shape and any
+  // pre-reason producer stay valid.
+  reason: SubmissionRejectionReasonSchema.optional(),
 });
 export type SubmissionEvent = z.infer<typeof SubmissionEventSchema>;
 

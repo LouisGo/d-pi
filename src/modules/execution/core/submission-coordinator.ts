@@ -9,15 +9,17 @@ import {
   type SubmissionEvent,
   type SubmissionFailure,
   type SubmissionReceipt,
+  type SubmissionRejectionReason,
 } from "../contracts/public";
 import { changesManagedSession } from "./native-command-policy";
+import { sameSubmissionTarget } from "./target";
 export interface SubmissionStore {
   prepareSubmission(value: FrozenSubmission): SubmissionReceipt;
   submission(id: string): SubmissionReceipt | null;
   dispatchSubmission(id: string): boolean;
   acknowledgeSubmission(id: string): boolean;
   failSubmission(id: string): void;
-  rejectSubmission(id: string): void;
+  rejectSubmission(id: string, reason?: SubmissionRejectionReason): void;
   unknownSubmission(id: string): void;
 }
 export interface NativeSubmissionPort {
@@ -46,17 +48,6 @@ export interface SubmissionDiagnostic {
 export const SUBMISSION_FRAME_BUDGET = 1024 * 1024;
 function frameFor(value: FrozenSubmission): string {
   return `${JSON.stringify({ id: value.requestId, type: "prompt", message: value.text, streamingBehavior: value.delivery ?? "followUp" })}\n`;
-}
-function sameTarget(
-  a: FrozenSubmission["target"],
-  b: FrozenSubmission["target"],
-): boolean {
-  return (
-    a.processInstanceId === b.processInstanceId &&
-    a.connectionGeneration === b.connectionGeneration &&
-    a.configContextId === b.configContextId &&
-    a.nativeSessionRef === b.nativeSessionRef
-  );
 }
 export class SubmissionCoordinator {
   constructor(
@@ -124,7 +115,7 @@ export class SubmissionCoordinator {
       if (
         !receipt ||
         receipt.requestId !== event.requestId ||
-        !sameTarget(receipt.target, event.target) ||
+        !sameSubmissionTarget(receipt.target, event.target) ||
         !this.native.isCurrentTarget(event.target)
       )
         return this.failure("stale-event", context);
@@ -133,7 +124,9 @@ export class SubmissionCoordinator {
           this.store.acknowledgeSubmission(receipt.submissionId);
         })
         .with("rejected", () => {
-          this.store.rejectSubmission(receipt.submissionId);
+          // The refusal cause is evidence, not decoration: without it every
+          // rejection reads the same to the user.
+          this.store.rejectSubmission(receipt.submissionId, event.reason);
         })
         .with("error", () => {
           this.store.failSubmission(receipt.submissionId);
