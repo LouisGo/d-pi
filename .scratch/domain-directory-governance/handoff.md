@@ -54,7 +54,7 @@ node validation/s1/source-boundaries.mjs
 
 ## 受影响 GUI 证据
 
-已用 macOS 原生 Electron 验证页检查本次触及的 Editor 路径：输入 `第一行\nsecond-line` 后，AX 可见 textarea 与渲染行；Cmd+Z 清空、Shift+Cmd+Z 恢复；主题和密度切换后截图可见深色界面、文本、图标、textarea 与控件。一次 ScreenCaptureKit 瞬态错误不影响随后 AX 对 Undo 的确认。该证据是 Agent 验证，不替代用户试用或产品认可。
+已用 macOS 原生 Electron 验证页检查本次触及的 Editor 路径：输入 `alpha` 后回车再输入 `beta`，AX 同时看到 textarea 值和两行渲染文本；`super+z` 清空、`super+shift+z` 恢复；切换主题和密度后截图可见深色界面、文本、图标、textarea 与控件。该证据是 Agent 验证，不替代用户试用或产品认可。
 
 ## 继续边界
 
