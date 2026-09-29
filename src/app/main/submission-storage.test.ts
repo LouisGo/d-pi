@@ -5,8 +5,11 @@ import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { describe, expect, it, vi } from "vitest";
 import { FrozenSubmissionSchema } from "../../modules/execution/contracts/public";
+import { SubmissionRepository } from "../../modules/execution/main/public";
+import { DraftRepository } from "../../modules/input/main/public";
+import { ThreadRepository } from "../../modules/workspace/main/public";
 import { AppDatabase } from "../../platform/main/storage/public";
-import { AppStorage } from "./wiring/app-storage";
+import { AppStorage, StorageNotInitializedError } from "./wiring/app-storage";
 
 function fixture(run: (path: string) => void): void {
   const dir = mkdtempSync(join(tmpdir(), "d-pi-submission-"));
@@ -39,37 +42,86 @@ function frozen(store: AppStorage) {
     },
   });
 }
+/**
+ * Leave the file exactly as an interrupted run does: schema at v3 with WAL, a
+ * committed draft, and one dispatch that was written but never resolved. Only
+ * the storage layer is used to build it, then the receipt is put back to the
+ * pre-initialization shape, because recovery is the step under test.
+ */
+function stageInterruptedRun(path: string): string {
+  const database = new AppDatabase(path);
+  const drafts = new DraftRepository(database, new ThreadRepository(database));
+  const draft = drafts.create("/fixture");
+  drafts.save(draft.threadId, 0, "A");
+  const submissionId = randomUUID();
+  database.connection
+    .prepare("INSERT INTO submission(id, thread_id, receipt) VALUES(?,?,?)")
+    .run(
+      submissionId,
+      draft.threadId,
+      JSON.stringify({
+        submissionId,
+        threadId: draft.threadId,
+        traceId: randomUUID(),
+        revision: 1,
+        text: "A",
+        requestId: randomUUID(),
+        target: {
+          processInstanceId: randomUUID(),
+          connectionGeneration: randomUUID(),
+          configContextId: "isolated",
+          nativeSessionRef: "managed-session",
+        },
+        state: "dispatching",
+        acknowledgedAt: null,
+        outcome: "unobserved",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }),
+    );
+  database.close();
+  return submissionId;
+}
+
+function receiptState(path: string, submissionId: string): unknown {
+  const database = new DatabaseSync(path, { readOnly: true });
+  try {
+    return (
+      database
+        .prepare(
+          "SELECT json_extract(receipt,'$.state') AS state FROM submission WHERE id=?",
+        )
+        .get(submissionId) as { state?: unknown } | undefined
+    )?.state;
+  } finally {
+    database.close();
+  }
+}
+
 describe("persistent submission handoff", () => {
   it("separates opening from ordered, idempotent initialization", () =>
     fixture((path) => {
-      let store = new AppStorage(path);
-      const value = frozen(store);
-      store.submissions.prepareSubmission(value);
-      expect(store.submissions.dispatchSubmission(value.submissionId)).toBe(
-        true,
-      );
-      store.close();
+      const submissionId = stageInterruptedRun(path);
 
-      store = new AppStorage(path);
       const before = new DatabaseSync(path, { readOnly: true });
       expect(
         before
           .prepare(
             "SELECT json_extract(receipt,'$.state') AS state FROM submission WHERE id=?",
           )
-          .get(value.submissionId),
+          .get(submissionId),
       ).toEqual({ state: "dispatching" });
       expect(before.prepare("PRAGMA user_version").get()?.user_version).toBe(3);
       before.close();
 
       const order: string[] = [];
       const originalRecovery =
-        store.submissions.recoverInterruptedSubmissions.bind(store.submissions);
+        SubmissionRepository.prototype.recoverInterruptedSubmissions;
       const recover = vi
-        .spyOn(store.submissions, "recoverInterruptedSubmissions")
-        .mockImplementation(() => {
+        .spyOn(SubmissionRepository.prototype, "recoverInterruptedSubmissions")
+        .mockImplementation(function (this: SubmissionRepository) {
           order.push("recovery");
-          return originalRecovery();
+          return originalRecovery.call(this);
         });
       const originalMigration = AppDatabase.prototype.completeSchemaMigrations;
       const migrate = vi
@@ -78,11 +130,14 @@ describe("persistent submission handoff", () => {
           order.push("schema");
           return originalMigration.call(this);
         });
+      // Repositories are behind the startup gate, so the sequence is spied at
+      // the class boundary instead of on a partially published instance.
+      const store = new AppStorage(path);
       try {
         store.initialize();
         store.initialize();
         expect(order).toEqual(["recovery", "schema"]);
-        expect(store.submissions.submission(value.submissionId)?.state).toBe(
+        expect(store.submissions.submission(submissionId)?.state).toBe(
           "unknown",
         );
         const after = new DatabaseSync(path, { readOnly: true });
@@ -129,13 +184,7 @@ describe("persistent submission handoff", () => {
 
   it("leaves interrupted receipts untouched until the explicit execution recovery step", () =>
     fixture((path) => {
-      let store = new AppStorage(path);
-      const value = frozen(store);
-      store.submissions.prepareSubmission(value);
-      expect(store.submissions.dispatchSubmission(value.submissionId)).toBe(
-        true,
-      );
-      store.close();
+      const submissionId = stageInterruptedRun(path);
 
       const database = new AppDatabase(path);
       expect(
@@ -143,18 +192,17 @@ describe("persistent submission handoff", () => {
           .prepare(
             "SELECT json_extract(receipt,'$.state') AS state FROM submission WHERE id=?",
           )
-          .get(value.submissionId),
+          .get(submissionId),
       ).toEqual({ state: "dispatching" });
       database.close();
 
-      store = new AppStorage(path);
-      expect(store.submissions.submission(value.submissionId)?.state).toBe(
-        "dispatching",
-      );
+      const store = new AppStorage(path);
+      // Repositories stay behind the startup gate, so an untouched row is
+      // observed on the file: pre-initialization state has no business reader.
+      expect(() => store.submissions).toThrow(StorageNotInitializedError);
+      expect(receiptState(path, submissionId)).toBe("dispatching");
       store.initialize();
-      expect(store.submissions.submission(value.submissionId)?.state).toBe(
-        "unknown",
-      );
+      expect(store.submissions.submission(submissionId)?.state).toBe("unknown");
       store.close();
     }));
 

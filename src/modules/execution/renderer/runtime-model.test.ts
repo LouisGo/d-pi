@@ -77,3 +77,60 @@ it("preserves a typed runtime failure message instead of collapsing it to transp
   });
   model.dispose();
 });
+
+it("a superseded control reply cannot resurrect a view the newer reply replaced", async () => {
+  const threadId = ThreadIdSchema.parse(crypto.randomUUID());
+  const base: RuntimeView = {
+    threadId,
+    traceId: crypto.randomUUID(),
+    configuration: { code: "runtime.configDefault" },
+    generation: crypto.randomUUID(),
+    control: {
+      streaming: false,
+      compacting: false,
+      stopping: false,
+      queued: 0,
+      background: 0,
+      pendingAsync: false,
+      admitted: false,
+      paused: false,
+      queue: [],
+    },
+    revision: 1,
+    phase: "ready",
+    trusted: true,
+    busy: false,
+    model: "fixture",
+    message: { code: "runtime.readyToSend" },
+  };
+  // Each reply stays in flight until the test releases it, so an older request
+  // can be answered *after* a newer one has already published.
+  const inFlight: Array<() => void> = [];
+  let revision = 0;
+  const model = new RuntimeModel({
+    subscribe: () => () => {},
+    request: (): Promise<RuntimeReply> =>
+      new Promise((accept) => {
+        inFlight.push(() =>
+          accept({ kind: "view", view: { ...base, revision: ++revision } }),
+        );
+      }),
+  });
+  model.bind(threadId);
+  inFlight.shift()?.();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  const stale = model.control("stop");
+  const current = model.control("stop");
+  // The newest request is the last one queued; release it first.
+  const releaseCurrent = inFlight.pop();
+  const releaseStale = inFlight.shift();
+  releaseCurrent?.();
+  await current;
+  const published = model.getSnapshot()?.revision;
+  releaseStale?.();
+  await stale;
+  expect(published).toBe(2);
+  expect(model.getSnapshot()?.revision).toBe(published);
+  model.dispose();
+});

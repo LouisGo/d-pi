@@ -1,5 +1,5 @@
 import type { ThreadId } from "../../../shared/identity";
-import { uiMessage } from "../../../shared/messages/contracts";
+import { type UiMessage, uiMessage } from "../../../shared/messages/contracts";
 import type { Answer } from "../contracts/interactions";
 import type {
   RuntimeBridge,
@@ -98,87 +98,84 @@ export class RuntimeModel {
     const current = this.view;
     if (!current?.generation || !this.thread) return;
     const traceId = crypto.randomUUID();
-    try {
-      const reply = await this.bridge.request({
+    await this.request(
+      {
         kind,
         threadId: this.thread,
         traceId,
         generation: current.generation,
-      });
-      if (reply.kind === "view" && this.thread === reply.view.threadId)
-        this.publish(reply.view);
-      else if (
-        reply.kind === "failed" &&
-        reply.error.traceId === traceId &&
-        this.view === current
-      )
-        this.publish({ ...current, traceId, message: reply.error.message });
-      else throw Error("Mismatched runtime reply");
-    } catch {
-      if (this.view === current)
-        this.publish({
-          ...current,
-          message: uiMessage("runtime.controlUnknown"),
-        });
-    }
+      },
+      current,
+      uiMessage("runtime.controlUnknown"),
+    );
   }
   async answer(id: string, answer: Answer): Promise<void> {
     const current = this.view;
     if (!current?.interactions || !this.thread) return;
     const traceId = crypto.randomUUID();
-    try {
-      const reply = await this.bridge.request({
+    await this.request(
+      {
         kind: "answer",
         threadId: this.thread,
         traceId,
         generation: current.interactions.generation,
         id,
         answer,
-      });
-      if (reply.kind === "view" && this.thread === reply.view.threadId)
-        this.publish(reply.view);
-      else if (
-        reply.kind === "failed" &&
-        reply.error.traceId === traceId &&
-        this.view === current
-      )
-        this.publish({ ...current, traceId, message: reply.error.message });
-      else throw Error("Mismatched runtime reply");
-    } catch {
-      if (this.view === current)
-        this.publish({
-          ...current,
-          message: uiMessage("runtime.answerUnknown"),
-        });
-    }
+      },
+      current,
+      uiMessage("runtime.answerUnknown"),
+    );
   }
   async dismiss(id: string): Promise<void> {
     const current = this.view;
     if (!current?.interactions || !this.thread) return;
     const traceId = crypto.randomUUID();
-    try {
-      const reply = await this.bridge.request({
+    await this.request(
+      {
         kind: "dismiss",
         threadId: this.thread,
         traceId,
         generation: current.interactions.generation,
         id,
-      });
+      },
+      current,
+      uiMessage("runtime.dismissUnknown"),
+    );
+  }
+  /**
+   * One funnel for the state-changing commands so all three share the same
+   * staleness rule as `act`: a superseded request may still be in flight when
+   * a newer one lands, and its reply must not resurrect an older view. The
+   * generation is bumped per request, so only the newest reply applies.
+   */
+  private async request(
+    command: RuntimeCommand,
+    current: RuntimeView,
+    unknownMessage: UiMessage,
+  ): Promise<void> {
+    const generation = ++this.generation;
+    try {
+      const reply = await this.bridge.request(command);
+      if (generation !== this.generation) return;
       if (reply.kind === "view" && this.thread === reply.view.threadId)
         this.publish(reply.view);
       else if (
         reply.kind === "failed" &&
-        reply.error.traceId === traceId &&
-        this.view === current
+        reply.error.traceId === command.traceId
       )
-        this.publish({ ...current, traceId, message: reply.error.message });
-      else throw Error("Mismatched runtime reply");
-    } catch {
-      if (this.view === current)
         this.publish({
           ...current,
-          message: uiMessage("runtime.dismissUnknown"),
+          traceId: command.traceId,
+          message: reply.error.message,
         });
+      else throw Error("Mismatched runtime reply");
+    } catch {
+      if (generation !== this.generation) return;
+      this.publish({
+        ...current,
+        traceId: command.traceId,
+        message: unknownMessage,
+      });
     }
   }
   dispose(): void {
