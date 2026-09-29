@@ -80,6 +80,26 @@ test("rejects non-utf8 bytes without nul as invalid encoding", async () => {
   });
 });
 
+test("serves a project reached through a symlinked parent directory", async () => {
+  const root = await fixture();
+  await writeFile(join(root, "linked.txt"), "via link\n");
+  const alias = join(tmpdir(), `d-pi-s4-alias-${process.pid}-${Date.now()}`);
+  await symlink(root, alias);
+  roots.push(alias);
+  try {
+    expect(await listProjectFiles(alias, "")).toMatchObject({
+      kind: "entries",
+    });
+    expect(await readProjectFile(alias, "linked.txt")).toMatchObject({
+      kind: "text",
+      text: "via link\n",
+    });
+  } finally {
+    await rm(alias, { force: true });
+    roots.splice(roots.indexOf(alias), 1);
+  }
+});
+
 test("rejects a file replaced during the read", async () => {
   const root = await fixture();
   await writeFile(join(root, "race"), "before");

@@ -52,12 +52,21 @@ function isFailure(
 ): value is FileReply {
   return "kind" in value;
 }
+async function canonicalRoot(root: string): Promise<string | FileReply> {
+  try {
+    return await realpath(root);
+  } catch (error) {
+    return reasonOf(error);
+  }
+}
 export async function listProjectFiles(
   root: string,
   path: string,
 ): Promise<FileReply> {
   try {
-    const resolved = await resolveInProject(root, path);
+    const canonical = await canonicalRoot(root);
+    if (typeof canonical !== "string") return canonical;
+    const resolved = await resolveInProject(canonical, path);
     if (isFailure(resolved)) return resolved;
     const before = await stat(resolved.target);
     if (!before.isDirectory()) return unavailable("not-file");
@@ -88,7 +97,7 @@ export async function listProjectFiles(
       before.ino !== after.ino ||
       before.dev !== after.dev ||
       before.mtimeMs !== after.mtimeMs ||
-      (await realpath(join(root, path))) !== resolved.target
+      (await realpath(join(canonical, path))) !== resolved.target
     )
       return unavailable("changed");
     return {
@@ -108,7 +117,9 @@ export async function readProjectFile(
   afterRead?: () => Promise<void>,
 ): Promise<FileReply> {
   try {
-    const resolved = await resolveInProject(root, path);
+    const canonical = await canonicalRoot(root);
+    if (typeof canonical !== "string") return canonical;
+    const resolved = await resolveInProject(canonical, path);
     if (isFailure(resolved)) return resolved;
     const file = await open(
       resolved.target,
@@ -138,7 +149,7 @@ export async function readProjectFile(
         before.size !== after.size ||
         before.mtimeMs !== after.mtimeMs ||
         before.ctimeMs !== after.ctimeMs ||
-        (await realpath(join(root, path))) !== resolved.target
+        (await realpath(join(canonical, path))) !== resolved.target
       )
         return unavailable("changed");
       if (buffer.includes(0)) return unavailable("binary");

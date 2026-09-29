@@ -190,20 +190,30 @@ async function sample(
 }
 export async function listGitChanges(root: string): Promise<GitReply> {
   try {
-    const repo = await repository(root);
+    let base: string;
+    try {
+      base = await realpath(root);
+    } catch (error) {
+      const code =
+        typeof error === "object" && error !== null && "code" in error
+          ? error.code
+          : null;
+      return unavailable(code === "ENOENT" ? "missing" : "failed");
+    }
+    const repo = await repository(base);
     if (typeof repo !== "string") return repo;
-    const beforeHead = await head(root);
+    const beforeHead = await head(base);
     const scopes = ["head-index", "index-worktree", "untracked"] as const;
     const samples = await Promise.all(
-      scopes.map((scope) => sample(root, scope)),
+      scopes.map((scope) => sample(base, scope)),
     );
     if (samples.some((item) => !item.ok)) return unavailable("failed");
-    const again = await Promise.all(scopes.map((scope) => sample(root, scope)));
+    const again = await Promise.all(scopes.map((scope) => sample(base, scope)));
     if (
       again.some(
         (item, i) => !item.ok || !item.data.equals(samples[i]!.data),
       ) ||
-      (await head(root)) !== beforeHead
+      (await head(base)) !== beforeHead
     )
       return unavailable("changed");
     const entries = scopes.flatMap((scope, i) =>
@@ -257,24 +267,34 @@ export async function readGitChange(
 ): Promise<GitReply> {
   if (!valid(path)) return unavailable("denied");
   try {
-    const listing = await listGitChanges(root);
+    let base: string;
+    try {
+      base = await realpath(root);
+    } catch (error) {
+      const code =
+        typeof error === "object" && error !== null && "code" in error
+          ? error.code
+          : null;
+      return unavailable(code === "ENOENT" ? "missing" : "failed");
+    }
+    const listing = await listGitChanges(base);
     if (listing.kind !== "changes") return listing;
     const entry = listing.entries.find(
       (value) => value.scope === scope && value.path === path,
     );
     if (!entry) return unavailable("missing");
     if (entry.status === "unmerged") return unavailable("unmerged");
-    const repoPath = relative(listing.repository, join(root, path))
+    const repoPath = relative(listing.repository, join(base, path))
       .split(sep)
       .join("/");
     const previousPath = entry.previousPath
-      ? relative(listing.repository, join(root, entry.previousPath))
+      ? relative(listing.repository, join(base, entry.previousPath))
           .split(sep)
           .join("/")
       : repoPath;
     const stagePath =
       scope === "index-worktree" ? (entry.previousPath ?? path) : path;
-    const stage = await git(root, [
+    const stage = await git(base, [
       "ls-files",
       "--stage",
       "-z",
@@ -298,7 +318,7 @@ export async function readGitChange(
     }
     if (scope !== "head-index") {
       try {
-        if ((await lstat(join(root, path))).isSymbolicLink())
+        if ((await lstat(join(base, path))).isSymbolicLink())
           return unavailable("unsupported");
       } catch (error) {
         const code =
@@ -309,7 +329,7 @@ export async function readGitChange(
       }
     }
     const worktree = async () => {
-      const result = await readProjectFile(root, path);
+      const result = await readProjectFile(base, path);
       if (result.kind === "text")
         return {
           kind: "text" as const,
@@ -338,7 +358,7 @@ export async function readGitChange(
       scope === "head-index"
         ? listing.head && entry.status !== "added"
           ? await blob(
-              root,
+              base,
               `${listing.head}:${previousPath}`,
               `HEAD ${listing.head.slice(0, 12)}: ${entry.previousPath ?? path}`,
             )
@@ -350,7 +370,7 @@ export async function readGitChange(
             }
         : scope === "index-worktree"
           ? await blob(
-              root,
+              base,
               `:${previousPath}`,
               `index: ${entry.previousPath ?? path}`,
             )
@@ -362,7 +382,7 @@ export async function readGitChange(
       scope === "head-index"
         ? entry.status === "deleted"
           ? { kind: "absent" as const, source: `index: ${path} (absent)` }
-          : await blob(root, `:${repoPath}`, `index: ${path}`)
+          : await blob(base, `:${repoPath}`, `index: ${path}`)
         : scope === "index-worktree" && entry.status === "deleted"
           ? {
               kind: "absent" as const,
@@ -376,21 +396,21 @@ export async function readGitChange(
       scope === "head-index"
         ? listing.head && entry.status !== "added"
           ? await blob(
-              root,
+              base,
               `${listing.head}:${previousPath}`,
               `HEAD ${listing.head.slice(0, 12)}: ${entry.previousPath ?? path}`,
             )
           : left
         : scope === "index-worktree"
           ? await blob(
-              root,
+              base,
               `:${previousPath}`,
               `index: ${entry.previousPath ?? path}`,
             )
           : left;
     const repeatRight =
       scope === "head-index" && entry.status !== "deleted"
-        ? await blob(root, `:${repoPath}`, `index: ${path}`)
+        ? await blob(base, `:${repoPath}`, `index: ${path}`)
         : scope !== "head-index" &&
             !(scope === "index-worktree" && entry.status === "deleted")
           ? await worktree()
@@ -402,7 +422,7 @@ export async function readGitChange(
       JSON.stringify(right) !== JSON.stringify(repeatRight)
     )
       return unavailable("changed");
-    const after = await listGitChanges(root);
+    const after = await listGitChanges(base);
     if (
       after.kind !== "changes" ||
       after.repository !== listing.repository ||

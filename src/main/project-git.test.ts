@@ -218,6 +218,43 @@ test("does not compare a symlink target as if it were the link's Git content", a
   });
 });
 
+test("lists changes for a project reached through a symlinked parent directory", async () => {
+  const root = await fixture();
+  await git(root, "init", "-q");
+  await git(root, "config", "user.name", "Fixture");
+  await git(root, "config", "user.email", "fixture@example.invalid");
+  await writeFile(join(root, "linked.txt"), "base");
+  await git(root, "add", "linked.txt");
+  await git(root, "commit", "-qm", "init");
+  await writeFile(join(root, "linked.txt"), "edited");
+  const alias = join(tmpdir(), `d-pi-s4-git-alias-${process.pid}-${Date.now()}`);
+  await symlink(root, alias);
+  roots.push(alias);
+  try {
+    const result = await listGitChanges(alias);
+    expect(result.kind).toBe("changes");
+    if (result.kind !== "changes") return;
+    expect(result.entries).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          scope: "index-worktree",
+          path: "linked.txt",
+        }),
+      ]),
+    );
+    expect(
+      await readGitChange(alias, "index-worktree", "linked.txt"),
+    ).toMatchObject({
+      kind: "diff",
+      left: { text: "base" },
+      right: { text: "edited" },
+    });
+  } finally {
+    await rm(alias, { force: true });
+    roots.splice(roots.indexOf(alias), 1);
+  }
+});
+
 test("marks a diff stale when the worktree changes with the same Git status during sampling", async () => {
   const root = await fixture();
   await git(root, "init", "-q");
