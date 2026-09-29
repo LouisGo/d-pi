@@ -52,3 +52,8 @@ Blocked by: 02, 03
 5. 主题与密度切换；确认输入内容与焦点不丢。
 
 已知限制：`pnpm check` 在本机需要 Node 24.21.0（`~/.nvm/versions/node/v24.21.0/bin`）；Node 24.17.0 下 oxlint 设计检查的 JS 插件 worker 会 SIGTRAP，脚本会报工具故障而非规则结果。该问题与本切片无关，已记录在 01 票。
+
+## Comments（提交后状态）
+
+- 文档与实现已分两次本地提交：`4b6d0db`（决定/规格/合同/模块地图）、`32807ca`（依赖与迁移）。提交后 `pnpm check` 退出码 0（设计检查里的 `FAIL: design lint crashed` / `oxlint-that-does-not-exist` 是 `validation/s1/design-check.mjs` 故意注入的负例，用于证明工具故障不会被当成规则通过）。
+- 版本号保持 `0.1.0-s4.0`：本切片尚未形成交付给用户的试用候选，不虚报新版本；等 GUI 试用通过后再按既有节奏（`0.1.0-sN.M`）分配。
