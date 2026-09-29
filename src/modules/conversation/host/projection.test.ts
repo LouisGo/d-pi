@@ -1,6 +1,23 @@
 import { expect, it } from "vitest";
 import { ConversationProjection } from "./projection";
 
+it("ignores known non-conversation frames but preserves an unknown-frame notice", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {});
+
+  p.accept({ type: "ready" });
+  p.accept({ type: "future_native_event", payload: { value: 42 } });
+
+  expect(p.snapshot().items).toMatchObject([
+    {
+      notice: {
+        code: "conversation.unsupportedNativeEvent",
+        params: { eventType: "future_native_event" },
+      },
+    },
+  ]);
+  p.dispose();
+});
+
 it("merges streamed text into a bounded message and keeps tools/results distinct before terminal state", () => {
   const p = new ConversationProjection(crypto.randomUUID(), () => {});
   p.accept({

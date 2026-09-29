@@ -152,6 +152,38 @@ it("without a fresh state query refuses close-idle while last known control show
   expect(messages).toContainEqual({ kind: "failed", code: "active-work" });
 });
 
+it("forwards unknown host frames without treating them as interactions", async () => {
+  const messages: HostMessage[] = [];
+  const nativeFrames: unknown[] = [];
+  const exit = vi.fn();
+  const host = createSessionHost((message) => messages.push(message), exit, {
+    onNativeFrame: (frame) => nativeFrames.push(frame),
+  });
+  await host.handle({
+    kind: "start",
+    threadId: crypto.randomUUID(),
+    traceId: crypto.randomUUID(),
+    processInstanceId: crypto.randomUUID(),
+    connectionGeneration: crypto.randomUUID(),
+    configContextId: "fixture",
+    binary: "/fixture/omp",
+    identity: { directory: "/project", device: "1", inode: "2" },
+    environment: {},
+    sessionDirectory: "/sessions",
+  });
+
+  const frame = {
+    type: "host_future_request",
+    payload: { value: "forward-compatible" },
+  };
+  native.observers[0]?.({ kind: "frame", frame });
+
+  expect(nativeFrames).toEqual([frame]);
+  expect(messages.filter((message) => message.kind === "interactions")).toEqual(
+    [],
+  );
+});
+
 it("answers timed-out questions with the timeout default while confirm dialogs keep blocking", async () => {
   vi.useFakeTimers();
   try {

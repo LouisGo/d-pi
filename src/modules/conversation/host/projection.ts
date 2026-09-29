@@ -1,5 +1,9 @@
 import { z } from "zod";
-import type { NativeFrame } from "../../../platform/omp/protocol/public";
+import {
+  isNativeFrameType,
+  type NativeFrame,
+  NativeFrameTypes,
+} from "../../../platform/omp/protocol/public";
 import { draftByteLength } from "../../../shared/draft-text";
 import { uiMessage } from "../../../shared/messages/contracts";
 import type {
@@ -44,7 +48,13 @@ export class ConversationProjection {
     private readonly budget = 8 * 1024 * 1024,
   ) {}
   accept(frame: NativeFrame): void {
-    if (["message_start", "message_end"].includes(frame.type)) {
+    if (
+      isNativeFrameType(
+        frame,
+        NativeFrameTypes.messageStart,
+        NativeFrameTypes.messageEnd,
+      )
+    ) {
       const parsed = MessageSchema.safeParse(frame.message);
       if (!parsed.success) return;
       this.flush();
@@ -61,10 +71,17 @@ export class ConversationProjection {
       const existing = tool ?? (role === "assistant" ? this.active : null);
       const id = existing ?? this.nextId++;
       const text = textOf(message.content) || message.errorMessage || "";
-      if (frame.type === "message_start" && role === "assistant")
+      if (
+        isNativeFrameType(frame, NativeFrameTypes.messageStart) &&
+        role === "assistant"
+      )
         this.active = id;
       // Native user start/end share one append in the visible projection.
-      if (frame.type === "message_start" && role !== "assistant") return;
+      if (
+        isNativeFrameType(frame, NativeFrameTypes.messageStart) &&
+        role !== "assistant"
+      )
+        return;
       this.put({
         id,
         role,
@@ -72,7 +89,7 @@ export class ConversationProjection {
         state:
           message.isError || message.errorMessage
             ? "failed"
-            : frame.type === "message_end"
+            : isNativeFrameType(frame, NativeFrameTypes.messageEnd)
               ? "complete"
               : "streaming",
         label:
@@ -85,13 +102,13 @@ export class ConversationProjection {
                 }
               : { kind: "literal", text: "OMP" },
       });
-      if (frame.type === "message_end") {
+      if (isNativeFrameType(frame, NativeFrameTypes.messageEnd)) {
         if (role === "assistant") this.active = null;
         this.flush();
       }
       return;
     }
-    if (frame.type === "message_update") {
+    if (isNativeFrameType(frame, NativeFrameTypes.messageUpdate)) {
       const delta = z
         .object({ type: z.literal("text_delta"), delta: z.string() })
         .safeParse(frame.assistantMessageEvent);
@@ -108,7 +125,13 @@ export class ConversationProjection {
       });
       return;
     }
-    if (["tool_execution_start", "tool_execution_end"].includes(frame.type)) {
+    if (
+      isNativeFrameType(
+        frame,
+        NativeFrameTypes.toolExecutionStart,
+        NativeFrameTypes.toolExecutionEnd,
+      )
+    ) {
       this.flush();
       const parsed = z
         .object({
@@ -130,7 +153,7 @@ export class ConversationProjection {
         label: { kind: "literal", text: parsed.data.toolName.slice(0, 120) },
         state: parsed.data.isError
           ? "failed"
-          : frame.type === "tool_execution_end"
+          : isNativeFrameType(frame, NativeFrameTypes.toolExecutionEnd)
             ? "complete"
             : "streaming",
         text: result.success ? textOf(result.data.content) : "",
@@ -138,27 +161,28 @@ export class ConversationProjection {
       this.flush();
       return;
     }
-    if (frame.type === "agent_end") {
+    if (isNativeFrameType(frame, NativeFrameTypes.agentEnd)) {
       this.flush();
       return;
     }
     if (
-      [
-        "ready",
-        "response",
-        "agent_start",
-        "turn_start",
-        "turn_end",
-        "tool_execution_update",
-        "prompt_result",
-        "available_commands_update",
-        "session_info_update",
-        "config_update",
-      ].includes(frame.type)
+      isNativeFrameType(
+        frame,
+        NativeFrameTypes.ready,
+        NativeFrameTypes.response,
+        NativeFrameTypes.agentStart,
+        NativeFrameTypes.turnStart,
+        NativeFrameTypes.turnEnd,
+        NativeFrameTypes.toolExecutionUpdate,
+        NativeFrameTypes.promptResult,
+        NativeFrameTypes.availableCommandsUpdate,
+        NativeFrameTypes.sessionInfoUpdate,
+        NativeFrameTypes.configUpdate,
+      )
     )
       return;
     if (
-      frame.type === "extension_ui_request" &&
+      isNativeFrameType(frame, NativeFrameTypes.extensionUiRequest) &&
       ["setStatus", "setTitle", "setWidget"].includes(String(frame.method))
     )
       return;

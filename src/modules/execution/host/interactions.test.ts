@@ -1,6 +1,19 @@
 import { expect, it } from "vitest";
 import { PendingInteractions } from "./interactions";
 
+it("does not classify an unknown host frame as an interaction", () => {
+  const interaction = new PendingInteractions();
+
+  interaction.update({
+    type: "host_future_request",
+    id: "future",
+    payload: { value: "forward-compatible" },
+  });
+
+  expect(interaction.pending).toBe(false);
+  expect(interaction.snapshot()).toEqual([]);
+});
+
 it("native status notifications do not block idle close; real dialogs stay pending until their own cancellation", () => {
   const interaction = new PendingInteractions();
   interaction.update({

@@ -2,7 +2,11 @@ import { randomUUID } from "node:crypto";
 import { isAbsolute, relative } from "node:path";
 import { match } from "ts-pattern";
 import { identifyDirectory } from "../../../platform/node/filesystem/public";
-import type { NativeFrame } from "../../../platform/omp/protocol/public";
+import {
+  isNativeFrameType,
+  type NativeFrame,
+  NativeFrameTypes,
+} from "../../../platform/omp/protocol/public";
 import { type ControlState, ControlStateSchema } from "../contracts/control";
 import { defaultAnswerFor } from "../contracts/interactions";
 import type { FrozenSubmission } from "../contracts/public";
@@ -219,7 +223,7 @@ export function createSessionHost(
     }
     if (disconnected || closing) return;
     const frame = event.frame;
-    if (frame.type === "d_pi_control_state" && start) {
+    if (isNativeFrameType(frame, NativeFrameTypes.dPiControlState) && start) {
       const control = ControlStateSchema.safeParse(frame.data);
       if (control.success) {
         observationVersion++;
@@ -233,19 +237,32 @@ export function createSessionHost(
         if (!activeControl(control.data)) void refresh();
       }
     }
-    if (frame.type !== "d_pi_control_state") options.onNativeFrame?.(frame);
-    if (frame.type === "agent_start") {
+    if (!isNativeFrameType(frame, NativeFrameTypes.dPiControlState))
+      options.onNativeFrame?.(frame);
+    if (isNativeFrameType(frame, NativeFrameTypes.agentStart)) {
       observationVersion++;
       busy = true;
     }
-    if (frame.type === "agent_end" && frame.isTerminal !== false) {
+    if (
+      isNativeFrameType(frame, NativeFrameTypes.agentEnd) &&
+      frame.isTerminal !== false
+    ) {
       observationVersion++;
       busy = false;
       void refresh();
     }
     const hadInteraction = interactions.pending;
     interactions.update(frame);
-    if (frame.type === "extension_ui_request" || frame.type.startsWith("host_"))
+    if (
+      isNativeFrameType(
+        frame,
+        NativeFrameTypes.extensionUiRequest,
+        NativeFrameTypes.hostToolCancel,
+        NativeFrameTypes.hostUriCancel,
+        NativeFrameTypes.hostToolCall,
+        NativeFrameTypes.hostUriRequest,
+      )
+    )
       publishInteractions();
     reconcileDefaultAnswerTimers();
     if (hadInteraction !== interactions.pending && state)
@@ -256,7 +273,7 @@ export function createSessionHost(
         pendingInteraction: interactions.pending,
       });
     if (
-      frame.type === "response" &&
+      isNativeFrameType(frame, NativeFrameTypes.response) &&
       typeof frame.id === "string" &&
       frame.command === "prompt"
     ) {
@@ -279,7 +296,10 @@ export function createSessionHost(
         void refresh();
       }
     }
-    if (frame.type === "prompt_result" && frame.agentInvoked === false) {
+    if (
+      isNativeFrameType(frame, NativeFrameTypes.promptResult) &&
+      frame.agentInvoked === false
+    ) {
       observationVersion++;
       busy = false;
       void refresh();

@@ -1,4 +1,8 @@
-import type { NativeFrame } from "../../../platform/omp/protocol/public";
+import {
+  isNativeFrameType,
+  type NativeFrame,
+  NativeFrameTypes,
+} from "../../../platform/omp/protocol/public";
 import {
   type Answer,
   DialogSchema,
@@ -74,7 +78,7 @@ export class PendingInteractions {
         : answer.kind === "confirm"
           ? { confirmed: answer.confirmed }
           : { value: answer.value };
-    return `${JSON.stringify({ type: "extension_ui_response", id, ...fields })}\n`;
+    return `${JSON.stringify({ type: NativeFrameTypes.extensionUiResponse, id, ...fields })}\n`;
   }
   /** User acknowledges an unknown/expired dialog locally. Clears the
    * canSubmit block without claiming a native write. Pending dialogs must use
@@ -140,7 +144,7 @@ export class PendingInteractions {
   }
   update(frame: NativeFrame): void {
     if (
-      frame.type === "extension_ui_request" &&
+      isNativeFrameType(frame, NativeFrameTypes.extensionUiRequest) &&
       frame.method === "cancel" &&
       typeof frame.targetId === "string"
     ) {
@@ -152,7 +156,11 @@ export class PendingInteractions {
       return;
     }
     if (
-      (frame.type === "host_tool_cancel" || frame.type === "host_uri_cancel") &&
+      isNativeFrameType(
+        frame,
+        NativeFrameTypes.hostToolCancel,
+        NativeFrameTypes.hostUriCancel,
+      ) &&
       typeof frame.id === "string"
     ) {
       const had = this.ids.delete(frame.id);
@@ -171,7 +179,7 @@ export class PendingInteractions {
       return;
     }
     if (
-      frame.type === "extension_ui_request" &&
+      isNativeFrameType(frame, NativeFrameTypes.extensionUiRequest) &&
       [
         "notify",
         "setStatus",
@@ -183,9 +191,12 @@ export class PendingInteractions {
     )
       return;
     if (
-      frame.type !== "extension_ui_request" &&
-      frame.type !== "host_tool_call" &&
-      frame.type !== "host_uri_request"
+      !isNativeFrameType(
+        frame,
+        NativeFrameTypes.extensionUiRequest,
+        NativeFrameTypes.hostToolCall,
+        NativeFrameTypes.hostUriRequest,
+      )
     )
       return;
     if (typeof frame.id !== "string" || this.ids.size >= 128) {
