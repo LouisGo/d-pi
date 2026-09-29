@@ -43,11 +43,8 @@
 
 以 shadcn 官方 Base UI 组件/语义主题为主要来源，Base UI 官方 CSS Modules 为复杂交互样式参照；应用仓库仅补充组织经验。Tailwind [自定义样式](https://tailwindcss.com/docs/adding-custom-styles)作为全局层、组件层和自定义工具类机制的依据。
 
-- 上述源码是选择依据，不是按场景自动分派样式技术的模板。结合当前实现的可读性、复用范围、级联影响和维护成本选择或组合；无需为符合分类而重写已有清晰实现。使用普通 spacing 时可沿用统一 Tailwind 标尺，无须将每个 gap 再包装成新 token。
-- 需要跨 normal/compact 联动的尺寸和间距，在共享层集中映射；主题名称优先复用 shadcn，新增 token 仅补项目实际缺口。
-- CSS Modules、受作用域约束的全局 CSS 与 Tailwind 平等消费同一变量，选择最清晰的表达方式。
-- @apply 可用于可读的共享组件规则，不将每个 Tailwind 类机械移入 CSS；CSS Modules 默认可直接引用变量，只有实际需要 Tailwind 指令时再核对当前版本的处理方式。
-- CSS 级联层和导入顺序必须明确。未分层的 CSS 可能压过分层的工具类，不能假定 cn/tailwind-merge 可以解决 CSS Module 或全局选择器冲突。
-- 动态定位和运行时尺寸允许受控 style/CSS 变量；lint 的窄例外服务真实接入，不通过禁用整个目录来掩盖设计值漂移。
+- 上述源码是选择依据。可复用的模式是：CSS Modules、受作用域约束的全局 CSS 与 Tailwind 平等消费同一变量；`@apply` 用于可读的共享组件规则；动态定位与运行时尺寸通过受控 style/CSS 变量表达。
+- 主题名称优先复用 shadcn，新增 token 仅补项目实际缺口。
+- 选择方式、token 唯一入口、级联层与 lint 例外等**规则**由[设计系统合同](design-system.md)规定；本页只记录源码中观察到的做法与出处，不复制规则。
 
 正式引用源码时记录来源、commit、许可和本地改动理由，保留必要许可声明。本轮仅记录来源和模式，不固定额外依赖、具体风格或全量文件结构。

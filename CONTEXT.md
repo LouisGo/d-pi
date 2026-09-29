@@ -4,11 +4,11 @@
 
 ## Language
 
-**Thread（任务）**：用户在桌面应用中持续推进的一项工作；同一项目可有多个 Thread 并行。可直接在项目目录或独立 Git worktree 工作，身份不因切换窗口、模型或重启而改变；持久化与恢复见[基础契约](docs/architecture/foundation-contracts.md)。
+**Thread（任务；中文界面显示为“会话”）**：用户在桌面应用中持续推进的一项工作；同一项目可有多个 Thread 并行。可直接在项目目录或独立 Git worktree 工作，身份不因切换窗口、模型或重启而改变；持久化与恢复见[基础契约](docs/architecture/foundation-contracts.md)。
 
 **任务工作目录**：Thread 实际读写项目文件的目录，可以是项目原目录或独立 Git worktree。多个 Thread 使用同一目录时共享文件状态；会话历史独立不等于文件修改隔离。
 
-**OMP 会话**：由 OMP 管理的工作记录及其上下文，用户可以在其中追加需求，并在退出后恢复工作。
+**OMP 会话**：由 OMP 管理的工作记录及其上下文，用户可以在其中追加需求，并在退出后恢复工作。它不是 Thread：Thread 是应用侧的工作单元，原生会话是 OMP 的记录；当前单会话设计下两者一一对应，中文界面因而沿用“会话”一词，多 Thread 落地时须重新校对用词（见[产品术语](docs/product-terminology.md)）。
 _Avoid_：GUI 消息列表（不能替代完整会话）
 
 **会话镜像**：客户端依据 OMP 已提供的信息维护的展示状态，不是另一份执行事实或会话记录。

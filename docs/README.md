@@ -14,6 +14,7 @@
 | [TypeScript 合同](architecture/typescript.md) | D-35 的应用写法与验收标准：严格类型、ts-pattern、Zod v4；库版本与实际集成在接入时验证 |
 | [国际化架构](architecture/internationalization.md)与[产品术语](product-terminology.md) | S4 前 i18n 的产品文案边界、locale 偏好、Main/Renderer 共用核心及英文/中文术语；实施状态见[切片规格](../.scratch/i18n-foundation/spec.md) |
 | [模块地图与各模块方案](architecture/modules/README.md)、[交接图](architecture/modules/flows.md) | 现有合同的工程分工：所有权、生命周期、输入输出与模块组合；不重复定义产品范围或上游协议 |
+| [源码目录与依赖边界](architecture/source-layout.md) | 领域目录、环境职责、跨模块消费与门禁命令的稳定规则；机器单源是 `architecture/modules.json` |
 | [M1 开发准备](../.scratch/development-foundation/spec.md) | 近期 G1 缺口、实施切片、跨模块验收及 V1-00–10 责任覆盖；不是实现通过记录 |
 | [CONTEXT.md](../CONTEXT.md) | 领域概念和统一用语；技术字段、传输与持久化细节以合同为准 |
 | [验证记录](validation/)、[历史 GUI 证据](archive/stage1-evidence.md)及机器结果 | 支持特定版本、平台和场景的事实；验证通过不决定产品范围，也不证明未来集成已通过 |

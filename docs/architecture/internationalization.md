@@ -1028,46 +1028,11 @@ ltr
 
 # 20. Terminology
 
-翻译文件不能解决产品术语不统一的问题。
+翻译文件不能解决产品术语不统一的问题。d-pi 只维护一份很短的术语表：[product-terminology.md](../product-terminology.md)。
 
-d-pi 应维护一个非常短的：
+该表是产品术语与界面文案的单源：设计稿、代码、文档、中英文 UI 表达同一个产品模型。本文件不复制该表，只约束使用边界——术语随产品演进修改，不要求一开始把所有 Agent 术语定义完。
 
-```text
-docs/product-terminology.md
-```
-
-统一核心产品概念。
-
-例如：
-
-| Internal Concept | English UI | Chinese UI |
-|---|---|---|
-| Agent | Agent | Agent |
-| Subagent | Subagent | 子 Agent |
-| Thread | Thread | 会话 |
-| Run | Run | 运行 |
-| Tool call | Tool call | 工具调用 |
-| Approval | Approval | 审批 |
-| Workspace | Workspace | 工作区 |
-| Diff | Diff | Diff |
-
-这张表的目的不是语言学准确。
-
-而是保证：
-
-```text
-设计稿
-代码
-文档
-中文 UI
-英文 UI
-```
-
-表达同一个产品模型。
-
-术语应该根据产品演进修改。
-
-不需要一开始把所有 Agent 术语定义完。
+一处需要留意的同名不同义：术语表的 `Thread`（中文 UI 显示为“会话”）指用户在应用里持续推进的工作单元，与领域层由 OMP 管理的原生会话不是同一对象。当前单会话设计下两者一一对应，界面靠位置与动作区分；多 Thread 落地时须重新校对中文用词。领域定义见 [CONTEXT.md](../../CONTEXT.md)。
 
 ---
 

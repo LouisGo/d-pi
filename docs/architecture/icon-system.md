@@ -35,15 +35,16 @@
 
 应用图标只负责画图，不接收点击/Tooltip、读 store、请求数据、启动计时器或判断业务状态。`IconButton` 负责按钮语义、焦点、键盘、禁用与可访问名称；状态呈现组件读取既有投影并组合文字、颜色和图标，不重写状态机或用动画计时伪造进度。纯 SVG 渲染无需逐图标日志，D-21/D-22 诊断仍在实际业务操作链路完成。
 
-初始公共 API：
+公共 API（已按此形态落在 `src/app/renderer/components/icons/common.tsx`）：
 
 ```ts
-export type IconSize = 16 | 18 | 20 | 24;
 export interface IconProps {
-  size?: IconSize;
+  size?: 16 | 18 | 20 | 24; // 默认 16
   className?: string;
 }
 ```
+
+当前实现使用内联联合而不导出 `IconSize` 别名；个别语义图标（如 `WebsiteIcon`）另接受窄的 `brand` 判别值。新增缺口按此形态扩展，不因为文档示例而补一个未被使用的导出。
 
 - 默认 `size=16`、`color="currentColor"`、`aria-hidden={true}`、`focusable={false}`；宽高随 size。统一线宽初始取 1.5，由 Icon Layer 管理，实际小尺寸可读性在 GUI 阶段验收后统一调整，不假定外部库默认值等于项目规范。
 - 不继承全部 SVG/vendor props，不向消费者暴露 icon 数据、strokeWidth、absoluteStrokeWidth、fill、替换字形或动画开关；若组件库真的需要 ref 等能力，按具体调用场景增加窄接口，不能直接透传整包属性。

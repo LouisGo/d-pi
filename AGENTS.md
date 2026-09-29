@@ -69,6 +69,7 @@
 - D-05：macOS 优先，Windows/Linux 的支持范围与时间未承诺。拟采用 macOS 独占的功能或必需能力时，先报告原因、其他平台影响及替代方案，由用户决定；Electron 跨平台不代表所有依赖已兼容。
 - D-31：Hugeicons 免费 Stroke Rounded 经自有 Icon Layer 接入；业务视图不直引供应商或私有 SVG，图标/React 类型不进入无头功能或 IPC 合同。按 GUI 切片接入与验收，不预铺全图库。
 - D-32–D-35：Base UI 为默认基础交互，Composer 采用最小 Tiptap，App 结构化存储采用 SQLite；ts-pattern 为应用业务分支默认范式，Zod v4 标准版负责数据边界。旧否定/待定结论已取代；Drizzle、Effect 等其他候选不连带批准。具体所有权与验收仍遵守相关合同。
+- D-36/D-37：i18n 只翻译 d-pi 自有文案，Main 与 Renderer 共用解析语言，SessionHost/OMP 不格式化用户内容或原生事件；展示状态用 Zustand（`core` 不引入 React，vanilla store 与 React 绑定分离），只读异步查询用 TanStack Query，OMP 仍是执行与原生历史的事实所有者，发送类副作用不交给查询重试。
 - `.scratch/omp-runtime-feasibility/` 是独立实验，不是生产基础设施。数值预算是工程目标，不能冒称用户逐项指定或实测达标。
 
 - D-17/D-32 补充：视觉值集中 token 化；正常/compact 由单一全局入口选择密度映射，业务页面不得私建色板/尺寸体系或重绘共享组件。允许 Tailwind、CSS Modules 与受作用域约束的全局 CSS，优先成熟开源模式，按当前代码与可维护性选择或组合，不按场景预设固定技术分工。新组件必须沿用主题/密度合同；样式 lint 及真实切换验收通过才算完成，不能通过关闭规则消除违规。

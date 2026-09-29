@@ -33,4 +33,4 @@ description: "用于 d-pi 功能规划与拆票、功能模块或 React 接入�
 
 ## 自动化测试策略
 
-遵循[无头功能合同的 TDD 与自动化策略](../../../docs/architecture/headless-features.md#tdd-与自动化优先2026-09-28)：功能/缺陷修复先失败测试、最小实现、再按需重构；既有行为补测不伪造红灯。默认用可重复测试验证实际行为，不凑数量。Computer use 只补原生系统交互、视觉体验等难以替代的少量证据，或用户明确要求；不把 GUI 验收自动扩成反复手工操作。纯文档/纯样式任务不硬套业务 TDD。
+TDD、测试分层与 Computer use 的规则单源见[无头功能合同](../../../docs/architecture/headless-features.md#tdd-与自动化优先2026-09-28)；本 skill 不复制细则。

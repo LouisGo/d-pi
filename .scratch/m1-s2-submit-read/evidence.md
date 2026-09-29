@@ -8,9 +8,9 @@
 
 - `git status --short`：开始时无修改；HEAD `3faea9d`（S1 巩固），其父 `e9d256f`。交接中的“未提交巩固”已过时；没有 reset、pull、覆盖或清理。
 - [S1 spec](../m1-s1-project-draft/spec.md)、[handoff](../m1-s1-project-draft/handoff.md)、[hardening](../m1-s1-project-draft/hardening.md)、[机器结果](../m1-s1-project-draft/evidence/hardening.json)：既有 8 文件/33 测试、统一检查、构建和隔离恢复已通过；结果构建 `e9d256fa-dirty-8b99dc32` 是历史验证时的身份，不改写成当前 HEAD 的新实测。UnknownVizError、新增视觉区域待试用、旧包未替换继续保留。
-- [DraftController](../../src/features/draft/controller.ts)：内存 sequence 与持久 revision 分开，drain 会继续保存后来编辑，S1 还没有提交冻结/accepted 协调。只读 reconcile 根据本地 revision/正文判定保存，不能外推 OMP 接受。
-- [DraftStorage](../../src/main/storage.ts)：schema v1，仅 workspace/thread/desktop，信任约束只允许 browse；CAS 保存单独推进 revision。S2 需要有备份的迁移和新的业务事务，不能直接在 Main 清稿绕过控制器。
-- [AppModel](../../src/renderer/model.ts)：现有关闭准备冻结编辑并 flush 草稿；加入 OMP 后不能把此结果等同任务可退出。
+- [DraftController](../../src/modules/input/core/draft-controller.ts)（当时位于 `src/features/draft/controller.ts`）：内存 sequence 与持久 revision 分开，drain 会继续保存后来编辑，S1 还没有提交冻结/accepted 协调。只读 reconcile 根据本地 revision/正文判定保存，不能外推 OMP 接受。
+- [DraftStorage](../../src/platform/main/storage/database.ts)（当时位于 `src/main/storage.ts`）：schema v1，仅 workspace/thread/desktop，信任约束只允许 browse；CAS 保存单独推进 revision。S2 需要有备份的迁移和新的业务事务，不能直接在 Main 清稿绕过控制器。
+- [AppModel](../../src/app/renderer/model.ts)（当时位于 `src/renderer/model.ts`）：现有关闭准备冻结编辑并 flush 草稿；加入 OMP 后不能把此结果等同任务可退出。
 - [构建配置](../../electron-builder.yml)目前没有正式 Host/OMP 资源。旧独立实验不能当作产品已打包。
 
 ## 固定上游

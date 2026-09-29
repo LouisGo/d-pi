@@ -26,7 +26,7 @@ status: accepted
 - [官方配置文档](https://opencode.ai/docs/config/)：全局 Runtime 配置与项目配置按原生规则合并，TUI 设置另有文件。
 - [桌面 store.ts](https://github.com/anomalyco/opencode/blob/v1.18.32/packages/desktop/src/main/store.ts)：桌面 store 位于 Electron userData。**不能据此推断 OpenCode 的全部状态目录都与 CLI 完全相同。**
 
-只沿用“Runtime 原生配置共享、客户端偏好分离”的产品策略；不复制 OpenCode 的 HTTP Server、文件格式或全部服务架构。最小随包方案已验证，见 [随包证据](../validation/packaged-runtime-evidence.md)；早期应用实现已移除，本 ADR 约束后续产品接入，不表示产品发行已经实现。
+只沿用“Runtime 原生配置共享、客户端偏好分离”的产品策略；不复制 OpenCode 的 HTTP Server、文件格式或全部服务架构。最小随包方案已验证，见 [随包证据](../validation/packaged-runtime-evidence.md)；早期应用实现已移除，其后产品接入已按本 ADR 落地（S1–S4），但不表示产品发行已经实现。
 
 ## 2026-09-25 初始化与模型范围补充
 

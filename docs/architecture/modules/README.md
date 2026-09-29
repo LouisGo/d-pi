@@ -1,6 +1,6 @@
 # 模块地图与设计入口
 
-日期：2026-09-29。状态：领域目录治理 P0–P4 原交付经独立 review 补齐边界并完成验证，交接记录见[领域治理交接](../../../.scratch/domain-directory-governance/handoff.md)；用户试用状态仍独立记录，未因目录迁移或修复而认可产品体验。模块边界可随有证据的实现反馈调整，变更已确认决定仍按[决定登记](../../decisions.md)处理。依据 D-02–D-16、D-20–D-36；全量目标和阶段以[基础方案](../../../.scratch/product-requirements/foundation-plan.md)为准。
+日期：2026-09-29。状态：领域目录治理 P0–P4 原交付经独立 review 补齐边界并完成验证，交接记录见[领域治理交接](../../../.scratch/domain-directory-governance/handoff.md)；用户试用状态仍独立记录，未因目录迁移或修复而认可产品体验。模块边界可随有证据的实现反馈调整，变更已确认决定仍按[决定登记](../../decisions.md)处理。依据 D-02–D-16、D-20–D-37；全量目标和阶段以[基础方案](../../../.scratch/product-requirements/foundation-plan.md)为准。
 
 本目录把已有合同落实到模块：谁拥有状态、向谁请求能力、怎样交接、失败后由谁恢复。它不另建一套产品规格，也不要求一个模块对应一个包、类或进程。近期深入 M1，M3 模块只确定能独立理解的边界及启动条件。
 
@@ -19,10 +19,11 @@
 | `src/app/` | Main/Host/Preload/Renderer 入口、跨域事务组合、桌面桥和 workbench；不复制领域真相 |
 | `src/platform/` | SQLite、诊断、真实路径、OMP 协议/资源和消费门控等技术适配；不承载产品用例 |
 | `src/shared/` | 稳定身份、消息 DTO、i18n formatter/catalog 和纯文本基础；Node 文件系统能力已归 `platform/node` |
+| `runtime/` | 随包 OMP/SDK 的薄宿主入口 `host.mjs`；不承载产品用例 |
 
-这是按功能与进程边界共同组织的单应用结构。机器边界单源为 [`architecture/modules.json`](../../../architecture/modules.json)，规则入口为 `pnpm check:architecture`；结构报告只提供维护提示，不把行数变成硬门槛。SQLite v4 的 Thread 表仍保存草稿字段，不因代码职责拆分而进行无收益的物理表迁移；恢复/控制行为继续按 S3 合同演进。`architecture/modules.json` 同时声明领域模块、`src/app`、`src/platform`、`src/shared` 和 `runtime` 的源码归属；报告应显示 `ownership=all-source-files`、`unowned=0`，以及 `checked=configured-module-files`、`owned-only=0`，例外清单为空。
+这是按功能与进程边界共同组织的单应用结构。机器边界单源为 [`architecture/modules.json`](../../../architecture/modules.json)，规则入口为 `pnpm check:architecture`，目录与依赖的稳定规则见[源码目录与依赖边界](../source-layout.md)；结构报告只提供维护提示，不把行数变成硬门槛。Thread 表自 v1 起保存草稿字段（schema 现为 v5），不因代码职责拆分而进行无收益的物理表迁移；恢复/控制行为继续按 S3 合同演进。`architecture/modules.json` 同时声明领域模块、`src/app`、`src/platform`、`src/shared` 和 `runtime` 的源码归属；报告应显示 `ownership=all-source-files`、`unowned=0`，以及 `checked=configured-module-files`、`owned-only=0`，例外清单为空。
 
-P1 的三条实际路径是 `files → input`（选区冻结与引用）和 `files → changes`（Git Diff 只读来源），应用级 Composer/FileWorkspace 留在 `src/app/renderer/workbench`。新增普通内部文件不要求修改清单；只有公开面、环境或跨模块依赖变化才更新机器配置。
+P1 落地的跨模块路径有两条：`files → input`（选区冻结与引用）与 `files → changes`（Git Diff 只读来源）。第三项不是跨模块依赖——应用级 Composer/FileWorkspace 留在 `src/app/renderer/workbench`，由 app 组合而不新增领域依赖。新增普通内部文件不要求修改清单；只有公开面、环境或跨模块依赖变化才更新机器配置。
 
 当前代码清单中的环境依赖已经随 review follow-up 校准；下列是机器配置中按环境保留的跨模块声明：
 
@@ -66,7 +67,7 @@ P1 的三条实际路径是 `files → input`（选区冻结与引用）和 `fil
 
 ## 核心模块的主要能力依赖
 
-箭头表示左侧使用右侧能力或已确认数据，不是进程通信方向、事件传播方向或强制实施顺序。回调和结果返回不构成反向代码依赖；在相应作用域组装窄接口。这里只画影响拆分的主要依赖，具体交接见各模块页。
+箭头表示左侧使用右侧能力或已确认数据，不是进程通信方向、事件传播方向或强制实施顺序。回调和结果返回不构成反向代码依赖；在相应作用域组装窄接口。这里只画影响拆分的主要依赖，具体交接见各模块页。图中的中文名是能力标签而非 `modules.json` 的模块名：`配置与模型能力` 跨 `platform/omp` 与 `execution`，没有同名模块；`变化记录与 Git → 执行记录与阅读` 目前是尚未实现的交接意图，`changes` 的合同还没有工具来源字段，工具证据仍由阅读侧呈现。
 
 ```mermaid
 flowchart TB

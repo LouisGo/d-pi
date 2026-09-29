@@ -30,11 +30,11 @@ d-pi 的基础方向是合理的：Electron 承载桌面应用，OMP 拥有 Agen
 | 数据校验 | Zod v4 标准版 | D-35 已确认；边界解析、schema 推导与版本策略按 TypeScript 合同 |
 | Composer | 最小 Tiptap，加项目业务扩展 | D-33 已确认，取代 P-02；底层 ProseMirror 按需使用 |
 | 内容与代码 | Streamdown + Shiki；Monaco 文件与 Diff | 沿用；内容阅读与编辑各用适合的工具 |
-| 图标与质量工具 | Hugeicons、自有 Icon Layer；Biome、Vitest、RTL、Playwright | 遵守既有决定，随功能使用 |
+| 图标与质量工具 | Hugeicons、自有 Icon Layer；Biome、Vitest | 遵守既有决定，随功能使用。组件测试与 E2E 框架（RTL/Playwright 等）尚未选型、未安装，按功能需要再评估 |
 | 应用业务分支 | ts-pattern | D-35 已确认；判别联合与穷尽匹配为默认范式，覆盖各应用层 |
 | 短生命周期命令 | Execa | Git 与辅助命令的优先候选 |
 | 日志输出 | Pino | 优先评估结构化输出与异步落盘，尚未锁定整套设施 |
-| App 自有结构化数据 | SQLite；Drizzle 分别评估 | D-34 已确认 SQLite，取代文件元数据起步方案；驱动/ORM 未锁定 |
+| App 自有结构化数据 | SQLite；Drizzle 分别评估 | D-34 已确认 SQLite，取代文件元数据起步方案；驱动已确定为 `node:sqlite`（`DatabaseSync`，见 `src/platform/main/storage/database.ts`），未引入额外原生驱动或 ORM；Drizzle 仍按候选另判 |
 | 命令面板与区域尺寸 | cmdk、react-resizable-panels | 对应功能进入实现时优先考虑 |
 | 内部 RPC | birpc | 只在请求关联代码明显重复时引入 |
 | 异步与资源管理 | 原生 Promise / AbortSignal 起步；Effect 为 Host 候选 | 按可替代的自写机制决定，不设为全项目默认 |
@@ -159,7 +159,7 @@ Effect 的学习成本真实存在，但不能因此先自研一套不完整的�
 
 两个额外组件与已知产品方向直接对应：[cmdk](https://github.com/dip/cmdk) 可以支撑命令面板、项目与 Thread 搜索入口；[react-resizable-panels](https://github.com/bvaughn/react-resizable-panels) 可以处理现有侧栏和底部区域的尺寸、折叠。后者并不引入自由分屏需求。两者在对应功能进入实现时接入即可，不作为首个功能的前置工程。
 
-近期按已确认路线推进：业务类型与边界遵守 D-35；宿主持久化采用 SQLite；Composer 验证最小 Tiptap；首个 GUI 切片复用 Base UI/shadcn 源码并接入自有设计变量与 Hugeicons。其余 Git、诊断等工具按具体功能评估。本轮是文档和 skill 更新，不启动产品实现；后续获得功能实现授权后可直接按这些选择工作。
+本条记录选型与采纳依据；S1–S4 已按这些选择实现并交付待试用，本轮不再重开选型。其余 Git、诊断等工具仍按具体功能评估。
 
 每个新增依赖都应能说明：它替代哪段工作，在哪个进程使用，会把什么成本带进构建与维护。小范围工具按实际功能决定，影响组件底座、持久化或整个执行模型的选择再记录取舍。无需先建立一个容纳所有库的通用平台。
 
@@ -181,4 +181,4 @@ Effect 的学习成本真实存在，但不能因此先自研一套不完整的�
 
 ## 9. 2026-09-29：Zustand / Query 恢复接入（D-37）
 
-用户确认 §"Zustand 与 Query 分担拥有权"的实际职责就是要求落实的基础设施，不是可无限推迟的候选：目前仓库既没有这两个依赖，也没有实现，只有历史归档。D-37 据此把两库锁为基础依赖，取代 09-28 工程侧"不为名录补齐状态库"的规则；上文该节的 `networkMode: 'always'`、缓存新鲜度与失效、以及"副作用的未知结果不交给通用自动重试"要求，从本次起按实现验收，而不是建议。迁移范围与验证记录见[对齐切片](../../.scratch/state-query-alignment/spec.md)。
+用户确认 §"Zustand 与 Query 分担拥有权"的实际职责就是要求落实的基础设施，不是可无限推迟的候选。该规则在 2026-09-29 之前没有落实：当时仓库既没有这两个依赖，也没有实现，只有历史归档。D-37 据此把两库锁为基础依赖，取代 09-28 工程侧"不为名录补齐状态库"的规则；上文该节的 `networkMode: 'always'`、缓存新鲜度与失效、以及"副作用的未知结果不交给通用自动重试"要求，从本次起按实现验收，而不是建议。迁移范围与验证记录见[对齐切片](../../.scratch/state-query-alignment/spec.md)。

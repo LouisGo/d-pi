@@ -1,6 +1,6 @@
 ---
 name: d-pi-typescript
-description: "用于 d-pi 应用 TypeScript 的实现、重构、类型与数据边界设计及相关代码评审，落实 ts-pattern 和 Zod v4 范式。不用于全局文档/skill 审计、纯样式或无关仓库任务。"
+description: "用于 d-pi 应用 TypeScript 的实现、重构、类型与数据边界设计及相关代码评审，落实 ts-pattern 和 Zod v4 范式。不用于全局文档/skill 审计、纯样式或无关仓库任务；GUI 组件与样式改动以 d-pi-design-system 为主，本 skill 只覆盖其中的类型与数据边界。"
 ---
 
 # d-pi TypeScript
@@ -15,4 +15,4 @@ description: "用于 d-pi 应用 TypeScript 的实现、重构、类型与数据
 
 ## 自动化测试策略
 
-遵循[无头功能合同的 TDD 与自动化策略](../../../docs/architecture/headless-features.md#tdd-与自动化优先2026-09-28)：功能/缺陷修复先失败测试、最小实现、再按需重构；既有行为补测不伪造红灯。默认用可重复测试验证实际行为，不凑数量。Computer use 只补原生系统交互、视觉体验等难以替代的少量证据，或用户明确要求；不把 GUI 验收自动扩成反复手工操作。纯文档/纯样式任务不硬套业务 TDD。
+TDD、测试分层与 Computer use 的规则单源见[无头功能合同](../../../docs/architecture/headless-features.md#tdd-与自动化优先2026-09-28)；本 skill 不复制细则。
