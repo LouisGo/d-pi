@@ -1,3 +1,4 @@
+import { execFile } from "node:child_process";
 import {
   mkdir,
   mkdtemp,
@@ -107,4 +108,29 @@ test("rejects a file replaced during the read", async () => {
     await writeFile(join(root, "race"), "after");
   });
   expect(result).toMatchObject({ kind: "unavailable", reason: "changed" });
+});
+
+test("rejects a FIFO without blocking and keeps serving normal files", async () => {
+  if (process.platform === "win32") return;
+  const root = await fixture();
+  await writeFile(join(root, "normal.txt"), "hello\n");
+  await new Promise<void>((resolve, reject) => {
+    execFile("mkfifo", [join(root, "pipe")], (error) => {
+      if (error) reject(error);
+      else resolve();
+    });
+  });
+  // A blocking open would never settle: the no-writer FIFO must be refused
+  // promptly instead of occupying the shared file I/O resource.
+  const raced = await Promise.race([
+    readProjectFile(root, "pipe"),
+    new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error("read-blocked")), 4000);
+    }),
+  ]);
+  expect(raced).toMatchObject({ kind: "unavailable", reason: "not-file" });
+  expect(await readProjectFile(root, "normal.txt")).toMatchObject({
+    kind: "text",
+    text: "hello\n",
+  });
 });

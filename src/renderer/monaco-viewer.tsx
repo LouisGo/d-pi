@@ -16,6 +16,7 @@ import {
   codeViewIdentity,
 } from "../features/files/selection";
 import { useI18n } from "./i18n/i18n-provider";
+import { MONACO_DIFF_OPTIONS } from "./monaco-diff-options";
 
 Object.assign(globalThis, {
   MonacoEnvironment: {
@@ -154,6 +155,7 @@ export function MonacoViewer({
         scrollBeyondLastLine: false,
         renderSideBySide: true,
         useInlineViewWhenSpaceIsLimited: false,
+        ...MONACO_DIFF_OPTIONS,
         theme: "d-pi",
       });
       diff.setModel({

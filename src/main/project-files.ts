@@ -121,9 +121,15 @@ export async function readProjectFile(
     if (typeof canonical !== "string") return canonical;
     const resolved = await resolveInProject(canonical, path);
     if (isFailure(resolved)) return resolved;
+    // FIFOs, sockets and devices must never reach a blocking open: `lstat`
+    // itself never blocks, and `O_NONBLOCK` keeps the open itself from
+    // waiting when the target is swapped between the check and the open.
+    // The post-open `fstat` recheck below stays as the race-safe verdict.
+    const pre = await lstat(resolved.target);
+    if (!pre.isFile()) return unavailable("not-file");
     const file = await open(
       resolved.target,
-      constants.O_RDONLY | constants.O_NOFOLLOW,
+      constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK,
     );
     try {
       const before = await file.stat();

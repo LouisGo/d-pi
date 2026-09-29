@@ -1,9 +1,11 @@
 import { execFile } from "node:child_process";
 import {
+  chmod,
   mkdir,
   mkdtemp,
   realpath,
   rm,
+  stat,
   symlink,
   writeFile,
 } from "node:fs/promises";
@@ -373,4 +375,45 @@ test("reports an oversized untracked file as too-large", async () => {
     kind: "unavailable",
     reason: "too-large",
   });
+});
+
+test("never executes project-configured clean filters during read-only queries", async () => {
+  const root = await fixture();
+  await git(root, "init", "-q");
+  await git(root, "config", "user.name", "Fixture");
+  await git(root, "config", "user.email", "fixture@example.invalid");
+  const marker = join(root, "filter-ran.marker");
+  const script = join(root, "mark-filter.sh");
+  await writeFile(script, `#!/bin/sh\ntouch "${marker}"\ncat\n`);
+  await chmod(script, 0o755);
+  await git(root, "config", "filter.marktest.clean", script);
+  await git(root, "config", "filter.marktest.smudge", "cat");
+  await writeFile(
+    join(root, ".gitattributes"),
+    "tracked.txt filter=marktest\n",
+  );
+  await writeFile(join(root, "tracked.txt"), "hello\n");
+  await git(root, "add", ".");
+  await git(root, "commit", "-qm", "init");
+  // Setup above runs the filter through the user's own write path; the
+  // read-only queries below must not run it again.
+  await rm(marker, { force: true });
+  await writeFile(join(root, "tracked.txt"), "hello world\n");
+  const result = await listGitChanges(root);
+  const executed = await stat(marker).then(
+    () => true,
+    () => false,
+  );
+  expect(executed).toBe(false);
+  expect(result.kind).toBe("changes");
+  if (result.kind !== "changes") return;
+  expect(result.entries).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        scope: "index-worktree",
+        path: "tracked.txt",
+        status: "modified",
+      }),
+    ]),
+  );
 });

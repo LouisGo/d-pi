@@ -13,6 +13,7 @@ function git(
   cwd: string,
   args: string[],
   maxBuffer = MAX_VIEW_BYTES + 1024,
+  extraConfig: string[] = [],
 ): Promise<CommandResult> {
   const env: NodeJS.ProcessEnv = {
     ...process.env,
@@ -31,18 +32,17 @@ function git(
     "GIT_CONFIG_SYSTEM",
   ])
     delete env[key];
+  const configArgs: string[] = [
+    "-c",
+    "core.quotePath=false",
+    "-c",
+    "core.fsmonitor=false",
+  ];
+  for (const entry of extraConfig) configArgs.push("-c", entry);
   return new Promise((resolve) => {
     execFile(
       "git",
-      [
-        "-c",
-        "core.quotePath=false",
-        "-c",
-        "core.fsmonitor=false",
-        "-C",
-        cwd,
-        ...args,
-      ],
+      [...configArgs, "-C", cwd, ...args],
       { encoding: "buffer", env, timeout: 10000, maxBuffer },
       (error, stdout, stderr) => {
         const data = Buffer.isBuffer(stdout) ? stdout : Buffer.from(stdout);
@@ -77,6 +77,29 @@ function valid(path: string): boolean {
 }
 function digest(data: Buffer): string {
   return `sha256:${createHash("sha256").update(data).digest("hex")}`;
+}
+/** Read-only queries must never execute programs from project or user Git
+ * configuration. A worktree-involving `git diff` runs `clean` filters (a
+ * configured long-running `process` filter takes precedence), and neither
+ * `--no-ext-diff` nor `--no-textconv` covers them. Neutralize every
+ * effective filter driver to a passthrough, so at most `cat` plus Git's
+ * internal end-of-line handling can run. The resulting comparison is a
+ * filter-free current sample, not a claim of fully normalized Git semantics.
+ */
+async function filterNeutralizers(cwd: string): Promise<string[]> {
+  const listing = await git(cwd, ["config", "--list"], 1024 * 1024);
+  if (!listing.ok) return [];
+  const drivers = new Set<string>();
+  for (const line of listing.data.toString("utf8").split("\n")) {
+    const name = line.split("=")[0]?.trim() ?? "";
+    const match = /^filter\.(.*)\.(clean|smudge|process)$/i.exec(name);
+    if (match?.[1]) drivers.add(match[1]);
+  }
+  return [...drivers].flatMap((driver) => [
+    `filter.${driver}.clean=cat`,
+    `filter.${driver}.smudge=cat`,
+    `filter.${driver}.process=`,
+  ]);
 }
 function decode(data: Buffer): string | null {
   if (data.includes(0)) return null;
@@ -164,6 +187,7 @@ function parseStatus(
 async function sample(
   root: string,
   scope: ChangeScope,
+  neutralizers: string[],
 ): Promise<CommandResult> {
   if (scope === "untracked")
     return git(
@@ -186,6 +210,7 @@ async function sample(
       ".",
     ],
     4 * 1024 * 1024,
+    neutralizers,
   );
 }
 export async function listGitChanges(root: string): Promise<GitReply> {
@@ -204,15 +229,20 @@ export async function listGitChanges(root: string): Promise<GitReply> {
     if (typeof repo !== "string") return repo;
     const beforeHead = await head(base);
     const scopes = ["head-index", "index-worktree", "untracked"] as const;
+    const neutralizers = await filterNeutralizers(base);
     const samples = await Promise.all(
-      scopes.map((scope) => sample(base, scope)),
+      scopes.map((scope) => sample(base, scope, neutralizers)),
     );
     if (samples.some((item) => !item.ok)) return unavailable("failed");
-    const again = await Promise.all(scopes.map((scope) => sample(base, scope)));
+    const againNeutralizers = await filterNeutralizers(base);
+    const again = await Promise.all(
+      scopes.map((scope) => sample(base, scope, againNeutralizers)),
+    );
     if (
       again.some(
         (item, i) => !item.ok || !item.data.equals(samples[i]!.data),
       ) ||
+      JSON.stringify(againNeutralizers) !== JSON.stringify(neutralizers) ||
       (await head(base)) !== beforeHead
     )
       return unavailable("changed");
@@ -241,7 +271,9 @@ async function blob(
   if (!size.ok) return unavailable("failed");
   if (Number(size.data.toString("utf8").trim()) > MAX_VIEW_BYTES)
     return unavailable("too-large");
-  const result = await git(root, ["show", reference]);
+  // Plumbing output stays raw: unlike `git show`, `cat-file -p` never runs
+  // smudge or text conversion filters from project or user configuration.
+  const result = await git(root, ["cat-file", "-p", reference]);
   if (!result.ok) return unavailable("failed");
   if (result.data.length > MAX_VIEW_BYTES) return unavailable("too-large");
   const text = decode(result.data);
