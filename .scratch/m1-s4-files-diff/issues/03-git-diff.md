@@ -8,3 +8,5 @@ M1。D-14/D-20。只读区分 HEAD/index、index/工作区、未跟踪；明确�
 ## Answer
 
 `src/main/project-git.ts` 查询当前项目范围，禁用外部 diff、textconv 与 fsmonitor；显示 HEAD/index/工作区来源及覆盖。测试覆盖混合暂存、未跟踪、非 Git、无 HEAD、重命名、二进制、父仓库子目录、symlink 与状态不变时的并发内容变更。普通文本 Diff 不处理 symlink/子模块；界面明确限制。
+
+2026-09-29 夯实：补未跟踪单文件 Diff（左 absent/右 worktree）、暂存删除与工作区删除两侧、冲突判 `unmerged`、超限未跟踪判 `too-large` 单测；实现不变。

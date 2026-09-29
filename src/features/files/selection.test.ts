@@ -35,3 +35,36 @@ test("empty or out-of-range selections do not become references", () => {
     ),
   ).toMatchObject({ kind: "invalid" });
 });
+
+test("oversized selections are rejected instead of truncated", () => {
+  const text = "a".repeat(70_000);
+  expect(
+    captureSelection(
+      text,
+      {
+        startLineNumber: 1,
+        startColumn: 1,
+        endLineNumber: 1,
+        endColumn: 70_001,
+      },
+      { path: "src/big.ts", source: "working tree", version: "sha256:big" },
+    ),
+  ).toMatchObject({ kind: "invalid", reason: "too-large" });
+});
+
+test("crlf line endings keep carriage returns in the frozen text", () => {
+  const text = "a\r\nb\r\n";
+  const value = captureSelection(
+    text,
+    { startLineNumber: 1, startColumn: 1, endLineNumber: 2, endColumn: 1 },
+    { path: "src/crlf.ts", source: "working tree", version: "sha256:crlf" },
+  );
+  expect(value).toMatchObject({
+    kind: "selection",
+    text: "a\r\n",
+    startLine: 1,
+    startColumn: 1,
+    endLine: 2,
+    endColumn: 1,
+  });
+});

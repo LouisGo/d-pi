@@ -7,3 +7,5 @@ M1。D-06/D-25/D-29。Main 负责目录身份、真实路径和文件句柄复�
 ## Answer
 
 `src/main/project-files.ts` 与独立 IPC 合同已接入。`project-files.test.ts` 覆盖授权目录、越界 symlink、空/缺失/二进制/超限和读取中变化；`pnpm check` 已通过。真实 GUI 作为 02/05 的验收继续。
+
+2026-09-29 夯实：补非 UTF-8 无 NUL 判 `invalid-encoding` 单测；实现不变。

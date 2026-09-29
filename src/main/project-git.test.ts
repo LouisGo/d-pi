@@ -203,3 +203,100 @@ test("marks a diff stale when the worktree changes with the same Git status duri
   );
   expect(result).toMatchObject({ kind: "unavailable", reason: "changed" });
 });
+
+test("reads an untracked file as absent on the left and worktree text on the right", async () => {
+  const root = await fixture();
+  await git(root, "init", "-q");
+  await git(root, "config", "user.name", "Fixture");
+  await git(root, "config", "user.email", "fixture@example.invalid");
+  await writeFile(join(root, "tracked.txt"), "tracked\n");
+  await git(root, "add", "tracked.txt");
+  await git(root, "commit", "-qm", "init");
+  await writeFile(join(root, "fresh.txt"), "fresh\n");
+  const listing = await listGitChanges(root);
+  expect(listing).toMatchObject({ kind: "changes" });
+  if (listing.kind !== "changes") return;
+  expect(listing.entries).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ scope: "untracked", path: "fresh.txt" }),
+    ]),
+  );
+  expect(await readGitChange(root, "untracked", "fresh.txt")).toMatchObject({
+    kind: "diff",
+    left: { kind: "absent" },
+    right: { text: "fresh\n" },
+  });
+});
+
+test("reports staged and worktree deletions with an absent side", async () => {
+  const root = await fixture();
+  await git(root, "init", "-q");
+  await git(root, "config", "user.name", "Fixture");
+  await git(root, "config", "user.email", "fixture@example.invalid");
+  await writeFile(join(root, "staged-delete.txt"), "gone from index\n");
+  await writeFile(join(root, "worktree-delete.txt"), "gone from disk\n");
+  await git(root, "add", ".");
+  await git(root, "commit", "-qm", "init");
+  await git(root, "rm", "-q", "staged-delete.txt");
+  await rm(join(root, "worktree-delete.txt"));
+  const staged = await readGitChange(root, "head-index", "staged-delete.txt");
+  expect(staged).toMatchObject({
+    kind: "diff",
+    left: { text: "gone from index\n" },
+    right: { kind: "absent" },
+  });
+  const worktree = await readGitChange(
+    root,
+    "index-worktree",
+    "worktree-delete.txt",
+  );
+  expect(worktree).toMatchObject({
+    kind: "diff",
+    right: { kind: "absent" },
+  });
+  if (worktree.kind !== "diff" || worktree.left.kind !== "text") return;
+  expect(worktree.left.text).toBe("gone from disk\n");
+});
+
+test("refuses an unmerged conflict as unmerged instead of an empty diff", async () => {
+  const root = await fixture();
+  await git(root, "init", "-q");
+  await git(root, "config", "user.name", "Fixture");
+  await git(root, "config", "user.email", "fixture@example.invalid");
+  await writeFile(join(root, "conflict.txt"), "base\n");
+  await git(root, "add", "conflict.txt");
+  await git(root, "commit", "-qm", "init");
+  await git(root, "checkout", "-b", "side", "-q");
+  await writeFile(join(root, "conflict.txt"), "side\n");
+  await git(root, "commit", "-qam", "side");
+  await git(root, "checkout", "-q", "-");
+  await writeFile(join(root, "conflict.txt"), "main\n");
+  await git(root, "commit", "-qam", "main");
+  await git(root, "merge", "side").catch(() => null);
+  const listing = await listGitChanges(root);
+  expect(listing).toMatchObject({ kind: "changes" });
+  if (listing.kind !== "changes") return;
+  expect(listing.entries).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ path: "conflict.txt", status: "unmerged" }),
+    ]),
+  );
+  expect(await readGitChange(root, "head-index", "conflict.txt")).toMatchObject(
+    { kind: "unavailable", reason: "unmerged" },
+  );
+});
+
+test("reports an oversized untracked file as too-large", async () => {
+  const root = await fixture();
+  await git(root, "init", "-q");
+  await git(root, "config", "user.name", "Fixture");
+  await git(root, "config", "user.email", "fixture@example.invalid");
+  await writeFile(join(root, "tracked.txt"), "tracked\n");
+  await git(root, "add", "tracked.txt");
+  await git(root, "commit", "-qm", "init");
+  await writeFile(join(root, "huge.txt"), "a".repeat(5 * 1024 * 1024 + 16));
+  expect(await readGitChange(root, "untracked", "huge.txt")).toMatchObject({
+    kind: "unavailable",
+    reason: "too-large",
+  });
+});

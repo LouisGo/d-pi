@@ -94,6 +94,116 @@ it("reads bound native v3 history without modifying it, retaining branch identit
   }
 });
 
+it("keeps failed, successful and unknown tool results distinct and ignores results without tool identity", async () => {
+  const root = mkdtempSync(join(tmpdir(), "d-pi-history-tools-"));
+  const threadId = crypto.randomUUID();
+  const directory = join(root, threadId);
+  mkdirSync(directory);
+  const file = join(directory, "session.jsonl");
+  const binding = {
+    threadId,
+    configContextId: "fixture",
+    sessionId: "session",
+    sessionFile: file,
+  };
+  const body =
+    [
+      { type: "session", version: 3, id: "session" },
+      {
+        type: "message",
+        id: "failed",
+        parentId: null,
+        message: {
+          role: "toolResult",
+          toolCallId: "call-error",
+          toolName: "shell",
+          isError: true,
+          content: [{ type: "text", text: "boom" }],
+        },
+      },
+      {
+        type: "message",
+        id: "ok-read",
+        parentId: "failed",
+        message: {
+          role: "toolResult",
+          toolCallId: "call-ok",
+          toolName: "read",
+          isError: false,
+          content: [{ type: "text", text: "content" }],
+        },
+      },
+      {
+        type: "message",
+        id: "unknown",
+        parentId: "ok-read",
+        message: {
+          role: "toolResult",
+          toolCallId: "call-unknown",
+          toolName: "custom-tool",
+          content: [
+            { type: "text", text: "done" },
+            { type: "image", data: "ignored" },
+          ],
+        },
+      },
+      {
+        type: "message",
+        id: "orphan",
+        parentId: "unknown",
+        message: {
+          role: "toolResult",
+          content: [{ type: "text", text: "orphan" }],
+        },
+      },
+    ]
+      .map((x) => JSON.stringify(x))
+      .join("\n") + "\n";
+  writeFileSync(file, body);
+  try {
+    const page = await readNativeHistory(root, binding);
+    expect(page).toMatchObject({ kind: "page" });
+    if (page.kind !== "page") return;
+    expect(page.entries).toMatchObject([
+      {
+        id: "failed",
+        toolEvidence: {
+          toolCallId: "call-error",
+          toolName: "shell",
+          isError: true,
+          coverage: "text-parts-only",
+          nonTextParts: 0,
+        },
+      },
+      {
+        id: "ok-read",
+        toolEvidence: {
+          toolCallId: "call-ok",
+          toolName: "read",
+          isError: false,
+          coverage: "text-parts-only",
+          nonTextParts: 0,
+        },
+      },
+      {
+        id: "unknown",
+        text: "done",
+        toolEvidence: {
+          toolCallId: "call-unknown",
+          toolName: "custom-tool",
+          isError: null,
+          coverage: "text-parts-only",
+          nonTextParts: 1,
+        },
+      },
+      { id: "orphan", text: "orphan" },
+    ]);
+    expect(page.entries[3]).not.toHaveProperty("toolEvidence");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 it("pages large files within a byte budget and rejects changed cursors, other Threads and unsupported versions", async () => {
   const root = mkdtempSync(join(tmpdir(), "d-pi-history-pages-"));
   const threadId = crypto.randomUUID();

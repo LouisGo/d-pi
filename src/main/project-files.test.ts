@@ -71,6 +71,15 @@ test("distinguishes empty, missing, binary, and oversized files", async () => {
   });
 });
 
+test("rejects non-utf8 bytes without nul as invalid encoding", async () => {
+  const root = await fixture();
+  await writeFile(join(root, "latin"), Buffer.from([0xff, 0xfe, 0xfd]));
+  expect(await readProjectFile(root, "latin")).toMatchObject({
+    kind: "unavailable",
+    reason: "invalid-encoding",
+  });
+});
+
 test("rejects a file replaced during the read", async () => {
   const root = await fixture();
   await writeFile(join(root, "race"), "before");
