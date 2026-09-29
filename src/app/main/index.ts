@@ -10,24 +10,8 @@ import {
   MessageChannelMain,
 } from "electron";
 import { z } from "zod";
-import { GitRequestSchema } from "../../modules/changes/contracts/public";
-import {
-  listGitChanges,
-  readGitChange,
-} from "../../modules/changes/main/public";
-import { HistoryRequestSchema } from "../../modules/conversation/contracts/public";
-import { readNativeHistory } from "../../modules/conversation/main/public";
-import {
-  RuntimeCommandSchema,
-  RuntimeFailureSchema,
-  SubmissionCommandSchema,
-} from "../../modules/execution/contracts/public";
+import { RuntimeFailureSchema } from "../../modules/execution/contracts/public";
 import { RuntimeService } from "../../modules/execution/main/public";
-import { FileRequestSchema } from "../../modules/files/contracts/public";
-import {
-  listProjectFiles,
-  readProjectFile,
-} from "../../modules/files/main/public";
 import {
   Diagnostics,
   diagnosticCode,
@@ -47,6 +31,16 @@ import {
   EnvelopeSchema,
 } from "../contracts/desktop-bridge";
 import { failure } from "../contracts/failure";
+import {
+  registerRuntimeConnectionIpc,
+  registerRuntimeRequestIpc,
+  registerSubmissionIpc,
+} from "./ipc/execution";
+import {
+  registerFilesIpc,
+  registerGitIpc,
+  registerHistoryIpc,
+} from "./ipc/project-reads";
 import { QuitCoordinator } from "./lifecycle/quit";
 import { AppStorage } from "./wiring/app-storage";
 import { DesktopCommandService } from "./wiring/desktop-command-service";
@@ -353,138 +347,33 @@ else {
         });
       }
     });
-    ipcMain.on("runtime:connect", (event, raw: unknown) => {
-      if (!sourceValid(event) || !runtime) return;
-      const parsed = z.uuid().safeParse(raw);
-      if (
-        !parsed.success ||
-        store?.threads.activeThread()?.threadId !== parsed.data
-      )
-        return;
-      const { port1, port2 } = new MessageChannelMain();
-      runtime.attach(port1);
-      event.senderFrame?.postMessage(
-        "runtime:port",
-        { threadId: parsed.data },
-        [port2],
-      );
+    const ipcSourceContext = { ipcMain, sourceValid };
+    registerRuntimeConnectionIpc({
+      ...ipcSourceContext,
+      getRuntime: () => runtime,
+      getStore: () => store,
+      createMessageChannel: () => new MessageChannelMain(),
     });
-    ipcMain.handle("history:read", async (event, raw: unknown) => {
-      if (!sourceValid(event) || !store) throw Error("Invalid history source");
-      const { threadId, cursor } = HistoryRequestSchema.parse(raw);
-      if (store.threads.activeThread()?.threadId !== threadId)
-        throw Error("Foreign Thread");
-      const binding = store.threads.nativeSession(threadId);
-      return binding
-        ? readNativeHistory(
-            join(app.getPath("userData"), "native-sessions"),
-            binding,
-            cursor,
-          )
-        : { kind: "unavailable", reason: "missing" };
+    const projectReadContext = {
+      ...ipcSourceContext,
+      getStore: () => store,
+      getDiagnostics: () => diagnostics,
+      nativeSessionsPath: () =>
+        join(app.getPath("userData"), "native-sessions"),
+    };
+    registerHistoryIpc(projectReadContext);
+    registerFilesIpc(projectReadContext);
+    registerGitIpc(projectReadContext);
+    registerSubmissionIpc({
+      ...ipcSourceContext,
+      getRuntime: () => runtime,
     });
-    ipcMain.handle("files:request", async (event, raw: unknown) => {
-      if (!sourceValid(event) || !store) throw Error("Invalid file source");
-      const command = FileRequestSchema.parse(raw);
-      const thread = store.threads.activeThread();
-      if (!thread || thread.threadId !== command.threadId)
-        throw Error("Foreign Thread");
-      const context = {
-        traceId: command.traceId,
-        requestId: randomUUID(),
-        connectionId: diagnostics?.processInstanceId ?? randomUUID(),
-        operation: `files:${command.kind}`,
-      };
-      diagnostics?.record({ ...context, stage: "received" });
-      const reply =
-        command.kind === "list"
-          ? await listProjectFiles(thread.directory, command.path)
-          : await readProjectFile(thread.directory, command.path);
-      diagnostics?.record({
-        ...context,
-        stage: reply.kind === "unavailable" ? "failed" : "completed",
-        ...(reply.kind === "unavailable" ? { code: reply.reason } : {}),
-      });
-      return reply;
-    });
-    ipcMain.handle("git:request", async (event, raw: unknown) => {
-      if (!sourceValid(event) || !store) throw Error("Invalid Git source");
-      const command = GitRequestSchema.parse(raw);
-      const thread = store.threads.activeThread();
-      if (!thread || thread.threadId !== command.threadId)
-        throw Error("Foreign Thread");
-      const context = {
-        traceId: command.traceId,
-        requestId: randomUUID(),
-        connectionId: diagnostics?.processInstanceId ?? randomUUID(),
-        operation: `git:${command.kind}`,
-      };
-      diagnostics?.record({ ...context, stage: "received" });
-      const reply =
-        command.kind === "list"
-          ? await listGitChanges(thread.directory)
-          : await readGitChange(thread.directory, command.scope, command.path);
-      diagnostics?.record({
-        ...context,
-        stage: reply.kind === "unavailable" ? "failed" : "completed",
-        ...(reply.kind === "unavailable" ? { code: reply.reason } : {}),
-      });
-      return reply;
-    });
-    ipcMain.handle("submission:request", async (event, raw: unknown) => {
-      if (!sourceValid(event) || !runtime)
-        throw Error("Invalid submission source");
-      return runtime.submit(SubmissionCommandSchema.parse(raw));
-    });
-    ipcMain.handle("runtime:request", async (event, raw: unknown) => {
-      if (!sourceValid(event))
-        throw new Error("Invalid runtime request source");
-      const command = RuntimeCommandSchema.parse(raw);
-      if (command.kind === "inspect") initializeStorage();
-      const context = {
-        traceId: command.traceId,
-        requestId: randomUUID(),
-        connectionId: diagnostics?.processInstanceId ?? randomUUID(),
-        operation: `runtime:${command.kind}`,
-      };
-      diagnostics?.record({ ...context, stage: "received" });
-      if (!runtime) {
-        const failure = runtimeFailure(
-          command.traceId,
-          Error("Runtime storage unavailable"),
-        );
-        diagnostics?.record({
-          ...context,
-          stage: "failed",
-          code: failure.code,
-        });
-        return { kind: "failed", error: failure };
-      }
-      try {
-        const view = await runtime.execute(command);
-        diagnostics?.record({
-          ...context,
-          stage:
-            view.phase === "failed" || view.phase === "interrupted"
-              ? "failed"
-              : command.kind === "stop" ||
-                  command.kind === "continue" ||
-                  command.kind === "answer"
-                ? "dispatching"
-                : "completed",
-        });
-        return { kind: "view", view };
-      } catch (error) {
-        const failure = runtimeFailure(command.traceId, error);
-        const causeCode = diagnosticCode(error);
-        diagnostics?.record({
-          ...context,
-          stage: "failed",
-          code: failure.code,
-          ...(causeCode ? { causeCode } : {}),
-        });
-        return { kind: "failed", error: failure };
-      }
+    registerRuntimeRequestIpc({
+      ...ipcSourceContext,
+      getRuntime: () => runtime,
+      initializeStorage,
+      getDiagnostics: () => diagnostics,
+      runtimeFailure,
     });
     ipcMain.handle("draft:request", async (event, raw: unknown) => {
       const fallbackTrace = randomUUID();
