@@ -91,6 +91,14 @@ export class SubmissionRepository {
       return true;
     });
   }
+  recoverInterruptedSubmissions(): number {
+    const result = this.db
+      .prepare(
+        "UPDATE submission SET receipt=json_set(receipt,'$.state','unknown','$.outcome','unknown','$.updatedAt',?) WHERE json_extract(receipt,'$.state')='dispatching'",
+      )
+      .run(new Date().toISOString());
+    return Number(result.changes);
+  }
   acknowledgeSubmission(id: string): boolean {
     return this.database.transaction(() => {
       const receipt = this.submission(id);

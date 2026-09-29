@@ -6,6 +6,7 @@ import { DatabaseSync } from "node:sqlite";
 import { describe, expect, it } from "vitest";
 import { FrozenSubmissionSchema } from "../features/submission/contracts";
 import { AppStorage } from "./storage/app-storage";
+import { AppDatabase } from "./storage/database";
 
 function fixture(run: (path: string) => void): void {
   const dir = mkdtempSync(join(tmpdir(), "d-pi-submission-"));
@@ -34,6 +35,33 @@ function frozen(store: AppStorage) {
   });
 }
 describe("persistent submission handoff", () => {
+  it("leaves interrupted receipts untouched until the explicit execution recovery step", () =>
+    fixture((path) => {
+      let store = new AppStorage(path);
+      const value = frozen(store);
+      store.submissions.prepareSubmission(value);
+      expect(store.submissions.dispatchSubmission(value.submissionId)).toBe(
+        true,
+      );
+      store.close();
+
+      const database = new AppDatabase(path);
+      expect(
+        database.connection
+          .prepare(
+            "SELECT json_extract(receipt,'$.state') AS state FROM submission WHERE id=?",
+          )
+          .get(value.submissionId),
+      ).toEqual({ state: "dispatching" });
+      database.close();
+
+      store = new AppStorage(path);
+      expect(store.submissions.submission(value.submissionId)?.state).toBe(
+        "unknown",
+      );
+      store.close();
+    }));
+
   it("ACK consumes only A without advancing the draft CAS baseline; original survives restart", () =>
     fixture((path) => {
       let store = new AppStorage(path);

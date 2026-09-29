@@ -3,7 +3,10 @@ import { renameSync, rmSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 export class AppDatabase {
   readonly connection: DatabaseSync;
+  private readonly path: string;
+  private readonly originalVersion: number;
   constructor(path: string) {
+    this.path = path;
     this.connection = new DatabaseSync(path);
     try {
       this.connection.exec(
@@ -12,6 +15,9 @@ export class AppDatabase {
       const version = this.connection
         .prepare("PRAGMA user_version")
         .get()?.user_version;
+      if (typeof version !== "number")
+        throw new Error("Missing schema version");
+      this.originalVersion = version;
       if (
         version !== 0 &&
         version !== 1 &&
@@ -74,16 +80,23 @@ export class AppDatabase {
         });
       }
       this.connection.exec("PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL;");
-      this.connection
-        .prepare(
-          "UPDATE submission SET receipt=json_set(receipt,'$.state','unknown','$.outcome','unknown','$.updatedAt',?) WHERE json_extract(receipt,'$.state')='dispatching'",
-        )
-        .run(new Date().toISOString());
-      if (version !== 4 && version !== 5) {
-        const temporary = `${path}.before-v4.${randomUUID()}.tmp`;
+    } catch (error) {
+      this.connection.close();
+      throw error;
+    }
+  }
+  /**
+   * Complete the post-recovery schema steps. AppStorage calls this only after
+   * execution has explicitly normalized interrupted receipts, preserving the
+   * historical open -> v3 -> WAL -> recovery -> v4/v5 -> publish order.
+   */
+  completeSchemaMigrations(): void {
+    try {
+      if (this.originalVersion !== 4 && this.originalVersion !== 5) {
+        const temporary = `${this.path}.before-v4.${randomUUID()}.tmp`;
         try {
           this.connection.prepare("VACUUM INTO ?").run(temporary);
-          renameSync(temporary, `${path}.before-v4`);
+          renameSync(temporary, `${this.path}.before-v4`);
         } finally {
           rmSync(temporary, { force: true });
         }
@@ -93,11 +106,11 @@ export class AppDatabase {
           ),
         );
       }
-      if (version !== 5) {
-        const temporary = `${path}.before-v5.${randomUUID()}.tmp`;
+      if (this.originalVersion !== 5) {
+        const temporary = `${this.path}.before-v5.${randomUUID()}.tmp`;
         try {
           this.connection.prepare("VACUUM INTO ?").run(temporary);
-          renameSync(temporary, `${path}.before-v5`);
+          renameSync(temporary, `${this.path}.before-v5`);
         } finally {
           rmSync(temporary, { force: true });
         }
