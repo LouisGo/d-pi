@@ -8,6 +8,7 @@ import type {
   HistoryCursor,
   HistoryEntry,
   HistoryPage,
+  HistoryToolEffect,
 } from "../contracts/history";
 
 const HeaderSchema = z.object({
@@ -29,6 +30,21 @@ const EntrySchema = z.object({
 });
 const TextPartSchema = z.object({ type: z.literal("text"), text: z.string() });
 const PAGE_BYTES = 1024 * 1024;
+const MUTATING_TOOL_NAMES = new Set([
+  "write",
+  "edit",
+  "delete",
+  "apply_patch",
+  "ast_edit",
+]);
+const NON_MUTATING_TOOL_NAMES = new Set(["read"]);
+
+function classifyToolEffect(toolName: string): HistoryToolEffect {
+  if (MUTATING_TOOL_NAMES.has(toolName)) return "mutation";
+  if (NON_MUTATING_TOOL_NAMES.has(toolName)) return "no-mutation";
+  return "unknown";
+}
+
 export async function readNativeHistory(
   root: string,
   binding: NativeBinding,
@@ -120,6 +136,7 @@ export async function readNativeHistory(
                 toolCallId: message.toolCallId,
                 toolName: message.toolName,
                 isError: message.isError ?? null,
+                effect: classifyToolEffect(message.toolName),
                 coverage: "text-parts-only" as const,
                 nonTextParts: Array.isArray(message.content)
                   ? message.content.filter(

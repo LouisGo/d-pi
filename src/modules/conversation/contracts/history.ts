@@ -5,6 +5,12 @@ export const HistoryCursorSchema = z.strictObject({
   offset: z.number().int().nonnegative(),
 });
 export type HistoryCursor = z.infer<typeof HistoryCursorSchema>;
+export const HistoryToolEffectSchema = z.enum([
+  "mutation",
+  "no-mutation",
+  "unknown",
+]);
+export type HistoryToolEffect = z.infer<typeof HistoryToolEffectSchema>;
 export const HistoryEntrySchema = z.strictObject({
   id: z.string(),
   parentId: z.string().nullable(),
@@ -15,6 +21,7 @@ export const HistoryEntrySchema = z.strictObject({
       toolCallId: z.string().max(256),
       toolName: z.string().max(120),
       isError: z.boolean().nullable(),
+      effect: HistoryToolEffectSchema,
       coverage: z.literal("text-parts-only"),
       nonTextParts: z.number().int().nonnegative(),
     })

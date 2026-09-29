@@ -80,6 +80,7 @@ it("reads bound native v3 history without modifying it, retaining branch identit
             toolCallId: "call-1",
             toolName: "write",
             isError: false,
+            effect: "mutation",
             coverage: "text-parts-only",
             nonTextParts: 1,
           },
@@ -141,6 +142,7 @@ it("keeps failed, successful and unknown tool results distinct and ignores resul
           role: "toolResult",
           toolCallId: "call-unknown",
           toolName: "custom-tool",
+          isError: false,
           content: [
             { type: "text", text: "done" },
             { type: "image", data: "ignored" },
@@ -171,6 +173,7 @@ it("keeps failed, successful and unknown tool results distinct and ignores resul
           toolCallId: "call-error",
           toolName: "shell",
           isError: true,
+          effect: "unknown",
           coverage: "text-parts-only",
           nonTextParts: 0,
         },
@@ -181,6 +184,7 @@ it("keeps failed, successful and unknown tool results distinct and ignores resul
           toolCallId: "call-ok",
           toolName: "read",
           isError: false,
+          effect: "no-mutation",
           coverage: "text-parts-only",
           nonTextParts: 0,
         },
@@ -191,7 +195,8 @@ it("keeps failed, successful and unknown tool results distinct and ignores resul
         toolEvidence: {
           toolCallId: "call-unknown",
           toolName: "custom-tool",
-          isError: null,
+          isError: false,
+          effect: "unknown",
           coverage: "text-parts-only",
           nonTextParts: 1,
         },
@@ -199,6 +204,53 @@ it("keeps failed, successful and unknown tool results distinct and ignores resul
       { id: "orphan", text: "orphan" },
     ]);
     expect(page.entries[3]).not.toHaveProperty("toolEvidence");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+it("classifies every known mutating native tool without changing its original name", async () => {
+  const root = mkdtempSync(join(tmpdir(), "d-pi-history-tool-effects-"));
+  const threadId = crypto.randomUUID();
+  const directory = join(root, threadId);
+  mkdirSync(directory);
+  const file = join(directory, "session.jsonl");
+  const binding = {
+    threadId,
+    configContextId: "fixture",
+    sessionId: "session",
+    sessionFile: file,
+  };
+  const toolNames = ["edit", "delete", "apply_patch", "ast_edit"] as const;
+  const body =
+    [
+      { type: "session", version: 3, id: "session" },
+      ...toolNames.map((toolName, index) => ({
+        type: "message",
+        id: `tool-${index}`,
+        parentId: index === 0 ? null : `tool-${index - 1}`,
+        message: {
+          role: "toolResult",
+          toolCallId: `call-${index}`,
+          toolName,
+          isError: false,
+          content: [{ type: "text", text: `${toolName} succeeded` }],
+        },
+      })),
+    ]
+      .map((x) => JSON.stringify(x))
+      .join("\n") + "\n";
+  writeFileSync(file, body);
+  try {
+    const page = await readNativeHistory(root, binding);
+    expect(page.kind).toBe("page");
+    if (page.kind !== "page") return;
+    expect(page.entries.map((entry) => entry.toolEvidence?.toolName)).toEqual(
+      toolNames,
+    );
+    expect(page.entries.map((entry) => entry.toolEvidence?.effect)).toEqual(
+      toolNames.map(() => "mutation"),
+    );
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

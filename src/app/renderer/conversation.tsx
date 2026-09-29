@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import type {
   HistoryBridge,
   HistoryCursor,
+  HistoryEntry,
   HistoryPage,
 } from "../../modules/conversation/contracts/public";
 import type { ConversationModel } from "../../modules/conversation/core/public";
@@ -188,6 +189,25 @@ export function Submissions({ model }: { model: SubmissionModel }) {
     </section>
   );
 }
+
+type HistoryToolEvidenceMessage =
+  | "ui.history.toolFailed"
+  | "ui.history.toolReportedWrite"
+  | "ui.history.toolSuccessNoWrite"
+  | "ui.history.toolUnknown";
+
+export function historyToolEvidenceMessage(
+  evidence: NonNullable<HistoryEntry["toolEvidence"]>,
+): HistoryToolEvidenceMessage {
+  if (evidence.isError === true) return "ui.history.toolFailed";
+  if (evidence.isError !== false) return "ui.history.toolUnknown";
+  return match(evidence.effect)
+    .with("mutation", () => "ui.history.toolReportedWrite" as const)
+    .with("no-mutation", () => "ui.history.toolSuccessNoWrite" as const)
+    .with("unknown", () => "ui.history.toolUnknown" as const)
+    .exhaustive();
+}
+
 export function History({
   bridge,
   threadId,
@@ -265,22 +285,7 @@ export function History({
                         recordId: entry.id,
                       })}
                     </p>
-                    <p>
-                      {entry.toolEvidence.isError === true
-                        ? t("ui.history.toolFailed")
-                        : entry.toolEvidence.isError === false &&
-                            [
-                              "write",
-                              "edit",
-                              "delete",
-                              "apply_patch",
-                              "ast_edit",
-                            ].includes(entry.toolEvidence.toolName)
-                          ? t("ui.history.toolReportedWrite")
-                          : entry.toolEvidence.isError === false
-                            ? t("ui.history.toolSuccessNoWrite")
-                            : t("ui.history.toolUnknown")}
-                    </p>
+                    <p>{t(historyToolEvidenceMessage(entry.toolEvidence))}</p>
                     <p>
                       {t("ui.history.toolCoverage", {
                         count: entry.toolEvidence.nonTextParts,
