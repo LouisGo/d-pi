@@ -8,3 +8,4 @@ Status: resolved
 
 - 2026-09-29：`safeMessage` 与 `ConversationItem.label` 现为混合字符串，需随合同迁移并同步诊断文档。
 - 2026-09-29：跨层 UiMessage 代码/受限参数、原始正文分离与诊断合同完成；目标行为测试先红后绿，受影响现有集成断言已更新。验证见[交接](../handoff.md)。
+- 2026-09-29 复核：实际缺失 SDK 资源的失败先行测试暴露恢复命令丢失；SDK 校验路径改传 `runtime.sdkResourcesUnavailable`，双语最终提示保留 `pnpm runtime:sdk` 和重新获取完整应用。

@@ -24,6 +24,7 @@ const shell = vi.hoisted(() => ({
   },
   quit: vi.fn(),
   systemLocale: "en-US",
+  preferredSystemLanguages: ["en-US"],
 }));
 vi.mock("electron", () => ({
   app: {
@@ -33,6 +34,7 @@ vi.mock("electron", () => ({
     whenReady: () => Promise.resolve(),
     getPath: () => shell.directory,
     getLocale: () => shell.systemLocale,
+    getPreferredSystemLanguages: () => shell.preferredSystemLanguages,
     on: (name: string, listener: (event: unknown) => void) =>
       shell.events.set(name, listener),
     quit: shell.quit,
@@ -60,6 +62,44 @@ vi.mock("electron", () => ({
     setApplicationMenu: vi.fn(),
   },
 }));
+
+it("uses the first preferred system language rather than the Chromium app locale", async () => {
+  vi.resetModules();
+  shell.handlers.clear();
+  shell.events.clear();
+  shell.quit.mockClear();
+  shell.directory = mkdtempSync(join(tmpdir(), "d-pi-system-language-"));
+  shell.systemLocale = "en-US";
+  shell.preferredSystemLanguages = ["zh-Hans-CN", "en-US"];
+  const { Menu } = await import("electron");
+  vi.mocked(Menu.buildFromTemplate).mockClear();
+  try {
+    await import("./index");
+    const snapshot = shell.handlers.get("locale:snapshot");
+    const set = shell.handlers.get("locale:set-preference");
+    if (!snapshot || !set) throw Error("Missing locale IPC handlers");
+    const event = {
+      sender: shell.contents,
+      senderFrame: shell.contents.mainFrame,
+    };
+    expect(await snapshot(event, undefined)).toEqual({
+      preference: "system",
+      resolvedLocale: "zh-CN",
+    });
+    expect(
+      JSON.stringify(vi.mocked(Menu.buildFromTemplate).mock.lastCall?.[0]),
+    ).toContain("编辑");
+    expect(await set(event, "en-US")).toMatchObject({
+      preference: "en-US",
+      resolvedLocale: "en-US",
+    });
+  } finally {
+    shell.preferredSystemLanguages = ["en-US"];
+    shell.events.get("will-quit")?.({ preventDefault: vi.fn() });
+    await vi.waitFor(() => expect(shell.quit).toHaveBeenCalled());
+    rmSync(shell.directory, { recursive: true, force: true });
+  }
+});
 
 it("starts with system locale, rebuilds the native menu on interaction, and keeps a failed locale save visible", async () => {
   vi.resetModules();

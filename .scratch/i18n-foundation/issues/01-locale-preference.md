@@ -8,3 +8,4 @@ Status: resolved
 
 - 2026-09-29：实施前发现偏好无 locale、Main 菜单先于存储读取、preload 回执漏比 sendKey，纳入本票。
 - 2026-09-29：v5 偏好迁移与独立写、Main 系统语言解析/菜单/弹窗、严格 IPC、shared ICU facade 完成。失败测试先暴露缺口；存储/Main/preload 与共享检查通过，整体验证见[交接](../handoff.md)。
+- 2026-09-29 复核：`system` 改取 `app.getPreferredSystemLanguages()[0]`，空列表才回退 `getLocale()`；失败先行测试覆盖应用 locale 为英文、首选系统语言为中文及显式英文偏好。

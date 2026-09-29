@@ -53,6 +53,8 @@ export const domain = {
     "Cannot read or execute the official Runtime. Check permissions on the app resources.",
   "runtime.resourceIncompatible":
     "The official Runtime or SDK resources failed compatibility or integrity checks in this environment. In development, check the managed resources; for a packaged app, obtain the complete app again.",
+  "runtime.sdkResourcesUnavailable":
+    "Official SDK resources are missing or failed verification. In development, run pnpm runtime:sdk; for a packaged app, obtain the complete app again.",
   "runtime.configProfile":
     "OMP profile: {profile} (using native discovery rules)",
   "runtime.configDirectory": "Native configuration directory: {directory}",

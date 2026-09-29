@@ -4,7 +4,7 @@
 
 ## 已交付
 
-- `system`、`zh-CN`、`en-US` 偏好由 Main/SQLite 持久化；`system` 保持为偏好，启动时按当前 macOS locale 解析。语言选择即时改变 Renderer 和应用菜单，后续原生对话框使用同一语言；保存失败不撤销本次选择，界面提示下次启动可能恢复旧值。
+- `system`、`zh-CN`、`en-US` 偏好由 Main/SQLite 持久化；`system` 保持为偏好，启动时按系统首选语言列表的第一项解析，列表为空时回退应用 locale。语言选择即时改变 Renderer 和应用菜单，后续原生对话框使用同一语言；保存失败不撤销本次选择，界面提示下次启动可能恢复旧值。
 - 当前 Renderer 的 d-pi 自有文案、状态、草稿/提交错误、辅助功能标签与 Main 菜单/弹窗进入共享 typed catalog；支持 ICU 动态参数与英文复数。跨层传稳定语义码与受限参数，现有状态在切换后会重新显示。用户、Agent、工具、原生交互、路径、URL、模型名与外部诊断内容仍保留原文。
 - 双语 key parity、ICU 格式检查及主要 Renderer TSX 的明显写死文案守卫进入 `pnpm check`。完整架构基准见[国际化架构](../../docs/architecture/internationalization.md)，盘点和任务见[规格](spec.md)。
 
@@ -29,7 +29,8 @@ D_PI_DATA_DIR="$HOME/Library/Application Support/d-pi-i18n-trial" pnpm dev
 
 ## 本轮验证与限制
 
-- `pnpm check`：TypeScript、Biome、设计 lint、i18n 守卫、设计与源码边界检查通过；Vitest 40 文件/177 项通过，另 1 项可选 smoke 跳过。
+- `pnpm check`：TypeScript、Biome、设计 lint、i18n 守卫、设计与源码边界检查通过；Vitest 41 文件/179 项通过，另 1 项可选 smoke 跳过。新增测试覆盖应用 locale 与系统首选语言不同、SDK 资源实际缺失时中英最终提示包含 `pnpm runtime:sdk` 和重新获取完整应用。
 - `pnpm build` 通过；Vite 报告既有大 chunk 警告，未把本轮语言文件做动态分包。
 - 使用隔离 App 数据的真实 Electron 开发窗口，观察到中文 `system` 启动，选 English 后界面和原生 `Edit`/`Window` 菜单同步切换；原生项目选择对话框的 d-pi 标题为英文；深色/紧凑布局下选择器可读、未见遮挡。未进行完整用户任务或正式包验收。
-- 未验证系统语言实际改变后的重启、偏好写入失败的真实磁盘故障、签名/公证包或 Windows/Linux。自动化验证和本轮 GUI 样本不替代用户试用反馈。
+- 复核后使用另一份隔离 App 数据和临时项目运行构建版：SQLite 写锁使草稿进入真实“尚未保存”状态，切换英文/中文后输入 `alphabeta gamma`、错误提示和项目身份保留，提交记录仍为 0；跨语言 `⌘Z` 撤销了切换前输入的 ` gamma`，选中的 `beta` 在再次切换后仍显示为选区。释放写锁后“重试保存”成功；临时实例未允许项目执行。
+- 未验证系统语言实际改变后的重启、持续输出或待回答原生交互中的切换、签名/公证包或 Windows/Linux。自动化验证和本轮 GUI 样本不替代用户试用反馈。

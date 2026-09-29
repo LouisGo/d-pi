@@ -86,9 +86,11 @@ function buildMenu(): void {
   );
 }
 function applyLocale(preference: LocalePreference, announce: boolean): void {
+  const systemLanguage =
+    app.getPreferredSystemLanguages()[0] ?? app.getLocale();
   const next: LocaleSnapshot = {
     preference,
-    resolvedLocale: resolveLocale(preference, app.getLocale()),
+    resolvedLocale: resolveLocale(preference, systemLanguage),
   };
   const changed =
     next.preference !== localeSnapshot.preference ||

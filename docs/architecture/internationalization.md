@@ -351,6 +351,8 @@ resolvedLocale = en-US
 
 System locale 由 Electron Main 负责解析。
 
+“跟随系统”取 `app.getPreferredSystemLanguages()[0]`；首选语言列表为空时才回退到 `app.getLocale()`。`app.getSystemLocale()` 对应区域格式，不用于决定界面语言。
+
 Renderer 的：
 
 ```ts

@@ -37,16 +37,6 @@ function boundedDisplayValue(value: string, maxLength: number): string {
   return value.length > maxLength ? `${value.slice(0, maxLength - 1)}…` : value;
 }
 
-function resourceMessage(error: RuntimeResourceError) {
-  return match(error.code)
-    .with("resource-missing", () => uiMessage("runtime.resourceMissing"))
-    .with("resource-unreadable", () => uiMessage("runtime.resourceUnreadable"))
-    .with("resource-incompatible", () =>
-      uiMessage("runtime.resourceIncompatible"),
-    )
-    .exhaustive();
-}
-
 export class RuntimeService {
   private readonly executingIds = new Set<string>();
   private lastDispatchId: string | null = null;
@@ -130,7 +120,7 @@ export class RuntimeService {
         busy: false,
         message:
           error instanceof RuntimeResourceError
-            ? resourceMessage(error)
+            ? uiMessage("runtime.sdkResourcesUnavailable")
             : uiMessage("runtime.resourceUnknown"),
       });
       throw error;

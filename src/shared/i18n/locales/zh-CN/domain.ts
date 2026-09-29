@@ -42,6 +42,8 @@ export const domain = {
     "无法读取或执行官方 Runtime，请检查应用资源的文件权限。",
   "runtime.resourceIncompatible":
     "官方 Runtime 或 SDK 资源无法通过当前环境的兼容性或完整性校验。开发环境请核对受管理资源；随包版本请重新获取完整应用。",
+  "runtime.sdkResourcesUnavailable":
+    "官方 SDK 运行资源缺失或校验失败。开发环境请运行 pnpm runtime:sdk；随包版本请重新获取完整应用。",
   "runtime.configProfile": "OMP profile：{profile}（沿用原生发现规则）",
   "runtime.configDirectory": "原生配置目录：{directory}",
   "submission.storageUnavailable":

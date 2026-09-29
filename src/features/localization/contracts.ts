@@ -34,6 +34,7 @@ export const PlainUiMessageCodeSchema = z.enum([
   "runtime.resourceMissing",
   "runtime.resourceUnreadable",
   "runtime.resourceIncompatible",
+  "runtime.sdkResourcesUnavailable",
   "submission.storageUnavailable",
   "submission.notReady",
   "submission.unsupportedNativeCommand",
