@@ -19,7 +19,7 @@
 | [验证记录](validation/)、[历史 GUI 证据](archive/stage1-evidence.md)及机器结果 | 支持特定版本、平台和场景的事实；验证通过不决定产品范围，也不证明未来集成已通过 |
 | [技术审议](architecture/technology-selection-review.md)、[增量评估](../.scratch/product-requirements/technical-evaluation.md)、[Composer 研究](../.scratch/product-requirements/composer-research.md) | 候选、比较和待验证问题；建议按决定登记辨别状态 |
 | [无头功能 skill](../.agents/skills/d-pi-headless-features/SKILL.md)、[TypeScript skill](../.agents/skills/d-pi-typescript/SKILL.md)与[任务约定](agents/issue-tracker.md) | 在当前授权范围内组织工作，按需引用合同；不自行扩大范围或批准候选 |
-| [不可变归档](archive/pre-reset/README.md) | 来源提交、原文、代码和实验；只作历史依据，不作为当前构建或执行指令 |
+| [历史归档](archive/pre-reset/README.md) | 来源提交、决策、研究与机器结果；只作历史证据，不作为当前构建或执行指令。旧源码与同名构建文件已于 2026-09-30 裁剪，`pruned` 段记录其哈希与取回方式 |
 
 文档冲突先查决定的日期、状态与明确取代关系，不按文件新旧、目录名或措辞强弱猜测。代码/观测与文档不符时，应分别报告实现事实、既定要求和证据缺口；不能以当前行为自动改写规格。
 

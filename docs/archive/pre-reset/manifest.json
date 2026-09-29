@@ -1,6 +1,8 @@
 {
   "source_commit": "6fab3efd0526d2d716d7939b75202a88f857078a",
   "purpose": "Immutable historical evidence; not current implementation or instructions",
+  "pruned_on": "2026-09-30",
+  "prune_note": "按用户 2026-09-30 决定精准瘦身：移除无引用的旧应用源码、与当前配置同名的构建文件及不可运行的原型脚本。被移除文件仍可用 git show 6fab3efd0526d2d716d7939b75202a88f857078a:<source_path> 逐字取回；哈希保留在此清单中。",
   "files": [
     {
       "source_path": ".scratch/omp-gui-m1/decisions.md",
@@ -8,34 +10,9 @@
       "bytes": 1991
     },
     {
-      "source_path": ".scratch/omp-gui-m1/prototype/.gitignore",
-      "sha256": "c7c9f36e97a097d93beba20f336ce72faa00810865fcfda5c4383fbd33bdeabd",
-      "bytes": 19
-    },
-    {
       "source_path": ".scratch/omp-gui-m1/prototype/README.md",
       "sha256": "95a74571f4a3b7812869bb6d0ea82ff51e98245179778ef3e1bb5674cd3c535f",
       "bytes": 837
-    },
-    {
-      "source_path": ".scratch/omp-gui-m1/prototype/host.cjs",
-      "sha256": "f03ea718cd5083a87f43b2cadcb430d1e7018ef74c54063ce1d23617c0e73614",
-      "bytes": 1812
-    },
-    {
-      "source_path": ".scratch/omp-gui-m1/prototype/interaction.ts",
-      "sha256": "8d064aa47900e51890720d3a1701d658423d1c3341632877d44bbc2154bee87e",
-      "bytes": 356
-    },
-    {
-      "source_path": ".scratch/omp-gui-m1/prototype/main.cjs",
-      "sha256": "27216fdb3d44e538b8d9373e8734a516477739060452ccba6c02db35fc402dbc",
-      "bytes": 7843
-    },
-    {
-      "source_path": ".scratch/omp-gui-m1/prototype/preload.cjs",
-      "sha256": "0ffad26cc4d6e3356e3392e5b7f4711c057b8845de3e2b296a9a1c634a564fc8",
-      "bytes": 340
     },
     {
       "source_path": ".scratch/omp-gui-m1/prototype/result.json",
@@ -61,11 +38,6 @@
       "source_path": ".scratch/omp-gui-m1/prototype/rpc-ui-interaction-result.json",
       "sha256": "9a6a2447b979b888784401f3a6a8a377a71500dd14084cbd55f47c20125c46a6",
       "bytes": 2242
-    },
-    {
-      "source_path": ".scratch/omp-gui-m1/prototype/rpc-ui-probe.cjs",
-      "sha256": "17cbdf6e0293c862df4525a0fb379ba0b06764cbde4b333c3aef863f5eb0232c",
-      "bytes": 7983
     },
     {
       "source_path": ".scratch/omp-gui-m1/prototype/rpc-ui-queue-result.json",
@@ -161,91 +133,146 @@
       "source_path": "docs/prototype/v1-architecture-draft.md",
       "sha256": "d31f00ee18f43ff14dfef3c074c7c61dd1a3508b53c5cd0bf2f8880a808e5d0a",
       "bytes": 32994
+    }
+  ],
+  "pruned": [
+    {
+      "source_path": ".scratch/omp-gui-m1/prototype/.gitignore",
+      "sha256": "c7c9f36e97a097d93beba20f336ce72faa00810865fcfda5c4383fbd33bdeabd",
+      "bytes": 19,
+      "reason": "prototype script; not runnable since the pre-reset dependency set was removed"
+    },
+    {
+      "source_path": ".scratch/omp-gui-m1/prototype/host.cjs",
+      "sha256": "f03ea718cd5083a87f43b2cadcb430d1e7018ef74c54063ce1d23617c0e73614",
+      "bytes": 1812,
+      "reason": "prototype script; not runnable since the pre-reset dependency set was removed"
+    },
+    {
+      "source_path": ".scratch/omp-gui-m1/prototype/interaction.ts",
+      "sha256": "8d064aa47900e51890720d3a1701d658423d1c3341632877d44bbc2154bee87e",
+      "bytes": 356,
+      "reason": "prototype script; not runnable since the pre-reset dependency set was removed"
+    },
+    {
+      "source_path": ".scratch/omp-gui-m1/prototype/main.cjs",
+      "sha256": "27216fdb3d44e538b8d9373e8734a516477739060452ccba6c02db35fc402dbc",
+      "bytes": 7843,
+      "reason": "prototype script; not runnable since the pre-reset dependency set was removed"
+    },
+    {
+      "source_path": ".scratch/omp-gui-m1/prototype/preload.cjs",
+      "sha256": "0ffad26cc4d6e3356e3392e5b7f4711c057b8845de3e2b296a9a1c634a564fc8",
+      "bytes": 340,
+      "reason": "prototype script; not runnable since the pre-reset dependency set was removed"
+    },
+    {
+      "source_path": ".scratch/omp-gui-m1/prototype/rpc-ui-probe.cjs",
+      "sha256": "17cbdf6e0293c862df4525a0fb379ba0b06764cbde4b333c3aef863f5eb0232c",
+      "bytes": 7983,
+      "reason": "prototype script; not runnable since the pre-reset dependency set was removed"
     },
     {
       "source_path": "components.json",
       "sha256": "dd9e966dbc3937bb2bc5596b05b7cedb87daebc8268b277d025a9873d5747f70",
-      "bytes": 440
+      "bytes": 440,
+      "reason": "duplicate filename with the live root config; no citation in any repository document"
     },
     {
       "source_path": "electron.vite.config.ts",
       "sha256": "cf8af703316bb02541634151a557744698956df51fc2943ded149d8282057839",
-      "bytes": 633
+      "bytes": 633,
+      "reason": "duplicate filename with the live root config; no citation in any repository document"
     },
     {
       "source_path": "package.json",
       "sha256": "60307716c913f73a16fff809b5f4676cb7e74ea790dee3a2f363f689d1654196",
-      "bytes": 1746
+      "bytes": 1746,
+      "reason": "duplicate filename with the live root config; no citation in any repository document"
     },
     {
       "source_path": "pnpm-lock.yaml",
       "sha256": "64c6a2875e1b038ff997ed23e8bd3ac8ca237e00973998560de13f3932254034",
-      "bytes": 283936
+      "bytes": 283936,
+      "reason": "duplicate filename with the live root config; no citation in any repository document"
     },
     {
       "source_path": "pnpm-workspace.yaml",
       "sha256": "d3f2627e13d41794f04052a66fa5210e5a43ee1ce30dc6b448a15f4b8cc0a2aa",
-      "bytes": 98
+      "bytes": 98,
+      "reason": "duplicate filename with the live root config; no citation in any repository document"
     },
     {
       "source_path": "src/host/frame-decoder.test.ts",
       "sha256": "3cbf2064674013d18e59354fa150fccfb4500fc5ee74e07a68d39fdaf88bb89b",
-      "bytes": 1761
+      "bytes": 1761,
+      "reason": "superseded by current src/; no citation in any repository document"
     },
     {
       "source_path": "src/host/frame-decoder.ts",
       "sha256": "ed9a35d7b5f9113374e24a7f88dec4f9709406ac0c4651be570c880f8529a8dd",
-      "bytes": 3069
+      "bytes": 3069,
+      "reason": "superseded by current src/; no citation in any repository document"
     },
     {
       "source_path": "src/host/index.ts",
       "sha256": "784c8d4952f239bbc975e777a725fe9641e9828660bfe9c261ff717425209009",
-      "bytes": 21397
+      "bytes": 21397,
+      "reason": "superseded by current src/; no citation in any repository document"
     },
     {
       "source_path": "src/main/index.ts",
       "sha256": "614831f0b7dfa112f157b31543277685029016481cc6e18c3ed10ff10fd90de0",
-      "bytes": 6805
+      "bytes": 6805,
+      "reason": "superseded by current src/; no citation in any repository document"
     },
     {
       "source_path": "src/preload/index.ts",
       "sha256": "4caed355001dbde68ef92942b351d65c864209cb15d085350b945d2f45701c3a",
-      "bytes": 964
+      "bytes": 964,
+      "reason": "superseded by current src/; no citation in any repository document"
     },
     {
       "source_path": "src/renderer/index.html",
       "sha256": "585fbd2a4e9193f76e16aa5f3e03cdc0d38f4823c1f2981b35f921c09242c9a8",
-      "bytes": 268
+      "bytes": 268,
+      "reason": "superseded by current src/; no citation in any repository document"
     },
     {
       "source_path": "src/renderer/src/components/app-button.tsx",
       "sha256": "b63d871110b7079602f93dfe4c9dc0c0a1ed957434dc2a8852626d850bf2f1ac",
-      "bytes": 557
+      "bytes": 557,
+      "reason": "superseded by current src/; no citation in any repository document"
     },
     {
       "source_path": "src/renderer/src/components/ui/button.tsx",
       "sha256": "313353436d0fcc8e44ab470adb614b9fd013d28626f624328ea0d66d41a6c81b",
-      "bytes": 3230
+      "bytes": 3230,
+      "reason": "superseded by current src/; no citation in any repository document"
     },
     {
       "source_path": "src/renderer/src/main.tsx",
       "sha256": "2ebe5d07a2186e437444a9ea3eb1f4bd8d0eb50e4d34337ef4ce5500f4ccf279",
-      "bytes": 13996
+      "bytes": 13996,
+      "reason": "superseded by current src/; no citation in any repository document"
     },
     {
       "source_path": "src/renderer/src/style.css",
       "sha256": "c66def514d29c022d5ff3c61c84fda763352d1dd7801457db37fa3dac08fde7d",
-      "bytes": 6754
+      "bytes": 6754,
+      "reason": "superseded by current src/; no citation in any repository document"
     },
     {
       "source_path": "src/shared/protocol.ts",
       "sha256": "6943b0dad86cff01170c948e91064d8c26353ab59c33cb0b6cb8e3b20d2e14b6",
-      "bytes": 2673
+      "bytes": 2673,
+      "reason": "superseded by current src/; no citation in any repository document"
     },
     {
       "source_path": "tsconfig.json",
       "sha256": "a36f7be752cfab32bc63d23ccd6d66bc396515902abe4e3305e42f27b6a634b4",
-      "bytes": 440
+      "bytes": 440,
+      "reason": "duplicate filename with the live root config; no citation in any repository document"
     }
   ]
 }

@@ -32,7 +32,7 @@ pnpm package:mac
 - [技术选型与采纳记录](docs/architecture/technology-selection-review.md)：D-32–D-35 已确认 Base UI、最小 Tiptap、SQLite、应用级 ts-pattern 与 Zod v4，其他工具仍按候选状态。
 - [TypeScript 范式](docs/architecture/typescript.md)：严格类型、schema 推导、穷尽业务分支与边界验收；对应 [项目 skill](.agents/skills/d-pi-typescript/SKILL.md)按任务调用。
 - [当前需求](.scratch/product-requirements/spec.md)与[增量选型评估](.scratch/product-requirements/technical-evaluation.md)：本轮确认与待验证项。
-- [清理前完整归档](docs/archive/pre-reset/README.md)：原型、机器结果、源码、测试及构建文件，附固定提交与哈希清单。
+- [清理前归档证据](docs/archive/pre-reset/README.md)：M1 研究快照、访谈决策、规格、原型机器结果与旧文档原稿，附固定提交与哈希清单；旧源码、同名构建文件与不可运行的原型脚本已于 2026-09-30 裁剪，见其 `pruned` 段。
 
 功能开发遵守 [证据优先 → 无头功能 → 正式 GUI](docs/architecture/headless-features.md)（D-28–D-30）：常规能力查官方文档/固定版本源码后实现，仅关键未知前置最小实验，不逐切片重跑全套；组件化包括非 UI 逻辑，应用生命周期独立于 React，不引入 XState。对应 [仓库 skill](.agents/skills/d-pi-headless-features/SKILL.md)随本仓库维护。
 

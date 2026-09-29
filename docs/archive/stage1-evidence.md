@@ -1,4 +1,4 @@
-> 历史证据：以下内容对应清理前的单会话 GUI，不代表当前代码或全部验收通过。旧应用、测试和原型结果现已[完整归档](pre-reset/README.md)，来源为 Git 提交 `6fab3ef`；用户选择保留旧基线并逐项复用。当前接入结论见 [Runtime 验证](../validation/runtime-feasibility.md)，新需求取代关系见[整理后的架构](../prototype/v1-architecture-draft.md)。
+> 历史证据：以下内容对应清理前的单会话 GUI，不代表当前代码或全部验收通过。旧应用、测试和原型结果来自 Git 提交 `6fab3ef`，现存于[归档](pre-reset/README.md)；该归档于 2026-09-30 按无引用程度裁剪了旧源码、同名构建文件与不可运行的原型脚本，保留下来的决策、研究与机器结果仍逐字未改。用户选择保留旧基线证据并逐项复用。当前接入结论见 [Runtime 验证](../validation/runtime-feasibility.md)，新需求取代关系见[整理后的架构](../prototype/v1-architecture-draft.md)。
 
 # 阶段 1 运行证据与限制
 
@@ -12,7 +12,7 @@
 
 ## 先行 RPC 实验
 
-运行 `prototype/rpc-ui-probe.cjs`，结果保存在同目录的 `rpc-ui-*-result.json`：
+当时运行 `prototype/rpc-ui-probe.cjs`（脚本已于 2026-09-30 裁剪，见[归档说明](pre-reset/README.md)），结果保存在同目录的 `rpc-ui-*-result.json`：
 
 交互帧字段参考 [Pi RPC Extension UI 文档](https://pi.dev/docs/latest/rpc-extension-ui)；当前 OMP 18.3.0 的具体行为仍以下面的本机探针结果为准。
 
