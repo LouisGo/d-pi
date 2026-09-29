@@ -202,7 +202,9 @@ it("releases submission state and ignores a restore that finishes after dispose"
   expect(subscribed).toBe(1);
   active.dispose();
   expect(released).toBe(1);
-  expect(active.controller).toBeNull();
+  // The instance stays in place as the view's render switch; disposal only
+  // releases its resources.
+  expect(active.controller).not.toBeNull();
 });
 
 it("replaces the published state so a retry cannot keep failure fields", async () => {

@@ -32,6 +32,11 @@ const appInitial: StateCreator<
 const createAppStore = () =>
   createStore<ViewState>()(subscribeWithSelector(appInitial));
 export type AppStore = ReturnType<typeof createAppStore>;
+/**
+ * What the React binding consumes. Declared structurally so the store library
+ * stays an implementation detail of this model instead of leaking into the app
+ * surface; zustand's store satisfies it as-is.
+ */
 export type AppStateStore = Pick<
   AppStore,
   "getState" | "getInitialState" | "subscribe"
@@ -132,10 +137,13 @@ export class AppModel {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
+    // Dispose releases the resources but keeps the fields in place: the view
+    // uses them as render switches (`app.tsx` gates the workspace on
+    // `model.controller` and hands `model.submission` to the runtime panel).
+    // Nulling them here would leave the published state claiming `ready` while
+    // the workspace silently collapses on the next render.
     this.submission?.dispose();
-    this.submission = null;
     this.controller?.dispose();
-    this.controller = null;
     this.runtimeReadingUnsubscribe?.();
     this.reading?.dispose();
     this.runtime?.dispose();

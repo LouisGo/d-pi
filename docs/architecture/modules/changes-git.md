@@ -26,7 +26,7 @@ Git 视图负责选择比较对象和业务操作；[文件/Monaco](files-editor
 
 ## 读路径的查询与缓存
 
-`renderer/public.ts` 暴露 Git 的 Query key、请求构造与 `useChanges`/`useDiff`；key 以 Thread、scope 与路径为界，选中另一文件或另一侧不会串结果。本地采样按 D-37 显式使用 `networkMode: 'always'`；`unavailable`（非 Git/缺失/拒绝/二进制/超限/冲突/变化中）作为业务结论如实显示，不作为可重试错误。刷新为显式动作，不做定时轮询；缓存不改变来源与覆盖字段，也不能把旧采样冒充当前 Git 状态。
+`renderer/public.ts` 暴露 Git 的 Query key、请求构造与 `useChanges`/`useDiff`；key 以 Thread、scope 与路径为界，选中另一文件或另一侧不会串结果。本地采样按 D-37 显式使用 `networkMode: 'always'`；`unavailable`（非 Git/缺失/拒绝/二进制/超限/冲突/变化中）作为业务结论如实显示，不作为可重试错误；只有采样失败（`unavailable("failed")`）在查询层转成可重试错误。刷新为显式动作，不做定时轮询；缓存不改变来源与覆盖字段，也不能把旧采样冒充当前 Git 状态。
 
 ## 生命周期与失败
 

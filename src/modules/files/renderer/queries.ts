@@ -1,6 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import type { FileBridge } from "../contracts/public";
+import type { FileBridge, FileReply } from "../contracts/public";
 
 /**
  * Query keys and request builders for the read-only project file surface.
@@ -15,26 +15,43 @@ export const fileKeys = {
     ["files", threadId, "read", path] as const,
 };
 
+/**
+ * The Main read surface reports both business conclusions and its own sampling
+ * failures through the same `unavailable` shape. Only the latter is worth
+ * retrying: a transient filesystem error must reach Query as an error, while
+ * missing/denied/binary/too-large/changed stay terminal business answers that
+ * the view displays as they are.
+ */
+function retryableSampling(kind: "list" | "read", reply: FileReply) {
+  if (reply.kind === "unavailable" && reply.reason === "failed")
+    throw Error(`files:${kind} sampling failed`);
+  return reply;
+}
+
 export function listDirectory(
   files: FileBridge,
   threadId: string,
   path: string,
 ) {
-  return files.request({
-    kind: "list",
-    traceId: crypto.randomUUID(),
-    threadId,
-    path,
-  });
+  return files
+    .request({
+      kind: "list",
+      traceId: crypto.randomUUID(),
+      threadId,
+      path,
+    })
+    .then((reply) => retryableSampling("list", reply));
 }
 
 export function readFile(files: FileBridge, threadId: string, path: string) {
-  return files.request({
-    kind: "read",
-    traceId: crypto.randomUUID(),
-    threadId,
-    path,
-  });
+  return files
+    .request({
+      kind: "read",
+      traceId: crypto.randomUUID(),
+      threadId,
+      path,
+    })
+    .then((reply) => retryableSampling("read", reply));
 }
 
 export function refreshFiles(client: QueryClient, threadId: string): void {
@@ -51,14 +68,18 @@ const localRead = { networkMode: "always" } as const;
 /**
  * The single source of truth for each file query. Hooks and imperative
  * consumers share the same key, enabled rule, and local-read policy.
+ *
+ * A directory always exists to list — the project root is the empty path — so
+ * `listing` takes a required `path` and never needs an `enabled` gate. Leaving
+ * `path` optional would map "no directory selected" onto the real root entry
+ * and let an unselected view read the root's data. Only `content` has a
+ * genuine "nothing selected" state, because "" is never a file path.
  */
 export const fileQueryOptions = {
-  listing(files: FileBridge, threadId: string, path: string | undefined) {
-    const resolvedPath = path ?? "";
+  listing(files: FileBridge, threadId: string, path: string) {
     return queryOptions({
-      queryKey: fileKeys.listing(threadId, resolvedPath),
-      queryFn: () => listDirectory(files, threadId, resolvedPath),
-      enabled: path !== undefined,
+      queryKey: fileKeys.listing(threadId, path),
+      queryFn: () => listDirectory(files, threadId, path),
       ...localRead,
     });
   },
@@ -80,7 +101,7 @@ export function useDirectoryListing({
 }: {
   files: FileBridge;
   threadId: string;
-  path: string | undefined;
+  path: string;
 }) {
   return useQuery(fileQueryOptions.listing(files, threadId, path));
 }

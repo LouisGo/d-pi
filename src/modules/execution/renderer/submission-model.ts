@@ -32,6 +32,7 @@ const submissionInitial: StateCreator<
 const createSubmissionStore = () =>
   createStore<SubmissionView>()(subscribeWithSelector(submissionInitial));
 export type SubmissionStore = ReturnType<typeof createSubmissionStore>;
+/** Read-only face of the store, kept for the React binding and for tests. */
 export type SubmissionStateStore = Pick<
   SubmissionStore,
   "getState" | "getInitialState" | "subscribe"
@@ -355,7 +356,6 @@ export class SubmissionModel {
     if (this.disposed) return;
     this.disposed = true;
     this.remove();
-    this.remove = () => {};
     this.editorAdapter = null;
   }
 }

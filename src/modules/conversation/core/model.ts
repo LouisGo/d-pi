@@ -26,6 +26,7 @@ const initial: StateCreator<
 const createConversationStore = () =>
   createStore<ConversationState>()(subscribeWithSelector(initial));
 export type ConversationStore = ReturnType<typeof createConversationStore>;
+/** Read-only face of the store, kept for the React binding and for tests. */
 export type ConversationStateStore = Pick<
   ConversationStore,
   "getState" | "getInitialState" | "subscribe"

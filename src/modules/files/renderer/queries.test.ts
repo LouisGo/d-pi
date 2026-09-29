@@ -178,3 +178,83 @@ it("runs local file reads while Query reports the renderer offline", async () =>
     client_.clear();
   }
 });
+
+it("retries a transient sampling failure instead of treating it as a terminal result", async () => {
+  const client_ = new QueryClient({
+    defaultOptions: { queries: { retry: 2, retryDelay: 0 } },
+  });
+  let attempts = 0;
+  const bridge: FileBridge = {
+    request: () => {
+      attempts += 1;
+      return Promise.resolve(
+        attempts === 1
+          ? { kind: "unavailable", reason: "failed" }
+          : text("flaky.ts", "eventually"),
+      );
+    },
+  };
+  const observer = new QueryObserver(
+    client_,
+    fileQueryOptions.content(bridge, threadId, "flaky.ts"),
+  );
+  const release = observer.subscribe(() => {});
+  await observer.refetch();
+  expect(attempts).toBe(2);
+  expect(observer.getCurrentResult().data).toMatchObject({
+    text: "eventually",
+  });
+  expect(observer.getCurrentResult().isError).toBe(false);
+  release();
+  client_.clear();
+});
+
+it("stops retrying a sampling failure once the attempts are exhausted", async () => {
+  const client_ = new QueryClient({
+    defaultOptions: { queries: { retry: 2, retryDelay: 0 } },
+  });
+  let attempts = 0;
+  const bridge: FileBridge = {
+    request: () => {
+      attempts += 1;
+      return Promise.resolve({ kind: "unavailable", reason: "failed" });
+    },
+  };
+  const observer = new QueryObserver(
+    client_,
+    fileQueryOptions.content(bridge, threadId, "broken.ts"),
+  );
+  const release = observer.subscribe(() => {});
+  await observer.refetch();
+  expect(attempts).toBe(3);
+  expect(observer.getCurrentResult().isError).toBe(true);
+  release();
+  client_.clear();
+});
+
+it("keeps a business unavailable reason as a single terminal sample", async () => {
+  const client_ = new QueryClient({
+    defaultOptions: { queries: { retry: 2, retryDelay: 0 } },
+  });
+  let attempts = 0;
+  const bridge: FileBridge = {
+    request: () => {
+      attempts += 1;
+      return Promise.resolve({ kind: "unavailable", reason: "denied" });
+    },
+  };
+  const observer = new QueryObserver(
+    client_,
+    fileQueryOptions.content(bridge, threadId, "denied.ts"),
+  );
+  const release = observer.subscribe(() => {});
+  await observer.refetch();
+  expect(attempts).toBe(1);
+  expect(observer.getCurrentResult().data).toEqual({
+    kind: "unavailable",
+    reason: "denied",
+  });
+  expect(observer.getCurrentResult().isError).toBe(false);
+  release();
+  client_.clear();
+});

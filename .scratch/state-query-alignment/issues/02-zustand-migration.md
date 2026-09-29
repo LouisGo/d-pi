@@ -38,7 +38,7 @@ Blocked by: 01
 
 ## Answer
 
-四个模型全部迁移为 Zustand vanilla store + `subscribeWithSelector`，对外方法与稳定引用（`getSnapshot`/`subscribe` 为类属性箭头函数，可直接进 `useSyncExternalStore`）保持不变，并新增 `subscribeTo(selector, listener)` 细粒度订阅。
+四个模型全部迁移为 Zustand vanilla store + `subscribeWithSelector`。后续按 Codex 的 `1e615fb` 统一了 React 绑定：**React 侧一律用官方 `useStore(model.stateStore, selector)`**，派生数组用 `useShallow`；`getSnapshot`/`subscribe`（类属性箭头函数）与 `subscribeTo(selector, listener)` 保留给无头读取、既有测试与细粒度订阅。选择器的引用稳定性规则已写入[无头功能合同 §4](../../../docs/architecture/headless-features.md)。
 
 关键语义选择：
 

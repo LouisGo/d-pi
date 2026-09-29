@@ -1,6 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import type { ChangeScope, GitBridge } from "../contracts/public";
+import type { ChangeScope, GitBridge, GitReply } from "../contracts/public";
 
 /**
  * Query keys and request builders for the read-only Git sample. The scope and
@@ -14,8 +14,21 @@ export const gitKeys = {
     ["git", threadId, "diff", scope, path] as const,
 };
 
+/**
+ * `unavailable` carries both Git's own conclusions (not a repository, missing,
+ * denied, binary, too large, unmerged, changed) and a failed sampling run. Only
+ * the last one is retryable; the rest are terminal answers the view displays.
+ */
+function retryableSampling(kind: "list" | "diff", reply: GitReply) {
+  if (reply.kind === "unavailable" && reply.reason === "failed")
+    throw Error(`git:${kind} sampling failed`);
+  return reply;
+}
+
 export function readChanges(git: GitBridge, threadId: string) {
-  return git.request({ kind: "list", traceId: crypto.randomUUID(), threadId });
+  return git
+    .request({ kind: "list", traceId: crypto.randomUUID(), threadId })
+    .then((reply) => retryableSampling("list", reply));
 }
 
 export function readDiff(
@@ -24,13 +37,15 @@ export function readDiff(
   scope: ChangeScope,
   path: string,
 ) {
-  return git.request({
-    kind: "diff",
-    traceId: crypto.randomUUID(),
-    threadId,
-    scope,
-    path,
-  });
+  return git
+    .request({
+      kind: "diff",
+      traceId: crypto.randomUUID(),
+      threadId,
+      scope,
+      path,
+    })
+    .then((reply) => retryableSampling("diff", reply));
 }
 
 export function refreshGit(client: QueryClient, threadId: string): void {

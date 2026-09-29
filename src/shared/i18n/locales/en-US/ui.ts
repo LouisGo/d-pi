@@ -206,6 +206,8 @@ export const ui = {
     "Reading files does not run project code. The view shows a complete text snapshot from its capture time.",
   "ui.files.tree": "Project files",
   "ui.files.refresh": "Refresh",
+  "ui.files.refreshing":
+    "Re-sampling; the view still shows the previous capture.",
   "ui.files.up": "Up",
   "ui.files.truncatedTree":
     "This directory exceeds the display limit; showing the first 500 entries.",

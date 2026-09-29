@@ -190,6 +190,7 @@ export const ui = {
   "ui.files.readOnly": "文件读取不会运行项目代码；视图是捕获时的完整文本快照。",
   "ui.files.tree": "项目文件",
   "ui.files.refresh": "刷新",
+  "ui.files.refreshing": "正在重新采样；当前显示的仍是上一次捕获的内容。",
   "ui.files.up": "上一级",
   "ui.files.truncatedTree": "目录项超过显示上限，仅展示前 500 项。",
   "ui.files.gitHeading": "Git 当前变化",

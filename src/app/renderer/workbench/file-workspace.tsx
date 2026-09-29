@@ -1,11 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  type ComponentType,
-  Suspense,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { type ComponentType, Suspense, useMemo, useState } from "react";
 import { match } from "ts-pattern";
 import { Button } from "@/components/ui/button";
 import type {
@@ -33,6 +27,7 @@ import {
   useFileContent,
 } from "../../../modules/files/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
+import { readInFlight } from "./refresh-state";
 
 type EditorComponent = ComponentType<{
   view: CodeView;
@@ -111,17 +106,18 @@ export function FileWorkspace({
   const diffReply = diff.data;
   const transportError =
     listing.isError || content.isError || changes.isError || diff.isError;
+  // A re-sample stays pending through Query's retry window, so `isError` alone
+  // would leave the previous capture on screen with no sign that a read is in
+  // flight. See `readInFlight` for why a disabled query must not count.
+  const refreshing =
+    readInFlight(listing) ||
+    readInFlight(content) ||
+    readInFlight(changes) ||
+    readInFlight(diff);
   const refresh = () => {
     refreshFiles(client, threadId);
     refreshGit(client, threadId);
   };
-  useEffect(() => {
-    setDirectory("");
-    setFilePath(undefined);
-    setDiffTarget(undefined);
-    setActive("file");
-    setSelected(null);
-  }, [threadId]);
   const listDirectory = (path: string) => {
     setDirectory(path);
     setFilePath(undefined);
@@ -183,7 +179,7 @@ export function FileWorkspace({
       <div className="file-browser">
         <div className="flex gap-2">
           <strong>{t("ui.files.tree")}</strong>
-          <Button variant="ghost" onClick={refresh}>
+          <Button variant="ghost" disabled={refreshing} onClick={refresh}>
             {t("ui.files.refresh")}
           </Button>
           {directory && (
@@ -226,7 +222,7 @@ export function FileWorkspace({
       <div className="git-panel">
         <div className="flex gap-2">
           <strong>{t("ui.files.gitHeading")}</strong>
-          <Button variant="ghost" onClick={refresh}>
+          <Button variant="ghost" disabled={refreshing} onClick={refresh}>
             {t("ui.files.refresh")}
           </Button>
         </div>
@@ -338,6 +334,7 @@ export function FileWorkspace({
           </div>
         </>
       )}
+      {refreshing && <p role="status">{t("ui.files.refreshing")}</p>}
       {transportError && <p role="alert">{t("ui.files.transportFailed")}</p>}
     </section>
   );

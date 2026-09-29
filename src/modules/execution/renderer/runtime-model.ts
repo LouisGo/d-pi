@@ -27,6 +27,7 @@ const initial: StateCreator<
 const createRuntimeStore = () =>
   createStore<RuntimeState>()(subscribeWithSelector(initial));
 export type RuntimeStore = ReturnType<typeof createRuntimeStore>;
+/** Read-only face of the store, kept for the React binding and for tests. */
 export type RuntimeStateStore = Pick<
   RuntimeStore,
   "getState" | "getInitialState" | "subscribe"
