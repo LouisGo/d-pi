@@ -6,6 +6,8 @@ import {
 import type { DesktopBridge } from "../contracts/desktop-bridge";
 import { App } from "./app";
 import { AppModel } from "./model";
+import { QueryProvider } from "./query-client";
+import { fileEditor } from "./workbench/editor";
 import "./styles/app.css";
 
 declare global {
@@ -27,11 +29,13 @@ const initialLocale = await window.desktop.locale
   .catch(browserLocaleFallback);
 if (root)
   createRoot(root).render(
-    <I18nProvider
-      bridge={window.desktop.locale}
-      initialSnapshot={initialLocale ?? browserLocaleFallback()}
-    >
-      <App model={model} />
-    </I18nProvider>,
+    <QueryProvider>
+      <I18nProvider
+        bridge={window.desktop.locale}
+        initialSnapshot={initialLocale ?? browserLocaleFallback()}
+      >
+        <App model={model} editor={fileEditor()} />
+      </I18nProvider>
+    </QueryProvider>,
   );
 void model.start();

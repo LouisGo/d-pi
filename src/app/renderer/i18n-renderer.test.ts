@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "./app";
 import type { AppModel, ViewState } from "./model";
+import { QueryProvider } from "./query-client";
 
 let locale: "zh-CN" | "en-US" = "zh-CN";
 
@@ -28,6 +29,9 @@ vi.mock("../../modules/preferences/renderer/public", async () => {
 });
 
 vi.mock("./workbench/composer", () => ({ Composer: () => null }));
+// The Monaco adapter is not part of this locale check and must not load here:
+// its editor bundle reaches into `window` at module scope.
+vi.mock("./workbench/editor", () => ({ LazyFileEditor: () => null }));
 vi.mock("./conversation", () => ({
   Conversation: () => null,
   History: () => null,
@@ -63,7 +67,11 @@ function renderApp() {
     subscribe: () => () => {},
     getSnapshot: () => state,
   } as unknown as AppModel;
-  return renderToStaticMarkup(createElement(App, { model }));
+  // The file and Git panels read through TanStack Query, so this render needs
+  // the same query client the renderer entry installs.
+  return renderToStaticMarkup(
+    createElement(QueryProvider, null, createElement(App, { model })),
+  );
 }
 
 describe("renderer locale", () => {

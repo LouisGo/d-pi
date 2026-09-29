@@ -1,0 +1,191 @@
+import { afterEach, expect, it, vi } from "vitest";
+import type {
+  Command,
+  DesktopBridge,
+  Reply,
+} from "../contracts/desktop-bridge";
+import { AppModel } from "./model";
+
+// The AppModel state container must keep the publication contract the hand
+// written listener set had: one notification per published state, exact
+// replacement of that state, a cached snapshot, stable subscribe/getSnapshot
+// references (both go straight into useSyncExternalStore) and no publication
+// once the model is disposed.
+const ready = (theme: "light" | "dark" = "light"): Reply => ({
+  kind: "ready",
+  draft: null,
+  directoryAvailable: true,
+  preferences: { theme, density: "normal", locale: "system" },
+});
+
+function deferred(): {
+  promise: Promise<Reply>;
+  resolve: (reply: Reply) => void;
+} {
+  let resolve: (reply: Reply) => void = () => {
+    throw new Error("Reply not initialized");
+  };
+  const promise = new Promise<Reply>((accept) => {
+    resolve = accept;
+  });
+  return { promise, resolve };
+}
+
+function bridge(request: (command: Command) => Promise<Reply>): DesktopBridge {
+  return {
+    request,
+    onCloseRequest: () => () => {},
+    onCloseCancelled: () => () => {},
+    completeClose: () => {},
+  };
+}
+
+function busy(model: AppModel): boolean | null {
+  const view = model.getSnapshot();
+  return view.kind === "ready" ? view.busy : null;
+}
+
+function theme(model: AppModel): string | null {
+  const view = model.getSnapshot();
+  return view.kind === "ready" ? view.preferences.theme : null;
+}
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
+it("notifies a selected projection only when that projection changes", async () => {
+  vi.stubGlobal("document", { documentElement: { dataset: {} } });
+  const restore = deferred();
+  const saved = deferred();
+  const model = new AppModel(
+    bridge((command) =>
+      command.kind === "restore" ? restore.promise : saved.promise,
+    ),
+  );
+  const busies: (boolean | null)[] = [];
+  const themes: (string | null)[] = [];
+  model.subscribeTo(
+    (view) => (view.kind === "ready" ? view.busy : null),
+    () => {
+      busies.push(busy(model));
+    },
+  );
+  model.subscribeTo(
+    (view) => (view.kind === "ready" ? view.preferences.theme : null),
+    () => {
+      themes.push(theme(model));
+    },
+  );
+  const started = model.start();
+  restore.resolve(ready());
+  await started;
+  expect(busies).toEqual([false]);
+  expect(themes).toEqual(["light"]);
+  const toggled = model.preference("theme");
+  // The busy-only publication must not reach the theme projection.
+  expect(busies).toEqual([false, true]);
+  expect(themes).toEqual(["light"]);
+  saved.resolve({
+    kind: "preferences-saved",
+    value: { theme: "dark", density: "normal", locale: "system" },
+  });
+  await toggled;
+  expect(busies).toEqual([false, true, false]);
+  expect(themes).toEqual(["light", "dark"]);
+  model.dispose();
+});
+
+it("keeps whole-state subscribers notified for every published state", async () => {
+  vi.stubGlobal("document", { documentElement: { dataset: {} } });
+  const model = new AppModel(
+    bridge(async (command) =>
+      command.kind === "restore"
+        ? ready()
+        : {
+            kind: "preferences-saved",
+            value: { theme: "dark", density: "normal", locale: "system" },
+          },
+    ),
+  );
+  let changes = 0;
+  model.subscribe(() => {
+    changes += 1;
+  });
+  await model.start();
+  expect(changes).toBe(1);
+  // preference() publishes the pending busy state and then the reply: two
+  // states, two notifications.
+  await model.preference("theme");
+  expect(changes).toBe(3);
+  model.dispose();
+});
+
+it("does not publish a late reply after dispose", async () => {
+  vi.stubGlobal("document", { documentElement: { dataset: {} } });
+  const restore = deferred();
+  const model = new AppModel(bridge(() => restore.promise));
+  let changes = 0;
+  model.subscribe(() => {
+    changes += 1;
+  });
+  const started = model.start();
+  model.dispose();
+  restore.resolve(ready());
+  await started;
+  expect(model.getSnapshot()).toEqual({ kind: "loading" });
+  expect(changes).toBe(0);
+});
+
+it("replaces the published state so a retry cannot keep failure fields", async () => {
+  vi.stubGlobal("document", { documentElement: { dataset: {} } });
+  let fail = true;
+  const model = new AppModel(
+    bridge(async (command) => {
+      if (command.kind !== "restore") throw Error("Unexpected command");
+      if (fail) throw Error("transport unavailable");
+      return ready();
+    }),
+  );
+  await model.start();
+  expect(model.getSnapshot().kind).toBe("failed");
+  fail = false;
+  await model.start();
+  expect(model.getSnapshot()).toEqual({
+    kind: "ready",
+    draft: null,
+    directoryAvailable: true,
+    preferences: { theme: "light", density: "normal", locale: "system" },
+    busy: false,
+    notice: null,
+  });
+  model.dispose();
+});
+
+it("returns a cached snapshot and keeps both store references stable", async () => {
+  vi.stubGlobal("document", { documentElement: { dataset: {} } });
+  const saved = deferred();
+  const model = new AppModel(
+    bridge((command) =>
+      command.kind === "restore" ? Promise.resolve(ready()) : saved.promise,
+    ),
+  );
+  await model.start();
+  const subscribe = model.subscribe;
+  const getSnapshot = model.getSnapshot;
+  expect(model.subscribe).toBe(subscribe);
+  expect(model.getSnapshot).toBe(getSnapshot);
+  const before = model.getSnapshot();
+  expect(model.getSnapshot()).toBe(before);
+  const toggled = model.preference("theme");
+  const during = model.getSnapshot();
+  expect(during).not.toBe(before);
+  expect(model.getSnapshot()).toBe(during);
+  saved.resolve({
+    kind: "preferences-saved",
+    value: { theme: "dark", density: "normal", locale: "system" },
+  });
+  await toggled;
+  expect(model.getSnapshot()).not.toBe(during);
+  model.dispose();
+});

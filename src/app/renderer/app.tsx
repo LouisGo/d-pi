@@ -1,4 +1,4 @@
-import { useState, useSyncExternalStore } from "react";
+import { type ComponentType, useState, useSyncExternalStore } from "react";
 import { match } from "ts-pattern";
 import {
   DarkThemeIcon,
@@ -7,6 +7,7 @@ import {
 } from "@/components/icons/common";
 import { Button } from "@/components/ui/button";
 import type { FrozenSelection } from "../../modules/files/core/public";
+import type { CodeView } from "../../modules/files/renderer/public";
 import { useI18n } from "../../modules/preferences/renderer/public";
 import { BUILD_INFO } from "../../shared/build-info";
 import { Conversation, History, Submissions } from "./conversation";
@@ -14,7 +15,19 @@ import type { AppModel } from "./model";
 import { RuntimePanel } from "./runtime-panel";
 import { Composer } from "./workbench/composer";
 import { FileWorkspace } from "./workbench/file-workspace";
-export function App({ model }: { model: AppModel }) {
+export function App({
+  model,
+  editor,
+}: {
+  model: AppModel;
+  /** Renderer bootstrap supplies the lazily loaded editor adapter. */
+  editor?:
+    | ComponentType<{
+        view: CodeView;
+        onSelection: (value: FrozenSelection) => void;
+      }>
+    | undefined;
+}) {
   const { t, formatMessage, preference, setPreference, persistenceFailed } =
     useI18n();
   const state = useSyncExternalStore(model.subscribe, model.getSnapshot);
@@ -181,6 +194,7 @@ export function App({ model }: { model: AppModel }) {
                       threadId={draft.threadId}
                       files={model.files}
                       git={model.git}
+                      editor={editor}
                       onAttach={(selection) =>
                         setSelectionAttachment({
                           id: crypto.randomUUID(),

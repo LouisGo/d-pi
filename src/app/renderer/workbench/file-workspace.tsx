@@ -1,4 +1,11 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  type ComponentType,
+  Suspense,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { match } from "ts-pattern";
 import { Button } from "@/components/ui/button";
 import type {
@@ -6,6 +13,11 @@ import type {
   GitBridge,
   GitReply,
 } from "../../../modules/changes/contracts/public";
+import {
+  refreshGit,
+  useChanges,
+  useDiff,
+} from "../../../modules/changes/renderer/public";
 import type {
   FileBridge,
   FileReply,
@@ -15,13 +27,17 @@ import {
   isDiffViewTooLarge,
 } from "../../../modules/files/core/public";
 import type { CodeView } from "../../../modules/files/renderer/public";
+import {
+  refreshFiles,
+  useDirectoryListing,
+  useFileContent,
+} from "../../../modules/files/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 
-const MonacoViewer = lazy(() =>
-  import("../../../modules/files/renderer/public").then(({ MonacoViewer }) => ({
-    default: MonacoViewer,
-  })),
-);
+type EditorComponent = ComponentType<{
+  view: CodeView;
+  onSelection: (value: FrozenSelection) => void;
+}>;
 
 type UnavailableReason = Extract<
   FileReply | GitReply,
@@ -61,108 +77,66 @@ export function FileWorkspace({
   threadId,
   files,
   git,
+  editor: Editor,
   onAttach,
 }: {
   threadId: string;
   files: FileBridge;
   git: GitBridge;
+  editor?: EditorComponent | undefined;
   onAttach: (
     selection: Extract<FrozenSelection, { kind: "selection" }>,
   ) => void;
 }) {
   const { t } = useI18n();
+  const client = useQueryClient();
   const [directory, setDirectory] = useState("");
-  const [listing, setListing] = useState<FileReply | null>(null);
-  const [file, setFile] = useState<FileReply | null>(null);
-  const [changes, setChanges] = useState<GitReply | null>(null);
-  const [diff, setDiff] = useState<GitReply | null>(null);
+  const [filePath, setFilePath] = useState<string | undefined>(undefined);
+  const [diffTarget, setDiffTarget] = useState<
+    { scope: ChangeScope; path: string } | undefined
+  >(undefined);
   const [active, setActive] = useState<"file" | "diff">("file");
   const [selected, setSelected] = useState<FrozenSelection | null>(null);
-  const [transportError, setTransportError] = useState(false);
-  const fileSequence = useRef(0);
-  const gitSequence = useRef(0);
-  const listDirectory = async (path: string) => {
-    const generation = ++fileSequence.current;
-    setTransportError(false);
-    setDirectory(path);
-    setListing(null);
-    setFile(null);
-    setSelected(null);
-    try {
-      const result = await files.request({
-        kind: "list",
-        traceId: crypto.randomUUID(),
-        threadId,
-        path,
-      });
-      if (generation === fileSequence.current) setListing(result);
-    } catch {
-      if (generation === fileSequence.current) setTransportError(true);
-    }
-  };
-  const openFile = async (path: string) => {
-    const generation = ++fileSequence.current;
-    setTransportError(false);
-    setFile(null);
-    setSelected(null);
-    setActive("file");
-    try {
-      const result = await files.request({
-        kind: "read",
-        traceId: crypto.randomUUID(),
-        threadId,
-        path,
-      });
-      if (generation === fileSequence.current) setFile(result);
-    } catch {
-      if (generation === fileSequence.current) setTransportError(true);
-    }
-  };
-  const refreshGit = async () => {
-    const generation = ++gitSequence.current;
-    setTransportError(false);
-    setChanges(null);
-    setDiff(null);
-    setSelected(null);
-    try {
-      const result = await git.request({
-        kind: "list",
-        traceId: crypto.randomUUID(),
-        threadId,
-      });
-      if (generation === gitSequence.current) setChanges(result);
-    } catch {
-      if (generation === gitSequence.current) setTransportError(true);
-    }
-  };
-  const openDiff = async (scope: ChangeScope, path: string) => {
-    const generation = ++gitSequence.current;
-    setTransportError(false);
-    setDiff(null);
-    setSelected(null);
-    setActive("diff");
-    try {
-      const result = await git.request({
-        kind: "diff",
-        traceId: crypto.randomUUID(),
-        threadId,
-        scope,
-        path,
-      });
-      if (generation === gitSequence.current) setDiff(result);
-    } catch {
-      if (generation === gitSequence.current) setTransportError(true);
-    }
+  const listing = useDirectoryListing({ files, threadId, path: directory });
+  const content = useFileContent({ files, threadId, path: filePath });
+  const changes = useChanges({ git, threadId });
+  const diff = useDiff({
+    git,
+    threadId,
+    scope: diffTarget?.scope ?? "index-worktree",
+    path: diffTarget?.path,
+  });
+  const file = content.data;
+  const changeList = changes.data;
+  const diffReply = diff.data;
+  const transportError =
+    listing.isError || content.isError || changes.isError || diff.isError;
+  const refresh = () => {
+    refreshFiles(client, threadId);
+    refreshGit(client, threadId);
   };
   useEffect(() => {
-    void listDirectory("");
-    void refreshGit();
-    return () => {
-      fileSequence.current++;
-      gitSequence.current++;
-    };
-    // The Thread identity owns these requests; button actions drive later refreshes.
+    setDirectory("");
+    setFilePath(undefined);
+    setDiffTarget(undefined);
+    setActive("file");
+    setSelected(null);
   }, [threadId]);
+  const listDirectory = (path: string) => {
+    setDirectory(path);
+    setFilePath(undefined);
+    setSelected(null);
+  };
+  const openFile = (path: string) => {
+    setFilePath(path);
+    setActive("file");
+    setSelected(null);
+  };
+  const openDiff = (scope: ChangeScope, path: string) => {
+    setDiffTarget({ scope, path });
+    setActive("diff");
+    setSelected(null);
+  };
   const view = useMemo<CodeView | null>(() => {
     if (active === "file" && file?.kind === "text")
       return {
@@ -174,28 +148,34 @@ export function FileWorkspace({
           version: file.version,
         },
       };
-    if (active === "diff" && diff?.kind === "diff")
+    if (active === "diff" && diffReply?.kind === "diff")
       return {
         kind: "diff",
         left: {
-          text: diff.left.kind === "text" ? diff.left.text : "",
+          text: diffReply.left.kind === "text" ? diffReply.left.text : "",
           source: {
-            path: diff.previousPath ?? diff.path,
-            source: diff.left.source,
-            version: diff.left.kind === "text" ? diff.left.version : "absent",
+            path: diffReply.previousPath ?? diffReply.path,
+            source: diffReply.left.source,
+            version:
+              diffReply.left.kind === "text"
+                ? diffReply.left.version
+                : "absent",
           },
         },
         right: {
-          text: diff.right.kind === "text" ? diff.right.text : "",
+          text: diffReply.right.kind === "text" ? diffReply.right.text : "",
           source: {
-            path: diff.path,
-            source: diff.right.source,
-            version: diff.right.kind === "text" ? diff.right.version : "absent",
+            path: diffReply.path,
+            source: diffReply.right.source,
+            version:
+              diffReply.right.kind === "text"
+                ? diffReply.right.version
+                : "absent",
           },
         },
       };
     return null;
-  }, [active, file, diff, t]);
+  }, [active, file, diffReply, t]);
   return (
     <section className="file-workspace" aria-label={t("ui.files.section")}>
       <h2>{t("ui.files.section")}</h2>
@@ -203,14 +183,14 @@ export function FileWorkspace({
       <div className="file-browser">
         <div className="flex gap-2">
           <strong>{t("ui.files.tree")}</strong>
-          <Button variant="ghost" onClick={() => void listDirectory(directory)}>
+          <Button variant="ghost" onClick={refresh}>
             {t("ui.files.refresh")}
           </Button>
           {directory && (
             <Button
               variant="ghost"
               onClick={() =>
-                void listDirectory(directory.split("/").slice(0, -1).join("/"))
+                listDirectory(directory.split("/").slice(0, -1).join("/"))
               }
             >
               {t("ui.files.up")}
@@ -218,19 +198,19 @@ export function FileWorkspace({
           )}
         </div>
         <p className="file-meta">/{directory}</p>
-        {listing?.kind === "unavailable" && (
-          <p role="status">{reason(listing.reason, t)}</p>
+        {listing.data?.kind === "unavailable" && (
+          <p role="status">{reason(listing.data.reason, t)}</p>
         )}
-        {listing?.kind === "entries" && (
+        {listing.data?.kind === "entries" && (
           <div className="file-list">
-            {listing.entries.map((entry) => (
+            {listing.data.entries.map((entry) => (
               <Button
                 key={entry.path}
                 variant="ghost"
                 onClick={() =>
                   entry.kind === "directory"
-                    ? void listDirectory(entry.path)
-                    : void openFile(entry.path)
+                    ? listDirectory(entry.path)
+                    : openFile(entry.path)
                 }
               >
                 {entry.kind === "directory" ? "▸ " : ""}
@@ -239,33 +219,34 @@ export function FileWorkspace({
             ))}
           </div>
         )}
-        {listing?.kind === "entries" && listing.truncated && (
+        {listing.data?.kind === "entries" && listing.data.truncated && (
           <p role="status">{t("ui.files.truncatedTree")}</p>
         )}
       </div>
       <div className="git-panel">
         <div className="flex gap-2">
           <strong>{t("ui.files.gitHeading")}</strong>
-          <Button variant="ghost" onClick={() => void refreshGit()}>
+          <Button variant="ghost" onClick={refresh}>
             {t("ui.files.refresh")}
           </Button>
         </div>
         <p className="file-meta">{t("ui.files.gitDisclaimer")}</p>
-        {changes?.kind === "unavailable" && (
-          <p role="status">{reason(changes.reason, t)}</p>
+        {changeList?.kind === "unavailable" && (
+          <p role="status">{reason(changeList.reason, t)}</p>
         )}
-        {changes?.kind === "changes" && (
+        {changeList?.kind === "changes" && (
           <>
             <p className="file-meta">
-              {changes.repository} · HEAD {changes.head ?? t("ui.files.unborn")}{" "}
-              · {changes.capturedAt} · {t("ui.files.projectSample")}
+              {changeList.repository} · HEAD{" "}
+              {changeList.head ?? t("ui.files.unborn")} ·{" "}
+              {changeList.capturedAt} · {t("ui.files.projectSample")}
             </p>
             <div className="change-list">
-              {changes.entries.map((entry) => (
+              {changeList.entries.map((entry) => (
                 <Button
                   key={`${entry.scope}:${entry.path}`}
                   variant="ghost"
-                  onClick={() => void openDiff(entry.scope, entry.path)}
+                  onClick={() => openDiff(entry.scope, entry.path)}
                 >
                   {entry.scope === "head-index"
                     ? t("ui.files.headIndex")
@@ -276,10 +257,10 @@ export function FileWorkspace({
                 </Button>
               ))}
             </div>
-            {changes.truncated && (
+            {changeList.truncated && (
               <p role="status">{t("ui.files.truncatedChanges")}</p>
             )}
-            {!changes.entries.length && (
+            {!changeList.entries.length && (
               <p className="muted">{t("ui.files.noChanges")}</p>
             )}
           </>
@@ -288,8 +269,8 @@ export function FileWorkspace({
       {active === "file" && file?.kind === "unavailable" && (
         <p role="status">{reason(file.reason, t)}</p>
       )}
-      {active === "diff" && diff?.kind === "unavailable" && (
-        <p role="status">{reason(diff.reason, t)}</p>
+      {active === "diff" && diffReply?.kind === "unavailable" && (
+        <p role="status">{reason(diffReply.reason, t)}</p>
       )}
       {active === "file" && file?.kind === "text" && (
         <p className="file-meta">
@@ -297,19 +278,19 @@ export function FileWorkspace({
           {file.bytes} B · {file.capturedAt} · {t("ui.files.complete")}
         </p>
       )}
-      {active === "diff" && diff?.kind === "diff" && (
+      {active === "diff" && diffReply?.kind === "diff" && (
         <>
           <p className="file-meta">
-            {diff.path} · {diff.repository} · {diff.capturedAt} ·{" "}
+            {diffReply.path} · {diffReply.repository} · {diffReply.capturedAt} ·{" "}
             {t("ui.files.singleFileSample")}
           </p>
           <div className="diff-sources file-meta">
-            <span>{diff.left.source}</span>
-            <span>{diff.right.source}</span>
+            <span>{diffReply.left.source}</span>
+            <span>{diffReply.right.source}</span>
           </div>
-          {diff.left.kind === "text" &&
-            diff.right.kind === "text" &&
-            diff.left.text === diff.right.text && (
+          {diffReply.left.kind === "text" &&
+            diffReply.right.kind === "text" &&
+            diffReply.left.text === diffReply.right.text && (
               <p className="file-meta">{t("ui.files.sameText")}</p>
             )}
         </>
@@ -324,11 +305,15 @@ export function FileWorkspace({
       ) : null}
       {view && !(view.kind === "diff" && isDiffViewTooLarge(view)) && (
         <>
-          <Suspense
-            fallback={<p role="status">{t("ui.files.loadingEditor")}</p>}
-          >
-            <MonacoViewer view={view} onSelection={setSelected} />
-          </Suspense>
+          {Editor ? (
+            <Suspense
+              fallback={<p role="status">{t("ui.files.loadingEditor")}</p>}
+            >
+              <Editor view={view} onSelection={setSelected} />
+            </Suspense>
+          ) : (
+            <p role="status">{t("ui.files.loadingEditor")}</p>
+          )}
           <div className="flex gap-2">
             <Button
               disabled={selected?.kind !== "selection"}

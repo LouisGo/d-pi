@@ -1,4 +1,6 @@
 import { match } from "ts-pattern";
+import { subscribeWithSelector } from "zustand/middleware";
+import { createStore, type StateCreator } from "zustand/vanilla";
 import type { ThreadId } from "../../../shared/identity";
 import { type UiMessage, uiMessage } from "../../../shared/messages/contracts";
 import type { CapturedDraft, DraftController } from "../../input/core/public";
@@ -15,6 +17,21 @@ interface View {
   receipts: SubmissionReceipt[];
   message: UiMessage | null;
 }
+// The published view is the whole store state: every publication is a partial
+// update that zustand shallow merges into the current view (see `publish`).
+const submissionInitial: StateCreator<
+  View,
+  [],
+  [["zustand/subscribeWithSelector", never]]
+> = () => ({
+  sending: false,
+  sendingText: false,
+  receipts: [],
+  message: null,
+});
+const createSubmissionStore = () =>
+  createStore<View>()(subscribeWithSelector(submissionInitial));
+export type SubmissionStore = ReturnType<typeof createSubmissionStore>;
 // Receipt facts advance independently: a late ACK can resolve call confirmation,
 // but cannot erase an observed failure/uncertain outcome. Millisecond wall-clock
 // timestamps are display metadata, not a causal ordering of IPC replies/events.
@@ -52,13 +69,9 @@ export function mergeReceipt(
   };
 }
 export class SubmissionModel {
-  private view: View = {
-    sending: false,
-    sendingText: false,
-    receipts: [],
-    message: null,
-  };
-  private listeners = new Set<() => void>();
+  // Vanilla store, no React binding: the renderer reads it through
+  // `getSnapshot`/`subscribe`, exactly as it did with the listener set.
+  private readonly store: SubmissionStore = createSubmissionStore();
   private captured: CapturedDraft | null = null;
   private remove: () => void;
   private disposed = false;
@@ -71,15 +84,34 @@ export class SubmissionModel {
     this.remove = bridge.subscribe((reply) => this.accept(reply));
     void this.refresh();
   }
-  getSnapshot = (): View => this.view;
-  subscribe = (listener: () => void): (() => void) => {
-    this.listeners.add(listener);
-    return () => this.listeners.delete(listener);
-  };
+  /**
+   * Live read of the published view. Every former `this.view` read resolves to
+   * the current store value at the same point in time as before.
+   */
+  private get view(): View {
+    return this.store.getState();
+  }
+  getSnapshot = (): View => this.store.getState();
+  subscribe = (listener: () => void): (() => void) =>
+    this.store.subscribe(
+      (state) => state,
+      () => listener(),
+    );
+  /**
+   * Fine grained subscription for one projection of the view, e.g. a single
+   * receipt. Plain `subscribe` still fires for every published change.
+   */
+  subscribeTo<Selection>(
+    selector: (state: View) => Selection,
+    listener: () => void,
+  ): () => void {
+    return this.store.subscribe(selector, () => listener());
+  }
   private publish(change: Partial<View>): void {
     if (this.disposed) return;
-    this.view = { ...this.view, ...change };
-    for (const cb of this.listeners) cb();
+    // Default shallow merge keeps the former partial update: the fields not
+    // named in `change` stay as they are.
+    this.store.setState(change);
   }
   private accept(reply: SubmissionReply): void {
     if (reply.kind === "failed") {
@@ -315,7 +347,6 @@ export class SubmissionModel {
   dispose(): void {
     this.disposed = true;
     this.remove();
-    this.listeners.clear();
     this.editorAdapter = null;
   }
 }

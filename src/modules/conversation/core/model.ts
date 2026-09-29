@@ -1,64 +1,97 @@
+import { subscribeWithSelector } from "zustand/middleware";
+import { createStore, type StateCreator } from "zustand/vanilla";
 import type {
   ConversationPort,
   ConversationSnapshot,
 } from "../contracts/public";
+
+interface ConversationState {
+  view: ConversationSnapshot | null;
+  threadId: string | null;
+  epoch: number;
+  resyncing: boolean;
+}
+
+const initial: StateCreator<
+  ConversationState,
+  [],
+  [["zustand/subscribeWithSelector", never]]
+> = () => ({
+  view: null,
+  threadId: null,
+  epoch: 0,
+  resyncing: false,
+});
+
+const createConversationStore = () =>
+  createStore<ConversationState>()(subscribeWithSelector(initial));
+
 export class ConversationModel {
-  private view: ConversationSnapshot | null = null;
-  private readonly listeners = new Set<() => void>();
+  private readonly store: ReturnType<typeof createConversationStore> =
+    createConversationStore();
   private remove: (() => void) | null = null;
-  private threadId: string | null = null;
-  private epoch = 0;
-  private resyncing = false;
   constructor(private readonly port: ConversationPort) {}
-  getSnapshot = (): ConversationSnapshot | null => this.view;
-  subscribe = (listener: () => void): (() => void) => {
-    this.listeners.add(listener);
-    return () => this.listeners.delete(listener);
-  };
+  getSnapshot = (): ConversationSnapshot | null => this.store.getState().view;
+  subscribe = (listener: () => void): (() => void) =>
+    this.store.subscribe(
+      (state) => state.view,
+      () => listener(),
+    );
+  /**
+   * Fine grained subscription for one projection of the reading state, e.g. a
+   * single message. Plain `subscribe` still fires for every view change.
+   */
+  subscribeTo<Selection>(
+    selector: (state: ConversationState) => Selection,
+    listener: () => void,
+  ): () => void {
+    return this.store.subscribe(selector, () => listener());
+  }
   connect(threadId: string): void {
     this.remove?.();
-    this.threadId = threadId;
-    const epoch = ++this.epoch;
+    const epoch = this.store.getState().epoch + 1;
     let synchronized = false;
+    this.store.setState({ threadId, epoch, resyncing: false });
     this.remove = this.port.connect(threadId, (event) => {
-      if (epoch !== this.epoch) return;
+      if (epoch !== this.store.getState().epoch) return;
       if (event.kind === "snapshot") {
         synchronized = true;
-        this.view = event;
-        this.resyncing = false;
-      } else {
-        if (
-          !synchronized ||
-          !this.view ||
-          event.generation !== this.view.generation ||
-          event.seq <= this.view.seq
-        )
-          return;
-        if (event.seq !== this.view.seq + 1) {
-          this.view = { ...this.view, gap: true };
-          if (!this.resyncing) {
-            this.resyncing = true;
-            void Promise.resolve().then(() => {
-              if (epoch === this.epoch && this.threadId)
-                this.connect(this.threadId);
-            });
-          }
-        } else {
-          const items = this.view.items.filter(
-            (item) => item.id >= event.droppedBefore,
-          );
-          const index = items.findIndex((item) => item.id === event.item.id);
-          if (index < 0) items.push(event.item);
-          else items[index] = event.item;
-          this.view = { ...this.view, seq: event.seq, items, gap: event.gap };
-        }
+        this.store.setState({ view: event, resyncing: false });
+        return;
       }
-      for (const listener of this.listeners) listener();
+      const view = this.store.getState().view;
+      if (
+        !synchronized ||
+        !view ||
+        event.generation !== view.generation ||
+        event.seq <= view.seq
+      )
+        return;
+      if (event.seq !== view.seq + 1) {
+        this.store.setState({ view: { ...view, gap: true } });
+        if (!this.store.getState().resyncing) {
+          this.store.setState({ resyncing: true });
+          void Promise.resolve().then(() => {
+            const current = this.store.getState();
+            if (epoch === current.epoch && current.threadId)
+              this.connect(current.threadId);
+          });
+        }
+        return;
+      }
+      const items = view.items.filter(
+        (entry) => entry.id >= event.droppedBefore,
+      );
+      const index = items.findIndex((entry) => entry.id === event.item.id);
+      if (index < 0) items.push(event.item);
+      else items[index] = event.item;
+      this.store.setState({
+        view: { ...view, seq: event.seq, items, gap: event.gap },
+      });
     });
   }
   dispose(): void {
-    this.epoch++;
+    this.store.setState({ epoch: this.store.getState().epoch + 1 });
     this.remove?.();
-    this.listeners.clear();
   }
 }

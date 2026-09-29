@@ -1,4 +1,6 @@
 import { match } from "ts-pattern";
+import { subscribeWithSelector } from "zustand/middleware";
+import { createStore, type StateCreator } from "zustand/vanilla";
 import { ConversationModel } from "../../modules/conversation/core/public";
 import type { RuntimeView } from "../../modules/execution/contracts/public";
 import {
@@ -20,6 +22,16 @@ export type ViewState =
       busy: boolean;
       notice: Failure | null;
     };
+// The published application state is the whole store state: `publish` replaces
+// it, so a state member never keeps fields of another member (see `publish`).
+const appInitial: StateCreator<
+  ViewState,
+  [],
+  [["zustand/subscribeWithSelector", never]]
+> = () => ({ kind: "loading" });
+const createAppStore = () =>
+  createStore<ViewState>()(subscribeWithSelector(appInitial));
+export type AppStore = ReturnType<typeof createAppStore>;
 export function transportFailure(traceId: string): Failure {
   return {
     errorId: crypto.randomUUID(),
@@ -35,8 +47,10 @@ export function transportFailure(traceId: string): Failure {
   };
 }
 export class AppModel {
-  private state: ViewState = { kind: "loading" };
-  private listeners = new Set<() => void>();
+  // Vanilla store, no React binding: the renderer reads it through
+  // `getSnapshot`/`subscribe`, exactly as it did with the listener set.
+  private readonly store: AppStore = createAppStore();
+  private disposed = false;
   controller: DraftController | null = null;
   submission: SubmissionModel | null = null;
   editorBoundary: { freeze: () => boolean; release: () => void } | null = null;
@@ -111,18 +125,40 @@ export class AppModel {
       this.reading.connect(view.threadId);
   };
   dispose(): void {
+    this.disposed = true;
     this.runtimeReadingUnsubscribe?.();
     this.reading?.dispose();
     this.runtime?.dispose();
   }
-  getSnapshot = (): ViewState => this.state;
-  subscribe = (listener: () => void): (() => void) => {
-    this.listeners.add(listener);
-    return () => this.listeners.delete(listener);
-  };
+  /**
+   * Live read of the published state. Every former `this.state` read resolves
+   * to the current store value at the same point in time as before.
+   */
+  private get state(): ViewState {
+    return this.store.getState();
+  }
+  getSnapshot = (): ViewState => this.store.getState();
+  subscribe = (listener: () => void): (() => void) =>
+    this.store.subscribe(
+      (state) => state,
+      () => listener(),
+    );
+  /**
+   * Fine grained subscription for one projection of the published state, e.g.
+   * one ready-state field. Plain `subscribe` still fires for every published
+   * state.
+   */
+  subscribeTo<Selection>(
+    selector: (state: ViewState) => Selection,
+    listener: () => void,
+  ): () => void {
+    return this.store.subscribe(selector, () => listener());
+  }
   private publish(state: ViewState): void {
-    this.state = state;
-    for (const listener of this.listeners) listener();
+    if (this.disposed) return;
+    // `replace` keeps the whole-state assignment of the former container:
+    // merging would let one union member keep fields of another.
+    this.store.setState(state, true);
   }
   private accept(reply: Reply): void {
     match(reply)
