@@ -157,10 +157,10 @@ it.each(["unchanged", "edited-before", "edited-after"] as const)(
   async (change) => {
     const f = await interruptedRenderer();
     let clears = 0;
-    f.model.replace = () => {
+    const detachEditor = f.model.attachEditor(() => {
       clears++;
       return true;
-    };
+    });
     if (change === "edited-before") f.controller.edit("B");
     await Promise.all([
       f.model.continuePrepared(f.receipt.submissionId),
@@ -188,6 +188,7 @@ it.each(["unchanged", "edited-before", "edited-after"] as const)(
     await f.model.continuePrepared(f.receipt.submissionId);
     expect(f.writes()).toHaveLength(1);
     expect(f.store.submissions.list(f.draft.threadId)).toHaveLength(1);
+    detachEditor();
   },
 );
 
@@ -224,10 +225,10 @@ it("continues an interrupted explicit resend without consuming the current draft
   });
   await f.model.refresh();
   let clears = 0;
-  f.model.replace = () => {
+  const detachEditor = f.model.attachEditor(() => {
     clears++;
     return true;
-  };
+  });
   await f.model.continuePrepared(replay.submissionId);
   f.host.emit("message", {
     kind: "submission",
@@ -242,4 +243,5 @@ it("continues an interrupted explicit resend without consuming the current draft
   expect(clears).toBe(0);
   expect(f.store.drafts.read(f.draft.threadId).text).toBe("A");
   expect(f.writes()).toHaveLength(1);
+  detachEditor();
 });

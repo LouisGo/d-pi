@@ -63,8 +63,6 @@ export class SubmissionModel {
   private remove: () => void;
   private disposed = false;
   private editorAdapter: { replace: () => boolean } | null = null;
-  // Kept for existing non-React recovery fixtures; Composer uses attachEditor.
-  replace: (() => boolean) | null = null;
   constructor(
     private readonly bridge: SubmissionBridge,
     private readonly threadId: ThreadId,
@@ -126,7 +124,7 @@ export class SubmissionModel {
       this.captured = null;
       return;
     }
-    const replace = this.editorAdapter?.replace ?? this.replace;
+    const replace = this.editorAdapter?.replace;
     if (
       receipt?.acknowledgedAt &&
       replace &&
@@ -319,6 +317,5 @@ export class SubmissionModel {
     this.remove();
     this.listeners.clear();
     this.editorAdapter = null;
-    this.replace = null;
   }
 }

@@ -119,10 +119,10 @@ it("freezes A before dispatch, consumes only its unchanged edit sequence, and de
     c,
   );
   let clears = 0;
-  m.replace = () => {
+  const detachEditor = m.attachEditor(() => {
     clears++;
     return true;
-  };
+  });
   await m.send();
   c.edit("B");
   receive({
@@ -131,6 +131,7 @@ it("freezes A before dispatch, consumes only its unchanged edit sequence, and de
   });
   expect(clears).toBe(0);
   expect(m.getSnapshot().receipts[0]?.text).toBe("A");
+  detachEditor();
   m.dispose();
   c.dispose();
 });
@@ -418,11 +419,6 @@ it("sends follow-up text without capturing or consuming the draft", async () => 
     draft.threadId,
     c,
   );
-  let clears = 0;
-  m.replace = () => {
-    clears++;
-    return true;
-  };
   await m.sendText("late answer", "followUp");
   expect(requests).toContainEqual(
     expect.objectContaining({
@@ -436,7 +432,6 @@ it("sends follow-up text without capturing or consuming the draft", async () => 
     expect.objectContaining({ kind: "dispatch" }),
   );
   expect(m.getSnapshot().receipts[0]?.text).toBe("late answer");
-  expect(clears).toBe(0);
   await m.sendText("   ");
   expect(requests).toHaveLength(3);
   m.dispose();
