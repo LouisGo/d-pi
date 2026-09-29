@@ -7,17 +7,17 @@ import {
   HostCommandSchema,
   SubmissionIdSchema,
   type SubmissionReply,
-} from "../../modules/execution/contracts/public";
+} from "../../src/modules/execution/contracts/public";
 import type {
   NativeObservation,
   NativeSessionOptions,
-} from "../../modules/execution/host/public";
-import { createSessionHost } from "../../modules/execution/host/public";
-import { RuntimeService } from "../../modules/execution/main/public";
-import { SubmissionModel } from "../../modules/execution/renderer/public";
-import { DraftController } from "../../modules/input/core/public";
-import { TraceIdSchema } from "../../shared/identity";
-import { AppStorage } from "./wiring/app-storage";
+} from "../../src/modules/execution/host/public";
+import { createSessionHost } from "../../src/modules/execution/host/public";
+import { RuntimeService } from "../../src/modules/execution/main/public";
+import { SubmissionModel } from "../../src/modules/execution/renderer/public";
+import { DraftController } from "../../src/modules/input/core/public";
+import { TraceIdSchema } from "../../src/shared/identity";
+import { AppStorage } from "../../src/app/main/wiring/app-storage";
 
 const transport = vi.hoisted(() => ({
   fork: vi.fn(),
@@ -25,13 +25,13 @@ const transport = vi.hoisted(() => ({
   writes: [] as string[],
 }));
 vi.mock("electron", () => ({ utilityProcess: { fork: transport.fork } }));
-vi.mock("../../platform/omp/resources/public", () => ({
+vi.mock("../../src/platform/omp/resources/public", () => ({
   managedSdkRuntime: async () => ({
     binary: "/fixture/bun",
     entry: "/fixture/host.mjs",
   }),
 }));
-vi.mock("../../modules/execution/host/native-session", () => ({
+vi.mock("../../src/modules/execution/host/native-session", () => ({
   NativeSession: class {
     constructor(
       private options: NativeSessionOptions,

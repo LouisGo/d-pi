@@ -4,9 +4,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { expect, it } from "vitest";
-import { AppStorage } from "../../../app/main/wiring/app-storage";
-import { FrozenSubmissionSchema } from "../contracts/public";
-import { SubmissionCoordinator } from "./submission-coordinator";
+import { AppStorage } from "../../src/app/main/wiring/app-storage";
+import { FrozenSubmissionSchema } from "../../src/modules/execution/contracts/public";
+import { SubmissionCoordinator } from "../../src/modules/execution/core/public";
 
 it("failed dispatch persistence writes nothing; duplicate dispatch writes once and late error keeps ACK", () => {
   const dir = mkdtempSync(join(tmpdir(), "d-pi-send-"));

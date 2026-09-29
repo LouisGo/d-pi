@@ -6,20 +6,20 @@ import { afterEach, expect, it, vi } from "vitest";
 import type {
   SubmissionBridge,
   SubmissionReply,
-} from "../../modules/execution/contracts/public";
+} from "../../src/modules/execution/contracts/public";
 import {
   type HostCommand,
   HostCommandSchema,
-} from "../../modules/execution/contracts/public";
-import { RuntimeService } from "../../modules/execution/main/public";
-import { SubmissionModel } from "../../modules/execution/renderer/public";
-import { DraftController } from "../../modules/input/core/public";
-import { TraceIdSchema } from "../../shared/identity";
-import { AppStorage } from "./wiring/app-storage";
+} from "../../src/modules/execution/contracts/public";
+import { RuntimeService } from "../../src/modules/execution/main/public";
+import { SubmissionModel } from "../../src/modules/execution/renderer/public";
+import { DraftController } from "../../src/modules/input/core/public";
+import { TraceIdSchema } from "../../src/shared/identity";
+import { AppStorage } from "../../src/app/main/wiring/app-storage";
 
 const electron = vi.hoisted(() => ({ fork: vi.fn() }));
 vi.mock("electron", () => ({ utilityProcess: { fork: electron.fork } }));
-vi.mock("../../platform/omp/resources/public", () => ({
+vi.mock("../../src/platform/omp/resources/public", () => ({
   managedSdkRuntime: async () => ({
     binary: "/fixture/bun",
     entry: "/fixture/host.mjs",

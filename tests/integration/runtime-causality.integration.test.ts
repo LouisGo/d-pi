@@ -7,16 +7,16 @@ import { afterEach, expect, it, vi } from "vitest";
 import {
   HostCommandSchema,
   SubmissionIdSchema,
-} from "../../modules/execution/contracts/public";
-import { createSessionHost } from "../../modules/execution/host/public";
-import { RuntimeService } from "../../modules/execution/main/public";
-import { TraceIdSchema } from "../../shared/identity";
-import { AppStorage } from "./wiring/app-storage";
+} from "../../src/modules/execution/contracts/public";
+import { createSessionHost } from "../../src/modules/execution/host/public";
+import { RuntimeService } from "../../src/modules/execution/main/public";
+import { TraceIdSchema } from "../../src/shared/identity";
+import { AppStorage } from "../../src/app/main/wiring/app-storage";
 
 const adapters = vi.hoisted(() => ({ fork: vi.fn(), spawn: vi.fn() }));
 vi.mock("electron", () => ({ utilityProcess: { fork: adapters.fork } }));
 vi.mock("node:child_process", () => ({ spawn: adapters.spawn }));
-vi.mock("../../platform/omp/resources/public", () => ({
+vi.mock("../../src/platform/omp/resources/public", () => ({
   managedSdkRuntime: async () => ({
     binary: "/fixture/bun",
     entry: "/fixture/host.mjs",
