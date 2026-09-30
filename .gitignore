@@ -4,10 +4,6 @@ dist/
 .DS_Store
 *.log
 
-# Local runtime state recreated by the historical M1 experiment.
-/.scratch/omp-gui-m1/prototype/.agent/
-/.scratch/omp-gui-m1/prototype/.sessions/
-
 # Managed official Runtime binary; reproducible through scripts/fetch-runtime.mjs.
 /resources/omp/omp
 /resources/omp/omp.download

@@ -25,4 +25,4 @@
 
 原文相对路径按旧仓库布局保存；为保持原始文件哈希，本目录不改写原文失效链接或历史状态。文中指向已裁剪路径的相对链接不再解析，需要原文时用 `git show 6fab3ef:<原路径>` 或[固定提交](https://github.com/LouisGo/d-pi/tree/6fab3efd0526d2d716d7939b75202a88f857078a)读取。
 
-当前有效结论与取代关系见[整理后的交接](../../prototype/handoff.md)、[架构](../../prototype/v1-architecture-draft.md)和[选型记录](../../prototype/frontend-library-radar.md)。用户已选择保留旧基线证据并逐项复用，不直接恢复旧 UI 为当前产品。不会自动执行旧实验。
+当前有效结论与取代关系见[整理后的交接](../../prototype/handoff.md)、[架构](../../architecture/overview.md)和[选型记录](../../prototype/frontend-library-radar.md)。用户已选择保留旧基线证据并逐项复用，不直接恢复旧 UI 为当前产品。不会自动执行旧实验。

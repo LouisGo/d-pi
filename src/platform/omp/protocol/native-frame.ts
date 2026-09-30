@@ -45,7 +45,6 @@ export const NativeResponseSchema = z.looseObject({
   data: z.unknown().optional(),
   error: z.string().optional(),
 });
-export type NativeResponse = z.infer<typeof NativeResponseSchema>;
 const message = z.looseObject({
   role: z.string(),
   content: z.unknown(),

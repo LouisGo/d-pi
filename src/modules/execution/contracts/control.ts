@@ -25,4 +25,3 @@ export const ControlCommandSchema = z.strictObject({
   traceId: TraceIdSchema,
   generation: z.uuid(),
 });
-export type ControlCommand = z.infer<typeof ControlCommandSchema>;

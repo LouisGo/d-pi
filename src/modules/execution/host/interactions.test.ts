@@ -212,7 +212,6 @@ it("dismisses unknown dialogs locally to release the submit block", () => {
     id: "stuck",
     title: "Details",
   });
-  const frames: string[] = [];
   expect(
     interaction.answer("stuck", { kind: "value", value: "a" }, () => {
       throw Error("closed");
