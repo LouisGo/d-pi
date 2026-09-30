@@ -20,8 +20,8 @@ import { shouldSend } from "../../../modules/execution/renderer/public";
 import type { FrozenSelection } from "../../../modules/files/core/public";
 import {
   appendSelectionReference,
+  createClipboardPaste,
   draftDocument,
-  handlePlainTextPaste,
   plainTextEditorOptions,
   replaceDraftText,
 } from "../../../modules/input/renderer/public";
@@ -52,6 +52,7 @@ export function Composer({
     controller.getSnapshot,
   );
   const [expanded, setExpanded] = useState(false);
+  const [unsupportedPaste, setUnsupportedPaste] = useState(false);
   const preference = useStore(model.stateStore, (appState) =>
     appState.kind === "ready"
       ? (appState.preferences.sendKey ?? "enter-send")
@@ -63,14 +64,19 @@ export function Composer({
     () => draftDocument(controller.getTextSnapshot()),
     [controller],
   );
+  const paste = useMemo(
+    () => createClipboardPaste(() => setUnsupportedPaste(true)),
+    [controller],
+  );
   const editor = useEditor(
     {
       ...plainTextEditorOptions,
       extensions: [...plainTextEditorOptions.extensions, UrlDecoration],
       content: initialDocument,
       editorProps: {
-        handlePaste: handlePlainTextPaste,
+        handlePaste: paste.handlePaste,
         handleKeyDown: (view, event) => {
+          paste.keyDown(event);
           if (!model.isCurrentThread(thread)) return false;
           if (view.composing) return false;
           if (
@@ -93,6 +99,10 @@ export function Composer({
           return true;
         },
         handleDOMEvents: {
+          blur: () => {
+            paste.reset();
+            return false;
+          },
           compositionend: () => {
             setTimeout(() => {
               if (model.isCurrentThread(thread)) submission?.consume();
@@ -188,12 +198,17 @@ export function Composer({
         </span>
       </div>
       <EditorContent className="composer-editor" editor={editor} />
+      {unsupportedPaste && (
+        <p role="alert" className="failure">
+          {t("composer.paste.unsupported")}
+        </p>
+      )}
       <div className="composer-footer">
         <span>
           {expanded || preference === "enter-newline"
             ? t("composer.shortcut.newline")
             : t("composer.shortcut.send")}{" "}
-          {t("composer.shortcut.undo")}
+          {t("composer.shortcut.undo")} · {t("composer.paste.hint")}
         </span>
         <div className="flex flex-wrap gap-2">
           <Button

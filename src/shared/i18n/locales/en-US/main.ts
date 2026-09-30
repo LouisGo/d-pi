@@ -24,6 +24,7 @@ export const main = {
   "main.menu.redo": "Redo",
   "main.menu.cut": "Cut",
   "main.menu.copy": "Copy",
+  "main.menu.pastePlain": "Paste as Plain Text",
   "main.menu.paste": "Paste",
   "main.menu.selectAll": "Select All",
   "main.menu.window": "Window",

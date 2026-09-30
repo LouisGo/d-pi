@@ -1,0 +1,5 @@
+
+DevTools listening on ws://127.0.0.1:61132/devtools/browser/6b0ad8a3-b9ed-45b0-ab21-fd1f218e72d0
+
+DevTools listening on ws://127.0.0.1:61132/devtools/browser/d0bc3441-6848-4ede-b8a7-1ad400f61d54
+{"result":"/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-l3ElMG/m2-result.json","checks":["two parallel native OMP scopes; switching does not interrupt held work","separate model/effort, messages, drafts and session identities","renderer reload reconnects same native sessions without resending","composer and send action stay inside window; switching reading view preserves draft","cold old native sessions remain read-only, preserve drafts; explicit new independent Thread is available"]}

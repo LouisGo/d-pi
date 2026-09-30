@@ -5,6 +5,7 @@
 ## 当前工程落点（领域目录治理，2026-09-29）
 
 - 草稿合同与状态在 `src/modules/input/contracts/`，控制器与引用序列化在 `src/modules/input/core/`，草稿仓储与服务在 `src/modules/input/main/`，编辑器适配在 `src/modules/input/renderer/`。
+- M2 文字增量（2026-10-01）：普通剪贴板结构转为可编辑 Markdown；明确纯文本入口保留 literal source，剪贴板模板不挂载/不获取资源。标题、嵌套列表、表格、链接、代码/引用及一笔撤销/重做已由行为测试覆盖；附件粘贴暂明确拒绝整项，保留旧草稿，后续内容导入接入前不判 V1-04 完成。
 - 应用级 Composer 组合留在 `src/app/renderer/workbench/`，不复制草稿真相；提交收据与 OMP 消费仍归 execution。
 
 ## 范围与拥有者

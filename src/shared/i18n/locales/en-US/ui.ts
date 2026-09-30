@@ -83,6 +83,9 @@ export const ui = {
   "app.empty.choose": "Choose a project and create a draft",
   "app.empty.note":
     "Directories are browse only by default; project code does not run.",
+  "composer.paste.unsupported":
+    "Attachment paste is not connected in this candidate. No part was inserted or discarded; the existing draft is preserved.",
+  "composer.paste.hint": "⌘⇧V paste plain text",
   "composer.editorLabel": "Draft body",
   "composer.sectionLabel": "Persistent text draft",
   "composer.heading": "Draft",

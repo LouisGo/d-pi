@@ -23,6 +23,7 @@ export const main = {
   "main.menu.redo": "重做",
   "main.menu.cut": "剪切",
   "main.menu.copy": "复制",
+  "main.menu.pastePlain": "粘贴为纯文本",
   "main.menu.paste": "粘贴",
   "main.menu.selectAll": "全选",
   "main.menu.window": "窗口",

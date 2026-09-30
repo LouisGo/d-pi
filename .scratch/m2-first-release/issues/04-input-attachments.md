@@ -1,6 +1,6 @@
 # 04 输入与附件
 
-Status: open
+Status: claimed
 Blocked by: none
 
 所属范围与授权见 [spec](../spec.md)。
@@ -10,3 +10,5 @@ Blocked by: none
 ## Comments
 
 2026-09-30：M2 明确授权接续 S5；这是工程票，用户认可在 spec 单独维护。
+
+2026-10-01：入口候选验证后接入普通结构化粘贴为可编辑 Markdown；显式纯文本粘贴保留原文，沿用 Tiptap 单实例与撤销。附件内容存储及 @ 发送时冻结继续按合同接入，不把此增量标为 V1-04 完成。

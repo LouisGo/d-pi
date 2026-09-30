@@ -264,24 +264,31 @@ function ThreadWorkbench({
         </Button>
       </nav>
       <div className="thread-reading">
-        {readingView === "conversation" && thread.reading && (
-          <Conversation model={thread.reading} />
-        )}
-        {readingView === "files" && model.files && model.git && (
-          <FilePanel
-            resource={thread.context}
-            files={model.files}
-            git={model.git}
-            editor={editor}
-            onAttach={onAttach}
-          />
-        )}
-        {readingView === "submissions" && submission && (
-          <Submissions model={submission} />
-        )}
-        {readingView === "history" && model.history && (
-          <History bridge={model.history} threadId={thread.context.threadId} />
-        )}
+        <div className="reading-pane" hidden={readingView !== "conversation"}>
+          {thread.reading && <Conversation model={thread.reading} />}
+        </div>
+        <div className="reading-pane" hidden={readingView !== "files"}>
+          {model.files && model.git && (
+            <FilePanel
+              resource={thread.context}
+              files={model.files}
+              git={model.git}
+              editor={editor}
+              onAttach={onAttach}
+            />
+          )}
+        </div>
+        <div className="reading-pane" hidden={readingView !== "submissions"}>
+          {submission && <Submissions model={submission} />}
+        </div>
+        <div className="reading-pane" hidden={readingView !== "history"}>
+          {model.history && (
+            <History
+              bridge={model.history}
+              threadId={thread.context.threadId}
+            />
+          )}
+        </div>
       </div>
       <Composer
         thread={thread}

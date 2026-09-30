@@ -122,6 +122,10 @@
   .thread-reading {
     flex: 1;
     min-height: 0;
+    overflow: hidden;
+  }
+  .reading-pane {
+    height: 100%;
     overflow: auto;
     overscroll-behavior: contain;
   }

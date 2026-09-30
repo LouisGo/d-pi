@@ -77,6 +77,9 @@ export const ui = {
   "app.empty.description": "选择目录，创建一份可恢复的文字草稿。",
   "app.empty.choose": "打开项目",
   "app.empty.note": "目录默认仅浏览，不运行项目代码。",
+  "composer.paste.unsupported":
+    "此候选的附件粘贴尚未接入；未插入或丢弃其中任何内容，原草稿保留。",
+  "composer.paste.hint": "⌘⇧V 纯文本粘贴",
   "composer.editorLabel": "草稿正文",
   "composer.sectionLabel": "持久文字草稿",
   "composer.heading": "草稿",

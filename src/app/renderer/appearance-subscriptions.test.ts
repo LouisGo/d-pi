@@ -479,7 +479,9 @@ it("keeps the project chooser disabled for its real pending operation", async ()
 
 it("still updates localized workbench text when the language context changes", async () => {
   const fixture = await setup();
-  expect(fixture.container.textContent).toContain(i18n.t("app.draft.title"));
+  expect(fixture.container.textContent).toContain(
+    i18n.t("ui.conversation.heading"),
+  );
   const language = fixture.container.querySelector("select");
   if (!language) throw Error("missing language selector");
   await act(() => {
@@ -487,6 +489,6 @@ it("still updates localized workbench text when the language context changes", a
     language.dispatchEvent(new Event("change", { bubbles: true }));
   });
   expect(fixture.container.textContent).toContain(
-    createI18n("zh-CN").t("app.draft.title"),
+    createI18n("zh-CN").t("ui.conversation.heading"),
   );
 });

@@ -115,6 +115,11 @@ function buildMenu(): void {
           { role: "cut", label: t("main.menu.cut") },
           { role: "copy", label: t("main.menu.copy") },
           { role: "paste", label: t("main.menu.paste") },
+          {
+            role: "pasteAndMatchStyle",
+            label: t("main.menu.pastePlain"),
+            accelerator: "CmdOrCtrl+Shift+V",
+          },
           { role: "selectAll", label: t("main.menu.selectAll") },
         ],
       },

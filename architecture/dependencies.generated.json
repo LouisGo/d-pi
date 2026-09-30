@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "df2e605dc0f69296e80ea642b8b668b8f1dafbfd7f48e7328f083f97849e189c",
+  "inputsHash": "a695364803a6dde53672ebfbb0f8261591e7c421f3147c9c9614df84bdb68042",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 205,
-    "scannedFiles": 205,
+    "sourceFiles": 207,
+    "scannedFiles": 207,
     "unscanned": []
   },
   "modules": [
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 54,
-      "lines": 10148,
+      "lines": 10180,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -98,7 +98,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 18,
-      "lines": 1286,
+      "lines": 1294,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -173,8 +173,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 18,
-      "lines": 1562,
+      "files": 20,
+      "lines": 1833,
       "publicEntries": [
         {
           "path": "src/modules/input/contracts/public.ts",
@@ -8116,6 +8116,18 @@
       "resolution": "external"
     },
     {
+      "from": "src/modules/input/renderer/plain-text-paste.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./structured-paste",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/structured-paste.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/modules/input/renderer/public.ts",
       "sourceModule": "input",
       "sourceEnvironment": "renderer",
@@ -8258,6 +8270,93 @@
       "to": "src/modules/files/core/public.ts",
       "targetModule": "files",
       "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/renderer/structured-paste.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/structured-paste.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./structured-paste",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/structured-paste.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/structured-paste.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tiptap/core",
+      "kind": "dynamic-import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/structured-paste.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./plain-text-editor",
+      "kind": "dynamic-import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/plain-text-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/structured-paste.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./plain-text-paste",
+      "kind": "dynamic-import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/plain-text-paste.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/structured-paste.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tiptap/core",
+      "kind": "dynamic-import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/structured-paste.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./plain-text-editor",
+      "kind": "dynamic-import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/plain-text-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/structured-paste.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./plain-text-paste",
+      "kind": "dynamic-import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/plain-text-paste.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/modules/changes/contracts/public.ts",

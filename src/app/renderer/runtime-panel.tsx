@@ -89,8 +89,11 @@ export function RuntimePanel({
       <details className="runtime-source">
         <summary>{t("ui.runtime.details")}</summary>
         <span className="muted">{formatMessage(state.configuration)}</span>
+        {state.phase === "ready" && <p>{formatMessage(state.message)}</p>}
       </details>
-      <p className="muted">{formatMessage(state.message)}</p>
+      {state.phase !== "ready" && (
+        <p className="muted">{formatMessage(state.message)}</p>
+      )}
       {state.control &&
         (state.busy ||
           state.control.paused ||
