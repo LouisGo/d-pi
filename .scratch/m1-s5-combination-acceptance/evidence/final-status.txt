@@ -1,0 +1,5 @@
+
+> d-pi@0.1.0-s5.0 report:status:write /Users/lou/Learn/d-pi
+> node scripts/project-status.mjs --write docs/status.md
+
+PASS: project status (13 slices, 61 tasks; engineering/trial/acceptance independent)

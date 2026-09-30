@@ -1,0 +1,23 @@
+
+DevTools listening on ws://127.0.0.1:62176/devtools/browser/113dd6d7-525c-4a7e-9864-33b44cb86f47
+Package failure evidence: /private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-RQgSbD
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ undefined
+- 'paused'
+
+    at file:///Users/lou/Learn/d-pi/validation/s3/package.mjs:699:12 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: undefined,
+  expected: 'paused',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.21.0

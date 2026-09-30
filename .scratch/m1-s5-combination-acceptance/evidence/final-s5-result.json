@@ -1,0 +1,331 @@
+{
+  "bundle": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/Package With Spaces/d-pi.app",
+  "sourceBundle": "/Users/lou/Learn/d-pi/dist/s5-candidate/mac-arm64/d-pi.app",
+  "fixtureBundleModification": {
+    "path": "Contents/Info.plist",
+    "originalIdentifier": "local.d-pi.desktop",
+    "fixtureIdentifier": "local.d-pi.s5-validation",
+    "reason": "bind native inspection to the isolated copy, apart from the user's live App",
+    "unchangedResources": [
+      {
+        "path": "Contents/Resources/app.asar",
+        "sha256": "cabe4673763a3882b5ef79a36595ecd31ec480e96ce88040af8ea5950f20d444"
+      },
+      {
+        "path": "Contents/Resources/sdk/host.mjs",
+        "sha256": "3beeb728f4635df18ec601ff5d0d17a1a5b21a3d07f61f38be8287df385a5bf1"
+      },
+      {
+        "path": "Contents/Resources/sdk/manifest.json",
+        "sha256": "40eddef35060706769733cbdc0c04e49fd42af985f95d6680072bb66099752ff"
+      }
+    ]
+  },
+  "combinationEvidence": {
+    "interaction": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/s5-interaction-reload.png",
+    "editorInteraction": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/s5-editor-interaction.png",
+    "representativeDraft": {
+      "utf16Length": 20000,
+      "persistedAndRestoredExactly": true,
+      "appearanceCommandsResponsive": true,
+      "performanceMeasurement": false
+    },
+    "pausedQueue": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/s5-paused-queue-reload.png",
+    "queue": {
+      "callsBeforeBusy": 3,
+      "callsAfterContinue": 5,
+      "sameNativeSession": true,
+      "resumedOnce": true
+    },
+    "rejection": {
+      "receipt": {
+        "submissionId": "bda970ed-8d02-4061-8941-f113bbd8fbdb",
+        "threadId": "0e1f168f-2f14-41e3-807e-d8b0cc453453",
+        "traceId": "23d937c0-5a93-4520-a296-0c9ce2b0740e",
+        "revision": 13,
+        "text": "S5_PREPARED_BEFORE_PAUSE",
+        "delivery": "followUp",
+        "target": {
+          "processInstanceId": "ca787edb-bd3c-4f4b-9b25-2321dc5d15e9",
+          "connectionGeneration": "3389186a-a114-4b0f-afcb-d5c25d4dab9c",
+          "configContextId": "00a065b5a6bd6d2d3655ec4a4e6af6a8e8e46b861eb4112b372199808fc95ed1",
+          "nativeSessionRef": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/app-data/native-sessions/0e1f168f-2f14-41e3-807e-d8b0cc453453/2026-09-30T10-54-31-985Z_01a0f1f3-a631-7000-b499-f559774844c4.jsonl"
+        },
+        "requestId": "031caa6e-527f-4394-98ee-1db70badde90",
+        "createdAt": "2026-09-30T10:54:39.396Z",
+        "updatedAt": "2026-09-30T10:54:39.452Z",
+        "acknowledgedAt": null,
+        "outcome": "unobserved",
+        "state": "rejected"
+      },
+      "attribution": "Main admission; no Host reason was reported",
+      "noProviderCall": true,
+      "draftPreserved": true,
+      "screenshot": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/s5-paused-rejection.png"
+    },
+    "sameByteSources": {
+      "path": "mode-source.txt",
+      "sources": [
+        "index: mode-source.txt · sha256:606eb46b2b10f42689fad7ce21baabda46116e56746fcb6980037baa14706e96",
+        "working tree: mode-source.txt · sha256:606eb46b2b10f42689fad7ce21baabda46116e56746fcb6980037baa14706e96"
+      ],
+      "sameEditor": true,
+      "sameText": true,
+      "stagedMode": "100755",
+      "worktreeMode": "100644",
+      "screenshot": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/s5-same-byte-source-switch.png"
+    },
+    "whitespaceDiff": {
+      "rawText": "  \n\t\n",
+      "screenshot": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/s5-whitespace-diff.png"
+    }
+  },
+  "providerEvents": [
+    {
+      "request": 1,
+      "hold": null,
+      "reply": null,
+      "closed": true
+    },
+    {
+      "request": 2,
+      "hold": null,
+      "reply": null,
+      "closed": true
+    },
+    {
+      "request": 3,
+      "hold": null,
+      "reply": null,
+      "closed": true
+    },
+    {
+      "request": 4,
+      "hold": "busy",
+      "reply": null,
+      "closed": true
+    },
+    {
+      "request": 5,
+      "hold": null,
+      "reply": "S5_QUEUE_REPLY",
+      "closed": true
+    },
+    {
+      "request": 6,
+      "hold": "interrupted",
+      "reply": null,
+      "closed": true
+    }
+  ],
+  "limitations": [
+    "localhost deterministic fixture; no real supplier account or billing",
+    "CDP composition events; no system IME proof",
+    "paused nonempty queue abandonment/complete quit still pending S3 09",
+    "engineering evidence is separate from user trial/acceptance"
+  ],
+  "project": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/work",
+  "data": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/app-data",
+  "config": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/home/.omp/agent",
+  "environment": {
+    "PATH": "/private/tmp/d-pi-rewrite-toolchain/node-v24.21.0-darwin-arm64/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+    "HOME": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/home",
+    "USERPROFILE": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/home",
+    "APPDATA": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/home/AppData/Roaming",
+    "LOCALAPPDATA": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/home/AppData/Local",
+    "TMPDIR": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/tmp",
+    "TMP": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/tmp",
+    "TEMP": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/tmp",
+    "PWD": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/work",
+    "XDG_CONFIG_HOME": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/xdg/config",
+    "XDG_DATA_HOME": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/xdg/data",
+    "XDG_STATE_HOME": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/xdg/state",
+    "XDG_CACHE_HOME": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/xdg/cache",
+    "D_PI_DATA_DIR": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/app-data",
+    "PI_CODING_AGENT_DIR": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/home/.omp/agent",
+    "PI_CODING_AGENT_SESSION_DIR": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/omp-sessions",
+    "PI_CONFIG_DIR": ".omp",
+    "OMP_PROFILE": "",
+    "PI_PROFILE": "",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "CI": "1",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_CONFIG_GLOBAL": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/home/.gitconfig",
+    "GIT_TERMINAL_PROMPT": "0"
+  },
+  "providerCalls": 6,
+  "native": {
+    "thread_id": "0e1f168f-2f14-41e3-807e-d8b0cc453453",
+    "config_context": "00a065b5a6bd6d2d3655ec4a4e6af6a8e8e46b861eb4112b372199808fc95ed1",
+    "session_file": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/app-data/native-sessions/0e1f168f-2f14-41e3-807e-d8b0cc453453/2026-09-30T10-54-31-985Z_01a0f1f3-a631-7000-b499-f559774844c4.jsonl",
+    "session_id": "01a0f1f3-a631-7000-b499-f559774844c4"
+  },
+  "receipts": [
+    {
+      "submissionId": "476f010a-a100-4bab-9d8e-001c214f18ab",
+      "threadId": "0e1f168f-2f14-41e3-807e-d8b0cc453453",
+      "traceId": "de03fd13-9fcb-4b07-b9c7-0d27d3b67a74",
+      "revision": 1,
+      "delivery": "followUp",
+      "target": {
+        "processInstanceId": "ca787edb-bd3c-4f4b-9b25-2321dc5d15e9",
+        "connectionGeneration": "3389186a-a114-4b0f-afcb-d5c25d4dab9c",
+        "configContextId": "00a065b5a6bd6d2d3655ec4a4e6af6a8e8e46b861eb4112b372199808fc95ed1",
+        "nativeSessionRef": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/app-data/native-sessions/0e1f168f-2f14-41e3-807e-d8b0cc453453/2026-09-30T10-54-31-985Z_01a0f1f3-a631-7000-b499-f559774844c4.jsonl"
+      },
+      "requestId": "6f018630-5d15-4f3b-9983-a25fa63b68cf",
+      "createdAt": "2026-09-30T10:54:32.760Z",
+      "updatedAt": "2026-09-30T10:54:32.817Z",
+      "acknowledgedAt": "2026-09-30T10:54:32.817Z",
+      "outcome": "unobserved",
+      "state": "acknowledged"
+    },
+    {
+      "submissionId": "983e51a9-734c-4b18-b144-70b310d584ad",
+      "threadId": "0e1f168f-2f14-41e3-807e-d8b0cc453453",
+      "traceId": "020d1715-3ab9-4108-9d59-19d478855ab1",
+      "revision": 3,
+      "delivery": "followUp",
+      "target": {
+        "processInstanceId": "ca787edb-bd3c-4f4b-9b25-2321dc5d15e9",
+        "connectionGeneration": "3389186a-a114-4b0f-afcb-d5c25d4dab9c",
+        "configContextId": "00a065b5a6bd6d2d3655ec4a4e6af6a8e8e46b861eb4112b372199808fc95ed1",
+        "nativeSessionRef": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/app-data/native-sessions/0e1f168f-2f14-41e3-807e-d8b0cc453453/2026-09-30T10-54-31-985Z_01a0f1f3-a631-7000-b499-f559774844c4.jsonl"
+      },
+      "requestId": "7f9a6479-d70f-4138-b058-856f02656a13",
+      "createdAt": "2026-09-30T10:54:35.002Z",
+      "updatedAt": "2026-09-30T10:54:35.013Z",
+      "acknowledgedAt": "2026-09-30T10:54:35.013Z",
+      "outcome": "unobserved",
+      "state": "acknowledged"
+    },
+    {
+      "submissionId": "dfe4378f-a6e3-4e31-8bf6-af21a6fb6fdb",
+      "threadId": "0e1f168f-2f14-41e3-807e-d8b0cc453453",
+      "traceId": "ba6e63c6-1a38-4d28-ba8c-af9196b26ec5",
+      "revision": 5,
+      "delivery": "followUp",
+      "target": {
+        "processInstanceId": "ca787edb-bd3c-4f4b-9b25-2321dc5d15e9",
+        "connectionGeneration": "3389186a-a114-4b0f-afcb-d5c25d4dab9c",
+        "configContextId": "00a065b5a6bd6d2d3655ec4a4e6af6a8e8e46b861eb4112b372199808fc95ed1",
+        "nativeSessionRef": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/app-data/native-sessions/0e1f168f-2f14-41e3-807e-d8b0cc453453/2026-09-30T10-54-31-985Z_01a0f1f3-a631-7000-b499-f559774844c4.jsonl"
+      },
+      "requestId": "2f32907d-7222-4111-be99-d49db98bfb82",
+      "createdAt": "2026-09-30T10:54:35.422Z",
+      "updatedAt": "2026-09-30T10:54:35.428Z",
+      "acknowledgedAt": "2026-09-30T10:54:35.428Z",
+      "outcome": "unobserved",
+      "state": "acknowledged"
+    },
+    {
+      "submissionId": "a3de6f36-3120-448b-87be-f0a9204f545b",
+      "threadId": "0e1f168f-2f14-41e3-807e-d8b0cc453453",
+      "traceId": "74b2b556-ee7a-4546-ba38-19d094ad77ec",
+      "revision": 10,
+      "delivery": "followUp",
+      "target": {
+        "processInstanceId": "ca787edb-bd3c-4f4b-9b25-2321dc5d15e9",
+        "connectionGeneration": "3389186a-a114-4b0f-afcb-d5c25d4dab9c",
+        "configContextId": "00a065b5a6bd6d2d3655ec4a4e6af6a8e8e46b861eb4112b372199808fc95ed1",
+        "nativeSessionRef": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/app-data/native-sessions/0e1f168f-2f14-41e3-807e-d8b0cc453453/2026-09-30T10-54-31-985Z_01a0f1f3-a631-7000-b499-f559774844c4.jsonl"
+      },
+      "requestId": "829f1d3e-dfa5-4325-8dc7-cda764ce0be1",
+      "createdAt": "2026-09-30T10:54:37.526Z",
+      "updatedAt": "2026-09-30T10:54:37.529Z",
+      "acknowledgedAt": "2026-09-30T10:54:37.529Z",
+      "outcome": "unobserved",
+      "state": "acknowledged"
+    },
+    {
+      "submissionId": "e2ab337a-08bc-445a-a5bc-56844d526ab0",
+      "threadId": "0e1f168f-2f14-41e3-807e-d8b0cc453453",
+      "traceId": "54fa24b7-24e3-4361-9a4d-157f2787cb6f",
+      "revision": 11,
+      "delivery": "followUp",
+      "target": {
+        "processInstanceId": "ca787edb-bd3c-4f4b-9b25-2321dc5d15e9",
+        "connectionGeneration": "3389186a-a114-4b0f-afcb-d5c25d4dab9c",
+        "configContextId": "00a065b5a6bd6d2d3655ec4a4e6af6a8e8e46b861eb4112b372199808fc95ed1",
+        "nativeSessionRef": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/app-data/native-sessions/0e1f168f-2f14-41e3-807e-d8b0cc453453/2026-09-30T10-54-31-985Z_01a0f1f3-a631-7000-b499-f559774844c4.jsonl"
+      },
+      "requestId": "02e158dd-44b3-40d9-8637-63746a2858d1",
+      "createdAt": "2026-09-30T10:54:37.714Z",
+      "updatedAt": "2026-09-30T10:54:37.720Z",
+      "acknowledgedAt": "2026-09-30T10:54:37.720Z",
+      "outcome": "unobserved",
+      "state": "acknowledged"
+    },
+    {
+      "submissionId": "bda970ed-8d02-4061-8941-f113bbd8fbdb",
+      "threadId": "0e1f168f-2f14-41e3-807e-d8b0cc453453",
+      "traceId": "23d937c0-5a93-4520-a296-0c9ce2b0740e",
+      "revision": 13,
+      "delivery": "followUp",
+      "target": {
+        "processInstanceId": "ca787edb-bd3c-4f4b-9b25-2321dc5d15e9",
+        "connectionGeneration": "3389186a-a114-4b0f-afcb-d5c25d4dab9c",
+        "configContextId": "00a065b5a6bd6d2d3655ec4a4e6af6a8e8e46b861eb4112b372199808fc95ed1",
+        "nativeSessionRef": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/app-data/native-sessions/0e1f168f-2f14-41e3-807e-d8b0cc453453/2026-09-30T10-54-31-985Z_01a0f1f3-a631-7000-b499-f559774844c4.jsonl"
+      },
+      "requestId": "031caa6e-527f-4394-98ee-1db70badde90",
+      "createdAt": "2026-09-30T10:54:39.396Z",
+      "updatedAt": "2026-09-30T10:54:39.452Z",
+      "acknowledgedAt": null,
+      "outcome": "unobserved",
+      "state": "rejected"
+    },
+    {
+      "submissionId": "a9d6151c-8756-4f9d-8cc9-5d6fc27da4ea",
+      "threadId": "0e1f168f-2f14-41e3-807e-d8b0cc453453",
+      "traceId": "82beeae4-18b6-4272-8eef-19953fdd5857",
+      "revision": 19,
+      "delivery": "followUp",
+      "target": {
+        "processInstanceId": "ca787edb-bd3c-4f4b-9b25-2321dc5d15e9",
+        "connectionGeneration": "3389186a-a114-4b0f-afcb-d5c25d4dab9c",
+        "configContextId": "00a065b5a6bd6d2d3655ec4a4e6af6a8e8e46b861eb4112b372199808fc95ed1",
+        "nativeSessionRef": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-xwB0Bx/app-data/native-sessions/0e1f168f-2f14-41e3-807e-d8b0cc453453/2026-09-30T10-54-31-985Z_01a0f1f3-a631-7000-b499-f559774844c4.jsonl"
+      },
+      "requestId": "e849b137-9110-4cc7-9e70-f4eee3007c8e",
+      "createdAt": "2026-09-30T10:54:43.971Z",
+      "updatedAt": "2026-09-30T10:54:44.436Z",
+      "state": "acknowledged",
+      "acknowledgedAt": "2026-09-30T10:54:43.977Z",
+      "outcome": "unknown"
+    }
+  ],
+  "build": {
+    "version": "0.1.0-s5.0",
+    "commit": "4b003e843e1c874d2eb951118b2f2c614927ffda",
+    "dirty": false,
+    "id": "4b003e84-4c6aa4ad"
+  },
+  "checks": [
+    "official extension confirm/select/input/editor; pending confirm survives renderer reload with draft and no replay",
+    "representative 20000-character draft persists, reloads exactly and accepts appearance commands; no performance claim",
+    "busy submit queues natively; stop preserves and pauses; renderer reload does not replay; explicit continuation consumes once on the same session",
+    "prepare before pause then dispatch is refused by Main; ordinary submission GUI preserves the generic fallback when no Host reason was reported, with no ACK/provider call and exact draft preserved",
+    "mode-only HEAD/index/worktree have the same path/hash/bytes; mounted right-pane selections retain each current Git source",
+    "whitespace-only current Git diff rendered and captured for visual inspection",
+    "v1 migration",
+    "real browser composition events block dispatch (CDP, not system IME)",
+    "two turns and native write",
+    "same live session after window reload",
+    "raw CRLF/CR/LF file and diff selection",
+    "frozen input references after disk refresh and renderer reload",
+    "theme and density",
+    "language changes retain the mounted editor and exact references",
+    "ACK then native child interrupted",
+    "unknown persisted without resend",
+    "same-trace receipt outcome and distinct Host exit",
+    "cold reopen remains read-only with preserved history, draft and file access"
+  ],
+  "coldRecovery": {
+    "providerCalls": 6,
+    "sameNativeSession": true,
+    "outcome": "unknown",
+    "nativeChildSpawned": false
+  }
+}

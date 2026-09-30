@@ -18,3 +18,5 @@
 | [同一 range](harness-failure-same-range.txt) | 同字节切换保留 Monaco range，父组件清除待附入选区；再次 Cmd+A 选相同范围不生成新事件。测试先 ArrowLeft 改变 range 再全选，实际触发当前来源的选区事件，不通过测试钩子写生产状态。 |
 
 五次运行是修正验证入口后的递进验收，不是冷启动评测或性能对照。第一次完整组合通过见 [原生组合日志](native-combination.txt)，源码构建为 `12dddfb3-86d5de15`；随后仅发布标记与验证入口补修，最终候选另记录其源码身份和运行结果。
+
+最终候选补普通提交拒绝样本时，[首次失败](harness-failure-main-rejection.txt)说明预期错层：prepare→GUI pause→dispatch 被 Main 准入先拒绝，没有 Host reason。按当前合同改为核对实际 `rejected`、ACK null、无新调用、草稿原文不变及通用反馈；没有修改生产行为或伪造数据库。最终 [运行](final-combination.txt)通过，独立只读复核确认公开 bridge、身份绑定、generic fallback 和原模式隔离无可行动问题，Node/Biome/diff 通过。

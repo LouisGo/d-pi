@@ -1,0 +1,12 @@
+{
+  "candidate": "/Users/lou/Learn/d-pi/dist/s5-candidate/mac-arm64/d-pi.app",
+  "sourceCommit": "4b003e843e1c874d2eb951118b2f2c614927ffda",
+  "build": {
+    "version": "0.1.0-s5.0",
+    "id": "4b003e84-4c6aa4ad",
+    "dirty": false
+  },
+  "asarSha256": "cabe4673763a3882b5ef79a36595ecd31ec480e96ce88040af8ea5950f20d444",
+  "mainSha256": "e5d1b449a0fe578f39bc2f9c11668bdd20d6d8d0449eb2015b76400ea750c62f",
+  "sdkManifestSha256": "40eddef35060706769733cbdc0c04e49fd42af985f95d6680072bb66099752ff"
+}

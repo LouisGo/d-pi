@@ -6,12 +6,14 @@
     "id": "s5",
     "title": "S5 组合验收",
     "phase": "M1",
-    "engineering": "in-progress",
-    "trial": "not-delivered",
+    "engineering": "complete",
+    "trial": "delivered",
     "acceptance": "pending",
     "pending": ["../m1-s3-control-recovery/issues/09-quit-discard-decision.md"],
     "current": true,
-    "next": "完成隔离组合验证、必要补修与冻结审阅，交付本地 macOS 候选包",
+    "build": "0.1.0-s5.0 / 4b003e84-4c6aa4ad",
+    "evidence": ["handoff.md", "evidence/acceptance.md", "evidence/final-s5-result.json", "evidence/frozen-review.md"],
+    "next": "当前授权工程完成后停止，等待候选试用反馈；不自动进入 M2",
     "constraints": "不 push、不公开发布、不扩 M2/M3；冷恢复只读，unknown 不自动重发；暂停队列放弃出口继续待决。"
   }
 ]
@@ -25,9 +27,9 @@
 - 交付目标：打开项目 → 提交 → 阅读与交互 → 文件/可信 Diff → 停止、明确继续及窗口重连/保守恢复的一条可操作 M1 流程。已有正确行为复用证据；真实缺陷先失败测试再最小修复。
 - 保持：D-02/D-03、D-06/D-07、D-11、D-20–D-26、D-28–D-37；OMP 执行/队列/原生历史所有权，App 事务原子性、草稿与冻结原文、ACK/业务接受/执行结果区分，真实身份、unknown 不自动重发及执行全周期单写门槛。
 - 重要待决：无新增产品判断。[S3 09](../m1-s3-control-recovery/issues/09-quit-discard-decision.md)仍待决，暂停非空队列没有放弃后退出出口；完整退出验收不能关闭。允许验证取消退出、明确继续处理后正常退出，但不擅自清队列或改退出策略。
-- 工程：实施中，最近任务见下表。App 数据、OMP 配置/会话、项目及 Git 配置全部隔离；只接 localhost fixture，不继承个人凭据。
-- 用户试用：尚未交付，用户认可待定。真实供应商须有明确账户/费用授权及可用配置，缺少时只暂停该项；确定性本地模型不冒称真实供应商通过。
-- 继续边界：不升级 SDK，不新增通用 AgentRuntime、Run、检查点、认证、完整队列管理、多 Thread GUI 或诊断包 UI。冷恢复只读，保留历史/草稿/文件访问，不创建替代会话掩盖失败。不重复冷启动评测或宣称效率提升。
+- 工程：当前授权范围完成，01–03 resolved。两项展示缺陷先红后绿补修，完整 check 399 项、定向 64 项及冻结独立审阅 34 项通过；最终候选完成 18 项真实 Electron/官方 SDK 组合检查、必要原生/视觉与隔离试用入口核对。App 数据、OMP 配置/会话、项目及 Git 配置全部隔离；只接 localhost fixture，不继承个人凭据。实际覆盖与复用边界见 [验收](evidence/acceptance.md)。
+- 用户试用：`0.1.0-s5.0` / `4b003e84-4c6aa4ad` 已交付待试用，用户认可待定；候选身份、步骤、SHA 和证据见 [交接](handoff.md)。真实供应商须有明确账户/费用授权及可用配置，缺少时只暂停该项；确定性本地模型不冒称真实供应商通过，系统 IME/原生 Unicode 粘贴与完整退出放弃路径也未认可。
+- 继续边界：当前授权工作完成后停止，等待用户试用反馈，不自动进入 M2/M3。不升级 SDK，不新增通用 AgentRuntime、Run、检查点、认证、完整队列管理、多 Thread GUI 或诊断包 UI。冷恢复只读，保留历史/草稿/文件访问，不创建替代会话掩盖失败。不重复冷启动评测或宣称效率提升。
 
 ## 验收选择
 

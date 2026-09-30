@@ -666,6 +666,65 @@ try {
     combinationChecks.push(
       "busy submit queues natively; stop preserves and pauses; renderer reload does not replay; explicit continuation consumes once on the same session",
     );
+    // Reproduce a real prepare/dispatch race across the restricted public bridge.
+    // Main rejects before Host here, so do not invent a Host reason or seed a
+    // synthetic receipt in SQLite. Exercise the ordinary GUI's generic fallback.
+    const refusedText = "S5_PREPARED_BEFORE_PAUSE";
+    await insertDraft(refusedText);
+    await wait(() => draftBody() === refusedText);
+    const refusalCommand = {
+      kind: "prepare",
+      threadId: thread,
+      submissionId: randomUUID(),
+      traceId: randomUUID(),
+      revision: db.prepare("SELECT revision FROM thread WHERE id=?").get(thread)
+        .revision,
+      text: refusedText,
+      delivery: "followUp",
+    };
+    const prepared = await evaluate(
+      `window.desktop.submission.request(${JSON.stringify(refusalCommand)})`,
+    );
+    assert.equal(prepared.kind, "receipt");
+    assert.equal(prepared.receipt.state, "prepared");
+    const callsBeforeRefusal = requests.length;
+    await click("停止并暂缓队列");
+    await wait(() =>
+      evaluate("document.body.textContent.includes('队列已暂缓')"),
+    );
+    const refused = await evaluate(
+      `window.desktop.submission.request(${JSON.stringify({ kind: "dispatch", threadId: thread, submissionId: refusalCommand.submissionId })})`,
+    );
+    assert.equal(refused.kind, "receipt");
+    assert.equal(refused.receipt.state, "rejected");
+    assert.equal(refused.receipt.rejectionReason, undefined);
+    assert.equal(refused.receipt.acknowledgedAt, null);
+    await click("核对提交状态");
+    await evaluate(
+      "document.querySelector('[aria-label=提交记录] details').open=true",
+    );
+    await wait(() =>
+      evaluate(
+        "document.querySelector('[aria-label=提交记录]')?.textContent.includes('未派发到 OMP，原文保留；可处理阻塞后重新发送')",
+      ),
+    );
+    assert.equal(draftBody(), refusedText);
+    assert.equal(requests.length, callsBeforeRefusal);
+    combinationEvidence.rejection = {
+      receipt: refused.receipt,
+      attribution: "Main admission; no Host reason was reported",
+      noProviderCall: true,
+      draftPreserved: true,
+      screenshot: await shot("s5-paused-rejection.png"),
+    };
+    combinationChecks.push(
+      "prepare before pause then dispatch is refused by Main; ordinary submission GUI preserves the generic fallback when no Host reason was reported, with no ACK/provider call and exact draft preserved",
+    );
+    await click("明确继续");
+    await wait(() =>
+      evaluate("!document.body.textContent.includes('队列已暂缓')"),
+    );
+    await clearDraft();
   }
   await click("读取原生记录");
   await wait(() =>
