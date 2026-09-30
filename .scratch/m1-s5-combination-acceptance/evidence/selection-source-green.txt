@@ -1,0 +1,15 @@
+
+> d-pi@0.1.0-s4.0 test /Users/lou/Learn/d-pi
+> node scripts/test.mjs vitest src/modules/files/renderer/monaco-viewer.test.ts src/modules/files/core/selection.test.ts
+
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/Learn/d-pi
+
+ ✓ src/modules/files/core/selection.test.ts (9 tests) 6ms
+ ✓ src/modules/files/renderer/monaco-viewer.test.ts (13 tests) 11ms
+
+ Test Files  2 passed (2)
+      Tests  22 passed (22)
+   Start at  18:05:13
+   Duration  199ms (transform 71%, import 16%, tests 9%, worker 3%)

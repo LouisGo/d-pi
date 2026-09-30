@@ -396,3 +396,46 @@ it("freezes each diff pane with its own raw content and source version", () => {
   ]);
   cleanup();
 });
+
+it.each(["file", "diff"] as const)(
+  "freezes the current %s source when identical bytes are shown from a new capture or Git side",
+  (kind) => {
+    const selected = vi.fn();
+    const initial = appearanceView(kind);
+    render(initial, selected);
+    const cleanup = mount();
+    const next: CodeViewModel =
+      initial.kind === "file"
+        ? {
+            ...initial,
+            source: { ...initial.source, source: "working tree · capture B" },
+          }
+        : {
+            ...initial,
+            left: {
+              ...initial.left,
+              source: { ...initial.left.source, source: "index" },
+            },
+            right: {
+              ...initial.right,
+              source: { ...initial.right.source, source: "working tree" },
+            },
+          };
+    render(next, selected);
+    const oneLine = {
+      startLineNumber: 1,
+      startColumn: 1,
+      endLineNumber: 1,
+      endColumn: 2,
+    };
+    for (const code of harness.codes) code.listener?.({ selection: oneLine });
+    expect(selected.mock.calls.map(([value]) => value.source)).toEqual(
+      kind === "file"
+        ? ["working tree · capture B"]
+        : ["index", "working tree"],
+    );
+    expect(harness.viewers).toHaveLength(1);
+    expect(harness.models).toHaveLength(kind === "file" ? 1 : 2);
+    cleanup();
+  },
+);

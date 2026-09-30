@@ -14,6 +14,7 @@ import type {
 import type { ConversationModel } from "../../modules/conversation/core/public";
 import type { SubmissionModel } from "../../modules/execution/renderer/public";
 import { useI18n } from "../../modules/preferences/renderer/public";
+import { submissionRejectionKey } from "./receipt-status";
 import { urlBrand } from "./url-display";
 
 // Keep remote resources inert. Native text can be copied; only an explicit app action may open a URL.
@@ -166,7 +167,7 @@ function SubmissionRecord({
     <article className="message">
       <p>
         {receipt.state === "rejected"
-          ? t("ui.submissions.rejected")
+          ? t(submissionRejectionKey(receipt.rejectionReason))
           : receipt.state === "acknowledged"
             ? t("ui.submissions.acknowledged")
             : receipt.state === "prepared"

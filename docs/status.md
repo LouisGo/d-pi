@@ -32,9 +32,8 @@
 | [m1-interaction-hardening / 04 历史 busy 语义复核](../.scratch/m1-interaction-hardening/issues/04-history-busy.md) | open | 无；范围以所属规格为准 |
 | [m1-interaction-hardening / 07 退出健壮性与 GUI 可访问补齐](../.scratch/m1-interaction-hardening/issues/07-quit-a11y.md) | open | 无；范围以所属规格为准 |
 | [m1-s3-control-recovery / 09 暂缓队列后的退出出口](../.scratch/m1-s3-control-recovery/issues/09-quit-discard-decision.md) | open | 无；范围以所属规格为准 |
-| [m1-s5-combination-acceptance / 01 M1 组合路径与必要补修](../.scratch/m1-s5-combination-acceptance/issues/01-combination.md) | claimed | 无；范围以所属规格为准 |
-| [m1-s5-combination-acceptance / 02 当前源码候选与 macOS 原生视觉](../.scratch/m1-s5-combination-acceptance/issues/02-candidate-native.md) | open | [01](../.scratch/m1-s5-combination-acceptance/issues/01-combination.md) |
-| [m1-s5-combination-acceptance / 03 冻结审阅与 S5 交付](../.scratch/m1-s5-combination-acceptance/issues/03-review-handoff.md) | open | [01](../.scratch/m1-s5-combination-acceptance/issues/01-combination.md)、[02](../.scratch/m1-s5-combination-acceptance/issues/02-candidate-native.md) |
+| [m1-s5-combination-acceptance / 02 当前源码候选与 macOS 原生视觉](../.scratch/m1-s5-combination-acceptance/issues/02-candidate-native.md) | claimed | 无；范围以所属规格为准 |
+| [m1-s5-combination-acceptance / 03 冻结审阅与 S5 交付](../.scratch/m1-s5-combination-acceptance/issues/03-review-handoff.md) | open | [02](../.scratch/m1-s5-combination-acceptance/issues/02-candidate-native.md) |
 | [state-query-alignment / 04 集成验证与试用交接](../.scratch/state-query-alignment/issues/04-integration-verification.md) | claimed | 无；范围以所属规格为准 |
 
 ## 重要待决与继续边界
@@ -47,4 +46,4 @@
 - [核心重写及外观补修](../.scratch/rewrite-preparation/spec.md)：同题复测未证明接手效率提升；真实供应商、系统 IME 与用户体验未认可。
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 
-<!-- source-sha256: 3b946bd04190c1d643f6aa2e75c6abf10f19f2c490616b03da0e67c8a6fc84d7; sources: 72 -->
+<!-- source-sha256: 40b87fa2a22ac3351834292286af1920ca44ec6d63b37274ced31b7d3c163958; sources: 72 -->

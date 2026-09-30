@@ -1,6 +1,6 @@
 # 02 当前源码候选与 macOS 原生视觉
 
-Status: open
+Status: claimed
 Blocked by: 01
 
 阶段 M1；范围见 [spec](../spec.md)。准备固定 SDK、当前源码构建与未签名 macOS arm64 候选。用隔离数据/配置/项目验证新增或受影响流程，补必要的 Diff 空白/工具结果视觉与窗口原生证据。记录 build ID、源码身份、资源/asar 哈希、可操作步骤和未覆盖项；不继承个人凭据。

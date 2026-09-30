@@ -84,6 +84,20 @@ export const ui = {
   "ui.submissions.checkStatus": "Check submission status",
   "ui.submissions.rejected":
     "Not dispatched to OMP; original text preserved. Resolve the blocker before resending.",
+  "ui.submissions.rejected.notReady":
+    "Not dispatched to OMP: the session has no ready model. Original text preserved; check the runtime status first.",
+  "ui.submissions.rejected.nativeUnavailable":
+    "Not dispatched to OMP: the native session is not connected. Original text preserved; check the runtime status first.",
+  "ui.submissions.rejected.unsupportedNativeCommand":
+    "Not dispatched to OMP: this text is a managed native command and cannot go through the composer. Original text preserved.",
+  "ui.submissions.rejected.paused":
+    "Not dispatched to OMP: the native queue is paused. Original text preserved; explicitly continue before sending again.",
+  "ui.submissions.rejected.interactionPending":
+    "Not dispatched to OMP: a native dialog is waiting for an answer. Original text preserved; handle the pending question first.",
+  "ui.submissions.rejected.staleTarget":
+    "Not dispatched to OMP: the submission targeted an older session instance. Original text preserved; check the current runtime status before sending again.",
+  "ui.submissions.rejected.correlationLimit":
+    "Not dispatched to OMP: too many dispatches are still unconfirmed. Original text preserved; check the existing submission states first.",
   "ui.submissions.acknowledged": "Call receipt received",
   "ui.submissions.prepared": "Saved, not dispatched",
   "ui.submissions.dispatching": "Dispatched, awaiting receipt",

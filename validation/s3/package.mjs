@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import {
+  chmodSync,
   cpSync,
+  existsSync,
   mkdirSync,
   readFileSync,
   realpathSync,
@@ -13,31 +15,92 @@ import { join, resolve } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { createTestEnvironment } from "../../scripts/test-environment.mjs";
 
-const rewriting = process.argv.includes("--rewrite");
-const sandbox = createTestEnvironment({ prefix: "d-pi-s3-package-" });
+const combination = process.argv.includes("--s5");
+const rewriting = combination || process.argv.includes("--rewrite");
+const inspecting = process.argv.includes("--inspect");
+assert.ok(!inspecting || combination, "--inspect requires --s5");
+const sandbox = createTestEnvironment({
+  prefix: combination ? "d-pi-s5-package-" : "d-pi-s3-package-",
+});
 const root = realpathSync(sandbox.root);
 const bundle = join(root, "Package With Spaces", "d-pi.app");
-cpSync(
-  resolve(process.argv[2] ?? "dist/s3-candidate/mac-arm64/d-pi.app"),
-  bundle,
-  {
-    recursive: true,
-    verbatimSymlinks: true,
-  },
+const sourceBundle = resolve(
+  process.argv.slice(2).find((argument) => !argument.startsWith("--")) ??
+    (combination
+      ? "dist/s5-candidate/mac-arm64/d-pi.app"
+      : "dist/s3-candidate/mac-arm64/d-pi.app"),
 );
+cpSync(sourceBundle, bundle, {
+  recursive: true,
+  verbatimSymlinks: true,
+});
+const fixtureBundleModification = {};
+if (combination) {
+  const info = join(bundle, "Contents/Info.plist");
+  const identifier = spawnSync(
+    "/usr/bin/plutil",
+    ["-extract", "CFBundleIdentifier", "raw", "-o", "-", info],
+    { encoding: "utf8", env: sandbox.env },
+  );
+  assert.equal(identifier.status, 0, identifier.stderr);
+  const replacement = "local.d-pi.s5-validation";
+  const changed = spawnSync(
+    "/usr/bin/plutil",
+    ["-replace", "CFBundleIdentifier", "-string", replacement, info],
+    { encoding: "utf8", env: sandbox.env },
+  );
+  assert.equal(changed.status, 0, changed.stderr);
+  const unchangedResources = [
+    "Contents/Resources/app.asar",
+    "Contents/Resources/sdk/host.mjs",
+    "Contents/Resources/sdk/manifest.json",
+  ].map((path) => {
+    const digest = (base) =>
+      createHash("sha256")
+        .update(readFileSync(join(base, path)))
+        .digest("hex");
+    const sourceSha256 = digest(sourceBundle);
+    const fixtureSha256 = digest(bundle);
+    assert.equal(fixtureSha256, sourceSha256);
+    return { path, sha256: sourceSha256 };
+  });
+  Object.assign(fixtureBundleModification, {
+    path: "Contents/Info.plist",
+    originalIdentifier: identifier.stdout.trim(),
+    fixtureIdentifier: replacement,
+    reason:
+      "bind native inspection to the isolated copy, apart from the user's live App",
+    unchangedResources,
+  });
+}
 const { cwd: project, data, config } = sandbox;
 const rawFile = "BEGIN😀\r\nSECOND\rTHIRD\nEND";
 const changedFile = "CHANGED😀\r\nSECOND\rTHIRD\nEND";
 const rawPreview = "BEGIN😀\nSECOND\nTHIRD\nEND";
 const changedPreview = "CHANGED😀\nSECOND\nTHIRD\nEND";
+const modeFile = "S5_SAME_BYTES\nconst mode = 1;\n";
+const whitespaceFile = "  \n\t\n";
+function git(...args) {
+  const result = spawnSync("/usr/bin/git", ["-C", project, ...args], {
+    env: sandbox.env,
+    encoding: "utf8",
+  });
+  assert.equal(result.status, 0, result.stderr);
+  return result.stdout;
+}
 if (rewriting) {
   writeFileSync(
     join(project, "raw-selection.txt"),
     "INITIAL\r\nSECOND\rTHIRD\nEND",
   );
+  if (combination) {
+    writeFileSync(join(project, "mode-source.txt"), modeFile);
+    chmodSync(join(project, "mode-source.txt"), 0o644);
+    writeFileSync(join(project, "whitespace-diff.txt"), "");
+  }
   for (const args of [
     ["init", "-q"],
-    ["add", "raw-selection.txt"],
+    ["add", "."],
     [
       "-c",
       "user.name=Fixture",
@@ -50,12 +113,22 @@ if (rewriting) {
       "fixture baseline",
     ],
   ]) {
-    const result = spawnSync("/usr/bin/git", ["-C", project, ...args], {
-      env: sandbox.env,
-    });
-    assert.equal(result.status, 0, result.stderr?.toString());
+    git(...args);
   }
   writeFileSync(join(project, "raw-selection.txt"), rawFile);
+  if (combination) {
+    git("config", "core.filemode", "true");
+    chmodSync(join(project, "mode-source.txt"), 0o755);
+    git("add", "mode-source.txt");
+    chmodSync(join(project, "mode-source.txt"), 0o644);
+    writeFileSync(join(project, "whitespace-diff.txt"), whitespaceFile);
+    assert.equal(git("show", "HEAD:mode-source.txt"), modeFile);
+    assert.equal(git("show", ":mode-source.txt"), modeFile);
+    assert.equal(
+      readFileSync(join(project, "mode-source.txt"), "utf8"),
+      modeFile,
+    );
+  }
 }
 const db = new DatabaseSync(join(data, "drafts.sqlite"));
 // Seed an S1 browse-only Thread; the unmodified package performs its real migrations.
@@ -71,11 +144,25 @@ db.prepare("INSERT INTO workspace VALUES(?,?,'browse')").run(
 db.prepare("INSERT INTO thread VALUES(?,?,0,'')").run(thread, workspace);
 db.prepare("INSERT INTO desktop VALUES(1,?,'light','normal')").run(thread);
 const requests = [];
+const providerEvents = [];
+let nextRequestHold = null;
+let nextRequestReply = null;
+const combinationChecks = [];
+const combinationEvidence = {};
 const sockets = new Set();
 const server = createServer(async (req, res) => {
   let text = "";
   for await (const bytes of req) text += bytes.toString();
   requests.push(text);
+  const hold = nextRequestHold;
+  nextRequestHold = null;
+  const reply = nextRequestReply;
+  nextRequestReply = null;
+  const requestEvent = { request: requests.length, hold, reply, closed: false };
+  providerEvents.push(requestEvent);
+  res.on("close", () => {
+    requestEvent.closed = true;
+  });
   res.writeHead(200, { "Content-Type": "text/event-stream" });
   const frame = (delta, finish) => ({
     id: "fixture",
@@ -94,10 +181,10 @@ const server = createServer(async (req, res) => {
   }
   const firstReply = requests.length === (rewriting ? 2 : 1);
   res.write(
-    `data: ${JSON.stringify(frame({ role: "assistant", content: firstReply ? "PACKAGE_FIRST_REPLY\n\n```ts\nconst value = 1;\n```\n[GitHub](https://github.com/can1357/oh-my-pi)" : requests.length === 4 && rewriting ? "PACKAGE_INTERRUPTED_REPLY" : "PACKAGE_SECOND_REPLY" }, null))}\n\n`,
+    `data: ${JSON.stringify(frame({ role: "assistant", content: reply ?? (firstReply ? "PACKAGE_FIRST_REPLY\n\n```ts\nconst value = 1;\n```\n[GitHub](https://github.com/can1357/oh-my-pi)" : hold === "interrupted" ? "PACKAGE_INTERRUPTED_REPLY" : hold === "busy" ? "S5_BUSY_REPLY" : "PACKAGE_SECOND_REPLY") }, null))}\n\n`,
   );
-  // Leave only the deliberately interrupted third submission active.
-  if (rewriting && requests.length === 4) return;
+  // Each held request is armed immediately before the matching GUI action.
+  if (hold) return;
   await new Promise((r) => setTimeout(r, 300));
   res.write(`data: ${JSON.stringify(frame({}, "stop"))}\n\n`);
   res.end("data: [DONE]\n\n");
@@ -130,6 +217,20 @@ writeFileSync(
     },
   }),
 );
+if (combination) {
+  mkdirSync(join(config, "extensions"), { recursive: true });
+  writeFileSync(
+    join(config, "extensions", "s5.ts"),
+    `import { writeFileSync } from 'node:fs';
+export default function(pi) { pi.registerCommand('s5ask', { description: 'Isolated S5 interaction fixture', handler: async (_, ctx) => {
+  const a = await ctx.ui.confirm('S5 确认', '确认组合测试操作？');
+  const b = await ctx.ui.select('S5 选择', ['选项甲', '选项乙']);
+  const c = await ctx.ui.input('S5 输入');
+  const d = await ctx.ui.editor('S5 编辑', 'S5预填内容');
+  writeFileSync(${JSON.stringify(join(project, "s5-answers.json"))}, JSON.stringify([a,b,c,d]));
+} }); }`,
+  );
+}
 writeFileSync(
   join(config, "config.yml"),
   JSON.stringify({
@@ -236,10 +337,69 @@ try {
       JSON.stringify(state, null, 2) + "\n",
     );
   };
-  const click = (text) =>
-    evaluate(
+  const click = async (text) => {
+    await wait(() =>
+      evaluate(
+        `Array.from(document.querySelectorAll('button')).some(b=>b.textContent.trim()===${JSON.stringify(text)}&&!b.disabled)`,
+      ),
+    );
+    return evaluate(
       `(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>b.textContent.trim()===${JSON.stringify(text)});if(!b || b.disabled)throw Error('Button unavailable');b.click();})()`,
     );
+  };
+  const shot = async (name) => {
+    await evaluate(
+      "new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))",
+    );
+    const screenshot = await call("Page.captureScreenshot", { format: "png" });
+    const path = join(root, name);
+    writeFileSync(path, Buffer.from(screenshot.data, "base64"));
+    return path;
+  };
+  const composerText = () =>
+    evaluate("document.querySelector('[contenteditable=true]')?.textContent");
+  const draftBody = () =>
+    db.prepare("SELECT body FROM thread WHERE id=?").get(thread)?.body;
+  const insertDraft = async (text) => {
+    await evaluate("document.querySelector('[contenteditable=true]').focus()");
+    await call("Input.insertText", { text });
+    await wait(async () => (await composerText()).includes(text));
+  };
+  const clearDraft = async () => {
+    await call("Page.bringToFront");
+    await evaluate("document.querySelector('[contenteditable=true]').focus()");
+    for (const type of ["keyDown", "keyUp"])
+      await call("Input.dispatchKeyEvent", {
+        type,
+        key: "a",
+        code: "KeyA",
+        modifiers: 4,
+        windowsVirtualKeyCode: 65,
+      });
+    for (const type of ["keyDown", "keyUp"])
+      await call("Input.dispatchKeyEvent", {
+        type,
+        key: "Backspace",
+        code: "Backspace",
+        windowsVirtualKeyCode: 8,
+      });
+    await wait(async () => (await composerText()) === "" && draftBody() === "");
+  };
+  const reloadRenderer = async (ready) => {
+    await call("Page.reload");
+    await wait(async () => {
+      try {
+        return await evaluate(ready);
+      } catch {
+        return false;
+      }
+    });
+    assert.equal(
+      db.prepare("SELECT session_id FROM native_session").get().session_id,
+      session,
+      "renderer reload must retain the native session identity",
+    );
+  };
   const switchLocale = async (locale) => {
     await wait(() => evaluate("!!document.querySelector('.toolbar select')"));
     await evaluate(
@@ -336,6 +496,173 @@ try {
     .map((r) => JSON.parse(r.receipt));
   if (receipts.some((r) => r.state !== "acknowledged"))
     throw Error("ACK not durable");
+  if (combination) {
+    const callsBeforeInteraction = requests.length;
+    await insertDraft("/s5ask");
+    await click("发送");
+    await wait(() =>
+      evaluate("document.body.textContent.includes('确认组合测试操作？')"),
+    );
+    await wait(async () => (await composerText()) === "");
+    await insertDraft("S5_PRESERVED_DURING_DIALOG");
+    await wait(() => draftBody() === "S5_PRESERVED_DURING_DIALOG");
+    await reloadRenderer(
+      "document.body.textContent.includes('确认组合测试操作？') && Array.from(document.querySelectorAll('button')).some(b=>b.textContent.trim()==='确认'&&!b.disabled)",
+    );
+    assert.equal(await composerText(), "S5_PRESERVED_DURING_DIALOG");
+    assert.equal(requests.length, callsBeforeInteraction);
+    assert.equal(
+      await evaluate(
+        "Array.from(document.querySelectorAll('.composer button')).filter(b=>['发送','排队发送','干预当前执行'].includes(b.textContent.trim())).every(b=>b.disabled)",
+      ),
+      true,
+      "pending native interaction must block submission admission after resubscription",
+    );
+    combinationEvidence.interaction = await shot("s5-interaction-reload.png");
+    await click("确认");
+    await click("选项乙");
+    await wait(() =>
+      evaluate(
+        "!!document.querySelector('textarea[aria-label=\"S5 输入\"]:not(:disabled)')",
+      ),
+    );
+    await evaluate(
+      "document.querySelector('textarea[aria-label=\"S5 输入\"]').focus()",
+    );
+    await call("Input.insertText", { text: "S5测试回答" });
+    await click("提交回答");
+    await wait(() =>
+      evaluate(
+        "!!document.querySelector('textarea[aria-label=\"S5 编辑\"]:not(:disabled)')",
+      ),
+    );
+    assert.equal(
+      await evaluate(
+        "document.querySelector('textarea[aria-label=\"S5 编辑\"]').value",
+      ),
+      "S5预填内容",
+    );
+    combinationEvidence.editorInteraction = await shot(
+      "s5-editor-interaction.png",
+    );
+    await click("提交回答");
+    await wait(() => existsSync(join(project, "s5-answers.json")));
+    assert.deepEqual(
+      JSON.parse(readFileSync(join(project, "s5-answers.json"), "utf8")),
+      [true, "选项乙", "S5测试回答", "S5预填内容"],
+    );
+    await wait(() =>
+      evaluate(
+        "Array.from(document.querySelectorAll('button')).some(b=>b.textContent.trim()==='发送'&&!b.disabled)",
+      ),
+    );
+    assert.equal(await composerText(), "S5_PRESERVED_DURING_DIALOG");
+    assert.equal(requests.length, callsBeforeInteraction);
+    combinationChecks.push(
+      "official extension confirm/select/input/editor; pending confirm survives renderer reload with draft and no replay",
+    );
+    await clearDraft();
+
+    const representativeDraft = "S5代表性草稿0123456789 "
+      .repeat(1250)
+      .slice(0, 20000);
+    assert.equal(representativeDraft.length, 20000);
+    await insertDraft(representativeDraft);
+    await wait(() => draftBody() === representativeDraft);
+    await reloadRenderer("!!document.querySelector('[contenteditable=true]')");
+    await wait(async () => (await composerText()) === representativeDraft);
+    assert.equal(draftBody(), representativeDraft);
+    await click("紧凑密度");
+    await wait(() =>
+      evaluate("document.documentElement.dataset.density==='compact'"),
+    );
+    await click("正常密度");
+    await wait(() =>
+      evaluate("document.documentElement.dataset.density==='normal'"),
+    );
+    combinationEvidence.representativeDraft = {
+      utf16Length: representativeDraft.length,
+      persistedAndRestoredExactly: true,
+      appearanceCommandsResponsive: true,
+      performanceMeasurement: false,
+    };
+    await clearDraft();
+    combinationChecks.push(
+      "representative 20000-character draft persists, reloads exactly and accepts appearance commands; no performance claim",
+    );
+
+    const callsBeforeBusy = requests.length;
+    nextRequestHold = "busy";
+    await insertDraft("S5_BUSY_INPUT");
+    await click("发送");
+    await wait(() => requests.length === callsBeforeBusy + 1);
+    await wait(() =>
+      evaluate(
+        "document.querySelector('[aria-label=会话阅读]').textContent.includes('S5_BUSY_REPLY') && Array.from(document.querySelectorAll('button')).some(b=>b.textContent.trim()==='排队发送'&&!b.disabled)",
+      ),
+    );
+    await wait(async () => (await composerText()) === "");
+    await insertDraft("S5_QUEUED_INPUT");
+    await click("排队发送");
+    await wait(() =>
+      evaluate("document.body.textContent.includes('待处理：S5_QUEUED_INPUT')"),
+    );
+    await wait(async () => (await composerText()) === "");
+    await click("停止并暂缓队列");
+    await wait(() =>
+      evaluate("document.body.textContent.includes('队列已暂缓')"),
+    );
+    await new Promise((accept) => setTimeout(accept, 350));
+    assert.equal(
+      requests.length,
+      callsBeforeBusy + 1,
+      "stopping must preserve the queued input without consuming it",
+    );
+    await reloadRenderer(
+      "document.body.textContent.includes('队列已暂缓') && document.body.textContent.includes('S5_QUEUED_INPUT')",
+    );
+    assert.equal(
+      requests.length,
+      callsBeforeBusy + 1,
+      "renderer reload must not resume the paused native queue",
+    );
+    combinationEvidence.pausedQueue = await shot("s5-paused-queue-reload.png");
+    nextRequestReply = "S5_QUEUE_REPLY";
+    await click("明确继续");
+    await wait(() => requests.length === callsBeforeBusy + 2);
+    await wait(() =>
+      evaluate(
+        "document.querySelector('[aria-label=会话阅读]').textContent.includes('S5_QUEUE_REPLY') && Array.from(document.querySelectorAll('button')).some(b=>b.textContent.trim()==='发送'&&!b.disabled)",
+      ),
+    );
+    assert.ok(requests.at(-1).includes("S5_QUEUED_INPUT"));
+    await new Promise((accept) => setTimeout(accept, 350));
+    assert.equal(
+      requests.length,
+      callsBeforeBusy + 2,
+      "explicit continuation consumes the queued input once",
+    );
+    assert.equal(
+      db.prepare("SELECT session_id FROM native_session").get().session_id,
+      session,
+    );
+    assert.ok(
+      db
+        .prepare("SELECT receipt FROM submission")
+        .all()
+        .map((row) => JSON.parse(row.receipt))
+        .every((receipt) => receipt.state === "acknowledged"),
+    );
+    combinationEvidence.queue = {
+      callsBeforeBusy,
+      callsAfterContinue: requests.length,
+      sameNativeSession: true,
+      resumedOnce: true,
+    };
+    combinationChecks.push(
+      "busy submit queues natively; stop preserves and pauses; renderer reload does not replay; explicit continuation consumes once on the same session",
+    );
+  }
   await click("读取原生记录");
   await wait(() =>
     evaluate(
@@ -378,6 +705,97 @@ try {
       );
       await click("将选区附入输入");
     };
+    if (combination) {
+      const openModeDiff = async (scope, source) => {
+        await wait(() =>
+          evaluate(
+            `Array.from(document.querySelectorAll('.change-list button')).some(b=>b.textContent.includes(${JSON.stringify(scope)})&&b.textContent.includes('mode-source.txt'))`,
+          ),
+        );
+        await evaluate(
+          `Array.from(document.querySelectorAll('.change-list button')).find(b=>b.textContent.includes(${JSON.stringify(scope)})&&b.textContent.includes('mode-source.txt')).click()`,
+        );
+        await wait(() =>
+          evaluate(
+            `document.querySelector('.diff-sources span:last-child')?.textContent===${JSON.stringify(source)} && document.querySelector('.monaco-diff-editor')?.textContent.includes('S5_SAME_BYTES')`,
+          ),
+        );
+      };
+      // Prime both Query entries before switching the same-byte view. A cache miss
+      // would temporarily remove the editor and fail to exercise its source update.
+      await openModeDiff("暂存区 → 工作区", "working tree: mode-source.txt");
+      await openModeDiff("HEAD → 暂存区", "index: mode-source.txt");
+      await selectAll();
+      await wait(() =>
+        evaluate("document.querySelectorAll('.file-reference pre').length===1"),
+      );
+      await evaluate(
+        "void (window.fixtureModeDiff=document.querySelector('.monaco-diff-editor'))",
+      );
+      await openModeDiff("暂存区 → 工作区", "working tree: mode-source.txt");
+      assert.equal(
+        await evaluate(
+          "window.fixtureModeDiff===document.querySelector('.monaco-diff-editor')",
+        ),
+        true,
+        "same-byte Git scope switch must exercise the mounted editor",
+      );
+      await selectAll();
+      await wait(() =>
+        evaluate("document.querySelectorAll('.file-reference pre').length===2"),
+      );
+      const sources = await evaluate(
+        "Array.from(document.querySelectorAll('.file-reference small')).map(node=>node.textContent)",
+      );
+      assert.ok(sources[0].startsWith("index: mode-source.txt · sha256:"));
+      assert.ok(
+        sources[1].startsWith("working tree: mode-source.txt · sha256:"),
+      );
+      assert.equal(
+        sources[0].split(" · ").at(-1),
+        sources[1].split(" · ").at(-1),
+      );
+      assert.deepEqual(
+        await evaluate(
+          "Array.from(document.querySelectorAll('.file-reference pre')).map(node=>node.textContent)",
+        ),
+        [modeFile, modeFile],
+      );
+      await wait(() =>
+        draftBody()?.includes('"source":"working tree: mode-source.txt"'),
+      );
+      combinationEvidence.sameByteSources = {
+        path: "mode-source.txt",
+        sources,
+        sameEditor: true,
+        sameText: true,
+        stagedMode: "100755",
+        worktreeMode: "100644",
+        screenshot: await shot("s5-same-byte-source-switch.png"),
+      };
+      combinationChecks.push(
+        "mode-only HEAD/index/worktree have the same path/hash/bytes; mounted right-pane selections retain each current Git source",
+      );
+      await clearDraft();
+      await evaluate(
+        "Array.from(document.querySelectorAll('.change-list button')).find(b=>b.textContent.includes('whitespace-diff.txt')).click()",
+      );
+      await wait(() =>
+        evaluate(
+          "document.querySelector('.diff-sources span:last-child')?.textContent==='working tree: whitespace-diff.txt' && !!document.querySelector('.monaco-diff-editor .view-lines')",
+        ),
+      );
+      await evaluate(
+        "document.querySelector('.monaco-diff-editor').scrollIntoView({block:'center'})",
+      );
+      combinationEvidence.whitespaceDiff = {
+        rawText: whitespaceFile,
+        screenshot: await shot("s5-whitespace-diff.png"),
+      };
+      combinationChecks.push(
+        "whitespace-only current Git diff rendered and captured for visual inspection",
+      );
+    }
     await click("raw-selection.txt");
     await wait(() =>
       evaluate(
@@ -480,7 +898,7 @@ try {
     );
     assert.equal(
       requests.length,
-      3,
+      combination ? combinationEvidence.queue.callsAfterContinue : 3,
       "window reload must not restart or resend native work",
     );
   }
@@ -512,14 +930,87 @@ try {
     join(root, "package-dark.png"),
     Buffer.from(darkShot.data, "base64"),
   );
+  if (combination && inspecting) {
+    const checkpoint = join(root, "inspect-checkpoint.json");
+    const resume = join(root, "inspect-continue");
+    const callsBeforeInspection = requests.length;
+    const expiresAt = new Date(Date.now() + 300000).toISOString();
+    writeFileSync(
+      checkpoint,
+      JSON.stringify(
+        {
+          phase:
+            "live S5 flow completed; before deliberate native interruption",
+          sourceBundle,
+          bundle,
+          bundleIdentifier: fixtureBundleModification.fixtureIdentifier,
+          binary,
+          project,
+          data,
+          config,
+          environment: sandbox.env,
+          thread,
+          session,
+          debugPort: port,
+          providerCalls: callsBeforeInspection,
+          resumeFile: resume,
+          expiresAt,
+          instructions:
+            "Inspect only this isolated fixture App. Create resumeFile to continue within 5 minutes. Do not submit new work or change draft references; closing/reopening the same fixture window is allowed if the App remains alive.",
+        },
+        null,
+        2,
+      ) + "\n",
+    );
+    console.log(JSON.stringify({ checkpoint, resumeFile: resume, expiresAt }));
+    while (!existsSync(resume)) {
+      if (Date.now() >= Date.parse(expiresAt))
+        throw Error(
+          "S5 native inspection checkpoint timed out after 5 minutes",
+        );
+      if (child.exitCode !== null || child.signalCode !== null)
+        throw Error("S5 fixture App exited during inspection");
+      await new Promise((accept) => setTimeout(accept, 250));
+    }
+    // A native close/reopen can replace the renderer target. Bind the fresh target
+    // before continuing and verify that inspection did not cause native replay.
+    socket.close();
+    socket = await connect();
+    socket.onclose = onClose;
+    socket.onmessage = onMessage;
+    await wait(() =>
+      evaluate("document.querySelectorAll('.file-reference pre').length===2"),
+    );
+    assert.equal(
+      requests.length,
+      callsBeforeInspection,
+      "native inspection/reconnection must not replay native work",
+    );
+    assert.equal(
+      db.prepare("SELECT session_id FROM native_session").get().session_id,
+      session,
+    );
+    combinationEvidence.inspection = {
+      checkpoint,
+      resumed: true,
+      providerCalls: requests.length,
+      sameNativeSession: true,
+      screenshot: await shot("s5-after-native-inspection.png"),
+    };
+    combinationChecks.push(
+      "inspection checkpoint resumed on the current renderer target without native resend/session replacement",
+    );
+  }
   console.log(
     `PASS: relocated formal package, bundled official SDK, v1 migration, two turns/same session, ACK consumption, direct reading/history. Evidence: ${root}`,
   );
   if (rewriting) {
+    const interruptedRequest = requests.length + 1;
+    nextRequestHold = "interrupted";
     await evaluate("document.querySelector('[contenteditable=true]').focus()");
     await call("Input.insertText", { text: "PACKAGE_INTERRUPTED_INPUT" });
     await click("发送");
-    await wait(() => requests.length === 4);
+    await wait(() => requests.length === interruptedRequest);
     const latestReceipt = () =>
       db
         .prepare("SELECT receipt FROM submission")
@@ -558,7 +1049,11 @@ try {
     process.kill(Number(owned[0][1]), "SIGKILL");
     await wait(() => latestReceipt()?.outcome === "unknown");
     await new Promise((accept) => setTimeout(accept, 500));
-    assert.equal(requests.length, 4, "unknown must not resend");
+    assert.equal(
+      requests.length,
+      interruptedRequest,
+      "unknown must not resend",
+    );
     const logs = readFileSync(join(data, "logs/main.jsonl"), "utf8");
     const events = logs
       .trim()
@@ -587,13 +1082,35 @@ try {
       !logs.includes("PACKAGE_FIRST_INPUT"),
       "diagnostics must not mirror content",
     );
-    writeFileSync(join(root, "rewrite-main.jsonl"), logs);
+    const resultPath = join(
+      root,
+      combination ? "s5-result.json" : "rewrite-result.json",
+    );
+    const logPath = join(
+      root,
+      combination ? "s5-main.jsonl" : "rewrite-main.jsonl",
+    );
+    writeFileSync(logPath, logs);
     const native = db.prepare("SELECT * FROM native_session").get();
     writeFileSync(
-      join(root, "rewrite-result.json"),
+      resultPath,
       JSON.stringify(
         {
           bundle,
+          ...(combination
+            ? {
+                sourceBundle,
+                fixtureBundleModification,
+                combinationEvidence,
+                providerEvents,
+                limitations: [
+                  "localhost deterministic fixture; no real supplier account or billing",
+                  "CDP composition events; no system IME proof",
+                  "paused nonempty queue abandonment/complete quit still pending S3 09",
+                  "engineering evidence is separate from user trial/acceptance",
+                ],
+              }
+            : {}),
           project,
           data,
           config,
@@ -609,6 +1126,7 @@ try {
             }),
           build: events[0].build,
           checks: [
+            ...combinationChecks,
             "v1 migration",
             "real browser composition events block dispatch (CDP, not system IME)",
             "two turns and native write",
@@ -679,7 +1197,7 @@ try {
     await new Promise((accept) => setTimeout(accept, 500));
     assert.equal(
       requests.length,
-      4,
+      interruptedRequest,
       "cold reopen must not send or create replacement native work",
     );
     const coldProcesses = spawnSync("/bin/ps", ["-ww", "-axo", "command="], {
@@ -697,7 +1215,6 @@ try {
       join(root, "package-cold-recovery.png"),
       Buffer.from(coldShot.data, "base64"),
     );
-    const resultPath = join(root, "rewrite-result.json");
     const result = JSON.parse(readFileSync(resultPath, "utf8"));
     result.checks.push(
       "cold reopen remains read-only with preserved history, draft and file access",
@@ -709,13 +1226,20 @@ try {
       nativeChildSpawned: false,
     };
     writeFileSync(resultPath, JSON.stringify(result, null, 2) + "\n");
-    writeFileSync(
-      join(root, "rewrite-main.jsonl"),
-      readFileSync(join(data, "logs/main.jsonl"), "utf8"),
-    );
+    writeFileSync(logPath, readFileSync(join(data, "logs/main.jsonl"), "utf8"));
     console.log(
       `PASS: cold recovery stays read-only and content stays accessible. Evidence: ${root}`,
     );
+    if (combination)
+      console.log(
+        JSON.stringify({
+          result: resultPath,
+          logs: logPath,
+          root,
+          checks: result.checks,
+          providerCalls: requests.length,
+        }),
+      );
     void call("Browser.close").catch(() => {});
     await wait(() => child.exitCode !== null);
   } else {

@@ -1,0 +1,13 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/Learn/d-pi
+
+ ✓ src/app/renderer/receipt-status.test.ts (11 tests) 41ms
+ ✓ tests/integration/submission-rejection-reason.integration.test.ts (10 tests) 109ms
+ ✓ src/app/renderer/conversation-i18n.test.ts (4 tests) 29ms
+ ✓ src/app/renderer/submissions-renderer.test.ts (10 tests) 49ms
+
+ Test Files  4 passed (4)
+      Tests  35 passed (35)
+   Start at  18:08:29
+   Duration  1.89s (import 63%, transform 20%, environment 9%, tests 8%)

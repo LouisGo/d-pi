@@ -67,6 +67,8 @@ export function MonacoViewer({
   const container = useRef<HTMLDivElement>(null);
   const selectionHandler = useRef(onSelection);
   selectionHandler.current = onSelection;
+  const currentView = useRef(view);
+  currentView.current = view;
   // Locale display strings must not destroy the editor and its selection.
   const identity = codeViewIdentity(view);
   const [workerFailed, setWorkerFailed] = useState(false);
@@ -107,12 +109,26 @@ export function MonacoViewer({
       mounted: monaco.editor.ITextModel,
       text: string,
       source: SelectionSource,
+      side?: "left" | "right",
     ) => {
       const snapshot = { ...source };
       disposables.push(
         code.onDidChangeCursorSelection(({ selection }) => {
           if (!active || code.getModel() !== mounted) return;
-          selectionHandler.current(captureSelection(text, selection, snapshot));
+          // Same bytes may now be shown from index/worktree or a newer capture.
+          // A callback from a replaced model remains bound to its mounted version.
+          const latest = currentView.current;
+          const currentSource =
+            codeViewIdentity(latest) !== identity
+              ? snapshot
+              : latest.kind === "file"
+                ? latest.source
+                : side === "left"
+                  ? latest.left.source
+                  : latest.right.source;
+          selectionHandler.current(
+            captureSelection(text, selection, currentSource),
+          );
         }),
       );
     };
@@ -150,12 +166,14 @@ export function MonacoViewer({
         original,
         view.left.text,
         view.left.source,
+        "left",
       );
       watch(
         diff.getModifiedEditor(),
         modified,
         view.right.text,
         view.right.source,
+        "right",
       );
     }
     const observer = new MutationObserver(() => {

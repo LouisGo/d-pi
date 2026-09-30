@@ -77,6 +77,20 @@ export const ui = {
     "调用回执不代表业务已接受或任务已完成。结果未知时请先核对，不要重复发送。",
   "ui.submissions.checkStatus": "核对提交状态",
   "ui.submissions.rejected": "未派发到 OMP，原文保留；可处理阻塞后重新发送",
+  "ui.submissions.rejected.notReady":
+    "未派发到 OMP：会话尚未就绪（没有可用模型）。原文已保留；请先核对运行状态。",
+  "ui.submissions.rejected.nativeUnavailable":
+    "未派发到 OMP：原生会话未连接。原文已保留；请先核对运行状态。",
+  "ui.submissions.rejected.unsupportedNativeCommand":
+    "未派发到 OMP：该文本属于应用托管的原生命令，不能经输入框发送。原文已保留。",
+  "ui.submissions.rejected.paused":
+    "未派发到 OMP：原生队列已暂停。原文已保留；明确继续后可重新发送。",
+  "ui.submissions.rejected.interactionPending":
+    "未派发到 OMP：有原生对话框等待回答。原文已保留；请先处理待回答交互。",
+  "ui.submissions.rejected.staleTarget":
+    "未派发到 OMP：提交指向旧的原生会话实例。原文已保留；请核对当前运行状态后重新发送。",
+  "ui.submissions.rejected.correlationLimit":
+    "未派发到 OMP：未确认的派发过多。原文已保留；请先核对已有提交状态。",
   "ui.submissions.acknowledged": "已收到调用回执",
   "ui.submissions.prepared": "已保存，未派发",
   "ui.submissions.dispatching": "已派发，等待回执",

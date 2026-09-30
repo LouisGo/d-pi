@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "6f650bee8d28d834d830c6d395ff15547f3d19974411752cfbba248c978a9156",
+  "inputsHash": "62dc9116b55e23344ab3eade0c7fb3d2e1faad9d3575bc41eac113df882a7151",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 191,
-    "scannedFiles": 191,
+    "sourceFiles": 192,
+    "scannedFiles": 192,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 50,
-      "lines": 9229,
+      "files": 51,
+      "lines": 9439,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -98,7 +98,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 18,
-      "lines": 1157,
+      "lines": 1185,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -142,7 +142,7 @@
       ],
       "materialized": true,
       "files": 15,
-      "lines": 1883,
+      "lines": 1944,
       "publicEntries": [
         {
           "path": "src/modules/files/contracts/public.ts",
@@ -4231,6 +4231,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "./receipt-status",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/receipt-status.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/conversation.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "./url-display",
       "kind": "import",
       "resolution": "module",
@@ -4860,6 +4872,105 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/receipt-status.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/submissions-renderer.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/submissions-renderer.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react-dom/client",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/submissions-renderer.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/submissions-renderer.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/submissions-renderer.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../modules/execution/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/renderer/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/submissions-renderer.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../modules/input/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/submissions-renderer.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../modules/input/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/app/renderer/submissions-renderer.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/submissions-renderer.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./conversation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/conversation.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },

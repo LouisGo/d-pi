@@ -1,0 +1,75 @@
+
+> d-pi@0.1.0-s4.0 test /Users/lou/Learn/d-pi
+> node scripts/test.mjs vitest src/modules/files/renderer/monaco-viewer.test.ts
+
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/Learn/d-pi
+
+ ❯ src/modules/files/renderer/monaco-viewer.test.ts (13 tests | 2 failed) 12ms
+   ✓ applies theme colors only when the theme changes without laying out or replacing the file viewer 4ms
+   ✓ applies theme colors only when the theme changes without laying out or replacing the diff viewer 1ms
+   ✓ lays out the file viewer at its initial visible size and coalesces real size changes per frame 0ms
+   ✓ lays out the diff viewer at its initial visible size and coalesces real size changes per frame 0ms
+   ✓ restores the file viewer after zero size and skips a same-frame return to its current size 0ms
+   ✓ restores the diff viewer after zero size and skips a same-frame return to its current size 0ms
+   ✓ cancels queued layout and ignores late notifications after disposing the file viewer 0ms
+   ✓ cancels queued layout and ignores late notifications after disposing the diff viewer 0ms
+   ✓ freezes the mounted raw snapshot even when Monaco normalizes mixed line endings 0ms
+   ✓ keeps old-model callbacks bound to their own version and ignores callbacks after cleanup 0ms
+   ✓ freezes each diff pane with its own raw content and source version 0ms
+   × freezes the current file source when identical bytes are shown from a new capture or Git side 3ms
+   × freezes the current diff source when identical bytes are shown from a new capture or Git side 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/modules/files/renderer/monaco-viewer.test.ts > freezes the current file source when identical bytes are shown from a new capture or Git side
+AssertionError: expected [ 'working tree' ] to deeply equal [ 'working tree · capture B' ]
+
+- Expected
++ Received
+
+  [
+-   "working tree · capture B",
++   "working tree",
+  ]
+
+ ❯ src/modules/files/renderer/monaco-viewer.test.ts:418:64
+    416|     const oneLine = { startLineNumber: 1, startColumn: 1, endLineNumbe…
+    417|     for (const code of harness.codes) code.listener?.({ selection: one…
+    418|     expect(selected.mock.calls.map(([value]) => value.source)).toEqual(
+       |                                                                ^
+    419|       kind === "file" ? ["working tree · capture B"] : ["index", "work…
+    420|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/modules/files/renderer/monaco-viewer.test.ts > freezes the current diff source when identical bytes are shown from a new capture or Git side
+AssertionError: expected [ 'working tree', 'working tree' ] to deeply equal [ 'index', 'working tree' ]
+
+- Expected
++ Received
+
+  [
+-   "index",
++   "working tree",
+    "working tree",
+  ]
+
+ ❯ src/modules/files/renderer/monaco-viewer.test.ts:418:64
+    416|     const oneLine = { startLineNumber: 1, startColumn: 1, endLineNumbe…
+    417|     for (const code of harness.codes) code.listener?.({ selection: one…
+    418|     expect(selected.mock.calls.map(([value]) => value.source)).toEqual(
+       |                                                                ^
+    419|       kind === "file" ? ["working tree · capture B"] : ["index", "work…
+    420|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 11 passed (13)
+   Start at  18:04:42
+   Duration  191ms (transform 53%, import 34%, tests 11%, worker 2%)
+
+ ELIFECYCLE  Test failed. See above for more details.

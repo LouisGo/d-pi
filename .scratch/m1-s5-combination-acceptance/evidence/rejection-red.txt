@@ -1,0 +1,170 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/Learn/d-pi
+
+ ❯ src/app/renderer/submissions-renderer.test.ts (10 tests | 7 failed) 60ms
+   × renders the persisted not-ready cause for an ordinary submission in both UI languages 41ms
+   × renders the persisted native-unavailable cause for an ordinary submission in both UI languages 2ms
+   × renders the persisted unsupported-native-command cause for an ordinary submission in both UI languages 2ms
+   × renders the persisted paused cause for an ordinary submission in both UI languages 1ms
+   × renders the persisted interaction-pending cause for an ordinary submission in both UI languages 2ms
+   × renders the persisted stale-target cause for an ordinary submission in both UI languages 2ms
+   × renders the persisted correlation-limit cause for an ordinary submission in both UI languages 1ms
+   ✓ keeps an unreported refusal cause generic without inventing a recovery fact 2ms
+   ✓ retains call ACK and its independent failed outcome without claiming acceptance or completion 3ms
+   ✓ retains call ACK and its independent unknown outcome without claiming acceptance or completion 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/renderer/submissions-renderer.test.ts > renders the persisted not-ready cause for an ordinary submission in both UI languages
+AssertionError: expected '本地提交原文（1，最多显示最近 100 条）调用回执不代表业务已接受或任务…' to contain '会话尚未就绪'
+
+- Expected
++ Received
+
+- 会话尚未就绪
++ 本地提交原文（1，最多显示最近 100 条）调用回执不代表业务已接受或任务已完成。结果未知时请先核对，不要重复发送。核对提交状态未派发到 OMP，原文保留；可处理阻塞后重新发送用户提交原文
+
++ Keep **Markdown** and 😀 unchanged复制提交原文
+
+ ❯ src/app/renderer/submissions-renderer.test.ts:130:37
+    128|         rejectionReason,
+    129|       });
+    130|       expect(container.textContent).toContain(
+       |                                     ^
+    131|         refusalCopy[rejectionReason][index],
+    132|       );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  src/app/renderer/submissions-renderer.test.ts > renders the persisted native-unavailable cause for an ordinary submission in both UI languages
+AssertionError: expected '本地提交原文（1，最多显示最近 100 条）调用回执不代表业务已接受或任务…' to contain '原生会话未连接'
+
+- Expected
++ Received
+
+- 原生会话未连接
++ 本地提交原文（1，最多显示最近 100 条）调用回执不代表业务已接受或任务已完成。结果未知时请先核对，不要重复发送。核对提交状态未派发到 OMP，原文保留；可处理阻塞后重新发送用户提交原文
+
++ Keep **Markdown** and 😀 unchanged复制提交原文
+
+ ❯ src/app/renderer/submissions-renderer.test.ts:130:37
+    128|         rejectionReason,
+    129|       });
+    130|       expect(container.textContent).toContain(
+       |                                     ^
+    131|         refusalCopy[rejectionReason][index],
+    132|       );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  src/app/renderer/submissions-renderer.test.ts > renders the persisted unsupported-native-command cause for an ordinary submission in both UI languages
+AssertionError: expected '本地提交原文（1，最多显示最近 100 条）调用回执不代表业务已接受或任务…' to contain '应用托管的原生命令'
+
+- Expected
++ Received
+
+- 应用托管的原生命令
++ 本地提交原文（1，最多显示最近 100 条）调用回执不代表业务已接受或任务已完成。结果未知时请先核对，不要重复发送。核对提交状态未派发到 OMP，原文保留；可处理阻塞后重新发送用户提交原文
+
++ Keep **Markdown** and 😀 unchanged复制提交原文
+
+ ❯ src/app/renderer/submissions-renderer.test.ts:130:37
+    128|         rejectionReason,
+    129|       });
+    130|       expect(container.textContent).toContain(
+       |                                     ^
+    131|         refusalCopy[rejectionReason][index],
+    132|       );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  src/app/renderer/submissions-renderer.test.ts > renders the persisted paused cause for an ordinary submission in both UI languages
+AssertionError: expected '本地提交原文（1，最多显示最近 100 条）调用回执不代表业务已接受或任务…' to contain '原生队列已暂停'
+
+- Expected
++ Received
+
+- 原生队列已暂停
++ 本地提交原文（1，最多显示最近 100 条）调用回执不代表业务已接受或任务已完成。结果未知时请先核对，不要重复发送。核对提交状态未派发到 OMP，原文保留；可处理阻塞后重新发送用户提交原文
+
++ Keep **Markdown** and 😀 unchanged复制提交原文
+
+ ❯ src/app/renderer/submissions-renderer.test.ts:130:37
+    128|         rejectionReason,
+    129|       });
+    130|       expect(container.textContent).toContain(
+       |                                     ^
+    131|         refusalCopy[rejectionReason][index],
+    132|       );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  src/app/renderer/submissions-renderer.test.ts > renders the persisted interaction-pending cause for an ordinary submission in both UI languages
+AssertionError: expected '本地提交原文（1，最多显示最近 100 条）调用回执不代表业务已接受或任务…' to contain '有原生对话框等待回答'
+
+- Expected
++ Received
+
+- 有原生对话框等待回答
++ 本地提交原文（1，最多显示最近 100 条）调用回执不代表业务已接受或任务已完成。结果未知时请先核对，不要重复发送。核对提交状态未派发到 OMP，原文保留；可处理阻塞后重新发送用户提交原文
+
++ Keep **Markdown** and 😀 unchanged复制提交原文
+
+ ❯ src/app/renderer/submissions-renderer.test.ts:130:37
+    128|         rejectionReason,
+    129|       });
+    130|       expect(container.textContent).toContain(
+       |                                     ^
+    131|         refusalCopy[rejectionReason][index],
+    132|       );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  src/app/renderer/submissions-renderer.test.ts > renders the persisted stale-target cause for an ordinary submission in both UI languages
+AssertionError: expected '本地提交原文（1，最多显示最近 100 条）调用回执不代表业务已接受或任务…' to contain '旧的原生会话实例'
+
+- Expected
++ Received
+
+- 旧的原生会话实例
++ 本地提交原文（1，最多显示最近 100 条）调用回执不代表业务已接受或任务已完成。结果未知时请先核对，不要重复发送。核对提交状态未派发到 OMP，原文保留；可处理阻塞后重新发送用户提交原文
+
++ Keep **Markdown** and 😀 unchanged复制提交原文
+
+ ❯ src/app/renderer/submissions-renderer.test.ts:130:37
+    128|         rejectionReason,
+    129|       });
+    130|       expect(container.textContent).toContain(
+       |                                     ^
+    131|         refusalCopy[rejectionReason][index],
+    132|       );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  src/app/renderer/submissions-renderer.test.ts > renders the persisted correlation-limit cause for an ordinary submission in both UI languages
+AssertionError: expected '本地提交原文（1，最多显示最近 100 条）调用回执不代表业务已接受或任务…' to contain '未确认的派发过多'
+
+- Expected
++ Received
+
+- 未确认的派发过多
++ 本地提交原文（1，最多显示最近 100 条）调用回执不代表业务已接受或任务已完成。结果未知时请先核对，不要重复发送。核对提交状态未派发到 OMP，原文保留；可处理阻塞后重新发送用户提交原文
+
++ Keep **Markdown** and 😀 unchanged复制提交原文
+
+ ❯ src/app/renderer/submissions-renderer.test.ts:130:37
+    128|         rejectionReason,
+    129|       });
+    130|       expect(container.textContent).toContain(
+       |                                     ^
+    131|         refusalCopy[rejectionReason][index],
+    132|       );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 3 passed (10)
+   Start at  18:06:38
+   Duration  1.84s (import 76%, environment 11%, transform 9%, tests 3%)

@@ -6,7 +6,7 @@
 
 | 事项 | 现状与事实入口 |
 | --- | --- |
-| 包版本 | [package.json](../../package.json) 为 `0.1.0-s4.0`、`private=true`。切片编号、Git SHA、build ID 与包版本分别记录；本地切片提交不自动递增发行版本。 |
+| 包版本 | [package.json](../../package.json) 为 `0.1.0-s5.0`、`private=true`，用于本地 S5 候选。切片编号、Git SHA、build ID 与包版本分别记录；本地切片提交不自动递增发行版本。 |
 | 构建身份 | [构建配置](../../electron.vite.config.ts)注入 version、commit、dirty 和随机 build ID；无 Git 导出保留 unknown/dirty。对应构建和试用状态见 [总看板](../status.md) 路由到的交接。 |
 | 本地打包 | `pnpm package:mac` 安装固定 Electron、准备固定 SDK、构建，再用 [electron-builder](../../electron-builder.yml)生成 macOS 目录包。当前经过验证的是 macOS arm64；Windows/Linux 与其他架构未承诺支持。 |
 | 第三方声明 | [THIRD_PARTY_NOTICES](../../THIRD_PARTY_NOTICES.md)随 App 打包，保留改编 UI 来源与依赖许可；SDK 闭包的原始许可证文件随 `sdk/node_modules` 保留，Bun 原始说明随 `sdk/BUN-LICENSE.md` 保留。[OMP 资源维护](omp-maintenance.md)说明准备过程。 |

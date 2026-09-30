@@ -7,15 +7,46 @@ import type { MessageKey } from "../../shared/i18n/create-i18n";
 
 /** Native refusal causes, in the order the Host checks them. */
 const rejectionMessageKeys = {
-  "not-ready": "ui.interaction.rejected.notReady",
-  "native-unavailable": "ui.interaction.rejected.nativeUnavailable",
-  "unsupported-native-command":
-    "ui.interaction.rejected.unsupportedNativeCommand",
-  paused: "ui.interaction.rejected.paused",
-  "interaction-pending": "ui.interaction.rejected.interactionPending",
-  "stale-target": "ui.interaction.rejected.staleTarget",
-  "correlation-limit": "ui.interaction.rejected.correlationLimit",
-} as const satisfies Record<SubmissionRejectionReason, MessageKey>;
+  "not-ready": {
+    submission: "ui.submissions.rejected.notReady",
+    followUp: "ui.interaction.rejected.notReady",
+  },
+  "native-unavailable": {
+    submission: "ui.submissions.rejected.nativeUnavailable",
+    followUp: "ui.interaction.rejected.nativeUnavailable",
+  },
+  "unsupported-native-command": {
+    submission: "ui.submissions.rejected.unsupportedNativeCommand",
+    followUp: "ui.interaction.rejected.unsupportedNativeCommand",
+  },
+  paused: {
+    submission: "ui.submissions.rejected.paused",
+    followUp: "ui.interaction.rejected.paused",
+  },
+  "interaction-pending": {
+    submission: "ui.submissions.rejected.interactionPending",
+    followUp: "ui.interaction.rejected.interactionPending",
+  },
+  "stale-target": {
+    submission: "ui.submissions.rejected.staleTarget",
+    followUp: "ui.interaction.rejected.staleTarget",
+  },
+  "correlation-limit": {
+    submission: "ui.submissions.rejected.correlationLimit",
+    followUp: "ui.interaction.rejected.correlationLimit",
+  },
+} as const satisfies Record<
+  SubmissionRejectionReason,
+  { submission: MessageKey; followUp: MessageKey }
+>;
+
+export function submissionRejectionKey(
+  reason: SubmissionRejectionReason | undefined,
+): MessageKey {
+  return reason
+    ? rejectionMessageKeys[reason].submission
+    : "ui.submissions.rejected";
+}
 
 /** A refusal with no reported cause keeps the generic copy: the App reports
  * the cause the Host proved and must not invent one. `outcome` is optional so
@@ -27,7 +58,7 @@ export function receiptStatusKey(receipt: ReceiptStatus): MessageKey {
   return match(receipt)
     .with({ state: "rejected" }, (value) =>
       value.rejectionReason
-        ? rejectionMessageKeys[value.rejectionReason]
+        ? rejectionMessageKeys[value.rejectionReason].followUp
         : "ui.interaction.followUpRejected",
     )
     .with(
