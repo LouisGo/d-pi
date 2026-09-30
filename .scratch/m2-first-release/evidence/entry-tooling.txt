@@ -1,0 +1,52 @@
+
+> d-pi@0.1.0-m2.5 test:tooling /Users/louistation/MySpace/Life/d-pi
+> node scripts/test.mjs node tests/tooling/*.test.mjs
+
+✔ the fast environment gate accepts pinned required foundations and peer-qualified lock entries (66.136959ms)
+✔ deleting a confirmed foundation dependency cannot make the gate pass (442.35825ms)
+✔ foundation dependencies must be declared in their runtime or development section (56.414792ms)
+✔ rejects ranges and the wrong Zod major (107.371916ms)
+✔ rejects a stale lock specifier, resolved version or extra importer dependency (175.446584ms)
+✔ rejects inconsistent package families even when the lock agrees (234.789458ms)
+✔ an unsupported or unreadable lock cannot be reported as consistent (114.882708ms)
+✔ reports missing local Markdown and skill targets, while preserving raw historical links (3.308125ms)
+✔ checks Unicode and duplicate heading anchors, same-page links, and reference links (3.993958ms)
+✔ rejects unknown D-IDs without interpreting prose or fenced historical examples (1.6615ms)
+✔ CLI checks new untracked entries while excluding raw evidence and experimental fixtures (88.886708ms)
+✔ rejects invalid or duplicated task states and unresolved completion dependencies (2.632125ms)
+✔ rejects task dependency cycles instead of presenting them as runnable (2.113916ms)
+✔ reports malformed URL encoding as an invalid document link (0.696042ms)
+✔ the fast hook entry includes current status without native preparation or full test work (0.701459ms)
+✔ CI prepares native resources and reuses the local checks on macOS arm64 (0.786375ms)
+✔ distinguishes missing, crashed, failed and successful tool processes (179.04925ms)
+✔ checks installed metadata even when package exports hide package.json and require entries (1125.829167ms)
+✔ SDK inspection refuses stale locks, tampered files and missing bundled resources (5.377208ms)
+✔ the installed fast hook really prevents a commit when checks fail (4722.895084ms)
+✔ chains existing hooks and preserves global configuration and hook files (3237.17275ms)
+✔ a rejecting original hook stops the commit before the new fast check (912.681292ms)
+✔ uninstall restores a previous local relative hooksPath (2480.98125ms)
+✔ forwarding preserves significant trailing whitespace in a configured hook path (3515.679375ms)
+✔ later user configuration changes are never overwritten by reinstall or uninstall (423.715667ms)
+✔ other linked checkouts keep their original hooks without receiving this checkout's fast gate (3882.304375ms)
+✔ forwarded receive hooks still work from Git's metadata cwd (1163.786417ms)
+✔ existing worktree configuration is restored in its original scope (4228.904042ms)
+✔ a malformed installation record cannot clear repository configuration (330.268209ms)
+✔ the versioned hook names a missing pnpm as tooling unavailable (28.298667ms)
+✔ refreshes UI dependency notices without deleting the separately bundled SDK and Bun notices (949.09875ms)
+✔ repeated refresh preserves Markdown license headings and code fences without growing the generated section (422.009167ms)
+✔ aggregates independent engineering, trial and acceptance states and real blockers (13.024542ms)
+✔ rejects invalid states, duplicate identities and accepted-without-trial claims (1.4635ms)
+✔ rejects missing evidence, missing important pending tasks, and multiple current scopes (1.382ms)
+✔ snapshot check fails after an owning issue changes even when displayed totals stay equal (2.786792ms)
+✔ malformed status JSON and unknown fields fail rather than silently disappearing (1.869541ms)
+✔ isolates every App/OMP path, cwd and future credential names in a real child (45.033209ms)
+✔ only explicit fixture credentials enter the environment; isolation paths cannot be overridden (3.086459ms)
+✔ standard Node test runner drops inherited credentials and the project's extension directory (133.405167ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 24985.478125

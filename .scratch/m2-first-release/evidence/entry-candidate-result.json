@@ -1,0 +1,50 @@
+{
+  "source": "/Users/louistation/MySpace/Life/d-pi/dist/m2-entry-candidate/mac-arm64/d-pi.app",
+  "bundle": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-EKFgu3/Package With Spaces/d-pi.app",
+  "build": {
+    "version": "0.1.0-m2.6",
+    "commit": "9bd6a6dae3d418c441a2d05d45140e6e4c92c55d",
+    "dirty": false,
+    "id": "9bd6a6da-73a3242a"
+  },
+  "root": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-EKFgu3",
+  "checks": [
+    "two parallel native OMP scopes; switching does not interrupt held work",
+    "separate model/effort, messages, drafts and session identities",
+    "renderer reload reconnects same native sessions without resending",
+    "composer and send action stay inside window; switching reading view preserves draft",
+    "cold old native sessions remain read-only, preserve drafts; explicit new independent Thread is available"
+  ],
+  "screenshots": [
+    "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-EKFgu3/m2-parallel-entry.png",
+    "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-EKFgu3/m2-cold-new-thread.png"
+  ],
+  "providerCalls": 2,
+  "models": [
+    "fixture-b",
+    "fixture-a"
+  ],
+  "nativeSessions": [
+    {
+      "session_id": "01a0f365-91be-7000-9084-318f0b123e8e",
+      "thread_id": "b5b82f58-a9ed-4568-8446-f5de42a0b1af"
+    },
+    {
+      "session_id": "01a0f365-9655-7000-a505-46a416af5e04",
+      "thread_id": "2816a014-6ea6-486e-a3ce-c370686501cf"
+    }
+  ],
+  "layout": {
+    "editorTop": 591.203125,
+    "editorBottom": 663,
+    "sendBottom": 715,
+    "readingHeight": 116.8046875,
+    "height": 748
+  },
+  "sourceAsarSha256": "f1e7ab392ea4c62e7387be4bf4c743b494821a7153fa2e1785ef64712908521b",
+  "limitations": [
+    "localhost deterministic supplier, no real credentials/billing",
+    "native inspection evidence recorded separately",
+    "M2 V1-04 and queue/subagent/read-performance increments remain open"
+  ]
+}

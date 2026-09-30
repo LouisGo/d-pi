@@ -1,0 +1,54 @@
+
+> d-pi@0.1.0-m2.5 test:architecture /Users/louistation/MySpace/Life/d-pi
+> node scripts/test.mjs node tests/architecture/*.test.mjs
+
+✔ public entries must be source files, not directories or prose (120.591958ms)
+✔ renderer rejects Electron subpath imports (59.152958ms)
+✔ production rejects test packages and helpers in test directories (57.523417ms)
+✔ unreadable manifests are tooling failures, not boundary violations (55.603ms)
+✔ accepts a public type-only cross-module dependency (57.28575ms)
+✔ rejects a private cross-module import (58.471958ms)
+✔ rejects an unregistered cross-module dependency (58.800875ms)
+✔ rejects a public cross-module entry from the wrong environment (58.422583ms)
+✔ checks the runtime module and rejects Electron in the OMP environment (58.662916ms)
+✔ rejects forbidden external dependencies in shared, core and OMP environments (169.732833ms)
+✔ allows supported external packages in platform-independent environments (58.443208ms)
+✔ rejects a core import of a Node runtime and a file cycle (111.12ms)
+✔ rejects production test-helper imports and non-literal dynamic imports (54.783125ms)
+✔ supports flat shared roots and explicit test-only public entries (57.131333ms)
+✔ rejects source files outside configured modules and owned roots (52.903583ms)
+✔ resolves directory index imports before checking cross-module privacy (56.905166ms)
+FAIL: design lint crashed — /Users/louistation/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node was killed by SIGTRAP before it judged any file.
+This is a tooling failure, not a rule result. On Node 24.17.0 the oxlint JS-plugin worker dies with SIGTRAP; it must run on a Node build where JS plugins load.
+node v24.19.0
+
+
+FAIL: design lint is unavailable — could not run oxlint-that-does-not-exist (spawnSync oxlint-that-does-not-exist ENOENT).
+This is a tooling failure, not a rule result. On Node 24.17.0 the oxlint JS-plugin worker dies with SIGTRAP; it must run on a Node build where JS plugins load.
+node v24.19.0
+
+
+✔ a killed oxlint is a tooling failure, not a clean lint (140.127708ms)
+✔ a missing oxlint binary is reported instead of passing (1.041958ms)
+✔ a missing configuration is a tooling failure, not a rule result (36.262208ms)
+✔ a real violation still fails the gate with the rule name (233.847167ms)
+✔ the root has no design violation to report (339.134958ms)
+✔ the design fixture check names a crash instead of an assertion diff (568.670416ms)
+✔ reports entry, production, test, and CSS size hints separately (70.640375ms)
+✔ separates declared permissions from observed source dependencies and scan gaps (67.743875ms)
+✔ rejects a generated report after source or permissions change (300.656125ms)
+✔ i18n copy check scans migrated module Renderer files (42.388708ms)
+✔ Tailwind source configuration includes migrated Renderer roots (0.213625ms)
+✔ design lint executes against a migrated module Renderer root (131.398958ms)
+✔ Tailwind emits a utility used only by a module Renderer (170.362ms)
+✔ core has a dedicated typecheck without DOM or Node ambient types (1.557125ms)
+✔ process-specific typechecks declare their ambient environment explicitly (2.047625ms)
+✔ the real core typecheck rejects DOM globals (133.344875ms)
+ℹ tests 32
+ℹ suites 0
+ℹ pass 32
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1376.566792
