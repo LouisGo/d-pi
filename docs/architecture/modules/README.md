@@ -25,14 +25,7 @@
 
 P1 落地的跨模块路径有两条：`files → input`（选区冻结与引用）与 `files → changes`（Git Diff 只读来源）。第三项不是跨模块依赖——应用级 Composer/FileWorkspace 留在 `src/app/renderer/workbench`，由 app 组合而不新增领域依赖。新增普通内部文件不要求修改清单；只有公开面、环境或跨模块依赖变化才更新机器配置。
 
-当前代码清单中的环境依赖已经随 review follow-up 校准；下列是机器配置中按环境保留的跨模块声明：
-
-- `app.contracts → changes/conversation/execution/files/input/preferences/shared`；`app.main → changes/conversation/execution/files/input/platform/preferences/shared/workspace`；`app.host → conversation/execution`；`app.preload → changes/conversation/execution/files/shared`；`app.renderer → changes/conversation/execution/files/input/preferences/shared`。
-- `platform → shared`；`shared` 和 `runtime` 无跨模块依赖。
-- `files.contracts/core → shared`；`files.main` 无跨模块依赖；`files.renderer → preferences`。
-- `input.contracts → shared/workspace`、`input.core → files/shared`、`input.main → platform/workspace`、`input.renderer → files`。
-- `changes.contracts → files/shared`、`changes.main → files`、`changes.renderer → shared`；`workspace.contracts → shared`、`workspace.main → platform`；`preferences.contracts → shared`、`preferences.main → platform`、`preferences.renderer → shared`。
-- `conversation.contracts → shared`、`conversation.core` 无跨模块依赖、`conversation.host → platform/shared`、`conversation.main → workspace`；`execution.contracts → input/shared/workspace`、`execution.core → input/shared/workspace`、`execution.host → platform/shared`、`execution.main → input/platform/shared/workspace`、`execution.renderer → input/shared`。
+环境依赖权限从 `architecture/modules.json` 读取，实际源码导入从扫描结果读取。入库的[机器生成报告](../../../architecture/dependencies.generated.json)分开展示 `allowedDependencies` 与 `actualDependencies`，并保留未扫描文件、未解析导入和例外；运行 `pnpm report:structure` 查看文字结果，`pnpm check:structure` 检查快照新鲜度。本页保留所有权理由，不手工复制依赖清单。
 
 `app/host` 负责组合 execution 与 conversation 的 Host 作用域；`app` 只做按环境的组合，`platform` 只依赖 `shared`；平台能力不冒充领域依赖，跨模块消费必须经公开入口。跨模块测试依赖一律放在 `tests/integration/`，不占用 `testDependsOn`（该声明只在模块根内确有测试消费者时才登记）。
 

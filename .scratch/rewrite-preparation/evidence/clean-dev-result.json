@@ -1,0 +1,20 @@
+{
+  "checkout": "/tmp/d-pi-rewrite-clean-engineering",
+  "sandbox": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-rewrite-clean-Yftp00",
+  "command": "pnpm dev --remoteDebuggingPort <ephemeral>",
+  "startupEnv": "controlled allowlist; no personal App/OMP/Git configuration or credentials",
+  "gui": true,
+  "state": {
+    "title": "d-pi",
+    "theme": "light",
+    "density": "normal",
+    "body": "d-pi S4项目尚未选择项目本地草稿项目执行需授权0.1.0-s4.0 · unknown-dirty-29be997d开始跟随系统简体中文English紧凑密度在项目里，写下第一步选择目录，创建一份可恢复的文字草稿。选择项目并创建草稿目录默认仅浏览，不运行项目代码。\n",
+    "desktop": "object"
+  },
+  "traceId": "9c99945e-f527-4eda-a8f5-84a5dd479556",
+  "reply": {
+    "kind": "ready",
+    "draft": null
+  },
+  "exceptions": []
+}

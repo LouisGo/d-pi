@@ -30,9 +30,10 @@ export function reportOxlintResult(result) {
       result.status === 0
         ? "PASS: design lint"
         : `FAIL: design lint reported violations (exit ${result.status})`;
-    const output = result.output.endsWith("\n") || !result.output
-      ? result.output
-      : `${result.output}\n`;
+    const output =
+      result.output.endsWith("\n") || !result.output
+        ? result.output
+        : `${result.output}\n`;
     process.stdout.write(`${output}${label}\n`);
     return result.status;
   }
@@ -52,7 +53,10 @@ export function reportOxlintResult(result) {
   return 1;
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
+) {
   const separator = process.argv.indexOf("--");
   const args = separator === -1 ? [] : process.argv.slice(separator + 1);
   if (args.length === 0) {

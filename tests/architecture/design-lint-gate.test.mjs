@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { spawnSync } from "node:child_process";
 import { test } from "node:test";
 import {
   reportOxlintResult,
@@ -42,10 +42,7 @@ function runScript(script, args) {
 test("a killed oxlint is a tooling failure, not a clean lint", () => {
   const result = runOxlint({
     binary: process.execPath,
-    args: [
-      "-e",
-      "process.kill(process.pid, 'SIGTRAP')",
-    ],
+    args: ["-e", "process.kill(process.pid, 'SIGTRAP')"],
     cwd: repositoryRoot,
   });
   assert.equal(result.kind, "crashed");
@@ -80,7 +77,12 @@ test("a real violation still fails the gate with the rule name", () => {
 });
 
 test("the root has no design violation to report", () => {
-  const result = runScript(designLint, ["--root", repositoryRoot, "--config", config]);
+  const result = runScript(designLint, [
+    "--root",
+    repositoryRoot,
+    "--config",
+    config,
+  ]);
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.match(`${result.stdout}`, /PASS: design lint/);
 });

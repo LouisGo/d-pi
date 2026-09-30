@@ -1,0 +1,239 @@
+
+> d-pi@0.1.0-s4.0 check /private/tmp/d-pi-rewrite-clean-engineering
+> pnpm check:tools && pnpm typecheck && pnpm lint && pnpm lint:design && pnpm lint:i18n && pnpm validate:design && node validation/s1/source-boundaries.mjs && pnpm check:architecture && pnpm check:documentation && pnpm check:structure && pnpm test:architecture && pnpm test:tooling && pnpm test
+
+
+> d-pi@0.1.0-s4.0 check:tools /private/tmp/d-pi-rewrite-clean-engineering
+> node scripts/check-environment.mjs --tools-only
+
+Development Node: 24.21.0 (target 24.21.0)
+pnpm: 10.5.2 (target 10.5.2)
+Platform: darwin-arm64
+Installed exact dependencies: 41/41
+Fast tool check; native executables and SDK resources were not inspected
+PASS: development environment (0 issues)
+
+> d-pi@0.1.0-s4.0 typecheck /private/tmp/d-pi-rewrite-clean-engineering
+> tsc --noEmit && pnpm typecheck:core && pnpm typecheck:renderer && pnpm typecheck:main && pnpm typecheck:host && pnpm typecheck:preload
+
+
+> d-pi@0.1.0-s4.0 typecheck:core /private/tmp/d-pi-rewrite-clean-engineering
+> tsc --noEmit -p tsconfig.core.json
+
+
+> d-pi@0.1.0-s4.0 typecheck:renderer /private/tmp/d-pi-rewrite-clean-engineering
+> tsc --noEmit -p tsconfig.renderer.json
+
+
+> d-pi@0.1.0-s4.0 typecheck:main /private/tmp/d-pi-rewrite-clean-engineering
+> tsc --noEmit -p tsconfig.main.json
+
+
+> d-pi@0.1.0-s4.0 typecheck:host /private/tmp/d-pi-rewrite-clean-engineering
+> tsc --noEmit -p tsconfig.host.json
+
+
+> d-pi@0.1.0-s4.0 typecheck:preload /private/tmp/d-pi-rewrite-clean-engineering
+> tsc --noEmit -p tsconfig.preload.json
+
+
+> d-pi@0.1.0-s4.0 lint /private/tmp/d-pi-rewrite-clean-engineering
+> biome check .
+
+Checked 251 files in 52ms. No fixes applied.
+
+> d-pi@0.1.0-s4.0 lint:design /private/tmp/d-pi-rewrite-clean-engineering
+> node scripts/lint-design.mjs
+
+Found 0 warnings and 0 errors.
+Finished in 242ms on 50 files with 6 rules using 11 threads.
+PASS: design lint
+
+> d-pi@0.1.0-s4.0 lint:i18n /private/tmp/d-pi-rewrite-clean-engineering
+> node scripts/check-i18n-copy.mjs
+
+
+> d-pi@0.1.0-s4.0 validate:design /private/tmp/d-pi-rewrite-clean-engineering
+> node validation/s1/design-check.mjs
+
+PASS: CSS Modules, clsx/cva, shared variable accepted; six invalid design patterns rejected.
+PASS: token source, icon/domain and module environment boundaries (narrow source checks; architecture gate is authoritative for dependency graph).
+
+> d-pi@0.1.0-s4.0 check:architecture /private/tmp/d-pi-rewrite-clean-engineering
+> node scripts/architecture/check.mjs
+
+PASS: architecture boundaries (183 source files checked, TypeScript scanner)
+
+> d-pi@0.1.0-s4.0 check:documentation /private/tmp/d-pi-rewrite-clean-engineering
+> node scripts/check-documentation.mjs
+
+PASS: documentation references (139 Markdown files; 17 historical snapshots excluded; external URLs not fetched)
+
+> d-pi@0.1.0-s4.0 check:structure /private/tmp/d-pi-rewrite-clean-engineering
+> node scripts/architecture/report.mjs --check architecture/dependencies.generated.json
+
+PASS: generated structure report is current
+
+> d-pi@0.1.0-s4.0 test:architecture /private/tmp/d-pi-rewrite-clean-engineering
+> node scripts/test.mjs node tests/architecture/*.test.mjs
+
+✔ accepts a public type-only cross-module dependency (82.030875ms)
+✔ rejects a private cross-module import (123.570958ms)
+✔ rejects an unregistered cross-module dependency (105.8965ms)
+✔ rejects a public cross-module entry from the wrong environment (97.656208ms)
+✔ checks the runtime module and rejects Electron in the OMP environment (100.082625ms)
+✔ rejects forbidden external dependencies in shared, core and OMP environments (258.305208ms)
+✔ allows supported external packages in platform-independent environments (70.44425ms)
+✔ rejects a core import of a Node runtime and a file cycle (123.975084ms)
+✔ rejects production test-helper imports and non-literal dynamic imports (53.695792ms)
+✔ supports flat shared roots and explicit test-only public entries (59.713708ms)
+✔ rejects source files outside configured modules and owned roots (60.5455ms)
+✔ resolves directory index imports before checking cross-module privacy (66.257666ms)
+FAIL: design lint crashed — /private/tmp/d-pi-rewrite-toolchain/node-v24.21.0-darwin-arm64/bin/node was killed by SIGTRAP before it judged any file.
+This is a tooling failure, not a rule result. On Node 24.17.0 the oxlint JS-plugin worker dies with SIGTRAP; it must run on a Node build where JS plugins load.
+node v24.21.0
+
+
+FAIL: design lint is unavailable — could not run oxlint-that-does-not-exist (spawnSync oxlint-that-does-not-exist ENOENT).
+This is a tooling failure, not a rule result. On Node 24.17.0 the oxlint JS-plugin worker dies with SIGTRAP; it must run on a Node build where JS plugins load.
+node v24.21.0
+
+
+✔ a killed oxlint is a tooling failure, not a clean lint (231.169291ms)
+✔ a missing oxlint binary is reported instead of passing (1.599458ms)
+✔ a real violation still fails the gate with the rule name (283.450041ms)
+✔ the root has no design violation to report (408.2555ms)
+✔ the design fixture check names a crash instead of an assertion diff (597.604709ms)
+✔ reports entry, production, test, and CSS size hints separately (99.168791ms)
+✔ separates declared permissions from observed source dependencies and scan gaps (137.118875ms)
+✔ rejects a generated report after source or permissions change (500.37725ms)
+✔ i18n copy check scans migrated module Renderer files (37.201125ms)
+✔ Tailwind source configuration includes migrated Renderer roots (0.216875ms)
+✔ design lint executes against a migrated module Renderer root (117.241792ms)
+✔ Tailwind emits a utility used only by a module Renderer (886.216792ms)
+✔ core has a dedicated typecheck without DOM or Node ambient types (1.110333ms)
+✔ process-specific typechecks declare their ambient environment explicitly (0.418959ms)
+✔ the real core typecheck rejects DOM globals (136.926958ms)
+ℹ tests 27
+ℹ suites 0
+ℹ pass 27
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2977.259458
+
+> d-pi@0.1.0-s4.0 test:tooling /private/tmp/d-pi-rewrite-clean-engineering
+> node scripts/test.mjs node tests/tooling/*.test.mjs
+
+✔ reports missing local Markdown and skill targets, while preserving raw historical links (2.98275ms)
+✔ checks Unicode and duplicate heading anchors, same-page links, and reference links (2.9765ms)
+✔ rejects unknown D-IDs without interpreting prose or fenced historical examples (0.9875ms)
+✔ CLI checks new untracked entries while excluding raw evidence and experimental fixtures (145.41875ms)
+✔ distinguishes missing, crashed, failed and successful tool processes (160.150834ms)
+✔ checks installed metadata even when package exports hide package.json and require entries (204.7795ms)
+✔ SDK inspection refuses stale locks, tampered files and missing bundled resources (3.814125ms)
+✔ isolates every App/OMP path, cwd and future credential names in a real child (38.052042ms)
+✔ only explicit fixture credentials enter the environment; isolation paths cannot be overridden (2.575542ms)
+✔ standard Node test runner drops inherited credentials and the project's extension directory (135.932792ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 417.466125
+
+> d-pi@0.1.0-s4.0 test /private/tmp/d-pi-rewrite-clean-engineering
+> node scripts/test.mjs vitest
+
+
+ RUN  v5.0.2 /private/tmp/d-pi-rewrite-clean-engineering
+
+ ✓ src/modules/input/core/draft-controller.test.ts (10 tests) 23ms
+ ✓ src/modules/execution/host/interactions.test.ts (11 tests) 92ms
+ ✓ src/modules/execution/renderer/submission-model.test.ts (12 tests) 35ms
+ ✓ src/app/renderer/model.test.ts (5 tests) 11ms
+ ✓ src/modules/execution/host/session-host.test.ts (21 tests) 67ms
+ ✓ src/modules/conversation/main/native-history.test.ts (4 tests) 101ms
+ ✓ src/app/main/submission-storage.test.ts (13 tests) 235ms
+ ✓ tests/integration/runtime-host.integration.test.ts (7 tests) 258ms
+ ✓ tests/integration/submission-coordinator.integration.test.ts (4 tests) 383ms
+   ✓ failed dispatch persistence writes nothing; duplicate dispatch writes once and late error keeps ACK 309ms
+ ✓ src/app/host/index.test.ts (7 tests) 402ms
+ ✓ src/modules/files/renderer/queries.test.ts (8 tests) 15ms
+ ✓ src/app/renderer/model-store.test.ts (6 tests) 17ms
+ ✓ src/app/main/storage.test.ts (7 tests) 415ms
+   ✓ real SQLite and directory service (6)
+     ✓ locked writer reports failure without overwriting draft 305ms
+ ✓ src/app/main/runtime-service.test.ts (23 tests) 672ms
+ ✓ tests/integration/runtime-causality.integration.test.ts (5 tests) 189ms
+ ✓ src/modules/input/core/submission.test.ts (5 tests) 8ms
+ ✓ src/modules/execution/renderer/submission-store.test.ts (4 tests) 46ms
+ ✓ src/modules/changes/renderer/queries.test.ts (4 tests) 27ms
+ ✓ tests/integration/prepared-recovery.integration.test.ts (7 tests) 618ms
+ ✓ src/app/preload/index.test.ts (7 tests) 200ms
+ ✓ tests/integration/submission-rejection-reason.integration.test.ts (10 tests) 138ms
+ ↓ src/modules/execution/host/native-smoke.test.ts (1 test | 1 skipped)
+ ✓ src/modules/files/main/project-files.test.ts (6 tests) 112ms
+ ✓ src/modules/execution/renderer/runtime-store.test.ts (5 tests) 11ms
+ ✓ src/modules/files/core/selection.test.ts (7 tests) 8ms
+ ✓ src/modules/input/renderer/plain-text-paste.test.ts (4 tests) 60ms
+ ✓ src/modules/execution/renderer/runtime-model.test.ts (4 tests) 27ms
+ ✓ src/modules/conversation/host/projection.test.ts (6 tests) 15ms
+ ✓ src/app/main/ipc/project-reads.test.ts (3 tests) 76ms
+ ✓ src/modules/conversation/core/subscription.test.ts (2 tests) 7ms
+ ✓ src/platform/omp/protocol/frame-decoder.test.ts (2 tests) 7ms
+ ✓ src/app/main/app-storage-init.test.ts (3 tests) 39ms
+ ✓ src/app/renderer/receipt-status.test.ts (11 tests) 47ms
+ ✓ src/platform/omp/protocol/native-frame.test.ts (3 tests) 10ms
+ ✓ src/app/renderer/i18n-renderer.test.ts (1 test) 77ms
+ ✓ src/app/contracts/desktop-bridge.test.ts (3 tests) 61ms
+ ✓ src/app/renderer/workbench/refresh-state.test.ts (2 tests) 4ms
+ ✓ src/platform/main/diagnostics/diagnostics.test.ts (2 tests) 28ms
+ ✓ src/modules/execution/core/submission-admission.test.ts (2 tests) 8ms
+ ✓ src/modules/conversation/core/model.test.ts (1 test) 6ms
+ ✓ src/app/renderer/conversation-i18n.test.ts (2 tests) 120ms
+ ✓ src/app/main/runtime-sdk-i18n.test.ts (1 test) 47ms
+ ✓ src/app/main/index.test.ts (7 tests) 1852ms
+   ✓ uses the first preferred system language rather than the Chromium app locale 458ms
+   ✓ starts with system locale, rebuilds the native menu on interaction, and keeps a failed locale save visible 396ms
+   ✓ retries a failed initial restore after the lock clears, preserving the same draft 720ms
+ ✓ src/modules/execution/host/native-session.test.ts (3 tests) 426ms
+ ✓ src/platform/omp/resources/sdk-resource.test.ts (1 test) 15ms
+ ✓ src/modules/input/renderer/selection-insert.test.ts (1 test) 50ms
+ ✓ src/app/main/lifecycle/quit.test.ts (2 tests) 14ms
+ ✓ src/platform/omp/consumption-gate.test.ts (2 tests) 4ms
+ ✓ src/modules/input/core/references/serialize.test.ts (2 tests) 4ms
+ ✓ src/modules/execution/core/admission.test.ts (1 test) 8ms
+ ✓ src/shared/i18n/create-i18n.test.ts (3 tests) 39ms
+ ✓ src/modules/conversation/host/scope.test.ts (1 test) 7ms
+ ✓ src/modules/execution/contracts/interactions.test.ts (3 tests) 2ms
+ ✓ src/modules/execution/renderer/submission-shortcut.test.ts (1 test) 1ms
+ ✓ src/modules/execution/core/target.test.ts (5 tests) 2ms
+ ✓ src/shared/i18n/locale.test.ts (2 tests) 3ms
+ ✓ src/shared/messages/contracts.test.ts (1 test) 4ms
+ ✓ src/shared/i18n/catalog.test.ts (2 tests) 26ms
+ ✓ src/platform/omp/resources/runtime-resource.test.ts (1 test) 31ms
+ ✓ src/app/renderer/url-display.test.ts (1 test) 1ms
+ ✓ src/modules/files/renderer/monaco-diff-options.test.ts (1 test) 2ms
+ ✓ src/modules/changes/main/project-git.test.ts (14 tests) 7604ms
+   ✓ separates HEAD/index, index/worktree and untracked without author attribution 1802ms
+   ✓ distinguishes non-Git and unborn HEAD 786ms
+   ✓ labels a rename with its former path and refuses binary text diff 650ms
+   ✓ scopes a parent repository to the selected project subdirectory 443ms
+   ✓ reads a staged rename through the project subdirectory 722ms
+   ✓ lists changes for a project reached through a symlinked parent directory 563ms
+   ✓ reads an untracked file as absent on the left and worktree text on the right 340ms
+   ✓ reports staged and worktree deletions with an absent side 597ms
+   ✓ refuses an unmerged conflict as unmerged instead of an empty diff 370ms
+   ✓ never executes project-configured clean filters during read-only queries 658ms
+
+ Test Files  61 passed | 1 skipped (62)
+      Tests  304 passed | 1 skipped (305)
+   Start at  11:09:52
+   Duration  7.92s (tests 60%, import 24%, transform 15%, worker 1%)
+
+    Isolate  62 workers spawned · ~133ms startup each (spawn + environment, per file)
+             at least ~691ms faster with isolate: false — reuses workers across files instead of one per file

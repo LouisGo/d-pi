@@ -5,7 +5,9 @@
     "includes": [
       "src/**",
       "runtime/**/*.mjs",
-      "scripts/prepare-sdk.mjs",
+      "scripts/**",
+      "tests/architecture/**",
+      "tests/tooling/**",
       "validation/**",
       "*.json",
       "*.ts",

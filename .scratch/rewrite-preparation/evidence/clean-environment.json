@@ -1,0 +1,132 @@
+{
+  "firstAttempt": {
+    "base": "d9a991aa699b99312e58733b34415a58850a7531",
+    "overlay": "frozen engineering scripts, Node/package/Biome and engineering README/map updates only",
+    "node": "v24.21.0",
+    "pnpmCli": "/tmp/d-pi-rewrite-toolchain/pnpm-10.5.2/package/bin/pnpm.cjs",
+    "pnpmTarSha256": "79a98daa90248b50815e31460790f118c56fe099113370826caa0153be6daba5",
+    "sandbox": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-rewrite-clean-e7VlwV",
+    "checkout": "/tmp/d-pi-rewrite-clean-engineering",
+    "store": "/tmp/d-pi-rewrite-clean-store",
+    "platform": "darwin-arm64",
+    "steps": [
+      {
+        "name": "install",
+        "args": [
+          "/tmp/d-pi-rewrite-toolchain/pnpm-10.5.2/package/bin/pnpm.cjs",
+          "install",
+          "--frozen-lockfile",
+          "--store-dir",
+          "/tmp/d-pi-rewrite-clean-store"
+        ],
+        "exit": 0,
+        "signal": null,
+        "durationMs": 35994
+      },
+      {
+        "name": "electron",
+        "args": [
+          "/tmp/d-pi-rewrite-toolchain/pnpm-10.5.2/package/bin/pnpm.cjs",
+          "exec",
+          "install-electron"
+        ],
+        "exit": 0,
+        "signal": null,
+        "durationMs": 24685
+      },
+      {
+        "name": "sdk",
+        "args": [
+          "/tmp/d-pi-rewrite-toolchain/pnpm-10.5.2/package/bin/pnpm.cjs",
+          "runtime:sdk"
+        ],
+        "exit": 0,
+        "signal": null,
+        "durationMs": 12419
+      },
+      {
+        "name": "environment",
+        "args": [
+          "/tmp/d-pi-rewrite-toolchain/pnpm-10.5.2/package/bin/pnpm.cjs",
+          "check:environment"
+        ],
+        "exit": 0,
+        "signal": null,
+        "durationMs": 2516
+      },
+      {
+        "name": "check",
+        "args": [
+          "/tmp/d-pi-rewrite-toolchain/pnpm-10.5.2/package/bin/pnpm.cjs",
+          "check"
+        ],
+        "exit": 1,
+        "signal": null,
+        "durationMs": 3270
+      }
+    ]
+  },
+  "repairedAttempt": {
+    "base": "d9a991aa699b99312e58733b34415a58850a7531",
+    "overlay": "frozen engineering scripts, Node/package/Biome and engineering README/map updates only",
+    "repairCommit": "3817d5d65ca1b41dccee5a50baa5ce9bf9ad096c",
+    "node": "v24.21.0",
+    "pnpmCli": "/tmp/d-pi-rewrite-toolchain/pnpm-10.5.2/package/bin/pnpm.cjs",
+    "pnpmTarSha256": "79a98daa90248b50815e31460790f118c56fe099113370826caa0153be6daba5",
+    "sandbox": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-rewrite-clean-Yftp00",
+    "checkout": "/tmp/d-pi-rewrite-clean-engineering",
+    "store": "/tmp/d-pi-rewrite-clean-store",
+    "platform": "darwin-arm64",
+    "steps": [
+      {
+        "name": "check-repaired",
+        "args": [
+          "/tmp/d-pi-rewrite-toolchain/pnpm-10.5.2/package/bin/pnpm.cjs",
+          "check"
+        ],
+        "exit": 0,
+        "signal": null,
+        "durationMs": 22920
+      },
+      {
+        "name": "build",
+        "args": [
+          "/tmp/d-pi-rewrite-toolchain/pnpm-10.5.2/package/bin/pnpm.cjs",
+          "build"
+        ],
+        "exit": 0,
+        "signal": null,
+        "durationMs": 9997
+      },
+      {
+        "name": "sdk-control",
+        "args": [
+          "/tmp/d-pi-rewrite-clean-engineering/validation/s3/sdk-control.mjs"
+        ],
+        "exit": 0,
+        "signal": null,
+        "durationMs": 6328
+      }
+    ]
+  },
+  "developmentStartup": {
+    "checkout": "/tmp/d-pi-rewrite-clean-engineering",
+    "sandbox": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-rewrite-clean-Yftp00",
+    "command": "pnpm dev --remoteDebuggingPort <ephemeral>",
+    "startupEnv": "controlled allowlist; no personal App/OMP/Git configuration or credentials",
+    "gui": true,
+    "state": {
+      "title": "d-pi",
+      "theme": "light",
+      "density": "normal",
+      "body": "d-pi S4项目尚未选择项目本地草稿项目执行需授权0.1.0-s4.0 · unknown-dirty-29be997d开始跟随系统简体中文English紧凑密度在项目里，写下第一步选择目录，创建一份可恢复的文字草稿。选择项目并创建草稿目录默认仅浏览，不运行项目代码。\n",
+      "desktop": "object"
+    },
+    "traceId": "9c99945e-f527-4eda-a8f5-84a5dd479556",
+    "reply": {
+      "kind": "ready",
+      "draft": null
+    },
+    "exceptions": []
+  }
+}

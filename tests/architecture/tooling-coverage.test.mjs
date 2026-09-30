@@ -1,18 +1,18 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import {
-  mkdtempSync,
   mkdirSync,
-  readFileSync,
+  mkdtempSync,
   readdirSync,
+  readFileSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
-import { join, resolve } from "node:path";
-import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import { test } from "node:test";
-import { build } from "vite";
 import tailwindcss from "@tailwindcss/vite";
+import { build } from "vite";
 import { runOxlint } from "../../scripts/architecture/oxlint-runner.mjs";
 
 const repositoryRoot = resolve(import.meta.dirname, "../..");
@@ -76,16 +76,19 @@ test("design lint executes against a migrated module Renderer root", () => {
 });
 
 test("Tailwind emits a utility used only by a module Renderer", async () => {
-  const directory = fixture({
-    "index.html":
-      '<!doctype html><html><body><script type="module" src="/src/main.ts"></script></body></html>\n',
-    "src/main.ts": 'import "./app/renderer/styles/tokens.css";\n',
-    "src/app/renderer/styles/tokens.css": readFileSync(
-      join(repositoryRoot, "src/app/renderer/styles/tokens.css"),
-    ),
-    "src/modules/files/renderer/utility.tsx":
-      'export function Utility() { return <div className="bg-fuchsia-500" />; }\n',
-  }, join(repositoryRoot, ".scratch"));
+  const directory = fixture(
+    {
+      "index.html":
+        '<!doctype html><html><body><script type="module" src="/src/main.ts"></script></body></html>\n',
+      "src/main.ts": 'import "./app/renderer/styles/tokens.css";\n',
+      "src/app/renderer/styles/tokens.css": readFileSync(
+        join(repositoryRoot, "src/app/renderer/styles/tokens.css"),
+      ),
+      "src/modules/files/renderer/utility.tsx":
+        'export function Utility() { return <div className="bg-fuchsia-500" />; }\n',
+    },
+    join(repositoryRoot, ".scratch"),
+  );
   try {
     await build({
       root: directory,

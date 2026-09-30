@@ -1,0 +1,40 @@
+{
+  "date": "2026-09-30",
+  "baseline": "4adea8299a254df56664c0b3bc00c71abcd01383",
+  "preparation": "8ae20cd5f06abb06543bf10e267867805c7148bc",
+  "branch": "codex/rewrite-core",
+  "tasks": [
+    {
+      "slug": "local-query",
+      "text": "为 d-pi 增加选中文件内容的本地只读查询入口，供 React 与命令式读取使用；未选中文件时不读取，复用现有项目文件能力并保持已有用户交互。补有意义的验证。"
+    },
+    {
+      "slug": "density",
+      "text": "让 d-pi 共享 Button 在 compact 密度下更紧凑，保留 normal 密度和现有主题表现。按项目全局设计合同修改必要 token，验证受影响组件与检查。"
+    },
+    {
+      "slug": "interface",
+      "text": "调整文件选区附入输入的跨模块接口：由 files 明确交付来源与已冻结文本，input 接收并插入。消除应用层重复拼接，保留选区的版本、路径、行号与准确原文，补回归验证。"
+    },
+    {
+      "slug": "unknown-recovery",
+      "text": "为 d-pi 设计“上次提交结果未知”的恢复入口：用户重开已有 Thread 后想继续工作。基于仓库现行合同给出可实施方案，说明界面可提供的动作、动作依据与未决项。只做设计。"
+    },
+    {
+      "slug": "next-work",
+      "text": "只读仓库，从 AGENTS.md 和当前项目入口查阅：判断当前可以继续推进哪些工作、哪些需要用户答复或试用反馈，给出有文件依据的下一步。"
+    }
+  ],
+  "context": "Every task dispatched with fork_turns none; ordinary task and isolated checkout only; no review answers or scoring rubric in the prompt",
+  "model": "Inherited parent model and reasoning configuration; no overrides. Exact model ID, reasoning setting and token usage are not exposed by collaboration tools.",
+  "toolPermissions": "Same session tools and unrestricted filesystem/network permissions; task instructions prohibit other evaluation answers, SDK preparation, GUI, commit and push",
+  "baselineDirectories": "/tmp/d-pi-rewrite-cold-baseline/<task>",
+  "dependencySetup": "Independent dependency-only baseline snapshot with package.json/pnpm-lock.yaml/.npmrc. Frozen offline install from an explicitly recorded existing pnpm store, node_modules shared with implementation evaluations. No resources/sdk or personal OMP/App configuration copied.",
+  "differences": "First implementation evaluation encountered missing Electron distribution and a Git test timeout; Electron first-import installation mutated the shared dependency snapshot. Later implementation evaluations passed. Dependency readiness must be fixed before a comparable final measurement; do not claim all baseline runs had identical pristine dependencies.",
+  "elapsedObservedSeconds": {
+    "localQuery": 309.311,
+    "density": 189.061,
+    "interface": 978.324
+  },
+  "costLimits": "Elapsed values measure main dispatch-to-observed-result intervals including orchestration overhead; design-task elapsed and all token counts unavailable. No statistical efficiency claim."
+}

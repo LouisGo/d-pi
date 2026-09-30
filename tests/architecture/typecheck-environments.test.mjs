@@ -1,13 +1,15 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { test } from "node:test";
 
 const repositoryRoot = resolve(import.meta.dirname, "../..");
 
 function runTypecheck(configName, source) {
-  const directory = mkdtempSync(join(repositoryRoot, ".scratch", "typecheck-environment-"));
+  const directory = mkdtempSync(
+    join(repositoryRoot, ".scratch", "typecheck-environment-"),
+  );
   const configPath = join(directory, "tsconfig.json");
   writeFileSync(join(directory, "fixture.ts"), source);
   writeFileSync(
@@ -20,7 +22,12 @@ function runTypecheck(configName, source) {
   try {
     return spawnSync(
       process.execPath,
-      [resolve(repositoryRoot, "node_modules/typescript/bin/tsc"), "--noEmit", "-p", configPath],
+      [
+        resolve(repositoryRoot, "node_modules/typescript/bin/tsc"),
+        "--noEmit",
+        "-p",
+        configPath,
+      ],
       { encoding: "utf8" },
     );
   } finally {

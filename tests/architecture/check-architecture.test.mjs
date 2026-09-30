@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { spawnSync } from "node:child_process";
 import { test } from "node:test";
 
 const repositoryRoot = resolve(import.meta.dirname, "../..");
@@ -34,22 +34,41 @@ function fixture(name, files, modules, options = {}) {
 }
 
 function run(directory) {
-  return spawnSync(process.execPath, [checker, "--config", "modules.json"], { cwd: directory, encoding: "utf8" });
+  return spawnSync(process.execPath, [checker, "--config", "modules.json"], {
+    cwd: directory,
+    encoding: "utf8",
+  });
 }
 
 function modules({ alphaDependencies = ["beta"], betaDependencies = [] } = {}) {
   return {
-    alpha: { root: "src/modules/alpha", environments: ["core"], public: ["core/public.ts"], dependsOn: { core: alphaDependencies } },
-    beta: { root: "src/modules/beta", environments: ["contracts", "core"], public: ["contracts/public.ts", "core/public.ts"], dependsOn: { core: betaDependencies } },
+    alpha: {
+      root: "src/modules/alpha",
+      environments: ["core"],
+      public: ["core/public.ts"],
+      dependsOn: { core: alphaDependencies },
+    },
+    beta: {
+      root: "src/modules/beta",
+      environments: ["contracts", "core"],
+      public: ["contracts/public.ts", "core/public.ts"],
+      dependsOn: { core: betaDependencies },
+    },
   };
 }
 
 test("accepts a public type-only cross-module dependency", () => {
-  const directory = fixture("valid", {
-    "src/modules/alpha/core/public.ts": 'import type { Beta } from "../../beta/contracts/public";\nexport type Alpha = Beta;\n',
-    "src/modules/beta/contracts/public.ts": "export type Beta = { ok: true };\n",
-    "src/modules/beta/core/public.ts": "export const beta = true;\n",
-  }, modules());
+  const directory = fixture(
+    "valid",
+    {
+      "src/modules/alpha/core/public.ts":
+        'import type { Beta } from "../../beta/contracts/public";\nexport type Alpha = Beta;\n',
+      "src/modules/beta/contracts/public.ts":
+        "export type Beta = { ok: true };\n",
+      "src/modules/beta/core/public.ts": "export const beta = true;\n",
+    },
+    modules(),
+  );
   const result = run(directory);
   rmSync(directory, { recursive: true, force: true });
   assert.equal(result.status, 0, result.stderr || result.stdout);
@@ -57,11 +76,16 @@ test("accepts a public type-only cross-module dependency", () => {
 });
 
 test("rejects a private cross-module import", () => {
-  const directory = fixture("private-entry", {
-    "src/modules/alpha/core/public.ts": 'import { secret } from "../../beta/contracts/private";\nexport { secret };\n',
-    "src/modules/beta/contracts/public.ts": "export const publicValue = 1;\n",
-    "src/modules/beta/contracts/private.ts": "export const secret = 2;\n",
-  }, modules());
+  const directory = fixture(
+    "private-entry",
+    {
+      "src/modules/alpha/core/public.ts":
+        'import { secret } from "../../beta/contracts/private";\nexport { secret };\n',
+      "src/modules/beta/contracts/public.ts": "export const publicValue = 1;\n",
+      "src/modules/beta/contracts/private.ts": "export const secret = 2;\n",
+    },
+    modules(),
+  );
   const result = run(directory);
   rmSync(directory, { recursive: true, force: true });
   assert.notEqual(result.status, 0);
@@ -69,10 +93,15 @@ test("rejects a private cross-module import", () => {
 });
 
 test("rejects an unregistered cross-module dependency", () => {
-  const directory = fixture("unknown-dependency", {
-    "src/modules/alpha/core/public.ts": 'import { publicValue } from "../../beta/contracts/public";\nexport { publicValue };\n',
-    "src/modules/beta/contracts/public.ts": "export const publicValue = 1;\n",
-  }, modules({ alphaDependencies: [] }));
+  const directory = fixture(
+    "unknown-dependency",
+    {
+      "src/modules/alpha/core/public.ts":
+        'import { publicValue } from "../../beta/contracts/public";\nexport { publicValue };\n',
+      "src/modules/beta/contracts/public.ts": "export const publicValue = 1;\n",
+    },
+    modules({ alphaDependencies: [] }),
+  );
   const result = run(directory);
   rmSync(directory, { recursive: true, force: true });
   assert.notEqual(result.status, 0);
@@ -117,7 +146,10 @@ test("rejects a public cross-module entry from the wrong environment", () => {
 test("checks the runtime module and rejects Electron in the OMP environment", () => {
   const directory = fixture(
     "runtime-environment",
-    { "runtime/host.mjs": 'import { app } from "electron";\nconsole.log(app);\n' },
+    {
+      "runtime/host.mjs":
+        'import { app } from "electron";\nconsole.log(app);\n',
+    },
     {
       runtime: {
         root: "runtime",
@@ -140,7 +172,8 @@ test("rejects forbidden external dependencies in shared, core and OMP environmen
     {
       name: "shared-node",
       files: {
-        "src/shared/public.ts": 'import "node:fs";\nexport const value = true;\n',
+        "src/shared/public.ts":
+          'import "node:fs";\nexport const value = true;\n',
       },
       modules: {
         shared: {
@@ -194,55 +227,78 @@ test("rejects forbidden external dependencies in shared, core and OMP environmen
     rmSync(directory, { recursive: true, force: true });
     assert.notEqual(result.status, 0, `${name} unexpectedly passed`);
     assert.match(`${result.stdout}\n${result.stderr}`, /ARCH-ENVIRONMENT/);
-    assert.match(`${result.stdout}\n${result.stderr}`, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+    assert.match(
+      `${result.stdout}\n${result.stderr}`,
+      new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
+    );
   }
 });
 
 test("allows supported external packages in platform-independent environments", () => {
-  const directory = fixture("valid-platform-packages", {
-    "src/shared/public.ts":
-      'import { createIntl } from "@formatjs/intl";\nimport { z } from "zod";\nexport const shared = [createIntl, z.string()];\n',
-    "src/modules/alpha/core/public.ts":
-      'import { z } from "zod";\nexport const alpha = z.string();\n',
-    "src/modules/beta/contracts/public.ts":
-      'import { createIntl } from "@formatjs/intl";\nexport const beta = createIntl;\n',
-  }, {
-    shared: {
-      root: "src/shared",
-      environments: ["shared"],
-      defaultEnvironment: "shared",
-      public: ["public.ts"],
-      dependsOn: [],
+  const directory = fixture(
+    "valid-platform-packages",
+    {
+      "src/shared/public.ts":
+        'import { createIntl } from "@formatjs/intl";\nimport { z } from "zod";\nexport const shared = [createIntl, z.string()];\n',
+      "src/modules/alpha/core/public.ts":
+        'import { z } from "zod";\nexport const alpha = z.string();\n',
+      "src/modules/beta/contracts/public.ts":
+        'import { createIntl } from "@formatjs/intl";\nexport const beta = createIntl;\n',
     },
-    alpha: {
-      root: "src/modules/alpha",
-      environments: ["core"],
-      public: ["core/public.ts"],
-      dependsOn: { core: [] },
+    {
+      shared: {
+        root: "src/shared",
+        environments: ["shared"],
+        defaultEnvironment: "shared",
+        public: ["public.ts"],
+        dependsOn: [],
+      },
+      alpha: {
+        root: "src/modules/alpha",
+        environments: ["core"],
+        public: ["core/public.ts"],
+        dependsOn: { core: [] },
+      },
+      beta: {
+        root: "src/modules/beta",
+        environments: ["contracts"],
+        public: ["contracts/public.ts"],
+        dependsOn: { contracts: [] },
+      },
     },
-    beta: {
-      root: "src/modules/beta",
-      environments: ["contracts"],
-      public: ["contracts/public.ts"],
-      dependsOn: { contracts: [] },
-    },
-  });
+  );
   const result = run(directory);
   rmSync(directory, { recursive: true, force: true });
   assert.equal(result.status, 0, result.stderr || result.stdout);
 });
 
 test("rejects a core import of a Node runtime and a file cycle", () => {
-  const environment = fixture("environment", { "src/modules/alpha/core/public.ts": 'import "node:fs";\nexport const value = 1;\n' }, modules({ betaDependencies: [] }));
+  const environment = fixture(
+    "environment",
+    {
+      "src/modules/alpha/core/public.ts":
+        'import "node:fs";\nexport const value = 1;\n',
+    },
+    modules({ betaDependencies: [] }),
+  );
   const environmentResult = run(environment);
   rmSync(environment, { recursive: true, force: true });
   assert.notEqual(environmentResult.status, 0);
-  assert.match(`${environmentResult.stdout}\n${environmentResult.stderr}`, /ARCH-ENVIRONMENT/);
+  assert.match(
+    `${environmentResult.stdout}\n${environmentResult.stderr}`,
+    /ARCH-ENVIRONMENT/,
+  );
 
-  const cycle = fixture("cycle", {
-    "src/modules/alpha/core/public.ts": 'import { beta } from "../../beta/core/public";\nexport const alpha = beta;\n',
-    "src/modules/beta/core/public.ts": 'import { alpha } from "../../alpha/core/public";\nexport const beta = alpha;\n',
-  }, modules({ betaDependencies: ["alpha"] }));
+  const cycle = fixture(
+    "cycle",
+    {
+      "src/modules/alpha/core/public.ts":
+        'import { beta } from "../../beta/core/public";\nexport const alpha = beta;\n',
+      "src/modules/beta/core/public.ts":
+        'import { alpha } from "../../alpha/core/public";\nexport const beta = alpha;\n',
+    },
+    modules({ betaDependencies: ["alpha"] }),
+  );
   const cycleResult = run(cycle);
   rmSync(cycle, { recursive: true, force: true });
   assert.notEqual(cycleResult.status, 0);
@@ -250,10 +306,22 @@ test("rejects a core import of a Node runtime and a file cycle", () => {
 });
 
 test("rejects production test-helper imports and non-literal dynamic imports", () => {
-  const directory = fixture("production-boundary", {
-    "src/modules/alpha/core/public.ts": 'import { helper } from "./support.test";\nconst name = globalThis as { moduleName?: string };\nawait import(name.moduleName);\nexport { helper };\n',
-    "src/modules/alpha/core/support.test.ts": "export const helper = 1;\n",
-  }, { alpha: { root: "src/modules/alpha", environments: ["core"], public: ["core/public.ts"], dependsOn: { core: [] } } });
+  const directory = fixture(
+    "production-boundary",
+    {
+      "src/modules/alpha/core/public.ts":
+        'import { helper } from "./support.test";\nconst name = globalThis as { moduleName?: string };\nawait import(name.moduleName);\nexport { helper };\n',
+      "src/modules/alpha/core/support.test.ts": "export const helper = 1;\n",
+    },
+    {
+      alpha: {
+        root: "src/modules/alpha",
+        environments: ["core"],
+        public: ["core/public.ts"],
+        dependsOn: { core: [] },
+      },
+    },
+  );
   const result = run(directory);
   rmSync(directory, { recursive: true, force: true });
   assert.notEqual(result.status, 0);
@@ -262,40 +330,86 @@ test("rejects production test-helper imports and non-literal dynamic imports", (
 });
 
 test("supports flat shared roots and explicit test-only public entries", () => {
-  const directory = fixture("flat-root", {
-    "src/shared/identity.ts": "export type Identity = { id: string };\n",
-    "src/shared/test-fixture.ts": "export const fixture = true;\n",
-    "src/modules/alpha/core/public.ts": 'import type { Identity } from "../../../shared/identity";\nexport type Alpha = Identity;\n',
-    "src/modules/alpha/core/consumer.test.ts": 'import { fixture } from "../../../shared/test-fixture";\nexport { fixture };\n',
-  }, {
-    shared: {
-      root: "src/shared",
-      environments: ["shared"],
-      defaultEnvironment: "shared",
-      public: ["identity.ts"],
-      testPublic: ["test-fixture.ts"],
-      dependsOn: [],
+  const directory = fixture(
+    "flat-root",
+    {
+      "src/shared/identity.ts": "export type Identity = { id: string };\n",
+      "src/shared/test-fixture.ts": "export const fixture = true;\n",
+      "src/modules/alpha/core/public.ts":
+        'import type { Identity } from "../../../shared/identity";\nexport type Alpha = Identity;\n',
+      "src/modules/alpha/core/consumer.test.ts":
+        'import { fixture } from "../../../shared/test-fixture";\nexport { fixture };\n',
     },
-    alpha: {
-      root: "src/modules/alpha",
-      environments: ["core"],
-      public: ["core/public.ts"],
-      dependsOn: { core: ["shared"] },
-      testDependsOn: ["shared"],
+    {
+      shared: {
+        root: "src/shared",
+        environments: ["shared"],
+        defaultEnvironment: "shared",
+        public: ["identity.ts"],
+        testPublic: ["test-fixture.ts"],
+        dependsOn: [],
+      },
+      alpha: {
+        root: "src/modules/alpha",
+        environments: ["core"],
+        public: ["core/public.ts"],
+        dependsOn: { core: ["shared"] },
+        testDependsOn: ["shared"],
+      },
     },
-  });
+  );
   const result = run(directory);
   rmSync(directory, { recursive: true, force: true });
   assert.equal(result.status, 0, result.stderr || result.stdout);
 });
 
 test("rejects source files outside configured modules and owned roots", () => {
-  const directory = fixture("unowned-source", {
-    "src/modules/alpha/core/public.ts": "export const alpha = true;\n",
-    "src/other/value.ts": "export const value = true;\n",
-  }, { alpha: { root: "src/modules/alpha", environments: ["core"], public: ["core/public.ts"], dependsOn: { core: [] } } });
+  const directory = fixture(
+    "unowned-source",
+    {
+      "src/modules/alpha/core/public.ts": "export const alpha = true;\n",
+      "src/other/value.ts": "export const value = true;\n",
+    },
+    {
+      alpha: {
+        root: "src/modules/alpha",
+        environments: ["core"],
+        public: ["core/public.ts"],
+        dependsOn: { core: [] },
+      },
+    },
+  );
   const result = run(directory);
   rmSync(directory, { recursive: true, force: true });
   assert.notEqual(result.status, 0);
   assert.match(`${result.stdout}\n${result.stderr}`, /ARCH-UNOWNED/);
+});
+
+test("resolves directory index imports before checking cross-module privacy", () => {
+  const directory = fixture(
+    "directory-index",
+    {
+      "src/modules/alpha/core/public.ts":
+        'import { beta } from "../../beta/core";\nexport const alpha = beta;\n',
+      "src/modules/beta/core/public.ts": "export const beta = true;\n",
+      "src/modules/beta/core/index.ts": "export const beta = true;\n",
+      "src/modules/beta/contracts/public.ts":
+        "export type Beta = { id: string };\n",
+    },
+    modules(),
+  );
+  try {
+    const result = run(directory);
+    assert.notEqual(
+      result.status,
+      0,
+      "a directory must not bypass the private index entry check",
+    );
+    assert.match(
+      `${result.stdout}\n${result.stderr}`,
+      /ARCH-PRIVATE-IMPORT.*beta\/core\/index\.ts/,
+    );
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 });

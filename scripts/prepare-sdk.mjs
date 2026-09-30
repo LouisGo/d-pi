@@ -13,6 +13,20 @@ import { createRequire } from "node:module";
 import { dirname, join, relative, resolve } from "node:path";
 
 const require = createRequire(import.meta.url);
+const declared = JSON.parse(await readFile("package.json", "utf8"));
+const versions = {};
+for (const name of ["@oh-my-pi/pi-coding-agent", "@oh-my-pi/pi-utils", "bun"]) {
+  const installed = JSON.parse(
+    await readFile(`node_modules/${name}/package.json`, "utf8"),
+  );
+  const expected =
+    declared.devDependencies?.[name] ?? declared.dependencies?.[name];
+  if (installed.name !== name || installed.version !== expected)
+    throw Error(
+      `${name} does not match the declared version; install with the frozen lockfile before preparing SDK resources`,
+    );
+  versions[name] = installed.version;
+}
 const root = resolve("resources/sdk");
 await mkdir(join(root, "node_modules", "@oh-my-pi"), { recursive: true });
 const source = await realpath("node_modules/@oh-my-pi/pi-coding-agent");
@@ -91,8 +105,8 @@ await writeFile(
   JSON.stringify(
     {
       lockHash,
-      sdkVersion: "18.3.0",
-      bunVersion: "1.3.14",
+      sdkVersion: versions["@oh-my-pi/pi-coding-agent"],
+      bunVersion: versions.bun,
       platform: `${process.platform}-${process.arch}`,
       hashes,
     },
@@ -101,5 +115,5 @@ await writeFile(
   ),
 );
 console.log(
-  `Prepared unchanged official SDK 18.3.0: ${copied.size} dependency units`,
+  `Prepared unchanged official SDK ${versions["@oh-my-pi/pi-coding-agent"]}: ${copied.size} dependency units`,
 );

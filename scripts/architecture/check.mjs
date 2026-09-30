@@ -1,9 +1,23 @@
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { builtinModules } from "node:module";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, extname, relative, resolve, sep } from "node:path";
-import { createScanner, LanguageVariant, SyntaxKind } from "typescript/unstable/ast";
+import { pathToFileURL } from "node:url";
+import {
+  createScanner,
+  LanguageVariant,
+  SyntaxKind,
+} from "typescript/unstable/ast";
 
-const SOURCE_EXTENSIONS = new Set([".cjs", ".cts", ".js", ".jsx", ".mjs", ".mts", ".ts", ".tsx"]);
+const SOURCE_EXTENSIONS = new Set([
+  ".cjs",
+  ".cts",
+  ".js",
+  ".jsx",
+  ".mjs",
+  ".mts",
+  ".ts",
+  ".tsx",
+]);
 const ENVIRONMENTS = new Set([
   "contracts",
   "core",
@@ -37,10 +51,17 @@ const ALLOWED_CROSS_MODULE = {
   omp: new Set(["omp", "shared"]),
   shared: new Set(["shared"]),
 };
-const BUILTINS = new Set(builtinModules.flatMap((value) => [value, `node:${value}`]));
-const UI_VENDOR = /^(?:electron|react(?:$|\/)|react-dom(?:$|\/)|@tiptap\/|@base-ui\/|@hugeicons\/|monaco-editor(?:$|\/))/;
+const BUILTINS = new Set(
+  builtinModules.flatMap((value) => [value, `node:${value}`]),
+);
+const UI_VENDOR =
+  /^(?:electron|react(?:$|\/)|react-dom(?:$|\/)|@tiptap\/|@base-ui\/|@hugeicons\/|monaco-editor(?:$|\/))/;
 const OMP_VENDOR = /^@oh-my-pi(?:$|\/)/;
-const PLATFORM_INDEPENDENT_ENVIRONMENTS = new Set(["contracts", "core", "shared"]);
+const PLATFORM_INDEPENDENT_ENVIRONMENTS = new Set([
+  "contracts",
+  "core",
+  "shared",
+]);
 const ELECTRON_VENDOR = /^(?:electron)(?:$|\/)/;
 const LEGACY_ROOTS = [
   "src/features/",
@@ -51,17 +72,26 @@ const LEGACY_ROOTS = [
 ];
 
 function usage(message) {
-  throw new Error(`${message}\nUsage: node scripts/architecture/check.mjs --config architecture/modules.json [--root .]`);
+  throw new Error(
+    `${message}\nUsage: node scripts/architecture/check.mjs --config architecture/modules.json [--root .]`,
+  );
 }
 
 function parseArgs(argv) {
-  const result = { root: process.cwd(), config: resolve(process.cwd(), "architecture/modules.json") };
+  const result = {
+    root: process.cwd(),
+    config: resolve(process.cwd(), "architecture/modules.json"),
+  };
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
-    if (argument === "--root") result.root = resolve(argv[++index] ?? usage("missing --root"));
-    else if (argument === "--config") result.config = resolve(argv[++index] ?? usage("missing --config"));
+    if (argument === "--root")
+      result.root = resolve(argv[++index] ?? usage("missing --root"));
+    else if (argument === "--config")
+      result.config = resolve(argv[++index] ?? usage("missing --config"));
     else if (argument === "--help") {
-      console.log("Usage: node scripts/architecture/check.mjs --config architecture/modules.json [--root .]");
+      console.log(
+        "Usage: node scripts/architecture/check.mjs --config architecture/modules.json [--root .]",
+      );
       process.exit(0);
     } else usage(`unknown argument: ${argument}`);
   }
@@ -99,13 +129,29 @@ function sourceFiles(directory) {
 }
 
 function isTestFile(path) {
-  return /(?:\.test|\.spec)\.[cm]?[jt]sx?$/.test(path) || /(?:^|[/\\])tests?(?:[/\\]|$)/.test(path);
+  return (
+    /(?:\.test|\.spec)\.[cm]?[jt]sx?$/.test(path) ||
+    /(?:^|[/\\])tests?(?:[/\\]|$)/.test(path)
+  );
 }
 
 function resolveFile(candidate) {
-  const extensions = [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs"];
-  const candidates = [candidate, ...extensions.map((extension) => `${candidate}${extension}`)];
-  for (const path of candidates) if (existsSync(path) && !path.endsWith(sep)) return resolve(path);
+  const extensions = [
+    ".ts",
+    ".tsx",
+    ".mts",
+    ".cts",
+    ".js",
+    ".jsx",
+    ".mjs",
+    ".cjs",
+  ];
+  const candidates = [
+    candidate,
+    ...extensions.map((extension) => `${candidate}${extension}`),
+  ];
+  for (const path of candidates)
+    if (existsSync(path) && statSync(path).isFile()) return resolve(path);
   for (const extension of extensions) {
     const path = resolve(candidate, `index${extension}`);
     if (existsSync(path)) return resolve(path);
@@ -115,22 +161,34 @@ function resolveFile(candidate) {
 
 function resolveSpecifier(specifier, importer, root) {
   const clean = specifier.split("?")[0];
-  if (clean.startsWith(".")) return resolveFile(resolve(dirname(importer), clean));
+  if (clean.startsWith("."))
+    return resolveFile(resolve(dirname(importer), clean));
   if (clean.startsWith("src/")) return resolveFile(resolve(root, clean));
-  if (clean.startsWith("@/")) return resolveFile(resolve(root, "src/app/renderer", clean.slice(2)));
-  if (clean.startsWith("@modules/")) return resolveFile(resolve(root, "src/modules", clean.slice("@modules/".length)));
+  if (clean.startsWith("@/"))
+    return resolveFile(resolve(root, "src/app/renderer", clean.slice(2)));
+  if (clean.startsWith("@modules/"))
+    return resolveFile(
+      resolve(root, "src/modules", clean.slice("@modules/".length)),
+    );
   return null;
 }
 
 function tokenise(path) {
   const text = readFileSync(path, "utf8");
-  const variant = path.endsWith(".tsx") || path.endsWith(".jsx") ? LanguageVariant.JSX : LanguageVariant.Standard;
+  const variant =
+    path.endsWith(".tsx") || path.endsWith(".jsx")
+      ? LanguageVariant.JSX
+      : LanguageVariant.Standard;
   const scanner = createScanner(true, variant, text, 0, text.length);
   const tokens = [];
   let token;
   do {
     token = scanner.scan();
-    tokens.push({ kind: token, text: scanner.getTokenText(), value: scanner.getTokenValue() });
+    tokens.push({
+      kind: token,
+      text: scanner.getTokenText(),
+      value: scanner.getTokenValue(),
+    });
   } while (token !== SyntaxKind.EndOfFile);
   return tokens;
 }
@@ -142,19 +200,37 @@ function stringToken(token) {
 function importsOf(path, config) {
   const imports = [];
   const errors = [];
+  const unparsed = [];
   let tokens;
   try {
     tokens = tokenise(path);
   } catch (error) {
-    return { imports, errors: [`ARCH-PARSE: ${path}: ${error.message}`] };
+    return {
+      imports,
+      unparsed,
+      errors: [`ARCH-PARSE: ${path}: ${error.message}`],
+    };
   }
-  const allowedDynamic = (config.unresolved?.dynamicImports ?? []).map((value) => new RegExp(value));
+  const allowedDynamic = (config.unresolved?.dynamicImports ?? []).map(
+    (value) => new RegExp(value),
+  );
   const addDynamicError = (specifier) => {
-    if (!allowedDynamic.some((pattern) => pattern.test(path) || (specifier && pattern.test(specifier)))) errors.push(`ARCH-NONLITERAL-IMPORT: ${path} has a non-literal dynamic import`);
+    const allowed = allowedDynamic.some(
+      (pattern) => pattern.test(path) || (specifier && pattern.test(specifier)),
+    );
+    unparsed.push({ kind: "dynamic-import", allowed });
+    if (!allowed)
+      errors.push(
+        `ARCH-NONLITERAL-IMPORT: ${path} has a non-literal dynamic import`,
+      );
   };
   const scanStatementEnd = (start) => {
     for (let index = start; index < tokens.length; index += 1) {
-      if (tokens[index].kind === SyntaxKind.SemicolonToken || tokens[index].kind === SyntaxKind.EndOfFile) return index;
+      if (
+        tokens[index].kind === SyntaxKind.SemicolonToken ||
+        tokens[index].kind === SyntaxKind.EndOfFile
+      )
+        return index;
     }
     return tokens.length;
   };
@@ -194,17 +270,31 @@ function importsOf(path, config) {
       }
       continue;
     }
-    if (current.kind === SyntaxKind.Identifier && current.text === "require" && tokens[index + 1]?.kind === SyntaxKind.OpenParenToken) {
+    if (
+      current.kind === SyntaxKind.Identifier &&
+      current.text === "require" &&
+      tokens[index + 1]?.kind === SyntaxKind.OpenParenToken
+    ) {
       const specifier = stringToken(tokens[index + 2]);
       if (specifier) imports.push({ specifier, kind: "require" });
-      else errors.push(`ARCH-NONLITERAL-IMPORT: ${path} has a non-literal require`);
+      else {
+        unparsed.push({ kind: "require", allowed: false });
+        errors.push(
+          `ARCH-NONLITERAL-IMPORT: ${path} has a non-literal require`,
+        );
+      }
     }
   }
-  return { imports, errors };
+  return { imports, unparsed, errors };
 }
 
 function configuredModules(root, config) {
-  if (config.version !== 1 || !config.modules || typeof config.modules !== "object") throw new Error("ARCH-MANIFEST: expected version 1 and a modules object");
+  if (
+    config.version !== 1 ||
+    !config.modules ||
+    typeof config.modules !== "object"
+  )
+    throw new Error("ARCH-MANIFEST: expected version 1 and a modules object");
   return Object.entries(config.modules).map(([name, value]) => {
     const moduleRoot = resolve(root, value.root);
     return {
@@ -212,8 +302,12 @@ function configuredModules(root, config) {
       root: moduleRoot,
       environments: new Set(value.environments ?? []),
       defaultEnvironment: value.defaultEnvironment,
-      public: new Set((value.public ?? []).map((path) => resolve(moduleRoot, path))),
-      testPublic: new Set((value.testPublic ?? []).map((path) => resolve(moduleRoot, path))),
+      public: new Set(
+        (value.public ?? []).map((path) => resolve(moduleRoot, path)),
+      ),
+      testPublic: new Set(
+        (value.testPublic ?? []).map((path) => resolve(moduleRoot, path)),
+      ),
       dependsOn: value.dependsOn ?? [],
       testDependsOn: value.testDependsOn ?? [],
     };
@@ -232,55 +326,114 @@ function allowedDependencies(module, environment, sourceTest) {
 }
 
 function isAllowedUnresolved(config, specifier) {
-  return (config.unresolved?.allowed ?? []).some((value) => new RegExp(value).test(specifier));
+  return (config.unresolved?.allowed ?? []).some((value) =>
+    new RegExp(value).test(specifier),
+  );
 }
 
 function externalEnvironmentViolation(environment, specifier) {
   if (
     PLATFORM_INDEPENDENT_ENVIRONMENTS.has(environment) &&
-    (BUILTINS.has(specifier) || UI_VENDOR.test(specifier) || OMP_VENDOR.test(specifier))
+    (BUILTINS.has(specifier) ||
+      UI_VENDOR.test(specifier) ||
+      OMP_VENDOR.test(specifier))
   )
     return true;
   if (environment === "omp" && UI_VENDOR.test(specifier)) return true;
-  if (["host", "node"].includes(environment) && ELECTRON_VENDOR.test(specifier)) return true;
+  if (["host", "node"].includes(environment) && ELECTRON_VENDOR.test(specifier))
+    return true;
   return false;
 }
 
-function main() {
-  const { root, config: configPath } = parseArgs(process.argv.slice(2));
-  const config = readJson(configPath);
-  const exceptionsPath = resolve(root, config.exceptions ?? "architecture/exceptions.json");
-  const exceptions = existsSync(exceptionsPath) ? readJson(exceptionsPath) : { exceptions: [] };
+export function scanArchitecture(
+  root,
+  config = readJson(resolve(root, "architecture/modules.json")),
+) {
+  const exceptionsPath = resolve(
+    root,
+    config.exceptions ?? "architecture/exceptions.json",
+  );
+  const exceptions = existsSync(exceptionsPath)
+    ? readJson(exceptionsPath)
+    : { exceptions: [] };
   const modules = configuredModules(root, config);
-  const sourceRoots = (config.sourceRoots ?? ["src"]).map((path) => resolve(root, path));
-  const ownedRoots = (config.ownedRoots ?? []).map((path) => resolve(root, path));
+  const sourceRoots = (config.sourceRoots ?? ["src"]).map((path) =>
+    resolve(root, path),
+  );
+  const ownedRoots = (config.ownedRoots ?? []).map((path) =>
+    resolve(root, path),
+  );
   const errors = [];
+  const imports = [];
+  const unparsed = [];
+  const appliedExceptions = [];
   const files = new Map();
   const graph = new Map();
-  const exceptionMatches = (id, from, to) => (exceptions.exceptions ?? []).some((entry) =>
-    (entry.rules ?? ["*"]).some((rule) => rule === "*" || rule === id) &&
-    new RegExp(entry.from).test(from) && new RegExp(entry.to).test(to),
-  );
+  const exceptionMatches = (id, from, to) =>
+    (exceptions.exceptions ?? []).filter(
+      (entry) =>
+        (entry.rules ?? ["*"]).some((rule) => rule === "*" || rule === id) &&
+        new RegExp(entry.from).test(from) &&
+        new RegExp(entry.to).test(to),
+    );
   const report = (id, message, from = "", to = "") => {
-    if (!exceptionMatches(id, from, to)) errors.push(`${id}: ${message}`);
+    const matches = exceptionMatches(id, from, to);
+    if (matches.length === 0) errors.push(`${id}: ${message}`);
+    else
+      for (const entry of matches)
+        appliedExceptions.push({
+          rule: id,
+          from,
+          to,
+          removeBy: entry.removeBy,
+          reason: entry.reason,
+        });
   };
 
   for (const module of modules) {
-    if (!existsSync(module.root)) report("ARCH-MANIFEST", `${module.name} root is missing: ${relativePath(root, module.root)}`);
-    if (module.environments.size === 0 || [...module.environments].some((value) => !ENVIRONMENTS.has(value))) report("ARCH-MANIFEST", `${module.name} has invalid environments`);
-    if (module.defaultEnvironment && !module.environments.has(module.defaultEnvironment)) report("ARCH-MANIFEST", `${module.name} has invalid default environment`);
+    if (!existsSync(module.root))
+      report(
+        "ARCH-MANIFEST",
+        `${module.name} root is missing: ${relativePath(root, module.root)}`,
+      );
+    if (
+      module.environments.size === 0 ||
+      [...module.environments].some((value) => !ENVIRONMENTS.has(value))
+    )
+      report("ARCH-MANIFEST", `${module.name} has invalid environments`);
+    if (
+      module.defaultEnvironment &&
+      !module.environments.has(module.defaultEnvironment)
+    )
+      report("ARCH-MANIFEST", `${module.name} has invalid default environment`);
     for (const publicPath of module.public) {
-      if (!isWithin(publicPath, module.root) || !existsSync(publicPath)) report("ARCH-PUBLIC-ENTRY", `${module.name} public entry is missing: ${relativePath(root, publicPath)}`);
+      if (!isWithin(publicPath, module.root) || !existsSync(publicPath))
+        report(
+          "ARCH-PUBLIC-ENTRY",
+          `${module.name} public entry is missing: ${relativePath(root, publicPath)}`,
+        );
     }
     for (const publicPath of module.testPublic) {
-      if (!isWithin(publicPath, module.root) || !existsSync(publicPath)) report("ARCH-TEST-PUBLIC-ENTRY", `${module.name} test public entry is missing: ${relativePath(root, publicPath)}`);
+      if (!isWithin(publicPath, module.root) || !existsSync(publicPath))
+        report(
+          "ARCH-TEST-PUBLIC-ENTRY",
+          `${module.name} test public entry is missing: ${relativePath(root, publicPath)}`,
+        );
     }
     const dependencies = [
-      ...(Array.isArray(module.dependsOn) ? module.dependsOn : Object.values(module.dependsOn).flat()),
-      ...(Array.isArray(module.testDependsOn) ? module.testDependsOn : Object.values(module.testDependsOn).flat()),
+      ...(Array.isArray(module.dependsOn)
+        ? module.dependsOn
+        : Object.values(module.dependsOn).flat()),
+      ...(Array.isArray(module.testDependsOn)
+        ? module.testDependsOn
+        : Object.values(module.testDependsOn).flat()),
     ];
     for (const dependency of new Set(dependencies)) {
-      if (!modules.some((candidate) => candidate.name === dependency)) report("ARCH-MODULE-CONFIG", `${module.name} depends on unknown module ${dependency}`);
+      if (!modules.some((candidate) => candidate.name === dependency))
+        report(
+          "ARCH-MODULE-CONFIG",
+          `${module.name} depends on unknown module ${dependency}`,
+        );
     }
     for (const path of sourceFiles(module.root)) {
       const firstSegment = relativePath(module.root, path).split("/")[0];
@@ -288,58 +441,177 @@ function main() {
         module,
         environment: module.environments.has(firstSegment)
           ? firstSegment
-          : module.defaultEnvironment ?? firstSegment,
+          : (module.defaultEnvironment ?? firstSegment),
       });
       graph.set(path, []);
     }
   }
 
-  for (const sourcePath of new Set(sourceRoots.flatMap((sourceRoot) => sourceFiles(sourceRoot)))) {
-    if (files.has(sourcePath) || ownedRoots.some((ownedRoot) => isWithin(sourcePath, ownedRoot))) continue;
+  for (const sourcePath of new Set(
+    sourceRoots.flatMap((sourceRoot) => sourceFiles(sourceRoot)),
+  )) {
+    if (
+      files.has(sourcePath) ||
+      ownedRoots.some((ownedRoot) => isWithin(sourcePath, ownedRoot))
+    )
+      continue;
     const sourceRelative = relativePath(root, sourcePath);
-    report("ARCH-UNOWNED", `${sourceRelative} is outside configured modules and owned roots`, sourceRelative);
+    report(
+      "ARCH-UNOWNED",
+      `${sourceRelative} is outside configured modules and owned roots`,
+      sourceRelative,
+    );
   }
 
   for (const [sourcePath, sourceInfo] of files) {
     const sourceRelative = relativePath(root, sourcePath);
     const sourceTest = isTestFile(sourcePath);
     if (!sourceInfo.module.environments.has(sourceInfo.environment)) {
-      report("ARCH-ENVIRONMENT", `${sourceRelative} is not inside a declared environment`, sourceRelative);
+      report(
+        "ARCH-ENVIRONMENT",
+        `${sourceRelative} is not inside a declared environment`,
+        sourceRelative,
+      );
       continue;
     }
     const parsed = importsOf(sourcePath, config);
+    unparsed.push(
+      ...parsed.unparsed.map((entry) => ({ from: sourceRelative, ...entry })),
+    );
     for (const error of parsed.errors) {
       const separator = error.indexOf(":");
       const id = separator < 0 ? "ARCH-PARSE" : error.slice(0, separator);
       const message = separator < 0 ? error : error.slice(separator + 1).trim();
       report(id, message, sourceRelative);
     }
-    for (const { specifier } of parsed.imports) {
-      const rendererProcess = sourceInfo.environment === "renderer" && (BUILTINS.has(specifier) || specifier === "electron");
-      if (!sourceTest && (externalEnvironmentViolation(sourceInfo.environment, specifier) || rendererProcess)) report("ARCH-ENVIRONMENT", `${sourceRelative} imports ${specifier}`, sourceRelative, specifier);
+    for (const { specifier, kind } of parsed.imports) {
+      const rendererProcess =
+        sourceInfo.environment === "renderer" &&
+        (BUILTINS.has(specifier) || specifier === "electron");
+      if (
+        !sourceTest &&
+        (externalEnvironmentViolation(sourceInfo.environment, specifier) ||
+          rendererProcess)
+      )
+        report(
+          "ARCH-ENVIRONMENT",
+          `${sourceRelative} imports ${specifier}`,
+          sourceRelative,
+          specifier,
+        );
       const target = resolveSpecifier(specifier, sourcePath, root);
+      const local =
+        specifier.startsWith(".") ||
+        specifier.startsWith("src/") ||
+        specifier.startsWith("@/") ||
+        specifier.startsWith("@modules/");
+      const targetInfo = target ? files.get(target) : undefined;
+      imports.push({
+        from: sourceRelative,
+        sourceModule: sourceInfo.module.name,
+        sourceEnvironment: sourceInfo.environment,
+        test: sourceTest,
+        specifier,
+        kind,
+        resolution: targetInfo
+          ? "module"
+          : target
+            ? "unowned"
+            : local
+              ? "unresolved"
+              : "external",
+        ...(target ? { to: relativePath(root, target) } : {}),
+        ...(targetInfo
+          ? {
+              targetModule: targetInfo.module.name,
+              targetEnvironment: targetInfo.environment,
+            }
+          : {}),
+        ...(!target && local
+          ? { allowed: isAllowedUnresolved(config, specifier) }
+          : {}),
+      });
       if (!target) {
-        if (specifier.startsWith(".") || specifier.startsWith("src/") || specifier.startsWith("@/") || specifier.startsWith("@modules/")) {
-          if (!isAllowedUnresolved(config, specifier)) report("ARCH-UNRESOLVED", `${sourceRelative} cannot resolve ${specifier}`, sourceRelative, specifier);
+        if (local) {
+          if (!isAllowedUnresolved(config, specifier))
+            report(
+              "ARCH-UNRESOLVED",
+              `${sourceRelative} cannot resolve ${specifier}`,
+              sourceRelative,
+              specifier,
+            );
         }
         continue;
       }
       const targetRelative = relativePath(root, target);
-      if (/(?:\.test|\.spec)\.[cm]?[jt]sx?$/.test(target) && !sourceTest) report("ARCH-TEST-IMPORT", `${sourceRelative} imports test code ${targetRelative}`, sourceRelative, targetRelative);
-      const targetInfo = files.get(target);
+      if (/(?:\.test|\.spec)\.[cm]?[jt]sx?$/.test(target) && !sourceTest)
+        report(
+          "ARCH-TEST-IMPORT",
+          `${sourceRelative} imports test code ${targetRelative}`,
+          sourceRelative,
+          targetRelative,
+        );
       if (!targetInfo) {
-        if (LEGACY_ROOTS.some((prefix) => targetRelative.startsWith(prefix))) report("ARCH-LEGACY-IMPORT", `${sourceRelative} imports legacy source: ${targetRelative}`, sourceRelative, targetRelative);
+        if (LEGACY_ROOTS.some((prefix) => targetRelative.startsWith(prefix)))
+          report(
+            "ARCH-LEGACY-IMPORT",
+            `${sourceRelative} imports legacy source: ${targetRelative}`,
+            sourceRelative,
+            targetRelative,
+          );
         continue;
       }
       graph.get(sourcePath).push(target);
       if (targetInfo.module.name === sourceInfo.module.name) {
-        if (!ALLOWED_SAME_MODULE[sourceInfo.environment]?.has(targetInfo.environment)) report("ARCH-ENVIRONMENT", `${sourceRelative} imports ${targetRelative} across ${sourceInfo.environment} -> ${targetInfo.environment}`, sourceRelative, targetRelative);
+        if (
+          !ALLOWED_SAME_MODULE[sourceInfo.environment]?.has(
+            targetInfo.environment,
+          )
+        )
+          report(
+            "ARCH-ENVIRONMENT",
+            `${sourceRelative} imports ${targetRelative} across ${sourceInfo.environment} -> ${targetInfo.environment}`,
+            sourceRelative,
+            targetRelative,
+          );
         continue;
       }
-      if (!sourceTest && !ALLOWED_CROSS_MODULE[sourceInfo.environment]?.has(targetInfo.environment)) report("ARCH-ENVIRONMENT", `${sourceRelative} imports ${targetRelative} across ${sourceInfo.environment} -> ${targetInfo.environment}`, sourceRelative, targetRelative);
-      if (!allowedDependencies(sourceInfo.module, sourceInfo.environment, sourceTest).has(targetInfo.module.name)) report("ARCH-DEPENDENCY", `${sourceInfo.module.name}/${sourceInfo.environment} cannot depend on ${targetInfo.module.name}: ${sourceRelative} -> ${targetRelative}`, sourceRelative, targetRelative);
-      const targetPublic = [...targetInfo.module.public].some((path) => path === target) || (sourceTest && [...targetInfo.module.testPublic].some((path) => path === target));
-      if (!targetPublic) report("ARCH-PRIVATE-IMPORT", `${sourceRelative} imports private ${targetRelative}`, sourceRelative, targetRelative);
+      if (
+        !sourceTest &&
+        !ALLOWED_CROSS_MODULE[sourceInfo.environment]?.has(
+          targetInfo.environment,
+        )
+      )
+        report(
+          "ARCH-ENVIRONMENT",
+          `${sourceRelative} imports ${targetRelative} across ${sourceInfo.environment} -> ${targetInfo.environment}`,
+          sourceRelative,
+          targetRelative,
+        );
+      if (
+        !allowedDependencies(
+          sourceInfo.module,
+          sourceInfo.environment,
+          sourceTest,
+        ).has(targetInfo.module.name)
+      )
+        report(
+          "ARCH-DEPENDENCY",
+          `${sourceInfo.module.name}/${sourceInfo.environment} cannot depend on ${targetInfo.module.name}: ${sourceRelative} -> ${targetRelative}`,
+          sourceRelative,
+          targetRelative,
+        );
+      const targetPublic =
+        [...targetInfo.module.public].some((path) => path === target) ||
+        (sourceTest &&
+          [...targetInfo.module.testPublic].some((path) => path === target));
+      if (!targetPublic)
+        report(
+          "ARCH-PRIVATE-IMPORT",
+          `${sourceRelative} imports private ${targetRelative}`,
+          sourceRelative,
+          targetRelative,
+        );
     }
   }
 
@@ -348,7 +620,9 @@ function main() {
   const stack = [];
   const visit = (path) => {
     if (visiting.has(path)) {
-      const cycle = [...stack.slice(stack.indexOf(path)), path].map((item) => relativePath(root, item)).join(" -> ");
+      const cycle = [...stack.slice(stack.indexOf(path)), path]
+        .map((item) => relativePath(root, item))
+        .join(" -> ");
       report("ARCH-CYCLE", cycle, relativePath(root, path), cycle);
       return;
     }
@@ -362,13 +636,36 @@ function main() {
   };
   for (const path of graph.keys()) visit(path);
 
-  const uniqueErrors = [...new Set(errors)];
+  return {
+    files: [...files].map(([path, info]) => ({
+      path: relativePath(root, path),
+      module: info.module.name,
+      environment: info.environment,
+      test: isTestFile(path),
+    })),
+    imports,
+    unparsed,
+    appliedExceptions,
+    errors: [...new Set(errors)],
+  };
+}
+
+function main() {
+  const { root, config: configPath } = parseArgs(process.argv.slice(2));
+  const result = scanArchitecture(root, readJson(configPath));
+  const uniqueErrors = result.errors;
   if (uniqueErrors.length > 0) {
     for (const error of uniqueErrors) console.error(error);
     process.exitCode = 1;
     return;
   }
-  console.log(`PASS: architecture boundaries (${files.size} source files checked, TypeScript scanner)`);
+  console.log(
+    `PASS: architecture boundaries (${result.files.length} source files checked, TypeScript scanner)`,
+  );
 }
 
-main();
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(resolve(process.argv[1])).href
+)
+  main();

@@ -6,11 +6,13 @@
 
 ## 环境准备与启动
 
-本轮开发环境目标为 **Node 24.21.0 / pnpm 10.5.2**。`package.json` 的 Node 最低声明不代表所有满足版本均已验证。开发 Node、Electron 内嵌 Node、OMP 宿主 Bun 各自独立；固定依赖与资源版本由锁文件和资源 manifest 核对。
+本轮开发环境目标为 **Node 24.21.0 / pnpm 10.5.2**，分别以 `.node-version` 与 `packageManager` 为单一入口。`package.json` 的 Node 最低声明不代表所有满足版本均已验证。开发 Node、Electron 内嵌 Node、OMP 宿主 Bun 各自独立；固定依赖与资源版本由锁文件和资源 manifest 核对。
 
 ```sh
 pnpm install --frozen-lockfile
+pnpm exec install-electron
 pnpm runtime:sdk
+pnpm check:environment
 pnpm check
 pnpm build
 pnpm dev
@@ -19,8 +21,11 @@ pnpm dev
 | 命令 | 前置与结果 |
 | --- | --- |
 | `pnpm install --frozen-lockfile` | 安装锁定依赖；需要包仓库可访问或完整可用的离线缓存，不承诺无网络首次安装 |
+| `pnpm exec install-electron` | 串行准备已安装版本的 Electron 分发，避免首次测试多个进程同时自动下载；已有完整分发时直接返回 |
 | `pnpm runtime:sdk` | 使用已安装的锁定依赖准备 `resources/sdk`：官方 SDK 依赖图、Bun、App 薄宿主、消费门控和 manifest；不使用全局 OMP |
-| `pnpm check` | 类型、代码/设计/i18n、架构边界及自动测试；检查通过不等于 GUI 或用户试用通过 |
+| `pnpm check:environment` | 检查开发工具、已安装依赖、Electron 实际内嵌 Node、Bun 与 SDK manifest/资源哈希；缺失和异常启动变量明确失败 |
+| `pnpm check` | 快速工具环境、类型、代码/设计/i18n、文档引用、架构及报告新鲜度、门禁负例与隔离自动测试；检查通过不等于 GUI 或用户试用通过 |
+| `pnpm check:fast` | 已有本地 hook 可调用的快速入口，不启动原生进程、准备资源或运行打包；仓库不自动安装 Git hook |
 | `pnpm build` | 构建 Electron Main/preload/Renderer 到 `out/`；不单独准备 SDK 或生成 `.app` |
 | `pnpm dev` | 启动开发态应用；需先准备匹配本机平台/架构的 SDK 资源 |
 | `pnpm package:mac` | 先准备 SDK、构建，再生成未签名的本地 macOS 应用目录；产物在 `dist/`，实际构建标识以交接为准 |
@@ -28,6 +33,8 @@ pnpm dev
 当前已验证交付平台为 macOS arm64，未承诺 Windows/Linux、其他架构、签名或公证。`resources/sdk`、`out` 与 `dist` 都是可重建产物，不把作者机器的资源目录当干净环境前置。独立环境验证与实际证据由重写任务记录维护。
 
 `pnpm runtime:fetch` 另行下载并校验固定官方 **CLI artifact**，用于保留的对应验证路径；当前 artifact manifest 只包含 `darwin-arm64`。该命令不准备 SDK 资源，不是当前应用启动的必需步骤。
+
+`pnpm report:structure` 分开展示允许依赖与实际源码导入；审查相关源代码/规则变更后运行 `pnpm report:structure:write` 更新入库快照，`pnpm check:structure` 会拒绝陈旧报告。测试入口会创建受控临时环境，不继承个人凭据、App 数据、OMP 配置/会话或 Git 全局配置。CI 可复用上面的冻结安装、资源准备、环境检查、`check` 和 `build`，当前仓库没有 CI 配置。
 
 ## 配置与数据边界
 
