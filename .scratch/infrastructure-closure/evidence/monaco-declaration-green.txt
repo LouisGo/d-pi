@@ -1,0 +1,15 @@
+✔ the fast environment gate accepts pinned required foundations and peer-qualified lock entries (82.431459ms)
+✔ deleting a confirmed foundation dependency cannot make the gate pass (604.766958ms)
+✔ foundation dependencies must be declared in their runtime or development section (60.173291ms)
+✔ rejects ranges and the wrong Zod major (109.264667ms)
+✔ rejects a stale lock specifier, resolved version or extra importer dependency (211.497458ms)
+✔ rejects inconsistent package families even when the lock agrees (212.513667ms)
+✔ an unsupported or unreadable lock cannot be reported as consistent (99.6905ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1465.964

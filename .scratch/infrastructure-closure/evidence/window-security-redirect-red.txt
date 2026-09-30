@@ -1,0 +1,37 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/lou/Learn/d-pi[39m
+
+ [31m❯[39m tests/integration/window-security.integration.test.ts [2m([22m[2m12 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 1300[2mms[22m[39m
+   [33m[2m✓[22m[39m keeps the packaged privileged window local even when a development URL is inherited[33m 509[2mms[22m[39m
+   [32m✓[39m does not give an external development page the application preload[32m 72[2mms[22m[39m
+   [32m✓[39m keeps an untrusted development target local: http://localhost.external.example.test/[32m 69[2mms[22m[39m
+   [32m✓[39m keeps an untrusted development target local: http://user:password@localhost:5173/[32m 67[2mms[22m[39m
+   [32m✓[39m keeps an untrusted development target local: data:text/html,<script>window.dPi.locale.snapshot()</script>[32m 70[2mms[22m[39m
+   [32m✓[39m keeps an untrusted development target local: file:///tmp/external.html[32m 65[2mms[22m[39m
+   [32m✓[39m keeps an untrusted development target local: not a URL[32m 79[2mms[22m[39m
+   [32m✓[39m retains local development loading: http://localhost:5173/[32m 64[2mms[22m[39m
+   [32m✓[39m retains local development loading: http://127.0.0.1:5173/[32m 68[2mms[22m[39m
+   [32m✓[39m retains local development loading: http://[::1]:5173/[32m 67[2mms[22m[39m
+[31m   [31m×[31m blocks an external HTTP redirect before loading the development page and falls back after cancellation[39m[32m 100[2mms[22m[39m
+   [32m✓[39m retains sandboxed isolation and refuses page-created windows, navigation and webviews[32m 69[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/window-security.integration.test.ts[2m > [22mblocks an external HTTP redirect before loading the development page and falls back after cancellation
+[31m[1mAssertionError[22m: expected "vi.fn()" to be called once, but got 0 times[39m
+[36m [2m❯[22m tests/integration/window-security.integration.test.ts:[2m138:35[22m[39m
+    [90m136|[39m   await import("../../src/app/main/index");
+    [90m137|[39m   await vi.waitFor(() => expect(desktop.loadURL).toHaveBeenCalled());
+    [90m138|[39m   expect(redirect.preventDefault).toHaveBeenCalledOnce();
+    [90m   |[39m                                   [31m^[39m
+    [90m139|[39m   await vi.waitFor(() =>
+    [90m140|[39m     expect(desktop.loadFile).toHaveBeenCalledWith(
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m11 passed[39m[22m[90m (12)[39m
+[2m   Start at [22m 17:18:20
+[2m   Duration [22m 1.54s[2m (tests 95%, transform 3%, import 1%)[22m

@@ -1,0 +1,16 @@
+{
+  "reviewedCodeFiles": 32,
+  "currentCodeMatchesReviewedSnapshots": true,
+  "checkExit": 0,
+  "architectureTestsPassed": 32,
+  "toolingTestsPassed": 40,
+  "behaviorTestsPassed": 387,
+  "cliSmokeSkipped": 1,
+  "buildExit": 0,
+  "packagedWindowCheckExit": 0,
+  "sdkCheckExit": 0,
+  "remoteCiExecuted": false,
+  "newUserTrialAccepted": false,
+  "pushed": false,
+  "S5M2Started": false
+}

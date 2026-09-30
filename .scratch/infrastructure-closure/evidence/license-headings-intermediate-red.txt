@@ -1,0 +1,56 @@
+✔ refreshes UI dependency notices without deleting the separately bundled SDK and Bun notices (498.955708ms)
+✖ repeated refresh preserves Markdown license headings and code fences without growing the generated section (522.889208ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1072.578792
+
+✖ failing tests:
+
+test at ../../../../../../../../Users/lou/Learn/d-pi/tests/tooling/license-notices.test.mjs:70:1
+✖ repeated refresh preserves Markdown license headings and code fences without growing the generated section (522.889208ms)
+  AssertionError [ERR_ASSERTION]: repeated refresh must be stable
+  + actual - expected
+  ... Skipped lines
+
+    '# Third-party notices\n' +
+      '\n' +
+      '## Imported source\n' +
+      '\n' +
+      'Keep source attribution.\n' +
+  ...
+      '\n' +
+  +   '## Granted rights\n' +
+  +   '\n' +
+  +   'Preserve this notice.\n' +
+  +   '\n' +
+  +   '```example\n' +
+  +   '## Literal heading\n' +
+  +   '```\n' +
+  +   '\n' +
+  +   '````\n' +
+  +   '\n' +
+      '## Official OMP SDK\n' +
+      '\n' +
+      'Keep SDK attribution.\n' +
+      '\n' +
+      '## Bun runtime\n' +
+
+      at TestContext.<anonymous> (file:///Users/lou/Learn/d-pi/tests/tooling/license-notices.test.mjs:84:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: '# Third-party notices\n\n## Imported source\n\nKeep source attribution.\n\n## Bundled dependencies\n\nLicense files from the locked UI dependency graph. The official OMP SDK dependency closure and Bun runtime are also shipped; their original license files are retained in `Contents/Resources/sdk/node_modules` and `Contents/Resources/sdk/BUN-LICENSE.md`.\n\n### fixture@1.0.0\n\n````text\n# Fixture License\n\n## Granted rights\n\nPreserve this notice.\n\n```example\n## Literal heading\n```\n\n````\n\n## Granted rights\n\nPreserve this notice.\n\n```example\n## Literal heading\n```\n\n````\n\n## Official OMP SDK\n\nKeep SDK attribution.\n\n## Bun runtime\n\nKeep Bun attribution.\n',
+    expected: '# Third-party notices\n\n## Imported source\n\nKeep source attribution.\n\n## Bundled dependencies\n\nLicense files from the locked UI dependency graph. The official OMP SDK dependency closure and Bun runtime are also shipped; their original license files are retained in `Contents/Resources/sdk/node_modules` and `Contents/Resources/sdk/BUN-LICENSE.md`.\n\n### fixture@1.0.0\n\n````text\n# Fixture License\n\n## Granted rights\n\nPreserve this notice.\n\n```example\n## Literal heading\n```\n\n````\n\n## Official OMP SDK\n\nKeep SDK attribution.\n\n## Bun runtime\n\nKeep Bun attribution.\n',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

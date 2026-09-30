@@ -1,0 +1,8 @@
+{
+  "runner": "v24.21.0",
+  "firstExit": 0,
+  "secondExit": 0,
+  "idempotent": false,
+  "first": "# Notices\n\n## Bundled dependencies\n\nLicense files from the locked UI dependency graph. The official OMP SDK dependency closure and Bun runtime are also shipped; their original license files are retained in `Contents/Resources/sdk/node_modules` and `Contents/Resources/sdk/BUN-LICENSE.md`.\n\n### fixture@1.0.0\n\n```text\n# Fixture License\n\n## Granted rights\n\nPreserve this notice.\n\n```\n\n## Official OMP SDK\n\nPreserve SDK notice.\n",
+  "second": "# Notices\n\n## Bundled dependencies\n\nLicense files from the locked UI dependency graph. The official OMP SDK dependency closure and Bun runtime are also shipped; their original license files are retained in `Contents/Resources/sdk/node_modules` and `Contents/Resources/sdk/BUN-LICENSE.md`.\n\n### fixture@1.0.0\n\n```text\n# Fixture License\n\n## Granted rights\n\nPreserve this notice.\n\n```\n\n## Granted rights\n\nPreserve this notice.\n\n```\n\n## Official OMP SDK\n\nPreserve SDK notice.\n"
+}

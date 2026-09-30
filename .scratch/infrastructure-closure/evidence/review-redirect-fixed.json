@@ -1,0 +1,37 @@
+{
+  "runner": "v24.21.0",
+  "artifact": "/Users/lou/Learn/d-pi/out/main/index.js",
+  "artifactSha256": "6c3a7c2fd36fa9069fb5d2c606b98859bd158eed766b87a11404699ff8e24e9a",
+  "build": {
+    "version": "0.1.0-s4.0",
+    "commit": "3285474e5c6a37b72a36337d870fd2f27c2f63cb",
+    "dirty": true,
+    "id": "3285474e-dirty-1f488792"
+  },
+  "startUrl": "http://127.0.0.1:49702/index.html",
+  "remoteUrl": "https://redirect.example.test:49701/index.html",
+  "requests": [
+    {
+      "origin": "allowed-loopback",
+      "path": "/index.html"
+    }
+  ],
+  "snapshot": {
+    "url": "file:///Users/lou/Learn/d-pi/out/renderer/index.html",
+    "secure": true,
+    "bridge": "object",
+    "fixtureScriptRan": false,
+    "locale": {
+      "preference": "system",
+      "resolvedLocale": "zh-CN"
+    },
+    "restore": "ready",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) d-pi/44.4.5 Chrome/152.0.7977.130 Electron/44.4.5 Safari/537.36"
+  },
+  "checks": {
+    "outsideHttpsNotRequested": true,
+    "outsidePageNeverReceivedBridge": true,
+    "builtInFallbackIpcWorks": true,
+    "nativeSessionNotStarted": true
+  }
+}

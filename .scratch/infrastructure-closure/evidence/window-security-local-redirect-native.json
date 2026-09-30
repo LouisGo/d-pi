@@ -1,0 +1,37 @@
+{
+  "mode": "development-local-redirect",
+  "runnerNode": "v24.21.0",
+  "artifact": "/Users/lou/Learn/d-pi/out/main/index.js",
+  "artifactSha256": "6c3a7c2fd36fa9069fb5d2c606b98859bd158eed766b87a11404699ff8e24e9a",
+  "fixture": {
+    "inheritedUrl": "http://127.0.0.1:49550/local-redirect",
+    "outsideUrl": "http://external.example.test:49550/outside.html",
+    "requests": [
+      "/local-redirect",
+      "/index.html",
+      "/assets/index-C6mjDKs3.js",
+      "/assets/index-BU_j9MWL.css"
+    ],
+    "outsideRequests": []
+  },
+  "snapshot": {
+    "url": "http://127.0.0.1:49550/index.html",
+    "title": "d-pi",
+    "node": "undefined",
+    "require": "undefined",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) d-pi/44.4.5 Chrome/152.0.7977.130 Electron/44.4.5 Safari/537.36",
+    "locale": {
+      "preference": "system",
+      "resolvedLocale": "zh-CN"
+    },
+    "restore": "ready"
+  },
+  "checks": {
+    "expectedRendererLoaded": true,
+    "restrictedPreloadIpcWorks": true,
+    "rendererNodeUnavailable": true,
+    "inlineScriptBlocked": true,
+    "pageWindowAndNavigationDenied": true,
+    "nativeSessionNotStarted": true
+  }
+}

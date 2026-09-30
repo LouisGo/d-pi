@@ -8,21 +8,16 @@
     "id": "infrastructure",
     "title": "S5 前基建收口",
     "phase": "基建",
-    "engineering": "in-progress",
+    "engineering": "complete",
     "trial": "not-delivered",
     "acceptance": "not-applicable",
-    "evidence": [
-      "issues/01-language.md",
-      "issues/02-docs-status.md",
-      "issues/03-engineering.md",
-      "issues/04-maintenance.md",
-      "issues/05-verification.md"
-    ],
+    "build": "3285474e-dirty-1f488792（工程安全候选）",
+    "evidence": ["handoff.md"],
     "pending": [
       "../m1-s3-control-recovery/issues/09-quit-discard-decision.md"
     ],
     "current": true,
-    "next": "完成基建、冻结审阅和必要验证后停止；不启动 S5/M2",
+    "next": "本轮已完成并停止；S5/M2 未启动，后续依所属范围与明确授权推进",
     "constraints": "只本地 commit、不 push 或公开发布；许可证由权利人决定，签名/公证/更新尚未实施。"
   }
 ]
@@ -36,8 +31,8 @@
 - 交付：定义与实际命名一致；当前文档入口和决定索引清楚；固定总看板由所属规格/任务聚合；快速 hook 与受支持平台 CI 接入已有检查；固定 SDK、安全与交付边界有可执行入口。
 - 保持：实体与所有权、事务/恢复顺序、真实身份、草稿/冻结原文、ACK/业务接受/执行结果区分、unknown 不自动重发及恢复单写门槛。S3 退出放弃继续延期。
 - 产品待决：无新增方向。既有 [S3 退出出口](../m1-s3-control-recovery/issues/09-quit-discard-decision.md)、许可证/公开分发与 S5 授权分别处理，不阻塞独立工程工作。
-- 工程状态：实施中；最近任务见下表。最终检查、冻结审阅、分批 SHA 与限制写入本规格及交接。
-- 用户试用：本轮是基建收口，尚未生成新试用构建；重写及外观补修包继续待用户试用，未获认可。
+- 工程证据：检查、冻结独立审阅、实际 hook 与分批 SHA 见[交接](handoff.md)；当前状态由上方结构化块及所属任务聚合。
+- 用户试用：本轮生成独立安全验证候选包并保留构建身份，原试用包未覆盖；没有新用户试用交付。重写及外观补修包继续待用户试用，未获认可。
 - 继续边界：只推进下列基建；完成即停，不以工程通过推断产品认可或 S5 授权。
 
 ## 标准及迁移范围

@@ -1,0 +1,35 @@
+✔ the fast environment gate accepts pinned required foundations and peer-qualified lock entries (61.997ms)
+✖ deleting a confirmed foundation dependency cannot make the gate pass (441.635416ms)
+✔ foundation dependencies must be declared in their runtime or development section (74.0895ms)
+✔ rejects ranges and the wrong Zod major (120.666917ms)
+✔ rejects a stale lock specifier, resolved version or extra importer dependency (183.3925ms)
+✔ rejects inconsistent package families even when the lock agrees (278.650875ms)
+✔ an unsupported or unreadable lock cannot be reported as consistent (119.235958ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 6
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1340.520042
+
+✖ failing tests:
+
+test at ../../../../../../../../Users/lou/Learn/d-pi/tests/tooling/dependency-gate.test.mjs:69:1
+✖ deleting a confirmed foundation dependency cannot make the gate pass (441.635416ms)
+  AssertionError [ERR_ASSERTION]: monaco-editor deletion was not rejected:
+      at TestContext.<anonymous> (file:///Users/lou/Learn/d-pi/tests/tooling/dependency-gate.test.mjs:83:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

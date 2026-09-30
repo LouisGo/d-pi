@@ -1,0 +1,11 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/lou/Learn/d-pi[39m
+
+ [32m✓[39m tests/integration/window-security.integration.test.ts [2m([22m[2m12 tests[22m[2m)[22m[33m 2033[2mms[22m[39m
+   [33m[2m✓[22m[39m keeps the packaged privileged window local even when a development URL is inherited[33m 1126[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m12 passed[39m[22m[90m (12)[39m
+[2m   Start at [22m 17:18:54
+[2m   Duration [22m 2.39s[2m (tests 95%, transform 4%, import 1%)[22m

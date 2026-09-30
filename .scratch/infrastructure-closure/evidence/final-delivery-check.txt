@@ -1,0 +1,289 @@
+
+> d-pi@0.1.0-s4.0 check /Users/lou/Learn/d-pi
+> pnpm check:tools && pnpm typecheck && pnpm lint && pnpm lint:design && pnpm lint:i18n && pnpm validate:design && node validation/s1/source-boundaries.mjs && pnpm check:architecture && pnpm check:documentation && pnpm check:structure && pnpm check:status && pnpm test:architecture && pnpm test:tooling && pnpm test
+
+
+> d-pi@0.1.0-s4.0 check:tools /Users/lou/Learn/d-pi
+> node scripts/check-environment.mjs --tools-only
+
+Development Node: 24.21.0 (target 24.21.0)
+pnpm: 10.5.2 (target 10.5.2)
+Platform: darwin-arm64
+Installed exact dependencies: 42/42
+SKIP: fast tool check; native executables and SDK resources were not inspected
+PASS: development environment (0 issues)
+
+> d-pi@0.1.0-s4.0 typecheck /Users/lou/Learn/d-pi
+> tsc --noEmit && pnpm typecheck:core && pnpm typecheck:renderer && pnpm typecheck:main && pnpm typecheck:host && pnpm typecheck:preload
+
+
+> d-pi@0.1.0-s4.0 typecheck:core /Users/lou/Learn/d-pi
+> tsc --noEmit -p tsconfig.core.json
+
+
+> d-pi@0.1.0-s4.0 typecheck:renderer /Users/lou/Learn/d-pi
+> tsc --noEmit -p tsconfig.renderer.json
+
+
+> d-pi@0.1.0-s4.0 typecheck:main /Users/lou/Learn/d-pi
+> tsc --noEmit -p tsconfig.main.json
+
+
+> d-pi@0.1.0-s4.0 typecheck:host /Users/lou/Learn/d-pi
+> tsc --noEmit -p tsconfig.host.json
+
+
+> d-pi@0.1.0-s4.0 typecheck:preload /Users/lou/Learn/d-pi
+> tsc --noEmit -p tsconfig.preload.json
+
+
+> d-pi@0.1.0-s4.0 lint /Users/lou/Learn/d-pi
+> biome check .
+
+Checked 277 files in 99ms. No fixes applied.
+
+> d-pi@0.1.0-s4.0 lint:design /Users/lou/Learn/d-pi
+> node scripts/lint-design.mjs
+
+PASS: design lint
+
+> d-pi@0.1.0-s4.0 lint:i18n /Users/lou/Learn/d-pi
+> node scripts/check-i18n-copy.mjs
+
+
+> d-pi@0.1.0-s4.0 validate:design /Users/lou/Learn/d-pi
+> node validation/s1/design-check.mjs
+
+PASS: CSS Modules, clsx/cva, shared variable accepted; six invalid design patterns rejected.
+PASS: token source, icon/domain and module environment boundaries (narrow source checks; architecture gate is authoritative for dependency graph).
+
+> d-pi@0.1.0-s4.0 check:architecture /Users/lou/Learn/d-pi
+> node scripts/architecture/check.mjs
+
+PASS: architecture boundaries (191 source files checked, TypeScript scanner)
+
+> d-pi@0.1.0-s4.0 check:documentation /Users/lou/Learn/d-pi
+> node scripts/check-documentation.mjs
+
+PASS: documentation references (155 Markdown files; 17 historical snapshots excluded; external URLs not fetched)
+
+> d-pi@0.1.0-s4.0 check:structure /Users/lou/Learn/d-pi
+> node scripts/architecture/report.mjs --check architecture/dependencies.generated.json
+
+PASS: generated structure report is current
+
+> d-pi@0.1.0-s4.0 check:status /Users/lou/Learn/d-pi
+> node scripts/project-status.mjs --check docs/status.md
+
+PASS: project status (13 slices, 58 tasks; engineering/trial/acceptance independent)
+
+> d-pi@0.1.0-s4.0 test:architecture /Users/lou/Learn/d-pi
+> node scripts/test.mjs node tests/architecture/*.test.mjs
+
+✔ public entries must be source files, not directories or prose (189.916709ms)
+✔ renderer rejects Electron subpath imports (85.00075ms)
+✔ production rejects test packages and helpers in test directories (135.238917ms)
+✔ unreadable manifests are tooling failures, not boundary violations (130.979375ms)
+✔ accepts a public type-only cross-module dependency (115.921458ms)
+✔ rejects a private cross-module import (125.499917ms)
+✔ rejects an unregistered cross-module dependency (230.414875ms)
+✔ rejects a public cross-module entry from the wrong environment (225.218917ms)
+✔ checks the runtime module and rejects Electron in the OMP environment (121.189459ms)
+✔ rejects forbidden external dependencies in shared, core and OMP environments (199.392708ms)
+✔ allows supported external packages in platform-independent environments (96.841709ms)
+✔ rejects a core import of a Node runtime and a file cycle (168.331834ms)
+✔ rejects production test-helper imports and non-literal dynamic imports (161.54525ms)
+✔ supports flat shared roots and explicit test-only public entries (89.847334ms)
+✔ rejects source files outside configured modules and owned roots (99.408333ms)
+✔ resolves directory index imports before checking cross-module privacy (86.796791ms)
+FAIL: design lint crashed — /private/tmp/d-pi-rewrite-toolchain/node-v24.21.0-darwin-arm64/bin/node was killed by SIGTRAP before it judged any file.
+This is a tooling failure, not a rule result. On Node 24.17.0 the oxlint JS-plugin worker dies with SIGTRAP; it must run on a Node build where JS plugins load.
+node v24.21.0
+
+
+FAIL: design lint is unavailable — could not run oxlint-that-does-not-exist (spawnSync oxlint-that-does-not-exist ENOENT).
+This is a tooling failure, not a rule result. On Node 24.17.0 the oxlint JS-plugin worker dies with SIGTRAP; it must run on a Node build where JS plugins load.
+node v24.21.0
+
+
+✔ a killed oxlint is a tooling failure, not a clean lint (241.248333ms)
+✔ a missing oxlint binary is reported instead of passing (1.214667ms)
+✔ a missing configuration is a tooling failure, not a rule result (86.901084ms)
+✔ a real violation still fails the gate with the rule name (344.999958ms)
+✔ the root has no design violation to report (811.140667ms)
+✔ the design fixture check names a crash instead of an assertion diff (967.74475ms)
+✔ reports entry, production, test, and CSS size hints separately (117.294334ms)
+✔ separates declared permissions from observed source dependencies and scan gaps (96.1845ms)
+✔ rejects a generated report after source or permissions change (679.627625ms)
+✔ i18n copy check scans migrated module Renderer files (59.231417ms)
+✔ Tailwind source configuration includes migrated Renderer roots (0.431958ms)
+✔ design lint executes against a migrated module Renderer root (275.811542ms)
+✔ Tailwind emits a utility used only by a module Renderer (586.840084ms)
+✔ core has a dedicated typecheck without DOM or Node ambient types (1.650625ms)
+✔ process-specific typechecks declare their ambient environment explicitly (1.97125ms)
+✔ the real core typecheck rejects DOM globals (118.653166ms)
+ℹ tests 32
+ℹ suites 0
+ℹ pass 32
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2524.2285
+
+> d-pi@0.1.0-s4.0 test:tooling /Users/lou/Learn/d-pi
+> node scripts/test.mjs node tests/tooling/*.test.mjs
+
+✔ the fast environment gate accepts pinned required foundations and peer-qualified lock entries (205.918459ms)
+✔ deleting a confirmed foundation dependency cannot make the gate pass (716.074417ms)
+✔ foundation dependencies must be declared in their runtime or development section (62.745583ms)
+✔ rejects ranges and the wrong Zod major (137.06075ms)
+✔ rejects a stale lock specifier, resolved version or extra importer dependency (238.556292ms)
+✔ rejects inconsistent package families even when the lock agrees (364.335541ms)
+✔ an unsupported or unreadable lock cannot be reported as consistent (247.671375ms)
+✔ reports missing local Markdown and skill targets, while preserving raw historical links (14.639167ms)
+✔ checks Unicode and duplicate heading anchors, same-page links, and reference links (14.109833ms)
+✔ rejects unknown D-IDs without interpreting prose or fenced historical examples (9.36575ms)
+✔ CLI checks new untracked entries while excluding raw evidence and experimental fixtures (532.369375ms)
+✔ rejects invalid or duplicated task states and unresolved completion dependencies (7.568875ms)
+✔ rejects task dependency cycles instead of presenting them as runnable (1.715542ms)
+✔ reports malformed URL encoding as an invalid document link (0.635417ms)
+✔ the fast hook entry includes current status without native preparation or full test work (5.157291ms)
+✔ CI prepares native resources and reuses the local checks on macOS arm64 (0.846792ms)
+✔ distinguishes missing, crashed, failed and successful tool processes (382.365709ms)
+✔ checks installed metadata even when package exports hide package.json and require entries (949.470417ms)
+✔ SDK inspection refuses stale locks, tampered files and missing bundled resources (10.352833ms)
+✔ the installed fast hook really prevents a commit when checks fail (5351.777167ms)
+✔ chains existing hooks and preserves global configuration and hook files (4850.67375ms)
+✔ a rejecting original hook stops the commit before the new fast check (1378.107541ms)
+✔ uninstall restores a previous local relative hooksPath (4096.377208ms)
+✔ forwarding preserves significant trailing whitespace in a configured hook path (3414.37925ms)
+✔ later user configuration changes are never overwritten by reinstall or uninstall (435.33275ms)
+✔ other linked checkouts keep their original hooks without receiving this checkout's fast gate (4066.854959ms)
+✔ forwarded receive hooks still work from Git's metadata cwd (1216.8145ms)
+✔ existing worktree configuration is restored in its original scope (3343.842292ms)
+✔ a malformed installation record cannot clear repository configuration (331.497958ms)
+✔ the versioned hook names a missing pnpm as tooling unavailable (84.108375ms)
+✔ refreshes UI dependency notices without deleting the separately bundled SDK and Bun notices (762.74225ms)
+✔ repeated refresh preserves Markdown license headings and code fences without growing the generated section (1361.097375ms)
+✔ aggregates independent engineering, trial and acceptance states and real blockers (87.233417ms)
+✔ rejects invalid states, duplicate identities and accepted-without-trial claims (5.421125ms)
+✔ rejects missing evidence, missing important pending tasks, and multiple current scopes (8.130708ms)
+✔ snapshot check fails after an owning issue changes even when displayed totals stay equal (10.162583ms)
+✔ malformed status JSON and unknown fields fail rather than silently disappearing (5.249625ms)
+✔ isolates every App/OMP path, cwd and future credential names in a real child (149.1195ms)
+✔ only explicit fixture credentials enter the environment; isolation paths cannot be overridden (3.746958ms)
+✔ standard Node test runner drops inherited credentials and the project's extension directory (262.0415ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 28685.048333
+
+> d-pi@0.1.0-s4.0 test /Users/lou/Learn/d-pi
+> node scripts/test.mjs vitest
+
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/lou/Learn/d-pi[39m
+
+ [32m✓[39m src/app/host/index.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 363[2mms[22m[39m
+   [33m[2m✓[22m[39m local-only prompt ACK refreshes idle state and permits the next submission[33m 320[2mms[22m[39m
+ [32m✓[39m tests/integration/runtime-host.integration.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 300[2mms[22m[39m
+ [32m✓[39m tests/integration/submission-coordinator.integration.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 411[2mms[22m[39m
+   [33m[2m✓[22m[39m failed dispatch persistence writes nothing; duplicate dispatch writes once and late error keeps ACK[33m 308[2mms[22m[39m
+ [32m✓[39m src/app/main/storage.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 382[2mms[22m[39m
+ [32m✓[39m src/modules/execution/host/native-session.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 692[2mms[22m[39m
+   [33m[2m✓[22m[39m negotiates v2, correlates commands and drains process output through EOF[33m 538[2mms[22m[39m
+ [32m✓[39m src/app/main/submission-storage.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 265[2mms[22m[39m
+ [32m✓[39m tests/integration/prepared-recovery.integration.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 637[2mms[22m[39m
+ [32m✓[39m src/app/main/runtime-service.test.ts [2m([22m[2m23 tests[22m[2m)[22m[33m 712[2mms[22m[39m
+ [32m✓[39m src/app/main/app-storage-init.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 60[2mms[22m[39m
+ [32m✓[39m tests/integration/submission-rejection-reason.integration.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 158[2mms[22m[39m
+ [32m✓[39m src/shared/i18n/catalog.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 81[2mms[22m[39m
+ [32m✓[39m tests/integration/runtime-causality.integration.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 239[2mms[22m[39m
+ [32m✓[39m src/modules/input/renderer/plain-text-paste.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m src/app/main/runtime-sdk-i18n.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 50[2mms[22m[39m
+ [32m✓[39m src/app/contracts/desktop-bridge.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 63[2mms[22m[39m
+ [32m✓[39m src/app/preload/index.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 139[2mms[22m[39m
+ [32m✓[39m src/shared/messages/contracts.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/app/renderer/receipt-status.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 44[2mms[22m[39m
+ [32m✓[39m src/modules/files/main/project-files.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 205[2mms[22m[39m
+ [32m✓[39m src/modules/execution/host/interactions.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 111[2mms[22m[39m
+ [32m✓[39m src/app/main/submission-receipt.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 99[2mms[22m[39m
+ [32m✓[39m src/app/renderer/model-store.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m src/app/main/index.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 1742[2mms[22m[39m
+   [33m[2m✓[22m[39m starts with system locale, rebuilds the native menu on interaction, and keeps a failed locale save visible[33m 368[2mms[22m[39m
+   [33m[2m✓[22m[39m retries a failed initial restore after the lock clears, preserving the same draft[33m 750[2mms[22m[39m
+ [32m✓[39m src/modules/files/core/selection.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/app/main/ipc/project-reads.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 74[2mms[22m[39m
+ [32m✓[39m tests/integration/window-security.integration.test.ts [2m([22m[2m22 tests[22m[2m)[22m[33m 2431[2mms[22m[39m
+   [33m[2m✓[22m[39m keeps the packaged privileged window local even when a development URL is inherited[33m 663[2mms[22m[39m
+ [32m✓[39m src/shared/i18n/create-i18n.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 41[2mms[22m[39m
+ [32m✓[39m src/app/renderer/workbench/composer-binding.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 56[2mms[22m[39m
+ [32m✓[39m src/modules/conversation/main/native-history.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 92[2mms[22m[39m
+ [32m✓[39m src/modules/execution/renderer/submission-model.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 73[2mms[22m[39m
+ [32m✓[39m src/modules/conversation/core/subscription.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/platform/omp/resources/sdk-resource.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 35[2mms[22m[39m
+ [32m✓[39m src/app/renderer/conversation-i18n.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 79[2mms[22m[39m
+ [32m✓[39m src/modules/execution/core/submission-admission.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m src/modules/execution/host/session-host.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 122[2mms[22m[39m
+ [32m✓[39m src/modules/input/renderer/selection-insert.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m src/app/renderer/i18n-renderer.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 55[2mms[22m[39m
+ [32m✓[39m src/platform/main/diagnostics/diagnostics.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 127[2mms[22m[39m
+ [32m✓[39m src/modules/execution/renderer/runtime-store.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m src/modules/input/core/draft-controller.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 43[2mms[22m[39m
+ [32m✓[39m src/modules/changes/renderer/queries.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m src/modules/conversation/host/scope.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m src/modules/execution/renderer/submission-store.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 33[2mms[22m[39m
+ [32m✓[39m src/modules/files/renderer/queries.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 103[2mms[22m[39m
+ [32m✓[39m src/modules/conversation/host/projection.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 64[2mms[22m[39m
+ [32m✓[39m src/modules/execution/renderer/runtime-model.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 81[2mms[22m[39m
+ [32m✓[39m src/modules/files/renderer/monaco-viewer.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 114[2mms[22m[39m
+ [32m✓[39m tests/integration/native-evidence-replay.integration.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 32[2mms[22m[39m
+ [32m✓[39m src/app/main/lifecycle/quit.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m src/app/renderer/model.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 91[2mms[22m[39m
+ [32m✓[39m src/platform/omp/resources/runtime-resource.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 462[2mms[22m[39m
+   [33m[2m✓[22m[39m distinguishes missing managed resources from a checksum mismatch without executing either[33m 459[2mms[22m[39m
+ [32m✓[39m src/modules/conversation/core/model.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m src/modules/execution/contracts/submission.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m src/platform/omp/protocol/native-frame.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m src/modules/execution/core/admission.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m src/app/renderer/url-display.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/modules/input/core/submission.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m src/shared/i18n/locale.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m src/modules/input/core/references/serialize.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m src/modules/execution/contracts/interactions.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/platform/omp/protocol/frame-decoder.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m src/modules/files/renderer/monaco-diff-options.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/modules/execution/core/target.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/modules/execution/renderer/submission-shortcut.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m src/platform/omp/consumption-gate.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/app/renderer/workbench/refresh-state.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [2m[90m↓[39m[22m src/modules/execution/host/native-smoke.test.ts [2m([22m[2m1 test[22m[2m | [22m[33m1 skipped[39m[2m)[22m
+ [32m✓[39m src/app/renderer/workbench/composer-initialization.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 122[2mms[22m[39m
+ [32m✓[39m src/app/renderer/appearance-subscriptions.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 146[2mms[22m[39m
+ [32m✓[39m src/modules/changes/main/project-git.test.ts [2m([22m[2m14 tests[22m[2m)[22m[33m 13314[2mms[22m[39m
+   [33m[2m✓[22m[39m separates HEAD/index, index/worktree and untracked without author attribution[33m 1965[2mms[22m[39m
+   [33m[2m✓[22m[39m distinguishes non-Git and unborn HEAD[33m 1027[2mms[22m[39m
+   [33m[2m✓[22m[39m labels a rename with its former path and refuses binary text diff[33m 3166[2mms[22m[39m
+   [33m[2m✓[22m[39m scopes a parent repository to the selected project subdirectory[33m 764[2mms[22m[39m
+   [33m[2m✓[22m[39m reads a staged rename through the project subdirectory[33m 1210[2mms[22m[39m
+   [33m[2m✓[22m[39m lists changes for a project reached through a symlinked parent directory[33m 900[2mms[22m[39m
+   [33m[2m✓[22m[39m marks a diff stale when the worktree changes with the same Git status during sampling[33m 556[2mms[22m[39m
+   [33m[2m✓[22m[39m reads an untracked file as absent on the left and worktree text on the right[33m 896[2mms[22m[39m
+   [33m[2m✓[22m[39m reports staged and worktree deletions with an absent side[33m 883[2mms[22m[39m
+   [33m[2m✓[22m[39m refuses an unmerged conflict as unmerged instead of an empty diff[33m 589[2mms[22m[39m
+   [33m[2m✓[22m[39m reports an oversized untracked file as too-large[33m 323[2mms[22m[39m
+   [33m[2m✓[22m[39m never executes project-configured clean filters during read-only queries[33m 755[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m69 passed[39m[22m[2m | [22m[33m1 skipped[39m[90m (70)[39m
+[2m      Tests [22m [1m[32m387 passed[39m[22m[2m | [22m[33m1 skipped[39m[90m (388)[39m
+[2m   Start at [22m 17:44:23
+[2m   Duration [22m 13.80s[2m (tests 45%, import 37%, transform 15%, environment 2%, worker 1%)[22m
+
+[2m    Isolate [22m [33m70 workers spawned[39m[2m · ~252ms startup each (spawn + environment, per file)[22m
+[2m            [22m [2mat least ~1.51s faster with [22m[33misolate: false[39m[2m — reuses workers across files instead of one per file[22m

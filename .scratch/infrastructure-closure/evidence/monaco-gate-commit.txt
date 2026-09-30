@@ -1,0 +1,41 @@
+
+> d-pi@0.1.0-s4.0 check:fast /Users/lou/Learn/d-pi
+> pnpm check:tools && pnpm lint && pnpm check:documentation && pnpm check:architecture && pnpm check:structure && pnpm check:status
+
+
+> d-pi@0.1.0-s4.0 check:tools /Users/lou/Learn/d-pi
+> node scripts/check-environment.mjs --tools-only
+
+Development Node: 24.21.0 (target 24.21.0)
+pnpm: 10.5.2 (target 10.5.2)
+Platform: darwin-arm64
+Installed exact dependencies: 42/42
+SKIP: fast tool check; native executables and SDK resources were not inspected
+PASS: development environment (0 issues)
+
+> d-pi@0.1.0-s4.0 lint /Users/lou/Learn/d-pi
+> biome check .
+
+Checked 277 files in 60ms. No fixes applied.
+
+> d-pi@0.1.0-s4.0 check:documentation /Users/lou/Learn/d-pi
+> node scripts/check-documentation.mjs
+
+PASS: documentation references (155 Markdown files; 17 historical snapshots excluded; external URLs not fetched)
+
+> d-pi@0.1.0-s4.0 check:architecture /Users/lou/Learn/d-pi
+> node scripts/architecture/check.mjs
+
+PASS: architecture boundaries (191 source files checked, TypeScript scanner)
+
+> d-pi@0.1.0-s4.0 check:structure /Users/lou/Learn/d-pi
+> node scripts/architecture/report.mjs --check architecture/dependencies.generated.json
+
+PASS: generated structure report is current
+
+> d-pi@0.1.0-s4.0 check:status /Users/lou/Learn/d-pi
+> node scripts/project-status.mjs --check docs/status.md
+
+PASS: project status (13 slices, 58 tasks; engineering/trial/acceptance independent)
+[codex/rewrite-core 66b239c] build: protect the selected Monaco dependency declaration
+ 2 files changed, 3 insertions(+), 1 deletion(-)

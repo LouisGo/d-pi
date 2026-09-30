@@ -1,0 +1,29 @@
+{
+  "runner": "v24.21.0",
+  "artifact": "/Users/lou/Learn/d-pi/out/main/index.js",
+  "artifactSha256": "93bfcd0f239a96f62eb49a8bcc4bcdaa178ff51b4375233c51b040c54620f2da",
+  "startUrl": "http://127.0.0.1:64778/index.html",
+  "remoteUrl": "https://redirect.example.test:64777/index.html",
+  "requests": [
+    {
+      "origin": "allowed-loopback",
+      "path": "/index.html"
+    },
+    {
+      "origin": "external-https-fixture",
+      "path": "/index.html"
+    }
+  ],
+  "snapshot": {
+    "url": "https://redirect.example.test:64777/index.html",
+    "secure": true,
+    "bridge": "object",
+    "fixtureScriptRan": true,
+    "locale": {
+      "preference": "system",
+      "resolvedLocale": "zh-CN"
+    },
+    "restore": "ready",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) d-pi/44.4.5 Chrome/152.0.7977.130 Electron/44.4.5 Safari/537.36"
+  }
+}

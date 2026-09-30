@@ -1,0 +1,5 @@
+
+> d-pi@0.1.0-s4.0 hooks:install /Users/lou/Learn/d-pi
+> node scripts/git-hooks.mjs install
+
+INSTALLED: d-pi pre-commit for /Users/lou/Learn/d-pi; original hooks forwarded; global Git configuration unchanged

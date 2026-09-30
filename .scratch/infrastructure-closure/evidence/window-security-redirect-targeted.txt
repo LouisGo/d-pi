@@ -1,0 +1,17 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/lou/Learn/d-pi[39m
+
+ [32m✓[39m src/app/preload/index.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 573[2mms[22m[39m
+   [33m[2m✓[22m[39m close cancellation strips privileged event arguments and unsubscribes its wrapper[33m 377[2mms[22m[39m
+ [32m✓[39m src/app/main/index.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 2605[2mms[22m[39m
+   [33m[2m✓[22m[39m starts with system locale, rebuilds the native menu on interaction, and keeps a failed locale save visible[33m 422[2mms[22m[39m
+   [33m[2m✓[22m[39m retries a failed initial restore after the lock clears, preserving the same draft[33m 1235[2mms[22m[39m
+ [32m✓[39m tests/integration/window-security.integration.test.ts [2m([22m[2m22 tests[22m[2m)[22m[33m 4522[2mms[22m[39m
+   [33m[2m✓[22m[39m keeps the packaged privileged window local even when a development URL is inherited[33m 1197[2mms[22m[39m
+   [33m[2m✓[22m[39m keeps an untrusted development target local: not a URL[33m 388[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m3 passed[39m[22m[90m (3)[39m
+[2m      Tests [22m [1m[32m36 passed[39m[22m[90m (36)[39m
+[2m   Start at [22m 17:20:14
+[2m   Duration [22m 5.41s[2m (tests 78%, transform 15%, import 7%)[22m
