@@ -16,8 +16,7 @@
     "pending": [
       "../m1-s3-control-recovery/issues/09-quit-discard-decision.md"
     ],
-    "current": true,
-    "next": "本轮已完成并停止；S5/M2 未启动，后续依所属范围与明确授权推进",
+    "next": "本轮已完成；S5 按新授权进入所属规格，M2 未启动",
     "constraints": "只本地 commit、不 push 或公开发布；许可证由权利人决定，签名/公证/更新尚未实施。"
   }
 ]

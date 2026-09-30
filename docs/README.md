@@ -24,7 +24,7 @@
 当前工作从固定[项目总看板](status.md)进入[基建收口规格](../.scratch/infrastructure-closure/spec.md)。[重写准备与执行](../.scratch/rewrite-preparation/spec.md)保留其交付范围与试用状态，对应构建与试用步骤见[重写交接](../.scratch/rewrite-preparation/handoff.md)；[M1 开发准备](../.scratch/development-foundation/spec.md)保存阶段和跨模块责任。各切片范围、授权、工程状态、试用及继续边界直接读取所属规格：
 
 - [S1 项目与草稿](../.scratch/m1-s1-project-draft/spec.md)、[S1 巩固](../.scratch/m1-s1-project-draft/hardening.md)、[S2 提交与阅读](../.scratch/m1-s2-submit-read/spec.md)。
-- [S3 控制与恢复](../.scratch/m1-s3-control-recovery/spec.md)、[i18n 基础](../.scratch/i18n-foundation/spec.md)、[S4 文件与差异](../.scratch/m1-s4-files-diff/spec.md)。
+- [S3 控制与恢复](../.scratch/m1-s3-control-recovery/spec.md)、[i18n 基础](../.scratch/i18n-foundation/spec.md)、[S4 文件与差异](../.scratch/m1-s4-files-diff/spec.md)、[S5 组合验收](../.scratch/m1-s5-combination-acceptance/spec.md)。
 - [领域目录治理](../.scratch/domain-directory-governance/spec.md)、[状态/查询对齐](../.scratch/state-query-alignment/spec.md)。
 
 每份 spec 链接对应任务和交接，索引不另维护已完成表。旧规格的“本轮不启动后续阶段”保留当时语境，后续用户明确授权以当前切片为准。
