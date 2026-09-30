@@ -85,15 +85,6 @@ export class AppModel {
               : { kind: "failed" as const, error: transportFailure(traceId) },
           )
           .with({ kind: "failed" }, (value) => value)
-          .with(
-            { kind: "saved" },
-            { kind: "preferences-saved" },
-            { kind: "cancelled" },
-            () => ({
-              kind: "failed" as const,
-              error: transportFailure(traceId),
-            }),
-          )
           .exhaustive();
       } catch {
         return { kind: "failed", error: transportFailure(traceId) };
@@ -188,9 +179,8 @@ export class AppModel {
             draft,
             async (expectedRevision, text) => {
               const traceId = crypto.randomUUID();
-              let result: Reply;
               try {
-                result = await this.bridge.request({
+                return await this.bridge.request({
                   kind: "save",
                   traceId,
                   threadId: draft.threadId,
@@ -200,19 +190,6 @@ export class AppModel {
               } catch {
                 return { kind: "failed", error: transportFailure(traceId) };
               }
-              return match(result)
-                .with({ kind: "saved" }, (value) => value)
-                .with({ kind: "failed" }, (value) => value)
-                .with(
-                  { kind: "ready" },
-                  { kind: "preferences-saved" },
-                  { kind: "cancelled" },
-                  () => ({
-                    kind: "failed" as const,
-                    error: transportFailure(traceId),
-                  }),
-                )
-                .exhaustive();
             },
             () => transportFailure(crypto.randomUUID()),
           );

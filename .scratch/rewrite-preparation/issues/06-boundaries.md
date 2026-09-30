@@ -12,3 +12,5 @@ Blocked by: none
 ## Comments
 
 2026-09-30：从准备提交的干净 `codex/rewrite-core` 开始；不维持旧内部类/补丁形态，但保持正确的产品合同、事务、恢复与执行所有权。完成后记录实际验证、未覆盖项与提交。
+
+2026-09-30 桥接切片：Command → ReplyFor 保留命令结果关系，统一边界关联校验（含 locale），调用者不再处理该命令不可能的回包；DesktopRequestError 保留 trace/code/cause，诊断不含原文或原始秘密错误。新测试先 2 项失败（错 locale 被接受、cause/trace 丢失），修正后桥接/renderer 4 文件 20 项通过，六套 tsc 通过。读取诊断及 payload 子项继续实现，不以该提交冒称整票完成。

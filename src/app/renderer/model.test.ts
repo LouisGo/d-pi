@@ -9,7 +9,11 @@ import {
 } from "../../modules/input/contracts/public";
 import type { DraftController } from "../../modules/input/core/public";
 import { ThreadIdSchema } from "../../shared/identity";
-import { type Command, type DesktopBridge } from "../contracts/desktop-bridge";
+import {
+  type Command,
+  type DesktopBridge,
+  parseDesktopReply,
+} from "../contracts/desktop-bridge";
 import { failure } from "../contracts/failure";
 import { AppModel } from "./model";
 
@@ -45,8 +49,9 @@ async function setup(
   // AppModel and DraftController collaborate without React or native UI.
   vi.stubGlobal("document", { documentElement: { dataset: {} } });
   const bridge: DesktopBridge = {
-    request: (command) =>
-      match(command)
+    request: async (command) => {
+      const input: Command = command;
+      const raw = await match(input)
         .with({ kind: "restore" }, async () => ({
           kind: "ready" as const,
           draft: restored(),
@@ -61,7 +66,9 @@ async function setup(
         .with({ kind: "choose-project" }, { kind: "preferences" }, () => {
           throw new Error("Unexpected command in close scenario");
         })
-        .exhaustive(),
+        .exhaustive();
+      return parseDesktopReply(command, raw);
+    },
     onCloseRequest: () => () => {},
     onCloseCancelled: () => () => {},
     completeClose: () => {},
@@ -224,7 +231,7 @@ it("keeps conversation projection lifecycle in the AppModel", async () => {
   const bridge: DesktopBridge = {
     request: async (command) => {
       if (command.kind !== "restore") throw Error("unexpected command");
-      return {
+      return parseDesktopReply(command, {
         kind: "ready" as const,
         draft: DraftSchema.parse({
           schemaVersion: 1,
@@ -240,7 +247,7 @@ it("keeps conversation projection lifecycle in the AppModel", async () => {
           density: "normal" as const,
           locale: "system" as const,
         },
-      };
+      });
     },
     runtime: {
       request: () => new Promise<{ kind: "view"; view: RuntimeView }>(() => {}),

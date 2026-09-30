@@ -180,3 +180,35 @@ it("traces a rejected receipt with the original request identity without logging
     revision: 5,
   });
 });
+
+it("rejects a preferences receipt from a different locale and keeps the request trace", async () => {
+  await import("./index");
+  const bridge = shell.expose.mock.calls.at(-1)?.[1];
+  if (!bridge) throw Error("bridge not exposed");
+  const value = {
+    theme: "light" as const,
+    density: "normal" as const,
+    sendKey: "enter-send" as const,
+    locale: "zh-CN" as const,
+  };
+  const traceId = crypto.randomUUID();
+  shell.invoke.mockResolvedValueOnce({
+    kind: "preferences-saved",
+    value: { ...value, locale: "en-US" },
+  });
+  await expect(
+    bridge.request({ kind: "preferences", traceId, value }),
+  ).rejects.toMatchObject({ code: "invalid-reply", traceId });
+});
+
+it("preserves the transport cause and trace without putting it into diagnostics", async () => {
+  await import("./index");
+  const bridge = shell.expose.mock.calls.at(-1)?.[1];
+  if (!bridge) throw Error("bridge not exposed");
+  const cause = Error("private transport cause");
+  const traceId = crypto.randomUUID();
+  shell.invoke.mockRejectedValueOnce(cause);
+  await expect(
+    bridge.request({ kind: "restore", traceId }),
+  ).rejects.toMatchObject({ code: "transport-unavailable", traceId, cause });
+});

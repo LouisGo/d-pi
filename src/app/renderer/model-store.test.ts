@@ -1,9 +1,10 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { DraftSchema } from "../../modules/input/contracts/public";
-import type {
-  Command,
-  DesktopBridge,
-  Reply,
+import {
+  type Command,
+  type DesktopBridge,
+  parseDesktopReply,
+  type Reply,
 } from "../contracts/desktop-bridge";
 import { AppModel } from "./model";
 
@@ -33,7 +34,8 @@ function deferred(): {
 
 function bridge(request: (command: Command) => Promise<Reply>): DesktopBridge {
   return {
-    request,
+    request: async (command) =>
+      parseDesktopReply(command, await request(command)),
     onCloseRequest: () => () => {},
     onCloseCancelled: () => () => {},
     completeClose: () => {},
@@ -151,8 +153,9 @@ it("releases submission state and ignores a restore that finishes after dispose"
   let subscribed = 0;
   let released = 0;
   const bridge: DesktopBridge = {
-    request: (command) => {
-      if (command.kind === "restore") return restore.promise;
+    request: async (command) => {
+      if (command.kind === "restore")
+        return parseDesktopReply(command, await restore.promise);
       throw Error(`unexpected ${command.kind}`);
     },
     submission: {
@@ -185,7 +188,7 @@ it("releases submission state and ignores a restore that finishes after dispose"
     ...bridge,
     request: async (command) => {
       if (command.kind === "restore")
-        return {
+        return parseDesktopReply(command, {
           kind: "ready" as const,
           draft: restoredDraft,
           directoryAvailable: true,
@@ -194,7 +197,7 @@ it("releases submission state and ignores a restore that finishes after dispose"
             density: "normal" as const,
             locale: "system" as const,
           },
-        };
+        });
       throw Error(`unexpected ${command.kind}`);
     },
   });

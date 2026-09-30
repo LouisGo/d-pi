@@ -1,5 +1,4 @@
 import { contextBridge, ipcRenderer } from "electron";
-import { match } from "ts-pattern";
 import {
   GitReplySchema,
   GitRequestSchema,
@@ -28,9 +27,9 @@ import {
   type BridgeDiagnostic,
   type Command,
   type DesktopBridge,
+  DesktopRequestError,
   LocaleSetResultSchema,
-  type Reply,
-  ReplySchema,
+  parseDesktopReply,
 } from "../contracts/desktop-bridge";
 
 const connectionId = crypto.randomUUID();
@@ -40,31 +39,6 @@ function report(event: BridgeDiagnostic): void {
   } catch {
     /* Diagnostics cannot change the operation result. */
   }
-}
-function matchesRequest(command: Command, reply: Reply): boolean {
-  if (reply.kind === "failed") return reply.error.traceId === command.traceId;
-  return match(command)
-    .with({ kind: "restore" }, () => reply.kind === "ready")
-    .with(
-      { kind: "choose-project" },
-      () => reply.kind === "ready" || reply.kind === "cancelled",
-    )
-    .with(
-      { kind: "save" },
-      ({ threadId, expectedRevision }) =>
-        reply.kind === "saved" &&
-        reply.threadId === threadId &&
-        reply.revision === expectedRevision + 1,
-    )
-    .with(
-      { kind: "preferences" },
-      ({ value }) =>
-        reply.kind === "preferences-saved" &&
-        reply.value.theme === value.theme &&
-        reply.value.density === value.density &&
-        reply.value.sendKey === value.sendKey,
-    )
-    .exhaustive();
 }
 const bridge: DesktopBridge = {
   locale: {
@@ -186,7 +160,7 @@ const bridge: DesktopBridge = {
       return () => ipcRenderer.removeListener("runtime:state", handler);
     },
   },
-  async request(command: Command) {
+  async request<C extends Command>(command: C) {
     const requestId = crypto.randomUUID();
     const context = {
       connectionId,
@@ -203,25 +177,28 @@ const bridge: DesktopBridge = {
         requestId,
         command,
       });
-    } catch {
+    } catch (cause) {
       report({
         ...context,
         stage: "acknowledgement-failed",
         code: "transport-unavailable",
       });
-      throw new Error("Desktop transport unavailable");
+      throw new DesktopRequestError("transport-unavailable", command.traceId, {
+        cause,
+      });
     }
-    const parsed = ReplySchema.safeParse(raw);
-    if (!parsed.success || !matchesRequest(command, parsed.data)) {
+    try {
+      const reply = parseDesktopReply(command, raw);
+      report({ ...context, stage: "confirmed" });
+      return reply;
+    } catch (error) {
       report({
         ...context,
         stage: "acknowledgement-failed",
         code: "invalid-reply",
       });
-      throw new Error("Invalid desktop reply");
+      throw error;
     }
-    report({ ...context, stage: "confirmed" });
-    return parsed.data;
   },
   onCloseRequest(listener) {
     const handler = (_event: Electron.IpcRendererEvent, token: unknown) => {

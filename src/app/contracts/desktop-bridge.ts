@@ -1,3 +1,4 @@
+import { match } from "ts-pattern";
 import { z } from "zod";
 import type { GitBridge } from "../../modules/changes/contracts/public";
 import type {
@@ -57,6 +58,74 @@ export const ReplySchema = z.discriminatedUnion("kind", [
   DraftFailureReplySchema,
 ]);
 export type Reply = z.infer<typeof ReplySchema>;
+type SuccessKind = {
+  restore: "ready";
+  "choose-project": "ready" | "cancelled";
+  save: "saved";
+  preferences: "preferences-saved";
+};
+export type ReplyFor<C extends Command> = Extract<
+  Reply,
+  { kind: SuccessKind[C["kind"]] | "failed" }
+>;
+
+export class DesktopRequestError extends Error {
+  constructor(
+    readonly code: "invalid-reply" | "transport-unavailable",
+    readonly traceId: string,
+    options?: ErrorOptions,
+  ) {
+    super(
+      code === "invalid-reply"
+        ? "Invalid desktop reply"
+        : "Desktop transport unavailable",
+      options,
+    );
+    this.name = "DesktopRequestError";
+  }
+}
+
+// Validate the response and its relation to this request once at the boundary.
+export function parseDesktopReply<C extends Command>(
+  command: C,
+  raw: unknown,
+): ReplyFor<C>;
+export function parseDesktopReply(command: Command, raw: unknown): Reply {
+  const parsed = ReplySchema.safeParse(raw);
+  if (!parsed.success)
+    throw new DesktopRequestError("invalid-reply", command.traceId, {
+      cause: parsed.error,
+    });
+  const reply = parsed.data;
+  const matches =
+    reply.kind === "failed"
+      ? reply.error.traceId === command.traceId
+      : match(command)
+          .with({ kind: "restore" }, () => reply.kind === "ready")
+          .with(
+            { kind: "choose-project" },
+            () => reply.kind === "ready" || reply.kind === "cancelled",
+          )
+          .with(
+            { kind: "save" },
+            ({ threadId, expectedRevision }) =>
+              reply.kind === "saved" &&
+              reply.threadId === threadId &&
+              reply.revision === expectedRevision + 1,
+          )
+          .with(
+            { kind: "preferences" },
+            ({ value }) =>
+              reply.kind === "preferences-saved" &&
+              reply.value.theme === value.theme &&
+              reply.value.density === value.density &&
+              reply.value.sendKey === value.sendKey &&
+              reply.value.locale === value.locale,
+          )
+          .exhaustive();
+  if (!matches) throw new DesktopRequestError("invalid-reply", command.traceId);
+  return reply;
+}
 export interface DesktopBridge {
   locale?: LocaleBridge;
   history?: HistoryBridge;
@@ -65,7 +134,7 @@ export interface DesktopBridge {
   submission?: SubmissionBridge;
   conversation?: ConversationPort;
   runtime?: RuntimeBridge;
-  request(command: Command): Promise<Reply>;
+  request<C extends Command>(command: C): Promise<ReplyFor<C>>;
   onCloseRequest(listener: (token: string) => void): () => void;
   onCloseCancelled(listener: () => void): () => void;
   completeClose(token: string, saved: boolean): void;
