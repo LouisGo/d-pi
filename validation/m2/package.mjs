@@ -495,6 +495,7 @@ try {
     nativeSessions: db
       .prepare("SELECT session_id,thread_id FROM native_session")
       .all(),
+    layout: inputLayout,
     sourceAsarSha256: createHash("sha256")
       .update(readFileSync(join(source, "Contents/Resources/app.asar")))
       .digest("hex"),

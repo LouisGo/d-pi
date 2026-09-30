@@ -71,8 +71,8 @@
     outline-offset: 2px;
   }
   .model-controls {
-    margin-bottom: var(--layout-gap);
-    padding: var(--layout-gap);
+    margin-bottom: calc(var(--layout-gap) / 2);
+    padding: calc(var(--layout-gap) / 2);
     border: 1px solid var(--border);
     border-radius: var(--radius);
   }
@@ -93,7 +93,7 @@
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     gap: calc(var(--layout-gap) / 2);
-    padding: var(--layout-gap);
+    padding: calc(var(--layout-gap) / 2);
     border: 1px solid var(--border);
     border-radius: var(--radius);
   }
@@ -242,7 +242,7 @@
     width: 100%;
     max-width: var(--content-width);
     margin-inline: auto;
-    padding: var(--panel-padding);
+    padding: var(--layout-gap);
   }
   .draft-intro {
     margin-block: var(--intro-space) var(--panel-padding);
@@ -261,7 +261,7 @@
     gap: calc(var(--layout-gap) / 2);
     overflow-wrap: anywhere;
     flex-wrap: wrap;
-    margin-bottom: var(--layout-gap);
+    margin-bottom: calc(var(--layout-gap) / 2);
     font-size: var(--text-small);
   }
   .directory-info h1 {
