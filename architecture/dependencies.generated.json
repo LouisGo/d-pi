@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "296eed9647ac1782bb360b6677fc8824b2146bfd1347d2faf9e564443616dfa8",
+  "inputsHash": "c511f2c881e1d3ac8b4574ac14f2e934b4a8d46ec981b7dd4314ce87add8ca92",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 185,
-    "scannedFiles": 185,
+    "sourceFiles": 186,
+    "scannedFiles": 186,
     "unscanned": []
   },
   "modules": [
@@ -141,8 +141,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 14,
-      "lines": 1252,
+      "files": 15,
+      "lines": 1499,
       "publicEntries": [
         {
           "path": "src/modules/files/contracts/public.ts",
@@ -6065,6 +6065,39 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/files/renderer/monaco-diff-options.ts",
+      "targetModule": "files",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/files/renderer/monaco-viewer.test.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/files/renderer/monaco-viewer.test.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/files/core/public.ts",
+      "targetModule": "files",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/files/renderer/monaco-viewer.test.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./monaco-viewer",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/files/renderer/monaco-viewer.tsx",
       "targetModule": "files",
       "targetEnvironment": "renderer"
     },

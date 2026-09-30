@@ -42,6 +42,52 @@ test("CRLF view text keeps Monaco columns aligned with the raw slice", () => {
   ).toMatchObject({ kind: "selection", text: "ab\r\nc" });
 });
 
+test("mixed raw CRLF, CR and LF map Monaco UTF-16 lines without normalizing the selection", () => {
+  const text = "a😀\r\nb\rc\nd";
+  const source = {
+    path: "mixed.txt",
+    source: "working tree",
+    version: "raw:v1",
+  };
+  expect(
+    captureSelection(
+      text,
+      { startLineNumber: 1, startColumn: 2, endLineNumber: 4, endColumn: 2 },
+      source,
+    ),
+  ).toMatchObject({
+    kind: "selection",
+    text: "😀\r\nb\rc\nd",
+    version: "raw:v1",
+    startLine: 1,
+    startColumn: 2,
+    endLine: 4,
+    endColumn: 2,
+  });
+});
+
+test("Monaco columns exclude line endings and permit the empty line after a final CR", () => {
+  const source = {
+    path: "line.txt",
+    source: "working tree",
+    version: "raw:v2",
+  };
+  expect(
+    captureSelection(
+      "ab\r\ncd",
+      { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 4 },
+      source,
+    ),
+  ).toEqual({ kind: "invalid", reason: "range" });
+  expect(
+    captureSelection(
+      "ab\r",
+      { startLineNumber: 1, startColumn: 3, endLineNumber: 2, endColumn: 1 },
+      source,
+    ),
+  ).toMatchObject({ kind: "selection", text: "\r", version: "raw:v2" });
+});
+
 test("editor identity ignores locale display strings", () => {
   const pane = (source: string) => ({
     text: "const a = 1\n",

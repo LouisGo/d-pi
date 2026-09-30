@@ -67,8 +67,6 @@ export function MonacoViewer({
   const container = useRef<HTMLDivElement>(null);
   const selectionHandler = useRef(onSelection);
   selectionHandler.current = onSelection;
-  const viewRef = useRef(view);
-  viewRef.current = view;
   // Locale display strings must not destroy the editor and its selection.
   const identity = codeViewIdentity(view);
   const [workerFailed, setWorkerFailed] = useState(false);
@@ -97,6 +95,7 @@ export function MonacoViewer({
     resize.observe(container.current);
     const disposables: monaco.IDisposable[] = [];
     const models: monaco.editor.ITextModel[] = [];
+    let active = true;
     let editor:
       | monaco.editor.IStandaloneCodeEditor
       | monaco.editor.IStandaloneDiffEditor;
@@ -111,29 +110,24 @@ export function MonacoViewer({
       models.push(created);
       return created;
     };
-    const sourceOf = (side: "file" | "left" | "right"): SelectionSource => {
-      const current = viewRef.current;
-      if (current.kind === "file") return current.source;
-      if (side === "left") return current.left.source;
-      return current.right.source;
-    };
     const watch = (
       code: monaco.editor.IStandaloneCodeEditor,
-      side: "file" | "left" | "right",
+      mounted: monaco.editor.ITextModel,
+      text: string,
+      source: SelectionSource,
     ) => {
+      const snapshot = { ...source };
       disposables.push(
         code.onDidChangeCursorSelection(({ selection }) => {
-          const current = code.getModel();
-          if (current)
-            selectionHandler.current(
-              captureSelection(current.getValue(), selection, sourceOf(side)),
-            );
+          if (!active || code.getModel() !== mounted) return;
+          selectionHandler.current(captureSelection(text, selection, snapshot));
         }),
       );
     };
     if (view.kind === "file") {
+      const mounted = model(view.text, view.source);
       const code = monaco.editor.create(container.current, {
-        model: model(view.text, view.source),
+        model: mounted,
         readOnly: true,
         domReadOnly: true,
         automaticLayout: false,
@@ -142,7 +136,7 @@ export function MonacoViewer({
         theme: "d-pi",
       });
       editor = code;
-      watch(code, "file");
+      watch(code, mounted, view.text, view.source);
     } else {
       const diff = monaco.editor.createDiffEditor(container.current, {
         readOnly: true,
@@ -155,15 +149,25 @@ export function MonacoViewer({
         ...MONACO_DIFF_OPTIONS,
         theme: "d-pi",
       });
-      diff.setModel({
-        original: model(view.left.text, view.left.source),
-        modified: model(view.right.text, view.right.source),
-      });
+      const original = model(view.left.text, view.left.source);
+      const modified = model(view.right.text, view.right.source);
+      diff.setModel({ original, modified });
       editor = diff;
-      watch(diff.getOriginalEditor(), "left");
-      watch(diff.getModifiedEditor(), "right");
+      watch(
+        diff.getOriginalEditor(),
+        original,
+        view.left.text,
+        view.left.source,
+      );
+      watch(
+        diff.getModifiedEditor(),
+        modified,
+        view.right.text,
+        view.right.source,
+      );
     }
     return () => {
+      active = false;
       observer.disconnect();
       resize.disconnect();
       for (const disposable of disposables) disposable.dispose();
