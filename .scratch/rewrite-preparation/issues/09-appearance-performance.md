@@ -28,6 +28,7 @@ Blocked by: none
 - **集成**：目标工具链 Node `24.21.0` / pnpm `10.5.2`，完整 `pnpm check` 通过（364 项 Vitest + 1 项原生 opt-in 跳过；27 项架构 + 10 项工具门禁）。`pnpm build` 通过，保留既有上游 PURE 注释及大 chunk 提示。三份受影响 skill 通过 `quick_validate.py`，文档引用与结构生成报告通过。新增 exact `happy-dom@20.14.5` 仅用于真实 React DOM 挂载；默认 Node 测试环境保持。
 - **独立审阅**：冻结实现/测试/skill 与配置后，第三个只读 Agent 检查真实消费、旧 Thread/附件、初始化身份和 Monaco 尺寸/释放；独立 26 项相关测试通过，未发现可行动缺陷。主 Agent 核对最终 diff，不将审阅结论替代真实编辑器证据。
 - **开发态 GUI**：`validation/appearance.mjs` 运行实际构建 Electron、独立 App/OMP/Git 目录，无认证与执行许可。180 行文件、18 行草稿，文件与 Diff 各 6 次 theme / 6 次 density 切换；编辑器 DOM 身份、草稿、选区、两种编辑器滚动、几何、附件和真实 undo 保留，未创建 OMP session。主 Agent 已查看开发态深色/紧凑截图；[干净基线](../evidence/appearance-baseline.json)和[候选构建](../evidence/appearance-candidate.json)保留完整聚合计数/耗时。候选 profile 与另一目录构建部分重叠，文件 theme 的聚合耗时增加；不据此声称时延提升。正式构建的复核另记下方，短样本不代表帧时分布或用户体验验收。
+- **验证补修与真实布局红绿**：独立审阅随后指出初版脚本只检查切回 normal 后的内外宽度相等，未证明 compact 几何。补上父容器分配尺寸与两种密度的断言后，`e95d44e` 正式包出现实际红灯：normal 分配 700px，host 与 editor 均占 732px。grid item 的默认自动最小尺寸被 Monaco 内联宽度撑住，容器未缩小，ResizeObserver 也观察不到收缩；规则依据见 [MDN min-width](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/min-width#auto)。最小 `.monaco-readonly { min-width: 0; }` 后，同一脚本绿色：文件和 Diff 都按 normal 700px / compact 732px 正确往返，内层与分配尺寸一致，状态与真实 undo 保留。新增真实鼠标按下/释放验证工具栏切换后的选区。[实际几何红灯](../evidence/appearance-geometry-red.txt)、[绿灯](../evidence/appearance-geometry-green.txt)、[尺寸记录](../evidence/appearance-geometry-candidate.json)。该缺口同时进入 design-system skill；最终 GUI 证据取修复后版本，初版截图/计数不再充当完整几何验收。
 
 ## 交付与未覆盖
 

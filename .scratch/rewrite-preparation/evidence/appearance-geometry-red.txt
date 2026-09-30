@@ -1,0 +1,17 @@
+Appearance evidence: /private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-appearance-u91Iub
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: {"density":"normal","outerWidth":732,"innerWidth":732,"outerHeight":335,"innerHeight":335,"allocatedWidth":700,"parentWidth":750,"padding":"24px"}
+    at checkGeometry (file:///Users/lou/Learn/d-pi/validation/appearance.mjs:243:12)
+    at async file:///Users/lou/Learn/d-pi/validation/appearance.mjs:315:3 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.21.0

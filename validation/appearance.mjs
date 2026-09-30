@@ -201,11 +201,24 @@ try {
         .map((entry) => [entry.name, entry.value]),
     );
   };
-  const toggle = async (field) => {
+  const toggle = async (field, pointer = false) => {
     const before = await evaluate(`document.documentElement.dataset.${field}`);
-    await evaluate(
-      `document.querySelectorAll('.toolbar button')[${field === "theme" ? 0 : 1}].click()`,
-    );
+    const selector = `.toolbar button:nth-of-type(${field === "theme" ? 1 : 2})`;
+    if (pointer) {
+      const point = await evaluate(
+        `(()=>{const button=document.querySelector(${JSON.stringify(selector)});button.scrollIntoView({block:'center'});const rect=button.getBoundingClientRect();return {x:rect.x+rect.width/2,y:rect.y+rect.height/2};})()`,
+      );
+      for (const type of ["mousePressed", "mouseReleased"])
+        await call("Input.dispatchMouseEvent", {
+          type,
+          ...point,
+          button: "left",
+          clickCount: 1,
+        });
+    } else
+      await evaluate(
+        `document.querySelector(${JSON.stringify(selector)}).click()`,
+      );
     await wait(() =>
       evaluate(
         `document.documentElement.dataset.${field}!==${JSON.stringify(before)}`,
@@ -214,6 +227,25 @@ try {
     await settle();
   };
   const cycles = [];
+  const geometry = [];
+  const checkGeometry = async (kind) => {
+    const size = await evaluate(
+      "(()=>{const outer=document.querySelector('.monaco-readonly');const inner=appearanceMonaco.getBoundingClientRect();const parent=outer.parentElement;if(!parent.matches('.file-workspace'))throw Error('Unexpected Monaco host parent');const style=getComputedStyle(parent);const host=getComputedStyle(outer);const allocatedWidth=parent.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight)-parseFloat(host.borderLeftWidth)-parseFloat(host.borderRightWidth);return {density:document.documentElement.dataset.density,outerWidth:outer.clientWidth,innerWidth:inner.width,outerHeight:outer.clientHeight,innerHeight:inner.height,allocatedWidth,parentWidth:parent.clientWidth,padding:style.paddingLeft};})()",
+    );
+    assert.ok(
+      Math.abs(size.outerWidth - size.innerWidth) <= 1,
+      JSON.stringify(size),
+    );
+    assert.ok(
+      Math.abs(size.outerHeight - size.innerHeight) <= 1,
+      JSON.stringify(size),
+    );
+    assert.ok(
+      Math.abs(size.allocatedWidth - size.outerWidth) <= 1,
+      JSON.stringify(size),
+    );
+    geometry.push({ kind, ...size });
+  };
   const verify = async (kind) => {
     const roots =
       kind === "diff"
@@ -283,11 +315,14 @@ try {
     });
   };
   await verify("file");
-  // Toolbar clicks retain the active DOM selection (onMouseDown prevents focus
-  // theft). CDP click() does not synthesize a focus change.
+  await checkGeometry("file");
   assert.equal(await evaluate("getSelection().toString()"), composerSelection);
-  await toggle("theme");
-  await toggle("density");
+  // Supplement the fixed-operation metrics with real mouse-down/up events,
+  // verifying the toolbar's focus behavior while selection is still active.
+  await toggle("theme", true);
+  await toggle("density", true);
+  assert.equal(await evaluate("getSelection().toString()"), composerSelection);
+  await checkGeometry("file");
   await evaluate(
     "document.querySelector('.file-workspace').scrollIntoView({block:'center'})",
   );
@@ -300,6 +335,7 @@ try {
   );
   await settle();
   await verify("diff");
+  await checkGeometry("diff");
   await evaluate(
     "Array.from(document.querySelectorAll('.monaco-editor .native-edit-context,.monaco-editor textarea.inputarea')).at(-1).focus()",
   );
@@ -319,8 +355,9 @@ try {
   const selectionState = await evaluate(
     "document.querySelector('.file-workspace').textContent",
   );
-  await toggle("theme");
-  await toggle("density");
+  await toggle("theme", true);
+  await toggle("density", true);
+  await checkGeometry("diff");
   assert.equal(
     await evaluate("document.querySelector('.file-workspace').textContent"),
     selectionState,
@@ -331,6 +368,7 @@ try {
     ),
     true,
   );
+  await evaluate("appearanceMonaco.scrollIntoView({block:'center'})");
   await screenshot("diff-dark-compact.png");
   await click(".file-workspace button", "Attach selection");
   await wait(() => evaluate("!!document.querySelector('.file-reference pre')"));
@@ -374,6 +412,20 @@ try {
     db.prepare("SELECT COUNT(*) AS total FROM native_session").get().total,
     0,
   );
+  for (const kind of ["file", "diff"]) {
+    const normal = geometry.find(
+      (size) => size.kind === kind && size.density === "normal",
+    );
+    const compact = geometry.find(
+      (size) => size.kind === kind && size.density === "compact",
+    );
+    assert.ok(normal && compact);
+    assert.notEqual(
+      normal.outerWidth,
+      compact.outerWidth,
+      `fixture must exercise a real density size change: ${JSON.stringify(geometry)}`,
+    );
+  }
   const result = {
     application,
     build: await evaluate(
@@ -392,6 +444,7 @@ try {
       "no OMP session",
     ],
     cycles,
+    geometry,
     limitations:
       "CDP automation of the built Electron GUI; no frame-time distribution, physical paint, font preference, system IME, real provider or user acceptance claim.",
   };
