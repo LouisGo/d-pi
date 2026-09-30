@@ -28,6 +28,8 @@ cpSync(
 const { cwd: project, data, config } = sandbox;
 const rawFile = "BEGIN😀\r\nSECOND\rTHIRD\nEND";
 const changedFile = "CHANGED😀\r\nSECOND\rTHIRD\nEND";
+const rawPreview = "BEGIN😀\nSECOND\nTHIRD\nEND";
+const changedPreview = "CHANGED😀\nSECOND\nTHIRD\nEND";
 if (rewriting) {
   writeFileSync(
     join(project, "raw-selection.txt"),
@@ -155,6 +157,7 @@ function launch() {
 }
 let child = launch();
 let socket;
+let captureFailure;
 async function wait(fn) {
   const until = Date.now() + 30000;
   while (Date.now() < until) {
@@ -222,12 +225,23 @@ try {
       throw Error(JSON.stringify(result.exceptionDetails));
     return result.result.value;
   };
+  captureFailure = async () => {
+    const shot = await call("Page.captureScreenshot", { format: "png" });
+    writeFileSync(join(root, "failure.png"), Buffer.from(shot.data, "base64"));
+    const state = await evaluate(
+      "({focused:document.hasFocus(),activeTag:document.activeElement?.tagName,activeClass:document.activeElement?.className,activeLabel:document.activeElement?.getAttribute('aria-label'),buttons:Array.from(document.querySelectorAll('button')).map(b=>({text:b.textContent.trim(),disabled:b.disabled})),selectedTextElements:document.querySelectorAll('.monaco-editor .selected-text').length})",
+    );
+    writeFileSync(
+      join(root, "failure-dom.json"),
+      JSON.stringify(state, null, 2) + "\n",
+    );
+  };
   const click = (text) =>
     evaluate(
       `(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>b.textContent.trim()===${JSON.stringify(text)});if(!b || b.disabled)throw Error('Button unavailable');b.click();})()`,
     );
   const switchLocale = async (locale) => {
-    await wait(() => evaluate("document.querySelector('.toolbar select')"));
+    await wait(() => evaluate("!!document.querySelector('.toolbar select')"));
     await evaluate(
       `(()=>{const select=document.querySelector('.toolbar select');Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value').set.call(select,${JSON.stringify(locale)});select.dispatchEvent(new Event('change',{bubbles:true}));})()`,
     );
@@ -259,6 +273,34 @@ try {
   const session = db
     .prepare("SELECT session_id FROM native_session")
     .get().session_id;
+  if (rewriting) {
+    await evaluate(
+      "(()=>{const editor=document.querySelector('[contenteditable=true]');window.fixtureIME=[];editor.addEventListener('compositionstart',()=>window.fixtureIME.push('start'));editor.addEventListener('compositionend',()=>window.fixtureIME.push('end'));editor.focus();})()",
+    );
+    await call("Input.imeSetComposition", {
+      text: "中文",
+      selectionStart: 2,
+      selectionEnd: 2,
+    });
+    await wait(() => evaluate("window.fixtureIME.includes('start')"));
+    await click("发送");
+    await new Promise((accept) => setTimeout(accept, 150));
+    assert.equal(requests.length, 0, "an active composition must not dispatch");
+    assert.equal(
+      db.prepare("SELECT COUNT(*) AS total FROM submission").get().total,
+      0,
+    );
+    await call("Input.imeSetComposition", {
+      text: "",
+      selectionStart: 0,
+      selectionEnd: 0,
+    });
+    await wait(() =>
+      evaluate(
+        "window.fixtureIME.includes('end') && document.querySelector('[contenteditable=true]').textContent===''",
+      ),
+    );
+  }
   for (const [input, reply] of [
     ["PACKAGE_FIRST_INPUT", "PACKAGE_FIRST_REPLY"],
     ["PACKAGE_SECOND_INPUT", "PACKAGE_SECOND_REPLY"],
@@ -311,8 +353,9 @@ try {
       ),
     );
     const selectAll = async () => {
+      await call("Page.bringToFront");
       await evaluate(
-        "Array.from(document.querySelectorAll('.monaco-editor textarea')).at(-1).focus()",
+        "Array.from(document.querySelectorAll('.monaco-editor .native-edit-context, .monaco-editor textarea.inputarea')).at(-1).focus()",
       );
       await call("Input.dispatchKeyEvent", {
         type: "keyDown",
@@ -344,8 +387,14 @@ try {
     await selectAll();
     await wait(() =>
       evaluate(
-        `document.querySelector('.file-reference pre')?.textContent===${JSON.stringify(rawFile)}`,
+        `document.querySelector('.file-reference pre')?.textContent===${JSON.stringify(rawPreview)}`,
       ),
+    );
+    await wait(() =>
+      db
+        .prepare("SELECT body FROM thread WHERE id=?")
+        .get(thread)
+        ?.body.includes(rawFile),
     );
     writeFileSync(join(project, "raw-selection.txt"), changedFile);
     await evaluate("document.querySelector('.file-workspace button').click()");
@@ -358,7 +407,7 @@ try {
       await evaluate(
         "document.querySelector('.file-reference pre').textContent",
       ),
-      rawFile,
+      rawPreview,
     );
     await evaluate(
       "Array.from(document.querySelectorAll('.change-list button')).find(b=>b.textContent.includes('raw-selection.txt')).click()",
@@ -376,10 +425,10 @@ try {
       await evaluate(
         "Array.from(document.querySelectorAll('.file-reference pre')).map(p=>p.textContent)",
       ),
-      [rawFile, changedFile],
+      [rawPreview, changedPreview],
     );
     await evaluate(
-      "window.fixtureComposer=document.querySelector('[contenteditable=true]')",
+      "void (window.fixtureComposer=document.querySelector('[contenteditable=true]'))",
     );
     await switchLocale("en-US");
     await switchLocale("zh-CN");
@@ -394,7 +443,7 @@ try {
       await evaluate(
         "Array.from(document.querySelectorAll('.file-reference pre')).map(p=>p.textContent)",
       ),
-      [rawFile, changedFile],
+      [rawPreview, changedPreview],
     );
     await wait(() =>
       db
@@ -423,7 +472,7 @@ try {
       await evaluate(
         "Array.from(document.querySelectorAll('.file-reference pre')).map(p=>p.textContent)",
       ),
-      [rawFile, changedFile],
+      [rawPreview, changedPreview],
     );
     assert.equal(
       db.prepare("SELECT session_id FROM native_session").get().session_id,
@@ -561,6 +610,7 @@ try {
           build: events[0].build,
           checks: [
             "v1 migration",
+            "real browser composition events block dispatch (CDP, not system IME)",
             "two turns and native write",
             "same live session after window reload",
             "raw CRLF/CR/LF file and diff selection",
@@ -673,6 +723,12 @@ try {
     void call("Browser.close").catch(() => {});
     await wait(() => child.exitCode !== null);
   }
+} catch (error) {
+  try {
+    await captureFailure?.();
+  } catch {}
+  console.error(`Package failure evidence: ${root}`);
+  throw error;
 } finally {
   socket?.close();
   if (child.exitCode === null) child.kill("SIGTERM");

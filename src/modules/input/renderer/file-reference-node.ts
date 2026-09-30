@@ -35,7 +35,8 @@ export const FileReference = Node.create({
         `${value.path}:${value.startLine}:${value.startColumn}-${value.endLine}:${value.endColumn}`,
       ],
       ["small", {}, `${value.source} · ${value.version}`],
-      ["pre", {}, value.text],
+      // The DOM preview needs line feeds; serialized attributes retain source bytes.
+      ["pre", {}, value.text.replace(/\r\n?/g, "\n")],
     ];
   },
   renderText({ node }) {

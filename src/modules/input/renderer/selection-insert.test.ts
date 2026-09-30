@@ -44,3 +44,34 @@ test("appends an atomic selection reference and restores exact text from persist
     editor.destroy();
   }
 });
+
+test("renders source lines while keeping mixed newline bytes in the frozen draft", () => {
+  const raw = "BEGIN😀\r\nSECOND\rTHIRD\nEND";
+  const selection = captureSelection(
+    raw,
+    { startLineNumber: 1, startColumn: 1, endLineNumber: 4, endColumn: 4 },
+    { path: "mixed.txt", source: "working tree", version: "sha256:raw" },
+  );
+  if (selection.kind !== "selection") throw Error("Fixture selection failed");
+  const persisted = serializeReference(selection);
+  const editor = new Editor({
+    ...plainTextEditorOptions,
+    element: null,
+    content: draftDocument(persisted),
+  });
+  try {
+    const node = editor.state.doc.child(0);
+    expect(node.type.spec.toDOM?.(node)).toContainEqual([
+      "pre",
+      {},
+      "BEGIN😀\nSECOND\nTHIRD\nEND",
+    ]);
+    expect(node.attrs).toMatchObject(selection);
+    expect(editor.getText({ blockSeparator: "\n" })).toBe(persisted);
+    expect(replaceDraftText(editor, persisted)).toBe(true);
+    expect(editor.state.doc.child(0).attrs.text).toBe(raw);
+    expect(editor.getText({ blockSeparator: "\n" })).toBe(persisted);
+  } finally {
+    editor.destroy();
+  }
+});
