@@ -2,6 +2,7 @@ import { EditorContent, useEditor } from "@tiptap/react";
 import {
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -58,11 +59,15 @@ export function Composer({
   );
   const inputOptions = useRef({ expanded, preference });
   inputOptions.current = { expanded, preference };
+  const initialDocument = useMemo(
+    () => draftDocument(controller.getTextSnapshot()),
+    [controller],
+  );
   const editor = useEditor(
     {
       ...plainTextEditorOptions,
       extensions: [...plainTextEditorOptions.extensions, UrlDecoration],
-      content: draftDocument(controller.getTextSnapshot()),
+      content: initialDocument,
       editorProps: {
         handlePaste: handlePlainTextPaste,
         handleKeyDown: (view, event) => {

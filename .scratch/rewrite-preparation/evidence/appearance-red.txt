@@ -1,0 +1,171 @@
+
+> d-pi@0.1.0-s4.0 test /private/tmp/d-pi-appearance-baseline-992ceee
+> node scripts/test.mjs vitest src/app/renderer/appearance-subscriptions.test.ts src/app/renderer/workbench/composer-initialization.test.ts src/modules/files/renderer/monaco-viewer.test.ts -t 'keeps Thread views untouched|does not mutate appearance attributes|parses the initial editor document once|applies theme colors only|coalesces real size changes|cancels queued layout'
+
+
+ RUN  v5.0.2 /private/tmp/d-pi-appearance-baseline-992ceee
+
+ ❯ src/modules/files/renderer/monaco-viewer.test.ts (11 tests | 6 failed | 5 skipped) 11ms
+   × applies theme colors only when the theme changes without laying out or replacing the file viewer 6ms
+   × applies theme colors only when the theme changes without laying out or replacing the diff viewer 1ms
+   × lays out the file viewer at its initial visible size and coalesces real size changes per frame 1ms
+   × lays out the diff viewer at its initial visible size and coalesces real size changes per frame 1ms
+   ↓ restores the file viewer after zero size and skips a same-frame return to its current size
+   ↓ restores the diff viewer after zero size and skips a same-frame return to its current size
+   × cancels queued layout and ignores late notifications after disposing the file viewer 1ms
+   × cancels queued layout and ignores late notifications after disposing the diff viewer 0ms
+   ↓ freezes the mounted raw snapshot even when Monaco normalizes mixed line endings
+   ↓ keeps old-model callbacks bound to their own version and ignores callbacks after cleanup
+   ↓ freezes each diff pane with its own raw content and source version
+ ❯ src/app/renderer/workbench/composer-initialization.test.ts (3 tests | 1 failed | 2 skipped) 29ms
+   × parses the initial editor document once while mounted draft and shortcut subscriptions still update 29ms
+   ↓ does not parse again for an expanded editor and reads the latest pending snapshot on a real remount
+   ↓ constructs the editor document for a replacement Thread controller
+ ❯ src/app/renderer/appearance-subscriptions.test.ts (10 tests | 2 failed | 8 skipped) 46ms
+   × keeps Thread views untouched while theme saving disables controls and then applies the confirmed appearance 38ms
+   × does not mutate appearance attributes when only the send shortcut changes 7ms
+   ↓ isolates density, busy and failed-save notices while preserving the previous preference
+   ↓ writes only the appearance attribute that changes
+   ↓ updates the owning Thread resources when the workspace identity changes
+   ↓ consumes an attachment once and prevents old Thread callbacks from populating a replacement composer
+   ↓ passes a newly loaded editor adapter through without replacing the Thread
+   ↓ retains loading, repeated failure details and disposal without a root state subscription
+   ↓ keeps the project chooser disabled for its real pending operation
+   ↓ still updates localized workspace text when the language context changes
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/renderer/appearance-subscriptions.test.ts > keeps Thread views untouched while theme saving disables controls and then applies the confirmed appearance
+AssertionError: expected { conversation: 2, history: 2, …(4) } to deeply equal { conversation: 1, history: 1, …(4) }
+
+- Expected
++ Received
+
+  {
+-   "composer": 1,
+-   "conversation": 1,
+-   "files": 1,
+-   "history": 1,
+-   "runtime": 1,
+-   "submissions": 1,
++   "composer": 2,
++   "conversation": 2,
++   "files": 2,
++   "history": 2,
++   "runtime": 2,
++   "submissions": 2,
+  }
+
+ ❯ src/app/renderer/appearance-subscriptions.test.ts:272:26
+    270|   expect(fixture.button(i18n.t("app.toolbar.darkTheme")).disabled).toB…
+    271|   expect(document.documentElement.dataset.theme).toBe("light");
+    272|   expect(renderCounts()).toEqual(initial);
+       |                          ^
+    273|
+    274|   await act(async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  src/app/renderer/appearance-subscriptions.test.ts > does not mutate appearance attributes when only the send shortcut changes
+AssertionError: expected [ 'data-theme', 'data-density' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "data-theme",
++   "data-density",
++ ]
+
+ ❯ src/app/renderer/appearance-subscriptions.test.ts:302:24
+    300|       ...observer.takeRecords().map((record) => record.attributeName),
+    301|     );
+    302|     expect(attributes).toEqual([]);
+       |                        ^
+    303|     expect(document.documentElement.dataset.theme).toBe("light");
+    304|     expect(document.documentElement.dataset.density).toBe("normal");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  src/app/renderer/workbench/composer-initialization.test.ts > parses the initial editor document once while mounted draft and shortcut subscriptions still update
+AssertionError: expected [ [ 'restored draft' ], …(1) ] to deeply equal [ [ 'restored draft' ] ]
+
+- Expected
++ Received
+
+  [
+    [
+      "restored draft",
+    ],
++   [
++     "new unsaved draft",
++   ],
+  ]
+
+ ❯ src/app/renderer/workbench/composer-initialization.test.ts:146:36
+    144|   );
+    145|   expect(editorCalls.length).toBeGreaterThan(1);
+    146|   expect(documentCalls.mock.calls).toEqual([["restored draft"]]);
+       |                                    ^
+    147|   expect(editorCalls.at(-1)?.content).toBe(initialDocument);
+    148|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  src/modules/files/renderer/monaco-viewer.test.ts > applies theme colors only when the theme changes without laying out or replacing the file viewer
+ FAIL  src/modules/files/renderer/monaco-viewer.test.ts > applies theme colors only when the theme changes without laying out or replacing the diff viewer
+AssertionError: expected "vi.fn()" to be called 1 times, but got 3 times
+ ❯ src/modules/files/renderer/monaco-viewer.test.ts:251:33
+    249|     changeAttribute("density", "compact");
+    250|     changeAttribute("theme", "light");
+    251|     expect(harness.defineTheme).toHaveBeenCalledTimes(1);
+       |                                 ^
+    252|     changeAttribute("theme", "dark");
+    253|     expect(harness.defineTheme).toHaveBeenCalledTimes(2);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  src/modules/files/renderer/monaco-viewer.test.ts > lays out the file viewer at its initial visible size and coalesces real size changes per frame
+ FAIL  src/modules/files/renderer/monaco-viewer.test.ts > lays out the diff viewer at its initial visible size and coalesces real size changes per frame
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array []
+
+
+Number of calls: 1
+
+ ❯ src/modules/files/renderer/monaco-viewer.test.ts:276:32
+    274|     const editor = harness.viewers[0];
+    275|     notifyResize(640, 360);
+    276|     expect(editor?.layout).not.toHaveBeenCalled();
+       |                                ^
+    277|     flushFrame();
+    278|     expect(editor?.layout).toHaveBeenCalledTimes(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  src/modules/files/renderer/monaco-viewer.test.ts > cancels queued layout and ignores late notifications after disposing the file viewer
+ FAIL  src/modules/files/renderer/monaco-viewer.test.ts > cancels queued layout and ignores late notifications after disposing the diff viewer
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ src/modules/files/renderer/monaco-viewer.test.ts:330:33
+    328|     expect(harness.mutations[0]?.disconnected).toBe(true);
+    329|     expect(harness.resizes[0]?.disconnected).toBe(true);
+    330|     expect(harness.cancelFrame).toHaveBeenCalledTimes(1);
+       |                                 ^
+    331|     expect(harness.frames.size).toBe(0);
+    332|     expect(editor?.dispose).toHaveBeenCalledTimes(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+
+ Test Files  3 failed (3)
+      Tests  9 failed | 15 skipped (24)
+   Start at  15:29:52
+   Duration  2.03s (import 76%, environment 11%, transform 11%, tests 2%)
+
+ ELIFECYCLE  Test failed. See above for more details.

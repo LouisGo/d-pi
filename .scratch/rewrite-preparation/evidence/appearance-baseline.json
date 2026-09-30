@@ -1,0 +1,71 @@
+{
+  "application": "/tmp/d-pi-appearance-baseline-992ceee",
+  "build": "0.1.0-s4.0 · 992ceeea-061ba7a5",
+  "fixture": {
+    "fileLines": 180,
+    "draftLines": 18,
+    "sandbox": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-appearance-dNSxk5"
+  },
+  "checks": [
+    "file/diff/editor identity",
+    "draft and DOM selection",
+    "composer scroll",
+    "Monaco scroll",
+    "editor geometry",
+    "Monaco selection",
+    "attachment preserved",
+    "real undo",
+    "no OMP session"
+  ],
+  "cycles": [
+    {
+      "kind": "file",
+      "operationsPerPreference": 6,
+      "theme": {
+        "LayoutCount": 12,
+        "RecalcStyleCount": 28,
+        "LayoutDuration": 0.002728,
+        "RecalcStyleDuration": 0.016814,
+        "ScriptDuration": 0.036838,
+        "TaskDuration": 0.070182
+      },
+      "density": {
+        "LayoutCount": 13,
+        "RecalcStyleCount": 25,
+        "LayoutDuration": 0.00489,
+        "RecalcStyleDuration": 0.010968000000000002,
+        "ScriptDuration": 0.023767999999999997,
+        "TaskDuration": 0.05085600000000001
+      },
+      "dimension": {
+        "outer": 734,
+        "inner": 732
+      }
+    },
+    {
+      "kind": "diff",
+      "operationsPerPreference": 6,
+      "theme": {
+        "LayoutCount": 18,
+        "RecalcStyleCount": 32,
+        "LayoutDuration": 0.003162999999999999,
+        "RecalcStyleDuration": 0.021057,
+        "ScriptDuration": 0.03234899999999999,
+        "TaskDuration": 0.08104700000000001
+      },
+      "density": {
+        "LayoutCount": 18,
+        "RecalcStyleCount": 30,
+        "LayoutDuration": 0.004850999999999999,
+        "RecalcStyleDuration": 0.015073000000000003,
+        "ScriptDuration": 0.030810000000000004,
+        "TaskDuration": 0.06269600000000003
+      },
+      "dimension": {
+        "outer": 702,
+        "inner": 700
+      }
+    }
+  ],
+  "limitations": "CDP automation of the built Electron GUI; no frame-time distribution, physical paint, font preference, system IME, real provider or user acceptance claim."
+}

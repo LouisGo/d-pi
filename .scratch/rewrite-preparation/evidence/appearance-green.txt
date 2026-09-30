@@ -1,0 +1,15 @@
+
+> d-pi@0.1.0-s4.0 test /Users/lou/Learn/d-pi
+> node scripts/test.mjs vitest src/app/renderer/appearance-subscriptions.test.ts src/app/renderer/workbench/composer-initialization.test.ts src/modules/files/renderer/monaco-viewer.test.ts -t 'keeps Thread views untouched|does not mutate appearance attributes|parses the initial editor document once|applies theme colors only|coalesces real size changes|cancels queued layout'
+
+
+ RUN  v5.0.2 /Users/lou/Learn/d-pi
+
+ ✓ src/modules/files/renderer/monaco-viewer.test.ts (11 tests | 5 skipped) 7ms
+ ✓ src/app/renderer/appearance-subscriptions.test.ts (10 tests | 8 skipped) 34ms
+ ✓ src/app/renderer/workbench/composer-initialization.test.ts (3 tests | 2 skipped) 18ms
+
+ Test Files  3 passed (3)
+      Tests  9 passed | 15 skipped (24)
+   Start at  15:29:53
+   Duration  1.50s (import 71%, transform 14%, environment 12%, tests 2%)

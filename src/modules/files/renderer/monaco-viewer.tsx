@@ -81,21 +81,13 @@ export function MonacoViewer({
     return () => window.removeEventListener("error", onError);
   }, []);
   useEffect(() => {
-    if (!container.current) return;
+    const element = container.current;
+    if (!element) return;
     applyTheme();
-    const observer = new MutationObserver(() => {
-      applyTheme();
-      editor.layout();
-    });
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["data-theme", "data-density"],
-    });
-    const resize = new ResizeObserver(() => editor.layout());
-    resize.observe(container.current);
+    let active = true;
+    let darkTheme = document.documentElement.dataset.theme === "dark";
     const disposables: monaco.IDisposable[] = [];
     const models: monaco.editor.ITextModel[] = [];
-    let active = true;
     let editor:
       | monaco.editor.IStandaloneCodeEditor
       | monaco.editor.IStandaloneDiffEditor;
@@ -126,7 +118,7 @@ export function MonacoViewer({
     };
     if (view.kind === "file") {
       const mounted = model(view.text, view.source);
-      const code = monaco.editor.create(container.current, {
+      const code = monaco.editor.create(element, {
         model: mounted,
         readOnly: true,
         domReadOnly: true,
@@ -138,7 +130,7 @@ export function MonacoViewer({
       editor = code;
       watch(code, mounted, view.text, view.source);
     } else {
-      const diff = monaco.editor.createDiffEditor(container.current, {
+      const diff = monaco.editor.createDiffEditor(element, {
         readOnly: true,
         originalEditable: false,
         automaticLayout: false,
@@ -166,10 +158,54 @@ export function MonacoViewer({
         view.right.source,
       );
     }
+    const observer = new MutationObserver(() => {
+      const nextDarkTheme = document.documentElement.dataset.theme === "dark";
+      if (!active || nextDarkTheme === darkTheme) return;
+      darkTheme = nextDarkTheme;
+      applyTheme();
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+    // Density changes geometry through CSS; only observed size changes need layout.
+    let layoutFrame: number | undefined;
+    let lastSize: monaco.editor.IDimension | undefined;
+    let pendingSize: monaco.editor.IDimension | undefined;
+    const sameSize = (
+      previous: monaco.editor.IDimension | undefined,
+      next: monaco.editor.IDimension,
+    ) => previous?.width === next.width && previous?.height === next.height;
+    const resize = new ResizeObserver((entries) => {
+      if (!active) return;
+      const entry = entries.find((item) => item.target === element);
+      if (!entry) return;
+      const next = {
+        width: entry.contentRect.width,
+        height: entry.contentRect.height,
+      };
+      if (sameSize(pendingSize ?? lastSize, next)) return;
+      pendingSize = next;
+      if (layoutFrame !== undefined) return;
+      layoutFrame = requestAnimationFrame(() => {
+        layoutFrame = undefined;
+        if (!active) return;
+        const size = pendingSize;
+        pendingSize = undefined;
+        if (!size || sameSize(lastSize, size)) return;
+        lastSize = size;
+        editor.layout();
+      });
+    });
+    resize.observe(element);
     return () => {
+      if (!active) return;
       active = false;
       observer.disconnect();
       resize.disconnect();
+      if (layoutFrame !== undefined) cancelAnimationFrame(layoutFrame);
+      layoutFrame = undefined;
+      pendingSize = undefined;
       for (const disposable of disposables) disposable.dispose();
       editor.dispose();
       for (const item of models) item.dispose();

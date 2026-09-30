@@ -21,4 +21,14 @@ Blocked by: none
 
 ## 执行证据
 
-待补实际红绿、集成检查、GUI、构建身份及未覆盖项。状态由本票和上级 spec 维护，原重写 handoff 仍是原构建快照。
+2026-09-30：实现和自动检查、开发态实际 GUI 已完成；干净源码正式构建及交付核对继续由主 Agent 执行。状态由本票和上级 spec 维护，原重写 handoff 仍是原构建快照。
+
+- **TDD**：两个实现子 Agent 分别先观察全量订阅、重复属性写入、重复初始文档计算，以及 Monaco 颜色/尺寸耦合的失败，再最小实现。随后主 Agent 在独立 `992ceee` 源码目录，只复制本轮三个测试与 Vitest 配置作可复查对照：9 个目标行为断言实际失败；当前源码同题 9 个通过，另 15 个因过滤跳过，非套件遗漏。[基线红灯](../evidence/appearance-red.txt)、[当前绿灯](../evidence/appearance-green.txt)。既有 Thread、失败、语言和准确选区行为补测直接通过，不伪造红灯。
+- **可观察收益**：theme 保存的 busy 与成功通知不再执行六个无关业务边界；sendKey 保存的外观属性事件由 2 次变成 0；同一 mounted controller 的草稿更新不再重复 `draftDocument`。Monaco 只在真实 theme 改变时重设颜色，密度只经真实尺寸观察触发布局，多次变化按帧合并，卸载取消并拒绝迟到回调。
+- **集成**：目标工具链 Node `24.21.0` / pnpm `10.5.2`，完整 `pnpm check` 通过（364 项 Vitest + 1 项原生 opt-in 跳过；27 项架构 + 10 项工具门禁）。`pnpm build` 通过，保留既有上游 PURE 注释及大 chunk 提示。三份受影响 skill 通过 `quick_validate.py`，文档引用与结构生成报告通过。新增 exact `happy-dom@20.14.5` 仅用于真实 React DOM 挂载；默认 Node 测试环境保持。
+- **独立审阅**：冻结实现/测试/skill 与配置后，第三个只读 Agent 检查真实消费、旧 Thread/附件、初始化身份和 Monaco 尺寸/释放；独立 26 项相关测试通过，未发现可行动缺陷。主 Agent 核对最终 diff，不将审阅结论替代真实编辑器证据。
+- **开发态 GUI**：`validation/appearance.mjs` 运行实际构建 Electron、独立 App/OMP/Git 目录，无认证与执行许可。180 行文件、18 行草稿，文件与 Diff 各 6 次 theme / 6 次 density 切换；编辑器 DOM 身份、草稿、选区、两种编辑器滚动、几何、附件和真实 undo 保留，未创建 OMP session。主 Agent 已查看开发态深色/紧凑截图；[干净基线](../evidence/appearance-baseline.json)和[候选构建](../evidence/appearance-candidate.json)保留完整聚合计数/耗时。候选 profile 与另一目录构建部分重叠，文件 theme 的聚合耗时增加；不据此声称时延提升。正式构建的复核另记下方，短样本不代表帧时分布或用户体验验收。
+
+## 交付与未覆盖
+
+待补正式产物、实际构建身份、GUI 截图与启动步骤。不实现字号偏好，相关 skill 只约束后续设计；未验证系统 IME、真实供应商、Windows/Linux、M2 大内容性能或用户手感。不改变偏好保存失败行为、OMP 执行所有权、unknown 不重发与缺单写证据只读的继续边界。

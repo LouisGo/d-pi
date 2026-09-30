@@ -193,8 +193,9 @@ export class AppModel {
     return !this.disposed && generation === this.requestGeneration;
   }
   private applyAppearance(value: Preferences): void {
-    document.documentElement.dataset.theme = value.theme;
-    document.documentElement.dataset.density = value.density;
+    const { dataset } = document.documentElement;
+    if (dataset.theme !== value.theme) dataset.theme = value.theme;
+    if (dataset.density !== value.density) dataset.density = value.density;
   }
   private fail(error: Failure): void {
     const state = this.state;
