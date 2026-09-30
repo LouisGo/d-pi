@@ -63,9 +63,16 @@ async function setup(
           },
         }))
         .with({ kind: "save" }, save)
-        .with({ kind: "choose-project" }, { kind: "preferences" }, () => {
-          throw new Error("Unexpected command in close scenario");
-        })
+        .with(
+          { kind: "choose-project" },
+          { kind: "list-threads" },
+          { kind: "select-thread" },
+          { kind: "new-thread" },
+          { kind: "preferences" },
+          () => {
+            throw new Error("Unexpected command in close scenario");
+          },
+        )
         .exhaustive();
       return parseDesktopReply(command, raw);
     },

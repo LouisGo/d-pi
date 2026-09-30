@@ -1,5 +1,5 @@
 import { createConversationHost } from "../../modules/conversation/host/public";
-import { HostCommandSchema } from "../../modules/execution/contracts/public";
+import { HostTransportCommandSchema } from "../../modules/execution/contracts/public";
 import { createSessionHost } from "../../modules/execution/host/public";
 
 type HostPort = {
@@ -17,22 +17,33 @@ type ParentPort = {
 const parent = (process as NodeJS.Process & { parentPort?: ParentPort })
   .parentPort;
 if (!parent) throw Error("SessionHost requires an Electron parent port");
-const conversation = createConversationHost();
-const host = createSessionHost(
-  (message) => parent.postMessage(message),
-  (code) => process.exit(code),
-  {
-    onStart: (value) => conversation.start(value.connectionGeneration),
-    onNativeFrame: (frame) => conversation.accept(frame),
-    onAttach: (port) => conversation.attach(port),
-    onDispose: () => conversation.dispose(),
-  },
-);
+const scopes = new Map<string, ReturnType<typeof createSessionHost>>();
 parent.on("message", ({ data, ports }) => {
-  const parsed = HostCommandSchema.safeParse(data);
-  if (!parsed.success) {
-    parent.postMessage({ kind: "failed", code: "invalid-host-command" });
+  const parsed = HostTransportCommandSchema.safeParse(data);
+  if (!parsed.success) return;
+  const { scopeId, command } = parsed.data;
+  let host = scopes.get(scopeId);
+  if (command.kind === "start") {
+    if (host || scopeId !== command.processInstanceId) return;
+    const conversation = createConversationHost();
+    host = createSessionHost(
+      (message) => parent.postMessage({ scopeId, message }),
+      () => {
+        scopes.delete(scopeId);
+        parent.postMessage({ scopeId, message: { kind: "scope-closed" } });
+      },
+      {
+        onStart: (value) => conversation.start(value.connectionGeneration),
+        onNativeFrame: (frame) => conversation.accept(frame),
+        onAttach: (port) => conversation.attach(port),
+        onDispose: () => conversation.dispose(),
+      },
+    );
+    scopes.set(scopeId, host);
+  }
+  if (!host) {
+    ports[0]?.close();
     return;
   }
-  void host.handle(parsed.data, ports[0]);
+  void host.handle(command, ports[0]);
 });

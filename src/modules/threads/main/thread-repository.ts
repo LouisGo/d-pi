@@ -35,6 +35,20 @@ export class ThreadRepository implements ThreadReader {
         .get(id),
     );
   }
+  list(): ThreadContext[] {
+    return this.db
+      .prepare(
+        "SELECT t.id AS threadId,w.id AS workingDirectoryId,w.directory FROM thread t JOIN workspace w ON w.id=t.workspace_id ORDER BY t.rowid DESC",
+      )
+      .all()
+      .map((row) => ThreadContextSchema.parse(row));
+  }
+  select(threadId: string): void {
+    this.threadContext(threadId);
+    this.db
+      .prepare("UPDATE desktop SET active_thread=? WHERE id=1")
+      .run(threadId);
+  }
   create(directory: string): ThreadContext {
     return this.database.transaction(() => {
       this.db

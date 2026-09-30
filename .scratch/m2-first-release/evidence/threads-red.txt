@@ -1,0 +1,30 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/MySpace/Life/d-pi[39m
+
+ [31m❯[39m src/app/main/m2-thread-entry.test.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 25[2mms[22m[39m
+[31m   [31m×[31m opens projects repeatedly, creates same-directory Threads, switches persisted drafts without changing bindings[39m[32m 24[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/app/main/m2-thread-entry.test.ts[2m > [22mopens projects repeatedly, creates same-directory Threads, switches persisted drafts without changing bindings
+[31m[1mAssertionError[22m: expected 'failed' to be 'ready' // Object.is equality[39m
+
+Expected: [32m"ready"[39m
+Received: [31m"failed"[39m
+
+[36m [2m❯[22m src/app/main/m2-thread-entry.test.ts:[2m18:20[22m[39m
+    [90m 16|[39m     store.drafts.save(a.draft.threadId,0,'first original\r\n');
+    [90m 17|[39m     const b = await service.execute({kind:'choose-project',traceId});
+    [90m 18|[39m     expect(b.kind).toBe('ready');
+    [90m   |[39m                    [31m^[39m
+    [90m 19|[39m     if (b.kind !== 'ready' || !b.draft) return;
+    [90m 20|[39m     expect(b.draft.threadId).not.toBe(a.draft.threadId);
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m   Start at [22m 22:38:41
+[2m   Duration [22m 449ms[2m (transform 64%, import 28%, tests 7%, worker 1%)[22m

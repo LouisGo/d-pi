@@ -313,14 +313,12 @@ it("overlapping project requests open one dialog and create one foreground ident
     finish?.(dir);
     expect((await first).kind).toBe("ready");
     const active = store.drafts.active();
-    expect(
-      (
-        await service.execute({
-          kind: "choose-project",
-          traceId: crypto.randomUUID(),
-        })
-      ).kind,
-    ).toBe("failed");
-    expect(store.drafts.active()?.threadId).toBe(active?.threadId);
+    const next = service.execute({
+      kind: "choose-project",
+      traceId: crypto.randomUUID(),
+    });
+    finish?.(dir);
+    expect((await next).kind).toBe("ready");
+    expect(store.drafts.active()?.threadId).not.toBe(active?.threadId);
     store.close();
   }));

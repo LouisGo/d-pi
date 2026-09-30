@@ -87,11 +87,13 @@ test("SDK inspection refuses stale locks, tampered files and missing bundled res
         bun: hash("fixture-bun"),
         "host.mjs": hash("fixture-host"),
         "gate.js": hash("fixture-gate"),
+        "configuration.mjs": hash("fixture-configuration"),
       },
     }),
     "sdk/bun": "fixture-bun",
     "sdk/host.mjs": "fixture-host",
     "sdk/gate.js": "fixture-gate",
+    "sdk/configuration.mjs": "fixture-configuration",
     "sdk/BUN-LICENSE.md": "fixture-license",
     "sdk/node_modules/@oh-my-pi/pi-coding-agent/package.json": JSON.stringify({
       version: "18.3.0",

@@ -1,0 +1,1 @@
+{"root":"/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-auth-hESdmB","models":5319,"checks":["isolated empty configuration","native normalization and GET validation","invalid key preserves previous credential","native catalog refresh"],"realSupplierRequests":0}

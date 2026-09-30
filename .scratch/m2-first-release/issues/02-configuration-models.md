@@ -1,6 +1,6 @@
 # 02 配置、认证与模型
 
-Status: open
+Status: claimed
 Blocked by: none
 
 所属范围与授权见 [spec](../spec.md)。

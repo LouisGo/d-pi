@@ -4,6 +4,7 @@ import { createStore } from "zustand/vanilla";
 import type { Failure } from "../../modules/input/contracts/public";
 import type { DraftController } from "../../modules/input/core/public";
 import type { Preferences } from "../../modules/preferences/contracts/public";
+import type { ThreadContext } from "../../modules/threads/contracts/public";
 import type {
   Command,
   DesktopBridge,
@@ -35,7 +36,10 @@ export type AppStateStore = Pick<
   "getState" | "getInitialState" | "subscribe"
 >;
 type RestoreReply = ReplyFor<
-  Extract<Command, { kind: "restore" | "choose-project" }>
+  Extract<
+    Command,
+    { kind: "restore" | "choose-project" | "select-thread" | "new-thread" }
+  >
 >;
 type EditorBoundary = { freeze: () => boolean; release: () => void };
 type EditorBinding = { owner: ThreadModel; boundary: EditorBoundary };
@@ -57,6 +61,14 @@ export function transportFailure(traceId: string): Failure {
 export class AppModel {
   private readonly store: AppStore = createAppStore();
   readonly stateStore: AppStateStore = this.store;
+  readonly threadListStore = createStore<{
+    threads: ThreadContext[];
+    failed: boolean;
+  }>(() => ({
+    threads: [],
+    failed: false,
+  }));
+  private readonly threads = new Map<string, ThreadModel>();
   private disposed = false;
   private requestGeneration = 0;
   private editorBinding: EditorBinding | null = null;
@@ -86,6 +98,9 @@ export class AppModel {
   }
   get reading() {
     return this.activeThread?.reading ?? null;
+  }
+  get configuration() {
+    return this.bridge.configuration;
   }
   get history() {
     return this.bridge.history;
@@ -166,13 +181,13 @@ export class AppModel {
   }
   dispose(): void {
     if (this.disposed) return;
-    const thread = this.activeThread;
     this.disposed = true;
     this.requestGeneration++;
     this.editorBinding = null;
     this.closeAttempt = null;
     this.store.setState({ kind: "disposed" }, true);
-    thread?.dispose();
+    for (const thread of this.threads.values()) thread.dispose();
+    this.threads.clear();
   }
   getSnapshot = (): ViewState => this.store.getState();
   subscribe = (listener: () => void): (() => void) =>
@@ -207,11 +222,13 @@ export class AppModel {
     match(reply)
       .with({ kind: "ready" }, ({ draft, directoryAvailable, preferences }) => {
         const previous = this.activeThread;
+        const cached = draft ? this.threads.get(draft.threadId) : null;
         const thread = draft
-          ? previous?.matches(draft)
-            ? previous
+          ? cached?.matches(draft)
+            ? cached
             : new ThreadModel(draft, this.bridge, transportFailure)
           : null;
+        if (thread) this.threads.set(thread.context.threadId, thread);
         const threadSelection: ThreadSelectionState = thread
           ? { kind: "thread", thread, directoryAvailable }
           : { kind: "empty" };
@@ -227,7 +244,7 @@ export class AppModel {
           busy: false,
           notice: null,
         });
-        if (previous !== thread) previous?.dispose();
+        void this.refreshThreads();
       })
       .with({ kind: "failed" }, ({ error }) => this.fail(error))
       .with({ kind: "cancelled" }, () => {
@@ -247,26 +264,81 @@ export class AppModel {
       if (this.isCurrent(generation)) this.fail(transportFailure(traceId));
     }
   }
+  async refreshThreads(): Promise<void> {
+    const traceId = crypto.randomUUID();
+    try {
+      const reply = await this.bridge.request({
+        kind: "list-threads",
+        traceId,
+      });
+      if (!this.disposed && reply.kind === "threads")
+        this.threadListStore.setState({
+          threads: reply.threads,
+          failed: false,
+        });
+      else if (!this.disposed) this.threadListStore.setState({ failed: true });
+    } catch {
+      if (!this.disposed) this.threadListStore.setState({ failed: true });
+    }
+  }
   async choose(): Promise<void> {
+    await this.changeThread({
+      kind: "choose-project",
+      traceId: crypto.randomUUID(),
+    });
+  }
+  async newThread(): Promise<void> {
+    const thread = this.activeThread;
+    if (thread)
+      await this.changeThread({
+        kind: "new-thread",
+        threadId: thread.context.threadId,
+        traceId: crypto.randomUUID(),
+      });
+  }
+  async selectThread(threadId: ThreadContext["threadId"]): Promise<void> {
+    if (this.activeThread?.context.threadId === threadId) return;
+    await this.changeThread({
+      kind: "select-thread",
+      threadId,
+      traceId: crypto.randomUUID(),
+    });
+  }
+  private async changeThread(
+    command: Extract<
+      Command,
+      { kind: "choose-project" | "select-thread" | "new-thread" }
+    >,
+  ): Promise<void> {
     const state = this.state;
     if (
       this.disposed ||
       state.kind !== "ready" ||
       state.busy ||
-      state.threadSelection.kind !== "empty"
+      this.closeAttempt
     )
       return;
     const generation = ++this.requestGeneration;
+    const binding = this.editorBinding;
+    if (binding && !binding.boundary.freeze()) return;
+    const previous = this.activeThread;
     this.publish({ ...state, busy: true, notice: null });
-    const traceId = crypto.randomUUID();
     try {
-      const reply = await this.bridge.request({
-        kind: "choose-project",
-        traceId,
-      });
+      const saved = await (previous?.controller.flush() ??
+        Promise.resolve(true));
+      if (!this.isCurrent(generation)) return;
+      if (!saved) {
+        this.publish({ ...state, busy: false });
+        return;
+      }
+      const reply = await this.bridge.request(command);
       if (this.isCurrent(generation)) this.acceptRestore(reply);
     } catch {
-      if (this.isCurrent(generation)) this.fail(transportFailure(traceId));
+      if (this.isCurrent(generation))
+        this.fail(transportFailure(command.traceId));
+    } finally {
+      if (this.activeThread === previous && this.editorBinding === binding)
+        binding?.boundary.release();
     }
   }
   async preference(key: Exclude<keyof Preferences, "locale">): Promise<void> {

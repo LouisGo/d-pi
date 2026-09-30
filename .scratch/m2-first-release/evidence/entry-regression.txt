@@ -1,0 +1,40 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/MySpace/Life/d-pi[39m
+
+ [32m✓[39m src/modules/execution/main/host-multiplex.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/app/renderer/m2-thread-switch.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m src/app/host/index.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 216[2mms[22m[39m
+ [32m✓[39m src/app/main/m2-thread-entry.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m src/app/main/runtime-service.test.ts [2m([22m[2m23 tests[22m[2m)[22m[33m 424[2mms[22m[39m
+ [31m❯[39m src/app/main/storage.test.ts [2m([22m[2m8 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 5365[2mms[22m[39m
+   [32m✓[39m real SQLite and directory service [2m(7)[22m
+     [32m✓[39m migrates existing v4 preferences to system locale without changing other settings[32m 10[2mms[22m[39m
+     [32m✓[39m migration backup includes committed WAL records while an old reader holds a snapshot[32m 11[2mms[22m[39m
+     [32m✓[39m maps legacy SQLite directory identity without migration or changing native binding and draft[32m 14[2mms[22m[39m
+     [32m✓[39m stable identities, two threads, CAS and restart[32m 12[2mms[22m[39m
+     [32m✓[39m cancel/invalid directory does not associate a thread; foreign ID cannot write[32m 12[2mms[22m[39m
+     [32m✓[39m migration failure retains original DB and rollback; future schema is not reset[32m 5[2mms[22m[39m
+     [32m✓[39m locked writer reports failure without overwriting draft[32m 295[2mms[22m[39m
+[31m   [31m×[31m overlapping project requests open one dialog and create one foreground identity[39m[33m 5004[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/app/main/storage.test.ts[2m > [22moverlapping project requests open one dialog and create one foreground identity
+[31m[1mError[22m: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+[36m [2m❯[22m src/app/main/storage.test.ts:[2m290:1[22m[39m
+    [90m288|[39m });
+    [90m289|[39m
+    [90m290|[39m it("overlapping project requests open one dialog and create one foregr…
+    [90m   |[39m [31m^[39m
+    [90m291|[39m   fixture(async (path, dir) => {
+    [90m292|[39m     const store = openStorage(path);
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m5 passed[39m[22m[90m (6)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m40 passed[39m[22m[90m (41)[39m
+[2m   Start at [22m 22:54:41
+[2m   Duration [22m 5.79s[2m (tests 80%, transform 14%, import 6%)[22m

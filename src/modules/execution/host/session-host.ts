@@ -516,6 +516,43 @@ export function createSessionHost(
         dispatch(value);
         return Promise.resolve();
       })
+      .with(
+        { kind: "select-model" },
+        async ({ command, connectionGeneration }) => {
+          if (
+            !native ||
+            !start ||
+            command.threadId !== start.threadId ||
+            connectionGeneration !== start.connectionGeneration
+          )
+            return;
+          let status: "acknowledged" | "failed" | "unknown" = "unknown";
+          try {
+            if (
+              busy ||
+              prompts.size > 0 ||
+              interactions.pending ||
+              (lastControl && activeControl(lastControl))
+            )
+              throw Error("Active Thread");
+            const result = await native.request(
+              "d_pi_model",
+              command.selection,
+            );
+            status = result.success === true ? "acknowledged" : "failed";
+            await refresh();
+          } catch {
+            status = "unknown";
+          }
+          send({
+            kind: "operation-result",
+            traceId: command.traceId,
+            connectionGeneration,
+            operation: "select-model",
+            status,
+          });
+        },
+      )
       .with({ kind: "answer" }, async ({ command }) => {
         if (
           !native ||

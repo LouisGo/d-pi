@@ -21,6 +21,16 @@ const { session, setToolUIContext, subagentEventBus } =
       process.env.PI_CODING_AGENT_SESSION_DIR,
     ),
   });
+if (process.env.D_PI_MODEL_SELECTION) {
+  const selection = JSON.parse(process.env.D_PI_MODEL_SELECTION);
+  const model = session.modelRegistry.find(
+    selection.provider,
+    selection.modelId,
+  );
+  if (!model || !session.modelRegistry.hasConfiguredAuth(model))
+    throw Error("Selected model unavailable");
+  await session.setModelTemporary(model, selection.thinkingLevel);
+}
 const gate = new ConsumptionGate();
 let paused = false;
 let stopping = false;
@@ -59,7 +69,27 @@ const timer = setInterval(publish, 200);
 timer.unref();
 async function control(frame, claimStop, epoch) {
   try {
-    if (frame.type === "d_pi_stop") {
+    if (frame.type === "d_pi_model") {
+      if (
+        session.isStreaming ||
+        session.isCompacting ||
+        session.queuedMessageCount ||
+        session.hasPendingAsyncWork()
+      )
+        throw Error("Model change requires idle");
+      const model = session.modelRegistry.find(frame.provider, frame.modelId);
+      if (!model || !session.modelRegistry.hasConfiguredAuth(model))
+        throw Error("Selected model unavailable");
+      await session.setModelTemporary(model, frame.thinkingLevel);
+      output({
+        type: "response",
+        command: frame.type,
+        id: frame.id,
+        success: true,
+        data: { model: session.model, thinkingLevel: session.thinkingLevel },
+      });
+      return;
+    } else if (frame.type === "d_pi_stop") {
       // Claim before awaiting anything; subsequent native consumption sees the gate.
       if (claimStop) {
         paused = true;
@@ -117,7 +147,11 @@ const input = new ReadableStream({
         controller.enqueue(encode.encode(`${line}\n`));
         return;
       }
-      if (["d_pi_stop", "d_pi_continue", "d_pi_state"].includes(frame?.type)) {
+      if (
+        ["d_pi_stop", "d_pi_continue", "d_pi_state", "d_pi_model"].includes(
+          frame?.type,
+        )
+      ) {
         const claimStop = frame.type === "d_pi_stop" && !paused;
         if (frame.type === "d_pi_stop") {
           stopEpoch++;

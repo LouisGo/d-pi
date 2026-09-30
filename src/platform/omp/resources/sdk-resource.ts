@@ -13,6 +13,7 @@ const ManifestSchema = z.object({
     bun: z.string(),
     "host.mjs": z.string(),
     "gate.js": z.string(),
+    "configuration.mjs": z.string(),
   }),
 });
 export async function managedSdkRuntime(
@@ -40,4 +41,15 @@ export async function managedSdkRuntime(
       "官方 SDK 运行资源缺失或校验失败。开发环境请运行 pnpm runtime:sdk；随包版本请重新获取完整应用。",
     );
   }
+}
+
+export async function managedConfigurationRuntime(
+  root: string,
+): Promise<{ binary: string; entry: string }> {
+  const runtime = await managedSdkRuntime(root);
+  const directory = join(root, "sdk");
+  return {
+    binary: runtime.binary,
+    entry: join(directory, "configuration.mjs"),
+  };
 }

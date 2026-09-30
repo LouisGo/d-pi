@@ -28,9 +28,13 @@ export function PreferenceToolbar({
   );
   return (
     <header className="toolbar">
-      <span className="muted">
-        {hasThread ? t("app.toolbar.newThread") : t("app.toolbar.start")}
-      </span>
+      <Button
+        variant="ghost"
+        disabled={busy || !hasThread}
+        onClick={() => void model.newThread()}
+      >
+        {t("app.toolbar.newThread")}
+      </Button>
       <div className="flex gap-2">
         <select
           aria-label={t("app.toolbar.language")}

@@ -1,6 +1,7 @@
 import { match } from "ts-pattern";
 import { z } from "zod";
 import type { GitBridge } from "../../modules/changes/contracts/public";
+import type { ConfigurationBridge } from "../../modules/configuration/contracts/public";
 import type {
   ConversationPort,
   HistoryBridge,
@@ -18,6 +19,7 @@ import {
 } from "../../modules/input/contracts/public";
 import type { LocaleBridge } from "../../modules/preferences/contracts/public";
 import { PreferencesSchema } from "../../modules/preferences/contracts/public";
+import { ThreadContextSchema } from "../../modules/threads/contracts/public";
 import { ThreadIdSchema, TraceIdSchema } from "../../shared/identity";
 
 export {
@@ -28,6 +30,17 @@ export {
 export const CommandSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("restore"), traceId: TraceIdSchema }),
   z.strictObject({ kind: z.literal("choose-project"), traceId: TraceIdSchema }),
+  z.strictObject({ kind: z.literal("list-threads"), traceId: TraceIdSchema }),
+  z.strictObject({
+    kind: z.literal("new-thread"),
+    threadId: ThreadIdSchema,
+    traceId: TraceIdSchema,
+  }),
+  z.strictObject({
+    kind: z.literal("select-thread"),
+    threadId: ThreadIdSchema,
+    traceId: TraceIdSchema,
+  }),
   z.strictObject({
     kind: z.literal("save"),
     traceId: TraceIdSchema,
@@ -43,6 +56,10 @@ export const CommandSchema = z.discriminatedUnion("kind", [
 ]);
 export type Command = z.infer<typeof CommandSchema>;
 export const ReplySchema = z.discriminatedUnion("kind", [
+  z.strictObject({
+    kind: z.literal("threads"),
+    threads: z.array(ThreadContextSchema),
+  }),
   z.strictObject({
     kind: z.literal("ready"),
     draft: DraftSchema.nullable(),
@@ -60,6 +77,9 @@ export const ReplySchema = z.discriminatedUnion("kind", [
 export type Reply = z.infer<typeof ReplySchema>;
 type SuccessKind = {
   restore: "ready";
+  "new-thread": "ready";
+  "select-thread": "ready";
+  "list-threads": "threads";
   "choose-project": "ready" | "cancelled";
   save: "saved";
   preferences: "preferences-saved";
@@ -101,7 +121,17 @@ export function parseDesktopReply(command: Command, raw: unknown): Reply {
     reply.kind === "failed"
       ? reply.error.traceId === command.traceId
       : match(command)
-          .with({ kind: "restore" }, () => reply.kind === "ready")
+          .with(
+            { kind: "restore" },
+            { kind: "new-thread" },
+            () => reply.kind === "ready",
+          )
+          .with(
+            { kind: "select-thread" },
+            ({ threadId }) =>
+              reply.kind === "ready" && reply.draft?.threadId === threadId,
+          )
+          .with({ kind: "list-threads" }, () => reply.kind === "threads")
           .with(
             { kind: "choose-project" },
             () => reply.kind === "ready" || reply.kind === "cancelled",
@@ -127,6 +157,7 @@ export function parseDesktopReply(command: Command, raw: unknown): Reply {
   return reply;
 }
 export interface DesktopBridge {
+  configuration?: ConfigurationBridge;
   locale?: LocaleBridge;
   history?: HistoryBridge;
   files?: FileBridge;
@@ -149,7 +180,15 @@ export const BridgeDiagnosticSchema = z.strictObject({
   traceId: TraceIdSchema,
   requestId: z.uuid(),
   connectionId: z.uuid(),
-  operation: z.enum(["restore", "choose-project", "save", "preferences"]),
+  operation: z.enum([
+    "restore",
+    "choose-project",
+    "new-thread",
+    "select-thread",
+    "list-threads",
+    "save",
+    "preferences",
+  ]),
   stage: z.enum(["initiated", "confirmed", "acknowledgement-failed"]),
   code: z.enum(["invalid-reply", "transport-unavailable"]).optional(),
 });

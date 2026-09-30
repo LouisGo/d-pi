@@ -7,7 +7,9 @@
 - OMP profile 复用发生在 `runtime/host.mjs` 的 `resolveProfileEnv`/`setProfile`；随包资源与固定版本清单在 `src/platform/omp/resources/`。
 - 执行侧配置上下文 `configContextId` 由 `src/modules/execution/main/runtime-service.ts` 按规范化目录与环境派生，不是第二份原生配置。
 - App 自有的主题、密度与 locale 偏好归 `src/modules/preferences/`，该模块不拥有 OMP 配置。
-- D-23 的两条 GUI 认证入口（OpenAI 账户、DeepSeek API key）尚未实现，本页其余部分仍是设计合同而非已交付能力。
+- M2 入口由 `src/modules/configuration/` 接入；`runtime/configuration.mjs` 在短生命周期包内 Bun 中复用固定原生 Settings、AuthStorage、ModelRegistry，不启动项目 Agent。OpenAI 原生 OAuth、DeepSeek 原生 key 登录的 GUI 接入已实现，真实供应商尚未验收。
+- DeepSeek 使用原生 models-endpoint GET 校验后原子保存；失败保留旧凭据。隔离 fixture 已覆盖归一化、拒绝与旧凭据保护。凭据不进 argv、App 数据或诊断。
+- 当前 Thread 主模型/档位使用原生实例 `setModelTemporary`，不修改共享默认值；启动前选择通过本实例环境带入，启动后空闲时经 Host 控制更新，显示原生回读。子 Agent Thread 覆盖尚未接入。
 
 ## 范围与拥有者
 

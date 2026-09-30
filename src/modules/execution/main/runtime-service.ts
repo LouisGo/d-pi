@@ -80,6 +80,7 @@ export class RuntimeService {
       reply: SubmissionReply,
     ) => void = () => {},
     private readonly record: (event: DiagnosticEvent) => void = () => {},
+    private readonly scopeThreadId?: string,
   ) {
     this.connection = new HostConnection(
       (message) => this.receive(message),
@@ -177,7 +178,12 @@ export class RuntimeService {
         binary,
         sdkEntry,
         identity: current,
-        environment: this.environment,
+        environment: {
+          ...this.environment,
+          ...(this.view?.selectedModel
+            ? { D_PI_MODEL_SELECTION: JSON.stringify(this.view.selectedModel) }
+            : {}),
+        },
         sessionDirectory,
       },
       (message) => {
@@ -206,6 +212,9 @@ export class RuntimeService {
             message.state.isCompacting ||
             message.state.queuedMessageCount > 0,
           model: model ? `${model.provider}/${model.id}` : null,
+          ...(message.state.thinkingLevel
+            ? { thinkingLevel: message.state.thinkingLevel }
+            : {}),
           message: model
             ? uiMessage("runtime.readyToSend")
             : uiMessage("runtime.noModel"),
@@ -337,6 +346,13 @@ export class RuntimeService {
         { kind: "operation-result" },
         ({ traceId, connectionGeneration, operation, status }) => {
           if (connectionGeneration !== this.currentConnectionGeneration) return;
+          if (operation === "select-model")
+            this.update({
+              modelChanging: false,
+              ...(status === "unknown"
+                ? { model: null, message: uiMessage("runtime.controlUnknown") }
+                : {}),
+            });
           if (status === "failed")
             this.update({
               traceId,
@@ -411,6 +427,9 @@ export class RuntimeService {
         const model = state.model;
         this.update({
           busy: busy || pendingInteraction,
+          ...(state.thinkingLevel
+            ? { thinkingLevel: state.thinkingLevel }
+            : {}),
           model: model ? `${model.provider}/${model.id}` : null,
           message: pendingInteraction
             ? uiMessage("runtime.pendingInteraction")
@@ -439,7 +458,9 @@ export class RuntimeService {
     this.publish(this.view);
   }
   async execute(command: RuntimeCommand): Promise<RuntimeView> {
-    const thread = this.store.threads.activeThread();
+    const thread = this.scopeThreadId
+      ? this.store.threads.threadContext(this.scopeThreadId)
+      : this.store.threads.activeThread();
     if (!thread || thread.threadId !== command.threadId)
       throw Error("Inactive Thread");
     if (!this.view) {
@@ -480,6 +501,40 @@ export class RuntimeService {
           ? uiMessage("runtime.previousSessionReadOnly")
           : uiMessage("runtime.preStartTrust"),
       };
+    }
+    if (command.kind === "select-model") {
+      if (
+        this.store.threads.nativeSessionBinding(command.threadId) &&
+        !this.connection.connected
+      )
+        throw Error("Read-only recovered Thread");
+      if (this.hasActiveWork() || this.view.modelChanging)
+        throw Error("Model change requires idle Thread");
+      if (this.connection.connected && this.currentConnectionGeneration) {
+        const identity = await identifyDirectory(thread.directory);
+        const grant = this.store.threads.executionGrant(
+          thread.workingDirectoryId,
+        );
+        if (
+          !grant ||
+          !this.instanceDirectory ||
+          !sameDirectoryIdentity(grant, identity) ||
+          !sameDirectoryIdentity(this.instanceDirectory, identity)
+        )
+          throw Error("Execution grant invalid");
+        this.connection.send({
+          kind: "select-model",
+          command,
+          connectionGeneration: this.currentConnectionGeneration,
+        });
+        this.update({ modelChanging: true, traceId: command.traceId });
+      } else {
+        this.update({
+          selectedModel: command.selection,
+          traceId: command.traceId,
+        });
+      }
+      return this.view;
     }
     if (command.kind === "answer") {
       if (
@@ -623,7 +678,9 @@ export class RuntimeService {
     return this.view;
   }
   async submit(command: SubmissionCommand): Promise<SubmissionReply> {
-    const thread = this.store.threads.activeThread();
+    const thread = this.scopeThreadId
+      ? this.store.threads.threadContext(this.scopeThreadId)
+      : this.store.threads.activeThread();
     if (!thread || thread.threadId !== command.threadId)
       throw Error("Inactive Thread");
     if (command.kind === "list")
@@ -666,6 +723,7 @@ export class RuntimeService {
           },
         };
     }
+    if (this.view?.modelChanging) throw Error("Model change pending");
     if (command.kind === "prepare" && existing) {
       if (
         existing.text !== command.text ||

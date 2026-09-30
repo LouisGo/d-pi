@@ -7,6 +7,7 @@ export function canSubmit(view: RuntimeView | null | undefined): boolean {
   return !!(
     view?.phase === "ready" &&
     view.trusted &&
+    !view.modelChanging &&
     view.model &&
     !view.control?.paused &&
     !view.control?.stopping &&

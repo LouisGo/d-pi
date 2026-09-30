@@ -6,6 +6,7 @@ import {
   DismissCommandSchema,
   InteractionViewSchema,
 } from "./interactions";
+import { SelectModelCommandSchema } from "./runtime";
 import { FrozenSubmissionSchema, SubmissionEventSchema } from "./submission";
 export const HostStartSchema = z.strictObject({
   kind: z.literal("start"),
@@ -23,6 +24,11 @@ export const HostStartSchema = z.strictObject({
 export type HostStart = z.infer<typeof HostStartSchema>;
 export const HostCommandSchema = z.discriminatedUnion("kind", [
   HostStartSchema,
+  z.strictObject({
+    kind: z.literal("select-model"),
+    command: SelectModelCommandSchema,
+    connectionGeneration: z.uuid(),
+  }),
   z.strictObject({ kind: z.literal("answer"), command: AnswerCommandSchema }),
   z.strictObject({ kind: z.literal("dismiss"), command: DismissCommandSchema }),
   z.strictObject({ kind: z.literal("control"), command: ControlCommandSchema }),
@@ -41,6 +47,7 @@ export const NativeStateSchema = z.object({
     .object({ id: z.string(), provider: z.string() })
     .nullable()
     .optional(),
+  thinkingLevel: z.string().optional(),
   isStreaming: z.boolean(),
   isCompacting: z.boolean(),
   queuedMessageCount: z.number().int().nonnegative(),
@@ -58,7 +65,13 @@ export const HostMessageSchema = z.discriminatedUnion("kind", [
     kind: z.literal("operation-result"),
     traceId: z.uuid(),
     connectionGeneration: z.uuid(),
-    operation: z.enum(["answer", "dismiss", "stop", "continue"]),
+    operation: z.enum([
+      "answer",
+      "dismiss",
+      "stop",
+      "continue",
+      "select-model",
+    ]),
     status: z.enum(["acknowledged", "failed", "unknown"]),
   }),
   z.object({ kind: z.literal("interactions"), view: InteractionViewSchema }),
@@ -84,3 +97,15 @@ export const HostMessageSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("interrupted"), reason: z.string() }),
 ]);
 export type HostMessage = z.infer<typeof HostMessageSchema>;
+
+export const HostTransportCommandSchema = z.strictObject({
+  scopeId: z.uuid(),
+  command: HostCommandSchema,
+});
+export const HostTransportMessageSchema = z.strictObject({
+  scopeId: z.uuid(),
+  message: z.union([
+    HostMessageSchema,
+    z.strictObject({ kind: z.literal("scope-closed") }),
+  ]),
+});

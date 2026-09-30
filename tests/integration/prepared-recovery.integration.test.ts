@@ -10,7 +10,7 @@ import type {
 } from "../../src/modules/execution/contracts/public";
 import {
   type HostCommand,
-  HostCommandSchema,
+  HostTransportCommandSchema,
 } from "../../src/modules/execution/contracts/public";
 import { RuntimeService } from "../../src/modules/execution/main/public";
 import { SubmissionModel } from "../../src/modules/execution/renderer/public";
@@ -39,12 +39,20 @@ async function interruptedRenderer() {
   const store = AppStorage.open(join(root, "app.sqlite"));
   const draft = store.drafts.create(project);
   store.drafts.save(draft.threadId, 0, "A");
+  let scopeId = "";
   const host = new EventEmitter();
+  const emit = host.emit.bind(host);
+  host.emit = (event, ...args) =>
+    event === "message"
+      ? emit(event, { scopeId, message: args[0] })
+      : emit(event, ...args);
   const commands: HostCommand[] = [];
   electron.fork.mockReturnValue(
     Object.assign(host, {
       postMessage(raw: unknown) {
-        const command = HostCommandSchema.parse(raw);
+        const envelope = HostTransportCommandSchema.parse(raw);
+        const command = envelope.command;
+        scopeId = envelope.scopeId;
         commands.push(command);
         if (command.kind === "start")
           queueMicrotask(() =>

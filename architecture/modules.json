@@ -1,13 +1,30 @@
 {
   "version": 1,
   "root": "src/modules",
-  "sourceRoots": ["src", "runtime"],
-  "ownedRoots": ["src/app", "src/platform", "src/shared"],
-  "unresolved": { "allowed": ["^\\.\\/gate\\.js$"] },
+  "sourceRoots": [
+    "src",
+    "runtime"
+  ],
+  "ownedRoots": [
+    "src/app",
+    "src/platform",
+    "src/shared"
+  ],
+  "unresolved": {
+    "allowed": [
+      "^\\.\\/gate\\.js$"
+    ]
+  },
   "modules": {
     "app": {
       "root": "src/app",
-      "environments": ["contracts", "main", "host", "preload", "renderer"],
+      "environments": [
+        "contracts",
+        "main",
+        "host",
+        "preload",
+        "renderer"
+      ],
       "public": [
         "contracts/desktop-bridge.ts",
         "main/index.ts",
@@ -15,7 +32,9 @@
         "preload/index.ts",
         "renderer/main.tsx"
       ],
-      "testPublic": ["main/wiring/app-storage.ts"],
+      "testPublic": [
+        "main/wiring/app-storage.ts"
+      ],
       "dependsOn": {
         "contracts": [
           "changes",
@@ -24,7 +43,9 @@
           "files",
           "input",
           "preferences",
-          "shared"
+          "shared",
+          "threads",
+          "configuration"
         ],
         "main": [
           "changes",
@@ -35,15 +56,20 @@
           "platform",
           "preferences",
           "shared",
-          "threads"
+          "threads",
+          "configuration"
         ],
-        "host": ["conversation", "execution"],
+        "host": [
+          "conversation",
+          "execution"
+        ],
         "preload": [
           "changes",
           "conversation",
           "execution",
           "files",
-          "shared"
+          "shared",
+          "configuration"
         ],
         "renderer": [
           "changes",
@@ -53,13 +79,18 @@
           "input",
           "preferences",
           "shared",
-          "threads"
+          "threads",
+          "configuration"
         ]
       }
     },
     "platform": {
       "root": "src/platform",
-      "environments": ["main", "node", "omp"],
+      "environments": [
+        "main",
+        "node",
+        "omp"
+      ],
       "public": [
         "main/storage/public.ts",
         "main/diagnostics/public.ts",
@@ -68,11 +99,15 @@
         "omp/protocol/public.ts",
         "omp/resources/public.ts"
       ],
-      "dependsOn": ["shared"]
+      "dependsOn": [
+        "shared"
+      ]
     },
     "shared": {
       "root": "src/shared",
-      "environments": ["shared"],
+      "environments": [
+        "shared"
+      ],
       "defaultEnvironment": "shared",
       "public": [
         "build-info.ts",
@@ -87,7 +122,12 @@
     },
     "files": {
       "root": "src/modules/files",
-      "environments": ["contracts", "core", "main", "renderer"],
+      "environments": [
+        "contracts",
+        "core",
+        "main",
+        "renderer"
+      ],
       "public": [
         "contracts/public.ts",
         "core/public.ts",
@@ -95,16 +135,28 @@
         "renderer/public.ts"
       ],
       "dependsOn": {
-        "contracts": ["shared"],
-        "core": ["shared"],
+        "contracts": [
+          "shared"
+        ],
+        "core": [
+          "shared"
+        ],
         "main": [],
-        "renderer": ["preferences", "threads"]
+        "renderer": [
+          "preferences",
+          "threads"
+        ]
       },
       "materialized": true
     },
     "input": {
       "root": "src/modules/input",
-      "environments": ["contracts", "core", "main", "renderer"],
+      "environments": [
+        "contracts",
+        "core",
+        "main",
+        "renderer"
+      ],
       "public": [
         "contracts/public.ts",
         "core/public.ts",
@@ -112,56 +164,104 @@
         "renderer/public.ts"
       ],
       "dependsOn": {
-        "contracts": ["shared", "threads"],
-        "core": ["files", "shared"],
-        "main": ["platform", "threads"],
-        "renderer": ["files"]
+        "contracts": [
+          "shared",
+          "threads"
+        ],
+        "core": [
+          "files",
+          "shared"
+        ],
+        "main": [
+          "platform",
+          "threads"
+        ],
+        "renderer": [
+          "files"
+        ]
       },
       "materialized": true
     },
     "changes": {
       "root": "src/modules/changes",
-      "environments": ["contracts", "main", "renderer"],
+      "environments": [
+        "contracts",
+        "main",
+        "renderer"
+      ],
       "public": [
         "contracts/public.ts",
         "main/public.ts",
         "renderer/public.ts"
       ],
       "dependsOn": {
-        "contracts": ["files", "shared"],
-        "main": ["files"],
-        "renderer": ["shared", "threads"]
+        "contracts": [
+          "files",
+          "shared"
+        ],
+        "main": [
+          "files"
+        ],
+        "renderer": [
+          "shared",
+          "threads"
+        ]
       },
       "materialized": true
     },
     "threads": {
       "root": "src/modules/threads",
-      "environments": ["contracts", "main"],
-      "public": ["contracts/public.ts", "main/public.ts"],
+      "environments": [
+        "contracts",
+        "main"
+      ],
+      "public": [
+        "contracts/public.ts",
+        "main/public.ts"
+      ],
       "dependsOn": {
-        "contracts": ["shared"],
-        "main": ["platform"]
+        "contracts": [
+          "shared"
+        ],
+        "main": [
+          "platform"
+        ]
       },
       "materialized": true
     },
     "preferences": {
       "root": "src/modules/preferences",
-      "environments": ["contracts", "main", "renderer"],
+      "environments": [
+        "contracts",
+        "main",
+        "renderer"
+      ],
       "public": [
         "contracts/public.ts",
         "main/public.ts",
         "renderer/public.ts"
       ],
       "dependsOn": {
-        "contracts": ["shared"],
-        "main": ["platform"],
-        "renderer": ["shared"]
+        "contracts": [
+          "shared"
+        ],
+        "main": [
+          "platform"
+        ],
+        "renderer": [
+          "shared"
+        ]
       },
       "materialized": true
     },
     "conversation": {
       "root": "src/modules/conversation",
-      "environments": ["contracts", "core", "host", "main"],
+      "environments": [
+        "contracts",
+        "core",
+        "host",
+        "main"
+      ],
       "public": [
         "contracts/public.ts",
         "core/public.ts",
@@ -169,16 +269,29 @@
         "main/public.ts"
       ],
       "dependsOn": {
-        "contracts": ["shared"],
+        "contracts": [
+          "shared"
+        ],
         "core": [],
-        "host": ["platform", "shared"],
-        "main": ["threads"]
+        "host": [
+          "platform",
+          "shared"
+        ],
+        "main": [
+          "threads"
+        ]
       },
       "materialized": true
     },
     "execution": {
       "root": "src/modules/execution",
-      "environments": ["contracts", "core", "host", "main", "renderer"],
+      "environments": [
+        "contracts",
+        "core",
+        "host",
+        "main",
+        "renderer"
+      ],
       "public": [
         "contracts/public.ts",
         "core/public.ts",
@@ -187,20 +300,66 @@
         "renderer/public.ts"
       ],
       "dependsOn": {
-        "contracts": ["input", "shared", "threads"],
-        "core": ["input", "shared", "threads"],
-        "host": ["platform", "shared"],
-        "main": ["input", "platform", "shared", "threads"],
-        "renderer": ["input", "shared"]
+        "contracts": [
+          "input",
+          "shared",
+          "threads"
+        ],
+        "core": [
+          "input",
+          "shared",
+          "threads"
+        ],
+        "host": [
+          "platform",
+          "shared"
+        ],
+        "main": [
+          "input",
+          "platform",
+          "shared",
+          "threads"
+        ],
+        "renderer": [
+          "input",
+          "shared"
+        ]
       },
       "materialized": true
     },
     "runtime": {
       "root": "runtime",
-      "environments": ["omp"],
+      "environments": [
+        "omp"
+      ],
       "defaultEnvironment": "omp",
-      "public": ["host.mjs"],
+      "public": [
+        "host.mjs"
+      ],
       "dependsOn": [],
+      "materialized": true
+    },
+    "configuration": {
+      "root": "src/modules/configuration",
+      "environments": [
+        "contracts",
+        "main",
+        "renderer"
+      ],
+      "public": [
+        "contracts/public.ts",
+        "main/public.ts",
+        "renderer/public.ts"
+      ],
+      "dependsOn": {
+        "contracts": [],
+        "main": [
+          "platform"
+        ],
+        "renderer": [
+          "preferences"
+        ]
+      },
       "materialized": true
     }
   }

@@ -1,6 +1,6 @@
 # 03 主流程与候选
 
-Status: open
+Status: claimed
 Blocked by: 01, 02
 
 所属范围与授权见 [spec](../spec.md)。

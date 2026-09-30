@@ -69,6 +69,11 @@ function renderApp() {
   };
   const model = {
     stateStore,
+    threadListStore: {
+      getState: () => ({ threads: [] }),
+      getInitialState: () => ({ threads: [] }),
+      subscribe: () => () => {},
+    },
   } as unknown as AppModel;
   // The file and Git panels read through TanStack Query, so this render needs
   // the same query client the renderer entry installs.
@@ -85,7 +90,7 @@ describe("renderer locale", () => {
   it("updates visible app copy when the locale changes", () => {
     const chinese = renderApp();
     expect(chinese).toContain("在项目里，写下第一步");
-    expect(chinese).toContain("选择项目并创建草稿");
+    expect(chinese).toContain("打开项目");
 
     locale = "en-US";
     const english = renderApp();

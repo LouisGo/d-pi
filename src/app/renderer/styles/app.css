@@ -18,6 +18,61 @@
   }
 }
 @layer components {
+  .configuration-settings {
+    margin: var(--layout-gap) var(--panel-padding);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--layout-gap);
+  }
+  .configuration-settings summary {
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .configuration-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--layout-gap);
+    margin-top: var(--layout-gap);
+  }
+  .configuration-content form,
+  .model-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--layout-gap);
+    align-items: flex-end;
+  }
+  .configuration-content label,
+  .model-fields label {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--layout-gap) / 2);
+    min-width: 0;
+  }
+  .configuration-content input,
+  .configuration-content button,
+  .model-fields input,
+  .model-fields select {
+    background: var(--background);
+    color: var(--foreground);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    min-height: var(--control-height);
+    padding-inline: var(--control-padding);
+    max-width: 100%;
+  }
+  .configuration-content input:focus-visible,
+  .configuration-content button:focus-visible,
+  .model-fields input:focus-visible,
+  .model-fields select:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+  .model-controls {
+    display: flex;
+    flex-direction: column;
+    gap: var(--layout-gap);
+    margin-bottom: var(--panel-padding);
+  }
   .runtime-panel {
     display: flex;
     flex-direction: column;
@@ -60,6 +115,27 @@
     align-items: center;
     gap: calc(var(--layout-gap) / 2);
     overflow-wrap: anywhere;
+  }
+  .thread-navigation {
+    display: flex;
+    flex-direction: column;
+    gap: var(--layout-gap);
+    min-width: 0;
+  }
+  .thread-navigation button {
+    justify-content: flex-start;
+    text-align: start;
+    white-space: normal;
+  }
+  .thread-name {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .thread-name small {
+    font-size: var(--text-small);
+    color: var(--muted-foreground);
   }
   .sidebar-bottom {
     margin-top: auto;

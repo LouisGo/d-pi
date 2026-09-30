@@ -59,12 +59,26 @@ const tick = () => new Promise<void>((resolve) => setImmediate(resolve));
 async function running() {
   const messages: unknown[] = [];
   const parent = Object.assign(new EventEmitter(), {
-    postMessage: (message: unknown) => messages.push(message),
+    postMessage: (raw: unknown) => {
+      if (typeof raw === "object" && raw && "message" in raw)
+        messages.push(raw.message);
+    },
   });
   Object.defineProperty(process, "parentPort", {
     value: parent,
     configurable: true,
   });
+  let scopeId = "";
+  const emit = parent.emit.bind(parent);
+  parent.emit = (event, ...args) => {
+    if (event !== "message") return emit(event, ...args);
+    const payload = args[0];
+    if (payload.data.kind === "start") scopeId = payload.data.processInstanceId;
+    return emit(event, {
+      ...payload,
+      data: { scopeId, command: payload.data },
+    });
+  };
   await import("./index");
   const threadId = crypto.randomUUID();
   const target = {

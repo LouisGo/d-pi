@@ -8,8 +8,11 @@ import {
   ipcMain,
   Menu,
   MessageChannelMain,
+  shell,
 } from "electron";
 import { z } from "zod";
+import { ConfigurationCommandSchema } from "../../modules/configuration/contracts/public";
+import { NativeConfiguration } from "../../modules/configuration/main/public";
 import { RuntimeFailureSchema } from "../../modules/execution/contracts/public";
 import { RuntimeService } from "../../modules/execution/main/public";
 import {
@@ -52,7 +55,36 @@ const locked = app.requestSingleInstanceLock();
 let window: BrowserWindow | null = null;
 let store: AppStorage | undefined;
 let service: DesktopCommandService | undefined;
-let runtime: RuntimeService | undefined;
+let configuration: NativeConfiguration | undefined;
+const runtimes = new Map<string, RuntimeService>();
+function getRuntime(threadId: string): RuntimeService | undefined {
+  if (!store) return undefined;
+  try {
+    store.threads.threadContext(threadId);
+  } catch {
+    return undefined;
+  }
+  let runtime = runtimes.get(threadId);
+  if (!runtime) {
+    runtime = new RuntimeService(
+      store,
+      app.isPackaged
+        ? process.resourcesPath
+        : join(import.meta.dirname, "../../resources"),
+      app.getPath("userData"),
+      process.env,
+      (view) => window?.webContents.send("runtime:state", view),
+      (reply) => window?.webContents.send("submission:state", reply),
+      (event) => diagnostics?.record(event),
+      threadId,
+    );
+    runtimes.set(threadId, runtime);
+  }
+  return runtime;
+}
+function activeWork(): boolean {
+  return [...runtimes.values()].some((runtime) => runtime.hasActiveWork());
+}
 let startupCauseCode: string | undefined;
 let localeSnapshot: LocaleSnapshot = {
   preference: "system",
@@ -129,15 +161,14 @@ function initializeStorage(): void {
       });
       return result.canceled ? null : (result.filePaths[0] ?? null);
     });
-    runtime = new RuntimeService(
-      store,
+    configuration = new NativeConfiguration(
       app.isPackaged
         ? process.resourcesPath
         : join(import.meta.dirname, "../../resources"),
-      data,
+      () => store?.threads.activeThread()?.directory ?? data,
       process.env,
-      (view) => window?.webContents.send("runtime:state", view),
-      (reply) => window?.webContents.send("submission:state", reply),
+      (event) => window?.webContents.send("configuration:state", event),
+      (url) => shell.openExternal(url),
       (event) => diagnostics?.record(event),
     );
     startupCauseCode = undefined;
@@ -385,10 +416,38 @@ else {
         });
       }
     });
+    ipcMain.on("configuration:subscribe", (event) => {
+      if (sourceValid(event)) {
+        const state = configuration?.currentEvent();
+        if (state) event.sender.send("configuration:state", state);
+      }
+    });
+    ipcMain.handle("configuration:request", async (event, raw: unknown) => {
+      if (!sourceValid(event)) throw Error("Invalid configuration source");
+      const command = ConfigurationCommandSchema.parse(raw);
+      if (!configuration) initializeStorage();
+      const context = {
+        traceId: command.traceId,
+        requestId: randomUUID(),
+        connectionId: diagnostics?.processInstanceId ?? randomUUID(),
+        operation: `configuration:${command.kind}`,
+      };
+      diagnostics?.record({ ...context, stage: "received" });
+      const reply = (await configuration?.execute(command)) ?? {
+        kind: "failed",
+        traceId: command.traceId,
+        code: "configuration-unavailable",
+      };
+      diagnostics?.record({
+        ...context,
+        stage: reply.kind === "failed" ? "failed" : "completed",
+      });
+      return reply;
+    });
     const ipcSourceContext = { ipcMain, sourceValid };
     registerRuntimeConnectionIpc({
       ...ipcSourceContext,
-      getRuntime: () => runtime,
+      getRuntime,
       getStore: () => store,
       createMessageChannel: () => new MessageChannelMain(),
     });
@@ -404,11 +463,11 @@ else {
     registerGitIpc(projectReadContext);
     registerSubmissionIpc({
       ...ipcSourceContext,
-      getRuntime: () => runtime,
+      getRuntime,
     });
     registerRuntimeRequestIpc({
       ...ipcSourceContext,
-      getRuntime: () => runtime,
+      getRuntime,
       initializeStorage,
       getDiagnostics: () => diagnostics,
       runtimeFailure,
@@ -505,15 +564,19 @@ else {
     // Window lifetime is separate from Main; explicit Quit owns application shutdown.
   });
   const quitCoordinator = new QuitCoordinator(
-    () => runtime?.hasActiveWork() ?? false,
+    () => activeWork(),
     async () => {
-      await runtime?.requestStop();
+      await Promise.all(
+        [...runtimes.values()]
+          .filter((runtime) => runtime.hasActiveWork())
+          .map((runtime) => runtime.requestStop()),
+      );
     },
     () => app.quit(),
   );
   let quitDialogOpen = false;
   app.on("before-quit", (event) => {
-    if (runtime?.hasActiveWork()) {
+    if (activeWork()) {
       event.preventDefault();
       quitting = false;
       if (!window) createWindow();
@@ -557,11 +620,14 @@ else {
     quitCoordinator.dispose();
     event.preventDefault();
     void (async () => {
-      await runtime?.closeIdle();
+      await Promise.all(
+        [...runtimes.values()].map((runtime) => runtime.closeIdle()),
+      );
       await diagnostics?.close();
     })()
       .then(() => {
         drained = true;
+        configuration?.dispose();
         store?.close();
         // Let Electron unwind the prevented will-quit event before retrying Quit.
         setImmediate(() => app.quit());

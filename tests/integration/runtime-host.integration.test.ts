@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { afterEach, expect, it, vi } from "vitest";
 import { AppStorage } from "../../src/app/main/wiring/app-storage";
 import {
-  HostCommandSchema,
+  HostTransportCommandSchema,
   SubmissionIdSchema,
   type SubmissionReply,
 } from "../../src/modules/execution/contracts/public";
@@ -93,14 +93,17 @@ async function running(
   const draft = store.drafts.create(project);
   store.drafts.save(draft.threadId, 0, "A");
   const process = new EventEmitter();
+  let scopeId = "";
   const host = createSessionHost(
-    (message) => process.emit("message", message),
+    (message) => process.emit("message", { scopeId, message }),
     () => process.emit("exit"),
   );
   transport.fork.mockReturnValue(
     Object.assign(process, {
       postMessage: (raw: unknown) => {
-        void host.handle(HostCommandSchema.parse(raw));
+        const envelope = HostTransportCommandSchema.parse(raw);
+        scopeId = envelope.scopeId;
+        void host.handle(envelope.command);
       },
     }),
   );

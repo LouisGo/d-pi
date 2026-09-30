@@ -94,9 +94,10 @@ execFileSync(
 );
 await cp(bun, join(root, "bun"));
 await cp("runtime/host.mjs", join(root, "host.mjs"));
+await cp("runtime/configuration.mjs", join(root, "configuration.mjs"));
 await cp("runtime/BUN-LICENSE.md", join(root, "BUN-LICENSE.md"));
 const hashes = {};
-for (const name of ["bun", "host.mjs", "gate.js"])
+for (const name of ["bun", "host.mjs", "gate.js", "configuration.mjs"])
   hashes[name] = createHash("sha256")
     .update(await readFile(join(root, name)))
     .digest("hex");

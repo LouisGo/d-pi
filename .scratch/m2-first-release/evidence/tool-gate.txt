@@ -1,0 +1,13 @@
+
+> d-pi@0.1.0-m2.0 check:tools /Users/louistation/MySpace/Life/d-pi
+> node scripts/check-environment.mjs --tools-only
+
+Development Node: 24.19.0 (target 24.21.0)
+pnpm: failed-to-run (target 12.8.1)
+Platform: darwin-arm64
+Installed exact dependencies: 42/42
+SKIP: fast tool check; native executables and SDK resources were not inspected
+  Development Node 24.19.0 differs from .node-version 24.21.0; select the declared runtime
+  pnpm tool failed-to-run; it did not report a version
+FAIL: development environment (2 issues)
+ ELIFECYCLE  Command failed with exit code 1.

@@ -3,6 +3,7 @@ import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import { FolderIcon } from "@/components/icons/common";
 import { Button } from "@/components/ui/button";
+import { ConfigurationSettings } from "../../modules/configuration/renderer/public";
 import type { FrozenSelection } from "../../modules/files/core/public";
 import type { CodeView } from "../../modules/files/renderer/public";
 import { useI18n } from "../../modules/preferences/renderer/public";
@@ -14,6 +15,7 @@ import {
 } from "./appearance-controls";
 import { Conversation, History, Submissions } from "./conversation";
 import type { AppModel, ThreadSelectionState } from "./model";
+import { ModelControls } from "./model-controls";
 import { RuntimePanel } from "./runtime-panel";
 import { Composer } from "./workbench/composer";
 import { FilePanel } from "./workbench/file-panel";
@@ -69,23 +71,14 @@ function ReadyWorkbench({ model, editor }: AppProps) {
   if (!threadSelection) return null;
   const thread =
     threadSelection.kind === "thread" ? threadSelection.thread : null;
-  const draft = thread?.context;
   return (
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand">
           {/* i18n-ignore: product brand and release marker */}
-          d-pi <span>S5</span>
+          d-pi <span>M2</span>
         </div>
-        <div className="sidebar-label">{t("app.sidebar.projects")}</div>
-        {draft ? (
-          <div className="project-item">
-            <FolderIcon />
-            <span>{draft.directory.split("/").filter(Boolean).at(-1)}</span>
-          </div>
-        ) : (
-          <p className="muted">{t("app.sidebar.noProject")}</p>
-        )}
+        <ProjectThreads model={model} />
         <div className="sidebar-bottom">
           <span className="muted">{t("app.sidebar.localDraft")}</span>
           <span className="muted">{t("app.executionNeedsApproval")}</span>
@@ -97,6 +90,12 @@ function ReadyWorkbench({ model, editor }: AppProps) {
       <main className="workbench">
         <PreferenceToolbar model={model} hasThread={thread !== null} />
         <ThreadNotice model={model} />
+        {model.configuration && (
+          <ConfigurationSettings
+            bridge={model.configuration}
+            scope={thread?.key ?? null}
+          />
+        )}
         <div className="work-content">
           {threadSelection.kind === "thread" ? (
             <ThreadWorkbench
@@ -116,6 +115,57 @@ function ReadyWorkbench({ model, editor }: AppProps) {
         </div>
       </main>
     </div>
+  );
+}
+
+function ProjectThreads({ model }: { model: AppModel }) {
+  const { t } = useI18n();
+  const threads = useStore(model.threadListStore, (state) => state.threads);
+  const failed = useStore(model.threadListStore, (state) => state.failed);
+  const selected = useStore(model.stateStore, (state) =>
+    state.kind === "ready" && state.threadSelection.kind === "thread"
+      ? state.threadSelection.thread.context.threadId
+      : null,
+  );
+  const busy = useStore(
+    model.stateStore,
+    (state) => state.kind === "ready" && state.busy,
+  );
+  return (
+    <nav aria-label={t("app.sidebar.projects")} className="thread-navigation">
+      <ChooseProjectButton model={model} />
+      <div className="sidebar-label">{t("app.sidebar.projects")}</div>
+      {failed && (
+        <p role="alert" className="failure">
+          {t("app.thread.listFailed")}
+          <Button variant="ghost" onClick={() => void model.refreshThreads()}>
+            {t("app.retry")}
+          </Button>
+        </p>
+      )}
+      {!threads.length && !failed && (
+        <p className="muted">{t("app.sidebar.noProject")}</p>
+      )}
+      {threads.map((thread, index) => (
+        <Button
+          key={thread.threadId}
+          variant={selected === thread.threadId ? "default" : "ghost"}
+          disabled={busy}
+          aria-current={selected === thread.threadId ? "page" : undefined}
+          title={thread.directory + " · " + thread.threadId}
+          onClick={() => void model.selectThread(thread.threadId)}
+        >
+          <FolderIcon />
+          <span className="thread-name">
+            {thread.directory.split("/").filter(Boolean).at(-1)}
+            <small>
+              {t("app.thread.label", { number: threads.length - index })} ·{" "}
+              {thread.threadId.slice(0, 6)}
+            </small>
+          </span>
+        </Button>
+      ))}
+    </nav>
   );
 }
 
@@ -162,6 +212,9 @@ function ThreadWorkbench({
         <p className="failure" role="alert">
           {t("app.draft.directoryUnavailable")}
         </p>
+      )}
+      {model.configuration && (
+        <ModelControls thread={thread} bridge={model.configuration} />
       )}
       {thread.runtime && (
         <RuntimePanel

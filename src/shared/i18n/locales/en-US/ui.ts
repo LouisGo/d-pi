@@ -1,4 +1,50 @@
 export const ui = {
+  "config.heading": "Configuration & sign in",
+  "config.description":
+    "Reuse native OMP configuration. Sign in, choose a model, then allow project execution and start the session.",
+  "config.loading": "Reading native configuration…",
+  "config.failed":
+    "Native configuration operation was not confirmed. Check configuration, network and resources, then retry. Existing credentials are preserved.",
+  "config.source": "Configuration directory",
+  "config.openaiReady": "OpenAI account configured",
+  "config.openaiMissing": "OpenAI account needs sign in",
+  "config.deepseekReady": "DeepSeek credential configured",
+  "config.deepseekMissing": "DeepSeek API key needed",
+  "config.openaiLogin": "Sign in to OpenAI",
+  "config.refresh": "Refresh",
+  "config.deepseekKey": "DeepSeek API key",
+  "config.saveKey": "Save in native credential store",
+  "config.keyNotice":
+    "OMP validates with the model-list endpoint before saving. No billed generation request; failures preserve the previous credential.",
+  "config.saved": "Saved. Select a model and send to verify availability.",
+  "config.openBrowser": "Sign in using system browser",
+  "config.authWorking": "Waiting for native authentication…",
+  "config.answer": "Submit sign-in input",
+  "config.cancel": "Cancel sign in",
+  "config.auth.saved": "Native authentication saved",
+  "config.auth.cancelled": "Cancelled. You can sign in again.",
+  "config.auth.failed":
+    "Authentication failed. Retry is available; existing credentials are preserved.",
+  "config.auth.timed-out": "Authentication timed out. Retry is available.",
+  "model.showUnavailable":
+    "Include models requiring authentication or unavailable",
+  "model.reason.authentication-required": "Authentication required",
+  "model.reason.disabled": "Unavailable in current configuration",
+  "app.thread.listFailed":
+    "Thread list could not be read. The current draft is retained.",
+  "model.heading": "Model",
+  "model.search": "Search available models",
+  "model.active": "Active native model",
+  "model.none": "Not started or not ready",
+  "model.next": "Use on start",
+  "model.choose": "Choose a configured model",
+  "model.thinking": "Thinking level",
+  "model.apply": "Apply to this Thread",
+  "model.noAvailable":
+    "No matching configured model. Sign in or save a key in configuration, then refresh.",
+  "model.notice":
+    "Applies only to this Thread. Finish execution, queue and interactions before changing. Configuration availability does not prove requests work. Native thinking level is authoritative. Search shows up to 200 matches.",
+
   "app.loading": "Restoring the local draft…",
   "app.failure.title": "Local data is temporarily unavailable",
   "app.trace": "Trace: {traceId}",
@@ -8,6 +54,7 @@ export const ui = {
   "app.sidebar.noProject": "No project selected",
   "app.sidebar.localDraft": "Local draft",
   "app.executionNeedsApproval": "Project execution requires approval",
+  "app.thread.label": "Thread {number}",
   "app.toolbar.newThread": "New Thread",
   "app.toolbar.start": "Start",
   "app.toolbar.darkTheme": "Switch to dark theme",

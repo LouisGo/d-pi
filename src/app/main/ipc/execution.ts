@@ -15,14 +15,11 @@ export function registerRuntimeConnectionIpc(
   context: RuntimeConnectionContext,
 ): void {
   context.ipcMain.on("runtime:connect", (event, raw: unknown) => {
-    const runtime = context.getRuntime();
-    if (!context.sourceValid(event) || !runtime) return;
+    if (!context.sourceValid(event)) return;
     const parsed = z.uuid().safeParse(raw);
-    if (
-      !parsed.success ||
-      context.getStore()?.threads.activeThread()?.threadId !== parsed.data
-    )
-      return;
+    if (!parsed.success) return;
+    const runtime = context.getRuntime(parsed.data);
+    if (!runtime) return;
     const { port1, port2 } = context.createMessageChannel();
     runtime.attach(port1);
     event.senderFrame?.postMessage("runtime:port", { threadId: parsed.data }, [
@@ -33,10 +30,11 @@ export function registerRuntimeConnectionIpc(
 
 export function registerSubmissionIpc(context: SubmissionContext): void {
   context.ipcMain.handle("submission:request", async (event, raw: unknown) => {
-    const runtime = context.getRuntime();
-    if (!context.sourceValid(event) || !runtime)
-      throw Error("Invalid submission source");
-    return runtime.submit(SubmissionCommandSchema.parse(raw));
+    if (!context.sourceValid(event)) throw Error("Invalid submission source");
+    const command = SubmissionCommandSchema.parse(raw);
+    const runtime = context.getRuntime(command.threadId);
+    if (!runtime) throw Error("Invalid submission Thread");
+    return runtime.submit(command);
   });
 }
 
@@ -56,7 +54,7 @@ export function registerRuntimeRequestIpc(
       operation: `runtime:${command.kind}`,
     };
     diagnostics?.record({ ...requestContext, stage: "received" });
-    const runtime = context.getRuntime();
+    const runtime = context.getRuntime(command.threadId);
     if (!runtime) {
       const failure = context.runtimeFailure(
         command.traceId,

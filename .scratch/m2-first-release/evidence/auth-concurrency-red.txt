@@ -1,0 +1,28 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/MySpace/Life/d-pi[39m
+
+ [31m❯[39m src/modules/configuration/main/native-configuration.test.ts [2m([22m[2m2 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 5019[2mms[22m[39m
+[31m   [31m×[31m keeps secret key off argv and rejects overlapping native credential writes[39m[33m 5007[2mms[22m[39m
+   [32m✓[39m correlates native login, blocks unsafe browser URL and releases a cancelled job[32m 10[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/modules/configuration/main/native-configuration.test.ts[2m > [22mkeeps secret key off argv and rejects overlapping native credential writes
+[31m[1mError[22m: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+[36m [2m❯[22m src/modules/configuration/main/native-configuration.test.ts:[2m10:1[22m[39m
+    [90m  8|[39m import {NativeConfiguration} from './native-configuration';
+    [90m  9|[39m function child(){return Object.assign(new EventEmitter(),{stdin:new Pa…
+    [90m 10|[39m it('keeps secret key off argv and rejects overlapping native credentia…
+    [90m   |[39m [31m^[39m
+    [90m 11|[39m   const process=child();mocks.spawn.mockReturnValue(process);
+    [90m 12|[39m   const service=new NativeConfiguration('/resources',()=>'/project',{}…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (2)[39m
+[2m   Start at [22m 23:14:56
+[2m   Duration [22m 5.22s[2m (tests 98%, import 1%, transform 1%)[22m

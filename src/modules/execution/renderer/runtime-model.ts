@@ -97,7 +97,7 @@ export class RuntimeModel {
   async act(
     kind: Exclude<
       RuntimeCommand["kind"],
-      "stop" | "continue" | "answer" | "dismiss"
+      "stop" | "continue" | "answer" | "dismiss" | "select-model"
     >,
   ): Promise<void> {
     const state = this.store.getState();
@@ -138,6 +138,22 @@ export class RuntimeModel {
         ),
       );
     }
+  }
+  async selectModel(
+    selection: Extract<RuntimeCommand, { kind: "select-model" }>["selection"],
+  ): Promise<void> {
+    const state = this.store.getState();
+    if (!state.thread || !state.view || state.disposed) return;
+    await this.request(
+      {
+        kind: "select-model",
+        threadId: state.thread,
+        traceId: crypto.randomUUID(),
+        selection,
+      },
+      state.view,
+      uiMessage("runtime.connectionUnknown"),
+    );
   }
   async control(kind: "stop" | "continue"): Promise<void> {
     const state = this.store.getState();

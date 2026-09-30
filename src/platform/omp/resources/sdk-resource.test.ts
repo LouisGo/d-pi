@@ -19,7 +19,7 @@ it("admits a complete current-platform SDK launcher and refuses tampering withou
     });
     mkdirSync(join(root, "sdk"));
     const hashes: Record<string, string> = {};
-    for (const name of ["bun", "host.mjs", "gate.js"]) {
+    for (const name of ["bun", "host.mjs", "gate.js", "configuration.mjs"]) {
       writeFileSync(join(root, "sdk", name), name);
       hashes[name] = createHash("sha256").update(name).digest("hex");
     }

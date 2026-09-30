@@ -17,20 +17,20 @@ export type IpcSourceContext = {
 };
 
 export type RuntimeConnectionContext = IpcSourceContext & {
-  getRuntime: () => RuntimeService | undefined;
+  getRuntime: (threadId: string) => RuntimeService | undefined;
   getStore: () => AppStorage | undefined;
   createMessageChannel: () => MessageChannelMain;
 };
 
 export type RuntimeRequestContext = IpcSourceContext & {
-  getRuntime: () => RuntimeService | undefined;
+  getRuntime: (threadId: string) => RuntimeService | undefined;
   initializeStorage: () => void;
   getDiagnostics: () => Diagnostics | undefined;
   runtimeFailure: (traceId: string, error: unknown) => RuntimeFailure;
 };
 
 export type SubmissionContext = IpcSourceContext & {
-  getRuntime: () => RuntimeService | undefined;
+  getRuntime: (threadId: string) => RuntimeService | undefined;
 };
 
 export type ProjectReadContext = Omit<IpcSourceContext, "ipcMain"> & {

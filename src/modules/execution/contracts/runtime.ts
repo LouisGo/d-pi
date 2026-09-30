@@ -7,7 +7,27 @@ import {
   DismissCommandSchema,
   InteractionViewSchema,
 } from "./interactions";
+export const ModelSelectionSchema = z.strictObject({
+  provider: z.string().min(1).max(256),
+  modelId: z.string().min(1).max(512),
+  thinkingLevel: z.enum([
+    "off",
+    "minimal",
+    "low",
+    "medium",
+    "high",
+    "xhigh",
+    "max",
+  ]),
+});
+export const SelectModelCommandSchema = z.strictObject({
+  kind: z.literal("select-model"),
+  threadId: ThreadIdSchema,
+  traceId: TraceIdSchema,
+  selection: ModelSelectionSchema,
+});
 export const RuntimeCommandSchema = z.union([
+  SelectModelCommandSchema,
   z.strictObject({
     kind: z.enum(["inspect", "allow", "start", "revoke"]),
     threadId: ThreadIdSchema,
@@ -37,6 +57,9 @@ export const RuntimeViewSchema = z.strictObject({
   trusted: z.boolean(),
   busy: z.boolean(),
   model: z.string().nullable(),
+  selectedModel: ModelSelectionSchema.optional(),
+  thinkingLevel: z.string().optional(),
+  modelChanging: z.boolean().optional(),
   message: UiMessageSchema,
 });
 export type RuntimeView = z.infer<typeof RuntimeViewSchema>;

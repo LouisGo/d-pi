@@ -6,7 +6,7 @@ import { PassThrough, Writable } from "node:stream";
 import { afterEach, expect, it, vi } from "vitest";
 import { AppStorage } from "../../src/app/main/wiring/app-storage";
 import {
-  HostCommandSchema,
+  HostTransportCommandSchema,
   SubmissionIdSchema,
 } from "../../src/modules/execution/contracts/public";
 import { createSessionHost } from "../../src/modules/execution/host/public";
@@ -107,14 +107,17 @@ async function running(diagnosticFailure = false) {
     return child;
   });
   const process = new EventEmitter();
+  let scopeId = "";
   const host = createSessionHost(
-    (message) => process.emit("message", message),
+    (message) => process.emit("message", { scopeId, message }),
     () => process.emit("exit"),
   );
   adapters.fork.mockReturnValue(
     Object.assign(process, {
       postMessage: (raw: unknown) => {
-        void host.handle(HostCommandSchema.parse(raw));
+        const envelope = HostTransportCommandSchema.parse(raw);
+        scopeId = envelope.scopeId;
+        void host.handle(envelope.command);
       },
     }),
   );

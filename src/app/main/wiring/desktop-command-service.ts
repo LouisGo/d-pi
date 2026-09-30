@@ -20,26 +20,45 @@ export class DesktopCommandService {
     this.projects = new ProjectSelectionService(storage.threads, choose);
   }
 
+  private async restore(): Promise<Extract<Reply, { kind: "ready" }>> {
+    const draft = this.storage.drafts.active();
+    let directoryAvailable = true;
+    if (draft) {
+      try {
+        directoryAvailable =
+          (await resolveDirectory(draft.directory)) === draft.directory;
+      } catch {
+        directoryAvailable = false;
+      }
+    }
+    return {
+      kind: "ready",
+      draft,
+      directoryAvailable,
+      preferences: this.storage.preferences.read(),
+    };
+  }
+
   async execute(command: Command): Promise<Reply> {
     try {
       return await match(command)
         .with({ kind: "restore" }, async () => {
-          const draft = this.storage.drafts.active();
-          let directoryAvailable = true;
-          if (draft) {
-            try {
-              directoryAvailable =
-                (await resolveDirectory(draft.directory)) === draft.directory;
-            } catch {
-              directoryAvailable = false;
-            }
-          }
-          return {
-            kind: "ready" as const,
-            draft,
-            directoryAvailable,
-            preferences: this.storage.preferences.read(),
-          };
+          return this.restore();
+        })
+        .with({ kind: "list-threads" }, () => ({
+          kind: "threads" as const,
+          threads: this.storage.threads.list(),
+        }))
+        .with({ kind: "select-thread" }, async ({ threadId }) => {
+          this.storage.threads.select(threadId);
+          return this.restore();
+        })
+        .with({ kind: "new-thread" }, async ({ threadId }) => {
+          const thread = this.storage.threads.threadContext(threadId);
+          const directory = await resolveDirectory(thread.directory);
+          if (directory !== thread.directory) throw Error("Directory changed");
+          this.storage.threads.create(directory);
+          return this.restore();
         })
         .with({ kind: "choose-project" }, async ({ traceId }) => {
           const result = await this.projects.chooseProject();

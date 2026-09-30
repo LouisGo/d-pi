@@ -10,7 +10,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, expect, it, vi } from "vitest";
 import {
-  HostCommandSchema,
+  HostTransportCommandSchema,
   RuntimeViewSchema,
   SubmissionIdSchema,
 } from "../../modules/execution/contracts/public";
@@ -46,8 +46,15 @@ async function running(
   const draft = store.drafts.create(project);
   store.drafts.save(draft.threadId, 0, "A");
   const host = new EventEmitter();
+  let scopeId = "";
+  const emit = host.emit.bind(host);
+  host.emit = (event, ...args) =>
+    event === "message"
+      ? emit(event, { scopeId, message: args[0] })
+      : emit(event, ...args);
   const postMessage = vi.fn((raw: unknown) => {
-    const command = HostCommandSchema.parse(raw);
+    const command = HostTransportCommandSchema.parse(raw).command;
+    if (command.kind === "start") scopeId = command.processInstanceId;
     if (command.kind === "start")
       queueMicrotask(() => {
         host.emit("message", {
@@ -135,10 +142,10 @@ async function running(
     host,
     confirmIdle: () => {
       const latest = postMessage.mock.calls
-        .map(([raw]) => HostCommandSchema.parse(raw))
+        .map(([raw]) => HostTransportCommandSchema.parse(raw).command)
         .findLast((c) => c.kind === "dispatch");
       const start = postMessage.mock.calls
-        .map(([raw]) => HostCommandSchema.parse(raw))
+        .map(([raw]) => HostTransportCommandSchema.parse(raw).command)
         .find((c) => c.kind === "start");
       if (!start || start.kind !== "start") throw Error("missing start");
       host.emit("message", {
@@ -160,7 +167,8 @@ it("never dispatches to the old instance after replacing and reauthorizing its d
   await expect(fixture.prepare()).rejects.toThrow();
   expect(
     fixture.postMessage.mock.calls.filter(
-      ([raw]) => HostCommandSchema.parse(raw).kind === "dispatch",
+      ([raw]) =>
+        HostTransportCommandSchema.parse(raw).command.kind === "dispatch",
     ),
   ).toHaveLength(0);
   expect(fixture.runtime.hasActiveWork()).toBe(false);
@@ -187,7 +195,8 @@ it("a prepared submission cannot cross the instance directory boundary even if a
   });
   expect(
     fixture.postMessage.mock.calls.filter(
-      ([raw]) => HostCommandSchema.parse(raw).kind === "dispatch",
+      ([raw]) =>
+        HostTransportCommandSchema.parse(raw).command.kind === "dispatch",
     ),
   ).toHaveLength(0);
 });
@@ -211,7 +220,8 @@ it("regranting the unchanged directory preserves normal submission and idle shut
   });
   expect(
     fixture.postMessage.mock.calls.filter(
-      ([raw]) => HostCommandSchema.parse(raw).kind === "dispatch",
+      ([raw]) =>
+        HostTransportCommandSchema.parse(raw).command.kind === "dispatch",
     ),
   ).toHaveLength(1);
 });
@@ -294,7 +304,8 @@ it("busy native sessions accept a frozen follow-up without an App auto-send queu
   });
   expect(
     fixture.postMessage.mock.calls.filter(
-      ([raw]) => HostCommandSchema.parse(raw).kind === "dispatch",
+      ([raw]) =>
+        HostTransportCommandSchema.parse(raw).command.kind === "dispatch",
     ),
   ).toHaveLength(1);
 });
@@ -366,7 +377,8 @@ it("returns a historical non-prepared receipt without a native write after the g
     true,
   );
   const dispatchesBefore = fixture.postMessage.mock.calls.filter(
-    ([raw]) => HostCommandSchema.parse(raw).kind === "dispatch",
+    ([raw]) =>
+      HostTransportCommandSchema.parse(raw).command.kind === "dispatch",
   ).length;
   // Revoke the execution grant: new side effects are blocked from here on.
   fixture.store.threads.revokeExecution(fixture.draft.workingDirectoryId);
@@ -384,7 +396,8 @@ it("returns a historical non-prepared receipt without a native write after the g
   });
   expect(
     fixture.postMessage.mock.calls.filter(
-      ([raw]) => HostCommandSchema.parse(raw).kind === "dispatch",
+      ([raw]) =>
+        HostTransportCommandSchema.parse(raw).command.kind === "dispatch",
     ),
   ).toHaveLength(dispatchesBefore);
 });
@@ -409,7 +422,7 @@ it("Host exit marks every in-flight queued submission unknown without replay", a
     submissionId,
   });
   const start = fixture.postMessage.mock.calls
-    .map(([raw]) => HostCommandSchema.parse(raw))
+    .map(([raw]) => HostTransportCommandSchema.parse(raw).command)
     .find((c) => c.kind === "start");
   if (!start || start.kind !== "start") throw Error("Missing start");
   fixture.host.emit("message", {
@@ -444,7 +457,8 @@ it("Host exit marks every in-flight queued submission unknown without replay", a
   ).toEqual(["unknown", "unknown"]);
   expect(
     fixture.postMessage.mock.calls.filter(
-      ([raw]) => HostCommandSchema.parse(raw).kind === "dispatch",
+      ([raw]) =>
+        HostTransportCommandSchema.parse(raw).command.kind === "dispatch",
     ),
   ).toHaveLength(2);
 });
@@ -452,7 +466,7 @@ it("Host exit marks every in-flight queued submission unknown without replay", a
 it("control and answers reject stale generations and revoked grants while allowing cancellation", async () => {
   const f = await running();
   const start = f.postMessage.mock.calls
-    .map(([raw]) => HostCommandSchema.parse(raw))
+    .map(([raw]) => HostTransportCommandSchema.parse(raw).command)
     .find((c) => c.kind === "start");
   if (!start || start.kind !== "start") throw Error("start missing");
   const base = {
@@ -496,7 +510,8 @@ it("control and answers reject stale generations and revoked grants while allowi
   });
   expect(
     f.postMessage.mock.calls.filter(
-      ([raw]) => HostCommandSchema.parse(raw).kind === "answer",
+      ([raw]) =>
+        HostTransportCommandSchema.parse(raw).command.kind === "answer",
     ),
   ).toHaveLength(1);
 });
@@ -504,7 +519,7 @@ it("control and answers reject stale generations and revoked grants while allowi
 it("background-only work prevents quit even after a stale idle poll and ignores old control snapshots", async () => {
   const f = await running();
   const start = f.postMessage.mock.calls
-    .map(([raw]) => HostCommandSchema.parse(raw))
+    .map(([raw]) => HostTransportCommandSchema.parse(raw).command)
     .find((c) => c.kind === "start");
   if (!start || start.kind !== "start") throw Error("start missing");
   const state = {
@@ -556,7 +571,7 @@ it("settles an acknowledged submission when native admission clears after the id
   await f.dispatch();
   f.store.submissions.acknowledgeSubmission(prepared.receipt.submissionId);
   const start = f.postMessage.mock.calls
-    .map(([raw]) => HostCommandSchema.parse(raw))
+    .map(([raw]) => HostTransportCommandSchema.parse(raw).command)
     .find((c) => c.kind === "start");
   if (!start || start.kind !== "start") throw Error("start missing");
   const state = {
@@ -625,7 +640,7 @@ it("blocks prepare and dispatch during native interactions, then admits normal f
   });
   expect(
     f.postMessage.mock.calls
-      .map(([raw]) => HostCommandSchema.parse(raw))
+      .map(([raw]) => HostTransportCommandSchema.parse(raw).command)
       .filter((c) => c.kind === "dispatch"),
   ).toHaveLength(0);
   f.store.drafts.save(f.draft.threadId, 1, "B");
@@ -724,7 +739,7 @@ it("persists Host non-dispatch without consuming the draft and permits an explic
   ).toMatchObject({ kind: "receipt", receipt: { state: "dispatching" } });
   expect(
     f.postMessage.mock.calls
-      .map(([raw]) => HostCommandSchema.parse(raw))
+      .map(([raw]) => HostTransportCommandSchema.parse(raw).command)
       .filter((c) => c.kind === "dispatch"),
   ).toHaveLength(2);
 });
@@ -752,7 +767,9 @@ it("a control rejection preserves the same session for explicit continue and doe
     traceId,
   });
   expect(
-    f.postMessage.mock.calls.map(([raw]) => HostCommandSchema.parse(raw)),
+    f.postMessage.mock.calls.map(
+      ([raw]) => HostTransportCommandSchema.parse(raw).command,
+    ),
   ).toContainEqual(
     expect.objectContaining({
       kind: "control",
@@ -858,7 +875,7 @@ it.each(["revoke", "missing-directory"] as const)(
     });
     expect(
       f.postMessage.mock.calls
-        .map(([raw]) => HostCommandSchema.parse(raw))
+        .map(([raw]) => HostTransportCommandSchema.parse(raw).command)
         .filter((c) => c.kind === "dispatch"),
     ).toHaveLength(0);
     expect(f.store.drafts.read(f.draft.threadId).text).toBe("A");

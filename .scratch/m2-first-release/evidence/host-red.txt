@@ -1,0 +1,26 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/MySpace/Life/d-pi[39m
+
+ [31m❯[39m src/modules/execution/main/host-multiplex.test.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 7[2mms[22m[39m
+[31m   [31m×[31m one utility process routes two independent scopes and one scope exit leaves the other connected[39m[32m 6[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/modules/execution/main/host-multiplex.test.ts[2m > [22mone utility process routes two independent scopes and one scope exit leaves the other connected
+[31m[1mAssertionError[22m: expected "vi.fn()" to be called 1 times, but got 2 times[39m
+[36m [2m❯[22m src/modules/execution/main/host-multiplex.test.ts:[2m18:24[22m[39m
+    [90m 16|[39m   process.emit('message',ready(ca));process.emit('message',ready(cb));
+    [90m 17|[39m   try {
+    [90m 18|[39m     expect(mocks.fork).toHaveBeenCalledTimes(1);
+    [90m   |[39m                        [31m^[39m
+    [90m 19|[39m     await Promise.all([pa,pb]);
+    [90m 20|[39m     process.emit('message',{scopeId:cb.processInstanceId,message:{kind…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m   Start at [22m 22:40:36
+[2m   Duration [22m 269ms[2m (transform 51%, import 43%, tests 4%, worker 2%)[22m

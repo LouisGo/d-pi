@@ -21,8 +21,7 @@ export class ProjectSelectionService {
   }
 
   async chooseProject(): Promise<ChooseProjectResult> {
-    if (this.choosing || this.threads.activeThread())
-      return { kind: "already-active" };
+    if (this.choosing) return { kind: "already-active" };
     this.choosing = true;
     try {
       const path = await this.choose();

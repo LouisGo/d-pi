@@ -35,6 +35,7 @@ export function inspectSdk(root, sdkRoot, declared) {
     "bun",
     "host.mjs",
     "gate.js",
+    "configuration.mjs",
     "BUN-LICENSE.md",
     "node_modules/@oh-my-pi/pi-coding-agent/package.json",
     "node_modules/@oh-my-pi/pi-utils/package.json",
@@ -67,7 +68,7 @@ export function inspectSdk(root, sdkRoot, declared) {
     issues.push("SDK lockHash is stale or the lockfile is missing");
   if (missing.length > 0)
     issues.push(`SDK resources are missing: ${missing.join(", ")}`);
-  for (const name of ["bun", "host.mjs", "gate.js"]) {
+  for (const name of ["bun", "host.mjs", "gate.js", "configuration.mjs"]) {
     if (
       existsSync(join(sdkRoot, name)) &&
       manifest.hashes?.[name] !== sha256(join(sdkRoot, name))
