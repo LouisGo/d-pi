@@ -96,6 +96,15 @@ it("blocks mixed image paste with explicit feedback before modifying existing dr
     ).toBe(true);
     expect(failures).toBe(1);
     expect(editor.getText()).toBe("kept draft");
+    paste.keyDown(
+      new KeyboardEvent("keydown", { key: "v", metaKey: true, shiftKey: true }),
+    );
+    paste.handlePaste(
+      editor.view,
+      new ClipboardEvent("paste", { clipboardData: clipboard }),
+    );
+    expect(editor.getText()).toBe("kept draftmixed words");
+    expect(failures).toBe(1);
   } finally {
     editor.destroy();
   }

@@ -1,0 +1,35 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/MySpace/Life/d-pi[39m
+
+ [31m❯[39m src/modules/input/renderer/structured-paste.test.ts [2m([22m[2m6 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 137[2mms[22m[39m
+   [32m✓[39m keeps headings, nested lists, table cells and links as editable Markdown source[32m 5[2mms[22m[39m
+   [32m✓[39m retains code whitespace and multiline quotes without importing executable HTML[32m 1[2mms[22m[39m
+   [32m✓[39m uses plain source when rich clipboard HTML is only a wrapper around Markdown[32m 0[2mms[22m[39m
+   [32m✓[39m pastes editable rich source as one undoable change, while explicit plain paste preserves the alternate literal text[32m 125[2mms[22m[39m
+   [32m✓[39m does not invent column headers in a headerless table[32m 0[2mms[22m[39m
+[31m   [31m×[31m blocks mixed image paste with explicit feedback before modifying existing draft[39m[32m 5[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/modules/input/renderer/structured-paste.test.ts[2m > [22mblocks mixed image paste with explicit feedback before modifying existing draft
+[31m[1mAssertionError[22m: expected 'kept draft' to be 'kept draftmixed words' // Object.is equality[39m
+
+Expected: [32m"kept draft[7mmixed words[27m"[39m
+Received: [31m"kept draft"[39m
+
+[36m [2m❯[22m src/modules/input/renderer/structured-paste.test.ts:[2m101:30[22m[39m
+    [90m 99|[39m     paste.keyDown(new KeyboardEvent("keydown", { key: "v", metaKey: tr…
+    [90m100|[39m     paste.handlePaste(editor.view, new ClipboardEvent("paste", { clipb…
+    [90m101|[39m     expect(editor.getText()).toBe("kept draftmixed words");
+    [90m   |[39m                              [31m^[39m
+    [90m102|[39m     expect(failures).toBe(1);
+    [90m103|[39m   } finally {
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m5 passed[39m[22m[90m (6)[39m
+[2m   Start at [22m 01:33:36
+[2m   Duration [22m 508ms[2m (environment 58%, tests 32%, transform 7%, import 2%, worker 1%)[22m

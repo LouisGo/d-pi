@@ -53,6 +53,12 @@ export function createClipboardPaste(onUnsupported?: () => void) {
       plain = false;
       const clipboard = event.clipboardData;
       if (!clipboard) return false;
+      if (forcePlain)
+        return handlePlainTextPaste(
+          view,
+          event,
+          new Slice(Fragment.empty, 0, 0),
+        );
       // Until the content importer accepts these forms, reject the whole paste
       // explicitly rather than consuming just its textual representation.
       if (
@@ -62,12 +68,6 @@ export function createClipboardPaste(onUnsupported?: () => void) {
         onUnsupported?.();
         return true;
       }
-      if (forcePlain)
-        return handlePlainTextPaste(
-          view,
-          event,
-          new Slice(Fragment.empty, 0, 0),
-        );
       const html = clipboard.getData("text/html");
       const hasText = clipboard.types.includes("text/plain");
       // Our own source editor also supplies paragraph HTML: prefer its exact
