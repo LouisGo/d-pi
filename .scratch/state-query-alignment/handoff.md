@@ -1,6 +1,6 @@
 # 状态与查询基础库对齐：交接
 
-2026-09-29。切片规格与票见 [spec.md](spec.md)、[issues/](issues/)。受影响决定 [D-37](../../docs/decisions.md)。
+2026-09-29。切片规格与票见 [spec.md](spec.md)、[issues/](issues)。受影响决定 [D-37](../../docs/decisions.md)。
 
 ## 发生了什么
 
@@ -21,7 +21,7 @@ Zustand（vanilla store，`core` 不引入 React）：
 TanStack Query：
 
 - [app/renderer/query-client.tsx](../../src/app/renderer/query-client.tsx)：单例 client 与 provider；默认 `staleTime: 0`、`retry: 3`、关闭窗口聚焦/重连隐式重取；注释记录"不用 mutation"的理由。
-- [files/renderer/queries.ts](../../src/modules/files/renderer/queries.ts) 与 [changes/renderer/](../../src/modules/changes/renderer/)：key、请求构造、hooks 与失效函数；全部 `networkMode: 'always'`。
+- [files/renderer/queries.ts](../../src/modules/files/renderer/queries.ts) 与 [changes/renderer/](../../src/modules/changes/renderer)：key、请求构造、hooks 与失效函数；全部 `networkMode: 'always'`。
 - [workbench/file-workspace.tsx](../../src/app/renderer/workbench/file-workspace.tsx)：4 个结果型 `useState` 与手写序号防串线改为 key 隔离。
 
 顺带修掉的真实缺陷：`files/renderer/public.ts` 原先静态再导出 `MonacoViewer`，任何人导入查询 hook 都会被传染加载 Monaco，而它在模块顶层读 `window`，会让无头测试在导入期崩溃；现在编辑器经 `loadFileEditor()` 按需解析，由 Renderer 入口注入，构建中已独立分包。

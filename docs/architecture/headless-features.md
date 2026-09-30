@@ -79,8 +79,9 @@ hooks 可以绑定或获取已有功能实例、订阅数据和管理视图专�
 
 - **不引入 XState。** 状态转换采用 TypeScript 的判别联合、纯函数或局部协调模块；D-35 确认 ts-pattern 为业务分支默认范式，Zod v4 负责边界解析，详见[TypeScript 合同](typescript.md)。不借此自研通用状态机框架。
 - **Zustand** 承载客户端展示状态与细粒度订阅，可用 vanilla store 与 React 接入分离；不成为后台执行或原生历史的权威拥有者。React 绑定统一用官方 `useStore(store, selector)`；模型只暴露只读的 store 视图，`getState`/`getSnapshot` 留给无头读取与测试。
-- **选择器必须返回 store 内已有的引用或原始值。** 需要派生数组或对象时用 `useShallow` 包住，例如 `useShallow((state) => state.items.map((item) => item.id))`；写成 `useStore(store, (state) => ({ busy: state.busy }))` 每次返回新对象，会触发 `getSnapshot should be cached` 并进入无限重渲染。列表项级订阅同理要求 store 更新时保留未变化元素的引用，不能整表重建。
-- **TanStack Query** 承载模型、配置摘要、历史目录等异步查询缓存；查询函数与 key 可以独立于 hooks 组织。同一可变正文不在 Query 和 Zustand 双写，不用查询重试机制自动重发结果未知的副作用。
+- **选择器快照保持稳定。** 原始值或 store 内已有引用直接选择；派生数组/对象用 `useShallow`、记忆化或预计算，使未变化结果保持引用。直接写 `useStore(store, (state) => ({ busy: state.busy }))` 会每次返回新对象，可能触发 `getSnapshot should be cached` 并进入无限重渲染。列表更新保留未变化实体引用，热路径同时评估查找和通知成本，不能只凭少渲染宣称低成本。
+- **TanStack Query** 承载模型、配置摘要、历史目录等只读异步查询缓存；查询函数与 key 可以独立于 hooks 组织。同一可变事实不由 Query 与 Zustand 独立双写。允许同一 Thread 的历史分页与实时尾部保留范围明确的投影；重叠时按领域身份与版本合并、去重，不成为两份可独立修改的正文权威。历史分页随对应功能接入，不提前扩展范围。
+- **执行命令保持原拥有者。** 发送、回答、停止、继续沿用协调器与收据合同，不进入 Query 的缓存、重试或恢复机制去自动补发。这是 D-24/D-29 的项目政策，不是声称所有 Mutation 配置都必然重试或重发；保存等既有写操作也不因接查询库搬走事务和写入职责。
 - **本地读取的网络语义**（本节是这条规则的单源）：桌面端文件、Git 与配置查询不经网络，一律显式 `networkMode: 'always'`，不因 Renderer 判定离线而暂停；返回值中的 `unavailable`（非 Git/缺失/拒绝/二进制/超限/变化中等）是业务结论而非可重试错误，只有采样失败才走默认重试。刷新是显式动作，不做定时轮询；查询缓存不是磁盘或 Git 真相，缓存命中不伪报成功。各模块页只描述自己的 key 与结果，不重复这条规则。
 - **React hooks** 连接功能与视图；不把业务函数仅因“复用”改成 hook，不用多个 effects 隐式拼装业务状态机。
 

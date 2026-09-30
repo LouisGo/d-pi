@@ -36,7 +36,7 @@ D_PI_DATA_DIR="$HOME/Library/Application Support/d-pi-s1-trial" \
 
 ## 工程证据与限制
 
-完整证据见 [validation.md](validation.md)，性能原始样本在 [evidence](evidence/)。
+完整证据见 [validation.md](validation.md)，性能原始样本在 [evidence](evidence)。
 
 - 5 文件/13 行为测试、严格类型、Biome、设计 lint 六类反例与 token/导入边界检查通过。
 - 真实 Electron SQLite、SIGKILL 事务恢复、迁移失败备份/回滚、真实锁冲突与 GUI 失败保稿/重试/关窗保护；最小及正式 macOS 包资源/内置驱动均有证据。

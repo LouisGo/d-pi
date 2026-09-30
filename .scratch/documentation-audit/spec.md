@@ -26,7 +26,7 @@ date: 2026-09-26
 | A2 / 图片完整性 | 归档 [models.md](../../docs/archive/pre-reset/.scratch/omp-gui-m1/research/models.md)的 Image handling 说明 `stripImageInput` 可能在实际编码时移除图片；只检查 `input: [text, image]` 可能误报支持 | 同一合同要求核实实际 provider/transport/compat 与送出的内容；不把静默丢图当成功，沿用显式降级/阻止该表示的行为 |
 | A3 / 内容权限 | [旧架构](../../docs/archive/pre-reset/docs/prototype/v1-architecture-draft.md)明确模型输出、HTML、链接和附件均不可信；现行合同突出 IPC/路径，却未完整继承内容呈现边界 | 基础契约 §5 补回不可信内容与特权调用隔离，按相关切片验收；不引入新的工具沙箱或安全平台 |
 | A4 / 状态与选型 | [决定登记](../../docs/decisions.md)原把“未验收设计”归为提议，可能弱化已确认但未实测的合同；09-26 技术审议未进登记，且近期行动句容易被单独读成现行选型 | 区分决定状态与验收状态；新登记 P-05 只索引既有提议，审议稿明确未采纳前仍沿用 B-02/P-02/持久化合同。Shiki 标题与 B-03 沿用方向一致 |
-| A5 / 阶段范围 | [需求](../product-requirements/spec.md)仍写输入批次待定、下一步重新划分阶段，但 D-26/基础方案已确定 M1 文字/选区、M2 全部指定输入 | 统一指向基础契约 §8，保留最终目标与 M3 能力，不把 M1 可运行视为首版全验收 |
+| A5 / 阶段范围 | [需求](../../docs/product/requirements.md)仍写输入批次待定、下一步重新划分阶段，但 D-26/基础方案已确定 M1 文字/选区、M2 全部指定输入 | 统一指向基础契约 §8，保留最终目标与 M3 能力，不把 M1 可运行视为首版全验收 |
 | A6 / 权限概念 | [preflight 关闭表](../product-requirements/preflight-review.md)仍写“三层信任”，但末尾修订已取代为两个独立设置 | 更新当前关闭表及解释，保留旧方案及取代理由，避免把 App 文件访问范围当作 Agent 沙箱档位 |
 | A7 / 提交语义 | [CONTEXT](../../CONTEXT.md)原“已提交的追加需求不再属于草稿”未区分点击发送、原生接受与未知结果 | 排队追加定义补充接受条件和 unknown 内容保留；Thread 定义移除不必要的技术字段，细节仍归基础契约 |
 | A8 / AI 执行效率 | 入口重复阅读列表，项目 skill 重复合同细节，架构评审与普通文档审计边界不清；“本轮/阶段授权”跨任务后可能被误读成永久禁止开发或逐步申请 | 新增 [文档导航](../../docs/README.md)，精简 AGENTS 与 skill 的路由，声明日常只读相关材料、已有完整实现授权不逐层重复确认；所有实质决定边界保留。skill 修订稿通过格式核验后，经受保护路径写入授权保存 |
@@ -84,13 +84,13 @@ date: 2026-09-26
 | 文件 | 审查重点 |
 | --- | --- |
 | [.agents/skills/d-pi-headless-features/SKILL.md](../../.agents/skills/d-pi-headless-features/SKILL.md) | 作为被审对象检查触发、职责与加载方式 |
-| [.scratch/omp-runtime-feasibility/spec.md](../../.scratch/omp-runtime-feasibility/spec.md) | 独立探针范围与结果入口 |
-| [.scratch/product-requirements/composer-research.md](../../.scratch/product-requirements/composer-research.md) | P-02 理由、原型场景与未定项 |
-| [.scratch/product-requirements/foundation-plan.md](../../.scratch/product-requirements/foundation-plan.md) | 首版 V1-00–10、输入与变更来源 |
-| [.scratch/product-requirements/preflight-review.md](../../.scratch/product-requirements/preflight-review.md) | 历史问题、关闭状态与取代关系 |
-| [.scratch/product-requirements/spec.md](../../.scratch/product-requirements/spec.md) | 最终目标、阶段与用户确认记录 |
-| [.scratch/product-requirements/technical-evaluation.md](../../.scratch/product-requirements/technical-evaluation.md) | 六组选型的既有依据及候选边界 |
-| [.scratch/workspace-reset/spec.md](../../.scratch/workspace-reset/spec.md) | 清理/恢复范围与保全关系 |
+| [.scratch/omp-runtime-feasibility/spec.md](../omp-runtime-feasibility/spec.md) | 独立探针范围与结果入口 |
+| [.scratch/product-requirements/composer-research.md](../product-requirements/composer-research.md) | P-02 理由、原型场景与未定项 |
+| [.scratch/product-requirements/foundation-plan.md](../../docs/product/first-release.md) | 首版 V1-00–10、输入与变更来源 |
+| [.scratch/product-requirements/preflight-review.md](../product-requirements/preflight-review.md) | 历史问题、关闭状态与取代关系 |
+| [.scratch/product-requirements/spec.md](../../docs/product/requirements.md) | 最终目标、阶段与用户确认记录 |
+| [.scratch/product-requirements/technical-evaluation.md](../product-requirements/technical-evaluation.md) | 六组选型的既有依据及候选边界 |
+| [.scratch/workspace-reset/spec.md](../workspace-reset/spec.md) | 清理/恢复范围与保全关系 |
 | [AGENTS.md](../../AGENTS.md) | 授权延续、决定连续性、上下文路由 |
 | [CONTEXT.md](../../CONTEXT.md) | 领域词汇、提交与排队语义 |
 | [README.md](../../README.md) | 当前状态和导航入口 |
@@ -107,7 +107,7 @@ date: 2026-09-26
 | [docs/decisions.md](../../docs/decisions.md) | D/B/P 状态、来源和取代关系 |
 | [docs/prototype/frontend-library-radar.md](../../docs/prototype/frontend-library-radar.md) | 沿用、候选、未采用与集成条件 |
 | [docs/prototype/handoff.md](../../docs/prototype/handoff.md) | 历史工作、复用范围与当前下一步 |
-| [docs/prototype/v1-architecture-draft.md](../../docs/prototype/v1-architecture-draft.md) | 有效架构、状态归属与历史取代 |
+| [docs/prototype/v1-architecture-draft.md](../../docs/architecture/overview.md) | 有效架构、状态归属与历史取代 |
 | [docs/validation/packaged-runtime-evidence.md](../../docs/validation/packaged-runtime-evidence.md) | macOS 本地包通路与发行限制 |
 | [docs/validation/runtime-feasibility.md](../../docs/validation/runtime-feasibility.md) | 9 项固定版本能力与范围 |
 | [docs/validation/settings-feasibility.md](../../docs/validation/settings-feasibility.md) | 6 项原生设置及后续 GUI 边界 |

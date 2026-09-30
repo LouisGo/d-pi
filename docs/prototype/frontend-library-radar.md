@@ -12,7 +12,7 @@
 - 继续保留 Virtua / React Virtuoso / TanStack Virtual、Motion、Pacer、birpc、LiveStore 等候选及采用条件；保留候选不等于预装依赖。
 - Monaco 已定；Composer 由 D-33 确认最小 Tiptap 与业务扩展。SQLite 用于 App 结构化存储，ts-pattern/Zod v4 按[TypeScript 合同](../architecture/typescript.md)执行。Git Panel、内置浏览器与终端的范围不变，见[增量技术评估](../../.scratch/product-requirements/technical-evaluation.md)。选型确认不等于集成通过。
 - Zustand 与 TanStack Query 已由 [D-37](../decisions.md) 锁为基础依赖并完成迁移：展示状态用 Zustand vanilla store，文件与 Git 读路径用 Query；职责边界与本地读取语义见[无头功能合同 §4](../architecture/headless-features.md)。
-- 产品依赖清单以 `package.json` 为准；历史实现链接指向固定 Git 提交，不意味着被引用代码仍在工作区。旧 M1 范围只作历史依据，当前产品范围以[需求文档](../../.scratch/product-requirements/spec.md)为准。
+- 产品依赖清单以 `package.json` 为准；历史实现链接指向固定 Git 提交，不意味着被引用代码仍在工作区。旧 M1 范围只作历史依据，当前产品范围以[需求文档](../product/requirements.md)为准。
 
 2026-09-25 D-28–D-30：组件化不限于以下 UI 候选，功能模块/契约先于正式 GUI。Zustand/Query/hooks 的职责与生命周期见[无头功能合同](../architecture/headless-features.md)；不引入 XState，不因追求无头架构新增全局框架。
 
@@ -111,7 +111,7 @@
 
 ## 后续任务的接入步骤
 
-1. 从用户可见的问题和当前 [阶段计划](v1-architecture-draft.md)出发，定位本页候选及比较对象；核对 OMP 是否已提供该能力，确定是展示、交互、传输还是 App 自有数据问题。
+1. 从用户可见的问题和当前 [阶段计划](../architecture/overview.md)出发，定位本页候选及比较对象；核对 OMP 是否已提供该能力，确定是展示、交互、传输还是 App 自有数据问题。
 2. 查看候选的官方文档、源码、当前版本和许可证。Beautiful UI／Tool UI 按组件审查源码、样式和传递依赖；不得将演示数据、计时器或第三方运行时所有权直接复制进正式流程。
 3. 用真实 OMP 或保真协议样本验证上述采用条件，并记录相较现有实现的具体收益与代价。性能候选需要可复用的长输出／长历史样本。
 4. 采用后写明包名、固定版本、实际入口文件、验证证据和剩余限制，更新本页状态与锁文件。尚未采用的候选保持可查，不预装依赖。

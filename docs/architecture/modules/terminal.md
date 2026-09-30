@@ -1,6 +1,6 @@
 # 集成终端
 
-日期：2026-09-27。深度：M3 边界设计，终端适配与多会话细节待定。依据 D-13/D-25；[最终需求](../../../.scratch/product-requirements/spec.md)、[生命周期合同](../foundation-contracts.md#1-身份持久化与生命周期b1)。返回[模块地图](README.md)。
+日期：2026-09-27。深度：M3 边界设计，终端适配与多会话细节待定。依据 D-13/D-25；[最终需求](../../product/requirements.md)、[生命周期合同](../foundation-contracts.md#1-身份持久化与生命周期b1)。返回[模块地图](README.md)。
 
 ## 当前工程落点（领域目录治理，2026-09-29）
 

@@ -1,6 +1,6 @@
 # d-pi 技术选型：现代 TypeScript 生态中的复用与取舍
 
-日期：2026-09-26。性质：技术选型审议与采纳记录。用户已确认 **D-32–D-35：Base UI、最小 Tiptap、SQLite、应用级 ts-pattern 与 Zod v4**，取代相关旧结论；P-05 其余工具建议仍为候选。已确认不代表依赖已安装或集成已通过。现行约束仍见[决定登记](../decisions.md)、[首版方案](../../.scratch/product-requirements/foundation-plan.md)和[基础契约](foundation-contracts.md)。
+日期：2026-09-26。性质：技术选型审议与采纳记录。用户已确认 **D-32–D-35：Base UI、最小 Tiptap、SQLite、应用级 ts-pattern 与 Zod v4**，取代相关旧结论；P-05 其余工具建议仍为候选。已确认不代表依赖已安装或集成已通过。现行约束仍见[决定登记](../decisions.md)、[首版方案](../product/first-release.md)和[基础契约](foundation-contracts.md)。
 
 d-pi 的基础方向是合理的：Electron 承载桌面应用，OMP 拥有 Agent 执行，React 和 TypeScript 组织交互，Tailwind 控制视觉，Zustand 与 TanStack Query 分担展示状态和异步查询。值得重新审视的部分，集中在如何复用成熟能力：自有组件是否需要大量自写，深度定制是否必须直接使用最底层引擎，减少依赖是否反而导致维护一套自己的基础设施。
 

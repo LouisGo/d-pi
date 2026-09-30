@@ -1,6 +1,6 @@
 # 内置浏览器
 
-日期：2026-09-27。深度：M3 边界设计，嵌入与 AI 操作接入待定。依据 D-12；[最终需求](../../../.scratch/product-requirements/spec.md)、[不可信内容边界](../foundation-contracts.md#5-最小权限与信任b5)。返回[模块地图](README.md)。
+日期：2026-09-27。深度：M3 边界设计，嵌入与 AI 操作接入待定。依据 D-12；[最终需求](../../product/requirements.md)、[不可信内容边界](../foundation-contracts.md#5-最小权限与信任b5)。返回[模块地图](README.md)。
 
 ## 当前工程落点（领域目录治理，2026-09-29）
 

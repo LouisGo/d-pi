@@ -4,7 +4,7 @@
 
 ## 既有选型与证据的衔接
 
-清理前已存在[前端库雷达](../../docs/prototype/frontend-library-radar.md)与[架构选择](../../docs/prototype/v1-architecture-draft.md)，本评估是增量补充，不能替代或清空它们。此前遗漏的 Beautiful UI、Tool UI、Virtua、Motion、Pacer、birpc、LiveStore 等候选及采用条件已恢复。原始实现和验证材料见[归档](../../docs/archive/pre-reset/README.md)。有冲突且无法确定取舍时必须与用户确认，不默默以新稿覆盖旧决定。
+清理前已存在[前端库雷达](../../docs/prototype/frontend-library-radar.md)与[架构选择](../../docs/architecture/overview.md)，本评估是增量补充，不能替代或清空它们。此前遗漏的 Beautiful UI、Tool UI、Virtua、Motion、Pacer、birpc、LiveStore 等候选及采用条件已恢复。原始实现和验证材料见[归档](../../docs/archive/pre-reset/README.md)。有冲突且无法确定取舍时必须与用户确认，不默默以新稿覆盖旧决定。
 
 ## 1. 前端基础与状态
 
@@ -73,7 +73,7 @@ Electron 当前不建议使用 webview 标签；iframe 又会受目标网站嵌�
 
 ## 结论与下一步边界
 
-2026-09-25 最新阶段约束：先完成[基础方案](foundation-plan.md)收敛，本轮不开始实现或交互原型；下文验证是未来工作，不构成开工授权。
+2026-09-25 最新阶段约束：先完成[基础方案](../../docs/product/first-release.md)收敛，本轮不开始实现或交互原型；下文验证是未来工作，不构成开工授权。
 
 四组产品问题已达到可开始选型的清晰度，首版先只读后编辑。六组技术工作已形成初步推荐与风险清单，未完成依赖锁定或集成验收。
 

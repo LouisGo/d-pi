@@ -13,7 +13,7 @@ description: "用于 d-pi 功能规划与拆票、功能模块或 React 接入�
 
 | 需要确定的内容 | 唯一详细入口 |
 | --- | --- |
-| 决定状态、用户范围与交付阶段 | [决定登记](../../../docs/decisions.md)、[基础方案](../../../.scratch/product-requirements/foundation-plan.md)及当前功能 spec；提议不能覆盖已确认决定或沿用基线 |
+| 决定状态、用户范围与交付阶段 | [决定登记](../../../docs/decisions.md)、[基础方案](../../../docs/product/first-release.md)及当前功能 spec；提议不能覆盖已确认决定或沿用基线 |
 | 功能职责、拥有者、生命周期、React 接入与分层验收 | [无头功能合同](../../../docs/architecture/headless-features.md) |
 | 身份/恢复、提交、认证、附件、权限、输出及 G1/M1/M2/M3 | [基础契约](../../../docs/architecture/foundation-contracts.md)相关节；诊断行为再查[诊断合同](../../../docs/architecture/diagnostics.md) |
 | 应用 TypeScript 类型、分支与边界实现 | [TypeScript 合同](../../../docs/architecture/typescript.md)相关节；D-35 的 ts-pattern/Zod v4 不改变业务所有权 |
