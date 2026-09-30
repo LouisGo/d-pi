@@ -12,13 +12,6 @@ import type {
   ConversationUpdate,
 } from "../contracts/public";
 
-const MessageSchema = z.object({
-  role: z.string(),
-  content: z.unknown(),
-  toolCallId: z.string().optional(),
-  isError: z.boolean().optional(),
-  errorMessage: z.string().optional(),
-});
 const TextSchema = z.object({ type: z.literal("text"), text: z.string() });
 function textOf(content: unknown): string {
   if (typeof content === "string") return content;
@@ -55,10 +48,8 @@ export class ConversationProjection {
         NativeFrameTypes.messageEnd,
       )
     ) {
-      const parsed = MessageSchema.safeParse(frame.message);
-      if (!parsed.success) return;
       this.flush();
-      const message = parsed.data;
+      const message = frame.message;
       const role =
         message.role === "assistant"
           ? "assistant"
@@ -133,25 +124,14 @@ export class ConversationProjection {
       )
     ) {
       this.flush();
-      const parsed = z
-        .object({
-          toolCallId: z.string(),
-          toolName: z.string(),
-          isError: z.boolean().optional(),
-          result: z.unknown().optional(),
-        })
-        .safeParse(frame);
-      if (!parsed.success) return;
-      const id = this.tools.get(parsed.data.toolCallId) ?? this.nextId++;
-      this.tools.set(parsed.data.toolCallId, id);
-      const result = z
-        .object({ content: z.unknown() })
-        .safeParse(parsed.data.result);
+      const id = this.tools.get(frame.toolCallId) ?? this.nextId++;
+      this.tools.set(frame.toolCallId, id);
+      const result = z.object({ content: z.unknown() }).safeParse(frame.result);
       this.put({
         id,
         role: "tool",
-        label: { kind: "literal", text: parsed.data.toolName.slice(0, 120) },
-        state: parsed.data.isError
+        label: { kind: "literal", text: frame.toolName.slice(0, 120) },
+        state: frame.isError
           ? "failed"
           : isNativeFrameType(frame, NativeFrameTypes.toolExecutionEnd)
             ? "complete"

@@ -20,7 +20,13 @@ require('node:readline').createInterface({input:process.stdin}).on('line',line=>
     {
       binary,
       directory: dir,
-      environment: process.env,
+      environment: {
+        PATH: process.env.PATH,
+        HOME: dir,
+        TMPDIR: dir,
+        PI_CODING_AGENT_DIR: join(dir, "config"),
+        PI_CONFIG_DIR: ".isolated-config",
+      },
       sessionDirectory: join(dir, "sessions"),
     },
     (e) => events.push(e),
@@ -42,46 +48,56 @@ require('node:readline').createInterface({input:process.stdin}).on('line',line=>
   }
 });
 
-it("reports confirmed process close once after protocol disconnection and cannot send again", async () => {
-  const dir = mkdtempSync(join(tmpdir(), "d-pi-native-protocol-"));
-  const entry = join(dir, "fixture.cjs");
-  writeFileSync(
-    entry,
-    `console.log(JSON.stringify({type:'ready'}));
+it.each(["break_protocol", "bad_response"])(
+  "reports confirmed process close once after %s and cannot send again",
+  async (command) => {
+    const dir = mkdtempSync(join(tmpdir(), "d-pi-native-protocol-"));
+    const entry = join(dir, "fixture.cjs");
+    writeFileSync(
+      entry,
+      `console.log(JSON.stringify({type:'ready'}));
 require('node:readline').createInterface({input:process.stdin}).on('line',line=>{
  const c=JSON.parse(line);
  if(c.type==='break_protocol') process.stdout.write('not-json\\n');
+ else if(c.type==='bad_response') { console.log(JSON.stringify({type:'response',id:c.id,command:c.type,success:'true'})); setTimeout(()=>process.exit(0),40); }
  else console.log(JSON.stringify({type:'response',id:c.id,command:c.type,success:true}));
 }).on('close',()=>process.exit(0));
 `,
-  );
-  const events: NativeObservation[] = [];
-  const session = new NativeSession(
-    {
-      binary: process.execPath,
-      entry,
-      directory: dir,
-      environment: process.env,
-      sessionDirectory: join(dir, "sessions"),
-    },
-    (event) => events.push(event),
-  );
-  try {
-    await session.start();
-    await expect(session.request("break_protocol")).rejects.toThrow(
-      "Native connection interrupted",
     );
-    await session.close();
-    await session.close();
-    expect(events.filter((event) => event.kind !== "frame")).toEqual([
-      { kind: "disconnected", reason: "protocol" },
-      { kind: "exited" },
-    ]);
-    await expect(session.request("get_state")).rejects.toThrow(
-      "Native connection unavailable",
+    const events: NativeObservation[] = [];
+    const session = new NativeSession(
+      {
+        binary: process.execPath,
+        entry,
+        directory: dir,
+        environment: {
+          PATH: process.env.PATH,
+          HOME: dir,
+          TMPDIR: dir,
+          PI_CODING_AGENT_DIR: join(dir, "config"),
+          PI_CONFIG_DIR: ".isolated-config",
+        },
+        sessionDirectory: join(dir, "sessions"),
+      },
+      (event) => events.push(event),
     );
-  } finally {
-    await session.close();
-    rmSync(dir, { recursive: true, force: true });
-  }
-});
+    try {
+      await session.start();
+      await expect(session.request(command)).rejects.toThrow(
+        "Native connection interrupted",
+      );
+      await session.close();
+      await session.close();
+      expect(events.filter((event) => event.kind !== "frame")).toEqual([
+        { kind: "disconnected", reason: "protocol" },
+        { kind: "exited" },
+      ]);
+      await expect(session.request("get_state")).rejects.toThrow(
+        "Native connection unavailable",
+      );
+    } finally {
+      await session.close();
+      rmSync(dir, { recursive: true, force: true });
+    }
+  },
+);

@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import {
+  type GitReply,
   type GitRequest,
   GitRequestSchema,
 } from "../../../modules/changes/contracts/public";
@@ -10,6 +11,7 @@ import {
 import { HistoryRequestSchema } from "../../../modules/conversation/contracts/public";
 import { readNativeHistory } from "../../../modules/conversation/main/public";
 import {
+  type FileReply,
   type FileRequest,
   FileRequestSchema,
 } from "../../../modules/files/contracts/public";
@@ -41,27 +43,39 @@ function activeThreadFor(
   return thread;
 }
 
-/** Record the bounded diagnostic every read owes: identity, operation and a
- * terminal stage carrying the domain's own unavailable reason. */
-function recordRead(
+/** Snapshot one request context before I/O; never infer a start from its reply. */
+async function recordRead<T extends { kind: string; reason?: string }>(
   context: ProjectReadContext,
-  request: { traceId: string; operation: string },
-  reply: { kind: string; reason?: string },
-): void {
+  request: { traceId: string; threadId: string; operation: string },
+  sample: () => Promise<T>,
+): Promise<T> {
   const diagnostics = context.getDiagnostics();
   const requestContext = {
-    traceId: request.traceId,
+    ...request,
     requestId: randomUUID(),
     connectionId: diagnostics?.processInstanceId ?? randomUUID(),
-    operation: request.operation,
   };
+  const started = performance.now();
   diagnostics?.record({ ...requestContext, stage: "received" });
-  const unavailable = reply.kind === "unavailable";
-  diagnostics?.record({
-    ...requestContext,
-    stage: unavailable ? "failed" : "completed",
-    ...(unavailable && reply.reason ? { code: reply.reason } : {}),
-  });
+  try {
+    const reply = await sample();
+    const unavailable = reply.kind === "unavailable";
+    diagnostics?.record({
+      ...requestContext,
+      stage: unavailable ? "failed" : "completed",
+      durationMs: performance.now() - started,
+      ...(unavailable && reply.reason ? { code: reply.reason } : {}),
+    });
+    return reply;
+  } catch (error) {
+    diagnostics?.record({
+      ...requestContext,
+      stage: "failed",
+      code: "failed",
+      durationMs: performance.now() - started,
+    });
+    throw error;
+  }
 }
 
 export function registerHistoryIpc(context: ProjectReadContext): void {
@@ -84,16 +98,18 @@ export function registerFilesIpc(context: ProjectReadContext): void {
       "Invalid file source",
       command.threadId,
     );
-    const reply =
-      command.kind === "list"
-        ? await listProjectFiles(thread.directory, command.path)
-        : await readProjectFile(thread.directory, command.path);
-    recordRead(
+    return recordRead<FileReply>(
       context,
-      { traceId: command.traceId, operation: `files:${command.kind}` },
-      reply,
+      {
+        traceId: command.traceId,
+        threadId: command.threadId,
+        operation: `files:${command.kind}`,
+      },
+      () =>
+        command.kind === "list"
+          ? listProjectFiles(thread.directory, command.path)
+          : readProjectFile(thread.directory, command.path),
     );
-    return reply;
   });
 }
 
@@ -106,15 +122,17 @@ export function registerGitIpc(context: ProjectReadContext): void {
       "Invalid Git source",
       command.threadId,
     );
-    const reply =
-      command.kind === "list"
-        ? await listGitChanges(thread.directory)
-        : await readGitChange(thread.directory, command.scope, command.path);
-    recordRead(
+    return recordRead<GitReply>(
       context,
-      { traceId: command.traceId, operation: `git:${command.kind}` },
-      reply,
+      {
+        traceId: command.traceId,
+        threadId: command.threadId,
+        operation: `git:${command.kind}`,
+      },
+      () =>
+        command.kind === "list"
+          ? listGitChanges(thread.directory)
+          : readGitChange(thread.directory, command.scope, command.path),
     );
-    return reply;
   });
 }

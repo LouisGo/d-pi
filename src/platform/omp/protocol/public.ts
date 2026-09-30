@@ -7,4 +7,6 @@ export {
   type NativeFrame,
   NativeFrameSchema,
   NativeFrameTypes,
+  type NativeResponse,
+  NativeResponseSchema,
 } from "./native-frame";

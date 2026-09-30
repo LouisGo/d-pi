@@ -33,8 +33,11 @@ export type SubmissionContext = IpcSourceContext & {
   getRuntime: () => RuntimeService | undefined;
 };
 
-export type ProjectReadContext = IpcSourceContext & {
+export type ProjectReadContext = Omit<IpcSourceContext, "ipcMain"> & {
+  ipcMain: Pick<IpcMain, "handle">;
   getStore: () => AppStorage | undefined;
-  getDiagnostics: () => Diagnostics | undefined;
+  getDiagnostics: () =>
+    | Pick<Diagnostics, "processInstanceId" | "record">
+    | undefined;
   nativeSessionsPath: () => string;
 };

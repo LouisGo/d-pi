@@ -1,15 +1,11 @@
 import { type ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { z } from "zod";
 import type { NativeFrame } from "../../../platform/omp/protocol/public";
-import { FrameDecoder } from "../../../platform/omp/protocol/public";
+import {
+  FrameDecoder,
+  NativeResponseSchema,
+} from "../../../platform/omp/protocol/public";
 
-const ResponseSchema = z.looseObject({
-  type: z.literal("response"),
-  id: z.string().optional(),
-  command: z.string(),
-  success: z.boolean(),
-});
 export interface NativeSessionOptions {
   binary: string;
   entry?: string;
@@ -115,7 +111,12 @@ export class NativeSession {
       this.ready?.resolve();
       this.ready = null;
     }
-    const response = ResponseSchema.safeParse(frame);
+    const response = NativeResponseSchema.safeParse(frame);
+    if (frame.type === "response" && !response.success) {
+      this.disconnect("protocol");
+      this.child?.stdin.end();
+      return;
+    }
     if (response.success && response.data.id) {
       const pending = this.pending.get(response.data.id);
       if (pending && pending.command === response.data.command) {

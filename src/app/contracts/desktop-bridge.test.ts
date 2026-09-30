@@ -1,5 +1,10 @@
-import { expect, it } from "vitest";
-import { CommandSchema, EnvelopeSchema } from "./desktop-bridge";
+import { expect, expectTypeOf, it } from "vitest";
+import {
+  type Command,
+  CommandSchema,
+  EnvelopeSchema,
+  type ReplyFor,
+} from "./desktop-bridge";
 
 it("bounds draft UTF-8 bytes rather than UTF-16 string length", () => {
   const command = {
@@ -47,4 +52,15 @@ it("rejects unknown IPC operation/fields/versions and excessive draft content", 
       command: { kind: "restore", traceId },
     }).success,
   ).toBe(false);
+});
+
+it("preserves command-specific result types at the desktop boundary", () => {
+  type Save = ReplyFor<Extract<Command, { kind: "save" }>>;
+  expectTypeOf<Save["kind"]>().toEqualTypeOf<"saved" | "failed">();
+  expectTypeOf<
+    ReplyFor<Extract<Command, { kind: "restore" }>>["kind"]
+  >().toEqualTypeOf<"ready" | "failed">();
+  expectTypeOf<
+    ReplyFor<Extract<Command, { kind: "choose-project" }>>["kind"]
+  >().toEqualTypeOf<"ready" | "failed" | "cancelled">();
 });
