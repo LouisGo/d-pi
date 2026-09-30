@@ -32,6 +32,8 @@ export const ui = {
   "model.reason.disabled": "Unavailable in current configuration",
   "app.thread.listFailed":
     "Thread list could not be read. The current draft is retained.",
+  "model.change": "Change model / effort",
+  "ui.runtime.details": "Configuration source",
   "model.heading": "Model",
   "model.search": "Search available models",
   "model.active": "Active native model",

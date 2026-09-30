@@ -54,6 +54,7 @@ export function ModelControls({
       showUnavailable={showUnavailable}
       setShowUnavailable={setShowUnavailable}
       refresh={() => void query.refetch()}
+      defaultModel={query.data?.defaultModel ?? null}
       t={t}
     />
   );
@@ -73,6 +74,7 @@ function ModelSelectionState({
   refresh,
   showUnavailable,
   setShowUnavailable,
+  defaultModel,
   t,
 }: {
   thread: ThreadModel;
@@ -90,6 +92,7 @@ function ModelSelectionState({
   loading: boolean;
   failed: boolean;
   refresh: () => void;
+  defaultModel: string | null;
   showUnavailable: boolean;
   setShowUnavailable: (value: boolean) => void;
   t: ReturnType<typeof useI18n>["t"];
@@ -101,11 +104,16 @@ function ModelSelectionState({
     view?.phase === "starting" ||
     view?.phase === "interrupted";
   return (
-    <section className="model-controls" aria-label={t("model.heading")}>
-      <p>
-        {t("model.active")}: {view?.model ?? t("model.none")}{" "}
-        {view?.thinkingLevel ?? ""}
-      </p>
+    <details className="model-controls" aria-label={t("model.heading")}>
+      <summary>
+        {t(view?.model ? "model.active" : "model.next")}:{" "}
+        {view?.model ??
+          (view?.selectedModel
+            ? `${view.selectedModel.provider}/${view.selectedModel.modelId}`
+            : (defaultModel ?? t("model.none")))}{" "}
+        {view?.thinkingLevel ?? view?.selectedModel?.thinkingLevel ?? ""} ·{" "}
+        {t("model.change")}
+      </summary>
       {view?.selectedModel && !view.model && (
         <p className="muted">
           {t("model.next")}: {view.selectedModel.provider}/
@@ -195,6 +203,6 @@ function ModelSelectionState({
       )}
       {!loading && !models.length && <p>{t("model.noAvailable")}</p>}
       <p className="muted">{t("model.notice")}</p>
-    </section>
+    </details>
   );
 }

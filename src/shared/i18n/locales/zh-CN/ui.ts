@@ -29,6 +29,8 @@ export const ui = {
   "model.reason.authentication-required": "待认证",
   "model.reason.disabled": "当前配置不可用",
   "app.thread.listFailed": "会话列表读取失败，当前草稿保留。",
+  "model.change": "更换模型/档位",
+  "ui.runtime.details": "配置来源",
   "model.heading": "模型",
   "model.search": "查找可用模型",
   "model.active": "原生生效模型",

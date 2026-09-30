@@ -199,14 +199,10 @@ function ThreadWorkbench({
   );
   return (
     <Fragment>
-      <div className="draft-intro">
-        <h1>{t("app.draft.title")}</h1>
-        <p className="muted">{t("app.draft.description")}</p>
-      </div>
-      <div className="directory-info">
+      <div className="directory-info" title={thread.context.directory}>
         <FolderIcon />
-        <span>{thread.context.directory}</span>
-        <span className="muted">{t("app.executionNeedsApproval")}</span>
+        <h1>{thread.context.directory.split("/").filter(Boolean).at(-1)}</h1>
+        <span className="muted">{thread.context.directory}</span>
       </div>
       {!directoryAvailable && (
         <p className="failure" role="alert">
@@ -237,13 +233,16 @@ function ThreadWorkbench({
         onAttachmentApplied={onAttachmentApplied}
       />
       {model.files && model.git && (
-        <FilePanel
-          resource={thread.context}
-          files={model.files}
-          git={model.git}
-          editor={editor}
-          onAttach={onAttach}
-        />
+        <details className="code-tools">
+          <summary>{t("ui.files.section")}</summary>
+          <FilePanel
+            resource={thread.context}
+            files={model.files}
+            git={model.git}
+            editor={editor}
+            onAttach={onAttach}
+          />
+        </details>
       )}
       {submission && <Submissions model={submission} />}
       {model.history && (

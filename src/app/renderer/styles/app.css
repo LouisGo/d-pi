@@ -68,10 +68,22 @@
     outline-offset: 2px;
   }
   .model-controls {
-    display: flex;
-    flex-direction: column;
-    gap: var(--layout-gap);
-    margin-bottom: var(--panel-padding);
+    margin-bottom: var(--layout-gap);
+    padding: var(--layout-gap);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .model-controls summary,
+  .code-tools summary,
+  .runtime-source summary {
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .model-controls[open] > :not(summary) {
+    margin-top: var(--layout-gap);
+  }
+  .code-tools {
+    margin-top: var(--panel-padding);
   }
   .runtime-panel {
     display: flex;
@@ -83,9 +95,12 @@
   }
   .app-shell {
     display: flex;
-    min-height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
   }
   .sidebar {
+    min-height: 0;
+    overflow-y: auto;
     width: var(--sidebar-width);
     flex-shrink: 0;
     display: flex;
@@ -149,6 +164,7 @@
     flex-basis: 100%;
   }
   .workbench {
+    overflow-y: auto;
     min-width: 0;
     flex: 1;
   }
@@ -193,8 +209,18 @@
     align-items: center;
     gap: calc(var(--layout-gap) / 2);
     overflow-wrap: anywhere;
-    margin-block: var(--panel-padding);
+    flex-wrap: wrap;
+    margin-bottom: var(--layout-gap);
     font-size: var(--text-small);
+  }
+  .directory-info h1 {
+    font-size: var(--text-title);
+  }
+  .directory-info span {
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .directory-info svg {
     flex-shrink: 0;

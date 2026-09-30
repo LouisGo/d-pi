@@ -86,59 +86,67 @@ export function RuntimePanel({
       aria-label={t("ui.runtime.sectionLabel")}
     >
       <strong role="status">{label}</strong>
-      <span className="muted">{formatMessage(state.configuration)}</span>
+      <details className="runtime-source">
+        <summary>{t("ui.runtime.details")}</summary>
+        <span className="muted">{formatMessage(state.configuration)}</span>
+      </details>
       {state.model && (
         <span>{t("ui.runtime.model", { model: state.model })}</span>
       )}
       <p className="muted">{formatMessage(state.message)}</p>
-      {state.control && (
-        <div role="status">
-          <p>
-            {state.control.paused
-              ? t("ui.runtime.queuePaused", {
-                  queued: state.control.queued,
-                  background: state.control.background,
-                })
-              : t("ui.runtime.queueActive", {
-                  queued: state.control.queued,
-                  background: state.control.background,
-                })}
-          </p>
-          {state.control.queue.map((item, index) => (
-            <p key={`${item.kind}-${index}`}>
-              <strong>
-                {item.kind === "steering"
-                  ? t("ui.runtime.steering")
-                  : t("ui.runtime.pending")}
-                ：
-              </strong>
-              {item.text}
+      {state.control &&
+        (state.busy ||
+          state.control.paused ||
+          state.control.queued > 0 ||
+          state.control.stopping ||
+          state.control.background > 0) && (
+          <div role="status">
+            <p>
+              {state.control.paused
+                ? t("ui.runtime.queuePaused", {
+                    queued: state.control.queued,
+                    background: state.control.background,
+                  })
+                : t("ui.runtime.queueActive", {
+                    queued: state.control.queued,
+                    background: state.control.background,
+                  })}
             </p>
-          ))}
-          <div className="flex gap-2">
-            <Button
-              disabled={state.control.stopping || state.phase !== "ready"}
-              onClick={() => void model.control("stop")}
-            >
-              {state.control.stopping
-                ? t("ui.runtime.stopping")
-                : t("ui.runtime.stop")}
-            </Button>
-            {state.control.paused && (
+            {state.control.queue.map((item, index) => (
+              <p key={`${item.kind}-${index}`}>
+                <strong>
+                  {item.kind === "steering"
+                    ? t("ui.runtime.steering")
+                    : t("ui.runtime.pending")}
+                  ：
+                </strong>
+                {item.text}
+              </p>
+            ))}
+            <div className="flex gap-2">
               <Button
-                disabled={
-                  !state.trusted ||
-                  state.control.stopping ||
-                  state.phase !== "ready"
-                }
-                onClick={() => void model.control("continue")}
+                disabled={state.control.stopping || state.phase !== "ready"}
+                onClick={() => void model.control("stop")}
               >
-                {t("ui.runtime.continue")}
+                {state.control.stopping
+                  ? t("ui.runtime.stopping")
+                  : t("ui.runtime.stop")}
               </Button>
-            )}
+              {state.control.paused && (
+                <Button
+                  disabled={
+                    !state.trusted ||
+                    state.control.stopping ||
+                    state.phase !== "ready"
+                  }
+                  onClick={() => void model.control("continue")}
+                >
+                  {t("ui.runtime.continue")}
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
       {state.interactions && (
         <section
           aria-label={t("ui.runtime.interactionsLabel")}

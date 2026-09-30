@@ -36,7 +36,7 @@
   --text-small: 0.75rem;
   --sidebar-width: 15rem;
   --content-width: 50rem;
-  --editor-height: 14rem;
+  --editor-height: 8rem;
   --editor-max-height: 45vh;
 }
 :root[data-theme="dark"] {

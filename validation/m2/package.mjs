@@ -254,6 +254,7 @@ try {
       "document.querySelector('.model-controls select')?.options.length===3",
     ),
   );
+  await evaluate("document.querySelector('.model-controls').open=true");
   await evaluate(
     `(()=>{const s=document.querySelector('.model-controls select');s.value=${JSON.stringify(JSON.stringify(["fixture", "fixture-b"]))};s.dispatchEvent(new Event('change',{bubbles:true}));})()`,
   );
@@ -379,7 +380,7 @@ try {
   if (process.argv.includes("--inspect")) {
     const checkpoint = join(isolated.root, "inspect-checkpoint.json"),
       resume = join(isolated.root, "inspect-continue");
-    const expiresAt = new Date(Date.now() + 300000).toISOString();
+    const expiresAt = new Date(Date.now() + 600000).toISOString();
     writeFileSync(
       checkpoint,
       JSON.stringify(
