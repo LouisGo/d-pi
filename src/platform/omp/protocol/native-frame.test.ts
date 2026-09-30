@@ -77,3 +77,17 @@ it("does not certify known event payloads with malformed decision fields", () =>
     ),
   ).toBe(false);
 });
+
+it("retains the fixed SDK's optional tool completion failure flag", () => {
+  expect(
+    isNativeFrameType(
+      NativeFrameSchema.parse({
+        type: "tool_execution_end",
+        toolCallId: "tool",
+        toolName: "read",
+        result: { content: [] },
+      }),
+      NativeFrameTypes.toolExecutionEnd,
+    ),
+  ).toBe(true);
+});

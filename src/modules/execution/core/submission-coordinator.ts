@@ -42,6 +42,8 @@ export interface SubmissionDiagnostic {
   threadId: string;
   nativeProcessInstanceId: string;
   operation: "submit";
+  receiptState: SubmissionReceipt["state"];
+  outcome: SubmissionReceipt["outcome"];
   stage: "prepared" | "dispatching" | "acknowledged" | "unknown" | "failed";
 }
 // Conservative v18.3.0 physical-frame budget; not an observed native input limit.
@@ -162,6 +164,8 @@ export class SubmissionCoordinator {
         threadId: receipt.threadId,
         nativeProcessInstanceId: receipt.target.processInstanceId,
         operation: "submit",
+        receiptState: receipt.state,
+        outcome: receipt.outcome,
         stage:
           receipt.outcome === "failed" || receipt.state === "rejected"
             ? "failed"

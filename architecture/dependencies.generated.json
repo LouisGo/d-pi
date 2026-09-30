@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "c511f2c881e1d3ac8b4574ac14f2e934b4a8d46ec981b7dd4314ce87add8ca92",
+  "inputsHash": "e6311d9dd6d819647f63316ec28ffcd470847b47802d1ad60e2ee13dcdf2442f",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 186,
@@ -60,7 +60,7 @@
       ],
       "materialized": true,
       "files": 20,
-      "lines": 1011,
+      "lines": 1034,
       "publicEntries": [
         {
           "path": "src/platform/main/storage/public.ts",
@@ -282,7 +282,7 @@
       ],
       "materialized": true,
       "files": 14,
-      "lines": 1386,
+      "lines": 1409,
       "publicEntries": [
         {
           "path": "src/modules/conversation/contracts/public.ts",
@@ -315,7 +315,7 @@
       ],
       "materialized": true,
       "files": 38,
-      "lines": 6983,
+      "lines": 7046,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",

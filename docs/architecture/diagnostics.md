@@ -2,6 +2,8 @@
 
 日期：2026-09-25。**D-21 已确认**：从开发开始为 Electron 应用各层建立日志和基础监控体系，结构化、可追溯，日常使用无感，需要时易于读取和呈现。用户随后明确不追求 DeepSeek Harness 式完整体系；专用日志界面可以以后再做。下文是工程目标合同，不代表全部能力已完成；各切片实现与测量见对应spec/交接，不能用文档状态覆盖已有结果或扩大授权。
 
+2026-09-30 按重写工作树核对现有字段与接线，补充 §4.3、§7.1 及[诊断阅读证据](../../.scratch/rewrite-preparation/evidence/diagnostic-reading.md)。保留原设计日期与要求；当前实现、设计目标和未覆盖证据分别说明。
+
 ## 1. 建设目标与边界
 
 从第一条业务链路起能回答：哪个版本、哪个进程、哪个 Thread、什么操作、停在哪一步、发生什么错误。记录足够定位问题的事件和耗时，避免把应用做成一个观测平台。
@@ -21,6 +23,8 @@ OMP 内部执行/日志机制由 OMP 负责；本项目覆盖 Main、preload/IPC
 
 ## 3. 每层的最小记录
 
+下表是随功能落实的记录目标，不表示每项都已采集。现有接线与缺口见 §4.3；例如未实现的浏览器/终端功能没有对应监控，Renderer 与 Host 也没有独立日志 Writer。
+
 | 层 | 从开始就记录的内容 |
 | --- | --- |
 | Main | 启动/构建版本、窗口/子进程生命周期、退出原因、启动失败及日志设施异常 |
@@ -35,9 +39,13 @@ OMP 内部执行/日志机制由 OMP 负责；本项目覆盖 Main、preload/IPC
 
 ## 4. 跨进程 Trace 与结构化合同（D-22）
 
-用户明确要求：在 Renderer 拿到一个 trace ID，必须能检索到同一次操作实际经过的 Main、utility process 等阶段。这是基础架构要求，不是以后才做的可选字段。“轻量”约束采集成本，不削弱端到端关联和错误类型。以下字段与处理方式是工程合同；Main 侧已实现并接线（`src/platform/main/diagnostics/diagnostics.ts`，字段与本文 §4.3 存在差异，以实现为准并待对齐），Renderer 与 SessionHost 侧的记录尚未接入。
+用户明确要求：在 Renderer 拿到一个 trace ID，必须能检索到同一次操作实际经过的 Main、utility process 等阶段。这是基础架构要求，不是以后才做的可选字段。“轻量”约束采集成本，不削弱端到端关联和错误类型。
+
+当前 Main 是唯一 JSONL Writer。Renderer 在模型/查询入口生成 trace；preload 已将桌面请求的发起、回复确认与传输/回复校验失败送到 Main。文件/Git 读取在 Main 记录进入和结果；提交协调器记录收据阶段，SessionHost 保留冻结提交的 trace/请求/目标身份，运行控制结果携带原 trace 回到 Main 后记录。因此不能概括为 Renderer/SessionHost 完全未接入。它们尚无独立、通用的结构化诊断采集通道，当前业务 envelope 也未实现下列全部 span/采样/因果链接字段。不能把 Main 写出的记录冒称 Host 自身的观察，或宣称已得到 OMP 内部的完整 trace。
 
 ### 4.1 标识及生命周期
+
+本节描述完整设计合同。实际已记录的身份及尚未落实项见 §4.3；设计字段不能填造默认值来伪装已有证据。
 
 | 字段 | 语义 |
 | --- | --- |
@@ -63,7 +71,26 @@ OMP 内部执行/日志机制由 OMP 负责；本项目覆盖 Main、preload/IPC
 
 ### 4.3 每条记录的结构
 
-基础字段为 `schemaVersion`、`timestamp`、`level`、稳定 `eventName`、`component`、上述 trace/进程身份、`phase`、`outcome`；按场景附 `durationMs`、类型化属性与错误。构建/应用/Electron/Runtime 版本可存启动清单并关联。
+现有格式由 [DiagnosticEvent 与 Writer](../../src/platform/main/diagnostics/diagnostics.ts)定义，读取时使用真实字段：
+
+| 当前字段 | 含义与限制 |
+| --- | --- |
+| `schemaVersion: 1`、`time` | JSONL 版本和记录时的 ISO 墙钟时间；当前字段名不是 `timestamp` |
+| `process: "main"`、`processInstanceId` | Main Writer 及本次 Writer 实例 UUID；preload 转交的事件仍由 Main 落盘 |
+| `build` | `version`、`commit`、`dirty`、`id`；直接源码测试是 `unbundled`，不能当发布构建 |
+| `traceId`、`requestId`、`connectionId`、`operation`、`stage` | 现有最小关联合同；不同入口的 request/connection 语义如下文，不能只凭字段同名合并请求 |
+| `observedAt: "preload"` | 当前只有桌面请求的 preload 观察附此值；缺省记录没有 Host/Renderer 独立采集身份 |
+| `submissionId`、`threadId`、`nativeProcessInstanceId` | 按入口附带；提交及部分运行控制有这些字段。目标实例 UUID 由 Main 生成、Host ready 核对，不是操作系统 pid |
+| `receiptState`、`outcome` | 提交收据的调用状态与执行结果；每次协调器记录及 Host 退出后的逐收据记录分别保留这两种事实，不只看 stage |
+| `durationMs`、`errorId`、`code`、`causeCode` | 按入口附带；耗时采用 `performance.now()` 差值。`causeCode` 是有界机器码，不记录异常全文 |
+
+桌面请求的 requestId/connectionId 来自 preload envelope，并在 Main 和 preload 结果记录复用。文件/Git 读取的 requestId 由 Main 在 I/O 前生成，connectionId 使用 Main Writer 实例；运行控制入口也有 Main 请求 ID，但 Host 返回的控制结果当前用 traceId 作为 requestId、generation 作为 connectionId。提交的 requestId 是原生 prompt 帧 ID，connectionId 是冻结的连接代次。跨这些路径先按 trace 汇集，再按操作和实际身份区分阶段，不把不同 requestId 当成丢失传播的同一请求。
+
+当前 `stage` 包含 `initiated`、`confirmed`、`acknowledgement-failed`、`received`、`completed`、`prepared`、`dispatching`、`acknowledged`、`unknown`、`failed`、`renderer-gone`、`disconnected`、`exited`。`failed` 既可能来自拒绝，也可能来自执行失败；提交记录必须同时看 `receiptState`/`outcome`，具体拒绝原因仍回查类型化收据/结果。`spanId`、`parentSpanId`、`appSessionId`、`eventId`、进程内 `seq`、`level`、`eventName`、`component`、通用事件的 `phase`/结果合同、采样与因果 links 尚未实现。
+
+`runtime:host` 的 disconnected/failed 来自 Main 收到 Host interrupted/failed，exited 来自 Main 确认 utility Host exit。这里的 traceId/requestId 使用当前 RuntimeView 的 trace，未必是某个提交 trace；用连接代次补关联，不能改贴提交来源。`code`只保留 `spawn`、`protocol`、`exit`、`write`、`state-unavailable`、`active-work`、`runtime-unavailable`，其他原因记 unknown。Host 退出后逐 in-flight 收据的 `submit` 记录保留该收据原 trace/request/target，并带 `code: "host-exited"`及更新后的两种事实。utility 退出不能冒充官方 Native 执行全生命周期单写证据。
+
+完整目标结构保留 `schemaVersion`、`timestamp`、`level`、稳定 `eventName`、`component`、trace/进程身份、`phase`、`outcome`，并按场景附耗时、类型化属性与错误；后续落实时须记录与现有格式的兼容/迁移关系。构建/应用/Electron/Runtime 版本可存启动清单并关联，当前 `build` 不包含全部运行环境版本。
 
 阶段包含开始、成功、失败、取消；生命周期突然结束时由监督事件标记中断/未完成，不倒填成功。耗时使用进程内单调时钟，跨进程因果靠 ID/父子关系，不能用两台时钟相减或仅按日志接收时间推断顺序。
 
@@ -137,6 +164,8 @@ error code、eventName、component 和结构化 attributes 在实现中由类型
 
 ## 5. 性能与存储约束
 
+下列仍是预算和故障合同。现有 Writer 已有 FIFO 有界队列、异步批量、大小/总量/时间轮转与退出限时 drain；目前没有日志级别优先级、限时 debug、丢弃摘要落盘、独立 emergency 文件或上次异常退出识别。`dropped`/`degraded` 是运行中的内存状态，Writer 失败会通知一次应用提示，不能据此声称零丢失或已有完整缺口记录。
+
 - 默认关键 info/warn/error，debug 按组件/Thread 限时开启，结束自动恢复；不依赖重启应用才能拿到后续详细日志。
 - 异步、批量、有界队列；debug 洪峰先采样/丢弃，关键错误优先，但不能宣称崩溃/磁盘满时零丢失。留存丢弃计数或缺口信息，不把丢日志解释成没有发生事件。
 - 默认本地 JSONL，单文件单 Writer，按大小/总量/时间轮转；放系统应用日志目录，不写用户项目。具体保留天数、配额和批次以[基础契约 §7](foundation-contracts.md#7-诊断与性能验收预算b6)的初始预算为单源，本节不复制数值。
@@ -156,9 +185,51 @@ CPU/内存、Main/Host 事件循环延迟和 Renderer 响应性作为低频或�
 
 首版先保证稳定日志位置、可读 JSONL、明确的字段/筛选说明，以及按 traceId/时间/Thread/operation 选择和脱敏导出所需的基础。允许开发者直接用通用文本/JSON 工具查看，不以 DevTools 控制台作为唯一证据。
 
-应用可提供轻量“打开日志目录/导出诊断资料”入口；具体入口安排随首版设计，不要求先做实时日志页面。日志模块预留按范围读取、分页/流式查询接口边界，不为将来 UI 提前建数据库。
+目前可直接读取 `app.getPath("userData")/logs/main.jsonl` 与 `main-<毫秒时间>.jsonl`。`D_PI_DATA_DIR` 会覆盖 userData；macOS 默认常见目录为 `~/Library/Application Support/d-pi/logs`，验证隔离目录按实际启动参数选择。现有应用没有打开日志目录/导出诊断入口，也没有独立日志查询服务。
+
+应用以后可提供轻量“打开日志目录/导出诊断资料”入口；具体入口安排随首版设计，不要求先做实时日志页面。按范围读取、分页/流式查询接口是后续边界，不为将来 UI 提前建数据库。
 
 **专用日志界面是后续能力，不是首版或开工前置。** 后续可在既有结构上增加过滤、关联时间线、错误展开和指标摘要。没有查看器时也能诊断，主业务页面崩溃不丢失已落盘证据。
+
+### 7.1 现有 JSONL 的 trace 筛选
+
+在仓库已准备好的 Node 环境执行，下列只读命令汇集目录内所有 JSONL，并报告无法解析的行数。填入用户错误或请求中的真实 trace；文件/Git 查询的失败对象也保留 `traceId`，但不是每个界面结果都已提供复制入口。
+
+```sh
+export DP_LOG_DIR="${D_PI_DATA_DIR:-$HOME/Library/Application Support/d-pi}/logs"
+export DP_TRACE='替换为实际 traceId'
+node --input-type=module <<'NODE'
+import { readdir, readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+const directory = process.env.DP_LOG_DIR;
+const trace = process.env.DP_TRACE;
+if (!directory || !trace) throw new Error('DP_LOG_DIR and DP_TRACE are required');
+let matches = 0;
+let invalidLines = 0;
+for (const name of (await readdir(directory)).filter(n => n.endsWith('.jsonl')).sort()) {
+  const lines = (await readFile(join(directory, name), 'utf8')).split('\n');
+  for (let index = 0; index < lines.length; index++) {
+    if (!lines[index].trim()) continue;
+    let event;
+    try { event = JSON.parse(lines[index]); }
+    catch { invalidLines++; continue; }
+    if (event?.traceId !== trace) continue;
+    matches++;
+    console.log(JSON.stringify({ logFile: name, logLine: index + 1, ...event }));
+  }
+}
+console.error(JSON.stringify({ traceId: trace, matches, invalidLines }));
+NODE
+```
+
+文件/行顺序是读取线索，`time` 只是墙钟采集时间；当前无 span/seq，不据此构造跨进程严格时间线。`matches: 0` 表示当前保留文件没找到，不能证明操作没发生；轮转、丢弃、进程终止或未接入的阶段都可能留下缺口。
+
+阅读时先按 `build` 和 `processInstanceId` 划定构建/Writer，再按 trace、request、connection、Thread/Submission 检查最后确认位置：
+
+1. 桌面操作通常依次有 preload `initiated`、Main `received`、Main `completed`/`failed`、preload `confirmed`/`acknowledgement-failed`。`confirmed` 表示回复已通过 shape 与关联校验，回复本身仍可能是类型化失败；仅有 `received` 不能倒填完成。文件/Git 目前记录 Main 的进入与结果，前端查询异常保留请求 trace，不能声称已有两端落盘事件。
+2. 提交的 `prepared` 是原文/身份已持久化，`dispatching` 是派发门已持久化，不能证明已写入原生管道；`acknowledged` 是关联 prompt 回复已持久化，不能证明执行结束。以 [SubmissionReceipt](../../src/modules/execution/contracts/submission.ts)的 `state`、`acknowledgedAt`、`outcome`、`rejectionReason`分开阅读。`unknown` 不自动重发；已 ACK 后的 `failed`/`unknown` 执行结果不会回退为未 ACK。控制操作中的 answer `acknowledged` 当前只表示管道写入未抛错，原生 extension response 没有 ACK，不混用提交含义。
+3. [NativeSession](../../src/modules/execution/host/native-session.ts)的 `disconnected` 是传输不可继续，`exited` 来自原生子进程 `close`，是另一个确认事实。协议故障可以先断连而进程仍活着；不能由断连推断退出/释放所有权。Main JSONL 中的 `runtime:host + exited`具体表示 utility Host 已退出，Host 没有独立 Writer，不能把这条观察扩成原生执行的全部生死证据。[RuntimeService](../../src/modules/execution/main/runtime-service.ts)只处理其真实 in-flight 集合，不能把 Host 为迟到回复保留的全部关联都当执行中任务。
+4. 对同一 submission/request/target，先找 `receiptState: acknowledged`，再看后续 `outcome`。Host 退出的 `submit + stage: unknown + code: host-exited`仍可保留 `receiptState: acknowledged`，表示接受事实没撤回而执行结果未知；已有 failed 结果也不被 unknown 覆盖。要找 Host 生命周期观察，可再按该条 `connectionId`筛选：`rg -n -F '替换为实际 connectionId' "$DP_LOG_DIR" -g '*.jsonl'`，再核对 build/Writer/Thread。它的生命周期 trace 可能与提交不同，不伪造同一请求。保留文件缺阶段时回查类型化结果、只读收据及具名样本，不由日志重放提交。现有实测、回放与故障注入的区别见[诊断阅读证据](../../.scratch/rewrite-preparation/evidence/diagnostic-reading.md)。
 
 ## 8. 内容与故障边界
 
@@ -180,7 +251,7 @@ CPU/内存、Main/Host 事件循环延迟和 Renderer 响应性作为低频或�
 
 2026-09-25 阅读：[DeepSeek Harness core](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/subsystems/core.md)及[persistence](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/subsystems/persistence.md)支持类型化事件与可追溯原则；本项目只借鉴思路，不引入其会话事件溯源或全平台架构。master 为动态来源。
 
-[Electron app](https://www.electronjs.org/docs/latest/api/app)、[crashReporter](https://www.electronjs.org/docs/latest/api/crash-reporter)与[Node perf_hooks](https://nodejs.org/api/perf_hooks.html)提供部分进程/故障/耗时观测能力；采用前核实选定 Electron 内置 Node 版本、平台及进程覆盖。本轮未安装日志库、未运行性能或故障实验。
+[Electron app](https://www.electronjs.org/docs/latest/api/app)、[crashReporter](https://www.electronjs.org/docs/latest/api/crash-reporter)与[Node perf_hooks](https://nodejs.org/api/perf_hooks.html)提供部分进程/故障/耗时观测能力；采用前核实选定 Electron 内置 Node 版本、平台及进程覆盖。2026-09-25 这次设计记录未安装日志库、未运行性能或故障实验；后续实现及验证按对应切片追溯，不沿用这句作为当前工程状态。
 
 
 ## 11. 初始预算与验收样本

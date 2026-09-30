@@ -217,12 +217,32 @@ export class RuntimeService {
     await starting;
   }
   private onExit(): void {
+    this.recordHost("exited");
     const uncertain = this.executingIds.size > 0;
     for (const submissionId of this.executingIds) {
       try {
         this.store.submissions.unknownSubmission(submissionId);
         const receipt = this.store.submissions.submission(submissionId);
-        if (receipt) this.publishSubmission({ kind: "receipt", receipt });
+        if (receipt) {
+          try {
+            this.record({
+              traceId: receipt.traceId,
+              requestId: receipt.requestId,
+              connectionId: receipt.target.connectionGeneration,
+              nativeProcessInstanceId: receipt.target.processInstanceId,
+              submissionId: receipt.submissionId,
+              threadId: receipt.threadId,
+              operation: "submit",
+              stage: "unknown",
+              receiptState: receipt.state,
+              outcome: receipt.outcome,
+              code: "host-exited",
+            });
+          } catch {
+            /* Diagnostics cannot prevent receipt publication. */
+          }
+          this.publishSubmission({ kind: "receipt", receipt });
+        }
       } catch {
         /* Recovered as unknown on restart if still dispatching. */
       }
@@ -232,6 +252,41 @@ export class RuntimeService {
       busy: uncertain,
       message: uiMessage("runtime.disconnected"),
     });
+  }
+  private recordHost(
+    stage: "disconnected" | "exited" | "failed",
+    reason?: string,
+  ): void {
+    if (!this.view || !this.currentGeneration) return;
+    // Only known adapter codes are safe to persist; raw upstream errors may
+    // contain credentials or content and cannot establish root attribution.
+    const code = match(reason)
+      .with(
+        "spawn",
+        "protocol",
+        "exit",
+        "write",
+        "state-unavailable",
+        (value) => value,
+      )
+      .with("active-work", "runtime-unavailable", (value) => value)
+      .otherwise(() => "unknown");
+    try {
+      this.record({
+        traceId: this.view.traceId,
+        requestId: this.view.traceId,
+        connectionId: this.currentGeneration,
+        ...(this.target
+          ? { nativeProcessInstanceId: this.target.processInstanceId }
+          : {}),
+        threadId: this.view.threadId,
+        operation: "runtime:host",
+        stage,
+        ...(reason === undefined ? {} : { code }),
+      });
+    } catch {
+      /* Diagnostic failure cannot change execution or recovery. */
+    }
   }
   private settleIdleSubmissions(): void {
     const control = this.view?.control;
@@ -362,7 +417,11 @@ export class RuntimeService {
         });
         this.settleIdleSubmissions();
       })
-      .with({ kind: "failed" }, { kind: "interrupted" }, () => {
+      .with({ kind: "failed" }, { kind: "interrupted" }, (failure) => {
+        this.recordHost(
+          failure.kind === "interrupted" ? "disconnected" : "failed",
+          failure.kind === "interrupted" ? failure.reason : failure.code,
+        );
         this.update({
           phase: "interrupted",
           busy: true,

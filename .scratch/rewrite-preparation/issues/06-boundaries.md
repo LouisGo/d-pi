@@ -16,3 +16,9 @@ Blocked by: none
 2026-09-30 桥接切片：Command → ReplyFor 保留命令结果关系，统一边界关联校验（含 locale），调用者不再处理该命令不可能的回包；DesktopRequestError 保留 trace/code/cause，诊断不含原文或原始秘密错误。新测试先 2 项失败（错 locale 被接受、cause/trace 丢失），修正后桥接/renderer 4 文件 20 项通过，六套 tsc 通过。读取诊断及 payload 子项继续实现，不以该提交冒称整票完成。
 
 2026-09-30 读取/原生边界：读取日志三项真实红灯后改为 received → I/O → terminal，保留 Thread、request、trace、monotonic duration 及领域 reason，抛异常也记失败并保留 cause。原生已知 payload 必要字段由协议层消费守卫验证，projection 删除重复解析；未知事件与额外字段仍开放。坏 success 字段原来直到进程退出才被归为 exit，新红灯验证后在 response 消费点即时报告 protocol 断连，后续 close 是单独 exited 证据。六文件 38 项针对性测试通过；固定 SDK/包真实样本后补，当前是类型/合成回归证据。
+
+2026-09-30 冻结核心审阅补修：独立审阅确认工具 start 的开放额外字段被错误消费；目标负例红→绿后，仅已认证 end 分支决定失败/完成与结果正文。固定 SDK 的 optional isError 合法样本直接绿色补测，未借完整事件校验封闭未知字段。
+
+诊断事实链补修：协调器日志分别带 receiptState/outcome，Host interrupted/failed 与 utility exit 记录独立监督阶段，退出后逐 in-flight 收据按原 trace/request/target 记录未知结果。目标集成先失败，补修后通过；日志回调异常不改变收据/退出的既有保证直接补绿色回归。相关七文件 48 项通过。实际字段、可执行 trace 筛选和未覆盖项同步[诊断合同](../../../docs/architecture/diagnostics.md)与[阅读证据](../evidence/diagnostic-reading.md)，不新建 Writer/span/日志导出服务。utility Host exit 不冒称冷恢复全周期单写证据。
+
+固定官方 18.3.0/Bun 1.3.14 的真实样本已补：stop 保留原生队列、较新 stop 压过 continue、同 session 显式继续只消费一次；另有缺模型预检的 prompt ACK 后同 ID 异步失败、provider 调用数 0。两种样本通过生产 Decoder 回放，控制样本另经 Conversation 投影；来源/命令/局限见[SDK 边界证据](../evidence/sdk-boundary.md)。真实供应商故障与个人扩展不在这些样本证明范围。随包完整应用 trace/GUI 继续由 07 记录。

@@ -4,14 +4,15 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { PassThrough, Writable } from "node:stream";
 import { afterEach, expect, it, vi } from "vitest";
+import { AppStorage } from "../../src/app/main/wiring/app-storage";
 import {
   HostCommandSchema,
   SubmissionIdSchema,
 } from "../../src/modules/execution/contracts/public";
 import { createSessionHost } from "../../src/modules/execution/host/public";
 import { RuntimeService } from "../../src/modules/execution/main/public";
+import type { DiagnosticEvent } from "../../src/platform/main/diagnostics/public";
 import { TraceIdSchema } from "../../src/shared/identity";
-import { AppStorage } from "../../src/app/main/wiring/app-storage";
 
 const adapters = vi.hoisted(() => ({ fork: vi.fn(), spawn: vi.fn() }));
 vi.mock("electron", () => ({ utilityProcess: { fork: adapters.fork } }));
@@ -37,7 +38,7 @@ const idle = {
   pendingAsync: false,
   admitted: false,
 };
-async function running() {
+async function running(diagnosticFailure = false) {
   const root = realpathSync(mkdtempSync(join(tmpdir(), "d-pi-causal-")));
   const project = join(root, "project");
   mkdirSync(project);
@@ -117,7 +118,19 @@ async function running() {
       },
     }),
   );
-  const runtime = new RuntimeService(store, root, root, {}, () => {});
+  const diagnostics: DiagnosticEvent[] = [];
+  const runtime = new RuntimeService(
+    store,
+    root,
+    root,
+    {},
+    () => {},
+    () => {},
+    (event) => {
+      if (diagnosticFailure) throw Error("fixture diagnostic failure");
+      diagnostics.push(event);
+    },
+  );
   const nativeExit = () => {
     if (child.exitCode !== null) return;
     child.exitCode = 0;
@@ -151,6 +164,7 @@ async function running() {
   };
   return {
     runtime,
+    diagnostics,
     store,
     draft,
     host,
@@ -275,4 +289,70 @@ it("protocol disconnection alone still blocks quit; confirmed exit is a separate
   expect(f.runtime.hasActiveWork()).toBe(true);
   f.nativeExit();
   expect(f.runtime.hasActiveWork()).toBe(false);
+});
+
+it("correlates ACK, disconnection and unknown outcome without conflating transport loss with Host exit", async () => {
+  const f = await running();
+  const receipt = await f.prepare();
+  await f.dispatch();
+  f.busy();
+  f.frames({
+    type: "response",
+    command: "prompt",
+    id: receipt.requestId,
+    success: true,
+  });
+  expect(f.diagnostics).toContainEqual(
+    expect.objectContaining({
+      traceId: receipt.traceId,
+      requestId: receipt.requestId,
+      submissionId: receipt.submissionId,
+      receiptState: "acknowledged",
+      outcome: "unobserved",
+    }),
+  );
+  f.raw("{broken-json\n");
+  expect(f.diagnostics).toContainEqual(
+    expect.objectContaining({
+      traceId: receipt.traceId,
+      receiptState: "acknowledged",
+      outcome: "unknown",
+    }),
+  );
+  expect(f.diagnostics).toContainEqual(
+    expect.objectContaining({
+      operation: "runtime:host",
+      stage: "disconnected",
+      code: "protocol",
+      connectionId: receipt.target.connectionGeneration,
+      nativeProcessInstanceId: receipt.target.processInstanceId,
+    }),
+  );
+  expect(f.diagnostics.some((event) => event.stage === "exited")).toBe(false);
+  f.nativeExit();
+  expect(f.diagnostics).toContainEqual(
+    expect.objectContaining({ operation: "runtime:host", stage: "exited" }),
+  );
+  expect(f.store.submissions.submission(receipt.submissionId)).toMatchObject({
+    state: "acknowledged",
+    outcome: "unknown",
+  });
+  expect(
+    f.commands.filter((command) => command.type === "prompt"),
+  ).toHaveLength(1);
+  expect(JSON.stringify(f.diagnostics)).not.toContain('"text":"B"');
+});
+
+it("diagnostic failure cannot prevent an exited Host from preserving an unknown receipt", async () => {
+  const f = await running(true);
+  const receipt = await f.prepare();
+  await f.dispatch();
+  expect(() => f.nativeExit()).not.toThrow();
+  expect(f.store.submissions.submission(receipt.submissionId)).toMatchObject({
+    state: "unknown",
+    outcome: "unknown",
+  });
+  expect(
+    f.commands.filter((command) => command.type === "prompt"),
+  ).toHaveLength(1);
 });

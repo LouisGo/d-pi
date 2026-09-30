@@ -58,6 +58,21 @@ it("merges streamed text into a bounded message and keeps tools/results distinct
   ]);
 });
 
+it("does not let an unconsumed extra field on a tool start invent failure or result text", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {});
+  p.accept({
+    type: "tool_execution_start",
+    toolCallId: "t",
+    toolName: "read",
+    isError: "false",
+    result: { content: "untrusted extra result" },
+  });
+  expect(p.snapshot().items).toMatchObject([
+    { role: "tool", state: "streaming", text: "" },
+  ]);
+  p.dispose();
+});
+
 it("bounds retained messages and reports truncation without retaining evicted tools", () => {
   const p = new ConversationProjection(crypto.randomUUID(), () => {}, 4096);
   for (let n = 0; n < 50; n++)

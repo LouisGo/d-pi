@@ -173,6 +173,17 @@ try {
   console.log("Native idle observation", finalState);
   assert.equal(finalState.queued, 0);
   assert.match(inputs[1], /SECOND/);
+  if (process.env.D_PI_NATIVE_EVIDENCE) {
+    const path = resolve(process.env.D_PI_NATIVE_EVIDENCE);
+    await mkdir(join(path, ".."), { recursive: true });
+    await writeFile(
+      path,
+      frames.map((frame) => JSON.stringify(frame)).join("\n") + "\n",
+    );
+    console.log(
+      `Recorded fixed-SDK frames from isolated local provider fixture: ${path}`,
+    );
+  }
   console.log(
     "PASS: official SDK stop retains native queue; explicit continue consumes the same session exactly once",
   );

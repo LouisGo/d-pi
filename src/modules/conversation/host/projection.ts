@@ -126,17 +126,25 @@ export class ConversationProjection {
       this.flush();
       const id = this.tools.get(frame.toolCallId) ?? this.nextId++;
       this.tools.set(frame.toolCallId, id);
-      const result = z.object({ content: z.unknown() }).safeParse(frame.result);
+      const completed = isNativeFrameType(
+        frame,
+        NativeFrameTypes.toolExecutionEnd,
+      )
+        ? frame
+        : null;
+      const result = completed
+        ? z.object({ content: z.unknown() }).safeParse(completed.result)
+        : null;
       this.put({
         id,
         role: "tool",
         label: { kind: "literal", text: frame.toolName.slice(0, 120) },
-        state: frame.isError
-          ? "failed"
-          : isNativeFrameType(frame, NativeFrameTypes.toolExecutionEnd)
-            ? "complete"
-            : "streaming",
-        text: result.success ? textOf(result.data.content) : "",
+        state: completed
+          ? completed.isError
+            ? "failed"
+            : "complete"
+          : "streaming",
+        text: result?.success ? textOf(result.data.content) : "",
       });
       this.flush();
       return;

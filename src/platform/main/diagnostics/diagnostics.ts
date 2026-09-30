@@ -17,6 +17,13 @@ export interface DiagnosticEvent {
   submissionId?: string;
   threadId?: string;
   nativeProcessInstanceId?: string;
+  receiptState?:
+    | "prepared"
+    | "dispatching"
+    | "acknowledged"
+    | "unknown"
+    | "rejected";
+  outcome?: "unobserved" | "failed" | "unknown";
   stage:
     | "prepared"
     | "dispatching"
@@ -28,7 +35,9 @@ export interface DiagnosticEvent {
     | "renderer-gone"
     | "initiated"
     | "confirmed"
-    | "acknowledgement-failed";
+    | "acknowledgement-failed"
+    | "disconnected"
+    | "exited";
   observedAt?: "preload";
   durationMs?: number;
   errorId?: string;
