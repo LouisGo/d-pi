@@ -1,6 +1,6 @@
 # 06 跨进程与诊断边界
 
-Status: claimed
+Status: resolved
 Blocked by: none
 
 阶段：既有 M1 重写。授权、待决项与继续边界见 [spec](../spec.md#推进与交接)。受影响决定：D-05、D-17、D-21/D-22、D-24、D-28–D-37 与 B-01，按实际触及项核对。
