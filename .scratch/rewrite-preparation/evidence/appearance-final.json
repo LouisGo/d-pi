@@ -1,0 +1,126 @@
+{
+  "application": "/Users/lou/Learn/d-pi/dist/appearance/mac-arm64/d-pi.app",
+  "build": "0.1.0-s4.0 · 2b1990fa-6a10f88e",
+  "fixture": {
+    "fileLines": 180,
+    "draftLines": 18,
+    "sandbox": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-appearance-MYXOIK"
+  },
+  "checks": [
+    "file/diff/editor identity",
+    "draft and DOM selection",
+    "composer scroll",
+    "Monaco scroll",
+    "editor geometry",
+    "Monaco selection",
+    "attachment preserved",
+    "real undo",
+    "no OMP session"
+  ],
+  "cycles": [
+    {
+      "kind": "file",
+      "operationsPerPreference": 6,
+      "theme": {
+        "LayoutCount": 12,
+        "RecalcStyleCount": 24,
+        "LayoutDuration": 0.00218,
+        "RecalcStyleDuration": 0.018114,
+        "ScriptDuration": 0.038869,
+        "TaskDuration": 0.07239899999999999
+      },
+      "density": {
+        "LayoutCount": 17,
+        "RecalcStyleCount": 17,
+        "LayoutDuration": 0.005089,
+        "RecalcStyleDuration": 0.006699999999999998,
+        "ScriptDuration": 0.008797,
+        "TaskDuration": 0.031112
+      },
+      "dimension": {
+        "outer": 702,
+        "inner": 700
+      }
+    },
+    {
+      "kind": "diff",
+      "operationsPerPreference": 6,
+      "theme": {
+        "LayoutCount": 12,
+        "RecalcStyleCount": 28,
+        "LayoutDuration": 0.0025529999999999997,
+        "RecalcStyleDuration": 0.021226000000000002,
+        "ScriptDuration": 0.024772000000000002,
+        "TaskDuration": 0.070991
+      },
+      "density": {
+        "LayoutCount": 17,
+        "RecalcStyleCount": 18,
+        "LayoutDuration": 0.003965,
+        "RecalcStyleDuration": 0.008929999999999993,
+        "ScriptDuration": 0.010862999999999998,
+        "TaskDuration": 0.03776999999999997
+      },
+      "dimension": {
+        "outer": 702,
+        "inner": 700
+      }
+    }
+  ],
+  "geometry": [
+    {
+      "kind": "file",
+      "density": "normal",
+      "outerWidth": 700,
+      "innerWidth": 700,
+      "outerHeight": 335,
+      "innerHeight": 335,
+      "allocatedWidth": 700,
+      "parentWidth": 750,
+      "padding": "24px"
+    },
+    {
+      "kind": "file",
+      "density": "compact",
+      "outerWidth": 732,
+      "innerWidth": 732,
+      "outerHeight": 335,
+      "innerHeight": 335,
+      "allocatedWidth": 732,
+      "parentWidth": 766,
+      "padding": "16px"
+    },
+    {
+      "kind": "diff",
+      "density": "normal",
+      "outerWidth": 700,
+      "innerWidth": 700,
+      "outerHeight": 335,
+      "innerHeight": 335,
+      "allocatedWidth": 700,
+      "parentWidth": 750,
+      "padding": "24px"
+    },
+    {
+      "kind": "diff",
+      "density": "compact",
+      "outerWidth": 732,
+      "innerWidth": 732,
+      "outerHeight": 335,
+      "innerHeight": 335,
+      "allocatedWidth": 732,
+      "parentWidth": 766,
+      "padding": "16px"
+    }
+  ],
+  "limitations": "CDP automation of the built Electron GUI; no frame-time distribution, physical paint, font preference, system IME, real provider or user acceptance claim.",
+  "packaging": {
+    "sourceCommit": "2b1990fa9020db5434cd51ba013b20631e4536b9",
+    "cleanSourceAtBuild": true,
+    "appAsarSha256": "17ff561a5d0af585d956f5519f277c75e3b5746ac1f5798251a7beacc74127c5",
+    "platform": "darwin-arm64",
+    "electron": "44.4.5",
+    "officialSdk": "18.3.0",
+    "unsigned": true
+  }
+}

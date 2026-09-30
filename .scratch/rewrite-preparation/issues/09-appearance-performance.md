@@ -1,6 +1,6 @@
 # 09 外观偏好的订阅与更新边界
 
-Status: claimed
+Status: done
 Blocked by: none
 
 2026-09-30 用户指出顶层全量状态订阅削弱按需订阅，明确要求修复主题、密度等展示偏好的性能隐患，并以项目 skill 提醒后续 AI。从 `992ceee` 的干净 `codex/rewrite-core` 开始，授权实现、必要测试依赖、验证、受影响 GUI 与本地提交；不 push。
@@ -21,7 +21,7 @@ Blocked by: none
 
 ## 执行证据
 
-2026-09-30：实现和自动检查、开发态实际 GUI 已完成；干净源码正式构建及交付核对继续由主 Agent 执行。状态由本票和上级 spec 维护，原重写 handoff 仍是原构建快照。
+2026-09-30：实现、自动检查、干净源码正式构建及受影响 GUI 核对已完成，工程交付待用户试用。状态由本票和上级 spec 维护，原重写 handoff 仍是原构建快照。
 
 - **TDD**：两个实现子 Agent 分别先观察全量订阅、重复属性写入、重复初始文档计算，以及 Monaco 颜色/尺寸耦合的失败，再最小实现。随后主 Agent 在独立 `992ceee` 源码目录，只复制本轮三个测试与 Vitest 配置作可复查对照：9 个目标行为断言实际失败；当前源码同题 9 个通过，另 15 个因过滤跳过，非套件遗漏。[基线红灯](../evidence/appearance-red.txt)、[当前绿灯](../evidence/appearance-green.txt)。既有 Thread、失败、语言和准确选区行为补测直接通过，不伪造红灯。
 - **可观察收益**：theme 保存的 busy 与成功通知不再执行六个无关业务边界；sendKey 保存的外观属性事件由 2 次变成 0；同一 mounted controller 的草稿更新不再重复 `draftDocument`。Monaco 只在真实 theme 改变时重设颜色，密度只经真实尺寸观察触发布局，多次变化按帧合并，卸载取消并拒绝迟到回调。
@@ -32,4 +32,24 @@ Blocked by: none
 
 ## 交付与未覆盖
 
-待补正式产物、实际构建身份、GUI 截图与启动步骤。不实现字号偏好，相关 skill 只约束后续设计；未验证系统 IME、真实供应商、Windows/Linux、M2 大内容性能或用户手感。不改变偏好保存失败行为、OMP 执行所有权、unknown 不重发与缺单写证据只读的继续边界。
+正式产物：`/Users/lou/Learn/d-pi/dist/appearance/mac-arm64/d-pi.app`，保留原重写试用包路径不覆盖。版本 `0.1.0-s4.0`，源码 `2b1990fa9020db5434cd51ba013b20631e4536b9`，构建 ID `2b1990fa-6a10f88e`，构建时工作树干净；macOS arm64、未签名。asar SHA-256：`17ff561a5d0af585d956f5519f277c75e3b5746ac1f5798251a7beacc74127c5`。
+
+核心完整 check 在 `e95d44e` 实现阶段通过；最后一条 CSS 收缩补修另通过 Biome、design lint、token/设计检查、`check:fast`、结构报告、skill 校验、build 与包内实际 GUI，无 TS/业务变化，不重复完整故障矩阵。正式包同一脚本再次通过，主 Agent 查看了[文件](../evidence/appearance-file-dark-compact.png)与[Diff](../evidence/appearance-diff-dark-compact.png)两张最终深色/紧凑截图。[实际结果、各密度尺寸、聚合指标与构建身份](../evidence/appearance-final.json)。
+
+短样本中脚本与布局指标不全同向；修复前的 normal 溢出也使布局工作不等价。证实的是目标冗余工作消除、真实尺寸收缩与状态保留，不声称整体时延或帧率验收通过。
+
+用独立 App 数据目录试用：
+
+```sh
+env -u ELECTRON_RUN_AS_NODE \
+  D_PI_DATA_DIR="$HOME/Library/Application Support/d-pi-appearance-trial" \
+  /Users/lou/Learn/d-pi/dist/appearance/mac-arm64/d-pi.app/Contents/MacOS/d-pi
+```
+
+选择项目并起草；无需允许执行或启动 OMP，即可打开文件/Git 差异。选中文本、滚动编辑器，使用顶部工具栏往返 light/dark 和 normal/compact：颜色与尺寸应跟随变化，草稿、文件身份、选区和滚动保留；附入输入后切换，原文与来源不变，撤销仍可用。这个目录只隔离 App 数据；OMP 配置仍按正常启动环境发现，GUI fixture 验证则隔离了所有配置且未启动 OMP。
+
+复查入口：目标 Node/pnpm 环境下，`node validation/appearance.mjs dist/appearance/mac-arm64/d-pi.app`；默认记录在新建隔离目录，可追加第三个参数指定证据目录。
+
+本地波次：`33c32c2` 任务基线、`a3f6dac` skill/路由、`e95d44e` 订阅与编辑器更新、`2b1990f` 实际布局补修；本票收尾提交只记录交付证据。不 push，不公开发布。
+
+不实现字号偏好，相关 skill 只约束后续设计；未验证系统 IME、真实供应商、Windows/Linux、M2 大内容性能或用户手感。不改变偏好保存失败行为、OMP 执行所有权、unknown 不重发与缺单写证据只读的继续边界。工程与自动检查不替代用户体验认可。
