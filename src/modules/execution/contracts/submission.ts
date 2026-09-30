@@ -41,24 +41,38 @@ export type SubmissionRejectionReason = z.infer<
   typeof SubmissionRejectionReasonSchema
 >;
 
-export const SubmissionReceiptSchema = FrozenSubmissionSchema.extend({
-  state: z.enum([
-    "prepared",
-    "dispatching",
-    "acknowledged",
-    "unknown",
-    "rejected",
-  ]),
-  acknowledgedAt: z.string().nullable(),
-  // An asynchronous error is not proof of rejection before business acceptance.
-  outcome: z.enum(["unobserved", "failed", "unknown"]),
-  // Why the native side refused the dispatch. Only a `rejected` receipt can
-  // carry one; it is what lets the Renderer report the real cause instead of
-  // collapsing every refusal into "rejected".
-  rejectionReason: SubmissionRejectionReasonSchema.optional(),
+const ReceiptIdentitySchema = FrozenSubmissionSchema.extend({
   createdAt: z.string(),
   updatedAt: z.string(),
 });
+const ExecutionOutcomeSchema = z.enum(["unobserved", "failed", "unknown"]);
+const UnacknowledgedReceiptSchema = ReceiptIdentitySchema.extend({
+  acknowledgedAt: z.null(),
+  outcome: z.literal("unobserved"),
+  rejectionReason: z.never().optional(),
+});
+
+// Call confirmation and execution outcome are independent facts. Only the
+// acknowledged variant has an ACK time; only a refusal can have its reason.
+export const SubmissionReceiptSchema = z.discriminatedUnion("state", [
+  UnacknowledgedReceiptSchema.extend({ state: z.literal("prepared") }),
+  UnacknowledgedReceiptSchema.extend({ state: z.literal("dispatching") }),
+  UnacknowledgedReceiptSchema.extend({
+    state: z.literal("unknown"),
+    outcome: ExecutionOutcomeSchema,
+  }),
+  ReceiptIdentitySchema.extend({
+    state: z.literal("acknowledged"),
+    acknowledgedAt: z.string(),
+    outcome: ExecutionOutcomeSchema,
+    rejectionReason: z.never().optional(),
+  }),
+  UnacknowledgedReceiptSchema.extend({
+    state: z.literal("rejected"),
+    // Absent remains valid for old persisted refusals without a known cause.
+    rejectionReason: SubmissionRejectionReasonSchema.optional(),
+  }),
+]);
 export type SubmissionReceipt = z.infer<typeof SubmissionReceiptSchema>;
 
 export class SubmissionConflict extends Error {}
@@ -83,15 +97,21 @@ export const SubmissionFailureSchema = z.strictObject({
   message: UiMessageSchema,
 });
 export type SubmissionFailure = z.infer<typeof SubmissionFailureSchema>;
-export const SubmissionEventSchema = z.strictObject({
-  kind: z.enum(["ack", "error", "disconnected", "rejected"]),
+const SubmissionEventIdentitySchema = z.strictObject({
   submissionId: SubmissionIdSchema,
   requestId: z.uuid(),
   target: SubmissionTargetSchema,
-  // Present only on `rejected`. Optional so the persisted event shape and any
-  // pre-reason producer stay valid.
-  reason: SubmissionRejectionReasonSchema.optional(),
 });
+export const SubmissionEventSchema = z.discriminatedUnion("kind", [
+  SubmissionEventIdentitySchema.extend({
+    kind: z.enum(["ack", "error", "disconnected"]),
+    reason: z.never().optional(),
+  }),
+  SubmissionEventIdentitySchema.extend({
+    kind: z.literal("rejected"),
+    reason: SubmissionRejectionReasonSchema.optional(),
+  }),
+]);
 export type SubmissionEvent = z.infer<typeof SubmissionEventSchema>;
 
 export const SubmissionCommandSchema = z.discriminatedUnion("kind", [

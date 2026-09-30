@@ -13,6 +13,13 @@ import {
 } from "../contracts/public";
 import { SubmissionModel } from "./submission-model";
 
+type PreparedReceipt = Extract<SubmissionReceipt, { state: "prepared" }>;
+function preparedReceipt(value: unknown): PreparedReceipt {
+  const receipt = SubmissionReceiptSchema.parse(value);
+  if (receipt.state !== "prepared") throw Error("expected prepared fixture");
+  return receipt;
+}
+
 // The SubmissionModel state container must keep the publication contract the
 // hand written view had: partial publications merge into the current view,
 // fine grained selectors only fire for their own projection, the snapshot stays
@@ -54,7 +61,7 @@ function submissionStore() {
   let receive: (reply: SubmissionReply) => void = () => {};
   let released = false;
   let listFails = false;
-  let prepared: SubmissionReceipt | undefined;
+  let prepared: PreparedReceipt | undefined;
   const bridge: SubmissionBridge = {
     subscribe(listener) {
       receive = listener;
@@ -69,7 +76,7 @@ function submissionStore() {
       }
       if (command.kind === "prepare") {
         const { kind: _kind, ...value } = command;
-        prepared = SubmissionReceiptSchema.parse({
+        prepared = preparedReceipt({
           ...value,
           target: {
             processInstanceId: crypto.randomUUID(),

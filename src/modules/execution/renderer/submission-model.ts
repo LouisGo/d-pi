@@ -45,33 +45,56 @@ export function mergeReceipt(
   old: SubmissionReceipt,
   next: SubmissionReceipt,
 ): SubmissionReceipt {
-  if (old.state === "rejected") return old;
-  const state = match(old.state)
-    .with("acknowledged", () => "acknowledged" as const)
-    .with("unknown", () =>
-      next.state === "prepared" || next.state === "dispatching"
-        ? ("unknown" as const)
-        : next.state,
+  const outcome =
+    old.outcome === "failed" || next.outcome === "failed"
+      ? "failed"
+      : old.outcome === "unknown" || next.outcome === "unknown"
+        ? "unknown"
+        : "unobserved";
+  const executionFacts = (
+    receipt: Extract<SubmissionReceipt, { state: "acknowledged" | "unknown" }>,
+  ): SubmissionReceipt =>
+    receipt.outcome === outcome ? receipt : { ...receipt, outcome };
+
+  // Select a complete legal variant before merging its independent facts.
+  // In particular, a late refusal must not lend its fields to an ACK.
+  const merged = match(old)
+    .with({ state: "rejected" }, (prior) => {
+      if (
+        next.state === "rejected" &&
+        !prior.rejectionReason &&
+        next.rejectionReason
+      )
+        return { ...prior, rejectionReason: next.rejectionReason };
+      return prior;
+    })
+    .with({ state: "acknowledged" }, (prior) => executionFacts(prior))
+    .with({ state: "unknown" }, (prior) =>
+      match(next)
+        .with({ state: "acknowledged" }, (value) => executionFacts(value))
+        .with({ state: "rejected" }, (value) => value)
+        .with(
+          { state: "unknown" },
+          { state: "prepared" },
+          { state: "dispatching" },
+          () => executionFacts(prior),
+        )
+        .exhaustive(),
     )
-    .with("dispatching", () =>
-      next.state === "prepared" ? ("dispatching" as const) : next.state,
+    .with({ state: "dispatching" }, (prior) =>
+      match(next)
+        .with({ state: "prepared" }, () => prior)
+        .with({ state: "unknown" }, { state: "acknowledged" }, (value) =>
+          executionFacts(value),
+        )
+        .with({ state: "dispatching" }, { state: "rejected" }, (value) => value)
+        .exhaustive(),
     )
-    .with("prepared", () => next.state)
+    .with({ state: "prepared" }, () => next)
     .exhaustive();
-  return {
-    ...next,
-    state,
-    acknowledgedAt: old.acknowledgedAt ?? next.acknowledgedAt,
-    outcome:
-      state === "rejected"
-        ? "unobserved"
-        : old.outcome === "failed" || next.outcome === "failed"
-          ? "failed"
-          : old.outcome === "unknown" || next.outcome === "unknown"
-            ? "unknown"
-            : "unobserved",
-    updatedAt: old.updatedAt > next.updatedAt ? old.updatedAt : next.updatedAt,
-  };
+  const updatedAt =
+    old.updatedAt > next.updatedAt ? old.updatedAt : next.updatedAt;
+  return merged.updatedAt === updatedAt ? merged : { ...merged, updatedAt };
 }
 export class SubmissionModel {
   // Vanilla store, no React binding. React receives the read-only store API

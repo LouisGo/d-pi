@@ -3,11 +3,12 @@ import { ThreadIdSchema, TraceIdSchema } from "../../../shared/identity";
 import {
   SubmissionIdSchema,
   type SubmissionReceipt,
+  SubmissionReceiptSchema,
 } from "../contracts/public";
 import { QUEUE_CAP, queueCapped, queueCount } from "./submission-admission";
 
 function receipt(state: SubmissionReceipt["state"]): SubmissionReceipt {
-  return {
+  return SubmissionReceiptSchema.parse({
     submissionId: SubmissionIdSchema.parse(crypto.randomUUID()),
     threadId: ThreadIdSchema.parse(crypto.randomUUID()),
     traceId: TraceIdSchema.parse(crypto.randomUUID()),
@@ -21,11 +22,11 @@ function receipt(state: SubmissionReceipt["state"]): SubmissionReceipt {
     },
     requestId: crypto.randomUUID(),
     state,
-    acknowledgedAt: null,
+    acknowledgedAt: state === "acknowledged" ? new Date(0).toISOString() : null,
     outcome: "unobserved",
     createdAt: new Date(0).toISOString(),
     updatedAt: new Date(0).toISOString(),
-  };
+  });
 }
 
 it("counts only prepared and dispatching receipts plus the native queue", () => {

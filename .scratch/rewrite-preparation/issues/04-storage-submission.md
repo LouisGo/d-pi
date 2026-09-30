@@ -1,6 +1,6 @@
 # 04 初始化与提交事实链
 
-Status: claimed
+Status: resolved
 Blocked by: none
 
 阶段：既有 M1 重写。授权、待决项与继续边界见 [spec](../spec.md#推进与交接)。受影响决定：D-05、D-17、D-21/D-22、D-24、D-28–D-37 与 B-01，按实际触及项核对。
@@ -16,3 +16,7 @@ Blocked by: none
 2026-09-30 初始化切片：公开两段构造/initialize 改为 `AppStorage.open`，内部保持 v3/WAL → execution 恢复 → v4/v5 → 发布，失败由同一所有者关闭一次，成功实例 close 幂等。两项真实红灯分别覆盖尚未初始化的公开实例、二次关闭覆盖实际迁移错误；修正后主 Agent 在隔离测试入口复核 6 文件 44 项通过。备份实测覆盖 v3 恢复 unknown 后才制作 v4/v5 备份，恢复/迁移失败保留原数据与版本；调用点同步迁移。收据变体与坏持久化恢复仍在本票继续，不声明整票完成；本切片不改变 GUI 操作，完整路径与包验证由 07 集成。
 
 初始化提交 `d9a991a` 的独立完整 check 暴露两处 Vitest spy instance 类型推断为 `{}`；对应运行时行为已通过，但全仓 tsc 未通过。补修仅将属性访问断言改为 `toMatchObject`，保留关闭一次与 isOpen=false 的检查；干净环境继续按失败点复测，不重装已验证的依赖/SDK。
+
+收据切片：schema 明确 prepared/dispatching/unknown/acknowledged/rejected 有效组合，ACK 与 outcome 分开，拒绝原因只能属于拒绝；保留旧无原因拒绝与 unknown+failed 合法记录。新 attempt 只复制冻结身份，恢复按同一事务解析和转换，中途坏记录会整体回滚并关闭，不改原数据。Renderer 先选完整变体，再单调合并证据；ACK 不借迟到拒绝的原因，迟到的真实拒绝原因可以补入已拒绝记录而不复活。schema坏组合、retry串原因、坏持久化恢复、ACK合并非法与原因丢失均有真实红→绿；主 Agent 复核 A 9 文件 52 项与 B 7 文件 41 项。独立审阅指出冻结半片旧Renderer编译缺口，本交付已纳入适配，未用断言绕过；最终staged源码类型与门禁验证在提交前完成。该票工程完成，整应用GUI与待试用仍归07，不以此解除unknown/只读限制。
+
+冻结提交树：全部六个 TypeScript 工程、架构/报告新鲜度、受影响 Biome 检查通过；固定 Node 24.21.0 的 14 文件 80 项测试通过。第一次串行检查仅首条命令绑定固定 PATH，后续误用了默认 Node 22.19.0，三项 `DatabaseSync.isOpen` 断言失败；按固定 Node 重跑通过，未修改生产实现或降低断言。报告按本波暂存源码生成，未夹带另一实现波的未提交内容。

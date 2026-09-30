@@ -3,10 +3,18 @@ import { ThreadIdSchema } from "../../../shared/identity";
 import { DraftSchema } from "../../input/contracts/public";
 import { DraftController } from "../../input/core/public";
 import {
+  type SubmissionReceipt,
   SubmissionReceiptSchema,
   type SubmissionReply,
 } from "../contracts/public";
 import { mergeReceipt, SubmissionModel } from "./submission-model";
+
+type PreparedReceipt = Extract<SubmissionReceipt, { state: "prepared" }>;
+function preparedReceipt(value: unknown): PreparedReceipt {
+  const receipt = SubmissionReceiptSchema.parse(value);
+  if (receipt.state !== "prepared") throw Error("expected prepared fixture");
+  return receipt;
+}
 
 it("merges receipts monotonically: wall-clock never reorders causal facts (A3 lock)", () => {
   const base = {
@@ -31,6 +39,7 @@ it("merges receipts monotonically: wall-clock never reorders causal facts (A3 lo
       ...base,
       state,
       outcome,
+      acknowledgedAt: state === "acknowledged" ? "ACK" : null,
       ...(updatedAt ? { updatedAt } : {}),
     });
   // rejected and acknowledged are terminal: late replies cannot revive them.
@@ -64,6 +73,79 @@ it("merges receipts monotonically: wall-clock never reorders causal facts (A3 lo
   ).toBe("2026-09-29T00:00:02.000Z");
 });
 
+it("keeps an ACK valid when a delayed refusal carries its own reason", () => {
+  const fixture = SubmissionReceiptSchema.parse({
+    submissionId: crypto.randomUUID(),
+    threadId: crypto.randomUUID(),
+    traceId: crypto.randomUUID(),
+    revision: 1,
+    text: "A",
+    requestId: crypto.randomUUID(),
+    target: {
+      processInstanceId: crypto.randomUUID(),
+      connectionGeneration: crypto.randomUUID(),
+      configContextId: "cfg",
+      nativeSessionRef: "session",
+    },
+    state: "acknowledged",
+    acknowledgedAt: "ACK",
+    outcome: "failed",
+    createdAt: "1",
+    updatedAt: "2",
+  });
+  const refused = SubmissionReceiptSchema.parse({
+    ...fixture,
+    state: "rejected",
+    acknowledgedAt: null,
+    outcome: "unobserved",
+    rejectionReason: "paused",
+    updatedAt: "3",
+  });
+  const merged = mergeReceipt(fixture, refused);
+  expect(SubmissionReceiptSchema.safeParse(merged).success).toBe(true);
+  expect(merged).toMatchObject({
+    state: "acknowledged",
+    acknowledgedAt: "ACK",
+    outcome: "failed",
+  });
+  expect(merged.rejectionReason).toBeUndefined();
+});
+
+it("adds a subsequently observed refusal cause without reviving a terminal receipt", () => {
+  const base = preparedReceipt({
+    submissionId: crypto.randomUUID(),
+    threadId: crypto.randomUUID(),
+    traceId: crypto.randomUUID(),
+    revision: 1,
+    text: "A",
+    requestId: crypto.randomUUID(),
+    target: {
+      processInstanceId: crypto.randomUUID(),
+      connectionGeneration: crypto.randomUUID(),
+      configContextId: "cfg",
+      nativeSessionRef: "session",
+    },
+    state: "prepared",
+    acknowledgedAt: null,
+    outcome: "unobserved",
+    createdAt: "1",
+    updatedAt: "1",
+  });
+  const generic = SubmissionReceiptSchema.parse({ ...base, state: "rejected" });
+  const observed = SubmissionReceiptSchema.parse({
+    ...base,
+    state: "rejected",
+    rejectionReason: "paused",
+    updatedAt: "2",
+  });
+  expect(mergeReceipt(generic, observed)).toMatchObject({
+    state: "rejected",
+    rejectionReason: "paused",
+  });
+  expect(mergeReceipt(observed, generic).rejectionReason).toBe("paused");
+  expect(mergeReceipt(observed, base).state).toBe("rejected");
+});
+
 it("freezes A before dispatch, consumes only its unchanged edit sequence, and deduplicates ACK", async () => {
   const draft = DraftSchema.parse({
     schemaVersion: 1,
@@ -85,7 +167,7 @@ it("freezes A before dispatch, consumes only its unchanged edit sequence, and de
     },
   );
   let receive: (r: SubmissionReply) => void = () => {};
-  let receipt: ReturnType<typeof SubmissionReceiptSchema.parse>;
+  let receipt: PreparedReceipt;
   const m = new SubmissionModel(
     {
       subscribe(cb) {
@@ -96,7 +178,7 @@ it("freezes A before dispatch, consumes only its unchanged edit sequence, and de
         if (command.kind === "list") return { kind: "list", receipts: [] };
         if (command.kind === "prepare") {
           const { kind: _kind, ...value } = command;
-          receipt = SubmissionReceiptSchema.parse({
+          receipt = preparedReceipt({
             ...value,
             target: {
               processInstanceId: crypto.randomUUID(),
@@ -157,7 +239,7 @@ it("consumes an acknowledged draft after the editor adapter attaches", async () 
     },
   );
   let receive: (reply: SubmissionReply) => void = () => {};
-  let prepared: ReturnType<typeof SubmissionReceiptSchema.parse> | undefined;
+  let prepared: PreparedReceipt | undefined;
   const model = new SubmissionModel(
     {
       subscribe(listener) {
@@ -168,7 +250,7 @@ it("consumes an acknowledged draft after the editor adapter attaches", async () 
         if (command.kind === "list") return { kind: "list", receipts: [] };
         if (command.kind === "prepare") {
           const { kind: _kind, ...value } = command;
-          prepared = SubmissionReceiptSchema.parse({
+          prepared = preparedReceipt({
             ...value,
             target: {
               processInstanceId: crypto.randomUUID(),
@@ -244,7 +326,7 @@ function submissionFixture() {
     },
   );
   let receive: (reply: SubmissionReply) => void = () => {};
-  let prepared: ReturnType<typeof SubmissionReceiptSchema.parse> | undefined;
+  let prepared: PreparedReceipt | undefined;
   const model = new SubmissionModel(
     {
       subscribe(listener) {
@@ -255,7 +337,7 @@ function submissionFixture() {
         if (command.kind === "list") return { kind: "list", receipts: [] };
         if (command.kind === "prepare") {
           const { kind: _kind, ...value } = command;
-          prepared = SubmissionReceiptSchema.parse({
+          prepared = preparedReceipt({
             ...value,
             target: {
               processInstanceId: crypto.randomUUID(),
@@ -382,7 +464,7 @@ it("sends follow-up text without capturing or consuming the draft", async () => 
     },
   );
   const requests: unknown[] = [];
-  let prepared: ReturnType<typeof SubmissionReceiptSchema.parse> | null = null;
+  let prepared: PreparedReceipt | null = null;
   const m = new SubmissionModel(
     {
       subscribe() {
@@ -393,7 +475,7 @@ it("sends follow-up text without capturing or consuming the draft", async () => 
         if (command.kind === "list") return { kind: "list", receipts: [] };
         if (command.kind === "prepare") {
           const { kind: _kind, ...value } = command;
-          prepared = SubmissionReceiptSchema.parse({
+          prepared = preparedReceipt({
             ...value,
             target: {
               processInstanceId: crypto.randomUUID(),
@@ -484,7 +566,7 @@ it("reports follow-up honesty: success only after dispatch, failure message othe
               },
             };
           const { kind: _kind, ...value } = command;
-          const prepared = SubmissionReceiptSchema.parse({
+          const prepared = preparedReceipt({
             ...value,
             target: {
               processInstanceId: crypto.randomUUID(),
@@ -502,9 +584,7 @@ it("reports follow-up honesty: success only after dispatch, failure message othe
           replies.push(prepared);
           return { kind: "receipt", receipt: prepared };
         }
-        const prepared = replies.at(-1) as ReturnType<
-          typeof SubmissionReceiptSchema.parse
-        >;
+        const prepared = replies.at(-1) as PreparedReceipt;
         return {
           kind: "receipt",
           receipt: { ...prepared, state: "dispatching" },
@@ -564,7 +644,7 @@ it("binds dispatch-stage failures to the formal receipt and keeps draft/text cha
           const { kind: _kind, ...value } = command;
           return {
             kind: "receipt",
-            receipt: SubmissionReceiptSchema.parse({
+            receipt: preparedReceipt({
               ...value,
               target: {
                 processInstanceId: crypto.randomUUID(),
@@ -586,7 +666,10 @@ it("binds dispatch-stage failures to the formal receipt and keeps draft/text cha
           .receipts.find((r) => r.submissionId === command.submissionId);
         return {
           kind: "receipt",
-          receipt: { ...prepared!, state: dispatchState },
+          receipt: SubmissionReceiptSchema.parse({
+            ...prepared,
+            state: dispatchState,
+          }),
         };
       },
     },
@@ -639,7 +722,7 @@ it("releases only the rejected capture so unchanged text can be explicitly sent 
       throw Error("unexpected save failure");
     },
   );
-  const prepared: ReturnType<typeof SubmissionReceiptSchema.parse>[] = [];
+  const prepared: PreparedReceipt[] = [];
   const dispatched: string[] = [];
   let receive: (reply: SubmissionReply) => void = () => {};
   const model = new SubmissionModel(
@@ -652,7 +735,7 @@ it("releases only the rejected capture so unchanged text can be explicitly sent 
         if (command.kind === "list") return { kind: "list", receipts: [] };
         if (command.kind === "prepare") {
           const { kind: _kind, ...value } = command;
-          const receipt = SubmissionReceiptSchema.parse({
+          const receipt = preparedReceipt({
             ...value,
             target: {
               processInstanceId: crypto.randomUUID(),
@@ -748,7 +831,7 @@ it.each(["rejected", "unknown", "failed-after-ack"] as const)(
       },
     );
     let receive: (reply: SubmissionReply) => void = () => {};
-    let prepared: ReturnType<typeof SubmissionReceiptSchema.parse> | undefined;
+    let prepared: PreparedReceipt | undefined;
     const model = new SubmissionModel(
       {
         subscribe(cb) {
@@ -759,7 +842,7 @@ it.each(["rejected", "unknown", "failed-after-ack"] as const)(
           if (command.kind === "list") return { kind: "list", receipts: [] };
           if (command.kind === "prepare") {
             const { kind: _kind, ...value } = command;
-            prepared = SubmissionReceiptSchema.parse({
+            prepared = preparedReceipt({
               ...value,
               target: {
                 processInstanceId: crypto.randomUUID(),
@@ -777,17 +860,17 @@ it.each(["rejected", "unknown", "failed-after-ack"] as const)(
             return { kind: "receipt", receipt: prepared };
           }
           if (!prepared) throw Error("missing prepare");
-          const stale = {
+          const stale = SubmissionReceiptSchema.parse({
             ...prepared,
             state:
               result === "failed-after-ack"
                 ? ("acknowledged" as const)
                 : ("dispatching" as const),
             acknowledgedAt: result === "failed-after-ack" ? "now" : null,
-          };
+          });
           receive({
             kind: "receipt",
-            receipt: {
+            receipt: SubmissionReceiptSchema.parse({
               ...stale,
               state: result === "failed-after-ack" ? "acknowledged" : result,
               outcome:
@@ -796,7 +879,7 @@ it.each(["rejected", "unknown", "failed-after-ack"] as const)(
                   : result === "unknown"
                     ? "unknown"
                     : "unobserved",
-            },
+            }),
           });
           return { kind: "receipt", receipt: stale };
         },

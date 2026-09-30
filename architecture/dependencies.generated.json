@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "a60fe890aa59048b158f5008377a1950feea6c124bab4888e94085deb946ebf3",
+  "inputsHash": "296eed9647ac1782bb360b6677fc8824b2146bfd1347d2faf9e564443616dfa8",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 183,
-    "scannedFiles": 183,
+    "sourceFiles": 185,
+    "scannedFiles": 185,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 44,
-      "lines": 7688,
+      "files": 45,
+      "lines": 7890,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -314,8 +314,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 37,
-      "lines": 6721,
+      "files": 38,
+      "lines": 6983,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -2928,6 +2928,96 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/main/wiring/desktop-command-service.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/submission-receipt.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/submission-receipt.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/submission-receipt.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/submission-receipt.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/submission-receipt.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:sqlite",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/submission-receipt.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/submission-receipt.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/main/submission-receipt.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../platform/main/storage/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/main/storage/public.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/submission-receipt.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./wiring/app-storage",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/app-storage.ts",
       "targetModule": "app",
       "targetEnvironment": "main"
     },
@@ -8126,6 +8216,27 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/execution/contracts/interactions.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/contracts/submission.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "contracts",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/contracts/submission.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "contracts",
+      "test": true,
+      "specifier": "./submission",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/submission.ts",
       "targetModule": "execution",
       "targetEnvironment": "contracts"
     },

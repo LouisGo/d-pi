@@ -74,7 +74,18 @@ export class SubmissionRepository {
       }
       const now = new Date().toISOString();
       const receipt: SubmissionReceipt = {
-        ...value,
+        // A new attempt owns its own lifecycle facts. Structural callers may
+        // pass a receipt as FrozenSubmission, so copy only the frozen identity.
+        submissionId: value.submissionId,
+        threadId: value.threadId,
+        traceId: value.traceId,
+        revision: value.revision,
+        text: value.text,
+        requestId: value.requestId,
+        target: value.target,
+        ...(value.origin === undefined ? {} : { origin: value.origin }),
+        ...(value.delivery === undefined ? {} : { delivery: value.delivery }),
+        ...(value.retryOf === undefined ? {} : { retryOf: value.retryOf }),
         state: "prepared",
         acknowledgedAt: null,
         outcome: "unobserved",
@@ -96,12 +107,26 @@ export class SubmissionRepository {
     });
   }
   recoverInterruptedSubmissions(): number {
-    const result = this.db
-      .prepare(
-        "UPDATE submission SET receipt=json_set(receipt,'$.state','unknown','$.outcome','unknown','$.updatedAt',?) WHERE json_extract(receipt,'$.state')='dispatching'",
-      )
-      .run(new Date().toISOString());
-    return Number(result.changes);
+    return this.database.transaction(() => {
+      const rows = this.db
+        .prepare(
+          "SELECT receipt FROM submission WHERE json_extract(receipt,'$.state')='dispatching' ORDER BY rowid",
+        )
+        .all();
+      let recovered = 0;
+      for (const row of rows) {
+        const receipt = this.decodeReceipt(row.receipt);
+        if (receipt.state === "dispatching") {
+          this.writeReceipt({
+            ...receipt,
+            state: "unknown",
+            outcome: "unknown",
+          });
+          recovered += 1;
+        }
+      }
+      return recovered;
+    });
   }
   acknowledgeSubmission(id: string): boolean {
     return this.database.transaction(() => {
@@ -131,9 +156,7 @@ export class SubmissionRepository {
       .prepare("SELECT receipt FROM submission WHERE id=?")
       .get(id);
     if (!row) return null;
-    if (typeof row.receipt !== "string")
-      throw new Error("Invalid submission receipt");
-    return SubmissionReceiptSchema.parse(JSON.parse(row.receipt));
+    return this.decodeReceipt(row.receipt);
   }
   list(threadId: string): SubmissionReceipt[] {
     return this.db
@@ -141,9 +164,12 @@ export class SubmissionRepository {
         "SELECT receipt FROM submission WHERE thread_id=? ORDER BY rowid DESC LIMIT 100",
       )
       .all(threadId)
-      .map((row) =>
-        SubmissionReceiptSchema.parse(JSON.parse(String(row.receipt))),
-      );
+      .map((row) => this.decodeReceipt(row.receipt));
+  }
+  private decodeReceipt(value: unknown): SubmissionReceipt {
+    if (typeof value !== "string")
+      throw new Error("Invalid submission receipt");
+    return SubmissionReceiptSchema.parse(JSON.parse(value));
   }
   private writeReceipt(receipt: SubmissionReceipt): void {
     this.db
@@ -182,11 +208,12 @@ export class SubmissionRepository {
         receipt.state === "rejected"
       )
         return;
-      this.writeReceipt({
-        ...receipt,
-        state: receipt.state === "acknowledged" ? "acknowledged" : "unknown",
-        outcome: receipt.outcome === "failed" ? "failed" : "unknown",
-      });
+      const outcome = receipt.outcome === "failed" ? "failed" : "unknown";
+      if (receipt.state === "acknowledged") {
+        this.writeReceipt({ ...receipt, outcome });
+      } else {
+        this.writeReceipt({ ...receipt, state: "unknown", outcome });
+      }
     });
   }
   failSubmission(id: string): void {
@@ -198,11 +225,11 @@ export class SubmissionRepository {
         receipt.state === "rejected"
       )
         return;
-      this.writeReceipt({
-        ...receipt,
-        state: receipt.state === "acknowledged" ? "acknowledged" : "unknown",
-        outcome: "failed",
-      });
+      if (receipt.state === "acknowledged") {
+        this.writeReceipt({ ...receipt, outcome: "failed" });
+      } else {
+        this.writeReceipt({ ...receipt, state: "unknown", outcome: "failed" });
+      }
     });
   }
 }
