@@ -54,7 +54,7 @@ it("closes a failed migration while preserving its actual cause and original sch
       );
       expect(close).toHaveBeenCalledTimes(1);
       const failed = close.mock.instances[0];
-      expect(failed?.connection.isOpen).toBe(false);
+      expect(failed).toMatchObject({ connection: { isOpen: false } });
       const retained = new DatabaseSync(path, { readOnly: true });
       try {
         expect(

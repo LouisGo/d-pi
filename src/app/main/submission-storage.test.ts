@@ -162,7 +162,9 @@ describe("persistent submission handoff", () => {
       try {
         expect(() => AppStorage.open(path)).toThrow(failure);
         expect(close).toHaveBeenCalledTimes(1);
-        expect(close.mock.instances[0]?.connection.isOpen).toBe(false);
+        expect(close.mock.instances[0]).toMatchObject({
+          connection: { isOpen: false },
+        });
         expect(receiptState(path, submissionId)).toBe("dispatching");
         const retained = new DatabaseSync(path, { readOnly: true });
         try {
