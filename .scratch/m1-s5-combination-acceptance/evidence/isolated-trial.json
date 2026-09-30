@@ -1,0 +1,85 @@
+{
+  "bundle": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-trial-OEr6Wm/S5 Trial/d-pi.app",
+  "identifier": "local.d-pi.s5-trial",
+  "root": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-trial-OEr6Wm",
+  "project": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-trial-OEr6Wm/work",
+  "data": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-trial-OEr6Wm/app-data",
+  "config": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-trial-OEr6Wm/home/.omp/agent",
+  "sessions": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-trial-OEr6Wm/omp-sessions",
+  "supplier": "localhost fixture only",
+  "coldReopen": true,
+  "providerRequests": 3,
+  "launches": [
+    {
+      "code": 0,
+      "signal": null,
+      "callsAtStart": 0,
+      "callsAtExit": 3
+    },
+    {
+      "code": 0,
+      "signal": null,
+      "callsAtStart": 3,
+      "callsAtExit": 3
+    }
+  ],
+  "native": [
+    {
+      "thread_id": "8450522f-4499-4b22-8a64-32fb4c806742",
+      "config_context": "7a39625b0422ad75e38260ad5cfb1e5b556adaa9e4e50162c675d92f6f82bff1",
+      "session_file": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-trial-OEr6Wm/app-data/native-sessions/8450522f-4499-4b22-8a64-32fb4c806742/2026-09-30T10-41-17-377Z_01a0f1e7-8641-7000-b05a-cc141265dee3.jsonl",
+      "session_id": "01a0f1e7-8641-7000-b05a-cc141265dee3"
+    }
+  ],
+  "drafts": [
+    {
+      "id": "8450522f-4499-4b22-8a64-32fb4c806742",
+      "workspace_id": "be06f7d3-3a36-4184-92ab-67dc934cf709",
+      "revision": 6,
+      "body": "S5_COLD_TRIAL_DRAFT"
+    }
+  ],
+  "receipts": [
+    {
+      "submissionId": "5df03d1d-1026-4a7b-8d36-7c77d80747d9",
+      "threadId": "8450522f-4499-4b22-8a64-32fb4c806742",
+      "traceId": "ea06a0d4-9058-4d5e-9cf8-7c717101daa1",
+      "revision": 1,
+      "text": "S5_WRITE",
+      "delivery": "followUp",
+      "target": {
+        "processInstanceId": "05912f07-1012-4980-967b-3d69595a5a25",
+        "connectionGeneration": "27a563ad-f828-4a8b-8a63-6c0ab546ee60",
+        "configContextId": "7a39625b0422ad75e38260ad5cfb1e5b556adaa9e4e50162c675d92f6f82bff1",
+        "nativeSessionRef": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-trial-OEr6Wm/app-data/native-sessions/8450522f-4499-4b22-8a64-32fb4c806742/2026-09-30T10-41-17-377Z_01a0f1e7-8641-7000-b05a-cc141265dee3.jsonl"
+      },
+      "requestId": "9bd09905-aab3-4c6e-8971-9f5f7023d2f6",
+      "createdAt": "2026-09-30T10:42:24.406Z",
+      "updatedAt": "2026-09-30T10:42:24.493Z",
+      "acknowledgedAt": "2026-09-30T10:42:24.493Z",
+      "outcome": "unobserved",
+      "state": "acknowledged"
+    },
+    {
+      "submissionId": "1e8b8ca3-6ab5-494d-bbbb-c98d4be2e403",
+      "threadId": "8450522f-4499-4b22-8a64-32fb4c806742",
+      "traceId": "f853adf8-65fb-4dce-8445-4fc978fe5517",
+      "revision": 3,
+      "text": "S5_FAIL",
+      "delivery": "followUp",
+      "target": {
+        "processInstanceId": "05912f07-1012-4980-967b-3d69595a5a25",
+        "connectionGeneration": "27a563ad-f828-4a8b-8a63-6c0ab546ee60",
+        "configContextId": "7a39625b0422ad75e38260ad5cfb1e5b556adaa9e4e50162c675d92f6f82bff1",
+        "nativeSessionRef": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-trial-OEr6Wm/app-data/native-sessions/8450522f-4499-4b22-8a64-32fb4c806742/2026-09-30T10-41-17-377Z_01a0f1e7-8641-7000-b05a-cc141265dee3.jsonl"
+      },
+      "requestId": "066d3c22-b8bd-40dd-9e47-ac01edf0d4ad",
+      "createdAt": "2026-09-30T10:43:31.287Z",
+      "updatedAt": "2026-09-30T10:43:31.373Z",
+      "acknowledgedAt": "2026-09-30T10:43:31.372Z",
+      "outcome": "unobserved",
+      "state": "acknowledged"
+    }
+  ],
+  "toolFile": "S5 native tool fixture\n"
+}

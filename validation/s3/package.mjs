@@ -455,11 +455,15 @@ try {
       selectionStart: 0,
       selectionEnd: 0,
     });
-    await wait(() =>
-      evaluate(
-        "window.fixtureIME.includes('end') && document.querySelector('[contenteditable=true]').textContent===''",
-      ),
+    await wait(() => evaluate("window.fixtureIME.includes('end')"));
+    assert.equal(
+      requests.length,
+      0,
+      "composition completion must not dispatch",
     );
+    // Chromium may commit the composition on the button's focus change. End of
+    // composition is not cancellation of its text; clear this fixture explicitly.
+    await clearDraft();
   }
   for (const [input, reply] of [
     ["PACKAGE_FIRST_INPUT", "PACKAGE_FIRST_REPLY"],
@@ -470,7 +474,7 @@ try {
     await click("发送");
     await wait(() =>
       evaluate(
-        `document.querySelector('[aria-label=会话阅读]').textContent.includes(${JSON.stringify(reply)})`,
+        `document.querySelector('.conversation')?.textContent.includes(${JSON.stringify(reply)})`,
       ),
     );
     await wait(() =>
@@ -598,7 +602,7 @@ try {
     await wait(() => requests.length === callsBeforeBusy + 1);
     await wait(() =>
       evaluate(
-        "document.querySelector('[aria-label=会话阅读]').textContent.includes('S5_BUSY_REPLY') && Array.from(document.querySelectorAll('button')).some(b=>b.textContent.trim()==='排队发送'&&!b.disabled)",
+        "document.querySelector('.conversation')?.textContent.includes('S5_BUSY_REPLY') && Array.from(document.querySelectorAll('button')).some(b=>b.textContent.trim()==='排队发送'&&!b.disabled)",
       ),
     );
     await wait(async () => (await composerText()) === "");
@@ -632,7 +636,7 @@ try {
     await wait(() => requests.length === callsBeforeBusy + 2);
     await wait(() =>
       evaluate(
-        "document.querySelector('[aria-label=会话阅读]').textContent.includes('S5_QUEUE_REPLY') && Array.from(document.querySelectorAll('button')).some(b=>b.textContent.trim()==='发送'&&!b.disabled)",
+        "document.querySelector('.conversation')?.textContent.includes('S5_QUEUE_REPLY') && Array.from(document.querySelectorAll('button')).some(b=>b.textContent.trim()==='发送'&&!b.disabled)",
       ),
     );
     assert.ok(requests.at(-1).includes("S5_QUEUED_INPUT"));
@@ -666,7 +670,7 @@ try {
   await click("读取原生记录");
   await wait(() =>
     evaluate(
-      "document.querySelector('[aria-label=只读原生历史]').textContent.includes('PACKAGE_SECOND_REPLY')",
+      "document.querySelector('[aria-label=只读原生会话历史]')?.textContent.includes('PACKAGE_SECOND_REPLY')",
     ),
   );
   if (rewriting) {
@@ -676,7 +680,7 @@ try {
     );
     await wait(() =>
       evaluate(
-        "document.querySelector('[aria-label=只读原生历史]').textContent.includes('原生工具结果证据')",
+        "document.querySelector('[aria-label=只读原生会话历史]')?.textContent.includes('原生工具结果证据')",
       ),
     );
     const selectAll = async () => {
@@ -684,6 +688,16 @@ try {
       await evaluate(
         "Array.from(document.querySelectorAll('.monaco-editor .native-edit-context, .monaco-editor textarea.inputarea')).at(-1).focus()",
       );
+      // A same-byte view intentionally keeps Monaco's existing range, while the
+      // parent clears its pending attachment. Change the range before selecting
+      // again so this is a new selection event from the current Git source.
+      for (const type of ["keyDown", "keyUp"])
+        await call("Input.dispatchKeyEvent", {
+          type,
+          key: "ArrowLeft",
+          code: "ArrowLeft",
+          windowsVirtualKeyCode: 37,
+        });
       await call("Input.dispatchKeyEvent", {
         type: "keyDown",
         key: "a",
@@ -904,11 +918,11 @@ try {
   }
   await wait(() =>
     evaluate(
-      "document.querySelector('[aria-label=会话阅读] pre code')?.textContent.includes('const value')",
+      "document.querySelector('.conversation pre code')?.textContent.includes('const value')",
     ),
   );
   await evaluate(
-    "document.querySelector('[aria-label=会话阅读] pre').scrollIntoView({block:'center'})",
+    "document.querySelector('.conversation pre').scrollIntoView({block:'center'})",
   );
   const screenshot = await call("Page.captureScreenshot", { format: "png" });
   writeFileSync(
@@ -974,6 +988,9 @@ try {
     }
     // A native close/reopen can replace the renderer target. Bind the fresh target
     // before continuing and verify that inspection did not cause native replay.
+    // No request is in flight here. A late close from the old target must not
+    // reject requests queued against the new target through the shared map.
+    socket.onclose = null;
     socket.close();
     socket = await connect();
     socket.onclose = onClose;
@@ -1147,6 +1164,7 @@ try {
     console.log(`PASS: rewrite package integrated paths. Evidence: ${root}`);
     child.kill("SIGKILL");
     await wait(() => child.exitCode !== null || child.signalCode !== null);
+    socket.onclose = null;
     socket.close();
     child = launch();
     socket = await connect();
@@ -1177,7 +1195,7 @@ try {
     await click("读取原生记录");
     await wait(() =>
       evaluate(
-        "document.querySelector('[aria-label=只读原生历史]').textContent.includes('PACKAGE_SECOND_REPLY')",
+        "document.querySelector('[aria-label=只读原生会话历史]')?.textContent.includes('PACKAGE_SECOND_REPLY')",
       ),
     );
     await evaluate("document.querySelector('[contenteditable=true]').focus()");

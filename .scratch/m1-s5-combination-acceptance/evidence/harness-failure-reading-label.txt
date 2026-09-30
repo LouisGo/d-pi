@@ -1,0 +1,12 @@
+DevTools listening on ws://127.0.0.1:58832/devtools/browser/41483ae7-8e5d-4f5c-8f9a-fb5ec64483cd
+Package failure evidence: /private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-mIPwDc
+file:///Users/lou/Learn/d-pi/validation/s3/package.mjs:326
+      throw Error(JSON.stringify(result.exceptionDetails));
+            ^
+
+Error: {"exceptionId":1,"text":"Uncaught","lineNumber":0,"columnNumber":43,"scriptId":"54","exception":{"type":"object","subtype":"error","className":"TypeError","description":"TypeError: Cannot read properties of null (reading 'textContent')\n    at <anonymous>:1:44","objectId":"6480907428563890888.1.2"}}
+    at evaluate (file:///Users/lou/Learn/d-pi/validation/s3/package.mjs:326:13)
+    at async wait (file:///Users/lou/Learn/d-pi/validation/s3/package.mjs:265:19)
+    at async file:///Users/lou/Learn/d-pi/validation/s3/package.mjs:475:5
+
+Node.js v24.21.0

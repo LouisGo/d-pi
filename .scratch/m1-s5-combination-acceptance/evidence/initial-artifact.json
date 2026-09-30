@@ -1,0 +1,7 @@
+{
+  "asarSha256": "95b661bfaf355361f8b9f553655beb8edb398a301ba379288bcbd0c9324d5c4c",
+  "sdkManifestSha256": "40eddef35060706769733cbdc0c04e49fd42af985f95d6680072bb66099752ff",
+  "mainSha256": "3301e2f241a2212f00490b85d20036168ab4023cbcac3b6e0b4e042f0c42fc95",
+  "candidate": "/Users/lou/Learn/d-pi/dist/s5-candidate/mac-arm64/d-pi.app",
+  "sourceCommit": "12dddfb36546d52d43d4f2c77526626cfd1093ef"
+}

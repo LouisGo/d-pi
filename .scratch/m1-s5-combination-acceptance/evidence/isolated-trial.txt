@@ -1,0 +1,18 @@
+{
+  "bundle": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-trial-OEr6Wm/S5 Trial/d-pi.app",
+  "identifier": "local.d-pi.s5-trial",
+  "root": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-trial-OEr6Wm",
+  "project": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-trial-OEr6Wm/work",
+  "data": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-trial-OEr6Wm/app-data",
+  "config": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-trial-OEr6Wm/home/.omp/agent",
+  "sessions": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-trial-OEr6Wm/omp-sessions",
+  "supplier": "localhost fixture only",
+  "coldReopen": true
+}
+选择上面的 project → 保持仅浏览查看文件/Diff → 允许执行并启动 OMP。发送 S5_WRITE，查看真实 write 结果；发送 /s5ask 回答四类交互。发送 S5_HOLD 后排队发送 S5_NEXT，停止保留队列，关窗重开，明确继续。队列非空没有放弃退出出口；继续处理完成后再正常退出。S5_FAIL 是可选的失败反馈样本。
+App 数据/OMP 配置/项目均隔离，不继承个人凭据；退出保留临时目录以供复查。测试副本仅改 Bundle ID，正式候选不变。
+完整退出后不要从 Finder 冷启动测试副本：应重跑本命令，或使用 --cold-reopen 在同一隔离环境自动重开一次。
+Fixture provider request 1; no external supplier contacted
+Fixture provider request 2; no external supplier contacted
+Fixture provider request 3; no external supplier contacted
+同一隔离环境冷重开：旧 Thread 继续只读，检查草稿、历史与文件后再次正常退出。

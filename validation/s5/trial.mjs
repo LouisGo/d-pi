@@ -9,8 +9,12 @@ import { createTestEnvironment } from "../../scripts/test-environment.mjs";
 // The unmodified package owns all GUI, receipts, SDK tools and native queue work.
 const sandbox = createTestEnvironment({ prefix: "d-pi-s5-trial-" });
 const bundle = join(sandbox.root, "S5 Trial", "d-pi.app");
+const coldReopen = process.argv.includes("--cold-reopen");
 cpSync(
-  resolve(process.argv[2] ?? "dist/s5-candidate/mac-arm64/d-pi.app"),
+  resolve(
+    process.argv.slice(2).find((argument) => !argument.startsWith("--")) ??
+      "dist/s5-candidate/mac-arm64/d-pi.app",
+  ),
   bundle,
   {
     recursive: true,
@@ -193,6 +197,7 @@ const metadata = {
   config: sandbox.config,
   sessions: sandbox.sessions,
   supplier: "localhost fixture only",
+  coldReopen,
 };
 writeFileSync(
   join(sandbox.root, "trial.json"),
@@ -205,20 +210,36 @@ console.log(
 console.log(
   "App 数据/OMP 配置/项目均隔离，不继承个人凭据；退出保留临时目录以供复查。测试副本仅改 Bundle ID，正式候选不变。",
 );
-const child = spawn(join(bundle, "Contents/MacOS/d-pi"), ["--lang=zh-CN"], {
-  env: sandbox.env,
-  stdio: "inherit",
-});
-child.once("exit", (code, signal) => {
-  writeFileSync(
-    join(sandbox.root, "trial-result.json"),
-    JSON.stringify(
-      { ...metadata, providerRequests: requests, exitCode: code, signal },
-      null,
-      2,
-    ) + "\n",
-  );
-  for (const socket of sockets) socket.destroy();
-  server.close();
-  process.exitCode = code ?? 1;
-});
+console.log(
+  "完整退出后不要从 Finder 冷启动测试副本：应重跑本命令，或使用 --cold-reopen 在同一隔离环境自动重开一次。",
+);
+const launches = [];
+function launch() {
+  const callsAtStart = requests;
+  const child = spawn(join(bundle, "Contents/MacOS/d-pi"), ["--lang=zh-CN"], {
+    env: sandbox.env,
+    stdio: "inherit",
+  });
+  child.once("exit", (code, signal) => {
+    launches.push({ code, signal, callsAtStart, callsAtExit: requests });
+    writeFileSync(
+      join(sandbox.root, "trial-result.json"),
+      JSON.stringify(
+        { ...metadata, providerRequests: requests, launches },
+        null,
+        2,
+      ) + "\n",
+    );
+    if (coldReopen && launches.length === 1 && code === 0 && signal === null) {
+      console.log(
+        "同一隔离环境冷重开：旧 Thread 继续只读，检查草稿、历史与文件后再次正常退出。",
+      );
+      launch();
+      return;
+    }
+    for (const socket of sockets) socket.destroy();
+    server.close();
+    process.exitCode = code ?? 1;
+  });
+}
+launch();

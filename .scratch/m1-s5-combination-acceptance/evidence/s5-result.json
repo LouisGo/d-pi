@@ -1,0 +1,293 @@
+{
+  "bundle": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/Package With Spaces/d-pi.app",
+  "sourceBundle": "/Users/lou/Learn/d-pi/dist/s5-candidate/mac-arm64/d-pi.app",
+  "fixtureBundleModification": {
+    "path": "Contents/Info.plist",
+    "originalIdentifier": "local.d-pi.desktop",
+    "fixtureIdentifier": "local.d-pi.s5-validation",
+    "reason": "bind native inspection to the isolated copy, apart from the user's live App",
+    "unchangedResources": [
+      {
+        "path": "Contents/Resources/app.asar",
+        "sha256": "95b661bfaf355361f8b9f553655beb8edb398a301ba379288bcbd0c9324d5c4c"
+      },
+      {
+        "path": "Contents/Resources/sdk/host.mjs",
+        "sha256": "3beeb728f4635df18ec601ff5d0d17a1a5b21a3d07f61f38be8287df385a5bf1"
+      },
+      {
+        "path": "Contents/Resources/sdk/manifest.json",
+        "sha256": "40eddef35060706769733cbdc0c04e49fd42af985f95d6680072bb66099752ff"
+      }
+    ]
+  },
+  "combinationEvidence": {
+    "interaction": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/s5-interaction-reload.png",
+    "editorInteraction": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/s5-editor-interaction.png",
+    "representativeDraft": {
+      "utf16Length": 20000,
+      "persistedAndRestoredExactly": true,
+      "appearanceCommandsResponsive": true,
+      "performanceMeasurement": false
+    },
+    "pausedQueue": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/s5-paused-queue-reload.png",
+    "queue": {
+      "callsBeforeBusy": 3,
+      "callsAfterContinue": 5,
+      "sameNativeSession": true,
+      "resumedOnce": true
+    },
+    "sameByteSources": {
+      "path": "mode-source.txt",
+      "sources": [
+        "index: mode-source.txt · sha256:606eb46b2b10f42689fad7ce21baabda46116e56746fcb6980037baa14706e96",
+        "working tree: mode-source.txt · sha256:606eb46b2b10f42689fad7ce21baabda46116e56746fcb6980037baa14706e96"
+      ],
+      "sameEditor": true,
+      "sameText": true,
+      "stagedMode": "100755",
+      "worktreeMode": "100644",
+      "screenshot": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/s5-same-byte-source-switch.png"
+    },
+    "whitespaceDiff": {
+      "rawText": "  \n\t\n",
+      "screenshot": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/s5-whitespace-diff.png"
+    },
+    "inspection": {
+      "checkpoint": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/inspect-checkpoint.json",
+      "resumed": true,
+      "providerCalls": 5,
+      "sameNativeSession": true,
+      "screenshot": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/s5-after-native-inspection.png"
+    }
+  },
+  "providerEvents": [
+    {
+      "request": 1,
+      "hold": null,
+      "reply": null,
+      "closed": true
+    },
+    {
+      "request": 2,
+      "hold": null,
+      "reply": null,
+      "closed": true
+    },
+    {
+      "request": 3,
+      "hold": null,
+      "reply": null,
+      "closed": true
+    },
+    {
+      "request": 4,
+      "hold": "busy",
+      "reply": null,
+      "closed": true
+    },
+    {
+      "request": 5,
+      "hold": null,
+      "reply": "S5_QUEUE_REPLY",
+      "closed": true
+    },
+    {
+      "request": 6,
+      "hold": "interrupted",
+      "reply": null,
+      "closed": true
+    }
+  ],
+  "limitations": [
+    "localhost deterministic fixture; no real supplier account or billing",
+    "CDP composition events; no system IME proof",
+    "paused nonempty queue abandonment/complete quit still pending S3 09",
+    "engineering evidence is separate from user trial/acceptance"
+  ],
+  "project": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/work",
+  "data": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/app-data",
+  "config": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/home/.omp/agent",
+  "environment": {
+    "PATH": "/private/tmp/d-pi-rewrite-toolchain/node-v24.21.0-darwin-arm64/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+    "HOME": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/home",
+    "USERPROFILE": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/home",
+    "APPDATA": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/home/AppData/Roaming",
+    "LOCALAPPDATA": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/home/AppData/Local",
+    "TMPDIR": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/tmp",
+    "TMP": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/tmp",
+    "TEMP": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/tmp",
+    "PWD": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/work",
+    "XDG_CONFIG_HOME": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/xdg/config",
+    "XDG_DATA_HOME": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/xdg/data",
+    "XDG_STATE_HOME": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/xdg/state",
+    "XDG_CACHE_HOME": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/xdg/cache",
+    "D_PI_DATA_DIR": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/app-data",
+    "PI_CODING_AGENT_DIR": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/home/.omp/agent",
+    "PI_CODING_AGENT_SESSION_DIR": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/omp-sessions",
+    "PI_CONFIG_DIR": ".omp",
+    "OMP_PROFILE": "",
+    "PI_PROFILE": "",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "CI": "1",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_CONFIG_GLOBAL": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/home/.gitconfig",
+    "GIT_TERMINAL_PROMPT": "0"
+  },
+  "providerCalls": 6,
+  "native": {
+    "thread_id": "ad754739-97a8-442d-a315-27c6c0262821",
+    "config_context": "b2fe84760ed1d6eda8c3923d9edbef89a554e0303e6b65a88359c1b5cac1a331",
+    "session_file": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/app-data/native-sessions/ad754739-97a8-442d-a315-27c6c0262821/2026-09-30T10-35-31-429Z_01a0f1e2-3ee5-7000-a340-66e527ca4907.jsonl",
+    "session_id": "01a0f1e2-3ee5-7000-a340-66e527ca4907"
+  },
+  "receipts": [
+    {
+      "submissionId": "62aea77d-b893-42dd-a915-48ac8cc9d144",
+      "threadId": "ad754739-97a8-442d-a315-27c6c0262821",
+      "traceId": "2017244d-34e6-4ea8-95d7-014c9f569958",
+      "revision": 1,
+      "delivery": "followUp",
+      "target": {
+        "processInstanceId": "95e80141-9a14-4344-aafe-1ba870e32f22",
+        "connectionGeneration": "64002983-7d26-4c27-867a-1d27b2323ae4",
+        "configContextId": "b2fe84760ed1d6eda8c3923d9edbef89a554e0303e6b65a88359c1b5cac1a331",
+        "nativeSessionRef": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/app-data/native-sessions/ad754739-97a8-442d-a315-27c6c0262821/2026-09-30T10-35-31-429Z_01a0f1e2-3ee5-7000-a340-66e527ca4907.jsonl"
+      },
+      "requestId": "cf6318a8-8aa1-4e31-b8c3-ceec2279da28",
+      "createdAt": "2026-09-30T10:35:31.917Z",
+      "updatedAt": "2026-09-30T10:35:31.934Z",
+      "acknowledgedAt": "2026-09-30T10:35:31.934Z",
+      "outcome": "unobserved",
+      "state": "acknowledged"
+    },
+    {
+      "submissionId": "f19de7bb-2fb4-4bb9-a0f1-221192f68e73",
+      "threadId": "ad754739-97a8-442d-a315-27c6c0262821",
+      "traceId": "560a67c3-ee2d-4065-82d0-b209a596b5e3",
+      "revision": 3,
+      "delivery": "followUp",
+      "target": {
+        "processInstanceId": "95e80141-9a14-4344-aafe-1ba870e32f22",
+        "connectionGeneration": "64002983-7d26-4c27-867a-1d27b2323ae4",
+        "configContextId": "b2fe84760ed1d6eda8c3923d9edbef89a554e0303e6b65a88359c1b5cac1a331",
+        "nativeSessionRef": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/app-data/native-sessions/ad754739-97a8-442d-a315-27c6c0262821/2026-09-30T10-35-31-429Z_01a0f1e2-3ee5-7000-a340-66e527ca4907.jsonl"
+      },
+      "requestId": "86ea65b6-75fa-4f64-a106-3e7a8123fa6f",
+      "createdAt": "2026-09-30T10:35:33.095Z",
+      "updatedAt": "2026-09-30T10:35:33.100Z",
+      "acknowledgedAt": "2026-09-30T10:35:33.100Z",
+      "outcome": "unobserved",
+      "state": "acknowledged"
+    },
+    {
+      "submissionId": "0e0c8f5f-0c31-4ea2-b012-6c34e0661320",
+      "threadId": "ad754739-97a8-442d-a315-27c6c0262821",
+      "traceId": "ec075723-59ea-48cd-9e45-7ac564f407b0",
+      "revision": 5,
+      "delivery": "followUp",
+      "target": {
+        "processInstanceId": "95e80141-9a14-4344-aafe-1ba870e32f22",
+        "connectionGeneration": "64002983-7d26-4c27-867a-1d27b2323ae4",
+        "configContextId": "b2fe84760ed1d6eda8c3923d9edbef89a554e0303e6b65a88359c1b5cac1a331",
+        "nativeSessionRef": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/app-data/native-sessions/ad754739-97a8-442d-a315-27c6c0262821/2026-09-30T10-35-31-429Z_01a0f1e2-3ee5-7000-a340-66e527ca4907.jsonl"
+      },
+      "requestId": "d12f9dcf-acd5-4b46-b026-3f76d6d1a559",
+      "createdAt": "2026-09-30T10:35:33.521Z",
+      "updatedAt": "2026-09-30T10:35:33.526Z",
+      "acknowledgedAt": "2026-09-30T10:35:33.526Z",
+      "outcome": "unobserved",
+      "state": "acknowledged"
+    },
+    {
+      "submissionId": "dc90119d-20e8-454a-b5d3-9980d2070042",
+      "threadId": "ad754739-97a8-442d-a315-27c6c0262821",
+      "traceId": "6a4af713-5534-45c5-85ae-a4555663b861",
+      "revision": 10,
+      "delivery": "followUp",
+      "target": {
+        "processInstanceId": "95e80141-9a14-4344-aafe-1ba870e32f22",
+        "connectionGeneration": "64002983-7d26-4c27-867a-1d27b2323ae4",
+        "configContextId": "b2fe84760ed1d6eda8c3923d9edbef89a554e0303e6b65a88359c1b5cac1a331",
+        "nativeSessionRef": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/app-data/native-sessions/ad754739-97a8-442d-a315-27c6c0262821/2026-09-30T10-35-31-429Z_01a0f1e2-3ee5-7000-a340-66e527ca4907.jsonl"
+      },
+      "requestId": "32acef13-a694-4510-baf1-ddcb063683a1",
+      "createdAt": "2026-09-30T10:35:35.800Z",
+      "updatedAt": "2026-09-30T10:35:35.804Z",
+      "acknowledgedAt": "2026-09-30T10:35:35.804Z",
+      "outcome": "unobserved",
+      "state": "acknowledged"
+    },
+    {
+      "submissionId": "4acf3a10-5e13-4e26-8acd-82bf0a3417c9",
+      "threadId": "ad754739-97a8-442d-a315-27c6c0262821",
+      "traceId": "04ea446a-897a-4c75-845e-615c31072b90",
+      "revision": 11,
+      "delivery": "followUp",
+      "target": {
+        "processInstanceId": "95e80141-9a14-4344-aafe-1ba870e32f22",
+        "connectionGeneration": "64002983-7d26-4c27-867a-1d27b2323ae4",
+        "configContextId": "b2fe84760ed1d6eda8c3923d9edbef89a554e0303e6b65a88359c1b5cac1a331",
+        "nativeSessionRef": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/app-data/native-sessions/ad754739-97a8-442d-a315-27c6c0262821/2026-09-30T10-35-31-429Z_01a0f1e2-3ee5-7000-a340-66e527ca4907.jsonl"
+      },
+      "requestId": "92d0c6a1-7233-4aa5-9e5a-ee7fc9217410",
+      "createdAt": "2026-09-30T10:35:35.907Z",
+      "updatedAt": "2026-09-30T10:35:35.911Z",
+      "acknowledgedAt": "2026-09-30T10:35:35.911Z",
+      "outcome": "unobserved",
+      "state": "acknowledged"
+    },
+    {
+      "submissionId": "c141b03c-29a0-4f4c-b415-b3db26c225ee",
+      "threadId": "ad754739-97a8-442d-a315-27c6c0262821",
+      "traceId": "074b6dff-373b-4e38-93f8-31a0bd618007",
+      "revision": 17,
+      "delivery": "followUp",
+      "target": {
+        "processInstanceId": "95e80141-9a14-4344-aafe-1ba870e32f22",
+        "connectionGeneration": "64002983-7d26-4c27-867a-1d27b2323ae4",
+        "configContextId": "b2fe84760ed1d6eda8c3923d9edbef89a554e0303e6b65a88359c1b5cac1a331",
+        "nativeSessionRef": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-UyMGP6/app-data/native-sessions/ad754739-97a8-442d-a315-27c6c0262821/2026-09-30T10-35-31-429Z_01a0f1e2-3ee5-7000-a340-66e527ca4907.jsonl"
+      },
+      "requestId": "b72901b3-6c51-4d40-ab18-b8f666ae4c5b",
+      "createdAt": "2026-09-30T10:37:41.320Z",
+      "updatedAt": "2026-09-30T10:37:42.034Z",
+      "state": "acknowledged",
+      "acknowledgedAt": "2026-09-30T10:37:41.364Z",
+      "outcome": "unknown"
+    }
+  ],
+  "build": {
+    "version": "0.1.0-s5.0",
+    "commit": "12dddfb36546d52d43d4f2c77526626cfd1093ef",
+    "dirty": false,
+    "id": "12dddfb3-86d5de15"
+  },
+  "checks": [
+    "official extension confirm/select/input/editor; pending confirm survives renderer reload with draft and no replay",
+    "representative 20000-character draft persists, reloads exactly and accepts appearance commands; no performance claim",
+    "busy submit queues natively; stop preserves and pauses; renderer reload does not replay; explicit continuation consumes once on the same session",
+    "mode-only HEAD/index/worktree have the same path/hash/bytes; mounted right-pane selections retain each current Git source",
+    "whitespace-only current Git diff rendered and captured for visual inspection",
+    "inspection checkpoint resumed on the current renderer target without native resend/session replacement",
+    "v1 migration",
+    "real browser composition events block dispatch (CDP, not system IME)",
+    "two turns and native write",
+    "same live session after window reload",
+    "raw CRLF/CR/LF file and diff selection",
+    "frozen input references after disk refresh and renderer reload",
+    "theme and density",
+    "language changes retain the mounted editor and exact references",
+    "ACK then native child interrupted",
+    "unknown persisted without resend",
+    "same-trace receipt outcome and distinct Host exit",
+    "cold reopen remains read-only with preserved history, draft and file access"
+  ],
+  "coldRecovery": {
+    "providerCalls": 6,
+    "sameNativeSession": true,
+    "outcome": "unknown",
+    "nativeChildSpawned": false
+  }
+}

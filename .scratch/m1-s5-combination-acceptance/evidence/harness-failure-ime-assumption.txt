@@ -1,0 +1,11 @@
+DevTools listening on ws://127.0.0.1:58438/devtools/browser/ad2c6635-8749-4bcf-8cd5-48a5dcc855ad
+Package failure evidence: /private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s5-package-S514YJ
+file:///Users/lou/Learn/d-pi/validation/s3/package.mjs:271
+  throw Error("Package UI timeout");
+        ^
+
+Error: Package UI timeout
+    at wait (file:///Users/lou/Learn/d-pi/validation/s3/package.mjs:271:9)
+    at async file:///Users/lou/Learn/d-pi/validation/s3/package.mjs:458:5
+
+Node.js v24.21.0

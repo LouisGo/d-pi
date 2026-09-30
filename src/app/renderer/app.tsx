@@ -75,7 +75,7 @@ function ReadyWorkbench({ model, editor }: AppProps) {
       <aside className="sidebar">
         <div className="brand">
           {/* i18n-ignore: product brand and release marker */}
-          d-pi <span>S4</span>
+          d-pi <span>S5</span>
         </div>
         <div className="sidebar-label">{t("app.sidebar.projects")}</div>
         {draft ? (
