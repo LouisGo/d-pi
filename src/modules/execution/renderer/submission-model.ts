@@ -15,6 +15,8 @@ export interface SubmissionView {
   sending: boolean;
   sendingText: boolean;
   receipts: SubmissionReceipt[];
+  receiptIds: readonly string[];
+  receiptsById: ReadonlyMap<string, SubmissionReceipt>;
   message: UiMessage | null;
 }
 // The published view is the whole store state: every publication is a partial
@@ -27,6 +29,8 @@ const submissionInitial: StateCreator<
   sending: false,
   sendingText: false,
   receipts: [],
+  receiptIds: [],
+  receiptsById: new Map(),
   message: null,
 });
 const createSubmissionStore = () =>
@@ -148,9 +152,9 @@ export class SubmissionModel {
       this.publish({ message: reply.error.message });
       return;
     }
-    const receipts = reply.kind === "list" ? reply.receipts : [reply.receipt];
-    const values = new Map(this.view.receipts.map((r) => [r.submissionId, r]));
-    for (const receipt of receipts)
+    const incoming = reply.kind === "list" ? reply.receipts : [reply.receipt];
+    const values = new Map(this.view.receiptsById);
+    for (const receipt of incoming)
       if (receipt.threadId === this.threadId) {
         const old = values.get(receipt.submissionId);
         values.set(
@@ -158,10 +162,27 @@ export class SubmissionModel {
           old ? mergeReceipt(old, receipt) : receipt,
         );
       }
+    const ordered = [...values.values()]
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .slice(0, 100);
+    const nextIds = ordered.map((receipt) => receipt.submissionId);
+    const previous = this.view;
+    const receiptIds =
+      previous.receiptIds.length === nextIds.length &&
+      nextIds.every((id, index) => id === previous.receiptIds[index])
+        ? previous.receiptIds
+        : nextIds;
+    const receipts =
+      previous.receipts.length === ordered.length &&
+      ordered.every((receipt, index) => receipt === previous.receipts[index])
+        ? previous.receipts
+        : ordered;
     this.publish({
-      receipts: [...values.values()]
-        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-        .slice(0, 100),
+      receipts,
+      receiptIds,
+      receiptsById: new Map(
+        receipts.map((receipt) => [receipt.submissionId, receipt]),
+      ),
     });
     this.consume();
   }
@@ -178,9 +199,7 @@ export class SubmissionModel {
     if (this.disposed) return;
     const captured = this.captured;
     if (!captured) return;
-    const receipt = this.view.receipts.find(
-      (r) => r.submissionId === captured.submissionId,
-    );
+    const receipt = this.view.receiptsById.get(captured.submissionId);
     if (receipt?.state === "rejected") {
       this.draft.releaseRejectedSubmission(captured.submissionId);
       this.captured = null;
@@ -212,7 +231,7 @@ export class SubmissionModel {
       const captured = await this.draft.captureSubmission(
         submissionId,
         async (value) => {
-          if (!value.text.trim()) return false;
+          if (this.disposed || !value.text.trim()) return false;
           const reply = await this.bridge.request({
             kind: "prepare",
             threadId: this.threadId,
@@ -223,10 +242,14 @@ export class SubmissionModel {
             delivery,
           });
           this.accept(reply);
-          return reply.kind === "receipt" && reply.receipt.state === "prepared";
+          return (
+            !this.disposed &&
+            reply.kind === "receipt" &&
+            reply.receipt.state === "prepared"
+          );
         },
       );
-      if (!captured) {
+      if (!captured || this.disposed) {
         if (!this.view.message)
           this.publish({ message: uiMessage("submission.unsentDraft") });
         return;
@@ -289,6 +312,9 @@ export class SubmissionModel {
       if (prepared.kind !== "receipt" || prepared.receipt.state !== "prepared")
         return { ok: false, message: this.view.message, submissionId: null };
       preparedOk = true;
+      // A view detach keeps this owner alive. Only disposal of the actual
+      // Thread owner prevents a new command after the prepare reply.
+      if (this.disposed) return { ok: false, message: null, submissionId };
       const dispatched = await this.bridge.request({
         kind: "dispatch",
         threadId: this.threadId,
@@ -344,9 +370,7 @@ export class SubmissionModel {
     submissionId: SubmissionReceipt["submissionId"],
   ): Promise<void> {
     if (this.view.sending || this.disposed) return;
-    const receipt = this.view.receipts.find(
-      (value) => value.submissionId === submissionId,
-    );
+    const receipt = this.view.receiptsById.get(submissionId);
     if (receipt?.state !== "prepared") return;
     this.publish({ sending: true, message: null });
     // The explicit action sends the persisted original. Only reattach draft

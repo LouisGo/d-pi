@@ -2,12 +2,119 @@ import {
   onlineManager,
   QueryClient,
   QueryObserver,
+  type QueryObserverResult,
 } from "@tanstack/react-query";
 import { expect, it } from "vitest";
+import { ThreadContextSchema } from "../../workspace/contracts/public";
 import type { FileBridge, FileReply } from "../contracts/public";
 import { fileKeys, fileQueryOptions, refreshFiles } from "./queries";
 
-const threadId = crypto.randomUUID();
+const resource = ThreadContextSchema.parse({
+  threadId: crypto.randomUUID(),
+  workspaceId: crypto.randomUUID(),
+  directory: "/fixture/project",
+});
+
+it("isolates snapshots by the actual workspace and directory, while ignoring bridge object identity", async () => {
+  const client_ = client();
+  let current = "first";
+  let requests = 0;
+  const createBridge = (): FileBridge => ({
+    request: () => {
+      requests += 1;
+      return Promise.resolve(text("same.ts", current));
+    },
+  });
+  const first = createBridge();
+  const fetch = (context: typeof resource, bridge = first) =>
+    client_.fetchQuery({
+      ...fileQueryOptions.content(bridge, context, "same.ts"),
+      staleTime: Infinity,
+    });
+  await fetch(resource);
+  current = "second directory";
+  const directory = { ...resource, directory: "/second" };
+  expect(await fetch(directory)).toMatchObject({ text: current });
+  current = "second workspace";
+  const workspace = ThreadContextSchema.parse({
+    ...directory,
+    workspaceId: crypto.randomUUID(),
+  });
+  expect(await fetch(workspace)).toMatchObject({ text: current });
+  expect(requests).toBe(3);
+  expect(await fetch({ ...resource }, createBridge())).toMatchObject({
+    text: "first",
+  });
+  expect(requests).toBe(3);
+  client_.clear();
+});
+
+it("never sends an unselected file read through fetchQuery or refetch", async () => {
+  const client_ = client();
+  let requests = 0;
+  const bridge: FileBridge = {
+    request: () => {
+      requests += 1;
+      return Promise.resolve({ kind: "unavailable", reason: "not-file" });
+    },
+  };
+  const options = fileQueryOptions.content(bridge, resource, undefined);
+  await client_.fetchQuery(options);
+  const observer = new QueryObserver(client_, options);
+  const release = observer.subscribe(() => {});
+  const result = await observer.refetch();
+  expect(requests).toBe(0);
+  expect(result.data).toBeNull();
+  release();
+  client_.clear();
+});
+
+it("retains the request trace and original failed sample without inventing attribution", async () => {
+  const client_ = client();
+  let requestedTrace: string | undefined;
+  const failed: FileReply = { kind: "unavailable", reason: "failed" };
+  const bridge: FileBridge = {
+    request: (request) => {
+      requestedTrace = request.traceId;
+      return Promise.resolve(failed);
+    },
+  };
+  const observer = new QueryObserver(
+    client_,
+    fileQueryOptions.content(bridge, resource, "broken.ts"),
+  );
+  const result: QueryObserverResult = await observer.refetch();
+  expect(result.error).toMatchObject({
+    traceId: requestedTrace,
+    operation: "files:read",
+    attribution: "unknown",
+    reply: failed,
+  });
+  client_.clear();
+});
+
+it("retains the actual bridge rejection as cause with the request identity", async () => {
+  const client_ = client();
+  const cause = Error("fixture bridge disconnected");
+  let requestedTrace: string | undefined;
+  const bridge: FileBridge = {
+    request: (request) => {
+      requestedTrace = request.traceId;
+      return Promise.reject(cause);
+    },
+  };
+  const result = await new QueryObserver(
+    client_,
+    fileQueryOptions.content(bridge, resource, "disconnected.ts"),
+  ).refetch();
+  expect(result.error).toMatchObject({
+    traceId: requestedTrace,
+    operation: "files:read",
+    attribution: "unknown",
+    cause,
+  });
+  client_.clear();
+});
 
 const text = (path: string, value: string): FileReply => ({
   kind: "text",
@@ -47,11 +154,11 @@ it("keeps concurrent paths in separate cache entries so a late reply cannot over
   };
   const fast = new QueryObserver(
     client_,
-    fileQueryOptions.content(bridge, threadId, "fast.ts"),
+    fileQueryOptions.content(bridge, resource, "fast.ts"),
   );
   const slow = new QueryObserver(
     client_,
-    fileQueryOptions.content(bridge, threadId, "slow.ts"),
+    fileQueryOptions.content(bridge, resource, "slow.ts"),
   );
   const releaseFast = fast.subscribe(() => {});
   const releaseSlow = slow.subscribe(() => {});
@@ -62,7 +169,7 @@ it("keeps concurrent paths in separate cache entries so a late reply cannot over
   expect(fast.getCurrentResult().data).toMatchObject({ text: "fast" });
   expect(slow.getCurrentResult().data).toMatchObject({ text: "slow" });
   expect(
-    client_.getQueryData(fileKeys.content(threadId, "fast.ts")),
+    client_.getQueryData(fileKeys.content(resource, "fast.ts")),
   ).toMatchObject({ text: "fast" });
   releaseFast();
   releaseSlow();
@@ -80,7 +187,7 @@ it("treats a business unavailable reply as data rather than a retryable failure"
   };
   const observer = new QueryObserver(
     client_,
-    fileQueryOptions.content(bridge, threadId, "gone.ts"),
+    fileQueryOptions.content(bridge, resource, "gone.ts"),
   );
   const release = observer.subscribe(() => {});
   await observer.refetch();
@@ -107,14 +214,14 @@ it("invalidating the thread scope makes an active query sample the source again"
   };
   const observer = new QueryObserver(
     client_,
-    fileQueryOptions.listing(bridge, threadId, ""),
+    fileQueryOptions.listing(bridge, resource, ""),
   );
   const release = observer.subscribe(() => {});
   await observer.refetch();
   expect(observer.getCurrentResult().data).toMatchObject({
     entries: [{ path: "a.ts" }],
   });
-  refreshFiles(client_, threadId);
+  refreshFiles(client_, resource);
   await new Promise((resolve) => setTimeout(resolve, 0));
   expect(index).toBe(2);
   expect(observer.getCurrentResult().data).toMatchObject({ entries: [] });
@@ -124,14 +231,19 @@ it("invalidating the thread scope makes an active query sample the source again"
 
 it("does not serve a cached listing from another thread", async () => {
   const client_ = client();
-  const other = crypto.randomUUID();
+  const other = ThreadContextSchema.parse({
+    ...resource,
+    threadId: crypto.randomUUID(),
+  });
   const bridge: FileBridge = {
     request: ({ threadId: requested }) =>
-      Promise.resolve(entries([requested === threadId ? "1.ts" : "2.ts"])),
+      Promise.resolve(
+        entries([requested === resource.threadId ? "1.ts" : "2.ts"]),
+      ),
   };
   const first = new QueryObserver(
     client_,
-    fileQueryOptions.listing(bridge, threadId, ""),
+    fileQueryOptions.listing(bridge, resource, ""),
   );
   const second = new QueryObserver(
     client_,
@@ -166,7 +278,7 @@ it("runs local file reads while Query reports the renderer offline", async () =>
   try {
     const observer = new QueryObserver(
       client_,
-      fileQueryOptions.listing(bridge, threadId, ""),
+      fileQueryOptions.listing(bridge, resource, ""),
     );
     const release = observer.subscribe(() => {});
     await observer.refetch();
@@ -196,7 +308,7 @@ it("retries a transient sampling failure instead of treating it as a terminal re
   };
   const observer = new QueryObserver(
     client_,
-    fileQueryOptions.content(bridge, threadId, "flaky.ts"),
+    fileQueryOptions.content(bridge, resource, "flaky.ts"),
   );
   const release = observer.subscribe(() => {});
   await observer.refetch();
@@ -222,7 +334,7 @@ it("stops retrying a sampling failure once the attempts are exhausted", async ()
   };
   const observer = new QueryObserver(
     client_,
-    fileQueryOptions.content(bridge, threadId, "broken.ts"),
+    fileQueryOptions.content(bridge, resource, "broken.ts"),
   );
   const release = observer.subscribe(() => {});
   await observer.refetch();
@@ -245,7 +357,7 @@ it("keeps a business unavailable reason as a single terminal sample", async () =
   };
   const observer = new QueryObserver(
     client_,
-    fileQueryOptions.content(bridge, threadId, "denied.ts"),
+    fileQueryOptions.content(bridge, resource, "denied.ts"),
   );
   const release = observer.subscribe(() => {});
   await observer.refetch();

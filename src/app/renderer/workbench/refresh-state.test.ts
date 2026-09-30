@@ -5,9 +5,14 @@ import type {
   FileReply,
 } from "../../../modules/files/contracts/public";
 import { fileQueryOptions } from "../../../modules/files/renderer/public";
+import { ThreadContextSchema } from "../../../modules/workspace/contracts/public";
 import { readInFlight } from "./refresh-state";
 
-const threadId = crypto.randomUUID();
+const resource = ThreadContextSchema.parse({
+  threadId: crypto.randomUUID(),
+  workspaceId: crypto.randomUUID(),
+  directory: "/fixture",
+});
 
 it("counts a first sample as in flight", async () => {
   const client = new QueryClient({
@@ -19,7 +24,7 @@ it("counts a first sample as in flight", async () => {
   };
   const observer = new QueryObserver(
     client,
-    fileQueryOptions.listing(bridge, threadId, ""),
+    fileQueryOptions.listing(bridge, resource, ""),
   );
   const unsubscribe = observer.subscribe(() => {});
   const pending = observer.getCurrentResult();
@@ -45,7 +50,7 @@ it("does not count a disabled query as in flight", () => {
   };
   const observer = new QueryObserver(
     client,
-    fileQueryOptions.content(bridge, threadId, undefined),
+    fileQueryOptions.content(bridge, resource, undefined),
   );
   const unsubscribe = observer.subscribe(() => {});
   const result = observer.getCurrentResult();

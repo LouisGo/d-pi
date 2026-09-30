@@ -80,7 +80,7 @@ async function setup(
   controllers.push(controller);
   let composing = false;
   let editable = true;
-  model.editorBoundary = {
+  model.attachEditorBoundary(controller, {
     freeze: () => {
       if (composing) return false;
       editable = false;
@@ -89,7 +89,7 @@ async function setup(
     release: () => {
       editable = true;
     },
-  };
+  });
   return {
     model,
     controller,
@@ -199,6 +199,26 @@ it("cancelling a pending close releases editing and preserves edits made before 
   expect(input.controller.getSnapshot().kind).toBe("saved");
 });
 
+it("cannot release a replacement editor after the original close save fails late", async () => {
+  let rejectSave: (cause: Error) => void = () => {};
+  const input = await setup(
+    () =>
+      new Promise<SaveReply>((_accept, reject) => {
+        rejectSave = reject;
+      }),
+  );
+  input.controller.edit("closing original editor");
+  const closing = input.model.prepareClose();
+  const replacementRelease = vi.fn();
+  input.model.attachEditorBoundary(input.controller, {
+    freeze: () => true,
+    release: replacementRelease,
+  });
+  rejectSave(Error("old save reply lost"));
+  expect(await closing).toBe(false);
+  expect(replacementRelease).not.toHaveBeenCalled();
+});
+
 it("keeps conversation projection lifecycle in the AppModel", async () => {
   vi.stubGlobal("document", { documentElement: { dataset: {} } });
   const threadId = ThreadIdSchema.parse(crypto.randomUUID());
@@ -287,7 +307,8 @@ it("keeps conversation projection lifecycle in the AppModel", async () => {
   runtimeListeners[0]?.(ready);
   expect(conversationConnections).toBe(2);
   expect(model.reading?.getSnapshot()?.generation).toBe(generation);
-  const readingBeforeDispose = model.reading?.getSnapshot();
+  const reading = model.reading;
+  const readingBeforeDispose = reading?.getSnapshot();
   model.dispose();
   expect(runtimeUnsubscriptions).toBe(1);
   expect(conversationUnsubscriptions).toBe(2);
@@ -308,5 +329,6 @@ it("keeps conversation projection lifecycle in the AppModel", async () => {
     },
   });
   expect(conversationConnections).toBe(2);
-  expect(model.reading?.getSnapshot()).toEqual(readingBeforeDispose);
+  expect(reading?.getSnapshot()).toEqual(readingBeforeDispose);
+  expect(model.reading).toBeNull();
 });

@@ -87,7 +87,11 @@ export class RuntimeModel {
   bind(thread: ThreadId): void {
     const state = this.store.getState();
     if (state.disposed || state.thread === thread) return;
-    this.store.setState({ thread, generation: state.generation + 1 });
+    this.store.setState({
+      thread,
+      generation: state.generation + 1,
+      view: null,
+    });
     void this.act("inspect");
   }
   async act(

@@ -16,6 +16,72 @@ function preparedReceipt(value: unknown): PreparedReceipt {
   return receipt;
 }
 
+it("does not dispatch prepared free text after its Thread owner is disposed", async () => {
+  const draft = DraftSchema.parse({
+    schemaVersion: 1,
+    threadId: crypto.randomUUID(),
+    workspaceId: crypto.randomUUID(),
+    directory: "/fixture",
+    revision: 0,
+    text: "draft",
+  });
+  const controller = new DraftController(
+    draft,
+    async (revision) => ({
+      kind: "saved",
+      threadId: draft.threadId,
+      revision: revision + 1,
+    }),
+    () => {
+      throw Error("unexpected failure");
+    },
+  );
+  const commands: string[] = [];
+  let finish: () => void = () => {};
+  const model = new SubmissionModel(
+    {
+      subscribe: () => () => {},
+      request: async (command) => {
+        commands.push(command.kind);
+        if (command.kind === "list") return { kind: "list", receipts: [] };
+        if (command.kind === "prepare") {
+          const { kind: _kind, ...frozen } = command;
+          await new Promise<void>((resolve) => {
+            finish = resolve;
+          });
+          return {
+            kind: "receipt",
+            receipt: preparedReceipt({
+              ...frozen,
+              requestId: crypto.randomUUID(),
+              target: {
+                processInstanceId: crypto.randomUUID(),
+                connectionGeneration: crypto.randomUUID(),
+                configContextId: "cfg",
+                nativeSessionRef: "session",
+              },
+              state: "prepared",
+              acknowledgedAt: null,
+              outcome: "unobserved",
+              createdAt: "1",
+              updatedAt: "1",
+            }),
+          };
+        }
+        throw Error("unexpected dispatch");
+      },
+    },
+    draft.threadId,
+    controller,
+  );
+  const sending = model.sendText("prepared free text");
+  model.dispose();
+  controller.dispose();
+  finish();
+  await sending;
+  expect(commands).toEqual(["list", "prepare"]);
+});
+
 it("merges receipts monotonically: wall-clock never reorders causal facts (A3 lock)", () => {
   const base = {
     submissionId: crypto.randomUUID(),

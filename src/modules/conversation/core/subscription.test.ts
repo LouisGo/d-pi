@@ -43,13 +43,13 @@ it("notifies an entity subscriber only for the entity it selected", () => {
   let first = 0;
   let second = 0;
   const release = model.subscribeTo(
-    (state) => state.view?.items.find((entry) => entry.id === 1),
+    (state) => state.itemsById.get(1),
     () => {
       first += 1;
     },
   );
   model.subscribeTo(
-    (state) => state.view?.items.find((entry) => entry.id === 2),
+    (state) => state.itemsById.get(2),
     () => {
       second += 1;
     },

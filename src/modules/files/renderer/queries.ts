@@ -1,93 +1,119 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import type { FileBridge, FileReply } from "../contracts/public";
+import type { ThreadContext } from "../../workspace/contracts/public";
+import type { FileBridge, FileReply, FileRequest } from "../contracts/public";
 
-/**
- * Query keys and request builders for the read-only project file surface.
- * Keys are the isolation boundary: a late reply for an old path can only ever
- * land in that path's cache entry, so the view never sees a foreign result.
- */
+// These identities come from the application's active Thread, rather than
+// the bridge object or the component mounting the query.
 export const fileKeys = {
-  all: (threadId: string) => ["files", threadId] as const,
-  listing: (threadId: string, path: string) =>
-    ["files", threadId, "list", path] as const,
-  content: (threadId: string, path: string) =>
-    ["files", threadId, "read", path] as const,
+  all: (resource: ThreadContext) =>
+    [
+      "files",
+      resource.threadId,
+      resource.workspaceId,
+      resource.directory,
+    ] as const,
+  listing: (resource: ThreadContext, path: string) =>
+    [...fileKeys.all(resource), "list", path] as const,
+  content: (resource: ThreadContext, path: string | null) =>
+    [...fileKeys.all(resource), "read", path] as const,
 };
 
-/**
- * The Main read surface reports both business conclusions and its own sampling
- * failures through the same `unavailable` shape. Only the latter is worth
- * retrying: a transient filesystem error must reach Query as an error, while
- * missing/denied/binary/too-large/changed stay terminal business answers that
- * the view displays as they are.
- */
-function retryableSampling(kind: "list" | "read", reply: FileReply) {
+/** Renderer evidence of a failed sample; IPC may not preserve its root cause. */
+export class FileReadError extends Error {
+  readonly traceId: string;
+  readonly operation: "files:list" | "files:read";
+  readonly attribution = "unknown";
+  readonly reply: FileReply | undefined;
+
+  constructor(
+    readonly request: FileRequest,
+    observation: { reply: FileReply } | { cause: unknown },
+  ) {
+    super(
+      `files:${request.kind} sampling failed`,
+      "cause" in observation ? { cause: observation.cause } : undefined,
+    );
+    this.name = "FileReadError";
+    this.traceId = request.traceId;
+    this.operation = request.kind === "list" ? "files:list" : "files:read";
+    this.reply = "reply" in observation ? observation.reply : undefined;
+  }
+}
+
+async function sample(
+  files: FileBridge,
+  request: FileRequest,
+): Promise<FileReply> {
+  let reply: FileReply;
+  try {
+    reply = await files.request(request);
+  } catch (cause) {
+    throw new FileReadError(request, { cause });
+  }
   if (reply.kind === "unavailable" && reply.reason === "failed")
-    throw Error(`files:${kind} sampling failed`);
+    throw new FileReadError(request, { reply });
+  // Business conclusions stay data and never enter Query's retry policy.
   return reply;
 }
 
 export function listDirectory(
   files: FileBridge,
-  threadId: string,
+  resource: ThreadContext,
   path: string,
 ) {
-  return files
-    .request({
-      kind: "list",
-      traceId: crypto.randomUUID(),
-      threadId,
-      path,
-    })
-    .then((reply) => retryableSampling("list", reply));
+  return sample(files, {
+    kind: "list",
+    traceId: crypto.randomUUID(),
+    threadId: resource.threadId,
+    path,
+  });
 }
 
-export function readFile(files: FileBridge, threadId: string, path: string) {
-  return files
-    .request({
-      kind: "read",
-      traceId: crypto.randomUUID(),
-      threadId,
-      path,
-    })
-    .then((reply) => retryableSampling("read", reply));
+export function readFile(
+  files: FileBridge,
+  resource: ThreadContext,
+  path: string,
+) {
+  return sample(files, {
+    kind: "read",
+    traceId: crypto.randomUUID(),
+    threadId: resource.threadId,
+    path,
+  });
 }
 
-export function refreshFiles(client: QueryClient, threadId: string): void {
-  void client.invalidateQueries({ queryKey: fileKeys.all(threadId) });
+export function refreshFiles(
+  client: QueryClient,
+  resource: ThreadContext,
+): void {
+  void client.invalidateQueries({ queryKey: fileKeys.all(resource) });
 }
 
-/**
- * Local project reads do not depend on network connectivity, so they must not
- * be paused by Query's offline state; the desktop read path stays available
- * regardless of what the renderer reports about the network.
- */
+// Local reads must run even when Query reports the renderer offline.
 const localRead = { networkMode: "always" } as const;
 
-/**
- * The single source of truth for each file query. Hooks and imperative
- * consumers share the same key, enabled rule, and local-read policy.
- *
- * A directory always exists to list — the project root is the empty path — so
- * `listing` takes a required `path` and never needs an `enabled` gate. Leaving
- * `path` optional would map "no directory selected" onto the real root entry
- * and let an unselected view read the root's data. Only `content` has a
- * genuine "nothing selected" state, because "" is never a file path.
- */
 export const fileQueryOptions = {
-  listing(files: FileBridge, threadId: string, path: string) {
+  listing(files: FileBridge, resource: ThreadContext, path: string) {
     return queryOptions({
-      queryKey: fileKeys.listing(threadId, path),
-      queryFn: () => listDirectory(files, threadId, path),
+      queryKey: fileKeys.listing(resource, path),
+      queryFn: () => listDirectory(files, resource, path),
       ...localRead,
     });
   },
-  content(files: FileBridge, threadId: string, path: string | undefined) {
-    const resolvedPath = path ?? "";
+  content(
+    files: FileBridge,
+    resource: ThreadContext,
+    path: string | undefined,
+  ) {
     return queryOptions({
-      queryKey: fileKeys.content(threadId, resolvedPath),
-      queryFn: () => readFile(files, threadId, resolvedPath),
+      queryKey: fileKeys.content(resource, path ?? null),
+      // enabled only gates automatic observation. fetchQuery/refetch can
+      // still call this function, so absence must also be handled here.
+      queryFn: () =>
+        path === undefined
+          ? Promise.resolve(null)
+          : readFile(files, resource, path),
       enabled: path !== undefined,
       ...localRead,
     });
@@ -96,24 +122,24 @@ export const fileQueryOptions = {
 
 export function useDirectoryListing({
   files,
-  threadId,
+  resource,
   path,
 }: {
   files: FileBridge;
-  threadId: string;
+  resource: ThreadContext;
   path: string;
 }) {
-  return useQuery(fileQueryOptions.listing(files, threadId, path));
+  return useQuery(fileQueryOptions.listing(files, resource, path));
 }
 
 export function useFileContent({
   files,
-  threadId,
+  resource,
   path,
 }: {
   files: FileBridge;
-  threadId: string;
+  resource: ThreadContext;
   path: string | undefined;
 }) {
-  return useQuery(fileQueryOptions.content(files, threadId, path));
+  return useQuery(fileQueryOptions.content(files, resource, path));
 }

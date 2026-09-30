@@ -12,7 +12,9 @@ import { AppModel } from "./model";
 // written listener set had: one notification per published state, exact
 // replacement of that state, a cached snapshot, stable store references for
 // headless reads and the React binding, and no publication once disposed.
-const ready = (theme: "light" | "dark" = "light"): Reply => ({
+const ready = (
+  theme: "light" | "dark" = "light",
+): Extract<Reply, { kind: "ready" }> => ({
   kind: "ready",
   draft: null,
   directoryAvailable: true,
@@ -135,8 +137,8 @@ it("does not publish a late reply after dispose", async () => {
   model.dispose();
   restore.resolve(ready());
   await started;
-  expect(model.getSnapshot()).toEqual({ kind: "loading" });
-  expect(changes).toBe(0);
+  expect(model.getSnapshot()).toEqual({ kind: "disposed" });
+  expect(changes).toBe(1);
 });
 
 it("releases submission state and ignores a restore that finishes after dispose", async () => {
@@ -205,9 +207,8 @@ it("releases submission state and ignores a restore that finishes after dispose"
   expect(subscribed).toBe(1);
   active.dispose();
   expect(released).toBe(1);
-  // The instance stays in place as the view's render switch; disposal only
-  // releases its resources.
-  expect(active.controller).not.toBeNull();
+  expect(active.getSnapshot().kind).toBe("disposed");
+  expect(active.controller).toBeNull();
 });
 
 it("replaces the published state so a retry cannot keep failure fields", async () => {
@@ -226,8 +227,7 @@ it("replaces the published state so a retry cannot keep failure fields", async (
   await model.start();
   expect(model.getSnapshot()).toEqual({
     kind: "ready",
-    draft: null,
-    directoryAvailable: true,
+    workspace: { kind: "empty" },
     preferences: { theme: "light", density: "normal", locale: "system" },
     busy: false,
     notice: null,
@@ -260,5 +260,92 @@ it("returns a cached snapshot and keeps both store references stable", async () 
   });
   await toggled;
   expect(model.getSnapshot()).not.toBe(during);
+  model.dispose();
+});
+
+it("ignores a restore overtaken by a later initialization request", async () => {
+  vi.stubGlobal("document", { documentElement: { dataset: {} } });
+  const first = deferred();
+  const second = deferred();
+  let count = 0;
+  const model = new AppModel(
+    bridge(() => (++count === 1 ? first.promise : second.promise)),
+  );
+  const older = model.start();
+  const newer = model.start();
+  second.resolve(ready("dark"));
+  await newer;
+  first.resolve(ready("light"));
+  await older;
+  expect(theme(model)).toBe("dark");
+  model.dispose();
+});
+
+it("publishes a complete new Thread whose save lane cannot use the previous Thread", async () => {
+  vi.stubGlobal("document", { documentElement: { dataset: {} } });
+  const first = DraftSchema.parse({
+    schemaVersion: 1,
+    threadId: crypto.randomUUID(),
+    workspaceId: crypto.randomUUID(),
+    directory: "/first",
+    revision: 0,
+    text: "first text",
+  });
+  const second = DraftSchema.parse({
+    ...first,
+    threadId: crypto.randomUUID(),
+    directory: "/second",
+    text: "second text",
+  });
+  let current = first;
+  const savedThreads: string[] = [];
+  const model = new AppModel(
+    bridge(async (command) => {
+      if (command.kind === "restore")
+        return { ...ready(), kind: "ready", draft: current };
+      if (command.kind === "save") {
+        savedThreads.push(command.threadId);
+        return {
+          kind: "saved",
+          threadId: command.threadId,
+          revision: command.expectedRevision + 1,
+        };
+      }
+      throw Error("unexpected command");
+    }),
+  );
+  await model.start();
+  const previous = model.controller;
+  current = second;
+  await model.start();
+  const active = model.controller;
+  if (!previous || !active) throw Error("missing controller");
+  active.edit("new second edit");
+  await active.flush();
+  expect(savedThreads).toEqual([second.threadId]);
+  expect(active).not.toBe(previous);
+  previous.edit("late old edit");
+  expect(savedThreads).toEqual([second.threadId]);
+  model.dispose();
+});
+
+it("publishes disposed before exposing released workspace resources", async () => {
+  vi.stubGlobal("document", { documentElement: { dataset: {} } });
+  const restored = DraftSchema.parse({
+    schemaVersion: 1,
+    threadId: crypto.randomUUID(),
+    workspaceId: crypto.randomUUID(),
+    directory: "/fixture",
+    revision: 0,
+    text: "source",
+  });
+  const model = new AppModel(
+    bridge(async () => ({ ...ready(), kind: "ready", draft: restored })),
+  );
+  await model.start();
+  model.dispose();
+  expect(model.getSnapshot().kind).toBe("disposed");
+  expect(model.controller).toBeNull();
+  expect(model.submission).toBeNull();
   model.dispose();
 });

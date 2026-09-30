@@ -17,8 +17,6 @@ import {
 } from "../../../modules/execution/core/public";
 import { shouldSend } from "../../../modules/execution/renderer/public";
 import type { FrozenSelection } from "../../../modules/files/core/public";
-import type { Draft } from "../../../modules/input/contracts/public";
-import type { DraftController } from "../../../modules/input/core/public";
 import {
   appendSelectionReference,
   draftDocument,
@@ -28,16 +26,15 @@ import {
 } from "../../../modules/input/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import type { AppModel } from "../model";
+import type { ThreadModel } from "../thread-model";
 import { UrlDecoration } from "../url-decoration";
 export function Composer({
-  draft,
-  controller,
+  thread,
   model,
   selectionAttachment,
   onAttachmentApplied,
 }: {
-  draft: Draft;
-  controller: DraftController;
+  thread: ThreadModel;
   model: AppModel;
   selectionAttachment?: {
     id: string;
@@ -46,9 +43,11 @@ export function Composer({
   } | null;
   onAttachmentApplied?: (id: string) => void;
 }) {
+  const { controller, submission, runtime } = thread;
   const { locale, t, formatMessage } = useI18n();
   const state = useSyncExternalStore(
     controller.subscribe,
+    controller.getSnapshot,
     controller.getSnapshot,
   );
   const [expanded, setExpanded] = useState(false);
@@ -63,10 +62,11 @@ export function Composer({
     {
       ...plainTextEditorOptions,
       extensions: [...plainTextEditorOptions.extensions, UrlDecoration],
-      content: draftDocument(draft.text),
+      content: draftDocument(controller.getTextSnapshot()),
       editorProps: {
         handlePaste: handlePlainTextPaste,
         handleKeyDown: (view, event) => {
+          if (!model.isCurrentThread(thread)) return false;
           if (view.composing) return false;
           if (
             !shouldSend(
@@ -77,20 +77,21 @@ export function Composer({
           )
             return false;
           event.preventDefault();
-          const runtime = model.runtime?.stateStore.getState().view;
-          const receipts =
-            model.submission?.stateStore.getState().receipts ?? [];
+          const runtimeView = runtime?.stateStore.getState().view;
+          const receipts = submission?.stateStore.getState().receipts ?? [];
           if (
-            runtime &&
-            !queueCapped(receipts, runtime.control?.queue.length ?? 0) &&
-            canSubmit(runtime)
+            runtimeView &&
+            !queueCapped(receipts, runtimeView.control?.queue.length ?? 0) &&
+            canSubmit(runtimeView)
           )
-            void model.submission?.send();
+            void submission?.send();
           return true;
         },
         handleDOMEvents: {
           compositionend: () => {
-            setTimeout(() => model.submission?.consume(), 0);
+            setTimeout(() => {
+              if (model.isCurrentThread(thread)) submission?.consume();
+            }, 0);
             return false;
           },
         },
@@ -111,11 +112,12 @@ export function Composer({
     if (
       !editor ||
       !selectionAttachment ||
-      selectionAttachment.threadId !== draft.threadId ||
+      selectionAttachment.threadId !== thread.context.threadId ||
       lastAttachment.current === selectionAttachment.id
     )
       return;
     const apply = () => {
+      if (!model.isCurrentThread(thread) || editor.isDestroyed) return;
       if (editor.view.composing) return;
       editor.view.dispatch(
         appendSelectionReference(editor.state, selectionAttachment.selection),
@@ -128,7 +130,7 @@ export function Composer({
       editor.view.dom.addEventListener("compositionend", apply, { once: true });
     else apply();
     return () => editor.view.dom.removeEventListener("compositionend", apply);
-  }, [editor, selectionAttachment, draft.threadId, onAttachmentApplied]);
+  }, [editor, selectionAttachment, model, thread, onAttachmentApplied]);
   useEffect(() => {
     if (!editor) return;
     editor.setOptions({
@@ -151,16 +153,15 @@ export function Composer({
       },
       release: () => editor.setEditable(true, false),
     };
-    model.editorBoundary = boundary;
-    const submission = model.submission;
+    const detachBoundary = model.attachEditorBoundary(controller, boundary);
     const detachEditor = submission?.attachEditor(() =>
       replaceDraftText(editor, ""),
     );
     return () => {
-      if (model.editorBoundary === boundary) model.editorBoundary = null;
+      detachBoundary();
       detachEditor?.();
     };
-  }, [editor, model]);
+  }, [editor, model, thread, controller, submission]);
   const status = match(state)
     .with({ kind: "saved" }, () => t("composer.status.saved"))
     .with({ kind: "dirty" }, () => t("composer.status.dirty"))
@@ -204,11 +205,11 @@ export function Composer({
           >
             {t("composer.switchShortcut")}
           </Button>
-          {model.submission && model.runtime && (
+          {submission && runtime && (
             <SendButton
               canSend={() => !!editor && !editor.view.composing}
-              submission={model.submission}
-              runtime={model.runtime}
+              submission={submission}
+              runtime={runtime}
             />
           )}
         </div>

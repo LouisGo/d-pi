@@ -1,4 +1,5 @@
 export {
+  GitReadError,
   gitKeys,
   gitQueryOptions,
   readChanges,

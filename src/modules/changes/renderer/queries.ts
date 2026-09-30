@@ -1,82 +1,110 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import type { ChangeScope, GitBridge, GitReply } from "../contracts/public";
+import type { ThreadContext } from "../../workspace/contracts/public";
+import type {
+  ChangeScope,
+  GitBridge,
+  GitReply,
+  GitRequest,
+} from "../contracts/public";
 
-/**
- * Query keys and request builders for the read-only Git sample. The scope and
- * path are part of the key, so a reply for another selection can only land in
- * that selection's cache entry.
- */
 export const gitKeys = {
-  all: (threadId: string) => ["git", threadId] as const,
-  changes: (threadId: string) => ["git", threadId, "changes"] as const,
-  diff: (threadId: string, scope: ChangeScope, path: string) =>
-    ["git", threadId, "diff", scope, path] as const,
+  all: (resource: ThreadContext) =>
+    [
+      "git",
+      resource.threadId,
+      resource.workspaceId,
+      resource.directory,
+    ] as const,
+  changes: (resource: ThreadContext) =>
+    [...gitKeys.all(resource), "changes"] as const,
+  diff: (resource: ThreadContext, scope: ChangeScope, path: string | null) =>
+    [...gitKeys.all(resource), "diff", scope, path] as const,
 };
 
-/**
- * `unavailable` carries both Git's own conclusions (not a repository, missing,
- * denied, binary, too large, unmerged, changed) and a failed sampling run. Only
- * the last one is retryable; the rest are terminal answers the view displays.
- */
-function retryableSampling(kind: "list" | "diff", reply: GitReply) {
+/** The trace records what the renderer requested, not an inferred Main cause. */
+export class GitReadError extends Error {
+  readonly traceId: string;
+  readonly operation: "git:list" | "git:diff";
+  readonly attribution = "unknown";
+  readonly reply: GitReply | undefined;
+
+  constructor(
+    readonly request: GitRequest,
+    observation: { reply: GitReply } | { cause: unknown },
+  ) {
+    super(
+      `git:${request.kind} sampling failed`,
+      "cause" in observation ? { cause: observation.cause } : undefined,
+    );
+    this.name = "GitReadError";
+    this.traceId = request.traceId;
+    this.operation = request.kind === "list" ? "git:list" : "git:diff";
+    this.reply = "reply" in observation ? observation.reply : undefined;
+  }
+}
+
+async function sample(git: GitBridge, request: GitRequest): Promise<GitReply> {
+  let reply: GitReply;
+  try {
+    reply = await git.request(request);
+  } catch (cause) {
+    throw new GitReadError(request, { cause });
+  }
   if (reply.kind === "unavailable" && reply.reason === "failed")
-    throw Error(`git:${kind} sampling failed`);
+    throw new GitReadError(request, { reply });
   return reply;
 }
 
-export function readChanges(git: GitBridge, threadId: string) {
-  return git
-    .request({ kind: "list", traceId: crypto.randomUUID(), threadId })
-    .then((reply) => retryableSampling("list", reply));
+export function readChanges(git: GitBridge, resource: ThreadContext) {
+  return sample(git, {
+    kind: "list",
+    traceId: crypto.randomUUID(),
+    threadId: resource.threadId,
+  });
 }
 
 export function readDiff(
   git: GitBridge,
-  threadId: string,
+  resource: ThreadContext,
   scope: ChangeScope,
   path: string,
 ) {
-  return git
-    .request({
-      kind: "diff",
-      traceId: crypto.randomUUID(),
-      threadId,
-      scope,
-      path,
-    })
-    .then((reply) => retryableSampling("diff", reply));
+  return sample(git, {
+    kind: "diff",
+    traceId: crypto.randomUUID(),
+    threadId: resource.threadId,
+    scope,
+    path,
+  });
 }
 
-export function refreshGit(client: QueryClient, threadId: string): void {
-  void client.invalidateQueries({ queryKey: gitKeys.all(threadId) });
+export function refreshGit(client: QueryClient, resource: ThreadContext): void {
+  void client.invalidateQueries({ queryKey: gitKeys.all(resource) });
 }
 
-/** Git reads sample the local repository, not the network. */
 const localRead = { networkMode: "always" } as const;
 
-/**
- * The single source of truth for each Git query. Hooks and imperative
- * consumers share the same key and local-read policy.
- */
 export const gitQueryOptions = {
-  changes(git: GitBridge, threadId: string) {
+  changes(git: GitBridge, resource: ThreadContext) {
     return queryOptions({
-      queryKey: gitKeys.changes(threadId),
-      queryFn: () => readChanges(git, threadId),
+      queryKey: gitKeys.changes(resource),
+      queryFn: () => readChanges(git, resource),
       ...localRead,
     });
   },
   diff(
     git: GitBridge,
-    threadId: string,
+    resource: ThreadContext,
     scope: ChangeScope,
     path: string | undefined,
   ) {
-    const resolvedPath = path ?? "";
     return queryOptions({
-      queryKey: gitKeys.diff(threadId, scope, resolvedPath),
-      queryFn: () => readDiff(git, threadId, scope, resolvedPath),
+      queryKey: gitKeys.diff(resource, scope, path ?? null),
+      queryFn: () =>
+        path === undefined
+          ? Promise.resolve(null)
+          : readDiff(git, resource, scope, path),
       enabled: path !== undefined,
       ...localRead,
     });
@@ -85,24 +113,24 @@ export const gitQueryOptions = {
 
 export function useChanges({
   git,
-  threadId,
+  resource,
 }: {
   git: GitBridge;
-  threadId: string;
+  resource: ThreadContext;
 }) {
-  return useQuery(gitQueryOptions.changes(git, threadId));
+  return useQuery(gitQueryOptions.changes(git, resource));
 }
 
 export function useDiff({
   git,
-  threadId,
+  resource,
   scope,
   path,
 }: {
   git: GitBridge;
-  threadId: string;
+  resource: ThreadContext;
   scope: ChangeScope;
   path: string | undefined;
 }) {
-  return useQuery(gitQueryOptions.diff(git, threadId, scope, path));
+  return useQuery(gitQueryOptions.diff(git, resource, scope, path));
 }

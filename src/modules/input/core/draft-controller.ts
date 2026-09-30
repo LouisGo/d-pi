@@ -55,11 +55,15 @@ export class DraftController {
     this.baselineText = draft.text;
   }
   getSnapshot = (): SaveState => this.state;
+  // Reattaching an editor reads the existing immutable pending snapshot or
+  // confirmed baseline. This is not a second editable body.
+  getTextSnapshot = (): string => this.pending?.text ?? this.baselineText;
   subscribe = (listener: () => void): (() => void) => {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
   };
   private publish(state: SaveState): void {
+    if (this.disposed) return;
     this.state = state;
     for (const listener of this.listeners) listener();
   }
@@ -96,6 +100,7 @@ export class DraftController {
     return this.flush();
   }
   flush(): Promise<boolean> {
+    if (this.disposed) return Promise.resolve(false);
     timerHost.clearTimeout(this.timer);
     if (this.flight)
       return this.flight.then((saved) => {
@@ -118,6 +123,7 @@ export class DraftController {
   }
   private async drain(): Promise<boolean> {
     while (this.capture || (this.pending && this.confirmed < this.sequence)) {
+      if (this.disposed) return false;
       const capture = this.capture;
       if (capture && this.confirmed === capture.sequence) {
         const value: CapturedDraft = {
@@ -128,6 +134,7 @@ export class DraftController {
         };
         try {
           const prepared = await capture.prepare(value);
+          if (this.disposed) return false;
           if (prepared) this.captured = value;
           capture.finish(prepared ? value : null);
         } catch {
@@ -147,6 +154,7 @@ export class DraftController {
       } catch {
         result = { kind: "failed", error: this.onTransportError() };
       }
+      if (this.disposed) return false;
       const saved = match(result)
         .with({ kind: "saved" }, ({ threadId, revision }) => {
           if (

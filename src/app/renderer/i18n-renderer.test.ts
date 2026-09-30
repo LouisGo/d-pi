@@ -50,8 +50,7 @@ vi.mock("@/components/ui/button", () => ({
 
 const state: ViewState = {
   kind: "ready",
-  draft: null,
-  directoryAvailable: true,
+  workspace: { kind: "empty" },
   preferences: {
     theme: "light",
     density: "normal",

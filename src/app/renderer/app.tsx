@@ -1,4 +1,4 @@
-import { type ComponentType, useState } from "react";
+import { type ComponentType, Fragment, useState } from "react";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import {
@@ -52,9 +52,12 @@ export function App({
         <Button onClick={() => void model.start()}>{t("app.retry")}</Button>
       </main>
     ))
-    .with(
-      { kind: "ready" },
-      ({ draft, preferences, directoryAvailable, notice, busy }) => (
+    .with({ kind: "disposed" }, () => null)
+    .with({ kind: "ready" }, ({ workspace, preferences, notice, busy }) => {
+      const thread = workspace.kind === "thread" ? workspace.thread : null;
+      const draft = thread?.context;
+      const submission = thread?.submission;
+      return (
         <div className="app-shell">
           <aside className="sidebar">
             <div className="brand">
@@ -145,42 +148,41 @@ export function App({
               </div>
             )}
             <div className="work-content">
-              {draft && model.controller ? (
-                <>
+              {thread ? (
+                <Fragment key={thread.key}>
                   <div className="draft-intro">
                     <h1>{t("app.draft.title")}</h1>
                     <p className="muted">{t("app.draft.description")}</p>
                   </div>
                   <div className="directory-info">
                     <FolderIcon />
-                    <span>{draft.directory}</span>
+                    <span>{thread.context.directory}</span>
                     <span className="muted">
                       {t("app.executionNeedsApproval")}
                     </span>
                   </div>
-                  {!directoryAvailable && (
-                    <p className="failure" role="alert">
-                      {t("app.draft.directoryUnavailable")}
-                    </p>
-                  )}
-                  {model.runtime && (
+                  {workspace.kind === "thread" &&
+                    !workspace.directoryAvailable && (
+                      <p className="failure" role="alert">
+                        {t("app.draft.directoryUnavailable")}
+                      </p>
+                    )}
+                  {thread.runtime && (
                     <RuntimePanel
-                      model={model.runtime}
-                      submission={model.submission}
+                      model={thread.runtime}
+                      submission={thread.submission}
                       // Post-default user answers become a new steering
                       // instruction (2026-09-28 decision), not a follow-up.
                       onFollowUp={
-                        model.submission
-                          ? (text: string) =>
-                              model.submission!.sendText(text, "steer")
+                        submission
+                          ? (text: string) => submission.sendText(text, "steer")
                           : undefined
                       }
                     />
                   )}
-                  {model.reading && <Conversation model={model.reading} />}
+                  {thread.reading && <Conversation model={thread.reading} />}
                   <Composer
-                    draft={draft}
-                    controller={model.controller}
+                    thread={thread}
                     model={model}
                     selectionAttachment={selectionAttachment}
                     onAttachmentApplied={(id) =>
@@ -191,25 +193,29 @@ export function App({
                   />
                   {model.files && model.git && (
                     <FileWorkspace
-                      key={draft.threadId}
-                      threadId={draft.threadId}
+                      resource={thread.context}
                       files={model.files}
                       git={model.git}
                       editor={editor}
                       onAttach={(selection) =>
                         setSelectionAttachment({
                           id: crypto.randomUUID(),
-                          threadId: draft.threadId,
+                          threadId: thread.context.threadId,
                           selection,
                         })
                       }
                     />
                   )}
-                  {model.submission && <Submissions model={model.submission} />}
-                  {model.history && (
-                    <History bridge={model.history} threadId={draft.threadId} />
+                  {thread.submission && (
+                    <Submissions model={thread.submission} />
                   )}
-                </>
+                  {model.history && (
+                    <History
+                      bridge={model.history}
+                      threadId={thread.context.threadId}
+                    />
+                  )}
+                </Fragment>
               ) : (
                 <div className="empty-state">
                   <h1>{t("app.empty.title")}</h1>
@@ -224,7 +230,7 @@ export function App({
             </div>
           </main>
         </div>
-      ),
-    )
+      );
+    })
     .exhaustive();
 }

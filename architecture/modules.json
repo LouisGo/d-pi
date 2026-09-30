@@ -52,7 +52,8 @@
           "files",
           "input",
           "preferences",
-          "shared"
+          "shared",
+          "workspace"
         ]
       }
     },
@@ -97,7 +98,7 @@
         "contracts": ["shared"],
         "core": ["shared"],
         "main": [],
-        "renderer": ["preferences"]
+        "renderer": ["preferences", "workspace"]
       },
       "materialized": true
     },
@@ -129,7 +130,7 @@
       "dependsOn": {
         "contracts": ["files", "shared"],
         "main": ["files"],
-        "renderer": ["shared"]
+        "renderer": ["shared", "workspace"]
       },
       "materialized": true
     },

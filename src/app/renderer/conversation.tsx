@@ -3,7 +3,6 @@ import { useState } from "react";
 import { Streamdown } from "streamdown";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
-import { useShallow } from "zustand/react/shallow";
 import { WebsiteIcon } from "@/components/icons/common";
 import { Button } from "@/components/ui/button";
 import type {
@@ -54,10 +53,7 @@ function Markdown({
 }
 export function Conversation({ model }: { model: ConversationModel }) {
   const { t } = useI18n();
-  const itemIds = useStore(
-    model.stateStore,
-    useShallow((state) => state.view?.items.map((item) => item.id) ?? []),
-  );
+  const itemIds = useStore(model.stateStore, (state) => state.itemIds);
   const gap = useStore(model.stateStore, (state) => state.view?.gap ?? false);
   return (
     <section
@@ -82,9 +78,7 @@ function ConversationMessage({
   model: ConversationModel;
 }) {
   const { t, formatMessage } = useI18n();
-  const item = useStore(model.stateStore, (state) =>
-    state.view?.items.find((entry) => entry.id === id),
-  );
+  const item = useStore(model.stateStore, (state) => state.itemsById.get(id));
   if (!item) return null;
   return (
     <article className="message">
@@ -128,12 +122,7 @@ function ConversationMessage({
 export function Submissions({ model }: { model: SubmissionModel }) {
   const { t, formatMessage } = useI18n();
   const message = useStore(model.stateStore, (state) => state.message);
-  const receiptIds = useStore(
-    model.stateStore,
-    useShallow((state) =>
-      state.receipts.map((receipt) => receipt.submissionId),
-    ),
-  );
+  const receiptIds = useStore(model.stateStore, (state) => state.receiptIds);
   return (
     <section
       className="submission-records"
@@ -169,7 +158,7 @@ function SubmissionRecord({
 }) {
   const { t } = useI18n();
   const receipt = useStore(model.stateStore, (state) =>
-    state.receipts.find((entry) => entry.submissionId === id),
+    state.receiptsById.get(id),
   );
   const sending = useStore(model.stateStore, (state) => state.sending);
   if (!receipt) return null;

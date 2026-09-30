@@ -8,6 +8,7 @@ import type {
   GitReply,
 } from "../../../modules/changes/contracts/public";
 import {
+  GitReadError,
   refreshGit,
   useChanges,
   useDiff,
@@ -22,11 +23,13 @@ import {
 } from "../../../modules/files/core/public";
 import type { CodeView } from "../../../modules/files/renderer/public";
 import {
+  FileReadError,
   refreshFiles,
   useDirectoryListing,
   useFileContent,
 } from "../../../modules/files/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
+import type { ThreadContext } from "../../../modules/workspace/contracts/public";
 import { readInFlight } from "./refresh-state";
 
 type EditorComponent = ComponentType<{
@@ -69,13 +72,13 @@ function statusLabel(
     .exhaustive();
 }
 export function FileWorkspace({
-  threadId,
+  resource,
   files,
   git,
   editor: Editor,
   onAttach,
 }: {
-  threadId: string;
+  resource: ThreadContext;
   files: FileBridge;
   git: GitBridge;
   editor?: EditorComponent | undefined;
@@ -92,12 +95,12 @@ export function FileWorkspace({
   >(undefined);
   const [active, setActive] = useState<"file" | "diff">("file");
   const [selected, setSelected] = useState<FrozenSelection | null>(null);
-  const listing = useDirectoryListing({ files, threadId, path: directory });
-  const content = useFileContent({ files, threadId, path: filePath });
-  const changes = useChanges({ git, threadId });
+  const listing = useDirectoryListing({ files, resource, path: directory });
+  const content = useFileContent({ files, resource, path: filePath });
+  const changes = useChanges({ git, resource });
   const diff = useDiff({
     git,
-    threadId,
+    resource,
     scope: diffTarget?.scope ?? "index-worktree",
     path: diffTarget?.path,
   });
@@ -106,6 +109,14 @@ export function FileWorkspace({
   const diffReply = diff.data;
   const transportError =
     listing.isError || content.isError || changes.isError || diff.isError;
+  const failedSamples = [
+    listing.error,
+    content.error,
+    changes.error,
+    diff.error,
+  ].filter(
+    (error) => error instanceof FileReadError || error instanceof GitReadError,
+  );
   // A re-sample stays pending through Query's retry window, so `isError` alone
   // would leave the previous capture on screen with no sign that a read is in
   // flight. See `readInFlight` for why a disabled query must not count.
@@ -115,8 +126,8 @@ export function FileWorkspace({
     readInFlight(changes) ||
     readInFlight(diff);
   const refresh = () => {
-    refreshFiles(client, threadId);
-    refreshGit(client, threadId);
+    refreshFiles(client, resource);
+    refreshGit(client, resource);
   };
   const listDirectory = (path: string) => {
     setDirectory(path);
@@ -335,7 +346,16 @@ export function FileWorkspace({
         </>
       )}
       {refreshing && <p role="status">{t("ui.files.refreshing")}</p>}
-      {transportError && <p role="alert">{t("ui.files.transportFailed")}</p>}
+      {transportError && (
+        <div role="alert">
+          <p>{t("ui.files.transportFailed")}</p>
+          {failedSamples.map((error) => (
+            <p key={error.traceId} className="trace">
+              {t("app.trace", { traceId: error.traceId })}
+            </p>
+          ))}
+        </div>
+      )}
     </section>
   );
 }

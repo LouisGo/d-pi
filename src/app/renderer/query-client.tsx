@@ -14,10 +14,10 @@ import type { ReactNode } from "react";
  *   re-read project files or Git; refresh stays an explicit action.
  * - `retry: 3`: read-only sampling may retry transient failures.
  *
- * Query is never used for `D-24` side effects. Sending, answering, stopping,
- * resuming and saving stay on direct commands, and mutations are deliberately
- * unused, because a mutation would be paused while offline and then resumed
- * automatically on reconnect — an automatic re-send of an unknown result.
+ * D-24 keeps sending, answering, stopping, resuming and saving on direct
+ * commands with their own ownership and recovery protocol. Mutations can be
+ * configured without retry; that does not replace the protocol for an unknown
+ * execution result. This client owns read-only sampling only.
  */
 export const queryClient = new QueryClient({
   defaultOptions: {

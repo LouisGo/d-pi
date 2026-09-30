@@ -2,8 +2,13 @@ import { createElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import type { HistoryEntry } from "../../modules/conversation/contracts/public";
+import { ConversationModel } from "../../modules/conversation/core/public";
 import type { SubmissionModel } from "../../modules/execution/renderer/public";
-import { historyToolEvidenceMessage, Submissions } from "./conversation";
+import {
+  Conversation,
+  historyToolEvidenceMessage,
+  Submissions,
+} from "./conversation";
 
 let locale: "zh-CN" | "en-US" = "zh-CN";
 
@@ -41,10 +46,17 @@ const submissionState = {
     },
   ],
 };
+const indexedState = {
+  ...submissionState,
+  receiptIds: submissionState.receipts.map((receipt) => receipt.submissionId),
+  receiptsById: new Map(
+    submissionState.receipts.map((receipt) => [receipt.submissionId, receipt]),
+  ),
+};
 const model = {
   stateStore: {
-    getState: () => submissionState,
-    getInitialState: () => submissionState,
+    getState: () => indexedState,
+    getInitialState: () => indexedState,
     subscribe: () => () => {},
   },
 } as unknown as SubmissionModel;
@@ -62,6 +74,46 @@ describe("submission copy", () => {
     expect(english).toContain(originalText);
     expect(english).not.toContain("已保存，未派发");
   });
+
+  it("reads receipt rows without rescanning the receipt array for each ID", () => {
+    const find = vi.spyOn(submissionState.receipts, "find");
+    renderToStaticMarkup(createElement(Submissions, { model }));
+    expect(find).not.toHaveBeenCalled();
+    find.mockRestore();
+  });
+});
+
+it("reads conversation rows without rescanning the item array for each ID", () => {
+  const items = Array.from({ length: 8 }, (_value, id) => ({
+    id,
+    text: "native message",
+    role: "tool" as const,
+    state: "complete" as const,
+    label: { kind: "literal" as const, text: "OMP" },
+  }));
+  const model = new ConversationModel({
+    connect: (_thread, listener) => {
+      listener({
+        kind: "snapshot",
+        generation: crypto.randomUUID(),
+        seq: 0,
+        gap: false,
+        items,
+      });
+      return () => {};
+    },
+  });
+  model.connect("thread");
+  // Desktop uses the current store snapshot. Seed that same snapshot for this
+  // server renderer, which otherwise reads Zustand's initial empty state.
+  vi.spyOn(model.stateStore, "getInitialState").mockReturnValue(
+    model.stateStore.getState(),
+  );
+  const find = vi.spyOn(items, "find");
+  const rendered = renderToStaticMarkup(createElement(Conversation, { model }));
+  expect(rendered.match(/native message/g)).toHaveLength(items.length);
+  expect(find).not.toHaveBeenCalled();
+  model.dispose();
 });
 
 describe("history tool evidence", () => {

@@ -1,46 +1,45 @@
 import { match } from "ts-pattern";
 import { subscribeWithSelector } from "zustand/middleware";
-import { createStore, type StateCreator } from "zustand/vanilla";
-import { ConversationModel } from "../../modules/conversation/core/public";
-import type { RuntimeView } from "../../modules/execution/contracts/public";
-import {
-  RuntimeModel,
-  SubmissionModel,
-} from "../../modules/execution/renderer/public";
-import type { Draft, Failure } from "../../modules/input/contracts/public";
-import { DraftController } from "../../modules/input/core/public";
+import { createStore } from "zustand/vanilla";
+import type { Failure } from "../../modules/input/contracts/public";
+import type { DraftController } from "../../modules/input/core/public";
 import type { Preferences } from "../../modules/preferences/contracts/public";
-import type { DesktopBridge, Reply } from "../contracts/desktop-bridge";
+import type {
+  Command,
+  DesktopBridge,
+  ReplyFor,
+} from "../contracts/desktop-bridge";
+import { ThreadModel } from "./thread-model";
+
+export type WorkspaceState =
+  | { kind: "empty" }
+  | { kind: "thread"; thread: ThreadModel; directoryAvailable: boolean };
 export type ViewState =
   | { kind: "loading" }
   | { kind: "failed"; error: Failure }
+  | { kind: "disposed" }
   | {
       kind: "ready";
-      draft: Draft | null;
-      directoryAvailable: boolean;
+      workspace: WorkspaceState;
       preferences: Preferences;
       busy: boolean;
       notice: Failure | null;
     };
-// The published application state is the whole store state: `publish` replaces
-// it, so a state member never keeps fields of another member (see `publish`).
-const appInitial: StateCreator<
-  ViewState,
-  [],
-  [["zustand/subscribeWithSelector", never]]
-> = () => ({ kind: "loading" });
 const createAppStore = () =>
-  createStore<ViewState>()(subscribeWithSelector(appInitial));
+  createStore<ViewState>()(
+    subscribeWithSelector((): ViewState => ({ kind: "loading" })),
+  );
 export type AppStore = ReturnType<typeof createAppStore>;
-/**
- * What the React binding consumes. Declared structurally so the store library
- * stays an implementation detail of this model instead of leaking into the app
- * surface; zustand's store satisfies it as-is.
- */
 export type AppStateStore = Pick<
   AppStore,
   "getState" | "getInitialState" | "subscribe"
 >;
+type RestoreReply = ReplyFor<
+  Extract<Command, { kind: "restore" | "choose-project" }>
+>;
+type EditorBoundary = { freeze: () => boolean; release: () => void };
+type EditorBinding = { owner: ThreadModel; boundary: EditorBoundary };
+
 export function transportFailure(traceId: string): Failure {
   return {
     errorId: crypto.randomUUID(),
@@ -56,26 +55,100 @@ export function transportFailure(traceId: string): Failure {
   };
 }
 export class AppModel {
-  // Vanilla store, no React binding. React receives the read-only store API
-  // through `stateStore` and binds it with Zustand's official `useStore` hook.
   private readonly store: AppStore = createAppStore();
   readonly stateStore: AppStateStore = this.store;
   private disposed = false;
-  controller: DraftController | null = null;
-  submission: SubmissionModel | null = null;
-  editorBoundary: { freeze: () => boolean; release: () => void } | null = null;
+  private requestGeneration = 0;
+  private editorBinding: EditorBinding | null = null;
+  private closeAttempt: {
+    thread: ThreadModel | null;
+    binding: EditorBinding | null;
+  } | null = null;
+  constructor(private readonly bridge: DesktopBridge) {}
+
+  private get state(): ViewState {
+    return this.store.getState();
+  }
+  private get activeThread(): ThreadModel | null {
+    const state = this.state;
+    return state.kind === "ready" && state.workspace.kind === "thread"
+      ? state.workspace.thread
+      : null;
+  }
+  get controller() {
+    return this.activeThread?.controller ?? null;
+  }
+  get submission() {
+    return this.activeThread?.submission ?? null;
+  }
+  get runtime() {
+    return this.activeThread?.runtime ?? null;
+  }
+  get reading() {
+    return this.activeThread?.reading ?? null;
+  }
+  get history() {
+    return this.bridge.history;
+  }
+  get files() {
+    return this.bridge.files;
+  }
+  get git() {
+    return this.bridge.git;
+  }
+  isCurrentThread(thread: ThreadModel): boolean {
+    return !this.disposed && this.activeThread === thread;
+  }
+
+  attachEditorBoundary(
+    controller: DraftController,
+    boundary: EditorBoundary,
+  ): () => void {
+    const owner = this.activeThread;
+    if (!owner || owner.controller !== controller || this.disposed)
+      return () => {};
+    const binding = { owner, boundary };
+    this.editorBinding = binding;
+    return () => {
+      if (this.editorBinding === binding) this.editorBinding = null;
+    };
+  }
   async prepareClose(): Promise<boolean> {
-    if (this.editorBoundary && !this.editorBoundary.freeze()) return false;
-    const saved = await (this.controller?.flush() ?? Promise.resolve(true));
-    if (!saved) this.editorBoundary?.release();
+    if (this.disposed) return false;
+    const binding = this.editorBinding;
+    if (binding && !binding.boundary.freeze()) return false;
+    const attempt = { thread: this.activeThread, binding };
+    this.closeAttempt = attempt;
+    const saved = await (attempt.thread?.controller.flush() ??
+      Promise.resolve(true));
+    if (
+      this.disposed ||
+      this.closeAttempt !== attempt ||
+      this.activeThread !== attempt.thread ||
+      this.editorBinding !== binding
+    )
+      return false;
+    if (!saved) {
+      binding?.boundary.release();
+      this.closeAttempt = null;
+    }
     return saved;
   }
   cancelClose(): void {
-    this.editorBoundary?.release();
+    const attempt = this.closeAttempt;
+    this.closeAttempt = null;
+    if (
+      attempt?.binding &&
+      this.editorBinding === attempt.binding &&
+      this.activeThread === attempt.thread
+    )
+      attempt.binding.boundary.release();
   }
   async reconcileDraft(): Promise<void> {
+    const controller = this.controller;
+    if (!controller) return;
     const traceId = crypto.randomUUID();
-    await this.controller?.reconcile(async () => {
+    await controller.reconcile(async () => {
       try {
         const reply = await this.bridge.request({ kind: "restore", traceId });
         return match(reply)
@@ -91,60 +164,15 @@ export class AppModel {
       }
     });
   }
-  readonly runtime: RuntimeModel | null;
-  readonly reading: ConversationModel | null;
-  private previousRuntimeView: RuntimeView | null = null;
-  private readonly runtimeReadingUnsubscribe: (() => void) | null;
-  get history() {
-    return this.bridge.history;
-  }
-  get files() {
-    return this.bridge.files;
-  }
-  get git() {
-    return this.bridge.git;
-  }
-  constructor(private readonly bridge: DesktopBridge) {
-    this.runtime = bridge.runtime ? new RuntimeModel(bridge.runtime) : null;
-    this.reading = bridge.conversation
-      ? new ConversationModel(bridge.conversation)
-      : null;
-    this.runtimeReadingUnsubscribe =
-      this.runtime?.subscribe(this.syncReading) ?? null;
-  }
-  private syncReading = (): void => {
-    const view = this.runtime?.getSnapshot();
-    if (!view) return;
-    const previous = this.previousRuntimeView;
-    this.previousRuntimeView = view;
-    if (
-      this.reading &&
-      (!previous ||
-        previous.threadId !== view.threadId ||
-        (view.phase === "ready" && previous.phase !== "ready"))
-    )
-      this.reading.connect(view.threadId);
-  };
   dispose(): void {
     if (this.disposed) return;
+    const thread = this.activeThread;
     this.disposed = true;
-    // Dispose releases the resources but keeps the fields in place: the view
-    // uses them as render switches (`app.tsx` gates the workspace on
-    // `model.controller` and hands `model.submission` to the runtime panel).
-    // Nulling them here would leave the published state claiming `ready` while
-    // the workspace silently collapses on the next render.
-    this.submission?.dispose();
-    this.controller?.dispose();
-    this.runtimeReadingUnsubscribe?.();
-    this.reading?.dispose();
-    this.runtime?.dispose();
-  }
-  /**
-   * Live read of the published state. Every former `this.state` read resolves
-   * to the current store value at the same point in time as before.
-   */
-  private get state(): ViewState {
-    return this.store.getState();
+    this.requestGeneration++;
+    this.editorBinding = null;
+    this.closeAttempt = null;
+    this.store.setState({ kind: "disposed" }, true);
+    thread?.dispose();
   }
   getSnapshot = (): ViewState => this.store.getState();
   subscribe = (listener: () => void): (() => void) =>
@@ -152,11 +180,6 @@ export class AppModel {
       (state) => state,
       () => listener(),
     );
-  /**
-   * Fine grained subscription for one projection of the published state, e.g.
-   * one ready-state field. Plain `subscribe` still fires for every published
-   * state.
-   */
   subscribeTo<Selection>(
     selector: (state: ViewState) => Selection,
     listener: () => void,
@@ -164,112 +187,91 @@ export class AppModel {
     return this.store.subscribe(selector, () => listener());
   }
   private publish(state: ViewState): void {
-    if (this.disposed) return;
-    // `replace` keeps the whole-state assignment of the former container:
-    // merging would let one union member keep fields of another.
-    this.store.setState(state, true);
+    if (!this.disposed) this.store.setState(state, true);
   }
-  private accept(reply: Reply): void {
-    if (this.disposed) return;
+  private isCurrent(generation: number): boolean {
+    return !this.disposed && generation === this.requestGeneration;
+  }
+  private applyAppearance(value: Preferences): void {
+    document.documentElement.dataset.theme = value.theme;
+    document.documentElement.dataset.density = value.density;
+  }
+  private fail(error: Failure): void {
+    const state = this.state;
+    if (state.kind === "ready")
+      this.publish({ ...state, busy: false, notice: error });
+    else this.publish({ kind: "failed", error });
+  }
+  private acceptRestore(reply: RestoreReply): void {
     match(reply)
       .with({ kind: "ready" }, ({ draft, directoryAvailable, preferences }) => {
-        if (draft) this.runtime?.bind(draft.threadId);
-        if (draft && !this.controller)
-          this.controller = new DraftController(
-            draft,
-            async (expectedRevision, text) => {
-              const traceId = crypto.randomUUID();
-              try {
-                return await this.bridge.request({
-                  kind: "save",
-                  traceId,
-                  threadId: draft.threadId,
-                  expectedRevision,
-                  text,
-                });
-              } catch {
-                return { kind: "failed", error: transportFailure(traceId) };
-              }
-            },
-            () => transportFailure(crypto.randomUUID()),
-          );
-        if (
-          draft &&
-          this.controller &&
-          this.bridge.submission &&
-          !this.submission
-        )
-          this.submission = new SubmissionModel(
-            this.bridge.submission,
-            draft.threadId,
-            this.controller,
-          );
-        document.documentElement.dataset.theme = preferences.theme;
-        document.documentElement.dataset.density = preferences.density;
+        const previous = this.activeThread;
+        const thread = draft
+          ? previous?.matches(draft)
+            ? previous
+            : new ThreadModel(draft, this.bridge, transportFailure)
+          : null;
+        const workspace: WorkspaceState = thread
+          ? { kind: "thread", thread, directoryAvailable }
+          : { kind: "empty" };
+        this.applyAppearance(preferences);
+        if (previous !== thread) {
+          this.editorBinding = null;
+          this.closeAttempt = null;
+        }
         this.publish({
           kind: "ready",
-          draft,
-          directoryAvailable,
+          workspace,
           preferences,
           busy: false,
           notice: null,
         });
+        if (previous !== thread) previous?.dispose();
       })
-      .with({ kind: "failed" }, ({ error }) => {
-        if (this.state.kind === "ready")
-          this.publish({ ...this.state, busy: false, notice: error });
-        else this.publish({ kind: "failed", error });
-      })
+      .with({ kind: "failed" }, ({ error }) => this.fail(error))
       .with({ kind: "cancelled" }, () => {
         if (this.state.kind === "ready")
           this.publish({ ...this.state, busy: false });
       })
-      .with({ kind: "preferences-saved" }, ({ value }) => {
-        document.documentElement.dataset.theme = value.theme;
-        document.documentElement.dataset.density = value.density;
-        if (this.state.kind === "ready")
-          this.publish({
-            ...this.state,
-            preferences: value,
-            busy: false,
-            notice: null,
-          });
-      })
-      .with({ kind: "saved" }, () => {})
       .exhaustive();
   }
   async start(): Promise<void> {
     if (this.disposed) return;
+    const generation = ++this.requestGeneration;
     const traceId = crypto.randomUUID();
     try {
       const reply = await this.bridge.request({ kind: "restore", traceId });
-      if (!this.disposed) this.accept(reply);
+      if (this.isCurrent(generation)) this.acceptRestore(reply);
     } catch {
-      if (!this.disposed)
-        this.accept({ kind: "failed", error: transportFailure(traceId) });
+      if (this.isCurrent(generation)) this.fail(transportFailure(traceId));
     }
   }
   async choose(): Promise<void> {
+    const state = this.state;
     if (
       this.disposed ||
-      this.state.kind !== "ready" ||
-      this.state.busy ||
-      this.state.draft
+      state.kind !== "ready" ||
+      state.busy ||
+      state.workspace.kind !== "empty"
     )
       return;
-    this.publish({ ...this.state, busy: true, notice: null });
+    const generation = ++this.requestGeneration;
+    this.publish({ ...state, busy: true, notice: null });
     const traceId = crypto.randomUUID();
     try {
-      this.accept(
-        await this.bridge.request({ kind: "choose-project", traceId }),
-      );
+      const reply = await this.bridge.request({
+        kind: "choose-project",
+        traceId,
+      });
+      if (this.isCurrent(generation)) this.acceptRestore(reply);
     } catch {
-      this.accept({ kind: "failed", error: transportFailure(traceId) });
+      if (this.isCurrent(generation)) this.fail(transportFailure(traceId));
     }
   }
   async preference(key: Exclude<keyof Preferences, "locale">): Promise<void> {
-    if (this.disposed || this.state.kind !== "ready" || this.state.busy) return;
-    const current = this.state.preferences;
+    const state = this.state;
+    if (this.disposed || state.kind !== "ready" || state.busy) return;
+    const current = state.preferences;
     const value = match(key)
       .with("theme", () => ({
         ...current,
@@ -291,14 +293,31 @@ export class AppModel {
             : ("normal" as const),
       }))
       .exhaustive();
-    this.publish({ ...this.state, busy: true });
+    const generation = ++this.requestGeneration;
+    this.publish({ ...state, busy: true });
     const traceId = crypto.randomUUID();
     try {
-      this.accept(
-        await this.bridge.request({ kind: "preferences", traceId, value }),
-      );
+      const reply = await this.bridge.request({
+        kind: "preferences",
+        traceId,
+        value,
+      });
+      if (!this.isCurrent(generation)) return;
+      match(reply)
+        .with({ kind: "failed" }, ({ error }) => this.fail(error))
+        .with({ kind: "preferences-saved" }, ({ value }) => {
+          this.applyAppearance(value);
+          if (this.state.kind === "ready")
+            this.publish({
+              ...this.state,
+              preferences: value,
+              busy: false,
+              notice: null,
+            });
+        })
+        .exhaustive();
     } catch {
-      this.accept({ kind: "failed", error: transportFailure(traceId) });
+      if (this.isCurrent(generation)) this.fail(transportFailure(traceId));
     }
   }
 }

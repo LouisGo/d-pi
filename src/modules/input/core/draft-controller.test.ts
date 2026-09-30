@@ -23,6 +23,28 @@ const error: Failure = {
   message: { code: "draft.storageUnavailable" },
 };
 describe("draft save coordination", () => {
+  it("does not begin another write when a disposed Thread's pending save finishes", async () => {
+    let finish: (reply: SaveReply) => void = () => {};
+    const save = vi.fn((revision: number) =>
+      save.mock.calls.length === 1
+        ? new Promise<SaveReply>((resolve) => {
+            finish = resolve;
+          })
+        : Promise.resolve({
+            kind: "saved" as const,
+            threadId: draft.threadId,
+            revision: revision + 1,
+          }),
+    );
+    const controller = new DraftController(draft, save, () => error);
+    controller.edit("first write");
+    const saving = controller.flush();
+    controller.edit("queued second write");
+    controller.dispose();
+    finish({ kind: "saved", threadId: draft.threadId, revision: 1 });
+    await saving;
+    expect(save).toHaveBeenCalledTimes(1);
+  });
   it("a failed or foreign reconciliation never releases the write guard; edits during checking survive", async () => {
     let available = false;
     const sent: string[] = [];

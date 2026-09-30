@@ -24,6 +24,8 @@ const emptySubmissionStore = createStore<SubmissionView>()(() => ({
   sending: false as const,
   sendingText: false as const,
   receipts: [] as SubmissionReceipt[],
+  receiptIds: [],
+  receiptsById: new Map(),
   message: null,
 }));
 export function RuntimePanel({
@@ -38,10 +40,7 @@ export function RuntimePanel({
   const { t, formatMessage } = useI18n();
   const state = useStore(model.stateStore, (value) => value.view);
   const submissionStore = submission?.stateStore ?? emptySubmissionStore;
-  const submissionReceipts = useStore(
-    submissionStore,
-    (value) => value.receipts,
-  );
+  const receiptsById = useStore(submissionStore, (value) => value.receiptsById);
   // Follow-up identities live here, keyed by dialog id, so a generation
   // change (remount) neither loses the success indicator nor allows a silent
   // duplicate steer. Multiple entries per dialog are allowed: ack is call
@@ -163,7 +162,7 @@ export function RuntimePanel({
                 model={model}
                 onFollowUp={onFollowUp ? handleFollowUp(item.id) : undefined}
                 onContinueFollowUp={handleContinueFollowUp}
-                submissionReceipts={submissionReceipts}
+                receiptsById={receiptsById}
                 followUpIds={followUps[item.id] ?? []}
                 available={
                   state.phase !== "interrupted" && state.phase !== "failed"
@@ -194,7 +193,9 @@ export function RuntimePanel({
                       model={model}
                       onFollowUp={undefined}
                       onContinueFollowUp={undefined}
-                      submissionReceipts={[]}
+                      receiptsById={
+                        emptySubmissionStore.getState().receiptsById
+                      }
                       followUpIds={[]}
                       available={false}
                     />
@@ -250,7 +251,7 @@ function NativeDialog({
   trusted,
   onFollowUp,
   onContinueFollowUp,
-  submissionReceipts,
+  receiptsById,
   followUpIds,
 }: {
   item: Interaction;
@@ -261,7 +262,7 @@ function NativeDialog({
   onContinueFollowUp:
     | ((submissionId: SubmissionReceipt["submissionId"]) => void)
     | undefined;
-  submissionReceipts: SubmissionReceipt[];
+  receiptsById: ReadonlyMap<string, SubmissionReceipt>;
   followUpIds: string[];
 }) {
   const { t, formatMessage } = useI18n();
@@ -274,11 +275,7 @@ function NativeDialog({
   const enabled = available && item.status === "pending" && !sent;
   const defaulted = item.status === "sent" && item.defaultAnswered;
   const followUpReceipts = followUpIds
-    .map(
-      (id) =>
-        submissionReceipts.find((receipt) => receipt.submissionId === id) ??
-        null,
-    )
+    .map((id) => receiptsById.get(id) ?? null)
     .filter((receipt) => receipt !== null);
   // The formal receipts own the results. An in-flight prepared/dispatching
   // entry pauses further sends for this card; terminal entries never lock:

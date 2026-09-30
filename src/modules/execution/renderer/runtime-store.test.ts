@@ -86,7 +86,7 @@ it("keeps whole-state subscribers notified for every accepted view", () => {
   model.dispose();
 });
 
-it("ignores views from a thread that is no longer bound", () => {
+it("isolates a new Thread's view and revision from the previously bound Thread", () => {
   const first = ThreadIdSchema.parse(crypto.randomUUID());
   const second = ThreadIdSchema.parse(crypto.randomUUID());
   const { model, deliver } = deliverable();
@@ -95,11 +95,11 @@ it("ignores views from a thread that is no longer bound", () => {
   const bound = model.getSnapshot();
   expect(bound?.threadId).toBe(first);
   model.bind(second);
-  // Binding another thread keeps the last visible view until that thread
-  // reports its own state; a stale view from the old thread must not apply.
-  expect(model.getSnapshot()).toEqual(bound);
+  expect(model.getSnapshot()).toBeNull();
   deliver(ready(first, 4));
-  expect(model.getSnapshot()).toEqual(bound);
+  expect(model.getSnapshot()).toBeNull();
+  deliver(ready(second, 1));
+  expect(model.getSnapshot()).toMatchObject({ threadId: second, revision: 1 });
   model.dispose();
 });
 
