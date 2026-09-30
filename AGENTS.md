@@ -2,11 +2,9 @@
 
 ## 当前工作入口
 
-当前重写的范围、授权、任务、工程验证、用户试用与继续边界集中在[重写规格](.scratch/rewrite-preparation/spec.md)；[提交复盘](.scratch/rewrite-preparation/commit-review.md)按课题查阅。本任务可持续完成规格内实现和必要验证，并分波本地提交；不 push、不公开发布、不扩展 S5/M2。历史切片的限制只描述当时范围，不能覆盖用户后续明确授权。
+从固定[项目总看板](docs/status.md)找到当前范围、所属规格和任务，再按本页路由读取相关合同。授权、工程完成、交付试用与用户认可由所属 `spec.md` 维护；任务状态在所属票，看板只生成聚合，交接是特定构建的快照。
 
-各切片状态由各自 `spec.md` 维护，交接是特定构建的快照，入口见[工作记录导航](docs/README.md#工作记录)。工程通过、已交付待试用和用户认可必须区分；计划、提议或用户未回复不构成授权与认可。
-
-S3 的[暂缓队列后的退出出口](.scratch/m1-s3-control-recovery/issues/09-quit-discard-decision.md)仍是原功能范围内待决，本重写继续延期、不改变退出或清队列策略；交付前回看并明确说明限制，不据此阻塞独立工程工作。
+历史切片的授权或限制只描述当时范围，不能覆盖后续用户明确授权；计划、提议、工程通过和用户未回复都不构成授权或认可。发现重要待决时只暂停依赖部分，不据此阻塞独立工程工作。状态读取、更新与交接规则见[任务约定](docs/agents/issue-tracker.md)。
 
 ## 决定连续性
 
@@ -29,7 +27,7 @@ S3 的[暂缓队列后的退出出口](.scratch/m1-s3-control-recovery/issues/09
 
 ## 常用命令与验证
 
-环境准备、SDK 资源与启动顺序见[README](README.md#环境准备与启动)。常用检查为 `pnpm check`、`pnpm build`；边界任务按需用 `pnpm check:architecture`、`pnpm test:architecture`、`pnpm report:structure`。
+环境准备、SDK 资源与启动顺序见[README](README.md#环境准备与启动)。快速本地检查为 `pnpm check:fast`（显式安装的提交 hook 调用），完整检查为 `pnpm check`、`pnpm build`；边界任务按需用 `pnpm check:architecture`、`pnpm test:architecture`、`pnpm report:structure`。
 
 功能与缺陷遵循 TDD：目标缺口先失败测试，再最小实现；既有正确行为补测不伪造红灯。优先固定官方源码、文档和已有证据，关键未知才做最小实验；自动化证明常规行为，Computer use 仅补必要原生/视觉证据或响应用户明确要求。按风险完成必要检查，足够即交付，不逐票重跑无关矩阵。详细规则见[无头功能合同](docs/architecture/headless-features.md)。
 

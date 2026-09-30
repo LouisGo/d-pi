@@ -1,0 +1,24 @@
+{
+  "mode": "development-untrusted",
+  "artifact": "/Users/lou/Learn/d-pi/out/main/index.js",
+  "artifactSha256": "93bfcd0f239a96f62eb49a8bcc4bcdaa178ff51b4375233c51b040c54620f2da",
+  "snapshot": {
+    "url": "file:///Users/lou/Learn/d-pi/out/renderer/index.html",
+    "title": "d-pi",
+    "node": "undefined",
+    "require": "undefined",
+    "locale": {
+      "preference": "system",
+      "resolvedLocale": "zh-CN"
+    },
+    "restore": "ready"
+  },
+  "checks": {
+    "expectedRendererLoaded": true,
+    "restrictedPreloadIpcWorks": true,
+    "rendererNodeUnavailable": true,
+    "inlineScriptBlocked": true,
+    "pageWindowAndNavigationDenied": true,
+    "nativeSessionNotStarted": true
+  }
+}

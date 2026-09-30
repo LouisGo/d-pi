@@ -1,9 +1,28 @@
 ---
 title: M1 S1 项目与持久输入起点
-status: delivered-awaiting-user-trial
 ---
 
 # M1 S1 项目与持久输入起点
+
+当前结构化状态由此块维护，下文有日期的过程记录保留当时语境。
+
+```project-status
+[
+  {
+    "id": "s1",
+    "title": "S1 项目与草稿",
+    "phase": "M1",
+    "engineering": "complete",
+    "trial": "feedback",
+    "acceptance": "pending",
+    "evidence": [
+      "handoff.md",
+      "hardening.md"
+    ],
+    "next": "原文粘贴已修，等待用户复试"
+  }
+]
+```
 
 日期：2026-09-27。近期实施入口；2026-09-27 用户已明确授权正式实施 S1，当前 01–05 工程交付完成，用户反馈的原文粘贴问题已修复待复试。依据[开发计划](../development-foundation/spec.md)、[基础契约](../../docs/architecture/foundation-contracts.md)、[Thread](../../docs/architecture/modules/threads.md)、[存储](../../docs/architecture/modules/app-storage.md)、[输入](../../docs/architecture/modules/input-context.md)、[设计系统](../../docs/architecture/design-system.md)。
 

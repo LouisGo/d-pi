@@ -1,5 +1,24 @@
 # d-pi 领域、目录与 AI Coding 治理方案
 
+当前结构化状态由此块维护，下文有日期的过程记录保留当时语境。
+
+```project-status
+[
+  {
+    "id": "domain-migration",
+    "title": "领域目录治理",
+    "phase": "基建",
+    "engineering": "complete",
+    "trial": "not-applicable",
+    "acceptance": "not-applicable",
+    "evidence": [
+      "handoff.md"
+    ],
+    "next": "沿用模块机器清单，目录规模不作为硬门槛"
+  }
+]
+```
+
 日期：2026-09-29。版本：第二版（独立复核后完整修订）。状态：**原 P0–P4 工程切片已交付；本次独立 review 发现的收口缺口已补修，当前交付待用户试用**。
 
 历史方案授权仅覆盖文档，已被 2026-09-29 用户后续指令覆盖：正式启动领域重构，先完成 P0 最小门禁和 P1 完整切片，按实际成本校准后继续 P2–P4；遵循 TDD、必要回归/构建/受影响 GUI 验证，不扩展 S5/M2。针对本次 review，用户进一步明确授权在修复完成后 commit 并 push；文档或工程通过不等于用户试用认可。

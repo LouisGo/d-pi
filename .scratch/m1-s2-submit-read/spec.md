@@ -1,9 +1,28 @@
 ---
 title: M1 S2 — 真实文字提交与阅读
-status: trial-ready
 ---
 
 # M1 S2 — 真实文字提交与阅读
+
+当前结构化状态由此块维护，下文有日期的过程记录保留当时语境。
+
+```project-status
+[
+  {
+    "id": "s2",
+    "title": "S2 提交与阅读",
+    "phase": "M1",
+    "engineering": "complete",
+    "trial": "delivered",
+    "acceptance": "pending",
+    "build": "0.1.0-s2.0",
+    "evidence": [
+      "handoff.md"
+    ],
+    "next": "等待真实供应商与输入体验反馈"
+  }
+]
+```
 
 日期：2026-09-28。本地 tracker 的规格成果；规格与本地拆票已完成；文档基线 `3288baf` 已先提交；S2 主流程与正式包集成验证已完成，当前已交付待用户试用，见 [交接](handoff.md)。用户明确选择保留官方 OMP，确认持久发送记录方案，无当前重要产品待决项。
 

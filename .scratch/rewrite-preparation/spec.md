@@ -1,5 +1,27 @@
 # d-pi 重写准备定稿
 
+当前结构化状态由此块维护，下文有日期的过程记录保留当时语境。
+
+```project-status
+[
+  {
+    "id": "rewrite",
+    "title": "核心重写及外观补修",
+    "phase": "基建",
+    "engineering": "complete",
+    "trial": "delivered",
+    "acceptance": "pending",
+    "build": "441b27b4-1525b713 / 2b1990fa-6a10f88e",
+    "evidence": [
+      "handoff.md",
+      "issues/09-appearance-performance.md"
+    ],
+    "next": "构建继续待试用；当前实施转到基建收口",
+    "constraints": "同题复测未证明接手效率提升；真实供应商、系统 IME 与用户体验未认可。"
+  }
+]
+```
+
 2026-09-30。目标是在既有架构与产品合同内打磨核心实现，让关键约束可执行、开发环境可复现，并降低 Agent 接手成本。范围覆盖文档、skill、工程入口和有证据的实现问题，保持规范精简。
 
 依据是用户本次提出的八点方案、[32 条提交复盘与回归依据](commit-review.md)，以及[决定登记](../../docs/decisions.md)、[基础方案](../../docs/product/first-release.md)和相关现行合同。本规格组织本次工作，不建立第二套架构或规范体系；具体规则继续由各合同维护。
@@ -44,7 +66,7 @@
 
 保留 `app / modules / platform / shared`、领域 × 运行环境目录、Main / utility Host / 独立 OMP 边界，以及已确认的主要技术栈。Zustand 与 TanStack Query 从重写起点承担实际职责，不能只保留依赖名或 Provider。
 
-不整体重命名 `workspace`，不提前创建 Run/检查点体系，不新增通用 `AgentRuntime`、事件总线、DI 容器或通用状态机。内部接口、创建流程和状态模型可以重新设计；现有正确的用户行为、事务原子性、恢复顺序和执行所有权保持。
+原“不整体重命名 `workspace`”限制已由 2026-09-30 用户的[基建收口授权](../infrastructure-closure/spec.md)取代，当前按领域事实迁移内部命名并保留持久格式；不提前创建 Run/检查点体系，不新增通用 `AgentRuntime`、事件总线、DI 容器或通用状态机。内部接口、创建流程和状态模型可以重新设计；现有正确的用户行为、事务原子性、恢复顺序和执行所有权保持。
 
 文档与目录迁移不夹带业务修改。已确认缺陷可以修复，但必须明确触发条件、行为变化和回归证据，不把现有缺陷当成必须兼容的产品合同，也不借修复引入未确认的产品选择。
 

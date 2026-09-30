@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, extname, relative, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { readTaskRecords } from "./task-records.mjs";
 
 // Historical snapshots keep original paths. Links from current documents to
 // those snapshots are checked; their contents are not rewritten or gated.
@@ -58,7 +59,7 @@ function anchorsOf(source) {
 }
 
 export function checkDocumentation(root, files) {
-  const issues = [];
+  const issues = readTaskRecords(root, files).issues;
   const decisionsPath = resolve(root, "docs/decisions.md");
   const decisions = existsSync(decisionsPath)
     ? readFileSync(decisionsPath, "utf8")
@@ -101,13 +102,21 @@ export function checkDocumentation(root, files) {
       const target = targetOf(link);
       if (/^[a-z][a-z0-9+.-]*:/i.test(target) || target.startsWith("//"))
         continue;
-      const [localPath, fragment] = target.split("#");
-      const path = localPath
-        ? resolve(
-            dirname(resolve(root, file)),
-            decodeURIComponent(localPath.split("?")[0]),
-          )
-        : resolve(root, file);
+      const [localPath, rawFragment] = target.split("#");
+      let path;
+      let fragment;
+      try {
+        path = localPath
+          ? resolve(
+              dirname(resolve(root, file)),
+              decodeURIComponent(localPath.split("?")[0]),
+            )
+          : resolve(root, file);
+        fragment = rawFragment ? decodeURIComponent(rawFragment) : undefined;
+      } catch {
+        issues.push(`DOC-LINK: ${file} -> ${target}: invalid URL encoding`);
+        continue;
+      }
       if (!existsSync(path)) {
         issues.push(`DOC-LINK: ${file} -> ${target}: target is missing`);
         continue;
@@ -115,7 +124,7 @@ export function checkDocumentation(root, files) {
       if (
         fragment &&
         extname(path) === ".md" &&
-        !anchorsOf(readFileSync(path, "utf8")).has(decodeURIComponent(fragment))
+        !anchorsOf(readFileSync(path, "utf8")).has(fragment)
       )
         issues.push(`DOC-ANCHOR: ${file} -> ${target}: anchor is missing`);
     }

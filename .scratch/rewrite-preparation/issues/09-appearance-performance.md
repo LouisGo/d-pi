@@ -1,6 +1,6 @@
 # 09 外观偏好的订阅与更新边界
 
-Status: done
+Status: resolved
 Blocked by: none
 
 2026-09-30 用户指出顶层全量状态订阅削弱按需订阅，明确要求修复主题、密度等展示偏好的性能隐患，并以项目 skill 提醒后续 AI。从 `992ceee` 的干净 `codex/rewrite-core` 开始，授权实现、必要测试依赖、验证、受影响 GUI 与本地提交；不 push。

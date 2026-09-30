@@ -1,0 +1,101 @@
+exit_code=1
+
+> d-pi@0.1.0-s4.0 test /Users/lou/Learn/d-pi
+> node scripts/test.mjs vitest tests/integration/window-security.integration.test.ts
+
+
+ RUN  v5.0.2 /Users/lou/Learn/d-pi
+
+(node:96067) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ tests/integration/window-security.integration.test.ts (11 tests | 1 failed) 953ms
+   ✓ keeps the packaged privileged window local even when a development URL is inherited 310ms
+   ✓ does not give an external development page the application preload 67ms
+   ✓ keeps an untrusted development target local: http://localhost.external.example.test/ 65ms
+   ✓ keeps an untrusted development target local: http://user:password@localhost:5173/ 64ms
+   ✓ keeps an untrusted development target local: data:text/html,<script>window.dPi.locale.snapshot()</script> 65ms
+   ✓ keeps an untrusted development target local: file:///tmp/external.html 64ms
+   × keeps an untrusted development target local: not a URL 64ms
+   ✓ retains local development loading: http://localhost:5173/ 64ms
+   ✓ retains local development loading: http://127.0.0.1:5173/ 63ms
+   ✓ retains local development loading: http://[::1]:5173/ 64ms
+   ✓ retains sandboxed isolation and refuses page-created windows, navigation and webviews 62ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/window-security.integration.test.ts > keeps an untrusted development target local: not a URL
+AssertionError: expected "vi.fn()" to be called at least once
+ ❯ tests/integration/window-security.integration.test.ts:105:28
+    103|   await vi.waitFor(() => expect(desktop.construct).toHaveBeenCalled());
+    104|   expect(desktop.loadURL).not.toHaveBeenCalled();
+    105|   expect(desktop.loadFile).toHaveBeenCalled();
+       |                            ^
+    106| });
+    107|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 2 unhandled errors during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+TypeError: Invalid URL
+ ❯ new URL ../../../../private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-test-coCkGq/work/node:internal/url:825:25
+ ❯ Object.fn src/app/main/index.ts:175:15
+    173| });
+    174| const developmentRendererUrl = z.url().refine((value) => {
+    175|   const url = new URL(value);
+       |               ^
+    176|   return (
+    177|     ["http:", "https:"].includes(url.protocol) &&
+ ❯ Internals.inst._zod.check node_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/core/schemas.js:2584:23
+ ❯ runChecks node_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/core/schemas.js:51:35
+ ❯ Internals.inst._zod.run node_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/core/schemas.js:118:20
+ ❯ Module.<anonymous> node_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/core/parse.js:43:32
+ ❯ _.safeParse node_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/classic/schemas.js:141:22
+ ❯ createWindow src/app/main/index.ts:294:46
+ ❯ src/app/main/index.ts:472:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'ERR_INVALID_URL', input: 'not a URL' }
+This error originated in "tests/integration/window-security.integration.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The last test to run before this error was "keeps an untrusted development target local: not a URL". This means either:
+- the error was thrown while Vitest was running this test, or
+- the error was thrown after the test completed, and this was the most recent test at that point.
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+TypeError: Invalid URL
+ ❯ new URL ../../../../private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-test-coCkGq/work/node:internal/url:825:25
+ ❯ Object.fn src/app/main/index.ts:175:15
+    173| });
+    174| const developmentRendererUrl = z.url().refine((value) => {
+    175|   const url = new URL(value);
+       |               ^
+    176|   return (
+    177|     ["http:", "https:"].includes(url.protocol) &&
+ ❯ Internals.inst._zod.check node_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/core/schemas.js:2584:23
+ ❯ runChecks node_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/core/schemas.js:51:35
+ ❯ Internals.inst._zod.run node_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/core/schemas.js:118:20
+ ❯ Module.<anonymous> node_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/core/parse.js:43:32
+ ❯ _.safeParse node_modules/.pnpm/zod@4.6.5/node_modules/zod/v4/classic/schemas.js:141:22
+ ❯ createWindow src/app/main/index.ts:294:46
+ ❯ src/app/main/index.ts:472:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'ERR_INVALID_URL', input: '' }
+This error originated in "tests/integration/window-security.integration.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The last test to run before this error was "retains sandboxed isolation and refuses page-created windows, navigation and webviews". This means either:
+- the error was thrown while Vitest was running this test, or
+- the error was thrown after the test completed, and this was the most recent test at that point.
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 10 passed (11)
+     Errors  2 errors
+   Start at  16:44:17
+   Duration  1.06s (tests 96%, transform 3%, import 1%)
+
+ ELIFECYCLE  Test failed. See above for more details.

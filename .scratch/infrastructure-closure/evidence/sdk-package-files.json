@@ -1,0 +1,19 @@
+{
+  "runnerNode": "v24.21.0",
+  "sdkManifest": {
+    "lockHash": "32eddfb9c24738c8d540aff250ea5a56e09e86b3f2830abfcf298c2a6162135e",
+    "sdkVersion": "18.3.0",
+    "bunVersion": "1.3.14",
+    "platform": "darwin-arm64",
+    "hashes": {
+      "bun": "e0c90ec15d33363e6b70713d56bc3b2c7585c17f40a0fe0f8fd9305901d4e233",
+      "host.mjs": "3beeb728f4635df18ec601ff5d0d17a1a5b21a3d07f61f38be8287df385a5bf1",
+      "gate.js": "62d1bc93fa5bfa163686199a94ff12f096490b55d0e5aef76253e12f25c28753"
+    }
+  },
+  "packageUnitsChecked": 176,
+  "rootNoticeFilesMatched": 154,
+  "unitsWithoutNoticeCandidates": 24,
+  "originalBunNoticeMatched": true,
+  "resourceIssues": []
+}

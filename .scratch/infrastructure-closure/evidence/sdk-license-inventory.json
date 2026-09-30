@@ -1,0 +1,1827 @@
+{
+  "capturedOn": "2026-09-30",
+  "scope": "Prepared SDK directory snapshot. Root LICENSE/COPYING/NOTICE candidates were inventoried; only the 24 units without root notices were also scanned for filenames containing license/copying/notice, including third-party notices. Symlinks were not followed. This does not establish redistribution obligations or fulfillment.",
+  "sdkManifest": {
+    "lockHash": "32eddfb9c24738c8d540aff250ea5a56e09e86b3f2830abfcf298c2a6162135e",
+    "sdkVersion": "18.3.0",
+    "bunVersion": "1.3.14",
+    "platform": "darwin-arm64",
+    "hashes": {
+      "bun": "e0c90ec15d33363e6b70713d56bc3b2c7585c17f40a0fe0f8fd9305901d4e233",
+      "host.mjs": "3beeb728f4635df18ec601ff5d0d17a1a5b21a3d07f61f38be8287df385a5bf1",
+      "gate.js": "62d1bc93fa5bfa163686199a94ff12f096490b55d0e5aef76253e12f25c28753"
+    }
+  },
+  "packageUnits": 176,
+  "unitsWithRootNotices": 152,
+  "unitsWithoutRootNotices": 24,
+  "missingRootNotices": [
+    {
+      "name": "@img/sharp-libvips-darwin-arm64",
+      "version": "1.3.4",
+      "declaredLicense": "LGPL-3.0-or-later",
+      "directory": "node_modules/.pnpm/@img+sharp-libvips-darwin-arm64@1.3.4/node_modules/@img/sharp-libvips-darwin-arm64",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "@img/sharp-libvips-darwin-x64",
+      "version": "1.3.4",
+      "declaredLicense": "LGPL-3.0-or-later",
+      "directory": "node_modules/.pnpm/@img+sharp-libvips-darwin-x64@1.3.4/node_modules/@img/sharp-libvips-darwin-x64",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "@img/sharp-libvips-linux-arm64",
+      "version": "1.3.4",
+      "declaredLicense": "LGPL-3.0-or-later",
+      "directory": "node_modules/.pnpm/@img+sharp-libvips-linux-arm64@1.3.4/node_modules/@img/sharp-libvips-linux-arm64",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "@img/sharp-libvips-linux-arm",
+      "version": "1.3.4",
+      "declaredLicense": "LGPL-3.0-or-later",
+      "directory": "node_modules/.pnpm/@img+sharp-libvips-linux-arm@1.3.4/node_modules/@img/sharp-libvips-linux-arm",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "@img/sharp-libvips-linux-ppc64",
+      "version": "1.3.4",
+      "declaredLicense": "LGPL-3.0-or-later",
+      "directory": "node_modules/.pnpm/@img+sharp-libvips-linux-ppc64@1.3.4/node_modules/@img/sharp-libvips-linux-ppc64",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "@img/sharp-libvips-linux-riscv64",
+      "version": "1.3.4",
+      "declaredLicense": "LGPL-3.0-or-later",
+      "directory": "node_modules/.pnpm/@img+sharp-libvips-linux-riscv64@1.3.4/node_modules/@img/sharp-libvips-linux-riscv64",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "@img/sharp-libvips-linux-s390x",
+      "version": "1.3.4",
+      "declaredLicense": "LGPL-3.0-or-later",
+      "directory": "node_modules/.pnpm/@img+sharp-libvips-linux-s390x@1.3.4/node_modules/@img/sharp-libvips-linux-s390x",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "@img/sharp-libvips-linux-x64",
+      "version": "1.3.4",
+      "declaredLicense": "LGPL-3.0-or-later",
+      "directory": "node_modules/.pnpm/@img+sharp-libvips-linux-x64@1.3.4/node_modules/@img/sharp-libvips-linux-x64",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "@img/sharp-libvips-linuxmusl-arm64",
+      "version": "1.3.4",
+      "declaredLicense": "LGPL-3.0-or-later",
+      "directory": "node_modules/.pnpm/@img+sharp-libvips-linuxmusl-arm64@1.3.4/node_modules/@img/sharp-libvips-linuxmusl-arm64",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "@img/sharp-libvips-linuxmusl-x64",
+      "version": "1.3.4",
+      "declaredLicense": "LGPL-3.0-or-later",
+      "directory": "node_modules/.pnpm/@img+sharp-libvips-linuxmusl-x64@1.3.4/node_modules/@img/sharp-libvips-linuxmusl-x64",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "@puppeteer/browsers",
+      "version": "3.0.6",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@puppeteer+browsers@3.0.6/node_modules/@puppeteer/browsers",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "guid-typescript",
+      "version": "1.0.9",
+      "declaredLicense": "ISC",
+      "directory": "node_modules/.pnpm/guid-typescript@1.0.9/node_modules/guid-typescript",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "onnxruntime-common",
+      "version": "1.30.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/onnxruntime-common@1.30.0/node_modules/onnxruntime-common",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "onnxruntime-common",
+      "version": "1.31.0-dev.20260911-2a43ec07e",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/onnxruntime-common@1.31.0-dev.20260911-2a43ec07e/node_modules/onnxruntime-common",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "onnxruntime-node",
+      "version": "1.30.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/onnxruntime-node@1.30.0/node_modules/onnxruntime-node",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "onnxruntime-web",
+      "version": "1.31.0-dev.20260914-8d85527a0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/onnxruntime-web@1.31.0-dev.20260914-8d85527a0/node_modules/onnxruntime-web",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "puppeteer-core",
+      "version": "25.3.0",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/puppeteer-core@25.3.0/node_modules/puppeteer-core",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "sherpa-onnx-darwin-arm64",
+      "version": "1.13.8",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/sherpa-onnx-darwin-arm64@1.13.8/node_modules/sherpa-onnx-darwin-arm64",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "sherpa-onnx-darwin-x64",
+      "version": "1.13.8",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/sherpa-onnx-darwin-x64@1.13.8/node_modules/sherpa-onnx-darwin-x64",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "sherpa-onnx-linux-arm64",
+      "version": "1.13.8",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/sherpa-onnx-linux-arm64@1.13.8/node_modules/sherpa-onnx-linux-arm64",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "sherpa-onnx-linux-x64",
+      "version": "1.13.8",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/sherpa-onnx-linux-x64@1.13.8/node_modules/sherpa-onnx-linux-x64",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "sherpa-onnx-node",
+      "version": "1.13.2",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/sherpa-onnx-node@1.13.2/node_modules/sherpa-onnx-node",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "sherpa-onnx-win-ia32",
+      "version": "1.13.8",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/sherpa-onnx-win-ia32@1.13.8/node_modules/sherpa-onnx-win-ia32",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "sherpa-onnx-win-x64",
+      "version": "1.13.8",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/sherpa-onnx-win-x64@1.13.8/node_modules/sherpa-onnx-win-x64",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    }
+  ],
+  "packages": [
+    {
+      "name": "@babel/helper-string-parser",
+      "version": "7.29.7",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@babel+helper-string-parser@7.29.7/node_modules/@babel/helper-string-parser",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@babel/helper-validator-identifier",
+      "version": "7.29.7",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@babel+helper-validator-identifier@7.29.7/node_modules/@babel/helper-validator-identifier",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@babel/parser",
+      "version": "7.29.9",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@babel+parser@7.29.9/node_modules/@babel/parser",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@babel/types",
+      "version": "7.29.8",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@babel+types@7.29.8/node_modules/@babel/types",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@emnapi/runtime",
+      "version": "1.11.3",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@emnapi+runtime@1.11.3/node_modules/@emnapi/runtime",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@huggingface/jinja",
+      "version": "0.5.10",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@huggingface+jinja@0.5.10/node_modules/@huggingface/jinja",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@huggingface/tokenizers",
+      "version": "0.2.0",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@huggingface+tokenizers@0.2.0/node_modules/@huggingface/tokenizers",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@huggingface/transformers",
+      "version": "4.3.0",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@huggingface+transformers@4.3.0_@types+node@24.19.0/node_modules/@huggingface/transformers",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@img/colour",
+      "version": "1.1.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@img+colour@1.1.0/node_modules/@img/colour",
+      "rootNoticeFiles": [
+        "LICENSE.md"
+      ]
+    },
+    {
+      "name": "@img/sharp-darwin-arm64",
+      "version": "0.35.5",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@img+sharp-darwin-arm64@0.35.5/node_modules/@img/sharp-darwin-arm64",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@img/sharp-darwin-x64",
+      "version": "0.35.5",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@img+sharp-darwin-x64@0.35.5/node_modules/@img/sharp-darwin-x64",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@img/sharp-freebsd-wasm32",
+      "version": "0.35.5",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@img+sharp-freebsd-wasm32@0.35.5/node_modules/@img/sharp-freebsd-wasm32",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@img/sharp-libvips-darwin-arm64",
+      "version": "1.3.4",
+      "declaredLicense": "LGPL-3.0-or-later",
+      "directory": "node_modules/.pnpm/@img+sharp-libvips-darwin-arm64@1.3.4/node_modules/@img/sharp-libvips-darwin-arm64",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "@img/sharp-libvips-darwin-x64",
+      "version": "1.3.4",
+      "declaredLicense": "LGPL-3.0-or-later",
+      "directory": "node_modules/.pnpm/@img+sharp-libvips-darwin-x64@1.3.4/node_modules/@img/sharp-libvips-darwin-x64",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "@img/sharp-libvips-linux-arm64",
+      "version": "1.3.4",
+      "declaredLicense": "LGPL-3.0-or-later",
+      "directory": "node_modules/.pnpm/@img+sharp-libvips-linux-arm64@1.3.4/node_modules/@img/sharp-libvips-linux-arm64",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "@img/sharp-libvips-linux-arm",
+      "version": "1.3.4",
+      "declaredLicense": "LGPL-3.0-or-later",
+      "directory": "node_modules/.pnpm/@img+sharp-libvips-linux-arm@1.3.4/node_modules/@img/sharp-libvips-linux-arm",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "@img/sharp-libvips-linux-ppc64",
+      "version": "1.3.4",
+      "declaredLicense": "LGPL-3.0-or-later",
+      "directory": "node_modules/.pnpm/@img+sharp-libvips-linux-ppc64@1.3.4/node_modules/@img/sharp-libvips-linux-ppc64",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "@img/sharp-libvips-linux-riscv64",
+      "version": "1.3.4",
+      "declaredLicense": "LGPL-3.0-or-later",
+      "directory": "node_modules/.pnpm/@img+sharp-libvips-linux-riscv64@1.3.4/node_modules/@img/sharp-libvips-linux-riscv64",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "@img/sharp-libvips-linux-s390x",
+      "version": "1.3.4",
+      "declaredLicense": "LGPL-3.0-or-later",
+      "directory": "node_modules/.pnpm/@img+sharp-libvips-linux-s390x@1.3.4/node_modules/@img/sharp-libvips-linux-s390x",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "@img/sharp-libvips-linux-x64",
+      "version": "1.3.4",
+      "declaredLicense": "LGPL-3.0-or-later",
+      "directory": "node_modules/.pnpm/@img+sharp-libvips-linux-x64@1.3.4/node_modules/@img/sharp-libvips-linux-x64",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "@img/sharp-libvips-linuxmusl-arm64",
+      "version": "1.3.4",
+      "declaredLicense": "LGPL-3.0-or-later",
+      "directory": "node_modules/.pnpm/@img+sharp-libvips-linuxmusl-arm64@1.3.4/node_modules/@img/sharp-libvips-linuxmusl-arm64",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "@img/sharp-libvips-linuxmusl-x64",
+      "version": "1.3.4",
+      "declaredLicense": "LGPL-3.0-or-later",
+      "directory": "node_modules/.pnpm/@img+sharp-libvips-linuxmusl-x64@1.3.4/node_modules/@img/sharp-libvips-linuxmusl-x64",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "@img/sharp-linux-arm64",
+      "version": "0.35.5",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@img+sharp-linux-arm64@0.35.5/node_modules/@img/sharp-linux-arm64",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@img/sharp-linux-arm",
+      "version": "0.35.5",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@img+sharp-linux-arm@0.35.5/node_modules/@img/sharp-linux-arm",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@img/sharp-linux-ppc64",
+      "version": "0.35.5",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@img+sharp-linux-ppc64@0.35.5/node_modules/@img/sharp-linux-ppc64",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@img/sharp-linux-riscv64",
+      "version": "0.35.5",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@img+sharp-linux-riscv64@0.35.5/node_modules/@img/sharp-linux-riscv64",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@img/sharp-linux-s390x",
+      "version": "0.35.5",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@img+sharp-linux-s390x@0.35.5/node_modules/@img/sharp-linux-s390x",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@img/sharp-linux-x64",
+      "version": "0.35.5",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@img+sharp-linux-x64@0.35.5/node_modules/@img/sharp-linux-x64",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@img/sharp-linuxmusl-arm64",
+      "version": "0.35.5",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@img+sharp-linuxmusl-arm64@0.35.5/node_modules/@img/sharp-linuxmusl-arm64",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@img/sharp-linuxmusl-x64",
+      "version": "0.35.5",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@img+sharp-linuxmusl-x64@0.35.5/node_modules/@img/sharp-linuxmusl-x64",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@img/sharp-wasm32",
+      "version": "0.35.5",
+      "declaredLicense": "Apache-2.0 AND LGPL-3.0-or-later AND MIT",
+      "directory": "node_modules/.pnpm/@img+sharp-wasm32@0.35.5/node_modules/@img/sharp-wasm32",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@img/sharp-webcontainers-wasm32",
+      "version": "0.35.5",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@img+sharp-webcontainers-wasm32@0.35.5/node_modules/@img/sharp-webcontainers-wasm32",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@img/sharp-win32-arm64",
+      "version": "0.35.5",
+      "declaredLicense": "Apache-2.0 AND LGPL-3.0-or-later",
+      "directory": "node_modules/.pnpm/@img+sharp-win32-arm64@0.35.5/node_modules/@img/sharp-win32-arm64",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@img/sharp-win32-ia32",
+      "version": "0.35.5",
+      "declaredLicense": "Apache-2.0 AND LGPL-3.0-or-later",
+      "directory": "node_modules/.pnpm/@img+sharp-win32-ia32@0.35.5/node_modules/@img/sharp-win32-ia32",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@img/sharp-win32-x64",
+      "version": "0.35.5",
+      "declaredLicense": "Apache-2.0 AND LGPL-3.0-or-later",
+      "directory": "node_modules/.pnpm/@img+sharp-win32-x64@0.35.5/node_modules/@img/sharp-win32-x64",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@jridgewell/gen-mapping",
+      "version": "0.3.13",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@jridgewell+gen-mapping@0.3.13/node_modules/@jridgewell/gen-mapping",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@jridgewell/remapping",
+      "version": "2.3.5",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@jridgewell+remapping@2.3.5/node_modules/@jridgewell/remapping",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@jridgewell/resolve-uri",
+      "version": "3.1.2",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@jridgewell+resolve-uri@3.1.2/node_modules/@jridgewell/resolve-uri",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@jridgewell/sourcemap-codec",
+      "version": "1.6.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@jridgewell+sourcemap-codec@1.6.0/node_modules/@jridgewell/sourcemap-codec",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@jridgewell/trace-mapping",
+      "version": "0.3.31",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@jridgewell+trace-mapping@0.3.31/node_modules/@jridgewell/trace-mapping",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@kurkle/color",
+      "version": "0.3.4",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@kurkle+color@0.3.4/node_modules/@kurkle/color",
+      "rootNoticeFiles": [
+        "LICENSE.md"
+      ]
+    },
+    {
+      "name": "@oh-my-pi/omp-stats",
+      "version": "18.3.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@oh-my-pi+omp-stats@18.3.0/node_modules/@oh-my-pi/omp-stats",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@oh-my-pi/omptype",
+      "version": "18.3.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@oh-my-pi+omptype@18.3.0/node_modules/@oh-my-pi/omptype",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@oh-my-pi/pi-agent-core",
+      "version": "18.3.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@oh-my-pi+pi-agent-core@18.3.0/node_modules/@oh-my-pi/pi-agent-core",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@oh-my-pi/pi-ai",
+      "version": "18.3.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@oh-my-pi+pi-ai@18.3.0/node_modules/@oh-my-pi/pi-ai",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@oh-my-pi/pi-catalog",
+      "version": "18.3.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@oh-my-pi+pi-catalog@18.3.0/node_modules/@oh-my-pi/pi-catalog",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@oh-my-pi/pi-coding-agent",
+      "version": "18.3.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@oh-my-pi+pi-coding-agent@18.3.0_@types+node@24.19.0/node_modules/@oh-my-pi/pi-coding-agent",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@oh-my-pi/pi-mnemopi",
+      "version": "18.3.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@oh-my-pi+pi-mnemopi@18.3.0/node_modules/@oh-my-pi/pi-mnemopi",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@oh-my-pi/pi-natives-darwin-arm64",
+      "version": "18.3.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@oh-my-pi+pi-natives-darwin-arm64@18.3.0/node_modules/@oh-my-pi/pi-natives-darwin-arm64",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@oh-my-pi/pi-natives-darwin-x64",
+      "version": "18.3.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@oh-my-pi+pi-natives-darwin-x64@18.3.0/node_modules/@oh-my-pi/pi-natives-darwin-x64",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@oh-my-pi/pi-natives-linux-arm64",
+      "version": "18.3.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@oh-my-pi+pi-natives-linux-arm64@18.3.0/node_modules/@oh-my-pi/pi-natives-linux-arm64",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@oh-my-pi/pi-natives-linux-x64",
+      "version": "18.3.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@oh-my-pi+pi-natives-linux-x64@18.3.0/node_modules/@oh-my-pi/pi-natives-linux-x64",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@oh-my-pi/pi-natives-win32-arm64",
+      "version": "18.3.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@oh-my-pi+pi-natives-win32-arm64@18.3.0/node_modules/@oh-my-pi/pi-natives-win32-arm64",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@oh-my-pi/pi-natives-win32-x64",
+      "version": "18.3.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@oh-my-pi+pi-natives-win32-x64@18.3.0/node_modules/@oh-my-pi/pi-natives-win32-x64",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@oh-my-pi/pi-natives",
+      "version": "18.3.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@oh-my-pi+pi-natives@18.3.0/node_modules/@oh-my-pi/pi-natives",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@oh-my-pi/pi-tui",
+      "version": "18.3.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@oh-my-pi+pi-tui@18.3.0/node_modules/@oh-my-pi/pi-tui",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@oh-my-pi/pi-utils",
+      "version": "18.3.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@oh-my-pi+pi-utils@18.3.0/node_modules/@oh-my-pi/pi-utils",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@oh-my-pi/pi-wire",
+      "version": "18.3.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@oh-my-pi+pi-wire@18.3.0/node_modules/@oh-my-pi/pi-wire",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@oh-my-pi/snapcompact",
+      "version": "18.3.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@oh-my-pi+snapcompact@18.3.0/node_modules/@oh-my-pi/snapcompact",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@opentelemetry/api-logs",
+      "version": "0.220.0",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@opentelemetry+api-logs@0.220.0/node_modules/@opentelemetry/api-logs",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@opentelemetry/api",
+      "version": "1.9.1",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@opentelemetry+api@1.9.1/node_modules/@opentelemetry/api",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@opentelemetry/context-async-hooks",
+      "version": "2.11.0",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@opentelemetry+context-async-hooks@2.11.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/context-async-hooks",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@opentelemetry/core",
+      "version": "2.11.0",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@opentelemetry+core@2.11.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/core",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@opentelemetry/core",
+      "version": "2.9.0",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@opentelemetry+core@2.9.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/core",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@opentelemetry/exporter-logs-otlp-proto",
+      "version": "0.220.0",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@opentelemetry+exporter-logs-otlp-proto@0.220.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/exporter-logs-otlp-proto",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@opentelemetry/exporter-metrics-otlp-http",
+      "version": "0.220.0",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@opentelemetry+exporter-metrics-otlp-http@0.220.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/exporter-metrics-otlp-http",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@opentelemetry/exporter-metrics-otlp-proto",
+      "version": "0.220.0",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@opentelemetry+exporter-metrics-otlp-proto@0.220.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/exporter-metrics-otlp-proto",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@opentelemetry/exporter-trace-otlp-proto",
+      "version": "0.220.0",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@opentelemetry+exporter-trace-otlp-proto@0.220.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/exporter-trace-otlp-proto",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@opentelemetry/otlp-exporter-base",
+      "version": "0.220.0",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@opentelemetry+otlp-exporter-base@0.220.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/otlp-exporter-base",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@opentelemetry/otlp-transformer",
+      "version": "0.220.0",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@opentelemetry+otlp-transformer@0.220.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/otlp-transformer",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@opentelemetry/resources",
+      "version": "2.11.0",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@opentelemetry+resources@2.11.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/resources",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@opentelemetry/resources",
+      "version": "2.9.0",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@opentelemetry+resources@2.9.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/resources",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@opentelemetry/sdk-logs",
+      "version": "0.220.0",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@opentelemetry+sdk-logs@0.220.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/sdk-logs",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@opentelemetry/sdk-metrics",
+      "version": "2.11.0",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@opentelemetry+sdk-metrics@2.11.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/sdk-metrics",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@opentelemetry/sdk-metrics",
+      "version": "2.9.0",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@opentelemetry+sdk-metrics@2.9.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/sdk-metrics",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@opentelemetry/sdk-trace-base",
+      "version": "2.11.0",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@opentelemetry+sdk-trace-base@2.11.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/sdk-trace-base",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@opentelemetry/sdk-trace-node",
+      "version": "2.11.0",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@opentelemetry+sdk-trace-node@2.11.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/sdk-trace-node",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@opentelemetry/sdk-trace",
+      "version": "2.11.0",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@opentelemetry+sdk-trace@2.11.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/sdk-trace",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@opentelemetry/sdk-trace",
+      "version": "2.9.0",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@opentelemetry+sdk-trace@2.9.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/sdk-trace",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@opentelemetry/semantic-conventions",
+      "version": "1.43.0",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@opentelemetry+semantic-conventions@1.43.0/node_modules/@opentelemetry/semantic-conventions",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@protobufjs/aspromise",
+      "version": "1.1.2",
+      "declaredLicense": "BSD-3-Clause",
+      "directory": "node_modules/.pnpm/@protobufjs+aspromise@1.1.2/node_modules/@protobufjs/aspromise",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@protobufjs/base64",
+      "version": "1.1.2",
+      "declaredLicense": "BSD-3-Clause",
+      "directory": "node_modules/.pnpm/@protobufjs+base64@1.1.2/node_modules/@protobufjs/base64",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@protobufjs/codegen",
+      "version": "2.0.5",
+      "declaredLicense": "BSD-3-Clause",
+      "directory": "node_modules/.pnpm/@protobufjs+codegen@2.0.5/node_modules/@protobufjs/codegen",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@protobufjs/eventemitter",
+      "version": "1.1.1",
+      "declaredLicense": "BSD-3-Clause",
+      "directory": "node_modules/.pnpm/@protobufjs+eventemitter@1.1.1/node_modules/@protobufjs/eventemitter",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@protobufjs/fetch",
+      "version": "1.1.1",
+      "declaredLicense": "BSD-3-Clause",
+      "directory": "node_modules/.pnpm/@protobufjs+fetch@1.1.1/node_modules/@protobufjs/fetch",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@protobufjs/float",
+      "version": "1.0.2",
+      "declaredLicense": "BSD-3-Clause",
+      "directory": "node_modules/.pnpm/@protobufjs+float@1.0.2/node_modules/@protobufjs/float",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@protobufjs/path",
+      "version": "1.1.2",
+      "declaredLicense": "BSD-3-Clause",
+      "directory": "node_modules/.pnpm/@protobufjs+path@1.1.2/node_modules/@protobufjs/path",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@protobufjs/pool",
+      "version": "1.1.0",
+      "declaredLicense": "BSD-3-Clause",
+      "directory": "node_modules/.pnpm/@protobufjs+pool@1.1.0/node_modules/@protobufjs/pool",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@protobufjs/utf8",
+      "version": "1.1.2",
+      "declaredLicense": "BSD-3-Clause",
+      "directory": "node_modules/.pnpm/@protobufjs+utf8@1.1.2/node_modules/@protobufjs/utf8",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@puppeteer/browsers",
+      "version": "3.0.6",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/@puppeteer+browsers@3.0.6/node_modules/@puppeteer/browsers",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "@tailwindcss/node",
+      "version": "4.3.3",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@tailwindcss+node@4.3.3/node_modules/@tailwindcss/node",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "@types/node",
+      "version": "24.19.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/@types+node@24.19.0/node_modules/@types/node",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "adm-zip",
+      "version": "0.6.1",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/adm-zip@0.6.1/node_modules/adm-zip",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "ansi-regex",
+      "version": "6.4.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/ansi-regex@6.4.0/node_modules/ansi-regex",
+      "rootNoticeFiles": [
+        "license"
+      ]
+    },
+    {
+      "name": "ansi-styles",
+      "version": "6.2.3",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/ansi-styles@6.2.3/node_modules/ansi-styles",
+      "rootNoticeFiles": [
+        "license"
+      ]
+    },
+    {
+      "name": "axe-core",
+      "version": "4.13.0",
+      "declaredLicense": "MPL-2.0",
+      "directory": "node_modules/.pnpm/axe-core@4.13.0/node_modules/axe-core",
+      "rootNoticeFiles": [
+        "LICENSE",
+        "LICENSE-3RD-PARTY.txt"
+      ]
+    },
+    {
+      "name": "chart.js",
+      "version": "4.5.1",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/chart.js@4.5.1/node_modules/chart.js",
+      "rootNoticeFiles": [
+        "LICENSE.md"
+      ]
+    },
+    {
+      "name": "chromium-bidi",
+      "version": "16.0.1",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/chromium-bidi@16.0.1_devtools-protocol@0.0.1638949/node_modules/chromium-bidi",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "cliui",
+      "version": "9.0.1",
+      "declaredLicense": "ISC",
+      "directory": "node_modules/.pnpm/cliui@9.0.1/node_modules/cliui",
+      "rootNoticeFiles": [
+        "LICENSE.txt"
+      ]
+    },
+    {
+      "name": "define-data-property",
+      "version": "1.1.4",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/define-data-property@1.1.4/node_modules/define-data-property",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "define-properties",
+      "version": "1.2.1",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/define-properties@1.2.1/node_modules/define-properties",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "detect-libc",
+      "version": "2.1.2",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/detect-libc@2.1.2/node_modules/detect-libc",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "devtools-protocol",
+      "version": "0.0.1638949",
+      "declaredLicense": "BSD-3-Clause",
+      "directory": "node_modules/.pnpm/devtools-protocol@0.0.1638949/node_modules/devtools-protocol",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "emoji-regex",
+      "version": "10.6.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/emoji-regex@10.6.0/node_modules/emoji-regex",
+      "rootNoticeFiles": [
+        "LICENSE-MIT.txt"
+      ]
+    },
+    {
+      "name": "enhanced-resolve",
+      "version": "5.25.1",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/enhanced-resolve@5.25.1/node_modules/enhanced-resolve",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "es-define-property",
+      "version": "1.0.1",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/es-define-property@1.0.1/node_modules/es-define-property",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "es-errors",
+      "version": "1.3.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/es-errors@1.3.0/node_modules/es-errors",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "escalade",
+      "version": "3.2.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/escalade@3.2.0/node_modules/escalade",
+      "rootNoticeFiles": [
+        "license"
+      ]
+    },
+    {
+      "name": "escape-string-regexp",
+      "version": "4.0.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/escape-string-regexp@4.0.0/node_modules/escape-string-regexp",
+      "rootNoticeFiles": [
+        "license"
+      ]
+    },
+    {
+      "name": "flatbuffers",
+      "version": "25.9.23",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/flatbuffers@25.9.23/node_modules/flatbuffers",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "get-caller-file",
+      "version": "2.0.5",
+      "declaredLicense": "ISC",
+      "directory": "node_modules/.pnpm/get-caller-file@2.0.5/node_modules/get-caller-file",
+      "rootNoticeFiles": [
+        "LICENSE.md"
+      ]
+    },
+    {
+      "name": "get-east-asian-width",
+      "version": "1.7.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/get-east-asian-width@1.7.0/node_modules/get-east-asian-width",
+      "rootNoticeFiles": [
+        "license"
+      ]
+    },
+    {
+      "name": "global-agent",
+      "version": "4.1.3",
+      "declaredLicense": "BSD-3-Clause",
+      "directory": "node_modules/.pnpm/global-agent@4.1.3/node_modules/global-agent",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "globalthis",
+      "version": "1.0.4",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/globalthis@1.0.4/node_modules/globalthis",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "gopd",
+      "version": "1.2.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/gopd@1.2.0/node_modules/gopd",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "graceful-fs",
+      "version": "4.2.11",
+      "declaredLicense": "ISC",
+      "directory": "node_modules/.pnpm/graceful-fs@4.2.11/node_modules/graceful-fs",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "guid-typescript",
+      "version": "1.0.9",
+      "declaredLicense": "ISC",
+      "directory": "node_modules/.pnpm/guid-typescript@1.0.9/node_modules/guid-typescript",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "has-property-descriptors",
+      "version": "1.0.2",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/has-property-descriptors@1.0.2/node_modules/has-property-descriptors",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "jiti",
+      "version": "2.7.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/jiti@2.7.0/node_modules/jiti",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "lightningcss-android-arm64",
+      "version": "1.32.0",
+      "declaredLicense": "MPL-2.0",
+      "directory": "node_modules/.pnpm/lightningcss-android-arm64@1.32.0/node_modules/lightningcss-android-arm64",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "lightningcss-darwin-arm64",
+      "version": "1.32.0",
+      "declaredLicense": "MPL-2.0",
+      "directory": "node_modules/.pnpm/lightningcss-darwin-arm64@1.32.0/node_modules/lightningcss-darwin-arm64",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "lightningcss-darwin-x64",
+      "version": "1.32.0",
+      "declaredLicense": "MPL-2.0",
+      "directory": "node_modules/.pnpm/lightningcss-darwin-x64@1.32.0/node_modules/lightningcss-darwin-x64",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "lightningcss-freebsd-x64",
+      "version": "1.32.0",
+      "declaredLicense": "MPL-2.0",
+      "directory": "node_modules/.pnpm/lightningcss-freebsd-x64@1.32.0/node_modules/lightningcss-freebsd-x64",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "lightningcss-linux-arm-gnueabihf",
+      "version": "1.32.0",
+      "declaredLicense": "MPL-2.0",
+      "directory": "node_modules/.pnpm/lightningcss-linux-arm-gnueabihf@1.32.0/node_modules/lightningcss-linux-arm-gnueabihf",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "lightningcss-linux-arm64-gnu",
+      "version": "1.32.0",
+      "declaredLicense": "MPL-2.0",
+      "directory": "node_modules/.pnpm/lightningcss-linux-arm64-gnu@1.32.0/node_modules/lightningcss-linux-arm64-gnu",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "lightningcss-linux-arm64-musl",
+      "version": "1.32.0",
+      "declaredLicense": "MPL-2.0",
+      "directory": "node_modules/.pnpm/lightningcss-linux-arm64-musl@1.32.0/node_modules/lightningcss-linux-arm64-musl",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "lightningcss-linux-x64-gnu",
+      "version": "1.32.0",
+      "declaredLicense": "MPL-2.0",
+      "directory": "node_modules/.pnpm/lightningcss-linux-x64-gnu@1.32.0/node_modules/lightningcss-linux-x64-gnu",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "lightningcss-linux-x64-musl",
+      "version": "1.32.0",
+      "declaredLicense": "MPL-2.0",
+      "directory": "node_modules/.pnpm/lightningcss-linux-x64-musl@1.32.0/node_modules/lightningcss-linux-x64-musl",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "lightningcss-win32-arm64-msvc",
+      "version": "1.32.0",
+      "declaredLicense": "MPL-2.0",
+      "directory": "node_modules/.pnpm/lightningcss-win32-arm64-msvc@1.32.0/node_modules/lightningcss-win32-arm64-msvc",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "lightningcss-win32-x64-msvc",
+      "version": "1.32.0",
+      "declaredLicense": "MPL-2.0",
+      "directory": "node_modules/.pnpm/lightningcss-win32-x64-msvc@1.32.0/node_modules/lightningcss-win32-x64-msvc",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "lightningcss",
+      "version": "1.32.0",
+      "declaredLicense": "MPL-2.0",
+      "directory": "node_modules/.pnpm/lightningcss@1.32.0/node_modules/lightningcss",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "long",
+      "version": "5.3.2",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/long@5.3.2/node_modules/long",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "lucide-react",
+      "version": "1.48.0",
+      "declaredLicense": "ISC",
+      "directory": "node_modules/.pnpm/lucide-react@1.48.0_react@19.2.7/node_modules/lucide-react",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "magic-string",
+      "version": "0.30.21",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/magic-string@0.30.21/node_modules/magic-string",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "matcher",
+      "version": "4.0.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/matcher@4.0.0/node_modules/matcher",
+      "rootNoticeFiles": [
+        "license"
+      ]
+    },
+    {
+      "name": "mitt",
+      "version": "3.0.1",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/mitt@3.0.1/node_modules/mitt",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "modern-tar",
+      "version": "0.7.7",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/modern-tar@0.7.7/node_modules/modern-tar",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "object-keys",
+      "version": "1.1.1",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/object-keys@1.1.1/node_modules/object-keys",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "onnxruntime-common",
+      "version": "1.30.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/onnxruntime-common@1.30.0/node_modules/onnxruntime-common",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "onnxruntime-common",
+      "version": "1.31.0-dev.20260911-2a43ec07e",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/onnxruntime-common@1.31.0-dev.20260911-2a43ec07e/node_modules/onnxruntime-common",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "onnxruntime-node",
+      "version": "1.30.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/onnxruntime-node@1.30.0/node_modules/onnxruntime-node",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "onnxruntime-web",
+      "version": "1.31.0-dev.20260914-8d85527a0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/onnxruntime-web@1.31.0-dev.20260914-8d85527a0/node_modules/onnxruntime-web",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "platform",
+      "version": "1.3.6",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/platform@1.3.6/node_modules/platform",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "protobufjs",
+      "version": "7.6.6",
+      "declaredLicense": "BSD-3-Clause",
+      "directory": "node_modules/.pnpm/protobufjs@7.6.6/node_modules/protobufjs",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "puppeteer-core",
+      "version": "25.3.0",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/puppeteer-core@25.3.0/node_modules/puppeteer-core",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "react-chartjs-2",
+      "version": "5.3.1",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/react-chartjs-2@5.3.1_chart.js@4.5.1_react@19.2.7/node_modules/react-chartjs-2",
+      "rootNoticeFiles": [
+        "LICENSE",
+        "LICENSE.md"
+      ]
+    },
+    {
+      "name": "react-dom",
+      "version": "19.2.7",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/react-dom@19.2.7_react@19.2.7/node_modules/react-dom",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "react",
+      "version": "19.2.7",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/react@19.2.7/node_modules/react",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "scheduler",
+      "version": "0.27.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/scheduler@0.27.0/node_modules/scheduler",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "semver",
+      "version": "7.8.5",
+      "declaredLicense": "ISC",
+      "directory": "node_modules/.pnpm/semver@7.8.5/node_modules/semver",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "serialize-error",
+      "version": "8.1.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/serialize-error@8.1.0/node_modules/serialize-error",
+      "rootNoticeFiles": [
+        "license"
+      ]
+    },
+    {
+      "name": "sharp",
+      "version": "0.35.5",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/sharp@0.35.5_@types+node@24.19.0/node_modules/sharp",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "sherpa-onnx-darwin-arm64",
+      "version": "1.13.8",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/sherpa-onnx-darwin-arm64@1.13.8/node_modules/sherpa-onnx-darwin-arm64",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "sherpa-onnx-darwin-x64",
+      "version": "1.13.8",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/sherpa-onnx-darwin-x64@1.13.8/node_modules/sherpa-onnx-darwin-x64",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "sherpa-onnx-linux-arm64",
+      "version": "1.13.8",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/sherpa-onnx-linux-arm64@1.13.8/node_modules/sherpa-onnx-linux-arm64",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "sherpa-onnx-linux-x64",
+      "version": "1.13.8",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/sherpa-onnx-linux-x64@1.13.8/node_modules/sherpa-onnx-linux-x64",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "sherpa-onnx-node",
+      "version": "1.13.2",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/sherpa-onnx-node@1.13.2/node_modules/sherpa-onnx-node",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "sherpa-onnx-win-ia32",
+      "version": "1.13.8",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/sherpa-onnx-win-ia32@1.13.8/node_modules/sherpa-onnx-win-ia32",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "sherpa-onnx-win-x64",
+      "version": "1.13.8",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/sherpa-onnx-win-x64@1.13.8/node_modules/sherpa-onnx-win-x64",
+      "rootNoticeFiles": [],
+      "nestedNoticeFiles": [],
+      "additionalNoticeCandidates": []
+    },
+    {
+      "name": "source-map-js",
+      "version": "1.2.1",
+      "declaredLicense": "BSD-3-Clause",
+      "directory": "node_modules/.pnpm/source-map-js@1.2.1/node_modules/source-map-js",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "string-width",
+      "version": "7.2.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/string-width@7.2.0/node_modules/string-width",
+      "rootNoticeFiles": [
+        "license"
+      ]
+    },
+    {
+      "name": "string-width",
+      "version": "8.3.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/string-width@8.3.0/node_modules/string-width",
+      "rootNoticeFiles": [
+        "license"
+      ]
+    },
+    {
+      "name": "strip-ansi",
+      "version": "7.2.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/strip-ansi@7.2.0/node_modules/strip-ansi",
+      "rootNoticeFiles": [
+        "license"
+      ]
+    },
+    {
+      "name": "tailwindcss",
+      "version": "4.3.3",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/tailwindcss@4.3.3/node_modules/tailwindcss",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "tapable",
+      "version": "2.3.3",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/tapable@2.3.3/node_modules/tapable",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "tslib",
+      "version": "2.8.1",
+      "declaredLicense": "0BSD",
+      "directory": "node_modules/.pnpm/tslib@2.8.1/node_modules/tslib",
+      "rootNoticeFiles": [
+        "LICENSE.txt"
+      ]
+    },
+    {
+      "name": "type-fest",
+      "version": "0.20.2",
+      "declaredLicense": "(MIT OR CC0-1.0)",
+      "directory": "node_modules/.pnpm/type-fest@0.20.2/node_modules/type-fest",
+      "rootNoticeFiles": [
+        "license"
+      ]
+    },
+    {
+      "name": "typed-query-selector",
+      "version": "2.12.2",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/typed-query-selector@2.12.2/node_modules/typed-query-selector",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "undici-types",
+      "version": "7.24.6",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/undici-types@7.24.6/node_modules/undici-types",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "webdriver-bidi-protocol",
+      "version": "0.4.2",
+      "declaredLicense": "Apache-2.0",
+      "directory": "node_modules/.pnpm/webdriver-bidi-protocol@0.4.2/node_modules/webdriver-bidi-protocol",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "wrap-ansi",
+      "version": "9.0.2",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/wrap-ansi@9.0.2/node_modules/wrap-ansi",
+      "rootNoticeFiles": [
+        "license"
+      ]
+    },
+    {
+      "name": "ws",
+      "version": "8.22.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/ws@8.22.0/node_modules/ws",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "y18n",
+      "version": "5.0.8",
+      "declaredLicense": "ISC",
+      "directory": "node_modules/.pnpm/y18n@5.0.8/node_modules/y18n",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "yargs-parser",
+      "version": "22.0.0",
+      "declaredLicense": "ISC",
+      "directory": "node_modules/.pnpm/yargs-parser@22.0.0/node_modules/yargs-parser",
+      "rootNoticeFiles": [
+        "LICENSE.txt"
+      ]
+    },
+    {
+      "name": "yargs",
+      "version": "18.2.0",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/yargs@18.2.0/node_modules/yargs",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "zod",
+      "version": "3.25.76",
+      "declaredLicense": "MIT",
+      "directory": "node_modules/.pnpm/zod@3.25.76/node_modules/zod",
+      "rootNoticeFiles": [
+        "LICENSE"
+      ]
+    }
+  ],
+  "unitsWithNestedNoticesOnly": 0,
+  "unitsWithoutNoticeCandidates": 24,
+  "unitsWithAdditionalNoticeCandidates": 0
+}

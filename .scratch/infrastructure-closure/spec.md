@@ -1,5 +1,33 @@
 # S5 前基建收口
 
+当前结构化状态由此块维护，下文有日期的过程记录保留当时语境。
+
+```project-status
+[
+  {
+    "id": "infrastructure",
+    "title": "S5 前基建收口",
+    "phase": "基建",
+    "engineering": "in-progress",
+    "trial": "not-delivered",
+    "acceptance": "not-applicable",
+    "evidence": [
+      "issues/01-language.md",
+      "issues/02-docs-status.md",
+      "issues/03-engineering.md",
+      "issues/04-maintenance.md",
+      "issues/05-verification.md"
+    ],
+    "pending": [
+      "../m1-s3-control-recovery/issues/09-quit-discard-decision.md"
+    ],
+    "current": true,
+    "next": "完成基建、冻结审阅和必要验证后停止；不启动 S5/M2",
+    "constraints": "只本地 commit、不 push 或公开发布；许可证由权利人决定，签名/公证/更新尚未实施。"
+  }
+]
+```
+
 2026-09-30。基线 `00d16ae5098f12b9fdebf2afb630f99ee82bcebe`，分支 `codex/rewrite-core`，工作树干净。
 
 ## 推进与交接

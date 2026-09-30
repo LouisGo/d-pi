@@ -1,0 +1,24 @@
+{
+  "mode": "packaged",
+  "artifact": "/Users/lou/Learn/d-pi/dist/infrastructure/mac-arm64/d-pi.app/Contents/Resources/app.asar",
+  "artifactSha256": "559e367db8554d0d63d419ec2b7f8b9675dfe3461acf9997c8b2c30d8324c05b",
+  "snapshot": {
+    "url": "file:///Users/lou/Learn/d-pi/dist/infrastructure/mac-arm64/d-pi.app/Contents/Resources/app.asar/out/renderer/index.html",
+    "title": "d-pi",
+    "node": "undefined",
+    "require": "undefined",
+    "locale": {
+      "preference": "system",
+      "resolvedLocale": "zh-CN"
+    },
+    "restore": "ready"
+  },
+  "checks": {
+    "expectedRendererLoaded": true,
+    "restrictedPreloadIpcWorks": true,
+    "rendererNodeUnavailable": true,
+    "inlineScriptBlocked": true,
+    "pageWindowAndNavigationDenied": true,
+    "nativeSessionNotStarted": true
+  }
+}

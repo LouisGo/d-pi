@@ -1,0 +1,46 @@
+exit_code=1
+
+> d-pi@0.1.0-s4.0 test /Users/lou/Learn/d-pi
+> node scripts/test.mjs vitest tests/integration/window-security.integration.test.ts
+
+
+ RUN  v5.0.2 /Users/lou/Learn/d-pi
+
+(node:93683) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ tests/integration/window-security.integration.test.ts (1 test | 1 failed) 323ms
+   × keeps the packaged privileged window local even when a development URL is inherited 322ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/window-security.integration.test.ts > keeps the packaged privileged window local even when a development URL is inherited
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      "https://external.example.test/",
+    ]
+
+
+Number of calls: 1
+
+ ❯ tests/integration/window-security.integration.test.ts:78:31
+     76|   await import("../../src/app/main/index");
+     77|   await vi.waitFor(() => expect(desktop.construct).toHaveBeenCalled());
+     78|   expect(desktop.loadURL).not.toHaveBeenCalled();
+       |                               ^
+     79|   expect(desktop.loadFile).toHaveBeenCalledWith(
+     80|     expect.stringContaining("/renderer/index.html"),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  16:42:34
+   Duration  421ms (tests 91%, transform 6%, import 2%)
+
+ ELIFECYCLE  Test failed. See above for more details.

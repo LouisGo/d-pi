@@ -87,3 +87,40 @@ test("CLI checks new untracked entries while excluding raw evidence and experime
     /old-machine|fixtures\/sample|paste\/sample/,
   );
 });
+
+test("rejects invalid or duplicated task states and unresolved completion dependencies", (t) => {
+  const root = fixture(t, {
+    ".scratch/example/issues/01-one.md": "Status: done\n",
+    ".scratch/example/issues/02-two.md": "Status: claimed\nStatus: resolved\n",
+    ".scratch/example/issues/03-three.md":
+      "Status: resolved\nBlocked by: 01, 99\n",
+  });
+  const result = checkDocumentation(root, [
+    ".scratch/example/issues/01-one.md",
+    ".scratch/example/issues/02-two.md",
+    ".scratch/example/issues/03-three.md",
+  ]);
+  assert.match(result.issues.join("\n"), /DOC-TASK-STATUS.*01-one/);
+  assert.match(result.issues.join("\n"), /DOC-TASK-STATUS.*02-two/);
+  assert.match(result.issues.join("\n"), /DOC-TASK-DEPENDENCY.*99/);
+});
+
+test("rejects task dependency cycles instead of presenting them as runnable", (t) => {
+  const root = fixture(t, {
+    ".scratch/example/issues/01-one.md": "Status: open\nBlocked by: 02\n",
+    ".scratch/example/issues/02-two.md": "Status: claimed\nBlocked by: 01\n",
+  });
+  const result = checkDocumentation(root, [
+    ".scratch/example/issues/01-one.md",
+    ".scratch/example/issues/02-two.md",
+  ]);
+  assert.match(result.issues.join("\n"), /DOC-TASK-CYCLE/);
+});
+
+test("reports malformed URL encoding as an invalid document link", (t) => {
+  const root = fixture(t, { "README.md": "[bad](docs/%broken.md)\n" });
+  assert.match(
+    checkDocumentation(root, ["README.md"]).issues.join("\n"),
+    /DOC-LINK/,
+  );
+});

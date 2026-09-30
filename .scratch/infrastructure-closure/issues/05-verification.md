@@ -1,6 +1,6 @@
 # 05 冻结审阅与交接
 
-Status: open
+Status: claimed
 Blocked by: 01, 02, 03, 04
 
 范围与授权见 [spec](../spec.md)。冻结后独立审阅命名兼容与工程入口，完成必要检查与分批本地提交后停止。

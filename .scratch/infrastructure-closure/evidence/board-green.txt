@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: aggregates independent engineering, trial and acceptance states and real blockers
+ok 1 - aggregates independent engineering, trial and acceptance states and real blockers
+  ---
+  duration_ms: 10.886
+  type: 'test'
+  ...
+# Subtest: rejects invalid states, duplicate identities and accepted-without-trial claims
+ok 2 - rejects invalid states, duplicate identities and accepted-without-trial claims
+  ---
+  duration_ms: 2.226084
+  type: 'test'
+  ...
+# Subtest: rejects missing evidence, missing important pending tasks, and multiple current scopes
+ok 3 - rejects missing evidence, missing important pending tasks, and multiple current scopes
+  ---
+  duration_ms: 1.387083
+  type: 'test'
+  ...
+# Subtest: snapshot check fails after an owning issue changes even when displayed totals stay equal
+ok 4 - snapshot check fails after an owning issue changes even when displayed totals stay equal
+  ---
+  duration_ms: 2.463875
+  type: 'test'
+  ...
+# Subtest: malformed status JSON and unknown fields fail rather than silently disappearing
+ok 5 - malformed status JSON and unknown fields fail rather than silently disappearing
+  ---
+  duration_ms: 1.670916
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 62.539917

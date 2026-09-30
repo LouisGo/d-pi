@@ -1,0 +1,11 @@
+runnerNode=v24.21.0 (verified with the explicit toolchain node --version)
+exit_code=0
+✔ refreshes UI dependency notices without deleting the separately bundled SDK and Bun notices (688.66975ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 773.153042

@@ -1,0 +1,22 @@
+exit_code=0
+
+> d-pi@0.1.0-s4.0 test /Users/lou/Learn/d-pi
+> node scripts/test.mjs vitest tests/integration/window-security.integration.test.ts src/app/main/index.test.ts src/app/preload/index.test.ts
+
+
+ RUN  v5.0.2 /Users/lou/Learn/d-pi
+
+(node:96131) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/app/preload/index.test.ts (7 tests) 86ms
+(node:96130) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ tests/integration/window-security.integration.test.ts (11 tests) 969ms
+ ✓ src/app/main/index.test.ts (7 tests) 1398ms
+   ✓ starts with system locale, rebuilds the native menu on interaction, and keeps a failed locale save visible 357ms
+   ✓ retries a failed initial restore after the lock clears, preserving the same draft 665ms
+
+ Test Files  3 passed (3)
+      Tests  25 passed (25)
+   Start at  16:44:36
+   Duration  1.70s (tests 86%, transform 10%, import 4%)

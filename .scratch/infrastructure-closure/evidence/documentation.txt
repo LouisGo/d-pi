@@ -1,0 +1,5 @@
+
+> d-pi@0.1.0-s4.0 check:documentation /Users/lou/Learn/d-pi
+> node scripts/check-documentation.mjs
+
+PASS: documentation references (154 Markdown files; 17 historical snapshots excluded; external URLs not fetched)

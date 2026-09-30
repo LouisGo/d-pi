@@ -1,5 +1,30 @@
 # S3 控制、交互与恢复
 
+当前结构化状态由此块维护，下文有日期的过程记录保留当时语境。
+
+```project-status
+[
+  {
+    "id": "s3",
+    "title": "S3 控制、交互与恢复",
+    "phase": "M1",
+    "engineering": "complete",
+    "trial": "delivered",
+    "acceptance": "pending",
+    "build": "0.1.0-s3.0",
+    "evidence": [
+      "handoff.md",
+      "integrity-review.md"
+    ],
+    "pending": [
+      "issues/09-quit-discard-decision.md"
+    ],
+    "next": "等待试用，退出放弃另行对齐",
+    "constraints": "冷恢复仅只读，unknown 不自动重发；退出非空队列尚无放弃出口。"
+  }
+]
+```
+
 2026-09-28。当前授权：用户基于 S2 边界巩固正式开启 S3，要求核对决定、S2 交接与固定官方源码，完善规格、拆票、按 TDD 实现并验证，交付试用后本地 commit，不推送。不扩展 S4/M2。官方 OMP 保持未修改，unknown 不自动重发，禁止强占恢复。
 
 ## 推进与交接

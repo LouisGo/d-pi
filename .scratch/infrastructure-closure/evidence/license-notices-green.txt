@@ -1,0 +1,17 @@
+exit_code=0
+TAP version 13
+# Subtest: refreshes UI dependency notices without deleting the separately bundled SDK and Bun notices
+ok 1 - refreshes UI dependency notices without deleting the separately bundled SDK and Bun notices
+  ---
+  duration_ms: 485.270041
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 543.165292

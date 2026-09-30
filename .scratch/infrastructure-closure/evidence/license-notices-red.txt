@@ -1,0 +1,65 @@
+exit_code=1
+TAP version 13
+# Subtest: refreshes UI dependency notices without deleting the separately bundled SDK and Bun notices
+not ok 1 - refreshes UI dependency notices without deleting the separately bundled SDK and Bun notices
+  ---
+  duration_ms: 607.036042
+  type: 'test'
+  location: '/Users/lou/Learn/d-pi/tests/tooling/license-notices.test.mjs:14:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input was expected to not match the regular expression /old@0\.0\.1|no development tools are shipped/. Input:
+
+    '# Third-party notices\n' +
+      '\n' +
+      '## Imported source\n' +
+      '\n' +
+      'Keep source attribution.\n' +
+      '\n' +
+      '## Bundled dependencies\n' +
+      '\n' +
+      'License files from the locked production dependency graph; no development tools are shipped.\n' +
+      '\n' +
+      '### fixture@1.0.0\n' +
+      '\n' +
+      '```text\n' +
+      'Fixture license text.\n' +
+      '```\n'
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: |-
+    # Third-party notices
+
+    ## Imported source
+
+    Keep source attribution.
+
+    ## Bundled dependencies
+
+    License files from the locked production dependency graph; no development tools are shipped.
+
+    ### fixture@1.0.0
+
+    ```text
+    Fixture license text.
+    ```
+
+  operator: 'doesNotMatch'
+  stack: |-
+    TestContext.<anonymous> (file:///Users/lou/Learn/d-pi/tests/tooling/license-notices.test.mjs:54:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 651.628125

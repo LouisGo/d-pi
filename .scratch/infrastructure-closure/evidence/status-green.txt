@@ -1,0 +1,52 @@
+TAP version 13
+# Subtest: reports missing local Markdown and skill targets, while preserving raw historical links
+ok 1 - reports missing local Markdown and skill targets, while preserving raw historical links
+  ---
+  duration_ms: 3.849333
+  type: 'test'
+  ...
+# Subtest: checks Unicode and duplicate heading anchors, same-page links, and reference links
+ok 2 - checks Unicode and duplicate heading anchors, same-page links, and reference links
+  ---
+  duration_ms: 7.732708
+  type: 'test'
+  ...
+# Subtest: rejects unknown D-IDs without interpreting prose or fenced historical examples
+ok 3 - rejects unknown D-IDs without interpreting prose or fenced historical examples
+  ---
+  duration_ms: 1.494375
+  type: 'test'
+  ...
+# Subtest: CLI checks new untracked entries while excluding raw evidence and experimental fixtures
+ok 4 - CLI checks new untracked entries while excluding raw evidence and experimental fixtures
+  ---
+  duration_ms: 70.347084
+  type: 'test'
+  ...
+# Subtest: rejects invalid or duplicated task states and unresolved completion dependencies
+ok 5 - rejects invalid or duplicated task states and unresolved completion dependencies
+  ---
+  duration_ms: 2.452208
+  type: 'test'
+  ...
+# Subtest: rejects task dependency cycles instead of presenting them as runnable
+ok 6 - rejects task dependency cycles instead of presenting them as runnable
+  ---
+  duration_ms: 1.391
+  type: 'test'
+  ...
+# Subtest: reports malformed URL encoding as an invalid document link
+ok 7 - reports malformed URL encoding as an invalid document link
+  ---
+  duration_ms: 0.541208
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 140.250125

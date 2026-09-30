@@ -1,5 +1,27 @@
 # 状态与查询基础库对齐（Zustand / TanStack Query）
 
+当前结构化状态由此块维护，下文有日期的过程记录保留当时语境。
+
+```project-status
+[
+  {
+    "id": "state-query",
+    "title": "状态与查询对齐",
+    "phase": "基建",
+    "engineering": "complete",
+    "trial": "delivered",
+    "acceptance": "pending",
+    "build": "441b27b4-1525b713（随重写包）",
+    "evidence": [
+      "../rewrite-preparation/handoff.md",
+      "issues/04-integration-verification.md"
+    ],
+    "next": "04 含试用验收，继续 claimed 等待反馈",
+    "constraints": "刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。"
+  }
+]
+```
+
 2026-09-29。用户确认"这两个库对我的状态管理非常非常重要，我不能接受不在这两个库的基础上去做全局的状态管理，包括异步状态的管理"，并选择：**先落决定与规格，再按 TDD 实施迁移，保留现有外部行为与测试**（见 [D-37](../../docs/decisions.md)）。
 
 ## 推进与交接

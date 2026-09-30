@@ -6,7 +6,7 @@
 
 | 要回答的问题 | 材料与职责 |
 | --- | --- |
-| 当前允许做什么、下一步是什么 | [根 AGENTS](../AGENTS.md)路由到当前工作 spec；先读其推进与交接，再按实际依赖查任务 |
+| 当前允许做什么、下一步是什么 | [项目总看板](status.md)指向所属 spec；[根 AGENTS](../AGENTS.md)维护稳定规则与任务路由；先读其推进与交接，再按实际依赖查任务 |
 | 产品目标、阶段和用户已经决定什么 | [决定登记](decisions.md)、[产品需求](product/requirements.md)、[首版方案](product/first-release.md)及相关 [ADR](adr/)；候选和历史默认值不能代替用户决定 |
 | 业务和资源由谁拥有、实现在哪里 | [架构总览](architecture/overview.md)、[模块地图](architecture/modules/README.md)与目标模块页；跨模块再读[交接图](architecture/modules/flows.md) |
 | 提交、恢复、权限、输出和阶段门槛 | [基础契约](architecture/foundation-contracts.md)；功能职责、生命周期及验证看[无头功能合同](architecture/headless-features.md) |
@@ -21,13 +21,17 @@
 
 ## 工作记录
 
-[重写准备与执行](../.scratch/rewrite-preparation/spec.md)组织当前工作，对应构建与试用步骤见[重写交接](../.scratch/rewrite-preparation/handoff.md)；[M1 开发准备](../.scratch/development-foundation/spec.md)保存阶段和跨模块责任。各切片范围、授权、工程状态、试用及继续边界直接读取所属规格：
+当前工作从固定[项目总看板](status.md)进入[基建收口规格](../.scratch/infrastructure-closure/spec.md)。[重写准备与执行](../.scratch/rewrite-preparation/spec.md)保留其交付范围与试用状态，对应构建与试用步骤见[重写交接](../.scratch/rewrite-preparation/handoff.md)；[M1 开发准备](../.scratch/development-foundation/spec.md)保存阶段和跨模块责任。各切片范围、授权、工程状态、试用及继续边界直接读取所属规格：
 
 - [S1 项目与草稿](../.scratch/m1-s1-project-draft/spec.md)、[S1 巩固](../.scratch/m1-s1-project-draft/hardening.md)、[S2 提交与阅读](../.scratch/m1-s2-submit-read/spec.md)。
 - [S3 控制与恢复](../.scratch/m1-s3-control-recovery/spec.md)、[i18n 基础](../.scratch/i18n-foundation/spec.md)、[S4 文件与差异](../.scratch/m1-s4-files-diff/spec.md)。
 - [领域目录治理](../.scratch/domain-directory-governance/spec.md)、[状态/查询对齐](../.scratch/state-query-alignment/spec.md)。
 
 每份 spec 链接对应任务和交接，索引不另维护已完成表。旧规格的“本轮不启动后续阶段”保留当时语境，后续用户明确授权以当前切片为准。
+
+## 工程维护
+
+[日常检查、hook 与 CI](engineering/checks.md)维护工程入口；[OMP 维护](engineering/omp-maintenance.md)区分开发 skills 与运行资源，说明回放、真实固定版本检查和升级复核；[Electron 安全](engineering/desktop-security.md)列现有边界与验证；[本地交付](engineering/local-delivery.md)区分已有版本、未实施的签名/更新和待权利人决定的许可证。后续功能按实际影响复核，不重复全套历史矩阵。
 
 ## 需要证据或重评方向时
 

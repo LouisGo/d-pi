@@ -1,9 +1,58 @@
 ---
 title: 模块设计与 M1 开发准备
-status: design-ready-validation-pending
 ---
 
 # 模块设计与 M1 开发准备
+
+当前结构化状态由此块维护，下文有日期的过程记录保留当时语境。
+
+```project-status
+[
+  {
+    "id": "validation",
+    "title": "G1 按能力验证",
+    "phase": "G1",
+    "engineering": "partial",
+    "trial": "not-applicable",
+    "acceptance": "not-applicable",
+    "evidence": [
+      "../../docs/validation/runtime-feasibility.md"
+    ],
+    "next": "相关功能及 SDK 升级时复核所需证据",
+    "constraints": "执行全周期单写尚未证实，冷恢复只读；不是全部能力一次性验收。"
+  },
+  {
+    "id": "s5",
+    "title": "S5 组合验收",
+    "phase": "M1",
+    "engineering": "planned",
+    "trial": "not-delivered",
+    "acceptance": "pending",
+    "next": "基建收口后，另按用户授权细化范围与验收"
+  },
+  {
+    "id": "first-release",
+    "title": "M2 首版",
+    "phase": "M2",
+    "engineering": "planned",
+    "trial": "not-delivered",
+    "acceptance": "pending",
+    "evidence": [
+      "../../docs/product/first-release.md"
+    ],
+    "next": "未启动，按首版范围逐功能授权"
+  },
+  {
+    "id": "enhancements",
+    "title": "M3 后续增强",
+    "phase": "M3",
+    "engineering": "planned",
+    "trial": "not-delivered",
+    "acceptance": "pending",
+    "next": "未启动，保留边界"
+  }
+]
+```
 
 日期：2026-09-27；当前交接更新于 2026-09-28。历史模块设计/S1 的提交推送授权不作为当前动作授权。S1 交付及反馈见 [S1 spec](../m1-s1-project-draft/spec.md)。用户已明确开启 S2，[S2 规格与拆票](../m1-s2-submit-read/spec.md)已完成；用户随后授权开发，并要求先本地文档 commit 再开发，不推送。下文早期授权记录保留历史含义，以当前切片交接为准。
 

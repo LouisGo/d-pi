@@ -1,0 +1,5 @@
+runnerNode=v24.21.0 (verified with the explicit toolchain node --version)
+exit_code=0
+
+> d-pi@0.1.0-s4.0 typecheck:main /Users/lou/Learn/d-pi
+> tsc --noEmit -p tsconfig.main.json

@@ -1,5 +1,25 @@
 # S4 前国际化基础
 
+当前结构化状态由此块维护，下文有日期的过程记录保留当时语境。
+
+```project-status
+[
+  {
+    "id": "i18n",
+    "title": "国际化基础",
+    "phase": "基建",
+    "engineering": "complete",
+    "trial": "delivered",
+    "acceptance": "pending",
+    "build": "0.1.0-i18n.0",
+    "evidence": [
+      "handoff.md"
+    ],
+    "next": "等待热切换与输入体验反馈"
+  }
+]
+```
+
 日期：2026-09-29。依据：用户本轮明确要求先分析当前写死语言，再将引用对话的完整方案作为项目基准落盘，并按当前标准流程、TDD 完成开发。基准为[国际化架构](../../docs/architecture/internationalization.md)，决定记为 D-36；沿用 D-02/D-03/D-21/D-22/D-29/D-34/D-35。当前任务独立于 S4，只覆盖已实现的产品路径；不提前实施 S4 文件/Diff，不改变官方 OMP、执行恢复或 S3 待试用状态。
 
 ## 交付与验收

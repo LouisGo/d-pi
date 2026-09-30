@@ -43,3 +43,13 @@ Ticket 的 resolved 表示该票声明的交付与验证完成，不自动代表
 仅在用户要求或当前任务已采用对应流程时使用；skill 不可用时按上述约定手工完成，不安装为本仓库的前置依赖。
 
 Wayfinder 可用 `.scratch/<effort>/map.md` 汇总 Notes / Decisions-so-far / Fog；每个问题仍放在 `issues/NN-<slug>.md`。`Type:` 可为 `research` / `prototype` / `grilling` / `task`，状态沿用上表。Frontier 是编号最小的未阻塞 `open` 票；领取后标 `claimed`。解决后在票中追加 `## Answer` 并标 `resolved`，再把摘要和链接写入 map 的 Decisions-so-far。只有实际需要这种导航时才维护 map。
+
+## 总看板读取约定
+
+固定入口是 [docs/status.md](../status.md)。只对需要汇总的阶段/切片，在所属 `spec.md` 增加一个 `project-status` JSON 数组围栏块；不要求全部 Markdown 改成 frontmatter。字段枚举与读取单源在 [聚合脚本](../../scripts/project-status.mjs)，正文继续维护范围、理由和实际证据。历史记录有日期，结构字段表达现态，旧 frontmatter `status` 不再承担另一套进度。
+
+每条记录有稳定 `id`（在 `phase` 内唯一）、`title`、`phase`（G1/M1/M2/M3/基建）、`engineering`（planned/in-progress/partial/complete）、`trial`（not-delivered/delivered/feedback/not-applicable）、`acceptance`（pending/accepted/not-applicable）和 `next`。可选 `build` 表示实际可识别构建，`evidence` 与 `pending` 为相对 spec 的文件路径，`constraints` 记录继续边界；只有当前任务的记录使用 `current: true`。accepted 必须有试用与用户反馈证据，Agent 不推断认可。
+
+任务仍只使用 `Status: open/claimed/resolved`；`Blocked by` 只列同一切片 NN/NNletter 的真实工程依赖（逗号分隔），无则 none 或省略。产品待决通过 spec 的 `pending` 指向所属票，不给无关票强加 blocker。门禁拒绝非法/重复状态、失效依赖、循环及依赖未完成却 resolved。票包含用户体验验收时继续 claimed；纯工程票可以 resolved，试用状态独立。
+
+更新规格或票后运行 `pnpm report:status:write`，审查后与源一起提交；`pnpm check:status` 比较生成输出及来源指纹，拒绝陈旧聚合。文档门禁检查现行链接、锚点及 D-ID；生成器不抓外部网址或猜测产品状态。新切片按此短约定自然进入同一看板，不建立第二份手工状态表。
