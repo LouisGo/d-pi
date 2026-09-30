@@ -1,0 +1,39 @@
+name: macOS arm64 checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: macos-14
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: .node-version
+          architecture: arm64
+          package-manager-cache: false
+      - name: Require the supported native platform
+        run: node -e 'if (process.platform !== "darwin" || process.arch !== "arm64") throw new Error("This workflow verifies macOS arm64 only")'
+      - uses: pnpm/action-setup@f520eceda224fe1a4aed5a2a27a194379a409996 # v6; reads packageManager
+        with:
+          run_install: false
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec install-electron
+      - run: pnpm runtime:sdk
+      - run: pnpm check:environment
+      - run: pnpm validate:sdk
+      - run: pnpm check
+      - run: pnpm build

@@ -63,6 +63,8 @@ const PLATFORM_INDEPENDENT_ENVIRONMENTS = new Set([
   "shared",
 ]);
 const ELECTRON_VENDOR = /^(?:electron)(?:$|\/)/;
+const TEST_VENDOR =
+  /^(?:vitest|happy-dom|@testing-library\/[^/]+)(?:$|\/)|^(?:node|bun):test$/;
 const LEGACY_ROOTS = [
   "src/features/",
   "src/main/",
@@ -407,17 +409,27 @@ export function scanArchitecture(
     )
       report("ARCH-MANIFEST", `${module.name} has invalid default environment`);
     for (const publicPath of module.public) {
-      if (!isWithin(publicPath, module.root) || !existsSync(publicPath))
+      if (
+        !isWithin(publicPath, module.root) ||
+        !existsSync(publicPath) ||
+        !statSync(publicPath).isFile() ||
+        !SOURCE_EXTENSIONS.has(extname(publicPath))
+      )
         report(
           "ARCH-PUBLIC-ENTRY",
-          `${module.name} public entry is missing: ${relativePath(root, publicPath)}`,
+          `${module.name} public entry must be a source file inside its module: ${relativePath(root, publicPath)}`,
         );
     }
     for (const publicPath of module.testPublic) {
-      if (!isWithin(publicPath, module.root) || !existsSync(publicPath))
+      if (
+        !isWithin(publicPath, module.root) ||
+        !existsSync(publicPath) ||
+        !statSync(publicPath).isFile() ||
+        !SOURCE_EXTENSIONS.has(extname(publicPath))
+      )
         report(
           "ARCH-TEST-PUBLIC-ENTRY",
-          `${module.name} test public entry is missing: ${relativePath(root, publicPath)}`,
+          `${module.name} test public entry must be a source file inside its module: ${relativePath(root, publicPath)}`,
         );
     }
     const dependencies = [
@@ -487,7 +499,14 @@ export function scanArchitecture(
     for (const { specifier, kind } of parsed.imports) {
       const rendererProcess =
         sourceInfo.environment === "renderer" &&
-        (BUILTINS.has(specifier) || specifier === "electron");
+        (BUILTINS.has(specifier) || ELECTRON_VENDOR.test(specifier));
+      if (!sourceTest && TEST_VENDOR.test(specifier))
+        report(
+          "ARCH-TEST-IMPORT",
+          `${sourceRelative} imports test tool ${specifier}`,
+          sourceRelative,
+          specifier,
+        );
       if (
         !sourceTest &&
         (externalEnvironmentViolation(sourceInfo.environment, specifier) ||
@@ -544,7 +563,7 @@ export function scanArchitecture(
         continue;
       }
       const targetRelative = relativePath(root, target);
-      if (/(?:\.test|\.spec)\.[cm]?[jt]sx?$/.test(target) && !sourceTest)
+      if (isTestFile(target) && !sourceTest)
         report(
           "ARCH-TEST-IMPORT",
           `${sourceRelative} imports test code ${targetRelative}`,
@@ -668,4 +687,11 @@ if (
   process.argv[1] &&
   import.meta.url === pathToFileURL(resolve(process.argv[1])).href
 )
-  main();
+  try {
+    main();
+  } catch (error) {
+    console.error(
+      `FAIL: architecture check could not run (${error.message}); no boundary checks passed.`,
+    );
+    process.exitCode = 2;
+  }

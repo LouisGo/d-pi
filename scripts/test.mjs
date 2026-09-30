@@ -14,6 +14,12 @@ const sandbox = createTestEnvironment({
   fixtureEnv:
     process.env.D_PI_NATIVE_SMOKE === "1" ? { D_PI_NATIVE_SMOKE: "1" } : {},
 });
+if (suite === "vitest")
+  process.stdout.write(
+    process.env.D_PI_NATIVE_SMOKE === "1"
+      ? "RUN: fixed CLI artifact native behavior smoke (isolated localhost provider)\n"
+      : "SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch\n",
+  );
 try {
   const arguments_ =
     suite === "vitest"

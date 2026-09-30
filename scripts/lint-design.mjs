@@ -20,6 +20,12 @@ function parseOptions(argv) {
 }
 
 const { root, config } = parseOptions(process.argv.slice(2));
+if (!existsSync(config)) {
+  console.error(
+    `FAIL: design lint could not run (configuration is missing: ${config}); no files were judged.`,
+  );
+  process.exit(2);
+}
 const roots = [join(root, "src/app/renderer")];
 const modulesRoot = join(root, "src/modules");
 if (existsSync(modulesRoot)) {

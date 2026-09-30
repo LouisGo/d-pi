@@ -29,7 +29,7 @@ export function reportOxlintResult(result) {
     const label =
       result.status === 0
         ? "PASS: design lint"
-        : `FAIL: design lint reported violations (exit ${result.status})`;
+        : `FAIL: design lint returned exit ${result.status}; inspect the diagnostics above`;
     const output =
       result.output.endsWith("\n") || !result.output
         ? result.output
@@ -50,7 +50,7 @@ export function reportOxlintResult(result) {
       "",
     ].join("\n"),
   );
-  return 1;
+  return 2;
 }
 
 if (

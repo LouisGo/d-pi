@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { basename, delimiter, dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { inspectDependencyContract } from "./dependency-contract.mjs";
 import { createTestEnvironment } from "./test-environment.mjs";
 
 export function probeTool(binary, args, options) {
@@ -111,7 +112,7 @@ export function inspectEnvironment(
   const pnpmTarget =
     /^pnpm@(\d+\.\d+\.\d+)$/.exec(manifest.packageManager ?? "")?.[1] ?? null;
   const declared = { ...manifest.dependencies, ...manifest.devDependencies };
-  const issues = [];
+  const issues = inspectDependencyContract(root, manifest);
   const tools = {};
   const installed = {};
   const packagePaths = {};
@@ -251,7 +252,7 @@ export function inspectEnvironment(
   const sdk = toolsOnly
     ? {
         skipped:
-          "Fast tool check; native executables and SDK resources were not inspected",
+          "SKIP: fast tool check; native executables and SDK resources were not inspected",
       }
     : inspectSdk(root, sdkRoot, declared);
   issues.push(...(sdk.issues ?? []));

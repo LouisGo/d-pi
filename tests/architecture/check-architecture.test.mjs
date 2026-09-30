@@ -57,6 +57,95 @@ function modules({ alphaDependencies = ["beta"], betaDependencies = [] } = {}) {
   };
 }
 
+test("public entries must be source files, not directories or prose", () => {
+  for (const entry of ["core", "AGENTS.md"]) {
+    const directory = fixture(
+      "invalid-public-file",
+      {
+        "src/modules/alpha/core/value.ts": "export const value = true;\n",
+        "src/modules/alpha/AGENTS.md": "Module guidance.\n",
+      },
+      {
+        alpha: {
+          root: "src/modules/alpha",
+          environments: ["core"],
+          public: [entry],
+          dependsOn: [],
+        },
+      },
+    );
+    const result = run(directory);
+    rmSync(directory, { recursive: true, force: true });
+    assert.equal(
+      result.status,
+      1,
+      `${entry} must fail as a boundary violation`,
+    );
+    assert.match(`${result.stdout}\n${result.stderr}`, /ARCH-PUBLIC-ENTRY/);
+  }
+});
+
+test("renderer rejects Electron subpath imports", () => {
+  const directory = fixture(
+    "renderer-electron-subpath",
+    {
+      "src/modules/alpha/renderer/public.ts": 'import "electron/common";\n',
+    },
+    {
+      alpha: {
+        root: "src/modules/alpha",
+        environments: ["renderer"],
+        public: ["renderer/public.ts"],
+        dependsOn: [],
+      },
+    },
+  );
+  const result = run(directory);
+  rmSync(directory, { recursive: true, force: true });
+  assert.equal(result.status, 1);
+  assert.match(`${result.stdout}\n${result.stderr}`, /ARCH-ENVIRONMENT/);
+});
+
+test("production rejects test packages and helpers in test directories", () => {
+  const directory = fixture(
+    "production-test-tools",
+    {
+      "src/modules/alpha/main/public.ts":
+        'import "vitest";\nimport "node:test";\nimport "./tests/helper";\n',
+      "src/modules/alpha/main/tests/helper.ts":
+        "export const fixture = true;\n",
+    },
+    {
+      alpha: {
+        root: "src/modules/alpha",
+        environments: ["main"],
+        public: ["main/public.ts"],
+        dependsOn: [],
+      },
+    },
+  );
+  const result = run(directory);
+  rmSync(directory, { recursive: true, force: true });
+  assert.equal(result.status, 1);
+  assert.equal(
+    `${result.stdout}\n${result.stderr}`.match(/ARCH-TEST-IMPORT/g)?.length,
+    3,
+  );
+});
+
+test("unreadable manifests are tooling failures, not boundary violations", () => {
+  const directory = fixture("unreadable-manifest", {}, {});
+  writeFileSync(join(directory, "modules.json"), "{invalid-json");
+  const result = run(directory);
+  rmSync(directory, { recursive: true, force: true });
+  assert.equal(result.status, 2);
+  assert.match(
+    `${result.stdout}\n${result.stderr}`,
+    /architecture check could not run/,
+  );
+  assert.doesNotMatch(result.stdout, /PASS/);
+});
+
 test("accepts a public type-only cross-module dependency", () => {
   const directory = fixture(
     "valid",

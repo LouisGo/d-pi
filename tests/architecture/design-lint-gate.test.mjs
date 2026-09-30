@@ -47,7 +47,7 @@ test("a killed oxlint is a tooling failure, not a clean lint", () => {
   });
   assert.equal(result.kind, "crashed");
   assert.equal(result.reason, "SIGTRAP");
-  assert.equal(reportOxlintResult(result), 1);
+  assert.equal(reportOxlintResult(result), 2);
 });
 
 test("a missing oxlint binary is reported instead of passing", () => {
@@ -57,7 +57,20 @@ test("a missing oxlint binary is reported instead of passing", () => {
     cwd: repositoryRoot,
   });
   assert.equal(result.kind, "missing");
-  assert.equal(reportOxlintResult(result), 1);
+  assert.equal(reportOxlintResult(result), 2);
+});
+
+test("a missing configuration is a tooling failure, not a rule result", () => {
+  const result = runScript(designLint, [
+    "--config",
+    join(repositoryRoot, "missing-design-config.json"),
+  ]);
+  assert.equal(result.status, 2);
+  assert.match(`${result.stdout}${result.stderr}`, /design lint could not run/);
+  assert.doesNotMatch(
+    `${result.stdout}${result.stderr}`,
+    /reported violations|PASS/,
+  );
 });
 
 test("a real violation still fails the gate with the rule name", () => {
