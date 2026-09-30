@@ -75,6 +75,7 @@ test("deleting a confirmed foundation dependency cannot make the gate pass", (t)
     "@base-ui/react",
     "@tiptap/core",
     "@hugeicons/react",
+    "monaco-editor",
   ]) {
     const report = fixture(t, (manifest) => {
       delete manifest.dependencies[name];

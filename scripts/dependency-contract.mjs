@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 // Required substrate only, not a translation of every decision into a rule.
-// Versions stay in package.json and the lock; these names enforce D-17 and
+// Versions stay in package.json and the lock; these names enforce D-07, D-17 and
 // D-31–D-37 plus the existing React/TS/Electron/pnpm/Tailwind baseline.
 const required = {
   dependencies: [
@@ -18,6 +18,7 @@ const required = {
     "@tiptap/extensions",
     "@tiptap/pm",
     "@tiptap/react",
+    "monaco-editor",
     "react",
     "react-dom",
     "ts-pattern",
