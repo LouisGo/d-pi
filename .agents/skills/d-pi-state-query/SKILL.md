@@ -1,6 +1,6 @@
 ---
 name: d-pi-state-query
-description: "用于 d-pi 展示状态模型、store 订阅、React 绑定与只读异步查询的实现、重构和范式评审（Zustand 与 @tanstack/react-query）。新增 store、给视图接线、写查询 hook 或评审这类改动时使用；不用于全局文档/skill 审计、纯样式或无关仓库任务。"
+description: "用于 d-pi 展示状态模型、按需订阅与 React 渲染边界、只读异步查询的实现和评审（Zustand 与 @tanstack/react-query）。新增 store、给视图接线、处理外观更新性能或写查询 hook 时使用；不用于全局文档审计、纯样式或无关仓库任务。"
 ---
 
 # d-pi 状态与查询范式
@@ -61,6 +61,17 @@ const item = useStore(model.stateStore, (state) => state.itemsById.get(id));
 更新实体列表时保留未变化项引用，父级订阅顺序，行订阅对应实体。在频繁更新或大列表中评估 ID 顺序 + 实体索引；逐行 `items.find(...)` 可能让每次通知产生所有行的重复扫描，少渲染不能单独证明低成本。不为小且低频列表强制新增索引。
 
 模型的只读 store 足以接官方 `useStore` 时直接使用；已有窄 `getSnapshot`/`subscribe` 合同可用 `useSyncExternalStore`，不为 API 数量额外包装。当前[Conversation 视图](../../../src/app/renderer/conversation.tsx)按稳定 ID 顺序订阅，行从同一投影派生的 Map 取实体；[SubmissionModel](../../../src/modules/execution/renderer/submission-model.ts)的收据索引同样只由发布路径生成，不是可独立写入的第二份事实。
+
+### 2.1 订阅范围与父级渲染
+
+写 React 接入时先明确每个组件实际消费哪些状态，以及哪些子树不应随该状态更新。默认选择需要的字段或稳定资源引用；`useStore(store)` 或选择整个 state 只适用于确实消费全部投影的窄视图，不能用在包含编辑器、阅读列表等大子树的应用壳中图方便。全局偏好仍使用原状态拥有者，不另建可双写的 store。
+
+- 子组件有 selector 并不能阻断父级重渲染。检查从应用壳、Context 到列表行的传播路径；把偏好、保存 busy、提示等订阅放到真实消费者，工作内容订阅 Thread/资源身份。语言变更等确实影响内容的 Context 更新应正常传播。
+- 按自然职责拆分订阅边界；仍昂贵的子树才考虑 `memo`。检查回调、对象和 JSX 引用是否稳定，避免每次创建的新 props 使边界失效，也不把每个组件机械套上缓存。
+- 大正文解析、初始编辑文档构造和编辑器创建按真实输入或初始化身份发生。偏好重绘不得顺带重新构造正文、重建 editor/model、清空 Query 缓存或重发读取。重挂载必须读取当前 pending 正文，不能把初始快照永久缓存成另一份事实。
+- 对已知渲染缺口先写真实 React 挂载的失败回归：无关偏好/busy 更新不执行工作子树，实际资源变化和控件状态仍更新。可在慢业务边界观察调用次数；只 mock hooks 或比较 JSX 文本不证明实际订阅与父级传播。
+
+当前落点为 [App 接入](../../../src/app/renderer/app.tsx)与 [Composer](../../../src/app/renderer/workbench/composer.tsx)。需要非 CSS 组件换肤或尺寸测量时同时查 [design-system skill](../d-pi-design-system/SKILL.md#外观更新与布局成本)，保持颜色、字体和几何各自的更新原因。
 
 ## 3. 只读查询：TanStack Query
 
