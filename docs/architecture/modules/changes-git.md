@@ -26,7 +26,7 @@ Git 视图负责选择比较对象和业务操作；[文件/Monaco](files-editor
 
 ## 读路径的查询与缓存
 
-`renderer/public.ts` 暴露 Git 的 Query key、请求构造与 `useChanges`/`useDiff`；key 使用真实 ThreadContext（Thread、workspace、实际目录）、scope 与路径，选中另一资源或另一侧不会串结果；未选中的显式 fetch/refetch 不发 IPC。GitReadError 保留该次请求的 trace/operation 及业务回包或 transport cause。本地采样按 D-37 显式使用 `networkMode: 'always'`；`unavailable`（非 Git/缺失/拒绝/二进制/超限/冲突/变化中）作为业务结论如实显示，不作为可重试错误；只有采样失败（`unavailable("failed")`）在查询层转成可重试错误。刷新为显式动作，不做定时轮询；缓存不改变来源与覆盖字段，也不能把旧采样冒充当前 Git 状态。
+`renderer/public.ts` 暴露 Git 的 Query key、请求构造与 `useChanges`/`useDiff`；key 使用真实 ThreadContext（Thread、工作目录身份、实际目录）、scope 与路径，选中另一资源或另一侧不会串结果；未选中的显式 fetch/refetch 不发 IPC。GitReadError 保留该次请求的 trace/operation 及业务回包或 transport cause。本地采样按 D-37 显式使用 `networkMode: 'always'`；`unavailable`（非 Git/缺失/拒绝/二进制/超限/冲突/变化中）作为业务结论如实显示，不作为可重试错误；只有采样失败（`unavailable("failed")`）在查询层转成可重试错误。刷新为显式动作，不做定时轮询；缓存不改变来源与覆盖字段，也不能把旧采样冒充当前 Git 状态。
 
 ## 生命周期与失败
 

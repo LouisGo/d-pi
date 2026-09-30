@@ -198,7 +198,7 @@ it.each(["/move:/tmp", "/wt branch", "/worktree:branch", "/session:DELETE\t"])(
   "rejects %s before native dispatch, including explicit resend, without breaking the existing binding",
   async (text) => {
     const f = await running();
-    const binding = f.store.threads.nativeSession(f.draft.threadId);
+    const binding = f.store.threads.nativeSessionBinding(f.draft.threadId);
     f.store.drafts.save(f.draft.threadId, 1, text);
     const submissionId = SubmissionIdSchema.parse(crypto.randomUUID());
     const command = {
@@ -243,7 +243,9 @@ it.each(["/move:/tmp", "/wt branch", "/worktree:branch", "/session:DELETE\t"])(
     ).toMatchObject({ kind: "failed", code: "unsupported-native-command" });
     await f.host.handle({ kind: "dispatch", value: legacy });
     expect(transport.writes).toHaveLength(1);
-    expect(f.store.threads.nativeSession(f.draft.threadId)).toEqual(binding);
+    expect(f.store.threads.nativeSessionBinding(f.draft.threadId)).toEqual(
+      binding,
+    );
   },
 );
 

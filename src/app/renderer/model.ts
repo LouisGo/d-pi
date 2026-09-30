@@ -11,7 +11,7 @@ import type {
 } from "../contracts/desktop-bridge";
 import { ThreadModel } from "./thread-model";
 
-export type WorkspaceState =
+export type ThreadSelectionState =
   | { kind: "empty" }
   | { kind: "thread"; thread: ThreadModel; directoryAvailable: boolean };
 export type ViewState =
@@ -20,7 +20,7 @@ export type ViewState =
   | { kind: "disposed" }
   | {
       kind: "ready";
-      workspace: WorkspaceState;
+      threadSelection: ThreadSelectionState;
       preferences: Preferences;
       busy: boolean;
       notice: Failure | null;
@@ -71,8 +71,8 @@ export class AppModel {
   }
   private get activeThread(): ThreadModel | null {
     const state = this.state;
-    return state.kind === "ready" && state.workspace.kind === "thread"
-      ? state.workspace.thread
+    return state.kind === "ready" && state.threadSelection.kind === "thread"
+      ? state.threadSelection.thread
       : null;
   }
   get controller() {
@@ -212,7 +212,7 @@ export class AppModel {
             ? previous
             : new ThreadModel(draft, this.bridge, transportFailure)
           : null;
-        const workspace: WorkspaceState = thread
+        const threadSelection: ThreadSelectionState = thread
           ? { kind: "thread", thread, directoryAvailable }
           : { kind: "empty" };
         this.applyAppearance(preferences);
@@ -222,7 +222,7 @@ export class AppModel {
         }
         this.publish({
           kind: "ready",
-          workspace,
+          threadSelection,
           preferences,
           busy: false,
           notice: null,
@@ -253,7 +253,7 @@ export class AppModel {
       this.disposed ||
       state.kind !== "ready" ||
       state.busy ||
-      state.workspace.kind !== "empty"
+      state.threadSelection.kind !== "empty"
     )
       return;
     const generation = ++this.requestGeneration;

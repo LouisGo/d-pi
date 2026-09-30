@@ -29,7 +29,7 @@ import {
   useFileContent,
 } from "../../../modules/files/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import type { ThreadContext } from "../../../modules/workspace/contracts/public";
+import type { ThreadContext } from "../../../modules/threads/contracts/public";
 import { readInFlight } from "./refresh-state";
 
 type EditorComponent = ComponentType<{
@@ -71,7 +71,7 @@ function statusLabel(
     .with("other", () => t("ui.files.status.other"))
     .exhaustive();
 }
-export function FileWorkspace({
+export function FilePanel({
   resource,
   files,
   git,
@@ -184,7 +184,7 @@ export function FileWorkspace({
     return null;
   }, [active, file, diffReply, t]);
   return (
-    <section className="file-workspace" aria-label={t("ui.files.section")}>
+    <section className="file-panel" aria-label={t("ui.files.section")}>
       <h2>{t("ui.files.section")}</h2>
       <p className="file-meta">{t("ui.files.readOnly")}</p>
       <div className="file-browser">

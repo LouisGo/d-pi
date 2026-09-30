@@ -1,14 +1,16 @@
 import { randomUUID } from "node:crypto";
 import type { AppDatabase } from "../../../platform/main/storage/public";
 import {
-  type NativeBinding,
-  NativeBindingSchema,
-  type RuntimeGrant,
-  RuntimeGrantSchema,
+  type ExecutionGrant,
+  ExecutionGrantSchema,
+  type NativeSessionBinding,
+  NativeSessionBindingSchema,
   type ThreadContext,
   ThreadContextSchema,
   type ThreadReader,
 } from "../contracts/public";
+// Legacy SQLite workspace/workspace_id store shared working-directory identity.
+// Alias only at this repository boundary; the physical v1-v5 format stays valid.
 export class ThreadRepository implements ThreadReader {
   constructor(private readonly database: AppDatabase) {}
   private get db() {
@@ -28,7 +30,7 @@ export class ThreadRepository implements ThreadReader {
     return ThreadContextSchema.parse(
       this.db
         .prepare(
-          "SELECT t.id AS threadId,w.id AS workspaceId,w.directory FROM thread t JOIN workspace w ON w.id=t.workspace_id WHERE t.id=?",
+          "SELECT t.id AS threadId,w.id AS workingDirectoryId,w.directory FROM thread t JOIN workspace w ON w.id=t.workspace_id WHERE t.id=?",
         )
         .get(id),
     );
@@ -50,17 +52,17 @@ export class ThreadRepository implements ThreadReader {
       return this.threadContext(id);
     });
   }
-  nativeSession(threadId: string): NativeBinding | null {
+  nativeSessionBinding(threadId: string): NativeSessionBinding | null {
     const row = this.db
       .prepare(
         "SELECT thread_id AS threadId,config_context AS configContextId,session_file AS sessionFile,session_id AS sessionId FROM native_session WHERE thread_id=?",
       )
       .get(threadId);
-    return row ? NativeBindingSchema.parse(row) : null;
+    return row ? NativeSessionBindingSchema.parse(row) : null;
   }
-  bindNativeSession(binding: NativeBinding): void {
+  bindNativeSession(binding: NativeSessionBinding): void {
     this.database.transaction(() => {
-      const existing = this.nativeSession(binding.threadId);
+      const existing = this.nativeSessionBinding(binding.threadId);
       if (existing) {
         if (
           existing.configContextId !== binding.configContextId ||
@@ -80,26 +82,31 @@ export class ThreadRepository implements ThreadReader {
         );
     });
   }
-  executionGrant(id: string): RuntimeGrant | null {
+  executionGrant(id: string): ExecutionGrant | null {
     const row = this.db
       .prepare(
-        "SELECT workspace_id AS workspaceId,directory,device,inode FROM execution_permission WHERE workspace_id=?",
+        "SELECT workspace_id AS workingDirectoryId,directory,device,inode FROM execution_permission WHERE workspace_id=?",
       )
       .get(id);
-    return row ? RuntimeGrantSchema.parse(row) : null;
+    return row ? ExecutionGrantSchema.parse(row) : null;
   }
-  grantExecution(grant: RuntimeGrant): void {
+  grantExecution(grant: ExecutionGrant): void {
     this.database.transaction(() => {
-      const workspace = this.db
+      const workingDirectory = this.db
         .prepare("SELECT directory FROM workspace WHERE id=?")
-        .get(grant.workspaceId);
-      if (workspace?.directory !== grant.directory)
+        .get(grant.workingDirectoryId);
+      if (workingDirectory?.directory !== grant.directory)
         throw new Error("Directory identity conflict");
       this.db
         .prepare(
           "INSERT INTO execution_permission VALUES(?,?,?,?) ON CONFLICT(workspace_id) DO UPDATE SET directory=excluded.directory,device=excluded.device,inode=excluded.inode",
         )
-        .run(grant.workspaceId, grant.directory, grant.device, grant.inode);
+        .run(
+          grant.workingDirectoryId,
+          grant.directory,
+          grant.device,
+          grant.inode,
+        );
     });
   }
   revokeExecution(id: string): void {

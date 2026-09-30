@@ -1,7 +1,7 @@
 import { SubmissionRepository } from "../../../modules/execution/main/public";
 import { DraftRepository } from "../../../modules/input/main/public";
 import { PreferenceRepository } from "../../../modules/preferences/main/public";
-import { ThreadRepository } from "../../../modules/workspace/main/public";
+import { ThreadRepository } from "../../../modules/threads/main/public";
 import { AppDatabase } from "../../../platform/main/storage/public";
 
 // One writer and one transaction boundary, with business-owned repositories.

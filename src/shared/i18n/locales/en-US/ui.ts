@@ -65,7 +65,7 @@ export const ui = {
     "Queue full ({queued}/{cap}). Wait for an item to be processed before sending; your draft is preserved.",
   "ui.conversation.image": "[Image: {alt}]",
   "ui.conversation.imageNotLoaded": "not loaded",
-  "ui.conversation.sectionLabel": "Conversation reader",
+  "ui.conversation.sectionLabel": "Native session reader",
   "ui.conversation.heading": "Conversation",
   "ui.conversation.empty":
     "OMP responses and tool results will appear here after you send.",
@@ -99,7 +99,7 @@ export const ui = {
     "The original submission may have executed. Sending it again can repeat operations. Check native history first; the new draft stays unchanged. Nothing is dispatched during read-only recovery or while the queue is paused.",
   "ui.submissions.resendConfirm": "Resend despite possible duplication",
   "ui.submissions.copyOriginal": "Copy original submission",
-  "ui.history.sectionLabel": "Read-only native history",
+  "ui.history.sectionLabel": "Read-only native session history",
   "ui.history.description":
     "Text is paged in file append order, with branch identifiers preserved. This is not the current model context. Reading does not start OMP.",
   "ui.history.read": "Read native records",

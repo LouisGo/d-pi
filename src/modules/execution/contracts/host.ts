@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { DirectoryIdentitySchema } from "../../workspace/contracts/public";
+import { DirectoryIdentitySchema } from "../../threads/contracts/public";
 import { ControlCommandSchema, ControlStateSchema } from "./control";
 import {
   AnswerCommandSchema,
@@ -51,20 +51,20 @@ export type HostCommand = z.infer<typeof HostCommandSchema>;
 export const HostMessageSchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("idle-confirmed"),
-    generation: z.uuid(),
+    connectionGeneration: z.uuid(),
     afterSubmissionId: z.uuid().nullable(),
   }),
   z.object({
     kind: z.literal("operation-result"),
     traceId: z.uuid(),
-    generation: z.uuid(),
+    connectionGeneration: z.uuid(),
     operation: z.enum(["answer", "dismiss", "stop", "continue"]),
     status: z.enum(["acknowledged", "failed", "unknown"]),
   }),
   z.object({ kind: z.literal("interactions"), view: InteractionViewSchema }),
   z.object({
     kind: z.literal("control"),
-    generation: z.uuid(),
+    connectionGeneration: z.uuid(),
     state: ControlStateSchema,
   }),
   z.object({ kind: z.literal("submission"), event: SubmissionEventSchema }),

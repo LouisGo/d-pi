@@ -50,7 +50,7 @@ vi.mock("@/components/ui/button", () => ({
 
 const state: ViewState = {
   kind: "ready",
-  workspace: { kind: "empty" },
+  threadSelection: { kind: "empty" },
   preferences: {
     theme: "light",
     density: "normal",

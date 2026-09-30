@@ -207,7 +207,7 @@ export class DraftController {
       const stored = reply.draft;
       if (
         stored.threadId !== this.draft.threadId ||
-        stored.workspaceId !== this.draft.workspaceId ||
+        stored.workingDirectoryId !== this.draft.workingDirectoryId ||
         stored.directory !== this.draft.directory
       ) {
         this.publish(previous);

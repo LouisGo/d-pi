@@ -72,7 +72,7 @@
   .sidebar-bottom .trace {
     flex-basis: 100%;
   }
-  .workspace {
+  .workbench {
     min-width: 0;
     flex: 1;
   }
@@ -292,14 +292,14 @@
 }
 
 @layer components {
-  .file-workspace,
+  .file-panel,
   .file-browser,
   .git-panel {
     display: grid;
     gap: var(--layout-gap);
     margin-block: var(--panel-padding);
   }
-  .file-workspace {
+  .file-panel {
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: var(--panel-padding);

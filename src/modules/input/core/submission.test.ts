@@ -5,7 +5,7 @@ import { DraftController } from "./draft-controller";
 const draft = DraftSchema.parse({
   schemaVersion: 1,
   threadId: crypto.randomUUID(),
-  workspaceId: crypto.randomUUID(),
+  workingDirectoryId: crypto.randomUUID(),
   directory: "/fixture",
   revision: 0,
   text: "",

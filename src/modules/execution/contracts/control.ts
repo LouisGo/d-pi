@@ -23,5 +23,5 @@ export const ControlCommandSchema = z.strictObject({
   kind: z.enum(["stop", "continue"]),
   threadId: ThreadIdSchema,
   traceId: TraceIdSchema,
-  generation: z.uuid(),
+  connectionGeneration: z.uuid(),
 });

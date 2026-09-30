@@ -17,7 +17,7 @@ const item = (
 function connected(): {
   model: ConversationModel;
   deliver: (event: ConversationEvent) => void;
-  generation: string;
+  connectionGeneration: string;
 } {
   let deliver: (event: ConversationEvent) => void = () => {};
   const model = new ConversationModel({
@@ -27,15 +27,15 @@ function connected(): {
     },
   });
   model.connect("thread");
-  const generation = crypto.randomUUID();
-  return { model, deliver, generation };
+  const connectionGeneration = crypto.randomUUID();
+  return { model, deliver, connectionGeneration };
 }
 
 it("notifies an entity subscriber only for the entity it selected", () => {
-  const { model, deliver, generation } = connected();
+  const { model, deliver, connectionGeneration } = connected();
   deliver({
     kind: "snapshot",
-    generation,
+    connectionGeneration,
     seq: 0,
     items: [item(1, "A"), item(2, "B")],
     gap: false,
@@ -56,7 +56,7 @@ it("notifies an entity subscriber only for the entity it selected", () => {
   );
   deliver({
     kind: "update",
-    generation,
+    connectionGeneration,
     seq: 1,
     droppedBefore: 0,
     gap: false,
@@ -66,7 +66,7 @@ it("notifies an entity subscriber only for the entity it selected", () => {
   expect(second).toBe(1);
   deliver({
     kind: "update",
-    generation,
+    connectionGeneration,
     seq: 2,
     droppedBefore: 0,
     gap: false,
@@ -77,7 +77,7 @@ it("notifies an entity subscriber only for the entity it selected", () => {
   release();
   deliver({
     kind: "update",
-    generation,
+    connectionGeneration,
     seq: 3,
     droppedBefore: 0,
     gap: false,
@@ -88,14 +88,14 @@ it("notifies an entity subscriber only for the entity it selected", () => {
 });
 
 it("keeps whole-state subscribers unaffected by fine grained selection", () => {
-  const { model, deliver, generation } = connected();
+  const { model, deliver, connectionGeneration } = connected();
   let changes = 0;
   const release = model.subscribe(() => {
     changes += 1;
   });
   deliver({
     kind: "snapshot",
-    generation,
+    connectionGeneration,
     seq: 0,
     items: [item(1, "A"), item(2, "B")],
     gap: false,
@@ -103,7 +103,7 @@ it("keeps whole-state subscribers unaffected by fine grained selection", () => {
   expect(changes).toBe(1);
   deliver({
     kind: "update",
-    generation,
+    connectionGeneration,
     seq: 1,
     droppedBefore: 0,
     gap: false,
@@ -113,7 +113,7 @@ it("keeps whole-state subscribers unaffected by fine grained selection", () => {
   release();
   deliver({
     kind: "update",
-    generation,
+    connectionGeneration,
     seq: 2,
     droppedBefore: 0,
     gap: false,

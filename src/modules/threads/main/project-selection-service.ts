@@ -8,7 +8,7 @@ export type ChooseProjectResult =
   | { kind: "directory-unavailable" }
   | { kind: "ready"; thread: ThreadContext };
 
-export class WorkspaceService {
+export class ProjectSelectionService {
   private choosing = false;
 
   constructor(

@@ -230,7 +230,7 @@ try {
   const geometry = [];
   const checkGeometry = async (kind) => {
     const size = await evaluate(
-      "(()=>{const outer=document.querySelector('.monaco-readonly');const inner=appearanceMonaco.getBoundingClientRect();const parent=outer.parentElement;if(!parent.matches('.file-workspace'))throw Error('Unexpected Monaco host parent');const style=getComputedStyle(parent);const host=getComputedStyle(outer);const allocatedWidth=parent.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight)-parseFloat(host.borderLeftWidth)-parseFloat(host.borderRightWidth);return {density:document.documentElement.dataset.density,outerWidth:outer.clientWidth,innerWidth:inner.width,outerHeight:outer.clientHeight,innerHeight:inner.height,allocatedWidth,parentWidth:parent.clientWidth,padding:style.paddingLeft};})()",
+      "(()=>{const outer=document.querySelector('.monaco-readonly');const inner=appearanceMonaco.getBoundingClientRect();const parent=outer.parentElement;if(!parent.matches('.file-panel'))throw Error('Unexpected Monaco host parent');const style=getComputedStyle(parent);const host=getComputedStyle(outer);const allocatedWidth=parent.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight)-parseFloat(host.borderLeftWidth)-parseFloat(host.borderRightWidth);return {density:document.documentElement.dataset.density,outerWidth:outer.clientWidth,innerWidth:inner.width,outerHeight:outer.clientHeight,innerHeight:inner.height,allocatedWidth,parentWidth:parent.clientWidth,padding:style.paddingLeft};})()",
     );
     assert.ok(
       Math.abs(size.outerWidth - size.innerWidth) <= 1,
@@ -324,7 +324,7 @@ try {
   assert.equal(await evaluate("getSelection().toString()"), composerSelection);
   await checkGeometry("file");
   await evaluate(
-    "document.querySelector('.file-workspace').scrollIntoView({block:'center'})",
+    "document.querySelector('.file-panel').scrollIntoView({block:'center'})",
   );
   await screenshot("file-dark-compact.png");
   await toggle("theme");
@@ -349,17 +349,17 @@ try {
     });
   await wait(() =>
     evaluate(
-      "Array.from(document.querySelectorAll('.file-workspace button')).some(item=>item.textContent.includes('Attach selection')&&!item.disabled)",
+      "Array.from(document.querySelectorAll('.file-panel button')).some(item=>item.textContent.includes('Attach selection')&&!item.disabled)",
     ),
   );
   const selectionState = await evaluate(
-    "document.querySelector('.file-workspace').textContent",
+    "document.querySelector('.file-panel').textContent",
   );
   await toggle("theme", true);
   await toggle("density", true);
   await checkGeometry("diff");
   assert.equal(
-    await evaluate("document.querySelector('.file-workspace').textContent"),
+    await evaluate("document.querySelector('.file-panel').textContent"),
     selectionState,
   );
   assert.equal(
@@ -370,7 +370,7 @@ try {
   );
   await evaluate("appearanceMonaco.scrollIntoView({block:'center'})");
   await screenshot("diff-dark-compact.png");
-  await click(".file-workspace button", "Attach selection");
+  await click(".file-panel button", "Attach selection");
   await wait(() => evaluate("!!document.querySelector('.file-reference pre')"));
   const reference = await evaluate(
     "document.querySelector('.file-reference pre').textContent",

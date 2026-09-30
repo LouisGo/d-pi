@@ -14,7 +14,7 @@ import type {
 export interface RuntimeState {
   view: RuntimeView | null;
   thread: ThreadId | null;
-  generation: number;
+  requestGeneration: number;
   disposed: boolean;
 }
 
@@ -22,7 +22,7 @@ const initial: StateCreator<
   RuntimeState,
   [],
   [["zustand/subscribeWithSelector", never]]
-> = () => ({ view: null, thread: null, generation: 0, disposed: false });
+> = () => ({ view: null, thread: null, requestGeneration: 0, disposed: false });
 
 const createRuntimeStore = () =>
   createStore<RuntimeState>()(subscribeWithSelector(initial));
@@ -89,7 +89,7 @@ export class RuntimeModel {
     if (state.disposed || state.thread === thread) return;
     this.store.setState({
       thread,
-      generation: state.generation + 1,
+      requestGeneration: state.requestGeneration + 1,
       view: null,
     });
     void this.act("inspect");
@@ -104,11 +104,11 @@ export class RuntimeModel {
     if (state.disposed) return;
     const threadId = state.thread;
     if (!threadId) return;
-    const generation = state.generation;
+    const requestGeneration = state.requestGeneration;
     const traceId = crypto.randomUUID();
     try {
       const reply = await this.bridge.request({ kind, threadId, traceId });
-      if (generation !== this.store.getState().generation) return;
+      if (requestGeneration !== this.store.getState().requestGeneration) return;
       match(reply)
         .with({ kind: "view" }, ({ view }) => {
           if (view.threadId === threadId) this.publish(view);
@@ -128,7 +128,7 @@ export class RuntimeModel {
         })
         .exhaustive();
     } catch {
-      if (generation !== this.store.getState().generation) return;
+      if (requestGeneration !== this.store.getState().requestGeneration) return;
       this.publish(
         this.failureView(
           threadId,
@@ -144,10 +144,15 @@ export class RuntimeModel {
     if (state.disposed) return;
     const current = state.view;
     const thread = state.thread;
-    if (!current?.generation || !thread) return;
+    if (!current?.connectionGeneration || !thread) return;
     const traceId = crypto.randomUUID();
     await this.request(
-      { kind, threadId: thread, traceId, generation: current.generation },
+      {
+        kind,
+        threadId: thread,
+        traceId,
+        connectionGeneration: current.connectionGeneration,
+      },
       current,
       uiMessage("runtime.controlUnknown"),
     );
@@ -164,7 +169,7 @@ export class RuntimeModel {
         kind: "answer",
         threadId: thread,
         traceId,
-        generation: current.interactions.generation,
+        connectionGeneration: current.interactions.connectionGeneration,
         id,
         answer,
       },
@@ -184,7 +189,7 @@ export class RuntimeModel {
         kind: "dismiss",
         threadId: thread,
         traceId,
-        generation: current.interactions.generation,
+        connectionGeneration: current.interactions.connectionGeneration,
         id,
       },
       current,
@@ -195,7 +200,7 @@ export class RuntimeModel {
    * One funnel for the state-changing commands so all three share the same
    * staleness rule as `act`: a superseded request may still be in flight when
    * a newer one lands, and its reply must not resurrect an older view. The
-   * generation is bumped per request, so only the newest reply applies.
+   * requestGeneration is bumped per request, so only the newest reply applies.
    */
   private async request(
     command: RuntimeCommand,
@@ -203,11 +208,11 @@ export class RuntimeModel {
     unknownMessage: UiMessage,
   ): Promise<void> {
     if (this.store.getState().disposed) return;
-    const generation = this.store.getState().generation + 1;
-    this.store.setState({ generation });
+    const requestGeneration = this.store.getState().requestGeneration + 1;
+    this.store.setState({ requestGeneration });
     try {
       const reply = await this.bridge.request(command);
-      if (generation !== this.store.getState().generation) return;
+      if (requestGeneration !== this.store.getState().requestGeneration) return;
       match(reply)
         .with({ kind: "view" }, ({ view }) => {
           if (this.store.getState().thread === view.threadId)
@@ -225,7 +230,7 @@ export class RuntimeModel {
         })
         .exhaustive();
     } catch {
-      if (generation !== this.store.getState().generation) return;
+      if (requestGeneration !== this.store.getState().requestGeneration) return;
       this.publish({
         ...current,
         traceId: command.traceId,
@@ -236,7 +241,10 @@ export class RuntimeModel {
   dispose(): void {
     const state = this.store.getState();
     if (state.disposed) return;
-    this.store.setState({ generation: state.generation + 1, disposed: true });
+    this.store.setState({
+      requestGeneration: state.requestGeneration + 1,
+      disposed: true,
+    });
     this.unsubscribe();
   }
 }

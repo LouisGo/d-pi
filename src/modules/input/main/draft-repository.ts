@@ -1,5 +1,5 @@
 import type { AppDatabase } from "../../../platform/main/storage/public";
-import type { ThreadRepository } from "../../workspace/main/public";
+import type { ThreadRepository } from "../../threads/main/public";
 import {
   type Draft,
   type DraftConsumptionWriter,
@@ -22,9 +22,10 @@ export class DraftRepository implements DraftReader, DraftConsumptionWriter {
     return this.read(this.threads.create(directory).threadId);
   }
   read(id: string): Draft {
+    // workspace_id is the legacy SQLite directory key, mapped at the read boundary.
     const row = this.db
       .prepare(
-        `SELECT 1 AS schemaVersion,t.id AS threadId,w.id AS workspaceId,w.directory,t.revision,t.body AS text FROM thread t JOIN workspace w ON w.id=t.workspace_id WHERE t.id=?`,
+        `SELECT 1 AS schemaVersion,t.id AS threadId,w.id AS workingDirectoryId,w.directory,t.revision,t.body AS text FROM thread t JOIN workspace w ON w.id=t.workspace_id WHERE t.id=?`,
       )
       .get(id);
     const draft = DraftSchema.parse(row);

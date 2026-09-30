@@ -13,7 +13,7 @@ export type DraftSaveResult =
 
 /**
  * Save only the input-owned revision. Command decoding, UI errors, and
- * workspace selection belong to the app composition layer.
+ * project selection belong to the app composition layer.
  */
 export function saveDraft(
   drafts: Pick<DraftReader, "active" | "save">,

@@ -82,7 +82,7 @@ export function registerHistoryIpc(context: ProjectReadContext): void {
   context.ipcMain.handle("history:read", async (event, raw: unknown) => {
     const { threadId, cursor } = HistoryRequestSchema.parse(raw);
     activeThreadFor(context, event, "Invalid history source", threadId);
-    const binding = context.getStore()?.threads.nativeSession(threadId);
+    const binding = context.getStore()?.threads.nativeSessionBinding(threadId);
     return binding
       ? readNativeHistory(context.nativeSessionsPath(), binding, cursor)
       : { kind: "unavailable", reason: "missing" };

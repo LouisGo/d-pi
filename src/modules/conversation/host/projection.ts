@@ -36,7 +36,7 @@ export class ConversationProjection {
   private timer: ReturnType<typeof setTimeout> | undefined;
   private unknownTypes = new Set<string>();
   constructor(
-    private readonly generation: string,
+    private readonly connectionGeneration: string,
     private readonly emit: (event: ConversationUpdate) => void,
     private readonly budget = 8 * 1024 * 1024,
   ) {}
@@ -241,7 +241,7 @@ export class ConversationProjection {
     for (const item of this.pending.values())
       this.emit({
         kind: "update",
-        generation: this.generation,
+        connectionGeneration: this.connectionGeneration,
         seq: ++this.seq,
         item,
         droppedBefore: this.items[0]?.id ?? 0,
@@ -253,7 +253,7 @@ export class ConversationProjection {
     this.flush();
     return {
       kind: "snapshot",
-      generation: this.generation,
+      connectionGeneration: this.connectionGeneration,
       seq: this.seq,
       items: this.items.map((item) => ({ ...item })),
       gap: this.gap,

@@ -5,12 +5,12 @@ import type {
   FileReply,
 } from "../../../modules/files/contracts/public";
 import { fileQueryOptions } from "../../../modules/files/renderer/public";
-import { ThreadContextSchema } from "../../../modules/workspace/contracts/public";
+import { ThreadContextSchema } from "../../../modules/threads/contracts/public";
 import { readInFlight } from "./refresh-state";
 
 const resource = ThreadContextSchema.parse({
   threadId: crypto.randomUUID(),
-  workspaceId: crypto.randomUUID(),
+  workingDirectoryId: crypto.randomUUID(),
   directory: "/fixture",
 });
 

@@ -26,7 +26,7 @@ Diff 组件不读取 Git、不决定基线或作者，也不决定回退操作�
 
 ## 读路径的查询、缓存与编辑器边界
 
-`renderer/public.ts` 暴露文件的 Query key、请求构造与 `useDirectoryListing`/`useFileContent`；key 使用真实 ThreadContext（Thread、workspace、实际目录）和路径，切换资源不会让迟到结果覆盖当前文件。本地读取按 D-37 显式使用 `networkMode: 'always'`，不因 Renderer 判定离线而暂停；返回值中的 `unavailable`（缺失/拒绝/二进制/编码/超限/变化中）是业务结论而非可重试错误，只有采样失败（`unavailable("failed")`）由查询层转成可重试错误，其余 reason 保持终局结论。刷新是显式动作，不做定时轮询；查询缓存不是磁盘真相，缓存命中不伪报成功。重试窗口内界面显示"正在重新采样"并禁用刷新按钮，避免旧采样被当成本次刷新的结果。列表查询的 key 必须能区分"未选中"与根目录：`""` 是合法根路径，因此列表不设 `enabled` 门控，门控只用于"未选中"确实合法的单文件查询；未选中的显式 fetch/refetch 也由执行函数阻止 IPC。FileReadError 保留该次请求的 trace/operation 及业务回包或 transport cause。
+`renderer/public.ts` 暴露文件的 Query key、请求构造与 `useDirectoryListing`/`useFileContent`；key 使用真实 ThreadContext（Thread、工作目录身份、实际目录）和路径，切换资源不会让迟到结果覆盖当前文件。本地读取按 D-37 显式使用 `networkMode: 'always'`，不因 Renderer 判定离线而暂停；返回值中的 `unavailable`（缺失/拒绝/二进制/编码/超限/变化中）是业务结论而非可重试错误，只有采样失败（`unavailable("failed")`）由查询层转成可重试错误，其余 reason 保持终局结论。刷新是显式动作，不做定时轮询；查询缓存不是磁盘真相，缓存命中不伪报成功。重试窗口内界面显示"正在重新采样"并禁用刷新按钮，避免旧采样被当成本次刷新的结果。列表查询的 key 必须能区分"未选中"与根目录：`""` 是合法根路径，因此列表不设 `enabled` 门控，门控只用于"未选中"确实合法的单文件查询；未选中的显式 fetch/refetch 也由执行函数阻止 IPC。FileReadError 保留该次请求的 trace/operation 及业务回包或 transport cause。
 
 Monaco 适配不进入任何静态导入面：它以 `loadFileEditor()` 形式由本模块公开，Renderer 入口调用一次并作为组件注入工作台，业务模块与应用外壳都不静态引用编辑器包。编辑器包在模块顶层访问 `window`，无头测试不得加载它。
 

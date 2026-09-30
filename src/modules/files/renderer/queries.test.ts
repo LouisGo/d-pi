@@ -5,17 +5,17 @@ import {
   type QueryObserverResult,
 } from "@tanstack/react-query";
 import { expect, it } from "vitest";
-import { ThreadContextSchema } from "../../workspace/contracts/public";
+import { ThreadContextSchema } from "../../threads/contracts/public";
 import type { FileBridge, FileReply } from "../contracts/public";
 import { fileKeys, fileQueryOptions, refreshFiles } from "./queries";
 
 const resource = ThreadContextSchema.parse({
   threadId: crypto.randomUUID(),
-  workspaceId: crypto.randomUUID(),
+  workingDirectoryId: crypto.randomUUID(),
   directory: "/fixture/project",
 });
 
-it("isolates snapshots by the actual workspace and directory, while ignoring bridge object identity", async () => {
+it("isolates snapshots by the working directory identity and path, while ignoring bridge object identity", async () => {
   const client_ = client();
   let current = "first";
   let requests = 0;
@@ -35,12 +35,12 @@ it("isolates snapshots by the actual workspace and directory, while ignoring bri
   current = "second directory";
   const directory = { ...resource, directory: "/second" };
   expect(await fetch(directory)).toMatchObject({ text: current });
-  current = "second workspace";
-  const workspace = ThreadContextSchema.parse({
+  current = "second working directory";
+  const workingDirectory = ThreadContextSchema.parse({
     ...directory,
-    workspaceId: crypto.randomUUID(),
+    workingDirectoryId: crypto.randomUUID(),
   });
-  expect(await fetch(workspace)).toMatchObject({ text: current });
+  expect(await fetch(workingDirectory)).toMatchObject({ text: current });
   expect(requests).toBe(3);
   expect(await fetch({ ...resource }, createBridge())).toMatchObject({
     text: "first",

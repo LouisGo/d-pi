@@ -147,7 +147,7 @@ it("releases submission state and ignores a restore that finishes after dispose"
   const restoredDraft = DraftSchema.parse({
     schemaVersion: 1,
     threadId: crypto.randomUUID(),
-    workspaceId: crypto.randomUUID(),
+    workingDirectoryId: crypto.randomUUID(),
     directory: "/fixture",
     revision: 0,
     text: "saved source",
@@ -227,7 +227,7 @@ it("replaces the published state so a retry cannot keep failure fields", async (
   await model.start();
   expect(model.getSnapshot()).toEqual({
     kind: "ready",
-    workspace: { kind: "empty" },
+    threadSelection: { kind: "empty" },
     preferences: { theme: "light", density: "normal", locale: "system" },
     busy: false,
     notice: null,
@@ -286,7 +286,7 @@ it("publishes a complete new Thread whose save lane cannot use the previous Thre
   const first = DraftSchema.parse({
     schemaVersion: 1,
     threadId: crypto.randomUUID(),
-    workspaceId: crypto.randomUUID(),
+    workingDirectoryId: crypto.randomUUID(),
     directory: "/first",
     revision: 0,
     text: "first text",
@@ -329,12 +329,12 @@ it("publishes a complete new Thread whose save lane cannot use the previous Thre
   model.dispose();
 });
 
-it("publishes disposed before exposing released workspace resources", async () => {
+it("publishes disposed before exposing released Thread resources", async () => {
   vi.stubGlobal("document", { documentElement: { dataset: {} } });
   const restored = DraftSchema.parse({
     schemaVersion: 1,
     threadId: crypto.randomUUID(),
-    workspaceId: crypto.randomUUID(),
+    workingDirectoryId: crypto.randomUUID(),
     directory: "/fixture",
     revision: 0,
     text: "source",

@@ -71,8 +71,8 @@ vi.mock("./workbench/composer", () => ({
     return null;
   },
 }));
-vi.mock("./workbench/file-workspace", () => ({
-  FileWorkspace: (props: { onAttach: (selection: Selection) => void }) => {
+vi.mock("./workbench/file-panel", () => ({
+  FilePanel: (props: { onAttach: (selection: Selection) => void }) => {
     views.files(props);
     attachmentBridge.attach = props.onAttach;
     return null;
@@ -109,7 +109,7 @@ async function setup({
   let draft = DraftSchema.parse({
     schemaVersion: 1,
     threadId: crypto.randomUUID(),
-    workspaceId: crypto.randomUUID(),
+    workingDirectoryId: crypto.randomUUID(),
     directory: "/fixture/first",
     revision: 0,
     text: "a saved draft",
@@ -373,14 +373,14 @@ it("writes only the appearance attribute that changes", async () => {
   }
 });
 
-it("updates the owning Thread resources when the workspace identity changes", async () => {
+it("updates the owning Thread resources when the working directory identity changes", async () => {
   const fixture = await setup();
   const previous = fixture.model.controller;
   await act(() => fixture.changeThread());
   const state = fixture.model.getSnapshot();
-  if (state.kind !== "ready" || state.workspace.kind !== "thread")
+  if (state.kind !== "ready" || state.threadSelection.kind !== "thread")
     throw Error("missing replacement Thread");
-  const { thread } = state.workspace;
+  const { thread } = state.threadSelection;
   expect(thread.controller).not.toBe(previous);
   expect(fixture.container.textContent).toContain("/fixture/second");
   expect(views.composer.mock.calls.at(-1)?.[0]).toMatchObject({ thread });
@@ -413,10 +413,10 @@ it("consumes an attachment once and prevents old Thread callbacks from populatin
   const applied = attachmentBridge.applied;
   if (!attachment || !applied) throw Error("attachment not delivered");
   const state = fixture.model.getSnapshot();
-  if (state.kind !== "ready" || state.workspace.kind !== "thread")
+  if (state.kind !== "ready" || state.threadSelection.kind !== "thread")
     throw Error("missing attachment Thread");
   expect(attachment).toMatchObject({
-    threadId: state.workspace.thread.context.threadId,
+    threadId: state.threadSelection.thread.context.threadId,
     selection,
   });
   await act(() => applied(attachment.id));
@@ -477,7 +477,7 @@ it("keeps the project chooser disabled for its real pending operation", async ()
   expect(choose()?.disabled).toBe(false);
 });
 
-it("still updates localized workspace text when the language context changes", async () => {
+it("still updates localized workbench text when the language context changes", async () => {
   const fixture = await setup();
   expect(fixture.container.textContent).toContain(i18n.t("app.draft.title"));
   const language = fixture.container.querySelector("select");

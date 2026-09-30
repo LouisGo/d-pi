@@ -20,7 +20,7 @@ it("does not dispatch prepared free text after its Thread owner is disposed", as
   const draft = DraftSchema.parse({
     schemaVersion: 1,
     threadId: crypto.randomUUID(),
-    workspaceId: crypto.randomUUID(),
+    workingDirectoryId: crypto.randomUUID(),
     directory: "/fixture",
     revision: 0,
     text: "draft",
@@ -216,7 +216,7 @@ it("freezes A before dispatch, consumes only its unchanged edit sequence, and de
   const draft = DraftSchema.parse({
     schemaVersion: 1,
     threadId: crypto.randomUUID(),
-    workspaceId: crypto.randomUUID(),
+    workingDirectoryId: crypto.randomUUID(),
     directory: "/p",
     revision: 1,
     text: "A",
@@ -288,7 +288,7 @@ it("consumes an acknowledged draft after the editor adapter attaches", async () 
   const draft = DraftSchema.parse({
     schemaVersion: 1,
     threadId: crypto.randomUUID(),
-    workspaceId: crypto.randomUUID(),
+    workingDirectoryId: crypto.randomUUID(),
     directory: "/fixture",
     revision: 1,
     text: "A",
@@ -371,7 +371,7 @@ function submissionFixture() {
   const draft = DraftSchema.parse({
     schemaVersion: 1,
     threadId: crypto.randomUUID(),
-    workspaceId: crypto.randomUUID(),
+    workingDirectoryId: crypto.randomUUID(),
     directory: "/fixture",
     revision: 1,
     text: "A",
@@ -513,7 +513,7 @@ it("sends follow-up text without capturing or consuming the draft", async () => 
   const draft = DraftSchema.parse({
     schemaVersion: 1,
     threadId: crypto.randomUUID(),
-    workspaceId: crypto.randomUUID(),
+    workingDirectoryId: crypto.randomUUID(),
     directory: "/p",
     revision: 1,
     text: "B",
@@ -593,7 +593,7 @@ it("reports follow-up honesty: success only after dispatch, failure message othe
     DraftSchema.parse({
       schemaVersion: 1,
       threadId,
-      workspaceId: crypto.randomUUID(),
+      workingDirectoryId: crypto.randomUUID(),
       directory: "/p",
       revision: 1,
       text: "B",
@@ -684,7 +684,7 @@ it("binds dispatch-stage failures to the formal receipt and keeps draft/text cha
     DraftSchema.parse({
       schemaVersion: 1,
       threadId,
-      workspaceId: crypto.randomUUID(),
+      workingDirectoryId: crypto.randomUUID(),
       directory: "/p",
       revision: 1,
       text: "B",
@@ -768,7 +768,7 @@ it("releases only the rejected capture so unchanged text can be explicitly sent 
   const draft = DraftSchema.parse({
     schemaVersion: 1,
     threadId: crypto.randomUUID(),
-    workspaceId: crypto.randomUUID(),
+    workingDirectoryId: crypto.randomUUID(),
     directory: "/fixture",
     revision: 1,
     text: "A",
@@ -880,7 +880,7 @@ it.each(["rejected", "unknown", "failed-after-ack"] as const)(
     const draft = DraftSchema.parse({
       schemaVersion: 1,
       threadId: crypto.randomUUID(),
-      workspaceId: crypto.randomUUID(),
+      workingDirectoryId: crypto.randomUUID(),
       directory: "/fixture",
       revision: 1,
       text: "A",

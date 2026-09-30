@@ -9,7 +9,7 @@ export interface ConversationHostPort {
 }
 
 export interface ConversationHost {
-  start(generation: string): void;
+  start(connectionGeneration: string): void;
   accept(frame: NativeFrame): void;
   attach(port?: ConversationHostPort): void;
   dispose(): void;
@@ -29,9 +29,9 @@ export function createConversationHost(): ConversationHost {
   };
 
   return {
-    start(generation) {
+    start(connectionGeneration) {
       projection?.dispose();
-      projection = new ConversationProjection(generation, post);
+      projection = new ConversationProjection(connectionGeneration, post);
     },
     accept(frame) {
       projection?.accept(frame);

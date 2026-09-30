@@ -434,7 +434,7 @@ OMP config
 Session
 Thread
 Run
-Workspace domain model
+Thread domain model
 ```
 
 原因很简单：

@@ -1,6 +1,6 @@
 import { match } from "ts-pattern";
 import { saveDraft } from "../../../modules/input/main/public";
-import { WorkspaceService } from "../../../modules/workspace/main/public";
+import { ProjectSelectionService } from "../../../modules/threads/main/public";
 import { diagnosticCode } from "../../../platform/main/diagnostics/public";
 import { resolveDirectory } from "../../../platform/node/filesystem/public";
 import type { Command, Reply } from "../../contracts/desktop-bridge";
@@ -8,7 +8,7 @@ import { failure } from "../../contracts/failure";
 import type { AppStorage } from "./app-storage";
 
 export class DesktopCommandService {
-  private readonly workspace: WorkspaceService;
+  private readonly projects: ProjectSelectionService;
 
   constructor(
     private readonly storage: Pick<
@@ -17,7 +17,7 @@ export class DesktopCommandService {
     >,
     choose: () => Promise<string | null>,
   ) {
-    this.workspace = new WorkspaceService(storage.threads, choose);
+    this.projects = new ProjectSelectionService(storage.threads, choose);
   }
 
   async execute(command: Command): Promise<Reply> {
@@ -42,7 +42,7 @@ export class DesktopCommandService {
           };
         })
         .with({ kind: "choose-project" }, async ({ traceId }) => {
-          const result = await this.workspace.chooseProject();
+          const result = await this.projects.chooseProject();
           if (result.kind === "already-active")
             return failure(traceId, "invalid-request", "draft.alreadyActive");
           if (result.kind === "cancelled") return result;

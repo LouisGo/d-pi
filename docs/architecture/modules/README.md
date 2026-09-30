@@ -12,7 +12,7 @@
 | `src/modules/files/` | 文件合同、选区/代码视图、授权只读读取与 Monaco 只读适配；不写工作区或 Git index |
 | `src/modules/input/` | 草稿合同、草稿控制器、冻结引用序列化与输入编辑器适配；提交收据和 OMP 消费仍归 execution |
 | `src/modules/changes/` | Git 只读合同、读取实现与 Renderer 查询面；复用 files 的公开读取能力，不推断作者或写 Git |
-| `src/modules/workspace/` | Thread、目录身份、项目选择、执行信任和原生记录绑定；`main/public.ts` 提供应用组合入口 |
+| `src/modules/threads/` | Thread、目录身份、项目选择、执行信任和原生记录绑定；`main/public.ts` 提供应用组合入口 |
 | `src/modules/preferences/` | App 主题、密度、发送方式和 locale 合同/仓储/Renderer provider；不拥有 OMP 配置 |
 | `src/modules/conversation/` | 实时阅读合同、核心订阅模型、Host 投影/端口作用域和原生历史读取；不启动或恢复执行 |
 | `src/modules/execution/` | 提交收据、准入、控制、交互、Host/OMP 适配和 Renderer 镜像；不复制 OMP 队列或历史，也不构造阅读模型 |
@@ -23,7 +23,7 @@
 
 这是按功能与进程边界共同组织的单应用结构。机器边界单源为 [`architecture/modules.json`](../../../architecture/modules.json)，规则入口为 `pnpm check:architecture`，目录与依赖的稳定规则见[源码目录与依赖边界](../source-layout.md)；结构报告只提供维护提示，不把行数变成硬门槛。Thread 表自 v1 起保存草稿字段（schema 现为 v5），不因代码职责拆分而进行无收益的物理表迁移；恢复/控制行为继续按 S3 合同演进。`architecture/modules.json` 同时声明领域模块、`src/app`、`src/platform`、`src/shared` 和 `runtime` 的源码归属；报告应显示 `ownership=all-source-files`、`unowned=0`，以及 `checked=configured-module-files`、`owned-only=0`，例外清单为空。
 
-P1 落地的跨模块路径有两条：`files → input`（选区冻结与引用）与 `files → changes`（Git Diff 只读来源）。第三项不是跨模块依赖——应用级 Composer/FileWorkspace 留在 `src/app/renderer/workbench`，由 app 组合而不新增领域依赖。新增普通内部文件不要求修改清单；只有公开面、环境或跨模块依赖变化才更新机器配置。
+P1 落地的跨模块路径有两条：`files → input`（选区冻结与引用）与 `files → changes`（Git Diff 只读来源）。第三项不是跨模块依赖——应用级 Composer/FilePanel 留在 `src/app/renderer/workbench`，由 app 组合而不新增领域依赖。新增普通内部文件不要求修改清单；只有公开面、环境或跨模块依赖变化才更新机器配置。
 
 环境依赖权限从 `architecture/modules.json` 读取，实际源码导入从扫描结果读取。入库的[机器生成报告](../../../architecture/dependencies.generated.json)分开展示 `allowedDependencies` 与 `actualDependencies`，并保留未扫描文件、未解析导入和例外；运行 `pnpm report:structure` 查看文字结果，`pnpm check:structure` 检查快照新鲜度。本页保留所有权理由，不手工复制依赖清单。
 
@@ -45,7 +45,7 @@ P1 落地的跨模块路径有两条：`files → input`（选区冻结与引用
 | [宿主与 OMP 接入](runtime-host.md) | `runtime/host.mjs`、`src/modules/execution/host`、`src/platform/omp`、`src/app/host` | 进程监督、受限通道、协议解码、原生请求关联、实例恢复 | M1 核心；不重建 OMP 执行循环 |
 | [App 存储与内容](app-storage.md) | `src/platform/main/storage`、`src/app/main/wiring` | SQLite 写入、迁移恢复、私有内容文件及引用一致性 | M1 核心；驱动和具体表结构在持久化切片确定 |
 | [配置、模型与认证](configuration.md) | `runtime/host.mjs`（OMP profile）、`src/platform/omp/resources`、`src/modules/execution/main`；App 偏好归 `src/modules/preferences` | 原生配置复用、配置上下文、模型能力、新用户认证 | M1 已有配置；M2 两条新增认证与子 Agent Thread 配置覆盖；GUI 认证入口尚未实现 |
-| [项目、工作目录与 Thread](threads.md) | `src/modules/workspace` | 稳定身份、目录关系、执行准入、原生记录绑定与恢复入口 | M1 数据模型；M2 多 Thread 界面 |
+| [项目、工作目录与 Thread](threads.md) | `src/modules/threads` | 稳定身份、目录关系、执行准入、原生记录绑定与恢复入口 | M1 数据模型；M2 多 Thread 界面 |
 | [输入与上下文](input-context.md) | `src/modules/input`、`src/app/renderer/workbench`（应用级组合） | 编辑接入、草稿、引用、内容准备与冻结 | M1 文字/选区；M2 全部指定输入 |
 | [提交与执行交互](execution.md) | `src/modules/execution` | 提交收据、接受证据、排队/干预/停止和待答交互 | M1 核心；M2 完整队列管理 |
 | [执行记录与阅读](conversation.md) | `src/modules/conversation` | 会话投影、实时尾部、历史分页、工具/子 Agent 展示、复制 | M1 主链路；M2 长输出；M3 PNG 导出等 |
@@ -55,7 +55,7 @@ P1 落地的跨模块路径有两条：`files → input`（选区冻结与引用
 | [内置浏览器](browser.md) | 无（M3 设计，未登记模块） | 预览、标签页、共享持久登录与后续 AI 操作 | M3 边界；不阻塞首版登录 |
 | [集成终端](terminal.md) | 无（M3 设计，未登记模块） | 用户终端会话、进程、输入输出和释放 | M3 边界；不接管 OMP 工具命令 |
 
-模块页名是能力名，不等于 `architecture/modules.json` 的领域模块名，也不一一对应源码目录：`threads`→`workspace`、`files-editor`→`files`、`input-context`→`input`、`changes-git`→`changes` 是同一领域的不同称呼；`runtime-host` 与 `app-storage` 跨 `runtime`/`execution`/`platform`/`app` 组合；`configuration`、`side-chat`、`browser`、`terminal` 在机器清单中没有同名模块。领域模块与环境依赖的机器单源始终是 [`architecture/modules.json`](../../../architecture/modules.json)。
+模块页名是能力名，不等于 `architecture/modules.json` 的领域模块名，也不一一对应源码目录：`threads`、`files-editor`→`files`、`input-context`→`input`、`changes-git`→`changes` 是同一领域的不同称呼；`runtime-host` 与 `app-storage` 跨 `runtime`/`execution`/`platform`/`app` 组合；`configuration`、`side-chat`、`browser`、`terminal` 在机器清单中没有同名模块。领域模块与环境依赖的机器单源始终是 [`architecture/modules.json`](../../../architecture/modules.json)。
 
 所有模块都遵守[无头功能合同](../headless-features.md)：规则、协调、查询投影、React 绑定和视图按实际需要分工。模块的业务逻辑不因页面卸载而结束，DOM/编辑器等视图资源则应及时释放。
 

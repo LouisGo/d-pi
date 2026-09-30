@@ -23,7 +23,7 @@ export const ui = {
   "app.draft.title": "从一个想法开始",
   "app.draft.description": "文字会保存到此设备，下次打开可继续编辑。",
   "app.draft.directoryUnavailable":
-    "项目目录已失效。草稿仍可编辑；应用不会自动换到其他目录。",
+    "工作目录已失效。草稿仍可编辑；应用不会自动换到其他目录。",
   "app.empty.title": "在项目里，写下第一步",
   "app.empty.description": "选择目录，创建一份可恢复的文字草稿。",
   "app.empty.choose": "选择项目并创建草稿",
@@ -62,7 +62,7 @@ export const ui = {
     "排队已满（{queued}/{cap}），请等待消费后再发送；草稿已保留。",
   "ui.conversation.image": "[图片：{alt}]",
   "ui.conversation.imageNotLoaded": "未加载",
-  "ui.conversation.sectionLabel": "会话阅读",
+  "ui.conversation.sectionLabel": "原生会话阅读",
   "ui.conversation.heading": "会话",
   "ui.conversation.empty": "发送后，OMP 的回复和工具结果会显示在这里。",
   "ui.conversation.gap": "当前显示有缺口，可在下方读取原生记录核对。",
@@ -92,7 +92,7 @@ export const ui = {
     "原提交可能已经执行，再次发送可能产生重复操作。请先核对原生历史；新草稿保持不变。恢复只读或队列暂停时不会派发。",
   "ui.submissions.resendConfirm": "确认可能重复，重新发送",
   "ui.submissions.copyOriginal": "复制提交原文",
-  "ui.history.sectionLabel": "只读原生历史",
+  "ui.history.sectionLabel": "只读原生会话历史",
   "ui.history.description":
     "按文件追加顺序分页显示文字，保留记录分支标识；不等于当前模型上下文。读取不会启动 OMP。",
   "ui.history.read": "读取原生记录",

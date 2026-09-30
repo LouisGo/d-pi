@@ -95,7 +95,7 @@ it("reads conversation rows without rescanning the item array for each ID", () =
     connect: (_thread, listener) => {
       listener({
         kind: "snapshot",
-        generation: crypto.randomUUID(),
+        connectionGeneration: crypto.randomUUID(),
         seq: 0,
         gap: false,
         items,

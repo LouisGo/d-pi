@@ -1,6 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import type { ThreadContext } from "../../workspace/contracts/public";
+import type { ThreadContext } from "../../threads/contracts/public";
 import type { FileBridge, FileReply, FileRequest } from "../contracts/public";
 
 // These identities come from the application's active Thread, rather than
@@ -10,7 +10,7 @@ export const fileKeys = {
     [
       "files",
       resource.threadId,
-      resource.workspaceId,
+      resource.workingDirectoryId,
       resource.directory,
     ] as const,
   listing: (resource: ThreadContext, path: string) =>

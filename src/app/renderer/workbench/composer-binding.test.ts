@@ -51,7 +51,7 @@ async function setup() {
   const first = DraftSchema.parse({
     schemaVersion: 1,
     threadId: crypto.randomUUID(),
-    workspaceId: crypto.randomUUID(),
+    workingDirectoryId: crypto.randomUUID(),
     directory: "/fixture",
     revision: 0,
     text: "restored A",
@@ -86,9 +86,9 @@ async function setup() {
   models.push(model);
   await model.start();
   const state = model.getSnapshot();
-  if (state.kind !== "ready" || state.workspace.kind !== "thread")
+  if (state.kind !== "ready" || state.threadSelection.kind !== "thread")
     throw Error("missing Thread");
-  const thread = state.workspace.thread;
+  const thread = state.threadSelection.thread;
   const render = () =>
     renderToStaticMarkup(createElement(Composer, { thread, model }));
   return {

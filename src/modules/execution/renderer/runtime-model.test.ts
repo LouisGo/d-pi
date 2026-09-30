@@ -84,7 +84,7 @@ it("a superseded control reply cannot resurrect a view the newer reply replaced"
     threadId,
     traceId: crypto.randomUUID(),
     configuration: { code: "runtime.configDefault" },
-    generation: crypto.randomUUID(),
+    connectionGeneration: crypto.randomUUID(),
     control: {
       streaming: false,
       compacting: false,

@@ -191,13 +191,13 @@ it("answers timed-out questions with the timeout default while confirm dialogs k
     const exit = vi.fn();
     const host = createSessionHost((message) => messages.push(message), exit);
     const threadId = crypto.randomUUID();
-    const generation = crypto.randomUUID();
+    const connectionGeneration = crypto.randomUUID();
     await host.handle({
       kind: "start",
       threadId,
       traceId: crypto.randomUUID(),
       processInstanceId: crypto.randomUUID(),
-      connectionGeneration: generation,
+      connectionGeneration: connectionGeneration,
       configContextId: "fixture",
       binary: "/fixture/omp",
       identity: { directory: "/project", device: "1", inode: "2" },
@@ -510,13 +510,13 @@ it("refreshes the last known control from stop/continue replies so close-idle un
     const exit = vi.fn();
     const host = createSessionHost((message) => messages.push(message), exit);
     const threadId = ThreadIdSchema.parse(crypto.randomUUID());
-    const generation = crypto.randomUUID();
+    const connectionGeneration = crypto.randomUUID();
     await host.handle({
       kind: "start",
       threadId,
       traceId: crypto.randomUUID(),
       processInstanceId: crypto.randomUUID(),
-      connectionGeneration: generation,
+      connectionGeneration: connectionGeneration,
       configContextId: "fixture",
       binary: "/fixture/omp",
       identity: { directory: "/project", device: "1", inode: "2" },
@@ -537,7 +537,7 @@ it("refreshes the last known control from stop/continue replies so close-idle un
         kind: "continue",
         threadId,
         traceId: crypto.randomUUID(),
-        generation,
+        connectionGeneration,
       },
     });
     await host.handle({ kind: "close-idle" });
@@ -586,13 +586,13 @@ it("acknowledges a superseded control call without applying its stale state (A9 
     const exit = vi.fn();
     const host = createSessionHost((message) => messages.push(message), exit);
     const threadId = ThreadIdSchema.parse(crypto.randomUUID());
-    const generation = crypto.randomUUID();
+    const connectionGeneration = crypto.randomUUID();
     await host.handle({
       kind: "start",
       threadId,
       traceId: crypto.randomUUID(),
       processInstanceId: crypto.randomUUID(),
-      connectionGeneration: generation,
+      connectionGeneration: connectionGeneration,
       configContextId: "fixture",
       binary: "/fixture/omp",
       identity: { directory: "/project", device: "1", inode: "2" },
@@ -602,7 +602,7 @@ it("acknowledges a superseded control call without applying its stale state (A9 
     const traceId = crypto.randomUUID();
     const pending = host.handle({
       kind: "control",
-      command: { kind: "continue", threadId, traceId, generation },
+      command: { kind: "continue", threadId, traceId, connectionGeneration },
     });
     // A newer native observation lands while the control reply is in flight.
     native.observers[0]?.({
@@ -751,13 +751,13 @@ it("dismisses an unknown dialog locally and reports acknowledged without a nativ
   const exit = vi.fn();
   const host = createSessionHost((message) => messages.push(message), exit);
   const threadId = crypto.randomUUID();
-  const generation = crypto.randomUUID();
+  const connectionGeneration = crypto.randomUUID();
   await host.handle({
     kind: "start",
     threadId,
     traceId: crypto.randomUUID(),
     processInstanceId: crypto.randomUUID(),
-    connectionGeneration: generation,
+    connectionGeneration: connectionGeneration,
     configContextId: "fixture",
     binary: "/fixture/omp",
     identity: { directory: "/project", device: "1", inode: "2" },
@@ -782,7 +782,7 @@ it("dismisses an unknown dialog locally and reports acknowledged without a nativ
       kind: "dismiss",
       threadId: ThreadIdSchema.parse(threadId),
       traceId: crypto.randomUUID(),
-      generation,
+      connectionGeneration,
       id: "wedged",
     },
   });

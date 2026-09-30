@@ -34,12 +34,12 @@ export const AnswerCommandSchema = z.strictObject({
   kind: z.literal("answer"),
   threadId: ThreadIdSchema,
   traceId: TraceIdSchema,
-  generation: z.uuid(),
+  connectionGeneration: z.uuid(),
   id: z.string().min(1).max(256),
   answer: AnswerSchema,
 });
 export const InteractionViewSchema = z.object({
-  generation: z.uuid(),
+  connectionGeneration: z.uuid(),
   items: z.array(InteractionSchema).max(32),
   unsupported: z.boolean(),
 });
@@ -47,7 +47,7 @@ export const DismissCommandSchema = z.strictObject({
   kind: z.literal("dismiss"),
   threadId: ThreadIdSchema,
   traceId: TraceIdSchema,
-  generation: z.uuid(),
+  connectionGeneration: z.uuid(),
   id: z.string().min(1).max(256),
 });
 

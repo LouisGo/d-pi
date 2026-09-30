@@ -100,13 +100,98 @@ describe("real SQLite and directory service", () => {
         store?.close();
       }
     }));
+  it("maps legacy SQLite directory identity without migration or changing native binding and draft", () =>
+    fixture((path) => {
+      const directoryId = "cf049bd1-0015-44c8-a3d8-cfce812c7b76";
+      const threadId = "8e324701-bfa8-4f6d-b989-36d3793e57aa";
+      const originalText = "保留\r\n原文\r与目录";
+      const db = new DatabaseSync(path);
+      db.exec(`
+        CREATE TABLE workspace(id TEXT PRIMARY KEY, directory TEXT NOT NULL UNIQUE, execution_trust TEXT);
+        CREATE TABLE thread(id TEXT PRIMARY KEY, workspace_id TEXT REFERENCES workspace(id), revision INTEGER, body TEXT);
+        CREATE TABLE desktop(id INTEGER PRIMARY KEY, active_thread TEXT, theme TEXT, density TEXT, send_key TEXT, locale TEXT);
+        CREATE TABLE submission(id TEXT PRIMARY KEY, thread_id TEXT, receipt TEXT);
+        CREATE TABLE draft_consumption(thread_id TEXT, revision INTEGER, submission_id TEXT);
+        CREATE TABLE execution_permission(workspace_id TEXT PRIMARY KEY, directory TEXT, device TEXT, inode TEXT);
+        CREATE TABLE native_session(thread_id TEXT PRIMARY KEY, config_context TEXT, session_file TEXT, session_id TEXT);
+        PRAGMA user_version=5;
+      `);
+      db.prepare("INSERT INTO workspace VALUES(?,?,'browse')").run(
+        directoryId,
+        "/existing",
+      );
+      db.prepare("INSERT INTO thread VALUES(?,?,7,?)").run(
+        threadId,
+        directoryId,
+        originalText,
+      );
+      db.prepare(
+        "INSERT INTO desktop VALUES(1,?,'dark','compact','enter-newline','zh-CN')",
+      ).run(threadId);
+      db.prepare("INSERT INTO execution_permission VALUES(?,?,?,?)").run(
+        directoryId,
+        "/existing",
+        "device",
+        "inode",
+      );
+      db.prepare("INSERT INTO native_session VALUES(?,?,?,?)").run(
+        threadId,
+        "profile",
+        "/native.jsonl",
+        "native-session",
+      );
+      db.close();
+      const store = openStorage(path);
+      try {
+        const draft = store.drafts.active();
+        expect(draft?.threadId).toBe(threadId);
+        expect(draft?.text).toBe(originalText);
+        expect(draft?.revision).toBe(7);
+        expect(store.threads.nativeSessionBinding(threadId)).toEqual({
+          threadId,
+          configContextId: "profile",
+          sessionFile: "/native.jsonl",
+          sessionId: "native-session",
+        });
+        expect(draft && Reflect.get(draft, "workingDirectoryId")).toBe(
+          directoryId,
+        );
+        expect(draft && Reflect.has(draft, "workspaceId")).toBe(false);
+        expect(
+          Reflect.get(
+            store.threads.executionGrant(directoryId) ?? {},
+            "workingDirectoryId",
+          ),
+        ).toBe(directoryId);
+      } finally {
+        store.close();
+      }
+      const unchanged = new DatabaseSync(path, { readOnly: true });
+      try {
+        expect(
+          unchanged.prepare("PRAGMA user_version").get()?.user_version,
+        ).toBe(5);
+        expect(
+          unchanged
+            .prepare("SELECT workspace_id,body FROM thread WHERE id=?")
+            .get(threadId),
+        ).toEqual({ workspace_id: directoryId, body: originalText });
+        expect(
+          unchanged
+            .prepare("SELECT session_id FROM native_session WHERE thread_id=?")
+            .get(threadId)?.session_id,
+        ).toBe("native-session");
+      } finally {
+        unchanged.close();
+      }
+    }));
   it("stable identities, two threads, CAS and restart", () =>
     fixture((path) => {
       let store = openStorage(path);
       const a = store.drafts.create("/a");
       const b = store.drafts.create("/a");
       expect(a.threadId).not.toBe(b.threadId);
-      expect(a.workspaceId).toBe(b.workspaceId);
+      expect(a.workingDirectoryId).toBe(b.workingDirectoryId);
       expect(store.drafts.save(a.threadId, 0, "a body")).toBe(1);
       expect(store.drafts.save(a.threadId, 0, "stale")).toBeNull();
       expect(store.drafts.read(b.threadId).text).toBe("");

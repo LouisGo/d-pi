@@ -96,7 +96,7 @@ export class ConversationModel {
         const current = this.store.getState().view;
         if (
           synchronized &&
-          current?.generation === event.generation &&
+          current?.connectionGeneration === event.connectionGeneration &&
           event.seq < current.seq
         )
           return;
@@ -109,7 +109,7 @@ export class ConversationModel {
       if (
         !synchronized ||
         !view ||
-        event.generation !== view.generation ||
+        event.connectionGeneration !== view.connectionGeneration ||
         event.seq <= view.seq
       )
         return;

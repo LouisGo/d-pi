@@ -7,7 +7,7 @@ Blocked by: 01
 
 ## 交付结果
 
-Renderer 的只读查询由 Query 拥有缓存与失效，替代 [file-workspace.tsx](../../../src/app/renderer/workbench/file-workspace.tsx) 中 4 个结果型 `useState` 与手写序号防串线：
+Renderer 的只读查询由 Query 拥有缓存与失效，替代 [file-panel.tsx](../../../src/app/renderer/workbench/file-panel.tsx) 中 4 个结果型 `useState` 与手写序号防串线：
 
 | 查询 | key | 调用 |
 | --- | --- | --- |
@@ -44,7 +44,7 @@ Renderer 的只读查询由 Query 拥有缓存与失效，替代 [file-workspace
 
 放置：文件查询在 `src/modules/files/renderer/queries.ts`（公开面 `renderer/public.ts`）；Git 查询新建 `src/modules/changes/renderer/`（`queries.ts` + `public.ts`），`architecture/modules.json` 增加 `renderer` 环境与 `changes.renderer → shared` 依赖，模块地图同步；选择新增环境而不是把 Git 查询塞进应用层，因为 key 与失效策略属于该业务域的读路径。
 
-实现：`fileKeys`/`gitKeys` 以 Thread、path、scope 组成 key；`useDirectoryListing`/`useFileContent`/`useChanges`/`useDiff` 四个 hook 全部显式 `networkMode: 'always'`；`refreshFiles`/`refreshGit` 以 `invalidateQueries` 按 Thread 失效；`QueryClient` 单例与 provider 在 `src/app/renderer/query-client.tsx`，默认 `staleTime: 0`、`retry: 3`、`refetchOnWindowFocus: false`、`refetchOnReconnect: false`。`file-workspace.tsx` 的 4 个结果型 `useState` 与手写 `fileSequence`/`gitSequence` 防串线被移除，改由 key 隔离；查看路径只由 key 派生，`unavailable` 作为数据参与渲染，不进入重试。
+实现：`fileKeys`/`gitKeys` 以 Thread、path、scope 组成 key；`useDirectoryListing`/`useFileContent`/`useChanges`/`useDiff` 四个 hook 全部显式 `networkMode: 'always'`；`refreshFiles`/`refreshGit` 以 `invalidateQueries` 按 Thread 失效；`QueryClient` 单例与 provider 在 `src/app/renderer/query-client.tsx`，默认 `staleTime: 0`、`retry: 3`、`refetchOnWindowFocus: false`、`refetchOnReconnect: false`。`file-panel.tsx` 的 4 个结果型 `useState` 与手写 `fileSequence`/`gitSequence` 防串线被移除，改由 key 隔离；查看路径只由 key 派生，`unavailable` 作为数据参与渲染，不进入重试。
 
 测试（先失败后实现）：`src/modules/files/renderer/queries.test.ts` 覆盖并发路径互不覆盖、`unavailable` 计为 success 且只请求一次、失效后重新采样、跨 Thread 不共享缓存。
 

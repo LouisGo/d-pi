@@ -41,7 +41,7 @@ export function RuntimePanel({
   const state = useStore(model.stateStore, (value) => value.view);
   const submissionStore = submission?.stateStore ?? emptySubmissionStore;
   const receiptsById = useStore(submissionStore, (value) => value.receiptsById);
-  // Follow-up identities live here, keyed by dialog id, so a generation
+  // Follow-up identities live here, keyed by dialog id, so a connectionGeneration
   // change (remount) neither loses the success indicator nor allows a silent
   // duplicate steer. Multiple entries per dialog are allowed: ack is call
   // confirmation, not task completion.
@@ -156,7 +156,7 @@ export function RuntimePanel({
             )
             .map((item) => (
               <NativeDialog
-                key={`${state.interactions?.generation}-${item.id}`}
+                key={`${state.interactions?.connectionGeneration}-${item.id}`}
                 item={item}
                 trusted={state.trusted}
                 model={model}

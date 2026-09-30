@@ -13,7 +13,7 @@ it("clears the previous Thread projection while a new Thread awaits its snapshot
   model.connect("first");
   listeners[0]?.({
     kind: "snapshot",
-    generation: crypto.randomUUID(),
+    connectionGeneration: crypto.randomUUID(),
     seq: 0,
     gap: false,
     items: [
@@ -30,7 +30,7 @@ it("clears the previous Thread projection while a new Thread awaits its snapshot
   expect(model.getSnapshot()).toBeNull();
   listeners[0]?.({
     kind: "snapshot",
-    generation: crypto.randomUUID(),
+    connectionGeneration: crypto.randomUUID(),
     seq: 5,
     gap: false,
     items: [],
@@ -39,7 +39,7 @@ it("clears the previous Thread projection while a new Thread awaits its snapshot
   model.dispose();
 });
 
-it("does not regress the current projection to a late snapshot of the same generation", () => {
+it("does not regress the current projection to a late snapshot of the same connectionGeneration", () => {
   let receive: (event: ConversationEvent) => void = () => {};
   const model = new ConversationModel({
     connect: (_thread, listener) => {
@@ -47,10 +47,22 @@ it("does not regress the current projection to a late snapshot of the same gener
       return () => {};
     },
   });
-  const generation = crypto.randomUUID();
+  const connectionGeneration = crypto.randomUUID();
   model.connect("thread");
-  receive({ kind: "snapshot", generation, seq: 2, gap: false, items: [] });
-  receive({ kind: "snapshot", generation, seq: 1, gap: true, items: [] });
+  receive({
+    kind: "snapshot",
+    connectionGeneration,
+    seq: 2,
+    gap: false,
+    items: [],
+  });
+  receive({
+    kind: "snapshot",
+    connectionGeneration,
+    seq: 1,
+    gap: true,
+    items: [],
+  });
   expect(model.getSnapshot()?.seq).toBe(2);
   expect(model.getSnapshot()?.gap).toBe(false);
   model.dispose();
@@ -64,11 +76,11 @@ it("resynchronizes sequence gaps and ignores events from the detached port", asy
       return () => {};
     },
   });
-  const generation = crypto.randomUUID();
+  const connectionGeneration = crypto.randomUUID();
   model.connect("thread");
   const snapshot = {
     kind: "snapshot",
-    generation,
+    connectionGeneration,
     seq: 0,
     items: [],
     gap: false,
@@ -76,7 +88,7 @@ it("resynchronizes sequence gaps and ignores events from the detached port", asy
   callbacks[0]?.({ ...snapshot, items: [] });
   callbacks[0]?.({
     kind: "update",
-    generation,
+    connectionGeneration,
     seq: 2,
     droppedBefore: 0,
     gap: false,
@@ -93,7 +105,7 @@ it("resynchronizes sequence gaps and ignores events from the detached port", asy
   expect(callbacks).toHaveLength(2);
   callbacks[1]?.({
     kind: "update",
-    generation,
+    connectionGeneration,
     seq: 1,
     droppedBefore: 0,
     gap: false,

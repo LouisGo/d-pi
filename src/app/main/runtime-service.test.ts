@@ -143,7 +143,7 @@ async function running(
       if (!start || start.kind !== "start") throw Error("missing start");
       host.emit("message", {
         kind: "idle-confirmed",
-        generation: start.connectionGeneration,
+        connectionGeneration: start.connectionGeneration,
         afterSubmissionId:
           latest?.kind === "dispatch" ? latest.value.submissionId : null,
       });
@@ -179,7 +179,7 @@ it("a prepared submission cannot cross the instance directory boundary even if a
   );
   fixture.store.threads.grantExecution({
     ...(await identifyDirectory(fixture.project)),
-    workspaceId: fixture.draft.workspaceId,
+    workingDirectoryId: fixture.draft.workingDirectoryId,
   });
   expect(await fixture.dispatch()).toMatchObject({
     kind: "receipt",
@@ -255,7 +255,9 @@ it("a fork failure before any Host exists still allows an explicit start retry",
 
 it("restart exposes the unproven execution lock and never substitutes a new session", async () => {
   const fixture = await running();
-  const binding = fixture.store.threads.nativeSession(fixture.draft.threadId);
+  const binding = fixture.store.threads.nativeSessionBinding(
+    fixture.draft.threadId,
+  );
   const forks = electron.fork.mock.calls.length;
   const restored = new RuntimeService(
     fixture.store,
@@ -274,9 +276,9 @@ it("restart exposes the unproven execution lock and never substitutes a new sess
     expect(view.message).toEqual({ code: "runtime.previousSessionReadOnly" });
   }
   expect(electron.fork.mock.calls).toHaveLength(forks);
-  expect(fixture.store.threads.nativeSession(fixture.draft.threadId)).toEqual(
-    binding,
-  );
+  expect(
+    fixture.store.threads.nativeSessionBinding(fixture.draft.threadId),
+  ).toEqual(binding);
   expect(fixture.store.drafts.read(fixture.draft.threadId)?.text).toBe("A");
 });
 
@@ -367,7 +369,7 @@ it("returns a historical non-prepared receipt without a native write after the g
     ([raw]) => HostCommandSchema.parse(raw).kind === "dispatch",
   ).length;
   // Revoke the execution grant: new side effects are blocked from here on.
-  fixture.store.threads.revokeExecution(fixture.draft.workspaceId);
+  fixture.store.threads.revokeExecution(fixture.draft.workingDirectoryId);
   // Historical read of a non-prepared receipt must not throw and must not
   // produce a second native write. Execution permission gates new side
   // effects, never the lookup of what already happened.
@@ -412,7 +414,7 @@ it("Host exit marks every in-flight queued submission unknown without replay", a
   if (!start || start.kind !== "start") throw Error("Missing start");
   fixture.host.emit("message", {
     kind: "control",
-    generation: start.connectionGeneration,
+    connectionGeneration: start.connectionGeneration,
     state: {
       paused: true,
       stopping: false,
@@ -456,20 +458,20 @@ it("control and answers reject stale generations and revoked grants while allowi
   const base = {
     threadId: f.draft.threadId,
     traceId: TraceIdSchema.parse(crypto.randomUUID()),
-    generation: start.connectionGeneration,
+    connectionGeneration: start.connectionGeneration,
   };
   await expect(
     f.runtime.execute({
       ...base,
       kind: "continue",
-      generation: crypto.randomUUID(),
+      connectionGeneration: crypto.randomUUID(),
     }),
   ).rejects.toThrow("Stale control");
   await expect(
     f.runtime.execute({
       ...base,
       kind: "answer",
-      generation: crypto.randomUUID(),
+      connectionGeneration: crypto.randomUUID(),
       id: "request",
       answer: { kind: "cancel" },
     }),
@@ -518,7 +520,7 @@ it("background-only work prevents quit even after a stale idle poll and ignores 
   };
   f.host.emit("message", {
     kind: "control",
-    generation: start.connectionGeneration,
+    connectionGeneration: start.connectionGeneration,
     state,
   });
   f.host.emit("message", {
@@ -535,13 +537,13 @@ it("background-only work prevents quit even after a stale idle poll and ignores 
   expect(f.runtime.hasActiveWork()).toBe(true);
   f.host.emit("message", {
     kind: "control",
-    generation: crypto.randomUUID(),
+    connectionGeneration: crypto.randomUUID(),
     state: { ...state, background: 0 },
   });
   expect(f.runtime.hasActiveWork()).toBe(true);
   f.host.emit("message", {
     kind: "control",
-    generation: start.connectionGeneration,
+    connectionGeneration: start.connectionGeneration,
     state: { ...state, background: 0 },
   });
   expect(f.runtime.hasActiveWork()).toBe(false);
@@ -570,7 +572,7 @@ it("settles an acknowledged submission when native admission clears after the id
   };
   f.host.emit("message", {
     kind: "control",
-    generation: start.connectionGeneration,
+    connectionGeneration: start.connectionGeneration,
     state,
   });
   f.host.emit("message", {
@@ -586,7 +588,7 @@ it("settles an acknowledged submission when native admission clears after the id
   });
   f.host.emit("message", {
     kind: "control",
-    generation: start.connectionGeneration,
+    connectionGeneration: start.connectionGeneration,
     state: { ...state, admitted: false },
   });
   expect(f.runtime.hasActiveWork()).toBe(true); // Bare samples cannot prove current work drained.
@@ -602,9 +604,9 @@ it("blocks prepare and dispatch during native interactions, then admits normal f
   const f = await running(false, true);
   const prepared = await f.prepare();
   if (prepared.kind !== "receipt") throw Error("prepare failed");
-  const generation = prepared.receipt.target.connectionGeneration;
+  const connectionGeneration = prepared.receipt.target.connectionGeneration;
   const interactions = {
-    generation,
+    connectionGeneration,
     unsupported: false,
     items: [
       {
@@ -687,7 +689,7 @@ it("persists Host non-dispatch without consuming the draft and permits an explic
   expect(f.store.drafts.read(f.draft.threadId).text).toBe("A");
   f.host.emit("message", {
     kind: "control",
-    generation: p.receipt.target.connectionGeneration,
+    connectionGeneration: p.receipt.target.connectionGeneration,
     state: {
       paused: false,
       stopping: false,
@@ -730,11 +732,11 @@ it("persists Host non-dispatch without consuming the draft and permits an explic
 it("a control rejection preserves the same session for explicit continue and does not mask real disconnection", async () => {
   const f = await running();
   const view = await f.act("inspect");
-  if (!view.generation) throw Error("generation missing");
+  if (!view.connectionGeneration) throw Error("connectionGeneration missing");
   const traceId = TraceIdSchema.parse(crypto.randomUUID());
   f.host.emit("message", {
     kind: "operation-result",
-    generation: view.generation,
+    connectionGeneration: view.connectionGeneration,
     traceId,
     operation: "continue",
     status: "failed",
@@ -746,7 +748,7 @@ it("a control rejection preserves the same session for explicit continue and doe
   await f.runtime.execute({
     kind: "continue",
     threadId: f.draft.threadId,
-    generation: view.generation,
+    connectionGeneration: view.connectionGeneration,
     traceId,
   });
   expect(
@@ -782,7 +784,7 @@ it.each(["error", "disconnected"] as const)(
     const control = (background: number) =>
       f.host.emit("message", {
         kind: "control",
-        generation: p.receipt.target.connectionGeneration,
+        connectionGeneration: p.receipt.target.connectionGeneration,
         state: { ...state, background },
       });
     control(0);
@@ -812,7 +814,7 @@ it("settles a late failure after the last idle snapshot without waiting for anot
   await f.dispatch();
   f.host.emit("message", {
     kind: "control",
-    generation: p.receipt.target.connectionGeneration,
+    connectionGeneration: p.receipt.target.connectionGeneration,
     state: {
       paused: false,
       stopping: false,

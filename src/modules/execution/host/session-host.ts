@@ -110,7 +110,7 @@ export function createSessionHost(
     send({
       kind: "operation-result",
       traceId,
-      generation: start.connectionGeneration,
+      connectionGeneration: start.connectionGeneration,
       operation: "answer",
       status: written ? "acknowledged" : "unknown",
     });
@@ -159,7 +159,7 @@ export function createSessionHost(
       send({
         kind: "interactions",
         view: {
-          generation: start.connectionGeneration,
+          connectionGeneration: start.connectionGeneration,
           items: interactions.snapshot(),
           unsupported: interactions.unsupported,
         },
@@ -231,7 +231,7 @@ export function createSessionHost(
         lastControl = control.data;
         send({
           kind: "control",
-          generation: start.connectionGeneration,
+          connectionGeneration: start.connectionGeneration,
           state: control.data,
         });
         if (!activeControl(control.data)) void refresh();
@@ -344,7 +344,7 @@ export function createSessionHost(
           lastControl = control;
           send({
             kind: "control",
-            generation: start.connectionGeneration,
+            connectionGeneration: start.connectionGeneration,
             state: control,
           });
         }
@@ -362,7 +362,7 @@ export function createSessionHost(
         )
           send({
             kind: "idle-confirmed",
-            generation: start.connectionGeneration,
+            connectionGeneration: start.connectionGeneration,
             afterSubmissionId,
           });
         return;
@@ -521,7 +521,7 @@ export function createSessionHost(
           !native ||
           !start ||
           command.threadId !== start.threadId ||
-          command.generation !== start.connectionGeneration
+          command.connectionGeneration !== start.connectionGeneration
         )
           return;
         const written = interactions.answer(
@@ -534,7 +534,7 @@ export function createSessionHost(
         send({
           kind: "operation-result",
           traceId: command.traceId,
-          generation: command.generation,
+          connectionGeneration: command.connectionGeneration,
           operation: "answer",
           status: written ? "acknowledged" : "unknown",
         });
@@ -547,7 +547,7 @@ export function createSessionHost(
         if (
           !start ||
           command.threadId !== start.threadId ||
-          command.generation !== start.connectionGeneration
+          command.connectionGeneration !== start.connectionGeneration
         )
           return Promise.resolve();
         const dismissed = interactions.dismiss(command.id);
@@ -556,7 +556,7 @@ export function createSessionHost(
         send({
           kind: "operation-result",
           traceId: command.traceId,
-          generation: command.generation,
+          connectionGeneration: command.connectionGeneration,
           operation: "dismiss",
           status: dismissed ? "acknowledged" : "unknown",
         });
@@ -567,7 +567,7 @@ export function createSessionHost(
           !native ||
           !start ||
           command.threadId !== start.threadId ||
-          command.generation !== start.connectionGeneration
+          command.connectionGeneration !== start.connectionGeneration
         )
           return;
         const version = ++observationVersion;
@@ -580,7 +580,7 @@ export function createSessionHost(
           send({
             kind: "operation-result",
             traceId: command.traceId,
-            generation: command.generation,
+            connectionGeneration: command.connectionGeneration,
             operation: command.kind,
             status: "failed",
           });
@@ -597,14 +597,14 @@ export function createSessionHost(
         send({
           kind: "operation-result",
           traceId: command.traceId,
-          generation: command.generation,
+          connectionGeneration: command.connectionGeneration,
           operation: command.kind,
           status: "acknowledged",
         });
         if (version === observationVersion)
           send({
             kind: "control",
-            generation: start.connectionGeneration,
+            connectionGeneration: start.connectionGeneration,
             state: control,
           });
         await refresh();
@@ -635,7 +635,7 @@ export function createSessionHost(
           ) {
             send({
               kind: "control",
-              generation: start.connectionGeneration,
+              connectionGeneration: start.connectionGeneration,
               state: actual,
             });
             send({ kind: "failed", code: "active-work" });
@@ -667,7 +667,7 @@ export function createSessionHost(
           send({
             kind: "operation-result",
             traceId: command.command.traceId,
-            generation: command.command.generation,
+            connectionGeneration: command.command.connectionGeneration,
             operation: command.command.kind,
             status: "unknown",
           });

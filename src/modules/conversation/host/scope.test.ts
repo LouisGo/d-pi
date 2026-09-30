@@ -13,9 +13,9 @@ it("retains the projection independently of port attachment", () => {
   const scope = createConversationHost();
   const first = { start: vi.fn(), close: vi.fn(), postMessage: vi.fn() };
   const second = { start: vi.fn(), close: vi.fn(), postMessage: vi.fn() };
-  const generation = crypto.randomUUID();
+  const connectionGeneration = crypto.randomUUID();
 
-  scope.start(generation);
+  scope.start(connectionGeneration);
   scope.attach(first);
   scope.accept(message("retained output"));
   scope.attach(second);
@@ -25,7 +25,7 @@ it("retains the projection independently of port attachment", () => {
   expect(second.postMessage).toHaveBeenCalledWith(
     expect.objectContaining({
       kind: "snapshot",
-      generation,
+      connectionGeneration,
       items: [expect.objectContaining({ text: "retained output" })],
     }),
   );

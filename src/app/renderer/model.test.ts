@@ -31,7 +31,7 @@ type SaveCommand = Extract<Command, { kind: "save" }>;
 const draft = DraftSchema.parse({
   schemaVersion: 1,
   threadId: crypto.randomUUID(),
-  workspaceId: crypto.randomUUID(),
+  workingDirectoryId: crypto.randomUUID(),
   directory: "/fixture",
   revision: 0,
   text: "saved source",
@@ -222,12 +222,12 @@ it("cannot release a replacement editor after the original close save fails late
 it("keeps conversation projection lifecycle in the AppModel", async () => {
   vi.stubGlobal("document", { documentElement: { dataset: {} } });
   const threadId = ThreadIdSchema.parse(crypto.randomUUID());
-  const generation = crypto.randomUUID();
+  const connectionGeneration = crypto.randomUUID();
   const view: RuntimeView = {
     threadId,
     traceId: crypto.randomUUID(),
     configuration: { code: "runtime.configDefault" },
-    generation,
+    connectionGeneration,
     revision: 0,
     phase: "browse",
     trusted: false,
@@ -256,7 +256,7 @@ it("keeps conversation projection lifecycle in the AppModel", async () => {
         draft: DraftSchema.parse({
           schemaVersion: 1,
           threadId,
-          workspaceId: crypto.randomUUID(),
+          workingDirectoryId: crypto.randomUUID(),
           directory: "/fixture",
           revision: 0,
           text: "saved source",
@@ -285,7 +285,7 @@ it("keeps conversation projection lifecycle in the AppModel", async () => {
         conversationListeners.push(listener);
         listener({
           kind: "snapshot",
-          generation,
+          connectionGeneration,
           seq: 0,
           items: [],
           gap: false,
@@ -306,7 +306,9 @@ it("keeps conversation projection lifecycle in the AppModel", async () => {
   expect(conversationConnections).toBe(1);
   runtimeListeners[0]?.(ready);
   expect(conversationConnections).toBe(2);
-  expect(model.reading?.getSnapshot()?.generation).toBe(generation);
+  expect(model.reading?.getSnapshot()?.connectionGeneration).toBe(
+    connectionGeneration,
+  );
   const reading = model.reading;
   const readingBeforeDispose = reading?.getSnapshot();
   model.dispose();
@@ -316,7 +318,7 @@ it("keeps conversation projection lifecycle in the AppModel", async () => {
   runtimeListeners[0]?.({ ...ready, revision: 2 });
   conversationListeners[1]?.({
     kind: "update",
-    generation,
+    connectionGeneration,
     seq: 1,
     droppedBefore: 0,
     gap: false,

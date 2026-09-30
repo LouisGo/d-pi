@@ -4,17 +4,17 @@ import {
   QueryObserver,
 } from "@tanstack/react-query";
 import { expect, it } from "vitest";
-import { ThreadContextSchema } from "../../workspace/contracts/public";
+import { ThreadContextSchema } from "../../threads/contracts/public";
 import type { GitBridge, GitReply } from "../contracts/public";
 import { gitQueryOptions, refreshGit } from "./queries";
 
 const resource = ThreadContextSchema.parse({
   threadId: crypto.randomUUID(),
-  workspaceId: crypto.randomUUID(),
+  workingDirectoryId: crypto.randomUUID(),
   directory: "/fixture/project",
 });
 
-it("isolates Git snapshots by workspace and directory with stable resource keys", async () => {
+it("isolates Git snapshots by working directory identity and path with stable resource keys", async () => {
   const client_ = client();
   let repository = "first";
   const bridge: GitBridge = {
@@ -29,12 +29,12 @@ it("isolates Git snapshots by workspace and directory with stable resource keys"
   repository = "second directory";
   const directory = { ...resource, directory: "/second" };
   expect(await fetch(directory)).toMatchObject({ repository });
-  repository = "second workspace";
+  repository = "second working directory";
   expect(
     await fetch(
       ThreadContextSchema.parse({
         ...directory,
-        workspaceId: crypto.randomUUID(),
+        workingDirectoryId: crypto.randomUUID(),
       }),
     ),
   ).toMatchObject({ repository });

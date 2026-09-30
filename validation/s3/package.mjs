@@ -397,7 +397,7 @@ try {
         ?.body.includes(rawFile),
     );
     writeFileSync(join(project, "raw-selection.txt"), changedFile);
-    await evaluate("document.querySelector('.file-workspace button').click()");
+    await evaluate("document.querySelector('.file-panel button').click()");
     await wait(() =>
       evaluate(
         "document.querySelector('.monaco-editor')?.textContent.includes('CHANGED')",

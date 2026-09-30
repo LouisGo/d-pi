@@ -4,15 +4,15 @@
 
 ## 当前工程落点（领域目录治理，2026-09-29）
 
-- Thread/目录/执行信任合同在 `src/modules/workspace/contracts/public.ts`，仓储和项目选择协调在 `src/modules/workspace/main/`。
-- `src/app/main/wiring/desktop-command-service.ts` 只组合 restore/choose-project/save/preferences；选择项目的并发和真实路径归 `WorkspaceService`，不会把选择逻辑继续堆回桌面入口。
-- OMP session binding 仍是 workspace 的关联事实，执行许可在每次操作前由 execution/Host 重新核对，不因缓存的 Renderer 状态获得权限。
-- Renderer 由应用层 `ThreadModel` 组合完整的 controller、提交、运行与阅读资源，成功后再发布 ready；它复用 workspace 的真实 `ThreadContext`，不复制 Main 身份所有权。文件/Git 查询使用该上下文隔离缓存，业务释放与编辑器解绑分开，旧 Thread 保存 lane 不转接到新 Thread。路径验证见[重写记录](../../../.scratch/rewrite-preparation/issues/05-workspace-display.md)。
+- Thread/目录/执行信任合同在 `src/modules/threads/contracts/public.ts`，仓储和项目选择协调在 `src/modules/threads/main/`。
+- `src/app/main/wiring/desktop-command-service.ts` 只组合 restore/choose-project/save/preferences；选择项目的并发和真实路径归 `ProjectSelectionService`，不会把选择逻辑继续堆回桌面入口。
+- OMP session binding 仍是 threads 的关联事实，执行许可在每次操作前由 execution/Host 重新核对，不因缓存的 Renderer 状态获得权限。
+- Renderer 由应用层 `ThreadModel` 组合完整的 controller、提交、运行与阅读资源，成功后再发布 ready；它复用 threads 的真实 `ThreadContext`，不复制 Main 身份所有权。文件/Git 查询使用该上下文隔离缓存，业务释放与编辑器解绑分开，旧 Thread 保存 lane 不转接到新 Thread。路径验证见[重写记录](../../../.scratch/rewrite-preparation/issues/05-workspace-display.md)。
 
 
 ## 范围与拥有者
 
-Main 的 Thread 功能管理项目/目录关系、稳定 threadId、workspaceId、原生记录引用，以及目录维度的执行信任和 App 文件授权。数据由[存储](app-storage.md)落盘，UI 只查询和发意图。选中的 Thread、侧栏展开等属于界面偏好，不代表后台执行归属。
+Main 的 Thread 功能管理项目/目录关系、稳定 threadId、workingDirectoryId、原生记录引用，以及目录维度的执行信任和 App 文件授权。数据由[存储](app-storage.md)落盘，UI 只查询和发意图。选中的 Thread、侧栏展开等属于界面偏好，不代表后台执行归属。
 
 创建草稿即有 threadId；原生引用只在证据确认后绑定。一个目录可被多个 Thread 使用，必须明确文件共享；worktree 作为独立工作目录。线程切换不复制业务状态，也不重新启动正在工作的 OMP。
 

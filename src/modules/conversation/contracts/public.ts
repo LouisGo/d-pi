@@ -18,7 +18,7 @@ export const ConversationItemSchema = z.strictObject({
 export type ConversationItem = z.infer<typeof ConversationItemSchema>;
 export const ConversationSnapshotSchema = z.strictObject({
   kind: z.literal("snapshot"),
-  generation: z.uuid(),
+  connectionGeneration: z.uuid(),
   seq: z.number().int().nonnegative(),
   items: z.array(ConversationItemSchema),
   gap: z.boolean(),
@@ -26,7 +26,7 @@ export const ConversationSnapshotSchema = z.strictObject({
 export type ConversationSnapshot = z.infer<typeof ConversationSnapshotSchema>;
 export const ConversationUpdateSchema = z.strictObject({
   kind: z.literal("update"),
-  generation: z.uuid(),
+  connectionGeneration: z.uuid(),
   seq: z.number().int().nonnegative(),
   item: ConversationItemSchema,
   droppedBefore: z.number().int().nonnegative(),

@@ -5,6 +5,7 @@ import { DraftTextSchema } from "../../input/contracts/public";
 
 export const SubmissionIdSchema = z.uuid().brand<"SubmissionId">();
 export const SubmissionTargetSchema = z.strictObject({
+  // Persisted field: identity of the native OMP process, not SessionHost or Thread.
   processInstanceId: z.uuid(),
   connectionGeneration: z.uuid(),
   configContextId: z.string().min(1),

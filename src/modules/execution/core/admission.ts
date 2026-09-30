@@ -1,8 +1,8 @@
 import {
   type DirectoryIdentity,
-  type RuntimeGrant,
+  type ExecutionGrant,
   type ThreadContext,
-} from "../../workspace/contracts/public";
+} from "../../threads/contracts/public";
 export function sameDirectoryIdentity(
   a: DirectoryIdentity,
   b: DirectoryIdentity,
@@ -13,9 +13,9 @@ export function sameDirectoryIdentity(
 }
 export interface AdmissionStore {
   threadContext(threadId: string): ThreadContext;
-  executionGrant(workspaceId: string): RuntimeGrant | null;
-  grantExecution(grant: RuntimeGrant): void;
-  revokeExecution(workspaceId: string): void;
+  executionGrant(workingDirectoryId: string): ExecutionGrant | null;
+  grantExecution(grant: ExecutionGrant): void;
+  revokeExecution(workingDirectoryId: string): void;
 }
 export type AdmissionResult =
   | { kind: "allowed" }
@@ -32,12 +32,12 @@ export class RuntimeAdmission {
       identity: DirectoryIdentity,
     ) => Promise<void>,
   ) {}
-  private generation = 0;
+  private admissionGeneration = 0;
   async allow(
     threadId: string,
     boundDirectory?: DirectoryIdentity,
   ): Promise<AdmissionResult> {
-    const generation = this.generation;
+    const admissionGeneration = this.admissionGeneration;
     try {
       const thread = this.store.threadContext(threadId);
       const identity = await this.identify(thread.directory);
@@ -46,11 +46,11 @@ export class RuntimeAdmission {
         (boundDirectory && !sameDirectoryIdentity(boundDirectory, identity))
       )
         return { kind: "denied", reason: "directory-changed" };
-      if (generation !== this.generation)
+      if (admissionGeneration !== this.admissionGeneration)
         return { kind: "denied", reason: "browse" };
       this.store.grantExecution({
         ...identity,
-        workspaceId: thread.workspaceId,
+        workingDirectoryId: thread.workingDirectoryId,
       });
       return { kind: "allowed" };
     } catch {
@@ -58,10 +58,10 @@ export class RuntimeAdmission {
     }
   }
   async start(threadId: string): Promise<AdmissionResult> {
-    const generation = this.generation;
+    const admissionGeneration = this.admissionGeneration;
     try {
       const thread = this.store.threadContext(threadId);
-      const grant = this.store.executionGrant(thread.workspaceId);
+      const grant = this.store.executionGrant(thread.workingDirectoryId);
       if (!grant) return { kind: "denied", reason: "browse" };
       const identity = await this.identify(thread.directory);
       if (
@@ -72,8 +72,8 @@ export class RuntimeAdmission {
       )
         return { kind: "denied", reason: "directory-changed" };
       if (
-        generation !== this.generation ||
-        !this.store.executionGrant(thread.workspaceId)
+        admissionGeneration !== this.admissionGeneration ||
+        !this.store.executionGrant(thread.workingDirectoryId)
       )
         return { kind: "denied", reason: "browse" };
       await this.launch(thread, identity);
@@ -83,7 +83,9 @@ export class RuntimeAdmission {
     }
   }
   revoke(threadId: string): void {
-    this.generation++;
-    this.store.revokeExecution(this.store.threadContext(threadId).workspaceId);
+    this.admissionGeneration++;
+    this.store.revokeExecution(
+      this.store.threadContext(threadId).workingDirectoryId,
+    );
   }
 }

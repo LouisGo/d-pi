@@ -1,0 +1,163 @@
+
+> d-pi@0.1.0-s4.0 test /Users/lou/Learn/d-pi
+> node scripts/test.mjs vitest -- src/app/main/storage.test.ts
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/lou/Learn/d-pi[39m
+
+(node:94328) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:94329) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:94323) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:94331) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:94325) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:94327) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:94330) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m tests/integration/runtime-causality.integration.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 289[2mms[22m[39m
+ [32m✓[39m src/modules/execution/host/native-session.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 710[2mms[22m[39m
+   [33m[2m✓[22m[39m negotiates v2, correlates commands and drains process output through EOF[33m 579[2mms[22m[39m
+ [32m✓[39m src/app/renderer/workbench/composer-binding.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 76[2mms[22m[39m
+ [32m✓[39m tests/integration/submission-coordinator.integration.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 440[2mms[22m[39m
+   [33m[2m✓[22m[39m failed dispatch persistence writes nothing; duplicate dispatch writes once and late error keeps ACK[33m 349[2mms[22m[39m
+ [32m✓[39m tests/integration/runtime-host.integration.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 415[2mms[22m[39m
+(node:94391) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [31m❯[39m src/app/main/storage.test.ts [2m([22m[2m8 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 452[2mms[22m[39m
+   [31m❯[39m real SQLite and directory service [2m(7)[22m
+     [32m✓[39m migrates existing v4 preferences to system locale without changing other settings[32m 20[2mms[22m[39m
+     [32m✓[39m migration backup includes committed WAL records while an old reader holds a snapshot[32m 17[2mms[22m[39m
+[31m     [31m×[31m maps legacy SQLite directory identity without migration or changing native binding and draft[39m[32m 25[2mms[22m[39m
+     [32m✓[39m stable identities, two threads, CAS and restart[32m 38[2mms[22m[39m
+     [32m✓[39m cancel/invalid directory does not associate a thread; foreign ID cannot write[32m 35[2mms[22m[39m
+     [32m✓[39m migration failure retains original DB and rollback; future schema is not reset[32m 7[2mms[22m[39m
+     [32m✓[39m locked writer reports failure without overwriting draft[32m 297[2mms[22m[39m
+   [32m✓[39m overlapping project requests open one dialog and create one foreground identity[32m 13[2mms[22m[39m
+ [32m✓[39m src/shared/i18n/catalog.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 47[2mms[22m[39m
+ [32m✓[39m tests/integration/prepared-recovery.integration.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 628[2mms[22m[39m
+(node:94384) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m src/app/main/runtime-service.test.ts [2m([22m[2m23 tests[22m[2m)[22m[33m 769[2mms[22m[39m
+(node:94408) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m tests/integration/window-security.integration.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 332[2mms[22m[39m
+ [32m✓[39m src/app/host/index.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 384[2mms[22m[39m
+ [32m✓[39m src/app/main/submission-storage.test.ts [2m([22m[2m13 tests[22m[2m)[22m[33m 306[2mms[22m[39m
+ [32m✓[39m src/app/renderer/receipt-status.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 51[2mms[22m[39m
+ [32m✓[39m src/modules/conversation/host/scope.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m tests/integration/submission-rejection-reason.integration.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 251[2mms[22m[39m
+ [32m✓[39m src/platform/omp/resources/sdk-resource.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 40[2mms[22m[39m
+ [32m✓[39m src/modules/execution/renderer/runtime-store.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/app/preload/index.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 274[2mms[22m[39m
+ [32m✓[39m src/modules/conversation/host/projection.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 28[2mms[22m[39m
+(node:94466) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m src/app/contracts/desktop-bridge.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 92[2mms[22m[39m
+ [32m✓[39m src/app/main/ipc/project-reads.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 76[2mms[22m[39m
+ [32m✓[39m src/modules/files/main/project-files.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 134[2mms[22m[39m
+(node:94515) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m src/app/renderer/i18n-renderer.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 42[2mms[22m[39m
+ [32m✓[39m src/platform/omp/resources/runtime-resource.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m src/shared/i18n/create-i18n.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m src/modules/execution/renderer/submission-model.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 97[2mms[22m[39m
+ [32m✓[39m src/app/main/app-storage-init.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 70[2mms[22m[39m
+ [32m✓[39m src/app/renderer/conversation-i18n.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 41[2mms[22m[39m
+ [32m✓[39m src/app/renderer/model-store.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+(node:94543) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m src/platform/omp/protocol/frame-decoder.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 46[2mms[22m[39m
+(node:94571) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m src/app/main/index.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 1876[2mms[22m[39m
+   [33m[2m✓[22m[39m uses the first preferred system language rather than the Chromium app locale[33m 472[2mms[22m[39m
+   [33m[2m✓[22m[39m starts with system locale, rebuilds the native menu on interaction, and keeps a failed locale save visible[33m 374[2mms[22m[39m
+   [33m[2m✓[22m[39m retries a failed initial restore after the lock clears, preserving the same draft[33m 707[2mms[22m[39m
+ [32m✓[39m src/app/main/runtime-sdk-i18n.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 82[2mms[22m[39m
+ [32m✓[39m tests/integration/native-evidence-replay.integration.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 40[2mms[22m[39m
+ [32m✓[39m src/modules/execution/host/interactions.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 125[2mms[22m[39m
+ [32m✓[39m src/platform/omp/consumption-gate.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/modules/input/renderer/plain-text-paste.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 48[2mms[22m[39m
+ [32m✓[39m src/app/main/submission-receipt.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 86[2mms[22m[39m
+ [32m✓[39m src/modules/files/renderer/queries.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32m✓[39m src/modules/execution/host/session-host.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 67[2mms[22m[39m
+ [32m✓[39m src/platform/main/diagnostics/diagnostics.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 94[2mms[22m[39m
+ [32m✓[39m src/modules/conversation/main/native-history.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 156[2mms[22m[39m
+ [32m✓[39m src/modules/execution/renderer/submission-store.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 41[2mms[22m[39m
+ [32m✓[39m src/modules/input/core/draft-controller.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 81[2mms[22m[39m
+ [32m✓[39m src/modules/conversation/core/model.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/app/renderer/model.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m src/modules/execution/core/submission-admission.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 57[2mms[22m[39m
+ [32m✓[39m src/modules/input/renderer/selection-insert.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 133[2mms[22m[39m
+ [32m✓[39m src/modules/execution/renderer/runtime-model.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m src/platform/omp/protocol/native-frame.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 33[2mms[22m[39m
+ [32m✓[39m src/modules/conversation/core/subscription.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/modules/execution/contracts/submission.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/modules/files/core/selection.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/app/renderer/url-display.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m src/modules/changes/renderer/queries.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 92[2mms[22m[39m
+ [32m✓[39m src/app/main/lifecycle/quit.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m src/modules/execution/core/admission.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/modules/input/core/references/serialize.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m src/shared/i18n/locale.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m src/shared/messages/contracts.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/modules/execution/contracts/interactions.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 28[2mms[22m[39m
+ [32m✓[39m src/modules/files/renderer/monaco-viewer.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m src/modules/input/core/submission.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 61[2mms[22m[39m
+ [32m✓[39m src/modules/files/renderer/monaco-diff-options.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m src/modules/execution/core/target.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/modules/execution/renderer/submission-shortcut.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m src/app/renderer/workbench/refresh-state.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [2m[90m↓[39m[22m src/modules/execution/host/native-smoke.test.ts [2m([22m[2m1 test[22m[2m | [22m[33m1 skipped[39m[2m)[22m
+ [32m✓[39m src/app/renderer/workbench/composer-initialization.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 45[2mms[22m[39m
+ [32m✓[39m src/app/renderer/appearance-subscriptions.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 102[2mms[22m[39m
+ [32m✓[39m src/modules/changes/main/project-git.test.ts [2m([22m[2m14 tests[22m[2m)[22m[33m 7947[2mms[22m[39m
+   [33m[2m✓[22m[39m separates HEAD/index, index/worktree and untracked without author attribution[33m 2289[2mms[22m[39m
+   [33m[2m✓[22m[39m distinguishes non-Git and unborn HEAD[33m 727[2mms[22m[39m
+   [33m[2m✓[22m[39m labels a rename with its former path and refuses binary text diff[33m 861[2mms[22m[39m
+   [33m[2m✓[22m[39m scopes a parent repository to the selected project subdirectory[33m 404[2mms[22m[39m
+   [33m[2m✓[22m[39m reads a staged rename through the project subdirectory[33m 577[2mms[22m[39m
+   [33m[2m✓[22m[39m lists changes for a project reached through a symlinked parent directory[33m 407[2mms[22m[39m
+   [33m[2m✓[22m[39m reads an untracked file as absent on the left and worktree text on the right[33m 327[2mms[22m[39m
+   [33m[2m✓[22m[39m reports staged and worktree deletions with an absent side[33m 542[2mms[22m[39m
+   [33m[2m✓[22m[39m refuses an unmerged conflict as unmerged instead of an empty diff[33m 337[2mms[22m[39m
+   [33m[2m✓[22m[39m reports an oversized untracked file as too-large[33m 343[2mms[22m[39m
+   [33m[2m✓[22m[39m never executes project-configured clean filters during read-only queries[33m 625[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/app/main/storage.test.ts[2m > [22mreal SQLite and directory service[2m > [22mmaps legacy SQLite directory identity without migration or changing native binding and draft
+[31m[1mAssertionError[22m: expected undefined to be 'cf049bd1-0015-44c8-a3d8-cfce812c7b76' // Object.is equality[39m
+
+[32m- Expected:[39m
+"cf049bd1-0015-44c8-a3d8-cfce812c7b76"
+
+[31m+ Received:[39m
+undefined
+
+[36m [2m❯[22m src/app/main/storage.test.ts:[2m131:67[22m[39m
+    [90m129|[39m         expect(draft?.text).toBe(originalText);
+    [90m130|[39m         expect(draft?.revision).toBe(7);
+    [90m131|[39m         expect(draft && Reflect.get(draft, "workingDirectoryId")).toBe…
+    [90m   |[39m                                                                   [31m^[39m
+    [90m132|[39m         expect(draft && Reflect.has(draft, "workspaceId")).toBe(false);
+    [90m133|[39m         expect(Reflect.get(store.threads.executionGrant(directoryId) ?…
+[90m [2m❯[22m src/app/main/storage.test.ts:[2m14:17[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m68 passed[39m[22m[2m | [22m[33m1 skipped[39m[90m (70)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m366 passed[39m[22m[2m | [22m[33m1 skipped[39m[90m (368)[39m
+[2m   Start at [22m 16:44:02
+[2m   Duration [22m 8.28s[2m (tests 51%, import 29%, transform 16%, environment 3%, worker 1%)[22m
+
+[2m    Isolate [22m [33m70 workers spawned[39m[2m · ~144ms startup each (spawn + environment, per file)[22m
+[2m            [22m [2mat least ~867ms faster with [22m[33misolate: false[39m[2m — reuses workers across files instead of one per file[22m
+
+ ELIFECYCLE  Test failed. See above for more details.

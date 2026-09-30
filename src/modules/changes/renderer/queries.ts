@@ -1,6 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import type { ThreadContext } from "../../workspace/contracts/public";
+import type { ThreadContext } from "../../threads/contracts/public";
 import type {
   ChangeScope,
   GitBridge,
@@ -13,7 +13,7 @@ export const gitKeys = {
     [
       "git",
       resource.threadId,
-      resource.workspaceId,
+      resource.workingDirectoryId,
       resource.directory,
     ] as const,
   changes: (resource: ThreadContext) =>

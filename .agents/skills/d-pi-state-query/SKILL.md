@@ -77,7 +77,7 @@ const item = useStore(model.stateStore, (state) => state.itemsById.get(id));
 
 **推荐写法**：领域 `renderer/queries.ts` 提供 key 与 `queryOptions`，经对应 `public.ts` 暴露；hook 与命令式读取复用同一工厂，应用层只组合。新增公开面/环境/跨模块依赖才同步机器清单与模块地图。
 
-**查询身份**：key 表达影响结果的稳定资源身份和维度。当前文件/Git 查询共用 workspace 的真实 `ThreadContext`（threadId、workspaceId、directory），再加入路径及 Git scope；不构造没有事实拥有者的配置代次，bridge 对象引用也不能代替资源身份。数组或可序列化对象都可作为维度，不限制为只有字符串/数字。区别“未选中”与合法默认值：未选中 key 使用 `null`，目录根路径 `""` 合法。
+**查询身份**：key 表达影响结果的稳定资源身份和维度。当前文件/Git 查询共用 threads 的真实 `ThreadContext`（threadId、workingDirectoryId、directory），再加入路径及 Git scope；不构造没有事实拥有者的配置代次，bridge 对象引用也不能代替资源身份。数组或可序列化对象都可作为维度，不限制为只有字符串/数字。区别“未选中”与合法默认值：未选中 key 使用 `null`，目录根路径 `""` 合法。
 
 **项目政策**：本地文件/Git/配置读取显式 `networkMode: "always"`；业务 `unavailable` 按数据返回，采样失败进入错误通道。错误仍需保留真实原因和 trace，不把所有失败压成同一无来源的字符串。缓存不是当前磁盘事实；分别表达旧采样、正在采样和失败，不借工程重写自行改变已定刷新体验。
 

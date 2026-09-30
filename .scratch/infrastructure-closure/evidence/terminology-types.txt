@@ -1,0 +1,23 @@
+
+> d-pi@0.1.0-s4.0 typecheck /Users/lou/Learn/d-pi
+> tsc --noEmit && pnpm typecheck:core && pnpm typecheck:renderer && pnpm typecheck:main && pnpm typecheck:host && pnpm typecheck:preload
+
+
+> d-pi@0.1.0-s4.0 typecheck:core /Users/lou/Learn/d-pi
+> tsc --noEmit -p tsconfig.core.json
+
+
+> d-pi@0.1.0-s4.0 typecheck:renderer /Users/lou/Learn/d-pi
+> tsc --noEmit -p tsconfig.renderer.json
+
+
+> d-pi@0.1.0-s4.0 typecheck:main /Users/lou/Learn/d-pi
+> tsc --noEmit -p tsconfig.main.json
+
+
+> d-pi@0.1.0-s4.0 typecheck:host /Users/lou/Learn/d-pi
+> tsc --noEmit -p tsconfig.host.json
+
+
+> d-pi@0.1.0-s4.0 typecheck:preload /Users/lou/Learn/d-pi
+> tsc --noEmit -p tsconfig.preload.json

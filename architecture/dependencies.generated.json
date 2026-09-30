@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "fc3f20d40d0b4a77369e1777e4e5e69482d0579b2118e677a1b861123e5a3d02",
+  "inputsHash": "0393a8fee289b81b57fe4cecdc55fdc61cfa301c3e7a1a479ff2999e231cce15",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 191,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 50,
-      "lines": 9094,
+      "lines": 9190,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -174,7 +174,7 @@
       ],
       "materialized": true,
       "files": 18,
-      "lines": 1561,
+      "lines": 1562,
       "publicEntries": [
         {
           "path": "src/modules/input/contracts/public.ts",
@@ -223,22 +223,22 @@
       "testPublicEntries": []
     },
     {
-      "name": "workspace",
-      "root": "src/modules/workspace",
+      "name": "threads",
+      "root": "src/modules/threads",
       "environments": [
         "contracts",
         "main"
       ],
       "materialized": true,
       "files": 4,
-      "lines": 192,
+      "lines": 199,
       "publicEntries": [
         {
-          "path": "src/modules/workspace/contracts/public.ts",
+          "path": "src/modules/threads/contracts/public.ts",
           "exists": true
         },
         {
-          "path": "src/modules/workspace/main/public.ts",
+          "path": "src/modules/threads/main/public.ts",
           "exists": true
         }
       ],
@@ -282,7 +282,7 @@
       ],
       "materialized": true,
       "files": 14,
-      "lines": 1498,
+      "lines": 1510,
       "publicEntries": [
         {
           "path": "src/modules/conversation/contracts/public.ts",
@@ -315,7 +315,7 @@
       ],
       "materialized": true,
       "files": 38,
-      "lines": 7137,
+      "lines": 7159,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -453,7 +453,7 @@
     {
       "module": "app",
       "environment": "main",
-      "dependency": "workspace",
+      "dependency": "threads",
       "testOnly": false
     },
     {
@@ -543,7 +543,7 @@
     {
       "module": "app",
       "environment": "renderer",
-      "dependency": "workspace",
+      "dependency": "threads",
       "testOnly": false
     },
     {
@@ -585,7 +585,7 @@
     {
       "module": "files",
       "environment": "renderer",
-      "dependency": "workspace",
+      "dependency": "threads",
       "testOnly": false
     },
     {
@@ -597,7 +597,7 @@
     {
       "module": "input",
       "environment": "contracts",
-      "dependency": "workspace",
+      "dependency": "threads",
       "testOnly": false
     },
     {
@@ -621,7 +621,7 @@
     {
       "module": "input",
       "environment": "main",
-      "dependency": "workspace",
+      "dependency": "threads",
       "testOnly": false
     },
     {
@@ -657,17 +657,17 @@
     {
       "module": "changes",
       "environment": "renderer",
-      "dependency": "workspace",
+      "dependency": "threads",
       "testOnly": false
     },
     {
-      "module": "workspace",
+      "module": "threads",
       "environment": "contracts",
       "dependency": "shared",
       "testOnly": false
     },
     {
-      "module": "workspace",
+      "module": "threads",
       "environment": "main",
       "dependency": "platform",
       "testOnly": false
@@ -711,7 +711,7 @@
     {
       "module": "conversation",
       "environment": "main",
-      "dependency": "workspace",
+      "dependency": "threads",
       "testOnly": false
     },
     {
@@ -729,7 +729,7 @@
     {
       "module": "execution",
       "environment": "contracts",
-      "dependency": "workspace",
+      "dependency": "threads",
       "testOnly": false
     },
     {
@@ -747,7 +747,7 @@
     {
       "module": "execution",
       "environment": "core",
-      "dependency": "workspace",
+      "dependency": "threads",
       "testOnly": false
     },
     {
@@ -783,7 +783,7 @@
     {
       "module": "execution",
       "environment": "main",
-      "dependency": "workspace",
+      "dependency": "threads",
       "testOnly": false
     },
     {
@@ -1006,7 +1006,7 @@
     {
       "module": "app",
       "environment": "main",
-      "dependency": "workspace",
+      "dependency": "threads",
       "targetEnvironment": "main",
       "testOnly": true
     },
@@ -1027,7 +1027,7 @@
     {
       "module": "app",
       "environment": "main",
-      "dependency": "workspace",
+      "dependency": "threads",
       "targetEnvironment": "main",
       "testOnly": false
     },
@@ -1237,7 +1237,7 @@
     {
       "module": "app",
       "environment": "renderer",
-      "dependency": "workspace",
+      "dependency": "threads",
       "targetEnvironment": "contracts",
       "testOnly": false
     },
@@ -1293,7 +1293,7 @@
     {
       "module": "app",
       "environment": "renderer",
-      "dependency": "workspace",
+      "dependency": "threads",
       "targetEnvironment": "contracts",
       "testOnly": true
     },
@@ -1335,14 +1335,14 @@
     {
       "module": "files",
       "environment": "renderer",
-      "dependency": "workspace",
+      "dependency": "threads",
       "targetEnvironment": "contracts",
       "testOnly": true
     },
     {
       "module": "files",
       "environment": "renderer",
-      "dependency": "workspace",
+      "dependency": "threads",
       "targetEnvironment": "contracts",
       "testOnly": false
     },
@@ -1356,7 +1356,7 @@
     {
       "module": "input",
       "environment": "contracts",
-      "dependency": "workspace",
+      "dependency": "threads",
       "targetEnvironment": "contracts",
       "testOnly": false
     },
@@ -1391,7 +1391,7 @@
     {
       "module": "input",
       "environment": "main",
-      "dependency": "workspace",
+      "dependency": "threads",
       "targetEnvironment": "main",
       "testOnly": false
     },
@@ -1433,39 +1433,39 @@
     {
       "module": "changes",
       "environment": "renderer",
-      "dependency": "workspace",
+      "dependency": "threads",
       "targetEnvironment": "contracts",
       "testOnly": true
     },
     {
       "module": "changes",
       "environment": "renderer",
-      "dependency": "workspace",
+      "dependency": "threads",
       "targetEnvironment": "contracts",
       "testOnly": false
     },
     {
-      "module": "workspace",
+      "module": "threads",
       "environment": "contracts",
       "dependency": "shared",
       "targetEnvironment": "shared",
       "testOnly": false
     },
     {
-      "module": "workspace",
-      "environment": "main",
-      "dependency": "platform",
-      "targetEnvironment": "main",
-      "testOnly": false
-    },
-    {
-      "module": "workspace",
+      "module": "threads",
       "environment": "main",
       "dependency": "platform",
       "targetEnvironment": "node",
       "testOnly": false
     },
     {
+      "module": "threads",
+      "environment": "main",
+      "dependency": "platform",
+      "targetEnvironment": "main",
+      "testOnly": false
+    },
+    {
       "module": "preferences",
       "environment": "contracts",
       "dependency": "shared",
@@ -1517,7 +1517,7 @@
     {
       "module": "conversation",
       "environment": "main",
-      "dependency": "workspace",
+      "dependency": "threads",
       "targetEnvironment": "contracts",
       "testOnly": false
     },
@@ -1531,7 +1531,7 @@
     {
       "module": "execution",
       "environment": "contracts",
-      "dependency": "workspace",
+      "dependency": "threads",
       "targetEnvironment": "contracts",
       "testOnly": false
     },
@@ -1552,14 +1552,14 @@
     {
       "module": "execution",
       "environment": "core",
-      "dependency": "workspace",
+      "dependency": "threads",
       "targetEnvironment": "contracts",
       "testOnly": true
     },
     {
       "module": "execution",
       "environment": "core",
-      "dependency": "workspace",
+      "dependency": "threads",
       "targetEnvironment": "contracts",
       "testOnly": false
     },
@@ -1636,14 +1636,14 @@
     {
       "module": "execution",
       "environment": "main",
-      "dependency": "workspace",
+      "dependency": "threads",
       "targetEnvironment": "contracts",
       "testOnly": false
     },
     {
       "module": "execution",
       "environment": "main",
-      "dependency": "workspace",
+      "dependency": "threads",
       "targetEnvironment": "main",
       "testOnly": false
     },
@@ -3211,11 +3211,11 @@
       "sourceModule": "app",
       "sourceEnvironment": "main",
       "test": true,
-      "specifier": "../../modules/workspace/main/public",
+      "specifier": "../../modules/threads/main/public",
       "kind": "import",
       "resolution": "module",
-      "to": "src/modules/workspace/main/public.ts",
-      "targetModule": "workspace",
+      "to": "src/modules/threads/main/public.ts",
+      "targetModule": "threads",
       "targetEnvironment": "main"
     },
     {
@@ -3283,11 +3283,11 @@
       "sourceModule": "app",
       "sourceEnvironment": "main",
       "test": false,
-      "specifier": "../../../modules/workspace/main/public",
+      "specifier": "../../../modules/threads/main/public",
       "kind": "import",
       "resolution": "module",
-      "to": "src/modules/workspace/main/public.ts",
-      "targetModule": "workspace",
+      "to": "src/modules/threads/main/public.ts",
+      "targetModule": "threads",
       "targetEnvironment": "main"
     },
     {
@@ -3328,11 +3328,11 @@
       "sourceModule": "app",
       "sourceEnvironment": "main",
       "test": false,
-      "specifier": "../../../modules/workspace/main/public",
+      "specifier": "../../../modules/threads/main/public",
       "kind": "import",
       "resolution": "module",
-      "to": "src/modules/workspace/main/public.ts",
-      "targetModule": "workspace",
+      "to": "src/modules/threads/main/public.ts",
+      "targetModule": "threads",
       "targetEnvironment": "main"
     },
     {
@@ -3757,10 +3757,10 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
-      "specifier": "./workbench/file-workspace",
+      "specifier": "./workbench/file-panel",
       "kind": "import",
       "resolution": "module",
-      "to": "src/app/renderer/workbench/file-workspace.tsx",
+      "to": "src/app/renderer/workbench/file-panel.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -4928,11 +4928,11 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
-      "specifier": "../../modules/workspace/contracts/public",
+      "specifier": "../../modules/threads/contracts/public",
       "kind": "import",
       "resolution": "module",
-      "to": "src/modules/workspace/contracts/public.ts",
-      "targetModule": "workspace",
+      "to": "src/modules/threads/contracts/public.ts",
+      "targetModule": "threads",
       "targetEnvironment": "contracts"
     },
     {
@@ -5440,7 +5440,7 @@
       "targetEnvironment": "renderer"
     },
     {
-      "from": "src/app/renderer/workbench/file-workspace.tsx",
+      "from": "src/app/renderer/workbench/file-panel.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
@@ -5449,7 +5449,7 @@
       "resolution": "external"
     },
     {
-      "from": "src/app/renderer/workbench/file-workspace.tsx",
+      "from": "src/app/renderer/workbench/file-panel.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
@@ -5458,7 +5458,7 @@
       "resolution": "external"
     },
     {
-      "from": "src/app/renderer/workbench/file-workspace.tsx",
+      "from": "src/app/renderer/workbench/file-panel.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
@@ -5467,7 +5467,7 @@
       "resolution": "external"
     },
     {
-      "from": "src/app/renderer/workbench/file-workspace.tsx",
+      "from": "src/app/renderer/workbench/file-panel.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
@@ -5479,7 +5479,7 @@
       "targetEnvironment": "renderer"
     },
     {
-      "from": "src/app/renderer/workbench/file-workspace.tsx",
+      "from": "src/app/renderer/workbench/file-panel.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
@@ -5491,7 +5491,7 @@
       "targetEnvironment": "contracts"
     },
     {
-      "from": "src/app/renderer/workbench/file-workspace.tsx",
+      "from": "src/app/renderer/workbench/file-panel.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
@@ -5503,7 +5503,7 @@
       "targetEnvironment": "renderer"
     },
     {
-      "from": "src/app/renderer/workbench/file-workspace.tsx",
+      "from": "src/app/renderer/workbench/file-panel.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
@@ -5515,7 +5515,7 @@
       "targetEnvironment": "contracts"
     },
     {
-      "from": "src/app/renderer/workbench/file-workspace.tsx",
+      "from": "src/app/renderer/workbench/file-panel.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
@@ -5527,7 +5527,7 @@
       "targetEnvironment": "core"
     },
     {
-      "from": "src/app/renderer/workbench/file-workspace.tsx",
+      "from": "src/app/renderer/workbench/file-panel.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
@@ -5539,7 +5539,7 @@
       "targetEnvironment": "renderer"
     },
     {
-      "from": "src/app/renderer/workbench/file-workspace.tsx",
+      "from": "src/app/renderer/workbench/file-panel.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
@@ -5551,7 +5551,7 @@
       "targetEnvironment": "renderer"
     },
     {
-      "from": "src/app/renderer/workbench/file-workspace.tsx",
+      "from": "src/app/renderer/workbench/file-panel.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
@@ -5563,19 +5563,19 @@
       "targetEnvironment": "renderer"
     },
     {
-      "from": "src/app/renderer/workbench/file-workspace.tsx",
+      "from": "src/app/renderer/workbench/file-panel.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
-      "specifier": "../../../modules/workspace/contracts/public",
+      "specifier": "../../../modules/threads/contracts/public",
       "kind": "import",
       "resolution": "module",
-      "to": "src/modules/workspace/contracts/public.ts",
-      "targetModule": "workspace",
+      "to": "src/modules/threads/contracts/public.ts",
+      "targetModule": "threads",
       "targetEnvironment": "contracts"
     },
     {
-      "from": "src/app/renderer/workbench/file-workspace.tsx",
+      "from": "src/app/renderer/workbench/file-panel.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
@@ -5633,11 +5633,11 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": true,
-      "specifier": "../../../modules/workspace/contracts/public",
+      "specifier": "../../../modules/threads/contracts/public",
       "kind": "import",
       "resolution": "module",
-      "to": "src/modules/workspace/contracts/public.ts",
-      "targetModule": "workspace",
+      "to": "src/modules/threads/contracts/public.ts",
+      "targetModule": "threads",
       "targetEnvironment": "contracts"
     },
     {
@@ -6912,11 +6912,11 @@
       "sourceModule": "files",
       "sourceEnvironment": "renderer",
       "test": true,
-      "specifier": "../../workspace/contracts/public",
+      "specifier": "../../threads/contracts/public",
       "kind": "import",
       "resolution": "module",
-      "to": "src/modules/workspace/contracts/public.ts",
-      "targetModule": "workspace",
+      "to": "src/modules/threads/contracts/public.ts",
+      "targetModule": "threads",
       "targetEnvironment": "contracts"
     },
     {
@@ -6966,11 +6966,11 @@
       "sourceModule": "files",
       "sourceEnvironment": "renderer",
       "test": false,
-      "specifier": "../../workspace/contracts/public",
+      "specifier": "../../threads/contracts/public",
       "kind": "import",
       "resolution": "module",
-      "to": "src/modules/workspace/contracts/public.ts",
-      "targetModule": "workspace",
+      "to": "src/modules/threads/contracts/public.ts",
+      "targetModule": "threads",
       "targetEnvironment": "contracts"
     },
     {
@@ -7035,11 +7035,11 @@
       "sourceModule": "input",
       "sourceEnvironment": "contracts",
       "test": false,
-      "specifier": "../../workspace/contracts/public",
+      "specifier": "../../threads/contracts/public",
       "kind": "import",
       "resolution": "module",
-      "to": "src/modules/workspace/contracts/public.ts",
-      "targetModule": "workspace",
+      "to": "src/modules/threads/contracts/public.ts",
+      "targetModule": "threads",
       "targetEnvironment": "contracts"
     },
     {
@@ -7272,11 +7272,11 @@
       "sourceModule": "input",
       "sourceEnvironment": "main",
       "test": false,
-      "specifier": "../../workspace/main/public",
+      "specifier": "../../threads/main/public",
       "kind": "import",
       "resolution": "module",
-      "to": "src/modules/workspace/main/public.ts",
-      "targetModule": "workspace",
+      "to": "src/modules/threads/main/public.ts",
+      "targetModule": "threads",
       "targetEnvironment": "main"
     },
     {
@@ -7908,11 +7908,11 @@
       "sourceModule": "changes",
       "sourceEnvironment": "renderer",
       "test": true,
-      "specifier": "../../workspace/contracts/public",
+      "specifier": "../../threads/contracts/public",
       "kind": "import",
       "resolution": "module",
-      "to": "src/modules/workspace/contracts/public.ts",
-      "targetModule": "workspace",
+      "to": "src/modules/threads/contracts/public.ts",
+      "targetModule": "threads",
       "targetEnvironment": "contracts"
     },
     {
@@ -7962,11 +7962,11 @@
       "sourceModule": "changes",
       "sourceEnvironment": "renderer",
       "test": false,
-      "specifier": "../../workspace/contracts/public",
+      "specifier": "../../threads/contracts/public",
       "kind": "import",
       "resolution": "module",
-      "to": "src/modules/workspace/contracts/public.ts",
-      "targetModule": "workspace",
+      "to": "src/modules/threads/contracts/public.ts",
+      "targetModule": "threads",
       "targetEnvironment": "contracts"
     },
     {
@@ -7982,8 +7982,8 @@
       "targetEnvironment": "contracts"
     },
     {
-      "from": "src/modules/workspace/contracts/public.ts",
-      "sourceModule": "workspace",
+      "from": "src/modules/threads/contracts/public.ts",
+      "sourceModule": "threads",
       "sourceEnvironment": "contracts",
       "test": false,
       "specifier": "zod",
@@ -7991,8 +7991,8 @@
       "resolution": "external"
     },
     {
-      "from": "src/modules/workspace/contracts/public.ts",
-      "sourceModule": "workspace",
+      "from": "src/modules/threads/contracts/public.ts",
+      "sourceModule": "threads",
       "sourceEnvironment": "contracts",
       "test": false,
       "specifier": "../../../shared/identity",
@@ -8003,8 +8003,8 @@
       "targetEnvironment": "shared"
     },
     {
-      "from": "src/modules/workspace/contracts/public.ts",
-      "sourceModule": "workspace",
+      "from": "src/modules/threads/contracts/public.ts",
+      "sourceModule": "threads",
       "sourceEnvironment": "contracts",
       "test": false,
       "specifier": "../../../shared/identity",
@@ -8015,65 +8015,8 @@
       "targetEnvironment": "shared"
     },
     {
-      "from": "src/modules/workspace/main/public.ts",
-      "sourceModule": "workspace",
-      "sourceEnvironment": "main",
-      "test": false,
-      "specifier": "./thread-repository",
-      "kind": "export",
-      "resolution": "module",
-      "to": "src/modules/workspace/main/thread-repository.ts",
-      "targetModule": "workspace",
-      "targetEnvironment": "main"
-    },
-    {
-      "from": "src/modules/workspace/main/public.ts",
-      "sourceModule": "workspace",
-      "sourceEnvironment": "main",
-      "test": false,
-      "specifier": "./workspace-service",
-      "kind": "export",
-      "resolution": "module",
-      "to": "src/modules/workspace/main/workspace-service.ts",
-      "targetModule": "workspace",
-      "targetEnvironment": "main"
-    },
-    {
-      "from": "src/modules/workspace/main/thread-repository.ts",
-      "sourceModule": "workspace",
-      "sourceEnvironment": "main",
-      "test": false,
-      "specifier": "node:crypto",
-      "kind": "import",
-      "resolution": "external"
-    },
-    {
-      "from": "src/modules/workspace/main/thread-repository.ts",
-      "sourceModule": "workspace",
-      "sourceEnvironment": "main",
-      "test": false,
-      "specifier": "../../../platform/main/storage/public",
-      "kind": "import",
-      "resolution": "module",
-      "to": "src/platform/main/storage/public.ts",
-      "targetModule": "platform",
-      "targetEnvironment": "main"
-    },
-    {
-      "from": "src/modules/workspace/main/thread-repository.ts",
-      "sourceModule": "workspace",
-      "sourceEnvironment": "main",
-      "test": false,
-      "specifier": "../contracts/public",
-      "kind": "import",
-      "resolution": "module",
-      "to": "src/modules/workspace/contracts/public.ts",
-      "targetModule": "workspace",
-      "targetEnvironment": "contracts"
-    },
-    {
-      "from": "src/modules/workspace/main/workspace-service.ts",
-      "sourceModule": "workspace",
+      "from": "src/modules/threads/main/project-selection-service.ts",
+      "sourceModule": "threads",
       "sourceEnvironment": "main",
       "test": false,
       "specifier": "../../../platform/node/filesystem/public",
@@ -8084,28 +8027,85 @@
       "targetEnvironment": "node"
     },
     {
-      "from": "src/modules/workspace/main/workspace-service.ts",
-      "sourceModule": "workspace",
+      "from": "src/modules/threads/main/project-selection-service.ts",
+      "sourceModule": "threads",
       "sourceEnvironment": "main",
       "test": false,
       "specifier": "../contracts/public",
       "kind": "import",
       "resolution": "module",
-      "to": "src/modules/workspace/contracts/public.ts",
-      "targetModule": "workspace",
+      "to": "src/modules/threads/contracts/public.ts",
+      "targetModule": "threads",
       "targetEnvironment": "contracts"
     },
     {
-      "from": "src/modules/workspace/main/workspace-service.ts",
-      "sourceModule": "workspace",
+      "from": "src/modules/threads/main/project-selection-service.ts",
+      "sourceModule": "threads",
       "sourceEnvironment": "main",
       "test": false,
       "specifier": "./thread-repository",
       "kind": "import",
       "resolution": "module",
-      "to": "src/modules/workspace/main/thread-repository.ts",
-      "targetModule": "workspace",
+      "to": "src/modules/threads/main/thread-repository.ts",
+      "targetModule": "threads",
       "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/threads/main/public.ts",
+      "sourceModule": "threads",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "./project-selection-service",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/threads/main/project-selection-service.ts",
+      "targetModule": "threads",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/threads/main/public.ts",
+      "sourceModule": "threads",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "./thread-repository",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/threads/main/thread-repository.ts",
+      "targetModule": "threads",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/threads/main/thread-repository.ts",
+      "sourceModule": "threads",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/threads/main/thread-repository.ts",
+      "sourceModule": "threads",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../platform/main/storage/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/main/storage/public.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/threads/main/thread-repository.ts",
+      "sourceModule": "threads",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/threads/contracts/public.ts",
+      "targetModule": "threads",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/modules/preferences/contracts/preferences.ts",
@@ -8664,11 +8664,11 @@
       "sourceModule": "conversation",
       "sourceEnvironment": "main",
       "test": false,
-      "specifier": "../../workspace/contracts/public",
+      "specifier": "../../threads/contracts/public",
       "kind": "import",
       "resolution": "module",
-      "to": "src/modules/workspace/contracts/public.ts",
-      "targetModule": "workspace",
+      "to": "src/modules/threads/contracts/public.ts",
+      "targetModule": "threads",
       "targetEnvironment": "contracts"
     },
     {
@@ -8730,11 +8730,11 @@
       "sourceModule": "execution",
       "sourceEnvironment": "contracts",
       "test": false,
-      "specifier": "../../workspace/contracts/public",
+      "specifier": "../../threads/contracts/public",
       "kind": "import",
       "resolution": "module",
-      "to": "src/modules/workspace/contracts/public.ts",
-      "targetModule": "workspace",
+      "to": "src/modules/threads/contracts/public.ts",
+      "targetModule": "threads",
       "targetEnvironment": "contracts"
     },
     {
@@ -9024,11 +9024,11 @@
       "sourceModule": "execution",
       "sourceEnvironment": "core",
       "test": true,
-      "specifier": "../../workspace/contracts/public",
+      "specifier": "../../threads/contracts/public",
       "kind": "import",
       "resolution": "module",
-      "to": "src/modules/workspace/contracts/public.ts",
-      "targetModule": "workspace",
+      "to": "src/modules/threads/contracts/public.ts",
+      "targetModule": "threads",
       "targetEnvironment": "contracts"
     },
     {
@@ -9048,11 +9048,11 @@
       "sourceModule": "execution",
       "sourceEnvironment": "core",
       "test": false,
-      "specifier": "../../workspace/contracts/public",
+      "specifier": "../../threads/contracts/public",
       "kind": "import",
       "resolution": "module",
-      "to": "src/modules/workspace/contracts/public.ts",
-      "targetModule": "workspace",
+      "to": "src/modules/threads/contracts/public.ts",
+      "targetModule": "threads",
       "targetEnvironment": "contracts"
     },
     {
@@ -9918,11 +9918,11 @@
       "sourceModule": "execution",
       "sourceEnvironment": "main",
       "test": false,
-      "specifier": "../../workspace/contracts/public",
+      "specifier": "../../threads/contracts/public",
       "kind": "import",
       "resolution": "module",
-      "to": "src/modules/workspace/contracts/public.ts",
-      "targetModule": "workspace",
+      "to": "src/modules/threads/contracts/public.ts",
+      "targetModule": "threads",
       "targetEnvironment": "contracts"
     },
     {
@@ -9930,11 +9930,11 @@
       "sourceModule": "execution",
       "sourceEnvironment": "main",
       "test": false,
-      "specifier": "../../workspace/main/public",
+      "specifier": "../../threads/main/public",
       "kind": "import",
       "resolution": "module",
-      "to": "src/modules/workspace/main/public.ts",
-      "targetModule": "workspace",
+      "to": "src/modules/threads/main/public.ts",
+      "targetModule": "threads",
       "targetEnvironment": "main"
     },
     {

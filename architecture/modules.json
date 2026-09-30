@@ -35,7 +35,7 @@
           "platform",
           "preferences",
           "shared",
-          "workspace"
+          "threads"
         ],
         "host": ["conversation", "execution"],
         "preload": [
@@ -53,7 +53,7 @@
           "input",
           "preferences",
           "shared",
-          "workspace"
+          "threads"
         ]
       }
     },
@@ -98,7 +98,7 @@
         "contracts": ["shared"],
         "core": ["shared"],
         "main": [],
-        "renderer": ["preferences", "workspace"]
+        "renderer": ["preferences", "threads"]
       },
       "materialized": true
     },
@@ -112,9 +112,9 @@
         "renderer/public.ts"
       ],
       "dependsOn": {
-        "contracts": ["shared", "workspace"],
+        "contracts": ["shared", "threads"],
         "core": ["files", "shared"],
-        "main": ["platform", "workspace"],
+        "main": ["platform", "threads"],
         "renderer": ["files"]
       },
       "materialized": true
@@ -130,12 +130,12 @@
       "dependsOn": {
         "contracts": ["files", "shared"],
         "main": ["files"],
-        "renderer": ["shared", "workspace"]
+        "renderer": ["shared", "threads"]
       },
       "materialized": true
     },
-    "workspace": {
-      "root": "src/modules/workspace",
+    "threads": {
+      "root": "src/modules/threads",
       "environments": ["contracts", "main"],
       "public": ["contracts/public.ts", "main/public.ts"],
       "dependsOn": {
@@ -172,7 +172,7 @@
         "contracts": ["shared"],
         "core": [],
         "host": ["platform", "shared"],
-        "main": ["workspace"]
+        "main": ["threads"]
       },
       "materialized": true
     },
@@ -187,10 +187,10 @@
         "renderer/public.ts"
       ],
       "dependsOn": {
-        "contracts": ["input", "shared", "workspace"],
-        "core": ["input", "shared", "workspace"],
+        "contracts": ["input", "shared", "threads"],
+        "core": ["input", "shared", "threads"],
         "host": ["platform", "shared"],
-        "main": ["input", "platform", "shared", "workspace"],
+        "main": ["input", "platform", "shared", "threads"],
         "renderer": ["input", "shared"]
       },
       "materialized": true

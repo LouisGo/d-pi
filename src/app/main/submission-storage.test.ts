@@ -7,7 +7,7 @@ import { describe, expect, it, vi } from "vitest";
 import { FrozenSubmissionSchema } from "../../modules/execution/contracts/public";
 import { SubmissionRepository } from "../../modules/execution/main/public";
 import { DraftRepository } from "../../modules/input/main/public";
-import { ThreadRepository } from "../../modules/workspace/main/public";
+import { ThreadRepository } from "../../modules/threads/main/public";
 import { AppDatabase } from "../../platform/main/storage/public";
 import { AppStorage } from "./wiring/app-storage";
 
@@ -312,14 +312,14 @@ it("restart makes dispatch uncertain while ACK survives later failure; duplicate
     }
   }));
 
-it("execution trust survives restart for the exact workspace and can be revoked without touching drafts", () =>
+it("execution trust survives restart for the exact working directory and can be revoked without touching drafts", () =>
   fixture((path) => {
     let store = openStorage(path);
     const d = store.drafts.create("/project");
     store.drafts.save(d.threadId, 0, "draft");
-    expect(store.threads.executionGrant(d.workspaceId)).toBeNull();
+    expect(store.threads.executionGrant(d.workingDirectoryId)).toBeNull();
     const grant = {
-      workspaceId: d.workspaceId,
+      workingDirectoryId: d.workingDirectoryId,
       directory: d.directory,
       device: "1",
       inode: "2",
@@ -328,9 +328,9 @@ it("execution trust survives restart for the exact workspace and can be revoked 
     store.close();
     store = openStorage(path);
     try {
-      expect(store.threads.executionGrant(d.workspaceId)).toEqual(grant);
-      store.threads.revokeExecution(d.workspaceId);
-      expect(store.threads.executionGrant(d.workspaceId)).toBeNull();
+      expect(store.threads.executionGrant(d.workingDirectoryId)).toEqual(grant);
+      store.threads.revokeExecution(d.workingDirectoryId);
+      expect(store.threads.executionGrant(d.workingDirectoryId)).toBeNull();
       expect(store.drafts.read(d.threadId).text).toBe("draft");
     } finally {
       store.close();
@@ -351,14 +351,18 @@ it("native session binding survives restart and cannot be silently replaced", ()
     store.close();
     store = openStorage(path);
     try {
-      expect(store.threads.nativeSession(draft.threadId)).toEqual(binding);
+      expect(store.threads.nativeSessionBinding(draft.threadId)).toEqual(
+        binding,
+      );
       expect(() =>
         store.threads.bindNativeSession({
           ...binding,
           sessionId: "new-session",
         }),
       ).toThrow();
-      expect(store.threads.nativeSession(draft.threadId)).toEqual(binding);
+      expect(store.threads.nativeSessionBinding(draft.threadId)).toEqual(
+        binding,
+      );
     } finally {
       store.close();
     }

@@ -4,7 +4,7 @@
 
 ## 当前工程落点（领域目录治理，2026-09-29）
 
-- `src/platform/main/storage/database.ts` 只负责连接、PRAGMA、schema/备份迁移和事务原语；业务仓储分别位于 workspace/input/preferences/execution 模块。
+- `src/platform/main/storage/database.ts` 只负责连接、PRAGMA、schema/备份迁移和事务原语；业务仓储分别位于 threads/input/preferences/execution 模块。
 - `src/app/main/wiring/app-storage.ts` 以一个 `AppDatabase` 组装仓储，并显式执行 `v3 + WAL → execution recovery → v4/v5 → publish`；数据库构造不再隐式修改 `dispatching` 收据。
 - `src/platform/main/diagnostics/` 是轻量有界诊断设施；它不决定业务恢复，也不记录秘密、路径或正文作为诊断内容。
 

@@ -79,7 +79,7 @@ export function PreferenceToolbar({
   );
 }
 
-export function WorkspaceNotice({ model }: { model: AppModel }) {
+export function ThreadNotice({ model }: { model: AppModel }) {
   const { formatMessage } = useI18n();
   const notice = useStore(model.stateStore, (state) =>
     state.kind === "ready" ? state.notice : null,

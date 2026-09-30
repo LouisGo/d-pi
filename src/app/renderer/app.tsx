@@ -10,13 +10,13 @@ import { BUILD_INFO } from "../../shared/build-info";
 import {
   ChooseProjectButton,
   PreferenceToolbar,
-  WorkspaceNotice,
+  ThreadNotice,
 } from "./appearance-controls";
 import { Conversation, History, Submissions } from "./conversation";
-import type { AppModel, WorkspaceState } from "./model";
+import type { AppModel, ThreadSelectionState } from "./model";
 import { RuntimePanel } from "./runtime-panel";
 import { Composer } from "./workbench/composer";
-import { FileWorkspace } from "./workbench/file-workspace";
+import { FilePanel } from "./workbench/file-panel";
 
 type AppProps = {
   model: AppModel;
@@ -40,7 +40,7 @@ export function App({ model, editor }: AppProps) {
     ))
     .with("failed", () => <StartupFailure model={model} />)
     .with("disposed", () => null)
-    .with("ready", () => <ReadyWorkspace model={model} editor={editor} />)
+    .with("ready", () => <ReadyWorkbench model={model} editor={editor} />)
     .exhaustive();
 }
 
@@ -61,13 +61,14 @@ function StartupFailure({ model }: { model: AppModel }) {
   );
 }
 
-function ReadyWorkspace({ model, editor }: AppProps) {
+function ReadyWorkbench({ model, editor }: AppProps) {
   const { t } = useI18n();
-  const workspace = useStore(model.stateStore, (state) =>
-    state.kind === "ready" ? state.workspace : null,
+  const threadSelection = useStore(model.stateStore, (state) =>
+    state.kind === "ready" ? state.threadSelection : null,
   );
-  if (!workspace) return null;
-  const thread = workspace.kind === "thread" ? workspace.thread : null;
+  if (!threadSelection) return null;
+  const thread =
+    threadSelection.kind === "thread" ? threadSelection.thread : null;
   const draft = thread?.context;
   return (
     <div className="app-shell">
@@ -93,15 +94,15 @@ function ReadyWorkspace({ model, editor }: AppProps) {
           </span>
         </div>
       </aside>
-      <main className="workspace">
+      <main className="workbench">
         <PreferenceToolbar model={model} hasThread={thread !== null} />
-        <WorkspaceNotice model={model} />
+        <ThreadNotice model={model} />
         <div className="work-content">
-          {workspace.kind === "thread" ? (
-            <ThreadWorkspace
-              key={workspace.thread.key}
+          {threadSelection.kind === "thread" ? (
+            <ThreadWorkbench
+              key={threadSelection.thread.key}
               model={model}
-              workspace={workspace}
+              threadSelection={threadSelection}
               editor={editor}
             />
           ) : (
@@ -118,13 +119,15 @@ function ReadyWorkspace({ model, editor }: AppProps) {
   );
 }
 
-function ThreadWorkspace({
+function ThreadWorkbench({
   model,
-  workspace,
+  threadSelection,
   editor,
-}: AppProps & { workspace: Extract<WorkspaceState, { kind: "thread" }> }) {
+}: AppProps & {
+  threadSelection: Extract<ThreadSelectionState, { kind: "thread" }>;
+}) {
   const { t } = useI18n();
-  const { thread, directoryAvailable } = workspace;
+  const { thread, directoryAvailable } = threadSelection;
   const { submission } = thread;
   const [selectionAttachment, setSelectionAttachment] = useState<{
     id: string;
@@ -181,7 +184,7 @@ function ThreadWorkspace({
         onAttachmentApplied={onAttachmentApplied}
       />
       {model.files && model.git && (
-        <FileWorkspace
+        <FilePanel
           resource={thread.context}
           files={model.files}
           git={model.git}

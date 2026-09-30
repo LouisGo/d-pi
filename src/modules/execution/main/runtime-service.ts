@@ -12,8 +12,8 @@ import { uiMessage } from "../../../shared/messages/contracts";
 import type {
   DirectoryIdentity,
   ThreadContext,
-} from "../../workspace/contracts/public";
-import type { ThreadRepository } from "../../workspace/main/public";
+} from "../../threads/contracts/public";
+import type { ThreadRepository } from "../../threads/main/public";
 import type { HostMessage } from "../contracts/host";
 import {
   type FrozenSubmission,
@@ -36,7 +36,7 @@ type RuntimeStore = {
     | "grantExecution"
     | "revokeExecution"
     | "bindNativeSession"
-    | "nativeSession"
+    | "nativeSessionBinding"
   >;
   submissions: Pick<
     SubmissionRepository,
@@ -68,7 +68,7 @@ export class RuntimeService {
   private readonly environment: Record<string, string>;
   private launchGeneration = 0;
   private sessionStarted = false;
-  private currentGeneration: string | null = null;
+  private currentConnectionGeneration: string | null = null;
   private instanceDirectory: DirectoryIdentity | undefined;
   constructor(
     private readonly store: RuntimeStore,
@@ -123,7 +123,7 @@ export class RuntimeService {
     thread: ThreadContext,
     identity: DirectoryIdentity,
   ): Promise<void> {
-    const generation = this.launchGeneration;
+    const launchAttempt = this.launchGeneration;
     let binary: string;
     let sdkEntry: string;
     try {
@@ -148,9 +148,9 @@ export class RuntimeService {
     );
     await mkdir(sessionDirectory, { recursive: true, mode: 0o700 });
     const current = await identifyDirectory(thread.directory);
-    const grant = this.store.threads.executionGrant(thread.workspaceId);
+    const grant = this.store.threads.executionGrant(thread.workingDirectoryId);
     if (
-      generation !== this.launchGeneration ||
+      launchAttempt !== this.launchGeneration ||
       !grant ||
       grant.inode !== current.inode ||
       grant.device !== current.device ||
@@ -161,8 +161,8 @@ export class RuntimeService {
       throw Error("Native recovery requires lifetime single-writer evidence");
     const processInstanceId = randomUUID();
     const connectionGeneration = randomUUID();
-    this.currentGeneration = connectionGeneration;
-    this.update({ generation: connectionGeneration });
+    this.currentConnectionGeneration = connectionGeneration;
+    this.update({ connectionGeneration: connectionGeneration });
     const context = createHash("sha256")
       .update(JSON.stringify({ cwd: thread.directory, env: this.environment }))
       .digest("hex");
@@ -257,7 +257,7 @@ export class RuntimeService {
     stage: "disconnected" | "exited" | "failed",
     reason?: string,
   ): void {
-    if (!this.view || !this.currentGeneration) return;
+    if (!this.view || !this.currentConnectionGeneration) return;
     // Only known adapter codes are safe to persist; raw upstream errors may
     // contain credentials or content and cannot establish root attribution.
     const code = match(reason)
@@ -275,7 +275,7 @@ export class RuntimeService {
       this.record({
         traceId: this.view.traceId,
         requestId: this.view.traceId,
-        connectionId: this.currentGeneration,
+        connectionId: this.currentConnectionGeneration,
         ...(this.target
           ? { nativeProcessInstanceId: this.target.processInstanceId }
           : {}),
@@ -321,19 +321,22 @@ export class RuntimeService {
   }
   private receive(message: Exclude<HostMessage, { kind: "ready" }>): void {
     match(message)
-      .with({ kind: "idle-confirmed" }, ({ generation, afterSubmissionId }) => {
-        if (
-          generation !== this.currentGeneration ||
-          afterSubmissionId !== this.lastDispatchId
-        )
-          return;
-        this.idleConfirmed = true;
-        this.settleIdleSubmissions();
-      })
+      .with(
+        { kind: "idle-confirmed" },
+        ({ connectionGeneration, afterSubmissionId }) => {
+          if (
+            connectionGeneration !== this.currentConnectionGeneration ||
+            afterSubmissionId !== this.lastDispatchId
+          )
+            return;
+          this.idleConfirmed = true;
+          this.settleIdleSubmissions();
+        },
+      )
       .with(
         { kind: "operation-result" },
-        ({ traceId, generation, operation, status }) => {
-          if (generation !== this.currentGeneration) return;
+        ({ traceId, connectionGeneration, operation, status }) => {
+          if (connectionGeneration !== this.currentConnectionGeneration) return;
           if (status === "failed")
             this.update({
               traceId,
@@ -342,7 +345,7 @@ export class RuntimeService {
           this.record({
             traceId,
             requestId: traceId,
-            connectionId: generation,
+            connectionId: connectionGeneration,
             operation: `runtime:${operation}`,
             stage: status,
             ...(this.view ? { threadId: this.view.threadId } : {}),
@@ -353,7 +356,7 @@ export class RuntimeService {
         },
       )
       .with({ kind: "interactions" }, ({ view }) => {
-        if (view.generation === this.currentGeneration) {
+        if (view.connectionGeneration === this.currentConnectionGeneration) {
           if (
             view.unsupported ||
             view.items.some(
@@ -364,8 +367,8 @@ export class RuntimeService {
           this.update({ interactions: view });
         }
       })
-      .with({ kind: "control" }, ({ generation, state }) => {
-        if (generation !== this.currentGeneration) return;
+      .with({ kind: "control" }, ({ connectionGeneration, state }) => {
+        if (connectionGeneration !== this.currentConnectionGeneration) return;
         if (
           state.streaming ||
           state.compacting ||
@@ -377,7 +380,7 @@ export class RuntimeService {
         )
           this.idleConfirmed = false;
         this.update({
-          generation,
+          connectionGeneration,
           control: state,
           busy:
             state.streaming ||
@@ -440,8 +443,10 @@ export class RuntimeService {
     if (!thread || thread.threadId !== command.threadId)
       throw Error("Inactive Thread");
     if (!this.view) {
-      const trusted = !!this.store.threads.executionGrant(thread.workspaceId);
-      const previous = this.store.threads.nativeSession(thread.threadId);
+      const trusted = !!this.store.threads.executionGrant(
+        thread.workingDirectoryId,
+      );
+      const previous = this.store.threads.nativeSessionBinding(thread.threadId);
       const profile = (
         this.environment.OMP_PROFILE ??
         this.environment.PI_PROFILE ??
@@ -479,12 +484,14 @@ export class RuntimeService {
     if (command.kind === "answer") {
       if (
         !this.connection.connected ||
-        command.generation !== this.currentGeneration
+        command.connectionGeneration !== this.currentConnectionGeneration
       )
         throw Error("Stale answer target");
       if (command.answer.kind !== "cancel") {
         const identity = await identifyDirectory(thread.directory);
-        const grant = this.store.threads.executionGrant(thread.workspaceId);
+        const grant = this.store.threads.executionGrant(
+          thread.workingDirectoryId,
+        );
         if (
           !grant ||
           !this.instanceDirectory ||
@@ -498,10 +505,10 @@ export class RuntimeService {
     }
     if (command.kind === "dismiss") {
       // Local unknown cleanup: no directory grant needed (no native write),
-      // only the generation check to avoid dismissing a new connection's view.
+      // only the connectionGeneration check to avoid dismissing a new connection's view.
       if (
         !this.connection.connected ||
-        command.generation !== this.currentGeneration
+        command.connectionGeneration !== this.currentConnectionGeneration
       )
         throw Error("Stale dismiss target");
       this.connection.send({ kind: "dismiss", command });
@@ -510,12 +517,14 @@ export class RuntimeService {
     if (command.kind === "stop" || command.kind === "continue") {
       if (
         !this.connection.connected ||
-        command.generation !== this.currentGeneration
+        command.connectionGeneration !== this.currentConnectionGeneration
       )
         throw Error("Stale control target");
       if (command.kind === "continue") {
         const identity = await identifyDirectory(thread.directory);
-        const grant = this.store.threads.executionGrant(thread.workspaceId);
+        const grant = this.store.threads.executionGrant(
+          thread.workingDirectoryId,
+        );
         if (
           !grant ||
           !this.instanceDirectory ||
@@ -544,7 +553,7 @@ export class RuntimeService {
                 trusted: true,
                 phase: this.connection.connected
                   ? (this.view?.phase ?? "interrupted")
-                  : this.store.threads.nativeSession(command.threadId)
+                  : this.store.threads.nativeSessionBinding(command.threadId)
                     ? "interrupted"
                     : "allowed",
                 traceId: command.traceId,
@@ -565,14 +574,14 @@ export class RuntimeService {
       .with("revoke", async () => {
         this.launchGeneration++;
         this.admission.revoke(command.threadId);
-        if (this.connection.connected && this.currentGeneration)
+        if (this.connection.connected && this.currentConnectionGeneration)
           this.connection.send({
             kind: "control",
             command: {
               kind: "stop",
               threadId: command.threadId,
               traceId: command.traceId,
-              generation: this.currentGeneration,
+              connectionGeneration: this.currentConnectionGeneration,
             },
           });
         this.update({
@@ -589,7 +598,7 @@ export class RuntimeService {
         if (
           this.connection.connected ||
           this.sessionStarted ||
-          this.store.threads.nativeSession(command.threadId) ||
+          this.store.threads.nativeSessionBinding(command.threadId) ||
           this.view?.phase === "starting"
         )
           return;
@@ -675,7 +684,9 @@ export class RuntimeService {
       return this.coordinator.dispatch(command.submissionId);
     try {
       const identity = await identifyDirectory(thread.directory);
-      const grant = this.store.threads.executionGrant(thread.workspaceId);
+      const grant = this.store.threads.executionGrant(
+        thread.workingDirectoryId,
+      );
       if (
         !grant ||
         grant.directory !== identity.directory ||
@@ -731,13 +742,13 @@ export class RuntimeService {
     this.connection.attach(port);
   }
   async requestStop(): Promise<void> {
-    if (!this.view || !this.currentGeneration)
+    if (!this.view || !this.currentConnectionGeneration)
       throw Error("No current native target");
     await this.execute({
       kind: "stop",
       threadId: this.view.threadId,
       traceId: randomUUID(),
-      generation: this.currentGeneration,
+      connectionGeneration: this.currentConnectionGeneration,
     });
   }
   hasActiveWork(): boolean {

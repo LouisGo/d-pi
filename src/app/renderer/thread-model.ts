@@ -6,7 +6,7 @@ import {
 } from "../../modules/execution/renderer/public";
 import type { Draft, Failure } from "../../modules/input/contracts/public";
 import { DraftController } from "../../modules/input/core/public";
-import type { ThreadContext } from "../../modules/workspace/contracts/public";
+import type { ThreadContext } from "../../modules/threads/contracts/public";
 import type { DesktopBridge } from "../contracts/desktop-bridge";
 
 /** Application-owned Thread resources. Detaching a view does not dispose them. */
@@ -28,12 +28,12 @@ export class ThreadModel {
   ) {
     this.context = {
       threadId: draft.threadId,
-      workspaceId: draft.workspaceId,
+      workingDirectoryId: draft.workingDirectoryId,
       directory: draft.directory,
     };
     this.key = JSON.stringify([
       draft.threadId,
-      draft.workspaceId,
+      draft.workingDirectoryId,
       draft.directory,
     ]);
     this.controller = new DraftController(
@@ -78,7 +78,7 @@ export class ThreadModel {
   matches(context: ThreadContext): boolean {
     return (
       this.context.threadId === context.threadId &&
-      this.context.workspaceId === context.workspaceId &&
+      this.context.workingDirectoryId === context.workingDirectoryId &&
       this.context.directory === context.directory
     );
   }

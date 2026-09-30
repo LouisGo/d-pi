@@ -22,7 +22,7 @@ export const RuntimeViewSchema = z.strictObject({
   threadId: ThreadIdSchema,
   traceId: TraceIdSchema,
   configuration: UiMessageSchema,
-  generation: z.uuid().optional(),
+  connectionGeneration: z.uuid().optional(),
   control: ControlStateSchema.optional(),
   interactions: InteractionViewSchema.optional(),
   revision: z.number().int().nonnegative(),

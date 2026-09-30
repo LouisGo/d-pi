@@ -195,7 +195,7 @@ it("a surviving Host serves retained output through a new port after native disc
   expect(native.write).not.toHaveBeenCalled();
 });
 
-it("reports answer transport result under the original trace and generation without text", async () => {
+it("reports answer transport result under the original trace and connectionGeneration without text", async () => {
   const { messages, parent, threadId, target } = await running();
   native.observe({
     kind: "frame",
@@ -213,7 +213,7 @@ it("reports answer transport result under the original trace and generation with
       command: {
         kind: "answer",
         threadId,
-        generation: target.connectionGeneration,
+        connectionGeneration: target.connectionGeneration,
         traceId,
         id: "dialog",
         answer: { kind: "confirm", confirmed: true },
@@ -225,7 +225,7 @@ it("reports answer transport result under the original trace and generation with
   expect(messages).toContainEqual({
     kind: "operation-result",
     traceId,
-    generation: target.connectionGeneration,
+    connectionGeneration: target.connectionGeneration,
     operation: "answer",
     status: "acknowledged",
   });
@@ -273,7 +273,7 @@ it("a superseded continue reports rejection without invalidating the live connec
         kind: "continue",
         threadId,
         traceId,
-        generation: target.connectionGeneration,
+        connectionGeneration: target.connectionGeneration,
       },
     },
     ports: [],
@@ -282,7 +282,7 @@ it("a superseded continue reports rejection without invalidating the live connec
   expect(messages).toContainEqual({
     kind: "operation-result",
     traceId,
-    generation: target.connectionGeneration,
+    connectionGeneration: target.connectionGeneration,
     operation: "continue",
     status: "failed",
   });

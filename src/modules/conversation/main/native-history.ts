@@ -3,7 +3,7 @@ import { constants } from "node:fs";
 import { open, realpath } from "node:fs/promises";
 import { isAbsolute, relative, sep } from "node:path";
 import { z } from "zod";
-import type { NativeBinding } from "../../workspace/contracts/public";
+import type { NativeSessionBinding } from "../../threads/contracts/public";
 import type {
   HistoryCursor,
   HistoryEntry,
@@ -47,7 +47,7 @@ function classifyToolEffect(toolName: string): HistoryToolEffect {
 
 export async function readNativeHistory(
   root: string,
-  binding: NativeBinding,
+  binding: NativeSessionBinding,
   cursor: HistoryCursor | null = null,
   signal?: AbortSignal,
 ): Promise<HistoryPage> {
