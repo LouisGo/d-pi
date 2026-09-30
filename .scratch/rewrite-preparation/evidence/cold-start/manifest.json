@@ -1,0 +1,332 @@
+{
+  "date": "2026-09-30",
+  "note": "Evaluation-only snapshots; none applied to the production checkout. node_modules symlinks, generated build outputs and SDK resources excluded.",
+  "snapshots": [
+    {
+      "name": "baseline-local-query",
+      "baseCommit": "4adea8299a254df56664c0b3bc00c71abcd01383",
+      "directory": "/tmp/d-pi-rewrite-cold-baseline/local-query",
+      "patch": "baseline-local-query.patch",
+      "files": [
+        {
+          "path": "src/modules/files/renderer/queries.test.ts",
+          "newFile": false,
+          "removed": false,
+          "sha256": "80177e530deade0084a5a1b3267474ae71b6c481eccc6db1f066593a9f28528e"
+        },
+        {
+          "path": "src/modules/files/renderer/queries.ts",
+          "newFile": false,
+          "removed": false,
+          "sha256": "fb14f92b8c16fe0ce90ea097c8c1941ad3efacb6617266c811d8e4592a75f724"
+        }
+      ]
+    },
+    {
+      "name": "baseline-local-query-repeat",
+      "baseCommit": "4adea8299a254df56664c0b3bc00c71abcd01383",
+      "directory": "/tmp/d-pi-rewrite-cold-baseline/local-query-repeat",
+      "patch": "baseline-local-query-repeat.patch",
+      "files": [
+        {
+          "path": "src/modules/files/renderer/queries.ts",
+          "newFile": false,
+          "removed": false,
+          "sha256": "2d5261f60d6eebc48cf3dc3ca577401300d43c3870d735b7dc5516cefde3dff3"
+        },
+        {
+          "path": "src/modules/files/renderer/selected-content.test.ts",
+          "newFile": true,
+          "removed": false,
+          "sha256": "4d55ead92ddb207a835ad7d3890cf15e51ac55e232e8a20f1cfa5b9c21d0c75e"
+        }
+      ]
+    },
+    {
+      "name": "baseline-density",
+      "baseCommit": "4adea8299a254df56664c0b3bc00c71abcd01383",
+      "directory": "/tmp/d-pi-rewrite-cold-baseline/density",
+      "patch": "baseline-density.patch",
+      "files": [
+        {
+          "path": "src/app/renderer/styles/tokens.css",
+          "newFile": false,
+          "removed": false,
+          "sha256": "a06f38fe9d28eee1d01275ac169400cc20a188f494c1f29ea445085196d6b25a"
+        }
+      ]
+    },
+    {
+      "name": "baseline-interface",
+      "baseCommit": "4adea8299a254df56664c0b3bc00c71abcd01383",
+      "directory": "/tmp/d-pi-rewrite-cold-baseline/interface",
+      "patch": "baseline-interface.patch",
+      "files": [
+        {
+          "path": "docs/architecture/modules/files-editor.md",
+          "newFile": false,
+          "removed": false,
+          "sha256": "5dc31074679ab3ebc86fb8c10ffdf331858a000bf74d9df0b3b6a9cce512cedd"
+        },
+        {
+          "path": "docs/architecture/modules/flows.md",
+          "newFile": false,
+          "removed": false,
+          "sha256": "089189bcc8670b4c1401aa7be971489a61a78bf97ea17af5b5e63a67f4882844"
+        },
+        {
+          "path": "docs/architecture/modules/input-context.md",
+          "newFile": false,
+          "removed": false,
+          "sha256": "64f62aa4ae2876e381496345ef1836ebe46edb6d712d32c83402c2335850e24f"
+        },
+        {
+          "path": "src/app/renderer/app.tsx",
+          "newFile": false,
+          "removed": false,
+          "sha256": "c20c71470cf7de95f840ee01b43823074e827028790b7b960392f1b18a331b8e"
+        },
+        {
+          "path": "src/app/renderer/workbench/composer.tsx",
+          "newFile": false,
+          "removed": false,
+          "sha256": "ae4792838adfc93f839c6d149721279158a35172939631a99ae1050a80b26a84"
+        },
+        {
+          "path": "src/app/renderer/workbench/file-workspace.tsx",
+          "newFile": false,
+          "removed": false,
+          "sha256": "76eef9cb2bd8452ecbfc539c8ba1d1e0d61530fee1c947fd252b1871858a2997"
+        },
+        {
+          "path": "src/modules/files/AGENTS.md",
+          "newFile": false,
+          "removed": false,
+          "sha256": "3aed0dfe0d81e52e64e534e3c8528dbb05c6155201bb0c7f2c124e6d02638e37"
+        },
+        {
+          "path": "src/modules/files/core/public.ts",
+          "newFile": false,
+          "removed": false,
+          "sha256": "6b3eaf04e3e2127dc020a5d59d9bef5756af48cd4b770fa7331098ef62fea2bf"
+        },
+        {
+          "path": "src/modules/files/core/selection.test.ts",
+          "newFile": false,
+          "removed": false,
+          "sha256": "b368af18422ed04b5dc8b1d4a81791855e83c573638bfa5777d8584c16cdb75b"
+        },
+        {
+          "path": "src/modules/files/core/selection.ts",
+          "newFile": false,
+          "removed": false,
+          "sha256": "9ae7d20f126daf57d0b270efe449239e711b292406c15628e1d70ddedaf23bcb"
+        },
+        {
+          "path": "src/modules/files/renderer/monaco-viewer.tsx",
+          "newFile": false,
+          "removed": false,
+          "sha256": "df6cc9743263abb631e43d46c63eb4cdcae026f203b8c0fb1fbc8821d8119905"
+        },
+        {
+          "path": "src/modules/input/AGENTS.md",
+          "newFile": false,
+          "removed": false,
+          "sha256": "7444e83f0ce8e05ec36ddb3f2edc199b1c1ae0f75a9379b5b150613a5e36ed8b"
+        },
+        {
+          "path": "src/modules/input/core/references/serialize.ts",
+          "newFile": false,
+          "removed": false,
+          "sha256": "6e4c2c733900bca966781c1b49dbe42f145fe7154c2484ea0b14aff2163348ad"
+        },
+        {
+          "path": "src/modules/input/renderer/public.ts",
+          "newFile": false,
+          "removed": false,
+          "sha256": "e33608c9ef47d40243e822d638729fce4a6fbdbcb61e3cfc18c9e80ab5e093c8"
+        },
+        {
+          "path": "src/modules/input/renderer/selection-insert.test.ts",
+          "newFile": false,
+          "removed": false,
+          "sha256": "e522791c35335446e4140bc1dbb7bf3f916dd3600794ea2ef6f6ff2fc75b531d"
+        },
+        {
+          "path": "src/modules/input/renderer/selection-insert.ts",
+          "newFile": false,
+          "removed": false,
+          "sha256": "41f09091c1fd3f36c3c615ece904690549121dd71a29d99220c326d39016f3a3"
+        },
+        {
+          "path": "src/modules/files/core/code-view.test.ts",
+          "newFile": true,
+          "removed": false,
+          "sha256": "61be2c0acf5a559e08fae5c791403433e28e25e0a0372e5e95d5fb59c81b4f03"
+        },
+        {
+          "path": "src/modules/files/core/code-view.ts",
+          "newFile": true,
+          "removed": false,
+          "sha256": "0f16d48031986968ec6b6a459321d2ae4f71122bf4355f60a864f80f829072e5"
+        }
+      ]
+    },
+    {
+      "name": "final-local-query",
+      "baseCommit": "f5e998f1e3f4c5ed1deaa0faf0e33ae75912e379",
+      "directory": "/tmp/d-pi-rewrite-cold-final/local-query",
+      "patch": "final-local-query.patch",
+      "files": [
+        {
+          "path": "architecture/dependencies.generated.json",
+          "newFile": false,
+          "removed": false,
+          "sha256": "f4bb0ba5e929735bceb5e848b341a127b7e6fcd46d52843b1615244c97d056d1"
+        },
+        {
+          "path": "src/modules/files/renderer/queries.test.ts",
+          "newFile": false,
+          "removed": false,
+          "sha256": "950d4e9081d89fcc1784f69f698449ad1046cd70e9bd6483ae3e124c0c6108e0"
+        },
+        {
+          "path": "tests/integration/file-content-query.integration.test.ts",
+          "newFile": true,
+          "removed": false,
+          "sha256": "567c9f77a783879c9dfbe82a80fc90e8e7f2fa745cc82c251742ac3a16468859"
+        }
+      ]
+    },
+    {
+      "name": "final-density",
+      "baseCommit": "f5e998f1e3f4c5ed1deaa0faf0e33ae75912e379",
+      "directory": "/tmp/d-pi-rewrite-cold-final/density",
+      "patch": "final-density.patch",
+      "files": [
+        {
+          "path": "src/app/renderer/styles/tokens.css",
+          "newFile": false,
+          "removed": false,
+          "sha256": "a06f38fe9d28eee1d01275ac169400cc20a188f494c1f29ea445085196d6b25a"
+        }
+      ]
+    },
+    {
+      "name": "final-interface",
+      "baseCommit": "f5e998f1e3f4c5ed1deaa0faf0e33ae75912e379",
+      "directory": "/tmp/d-pi-rewrite-cold-final/interface",
+      "patch": "final-interface.patch",
+      "files": [
+        {
+          "path": "architecture/dependencies.generated.json",
+          "newFile": false,
+          "removed": false,
+          "sha256": "47ea483d5764d6a910b405c28339ce3fbbc29e4b488f65fc809f74e507c7ce18"
+        },
+        {
+          "path": "docs/architecture/modules/files-editor.md",
+          "newFile": false,
+          "removed": false,
+          "sha256": "d2dfd2aaf7f7ae64d98fb0fcd0dd5b794e4d9a694fdae3d01f8c2ef72b0eb708"
+        },
+        {
+          "path": "docs/architecture/modules/flows.md",
+          "newFile": false,
+          "removed": false,
+          "sha256": "3f91f8213a01bce581ac7d077fe7b2c54e2fd73d42174e4794360dcfe710295d"
+        },
+        {
+          "path": "docs/architecture/modules/input-context.md",
+          "newFile": false,
+          "removed": false,
+          "sha256": "17e74123302cfa19da431fa778f6d0d5cb20ed5a0404261540cb0387c865e88a"
+        },
+        {
+          "path": "src/app/renderer/app.tsx",
+          "newFile": false,
+          "removed": false,
+          "sha256": "274ad27a73b58b26ab089851475b99d74245c423818232d8098e442d61e3b980"
+        },
+        {
+          "path": "src/app/renderer/workbench/composer.tsx",
+          "newFile": false,
+          "removed": false,
+          "sha256": "8d31b9b8342b58501db02e1a89503b4d25848b5a67d56c393c563606bd0e68d2"
+        },
+        {
+          "path": "src/app/renderer/workbench/file-workspace.tsx",
+          "newFile": false,
+          "removed": false,
+          "sha256": "cd118164dff8c839c7efc67f6d4437ab6ed70e3fe516c54034c273ee39d0706a"
+        },
+        {
+          "path": "src/modules/files/contracts/public.ts",
+          "newFile": false,
+          "removed": false,
+          "sha256": "e1d59427965c532335a6b22f03c9642bdf29f3168fd114e8174797ffe296b5ca"
+        },
+        {
+          "path": "src/modules/files/core/selection.ts",
+          "newFile": false,
+          "removed": false,
+          "sha256": "68dfd52e3ee0714e2a4ebf8de4b741c8071a6b4e31bcc6203a405174f4745666"
+        },
+        {
+          "path": "src/modules/input/core/references/serialize.ts",
+          "newFile": false,
+          "removed": false,
+          "sha256": "2170309bbf554241f458708ec917be6319c98d050285f05c0ead9019c91a2c66"
+        },
+        {
+          "path": "src/modules/input/renderer/file-reference-node.ts",
+          "newFile": false,
+          "removed": false,
+          "sha256": "471bfb8c5d16b9d4e76dd1db2969d60bd6f758a062d0aeff69070ed6a789483b"
+        },
+        {
+          "path": "src/modules/input/renderer/public.ts",
+          "newFile": false,
+          "removed": false,
+          "sha256": "18a607c97f01b796b1b1f052dcc70e4298045e1d3c0e4336d6d11f05fab7d365"
+        },
+        {
+          "path": "src/modules/input/renderer/selection-insert.ts",
+          "newFile": false,
+          "removed": false,
+          "sha256": "4f03c666fa59fa216bf6c3aa33ab9f7167acc95ef31f8002adf6e1bd7b0e680b"
+        },
+        {
+          "path": "src/modules/files/contracts/selection.ts",
+          "newFile": true,
+          "removed": false,
+          "sha256": "fcbba264d7bdc56ba9d037740b488bbf05a17c5007cae3e310144e75276b6004"
+        },
+        {
+          "path": "src/modules/input/renderer/selection-attachment.test.ts",
+          "newFile": true,
+          "removed": false,
+          "sha256": "eeee00d57b787d6720c3705d42e2eae72a575af61858935da3cc04953bcd4ac8"
+        },
+        {
+          "path": "src/modules/input/renderer/selection-attachment.ts",
+          "newFile": true,
+          "removed": false,
+          "sha256": "befd5aef6bc4d4b3dcdf8f3da74d066146351660091e3a417aefdec13be74123"
+        },
+        {
+          "path": "tests/integration/file-selection.integration.test.ts",
+          "newFile": true,
+          "removed": false,
+          "sha256": "d76937b5f8e807ecb7a033f9d4f31b021975a3ab74b538ba4c42bdcb83dd019d"
+        }
+      ]
+    }
+  ],
+  "patchFormat": "git no-index with zero context; use git apply --unidiff-zero on the matching base if reconstructing",
+  "patchCheck": {
+    "method": "git apply --check --unidiff-zero against exact base commits in an independent temporary clone",
+    "snapshotsPassed": 7,
+    "productionModified": false
+  }
+}

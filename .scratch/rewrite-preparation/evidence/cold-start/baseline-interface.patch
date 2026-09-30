@@ -1,0 +1,682 @@
+diff --git a/docs/architecture/modules/files-editor.md b/docs/architecture/modules/files-editor.md
+index 6e9cb3f..f858be5 100644
+--- a/docs/architecture/modules/files-editor.md
++++ b/docs/architecture/modules/files-editor.md
+@@ -7,0 +8 @@
++- `core/public.ts` 用 `fileCodeView` / `diffCodeView` 交付带路径和版本的显示快照，`captureCodeViewSelection` 按所选侧捕获 `FrozenFileSelection`；成功合同包含准确原文、来源、路径、版本与行列，失败保持 `invalid`。应用层只转交这些结果，不重拼来源或引用正文。
+@@ -15,0 +17,2 @@ Main 的文件功能在授权范围内读取实际文件，返回来源、版本
++选区行列按 Monaco 的 UTF-16 规则映射到原始显示快照；捕获不使用会统一换行的 `getValue()`，保留原文的 LF、CRLF 和 CR。成功捕获复制并冻结所有原始值，输入接收后不再读取或替换为最新文件内容。
++
+diff --git a/docs/architecture/modules/flows.md b/docs/architecture/modules/flows.md
+index 871caa7..7c12e85 100644
+--- a/docs/architecture/modules/flows.md
++++ b/docs/architecture/modules/flows.md
+@@ -30,0 +31 @@ flowchart TB
++| 文件选区 → 输入 | files 的 `FrozenFileSelection`：准确原文、来源、路径、版本、行列；input 的插入意图另带 ID 与 Thread | 原子插入并沿用冻结值持久化/恢复；不重新拼接来源、不读取最新文件替换内容 | files 返回无效选区原因；input 保留原草稿 |
+diff --git a/docs/architecture/modules/input-context.md b/docs/architecture/modules/input-context.md
+index 29ae669..33ffcfd 100644
+--- a/docs/architecture/modules/input-context.md
++++ b/docs/architecture/modules/input-context.md
+@@ -8,0 +9 @@
++- `renderer/public.ts` 暴露 `SelectionAttachment` 与 `appendSelectionReference`：交接意图携带独立插入 ID、目标 Thread 和 files 的 `FrozenFileSelection`，input 将冻结值插入原子引用。应用层保留 Thread / 插入 ID 对齐，沿用这一个合同；引用持久化仍使用既有 `d-pi:file-selection:v1`，不改变草稿或提交协议。
+diff --git a/src/app/renderer/app.tsx b/src/app/renderer/app.tsx
+index d6fcff7..7d938e4 100644
+--- a/src/app/renderer/app.tsx
++++ b/src/app/renderer/app.tsx
+@@ -1 +1 @@
+-import { type ComponentType, useState } from "react";
++import { useState } from "react";
+@@ -10,2 +10,2 @@ import { Button } from "@/components/ui/button";
+-import type { FrozenSelection } from "../../modules/files/core/public";
+-import type { CodeView } from "../../modules/files/renderer/public";
++import type { FileEditorComponent } from "../../modules/files/renderer/public";
++import type { SelectionAttachment } from "../../modules/input/renderer/public";
+@@ -25,6 +25 @@ export function App({
+-  editor?:
+-    | ComponentType<{
+-        view: CodeView;
+-        onSelection: (value: FrozenSelection) => void;
+-      }>
+-    | undefined;
++  editor?: FileEditorComponent | undefined;
+@@ -35,5 +30,2 @@ export function App({
+-  const [selectionAttachment, setSelectionAttachment] = useState<{
+-    id: string;
+-    threadId: string;
+-    selection: Extract<FrozenSelection, { kind: "selection" }>;
+-  } | null>(null);
++  const [selectionAttachment, setSelectionAttachment] =
++    useState<SelectionAttachment | null>(null);
+diff --git a/src/app/renderer/workbench/composer.tsx b/src/app/renderer/workbench/composer.tsx
+index 3f20de2..e13c88e 100644
+--- a/src/app/renderer/workbench/composer.tsx
++++ b/src/app/renderer/workbench/composer.tsx
+@@ -19 +18,0 @@ import { shouldSend } from "../../../modules/execution/renderer/public";
+-import type { FrozenSelection } from "../../../modules/files/core/public";
+@@ -27,0 +27 @@ import {
++  type SelectionAttachment,
+@@ -42,5 +42 @@ export function Composer({
+-  selectionAttachment?: {
+-    id: string;
+-    threadId: string;
+-    selection: Extract<FrozenSelection, { kind: "selection" }>;
+-  } | null;
++  selectionAttachment?: SelectionAttachment | null;
+diff --git a/src/app/renderer/workbench/file-workspace.tsx b/src/app/renderer/workbench/file-workspace.tsx
+index 8008ea2..53df465 100644
+--- a/src/app/renderer/workbench/file-workspace.tsx
++++ b/src/app/renderer/workbench/file-workspace.tsx
+@@ -2 +2 @@ import { useQueryClient } from "@tanstack/react-query";
+-import { type ComponentType, Suspense, useMemo, useState } from "react";
++import { Suspense, useMemo, useState } from "react";
+@@ -19,0 +20,2 @@ import {
++  diffCodeView,
++  type FrozenFileSelection,
+@@ -20,0 +23 @@ import {
++  fileCodeView,
+@@ -23 +26,4 @@ import {
+-import type { CodeView } from "../../../modules/files/renderer/public";
++import type {
++  CodeView,
++  FileEditorComponent,
++} from "../../../modules/files/renderer/public";
+@@ -32,5 +37,0 @@ import { readInFlight } from "./refresh-state";
+-type EditorComponent = ComponentType<{
+-  view: CodeView;
+-  onSelection: (value: FrozenSelection) => void;
+-}>;
+-
+@@ -81,4 +82,2 @@ export function FileWorkspace({
+-  editor?: EditorComponent | undefined;
+-  onAttach: (
+-    selection: Extract<FrozenSelection, { kind: "selection" }>,
+-  ) => void;
++  editor?: FileEditorComponent | undefined;
++  onAttach: (selection: FrozenFileSelection) => void;
+@@ -138,9 +137 @@ export function FileWorkspace({
+-      return {
+-        kind: "file",
+-        text: file.text,
+-        source: {
+-          path: file.path,
+-          source: `${t("ui.files.workingTree")} · ${file.capturedAt}`,
+-          version: file.version,
+-        },
+-      };
++      return fileCodeView(file, t("ui.files.workingTree"));
+@@ -148,25 +139 @@ export function FileWorkspace({
+-      return {
+-        kind: "diff",
+-        left: {
+-          text: diffReply.left.kind === "text" ? diffReply.left.text : "",
+-          source: {
+-            path: diffReply.previousPath ?? diffReply.path,
+-            source: diffReply.left.source,
+-            version:
+-              diffReply.left.kind === "text"
+-                ? diffReply.left.version
+-                : "absent",
+-          },
+-        },
+-        right: {
+-          text: diffReply.right.kind === "text" ? diffReply.right.text : "",
+-          source: {
+-            path: diffReply.path,
+-            source: diffReply.right.source,
+-            version:
+-              diffReply.right.kind === "text"
+-                ? diffReply.right.version
+-                : "absent",
+-          },
+-        },
+-      };
++      return diffCodeView(diffReply);
+diff --git a/src/modules/files/AGENTS.md b/src/modules/files/AGENTS.md
+index be44da7..eb9a7eb 100644
+--- a/src/modules/files/AGENTS.md
++++ b/src/modules/files/AGENTS.md
+@@ -4 +4 @@
+-- `core/public.ts` 是选区、代码视图和版本化来源的无平台规则公开面。
++- `core/public.ts` 是选区、代码视图和版本化来源的无平台规则公开面；`FrozenFileSelection` 由 files 捕获并交付准确原文，所选侧与原始换行不能被编辑器规范化值替代。
+diff --git a/src/modules/files/core/public.ts b/src/modules/files/core/public.ts
+index f763eb9..d0b8334 100644
+--- a/src/modules/files/core/public.ts
++++ b/src/modules/files/core/public.ts
+@@ -3 +2,0 @@ export {
+-  captureSelection,
+@@ -5 +4,3 @@ export {
+-  type FrozenSelection,
++  type DiffCodeSource,
++  diffCodeView,
++  fileCodeView,
+@@ -8,0 +10,6 @@ export {
++} from "./code-view";
++export {
++  captureCodeViewSelection,
++  captureSelection,
++  type FrozenFileSelection,
++  type FrozenSelection,
+diff --git a/src/modules/files/core/selection.test.ts b/src/modules/files/core/selection.test.ts
+index 8a8d835..a8f4a3f 100644
+--- a/src/modules/files/core/selection.test.ts
++++ b/src/modules/files/core/selection.test.ts
+@@ -3 +2,0 @@ import {
+-  captureSelection,
+@@ -7 +6,2 @@ import {
+-} from "./selection";
++} from "./code-view";
++import { captureSelection } from "./selection";
+@@ -42,0 +43,26 @@ test("CRLF view text keeps Monaco columns aligned with the raw slice", () => {
++  expect(
++    captureSelection(
++      text,
++      { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 4 },
++      source,
++    ),
++  ).toEqual({ kind: "invalid", reason: "range" });
++});
++
++test("captures mixed source line endings without normalizing the original text", () => {
++  const value = captureSelection(
++    "pre😀\r\n  第二行\rtail\nlast",
++    { startLineNumber: 1, startColumn: 4, endLineNumber: 3, endColumn: 3 },
++    { path: "src/mixed.ts", source: "index", version: "blob:captured" },
++  );
++  expect(value).toEqual({
++    kind: "selection",
++    path: "src/mixed.ts",
++    source: "index",
++    version: "blob:captured",
++    text: "😀\r\n  第二行\rta",
++    startLine: 1,
++    startColumn: 4,
++    endLine: 3,
++    endColumn: 3,
++  });
+diff --git a/src/modules/files/core/selection.ts b/src/modules/files/core/selection.ts
+index dadde49..cf3ad7a 100644
+--- a/src/modules/files/core/selection.ts
++++ b/src/modules/files/core/selection.ts
+@@ -0,0 +1 @@
++import { match } from "ts-pattern";
+@@ -1,0 +3 @@ import { utf8ByteLength } from "../../../shared/text/utf8";
++import type { CodeViewModel, SelectionSource } from "./code-view";
+@@ -9,4 +11,8 @@ export interface TextRange {
+-export interface SelectionSource {
+-  path: string;
+-  source: string;
+-  version: string;
++/** files-owned handoff: the selected source and exact captured text travel together. */
++export interface FrozenFileSelection extends SelectionSource {
++  readonly kind: "selection";
++  readonly text: string;
++  readonly startLine: number;
++  readonly startColumn: number;
++  readonly endLine: number;
++  readonly endColumn: number;
+@@ -15 +20,0 @@ export type FrozenSelection =
+-  | { kind: "invalid"; reason: "empty" | "range" | "too-large" }
+@@ -17,10 +22,4 @@ export type FrozenSelection =
+-      kind: "selection";
+-      path: string;
+-      source: string;
+-      version: string;
+-      text: string;
+-      startLine: number;
+-      startColumn: number;
+-      endLine: number;
+-      endColumn: number;
+-    };
++      readonly kind: "invalid";
++      readonly reason: "empty" | "range" | "too-large";
++    }
++  | FrozenFileSelection;
+@@ -28,27 +26,0 @@ const MAX_SELECTION_BYTES = 64 * 1024;
+-/** Per-pane Monaco diff budget. Full file reads allow 5 MiB, but running the
+- * diff algorithm on two multi-megabyte panes hangs the renderer. Sides above
+- * this limit stay readable as versions/sources; only the visual compare waits. */
+-export const MAX_DIFF_PANE_CHARS = 512 * 1024;
+-export interface CodePane {
+-  text: string;
+-  source: SelectionSource;
+-}
+-export type CodeViewModel =
+-  | { kind: "file"; text: string; source: SelectionSource }
+-  | { kind: "diff"; left: CodePane; right: CodePane };
+-/** Stable editor identity: locale display strings must not recreate Monaco. */
+-export function codeViewIdentity(view: CodeViewModel): string {
+-  if (view.kind === "file")
+-    return `file|${view.source.path}|${view.source.version}|${view.text.length}`;
+-  return (
+-    `diff|${view.left.source.path}|${view.left.source.version}|${view.left.text.length}` +
+-    `|${view.right.source.path}|${view.right.source.version}|${view.right.text.length}`
+-  );
+-}
+-export function isDiffViewTooLarge(view: CodeViewModel): boolean {
+-  return (
+-    view.kind === "diff" &&
+-    (view.left.text.length > MAX_DIFF_PANE_CHARS ||
+-      view.right.text.length > MAX_DIFF_PANE_CHARS)
+-  );
+-}
+@@ -60 +32,9 @@ export function captureSelection(
+-  const lines = text.split("\n");
++  // Monaco treats CRLF, CR and LF as line breaks and may normalize them in
++  // getValue(). Map its UTF-16 columns to the original snapshot instead.
++  const lines: { start: number; length: number }[] = [];
++  let lineStart = 0;
++  for (const match of text.matchAll(/\r\n|\r|\n/g)) {
++    lines.push({ start: lineStart, length: match.index - lineStart });
++    lineStart = match.index + match[0].length;
++  }
++  lines.push({ start: lineStart, length: text.length - lineStart });
+@@ -83,3 +63 @@ export function captureSelection(
+-    lines.slice(0, line - 1).reduce((sum, part) => sum + part.length + 1, 0) +
+-    column -
+-    1;
++    (lines[line - 1]?.start ?? 0) + column - 1;
+@@ -93,2 +71,2 @@ export function captureSelection(
+-  return {
+-    kind: "selection",
++  return Object.freeze({
++    kind: "selection" as const,
+@@ -103 +81,16 @@ export function captureSelection(
+-  };
++  });
++}
++
++/** Capture the chosen pane's raw snapshot, never Monaco's normalized getValue(). */
++export function captureCodeViewSelection(
++  view: CodeViewModel,
++  side: "file" | "left" | "right",
++  range: TextRange,
++): FrozenSelection {
++  const pane = match(view)
++    .with({ kind: "file" }, (file) => (side === "file" ? file : null))
++    .with({ kind: "diff" }, (diff) => (side === "file" ? null : diff[side]))
++    .exhaustive();
++  return pane
++    ? captureSelection(pane.text, range, pane.source)
++    : { kind: "invalid", reason: "range" };
+diff --git a/src/modules/files/renderer/monaco-viewer.tsx b/src/modules/files/renderer/monaco-viewer.tsx
+index 7d9e3bf..46cd1bb 100644
+--- a/src/modules/files/renderer/monaco-viewer.tsx
++++ b/src/modules/files/renderer/monaco-viewer.tsx
+@@ -15 +15 @@ import type {
+-import { captureSelection, codeViewIdentity } from "../core/public";
++import { captureCodeViewSelection, codeViewIdentity } from "../core/public";
+@@ -114,6 +113,0 @@ export function MonacoViewer({
+-    const sourceOf = (side: "file" | "left" | "right"): SelectionSource => {
+-      const current = viewRef.current;
+-      if (current.kind === "file") return current.source;
+-      if (side === "left") return current.left.source;
+-      return current.right.source;
+-    };
+@@ -127 +121,6 @@ export function MonacoViewer({
+-          if (current)
++          if (current) {
++            // React can expose the next view before this mounted model is
++            // replaced. Only refresh display labels for the same snapshot.
++            const latest = viewRef.current;
++            const snapshot =
++              codeViewIdentity(latest) === identity ? latest : view;
+@@ -129 +128 @@ export function MonacoViewer({
+-              captureSelection(current.getValue(), selection, sourceOf(side)),
++              captureCodeViewSelection(snapshot, side, selection),
+@@ -130,0 +130 @@ export function MonacoViewer({
++          }
+diff --git a/src/modules/input/AGENTS.md b/src/modules/input/AGENTS.md
+index 6f68e22..b73daab 100644
+--- a/src/modules/input/AGENTS.md
++++ b/src/modules/input/AGENTS.md
+@@ -6,0 +7 @@
++- 文件选区接收 files 的 `FrozenFileSelection`，通过 `renderer/public.ts` 的 `SelectionAttachment` / `appendSelectionReference` 插入原子引用；应用层不另定义同构交接或重拼正文。
+diff --git a/src/modules/input/core/references/serialize.ts b/src/modules/input/core/references/serialize.ts
+index 0da894b..a4b6fa1 100644
+--- a/src/modules/input/core/references/serialize.ts
++++ b/src/modules/input/core/references/serialize.ts
+@@ -3 +3 @@ import { utf8ByteLength } from "../../../../shared/text/utf8";
+-import type { FrozenSelection } from "../../../files/core/public";
++import type { FrozenFileSelection } from "../../../files/core/public";
+@@ -5 +4,0 @@ import type { FrozenSelection } from "../../../files/core/public";
+-type Selection = Extract<FrozenSelection, { kind: "selection" }>;
+@@ -8 +7 @@ export type DraftBlock =
+-  | { kind: "selection"; value: Selection };
++  | { kind: "selection"; value: FrozenFileSelection };
+@@ -23 +22 @@ const ReferenceHeaderSchema = z.strictObject({
+-export function serializeReference(value: Selection): string {
++export function serializeReference(value: FrozenFileSelection): string {
+@@ -52 +51 @@ function readReference(
+-): { value: Selection; next: number } | null {
++): { value: FrozenFileSelection; next: number } | null {
+diff --git a/src/modules/input/renderer/public.ts b/src/modules/input/renderer/public.ts
+index eca8dee..a3a5a51 100644
+--- a/src/modules/input/renderer/public.ts
++++ b/src/modules/input/renderer/public.ts
+@@ -8 +8,4 @@ export { handlePlainTextPaste } from "./plain-text-paste";
+-export { appendSelectionReference } from "./selection-insert";
++export {
++  appendSelectionReference,
++  type SelectionAttachment,
++} from "./selection-insert";
+diff --git a/src/modules/input/renderer/selection-insert.test.ts b/src/modules/input/renderer/selection-insert.test.ts
+index 44b802e..3f8626e 100644
+--- a/src/modules/input/renderer/selection-insert.test.ts
++++ b/src/modules/input/renderer/selection-insert.test.ts
+@@ -4,2 +4,9 @@ import { expect, test } from "vitest";
+-import { captureSelection } from "../../files/core/public";
+-import { serializeReference } from "../core/references/serialize";
++import {
++  captureCodeViewSelection,
++  captureSelection,
++  diffCodeView,
++} from "../../files/core/public";
++import {
++  parseDraftBlocks,
++  serializeReference,
++} from "../core/references/serialize";
+@@ -46,0 +54,79 @@ test("appends an atomic selection reference and restores exact text from persist
++
++test.each([
++  {
++    side: "left" as const,
++    text: "😀\r\n[/d-pi:file-selection]\r旧文",
++    source: "HEAD: src/a.ts",
++    version: "blob:old",
++  },
++  {
++    side: "right" as const,
++    text: "😀\n[/d-pi:file-selection]\n新文",
++    source: "index: src/a.ts",
++    version: "blob:new",
++  },
++])(
++  "inserts and restores the frozen $side diff handoff at the same path",
++  ({ side, text, source, version }) => {
++    const view = diffCodeView({
++      path: "src/a.ts",
++      left: {
++        kind: "text",
++        text: "prefix😀\r\n[/d-pi:file-selection]\r旧文",
++        source: "HEAD: src/a.ts",
++        version: "blob:old",
++      },
++      right: {
++        kind: "text",
++        text: "prefix😀\n[/d-pi:file-selection]\n新文",
++        source: "index: src/a.ts",
++        version: "blob:new",
++      },
++    });
++    const captured = captureCodeViewSelection(view, side, {
++      startLineNumber: 1,
++      startColumn: 7,
++      endLineNumber: 3,
++      endColumn: 3,
++    });
++    if (captured.kind !== "selection") throw Error("Selection capture failed");
++    const expected = {
++      kind: "selection",
++      path: "src/a.ts",
++      source,
++      version,
++      text,
++      startLine: 1,
++      startColumn: 7,
++      endLine: 3,
++      endColumn: 3,
++    };
++    expect(captured).toEqual(expected);
++
++    const schema = getSchema(plainTextEditorOptions.extensions);
++    const state = EditorState.create({
++      schema,
++      doc: schema.nodeFromJSON(draftDocument("existing\n\ndraft")),
++    });
++    const inserted = state.apply(appendSelectionReference(state, captured));
++    const editor = new Editor({
++      ...plainTextEditorOptions,
++      element: null,
++      content: inserted.doc.toJSON(),
++    });
++    try {
++      const persisted = editor.getText({ blockSeparator: "\n" });
++      expect(parseDraftBlocks(persisted)).toEqual([
++        { kind: "paragraph", text: "existing" },
++        { kind: "paragraph", text: "" },
++        { kind: "paragraph", text: "draft" },
++        { kind: "selection", value: expected },
++      ]);
++      expect(replaceDraftText(editor, persisted)).toBe(true);
++      expect(editor.state.doc.child(3).attrs).toMatchObject(expected);
++      expect(editor.getText({ blockSeparator: "\n" })).toBe(persisted);
++    } finally {
++      editor.destroy();
++    }
++  },
++);
+diff --git a/src/modules/input/renderer/selection-insert.ts b/src/modules/input/renderer/selection-insert.ts
+index 1b84a3b..0611be4 100644
+--- a/src/modules/input/renderer/selection-insert.ts
++++ b/src/modules/input/renderer/selection-insert.ts
+@@ -2 +2,8 @@ import type { EditorState, Transaction } from "@tiptap/pm/state";
+-import type { FrozenSelection } from "../../files/core/public";
++import type { FrozenFileSelection } from "../../files/core/public";
++
++/** One insertion intent; its identity is separate from the captured file version. */
++export interface SelectionAttachment {
++  readonly id: string;
++  readonly threadId: string;
++  readonly selection: FrozenFileSelection;
++}
+@@ -6 +13 @@ export function appendSelectionReference(
+-  value: Extract<FrozenSelection, { kind: "selection" }>,
++  value: FrozenFileSelection,
+diff --git a/src/modules/files/core/code-view.test.ts b/src/modules/files/core/code-view.test.ts
+new file mode 100644
+index 0000000..03fc5eb
+--- /dev/null
++++ b/src/modules/files/core/code-view.test.ts
+@@ -0,0 +1,106 @@
++import { expect, test } from "vitest";
++import { diffCodeView, fileCodeView } from "./code-view";
++import { captureCodeViewSelection } from "./selection";
++
++test("file view hands off the original text and capture source before later file changes", () => {
++  const reply = {
++    kind: "text" as const,
++    path: "src/a;\n.ts",
++    text: "pre😀\r\n  第二行\rtail\nlast",
++    version: "sha256:original",
++    capturedAt: "2026-09-30T00:00:00Z",
++    bytes: 32,
++    coverage: "complete" as const,
++  };
++  const view = fileCodeView(reply, "working tree");
++  const selection = captureCodeViewSelection(view, "file", {
++    startLineNumber: 1,
++    startColumn: 4,
++    endLineNumber: 3,
++    endColumn: 3,
++  });
++  reply.path = "src/renamed.ts";
++  reply.text = "changed";
++  reply.version = "sha256:changed";
++  reply.capturedAt = "2026-09-30T00:01:00Z";
++  expect(selection).toEqual({
++    kind: "selection",
++    path: "src/a;\n.ts",
++    source: "working tree · 2026-09-30T00:00:00Z",
++    version: "sha256:original",
++    text: "😀\r\n  第二行\rta",
++    startLine: 1,
++    startColumn: 4,
++    endLine: 3,
++    endColumn: 3,
++  });
++});
++
++test("diff selections retain the chosen side's path, source, version and original text", () => {
++  const view = diffCodeView({
++    path: "src/current.ts",
++    previousPath: "src/previous.ts",
++    left: {
++      kind: "text",
++      text: "old😀\r\nleft",
++      source: "HEAD: src/previous.ts",
++      version: "blob:old",
++    },
++    right: {
++      kind: "text",
++      text: "new😀\nright",
++      source: "index: src/current.ts",
++      version: "blob:new",
++    },
++  });
++  const range = {
++    startLineNumber: 1,
++    startColumn: 4,
++    endLineNumber: 2,
++    endColumn: 3,
++  };
++  expect(captureCodeViewSelection(view, "left", range)).toEqual({
++    kind: "selection",
++    path: "src/previous.ts",
++    source: "HEAD: src/previous.ts",
++    version: "blob:old",
++    text: "😀\r\nle",
++    startLine: 1,
++    startColumn: 4,
++    endLine: 2,
++    endColumn: 3,
++  });
++  expect(captureCodeViewSelection(view, "right", range)).toEqual({
++    kind: "selection",
++    path: "src/current.ts",
++    source: "index: src/current.ts",
++    version: "blob:new",
++    text: "😀\nri",
++    startLine: 1,
++    startColumn: 4,
++    endLine: 2,
++    endColumn: 3,
++  });
++});
++
++test("an absent diff side and a mismatched pane never create a file reference", () => {
++  const view = diffCodeView({
++    path: "new.ts",
++    left: { kind: "absent", source: "HEAD: absent" },
++    right: { kind: "text", text: "new", source: "index", version: "blob:new" },
++  });
++  const range = {
++    startLineNumber: 1,
++    startColumn: 1,
++    endLineNumber: 1,
++    endColumn: 1,
++  };
++  expect(captureCodeViewSelection(view, "left", range)).toEqual({
++    kind: "invalid",
++    reason: "empty",
++  });
++  expect(captureCodeViewSelection(view, "file", range)).toEqual({
++    kind: "invalid",
++    reason: "range",
++  });
++});
+diff --git a/src/modules/files/core/code-view.ts b/src/modules/files/core/code-view.ts
+new file mode 100644
+index 0000000..41e9367
+--- /dev/null
++++ b/src/modules/files/core/code-view.ts
+@@ -0,0 +1,90 @@
++import { match } from "ts-pattern";
++import type { FileReply } from "../contracts/public";
++
++export interface SelectionSource {
++  readonly path: string;
++  readonly source: string;
++  readonly version: string;
++}
++
++export interface CodePane {
++  readonly text: string;
++  readonly source: SelectionSource;
++}
++export type CodeViewModel =
++  | ({ readonly kind: "file" } & CodePane)
++  | {
++      readonly kind: "diff";
++      readonly left: CodePane;
++      readonly right: CodePane;
++    };
++
++/** Presentation input: files does not read Git or choose the diff baseline. */
++type CodeContent =
++  | {
++      readonly kind: "text";
++      readonly text: string;
++      readonly source: string;
++      readonly version: string;
++    }
++  | { readonly kind: "absent"; readonly source: string };
++export interface DiffCodeSource {
++  readonly path: string;
++  readonly previousPath?: string | undefined;
++  readonly left: CodeContent;
++  readonly right: CodeContent;
++}
++
++export function fileCodeView(
++  file: Extract<FileReply, { kind: "text" }>,
++  sourceLabel: string,
++): CodeViewModel {
++  return {
++    kind: "file",
++    text: file.text,
++    source: {
++      path: file.path,
++      source: `${sourceLabel} · ${file.capturedAt}`,
++      version: file.version,
++    },
++  };
++}
++
++export function diffCodeView(diff: DiffCodeSource): CodeViewModel {
++  const pane = (path: string, content: CodeContent): CodePane =>
++    match(content)
++      .with({ kind: "text" }, ({ text, source, version }) => ({
++        text,
++        source: { path, source, version },
++      }))
++      .with({ kind: "absent" }, ({ source }) => ({
++        text: "",
++        source: { path, source, version: "absent" },
++      }))
++      .exhaustive();
++  return {
++    kind: "diff",
++    left: pane(diff.previousPath ?? diff.path, diff.left),
++    right: pane(diff.path, diff.right),
++  };
++}
++
++/** Stable editor identity: locale display strings must not recreate Monaco. */
++export function codeViewIdentity(view: CodeViewModel): string {
++  if (view.kind === "file")
++    return `file|${view.source.path}|${view.source.version}|${view.text.length}`;
++  return (
++    `diff|${view.left.source.path}|${view.left.source.version}|${view.left.text.length}` +
++    `|${view.right.source.path}|${view.right.source.version}|${view.right.text.length}`
++  );
++}
++
++/** Full reads allow 5 MiB; defer costly visual comparison above this per-pane budget. */
++export const MAX_DIFF_PANE_CHARS = 512 * 1024;
++export function isDiffViewTooLarge(view: CodeViewModel): boolean {
++  return (
++    view.kind === "diff" &&
++    (view.left.text.length > MAX_DIFF_PANE_CHARS ||
++      view.right.text.length > MAX_DIFF_PANE_CHARS)
++  );
++}

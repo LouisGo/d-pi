@@ -1,0 +1,163 @@
+diff --git a/src/modules/files/renderer/queries.ts b/src/modules/files/renderer/queries.ts
+index f3f06d8..86aab54 100644
+--- a/src/modules/files/renderer/queries.ts
++++ b/src/modules/files/renderer/queries.ts
+@@ -14,2 +14,2 @@ export const fileKeys = {
+-  content: (threadId: string, path: string) =>
+-    ["files", threadId, "read", path] as const,
++  content: (threadId: string, path: string | undefined) =>
++    ["files", threadId, "read", path || null] as const,
+@@ -87 +86,0 @@ export const fileQueryOptions = {
+-    const resolvedPath = path ?? "";
+@@ -89,3 +88,9 @@ export const fileQueryOptions = {
+-      queryKey: fileKeys.content(threadId, resolvedPath),
+-      queryFn: () => readFile(files, threadId, resolvedPath),
+-      enabled: path !== undefined,
++      queryKey: fileKeys.content(threadId, path),
++      // `enabled` gates automatic reads only. Explicit fetchQuery/refetch
++      // must also leave an unselected file alone; null is a valid Query result
++      // for that state, distinct from an empty file or an unavailable reply.
++      queryFn: async (): Promise<FileReply | null> => {
++        if (!path) return null;
++        return readFile(files, threadId, path);
++      },
++      enabled: Boolean(path),
+diff --git a/src/modules/files/renderer/selected-content.test.ts b/src/modules/files/renderer/selected-content.test.ts
+new file mode 100644
+index 0000000..2748afb
+--- /dev/null
++++ b/src/modules/files/renderer/selected-content.test.ts
+@@ -0,0 +1,133 @@
++import {
++  onlineManager,
++  QueryClient,
++  QueryObserver,
++} from "@tanstack/react-query";
++import { expect, it, vi } from "vitest";
++import type { FileBridge, FileReply } from "../contracts/public";
++import { fileKeys, fileQueryOptions } from "./public";
++
++const threadId = crypto.randomUUID();
++
++const text = (path: string, value: string): FileReply => ({
++  kind: "text",
++  path,
++  text: value,
++  bytes: value.length,
++  version: "v1",
++  capturedAt: "2026-09-30T00:00:00.000Z",
++  coverage: "complete",
++});
++
++function client(): QueryClient {
++  return new QueryClient({ defaultOptions: { queries: { retry: false } } });
++}
++
++it.each([undefined, ""])(
++  "does not read without a selected file (%s), including explicit fetches",
++  async (path) => {
++    const queryClient = client();
++    const request = vi.fn<FileBridge["request"]>(() =>
++      Promise.resolve({ kind: "unavailable", reason: "not-file" }),
++    );
++    const options = fileQueryOptions.content({ request }, threadId, path);
++    const observer = new QueryObserver(queryClient, options);
++    const unsubscribe = observer.subscribe(() => {});
++    try {
++      expect(observer.getCurrentResult().isEnabled).toBe(false);
++      expect(observer.getCurrentResult().fetchStatus).toBe("idle");
++      expect(request).not.toHaveBeenCalled();
++      expect((await observer.refetch()).data).toBeNull();
++      expect(await queryClient.fetchQuery(options)).toBeNull();
++      expect(request).not.toHaveBeenCalled();
++    } finally {
++      unsubscribe();
++      queryClient.clear();
++    }
++  },
++);
++
++it("reads a selected empty file through the imperative entry while offline", async () => {
++  const queryClient = client();
++  const reply = text("empty.ts", "");
++  const request = vi.fn<FileBridge["request"]>(() => Promise.resolve(reply));
++  const wasOnline = onlineManager.isOnline();
++  onlineManager.setOnline(false);
++  try {
++    const result = await queryClient.fetchQuery(
++      fileQueryOptions.content({ request }, threadId, "empty.ts"),
++    );
++    expect(result).toEqual(reply);
++    expect(request).toHaveBeenCalledExactlyOnceWith({
++      kind: "read",
++      threadId,
++      path: "empty.ts",
++      traceId: expect.any(String),
++    });
++  } finally {
++    onlineManager.setOnline(wasOnline);
++    queryClient.clear();
++  }
++});
++
++it("keeps imperative content caches separate for the same path in different threads", async () => {
++  const queryClient = client();
++  const otherThread = crypto.randomUUID();
++  const request = vi.fn<FileBridge["request"]>(
++    ({ threadId: requested, path }) => Promise.resolve(text(path, requested)),
++  );
++  try {
++    const first = await queryClient.fetchQuery({
++      ...fileQueryOptions.content({ request }, threadId, "main.ts"),
++      staleTime: Number.POSITIVE_INFINITY,
++    });
++    const second = await queryClient.fetchQuery({
++      ...fileQueryOptions.content({ request }, otherThread, "main.ts"),
++      staleTime: Number.POSITIVE_INFINITY,
++    });
++    expect(first).toMatchObject({ text: threadId });
++    expect(second).toMatchObject({ text: otherThread });
++    expect(request).toHaveBeenCalledTimes(2);
++  } finally {
++    queryClient.clear();
++  }
++});
++
++it("clears the current content on deselection and ignores late replies from an old path", async () => {
++  const queryClient = client();
++  let finishSlow: (reply: FileReply) => void = () => {};
++  const request = vi.fn<FileBridge["request"]>(({ path }) =>
++    path === "slow.ts"
++      ? new Promise<FileReply>((resolve) => {
++          finishSlow = resolve;
++        })
++      : Promise.resolve(text(path, "fast")),
++  );
++  const files: FileBridge = { request };
++  const observer = new QueryObserver(
++    queryClient,
++    fileQueryOptions.content(files, threadId, "slow.ts"),
++  );
++  const unsubscribe = observer.subscribe(() => {});
++  const slow = observer.refetch();
++  try {
++    observer.setOptions(fileQueryOptions.content(files, threadId, "fast.ts"));
++    await observer.refetch();
++    expect(observer.getCurrentResult().data).toMatchObject({ text: "fast" });
++    observer.setOptions(fileQueryOptions.content(files, threadId, undefined));
++    expect(observer.getCurrentResult().isEnabled).toBe(false);
++    expect(observer.getCurrentResult().data).toBeUndefined();
++
++    finishSlow(text("slow.ts", "slow"));
++    await slow;
++    expect(observer.getCurrentResult().data).toBeUndefined();
++    expect(
++      queryClient.getQueryData(fileKeys.content(threadId, "slow.ts")),
++    ).toEqual(text("slow.ts", "slow"));
++    expect(request).toHaveBeenCalledTimes(2);
++  } finally {
++    finishSlow(text("slow.ts", "slow"));
++    unsubscribe();
++    queryClient.clear();
++  }
++});

@@ -1,0 +1,857 @@
+diff --git a/architecture/dependencies.generated.json b/architecture/dependencies.generated.json
+index 9d91af7..6516eee 100644
+--- a/architecture/dependencies.generated.json
++++ b/architecture/dependencies.generated.json
+@@ -3 +3 @@
+-  "inputsHash": "371484e332517126f585428356dc71ab86e0d03bdfc9148389f1cf57af94ece9",
++  "inputsHash": "1c28318a68427ea2f13a3cbbd8cea8d849c4850379385450c0e15d77176629a9",
+@@ -6,2 +6,2 @@
+-    "sourceFiles": 188,
+-    "scannedFiles": 188,
++    "sourceFiles": 191,
++    "scannedFiles": 191,
+@@ -23 +23 @@
+-      "lines": 8336,
++      "lines": 8317,
+@@ -144,2 +144,2 @@
+-      "files": 15,
+-      "lines": 1638,
++      "files": 16,
++      "lines": 1661,
+@@ -176,2 +176,2 @@
+-      "files": 18,
+-      "lines": 1529,
++      "files": 20,
++      "lines": 1723,
+@@ -1096,0 +1097,7 @@
++    {
++      "module": "app",
++      "environment": "renderer",
++      "dependency": "input",
++      "targetEnvironment": "renderer",
++      "testOnly": false
++    },
+@@ -1230,7 +1236,0 @@
+-    {
+-      "module": "app",
+-      "environment": "renderer",
+-      "dependency": "input",
+-      "targetEnvironment": "renderer",
+-      "testOnly": false
+-    },
+@@ -1360 +1360 @@
+-      "targetEnvironment": "core",
++      "targetEnvironment": "contracts",
+@@ -1381,2 +1381,2 @@
+-      "targetEnvironment": "core",
+-      "testOnly": true
++      "targetEnvironment": "contracts",
++      "testOnly": false
+@@ -1389 +1389 @@
+-      "testOnly": false
++      "testOnly": true
+@@ -3649,0 +3650,12 @@
++    {
++      "from": "src/app/renderer/app.tsx",
++      "sourceModule": "app",
++      "sourceEnvironment": "renderer",
++      "test": false,
++      "specifier": "../../modules/input/renderer/public",
++      "kind": "import",
++      "resolution": "module",
++      "to": "src/modules/input/renderer/public.ts",
++      "targetModule": "input",
++      "targetEnvironment": "renderer"
++    },
+@@ -5001,12 +5012,0 @@
+-    {
+-      "from": "src/app/renderer/workbench/composer.tsx",
+-      "sourceModule": "app",
+-      "sourceEnvironment": "renderer",
+-      "test": false,
+-      "specifier": "../../../modules/files/core/public",
+-      "kind": "import",
+-      "resolution": "module",
+-      "to": "src/modules/files/core/public.ts",
+-      "targetModule": "files",
+-      "targetEnvironment": "core"
+-    },
+@@ -6117,0 +6118,33 @@
++    {
++      "from": "src/modules/files/contracts/public.ts",
++      "sourceModule": "files",
++      "sourceEnvironment": "contracts",
++      "test": false,
++      "specifier": "./selection",
++      "kind": "export",
++      "resolution": "module",
++      "to": "src/modules/files/contracts/selection.ts",
++      "targetModule": "files",
++      "targetEnvironment": "contracts"
++    },
++    {
++      "from": "src/modules/files/contracts/selection.ts",
++      "sourceModule": "files",
++      "sourceEnvironment": "contracts",
++      "test": false,
++      "specifier": "zod",
++      "kind": "import",
++      "resolution": "external"
++    },
++    {
++      "from": "src/modules/files/contracts/selection.ts",
++      "sourceModule": "files",
++      "sourceEnvironment": "contracts",
++      "test": false,
++      "specifier": "../../../shared/text/utf8",
++      "kind": "import",
++      "resolution": "module",
++      "to": "src/shared/text/utf8.ts",
++      "targetModule": "shared",
++      "targetEnvironment": "shared"
++    },
+@@ -6162,0 +6196,12 @@
++    {
++      "from": "src/modules/files/core/selection.ts",
++      "sourceModule": "files",
++      "sourceEnvironment": "core",
++      "test": false,
++      "specifier": "../contracts/selection",
++      "kind": "import",
++      "resolution": "module",
++      "to": "src/modules/files/contracts/selection.ts",
++      "targetModule": "files",
++      "targetEnvironment": "contracts"
++    },
+@@ -6861 +6906 @@
+-      "specifier": "../../../files/core/public",
++      "specifier": "../../../files/contracts/public",
+@@ -6864 +6909 @@
+-      "to": "src/modules/files/core/public.ts",
++      "to": "src/modules/files/contracts/public.ts",
+@@ -6866 +6911 @@
+-      "targetEnvironment": "core"
++      "targetEnvironment": "contracts"
+@@ -6987 +7032 @@
+-      "specifier": "zod",
++      "specifier": "../../files/contracts/public",
+@@ -6989 +7034,4 @@
+-      "resolution": "external"
++      "resolution": "module",
++      "to": "src/modules/files/contracts/public.ts",
++      "targetModule": "files",
++      "targetEnvironment": "contracts"
+@@ -7239,0 +7288,12 @@
++    {
++      "from": "src/modules/input/renderer/public.ts",
++      "sourceModule": "input",
++      "sourceEnvironment": "renderer",
++      "test": false,
++      "specifier": "./selection-attachment",
++      "kind": "export",
++      "resolution": "module",
++      "to": "src/modules/input/renderer/selection-attachment.ts",
++      "targetModule": "input",
++      "targetEnvironment": "renderer"
++    },
+@@ -7251,0 +7312,105 @@
++    {
++      "from": "src/modules/input/renderer/selection-attachment.test.ts",
++      "sourceModule": "input",
++      "sourceEnvironment": "renderer",
++      "test": true,
++      "specifier": "@tiptap/core",
++      "kind": "import",
++      "resolution": "external"
++    },
++    {
++      "from": "src/modules/input/renderer/selection-attachment.test.ts",
++      "sourceModule": "input",
++      "sourceEnvironment": "renderer",
++      "test": true,
++      "specifier": "@tiptap/pm/state",
++      "kind": "import",
++      "resolution": "external"
++    },
++    {
++      "from": "src/modules/input/renderer/selection-attachment.test.ts",
++      "sourceModule": "input",
++      "sourceEnvironment": "renderer",
++      "test": true,
++      "specifier": "vitest",
++      "kind": "import",
++      "resolution": "external"
++    },
++    {
++      "from": "src/modules/input/renderer/selection-attachment.test.ts",
++      "sourceModule": "input",
++      "sourceEnvironment": "renderer",
++      "test": true,
++      "specifier": "../../files/core/public",
++      "kind": "import",
++      "resolution": "module",
++      "to": "src/modules/files/core/public.ts",
++      "targetModule": "files",
++      "targetEnvironment": "core"
++    },
++    {
++      "from": "src/modules/input/renderer/selection-attachment.test.ts",
++      "sourceModule": "input",
++      "sourceEnvironment": "renderer",
++      "test": true,
++      "specifier": "./plain-text-editor",
++      "kind": "import",
++      "resolution": "module",
++      "to": "src/modules/input/renderer/plain-text-editor.ts",
++      "targetModule": "input",
++      "targetEnvironment": "renderer"
++    },
++    {
++      "from": "src/modules/input/renderer/selection-attachment.test.ts",
++      "sourceModule": "input",
++      "sourceEnvironment": "renderer",
++      "test": true,
++      "specifier": "./selection-attachment",
++      "kind": "import",
++      "resolution": "module",
++      "to": "src/modules/input/renderer/selection-attachment.ts",
++      "targetModule": "input",
++      "targetEnvironment": "renderer"
++    },
++    {
++      "from": "src/modules/input/renderer/selection-attachment.ts",
++      "sourceModule": "input",
++      "sourceEnvironment": "renderer",
++      "test": false,
++      "specifier": "@tiptap/pm/state",
++      "kind": "import",
++      "resolution": "external"
++    },
++    {
++      "from": "src/modules/input/renderer/selection-attachment.ts",
++      "sourceModule": "input",
++      "sourceEnvironment": "renderer",
++      "test": false,
++      "specifier": "react",
++      "kind": "import",
++      "resolution": "external"
++    },
++    {
++      "from": "src/modules/input/renderer/selection-attachment.ts",
++      "sourceModule": "input",
++      "sourceEnvironment": "renderer",
++      "test": false,
++      "specifier": "../../files/contracts/public",
++      "kind": "import",
++      "resolution": "module",
++      "to": "src/modules/files/contracts/public.ts",
++      "targetModule": "files",
++      "targetEnvironment": "contracts"
++    },
++    {
++      "from": "src/modules/input/renderer/selection-attachment.ts",
++      "sourceModule": "input",
++      "sourceEnvironment": "renderer",
++      "test": false,
++      "specifier": "./selection-insert",
++      "kind": "import",
++      "resolution": "module",
++      "to": "src/modules/input/renderer/selection-insert.ts",
++      "targetModule": "input",
++      "targetEnvironment": "renderer"
++    },
+@@ -7341 +7506 @@
+-      "specifier": "../../files/core/public",
++      "specifier": "../../files/contracts/public",
+@@ -7344 +7509 @@
+-      "to": "src/modules/files/core/public.ts",
++      "to": "src/modules/files/contracts/public.ts",
+@@ -7346 +7511 @@
+-      "targetEnvironment": "core"
++      "targetEnvironment": "contracts"
+diff --git a/docs/architecture/modules/files-editor.md b/docs/architecture/modules/files-editor.md
+index b0e0fa3..9ebab71 100644
+--- a/docs/architecture/modules/files-editor.md
++++ b/docs/architecture/modules/files-editor.md
+@@ -7,0 +8 @@
++- `contracts/public.ts` 交付 `FrozenFileSelection`：来源、版本、路径、行列与准确原文共用一份只读合同；`captureSelection` 生成不可变成功值，无效选区不交给输入。
+@@ -22 +23 @@ Main 的文件功能在授权范围内读取实际文件，返回来源、版本
+-| 选区及显示版本 / Monaco | 按基础契约 §4 返回冻结文字、路径、行号与来源版本；Diff 选区保留所选侧来源 | 输入和未来 Side Chat |
++| 选区及显示版本 / Monaco | 按基础契约 §4 返回 `FrozenFileSelection` 的冻结文字、路径、行号与来源版本；Diff 选区保留所选侧来源 | 输入和未来 Side Chat |
+diff --git a/docs/architecture/modules/flows.md b/docs/architecture/modules/flows.md
+index 871caa7..9e89325 100644
+--- a/docs/architecture/modules/flows.md
++++ b/docs/architecture/modules/flows.md
+@@ -30,0 +31 @@ flowchart TB
++| 文件选区 → 输入 | `FrozenFileSelection`：准确原文、路径、行列、所选侧来源及捕获版本；App 提供目标 Thread | 使用冻结值插入整体引用，IME 延后仍核对当前资源，不重新读取或拼接来源内容 | 文件返回无效选区原因，输入延后或忽略已释放/过期资源 |
+diff --git a/docs/architecture/modules/input-context.md b/docs/architecture/modules/input-context.md
+index 7e61f54..85e4f7d 100644
+--- a/docs/architecture/modules/input-context.md
++++ b/docs/architecture/modules/input-context.md
+@@ -8,0 +9 @@
++- 选区通过 files 的 `FrozenFileSelection` 合同进入 `renderer/public.ts` 的 `useSelectionAttachment`：input 负责一次插入、IME 延后和编辑器释放检查，引用节点与持久格式复用该合同；App 只路由目标 Thread 并提供当前资源检查，不重复拼接引用正文或重读文件。
+@@ -21 +22 @@ Renderer 的最小 Tiptap 实例拥有文字、引用节点、选区和撤销；
+-| [Monaco 选区](files-editor.md) | 按基础契约 §4 冻结文字、路径、行号与来源版本；Diff 选区沿用所选侧内容 | 草稿引用、后续冻结内容包与来源说明 |
++| [Monaco 选区](files-editor.md) | 接收 files 已冻结的文字、路径、行号与来源版本；Diff 选区沿用所选侧内容，由 input 插入整体引用 | 草稿引用、后续冻结内容包与来源说明 |
+diff --git a/src/app/renderer/app.tsx b/src/app/renderer/app.tsx
+index 8a03a91..421fc54 100644
+--- a/src/app/renderer/app.tsx
++++ b/src/app/renderer/app.tsx
+@@ -11,0 +12 @@ import type { CodeView } from "../../modules/files/renderer/public";
++import type { SelectionAttachment } from "../../modules/input/renderer/public";
+@@ -35,5 +36,2 @@ export function App({
+-  const [selectionAttachment, setSelectionAttachment] = useState<{
+-    id: string;
+-    threadId: string;
+-    selection: Extract<FrozenSelection, { kind: "selection" }>;
+-  } | null>(null);
++  const [selectionAttachment, setSelectionAttachment] =
++    useState<SelectionAttachment | null>(null);
+diff --git a/src/app/renderer/workbench/composer.tsx b/src/app/renderer/workbench/composer.tsx
+index 6cb3793..2f935c1 100644
+--- a/src/app/renderer/workbench/composer.tsx
++++ b/src/app/renderer/workbench/composer.tsx
+@@ -2,0 +3 @@ import {
++  useCallback,
+@@ -19 +19,0 @@ import { shouldSend } from "../../../modules/execution/renderer/public";
+-import type { FrozenSelection } from "../../../modules/files/core/public";
+@@ -21 +20,0 @@ import {
+-  appendSelectionReference,
+@@ -25,0 +25,2 @@ import {
++  type SelectionAttachment,
++  useSelectionAttachment,
+@@ -39,5 +40 @@ export function Composer({
+-  selectionAttachment?: {
+-    id: string;
+-    threadId: string;
+-    selection: Extract<FrozenSelection, { kind: "selection" }>;
+-  } | null;
++  selectionAttachment?: SelectionAttachment | null;
+@@ -110,24 +107,11 @@ export function Composer({
+-  const lastAttachment = useRef<string | null>(null);
+-  useEffect(() => {
+-    if (
+-      !editor ||
+-      !selectionAttachment ||
+-      selectionAttachment.threadId !== thread.context.threadId ||
+-      lastAttachment.current === selectionAttachment.id
+-    )
+-      return;
+-    const apply = () => {
+-      if (!model.isCurrentThread(thread) || editor.isDestroyed) return;
+-      if (editor.view.composing) return;
+-      editor.view.dispatch(
+-        appendSelectionReference(editor.state, selectionAttachment.selection),
+-      );
+-      lastAttachment.current = selectionAttachment.id;
+-      editor.commands.focus("end");
+-      onAttachmentApplied?.(selectionAttachment.id);
+-    };
+-    if (editor.view.composing)
+-      editor.view.dom.addEventListener("compositionend", apply, { once: true });
+-    else apply();
+-    return () => editor.view.dom.removeEventListener("compositionend", apply);
+-  }, [editor, selectionAttachment, model, thread, onAttachmentApplied]);
++  const isCurrentThread = useCallback(
++    () => model.isCurrentThread(thread),
++    [model, thread],
++  );
++  useSelectionAttachment(
++    editor,
++    selectionAttachment,
++    thread.context.threadId,
++    isCurrentThread,
++    onAttachmentApplied,
++  );
+diff --git a/src/app/renderer/workbench/file-workspace.tsx b/src/app/renderer/workbench/file-workspace.tsx
+index c1a2254..18f555a 100644
+--- a/src/app/renderer/workbench/file-workspace.tsx
++++ b/src/app/renderer/workbench/file-workspace.tsx
+@@ -18,0 +19 @@ import type {
++  FrozenFileSelection,
+@@ -85,3 +86 @@ export function FileWorkspace({
+-  onAttach: (
+-    selection: Extract<FrozenSelection, { kind: "selection" }>,
+-  ) => void;
++  onAttach: (selection: FrozenFileSelection) => void;
+diff --git a/src/modules/files/contracts/public.ts b/src/modules/files/contracts/public.ts
+index d285bd3..60ceb4b 100644
+--- a/src/modules/files/contracts/public.ts
++++ b/src/modules/files/contracts/public.ts
+@@ -3,0 +4,6 @@ import { TraceIdSchema } from "../../../shared/identity";
++export {
++  type FrozenFileSelection,
++  FrozenFileSelectionSchema,
++  MAX_SELECTION_BYTES,
++} from "./selection";
++
+diff --git a/src/modules/files/core/selection.ts b/src/modules/files/core/selection.ts
+index 368f23f..8f695d6 100644
+--- a/src/modules/files/core/selection.ts
++++ b/src/modules/files/core/selection.ts
+@@ -1,0 +2,4 @@ import { utf8ByteLength } from "../../../shared/text/utf8";
++import {
++  type FrozenFileSelection,
++  MAX_SELECTION_BYTES,
++} from "../contracts/selection";
+@@ -16,12 +20 @@ export type FrozenSelection =
+-  | {
+-      kind: "selection";
+-      path: string;
+-      source: string;
+-      version: string;
+-      text: string;
+-      startLine: number;
+-      startColumn: number;
+-      endLine: number;
+-      endColumn: number;
+-    };
+-const MAX_SELECTION_BYTES = 64 * 1024;
++  | FrozenFileSelection;
+@@ -101 +94 @@ export function captureSelection(
+-  return {
++  return Object.freeze({
+@@ -111 +104 @@ export function captureSelection(
+-  };
++  });
+diff --git a/src/modules/input/core/references/serialize.ts b/src/modules/input/core/references/serialize.ts
+index 0da894b..a8fa7df 100644
+--- a/src/modules/input/core/references/serialize.ts
++++ b/src/modules/input/core/references/serialize.ts
+@@ -3 +3,5 @@ import { utf8ByteLength } from "../../../../shared/text/utf8";
+-import type { FrozenSelection } from "../../../files/core/public";
++import {
++  type FrozenFileSelection,
++  FrozenFileSelectionSchema,
++  MAX_SELECTION_BYTES,
++} from "../../../files/contracts/public";
+@@ -5 +8,0 @@ import type { FrozenSelection } from "../../../files/core/public";
+-type Selection = Extract<FrozenSelection, { kind: "selection" }>;
+@@ -8 +11 @@ export type DraftBlock =
+-  | { kind: "selection"; value: Selection };
++  | { kind: "selection"; value: FrozenFileSelection };
+@@ -11,11 +14,6 @@ const SUFFIX = "\n[/d-pi:file-selection]";
+-const ReferenceHeaderSchema = z.strictObject({
+-  schemaVersion: z.literal(1),
+-  path: z.string().max(4096),
+-  source: z.string().max(8192),
+-  version: z.string().max(256),
+-  startLine: z.number().int().positive(),
+-  startColumn: z.number().int().positive(),
+-  endLine: z.number().int().positive(),
+-  endColumn: z.number().int().positive(),
+-  textLength: z.number().int().positive().max(65536),
+-});
++const ReferenceHeaderSchema = FrozenFileSelectionSchema.unwrap()
++  .omit({ kind: true, text: true })
++  .extend({
++    schemaVersion: z.literal(1),
++    textLength: z.number().int().positive().max(MAX_SELECTION_BYTES),
++  });
+@@ -23 +21 @@ const ReferenceHeaderSchema = z.strictObject({
+-export function serializeReference(value: Selection): string {
++export function serializeReference(value: FrozenFileSelection): string {
+@@ -52 +50 @@ function readReference(
+-): { value: Selection; next: number } | null {
++): { value: FrozenFileSelection; next: number } | null {
+@@ -70 +68 @@ function readReference(
+-  if (utf8ByteLength(text) > 64 * 1024) return null;
++  if (utf8ByteLength(text) > MAX_SELECTION_BYTES) return null;
+@@ -76 +74 @@ function readReference(
+-  return { value: { kind: "selection", ...fields, text }, next };
++  return { value: Object.freeze({ kind: "selection", ...fields, text }), next };
+diff --git a/src/modules/input/renderer/file-reference-node.ts b/src/modules/input/renderer/file-reference-node.ts
+index e08c161..5f167ad 100644
+--- a/src/modules/input/renderer/file-reference-node.ts
++++ b/src/modules/input/renderer/file-reference-node.ts
+@@ -2 +2 @@ import { Node } from "@tiptap/core";
+-import { z } from "zod";
++import { FrozenFileSelectionSchema } from "../../files/contracts/public";
+@@ -5,12 +4,0 @@ import { serializeReference } from "../core/references/serialize";
+-const Attributes = z.object({
+-  kind: z.literal("selection"),
+-  path: z.string(),
+-  source: z.string(),
+-  version: z.string(),
+-  text: z.string(),
+-  startLine: z.number().int(),
+-  startColumn: z.number().int(),
+-  endLine: z.number().int(),
+-  endColumn: z.number().int(),
+-});
+-
+@@ -24 +12,4 @@ export const FileReference = Node.create({
+-      Object.keys(Attributes.shape).map((key) => [key, { default: null }]),
++      Object.keys(FrozenFileSelectionSchema.unwrap().shape).map((key) => [
++        key,
++        { default: null },
++      ]),
+@@ -28 +19 @@ export const FileReference = Node.create({
+-    const value = Attributes.parse(node.attrs);
++    const value = FrozenFileSelectionSchema.parse(node.attrs);
+@@ -42 +33 @@ export const FileReference = Node.create({
+-    return serializeReference(Attributes.parse(node.attrs));
++    return serializeReference(FrozenFileSelectionSchema.parse(node.attrs));
+diff --git a/src/modules/input/renderer/public.ts b/src/modules/input/renderer/public.ts
+index eca8dee..5cd1319 100644
+--- a/src/modules/input/renderer/public.ts
++++ b/src/modules/input/renderer/public.ts
+@@ -7,0 +8,4 @@ export { handlePlainTextPaste } from "./plain-text-paste";
++export {
++  type SelectionAttachment,
++  useSelectionAttachment,
++} from "./selection-attachment";
+diff --git a/src/modules/input/renderer/selection-insert.ts b/src/modules/input/renderer/selection-insert.ts
+index 1b84a3b..fa29916 100644
+--- a/src/modules/input/renderer/selection-insert.ts
++++ b/src/modules/input/renderer/selection-insert.ts
+@@ -2 +2 @@ import type { EditorState, Transaction } from "@tiptap/pm/state";
+-import type { FrozenSelection } from "../../files/core/public";
++import type { FrozenFileSelection } from "../../files/contracts/public";
+@@ -6 +6 @@ export function appendSelectionReference(
+-  value: Extract<FrozenSelection, { kind: "selection" }>,
++  value: FrozenFileSelection,
+diff --git a/src/modules/files/contracts/selection.ts b/src/modules/files/contracts/selection.ts
+new file mode 100644
+index 0000000..906d38e
+--- /dev/null
++++ b/src/modules/files/contracts/selection.ts
+@@ -0,0 +1,24 @@
++import { z } from "zod";
++import { utf8ByteLength } from "../../../shared/text/utf8";
++
++export const MAX_SELECTION_BYTES = 64 * 1024;
++
++/** Files delivers the selected side's original text and provenance together.
++ * Input persists this value; it never re-reads the path to rebuild a quote. */
++export const FrozenFileSelectionSchema = z
++  .strictObject({
++    kind: z.literal("selection"),
++    path: z.string().max(4096),
++    source: z.string().max(8192),
++    version: z.string().max(256),
++    text: z
++      .string()
++      .min(1)
++      .refine((text) => utf8ByteLength(text) <= MAX_SELECTION_BYTES),
++    startLine: z.number().int().positive(),
++    startColumn: z.number().int().positive(),
++    endLine: z.number().int().positive(),
++    endColumn: z.number().int().positive(),
++  })
++  .readonly();
++export type FrozenFileSelection = z.infer<typeof FrozenFileSelectionSchema>;
+diff --git a/src/modules/input/renderer/selection-attachment.test.ts b/src/modules/input/renderer/selection-attachment.test.ts
+new file mode 100644
+index 0000000..a877af9
+--- /dev/null
++++ b/src/modules/input/renderer/selection-attachment.test.ts
+@@ -0,0 +1,148 @@
++import { getSchema } from "@tiptap/core";
++import { EditorState, type Transaction } from "@tiptap/pm/state";
++import { beforeEach, expect, it, vi } from "vitest";
++import { captureSelection } from "../../files/core/public";
++import { draftDocument, plainTextEditorOptions } from "./plain-text-editor";
++import {
++  type SelectionAttachment,
++  useSelectionAttachment,
++} from "./selection-attachment";
++
++type Effect = () => undefined | (() => void);
++const harness = vi.hoisted(() => ({
++  refIndex: 0,
++  refs: new Array<{ current: unknown }>(),
++  effects: new Array<Effect>(),
++}));
++vi.mock("react", () => ({
++  useRef(initial: unknown) {
++    const index = harness.refIndex++;
++    harness.refs[index] ??= { current: initial };
++    return harness.refs[index];
++  },
++  useEffect(effect: Effect) {
++    harness.effects.push(effect);
++  },
++}));
++beforeEach(() => {
++  harness.refIndex = 0;
++  harness.refs.length = 0;
++  harness.effects.length = 0;
++});
++
++function fixture() {
++  const selection = captureSelection(
++    "a\r\n原文😀",
++    { startLineNumber: 1, startColumn: 1, endLineNumber: 2, endColumn: 5 },
++    { path: "src/a.ts", source: "index", version: "git:original" },
++  );
++  if (selection.kind !== "selection") throw Error("Fixture selection failed");
++  const attachment: SelectionAttachment = {
++    id: crypto.randomUUID(),
++    threadId: crypto.randomUUID(),
++    selection,
++  };
++  const schema = getSchema(plainTextEditorOptions.extensions);
++  let state = EditorState.create({
++    schema,
++    doc: schema.nodeFromJSON(draftDocument("draft")),
++  });
++  const view = {
++    composing: false,
++    dom: new EventTarget(),
++    dispatch(transaction: Transaction) {
++      state = state.apply(transaction);
++    },
++  };
++  const editor = {
++    get state() {
++      return state;
++    },
++    isDestroyed: false,
++    view,
++    commands: { focus: vi.fn(() => true) },
++  };
++  const applied = vi.fn();
++  let current = true;
++  const isCurrent = () => current;
++  const render = (value = attachment, threadId = attachment.threadId) => {
++    harness.refIndex = 0;
++    harness.effects.length = 0;
++    useSelectionAttachment(editor, value, threadId, isCurrent, applied);
++    const cleanups = harness.effects.map((effect) => effect());
++    return () => {
++      for (const cleanup of cleanups) cleanup?.();
++    };
++  };
++  return {
++    attachment,
++    editor,
++    applied,
++    render,
++    leaveThread() {
++      current = false;
++    },
++  };
++}
++
++// React effects and the native composition event are narrow boundary doubles.
++// Document insertion uses the real Tiptap schema and ProseMirror transaction.
++it("applies each attachment once, allowing an explicit second quote of the same selection", () => {
++  const value = fixture();
++  const cleanup = value.render();
++  expect(value.editor.state.doc.lastChild?.attrs).toEqual(
++    value.attachment.selection,
++  );
++  expect(value.editor.commands.focus).toHaveBeenCalledWith("end");
++  expect(value.applied).toHaveBeenCalledExactlyOnceWith(value.attachment.id);
++  cleanup();
++  value.render();
++  expect(value.editor.state.doc.childCount).toBe(2);
++  const second = { ...value.attachment, id: crypto.randomUUID() };
++  value.render(second);
++  expect(value.editor.state.doc.childCount).toBe(3);
++  expect(value.applied).toHaveBeenLastCalledWith(second.id);
++});
++
++it("waits for composition to finish before inserting the frozen selection", () => {
++  const value = fixture();
++  value.editor.view.composing = true;
++  const cleanup = value.render();
++  expect(value.editor.state.doc.childCount).toBe(1);
++  expect(value.applied).not.toHaveBeenCalled();
++  value.editor.view.composing = false;
++  value.editor.view.dom.dispatchEvent(new Event("compositionend"));
++  expect(value.editor.state.doc.lastChild?.attrs).toEqual(
++    value.attachment.selection,
++  );
++  expect(value.applied).toHaveBeenCalledExactlyOnceWith(value.attachment.id);
++  cleanup();
++});
++
++it("ignores a mismatched Thread and rechecks a deferred attachment after a Thread switch", () => {
++  const value = fixture();
++  value.render(value.attachment, crypto.randomUUID());
++  expect(value.editor.state.doc.childCount).toBe(1);
++  value.editor.view.composing = true;
++  const cleanup = value.render();
++  value.leaveThread();
++  value.editor.view.composing = false;
++  value.editor.view.dom.dispatchEvent(new Event("compositionend"));
++  expect(value.editor.state.doc.childCount).toBe(1);
++  expect(value.applied).not.toHaveBeenCalled();
++  cleanup();
++});
++
++it("releases the deferred listener on cleanup and ignores a destroyed editor", () => {
++  const value = fixture();
++  value.editor.view.composing = true;
++  const cleanup = value.render();
++  cleanup();
++  value.editor.view.composing = false;
++  value.editor.view.dom.dispatchEvent(new Event("compositionend"));
++  expect(value.editor.state.doc.childCount).toBe(1);
++  value.editor.isDestroyed = true;
++  value.render();
++  expect(value.editor.state.doc.childCount).toBe(1);
++  expect(value.applied).not.toHaveBeenCalled();
++});
+diff --git a/src/modules/input/renderer/selection-attachment.ts b/src/modules/input/renderer/selection-attachment.ts
+new file mode 100644
+index 0000000..e540d51
+--- /dev/null
++++ b/src/modules/input/renderer/selection-attachment.ts
+@@ -0,0 +1,53 @@
++import type { EditorState, Transaction } from "@tiptap/pm/state";
++import { useEffect, useRef } from "react";
++import type { FrozenFileSelection } from "../../files/contracts/public";
++import { appendSelectionReference } from "./selection-insert";
++
++/** The app routes an attachment to a Thread; input owns applying it once. */
++export interface SelectionAttachment {
++  readonly id: string;
++  readonly threadId: string;
++  readonly selection: FrozenFileSelection;
++}
++type SelectionEditor = {
++  readonly state: EditorState;
++  readonly isDestroyed: boolean;
++  readonly view: {
++    readonly composing: boolean;
++    readonly dom: Pick<EventTarget, "addEventListener" | "removeEventListener">;
++    dispatch(transaction: Transaction): void;
++  };
++  readonly commands: { focus(position: "end"): boolean };
++};
++
++export function useSelectionAttachment(
++  editor: SelectionEditor | null,
++  attachment: SelectionAttachment | null | undefined,
++  threadId: string,
++  isCurrent: () => boolean,
++  onApplied: ((id: string) => void) | undefined,
++): void {
++  const lastAttachment = useRef<string | null>(null);
++  useEffect(() => {
++    if (
++      !editor ||
++      !attachment ||
++      attachment.threadId !== threadId ||
++      lastAttachment.current === attachment.id
++    )
++      return;
++    const apply = () => {
++      if (!isCurrent() || editor.isDestroyed || editor.view.composing) return;
++      editor.view.dispatch(
++        appendSelectionReference(editor.state, attachment.selection),
++      );
++      lastAttachment.current = attachment.id;
++      editor.commands.focus("end");
++      onApplied?.(attachment.id);
++    };
++    if (editor.view.composing)
++      editor.view.dom.addEventListener("compositionend", apply, { once: true });
++    else apply();
++    return () => editor.view.dom.removeEventListener("compositionend", apply);
++  }, [editor, attachment, threadId, isCurrent, onApplied]);
++}
+diff --git a/tests/integration/file-selection.integration.test.ts b/tests/integration/file-selection.integration.test.ts
+new file mode 100644
+index 0000000..0634001
+--- /dev/null
++++ b/tests/integration/file-selection.integration.test.ts
+@@ -0,0 +1,95 @@
++import { Editor, getSchema } from "@tiptap/core";
++import { EditorState } from "@tiptap/pm/state";
++import { expect, it } from "vitest";
++import { captureSelection } from "../../src/modules/files/core/public";
++import { parseDraftBlocks } from "../../src/modules/input/core/public";
++import {
++  appendSelectionReference,
++  draftDocument,
++  plainTextEditorOptions,
++  replaceDraftText,
++} from "../../src/modules/input/renderer/public";
++
++it("keeps both Diff sides and exact frozen bytes through insertion and draft restoration", () => {
++  const path = "src/@message@List.ts";
++  const range = {
++    startLineNumber: 1,
++    startColumn: 3,
++    endLineNumber: 4,
++    endColumn: 3,
++  };
++  const left = captureSelection(
++    "  😀\r\n\tleft\r[/d-pi:file-selection]\n尾部",
++    range,
++    { path, source: "HEAD: src/@message@List.ts", version: "git:before" },
++  );
++  const workingTree = {
++    text: "  😀\n\tright\r\n[/d-pi:file-selection]\r最新",
++    source: { path, source: "working tree", version: "sha256:after" },
++  };
++  const right = captureSelection(workingTree.text, range, workingTree.source);
++  if (left.kind !== "selection" || right.kind !== "selection")
++    throw Error("Fixture selections failed");
++  expect(left.text).toBe("😀\r\n\tleft\r[/d-pi:file-selection]\n尾部");
++  expect(right.text).toBe("😀\n\tright\r\n[/d-pi:file-selection]\r最新");
++
++  const schema = getSchema(plainTextEditorOptions.extensions);
++  let state = EditorState.create({
++    schema,
++    doc: schema.nodeFromJSON(draftDocument("existing draft")),
++  });
++  for (const selection of [left, right])
++    state = state.apply(appendSelectionReference(state, selection));
++
++  // Updating the source pane's sample must not rewrite an attached quote.
++  workingTree.text = "new disk content";
++  workingTree.source.version = "sha256:new-disk";
++  const editor = new Editor({
++    ...plainTextEditorOptions,
++    element: null,
++    content: state.doc.toJSON(),
++  });
++  try {
++    const persisted = editor.getText({ blockSeparator: "\n" });
++    expect(parseDraftBlocks(persisted)).toEqual([
++      { kind: "paragraph", text: "existing draft" },
++      { kind: "selection", value: left },
++      { kind: "selection", value: right },
++    ]);
++    expect(replaceDraftText(editor, persisted)).toBe(true);
++    expect(editor.state.doc.child(1).attrs).toEqual(left);
++    expect(editor.state.doc.child(2).attrs).toEqual(right);
++    expect(editor.state.doc.child(2).attrs).toMatchObject({
++      text: "😀\n\tright\r\n[/d-pi:file-selection]\r最新",
++      version: "sha256:after",
++    });
++    expect(editor.getText({ blockSeparator: "\n" })).toBe(persisted);
++  } finally {
++    editor.destroy();
++  }
++});
++
++it("cannot rewrite files' captured source or text while the reference waits for insertion", () => {
++  const value = captureSelection(
++    "first\r\n  原文😀",
++    { startLineNumber: 1, startColumn: 1, endLineNumber: 2, endColumn: 7 },
++    { path: "src/a.ts", source: "index", version: "git:original" },
++  );
++  if (value.kind !== "selection") throw Error("Fixture selection failed");
++  const captured = { ...value };
++  // All consumers share this handoff value while IME can defer insertion.
++  // It must not become a mutable route to changing an already captured quote.
++  Reflect.set(value, "path", "src/b.ts");
++  Reflect.set(value, "source", "working tree");
++  Reflect.set(value, "version", "sha256:new");
++  Reflect.set(value, "text", "replacement");
++  Reflect.set(value, "startLine", 99);
++
++  const schema = getSchema(plainTextEditorOptions.extensions);
++  const state = EditorState.create({
++    schema,
++    doc: schema.nodeFromJSON(draftDocument("")),
++  });
++  const next = state.apply(appendSelectionReference(state, value));
++  expect(next.doc.lastChild?.attrs).toEqual(captured);
++});

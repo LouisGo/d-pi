@@ -1,0 +1,60 @@
+{
+  "date": "2026-09-30",
+  "baseline": "4adea8299a254df56664c0b3bc00c71abcd01383",
+  "final": "f5e998f1e3f4c5ed1deaa0faf0e33ae75912e379",
+  "cases": [
+    {
+      "task": "local-query",
+      "baselineSeconds": [
+        309.311,
+        529.601
+      ],
+      "finalStart": 1790740711454,
+      "finalEnd": 1790741410377,
+      "finalSeconds": 698.923
+    },
+    {
+      "task": "density",
+      "baselineSeconds": [
+        189.061
+      ],
+      "finalStart": 1790740724119,
+      "finalEnd": 1790741009819,
+      "finalSeconds": 285.7
+    },
+    {
+      "task": "interface",
+      "baselineSeconds": [
+        978.324
+      ],
+      "finalStart": 1790741009819,
+      "finalEnd": 1790742328621,
+      "finalSeconds": 1318.802
+    },
+    {
+      "task": "unknown-recovery",
+      "baselineSeconds": null,
+      "finalStart": 1790741410377,
+      "finalEnd": 1790741891199,
+      "finalSeconds": 480.822
+    },
+    {
+      "task": "next-work",
+      "baselineSeconds": null,
+      "finalStart": 1790741496407,
+      "finalEnd": 1790741874393,
+      "finalSeconds": 377.986
+    }
+  ],
+  "metric": "Main dispatch to observed final result, seconds; includes orchestration and observation delay",
+  "tokens": null,
+  "model": "Inherited, no override; exact model ID and reasoning settings not exposed",
+  "limits": [
+    "Initial baseline query dependency readiness changed; repeated baseline recorded separately",
+    "Baseline archives lack Git metadata; final uses local clones",
+    "Same host concurrent checks, SDK preparation and packaging; CPU and I/O not controlled",
+    "Task verification scope and remaining source work differ",
+    "Design baseline timings unavailable; no statistical efficiency claim"
+  ],
+  "conclusion": "All five preserve tested critical constraints; observed implementation task times did not decrease"
+}

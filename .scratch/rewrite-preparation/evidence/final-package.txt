@@ -1,0 +1,9 @@
+
+DevTools listening on ws://127.0.0.1:53443/devtools/browser/68ec13bf-8efa-46f3-8878-9ec1293e519e
+PASS: relocated formal package, bundled official SDK, v1 migration, two turns/same session, ACK consumption, direct reading/history. Evidence: /private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s3-package-aEaRQ4
+PASS: rewrite package integrated paths. Evidence: /private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s3-package-aEaRQ4
+package exit null SIGKILL
+
+DevTools listening on ws://127.0.0.1:53443/devtools/browser/160783aa-feb0-4150-aae3-d391f6be7902
+PASS: cold recovery stays read-only and content stays accessible. Evidence: /private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s3-package-aEaRQ4
+package exit 0 null

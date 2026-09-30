@@ -20,3 +20,5 @@ Blocked by: none
 文件/Git 工厂共用真实 ThreadContext（threadId/workspaceId/directory）及路径/scope；未选中 key 为 null，目录根空路径仍合法。未选中显式 fetch/refetch 目标测试原先各调用两次 IPC，执行 guard 后零 IPC；错误保留该次 trace/operation/reply/cause。本地 always、业务 unavailable 与采样重试、既有刷新策略保留。Conversation/收据发布生成 ID 顺序和实体 Map，行 O(1) 取项，未变化实体/顺序引用保持，不产生独立可写正文。
 
 子 Agent 定向 22 文件 112 项、root/core/renderer tsc、29 文件 Biome 与 188 源文件架构检查通过。主 Agent 集成 `pnpm check` 全项通过：六套 tsc、设计/i18n/源码/文档/结构门禁、37 项 Node 门禁、342 项 Vitest，1 项既有原生 opt-in 跳过。新真实 workspace 类型依赖已进入机器单源并重新生成实际依赖报告。冻结 snapshot `/tmp/d-pi-rewrite-review-core-b` 正由独立审阅者核对，发现只以新补修记录处理。真实 GUI、试用与最终构建身份留给 07，工程绿灯不替代用户体验认可。
+
+后续 07 已完成第二轮独立审阅、正式包和受影响 GUI；CR 预览补修按 TDD 完成并重建复核，最终完整 check 为 343 项 Vitest + 1 跳过、37 项 Node。明确源码/构建、真实选区/编辑器/只读冷恢复与试用步骤见[本轮交接](../handoff.md)，用户反馈尚未取得。

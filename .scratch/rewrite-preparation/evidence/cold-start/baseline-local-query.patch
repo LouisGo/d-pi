@@ -1,0 +1,159 @@
+diff --git a/src/modules/files/renderer/queries.test.ts b/src/modules/files/renderer/queries.test.ts
+index 4166de5..4ba16f9 100644
+--- a/src/modules/files/renderer/queries.test.ts
++++ b/src/modules/files/renderer/queries.test.ts
+@@ -7,2 +7,2 @@ import { expect, it } from "vitest";
+-import type { FileBridge, FileReply } from "../contracts/public";
+-import { fileKeys, fileQueryOptions, refreshFiles } from "./queries";
++import type { FileBridge, FileReply, FileRequest } from "../contracts/public";
++import { fileKeys, fileQueryOptions, refreshFiles } from "./public";
+@@ -260,0 +261,127 @@ it("keeps a business unavailable reason as a single terminal sample", async () =
++
++it("does not expose an empty-path cache entry or read when no file is selected", async () => {
++  const client_ = client();
++  const requests: FileRequest[] = [];
++  const bridge: FileBridge = {
++    request: (request) => {
++      requests.push(request);
++      return Promise.resolve(text(request.path, "unexpected"));
++    },
++  };
++  client_.setQueryData(fileKeys.content(threadId, ""), text("", "cached root"));
++  const options = fileQueryOptions.content(bridge, threadId, undefined);
++  const observer = new QueryObserver(client_, options);
++  const release = observer.subscribe(() => {});
++  try {
++    expect(observer.getCurrentResult().data).toBeUndefined();
++    expect(observer.getCurrentResult().isEnabled).toBe(false);
++    await client_.invalidateQueries({ queryKey: fileKeys.all(threadId) });
++    expect(requests).toEqual([]);
++    const result = await observer.refetch();
++    expect(result.data).toBeNull();
++    expect(requests).toEqual([]);
++    expect(client_.getQueryData(fileKeys.content(threadId, ""))).toMatchObject({
++      text: "cached root",
++    });
++  } finally {
++    release();
++    client_.clear();
++  }
++});
++
++it("returns an empty result without IPC for an imperative unselected content query", async () => {
++  const client_ = client();
++  const requests: FileRequest[] = [];
++  const bridge: FileBridge = {
++    request: (request) => {
++      requests.push(request);
++      return Promise.resolve(text(request.path, "unexpected"));
++    },
++  };
++  try {
++    const result = await client_.fetchQuery(
++      fileQueryOptions.content(bridge, threadId, undefined),
++    );
++    expect(result).toBeNull();
++    expect(requests).toEqual([]);
++  } finally {
++    client_.clear();
++  }
++});
++
++it("shares a selected local content sample between imperative and observed reads while offline", async () => {
++  const client_ = client();
++  const requests: FileRequest[] = [];
++  const reply = text("selected.ts", "local content");
++  const bridge: FileBridge = {
++    request: (request) => {
++      requests.push(request);
++      return Promise.resolve(reply);
++    },
++  };
++  const wasOnline = onlineManager.isOnline();
++  onlineManager.setOnline(false);
++  try {
++    const options = {
++      ...fileQueryOptions.content(bridge, threadId, "selected.ts"),
++      staleTime: Number.POSITIVE_INFINITY,
++    };
++    const result = await client_.fetchQuery(options);
++    const observer = new QueryObserver(client_, options);
++    const release = observer.subscribe(() => {});
++    try {
++      expect(result).toBe(reply);
++      expect(observer.getCurrentResult().data).toBe(result);
++      expect(observer.getCurrentResult().isEnabled).toBe(true);
++      expect(requests).toHaveLength(1);
++      expect(requests[0]).toMatchObject({
++        kind: "read",
++        threadId,
++        path: "selected.ts",
++        traceId: expect.stringMatching(/^[0-9a-f-]{36}$/),
++      });
++    } finally {
++      release();
++    }
++  } finally {
++    onlineManager.setOnline(wasOnline);
++    client_.clear();
++  }
++});
++
++it("clears the observed content when selection is removed and ignores its late reply", async () => {
++  const client_ = client();
++  let finish: (reply: FileReply) => void = () => {};
++  const requests: FileRequest[] = [];
++  const bridge: FileBridge = {
++    request: (request) => {
++      requests.push(request);
++      return new Promise<FileReply>((accept) => {
++        finish = accept;
++      });
++    },
++  };
++  const observer = new QueryObserver(
++    client_,
++    fileQueryOptions.content(bridge, threadId, "previous.ts"),
++  );
++  const release = observer.subscribe(() => {});
++  try {
++    const pending = observer.refetch();
++    observer.setOptions(fileQueryOptions.content(bridge, threadId, undefined));
++    expect(observer.getCurrentResult().data).toBeUndefined();
++    expect(observer.getCurrentResult().isEnabled).toBe(false);
++    finish(text("previous.ts", "late content"));
++    await pending;
++    expect(observer.getCurrentResult().data).toBeUndefined();
++    expect(
++      client_.getQueryData(fileKeys.content(threadId, "previous.ts")),
++    ).toMatchObject({
++      text: "late content",
++    });
++    expect(requests.map(({ path }) => path)).toEqual(["previous.ts"]);
++  } finally {
++    release();
++    client_.clear();
++  }
++});
+diff --git a/src/modules/files/renderer/queries.ts b/src/modules/files/renderer/queries.ts
+index f3f06d8..b30d18a 100644
+--- a/src/modules/files/renderer/queries.ts
++++ b/src/modules/files/renderer/queries.ts
+@@ -14,2 +14,2 @@ export const fileKeys = {
+-  content: (threadId: string, path: string) =>
+-    ["files", threadId, "read", path] as const,
++  content: (threadId: string, path: string | undefined) =>
++    ["files", threadId, "read", path ?? null] as const,
+@@ -76 +76,3 @@ const localRead = { networkMode: "always" } as const;
+- * genuine "nothing selected" state, because "" is never a file path.
++ * genuine "nothing selected" state. Its null key is distinct from every
++ * requested path, and its query function returns null without IPC because
++ * imperative fetches and manual refetches do not honor the enabled gate.
+@@ -87 +88,0 @@ export const fileQueryOptions = {
+-    const resolvedPath = path ?? "";
+@@ -89,2 +90,3 @@ export const fileQueryOptions = {
+-      queryKey: fileKeys.content(threadId, resolvedPath),
+-      queryFn: () => readFile(files, threadId, resolvedPath),
++      queryKey: fileKeys.content(threadId, path),
++      queryFn: async () =>
++        path === undefined ? null : readFile(files, threadId, path),

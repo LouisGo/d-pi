@@ -1,0 +1,105 @@
+{
+  "bundle": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s3-package-aEaRQ4/Package With Spaces/d-pi.app",
+  "project": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s3-package-aEaRQ4/work",
+  "data": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s3-package-aEaRQ4/app-data",
+  "config": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s3-package-aEaRQ4/home/.omp/agent",
+  "providerCalls": 4,
+  "native": {
+    "thread_id": "710af8c4-1793-43e9-a31b-6b1a361c4991",
+    "config_context": "481b73aae294b688595190049d985c20c3948838129ea5f47e2b7c0df4755078",
+    "session_file": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s3-package-aEaRQ4/app-data/native-sessions/710af8c4-1793-43e9-a31b-6b1a361c4991/2026-09-30T04-19-46-232Z_01a0f08a-3bb8-7000-a96b-5ce09092825a.jsonl",
+    "session_id": "01a0f08a-3bb8-7000-a96b-5ce09092825a"
+  },
+  "receipts": [
+    {
+      "submissionId": "374190d8-78a1-45ef-a0fa-fb01e945d2f9",
+      "threadId": "710af8c4-1793-43e9-a31b-6b1a361c4991",
+      "traceId": "583bff39-e8e0-4807-9827-b91e52a0ea2e",
+      "revision": 1,
+      "delivery": "followUp",
+      "target": {
+        "processInstanceId": "7d6ab37c-5f39-4509-b384-bb521626584a",
+        "connectionGeneration": "b54ac0a5-43d2-4136-ade8-29015b264370",
+        "configContextId": "481b73aae294b688595190049d985c20c3948838129ea5f47e2b7c0df4755078",
+        "nativeSessionRef": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s3-package-aEaRQ4/app-data/native-sessions/710af8c4-1793-43e9-a31b-6b1a361c4991/2026-09-30T04-19-46-232Z_01a0f08a-3bb8-7000-a96b-5ce09092825a.jsonl"
+      },
+      "requestId": "a55b3674-e0e5-4912-bf95-587fa090d624",
+      "createdAt": "2026-09-30T04:19:46.711Z",
+      "updatedAt": "2026-09-30T04:19:46.724Z",
+      "acknowledgedAt": "2026-09-30T04:19:46.724Z",
+      "outcome": "unobserved",
+      "state": "acknowledged"
+    },
+    {
+      "submissionId": "641c5d6e-2f4a-42cd-badb-2c4b25120907",
+      "threadId": "710af8c4-1793-43e9-a31b-6b1a361c4991",
+      "traceId": "f0c1b9ca-1617-4888-aef6-945b6ef13cf1",
+      "revision": 3,
+      "delivery": "followUp",
+      "target": {
+        "processInstanceId": "7d6ab37c-5f39-4509-b384-bb521626584a",
+        "connectionGeneration": "b54ac0a5-43d2-4136-ade8-29015b264370",
+        "configContextId": "481b73aae294b688595190049d985c20c3948838129ea5f47e2b7c0df4755078",
+        "nativeSessionRef": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s3-package-aEaRQ4/app-data/native-sessions/710af8c4-1793-43e9-a31b-6b1a361c4991/2026-09-30T04-19-46-232Z_01a0f08a-3bb8-7000-a96b-5ce09092825a.jsonl"
+      },
+      "requestId": "8b6ec57d-d814-45ee-814b-4bd7916d454b",
+      "createdAt": "2026-09-30T04:19:47.585Z",
+      "updatedAt": "2026-09-30T04:19:47.588Z",
+      "acknowledgedAt": "2026-09-30T04:19:47.588Z",
+      "outcome": "unobserved",
+      "state": "acknowledged"
+    },
+    {
+      "submissionId": "df569630-d4d2-45f8-9278-f038db0d0727",
+      "threadId": "710af8c4-1793-43e9-a31b-6b1a361c4991",
+      "traceId": "447aa0ad-1d9b-42be-976b-efd7ecd7bfaf",
+      "revision": 7,
+      "delivery": "followUp",
+      "target": {
+        "processInstanceId": "7d6ab37c-5f39-4509-b384-bb521626584a",
+        "connectionGeneration": "b54ac0a5-43d2-4136-ade8-29015b264370",
+        "configContextId": "481b73aae294b688595190049d985c20c3948838129ea5f47e2b7c0df4755078",
+        "nativeSessionRef": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-s3-package-aEaRQ4/app-data/native-sessions/710af8c4-1793-43e9-a31b-6b1a361c4991/2026-09-30T04-19-46-232Z_01a0f08a-3bb8-7000-a96b-5ce09092825a.jsonl"
+      },
+      "requestId": "51c0f20f-8557-449c-a0c3-c4a54ee70176",
+      "createdAt": "2026-09-30T04:19:49.851Z",
+      "updatedAt": "2026-09-30T04:19:50.281Z",
+      "state": "acknowledged",
+      "acknowledgedAt": "2026-09-30T04:19:49.862Z",
+      "outcome": "unknown"
+    }
+  ],
+  "build": {
+    "version": "0.1.0-s4.0",
+    "commit": "441b27b42e68cdc155ef30d2f6fc05ce821ae072",
+    "dirty": false,
+    "id": "441b27b4-1525b713"
+  },
+  "checks": [
+    "v1 migration",
+    "real browser composition events block dispatch (CDP, not system IME)",
+    "two turns and native write",
+    "same live session after window reload",
+    "raw CRLF/CR/LF file and diff selection",
+    "frozen input references after disk refresh and renderer reload",
+    "theme and density",
+    "language changes retain the mounted editor and exact references",
+    "ACK then native child interrupted",
+    "unknown persisted without resend",
+    "same-trace receipt outcome and distinct Host exit",
+    "cold reopen remains read-only with preserved history, draft and file access"
+  ],
+  "coldRecovery": {
+    "providerCalls": 4,
+    "sameNativeSession": true,
+    "outcome": "unknown",
+    "nativeChildSpawned": false
+  },
+  "artifact": {
+    "path": "/Users/lou/Learn/d-pi/dist/mac-arm64/d-pi.app",
+    "appAsarSha256": "4fce57efd0cd44fd2c1892be8ffd96a8d86658593770bb41fdd1f6f6204b1458",
+    "testedCopyMatches": true,
+    "platform": "darwin-arm64",
+    "signed": false
+  }
+}

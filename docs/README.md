@@ -21,7 +21,7 @@
 
 ## 工作记录
 
-[重写准备与执行](../.scratch/rewrite-preparation/spec.md)组织当前工作；[M1 开发准备](../.scratch/development-foundation/spec.md)保存阶段和跨模块责任。各切片范围、授权、工程状态、试用及继续边界直接读取所属规格：
+[重写准备与执行](../.scratch/rewrite-preparation/spec.md)组织当前工作，对应构建与试用步骤见[重写交接](../.scratch/rewrite-preparation/handoff.md)；[M1 开发准备](../.scratch/development-foundation/spec.md)保存阶段和跨模块责任。各切片范围、授权、工程状态、试用及继续边界直接读取所属规格：
 
 - [S1 项目与草稿](../.scratch/m1-s1-project-draft/spec.md)、[S1 巩固](../.scratch/m1-s1-project-draft/hardening.md)、[S2 提交与阅读](../.scratch/m1-s2-submit-read/spec.md)。
 - [S3 控制与恢复](../.scratch/m1-s3-control-recovery/spec.md)、[i18n 基础](../.scratch/i18n-foundation/spec.md)、[S4 文件与差异](../.scratch/m1-s4-files-diff/spec.md)。

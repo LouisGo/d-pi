@@ -1,0 +1,16 @@
+
+> d-pi@0.1.0-s4.0 test /Users/lou/Learn/d-pi
+> node scripts/test.mjs vitest src/modules/input/renderer src/modules/input/core/references/serialize.test.ts src/modules/files/core/selection.test.ts
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/lou/Learn/d-pi[39m
+
+ [32m✓[39m src/modules/files/core/selection.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/modules/input/core/references/serialize.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/modules/input/renderer/selection-insert.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m src/modules/input/renderer/plain-text-paste.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m4 passed[39m[22m[90m (4)[39m
+[2m      Tests [22m [1m[32m17 passed[39m[22m[90m (17)[39m
+[2m   Start at [22m 12:11:26
+[2m   Duration [22m 236ms[2m (import 50%, transform 41%, tests 7%, worker 3%)[22m

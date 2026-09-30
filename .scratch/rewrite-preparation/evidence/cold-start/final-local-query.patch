@@ -1,0 +1,186 @@
+diff --git a/architecture/dependencies.generated.json b/architecture/dependencies.generated.json
+index 9d91af7..42ae3b8 100644
+--- a/architecture/dependencies.generated.json
++++ b/architecture/dependencies.generated.json
+@@ -3 +3 @@
+-  "inputsHash": "371484e332517126f585428356dc71ab86e0d03bdfc9148389f1cf57af94ece9",
++  "inputsHash": "660e82aea908e3fb985bc2d29f4845abb0e849de7ffa077f3a3d5b45fc56891e",
+@@ -145 +145 @@
+-      "lines": 1638,
++      "lines": 1686,
+diff --git a/src/modules/files/renderer/queries.test.ts b/src/modules/files/renderer/queries.test.ts
+index 6913bd8..d398946 100644
+--- a/src/modules/files/renderer/queries.test.ts
++++ b/src/modules/files/renderer/queries.test.ts
+@@ -52 +52 @@ it("isolates snapshots by the actual workspace and directory, while ignoring bri
+-it("never sends an unselected file read through fetchQuery or refetch", async () => {
++it("never sends an unselected file read through observation, fetchQuery or refetch", async () => {
+@@ -62 +61,0 @@ it("never sends an unselected file read through fetchQuery or refetch", async ()
+-  await client_.fetchQuery(options);
+@@ -65,5 +64,54 @@ it("never sends an unselected file read through fetchQuery or refetch", async ()
+-  const result = await observer.refetch();
+-  expect(requests).toBe(0);
+-  expect(result.data).toBeNull();
+-  release();
+-  client_.clear();
++  try {
++    const initial = observer.getCurrentResult();
++    expect(initial.isEnabled).toBe(false);
++    expect(initial.fetchStatus).toBe("idle");
++    expect(requests).toBe(0);
++    expect(await client_.fetchQuery(options)).toBeNull();
++    const result = await observer.refetch();
++    expect(requests).toBe(0);
++    expect(result.data).toBeNull();
++  } finally {
++    release();
++    client_.clear();
++  }
++});
++
++it("does not display a late file sample after the selection is cleared", async () => {
++  const client_ = client();
++  let finishRead: (reply: FileReply) => void = () => {};
++  let requests = 0;
++  const bridge: FileBridge = {
++    request: () => {
++      requests += 1;
++      return new Promise<FileReply>((accept) => {
++        finishRead = accept;
++      });
++    },
++  };
++  const observer = new QueryObserver(
++    client_,
++    fileQueryOptions.content(bridge, resource, undefined),
++  );
++  const release = observer.subscribe(() => {});
++  try {
++    observer.setOptions(fileQueryOptions.content(bridge, resource, "slow.ts"));
++    const reading = observer.refetch();
++    expect(observer.getCurrentResult().isFetching).toBe(true);
++    expect(requests).toBe(1);
++
++    observer.setOptions(fileQueryOptions.content(bridge, resource, undefined));
++    finishRead(text("slow.ts", "late sample"));
++    await reading;
++
++    const current = observer.getCurrentResult();
++    expect(current.isEnabled).toBe(false);
++    expect(current.fetchStatus).toBe("idle");
++    expect(current.data).toBeUndefined();
++    expect(
++      client_.getQueryData(fileKeys.content(resource, "slow.ts")),
++    ).toMatchObject({ text: "late sample" });
++    expect(requests).toBe(1);
++  } finally {
++    release();
++    client_.clear();
++  }
+diff --git a/tests/integration/file-content-query.integration.test.ts b/tests/integration/file-content-query.integration.test.ts
+new file mode 100644
+index 0000000..dc6ae5f
+--- /dev/null
++++ b/tests/integration/file-content-query.integration.test.ts
+@@ -0,0 +1,101 @@
++import {
++  onlineManager,
++  QueryClient,
++  QueryClientProvider,
++} from "@tanstack/react-query";
++import { createElement } from "react";
++import { renderToStaticMarkup } from "react-dom/server";
++import { expect, it } from "vitest";
++import {
++  type FileBridge,
++  type FileReply,
++  type FileRequest,
++  FileRequestSchema,
++} from "../../src/modules/files/contracts/public";
++import {
++  fileQueryOptions,
++  refreshFiles,
++  useFileContent,
++} from "../../src/modules/files/renderer/public";
++import { ThreadContextSchema } from "../../src/modules/workspace/contracts/public";
++
++const resource = ThreadContextSchema.parse({
++  threadId: crypto.randomUUID(),
++  workspaceId: crypto.randomUUID(),
++  directory: "/fixture/project",
++});
++
++function FileContent({ files }: { files: FileBridge }) {
++  const { data } = useFileContent({ files, resource, path: "selected.ts" });
++  return data?.kind === "text"
++    ? createElement(
++        "pre",
++        { "data-version": data.version, "data-captured-at": data.capturedAt },
++        data.text,
++      )
++    : createElement("p", null, "No sample");
++}
++
++it("shares a local offline sample between imperative reads and the public React hook, then refreshes explicitly", async () => {
++  const client = new QueryClient({
++    defaultOptions: { queries: { retry: false, staleTime: Infinity } },
++  });
++  const requests: FileRequest[] = [];
++  let sample: FileReply = {
++    kind: "text",
++    path: "selected.ts",
++    text: "first sample",
++    bytes: 12,
++    version: "v1",
++    capturedAt: "2026-09-30T00:00:00.000Z",
++    coverage: "complete",
++  };
++  const files: FileBridge = {
++    request: (request) => {
++      requests.push(FileRequestSchema.parse(request));
++      return Promise.resolve(sample);
++    },
++  };
++  const render = () =>
++    renderToStaticMarkup(
++      createElement(
++        QueryClientProvider,
++        { client },
++        createElement(FileContent, { files }),
++      ),
++    );
++  const wasOnline = onlineManager.isOnline();
++  onlineManager.setOnline(false);
++  try {
++    const options = fileQueryOptions.content(files, resource, "selected.ts");
++    expect(await client.fetchQuery(options)).toEqual(sample);
++    expect(render()).toBe(
++      '<pre data-version="v1" data-captured-at="2026-09-30T00:00:00.000Z">first sample</pre>',
++    );
++    expect(requests).toHaveLength(1);
++    expect(requests[0]).toMatchObject({
++      kind: "read",
++      threadId: resource.threadId,
++      path: "selected.ts",
++    });
++
++    sample = {
++      ...sample,
++      text: "second sample",
++      bytes: 13,
++      version: "v2",
++      capturedAt: "2026-09-30T00:01:00.000Z",
++    };
++    expect(render()).toContain("first sample");
++    expect(requests).toHaveLength(1);
++    refreshFiles(client, resource);
++    expect(await client.fetchQuery(options)).toEqual(sample);
++    expect(render()).toBe(
++      '<pre data-version="v2" data-captured-at="2026-09-30T00:01:00.000Z">second sample</pre>',
++    );
++    expect(requests).toHaveLength(2);
++  } finally {
++    onlineManager.setOnline(wasOnline);
++    client.clear();
++  }
++});

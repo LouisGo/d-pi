@@ -1,0 +1,9 @@
+diff --git a/src/app/renderer/styles/tokens.css b/src/app/renderer/styles/tokens.css
+index d894f11..3dae2ee 100644
+--- a/src/app/renderer/styles/tokens.css
++++ b/src/app/renderer/styles/tokens.css
+@@ -57,2 +57,2 @@
+-  --control-height: 2rem;
+-  --control-padding: 0.625rem;
++  --control-height: 1.75rem;
++  --control-padding: 0.5rem;
