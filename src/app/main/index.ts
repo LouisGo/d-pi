@@ -171,6 +171,19 @@ const closeResult = z.strictObject({ token: z.uuid(), saved: z.boolean() });
 const traceContext = z.object({
   command: z.object({ traceId: TraceIdSchema }),
 });
+const DevelopmentRendererUrlSchema = z.string().refine((value) => {
+  try {
+    const url = new URL(value);
+    return (
+      ["http:", "https:"].includes(url.protocol) &&
+      ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname) &&
+      !url.username &&
+      !url.password
+    );
+  } catch {
+    return false;
+  }
+});
 function runtimeFailure(
   traceId: string,
   error: unknown,
@@ -281,8 +294,11 @@ function createWindow(): void {
         createWindow();
       });
   });
-  if (process.env.ELECTRON_RENDERER_URL)
-    void current.loadURL(process.env.ELECTRON_RENDERER_URL);
+  // Only the built-in renderer or a local development server receives preload.
+  const development = app.isPackaged
+    ? undefined
+    : DevelopmentRendererUrlSchema.safeParse(process.env.ELECTRON_RENDERER_URL);
+  if (development?.success) void current.loadURL(development.data);
   else
     void current.loadFile(join(import.meta.dirname, "../renderer/index.html"));
 }
