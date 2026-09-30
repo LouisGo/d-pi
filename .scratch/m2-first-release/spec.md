@@ -1,0 +1,48 @@
+# M2 首版实施
+
+```project-status
+[
+  {
+    "id": "first-release",
+    "title": "M2 首版",
+    "phase": "M2",
+    "engineering": "in-progress",
+    "trial": "not-delivered",
+    "acceptance": "pending",
+    "current": true,
+    "pending": [
+      "../m1-s3-control-recovery/issues/09-quit-discard-decision.md"
+    ],
+    "evidence": [
+      "../../docs/product/first-release.md"
+    ],
+    "next": "实施可反复使用的配置/认证、模型与项目/会话入口，再逐功能完成 V1-00–10",
+    "constraints": "仅本地 commit/候选，不 push、不公开发布、不扩 M3；冷恢复只读，unknown 不自动重发；S3 退出放弃待决仅暂停依赖部分。"
+  }
+]
+```
+
+2026-09-30。起点 `1913abe`，分支 `main`；已有未提交 `package.json` 的 packageManager 变更（10.5.2 → 12.8.1）保留，不纳入本轮提交。实际 HEAD/工作树与验证优先于历史路径。
+
+## 推进与交接
+
+- 授权：用户明确正式开启 M2，包含文档、源码、测试、工程配置、macOS GUI/原生验证、候选包与分批本地 commit；不 push、不公开发布、不扩 M3，不需逐票重复授权。
+- 交付：按 [V1-00–10](../../docs/product/first-release.md#首版-m2-验收清单内部-m1-是子集见基础契约-8)逐功能完成，优先可重复配置、认证、模型、项目与 Thread 主流程。接续 [S5 体验反馈](../m1-s5-combination-acceptance/spec.md#2026-09-30-体验反馈与完成口径)，M1 工程完成不等于用户认可。
+- 已定：D-02–D-08、D-10/D-11、D-20–D-27、D-28–D-37；沿用 OMP 执行、队列、原生历史、配置与凭据所有权，App 草稿/冻结原文/收据事务不改变。
+- 重要待决：无新增。[S3 09](../m1-s3-control-recovery/issues/09-quit-discard-decision.md)退出放弃队列待决，仅暂停对应出口；缺全周期单写证据的冷恢复只读，提供明确新建独立 Thread 出口，不冒称恢复旧执行。
+- 工程：正在实施；既有正确路径复用当前相关证据，新增缺口先失败行为测试。测试隔离 App 数据、OMP 配置、HOME、Git 配置、项目及网络；不继承个人凭据。真实供应商缺账户/费用授权仅暂停实测，不阻塞薄桥接及 fixture 验证。
+- 用户试用：尚未交付 M2 候选；每段可操作体验及时给出对应源码、包身份、步骤及实际证据。Agent 验证和用户认可独立。
+- 继续边界：本授权内持续实施，不重做基建审计。重大产品/权限/数据合同变化才对齐；签名、公证、公开分发及 M3 不纳入。
+
+## 首版覆盖与近期任务
+
+| 票 | 路径 | 结果/验收 |
+| --- | --- | --- |
+| [01 项目与 Thread](issues/01-project-threads.md) | V1-03/09 | 随时打开项目、新建/切换 Thread，切换先保存且不停止后台；冷重开列表与只读恢复，身份/草稿/回执隔离 |
+| [02 配置、认证与模型](issues/02-configuration-models.md) | V1-01/02 | 同一原生配置上下文，已有配置复用，两条原生认证、取消/重试及实际模型/档位选择；秘密不落 App 数据/日志 |
+| [03 主流程候选](issues/03-entry-candidate.md) | V1-10 | 清晰流程、真实 macOS 包/原生/GUI 验证、可重复隔离试用与对应 SHA |
+| [04 输入与附件](issues/04-input-attachments.md) | V1-04 | 结构粘贴、@ 文件、截图/拖入/文件/PDF、预览/缩放/删除/重排、真实编码预检，无静默丢失 |
+| [05 队列与子 Agent](issues/05-queue-subagent.md) | V1-02/05/06 | 原生队列编辑/删除/重排消费竞争，Thread 子 Agent 覆盖与并行隔离、状态/结果观察 |
+| [06 阅读与组合验收](issues/06-reading-acceptance.md) | V1-00/07/08/09/10 | 长输出/复制/阅读保留、来源 Diff、恢复、固定负载与故障、最终 macOS 候选，逐路径实际证据 |
+
+近期接口与方法由 Agent 按当前源码细化；后续票可按实际需要拆分，不为全部风险先建验证项目。V1 只有实际完成并验证的组合可标通过。

@@ -22,18 +22,6 @@ title: 模块设计与 M1 开发准备
     "constraints": "执行全周期单写尚未证实，冷恢复只读；不是全部能力一次性验收。"
   },
   {
-    "id": "first-release",
-    "title": "M2 首版",
-    "phase": "M2",
-    "engineering": "planned",
-    "trial": "not-delivered",
-    "acceptance": "pending",
-    "evidence": [
-      "../../docs/product/first-release.md"
-    ],
-    "next": "未启动，按首版范围逐功能授权"
-  },
-  {
     "id": "enhancements",
     "title": "M3 后续增强",
     "phase": "M3",

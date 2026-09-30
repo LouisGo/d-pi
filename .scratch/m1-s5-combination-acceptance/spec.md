@@ -10,10 +10,10 @@
     "trial": "feedback",
     "acceptance": "pending",
     "pending": ["../m1-s3-control-recovery/issues/09-quit-discard-decision.md"],
-    "current": true,
+    "current": false,
     "build": "0.1.0-s5.0 / 4b003e84-4c6aa4ad",
     "evidence": ["handoff.md", "evidence/acceptance.md", "evidence/final-s5-result.json", "evidence/frozen-review.md"],
-    "next": "已收到无法有效试用的体验反馈；明确实际入口缺口及后续范围，M2 尚未授权启动",
+    "next": "M1 工程完成、用户未认可；入口反馈由已授权 M2 接续处理",
     "constraints": "不 push、不公开发布、不扩 M2/M3；冷恢复只读，unknown 不自动重发；暂停队列放弃出口继续待决。"
   }
 ]
@@ -59,3 +59,7 @@
 | [01 组合路径](issues/01-combination.md) | 矩阵、可重复隔离组合验证与必要红绿补修 | 无 |
 | [02 候选与原生视觉](issues/02-candidate-native.md) | 对应源码的 macOS 候选、受影响 GUI/原生证据及试用步骤 | 01 |
 | [03 冻结审阅与交付](issues/03-review-handoff.md) | 独立高风险补修审阅、工程检查、SHA/哈希与未关闭影响 | 01、02 |
+
+## 2026-09-30 M2 授权接续
+
+用户明确授权 [M2 首版](../m2-first-release/spec.md)持续实施，覆盖文档、源码、测试、工程配置、macOS GUI/原生验证、候选与本地 commit。此前 S5 不扩 M2 的限制只适用于当时切片；M1 未获用户认可，反馈由 M2 接续处理。S3 退出待决和冷恢复只读继续有效。
