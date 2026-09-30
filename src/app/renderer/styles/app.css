@@ -116,7 +116,7 @@
   .thread-setup {
     flex-shrink: 1;
     min-height: 0;
-    max-height: 40vh;
+    max-height: var(--thread-setup-max-height);
     overflow-y: auto;
   }
   .thread-reading {

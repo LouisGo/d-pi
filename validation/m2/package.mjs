@@ -380,12 +380,13 @@ try {
     const editor=document.querySelector('[contenteditable=true]');
     const send=Array.from(document.querySelectorAll('button')).find(b=>b.textContent.trim()==='发送');
     const e=editor.getBoundingClientRect(), b=send.getBoundingClientRect();
-    return { editorTop:e.top, editorBottom:e.bottom, sendBottom:b.bottom, height:innerHeight };
+    return { editorTop:e.top, editorBottom:e.bottom, sendBottom:b.bottom, readingHeight:document.querySelector(".thread-reading").getBoundingClientRect().height, height:innerHeight };
   })()`);
   assert.ok(
     inputLayout.editorTop >= 0 &&
       inputLayout.editorBottom <= inputLayout.height &&
-      inputLayout.sendBottom <= inputLayout.height,
+      inputLayout.sendBottom <= inputLayout.height &&
+      inputLayout.readingHeight >= 100,
     JSON.stringify(inputLayout),
   );
   await click("只读文件与当前差异");
