@@ -187,7 +187,7 @@ export function Composer({
           {status}
         </span>
       </div>
-      <EditorContent editor={editor} />
+      <EditorContent className="composer-editor" editor={editor} />
       <div className="composer-footer">
         <span>
           {expanded || preference === "enter-newline"

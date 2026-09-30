@@ -37,6 +37,7 @@
   --sidebar-width: 15rem;
   --content-width: 50rem;
   --editor-height: 8rem;
+  --composer-max-height: 24vh;
   --editor-max-height: 45vh;
 }
 :root[data-theme="dark"] {

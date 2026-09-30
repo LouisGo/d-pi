@@ -20,6 +20,10 @@ export function ConfigurationSettings({
   const [answer, setAnswer] = useState("");
   const eventRef = useRef<ConfigurationEvent | null>(null);
   const [event, setEvent] = useState<ConfigurationEvent | null>(null);
+  const [challenge, setChallenge] = useState<Extract<
+    ConfigurationEvent,
+    { kind: "challenge" }
+  > | null>(null);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const query = useQuery({
@@ -32,8 +36,10 @@ export function ConfigurationSettings({
       bridge.subscribe((next) => {
         eventRef.current = next;
         setEvent(next);
+        if (next.kind === "challenge") setChallenge(next);
         if (next.kind === "finished") {
           setBusy(false);
+          setChallenge(null);
           setAnswer("");
           void client.invalidateQueries({ queryKey: ["configuration"] });
         }
@@ -42,6 +48,7 @@ export function ConfigurationSettings({
   );
   const request = async (command: ConfigurationCommand) => {
     setBusy(true);
+    if (command.kind === "login") setChallenge(null);
     setResult(null);
     try {
       const reply = await bridge.request(command);
@@ -161,15 +168,15 @@ export function ConfigurationSettings({
           )}
           {active && event && (
             <div role="status">
-              {event.kind === "challenge" && (
+              {challenge && challenge.jobId === event.jobId && (
                 <>
-                  <p>{event.instructions}</p>
+                  <p>{challenge.instructions}</p>
                   <button
                     type="button"
                     onClick={() =>
                       void bridge.request({
                         kind: "open-login",
-                        jobId: event.jobId,
+                        jobId: challenge.jobId,
                         traceId: crypto.randomUUID(),
                       })
                     }

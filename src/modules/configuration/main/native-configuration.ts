@@ -24,12 +24,22 @@ export class NativeConfiguration {
   private mutation = false;
   private readonly children = new Set<ChildProcessWithoutNullStreams>();
   private event: ConfigurationEvent | null = null;
+  private challenge: Extract<ConfigurationEvent, { kind: "challenge" }> | null =
+    null;
   private announce(event: ConfigurationEvent): void {
     this.event = event;
+    if (event.kind === "challenge") this.challenge = event;
+    if (event.kind === "finished") this.challenge = null;
     this.publish(event);
   }
-  currentEvent(): ConfigurationEvent | null {
-    return this.event;
+  currentEvents(): ConfigurationEvent[] {
+    const event = this.event;
+    if (!event) return [];
+    return this.challenge &&
+      this.challenge.jobId === event.jobId &&
+      event.kind !== "challenge"
+      ? [this.challenge, event]
+      : [event];
   }
   constructor(
     private readonly resources: string,

@@ -274,7 +274,7 @@ try {
   await click("启动 OMP");
   await wait(() =>
     evaluate(
-      "document.querySelector('.runtime-panel').textContent.includes('fixture/fixture-b')",
+      "document.querySelector('.model-controls').textContent.includes('fixture/fixture-b')",
     ),
   );
   await insert("M2_FIRST_INPUT");
@@ -297,7 +297,7 @@ try {
   await click("启动 OMP");
   await wait(() =>
     evaluate(
-      "document.querySelector('.runtime-panel').textContent.includes('fixture/fixture-a')",
+      "document.querySelector('.model-controls').textContent.includes('fixture/fixture-a')",
     ),
   );
   await insert("M2_SECOND_INPUT");
@@ -376,6 +376,29 @@ try {
   checks.push(
     "renderer reload reconnects same native sessions without resending",
   );
+  const inputLayout = await evaluate(`(()=>{
+    const editor=document.querySelector('[contenteditable=true]');
+    const send=Array.from(document.querySelectorAll('button')).find(b=>b.textContent.trim()==='发送');
+    const e=editor.getBoundingClientRect(), b=send.getBoundingClientRect();
+    return { editorTop:e.top, editorBottom:e.bottom, sendBottom:b.bottom, height:innerHeight };
+  })()`);
+  assert.ok(
+    inputLayout.editorTop >= 0 &&
+      inputLayout.editorBottom <= inputLayout.height &&
+      inputLayout.sendBottom <= inputLayout.height,
+    JSON.stringify(inputLayout),
+  );
+  await click("只读文件与当前差异");
+  assert.equal(
+    await evaluate(
+      "document.querySelector('[contenteditable=true]').textContent",
+    ),
+    "A_UNSENT_DRAFT",
+  );
+  await click("会话");
+  checks.push(
+    "composer and send action stay inside window; switching reading view preserves draft",
+  );
   screenshots.push(await shot("m2-parallel-entry"));
   if (process.argv.includes("--inspect")) {
     const checkpoint = join(isolated.root, "inspect-checkpoint.json"),
@@ -399,7 +422,7 @@ try {
           resumeFile: resume,
           expiresAt,
           instructions:
-            "Inspect only this isolated App. Test native Open Project with secondProject and cancel, system IME and cancel-login. Do not send real provider requests. Create resumeFile within 5 minutes.",
+            "Inspect only this isolated App. Test native Open Project with secondProject and cancel, system IME and cancel-login. Do not send real provider requests. Create resumeFile within 10 minutes.",
         },
         null,
         2,

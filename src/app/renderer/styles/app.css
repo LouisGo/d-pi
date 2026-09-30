@@ -19,6 +19,9 @@
 }
 @layer components {
   .configuration-settings {
+    flex-shrink: 0;
+    max-height: 40vh;
+    overflow-y: auto;
     margin: var(--layout-gap) var(--panel-padding);
     border: 1px solid var(--border);
     border-radius: var(--radius);
@@ -86,12 +89,51 @@
     margin-top: var(--panel-padding);
   }
   .runtime-panel {
-    display: flex;
-    flex-direction: column;
-    gap: var(--layout-gap);
-    padding: var(--panel-padding);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: calc(var(--layout-gap) / 2);
+    padding: var(--layout-gap);
     border: 1px solid var(--border);
     border-radius: var(--radius);
+  }
+  .runtime-panel > p,
+  .runtime-panel > div,
+  .runtime-panel > .native-interactions {
+    grid-column: 1 / -1;
+  }
+  .runtime-panel > .native-interactions:empty {
+    display: none;
+  }
+  .thread-workspace {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--layout-gap) / 2);
+    height: 100%;
+    min-height: 0;
+  }
+  .thread-setup {
+    flex-shrink: 1;
+    min-height: 0;
+    max-height: 40vh;
+    overflow-y: auto;
+  }
+  .thread-reading {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  .reading-navigation {
+    display: flex;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+    gap: calc(var(--layout-gap) / 2);
+  }
+  .reading-navigation [aria-pressed="true"] {
+    color: var(--primary);
+    background: var(--muted);
   }
   .app-shell {
     display: flex;
@@ -164,7 +206,9 @@
     flex-basis: 100%;
   }
   .workbench {
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     min-width: 0;
     flex: 1;
   }
@@ -188,6 +232,9 @@
     outline-offset: 2px;
   }
   .work-content {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
     width: 100%;
     max-width: var(--content-width);
     margin-inline: auto;
@@ -226,6 +273,8 @@
     flex-shrink: 0;
   }
   .composer {
+    flex-shrink: 0;
+    background: var(--background);
     border: 1px solid var(--border);
     border-radius: var(--radius);
   }
@@ -247,7 +296,7 @@
   .tiptap {
     padding: var(--panel-padding);
     min-height: var(--editor-height);
-    max-height: max(var(--editor-height), var(--editor-max-height));
+    max-height: max(var(--editor-height), var(--composer-max-height));
     overflow-y: auto;
     line-height: 1.7;
     white-space: pre-wrap;
@@ -375,8 +424,21 @@
     max-height: var(--editor-max-height);
     overflow: auto;
   }
+  .composer[data-expanded="true"] {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .composer[data-expanded="true"] .composer-editor {
+    flex: 1;
+    min-height: 0;
+  }
   .composer[data-expanded="true"] .tiptap {
-    min-height: var(--editor-max-height);
+    height: 100%;
+    min-height: 0;
+    max-height: none;
   }
 }
 

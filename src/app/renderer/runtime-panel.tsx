@@ -90,9 +90,6 @@ export function RuntimePanel({
         <summary>{t("ui.runtime.details")}</summary>
         <span className="muted">{formatMessage(state.configuration)}</span>
       </details>
-      {state.model && (
-        <span>{t("ui.runtime.model", { model: state.model })}</span>
-      )}
       <p className="muted">{formatMessage(state.message)}</p>
       {state.control &&
         (state.busy ||

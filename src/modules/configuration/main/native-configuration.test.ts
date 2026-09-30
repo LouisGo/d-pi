@@ -95,6 +95,21 @@ it("correlates native login, blocks unsafe browser URL and releases a cancelled 
     }),
   ).toMatchObject({ kind: "failed", code: "unsafe-login-url" });
   expect(open).not.toHaveBeenCalled();
+  process.stdout.write(
+    JSON.stringify({
+      traceId,
+      message: {
+        kind: "prompt",
+        jobId: result.jobId,
+        message: "Paste code",
+        secret: false,
+      },
+    }) + "\n",
+  );
+  expect(service.currentEvents().map((event) => event.kind)).toEqual([
+    "challenge",
+    "prompt",
+  ]);
   await service.execute({
     kind: "cancel",
     traceId: crypto.randomUUID(),
@@ -106,5 +121,6 @@ it("correlates native login, blocks unsafe browser URL and releases a cancelled 
     jobId: result.jobId,
     result: "cancelled",
   });
+  expect(service.currentEvents()).toEqual([events.at(-1)]);
   expect(process.kill).toHaveBeenCalledOnce();
 });

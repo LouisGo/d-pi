@@ -1,0 +1,42 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/MySpace/Life/d-pi[39m
+
+[90mstderr[2m | src/modules/configuration/renderer/settings.test.ts[2m > [22m[2mretains the native browser challenge while the later authorization-code prompt is displayed, then clears it on cancel
+[22m[39mThe current testing environment is not configured to support act(...)
+
+[90mstderr[2m | src/modules/configuration/renderer/settings.test.ts[2m > [22m[2mretains the native browser challenge while the later authorization-code prompt is displayed, then clears it on cancel
+[22m[39mThe current testing environment is not configured to support act(...)
+The current testing environment is not configured to support act(...)
+
+[90mstderr[2m | src/modules/configuration/renderer/settings.test.ts[2m > [22m[2mretains the native browser challenge while the later authorization-code prompt is displayed, then clears it on cancel
+[22m[39mThe current testing environment is not configured to support act(...)
+The current testing environment is not configured to support act(...)
+The current testing environment is not configured to support act(...)
+
+[90mstderr[2m | src/modules/configuration/renderer/settings.test.ts[2m > [22m[2mretains the native browser challenge while the later authorization-code prompt is displayed, then clears it on cancel
+[22m[39mThe current testing environment is not configured to support act(...)
+
+[90mstderr[2m | src/modules/configuration/renderer/settings.test.ts[2m > [22m[2mretains the native browser challenge while the later authorization-code prompt is displayed, then clears it on cancel
+[22m[39mThe current testing environment is not configured to support act(...)
+The current testing environment is not configured to support act(...)
+The current testing environment is not configured to support act(...)
+
+[90mstderr[2m | src/modules/configuration/renderer/settings.test.ts[2m > [22m[2mretains the native browser challenge while the later authorization-code prompt is displayed, then clears it on cancel
+[22m[39mThe current testing environment is not configured to support act(...)
+The current testing environment is not configured to support act(...)
+The current testing environment is not configured to support act(...)
+The current testing environment is not configured to support act(...)
+
+[90mstderr[2m | src/modules/configuration/renderer/settings.test.ts[2m > [22m[2mretains the native browser challenge while the later authorization-code prompt is displayed, then clears it on cancel
+[22m[39mThe current testing environment is not configured to support act(...)
+
+[90mstderr[2m | src/modules/configuration/renderer/settings.test.ts[2m > [22m[2mretains the native browser challenge while the later authorization-code prompt is displayed, then clears it on cancel
+[22m[39mThe current testing environment is not configured to support act(...)
+
+ [32m✓[39m src/modules/configuration/renderer/settings.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 56[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m   Start at [22m 00:29:40
+[2m   Duration [22m 563ms[2m (environment 53%, transform 21%, import 14%, tests 12%, worker 1%)[22m

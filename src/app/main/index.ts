@@ -418,8 +418,8 @@ else {
     });
     ipcMain.on("configuration:subscribe", (event) => {
       if (sourceValid(event)) {
-        const state = configuration?.currentEvent();
-        if (state) event.sender.send("configuration:state", state);
+        for (const state of configuration?.currentEvents() ?? [])
+          event.sender.send("configuration:state", state);
       }
     });
     ipcMain.handle("configuration:request", async (event, raw: unknown) => {

@@ -1,4 +1,4 @@
-import { type ComponentType, Fragment, useCallback, useState } from "react";
+import { type ComponentType, useCallback, useState } from "react";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import { FolderIcon } from "@/components/icons/common";
@@ -179,6 +179,9 @@ function ThreadWorkbench({
   const { t } = useI18n();
   const { thread, directoryAvailable } = threadSelection;
   const { submission } = thread;
+  const [readingView, setReadingView] = useState<
+    "conversation" | "files" | "submissions" | "history"
+  >("conversation");
   const [selectionAttachment, setSelectionAttachment] = useState<{
     id: string;
     threadId: string;
@@ -198,43 +201,73 @@ function ThreadWorkbench({
     [thread],
   );
   return (
-    <Fragment>
-      <div className="directory-info" title={thread.context.directory}>
-        <FolderIcon />
-        <h1>{thread.context.directory.split("/").filter(Boolean).at(-1)}</h1>
-        <span className="muted">{thread.context.directory}</span>
+    <section className="thread-workspace">
+      <div className="thread-setup">
+        <div className="directory-info" title={thread.context.directory}>
+          <FolderIcon />
+          <h1>{thread.context.directory.split("/").filter(Boolean).at(-1)}</h1>
+          <span className="muted">{thread.context.directory}</span>
+        </div>
+        {!directoryAvailable && (
+          <p className="failure" role="alert">
+            {t("app.draft.directoryUnavailable")}
+          </p>
+        )}
+        {model.configuration && (
+          <ModelControls thread={thread} bridge={model.configuration} />
+        )}
+        {thread.runtime && (
+          <RuntimePanel
+            model={thread.runtime}
+            submission={thread.submission}
+            // Post-default user answers become a new steering instruction
+            // (2026-09-28 decision), not a follow-up.
+            onFollowUp={
+              submission
+                ? (text: string) => submission.sendText(text, "steer")
+                : undefined
+            }
+          />
+        )}
       </div>
-      {!directoryAvailable && (
-        <p className="failure" role="alert">
-          {t("app.draft.directoryUnavailable")}
-        </p>
-      )}
-      {model.configuration && (
-        <ModelControls thread={thread} bridge={model.configuration} />
-      )}
-      {thread.runtime && (
-        <RuntimePanel
-          model={thread.runtime}
-          submission={thread.submission}
-          // Post-default user answers become a new steering instruction
-          // (2026-09-28 decision), not a follow-up.
-          onFollowUp={
-            submission
-              ? (text: string) => submission.sendText(text, "steer")
-              : undefined
-          }
-        />
-      )}
-      {thread.reading && <Conversation model={thread.reading} />}
-      <Composer
-        thread={thread}
-        model={model}
-        selectionAttachment={selectionAttachment}
-        onAttachmentApplied={onAttachmentApplied}
-      />
-      {model.files && model.git && (
-        <details className="code-tools">
-          <summary>{t("ui.files.section")}</summary>
+      <nav
+        className="reading-navigation"
+        aria-label={t("app.reading.navigation")}
+      >
+        <Button
+          variant="ghost"
+          aria-pressed={readingView === "conversation"}
+          onClick={() => setReadingView("conversation")}
+        >
+          {t("ui.conversation.heading")}
+        </Button>
+        <Button
+          variant="ghost"
+          aria-pressed={readingView === "files"}
+          onClick={() => setReadingView("files")}
+        >
+          {t("ui.files.section")}
+        </Button>
+        <Button
+          variant="ghost"
+          aria-pressed={readingView === "submissions"}
+          onClick={() => setReadingView("submissions")}
+        >
+          {t("app.reading.submissions")}
+        </Button>
+        <Button
+          variant="ghost"
+          aria-pressed={readingView === "history"}
+          onClick={() => setReadingView("history")}
+        >
+          {t("app.reading.history")}
+        </Button>
+      </nav>
+      <div className="thread-reading">
+        {readingView === "conversation" && thread.reading && (
+          <Conversation model={thread.reading} />
+        )}
+        {readingView === "files" && model.files && model.git && (
           <FilePanel
             resource={thread.context}
             files={model.files}
@@ -242,12 +275,20 @@ function ThreadWorkbench({
             editor={editor}
             onAttach={onAttach}
           />
-        </details>
-      )}
-      {submission && <Submissions model={submission} />}
-      {model.history && (
-        <History bridge={model.history} threadId={thread.context.threadId} />
-      )}
-    </Fragment>
+        )}
+        {readingView === "submissions" && submission && (
+          <Submissions model={submission} />
+        )}
+        {readingView === "history" && model.history && (
+          <History bridge={model.history} threadId={thread.context.threadId} />
+        )}
+      </div>
+      <Composer
+        thread={thread}
+        model={model}
+        selectionAttachment={selectionAttachment}
+        onAttachmentApplied={onAttachmentApplied}
+      />
+    </section>
   );
 }

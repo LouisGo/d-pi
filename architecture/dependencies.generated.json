@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "e2e0166970c3e579abd8abefdf8378864124af753df3f237847f75b4b4c1a042",
+  "inputsHash": "549d1523a69dffba22cd4a96c4734618e8edd650633aa18f2d6b744565bf8cf7",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 204,
-    "scannedFiles": 204,
+    "sourceFiles": 205,
+    "scannedFiles": 205,
     "unscanned": []
   },
   "modules": [
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 54,
-      "lines": 10095,
+      "lines": 10148,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -98,7 +98,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 18,
-      "lines": 1276,
+      "lines": 1286,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -367,8 +367,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 7,
-      "lines": 692,
+      "files": 8,
+      "lines": 825,
       "publicEntries": [
         {
           "path": "src/modules/configuration/contracts/public.ts",
@@ -1820,6 +1820,13 @@
       "dependency": "platform",
       "targetEnvironment": "omp",
       "testOnly": false
+    },
+    {
+      "module": "configuration",
+      "environment": "renderer",
+      "dependency": "preferences",
+      "targetEnvironment": "renderer",
+      "testOnly": true
     },
     {
       "module": "configuration",
@@ -11396,6 +11403,78 @@
       "to": "src/modules/configuration/contracts/public.ts",
       "targetModule": "configuration",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings.test.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tanstack/react-query",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings.test.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings.test.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react-dom/client",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings.test.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings.test.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings.test.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/contracts/public.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings.test.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./settings",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/renderer/settings.tsx",
+      "targetModule": "configuration",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/modules/configuration/renderer/settings.tsx",
