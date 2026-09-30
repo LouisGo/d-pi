@@ -24,7 +24,27 @@ const generatedStart = previous.indexOf(generatedHeading);
 if (generatedStart < 0)
   throw Error("Missing generated dependency section in THIRD_PARTY_NOTICES.md");
 const afterHeading = previous.slice(generatedStart + generatedHeading.length);
-const nextSection = afterHeading.search(/^## /m);
+let nextSection = -1;
+let offset = 0;
+let fence;
+for (const line of afterHeading.match(/[^\n]*(?:\n|$)/g) ?? []) {
+  const marker = line.trimEnd().match(/^ {0,3}(`{3,}|~{3,})(.*)$/);
+  if (fence) {
+    if (
+      marker &&
+      marker[1][0] === fence[0] &&
+      marker[1].length >= fence.length &&
+      !marker[2].trim()
+    )
+      fence = undefined;
+  } else if (marker) fence = marker[1];
+  else if (/^## /.test(line)) {
+    nextSection = offset;
+    break;
+  }
+  offset += line.length;
+}
+if (fence) throw Error("Unclosed license fence; original notices left intact");
 // Only this section belongs to the UI dependency generator. SDK, Bun and
 // manually preserved upstream notices remain separate, even when listed later.
 const suffix = nextSection < 0 ? "" : afterHeading.slice(nextSection);
@@ -36,7 +56,13 @@ for (const [name, path] of [...packages].sort()) {
     /^licen[cs]e(?:\.\w+)?$/i.test(file),
   );
   if (!license) throw Error(`Missing license: ${name}`);
-  text += `\n### ${name}\n\n\`\`\`text\n${readFileSync(join(path, license), "utf8")}\n\`\`\`\n`;
+  const licenseText = readFileSync(join(path, license), "utf8");
+  const longest = [...licenseText.matchAll(/`+/g)].reduce(
+    (length, match) => Math.max(length, match[0].length),
+    2,
+  );
+  const delimiter = "`".repeat(longest + 1);
+  text += `\n### ${name}\n\n${delimiter}text\n${licenseText}\n${delimiter}\n`;
 }
 writeFileSync("THIRD_PARTY_NOTICES.md", text + (suffix ? `\n${suffix}` : ""));
 console.log(`Recorded ${packages.size} production license notices.`);

@@ -9,20 +9,39 @@ import { createTestEnvironment } from "../scripts/test-environment.mjs";
 // Focused real-Electron check for the privileged window. This does not start OMP
 // or exercise the entire GUI, and never inherits personal configuration.
 const argument = process.argv[2];
-const development = ["--development", "--development-untrusted"].includes(
-  argument,
-);
+const development = [
+  "--development",
+  "--development-untrusted",
+  "--development-redirect",
+  "--development-local-redirect",
+].includes(argument);
 if (!argument || (argument.startsWith("--") && !development))
   throw Error(
-    "Usage: node validation/security-window.mjs --development | --development-untrusted | <macOS app path>",
+    "Usage: node validation/security-window.mjs --development | --development-untrusted | --development-redirect | --development-local-redirect | <macOS app path>",
   );
 if (process.platform !== "darwin" || process.arch !== "arm64")
   throw Error("This native check currently supports verified macOS arm64 only");
 
 const rendererRoot = resolve("out/renderer");
 const requests = [];
+const outsideRequests = [];
+let fixtureUrl;
+let outsideUrl;
 const server = createServer(async (request, response) => {
+  if (request.headers.host?.startsWith("external.example.test:")) {
+    outsideRequests.push(request.url);
+    response.writeHead(200, { "Content-Type": "text/html" });
+    response.end("<!doctype html><title>outside renderer fixture</title>");
+    return;
+  }
   requests.push(request.url);
+  if (["/external-redirect", "/local-redirect"].includes(request.url)) {
+    response.writeHead(302, {
+      Location: request.url === "/external-redirect" ? outsideUrl : fixtureUrl,
+    });
+    response.end();
+    return;
+  }
   try {
     const path = resolve(
       rendererRoot,
@@ -48,15 +67,20 @@ const server = createServer(async (request, response) => {
   }
 });
 await new Promise((accept) => server.listen(0, "127.0.0.1", accept));
-const fixtureUrl = `http://127.0.0.1:${server.address().port}/index.html`;
+const fixtureOrigin = `http://127.0.0.1:${server.address().port}`;
+fixtureUrl = `${fixtureOrigin}/index.html`;
+outsideUrl = `http://external.example.test:${server.address().port}/outside.html`;
 const debugging = createServer();
 await new Promise((accept) => debugging.listen(0, "127.0.0.1", accept));
 const debugPort = debugging.address().port;
 await new Promise((accept) => debugging.close(accept));
 const inheritedUrl =
-  argument === "--development-untrusted"
-    ? "data:text/html,<script>document.title=typeof desktop</script>"
-    : fixtureUrl;
+  {
+    "--development-untrusted":
+      "data:text/html,<script>document.title=typeof desktop</script>",
+    "--development-redirect": `${fixtureOrigin}/external-redirect`,
+    "--development-local-redirect": `${fixtureOrigin}/local-redirect`,
+  }[argument] ?? fixtureUrl;
 const sandbox = createTestEnvironment({
   prefix: "d-pi-window-security-",
   fixtureEnv: { ELECTRON_RENDERER_URL: inheritedUrl },
@@ -72,6 +96,12 @@ const child = spawn(
   [
     ...(development ? [resolve("out/main/index.js")] : []),
     `--remote-debugging-port=${debugPort}`,
+    ...(argument === "--development-redirect"
+      ? [
+          "--host-resolver-rules=MAP external.example.test 127.0.0.1",
+          "--no-proxy-server",
+        ]
+      : []),
   ],
   { cwd: sandbox.cwd, env: sandbox.env, stdio: ["ignore", "pipe", "pipe"] },
 );
@@ -154,7 +184,9 @@ try {
     return result.result.value;
   };
   await wait(() =>
-    evaluate("document.readyState === 'complete' && !!window.desktop"),
+    evaluate(
+      "document.readyState === 'complete' && location.href !== 'about:blank' && !!window.desktop",
+    ),
   );
   const snapshot = await evaluate(`(async () => ({
     url: location.href,
@@ -169,20 +201,30 @@ try {
   assert.equal(snapshot.require, "undefined");
   assert.equal(snapshot.restore, "ready");
   assert.equal(snapshot.title, "d-pi");
-  if (argument === "--development") {
+  if (["--development", "--development-local-redirect"].includes(argument)) {
     assert.equal(snapshot.url, fixtureUrl);
     assert.ok(requests.length > 0);
+    if (argument === "--development-local-redirect")
+      assert.ok(requests.includes("/local-redirect"));
   } else {
     assert.ok(
       snapshot.url.startsWith("file://") &&
         snapshot.url.endsWith("/renderer/index.html"),
     );
-    assert.equal(
-      requests.length,
-      0,
-      "the inherited renderer URL must not be fetched",
-    );
+    if (argument === "--development-redirect")
+      assert.deepEqual(requests, ["/external-redirect"]);
+    else
+      assert.equal(
+        requests.length,
+        0,
+        "the inherited renderer URL must not be fetched",
+      );
   }
+  assert.deepEqual(
+    outsideRequests,
+    [],
+    "an outside redirect must not be fetched",
+  );
   const inlineExecuted = await evaluate(`(() => {
     window.__dPiInlineExecuted = false;
     const script = document.createElement('script');
@@ -206,6 +248,7 @@ try {
     artifactSha256: createHash("sha256")
       .update(await readFile(artifact))
       .digest("hex"),
+    fixture: { inheritedUrl, outsideUrl, requests, outsideRequests },
     snapshot,
     checks: {
       expectedRendererLoaded: true,

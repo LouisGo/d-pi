@@ -248,6 +248,13 @@ function createWindow(): void {
   window = current;
   current.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
   current.webContents.on("will-navigate", (event) => event.preventDefault());
+  current.webContents.on("will-redirect", (event) => {
+    if (
+      app.isPackaged ||
+      !DevelopmentRendererUrlSchema.safeParse(event.url).success
+    )
+      event.preventDefault();
+  });
   current.webContents.on("will-attach-webview", (event) =>
     event.preventDefault(),
   );
@@ -298,9 +305,25 @@ function createWindow(): void {
   const development = app.isPackaged
     ? undefined
     : DevelopmentRendererUrlSchema.safeParse(process.env.ELECTRON_RENDERER_URL);
-  if (development?.success) void current.loadURL(development.data);
-  else
-    void current.loadFile(join(import.meta.dirname, "../renderer/index.html"));
+  const loadBuiltInRenderer = () => {
+    if (window !== current) return undefined;
+    return current.loadFile(
+      join(import.meta.dirname, "../renderer/index.html"),
+    );
+  };
+  const loading = development?.success
+    ? current.loadURL(development.data).catch(loadBuiltInRenderer)
+    : loadBuiltInRenderer();
+  void loading?.catch((error: unknown) => {
+    diagnostics?.record({
+      traceId: randomUUID(),
+      requestId: randomUUID(),
+      connectionId: randomUUID(),
+      operation: "window",
+      stage: "failed",
+      code: diagnosticCode(error) ?? "unknown",
+    });
+  });
 }
 if (!locked) app.quit();
 else {
