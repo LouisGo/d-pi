@@ -9,7 +9,7 @@ import { SubmissionRepository } from "../../modules/execution/main/public";
 import { DraftRepository } from "../../modules/input/main/public";
 import { ThreadRepository } from "../../modules/workspace/main/public";
 import { AppDatabase } from "../../platform/main/storage/public";
-import { AppStorage, StorageNotInitializedError } from "./wiring/app-storage";
+import { AppStorage } from "./wiring/app-storage";
 
 function fixture(run: (path: string) => void): void {
   const dir = mkdtempSync(join(tmpdir(), "d-pi-submission-"));
@@ -20,9 +20,7 @@ function fixture(run: (path: string) => void): void {
   }
 }
 function openStorage(path: string): AppStorage {
-  const store = new AppStorage(path);
-  store.initialize();
-  return store;
+  return AppStorage.open(path);
 }
 function frozen(store: AppStorage) {
   const draft = store.drafts.create("/fixture");
@@ -99,111 +97,104 @@ function receiptState(path: string, submissionId: string): unknown {
 }
 
 describe("persistent submission handoff", () => {
-  it("separates opening from ordered, idempotent initialization", () =>
+  it("recovers interrupted receipts before v4/v5 backups and returns a ready store", () =>
     fixture((path) => {
       const submissionId = stageInterruptedRun(path);
-
-      const before = new DatabaseSync(path, { readOnly: true });
-      expect(
-        before
-          .prepare(
-            "SELECT json_extract(receipt,'$.state') AS state FROM submission WHERE id=?",
-          )
-          .get(submissionId),
-      ).toEqual({ state: "dispatching" });
-      expect(before.prepare("PRAGMA user_version").get()?.user_version).toBe(3);
-      before.close();
-
-      const order: string[] = [];
-      const originalRecovery =
-        SubmissionRepository.prototype.recoverInterruptedSubmissions;
-      const recover = vi
-        .spyOn(SubmissionRepository.prototype, "recoverInterruptedSubmissions")
-        .mockImplementation(function (this: SubmissionRepository) {
-          order.push("recovery");
-          return originalRecovery.call(this);
-        });
-      const originalMigration = AppDatabase.prototype.completeSchemaMigrations;
-      const migrate = vi
-        .spyOn(AppDatabase.prototype, "completeSchemaMigrations")
-        .mockImplementation(function (this: AppDatabase) {
-          order.push("schema");
-          return originalMigration.call(this);
-        });
-      // Repositories are behind the startup gate, so the sequence is spied at
-      // the class boundary instead of on a partially published instance.
-      const store = new AppStorage(path);
+      expect(receiptState(path, submissionId)).toBe("dispatching");
+      const store = AppStorage.open(path);
       try {
-        store.initialize();
-        store.initialize();
-        expect(order).toEqual(["recovery", "schema"]);
-        expect(store.submissions.submission(submissionId)?.state).toBe(
-          "unknown",
-        );
-        const after = new DatabaseSync(path, { readOnly: true });
-        expect(after.prepare("PRAGMA user_version").get()?.user_version).toBe(
-          5,
-        );
-        after.close();
+        expect(store.submissions.submission(submissionId)).toMatchObject({
+          state: "unknown",
+          outcome: "unknown",
+          text: "A",
+        });
+        for (const [suffix, version] of [
+          ["before-v4", 3],
+          ["before-v5", 4],
+        ] as const) {
+          const backup = new DatabaseSync(`${path}.${suffix}`, {
+            readOnly: true,
+          });
+          try {
+            expect(
+              backup.prepare("PRAGMA user_version").get()?.user_version,
+            ).toBe(version);
+            expect(
+              backup.prepare("PRAGMA journal_mode").get()?.journal_mode,
+            ).toBe("delete");
+            expect(
+              backup
+                .prepare(
+                  "SELECT json_extract(receipt,'$.state') AS state FROM submission WHERE id=?",
+                )
+                .get(submissionId),
+            ).toEqual({ state: "unknown" });
+          } finally {
+            backup.close();
+          }
+        }
+        const ready = new DatabaseSync(path, { readOnly: true });
+        try {
+          expect(ready.prepare("PRAGMA user_version").get()?.user_version).toBe(
+            5,
+          );
+          expect(ready.prepare("PRAGMA journal_mode").get()?.journal_mode).toBe(
+            "wal",
+          );
+        } finally {
+          ready.close();
+        }
       } finally {
-        migrate.mockRestore();
-        recover.mockRestore();
         store.close();
       }
     }));
 
-  it("closes the connection when explicit initialization fails", () =>
-    fixture((path) => {
-      const database = new DatabaseSync(path);
-      database.exec(`
-        CREATE TABLE desktop(
-          id INTEGER PRIMARY KEY CHECK(id=1),
-          active_thread TEXT,
-          theme TEXT NOT NULL,
-          density TEXT NOT NULL,
-          send_key TEXT,
-          locale TEXT NOT NULL DEFAULT 'system'
-        );
-        INSERT INTO desktop VALUES(1,NULL,'light','normal','enter','system');
-        CREATE TABLE submission(id TEXT PRIMARY KEY, receipt TEXT NOT NULL);
-        PRAGMA user_version=4;
-      `);
-      database.close();
-
-      const store = new AppStorage(path);
-      expect(() => store.initialize()).toThrow();
-      expect(() => store.preferences.read()).toThrow();
-      store.close();
-
-      const reopened = new DatabaseSync(path, { readOnly: true });
-      expect(reopened.prepare("PRAGMA user_version").get()?.user_version).toBe(
-        4,
-      );
-      reopened.close();
-    }));
-
-  it("leaves interrupted receipts untouched until the explicit execution recovery step", () =>
+  it("closes failed execution recovery without publishing or starting later migrations", () =>
     fixture((path) => {
       const submissionId = stageInterruptedRun(path);
+      const failure = new Error("execution recovery failed");
+      const recover = vi
+        .spyOn(SubmissionRepository.prototype, "recoverInterruptedSubmissions")
+        .mockImplementation(() => {
+          throw failure;
+        });
+      const close = vi.spyOn(AppDatabase.prototype, "close");
+      try {
+        expect(() => AppStorage.open(path)).toThrow(failure);
+        expect(close).toHaveBeenCalledTimes(1);
+        expect(close.mock.instances[0]?.connection.isOpen).toBe(false);
+        expect(receiptState(path, submissionId)).toBe("dispatching");
+        const retained = new DatabaseSync(path, { readOnly: true });
+        try {
+          expect(
+            retained.prepare("PRAGMA user_version").get()?.user_version,
+          ).toBe(3);
+        } finally {
+          retained.close();
+        }
+      } finally {
+        close.mockRestore();
+        recover.mockRestore();
+      }
+    }));
 
+  it("leaves interrupted receipts untouched when only the platform database is opened", () =>
+    fixture((path) => {
+      const submissionId = stageInterruptedRun(path);
       const database = new AppDatabase(path);
-      expect(
-        database.connection
-          .prepare(
-            "SELECT json_extract(receipt,'$.state') AS state FROM submission WHERE id=?",
-          )
-          .get(submissionId),
-      ).toEqual({ state: "dispatching" });
-      database.close();
-
-      const store = new AppStorage(path);
-      // Repositories stay behind the startup gate, so an untouched row is
-      // observed on the file: pre-initialization state has no business reader.
-      expect(() => store.submissions).toThrow(StorageNotInitializedError);
-      expect(receiptState(path, submissionId)).toBe("dispatching");
-      store.initialize();
-      expect(store.submissions.submission(submissionId)?.state).toBe("unknown");
-      store.close();
+      try {
+        expect(receiptState(path, submissionId)).toBe("dispatching");
+      } finally {
+        database.close();
+      }
+      const store = AppStorage.open(path);
+      try {
+        expect(store.submissions.submission(submissionId)?.state).toBe(
+          "unknown",
+        );
+      } finally {
+        store.close();
+      }
     }));
 
   it("ACK consumes only A without advancing the draft CAS baseline; original survives restart", () =>

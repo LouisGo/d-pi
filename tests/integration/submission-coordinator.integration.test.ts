@@ -11,8 +11,7 @@ import { SubmissionCoordinator } from "../../src/modules/execution/core/public";
 it("failed dispatch persistence writes nothing; duplicate dispatch writes once and late error keeps ACK", () => {
   const dir = mkdtempSync(join(tmpdir(), "d-pi-send-"));
   const path = join(dir, "app.sqlite");
-  const store = new AppStorage(path);
-  store.initialize();
+  const store = AppStorage.open(path);
   const lock = new DatabaseSync(path);
   try {
     const d = store.drafts.create(dir);
@@ -87,8 +86,7 @@ it("failed dispatch persistence writes nothing; duplicate dispatch writes once a
 
 it("old instances cannot ACK; a failed write becomes unknown and an encoded oversized draft is retained", () => {
   const dir = mkdtempSync(join(tmpdir(), "d-pi-send-errors-"));
-  const store = new AppStorage(join(dir, "app.sqlite"));
-  store.initialize();
+  const store = AppStorage.open(join(dir, "app.sqlite"));
   try {
     const d = store.drafts.create(dir);
     store.drafts.save(d.threadId, 0, "A");
@@ -155,8 +153,7 @@ it("old instances cannot ACK; a failed write becomes unknown and an encoded over
 
 it("returns historical receipts without a native write (A12 lock)", () => {
   const dir = mkdtempSync(join(tmpdir(), "d-pi-fast-return-"));
-  const store = new AppStorage(join(dir, "app.sqlite"));
-  store.initialize();
+  const store = AppStorage.open(join(dir, "app.sqlite"));
   try {
     const d = store.drafts.create(dir);
     store.drafts.save(d.threadId, 0, "A");
@@ -218,8 +215,7 @@ it("returns historical receipts without a native write (A12 lock)", () => {
 
 it("reports correlated safe stages and typed failures without logging frozen text", () => {
   const dir = mkdtempSync(join(tmpdir(), "d-pi-send-trace-"));
-  const store = new AppStorage(join(dir, "app.sqlite"));
-  store.initialize();
+  const store = AppStorage.open(join(dir, "app.sqlite"));
   try {
     const d = store.drafts.create(dir);
     store.drafts.save(d.threadId, 0, "secret body");

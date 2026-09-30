@@ -42,8 +42,7 @@ async function running(
   );
   const project = join(root, "project");
   mkdirSync(project);
-  const store = new AppStorage(join(root, "app.sqlite"));
-  store.initialize();
+  const store = AppStorage.open(join(root, "app.sqlite"));
   const draft = store.drafts.create(project);
   store.drafts.save(draft.threadId, 0, "A");
   const host = new EventEmitter();

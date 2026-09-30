@@ -21,8 +21,7 @@ const results: unknown[] = [];
 const modes = ["off", "on", "on", "off", "off", "on", "on", "off", "off", "on"];
 // Two unreported warmups are fixed in advance; no measured run is discarded.
 for (const [index, mode] of ["off", "on", ...modes].entries()) {
-  const store = new AppStorage(join(directory, `task-${index}.sqlite`));
-  store.initialize();
+  const store = AppStorage.open(join(directory, `task-${index}.sqlite`));
   const draft = store.drafts.create(directory);
   const service = new DesktopCommandService(store, async () => directory);
   const logger =

@@ -4,81 +4,41 @@ import { PreferenceRepository } from "../../../modules/preferences/main/public";
 import { ThreadRepository } from "../../../modules/workspace/main/public";
 import { AppDatabase } from "../../../platform/main/storage/public";
 
-export class StorageNotInitializedError extends Error {
-  constructor() {
-    super("Storage initialization has not completed");
-    this.name = "StorageNotInitializedError";
-  }
-}
-
-// One writer and one transaction boundary, with business-specific access paths.
+// One writer and one transaction boundary, with business-owned repositories.
 export class AppStorage {
-  private readonly database: AppDatabase;
-  private readonly repositories: {
-    threads: ThreadRepository;
-    drafts: DraftRepository;
-    submissions: SubmissionRepository;
-    preferences: PreferenceRepository;
-  };
-  private initialized = false;
   private closed = false;
-  constructor(path: string) {
-    this.database = new AppDatabase(path);
+  private constructor(
+    private readonly database: AppDatabase,
+    readonly threads: ThreadRepository,
+    readonly drafts: DraftRepository,
+    readonly submissions: SubmissionRepository,
+    readonly preferences: PreferenceRepository,
+  ) {}
+
+  static open(path: string): AppStorage {
+    const database = new AppDatabase(path);
     try {
-      const threads = new ThreadRepository(this.database);
-      const drafts = new DraftRepository(this.database, threads);
-      this.repositories = {
+      const threads = new ThreadRepository(database);
+      const drafts = new DraftRepository(database, threads);
+      const submissions = new SubmissionRepository(database, drafts);
+      const preferences = new PreferenceRepository(database);
+      // Recovery owns receipt normalization and must precede the v4/v5
+      // backups. Only a fully recovered and migrated instance is published.
+      submissions.recoverInterruptedSubmissions();
+      database.completeSchemaMigrations();
+      return new AppStorage(
+        database,
         threads,
         drafts,
-        submissions: new SubmissionRepository(this.database, drafts),
-        preferences: new PreferenceRepository(this.database),
-      };
+        submissions,
+        preferences,
+      );
     } catch (error) {
-      this.close();
+      database.close();
       throw error;
     }
   }
-  /**
-   * Repositories are reachable only after the startup sequence completed. A
-   * partially migrated database (v3 with WAL, no v4/v5 columns, recovery not
-   * run) would otherwise answer queries with whatever error the missing
-   * column happens to produce, far from the caller who skipped initialize().
-   */
-  private ready(): AppStorage["repositories"] {
-    if (!this.initialized) throw new StorageNotInitializedError();
-    return this.repositories;
-  }
-  get threads(): ThreadRepository {
-    return this.ready().threads;
-  }
-  get drafts(): DraftRepository {
-    return this.ready().drafts;
-  }
-  get submissions(): SubmissionRepository {
-    return this.ready().submissions;
-  }
-  get preferences(): PreferenceRepository {
-    return this.ready().preferences;
-  }
-  /**
-   * Complete the application-owned startup sequence once the database has
-   * opened at v3 with WAL: recover execution receipts, then finish v4/v5
-   * schema work before callers publish services backed by this storage.
-   */
-  initialize(): void {
-    if (this.closed) throw new Error("Storage is closed");
-    if (this.initialized) return;
-    try {
-      // Recovery is an execution-owned business step. It must run after v3
-      // and WAL setup, but before v4/v5 migration and service publication.
-      this.repositories.submissions.recoverInterruptedSubmissions();
-      this.database.completeSchemaMigrations();
-      this.initialized = true;
-    } catch (error) {
-      this.close();
-      throw error;
-    }
-  }
+
   close(): void {
     if (this.closed) return;
     this.closed = true;

@@ -33,8 +33,7 @@ afterEach(() => {
 
 function setup() {
   const directory = mkdtempSync(join(tmpdir(), "d-pi-read-diagnostics-"));
-  const store = new AppStorage(join(directory, "app.sqlite"));
-  store.initialize();
+  const store = AppStorage.open(join(directory, "app.sqlite"));
   stores.push({ store, directory });
   const thread = store.threads.create("/fixture");
   const events: DiagnosticEvent[] = [];

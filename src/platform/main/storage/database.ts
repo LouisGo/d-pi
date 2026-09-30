@@ -91,38 +91,33 @@ export class AppDatabase {
    * historical open -> v3 -> WAL -> recovery -> v4/v5 -> publish order.
    */
   completeSchemaMigrations(): void {
-    try {
-      if (this.originalVersion !== 4 && this.originalVersion !== 5) {
-        const temporary = `${this.path}.before-v4.${randomUUID()}.tmp`;
-        try {
-          this.connection.prepare("VACUUM INTO ?").run(temporary);
-          renameSync(temporary, `${this.path}.before-v4`);
-        } finally {
-          rmSync(temporary, { force: true });
-        }
-        this.transaction(() =>
-          this.connection.exec(
-            "ALTER TABLE desktop ADD COLUMN send_key TEXT; PRAGMA user_version=4;",
-          ),
-        );
+    if (this.originalVersion !== 4 && this.originalVersion !== 5) {
+      const temporary = `${this.path}.before-v4.${randomUUID()}.tmp`;
+      try {
+        this.connection.prepare("VACUUM INTO ?").run(temporary);
+        renameSync(temporary, `${this.path}.before-v4`);
+      } finally {
+        rmSync(temporary, { force: true });
       }
-      if (this.originalVersion !== 5) {
-        const temporary = `${this.path}.before-v5.${randomUUID()}.tmp`;
-        try {
-          this.connection.prepare("VACUUM INTO ?").run(temporary);
-          renameSync(temporary, `${this.path}.before-v5`);
-        } finally {
-          rmSync(temporary, { force: true });
-        }
-        this.transaction(() =>
-          this.connection.exec(
-            "ALTER TABLE desktop ADD COLUMN locale TEXT NOT NULL DEFAULT 'system' CHECK(locale IN ('system','en-US','zh-CN')); PRAGMA user_version=5;",
-          ),
-        );
+      this.transaction(() =>
+        this.connection.exec(
+          "ALTER TABLE desktop ADD COLUMN send_key TEXT; PRAGMA user_version=4;",
+        ),
+      );
+    }
+    if (this.originalVersion !== 5) {
+      const temporary = `${this.path}.before-v5.${randomUUID()}.tmp`;
+      try {
+        this.connection.prepare("VACUUM INTO ?").run(temporary);
+        renameSync(temporary, `${this.path}.before-v5`);
+      } finally {
+        rmSync(temporary, { force: true });
       }
-    } catch (error) {
-      this.connection.close();
-      throw error;
+      this.transaction(() =>
+        this.connection.exec(
+          "ALTER TABLE desktop ADD COLUMN locale TEXT NOT NULL DEFAULT 'system' CHECK(locale IN ('system','en-US','zh-CN')); PRAGMA user_version=5;",
+        ),
+      );
     }
   }
   transaction<T>(body: () => T): T {

@@ -45,8 +45,7 @@ it.each(SubmissionRejectionReasonSchema.options)(
   "persists the native refusal cause %s on the receipt",
   (reason: SubmissionRejectionReason) => {
     fixture((path, dir) => {
-      const store = new AppStorage(path);
-      store.initialize();
+      const store = AppStorage.open(path);
       try {
         const draft = store.drafts.create(dir);
         store.drafts.save(draft.threadId, 0, "queued work");
@@ -83,8 +82,7 @@ it.each(SubmissionRejectionReasonSchema.options)(
 
 it("keeps a rejection without a reported cause valid", () => {
   fixture((path, dir) => {
-    const store = new AppStorage(path);
-    store.initialize();
+    const store = AppStorage.open(path);
     try {
       const draft = store.drafts.create(dir);
       store.drafts.save(draft.threadId, 0, "queued work");
@@ -113,8 +111,7 @@ it("keeps a rejection without a reported cause valid", () => {
 
 it("does not carry a stale reason onto an acknowledgement", () => {
   fixture((path, dir) => {
-    const store = new AppStorage(path);
-    store.initialize();
+    const store = AppStorage.open(path);
     try {
       const draft = store.drafts.create(dir);
       store.drafts.save(draft.threadId, 0, "queued work");
@@ -151,8 +148,7 @@ it("does not carry a stale reason onto an acknowledgement", () => {
 
 it("keeps a rejected receipt terminal so its cause cannot go stale", () => {
   fixture((path, dir) => {
-    const store = new AppStorage(path);
-    store.initialize();
+    const store = AppStorage.open(path);
     try {
       const draft = store.drafts.create(dir);
       store.drafts.save(draft.threadId, 0, "queued work");

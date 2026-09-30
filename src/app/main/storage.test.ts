@@ -15,8 +15,7 @@ function fixture(
     .finally(() => rmSync(dir, { recursive: true, force: true }));
 }
 function openStorage(path: string): AppStorage {
-  const store = new AppStorage(path);
-  store.initialize();
+  const store = AppStorage.open(path);
   return store;
 }
 describe("real SQLite and directory service", () => {
@@ -164,7 +163,7 @@ describe("real SQLite and directory service", () => {
         "CREATE TABLE thread(id TEXT); INSERT INTO thread VALUES('precious')",
       );
       db.close();
-      expect(() => new AppStorage(path)).toThrow();
+      expect(() => AppStorage.open(path)).toThrow();
       expect(readFileSync(`${path}.before-v1`).length).toBeGreaterThan(0);
       db = new DatabaseSync(path);
       expect(db.prepare("SELECT id FROM thread").get()?.id).toBe("precious");
@@ -176,7 +175,7 @@ describe("real SQLite and directory service", () => {
       ).toBeUndefined();
       db.exec("PRAGMA user_version=999");
       db.close();
-      expect(() => new AppStorage(path)).toThrow();
+      expect(() => AppStorage.open(path)).toThrow();
       db = new DatabaseSync(path);
       expect(db.prepare("PRAGMA user_version").get()?.user_version).toBe(999);
       db.close();

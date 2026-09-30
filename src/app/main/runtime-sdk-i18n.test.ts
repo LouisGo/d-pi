@@ -19,8 +19,7 @@ it("shows the SDK recovery command when managed SDK resources are missing", asyn
   const root = realpathSync(mkdtempSync(join(tmpdir(), "d-pi-sdk-copy-")));
   const project = join(root, "project");
   mkdirSync(project);
-  const store = new AppStorage(join(root, "app.sqlite"));
-  store.initialize();
+  const store = AppStorage.open(join(root, "app.sqlite"));
   try {
     const draft = store.drafts.create(project);
     const runtime = new RuntimeService(
