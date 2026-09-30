@@ -3,6 +3,7 @@ import { mkdirSync, mkdtempSync, realpathSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, expect, it, vi } from "vitest";
+import { AppStorage } from "../../src/app/main/wiring/app-storage";
 import {
   HostCommandSchema,
   SubmissionIdSchema,
@@ -17,7 +18,6 @@ import { RuntimeService } from "../../src/modules/execution/main/public";
 import { SubmissionModel } from "../../src/modules/execution/renderer/public";
 import { DraftController } from "../../src/modules/input/core/public";
 import { TraceIdSchema } from "../../src/shared/identity";
-import { AppStorage } from "../../src/app/main/wiring/app-storage";
 
 const transport = vi.hoisted(() => ({
   fork: vi.fn(),

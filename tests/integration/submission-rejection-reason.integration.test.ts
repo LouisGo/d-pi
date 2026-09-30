@@ -21,7 +21,10 @@ function fixture(run: (path: string, dir: string) => void): void {
   }
 }
 
-function prepared(threadId: string, requestId = randomUUID()): FrozenSubmission {
+function prepared(
+  threadId: string,
+  requestId = randomUUID(),
+): FrozenSubmission {
   return FrozenSubmissionSchema.parse({
     submissionId: randomUUID(),
     threadId,
@@ -50,10 +53,11 @@ it.each(SubmissionRejectionReasonSchema.options)(
         const draft = store.drafts.create(dir);
         store.drafts.save(draft.threadId, 0, "queued work");
         const value = prepared(draft.threadId);
-        const coordinator = new SubmissionCoordinator(
-          store.submissions,
-          { isCurrentTarget: () => true, canDispatch: () => true, write: () => {} },
-        );
+        const coordinator = new SubmissionCoordinator(store.submissions, {
+          isCurrentTarget: () => true,
+          canDispatch: () => true,
+          write: () => {},
+        });
         expect(coordinator.prepare(value).kind).toBe("receipt");
         expect(coordinator.dispatch(value.submissionId).kind).toBe("receipt");
 
