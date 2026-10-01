@@ -56,5 +56,45 @@ export const HistoryRequestSchema = z.strictObject({
   cursor: HistoryCursorSchema.nullable(),
 });
 export interface HistoryBridge {
+  projectList(threadId: string): Promise<ProjectHistoryCatalog>;
+  projectRead(
+    threadId: string,
+    key: string,
+    cursor: HistoryCursor | null,
+  ): Promise<HistoryPage>;
   read(threadId: string, cursor: HistoryCursor | null): Promise<HistoryPage>;
 }
+
+export const ProjectHistoryCatalogSchema = z.discriminatedUnion("kind", [
+  z.strictObject({
+    kind: z.literal("catalog"),
+    sessions: z.array(
+      z.strictObject({
+        key: z.string().regex(/^[a-f0-9]{64}$/),
+        sessionId: z.string(),
+        title: z.string(),
+        modifiedAt: z.number(),
+      }),
+    ),
+    partial: z.boolean(),
+  }),
+  z.strictObject({
+    kind: z.literal("unavailable"),
+    reason: z.enum(["missing", "denied", "invalid"]),
+  }),
+]);
+export type ProjectHistoryCatalog = z.infer<typeof ProjectHistoryCatalogSchema>;
+export const ProjectHistoryRequestSchema = z.discriminatedUnion("kind", [
+  z.strictObject({
+    kind: z.literal("list"),
+    threadId: z.uuid(),
+    traceId: z.uuid(),
+  }),
+  z.strictObject({
+    kind: z.literal("read"),
+    threadId: z.uuid(),
+    traceId: z.uuid(),
+    key: z.string().regex(/^[a-f0-9]{64}$/),
+    cursor: HistoryCursorSchema.nullable(),
+  }),
+]);

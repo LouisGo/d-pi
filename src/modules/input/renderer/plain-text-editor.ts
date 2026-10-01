@@ -1,4 +1,9 @@
-import { type Editor, type EditorOptions, getSchema } from "@tiptap/core";
+import {
+  type Editor,
+  type EditorOptions,
+  Extension,
+  getSchema,
+} from "@tiptap/core";
 import Document from "@tiptap/extension-document";
 import Paragraph from "@tiptap/extension-paragraph";
 import Text from "@tiptap/extension-text";
@@ -13,6 +18,12 @@ const extensions = [
   Document,
   Paragraph,
   Text,
+  Extension.create({
+    name: "sourceLineBreak",
+    addKeyboardShortcuts() {
+      return { "Shift-Enter": () => this.editor.commands.splitBlock() };
+    },
+  }),
   FileReference,
   UndoRedo.configure({ depth: draftHistoryDepth }),
 ];

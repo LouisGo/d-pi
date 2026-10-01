@@ -1,4 +1,5 @@
 import { code } from "@streamdown/code";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Streamdown } from "streamdown";
 import { match } from "ts-pattern";
@@ -11,7 +12,11 @@ import type {
   HistoryEntry,
   HistoryPage,
 } from "../../modules/conversation/contracts/public";
-import type { ConversationModel } from "../../modules/conversation/core/public";
+import {
+  type ConversationModel,
+  projectHistoryCatalogQuery,
+  projectHistoryPageQuery,
+} from "../../modules/conversation/core/public";
 import type { SubmissionModel } from "../../modules/execution/renderer/public";
 import { useI18n } from "../../modules/preferences/renderer/public";
 import { submissionRejectionKey } from "./receipt-status";
@@ -52,7 +57,13 @@ function Markdown({
     </Streamdown>
   );
 }
-export function Conversation({ model }: { model: ConversationModel }) {
+export function Conversation({
+  model,
+  onHistory,
+}: {
+  model: ConversationModel;
+  onHistory?: () => void;
+}) {
   const { t } = useI18n();
   const itemIds = useStore(model.stateStore, (state) => state.itemIds);
   const gap = useStore(model.stateStore, (state) => state.view?.gap ?? false);
@@ -62,7 +73,16 @@ export function Conversation({ model }: { model: ConversationModel }) {
       aria-label={t("ui.conversation.sectionLabel")}
     >
       <h2>{t("ui.conversation.heading")}</h2>
-      {!itemIds.length && <p className="muted">{t("ui.conversation.empty")}</p>}
+      {!itemIds.length && (
+        <>
+          <p className="muted">{t("ui.conversation.empty")}</p>
+          {onHistory && (
+            <Button variant="ghost" onClick={onHistory}>
+              {t("ui.history.openCli")}
+            </Button>
+          )}
+        </>
+      )}
       {gap && <p role="status">{t("ui.conversation.gap")}</p>}
       {itemIds.map((id) => (
         <ConversationMessage key={id} id={id} model={model} />
@@ -248,15 +268,37 @@ export function historyToolEvidenceMessage(
 export function History({
   bridge,
   threadId,
+  active,
 }: {
   bridge: HistoryBridge;
   threadId: string;
+  active: boolean;
 }) {
   const { t } = useI18n();
-  const [page, setPage] = useState<HistoryPage | null>(null);
+  const catalog = useQuery({
+    ...projectHistoryCatalogQuery(bridge, threadId),
+    enabled: active,
+  });
+  const [choice, setChoice] = useState<string | null>(null);
+  const [cursor, setCursor] = useState<HistoryCursor | null>(null);
+  const selected =
+    choice ??
+    (catalog.data?.kind === "catalog"
+      ? (catalog.data.sessions[0]?.key ?? "")
+      : "");
+  const nativePage = useQuery({
+    ...projectHistoryPageQuery(bridge, threadId, selected || null, cursor),
+    enabled: active && !!selected,
+  });
+  const [boundPage, setPage] = useState<HistoryPage | null>(null);
+  const page = selected ? nativePage.data : boundPage;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
   async function read(cursor: HistoryCursor | null) {
+    if (selected) {
+      setCursor(cursor);
+      return;
+    }
     if (busy) return;
     setBusy(true);
     setError(false);
@@ -270,12 +312,56 @@ export function History({
   }
   return (
     <section className="history" aria-label={t("ui.history.sectionLabel")}>
-      <details>
+      <details open>
         <summary>{t("ui.history.sectionLabel")}</summary>
-        <p className="muted">{t("ui.history.description")}</p>
-        <Button variant="ghost" disabled={busy} onClick={() => void read(null)}>
-          {t("ui.history.read")}
+        <p>{t("ui.history.projectDescription")}</p>
+        <label>
+          {t("ui.history.choose")}
+          <select
+            value={selected}
+            onChange={(event) => {
+              setChoice(event.target.value);
+              setCursor(null);
+            }}
+          >
+            <option value="">{t("ui.history.bound")}</option>
+            {catalog.data?.kind === "catalog" &&
+              catalog.data.sessions.map((session) => (
+                <option key={session.key} value={session.key}>
+                  {session.title} · {session.sessionId.slice(0, 8)}
+                </option>
+              ))}
+          </select>
+        </label>
+        <Button
+          variant="ghost"
+          disabled={catalog.isFetching || nativePage.isFetching}
+          onClick={() => {
+            void catalog.refetch();
+            if (selected) void nativePage.refetch();
+          }}
+        >
+          {t("config.refresh")}
         </Button>
+        {catalog.data?.kind === "catalog" && catalog.data.partial && (
+          <p role="status">{t("ui.history.catalogPartial")}</p>
+        )}
+        {(catalog.isError || nativePage.isError) && (
+          <p role="alert">{t("ui.history.readFailed")}</p>
+        )}
+        {catalog.data?.kind === "unavailable" && (
+          <p role="status">{t("ui.history.catalogUnavailable")}</p>
+        )}
+        <p className="muted">{t("ui.history.description")}</p>
+        {!selected && (
+          <Button
+            variant="ghost"
+            disabled={busy}
+            onClick={() => void read(null)}
+          >
+            {t("ui.history.read")}
+          </Button>
+        )}
         {error && <p role="alert">{t("ui.history.readFailed")}</p>}
         {page?.kind === "unavailable" && (
           <p role="status">

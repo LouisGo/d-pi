@@ -37,7 +37,7 @@ it("renders native effort metadata and sends default, off and minimal as distinc
     phase: "ready",
     trusted: true,
     busy: false,
-    model: "fixture/current",
+    model: "fixture/minimal",
     thinkingLevel: "off",
     message: { code: "runtime.readyToSend" },
   });
@@ -168,6 +168,8 @@ it("renders native effort metadata and sends default, off and minimal as distinc
     const model = selects[0],
       thinking = selects[1];
     if (!model || !thinking) throw Error("missing selectors");
+    expect(model.value).toBe(JSON.stringify(["fixture", "minimal"]));
+    expect(thinking.value).toBe("off");
     const choose = async (id: string) =>
       act(async () => {
         model.value = JSON.stringify(["fixture", id]);

@@ -14,3 +14,5 @@ Blocked by: none
 2026-10-01：本次 OMP 18.4.6 加固已完成 scope/trace/source 身份、原生整条无写读取和真实 metadata 推理选择/回读三项缺口，见[加固配置票](../../runtime-hardening-omp1845/issues/02-configuration-contract.md)。Finder来源选择/修复、真实两条账户认证及子 Agent Thread覆盖仍在本票/05，不因局部修复关闭完整02。
 
 2026-10-01：用户报告 CLI 已登录但 Electron 重开读取失败，明确要求根因修复与双向共享验证。已复现正常 WAL 被旧适配拒绝、CLI 模型缓存被遗漏、partial 未记原因三项代码/验证缺口；正常双向场景补入常规门禁，修复与交付见 [配置复用修复](../configuration-sharing.md)。保留本票其它未完成范围，不把 fixture 当成真实供应商账户验收。
+
+2026-10-01：m2.8 实际主流程试用失败，已用 Computer use 核实并处理 CLI 历史发现、模型/档位回填、只读操作出口和 Shift+Enter 缺口，见 [主流程修复](../mainflow-feedback.md)。本票未完成范围与用户认可边界不变。

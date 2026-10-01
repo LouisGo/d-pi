@@ -1,0 +1,263 @@
+$ pnpm check:tools && pnpm typecheck && pnpm lint && pnpm lint:design && pnpm lint:i18n && pnpm validate:design && node validation/s1/source-boundaries.mjs && pnpm check:architecture && pnpm check:documentation && pnpm check:structure && pnpm check:status && pnpm test:architecture && pnpm test:tooling && pnpm test
+$ node scripts/check-environment.mjs --tools-only
+Development Node: 24.21.0 (target 24.21.0)
+pnpm: 12.8.1 (target 12.8.1)
+Platform: darwin-arm64
+Installed exact dependencies: 42/42
+SKIP: fast tool check; native executables and SDK resources were not inspected
+PASS: development environment (0 issues)
+$ tsc --noEmit && pnpm typecheck:core && pnpm typecheck:renderer && pnpm typecheck:main && pnpm typecheck:host && pnpm typecheck:preload
+$ tsc --noEmit -p tsconfig.core.json
+$ tsc --noEmit -p tsconfig.renderer.json
+$ tsc --noEmit -p tsconfig.main.json
+$ tsc --noEmit -p tsconfig.host.json
+$ tsc --noEmit -p tsconfig.preload.json
+$ biome check .
+Checked 324 files in 56ms. No fixes applied.
+$ node scripts/lint-design.mjs
+PASS: design lint
+$ node scripts/check-i18n-copy.mjs
+$ node validation/s1/design-check.mjs
+PASS: CSS Modules, clsx/cva, shared variable accepted; six invalid design patterns rejected.
+PASS: token source, icon/domain and module environment boundaries (narrow source checks; architecture gate is authoritative for dependency graph).
+$ node scripts/architecture/check.mjs
+PASS: architecture boundaries (224 source files checked, TypeScript scanner)
+$ node scripts/check-documentation.mjs
+PASS: documentation references (177 Markdown files; 17 historical snapshots excluded; external URLs not fetched)
+$ node scripts/architecture/report.mjs --check architecture/dependencies.generated.json
+PASS: generated structure report is current
+$ node scripts/project-status.mjs --check docs/status.md
+PASS: project status (14 slices, 73 tasks; engineering/trial/acceptance independent)
+$ node scripts/test.mjs node tests/architecture/*.test.mjs
+✔ public entries must be source files, not directories or prose (130.367042ms)
+✔ renderer rejects Electron subpath imports (67.20175ms)
+✔ production rejects test packages and helpers in test directories (61.016208ms)
+✔ unreadable manifests are tooling failures, not boundary violations (65.012125ms)
+✔ accepts a public type-only cross-module dependency (63.0745ms)
+✔ rejects a private cross-module import (72.782458ms)
+✔ rejects an unregistered cross-module dependency (60.90375ms)
+✔ rejects a public cross-module entry from the wrong environment (66.96875ms)
+✔ checks the runtime module and rejects Electron in the OMP environment (108.079375ms)
+✔ rejects forbidden external dependencies in shared, core and OMP environments (187.429ms)
+✔ allows supported external packages in platform-independent environments (60.129125ms)
+✔ rejects a core import of a Node runtime and a file cycle (113.507792ms)
+✔ rejects production test-helper imports and non-literal dynamic imports (60.111ms)
+✔ supports flat shared roots and explicit test-only public entries (61.659708ms)
+✔ rejects source files outside configured modules and owned roots (59.494167ms)
+✔ resolves directory index imports before checking cross-module privacy (62.4545ms)
+FAIL: design lint crashed — /Users/louistation/.nvm/versions/node/v24.21.0/bin/node was killed by SIGTRAP before it judged any file.
+This is a tooling failure, not a rule result. On Node 24.17.0 the oxlint JS-plugin worker dies with SIGTRAP; it must run on a Node build where JS plugins load.
+node v24.21.0
+
+
+FAIL: design lint is unavailable — could not run oxlint-that-does-not-exist (spawnSync oxlint-that-does-not-exist ENOENT).
+This is a tooling failure, not a rule result. On Node 24.17.0 the oxlint JS-plugin worker dies with SIGTRAP; it must run on a Node build where JS plugins load.
+node v24.21.0
+
+
+✔ a killed oxlint is a tooling failure, not a clean lint (153.898958ms)
+✔ a missing oxlint binary is reported instead of passing (1.545ms)
+✔ a missing configuration is a tooling failure, not a rule result (38.427167ms)
+✔ a real violation still fails the gate with the rule name (192.654667ms)
+✔ the root has no design violation to report (437.219125ms)
+✔ the design fixture check names a crash instead of an assertion diff (595.558625ms)
+✔ reports entry, production, test, and CSS size hints separately (79.469458ms)
+✔ separates declared permissions from observed source dependencies and scan gaps (74.957417ms)
+✔ rejects a generated report after source or permissions change (334.86725ms)
+✔ i18n copy check scans migrated module Renderer files (41.319ms)
+✔ Tailwind source configuration includes migrated Renderer roots (0.241917ms)
+✔ design lint executes against a migrated module Renderer root (149.031458ms)
+✔ Tailwind emits a utility used only by a module Renderer (152.792791ms)
+✔ core has a dedicated typecheck without DOM or Node ambient types (0.900042ms)
+✔ process-specific typechecks declare their ambient environment explicitly (0.296958ms)
+✔ the real core typecheck rejects DOM globals (71.131417ms)
+ℹ tests 32
+ℹ suites 0
+ℹ pass 32
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1480.447167
+$ node scripts/test.mjs node tests/tooling/*.test.mjs
+✔ the fast environment gate accepts pinned required foundations and peer-qualified lock entries (88.549667ms)
+✔ deleting a confirmed foundation dependency cannot make the gate pass (500.268708ms)
+✔ foundation dependencies must be declared in their runtime or development section (58.767667ms)
+✔ rejects ranges and the wrong Zod major (123.542083ms)
+✔ rejects a stale lock specifier, resolved version or extra importer dependency (179.742291ms)
+✔ rejects inconsistent package families even when the lock agrees (270.914125ms)
+✔ an unsupported or unreadable lock cannot be reported as consistent (117.969708ms)
+✔ pnpm 12 empty configDependencies preserves strict application dependency verification (132.856ms)
+✔ pnpm 12 manager document cannot hide an invalid application lock (185.67ms)
+✔ reports missing local Markdown and skill targets, while preserving raw historical links (3.033333ms)
+✔ checks Unicode and duplicate heading anchors, same-page links, and reference links (5.386583ms)
+✔ rejects unknown D-IDs without interpreting prose or fenced historical examples (3.749083ms)
+✔ CLI checks new untracked entries while excluding raw evidence and experimental fixtures (106.499ms)
+✔ rejects invalid or duplicated task states and unresolved completion dependencies (3.058792ms)
+✔ rejects task dependency cycles instead of presenting them as runnable (2.561459ms)
+✔ reports malformed URL encoding as an invalid document link (1.137833ms)
+✔ the fast hook entry includes current status without native preparation or full test work (0.72525ms)
+✔ CI prepares native resources and reuses the local checks on macOS arm64 (1.715042ms)
+✔ distinguishes missing, crashed, failed and successful tool processes (209.363458ms)
+✔ checks installed metadata even when package exports hide package.json and require entries (1131.360958ms)
+✔ SDK inspection refuses stale locks, tampered files and missing bundled resources (9.096416ms)
+✔ version probing never lets a package-manager shim overwrite the project lock (445.94575ms)
+✔ the installed fast hook really prevents a commit when checks fail (4027.708292ms)
+✔ chains existing hooks and preserves global configuration and hook files (4251.932458ms)
+✔ a rejecting original hook stops the commit before the new fast check (1210.575666ms)
+✔ uninstall restores a previous local relative hooksPath (3725.932667ms)
+✔ forwarding preserves significant trailing whitespace in a configured hook path (3190.141042ms)
+✔ later user configuration changes are never overwritten by reinstall or uninstall (560.553791ms)
+✔ other linked checkouts keep their original hooks without receiving this checkout's fast gate (3924.813ms)
+✔ forwarded receive hooks still work from Git's metadata cwd (1146.047375ms)
+✔ existing worktree configuration is restored in its original scope (3551.055667ms)
+✔ a malformed installation record cannot clear repository configuration (359.209875ms)
+✔ the versioned hook names a missing pnpm as tooling unavailable (33.120666ms)
+✔ refreshes UI dependency notices without deleting the separately bundled SDK and Bun notices (527.697ms)
+✔ repeated refresh preserves Markdown license headings and code fences without growing the generated section (623.299208ms)
+✔ aggregates independent engineering, trial and acceptance states and real blockers (14.264375ms)
+✔ rejects invalid states, duplicate identities and accepted-without-trial claims (2.052708ms)
+✔ rejects missing evidence, missing important pending tasks, and multiple current scopes (2.139334ms)
+✔ snapshot check fails after an owning issue changes even when displayed totals stay equal (2.960375ms)
+✔ malformed status JSON and unknown fields fail rather than silently disappearing (2.036833ms)
+✔ SDK preparation replaces old links, resolves the declared packages and is repeatable (1729.940375ms)
+✔ resource validation excludes preparation until Main exits, across HOME and TMPDIR contexts (2826.389667ms)
+✔ empty resources prepare successfully; a failed copy preserves the previous complete resources (693.874083ms)
+✔ changed upstream source or active resource users cannot replace a complete SDK root (1004.03075ms)
+✔ isolates every App/OMP path, cwd and future credential names in a real child (49.458917ms)
+✔ only explicit fixture credentials enter the environment; isolation paths cannot be overridden (3.18575ms)
+✔ standard Node test runner drops inherited credentials and the project's extension directory (145.546166ms)
+ℹ tests 47
+ℹ suites 0
+ℹ pass 47
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 26058.163042
+$ node scripts/test.mjs vitest
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/MySpace/Life/d-pi[39m
+
+ [32m✓[39m src/app/main/storage.test.ts [2m([22m[2m10 tests[22m[2m)[22m[33m 456[2mms[22m[39m
+   [32m✓[39m real SQLite and directory service [2m(7)[22m
+     [33m[2m✓[22m[39m locked writer reports failure without overwriting draft[33m 305[2mms[22m[39m
+ [32m✓[39m src/app/main/runtime-service.test.ts [2m([22m[2m23 tests[22m[2m)[22m[33m 613[2mms[22m[39m
+ [32m✓[39m tests/integration/prepared-recovery.integration.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 566[2mms[22m[39m
+ [32m✓[39m src/modules/execution/host/native-session.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 1124[2mms[22m[39m
+   [33m[2m✓[22m[39m negotiates v2, correlates commands and drains process output through EOF[33m 530[2mms[22m[39m
+(node:54204) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 exit listeners added to [process]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m tests/integration/submission-coordinator.integration.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 423[2mms[22m[39m
+   [33m[2m✓[22m[39m failed dispatch persistence writes nothing; duplicate dispatch writes once and late error keeps ACK[33m 338[2mms[22m[39m
+ [32m✓[39m src/app/main/submission-storage.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 268[2mms[22m[39m
+ [32m✓[39m tests/integration/runtime-host.integration.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 261[2mms[22m[39m
+ [32m✓[39m tests/integration/submission-rejection-reason.integration.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 203[2mms[22m[39m
+ [32m✓[39m src/app/main/index.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 1591[2mms[22m[39m
+   [33m[2m✓[22m[39m starts with system locale, rebuilds the native menu on interaction, and keeps a failed locale save visible[33m 375[2mms[22m[39m
+   [33m[2m✓[22m[39m retries a failed initial restore after the lock clears, preserving the same draft[33m 697[2mms[22m[39m
+ [32m✓[39m src/app/host/index.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 207[2mms[22m[39m
+ [32m✓[39m src/app/preload/index.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 130[2mms[22m[39m
+ [32m✓[39m tests/integration/window-security.integration.test.ts [2m([22m[2m22 tests[22m[2m)[22m[33m 2204[2mms[22m[39m
+   [33m[2m✓[22m[39m keeps the packaged privileged window local even when a development URL is inherited[33m 534[2mms[22m[39m
+ [32m✓[39m src/app/renderer/model-controls.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 202[2mms[22m[39m
+ [32m✓[39m src/app/main/submission-receipt.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 109[2mms[22m[39m
+ [32m✓[39m src/modules/execution/main/host-shutdown.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 125[2mms[22m[39m
+ [32m✓[39m src/modules/execution/host/interactions.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 90[2mms[22m[39m
+ [32m✓[39m src/modules/input/renderer/structured-paste.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 86[2mms[22m[39m
+ [32m✓[39m src/modules/input/renderer/draft-editor-cache.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 129[2mms[22m[39m
+ [32m✓[39m src/app/main/app-storage-init.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 62[2mms[22m[39m
+ [32m✓[39m src/modules/input/core/draft-controller.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m src/modules/execution/main/host-multiplex.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 68[2mms[22m[39m
+ [32m✓[39m src/app/renderer/submissions-renderer.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 112[2mms[22m[39m
+ [32m✓[39m src/app/renderer/project-history.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 141[2mms[22m[39m
+ [32m✓[39m src/app/renderer/appearance-subscriptions.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 164[2mms[22m[39m
+ [32m✓[39m src/modules/files/main/project-files.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 133[2mms[22m[39m
+ [32m✓[39m src/app/renderer/workbench/composer-continuity.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 206[2mms[22m[39m
+ [32m✓[39m src/app/main/ipc/project-reads.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 80[2mms[22m[39m
+ [32m✓[39m tests/integration/runtime-causality.integration.test.ts [2m([22m[2m17 tests[22m[2m)[22m[33m 4492[2mms[22m[39m
+   [33m[2m✓[22m[39m replays bounded evidence in the same live Host after a SQLite failure without replaying prompt[33m 1223[2mms[22m[39m
+   [33m[2m✓[22m[39m idle cannot dispose unconfirmed terminal evidence after ACK was already committed[33m 627[2mms[22m[39m
+   [33m[2m✓[22m[39m a Host loss after Main write failure loses only memory evidence and reopens conservatively without resending[33m 2175[2mms[22m[39m
+ [32m✓[39m src/app/renderer/workbench/composer-initialization.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 115[2mms[22m[39m
+ [32m✓[39m src/app/main/runtime-sdk-i18n.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 73[2mms[22m[39m
+ [32m✓[39m src/app/contracts/desktop-bridge.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 84[2mms[22m[39m
+ [32m✓[39m src/modules/execution/host/session-host.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 103[2mms[22m[39m
+ [32m✓[39m src/platform/main/diagnostics/diagnostics.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 48[2mms[22m[39m
+ [32m✓[39m src/modules/configuration/renderer/settings.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 123[2mms[22m[39m
+ [32m✓[39m tests/integration/native-evidence-replay.integration.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m src/app/main/m2-thread-entry.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 39[2mms[22m[39m
+ [32m✓[39m src/platform/omp/resources/sdk-resource.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 146[2mms[22m[39m
+ [32m✓[39m src/modules/conversation/main/native-history.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 77[2mms[22m[39m
+ [32m✓[39m src/modules/input/renderer/plain-text-paste.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/modules/execution/renderer/submission-model.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+ [32m✓[39m src/shared/i18n/create-i18n.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m src/shared/i18n/catalog.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 35[2mms[22m[39m
+ [32m✓[39m src/app/renderer/workbench/composer-binding.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 45[2mms[22m[39m
+ [32m✓[39m src/app/renderer/receipt-status.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 41[2mms[22m[39m
+ [32m✓[39m tests/integration/configuration-identity.integration.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/app/renderer/conversation-i18n.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 95[2mms[22m[39m
+ [32m✓[39m src/modules/execution/core/submission-admission.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m src/modules/input/renderer/selection-insert.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m src/modules/files/renderer/monaco-viewer.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/modules/configuration/main/native-configuration.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m src/modules/files/renderer/queries.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m src/app/renderer/i18n-renderer.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m src/platform/omp/protocol/native-frame.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/modules/execution/renderer/runtime-model.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m src/modules/conversation/host/projection.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m src/modules/configuration/renderer/queries.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m src/app/renderer/model-store.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m src/modules/conversation/main/project-history.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 60[2mms[22m[39m
+ [32m✓[39m src/modules/execution/contracts/submission.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m src/app/renderer/model.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m src/modules/changes/renderer/queries.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 35[2mms[22m[39m
+ [32m✓[39m src/modules/conversation/core/subscription.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/platform/omp/resources/runtime-resource.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 34[2mms[22m[39m
+ [32m✓[39m src/modules/execution/renderer/submission-store.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m src/app/main/lifecycle/quit.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m src/app/renderer/m2-thread-switch.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/platform/omp/protocol/frame-decoder.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/modules/execution/renderer/runtime-store.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m src/app/renderer/workbench/refresh-state.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/modules/conversation/host/scope.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m src/shared/messages/contracts.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/shared/i18n/locale.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/modules/files/core/selection.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/modules/conversation/core/model.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m src/modules/execution/core/admission.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/modules/input/core/submission.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/platform/node/processes/managed-process.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/app/renderer/url-display.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/modules/input/core/references/serialize.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/platform/omp/consumption-gate.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m src/modules/execution/core/target.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/modules/execution/renderer/submission-shortcut.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m src/modules/execution/contracts/interactions.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m src/modules/files/renderer/monaco-diff-options.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 2[2mms[22m[39m
+ [2m[90m↓[39m[22m src/modules/execution/host/native-smoke.test.ts [2m([22m[2m1 test[22m[2m | [22m[33m1 skipped[39m[2m)[22m
+ [32m✓[39m tests/integration/configuration-sharing.integration.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 7894[2mms[22m[39m
+   [33m[2m✓[22m[39m shares native login and cached models both ways while CLI is open and from a desktop-only home[33m 7893[2mms[22m[39m
+ [32m✓[39m src/modules/changes/main/project-git.test.ts [2m([22m[2m14 tests[22m[2m)[22m[33m 10648[2mms[22m[39m
+   [33m[2m✓[22m[39m separates HEAD/index, index/worktree and untracked without author attribution[33m 1444[2mms[22m[39m
+   [33m[2m✓[22m[39m distinguishes non-Git and unborn HEAD[33m 867[2mms[22m[39m
+   [33m[2m✓[22m[39m labels a rename with its former path and refuses binary text diff[33m 1607[2mms[22m[39m
+   [33m[2m✓[22m[39m scopes a parent repository to the selected project subdirectory[33m 1092[2mms[22m[39m
+   [33m[2m✓[22m[39m reads a staged rename through the project subdirectory[33m 1289[2mms[22m[39m
+   [33m[2m✓[22m[39m does not compare a symlink target as if it were the link's Git content[33m 401[2mms[22m[39m
+   [33m[2m✓[22m[39m lists changes for a project reached through a symlinked parent directory[33m 614[2mms[22m[39m
+   [33m[2m✓[22m[39m marks a diff stale when the worktree changes with the same Git status during sampling[33m 358[2mms[22m[39m
+   [33m[2m✓[22m[39m reads an untracked file as absent on the left and worktree text on the right[33m 532[2mms[22m[39m
+   [33m[2m✓[22m[39m reports staged and worktree deletions with an absent side[33m 880[2mms[22m[39m
+   [33m[2m✓[22m[39m refuses an unmerged conflict as unmerged instead of an empty diff[33m 529[2mms[22m[39m
+   [33m[2m✓[22m[39m never executes project-configured clean filters during read-only queries[33m 749[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m86 passed[39m[22m[2m | [22m[33m1 skipped[39m[90m (87)[39m
+[2m      Tests [22m [1m[32m457 passed[39m[22m[2m | [22m[33m1 skipped[39m[90m (458)[39m
+[2m   Start at [22m 14:49:38
+[2m   Duration [22m 10.92s[2m (tests 60%, import 28%, transform 8%, environment 3%, worker 1%)[22m
+
+[2m    Isolate [22m [33m87 workers spawned[39m[2m · ~124ms startup each (spawn + environment, per file)[22m
+[2m            [22m [2mat least ~1.08s faster with [22m[33misolate: false[39m[2m — reuses workers across files instead of one per file[22m
+

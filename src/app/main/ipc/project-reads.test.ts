@@ -6,7 +6,11 @@ import { afterEach, expect, it, vi } from "vitest";
 import type { DiagnosticEvent } from "../../../platform/main/diagnostics/public";
 import { AppStorage } from "../wiring/app-storage";
 import type { ProjectReadContext } from "./context";
-import { registerFilesIpc, registerGitIpc } from "./project-reads";
+import {
+  registerFilesIpc,
+  registerGitIpc,
+  registerHistoryIpc,
+} from "./project-reads";
 
 const reads = vi.hoisted(() => ({
   listFiles: vi.fn(),
@@ -48,11 +52,15 @@ function setup() {
     getStore: () => store,
     getDiagnostics: () => diagnostics,
     nativeSessionsPath: () => "/fixture-sessions",
+    projectNativeSessionsPath: async () => "/fixture-native-sessions",
   };
+  registerHistoryIpc(context);
   registerFilesIpc(context);
   registerGitIpc(context);
   return {
     thread,
+    context,
+    store,
     events,
     request: (channel: string, raw: unknown) => {
       const handler = handle.mock.calls.find(([name]) => name === channel)?.[1];
@@ -124,4 +132,33 @@ it("records a thrown sampling error as failure and preserves the original cause"
     durationMs: expect.any(Number),
   });
   expect(JSON.stringify(fixture.events)).not.toContain("PRIVATE FILE BODY");
+});
+
+it("rejects foreign CLI history and rechecks the active Thread after configuration source resolution", async () => {
+  const fixture = setup();
+  const foreign = fixture.store.threads.create("/foreign");
+  await expect(
+    fixture.request("history:project", {
+      kind: "list",
+      threadId: fixture.thread.threadId,
+      traceId: crypto.randomUUID(),
+    }),
+  ).rejects.toThrow("Foreign Thread");
+  let resolveRoot: (root: string) => void = () => {};
+  const source = new Promise<string>((resolve) => {
+    resolveRoot = resolve;
+  });
+  fixture.context.projectNativeSessionsPath = () => source;
+  const read = fixture.request("history:project", {
+    kind: "list",
+    threadId: foreign.threadId,
+    traceId: crypto.randomUUID(),
+  });
+  fixture.store.threads.create("/third");
+  resolveRoot("/unused");
+  await expect(read).rejects.toThrow("Foreign Thread");
+  expect(fixture.events.at(-1)).toMatchObject({
+    operation: "history:project-list",
+    stage: "failed",
+  });
 });

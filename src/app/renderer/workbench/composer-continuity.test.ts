@@ -4,6 +4,7 @@ import { closeHistory } from "@tiptap/pm/history";
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
+import { RuntimeViewSchema } from "../../../modules/execution/contracts/public";
 import { DraftSchema } from "../../../modules/input/contracts/public";
 import { replaceDraftText } from "../../../modules/input/renderer/public";
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
@@ -24,7 +25,7 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 
-async function setup() {
+async function setup(phase?: "interrupted" | "allowed") {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const first = DraftSchema.parse({
     schemaVersion: 1,
@@ -74,6 +75,24 @@ async function setup() {
     onCloseCancelled: () => () => {},
     completeClose: () => {},
   };
+  if (phase)
+    bridge.runtime = {
+      subscribe: () => () => {},
+      request: async (command) => ({
+        kind: "view",
+        view: RuntimeViewSchema.parse({
+          threadId: command.threadId,
+          traceId: command.traceId,
+          revision: 0,
+          phase,
+          trusted: true,
+          busy: false,
+          model: null,
+          configuration: { code: "runtime.configDefault" },
+          message: { code: "runtime.previousSessionReadOnly" },
+        }),
+      }),
+    };
   const model = new AppModel(bridge);
   await model.start();
   const container = document.createElement("div");
@@ -182,4 +201,40 @@ it("uses an externally updated draft version on return and discards the previous
   await fixture.select(fixture.first.threadId);
   expect(fixture.editor().getText()).toBe("external draft");
   expect(fixture.editor().commands.undo()).toBe(false);
+});
+
+it("Shift+Enter inserts a source line in the real composer and remains undoable", async () => {
+  const fixture = await setup();
+  await act(() => {
+    fixture.editor().commands.setTextSelection(6);
+    fixture.editor().view.dispatchEvent(
+      new KeyboardEvent("keydown", {
+        key: "Enter",
+        code: "Enter",
+        shiftKey: true,
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+  });
+  expect(fixture.editor().getText({ blockSeparator: "\n" })).toBe(
+    "alpha\n omega",
+  );
+  expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha\n omega");
+  await act(() => expect(fixture.editor().commands.undo()).toBe(true));
+  expect(fixture.editor().getText()).toBe("alpha omega");
+});
+
+it("offers a visible new-session exit beside the disabled send button for a recovered read-only thread", async () => {
+  const fixture = await setup("interrupted");
+  const container = fixture.editor().view.dom.closest("section");
+  expect(container?.textContent).toContain("read-only");
+  const button = Array.from(container?.querySelectorAll("button") ?? []).find(
+    (b) => b.textContent === "New Thread",
+  );
+  expect(button).toBeDefined();
+  const create = vi.spyOn(fixture.model, "newThread").mockResolvedValue();
+  await act(() => button?.click());
+  expect(create).toHaveBeenCalledOnce();
+  expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha omega");
 });

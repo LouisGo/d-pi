@@ -50,6 +50,7 @@ export async function readNativeHistory(
   binding: NativeSessionBinding,
   cursor: HistoryCursor | null = null,
   signal?: AbortSignal,
+  projectDirectory?: string,
 ): Promise<HistoryPage> {
   try {
     signal?.throwIfAborted();
@@ -58,7 +59,11 @@ export async function readNativeHistory(
       realpath(binding.sessionFile),
     ]);
     const within = relative(base, path);
-    if (isAbsolute(within) || !within.startsWith(`${binding.threadId}${sep}`))
+    if (
+      isAbsolute(within) ||
+      within.startsWith("..") ||
+      (!projectDirectory && !within.startsWith(`${binding.threadId}${sep}`))
+    )
       return { kind: "unavailable", reason: "denied" };
     const file = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW);
     try {
@@ -80,6 +85,14 @@ export async function readNativeHistory(
       const header = HeaderSchema.safeParse(rawHeader);
       if (!header.success)
         return { kind: "unavailable", reason: "unsupported" };
+      if (projectDirectory) {
+        const cwd = z.object({ cwd: z.string() }).safeParse(rawHeader);
+        if (
+          !cwd.success ||
+          (await realpath(cwd.data.cwd)) !== (await realpath(projectDirectory))
+        )
+          return { kind: "unavailable", reason: "denied" };
+      }
       if (header.data.id !== binding.sessionId)
         return { kind: "unavailable", reason: "changed" };
       const source = createHash("sha256")

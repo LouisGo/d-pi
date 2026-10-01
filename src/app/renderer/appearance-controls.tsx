@@ -29,7 +29,7 @@ export function PreferenceToolbar({
   return (
     <header className="toolbar">
       <Button
-        variant="ghost"
+        variant="default"
         disabled={busy || !hasThread}
         onClick={() => void model.newThread()}
       >

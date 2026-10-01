@@ -464,10 +464,29 @@ else {
       ...ipcSourceContext,
       getStore: () => store,
       getDiagnostics: () => diagnostics,
+      projectNativeSessionsPath: async () => null,
       nativeSessionsPath: () =>
         join(app.getPath("userData"), "native-sessions"),
     };
-    registerHistoryIpc(projectReadContext);
+    registerHistoryIpc({
+      ...projectReadContext,
+      projectNativeSessionsPath: async (threadId, traceId) => {
+        const thread = store?.threads.threadContext(threadId);
+        if (!thread || !configuration) return null;
+        const reply = await configuration.execute({
+          kind: "snapshot",
+          traceId,
+          scope: {
+            kind: "thread",
+            threadId: thread.threadId,
+            workingDirectoryId: thread.workingDirectoryId,
+          },
+        });
+        return reply.kind === "snapshot" && reply.source
+          ? join(reply.source.directory, "sessions")
+          : null;
+      },
+    });
     registerFilesIpc(projectReadContext);
     registerGitIpc(projectReadContext);
     registerSubmissionIpc({

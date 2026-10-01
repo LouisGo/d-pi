@@ -76,6 +76,19 @@
     border: 1px solid var(--border);
     border-radius: var(--radius);
   }
+  .history select {
+    max-width: 100%;
+    min-height: var(--control-height);
+    background: var(--background);
+    color: var(--foreground);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding-inline: var(--control-padding);
+  }
+  .history select:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
   .model-controls summary,
   .code-tools summary,
   .runtime-source summary {
@@ -281,6 +294,16 @@
     background: var(--background);
     border: 1px solid var(--border);
     border-radius: var(--radius);
+  }
+  .composer-readiness {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--layout-gap);
+    padding: var(--layout-gap) var(--panel-padding);
+    border-bottom: 1px solid var(--border);
+    color: var(--muted-foreground);
+    font-size: var(--text-small);
   }
   .composer-heading {
     display: flex;

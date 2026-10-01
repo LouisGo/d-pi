@@ -179,7 +179,15 @@ async function setup({
       request: async () => ({ kind: "unavailable", reason: "missing" }),
     },
     git: { request: async () => ({ kind: "unavailable", reason: "not-git" }) },
-    history: { read: async () => ({ kind: "unavailable", reason: "missing" }) },
+    history: {
+      read: async () => ({ kind: "unavailable", reason: "missing" }),
+      projectList: async () => ({
+        kind: "catalog",
+        sessions: [],
+        partial: false,
+      }),
+      projectRead: async () => ({ kind: "unavailable", reason: "missing" }),
+    },
     onCloseRequest: () => () => {},
     onCloseCancelled: () => () => {},
     completeClose: () => {},

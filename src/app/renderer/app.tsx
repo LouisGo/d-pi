@@ -273,7 +273,12 @@ function ThreadWorkbench({
       </nav>
       <div className="thread-reading">
         <div className="reading-pane" hidden={readingView !== "conversation"}>
-          {thread.reading && <Conversation model={thread.reading} />}
+          {thread.reading && (
+            <Conversation
+              model={thread.reading}
+              onHistory={() => setReadingView("history")}
+            />
+          )}
         </div>
         <div className="reading-pane" hidden={readingView !== "files"}>
           {model.files && model.git && (
@@ -293,6 +298,7 @@ function ThreadWorkbench({
           {model.history && (
             <History
               bridge={model.history}
+              active={readingView === "history"}
               threadId={thread.context.threadId}
             />
           )}

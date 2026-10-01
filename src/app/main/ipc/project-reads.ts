@@ -8,8 +8,15 @@ import {
   listGitChanges,
   readGitChange,
 } from "../../../modules/changes/main/public";
-import { HistoryRequestSchema } from "../../../modules/conversation/contracts/public";
-import { readNativeHistory } from "../../../modules/conversation/main/public";
+import {
+  HistoryRequestSchema,
+  ProjectHistoryRequestSchema,
+} from "../../../modules/conversation/contracts/public";
+import {
+  listProjectNativeHistory,
+  readNativeHistory,
+  readProjectNativeHistory,
+} from "../../../modules/conversation/main/public";
 import {
   type FileReply,
   type FileRequest,
@@ -60,9 +67,11 @@ async function recordRead<T extends { kind: string; reason?: string }>(
   try {
     const reply = await sample();
     const unavailable = reply.kind === "unavailable";
+    const partial = "partial" in reply && reply.partial === true;
     diagnostics?.record({
       ...requestContext,
-      stage: unavailable ? "failed" : "completed",
+      stage: unavailable ? "failed" : partial ? "unknown" : "completed",
+      ...(partial ? { code: "history-catalog-partial" } : {}),
       durationMs: performance.now() - started,
       ...(unavailable && reply.reason ? { code: reply.reason } : {}),
     });
@@ -79,6 +88,45 @@ async function recordRead<T extends { kind: string; reason?: string }>(
 }
 
 export function registerHistoryIpc(context: ProjectReadContext): void {
+  context.ipcMain.handle("history:project", async (event, raw: unknown) => {
+    const request = ProjectHistoryRequestSchema.parse(raw);
+    const thread = activeThreadFor(
+      context,
+      event,
+      "Invalid history source",
+      request.threadId,
+    );
+    return recordRead(
+      context,
+      {
+        traceId: request.traceId,
+        threadId: request.threadId,
+        operation: `history:project-${request.kind}`,
+      },
+      async () => {
+        const root = await context.projectNativeSessionsPath(
+          thread.threadId,
+          request.traceId,
+        );
+        activeThreadFor(
+          context,
+          event,
+          "Invalid history source",
+          request.threadId,
+        );
+        if (!root) return { kind: "unavailable", reason: "invalid" } as const;
+        return request.kind === "list"
+          ? listProjectNativeHistory(root, thread.directory)
+          : readProjectNativeHistory(
+              root,
+              thread.directory,
+              thread.threadId,
+              request.key,
+              request.cursor,
+            );
+      },
+    );
+  });
   context.ipcMain.handle("history:read", async (event, raw: unknown) => {
     const { threadId, cursor } = HistoryRequestSchema.parse(raw);
     activeThreadFor(context, event, "Invalid history source", threadId);

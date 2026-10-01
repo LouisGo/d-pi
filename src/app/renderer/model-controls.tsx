@@ -43,8 +43,8 @@ export function ModelControls({
   );
   const [search, setSearch] = useState("");
   const [showUnavailable, setShowUnavailable] = useState(false);
-  const [selected, setSelected] = useState("");
-  const [level, setLevel] = useState<ThinkingChoice>("default");
+  const [selected, setSelected] = useState<string | null>(null);
+  const [level, setLevel] = useState<ThinkingChoice | null>(null);
   const models =
     query.data?.models.filter(
       (m) =>
@@ -53,16 +53,13 @@ export function ModelControls({
           .toLowerCase()
           .includes(search.toLowerCase()),
     ) ?? [];
-  const target = models.find(
-    (m) => JSON.stringify([m.provider, m.id]) === selected,
-  );
   if (!runtime) return null;
   return (
     <ModelSelectionState
       thread={thread}
       runtime={runtime}
       models={models.slice(0, 200)}
-      target={target}
+      catalog={query.data?.models ?? []}
       selected={selected}
       select={(value) => {
         setSelected(value);
@@ -85,10 +82,10 @@ export function ModelControls({
 function ModelSelectionState({
   runtime,
   models,
-  target,
-  selected,
+  catalog,
+  selected: chosen,
   select,
-  level,
+  level: chosenLevel,
   setLevel,
   search,
   setSearch,
@@ -103,10 +100,10 @@ function ModelSelectionState({
   thread: ThreadModel;
   runtime: NonNullable<ThreadModel["runtime"]>;
   models: ConfigurationSnapshot["models"];
-  target: ConfigurationSnapshot["models"][number] | undefined;
-  selected: string;
+  catalog: ConfigurationSnapshot["models"];
+  selected: string | null;
   select: (value: string) => void;
-  level: ThinkingChoice;
+  level: ThinkingChoice | null;
   setLevel: (value: ThinkingChoice) => void;
   search: string;
   setSearch: (value: string) => void;
@@ -119,6 +116,33 @@ function ModelSelectionState({
   t: ReturnType<typeof useI18n>["t"];
 }) {
   const view = useStore(runtime.stateStore, (state) => state.view);
+  const inherited =
+    view?.model ??
+    (view?.selectedModel
+      ? `${view.selectedModel.provider}/${view.selectedModel.modelId}`
+      : view?.phase === "interrupted"
+        ? null
+        : defaultModel);
+  const current = catalog.find((m) => `${m.provider}/${m.id}` === inherited);
+  const selected =
+    chosen ?? (current ? JSON.stringify([current.provider, current.id]) : "");
+  const target = catalog.find(
+    (m) => JSON.stringify([m.provider, m.id]) === selected,
+  );
+  const visibleModels =
+    target && !models.includes(target) ? [target, ...models] : models;
+  const intent = view?.selectedModel?.thinking;
+  const effective = view?.thinkingLevel;
+  const level: ThinkingChoice =
+    chosenLevel ??
+    (effective === "off" ||
+    target?.thinking.efforts.some((effort) => effort === effective)
+      ? (effective as ThinkingChoice)
+      : intent?.kind === "effort"
+        ? intent.effort
+        : intent?.kind === "off"
+          ? "off"
+          : "default");
   const disabled =
     !!view?.busy ||
     !!view?.modelChanging ||
@@ -132,16 +156,26 @@ function ModelSelectionState({
   return (
     <details className="model-controls" aria-label={t("model.heading")}>
       <summary>
-        {t(view?.model ? "model.active" : "model.next")}:{" "}
-        {view?.model ??
-          (view?.selectedModel
-            ? `${view.selectedModel.provider}/${view.selectedModel.modelId}`
-            : (defaultModel ?? t("model.none")))}{" "}
+        {t(
+          view?.phase === "interrupted"
+            ? "model.readOnly"
+            : view?.model
+              ? "model.active"
+              : "model.next",
+        )}
+        : {inherited ?? t("model.none")} · {t("model.thinking")}:{" "}
         {view?.thinkingLevel ??
-          thinkingLabel(view?.selectedModel?.thinking, t) ??
-          ""}{" "}
+          thinkingLabel(
+            view?.selectedModel?.thinking ?? { kind: "default" },
+            t,
+          )}{" "}
         · {t("model.change")}
       </summary>
+      {view?.phase === "interrupted" && (
+        <p role="status" className="muted">
+          {t("model.readOnlyNotice")}
+        </p>
+      )}
       {view?.selectedModel && !view.model && (
         <p className="muted">
           {t("model.next")}: {view.selectedModel.provider}/
@@ -170,7 +204,7 @@ function ModelSelectionState({
             onChange={(e) => select(e.target.value)}
           >
             <option value="">{t("model.choose")}</option>
-            {models.map((m) => (
+            {visibleModels.map((m) => (
               <option
                 key={JSON.stringify([m.provider, m.id])}
                 value={JSON.stringify([m.provider, m.id])}

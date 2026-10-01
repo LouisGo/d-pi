@@ -7,7 +7,7 @@
     "title": "M2 首版",
     "phase": "M2",
     "engineering": "in-progress",
-    "trial": "delivered",
+    "trial": "feedback",
     "acceptance": "pending",
     "current": true,
     "build": "0.1.0-m2.8 / 0243e4a0-1e4354ec",
@@ -18,9 +18,10 @@
       "../../docs/product/first-release.md",
       "handoff-entry.md",
       "../runtime-hardening-omp1845/handoff.md",
-      "configuration-sharing.md"
+      "configuration-sharing.md",
+      "mainflow-feedback.md"
     ],
-    "next": "实施可反复使用的配置/认证、模型与项目/会话入口，再逐功能完成 V1-00–10",
+    "next": "处理 m2.8 主流程试用反馈，交付复试候选；其余 M2 能力继续实施",
     "constraints": "仅本地 commit/候选，不 push、不公开发布、不扩 M3；冷恢复只读，unknown 不自动重发；S3 退出放弃待决仅暂停依赖部分。"
   }
 ]
@@ -77,3 +78,5 @@
 ### 2026-10-01 共享配置回归修复
 
 用户报告 CLI 已登录但 Electron 读取不可用，明确要求查根因、追查此前漏检并验证反向共享。已纠正将正常 WAL 一律视为不可读和遗漏原生缓存模型的工程限制，保留原生配置/认证所有权；双向正常场景纳入常规 check，partial 保留原因诊断。已交付 m2.8 clean 候选 `0243e4a0-1e4354ec`，源码 `0243e4a`；实际包内 Bun/SDK/官方 CLI 双向验证通过，本机原生根只读采样完整、OpenAI已认证、gpt-6.1-sol可用。完整检查453通过/1既有artifact跳过。根因、漏检与身份见 [修复交接](configuration-sharing.md)。真实供应商生成和用户复试未认可，M2其它能力未因此完成。
+
+2026-10-01：用户实际 m2.8 试用否定当前主流程可用性，明确要求实际操作与缺口修复。反馈、根因和本次范围见 [主流程修复](mainflow-feedback.md)；工程仍 in-progress，试用改 feedback，用户未认可。

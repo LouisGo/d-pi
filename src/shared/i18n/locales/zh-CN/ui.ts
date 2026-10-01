@@ -1,7 +1,23 @@
 export const ui = {
+  "ui.history.openCli": "查看此项目已有的 CLI 历史",
+  "ui.history.projectDescription":
+    "查看当前项目在 OMP CLI 中保存的历史；仅阅读，不接管或继续原生会话。",
+  "ui.history.choose": "历史来源",
+  "ui.history.bound": "此 d-pi 会话的原生记录",
+  "ui.history.catalogPartial": "部分记录不可读或超出列表预算；当前列表不完整。",
+  "ui.history.catalogUnavailable": "当前项目的 CLI 历史暂不可读或尚未保存。",
+
   "config.authUnknown": "认证状态暂不可读",
   "config.partial": "部分原生配置来源暂不可安全读取，来源可用后请刷新。",
-  "model.defaultThinking": "原生默认",
+  "model.defaultThinking": "原生默认（启动后确认）",
+  "model.readOnly": "只读会话：模型未确认",
+  "model.readOnlyNotice":
+    "此旧会话不能更换模型或发送。请新建独立会话继续工作；原有草稿和历史保留。",
+  "composer.blocked.readOnly":
+    "此会话只读，不能发送。原有草稿保留；新会话可选择模型并开始工作。",
+  "composer.blocked.start": "尚未启动会话，请先启动 OMP，再发送。",
+  "composer.blocked.allow": "项目尚未允许执行，请先允许，再启动会话。",
+  "composer.blocked.wait": "会话尚未就绪，请查看执行状态。",
   "model.offThinking": "关闭推理",
   "model.reason.configuration-unknown": "配置暂不可用",
   "config.heading": "配置与认证",
@@ -194,7 +210,7 @@ export const ui = {
   "ui.runtime.phase.starting": "正在启动 OMP",
   "ui.runtime.phase.busy": "OMP 正在工作",
   "ui.runtime.phase.ready": "OMP 已就绪",
-  "ui.runtime.phase.interrupted": "原生状态待确认",
+  "ui.runtime.phase.interrupted": "只读会话 · 无法继续执行",
   "ui.runtime.phase.failed": "OMP 尚未就绪",
   "ui.runtime.sectionLabel": "项目执行",
   "ui.runtime.model": "模型：{model}",

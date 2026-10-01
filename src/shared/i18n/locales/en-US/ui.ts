@@ -1,8 +1,28 @@
 export const ui = {
+  "ui.history.openCli": "View this project’s existing CLI history",
+  "ui.history.projectDescription":
+    "Read this project’s saved OMP CLI history. Viewing does not adopt or resume a native session.",
+  "ui.history.choose": "History source",
+  "ui.history.bound": "This d-pi session’s native record",
+  "ui.history.catalogPartial":
+    "Some records are unreadable or exceed the list budget. This list is incomplete.",
+  "ui.history.catalogUnavailable":
+    "The project’s CLI history is unavailable or has not been saved.",
+
   "config.authUnknown": "Authentication status unavailable",
   "config.partial":
     "Some native configuration sources could not be safely read. Refresh after the native source is available.",
-  "model.defaultThinking": "Native default",
+  "model.defaultThinking": "Native default (confirmed after start)",
+  "model.readOnly": "Read-only session: model unconfirmed",
+  "model.readOnlyNotice":
+    "This previous session cannot change model or send. Create an independent session to continue; its draft and history are preserved.",
+  "composer.blocked.readOnly":
+    "This session is read-only and cannot send. Its draft is preserved; create a new session to select a model and work.",
+  "composer.blocked.start":
+    "The session has not started. Start OMP before sending.",
+  "composer.blocked.allow": "Allow project execution, then start the session.",
+  "composer.blocked.wait":
+    "The session is not ready. Check its execution status.",
   "model.offThinking": "Reasoning off",
   "model.reason.configuration-unknown": "Configuration unavailable",
   "config.heading": "Configuration & sign in",
@@ -208,7 +228,7 @@ export const ui = {
   "ui.runtime.phase.starting": "Starting OMP",
   "ui.runtime.phase.busy": "OMP is working",
   "ui.runtime.phase.ready": "OMP is ready",
-  "ui.runtime.phase.interrupted": "Native status needs confirmation",
+  "ui.runtime.phase.interrupted": "Read-only session · execution unavailable",
   "ui.runtime.phase.failed": "OMP is not ready",
   "ui.runtime.sectionLabel": "Project execution",
   "ui.runtime.model": "Model: {model}",

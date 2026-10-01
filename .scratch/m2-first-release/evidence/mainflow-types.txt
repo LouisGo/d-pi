@@ -1,0 +1,6 @@
+$ tsc --noEmit && pnpm typecheck:core && pnpm typecheck:renderer && pnpm typecheck:main && pnpm typecheck:host && pnpm typecheck:preload
+$ tsc --noEmit -p tsconfig.core.json
+$ tsc --noEmit -p tsconfig.renderer.json
+$ tsc --noEmit -p tsconfig.main.json
+$ tsc --noEmit -p tsconfig.host.json
+$ tsc --noEmit -p tsconfig.preload.json

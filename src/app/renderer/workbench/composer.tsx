@@ -200,6 +200,7 @@ export function Composer({
           {status}
         </span>
       </div>
+      {runtime && <ComposerReadiness runtime={runtime} model={model} />}
       <EditorContent className="composer-editor" editor={editor} />
       {unsupportedPaste && (
         <p role="alert" className="failure">
@@ -352,6 +353,53 @@ function SendButton({
         <p role="status" className="muted">
           {t("composer.queueFull", { queued, cap: QUEUE_CAP })}
         </p>
+      )}
+    </div>
+  );
+}
+
+function ComposerReadiness({
+  runtime,
+  model,
+}: {
+  runtime: NonNullable<ThreadModel["runtime"]>;
+  model: AppModel;
+}) {
+  const { t } = useI18n();
+  const view = useStore(runtime.stateStore, (state) => state.view);
+  const busy = useStore(
+    model.stateStore,
+    (state) => state.kind === "ready" && state.busy,
+  );
+  if (canSubmit(view)) return null;
+  const phase = view?.phase;
+  return (
+    <div className="composer-readiness" role="status">
+      <p>
+        {t(
+          phase === "interrupted"
+            ? "composer.blocked.readOnly"
+            : phase === "allowed"
+              ? "composer.blocked.start"
+              : phase === "browse"
+                ? "composer.blocked.allow"
+                : "composer.blocked.wait",
+        )}
+      </p>
+      {phase === "interrupted" && (
+        <Button disabled={busy} onClick={() => void model.newThread()}>
+          {t("app.toolbar.newThread")}
+        </Button>
+      )}
+      {phase === "browse" && (
+        <Button disabled={busy} onClick={() => void runtime.act("allow")}>
+          {t("ui.runtime.allow")}
+        </Button>
+      )}
+      {phase === "allowed" && (
+        <Button disabled={busy} onClick={() => void runtime.act("start")}>
+          {t("ui.runtime.start")}
+        </Button>
       )}
     </div>
   );

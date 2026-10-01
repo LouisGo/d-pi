@@ -12,6 +12,8 @@ import {
   ConversationEventSchema,
   HistoryPageSchema,
   HistoryRequestSchema,
+  ProjectHistoryCatalogSchema,
+  ProjectHistoryRequestSchema,
 } from "../../modules/conversation/contracts/public";
 import {
   RuntimeCommandSchema,
@@ -89,6 +91,32 @@ const bridge: DesktopBridge = {
     },
   },
   history: {
+    async projectList(threadId) {
+      return ProjectHistoryCatalogSchema.parse(
+        await ipcRenderer.invoke(
+          "history:project",
+          ProjectHistoryRequestSchema.parse({
+            kind: "list",
+            threadId,
+            traceId: crypto.randomUUID(),
+          }),
+        ),
+      );
+    },
+    async projectRead(threadId, key, cursor) {
+      return HistoryPageSchema.parse(
+        await ipcRenderer.invoke(
+          "history:project",
+          ProjectHistoryRequestSchema.parse({
+            kind: "read",
+            threadId,
+            key,
+            cursor,
+            traceId: crypto.randomUUID(),
+          }),
+        ),
+      );
+    },
     async read(threadId, cursor) {
       return HistoryPageSchema.parse(
         await ipcRenderer.invoke(
