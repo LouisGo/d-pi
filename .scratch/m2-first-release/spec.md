@@ -10,7 +10,7 @@
     "trial": "feedback",
     "acceptance": "pending",
     "current": true,
-    "build": "0.1.0-m2.8 / 0243e4a0-1e4354ec",
+    "build": "0.1.0-m2.9 / d7412cea-c01373c5",
     "pending": [
       "../m1-s3-control-recovery/issues/09-quit-discard-decision.md"
     ],
@@ -21,9 +21,10 @@
       "configuration-sharing.md",
       "mainflow-feedback.md",
       "progress-audit.md",
+      "navigation-continuity.md",
       "../review-seven-commits/spec.md"
     ],
-    "next": "七提交 review 修复已通过工程准入与 clean m2.9 包内闭环；从该候选继续已承诺基础主流程的实际试用验收，尚未交付能力保持原票",
+    "next": "处理 m2.9 会话切换闪烁反馈；已复现并修复工作区空白与阅读位置丢失，准备 m2.10 包内验证和候选交付",
     "constraints": "仅本地 commit/候选，不 push、不公开发布、不扩 M3；冷恢复只读，unknown 不自动重发；S3 退出放弃待决仅暂停依赖部分。"
   }
 ]
@@ -86,3 +87,10 @@
 2026-10-01：用户补充先检查实际应用是否匹配文档进度，未开发能力不提前开启。[核对](progress-audit.md)基于先前文档 77385a7 与实际交付 m2.8：基本独立新会话闭环已存在且包内重验通过；冷旧 Thread 只读符合合同，但入口、模型状态和 Shift+Enter 未充分兑现已承诺体验。01 重开 claimed；CLI 历史自动发现未声明完成。本地 m2.9 有新增历史发现代码及局部修复，但包内启动故障根因未知，不标交付。此次不展开其它 M2 能力。
 
 2026-10-01：按用户要求全量 review 最近七提交，确认并修复 ACK/idle 提前释放未决提交、Runtime 跳过断开后的组清理、CLI 历史刷新沿用失效游标、官方拒收缓存后仍标完整四类缺陷。新回归先失败后通过，完整准入 464 行为测试/1 既有 opt-in 跳过、32 架构/47 工具测试及实际 SDK/配置验证通过；clean m2.9 review 候选 `18a6ef6a-10ca9182` 八场景包内闭环与 app 内配置验证通过。[范围、合同、证据与下一阶段 prompt](../review-seven-commits/spec.md)。无新增产品决定，不将本次审查当成 M2 全集完成或用户认可；原启动失败未复现但根因仍 unknown。
+
+
+### 2026-10-01 会话切换连续性反馈
+
+用户以 `0.1.0-m2.9 / d7412cea-c01373c5` 反馈切换历史 Thread 时闪烁，明确授权接续已承诺基础主流程、TDD、实际桌面验证、本地提交和候选；不 push、不公开发布、不扩附件/完整队列/子 Agent/M3。起点 `d7412cea`，工作树干净。
+
+基线实际包复现 Thread 页面在 Main 确认与路由提交之间被清空；公共壳和 Outlet 已存在且保持挂载。按失败行为回归保留并冻结旧路由匹配的工作区，身份对齐后替换；未知选择仍撤下工作区。另按失败回归保存每 Thread 的阅读坐标，不保存或重建 OMP 内容。完整工程检查 480 行为测试、33 架构、47 tooling 通过，1 项既有 CLI artifact opt-in 跳过；候选包尚待实际桌面验证。具体证据、构建和试用步骤维护于 [切换连续性交接](navigation-continuity.md)。重要新产品待决：无；工程通过不构成用户认可。

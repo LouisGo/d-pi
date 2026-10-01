@@ -1,0 +1,244 @@
+// @vitest-environment happy-dom
+import { RouterProvider } from "@tanstack/react-router";
+import { act, createElement } from "react";
+import { createRoot } from "react-dom/client";
+import { afterEach, expect, it, vi } from "vitest";
+import { DraftSchema } from "../../../modules/input/contracts/public";
+import { I18nProvider } from "../../../modules/preferences/renderer/public";
+import {
+  type DesktopBridge,
+  parseDesktopReply,
+} from "../../contracts/desktop-bridge";
+import { AppModel } from "../wiring/model";
+import { createAppRouting } from "./router";
+
+const cleanup: (() => Promise<void>)[] = [];
+afterEach(async () => {
+  for (const dispose of cleanup.splice(0)) await dispose();
+  vi.unstubAllGlobals();
+});
+function deferred() {
+  let resolve = () => {};
+  const promise = new Promise<void>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
+}
+async function fixture() {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const first = DraftSchema.parse({
+    schemaVersion: 1,
+    threadId: crypto.randomUUID(),
+    workingDirectoryId: crypto.randomUUID(),
+    directory: "/fixture/first",
+    revision: 0,
+    text: "first draft",
+  });
+  const second = DraftSchema.parse({
+    ...first,
+    threadId: crypto.randomUUID(),
+    directory: "/fixture/second",
+    text: "second draft",
+  });
+  const drafts = new Map([
+    [first.threadId, first],
+    [second.threadId, second],
+  ]);
+  let selected = first.threadId;
+  let uncertain = false;
+  const bridge: DesktopBridge = {
+    request: async (command) => {
+      if (
+        uncertain &&
+        (command.kind === "select-thread" || command.kind === "restore")
+      )
+        throw Error("lost selection receipt");
+      if (command.kind === "list-threads")
+        return parseDesktopReply(command, {
+          kind: "threads",
+          threads: [...drafts.values()],
+        });
+      if (command.kind === "select-thread") selected = command.threadId;
+      if (command.kind === "restore" || command.kind === "select-thread")
+        return parseDesktopReply(command, {
+          kind: "ready",
+          draft: drafts.get(selected),
+          directoryAvailable: true,
+          preferences: { theme: "light", density: "normal", locale: "system" },
+        });
+      throw Error("unexpected command");
+    },
+    onCloseRequest: () => () => {},
+    onCloseCancelled: () => () => {},
+    completeClose: () => {},
+  };
+  const model = new AppModel(bridge);
+  await model.start();
+  const routing = createAppRouting(model);
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  const disconnect = routing.connect();
+  await act(async () => {
+    root.render(
+      createElement(I18nProvider, {
+        initialSnapshot: { preference: "system", resolvedLocale: "en-US" },
+        children: createElement(RouterProvider, { router: routing.router }),
+      }),
+    );
+  });
+  await act(async () => {
+    await routing.router.load();
+  });
+  cleanup.push(async () => {
+    await act(() => root.unmount());
+    disconnect();
+    routing.dispose();
+    model.dispose();
+    container.remove();
+  });
+  return {
+    first,
+    second,
+    model,
+    router: routing.router,
+    container,
+    loseSelection: () => {
+      uncertain = true;
+    },
+  };
+}
+
+it("keeps the application shell visible and mounted while a Thread route waits for readiness", async () => {
+  const input = await fixture();
+  const shell = input.container.querySelector<HTMLElement>(".app-shell");
+  const toolbar = input.container.querySelector(".toolbar");
+  expect(shell).not.toBeNull();
+  const gate = deferred();
+  const route = input.router.routesById["/threads/$threadId"];
+  const beforeLoad = route.options.beforeLoad;
+  route.options.beforeLoad = () => gate.promise;
+  route.update({ pendingMinMs: 0 });
+  let navigation: Promise<void> | undefined;
+  await act(async () => {
+    navigation = input.router.navigate({
+      to: "/threads/$threadId",
+      params: { threadId: input.second.threadId },
+      search: { view: "conversation" },
+    });
+    await new Promise((resolve) => setTimeout(resolve, 30));
+  });
+  try {
+    expect(shell?.isConnected).toBe(true);
+    expect(shell?.style.display).not.toBe("none");
+    expect(input.container.querySelector(".toolbar")).toBe(toolbar);
+  } finally {
+    await act(async () => {
+      gate.resolve();
+      await navigation;
+    });
+    if (beforeLoad) route.options.beforeLoad = beforeLoad;
+    else delete route.options.beforeLoad;
+  }
+  expect(input.container.querySelector(".app-shell")).toBe(shell);
+  expect(input.container.querySelector(".tiptap")?.textContent).toBe(
+    "second draft",
+  );
+});
+
+it("retains the frozen source workspace until the confirmed target route can replace it", async () => {
+  const input = await fixture();
+  const editor = input.container.querySelector(".tiptap");
+  const gate = deferred();
+  const route = input.router.routesById["/threads/$threadId"];
+  const beforeLoad = route.options.beforeLoad;
+  route.options.beforeLoad = () => gate.promise;
+  let navigation: Promise<void> | undefined;
+  await act(async () => {
+    navigation = input.router.navigate({
+      to: "/threads/$threadId",
+      params: { threadId: input.second.threadId },
+      search: { view: "conversation" },
+    });
+    await new Promise((resolve) => setTimeout(resolve, 30));
+  });
+  try {
+    expect(input.model.controller?.getTextSnapshot()).toBe("second draft");
+    expect(input.router.state.resolvedLocation?.pathname).toBe(
+      `/threads/${input.first.threadId}`,
+    );
+    expect(input.container.querySelector(".tiptap")).toBe(editor);
+    expect(editor?.isConnected).toBe(true);
+    expect(
+      input.container.querySelector(".thread-workspace")?.hasAttribute("inert"),
+    ).toBe(true);
+    expect(
+      input.container
+        .querySelector(".thread-workspace")
+        ?.getAttribute("aria-busy"),
+    ).toBe("true");
+    expect(input.container.textContent).not.toContain("second draft");
+  } finally {
+    await act(async () => {
+      gate.resolve();
+      await navigation;
+    });
+    if (beforeLoad) route.options.beforeLoad = beforeLoad;
+    else delete route.options.beforeLoad;
+  }
+  expect(input.container.querySelector(".tiptap")?.textContent).toBe(
+    "second draft",
+  );
+  expect(
+    input.container.querySelector(".thread-workspace")?.hasAttribute("inert"),
+  ).toBe(false);
+});
+
+it("restores each Thread's reading position on return without sharing scroll between Threads", async () => {
+  const input = await fixture();
+  const pane = () =>
+    input.container.querySelector<HTMLElement>(".reading-pane");
+  const select = (threadId: typeof input.first.threadId) =>
+    act(async () => {
+      await input.router.navigate({
+        to: "/threads/$threadId",
+        params: { threadId },
+        search: { view: "conversation" },
+      });
+    });
+  const firstPane = pane();
+  if (!firstPane) throw Error("missing first pane");
+  firstPane.scrollTop = 180;
+  firstPane.dispatchEvent(new Event("scroll"));
+  await select(input.second.threadId);
+  expect(pane()?.scrollTop).toBe(0);
+  const secondPane = pane();
+  if (!secondPane) throw Error("missing second pane");
+  secondPane.scrollTop = 95;
+  secondPane.dispatchEvent(new Event("scroll"));
+  await select(input.first.threadId);
+  expect(pane()?.scrollTop).toBe(180);
+  await select(input.second.threadId);
+  expect(pane()?.scrollTop).toBe(95);
+});
+
+it("removes the retained workspace when authoritative selection becomes unknown", async () => {
+  const input = await fixture();
+  const shell = input.container.querySelector(".app-shell");
+  input.loseSelection();
+  await act(async () => {
+    await input.router.navigate({
+      to: "/threads/$threadId",
+      params: { threadId: input.second.threadId },
+      search: { view: "conversation" },
+    });
+  });
+  expect(input.model.getSnapshot()).toMatchObject({
+    threadTransition: "unknown",
+  });
+  expect(input.router.state.location.pathname).toBe(
+    `/threads/${input.first.threadId}`,
+  );
+  expect(input.container.querySelector(".app-shell")).toBe(shell);
+  expect(input.container.querySelector(".thread-workspace")).toBeNull();
+});

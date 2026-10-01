@@ -1,0 +1,36 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/louistation/MySpace/Life/d-pi
+
+ ❯ src/app/renderer/routing/navigation-continuity.test.ts (3 tests | 1 failed) 195ms
+   ✓ keeps the application shell visible and mounted while a Thread route is pending 104ms
+   ✓ retains the frozen source workspace until the confirmed target route can replace it 50ms
+   × restores each Thread's reading position on return without sharing scroll between Threads 41ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/renderer/routing/navigation-continuity.test.ts > restores each Thread's reading position on return without sharing scroll between Threads
+AssertionError: expected +0 to be 180 // Object.is equality
+
+- Expected
++ Received
+
+- 180
++ 0
+
+ ❯ src/app/renderer/routing/navigation-continuity.test.ts:118:29
+    116|   secondPane.dispatchEvent(new Event("scroll"));
+    117|   await select(input.first.threadId);
+    118|   expect(pane()?.scrollTop).toBe(180);
+       |                             ^
+    119|   await select(input.second.threadId);
+    120|   expect(pane()?.scrollTop).toBe(95);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  21:15:20
+   Duration  1.88s (import 59%, transform 22%, tests 11%, environment 8%)
+

@@ -1,0 +1,20 @@
+
+DevTools listening on ws://127.0.0.1:60711/devtools/browser/55cbc39e-7c75-41a2-965a-f95b7fe416ec
+{"threadSwitch":"fe72e2e2-510e-476a-8f43-8b901cd62806","samples":[{"shell":true,"sidebar":true,"toolbar":true,"workspace":false,"editor":false},{"shell":true,"sidebar":true,"toolbar":true,"workspace":true,"editor":true},{"shell":true,"sidebar":true,"toolbar":true,"workspace":true,"editor":true},{"shell":true,"sidebar":true,"toolbar":true,"workspace":true,"editor":true},{"shell":true,"sidebar":true,"toolbar":true,"workspace":true,"editor":true},{"shell":true,"sidebar":true,"toolbar":true,"workspace":true,"editor":true},{"shell":true,"sidebar":true,"toolbar":true,"workspace":true,"editor":true},{"shell":true,"sidebar":true,"toolbar":true,"workspace":true,"editor":true},{"shell":true,"sidebar":true,"toolbar":true,"workspace":true,"editor":true},{"shell":true,"sidebar":true,"toolbar":true,"workspace":true,"editor":true},{"shell":true,"sidebar":true,"toolbar":true,"workspace":true,"editor":true},{"shell":true,"sidebar":true,"toolbar":true,"workspace":true,"editor":true}]}
+Failure evidence: /private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-FHsBKJ
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Thread switch removed or hid the shell/workspace: [{"shell":true,"sidebar":true,"toolbar":true,"workspace":false,"editor":false},{"shell":true,"sidebar":true,"toolbar":true,"workspace":true,"editor":true},{"shell":true,"sidebar":true,"toolbar":true,"workspace":true,"editor":true},{"shell":true,"sidebar":true,"toolbar":true,"workspace":true,"editor":true},{"shell":true,"sidebar":true,"toolbar":true,"workspace":true,"editor":true},{"shell":true,"sidebar":true,"toolbar":true,"workspace":true,"editor":true},{"shell":true,"sidebar":true,"toolbar":true,"workspace":true,"editor":true},{"shell":true,"sidebar":true,"toolbar":true,"workspace":true,"editor":true},{"shell":true,"sidebar":true,"toolbar":true,"workspace":true,"editor":true},{"shell":true,"sidebar":true,"toolbar":true,"workspace":true,"editor":true},{"shell":true,"sidebar":true,"toolbar":true,"workspace":true,"editor":true},{"shell":true,"sidebar":true,"toolbar":true,"workspace":true,"editor":true}]
+    at selectThread (file:///Users/louistation/MySpace/Life/d-pi/validation/m2/package.mjs:246:12)
+    at async file:///Users/louistation/MySpace/Life/d-pi/validation/m2/package.mjs:437:3 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.21.0

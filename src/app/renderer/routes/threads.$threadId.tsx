@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { useStore } from "zustand";
 import { ThreadIdSchema } from "../../../shared/identity";
 import { readingSearch } from "../routing/search";
@@ -27,13 +27,26 @@ function ThreadPage() {
       ? state.threadSelection
       : null,
   );
-  if (!selection) return null;
+  const known = useStore(
+    model.stateStore,
+    (state) => state.kind === "ready" && state.threadTransition !== "unknown",
+  );
+  // Main confirms selection before history commits. Retain only the last view
+  // belonging to this still-presented route, frozen until both identities agree.
+  // This is a presentation reference, never another writable Thread owner.
+  const [presented, setPresented] = useState(selection);
+  if (selection && selection !== presented) setPresented(selection);
+  const visible =
+    selection ??
+    (presented?.thread.context.threadId === threadId ? presented : null);
+  if (!known || !visible) return null;
   return (
     <ThreadWorkbench
-      key={selection.thread.key}
+      key={visible.thread.key}
       model={model}
       editor={editor}
-      threadSelection={selection}
+      threadSelection={visible}
+      transitioning={!selection}
       readingView={view}
       onReadingViewChange={(view) =>
         void navigate({ search: { view }, replace: true })

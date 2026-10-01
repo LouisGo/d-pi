@@ -8,6 +8,7 @@ import type { Draft, Failure } from "../../../modules/input/contracts/public";
 import { DraftController } from "../../../modules/input/core/public";
 import type { ThreadContext } from "../../../modules/threads/contracts/public";
 import type { DesktopBridge } from "../../contracts/desktop-bridge";
+import type { ReadingView } from "../routing/search";
 
 /** Application-owned Thread resources. Detaching a view does not dispose them. */
 export class ThreadModel {
@@ -17,6 +18,8 @@ export class ThreadModel {
   readonly submission: SubmissionModel | null = null;
   readonly runtime: RuntimeModel | null = null;
   readonly reading: ConversationModel | null = null;
+  /** View coordinates only; native history/content remain owned by OMP. */
+  readonly readingPositions = new Map<ReadingView, number>();
   private previousRuntimeView: RuntimeView | null = null;
   private runtimeReadingUnsubscribe: (() => void) | null = null;
   private disposed = false;
@@ -101,6 +104,7 @@ export class ThreadModel {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
+    this.readingPositions.clear();
     this.submission?.dispose();
     this.controller.dispose();
     this.runtimeReadingUnsubscribe?.();

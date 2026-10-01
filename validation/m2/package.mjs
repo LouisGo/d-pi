@@ -204,6 +204,23 @@ async function click(text) {
   );
 }
 async function selectThread(id) {
+  if (process.argv.includes("--continuity"))
+    await evaluate(`(()=>{
+    const shell=document.querySelector('.app-shell');
+    const sidebar=document.querySelector('.sidebar');
+    const toolbar=document.querySelector('.toolbar');
+    const samples=[];
+    const sample=()=>{
+      samples.push({shell:document.querySelector('.app-shell')===shell && shell.getBoundingClientRect().height>0,sidebar:document.querySelector('.sidebar')===sidebar,toolbar:document.querySelector('.toolbar')===toolbar,workspace:!!document.querySelector('.thread-workspace'),editor:!!document.querySelector('.tiptap')});
+    };
+    let running=true;
+    const frame=()=>{if(running){sample();requestAnimationFrame(frame);}};
+    requestAnimationFrame(frame);
+    const observer=new MutationObserver(sample);
+    observer.observe(document.getElementById('root'),{subtree:true,childList:true,attributes:true,attributeFilter:['style']});
+    window.__continuityStop=()=>{running=false;observer.disconnect();return samples;};
+    return true;
+  })()`);
   await wait(() =>
     evaluate(
       `!!document.querySelector('.thread-navigation button[title$="${id}"]')`,
@@ -222,6 +239,21 @@ async function selectThread(id) {
       `document.querySelector('.thread-navigation button[aria-current=page]')?.title.endsWith('${id}')`,
     ),
   );
+  if (process.argv.includes("--continuity")) {
+    await evaluate(
+      "new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))",
+    );
+    const samples = await evaluate("window.__continuityStop()");
+    continuitySamples.push({ threadId: id, samples });
+    assert.ok(samples.length > 0);
+    assert.ok(
+      samples.every(
+        (s) => s.shell && s.sidebar && s.toolbar && s.workspace && s.editor,
+      ),
+      "Thread switch removed or hid the shell/workspace: " +
+        JSON.stringify(samples),
+    );
+  }
 }
 async function insert(text) {
   await evaluate("document.querySelector('[contenteditable=true]').focus()");
@@ -271,6 +303,7 @@ async function shot(name) {
 const routerValidation = process.argv.includes("--router");
 const checks = [];
 const screenshots = [];
+const continuitySamples = [];
 try {
   await connect();
   await wait(() =>
@@ -565,6 +598,15 @@ try {
       "document.querySelector('[contenteditable=true]')?.textContent==='B_UNSENT_DRAFT'",
     ),
   );
+  if (process.argv.includes("--continuity")) {
+    assert.equal(
+      await evaluate("document.querySelector('.reading-pane').scrollTop"),
+      readingPosition.top,
+    );
+    checks.push(
+      "Thread switching preserves shell and workspace through every DOM mutation/frame; returning restores independent reading scroll",
+    );
+  }
   await call("Page.reload");
   await wait(() =>
     evaluate(
@@ -695,6 +737,7 @@ try {
     root: isolated.root,
     checks,
     screenshots,
+    continuitySamples,
     providerCalls: requests.length,
     models: requests.map((r) => r.model),
     nativeSessions: db

@@ -1,4 +1,10 @@
-import { useCallback, useState } from "react";
+import {
+  type ReactNode,
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { FolderIcon } from "@/components/icons/common";
 import { Button } from "@/components/ui/button";
 import type { FrozenSelection } from "../../../modules/files/core/public";
@@ -8,6 +14,7 @@ import { History } from "../reading/history";
 import { Submissions } from "../reading/submissions";
 import type { ReadingView } from "../routing/search";
 import type { ThreadSelectionState } from "../wiring/model";
+import type { ThreadModel } from "../wiring/thread-model";
 import { Composer } from "./composer";
 import { FilePanel } from "./file-panel";
 import { ModelControls } from "./model-controls";
@@ -20,7 +27,9 @@ export function ThreadWorkbench({
   editor,
   readingView,
   onReadingViewChange,
+  transitioning = false,
 }: WorkbenchProps & {
+  transitioning?: boolean;
   readingView: ReadingView;
   onReadingViewChange: (view: ReadingView) => void;
   threadSelection: Extract<ThreadSelectionState, { kind: "thread" }>;
@@ -47,7 +56,11 @@ export function ThreadWorkbench({
     [thread],
   );
   return (
-    <section className="thread-workspace">
+    <section
+      className="thread-workspace"
+      inert={transitioning}
+      aria-busy={transitioning}
+    >
       <div className="thread-setup">
         <div className="directory-info" title={thread.context.directory}>
           <FolderIcon />
@@ -110,15 +123,23 @@ export function ThreadWorkbench({
         </Button>
       </nav>
       <div className="thread-reading">
-        <div className="reading-pane" hidden={readingView !== "conversation"}>
+        <ReadingPane
+          thread={thread}
+          view="conversation"
+          active={readingView === "conversation"}
+        >
           {thread.reading && (
             <Conversation
               model={thread.reading}
               onHistory={() => onReadingViewChange("history")}
             />
           )}
-        </div>
-        <div className="reading-pane" hidden={readingView !== "files"}>
+        </ReadingPane>
+        <ReadingPane
+          thread={thread}
+          view="files"
+          active={readingView === "files"}
+        >
           {model.files && model.git && (
             <FilePanel
               resource={thread.context}
@@ -128,11 +149,19 @@ export function ThreadWorkbench({
               onAttach={onAttach}
             />
           )}
-        </div>
-        <div className="reading-pane" hidden={readingView !== "submissions"}>
+        </ReadingPane>
+        <ReadingPane
+          thread={thread}
+          view="submissions"
+          active={readingView === "submissions"}
+        >
           {submission && <Submissions model={submission} />}
-        </div>
-        <div className="reading-pane" hidden={readingView !== "history"}>
+        </ReadingPane>
+        <ReadingPane
+          thread={thread}
+          view="history"
+          active={readingView === "history"}
+        >
           {model.history && (
             <History
               bridge={model.history}
@@ -140,7 +169,7 @@ export function ThreadWorkbench({
               threadId={thread.context.threadId}
             />
           )}
-        </div>
+        </ReadingPane>
       </div>
       <Composer
         thread={thread}
@@ -149,5 +178,40 @@ export function ThreadWorkbench({
         onAttachmentApplied={onAttachmentApplied}
       />
     </section>
+  );
+}
+
+function ReadingPane({
+  thread,
+  view,
+  active,
+  children,
+}: {
+  thread: ThreadModel;
+  view: ReadingView;
+  active: boolean;
+  children: ReactNode;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const pane = ref.current;
+    if (!pane || !active) return;
+    pane.scrollTop = thread.readingPositions.get(view) ?? 0;
+    return () => {
+      thread.readingPositions.set(view, pane.scrollTop);
+    };
+  }, [thread, view, active]);
+  return (
+    <div
+      ref={ref}
+      className="reading-pane"
+      hidden={!active}
+      onScroll={(event) => {
+        if (active)
+          thread.readingPositions.set(view, event.currentTarget.scrollTop);
+      }}
+    >
+      {children}
+    </div>
   );
 }

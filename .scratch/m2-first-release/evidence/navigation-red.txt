@@ -1,0 +1,47 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/louistation/MySpace/Life/d-pi
+
+ ❯ src/app/renderer/routing/navigation-continuity.test.ts (2 tests | 1 failed) 152ms
+   ✓ keeps the application shell visible and mounted while a Thread route is pending 99ms
+   × retains the frozen source workspace until the confirmed target route can replace it 52ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/renderer/routing/navigation-continuity.test.ts > retains the frozen source workspace until the confirmed target route can replace it
+AssertionError: expected null to be <div contenteditable="false" …(6)>…(1)</div> // Object.is equality
+
+- Expected:
+<div
+  aria-label="Draft body"
+  aria-multiline="true"
+  class="tiptap ProseMirror"
+  contenteditable="false"
+  role="textbox"
+  spellcheck="false"
+  translate="no"
+>
+  <p>
+    first draft
+  </p>
+</div>
+
++ Received:
+null
+
+ ❯ src/app/renderer/routing/navigation-continuity.test.ts:89:54
+     87|     expect(input.model.controller?.getTextSnapshot()).toBe("second dra…
+     88|     expect(input.router.state.resolvedLocation?.pathname).toBe(`/threa…
+     89|     expect(input.container.querySelector(".tiptap")).toBe(editor);
+       |                                                      ^
+     90|     expect(editor?.isConnected).toBe(true);
+     91|     expect(input.container.querySelector(".thread-workspace")?.hasAttr…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  21:14:03
+   Duration  3.16s (import 73%, transform 12%, environment 9%, tests 5%)
+

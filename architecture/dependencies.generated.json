@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "2250fc848f037b3026cb3155321a6584940ec60d7457410407b3ffb556b3972f",
+  "inputsHash": "1eb865e410968084aee3a2db6b728068e0cc9621688272223e5db49932d08486",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 260,
-    "scannedFiles": 260,
+    "sourceFiles": 261,
+    "scannedFiles": 261,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 90,
-      "lines": 11747,
+      "files": 91,
+      "lines": 12072,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -5366,6 +5366,102 @@
       "resolution": "external"
     },
     {
+      "from": "src/app/renderer/routing/navigation-continuity.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tanstack/react-router",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/routing/navigation-continuity.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/routing/navigation-continuity.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react-dom/client",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/routing/navigation-continuity.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/routing/navigation-continuity.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/input/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/routing/navigation-continuity.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/routing/navigation-continuity.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../contracts/desktop-bridge",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/desktop-bridge.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/routing/navigation-continuity.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../wiring/model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/wiring/model.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/routing/navigation-continuity.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./router",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/routing/router.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/app/renderer/routing/route-tree.gen.ts",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -6689,6 +6785,18 @@
       "targetEnvironment": "contracts"
     },
     {
+      "from": "src/app/renderer/wiring/thread-model.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../routing/search",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/routing/search.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/app/renderer/workbench/composer-binding.test.ts",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -7894,6 +8002,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/wiring/model.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/thread-workbench.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../wiring/thread-model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/wiring/thread-model.ts",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
