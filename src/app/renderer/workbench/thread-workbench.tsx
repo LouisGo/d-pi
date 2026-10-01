@@ -193,14 +193,26 @@ function ReadingPane({
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const restoring = useRef(false);
   useLayoutEffect(() => {
     const pane = ref.current;
     if (!pane || !active) return;
-    pane.scrollTop = thread.readingPositions.get(view) ?? 0;
+    const top = thread.readingPositions.get(view) ?? 0;
+    restoring.current = true;
+    pane.scrollTop = top;
+    // Composer mounts after this pane's layout effect. Restore again before
+    // paint, once its geometry is present, without recording an initial clamp.
+    const frame = requestAnimationFrame(() => {
+      pane.scrollTop = top;
+      restoring.current = false;
+    });
     return () => {
-      // React has already hidden a pane when an active-tab effect cleans up.
-      // Its zero viewport coordinate must not overwrite the last visible scroll.
-      if (!pane.hidden) thread.readingPositions.set(view, pane.scrollTop);
+      cancelAnimationFrame(frame);
+      // React may already have hidden the viewport. Preserve its last visible
+      // coordinate, and never persist an unfinished restoration's clamp.
+      if (!pane.hidden && !restoring.current)
+        thread.readingPositions.set(view, pane.scrollTop);
+      restoring.current = false;
     };
   }, [thread, view, active]);
   return (
@@ -209,7 +221,7 @@ function ReadingPane({
       className="reading-pane"
       hidden={!active}
       onScroll={(event) => {
-        if (active)
+        if (active && !restoring.current)
           thread.readingPositions.set(view, event.currentTarget.scrollTop);
       }}
     >

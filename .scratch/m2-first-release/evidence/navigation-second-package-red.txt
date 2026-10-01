@@ -1,0 +1,18 @@
+
+DevTools listening on ws://127.0.0.1:62919/devtools/browser/282c23a2-6242-4dc0-8b06-d66a95ae2f20
+Failure evidence: /private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-ODnTH6
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: {"readingPosition":{"top":2120,"height":2257,"client":117},"returnedPosition":{"top":2068.5,"height":2257,"client":117},"expectedTop":2120}
+    at file:///Users/louistation/MySpace/Life/d-pi/validation/m2/package.mjs:644:12 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.21.0

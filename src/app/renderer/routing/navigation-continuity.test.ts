@@ -269,3 +269,51 @@ it("does not replace a reading position with the hidden viewport's zero coordina
   }
   expect(pane.scrollTop).toBe(180);
 });
+
+it("restores the requested position after Composer mounting finalizes the reading viewport", async () => {
+  const input = await fixture();
+  let range = 1000;
+  const positions = new WeakMap<HTMLElement, number>();
+  const getter = vi
+    .spyOn(HTMLElement.prototype, "scrollTop", "get")
+    .mockImplementation(function (this: HTMLElement) {
+      return positions.get(this) ?? 0;
+    });
+  const setter = vi
+    .spyOn(HTMLElement.prototype, "scrollTop", "set")
+    .mockImplementation(function (this: HTMLElement, top: number) {
+      positions.set(this, Math.min(top, range));
+      if (range === 100 && top === 180)
+        requestAnimationFrame(() => {
+          range = 1000;
+        });
+    });
+  try {
+    const pane = () =>
+      input.container.querySelector<HTMLElement>(".reading-pane");
+    const select = (threadId: typeof input.first.threadId) =>
+      act(async () => {
+        await input.router.navigate({
+          to: "/threads/$threadId",
+          params: { threadId },
+          search: { view: "conversation" },
+        });
+      });
+    const first = pane();
+    if (!first) throw Error("missing reading pane");
+    first.scrollTop = 180;
+    first.dispatchEvent(new Event("scroll"));
+    await select(input.second.threadId);
+    // A native viewport can initially be shorter before the Composer mounts.
+    range = 100;
+    await select(input.first.threadId);
+    await act(
+      () =>
+        new Promise<void>((resolve) => requestAnimationFrame(() => resolve())),
+    );
+    expect(pane()?.scrollTop).toBe(180);
+  } finally {
+    getter.mockRestore();
+    setter.mockRestore();
+  }
+});

@@ -1,0 +1,39 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/louistation/MySpace/Life/d-pi
+
+ ❯ src/app/renderer/routing/navigation-continuity.test.ts (6 tests | 1 failed) 266ms
+   ✓ keeps the application shell visible and mounted while a Thread route waits for readiness 118ms
+   ✓ retains the frozen source workspace until the confirmed target route can replace it 51ms
+   ✓ restores each Thread's reading position on return without sharing scroll between Threads 41ms
+   ✓ removes the retained workspace when authoritative selection becomes unknown 13ms
+   ✓ does not replace a reading position with the hidden viewport's zero coordinate 14ms
+   × restores the requested position after Composer mounting finalizes the reading viewport 29ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/renderer/routing/navigation-continuity.test.ts > restores the requested position after Composer mounting finalizes the reading viewport
+AssertionError: expected 100 to be 180 // Object.is equality
+
+- Expected
++ Received
+
+- 180
++ 100
+
+ ❯ src/app/renderer/routing/navigation-continuity.test.ts:294:31
+    292|     range = 1000;
+    293|     await act(() => new Promise<void>((resolve) => requestAnimationFra…
+    294|     expect(pane()?.scrollTop).toBe(180);
+       |                               ^
+    295|   } finally { getter.mockRestore();setter.mockRestore(); }
+    296| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 passed (6)
+   Start at  21:32:29
+   Duration  3.98s (import 74%, transform 12%, environment 7%, tests 7%)
+
