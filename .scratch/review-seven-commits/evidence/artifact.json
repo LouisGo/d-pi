@@ -1,0 +1,12 @@
+{
+  "retained": "/Users/louistation/MySpace/Life/d-pi/dist/review-seven-18a6ef6/mac-arm64/d-pi.app",
+  "build": {
+    "version": "0.1.0-m2.9",
+    "commit": "18a6ef6a7c722e896c6ae267f19100fee2709119",
+    "dirty": false,
+    "id": "18a6ef6a-10ca9182"
+  },
+  "asarSha256": "848e2230939f1262a1cd92e4216122da7551f7dab82db5495c92f6fd44e1c428",
+  "sdkManifestSha256": "a1f16cea8eec82e83e13b07ee34c74afb9c069ce91e78f0c14ce7056e3c28556",
+  "copiedRuntimeHashesMatch": true
+}

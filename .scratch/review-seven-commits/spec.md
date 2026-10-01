@@ -56,7 +56,17 @@ HostConnection.closeIdle 已等待并校验 cleanup，但 RuntimeService.closeId
 
 当前 [pnpm check](evidence/check.txt) 退出 0：464 Vitest、32 架构、47 工具测试通过，1 项既有 opt-in CLI artifact 跳过；全部类型、Biome、设计/i18n、文档、结构和状态门禁通过，未降低规则。[实际 SDK](evidence/sdk.txt)四组验证、[只读配置](evidence/readonly.json)13 场景、[随包配置适配](evidence/sharing.json)双向共享及三类缓存拒收全部通过，真实供应商请求为 0。
 
-[pnpm build](evidence/build.txt)通过；既有大 chunk 提示保留，不从构建推导性能验收。clean macOS 修复构建验证在完成后追加。用户认可仍 pending；真实供应商生成、完整系统 IME 与 M2 全集验收不由工程检查替代。
+[pnpm build](evidence/build.txt)通过；既有大 chunk 提示保留，不从构建推导性能验收。用户认可仍 pending；真实供应商生成、完整系统 IME 与 M2 全集验收不由工程检查替代。
+
+## Clean 修复构建与完成
+
+修复 commit `18a6ef6a7c722e896c6ae267f19100fee2709119`。在隔离 clean checkout 冻结离线安装，`pnpm package:mac` 和完整环境核验通过，[打包](evidence/package-build.txt)、[环境](evidence/environment.txt)。构建身份 `0.1.0-m2.9 / 18a6ef6a-10ca9182`，dirty=false；非签名/公证的本地 arm64 review 候选。
+
+实际包内 Electron/Bun/OMP 的[八场景闭环](evidence/package-result.json)及[执行日志](evidence/package.txt)通过：双 scope 并行与模型/档位/消息/草稿隔离、编辑中段选区/撤销恢复、Chromium 组合事件、Renderer 重连无重发、最终原生文字与阅读位置、输入/发送可达、冷旧会话只读及新建独立 Thread 出口。供应商仅 localhost 两次请求，系统输入源未覆盖。[并行截图](evidence/m2-parallel-entry.png)、[冷恢复后的独立新建截图](evidence/m2-cold-new-thread.png)。
+
+直接使用该 app 内 SDK 的[配置验证](evidence/package-sharing.json)也全部通过，包括三类官方缓存拒收；没有仅验证仓库 source。候选保存在仓库 `dist/review-seven-18a6ef6/mac-arm64/d-pi.app`，App asar SHA-256 为 `848e2230939f1262a1cd92e4216122da7551f7dab82db5495c92f6fd44e1c428`；复制后 asar、SDK manifest、Bun 与所有薄适配哈希一致，[保留身份](evidence/artifact.json)。临时验证 checkout 已完成使命，保留包后可归档。
+
+本轮 review 与四类缺陷修复达到工程准入；不再保留已证实而未修复的高价值发现。该候选供下一阶段实际试用验收，当前产品交付/反馈身份仍由 [M2 spec](../m2-first-release/spec.md)维护；本次工程通过不推断用户认可，也不把原 m2.9 启动失败的 unknown 改成已查明。
 
 ## 原 m2.9 启动失败的独立核对
 
