@@ -1,0 +1,46 @@
+✔ the fast environment gate accepts pinned required foundations and peer-qualified lock entries (70.224042ms)
+✔ deleting a confirmed foundation dependency cannot make the gate pass (472.418333ms)
+✔ foundation dependencies must be declared in their runtime or development section (61.779541ms)
+✔ rejects ranges and the wrong Zod major (118.933083ms)
+✔ rejects a stale lock specifier, resolved version or extra importer dependency (177.028583ms)
+✔ rejects inconsistent package families even when the lock agrees (235.160292ms)
+✔ an unsupported or unreadable lock cannot be reported as consistent (116.079834ms)
+✔ pnpm 12 empty configDependencies preserves strict application dependency verification (113.446041ms)
+✔ pnpm 12 manager document cannot hide an invalid application lock (173.650125ms)
+✖ the pnpm 12 executable manager document preserves application lock verification (59.358ms)
+✔ rejects unrecognized manager entries and manager version drift (227.82225ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 10
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1889.093083
+
+✖ failing tests:
+
+test at ../../../../../../../../Users/louistation/MySpace/Life/d-pi/tests/tooling/dependency-gate.test.mjs:215:1
+✖ the pnpm 12 executable manager document preserves application lock verification (59.358ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+
+  + [
+  +   'DEP-LOCK-FORMAT: cannot inspect root lock importer (unsupported package-manager document)'
+  + ]
+  - []
+
+      at TestContext.<anonymous> (file:///Users/louistation/MySpace/Life/d-pi/tests/tooling/dependency-gate.test.mjs:221:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'DEP-LOCK-FORMAT: cannot inspect root lock importer (unsupported package-manager document)' ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

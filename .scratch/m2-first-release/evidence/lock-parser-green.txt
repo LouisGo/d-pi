@@ -1,0 +1,19 @@
+✔ the fast environment gate accepts pinned required foundations and peer-qualified lock entries (69.118333ms)
+✔ deleting a confirmed foundation dependency cannot make the gate pass (470.4855ms)
+✔ foundation dependencies must be declared in their runtime or development section (58.468084ms)
+✔ rejects ranges and the wrong Zod major (122.818ms)
+✔ rejects a stale lock specifier, resolved version or extra importer dependency (187.255833ms)
+✔ rejects inconsistent package families even when the lock agrees (235.130833ms)
+✔ an unsupported or unreadable lock cannot be reported as consistent (119.717833ms)
+✔ pnpm 12 empty configDependencies preserves strict application dependency verification (121.9365ms)
+✔ pnpm 12 manager document cannot hide an invalid application lock (181.98975ms)
+✔ the pnpm 12 executable manager document preserves application lock verification (118.815541ms)
+✔ rejects unrecognized manager entries and manager version drift (238.929167ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1988.307458

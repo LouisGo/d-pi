@@ -22,3 +22,11 @@
 实际工作树验证包 `14952d69-dirty-e5b755c1`（dirty=true，源码基线 `14952d69`）通过 15 项隔离 Main/SessionHost/OMP 检查：明确项目授权接续启动、新 Thread 自动启动、两个 OMP scope 并行、独立草稿/选区/撤销、Thread/页签/back-forward 连续性与阅读坐标、刷新不重发，以及冷旧会话只读。冷恢复后新建的第三条原生会话也自动就绪；全部只有两次 localhost fixture 生成请求。见 [结果](evidence/rendering-package-result.json)、[原始运行](evidence/rendering-packaged.txt)、[新 Thread 窗口](evidence/rendering-m2-cold-new-thread.png)。app.asar SHA-256：`e64b1ecae128914c3cd3910002af559e25ce88ce7da96e81df12f827b2ed5c6e`。
 
 这是真实原生链路的工作树验证包，不冒称 clean 发布候选。当前源码用于 `pnpm dev` 复试，未替换历史已交付包。生产构建通过（既有 Zod 注释及大 chunk 提示保留）；初次验证打包因临时目录的 macOS 路径别名、显式 FileSet 缺少 package.json 失败，改为独立工作区构建副本与显式 metadata 后通过，未改生产打包配置。工程通过不替代用户认可，历史 m2.10 证据仍保留。
+
+## 2026-10-01 门禁解析补修与 push 授权
+
+用户随后明确要求优雅修复 `check:fast` 的解析阻塞，并完整 commit/push；该直接授权取代本轮先前的“不 push”限制，未扩展为公开发布或用户体验认可。当前远端 `origin/main` 无分叉，已有七个本地提交包含导航、开发工具、Impeccable 和本轮渲染修复，均纳入本次正常 fast-forward push。
+
+根因：pnpm 12 的独立包管理器 YAML 文档同时记录 `pnpm` 与 `@pnpm/exe`，此前单一正则只接受 `pnpm` 一个条目。复用同一个按结构读取 root importer 的函数来读取两份文档，明确分开应用依赖与包管理器依赖；管理器只接受 pnpm 与可选的 @pnpm/exe，specifier/实际版本必须与 package.json 的 packageManager 相同。应用锁 specifier、peer-qualified resolution、重复/多文档/未知结构仍严格检查。未增加依赖、删除锁文档、放宽门禁或改动锁文件。
+
+用实际 pnpm 输出的 manager 文档新增回归，先在原解析器失败，再通过；同时验证 manager 不会遮盖应用锁漂移，拒绝未知 manager 和 manager 版本漂移。11 项 dependency-gate 回归通过：[失败](evidence/lock-parser-red.txt)、[修复后](evidence/lock-parser-green.txt)。当前 `pnpm check:fast` 全链通过：[结果](evidence/lock-parser-check-fast.txt)。完整 `pnpm check`（500 行为测试、33 架构测试、49 tooling 测试通过；1 项既有 native opt-in 跳过）与 `pnpm build` 通过：[完整检查](evidence/lock-parser-check.txt)、[构建](evidence/lock-parser-build.txt)。原工作区在检查期间出现并行视觉任务的临时文件及未完成格式改动，故最终完整检查冻结 `eaf29c9` 加本轮解析/文档修改，在托管隔离 checkout 内使用 Node 24.21.0、pnpm 12.8.1 与独立 COW 依赖执行；未回滚或纳入另一个任务的进行中改动。本轮实际被提交/推送的源码与该验证范围一致，未关闭任何检查。后续普通 fast-forward push 包含已完成本地提交；最终远端提交身份由 push 后 Git ref 核对确认。

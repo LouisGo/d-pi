@@ -211,3 +211,41 @@ test("pnpm 12 manager document cannot hide an invalid application lock", (t) => 
     /DEP-LOCK-FORMAT/,
   );
 });
+
+test("the pnpm 12 executable manager document preserves application lock verification", (t) => {
+  // Use pnpm's actual emitted document, including @pnpm/exe and its packages.
+  const manager = readFileSync(join(root, "pnpm-lock.yaml"), "utf8").split(
+    /^---\s*$/m,
+  )[1];
+  assert.match(manager, /'@pnpm\/exe':/);
+  const prepend = (text) => `---\n${manager}---\n${text}`;
+  assert.deepEqual(fixture(t, () => {}, prepend).issues, []);
+  const stale = fixture(
+    t,
+    () => {},
+    (text) => prepend(text.replace("specifier: 5.0.15", "specifier: 5.0.14")),
+  );
+  assert.match(stale.issues.join("\n"), /DEP-LOCK: zustand/);
+  assert.doesNotMatch(stale.issues.join("\n"), /DEP-LOCK-FORMAT/);
+});
+
+test("rejects unrecognized manager entries and manager version drift", (t) => {
+  const manager = (entries) =>
+    `---\nlockfileVersion: '9.0'\nimporters:\n  .:\n    configDependencies: {}\n    packageManagerDependencies:\n${entries}\npackages: {}\n---\n`;
+  const entry = (name, specifier, version = specifier) =>
+    `      '${name}':\n        specifier: ${specifier}\n        version: ${version}`;
+  const version = baseline.packageManager.split("@")[1];
+  for (const entries of [
+    entry("pnpm", "0.0.1"),
+    `${entry("pnpm", version)}\n${entry("@pnpm/exe", "0.0.1")}`,
+    `${entry("pnpm", version)}\n${entry("@pnpm/exe", version, "0.0.1")}`,
+    `${entry("pnpm", version)}\n${entry("unexpected-tool", version)}`,
+  ]) {
+    const report = fixture(
+      t,
+      () => {},
+      (text) => manager(entries) + text,
+    );
+    assert.match(report.issues.join("\n"), /DEP-LOCK-FORMAT/);
+  }
+});

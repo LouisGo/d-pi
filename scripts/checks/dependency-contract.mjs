@@ -49,36 +49,51 @@ const unquote = (value) => value.replace(/^(?:'([^']*)'|"([^"]*)")$/, "$1$2");
 
 // Intentionally reads only pnpm v9's root importer. It is not a general YAML
 // parser, and refuses unfamiliar structures instead of guessing consistency.
-function rootImporter(contents) {
-  const documents = contents.split(/^---\s*$/m).filter((text) => text.trim());
-  if (documents.length > 1) {
-    const manager = documents.filter((text) =>
-      /^    packageManagerDependencies:\s*$/m.test(text),
+function rootImporter(contents, packageManager) {
+  const documents = contents
+    .replaceAll("\r", "")
+    .split(/^---\s*$/m)
+    .filter((text) => text.trim());
+  if (documents.length === 1) return documentImporter(documents[0], sections);
+  if (documents.length !== 2)
+    throw new Error(
+      "expected one package-manager document and one application document",
     );
-    const application = documents.filter(
-      (text) => !/^    packageManagerDependencies:\s*$/m.test(text),
+  const importers = documents.map((text) =>
+    documentImporter(text, [...sections, "packageManagerDependencies"]),
+  );
+  const manager = importers.filter((value) =>
+    Object.hasOwn(value, "packageManagerDependencies"),
+  );
+  const application = importers.filter(
+    (value) => !Object.hasOwn(value, "packageManagerDependencies"),
+  );
+  if (
+    manager.length !== 1 ||
+    application.length !== 1 ||
+    sections.some((section) => Object.hasOwn(manager[0], section))
+  )
+    throw new Error(
+      "expected one package-manager document and one application document",
     );
-    const managerRoot = manager[0]?.split(/^packages:/m)[0] ?? "";
-    if (
-      manager.length !== 1 ||
-      application.length !== 1 ||
-      /^    (dependencies|devDependencies|optionalDependencies):/m.test(
-        managerRoot,
-      )
-    )
+  const tools = manager[0].packageManagerDependencies;
+  const version = packageManager?.startsWith("pnpm@")
+    ? packageManager.slice("pnpm@".length)
+    : undefined;
+  if (!version || !exactVersion.test(version) || !Object.hasOwn(tools, "pnpm"))
+    throw new Error("expected a pinned pnpm package-manager entry");
+  for (const [name, entry] of Object.entries(tools)) {
+    if (name !== "pnpm" && name !== "@pnpm/exe")
+      throw new Error(`unsupported package-manager dependency ${name}`);
+    if (entry.specifier !== version || entry.version !== version)
       throw new Error(
-        "expected one package-manager document and one application document",
+        `${name} disagrees with packageManager ${packageManager}`,
       );
-    if (
-      !/^lockfileVersion: ['"]?9\.0['"]?\s*$/m.test(manager[0]) ||
-      !/^    packageManagerDependencies:\n      pnpm:\n        specifier: \d+\.\d+\.\d+\n        version: \d+\.\d+\.\d+\s*$/m.test(
-        manager[0],
-      )
-    )
-      throw new Error("unsupported package-manager document");
-    return rootImporter(application[0]);
   }
+  return application[0];
+}
 
+function documentImporter(contents, allowedSections) {
   if (!/^lockfileVersion: ['"]?9\.0['"]?\s*$/m.test(contents))
     throw new Error("expected pnpm lockfileVersion 9.0");
   const result = {};
@@ -103,11 +118,8 @@ function rootImporter(contents) {
       dependency = undefined;
       continue;
     }
-    const sectionMatch =
-      /^    (dependencies|devDependencies|optionalDependencies):(?:\s*\{\})?\s*$/.exec(
-        line,
-      );
-    if (sectionMatch) {
+    const sectionMatch = /^    (\w+):(?:\s*\{\})?\s*$/.exec(line);
+    if (sectionMatch && allowedSections.includes(sectionMatch[1])) {
       section = sectionMatch[1];
       if (result[section])
         throw new Error(`duplicate importer section ${section}`);
@@ -178,7 +190,10 @@ export function inspectDependencyContract(root, manifest) {
   }
   let importer;
   try {
-    importer = rootImporter(readFileSync(join(root, "pnpm-lock.yaml"), "utf8"));
+    importer = rootImporter(
+      readFileSync(join(root, "pnpm-lock.yaml"), "utf8"),
+      manifest.packageManager,
+    );
   } catch (error) {
     issues.push(
       `DEP-LOCK-FORMAT: cannot inspect root lock importer (${error.message})`,
