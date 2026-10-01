@@ -81,6 +81,11 @@ export const ui = {
   "app.trace": "Trace: {traceId}",
   "app.build": "Build {buildId}",
   "app.retry": "Check again",
+  "app.navigation.selectionUnknown":
+    "The selected Thread could not be confirmed. Check again before continuing.",
+  "app.navigation.back": "Back",
+  "app.navigation.forward": "Forward",
+  "app.navigation.checkSelection": "Check selected Thread",
   "app.sidebar.projects": "Projects",
   "app.sidebar.noProject": "No project selected",
   "app.sidebar.localDraft": "Local draft",

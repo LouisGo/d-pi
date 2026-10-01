@@ -1,3 +1,4 @@
+import { useRouter, useRouterState } from "@tanstack/react-router";
 import { useStore } from "zustand";
 import {
   DarkThemeIcon,
@@ -24,10 +25,13 @@ export function PreferenceToolbar({
   );
   const busy = useStore(
     model.stateStore,
-    (state) => state.kind === "ready" && state.busy,
+    (state) =>
+      state.kind === "ready" &&
+      (state.busy || state.threadTransition === "unknown"),
   );
   return (
     <header className="toolbar">
+      <NavigationHistory disabled={busy} />
       <Button
         variant="default"
         disabled={busy || !hasThread}
@@ -84,15 +88,34 @@ export function PreferenceToolbar({
 }
 
 export function ThreadNotice({ model }: { model: AppModel }) {
-  const { formatMessage } = useI18n();
+  const { t, formatMessage } = useI18n();
   const notice = useStore(model.stateStore, (state) =>
     state.kind === "ready" ? state.notice : null,
+  );
+  const uncertain = useStore(
+    model.stateStore,
+    (state) => state.kind === "ready" && state.threadTransition === "unknown",
+  );
+  const busy = useStore(
+    model.stateStore,
+    (state) => state.kind === "ready" && state.busy,
   );
   if (!notice) return null;
   return (
     <div role="alert" className="notice failure">
       {formatMessage(notice.message)}
       <span className="trace"> {notice.traceId}</span>
+      {uncertain && (
+        <>
+          <p>{t("app.navigation.selectionUnknown")}</p>
+          <Button
+            disabled={busy}
+            onClick={() => void model.reconcileSelection()}
+          >
+            {t("app.navigation.checkSelection")}
+          </Button>
+        </>
+      )}
     </div>
   );
 }
@@ -101,12 +124,40 @@ export function ChooseProjectButton({ model }: { model: AppModel }) {
   const { t } = useI18n();
   const busy = useStore(
     model.stateStore,
-    (state) => state.kind === "ready" && state.busy,
+    (state) =>
+      state.kind === "ready" &&
+      (state.busy || state.threadTransition === "unknown"),
   );
   return (
     <Button disabled={busy} onClick={() => void model.choose()}>
       <FolderIcon />
       {t("app.empty.choose")}
     </Button>
+  );
+}
+
+function NavigationHistory({ disabled }: { disabled: boolean }) {
+  const { t } = useI18n();
+  const router = useRouter();
+  const index = useRouterState({
+    select: (state) => state.location.state.__TSR_index,
+  });
+  return (
+    <div className="flex gap-2">
+      <Button
+        variant="ghost"
+        disabled={disabled || index === 0}
+        onClick={() => router.history.back()}
+      >
+        {t("app.navigation.back")}
+      </Button>
+      <Button
+        variant="ghost"
+        disabled={disabled || index >= router.history.length - 1}
+        onClick={() => router.history.forward()}
+      >
+        {t("app.navigation.forward")}
+      </Button>
+    </div>
   );
 }

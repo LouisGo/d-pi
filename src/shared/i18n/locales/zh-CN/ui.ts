@@ -73,6 +73,11 @@ export const ui = {
   "app.trace": "追踪：{traceId}",
   "app.build": "构建 {buildId}",
   "app.retry": "重新检查",
+  "app.navigation.selectionUnknown":
+    "暂时无法确认选中的 Thread，请重新检查后再继续。",
+  "app.navigation.back": "后退",
+  "app.navigation.forward": "前进",
+  "app.navigation.checkSelection": "核对当前 Thread",
   "app.sidebar.projects": "项目",
   "app.sidebar.noProject": "尚未选择项目",
   "app.sidebar.localDraft": "本地草稿",

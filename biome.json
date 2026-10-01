@@ -11,6 +11,7 @@
       "*.json",
       "*.ts",
       "!pnpm-lock.yaml",
+      "!src/app/renderer/routing/route-tree.gen.ts",
       "!validation/**/fixtures"
     ]
   },

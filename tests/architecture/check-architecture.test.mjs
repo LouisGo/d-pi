@@ -106,6 +106,45 @@ test("renderer rejects Electron subpath imports", () => {
   assert.match(`${result.stdout}\n${result.stderr}`, /ARCH-ENVIRONMENT/);
 });
 
+test("TanStack React Router is confined to the Renderer environment", () => {
+  for (const environment of [
+    "contracts",
+    "core",
+    "main",
+    "host",
+    "preload",
+    "node",
+    "omp",
+    "shared",
+    "renderer",
+  ]) {
+    const directory = fixture(
+      "router-environment",
+      {
+        [`src/modules/alpha/${environment}/public.ts`]:
+          'import "@tanstack/react-router";\n',
+      },
+      {
+        alpha: {
+          root: "src/modules/alpha",
+          environments: [environment],
+          public: [`${environment}/public.ts`],
+          dependsOn: [],
+        },
+      },
+    );
+    const result = run(directory);
+    rmSync(directory, { recursive: true, force: true });
+    assert.equal(
+      result.status,
+      environment === "renderer" ? 0 : 1,
+      `${environment}: ${result.stdout}\n${result.stderr}`,
+    );
+    if (environment !== "renderer")
+      assert.match(`${result.stdout}\n${result.stderr}`, /ARCH-ENVIRONMENT/);
+  }
+});
+
 test("production rejects test packages and helpers in test directories", () => {
   const directory = fixture(
     "production-test-tools",

@@ -59,6 +59,7 @@
 | D-35 | ts-pattern 为应用业务分支默认范式，Zod v4 标准版为数据边界标准 | 2026-09-26 取代 ts-pattern 仅为复杂分支候选；判别联合、穷尽处理、schema 推导、严格类型与窄接口见[TypeScript 合同](architecture/typescript.md)和[项目 skill](../.agents/skills/d-pi-typescript/SKILL.md)，不用类型技巧或无意义包装代替业务模型 |
 | D-36 | Desktop 保存 `system`/`zh-CN`/`en-US` 偏好，Main 解析并与 Renderer 共用 locale，只翻译自有展示文案 | 2026-09-29 用户指定完整[国际化架构](architecture/internationalization.md)为基准并授权 S4 前落地；语言不进入 OMP/SessionHost/Agent 请求，原生与用户内容保持原文。实施/试用见[切片规格](../.scratch/i18n-foundation/spec.md) |
 | D-37 | Zustand 管 Renderer 展示状态及细粒度订阅，TanStack Query 管只读异步查询缓存；两库为锁定基础依赖，不按功能无限推迟 | 2026-09-29 用户确认既有自写 model + 直接 IPC 是实现缺口，保留外部行为迁移；取代[development-foundation](../.scratch/development-foundation/spec.md) 09-28 “不为名录补齐状态库”（`3faea9d` 未获用户确认的工程侧写法），并细化 B-01。镜像/缓存不拥有 OMP 执行、队列或历史；命令未知不交由 Query 自动重发，vanilla store 与 React 绑定分离。版本/迁移见[对齐规格](../.scratch/state-query-alignment/spec.md)，写法见[状态与查询 skill](../.agents/skills/d-pi-state-query/SKILL.md)及[无头合同 §4](architecture/headless-features.md#4-对外合同与状态工具) |
+| D-38 | TanStack Router 管应用导航，注册路由树完整推导目标、params/search；路由属于 app/renderer，业务生命周期独立 | 2026-10-01 用户授权完整接入并要求无断言的顺畅类型推导、独立 review 和分批本地提交。memory history、文件路由、业务确认后导航、阅读页签保留挂载；不在 loader/preload 执行命令，不改变 Main/OMP 所有权。范围及验证见[路由规格](../.scratch/router-integration/spec.md) |
 
 ## 沿用基线与提议
 

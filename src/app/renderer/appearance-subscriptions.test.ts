@@ -473,7 +473,7 @@ it("keeps the project chooser disabled for its real pending operation", async ()
       (button) => button.textContent === i18n.t("app.empty.choose"),
     );
   expect(choose()?.disabled).toBe(false);
-  let choosing: Promise<void> | undefined;
+  let choosing: ReturnType<AppModel["choose"]> | undefined;
   await act(() => {
     choosing = fixture.model.choose();
   });

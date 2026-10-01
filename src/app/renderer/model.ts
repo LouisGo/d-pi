@@ -16,6 +16,22 @@ import { ThreadModel } from "./thread-model";
 export type ThreadSelectionState =
   | { kind: "empty" }
   | { kind: "thread"; thread: ThreadModel; directoryAvailable: boolean };
+export type ThreadTransitionResult =
+  | { kind: "applied"; selection: ThreadSelectionState }
+  | {
+      kind: "blocked";
+      reason:
+        | "not-ready"
+        | "busy"
+        | "closing"
+        | "composing"
+        | "save-failed"
+        | "superseded"
+        | "selection-unknown";
+    }
+  | { kind: "cancelled" }
+  | { kind: "failed"; error: Failure }
+  | { kind: "unknown"; error: Failure };
 export type ViewState =
   | { kind: "loading" }
   | { kind: "failed"; error: Failure }
@@ -26,6 +42,7 @@ export type ViewState =
       preferences: Preferences;
       busy: boolean;
       notice: Failure | null;
+      threadTransition?: "pending" | "unknown";
     };
 const createAppStore = () =>
   createStore<ViewState>()(
@@ -131,7 +148,11 @@ export class AppModel {
     };
   }
   async prepareClose(): Promise<boolean> {
-    if (this.disposed) return false;
+    if (
+      this.disposed ||
+      (this.state.kind === "ready" && this.state.threadTransition !== undefined)
+    )
+      return false;
     const binding = this.editorBinding;
     if (binding && !binding.boundary.freeze()) return false;
     const attempt = { thread: this.activeThread, binding };
@@ -221,8 +242,8 @@ export class AppModel {
       this.publish({ ...state, busy: false, notice: error });
     else this.publish({ kind: "failed", error });
   }
-  private acceptRestore(reply: RestoreReply): void {
-    match(reply)
+  private acceptRestore(reply: RestoreReply): ThreadTransitionResult {
+    return match(reply)
       .with({ kind: "ready" }, ({ draft, directoryAvailable, preferences }) => {
         const previous = this.activeThread;
         const cached = draft ? this.threads.get(draft.threadId) : null;
@@ -253,11 +274,19 @@ export class AppModel {
           notice: null,
         });
         void this.refreshThreads();
+        return { kind: "applied" as const, selection: threadSelection };
       })
-      .with({ kind: "failed" }, ({ error }) => this.fail(error))
+      .with({ kind: "failed" }, ({ error }) => {
+        this.fail(error);
+        return { kind: "failed" as const, error };
+      })
       .with({ kind: "cancelled" }, () => {
-        if (this.state.kind === "ready")
-          this.publish({ ...this.state, busy: false });
+        if (this.state.kind === "ready") {
+          const ready = { ...this.state, busy: false };
+          delete ready.threadTransition;
+          this.publish(ready);
+        }
+        return { kind: "cancelled" as const };
       })
       .exhaustive();
   }
@@ -289,24 +318,40 @@ export class AppModel {
       if (!this.disposed) this.threadListStore.setState({ failed: true });
     }
   }
-  async choose(): Promise<void> {
-    await this.changeThread({
+  async choose(): Promise<ThreadTransitionResult> {
+    return this.changeThread({
       kind: "choose-project",
       traceId: crypto.randomUUID(),
     });
   }
-  async newThread(): Promise<void> {
+  async newThread(): Promise<ThreadTransitionResult> {
     const thread = this.activeThread;
     if (thread)
-      await this.changeThread({
+      return this.changeThread({
         kind: "new-thread",
         threadId: thread.context.threadId,
         traceId: crypto.randomUUID(),
       });
+    return { kind: "blocked", reason: "not-ready" };
   }
-  async selectThread(threadId: ThreadContext["threadId"]): Promise<void> {
-    if (this.activeThread?.context.threadId === threadId) return;
-    await this.changeThread({
+  async selectThread(
+    threadId: ThreadContext["threadId"],
+  ): Promise<ThreadTransitionResult> {
+    if (this.disposed || this.state.kind !== "ready")
+      return { kind: "blocked", reason: "not-ready" };
+    if (this.state.busy) return { kind: "blocked", reason: "busy" };
+    if (this.closeAttempt) return { kind: "blocked", reason: "closing" };
+    if (
+      this.state.kind === "ready" &&
+      this.state.threadTransition === "unknown"
+    )
+      return { kind: "blocked", reason: "selection-unknown" };
+    if (
+      this.state.kind === "ready" &&
+      this.activeThread?.context.threadId === threadId
+    )
+      return { kind: "applied", selection: this.state.threadSelection };
+    return this.changeThread({
       kind: "select-thread",
       threadId,
       traceId: crypto.randomUUID(),
@@ -317,41 +362,126 @@ export class AppModel {
       Command,
       { kind: "choose-project" | "select-thread" | "new-thread" }
     >,
-  ): Promise<void> {
+  ): Promise<ThreadTransitionResult> {
+    const state = this.state;
+    if (this.disposed || state.kind !== "ready")
+      return { kind: "blocked", reason: "not-ready" };
+    if (state.busy) return { kind: "blocked", reason: "busy" };
+    if (state.threadTransition === "unknown")
+      return { kind: "blocked", reason: "selection-unknown" };
+    if (this.closeAttempt) return { kind: "blocked", reason: "closing" };
+    const generation = ++this.requestGeneration;
+    const binding = this.editorBinding;
+    if (binding && !binding.boundary.freeze())
+      return { kind: "blocked", reason: "composing" };
+    const previous = this.activeThread;
+    this.publish({
+      ...state,
+      busy: true,
+      notice: null,
+      threadTransition: "pending",
+    });
+    try {
+      const saved = await (previous?.controller.flush() ??
+        Promise.resolve(true));
+      if (!this.isCurrent(generation))
+        return { kind: "blocked", reason: "superseded" };
+      if (!saved) {
+        this.publish({ ...state, busy: false });
+        return { kind: "blocked", reason: "save-failed" };
+      }
+      const reply = await this.bridge.request(command);
+      if (this.isCurrent(generation)) {
+        if (reply.kind === "failed")
+          return await this.readSelection(generation, previous, reply.error);
+        return this.acceptRestore(reply);
+      }
+      return { kind: "blocked", reason: "superseded" };
+    } catch {
+      const error = transportFailure(command.traceId);
+      if (this.isCurrent(generation))
+        return await this.readSelection(generation, previous, error);
+      return { kind: "blocked", reason: "superseded" };
+    } finally {
+      if (
+        this.activeThread === previous &&
+        this.editorBinding === binding &&
+        !(
+          this.state.kind === "ready" &&
+          this.state.threadTransition === "unknown"
+        )
+      )
+        binding?.boundary.release();
+    }
+  }
+  /** A command receipt can be lost after Main changes its selection. Never resend it. */
+  private async readSelection(
+    generation: number,
+    previous: ThreadModel | null,
+    error: Failure,
+  ): Promise<ThreadTransitionResult> {
+    try {
+      const reply = await this.bridge.request({
+        kind: "restore",
+        traceId: crypto.randomUUID(),
+      });
+      if (!this.isCurrent(generation))
+        return { kind: "blocked", reason: "superseded" };
+      if (reply.kind === "ready") {
+        const result = this.acceptRestore(reply);
+        if (this.activeThread?.context.threadId !== previous?.context.threadId)
+          return result;
+        this.fail(error);
+        return { kind: "failed", error };
+      }
+    } catch {
+      /* The authoritative selection remains unknown. */
+    }
+    if (!this.isCurrent(generation))
+      return { kind: "blocked", reason: "superseded" };
+    if (this.state.kind === "ready")
+      this.publish({
+        ...this.state,
+        busy: false,
+        threadTransition: "unknown",
+        notice: error,
+      });
+    return { kind: "unknown", error };
+  }
+  async reconcileSelection(): Promise<ThreadTransitionResult> {
+    const state = this.state;
+    if (state.kind !== "ready" || state.threadTransition !== "unknown")
+      return { kind: "blocked", reason: "not-ready" };
+    if (state.busy || this.closeAttempt)
+      return { kind: "blocked", reason: "busy" };
+    const binding = this.editorBinding;
+    const previous = this.activeThread;
+    const generation = ++this.requestGeneration;
+    this.publish({ ...state, busy: true });
+    const result = await this.readSelection(
+      generation,
+      previous,
+      state.notice ?? transportFailure(crypto.randomUUID()),
+    );
+    if (
+      this.activeThread === previous &&
+      this.editorBinding === binding &&
+      !(
+        this.state.kind === "ready" && this.state.threadTransition === "unknown"
+      )
+    )
+      binding?.boundary.release();
+    return result;
+  }
+  async preference(key: Exclude<keyof Preferences, "locale">): Promise<void> {
     const state = this.state;
     if (
       this.disposed ||
       state.kind !== "ready" ||
       state.busy ||
-      this.closeAttempt
+      state.threadTransition === "unknown"
     )
       return;
-    const generation = ++this.requestGeneration;
-    const binding = this.editorBinding;
-    if (binding && !binding.boundary.freeze()) return;
-    const previous = this.activeThread;
-    this.publish({ ...state, busy: true, notice: null });
-    try {
-      const saved = await (previous?.controller.flush() ??
-        Promise.resolve(true));
-      if (!this.isCurrent(generation)) return;
-      if (!saved) {
-        this.publish({ ...state, busy: false });
-        return;
-      }
-      const reply = await this.bridge.request(command);
-      if (this.isCurrent(generation)) this.acceptRestore(reply);
-    } catch {
-      if (this.isCurrent(generation))
-        this.fail(transportFailure(command.traceId));
-    } finally {
-      if (this.activeThread === previous && this.editorBinding === binding)
-        binding?.boundary.release();
-    }
-  }
-  async preference(key: Exclude<keyof Preferences, "locale">): Promise<void> {
-    const state = this.state;
-    if (this.disposed || state.kind !== "ready" || state.busy) return;
     const current = state.preferences;
     const value = match(key)
       .with("theme", () => ({

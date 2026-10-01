@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 // Required substrate only, not a translation of every decision into a rule.
 // Versions stay in package.json and the lock; these names enforce D-07, D-17 and
-// D-31–D-37 plus the existing React/TS/Electron/pnpm/Tailwind baseline.
+// D-31–D-38 plus the existing React/TS/Electron/pnpm/Tailwind baseline.
 const required = {
   dependencies: [
     "@base-ui/react",
@@ -11,6 +11,7 @@ const required = {
     "@hugeicons/core-free-icons",
     "@hugeicons/react",
     "@tanstack/react-query",
+    "@tanstack/react-router",
     "@tiptap/core",
     "@tiptap/extension-document",
     "@tiptap/extension-paragraph",
@@ -31,6 +32,8 @@ const required = {
     "@oh-my-pi/pi-utils",
     "@shadcn/lint",
     "@tailwindcss/vite",
+    "@tanstack/router-cli",
+    "@tanstack/router-plugin",
     "bun",
     "electron",
     "electron-vite",

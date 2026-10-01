@@ -1,9 +1,10 @@
+import { RouterProvider } from "@tanstack/react-router";
 import { createElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { App } from "./app";
 import type { AppModel, ViewState } from "./model";
 import { QueryProvider } from "./query-client";
+import { createAppRouting } from "./routing/router";
 
 let locale: "zh-CN" | "en-US" = "zh-CN";
 
@@ -61,13 +62,14 @@ const state: ViewState = {
   notice: null,
 };
 
-function renderApp() {
+async function renderApp() {
   const stateStore = {
     getState: () => state,
     getInitialState: () => state,
     subscribe: () => () => {},
   };
   const model = {
+    getSnapshot: () => state,
     stateStore,
     threadListStore: {
       getState: () => ({ threads: [] }),
@@ -77,9 +79,19 @@ function renderApp() {
   } as unknown as AppModel;
   // The file and Git panels read through TanStack Query, so this render needs
   // the same query client the renderer entry installs.
-  return renderToStaticMarkup(
-    createElement(QueryProvider, null, createElement(App, { model })),
-  );
+  const routing = createAppRouting(model);
+  await routing.router.load();
+  try {
+    return renderToStaticMarkup(
+      createElement(
+        QueryProvider,
+        null,
+        createElement(RouterProvider, { router: routing.router }),
+      ),
+    );
+  } finally {
+    routing.dispose();
+  }
 }
 
 describe("renderer locale", () => {
@@ -87,13 +99,13 @@ describe("renderer locale", () => {
     locale = "zh-CN";
   });
 
-  it("updates visible app copy when the locale changes", () => {
-    const chinese = renderApp();
+  it("updates visible app copy when the locale changes", async () => {
+    const chinese = await renderApp();
     expect(chinese).toContain("在项目里，写下第一步");
     expect(chinese).toContain("打开项目");
 
     locale = "en-US";
-    const english = renderApp();
+    const english = await renderApp();
     expect(english).toContain("Write your first step in a project");
     expect(english).toContain("Choose a project and create a draft");
     expect(english).not.toContain("在项目里，写下第一步");

@@ -233,7 +233,9 @@ it("offers a visible new-session exit beside the disabled send button for a reco
     (b) => b.textContent === "New Thread",
   );
   expect(button).toBeDefined();
-  const create = vi.spyOn(fixture.model, "newThread").mockResolvedValue();
+  const create = vi
+    .spyOn(fixture.model, "newThread")
+    .mockResolvedValue({ kind: "cancelled" });
   await act(() => button?.click());
   expect(create).toHaveBeenCalledOnce();
   expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha omega");

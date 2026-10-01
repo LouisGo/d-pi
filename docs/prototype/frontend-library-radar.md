@@ -12,6 +12,7 @@
 - 继续保留 Virtua / React Virtuoso / TanStack Virtual、Motion、Pacer、birpc、LiveStore 等候选及采用条件；保留候选不等于预装依赖。
 - Monaco 已定；Composer 由 D-33 确认最小 Tiptap 与业务扩展。SQLite 用于 App 结构化存储，ts-pattern/Zod v4 按[TypeScript 合同](../architecture/typescript.md)执行。Git Panel、内置浏览器与终端的范围不变，见[增量技术评估](../../.scratch/product-requirements/technical-evaluation.md)。选型确认不等于集成通过。
 - Zustand 与 TanStack Query 已由 [D-37](../decisions.md) 锁为基础依赖并完成迁移：展示状态用 Zustand vanilla store，文件与 Git 读路径用 Query；职责边界与本地读取语义见[无头功能合同 §4](../architecture/headless-features.md)。
+- TanStack Router 由 [D-38](../decisions.md) 确认接入应用导航；类型推导、memory history 与业务切换边界见[导航合同](../architecture/navigation.md)，工程及试用证据回到[规格](../../.scratch/router-integration/spec.md)。
 - 产品依赖清单以 `package.json` 为准；历史实现链接指向固定 Git 提交，不意味着被引用代码仍在工作区。旧 M1 范围只作历史依据，当前产品范围以[需求文档](../product/requirements.md)为准。
 
 2026-09-25 D-28–D-30：组件化不限于以下 UI 候选，功能模块/契约先于正式 GUI。Zustand/Query/hooks 的职责与生命周期见[无头功能合同](../architecture/headless-features.md)；不引入 XState，不因追求无头架构新增全局框架。

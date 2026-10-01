@@ -3,8 +3,10 @@ import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import tailwindcss from "@tailwindcss/vite";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "electron-vite";
+import routingConfig from "./tsr.config.json";
 export default defineConfig(({ command }) => {
   const nonce = randomUUID();
   let commit = "unknown";
@@ -65,6 +67,14 @@ export default defineConfig(({ command }) => {
         },
       },
       plugins: [
+        tanstackRouter({
+          ...routingConfig,
+          routesDirectory: resolve(routingConfig.routesDirectory),
+          generatedRouteTree: resolve(routingConfig.generatedRouteTree),
+          quoteStyle: "double",
+          target: "react",
+          autoCodeSplitting: true,
+        }),
         react(),
         tailwindcss(),
         {

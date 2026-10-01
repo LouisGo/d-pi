@@ -12,6 +12,7 @@
 - Renderer/preload 与 SessionHost 使用受限 MessagePort；Main 建立通道，不逐条转发流式内容。2026-09-28 用户确认官方 SDK 薄宿主路线：独立 Bun 进程运行未修改的固定 OMP SDK，App 薄宿主经 stdio 连接 SessionHost；不直接把 Bun SDK 塞入 Electron Node utility process。接入依据见[S3 规格](../../.scratch/m1-s3-control-recovery/spec.md)，薄宿主信封不冒称 OMP 官方 CLI RPC 全集。
 - 不为 OMP 接入另建 HTTP Server。编辑器已选 Monaco，不引入完整 VSCode 工作台服务作为默认架构。
 - React、TypeScript、electron-vite、pnpm、Tailwind CSS、自有组件层、Vitest、React Testing Library、Playwright 与 electron-builder 沿用 B-01，按实际功能复核版本与必要性。Zustand/TanStack Query 的基础依赖与接入由 2026-09-29 D-37 锁定，不再是可无限推迟的候选；Zod v4 与质量工具按 D-35/D-17 的决定执行。
+- TanStack Router 按 D-38 接入应用层，拥有导航位置与内存历史；领域生命周期继续独立于路由。实现、类型推导和导航检查见[应用导航](navigation.md)。
 - 单应用组织，目录按职责建立，不提前拆平台型 monorepo。Renderer 不直接依赖 Node 文件系统/OMP SDK；preload 不承载 Agent 业务；Host 不依赖 React/DOM。
 
 ## 应用诊断基础（D-21）

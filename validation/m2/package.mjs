@@ -268,6 +268,7 @@ async function shot(name) {
   writeFileSync(path, Buffer.from(result.data, "base64"));
   return path;
 }
+const routerValidation = process.argv.includes("--router");
 const checks = [];
 const screenshots = [];
 try {
@@ -372,6 +373,44 @@ try {
       "document.querySelector('.conversation')?.textContent.includes('M2_THREAD_A_REPLY')",
     )),
   );
+  if (routerValidation) {
+    await evaluate(
+      "window.__routerEditor=document.querySelector('[contenteditable=true]');window.__routerPanes=Array.from(document.querySelectorAll('.reading-pane'))",
+    );
+    for (const [index, label] of [
+      [1, "只读文件与当前差异"],
+      [2, "提交原文"],
+      [3, "原生历史"],
+      [0, "会话"],
+    ]) {
+      await click(label);
+      await wait(() =>
+        evaluate(
+          `Array.from(document.querySelectorAll('.reading-pane')).every((pane,i)=>pane.hidden===(i!==${index})) && document.querySelectorAll('.reading-navigation button')[${index}].getAttribute('aria-pressed')==='true'`,
+        ),
+      );
+    }
+    assert.equal(
+      await evaluate(
+        "window.__routerEditor===document.querySelector('[contenteditable=true]') && window.__routerPanes.every((pane,i)=>pane===document.querySelectorAll('.reading-pane')[i])",
+      ),
+      true,
+    );
+    assert.equal(
+      await evaluate("document.querySelector('.reading-pane').scrollTop"),
+      readingPosition.top,
+    );
+    assert.equal(
+      await evaluate(
+        "document.querySelector('[contenteditable=true]').textContent",
+      ),
+      "B_UNSENT_DRAFT",
+    );
+    checks.push(
+      "actual Router search navigation retains Composer and all reading-pane DOM, draft and manual scroll position",
+    );
+  }
+
   await selectThread(a);
   await wait(() =>
     evaluate(
@@ -406,6 +445,34 @@ try {
   checks.push(
     "native Electron editor restores middle selection and independent undo/redo across Thread switch",
   );
+  if (routerValidation) {
+    await click("后退");
+    await wait(
+      () =>
+        db.prepare("SELECT active_thread FROM desktop").get().active_thread ===
+        b,
+    );
+    await wait(() =>
+      evaluate(
+        "document.querySelector('[contenteditable=true]')?.textContent==='B_UNSENT_DRAFT'",
+      ),
+    );
+    await click("前进");
+    await wait(
+      () =>
+        db.prepare("SELECT active_thread FROM desktop").get().active_thread ===
+        a,
+    );
+    await wait(() =>
+      evaluate(
+        "document.querySelector('[contenteditable=true]')?.textContent==='A_UNSENT_DRAFT'",
+      ),
+    );
+    checks.push(
+      "actual toolbar back/forward confirm Main selection and restore separate Thread drafts",
+    );
+  }
+
   await editorSelection(3);
   await evaluate(`(()=>{
     window.__fixtureIme={active:false,trusted:false};
@@ -429,6 +496,20 @@ try {
     a,
   );
   assert.equal(await evaluate("window.__fixtureIme.trusted"), true);
+  if (routerValidation) {
+    await click("后退");
+    await evaluate(
+      "new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))",
+    );
+    assert.equal(
+      db.prepare("SELECT active_thread FROM desktop").get().active_thread,
+      a,
+    );
+    checks.push(
+      "trusted Chromium IME blocks actual toolbar POP and preserves Main selection",
+    );
+  }
+
   await call("Input.imeSetComposition", {
     text: "",
     selectionStart: 0,

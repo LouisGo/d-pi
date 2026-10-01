@@ -22,7 +22,7 @@
 - 最终目标是基本承接适合 GUI 的 OMP TUI 能力，逐功能交付；全集和完整组件基础不是可用版本前置。G1/M1/M2/M3 与当前授权分开，验证通过不替代产品决定。
 - macOS 优先，其他平台支持未承诺；拟采用平台独占的必需能力时，说明原因、影响及替代方案并由用户决定。首版新增认证仅 OpenAI 账户（`openai-codex`）与 DeepSeek API key，已有其他可用配置仍复用。
 - 项目执行信任与 App 文件访问分开，不冒称工具沙箱。只翻译 d-pi 自有文案，Main/Renderer 共用解析语言，OMP/SessionHost 不格式化原生或用户内容。
-- 已定技术路线由 D-17、D-30–D-37 及对应合同维护：Biome、Base UI、自有 Icon Layer、最小 Tiptap、SQLite、ts-pattern、Zod v4、Zustand 与 Query；不引入 XState。GUI 共享 token 与全局主题/密度，设计 lint 不得关闭来消除违规。
+- 已定技术路线由 D-17、D-30–D-38 及对应合同维护：Biome、Base UI、自有 Icon Layer、最小 Tiptap、SQLite、ts-pattern、Zod v4、Zustand 与 Query、应用导航的 TanStack Router；不引入 XState。GUI 共享 token 与全局主题/密度，设计 lint 不得关闭来消除违规。
 - `docs/archive/pre-reset/` 只保留历史证据，来源与取回见[归档说明](docs/archive/pre-reset/README.md)。不改写原始证据，不把旧命令、源码或候选当当前执行指令；独立实验也不是生产基础设施。
 
 ## 常用命令与验证

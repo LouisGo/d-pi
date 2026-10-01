@@ -335,6 +335,11 @@ function isAllowedUnresolved(config, specifier) {
 
 function externalEnvironmentViolation(environment, specifier) {
   if (
+    environment !== "renderer" &&
+    /^@tanstack\/(?:react-router|router-core|history)(?:$|\/)/.test(specifier)
+  )
+    return true;
+  if (
     PLATFORM_INDEPENDENT_ENVIRONMENTS.has(environment) &&
     (BUILTINS.has(specifier) ||
       UI_VENDOR.test(specifier) ||

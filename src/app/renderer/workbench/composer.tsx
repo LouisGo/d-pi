@@ -369,7 +369,9 @@ function ComposerReadiness({
   const view = useStore(runtime.stateStore, (state) => state.view);
   const busy = useStore(
     model.stateStore,
-    (state) => state.kind === "ready" && state.busy,
+    (state) =>
+      state.kind === "ready" &&
+      (state.busy || state.threadTransition === "unknown"),
   );
   if (canSubmit(view)) return null;
   const phase = view?.phase;
