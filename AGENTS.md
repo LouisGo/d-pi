@@ -40,7 +40,7 @@
 | 领域归属、目录迁移、公开面或门禁 | [d-pi-architecture](.agents/skills/d-pi-architecture/SKILL.md)、`architecture/modules.json`、模块 `AGENTS.md` 与相关模块页；机器清单是单源 |
 | 应用 TypeScript 与类型/数据边界 | [d-pi-typescript](.agents/skills/d-pi-typescript/SKILL.md)、[TypeScript 合同](docs/architecture/typescript.md)；不用于文档审计或纯样式 |
 | 展示状态、按需订阅与渲染边界、React 绑定、只读查询 | [d-pi-state-query](.agents/skills/d-pi-state-query/SKILL.md)、[无头功能合同 §4](docs/architecture/headless-features.md#4-对外合同与状态工具)及目标模块 |
-| GUI 样式、组件、主题/密度与布局性能、外部 UI 源码 | [d-pi-design-system](.agents/skills/d-pi-design-system/SKILL.md)、[设计系统合同](docs/architecture/design-system.md)、[图标合同](docs/architecture/icon-system.md)；纯样式也适用 |
+| GUI 设计、样式、组件、主题/密度与布局性能、外部 UI 源码 | [d-pi-design-system](.agents/skills/d-pi-design-system/SKILL.md)按任务联动项目级 [impeccable](.agents/skills/impeccable/SKILL.md)，Agent 自行选择相关指令；[设计系统合同](docs/architecture/design-system.md)、[图标合同](docs/architecture/icon-system.md)；纯样式也适用 |
 | 跨进程操作、错误、性能 | [诊断合同](docs/architecture/diagnostics.md)及相关模块 |
 | 文案、语言和产品术语 | [国际化架构](docs/architecture/internationalization.md)、[产品术语](docs/product-terminology.md) |
 | 领域术语、ADR、本地任务 | [领域约定](docs/agents/domain.md)、`CONTEXT.md`、相关 ADR；工作记录按[任务约定](docs/agents/issue-tracker.md)放 `.scratch/<feature>/` |

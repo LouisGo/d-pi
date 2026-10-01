@@ -7,6 +7,16 @@ description: 用于 d-pi GUI 组件、Tailwind/CSS、主题与密度的布局性
 
 先读[设计系统合同](../../../docs/architecture/design-system.md)相关节。复用或调整组件写法时查[固定源码依据](../../../docs/architecture/design-system-references.md)，优先 shadcn 官方 Base UI 版本及 Base UI 官方示例；已有适用证据不用每次重新联网研究。
 
+## 按需联动 Impeccable
+
+涉及 GUI 设计、实现或体验评审时，主动使用项目级 [impeccable](../impeccable/SKILL.md)，按当前任务和阶段选择其 playbook，无需用户复述命令。设计未清楚时参考 `shape`；评审现有体验用 `critique`；实现中按具体问题选择相关指令；交付前按影响范围用 `polish`、`harden` 或 `audit`。上游已有命令路由，不复制清单，也不把这些指令串成每次必跑的流水线。纯后端或文档任务不触发。
+
+- 工作界面采用 `Operate`，长文阅读按区域参考 `Read`；沿用现有视觉体系，系统字体、紧凑布局和标准导航是上游允许的选择。局部改动不自动进入整页重设计或视觉方案竞赛。
+- 上下文入口为根 [PRODUCT.md](../../../PRODUCT.md) 与 [DESIGN.md](../../../DESIGN.md)，它们引用已有权威文档和代码，不另存需求或 token 副本。新功能的目的、范围和已确认选择先从所属规格读取；不重复初始化或询问已确认内容，仅澄清实质缺口。
+- 当前用户授权、根 AGENTS.md 及项目合同优先于上游流程建议；既有明确实施请求不因上游通用确认步骤重复索要许可。设计评审不授权改变业务状态、OMP 所有权或阶段范围。工程与真实 GUI 验证继续按本项目合同执行，不以工具评分代替验收。
+
+安装来源、运行与更新方式见[接入记录](../../../docs/agents/impeccable.md)。
+
 ## 选择实现
 
 - 先检查项目已有组件、token 和 variant，再取上游对应实现。优先 shadcn 语义颜色、size/variant、data-slot，以及 Base UI 公开状态属性/变量；不要另造命名和主题框架。
