@@ -5,17 +5,22 @@ import { clsx } from "clsx";
 
 const buttonVariants = cva("ui-button", {
   variants: {
-    variant: { default: "ui-button-primary", ghost: "ui-button-ghost" },
+    size: { default: "", icon: "ui-button-icon" },
+    variant: {
+      default: "ui-button-primary",
+      ghost: "ui-button-ghost",
+      navigation: "ui-button-navigation",
+    },
   },
-  defaultVariants: { variant: "default" },
+  defaultVariants: { variant: "default", size: "default" },
 });
 type Props = ButtonPrimitive.Props & VariantProps<typeof buttonVariants>;
-export function Button({ className, variant, ...props }: Props) {
+export function Button({ className, variant, size, ...props }: Props) {
   return (
     <ButtonPrimitive
       {...props}
       data-slot="button"
-      className={clsx(buttonVariants({ variant }), className)}
+      className={clsx(buttonVariants({ variant, size }), className)}
     />
   );
 }

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "9d6f17b946fec1212d456fcb94665b1b49e2704437056272ca9da6b5f8862482",
+  "inputsHash": "ff9e95c859dfe95ef08f44ec11fe6564c6d2281d64d109adc3e65ec2cf531e57",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 266,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 95,
-      "lines": 12737,
+      "lines": 12781,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -6210,6 +6210,18 @@
       "specifier": "@tanstack/react-router",
       "kind": "import",
       "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/shell/navigation-history.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@/components/icons/common",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/icons/common.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/app/renderer/shell/navigation-history.tsx",

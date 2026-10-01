@@ -1,4 +1,6 @@
 import {
+  ArrowLeft01Icon,
+  ArrowRight01Icon,
   Folder01Icon,
   GithubIcon,
   Globe02Icon,
@@ -58,6 +60,34 @@ export function WebsiteIcon({
   return (
     <HugeiconsIcon
       icon={brand === "github" ? GithubIcon : Globe02Icon}
+      size={size}
+      className={className}
+      strokeWidth={1.5}
+      color="currentColor"
+      aria-hidden={true}
+      focusable={false}
+    />
+  );
+}
+
+export function BackIcon({ size = 16, className }: IconProps) {
+  return (
+    <HugeiconsIcon
+      icon={ArrowLeft01Icon}
+      size={size}
+      className={className}
+      strokeWidth={1.5}
+      color="currentColor"
+      aria-hidden={true}
+      focusable={false}
+    />
+  );
+}
+
+export function ForwardIcon({ size = 16, className }: IconProps) {
+  return (
+    <HugeiconsIcon
+      icon={ArrowRight01Icon}
       size={size}
       className={className}
       strokeWidth={1.5}

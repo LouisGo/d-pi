@@ -13,29 +13,38 @@
 }
 :root {
   color-scheme: light;
-  --background: #fafafa;
-  --foreground: #202124;
-  --primary: #315cba;
+  --background: #fcfcfd;
+  --surface: #ffffff;
+  --sidebar: #f3f4f7;
+  --accent: #e8edf9;
+  --accent-foreground: #304a97;
+  --primary-hover: #2c49a1;
+  --muted-hover: #e6e8ee;
+  --foreground: #242730;
+  --primary: #3757bc;
   --primary-foreground: #ffffff;
-  --muted: #f0f0f0;
-  --muted-foreground: #62656a;
-  --border: #d9dadd;
+  --muted: #f0f2f6;
+  --muted-foreground: #606775;
+  --border: #dfe3eb;
   --destructive: #b3261e;
   --code-selection: #c5d5f8;
   --diff-added-background: #d6f0df;
   --diff-removed-background: #f6d9d6;
-  --control-height: 2.25rem;
+  --control-height: 2rem;
   --control-padding: 0.875rem;
-  --panel-padding: 1.5rem;
-  --layout-gap: 1rem;
-  --radius: 0.625rem;
+  --panel-padding: 1.25rem;
+  --layout-gap: 0.875rem;
+  --radius: 0.75rem;
+  --radius-control: 0.5rem;
+  --motion-control: 160ms;
   --text-title: 1.125rem;
   --text-heading: 1.5rem;
   --intro-space: 3rem;
-  --text-body: 0.875rem;
+  --text-body: 0.8125rem;
+  --text-reading: 0.9375rem;
   --text-small: 0.75rem;
-  --sidebar-width: 15rem;
-  --content-width: 50rem;
+  --sidebar-width: 14.5rem;
+  --content-width: 56rem;
   --editor-height: 4rem;
   --thread-setup-max-height: 26vh;
   --composer-max-height: 24vh;
@@ -43,21 +52,41 @@
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --background: #202124;
-  --foreground: #f1f2f3;
+  --background: #181b22;
+  --surface: #20242d;
+  --sidebar: #1d2028;
+  --accent: #2c3855;
+  --accent-foreground: #c4d4ff;
+  --primary-hover: #bed1ff;
+  --muted-hover: #333945;
+  --foreground: #e8ebf2;
   --primary: #a8c1ff;
   --primary-foreground: #162649;
-  --muted: #292b2f;
-  --muted-foreground: #aaaeb6;
-  --border: #41434a;
+  --muted: #272c36;
+  --muted-foreground: #a5adbd;
+  --border: #363c49;
   --destructive: #ffb4ab;
   --code-selection: #34538d;
   --diff-added-background: #244636;
   --diff-removed-background: #593530;
 }
 :root[data-density="compact"] {
-  --control-height: 2rem;
+  --control-height: 1.875rem;
   --control-padding: 0.625rem;
   --panel-padding: 1rem;
   --layout-gap: 0.625rem;
+}
+
+@media (max-width: 960px) {
+  :root {
+    --sidebar-width: 12rem;
+  }
+}
+@media (max-height: 680px) {
+  :root,
+  :root[data-density="compact"] {
+    --panel-padding: 0.75rem;
+    --layout-gap: 0.5rem;
+    --editor-height: 2.5rem;
+  }
 }

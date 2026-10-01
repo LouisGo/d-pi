@@ -4,25 +4,56 @@
     align-items: center;
     justify-content: center;
     gap: calc(var(--layout-gap) / 2);
-    height: var(--control-height);
-    padding-inline: var(--control-padding);
-    border-radius: var(--radius);
+    min-height: var(--control-height);
+    flex-shrink: 0;
+    padding: calc(var(--layout-gap) / 3) var(--control-padding);
+    border-radius: var(--radius-control);
     font-size: var(--text-body);
     font-weight: 500;
     white-space: nowrap;
     cursor: pointer;
     border: 1px solid transparent;
+    line-height: 1.4;
+    transition:
+      background-color var(--motion-control),
+      color var(--motion-control);
+  }
+  .ui-button-icon {
+    width: var(--control-height);
+    padding: 0;
+  }
+  .ui-button svg {
+    flex-shrink: 0;
   }
   .ui-button-primary {
     color: var(--primary-foreground);
     background: var(--primary);
   }
+  .ui-button-primary:hover:not(:disabled) {
+    background: var(--primary-hover);
+  }
+  .ui-button-primary:active:not(:disabled) {
+    background: var(--primary);
+  }
+  .ui-button-navigation {
+    color: var(--muted-foreground);
+    background: transparent;
+  }
+  .ui-button-navigation:hover:not(:disabled) {
+    color: var(--foreground);
+    background: var(--muted-hover);
+  }
+  .ui-button-navigation[aria-current="page"],
+  .ui-button-navigation[aria-pressed="true"] {
+    color: var(--accent-foreground);
+    background: var(--accent);
+  }
   .ui-button-ghost {
     color: var(--foreground);
     background: transparent;
   }
-  .ui-button-ghost:hover {
-    background: var(--muted);
+  .ui-button-ghost:hover:not(:disabled) {
+    background: var(--muted-hover);
   }
   .ui-button:focus-visible {
     outline: 2px solid var(--primary);
@@ -31,5 +62,10 @@
   .ui-button:disabled {
     opacity: 0.5;
     cursor: default;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-button {
+    transition: none;
   }
 }

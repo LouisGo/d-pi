@@ -8,19 +8,19 @@
 
 ## Colors
 
-语义颜色和深浅主题以 [tokens.css](src/app/renderer/styles/tokens.css) 为唯一视觉值来源；传播、覆盖与检查规则见[设计系统合同](docs/architecture/design-system.md)。此文件不复制色值。
+现有界面采用冷中性色与蓝色主操作。侧栏、阅读底面和输入／控件表面分层；选中导航使用柔和的 accent 与对应前景色，避免把选中项表现为新的主操作。语义颜色和深浅主题以 [tokens.css](src/app/renderer/styles/tokens.css) 为唯一视觉值来源；传播、覆盖与检查规则见[设计系统合同](docs/architecture/design-system.md)。此文件不复制色值。
 
 ## Typography
 
-沿用当前实现的字体与文字角色，字号来源同为 token；系统字体和紧凑的信息呈现可用于桌面工具，不因通用反模式提示更换字体。
+使用系统字体，控件、辅助信息与阅读正文分别消费文字角色；阅读正文保留更舒适的字号与行高。字号来源同为 token，不用全局缩放替代控件密度。
 
 ## Layout
 
-normal/compact、窗口布局及第三方编辑器适配遵守[设计系统合同](docs/architecture/design-system.md)；控件密度与阅读字号分别判断。现有实现是证据，不意味着用户已认可全部体验。
+项目导航固定在侧栏，工作区依次呈现配置入口、项目与运行状态、阅读导航／内容和底部 Composer。辅助区域使用分隔线与中性底面，避免每一层都套卡片。长设置按预算独立滚动，阅读导航在窄窗口横向滚动；输入操作允许换行，最小窗口的布局预算由共享 token 调整。空工作区保留明确的项目入口。normal/compact、窗口布局及第三方编辑器适配遵守[设计系统合同](docs/architecture/design-system.md)；控件密度与阅读字号分别判断。现有实现是证据，不意味着用户已认可全部体验。
 
 ## Components
 
-Base UI 基础交互与 shadcn 源码复用遵守项目组件 API；图标经自有 Icon Layer，见[图标合同](docs/architecture/icon-system.md)。接入和按需使用 Impeccable 的规则由 [d-pi-design-system](.agents/skills/d-pi-design-system/SKILL.md)维护。
+Base UI 基础交互与 shadcn 源码复用遵守项目组件 API；Button 的主操作、ghost 与 navigation 变体以及 icon 尺寸由共享组件拥有，调用方只安排布局。图标经自有 Icon Layer，见[图标合同](docs/architecture/icon-system.md)。接入和按需使用 Impeccable 的规则由 [d-pi-design-system](.agents/skills/d-pi-design-system/SKILL.md)维护。
 
 ## Do's and Don'ts
 

@@ -180,28 +180,28 @@ function ReadingNavigation({
       aria-label={t("app.reading.navigation")}
     >
       <Button
-        variant="ghost"
+        variant="navigation"
         aria-pressed={readingView === "conversation"}
         onClick={() => onReadingViewChange("conversation")}
       >
         {t("ui.conversation.heading")}
       </Button>
       <Button
-        variant="ghost"
+        variant="navigation"
         aria-pressed={readingView === "files"}
         onClick={() => onReadingViewChange("files")}
       >
         {t("ui.files.section")}
       </Button>
       <Button
-        variant="ghost"
+        variant="navigation"
         aria-pressed={readingView === "submissions"}
         onClick={() => onReadingViewChange("submissions")}
       >
         {t("app.reading.submissions")}
       </Button>
       <Button
-        variant="ghost"
+        variant="navigation"
         aria-pressed={readingView === "history"}
         onClick={() => onReadingViewChange("history")}
       >

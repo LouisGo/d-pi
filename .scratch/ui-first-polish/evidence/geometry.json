@@ -1,0 +1,553 @@
+{
+  "fixture": "real Renderer in isolated Electron, synthetic bridges, no provider",
+  "captures": [
+    {
+      "name": "readonly-light-normal",
+      "width": 1000,
+      "height": 800,
+      "scrollWidth": 1000,
+      "reading": {
+        "x": 252,
+        "y": 385.796875,
+        "width": 728,
+        "height": 155.1171875,
+        "bottom": 540.9140625,
+        "right": 980
+      },
+      "setup": {
+        "x": 252,
+        "y": 109.796875,
+        "width": 728,
+        "height": 208,
+        "bottom": 317.796875,
+        "right": 980
+      },
+      "runtimeStatus": {
+        "x": 266,
+        "y": 209.7890625,
+        "width": 561.1953125,
+        "height": 19.1953125,
+        "bottom": 228.984375,
+        "right": 827.1953125
+      },
+      "composer": {
+        "x": 252,
+        "y": 554.9140625,
+        "width": 728,
+        "height": 225.0859375,
+        "bottom": 780,
+        "right": 980
+      },
+      "controls": [
+        {
+          "text": "Expand editor",
+          "bottom": 772,
+          "right": 726.0859375
+        },
+        {
+          "text": "Switch send shortcut",
+          "bottom": 772,
+          "right": 895.375
+        },
+        {
+          "text": "Send",
+          "bottom": 772,
+          "right": 965
+        }
+      ],
+      "selected": {
+        "color": "rgb(48, 74, 151)",
+        "background": "rgb(232, 237, 249)",
+        "metaColor": "rgb(48, 74, 151)"
+      }
+    },
+    {
+      "name": "readonly-light-minimum-en",
+      "width": 720,
+      "height": 540,
+      "scrollWidth": 720,
+      "reading": {
+        "x": 204,
+        "y": 280.1953125,
+        "width": 504,
+        "height": 58.21875,
+        "bottom": 338.4140625,
+        "right": 708
+      },
+      "setup": {
+        "x": 204,
+        "y": 86.796875,
+        "width": 504,
+        "height": 140.3984375,
+        "bottom": 227.1953125,
+        "right": 708
+      },
+      "runtimeStatus": {
+        "x": 212,
+        "y": 171.7890625,
+        "width": 352.1953125,
+        "height": 19.1953125,
+        "bottom": 190.984375,
+        "right": 564.1953125
+      },
+      "composer": {
+        "x": 204,
+        "y": 346.4140625,
+        "width": 504,
+        "height": 181.5859375,
+        "bottom": 528,
+        "right": 708
+      },
+      "controls": [
+        {
+          "text": "Expand editor",
+          "bottom": 523,
+          "right": 460.0859375
+        },
+        {
+          "text": "Switch send shortcut",
+          "bottom": 523,
+          "right": 629.375
+        },
+        {
+          "text": "Send",
+          "bottom": 523,
+          "right": 699
+        }
+      ],
+      "selected": {
+        "color": "rgb(48, 74, 151)",
+        "background": "rgb(232, 237, 249)",
+        "metaColor": "rgb(48, 74, 151)"
+      }
+    },
+    {
+      "name": "ready-light-normal",
+      "width": 1440,
+      "height": 900,
+      "scrollWidth": 1440,
+      "reading": {
+        "x": 408,
+        "y": 322.1875,
+        "width": 856,
+        "height": 371.1171875,
+        "bottom": 693.3046875,
+        "right": 1264
+      },
+      "setup": {
+        "x": 408,
+        "y": 109.796875,
+        "width": 856,
+        "height": 144.390625,
+        "bottom": 254.1875,
+        "right": 1264
+      },
+      "runtimeStatus": {
+        "x": 422,
+        "y": 188.9921875,
+        "width": 689.1953125,
+        "height": 19.1953125,
+        "bottom": 208.1875,
+        "right": 1111.1953125
+      },
+      "composer": {
+        "x": 408,
+        "y": 707.3046875,
+        "width": 856,
+        "height": 172.6953125,
+        "bottom": 880,
+        "right": 1264
+      },
+      "controls": [
+        {
+          "text": "Expand editor",
+          "bottom": 872,
+          "right": 1010.0859375
+        },
+        {
+          "text": "Switch send shortcut",
+          "bottom": 872,
+          "right": 1179.375
+        },
+        {
+          "text": "Send",
+          "bottom": 872,
+          "right": 1249
+        }
+      ],
+      "selected": {
+        "color": "rgb(48, 74, 151)",
+        "background": "rgb(232, 237, 249)",
+        "metaColor": "rgb(48, 74, 151)"
+      }
+    },
+    {
+      "name": "ready-dark-normal",
+      "width": 1000,
+      "height": 800,
+      "scrollWidth": 1000,
+      "reading": {
+        "x": 252,
+        "y": 322.1875,
+        "width": 728,
+        "height": 271.1171875,
+        "bottom": 593.3046875,
+        "right": 980
+      },
+      "setup": {
+        "x": 252,
+        "y": 109.796875,
+        "width": 728,
+        "height": 144.390625,
+        "bottom": 254.1875,
+        "right": 980
+      },
+      "runtimeStatus": {
+        "x": 266,
+        "y": 188.9921875,
+        "width": 561.1953125,
+        "height": 19.1953125,
+        "bottom": 208.1875,
+        "right": 827.1953125
+      },
+      "composer": {
+        "x": 252,
+        "y": 607.3046875,
+        "width": 728,
+        "height": 172.6953125,
+        "bottom": 780,
+        "right": 980
+      },
+      "controls": [
+        {
+          "text": "Expand editor",
+          "bottom": 772,
+          "right": 726.0859375
+        },
+        {
+          "text": "Switch send shortcut",
+          "bottom": 772,
+          "right": 895.375
+        },
+        {
+          "text": "Send",
+          "bottom": 772,
+          "right": 965
+        }
+      ],
+      "selected": {
+        "color": "rgb(192, 208, 252)",
+        "background": "rgb(50, 61, 90)",
+        "metaColor": "rgb(192, 208, 252)"
+      }
+    },
+    {
+      "name": "ready-dark-compact",
+      "width": 720,
+      "height": 540,
+      "scrollWidth": 720,
+      "reading": {
+        "x": 204,
+        "y": 276.1953125,
+        "width": 504,
+        "height": 110.609375,
+        "bottom": 386.8046875,
+        "right": 708
+      },
+      "setup": {
+        "x": 204,
+        "y": 84.796875,
+        "width": 504,
+        "height": 140.3984375,
+        "bottom": 225.1953125,
+        "right": 708
+      },
+      "runtimeStatus": {
+        "x": 212,
+        "y": 169.7890625,
+        "width": 352.1953125,
+        "height": 19.1953125,
+        "bottom": 188.984375,
+        "right": 564.1953125
+      },
+      "composer": {
+        "x": 204,
+        "y": 394.8046875,
+        "width": 504,
+        "height": 133.1953125,
+        "bottom": 528,
+        "right": 708
+      },
+      "controls": [
+        {
+          "text": "Expand editor",
+          "bottom": 523,
+          "right": 476.0859375
+        },
+        {
+          "text": "Switch send shortcut",
+          "bottom": 523,
+          "right": 637.375
+        },
+        {
+          "text": "Send",
+          "bottom": 523,
+          "right": 699
+        }
+      ],
+      "selected": {
+        "color": "rgb(196, 212, 255)",
+        "background": "rgb(44, 56, 85)",
+        "metaColor": "rgb(196, 212, 255)"
+      }
+    },
+    {
+      "name": "ready-light-compact-zh",
+      "width": 1000,
+      "height": 800,
+      "scrollWidth": 1000,
+      "reading": {
+        "x": 248,
+        "y": 278.1875,
+        "width": 736,
+        "height": 335.1171875,
+        "bottom": 613.3046875,
+        "right": 984
+      },
+      "setup": {
+        "x": 248,
+        "y": 93.796875,
+        "width": 736,
+        "height": 128.390625,
+        "bottom": 222.1875,
+        "right": 984
+      },
+      "runtimeStatus": {
+        "x": 258,
+        "y": 162.9921875,
+        "width": 652.6875,
+        "height": 19.1953125,
+        "bottom": 182.1875,
+        "right": 910.6875
+      },
+      "composer": {
+        "x": 248,
+        "y": 623.3046875,
+        "width": 736,
+        "height": 160.6953125,
+        "bottom": 784,
+        "right": 984
+      },
+      "controls": [
+        {
+          "text": "展开编辑区",
+          "bottom": 778,
+          "right": 796
+        },
+        {
+          "text": "切换发送快捷键",
+          "bottom": 778,
+          "right": 917
+        },
+        {
+          "text": "发送",
+          "bottom": 778,
+          "right": 973
+        }
+      ],
+      "selected": {
+        "color": "rgb(48, 74, 151)",
+        "background": "rgb(232, 237, 249)",
+        "metaColor": "rgb(48, 74, 151)"
+      }
+    },
+    {
+      "name": "editor-focus-light-compact",
+      "width": 1000,
+      "height": 800,
+      "scrollWidth": 1000,
+      "reading": {
+        "x": 248,
+        "y": 278.1875,
+        "width": 736,
+        "height": 335.1171875,
+        "bottom": 613.3046875,
+        "right": 984
+      },
+      "setup": {
+        "x": 248,
+        "y": 93.796875,
+        "width": 736,
+        "height": 128.390625,
+        "bottom": 222.1875,
+        "right": 984
+      },
+      "runtimeStatus": {
+        "x": 258,
+        "y": 162.9921875,
+        "width": 652.6875,
+        "height": 19.1953125,
+        "bottom": 182.1875,
+        "right": 910.6875
+      },
+      "composer": {
+        "x": 248,
+        "y": 623.3046875,
+        "width": 736,
+        "height": 160.6953125,
+        "bottom": 784,
+        "right": 984
+      },
+      "controls": [
+        {
+          "text": "展开编辑区",
+          "bottom": 778,
+          "right": 796
+        },
+        {
+          "text": "切换发送快捷键",
+          "bottom": 778,
+          "right": 917
+        },
+        {
+          "text": "发送",
+          "bottom": 778,
+          "right": 973
+        }
+      ],
+      "selected": {
+        "color": "rgb(48, 74, 151)",
+        "background": "rgb(232, 237, 249)",
+        "metaColor": "rgb(48, 74, 151)"
+      }
+    },
+    {
+      "name": "settings-light-compact",
+      "width": 1000,
+      "height": 800,
+      "scrollWidth": 1000,
+      "reading": {
+        "x": 248,
+        "y": 502,
+        "width": 736,
+        "height": 111.3046875,
+        "bottom": 613.3046875,
+        "right": 984
+      },
+      "setup": {
+        "x": 248,
+        "y": 238,
+        "width": 736,
+        "height": 208,
+        "bottom": 446,
+        "right": 984
+      },
+      "runtimeStatus": {
+        "x": 258,
+        "y": 476.1796875,
+        "width": 652.6875,
+        "height": 19.1953125,
+        "bottom": 495.375,
+        "right": 910.6875
+      },
+      "composer": {
+        "x": 248,
+        "y": 623.3046875,
+        "width": 736,
+        "height": 160.6953125,
+        "bottom": 784,
+        "right": 984
+      },
+      "controls": [
+        {
+          "text": "展开编辑区",
+          "bottom": 778,
+          "right": 796
+        },
+        {
+          "text": "切换发送快捷键",
+          "bottom": 778,
+          "right": 917
+        },
+        {
+          "text": "发送",
+          "bottom": 778,
+          "right": 973
+        }
+      ],
+      "selected": {
+        "color": "rgb(48, 74, 151)",
+        "background": "rgb(232, 237, 249)",
+        "metaColor": "rgb(48, 74, 151)"
+      }
+    },
+    {
+      "name": "readonly-light-minimum",
+      "width": 720,
+      "height": 540,
+      "scrollWidth": 720,
+      "reading": {
+        "x": 204,
+        "y": 280.1953125,
+        "width": 504,
+        "height": 64.609375,
+        "bottom": 344.8046875,
+        "right": 708
+      },
+      "setup": {
+        "x": 204,
+        "y": 86.796875,
+        "width": 504,
+        "height": 140.3984375,
+        "bottom": 227.1953125,
+        "right": 708
+      },
+      "runtimeStatus": {
+        "x": 212,
+        "y": 171.7890625,
+        "width": 425.6875,
+        "height": 19.1953125,
+        "bottom": 190.984375,
+        "right": 637.6875
+      },
+      "composer": {
+        "x": 204,
+        "y": 352.8046875,
+        "width": 504,
+        "height": 175.1953125,
+        "bottom": 528,
+        "right": 708
+      },
+      "controls": [
+        {
+          "text": "展开编辑区",
+          "bottom": 523,
+          "right": 506
+        },
+        {
+          "text": "切换发送快捷键",
+          "bottom": 523,
+          "right": 635
+        },
+        {
+          "text": "发送",
+          "bottom": 523,
+          "right": 699
+        }
+      ],
+      "selected": {
+        "color": "rgb(48, 74, 151)",
+        "background": "rgba(232, 237, 249, 1)",
+        "metaColor": "rgb(48, 74, 151)"
+      }
+    },
+    {
+      "name": "empty-light-normal",
+      "width": 1000,
+      "height": 800,
+      "scrollWidth": 1000,
+      "controls": [],
+      "selected": null
+    }
+  ]
+}

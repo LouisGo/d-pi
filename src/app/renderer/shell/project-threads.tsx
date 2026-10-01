@@ -81,7 +81,7 @@ const ThreadButton = memo(function ThreadButton({
   );
   return (
     <Button
-      variant={selected ? "default" : "ghost"}
+      variant="navigation"
       aria-current={selected ? "page" : undefined}
       title={directory + " · " + threadId}
       onClick={() =>
