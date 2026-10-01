@@ -21,7 +21,11 @@ import { RuntimeService } from "../../src/modules/execution/main/public";
 import type { DiagnosticEvent } from "../../src/platform/main/diagnostics/public";
 import { TraceIdSchema } from "../../src/shared/identity";
 
-const adapters = vi.hoisted(() => ({ fork: vi.fn(), spawn: vi.fn() }));
+const adapters = vi.hoisted(() => ({
+  fork: vi.fn(),
+  spawn: vi.fn(),
+  terminate: vi.fn(async () => true),
+}));
 vi.mock("electron", () => ({ utilityProcess: { fork: adapters.fork } }));
 vi.mock("node:child_process", async (importOriginal) => ({
   ...(await importOriginal<typeof import("node:child_process")>()),
@@ -41,11 +45,12 @@ vi.mock("../../src/platform/node/processes/public", () => ({
     parentPid: globalThis.process.pid,
     groupId: pid,
   }),
-  terminateManagedGroup: async () => true,
+  terminateManagedGroup: adapters.terminate,
 }));
 const cleanup: (() => void)[] = [];
 afterEach(() => {
   for (const close of cleanup.splice(0)) close();
+  adapters.terminate.mockReset().mockResolvedValue(true);
 });
 const idle = {
   paused: false,
@@ -210,6 +215,7 @@ async function running(diagnosticFailure = false) {
     state,
     commands,
     nativeExit,
+    hostCrash: () => process.emit("exit"),
     prepare,
     dispatch: () =>
       runtime.submit({
@@ -272,6 +278,84 @@ it("same decoder batch cannot apply old idle after agent_start/ACK and lose the 
     outcome: "unknown",
   });
 });
+
+it("ACK and fresh idle keep the submission pending until its identified terminal arrives", async () => {
+  const f = await running();
+  const receipt = await f.prepare();
+  await f.dispatch();
+  f.frames({
+    type: "response",
+    command: "prompt",
+    id: receipt.requestId,
+    success: true,
+  });
+  await f.host.handle({ kind: "state" });
+  expect(f.runtime.hasActiveWork()).toBe(true);
+  await expect(f.runtime.closeIdle()).rejects.toThrow("Active native work");
+  f.frames({
+    type: "prompt_result",
+    id: receipt.requestId,
+    status: "completed",
+    agentInvoked: true,
+    sessionSettled: true,
+  });
+  await f.host.handle({ kind: "state" });
+  expect(f.runtime.hasActiveWork()).toBe(false);
+  expect(f.store.submissions.submission(receipt.submissionId)).toMatchObject({
+    state: "acknowledged",
+    outcome: "completed",
+  });
+});
+
+it("native exit after ACK and fresh idle preserves the missing terminal as unknown", async () => {
+  const f = await running();
+  const receipt = await f.prepare();
+  await f.dispatch();
+  f.frames({
+    type: "response",
+    command: "prompt",
+    id: receipt.requestId,
+    success: true,
+  });
+  await f.host.handle({ kind: "state" });
+  await f.nativeExit();
+  expect(f.store.submissions.submission(receipt.submissionId)).toMatchObject({
+    state: "acknowledged",
+    outcome: "unknown",
+  });
+  expect(
+    f.commands.filter((command) => command.type === "prompt"),
+  ).toHaveLength(1);
+});
+
+it.each([true, false])(
+  "Runtime shutdown waits for disconnected Host group cleanup (confirmed=%s)",
+  async (confirmed) => {
+    const f = await running();
+    let finish!: (confirmed: boolean) => void;
+    adapters.terminate.mockImplementationOnce(
+      () =>
+        new Promise<boolean>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    f.hostCrash();
+    let settled = false;
+    const closing = f.runtime.closeIdle().finally(() => {
+      settled = true;
+    });
+    await Promise.resolve();
+    expect(settled).toBe(false);
+    finish(confirmed);
+    if (confirmed) await expect(closing).resolves.toBeUndefined();
+    else {
+      await expect(closing).rejects.toThrow(
+        "Process group shutdown unconfirmed",
+      );
+      await expect(f.runtime.closeIdle()).rejects.toThrow();
+    }
+  },
+);
 
 it("an idle control sampled before dispatch cannot settle its later ACK", async () => {
   const f = await running();

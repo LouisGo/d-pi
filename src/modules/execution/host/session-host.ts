@@ -499,12 +499,7 @@ export function createSessionHost(
           pendingInteraction: interactions.pending,
           busy,
         });
-        if (
-          !busy &&
-          !interactions.pending &&
-          start &&
-          [...prompts.values()].every((entry) => entry.responded)
-        )
+        if (!busy && !interactions.pending && start && prompts.size === 0)
           send({
             kind: "idle-confirmed",
             connectionGeneration: start.connectionGeneration,
@@ -715,6 +710,9 @@ export function createSessionHost(
                 clearTimeout(entry.acknowledgementTimer);
                 rememberConfirmed(entry.value);
                 prompts.delete(event.requestId);
+                // Main may confirm after the terminal's idle sample finished.
+                // Re-sample when the final durable correlation is released.
+                void refresh();
               }
             }
           }
@@ -896,6 +894,7 @@ export function createSessionHost(
         }
         if (
           evidence.size > 0 ||
+          prompts.size > 0 ||
           unsettledPrompt ||
           busy ||
           interactions.blocked ||

@@ -93,7 +93,7 @@ function readSnapshot() {
   assert.equal(result.status, 0, result.stderr);
   return JSON.parse(result.stdout.trim()).message;
 }
-function persistentFiles() {
+function persistentFiles({ coordinationModes = true } = {}) {
   return Object.fromEntries(
     readdirSync(isolated.config)
       .filter((name) => !name.endsWith("-shm"))
@@ -103,7 +103,11 @@ function persistentFiles() {
           hash: createHash("sha256")
             .update(readFileSync(join(isolated.config, name)))
             .digest("hex"),
-          mode: statSync(join(isolated.config, name)).mode,
+          // SQLite may reset WAL coordination permissions after the writer
+          // closes. Source bytes and source-file permissions must still match.
+          ...(coordinationModes || !name.endsWith("-wal")
+            ? { mode: statSync(join(isolated.config, name)).mode }
+            : {}),
         },
       ]),
   );
@@ -168,6 +172,56 @@ try {
   writer.stdin.end("close");
   await once(writer, "exit");
   writer = null;
+  const rejectCacheFixture = join(adapter, "reject-cache.mjs");
+  writeFileSync(
+    rejectCacheFixture,
+    `
+import { Database } from 'bun:sqlite';
+import { getModelDbPath } from '@oh-my-pi/pi-utils';
+import { getBundledModel } from '@oh-my-pi/pi-catalog/models';
+import { writeModelCache } from '@oh-my-pi/pi-catalog/model-cache';
+import { resolveModelCacheProviderId } from '@oh-my-pi/pi-catalog/provider-models';
+const provider = resolveModelCacheProviderId('openai-codex');
+writeModelCache(provider, Date.now(), [{...getBundledModel('openai-codex', 'gpt-6-sol'), id:'fixture-cli-cached', name:'CLI discovered model'}], false, '', getModelDbPath());
+const db = new Database(getModelDbPath());
+const mode = process.argv.at(-1);
+if(mode === 'models') db.query('UPDATE model_cache SET models=? WHERE provider_id=?').run('not-json', provider);
+else if(mode === 'policy') db.query('UPDATE model_cache SET materialization_policy=? WHERE provider_id=?').run('incompatible-policy', provider);
+else if(mode === 'version') db.query('UPDATE model_cache SET version=? WHERE provider_id=?').run(-1, provider);
+else throw Error('unexpected fixture mode');
+db.close();
+`,
+  );
+  for (const mode of ["models", "policy", "version"]) {
+    const mutated = spawnSync(join(sdk, "bun"), [rejectCacheFixture, mode], {
+      cwd: isolated.cwd,
+      env: isolated.env,
+      encoding: "utf8",
+      timeout: 30000,
+    });
+    assert.equal(mutated.status, 0, mutated.stderr);
+    const corruptedSource = persistentFiles({ coordinationModes: false });
+    const rejected = readSnapshot();
+    assert.equal(
+      rejected.coverage,
+      "partial",
+      `rejected ${mode} cache must not report complete`,
+    );
+    assert.ok(rejected.issues.includes("catalog-cache-rejected"));
+    assert.equal(
+      rejected.models.some((model) => model.id === "fixture-cli-cached"),
+      false,
+    );
+    assert.equal(rejected.openaiAuthenticated, true);
+    assert.deepEqual(
+      persistentFiles({ coordinationModes: false }),
+      corruptedSource,
+      "rejection must not repair or delete source rows",
+    );
+  }
+  checks.push(
+    "native rejection of corrupt and incompatible model cache rows is partial without source writes",
+  );
   // A fresh home has the bundled runtime but no separately installed omp CLI.
   for (const name of readdirSync(isolated.config))
     rmSync(join(isolated.config, name), { recursive: true, force: true });

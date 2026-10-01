@@ -1,0 +1,17 @@
+$ node scripts/test.mjs vitest tests/integration/runtime-causality.integration.test.ts src/modules/execution/host/session-host.test.ts src/app/renderer/project-history.test.ts
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/MySpace/Life/d-pi[39m
+
+ [32m✓[39m src/modules/execution/host/session-host.test.ts [2m([22m[2m25 tests[22m[2m)[22m[32m 48[2mms[22m[39m
+ [32m✓[39m src/app/renderer/project-history.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 199[2mms[22m[39m
+ [32m✓[39m tests/integration/runtime-causality.integration.test.ts [2m([22m[2m21 tests[22m[2m)[22m[33m 4148[2mms[22m[39m
+   [33m[2m✓[22m[39m replays bounded evidence in the same live Host after a SQLite failure without replaying prompt[33m 1160[2mms[22m[39m
+   [33m[2m✓[22m[39m idle cannot dispose unconfirmed terminal evidence after ACK was already committed[33m 587[2mms[22m[39m
+   [33m[2m✓[22m[39m a Host loss after Main write failure loses only memory evidence and reopens conservatively without resending[33m 2002[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m3 passed[39m[22m[90m (3)[39m
+[2m      Tests [22m [1m[32m48 passed[39m[22m[90m (48)[39m
+[2m   Start at [22m 17:39:17
+[2m   Duration [22m 4.63s[2m (tests 56%, import 32%, transform 8%, environment 4%)[22m
+

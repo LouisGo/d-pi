@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "00b0b7d7216964135f28c8b4fdb15c72644647869b3cf9fad34cca349d333bba",
+  "inputsHash": "48ca0bfc2c59c53f6c27becc33994127cae172ebb2fc558920b21d31360413b3",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 224,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 57,
-      "lines": 11239,
+      "lines": 11381,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -319,7 +319,7 @@
       ],
       "materialized": true,
       "files": 41,
-      "lines": 8529,
+      "lines": 8613,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -353,7 +353,7 @@
       "defaultEnvironment": "omp",
       "materialized": true,
       "files": 4,
-      "lines": 829,
+      "lines": 856,
       "publicEntries": [
         {
           "path": "runtime/host.mjs",
@@ -1393,6 +1393,13 @@
       "dependency": "threads",
       "targetEnvironment": "contracts",
       "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "renderer",
+      "dependency": "conversation",
+      "targetEnvironment": "main",
+      "testOnly": true
     },
     {
       "module": "app",
@@ -5347,6 +5354,33 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": true,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/project-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/project-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/project-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
       "specifier": "@tanstack/react-query",
       "kind": "import",
       "resolution": "external"
@@ -5389,6 +5423,18 @@
       "to": "src/modules/conversation/contracts/public.ts",
       "targetModule": "conversation",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/project-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../modules/conversation/main/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/main/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "main"
     },
     {
       "from": "src/app/renderer/project-history.test.ts",

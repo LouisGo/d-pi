@@ -51,3 +51,5 @@ M1：在隔离配置中发现可用模型，使用同一上下文启动并完成
 M2：验证子 Agent 默认配置与当前 Thread 覆盖在并行会话、取消覆盖及恢复路径中的实际生效，合理默认映射依据实际可用模型制定，自动降档/调整确认/倒计时后置。另验证两条原生认证桥接、取消/超时/无网络、重启与刷新、旧配置保护；认证受阻仅阻塞该切片和 M2 完整验收。测试使用隔离样本；真实账户路径按实际授权手工验收，不用无提示计费请求充当探针。
 
 2026-10-01 用户报告的 CLI 登录复用回归及两向验证见 [M2 配置复用修复](../../../.scratch/m2-first-release/configuration-sharing.md)；原 WAL 保守失败限制已被纠正，传输完成但覆盖不全的 snapshot 记录 unknown 和有界原因码，不再只记 confirmed。
+
+官方 ModelRegistry 因 JSON、版本或 materialization policy 拒收私有副本中的源缓存行时，snapshot 标记 partial / catalog-cache-rejected；不复制兼容规则，不修复源库，也不把目录缺口解释为认证失效。回归及准入证据见[七提交审查](../../../.scratch/review-seven-commits/spec.md)。

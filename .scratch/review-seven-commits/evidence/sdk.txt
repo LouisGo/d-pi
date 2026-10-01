@@ -1,0 +1,16 @@
+$ node validation/s3/sdk-control.mjs && node validation/s3/sdk-failure.mjs && node validation/s3/sdk-outcomes.mjs && node validation/s3/sdk-prompt-correlation.mjs
+Native idle observation {
+  paused: false,
+  stopping: false,
+  pendingAsync: false,
+  admitted: false,
+  streaming: false,
+  compacting: false,
+  queued: 0,
+  background: 0,
+  queue: []
+}
+PASS: official SDK stop retains native queue; explicit continue consumes the same session exactly once
+PASS: fixed SDK resource accepts prompt, then reports prompt_result error with the same request ID; provider calls: 0
+PASS SDK 18.4.6: local completed, two steer/followUp prompt results, abort, session_settled, native queue and manual compaction/input race; localhost calls 10
+PASS: native correlation keeps old runs, queued prompts, and background settlement independent

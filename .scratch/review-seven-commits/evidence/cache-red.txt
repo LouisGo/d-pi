@@ -1,0 +1,58 @@
+$ node scripts/test.mjs vitest tests/integration/configuration-sharing.integration.test.ts
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/MySpace/Life/d-pi[39m
+
+ [31m❯[39m tests/integration/configuration-sharing.integration.test.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 2396[2mms[22m[39m
+[31m   [31m×[31m shares native login and cached models both ways while CLI is open and from a desktop-only home[39m[33m 2396[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/configuration-sharing.integration.test.ts[2m > [22mshares native login and cached models both ways while CLI is open and from a desktop-only home
+[31m[1mAssertionError[22m: node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: rejected models cache must not report complete
++ actual - expected
+
++ 'complete'
+- 'partial'
+
+    at file:///Users/louistation/MySpace/Life/d-pi/validation/m2/configuration-sharing.mjs:198:12
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 'complete',
+  expected: 'partial',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.21.0
+: expected 1 to be +0 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 0[39m
+[31m+ 1[39m
+
+[90m [2m❯[22m validation/m2/configuration-sharing.mjs:[2m198:12[22m[39m
+[36m [2m❯[22m tests/integration/configuration-sharing.integration.test.ts:[2m16:40[22m[39m
+    [90m 14|[39m     },
+    [90m 15|[39m   );
+    [90m 16|[39m   expect(result.status, result.stderr).toBe(0);
+    [90m   |[39m                                        [31m^[39m
+    [90m 17|[39m   const evidence = JSON.parse(result.stdout.trim());
+    [90m 18|[39m   expect(evidence.realSupplierRequests).toBe(0);
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m   Start at [22m 17:40:55
+[2m   Duration [22m 2.51s[2m (tests 99%, transform 1%)[22m
+
+[ELIFECYCLE] Test failed. See above for more details.

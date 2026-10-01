@@ -157,6 +157,16 @@ it("native disconnection affects B in flight but not settled A retained for late
   const f = await running();
   const a = await f.submit("A", 1);
   f.response(a.requestId, true);
+  transport.observe({
+    kind: "frame",
+    frame: {
+      type: "prompt_result",
+      id: a.requestId,
+      status: "completed",
+      agentInvoked: true,
+      sessionSettled: true,
+    },
+  });
   await f.host.handle({ kind: "state" });
   expect(f.runtime.hasActiveWork()).toBe(false);
   f.store.drafts.save(f.draft.threadId, 1, "B");
@@ -164,7 +174,7 @@ it("native disconnection affects B in flight but not settled A retained for late
   transport.observe({ kind: "disconnected", reason: "exit" });
   expect(f.store.submissions.submission(a.submissionId)).toMatchObject({
     state: "acknowledged",
-    outcome: "unobserved",
+    outcome: "completed",
   });
   expect(f.store.submissions.submission(b.submissionId)).toMatchObject({
     state: "unknown",
@@ -173,17 +183,29 @@ it("native disconnection affects B in flight but not settled A retained for late
   expect(transport.writes).toHaveLength(2);
 });
 
-it("retains late native failures after idle and does not settle an unacknowledged request merely on idle", async () => {
+it("retains late native failures after ACK and idle and never settles a missing terminal merely on idle", async () => {
   const f = await running();
   const a = await f.submit("A", 1);
   f.response(a.requestId, true);
   await f.host.handle({ kind: "state" });
-  expect(f.runtime.hasActiveWork()).toBe(false);
+  expect(f.runtime.hasActiveWork()).toBe(true);
   f.response(a.requestId, false);
   expect(f.store.submissions.submission(a.submissionId)).toMatchObject({
     state: "acknowledged",
     outcome: "failed",
   });
+  transport.observe({
+    kind: "frame",
+    frame: {
+      type: "prompt_result",
+      id: a.requestId,
+      status: "error",
+      agentInvoked: true,
+      sessionSettled: true,
+    },
+  });
+  await f.host.handle({ kind: "state" });
+  expect(f.runtime.hasActiveWork()).toBe(false);
   f.store.drafts.save(f.draft.threadId, 1, "B");
   const b = await f.submit("B", 2);
   await f.host.handle({ kind: "state" });

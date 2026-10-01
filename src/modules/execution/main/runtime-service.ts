@@ -335,8 +335,7 @@ export class RuntimeService {
         receipt?.state === "rejected" ||
         receipt?.outcome === "failed" ||
         receipt?.outcome === "completed" ||
-        receipt?.outcome === "aborted" ||
-        (receipt?.state === "acknowledged" && receipt.outcome !== "unknown")
+        receipt?.outcome === "aborted"
       )
         this.executingIds.delete(id);
     }
@@ -901,7 +900,6 @@ export class RuntimeService {
     );
   }
   async closeIdle(): Promise<void> {
-    if (!this.connection.connected) return;
     if (this.hasActiveWork()) throw Error("Active native work");
     await this.connection.closeIdle();
   }

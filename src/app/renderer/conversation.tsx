@@ -338,7 +338,8 @@ export function History({
           disabled={catalog.isFetching || nativePage.isFetching}
           onClick={() => {
             void catalog.refetch();
-            if (selected) void nativePage.refetch();
+            if (cursor) setCursor(null);
+            else if (selected) void nativePage.refetch();
           }}
         >
           {t("config.refresh")}
@@ -421,7 +422,10 @@ export function History({
               </article>
             ))}
             {page.next && (
-              <Button disabled={busy} onClick={() => void read(page.next)}>
+              <Button
+                disabled={busy || nativePage.isFetching}
+                onClick={() => void read(page.next)}
+              >
                 {t("ui.history.next")}
               </Button>
             )}

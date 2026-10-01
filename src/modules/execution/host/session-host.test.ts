@@ -1160,6 +1160,93 @@ it("duplicate native ACKs cannot exhaust the live evidence cache and cause its t
   native.observers[0]?.({ kind: "exited" });
 });
 
+it("ACK confirmation and idle cannot dispose a prompt before its terminal is durable", async () => {
+  const messages: HostMessage[] = [];
+  const exit = vi.fn();
+  const host = createSessionHost((message) => messages.push(message), exit);
+  const start: HostStart = {
+    kind: "start",
+    threadId: ThreadIdSchema.parse(crypto.randomUUID()),
+    traceId: crypto.randomUUID(),
+    processInstanceId: crypto.randomUUID(),
+    connectionGeneration: crypto.randomUUID(),
+    configContextId: "fixture",
+    binary: "/fixture/omp",
+    identity: { directory: "/project", device: "1", inode: "2" },
+    environment: {},
+    sessionDirectory: "/sessions",
+  };
+  await host.handle(start);
+  const value = FrozenSubmissionSchema.parse({
+    submissionId: crypto.randomUUID(),
+    threadId: start.threadId,
+    traceId: crypto.randomUUID(),
+    requestId: crypto.randomUUID(),
+    revision: 1,
+    text: "frozen",
+    target: {
+      processInstanceId: start.processInstanceId,
+      connectionGeneration: start.connectionGeneration,
+      configContextId: start.configContextId,
+      nativeSessionRef: "/sessions/session.jsonl",
+    },
+  });
+  await host.handle({ kind: "dispatch", value });
+  native.observers[0]?.({
+    kind: "frame",
+    frame: {
+      type: "response",
+      command: "prompt",
+      id: value.requestId,
+      success: true,
+    },
+  });
+  const ack = messages.find((message) => message.kind === "submission");
+  if (ack?.kind !== "submission") throw Error("ACK missing");
+  await host.handle({
+    kind: "confirm-evidence",
+    evidenceId: ack.evidenceId,
+    connectionGeneration: start.connectionGeneration,
+  });
+  messages.length = 0;
+  await host.handle({ kind: "state" });
+  await host.handle({ kind: "close-idle" });
+  expect(native.close).not.toHaveBeenCalled();
+  expect(exit).not.toHaveBeenCalled();
+  expect(messages.some((message) => message.kind === "idle-confirmed")).toBe(
+    false,
+  );
+
+  native.observers[0]?.({
+    kind: "frame",
+    frame: {
+      type: "prompt_result",
+      id: value.requestId,
+      status: "completed",
+      agentInvoked: true,
+      sessionSettled: true,
+    },
+  });
+  await host.handle({ kind: "state" });
+  const terminal = messages.find((message) => message.kind === "submission");
+  if (terminal?.kind !== "submission") throw Error("terminal missing");
+  await host.handle({
+    kind: "confirm-evidence",
+    evidenceId: terminal.evidenceId,
+    connectionGeneration: start.connectionGeneration,
+  });
+  // A late Main commit must trigger a fresh idle sample without another UI request.
+  await Promise.resolve();
+  await Promise.resolve();
+  expect(messages).toContainEqual({
+    kind: "idle-confirmed",
+    connectionGeneration: start.connectionGeneration,
+    afterSubmissionId: value.submissionId,
+  });
+  await host.handle({ kind: "close-idle" });
+  expect(native.close).toHaveBeenCalledOnce();
+});
+
 it("agent_end cannot open an idle-close gap while a confirmed completed prompt remains unsettled", async () => {
   const messages: HostMessage[] = [];
   const host = createSessionHost((message) => messages.push(message), vi.fn());

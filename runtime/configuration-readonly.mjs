@@ -311,6 +311,7 @@ export async function readConfigurationSnapshot(frame) {
     // any migrations/deletions affect this copy only, never the user's catalog.
     let cache;
     let cacheDbPath = ":memory:";
+    let cacheProviders = [];
     try {
       cache = readonlyDatabase(getModelDbPath(agent));
       if (cache) {
@@ -341,6 +342,9 @@ export async function readConfigurationSnapshot(frame) {
           cacheDirectory = mkdtempSync(join(tmpdir(), "d-pi-model-catalog-"));
           cacheDbPath = join(cacheDirectory, "models.db");
           writeFileSync(cacheDbPath, bytes, { mode: 0o600 });
+          cacheProviders = cache
+            .query("SELECT provider_id FROM model_cache")
+            .all();
         }
       }
     } catch (error) {
@@ -386,6 +390,29 @@ export async function readConfigurationSnapshot(frame) {
         thinking: thinkingCapabilities(model),
       };
     });
+    if (cacheDirectory && cacheProviders.length) {
+      let materialized;
+      try {
+        materialized = new Database(cacheDbPath, {
+          readonly: true,
+          create: false,
+        });
+        const remaining = new Set(
+          materialized
+            .query("SELECT provider_id FROM model_cache")
+            .all()
+            .map((row) => row.provider_id),
+        );
+        // Official compatibility and parsing may reject rows in the private
+        // copy. Preserve that decision, but do not claim complete source coverage.
+        if (cacheProviders.some((row) => !remaining.has(row.provider_id)))
+          issues.push("catalog-cache-rejected");
+      } catch {
+        issues.push("catalog-cache-unavailable");
+      } finally {
+        materialized?.close();
+      }
+    }
     if (registry.getError()) issues.push("models-config-invalid");
     return {
       kind: "snapshot",

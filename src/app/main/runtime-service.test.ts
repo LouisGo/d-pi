@@ -564,7 +564,7 @@ it("background-only work prevents quit even after a stale idle poll and ignores 
   expect(f.runtime.hasActiveWork()).toBe(false);
 });
 
-it("settles an acknowledged submission when native admission clears after the idle RPC reply", async () => {
+it("clearing native admission and confirming idle cannot settle an acknowledged submission without its terminal", async () => {
   const f = await running();
   const prepared = await f.prepare();
   if (prepared.kind !== "receipt") throw Error("prepare failed");
@@ -608,11 +608,12 @@ it("settles an acknowledged submission when native admission clears after the id
   });
   expect(f.runtime.hasActiveWork()).toBe(true); // Bare samples cannot prove current work drained.
   f.confirmIdle();
+  expect(f.runtime.hasActiveWork()).toBe(true);
   f.host.emit("exit");
-  expect(f.runtime.hasActiveWork()).toBe(false);
+  expect(f.runtime.hasActiveWork()).toBe(true);
   expect(
     f.store.submissions.submission(prepared.receipt.submissionId)?.outcome,
-  ).not.toBe("unknown");
+  ).toBe("unknown");
 });
 
 it("blocks prepare and dispatch during native interactions, then admits normal follow-up", async () => {

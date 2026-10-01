@@ -42,7 +42,7 @@ Main 的提交协调拥有 App 收据和草稿交接；Host 的执行协调负�
 - 已持久 ACK 不因后来失败被撤销；业务接受与执行失败另有证据才标注，不能倒写为从未发送。后续失败保留原提交内容，不覆盖用户新草稿。
 - 相同 submissionId 的重复点击/IPC 返回已知状态，不重复派发。用户主动重新发送 unknown 内容须使用新 submissionId 并关联原提交，提示可能重复。
 - schema 6 保留已持久结果；重启把 dispatching、ACK 后仍 unobserved 的结果保守解释为 unknown，保留 ACK 时间/消费标记与原文。prepared 可由用户继续。ACK 丢失不能凭相同文本或相近时间认定接受，unknown 不自动重试。
-- prompt_result 可先于 ACK 入库，不消费草稿；完整 target 和合法派发状态必须匹配。ACK、prompt 结束与 session settled 分开，completed 且 sessionSettled=false 不放行回收/退出，generic idle/agent_end 不给未知提交猜成功。原生 get_state.queuedMessages/queue_update 是队列展示来源，完整编辑/重排 GUI 留在 M2 05。
+- prompt_result 可先于 ACK 入库，不消费草稿；完整 target 和合法派发状态必须匹配。ACK、prompt 结束与 session settled 分开，ACK 后 unobserved 或 completed 且 sessionSettled=false 不放行回收/退出，generic idle/agent_end 不给未知提交猜成功。Host 保留关联直到终态持久确认，迟到确认主动重采 idle；其间进程退出的缺失终态按 unknown 保留。原生 get_state.queuedMessages/queue_update 是队列展示来源，完整编辑/重排 GUI 留在 M2 05。
 - 停止回执只证明中断请求已返回；排队输入、待答交互和后台活动另按证据显示。用户确认停止须同时暂缓当前 Thread 后续队列，保留内容，待明确继续后恢复；不清队列、不回滚文件。实际消费阻断与恢复属于执行侧，原生 abort 本身不证明这些效果。
 
 ## 生命周期与第一批验收

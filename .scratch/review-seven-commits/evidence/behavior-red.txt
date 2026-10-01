@@ -1,0 +1,174 @@
+$ node scripts/test.mjs vitest tests/integration/runtime-causality.integration.test.ts src/modules/execution/host/session-host.test.ts src/app/renderer/project-history.test.ts
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/MySpace/Life/d-pi[39m
+
+ [31m❯[39m src/modules/execution/host/session-host.test.ts [2m([22m[2m25 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 48[2mms[22m[39m
+   [32m✓[39m does not close from an idle query overtaken by observed background activity[32m 6[2mms[22m[39m
+   [32m✓[39m without a fresh state query refuses close-idle while last known control shows background activity[32m 0[2mms[22m[39m
+   [32m✓[39m forwards unknown host frames without treating them as interactions[32m 0[2mms[22m[39m
+   [32m✓[39m answers timed-out questions with the timeout default while confirm dialogs keep blocking[32m 3[2mms[22m[39m
+   [32m✓[39m fires the default just before a short native timeout[32m 3[2mms[22m[39m
+   [32m✓[39m publishes the timeout default as one sent+flagged snapshot[32m 1[2mms[22m[39m
+   [32m✓[39m never auto-answers confirm with a native timeout; expiry is shown truthfully[32m 1[2mms[22m[39m
+   [32m✓[39m keeps a confirm without native timeout pending past the 120s fallback[32m 0[2mms[22m[39m
+   [32m✓[39m honors a long native timeout instead of answering at the 120s fallback[32m 1[2mms[22m[39m
+   [32m✓[39m refreshes the last known control from stop/continue replies so close-idle unblocks[32m 1[2mms[22m[39m
+   [32m✓[39m acknowledges a superseded control call without applying its stale state (A9 lock)[32m 0[2mms[22m[39m
+   [32m✓[39m independent Host owners isolate native output, prompt timers and idle disposal[32m 3[2mms[22m[39m
+   [32m✓[39m dismisses an unknown dialog locally and reports acknowledged without a native write[32m 0[2mms[22m[39m
+   [32m✓[39m keeps correlation expiry out of conversation frames while retaining submission uncertainty[32m 1[2mms[22m[39m
+   [32m✓[39m labels a rejected submission with a stable host reason[32m 0[2mms[22m[39m
+   [32m✓[39m reports the not-ready dispatch gate[32m 0[2mms[22m[39m
+   [32m✓[39m reports the native-unavailable dispatch gate[32m 0[2mms[22m[39m
+   [32m✓[39m reports the paused dispatch gate[32m 0[2mms[22m[39m
+   [32m✓[39m reports the interaction-pending dispatch gate[32m 0[2mms[22m[39m
+   [32m✓[39m reports the stale-target dispatch gate[32m 0[2mms[22m[39m
+   [32m✓[39m reports the correlation-limit dispatch gate[32m 3[2mms[22m[39m
+   [32m✓[39m bounds unconfirmed evidence, reports cache pressure and only replays facts[32m 13[2mms[22m[39m
+   [32m✓[39m duplicate native ACKs cannot exhaust the live evidence cache and cause its terminal to be lost[32m 2[2mms[22m[39m
+[31m   [31m×[31m ACK confirmation and idle cannot dispose a prompt before its terminal is durable[39m[32m 5[2mms[22m[39m
+   [32m✓[39m agent_end cannot open an idle-close gap while a confirmed completed prompt remains unsettled[32m 1[2mms[22m[39m
+[90mstderr[2m | src/app/renderer/project-history.test.ts[2m > [22m[2mrefreshes a changed CLI history from the first page and can continue reading its new version
+[22m[39mAn update to History inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ [31m❯[39m src/app/renderer/project-history.test.ts [2m([22m[2m2 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 1217[2mms[22m[39m
+   [32m✓[39m opens the project's CLI history directly when the history tab is selected, without executing OMP[32m 129[2mms[22m[39m
+[31m   [31m×[31m refreshes a changed CLI history from the first page and can continue reading its new version[39m[33m 1088[2mms[22m[39m
+ [31m❯[39m tests/integration/runtime-causality.integration.test.ts [2m([22m[2m21 tests[22m[2m | [22m[31m4 failed[39m[2m)[22m[33m 4099[2mms[22m[39m
+   [32m✓[39m same decoder batch cannot apply old idle after agent_start/ACK and lose the in-flight receipt[32m 42[2mms[22m[39m
+[31m   [31m×[31m ACK and fresh idle keep the submission pending until its identified terminal arrives[39m[32m 22[2mms[22m[39m
+[31m   [31m×[31m native exit after ACK and fresh idle preserves the missing terminal as unknown[39m[32m 18[2mms[22m[39m
+[31m   [31m×[31m Runtime shutdown waits for disconnected Host group cleanup (confirmed=true)[39m[32m 15[2mms[22m[39m
+[31m   [31m×[31m Runtime shutdown waits for disconnected Host group cleanup (confirmed=false)[39m[32m 14[2mms[22m[39m
+   [32m✓[39m an idle control sampled before dispatch cannot settle its later ACK[32m 16[2mms[22m[39m
+   [32m✓[39m confirmed idle native exit releases its Host and lets normal idle close finish without querying the dead process[32m 13[2mms[22m[39m
+   [32m✓[39m idle sampled before a prompt reply cannot become settlement evidence when that reply arrives[32m 16[2mms[22m[39m
+   [32m✓[39m protocol disconnection alone still blocks quit; confirmed exit is a separate cleanup fact[32m 15[2mms[22m[39m
+   [32m✓[39m correlates ACK, disconnection and unknown outcome without conflating transport loss with Host exit[32m 16[2mms[22m[39m
+   [32m✓[39m diagnostic failure cannot prevent an exited Host from preserving an unknown receipt[32m 16[2mms[22m[39m
+   [32m✓[39m confirmed terminal duplicates keep coverage complete and a later identified error remains sticky[32m 17[2mms[22m[39m
+   [32m✓[39m decodes and persists a prompt terminal before ACK, keeps background work active and ignores an unknown id[32m 22[2mms[22m[39m
+   [33m[2m✓[22m[39m replays bounded evidence in the same live Host after a SQLite failure without replaying prompt[33m 1170[2mms[22m[39m
+   [33m[2m✓[22m[39m idle cannot dispose unconfirmed terminal evidence after ACK was already committed[33m 576[2mms[22m[39m
+   [32m✓[39m persists the recorded SDK 18.4.6 local outcome through the real decoder/session/Host/Main/SQLite chain[32m 23[2mms[22m[39m
+   [32m✓[39m persists the recorded SDK 18.4.6 builtinLocal outcome through the real decoder/session/Host/Main/SQLite chain[32m 22[2mms[22m[39m
+   [32m✓[39m persists the recorded SDK 18.4.6 steer outcome through the real decoder/session/Host/Main/SQLite chain[32m 21[2mms[22m[39m
+   [32m✓[39m persists the recorded SDK 18.4.6 aborted outcome through the real decoder/session/Host/Main/SQLite chain[32m 19[2mms[22m[39m
+   [32m✓[39m persists the recorded SDK 18.4.6 error outcome through the real decoder/session/Host/Main/SQLite chain[32m 16[2mms[22m[39m
+   [33m[2m✓[22m[39m a Host loss after Main write failure loses only memory evidence and reopens conservatively without resending[33m 2007[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 6 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/runtime-causality.integration.test.ts[2m > [22mACK and fresh idle keep the submission pending until its identified terminal arrives
+[31m[1mAssertionError[22m: expected false to be true // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+[36m [2m❯[22m tests/integration/runtime-causality.integration.test.ts:[2m293:37[22m[39m
+    [90m291|[39m   });
+    [90m292|[39m   await f.host.handle({ kind: "state" });
+    [90m293|[39m   expect(f.runtime.hasActiveWork()).toBe(true);
+    [90m   |[39m                                     [31m^[39m
+    [90m294|[39m   await expect(f.runtime.closeIdle()).rejects.toThrow("Active native w…
+    [90m295|[39m   f.frames({
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/runtime-causality.integration.test.ts[2m > [22mnative exit after ACK and fresh idle preserves the missing terminal as unknown
+[31m[1mAssertionError[22m: expected { …(12) } to match object { state: 'acknowledged', …(1) }
+(14 matching properties omitted from actual)[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "outcome": "unknown",[39m
+[31m+   "outcome": "unobserved",[39m
+[2m    "state": "acknowledged",[22m
+[2m  }[22m
+
+[36m [2m❯[22m tests/integration/runtime-causality.integration.test.ts:[2m322:64[22m[39m
+    [90m320|[39m   await f.host.handle({ kind: "state" });
+    [90m321|[39m   await f.nativeExit();
+    [90m322|[39m   expect(f.store.submissions.submission(receipt.submissionId)).toMatch…
+    [90m   |[39m                                                                [31m^[39m
+    [90m323|[39m     state: "acknowledged",
+    [90m324|[39m     outcome: "unknown",
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/runtime-causality.integration.test.ts[2m > [22mRuntime shutdown waits for disconnected Host group cleanup (confirmed=true)
+[41m[1m FAIL [22m[49m tests/integration/runtime-causality.integration.test.ts[2m > [22mRuntime shutdown waits for disconnected Host group cleanup (confirmed=false)
+[31m[1mAssertionError[22m: expected true to be false // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+[36m [2m❯[22m tests/integration/runtime-causality.integration.test.ts:[2m341:21[22m[39m
+    [90m339|[39m     const closing = f.runtime.closeIdle().finally(() => { settled = tr…
+    [90m340|[39m     await Promise.resolve();
+    [90m341|[39m     expect(settled).toBe(false);
+    [90m   |[39m                     [31m^[39m
+    [90m342|[39m     finish(confirmed);
+    [90m343|[39m     if (confirmed) await expect(closing).resolves.toBeUndefined();
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/app/renderer/project-history.test.ts[2m > [22mrefreshes a changed CLI history from the first page and can continue reading its new version
+[31m[1mAssertionError[22m: the given combination of arguments (undefined and string) is invalid for this assertion. You can use an array, a map, an object, a set, a string, or a weakset instead of a string[39m
+[36m [2m❯[22m src/app/renderer/project-history.test.ts:[2m103:63[22m[39m
+    [90m101|[39m     await vi.waitFor(async () => {
+    [90m102|[39m       await act(() => new Promise((resolve) => setTimeout(resolve, 10)…
+    [90m103|[39m       expect(container.querySelector("article")?.textContent).toContai…
+    [90m   |[39m                                                               [31m^[39m
+    [90m104|[39m     });
+    [90m105|[39m   };
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/execution/host/session-host.test.ts[2m > [22mACK confirmation and idle cannot dispose a prompt before its terminal is durable
+[31m[1mAssertionError[22m: expected "vi.fn()" to not be called at all, but actually been called 1 times[90m
+
+Received:
+
+[1m  1st vi.fn() call:
+
+[22m    Array []
+[31m[90m
+
+Number of calls: [1m1[22m
+[31m[39m
+[36m [2m❯[22m src/modules/execution/host/session-host.test.ts:[2m1209:28[22m[39m
+    [90m1207|[39m   await host.handle({ kind: "state" });
+    [90m1208|[39m   await host.handle({ kind: "close-idle" });
+    [90m1209|[39m   expect(native.close).not.toHaveBeenCalled();
+    [90m   |[39m                            [31m^[39m
+    [90m1210|[39m   expect(exit).not.toHaveBeenCalled();
+    [90m1211|[39m   expect(messages.some((message) => message.kind === "idle-confirmed")…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m3 failed[39m[22m[90m (3)[39m
+[2m      Tests [22m [1m[31m6 failed[39m[22m[2m | [22m[1m[32m42 passed[39m[22m[90m (48)[39m
+[2m   Start at [22m 17:38:32
+[2m   Duration [22m 4.55s[2m (tests 60%, import 30%, transform 6%, environment 3%)[22m
+
+[ELIFECYCLE] Test failed. See above for more details.
