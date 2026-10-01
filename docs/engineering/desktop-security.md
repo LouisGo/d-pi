@@ -8,10 +8,10 @@
 | --- | --- | --- |
 | 特权窗口加载 | [Main](../../src/app/main/index.ts)、[构建配置](../../electron.vite.config.ts) | `nodeIntegration=false`、`contextIsolation=true`、`sandbox=true`。打包应用只加载内置 Renderer；开发初始 URL 与 HTTP 重定向目标均只允许无凭据的 HTTP/HTTPS loopback 地址。加载前注册 `will-redirect`，取消越界重定向；开发加载拒绝后回到内置页面，窗口已关闭时不重载，加载失败留有类型化诊断，不能把 preload 带到外部内容。 |
 | 页面导航与系统权限 | Main `createWindow` | 页面新窗口、`will-navigate` 和 webview attach 均拒绝；permission request 回调拒绝。不能为了新增浏览器或认证功能直接复用应用特权窗口。 |
-| 内容与脚本 | [Renderer CSP](../../src/app/renderer/index.html)、[阅读渲染](../../src/app/renderer/conversation.tsx) | 脚本来源为 self；开发态只为启动生成 nonce。样式允许 inline，图片为 self/data，connect 允许 self 与 localhost 开发连接。Markdown 链接和图片呈现为无操作文本；当前没有自动打开外链或加载远程图片。原生/用户文本仍不可信。 |
+| 内容与脚本 | [Renderer CSP](../../src/app/renderer/index.html)、[阅读渲染](../../src/app/renderer/reading/markdown.tsx) | 脚本来源为 self；开发态只为启动生成 nonce。样式允许 inline，图片为 self/data，connect 允许 self 与 localhost 开发连接。Markdown 链接和图片呈现为无操作文本；当前没有自动打开外链或加载远程图片。原生/用户文本仍不可信。 |
 | preload 与 IPC | [preload](../../src/app/preload/index.ts)、[IPC](../../src/app/main/ipc/) | 只暴露 `desktop` 的受限域操作，禁止通用 invoke、Node、文件系统或 shell。Main 核对窗口 `webContents` 与 mainFrame，消费边界解析 schema；schema 不替代 Thread、目录、请求代次与资源归属。 |
 | App 文件与 Git 读取 | [文件读取](../../src/modules/files/main/project-files.ts)、[Git 读取](../../src/modules/changes/main/project-git.ts)、[实际路径](../../src/platform/node/filesystem/directory.ts) | 规范化实际路径并校验根范围；拒绝逃逸 symlink、越界路径和非普通文件，打开后复核文件身份。Git 查询禁用 ext-diff/textconv，不能因“只读”运行项目脚本。 |
-| OMP 执行与配置 | [执行服务](../../src/modules/execution/main/runtime-service.ts)、[原生进程](../../src/modules/execution/host/native-session.ts) | 默认仅浏览，允许项目执行后才启动 OMP/加载扩展。原生工具审批与 App 文件读取是两个执行面；Agent 仍使用当前 OS 用户权限，不宣称目录沙箱。配置与资源维护见 [OMP 接入](omp-maintenance.md)。 |
+| OMP 执行与配置 | [执行服务](../../src/modules/execution/main/runtime/runtime-service.ts)、[原生进程](../../src/modules/execution/host/native/native-session.ts) | 默认仅浏览，允许项目执行后才启动 OMP/加载扩展。原生工具审批与 App 文件读取是两个执行面；Agent 仍使用当前 OS 用户权限，不宣称目录沙箱。配置与资源维护见 [OMP 接入](omp-maintenance.md)。 |
 | 诊断与恢复 | [诊断合同](../architecture/diagnostics.md)、执行服务与收据集成 | 保留 trace/真实身份/类型化失败，不记录秘密或业务全文。unknown 不自动重发；不删除数据、新建替代会话或伪造 ready 掩盖资源/恢复失败。 |
 
 本轮发现并修复的入口缺口：打包应用曾无条件接受 `ELECTRON_RENDERER_URL`，开发态也接受外部 URL；该页面会获得应用 preload。现按打包/开发状态和实际 URL 主机拒绝这两条路径，并保留正常 loopback 开发加载。[行为回归](../../tests/integration/window-security.integration.test.ts) 有两个目标失败样本，另覆盖恶意主机/凭据/协议、无效 URL、合法 loopback 与现有隔离/导航限制；具体红绿和原生结果由所属规格的证据维护。

@@ -11,9 +11,9 @@ Blocked by: 01
 
 | 文件 | 现状 | 迁移后 |
 | --- | --- | --- |
-| [app/renderer/model.ts](../../../src/app/renderer/model.ts) | `private state` + `listeners` + `publish` | vanilla store + `setState`，`getSnapshot/subscribe` 仍可用 |
-| [execution/renderer/runtime-model.ts](../../../src/modules/execution/renderer/runtime-model.ts) | 同上，含代次与失败视图 | 同上；`bind`/`act`/`control`/`answer`/`dismiss`/`dispose` 不变 |
-| [execution/renderer/submission-model.ts](../../../src/modules/execution/renderer/submission-model.ts) | 同上，`publish(Partial<View>)` | 同上；回执消费与清稿判定不变 |
+| [app/renderer/model.ts](../../../src/app/renderer/wiring/model.ts) | `private state` + `listeners` + `publish` | vanilla store + `setState`，`getSnapshot/subscribe` 仍可用 |
+| [execution/renderer/runtime-model.ts](../../../src/modules/execution/renderer/runtime/runtime-model.ts) | 同上，含代次与失败视图 | 同上；`bind`/`act`/`control`/`answer`/`dismiss`/`dispose` 不变 |
+| [execution/renderer/submission-model.ts](../../../src/modules/execution/renderer/submission/submission-model.ts) | 同上，`publish(Partial<View>)` | 同上；回执消费与清稿判定不变 |
 | [conversation/core/model.ts](../../../src/modules/conversation/core/model.ts) | 同上，含 generation/seq/gap | 同上；水位与重同步规则不变 |
 
 同时提供细粒度订阅：`RuntimeModel` 与 `ConversationModel` 的列表消费者按实体订阅，单条消息更新不再通知全部消费者。`core` 内只用 vanilla store，React 绑定只在 `renderer`。

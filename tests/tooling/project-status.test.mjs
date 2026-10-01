@@ -13,7 +13,7 @@ import {
   checkStatusSnapshot,
   readProjectStatus,
   renderProjectStatus,
-} from "../../scripts/project-status.mjs";
+} from "../../scripts/tasks/project-status.mjs";
 
 const record = {
   id: "sample",

@@ -5,7 +5,7 @@ import { createWriteStream, mkdirSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { dirname, join, resolve } from "node:path";
 import { DatabaseSync } from "node:sqlite";
-import { createTestEnvironment } from "../scripts/test-environment.mjs";
+import { createTestEnvironment } from "../scripts/testing/test-environment.mjs";
 
 // Run the built application with isolated App/OMP/Git directories. No model or
 // execution permission is configured; this checks only the affected GUI path.

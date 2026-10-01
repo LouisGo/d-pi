@@ -14,7 +14,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { join, resolve } from "node:path";
-import { createTestEnvironment } from "../../scripts/test-environment.mjs";
+import { createTestEnvironment } from "../../scripts/testing/test-environment.mjs";
 
 const sdk = resolve("resources/sdk");
 const isolated = createTestEnvironment({ prefix: "d-pi-config-readonly-" });

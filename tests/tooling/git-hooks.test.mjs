@@ -9,7 +9,7 @@ import {
 } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { test } from "node:test";
-import { createTestEnvironment } from "../../scripts/test-environment.mjs";
+import { createTestEnvironment } from "../../scripts/testing/test-environment.mjs";
 
 const root = resolve(import.meta.dirname, "../..");
 const installer = join(root, "scripts/git-hooks.mjs");

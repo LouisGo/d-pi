@@ -10,7 +10,7 @@ import {
 } from "../../scripts/architecture/oxlint-runner.mjs";
 
 const repositoryRoot = resolve(import.meta.dirname, "../..");
-const designLint = join(repositoryRoot, "scripts/lint-design.mjs");
+const designLint = join(repositoryRoot, "scripts/checks/lint-design.mjs");
 const designCheck = join(repositoryRoot, "validation/s1/design-check.mjs");
 const config = join(repositoryRoot, ".oxlintrc.json");
 

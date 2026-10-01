@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import { dirname, extname, join, resolve } from "node:path";
-import { createTestEnvironment } from "../scripts/test-environment.mjs";
+import { createTestEnvironment } from "../scripts/testing/test-environment.mjs";
 
 // Focused real-Electron check for the privileged window. This does not start OMP
 // or exercise the entire GUI, and never inherits personal configuration.

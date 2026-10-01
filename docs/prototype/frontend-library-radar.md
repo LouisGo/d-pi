@@ -30,7 +30,7 @@
 
 ### Streamdown · 已采用（Markdown 统一入口）
 
-- **采用状态：**已采用。`streamdown@2.6.0` 与 `@streamdown/code@1.1.1` 已在 `package.json`，入口在 `src/app/renderer/conversation.tsx`；代码块高亮由 `@streamdown/code` 提供，未单独引入 `shiki`。
+- **采用状态：**已采用。`streamdown@2.6.0` 与 `@streamdown/code@1.1.1` 已在 `package.json`，入口在 `src/app/renderer/reading/markdown.tsx`；代码块高亮由 `@streamdown/code` 提供，未单独引入 `shiki`。
 - **入口：**[官方用法](https://streamdown.ai/docs/usage)、[安装与 Tailwind 配置](https://streamdown.ai/docs/getting-started)、[源码](https://github.com/vercel/streamdown)；包为 `streamdown`，组件入口为 `Streamdown`。
 - **接入位置与理由：**[历史对话渲染](https://github.com/LouisGo/d-pi/blob/6fab3efd0526d2d716d7939b75202a88f857078a/src/renderer/src/main.tsx)曾在流式阶段显示纯文本，完成后用 `react-markdown`。需要在生成过程中稳定显示 Markdown 时，评估 Streamdown 对未闭合代码围栏、列表、表格和增量更新的处理。
 - **采用后仍需检查：**用真实 OMP 输出对照当前方案，检查不可信链接、中文、长代码块、CPU／内存、阅读旧消息时的滚动稳定性和终态内容一致性。它解决内容渲染；Host 的积压上限与消息顺序仍由本项目负责。

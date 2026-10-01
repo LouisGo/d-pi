@@ -5,7 +5,7 @@
 ## 当前工程落点（配置加固，2026-10-01）
 
 - OMP profile 复用发生在 `runtime/host.mjs` 的 `resolveProfileEnv`/`setProfile`；随包资源与固定版本清单在 `src/platform/omp/resources/`。
-- 执行侧配置上下文 `configContextId` 由 `src/modules/execution/main/runtime-service.ts` 按规范化目录与环境派生，不是第二份原生配置。
+- 执行侧配置上下文 `configContextId` 由 `src/modules/execution/main/runtime/runtime-service.ts` 按规范化目录与环境派生，不是第二份原生配置。
 - App 自有的主题、密度与 locale 偏好归 `src/modules/preferences/`，该模块不拥有 OMP 配置。
 - M2 入口由 `src/modules/configuration/` 接入；query key、IPC、Main 与 Bun 响应使用同一 scope/trace。Main 经 `threads/contracts/public.ts` 解析并复核目录，固定原生环境；application 使用独立探测目录。A 的异步读取不随活动 Thread 改为 B，删除或重关联返回 `stale-target`，错位回复不进入成功缓存。
 - `runtime/configuration.mjs` 在短生命周期包内 Bun 中区分只读 snapshot 和显式认证写入。snapshot 的 `configuration-readonly.mjs` 复用官方 `Settings.loadReadOnly`、AuthStorage 的内存凭据投影与 ModelRegistry 的私有临时缓存快照；本地文件/SQLite 事务有限、只读且关闭；正常 WAL 的已提交内容直接读取，原生 WAL/SHM 协调文件允许管理，不 checkpoint，缓存源通过 serialize 一致快照交给官方代码并在退出时清理临时库，不启动项目 Agent，不运行命令 key/helper、不联网、迁移或修复用户文件。原生 credential schema 8 经版本检查；不兼容、损坏、symlink、锁超时、remote auth、未观察账户目录以覆盖缺口返回，unknown 不冒称无认证。官方认证/合并规则仍由 OMP 拥有。
@@ -53,3 +53,5 @@ M2：验证子 Agent 默认配置与当前 Thread 覆盖在并行会话、取消
 2026-10-01 用户报告的 CLI 登录复用回归及两向验证见 [M2 配置复用修复](../../../.scratch/m2-first-release/configuration-sharing.md)；原 WAL 保守失败限制已被纠正，传输完成但覆盖不全的 snapshot 记录 unknown 和有界原因码，不再只记 confirmed。
 
 官方 ModelRegistry 因 JSON、版本或 materialization policy 拒收私有副本中的源缓存行时，snapshot 标记 partial / catalog-cache-rejected；不复制兼容规则，不修复源库，也不把目录缺口解释为认证失效。回归及准入证据见[七提交审查](../../../.scratch/review-seven-commits/spec.md)。
+
+2026-10-01 Renderer 内部整理：`settings/` 分离查询摘要、认证 hook 和进度呈现；父视图保持 hook 挂载，折叠不取消认证、续步按原 jobId，环境公开入口不变。

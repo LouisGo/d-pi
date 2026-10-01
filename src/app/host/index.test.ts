@@ -9,7 +9,7 @@ const native = vi.hoisted(() => ({
   rejectContinue: false,
   busy: false,
 }));
-vi.mock("../../modules/execution/host/native-session", () => ({
+vi.mock("../../modules/execution/host/native/native-session", () => ({
   NativeSession: class {
     constructor(
       _options: unknown,

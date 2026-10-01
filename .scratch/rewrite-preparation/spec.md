@@ -139,7 +139,7 @@ Zustand/Query 的推荐写法围绕实际责任建立：
 | --- | --- | --- |
 | [AppStorage 两段式初始化](../../src/app/main/wiring/app-storage.ts) | 内部保留明确恢复/迁移步骤，成功后才返回可用存储；失败关闭资源 | 顺序不变，失败无可用实例，已有合法数据仍可读取 |
 | [宽泛命令返回类型](../../src/app/contracts/desktop-bridge.ts) | 保留命令与结果关系，在边界校验；调用者不反复处理不属于该命令的结果 | 错配响应在边界被拒绝，真实错误原因和 trace 保留 |
-| [AppModel 状态与实例字段](../../src/app/renderer/model.ts) | 明确工作区准备完成保证哪些资源可用；展示状态与资源释放职责一致 | 初始化、重试、卸载和迟到回复不产生半成品工作区 |
+| [AppModel 状态与实例字段](../../src/app/renderer/wiring/model.ts) | 明确工作区准备完成保证哪些资源可用；展示状态与资源释放职责一致 | 初始化、重试、卸载和迟到回复不产生半成品工作区 |
 | [收据的状态与可选字段](../../src/modules/execution/contracts/submission.ts) | 用有意义的变体或状态转换表达关系，保留既有合法记录兼容性 | ACK 与执行结果分离，rejected 终态不回退，原因不串线 |
 | [原生事件名称包装](../../src/platform/omp/protocol/native-frame.ts) | 在消费边界解析已知 payload 的必要字段；未知事件保持开放 | 已知事件得到可用类型，未知事件不伪装成已知能力 |
 | [读取日志时序](../../src/app/main/ipc/project-reads.ts) | 起始阶段在 I/O 前记录，终态在实际完成或失败后记录 | 请求挂起时已有 received；终态、原因和耗时覆盖真实操作 |

@@ -12,15 +12,15 @@
 
 Zustand（vanilla store，`core` 不引入 React）：
 
-- [app/renderer/model.ts](../../src/app/renderer/model.ts)：整体替换语义用 `setState(state, true)`。
-- [execution/renderer/runtime-model.ts](../../src/modules/execution/renderer/runtime-model.ts)：新增 `disposed` 守卫与投影订阅。
-- [execution/renderer/submission-model.ts](../../src/modules/execution/renderer/submission-model.ts)：部分更新保留浅合并。
+- [app/renderer/model.ts](../../src/app/renderer/wiring/model.ts)：整体替换语义用 `setState(state, true)`。
+- [execution/renderer/runtime-model.ts](../../src/modules/execution/renderer/runtime/runtime-model.ts)：新增 `disposed` 守卫与投影订阅。
+- [execution/renderer/submission-model.ts](../../src/modules/execution/renderer/submission/submission-model.ts)：部分更新保留浅合并。
 - [conversation/core/model.ts](../../src/modules/conversation/core/model.ts)：水位/gap/重同步规则不变。
 - 四者都新增 `subscribeTo(selector, listener)`；`DraftController` 与 `I18nProvider` 有意不迁移（不是展示状态，见 spec 的迁移边界表）。
 
 TanStack Query：
 
-- [app/renderer/query-client.tsx](../../src/app/renderer/query-client.tsx)：单例 client 与 provider；默认 `staleTime: 0`、`retry: 3`、关闭窗口聚焦/重连隐式重取；注释记录"不用 mutation"的理由。
+- [app/renderer/query-client.tsx](../../src/app/renderer/wiring/query-client.tsx)：单例 client 与 provider；默认 `staleTime: 0`、`retry: 3`、关闭窗口聚焦/重连隐式重取；注释记录"不用 mutation"的理由。
 - [files/renderer/queries.ts](../../src/modules/files/renderer/queries.ts) 与 [changes/renderer/](../../src/modules/changes/renderer)：key、请求构造、hooks 与失效函数；全部 `networkMode: 'always'`。
 - [workbench/file-panel.tsx](../../src/app/renderer/workbench/file-panel.tsx)：4 个结果型 `useState` 与手写序号防串线改为 key 隔离。
 

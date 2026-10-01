@@ -1,6 +1,6 @@
 import { createRouter, type HistoryLocation } from "@tanstack/react-router";
 import { ThreadIdSchema } from "../../../shared/identity";
-import type { AppModel } from "../model";
+import type { AppModel } from "../wiring/model";
 import { createDesktopHistory } from "./desktop-history";
 import { routeTree } from "./route-tree.gen";
 

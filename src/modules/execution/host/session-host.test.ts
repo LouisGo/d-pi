@@ -2,8 +2,11 @@ import { afterEach, expect, it, vi } from "vitest";
 import { ThreadIdSchema } from "../../../shared/identity";
 import type { HostMessage, HostStart } from "../contracts/public";
 import { FrozenSubmissionSchema } from "../contracts/public";
-import type { NativeObservation, NativeSessionOptions } from "./native-session";
-import { NativeSession } from "./native-session";
+import type {
+  NativeObservation,
+  NativeSessionOptions,
+} from "./native/native-session";
+import { NativeSession } from "./native/native-session";
 import { createSessionHost } from "./session-host";
 
 const native = vi.hoisted(() => ({
@@ -12,7 +15,7 @@ const native = vi.hoisted(() => ({
   close: vi.fn(),
   controlRequest: vi.fn(),
 }));
-vi.mock("./native-session", () => ({
+vi.mock("./native/native-session", () => ({
   NativeSession: class {
     constructor(
       private options: NativeSessionOptions,

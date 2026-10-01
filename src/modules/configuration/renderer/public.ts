@@ -1,2 +1,2 @@
 export { configurationSnapshotQuery } from "./queries";
-export { ConfigurationSettings } from "./settings";
+export { ConfigurationSettings } from "./settings/settings";

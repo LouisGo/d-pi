@@ -3,7 +3,7 @@ import { spawn, spawnSync } from "node:child_process";
 import { cpSync, mkdirSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { join, resolve } from "node:path";
-import { createTestEnvironment } from "../../scripts/test-environment.mjs";
+import { createTestEnvironment } from "../../scripts/testing/test-environment.mjs";
 
 // A disposable local-provider trial, not a real supplier or model evaluation.
 // The unmodified package owns all GUI, receipts, SDK tools and native queue work.

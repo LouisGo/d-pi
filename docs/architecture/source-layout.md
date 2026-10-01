@@ -31,3 +31,9 @@ pnpm report:structure
 `check:architecture` 是失败即阻断的边界检查；`test:architecture` 运行真实 CLI 的正/负例；`report:structure` 只提示覆盖和规模热点，不以行数制造抽象或失败。行为、事务、恢复顺序、OMP 所有权仍由领域测试和切片验收负责。
 
 当前源码扫描范围为 `src` 与 `runtime`：`src/modules`、`src/app`、`src/platform`、`src/shared` 与 `runtime` 均由领域清单登记；结构报告应保持生产源码 `unowned=0`，例外清单为空。Renderer 的 i18n、设计 lint 和 Tailwind source 扫描均显式覆盖 `src/modules/*/renderer`。新增模块、环境或跨模块依赖必须同步更新机器清单及对应模块 AI 规则，不得通过扩大路径例外绕过门禁。
+
+## 职责分组与工程脚本（2026-10-01）
+
+环境内存在独立职责时再分组，采用实际功能名（例如 execution 的 runtime / submission / transport，input 的 editor / clipboard / references），公开入口保持原环境 `public.ts`。Main 和 Renderer 的具体落点见 [`src/app/AGENTS.md`](../../src/app/AGENTS.md)。测试与实现就近；涉及应用仓储与领域运行的组合测试放 `tests/integration/`。小而单一的目录不增加空层级，共同生命周期状态不按行数拆分。
+
+`scripts/checks/` 管环境、依赖、文档、设计与文案检查，`scripts/runtime/` 管 OMP/SDK 资源准备，`scripts/tasks/` 管本地任务及总看板，`scripts/testing/` 管受控测试运行环境；既有 `scripts/architecture/` 保持边界扫描与报告，`git-hooks.mjs` 保持单独入口。统一从仓库根执行现有 pnpm 命令；不依赖调用者的用户数据和认证环境。脚本及 fixture 的相对路径随迁移收齐，历史验证的已记录命令和哈希保留。

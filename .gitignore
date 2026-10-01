@@ -5,7 +5,7 @@ dist/
 *.log
 /.archify/
 
-# Managed official Runtime binary; reproducible through scripts/fetch-runtime.mjs.
+# Managed official Runtime binary; reproducible through scripts/runtime/fetch-runtime.mjs.
 /resources/omp/omp
 /resources/omp/omp.download
 

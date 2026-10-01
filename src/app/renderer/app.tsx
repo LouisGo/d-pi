@@ -1,8 +1,8 @@
 import { RouterProvider } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import type { WorkbenchProps } from "./app-layout";
 import { createAppRouting } from "./routing/router";
 import { EditorAdapterContext } from "./workbench/editor-context";
+import type { WorkbenchProps } from "./workbench/types";
 
 export function App({ model, editor }: WorkbenchProps) {
   const [routing] = useState(() => createAppRouting(model));

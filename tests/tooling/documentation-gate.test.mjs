@@ -4,7 +4,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { test } from "node:test";
-import { checkDocumentation } from "../../scripts/check-documentation.mjs";
+import { checkDocumentation } from "../../scripts/checks/check-documentation.mjs";
 
 function fixture(t, files) {
   const root = mkdtempSync(join(tmpdir(), "d-pi-doc-gate-"));
@@ -74,7 +74,10 @@ test("CLI checks new untracked entries while excluding raw evidence and experime
   const result = spawnSync(
     process.execPath,
     [
-      resolve(import.meta.dirname, "../../scripts/check-documentation.mjs"),
+      resolve(
+        import.meta.dirname,
+        "../../scripts/checks/check-documentation.mjs",
+      ),
       "--root",
       root,
     ],

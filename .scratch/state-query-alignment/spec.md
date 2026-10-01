@@ -55,9 +55,9 @@
 
 | 现有实现 | 是否迁移 | 理由 |
 | --- | --- | --- |
-| [AppModel](../../src/app/renderer/model.ts)（视图状态、草稿/偏好/忙碌/通知） | 迁移 | Renderer 展示状态与细粒度订阅，正是无头合同交给 Zustand 的部分 |
-| [RuntimeModel](../../src/modules/execution/renderer/runtime-model.ts)（执行镜像、代次、失败视图） | 迁移 | 客户端执行镜像；不成为 OMP 执行事实的拥有者 |
-| [SubmissionModel](../../src/modules/execution/renderer/submission-model.ts)（提交回执视图） | 迁移 | 回执落盘仍归 Main；此处只是消费结果的展示镜像 |
+| [AppModel](../../src/app/renderer/wiring/model.ts)（视图状态、草稿/偏好/忙碌/通知） | 迁移 | Renderer 展示状态与细粒度订阅，正是无头合同交给 Zustand 的部分 |
+| [RuntimeModel](../../src/modules/execution/renderer/runtime/runtime-model.ts)（执行镜像、代次、失败视图） | 迁移 | 客户端执行镜像；不成为 OMP 执行事实的拥有者 |
+| [SubmissionModel](../../src/modules/execution/renderer/submission/submission-model.ts)（提交回执视图） | 迁移 | 回执落盘仍归 Main；此处只是消费结果的展示镜像 |
 | [ConversationModel](../../src/modules/conversation/core/model.ts)（阅读投影、水位、gap） | 迁移 | 阅读投影模型；generation/seq/gap 证据规则不变 |
 | [DraftController](../../src/modules/input/core/draft-controller.ts)（保存协调、revision 竞争） | **不迁移** | 它是保存协调与竞争判定，不是展示状态；换库会改变 D-24 相关语义而无收益 |
 | [I18nProvider](../../src/modules/preferences/renderer/i18n-provider.tsx) | **不迁移** | 它是 React context provider 与已有 bridge 订阅的生命周期绑定，不是全局 store |

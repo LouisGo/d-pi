@@ -5,8 +5,8 @@ import {
 } from "../../modules/preferences/renderer/public";
 import type { DesktopBridge } from "../contracts/desktop-bridge";
 import { App } from "./app";
-import { AppModel } from "./model";
-import { QueryProvider } from "./query-client";
+import { AppModel } from "./wiring/model";
+import { QueryProvider } from "./wiring/query-client";
 import { fileEditor } from "./workbench/editor";
 import "./styles/app.css";
 

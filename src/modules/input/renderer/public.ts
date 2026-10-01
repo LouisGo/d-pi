@@ -1,9 +1,12 @@
-export { DraftEditorCache } from "./draft-editor-cache";
-export { FileReference } from "./file-reference-node";
+export {
+  createClipboardPaste,
+  handlePlainTextPaste,
+} from "./clipboard/plain-text-paste";
+export { DraftEditorCache } from "./editor/draft-editor-cache";
 export {
   draftDocument,
   plainTextEditorOptions,
   replaceDraftText,
-} from "./plain-text-editor";
-export { createClipboardPaste, handlePlainTextPaste } from "./plain-text-paste";
-export { appendSelectionReference } from "./selection-insert";
+} from "./editor/plain-text-editor";
+export { FileReference } from "./references/file-reference-node";
+export { appendSelectionReference } from "./references/selection-insert";

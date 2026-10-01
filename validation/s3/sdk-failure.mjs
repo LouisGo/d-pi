@@ -4,7 +4,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import { resolve } from "node:path";
 import { createInterface } from "node:readline";
-import { createTestEnvironment } from "../../scripts/test-environment.mjs";
+import { createTestEnvironment } from "../../scripts/testing/test-environment.mjs";
 
 // No provider credentials are available. A localhost endpoint also makes an
 // unexpected model call observable without sending fixture content elsewhere.

@@ -1,3 +1,3 @@
-import type { WorkbenchProps } from "../app-layout";
+import type { AppModel } from "../wiring/model";
 
-export type RoutingContext = Pick<WorkbenchProps, "model">;
+export type RoutingContext = { model: AppModel };

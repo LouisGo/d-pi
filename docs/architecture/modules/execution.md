@@ -55,3 +55,5 @@ Main 收据和冻结内容跨窗口/重启保留。Host 的请求映射随原生
 
 
 2026-10-01 的实现与验证见 [03 证据](../../../.scratch/runtime-hardening-omp1845/evidence/native-outcomes.md)：真实固定 SDK/localhost RPC 录制、真实原生关联类的受控旧 run 样本与 App Decoder→NativeSession→SessionHost→RuntimeService→SQLite 回放分开记录。未调用个人账户或计费供应商，不把该证据当完整 M2/用户认可。
+
+2026-10-01 内部整理：core 按 runtime / submission，Main 按 runtime / transport / submission，Host 按 native / interactions，Renderer 按 runtime / submission 分组；SessionHost 与 RuntimeService 继续单独拥有各自共同因果状态。环境公开入口与既有事务、ACK、恢复合同不变。

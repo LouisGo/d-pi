@@ -2,9 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useContext } from "react";
 import { useStore } from "zustand";
 import { ThreadIdSchema } from "../../../shared/identity";
-import { ThreadWorkbench } from "../app-layout";
 import { readingSearch } from "../routing/search";
 import { EditorAdapterContext } from "../workbench/editor-context";
+import { ThreadWorkbench } from "../workbench/thread-workbench";
 
 export const Route = createFileRoute("/threads/$threadId")({
   params: {

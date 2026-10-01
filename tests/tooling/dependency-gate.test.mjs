@@ -9,7 +9,7 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { test } from "node:test";
-import { inspectEnvironment } from "../../scripts/check-environment.mjs";
+import { inspectEnvironment } from "../../scripts/checks/check-environment.mjs";
 
 const root = resolve(import.meta.dirname, "../..");
 const baseline = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));

@@ -10,7 +10,7 @@ import {
 } from "node:fs";
 import { join, resolve } from "node:path";
 import { createInterface } from "node:readline";
-import { createTestEnvironment } from "../../scripts/test-environment.mjs";
+import { createTestEnvironment } from "../../scripts/testing/test-environment.mjs";
 
 const isolated = createTestEnvironment({ prefix: "d-pi-model-capabilities-" });
 const sdk = resolve("resources/sdk");

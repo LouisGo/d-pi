@@ -19,8 +19,8 @@ import {
   type SubmissionRejectionReason,
 } from "../contracts/public";
 import { changesManagedSession } from "../core/public";
-import { PendingInteractions } from "./interactions";
-import { type NativeObservation, NativeSession } from "./native-session";
+import { PendingInteractions } from "./interactions/interactions";
+import { type NativeObservation, NativeSession } from "./native/native-session";
 
 export interface HostMessagePort {
   start(): void;

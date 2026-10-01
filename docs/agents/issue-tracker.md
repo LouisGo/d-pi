@@ -46,7 +46,7 @@ Wayfinder 可用 `.scratch/<effort>/map.md` 汇总 Notes / Decisions-so-far / Fo
 
 ## 总看板读取约定
 
-固定入口是 [docs/status.md](../status.md)。只对需要汇总的阶段/切片，在所属 `spec.md` 增加一个 `project-status` JSON 数组围栏块；不要求全部 Markdown 改成 frontmatter。字段枚举与读取单源在 [聚合脚本](../../scripts/project-status.mjs)，正文继续维护范围、理由和实际证据。历史记录有日期，结构字段表达现态，旧 frontmatter `status` 不再承担另一套进度。
+固定入口是 [docs/status.md](../status.md)。只对需要汇总的阶段/切片，在所属 `spec.md` 增加一个 `project-status` JSON 数组围栏块；不要求全部 Markdown 改成 frontmatter。字段枚举与读取单源在 [聚合脚本](../../scripts/tasks/project-status.mjs)，正文继续维护范围、理由和实际证据。历史记录有日期，结构字段表达现态，旧 frontmatter `status` 不再承担另一套进度。
 
 每条记录有稳定 `id`（在 `phase` 内唯一）、`title`、`phase`（G1/M1/M2/M3/基建）、`engineering`（planned/in-progress/partial/complete）、`trial`（not-delivered/delivered/feedback/not-applicable）、`acceptance`（pending/accepted/not-applicable）和 `next`。可选 `build` 表示实际可识别构建，`evidence` 与 `pending` 为相对 spec 的文件路径，`constraints` 记录继续边界；只有当前任务的记录使用 `current: true`。accepted 必须有试用与用户反馈证据，Agent 不推断认可。
 

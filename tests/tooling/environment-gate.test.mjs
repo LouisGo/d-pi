@@ -15,7 +15,7 @@ import {
   inspectEnvironment,
   inspectSdk,
   probeTool,
-} from "../../scripts/check-environment.mjs";
+} from "../../scripts/checks/check-environment.mjs";
 
 function fixture(t, files) {
   const root = mkdtempSync(join(tmpdir(), "d-pi-env-gate-"));

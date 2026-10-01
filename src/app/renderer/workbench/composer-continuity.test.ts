@@ -12,7 +12,7 @@ import {
   type DesktopBridge,
   parseDesktopReply,
 } from "../../contracts/desktop-bridge";
-import { AppModel } from "../model";
+import { AppModel } from "../wiring/model";
 import { Composer } from "./composer";
 
 const mounted: { root: Root; container: HTMLElement; model: AppModel }[] = [];

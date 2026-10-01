@@ -6,3 +6,12 @@
 - Runtime/Host 拆分以状态所有权和生命周期为准，不为目录或行数制造第二套 service、队列或状态。
 - ACK、精确 prompt_result、本地响应完成与 session settled 是独立证据；不按 agent_end/idle 猜逐提交结果，迟到 error 不提前释放已接受请求关联。
 - schema 6 收据仅存有限结果观察；Main commit 后确认 evidenceId，同活 Host 有界重送事实，不重送 prompt。未确认证据阻止正常 idle 回收，原生闲置不代表证据已持久。已确认身份有界保留且不含正文，重复终态与迟到错误仍核对完整身份。持久失败、缓存满/超时、无关联结果和 Host 再崩溃保留覆盖缺口。
+
+## 内部落点
+
+- `core/runtime/` 维护执行准入，`core/submission/` 维护提交准入、协调与原生命令策略。
+- `main/runtime/` 监督运行，`main/transport/` 管 Host 连接，`main/submission/` 持久收据。
+- `host/native/` 管原生进程和启动，`host/interactions/` 管待答交互；`session-host.ts` 保留共同关联与恢复状态的 owner。
+- `renderer/runtime/` 与 `renderer/submission/` 分别维护客户端投影，不因目录分开改变提交与执行的合同。
+
+公开面保持各环境 `public.ts`，内部相对导入；测试与所属实现就近。AppStorage 与 RuntimeService 的跨域组合验证放 `tests/integration/`。

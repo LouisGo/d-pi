@@ -5,7 +5,7 @@ import {
   type DesktopBridge,
   parseDesktopReply,
 } from "../../contracts/desktop-bridge";
-import { AppModel } from "../model";
+import { AppModel } from "../wiring/model";
 import { createAppRouting } from "./router";
 import { readingSearch } from "./search";
 

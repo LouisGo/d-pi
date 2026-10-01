@@ -2,7 +2,7 @@ export {
   type NativeObservation,
   NativeSession,
   type NativeSessionOptions,
-} from "./native-session";
+} from "./native/native-session";
 export {
   createSessionHost,
   type HostMessagePort,

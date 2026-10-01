@@ -5,7 +5,7 @@ import { dirname, join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { AppStorage } from "../../src/app/main/wiring/app-storage";
 import { SubmissionIdSchema } from "../../src/modules/execution/contracts/public";
-import { RuntimeService } from "../../src/modules/execution/main/runtime-service";
+import { RuntimeService } from "../../src/modules/execution/main/runtime/runtime-service";
 import { TraceIdSchema } from "../../src/shared/identity";
 
 export async function databaseStop(

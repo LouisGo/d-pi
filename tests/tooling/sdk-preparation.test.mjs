@@ -15,7 +15,10 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { test } from "node:test";
 
-const script = resolve(import.meta.dirname, "../../scripts/prepare-sdk.mjs");
+const script = resolve(
+  import.meta.dirname,
+  "../../scripts/runtime/prepare-sdk.mjs",
+);
 const officialSource = readFileSync(
   resolve(
     import.meta.dirname,

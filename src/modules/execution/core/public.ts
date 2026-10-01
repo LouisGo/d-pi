@@ -3,14 +3,14 @@ export {
   type AdmissionStore,
   RuntimeAdmission,
   sameDirectoryIdentity,
-} from "./admission";
-export { changesManagedSession } from "./native-command-policy";
+} from "./runtime/admission";
+export { changesManagedSession } from "./submission/native-command-policy";
 export {
   canSubmit,
   QUEUE_CAP,
   queueCapped,
   queueCount,
-} from "./submission-admission";
+} from "./submission/submission-admission";
 export {
   type NativeSubmissionPort,
   SUBMISSION_FRAME_BUDGET,
@@ -18,5 +18,5 @@ export {
   type SubmissionDiagnostic,
   type SubmissionResult,
   type SubmissionStore,
-} from "./submission-coordinator";
-export { sameSubmissionTarget } from "./target";
+} from "./submission/submission-coordinator";
+export { sameSubmissionTarget } from "./submission/target";

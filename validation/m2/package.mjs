@@ -11,7 +11,7 @@ import {
 import { createServer } from "node:http";
 import { join, resolve } from "node:path";
 import { DatabaseSync } from "node:sqlite";
-import { createTestEnvironment } from "../../scripts/test-environment.mjs";
+import { createTestEnvironment } from "../../scripts/testing/test-environment.mjs";
 
 const isolated = createTestEnvironment({ prefix: "d-pi-m2-package-" });
 const source = resolve(

@@ -18,6 +18,7 @@
 | `src/modules/conversation/` | 实时阅读合同、核心订阅模型、Host 投影/端口作用域和原生历史读取；不启动或恢复执行 |
 | `src/modules/execution/` | 提交收据、准入、控制、交互、Host/OMP 适配和 Renderer 镜像；不复制 OMP 队列或历史，也不构造阅读模型 |
 | `src/app/` | Main/Host/Preload/Renderer 入口、跨域事务组合、桌面桥和 workbench；不复制领域真相 |
+| `src/app/renderer/{wiring,shell,routes,routing,workbench,reading,components,styles}/` | 按应用装配、外壳、路由、Thread 交互、阅读呈现及共享 UI 分组；入口和就近测试规则见 [`src/app/AGENTS.md`](../../../src/app/AGENTS.md) |
 | `src/platform/` | SQLite、诊断、真实路径、OMP 协议/资源和消费门控等技术适配；不承载产品用例 |
 | `src/shared/` | 稳定身份、消息 DTO、i18n formatter/catalog 和纯文本基础；Node 文件系统能力已归 `platform/node` |
 | `runtime/` | 随包 OMP/SDK 的薄宿主 `host.mjs` 和短生命周期配置/认证适配 `configuration.mjs`、无写读取 `configuration-readonly.mjs` 与原生能力映射 `model-selection.mjs`；不承载产品用例 |
@@ -45,7 +46,7 @@ P1 落地的跨模块路径有两条：`files → input`（选区冻结与引用
 | --- | --- | --- | --- |
 | [宿主与 OMP 接入](runtime-host.md) | `runtime/host.mjs`、`src/modules/execution/host`、`src/platform/omp`、`src/app/host` | 进程监督、受限通道、协议解码、原生请求关联、实例恢复 | M1 核心；不重建 OMP 执行循环 |
 | [App 存储与内容](app-storage.md) | `src/platform/main/storage`、`src/app/main/wiring` | SQLite 写入、迁移恢复、私有内容文件及引用一致性 | M1 核心；驱动和具体表结构在持久化切片确定 |
-| [配置、模型与认证](configuration.md) | `runtime/host.mjs`（OMP profile）、`src/platform/omp/resources`、`src/modules/execution/main`；App 偏好归 `src/modules/preferences` | 原生配置复用、配置上下文、模型能力、新用户认证 | M1 已有配置；M2 两条新增认证与子 Agent Thread 配置覆盖；GUI 认证入口尚未实现 |
+| [配置、模型与认证](configuration.md) | `src/modules/configuration`、`runtime/configuration*.mjs` 与 `runtime/host.mjs`（OMP profile）；资源归 `src/platform/omp/resources`，App 偏好归 `src/modules/preferences` | 原生配置复用、配置上下文、模型能力、新用户认证 | M1 已有配置；M2 两条新增认证入口已接入，子 Agent Thread 配置覆盖后续逐项交付 |
 | [项目、工作目录与 Thread](threads.md) | `src/modules/threads` | 稳定身份、目录关系、执行准入、原生记录绑定与恢复入口 | M1 数据模型；M2 多 Thread 界面 |
 | [输入与上下文](input-context.md) | `src/modules/input`、`src/app/renderer/workbench`（应用级组合） | 编辑接入、草稿、引用、内容准备与冻结 | M1 文字/选区；M2 全部指定输入 |
 | [提交与执行交互](execution.md) | `src/modules/execution` | 提交收据、接受证据、排队/干预/停止和待答交互 | M1 核心；M2 完整队列管理 |
@@ -105,7 +106,7 @@ flowchart TB
 | --- | --- | --- |
 | 权限与信任 | [基础契约 §5](../foundation-contracts.md#5-最小权限与信任b5) | Thread 管授权记录；文件/启动/配置等操作入口各自执行所需检查。App 读取与项目执行为两个独立设置 |
 | 类型与数据边界 | [TypeScript 合同](../typescript.md) | 公开业务 DTO 可序列化，schema 推导类型；边界用 Zod v4，可信内部不重复 parse；业务分支用 ts-pattern 穷尽处理 |
-| 状态与异步查询 | [无头功能合同 §4](../headless-features.md)、D-37 | 展示状态用 Zustand vanilla store（`core` 不引入 React，React 绑定只在 `renderer`），按实体选择器订阅；只读异步查询用 TanStack Query，本地 IPC 显式 `networkMode: 'always'`；Query 单例与 provider 由 `src/app/renderer/query-client.tsx` 持有，视图只读缓存与失效；发送类副作用不进 Query 重试 |
+| 状态与异步查询 | [无头功能合同 §4](../headless-features.md)、D-37 | 展示状态用 Zustand vanilla store（`core` 不引入 React，React 绑定只在 `renderer`），按实体选择器订阅；只读异步查询用 TanStack Query，本地 IPC 显式 `networkMode: 'always'`；Query 单例与 provider 由 `src/app/renderer/wiring/query-client.tsx` 持有，视图只读缓存与失效；发送类副作用不进 Query 重试 |
 | 错误与诊断 | [诊断合同](../diagnostics.md) | Main 管设施；操作拥有者决定恢复；实际跨进程路径传同一 traceId，日志失败不改业务结果 |
 | UI 组合 | Base UI / 自有组件 API、[图标合同](../icon-system.md) | 薄绑定组合功能，Tiptap/Monaco 留在所属适配层；按[设计系统合同](../design-system.md)统一 token、主题/密度与组件覆盖边界，S1 起设计 lint；布局、焦点和面板不拥有后台任务 |
 | 构建与质量检查 | [M1 计划](../../../.scratch/development-foundation/spec.md) | 单应用，按切片接入严格 TS、Biome、行为检查与 macOS 包验证，不先搭通用框架 |

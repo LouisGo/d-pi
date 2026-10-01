@@ -1,0 +1,57 @@
+{
+  "source": "/Users/louistation/MySpace/Life/d-pi/dist/project-organization/mac-arm64/d-pi.app",
+  "bundle": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-ESizH7/Package With Spaces/d-pi.app",
+  "build": {
+    "version": "0.1.0-m2.9",
+    "commit": "1bf146b4d584783b50e4fc5de5ce9e771f4baeb5",
+    "dirty": true,
+    "id": "1bf146b4-dirty-14370b0a"
+  },
+  "root": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-ESizH7",
+  "checks": [
+    "full message_end displays finalized native text; manual near-bottom reading position survives draft input",
+    "actual Router search navigation retains Composer and all reading-pane DOM, draft and manual scroll position",
+    "native Electron editor restores middle selection and independent undo/redo across Thread switch",
+    "actual toolbar back/forward confirm Main selection and restore separate Thread drafts",
+    "trusted Chromium IME blocks actual toolbar POP and preserves Main selection",
+    "trusted Chromium composition in native Electron blocks Thread switch until composition ends; system input source not exercised",
+    "two parallel native OMP scopes; switching does not interrupt held work",
+    "separate model/effort, messages, drafts and session identities",
+    "renderer reload reconnects same native sessions without resending",
+    "composer and send action stay inside window; switching reading view preserves draft",
+    "cold old native sessions remain read-only, preserve drafts; explicit new independent Thread is available"
+  ],
+  "screenshots": [
+    "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-ESizH7/m2-parallel-entry.png",
+    "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-ESizH7/m2-cold-new-thread.png"
+  ],
+  "providerCalls": 2,
+  "models": [
+    "fixture-b",
+    "fixture-a"
+  ],
+  "nativeSessions": [
+    {
+      "session_id": "01a0f776-b588-7000-ae72-db4c75bb2bd1",
+      "thread_id": "f100609a-a500-49a2-b8a7-126a1c570fbc"
+    },
+    {
+      "session_id": "01a0f776-be42-7000-a391-39c7851d6d8c",
+      "thread_id": "dd713fd5-ed4f-4006-ab76-64728b6f1c6b"
+    }
+  ],
+  "layout": {
+    "editorTop": 591.203125,
+    "editorBottom": 663,
+    "sendBottom": 715,
+    "readingHeight": 116.8046875,
+    "height": 748
+  },
+  "sourceAsarSha256": "192411c686c6252151ffc8b91c1018ffaa0da3dc5f6223a7250ecdb87e5de3e9",
+  "limitations": [
+    "uncommitted local engineering build; not a release or user acceptance",
+    "localhost deterministic supplier, no real credentials/billing",
+    "native inspection evidence recorded separately",
+    "M2 V1-04 and queue/subagent/read-performance increments remain open"
+  ]
+}

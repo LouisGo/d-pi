@@ -7,7 +7,7 @@
 | 内容 | 使用者与事实来源 | 维护边界 |
 | --- | --- | --- |
 | 仓库 `AGENTS.md`、`.agents/skills/` | 开发 d-pi 的 Agent；[项目路由](../../AGENTS.md)选择适用的源码、测试和合同约定 | 是开发方法，不是 App 的内置功能、原生插件清单或运行配置。修改不表示用户已认可产品行为。 |
-| 随包 OMP SDK、Bun 与依赖闭包 | 原生 OMP 进程；[package.json](../../package.json)、锁文件与 [资源准备](../../scripts/prepare-sdk.mjs) | 固定版本、未修改的官方源码；App 只拥有 [薄宿主](../../runtime/host.mjs) 和 [消费门控](../../src/platform/omp/consumption-gate.ts)，不复制原生执行、队列或历史。 |
+| 随包 OMP SDK、Bun 与依赖闭包 | 原生 OMP 进程；[package.json](../../package.json)、锁文件与 [资源准备](../../scripts/runtime/prepare-sdk.mjs) | 固定版本、未修改的官方源码；App 只拥有 [薄宿主](../../runtime/host.mjs) 和 [消费门控](../../src/platform/omp/consumption-gate.ts)，不复制原生执行、队列或历史。 |
 | OMP 原生配置、凭据、skills 与扩展 | OMP 按 profile、环境及实际工作目录发现；薄宿主先设置原生 profile 再导入 SDK | 默认复用已有原生配置。App 偏好和数据目录独立；`D_PI_DATA_DIR` 只隔离 App 数据，不隔离 OMP。 |
 | App 原生会话目录与绑定 | Main 管持久关联和会话目录，SessionHost 管连接；[宿主合同](../architecture/modules/runtime-host.md) | 原生历史仍由 OMP 写入。窗口重连与冷恢复不同；缺执行全周期单写证据时冷恢复只读。 |
 
@@ -28,7 +28,7 @@
 | 固定 SDK 实际行为 | `pnpm validate:sdk` 顺序运行 [队列控制](../../validation/s3/sdk-control.mjs)、[ACK 后失败](../../validation/s3/sdk-failure.mjs)、[原生结果](../../validation/s3/sdk-outcomes.mjs)与[关联/settled](../../validation/s3/sdk-prompt-correlation.mjs) | 本地 provider、隔离配置和临时项目。核实停止保留队列、较新停止压过 continue、同 session 显式继续只消费一次，以及同 ID 的 ACK 后失败；不证明真实供应商、个人扩展或冷恢复单写。 |
 | 随包集成与必要 GUI | [重写交接](../../.scratch/rewrite-preparation/handoff.md#验证与证据)、`node validation/s3/package.mjs <应用路径> --rewrite` | 对应构建的进程、资源、桥接、工具、窗口重载和中断/冷恢复。历史结果不是任意后来构建的验收；资源、原生路径或可见行为变化时才复核受影响路径。 |
 
-前两层纳入常规工程回归。实际 SDK 和包内检查有原生资源前置条件，按适配/资源变化或升级运行，不因普通文档修改重跑。`D_PI_NATIVE_SMOKE=1 pnpm test src/modules/execution/host/native-smoke.test.ts` 是保留的官方 **CLI artifact** 双轮冒烟，需要 `pnpm runtime:fetch`，不替代 SDK 路线检查。
+前两层纳入常规工程回归。实际 SDK 和包内检查有原生资源前置条件，按适配/资源变化或升级运行，不因普通文档修改重跑。`D_PI_NATIVE_SMOKE=1 pnpm test src/modules/execution/host/native/native-smoke.test.ts` 是保留的官方 **CLI artifact** 双轮冒烟，需要 `pnpm runtime:fetch`，不替代 SDK 路线检查。
 
 如需录制新证据，给实际 SDK 检查设置 `D_PI_NATIVE_EVIDENCE=<新的输出路径>`，可用 `SDK_ROOT=<独立 sdk 资源目录>`；不覆盖已经引用的历史样本。记录 SDK/Bun、平台、资源来源、fixture/真实供应商的区别、覆盖和未覆盖项，不写个人凭据、业务全文或私有项目材料。
 

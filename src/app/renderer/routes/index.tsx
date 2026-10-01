@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useStore } from "zustand";
-import { EmptyWorkbench } from "../app-layout";
+import { EmptyWorkbench } from "../shell/empty-workbench";
 
 export const Route = createFileRoute("/")({ component: Index });
 function Index() {

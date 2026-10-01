@@ -5,7 +5,7 @@ import { app } from "electron";
 import { z } from "zod";
 import { AppStorage } from "../../src/app/main/wiring/app-storage";
 import { SubmissionIdSchema } from "../../src/modules/execution/contracts/public";
-import { RuntimeService } from "../../src/modules/execution/main/runtime-service";
+import { RuntimeService } from "../../src/modules/execution/main/runtime/runtime-service";
 import { ThreadIdSchema, TraceIdSchema } from "../../src/shared/identity";
 import { databaseStop } from "./process-database-stop";
 

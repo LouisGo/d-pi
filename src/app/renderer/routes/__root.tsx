@@ -1,6 +1,6 @@
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
-import { ApplicationLayout } from "../app-layout";
 import type { RoutingContext } from "../routing/context";
+import { ApplicationLayout } from "../shell/application-layout";
 
 export const Route = createRootRouteWithContext<RoutingContext>()({
   component: Root,

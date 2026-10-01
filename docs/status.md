@@ -20,6 +20,7 @@
 | 基建 | [国际化基础](../.scratch/i18n-foundation/spec.md) | 工程完成 | 已交付待试用 | 待认可 | 0.1.0-i18n.0 [证据1](../.scratch/i18n-foundation/handoff.md) | 等待热切换与输入体验反馈 |
 | 基建 | [S5 前基建收口](../.scratch/infrastructure-closure/spec.md) | 工程完成 | 未交付 | 不适用 | 3285474e-dirty-1f488792（工程安全候选） [证据1](../.scratch/infrastructure-closure/handoff.md) | 本轮已完成；S5 按新授权进入所属规格，M2 未启动 |
 | 基建 | [OMP 18.4.6 升级与运行时边界加固](../.scratch/runtime-hardening-omp1845/spec.md) | 工程完成 | 已交付待试用 | 待认可 | 0.1.0-m2.7 / 24f086e7-fa83a4f5 [证据1](../.scratch/runtime-hardening-omp1845/handoff.md) · [证据2](../.scratch/runtime-hardening-omp1845/evidence.md) | 完整切片已本地交付；等待用户试用，M2其它能力与S3退出待决继续留原票 |
+| 基建 | [全项目组织整理](../.scratch/project-organization/spec.md) | 工程完成 | 不适用 | 不适用 | — [证据1](../.scratch/project-organization/spec.md) | 组织整理与工程验证完成；继续按职责落点维护，新功能由所属切片授权 |
 | 基建 | [核心重写及外观补修](../.scratch/rewrite-preparation/spec.md) | 工程完成 | 已交付待试用 | 待认可 | 441b27b4-1525b713 / 2b1990fa-6a10f88e [证据1](../.scratch/rewrite-preparation/handoff.md) · [证据2](../.scratch/rewrite-preparation/issues/09-appearance-performance.md) | 构建继续待试用；当前实施转到基建收口 |
 | 基建 | [类型安全桌面路由](../.scratch/router-integration/spec.md) | 工程完成 | 已交付待试用 | 待认可 | 0.1.0-m2.9 / acf535c4-88948e3f [证据1](../.scratch/router-integration/issues/01-routing.md) · [证据2](../.scratch/router-integration/review.md) · [证据3](../.scratch/router-integration/handoff.md) · [证据4](../.scratch/router-integration/evidence/native-result.json) | 试用本地 macOS 候选：页签、会话切换和前进后退；用户认可待反馈 |
 | 基建 | [状态与查询对齐](../.scratch/state-query-alignment/spec.md) | 工程完成 | 已交付待试用 | 待认可 | 441b27b4-1525b713（随重写包） [证据1](../.scratch/rewrite-preparation/handoff.md) · [证据2](../.scratch/state-query-alignment/issues/04-integration-verification.md) | 04 含试用验收，继续 claimed 等待反馈 |
@@ -51,8 +52,9 @@
 - [M2 首版](../.scratch/m2-first-release/spec.md)：仅本地 commit/候选，不 push、不公开发布、不扩 M3；冷恢复只读，unknown 不自动重发；S3 退出放弃待决仅暂停依赖部分。
 - [S5 前基建收口](../.scratch/infrastructure-closure/spec.md)：只本地 commit、不 push 或公开发布；许可证由权利人决定，签名/公证/更新尚未实施。
 - [OMP 18.4.6 升级与运行时边界加固](../.scratch/runtime-hardening-omp1845/spec.md)：2026-10-01 用户认可方案及实施范围，允许合理分工与适量 sub agent；本次从4d294e0实施；随后授权18.4.6及唯一导入修正。保留冷恢复只读、unknown 不自动重发和同目录多 Thread 基线。
+- [全项目组织整理](../.scratch/project-organization/spec.md)：保留领域公开面、资源所有权、持久化事务和恢复顺序；历史证据不改写。
 - [核心重写及外观补修](../.scratch/rewrite-preparation/spec.md)：同题复测未证明接手效率提升；真实供应商、系统 IME 与用户体验未认可。
 - [类型安全桌面路由](../.scratch/router-integration/spec.md)：本地实施和提交；不 push、不改变 OMP 执行及冷恢复政策。
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 
-<!-- source-sha256: 711eeeae0cac0ed736acbd16872df5b126544f1cf9e026a500955f6ffafca284; sources: 88 -->
+<!-- source-sha256: 04b66c336c614aa5335805f79909a7248d6c3bb68199db9f1ee643bbd1b1ada2; sources: 89 -->

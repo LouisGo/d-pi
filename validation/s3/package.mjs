@@ -13,7 +13,7 @@ import {
 import { createServer } from "node:http";
 import { join, resolve } from "node:path";
 import { DatabaseSync } from "node:sqlite";
-import { createTestEnvironment } from "../../scripts/test-environment.mjs";
+import { createTestEnvironment } from "../../scripts/testing/test-environment.mjs";
 
 const combination = process.argv.includes("--s5");
 const rewriting = combination || process.argv.includes("--rewrite");

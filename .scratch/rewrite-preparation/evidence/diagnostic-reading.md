@@ -4,10 +4,10 @@
 
 ## 当前实际链路
 
-- [Renderer 桌面模型](../../../src/app/renderer/model.ts)生成 trace，经[preload](../../../src/app/preload/index.ts)的 envelope 进入 [Main](../../../src/app/main/index.ts)。preload 的 `initiated`、`confirmed`、`acknowledgement-failed` 与 Main 的 `received`、`completed`/`failed`复用同一 trace/request/connection；preload 观察由 Main Writer 落盘，`observedAt: "preload"`不等于独立 Renderer 日志。
+- [Renderer 桌面模型](../../../src/app/renderer/wiring/model.ts)生成 trace，经[preload](../../../src/app/preload/index.ts)的 envelope 进入 [Main](../../../src/app/main/index.ts)。preload 的 `initiated`、`confirmed`、`acknowledgement-failed` 与 Main 的 `received`、`completed`/`failed`复用同一 trace/request/connection；preload 观察由 Main Writer 落盘，`observedAt: "preload"`不等于独立 Renderer 日志。
 - [文件](../../../src/modules/files/renderer/queries.ts)/[Git](../../../src/modules/changes/renderer/queries.ts)查询生成请求 trace，前端失败对象保留该 trace 与 `attribution: "unknown"`。[Main 只读入口](../../../src/app/main/ipc/project-reads.ts)在 I/O 前记录 received，之后记录 completed/failed 与耗时；Main 生成 requestId、以 Writer 实例作为 connectionId。当前 history 读取没有同样的 trace 接线。
-- [提交协调器](../../../src/modules/execution/core/submission-coordinator.ts)的日志来自持久化收据，保留 submission/request/Thread/连接代次/目标实例 UUID。[SessionHost](../../../src/modules/execution/host/session-host.ts)保留冻结提交的 trace，并按 prompt ID 与目标关联 ACK/error；ACK 事件本身不带 trace，Main 用被验证的 requestId 与 target 找到收据 trace，不能只靠响应自报 trace 接受它。
-- [运行控制入口](../../../src/app/main/ipc/execution.ts)记录 Main 接收与派发结果；Host 的 `operation-result`保留命令 trace/generation，[RuntimeService](../../../src/modules/execution/main/runtime-service.ts)校验当前 generation 后记录终态。这个返回记录的 requestId 当前取 traceId，不能与入口新生成的 Main requestId 强行视为同一个 span。
+- [提交协调器](../../../src/modules/execution/core/submission/submission-coordinator.ts)的日志来自持久化收据，保留 submission/request/Thread/连接代次/目标实例 UUID。[SessionHost](../../../src/modules/execution/host/session-host.ts)保留冻结提交的 trace，并按 prompt ID 与目标关联 ACK/error；ACK 事件本身不带 trace，Main 用被验证的 requestId 与 target 找到收据 trace，不能只靠响应自报 trace 接受它。
+- [运行控制入口](../../../src/app/main/ipc/execution.ts)记录 Main 接收与派发结果；Host 的 `operation-result`保留命令 trace/generation，[RuntimeService](../../../src/modules/execution/main/runtime/runtime-service.ts)校验当前 generation 后记录终态。这个返回记录的 requestId 当前取 traceId，不能与入口新生成的 Main requestId 强行视为同一个 span。
 - RuntimeService 在 Host interrupted/failed 时记录 `runtime:host + disconnected/failed`，在 utility Host exit 时记录 `runtime:host + exited`；这是 Main 对 Host 的监督观察，Host 没有独立 Writer。生命周期 trace/request 使用 RuntimeView.traceId，按 generation/connectionId 关联该实例，未必与某个提交 trace 相同。已知安全 code 只保留 spawn/protocol/exit/write/state-unavailable/active-work/runtime-unavailable，其他原因记 unknown。
 
 Main Writer [实际 schema](../../../src/platform/main/diagnostics/diagnostics.ts)使用 `time`、`operation`、`stage`、`process: "main"`、`build`，不使用设计中的 timestamp/eventName/phase/level。span/parentSpan、eventId/seq、完整 appSession/采样/因果 links、Renderer/Host 独立采集身份仍未实现。目标实例 UUID 由 Main 生成并经 ready 校验，不是 OS pid；未有 Host 独立日志时不填写一个虚构的 Host process 来源。
@@ -28,7 +28,7 @@ export DP_TRACE='9c99945e-f527-4eda-a8f5-84a5dd479556'
 
 - prepared：原文和目标身份已持久化；dispatching：派发门已持久化，尚不证明原生接受。
 - acknowledged：关联 prompt 的调用确认已持久化；每条协调器日志同时带 receiptState/outcome，ACK 后 outcome failed/unknown 都合法。rejected 原因只属于该 attempt；旧的无原因 rejected 行继续合法。
-- disconnected：传输不可继续；[NativeSession](../../../src/modules/execution/host/native-session.ts)的 exited 是原生子进程 close 的独立确认，即使先断连，后续 close 仍发出 exited。Main `runtime:host + exited`是 utility Host 退出观察，不能扩大为官方 Native 执行全生命周期单写证据。不能把断连当作进程死亡，也不能据此释放执行所有权或重发 unknown。
+- disconnected：传输不可继续；[NativeSession](../../../src/modules/execution/host/native/native-session.ts)的 exited 是原生子进程 close 的独立确认，即使先断连，后续 close 仍发出 exited。Main `runtime:host + exited`是 utility Host 退出观察，不能扩大为官方 Native 执行全生命周期单写证据。不能把断连当作进程死亡，也不能据此释放执行所有权或重发 unknown。
 
 RuntimeService.onExit 逐真实 in-flight 收据记录 `submit + stage: unknown + code: host-exited`，保留该收据原 trace/request/target，并带更新后的 receiptState/outcome。例如接受后 Host 退出可读到 `receiptState: acknowledged + outcome: unknown`；stage unknown 不表示 ACK 被撤销，已有 failed 也不被覆盖。要找实例的 `runtime:host`监督观察，按同一 connectionId 扩大筛选，再核对 build/Writer/Thread，不将不同生命周期 trace 改造成提交 trace。
 

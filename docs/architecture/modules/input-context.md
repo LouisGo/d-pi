@@ -50,3 +50,5 @@ M2：逐项补 @ 文件、截图、拖入图片/文件、PDF、预览与删除�
 ## 窗口内编辑连续性（2026-10-01）
 
 AppModel 拥有窗口级 DraftEditorCache，input Renderer 缓存脱离 EditorView/DOM 及插件闭包的 EditorState。A→B→A 在匹配草稿 revision、消费序号和正文时恢复选区与撤销，两个 Thread 独立；发送消费、外部新版本及旧 Editor 迟到事件不能复活已提交正文。最多缓存 8 个 Thread、总 UTF-8 正文估算 4 MiB，LRU 淘汰只释放编辑历史；原生 history depth 50 沿用其批次裁剪，正文估算不承诺 undo/RSS 硬上限。窗口释放清缓存，reload/重启只恢复 Main 持久草稿，不持久化 ProseMirror 内部状态。真实 Tiptap/React 红绿与原生候选检查见[05](../../../.scratch/runtime-hardening-omp1845/issues/05-editor-continuity.md)。
+
+当前 Renderer 私有实现分别落在 `editor/`、`clipboard/`、`references/`；环境公开入口与草稿所有权不变。

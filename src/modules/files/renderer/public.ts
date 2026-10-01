@@ -1,5 +1,8 @@
-export { type FileEditorComponent, loadFileEditor } from "./editor-loader";
-export type { CodeView } from "./monaco-viewer";
+export {
+  type FileEditorComponent,
+  loadFileEditor,
+} from "./editor/editor-loader";
+export type { CodeView } from "./editor/monaco-viewer";
 export {
   FileReadError,
   fileKeys,

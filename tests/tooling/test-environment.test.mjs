@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { test } from "node:test";
-import { createTestEnvironment } from "../../scripts/test-environment.mjs";
+import { createTestEnvironment } from "../../scripts/testing/test-environment.mjs";
 
 test("isolates every App/OMP path, cwd and future credential names in a real child", () => {
   const sandbox = createTestEnvironment();
@@ -71,7 +71,11 @@ test("standard Node test runner drops inherited credentials and the project's ex
   try {
     const result = spawnSync(
       process.execPath,
-      [resolve(import.meta.dirname, "../../scripts/test.mjs"), "node", file],
+      [
+        resolve(import.meta.dirname, "../../scripts/testing/test.mjs"),
+        "node",
+        file,
+      ],
       {
         cwd: resolve(import.meta.dirname, "../.."),
         env: {

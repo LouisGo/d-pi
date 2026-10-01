@@ -31,7 +31,7 @@ vi.mock("../../src/platform/omp/resources/public", () => ({
     entry: "/fixture/host.mjs",
   }),
 }));
-vi.mock("../../src/modules/execution/host/native-session", () => ({
+vi.mock("../../src/modules/execution/host/native/native-session", () => ({
   NativeSession: class {
     constructor(
       private options: NativeSessionOptions,

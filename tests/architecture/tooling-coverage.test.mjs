@@ -16,7 +16,7 @@ import { build } from "vite";
 import { runOxlint } from "../../scripts/architecture/oxlint-runner.mjs";
 
 const repositoryRoot = resolve(import.meta.dirname, "../..");
-const checker = join(repositoryRoot, "scripts/check-i18n-copy.mjs");
+const checker = join(repositoryRoot, "scripts/checks/check-i18n-copy.mjs");
 
 function fixture(contents, baseDirectory = tmpdir()) {
   const directory = mkdtempSync(join(baseDirectory, "d-pi-tooling-coverage-"));

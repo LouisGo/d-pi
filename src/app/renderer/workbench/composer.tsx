@@ -26,9 +26,9 @@ import {
   replaceDraftText,
 } from "../../../modules/input/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import type { AppModel } from "../model";
-import type { ThreadModel } from "../thread-model";
-import { UrlDecoration } from "../url-decoration";
+import type { AppModel } from "../wiring/model";
+import type { ThreadModel } from "../wiring/thread-model";
+import { UrlDecoration } from "./url-decoration";
 export function Composer({
   thread,
   model,

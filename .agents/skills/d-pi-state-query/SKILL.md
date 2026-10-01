@@ -60,7 +60,7 @@ const item = useStore(model.stateStore, (state) => state.itemsById.get(id));
 
 更新实体列表时保留未变化项引用，父级订阅顺序，行订阅对应实体。在频繁更新或大列表中评估 ID 顺序 + 实体索引；逐行 `items.find(...)` 可能让每次通知产生所有行的重复扫描，少渲染不能单独证明低成本。不为小且低频列表强制新增索引。
 
-模型的只读 store 足以接官方 `useStore` 时直接使用；已有窄 `getSnapshot`/`subscribe` 合同可用 `useSyncExternalStore`，不为 API 数量额外包装。当前[Conversation 视图](../../../src/app/renderer/conversation.tsx)按稳定 ID 顺序订阅，行从同一投影派生的 Map 取实体；[SubmissionModel](../../../src/modules/execution/renderer/submission-model.ts)的收据索引同样只由发布路径生成，不是可独立写入的第二份事实。
+模型的只读 store 足以接官方 `useStore` 时直接使用；已有窄 `getSnapshot`/`subscribe` 合同可用 `useSyncExternalStore`，不为 API 数量额外包装。当前[Conversation 视图](../../../src/app/renderer/reading/conversation.tsx)按稳定 ID 顺序订阅，行从同一投影派生的 Map 取实体；[SubmissionModel](../../../src/modules/execution/renderer/submission/submission-model.ts)的收据索引同样只由发布路径生成，不是可独立写入的第二份事实。
 
 ### 2.1 订阅范围与父级渲染
 
@@ -88,7 +88,7 @@ const item = useStore(model.stateStore, (state) => state.itemsById.get(id));
 - 首次读取重试期间可为 pending；已有成功数据的后台重试可以保持 success。只看 `isError` 或 `isPending` 无法完整表达正在重新采样，应同时检查 `fetchStatus`/`isFetching` 和旧数据身份。
 - `invalidateQueries` 的取消/重取条件取决于活动 observer、已有数据和 `cancelRefetch` 等选项。当前界面在采样期间禁用刷新，避免重复刷新扰乱当前尝试；不能概括成任何连点都必然取消并重试。
 
-当前入口：[文件查询](../../../src/modules/files/renderer/queries.ts)与[行为测试](../../../src/modules/files/renderer/queries.test.ts)、[Git 查询](../../../src/modules/changes/renderer/queries.ts)与[行为测试](../../../src/modules/changes/renderer/queries.test.ts)、[应用 QueryClient](../../../src/app/renderer/query-client.tsx)。行为检查覆盖真实资源身份隔离、未选中零 IPC、本地离线读取、采样失败重试与业务结论不重试；`FileReadError`/`GitReadError` 保留该次请求的 trace、operation、业务回包或 transport cause。Client 默认配置集中维护，显式刷新，不新增轮询或后台重取策略；刷新失败的旧采样体验仍待用户试用。
+当前入口：[文件查询](../../../src/modules/files/renderer/queries.ts)与[行为测试](../../../src/modules/files/renderer/queries.test.ts)、[Git 查询](../../../src/modules/changes/renderer/queries.ts)与[行为测试](../../../src/modules/changes/renderer/queries.test.ts)、[应用 QueryClient](../../../src/app/renderer/wiring/query-client.tsx)。行为检查覆盖真实资源身份隔离、未选中零 IPC、本地离线读取、采样失败重试与业务结论不重试；`FileReadError`/`GitReadError` 保留该次请求的 trace、operation、业务回包或 transport cause。Client 默认配置集中维护，显式刷新，不新增轮询或后台重取策略；刷新失败的旧采样体验仍待用户试用。
 
 概念参考官方 [Query Options](https://tanstack.com/query/latest/docs/framework/react/guides/query-options)、[Query Keys](https://tanstack.com/query/latest/docs/framework/react/guides/query-keys)；实际成立条件以锁定包的 `queryObserver.ts`、`queryClient.ts`、`retryer.ts` 和行为检查为准，不以 latest 文档暗中升级本项目。
 
@@ -102,9 +102,9 @@ const item = useStore(model.stateStore, (state) => state.itemsById.get(id));
 
 业务实例由应用、Thread 或 Renderer 连接作用域拥有，视图卸载释放订阅、编辑器和 DOM 资源，不等于停止 OMP 任务。内部资源状态与展示投影分清；dispose 幂等，释放后投影仍表达真实可读性和可操作性，不靠保留非空字段伪造可用资源，也不因清空字段制造半成品工作区。
 
-跨 `await`、事件回调与重连继续校验 Thread/会话身份、实例代次和版本；入口一次检查不足。只保留真实需要的守卫，不把每个模型都必须存 `disposed/epoch/generation` 当统一模板。已有[Runtime 行为测试](../../../src/modules/execution/renderer/runtime-model.test.ts)与[AppModel 测试](../../../src/app/renderer/model.test.ts)是相应路径的验证入口。
+跨 `await`、事件回调与重连继续校验 Thread/会话身份、实例代次和版本；入口一次检查不足。只保留真实需要的守卫，不把每个模型都必须存 `disposed/epoch/generation` 当统一模板。已有[Runtime 行为测试](../../../src/modules/execution/renderer/runtime/runtime-model.test.ts)与[AppModel 测试](../../../src/app/renderer/wiring/model.test.ts)是相应路径的验证入口。
 
-当前应用通过[ThreadModel](../../../src/app/renderer/thread-model.ts)构造完整资源后才发布 ready；草稿保存 lane 绑定原 Thread，编辑器重挂载读取 controller 的 pending/已确认正文。视图只绑定和释放编辑资源，旧回调不从应用的“当前 controller”取新 Thread；[绑定回归](../../../src/app/renderer/workbench/composer-binding.test.ts)补迟到 IME 与重挂载路径，真实编辑器体验仍由对应构建的 GUI 验证和用户试用确认。
+当前应用通过[ThreadModel](../../../src/app/renderer/wiring/thread-model.ts)构造完整资源后才发布 ready；草稿保存 lane 绑定原 Thread，编辑器重挂载读取 controller 的 pending/已确认正文。视图只绑定和释放编辑资源，旧回调不从应用的“当前 controller”取新 Thread；[绑定回归](../../../src/app/renderer/workbench/composer-binding.test.ts)补迟到 IME 与重挂载路径，真实编辑器体验仍由对应构建的 GUI 验证和用户试用确认。
 
 ## 5. 按影响验证
 

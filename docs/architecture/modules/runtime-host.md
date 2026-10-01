@@ -5,7 +5,7 @@
 ## 当前工程落点（领域目录治理，2026-09-29）
 
 - M2 的 `src/app/host/index.ts` 按进程实例 scope 路由，一个 utility 监督多个独立 OMP；Main 按 Thread 持有 RuntimeService，切换 Renderer 视图不停止后台。单 scope 回收不关闭其他 scope。
-- `src/app/host/index.ts` 只做 utility 入口；执行 Host 实现在 `src/modules/execution/host/`，连接监督在 `src/modules/execution/main/host-connection.ts`。
+- `src/app/host/index.ts` 只做 utility 入口；执行 Host 实现在 `src/modules/execution/host/`，连接监督在 `src/modules/execution/main/transport/host-connection.ts`。
 - `src/platform/omp/protocol/` 持有原生帧合同和 decoder，`src/platform/omp/resources/` 持有 Runtime/官方 SDK 资源校验；`runtime/host.mjs` 只加载官方 SDK 并接入已确认的消费门控。
 - 阅读事件在 `src/modules/conversation/host/projection.ts` 归一化，Host 不把未经归一的 OMP 帧交给 Renderer。关闭 scope 的实际释放顺序是 NativeSession → 交互 → 投影 → 阅读端口（`session-host.ts` 先关原生会话再清理交互，最后经 `app/host` 释放 conversation scope）；顺序变化须同步本页与领域测试。
 
@@ -45,7 +45,7 @@ Main 拥有窗口、Host 监督及受限通道建立；一个 utility SessionHos
 
 ## S3 当前实现（2026-09-28）
 
-当前固定官方 SDK 18.4.6 在随包 Bun 1.3.14 中运行；`runtime/host.mjs` 是 App 自有薄适配。2026-10-01 用户授权仅在资源 staging 修正 sdk.ts 的 prelude 导入歧义，原文件和补丁哈希入 manifest，其余官方代码与所有权不变。正式 Host 使用该入口，原生 RPC driver 继续拥有标准命令和扩展 UI；仅增加消费前钩子、控制帧与有界状态观察。资源准备由 `scripts/prepare-sdk.mjs` 复制锁定依赖，打包显式保留 node_modules。控制和回答沿 Main 信任检查、Host 当前代次及 traceId 返回运输结果，正文不记诊断日志。
+当前固定官方 SDK 18.4.6 在随包 Bun 1.3.14 中运行；`runtime/host.mjs` 是 App 自有薄适配。2026-10-01 用户授权仅在资源 staging 修正 sdk.ts 的 prelude 导入歧义，原文件和补丁哈希入 manifest，其余官方代码与所有权不变。正式 Host 使用该入口，原生 RPC driver 继续拥有标准命令和扩展 UI；仅增加消费前钩子、控制帧与有界状态观察。资源准备由 `scripts/runtime/prepare-sdk.mjs` 复制锁定依赖，打包显式保留 node_modules。控制和回答沿 Main 信任检查、Host 当前代次及 traceId 返回运输结果，正文不记诊断日志。
 
 原生 session 放入 Main 指定目录；新启动与冷恢复分开，已有绑定缺执行全周期独占证据则只读。停止/退出的实际验收和限制以 [S3 交接](../../../.scratch/m1-s3-control-recovery/handoff.md) 为准。
 

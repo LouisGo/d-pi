@@ -22,11 +22,11 @@
 | --- | --- | --- |
 | 配置 query key 含 scope，请求只有 kind/traceId；Main 在资源 await 后用活动目录 getter | [query](../../src/modules/configuration/renderer/queries.ts)、[命令 schema](../../src/modules/configuration/contracts/public.ts)、[Main adapter](../../src/modules/configuration/main/native-configuration.ts)、[装配](../../src/app/main/index.ts) | 本轮源码复核；另一会话用真实 QueryClient/Zod/类及替身资源/子进程作内存复现 A→B 结果进 A key，非真实 Electron 全链路 |
 | snapshot 虽读 Settings，却构造普通 AuthStorage/ModelRegistry；legacy JSON 可触发原生迁移 | [Bun adapter](../../runtime/configuration.mjs) | 本轮源码复核；另一会话用真实 18.3.0 ConfigFile+内存 FS 观察写 models.yml，未改真实文件，未证明数据损坏 |
-| reasoning 只有 boolean，ModelControls 固定六档；不能表达 metadata 全部语义 | [摘要](../../src/modules/configuration/contracts/public.ts)、[GUI](../../src/app/renderer/model-controls.tsx) | 当前源码；官方 metadata/helper 是能力依据，未声称所有供应商请求失败 |
-| prepared/dispatching 先落库，ACK 与稿消费事务；未知不重发 | [coordinator](../../src/modules/execution/core/submission-coordinator.ts)、[repository](../../src/modules/execution/main/submission-repository.ts) | 当前源码及本会话较早的相关回归；本轮文档工作不重跑全部行为门禁 |
-| executingIds 仅内存；启动恢复扫描 dispatching，完整 prompt terminal 尚未持久适配 | [runtime](../../src/modules/execution/main/runtime-service.ts)、[Host](../../src/modules/execution/host/session-host.ts)、[receipt](../../src/modules/execution/contracts/submission.ts) | 源码缺口；不能据此声称已经发生已确认提交丢失或重复执行 |
-| Host exit 清 scopes；Native close 等 close 并有 kill，但没有跨 Main/Host 崩溃的完整出生身份/残留证明 | [HostConnection](../../src/modules/execution/main/host-connection.ts)、[NativeSession](../../src/modules/execution/host/native-session.ts)、[Host 入口](../../src/app/host/index.ts) | 源码与契约的证明缺口，尚未用真实 OS 崩溃确认孤儿范围；04 精确验证 |
-| SDK manifest 校验 literal 18.3.0；准备脚本遇已有顶层包 link 的 EEXIST 不替换 | [资源校验](../../src/platform/omp/resources/sdk-resource.ts)、[准备](../../scripts/prepare-sdk.mjs)、[环境门禁](../../scripts/check-environment.mjs) | 静态确定的升级风险；现有环境门禁可发现包元数据不符，未声称已交付 m2.6 包错版 |
+| reasoning 只有 boolean，ModelControls 固定六档；不能表达 metadata 全部语义 | [摘要](../../src/modules/configuration/contracts/public.ts)、[GUI](../../src/app/renderer/workbench/model-controls.tsx) | 当前源码；官方 metadata/helper 是能力依据，未声称所有供应商请求失败 |
+| prepared/dispatching 先落库，ACK 与稿消费事务；未知不重发 | [coordinator](../../src/modules/execution/core/submission/submission-coordinator.ts)、[repository](../../src/modules/execution/main/submission/submission-repository.ts) | 当前源码及本会话较早的相关回归；本轮文档工作不重跑全部行为门禁 |
+| executingIds 仅内存；启动恢复扫描 dispatching，完整 prompt terminal 尚未持久适配 | [runtime](../../src/modules/execution/main/runtime/runtime-service.ts)、[Host](../../src/modules/execution/host/session-host.ts)、[receipt](../../src/modules/execution/contracts/submission.ts) | 源码缺口；不能据此声称已经发生已确认提交丢失或重复执行 |
+| Host exit 清 scopes；Native close 等 close 并有 kill，但没有跨 Main/Host 崩溃的完整出生身份/残留证明 | [HostConnection](../../src/modules/execution/main/transport/host-connection.ts)、[NativeSession](../../src/modules/execution/host/native/native-session.ts)、[Host 入口](../../src/app/host/index.ts) | 源码与契约的证明缺口，尚未用真实 OS 崩溃确认孤儿范围；04 精确验证 |
+| SDK manifest 校验 literal 18.3.0；准备脚本遇已有顶层包 link 的 EEXIST 不替换 | [资源校验](../../src/platform/omp/resources/sdk-resource.ts)、[准备](../../scripts/runtime/prepare-sdk.mjs)、[环境门禁](../../scripts/checks/check-environment.mjs) | 静态确定的升级风险；现有环境门禁可发现包元数据不符，未声称已交付 m2.6 包错版 |
 
 ## 3. v18.4.5 的关键复核
 
