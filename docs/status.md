@@ -52,4 +52,4 @@
 - [核心重写及外观补修](../.scratch/rewrite-preparation/spec.md)：同题复测未证明接手效率提升；真实供应商、系统 IME 与用户体验未认可。
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 
-<!-- source-sha256: ca229ad3e85a12f545e8f1c74d130d3265bb5598d51eaea0592e9d0282253411; sources: 86 -->
+<!-- source-sha256: e8cf7d8c5d4bda6540526989075790488dcafc5e02d68a4ede7162bbfd448cec; sources: 86 -->

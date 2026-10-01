@@ -1,8 +1,14 @@
 // Versioned, read-only boundary for OMP 18.4.6. No OAuth/key resolution or refresh.
 
 import { Database } from "bun:sqlite";
-import { lstatSync, readFileSync } from "node:fs";
-import { homedir } from "node:os";
+import {
+  lstatSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { homedir, tmpdir } from "node:os";
 import { delimiter, dirname, join, parse, resolve } from "node:path";
 import { AuthStorage } from "@oh-my-pi/pi-ai/auth-storage";
 import { isCredentialScopedModelCacheProvider } from "@oh-my-pi/pi-catalog/provider-models";
@@ -100,12 +106,26 @@ function safeSettingsPaths(agent, cwd) {
 }
 function readonlyDatabase(path) {
   if (!safePath(path)) return null;
-  // SQLite can create shm while reading WAL. A live/uncheckpointed source is
-  // conservatively unavailable; never checkpoint it or silently discard its WAL.
-  if (safePath(path + "-wal") && lstatSync(path + "-wal").size > 0)
-    throw Error("database-active-wal");
+  // WAL contains committed credentials while CLI/Host remains open. Let SQLite
+  // pin a consistent read transaction instead of treating normal WAL as failure.
+  // Its shared-memory index is coordination data, never an App-owned credential.
+  safePath(path + "-wal");
   safePath(path + "-shm");
-  return new Database(path, { readonly: true, create: false, strict: true });
+  safePath(path + "-journal");
+  const db = new Database(path, {
+    readonly: true,
+    create: false,
+    strict: true,
+  });
+  try {
+    db.run("PRAGMA query_only = ON");
+    db.run("PRAGMA busy_timeout = 1000");
+    db.run("BEGIN");
+    return db;
+  } catch (error) {
+    db.close();
+    throw error;
+  }
 }
 function credentialRows(db) {
   if (!db) return [];
@@ -174,6 +194,7 @@ export async function readConfigurationSnapshot(frame) {
   let auth;
   let db;
   let settings;
+  let cacheDirectory;
   try {
     safeSettingsPaths(agent, source.cwd);
     settings = await Settings.loadReadOnly({
@@ -230,7 +251,6 @@ export async function readConfigurationSnapshot(frame) {
     issues.push(
       [
         "unsafe-path",
-        "database-active-wal",
         "credential-schema-unsupported",
         "remote-auth-unobserved",
         "credential-count-limit",
@@ -285,9 +305,12 @@ export async function readConfigurationSnapshot(frame) {
         break;
       }
     }
-    // Native cache reads initialize/migrate/write. In-memory cache keeps official
-    // composition without touching the on-disk cache. Coverage states the gap.
+    // Native cache reads initialize/migrate/write. Serialize a consistent SQLite
+    // read transaction (including committed WAL) to a private, short-lived cache.
+    // Official OMP code owns compatibility, freshness, merging and header restore;
+    // any migrations/deletions affect this copy only, never the user's catalog.
     let cache;
+    let cacheDbPath = ":memory:";
     try {
       cache = readonlyDatabase(getModelDbPath(agent));
       if (cache) {
@@ -298,15 +321,30 @@ export async function readConfigurationSnapshot(frame) {
             .map((row) => row.name),
         );
         if (
-          !["provider_id", "version", "models", "materialization_policy"].every(
-            (name) => columns.has(name),
-          )
+          ![
+            "provider_id",
+            "version",
+            "models",
+            "materialization_policy",
+            "updated_at",
+            "authoritative",
+            "static_fingerprint",
+            "header_omitted_model_ids",
+            "unrestorable_header_model_ids",
+            "header_restore_version",
+          ].every((name) => columns.has(name))
         )
           issues.push("catalog-schema-unsupported");
-        else if (cache.query("SELECT 1 FROM model_cache LIMIT 1").get())
-          issues.push("cached-catalog-unobserved");
+        else if (cache.query("SELECT 1 FROM model_cache LIMIT 1").get()) {
+          const bytes = cache.serialize();
+          if (bytes.length > 32 * 1024 * 1024) throw Error("source-too-large");
+          cacheDirectory = mkdtempSync(join(tmpdir(), "d-pi-model-catalog-"));
+          cacheDbPath = join(cacheDirectory, "models.db");
+          writeFileSync(cacheDbPath, bytes, { mode: 0o600 });
+        }
       }
     } catch (error) {
+      cacheDbPath = ":memory:";
       issues.push(
         error.message === "unsafe-path"
           ? "unsafe-path"
@@ -317,7 +355,7 @@ export async function readConfigurationSnapshot(frame) {
     }
     const registry = new ModelRegistry(auth, modelsPath, {
       settings,
-      cacheDbPath: ":memory:",
+      cacheDbPath,
       fetch: () => Promise.reject(Error("readonly-network-forbidden")),
     });
     const available = new Set(
@@ -393,5 +431,7 @@ export async function readConfigurationSnapshot(frame) {
     };
   } finally {
     auth.close();
+    if (cacheDirectory)
+      rmSync(cacheDirectory, { recursive: true, force: true });
   }
 }

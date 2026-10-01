@@ -8,7 +8,7 @@
 - 执行侧配置上下文 `configContextId` 由 `src/modules/execution/main/runtime-service.ts` 按规范化目录与环境派生，不是第二份原生配置。
 - App 自有的主题、密度与 locale 偏好归 `src/modules/preferences/`，该模块不拥有 OMP 配置。
 - M2 入口由 `src/modules/configuration/` 接入；query key、IPC、Main 与 Bun 响应使用同一 scope/trace。Main 经 `threads/contracts/public.ts` 解析并复核目录，固定原生环境；application 使用独立探测目录。A 的异步读取不随活动 Thread 改为 B，删除或重关联返回 `stale-target`，错位回复不进入成功缓存。
-- `runtime/configuration.mjs` 在短生命周期包内 Bun 中区分只读 snapshot 和显式认证写入。snapshot 的 `configuration-readonly.mjs` 复用官方 `Settings.loadReadOnly`、AuthStorage 的内存凭据投影与 ModelRegistry 的内存缓存；本地文件/SQLite 句柄有限、只读且关闭，不启动项目 Agent，不运行命令 key/helper、不联网、迁移或修复用户文件。原生 credential schema 8 经版本检查；不兼容、损坏、symlink、活动 WAL、remote auth、未观察缓存或账户目录以覆盖缺口返回，unknown 不冒称无认证。官方认证/合并规则仍由 OMP 拥有。
+- `runtime/configuration.mjs` 在短生命周期包内 Bun 中区分只读 snapshot 和显式认证写入。snapshot 的 `configuration-readonly.mjs` 复用官方 `Settings.loadReadOnly`、AuthStorage 的内存凭据投影与 ModelRegistry 的私有临时缓存快照；本地文件/SQLite 事务有限、只读且关闭；正常 WAL 的已提交内容直接读取，原生 WAL/SHM 协调文件允许管理，不 checkpoint，缓存源通过 serialize 一致快照交给官方代码并在退出时清理临时库，不启动项目 Agent，不运行命令 key/helper、不联网、迁移或修复用户文件。原生 credential schema 8 经版本检查；不兼容、损坏、symlink、锁超时、remote auth、未观察账户目录以覆盖缺口返回，unknown 不冒称无认证。官方认证/合并规则仍由 OMP 拥有。
 - OpenAI 原生 OAuth、DeepSeek 原生 key 登录的 GUI 接入已实现，真实供应商尚未验收。认证 job 固定原 scope/source；answer/cancel/open-login 仅经 jobId 续接，Thread 切换或删除不丢失旧 job 的取消出口。保存成功仅使摘要查询失效，不重试认证副作用。
 - DeepSeek 使用原生 models-endpoint GET 校验后原子保存；失败保留旧凭据。隔离 fixture 已覆盖归一化、拒绝与旧凭据保护。凭据不进 argv、App 数据或诊断。
 - 当前 Thread 主模型/档位使用原生实例 `setModelTemporary`，不修改共享默认值；启动前选择通过本实例环境带入，启动后空闲时经 Host 控制更新，显示原生回读。能力直接派生自 18.4.6 metadata/helper，包含 minimal、不可调档与 requiresEffort；GUI 默认/off/effort 传输意图独立。官方 `ThinkingLevel.Off` 关闭 provider reasoning，未指定实际值保留为 `inherit`；失效 effort 拒绝或要求刷新，不能显示为成功。子 Agent Thread 覆盖尚未接入。
@@ -49,3 +49,5 @@ M2 新增认证仅 OpenAI 账户（openai-codex）和 DeepSeek API key；其他�
 M1：在隔离配置中发现可用模型，使用同一上下文启动并完成一次请求；覆盖 Finder/终端环境差异、无模型、配置不可读。复用[Settings 证据](../../validation/settings-feasibility.md)，不把它当成 GUI OAuth 已验证。
 
 M2：验证子 Agent 默认配置与当前 Thread 覆盖在并行会话、取消覆盖及恢复路径中的实际生效，合理默认映射依据实际可用模型制定，自动降档/调整确认/倒计时后置。另验证两条原生认证桥接、取消/超时/无网络、重启与刷新、旧配置保护；认证受阻仅阻塞该切片和 M2 完整验收。测试使用隔离样本；真实账户路径按实际授权手工验收，不用无提示计费请求充当探针。
+
+2026-10-01 用户报告的 CLI 登录复用回归及两向验证见 [M2 配置复用修复](../../../.scratch/m2-first-release/configuration-sharing.md)；原 WAL 保守失败限制已被纠正，传输完成但覆盖不全的 snapshot 记录 unknown 和有界原因码，不再只记 confirmed。

@@ -65,7 +65,7 @@
 
 - `configContextId` 标识解析后的配置根、profile、cwd 与非秘密的来源信息；真实环境值/凭据由宿主使用，不放进 UI 状态/日志。所有配置读取、认证及 OMP 执行使用同一上下文。
 - 配置摘要与新认证命令携带明确的 `application` 或 `thread { threadId, workingDirectoryId }` scope 和同一 `traceId`。Main 在资源等待前从 Thread 仓储固定实际目录及原生环境，等待后复核关联；切换活动 Thread 不改写旧请求，删除或重关联返回 `stale-target`。application 使用 Main 拥有的固定隔离探测目录。Query key 与命令 scope 一致，回包身份不符不能进入成功缓存；认证续步与取消只按原 job 找固定来源。
-- snapshot 全链只读，不以 `Settings.loadReadOnly` 代替凭据、模型缓存与文件迁移的验证。薄适配以有限只读 SQLite 句柄及官方内存模型组合读取；缺数据库不创建、legacy JSON 不迁移、不执行命令 key/helper、不联网、不加载项目 Agent/扩展。旧 schema、损坏或不安全路径、活动 WAL、远程认证、未观察账户目录和无法在有限读取内观察的外部配置引用均明确返回 `partial/unavailable` 与 unknown 认证状态，不把未知解释为无认证。
+- snapshot 全链只读，不以 `Settings.loadReadOnly` 代替凭据、模型缓存与文件迁移的验证。薄适配以有限只读 SQLite 事务读取已提交的数据库和 WAL；缺数据库不创建、legacy JSON 不迁移、不执行命令 key/helper、不联网、不加载项目 Agent/扩展。SQLite 的 WAL/SHM 协调文件允许由原生只读连接管理，不 checkpoint、不修改持久凭据/配置/模型缓存源。模型缓存通过 SQLite serialize 的一致快照交给私有临时库中的官方兼容校验、合并和 metadata 读取，退出清理。旧 schema、损坏或不安全路径、读取锁超时、远程认证、未观察账户目录和无法在有限读取内观察的外部配置引用均明确返回 `partial/unavailable` 与对应未知项，不把未知解释为无认证。2026-10-01 用户纠正共享配置回归后，取代此前将正常活动 WAL 当作不可读的工程限制；双向共享证据见 [M2 配置复用修复](../../.scratch/m2-first-release/configuration-sharing.md)。
 - 推理选项从固定 SDK 的实际 metadata/helper 派生，区分 native default、explicit off 和支持的 effort（含 minimal）；不可调模型不给虚假菜单，requiresEffort 不提供 off。18.4.6 使用官方 `ThinkingLevel.Off` 显式关闭，`undefined`/`ThinkingLevel.Inherit` 表示未指定。空闲实例应用前复核能力，完成后显示 Host 的实际回读；未知操作结果不显示成功。
 - 正常已配置路径零配置进入。Finder 启动缺少终端环境时，区分 absent / incomplete / incompatible / inaccessible；GUI 可选择原生配置根及必要环境来源，展示来源与作用域。不能误判成新用户后暗建默认配置，也不自动执行任意 shell startup 文件以“修复环境”。
 - 不兼容格式禁止写入，不自动迁移外部 CLI；提供只读诊断、选择兼容上下文及明确修复说明。原生接口写设置，保存前重读、比较目标 revision/内容，保存后回读；App 内串行不冒充外部 CLI 互斥，record 冲突要求刷新重做，不能盲覆盖。

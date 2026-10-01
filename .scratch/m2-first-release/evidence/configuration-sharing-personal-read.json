@@ -1,0 +1,13 @@
+{
+  "source": {
+    "directory": "/Users/louistation/.omp/agent",
+    "profile": null,
+    "cwd": "/Users/louistation/MySpace/Work/Frontend/YL/typex-pc"
+  },
+  "openaiAuthenticated": true,
+  "deepseekAuthenticated": false,
+  "coverage": "complete",
+  "issues": [],
+  "availableModels": 9,
+  "gpt61solAvailable": true
+}

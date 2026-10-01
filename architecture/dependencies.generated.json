@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "e6cbaae91d2c6e0713711a79530d2f96e5db58f31f78d6ad2deac350fb3bc67b",
+  "inputsHash": "bd7379fa6db652c249f75b801ea2b85fcf1001820a8fd7e95412bccdad71da8b",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 220,
@@ -353,7 +353,7 @@
       "defaultEnvironment": "omp",
       "materialized": true,
       "files": 4,
-      "lines": 789,
+      "lines": 829,
       "publicEntries": [
         {
           "path": "runtime/host.mjs",
@@ -372,7 +372,7 @@
       ],
       "materialized": true,
       "files": 9,
-      "lines": 1281,
+      "lines": 1337,
       "publicEntries": [
         {
           "path": "src/modules/configuration/contracts/public.ts",

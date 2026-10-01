@@ -39,3 +39,7 @@ M2 来源选择、真实账户认证和子 Agent 模型覆盖仍由原票承接�
 - 只读有限边界明确：活动非空 WAL、旧 schema、remote auth、native cached/account catalog 无安全无写 hydration 时返回 partial/unavailable；不声明完整账户目录或计费可用，也不复制原生认证/模型规则。GUI 来源选择、真实 OpenAI/DeepSeek 账户验收与子 Agent 覆盖仍归 M2 原票。
 
 代码、模块合同与必要依赖已完成；最终随包三脚本均通过，见 [configuration-packaged-18.4.6](../evidence/configuration-packaged-18.4.6.json)。本票 resolved，不关闭 M2 真实供应商/来源选择/子 Agent 范围。
+
+### 2026-10-01 用户试用发现的正常共享回归
+
+本票原工程证据仍保留，但将活动 WAL 和已有缓存目录排除出读取的完成边界违反 D-03/D-04。静态 13 样本通过不能证明正常 CLI 登录复用；后续用户已明确要求修复，由 [M2 配置共享修复](../../m2-first-release/configuration-sharing.md)纠正这项限制并把双向正常路径纳入常规门禁。原真实供应商/来源选择/子 Agent 范围没有因本修复完成而关闭。

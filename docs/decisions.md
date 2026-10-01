@@ -24,7 +24,7 @@
 | --- | --- | --- |
 | D-01 | 最终核心体验成为 OMP TUI 的超集，基本覆盖适合 GUI 的原生内容与交互，渐进交付 | 2026-09-27 澄清：仅适合 TUI 的工作可不接入，具体排除须有依据；取代无条件全量承接的解释，全集不是首版前置。见[访谈](../.scratch/pre-coding-interview/spec.md) |
 | D-02 | Electron Main / utility SessionHost / 独立 OMP；OMP 拥有执行和原生会话 | [ADR-0001](adr/0001-omp-session-client.md)；2026-09-28 用户选择[官方 SDK 薄宿主](../.scratch/m1-s3-control-recovery/spec.md)，取代 S2 仅依赖官方二进制 RPC 的实现限制，不改 OMP 源码或所有权 |
-| D-03 | 随包兼容 OMP，复用原生配置，App 偏好独立 | [ADR-0002](adr/0002-share-native-omp-config.md)；取代依赖外装 CLI 与默认独立 GUI Runtime 配置，不依赖外部 CLI 可执行文件 |
+| D-03 | 随包兼容 OMP，复用原生配置，App 偏好独立 | [ADR-0002](adr/0002-share-native-omp-config.md)；取代依赖外装 CLI 与默认独立 GUI Runtime 配置，不依赖外部 CLI 可执行文件；2026-10-01 用户重申双向复用，正常 CLI 活动 WAL 不能阻断已提交凭据/模型读取，见 [修复证据](../.scratch/m2-first-release/configuration-sharing.md) |
 | D-04 | 模型选择不设 GUI 白名单；已有可用配置免初始化，无配置用户 GUI 引导 | 2026-09-25 明确；D-23 随后收窄首批新增认证入口，已有其他可用配置仍复用 |
 | D-05 | macOS 优先；拟采用 macOS 独占能力须报告原因、影响和替代方案，由用户决定 | 不宣称已完成其他平台兼容 |
 | D-06 | 首阶段主对话闭环、只读文件与 Diff，后续编辑 | 取代第一阶段不含文件查看/专属 Diff 的方向；分阶段验收由 D-26 与[首版方案](product/first-release.md)收敛 |

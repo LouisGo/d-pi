@@ -39,3 +39,11 @@ status: accepted
 首版 GUI 新增/修复认证仅覆盖 OpenAI GPT 账户登录（OMP openai-codex）与 DeepSeek API key，用于验证登录和配置复用。取代前文“不限制首批认证适配”的范围；已有其他 provider/model 的可用原生配置仍直接复用，最终覆盖目标不删减。登录与 API key 不混称，其他 provider 不视为已验收。
 
 配置上下文识别、Finder 环境差异、版本兼容/并发写入、认证桥接边界统一见[基础契约 §3](../architecture/foundation-contracts.md#3-配置与首版认证b3)。正常路径零配置；异常允许 GUI 选择/修复，不覆盖未知格式、不暗建另一套配置、不自研 OAuth 或长期 fork Runtime。
+
+## 2026-10-01 双向复用回归修复
+
+用户指出 CLI 已授权登录、Electron 重开却读不到配置，违反本 ADR 的正常路径零配置要求；同时要求验证 Electron 先配置、以后安装 CLI 的反向体验。本次授权修复取代 18.4.6 加固中将非空 WAL 一律标记不可读的工程限制，不改变既有共享原生根的产品决定。
+
+SQLite 只读事务负责读取 CLI 尚未 checkpoint 的已提交凭据；原生 WAL/SHM 是 SQLite 协调文件，不是第二份业务配置，不强制 checkpoint。模型缓存使用 SQLite serialize 的一致快照与官方 ModelRegistry 组合，兼容校验和清理只发生在私有临时副本。配置和凭据源不迁移、不修复、不执行 helper、不联网刷新。CLI 与 App 使用同一根/profile/cwd 且版本兼容时，持久原生配置和登录双向可读；当前 Thread 的临时模型选择不会改写全局默认或另一 CLI 会话。
+
+红绿复现、此前验证漏检原因和真实官方 CLI 入口的反向复用见 [M2 修复记录](../../.scratch/m2-first-release/configuration-sharing.md)。

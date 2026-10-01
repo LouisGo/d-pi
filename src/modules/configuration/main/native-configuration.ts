@@ -273,9 +273,20 @@ export class NativeConfiguration {
           }
           this.record({
             ...context,
-            stage: reply.kind === "failed" ? "failed" : "confirmed",
+            stage:
+              reply.kind === "failed"
+                ? "failed"
+                : reply.kind === "snapshot" && reply.coverage !== "complete"
+                  ? "unknown"
+                  : "confirmed",
             durationMs: performance.now() - started,
             ...(reply.kind === "failed" ? { code: reply.code } : {}),
+            ...(reply.kind === "snapshot" && reply.coverage !== "complete"
+              ? {
+                  code: `configuration-${reply.coverage}`,
+                  causeCode: reply.issues.slice(0, 8).join(",").slice(0, 512),
+                }
+              : {}),
           });
           resolve(reply);
         };

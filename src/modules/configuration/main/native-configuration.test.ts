@@ -48,6 +48,51 @@ function frame(
 ) {
   process.stdout.write(JSON.stringify({ traceId, message }) + "\n");
 }
+it("records unreadable credentials as an unknown result with bounded cause codes", async () => {
+  const process = child();
+  mocks.spawn.mockReturnValue(process);
+  const record = vi.fn();
+  const service = new NativeConfiguration(
+    "/resources",
+    threads,
+    "/probe",
+    {},
+    () => {},
+    async () => {},
+    record,
+  );
+  const traceId = crypto.randomUUID();
+  const pending = service.execute({
+    kind: "snapshot",
+    scope: application,
+    traceId,
+  });
+  await new Promise((resolve) => setImmediate(resolve));
+  frame(process, traceId, {
+    kind: "snapshot",
+    scope: application,
+    traceId,
+    source,
+    models: [],
+    defaultModel: null,
+    openaiAuthenticated: null,
+    deepseekAuthenticated: null,
+    catalogError: true,
+    coverage: "partial",
+    issues: ["credentials-unavailable"],
+  });
+  process.emit("close", 0);
+  expect(await pending).toMatchObject({
+    kind: "snapshot",
+    coverage: "partial",
+  });
+  expect(record.mock.calls.at(-1)?.[0]).toMatchObject({
+    stage: "unknown",
+    code: "configuration-partial",
+    causeCode: "credentials-unavailable",
+    traceId,
+  });
+});
 it("keeps secret key off argv and rejects overlapping native credential writes", async () => {
   const process = child();
   mocks.spawn.mockReturnValue(process);
