@@ -1,5 +1,7 @@
 # M2 首批入口候选交付
 
+最新候选（2026-10-01）：[m2.10 会话切换连续性](navigation-continuity.md)，`0.1.0-m2.10 / c00f3dc5-e027fc01`，clean source `c00f3dc5`。本次试用使用该 App/ZIP；下文 m2.6–m2.9 的交接与反馈均保留为精确历史快照，不再表达当前候选或当前状态。M2 工程 in-progress，用户认可 pending。
+
 最新增量（2026-10-01）：[m2.8 共享配置回归修复](configuration-sharing.md)，build `0243e4a0-1e4354ec`。修复 CLI 登录后的正常 WAL 读取和缓存模型复用；以下早期入口候选保留历史证据，最新试用用 m2.8 App/ZIP。
 
 2026-10-01 试用反馈纠正：[当前进度核对](progress-audit.md)确认 m2.8 的基本新会话闭环存在，但以下“反复使用的主流程”对冷恢复入口的可发现性表述过于乐观，Shift+Enter 与模型状态回填也有实际缺陷。当前 trial feedback、acceptance pending，01 重开。本地 m2.9 未通过包内闭环，未作为新交付。

@@ -7,10 +7,10 @@
     "title": "M2 首版",
     "phase": "M2",
     "engineering": "in-progress",
-    "trial": "feedback",
+    "trial": "delivered",
     "acceptance": "pending",
     "current": true,
-    "build": "0.1.0-m2.9 / d7412cea-c01373c5",
+    "build": "0.1.0-m2.10 / c00f3dc5-e027fc01",
     "pending": [
       "../m1-s3-control-recovery/issues/09-quit-discard-decision.md"
     ],
@@ -24,7 +24,7 @@
       "navigation-continuity.md",
       "../review-seven-commits/spec.md"
     ],
-    "next": "处理 m2.9 会话切换闪烁反馈；已复现并修复工作区空白与阅读位置丢失，准备 m2.10 包内验证和候选交付",
+    "next": "复试 m2.10 的 Thread 切换连续性、独立草稿/撤销及阅读位置；基础主流程已包内验证，M2 未交付能力保持原票",
     "constraints": "仅本地 commit/候选，不 push、不公开发布、不扩 M3；冷恢复只读，unknown 不自动重发；S3 退出放弃待决仅暂停依赖部分。"
   }
 ]
@@ -39,7 +39,7 @@
 - 已定：D-02–D-08、D-10/D-11、D-20–D-27、D-28–D-37；沿用 OMP 执行、队列、原生历史、配置与凭据所有权，App 草稿/冻结原文/收据事务不改变。
 - 重要待决：无新增。[S3 09](../m1-s3-control-recovery/issues/09-quit-discard-decision.md)退出放弃队列待决，仅暂停对应出口；缺全周期单写证据的冷恢复只读，提供明确新建独立 Thread 出口，不冒称恢复旧执行。
 - 工程：正在实施；既有正确路径复用当前相关证据，新增缺口先失败行为测试。测试隔离 App 数据、OMP 配置、HOME、Git 配置、项目及网络；不继承个人凭据。真实供应商缺账户/费用授权仅暂停实测，不阻塞薄桥接及 fixture 验证。
-- 用户试用：当前交付 0.1.0-m2.8，源码 0243e4a，已收到主流程负面反馈，认可 pending；[快照/步骤/证据](handoff-entry.md)。本地原 m2.9 曾未通过包内闭环，本次原包复跑通过，但原故障根因仍 unknown；修复候选验证见[七提交审查](../review-seven-commits/spec.md)，不提前替换当前交付身份。每段可操作体验给出对应源码、包身份、步骤及实际证据，Agent 验证和用户认可独立。
+- 用户试用：当前交付 `0.1.0-m2.10 / c00f3dc5-e027fc01`、源码 `c00f3dc5`，实际包内与必要原生窗口验证通过；用户认可 pending。[精确身份、哈希、证据和步骤](navigation-continuity.md)。m2.9 的 Thread 切换闪烁已收到并处理，历史反馈/失败包仍保留，不用本轮通过覆盖原证据。每段可操作体验继续给出对应源码和包身份；Agent 验证不替代用户认可。
 - 继续边界：本授权内持续实施，不重做基建审计。重大产品/权限/数据合同变化才对齐；签名、公证、公开分发及 M3 不纳入。
 
 ## 首版覆盖与近期任务
@@ -100,3 +100,6 @@
 
 
 第二轮实际包继续拦住跨 Thread 阅读坐标恢复过早的缺口，按新失败回归修复挂载时序；原位置精确断言保留。完整工程检查更新为 482 行为测试、33 架构、47 tooling 通过，固定 CLI opt-in 仍跳过。最终候选等待包内验证，不将前两次失败包交付或视为认可。
+
+
+2026-10-01：最终 clean `0.1.0-m2.10 / c00f3dc5-e027fc01` 已交付，实际 14 项包内检查和 Computer Use 原生窗口抽查通过；7 次切换、42 帧和16 DOM mutation 均未出现基线工作区空白，阅读坐标精确恢复。ZIP 完整性及内部 app.asar 同源核对通过；482 行为、33 架构、47 tooling、build/pack 与固定环境通过。基础项目/Thread 01 工程闭环 resolved；02/03 及其它 M2 未完成范围保持原票。M2 engineering in-progress / trial delivered / acceptance pending，不 push 或公开发布。[本轮交接](navigation-continuity.md)。

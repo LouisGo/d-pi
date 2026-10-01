@@ -1,0 +1,15 @@
+{
+  "sourceCommit": "c00f3dc5be1c6855c480c81c7a10013cb6ddf2e6",
+  "version": "0.1.0-m2.10",
+  "buildId": "c00f3dc5-e027fc01",
+  "dirty": false,
+  "app": "/Users/louistation/MySpace/Life/d-pi/dist/navigation-m2.10/mac-arm64/d-pi.app",
+  "zip": "/Users/louistation/MySpace/Life/d-pi/dist/candidates/d-pi-0.1.0-m2.10-c00f3dc5-mac-arm64.zip",
+  "zipSha256": "7682a3dfe327b72e76d3de7a070db436d0d254c70a294c893c9e13219a1768ba",
+  "asarSha256": "da12dcfda41694d563170dcbdf1c23251e0c0905a2866e73892179b36c4d467e",
+  "zipIntegrity": "passed",
+  "zipAsarMatchesVerifiedApp": true,
+  "engineering": "M2 remains in-progress",
+  "trial": "delivered",
+  "acceptance": "pending"
+}

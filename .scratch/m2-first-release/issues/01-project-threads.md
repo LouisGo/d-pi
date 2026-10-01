@@ -1,6 +1,6 @@
 # 01 项目与 Thread
 
-Status: claimed
+Status: resolved
 Blocked by: none
 
 所属范围与授权见 [spec](../spec.md)。
@@ -17,3 +17,6 @@ Blocked by: none
 
 
 2026-10-01：接续用户 m2.9 切换闪烁反馈，复现 Main 已确认目标与 Router 提交之间工作区清空，以及返回 Thread 阅读位置丢失；失败回归后修复，完整工程检查通过。实际包内验证与候选身份见 [切换连续性交接](../navigation-continuity.md)。本票全集与用户认可仍按 spec 维护，不扩其它尚未交付能力。
+
+
+2026-10-01：m2.10 clean 候选修复导航交接空白与阅读位置丢失，实际独立 scope/草稿/撤销、切换、冷只读/新 Thread 入口、包内与原生窗口验证通过。本票声明的基础项目/Thread 工程闭环完成，resolved；用户体验认可仍由 spec 保持 pending，不将未覆盖完整 M2 能力算入。精确身份与复试见 [本轮交接](../navigation-continuity.md)。

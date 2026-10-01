@@ -21,7 +21,29 @@
 
 ## 候选交付
 
-当前准备 `0.1.0-m2.10` 的 clean 本地 macOS arm64 包。包内验证、精确源码/构建/哈希及步骤在完成后补充；不以未验证包冒充交付。
+已交付 clean macOS arm64 本地候选；交接记录提交只补文档/证据，不改变下面的精确构建源码。
+
+- 源码：`c00f3dc5be1c6855c480c81c7a10013cb6ddf2e6`，dirty=false；版本/构建：`0.1.0-m2.10 / c00f3dc5-e027fc01`。
+- App：`/Users/louistation/MySpace/Life/d-pi/dist/navigation-m2.10/mac-arm64/d-pi.app`。
+- ZIP：`/Users/louistation/MySpace/Life/d-pi/dist/candidates/d-pi-0.1.0-m2.10-c00f3dc5-mac-arm64.zip`。
+- ZIP SHA-256：`7682a3dfe327b72e76d3de7a070db436d0d254c70a294c893c9e13219a1768ba`。
+- app.asar SHA-256：`da12dcfda41694d563170dcbdf1c23251e0c0905a2866e73892179b36c4d467e`。ZIP 完整性通过，ZIP 内 app.asar 与实际验证源包一致。[身份记录](evidence/navigation-candidate.json)。
+- Build/pack 与固定资源环境核对通过；既有 Router 循环依赖/大 chunk 提示保留，未改警告门槛。首次隔离 checkout 的依赖目录 symlink 不被 pnpm/SDK 管理规则接受，改为独立 COW 副本后通过；最终 checkout 干净，锁文件/工具版本未变。
+
+### 实际桌面与回归
+
+实际执行 `node validation/m2/package.mjs <上述App> --router --continuity --inspect`：[完整结果](evidence/navigation-candidate-result.json)、[原始运行](evidence/navigation-packaged.txt)。14 项检查通过，只有 2 次 localhost fixture 供应商调用；两个真实 OMP scope 并行、不同模型/档位/草稿/消息、冻结多行发送、独立选区与 undo/redo、四页签和 back/forward、可信 Chromium IME、Renderer 刷新无重发、冷旧记录只读与明确新 Thread 出口均通过。7 次实际 Thread 切换共 58 个采样（42 个绘制帧、16 个 DOM mutation），公共壳/侧栏/工具栏身份保持，工作区与编辑器都有非零几何，未再出现基线空样本；近底部阅读位置精确恢复。该代表性采样不冒充全负载性能或完整 Codex 体验验收。
+
+Computer Use 在隔离包 `local.d-pi.m2-validation` 的真实 macOS 窗口中切换 B→A，核对 B 的 `fixture-a` / `B_UNSENT_DRAFT` 与 A 的 `fixture-b/high` / `A_UNSENT_DRAFT`；输入区和发送入口可见。原生历史页的当前绑定记录经明确“读取原生记录”成功显示多行用户输入、最终助手正文与 parent ID，草稿保持。fixture 没有 CLI 写入的项目历史，目录页显示暂不可读/尚未保存，不把绑定记录阅读冒称 CLI 历史发现实测；CLI 目录行为沿用已有隔离集成测试。该次刷新期间 stderr 有旧 frame 的 `Invalid history source` 拒绝及 Electron frame 提示，当前窗口绑定读取随后成功；保留日志，不冒称零报错，也未放松 IPC 来源守卫。[窗口](evidence/navigation-m2-parallel-entry.png)、[冷后新会话](evidence/navigation-m2-cold-new-thread.png)。
+
+### 复试步骤
+
+1. 解压新 ZIP，确认左下角为 `0.1.0-m2.10 · c00f3dc5-e027fc01`；使用原有项目与历史 Thread。
+2. 在 A 阅读长输出的中间/靠后位置，留下草稿，再切换 B 并返回 A：公共壳保持，工作区不会先清空，正文/模型/草稿属于对应 Thread，阅读位置恢复；再验证 A/B 各自撤销。
+3. 切换会话/文件/提交原文/原生历史页签及后退/前进，核对对应资料和阅读位置。Shift+Enter 换行后显式发送，冻结原文保持多行。
+4. 从冷旧 Thread 通过顶部“新会话”进入独立会话，按真实原生模型/档位选择并启动；旧原生会话继续只读，不解禁旧执行或自动重发 unknown。真实供应商生成由用户正常试用，Agent 本轮未消费个人凭据/计费。
+
+M2 全集工程仍 in-progress；本轮基础主流程候选已交付待复试，用户认可 pending。附件、完整队列、子 Agent、M3 和完整阅读/诊断矩阵保持原票。
 
 ## 范围与限制
 
