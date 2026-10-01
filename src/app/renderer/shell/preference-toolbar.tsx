@@ -1,18 +1,22 @@
 import { useStore } from "zustand";
 import { DarkThemeIcon, LightThemeIcon } from "@/components/icons/common";
 import { Button } from "@/components/ui/button";
-import { useI18n } from "../../../modules/preferences/renderer/public";
+import {
+  useI18n,
+  useLocalePreference,
+} from "../../../modules/preferences/renderer/public";
 import type { AppModel } from "../wiring/model";
 import { NavigationHistory } from "./navigation-history";
 
-export function PreferenceToolbar({
-  model,
-  hasThread,
-}: {
-  model: AppModel;
-  hasThread: boolean;
-}) {
-  const { t, preference, setPreference, persistenceFailed } = useI18n();
+export function PreferenceToolbar({ model }: { model: AppModel }) {
+  const hasThread = useStore(
+    model.stateStore,
+    (state) =>
+      state.kind === "ready" && state.threadSelection.kind === "thread",
+  );
+  const { t } = useI18n();
+  const { preference, setPreference, persistenceFailed } =
+    useLocalePreference();
   const theme = useStore(model.stateStore, (state) =>
     state.kind === "ready" ? state.preferences.theme : "light",
   );
@@ -21,9 +25,7 @@ export function PreferenceToolbar({
   );
   const busy = useStore(
     model.stateStore,
-    (state) =>
-      state.kind === "ready" &&
-      (state.busy || state.threadTransition === "unknown"),
+    (state) => state.kind === "ready" && state.threadTransition === "unknown",
   );
   return (
     <header className="toolbar">

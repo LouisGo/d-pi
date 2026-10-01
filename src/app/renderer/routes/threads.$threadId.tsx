@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useContext, useState } from "react";
+import { useCallback, useContext, useState } from "react";
 import { useStore } from "zustand";
 import { ThreadIdSchema } from "../../../shared/identity";
-import { readingSearch } from "../routing/search";
+import { type ReadingView, readingSearch } from "../routing/search";
 import { EditorAdapterContext } from "../workbench/editor-context";
 import { ThreadWorkbench } from "../workbench/thread-workbench";
 
@@ -19,6 +19,12 @@ function ThreadPage() {
   const { threadId } = Route.useParams();
   const view = Route.useSearch({ select: (search) => search.view });
   const navigate = Route.useNavigate();
+  const onReadingViewChange = useCallback(
+    (view: ReadingView) => {
+      void navigate({ search: { view }, replace: true });
+    },
+    [navigate],
+  );
   const selection = useStore(model.stateStore, (state) =>
     state.kind === "ready" &&
     state.threadTransition !== "unknown" &&
@@ -48,9 +54,7 @@ function ThreadPage() {
       threadSelection={visible}
       transitioning={!selection}
       readingView={view}
-      onReadingViewChange={(view) =>
-        void navigate({ search: { view }, replace: true })
-      }
+      onReadingViewChange={onReadingViewChange}
     />
   );
 }

@@ -87,15 +87,15 @@ it("notifies a selected projection only when that projection changes", async () 
   expect(busies).toEqual([false]);
   expect(themes).toEqual(["light"]);
   const toggled = model.preference("theme");
-  // The busy-only publication must not reach the theme projection.
-  expect(busies).toEqual([false, true]);
+  // Desktop preference persistence must not publish a navigation busy state.
+  expect(busies).toEqual([false]);
   expect(themes).toEqual(["light"]);
   saved.resolve({
     kind: "preferences-saved",
     value: { theme: "dark", density: "normal", locale: "system" },
   });
   await toggled;
-  expect(busies).toEqual([false, true, false]);
+  expect(busies).toEqual([false]);
   expect(themes).toEqual(["light", "dark"]);
   model.dispose();
 });
@@ -118,10 +118,9 @@ it("keeps whole-state subscribers notified for every published state", async () 
   });
   await model.start();
   expect(changes).toBe(1);
-  // preference() publishes the pending busy state and then the reply: two
-  // states, two notifications.
+  // Only the confirmed preference changes the visible App projection.
   await model.preference("theme");
-  expect(changes).toBe(3);
+  expect(changes).toBe(2);
   model.dispose();
 });
 
@@ -252,7 +251,7 @@ it("returns a cached snapshot and keeps both store references stable", async () 
   expect(model.getSnapshot()).toBe(before);
   const toggled = model.preference("theme");
   const during = model.getSnapshot();
-  expect(during).not.toBe(before);
+  expect(during).toBe(before);
   expect(model.getSnapshot()).toBe(during);
   saved.resolve({
     kind: "preferences-saved",

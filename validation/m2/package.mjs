@@ -336,8 +336,15 @@ try {
   await evaluate(
     "document.querySelector('.configuration-settings').open=false",
   );
-  await click("允许项目执行");
-  await click("启动 OMP");
+  await click("允许执行并启动");
+  await wait(() =>
+    evaluate(
+      "document.querySelector('.runtime-panel')?.textContent.includes('OMP 已就绪')",
+    ),
+  );
+  checks.push(
+    "explicit project grant automatically starts OMP without a separate startup click",
+  );
   await wait(() =>
     evaluate(
       "document.querySelector('.model-controls').textContent.includes('fixture/fixture-b')",
@@ -396,11 +403,13 @@ try {
       "document.querySelector('[contenteditable=true]')?.textContent===''",
     ),
   );
-  await click("启动 OMP");
   await wait(() =>
     evaluate(
       "document.querySelector('.model-controls').textContent.includes('fixture/fixture-a')",
     ),
+  );
+  checks.push(
+    "new trusted Thread automatically starts its own native OMP session",
   );
   await insert("M2_SECOND_INPUT");
   await click("发送");
@@ -750,7 +759,7 @@ try {
   );
   await wait(() =>
     evaluate(
-      "Array.from(document.querySelectorAll('button')).some(b=>b.textContent.trim()==='启动 OMP'&&!b.disabled)",
+      "document.querySelector('.runtime-panel')?.textContent.includes('OMP 已就绪')",
     ),
   );
   checks.push(
@@ -761,7 +770,7 @@ try {
   assert.ok(!logs.includes("M2_FIRST_INPUT"));
   assert.ok(!logs.includes("fixture-original"));
   const build = JSON.parse(logs.trim().split("\n")[0]).build;
-  assert.equal(build.dirty, false);
+  assert.equal(build.dirty, process.argv.includes("--working-tree"));
   const result = {
     source,
     bundle,

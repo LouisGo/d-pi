@@ -90,6 +90,7 @@ export class AppModel {
   private readonly threads = new Map<string, ThreadModel>();
   private disposed = false;
   private requestGeneration = 0;
+  private preferenceWrite: Promise<void> | null = null;
   private editorBinding: EditorBinding | null = null;
   private closeAttempt: {
     thread: ThreadModel | null;
@@ -242,9 +243,16 @@ export class AppModel {
       this.publish({ ...state, busy: false, notice: error });
     else this.publish({ kind: "failed", error });
   }
-  private acceptRestore(reply: RestoreReply): ThreadTransitionResult {
+  private acceptRestore(
+    reply: RestoreReply,
+    startOnCreate = false,
+  ): ThreadTransitionResult {
     return match(reply)
       .with({ kind: "ready" }, ({ draft, directoryAvailable, preferences }) => {
+        // Thread selection does not own desktop preferences. A selection
+        // receipt may have been sampled before an independent preference save.
+        const appearance =
+          this.state.kind === "ready" ? this.state.preferences : preferences;
         const previous = this.activeThread;
         const cached = draft ? this.threads.get(draft.threadId) : null;
         const thread = draft
@@ -254,14 +262,19 @@ export class AppModel {
                 draft.revision &&
                 cached.controller.getTextSnapshot() === draft.text))
             ? cached
-            : new ThreadModel(draft, this.bridge, transportFailure)
+            : new ThreadModel(
+                draft,
+                this.bridge,
+                transportFailure,
+                startOnCreate,
+              )
           : null;
         if (thread) this.threads.set(thread.context.threadId, thread);
         if (cached && cached !== thread) cached.dispose();
         const threadSelection: ThreadSelectionState = thread
           ? { kind: "thread", thread, directoryAvailable }
           : { kind: "empty" };
-        this.applyAppearance(preferences);
+        this.applyAppearance(appearance);
         if (previous !== thread) {
           this.editorBinding = null;
           this.closeAttempt = null;
@@ -269,7 +282,7 @@ export class AppModel {
         this.publish({
           kind: "ready",
           threadSelection,
-          preferences,
+          preferences: appearance,
           busy: false,
           notice: null,
         });
@@ -394,7 +407,10 @@ export class AppModel {
       if (this.isCurrent(generation)) {
         if (reply.kind === "failed")
           return await this.readSelection(generation, previous, reply.error);
-        return this.acceptRestore(reply);
+        return this.acceptRestore(
+          reply,
+          command.kind === "new-thread" || command.kind === "choose-project",
+        );
       }
       return { kind: "blocked", reason: "superseded" };
     } catch {
@@ -473,15 +489,22 @@ export class AppModel {
       binding?.boundary.release();
     return result;
   }
-  async preference(key: Exclude<keyof Preferences, "locale">): Promise<void> {
+  preference(key: Exclude<keyof Preferences, "locale">): Promise<void> {
+    const save = () => this.savePreference(key);
+    const writing = this.preferenceWrite
+      ? this.preferenceWrite.then(save)
+      : save();
+    this.preferenceWrite = writing;
+    void writing.finally(() => {
+      if (this.preferenceWrite === writing) this.preferenceWrite = null;
+    });
+    return writing;
+  }
+  private async savePreference(
+    key: Exclude<keyof Preferences, "locale">,
+  ): Promise<void> {
     const state = this.state;
-    if (
-      this.disposed ||
-      state.kind !== "ready" ||
-      state.busy ||
-      state.threadTransition === "unknown"
-    )
-      return;
+    if (this.disposed || state.kind !== "ready") return;
     const current = state.preferences;
     const value = match(key)
       .with("theme", () => ({
@@ -504,31 +527,32 @@ export class AppModel {
             : ("normal" as const),
       }))
       .exhaustive();
-    const generation = ++this.requestGeneration;
-    this.publish({ ...state, busy: true });
     const traceId = crypto.randomUUID();
+    const failSave = (error: Failure) => {
+      if (!this.disposed && this.state.kind === "ready")
+        this.publish({ ...this.state, notice: error });
+    };
     try {
       const reply = await this.bridge.request({
         kind: "preferences",
         traceId,
         value,
       });
-      if (!this.isCurrent(generation)) return;
+      if (this.disposed) return;
       match(reply)
-        .with({ kind: "failed" }, ({ error }) => this.fail(error))
+        .with({ kind: "failed" }, ({ error }) => failSave(error))
         .with({ kind: "preferences-saved" }, ({ value }) => {
           this.applyAppearance(value);
           if (this.state.kind === "ready")
             this.publish({
               ...this.state,
               preferences: value,
-              busy: false,
               notice: null,
             });
         })
         .exhaustive();
     } catch {
-      if (this.isCurrent(generation)) this.fail(transportFailure(traceId));
+      failSave(transportFailure(traceId));
     }
   }
 }

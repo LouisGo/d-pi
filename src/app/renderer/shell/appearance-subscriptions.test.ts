@@ -8,7 +8,10 @@ import {
 } from "../../../modules/files/core/public";
 import type { CodeView } from "../../../modules/files/renderer/public";
 import { DraftSchema } from "../../../modules/input/contracts/public";
-import type { Preferences } from "../../../modules/preferences/contracts/public";
+import type {
+  LocaleBridge,
+  Preferences,
+} from "../../../modules/preferences/contracts/public";
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
 import { createI18n } from "../../../shared/i18n/create-i18n";
 import {
@@ -30,6 +33,17 @@ const views = vi.hoisted(() => ({
   composer: vi.fn(),
   files: vi.fn(),
 }));
+const shell = vi.hoisted(() => ({ folder: vi.fn() }));
+vi.mock("@/components/icons/common", async (original) => {
+  const icons = await original<typeof import("../components/icons/common")>();
+  return {
+    ...icons,
+    FolderIcon: () => {
+      shell.folder();
+      return createElement(icons.FolderIcon);
+    },
+  };
+});
 type Selection = Extract<FrozenSelection, { kind: "selection" }>;
 type Attachment = { id: string; threadId: string; selection: Selection };
 const attachmentBridge = vi.hoisted(() => {
@@ -92,6 +106,7 @@ afterEach(async () => {
     container.remove();
   }
   for (const view of Object.values(views)) view.mockClear();
+  shell.folder.mockClear();
   attachmentBridge.current = null;
   attachmentBridge.attach = null;
   attachmentBridge.applied = null;
@@ -198,6 +213,33 @@ async function setup({
   };
   const model = new AppModel(bridge);
   if (start) await model.start();
+  model.threadListStore.setState({
+    threads: [1, 2, 3].map((number) => ({
+      threadId:
+        number === 1
+          ? draft.threadId
+          : DraftSchema.parse({ ...draft, threadId: crypto.randomUUID() })
+              .threadId,
+      workingDirectoryId: draft.workingDirectoryId,
+      directory: `/fixture/project-${number}`,
+    })),
+    failed: false,
+  });
+  let localeListener: Parameters<LocaleBridge["subscribe"]>[0] | undefined;
+  const localeBridge: LocaleBridge = {
+    snapshot: async () => ({ preference: "system", resolvedLocale: "en-US" }),
+    subscribe: (listener) => {
+      localeListener = listener;
+      return () => {
+        localeListener = undefined;
+      };
+    },
+    setPreference: async (preference) => ({
+      preference,
+      resolvedLocale: preference === "system" ? "en-US" : preference,
+      persisted: true,
+    }),
+  };
   const container = document.createElement("div");
   document.body.append(container);
   const root = createRoot(container);
@@ -208,17 +250,18 @@ async function setup({
       onSelection: (value: FrozenSelection) => void;
     }>,
   ) =>
-    act(() =>
+    act(async () => {
       root.render(
         createElement(I18nProvider, {
+          bridge: localeBridge,
           initialSnapshot: {
             preference: "system",
             resolvedLocale: "en-US",
           },
           children: createElement(App, { model, editor }),
         }),
-      ),
-    );
+      );
+    });
   await render();
   const button = (label: string): HTMLButtonElement => {
     const node = container.querySelector<HTMLButtonElement>(
@@ -232,6 +275,8 @@ async function setup({
     container,
     button,
     render,
+    changeLanguage: () =>
+      localeListener?.({ preference: "zh-CN", resolvedLocale: "zh-CN" }),
     settle: (failed = false) => {
       if (!pending) throw Error("no pending preference save");
       const { command, resolve } = pending;
@@ -271,7 +316,7 @@ function renderCounts() {
   );
 }
 
-it("keeps Thread views untouched while theme saving disables controls and then applies the confirmed appearance", async () => {
+it("keeps normal controls and Thread views untouched while saving a theme", async () => {
   const fixture = await setup();
   const initial = renderCounts();
   expect(Object.values(initial)).toEqual([1, 1, 1, 1, 1, 1]);
@@ -279,7 +324,7 @@ it("keeps Thread views untouched while theme saving disables controls and then a
   await act(() => {
     saving = fixture.model.preference("theme");
   });
-  expect(fixture.button(i18n.t("app.toolbar.darkTheme")).disabled).toBe(true);
+  expect(fixture.button(i18n.t("app.toolbar.darkTheme")).disabled).toBe(false);
   expect(document.documentElement.dataset.theme).toBe("light");
   expect(renderCounts()).toEqual(initial);
 
@@ -290,6 +335,38 @@ it("keeps Thread views untouched while theme saving disables controls and then a
   expect(fixture.button(i18n.t("app.toolbar.lightTheme")).disabled).toBe(false);
   expect(document.documentElement.dataset.theme).toBe("dark");
   expect(renderCounts()).toEqual(initial);
+});
+
+it("does not execute sidebar Thread rows for theme or shortcut save busy updates", async () => {
+  const fixture = await setup();
+  for (const key of ["theme", "sendKey"] as const) {
+    const before = shell.folder.mock.calls.length;
+    let saving: Promise<void> | undefined;
+    await act(() => {
+      saving = fixture.model.preference(key);
+    });
+    const row = fixture.container
+      .querySelector<HTMLButtonElement>(".thread-name")
+      ?.closest("button");
+    // happy-dom does not implement fieldset-inherited :disabled. Chromium's
+    // inherited disabled behavior and opacity are checked by the native probe.
+    expect(row?.closest("fieldset")?.disabled).toBe(false);
+    await act(async () => {
+      fixture.settle();
+      await saving;
+    });
+    expect(row?.closest("fieldset")?.disabled).toBe(false);
+    // Preference persistence must not disable or re-execute navigation.
+    expect(shell.folder.mock.calls.length - before).toBe(0);
+  }
+});
+
+it("translates controls without executing the workspace's unrelated business views", async () => {
+  const fixture = await setup();
+  const before = renderCounts();
+  await act(() => fixture.changeLanguage());
+  expect(fixture.container.textContent).toContain("原生历史");
+  expect(renderCounts()).toEqual(before);
 });
 
 it("does not mutate appearance attributes when only the send shortcut changes", async () => {
@@ -330,8 +407,8 @@ it("isolates density, busy and failed-save notices while preserving the previous
   await act(() => {
     saving = fixture.model.preference("density");
   });
-  expect(compactButton()?.disabled).toBe(true);
-  expect(fixture.container.querySelector("select")?.disabled).toBe(true);
+  expect(compactButton()?.disabled).toBe(false);
+  expect(fixture.container.querySelector("select")?.disabled).toBe(false);
   expect(renderCounts()).toEqual(initial);
   await act(async () => {
     fixture.settle(true);
@@ -470,7 +547,7 @@ it("retains loading, repeated failure details and disposal without a root state 
   expect(fixture.container.innerHTML).toBe("");
 });
 
-it("keeps the project chooser disabled for its real pending operation", async () => {
+it("freezes the shell for a real pending project choice without dimming each control", async () => {
   const fixture = await setup({ empty: true });
   const choose = () =>
     Array.from(fixture.container.querySelectorAll("button")).find(
@@ -481,7 +558,10 @@ it("keeps the project chooser disabled for its real pending operation", async ()
   await act(() => {
     choosing = fixture.model.choose();
   });
-  expect(choose()?.disabled).toBe(true);
+  expect(choose()?.disabled).toBe(false);
+  expect(
+    fixture.container.querySelector(".app-shell")?.hasAttribute("inert"),
+  ).toBe(true);
   await act(async () => {
     fixture.cancelChoice();
     await choosing;
@@ -496,11 +576,85 @@ it("still updates localized workbench text when the language context changes", a
   );
   const language = fixture.container.querySelector("select");
   if (!language) throw Error("missing language selector");
-  await act(() => {
+  await act(async () => {
     language.value = "zh-CN";
     language.dispatchEvent(new Event("change", { bubbles: true }));
   });
   expect(fixture.container.textContent).toContain(
     createI18n("zh-CN").t("ui.conversation.heading"),
   );
+});
+
+it("applies a preference receipt to the current App after Thread navigation without cancelling either operation", async () => {
+  const fixture = await setup();
+  let saving: Promise<void> | undefined;
+  await act(() => {
+    saving = fixture.model.preference("theme");
+  });
+  await act(() => fixture.changeThread());
+  const selected = fixture.model.controller;
+  await act(async () => {
+    fixture.settle();
+    await saving;
+  });
+  expect(fixture.model.controller).toBe(selected);
+  expect(fixture.model.getSnapshot()).toMatchObject({
+    kind: "ready",
+    busy: false,
+    preferences: { theme: "dark" },
+  });
+  expect(document.documentElement.dataset.theme).toBe("dark");
+});
+
+it("serializes rapid preference changes without blocking navigation or losing earlier fields", async () => {
+  const fixture = await setup();
+  let theme: Promise<void> | undefined;
+  let density: Promise<void> | undefined;
+  await act(() => {
+    theme = fixture.model.preference("theme");
+    density = fixture.model.preference("density");
+  });
+  expect(fixture.model.getSnapshot()).toMatchObject({
+    kind: "ready",
+    busy: false,
+  });
+  await act(async () => {
+    fixture.settle();
+    await theme;
+  });
+  expect(document.documentElement.dataset.theme).toBe("dark");
+  await act(async () => {
+    fixture.settle();
+    await density;
+  });
+  expect(fixture.model.getSnapshot()).toMatchObject({
+    preferences: { theme: "dark", density: "compact" },
+  });
+});
+
+it("does not clear a pending Thread transition when an independent preference save fails", async () => {
+  const fixture = await setup();
+  let saving: Promise<void> | undefined;
+  let choosing: ReturnType<AppModel["choose"]> | undefined;
+  await act(() => {
+    saving = fixture.model.preference("theme");
+    choosing = fixture.model.choose();
+  });
+  await act(async () => {
+    fixture.settle(true);
+    await saving;
+  });
+  expect(fixture.model.getSnapshot()).toMatchObject({
+    kind: "ready",
+    busy: true,
+    threadTransition: "pending",
+  });
+  await act(async () => {
+    fixture.cancelChoice();
+    await choosing;
+  });
+  expect(fixture.model.getSnapshot()).toMatchObject({
+    kind: "ready",
+    busy: false,
+  });
 });

@@ -1,4 +1,5 @@
 import {
+  memo,
   type ReactNode,
   useCallback,
   useLayoutEffect,
@@ -21,20 +22,35 @@ import { ModelControls } from "./model-controls";
 import { RuntimePanel } from "./runtime-panel";
 import type { WorkbenchProps } from "./types";
 
+type ThreadWorkbenchProps = WorkbenchProps & {
+  transitioning?: boolean;
+  readingView: ReadingView;
+  onReadingViewChange: (view: ReadingView) => void;
+  threadSelection: Extract<ThreadSelectionState, { kind: "thread" }>;
+};
+
 export function ThreadWorkbench({
+  transitioning = false,
+  ...props
+}: ThreadWorkbenchProps) {
+  return (
+    <section
+      className="thread-workspace"
+      inert={transitioning}
+      aria-busy={transitioning}
+    >
+      <ThreadContent {...props} />
+    </section>
+  );
+}
+
+const ThreadContent = memo(function ThreadContent({
   model,
   threadSelection,
   editor,
   readingView,
   onReadingViewChange,
-  transitioning = false,
-}: WorkbenchProps & {
-  transitioning?: boolean;
-  readingView: ReadingView;
-  onReadingViewChange: (view: ReadingView) => void;
-  threadSelection: Extract<ThreadSelectionState, { kind: "thread" }>;
-}) {
-  const { t } = useI18n();
+}: ThreadWorkbenchProps) {
   const { thread, directoryAvailable } = threadSelection;
   const { submission } = thread;
   const [selectionAttachment, setSelectionAttachment] = useState<{
@@ -56,22 +72,14 @@ export function ThreadWorkbench({
     [thread],
   );
   return (
-    <section
-      className="thread-workspace"
-      inert={transitioning}
-      aria-busy={transitioning}
-    >
+    <>
       <div className="thread-setup">
         <div className="directory-info" title={thread.context.directory}>
           <FolderIcon />
           <h1>{thread.context.directory.split("/").filter(Boolean).at(-1)}</h1>
           <span className="muted">{thread.context.directory}</span>
         </div>
-        {!directoryAvailable && (
-          <p className="failure" role="alert">
-            {t("app.draft.directoryUnavailable")}
-          </p>
-        )}
+        {!directoryAvailable && <DirectoryUnavailable />}
         {model.configuration && (
           <ModelControls thread={thread} bridge={model.configuration} />
         )}
@@ -89,39 +97,10 @@ export function ThreadWorkbench({
           />
         )}
       </div>
-      <nav
-        className="reading-navigation"
-        aria-label={t("app.reading.navigation")}
-      >
-        <Button
-          variant="ghost"
-          aria-pressed={readingView === "conversation"}
-          onClick={() => onReadingViewChange("conversation")}
-        >
-          {t("ui.conversation.heading")}
-        </Button>
-        <Button
-          variant="ghost"
-          aria-pressed={readingView === "files"}
-          onClick={() => onReadingViewChange("files")}
-        >
-          {t("ui.files.section")}
-        </Button>
-        <Button
-          variant="ghost"
-          aria-pressed={readingView === "submissions"}
-          onClick={() => onReadingViewChange("submissions")}
-        >
-          {t("app.reading.submissions")}
-        </Button>
-        <Button
-          variant="ghost"
-          aria-pressed={readingView === "history"}
-          onClick={() => onReadingViewChange("history")}
-        >
-          {t("app.reading.history")}
-        </Button>
-      </nav>
+      <ReadingNavigation
+        readingView={readingView}
+        onReadingViewChange={onReadingViewChange}
+      />
       <div className="thread-reading">
         <ReadingPane
           thread={thread}
@@ -177,7 +156,58 @@ export function ThreadWorkbench({
         selectionAttachment={selectionAttachment}
         onAttachmentApplied={onAttachmentApplied}
       />
-    </section>
+    </>
+  );
+});
+
+function DirectoryUnavailable() {
+  const { t } = useI18n();
+  return (
+    <p className="failure" role="alert">
+      {t("app.draft.directoryUnavailable")}
+    </p>
+  );
+}
+
+function ReadingNavigation({
+  readingView,
+  onReadingViewChange,
+}: Pick<ThreadWorkbenchProps, "readingView" | "onReadingViewChange">) {
+  const { t } = useI18n();
+  return (
+    <nav
+      className="reading-navigation"
+      aria-label={t("app.reading.navigation")}
+    >
+      <Button
+        variant="ghost"
+        aria-pressed={readingView === "conversation"}
+        onClick={() => onReadingViewChange("conversation")}
+      >
+        {t("ui.conversation.heading")}
+      </Button>
+      <Button
+        variant="ghost"
+        aria-pressed={readingView === "files"}
+        onClick={() => onReadingViewChange("files")}
+      >
+        {t("ui.files.section")}
+      </Button>
+      <Button
+        variant="ghost"
+        aria-pressed={readingView === "submissions"}
+        onClick={() => onReadingViewChange("submissions")}
+      >
+        {t("app.reading.submissions")}
+      </Button>
+      <Button
+        variant="ghost"
+        aria-pressed={readingView === "history"}
+        onClick={() => onReadingViewChange("history")}
+      >
+        {t("app.reading.history")}
+      </Button>
+    </nav>
   );
 }
 

@@ -16,7 +16,7 @@ export const ui = {
   "composer.blocked.readOnly":
     "此会话只读，不能发送。原有草稿保留；新会话可选择模型并开始工作。",
   "composer.blocked.start": "尚未启动会话，请先启动 OMP，再发送。",
-  "composer.blocked.allow": "项目尚未允许执行，请先允许，再启动会话。",
+  "composer.blocked.allow": "请允许项目执行以启动会话。",
   "composer.blocked.wait": "会话尚未就绪，请查看执行状态。",
   "model.offThinking": "关闭推理",
   "model.reason.configuration-unknown": "配置暂不可用",
@@ -230,7 +230,7 @@ export const ui = {
   "ui.runtime.unsupportedInteraction":
     "存在尚不支持或超出显示预算的原生交互，未自动回答。",
   "ui.runtime.interactionRecords": "交互记录",
-  "ui.runtime.allow": "允许项目执行",
+  "ui.runtime.allow": "允许执行并启动",
   "ui.runtime.start": "启动 OMP",
   "ui.runtime.revoke": "撤销执行授权",
   "ui.runtime.inspect": "检查状态",

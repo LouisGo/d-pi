@@ -22,3 +22,5 @@ Blocked by: none
 2026-10-01：m2.10 clean 候选修复导航交接空白与阅读位置丢失，实际独立 scope/草稿/撤销、切换、冷只读/新 Thread 入口、包内与原生窗口验证通过。本票声明的基础项目/Thread 工程闭环完成，resolved；用户体验认可仍由 spec 保持 pending，不将未覆盖完整 M2 能力算入。精确身份与复试见 [本轮交接](../navigation-continuity.md)。
 
 2026-10-01：用户最新反馈切换会话仍有整页闪烁；本票重开 claimed，既有有限采样不替代实际体验。本轮按用户要求接入 `pnpm dev` 的 DevTools 菜单及官方 React Developer Tools 扩展；工具已可用于定位，但未据此宣称闪烁修复。见 [开发调试工具](../development-tools.md)。
+
+2026-10-01：接续按钮重渲染/闪烁及手动启动反馈，当前源码修复全局偏好 busy、父级订阅传播和语言 Context；新 Thread 已授权时自动启动，首次明确允许接续启动。行为/原生连续性与实际包证据见 [本轮记录](../rendering-isolation.md)。用户复试仍待反馈，本票保持 claimed。

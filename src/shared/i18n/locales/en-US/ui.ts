@@ -20,7 +20,7 @@ export const ui = {
     "This session is read-only and cannot send. Its draft is preserved; create a new session to select a model and work.",
   "composer.blocked.start":
     "The session has not started. Start OMP before sending.",
-  "composer.blocked.allow": "Allow project execution, then start the session.",
+  "composer.blocked.allow": "Allow project execution to start the session.",
   "composer.blocked.wait":
     "The session is not ready. Check its execution status.",
   "model.offThinking": "Reasoning off",
@@ -250,7 +250,7 @@ export const ui = {
   "ui.runtime.unsupportedInteraction":
     "Some native interactions are unsupported or exceed the display budget. They were not answered automatically.",
   "ui.runtime.interactionRecords": "Interaction records",
-  "ui.runtime.allow": "Allow project execution",
+  "ui.runtime.allow": "Allow execution and start",
   "ui.runtime.start": "Start OMP",
   "ui.runtime.revoke": "Revoke execution approval",
   "ui.runtime.inspect": "Check status",

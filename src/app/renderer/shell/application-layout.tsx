@@ -14,20 +14,24 @@ import { ThreadNotice } from "./thread-notice";
 type ApplicationLayoutProps = { model: AppModel; children?: ReactNode };
 
 export function ApplicationLayout({ model, children }: ApplicationLayoutProps) {
-  const { t } = useI18n();
   const phase = useStore(model.stateStore, (state) => state.kind);
   return match(phase)
-    .with("loading", () => (
-      <main className="startup" role="status">
-        {t("app.loading")}
-      </main>
-    ))
+    .with("loading", () => <StartupLoading />)
     .with("failed", () => <StartupFailure model={model} />)
     .with("disposed", () => null)
     .with("ready", () => (
       <ReadyWorkbench model={model}>{children}</ReadyWorkbench>
     ))
     .exhaustive();
+}
+
+function StartupLoading() {
+  const { t } = useI18n();
+  return (
+    <main className="startup" role="status">
+      {t("app.loading")}
+    </main>
+  );
 }
 
 function StartupFailure({ model }: { model: AppModel }) {
@@ -48,55 +52,80 @@ function StartupFailure({ model }: { model: AppModel }) {
 }
 
 function ReadyWorkbench({ model, children }: ApplicationLayoutProps) {
-  const { t } = useI18n();
-  const threadSelection = useStore(model.stateStore, (state) =>
-    state.kind === "ready" ? state.threadSelection : null,
-  );
-  const transition = useStore(model.stateStore, (state) =>
-    state.kind === "ready" ? state.threadTransition : undefined,
-  );
-  if (!threadSelection) return null;
-  const thread =
-    threadSelection.kind === "thread" ? threadSelection.thread : null;
   return (
-    <div
-      className="app-shell"
-      inert={transition === "pending"}
-      aria-busy={transition === "pending"}
-    >
+    <ShellFrame model={model}>
       <aside className="sidebar">
         <div className="brand">
           {/* i18n-ignore: product brand and release marker */}
           d-pi <span>M2</span>
         </div>
         <ProjectThreads model={model} />
-        <div className="sidebar-bottom">
-          <span className="muted">{t("app.sidebar.localDraft")}</span>
-          <span className="muted">{t("app.executionNeedsApproval")}</span>
-          <span className="trace muted" title={BUILD_INFO.commit}>
-            {BUILD_INFO.version} · {BUILD_INFO.id}
-          </span>
-        </div>
+        <SidebarFooter />
       </aside>
       <main className="workbench">
-        <PreferenceToolbar model={model} hasThread={thread !== null} />
+        <PreferenceToolbar model={model} />
         <ThreadNotice model={model} />
-        {model.configuration && transition !== "unknown" && (
-          <ConfigurationSettings
-            bridge={model.configuration}
-            scope={
-              thread
-                ? {
-                    kind: "thread",
-                    threadId: thread.context.threadId,
-                    workingDirectoryId: thread.context.workingDirectoryId,
-                  }
-                : { kind: "application" }
-            }
-          />
-        )}
+        <ThreadConfiguration model={model} />
         <div className="work-content">{children ?? <Outlet />}</div>
       </main>
+    </ShellFrame>
+  );
+}
+
+function ShellFrame({ model, children }: ApplicationLayoutProps) {
+  const transition = useStore(model.stateStore, (state) =>
+    state.kind === "ready" ? state.threadTransition : undefined,
+  );
+  return (
+    <div
+      className="app-shell"
+      inert={transition === "pending"}
+      aria-busy={transition === "pending"}
+    >
+      {children}
     </div>
+  );
+}
+
+function SidebarFooter() {
+  const { t } = useI18n();
+  return (
+    <div className="sidebar-bottom">
+      <span className="muted">{t("app.sidebar.localDraft")}</span>
+      <span className="muted">{t("app.executionNeedsApproval")}</span>
+      <span className="trace muted" title={BUILD_INFO.commit}>
+        {BUILD_INFO.version} · {BUILD_INFO.id}
+      </span>
+    </div>
+  );
+}
+
+function ThreadConfiguration({ model }: { model: AppModel }) {
+  const threadSelection = useStore(model.stateStore, (state) =>
+    state.kind === "ready" ? state.threadSelection : null,
+  );
+  const unknown = useStore(
+    model.stateStore,
+    (state) => state.kind === "ready" && state.threadTransition === "unknown",
+  );
+  const thread =
+    threadSelection?.kind === "thread" ? threadSelection.thread : null;
+  return (
+    <>
+      {model.configuration && !unknown && (
+        <ConfigurationSettings
+          bridge={model.configuration}
+          scope={
+            thread
+              ? {
+                  kind: "thread",
+                  threadId: thread.context.threadId,
+                  workingDirectoryId: thread.context.workingDirectoryId,
+                }
+              : { kind: "application" }
+          }
+        />
+      )}
+    </>
   );
 }

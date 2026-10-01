@@ -20,6 +20,11 @@ vi.mock("react", async (importOriginal) => {
 vi.mock("../../../modules/preferences/renderer/public", async () => {
   const { createI18n } = await import("../../../shared/i18n/create-i18n");
   return {
+    useLocalePreference: () => ({
+      preference: locale,
+      persistenceFailed: false,
+      setPreference: () => Promise.resolve(),
+    }),
     useI18n: () => ({
       ...createI18n(locale),
       preference: locale,

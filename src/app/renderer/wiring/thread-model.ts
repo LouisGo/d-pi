@@ -28,6 +28,7 @@ export class ThreadModel {
     draft: Draft,
     bridge: DesktopBridge,
     transportFailure: (traceId: string) => Failure,
+    startOnCreate = false,
   ) {
     this.context = {
       threadId: draft.threadId,
@@ -71,7 +72,18 @@ export class ThreadModel {
         : null;
       this.runtimeReadingUnsubscribe =
         this.runtime?.subscribe(this.syncReading) ?? null;
-      this.runtime?.bind(draft.threadId);
+      const inspected = this.runtime?.bind(draft.threadId);
+      if (startOnCreate)
+        void inspected?.then(() => {
+          const view = this.runtime?.getSnapshot();
+          if (
+            !this.disposed &&
+            view?.phase === "allowed" &&
+            view.trusted &&
+            !view.busy
+          )
+            void this.runtime?.act("start");
+        });
     } catch (cause) {
       this.dispose();
       throw cause;

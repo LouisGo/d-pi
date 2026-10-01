@@ -15,14 +15,19 @@ import {
 import type { UiMessage } from "../../../shared/messages/contracts";
 import type { LocaleBridge } from "../contracts/public";
 
-interface I18nContextValue extends I18n {
+interface LocalePreferenceContextValue {
   readonly preference: LocalePreference;
   readonly persistenceFailed: boolean;
-  formatMessage(message: UiMessage): string;
   setPreference(preference: LocalePreference): Promise<void>;
 }
 
+interface I18nContextValue extends I18n {
+  formatMessage(message: UiMessage): string;
+}
+
 const I18nContext = createContext<I18nContextValue | null>(null);
+const LocalePreferenceContext =
+  createContext<LocalePreferenceContextValue | null>(null);
 
 export function browserLocaleFallback(): LocaleSnapshot {
   return {
@@ -45,6 +50,18 @@ export function I18nProvider({
   const i18n = useMemo(
     () => createI18n(snapshot.resolvedLocale),
     [snapshot.resolvedLocale],
+  );
+  const translation = useMemo<I18nContextValue>(
+    () => ({
+      ...i18n,
+      formatMessage(message) {
+        return i18n.t(
+          message.code,
+          "params" in message ? message.params : undefined,
+        );
+      },
+    }),
+    [i18n],
   );
 
   useEffect(() => {
@@ -74,17 +91,10 @@ export function I18nProvider({
     };
   }, [bridge]);
 
-  const value = useMemo<I18nContextValue>(
+  const value = useMemo<LocalePreferenceContextValue>(
     () => ({
-      ...i18n,
       preference: snapshot.preference,
       persistenceFailed,
-      formatMessage(message) {
-        return i18n.t(
-          message.code,
-          "params" in message ? message.params : undefined,
-        );
-      },
       async setPreference(preference) {
         setPersistenceFailed(false);
         if (preference !== "system")
@@ -109,9 +119,21 @@ export function I18nProvider({
         }
       },
     }),
-    [bridge, i18n, persistenceFailed, snapshot.preference],
+    [bridge, persistenceFailed, snapshot.preference],
   );
-  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
+  return (
+    <I18nContext value={translation}>
+      <LocalePreferenceContext value={value}>
+        {children}
+      </LocalePreferenceContext>
+    </I18nContext>
+  );
+}
+
+export function useLocalePreference(): LocalePreferenceContextValue {
+  const value = useContext(LocalePreferenceContext);
+  if (!value) throw new Error("I18nProvider is missing");
+  return value;
 }
 
 export function useI18n(): I18nContextValue {

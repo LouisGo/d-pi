@@ -8,9 +8,7 @@ export function ChooseProjectButton({ model }: { model: AppModel }) {
   const { t } = useI18n();
   const busy = useStore(
     model.stateStore,
-    (state) =>
-      state.kind === "ready" &&
-      (state.busy || state.threadTransition === "unknown"),
+    (state) => state.kind === "ready" && state.threadTransition === "unknown",
   );
   return (
     <Button disabled={busy} onClick={() => void model.choose()}>

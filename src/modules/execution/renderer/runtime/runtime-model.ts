@@ -87,15 +87,15 @@ export class RuntimeModel {
       message,
     };
   }
-  bind(thread: ThreadId): void {
+  bind(thread: ThreadId): Promise<void> {
     const state = this.store.getState();
-    if (state.disposed || state.thread === thread) return;
+    if (state.disposed || state.thread === thread) return Promise.resolve();
     this.store.setState({
       thread,
       requestGeneration: state.requestGeneration + 1,
       view: null,
     });
-    void this.act("inspect");
+    return this.act("inspect");
   }
   async act(
     kind: Exclude<
@@ -130,6 +130,14 @@ export class RuntimeModel {
           );
         })
         .exhaustive();
+      const current = this.store.getState().view;
+      if (
+        kind === "allow" &&
+        current?.phase === "allowed" &&
+        current.trusted &&
+        !current.busy
+      )
+        await this.act("start");
     } catch {
       if (requestGeneration !== this.store.getState().requestGeneration) return;
       this.publish(

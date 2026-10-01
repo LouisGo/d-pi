@@ -1,0 +1,233 @@
+import { createRoot } from "react-dom/client";
+import {
+  type DesktopBridge,
+  parseDesktopReply,
+} from "../../src/app/contracts/desktop-bridge";
+import { App } from "../../src/app/renderer/app";
+import { AppModel } from "../../src/app/renderer/wiring/model";
+import { QueryProvider } from "../../src/app/renderer/wiring/query-client";
+import { RuntimeViewSchema } from "../../src/modules/execution/contracts/public";
+import { DraftSchema } from "../../src/modules/input/contracts/public";
+import type { Preferences } from "../../src/modules/preferences/contracts/public";
+import { I18nProvider } from "../../src/modules/preferences/renderer/public";
+import type { LocaleSnapshot } from "../../src/shared/i18n/locale";
+import "../../src/app/renderer/styles/app.css";
+
+const pause = () => new Promise<void>((resolve) => setTimeout(resolve, 120));
+const first = DraftSchema.parse({
+  schemaVersion: 1,
+  threadId: crypto.randomUUID(),
+  workingDirectoryId: crypto.randomUUID(),
+  directory: "/isolated/rendering",
+  revision: 0,
+  text: "A unsent draft",
+});
+const drafts = [
+  first,
+  DraftSchema.parse({
+    ...first,
+    threadId: crypto.randomUUID(),
+    text: "B unsent draft",
+  }),
+  DraftSchema.parse({
+    ...first,
+    threadId: crypto.randomUUID(),
+    text: "C unsent draft",
+  }),
+];
+let selected = first;
+let preferences: Preferences = {
+  theme: "light",
+  density: "normal",
+  locale: "system",
+};
+let locale: LocaleSnapshot = { preference: "en-US", resolvedLocale: "en-US" };
+let localeListener: ((value: LocaleSnapshot) => void) | undefined;
+const runtimeCommands: { kind: string; threadId: string }[] = [];
+const bridge: DesktopBridge = {
+  request: async (command) => {
+    if (command.kind === "preferences") {
+      await pause();
+      preferences = command.value;
+      return parseDesktopReply(command, {
+        kind: "preferences-saved",
+        value: preferences,
+      });
+    }
+    if (command.kind === "list-threads")
+      return parseDesktopReply(command, {
+        kind: "threads",
+        threads: drafts.map(({ threadId, workingDirectoryId, directory }) => ({
+          threadId,
+          workingDirectoryId,
+          directory,
+        })),
+      });
+    if (command.kind === "select-thread") {
+      await pause();
+      const next = drafts.find((draft) => draft.threadId === command.threadId);
+      if (!next) throw Error("Missing fixture Thread");
+      selected = next;
+    }
+    if (command.kind === "new-thread") {
+      await pause();
+      selected = DraftSchema.parse({
+        ...first,
+        threadId: crypto.randomUUID(),
+        text: "",
+      });
+      drafts.unshift(selected);
+    }
+    if (
+      command.kind === "restore" ||
+      command.kind === "select-thread" ||
+      command.kind === "new-thread"
+    )
+      return parseDesktopReply(command, {
+        kind: "ready",
+        draft: selected,
+        directoryAvailable: true,
+        preferences,
+      });
+    if (command.kind === "save") {
+      const draft = drafts.find((draft) => draft.threadId === command.threadId);
+      if (!draft) throw Error("Missing draft");
+      draft.text = command.text;
+      draft.revision = command.expectedRevision + 1;
+      return parseDesktopReply(command, {
+        kind: "saved",
+        threadId: draft.threadId,
+        revision: draft.revision,
+      });
+    }
+    throw Error("Unexpected fixture command");
+  },
+  locale: {
+    snapshot: async () => locale,
+    subscribe: (listener) => {
+      localeListener = listener;
+      return () => {
+        localeListener = undefined;
+      };
+    },
+    setPreference: async (preference) => {
+      await pause();
+      locale = {
+        preference,
+        resolvedLocale: preference === "system" ? "en-US" : preference,
+      };
+      localeListener?.(locale);
+      return { ...locale, persisted: true };
+    },
+  },
+  configuration: {
+    subscribe: () => () => {},
+    request: async (command) => {
+      if (command.kind !== "snapshot")
+        throw Error("Read-only configuration fixture");
+      return {
+        kind: "snapshot",
+        scope: command.scope,
+        traceId: command.traceId,
+        source: { directory: "/isolated", profile: null, cwd: first.directory },
+        coverage: "complete",
+        issues: [],
+        models: [],
+        defaultModel: null,
+        openaiAuthenticated: false,
+        deepseekAuthenticated: false,
+        catalogError: false,
+      };
+    },
+  },
+  runtime: {
+    subscribe: () => () => {},
+    request: async (command) => {
+      runtimeCommands.push(command);
+      return {
+        kind: "view",
+        view: RuntimeViewSchema.parse({
+          threadId: command.threadId,
+          traceId: command.traceId,
+          revision: command.kind === "start" ? 1 : 0,
+          phase:
+            command.kind === "start"
+              ? "ready"
+              : drafts.some(
+                    (d) => d.threadId === command.threadId && d.text !== "",
+                  )
+                ? "interrupted"
+                : "allowed",
+          trusted: true,
+          busy: false,
+          model: command.kind === "start" ? "fixture/model" : null,
+          configuration: { code: "runtime.configDefault" },
+          message: { code: "runtime.previousSessionReadOnly" },
+        }),
+      };
+    },
+  },
+  conversation: {
+    connect: (threadId, listener) => {
+      listener({
+        kind: "snapshot",
+        seq: 0,
+        connectionGeneration: crypto.randomUUID(),
+        gap: false,
+        items: [
+          {
+            id: 1,
+            role: "assistant",
+            state: "complete",
+            label: { kind: "literal", text: "OMP fixture" },
+            text:
+              `# ${threadId}\n\n![inert fixture](https://example.invalid/asset.png)\n\n[link](https://example.invalid)\n\n\`\`\`ts\nconst value = 42;\n\`\`\`\n\n` +
+              Array.from(
+                { length: 60 },
+                (_, i) =>
+                  `Fixture paragraph ${i}: **reading content stays stable**.`,
+              ).join("\n\n"),
+          },
+        ],
+      });
+      return () => {};
+    },
+  },
+  submission: {
+    request: async () => ({ kind: "list", receipts: [] }),
+    subscribe: () => () => {},
+  },
+  files: { request: async () => ({ kind: "unavailable", reason: "missing" }) },
+  git: { request: async () => ({ kind: "unavailable", reason: "not-git" }) },
+  history: {
+    read: async () => ({ kind: "unavailable", reason: "missing" }),
+    projectList: async () => ({
+      kind: "catalog",
+      sessions: [],
+      partial: false,
+    }),
+    projectRead: async () => ({ kind: "unavailable", reason: "missing" }),
+  },
+  onCloseRequest: () => () => {},
+  onCloseCancelled: () => () => {},
+  completeClose: () => {},
+};
+const model = new AppModel(bridge);
+const root = document.getElementById("root");
+if (!root) throw Error("Missing root");
+createRoot(root).render(
+  <QueryProvider>
+    <I18nProvider bridge={bridge.locale} initialSnapshot={locale}>
+      <App model={model} />
+    </I18nProvider>
+  </QueryProvider>,
+);
+void model.start();
+const probe = {
+  model,
+  runtimeCommands,
+  firstId: first.threadId,
+  secondId: drafts[1]?.threadId,
+  pause,
+};
+Object.assign(window, { probe });

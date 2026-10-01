@@ -201,6 +201,9 @@
     text-align: start;
     white-space: normal;
   }
+  .thread-buttons {
+    display: contents;
+  }
   .thread-name {
     display: flex;
     flex-direction: column;

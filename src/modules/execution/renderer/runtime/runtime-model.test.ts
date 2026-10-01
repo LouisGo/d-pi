@@ -134,3 +134,41 @@ it("a superseded control reply cannot resurrect a view the newer reply replaced"
   expect(model.getSnapshot()?.revision).toBe(published);
   model.dispose();
 });
+
+it("starts after an explicit project grant without a second startup action", async () => {
+  const threadId = ThreadIdSchema.parse(crypto.randomUUID());
+  const requests: string[] = [];
+  const model = new RuntimeModel({
+    subscribe: () => () => {},
+    request: async (command) => {
+      requests.push(command.kind);
+      return {
+        kind: "view",
+        view: {
+          threadId,
+          traceId: command.traceId,
+          configuration: { code: "runtime.configDefault" },
+          revision: requests.length,
+          phase:
+            command.kind === "inspect"
+              ? "browse"
+              : command.kind === "allow"
+                ? "allowed"
+                : "ready",
+          trusted: command.kind !== "inspect",
+          busy: false,
+          model: command.kind === "start" ? "fixture/model" : null,
+          message: { code: "runtime.readyToSend" },
+        },
+      };
+    },
+  });
+  try {
+    await model.bind(threadId);
+    await model.act("allow");
+    expect(requests).toEqual(["inspect", "allow", "start"]);
+    expect(model.getSnapshot()?.phase).toBe("ready");
+  } finally {
+    model.dispose();
+  }
+});

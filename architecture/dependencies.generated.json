@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "4acc1c74f63a3e980e82922682133fa726b16e25eb1800f008c7700bcd0c86e3",
+  "inputsHash": "9d6f17b946fec1212d456fcb94665b1b49e2704437056272ca9da6b5f8862482",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 264,
-    "scannedFiles": 264,
+    "sourceFiles": 266,
+    "scannedFiles": 266,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 94,
-      "lines": 12313,
+      "files": 95,
+      "lines": 12737,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -257,8 +257,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 6,
-      "lines": 181,
+      "files": 7,
+      "lines": 264,
       "publicEntries": [
         {
           "path": "src/modules/preferences/contracts/public.ts",
@@ -319,7 +319,7 @@
       ],
       "materialized": true,
       "files": 41,
-      "lines": 8634,
+      "lines": 8680,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -4962,6 +4962,15 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/markdown.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "streamdown",
       "kind": "import",
       "resolution": "external"
@@ -5864,6 +5873,18 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/app/renderer/shell/appearance-subscriptions.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../components/icons/common",
+      "kind": "dynamic-import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/icons/common.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/app/renderer/shell/application-layout.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -6289,6 +6310,15 @@
       "sourceEnvironment": "renderer",
       "test": false,
       "specifier": "@tanstack/react-router",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/shell/project-threads.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
       "kind": "import",
       "resolution": "external"
     },
@@ -6877,6 +6907,63 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/routing/search.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/wiring/thread-startup.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/wiring/thread-startup.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/wiring/thread-startup.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/input/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/wiring/thread-startup.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../contracts/desktop-bridge",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/desktop-bridge.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/wiring/thread-startup.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/wiring/model.ts",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -11173,6 +11260,57 @@
       "to": "src/modules/preferences/main/preference-repository.ts",
       "targetModule": "preferences",
       "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/preferences/renderer/i18n-provider.test.ts",
+      "sourceModule": "preferences",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/preferences/renderer/i18n-provider.test.ts",
+      "sourceModule": "preferences",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react-dom/client",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/preferences/renderer/i18n-provider.test.ts",
+      "sourceModule": "preferences",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/preferences/renderer/i18n-provider.test.ts",
+      "sourceModule": "preferences",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/contracts/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/preferences/renderer/i18n-provider.test.ts",
+      "sourceModule": "preferences",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./i18n-provider",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/i18n-provider.tsx",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/modules/preferences/renderer/i18n-provider.tsx",

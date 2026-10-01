@@ -23,9 +23,10 @@
       "progress-audit.md",
       "navigation-continuity.md",
       "development-tools.md",
+      "rendering-isolation.md",
       "../review-seven-commits/spec.md"
     ],
-    "next": "用户反馈切换会话仍有整页闪烁；开发态 DevTools / React 扩展已接入，继续定位实际体验与既有采样的差异，M2 未交付能力保持原票",
+    "next": "渲染订阅和偏好 busy 根因已修复，新 Thread 自动启动；当前源码、原生连续性与实际 OMP 包验证通过，用户复试待反馈，M2 未交付能力保持原票",
     "constraints": "仅本地 commit/候选，不 push、不公开发布、不扩 M3；冷恢复只读，unknown 不自动重发；S3 退出放弃待决仅暂停依赖部分。"
   }
 ]
@@ -106,3 +107,5 @@
 2026-10-01：最终 clean `0.1.0-m2.10 / c00f3dc5-e027fc01` 已交付，实际 14 项包内检查和 Computer Use 原生窗口抽查通过；7 次切换、42 帧和16 DOM mutation 均未出现基线工作区空白，阅读坐标精确恢复。ZIP 完整性及内部 app.asar 同源核对通过；482 行为、33 架构、47 tooling、build/pack 与固定环境通过。基础项目/Thread 01 工程闭环 resolved；02/03 及其它 M2 未完成范围保持原票。M2 engineering in-progress / trial delivered / acceptance pending，不 push 或公开发布。[本轮交接](navigation-continuity.md)。
 
 2026-10-01：用户最新反馈切换会话仍有整页闪烁，01 重开 claimed，当前 trial 改为 feedback，acceptance 继续 pending。用户要求先在 `pnpm dev` 开启 DevTools 开关并安装官方 React 扩展，已接入开发菜单和扩展加载，并实际打开窗口验证 Components 组件树；见 [开发调试工具](development-tools.md)。本轮未处理闪烁根因或交付新候选，既有 m2.10 采样保留为历史证据，不覆盖新反馈。
+
+2026-10-01：用户明确要求消除闪烁、保留正常操作，并取消新 Thread 的第二次 OMP 启动点击。当前源码已移除偏好保存的全局 busy 和父级渲染传播，语言 Context 分离；新 Thread 在既有项目授权确认后自动启动，首次明确授权接续启动。恢复旧会话的执行策略不变。当前 500 行为测试及原生 Electron 六场景通过；实际 OMP 包复核与限制见 [本轮记录](rendering-isolation.md)。当前 trial 仍 feedback、acceptance pending，未将历史 m2.10 替换为未经验证的新候选。

@@ -1,4 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
+import { memo, type ReactNode } from "react";
 import { useStore } from "zustand";
 import { FolderIcon } from "@/components/icons/common";
 import { Button } from "@/components/ui/button";
@@ -8,20 +9,8 @@ import { ChooseProjectButton } from "./choose-project-button";
 
 export function ProjectThreads({ model }: { model: AppModel }) {
   const { t } = useI18n();
-  const navigate = useNavigate();
   const threads = useStore(model.threadListStore, (state) => state.threads);
   const failed = useStore(model.threadListStore, (state) => state.failed);
-  const selected = useStore(model.stateStore, (state) =>
-    state.kind === "ready" && state.threadSelection.kind === "thread"
-      ? state.threadSelection.thread.context.threadId
-      : null,
-  );
-  const busy = useStore(
-    model.stateStore,
-    (state) =>
-      state.kind === "ready" &&
-      (state.busy || state.threadTransition === "unknown"),
-  );
   return (
     <nav aria-label={t("app.sidebar.projects")} className="thread-navigation">
       <ChooseProjectButton model={model} />
@@ -37,31 +26,79 @@ export function ProjectThreads({ model }: { model: AppModel }) {
       {!threads.length && !failed && (
         <p className="muted">{t("app.sidebar.noProject")}</p>
       )}
-      {threads.map((thread, index) => (
-        <Button
-          key={thread.threadId}
-          variant={selected === thread.threadId ? "default" : "ghost"}
-          disabled={busy}
-          aria-current={selected === thread.threadId ? "page" : undefined}
-          title={thread.directory + " · " + thread.threadId}
-          onClick={() =>
-            void navigate({
-              to: "/threads/$threadId",
-              params: { threadId: thread.threadId },
-              search: { view: "conversation" },
-            })
-          }
-        >
-          <FolderIcon />
-          <span className="thread-name">
-            {thread.directory.split("/").filter(Boolean).at(-1)}
-            <small>
-              {t("app.thread.label", { number: threads.length - index })} ·{" "}
-              {thread.threadId.slice(0, 6)}
-            </small>
-          </span>
-        </Button>
-      ))}
+      <ThreadButtons model={model}>
+        {threads.map((thread, index) => (
+          <ThreadButton
+            key={thread.threadId}
+            model={model}
+            threadId={thread.threadId}
+            directory={thread.directory}
+            number={threads.length - index}
+          />
+        ))}
+      </ThreadButtons>
     </nav>
   );
 }
+
+function ThreadButtons({
+  model,
+  children,
+}: {
+  model: AppModel;
+  children: ReactNode;
+}) {
+  const busy = useStore(
+    model.stateStore,
+    (state) => state.kind === "ready" && state.threadTransition === "unknown",
+  );
+  return (
+    <fieldset className="thread-buttons" disabled={busy}>
+      {children}
+    </fieldset>
+  );
+}
+
+const ThreadButton = memo(function ThreadButton({
+  model,
+  threadId,
+  directory,
+  number,
+}: {
+  model: AppModel;
+  threadId: Parameters<AppModel["selectThread"]>[0];
+  directory: string;
+  number: number;
+}) {
+  const { t } = useI18n();
+  const navigate = useNavigate();
+  const selected = useStore(
+    model.stateStore,
+    (state) =>
+      state.kind === "ready" &&
+      state.threadSelection.kind === "thread" &&
+      state.threadSelection.thread.context.threadId === threadId,
+  );
+  return (
+    <Button
+      variant={selected ? "default" : "ghost"}
+      aria-current={selected ? "page" : undefined}
+      title={directory + " · " + threadId}
+      onClick={() =>
+        void navigate({
+          to: "/threads/$threadId",
+          params: { threadId },
+          search: { view: "conversation" },
+        })
+      }
+    >
+      <FolderIcon />
+      <span className="thread-name">
+        {directory.split("/").filter(Boolean).at(-1)}
+        <small>
+          {t("app.thread.label", { number })} · {threadId.slice(0, 6)}
+        </small>
+      </span>
+    </Button>
+  );
+});

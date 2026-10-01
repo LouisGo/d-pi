@@ -1,0 +1,544 @@
+{
+  "source": "/Users/louistation/MySpace/Life/d-pi/dist/rendering-verification/mac-arm64/d-pi.app",
+  "bundle": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-f462mW/Package With Spaces/d-pi.app",
+  "build": {
+    "version": "0.1.0-m2.10",
+    "commit": "14952d69732277e34701706d1965e22db92fea4c",
+    "dirty": true,
+    "id": "14952d69-dirty-e5b755c1"
+  },
+  "root": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-f462mW",
+  "checks": [
+    "explicit project grant automatically starts OMP without a separate startup click",
+    "trusted Electron Shift+Enter creates an editable newline without submitting; explicit send retains exact multiline input",
+    "new trusted Thread automatically starts its own native OMP session",
+    "full message_end displays finalized native text; manual near-bottom reading position survives draft input",
+    "actual Router search navigation retains Composer and all reading-pane DOM, draft and manual scroll position",
+    "native Electron editor restores middle selection and independent undo/redo across Thread switch",
+    "actual toolbar back/forward confirm Main selection and restore separate Thread drafts",
+    "trusted Chromium IME blocks actual toolbar POP and preserves Main selection",
+    "trusted Chromium composition in native Electron blocks Thread switch until composition ends; system input source not exercised",
+    "two parallel native OMP scopes; switching does not interrupt held work",
+    "separate model/effort, messages, drafts and session identities",
+    "Thread switching preserves shell and workspace through every DOM mutation/frame; returning restores independent reading scroll",
+    "renderer reload reconnects same native sessions without resending",
+    "composer and send action stay inside window; switching reading view preserves draft",
+    "cold old native sessions remain read-only, preserve drafts; explicit new independent Thread is available"
+  ],
+  "screenshots": [
+    "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-f462mW/m2-parallel-entry.png",
+    "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-f462mW/m2-cold-new-thread.png"
+  ],
+  "continuitySamples": [
+    {
+      "threadId": "d8394d9a-b489-4416-9aad-6448616b7cbb",
+      "samples": [
+        {
+          "phase": "mutation",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "mutation",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        }
+      ]
+    },
+    {
+      "threadId": "242c2e33-d41a-48e3-9c03-1579bbe468c7",
+      "samples": [
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "mutation",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "mutation",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        }
+      ]
+    },
+    {
+      "threadId": "d8394d9a-b489-4416-9aad-6448616b7cbb",
+      "samples": [
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "mutation",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        }
+      ]
+    },
+    {
+      "threadId": "242c2e33-d41a-48e3-9c03-1579bbe468c7",
+      "samples": [
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "mutation",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        }
+      ]
+    },
+    {
+      "threadId": "d8394d9a-b489-4416-9aad-6448616b7cbb",
+      "samples": [
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "mutation",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "mutation",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "mutation",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "mutation",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "mutation",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "mutation",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        }
+      ]
+    },
+    {
+      "threadId": "242c2e33-d41a-48e3-9c03-1579bbe468c7",
+      "samples": [
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "mutation",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "mutation",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "mutation",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "mutation",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "mutation",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        },
+        {
+          "phase": "frame",
+          "shell": true,
+          "sidebar": true,
+          "toolbar": true,
+          "workspace": true,
+          "editor": true
+        }
+      ]
+    }
+  ],
+  "providerCalls": 2,
+  "models": [
+    "fixture-b",
+    "fixture-a"
+  ],
+  "nativeSessions": [
+    {
+      "session_id": "01a0f817-cf75-7000-a948-19776e4e9b43",
+      "thread_id": "d8394d9a-b489-4416-9aad-6448616b7cbb"
+    },
+    {
+      "session_id": "01a0f817-d81b-7000-be7b-38922f0f1477",
+      "thread_id": "242c2e33-d41a-48e3-9c03-1579bbe468c7"
+    },
+    {
+      "session_id": "01a0f817-e71e-7000-9b7a-055f5bec94cb",
+      "thread_id": "e26b07d2-9847-4e00-a885-17aab0f28763"
+    }
+  ],
+  "layout": {
+    "editorTop": 591.203125,
+    "editorBottom": 663,
+    "sendBottom": 715,
+    "readingHeight": 116.8046875,
+    "height": 748
+  },
+  "sourceAsarSha256": "e64b1ecae128914c3cd3910002af559e25ce88ce7da96e81df12f827b2ed5c6e",
+  "limitations": [
+    "localhost deterministic supplier, no real credentials/billing",
+    "native inspection evidence recorded separately",
+    "M2 V1-04 and queue/subagent/read-performance increments remain open"
+  ]
+}
