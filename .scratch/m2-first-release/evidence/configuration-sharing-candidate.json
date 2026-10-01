@@ -1,0 +1,38 @@
+{
+  "date": "2026-10-01",
+  "build": {
+    "version": "0.1.0-m2.8",
+    "commit": "0243e4a08ea3e41b6e697eedaecf84042103cecf",
+    "dirty": false,
+    "id": "0243e4a0-1e4354ec"
+  },
+  "app": "/Users/louistation/MySpace/Life/d-pi/dist/configuration-sharing-m2.8/mac-arm64/d-pi.app",
+  "asarSha256": "4e2703c4c9f2f4d68edb78df5c9f387660964b48b775f06d9d7ba90b8e93137f",
+  "sdkVersion": "18.4.6",
+  "bunVersion": "1.3.14",
+  "resourceHashes": "verified against packaged manifest",
+  "fullCheck": "453 Vitest passed, 1 existing artifact skip; architecture/tooling/type/lint/docs/status passed",
+  "sharing": {
+    "checks": [
+      "CLI login in live WAL is readable by desktop",
+      "CLI cached models in live WAL are reused without source writes",
+      "desktop-only fresh home persists OpenAI OAuth and DeepSeek through official login flows",
+      "native CLI startup readers reuse desktop credentials and model availability",
+      "actual official CLI RPC model list reuses desktop login without reconfiguration"
+    ],
+    "realSupplierRequests": 0
+  },
+  "realSupplierRequests": 0,
+  "userAcceptance": "pending",
+  "zip": {
+    "path": "/Users/louistation/MySpace/Life/d-pi/dist/candidates/d-pi-0.1.0-m2.8-0243e4a0-mac-arm64.zip",
+    "bytes": 429968925,
+    "sha256": "d58cb1f821d433727fe99796c0bedc383a0c5e7e70ce2649db564945a2a6aa9d",
+    "integrity": "all entries CRC checked; app.asar equals the verified app"
+  },
+  "sdkLinks": {
+    "count": 237,
+    "result": "all targets exist within packaged SDK, no build-worktree dependency"
+  },
+  "finalCheck": "passed after restoring generated workspace command paths; 453 Vitest passed and 1 existing artifact skipped"
+}

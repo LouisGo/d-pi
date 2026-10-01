@@ -1,0 +1,18 @@
+$ pnpm check:tools && pnpm lint && pnpm check:documentation && pnpm check:architecture && pnpm check:structure && pnpm check:status
+$ node scripts/check-environment.mjs --tools-only
+Development Node: 24.21.0 (target 24.21.0)
+pnpm: 12.8.1 (target 12.8.1)
+Platform: darwin-arm64
+Installed exact dependencies: 42/42
+SKIP: fast tool check; native executables and SDK resources were not inspected
+PASS: development environment (0 issues)
+$ biome check .
+Checked 320 files in 76ms. No fixes applied.
+$ node scripts/check-documentation.mjs
+PASS: documentation references (177 Markdown files; 17 historical snapshots excluded; external URLs not fetched)
+$ node scripts/architecture/check.mjs
+PASS: architecture boundaries (220 source files checked, TypeScript scanner)
+$ node scripts/architecture/report.mjs --check architecture/dependencies.generated.json
+PASS: generated structure report is current
+$ node scripts/project-status.mjs --check docs/status.md
+PASS: project status (14 slices, 73 tasks; engineering/trial/acceptance independent)

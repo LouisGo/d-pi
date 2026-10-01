@@ -10,14 +10,15 @@
     "trial": "delivered",
     "acceptance": "pending",
     "current": true,
-    "build": "0.1.0-m2.7 / 24f086e7-fa83a4f5",
+    "build": "0.1.0-m2.8 / 0243e4a0-1e4354ec",
     "pending": [
       "../m1-s3-control-recovery/issues/09-quit-discard-decision.md"
     ],
     "evidence": [
       "../../docs/product/first-release.md",
       "handoff-entry.md",
-      "../runtime-hardening-omp1845/handoff.md"
+      "../runtime-hardening-omp1845/handoff.md",
+      "configuration-sharing.md"
     ],
     "next": "实施可反复使用的配置/认证、模型与项目/会话入口，再逐功能完成 V1-00–10",
     "constraints": "仅本地 commit/候选，不 push、不公开发布、不扩 M3；冷恢复只读，unknown 不自动重发；S3 退出放弃待决仅暂停依赖部分。"
@@ -71,3 +72,8 @@
 已交付 `0.1.0-m2.5 / 6fa03c6f-dd83e59d` clean macOS arm64 候选，详见 [交接](handoff-entry.md)。M2 工程 in-progress、trial delivered、acceptance pending；用户未回复不构成认可。01 声明的独立 Thread 入口工程与验证完成；02/03/04/05/06 的未完成范围保持进行中/开放。最后样式收紧的包内验证和截图通过；Mac 锁定只阻塞追加原生窗口操作，不阻塞独立工程。继续源选择修复、子 Agent/队列、@/附件及阅读/诊断组合，不 push、不扩 M3。
 
 2026-10-01：首批交付后的显式纯文本粘贴修正已进入 `0.1.0-m2.6 / 9bd6a6da-73a3242a` clean 候选，包内双 OMP/模型/草稿/重连/冷只读完整通过，ZIP 完整性及其中 app.asar 与源码构建一致。当前交接更新为 m2.6，旧 m2.5 ZIP 保留快照。仍未用户认可。
+
+
+### 2026-10-01 共享配置回归修复
+
+用户报告 CLI 已登录但 Electron 读取不可用，明确要求查根因、追查此前漏检并验证反向共享。已纠正将正常 WAL 一律视为不可读和遗漏原生缓存模型的工程限制，保留原生配置/认证所有权；双向正常场景纳入常规 check，partial 保留原因诊断。已交付 m2.8 clean 候选 `0243e4a0-1e4354ec`，源码 `0243e4a`；实际包内 Bun/SDK/官方 CLI 双向验证通过，本机原生根只读采样完整、OpenAI已认证、gpt-6.1-sol可用。完整检查453通过/1既有artifact跳过。根因、漏检与身份见 [修复交接](configuration-sharing.md)。真实供应商生成和用户复试未认可，M2其它能力未因此完成。

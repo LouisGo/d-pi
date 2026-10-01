@@ -25,3 +25,17 @@
 针对性红绿和完整 `pnpm check` 已通过：453 Vitest 通过、1 项既有 CLI artifact 跳过，类型/Biome/设计/i18n/文档/结构/状态及架构/工具门禁通过。既有只读 13 场景也通过。用户原生根只读重读返回 coverage=complete、OpenAI=true、9 可用模型且 gpt-6.1-sol 可用，见 [本机摘要](evidence/configuration-sharing-personal-read.json)。红灯见 [WAL 对照](evidence/configuration-sharing-wal-red.txt)，绿灯见 [双向结果](evidence/configuration-sharing-green.json)，完整检查见 [check](evidence/configuration-sharing-check.txt)。实际随包复验与本地 m2.8 候选身份在构建完成后追加；工程通过与用户试用认可分别记录。
 
 官方依据：[SQLite WAL 的提交、读事务和只读支持](https://sqlite.org/wal.html)，[Bun SQLite readonly 与 serialize](https://bun.sh/docs/runtime/sqlite)，[固定 OMP 18.4.6 ModelRegistry](https://github.com/can1357/oh-my-pi/blob/v18.4.6/packages/coding-agent/src/config/model-registry.ts)。模型缓存源的兼容、freshness、header restore 不由 d-pi 重写。
+
+
+## m2.8 本地交付
+
+修复源码 `0243e4a08ea3e41b6e697eedaecf84042103cecf`，build `0243e4a0-1e4354ec`、`dirty=false`，App `0.1.0-m2.8`、OMP `18.4.6`、Bun `1.3.14`。原工作区的用户 `bun.lock` 保留，候选由独立 clean worktree 构建；准备 SDK 和构建、打包记录分别保留，未 push/公开发布。
+
+- App：`dist/configuration-sharing-m2.8/mac-arm64/d-pi.app`。
+- ZIP：`dist/candidates/d-pi-0.1.0-m2.8-0243e4a0-mac-arm64.zip`。源码/包身份、资源哈希、ZIP CRC/asar一致性与 SHA-256 见 [候选身份](evidence/configuration-sharing-candidate.json)。
+- 用候选包里的实际 Bun/SDK/官方 CLI 重跑 [双向共享](evidence/configuration-sharing-packaged.json)，五项通过、真实供应商请求0；Main asar 中实际 build 身份和每个 manifest 资源哈希实读校验一致。没有追加真人浏览器/模型生成或新的 GUI 用户验收声明。
+- 退出旧 m2.7 后打开这个新 App。配置与凭据沿用原生目录，无需重新登录；CLI 可保持打开。旧冷恢复 Thread 的只读限制是另一合同，不因本修复改变。
+
+本修复工程完成，已本地交付待用户复试；M2 全集仍进行中，来源选择/其它输入/子 Agent/队列与阅读范围继续留原票。用户认可 pending。
+
+收尾：隔离构建期间 pnpm 曾将共享依赖的13个生成命令入口改为临时 worktree 路径；已恢复原工作区入口，锁文件与用户 bun.lock 未改，恢复后 [完整 check](evidence/configuration-sharing-final-check.txt) 和 [fast check](evidence/configuration-sharing-final-fast.txt)通过。候选内237个SDK链接均实际存在且落在包内，不依赖已归档的构建 worktree；完整 ZIP CRC 和其中 asar 与目录包一致性已通过。
