@@ -17,4 +17,4 @@ Blocked by: none
 
 2026-10-01：本次加固已完成窗口内 A→B→A 选区与有限 undo/redo、消费/外部版本失效、LRU与旧View迟到事件隔离，见[加固输入票](../../runtime-hardening-omp1845/issues/05-editor-continuity.md)。附件、@文件与其完整传输验证继续留本票，不因编辑连续性完成关闭V1-04。
 
-2026-10-01：m2.8 实际主流程试用失败，已用 Computer use 核实并处理 CLI 历史发现、模型/档位回填、只读操作出口和 Shift+Enter 缺口，见 [主流程修复](../mainflow-feedback.md)。本票未完成范围与用户认可边界不变。
+2026-10-01：实际 m2.8 Shift+Enter 不换行，违反已定基础编辑行为；真实 Composer 行为回归先失败，注册 splitBlock 后通过。源码局部修复尚未交付通过包内验证的新候选，见 [进度核对](../progress-audit.md)。附件/@ 等未完成范围未因此提前开启或验收。

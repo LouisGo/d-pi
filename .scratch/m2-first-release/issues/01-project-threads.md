@@ -1,6 +1,6 @@
 # 01 项目与 Thread
 
-Status: resolved
+Status: claimed
 Blocked by: none
 
 所属范围与授权见 [spec](../spec.md)。
@@ -12,3 +12,5 @@ Blocked by: none
 2026-09-30：M2 明确授权接续 S5；这是工程票，用户认可在 spec 单独维护。
 
 2026-10-01：入口工程完成，真实 SQLite/切换保存与独立后台 scope 测试、clean 包内两个真实 OMP 并行与冷只读/新 Thread 出口均通过；已交付首批候选，证据见 [交接](../handoff-entry.md)。该票 resolved 不代表 M2 完成或用户认可。
+
+2026-10-01：用户实际 m2.8 冷恢复首页无法发现可执行路径。新会话功能存在、包内闭环重新通过，但按钮近似标题、禁用原因藏在设置滚动区，不足以兑现本票“自然新建出口”。重开 claimed；本地入口修复尚未交付通过包内验证的候选。见 [进度核对](../progress-audit.md)，不以解禁只读或接管旧会话掩盖问题。

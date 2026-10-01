@@ -1,0 +1,53 @@
+{
+  "source": "/Users/louistation/MySpace/Life/d-pi/dist/configuration-sharing-m2.8/mac-arm64/d-pi.app",
+  "bundle": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-H4obi0/Package With Spaces/d-pi.app",
+  "build": {
+    "version": "0.1.0-m2.8",
+    "commit": "0243e4a08ea3e41b6e697eedaecf84042103cecf",
+    "dirty": false,
+    "id": "0243e4a0-1e4354ec"
+  },
+  "root": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-H4obi0",
+  "checks": [
+    "full message_end displays finalized native text; manual near-bottom reading position survives draft input",
+    "native Electron editor restores middle selection and independent undo/redo across Thread switch",
+    "trusted Chromium composition in native Electron blocks Thread switch until composition ends; system input source not exercised",
+    "two parallel native OMP scopes; switching does not interrupt held work",
+    "separate model/effort, messages, drafts and session identities",
+    "renderer reload reconnects same native sessions without resending",
+    "composer and send action stay inside window; switching reading view preserves draft",
+    "cold old native sessions remain read-only, preserve drafts; explicit new independent Thread is available"
+  ],
+  "screenshots": [
+    "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-H4obi0/m2-parallel-entry.png",
+    "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-H4obi0/m2-cold-new-thread.png"
+  ],
+  "providerCalls": 2,
+  "models": [
+    "fixture-b",
+    "fixture-a"
+  ],
+  "nativeSessions": [
+    {
+      "session_id": "01a0f642-4e79-7000-8aa7-fcf62dd96e4c",
+      "thread_id": "56e931e0-8e46-49d7-aaa5-3f0d6c20067c"
+    },
+    {
+      "session_id": "01a0f642-565c-7000-a50b-69498bec999b",
+      "thread_id": "4ea32aff-7ab2-4f0f-be75-03fa3714cba7"
+    }
+  ],
+  "layout": {
+    "editorTop": 591.203125,
+    "editorBottom": 663,
+    "sendBottom": 715,
+    "readingHeight": 116.8046875,
+    "height": 748
+  },
+  "sourceAsarSha256": "4e2703c4c9f2f4d68edb78df5c9f387660964b48b775f06d9d7ba90b8e93137f",
+  "limitations": [
+    "localhost deterministic supplier, no real credentials/billing",
+    "native inspection evidence recorded separately",
+    "M2 V1-04 and queue/subagent/read-performance increments remain open"
+  ]
+}
