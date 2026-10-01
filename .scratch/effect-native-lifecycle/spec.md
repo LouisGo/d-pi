@@ -37,3 +37,4 @@
 - 2026-10-02：完整检查确认基线 `b93971a` 的三个 `letter-spacing` 字面量违反已有 token 单源检查；仅将 -0.03em/-0.02em 移入 `tokens.css` 的品牌/标题字距角色，视觉数值、主题和密度保持相同，不放宽门禁。
 - 2026-10-02：依赖加入后资源 manifest 的 lockHash 失效，按既有 staging/原子替换流程重新生成 SDK，完整环境核验通过。Effect 编入 utility Host 构建，不加入原生 OMP SDK closure。
 - 2026-10-02：第三方许可生成器纳入 Effect MIT 声明，并将图谱说明由 UI 改为 application；故障矩阵增加可选输出路径，保留历史证据原件，当前结果写入本切片。
+- 2026-10-02：用户授权以最小引导促进后续使用并 commit/push；在 execution/AGENTS.md 补充适用场景默认用 Effect、Scope 归属、现有样例与简单调用/就地迁移边界，复用既有门禁，不新增 skill、检查体系或运行时代码。
