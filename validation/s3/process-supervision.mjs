@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { execFileSync, spawn } from "node:child_process";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 
 const resources = resolve("resources/sdk");
@@ -355,9 +355,13 @@ for (const [fault, mode] of [
     await rm(root, { recursive: true, force: true });
   }
 }
-await mkdir(".scratch/runtime-hardening-omp1845/evidence", { recursive: true });
+const evidenceOutput = resolve(
+  process.argv[2] ??
+    ".scratch/runtime-hardening-omp1845/evidence/process-supervision.json",
+);
+await mkdir(dirname(evidenceOutput), { recursive: true });
 await writeFile(
-  ".scratch/runtime-hardening-omp1845/evidence/process-supervision.json",
+  evidenceOutput,
   JSON.stringify(
     {
       platform: process.platform,

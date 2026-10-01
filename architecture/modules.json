@@ -10,6 +10,18 @@
     "src/platform",
     "src/shared"
   ],
+  "externalImportRules": [
+    {
+      "specifier": "^effect(?:$|/)",
+      "allowedFrom": ["^src/modules/execution/host/", "^src/modules/execution/main/transport/"],
+      "reason": "D-39: Effect stays inside native lifecycle adapters"
+    },
+    {
+      "specifier": "^(?:effect/unstable(?:$|/)|@effect/)",
+      "allowedFrom": [],
+      "reason": "D-39: only the stable core package is adopted"
+    }
+  ],
   "unresolved": {
     "allowed": [
       "^\\.\\/gate\\.js$"

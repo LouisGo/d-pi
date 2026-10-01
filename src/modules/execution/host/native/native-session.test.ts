@@ -7,7 +7,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
 import { type NativeObservation, NativeSession } from "./native-session";
 
 it("does not load an executable SDK entry before registration is allowed", async () => {
@@ -198,3 +198,153 @@ require('node:readline').createInterface({input:process.stdin}).on('line',line=>
     }
   },
 );
+
+it("ends in-flight waits when close begins, while still waiting for process exit", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "d-pi-native-close-waits-"));
+  const entry = join(dir, "fixture.cjs");
+  writeFileSync(
+    entry,
+    `console.log(JSON.stringify({type:'ready'}));
+require('node:readline').createInterface({input:process.stdin}).on('line',line=>{
+ const c=JSON.parse(line);
+ if(c.type==='negotiate_protocol') console.log(JSON.stringify({type:'response',id:c.id,command:c.type,success:true}));
+}).on('close',()=>setTimeout(()=>process.exit(0),500));`,
+  );
+  const events: NativeObservation[] = [];
+  const session = new NativeSession(
+    {
+      binary: process.execPath,
+      entry,
+      directory: dir,
+      environment: { PATH: process.env.PATH },
+      sessionDirectory: dir,
+    },
+    (event) => events.push(event),
+  );
+  try {
+    await session.start();
+    let settled = false;
+    const waiting = session.request("get_state").catch((error: unknown) => {
+      settled = true;
+      return error;
+    });
+    const closing = session.close();
+    expect(session.close()).toBe(closing);
+    expect(() => session.write("{}\n")).toThrow("Native connection closed");
+    await expect(session.request("get_state")).rejects.toThrow(
+      "Native connection unavailable",
+    );
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(settled).toBe(true);
+    expect(events.some((event) => event.kind === "exited")).toBe(false);
+    expect(await waiting).toMatchObject({
+      message: "Native connection interrupted",
+    });
+    await closing;
+    expect(events.filter((event) => event.kind === "exited")).toHaveLength(1);
+  } finally {
+    await session.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+it("releases the request budget on timeout and never resends commands when late replies arrive", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "d-pi-native-timeout-"));
+  const entry = join(dir, "fixture.cjs");
+  writeFileSync(
+    entry,
+    `console.log(JSON.stringify({type:'ready'}));
+const waiting=[];
+const respond=(c,data={})=>console.log(JSON.stringify({type:'response',id:c.id,command:c.type,success:true,data}));
+require('node:readline').createInterface({input:process.stdin}).on('line',line=>{
+ const c=JSON.parse(line);
+ if(c.type==='hold') waiting.push(c);
+ else if(c.type==='flush') { for(const old of waiting) respond(old); respond(c,{seen:waiting.length}); }
+ else respond(c);
+}).on('close',()=>process.exit(0));`,
+  );
+  const session = new NativeSession(
+    {
+      binary: process.execPath,
+      entry,
+      directory: dir,
+      environment: { PATH: process.env.PATH },
+      sessionDirectory: dir,
+    },
+    () => {},
+  );
+  try {
+    await session.start();
+    await expect(
+      session.request("hold", { message: "x".repeat(1048576) }),
+    ).rejects.toThrow("Native input budget exceeded");
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    const requests = Array.from({ length: 64 }, () =>
+      session.request("hold").catch((error: unknown) => error),
+    );
+    await expect(session.request("hold")).rejects.toThrow(
+      "Native connection unavailable",
+    );
+    await vi.advanceTimersByTimeAsync(30000);
+    for (const result of await Promise.all(requests))
+      expect(result).toMatchObject({ message: "Native command timed out" });
+    vi.useRealTimers();
+    expect(await session.request("flush")).toMatchObject({
+      data: { seen: 64 },
+    });
+    expect(await session.request("get_state")).toMatchObject({ success: true });
+  } finally {
+    vi.useRealTimers();
+    await session.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+it("closes the native process when ready times out", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "d-pi-native-ready-timeout-"));
+  const entry = join(dir, "fixture.cjs");
+  writeFileSync(
+    entry,
+    `console.log(JSON.stringify({type:'fixture_loaded'}));require('node:readline').createInterface({input:process.stdin}).on('close',()=>process.exit(0));`,
+  );
+  const events: NativeObservation[] = [];
+  let loaded: (() => void) | undefined;
+  const loading = new Promise<void>((resolve) => {
+    loaded = resolve;
+  });
+  const session = new NativeSession(
+    {
+      binary: process.execPath,
+      entry,
+      directory: dir,
+      environment: { PATH: process.env.PATH },
+      sessionDirectory: dir,
+    },
+    (event) => {
+      events.push(event);
+      if (event.kind === "frame" && event.frame.type === "fixture_loaded")
+        loaded?.();
+    },
+  );
+  try {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    const starting = expect(session.start()).rejects.toThrow(
+      "Native startup timed out",
+    );
+    await loading;
+    await vi.advanceTimersByTimeAsync(30000);
+    vi.useRealTimers();
+    await starting;
+    await session.close();
+    expect(events.filter((event) => event.kind === "exited")).toEqual([
+      { kind: "exited" },
+    ]);
+    await expect(session.request("get_state")).rejects.toThrow(
+      "Native connection unavailable",
+    );
+  } finally {
+    vi.useRealTimers();
+    await session.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

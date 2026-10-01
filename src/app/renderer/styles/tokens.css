@@ -39,6 +39,8 @@
   --motion-control: 160ms;
   --text-title: 1.125rem;
   --text-heading: 1.5rem;
+  --tracking-brand: -0.03em;
+  --tracking-heading: -0.02em;
   --intro-space: 3rem;
   --text-body: 0.8125rem;
   --text-reading: 0.9375rem;

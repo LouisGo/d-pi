@@ -17,6 +17,7 @@
 | M2 | [M2 首版](../.scratch/m2-first-release/spec.md) | 实施中 | 已反馈待处理/复试 | 待认可 | 0.1.0-m2.10 / c00f3dc5-e027fc01 [证据1](product/first-release.md) · [证据2](../.scratch/m2-first-release/handoff-entry.md) · [证据3](../.scratch/runtime-hardening-omp1845/handoff.md) · [证据4](../.scratch/m2-first-release/configuration-sharing.md) · [证据5](../.scratch/m2-first-release/mainflow-feedback.md) · [证据6](../.scratch/m2-first-release/progress-audit.md) · [证据7](../.scratch/m2-first-release/navigation-continuity.md) · [证据8](../.scratch/m2-first-release/development-tools.md) · [证据9](../.scratch/m2-first-release/rendering-isolation.md) · [证据10](../.scratch/review-seven-commits/spec.md) | 渲染订阅和偏好 busy 根因已修复，新 Thread 自动启动；当前源码、原生连续性与实际 OMP 包验证通过，用户复试待反馈，M2 未交付能力保持原票 |
 | M3 | [M3 后续增强](../.scratch/development-foundation/spec.md) | 未实施 | 未交付 | 待认可 | —  | 未启动，保留边界 |
 | 基建 | [领域目录治理](../.scratch/domain-directory-governance/spec.md) | 工程完成 | 不适用 | 不适用 | — [证据1](../.scratch/domain-directory-governance/handoff.md) | 沿用模块机器清单，目录规模不作为硬门槛 |
+| 基建 | [Effect 原生连接生命周期](../.scratch/effect-native-lifecycle/spec.md) | 工程完成 | 不适用 | 不适用 | — [证据1](../.scratch/effect-native-lifecycle/issues/01-native-lifecycle.md) · [证据2](../.scratch/effect-native-lifecycle/validation.md) · [证据3](../.scratch/effect-native-lifecycle/evidence/process-supervision.json) | NativeSession 接入完成；SessionHost 与 Main transport 后续按实际替代收益接入 |
 | 基建 | [国际化基础](../.scratch/i18n-foundation/spec.md) | 工程完成 | 已交付待试用 | 待认可 | 0.1.0-i18n.0 [证据1](../.scratch/i18n-foundation/handoff.md) | 等待热切换与输入体验反馈 |
 | 基建 | [S5 前基建收口](../.scratch/infrastructure-closure/spec.md) | 工程完成 | 未交付 | 不适用 | 3285474e-dirty-1f488792（工程安全候选） [证据1](../.scratch/infrastructure-closure/handoff.md) | 本轮已完成；S5 按新授权进入所属规格，M2 未启动 |
 | 基建 | [OMP 18.4.6 升级与运行时边界加固](../.scratch/runtime-hardening-omp1845/spec.md) | 工程完成 | 已交付待试用 | 待认可 | 0.1.0-m2.7 / 24f086e7-fa83a4f5 [证据1](../.scratch/runtime-hardening-omp1845/handoff.md) · [证据2](../.scratch/runtime-hardening-omp1845/evidence.md) | 完整切片已本地交付；等待用户试用，M2其它能力与S3退出待决继续留原票 |
@@ -50,6 +51,7 @@
 - [S3 控制、交互与恢复](../.scratch/m1-s3-control-recovery/spec.md)：冷恢复仅只读，unknown 不自动重发；退出非空队列尚无放弃出口。
 - [S5 组合验收](../.scratch/m1-s5-combination-acceptance/spec.md)：不 push、不公开发布、不扩 M2/M3；冷恢复只读，unknown 不自动重发；暂停队列放弃出口继续待决。
 - [M2 首版](../.scratch/m2-first-release/spec.md)：2026-10-01 用户已授权本轮完整 commit/push；不公开发布、不扩 M3；冷恢复只读，unknown 不自动重发；S3 退出放弃待决仅暂停依赖部分。
+- [Effect 原生连接生命周期](../.scratch/effect-native-lifecycle/spec.md)：Effect 限定 execution/host 与 execution/main/transport；unknown 不自动重发，冷恢复只读。
 - [S5 前基建收口](../.scratch/infrastructure-closure/spec.md)：只本地 commit、不 push 或公开发布；许可证由权利人决定，签名/公证/更新尚未实施。
 - [OMP 18.4.6 升级与运行时边界加固](../.scratch/runtime-hardening-omp1845/spec.md)：2026-10-01 用户认可方案及实施范围，允许合理分工与适量 sub agent；本次从4d294e0实施；随后授权18.4.6及唯一导入修正。保留冷恢复只读、unknown 不自动重发和同目录多 Thread 基线。
 - [全项目组织整理](../.scratch/project-organization/spec.md)：保留领域公开面、资源所有权、持久化事务和恢复顺序；历史证据不改写。
@@ -57,4 +59,4 @@
 - [类型安全桌面路由](../.scratch/router-integration/spec.md)：本地实施和提交；不 push、不改变 OMP 执行及冷恢复政策。
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 
-<!-- source-sha256: 6272fd2ace9a373008f4128c353f5bc33fa5f1ef235994371341d3378909e8e0; sources: 89 -->
+<!-- source-sha256: f88edcff2732ad74793c9515859bf8a15cebd27a274d023bea41f5a7c45590c9; sources: 91 -->

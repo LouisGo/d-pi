@@ -45,12 +45,12 @@ for (const line of afterHeading.match(/[^\n]*(?:\n|$)/g) ?? []) {
   offset += line.length;
 }
 if (fence) throw Error("Unclosed license fence; original notices left intact");
-// Only this section belongs to the UI dependency generator. SDK, Bun and
+// Only this section belongs to the application dependency generator. SDK, Bun and
 // manually preserved upstream notices remain separate, even when listed later.
 const suffix = nextSection < 0 ? "" : afterHeading.slice(nextSection);
 let text =
   previous.slice(0, generatedStart) +
-  "## Bundled dependencies\n\nLicense files from the locked UI dependency graph. The official OMP SDK dependency closure and Bun runtime are also shipped; their original license files are retained in `Contents/Resources/sdk/node_modules` and `Contents/Resources/sdk/BUN-LICENSE.md`.\n";
+  "## Bundled dependencies\n\nLicense files from the locked application dependency graph. The official OMP SDK dependency closure and Bun runtime are also shipped; their original license files are retained in `Contents/Resources/sdk/node_modules` and `Contents/Resources/sdk/BUN-LICENSE.md`.\n";
 for (const [name, path] of [...packages].sort()) {
   const license = readdirSync(path).find((file) =>
     /^licen[cs]e(?:\.\w+)?$/i.test(file),

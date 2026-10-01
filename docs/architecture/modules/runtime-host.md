@@ -8,6 +8,7 @@
 - `src/app/host/index.ts` 只做 utility 入口；执行 Host 实现在 `src/modules/execution/host/`，连接监督在 `src/modules/execution/main/transport/host-connection.ts`。
 - `src/platform/omp/protocol/` 持有原生帧合同和 decoder，`src/platform/omp/resources/` 持有 Runtime/官方 SDK 资源校验；`runtime/host.mjs` 只加载官方 SDK 并接入已确认的消费门控。
 - 阅读事件在 `src/modules/conversation/host/projection.ts` 归一化，Host 不把未经归一的 OMP 帧交给 Renderer。关闭 scope 的实际释放顺序是 NativeSession → 交互 → 投影 → 阅读端口（`session-host.ts` 先关原生会话再清理交互，最后经 `app/host` 释放 conversation scope）；顺序变化须同步本页与领域测试。
+- 2026-10-02 D-39：NativeSession 内部使用 Effect 4.0.0 Scope/Fiber 管 ready 与在途 RPC，超时/成功/失败/断链均释放等待关联；关闭先中断等待，再通过 finalizer 等待 EOF、真实 close 和身份核对后的组清理，3 秒期限后升级终止。外部仍为 Promise/NativeObservation，协议关联 Map、独立退出证据和 OMP 所有权不变。SessionHost 证据重送及 HostConnection 尚未迁移，验证见[Effect 规格](../../../.scratch/effect-native-lifecycle/spec.md)。
 
 
 ## 范围与拥有者

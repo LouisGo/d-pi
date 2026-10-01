@@ -60,6 +60,7 @@
 | D-36 | Desktop 保存 `system`/`zh-CN`/`en-US` 偏好，Main 解析并与 Renderer 共用 locale，只翻译自有展示文案 | 2026-09-29 用户指定完整[国际化架构](architecture/internationalization.md)为基准并授权 S4 前落地；语言不进入 OMP/SessionHost/Agent 请求，原生与用户内容保持原文。实施/试用见[切片规格](../.scratch/i18n-foundation/spec.md) |
 | D-37 | Zustand 管 Renderer 展示状态及细粒度订阅，TanStack Query 管只读异步查询缓存；两库为锁定基础依赖，不按功能无限推迟 | 2026-09-29 用户确认既有自写 model + 直接 IPC 是实现缺口，保留外部行为迁移；取代[development-foundation](../.scratch/development-foundation/spec.md) 09-28 “不为名录补齐状态库”（`3faea9d` 未获用户确认的工程侧写法），并细化 B-01。镜像/缓存不拥有 OMP 执行、队列或历史；命令未知不交由 Query 自动重发，vanilla store 与 React 绑定分离。版本/迁移见[对齐规格](../.scratch/state-query-alignment/spec.md)，写法见[状态与查询 skill](../.agents/skills/d-pi-state-query/SKILL.md)及[无头合同 §4](architecture/headless-features.md#4-对外合同与状态工具) |
 | D-38 | TanStack Router 管应用导航，注册路由树完整推导目标、params/search；路由属于 app/renderer，业务生命周期独立 | 2026-10-01 用户授权完整接入并要求无断言的顺畅类型推导、独立 review 和分批本地提交。memory history、文件路由、业务确认后导航、阅读页签保留挂载；不在 loader/preload 执行命令，不改变 Main/OMP 所有权。范围及验证见[路由规格](../.scratch/router-integration/spec.md) |
+| D-39 | Effect v4 稳定核心用于原生连接生命周期，先接入 NativeSession | 2026-10-02 用户授权引入、验证后 commit/push，取代 P-05 中 Effect 仅为候选的状态。锁定 4.0.0；限定 execution/host 与 execution/main/transport，内部 Scope/Fiber/超时/释放，对外 Promise/DTO。不接管 OMP 执行、不重发 unknown，不替换 Zod/ts-pattern/Renderer 状态与查询。当前落地与验收见[Effect 规格](../.scratch/effect-native-lifecycle/spec.md)，不以选型授权推断全层迁移完成 |
 
 ## 沿用基线与提议
 
@@ -73,7 +74,7 @@
 | P-02 | 已被 D-33 取代 | 原直接 ProseMirror 优先、最小 Tiptap 有条件对照；2026-09-26 用户确认最小 Tiptap，不再作为备用默认。旧研究理由保留在[历史快照](../.scratch/infrastructure-closure/evidence/decision-history.md) |
 | P-03 | 已转为确认 | 2026-09-25 用户接受准确标注来源的 Diff 交付顺序，见 D-20；保留编号追溯原提议 |
 | P-04 | 提议，图标部分已取代 | Node/TypeScript 宿主、不自研第二后端语言；WebContentsView、xterm.js/node-pty、PNG capturePage 等仍按候选状态，Lucide 部分由 2026-09-25 D-31 取代。见[技术评估](../.scratch/product-requirements/technical-evaluation.md) |
-| P-05 | 部分已确认 | 2026-09-26 [技术审议](architecture/technology-selection-review.md)的 Base UI/Tiptap/SQLite 由 D-32–D-34 确认，ts-pattern/Zod v4 由 D-35 提升为规范；Drizzle、Effect、Pino/electron-log、Execa 等仍按各自候选状态，局部采纳不等于整套批准 |
+| P-05 | 部分已确认 | 2026-09-26 [技术审议](architecture/technology-selection-review.md)的 Base UI/Tiptap/SQLite 由 D-32–D-34 确认，ts-pattern/Zod v4 由 D-35 提升为规范；2026-10-02 Effect 由 D-39 限定范围采纳。Drizzle、Pino/electron-log、Execa 等仍按各自候选状态，局部采纳不等于整套批准 |
 
 ## D-24 提交与恢复的现行修订
 

@@ -37,7 +37,7 @@ d-pi 的基础方向是合理的：Electron 承载桌面应用，OMP 拥有 Agen
 | App 自有结构化数据 | SQLite；Drizzle 分别评估 | D-34 已确认 SQLite，取代文件元数据起步方案；驱动已确定为 `node:sqlite`（`DatabaseSync`，见 `src/platform/main/storage/database.ts`），未引入额外原生驱动或 ORM；Drizzle 仍按候选另判 |
 | 命令面板与区域尺寸 | cmdk、react-resizable-panels | 对应功能进入实现时优先考虑 |
 | 内部 RPC | birpc | 只在请求关联代码明显重复时引入 |
-| 异步与资源管理 | 原生 Promise / AbortSignal 起步；Effect 为 Host 候选 | 按可替代的自写机制决定，不设为全项目默认 |
+| 异步与资源管理 | D-39 限定采纳 Effect v4；NativeSession 首先接入 | 内部 Scope/Fiber/超时/释放，对外 Promise；其余层按替代收益，不设为全项目默认 |
 
 ## 3. 前端：提高复用程度，保留产品表达
 
@@ -145,11 +145,13 @@ Pino 的结构化输出与带上下文的 logger 适合 D-21 / D-22，但“采�
 
 ## 6. Effect：按替代价值决定使用范围
 
+2026-10-02 更新：用户明确授权按当前源码在合适位置采纳 Effect，完成验证后 commit/push。D-39 取代本节此前仅列 Host 候选的状态；下面保留原判断依据，实施范围与实际证据以[Effect 规格](../../.scratch/effect-native-lifecycle/spec.md)为准。[官方 4.0.0 release](https://github.com/Effect-TS/effect/releases/tag/effect%404.0.0)与 npm registry 已核实；锁定 `effect@4.0.0`，只使用稳定核心，不引入 unstable 模块、生态 DI/Schema/Atom 或第二套 Agent Runtime。
+
 Effect 将结果、预期错误和运行依赖纳入类型，并提供结构化并发、资源管理、流与观测能力。它带来的是一套执行模型，影响明显大于普通工具库。[Effect 官方介绍](https://effect.website/docs/v4/onboarding)
 
 SessionHost 最可能从中获益：长期 OMP 连接、并发子任务、超时、取消传播和资源清理，都可能出现重复的协调逻辑。如果代码已经散布大量 AbortController、清理栈、重试循环和任务登记，Effect 有机会用成熟机制替换这些自写设施。
 
-当前仍以普通 `async/await`、`AbortSignal`、明确作用域与少量协调函数起步。OMP 已承担 Agent 循环、工具与大量执行语义，App 不需要再复制一套。采用 Effect 的具体信号，是一个边界清楚的 Host 功能能够因此删除多类重复机制，而不只是代码看起来更函数式。
+2026-09-26 原基线以普通 `async/await`、`AbortSignal`、明确作用域与少量协调函数起步。2026-10-02 NativeSession 已具有 ready/RPC/关闭超时与断链逐项 reject/清 timer，满足明确替代多类重复机制的信号；本次先将其纳入同一 Scope。协议关联 Map 与进程身份/组清理证据仍由适配层拥有。OMP 已承担 Agent 循环、工具与执行语义，App 不复制这些职责。
 
 若进入该阶段，应让一个功能内部使用连贯的 Effect 执行与资源模型，在模块边界转换为普通数据或 Promise；避免每一步都在两种模型之间往返。边界转换仍需保留明确的失败结果和取消入口，不能把内部类型化错误全部压成字符串。现有外部 Zod 合同可以保留，内部也不必把同一结构再定义成第二份 schema。错误、日志、调度等能力有重叠时，应减少重复工具，而不是把整个生态叠加上去。
 
@@ -174,7 +176,7 @@ Effect 的学习成本真实存在，但不能因此先自研一套不完整的�
 | P-02 → D-33 | 最小 Tiptap 与业务扩展 | 取代直接 ProseMirror 优先路线，集成/IME/性能仍待验证 |
 | D-24 / D-34 | SQLite 管 App 结构化数据，Main 集中拥有 | 取代文件元数据起点，保留提交/冻结/unknown 合同；Drizzle 仍为候选 |
 | D-21 / D-22 | 轻量结构化诊断、跨进程关联、错误归属 | Pino 为优先候选，electron-log 为桌面对照；不新增观测平台或默认远程服务 |
-| D-28 / D-29 / D-30 | 无头功能、独立业务生命周期、不引入 XState | 保留；Effect 仅为有收益时的 Host 候选，不重建 Agent Runtime |
+| D-28 / D-29 / D-30 / D-39 | 无头功能、独立业务生命周期、不引入 XState、Effect 限定范围采纳 | 保留；Effect 管 NativeSession 生命周期，不重建 Agent Runtime |
 | D-02 / D-03、D-07、D-16 / D-31、D-17、B-03 | 进程与配置归属、Monaco、布局与图标、Biome、内容渲染方向 | 保留，不因推荐其他库而重开已确认范围 |
 
 审查依据为当前仓库文档与文中上游一手资料，资料核对日期为 2026-09-26。本次没有安装候选依赖、编写产品原型或运行集成基准。与上轮讨论相比，明确收紧了 Pino 的承诺、拆开了 SQLite 与 Drizzle 的选择，并补充了 Query 在本地离线场景中的配置要求。

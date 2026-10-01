@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { test } from "node:test";
@@ -170,6 +176,48 @@ test("production rejects test packages and helpers in test directories", () => {
     `${result.stdout}\n${result.stderr}`.match(/ARCH-TEST-IMPORT/g)?.length,
     3,
   );
+});
+
+test("Effect is limited to execution Host and Main transport, with no unstable ecosystem", () => {
+  const { externalImportRules } = JSON.parse(
+    readFileSync(join(repositoryRoot, "architecture/modules.json"), "utf8"),
+  );
+  const cases = [
+    ["host/native/session.ts", "effect", true],
+    ["main/transport/connection.ts", "effect/Effect", true],
+    ["main/runtime/runtime.ts", "effect", false],
+    ["renderer/view.ts", "effect/Effect", false],
+    ["core/rules.ts", "effect", false],
+    ["contracts/dto.ts", "effect", false],
+    ["host/native/session.ts", "effect/unstable/rpc", false],
+    ["host/native/session.ts", "@effect/platform-node", false],
+  ];
+  for (const [path, specifier, allowed] of cases) {
+    const directory = fixture(
+      "effect-boundary",
+      {
+        [`src/modules/execution/${path}`]: `import "${specifier}";\n`,
+      },
+      {
+        execution: {
+          root: "src/modules/execution",
+          environments: ["host", "main", "renderer", "core", "contracts"],
+          public: [path],
+          dependsOn: [],
+        },
+      },
+      { externalImportRules },
+    );
+    const result = run(directory);
+    rmSync(directory, { recursive: true, force: true });
+    assert.equal(
+      result.status,
+      allowed ? 0 : 1,
+      `${path} ${specifier}: ${result.stdout}\n${result.stderr}`,
+    );
+    if (!allowed)
+      assert.match(result.stdout + result.stderr, /ARCH-ENVIRONMENT/);
+  }
 });
 
 test("unreadable manifests are tooling failures, not boundary violations", () => {

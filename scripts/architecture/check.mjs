@@ -333,7 +333,15 @@ function isAllowedUnresolved(config, specifier) {
   );
 }
 
-function externalEnvironmentViolation(environment, specifier) {
+function externalEnvironmentViolation(environment, specifier, source, config) {
+  if (
+    (config.externalImportRules ?? []).some(
+      (rule) =>
+        new RegExp(rule.specifier).test(specifier) &&
+        !rule.allowedFrom.some((pattern) => new RegExp(pattern).test(source)),
+    )
+  )
+    return true;
   if (
     environment !== "renderer" &&
     /^@tanstack\/(?:react-router|router-core|history)(?:$|\/)/.test(specifier)
@@ -514,7 +522,12 @@ export function scanArchitecture(
         );
       if (
         !sourceTest &&
-        (externalEnvironmentViolation(sourceInfo.environment, specifier) ||
+        (externalEnvironmentViolation(
+          sourceInfo.environment,
+          specifier,
+          sourceRelative,
+          config,
+        ) ||
           rendererProcess)
       )
         report(

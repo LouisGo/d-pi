@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "ff9e95c859dfe95ef08f44ec11fe6564c6d2281d64d109adc3e65ec2cf531e57",
+  "inputsHash": "a3dc251442c6cb149ab15bde3c3cd1764d00ab7f685f26791708a7ea023840c9",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 266,
@@ -319,7 +319,7 @@
       ],
       "materialized": true,
       "files": 41,
-      "lines": 8680,
+      "lines": 8860,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -12761,6 +12761,15 @@
       "sourceEnvironment": "host",
       "test": false,
       "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/host/native/native-session.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "effect",
       "kind": "import",
       "resolution": "external"
     },

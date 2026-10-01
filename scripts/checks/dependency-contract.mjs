@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 // Required substrate only, not a translation of every decision into a rule.
 // Versions stay in package.json and the lock; these names enforce D-07, D-17 and
-// D-31–D-38 plus the existing React/TS/Electron/pnpm/Tailwind baseline.
+// D-31–D-39 plus the existing React/TS/Electron/pnpm/Tailwind baseline.
 const required = {
   dependencies: [
     "@base-ui/react",
@@ -19,6 +19,7 @@ const required = {
     "@tiptap/extensions",
     "@tiptap/pm",
     "@tiptap/react",
+    "effect",
     "monaco-editor",
     "react",
     "react-dom",
@@ -175,6 +176,10 @@ export function inspectDependencyContract(root, manifest) {
   }
   if (declared.zod && !/^4\./.test(declared.zod))
     issues.push("DEP-MAJOR: zod must use the confirmed v4 standard package");
+  if (declared.effect && !/^4\.\d+\.\d+$/.test(declared.effect))
+    issues.push(
+      "DEP-MAJOR: effect must use the adopted stable v4 core package",
+    );
   const families = [
     Object.keys(declared).filter((name) => name.startsWith("@tiptap/")),
     ["react", "react-dom"],

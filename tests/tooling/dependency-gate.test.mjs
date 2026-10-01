@@ -68,6 +68,7 @@ test("the fast environment gate accepts pinned required foundations and peer-qua
 
 test("deleting a confirmed foundation dependency cannot make the gate pass", (t) => {
   for (const name of [
+    "effect",
     "zustand",
     "@tanstack/react-query",
     "zod",
@@ -86,6 +87,15 @@ test("deleting a confirmed foundation dependency cannot make the gate pass", (t)
       ),
       `${name} deletion was not rejected: ${report.issues.join("\n")}`,
     );
+  }
+});
+
+test("Effect requires the adopted stable v4 core package", (t) => {
+  for (const version of ["3.22.2", "4.0.0-rc.118"]) {
+    const report = fixture(t, (manifest) => {
+      manifest.dependencies.effect = version;
+    });
+    assert.match(report.issues.join("\n"), /DEP-MAJOR.*effect.*stable v4/);
   }
 });
 

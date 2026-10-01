@@ -1,5 +1,6 @@
 import { type ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
+import { Cause, Deferred, Effect, Exit, Fiber, Scope } from "effect";
 import {
   type ProcessIdentity,
   readProcessIdentity,
@@ -29,18 +30,15 @@ export type NativeObservation =
   | { kind: "disconnected"; reason: "spawn" | "protocol" | "exit" | "write" };
 interface Pending {
   command: string;
-  resolve: (frame: NativeFrame) => void;
-  reject: (error: Error) => void;
-  timer: ReturnType<typeof setTimeout>;
+  resume: (result: Effect.Effect<NativeFrame, Error>) => void;
 }
 export class NativeSession {
   private child: ChildProcessWithoutNullStreams | null = null;
   private readonly pending = new Map<string, Pending>();
   private closed = false;
-  private ready: {
-    resolve: () => void;
-    reject: (error: Error) => void;
-  } | null = null;
+  private readonly ready = Deferred.makeUnsafe<void>();
+  private readonly scope = Scope.makeUnsafe();
+  private shutdown: Promise<void> | null = null;
   private closePromise: Promise<void> = Promise.resolve();
   private identity: ProcessIdentity | null = null;
   private groupCleanup: Promise<boolean> | null = null;
@@ -50,13 +48,18 @@ export class NativeSession {
     private readonly observe: (event: NativeObservation) => void,
   ) {
     this.token = options.supervision?.token ?? randomUUID();
+    // Registered first: request fibers are interrupted before the process is
+    // released. Transport interruption is not evidence that OMP has stopped.
+    Effect.runSync(
+      Scope.addFinalizer(
+        this.scope,
+        Effect.suspend(() => this.stopChild()),
+      ),
+    );
   }
   async start(): Promise<void> {
-    if (this.child || this.closed)
+    if (this.child || this.closed || this.shutdown)
       throw new Error("Native instance already used");
-    const started = new Promise<void>((resolve, reject) => {
-      this.ready = { resolve, reject };
-    });
     const decoder = new FrameDecoder((frame) => this.frame(frame));
     const child = spawn(
       this.options.binary,
@@ -100,8 +103,6 @@ export class NativeSession {
     child.once("exit", () => {
       void this.cleanupGroup();
     });
-    if (!this.options.entry && child.pid)
-      this.identity = await readProcessIdentity(child.pid);
     child.on("error", () => this.disconnect("spawn"));
     child.stdin.on("error", () => this.disconnect("write"));
     child.stdout.on("data", (bytes: Buffer) => {
@@ -121,12 +122,19 @@ export class NativeSession {
     });
     // Always drain stderr. Neither raw provider errors nor business content enters logs.
     child.stderr.on("data", () => {});
-    const timer = setTimeout(() => {
-      this.ready?.reject(new Error("Native startup timed out"));
-      this.ready = null;
-    }, 30000);
     try {
-      await started;
+      // Install all stream/error listeners before the first asynchronous read.
+      if (!this.options.entry && child.pid)
+        this.identity = await readProcessIdentity(child.pid);
+      await this.run(
+        Deferred.await(this.ready).pipe(
+          Effect.timeoutOrElse({
+            duration: 30000,
+            orElse: () => Effect.fail(new Error("Native startup timed out")),
+          }),
+        ),
+        "Native startup interrupted",
+      );
       const response = await this.request("negotiate_protocol", {
         protocolVersion: 2,
       });
@@ -135,8 +143,6 @@ export class NativeSession {
     } catch (error) {
       await this.close();
       throw error;
-    } finally {
-      clearTimeout(timer);
     }
   }
   private frame(frame: NativeFrame): void {
@@ -149,8 +155,7 @@ export class NativeSession {
       return;
     }
     if (frame.type === "ready") {
-      this.ready?.resolve();
-      this.ready = null;
+      Deferred.doneUnsafe(this.ready, Effect.void);
     }
     const response = NativeResponseSchema.safeParse(frame);
     if (frame.type === "response" && !response.success) {
@@ -161,9 +166,8 @@ export class NativeSession {
     if (response.success && response.data.id) {
       const pending = this.pending.get(response.data.id);
       if (pending && pending.command === response.data.command) {
-        clearTimeout(pending.timer);
         this.pending.delete(response.data.id);
-        pending.resolve(frame);
+        pending.resume(Effect.succeed(frame));
       }
     }
     this.observe({ kind: "frame", frame });
@@ -178,7 +182,7 @@ export class NativeSession {
         this.identity.parentPid === process.pid &&
         this.identity.groupId === pid &&
         ((await this.options.register?.(this.identity)) ?? true);
-      if (!this.closed && this.child)
+      if (!this.closed && !this.shutdown && this.child)
         this.child.stdin.write(
           `${JSON.stringify({ type: "d_pi_native_permit", token: this.token, allowed })}\n`,
         );
@@ -196,28 +200,51 @@ export class NativeSession {
     command: string,
     fields: Record<string, unknown> = {},
   ): Promise<NativeFrame> {
-    if (this.closed || !this.child || this.pending.size >= 64)
+    if (this.closed || this.shutdown || !this.child || this.pending.size >= 64)
       return Promise.reject(new Error("Native connection unavailable"));
     const id = randomUUID();
-    return new Promise<NativeFrame>((resolve, reject) => {
-      const timer = setTimeout(() => {
-        this.pending.delete(id);
-        reject(new Error("Native command timed out"));
-      }, 30000);
-      this.pending.set(id, { command, resolve, reject, timer });
+    const response = Effect.callback<NativeFrame, Error>((resume) => {
+      this.pending.set(id, { command, resume });
       try {
         this.write(`${JSON.stringify({ ...fields, id, type: command })}\n`);
       } catch (error) {
-        clearTimeout(timer);
-        this.pending.delete(id);
-        reject(
-          error instanceof Error ? error : new Error("Native write failed"),
+        resume(
+          Effect.fail(
+            error instanceof Error ? error : new Error("Native write failed"),
+          ),
         );
       }
-    });
+    }).pipe(
+      Effect.timeoutOrElse({
+        duration: 30000,
+        orElse: () => Effect.fail(new Error("Native command timed out")),
+      }),
+      Effect.ensuring(Effect.sync(() => this.pending.delete(id))),
+    );
+    return this.run(response, "Native connection interrupted");
+  }
+  // Effect stays inside this adapter. Preserve ordinary Error rejection and
+  // distinguish local interruption from request timeout or write failure.
+  private async run<A>(
+    effect: Effect.Effect<A, Error>,
+    interrupted: string,
+  ): Promise<A> {
+    const fiber = Effect.runSync(
+      Effect.forkIn(effect, this.scope, { startImmediately: true }),
+    );
+    const result = await Effect.runPromiseExit(Fiber.join(fiber));
+    if (Exit.isSuccess(result)) return result.value;
+    if (result.cause.reasons.every(Cause.isInterruptReason))
+      throw new Error(interrupted);
+    throw Cause.squash(result.cause);
   }
   write(frame: string): void {
-    if (this.closed || !this.child || this.child.stdin.destroyed)
+    if (
+      this.closed ||
+      this.shutdown ||
+      !this.child ||
+      this.child.stdin.destroyed
+    )
       throw new Error("Native connection closed");
     if (
       Buffer.byteLength(frame) > 1048576 ||
@@ -231,29 +258,32 @@ export class NativeSession {
   ): void {
     if (this.closed) return;
     this.closed = true;
-    this.ready?.reject(new Error("Native startup interrupted"));
-    this.ready = null;
-    for (const pending of this.pending.values()) {
-      clearTimeout(pending.timer);
-      pending.reject(new Error("Native connection interrupted"));
-    }
-    this.pending.clear();
+    void this.close();
     this.observe({ kind: "disconnected", reason });
   }
   // Owner calls this only for failed startup or verified idle shutdown. Busy close is S3.
-  async close(): Promise<void> {
+  close(): Promise<void> {
+    // Memoize the entire finalization, not only the process close event.
+    this.shutdown ??= Effect.runPromise(Scope.close(this.scope, Exit.void));
+    return this.shutdown;
+  }
+  private stopChild(): Effect.Effect<void> {
     const child = this.child;
     if (!child || child.exitCode !== null || child.signalCode !== null)
-      return this.closePromise;
+      return Effect.promise(() => this.closePromise);
     child.stdin.end();
-    const timer = setTimeout(() => {
-      void this.cleanupGroup();
-      child.kill("SIGKILL");
-    }, 3000);
-    try {
-      await this.closePromise;
-    } finally {
-      clearTimeout(timer);
-    }
+    return Effect.promise(() => this.closePromise).pipe(
+      Effect.interruptible,
+      Effect.timeoutOrElse({
+        duration: 3000,
+        orElse: () =>
+          Effect.gen({ self: this }, function* () {
+            yield* Effect.promise(() => this.cleanupGroup());
+            if (child.exitCode === null && child.signalCode === null)
+              child.kill("SIGKILL");
+            yield* Effect.promise(() => this.closePromise);
+          }),
+      }),
+    );
   }
 }

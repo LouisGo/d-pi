@@ -12,6 +12,7 @@
 - `core/runtime/` 维护执行准入，`core/submission/` 维护提交准入、协调与原生命令策略。
 - `main/runtime/` 监督运行，`main/transport/` 管 Host 连接，`main/submission/` 持久收据。
 - `host/native/` 管原生进程和启动，`host/interactions/` 管待答交互；`session-host.ts` 保留共同关联与恢复状态的 owner。
+- D-39：Effect v4 仅用于 `host/` 和 `main/transport/` 的连接生命周期；当前 NativeSession 已接入。Scope/Fiber 等供应商类型留在内部，对外普通 Promise/DTO；超时/中断不是执行取消或失败证据，禁止自动重发写请求。不使用 unstable 或 `@effect/*` 扩展包。
 - `renderer/runtime/` 与 `renderer/submission/` 分别维护客户端投影，不因目录分开改变提交与执行的合同。
 
 公开面保持各环境 `public.ts`，内部相对导入；测试与所属实现就近。AppStorage 与 RuntimeService 的跨域组合验证放 `tests/integration/`。
