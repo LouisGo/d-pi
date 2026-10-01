@@ -33,6 +33,8 @@ pnpm dev
 
 当前已验证交付平台为 macOS arm64，未承诺 Windows/Linux、其他架构、签名或公证。`resources/sdk`、`out` 与 `dist` 都是可重建产物，不把作者机器的资源目录当干净环境前置。独立环境验证与实际证据由重写任务记录维护。
 
+`pnpm dev` 提供「开发 → 切换开发者工具」（macOS：`⌥⌘I`），并在页面加载前通过 `electron-devtools-installer` 加载官方 React Developer Tools 扩展。首次启动需要从 Chrome Web Store 下载，后续复用 App 数据目录中的扩展缓存；打开 DevTools 后可使用 Components / Profiler。如果首次安装后 Components 提示尚未检测到 React，按 `⌘R` 刷新一次，让扩展完成注入。下载失败会在启动终端提示，应用继续启动，可在网络恢复后重启。开发菜单和扩展加载仅用于开发构建。
+
 `pnpm runtime:fetch` 另行下载并校验固定官方 **CLI artifact**，用于保留的对应验证路径；当前 artifact manifest 只包含 `darwin-arm64`。该命令不准备 SDK 资源，不是当前应用启动的必需步骤。
 
 `pnpm report:structure` 分开展示允许依赖与实际源码导入；审查相关源代码/规则变更后运行 `pnpm report:structure:write` 更新入库快照，`pnpm check:structure` 会拒绝陈旧报告。测试入口会创建受控临时环境，不继承个人凭据、App 数据、OMP 配置/会话或 Git 全局配置。CI 可复用上面的冻结安装、资源准备、环境检查、`check` 和 `build`，已接入 [macOS arm64 CI](.github/workflows/check.yml)；配置不表示远端已执行。

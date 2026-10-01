@@ -1,5 +1,7 @@
-import { Menu } from "electron";
+import { app, Menu, type MenuItemConstructorOptions } from "electron";
 import type { createI18n } from "../../../shared/i18n/create-i18n";
+
+declare const __D_PI_DEV__: boolean;
 export function buildApplicationMenu(
   t: ReturnType<typeof createI18n>["t"],
 ): void {
@@ -38,6 +40,20 @@ export function buildApplicationMenu(
           { role: "close", label: t("main.menu.close") },
         ],
       },
+      ...(typeof __D_PI_DEV__ !== "undefined" && __D_PI_DEV__ && !app.isPackaged
+        ? [
+            {
+              label: t("main.menu.development"),
+              submenu: [
+                {
+                  role: "toggleDevTools",
+                  label: t("main.menu.devTools"),
+                  accelerator: "Alt+CommandOrControl+I",
+                },
+              ],
+            } satisfies MenuItemConstructorOptions,
+          ]
+        : []),
     ]),
   );
 }

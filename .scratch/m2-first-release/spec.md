@@ -7,7 +7,7 @@
     "title": "M2 首版",
     "phase": "M2",
     "engineering": "in-progress",
-    "trial": "delivered",
+    "trial": "feedback",
     "acceptance": "pending",
     "current": true,
     "build": "0.1.0-m2.10 / c00f3dc5-e027fc01",
@@ -22,9 +22,10 @@
       "mainflow-feedback.md",
       "progress-audit.md",
       "navigation-continuity.md",
+      "development-tools.md",
       "../review-seven-commits/spec.md"
     ],
-    "next": "复试 m2.10 的 Thread 切换连续性、独立草稿/撤销及阅读位置；基础主流程已包内验证，M2 未交付能力保持原票",
+    "next": "用户反馈切换会话仍有整页闪烁；开发态 DevTools / React 扩展已接入，继续定位实际体验与既有采样的差异，M2 未交付能力保持原票",
     "constraints": "仅本地 commit/候选，不 push、不公开发布、不扩 M3；冷恢复只读，unknown 不自动重发；S3 退出放弃待决仅暂停依赖部分。"
   }
 ]
@@ -103,3 +104,5 @@
 
 
 2026-10-01：最终 clean `0.1.0-m2.10 / c00f3dc5-e027fc01` 已交付，实际 14 项包内检查和 Computer Use 原生窗口抽查通过；7 次切换、42 帧和16 DOM mutation 均未出现基线工作区空白，阅读坐标精确恢复。ZIP 完整性及内部 app.asar 同源核对通过；482 行为、33 架构、47 tooling、build/pack 与固定环境通过。基础项目/Thread 01 工程闭环 resolved；02/03 及其它 M2 未完成范围保持原票。M2 engineering in-progress / trial delivered / acceptance pending，不 push 或公开发布。[本轮交接](navigation-continuity.md)。
+
+2026-10-01：用户最新反馈切换会话仍有整页闪烁，01 重开 claimed，当前 trial 改为 feedback，acceptance 继续 pending。用户要求先在 `pnpm dev` 开启 DevTools 开关并安装官方 React 扩展，已接入开发菜单和扩展加载，并实际打开窗口验证 Components 组件树；见 [开发调试工具](development-tools.md)。本轮未处理闪烁根因或交付新候选，既有 m2.10 采样保留为历史证据，不覆盖新反馈。

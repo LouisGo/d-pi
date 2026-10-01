@@ -34,7 +34,7 @@ export default defineConfig(({ command }) => {
   const define = { __D_PI_BUILD__: JSON.stringify(build) };
   return {
     main: {
-      define,
+      define: { ...define, __D_PI_DEV__: JSON.stringify(command === "serve") },
       build: {
         externalizeDeps: false,
         rollupOptions: {

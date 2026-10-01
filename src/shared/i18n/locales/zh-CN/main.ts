@@ -27,6 +27,8 @@ export const main = {
   "main.menu.paste": "粘贴",
   "main.menu.selectAll": "全选",
   "main.menu.window": "窗口",
+  "main.menu.development": "开发",
+  "main.menu.devTools": "切换开发者工具",
   "main.menu.minimize": "最小化",
   "main.menu.zoom": "缩放",
   "main.menu.close": "关闭窗口",

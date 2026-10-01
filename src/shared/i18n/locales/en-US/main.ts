@@ -28,6 +28,8 @@ export const main = {
   "main.menu.paste": "Paste",
   "main.menu.selectAll": "Select All",
   "main.menu.window": "Window",
+  "main.menu.development": "Development",
+  "main.menu.devTools": "Toggle Developer Tools",
   "main.menu.minimize": "Minimize",
   "main.menu.zoom": "Zoom",
   "main.menu.close": "Close Window",

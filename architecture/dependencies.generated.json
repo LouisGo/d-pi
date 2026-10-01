@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "173896e6f6e0449ffec40c6f69ec089903cd351bcc1d76b22495937a25523744",
+  "inputsHash": "4acc1c74f63a3e980e82922682133fa726b16e25eb1800f008c7700bcd0c86e3",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 261,
-    "scannedFiles": 261,
+    "sourceFiles": 264,
+    "scannedFiles": 264,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 91,
-      "lines": 12161,
+      "files": 94,
+      "lines": 12313,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -102,7 +102,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 18,
-      "lines": 1364,
+      "lines": 1368,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -1089,6 +1089,13 @@
     {
       "module": "app",
       "environment": "main",
+      "dependency": "shared",
+      "targetEnvironment": "shared",
+      "testOnly": true
+    },
+    {
+      "module": "app",
+      "environment": "main",
       "dependency": "input",
       "targetEnvironment": "main",
       "testOnly": false
@@ -1113,13 +1120,6 @@
       "dependency": "platform",
       "targetEnvironment": "node",
       "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "main",
-      "dependency": "shared",
-      "targetEnvironment": "shared",
-      "testOnly": true
     },
     {
       "module": "app",
@@ -3080,6 +3080,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "main",
       "test": false,
+      "specifier": "./development-tools",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/lifecycle/development-tools.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/lifecycle/application.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
       "specifier": "./menu",
       "kind": "import",
       "resolution": "module",
@@ -3108,6 +3120,78 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/main/lifecycle/window.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/lifecycle/development-tools.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/lifecycle/development-tools.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./development-tools",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/lifecycle/development-tools.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/lifecycle/development-tools.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "electron",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/lifecycle/development-tools.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "electron-devtools-installer",
+      "kind": "dynamic-import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/lifecycle/menu.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/lifecycle/menu.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../../shared/i18n/create-i18n",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/i18n/create-i18n.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/app/main/lifecycle/menu.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./menu",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/lifecycle/menu.ts",
       "targetModule": "app",
       "targetEnvironment": "main"
     },

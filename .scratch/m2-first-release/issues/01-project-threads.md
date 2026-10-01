@@ -1,6 +1,6 @@
 # 01 项目与 Thread
 
-Status: resolved
+Status: claimed
 Blocked by: none
 
 所属范围与授权见 [spec](../spec.md)。
@@ -20,3 +20,5 @@ Blocked by: none
 
 
 2026-10-01：m2.10 clean 候选修复导航交接空白与阅读位置丢失，实际独立 scope/草稿/撤销、切换、冷只读/新 Thread 入口、包内与原生窗口验证通过。本票声明的基础项目/Thread 工程闭环完成，resolved；用户体验认可仍由 spec 保持 pending，不将未覆盖完整 M2 能力算入。精确身份与复试见 [本轮交接](../navigation-continuity.md)。
+
+2026-10-01：用户最新反馈切换会话仍有整页闪烁；本票重开 claimed，既有有限采样不替代实际体验。本轮按用户要求接入 `pnpm dev` 的 DevTools 菜单及官方 React Developer Tools 扩展；工具已可用于定位，但未据此宣称闪烁修复。见 [开发调试工具](../development-tools.md)。

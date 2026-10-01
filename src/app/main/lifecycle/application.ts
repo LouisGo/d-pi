@@ -36,6 +36,7 @@ import {
   registerHistoryIpc,
 } from "../ipc/project-reads";
 import { createDesktopServices } from "../wiring/desktop-services";
+import { prepareDevelopmentTools } from "./development-tools";
 import { buildApplicationMenu } from "./menu";
 import { QuitCoordinator } from "./quit";
 import { loadWindowRenderer, secureWindow } from "./window";
@@ -224,7 +225,9 @@ export function startDesktopApplication(mainDirectory: string): void {
         window.focus();
       } else createWindow();
     });
-    app.whenReady().then(() => {
+    app.whenReady().then(async () => {
+      // Extensions must attach before the first renderer loads React.
+      await prepareDevelopmentTools();
       const data = app.getPath("userData");
       diagnostics = new Diagnostics(join(data, "logs"), reportLoggingFailure);
       applyLocale("system", false);
