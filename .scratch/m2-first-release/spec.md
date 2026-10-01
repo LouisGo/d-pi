@@ -10,13 +10,14 @@
     "trial": "delivered",
     "acceptance": "pending",
     "current": true,
-    "build": "0.1.0-m2.6 / 9bd6a6da-73a3242a",
+    "build": "0.1.0-m2.7 / 24f086e7-fa83a4f5",
     "pending": [
       "../m1-s3-control-recovery/issues/09-quit-discard-decision.md"
     ],
     "evidence": [
       "../../docs/product/first-release.md",
-      "handoff-entry.md"
+      "handoff-entry.md",
+      "../runtime-hardening-omp1845/handoff.md"
     ],
     "next": "实施可反复使用的配置/认证、模型与项目/会话入口，再逐功能完成 V1-00–10",
     "constraints": "仅本地 commit/候选，不 push、不公开发布、不扩 M3；冷恢复只读，unknown 不自动重发；S3 退出放弃待决仅暂停依赖部分。"

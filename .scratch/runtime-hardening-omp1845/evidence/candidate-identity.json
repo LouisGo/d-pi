@@ -1,0 +1,81 @@
+{
+  "date": "2026-10-01",
+  "baseline": "4d294e0e84f22477507d4b3d6df351cf71aa0d95",
+  "branch": "codex/runtime-hardening-omp1846",
+  "build": {
+    "version": "0.1.0-m2.7",
+    "commit": "24f086e7cb59d84a20f74127ce747ac580cccce9",
+    "dirty": false,
+    "id": "24f086e7-fa83a4f5"
+  },
+  "platform": "darwin-arm64",
+  "sqliteSchema": 6,
+  "environment": {
+    "node": "24.21.0",
+    "pnpm": "12.8.1",
+    "electron": "44.4.5",
+    "bun": "1.3.14"
+  },
+  "artifacts": {
+    "app": {
+      "path": "/Users/louistation/MySpace/Life/d-pi/dist/runtime-hardening-omp1846/mac-arm64/d-pi.app",
+      "asarSha256": "98d9a700cc76f846ba69c29809a7b85948089ba34c1b6c5dca18d17bf1499d51"
+    },
+    "zip": {
+      "path": "/Users/louistation/MySpace/Life/d-pi/dist/candidates/d-pi-0.1.0-m2.7-24f086e7-mac-arm64.zip",
+      "bytes": 429968442,
+      "sha256": "15204b73c7438ed300ed41dcf55609a9bcf90085ff5e322b4b59e4ef84a3bc71",
+      "integrityCheck": "unzip -tq passed"
+    }
+  },
+  "sdkManifestPath": "/Users/louistation/MySpace/Life/d-pi/dist/runtime-hardening-omp1846/mac-arm64/d-pi.app/Contents/Resources/sdk/manifest.json",
+  "sdkManifest": {
+    "lockHash": "79166b4842c041beb08ec19343622e3021b7d7a6820f4389fbea0ef481ad6abe",
+    "sdkImportFix": {
+      "file": "node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts",
+      "originalSha256": "97fc3bb3cd9ffe43b190da942c8ac326a62975484d46bc87f8c8d1ebf3db982d",
+      "sha256": "a3c4976059a734851ab0c57010dc3be38bc23b81b993bcd75fc8bb6b7532f1d4",
+      "originalImport": "import { createRatchetPrelude } from \"./ratchet/prelude\";",
+      "fixedImport": "import { createRatchetPrelude } from \"./ratchet/prelude.ts\";",
+      "authorized": "2026-10-01"
+    },
+    "sdkVersion": "18.4.6",
+    "bunVersion": "1.3.14",
+    "platform": "darwin-arm64",
+    "hashes": {
+      "bun": "e0c90ec15d33363e6b70713d56bc3b2c7585c17f40a0fe0f8fd9305901d4e233",
+      "host.mjs": "e8d83890fdb36b4c52c866b895564602f094b2f0d6f17bf0fe1af95e172c8963",
+      "gate.js": "62d1bc93fa5bfa163686199a94ff12f096490b55d0e5aef76253e12f25c28753",
+      "configuration.mjs": "f496f0e4daf0400be5813b0288db30a224303546fca83f29825417ee34af868c",
+      "configuration-readonly.mjs": "2bd9fa641c407796e59a6d093a72debde492e4462282a6c99b02fb0d87542c64",
+      "model-selection.mjs": "b60f93eeeb724840975f360c9b1670b267bd94606a3b509e5226c4a4a1cf37d8"
+    }
+  },
+  "validation": {
+    "fullCheck": {
+      "vitestPassed": 451,
+      "optInCliSkipped": 1,
+      "architecturePassed": 32,
+      "toolingPassed": 47
+    },
+    "sdkScriptsPassed": 4,
+    "packagedChecks": [
+      "full message_end displays finalized native text; manual near-bottom reading position survives draft input",
+      "native Electron editor restores middle selection and independent undo/redo across Thread switch",
+      "trusted Chromium composition in native Electron blocks Thread switch until composition ends; system input source not exercised",
+      "two parallel native OMP scopes; switching does not interrupt held work",
+      "separate model/effort, messages, drafts and session identities",
+      "renderer reload reconnects same native sessions without resending",
+      "composer and send action stay inside window; switching reading view preserves draft",
+      "cold old native sessions remain read-only, preserve drafts; explicit new independent Thread is available"
+    ]
+  },
+  "delivery": "unsigned local candidate; no remote push or public release",
+  "acceptance": "pending",
+  "limitations": [
+    "localhost deterministic supplier; no real credentials or billing",
+    "trusted Chromium composition tested in native Electron; physical macOS input-source switching not exercised",
+    "M2 source selection, real authentication, attachments, full queue/subagent and large-load reading matrix remain open",
+    "cold execution recovery remains read-only; escaped process groups unproven"
+  ]
+}

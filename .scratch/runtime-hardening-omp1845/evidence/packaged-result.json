@@ -1,0 +1,59 @@
+{
+  "source": "/Users/louistation/MySpace/Life/d-pi/dist/runtime-hardening-omp1846/mac-arm64/d-pi.app",
+  "bundle": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-rF0LKS/Package With Spaces/d-pi.app",
+  "build": {
+    "version": "0.1.0-m2.7",
+    "commit": "24f086e7cb59d84a20f74127ce747ac580cccce9",
+    "dirty": false,
+    "id": "24f086e7-fa83a4f5"
+  },
+  "root": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-rF0LKS",
+  "checks": [
+    "full message_end displays finalized native text; manual near-bottom reading position survives draft input",
+    "native Electron editor restores middle selection and independent undo/redo across Thread switch",
+    "trusted Chromium composition in native Electron blocks Thread switch until composition ends; system input source not exercised",
+    "two parallel native OMP scopes; switching does not interrupt held work",
+    "separate model/effort, messages, drafts and session identities",
+    "renderer reload reconnects same native sessions without resending",
+    "composer and send action stay inside window; switching reading view preserves draft",
+    "cold old native sessions remain read-only, preserve drafts; explicit new independent Thread is available"
+  ],
+  "screenshots": [
+    "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-rF0LKS/m2-parallel-entry.png",
+    "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-rF0LKS/m2-cold-new-thread.png"
+  ],
+  "providerCalls": 2,
+  "models": [
+    "fixture-b",
+    "fixture-a"
+  ],
+  "nativeSessions": [
+    {
+      "session_id": "01a0f5e7-2413-7000-8e2d-12bbfbd1bb96",
+      "thread_id": "845cfddb-ab09-4eb0-ab56-e31c89e8a48d"
+    },
+    {
+      "session_id": "01a0f5e7-2be3-7000-9c58-4c608a76fe48",
+      "thread_id": "789275cb-3e39-4f76-b4c1-9e10e6492be3"
+    }
+  ],
+  "layout": {
+    "editorTop": 591.203125,
+    "editorBottom": 663,
+    "sendBottom": 715,
+    "readingHeight": 116.8046875,
+    "height": 748
+  },
+  "sourceAsarSha256": "98d9a700cc76f846ba69c29809a7b85948089ba34c1b6c5dca18d17bf1499d51",
+  "limitations": [
+    "localhost deterministic supplier; no real credentials or billing",
+    "trusted Chromium composition tested in native Electron; physical macOS input-source switching not exercised",
+    "M2 source selection, real authentication, attachments, full queue/subagent and large-load reading matrix remain open",
+    "cold execution recovery remains read-only; escaped process groups unproven"
+  ],
+  "savedScreenshots": [
+    "packaged-parallel-entry.png",
+    "packaged-cold-new-thread.png"
+  ],
+  "visualInspection": "Both screenshots viewed by primary agent: current model, independent Threads, saved draft, composer/send geometry and cold new-Thread controls visible; setup panel retains its own scroll."
+}

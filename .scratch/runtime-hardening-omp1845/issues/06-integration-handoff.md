@@ -1,7 +1,7 @@
 # 06 契约同步、集成验证与本地候选
 
-Status: claimed
-Blocked by: 02, 03, 04, 05
+Status: resolved
+Blocked by: none
 
 范围/授权见 [spec](../spec.md)；关联 D-02/D-03/D-21/D-22/D-24/D-26/D-28–D-37 与 [M2 03](../../m2-first-release/issues/03-entry-candidate.md)。05 已获认可，纳入完整切片的集成验收。
 
@@ -20,3 +20,7 @@ Blocked by: 02, 03, 04, 05
 2026-10-01：集成票已拆出真实依赖，待方案审阅后实施。
 
 2026-10-01（方案认可后）：用户认可完整方案，05 纳入集成依赖；实施在新会话开始，工程票保持 open。
+
+## Answer
+
+2026-10-01：完整切片01–06工程完成并本地交付，实际源码/SDK/Bun/SQLite身份与验证见[handoff](../handoff.md)。`pnpm check` 全通过：451行为/32架构/47工具，1既有CLI smoke跳过；目标SDK四脚本及完整配置三脚本真实验证另已通过。干净源码`24f086e7`生成 `0.1.0-m2.7 / 24f086e7-fa83a4f5`、dirty=false候选，`pnpm package:mac`含build通过。包内双Thread/不同模型/后台、Renderer重连无重发、Main强杀后冷旧只读、独立Editor选区与⌘Z/重做、trusted Chromium组合输入切换门控、最终hook正文/近底滚动和输入可见均通过，见[结果](../evidence/packaged-result.json)。两截图已实际查看；物理系统输入源和真实供应商未冒称验证。失败/partial/未决/过期视图由实际React组件回归与真实Host故障证据分别覆盖。受影响基础合同、模块页/flows/AGENTS、机器依赖和现行维护已同步，M2完整范围及用户认可仍开放。

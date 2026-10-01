@@ -4,7 +4,7 @@
 
 ## 当前结果
 
-01–05 已完成实现及有意义的目标版本验证，完整 `pnpm check` 已通过（451 Vitest通过/1既有CLI跳过，32架构、47工具测试）；06 正在干净源码候选交付。当前 App `0.1.0-m2.7`、SDK `18.4.6`、Bun `1.3.14`、App SQLite schema `6`，Node `24.21.0`、pnpm `12.8.1`、Electron `44.4.5`。产品用户认可仍 pending。
+01–06 工程与本地交付完成，完整 `pnpm check` 已通过（451 Vitest通过/1既有CLI跳过，32架构、47工具测试）。当前 App `0.1.0-m2.7`、SDK `18.4.6`、Bun `1.3.14`、App SQLite schema `6`，Node `24.21.0`、pnpm `12.8.1`、Electron `44.4.5`。产品用户认可仍 pending。
 
 - 配置 scope/trace/source 固定，Main 从可信 Thread 解析目录，迟到或错位回包拒绝；全链只读采样不写原生根，无法安全读取的来源带 partial/unavailable。默认/off/effort使用官方 metadata/helper，五类模型真实 Host/get_state 回读。
 - ACK、prompt_result、native local response 与 session settled 分离；有限身份绑定证据先提交再确认，同活重送仅证据，unknown不自动重发。schema6保存必要结果，迁移前备份，失败保留原库；未settled或未确认证据阻止正常idle回收。
@@ -26,4 +26,12 @@
 
 ## 最终构建
 
-待完成整体门禁、干净源码构建及包内受影响路径后，在此记录真实commit/buildId/dirty、包路径与哈希，工程通过和用户认可独立。
+- 分支 `codex/runtime-hardening-omp1846`；构建源码 `24f086e7cb59d84a20f74127ce747ac580cccce9`，`dirty=false`，App `0.1.0-m2.7`，build ID `24f086e7-fa83a4f5`。后续交接文档提交不替代这个源码身份。
+- 目录包 `dist/runtime-hardening-omp1846/mac-arm64/d-pi.app`；app.asar SHA-256 `98d9a700cc76f846ba69c29809a7b85948089ba34c1b6c5dca18d17bf1499d51`。asar 325文件，验证harness未进入生产包。
+- 本地 ZIP `dist/candidates/d-pi-0.1.0-m2.7-24f086e7-mac-arm64.zip`，429,968,442 bytes；SHA-256 `15204b73c7438ed300ed41dcf55609a9bcf90085ff5e322b4b59e4ef84a3bc71`，`unzip -tq` 全包完整性通过。完整构建、资源和交付身份见[候选记录](evidence/candidate-identity.json)。
+- `pnpm package:mac --config.directories.output=dist/runtime-hardening-omp1846` 通过，内含 `runtime:sdk` 和 `pnpm build`；原始记录见[构建](evidence/package-build.txt)。默认图标/未签名与既有较大Renderer块提示保留，不关闭门禁。
+- [全仓check](evidence/full-check.txt)与[最终环境](evidence/environment-final.txt)：Node/pnpm/42固定依赖/Bun/Electron内置Node/SDK均实测一致，门禁未降级。`pnpm validate:sdk`四脚本与最终配置三脚本通过。
+- [实际包内结果](evidence/packaged-result.json)：包路径含空格、双OMP实例同目录并行、实际模型/档位与消息/草稿/身份隔离；Renderer reload不重发；Main SIGKILL后旧记录只读且显式新Thread可用。localhost调用仅2次，无个人账户/计费。
+- 原生Electron编辑器A→B→A段中选区和⌘Z/⇧⌘Z、B独立历史保持；trusted Chromium composition期间拒绝Thread切换，结束后允许（未声称物理macOS输入源）。真实assistant_message hook改写后的message_end正文显示，80段正文近底手动滚动不因草稿输入跳动；窗口底部编辑器和发送按钮可见。
+- 已查看[双Thread窗口](evidence/packaged-parallel-entry.png)和[冷恢复后的独立新Thread](evidence/packaged-cold-new-thread.png)。1120×748 CSS视口，编辑区591.2–663、发送底715、阅读高116.8；setup/阅读独立滚动，完整大负载/小窗口体验仍归M2阅读票。
+- 用户试用状态 delivered、认可 pending；工程和Agent包内检查不等于用户认可。
