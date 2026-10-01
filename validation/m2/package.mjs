@@ -375,7 +375,7 @@ try {
   );
   if (routerValidation) {
     await evaluate(
-      "window.__routerEditor=document.querySelector('[contenteditable=true]');window.__routerPanes=Array.from(document.querySelectorAll('.reading-pane'))",
+      "window.__routerEditor=document.querySelector('[contenteditable=true]');window.__routerPanes=Array.from(document.querySelectorAll('.reading-pane'));true",
     );
     for (const [index, label] of [
       [1, "只读文件与当前差异"],

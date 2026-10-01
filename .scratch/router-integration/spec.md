@@ -3,7 +3,7 @@
 2026-10-01。用户授权完整实施 TanStack Router 接入、独立 review subagent 检查并修复实质问题、分批本地 commit；不含推送或公开发布。基线 `29dc7ab`，既有未跟踪 `bun.lock` 不属于本切片。
 
 ```project-status
-[{"id":"router-integration","title":"类型安全桌面路由","phase":"基建","engineering":"in-progress","trial":"not-delivered","acceptance":"pending","evidence":["issues/01-routing.md"],"next":"实现导航边界及类型推导，独立 review 后验证实际构建","constraints":"本地实施和提交；不 push、不改变 OMP 执行及冷恢复政策。"}]
+[{"id":"router-integration","title":"类型安全桌面路由","phase":"基建","engineering":"complete","trial":"delivered","acceptance":"pending","evidence":["issues/01-routing.md","review.md","handoff.md","evidence/native-result.json"],"next":"试用本地 macOS 候选：页签、会话切换和前进后退；用户认可待反馈","constraints":"本地实施和提交；不 push、不改变 OMP 执行及冷恢复政策。","build":"0.1.0-m2.9 / acf535c4-88948e3f"}]
 ```
 
 ## 推进与交接
@@ -11,8 +11,8 @@
 - 交付：在现有 Electron 工作台接入类型安全的 TanStack Router，保留 Thread/编辑/查询资源所有权和已定交互。
 - 范围：memory history、应用层文件路由、Thread 与阅读页签导航、导航事务边界、版本/生成/门禁、行为及类型验证。当前配置 UI 保持位置；外部深链接和新设置页面不纳入本切片。
 - 重要待决：无。常规实现选择与遇到的库行为依据在本规格记录。
-- 工程：进行中；最新 registry 核实 Router 1.170.41、plugin 1.168.42、CLI 1.167.40。peer 声明兼容不等于实际验证通过。
-- 试用：尚未交付；工程和 Agent 验证不替代用户认可。
+- 工程：完成；最新 registry 核实 Router 1.170.41、plugin 1.168.42、CLI 1.167.40。peer 声明兼容不等于实际验证通过。
+- 试用：已交付[本地候选](handoff.md)；工程和 Agent 验证不替代用户认可。
 
 ## 合同与验收
 
@@ -40,3 +40,5 @@
 
 
 - 2026-10-01：独立审查问题均已修复，详见[审查记录](review.md)。完整 `pnpm check` 通过：475 行为测试、33 架构和 47 tooling；正在准备干净源码的实际打包导航。锁定 history 的 POP 与 core 同位置 load 行为采用窄的应用适配，不迁移领域操作。
+
+- 2026-10-01：干净隔离源码 `acf535c` 删除生成树后完整 typecheck 重新生成字节一致，构建/打包成功；实际打包 11 项原生检查通过，2 次调用仅为隔离 localhost fixture。试用包和哈希见[交接](handoff.md)，用户认可仍 pending。
