@@ -1,6 +1,6 @@
 # 提交与执行交互
 
-日期：2026-09-27。深度：M1 核心设计；原生接受证据按命令待验证。依据 D-11/D-24；[基础契约 §2](../foundation-contracts.md#2-提交交接b2)为状态规则的唯一详细来源。返回[模块地图](README.md)，跨进程序列见[交接图](flows.md)。
+日期：2026-10-01。深度：M1 核心与 OMP v18.4.6 原生结果加固；真实账户和完整队列 GUI 仍在 M2。依据 D-11/D-24；[基础契约 §2](../foundation-contracts.md#2-提交交接b2)为状态规则的唯一详细来源。返回[模块地图](README.md)，跨进程序列见[交接图](flows.md)。
 
 ## 当前工程落点（领域目录治理，2026-09-29）
 
@@ -9,6 +9,8 @@
 - `main/` 的 `RuntimeService` 是保留同一生命周期状态的执行协调器，复用 `RuntimeAdmission`、`SubmissionCoordinator`、`HostConnection` 和 `SubmissionRepository`；没有按行数复制状态或制造第二个队列。
 - `renderer/` 只保存当前执行镜像和提交客户端；应用组合与 SQLite 初始化在 `src/app/main/wiring/`，恢复由 `SubmissionRepository.recoverInterruptedSubmissions()` 显式调用。
 - OMP 队列、原生历史和执行事实仍由 OMP 所有；`unknown` 不自动重发，ACK 与草稿消费标记继续在同一 SQLite 事务中完成。
+- `SubmissionRepository` 保存有精确 request/target 的有限 `promptResult`，区分 `native-prompt-result` 与内置本地命令的 `native-local-response`；调用 state 与 completed/aborted/failed/unknown outcome 分开。RuntimeView 暴露证据覆盖缺口，Renderer 收据合并不会用旧 unknown 或迟到 success 擦除已观测终态/错误。
+- Host 的未确认 evidence 缓存上限 256，重复事实合并，Main 持久提交后发送 confirm-evidence；同活实例按退避重送事实，attach/replay-evidence 也仅重送证据。未确认事实阻止正常 idle 回收，不能凭 ACK 与原生闲置丢弃未保存终态。已确认身份最多保留 128 项/15 分钟，不含正文，用于重复终态和迟到错误关联。Host 退出清内存，缓存压力和无关联结果明确报告 gap，不承诺崩溃后的缓存恢复。
 
 
 ## 范围与拥有者
@@ -39,7 +41,8 @@ Main 的提交协调拥有 App 收据和草稿交接；Host 的执行协调负�
 - prepared 和 dispatching 均落盘后才能写 OMP。固定版本、具体命令的关联 ACK 与消费标记持久化后才清理对应草稿，冻结原文保留；首次 success 不自动推进 accepted 或完成（2026-09-28 D-24 修订）。
 - 已持久 ACK 不因后来失败被撤销；业务接受与执行失败另有证据才标注，不能倒写为从未发送。后续失败保留原提交内容，不覆盖用户新草稿。
 - 相同 submissionId 的重复点击/IPC 返回已知状态，不重复派发。用户主动重新发送 unknown 内容须使用新 submissionId 并关联原提交，提示可能重复。
-- 重启发现 dispatching 恢复为 unknown；prepared 可由用户继续。ACK 丢失不能凭相同文本或相近时间认定接受，unknown 不自动重试。
+- schema 6 保留已持久结果；重启把 dispatching、ACK 后仍 unobserved 的结果保守解释为 unknown，保留 ACK 时间/消费标记与原文。prepared 可由用户继续。ACK 丢失不能凭相同文本或相近时间认定接受，unknown 不自动重试。
+- prompt_result 可先于 ACK 入库，不消费草稿；完整 target 和合法派发状态必须匹配。ACK、prompt 结束与 session settled 分开，completed 且 sessionSettled=false 不放行回收/退出，generic idle/agent_end 不给未知提交猜成功。原生 get_state.queuedMessages/queue_update 是队列展示来源，完整编辑/重排 GUI 留在 M2 05。
 - 停止回执只证明中断请求已返回；排队输入、待答交互和后台活动另按证据显示。用户确认停止须同时暂缓当前 Thread 后续队列，保留内容，待明确继续后恢复；不清队列、不回滚文件。实际消费阻断与恢复属于执行侧，原生 abort 本身不证明这些效果。
 
 ## 生命周期与第一批验收
@@ -49,3 +52,6 @@ Main 收据和冻结内容跨窗口/重启保留。Host 的请求映射随原生
 先验证普通提交、排队、干预、停止和回答的原生证据；复用[历史实验](../../archive/stage1-evidence.md)，补齐相同请求 ID 的迟到错误及组合场景。S3 同时观察同一会话从当前工作进入后续队列时，干预/停止实际作用于什么，按原生证据设计反馈，并验证用户已确认的“中断当前执行、暂缓后续队列、明确继续”能否通过原生或薄适配实现；不预设产品 Run 或精确目标绑定能力。无头测试覆盖：写前存储失败、写后断链、ACK 写收据失败、重复 IPC、旧代次响应、提交中改稿与重启恢复。
 
 真实 GUI 验收：发送后有明确状态和可恢复内容，回答能推进对应交互，停止后的队列/后台状态不误报，刷新不重复提交。具体跨模块反例与通过标准见 [M1 场景](../../../.scratch/development-foundation/spec.md#跨模块验收场景)。
+
+
+2026-10-01 的实现与验证见 [03 证据](../../../.scratch/runtime-hardening-omp1845/evidence/native-outcomes.md)：真实固定 SDK/localhost RPC 录制、真实原生关联类的受控旧 run 样本与 App Decoder→NativeSession→SessionHost→RuntimeService→SQLite 回放分开记录。未调用个人账户或计费供应商，不把该证据当完整 M2/用户认可。

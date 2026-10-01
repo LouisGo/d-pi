@@ -20,6 +20,9 @@ it("retains the native browser challenge while the later authorization-code prom
   const root = createRoot(element);
   let receive: ((event: ConfigurationEvent) => void) | undefined;
   const jobId = crypto.randomUUID();
+  const scope = { kind: "application" } as const;
+  let traceId: string = crypto.randomUUID();
+  const source = { directory: "/isolated", profile: null, cwd: "/probe" };
   const bridge: ConfigurationBridge = {
     subscribe(listener) {
       receive = listener;
@@ -31,18 +34,31 @@ it("retains the native browser challenge while the later authorization-code prom
       if (command.kind === "snapshot")
         return {
           kind: "snapshot",
-          directory: "/isolated",
-          profile: null,
+          scope,
+          traceId: command.traceId,
+          source,
+          coverage: "complete",
+          issues: [],
           models: [],
           defaultModel: null,
           openaiAuthenticated: false,
           deepseekAuthenticated: false,
           catalogError: false,
         };
-      if (command.kind === "login") return { kind: "started", jobId };
+      if (command.kind === "login") {
+        traceId = command.traceId;
+        return { kind: "started", jobId, scope, traceId, source };
+      }
       if (command.kind === "cancel")
-        receive?.({ kind: "finished", jobId, result: "cancelled" });
-      return { kind: "done" };
+        receive?.({
+          kind: "finished",
+          jobId,
+          scope,
+          traceId,
+          source,
+          result: "cancelled",
+        });
+      return { kind: "done", scope, traceId: command.traceId, source };
     }),
   };
   try {
@@ -55,7 +71,7 @@ it("retains the native browser challenge while the later authorization-code prom
             initialSnapshot: { preference: "zh-CN", resolvedLocale: "zh-CN" },
             children: createElement(ConfigurationSettings, {
               bridge,
-              scope: null,
+              scope,
             }),
           }),
         ),
@@ -76,12 +92,18 @@ it("retains the native browser challenge while the later authorization-code prom
       receive?.({
         kind: "challenge",
         jobId,
+        scope,
+        traceId,
+        source,
         url: "https://auth.openai.com/oauth/authorize",
         instructions: "native instructions",
       });
       receive?.({
         kind: "prompt",
         jobId,
+        scope,
+        traceId,
+        source,
         message: "Paste authorization code",
         secret: false,
       });

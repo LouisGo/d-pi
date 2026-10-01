@@ -1,0 +1,50 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/MySpace/Life/d-pi[39m
+
+ [31m❯[39m tests/integration/runtime-causality.integration.test.ts [2m([22m[2m17 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 4373[2mms[22m[39m
+   [32m✓[39m same decoder batch cannot apply old idle after agent_start/ACK and lose the in-flight receipt[32m 35[2mms[22m[39m
+   [32m✓[39m an idle control sampled before dispatch cannot settle its later ACK[32m 13[2mms[22m[39m
+   [32m✓[39m confirmed idle native exit releases its Host and lets normal idle close finish without querying the dead process[32m 11[2mms[22m[39m
+   [32m✓[39m idle sampled before a prompt reply cannot become settlement evidence when that reply arrives[32m 12[2mms[22m[39m
+   [32m✓[39m protocol disconnection alone still blocks quit; confirmed exit is a separate cleanup fact[32m 11[2mms[22m[39m
+   [32m✓[39m correlates ACK, disconnection and unknown outcome without conflating transport loss with Host exit[32m 13[2mms[22m[39m
+   [32m✓[39m diagnostic failure cannot prevent an exited Host from preserving an unknown receipt[32m 12[2mms[22m[39m
+   [32m✓[39m confirmed terminal duplicates keep coverage complete and a later identified error remains sticky[32m 14[2mms[22m[39m
+   [32m✓[39m decodes and persists a prompt terminal before ACK, keeps background work active and ignores an unknown id[32m 17[2mms[22m[39m
+   [33m[2m✓[22m[39m replays bounded evidence in the same live Host after a SQLite failure without replaying prompt[33m 1273[2mms[22m[39m
+[31m   [31m×[31m idle cannot dispose unconfirmed terminal evidence after ACK was already committed[39m[33m 660[2mms[22m[39m
+   [32m✓[39m persists the recorded SDK 18.4.6 local outcome through the real decoder/session/Host/Main/SQLite chain[32m 21[2mms[22m[39m
+   [32m✓[39m persists the recorded SDK 18.4.6 builtinLocal outcome through the real decoder/session/Host/Main/SQLite chain[32m 16[2mms[22m[39m
+   [32m✓[39m persists the recorded SDK 18.4.6 steer outcome through the real decoder/session/Host/Main/SQLite chain[32m 16[2mms[22m[39m
+   [32m✓[39m persists the recorded SDK 18.4.6 aborted outcome through the real decoder/session/Host/Main/SQLite chain[32m 14[2mms[22m[39m
+   [32m✓[39m persists the recorded SDK 18.4.6 error outcome through the real decoder/session/Host/Main/SQLite chain[32m 12[2mms[22m[39m
+   [33m[2m✓[22m[39m a Host loss after Main write failure loses only memory evidence and reopens conservatively without resending[33m 2221[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/runtime-causality.integration.test.ts[2m > [22midle cannot dispose unconfirmed terminal evidence after ACK was already committed
+[31m[1mAssertionError[22m: expected false to be true // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+[36m [2m❯[22m tests/integration/runtime-causality.integration.test.ts:[2m591:39[22m[39m
+    [90m589|[39m       outcome: "unobserved",
+    [90m590|[39m     });
+    [90m591|[39m     expect(f.runtime.hasActiveWork()).toBe(true);
+    [90m   |[39m                                       [31m^[39m
+    [90m592|[39m     await expect(f.runtime.closeIdle()).rejects.toThrow("Active native…
+    [90m593|[39m     lock.exec("ROLLBACK");
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m16 passed[39m[22m[90m (17)[39m
+[2m   Start at [22m 12:20:54
+[2m   Duration [22m 4.72s[2m (tests 94%, transform 4%, import 2%)[22m
+

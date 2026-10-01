@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import { resolve } from "node:path";
 import { createInterface } from "node:readline";
@@ -75,7 +75,10 @@ try {
   );
   await wait(() =>
     frames.some(
-      (frame) => frame.type === "response" && frame.id === id && !frame.success,
+      (frame) =>
+        frame.type === "prompt_result" &&
+        frame.id === id &&
+        frame.status === "error",
     ),
   );
   const replies = frames.filter(
@@ -88,17 +91,45 @@ try {
     replies.map((frame) => frame.success),
     [true, false],
   );
+  const result = frames.find(
+    (frame) => frame.type === "prompt_result" && frame.id === id,
+  );
+  assert.equal(result.status, "error");
+  assert.equal(result.error.retryable, false);
+  assert.equal(result.agentInvoked, false);
+  assert.equal(typeof result.sessionSettled, "boolean");
   assert.equal(calls, 0, "credential rejection must not invoke any provider");
   if (process.env.D_PI_NATIVE_EVIDENCE) {
     const path = resolve(process.env.D_PI_NATIVE_EVIDENCE);
     await mkdir(resolve(path, ".."), { recursive: true });
     await writeFile(
       path,
-      frames.map((frame) => JSON.stringify(frame)).join("\n") + "\n",
+      (frames.map((frame) => JSON.stringify(frame)).join("\n") + "\n")
+        .split(sandbox.root)
+        .join("/isolated-native"),
+    );
+    const version = JSON.parse(
+      await readFile(
+        resolve(sdk, "node_modules/@oh-my-pi/pi-coding-agent/package.json"),
+        "utf8",
+      ),
+    ).version;
+    await writeFile(
+      `${path}.metadata.json`,
+      JSON.stringify(
+        {
+          sdk: version,
+          provider: "no credentials; isolated localhost",
+          promptId: id,
+          providerCalls: calls,
+        },
+        null,
+        2,
+      ) + "\n",
     );
   }
   console.log(
-    "PASS: unchanged SDK accepts prompt, then reports an asynchronous failure with the same request ID; provider calls: 0",
+    "PASS: fixed SDK resource accepts prompt, then reports prompt_result error with the same request ID; provider calls: 0",
   );
 } finally {
   child.stdin.end();

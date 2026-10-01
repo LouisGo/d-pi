@@ -32,7 +32,7 @@ flowchart TB
 | 输入 → 提交 | 不可变内容包、来源/覆盖、实际可发送表示 | 全部必需项 ready，模型/编码约束仍有效 | 输入/原生适配返回限制，提交不派发 |
 | 提交 → 存储 | submissionId、状态前置条件、版本与内容引用 | 事务提交后才报告持久成功 | 提交停在对应阶段；存储不重发业务 |
 | Main 提交 → Host | 已持久化 dispatching 的身份、冻结内容与目标实例 | 校验目标，只派发一次，不把 App ID 塞入不支持的原生字段 | Host 报告证据或未知，Main 维护收据 |
-| Host 执行 → Main 提交 | 命令/实例关联、调用 ACK 或失败 | ACK 与消费标记落盘后确认 acknowledged；迟到失败仍关联原提交 | 执行协调，写失败保留 unknown |
+| Host 执行 → Main 提交 | evidenceId、完整 request/target、调用 ACK/失败及有限原生结果 | ACK 与消费标记原子保存；prompt_result 独立保存；Main commit 后确认 evidenceId | 执行协调，写失败显示 gap，同活 Host 只重送证据 |
 | Main 提交 → 输入 | 持久调用确认及对应草稿消费标记 | 清理只作用于对应版本，不覆盖新输入 | 输入保留当前版本，原提交可恢复 |
 | Host 阅读 → Renderer | generation、seq、水位、来源与覆盖信息 | 先订阅缓冲再合并快照/增量；旧代次不应用 | 阅读模块重同步，显示真实缺口 |
 | 文件 → 变化模块（工具证据的交接尚未实现） | 内容/基线/版本或原生来源、缺失/截断 | 不推断作者、不伪造前文；展示明确来源 | 文件/Git/变化功能返回局部失败 |
@@ -76,6 +76,8 @@ sequenceDiagram
 ```
 
 准备失败不进入派发；prepared / dispatching 写失败不发原生命令。ACK 事务写失败时，不发送清稿通知给 UI；尽力保存未知状态，存储不可用时下次启动把残留 dispatching 恢复为 unknown。明确接受前拒绝才记 rejected；ACK 后错误保留 acknowledged 与原文，独立显示失败/未知，不能回填为未发送。业务 accepted 仍需独立证据。
+
+prompt_result 可先于 ACK 保存，不能据此清稿；completed 与 sessionSettled=false 可并存，后者继续限制实例回收。Host 只在 Main 确认持久 evidence 后释放相应事实，已接受请求的 ACK 与 terminal 都确认才释放其关联；迟到 response error 后仍等待 prompt_result。缓存满/关联到期/Host 崩溃没有重放承诺，原生队列 snapshot/event 仍是展示来源。
 
 清稿不能只依赖最后一条 UI 通知：持久化处理绑定对应 revision；通知丢失后从持久记录恢复，新 revision 不受影响。unknown 重新发送必须是新的用户提交，不能由恢复、查询缓存或存储重试自动触发。
 

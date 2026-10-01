@@ -13,6 +13,7 @@ const { runRpcMode } = await import(
 );
 
 import { ConsumptionGate } from "./gate.js";
+import { applyModelSelection } from "./model-selection.mjs";
 
 const { session, setToolUIContext, subagentEventBus } =
   await createAgentSession({
@@ -23,13 +24,7 @@ const { session, setToolUIContext, subagentEventBus } =
   });
 if (process.env.D_PI_MODEL_SELECTION) {
   const selection = JSON.parse(process.env.D_PI_MODEL_SELECTION);
-  const model = session.modelRegistry.find(
-    selection.provider,
-    selection.modelId,
-  );
-  if (!model || !session.modelRegistry.hasConfiguredAuth(model))
-    throw Error("Selected model unavailable");
-  await session.setModelTemporary(model, selection.thinkingLevel);
+  await applyModelSelection(session, selection);
 }
 const gate = new ConsumptionGate();
 let paused = false;
@@ -77,16 +72,13 @@ async function control(frame, claimStop, epoch) {
         session.hasPendingAsyncWork()
       )
         throw Error("Model change requires idle");
-      const model = session.modelRegistry.find(frame.provider, frame.modelId);
-      if (!model || !session.modelRegistry.hasConfiguredAuth(model))
-        throw Error("Selected model unavailable");
-      await session.setModelTemporary(model, frame.thinkingLevel);
+      const actual = await applyModelSelection(session, frame);
       output({
         type: "response",
         command: frame.type,
         id: frame.id,
         success: true,
-        data: { model: session.model, thinkingLevel: session.thinkingLevel },
+        data: actual,
       });
       return;
     } else if (frame.type === "d_pi_stop") {
@@ -185,4 +177,4 @@ const input = new ReadableStream({
     });
   },
 });
-await runRpcMode(session, setToolUIContext, subagentEventBus, input);
+await runRpcMode(session, { setToolUIContext, subagentEventBus, input });

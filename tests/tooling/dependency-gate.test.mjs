@@ -162,3 +162,52 @@ test("an unsupported or unreadable lock cannot be reported as consistent", (t) =
     assert.match(report.issues.join("\n"), /DEP-LOCK-FORMAT/);
   }
 });
+
+test("pnpm 12 empty configDependencies preserves strict application dependency verification", (t) => {
+  const report = fixture(
+    t,
+    () => {},
+    (text) => text.replace("  .:", "  .:\n    configDependencies: {}"),
+  );
+  assert.deepEqual(report.issues, []);
+  const unsupported = fixture(
+    t,
+    () => {},
+    (text) =>
+      text.replace(
+        "  .:",
+        "  .:\n    configDependencies:\n      fixture: 1.0.0",
+      ),
+  );
+  assert.match(unsupported.issues.join("\n"), /DEP-LOCK-FORMAT/);
+});
+
+test("pnpm 12 manager document cannot hide an invalid application lock", (t) => {
+  const manager =
+    "---\nlockfileVersion: '9.0'\nimporters:\n  .:\n    configDependencies: {}\n    packageManagerDependencies:\n      pnpm:\n        specifier: 12.8.1\n        version: 12.8.1\npackages: {}\n---\n";
+  assert.deepEqual(
+    fixture(
+      t,
+      () => {},
+      (text) => manager + text,
+    ).issues,
+    [],
+  );
+  assert.match(
+    fixture(
+      t,
+      () => {},
+      (text) =>
+        manager + text.replace("specifier: 5.0.15", "specifier: 5.0.14"),
+    ).issues.join("\n"),
+    /DEP-LOCK.*zustand/,
+  );
+  assert.match(
+    fixture(
+      t,
+      () => {},
+      (text) => manager + text + "---\n" + text,
+    ).issues.join("\n"),
+    /DEP-LOCK-FORMAT/,
+  );
+});

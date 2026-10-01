@@ -1,4 +1,6 @@
 export const domain = {
+  "runtime.evidenceGap":
+    "部分原生证据未能保存或关联。缺少的结果保持未知，不会自动重发输入。",
   "runtime.processingInput": "正在处理输入…",
   "runtime.resourceUnknown": "Runtime 资源无法确认。",
   "runtime.readyToSend": "OMP 已就绪，可发送文字。",

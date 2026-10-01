@@ -136,7 +136,7 @@ describe("persistent submission handoff", () => {
         const ready = new DatabaseSync(path, { readOnly: true });
         try {
           expect(ready.prepare("PRAGMA user_version").get()?.user_version).toBe(
-            5,
+            6,
           );
           expect(ready.prepare("PRAGMA journal_mode").get()?.journal_mode).toBe(
             "wal",

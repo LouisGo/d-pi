@@ -22,7 +22,7 @@ export class AppStorage {
       const drafts = new DraftRepository(database, threads);
       const submissions = new SubmissionRepository(database, drafts);
       const preferences = new PreferenceRepository(database);
-      // Recovery owns receipt normalization and must precede the v4/v5
+      // Recovery owns receipt normalization and must precede the v4/v5/v6
       // backups. Only a fully recovered and migrated instance is published.
       submissions.recoverInterruptedSubmissions();
       database.completeSchemaMigrations();

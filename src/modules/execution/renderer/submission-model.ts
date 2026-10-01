@@ -52,13 +52,23 @@ export function mergeReceipt(
   const outcome =
     old.outcome === "failed" || next.outcome === "failed"
       ? "failed"
-      : old.outcome === "unknown" || next.outcome === "unknown"
-        ? "unknown"
-        : "unobserved";
+      : old.outcome === "aborted" || next.outcome === "aborted"
+        ? "aborted"
+        : old.outcome === "completed" || next.outcome === "completed"
+          ? "completed"
+          : old.outcome === "unknown" || next.outcome === "unknown"
+            ? "unknown"
+            : "unobserved";
+  const promptResult =
+    old.promptResult?.status === "error"
+      ? old.promptResult
+      : (next.promptResult ?? old.promptResult);
   const executionFacts = (
     receipt: Extract<SubmissionReceipt, { state: "acknowledged" | "unknown" }>,
   ): SubmissionReceipt =>
-    receipt.outcome === outcome ? receipt : { ...receipt, outcome };
+    receipt.outcome === outcome && receipt.promptResult === promptResult
+      ? receipt
+      : { ...receipt, outcome, ...(promptResult ? { promptResult } : {}) };
 
   // Select a complete legal variant before merging its independent facts.
   // In particular, a late refusal must not lend its fields to an ACK.

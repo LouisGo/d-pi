@@ -9,7 +9,7 @@ import {
 } from "../../../platform/omp/protocol/public";
 import { type ControlState, ControlStateSchema } from "../contracts/control";
 import { defaultAnswerFor } from "../contracts/interactions";
-import type { FrozenSubmission } from "../contracts/public";
+import type { FrozenSubmission, SubmissionEvent } from "../contracts/public";
 import {
   type HostCommand,
   type HostMessage,
@@ -51,8 +51,10 @@ export function createSessionHost(
 ): SessionHost {
   let native: NativeSession | null = null;
   let start: HostStart | null = null;
+  let permit: ((allowed: boolean) => void) | null = null;
   let state: NativeState | null = null;
   let busy = false;
+  let unsettledPrompt = false;
   let paused = false;
   let lastControl: ControlState | null = null;
   let observationVersion = 0;
@@ -172,25 +174,118 @@ export function createSessionHost(
     {
       value: FrozenSubmission;
       responded: boolean;
+      responseConfirmed: boolean;
+      accepted: boolean;
+      terminalConfirmed: boolean;
       timer: ReturnType<typeof setTimeout>;
       acknowledgementTimer: ReturnType<typeof setTimeout>;
     }
   >();
+  // Keep only recent confirmed identities, never their frozen text. Native late
+  // duplicates and errors still belong to the same submission after Main commits.
+  const confirmedPrompts = new Map<
+    string,
+    {
+      value: Pick<FrozenSubmission, "submissionId" | "requestId" | "target">;
+      at: number;
+    }
+  >();
+  function promptIdentity(requestId: string) {
+    const now = Date.now();
+    for (const [id, entry] of confirmedPrompts)
+      if (now - entry.at >= 15 * 60_000) confirmedPrompts.delete(id);
+    const value =
+      prompts.get(requestId)?.value ?? confirmedPrompts.get(requestId)?.value;
+    return value
+      ? {
+          submissionId: value.submissionId,
+          requestId: value.requestId,
+          target: value.target,
+        }
+      : undefined;
+  }
+  function rememberConfirmed(value: FrozenSubmission): void {
+    confirmedPrompts.set(value.requestId, {
+      value: {
+        submissionId: value.submissionId,
+        requestId: value.requestId,
+        target: value.target,
+      },
+      at: Date.now(),
+    });
+    if (confirmedPrompts.size > 128) {
+      const oldest = confirmedPrompts.keys().next().value;
+      if (oldest) confirmedPrompts.delete(oldest);
+    }
+  }
+  // Only evidence is replayed; frozen prompts are never written again.
+  const evidence = new Map<string, SubmissionEvent>();
+  let evidenceRetry: ReturnType<typeof setTimeout> | null = null;
+  let retryDelay = 1000;
+  function replayEvidence(): void {
+    for (const [evidenceId, event] of evidence)
+      send({ kind: "submission", evidenceId, event });
+  }
+  function scheduleEvidenceRetry(): void {
+    if (!evidence.size || evidenceRetry || disconnected || closing) return;
+    evidenceRetry = setTimeout(() => {
+      evidenceRetry = null;
+      replayEvidence();
+      retryDelay = Math.min(retryDelay * 2, 30000);
+      scheduleEvidenceRetry();
+    }, retryDelay);
+    evidenceRetry.unref();
+  }
+  function publishEvidence(event: SubmissionEvent): void {
+    for (const [evidenceId, previous] of evidence) {
+      if (
+        previous.requestId === event.requestId &&
+        previous.kind === event.kind &&
+        (previous.kind !== "prompt-result" ||
+          event.kind !== "prompt-result" ||
+          previous.status === event.status)
+      ) {
+        send({ kind: "submission", evidenceId, event: previous });
+        return;
+      }
+    }
+    if (evidence.size >= 256) {
+      if (start)
+        send({
+          kind: "evidence-gap",
+          connectionGeneration: start.connectionGeneration,
+          reason: "cache-full",
+        });
+      return;
+    }
+    const evidenceId = randomUUID();
+    evidence.set(evidenceId, event);
+    send({ kind: "submission", evidenceId, event });
+    scheduleEvidenceRetry();
+  }
   function clearPrompts(): void {
     for (const entry of prompts.values()) {
       clearTimeout(entry.timer);
       clearTimeout(entry.acknowledgementTimer);
     }
     prompts.clear();
+    confirmedPrompts.clear();
   }
   function disposeHost(): void {
+    permit?.(false);
+    permit = null;
     clearPrompts();
+    if (evidenceRetry) clearTimeout(evidenceRetry);
+    evidenceRetry = null;
+    evidence.clear();
     clearDefaultAnswerTimers();
     interactions.dispose();
     options.onDispose?.();
   }
   function observe(event: NativeObservation): void {
     if (event.kind === "exited") {
+      if (event.groupStopped === false)
+        send({ kind: "interrupted", reason: "process-group-unconfirmed" });
       // The native child is confirmed dead. Release the remaining utility owner;
       // Main retains in-flight/interaction/background uncertainty independently.
       if (!closing) {
@@ -206,14 +301,11 @@ export function createSessionHost(
       disconnected = true;
       observationVersion++;
       for (const entry of prompts.values())
-        send({
-          kind: "submission",
-          event: {
-            kind: "disconnected",
-            submissionId: entry.value.submissionId,
-            requestId: entry.value.requestId,
-            target: entry.value.target,
-          },
+        publishEvidence({
+          kind: "disconnected",
+          submissionId: entry.value.submissionId,
+          requestId: entry.value.requestId,
+          target: entry.value.target,
         });
       clearPrompts();
       interactions.disconnect();
@@ -278,30 +370,80 @@ export function createSessionHost(
       frame.command === "prompt"
     ) {
       const entry = prompts.get(frame.id);
-      if (entry && typeof frame.success === "boolean") {
+      const value = promptIdentity(frame.id);
+      if (value && typeof frame.success === "boolean") {
         observationVersion++;
-        clearTimeout(entry.acknowledgementTimer);
-        entry.responded = true;
-        send({
-          kind: "submission",
-          event: {
-            kind: frame.success ? "ack" : "error",
-            submissionId: entry.value.submissionId,
-            requestId: entry.value.requestId,
-            target: entry.value.target,
-          },
+        if (entry) {
+          clearTimeout(entry.acknowledgementTimer);
+          entry.responded = true;
+          entry.accepted ||= frame.success;
+        }
+        publishEvidence({
+          kind: frame.success ? "ack" : "error",
+          ...value,
         });
+        if (
+          frame.success &&
+          frame.data &&
+          typeof frame.data === "object" &&
+          "agentInvoked" in frame.data &&
+          frame.data.agentInvoked === false
+        ) {
+          publishEvidence({
+            kind: "local-result",
+            ...value,
+          });
+        }
         // ACK is not completion. Query after this observation to establish whether
         // native admission/queues/background activity have actually drained.
         void refresh();
       }
     }
-    if (
-      isNativeFrameType(frame, NativeFrameTypes.promptResult) &&
-      frame.agentInvoked === false
-    ) {
+    if (isNativeFrameType(frame, NativeFrameTypes.promptResult)) {
       observationVersion++;
+      const value = frame.id ? promptIdentity(frame.id) : undefined;
+      if (value) {
+        publishEvidence({
+          kind: "prompt-result",
+          ...value,
+          status: frame.status,
+          agentInvoked: frame.agentInvoked,
+          sessionSettled: frame.sessionSettled,
+          ...(frame.error
+            ? {
+                error: {
+                  code: "native-error",
+                  retryable: frame.error.retryable,
+                  ...(frame.error.httpStatus &&
+                  frame.error.httpStatus >= 100 &&
+                  frame.error.httpStatus <= 599
+                    ? { httpStatus: frame.error.httpStatus }
+                    : {}),
+                },
+              }
+            : {}),
+        });
+      } else {
+        // A terminal without App correlation is never assigned to another prompt.
+        send({
+          kind: "evidence-gap",
+          connectionGeneration: start?.connectionGeneration ?? randomUUID(),
+          reason: "uncorrelated-result",
+        });
+      }
+      // Prompt completion is independent from session/background activity.
+      unsettledPrompt = !frame.sessionSettled;
+      busy = unsettledPrompt;
+      void refresh();
+    }
+    if (isNativeFrameType(frame, NativeFrameTypes.sessionSettled)) {
+      observationVersion++;
+      unsettledPrompt = false;
       busy = false;
+      void refresh();
+    }
+    if (isNativeFrameType(frame, NativeFrameTypes.queueUpdate)) {
+      observationVersion++;
       void refresh();
     }
     // Reading events go directly to the Renderer port; Main receives supervision only.
@@ -334,7 +476,10 @@ export function createSessionHost(
           control = ControlStateSchema.parse(reply.data);
         }
         state = next;
+        if (next.isSettled !== undefined) unsettledPrompt = !next.isSettled;
         busy =
+          unsettledPrompt ||
+          next.hasPendingAsyncWork === true ||
           next.isStreaming ||
           next.isCompacting ||
           next.queuedMessageCount > 0 ||
@@ -392,6 +537,25 @@ export function createSessionHost(
           directory: identity.directory,
           environment: value.environment,
           sessionDirectory: value.sessionDirectory,
+          ...(value.supervision
+            ? {
+                supervision: value.supervision,
+                register: async (identity) => {
+                  const result = new Promise<boolean>((resolve) => {
+                    permit = resolve;
+                  });
+                  send({
+                    kind: "native-register",
+                    registration: {
+                      ...identity,
+                      processInstanceId: value.processInstanceId,
+                      token: value.supervision?.token ?? "",
+                    },
+                  });
+                  return result;
+                },
+              }
+            : {}),
         },
         observe,
       );
@@ -432,21 +596,18 @@ export function createSessionHost(
     return null;
   }
   function dispatch(value: FrozenSubmission): void {
-    if (prompts.has(value.requestId)) return;
+    if (promptIdentity(value.requestId)) return;
     observationVersion++;
     if (value.target.connectionGeneration === start?.connectionGeneration)
       lastDispatchId = value.submissionId;
     const rejectionReason = dispatchRejectionReason(value);
     if (rejectionReason) {
-      send({
-        kind: "submission",
-        event: {
-          kind: "rejected",
-          submissionId: value.submissionId,
-          requestId: value.requestId,
-          target: value.target,
-          reason: rejectionReason,
-        },
+      publishEvidence({
+        kind: "rejected",
+        submissionId: value.submissionId,
+        requestId: value.requestId,
+        target: value.target,
+        reason: rejectionReason,
       });
       void refresh();
       return;
@@ -455,17 +616,20 @@ export function createSessionHost(
     const timer = setTimeout(() => {
       const entry = prompts.get(value.requestId);
       if (entry && !entry.responded)
-        send({
-          kind: "submission",
-          event: {
-            kind: "disconnected",
-            submissionId: value.submissionId,
-            requestId: value.requestId,
-            target: value.target,
-          },
+        publishEvidence({
+          kind: "disconnected",
+          submissionId: value.submissionId,
+          requestId: value.requestId,
+          target: value.target,
         });
       if (entry) clearTimeout(entry.acknowledgementTimer);
       prompts.delete(value.requestId);
+      if (start)
+        send({
+          kind: "evidence-gap",
+          connectionGeneration: start.connectionGeneration,
+          reason: "correlation-expired",
+        });
       options.onSupervisionEvent?.({
         kind: "submission-correlation-expired",
         submissionId: value.submissionId,
@@ -476,19 +640,19 @@ export function createSessionHost(
     const acknowledgementTimer = setTimeout(() => {
       const entry = prompts.get(value.requestId);
       if (entry && !entry.responded)
-        send({
-          kind: "submission",
-          event: {
-            kind: "disconnected",
-            submissionId: value.submissionId,
-            requestId: value.requestId,
-            target: value.target,
-          },
+        publishEvidence({
+          kind: "disconnected",
+          submissionId: value.submissionId,
+          requestId: value.requestId,
+          target: value.target,
         });
     }, 30000);
     prompts.set(value.requestId, {
       value,
       responded: false,
+      responseConfirmed: false,
+      accepted: false,
+      terminalConfirmed: false,
       timer,
       acknowledgementTimer,
     });
@@ -507,10 +671,61 @@ export function createSessionHost(
     port?: HostMessagePort,
   ): Promise<void> {
     await match(command)
-      .with({ kind: "attach" }, () => {
-        options.onAttach?.(port);
+      .with({ kind: "native-permit" }, (value) => {
+        if (
+          value.processInstanceId === start?.processInstanceId &&
+          value.token === start.supervision?.token
+        ) {
+          permit?.(value.allowed);
+          permit = null;
+        }
         return Promise.resolve();
       })
+      .with({ kind: "attach" }, () => {
+        options.onAttach?.(port);
+        replayEvidence();
+        return Promise.resolve();
+      })
+      .with({ kind: "replay-evidence" }, () => {
+        replayEvidence();
+        return Promise.resolve();
+      })
+      .with(
+        { kind: "confirm-evidence" },
+        ({ evidenceId, connectionGeneration }) => {
+          if (connectionGeneration === start?.connectionGeneration) {
+            const event = evidence.get(evidenceId);
+            evidence.delete(evidenceId);
+            const entry = event ? prompts.get(event.requestId) : undefined;
+            if (entry && event) {
+              if (event.kind === "ack") entry.responseConfirmed = true;
+              if (
+                event.kind === "prompt-result" ||
+                event.kind === "local-result"
+              )
+                entry.terminalConfirmed = true;
+              if (event.kind === "error") {
+                entry.responseConfirmed = true;
+                // 18.4.6 still emits ACK -> late response error -> prompt_result.
+                // Keep accepted request correlation until its native result arrives.
+                if (!entry.accepted) entry.terminalConfirmed = true;
+              }
+              if (entry.responseConfirmed && entry.terminalConfirmed) {
+                clearTimeout(entry.timer);
+                clearTimeout(entry.acknowledgementTimer);
+                rememberConfirmed(entry.value);
+                prompts.delete(event.requestId);
+              }
+            }
+          }
+          if (!evidence.size && evidenceRetry) {
+            clearTimeout(evidenceRetry);
+            evidenceRetry = null;
+            retryDelay = 1000;
+          }
+          return Promise.resolve();
+        },
+      )
       .with({ kind: "start" }, (value) => launch(value))
       .with({ kind: "dispatch" }, ({ value }) => {
         dispatch(value);
@@ -680,6 +895,8 @@ export function createSessionHost(
           }
         }
         if (
+          evidence.size > 0 ||
+          unsettledPrompt ||
           busy ||
           interactions.blocked ||
           starting ||

@@ -3,6 +3,7 @@ import { subscribeWithSelector } from "zustand/middleware";
 import { createStore } from "zustand/vanilla";
 import type { Failure } from "../../modules/input/contracts/public";
 import type { DraftController } from "../../modules/input/core/public";
+import { DraftEditorCache } from "../../modules/input/renderer/public";
 import type { Preferences } from "../../modules/preferences/contracts/public";
 import type { ThreadContext } from "../../modules/threads/contracts/public";
 import type {
@@ -59,6 +60,7 @@ export function transportFailure(traceId: string): Failure {
   };
 }
 export class AppModel {
+  readonly draftEditors = new DraftEditorCache();
   private readonly store: AppStore = createAppStore();
   readonly stateStore: AppStateStore = this.store;
   readonly threadListStore = createStore<{
@@ -188,6 +190,7 @@ export class AppModel {
     this.store.setState({ kind: "disposed" }, true);
     for (const thread of this.threads.values()) thread.dispose();
     this.threads.clear();
+    this.draftEditors.dispose();
   }
   getSnapshot = (): ViewState => this.store.getState();
   subscribe = (listener: () => void): (() => void) =>
@@ -224,11 +227,16 @@ export class AppModel {
         const previous = this.activeThread;
         const cached = draft ? this.threads.get(draft.threadId) : null;
         const thread = draft
-          ? cached?.matches(draft)
+          ? cached?.matches(draft) &&
+            (cached.controller.getSnapshot().kind !== "saved" ||
+              (cached.controller.getEditorSnapshot().revision ===
+                draft.revision &&
+                cached.controller.getTextSnapshot() === draft.text))
             ? cached
             : new ThreadModel(draft, this.bridge, transportFailure)
           : null;
         if (thread) this.threads.set(thread.context.threadId, thread);
+        if (cached && cached !== thread) cached.dispose();
         const threadSelection: ThreadSelectionState = thread
           ? { kind: "thread", thread, directoryAvailable }
           : { kind: "empty" };

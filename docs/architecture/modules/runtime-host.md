@@ -45,6 +45,10 @@ Main 拥有窗口、Host 监督及受限通道建立；一个 utility SessionHos
 
 ## S3 当前实现（2026-09-28）
 
-固定官方 SDK 18.3.0 在随包 Bun 1.3.14 中运行；`runtime/host.mjs` 是 App 自有薄适配，不修改官方模块。正式 Host 使用该入口，原生 RPC driver 继续拥有标准命令和扩展 UI；仅增加消费前钩子、控制帧与有界状态观察。资源准备由 `scripts/prepare-sdk.mjs` 复制锁定依赖，打包显式保留 node_modules。控制和回答沿 Main 信任检查、Host 当前代次及 traceId 返回运输结果，正文不记诊断日志。
+当前固定官方 SDK 18.4.6 在随包 Bun 1.3.14 中运行；`runtime/host.mjs` 是 App 自有薄适配。2026-10-01 用户授权仅在资源 staging 修正 sdk.ts 的 prelude 导入歧义，原文件和补丁哈希入 manifest，其余官方代码与所有权不变。正式 Host 使用该入口，原生 RPC driver 继续拥有标准命令和扩展 UI；仅增加消费前钩子、控制帧与有界状态观察。资源准备由 `scripts/prepare-sdk.mjs` 复制锁定依赖，打包显式保留 node_modules。控制和回答沿 Main 信任检查、Host 当前代次及 traceId 返回运输结果，正文不记诊断日志。
 
 原生 session 放入 Main 指定目录；新启动与冷恢复分开，已有绑定缺执行全周期独占证据则只读。停止/退出的实际验收和限制以 [S3 交接](../../../.scratch/m1-s3-control-recovery/handoff.md) 为准。
+
+## 运行时加固（2026-10-01）
+
+NativeSession 启动受管独立进程组，薄 bootstrap 在导入 SDK 前等待 Main 的身份登记许可。Main 登记 scope/processInstanceId、资源入口及实际 PID、父进程、进程组、birth/executable；Host 与 Main 故障分别清理属于本次实例的组。仅凭断链不能宣布原生或工具已停止，终止结果与 prompt 结果分别报告；清理复核身份，不能仅凭旧 PID 杀进程。单 Bun 故障不结束其他 scope，停止和紧急清理不依赖 SQLite 可写。逃逸进程组的未知外部进程不在已证终止范围，不能声称工具沙箱或跨 CLI 单写。冷旧原生绑定继续只读，不 adopt 或自动重放 unknown。真实 Electron utility/Bun/工具故障证据由[04](../../../.scratch/runtime-hardening-omp1845/issues/04-process-supervision.md)维护。

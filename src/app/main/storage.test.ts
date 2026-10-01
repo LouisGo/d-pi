@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
@@ -51,7 +51,7 @@ describe("real SQLite and directory service", () => {
       reopened.close();
       const migrated = new DatabaseSync(path, { readOnly: true });
       expect(migrated.prepare("PRAGMA user_version").get()?.user_version).toBe(
-        5,
+        6,
       );
       migrated.close();
       const backup = new DatabaseSync(`${path}.before-v5`, { readOnly: true });
@@ -100,7 +100,7 @@ describe("real SQLite and directory service", () => {
         store?.close();
       }
     }));
-  it("maps legacy SQLite directory identity without migration or changing native binding and draft", () =>
+  it("maps legacy SQLite directory identity while preserving native binding and draft through v6", () =>
     fixture((path) => {
       const directoryId = "cf049bd1-0015-44c8-a3d8-cfce812c7b76";
       const threadId = "8e324701-bfa8-4f6d-b989-36d3793e57aa";
@@ -170,7 +170,7 @@ describe("real SQLite and directory service", () => {
       try {
         expect(
           unchanged.prepare("PRAGMA user_version").get()?.user_version,
-        ).toBe(5);
+        ).toBe(6);
         expect(
           unchanged
             .prepare("SELECT workspace_id,body FROM thread WHERE id=?")
@@ -321,4 +321,52 @@ it("overlapping project requests open one dialog and create one foreground ident
     expect((await next).kind).toBe("ready");
     expect(store.drafts.active()?.threadId).not.toBe(active?.threadId);
     store.close();
+  }));
+
+it("backs up v5 before enabling typed native outcomes in v6 and reopens the new schema", () =>
+  fixture((path) => {
+    const original = openStorage(path);
+    original.close();
+    const migrated = new DatabaseSync(path, { readOnly: true });
+    try {
+      expect(migrated.prepare("PRAGMA user_version").get()?.user_version).toBe(
+        6,
+      );
+    } finally {
+      migrated.close();
+    }
+    const backup = new DatabaseSync(`${path}.before-v6`, { readOnly: true });
+    try {
+      expect(backup.prepare("PRAGMA user_version").get()?.user_version).toBe(5);
+    } finally {
+      backup.close();
+    }
+    openStorage(path).close();
+  }));
+
+it("a v6 backup publication failure preserves the v5 database and its draft instead of deleting it", () =>
+  fixture((path) => {
+    const store = openStorage(path);
+    const draft = store.drafts.create("/fixture");
+    store.drafts.save(draft.threadId, 0, "precious-original");
+    store.close();
+    const previous = new DatabaseSync(path);
+    previous.exec("PRAGMA user_version=5");
+    previous.close();
+    rmSync(`${path}.before-v6`);
+    mkdirSync(`${path}.before-v6`);
+    expect(() => openStorage(path)).toThrow();
+    const retained = new DatabaseSync(path, { readOnly: true });
+    try {
+      expect(retained.prepare("PRAGMA user_version").get()?.user_version).toBe(
+        5,
+      );
+      expect(
+        retained
+          .prepare("SELECT body FROM thread WHERE id=?")
+          .get(draft.threadId)?.body,
+      ).toBe("precious-original");
+    } finally {
+      retained.close();
+    }
   }));

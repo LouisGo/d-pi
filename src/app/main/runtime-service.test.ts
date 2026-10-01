@@ -691,6 +691,7 @@ it("persists Host non-dispatch without consuming the draft and permits an explic
   await f.dispatch();
   f.host.emit("message", {
     kind: "submission",
+    evidenceId: crypto.randomUUID(),
     event: {
       kind: "rejected",
       submissionId: p.receipt.submissionId,
@@ -809,6 +810,7 @@ it.each(["error", "disconnected"] as const)(
     control(1);
     f.host.emit("message", {
       kind: "submission",
+      evidenceId: crypto.randomUUID(),
       event: {
         kind,
         submissionId: p.receipt.submissionId,
@@ -847,6 +849,7 @@ it("settles a late failure after the last idle snapshot without waiting for anot
   f.confirmIdle();
   f.host.emit("message", {
     kind: "submission",
+    evidenceId: crypto.randomUUID(),
     event: {
       kind: "error",
       submissionId: p.receipt.submissionId,

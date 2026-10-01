@@ -181,6 +181,7 @@ it.each(["unchanged", "edited-before", "edited-after"] as const)(
     if (change === "edited-after") f.controller.edit("B");
     f.host.emit("message", {
       kind: "submission",
+      evidenceId: crypto.randomUUID(),
       event: {
         kind: "ack",
         submissionId: f.receipt.submissionId,
@@ -240,6 +241,7 @@ it("continues an interrupted explicit resend without consuming the current draft
   await f.model.continuePrepared(replay.submissionId);
   f.host.emit("message", {
     kind: "submission",
+    evidenceId: crypto.randomUUID(),
     event: {
       kind: "ack",
       submissionId: replay.submissionId,

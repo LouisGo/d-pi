@@ -35,9 +35,13 @@
 交接主路径：`preparing → prepared → dispatching → acknowledged`。`acknowledged` 仅表示与本次原生命令、实例准确关联的成功调用回执已经持久化；`accepted` 是需要额外原生证据的业务接受事实，S2 不依赖它清稿，二者都不是 started/completed。明确接受前拒绝为 `rejected`，本地准备中取消为 `cancelled`；派发后尚未持久确认 ACK 且断链/超时/崩溃为 `unknown`。
 
 - Host 必须等 prepared（含冻结内容）与 dispatching 分别落盘后才写 OMP。Main 收到有效调用 ACK 后，在同一事务保存 acknowledged 与对应草稿 revision 的消费标记，成功后才通知 Renderer 腾空仍对应本次提交的输入。事务不另改草稿正文或推进 revision；输入继续沿原保存序列工作。新编辑始终保留，通知丢失时由持久标记恢复有效草稿。
-- 通信确认、业务接受和执行结果分别记录。v18.3.0 prompt 可先 success 后同 ID 异步失败；首次 success 可以证明调用确认，不能证明业务接受、原生历史持久化或任务完成，也不能立即删除全部关联。请求映射按命令有界保留，并保留有限迟到回执识别；超出识别窗口时明确关联缺口，不按文本或时间猜测归属。
+- 通信确认、业务接受和执行结果分别记录。当前固定 OMP v18.4.6 仍可先 success 后同 ID 异步 response error，再给出独立 prompt_result。首次 success 只证明调用确认；Host 不能在 ACK 或迟到 error 后提前释放已接受请求的关联。requestId 映射到 submissionId 与完整 target（processInstanceId/connectionGeneration/configContextId/nativeSessionRef），不按文本、generic idle 或 agent_end 猜结果归属。
+- prompt_result(id) 的 completed/aborted/error、agentInvoked、sessionSettled 独立保存为有限结果观察；error 仅保存 retryable/httpStatus 等必要类型化摘要，不复制 provider 文本、诊断路径或正文。内置本地命令有时只返回 response.data.agentInvoked=false，该结果另标 native-local-response，不伪造 prompt_result 或 sessionSettled。agentInvoked=false 不证明没有配置/文件副作用。
+- completed 只说明该输入的原生工作结果；sessionSettled=false 时仍保留后台活动约束，新鲜 get_state/control 与 session_settled 才能确认该实例闲置。prompt_result 不证明最终正文已到 Renderer，正文仍以 full 模式的 message_end 与阅读快照为准。
 - 后续错误/执行中断与已持久确认的 ACK 分开：保留 acknowledged 事实及冻结原文，独立显示失败或执行结果未知，不倒写成从未发送、不因迟到 success 擦除错误。只有可靠证据证明接受前拒绝才标注该拒绝；一般异步错误不能推断失败阶段。没有逐提交身份的原生流只归属 Thread/会话。
-- 准备/派发前持久化失败不发命令；ACK 与消费标记事务失败不清稿，保留 unknown。若库不可写，重启将残留 dispatching 解释为 unknown。ACK 已持久化后发生故障不撤销消费标记、不强行把旧内容盖回新稿。
+- 准备/派发前持久化失败不发命令；ACK 与消费标记事务失败不清稿。结果可先于 ACK 保存，不能绕过对应 revision 的 ACK 消费条件。重复结果幂等，晚到 success/拒绝不清除已有失败或结果证据。
+- Main 提交成功后按 evidenceId 确认 Host 的证据；提交失败显示覆盖缺口，同活 Host 至多保留 256 项未确认事实，按有界退避重送证据，绝不重写 prompt。未确认证据阻止正常 idle 回收/退出，即使 ACK 已保存且原生已闲置。重复 ACK 不占新缓存项；确认后至多保留 128 项、15 分钟的无正文身份以识别重复终态和迟到错误。缓存满、未决关联到期、无关联结果和 Host 再崩溃保留缺口，不承诺跨 Host 重放或零丢失。
+- App schema 6 在现有 submission 收据 JSON 中增加有限观察，不存原生事件账本。升级按既有顺序恢复再生成 before-v6 备份和发布版本，失败不删库。重启把 dispatching 与已 ACK 但无结果的 unobserved 解释为 unknown；ACK 时间、已消费 revision 和冻结原文保留，持久终态保留。旧 schema 的 unobserved 不猜成功，旧 App 拒绝 schema 6，不开放旧原生会话写恢复。
 - ACK 丢失不能凭相同文本、队列长度或时间相近认定已确认；未知不自动重发。用户显式重新发送产生新 submissionId、关联原提交并提示可能重复；App ID 不创造 OMP exactly-once。重复点击/IPC 对同一 submissionId 只返回已知状态，不重复派发。重启 prepared 也不自动发送。
 - 冻结原文以可查看、复制的持久发送记录保留；不能依赖原生历史已保存它。S2 不回收这份唯一可靠副本。后续只有原生持久化及引用可恢复性已确认后才可解除临时保留，unknown 不受普通缓存 GC 影响。收据不另造模型执行历史。
 
@@ -60,6 +64,9 @@
 **首版新增/修复认证入口只交付两条：OpenAI 账户登录（OMP 的 openai-codex 路线）和 DeepSeek API key。** OpenAI API key 与 ChatGPT/Codex 账户登录不是一个认证入口，界面不能混称。这里收敛的是 GUI 初始化开发和验收范围；已有其他可用原生 provider/model 继续展示复用，不新增模型品牌拦截。其他 provider 的新增 GUI 认证后续逐项做，不能假设只是换名称：其他 OAuth、企业身份、本地服务等仍须各自验收。
 
 - `configContextId` 标识解析后的配置根、profile、cwd 与非秘密的来源信息；真实环境值/凭据由宿主使用，不放进 UI 状态/日志。所有配置读取、认证及 OMP 执行使用同一上下文。
+- 配置摘要与新认证命令携带明确的 `application` 或 `thread { threadId, workingDirectoryId }` scope 和同一 `traceId`。Main 在资源等待前从 Thread 仓储固定实际目录及原生环境，等待后复核关联；切换活动 Thread 不改写旧请求，删除或重关联返回 `stale-target`。application 使用 Main 拥有的固定隔离探测目录。Query key 与命令 scope 一致，回包身份不符不能进入成功缓存；认证续步与取消只按原 job 找固定来源。
+- snapshot 全链只读，不以 `Settings.loadReadOnly` 代替凭据、模型缓存与文件迁移的验证。薄适配以有限只读 SQLite 句柄及官方内存模型组合读取；缺数据库不创建、legacy JSON 不迁移、不执行命令 key/helper、不联网、不加载项目 Agent/扩展。旧 schema、损坏或不安全路径、活动 WAL、远程认证、未观察账户目录和无法在有限读取内观察的外部配置引用均明确返回 `partial/unavailable` 与 unknown 认证状态，不把未知解释为无认证。
+- 推理选项从固定 SDK 的实际 metadata/helper 派生，区分 native default、explicit off 和支持的 effort（含 minimal）；不可调模型不给虚假菜单，requiresEffort 不提供 off。18.4.6 使用官方 `ThinkingLevel.Off` 显式关闭，`undefined`/`ThinkingLevel.Inherit` 表示未指定。空闲实例应用前复核能力，完成后显示 Host 的实际回读；未知操作结果不显示成功。
 - 正常已配置路径零配置进入。Finder 启动缺少终端环境时，区分 absent / incomplete / incompatible / inaccessible；GUI 可选择原生配置根及必要环境来源，展示来源与作用域。不能误判成新用户后暗建默认配置，也不自动执行任意 shell startup 文件以“修复环境”。
 - 不兼容格式禁止写入，不自动迁移外部 CLI；提供只读诊断、选择兼容上下文及明确修复说明。原生接口写设置，保存前重读、比较目标 revision/内容，保存后回读；App 内串行不冒充外部 CLI 互斥，record 冲突要求刷新重做，不能盲覆盖。
 - 认证由原生实现管理 token、刷新及持久化；GUI 仅传秘密输入/显示挑战、取消与进度。OAuth 用系统浏览器，不依赖未来内置浏览器；回调/state/超时由原生路径处理，结束释放监听。API key 不进入命令行参数、日志或 App 偏好，走受控输入通道。新 key 验证/保存失败保留已有有效认证，不先删旧值。

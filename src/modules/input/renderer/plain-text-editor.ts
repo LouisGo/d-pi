@@ -1,15 +1,32 @@
-import type { Editor, EditorOptions } from "@tiptap/core";
+import { type Editor, type EditorOptions, getSchema } from "@tiptap/core";
 import Document from "@tiptap/extension-document";
 import Paragraph from "@tiptap/extension-paragraph";
 import Text from "@tiptap/extension-text";
 import { UndoRedo } from "@tiptap/extensions";
-import { closeHistory } from "@tiptap/pm/history";
+import { history } from "@tiptap/pm/history";
+import { EditorState } from "@tiptap/pm/state";
 import { parseDraftBlocks } from "../core/references/serialize";
 import { FileReference } from "./file-reference-node";
 
+export const draftHistoryDepth = 50;
+const extensions = [
+  Document,
+  Paragraph,
+  Text,
+  FileReference,
+  UndoRedo.configure({ depth: draftHistoryDepth }),
+];
+// Build the stable input schema without an Editor context. Cached documents and
+// history slices must not retain a destroyed Editor through schema callbacks.
+const schema = getSchema(extensions);
+
 // Each paragraph represents one source line, including in copied/cut text.
 export const plainTextEditorOptions = {
-  extensions: [Document, Paragraph, Text, FileReference, UndoRedo],
+  extensions,
+  onBeforeCreate: ({ editor }) => {
+    editor.schema = schema;
+    editor.extensionManager.schema = schema;
+  },
   coreExtensionOptions: {
     clipboardTextSerializer: { blockSeparator: "\n" },
   },
@@ -31,10 +48,29 @@ export function draftDocument(text: string) {
 
 export function replaceDraftText(editor: Editor, text: string): boolean {
   if (editor.view.composing) return false;
-  editor.view.dispatch(closeHistory(editor.state.tr));
   const replaced = editor.commands.setContent(draftDocument(text), {
     emitUpdate: false,
   });
-  editor.view.dispatch(closeHistory(editor.state.tr));
+  if (replaced) clearDraftHistory(editor);
   return replaced;
+}
+
+export function clearDraftHistory(editor: Editor): void {
+  editor.view.updateState(
+    EditorState.create({
+      schema: editor.state.schema,
+      doc: editor.state.doc,
+      selection: editor.state.selection,
+      storedMarks: editor.state.storedMarks,
+      plugins: editor.state.plugins,
+    }),
+  );
+}
+
+export function detachedDraftState(editor: Editor): EditorState {
+  // Reconfigure retains history by its stable ProseMirror key. All Tiptap,
+  // decoration and view plugin closures are omitted from the inactive cache.
+  return editor.state.reconfigure({
+    plugins: [history({ depth: draftHistoryDepth })],
+  });
 }

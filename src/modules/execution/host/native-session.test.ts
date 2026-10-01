@@ -1,8 +1,105 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, it } from "vitest";
 import { type NativeObservation, NativeSession } from "./native-session";
+
+it("does not load an executable SDK entry before registration is allowed", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "d-pi-native-register-"));
+  const entry = join(dir, "entry.cjs");
+  const marker = join(dir, "executed");
+  writeFileSync(
+    entry,
+    `require('node:fs').writeFileSync(${JSON.stringify(marker)},'loaded');`,
+  );
+  let observed: (() => void) | undefined;
+  const registering = new Promise<void>((resolve) => {
+    observed = resolve;
+  });
+  let decide: ((allowed: boolean) => void) | undefined;
+  const permission = new Promise<boolean>((resolve) => {
+    decide = resolve;
+  });
+  const session = new NativeSession(
+    {
+      binary: process.execPath,
+      entry,
+      directory: dir,
+      environment: { PATH: process.env.PATH },
+      sessionDirectory: dir,
+      register: async () => {
+        observed?.();
+        return permission;
+      },
+    },
+    () => {},
+  );
+  const starting = session.start();
+  const rejected = expect(starting).rejects.toThrow(
+    "Native startup interrupted",
+  );
+  try {
+    await registering;
+    expect(existsSync(marker)).toBe(false);
+    decide?.(false);
+    await rejected;
+    expect(existsSync(marker)).toBe(false);
+  } finally {
+    decide?.(false);
+    await session.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+it("confirms group shutdown including an inherited tool heartbeat after its native parent exits", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "d-pi-native-group-"));
+  const heartbeat = join(dir, "heartbeat");
+  const tool = join(dir, "tool.cjs");
+  const entry = join(dir, "native.cjs");
+  writeFileSync(
+    tool,
+    `require('node:fs').writeFileSync(${JSON.stringify(heartbeat)},String(process.pid));setInterval(()=>require('node:fs').appendFileSync(${JSON.stringify(heartbeat)},'.'),30);`,
+  );
+  writeFileSync(
+    entry,
+    `require('node:child_process').spawn(process.execPath,[${JSON.stringify(tool)}],{stdio:'ignore'});console.log(JSON.stringify({type:'ready'}));require('node:readline').createInterface({input:process.stdin}).on('line',line=>{const c=JSON.parse(line);console.log(JSON.stringify({type:'response',id:c.id,command:c.type,success:true}));}).on('close',()=>process.exit(0));`,
+  );
+  const session = new NativeSession(
+    {
+      binary: process.execPath,
+      entry,
+      directory: dir,
+      environment: { PATH: process.env.PATH },
+      sessionDirectory: dir,
+    },
+    () => {},
+  );
+  let pid: number | undefined;
+  try {
+    await session.start();
+    for (let index = 0; index < 100 && !existsSync(heartbeat); index++)
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    pid = Number.parseInt(readFileSync(heartbeat, "utf8"), 10);
+    await session.close();
+    const afterClose = readFileSync(heartbeat, "utf8");
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    expect(readFileSync(heartbeat, "utf8")).toBe(afterClose);
+  } finally {
+    if (pid) {
+      try {
+        process.kill(pid, "SIGKILL");
+      } catch {}
+    }
+    await session.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
 
 it("negotiates v2, correlates commands and drains process output through EOF", async () => {
   const dir = mkdtempSync(join(tmpdir(), "d-pi-native-"));

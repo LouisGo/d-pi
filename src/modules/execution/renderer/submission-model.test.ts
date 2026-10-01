@@ -982,3 +982,58 @@ it.each(["rejected", "unknown", "failed-after-ack"] as const)(
     }
   },
 );
+
+it("merges terminal evidence after ACK and preserves it through a stale unknown snapshot", () => {
+  const ack = SubmissionReceiptSchema.parse({
+    submissionId: crypto.randomUUID(),
+    threadId: crypto.randomUUID(),
+    traceId: crypto.randomUUID(),
+    revision: 1,
+    text: "frozen",
+    requestId: crypto.randomUUID(),
+    target: {
+      processInstanceId: crypto.randomUUID(),
+      connectionGeneration: crypto.randomUUID(),
+      configContextId: "fixture",
+      nativeSessionRef: "native",
+    },
+    state: "acknowledged",
+    acknowledgedAt: "ACK",
+    outcome: "unknown",
+    createdAt: "1",
+    updatedAt: "2",
+  });
+  const result = SubmissionReceiptSchema.parse({
+    ...ack,
+    outcome: "completed",
+    promptResult: {
+      source: "native-prompt-result",
+      status: "completed",
+      agentInvoked: false,
+      sessionSettled: false,
+    },
+  });
+  const merged = mergeReceipt(ack, result);
+  expect(merged).toMatchObject({
+    state: "acknowledged",
+    outcome: "completed",
+    promptResult: { agentInvoked: false, sessionSettled: false },
+  });
+  expect(mergeReceipt(merged, ack)).toMatchObject({
+    outcome: "completed",
+    promptResult: { status: "completed" },
+  });
+  const error = SubmissionReceiptSchema.parse({
+    ...result,
+    outcome: "failed",
+    promptResult: {
+      ...result.promptResult,
+      status: "error",
+      error: { code: "native-error", retryable: true },
+    },
+  });
+  expect(mergeReceipt(error, result)).toMatchObject({
+    outcome: "failed",
+    promptResult: { status: "error" },
+  });
+});

@@ -1,6 +1,7 @@
 # OMP v18.4.5 固定升级方案
 
-2026-10-01。这是 [spec](spec.md)中的实施设计；当前生产依赖仍为 18.3.0，尚未升级。
+2026-10-01 实施变更：用户要求核实原包失败后允许改用 **OMP v18.4.6**，并明确授权仅在随包 staging 将 `sdk.ts` 的 `./ratchet/prelude` 修正为 `./ratchet/prelude.ts`。18.4.5/18.4.6 新下载官方 tarball 均通过 npm integrity，SDK import 失败与网络无关；其余设计、所有权和范围不变。原目标18.4.5与原样包要求在此例外范围内被取代，包源与补丁哈希纳入 manifest。
+2026-10-01。这是 [spec](spec.md)中的实施设计；原设计基线为 18.3.0；本次实施固定为 18.4.6，以下 18.4.5 官方调研保留来源，目标和原样包要求以本页首段的用户授权取代。
 
 ## 1. 来源、固定版本和变化范围
 
@@ -27,17 +28,17 @@
 
 01 同批协调：
 
-- `package.json` 的 coding-agent 与 pi-utils 精确到 18.4.5，`pnpm-lock.yaml` 从官方 npm 生成并保留 integrity；用户原有 packageManager 变更不顺手回退或提交。
+- `package.json` 的 coding-agent 与 pi-utils 精确到 18.4.6，`pnpm-lock.yaml` 从官方 npm 生成并保留 integrity；用户原有 packageManager 变更不顺手回退或提交。
 - `scripts/prepare-sdk.mjs` 准备新的完整闭包，不能因旧 @oh-my-pi 包 symlink 已存在就保留旧链接。当前 `EEXIST` 分支是升级风险，环境门禁可以发现不符，但准备命令本身必须可修复。
 - 先写同资源根的 staging 目录，完成复制、版本/文件校验和 manifest 后切换；必须在无受管 OMP 使用该资源时替换，不能原地删除运行中加载的闭包。失败保留旧完整资源，避免半份新旧图混用。
 - `src/platform/omp/resources/sdk-resource.ts`、环境门禁、资源测试和必要 fixture 版本同批更新；运行时校验实际 coding-agent/utils 包元数据、入口解析属于资源根、平台与 launcher hash。manifest 的新版本号不能代替实际包身份。
 - manifest 继续包含 Bun、host.mjs、gate.js、configuration.mjs、lockHash 和 SDK 版本；准备脚本对两次连续运行和旧资源升级都得到同一目标包解析。当前不新建全闭包签名系统。
-- 审核 SDK 18.4.5 新闭包中的 native addon/平台资源与许可证，重新准备 macOS arm64 资源。不替换用户机器上的 OMP CLI、profile 或原生配置。
-- 现有 CLI artifact 是另一条保留的 smoke/历史证据路径。只在继续执行它时下载官方 18.4.5 artifact、核 SHA256SUMS 并标注版本；不能让 18.3.0 CLI smoke 冒充 SDK 18.4.5 验证，也不把 CLI 安装变成产品前置。
+- 审核 SDK 18.4.6 新闭包中的 native addon/平台资源与许可证，重新准备 macOS arm64 资源。不替换用户机器上的 OMP CLI、profile 或原生配置。
+- 现有 CLI artifact 是另一条保留的 smoke/历史证据路径。只在继续执行它时下载官方 18.4.6 artifact、核 SHA256SUMS 并标注版本；不能让 18.3.0 CLI smoke 冒充 SDK 18.4.6 验证，也不把 CLI 安装变成产品前置。
 
 ## 4. 顺序、验证和停止条件
 
-1. 固定官方包/源码和现有证据基线，在隔离资源根建立 18.4.5 SDK 闭包；先失败测试保护旧链接和版本错配，再修准备逻辑。
+1. 固定官方包/源码和现有证据基线，在隔离资源根建立 18.4.6 SDK 闭包；先失败测试保护旧链接和版本错配，再修准备逻辑。
 2. 跑 App Decoder/Host/收据/投影/历史相关既有回归，保留旧版本样本；目标版本新增脱敏录制，真实 SDK 使用本地 provider、临时 HOME/profile/项目/数据库，禁止继承个人认证。仅设置 D_PI_DATA_DIR 不足以隔离原生环境。
 3. 跑现有 `pnpm validate:sdk` 的目标版本路径，核实 stop/continue/queued work 与 ACK 后失败仍成立；原测试只等待旧式 response error 时，依据新版 terminal 语义修断言，不通过删除失败断言使门禁变绿。
 4. 检查短/长帧、prompt result、queue_update、交互 cancel、最终正文和未知字段；真实结果进入 [design](design.md)的 Main 持久链，资源升级本身不开放冷写恢复。
@@ -53,4 +54,8 @@ Node 使用仓库 24.21.0，工具门禁按现态检查。当前 packageManager 
 
 若 03 增加 App migration，升级前创建可恢复备份，旧 App 遇新 schema 拒绝不兼容写入；不能删库“恢复成功”。回退记录必须列明代码、资源、App DB 和原生数据分别可否恢复及证据。只有通过的固定样本才称兼容，不承诺所有旧 CLI 扩展。
 
-历史规格/录制中的 18.3.0 继续保留原版本说明；更新现行维护合同和本次交接到实际 18.4.5。D-02/D-03 的所有权与原生配置复用不变，用户指定升级目标不等于用户认可全部新行为。
+历史规格/录制中的 18.3.0 继续保留原版本说明；更新现行维护合同和本次交接到实际 18.4.6。D-02/D-03 的所有权与原生配置复用不变，用户指定升级目标不等于用户认可全部新行为。
+
+## 6. 实施身份（2026-10-01）
+
+实际 coding-agent/utils 均固定 18.4.6，Bun 1.3.14；同系列直接依赖来自冻结锁文件，完整 graph 准备为 112 个依赖单元。官方 tag 为 `8b25ad4a05625dde65df41d057756b4815f4837c`；新下载两版 tarball 的 npm integrity、tarball SHA-256、SDK 原文件/补丁哈希与唯一授权见 [package audit](evidence/sdk-package-audit.json)。18.4.6/18.4.6 都因 prelude 同名文本资源导入失败，网络不影响已验证本地字节；用户明确允许单处导入修正后，目标 import、SDK 全控制/失败/结果/关联验证通过。随包 manifest 包含六个启动文件与修正 sdk.ts，官方安装源不改。Node 24.21.0/pnpm 12.8.1 按用户现有声明使用；pnpm 12 多文档锁和 allowBuilds 迁移保留严格构建准入，只允许已审阅的固定 Bun/Electron/esbuild 脚本。资源准备旧 link/空目录/重复/复制失败/原文件变更/活跃使用者回归均通过。

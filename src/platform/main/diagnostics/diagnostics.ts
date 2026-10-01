@@ -23,7 +23,7 @@ export interface DiagnosticEvent {
     | "acknowledged"
     | "unknown"
     | "rejected";
-  outcome?: "unobserved" | "failed" | "unknown";
+  outcome?: "unobserved" | "failed" | "unknown" | "completed" | "aborted";
   stage:
     | "prepared"
     | "dispatching"

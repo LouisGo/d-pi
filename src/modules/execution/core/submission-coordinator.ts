@@ -5,6 +5,7 @@ import { uiMessage } from "../../../shared/messages/contracts";
 import {
   type FrozenSubmission,
   FrozenSubmissionSchema,
+  type PromptResultObservation,
   SubmissionConflict,
   type SubmissionEvent,
   type SubmissionFailure,
@@ -19,6 +20,7 @@ export interface SubmissionStore {
   dispatchSubmission(id: string): boolean;
   acknowledgeSubmission(id: string): boolean;
   failSubmission(id: string): void;
+  observePromptResult(id: string, result: PromptResultObservation): void;
   rejectSubmission(id: string, reason?: SubmissionRejectionReason): void;
   unknownSubmission(id: string): void;
 }
@@ -121,19 +123,44 @@ export class SubmissionCoordinator {
         !this.native.isCurrentTarget(event.target)
       )
         return this.failure("stale-event", context);
-      match(event.kind)
-        .with("ack", () => {
+      if (
+        (event.kind === "prompt-result" || event.kind === "local-result") &&
+        (receipt.state === "prepared" || receipt.state === "rejected")
+      )
+        return this.failure("stale-event", context);
+      match(event)
+        .with({ kind: "ack" }, () => {
           this.store.acknowledgeSubmission(receipt.submissionId);
         })
-        .with("rejected", () => {
+        .with({ kind: "rejected" }, (refusal) => {
           // The refusal cause is evidence, not decoration: without it every
           // rejection reads the same to the user.
-          this.store.rejectSubmission(receipt.submissionId, event.reason);
+          this.store.rejectSubmission(receipt.submissionId, refusal.reason);
         })
-        .with("error", () => {
+        .with({ kind: "error" }, () => {
           this.store.failSubmission(receipt.submissionId);
         })
-        .with("disconnected", () => {
+        .with({ kind: "prompt-result" }, (result) => {
+          const {
+            kind: _kind,
+            submissionId: _id,
+            requestId: _request,
+            target: _target,
+            ...fields
+          } = result;
+          this.store.observePromptResult(receipt.submissionId, {
+            ...fields,
+            source: "native-prompt-result",
+          });
+        })
+        .with({ kind: "local-result" }, () => {
+          this.store.observePromptResult(receipt.submissionId, {
+            source: "native-local-response",
+            status: "completed",
+            agentInvoked: false,
+          });
+        })
+        .with({ kind: "disconnected" }, () => {
           this.store.unknownSubmission(receipt.submissionId);
         })
         .exhaustive();

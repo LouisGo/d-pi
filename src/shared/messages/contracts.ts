@@ -4,6 +4,7 @@ import { z } from "zod";
 // user-authored text stays in its original fields and is never translated.
 export const PlainUiMessageCodeSchema = z.enum([
   "runtime.processingInput",
+  "runtime.evidenceGap",
   "runtime.resourceUnknown",
   "runtime.readyToSend",
   "runtime.noModel",

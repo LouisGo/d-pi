@@ -175,11 +175,15 @@ function SubmissionRecord({
               : receipt.state === "dispatching"
                 ? t("ui.submissions.dispatching")
                 : t("ui.submissions.unknown")}
-        {receipt.outcome === "failed"
-          ? t("ui.submissions.outcomeFailed")
-          : receipt.outcome === "unknown"
-            ? t("ui.submissions.outcomeUnknown")
-            : ""}
+        {receipt.outcome === "completed"
+          ? t("ui.submissions.outcomeCompleted")
+          : receipt.outcome === "aborted"
+            ? t("ui.submissions.outcomeAborted")
+            : receipt.outcome === "failed"
+              ? t("ui.submissions.outcomeFailed")
+              : receipt.outcome === "unknown"
+                ? t("ui.submissions.outcomeUnknown")
+                : ""}
       </p>
       <pre>{receipt.text}</pre>
       {receipt.retryOf && (
@@ -200,7 +204,8 @@ function SubmissionRecord({
       )}
       {(receipt.state === "unknown" ||
         receipt.outcome === "unknown" ||
-        receipt.outcome === "failed") && (
+        receipt.outcome === "failed" ||
+        receipt.outcome === "aborted") && (
         <details>
           <summary>{t("ui.submissions.resendTitle")}</summary>
           <p role="alert">{t("ui.submissions.resendWarning")}</p>

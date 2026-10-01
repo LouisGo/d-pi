@@ -1,3 +1,4 @@
+export { DraftEditorCache } from "./draft-editor-cache";
 export { FileReference } from "./file-reference-node";
 export {
   draftDocument,

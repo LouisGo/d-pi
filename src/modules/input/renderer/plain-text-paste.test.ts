@@ -21,7 +21,7 @@ function plain(state: EditorState): string {
   ).join("\n");
 }
 describe("S1 literal text paste", () => {
-  it("loading a stored draft is a single undoable replacement, preserving source blank lines", () => {
+  it("loading a stored draft clears previous undo, preserving source blank lines", () => {
     const editor = new Editor({
       ...plainTextEditorOptions,
       element: null,
@@ -44,8 +44,10 @@ describe("S1 literal text paste", () => {
       expect(editor.getText({ blockSeparator: "\n" })).toBe(
         "stored\n\n  text\n",
       );
-      expect(editor.commands.undo()).toBe(true);
-      expect(editor.getText({ blockSeparator: "\n" })).toBe("local words");
+      expect(editor.commands.undo()).toBe(false);
+      expect(editor.getText({ blockSeparator: "\n" })).toBe(
+        "stored\n\n  text\n",
+      );
     } finally {
       editor.destroy();
     }

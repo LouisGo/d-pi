@@ -1,7 +1,7 @@
 # 03 接入原生 prompt 结果与有限持久证据
 
-Status: open
-Blocked by: 01
+Status: resolved
+Blocked by: none
 
 范围/授权见 [spec](../spec.md)，证据含义见 [design](../design.md)。关联 D-02/D-11/D-21/D-22/D-24/D-34/D-35；不创建新 Agent 队列或产品 Run。
 
@@ -23,3 +23,11 @@ DB 备份/迁移失败与 ACK+revision 事务保持；diagnostics 默认无正�
 ## Comments
 
 2026-10-01：v18.4.5 提供完整原生依据，现有 partial prompt_result 适配待补。
+
+2026-10-01 实施：按用户后续授权完成最终目标 18.4.6。调用 ACK、精确 prompt_result、内置 local response 与 session settled 独立；Host 有界证据确认/重送与无正文近期关联、Main/schema 6 有限结果、错误优先恢复、Renderer 结果/覆盖缺口已接入。原生队列快照与实际消费录制完成，不扩展 M2 队列编辑 GUI。
+
+## Answer
+
+03 工程实现与目标SDK验证完成。实际证据、红绿记录、复现脚本和范围限制见 [native-outcomes](../evidence/native-outcomes.md)。范围验证 **210 passed / 1 skipped**（29 passed files / 1 skipped），Main/Host/Renderer TypeScript 与受影响 Biome 通过。
+
+完整 Decoder→NativeSession→SessionHost→RuntimeService→SQLite 回归覆盖真实 SDK completed/aborted/error/local-only、ACK/terminal 保存交错、重复与迟到错误、写锁重送、未确认证据阻止正常 idle 回收、Host 再丢失、真正关闭重开及 schema 6 备份失败。后台 sessionSettled=false、旧 run 和未排空队列使用目标 SDK 原生类受控事件，与完整 localhost RPC 样本分别标明，不冒称真实计费供应商或完整 GUI 用户认可。

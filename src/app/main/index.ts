@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, mkdtempSync, realpathSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   app,
@@ -170,7 +171,8 @@ function initializeStorage(): void {
       app.isPackaged
         ? process.resourcesPath
         : join(import.meta.dirname, "../../resources"),
-      () => store?.threads.activeThread()?.directory ?? data,
+      store.threads,
+      realpathSync(mkdtempSync(join(tmpdir(), "d-pi-configuration-probe-"))),
       process.env,
       (event) => window?.webContents.send("configuration:state", event),
       (url) => shell.openExternal(url),
@@ -442,6 +444,8 @@ else {
         kind: "failed",
         traceId: command.traceId,
         code: "configuration-unavailable",
+        scope: "scope" in command ? command.scope : { kind: "application" },
+        source: null,
       };
       diagnostics?.record({
         ...context,

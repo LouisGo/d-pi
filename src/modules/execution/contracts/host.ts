@@ -8,6 +8,15 @@ import {
 } from "./interactions";
 import { SelectModelCommandSchema } from "./runtime";
 import { FrozenSubmissionSchema, SubmissionEventSchema } from "./submission";
+export const NativeProcessRegistrationSchema = z.strictObject({
+  pid: z.number().int().min(2),
+  parentPid: z.number().int().positive(),
+  groupId: z.number().int().min(2),
+  birth: z.string().min(1),
+  executable: z.string().min(1),
+  processInstanceId: z.uuid(),
+  token: z.uuid(),
+});
 export const HostStartSchema = z.strictObject({
   kind: z.literal("start"),
   threadId: z.uuid(),
@@ -20,10 +29,23 @@ export const HostStartSchema = z.strictObject({
   identity: DirectoryIdentitySchema,
   environment: z.record(z.string(), z.string()),
   sessionDirectory: z.string().min(1),
+  supervision: z
+    .strictObject({
+      mainPid: z.number().int().min(2),
+      mainBirth: z.string().min(1),
+      token: z.uuid(),
+    })
+    .optional(),
 });
 export type HostStart = z.infer<typeof HostStartSchema>;
 export const HostCommandSchema = z.discriminatedUnion("kind", [
   HostStartSchema,
+  z.strictObject({
+    kind: z.literal("native-permit"),
+    processInstanceId: z.uuid(),
+    token: z.uuid(),
+    allowed: z.boolean(),
+  }),
   z.strictObject({
     kind: z.literal("select-model"),
     command: SelectModelCommandSchema,
@@ -38,6 +60,12 @@ export const HostCommandSchema = z.discriminatedUnion("kind", [
     value: FrozenSubmissionSchema,
   }),
   z.strictObject({ kind: z.literal("state") }),
+  z.strictObject({ kind: z.literal("replay-evidence") }),
+  z.strictObject({
+    kind: z.literal("confirm-evidence"),
+    evidenceId: z.uuid(),
+    connectionGeneration: z.uuid(),
+  }),
   z.strictObject({ kind: z.literal("close-idle") }),
 ]);
 export const NativeStateSchema = z.object({
@@ -47,15 +75,33 @@ export const NativeStateSchema = z.object({
     .object({ id: z.string(), provider: z.string() })
     .nullable()
     .optional(),
-  thinkingLevel: z.string().optional(),
+  thinkingLevel: z.string().default("inherit"),
   isStreaming: z.boolean(),
   isCompacting: z.boolean(),
+  isSettled: z.boolean().optional(),
+  hasPendingAsyncWork: z.boolean().optional(),
+  queuedMessages: z
+    .object({ steering: z.array(z.string()), followUp: z.array(z.string()) })
+    .optional(),
   queuedMessageCount: z.number().int().nonnegative(),
 });
 export type NativeState = z.infer<typeof NativeStateSchema>;
 
 export type HostCommand = z.infer<typeof HostCommandSchema>;
 export const HostMessageSchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("native-register"),
+    registration: NativeProcessRegistrationSchema,
+  }),
+  z.object({
+    kind: z.literal("evidence-gap"),
+    connectionGeneration: z.uuid(),
+    reason: z.enum([
+      "uncorrelated-result",
+      "cache-full",
+      "correlation-expired",
+    ]),
+  }),
   z.object({
     kind: z.literal("idle-confirmed"),
     connectionGeneration: z.uuid(),
@@ -80,7 +126,11 @@ export const HostMessageSchema = z.discriminatedUnion("kind", [
     connectionGeneration: z.uuid(),
     state: ControlStateSchema,
   }),
-  z.object({ kind: z.literal("submission"), event: SubmissionEventSchema }),
+  z.object({
+    kind: z.literal("submission"),
+    evidenceId: z.uuid(),
+    event: SubmissionEventSchema,
+  }),
   z.object({
     kind: z.literal("ready"),
     state: NativeStateSchema,

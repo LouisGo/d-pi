@@ -1,4 +1,6 @@
 export const domain = {
+  "runtime.evidenceGap":
+    "Some native evidence could not be saved or correlated. Missing results remain unknown; prompts are never resent automatically.",
   "runtime.processingInput": "Processing input…",
   "runtime.resourceUnknown": "Cannot verify the Runtime resources.",
   "runtime.readyToSend": "OMP is ready. You can send text.",

@@ -22,11 +22,22 @@ it("switches only after saving, retains detached resources and blocks switching 
     text: "b",
   });
   let current = a;
+  const stored = new Map([
+    [a.threadId, a],
+    [b.threadId, b],
+  ]);
   const writes: string[] = [];
   const bridge: DesktopBridge = {
     request: async (command) => {
       if (command.kind === "save") {
         writes.push(command.text);
+        const previous = stored.get(command.threadId);
+        if (!previous) throw Error("missing draft");
+        stored.set(command.threadId, {
+          ...previous,
+          text: command.text,
+          revision: command.expectedRevision + 1,
+        });
         return parseDesktopReply(command, {
           kind: "saved",
           threadId: command.threadId,
@@ -45,7 +56,7 @@ it("switches only after saving, retains detached resources and blocks switching 
           ),
         });
       if (command.kind === "select-thread")
-        current = command.threadId === a.threadId ? a : b;
+        current = stored.get(command.threadId) ?? current;
       return parseDesktopReply(command, {
         kind: "ready",
         draft: current,

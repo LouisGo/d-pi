@@ -1,21 +1,25 @@
 # 配置、模型与认证
 
-日期：2026-09-27。深度：M1 配置复用设计；M2 两条认证与子 Agent Thread 覆盖接入待验证。依据 D-03/D-04/D-23/D-27；[配置 ADR](../../adr/0002-share-native-omp-config.md)、[基础契约 §3](../foundation-contracts.md#3-配置与首版认证b3)。返回[模块地图](README.md)。
+日期：2026-10-01。深度：配置身份、只读摘要与原生模型能力已接入；M2 来源选择、真实供应商认证及子 Agent Thread 覆盖仍待验收。依据 D-03/D-04/D-23/D-27；[配置 ADR](../../adr/0002-share-native-omp-config.md)、[基础契约 §3](../foundation-contracts.md#3-配置与首版认证b3)。返回[模块地图](README.md)。
 
-## 当前工程落点（领域目录治理，2026-09-29）
+## 当前工程落点（配置加固，2026-10-01）
 
 - OMP profile 复用发生在 `runtime/host.mjs` 的 `resolveProfileEnv`/`setProfile`；随包资源与固定版本清单在 `src/platform/omp/resources/`。
 - 执行侧配置上下文 `configContextId` 由 `src/modules/execution/main/runtime-service.ts` 按规范化目录与环境派生，不是第二份原生配置。
 - App 自有的主题、密度与 locale 偏好归 `src/modules/preferences/`，该模块不拥有 OMP 配置。
-- M2 入口由 `src/modules/configuration/` 接入；`runtime/configuration.mjs` 在短生命周期包内 Bun 中复用固定原生 Settings、AuthStorage、ModelRegistry，不启动项目 Agent。OpenAI 原生 OAuth、DeepSeek 原生 key 登录的 GUI 接入已实现，真实供应商尚未验收。
+- M2 入口由 `src/modules/configuration/` 接入；query key、IPC、Main 与 Bun 响应使用同一 scope/trace。Main 经 `threads/contracts/public.ts` 解析并复核目录，固定原生环境；application 使用独立探测目录。A 的异步读取不随活动 Thread 改为 B，删除或重关联返回 `stale-target`，错位回复不进入成功缓存。
+- `runtime/configuration.mjs` 在短生命周期包内 Bun 中区分只读 snapshot 和显式认证写入。snapshot 的 `configuration-readonly.mjs` 复用官方 `Settings.loadReadOnly`、AuthStorage 的内存凭据投影与 ModelRegistry 的内存缓存；本地文件/SQLite 句柄有限、只读且关闭，不启动项目 Agent，不运行命令 key/helper、不联网、迁移或修复用户文件。原生 credential schema 8 经版本检查；不兼容、损坏、symlink、活动 WAL、remote auth、未观察缓存或账户目录以覆盖缺口返回，unknown 不冒称无认证。官方认证/合并规则仍由 OMP 拥有。
+- OpenAI 原生 OAuth、DeepSeek 原生 key 登录的 GUI 接入已实现，真实供应商尚未验收。认证 job 固定原 scope/source；answer/cancel/open-login 仅经 jobId 续接，Thread 切换或删除不丢失旧 job 的取消出口。保存成功仅使摘要查询失效，不重试认证副作用。
 - DeepSeek 使用原生 models-endpoint GET 校验后原子保存；失败保留旧凭据。隔离 fixture 已覆盖归一化、拒绝与旧凭据保护。凭据不进 argv、App 数据或诊断。
-- 当前 Thread 主模型/档位使用原生实例 `setModelTemporary`，不修改共享默认值；启动前选择通过本实例环境带入，启动后空闲时经 Host 控制更新，显示原生回读。子 Agent Thread 覆盖尚未接入。
+- 当前 Thread 主模型/档位使用原生实例 `setModelTemporary`，不修改共享默认值；启动前选择通过本实例环境带入，启动后空闲时经 Host 控制更新，显示原生回读。能力直接派生自 18.4.6 metadata/helper，包含 minimal、不可调档与 requiresEffort；GUI 默认/off/effort 传输意图独立。官方 `ThinkingLevel.Off` 关闭 provider reasoning，未指定实际值保留为 `inherit`；失效 effort 拒绝或要求刷新，不能显示为成功。子 Agent Thread 覆盖尚未接入。
 
 ## 范围与拥有者
 
 复用 OMP 原生配置读取、合并、认证与保存。配置模块负责桌面接入和摘要，不维护第二套模型目录、默认值或凭据库。App 窗口偏好属于 App 存储，项目执行信任与文件授权属于 [Thread](threads.md)。
 
 Main 管非会话查询/认证接入的生命周期；涉及当前会话的能力经 Host 使用同一配置上下文。原生 CLI、RPC 或短生命周期薄桥接按已验证能力接入，不预先建设常驻配置服务。具体入口受固定版本证据约束。
+
+本轮身份、只读文件不变与模型能力证据见[配置加固票](../../../.scratch/runtime-hardening-omp1845/issues/02-configuration-contract.md)。Query 只采样摘要，`networkMode: "always"`、`retry: 0`；认证和模型变更为显式命令。当前没有 GUI 配置来源切换，不编造来源 generation；以后由 M2 来源选择接入真实来源身份并使旧缓存失效。
 
 ## 交接
 

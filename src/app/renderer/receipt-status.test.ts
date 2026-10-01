@@ -61,3 +61,18 @@ it("flags exactly the receipts that need the user's attention", () => {
   expect(receiptNeedsAttention({ state: "prepared" })).toBe(false);
   expect(receiptNeedsAttention({ state: "dispatching" })).toBe(false);
 });
+
+it("shows durable completed/aborted outcomes without turning completed into an unknown attention card", () => {
+  expect(
+    receiptStatusKey({ state: "acknowledged", outcome: "completed" }),
+  ).toBe("ui.interaction.followUpCompleted");
+  expect(
+    receiptNeedsAttention({ state: "acknowledged", outcome: "completed" }),
+  ).toBe(false);
+  expect(receiptStatusKey({ state: "acknowledged", outcome: "aborted" })).toBe(
+    "ui.interaction.followUpAborted",
+  );
+  expect(
+    receiptNeedsAttention({ state: "acknowledged", outcome: "aborted" }),
+  ).toBe(true);
+});

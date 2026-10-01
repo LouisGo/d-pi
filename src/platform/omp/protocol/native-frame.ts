@@ -21,6 +21,8 @@ export const NativeFrameTypes = {
   turnStart: "turn_start",
   turnEnd: "turn_end",
   promptResult: "prompt_result",
+  sessionSettled: "session_settled",
+  queueUpdate: "queue_update",
   availableCommandsUpdate: "available_commands_update",
   sessionInfoUpdate: "session_info_update",
   configUpdate: "config_update",
@@ -62,6 +64,21 @@ const nativePayloadSchemas = {
     type: z.literal("prompt_result"),
     agentInvoked: z.boolean(),
     id: z.string().optional(),
+    status: z.enum(["completed", "aborted", "error"]),
+    sessionSettled: z.boolean(),
+    error: z
+      .looseObject({
+        message: z.string(),
+        retryable: z.boolean(),
+        httpStatus: z.number().int().optional(),
+      })
+      .optional(),
+  }),
+  session_settled: z.looseObject({ type: z.literal("session_settled") }),
+  queue_update: z.looseObject({
+    type: z.literal("queue_update"),
+    steering: z.array(z.string()),
+    followUp: z.array(z.string()),
   }),
   message_start: z.looseObject({ type: z.literal("message_start"), message }),
   message_end: z.looseObject({ type: z.literal("message_end"), message }),

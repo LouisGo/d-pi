@@ -42,14 +42,45 @@ export type SubmissionRejectionReason = z.infer<
   typeof SubmissionRejectionReasonSchema
 >;
 
+export const PromptResultSchema = z.strictObject({
+  status: z.enum(["completed", "aborted", "error"]),
+  agentInvoked: z.boolean(),
+  sessionSettled: z.boolean(),
+  error: z
+    .strictObject({
+      code: z.literal("native-error"),
+      retryable: z.boolean(),
+      httpStatus: z.number().int().min(100).max(599).optional(),
+    })
+    .optional(),
+});
+export const PromptResultObservationSchema = z.union([
+  PromptResultSchema.extend({ source: z.literal("native-prompt-result") }),
+  z.strictObject({
+    source: z.literal("native-local-response"),
+    status: z.literal("completed"),
+    agentInvoked: z.literal(false),
+  }),
+]);
+export type PromptResultObservation = z.infer<
+  typeof PromptResultObservationSchema
+>;
 const ReceiptIdentitySchema = FrozenSubmissionSchema.extend({
   createdAt: z.string(),
   updatedAt: z.string(),
+  promptResult: PromptResultObservationSchema.optional(),
 });
-const ExecutionOutcomeSchema = z.enum(["unobserved", "failed", "unknown"]);
+const ExecutionOutcomeSchema = z.enum([
+  "unobserved",
+  "failed",
+  "unknown",
+  "completed",
+  "aborted",
+]);
 const UnacknowledgedReceiptSchema = ReceiptIdentitySchema.extend({
   acknowledgedAt: z.null(),
   outcome: z.literal("unobserved"),
+  promptResult: z.never().optional(),
   rejectionReason: z.never().optional(),
 });
 
@@ -61,6 +92,7 @@ export const SubmissionReceiptSchema = z.discriminatedUnion("state", [
   UnacknowledgedReceiptSchema.extend({
     state: z.literal("unknown"),
     outcome: ExecutionOutcomeSchema,
+    promptResult: PromptResultObservationSchema.optional(),
   }),
   ReceiptIdentitySchema.extend({
     state: z.literal("acknowledged"),
@@ -108,6 +140,11 @@ export const SubmissionEventSchema = z.discriminatedUnion("kind", [
     kind: z.enum(["ack", "error", "disconnected"]),
     reason: z.never().optional(),
   }),
+  SubmissionEventIdentitySchema.extend({
+    kind: z.literal("prompt-result"),
+    ...PromptResultSchema.shape,
+  }),
+  SubmissionEventIdentitySchema.extend({ kind: z.literal("local-result") }),
   SubmissionEventIdentitySchema.extend({
     kind: z.literal("rejected"),
     reason: SubmissionRejectionReasonSchema.optional(),

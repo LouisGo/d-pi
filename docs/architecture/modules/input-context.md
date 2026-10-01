@@ -46,3 +46,7 @@ M2：逐项补 @ 文件、截图、拖入图片/文件、PDF、预览与删除�
 用户明确的编辑手感、多媒体预览与特殊路径检索要求集中在 [Composer 体验要求](../../product/first-release.md#2026-09-27-用户明确的输入体验要求)。补充样本包含可编辑的长短粘贴文本、桌面选区/光标/undo/redo、@message@List 等含 @ 路径、查询响应与过期结果、附件准备期间切换模型及切回。用户进一步确认图片查看/重排纳入 M2，裁剪/旋转/标注后置；各自接入时验证派生内容与预览、冻结提交版本一致。链接网站识别与图标展示纳入最初输入方案及后续 spec/ticket；可以后置的是输入框内 H1/H2、表格等 Markdown 样式的直接呈现，详见 Composer 方案；当前没有新增 GUI 或性能实测。
 
 关键样本：候选确认不发送；附加后文件变动仍保留原选区；准备失败不漏附件；提交中继续编辑、切 Thread、刷新后不串稿；调用回执迟到不清新版本。编辑机制验收与无头规则验收分别记录。
+
+## 窗口内编辑连续性（2026-10-01）
+
+AppModel 拥有窗口级 DraftEditorCache，input Renderer 缓存脱离 EditorView/DOM 及插件闭包的 EditorState。A→B→A 在匹配草稿 revision、消费序号和正文时恢复选区与撤销，两个 Thread 独立；发送消费、外部新版本及旧 Editor 迟到事件不能复活已提交正文。最多缓存 8 个 Thread、总 UTF-8 正文估算 4 MiB，LRU 淘汰只释放编辑历史；原生 history depth 50 沿用其批次裁剪，正文估算不承诺 undo/RSS 硬上限。窗口释放清缓存，reload/重启只恢复 Main 持久草稿，不持久化 ProseMirror 内部状态。真实 Tiptap/React 红绿与原生候选检查见[05](../../../.scratch/runtime-hardening-omp1845/issues/05-editor-continuity.md)。

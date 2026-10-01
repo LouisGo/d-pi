@@ -5,6 +5,7 @@ import type {
   ConfigurationBridge,
   ConfigurationCommand,
   ConfigurationEvent,
+  ConfigurationScope,
 } from "../contracts/public";
 import { configurationSnapshotQuery } from "./queries";
 export function ConfigurationSettings({
@@ -12,7 +13,7 @@ export function ConfigurationSettings({
   scope,
 }: {
   bridge: ConfigurationBridge;
-  scope: string | null;
+  scope: ConfigurationScope;
 }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
@@ -60,6 +61,9 @@ export function ConfigurationSettings({
           const next: ConfigurationEvent = {
             kind: "progress",
             jobId: reply.jobId,
+            scope: reply.scope,
+            traceId: reply.traceId,
+            source: reply.source,
             message: "",
           };
           eventRef.current = next;
@@ -97,20 +101,29 @@ export function ConfigurationSettings({
           {query.data && (
             <>
               <p className="trace">
-                {t("config.source")}: {query.data.directory}
-                {query.data.profile ? " · " + query.data.profile : ""}
+                {t("config.source")}: {query.data.source.directory}
+                {query.data.source.profile
+                  ? " · " + query.data.source.profile
+                  : ""}
               </p>
+              {query.data.coverage !== "complete" && (
+                <p role="status">{t("config.partial")}</p>
+              )}
               <p>
                 {t(
-                  query.data.openaiAuthenticated
-                    ? "config.openaiReady"
-                    : "config.openaiMissing",
+                  query.data.openaiAuthenticated === null
+                    ? "config.authUnknown"
+                    : query.data.openaiAuthenticated
+                      ? "config.openaiReady"
+                      : "config.openaiMissing",
                 )}{" "}
                 ·{" "}
                 {t(
-                  query.data.deepseekAuthenticated
-                    ? "config.deepseekReady"
-                    : "config.deepseekMissing",
+                  query.data.deepseekAuthenticated === null
+                    ? "config.authUnknown"
+                    : query.data.deepseekAuthenticated
+                      ? "config.deepseekReady"
+                      : "config.deepseekMissing",
                 )}
               </p>
             </>
@@ -120,7 +133,11 @@ export function ConfigurationSettings({
               type="button"
               disabled={busy || active}
               onClick={() =>
-                void request({ kind: "login", traceId: crypto.randomUUID() })
+                void request({
+                  kind: "login",
+                  scope,
+                  traceId: crypto.randomUUID(),
+                })
               }
             >
               {t("config.openaiLogin")}
@@ -138,6 +155,7 @@ export function ConfigurationSettings({
               e.preventDefault();
               void request({
                 kind: "save-key",
+                scope,
                 traceId: crypto.randomUUID(),
                 key,
               });

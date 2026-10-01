@@ -24,7 +24,8 @@ export class AppDatabase {
         version !== 2 &&
         version !== 3 &&
         version !== 4 &&
-        version !== 5
+        version !== 5 &&
+        version !== 6
       )
         throw new Error("Unsupported schema version");
       if (version === 0) {
@@ -63,7 +64,7 @@ export class AppDatabase {
           `);
         });
       }
-      if (version !== 3 && version !== 4 && version !== 5) {
+      if (version !== 3 && version !== 4 && version !== 5 && version !== 6) {
         const temporary = `${path}.before-v3.${randomUUID()}.tmp`;
         try {
           this.connection.prepare("VACUUM INTO ?").run(temporary);
@@ -88,10 +89,14 @@ export class AppDatabase {
   /**
    * Complete the post-recovery schema steps. AppStorage calls this only after
    * execution has explicitly normalized interrupted receipts, preserving the
-   * historical open -> v3 -> WAL -> recovery -> v4/v5 -> publish order.
+   * historical open -> v3 -> WAL -> recovery -> v4/v5/v6 -> publish order.
    */
   completeSchemaMigrations(): void {
-    if (this.originalVersion !== 4 && this.originalVersion !== 5) {
+    if (
+      this.originalVersion !== 4 &&
+      this.originalVersion !== 5 &&
+      this.originalVersion !== 6
+    ) {
       const temporary = `${this.path}.before-v4.${randomUUID()}.tmp`;
       try {
         this.connection.prepare("VACUUM INTO ?").run(temporary);
@@ -105,7 +110,7 @@ export class AppDatabase {
         ),
       );
     }
-    if (this.originalVersion !== 5) {
+    if (this.originalVersion !== 5 && this.originalVersion !== 6) {
       const temporary = `${this.path}.before-v5.${randomUUID()}.tmp`;
       try {
         this.connection.prepare("VACUUM INTO ?").run(temporary);
@@ -118,6 +123,18 @@ export class AppDatabase {
           "ALTER TABLE desktop ADD COLUMN locale TEXT NOT NULL DEFAULT 'system' CHECK(locale IN ('system','en-US','zh-CN')); PRAGMA user_version=5;",
         ),
       );
+    }
+    if (this.originalVersion !== 6) {
+      const temporary = `${this.path}.before-v6.${randomUUID()}.tmp`;
+      try {
+        this.connection.prepare("VACUUM INTO ?").run(temporary);
+        renameSync(temporary, `${this.path}.before-v6`);
+      } finally {
+        rmSync(temporary, { force: true });
+      }
+      // Receipts remain the finite App-owned fact; no native event/history ledger.
+      // The version guard prevents an older App silently dropping new outcomes.
+      this.transaction(() => this.connection.exec("PRAGMA user_version=6;"));
     }
   }
   transaction<T>(body: () => T): T {

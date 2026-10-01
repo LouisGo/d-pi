@@ -5,10 +5,26 @@ import { Button } from "@/components/ui/button";
 import type {
   ConfigurationBridge,
   ConfigurationSnapshot,
+  ThinkingSelection,
 } from "../../modules/configuration/contracts/public";
 import { configurationSnapshotQuery } from "../../modules/configuration/renderer/public";
 import { useI18n } from "../../modules/preferences/renderer/public";
 import type { ThreadModel } from "./thread-model";
+
+type ThinkingChoice =
+  | "default"
+  | "off"
+  | Extract<ThinkingSelection, { kind: "effort" }>["effort"];
+function thinkingLabel(
+  thinking: ThinkingSelection | undefined,
+  t: ReturnType<typeof useI18n>["t"],
+) {
+  return thinking?.kind === "effort"
+    ? thinking.effort
+    : thinking?.kind === "default"
+      ? t("model.defaultThinking")
+      : (thinking?.kind ?? "");
+}
 export function ModelControls({
   thread,
   bridge,
@@ -18,13 +34,17 @@ export function ModelControls({
 }) {
   const { t } = useI18n();
   const runtime = thread.runtime;
-  const query = useQuery(configurationSnapshotQuery(bridge, thread.key));
+  const query = useQuery(
+    configurationSnapshotQuery(bridge, {
+      kind: "thread",
+      threadId: thread.context.threadId,
+      workingDirectoryId: thread.context.workingDirectoryId,
+    }),
+  );
   const [search, setSearch] = useState("");
   const [showUnavailable, setShowUnavailable] = useState(false);
   const [selected, setSelected] = useState("");
-  const [level, setLevel] = useState<
-    "off" | "low" | "medium" | "high" | "xhigh" | "max"
-  >("off");
+  const [level, setLevel] = useState<ThinkingChoice>("default");
   const models =
     query.data?.models.filter(
       (m) =>
@@ -44,7 +64,10 @@ export function ModelControls({
       models={models.slice(0, 200)}
       target={target}
       selected={selected}
-      select={setSelected}
+      select={(value) => {
+        setSelected(value);
+        setLevel("default");
+      }}
       level={level}
       setLevel={setLevel}
       search={search}
@@ -83,10 +106,8 @@ function ModelSelectionState({
   target: ConfigurationSnapshot["models"][number] | undefined;
   selected: string;
   select: (value: string) => void;
-  level: "off" | "low" | "medium" | "high" | "xhigh" | "max";
-  setLevel: (
-    value: "off" | "low" | "medium" | "high" | "xhigh" | "max",
-  ) => void;
+  level: ThinkingChoice;
+  setLevel: (value: ThinkingChoice) => void;
   search: string;
   setSearch: (value: string) => void;
   loading: boolean;
@@ -103,6 +124,11 @@ function ModelSelectionState({
     !!view?.modelChanging ||
     view?.phase === "starting" ||
     view?.phase === "interrupted";
+  const validThinking =
+    level === "default" ||
+    (level === "off"
+      ? !!target?.thinking.adjustable && !target.thinking.requiresEffort
+      : !!target?.thinking.efforts.includes(level));
   return (
     <details className="model-controls" aria-label={t("model.heading")}>
       <summary>
@@ -111,13 +137,16 @@ function ModelSelectionState({
           (view?.selectedModel
             ? `${view.selectedModel.provider}/${view.selectedModel.modelId}`
             : (defaultModel ?? t("model.none")))}{" "}
-        {view?.thinkingLevel ?? view?.selectedModel?.thinkingLevel ?? ""} ·{" "}
-        {t("model.change")}
+        {view?.thinkingLevel ??
+          thinkingLabel(view?.selectedModel?.thinking, t) ??
+          ""}{" "}
+        · {t("model.change")}
       </summary>
       {view?.selectedModel && !view.model && (
         <p className="muted">
           {t("model.next")}: {view.selectedModel.provider}/
-          {view.selectedModel.modelId} · {view.selectedModel.thinkingLevel}
+          {view.selectedModel.modelId} ·{" "}
+          {thinkingLabel(view.selectedModel.thinking, t)}
         </p>
       )}
       <label>
@@ -156,22 +185,23 @@ function ModelSelectionState({
         <label>
           {t("model.thinking")}
           <select
-            disabled={disabled || !target?.reasoning}
+            disabled={disabled || !target?.thinking.adjustable}
             value={level}
             onChange={(e) => {
               const value = e.target.value;
               if (
+                value === "default" ||
                 value === "off" ||
-                value === "low" ||
-                value === "medium" ||
-                value === "high" ||
-                value === "xhigh" ||
-                value === "max"
+                target?.thinking.efforts.some((effort) => effort === value)
               )
-                setLevel(value);
+                setLevel(value as ThinkingChoice);
             }}
           >
-            {["off", "low", "medium", "high", "xhigh", "max"].map((value) => (
+            <option value="default">{t("model.defaultThinking")}</option>
+            {target?.thinking.adjustable && !target.thinking.requiresEffort && (
+              <option value="off">{t("model.offThinking")}</option>
+            )}
+            {target?.thinking.efforts.map((value) => (
               <option key={value} value={value}>
                 {value}
               </option>
@@ -179,13 +209,18 @@ function ModelSelectionState({
           </select>
         </label>
         <Button
-          disabled={!target?.available || disabled}
+          disabled={!target?.available || disabled || loading || !validThinking}
           onClick={() => {
-            if (target?.available)
+            if (target?.available && validThinking)
               void runtime.selectModel({
                 provider: target.provider,
                 modelId: target.id,
-                thinkingLevel: target.reasoning ? level : "off",
+                thinking:
+                  level === "default"
+                    ? { kind: "default" }
+                    : level === "off"
+                      ? { kind: "off" }
+                      : { kind: "effort", effort: level },
               });
           }}
         >

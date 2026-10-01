@@ -58,6 +58,11 @@ export class DraftController {
   // Reattaching an editor reads the existing immutable pending snapshot or
   // confirmed baseline. This is not a second editable body.
   getTextSnapshot = (): string => this.pending?.text ?? this.baselineText;
+  getEditorSnapshot = () => ({
+    revision: this.revision,
+    sequence: this.sequence,
+    text: this.getTextSnapshot(),
+  });
   subscribe = (listener: () => void): (() => void) => {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);

@@ -68,7 +68,7 @@ type ThinkingSelection =
   | { kind: "effort"; effort: "minimal" | "low" | "medium" | "high" | "xhigh" | "max" };
 ```
 
-默认沿用原生有效设置，off 是明确请求关闭，指定 effort 仅接受支持档。Bun 薄宿主使用官方 helper/setModelTemporary 映射；不能以字符串 `off` 直接代替原生 undefined，也不能把 default 和 off 合并。应用前核对当前 Thread/实例和新鲜能力，失效选项明确拒绝/刷新；完成后显示 Host 回传的实际模型/档位，未知结果不显示成功。
+默认沿用原生有效设置，off 是明确请求关闭，指定 effort 仅接受支持档。Bun 薄宿主使用官方 helper/setModelTemporary 映射；18.4.6 已由官方原生 setter/Host 回读证实 `ThinkingLevel.Off` 明确关闭，undefined/`ThinkingLevel.Inherit` 表示未指定；此版本证据取代设计时对 undefined 的假设，不能把 default 和 off 合并。应用前核对当前 Thread/实例和新鲜能力，失效选项明确拒绝/刷新；完成后显示 Host 回传的实际模型/档位，未知结果不显示成功。
 
 四类必验：DeepSeek `low/high/max`、含 minimal 的模型、reasoning 但无可调档、requiresEffort 不允许 off；再验非推理模型与切换后的实际回读。原生可能归一化的结果如实显示，不维护第二张供应商品牌表。
 

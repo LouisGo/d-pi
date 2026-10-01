@@ -1,0 +1,52 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/MySpace/Life/d-pi[39m
+
+ [31m❯[39m tests/integration/runtime-causality.integration.test.ts [2m([22m[2m16 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 3713[2mms[22m[39m
+   [32m✓[39m same decoder batch cannot apply old idle after agent_start/ACK and lose the in-flight receipt[32m 33[2mms[22m[39m
+   [32m✓[39m an idle control sampled before dispatch cannot settle its later ACK[32m 14[2mms[22m[39m
+   [32m✓[39m confirmed idle native exit releases its Host and lets normal idle close finish without querying the dead process[32m 12[2mms[22m[39m
+   [32m✓[39m idle sampled before a prompt reply cannot become settlement evidence when that reply arrives[32m 13[2mms[22m[39m
+   [32m✓[39m protocol disconnection alone still blocks quit; confirmed exit is a separate cleanup fact[32m 11[2mms[22m[39m
+   [32m✓[39m correlates ACK, disconnection and unknown outcome without conflating transport loss with Host exit[32m 14[2mms[22m[39m
+   [32m✓[39m diagnostic failure cannot prevent an exited Host from preserving an unknown receipt[32m 14[2mms[22m[39m
+[31m   [31m×[31m confirmed terminal duplicates keep coverage complete and a later identified error remains sticky[39m[32m 19[2mms[22m[39m
+   [32m✓[39m decodes and persists a prompt terminal before ACK, keeps background work active and ignores an unknown id[32m 17[2mms[22m[39m
+   [33m[2m✓[22m[39m replays bounded evidence in the same live Host after a SQLite failure without replaying prompt[33m 1274[2mms[22m[39m
+   [32m✓[39m persists the recorded SDK 18.4.6 local outcome through the real decoder/session/Host/Main/SQLite chain[32m 24[2mms[22m[39m
+   [32m✓[39m persists the recorded SDK 18.4.6 builtinLocal outcome through the real decoder/session/Host/Main/SQLite chain[32m 18[2mms[22m[39m
+   [32m✓[39m persists the recorded SDK 18.4.6 steer outcome through the real decoder/session/Host/Main/SQLite chain[32m 15[2mms[22m[39m
+   [32m✓[39m persists the recorded SDK 18.4.6 aborted outcome through the real decoder/session/Host/Main/SQLite chain[32m 15[2mms[22m[39m
+   [32m✓[39m persists the recorded SDK 18.4.6 error outcome through the real decoder/session/Host/Main/SQLite chain[32m 13[2mms[22m[39m
+   [33m[2m✓[22m[39m a Host loss after Main write failure loses only memory evidence and reopens conservatively without resending[33m 2207[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/runtime-causality.integration.test.ts[2m > [22mconfirmed terminal duplicates keep coverage complete and a later identified error remains sticky
+[31m[1mAssertionError[22m: expected { …(13) } to match object { evidenceCoverage: 'complete' }
+(23 matching properties omitted from actual)[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "evidenceCoverage": "complete",[39m
+[31m+   "evidenceCoverage": "gap",[39m
+[2m  }[22m
+
+[36m [2m❯[22m tests/integration/runtime-causality.integration.test.ts:[2m423:5[22m[39m
+    [90m421|[39m       traceId: TraceIdSchema.parse(crypto.randomUUID()),
+    [90m422|[39m     }),
+    [90m423|[39m   ).toMatchObject({ evidenceCoverage: "complete" });
+    [90m   |[39m     [31m^[39m
+    [90m424|[39m   f.frames({
+    [90m425|[39m     ...completed,
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m15 passed[39m[22m[90m (16)[39m
+[2m   Start at [22m 12:13:33
+[2m   Duration [22m 4.05s[2m (tests 93%, transform 5%, import 2%)[22m
+

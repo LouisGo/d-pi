@@ -109,6 +109,11 @@ writeFileSync(
     modelRoles: { default: "fixture/fixture-a", smol: "fixture/fixture-a" },
   }),
 );
+mkdirSync(join(isolated.config, "extensions"));
+writeFileSync(
+  join(isolated.config, "extensions", "finalized.ts"),
+  `export default function(pi){pi.on('assistant_message',event=>({content:event.message.content.map(part=>part.type==='text'?{...part,text:part.text+'_FINALIZED\\n\\n'+Array.from({length:80},(_,i)=>'Reading fixture line '+i).join('\\n\\n')}:part)}));}`,
+);
 const ports = createServer();
 await new Promise((r) => ports.listen(0, "127.0.0.1", r));
 const port = ports.address().port;
@@ -227,6 +232,33 @@ async function insert(text) {
     ),
   );
 }
+async function editorSelection(from, to = from) {
+  await evaluate(`(()=>{
+    const editor=document.querySelector('[contenteditable=true]');editor.focus();
+    const node=editor.querySelector('p').firstChild, range=document.createRange();
+    range.setStart(node,${from});range.setEnd(node,${to});
+    const selection=getSelection();selection.removeAllRanges();selection.addRange(range);
+    document.dispatchEvent(new Event('selectionchange'));
+  })()`);
+  await evaluate(
+    "new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))",
+  );
+}
+async function historyKey(redo = false) {
+  await evaluate("document.querySelector('[contenteditable=true]').focus()");
+  await call("Input.dispatchKeyEvent", {
+    type: "keyDown",
+    key: "z",
+    code: "KeyZ",
+    modifiers: redo ? 12 : 4,
+  });
+  await call("Input.dispatchKeyEvent", {
+    type: "keyUp",
+    key: "z",
+    code: "KeyZ",
+    modifiers: redo ? 12 : 4,
+  });
+}
 async function shot(name) {
   await evaluate(
     "new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))",
@@ -282,6 +314,10 @@ try {
   await wait(() => requests.length === 1);
   assert.equal(requests[0].model, "fixture-b");
   await insert("A_UNSENT_DRAFT");
+  await new Promise((resolve) => setTimeout(resolve, 600));
+  await editorSelection(3);
+  await insert("#");
+  await editorSelection(2, 8);
   await click("新会话");
   const b = await wait(() => {
     const id = db
@@ -309,17 +345,105 @@ try {
       "document.querySelector('.conversation')?.textContent.includes('M2_THREAD_B_REPLY')",
     ),
   );
+  await wait(() =>
+    evaluate(
+      "document.querySelector('.conversation')?.textContent.includes('M2_THREAD_B_REPLY_FINALIZED')",
+    ),
+  );
+  const readingPosition = await evaluate(`(()=>{
+    const pane=document.querySelector('.reading-pane');
+    pane.scrollTop=pane.scrollHeight-pane.clientHeight-20;
+    return {top:pane.scrollTop,height:pane.scrollHeight,client:pane.clientHeight};
+  })()`);
+  assert.ok(readingPosition.height > readingPosition.client + 100);
+  await insert("B_UNSENT_DRAFT");
+  await evaluate(
+    "new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))",
+  );
+  assert.equal(
+    await evaluate("document.querySelector('.reading-pane').scrollTop"),
+    readingPosition.top,
+  );
+  checks.push(
+    "full message_end displays finalized native text; manual near-bottom reading position survives draft input",
+  );
   assert.ok(
     !(await evaluate(
       "document.querySelector('.conversation')?.textContent.includes('M2_THREAD_A_REPLY')",
     )),
   );
-  await insert("B_UNSENT_DRAFT");
+  await selectThread(a);
+  await wait(() =>
+    evaluate(
+      "document.querySelector('[contenteditable=true]')?.textContent==='A_U#NSENT_DRAFT'",
+    ),
+  );
+  await evaluate("document.querySelector('[contenteditable=true]').focus()");
+  assert.deepEqual(
+    await evaluate(
+      "({from:getSelection().anchorOffset,to:getSelection().focusOffset})",
+    ),
+    { from: 2, to: 8 },
+  );
+  await historyKey();
+  await wait(() =>
+    evaluate(
+      "document.querySelector('[contenteditable=true]')?.textContent==='A_UNSENT_DRAFT'",
+    ),
+  );
+  await historyKey(true);
+  await wait(() =>
+    evaluate(
+      "document.querySelector('[contenteditable=true]')?.textContent==='A_U#NSENT_DRAFT'",
+    ),
+  );
+  await historyKey();
+  await wait(() =>
+    evaluate(
+      "document.querySelector('[contenteditable=true]')?.textContent==='A_UNSENT_DRAFT'",
+    ),
+  );
+  checks.push(
+    "native Electron editor restores middle selection and independent undo/redo across Thread switch",
+  );
+  await editorSelection(3);
+  await evaluate(`(()=>{
+    window.__fixtureIme={active:false,trusted:false};
+    document.addEventListener('compositionstart',e=>{window.__fixtureIme.active=true;window.__fixtureIme.trusted=e.isTrusted;},{once:true});
+    document.addEventListener('compositionend',()=>{window.__fixtureIme.active=false;},{once:true});
+  })()`);
+  await call("Input.imeSetComposition", {
+    text: "中",
+    selectionStart: 1,
+    selectionEnd: 1,
+  });
+  await wait(() => evaluate("window.__fixtureIme.active"));
+  await evaluate(
+    `document.querySelector('.thread-navigation button[title$="${b}"]').click()`,
+  );
+  await evaluate(
+    "new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))",
+  );
+  assert.equal(
+    db.prepare("SELECT active_thread FROM desktop").get().active_thread,
+    a,
+  );
+  assert.equal(await evaluate("window.__fixtureIme.trusted"), true);
+  await call("Input.imeSetComposition", {
+    text: "",
+    selectionStart: 0,
+    selectionEnd: 0,
+  });
+  await wait(() => evaluate("!window.__fixtureIme.active"));
+  await selectThread(b);
   await selectThread(a);
   await wait(() =>
     evaluate(
       "document.querySelector('[contenteditable=true]')?.textContent==='A_UNSENT_DRAFT'",
     ),
+  );
+  checks.push(
+    "trusted Chromium composition in native Electron blocks Thread switch until composition ends; system input source not exercised",
   );
   assert.ok(
     await evaluate(

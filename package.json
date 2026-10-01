@@ -1,6 +1,6 @@
 {
   "name": "d-pi",
-  "version": "0.1.0-m2.6",
+  "version": "0.1.0-m2.7",
   "private": true,
   "type": "module",
   "description": "d-pi desktop client",
@@ -22,7 +22,7 @@
     "report:structure": "node scripts/architecture/report.mjs",
     "validate:sqlite": "electron validation/s1/sqlite.cjs && node validation/s1/crash-check.mjs",
     "validate:design": "node validation/s1/design-check.mjs",
-    "validate:sdk": "node validation/s3/sdk-control.mjs && node validation/s3/sdk-failure.mjs",
+    "validate:sdk": "node validation/s3/sdk-control.mjs && node validation/s3/sdk-failure.mjs && node validation/s3/sdk-outcomes.mjs && node validation/s3/sdk-prompt-correlation.mjs",
     "validate:editor:web": "vite validation/s1/editor --config validation/s1/editor/vite.config.ts --host 127.0.0.1 --port 5178 --strictPort",
     "validate:editor": "electron validation/s1/editor/main.cjs",
     "check": "pnpm check:tools && pnpm typecheck && pnpm lint && pnpm lint:design && pnpm lint:i18n && pnpm validate:design && node validation/s1/source-boundaries.mjs && pnpm check:architecture && pnpm check:documentation && pnpm check:structure && pnpm check:status && pnpm test:architecture && pnpm test:tooling && pnpm test",
@@ -74,8 +74,8 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
     "@formatjs/icu-messageformat-parser": "3.5.20",
-    "@oh-my-pi/pi-coding-agent": "18.3.0",
-    "@oh-my-pi/pi-utils": "18.3.0",
+    "@oh-my-pi/pi-coding-agent": "18.4.6",
+    "@oh-my-pi/pi-utils": "18.4.6",
     "@shadcn/lint": "0.2.0",
     "@tailwindcss/vite": "4.3.3",
     "@types/node": "24.19.0",
@@ -93,10 +93,5 @@
     "vite": "7.3.6",
     "vitest": "5.0.2"
   },
-  "author": "d-pi",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "bun"
-    ]
-  }
+  "author": "d-pi"
 }

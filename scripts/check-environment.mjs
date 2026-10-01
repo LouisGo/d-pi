@@ -1,7 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync } from "node:fs";
-import { basename, delimiter, dirname, join, resolve } from "node:path";
+import { existsSync, readFileSync, realpathSync } from "node:fs";
+import { basename, delimiter, dirname, join, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 import { inspectDependencyContract } from "./dependency-contract.mjs";
 import { createTestEnvironment } from "./test-environment.mjs";
@@ -36,6 +36,8 @@ export function inspectSdk(root, sdkRoot, declared) {
     "host.mjs",
     "gate.js",
     "configuration.mjs",
+    "configuration-readonly.mjs",
+    "model-selection.mjs",
     "BUN-LICENSE.md",
     "node_modules/@oh-my-pi/pi-coding-agent/package.json",
     "node_modules/@oh-my-pi/pi-utils/package.json",
@@ -68,12 +70,29 @@ export function inspectSdk(root, sdkRoot, declared) {
     issues.push("SDK lockHash is stale or the lockfile is missing");
   if (missing.length > 0)
     issues.push(`SDK resources are missing: ${missing.join(", ")}`);
-  for (const name of ["bun", "host.mjs", "gate.js", "configuration.mjs"]) {
+  for (const name of [
+    "bun",
+    "host.mjs",
+    "gate.js",
+    "configuration.mjs",
+    "configuration-readonly.mjs",
+    "model-selection.mjs",
+  ]) {
     if (
       existsSync(join(sdkRoot, name)) &&
       manifest.hashes?.[name] !== sha256(join(sdkRoot, name))
     )
       issues.push(`SDK resource hash mismatch: ${name}`);
+  }
+  if (manifest.sdkVersion === "18.4.6" && !manifest.sdkImportFix)
+    issues.push("SDK import correction audit is missing");
+  if (manifest.sdkImportFix) {
+    const path = join(
+      sdkRoot,
+      "node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts",
+    );
+    if (!existsSync(path) || manifest.sdkImportFix.sha256 !== sha256(path))
+      issues.push("SDK import correction hash mismatch");
   }
   for (const name of ["pi-coding-agent", "pi-utils"]) {
     const packagePath = join(
@@ -84,11 +103,33 @@ export function inspectSdk(root, sdkRoot, declared) {
     );
     if (existsSync(packagePath)) {
       try {
+        const metadata = JSON.parse(readFileSync(packagePath, "utf8"));
+        const packageRoot = realpathSync(dirname(packagePath));
+        const resourceRoot = realpathSync(sdkRoot);
+        const entry = realpathSync(
+          join(
+            packageRoot,
+            name === "pi-coding-agent" ? "src/sdk.ts" : "src/index.ts",
+          ),
+        );
         if (
-          JSON.parse(readFileSync(packagePath, "utf8")).version !==
-          declared[`@oh-my-pi/${name}`]
+          metadata.name !== `@oh-my-pi/${name}` ||
+          metadata.version !== declared[`@oh-my-pi/${name}`]
         )
           issues.push(`Bundled ${name} disagrees with package.json`);
+        if (
+          metadata.exports?.["."]?.import !== "./src/index.ts" ||
+          (name === "pi-coding-agent" &&
+            metadata.exports?.["./*"]?.import !== "./src/*.ts")
+        )
+          issues.push(
+            `Bundled ${name} import entry disagrees with fixed official SDK`,
+          );
+        if (
+          !packageRoot.startsWith(`${resourceRoot}${sep}`) ||
+          !entry.startsWith(`${packageRoot}${sep}`)
+        )
+          issues.push(`Bundled ${name} resolves outside managed resources`);
       } catch {
         issues.push(`Bundled ${name} package metadata is unreadable`);
       }
@@ -163,7 +204,7 @@ export function inspectEnvironment(
   });
   try {
     const pnpmOptions = {
-      cwd: root,
+      cwd: sandbox.cwd,
       env: {
         ...sandbox.env,
         COREPACK_ENABLE_NETWORK: "0",

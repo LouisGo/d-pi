@@ -1,15 +1,18 @@
 import { EventEmitter } from "node:events";
 import { PassThrough } from "node:stream";
 import { expect, it, vi } from "vitest";
-import type { ConfigurationEvent } from "../contracts/public";
+import {
+  type ConfigurationEvent,
+  ConfigurationScopeSchema,
+} from "../contracts/public";
 
-const mocks = vi.hoisted(() => ({ spawn: vi.fn() }));
+const mocks = vi.hoisted(() => ({ spawn: vi.fn(), resources: vi.fn() }));
 vi.mock("node:child_process", () => ({ spawn: mocks.spawn }));
 vi.mock("../../../platform/omp/resources/public", () => ({
-  managedConfigurationRuntime: async () => ({
-    binary: "/fixture/bun",
-    entry: "/fixture/configuration.mjs",
-  }),
+  managedConfigurationRuntime: async () => {
+    await mocks.resources();
+    return { binary: "/fixture/bun", entry: "/fixture/configuration.mjs" };
+  },
 }));
 
 import { NativeConfiguration } from "./native-configuration";
@@ -22,12 +25,36 @@ function child() {
     kill: vi.fn(),
   });
 }
+function threadScope() {
+  const value = ConfigurationScopeSchema.parse({
+    kind: "thread",
+    threadId: crypto.randomUUID(),
+    workingDirectoryId: crypto.randomUUID(),
+  });
+  if (value.kind !== "thread") throw Error("missing thread");
+  return value;
+}
+const application = { kind: "application" } as const;
+const source = { directory: "/native", profile: null, cwd: "/probe" };
+const threads = {
+  threadContext: () => {
+    throw Error("No thread");
+  },
+};
+function frame(
+  process: ReturnType<typeof child>,
+  traceId: string,
+  message: unknown,
+) {
+  process.stdout.write(JSON.stringify({ traceId, message }) + "\n");
+}
 it("keeps secret key off argv and rejects overlapping native credential writes", async () => {
   const process = child();
   mocks.spawn.mockReturnValue(process);
   const service = new NativeConfiguration(
     "/resources",
-    () => "/project",
+    threads,
+    "/probe",
     {},
     () => {},
     async () => {},
@@ -35,92 +62,242 @@ it("keeps secret key off argv and rejects overlapping native credential writes",
   const traceId = crypto.randomUUID();
   const first = service.execute({
     kind: "save-key",
+    scope: application,
     traceId,
     key: "fixture-secret",
   });
   await new Promise((r) => setImmediate(r));
-  const second = await service.execute({
-    kind: "save-key",
-    traceId: crypto.randomUUID(),
-    key: "second",
-  });
-  expect(second).toMatchObject({
-    kind: "failed",
-    code: "operation-in-progress",
-  });
+  expect(
+    await service.execute({
+      kind: "save-key",
+      scope: application,
+      traceId: crypto.randomUUID(),
+      key: "second",
+    }),
+  ).toMatchObject({ kind: "failed", code: "operation-in-progress" });
   expect(JSON.stringify(mocks.spawn.mock.calls)).not.toContain(
     "fixture-secret",
   );
   expect(process.stdin.read().toString()).toContain("fixture-secret");
-  process.stdout.write(
-    JSON.stringify({ traceId, message: { kind: "done" } }) + "\n",
-  );
+  frame(process, traceId, {
+    kind: "done",
+    scope: application,
+    traceId,
+    source,
+  });
   process.emit("close", 0);
-  expect(await first).toEqual({ kind: "done" });
+  expect(await first).toMatchObject({
+    kind: "done",
+    scope: application,
+    traceId,
+    source,
+  });
 });
-it("correlates native login, blocks unsafe browser URL and releases a cancelled job", async () => {
+it("keeps the old job cancellation outlet after its Thread disappears, and retains browser challenge before a prompt", async () => {
+  const a = threadScope();
+  let exists = true;
+  const reader = {
+    threadContext: () => {
+      if (!exists) throw Error("deleted");
+      return { ...a, directory: "/A" };
+    },
+  };
   const process = child();
   mocks.spawn.mockReturnValue(process);
   const events: ConfigurationEvent[] = [];
   const open = vi.fn();
   const service = new NativeConfiguration(
     "/resources",
-    () => "/project",
+    reader,
+    "/probe",
     {},
-    (event) => events.push(event),
+    (e) => events.push(e),
     open,
   );
   const traceId = crypto.randomUUID();
-  const result = await service.execute({
-    kind: "login",
-    traceId,
-  });
+  const result = await service.execute({ kind: "login", scope: a, traceId });
   if (result.kind !== "started") throw Error("not started");
-  process.stdout.write(
-    JSON.stringify({
-      traceId,
-      message: {
-        kind: "challenge",
-        jobId: result.jobId,
-        url: "https://unsafe.invalid/login",
-        instructions: "native instructions",
-      },
-    }) + "\n",
-  );
+  const identity = {
+    scope: a,
+    traceId,
+    source: { ...source, cwd: "/A" },
+    jobId: result.jobId,
+  };
+  frame(process, traceId, {
+    ...identity,
+    kind: "challenge",
+    url: "https://unsafe.invalid/login",
+    instructions: "native instructions",
+  });
   expect(
     await service.execute({
       kind: "open-login",
       traceId: crypto.randomUUID(),
       jobId: result.jobId,
     }),
-  ).toMatchObject({ kind: "failed", code: "unsafe-login-url" });
+  ).toMatchObject({ kind: "failed", code: "unsafe-login-url", scope: a });
   expect(open).not.toHaveBeenCalled();
-  process.stdout.write(
-    JSON.stringify({
-      traceId,
-      message: {
-        kind: "prompt",
-        jobId: result.jobId,
-        message: "Paste code",
-        secret: false,
-      },
-    }) + "\n",
-  );
+  frame(process, traceId, {
+    ...identity,
+    kind: "prompt",
+    message: "Paste code",
+    secret: false,
+  });
   expect(service.currentEvents().map((event) => event.kind)).toEqual([
     "challenge",
     "prompt",
   ]);
-  await service.execute({
-    kind: "cancel",
-    traceId: crypto.randomUUID(),
-    jobId: result.jobId,
-  });
+  exists = false;
+  expect(
+    await service.execute({
+      kind: "cancel",
+      traceId: crypto.randomUUID(),
+      jobId: result.jobId,
+    }),
+  ).toMatchObject({ kind: "done", scope: a });
   process.emit("close", null);
-  expect(events.at(-1)).toEqual({
+  expect(events.at(-1)).toMatchObject({
+    ...identity,
     kind: "finished",
-    jobId: result.jobId,
     result: "cancelled",
   });
-  expect(service.currentEvents()).toEqual([events.at(-1)]);
   expect(process.kill).toHaveBeenCalledOnce();
+});
+it.each(["deleted", "reassociated"])(
+  "rejects an %s target after resource wait without falling back to the active Thread",
+  async (change) => {
+    let release!: () => void;
+    mocks.resources.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          release = resolve;
+        }),
+    );
+    const scope = threadScope();
+    let changed = false;
+    const reader = {
+      threadContext: () => {
+        if (changed && change === "deleted") throw Error("missing");
+        return {
+          ...scope,
+          workingDirectoryId: changed
+            ? threadScope().workingDirectoryId
+            : scope.workingDirectoryId,
+          directory: "/A",
+        };
+      },
+    };
+    const service = new NativeConfiguration(
+      "/resources",
+      reader,
+      "/probe",
+      {},
+      () => {},
+      async () => {},
+    );
+    const calls = mocks.spawn.mock.calls.length;
+    const pending = service.execute({
+      kind: "snapshot",
+      scope,
+      traceId: crypto.randomUUID(),
+    });
+    await new Promise((r) => setImmediate(r));
+    changed = true;
+    release();
+    expect(await pending).toMatchObject({
+      kind: "failed",
+      code: "stale-target",
+      scope,
+    });
+    expect(mocks.spawn.mock.calls.length).toBe(calls);
+  },
+);
+it("uses the fixed application probe and refuses a child reply with another cwd", async () => {
+  const process = child();
+  mocks.spawn.mockReturnValue(process);
+  const service = new NativeConfiguration(
+    "/resources",
+    threads,
+    "/probe",
+    {},
+    () => {},
+    async () => {},
+  );
+  const traceId = crypto.randomUUID();
+  const pending = service.execute({
+    kind: "snapshot",
+    scope: application,
+    traceId,
+  });
+  await new Promise((r) => setImmediate(r));
+  expect(mocks.spawn.mock.calls.at(-1)?.[2].cwd).toBe("/probe");
+  frame(process, traceId, {
+    kind: "snapshot",
+    scope: application,
+    traceId,
+    source: { ...source, cwd: "/other" },
+    models: [],
+    defaultModel: "other",
+    openaiAuthenticated: false,
+    deepseekAuthenticated: false,
+    catalogError: false,
+    coverage: "complete",
+    issues: [],
+  });
+  process.emit("close", 0);
+  expect(await pending).toMatchObject({
+    kind: "failed",
+    code: "configuration-unavailable",
+    scope: application,
+  });
+});
+it("records stale-target when the original Thread disappears before the snapshot completes", async () => {
+  const scope = threadScope();
+  let exists = true;
+  const record = vi.fn();
+  const process = child();
+  mocks.spawn.mockReturnValue(process);
+  const service = new NativeConfiguration(
+    "/resources",
+    {
+      threadContext: () => {
+        if (!exists) throw Error("deleted");
+        return { ...scope, directory: "/A" };
+      },
+    },
+    "/probe",
+    {},
+    () => {},
+    async () => {},
+    record,
+  );
+  const traceId = crypto.randomUUID();
+  const pending = service.execute({ kind: "snapshot", scope, traceId });
+  await new Promise((resolve) => setImmediate(resolve));
+  frame(process, traceId, {
+    kind: "snapshot",
+    scope,
+    traceId,
+    source: { ...source, cwd: "/A" },
+    models: [],
+    defaultModel: "A",
+    openaiAuthenticated: false,
+    deepseekAuthenticated: false,
+    catalogError: false,
+    coverage: "complete",
+    issues: [],
+  });
+  exists = false;
+  process.emit("close", 0);
+  expect(await pending).toMatchObject({
+    kind: "failed",
+    code: "stale-target",
+    scope,
+    traceId,
+  });
+  expect(record.mock.calls.at(-1)?.[0]).toMatchObject({
+    stage: "failed",
+    code: "stale-target",
+    traceId,
+  });
 });

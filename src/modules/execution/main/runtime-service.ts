@@ -49,6 +49,7 @@ type RuntimeStore = {
     | "rejectSubmission"
     | "unknownSubmission"
     | "failSubmission"
+    | "observePromptResult"
   >;
 };
 
@@ -58,6 +59,8 @@ function boundedDisplayValue(value: string, maxLength: number): string {
 
 export class RuntimeService {
   private readonly executingIds = new Set<string>();
+  private readonly pendingEvidence = new Set<string>();
+  private lostEvidence = false;
   private lastDispatchId: string | null = null;
   private idleConfirmed = false;
   private target: FrozenSubmission["target"] | null = null;
@@ -223,7 +226,14 @@ export class RuntimeService {
     );
     this.instanceDirectory = current;
     this.sessionStarted = true;
-    await starting;
+    try {
+      await starting;
+    } catch (error) {
+      // Identity sampling/fork can fail before any start reached Host. Preserve
+      // the cold write lock whenever startup was dispatched, even if ready lost.
+      if (!this.connection.startAttempted) this.sessionStarted = false;
+      throw error;
+    }
   }
   private onExit(): void {
     this.recordHost("exited");
@@ -301,6 +311,7 @@ export class RuntimeService {
     const control = this.view?.control;
     const interactions = this.view?.interactions;
     if (
+      this.pendingEvidence.size > 0 ||
       !this.idleConfirmed ||
       this.view?.busy ||
       control?.stopping ||
@@ -323,13 +334,38 @@ export class RuntimeService {
       if (
         receipt?.state === "rejected" ||
         receipt?.outcome === "failed" ||
+        receipt?.outcome === "completed" ||
+        receipt?.outcome === "aborted" ||
         (receipt?.state === "acknowledged" && receipt.outcome !== "unknown")
       )
         this.executingIds.delete(id);
     }
   }
-  private receive(message: Exclude<HostMessage, { kind: "ready" }>): void {
+  private receive(
+    message: Exclude<HostMessage, { kind: "ready" | "native-register" }>,
+  ): void {
     match(message)
+      .with({ kind: "evidence-gap" }, ({ connectionGeneration, reason }) => {
+        if (connectionGeneration !== this.currentConnectionGeneration) return;
+        this.lostEvidence = true;
+        this.update({
+          evidenceCoverage: "gap",
+          message: uiMessage("runtime.evidenceGap"),
+        });
+        try {
+          this.record({
+            traceId: this.view?.traceId ?? randomUUID(),
+            requestId: this.view?.traceId ?? randomUUID(),
+            connectionId: connectionGeneration,
+            operation: "runtime:evidence",
+            stage: "unknown",
+            code: reason,
+            ...(this.view ? { threadId: this.view.threadId } : {}),
+          });
+        } catch {
+          /* A diagnostic failure cannot erase the visible evidence gap. */
+        }
+      })
       .with(
         { kind: "idle-confirmed" },
         ({ connectionGeneration, afterSubmissionId }) => {
@@ -411,7 +447,7 @@ export class RuntimeService {
         });
         this.settleIdleSubmissions();
       })
-      .with({ kind: "submission" }, ({ event }) => {
+      .with({ kind: "submission" }, ({ event, evidenceId }) => {
         // Host retains correlations for late replies, not execution ownership.
         // Only Main's in-flight set determines which attempts a disconnect affects.
         if (
@@ -419,7 +455,33 @@ export class RuntimeService {
           !this.executingIds.has(event.submissionId)
         )
           return;
-        this.publishSubmission(this.coordinator.receive(event));
+        const result = this.coordinator.receive(event);
+        this.publishSubmission(result);
+        if (result.kind === "failed" && result.code === "storage-unavailable") {
+          this.pendingEvidence.add(evidenceId);
+          this.executingIds.add(event.submissionId);
+          this.update({
+            evidenceCoverage: "gap",
+            message: uiMessage("runtime.evidenceGap"),
+          });
+        }
+        if (result.kind === "receipt") {
+          if (
+            this.pendingEvidence.delete(evidenceId) &&
+            !this.pendingEvidence.size &&
+            !this.lostEvidence
+          )
+            this.update({ evidenceCoverage: "complete" });
+          try {
+            this.connection.send({
+              kind: "confirm-evidence",
+              evidenceId,
+              connectionGeneration: event.target.connectionGeneration,
+            });
+          } catch {
+            /* The evidence is durable; a dead Host cannot replay it. */
+          }
+        }
         this.settleIdleSubmissions();
       })
       .with({ kind: "state" }, ({ state, busy, pendingInteraction }) => {
@@ -813,6 +875,7 @@ export class RuntimeService {
     const control = this.view?.control;
     const pending = this.view?.interactions;
     return (
+      this.pendingEvidence.size > 0 ||
       this.executingIds.size > 0 ||
       !!(
         control &&

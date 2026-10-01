@@ -5574,7 +5574,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ## Official OMP SDK and prior CLI evidence
 
-Unmodified oh-my-pi SDK v18.3.0, commit 62bc57be1b03ef0802a33cf7f5f530e534527531, installed through pnpm-lock.yaml and shipped with its original dependencies. The S2 CLI resource remains in the workspace as historical evidence; S3 executes the SDK through an App-owned adapter and pinned Bun 1.3.14. Upstream OMP license:
+Official oh-my-pi SDK v18.4.6, installed through pnpm-lock.yaml and shipped with its original dependencies and license files. Explicit user authorization on 2026-10-01 permits exactly one import correction in the bundled staging copy of src/sdk.ts: ./ratchet/prelude to ./ratchet/prelude.ts. Original and corrected SHA-256 hashes are recorded in sdk/manifest.json; installed upstream packages remain unchanged. The S2 CLI resource remains in the workspace as historical evidence; S3 executes the SDK through an App-owned adapter and pinned Bun 1.3.14. Upstream OMP license:
 
 ```text
 MIT License

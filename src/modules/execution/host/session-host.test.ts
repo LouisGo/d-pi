@@ -725,6 +725,15 @@ it("independent Host owners isolate native output, prompt timers and idle dispos
       data: { agentInvoked: false },
     },
   });
+  // This isolated Host fixture supplies Main's successful durable confirmation.
+  for (const message of a.messages.filter(
+    (message) => message.kind === "submission",
+  ))
+    await a.host.handle({
+      kind: "confirm-evidence",
+      evidenceId: message.evidenceId,
+      connectionGeneration: a.start.connectionGeneration,
+    });
   await a.host.handle({ kind: "state" });
   await a.host.handle({ kind: "close-idle" });
   expect(a.exit).toHaveBeenCalledWith(0);
@@ -862,6 +871,7 @@ it("keeps correlation expiry out of conversation frames while retaining submissi
     });
     expect(messages).toContainEqual({
       kind: "submission",
+      evidenceId: expect.any(String),
       event: {
         kind: "disconnected",
         submissionId: submission.submissionId,
@@ -1007,4 +1017,209 @@ it.each([
       event: expect.objectContaining({ kind: "rejected", reason }),
     }),
   );
+});
+
+it("bounds unconfirmed evidence, reports cache pressure and only replays facts", async () => {
+  const messages: HostMessage[] = [];
+  const host = createSessionHost((message) => messages.push(message), vi.fn());
+  const start: HostStart = {
+    kind: "start",
+    threadId: ThreadIdSchema.parse(crypto.randomUUID()),
+    traceId: crypto.randomUUID(),
+    processInstanceId: crypto.randomUUID(),
+    connectionGeneration: crypto.randomUUID(),
+    configContextId: "fixture",
+    binary: "/fixture/omp",
+    identity: { directory: "/project", device: "1", inode: "2" },
+    environment: {},
+    sessionDirectory: "/sessions",
+  };
+  await host.handle(start);
+  native.observers[0]?.({
+    kind: "frame",
+    frame: {
+      type: "d_pi_control_state",
+      data: {
+        paused: true,
+        stopping: false,
+        streaming: false,
+        compacting: false,
+        queued: 0,
+        queue: [],
+        background: 0,
+        pendingAsync: false,
+        admitted: false,
+      },
+    },
+  });
+  for (let index = 0; index < 260; index++) {
+    await host.handle({
+      kind: "dispatch",
+      value: FrozenSubmissionSchema.parse({
+        submissionId: crypto.randomUUID(),
+        threadId: start.threadId,
+        traceId: crypto.randomUUID(),
+        requestId: crypto.randomUUID(),
+        revision: index,
+        text: "frozen",
+        target: {
+          processInstanceId: start.processInstanceId,
+          connectionGeneration: start.connectionGeneration,
+          configContextId: start.configContextId,
+          nativeSessionRef: "/sessions/session.jsonl",
+        },
+      }),
+    });
+  }
+  expect(native.writes).toEqual([]);
+  expect(messages).toContainEqual({
+    kind: "evidence-gap",
+    connectionGeneration: start.connectionGeneration,
+    reason: "cache-full",
+  });
+  const initial = messages.filter((message) => message.kind === "submission");
+  expect(initial).toHaveLength(256);
+  messages.length = 0;
+  await host.handle({ kind: "replay-evidence" });
+  expect(messages.filter((message) => message.kind === "submission")).toEqual(
+    initial,
+  );
+  expect(native.writes).toEqual([]);
+  native.observers[0]?.({ kind: "exited" });
+});
+
+it("duplicate native ACKs cannot exhaust the live evidence cache and cause its terminal to be lost", async () => {
+  const messages: HostMessage[] = [];
+  const host = createSessionHost((message) => messages.push(message), vi.fn());
+  const start: HostStart = {
+    kind: "start",
+    threadId: ThreadIdSchema.parse(crypto.randomUUID()),
+    traceId: crypto.randomUUID(),
+    processInstanceId: crypto.randomUUID(),
+    connectionGeneration: crypto.randomUUID(),
+    configContextId: "fixture",
+    binary: "/fixture/omp",
+    identity: { directory: "/project", device: "1", inode: "2" },
+    environment: {},
+    sessionDirectory: "/sessions",
+  };
+  await host.handle(start);
+  const value = FrozenSubmissionSchema.parse({
+    submissionId: crypto.randomUUID(),
+    threadId: start.threadId,
+    traceId: crypto.randomUUID(),
+    requestId: crypto.randomUUID(),
+    revision: 1,
+    text: "frozen",
+    target: {
+      processInstanceId: start.processInstanceId,
+      connectionGeneration: start.connectionGeneration,
+      configContextId: start.configContextId,
+      nativeSessionRef: "/sessions/session.jsonl",
+    },
+  });
+  await host.handle({ kind: "dispatch", value });
+  for (let index = 0; index < 300; index++)
+    native.observers[0]?.({
+      kind: "frame",
+      frame: {
+        type: "response",
+        command: "prompt",
+        id: value.requestId,
+        success: true,
+      },
+    });
+  native.observers[0]?.({
+    kind: "frame",
+    frame: {
+      type: "prompt_result",
+      id: value.requestId,
+      status: "completed",
+      agentInvoked: true,
+      sessionSettled: true,
+    },
+  });
+  expect(
+    messages.some(
+      (message) =>
+        message.kind === "evidence-gap" && message.reason === "cache-full",
+    ),
+  ).toBe(false);
+  messages.length = 0;
+  await host.handle({ kind: "replay-evidence" });
+  expect(
+    messages
+      .filter((message) => message.kind === "submission")
+      .map((message) => message.event.kind),
+  ).toEqual(["ack", "prompt-result"]);
+  expect(native.writes).toHaveLength(1);
+  await host.handle({ kind: "state" });
+  await host.handle({ kind: "close-idle" });
+  expect(native.close).not.toHaveBeenCalled();
+  expect(messages).toContainEqual({ kind: "failed", code: "active-work" });
+  native.observers[0]?.({ kind: "exited" });
+});
+
+it("agent_end cannot open an idle-close gap while a confirmed completed prompt remains unsettled", async () => {
+  const messages: HostMessage[] = [];
+  const host = createSessionHost((message) => messages.push(message), vi.fn());
+  const start: HostStart = {
+    kind: "start",
+    threadId: ThreadIdSchema.parse(crypto.randomUUID()),
+    traceId: crypto.randomUUID(),
+    processInstanceId: crypto.randomUUID(),
+    connectionGeneration: crypto.randomUUID(),
+    configContextId: "fixture",
+    binary: "/fixture/omp",
+    identity: { directory: "/project", device: "1", inode: "2" },
+    environment: {},
+    sessionDirectory: "/sessions",
+  };
+  await host.handle(start);
+  const value = FrozenSubmissionSchema.parse({
+    submissionId: crypto.randomUUID(),
+    threadId: start.threadId,
+    traceId: crypto.randomUUID(),
+    requestId: crypto.randomUUID(),
+    revision: 1,
+    text: "frozen",
+    target: {
+      processInstanceId: start.processInstanceId,
+      connectionGeneration: start.connectionGeneration,
+      configContextId: start.configContextId,
+      nativeSessionRef: "/sessions/session.jsonl",
+    },
+  });
+  await host.handle({ kind: "dispatch", value });
+  for (const frame of [
+    { type: "response", command: "prompt", id: value.requestId, success: true },
+    {
+      type: "prompt_result",
+      id: value.requestId,
+      status: "completed",
+      agentInvoked: true,
+      sessionSettled: false,
+    },
+  ])
+    native.observers[0]?.({ kind: "frame", frame });
+  for (const message of messages.filter(
+    (message) => message.kind === "submission",
+  ))
+    await host.handle({
+      kind: "confirm-evidence",
+      evidenceId: message.evidenceId,
+      connectionGeneration: start.connectionGeneration,
+    });
+  // Observe and issue close in the same turn, before refresh's awaiting sample.
+  native.observers[0]?.({
+    kind: "frame",
+    frame: { type: "agent_end", isTerminal: true },
+  });
+  await host.handle({ kind: "close-idle" });
+  expect(native.close).not.toHaveBeenCalled();
+  expect(messages).toContainEqual({ kind: "failed", code: "active-work" });
+  native.observers[0]?.({ kind: "frame", frame: { type: "session_settled" } });
+  await host.handle({ kind: "state" });
+  await host.handle({ kind: "close-idle" });
+  expect(native.close).toHaveBeenCalledOnce();
 });

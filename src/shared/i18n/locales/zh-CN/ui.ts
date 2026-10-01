@@ -1,4 +1,9 @@
 export const ui = {
+  "config.authUnknown": "认证状态暂不可读",
+  "config.partial": "部分原生配置来源暂不可安全读取，来源可用后请刷新。",
+  "model.defaultThinking": "原生默认",
+  "model.offThinking": "关闭推理",
+  "model.reason.configuration-unknown": "配置暂不可用",
   "config.heading": "配置与认证",
   "config.description":
     "复用 OMP 原生配置。登录或保存密钥后选择模型，再允许项目执行并启动会话。",
@@ -147,6 +152,10 @@ export const ui = {
   "ui.submissions.prepared": "已保存，未派发",
   "ui.submissions.dispatching": "已派发，等待回执",
   "ui.submissions.unknown": "结果未知",
+  "ui.submissions.outcomeCompleted": " · 原生输入已完成",
+  "ui.submissions.outcomeAborted": " · 原生输入已中止",
+  "ui.interaction.followUpCompleted": "原生输入已完成",
+  "ui.interaction.followUpAborted": "原生输入已中止",
   "ui.submissions.outcomeFailed": " · 原生返回失败",
   "ui.submissions.outcomeUnknown": " · 后续结果未知",
   "ui.submissions.retryOf": "显式再次发送，来源：{id}",

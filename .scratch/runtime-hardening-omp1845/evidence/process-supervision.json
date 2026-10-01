@@ -1,0 +1,88 @@
+{
+  "platform": "darwin",
+  "architecture": "arm64",
+  "time": "2026-10-01T05:13:07.712Z",
+  "results": [
+    {
+      "fault": "normal",
+      "mode": "idle",
+      "nativeStopped": true,
+      "scopes": 2
+    },
+    {
+      "fault": "bun",
+      "mode": "busy",
+      "nativeStopped": true,
+      "toolStopped": true,
+      "otherScopeContinues": true,
+      "nativeSdk": "18.4.6",
+      "receiptsReadable": true,
+      "acknowledgedInputPreserved": 2,
+      "nativeHistory": [
+        {
+          "scope": "a",
+          "state": "absent-before-fault-lazy-local-command"
+        },
+        {
+          "scope": "b",
+          "state": "absent-before-fault-lazy-local-command"
+        }
+      ],
+      "coldRecoveryReadOnly": false,
+      "background": "isolated extension child, outside native async-job accounting"
+    },
+    {
+      "fault": "host",
+      "mode": "interaction",
+      "nativeStopped": true,
+      "toolStopped": true,
+      "otherScopeContinues": false,
+      "nativeSdk": "18.4.6",
+      "receiptsReadable": true,
+      "acknowledgedInputPreserved": 2,
+      "nativeHistory": [
+        {
+          "scope": "a",
+          "state": "absent-before-fault-lazy-local-command"
+        },
+        {
+          "scope": "b",
+          "state": "absent-before-fault-lazy-local-command"
+        }
+      ],
+      "coldRecoveryReadOnly": false,
+      "background": "isolated extension child, outside native async-job accounting"
+    },
+    {
+      "fault": "main",
+      "mode": "background",
+      "nativeStopped": true,
+      "toolStopped": true,
+      "otherScopeContinues": false,
+      "nativeSdk": "18.4.6",
+      "receiptsReadable": true,
+      "acknowledgedInputPreserved": 2,
+      "nativeHistory": [
+        {
+          "scope": "a",
+          "state": "absent-before-fault-lazy-local-command"
+        },
+        {
+          "scope": "b",
+          "state": "absent-before-fault-lazy-local-command"
+        }
+      ],
+      "coldRecoveryReadOnly": true,
+      "background": "isolated extension child, outside native async-job accounting"
+    },
+    {
+      "fault": "database",
+      "sqliteWriteFailed": true,
+      "actualNativePaused": true,
+      "nativeStreamingBeforeStop": true,
+      "persistedAcknowledgementReadable": true,
+      "nativeHistoryReadable": true,
+      "nativeSdk": "18.4.6"
+    }
+  ]
+}

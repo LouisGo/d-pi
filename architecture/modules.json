@@ -95,6 +95,7 @@
         "main/storage/public.ts",
         "main/diagnostics/public.ts",
         "node/filesystem/public.ts",
+        "node/processes/public.ts",
         "omp/consumption-gate.ts",
         "omp/protocol/public.ts",
         "omp/resources/public.ts"
@@ -177,7 +178,8 @@
           "threads"
         ],
         "renderer": [
-          "files"
+          "files",
+          "shared"
         ]
       },
       "materialized": true
@@ -303,7 +305,8 @@
         "contracts": [
           "input",
           "shared",
-          "threads"
+          "threads",
+          "configuration"
         ],
         "core": [
           "input",
@@ -352,9 +355,10 @@
         "renderer/public.ts"
       ],
       "dependsOn": {
-        "contracts": [],
+        "contracts": ["shared"],
         "main": [
-          "platform"
+          "platform",
+          "threads"
         ],
         "renderer": [
           "preferences"

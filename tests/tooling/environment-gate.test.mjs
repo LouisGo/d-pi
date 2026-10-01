@@ -4,6 +4,7 @@ import {
   chmodSync,
   mkdirSync,
   mkdtempSync,
+  readFileSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -88,21 +89,42 @@ test("SDK inspection refuses stale locks, tampered files and missing bundled res
         "host.mjs": hash("fixture-host"),
         "gate.js": hash("fixture-gate"),
         "configuration.mjs": hash("fixture-configuration"),
+        "configuration-readonly.mjs": hash("fixture-readonly"),
+        "model-selection.mjs": hash("fixture-selection"),
       },
     }),
     "sdk/bun": "fixture-bun",
     "sdk/host.mjs": "fixture-host",
     "sdk/gate.js": "fixture-gate",
     "sdk/configuration.mjs": "fixture-configuration",
+    "sdk/configuration-readonly.mjs": "fixture-readonly",
+    "sdk/model-selection.mjs": "fixture-selection",
     "sdk/BUN-LICENSE.md": "fixture-license",
     "sdk/node_modules/@oh-my-pi/pi-coding-agent/package.json": JSON.stringify({
+      name: "@oh-my-pi/pi-coding-agent",
       version: "18.3.0",
+      exports: {
+        ".": { import: "./src/index.ts" },
+        "./*": { import: "./src/*.ts" },
+      },
     }),
+    "sdk/node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts": "export {};",
     "sdk/node_modules/@oh-my-pi/pi-utils/package.json": JSON.stringify({
+      name: "@oh-my-pi/pi-utils",
       version: "18.3.0",
+      exports: { ".": { import: "./src/index.ts" } },
     }),
+    "sdk/node_modules/@oh-my-pi/pi-utils/src/index.ts": "export {};",
   });
   assert.deepEqual(inspectSdk(root, join(root, "sdk"), declared).issues, []);
+  writeFileSync(
+    join(root, "sdk/node_modules/@oh-my-pi/pi-utils/package.json"),
+    JSON.stringify({ name: "wrong", version: "18.3.0", main: "./index.js" }),
+  );
+  assert.match(
+    inspectSdk(root, join(root, "sdk"), declared).issues.join("\n"),
+    /Bundled pi-utils disagrees/,
+  );
   writeFileSync(join(root, "sdk/host.mjs"), "tampered");
   writeFileSync(join(root, "pnpm-lock.yaml"), "changed-lock");
   rmSync(join(root, "sdk/gate.js"));
@@ -110,4 +132,27 @@ test("SDK inspection refuses stale locks, tampered files and missing bundled res
   assert.match(report.issues.join("\n"), /lockHash is stale/);
   assert.match(report.issues.join("\n"), /hash mismatch: host.mjs/);
   assert.ok(report.missing.includes("gate.js"));
+});
+
+test("version probing never lets a package-manager shim overwrite the project lock", (t) => {
+  const root = fixture(t, {
+    "package.json": JSON.stringify({ packageManager: "pnpm@12.8.1" }),
+    ".node-version": process.versions.node,
+    "pnpm-lock.yaml": "lockfileVersion: '9.0'\nimporters:\n  .:\n",
+    "bin/pnpm":
+      "#!/bin/sh\nif test -f package.json; then printf corrupted > pnpm-lock.yaml; fi\nprintf 12.8.1\n",
+  });
+  chmodSync(join(root, "bin/pnpm"), 0o755);
+  const inheritedPath = process.env.PATH;
+  process.env.PATH = join(root, "bin");
+  try {
+    inspectEnvironment(root, { toolsOnly: true });
+    assert.equal(
+      readFileSync(join(root, "pnpm-lock.yaml"), "utf8"),
+      "lockfileVersion: '9.0'\nimporters:\n  .:\n",
+    );
+  } finally {
+    if (inheritedPath === undefined) delete process.env.PATH;
+    else process.env.PATH = inheritedPath;
+  }
 });

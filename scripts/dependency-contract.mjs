@@ -47,6 +47,35 @@ const unquote = (value) => value.replace(/^(?:'([^']*)'|"([^"]*)")$/, "$1$2");
 // Intentionally reads only pnpm v9's root importer. It is not a general YAML
 // parser, and refuses unfamiliar structures instead of guessing consistency.
 function rootImporter(contents) {
+  const documents = contents.split(/^---\s*$/m).filter((text) => text.trim());
+  if (documents.length > 1) {
+    const manager = documents.filter((text) =>
+      /^    packageManagerDependencies:\s*$/m.test(text),
+    );
+    const application = documents.filter(
+      (text) => !/^    packageManagerDependencies:\s*$/m.test(text),
+    );
+    const managerRoot = manager[0]?.split(/^packages:/m)[0] ?? "";
+    if (
+      manager.length !== 1 ||
+      application.length !== 1 ||
+      /^    (dependencies|devDependencies|optionalDependencies):/m.test(
+        managerRoot,
+      )
+    )
+      throw new Error(
+        "expected one package-manager document and one application document",
+      );
+    if (
+      !/^lockfileVersion: ['"]?9\.0['"]?\s*$/m.test(manager[0]) ||
+      !/^    packageManagerDependencies:\n      pnpm:\n        specifier: \d+\.\d+\.\d+\n        version: \d+\.\d+\.\d+\s*$/m.test(
+        manager[0],
+      )
+    )
+      throw new Error("unsupported package-manager document");
+    return rootImporter(application[0]);
+  }
+
   if (!/^lockfileVersion: ['"]?9\.0['"]?\s*$/m.test(contents))
     throw new Error("expected pnpm lockfileVersion 9.0");
   const result = {};
@@ -66,6 +95,11 @@ function rootImporter(contents) {
       continue;
     }
     if (!line.startsWith("    ")) break;
+    if (line === "    configDependencies: {}") {
+      section = undefined;
+      dependency = undefined;
+      continue;
+    }
     const sectionMatch =
       /^    (dependencies|devDependencies|optionalDependencies):(?:\s*\{\})?\s*$/.exec(
         line,

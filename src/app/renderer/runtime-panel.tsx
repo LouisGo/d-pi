@@ -90,6 +90,9 @@ export function RuntimePanel({
         <summary>{t("ui.runtime.details")}</summary>
         <span className="muted">{formatMessage(state.configuration)}</span>
         {state.phase === "ready" && <p>{formatMessage(state.message)}</p>}
+        {state.evidenceCoverage === "gap" && (
+          <p>{formatMessage({ code: "runtime.evidenceGap" })}</p>
+        )}
       </details>
       {state.phase !== "ready" && (
         <p className="muted">{formatMessage(state.message)}</p>

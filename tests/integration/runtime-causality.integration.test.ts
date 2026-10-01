@@ -1,7 +1,14 @@
 import { EventEmitter } from "node:events";
-import { mkdirSync, mkdtempSync, realpathSync, rmSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  realpathSync,
+  rmSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { DatabaseSync } from "node:sqlite";
 import { PassThrough, Writable } from "node:stream";
 import { afterEach, expect, it, vi } from "vitest";
 import { AppStorage } from "../../src/app/main/wiring/app-storage";
@@ -16,12 +23,25 @@ import { TraceIdSchema } from "../../src/shared/identity";
 
 const adapters = vi.hoisted(() => ({ fork: vi.fn(), spawn: vi.fn() }));
 vi.mock("electron", () => ({ utilityProcess: { fork: adapters.fork } }));
-vi.mock("node:child_process", () => ({ spawn: adapters.spawn }));
+vi.mock("node:child_process", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("node:child_process")>()),
+  spawn: adapters.spawn,
+}));
 vi.mock("../../src/platform/omp/resources/public", () => ({
   managedSdkRuntime: async () => ({
     binary: "/fixture/bun",
     entry: "/fixture/host.mjs",
   }),
+}));
+vi.mock("../../src/platform/node/processes/public", () => ({
+  readProcessIdentity: async (pid: number) => ({
+    pid,
+    birth: "fixture-birth",
+    executable: "/fixture/bun",
+    parentPid: globalThis.process.pid,
+    groupId: pid,
+  }),
+  terminateManagedGroup: async () => true,
 }));
 const cleanup: (() => void)[] = [];
 afterEach(() => {
@@ -65,6 +85,11 @@ async function running(diagnosticFailure = false) {
     write(bytes, _encoding, done) {
       const command = JSON.parse(bytes.toString());
       commands.push(command);
+      if (command.type === "d_pi_native_permit") {
+        if (command.allowed) queueMicrotask(() => frames({ type: "ready" }));
+        done();
+        return;
+      }
       if (command.type === "prompt") {
         done();
         return;
@@ -94,6 +119,7 @@ async function running(diagnosticFailure = false) {
     },
   });
   const child = Object.assign(new EventEmitter(), {
+    pid: 999999,
     stdin,
     stdout,
     stderr: new PassThrough(),
@@ -103,7 +129,12 @@ async function running(diagnosticFailure = false) {
   });
   adapters.spawn.mockImplementation((_binary, _args, options) => {
     sessionDirectory = options.env.PI_CODING_AGENT_SESSION_DIR;
-    queueMicrotask(() => frames({ type: "ready" }));
+    queueMicrotask(() =>
+      frames({
+        type: "d_pi_native_bootstrap",
+        token: JSON.parse(options.env.D_PI_PROCESS_SUPERVISION).token,
+      }),
+    );
     return child;
   });
   const process = new EventEmitter();
@@ -114,6 +145,7 @@ async function running(diagnosticFailure = false) {
   );
   adapters.fork.mockReturnValue(
     Object.assign(process, {
+      pid: globalThis.process.pid,
       postMessage: (raw: unknown) => {
         const envelope = HostTransportCommandSchema.parse(raw);
         scopeId = envelope.scopeId;
@@ -134,10 +166,11 @@ async function running(diagnosticFailure = false) {
       diagnostics.push(event);
     },
   );
-  const nativeExit = () => {
+  const nativeExit = async () => {
     if (child.exitCode !== null) return;
     child.exitCode = 0;
     child.emit("close", 0);
+    await new Promise<void>((resolve) => queueMicrotask(resolve));
   };
   cleanup.push(() => {
     nativeExit();
@@ -167,6 +200,7 @@ async function running(diagnosticFailure = false) {
   };
   return {
     runtime,
+    root,
     diagnostics,
     store,
     draft,
@@ -195,6 +229,10 @@ async function running(diagnosticFailure = false) {
     },
     busy: () => {
       control = { ...idle, streaming: true, admitted: true };
+      frames({ type: "d_pi_control_state", data: control });
+    },
+    idleControl: () => {
+      control = idle;
       frames({ type: "d_pi_control_state", data: control });
     },
   };
@@ -228,7 +266,7 @@ it("same decoder batch cannot apply old idle after agent_start/ACK and lose the 
   await query;
   expect(f.runtime.hasActiveWork()).toBe(true);
   f.busy();
-  f.nativeExit();
+  await f.nativeExit();
   expect(f.store.submissions.submission(receipt.submissionId)).toMatchObject({
     state: "acknowledged",
     outcome: "unknown",
@@ -249,7 +287,7 @@ it("an idle control sampled before dispatch cannot settle its later ACK", async 
     },
   );
   f.busy();
-  f.nativeExit();
+  await f.nativeExit();
   expect(f.store.submissions.submission(receipt.submissionId)?.outcome).toBe(
     "unknown",
   );
@@ -258,7 +296,7 @@ it("an idle control sampled before dispatch cannot settle its later ACK", async 
 it("confirmed idle native exit releases its Host and lets normal idle close finish without querying the dead process", async () => {
   const f = await running();
   expect(f.runtime.hasActiveWork()).toBe(false);
-  f.nativeExit();
+  await f.nativeExit();
   expect(f.runtime.hasActiveWork()).toBe(false);
   const count = f.commands.length;
   await f.runtime.closeIdle();
@@ -279,7 +317,7 @@ it("idle sampled before a prompt reply cannot become settlement evidence when th
     success: true,
   });
   expect(f.runtime.hasActiveWork()).toBe(true);
-  f.nativeExit();
+  await f.nativeExit();
   expect(f.store.submissions.submission(receipt.submissionId)?.outcome).toBe(
     "unknown",
   );
@@ -290,7 +328,7 @@ it("protocol disconnection alone still blocks quit; confirmed exit is a separate
   // Enter through the actual decoder; the child has not emitted close yet.
   f.raw("{broken-json\n");
   expect(f.runtime.hasActiveWork()).toBe(true);
-  f.nativeExit();
+  await f.nativeExit();
   expect(f.runtime.hasActiveWork()).toBe(false);
 });
 
@@ -332,7 +370,7 @@ it("correlates ACK, disconnection and unknown outcome without conflating transpo
     }),
   );
   expect(f.diagnostics.some((event) => event.stage === "exited")).toBe(false);
-  f.nativeExit();
+  await f.nativeExit();
   expect(f.diagnostics).toContainEqual(
     expect.objectContaining({ operation: "runtime:host", stage: "exited" }),
   );
@@ -350,7 +388,7 @@ it("diagnostic failure cannot prevent an exited Host from preserving an unknown 
   const f = await running(true);
   const receipt = await f.prepare();
   await f.dispatch();
-  expect(() => f.nativeExit()).not.toThrow();
+  await expect(f.nativeExit()).resolves.toBeUndefined();
   expect(f.store.submissions.submission(receipt.submissionId)).toMatchObject({
     state: "unknown",
     outcome: "unknown",
@@ -358,4 +396,331 @@ it("diagnostic failure cannot prevent an exited Host from preserving an unknown 
   expect(
     f.commands.filter((command) => command.type === "prompt"),
   ).toHaveLength(1);
+});
+
+it("confirmed terminal duplicates keep coverage complete and a later identified error remains sticky", async () => {
+  const f = await running();
+  const receipt = await f.prepare();
+  await f.dispatch();
+  const completed = {
+    type: "prompt_result",
+    id: receipt.requestId,
+    status: "completed",
+    agentInvoked: true,
+    sessionSettled: true,
+  };
+  f.frames(
+    {
+      type: "response",
+      command: "prompt",
+      id: receipt.requestId,
+      success: true,
+    },
+    completed,
+  );
+  f.frames(completed);
+  const view = await f.runtime.execute({
+    kind: "inspect",
+    threadId: f.draft.threadId,
+    traceId: TraceIdSchema.parse(crypto.randomUUID()),
+  });
+  expect(view.evidenceCoverage).not.toBe("gap");
+  f.frames({
+    ...completed,
+    status: "error",
+    error: { retryable: true, httpStatus: 503, message: "provider-secret" },
+  });
+  f.frames(completed);
+  expect(f.store.submissions.submission(receipt.submissionId)).toMatchObject({
+    state: "acknowledged",
+    outcome: "failed",
+    promptResult: {
+      status: "error",
+      error: { retryable: true, httpStatus: 503 },
+    },
+  });
+  expect(
+    f.commands.filter((command) => command.type === "prompt"),
+  ).toHaveLength(1);
+});
+
+it("decodes and persists a prompt terminal before ACK, keeps background work active and ignores an unknown id", async () => {
+  const f = await running();
+  const receipt = await f.prepare();
+  await f.dispatch();
+  f.busy();
+  const backgroundFrames = readFileSync(
+    new URL(
+      "../../.scratch/runtime-hardening-omp1845/evidence/sdk-correlation-18.4.6.frames.jsonl",
+      import.meta.url,
+    ),
+    "utf8",
+  )
+    .trim()
+    .split("\n")
+    .map((line) => JSON.parse(line));
+  const result = backgroundFrames.find(
+    (frame) => frame.id === "completed-with-background",
+  );
+  expect(result).toMatchObject({ sessionSettled: false });
+  f.frames({ ...result, id: receipt.requestId });
+  expect(f.store.submissions.submission(receipt.submissionId)).toMatchObject({
+    state: "unknown",
+    outcome: "completed",
+    promptResult: { status: "completed", sessionSettled: false },
+  });
+  expect(f.store.drafts.read(f.draft.threadId).text).toBe("B");
+  expect(f.runtime.hasActiveWork()).toBe(true);
+  f.idleControl();
+  f.frames({ type: "agent_end", isTerminal: true, messages: [] });
+  await f.host.handle({ kind: "state" });
+  expect(f.runtime.hasActiveWork()).toBe(true);
+  await expect(f.runtime.closeIdle()).rejects.toThrow("Active native work");
+  f.frames({
+    type: "response",
+    command: "prompt",
+    id: receipt.requestId,
+    success: true,
+  });
+  expect(f.store.submissions.submission(receipt.submissionId)).toMatchObject({
+    state: "acknowledged",
+    outcome: "completed",
+  });
+  expect(f.store.drafts.read(f.draft.threadId).text).toBe("");
+  f.frames(backgroundFrames.find((frame) => frame.type === "session_settled"));
+  await f.host.handle({ kind: "state" });
+  expect(f.runtime.hasActiveWork()).toBe(false);
+  f.frames({
+    type: "prompt_result",
+    id: "unknown-request",
+    status: "error",
+    agentInvoked: true,
+    sessionSettled: true,
+    error: { retryable: true, message: "private-provider-text" },
+  });
+  await f.nativeExit();
+  expect(f.store.submissions.submission(receipt.submissionId)).toMatchObject({
+    outcome: "completed",
+  });
+  expect(
+    f.commands.filter((command) => command.type === "prompt"),
+  ).toHaveLength(1);
+});
+
+it("replays bounded evidence in the same live Host after a SQLite failure without replaying prompt", async () => {
+  const f = await running();
+  const receipt = await f.prepare();
+  await f.dispatch();
+  const lock = new DatabaseSync(join(f.root, "app.sqlite"));
+  try {
+    lock.exec("BEGIN IMMEDIATE");
+    f.frames(
+      {
+        type: "response",
+        command: "prompt",
+        id: receipt.requestId,
+        success: true,
+      },
+      {
+        type: "prompt_result",
+        id: receipt.requestId,
+        status: "aborted",
+        agentInvoked: true,
+        sessionSettled: true,
+      },
+    );
+    expect(f.store.submissions.submission(receipt.submissionId)).toMatchObject({
+      state: "dispatching",
+      outcome: "unobserved",
+    });
+    expect(f.store.drafts.read(f.draft.threadId).text).toBe("B");
+    expect(
+      await f.runtime.execute({
+        kind: "inspect",
+        threadId: f.draft.threadId,
+        traceId: TraceIdSchema.parse(crypto.randomUUID()),
+      }),
+    ).toMatchObject({ evidenceCoverage: "gap" });
+    lock.exec("ROLLBACK");
+    await f.host.handle({ kind: "replay-evidence" });
+    expect(
+      await f.runtime.execute({
+        kind: "inspect",
+        threadId: f.draft.threadId,
+        traceId: TraceIdSchema.parse(crypto.randomUUID()),
+      }),
+    ).toMatchObject({ evidenceCoverage: "complete" });
+    expect(f.store.submissions.submission(receipt.submissionId)).toMatchObject({
+      state: "acknowledged",
+      outcome: "aborted",
+    });
+    expect(f.store.drafts.read(f.draft.threadId).text).toBe("");
+    expect(
+      f.commands.filter((command) => command.type === "prompt"),
+    ).toHaveLength(1);
+  } finally {
+    lock.close();
+  }
+});
+
+it("idle cannot dispose unconfirmed terminal evidence after ACK was already committed", async () => {
+  const f = await running();
+  const receipt = await f.prepare();
+  await f.dispatch();
+  f.frames({
+    type: "response",
+    command: "prompt",
+    id: receipt.requestId,
+    success: true,
+  });
+  const lock = new DatabaseSync(join(f.root, "app.sqlite"));
+  try {
+    lock.exec("BEGIN IMMEDIATE");
+    f.frames({
+      type: "prompt_result",
+      id: receipt.requestId,
+      status: "completed",
+      agentInvoked: true,
+      sessionSettled: true,
+    });
+    await f.host.handle({ kind: "state" });
+    expect(f.store.submissions.submission(receipt.submissionId)).toMatchObject({
+      state: "acknowledged",
+      outcome: "unobserved",
+    });
+    expect(f.runtime.hasActiveWork()).toBe(true);
+    await expect(f.runtime.closeIdle()).rejects.toThrow("Active native work");
+    lock.exec("ROLLBACK");
+    await f.host.handle({ kind: "replay-evidence" });
+    await f.host.handle({ kind: "state" });
+    expect(f.store.submissions.submission(receipt.submissionId)).toMatchObject({
+      state: "acknowledged",
+      outcome: "completed",
+    });
+    expect(f.runtime.hasActiveWork()).toBe(false);
+    expect(
+      f.commands.filter((command) => command.type === "prompt"),
+    ).toHaveLength(1);
+  } finally {
+    lock.close();
+  }
+});
+
+it.each([
+  ["local", "completed", false],
+  ["builtinLocal", "completed", false],
+  ["steer", "completed", true],
+  ["aborted", "aborted", true],
+  ["error", "error", false],
+] as const)(
+  "persists the recorded SDK 18.4.6 %s outcome through the real decoder/session/Host/Main/SQLite chain",
+  async (scenario, status, agentInvoked) => {
+    const f = await running();
+    const receipt = await f.prepare();
+    await f.dispatch();
+    const evidence =
+      scenario === "error"
+        ? "sdk-failure-18.4.6.frames.jsonl"
+        : "sdk-outcomes-18.4.6.frames.jsonl";
+    const frames = readFileSync(
+      new URL(
+        `../../.scratch/runtime-hardening-omp1845/evidence/${evidence}`,
+        import.meta.url,
+      ),
+      "utf8",
+    )
+      .trim()
+      .split("\n")
+      .map((line) => JSON.parse(line));
+    const metadata =
+      scenario === "error"
+        ? null
+        : JSON.parse(
+            readFileSync(
+              new URL(
+                `../../.scratch/runtime-hardening-omp1845/evidence/${evidence}.metadata.json`,
+                import.meta.url,
+              ),
+              "utf8",
+            ),
+          );
+    const id =
+      scenario === "error"
+        ? frames.find((frame) => frame.type === "prompt_result").id
+        : scenario === "steer"
+          ? metadata.cases.steer[1]
+          : metadata.cases[scenario];
+    // Preserve the recorded fields and relative ordering of ACK/error/terminal;
+    // only bind the disposable fixture id to this App-owned frozen submission.
+    for (const frame of frames.filter(
+      (frame) =>
+        frame.id === id && ["response", "prompt_result"].includes(frame.type),
+    )) {
+      f.frames({ ...frame, id: receipt.requestId });
+    }
+    expect(f.store.submissions.submission(receipt.submissionId)).toMatchObject({
+      state: "acknowledged",
+      outcome: status === "error" ? "failed" : status,
+      promptResult: {
+        source:
+          scenario === "builtinLocal"
+            ? "native-local-response"
+            : "native-prompt-result",
+        status,
+        agentInvoked,
+      },
+    });
+    expect(f.store.drafts.read(f.draft.threadId).text).toBe("");
+    expect(
+      f.commands.filter((command) => command.type === "prompt"),
+    ).toHaveLength(1);
+  },
+);
+
+it("a Host loss after Main write failure loses only memory evidence and reopens conservatively without resending", async () => {
+  const f = await running();
+  const receipt = await f.prepare();
+  await f.dispatch();
+  const path = join(f.root, "app.sqlite");
+  const lock = new DatabaseSync(path);
+  try {
+    lock.exec("BEGIN IMMEDIATE");
+    f.frames(
+      {
+        type: "response",
+        command: "prompt",
+        id: receipt.requestId,
+        success: true,
+      },
+      {
+        type: "prompt_result",
+        id: receipt.requestId,
+        status: "completed",
+        agentInvoked: true,
+        sessionSettled: true,
+      },
+    );
+    await f.nativeExit();
+    lock.exec("ROLLBACK");
+    f.store.close();
+    const restarted = AppStorage.open(path);
+    try {
+      expect(
+        restarted.submissions.submission(receipt.submissionId),
+      ).toMatchObject({
+        state: "unknown",
+        acknowledgedAt: null,
+        outcome: "unknown",
+        text: "B",
+      });
+      expect(restarted.drafts.read(f.draft.threadId).text).toBe("B");
+      expect(
+        f.commands.filter((command) => command.type === "prompt"),
+      ).toHaveLength(1);
+    } finally {
+      restarted.close();
+    }
+  } finally {
+    lock.close();
+  }
 });

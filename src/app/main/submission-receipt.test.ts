@@ -200,3 +200,31 @@ it("retains failed execution evidence across restart and keeps ACK and refusal t
       store.close();
     }
   }));
+
+it("restart retains ACK and consumed revision while reporting an unobserved native result unknown", () =>
+  fixture((path) => {
+    let store = openStorage(path);
+    const value = frozen(store);
+    store.submissions.prepareSubmission(value);
+    store.submissions.dispatchSubmission(value.submissionId);
+    store.submissions.acknowledgeSubmission(value.submissionId);
+    const acknowledgedAt = store.submissions.submission(
+      value.submissionId,
+    )?.acknowledgedAt;
+    store.close();
+    store = openStorage(path);
+    try {
+      expect(store.submissions.submission(value.submissionId)).toMatchObject({
+        state: "acknowledged",
+        outcome: "unknown",
+        acknowledgedAt,
+        text: "A",
+      });
+      expect(store.drafts.read(value.threadId)).toMatchObject({
+        text: "",
+        consumedBy: value.submissionId,
+      });
+    } finally {
+      store.close();
+    }
+  }));

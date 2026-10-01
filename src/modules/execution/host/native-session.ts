@@ -1,10 +1,16 @@
 import { type ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
+import {
+  type ProcessIdentity,
+  readProcessIdentity,
+  terminateManagedGroup,
+} from "../../../platform/node/processes/public";
 import type { NativeFrame } from "../../../platform/omp/protocol/public";
 import {
   FrameDecoder,
   NativeResponseSchema,
 } from "../../../platform/omp/protocol/public";
+import { nativeBootstrap } from "./native-bootstrap";
 
 export interface NativeSessionOptions {
   binary: string;
@@ -14,10 +20,12 @@ export interface NativeSessionOptions {
   sessionDirectory: string;
   // Validation supplies fixed flags. Production passes none and retains native settings.
   extraArgs?: string[];
+  supervision?: { mainPid: number; mainBirth: string; token: string };
+  register?: (identity: ProcessIdentity) => Promise<boolean>;
 }
 export type NativeObservation =
   | { kind: "frame"; frame: NativeFrame }
-  | { kind: "exited" }
+  | { kind: "exited"; groupStopped?: boolean }
   | { kind: "disconnected"; reason: "spawn" | "protocol" | "exit" | "write" };
 interface Pending {
   command: string;
@@ -34,10 +42,15 @@ export class NativeSession {
     reject: (error: Error) => void;
   } | null = null;
   private closePromise: Promise<void> = Promise.resolve();
+  private identity: ProcessIdentity | null = null;
+  private groupCleanup: Promise<boolean> | null = null;
+  private readonly token: string;
   constructor(
     private readonly options: NativeSessionOptions,
     private readonly observe: (event: NativeObservation) => void,
-  ) {}
+  ) {
+    this.token = options.supervision?.token ?? randomUUID();
+  }
   async start(): Promise<void> {
     if (this.child || this.closed)
       throw new Error("Native instance already used");
@@ -48,15 +61,20 @@ export class NativeSession {
     const child = spawn(
       this.options.binary,
       this.options.entry
-        ? [this.options.entry]
+        ? ["-e", nativeBootstrap, "--", this.options.entry]
         : ["--mode", "rpc-ui", "--no-title", ...(this.options.extraArgs ?? [])],
       {
         cwd: this.options.directory,
         env: {
           ...this.options.environment,
           PI_CODING_AGENT_SESSION_DIR: this.options.sessionDirectory,
+          D_PI_PROCESS_SUPERVISION: JSON.stringify({
+            ...this.options.supervision,
+            token: this.token,
+          }),
         },
         stdio: ["pipe", "pipe", "pipe"],
+        detached: process.platform !== "win32",
       },
     );
     this.child = child;
@@ -65,10 +83,25 @@ export class NativeSession {
         this.disconnect("exit");
         // Transport failure can precede process death. Always publish the distinct
         // close evidence, even when disconnect() has already closed the transport.
-        this.observe({ kind: "exited" });
-        resolve();
+        if (!child.pid) {
+          this.observe({ kind: "exited" });
+          resolve();
+          return;
+        }
+        void this.cleanupGroup().then((groupStopped) => {
+          this.observe({
+            kind: "exited",
+            ...(groupStopped ? {} : { groupStopped }),
+          });
+          resolve();
+        });
       }),
     );
+    child.once("exit", () => {
+      void this.cleanupGroup();
+    });
+    if (!this.options.entry && child.pid)
+      this.identity = await readProcessIdentity(child.pid);
     child.on("error", () => this.disconnect("spawn"));
     child.stdin.on("error", () => this.disconnect("write"));
     child.stdout.on("data", (bytes: Buffer) => {
@@ -107,6 +140,14 @@ export class NativeSession {
     }
   }
   private frame(frame: NativeFrame): void {
+    if (frame.type === "d_pi_native_bootstrap") {
+      if (frame.token !== this.token || !this.child?.pid) {
+        this.child?.stdin.end();
+        return;
+      }
+      void this.register();
+      return;
+    }
     if (frame.type === "ready") {
       this.ready?.resolve();
       this.ready = null;
@@ -126,6 +167,30 @@ export class NativeSession {
       }
     }
     this.observe({ kind: "frame", frame });
+  }
+  private async register(): Promise<void> {
+    const pid = this.child?.pid;
+    if (!pid) return;
+    try {
+      this.identity = await readProcessIdentity(pid);
+      const allowed =
+        !!this.identity &&
+        this.identity.parentPid === process.pid &&
+        this.identity.groupId === pid &&
+        ((await this.options.register?.(this.identity)) ?? true);
+      if (!this.closed && this.child)
+        this.child.stdin.write(
+          `${JSON.stringify({ type: "d_pi_native_permit", token: this.token, allowed })}\n`,
+        );
+    } catch {
+      this.child?.stdin.end();
+    }
+  }
+  private cleanupGroup(): Promise<boolean> {
+    this.groupCleanup ??= this.identity
+      ? terminateManagedGroup(this.identity)
+      : Promise.resolve(false);
+    return this.groupCleanup;
   }
   request(
     command: string,
@@ -182,6 +247,7 @@ export class NativeSession {
       return this.closePromise;
     child.stdin.end();
     const timer = setTimeout(() => {
+      void this.cleanupGroup();
       child.kill("SIGKILL");
     }, 3000);
     try {

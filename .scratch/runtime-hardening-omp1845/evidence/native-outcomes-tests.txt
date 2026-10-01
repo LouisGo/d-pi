@@ -1,0 +1,50 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/MySpace/Life/d-pi[39m
+
+ [32m✓[39m src/app/main/submission-receipt.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 90[2mms[22m[39m
+ [32m✓[39m tests/integration/submission-rejection-reason.integration.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 180[2mms[22m[39m
+ [32m✓[39m src/app/main/submission-storage.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 249[2mms[22m[39m
+ [32m✓[39m src/modules/execution/host/interactions.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 88[2mms[22m[39m
+ [32m✓[39m src/app/main/app-storage-init.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 36[2mms[22m[39m
+ [32m✓[39m tests/integration/submission-coordinator.integration.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 405[2mms[22m[39m
+   [33m[2m✓[22m[39m failed dispatch persistence writes nothing; duplicate dispatch writes once and late error keeps ACK[33m 316[2mms[22m[39m
+ [32m✓[39m src/modules/execution/renderer/submission-model.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m src/modules/execution/main/host-multiplex.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 63[2mms[22m[39m
+ [32m✓[39m src/app/main/storage.test.ts [2m([22m[2m10 tests[22m[2m)[22m[33m 466[2mms[22m[39m
+   [32m✓[39m real SQLite and directory service [2m(7)[22m
+     [33m[2m✓[22m[39m locked writer reports failure without overwriting draft[33m 307[2mms[22m[39m
+ [32m✓[39m src/app/renderer/receipt-status.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m tests/integration/prepared-recovery.integration.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 596[2mms[22m[39m
+ [32m✓[39m src/modules/execution/host/session-host.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 91[2mms[22m[39m
+ [32m✓[39m src/app/main/runtime-service.test.ts [2m([22m[2m23 tests[22m[2m)[22m[33m 748[2mms[22m[39m
+ [32m✓[39m src/modules/execution/renderer/runtime-model.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/integration/native-evidence-replay.integration.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 35[2mms[22m[39m
+ [32m✓[39m src/modules/execution/renderer/runtime-store.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/modules/execution/core/submission-admission.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 44[2mms[22m[39m
+ [32m✓[39m src/modules/execution/renderer/submission-store.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m src/modules/execution/contracts/submission.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 40[2mms[22m[39m
+ [32m✓[39m src/modules/execution/core/admission.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/modules/execution/core/target.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/platform/omp/protocol/native-frame.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/app/renderer/conversation-i18n.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32m✓[39m src/platform/omp/protocol/frame-decoder.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/modules/execution/contracts/interactions.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m src/modules/execution/renderer/submission-shortcut.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 2[2mms[22m[39m
+ [2m[90m↓[39m[22m src/modules/execution/host/native-smoke.test.ts [2m([22m[2m1 test[22m[2m | [22m[33m1 skipped[39m[2m)[22m
+ [32m✓[39m src/modules/execution/host/native-session.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 1671[2mms[22m[39m
+   [33m[2m✓[22m[39m negotiates v2, correlates commands and drains process output through EOF[33m 1243[2mms[22m[39m
+ [32m✓[39m src/app/renderer/submissions-renderer.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 51[2mms[22m[39m
+ [32m✓[39m tests/integration/runtime-causality.integration.test.ts [2m([22m[2m17 tests[22m[2m)[22m[33m 4493[2mms[22m[39m
+   [33m[2m✓[22m[39m replays bounded evidence in the same live Host after a SQLite failure without replaying prompt[33m 1238[2mms[22m[39m
+   [33m[2m✓[22m[39m idle cannot dispose unconfirmed terminal evidence after ACK was already committed[33m 669[2mms[22m[39m
+   [33m[2m✓[22m[39m a Host loss after Main write failure loses only memory evidence and reopens conservatively without resending[33m 2270[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m29 passed[39m[22m[2m | [22m[33m1 skipped[39m[90m (30)[39m
+[2m      Tests [22m [1m[32m210 passed[39m[22m[2m | [22m[33m1 skipped[39m[90m (211)[39m
+[2m   Start at [22m 12:29:35
+[2m   Duration [22m 4.93s[2m (tests 56%, import 25%, transform 16%, environment 4%, worker 1%)[22m
+
+[2m    Isolate [22m [33m30 workers spawned[39m[2m · ~120ms startup each (spawn + environment, per file)[22m
+[2m            [22m [2mat least ~279ms faster with [22m[33misolate: false[39m[2m — reuses workers across files instead of one per file[22m
+

@@ -1,0 +1,146 @@
+{
+  "verifiedAt": "2026-10-01T04:56:46Z",
+  "platform": "darwin-arm64",
+  "nodeVersion": "24.21.0",
+  "sdkVersion": "18.4.6",
+  "bunVersion": "1.3.14",
+  "mode": "packaged resources/sdk; no SOURCE override",
+  "sdkImportFixSha256": "a3c4976059a734851ab0c57010dc3be38bc23b81b993bcd75fc8bb6b7532f1d4",
+  "resourceHashes": {
+    "host.mjs": "e8d83890fdb36b4c52c866b895564602f094b2f0d6f17bf0fe1af95e172c8963",
+    "configuration.mjs": "f496f0e4daf0400be5813b0288db30a224303546fca83f29825417ee34af868c",
+    "configuration-readonly.mjs": "2bd9fa641c407796e59a6d093a72debde492e4462282a6c99b02fb0d87542c64",
+    "model-selection.mjs": "b60f93eeeb724840975f360c9b1670b267bd94606a3b509e5226c4a4a1cf37d8"
+  },
+  "scripts": [
+    {
+      "script": "validation/m2/configuration-readonly.mjs",
+      "exitCode": 0,
+      "output": {
+        "sdkVersion": "18.4.6",
+        "root": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-config-readonly-SpL4oi",
+        "checks": [
+          "legacy JSON, missing DB and command key without migration/helper/network",
+          "native external settings references are unavailable before file expansion",
+          "legacy settings are reported as unobserved without migration",
+          "explicit symlink configuration overlay is rejected",
+          "native yml before yaml before JSON priority",
+          "project default overrides global without execution trust",
+          "invalid model source remains visible without repair",
+          "symlink model source is unavailable without following it",
+          "old credential schema stays untouched and authentication is unknown",
+          "corrupt credential DB stays untouched without recovery",
+          "symlink credential DB is partial and unknown",
+          "corrupt catalog cache stays untouched",
+          "invalid project settings are not quarantined or rewritten"
+        ],
+        "realSupplierRequests": 0
+      }
+    },
+    {
+      "script": "validation/m2/configuration.mjs",
+      "exitCode": 0,
+      "output": {
+        "root": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-auth-BUX4Oa",
+        "sdkVersion": "18.4.6",
+        "models": 5353,
+        "checks": [
+          "isolated empty configuration",
+          "native normalization and GET validation",
+          "invalid key preserves previous credential",
+          "readonly native catalog composition after credential save"
+        ],
+        "realSupplierRequests": 0
+      }
+    },
+    {
+      "script": "validation/m2/model-capabilities.mjs",
+      "exitCode": 0,
+      "output": {
+        "sdkVersion": "18.4.6",
+        "samples": {
+          "deepseek": {
+            "provider": "deepseek",
+            "id": "deepseek-flash",
+            "thinking": {
+              "efforts": [
+                "low",
+                "high",
+                "max"
+              ],
+              "adjustable": true,
+              "requiresEffort": false,
+              "defaultEffort": null,
+              "defaultLevel": null
+            }
+          },
+          "minimal": {
+            "provider": "abliteration",
+            "id": "abliterated-model",
+            "thinking": {
+              "efforts": [
+                "minimal",
+                "low",
+                "medium",
+                "high",
+                "xhigh"
+              ],
+              "adjustable": true,
+              "requiresEffort": false,
+              "defaultEffort": null,
+              "defaultLevel": null
+            }
+          },
+          "fixed": {
+            "provider": "cline-pass",
+            "id": "cline-free/deepseek-v4.1-flash",
+            "thinking": {
+              "efforts": [],
+              "adjustable": false,
+              "requiresEffort": false,
+              "defaultEffort": null,
+              "defaultLevel": null
+            }
+          },
+          "required": {
+            "provider": "abliteration",
+            "id": "abliterated-model-large-v2",
+            "thinking": {
+              "efforts": [
+                "low",
+                "medium",
+                "high",
+                "xhigh",
+                "max"
+              ],
+              "adjustable": true,
+              "requiresEffort": true,
+              "defaultEffort": "max",
+              "defaultLevel": "max"
+            }
+          },
+          "plain": {
+            "provider": "aimlapi",
+            "id": "act_two",
+            "thinking": {
+              "efforts": [],
+              "adjustable": false,
+              "requiresEffort": false,
+              "defaultEffort": null,
+              "defaultLevel": null
+            }
+          }
+        },
+        "checks": [
+          "official metadata five categories",
+          "distinct default/off/effort through native ModelControls",
+          "native Agent reasoning disabled only by explicit off",
+          "required and invalid efforts rejected",
+          "native actual level readback",
+          "packaged Host d_pi_model result agrees with native get_state for five categories"
+        ],
+        "realSupplierRequests": 0
+      }
+    }
+  ]
+}

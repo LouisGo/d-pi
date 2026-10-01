@@ -93,7 +93,15 @@ function ReadyWorkbench({ model, editor }: AppProps) {
         {model.configuration && (
           <ConfigurationSettings
             bridge={model.configuration}
-            scope={thread?.key ?? null}
+            scope={
+              thread
+                ? {
+                    kind: "thread",
+                    threadId: thread.context.threadId,
+                    workingDirectoryId: thread.context.workingDirectoryId,
+                  }
+                : { kind: "application" }
+            }
           />
         )}
         <div className="work-content">

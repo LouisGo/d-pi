@@ -5,6 +5,7 @@ import type {
 } from "../../input/contracts/public";
 import {
   type FrozenSubmission,
+  type PromptResultObservation,
   SubmissionConflict,
   type SubmissionReceipt,
   SubmissionReceiptSchema,
@@ -110,7 +111,7 @@ export class SubmissionRepository {
     return this.database.transaction(() => {
       const rows = this.db
         .prepare(
-          "SELECT receipt FROM submission WHERE json_extract(receipt,'$.state')='dispatching' ORDER BY rowid",
+          "SELECT receipt FROM submission WHERE json_extract(receipt,'$.state') IN ('dispatching','acknowledged') ORDER BY rowid",
         )
         .all();
       let recovered = 0;
@@ -122,6 +123,13 @@ export class SubmissionRepository {
             state: "unknown",
             outcome: "unknown",
           });
+          recovered += 1;
+        } else if (
+          receipt.state === "acknowledged" &&
+          !receipt.promptResult &&
+          receipt.outcome === "unobserved"
+        ) {
+          this.writeReceipt({ ...receipt, outcome: "unknown" });
           recovered += 1;
         }
       }
@@ -149,6 +157,33 @@ export class SubmissionRepository {
           receipt.submissionId,
         );
       return true;
+    });
+  }
+  observePromptResult(id: string, result: PromptResultObservation): void {
+    this.database.transaction(() => {
+      const receipt = this.submission(id);
+      if (
+        !receipt ||
+        receipt.state === "prepared" ||
+        receipt.state === "rejected"
+      )
+        return;
+      // An observed native failure cannot be erased by a duplicate success.
+      if (receipt.promptResult?.status === "error") return;
+      const outcome =
+        receipt.outcome === "failed" || result.status === "error"
+          ? "failed"
+          : result.status;
+      if (receipt.state === "acknowledged") {
+        this.writeReceipt({ ...receipt, outcome, promptResult: result });
+      } else {
+        this.writeReceipt({
+          ...receipt,
+          state: "unknown",
+          outcome,
+          promptResult: result,
+        });
+      }
     });
   }
   submission(id: string): SubmissionReceipt | null {
@@ -185,12 +220,17 @@ export class SubmissionRepository {
       const receipt = this.submission(id);
       if (
         !receipt ||
+        receipt.promptResult ||
         (receipt.state !== "prepared" &&
           receipt.state !== "dispatching" &&
           receipt.state !== "unknown")
       )
         return;
-      const { rejectionReason: _previous, ...rest } = receipt;
+      const {
+        rejectionReason: _previous,
+        promptResult: _result,
+        ...rest
+      } = receipt;
       this.writeReceipt({
         ...rest,
         state: "rejected",
@@ -208,7 +248,10 @@ export class SubmissionRepository {
         receipt.state === "rejected"
       )
         return;
-      const outcome = receipt.outcome === "failed" ? "failed" : "unknown";
+      const outcome =
+        receipt.promptResult || receipt.outcome === "failed"
+          ? receipt.outcome
+          : "unknown";
       if (receipt.state === "acknowledged") {
         this.writeReceipt({ ...receipt, outcome });
       } else {

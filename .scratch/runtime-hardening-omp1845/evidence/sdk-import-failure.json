@@ -1,0 +1,12 @@
+{
+  "sdk": "18.4.5",
+  "bunTested": [
+    "1.3.14",
+    "1.4.2"
+  ],
+  "sourceSha256": "fbf3bd155f98fae22578a06798623d6364fd8ad09bd05c04efbc3d4f7d0dd699",
+  "proposedSha256": "64873f6159062ad0d69b1a9f21547bcb8f1033832cd2fbe1dae9d44d497d89f9",
+  "error": "Export named createRatchetPrelude not found in ratchet/prelude.js",
+  "applied": false,
+  "impact": "SDK import fails before createAgentSession"
+}

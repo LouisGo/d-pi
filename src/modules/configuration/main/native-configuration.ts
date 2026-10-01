@@ -3,13 +3,18 @@ import { randomUUID } from "node:crypto";
 import { createInterface } from "node:readline";
 import type { DiagnosticEvent } from "../../../platform/main/diagnostics/public";
 import { managedConfigurationRuntime } from "../../../platform/omp/resources/public";
+import type { ThreadReader } from "../../threads/contracts/public";
 import {
   type ConfigurationCommand,
   type ConfigurationEvent,
   ConfigurationEventSchema,
   type ConfigurationReply,
+  ConfigurationReplySchema,
+  type ConfigurationScope,
   ConfigurationSnapshotSchema,
+  type ConfigurationSource,
   ConfigurationTransportFrameSchema,
+  sameConfigurationScope,
 } from "../contracts/public";
 
 type Job = {
@@ -18,10 +23,16 @@ type Job = {
   url: string | null;
   cancelled: boolean;
   timedOut: boolean;
+  scope: ConfigurationScope;
+  traceId: string;
+  source: ConfigurationSource | null;
+  directory: string;
 };
 export class NativeConfiguration {
   private job: Job | null = null;
   private mutation = false;
+  private disposed = false;
+  private readonly environment: NodeJS.ProcessEnv;
   private readonly children = new Set<ChildProcessWithoutNullStreams>();
   private event: ConfigurationEvent | null = null;
   private challenge: Extract<ConfigurationEvent, { kind: "challenge" }> | null =
@@ -43,21 +54,32 @@ export class NativeConfiguration {
   }
   constructor(
     private readonly resources: string,
-    private readonly directory: () => string,
-    private readonly environment: NodeJS.ProcessEnv,
+    private readonly threads: Pick<ThreadReader, "threadContext">,
+    private readonly applicationDirectory: string,
+    environment: NodeJS.ProcessEnv,
     private readonly publish: (event: ConfigurationEvent) => void,
     private readonly open: (url: string) => Promise<void>,
     private readonly record: (event: DiagnosticEvent) => void = () => {},
-  ) {}
+  ) {
+    this.environment = { ...environment };
+  }
   async execute(command: ConfigurationCommand): Promise<ConfigurationReply> {
+    const scope: ConfigurationScope =
+      "scope" in command
+        ? command.scope
+        : (this.job?.scope ?? { kind: "application" });
+    let source: ConfigurationSource | null =
+      "scope" in command ? null : (this.job?.source ?? null);
+    const replyIdentity = () => ({ scope, traceId: command.traceId, source });
     const failure = (
       code: Extract<ConfigurationReply, { kind: "failed" }>["code"],
     ): ConfigurationReply => ({
       kind: "failed",
-      traceId: command.traceId,
+      ...replyIdentity(),
       code,
     });
     try {
+      if (this.disposed) return failure("configuration-unavailable");
       if (
         command.kind === "cancel" ||
         command.kind === "answer" ||
@@ -85,15 +107,42 @@ export class NativeConfiguration {
             return failure("unsafe-login-url");
           await this.open(url.href);
         }
-        return { kind: "done" };
+        return { kind: "done", ...replyIdentity() };
       }
       if (this.mutation && command.kind !== "snapshot")
         return failure("operation-in-progress");
       if (command.kind !== "snapshot") this.mutation = true;
+      const resolveDirectory = () => {
+        if (scope.kind === "application") return this.applicationDirectory;
+        const thread = this.threads.threadContext(scope.threadId);
+        if (thread.workingDirectoryId !== scope.workingDirectoryId)
+          throw Error("stale-target");
+        return thread.directory;
+      };
+      let directory: string;
+      try {
+        directory = resolveDirectory();
+      } catch {
+        if (command.kind !== "snapshot") this.mutation = false;
+        return failure("stale-target");
+      }
       const runtime = await managedConfigurationRuntime(this.resources);
+      try {
+        if (resolveDirectory() !== directory) throw Error("stale-target");
+      } catch {
+        if (command.kind !== "snapshot") this.mutation = false;
+        return failure("stale-target");
+      }
+      if (this.disposed) {
+        if (command.kind !== "snapshot") this.mutation = false;
+        return failure("configuration-unavailable");
+      }
       const child = spawn(runtime.binary, [runtime.entry], {
-        cwd: this.directory(),
-        env: this.environment,
+        cwd: directory,
+        env:
+          command.kind === "snapshot"
+            ? { ...this.environment, BUN_RUNTIME_TRANSPILER_CACHE_PATH: "0" }
+            : this.environment,
         stdio: ["pipe", "pipe", "pipe"],
       });
       this.children.add(child);
@@ -104,6 +153,10 @@ export class NativeConfiguration {
         url: null,
         cancelled: false,
         timedOut: false,
+        scope,
+        traceId: command.traceId,
+        source: null,
+        directory,
       };
       if (command.kind === "login") this.job = job;
       const context = {
@@ -141,34 +194,42 @@ export class NativeConfiguration {
           return;
         }
         const snapshot = ConfigurationSnapshotSchema.safeParse(raw);
-        if (snapshot.success) {
+        if (
+          snapshot.success &&
+          snapshot.data.traceId === command.traceId &&
+          sameConfigurationScope(snapshot.data.scope, scope) &&
+          snapshot.data.source.cwd === directory
+        ) {
+          source = snapshot.data.source;
+          job.source = source;
           reply = snapshot.data;
           return;
         }
         const event = ConfigurationEventSchema.safeParse(raw);
-        if (event.success && event.data.jobId === job.id) {
+        if (
+          event.success &&
+          event.data.jobId === job.id &&
+          event.data.traceId === command.traceId &&
+          sameConfigurationScope(event.data.scope, scope) &&
+          event.data.source?.cwd === directory
+        ) {
+          source = event.data.source;
+          job.source = source;
           if (event.data.kind === "challenge") job.url = event.data.url;
           this.announce(event.data);
           return;
         }
+        const result = ConfigurationReplySchema.safeParse(raw);
         if (
-          typeof raw === "object" &&
-          raw &&
-          "kind" in raw &&
-          raw.kind === "done"
-        )
-          reply = { kind: "done" };
-        else if (
-          typeof raw === "object" &&
-          raw &&
-          "kind" in raw &&
-          raw.kind === "failed"
-        )
-          reply = failure(
-            "code" in raw && raw.code === "authentication-failed"
-              ? "authentication-failed"
-              : "configuration-unavailable",
-          );
+          result.success &&
+          result.data.traceId === command.traceId &&
+          sameConfigurationScope(result.data.scope, scope) &&
+          (result.data.source === null || result.data.source.cwd === directory)
+        ) {
+          source = result.data.source;
+          job.source = source;
+          reply = result.data;
+        }
       });
       const completed = new Promise<ConfigurationReply>((resolve) => {
         const timer = setTimeout(
@@ -189,6 +250,9 @@ export class NativeConfiguration {
             this.announce({
               kind: "finished",
               jobId: job.id,
+              scope,
+              traceId: command.traceId,
+              source,
               result: job.cancelled
                 ? "cancelled"
                 : job.timedOut
@@ -197,6 +261,16 @@ export class NativeConfiguration {
                     ? "saved"
                     : "failed",
             });
+          // An interactive job stays bound to its original source after start;
+          // snapshots and one-shot writes must still return to a live target.
+          if (command.kind !== "login") {
+            try {
+              if (resolveDirectory() !== directory)
+                reply = failure("stale-target");
+            } catch {
+              reply = failure("stale-target");
+            }
+          }
           this.record({
             ...context,
             stage: reply.kind === "failed" ? "failed" : "confirmed",
@@ -214,14 +288,21 @@ export class NativeConfiguration {
       child.stdin.write(
         JSON.stringify(
           command.kind === "login"
-            ? { kind: "login", jobId: job.id, traceId: command.traceId }
+            ? { kind: "login", jobId: job.id, scope, traceId: command.traceId }
             : command,
         ) + "\n",
       );
       if (command.kind === "login") {
-        this.announce({ kind: "progress", jobId: job.id, message: "" });
+        this.announce({
+          kind: "progress",
+          jobId: job.id,
+          scope,
+          traceId: command.traceId,
+          source,
+          message: "",
+        });
         void completed;
-        return { kind: "started", jobId: job.id };
+        return { kind: "started", jobId: job.id, ...replyIdentity() };
       }
       return await completed;
     } catch {
@@ -231,6 +312,7 @@ export class NativeConfiguration {
     }
   }
   dispose(): void {
+    this.disposed = true;
     if (this.job) this.job.cancelled = true;
     for (const child of this.children) child.kill();
   }

@@ -73,6 +73,10 @@ export function Composer({
       ...plainTextEditorOptions,
       extensions: [...plainTextEditorOptions.extensions, UrlDecoration],
       content: initialDocument,
+      onBeforeCreate: ({ editor }) => {
+        plainTextEditorOptions.onBeforeCreate({ editor });
+        model.draftEditors.bind(editor, thread.key, controller);
+      },
       editorProps: {
         handlePaste: paste.handlePaste,
         handleKeyDown: (view, event) => {
@@ -117,8 +121,6 @@ export function Composer({
           spellcheck: "false",
         },
       },
-      onUpdate: ({ editor }) =>
-        controller.edit(editor.getText({ blockSeparator: "\n" })),
     },
     [controller],
   );
@@ -173,6 +175,7 @@ export function Composer({
       replaceDraftText(editor, ""),
     );
     return () => {
+      model.draftEditors.capture(editor);
       detachBoundary();
       detachEditor?.();
     };

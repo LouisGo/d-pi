@@ -1,0 +1,59 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/MySpace/Life/d-pi[39m
+
+ [31m❯[39m src/modules/execution/host/session-host.test.ts [2m([22m[2m23 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 34[2mms[22m[39m
+   [32m✓[39m does not close from an idle query overtaken by observed background activity[32m 5[2mms[22m[39m
+   [32m✓[39m without a fresh state query refuses close-idle while last known control shows background activity[32m 0[2mms[22m[39m
+   [32m✓[39m forwards unknown host frames without treating them as interactions[32m 0[2mms[22m[39m
+   [32m✓[39m answers timed-out questions with the timeout default while confirm dialogs keep blocking[32m 2[2mms[22m[39m
+   [32m✓[39m fires the default just before a short native timeout[32m 1[2mms[22m[39m
+   [32m✓[39m publishes the timeout default as one sent+flagged snapshot[32m 1[2mms[22m[39m
+   [32m✓[39m never auto-answers confirm with a native timeout; expiry is shown truthfully[32m 0[2mms[22m[39m
+   [32m✓[39m keeps a confirm without native timeout pending past the 120s fallback[32m 0[2mms[22m[39m
+   [32m✓[39m honors a long native timeout instead of answering at the 120s fallback[32m 1[2mms[22m[39m
+   [32m✓[39m refreshes the last known control from stop/continue replies so close-idle unblocks[32m 1[2mms[22m[39m
+   [32m✓[39m acknowledges a superseded control call without applying its stale state (A9 lock)[32m 0[2mms[22m[39m
+   [32m✓[39m independent Host owners isolate native output, prompt timers and idle disposal[32m 2[2mms[22m[39m
+   [32m✓[39m dismisses an unknown dialog locally and reports acknowledged without a native write[32m 0[2mms[22m[39m
+   [32m✓[39m keeps correlation expiry out of conversation frames while retaining submission uncertainty[32m 1[2mms[22m[39m
+   [32m✓[39m labels a rejected submission with a stable host reason[32m 0[2mms[22m[39m
+   [32m✓[39m reports the not-ready dispatch gate[32m 0[2mms[22m[39m
+   [32m✓[39m reports the native-unavailable dispatch gate[32m 0[2mms[22m[39m
+   [32m✓[39m reports the paused dispatch gate[32m 0[2mms[22m[39m
+   [32m✓[39m reports the interaction-pending dispatch gate[32m 0[2mms[22m[39m
+   [32m✓[39m reports the stale-target dispatch gate[32m 0[2mms[22m[39m
+   [32m✓[39m reports the correlation-limit dispatch gate[32m 2[2mms[22m[39m
+   [32m✓[39m bounds unconfirmed evidence, reports cache pressure and only replays facts[32m 9[2mms[22m[39m
+[31m   [31m×[31m duplicate native ACKs cannot exhaust the live evidence cache and cause its terminal to be lost[39m[32m 5[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/modules/execution/host/session-host.test.ts[2m > [22mduplicate native ACKs cannot exhaust the live evidence cache and cause its terminal to be lost
+[31m[1mAssertionError[22m: expected "vi.fn()" to not be called at all, but actually been called 1 times[90m
+
+Received:
+
+[1m  1st vi.fn() call:
+
+[22m    Array []
+[31m[90m
+
+Number of calls: [1m1[22m
+[31m[39m
+[36m [2m❯[22m src/modules/execution/host/session-host.test.ts:[2m1149:28[22m[39m
+    [90m1147|[39m   await host.handle({ kind: "state" });
+    [90m1148|[39m   await host.handle({ kind: "close-idle" });
+    [90m1149|[39m   expect(native.close).not.toHaveBeenCalled();
+    [90m   |[39m                            [31m^[39m
+    [90m1150|[39m   expect(messages).toContainEqual({ kind: "failed", code: "active-work…
+    [90m1151|[39m   native.observers[0]?.({ kind: "exited" });
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m22 passed[39m[22m[90m (23)[39m
+[2m   Start at [22m 12:22:14
+[2m   Duration [22m 308ms[2m (transform 59%, import 25%, tests 14%, worker 1%)[22m
+

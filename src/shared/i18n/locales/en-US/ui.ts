@@ -1,4 +1,10 @@
 export const ui = {
+  "config.authUnknown": "Authentication status unavailable",
+  "config.partial":
+    "Some native configuration sources could not be safely read. Refresh after the native source is available.",
+  "model.defaultThinking": "Native default",
+  "model.offThinking": "Reasoning off",
+  "model.reason.configuration-unknown": "Configuration unavailable",
   "config.heading": "Configuration & sign in",
   "config.description":
     "Reuse native OMP configuration. Sign in, choose a model, then allow project execution and start the session.",
@@ -157,6 +163,10 @@ export const ui = {
   "ui.submissions.prepared": "Saved, not dispatched",
   "ui.submissions.dispatching": "Dispatched, awaiting receipt",
   "ui.submissions.unknown": "Result unknown",
+  "ui.submissions.outcomeCompleted": " · Native prompt completed",
+  "ui.submissions.outcomeAborted": " · Native prompt aborted",
+  "ui.interaction.followUpCompleted": "Native prompt completed",
+  "ui.interaction.followUpAborted": "Native prompt aborted",
   "ui.submissions.outcomeFailed": " · Native call failed",
   "ui.submissions.outcomeUnknown": " · Later result unknown",
   "ui.submissions.retryOf": "Explicit resend, source: {id}",

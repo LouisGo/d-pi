@@ -283,3 +283,85 @@ it("reports correlated safe stages and typed failures without logging frozen tex
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+it("persists prompt evidence before ACK without consuming the draft, then preserves it across restart", () => {
+  const dir = mkdtempSync(join(tmpdir(), "d-pi-prompt-result-"));
+  const path = join(dir, "app.sqlite");
+  let store = AppStorage.open(path);
+  try {
+    const draft = store.drafts.create(dir);
+    store.drafts.save(draft.threadId, 0, "frozen");
+    const value = FrozenSubmissionSchema.parse({
+      submissionId: randomUUID(),
+      threadId: draft.threadId,
+      traceId: randomUUID(),
+      revision: 1,
+      text: "frozen",
+      requestId: randomUUID(),
+      target: {
+        processInstanceId: randomUUID(),
+        connectionGeneration: randomUUID(),
+        configContextId: "fixture",
+        nativeSessionRef: "native",
+      },
+    });
+    const writes: string[] = [];
+    const coordinator = new SubmissionCoordinator(store.submissions, {
+      isCurrentTarget: () => true,
+      canDispatch: () => true,
+      write: (_value, frame) => writes.push(frame),
+    });
+    coordinator.prepare(value);
+    coordinator.dispatch(value.submissionId);
+    const identity = {
+      submissionId: value.submissionId,
+      requestId: value.requestId,
+      target: value.target,
+    };
+    const terminal = {
+      ...identity,
+      kind: "prompt-result" as const,
+      status: "completed" as const,
+      agentInvoked: true,
+      sessionSettled: false,
+    };
+    expect(coordinator.receive(terminal)).toMatchObject({
+      kind: "receipt",
+      receipt: {
+        state: "unknown",
+        outcome: "completed",
+        promptResult: { status: "completed", sessionSettled: false },
+      },
+    });
+    expect(store.drafts.read(draft.threadId).text).toBe("frozen");
+    expect(
+      coordinator.receive({
+        ...identity,
+        kind: "rejected",
+        reason: "stale-target",
+      }),
+    ).toMatchObject({
+      kind: "receipt",
+      receipt: { state: "unknown", outcome: "completed" },
+    });
+    coordinator.receive({ ...identity, kind: "ack" });
+    expect(store.drafts.read(draft.threadId).text).toBe("");
+    coordinator.receive(terminal);
+    expect(writes).toHaveLength(1);
+    store.close();
+    store = AppStorage.open(path);
+    expect(store.submissions.submission(value.submissionId)).toMatchObject({
+      state: "acknowledged",
+      outcome: "completed",
+      promptResult: {
+        source: "native-prompt-result",
+        agentInvoked: true,
+        sessionSettled: false,
+      },
+      text: "frozen",
+    });
+  } finally {
+    store.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

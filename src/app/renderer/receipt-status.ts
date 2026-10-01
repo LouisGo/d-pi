@@ -71,6 +71,14 @@ export function receiptStatusKey(receipt: ReceiptStatus): MessageKey {
     )
     .with({ state: "unknown" }, () => "ui.interaction.followUpUnknown" as const)
     .with(
+      { state: "acknowledged", outcome: "completed" },
+      () => "ui.interaction.followUpCompleted" as const,
+    )
+    .with(
+      { state: "acknowledged", outcome: "aborted" },
+      () => "ui.interaction.followUpAborted" as const,
+    )
+    .with(
       { state: "acknowledged", outcome: "unobserved" },
       () => "ui.interaction.followUpAcknowledged" as const,
     )
@@ -87,6 +95,8 @@ export function receiptNeedsAttention(receipt: ReceiptStatus): boolean {
   return (
     receipt.state === "rejected" ||
     receipt.state === "unknown" ||
-    (receipt.state === "acknowledged" && receipt.outcome !== "unobserved")
+    (receipt.state === "acknowledged" &&
+      receipt.outcome !== "unobserved" &&
+      receipt.outcome !== "completed")
   );
 }

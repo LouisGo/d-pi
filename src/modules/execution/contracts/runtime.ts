@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { ThreadIdSchema, TraceIdSchema } from "../../../shared/identity";
 import { UiMessageSchema } from "../../../shared/messages/contracts";
+import { ThinkingSelectionSchema } from "../../configuration/contracts/public";
 import { ControlCommandSchema, ControlStateSchema } from "./control";
 import {
   AnswerCommandSchema,
@@ -10,15 +11,7 @@ import {
 export const ModelSelectionSchema = z.strictObject({
   provider: z.string().min(1).max(256),
   modelId: z.string().min(1).max(512),
-  thinkingLevel: z.enum([
-    "off",
-    "minimal",
-    "low",
-    "medium",
-    "high",
-    "xhigh",
-    "max",
-  ]),
+  thinking: ThinkingSelectionSchema,
 });
 export const SelectModelCommandSchema = z.strictObject({
   kind: z.literal("select-model"),
@@ -56,6 +49,7 @@ export const RuntimeViewSchema = z.strictObject({
   ]),
   trusted: z.boolean(),
   busy: z.boolean(),
+  evidenceCoverage: z.enum(["complete", "gap"]).optional(),
   model: z.string().nullable(),
   selectedModel: ModelSelectionSchema.optional(),
   thinkingLevel: z.string().optional(),

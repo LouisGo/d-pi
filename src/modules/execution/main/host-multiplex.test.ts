@@ -35,6 +35,7 @@ it("one utility process routes two independent scopes and one scope exit leaves 
     b = new HostConnection(receiveB, exitB);
   const pa = a.start(ca, () => {}),
     pb = b.start(cb, () => {});
+  await vi.waitFor(() => expect(process.postMessage).toHaveBeenCalledTimes(2));
   const ready = (c: HostStart) => ({
     scopeId: c.processInstanceId,
     message: {
