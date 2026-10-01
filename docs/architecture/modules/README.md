@@ -1,8 +1,8 @@
 # 模块地图与设计入口
 
-日期：2026-09-29。状态：领域目录治理 P0–P4 原交付经独立 review 补齐边界并完成验证，交接记录见[领域治理交接](../../../.scratch/domain-directory-governance/handoff.md)；用户试用状态仍独立记录，未因目录迁移或修复而认可产品体验。模块边界可随有证据的实现反馈调整，变更已确认决定仍按[决定登记](../../decisions.md)处理。依据 D-02–D-16、D-20–D-37；全量目标和阶段以[基础方案](../../product/first-release.md)为准。
+日期：2026-10-01。状态：领域目录治理 P0–P4 原交付经独立 review 补齐边界并完成验证，交接记录见[领域治理交接](../../../.scratch/domain-directory-governance/handoff.md)；本页已补当前 M2 configuration 落点，用户试用状态仍独立记录，未因目录迁移或修复而认可产品体验。模块边界可随有证据的实现反馈调整，变更已确认决定仍按[决定登记](../../decisions.md)处理。依据 D-02–D-16、D-20–D-37；全量目标和阶段以[基础方案](../../product/first-release.md)为准。
 
-本目录把已有合同落实到模块：谁拥有状态、向谁请求能力、怎样交接、失败后由谁恢复。它不另建一套产品规格，也不要求一个模块对应一个包、类或进程。近期深入 M1，M3 模块只确定能独立理解的边界及启动条件。
+本目录把已有合同落实到模块：谁拥有状态、向谁请求能力、怎样交接、失败后由谁恢复。它不另建一套产品规格，也不要求一个模块对应一个包、类或进程。当前功能推进见 M2 所属规格，M3 模块只确定能独立理解的边界及启动条件。
 
 ## 当前代码落点
 
@@ -14,12 +14,13 @@
 | `src/modules/changes/` | Git 只读合同、读取实现与 Renderer 查询面；复用 files 的公开读取能力，不推断作者或写 Git |
 | `src/modules/threads/` | Thread、目录身份、项目选择、执行信任和原生记录绑定；`main/public.ts` 提供应用组合入口 |
 | `src/modules/preferences/` | App 主题、密度、发送方式和 locale 合同/仓储/Renderer provider；不拥有 OMP 配置 |
+| `src/modules/configuration/` | 原生配置摘要、认证命令/临时 job 和 Renderer 查询/设置桥接；OMP 拥有配置与凭据，读取身份和隐含写入的待修范围见[加固规格](../../../.scratch/runtime-hardening-omp1845/spec.md) |
 | `src/modules/conversation/` | 实时阅读合同、核心订阅模型、Host 投影/端口作用域和原生历史读取；不启动或恢复执行 |
 | `src/modules/execution/` | 提交收据、准入、控制、交互、Host/OMP 适配和 Renderer 镜像；不复制 OMP 队列或历史，也不构造阅读模型 |
 | `src/app/` | Main/Host/Preload/Renderer 入口、跨域事务组合、桌面桥和 workbench；不复制领域真相 |
 | `src/platform/` | SQLite、诊断、真实路径、OMP 协议/资源和消费门控等技术适配；不承载产品用例 |
 | `src/shared/` | 稳定身份、消息 DTO、i18n formatter/catalog 和纯文本基础；Node 文件系统能力已归 `platform/node` |
-| `runtime/` | 随包 OMP/SDK 的薄宿主入口 `host.mjs`；不承载产品用例 |
+| `runtime/` | 随包 OMP/SDK 的薄宿主 `host.mjs` 和短生命周期配置/认证适配 `configuration.mjs`；不承载产品用例 |
 
 这是按功能与进程边界共同组织的单应用结构。机器边界单源为 [`architecture/modules.json`](../../../architecture/modules.json)，规则入口为 `pnpm check:architecture`，目录与依赖的稳定规则见[源码目录与依赖边界](../source-layout.md)；结构报告只提供维护提示，不把行数变成硬门槛。Thread 表自 v1 起保存草稿字段（schema 现为 v5），不因代码职责拆分而进行无收益的物理表迁移；恢复/控制行为继续按 S3 合同演进。`architecture/modules.json` 同时声明领域模块、`src/app`、`src/platform`、`src/shared` 和 `runtime` 的源码归属；报告应显示 `ownership=all-source-files`、`unowned=0`，以及 `checked=configured-module-files`、`owned-only=0`，例外清单为空。
 
@@ -55,13 +56,13 @@ P1 落地的跨模块路径有两条：`files → input`（选区冻结与引用
 | [内置浏览器](browser.md) | 无（M3 设计，未登记模块） | 预览、标签页、共享持久登录与后续 AI 操作 | M3 边界；不阻塞首版登录 |
 | [集成终端](terminal.md) | 无（M3 设计，未登记模块） | 用户终端会话、进程、输入输出和释放 | M3 边界；不接管 OMP 工具命令 |
 
-模块页名是能力名，不等于 `architecture/modules.json` 的领域模块名，也不一一对应源码目录：`threads`、`files-editor`→`files`、`input-context`→`input`、`changes-git`→`changes` 是同一领域的不同称呼；`runtime-host` 与 `app-storage` 跨 `runtime`/`execution`/`platform`/`app` 组合；`configuration`、`side-chat`、`browser`、`terminal` 在机器清单中没有同名模块。领域模块与环境依赖的机器单源始终是 [`architecture/modules.json`](../../../architecture/modules.json)。
+模块页名是能力名，不等于 `architecture/modules.json` 的领域模块名，也不一一对应源码目录：`threads`、`files-editor`→`files`、`input-context`→`input`、`changes-git`→`changes` 是同一领域的不同称呼；`runtime-host` 与 `app-storage` 跨 `runtime`/`execution`/`platform`/`app` 组合；`configuration` 已是机器清单中的领域模块，`side-chat`、`browser`、`terminal` 尚没有同名模块。领域模块与环境依赖的机器单源始终是 [`architecture/modules.json`](../../../architecture/modules.json)。
 
 所有模块都遵守[无头功能合同](../headless-features.md)：规则、协调、查询投影、React 绑定和视图按实际需要分工。模块的业务逻辑不因页面卸载而结束，DOM/编辑器等视图资源则应及时释放。
 
 ## 核心模块的主要能力依赖
 
-箭头表示左侧使用右侧能力或已确认数据，不是进程通信方向、事件传播方向或强制实施顺序。回调和结果返回不构成反向代码依赖；在相应作用域组装窄接口。这里只画影响拆分的主要依赖，具体交接见各模块页。图中的中文名是能力标签而非 `modules.json` 的模块名：`配置与模型能力` 跨 `platform/omp` 与 `execution`，没有同名模块；`变化记录与 Git → 执行记录与阅读` 目前是尚未实现的交接意图，`changes` 的合同还没有工具来源字段，工具证据仍由阅读侧呈现。
+箭头表示左侧使用右侧能力或已确认数据，不是进程通信方向、事件传播方向或强制实施顺序。回调和结果返回不构成反向代码依赖；在相应作用域组装窄接口。这里只画影响拆分的主要依赖，具体交接见各模块页。图中的中文名是能力标签而非 `modules.json` 的模块名：`配置与模型能力` 由 `configuration`、`platform/omp` 和 `execution` 的相应入口组合；`变化记录与 Git → 执行记录与阅读` 目前是尚未实现的交接意图，`changes` 的合同还没有工具来源字段，工具证据仍由阅读侧呈现。
 
 ```mermaid
 flowchart TB

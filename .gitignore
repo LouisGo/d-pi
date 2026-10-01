@@ -3,6 +3,7 @@ out/
 dist/
 .DS_Store
 *.log
+/.archify/
 
 # Managed official Runtime binary; reproducible through scripts/fetch-runtime.mjs.
 /resources/omp/omp

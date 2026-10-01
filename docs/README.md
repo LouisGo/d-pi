@@ -21,7 +21,7 @@
 
 ## 工作记录
 
-当前工作从固定[项目总看板](status.md)进入[基建收口规格](../.scratch/infrastructure-closure/spec.md)。[重写准备与执行](../.scratch/rewrite-preparation/spec.md)保留其交付范围与试用状态，对应构建与试用步骤见[重写交接](../.scratch/rewrite-preparation/handoff.md)；[M1 开发准备](../.scratch/development-foundation/spec.md)保存阶段和跨模块责任。各切片范围、授权、工程状态、试用及继续边界直接读取所属规格：
+当前工作从固定[项目总看板](status.md)进入[M2 首版规格](../.scratch/m2-first-release/spec.md)。[OMP 18.4.5 升级与边界加固](../.scratch/runtime-hardening-omp1845/spec.md)是 2026-10-01 用户已认可、待新会话实施的方案，尚未替换运行资源。[基建收口](../.scratch/infrastructure-closure/spec.md)与[重写准备与执行](../.scratch/rewrite-preparation/spec.md)保留原交付范围与试用状态，对应重写构建见[重写交接](../.scratch/rewrite-preparation/handoff.md)；[M1 开发准备](../.scratch/development-foundation/spec.md)保存阶段和跨模块责任。各切片范围、授权、工程状态、试用及继续边界直接读取所属规格：
 
 - [S1 项目与草稿](../.scratch/m1-s1-project-draft/spec.md)、[S1 巩固](../.scratch/m1-s1-project-draft/hardening.md)、[S2 提交与阅读](../.scratch/m1-s2-submit-read/spec.md)。
 - [S3 控制与恢复](../.scratch/m1-s3-control-recovery/spec.md)、[i18n 基础](../.scratch/i18n-foundation/spec.md)、[S4 文件与差异](../.scratch/m1-s4-files-diff/spec.md)、[S5 组合验收](../.scratch/m1-s5-combination-acceptance/spec.md)。

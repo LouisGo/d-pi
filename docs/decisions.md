@@ -1,6 +1,8 @@
 # 产品与技术决定登记
 
-更新：2026-09-30。本页是现行决定、状态、依据与取代关系的索引；详细行为以所链接合同为准。领域定义见 [CONTEXT](../CONTEXT.md)，界面用词见[产品术语](product-terminology.md)，完整需求与阶段见[需求](product/requirements.md)及[首版方案](product/first-release.md)。授权、工程完成、用户试用与认可由[所属规格](README.md#工作记录)维护，不由决定状态推导。
+更新：2026-10-01。本页是现行决定、状态、依据与取代关系的索引；详细行为以所链接合同为准。领域定义见 [CONTEXT](../CONTEXT.md)，界面用词见[产品术语](product-terminology.md)，完整需求与阶段见[需求](product/requirements.md)及[首版方案](product/first-release.md)。授权、工程完成、用户试用与认可由[所属规格](README.md#工作记录)维护，不由决定状态推导。
+
+2026-10-01：用户明确将 OMP 升级目标固定为 **v18.4.5**，并认可[升级与边界加固规格](../.scratch/runtime-hardening-omp1845/spec.md)的完整推荐范围，包含编辑连续性；允许合理分工与适量 sub agent 并行实施。沿用 D-02/D-03 的官方 SDK 薄宿主与原生配置所有权，不改 D-08 并发与 D-24 冷恢复边界。当前实装仍为 18.3.0，方案认可不代表实现或产品试用完成；本会话先提交工作区，实施在新会话开始。
 
 ## 状态与变更规则
 

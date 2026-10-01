@@ -19,6 +19,8 @@
 
 当前固定基线为 OMP 18.3.0 / Bun 1.3.14，声明和安装结果以 `package.json`、锁文件及 `pnpm check:environment` 为准。以下层次各自证明不同问题，不互相替代：
 
+2026-10-01 用户已明确升级目标 v18.4.5，并认可[专属规格](../../.scratch/runtime-hardening-omp1845/spec.md)与[升级顺序](../../.scratch/runtime-hardening-omp1845/upgrade.md)；实施在新会话开始，当前基线尚未替换。新版原生结果/队列能力、只读配置和资源一致性一起核对，不能只更换依赖版本。
+
 | 层次 | 入口 | 覆盖与限制 |
 | --- | --- | --- |
 | 协议与应用行为回归 | `pnpm test`；[Decoder](../../src/platform/omp/protocol/frame-decoder.test.ts)、[原生 payload](../../src/platform/omp/protocol/native-frame.test.ts)、[收据/Host 集成](../../tests/integration/runtime-host.integration.test.ts) | 帧大小、碎片、开放字段、身份、ACK 后失败、事务和 unknown 不自动重发；模拟原生进程的测试不证明官方 SDK 当前行为。 |
@@ -32,9 +34,9 @@
 
 ## 资源失败与兼容边界
 
-`pnpm runtime:sdk` 核对已安装包与声明版本，从受管理 pnpm store 复制锁定依赖并生成 manifest；`pnpm check:environment` 核对声明、随包包元数据、lockHash、平台、必要文件和三个启动资源的 SHA-256。[启动校验](../../src/platform/omp/resources/sdk-resource.ts)拒绝固定版本/平台不符、缺失、不可执行或被改动的 launcher，返回 `resource-incompatible`，不执行未知资源、不搜索外部 CLI 回退。
+`pnpm runtime:sdk` 核对已安装包与声明版本，从受管理 pnpm store 复制锁定依赖并生成 manifest；`pnpm check:environment` 核对声明、随包包元数据、lockHash、平台、必要文件和启动资源的 SHA-256。[启动校验](../../src/platform/omp/resources/sdk-resource.ts)拒绝固定版本/平台不符、缺失、不可执行或被改动的 launcher，返回 `resource-incompatible`，不执行未知资源、不搜索外部 CLI 回退。
 
-manifest 目前校验 Bun、薄宿主和 gate 三个文件；依赖闭包由冻结安装与准备过程提供，不是全闭包签名或发布完整性保证。SDK 错误的具体原因不能从通用 `resource-incompatible` 推断，开发环境用环境检查定位并重新准备；随包缺损重新取得完整应用，不自行迁移未知外部配置。
+manifest 目前校验 Bun、薄宿主、gate 和 configuration.mjs 四个文件；依赖闭包由冻结安装与准备过程提供，不是全闭包签名或发布完整性保证。SDK 错误的具体原因不能从通用 `resource-incompatible` 推断，开发环境用环境检查定位并重新准备；随包缺损重新取得完整应用，不自行迁移未知外部配置。
 
 原生事件使用开放 envelope，未知事件和未消费字段不会被升级成可信 App 命令。App 消费的 payload 字段才做类型校验；非法分片、预算超限或截断导致协议断链，不能当成成功结束。资源校验、schema 成功、调用 ACK 均不证明业务接受或执行完成。
 

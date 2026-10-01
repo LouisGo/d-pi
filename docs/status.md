@@ -19,6 +19,7 @@
 | 基建 | [领域目录治理](../.scratch/domain-directory-governance/spec.md) | 工程完成 | 不适用 | 不适用 | — [证据1](../.scratch/domain-directory-governance/handoff.md) | 沿用模块机器清单，目录规模不作为硬门槛 |
 | 基建 | [国际化基础](../.scratch/i18n-foundation/spec.md) | 工程完成 | 已交付待试用 | 待认可 | 0.1.0-i18n.0 [证据1](../.scratch/i18n-foundation/handoff.md) | 等待热切换与输入体验反馈 |
 | 基建 | [S5 前基建收口](../.scratch/infrastructure-closure/spec.md) | 工程完成 | 未交付 | 不适用 | 3285474e-dirty-1f488792（工程安全候选） [证据1](../.scratch/infrastructure-closure/handoff.md) | 本轮已完成；S5 按新授权进入所属规格，M2 未启动 |
+| 基建 | [OMP 18.4.5 升级与运行时边界加固](../.scratch/runtime-hardening-omp1845/spec.md) | 未实施 | 未交付 | 待认可 | — [证据1](../.scratch/runtime-hardening-omp1845/evidence.md) | 用户已认可完整方案；新会话按 01→02/03/04→06 实施，05 可独立并行并纳入集成验收 |
 | 基建 | [核心重写及外观补修](../.scratch/rewrite-preparation/spec.md) | 工程完成 | 已交付待试用 | 待认可 | 441b27b4-1525b713 / 2b1990fa-6a10f88e [证据1](../.scratch/rewrite-preparation/handoff.md) · [证据2](../.scratch/rewrite-preparation/issues/09-appearance-performance.md) | 构建继续待试用；当前实施转到基建收口 |
 | 基建 | [状态与查询对齐](../.scratch/state-query-alignment/spec.md) | 工程完成 | 已交付待试用 | 待认可 | 441b27b4-1525b713（随重写包） [证据1](../.scratch/rewrite-preparation/handoff.md) · [证据2](../.scratch/state-query-alignment/issues/04-integration-verification.md) | 04 含试用验收，继续 claimed 等待反馈 |
 
@@ -37,6 +38,12 @@
 | [m2-first-release / 04 输入与附件](../.scratch/m2-first-release/issues/04-input-attachments.md) | claimed | 无；范围以所属规格为准 |
 | [m2-first-release / 05 队列与子 Agent](../.scratch/m2-first-release/issues/05-queue-subagent.md) | open | 无；范围以所属规格为准 |
 | [m2-first-release / 06 阅读与组合验收](../.scratch/m2-first-release/issues/06-reading-acceptance.md) | open | 无；范围以所属规格为准 |
+| [runtime-hardening-omp1845 / 01 固定 SDK 18.4.5 与随包资源一致性](../.scratch/runtime-hardening-omp1845/issues/01-upgrade-resources.md) | open | 无；范围以所属规格为准 |
+| [runtime-hardening-omp1845 / 02 配置身份、只读读取与模型能力修复](../.scratch/runtime-hardening-omp1845/issues/02-configuration-contract.md) | open | [01](../.scratch/runtime-hardening-omp1845/issues/01-upgrade-resources.md) |
+| [runtime-hardening-omp1845 / 03 接入原生 prompt 结果与有限持久证据](../.scratch/runtime-hardening-omp1845/issues/03-native-outcomes.md) | open | [01](../.scratch/runtime-hardening-omp1845/issues/01-upgrade-resources.md) |
+| [runtime-hardening-omp1845 / 04 真实进程故障验证与必要监督修复](../.scratch/runtime-hardening-omp1845/issues/04-process-supervision.md) | open | [01](../.scratch/runtime-hardening-omp1845/issues/01-upgrade-resources.md) |
+| [runtime-hardening-omp1845 / 05 窗口内跨 Thread 编辑连续性](../.scratch/runtime-hardening-omp1845/issues/05-editor-continuity.md) | open | 无；范围以所属规格为准 |
+| [runtime-hardening-omp1845 / 06 契约同步、集成验证与本地候选](../.scratch/runtime-hardening-omp1845/issues/06-integration-handoff.md) | open | [02](../.scratch/runtime-hardening-omp1845/issues/02-configuration-contract.md)、[03](../.scratch/runtime-hardening-omp1845/issues/03-native-outcomes.md)、[04](../.scratch/runtime-hardening-omp1845/issues/04-process-supervision.md)、[05](../.scratch/runtime-hardening-omp1845/issues/05-editor-continuity.md) |
 | [state-query-alignment / 04 集成验证与试用交接](../.scratch/state-query-alignment/issues/04-integration-verification.md) | claimed | 无；范围以所属规格为准 |
 
 ## 重要待决与继续边界
@@ -47,7 +54,8 @@
 - [S5 组合验收](../.scratch/m1-s5-combination-acceptance/spec.md)：不 push、不公开发布、不扩 M2/M3；冷恢复只读，unknown 不自动重发；暂停队列放弃出口继续待决。
 - [M2 首版](../.scratch/m2-first-release/spec.md)：仅本地 commit/候选，不 push、不公开发布、不扩 M3；冷恢复只读，unknown 不自动重发；S3 退出放弃待决仅暂停依赖部分。
 - [S5 前基建收口](../.scratch/infrastructure-closure/spec.md)：只本地 commit、不 push 或公开发布；许可证由权利人决定，签名/公证/更新尚未实施。
+- [OMP 18.4.5 升级与运行时边界加固](../.scratch/runtime-hardening-omp1845/spec.md)：2026-10-01 用户认可方案及实施范围，允许合理分工与适量 sub agent；本会话先提交全部工作区，实施在新会话开始。保留冷恢复只读、unknown 不自动重发和同目录多 Thread 基线。
 - [核心重写及外观补修](../.scratch/rewrite-preparation/spec.md)：同题复测未证明接手效率提升；真实供应商、系统 IME 与用户体验未认可。
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 
-<!-- source-sha256: 510faa75dcb170bf8b677cd0f27050249cd6167ec5a5dd2d1dcfe3509ca8e150; sources: 79 -->
+<!-- source-sha256: 2e8c6927ffd0d1ba8cc4e2bf23423efc4b2f34d870f3720c7880d49c6868665e; sources: 86 -->
