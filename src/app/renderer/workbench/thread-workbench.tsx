@@ -198,7 +198,9 @@ function ReadingPane({
     if (!pane || !active) return;
     pane.scrollTop = thread.readingPositions.get(view) ?? 0;
     return () => {
-      thread.readingPositions.set(view, pane.scrollTop);
+      // React has already hidden a pane when an active-tab effect cleans up.
+      // Its zero viewport coordinate must not overwrite the last visible scroll.
+      if (!pane.hidden) thread.readingPositions.set(view, pane.scrollTop);
     };
   }, [thread, view, active]);
   return (

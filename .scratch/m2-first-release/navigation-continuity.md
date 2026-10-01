@@ -13,7 +13,9 @@
 - ThreadPage 保留最后一次匹配当前路由的旧工作区引用，交接期间 frozen/inert/aria-busy，Router 参数与 Main 真实选择一致后替换。绝不将 B 的模型绘制到 A 路由；unknown/失效仍撤下工作区。无需重做公共壳或添加第二份业务状态。
 - ThreadModel 保存阅读坐标，ReadingPane 在返回时恢复；这是应用视图状态，不复制或改写 OMP 原生内容/队列/执行。编辑器仍用已有按 Thread 身份的 draft cache，草稿保存、选择与 undo 所有权不变。
 - 真实 React/AppModel/Router/Composer 回归：工作区连续性与 Thread 阅读位置均先失败后修复；公共壳稳定与 unknown 撤下属于既有正确行为回归，不伪造红灯。[工作区红灯](evidence/navigation-red.txt)、[阅读位置红灯](evidence/navigation-scroll-red.txt)。
-- 完整工程检查通过：480 行为测试、33 架构、47 tooling；1 项固定 CLI artifact opt-in 跳过。Node 24.21.0 / 当前仓库声明 pnpm 12.8.1，未改工具版本/锁文件或降低门禁。[检查](evidence/navigation-check.txt)。
+- 完整工程检查通过：481 行为测试、33 架构、47 tooling；1 项固定 CLI artifact opt-in 跳过。Node 24.21.0 / 当前仓库声明 pnpm 12.8.1，未改工具版本/锁文件或降低门禁。[检查](evidence/navigation-check.txt)。
+
+首个 clean 修复源码 `2231c4c` 的实际包检查在同 Thread 页签返回时失败：Chromium 隐藏面板后 `scrollTop=0`，新清理逻辑覆盖了可见坐标。该包未交付；保存时跳过 hidden viewport，新增真实 DOM 属性边界的失败回归后修复。[包红灯](evidence/navigation-first-package-red.txt)、[回归红灯](evidence/navigation-hidden-scroll-red.txt)。Shift+Enter 已在该次实际包检查先通过；最终仍随修正包复核。
 
 ## 候选交付
 

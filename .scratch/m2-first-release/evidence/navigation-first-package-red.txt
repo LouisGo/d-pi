@@ -1,0 +1,21 @@
+
+DevTools listening on ws://127.0.0.1:62063/devtools/browser/81d2bb91-409d-416c-ae85-07aca5bb7de4
+Failure evidence: /private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-ZsuipZ
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+0 !== 2120
+
+    at file:///Users/louistation/MySpace/Life/d-pi/validation/m2/package.mjs:464:12 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 0,
+  expected: 2120,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.21.0

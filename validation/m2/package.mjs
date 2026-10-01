@@ -210,13 +210,13 @@ async function selectThread(id) {
     const sidebar=document.querySelector('.sidebar');
     const toolbar=document.querySelector('.toolbar');
     const samples=[];
-    const sample=()=>{
-      samples.push({shell:document.querySelector('.app-shell')===shell && shell.getBoundingClientRect().height>0,sidebar:document.querySelector('.sidebar')===sidebar,toolbar:document.querySelector('.toolbar')===toolbar,workspace:!!document.querySelector('.thread-workspace'),editor:!!document.querySelector('.tiptap')});
+    const sample=(phase="mutation")=>{
+      samples.push({phase,shell:document.querySelector('.app-shell')===shell && shell.getBoundingClientRect().height>0,sidebar:document.querySelector('.sidebar')===sidebar,toolbar:document.querySelector('.toolbar')===toolbar,workspace:(document.querySelector('.thread-workspace')?.getBoundingClientRect().height??0)>0,editor:(document.querySelector('.tiptap')?.getBoundingClientRect().height??0)>0});
     };
     let running=true;
-    const frame=()=>{if(running){sample();requestAnimationFrame(frame);}};
+    const frame=()=>{if(running){sample("frame");requestAnimationFrame(frame);}};
     requestAnimationFrame(frame);
-    const observer=new MutationObserver(sample);
+    const observer=new MutationObserver(()=>sample("mutation"));
     observer.observe(document.getElementById('root'),{subtree:true,childList:true,attributes:true,attributeFilter:['style']});
     window.__continuityStop=()=>{running=false;observer.disconnect();return samples;};
     return true;
@@ -344,9 +344,41 @@ try {
     ),
   );
   await insert("M2_FIRST_INPUT");
+  if (process.argv.includes("--continuity")) {
+    await call("Input.dispatchKeyEvent", {
+      type: "keyDown",
+      key: "Enter",
+      code: "Enter",
+      windowsVirtualKeyCode: 13,
+      modifiers: 8,
+    });
+    await call("Input.dispatchKeyEvent", {
+      type: "keyUp",
+      key: "Enter",
+      code: "Enter",
+      windowsVirtualKeyCode: 13,
+      modifiers: 8,
+    });
+    await insert("LINE_TWO");
+    assert.equal(
+      await evaluate(
+        "document.querySelector('.tiptap').editor.getText({blockSeparator:'\\n'})",
+      ),
+      "M2_FIRST_INPUT\nLINE_TWO",
+    );
+    assert.equal(requests.length, 0);
+  }
   await click("发送");
   await wait(() => requests.length === 1);
   assert.equal(requests[0].model, "fixture-b");
+  if (process.argv.includes("--continuity")) {
+    assert.ok(
+      JSON.stringify(requests[0]).includes("M2_FIRST_INPUT\\nLINE_TWO"),
+    );
+    checks.push(
+      "trusted Electron Shift+Enter creates an editable newline without submitting; explicit send retains exact multiline input",
+    );
+  }
   await insert("A_UNSENT_DRAFT");
   await new Promise((resolve) => setTimeout(resolve, 600));
   await editorSelection(3);

@@ -242,3 +242,30 @@ it("removes the retained workspace when authoritative selection becomes unknown"
   expect(input.container.querySelector(".app-shell")).toBe(shell);
   expect(input.container.querySelector(".thread-workspace")).toBeNull();
 });
+
+it("does not replace a reading position with the hidden viewport's zero coordinate", async () => {
+  const input = await fixture();
+  const pane = input.container.querySelector<HTMLElement>(".reading-pane");
+  if (!pane) throw Error("missing reading pane");
+  // happy-dom has no layout. Chromium reports zero for a hidden viewport;
+  // model this DOM boundary, as observed by the packaged Electron regression.
+  let visibleTop = 180;
+  Object.defineProperty(pane, "scrollTop", {
+    get: () => (pane.hidden ? 0 : visibleTop),
+    set: (value: number) => {
+      visibleTop = value;
+    },
+  });
+  pane.dispatchEvent(new Event("scroll"));
+  for (const view of ["files", "conversation"] as const) {
+    await act(async () => {
+      await input.router.navigate({
+        to: "/threads/$threadId",
+        params: { threadId: input.first.threadId },
+        search: { view },
+        replace: true,
+      });
+    });
+  }
+  expect(pane.scrollTop).toBe(180);
+});

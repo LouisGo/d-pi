@@ -1,0 +1,38 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/louistation/MySpace/Life/d-pi
+
+ ❯ src/app/renderer/routing/navigation-continuity.test.ts (5 tests | 1 failed) 250ms
+   ✓ keeps the application shell visible and mounted while a Thread route waits for readiness 124ms
+   ✓ retains the frozen source workspace until the confirmed target route can replace it 54ms
+   ✓ restores each Thread's reading position on return without sharing scroll between Threads 41ms
+   ✓ removes the retained workspace when authoritative selection becomes unknown 14ms
+   × does not replace a reading position with the hidden viewport's zero coordinate 17ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/renderer/routing/navigation-continuity.test.ts > does not replace a reading position with the hidden viewport's zero coordinate
+AssertionError: expected +0 to be 180 // Object.is equality
+
+- Expected
++ Received
+
+- 180
++ 0
+
+ ❯ src/app/renderer/routing/navigation-continuity.test.ts:263:26
+    261|     });
+    262|   }
+    263|   expect(pane.scrollTop).toBe(180);
+       |                          ^
+    264| });
+    265|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 passed (5)
+   Start at  21:26:16
+   Duration  4.12s (import 74%, transform 12%, environment 8%, tests 6%)
+
