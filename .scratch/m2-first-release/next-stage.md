@@ -19,3 +19,5 @@ Main 的schema7 queue_change在派发前保存命令/旧文本、真实原生目
 ## 交付状态
 
 当前工作区 `pnpm check` 通过：591 项行为测试、34 项架构、59 项工具测试，1 项既有 CLI artifact opt-in 跳过；全部类型/设计/i18n/结构/文档/状态门禁通过。工作区使用已存在的环境对齐修复，保持其未提交，不借此声称原始工具文件亦通过同一环境。干净源码构建、实际macOS候选验证与精确身份待下方补齐。M2仍in-progress，用户认可pending；不push，不公开发布。原有环境对齐改动保持未提交。
+
+首轮包内核对未通过（候选未交付）：临时build checkout的顶层依赖软链接没有匹配仅目录的ignore，构建身份dirty=true；改用普通ignored依赖目录/实际克隆SDK再构建。队列输入fixture的CDP Meta+A未触发平台selectAll，实际插入在旧文前；这不是原生保存缺陷，改为明确DOM全选后trusted Input.insertText，保持正文精确断言。失败记录保留，后续同场景重新验证。

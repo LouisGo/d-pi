@@ -432,26 +432,15 @@ try {
       evaluate("!!document.querySelector('textarea[id^=queue-edit-]')"),
     );
     await evaluate(
-      "document.querySelector('textarea[id^=queue-edit-]').focus()",
+      "document.querySelector('textarea[id^=queue-edit-]').select()",
     );
-    await call("Input.dispatchKeyEvent", {
-      type: "keyDown",
-      key: "a",
-      code: "KeyA",
-      modifiers: 4,
-    });
-    await call("Input.dispatchKeyEvent", {
-      type: "keyUp",
-      key: "a",
-      code: "KeyA",
-      modifiers: 4,
-    });
     await call("Input.insertText", { text: "QUEUED_CHANGED" });
     await wait(() =>
       evaluate(
         "document.querySelector('textarea[id^=queue-edit-]')?.value==='QUEUED_CHANGED' && !document.querySelector('[data-queue-action=cancel-edit]').disabled",
       ),
     );
+    screenshots.push(await shot("m2-queue-edit"));
     await evaluate(
       "document.querySelector('[data-queue-action=save-edit]').click()",
     );
