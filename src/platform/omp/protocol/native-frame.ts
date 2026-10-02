@@ -26,6 +26,7 @@ export const NativeFrameTypes = {
   availableCommandsUpdate: "available_commands_update",
   sessionInfoUpdate: "session_info_update",
   configUpdate: "config_update",
+  advisorCostChanged: "advisor_cost_changed",
   extensionUiRequest: "extension_ui_request",
   extensionUiResponse: "extension_ui_response",
   dPiControlState: "d_pi_control_state",

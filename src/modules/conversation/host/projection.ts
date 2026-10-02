@@ -166,6 +166,9 @@ export class ConversationProjection {
         NativeFrameTypes.availableCommandsUpdate,
         NativeFrameTypes.sessionInfoUpdate,
         NativeFrameTypes.configUpdate,
+        // OMP 18.4.6 emits this when restoring cost metadata at startup,
+        // even without a submission. It carries no conversation or interaction.
+        NativeFrameTypes.advisorCostChanged,
       )
     )
       return;

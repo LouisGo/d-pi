@@ -134,3 +134,19 @@ it("bounds the external event type without changing the native source", () => {
   }
   p.dispose();
 });
+
+it("keeps startup advisor-cost telemetry out of an empty conversation while preserving unknown notices", () => {
+  const updates: unknown[] = [];
+  const projection = new ConversationProjection(crypto.randomUUID(), (update) =>
+    updates.push(update),
+  );
+  projection.accept({ type: "advisor_cost_changed" });
+  projection.flush();
+  expect(projection.snapshot().items).toEqual([]);
+  expect(updates).toEqual([]);
+  projection.accept({ type: "future_user_interaction" });
+  expect(projection.snapshot().items[0]?.notice?.params).toEqual({
+    eventType: "future_user_interaction",
+  });
+  projection.dispose();
+});
