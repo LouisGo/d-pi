@@ -20,3 +20,9 @@
 ## A 提交状态（工程完成）
 
 统一 `submissionBlockReason` 与 `canSubmit`；无模型显示 OMP 已启动、尚无生效模型，Composer 提供选择入口，模型摘要不再显示未启动。3 组定向测试共 10 项通过，含真实 Tiptap Enter 不消费草稿；Renderer 类型通过。冷恢复与 busy follow-up 策略不变。
+
+## B 认证反馈（工程完成）
+
+反馈从 22vh 内部滚动区移到固定可见区，表单前置；保存期间有状态且请求不重入。Renderer 保留失败码与 trace，不将错位响应认成功；Main 明确超时，交互 job 终态也带类型化失败。薄适配仅将固定 SDK 的 `ProviderHttpError.status`、TimeoutError 和白名单连接错误码映射为非秘密原因，其余保留 unknown；不解析或输出异常全文。
+
+先失败的挂载回归与 401 fixture 已转绿。配置定向 11 项、全量类型检查通过；隔离真实 SDK 的 GET fixture 验证 7 类失败、旧凭据保护和成功回读，无个人凭据和真实模型请求。网络未知根因未被“修复”冒称消除。

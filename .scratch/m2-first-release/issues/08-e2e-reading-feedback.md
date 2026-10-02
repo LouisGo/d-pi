@@ -1,6 +1,6 @@
 # 08 E2E 原生遥测与历史加载反馈
 
-Status: open
+Status: claimed
 Blocked by: none
 
 范围与授权见 [收敛记录](../e2e-convergence.md)。D/F：conversation Host 过滤固定 SDK 确认的内部遥测，未知交互继续降级；历史查询表达正在发现/读取，不引入轮询，不绑定执行。维护项目身份及已读取正文。

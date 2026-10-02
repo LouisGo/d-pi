@@ -19,7 +19,8 @@ export function ConfigurationSettings({
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const authentication = useAuthentication(bridge);
-  const { key, setKey, busy, result, request, active } = authentication;
+  const { key, setKey, busy, savingKey, result, request, active } =
+    authentication;
   const query = useQuery({
     ...configurationSnapshotQuery(bridge, scope),
     enabled: open,
@@ -39,7 +40,6 @@ export function ConfigurationSettings({
               {t("config.failed")}
             </p>
           )}
-          <SnapshotSummary snapshot={query.data} />
           <div className="flex gap-2">
             <button
               type="button"
@@ -88,12 +88,26 @@ export function ConfigurationSettings({
             </button>
           </form>
           <p className="muted">{t("config.keyNotice")}</p>
+          <SnapshotSummary snapshot={query.data} />
+        </div>
+      )}
+      {open && (
+        <div className="configuration-feedback">
+          {savingKey && <p role="status">{t("config.savingKey")}</p>}
           {result && (
             <p
-              role="status"
-              className={result === "failed" ? "failure" : "muted"}
+              role={result.kind === "failed" ? "alert" : "status"}
+              className={result.kind === "failed" ? "failure" : "muted"}
             >
-              {t(result === "saved" ? "config.saved" : "config.failed")}
+              {result.kind === "saved"
+                ? t("config.saved")
+                : t(`config.error.${result.code}`)}
+              {result.kind === "failed" && (
+                <span className="trace">
+                  {" "}
+                  {t("app.trace", { traceId: result.traceId })}
+                </span>
+              )}
             </p>
           )}
           <AuthenticationProgress

@@ -105,6 +105,18 @@ const eventIdentity = {
   source: ConfigurationSourceSchema.nullable(),
   jobId: z.uuid(),
 };
+export const ConfigurationFailureCodeSchema = z.enum([
+  "configuration-unavailable",
+  "stale-target",
+  "operation-in-progress",
+  "authentication-failed",
+  "authentication-rejected",
+  "authentication-network",
+  "authentication-provider-unavailable",
+  "operation-timed-out",
+  "invalid-job",
+  "unsafe-login-url",
+]);
 export const ConfigurationEventSchema = z.discriminatedUnion("kind", [
   z.strictObject({
     kind: z.literal("challenge"),
@@ -127,6 +139,7 @@ export const ConfigurationEventSchema = z.discriminatedUnion("kind", [
     kind: z.literal("finished"),
     ...eventIdentity,
     result: z.enum(["saved", "cancelled", "failed", "timed-out"]),
+    code: ConfigurationFailureCodeSchema.optional(),
   }),
 ]);
 export type ConfigurationEvent = z.infer<typeof ConfigurationEventSchema>;
@@ -145,14 +158,7 @@ export const ConfigurationReplySchema = z.union([
   z.strictObject({
     kind: z.literal("failed"),
     ...replyIdentity,
-    code: z.enum([
-      "configuration-unavailable",
-      "stale-target",
-      "operation-in-progress",
-      "authentication-failed",
-      "invalid-job",
-      "unsafe-login-url",
-    ]),
+    code: ConfigurationFailureCodeSchema,
   }),
 ]);
 export type ConfigurationReply = z.infer<typeof ConfigurationReplySchema>;

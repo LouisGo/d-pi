@@ -40,6 +40,10 @@ writeFileSync(
   `globalThis.fetch = async (input, init) => {
  const url = String(input instanceof Request ? input.url : input);
  if (url !== 'https://api.deepseek.com/v1/models') throw Error('Unexpected network boundary');
+ const mode = process.env.FIXTURE_AUTH_STATUS;
+ if (mode === 'network') throw Object.assign(new TypeError('private fixture-key text'), {cause: {code: 'ECONNREFUSED'}});
+ if (mode === 'timeout') throw new DOMException('private fixture-key text', 'TimeoutError');
+ if (mode === 'unknown') throw Error('private fixture-key text');
  if ((init?.method ?? 'GET').toUpperCase() !== 'GET') throw Error('Unexpected billed request');
  return new Response(process.env.FIXTURE_AUTH_STATUS === '401' ? '{"error":{"message":"rejected fixture"}}' : '{"data":[{"id":"fixture"}]}', {
   status: Number(process.env.FIXTURE_AUTH_STATUS ?? 200), headers: {'Content-Type':'application/json'}
@@ -81,8 +85,20 @@ assert.deepEqual(run({ kind: "save-key", key: "Bearer fixture-original" }), {
 });
 assert.deepEqual(run({ kind: "save-key", key: "fixture-rejected" }, 401), {
   kind: "failed",
-  code: "authentication-failed",
+  code: "authentication-rejected",
 });
+for (const [status, code] of [
+  [403, "authentication-rejected"],
+  [429, "authentication-provider-unavailable"],
+  [503, "authentication-provider-unavailable"],
+  ["network", "authentication-network"],
+  ["timeout", "operation-timed-out"],
+  ["unknown", "authentication-failed"],
+]) {
+  const result = run({ kind: "save-key", key: "fixture-rejected" }, status);
+  assert.deepEqual(result, { kind: "failed", code });
+  assert.ok(!JSON.stringify(result).includes("fixture-key"));
+}
 // Query the native credential cascade, compare inside this process, print no secret.
 const probe = join(isolated.root, "auth-probe.mjs");
 symlinkSync(
@@ -125,7 +141,7 @@ console.log(
     checks: [
       "isolated empty configuration",
       "native normalization and GET validation",
-      "invalid key preserves previous credential",
+      "rejected, network, timeout and unknown failures preserve previous credential",
       "readonly native catalog composition after credential save",
     ],
     realSupplierRequests: 0,

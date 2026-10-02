@@ -1,4 +1,28 @@
 export const ui = {
+  "config.error.configuration-unavailable":
+    "无法读取或确认原生配置。请检查随包运行时，再刷新配置后重试。",
+  "config.error.stale-target": "项目身份已变化。请回到目标项目后重试。",
+  "config.error.operation-in-progress":
+    "另一项原生凭据操作尚未结束。请等待或取消登录后重试。",
+  "config.error.authentication-failed":
+    "认证未确认，原因未知。请刷新原生配置，并使用此追踪标识排查。",
+  "config.error.authentication-rejected":
+    "认证端点拒绝访问（401/403）。请核对凭据和账户权限后重试。",
+  "config.error.authentication-network":
+    "认证连接失败。请检查网络、代理和 TLS 设置后重试。",
+  "config.error.authentication-provider-unavailable":
+    "认证端点限流或暂不可用。请稍后重试。",
+  "config.error.operation-timed-out":
+    "认证或配置操作超时。请先刷新配置确认结果，再重试。",
+  "config.error.invalid-job": "这次登录已不再有效，请重新开始登录。",
+  "config.error.unsafe-login-url":
+    "原生登录地址未被接受。请取消并重新开始登录。",
+  "config.error.identity-mismatch":
+    "响应与当前请求身份不一致。请刷新目标项目配置后重试。",
+  "config.error.transport-failed":
+    "配置连接中断，结果未确认。请先刷新原生配置再重试。",
+  "config.savingKey": "正在保存并校验密钥…",
+
   "composer.chooseModel": "选择模型",
   "composer.blocked.noModel":
     "尚无生效模型。请在顶部配置认证，再选择可用模型；草稿已保留。",

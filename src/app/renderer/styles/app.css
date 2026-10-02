@@ -33,8 +33,6 @@
 @layer components {
   .configuration-settings {
     flex-shrink: 0;
-    max-height: 22vh;
-    overflow-y: auto;
     margin: calc(var(--layout-gap) / 2) var(--panel-padding) 0;
     border-bottom: 1px solid var(--border);
     padding: calc(var(--layout-gap) / 2) 0;
@@ -46,10 +44,18 @@
     line-height: 1.6;
   }
   .configuration-content {
+    max-height: 22vh;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: var(--layout-gap);
     margin-top: var(--layout-gap);
+  }
+  .configuration-feedback {
+    display: grid;
+    gap: calc(var(--layout-gap) / 2);
+    margin-top: calc(var(--layout-gap) / 2);
+    overflow-wrap: anywhere;
   }
   .configuration-content form,
   .model-fields {

@@ -246,6 +246,8 @@ export class NativeConfiguration {
           this.children.delete(child);
           if (command.kind !== "snapshot") this.mutation = false;
           if (this.job === job) this.job = null;
+          if (job.timedOut && reply.kind !== "done")
+            reply = failure("operation-timed-out");
           if (command.kind === "login")
             this.announce({
               kind: "finished",
@@ -260,6 +262,9 @@ export class NativeConfiguration {
                   : reply.kind === "done"
                     ? "saved"
                     : "failed",
+              ...(reply.kind === "failed" && !job.cancelled
+                ? { code: reply.code }
+                : {}),
             });
           // An interactive job stays bound to its original source after start;
           // snapshots and one-shot writes must still return to a live target.

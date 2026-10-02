@@ -1,4 +1,30 @@
 export const ui = {
+  "config.error.configuration-unavailable":
+    "Native configuration could not be read or confirmed. Check the bundled runtime and refresh configuration before retrying.",
+  "config.error.stale-target":
+    "The project identity changed. Return to the intended project and retry there.",
+  "config.error.operation-in-progress":
+    "Another native credential operation is still running. Wait for it or cancel the login before retrying.",
+  "config.error.authentication-failed":
+    "Authentication was not confirmed; the cause is unknown. Refresh native configuration and use this trace when investigating.",
+  "config.error.authentication-rejected":
+    "The authentication endpoint denied access (401/403). Check the credential and account permissions, then retry.",
+  "config.error.authentication-network":
+    "The authentication connection failed. Check network, proxy and TLS settings before retrying.",
+  "config.error.authentication-provider-unavailable":
+    "The authentication endpoint is rate limited or unavailable. Wait and retry.",
+  "config.error.operation-timed-out":
+    "Authentication or configuration timed out. Refresh configuration to check the outcome before retrying.",
+  "config.error.invalid-job":
+    "This login is no longer active. Start a new login.",
+  "config.error.unsafe-login-url":
+    "The native login URL was not accepted. Cancel and start a new login.",
+  "config.error.identity-mismatch":
+    "The reply did not match this request. Refresh the intended project configuration before retrying.",
+  "config.error.transport-failed":
+    "The configuration connection ended without a confirmed result. Refresh native configuration before retrying.",
+  "config.savingKey": "Validating and saving the key…",
+
   "composer.chooseModel": "Select model",
   "composer.blocked.noModel":
     "No active model. Configure authentication above, then select an available model. Your draft is saved.",

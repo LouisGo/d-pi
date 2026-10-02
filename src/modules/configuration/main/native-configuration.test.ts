@@ -346,3 +346,44 @@ it("records stale-target when the original Thread disappears before the snapshot
     traceId,
   });
 });
+
+it("reports the one-shot credential timeout without claiming rejection or repeating the operation", async () => {
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+  const process = child();
+  mocks.spawn.mockReturnValue(process);
+  const record = vi.fn();
+  const service = new NativeConfiguration(
+    "/resources",
+    threads,
+    "/probe",
+    {},
+    () => {},
+    async () => {},
+    record,
+  );
+  const traceId = crypto.randomUUID();
+  try {
+    const pending = service.execute({
+      kind: "save-key",
+      scope: application,
+      traceId,
+      key: "fixture-secret",
+    });
+    await new Promise((resolve) => setImmediate(resolve));
+    await vi.advanceTimersByTimeAsync(20000);
+    expect(process.kill).toHaveBeenCalledOnce();
+    process.emit("close", null);
+    expect(await pending).toMatchObject({
+      kind: "failed",
+      code: "operation-timed-out",
+      traceId,
+    });
+    expect(record.mock.calls.at(-1)?.[0]).toMatchObject({
+      code: "operation-timed-out",
+      traceId,
+    });
+  } finally {
+    service.dispose();
+    vi.useRealTimers();
+  }
+});

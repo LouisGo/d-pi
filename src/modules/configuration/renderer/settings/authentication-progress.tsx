@@ -80,7 +80,14 @@ export function AuthenticationProgress({
         </div>
       )}
       {event?.kind === "finished" && (
-        <p role="status">{t(`config.auth.${event.result}`)}</p>
+        <p
+          role={event.result === "failed" ? "alert" : "status"}
+          className={event.result === "failed" ? "failure" : undefined}
+        >
+          {event.code
+            ? t(`config.error.${event.code}`)
+            : t(`config.auth.${event.result}`)}
+        </p>
       )}
     </>
   );

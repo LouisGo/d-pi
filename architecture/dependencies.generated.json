@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "edd70f71613c4846d2630ec15c3a91e4ecd626fa34e7a979c4f306ea124bba68",
+  "inputsHash": "b8ba0cd1dc80e0eea3397201728c09f9199b902c57c4d3020528e1f61164b09d",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 266,
@@ -102,7 +102,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 18,
-      "lines": 1391,
+      "lines": 1441,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -353,7 +353,7 @@
       "defaultEnvironment": "omp",
       "materialized": true,
       "files": 4,
-      "lines": 856,
+      "lines": 887,
       "publicEntries": [
         {
           "path": "runtime/host.mjs",
@@ -372,7 +372,7 @@
       ],
       "materialized": true,
       "files": 12,
-      "lines": 1492,
+      "lines": 1712,
       "publicEntries": [
         {
           "path": "src/modules/configuration/contracts/public.ts",
@@ -14110,6 +14110,15 @@
       "sourceModule": "runtime",
       "sourceEnvironment": "omp",
       "test": false,
+      "specifier": "@oh-my-pi/pi-ai/error",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/configuration.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
       "specifier": "@oh-my-pi/pi-utils",
       "kind": "import",
       "resolution": "external"
@@ -14684,6 +14693,18 @@
       "specifier": "react",
       "kind": "import",
       "resolution": "external"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/use-authentication.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/contracts/public.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/modules/configuration/renderer/settings/use-authentication.ts",

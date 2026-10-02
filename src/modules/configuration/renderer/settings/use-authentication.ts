@@ -4,7 +4,20 @@ import type {
   ConfigurationBridge,
   ConfigurationCommand,
   ConfigurationEvent,
+  ConfigurationReply,
 } from "../../contracts/public";
+import { sameConfigurationScope } from "../../contracts/public";
+
+type AuthenticationResult =
+  | { kind: "saved" }
+  | {
+      kind: "failed";
+      code:
+        | Extract<ConfigurationReply, { kind: "failed" }>["code"]
+        | "transport-failed"
+        | "identity-mismatch";
+      traceId: string;
+    };
 // Authentication continues when the settings disclosure is closed or its query scope changes.
 export function useAuthentication(bridge: ConfigurationBridge) {
   const [key, setKey] = useState("");
@@ -16,7 +29,9 @@ export function useAuthentication(bridge: ConfigurationBridge) {
     { kind: "challenge" }
   > | null>(null);
   const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<string | null>(null);
+  const [result, setResult] = useState<AuthenticationResult | null>(null);
+  const [savingKey, setSavingKey] = useState(false);
+  const requesting = useRef(false);
   const client = useQueryClient();
   useEffect(
     () =>
@@ -34,11 +49,31 @@ export function useAuthentication(bridge: ConfigurationBridge) {
     [bridge, client],
   );
   const request = async (command: ConfigurationCommand) => {
+    if (requesting.current) return;
+    requesting.current = true;
     setBusy(true);
-    if (command.kind === "login") setChallenge(null);
+    setSavingKey(command.kind === "save-key");
+    if (command.kind === "login" || command.kind === "save-key") {
+      setChallenge(null);
+      eventRef.current = null;
+      setEvent(null);
+    }
     setResult(null);
     try {
       const reply = await bridge.request(command);
+      if (
+        reply.traceId !== command.traceId ||
+        ("scope" in command &&
+          !sameConfigurationScope(reply.scope, command.scope))
+      ) {
+        setBusy(false);
+        setResult({
+          kind: "failed",
+          code: "identity-mismatch",
+          traceId: command.traceId,
+        });
+        return;
+      }
       if (reply.kind === "started") {
         const current = eventRef.current;
         if (current?.jobId === reply.jobId)
@@ -57,7 +92,18 @@ export function useAuthentication(bridge: ConfigurationBridge) {
         }
       } else {
         setBusy(false);
-        setResult(reply.kind === "done" ? "saved" : "failed");
+        setResult(
+          reply.kind === "done"
+            ? { kind: "saved" }
+            : {
+                kind: "failed",
+                code:
+                  reply.kind === "failed"
+                    ? reply.code
+                    : "configuration-unavailable",
+                traceId: command.traceId,
+              },
+        );
         if (reply.kind === "done") {
           setKey("");
           void client.invalidateQueries({ queryKey: ["configuration"] });
@@ -65,7 +111,14 @@ export function useAuthentication(bridge: ConfigurationBridge) {
       }
     } catch {
       setBusy(false);
-      setResult("failed");
+      setResult({
+        kind: "failed",
+        code: "transport-failed",
+        traceId: command.traceId,
+      });
+    } finally {
+      requesting.current = false;
+      setSavingKey(false);
     }
   };
   const active = !!event && event.kind !== "finished";
@@ -77,6 +130,7 @@ export function useAuthentication(bridge: ConfigurationBridge) {
     event,
     challenge,
     busy,
+    savingKey,
     result,
     request,
     active,

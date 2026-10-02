@@ -1,6 +1,7 @@
 // Short-lived desktop adapter over unchanged OMP 18.4.6 config/auth modules.
 
 import { createInterface } from "node:readline";
+import { ProviderHttpError } from "@oh-my-pi/pi-ai/error";
 import {
   getAgentDir,
   logger,
@@ -34,6 +35,34 @@ const abort = new AbortController();
 let prompt = null;
 let started = false;
 let interactive = false;
+let authenticating = false;
+// Read only machine evidence; provider messages may contain secret input.
+function authenticationFailureCode(error) {
+  if (error instanceof ProviderHttpError) {
+    if (error.status === 401 || error.status === 403)
+      return "authentication-rejected";
+    if (error.status === 429 || error.status >= 500)
+      return "authentication-provider-unavailable";
+  }
+  if (error?.name === "TimeoutError") return "operation-timed-out";
+  const codes = new Set([
+    "ECONNREFUSED",
+    "ECONNRESET",
+    "ENOTFOUND",
+    "EAI_AGAIN",
+    "ENETUNREACH",
+    "EHOSTUNREACH",
+    "ETIMEDOUT",
+    "ConnectionRefused",
+    "ConnectionReset",
+    "CERT_HAS_EXPIRED",
+    "UNABLE_TO_VERIFY_LEAF_SIGNATURE",
+    "ERR_TLS_CERT_ALTNAME_INVALID",
+  ]);
+  if (codes.has(error?.code) || codes.has(error?.cause?.code))
+    return "authentication-network";
+  return "authentication-failed";
+}
 const lines = createInterface({ input: process.stdin, crlfDelay: Infinity });
 async function run(frame) {
   if (frame.kind === "snapshot") {
@@ -70,18 +99,21 @@ async function run(frame) {
   if (frame.kind === "save-key") {
     // Native normalization + models-endpoint validation precede its atomic write.
     // A rejected key never removes or overwrites the existing credential.
+    authenticating = true;
     await auth.oauth.login("deepseek", {
       signal: abort.signal,
       onAuth: () => {},
       onProgress: () => {},
       onPrompt: async () => frame.key,
     });
+    authenticating = false;
     await auth.credentials.reload();
     if (!Boolean(auth.keys.source("deepseek")))
       throw Error("save-not-confirmed");
     output({ kind: "done", ...identity });
   } else if (frame.kind === "login") {
     const jobId = frame.jobId;
+    authenticating = true;
     await auth.oauth.login("openai-codex", {
       signal: abort.signal,
       onAuth: (info) =>
@@ -139,16 +171,15 @@ lines.on("line", (line) => {
   interactive = frame.kind === "login";
   traceId = frame.traceId;
   run(frame)
-    .catch(() =>
+    .catch((error) =>
       output({
         kind: "failed",
         scope: frame.scope,
         traceId: frame.traceId,
         source: source(),
-        code:
-          frame.kind === "snapshot"
-            ? "configuration-unavailable"
-            : "authentication-failed",
+        code: authenticating
+          ? authenticationFailureCode(error)
+          : "configuration-unavailable",
       }),
     )
     .finally(async () => {

@@ -210,3 +210,96 @@ it("keeps a completed login settled when its finished event arrives before the s
     element.remove();
   }
 });
+
+it("keeps save progress and a typed stale-target failure outside the scroll area without repeating the write", async () => {
+  Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  const element = document.createElement("div");
+  document.body.append(element);
+  const root = createRoot(element);
+  const scope = { kind: "application" } as const;
+  let finish: (() => void) | undefined;
+  const gate = new Promise<void>((resolve) => {
+    finish = resolve;
+  });
+  const bridge: ConfigurationBridge = {
+    subscribe: () => () => {},
+    request: vi.fn<ConfigurationBridge["request"]>(async (command) => {
+      if (command.kind === "save-key") {
+        await gate;
+        return {
+          kind: "failed",
+          scope,
+          traceId: command.traceId,
+          source: null,
+          code: "stale-target",
+        };
+      }
+      return {
+        kind: "snapshot",
+        scope,
+        traceId: command.traceId,
+        source: { directory: "/native", cwd: "/probe", profile: null },
+        coverage: "complete",
+        issues: [],
+        models: [],
+        defaultModel: null,
+        openaiAuthenticated: false,
+        deepseekAuthenticated: false,
+        catalogError: false,
+      };
+    }),
+  };
+  try {
+    await act(() =>
+      root.render(
+        createElement(
+          QueryClientProvider,
+          { client },
+          createElement(I18nProvider, {
+            initialSnapshot: { preference: "zh-CN", resolvedLocale: "zh-CN" },
+            children: createElement(ConfigurationSettings, { bridge, scope }),
+          }),
+        ),
+      ),
+    );
+    await act(() => {
+      const details = element.querySelector("details");
+      if (!details) throw Error("missing details");
+      details.open = true;
+      details.dispatchEvent(new Event("toggle"));
+    });
+    await act(() =>
+      element
+        .querySelector("form")
+        ?.dispatchEvent(
+          new Event("submit", { bubbles: true, cancelable: true }),
+        ),
+    );
+    expect(element.textContent).toContain("正在保存");
+    const status = element.querySelector(".configuration-feedback");
+    expect(status).not.toBeNull();
+    expect(status?.closest(".configuration-content")).toBeNull();
+    expect(
+      Array.from(element.querySelectorAll("button")).find(
+        (b) => b.type === "submit",
+      )?.disabled,
+    ).toBe(true);
+    await act(async () => finish?.());
+    expect(element.textContent).toContain("项目身份已变化");
+    expect(
+      element.querySelector(".configuration-feedback [role=alert]"),
+    ).not.toBeNull();
+    expect(
+      vi
+        .mocked(bridge.request)
+        .mock.calls.filter(([c]) => c.kind === "save-key"),
+    ).toHaveLength(1);
+  } finally {
+    await act(() => root.unmount());
+    client.clear();
+    element.remove();
+  }
+});
