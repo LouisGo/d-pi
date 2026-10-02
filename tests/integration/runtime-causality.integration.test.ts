@@ -761,7 +761,12 @@ it.each([
   },
 );
 
-it("a Host loss after Main write failure loses only memory evidence and reopens conservatively without resending", async () => {
+// This fault injection holds a real SQLite write lock across ACK, terminal,
+// disconnection and Host exit. Each attempted write waits for busy_timeout;
+// allow the repeated waits on hosted macOS runners without relaxing assertions.
+it("a Host loss after Main write failure loses only memory evidence and reopens conservatively without resending", {
+  timeout: 15000,
+}, async () => {
   const f = await running();
   const receipt = await f.prepare();
   await f.dispatch();
@@ -785,6 +790,11 @@ it("a Host loss after Main write failure loses only memory evidence and reopens 
       },
     );
     await f.nativeExit();
+    expect(f.store.submissions.submission(receipt.submissionId)).toMatchObject({
+      state: "dispatching",
+      acknowledgedAt: null,
+      outcome: "unobserved",
+    });
     lock.exec("ROLLBACK");
     f.store.close();
     const restarted = AppStorage.open(path);

@@ -1,0 +1,6 @@
+$ node scripts/runtime/prepare-sdk.mjs
+Bundled 1 module in 14ms
+
+  gate.js  0.94 KB  (entry point)
+
+Prepared fixed official SDK 18.4.6: 112 dependency units

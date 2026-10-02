@@ -1,0 +1,72 @@
+[
+  {
+    "runId": 36952368172,
+    "jobId": 110667874543,
+    "headSha": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+    "url": "https://github.com/LouisGo/d-pi/actions/runs/36952368172",
+    "lines": [
+      "check\tRun pnpm check\t2026-10-02T01:46:35.1770150Z  FAIL  tests/integration/configuration-sharing.integration.test.ts > shares native login and cached models both ways while CLI is open and from a desktop-only home",
+      "check\tRun pnpm check\t2026-10-02T01:46:35.1776100Z Error: fixture exited: 1: error: Cannot find module '@oh-my-pi/pi-ai/auth-storage' from '/private/var/folders/s6/5hzmn6lx4dz5nxs7k_0slzph0000gn/T/d-pi-test-bBR3bS/tmp/d-pi-config-sharing-OnIKye/adapter/cli-login.mjs'",
+      "check\tRun pnpm check\t2026-10-02T01:46:35.1797620Z  FAIL  tests/integration/runtime-causality.integration.test.ts > a Host loss after Main write failure loses only memory evidence and reopens conservatively without resending",
+      "check\tRun pnpm check\t2026-10-02T01:46:35.1798480Z Error: Test timed out in 5000ms.",
+      "check\tRun pnpm check\t2026-10-02T01:46:35.1849200Z       Tests  2 failed | 510 passed | 1 skipped (513)",
+      "check\tRun pnpm check\t2026-10-02T01:46:35.2708220Z ##[error]Process completed with exit code 1."
+    ]
+  },
+  {
+    "jobId": 109983739730,
+    "lines": [
+      "2026-09-30T16:22:27.9224960Z STALE: /Users/runner/work/d-pi/d-pi/architecture/dependencies.generated.json; regenerate with --write after reviewing current source and permissions.",
+      "2026-09-30T16:22:27.9914700Z ##[error]Process completed with exit code 1."
+    ]
+  },
+  {
+    "jobId": 110382852630,
+    "lines": [
+      "2026-10-01T13:09:42.8738950Z  FAIL  tests/integration/configuration-sharing.integration.test.ts > shares native login and cached models both ways while CLI is open and from a desktop-only home",
+      "2026-10-01T13:09:42.8743660Z Error: fixture exited: 1: error: Cannot find module '@oh-my-pi/pi-ai/auth-storage' from '/private/var/folders/s6/5hzmn6lx4dz5nxs7k_0slzph0000gn/T/d-pi-test-1Xyuyg/tmp/d-pi-config-sharing-ZKSYDC/adapter/cli-login.mjs'",
+      "2026-10-01T13:09:42.8782000Z  FAIL  tests/integration/runtime-causality.integration.test.ts > a Host loss after Main write failure loses only memory evidence and reopens conservatively without resending",
+      "2026-10-01T13:09:42.8786020Z Error: Test timed out in 5000ms.",
+      "2026-10-01T13:09:42.8818130Z       Tests  2 failed | 474 passed | 1 skipped (477)",
+      "2026-10-01T13:09:42.9952140Z ##[error]Process completed with exit code 1."
+    ]
+  },
+  {
+    "jobId": 110454558356,
+    "lines": [
+      "2026-10-01T15:54:24.1607870Z  FAIL  tests/integration/configuration-sharing.integration.test.ts > shares native login and cached models both ways while CLI is open and from a desktop-only home",
+      "2026-10-01T15:54:24.1619790Z Error: fixture exited: 1: error: Cannot find module '@oh-my-pi/pi-ai/auth-storage' from '/private/var/folders/s6/5hzmn6lx4dz5nxs7k_0slzph0000gn/T/d-pi-test-u9n7A5/tmp/d-pi-config-sharing-cEYcdV/adapter/cli-login.mjs'",
+      "2026-10-01T15:54:24.1675930Z  FAIL  tests/integration/runtime-causality.integration.test.ts > a Host loss after Main write failure loses only memory evidence and reopens conservatively without resending",
+      "2026-10-01T15:54:24.1685620Z Error: Test timed out in 5000ms.",
+      "2026-10-01T15:54:24.1795600Z       Tests  2 failed | 498 passed | 1 skipped (501)",
+      "2026-10-01T15:54:24.2856000Z ##[error]Process completed with exit code 1."
+    ]
+  },
+  {
+    "jobId": 110459093200,
+    "lines": [
+      "2026-10-01T16:03:37.3364820Z AssertionError [ERR_ASSERTION]: independent visual scale: src/app/renderer/styles/app.css",
+      "2026-10-01T16:03:37.3425130Z ##[error]Process completed with exit code 1."
+    ]
+  },
+  {
+    "jobId": 110472721740,
+    "lines": [
+      "2026-10-01T16:35:58.3501740Z  FAIL  tests/integration/configuration-sharing.integration.test.ts > shares native login and cached models both ways while CLI is open and from a desktop-only home",
+      "2026-10-01T16:35:58.3508970Z Error: fixture exited: 1: error: Cannot find module '@oh-my-pi/pi-ai/auth-storage' from '/private/var/folders/s6/5hzmn6lx4dz5nxs7k_0slzph0000gn/T/d-pi-test-8lLzXS/tmp/d-pi-config-sharing-wtMgqw/adapter/cli-login.mjs'",
+      "2026-10-01T16:35:58.3544260Z       Tests  1 failed | 502 passed | 1 skipped (504)",
+      "2026-10-01T16:35:58.4558990Z ##[error]Process completed with exit code 1."
+    ]
+  },
+  {
+    "jobId": 110479727298,
+    "lines": [
+      "2026-10-01T16:53:04.7948990Z  FAIL  tests/integration/configuration-sharing.integration.test.ts > shares native login and cached models both ways while CLI is open and from a desktop-only home",
+      "2026-10-01T16:53:04.7953890Z Error: fixture exited: 1: error: Cannot find module '@oh-my-pi/pi-ai/auth-storage' from '/private/var/folders/s6/5hzmn6lx4dz5nxs7k_0slzph0000gn/T/d-pi-test-vHY3yT/tmp/d-pi-config-sharing-w3qqmY/adapter/cli-login.mjs'",
+      "2026-10-01T16:53:04.8028460Z       Tests  2 failed | 501 passed | 1 skipped (504)",
+      "2026-10-01T16:53:04.8047370Z  FAIL  tests/integration/runtime-causality.integration.test.ts > a Host loss after Main write failure loses only memory evidence and reopens conservatively without resending",
+      "2026-10-01T16:53:04.8048330Z Error: Test timed out in 5000ms.",
+      "2026-10-01T16:53:04.9234490Z ##[error]Process completed with exit code 1."
+    ]
+  }
+]

@@ -1,0 +1,49 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-ci-clean-hil45eau
+
+ ❯ tests/integration/configuration-sharing.integration.test.ts (1 test | 1 failed) 73ms
+   × shares native login and cached models both ways while CLI is open and from a desktop-only home 72ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/configuration-sharing.integration.test.ts > shares native login and cached models both ways while CLI is open and from a desktop-only home
+AssertionError: file:///private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-ci-clean-hil45eau/validation/m2/configuration-sharing.mjs:132
+      throw Error(`fixture exited: ${code}: ${fixtureError}`);
+            ^
+
+Error: fixture exited: 1: error: Cannot find module '@oh-my-pi/pi-ai/auth-storage' from '/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-test-IdTbKp/tmp/d-pi-config-sharing-2ehfNU/adapter/cli-login.mjs'
+
+Bun v1.3.14 (macOS arm64)
+
+    at file:///private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-ci-clean-hil45eau/validation/m2/configuration-sharing.mjs:132:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-ci-clean-hil45eau/validation/m2/configuration-sharing.mjs:129:17
+
+Node.js v24.21.0
+: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ validation/m2/configuration-sharing.mjs:132:13
+ ❯ validation/m2/configuration-sharing.mjs:129:17
+ ❯ tests/integration/configuration-sharing.integration.test.ts:16:40
+     14|     },
+     15|   );
+     16|   expect(result.status, result.stderr).toBe(0);
+       |                                        ^
+     17|   const evidence = JSON.parse(result.stdout.trim());
+     18|   expect(evidence.realSupplierRequests).toBe(0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  09:56:21
+   Duration  200ms (tests 74%, transform 16%, import 6%, worker 3%)
+

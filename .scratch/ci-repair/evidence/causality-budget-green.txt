@@ -1,0 +1,12 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-ci-clean-hil45eau
+
+ ✓ tests/integration/runtime-causality.integration.test.ts (21 tests | 20 skipped) 5630ms
+   ✓ a Host loss after Main write failure loses only memory evidence and reopens conservatively without resending 5629ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 20 skipped (21)
+   Start at  09:58:52
+   Duration  6.12s (tests 93%, transform 3%, import 3%)
+

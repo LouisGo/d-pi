@@ -1,0 +1,14 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-ci-clean-hil45eau
+
+ ✓ tests/integration/runtime-causality.integration.test.ts (21 tests) 4078ms
+   ✓ replays bounded evidence in the same live Host after a SQLite failure without replaying prompt 1167ms
+   ✓ idle cannot dispose unconfirmed terminal evidence after ACK was already committed 593ms
+   ✓ a Host loss after Main write failure loses only memory evidence and reopens conservatively without resending 2019ms
+
+ Test Files  1 passed (1)
+      Tests  21 passed (21)
+   Start at  09:58:13
+   Duration  4.76s (tests 87%, transform 7%, import 6%)
+

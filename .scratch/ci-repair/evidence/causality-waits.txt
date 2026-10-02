@@ -1,0 +1,23 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-ci-clean-hil45eau
+
+stderr | tests/integration/runtime-causality.integration.test.ts > a Host loss after Main write failure loses only memory evidence and reopens conservatively without resending
+SQL WAIT BEGIN IMMEDIATE 275.261166
+SQL WAIT BEGIN IMMEDIATE 284.106667
+SQL WAIT BEGIN IMMEDIATE 288.779125
+SQL WAIT BEGIN IMMEDIATE 280.6801660000001
+SQL WAIT BEGIN IMMEDIATE 273.9030419999999
+SQL WAIT BEGIN IMMEDIATE 271.1314590000002
+
+stderr | tests/integration/runtime-causality.integration.test.ts > a Host loss after Main write failure loses only memory evidence and reopens conservatively without resending
+SQL WAIT BEGIN IMMEDIATE 274.455833
+
+ ✓ tests/integration/runtime-causality.integration.test.ts (21 tests | 20 skipped) 1992ms
+   ✓ a Host loss after Main write failure loses only memory evidence and reopens conservatively without resending 1991ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 20 skipped (21)
+   Start at  09:57:23
+   Duration  2.86s (tests 72%, transform 17%, import 11%)
+

@@ -1,0 +1,48 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-ci-clean-hil45eau
+
+ ❯ tests/integration/runtime-causality.integration.test.ts (21 tests | 1 failed | 20 skipped) 5689ms
+   ↓ same decoder batch cannot apply old idle after agent_start/ACK and lose the in-flight receipt
+   ↓ ACK and fresh idle keep the submission pending until its identified terminal arrives
+   ↓ native exit after ACK and fresh idle preserves the missing terminal as unknown
+   ↓ Runtime shutdown waits for disconnected Host group cleanup (confirmed=true)
+   ↓ Runtime shutdown waits for disconnected Host group cleanup (confirmed=false)
+   ↓ an idle control sampled before dispatch cannot settle its later ACK
+   ↓ confirmed idle native exit releases its Host and lets normal idle close finish without querying the dead process
+   ↓ idle sampled before a prompt reply cannot become settlement evidence when that reply arrives
+   ↓ protocol disconnection alone still blocks quit; confirmed exit is a separate cleanup fact
+   ↓ correlates ACK, disconnection and unknown outcome without conflating transport loss with Host exit
+   ↓ diagnostic failure cannot prevent an exited Host from preserving an unknown receipt
+   ↓ confirmed terminal duplicates keep coverage complete and a later identified error remains sticky
+   ↓ decodes and persists a prompt terminal before ACK, keeps background work active and ignores an unknown id
+   ↓ replays bounded evidence in the same live Host after a SQLite failure without replaying prompt
+   ↓ idle cannot dispose unconfirmed terminal evidence after ACK was already committed
+   ↓ persists the recorded SDK 18.4.6 local outcome through the real decoder/session/Host/Main/SQLite chain
+   ↓ persists the recorded SDK 18.4.6 builtinLocal outcome through the real decoder/session/Host/Main/SQLite chain
+   ↓ persists the recorded SDK 18.4.6 steer outcome through the real decoder/session/Host/Main/SQLite chain
+   ↓ persists the recorded SDK 18.4.6 aborted outcome through the real decoder/session/Host/Main/SQLite chain
+   ↓ persists the recorded SDK 18.4.6 error outcome through the real decoder/session/Host/Main/SQLite chain
+   × a Host loss after Main write failure loses only memory evidence and reopens conservatively without resending 5688ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/runtime-causality.integration.test.ts > a Host loss after Main write failure loses only memory evidence and reopens conservatively without resending
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/runtime-causality.integration.test.ts:771:1
+    769| // disconnection and Host exit. Each attempted write waits for busy_ti…
+    770| // allow the repeated waits on hosted macOS runners without relaxing a…
+    771| it("a Host loss after Main write failure loses only memory evidence an…
+       | ^
+    772|   timeout: 5000,
+    773| }, async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 20 skipped (21)
+   Start at  09:59:20
+   Duration  6.17s (tests 93%, transform 3%, import 3%)
+

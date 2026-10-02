@@ -21,9 +21,11 @@ const sdk = resolve(process.env.D_PI_CONFIGURATION_SDK ?? "resources/sdk");
 const isolated = createTestEnvironment({ prefix: "d-pi-config-sharing-" });
 const adapter = join(isolated.root, "adapter");
 mkdirSync(adapter);
+// pnpm exposes only direct dependencies at the project root. Resolve from
+// the pinned coding-agent's own graph, as its native CLI does.
 symlinkSync(
   process.env.D_PI_CONFIGURATION_SOURCE === "1"
-    ? resolve("node_modules")
+    ? resolve(realpathSync("node_modules/@oh-my-pi/pi-coding-agent"), "../..")
     : join(sdk, "node_modules"),
   join(adapter, "node_modules"),
 );

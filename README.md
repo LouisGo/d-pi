@@ -6,7 +6,7 @@
 
 ## 环境准备与启动
 
-本轮开发环境目标为 **Node 24.21.0 / pnpm 10.5.2**，分别以 `.node-version` 与 `packageManager` 为单一入口。`package.json` 的 Node 最低声明不代表所有满足版本均已验证。开发 Node、Electron 内嵌 Node、OMP 宿主 Bun 各自独立；固定依赖与资源版本由锁文件和资源 manifest 核对。
+本轮开发环境目标为 **Node 24.21.0 / pnpm 12.8.1**，分别以 `.node-version` 与 `packageManager` 为单一入口。`package.json` 的 Node 最低声明不代表所有满足版本均已验证。开发 Node、Electron 内嵌 Node、OMP 宿主 Bun 各自独立；固定依赖与资源版本由锁文件和资源 manifest 核对。
 
 ```sh
 pnpm install --frozen-lockfile
