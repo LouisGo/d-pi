@@ -14,7 +14,7 @@ import type {
   ThreadContext,
 } from "../../../threads/contracts/public";
 import type { ThreadRepository } from "../../../threads/main/public";
-import type { HostMessage } from "../../contracts/host";
+import type { HostMessage, ProcessExitEvidence } from "../../contracts/host";
 import {
   type FrozenSubmission,
   type SubmissionCommand,
@@ -93,7 +93,7 @@ export class RuntimeService {
   ) {
     this.connection = new HostConnection(
       (message) => this.receive(message),
-      () => this.onExit(),
+      (evidence) => this.onExit(evidence),
     );
     this.coordinator = new SubmissionCoordinator(
       store.submissions,
@@ -241,7 +241,8 @@ export class RuntimeService {
       throw error;
     }
   }
-  private onExit(): void {
+  private onExit(evidence?: ProcessExitEvidence): void {
+    if (evidence) this.recordProcessExit(evidence);
     this.recordHost("exited");
     const uncertain = this.executingIds.size > 0;
     for (const submissionId of this.executingIds) {
@@ -313,6 +314,29 @@ export class RuntimeService {
       /* Diagnostic failure cannot change execution or recovery. */
     }
   }
+  private recordProcessExit(evidence: ProcessExitEvidence): void {
+    if (!this.view || !this.currentConnectionGeneration) return;
+    try {
+      this.record({
+        traceId: this.view.traceId,
+        requestId: this.view.traceId,
+        connectionId: this.currentConnectionGeneration,
+        ...(this.target
+          ? { nativeProcessInstanceId: this.target.processInstanceId }
+          : {}),
+        threadId: this.view.threadId,
+        operation: `runtime:${evidence.process}-exit`,
+        stage: "exited",
+        processPid: evidence.pid,
+        exitCode: evidence.exitCode,
+        exitSignal: evidence.signal,
+        terminationReason: evidence.reason,
+        requestedExitCode: evidence.requestedExitCode,
+      });
+    } catch {
+      /* Diagnostics cannot change recovery. */
+    }
+  }
   private settleIdleSubmissions(): void {
     const control = this.view?.control;
     const interactions = this.view?.interactions;
@@ -350,6 +374,10 @@ export class RuntimeService {
     message: Exclude<HostMessage, { kind: "ready" | "native-register" }>,
   ): void {
     match(message)
+      .with({ kind: "process-exit" }, ({ connectionGeneration, evidence }) => {
+        if (connectionGeneration === this.currentConnectionGeneration)
+          this.recordProcessExit(evidence);
+      })
       .with({ kind: "evidence-gap" }, ({ connectionGeneration, reason }) => {
         if (connectionGeneration !== this.currentConnectionGeneration) return;
         this.lostEvidence = true;

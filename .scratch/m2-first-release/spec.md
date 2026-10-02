@@ -25,15 +25,18 @@
       "development-tools.md",
       "rendering-isolation.md",
       "e2e-convergence.md",
+      "warm-session-liveness.md",
       "../review-seven-commits/spec.md"
     ],
-    "next": "真实无模型 GUI QA 的 A/B/D/E/F 高价值问题已分批修复并验证；用户按 E2E 收敛记录复试，C 冷退出续接仍是后续能力缺口，M2 未交付能力保持原票",
+    "next": "暖会话看门狗误杀条件、退出诊断与配置读取并发已修复并完成工程/原生验证；待按原导航路径复试，原事故归因与用户认可仍待证据，冷恢复边界保持",
     "constraints": "2026-10-02 用户授权本次报告收敛、分阶段 commit 和检查后 push；不公开发布、不扩 M3；冷恢复只读，unknown 不自动重发；S3 退出放弃待决仅暂停依赖部分。"
   }
 ]
 ```
 
 2026-10-02：用户授权基于 fe03c4f 真实 GUI 报告策略性收敛，高价值修复分阶段提交，丢弃当前工作区改动，检查完成后 push；用户自行手动复试。过滤判断与工程进度见 [E2E 收敛](e2e-convergence.md)及 07–09 票。报告未调用真实模型，不作为 Agent 全流程通过；D-24 冷恢复边界保留。
+
+2026-10-02：用户提供 `dpi-gui-retest-7ae6962.zip`，报告未退出应用时的两次双 scope 中断，并授权优雅修复后 commit。当前工作区从干净 `5d8a323` 开始，本轮本地提交；具体边界、证据、修复和复试见 [暖会话记录](warm-session-liveness.md)及 [10](issues/10-warm-session-liveness.md)。这是暖会话缺陷，不能并入冷恢复能力缺口；原事故无退出原因，归因保留 unknown。
 
 2026-09-30。起点 `1913abe`，分支 `main`；已有未提交 `package.json` 的 packageManager 变更（10.5.2 → 12.8.1）保留，不纳入本轮提交。实际 HEAD/工作树与验证优先于历史路径。
 

@@ -174,7 +174,7 @@ async function running(diagnosticFailure = false) {
   const nativeExit = async () => {
     if (child.exitCode !== null) return;
     child.exitCode = 0;
-    child.emit("close", 0);
+    child.emit("close", 0, null);
     await new Promise<void>((resolve) => queueMicrotask(resolve));
   };
   cleanup.push(() => {
@@ -215,7 +215,7 @@ async function running(diagnosticFailure = false) {
     state,
     commands,
     nativeExit,
-    hostCrash: () => process.emit("exit"),
+    hostCrash: () => process.emit("exit", 17),
     prepare,
     dispatch: () =>
       runtime.submit({
@@ -243,6 +243,36 @@ async function running(diagnosticFailure = false) {
     },
   };
 }
+
+it("records native exit separately from a utility crash without guessing a signal or a watchdog cause", async () => {
+  const f = await running();
+  await f.nativeExit();
+  expect(f.diagnostics).toContainEqual(
+    expect.objectContaining({
+      operation: "runtime:native-exit",
+      stage: "exited",
+      threadId: f.draft.threadId,
+      processPid: 999999,
+      exitCode: 0,
+      exitSignal: null,
+      terminationReason: null,
+      requestedExitCode: null,
+    }),
+  );
+  const g = await running();
+  g.hostCrash();
+  expect(g.diagnostics).toContainEqual(
+    expect.objectContaining({
+      operation: "runtime:utility-exit",
+      stage: "exited",
+      threadId: g.draft.threadId,
+      processPid: process.pid,
+      exitCode: 17,
+      exitSignal: null,
+      terminationReason: null,
+    }),
+  );
+});
 
 it("same decoder batch cannot apply old idle after agent_start/ACK and lose the in-flight receipt", async () => {
   const f = await running();

@@ -4,6 +4,7 @@ import { dirname, join } from "node:path";
 import { app } from "electron";
 import { z } from "zod";
 import { AppStorage } from "../../src/app/main/wiring/app-storage";
+import { NativeConfiguration } from "../../src/modules/configuration/main/public";
 import { SubmissionIdSchema } from "../../src/modules/execution/contracts/public";
 import { RuntimeService } from "../../src/modules/execution/main/runtime/runtime-service";
 import { ThreadIdSchema, TraceIdSchema } from "../../src/shared/identity";
@@ -71,10 +72,12 @@ app
     }
     const store = AppStorage.open(join(root, "app.sqlite"));
     const runtimes: RuntimeService[] = [];
+    const threads: ReturnType<typeof store.threads.threadContext>[] = [];
     const mode = process.env.D_PI_FAULT_MODE ?? "busy";
     for (const name of ["a", "b"]) {
       const scope = join(root, name);
       const draft = store.drafts.create(realpathSync(scope));
+      threads.push(store.threads.threadContext(draft.threadId));
       const runtime = new RuntimeService(
         store,
         dirname(resources),
@@ -142,14 +145,88 @@ app
         });
       }
     }
-    writeFileSync(join(root, "ready"), String(process.pid));
     if (mode === "idle") {
+      // Four independent UI/history-style reads while both real OMP scopes
+      // remain live. Keep this no-provider resource check in the existing harness.
+      let reading = 0;
+      let peak = 0;
+      const configuration = new NativeConfiguration(
+        dirname(resources),
+        store.threads,
+        join(root, "a"),
+        {
+          PATH: "/usr/bin:/bin",
+          HOME: root,
+          TMPDIR: root,
+          PI_CODING_AGENT_DIR: join(root, "a", "config"),
+          PI_CONFIG_DIR: ".fixture-no-project",
+        },
+        () => {},
+        async () => {},
+        (event) => {
+          log({ event: "diagnostic", ...event });
+          if (event.operation !== "configuration:snapshot:adapter") return;
+          if (event.stage === "initiated") peak = Math.max(peak, ++reading);
+          else reading--;
+        },
+      );
+      try {
+        const replies = await Promise.all(
+          [0, 1, 0, 1].map(async (index) => {
+            const thread = threads[index];
+            if (!thread) throw Error("Missing query target");
+            const scope = {
+              kind: "thread" as const,
+              threadId: thread.threadId,
+              workingDirectoryId: thread.workingDirectoryId,
+            };
+            const traceId = randomUUID();
+            const reply = await configuration.execute({
+              kind: "snapshot",
+              scope,
+              traceId,
+            });
+            if (
+              reply.kind !== "snapshot" ||
+              reply.traceId !== traceId ||
+              reply.scope.kind !== "thread" ||
+              reply.scope.threadId !== thread.threadId ||
+              reply.source.cwd !== thread.directory
+            )
+              throw Error("Snapshot identity/result unavailable");
+            return reply;
+          }),
+        );
+        if (peak !== 1 || reading !== 0 || replies.length !== 4)
+          throw Error("Snapshot process concurrency exceeded");
+        await new Promise((resolve) => setTimeout(resolve, 1600));
+        for (const [index, runtime] of runtimes.entries()) {
+          const thread = threads[index];
+          if (!thread) throw Error("Missing runtime target");
+          const view = await runtime.execute({
+            kind: "inspect",
+            threadId: thread.threadId,
+            traceId: TraceIdSchema.parse(randomUUID()),
+          });
+          if (view.phase !== "ready")
+            throw Error("Warm scope lost during concurrent reads");
+        }
+        log({
+          event: "warm-read-liveness",
+          scopes: runtimes.length,
+          snapshots: replies.length,
+          peakSnapshotProcesses: peak,
+        });
+      } finally {
+        configuration.dispose();
+      }
+      writeFileSync(join(root, "ready"), String(process.pid));
       for (const runtime of runtimes) await runtime.closeIdle();
       log({ event: "idle-closed" });
       store.close();
       clearTimeout(timeout);
       app.exit(0);
-    }
+    } else writeFileSync(join(root, "ready"), String(process.pid));
   })
   .catch((error: unknown) => {
     log({ failure: error instanceof Error ? error.message : "unknown" });

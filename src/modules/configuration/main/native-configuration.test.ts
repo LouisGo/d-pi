@@ -48,6 +48,166 @@ function frame(
 ) {
   process.stdout.write(JSON.stringify({ traceId, message }) + "\n");
 }
+it("bounds navigation snapshot processes and drains queued reads with their original scope and trace", async () => {
+  const children = [child(), child(), child(), child()];
+  mocks.spawn.mockClear();
+  for (const process of children) mocks.spawn.mockReturnValueOnce(process);
+  const scopes = [threadScope(), threadScope(), threadScope(), threadScope()];
+  const traces = scopes.map(() => crypto.randomUUID());
+  const service = new NativeConfiguration(
+    "/resources",
+    {
+      threadContext: (threadId: string) => {
+        const scope = scopes.find(
+          (scope) => scope.kind === "thread" && scope.threadId === threadId,
+        );
+        if (!scope) throw Error("missing");
+        return { ...scope, directory: `/project/${threadId}` };
+      },
+    },
+    "/probe",
+    {},
+    () => {},
+    async () => {},
+  );
+  const reads = scopes.map((scope, index) =>
+    service.execute({ kind: "snapshot", scope, traceId: traces[index] ?? "" }),
+  );
+  try {
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(mocks.spawn).toHaveBeenCalledTimes(1);
+    for (const [index, scope] of scopes.entries()) {
+      if (scope.kind !== "thread") throw Error("missing thread");
+      const process = children[index];
+      if (!process) throw Error("missing child");
+      frame(process, traces[index] ?? "", {
+        kind: "snapshot",
+        scope,
+        traceId: traces[index],
+        source: { ...source, cwd: `/project/${scope.threadId}` },
+        models: [],
+        defaultModel: null,
+        openaiAuthenticated: false,
+        deepseekAuthenticated: false,
+        catalogError: false,
+        coverage: "complete",
+        issues: [],
+      });
+      process.emit("close", 0);
+      expect(await reads[index]).toMatchObject({
+        kind: "snapshot",
+        scope,
+        traceId: traces[index],
+      });
+      await new Promise((resolve) => setImmediate(resolve));
+      expect(mocks.spawn).toHaveBeenCalledTimes(Math.min(index + 2, 4));
+    }
+  } finally {
+    service.dispose();
+    for (const process of children) process.emit("close", 0);
+    await Promise.all(reads);
+  }
+});
+it("revalidates a queued Thread before spawning and cancels waiting reads on disposal", async () => {
+  const process = child();
+  mocks.spawn.mockClear().mockReturnValue(process);
+  const scope = threadScope();
+  let exists = true;
+  const service = new NativeConfiguration(
+    "/resources",
+    {
+      threadContext: () => {
+        if (!exists) throw Error("deleted");
+        return { ...scope, directory: "/A" };
+      },
+    },
+    "/probe",
+    {},
+    () => {},
+    async () => {},
+  );
+  const first = service.execute({
+    kind: "snapshot",
+    scope: application,
+    traceId: crypto.randomUUID(),
+  });
+  const traceId = crypto.randomUUID();
+  const waiting = service.execute({ kind: "snapshot", scope, traceId });
+  await new Promise((resolve) => setImmediate(resolve));
+  exists = false;
+  process.emit("close", 0);
+  await first;
+  expect(await waiting).toMatchObject({
+    kind: "failed",
+    code: "stale-target",
+    scope,
+    traceId,
+  });
+  expect(mocks.spawn).toHaveBeenCalledOnce();
+  const active = service.execute({
+    kind: "snapshot",
+    scope: application,
+    traceId: crypto.randomUUID(),
+  });
+  const queued = service.execute({
+    kind: "snapshot",
+    scope: application,
+    traceId,
+  });
+  await new Promise((resolve) => setImmediate(resolve));
+  service.dispose();
+  expect(await queued).toMatchObject({
+    kind: "failed",
+    code: "configuration-unavailable",
+    traceId,
+  });
+  process.emit("close", null);
+  await active;
+  expect(mocks.spawn).toHaveBeenCalledTimes(2);
+});
+
+it("limits pending navigation reads and expires them without starting more processes", async () => {
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+  const process = child();
+  mocks.spawn.mockClear().mockReturnValue(process);
+  const service = new NativeConfiguration(
+    "/resources",
+    threads,
+    "/probe",
+    {},
+    () => {},
+    async () => {},
+  );
+  const command = () => ({
+    kind: "snapshot" as const,
+    scope: application,
+    traceId: crypto.randomUUID(),
+  });
+  const active = service.execute(command());
+  const commands = Array.from({ length: 8 }, command);
+  const pending = commands.map((command) => service.execute(command));
+  try {
+    expect(await service.execute(command())).toMatchObject({
+      kind: "failed",
+      code: "operation-in-progress",
+    });
+    await new Promise((resolve) => setImmediate(resolve));
+    await vi.advanceTimersByTimeAsync(20000);
+    for (const [index, read] of pending.entries())
+      expect(await read).toMatchObject({
+        kind: "failed",
+        code: "operation-timed-out",
+        traceId: commands[index]?.traceId,
+      });
+    expect(mocks.spawn).toHaveBeenCalledOnce();
+    process.emit("close", null);
+    await active;
+  } finally {
+    service.dispose();
+    process.emit("close", null);
+    vi.useRealTimers();
+  }
+});
 it("records unreadable credentials as an unknown result with bounded cause codes", async () => {
   const process = child();
   mocks.spawn.mockReturnValue(process);

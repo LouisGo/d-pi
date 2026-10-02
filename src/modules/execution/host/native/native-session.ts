@@ -11,6 +11,10 @@ import {
   FrameDecoder,
   NativeResponseSchema,
 } from "../../../../platform/omp/protocol/public";
+import {
+  NativeTerminationSchema,
+  type ProcessExitEvidence,
+} from "../../contracts/host";
 import { nativeBootstrap } from "./native-bootstrap";
 
 export interface NativeSessionOptions {
@@ -26,7 +30,7 @@ export interface NativeSessionOptions {
 }
 export type NativeObservation =
   | { kind: "frame"; frame: NativeFrame }
-  | { kind: "exited"; groupStopped?: boolean }
+  | { kind: "exited"; groupStopped?: boolean; evidence?: ProcessExitEvidence }
   | { kind: "disconnected"; reason: "spawn" | "protocol" | "exit" | "write" };
 interface Pending {
   command: string;
@@ -43,6 +47,13 @@ export class NativeSession {
   private identity: ProcessIdentity | null = null;
   private groupCleanup: Promise<boolean> | null = null;
   private readonly token: string;
+  private termination: Pick<
+    ProcessExitEvidence,
+    "reason" | "requestedExitCode"
+  > = {
+    reason: null,
+    requestedExitCode: null,
+  };
   constructor(
     private readonly options: NativeSessionOptions,
     private readonly observe: (event: NativeObservation) => void,
@@ -82,18 +93,26 @@ export class NativeSession {
     );
     this.child = child;
     this.closePromise = new Promise<void>((resolve) =>
-      child.once("close", () => {
+      child.once("close", (exitCode, signal) => {
+        const evidence: ProcessExitEvidence = {
+          process: "native",
+          pid: child.pid ?? null,
+          exitCode: exitCode ?? null,
+          signal: signal ?? null,
+          ...this.termination,
+        };
         this.disconnect("exit");
         // Transport failure can precede process death. Always publish the distinct
         // close evidence, even when disconnect() has already closed the transport.
         if (!child.pid) {
-          this.observe({ kind: "exited" });
+          this.observe({ kind: "exited", evidence });
           resolve();
           return;
         }
         void this.cleanupGroup().then((groupStopped) => {
           this.observe({
             kind: "exited",
+            evidence,
             ...(groupStopped ? {} : { groupStopped }),
           });
           resolve();
@@ -146,6 +165,15 @@ export class NativeSession {
     }
   }
   private frame(frame: NativeFrame): void {
+    if (frame.type === "d_pi_native_termination") {
+      if (frame.token !== this.token) return;
+      const parsed = NativeTerminationSchema.safeParse({
+        reason: frame.reason,
+        requestedExitCode: frame.requestedExitCode,
+      });
+      if (parsed.success) this.termination = parsed.data;
+      return;
+    }
     if (frame.type === "d_pi_native_bootstrap") {
       if (frame.token !== this.token || !this.child?.pid) {
         this.child?.stdin.end();

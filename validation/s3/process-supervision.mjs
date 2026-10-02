@@ -197,7 +197,21 @@ for (const [fault, mode] of [
         await readFile(join(root, "events.jsonl"), "utf8"),
         /idle-closed/,
       );
-      results.push({ fault, mode, nativeStopped: true, scopes: 2 });
+      const liveness = (await events(root)).find(
+        (event) => event.event === "warm-read-liveness",
+      );
+      assert.ok(liveness);
+      assert.equal(liveness.scopes, 2);
+      assert.equal(liveness.snapshots, 4);
+      assert.equal(liveness.peakSnapshotProcesses, 1);
+      results.push({
+        fault,
+        mode,
+        nativeStopped: true,
+        scopes: 2,
+        warmScopesSurvivedFourReads: true,
+        peakSnapshotProcesses: 1,
+      });
       continue;
     }
     await wait(

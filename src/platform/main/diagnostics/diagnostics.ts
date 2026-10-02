@@ -43,6 +43,11 @@ export interface DiagnosticEvent {
   errorId?: string;
   code?: string;
   causeCode?: string;
+  processPid?: number | null;
+  exitCode?: number | null;
+  exitSignal?: string | null;
+  terminationReason?: string | null;
+  requestedExitCode?: number | null;
 }
 export class Diagnostics {
   readonly processInstanceId = randomUUID();

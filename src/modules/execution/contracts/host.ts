@@ -8,6 +8,33 @@ import {
 } from "./interactions";
 import { SelectModelCommandSchema } from "./runtime";
 import { FrozenSubmissionSchema, SubmissionEventSchema } from "./submission";
+export const NativeTerminationSchema = z.strictObject({
+  reason: z.enum([
+    "watchdog-owner-changed",
+    "watchdog-owner-missing",
+    "watchdog-main-changed",
+    "watchdog-main-missing",
+    "permit-timeout",
+    "permit-rejected",
+    "stdin-eof",
+    "bootstrap-error",
+    "sdk-exit",
+  ]),
+  requestedExitCode: z.number().int().nullable(),
+});
+export const ProcessExitEvidenceSchema = z.strictObject({
+  process: z.enum(["native", "utility"]),
+  pid: z.number().int().positive().nullable(),
+  exitCode: z.number().int().nullable(),
+  signal: z
+    .string()
+    .max(32)
+    .regex(/^SIG[A-Z0-9]+$/)
+    .nullable(),
+  reason: NativeTerminationSchema.shape.reason.nullable(),
+  requestedExitCode: z.number().int().nullable(),
+});
+export type ProcessExitEvidence = z.infer<typeof ProcessExitEvidenceSchema>;
 export const NativeProcessRegistrationSchema = z.strictObject({
   pid: z.number().int().min(2),
   parentPid: z.number().int().positive(),
@@ -89,6 +116,11 @@ export type NativeState = z.infer<typeof NativeStateSchema>;
 
 export type HostCommand = z.infer<typeof HostCommandSchema>;
 export const HostMessageSchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("process-exit"),
+    connectionGeneration: z.uuid(),
+    evidence: ProcessExitEvidenceSchema,
+  }),
   z.object({
     kind: z.literal("native-register"),
     registration: NativeProcessRegistrationSchema,

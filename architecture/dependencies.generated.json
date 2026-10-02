@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "5c15e34c0f26c2e7d9b721d79ca11e75bad5cd811248c635c3a889b0e737ba23",
+  "inputsHash": "6ef2fa1e5e6d77e3b2db18cc52627e049e5b979c512d29100adb65b12087c064",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 267,
-    "scannedFiles": 267,
+    "sourceFiles": 268,
+    "scannedFiles": 268,
     "unscanned": []
   },
   "modules": [
@@ -60,7 +60,7 @@
       ],
       "materialized": true,
       "files": 24,
-      "lines": 1455,
+      "lines": 1460,
       "publicEntries": [
         {
           "path": "src/platform/main/storage/public.ts",
@@ -318,8 +318,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 41,
-      "lines": 8930,
+      "files": 42,
+      "lines": 9361,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -372,7 +372,7 @@
       ],
       "materialized": true,
       "files": 12,
-      "lines": 1712,
+      "lines": 1949,
       "publicEntries": [
         {
           "path": "src/modules/configuration/contracts/public.ts",
@@ -1750,6 +1750,13 @@
       "dependency": "platform",
       "targetEnvironment": "omp",
       "testOnly": false
+    },
+    {
+      "module": "execution",
+      "environment": "host",
+      "dependency": "platform",
+      "targetEnvironment": "node",
+      "testOnly": true
     },
     {
       "module": "execution",
@@ -12832,6 +12839,36 @@
       "targetEnvironment": "contracts"
     },
     {
+      "from": "src/modules/execution/host/native/native-bootstrap.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": true,
+      "specifier": "node:vm",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/host/native/native-bootstrap.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/host/native/native-bootstrap.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": true,
+      "specifier": "./native-bootstrap",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/host/native/native-bootstrap.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "host"
+    },
+    {
       "from": "src/modules/execution/host/native/native-session.test.ts",
       "sourceModule": "execution",
       "sourceEnvironment": "host",
@@ -12866,6 +12903,18 @@
       "specifier": "vitest",
       "kind": "import",
       "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/host/native/native-session.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": true,
+      "specifier": "../../../../platform/node/processes/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/node/processes/public.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "node"
     },
     {
       "from": "src/modules/execution/host/native/native-session.test.ts",
@@ -12941,6 +12990,18 @@
       "to": "src/platform/omp/protocol/public.ts",
       "targetModule": "platform",
       "targetEnvironment": "omp"
+    },
+    {
+      "from": "src/modules/execution/host/native/native-session.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "../../contracts/host",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/host.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/modules/execution/host/native/native-session.ts",

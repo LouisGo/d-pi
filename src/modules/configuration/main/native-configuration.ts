@@ -29,6 +29,12 @@ type Job = {
   directory: string;
 };
 export class NativeConfiguration {
+  // Navigation and project-history reads share this owner. Loading another SDK
+  // for every concurrent read can starve the two long-lived execution processes.
+  private snapshotBusy = false;
+  private readonly snapshotWaiters = new Set<
+    (failure?: "operation-timed-out" | "configuration-unavailable") => void
+  >();
   private job: Job | null = null;
   private mutation = false;
   private disposed = false;
@@ -64,6 +70,70 @@ export class NativeConfiguration {
     this.environment = { ...environment };
   }
   async execute(command: ConfigurationCommand): Promise<ConfigurationReply> {
+    if (command.kind !== "snapshot") return this.executeNative(command);
+    const started = performance.now();
+    const failure = await this.acquireSnapshot();
+    if (failure) {
+      try {
+        this.record({
+          traceId: command.traceId,
+          requestId: command.traceId,
+          connectionId: command.traceId,
+          operation: "configuration:snapshot:queue",
+          stage: "failed",
+          code: failure,
+          durationMs: performance.now() - started,
+          ...(command.scope.kind === "thread"
+            ? { threadId: command.scope.threadId }
+            : {}),
+        });
+      } catch {
+        /* Diagnostics cannot prevent a typed read failure. */
+      }
+      return {
+        kind: "failed",
+        scope: command.scope,
+        traceId: command.traceId,
+        source: null,
+        code: failure,
+      };
+    }
+    try {
+      return await this.executeNative(command);
+    } finally {
+      const next = this.snapshotWaiters.values().next().value;
+      if (next) next();
+      else this.snapshotBusy = false;
+    }
+  }
+  private acquireSnapshot(): Promise<
+    | "operation-timed-out"
+    | "configuration-unavailable"
+    | "operation-in-progress"
+    | undefined
+  > {
+    if (this.disposed) return Promise.resolve("configuration-unavailable");
+    if (!this.snapshotBusy) {
+      this.snapshotBusy = true;
+      return Promise.resolve(undefined);
+    }
+    if (this.snapshotWaiters.size >= 8)
+      return Promise.resolve("operation-in-progress");
+    return new Promise((resolve) => {
+      const done = (
+        failure?: "operation-timed-out" | "configuration-unavailable",
+      ) => {
+        clearTimeout(timer);
+        this.snapshotWaiters.delete(done);
+        resolve(failure);
+      };
+      const timer = setTimeout(() => done("operation-timed-out"), 20000);
+      this.snapshotWaiters.add(done);
+    });
+  }
+  private async executeNative(
+    command: ConfigurationCommand,
+  ): Promise<ConfigurationReply> {
     const scope: ConfigurationScope =
       "scope" in command
         ? command.scope
@@ -240,7 +310,10 @@ export class NativeConfiguration {
           },
           command.kind === "login" ? 180000 : 20000,
         );
-        const finish = () => {
+        const finish = (
+          exitCode: number | null,
+          signal: NodeJS.Signals | null,
+        ) => {
           clearTimeout(timer);
           lines.close();
           this.children.delete(child);
@@ -278,6 +351,9 @@ export class NativeConfiguration {
           }
           this.record({
             ...context,
+            processPid: child.pid ?? null,
+            exitCode,
+            exitSignal: signal ?? null,
             stage:
               reply.kind === "failed"
                 ? "failed"
@@ -329,6 +405,7 @@ export class NativeConfiguration {
   }
   dispose(): void {
     this.disposed = true;
+    for (const done of this.snapshotWaiters) done("configuration-unavailable");
     if (this.job) this.job.cancelled = true;
     for (const child of this.children) child.kill();
   }

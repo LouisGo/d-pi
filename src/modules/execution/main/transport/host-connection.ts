@@ -10,6 +10,7 @@ import {
   type HostMessage,
   type HostStart,
   HostTransportMessageSchema,
+  type ProcessExitEvidence,
 } from "../../contracts/public";
 
 type ReadyMessage = Extract<HostMessage, { kind: "ready" }>;
@@ -18,7 +19,7 @@ type Ready = ReadyMessage & {
 };
 type ScopeListener = {
   message: (message: HostMessage | { kind: "scope-closed" }) => void;
-  exit: () => void;
+  exit: (evidence?: ProcessExitEvidence) => void;
 };
 let sharedHost: UtilityProcess | null = null;
 const scopes = new Map<string, ScopeListener>();
@@ -30,18 +31,30 @@ function hostProcess(): UtilityProcess {
     { serviceName: "d-pi SessionHost" },
   );
   sharedHost = host;
+  let pid = host.pid ?? null;
+  host.on("spawn", () => {
+    pid = host.pid ?? null;
+  });
   host.on("message", (raw: unknown) => {
     if (sharedHost !== host) return;
     const parsed = HostTransportMessageSchema.safeParse(raw);
     if (parsed.success)
       scopes.get(parsed.data.scopeId)?.message(parsed.data.message);
   });
-  host.on("exit", () => {
+  host.on("exit", (exitCode: number) => {
     if (sharedHost !== host) return;
     sharedHost = null;
     const previous = [...scopes.values()];
     scopes.clear();
-    for (const scope of previous) scope.exit();
+    for (const scope of previous)
+      scope.exit({
+        process: "utility",
+        pid,
+        exitCode,
+        signal: null,
+        reason: null,
+        requestedExitCode: null,
+      });
   });
   return host;
 }
@@ -58,7 +71,7 @@ export class HostConnection {
     private readonly receive: (
       message: Exclude<HostMessage, { kind: "ready" | "native-register" }>,
     ) => void,
-    private readonly exited: () => void,
+    private readonly exited: (evidence?: ProcessExitEvidence) => void,
   ) {}
   get connected(): boolean {
     return this.scopeId !== null;
@@ -87,12 +100,12 @@ export class HostConnection {
           command: { kind: "close-idle" },
         });
       }, 35000);
-      const exit = () => {
+      const exit = (evidence?: ProcessExitEvidence) => {
         clearTimeout(timeout);
         if (this.scopeId !== command.processInstanceId) return;
         scopes.delete(command.processInstanceId);
         this.scopeId = null;
-        this.exited();
+        this.exited(evidence);
         this.cleanup = nativeIdentity
           ? terminateManagedGroup(nativeIdentity)
           : Promise.resolve(true);

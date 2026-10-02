@@ -1,0 +1,642 @@
+{
+  "sourceArchive": "dpi-gui-retest-7ae6962.zip",
+  "sourceSha256": "d6a179978e777cf267b4ec59a426d7ede1f30562836d5db38686e58079f5ce0a",
+  "metadata": {
+    "testedCommit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+    "build": "0.1.0-m2.10 / 7ae6962c-5e567df2",
+    "platform": "Linux x64 cloud",
+    "window": [
+      1180,
+      812
+    ],
+    "sourceEdits": false,
+    "modelCalls": 0,
+    "realCredentialsUsed": false,
+    "providerAuthRequests": 0,
+    "threadCount": 6,
+    "nativeBindingCount": 5,
+    "submissionCount": 0,
+    "warmInterruptionOccurrences": 2,
+    "tests": {
+      "focusedFiles": 8,
+      "focusedPassed": 40,
+      "sdkAuthFixture": "passed",
+      "fullCheck": "not run"
+    },
+    "preservedOldArtifacts": true
+  },
+  "diagnosticExcerpt": [
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:07:15.973Z",
+      "process": "main",
+      "processInstanceId": "4650392e-04fb-48db-9af4-eadbd8fce5dc",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "a2bb854a-051a-42ca-86c0-c646cf8e86ac",
+      "threadId": "d40d83cd-8f14-4691-8529-8216c67bb890",
+      "operation": "history:project-list",
+      "requestId": "d4a94aab-32ef-465c-b9ce-9cd02773cb2b",
+      "connectionId": "4650392e-04fb-48db-9af4-eadbd8fce5dc",
+      "stage": "received"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:07:15.973Z",
+      "process": "main",
+      "processInstanceId": "4650392e-04fb-48db-9af4-eadbd8fce5dc",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "4e2cd19f-0626-42b8-8fe4-42faf6f25e58",
+      "threadId": "d40d83cd-8f14-4691-8529-8216c67bb890",
+      "operation": "history:project-read",
+      "requestId": "94155715-88c1-4a09-be87-437178752294",
+      "connectionId": "4650392e-04fb-48db-9af4-eadbd8fce5dc",
+      "stage": "received"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:07:16.682Z",
+      "process": "main",
+      "processInstanceId": "4650392e-04fb-48db-9af4-eadbd8fce5dc",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "8ff3ca7d-95cf-47a2-aade-aab1c56d4181",
+      "requestId": "8ff3ca7d-95cf-47a2-aade-aab1c56d4181",
+      "connectionId": "c5cb81ed-7940-4a3e-8edd-2a67bc43427b",
+      "nativeProcessInstanceId": "c5cb81ed-7940-4a3e-8edd-2a67bc43427b",
+      "operation": "configuration:snapshot:adapter",
+      "stage": "initiated"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:07:16.904Z",
+      "process": "main",
+      "processInstanceId": "4650392e-04fb-48db-9af4-eadbd8fce5dc",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "a2bb854a-051a-42ca-86c0-c646cf8e86ac",
+      "requestId": "a2bb854a-051a-42ca-86c0-c646cf8e86ac",
+      "connectionId": "6eff6371-58b8-4325-9a37-d2d33680b86b",
+      "nativeProcessInstanceId": "6eff6371-58b8-4325-9a37-d2d33680b86b",
+      "operation": "configuration:snapshot:adapter",
+      "stage": "initiated"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:07:16.935Z",
+      "process": "main",
+      "processInstanceId": "4650392e-04fb-48db-9af4-eadbd8fce5dc",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "4e2cd19f-0626-42b8-8fe4-42faf6f25e58",
+      "requestId": "4e2cd19f-0626-42b8-8fe4-42faf6f25e58",
+      "connectionId": "35020b19-44e6-418f-a3f8-258af5daaad9",
+      "nativeProcessInstanceId": "35020b19-44e6-418f-a3f8-258af5daaad9",
+      "operation": "configuration:snapshot:adapter",
+      "stage": "initiated"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:07:16.967Z",
+      "process": "main",
+      "processInstanceId": "4650392e-04fb-48db-9af4-eadbd8fce5dc",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "2010f840-b9c1-487a-9abd-64c11cef19a3",
+      "requestId": "2010f840-b9c1-487a-9abd-64c11cef19a3",
+      "connectionId": "2f50b1da-5e80-463a-a9b8-88578370aaef",
+      "nativeProcessInstanceId": "2f50b1da-5e80-463a-a9b8-88578370aaef",
+      "operation": "configuration:snapshot:adapter",
+      "stage": "initiated"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:07:42.672Z",
+      "process": "main",
+      "processInstanceId": "4650392e-04fb-48db-9af4-eadbd8fce5dc",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "f054c58b-8269-468a-9574-8156f0c5f1e7",
+      "requestId": "f054c58b-8269-468a-9574-8156f0c5f1e7",
+      "connectionId": "ef3f2752-ea0a-4690-aad2-d97db7784e4f",
+      "nativeProcessInstanceId": "40878cfa-3195-428d-851e-ac71ef1f89a0",
+      "threadId": "fe21b28a-a31c-4d6f-83a2-35c9e67089a3",
+      "operation": "runtime:host",
+      "stage": "disconnected",
+      "code": "exit"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:07:42.680Z",
+      "process": "main",
+      "processInstanceId": "4650392e-04fb-48db-9af4-eadbd8fce5dc",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "f56e35e5-a3c6-48b1-ab3c-8fc9445178ed",
+      "requestId": "f56e35e5-a3c6-48b1-ab3c-8fc9445178ed",
+      "connectionId": "0537061e-d22d-43c0-b3d3-54f64cec307c",
+      "nativeProcessInstanceId": "1db13f8f-b021-44e2-a0c8-755bd866f7a0",
+      "threadId": "c4567f54-e41f-4e1f-865c-b0d4f53bfe15",
+      "operation": "runtime:host",
+      "stage": "disconnected",
+      "code": "exit"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:07:42.745Z",
+      "process": "main",
+      "processInstanceId": "4650392e-04fb-48db-9af4-eadbd8fce5dc",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "f56e35e5-a3c6-48b1-ab3c-8fc9445178ed",
+      "requestId": "f56e35e5-a3c6-48b1-ab3c-8fc9445178ed",
+      "connectionId": "0537061e-d22d-43c0-b3d3-54f64cec307c",
+      "nativeProcessInstanceId": "1db13f8f-b021-44e2-a0c8-755bd866f7a0",
+      "threadId": "c4567f54-e41f-4e1f-865c-b0d4f53bfe15",
+      "operation": "runtime:host",
+      "stage": "exited"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:07:42.760Z",
+      "process": "main",
+      "processInstanceId": "4650392e-04fb-48db-9af4-eadbd8fce5dc",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "a2bb854a-051a-42ca-86c0-c646cf8e86ac",
+      "requestId": "a2bb854a-051a-42ca-86c0-c646cf8e86ac",
+      "connectionId": "6eff6371-58b8-4325-9a37-d2d33680b86b",
+      "nativeProcessInstanceId": "6eff6371-58b8-4325-9a37-d2d33680b86b",
+      "operation": "configuration:snapshot:adapter",
+      "stage": "failed",
+      "durationMs": 25856.01575500006,
+      "code": "operation-timed-out"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:07:42.760Z",
+      "process": "main",
+      "processInstanceId": "4650392e-04fb-48db-9af4-eadbd8fce5dc",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "a2bb854a-051a-42ca-86c0-c646cf8e86ac",
+      "threadId": "d40d83cd-8f14-4691-8529-8216c67bb890",
+      "operation": "history:project-list",
+      "requestId": "d4a94aab-32ef-465c-b9ce-9cd02773cb2b",
+      "connectionId": "4650392e-04fb-48db-9af4-eadbd8fce5dc",
+      "stage": "failed",
+      "durationMs": 26786.993608999997,
+      "code": "invalid"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:07:42.761Z",
+      "process": "main",
+      "processInstanceId": "4650392e-04fb-48db-9af4-eadbd8fce5dc",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "f054c58b-8269-468a-9574-8156f0c5f1e7",
+      "requestId": "f054c58b-8269-468a-9574-8156f0c5f1e7",
+      "connectionId": "ef3f2752-ea0a-4690-aad2-d97db7784e4f",
+      "nativeProcessInstanceId": "40878cfa-3195-428d-851e-ac71ef1f89a0",
+      "threadId": "fe21b28a-a31c-4d6f-83a2-35c9e67089a3",
+      "operation": "runtime:host",
+      "stage": "exited"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:07:42.786Z",
+      "process": "main",
+      "processInstanceId": "4650392e-04fb-48db-9af4-eadbd8fce5dc",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "2010f840-b9c1-487a-9abd-64c11cef19a3",
+      "requestId": "2010f840-b9c1-487a-9abd-64c11cef19a3",
+      "connectionId": "2f50b1da-5e80-463a-a9b8-88578370aaef",
+      "nativeProcessInstanceId": "2f50b1da-5e80-463a-a9b8-88578370aaef",
+      "operation": "configuration:snapshot:adapter",
+      "stage": "failed",
+      "durationMs": 25819.153583000065,
+      "code": "operation-timed-out"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:07:42.788Z",
+      "process": "main",
+      "processInstanceId": "4650392e-04fb-48db-9af4-eadbd8fce5dc",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "8ff3ca7d-95cf-47a2-aade-aab1c56d4181",
+      "requestId": "8ff3ca7d-95cf-47a2-aade-aab1c56d4181",
+      "connectionId": "c5cb81ed-7940-4a3e-8edd-2a67bc43427b",
+      "nativeProcessInstanceId": "c5cb81ed-7940-4a3e-8edd-2a67bc43427b",
+      "operation": "configuration:snapshot:adapter",
+      "stage": "failed",
+      "durationMs": 26106.076770000043,
+      "code": "operation-timed-out"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:07:43.076Z",
+      "process": "main",
+      "processInstanceId": "4650392e-04fb-48db-9af4-eadbd8fce5dc",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "4e2cd19f-0626-42b8-8fe4-42faf6f25e58",
+      "requestId": "4e2cd19f-0626-42b8-8fe4-42faf6f25e58",
+      "connectionId": "35020b19-44e6-418f-a3f8-258af5daaad9",
+      "nativeProcessInstanceId": "35020b19-44e6-418f-a3f8-258af5daaad9",
+      "operation": "configuration:snapshot:adapter",
+      "stage": "failed",
+      "durationMs": 26141.45181999996,
+      "code": "operation-timed-out"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:07:43.077Z",
+      "process": "main",
+      "processInstanceId": "4650392e-04fb-48db-9af4-eadbd8fce5dc",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "4e2cd19f-0626-42b8-8fe4-42faf6f25e58",
+      "threadId": "d40d83cd-8f14-4691-8529-8216c67bb890",
+      "operation": "history:project-read",
+      "requestId": "94155715-88c1-4a09-be87-437178752294",
+      "connectionId": "4650392e-04fb-48db-9af4-eadbd8fce5dc",
+      "stage": "failed",
+      "code": "failed",
+      "durationMs": 27103.05412799993
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:13:32.974Z",
+      "process": "main",
+      "processInstanceId": "dcd437b5-a5ea-4843-b2fe-05ff2c7e3b20",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "a2b712a3-1b85-46ab-87ec-39b8d8b2b265",
+      "threadId": "d40d83cd-8f14-4691-8529-8216c67bb890",
+      "operation": "history:project-list",
+      "requestId": "1e05663f-9802-4c70-bb6c-2f08fefcf993",
+      "connectionId": "dcd437b5-a5ea-4843-b2fe-05ff2c7e3b20",
+      "stage": "received"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:13:32.974Z",
+      "process": "main",
+      "processInstanceId": "dcd437b5-a5ea-4843-b2fe-05ff2c7e3b20",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "100251fb-e8ce-454c-8ca5-0ec8ca2f86ab",
+      "threadId": "d40d83cd-8f14-4691-8529-8216c67bb890",
+      "operation": "history:project-read",
+      "requestId": "e829d238-2885-4843-9a92-1e142944a45a",
+      "connectionId": "dcd437b5-a5ea-4843-b2fe-05ff2c7e3b20",
+      "stage": "received"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:13:33.922Z",
+      "process": "main",
+      "processInstanceId": "dcd437b5-a5ea-4843-b2fe-05ff2c7e3b20",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "c5901bae-be3b-41e2-a903-3ef5fe97551c",
+      "requestId": "c5901bae-be3b-41e2-a903-3ef5fe97551c",
+      "connectionId": "b2313daa-79bf-4304-a3c7-11325088236c",
+      "nativeProcessInstanceId": "b2313daa-79bf-4304-a3c7-11325088236c",
+      "operation": "configuration:snapshot:adapter",
+      "stage": "initiated"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:13:34.311Z",
+      "process": "main",
+      "processInstanceId": "dcd437b5-a5ea-4843-b2fe-05ff2c7e3b20",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "f8b398b3-e3d5-4969-a69f-d26b16bf133f",
+      "requestId": "f8b398b3-e3d5-4969-a69f-d26b16bf133f",
+      "connectionId": "7bc89c35-8b68-4836-a1c5-d900ab10a37a",
+      "nativeProcessInstanceId": "7bc89c35-8b68-4836-a1c5-d900ab10a37a",
+      "operation": "configuration:snapshot:adapter",
+      "stage": "initiated"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:13:34.336Z",
+      "process": "main",
+      "processInstanceId": "dcd437b5-a5ea-4843-b2fe-05ff2c7e3b20",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "100251fb-e8ce-454c-8ca5-0ec8ca2f86ab",
+      "requestId": "100251fb-e8ce-454c-8ca5-0ec8ca2f86ab",
+      "connectionId": "a5830684-a1b2-4016-99ce-fb8c13d3a541",
+      "nativeProcessInstanceId": "a5830684-a1b2-4016-99ce-fb8c13d3a541",
+      "operation": "configuration:snapshot:adapter",
+      "stage": "initiated"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:13:34.354Z",
+      "process": "main",
+      "processInstanceId": "dcd437b5-a5ea-4843-b2fe-05ff2c7e3b20",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "a2b712a3-1b85-46ab-87ec-39b8d8b2b265",
+      "requestId": "a2b712a3-1b85-46ab-87ec-39b8d8b2b265",
+      "connectionId": "997cc79a-f3d1-4acb-9782-6468224cb4d9",
+      "nativeProcessInstanceId": "997cc79a-f3d1-4acb-9782-6468224cb4d9",
+      "operation": "configuration:snapshot:adapter",
+      "stage": "initiated"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:15:45.551Z",
+      "process": "main",
+      "processInstanceId": "dcd437b5-a5ea-4843-b2fe-05ff2c7e3b20",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "3189a12d-a701-4e35-a04d-dd62f8a8648e",
+      "requestId": "3189a12d-a701-4e35-a04d-dd62f8a8648e",
+      "connectionId": "17ecdb2b-7cbc-46a5-8672-5fc55be57cdc",
+      "nativeProcessInstanceId": "17c1b02c-da5f-462f-a676-db3ceca4a9d9",
+      "threadId": "4f68fa41-d0f0-4dcd-a3dd-867dc7c8ade3",
+      "operation": "runtime:host",
+      "stage": "disconnected",
+      "code": "exit"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:15:45.559Z",
+      "process": "main",
+      "processInstanceId": "dcd437b5-a5ea-4843-b2fe-05ff2c7e3b20",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "ce29e179-3315-49ed-9c9d-c58ad6e9cd36",
+      "requestId": "ce29e179-3315-49ed-9c9d-c58ad6e9cd36",
+      "connectionId": "73149e5c-5773-4182-bdd5-e93c20badfa7",
+      "nativeProcessInstanceId": "ec947d90-5f3b-4a77-8f2e-f3194f96bc10",
+      "threadId": "bc8798da-dd52-4194-9ba2-8647d66cf108",
+      "operation": "runtime:host",
+      "stage": "disconnected",
+      "code": "exit"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:15:45.583Z",
+      "process": "main",
+      "processInstanceId": "dcd437b5-a5ea-4843-b2fe-05ff2c7e3b20",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "c5901bae-be3b-41e2-a903-3ef5fe97551c",
+      "requestId": "c5901bae-be3b-41e2-a903-3ef5fe97551c",
+      "connectionId": "b2313daa-79bf-4304-a3c7-11325088236c",
+      "nativeProcessInstanceId": "b2313daa-79bf-4304-a3c7-11325088236c",
+      "operation": "configuration:snapshot:adapter",
+      "stage": "failed",
+      "durationMs": 131661.861338,
+      "code": "operation-timed-out"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:15:45.591Z",
+      "process": "main",
+      "processInstanceId": "dcd437b5-a5ea-4843-b2fe-05ff2c7e3b20",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "100251fb-e8ce-454c-8ca5-0ec8ca2f86ab",
+      "requestId": "100251fb-e8ce-454c-8ca5-0ec8ca2f86ab",
+      "connectionId": "a5830684-a1b2-4016-99ce-fb8c13d3a541",
+      "nativeProcessInstanceId": "a5830684-a1b2-4016-99ce-fb8c13d3a541",
+      "operation": "configuration:snapshot:adapter",
+      "stage": "failed",
+      "durationMs": 131255.405882,
+      "code": "operation-timed-out"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:15:45.591Z",
+      "process": "main",
+      "processInstanceId": "dcd437b5-a5ea-4843-b2fe-05ff2c7e3b20",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "100251fb-e8ce-454c-8ca5-0ec8ca2f86ab",
+      "threadId": "d40d83cd-8f14-4691-8529-8216c67bb890",
+      "operation": "history:project-read",
+      "requestId": "e829d238-2885-4843-9a92-1e142944a45a",
+      "connectionId": "dcd437b5-a5ea-4843-b2fe-05ff2c7e3b20",
+      "stage": "failed",
+      "code": "failed",
+      "durationMs": 132617.13669599997
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:15:45.602Z",
+      "process": "main",
+      "processInstanceId": "dcd437b5-a5ea-4843-b2fe-05ff2c7e3b20",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "f8b398b3-e3d5-4969-a69f-d26b16bf133f",
+      "requestId": "f8b398b3-e3d5-4969-a69f-d26b16bf133f",
+      "connectionId": "7bc89c35-8b68-4836-a1c5-d900ab10a37a",
+      "nativeProcessInstanceId": "7bc89c35-8b68-4836-a1c5-d900ab10a37a",
+      "operation": "configuration:snapshot:adapter",
+      "stage": "failed",
+      "durationMs": 131291.530462,
+      "code": "operation-timed-out"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:15:45.604Z",
+      "process": "main",
+      "processInstanceId": "dcd437b5-a5ea-4843-b2fe-05ff2c7e3b20",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "ce29e179-3315-49ed-9c9d-c58ad6e9cd36",
+      "requestId": "ce29e179-3315-49ed-9c9d-c58ad6e9cd36",
+      "connectionId": "73149e5c-5773-4182-bdd5-e93c20badfa7",
+      "nativeProcessInstanceId": "ec947d90-5f3b-4a77-8f2e-f3194f96bc10",
+      "threadId": "bc8798da-dd52-4194-9ba2-8647d66cf108",
+      "operation": "runtime:host",
+      "stage": "exited"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:15:45.622Z",
+      "process": "main",
+      "processInstanceId": "dcd437b5-a5ea-4843-b2fe-05ff2c7e3b20",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "3189a12d-a701-4e35-a04d-dd62f8a8648e",
+      "requestId": "3189a12d-a701-4e35-a04d-dd62f8a8648e",
+      "connectionId": "17ecdb2b-7cbc-46a5-8672-5fc55be57cdc",
+      "nativeProcessInstanceId": "17c1b02c-da5f-462f-a676-db3ceca4a9d9",
+      "threadId": "4f68fa41-d0f0-4dcd-a3dd-867dc7c8ade3",
+      "operation": "runtime:host",
+      "stage": "exited"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:15:45.951Z",
+      "process": "main",
+      "processInstanceId": "dcd437b5-a5ea-4843-b2fe-05ff2c7e3b20",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "a2b712a3-1b85-46ab-87ec-39b8d8b2b265",
+      "requestId": "a2b712a3-1b85-46ab-87ec-39b8d8b2b265",
+      "connectionId": "997cc79a-f3d1-4acb-9782-6468224cb4d9",
+      "nativeProcessInstanceId": "997cc79a-f3d1-4acb-9782-6468224cb4d9",
+      "operation": "configuration:snapshot:adapter",
+      "stage": "failed",
+      "durationMs": 131596.48104400001,
+      "code": "operation-timed-out"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-02T02:15:45.951Z",
+      "process": "main",
+      "processInstanceId": "dcd437b5-a5ea-4843-b2fe-05ff2c7e3b20",
+      "build": {
+        "version": "0.1.0-m2.10",
+        "commit": "7ae6962c5f6e6903964f429d5d5f904b99d18c08",
+        "dirty": false,
+        "id": "7ae6962c-5e567df2"
+      },
+      "traceId": "a2b712a3-1b85-46ab-87ec-39b8d8b2b265",
+      "threadId": "d40d83cd-8f14-4691-8529-8216c67bb890",
+      "operation": "history:project-list",
+      "requestId": "1e05663f-9802-4c70-bb6c-2f08fefcf993",
+      "connectionId": "dcd437b5-a5ea-4843-b2fe-05ff2c7e3b20",
+      "stage": "failed",
+      "code": "failed",
+      "durationMs": 132977.21557399997
+    }
+  ]
+}

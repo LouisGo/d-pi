@@ -284,6 +284,12 @@ export function createSessionHost(
   }
   function observe(event: NativeObservation): void {
     if (event.kind === "exited") {
+      if (event.evidence && start)
+        send({
+          kind: "process-exit",
+          connectionGeneration: start.connectionGeneration,
+          evidence: event.evidence,
+        });
       if (event.groupStopped === false)
         send({ kind: "interrupted", reason: "process-group-unconfirmed" });
       // The native child is confirmed dead. Release the remaining utility owner;

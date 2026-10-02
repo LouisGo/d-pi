@@ -8,7 +8,82 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, it, vi } from "vitest";
+import { readProcessIdentity } from "../../../../platform/node/processes/public";
 import { type NativeObservation, NativeSession } from "./native-session";
+
+it("keeps two registered sessions queryable through repeated owner probe timeouts", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "d-pi-native-live-owner-"));
+  const entry = join(dir, "fixture.cjs");
+  const preload = join(dir, "probe.cjs");
+  const binary = join(dir, "node-with-probe");
+  const probeFault = join(dir, "probe-fault");
+  writeFileSync(
+    binary,
+    '#!/bin/sh\nexec "$D_PI_TEST_NODE" --require "$D_PI_TEST_PRELOAD" "$@"\n',
+    { mode: 0o755 },
+  );
+  writeFileSync(
+    preload,
+    `const cp=require('node:child_process');const fs=require('node:fs');
+const exec=cp.execFile;const sync=cp.execFileSync;
+const failed=()=>fs.existsSync(process.env.D_PI_TEST_PROBE_FAULT);
+cp.execFile=(file,args,options,done)=>{
+ if(file==='/bin/ps'&&failed()){setTimeout(()=>done(Error('controlled ps timeout'),''),5);return;}
+ return exec(file,args,options,done);
+};
+cp.execFileSync=(...args)=>{if(args[0]==='/bin/ps'&&failed())throw Error('controlled ps timeout');return sync(...args);};`,
+  );
+  writeFileSync(
+    entry,
+    `console.log(JSON.stringify({type:'ready'}));
+require('node:readline').createInterface({input:process.stdin}).on('line',line=>{
+ const c=JSON.parse(line);console.log(JSON.stringify({type:'response',id:c.id,command:c.type,success:true}));
+}).on('close',()=>process.exit(0));`,
+  );
+  const main = await readProcessIdentity(process.pid);
+  if (!main) throw Error("Main identity unavailable");
+  const observations: NativeObservation[][] = [[], []];
+  const sessions = observations.map(
+    (events) =>
+      new NativeSession(
+        {
+          binary,
+          entry,
+          directory: dir,
+          environment: {
+            PATH: process.env.PATH,
+            D_PI_TEST_NODE: process.execPath,
+            D_PI_TEST_PRELOAD: preload,
+            D_PI_TEST_PROBE_FAULT: probeFault,
+          },
+          sessionDirectory: dir,
+          supervision: {
+            mainPid: process.pid,
+            mainBirth: main.birth,
+            token: crypto.randomUUID(),
+          },
+        },
+        (event) => events.push(event),
+      ),
+  );
+  try {
+    await Promise.all(sessions.map((session) => session.start()));
+    writeFileSync(
+      probeFault,
+      "fail owner probes while both processes are alive",
+    );
+    await new Promise((resolve) => setTimeout(resolve, 1600));
+    for (const session of sessions)
+      expect(await session.request("get_state")).toMatchObject({
+        success: true,
+      });
+    for (const events of observations)
+      expect(events.filter((event) => event.kind !== "frame")).toEqual([]);
+  } finally {
+    await Promise.all(sessions.map((session) => session.close()));
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
 
 it("does not load an executable SDK entry before registration is allowed", async () => {
   const dir = mkdtempSync(join(tmpdir(), "d-pi-native-register-"));
@@ -137,7 +212,17 @@ require('node:readline').createInterface({input:process.stdin}).on('line',line=>
     await session.close();
     expect(events).toContainEqual({ kind: "disconnected", reason: "exit" });
     expect(events.filter((event) => event.kind === "exited")).toEqual([
-      { kind: "exited" },
+      {
+        kind: "exited",
+        evidence: {
+          process: "native",
+          pid: expect.any(Number),
+          exitCode: 0,
+          signal: null,
+          reason: null,
+          requestedExitCode: null,
+        },
+      },
     ]);
   } finally {
     await session.close();
@@ -187,11 +272,73 @@ require('node:readline').createInterface({input:process.stdin}).on('line',line=>
       await session.close();
       expect(events.filter((event) => event.kind !== "frame")).toEqual([
         { kind: "disconnected", reason: "protocol" },
-        { kind: "exited" },
+        {
+          kind: "exited",
+          evidence: {
+            process: "native",
+            pid: expect.any(Number),
+            exitCode: null,
+            signal: "SIGKILL",
+            reason: command === "break_protocol" ? null : "sdk-exit",
+            requestedExitCode: command === "break_protocol" ? null : 0,
+          },
+        },
       ]);
       await expect(session.request("get_state")).rejects.toThrow(
         "Native connection unavailable",
       );
+    } finally {
+      await session.close();
+      rmSync(dir, { recursive: true, force: true });
+    }
+  },
+);
+
+it.each(["finish", "signal"])(
+  "preserves %s exit evidence without attributing external signals to the watchdog",
+  async (command) => {
+    const dir = mkdtempSync(join(tmpdir(), "d-pi-native-exit-evidence-"));
+    const entry = join(dir, "fixture.cjs");
+    writeFileSync(
+      entry,
+      `console.log(JSON.stringify({type:'ready'}));
+require('node:readline').createInterface({input:process.stdin}).on('line',line=>{
+ const c=JSON.parse(line);
+ if(c.type==='finish')process.exit(7);
+ else if(c.type==='signal')process.kill(process.pid,'SIGTERM');
+ else console.log(JSON.stringify({type:'response',id:c.id,command:c.type,success:true}));
+}).on('close',()=>process.exit(0));`,
+    );
+    const events: NativeObservation[] = [];
+    const session = new NativeSession(
+      {
+        binary: process.execPath,
+        entry,
+        directory: dir,
+        environment: { PATH: process.env.PATH },
+        sessionDirectory: dir,
+      },
+      (event) => events.push(event),
+    );
+    try {
+      await session.start();
+      await expect(session.request(command)).rejects.toThrow(
+        "Native connection interrupted",
+      );
+      await session.close();
+      expect(events.filter((event) => event.kind === "exited")).toEqual([
+        {
+          kind: "exited",
+          evidence: {
+            process: "native",
+            pid: expect.any(Number),
+            exitCode: null,
+            signal: command === "finish" ? "SIGKILL" : "SIGTERM",
+            reason: command === "finish" ? "sdk-exit" : null,
+            requestedExitCode: command === "finish" ? 7 : null,
+          },
+        },
+      ]);
     } finally {
       await session.close();
       rmSync(dir, { recursive: true, force: true });
@@ -337,7 +484,17 @@ it("closes the native process when ready times out", async () => {
     await starting;
     await session.close();
     expect(events.filter((event) => event.kind === "exited")).toEqual([
-      { kind: "exited" },
+      {
+        kind: "exited",
+        evidence: {
+          process: "native",
+          pid: expect.any(Number),
+          exitCode: null,
+          signal: "SIGKILL",
+          reason: "sdk-exit",
+          requestedExitCode: 0,
+        },
+      },
     ]);
     await expect(session.request("get_state")).rejects.toThrow(
       "Native connection unavailable",
