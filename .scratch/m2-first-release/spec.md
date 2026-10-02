@@ -7,10 +7,10 @@
     "title": "M2 首版",
     "phase": "M2",
     "engineering": "in-progress",
-    "trial": "feedback",
+    "trial": "delivered",
     "acceptance": "pending",
     "current": true,
-    "build": "0.1.0-m2.10 / c00f3dc5-e027fc01",
+    "build": "0.1.0-m2.11 / 0d45db98-54e50919",
     "pending": [
       "../m1-s3-control-recovery/issues/09-quit-discard-decision.md"
     ],
@@ -29,7 +29,7 @@
       "../review-seven-commits/spec.md",
       "next-stage.md"
     ],
-    "next": "05a原生纯文本队列与05b后续子Agent配置已实现，06a证实缺执行全周期单写保证；本轮组合检查与m2.11候选验证收口后交付，冷旧Thread保持只读，附件/完整父票及用户认可仍待完成",
+    "next": "本轮05a纯文本队列/05b后续子Agent配置与06a证据切片工程完成，m2.11候选已交付待复试；下一步04附件/引用及父05其余能力，M2用户认可pending，冷旧Thread仍只读",
     "constraints": "2026-10-02用户授权下一阶段M2并行开发与中断后继续；本地commit/候选沿用M2授权，不将旧特定修复push扩大到本轮。保留原有环境对齐未提交改动；不公开发布、不扩M3，冷恢复只读，unknown不自动重发。"
   }
 ]
@@ -126,3 +126,5 @@
 2026-10-01：用户明确要求消除闪烁、保留正常操作，并取消新 Thread 的第二次 OMP 启动点击。当前源码已移除偏好保存的全局 busy 和父级渲染传播，语言 Context 分离；新 Thread 在既有项目授权确认后自动启动，首次明确授权接续启动。恢复旧会话的执行策略不变。当前 500 行为测试及原生 Electron 六场景通过；实际 OMP 包复核与限制见 [本轮记录](rendering-isolation.md)。当前 trial 仍 feedback、acceptance pending，未将历史 m2.10 替换为未经验证的新候选。
 
 2026-10-01：用户进一步明确要求修复 check:fast 锁解析阻塞并完整 commit/push；本轮 push 已获授权，取代前述本地限制。复用结构化 importer 读取支持 pnpm 12 的 pnpm/@pnpm/exe manager 文档，同时保持应用锁一致性和严格 manager 版本校验，11 项回归及 check:fast 通过。完整工程与远端状态见 [本轮记录](rendering-isolation.md)。用户体验认可与 M2 未交付范围不变。
+
+2026-10-02：本轮05a/05b/06a工程完成，clean m2.11候选交付；591行为、34架构、59工具、16项实际macOS包内检查与ZIP同源验证通过。[精确身份、证据、限制和试用](next-stage.md)。M2未完成范围与用户认可pending保留，原环境对齐未提交改动不纳入本轮commit，不push。

@@ -1,0 +1,12 @@
+
+DevTools listening on ws://127.0.0.1:50690/devtools/browser/f81e3120-f2a3-4015-bdf2-4b7d3ece79cd
+Failure evidence: /private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-m2-package-oZDWPC
+file:///Users/lou/Learn/d-pi/validation/m2/package.mjs:145
+  throw Error("M2 package timeout");
+        ^
+
+Error: M2 package timeout
+    at wait (file:///Users/lou/Learn/d-pi/validation/m2/package.mjs:145:9)
+    at async file:///Users/lou/Learn/d-pi/validation/m2/package.mjs:450:5
+
+Node.js v24.21.0

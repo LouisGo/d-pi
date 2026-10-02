@@ -1,0 +1,15 @@
+{
+  "build": {
+    "version": "0.1.0-m2.11",
+    "commit": "0d45db98530e443b33ebb253659ec41610f6e46f",
+    "dirty": false,
+    "id": "0d45db98-54e50919"
+  },
+  "app": "/Users/lou/Learn/d-pi/dist/queue-subagent-m2.11-clean/mac-arm64/d-pi.app",
+  "zip": "/Users/lou/Learn/d-pi/dist/candidates/d-pi-0.1.0-m2.11-0d45db9-mac-arm64.zip",
+  "zipSha256": "b07c6b05852e247033cd236ee36eea13f2d891d9fd91dcb94307aab9d51074ba",
+  "appAsarSha256": "25132b9978ac1c62e2c3fdb646a53dc3afdc0bcacdeaff2b0ab1ac3c9673cb7e",
+  "zipBytes": 430049605,
+  "zipIntegrity": "passed",
+  "zipAsarMatchesVerifiedApp": true
+}
