@@ -1,4 +1,6 @@
 export const ui = {
+  "queue.contentTooLarge":
+    "内容超出 256 KiB 限制，请缩短后保存；超限输入尚未保存，关闭窗口前请先处理。",
   "subagent.reconciled":
     "已核对原生配置。此前操作结果仍未知，可继续新的明确操作。",
   "queue.reconciled":

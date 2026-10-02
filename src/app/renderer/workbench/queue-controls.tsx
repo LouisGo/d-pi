@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useStore } from "zustand";
 import { Button } from "@/components/ui/button";
 import type { QueueAction } from "../../../modules/execution/contracts/public";
+import { QueueTextSchema } from "../../../modules/execution/contracts/public";
 import type { RuntimeModel } from "../../../modules/execution/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 
@@ -189,6 +190,7 @@ function QueueEditor({
   // Immediate typing belongs to this input. Reopening initializes from the native
   // instance's acknowledged draft; delayed earlier acknowledgements do not undo typing.
   const [text, setText] = useState(draftText);
+  const fitsBudget = QueueTextSchema.safeParse(text).success;
   return (
     <div className="flex flex-col gap-2">
       <label htmlFor={`queue-edit-${entryId}`}>{t("queue.editLabel")}</label>
@@ -197,22 +199,27 @@ function QueueEditor({
         className="native-answer"
         value={text}
         disabled={inputDisabled}
-        maxLength={262144}
         onChange={(event) => {
           const next = event.target.value;
           setText(next);
-          void model.manageQueue({
-            action: "update-edit",
-            entryId,
-            revision,
-            text: next,
-          });
+          if (QueueTextSchema.safeParse(next).success)
+            void model.manageQueue({
+              action: "update-edit",
+              entryId,
+              revision,
+              text: next,
+            });
         }}
       />
+      {!fitsBudget && (
+        <p role="alert" className="failure">
+          {t("queue.contentTooLarge")}
+        </p>
+      )}
       <div className="flex flex-wrap gap-2">
         <Button
           data-queue-action="save-edit"
-          disabled={disabled || !text.trim()}
+          disabled={disabled || !text.trim() || !fitsBudget}
           onClick={() =>
             void model.manageQueue({
               action: "save-edit",

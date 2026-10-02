@@ -1,0 +1,65 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/modules/execution/renderer/runtime/queue-write-lane.test.ts
+$ tsr generate
+(node:83405) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/lou/Learn/d-pi[39m
+
+ [31m❯[39m src/modules/execution/renderer/runtime/queue-write-lane.test.ts [2m([22m[2m7 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 25[2mms[22m[39m
+[31m   [31m×[31m rejects oversized encoded drafts visibly before transport without breaking the write lane[39m[32m 9[2mms[22m[39m
+   [32m✓[39m serializes rapid draft updates with newly confirmed revisions; save follows the last draft[32m 5[2mms[22m[39m
+   [32m✓[39m drops old queued draft text across bind instead of addressing the new Thread[32m 2[2mms[22m[39m
+   [32m✓[39m old connection rejection cannot label a new connection of the same Thread unknown[32m 2[2mms[22m[39m
+   [32m✓[39m late successful reply from old connection cannot restore its snapshot over a new connection[32m 2[2mms[22m[39m
+   [32m✓[39m unknown suppresses queued writes; inspected reconciled snapshot allows a fresh explicit operation[32m 2[2mms[22m[39m
+   [32m✓[39m cancel queued after draft acknowledgement uses the same edit's newest revision[32m 3[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/modules/execution/renderer/runtime/queue-write-lane.test.ts[2m > [22mrejects oversized encoded drafts visibly before transport without breaking the write lane
+[31m[1mAssertionError[22m: promise rejected "ZodError: [
+  {
+    "code": "custom",
+   … { …(2) }" instead of resolving[39m
+[36m [2m❯[22m src/modules/execution/renderer/runtime/queue-write-lane.test.ts:[2m112:102[22m[39m
+    [90m110|[39m   const text = "中".repeat(90000);
+    [90m111|[39m   expect(text.length).toBeLessThan(262144);
+    [90m112|[39m   await expect(f.model.manageQueue({ action: "update-edit", entryId: f…
+    [90m   |[39m                                                                                                      [31m^[39m
+    [90m113|[39m   expect(f.calls).toHaveLength(0);
+    [90m114|[39m   expect(f.model.getSnapshot()?.queueOperation).toMatchObject({ status…
+
+[31m[1mCaused by: ZodError[22m: [
+  {
+    "code": "custom",
+    "path": [
+      "command",
+      "text"
+    ],
+    "message": "Queue text too large"
+  }
+][39m
+[36m [2m❯[22m RuntimeModel.nativeChange src/modules/execution/renderer/runtime/runtime-model.ts:[2m246:41[22m[39m
+[90m [2m❯[22m src/modules/execution/renderer/runtime/runtime-model.ts:[2m205:18[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ _zod: { def: [ { code: 'custom', path: [ 'command', 'text' ], message: 'Queue text too large' } ], constr: 'Function<ZodError>', traits: { constructor: 'Function<Set>', has: 'Function<has>', add: 'Function<add>', delete: 'Function<delete>', difference: 'Function<difference>', clear: 'Function<clear>', entries: 'Function<entries>', forEach: 'Function<forEach>', intersection: 'Function<intersection>', isSubsetOf: 'Function<isSubsetOf>', isSupersetOf: 'Function<isSupersetOf>', isDisjointFrom: 'Function<isDisjointFrom>', size: 2, symmetricDifference: 'Function<symmetricDifference>', union: 'Function<union>', values: 'Function<values>', keys: 'Function<values>' }, message: '[
+  {
+    "code": "custom",
+    "path": [
+      "command",
+      "text"
+    ],
+    "message": "Queue text too large"
+  }
+]' }, issues: [ { code: 'custom', path: [ 'command', 'text' ], message: 'Queue text too large' } ], format: 'Function<anonymous>', flatten: 'Function<anonymous>', addIssue: 'Function<anonymous>', addIssues: 'Function<anonymous>', isEmpty: false }[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m6 passed[39m[22m[90m (7)[39m
+[2m   Start at [22m 21:21:03
+[2m   Duration [22m 185ms[2m (transform 48%, import 31%, tests 19%, worker 1%)[22m
+
+[ELIFECYCLE] Test failed. See above for more details.

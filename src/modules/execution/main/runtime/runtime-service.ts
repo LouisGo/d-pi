@@ -704,12 +704,17 @@ export class RuntimeService {
         )
           throw Error("Stale queue snapshot");
         if (
-          (command.command.action === "save-edit" ||
-            command.command.action === "update-edit" ||
-            command.command.action === "begin-edit") &&
+          command.command.action === "begin-edit" &&
           (!entry.editable || entry.truncated)
         )
           throw Error("Unsupported queue content");
+        // Reserving the active draft can truncate its original display text.
+        if (
+          (command.command.action === "save-edit" ||
+            command.command.action === "update-edit") &&
+          snapshot.editing?.entryId !== command.command.entryId
+        )
+          throw Error("Queue entry is not being edited");
         if (["save-edit", "delete", "move"].includes(command.command.action)) {
           if (!this.target) throw Error("Native identity unavailable");
           this.store.queueChanges.prepare({

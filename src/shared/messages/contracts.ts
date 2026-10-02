@@ -3,6 +3,7 @@ import { z } from "zod";
 // Product-owned copy crosses process boundaries as semantic data. Native and
 // user-authored text stays in its original fields and is never translated.
 export const PlainUiMessageCodeSchema = z.enum([
+  "queue.contentTooLarge",
   "runtime.processingInput",
   "runtime.evidenceGap",
   "runtime.resourceUnknown",

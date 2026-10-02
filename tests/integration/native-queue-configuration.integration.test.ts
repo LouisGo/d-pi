@@ -81,7 +81,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-async function running() {
+async function running(text = "original") {
   const root = realpathSync(mkdtempSync(join(tmpdir(), "d-pi-queue-config-")));
   const directory = join(root, "project");
   mkdirSync(directory);
@@ -94,7 +94,7 @@ async function running() {
       {
         id: itemId,
         kind: "followUp",
-        text: "original",
+        text,
         editable: true,
         editing: false,
         truncated: false,
@@ -115,7 +115,9 @@ async function running() {
     background: 0,
     pendingAsync: false,
     admitted: false,
-    queue: boundary.queued ? [{ kind: "followUp", text: "original" }] : [],
+    queue: boundary.queued
+      ? [{ kind: "followUp", text: text.slice(0, 2048) }]
+      : [],
     queueState: boundary.queue,
   });
   boundary.control.mockImplementation(async () => ({
@@ -252,6 +254,199 @@ it("acknowledges a native begin-edit without inventing a durable destructive-cha
   expect(view.control?.queueState).toEqual(edited);
   expect(f.store.queueChanges.find(traceId)).toBeNull();
 });
+it("updates and saves the active edit when reserving its large draft truncates the original projection", async () => {
+  const original = "a".repeat(250000);
+  const f = await running(original);
+  const edited = QueueSnapshotSchema.parse({
+    ...f.initial,
+    revision: 2,
+    items: f.initial.items.map((item) => ({
+      ...item,
+      text: original.slice(0, 2048),
+      editing: true,
+      editable: false,
+      truncated: true,
+    })),
+    editing: { entryId: f.itemId, draftText: original },
+    coverage: "limited",
+  });
+  boundary.operation.mockImplementationOnce(async () => {
+    boundary.queue = edited;
+    return { success: true, data: edited };
+  });
+  const execute = (command: unknown) =>
+    f.runtime.execute(
+      RuntimeCommandSchema.parse({
+        kind: "manage-queue",
+        threadId: f.draft.threadId,
+        traceId: crypto.randomUUID(),
+        connectionGeneration: f.generation,
+        command,
+      }),
+    );
+  expect(f.initial.items[0]).toMatchObject({
+    editable: true,
+    truncated: false,
+    text: original,
+  });
+  const begun = await execute({
+    action: "begin-edit",
+    entryId: f.itemId,
+    revision: 1,
+  });
+  expect(begun.queueOperation?.status).toBe("acknowledged");
+  expect(begun.control?.queueState).toEqual(edited);
+
+  const draftText = `${original.slice(0, -1)}b`;
+  const updated = {
+    ...edited,
+    revision: 3,
+    editing: { entryId: f.itemId, draftText },
+  };
+  boundary.operation.mockImplementationOnce(async () => {
+    boundary.queue = updated;
+    return { success: true, data: updated };
+  });
+  const changed = await execute({
+    action: "update-edit",
+    entryId: f.itemId,
+    revision: 2,
+    text: draftText,
+  });
+  expect(changed.queueOperation?.status).toBe("acknowledged");
+  expect(changed.control?.queueState?.editing?.draftText).toBe(draftText);
+
+  const saved = {
+    ...f.initial,
+    revision: 4,
+    items: f.initial.items.map((item) => ({
+      ...item,
+      text: "short replacement",
+    })),
+  };
+  boundary.operation.mockImplementationOnce(async () => {
+    boundary.queue = saved;
+    return { success: true, data: saved };
+  });
+  const finished = await execute({
+    action: "save-edit",
+    entryId: f.itemId,
+    revision: 3,
+    text: "short replacement",
+  });
+  expect(finished.queueOperation).toMatchObject({ status: "acknowledged" });
+  expect(finished.control?.queueState).toEqual(saved);
+  expect(
+    f.store.queueChanges.find(finished.queueOperation?.traceId ?? ""),
+  ).toMatchObject({
+    status: "acknowledged",
+    previousText: original.slice(0, 2048),
+    previousTruncated: true,
+  });
+  expect(boundary.operation).toHaveBeenCalledTimes(3);
+  expect(boundary.operation).toHaveBeenNthCalledWith(2, "d_pi_queue", {
+    command: {
+      action: "update-edit",
+      entryId: f.itemId,
+      revision: 2,
+      text: draftText,
+    },
+  });
+  expect(boundary.operation).toHaveBeenNthCalledWith(3, "d_pi_queue", {
+    command: {
+      action: "save-edit",
+      entryId: f.itemId,
+      revision: 3,
+      text: "short replacement",
+    },
+  });
+});
+it.each([
+  { action: "update-edit", editing: "none" },
+  { action: "save-edit", editing: "none" },
+  { action: "update-edit", editing: "other" },
+  { action: "save-edit", editing: "other" },
+] as const)(
+  "rejects $action when the current edit belongs to $editing before native dispatch or journaling",
+  async ({ action, editing }) => {
+    const f = await running();
+    if (editing === "other") {
+      const otherId = crypto.randomUUID();
+      boundary.queue = {
+        ...f.initial,
+        items: [
+          ...f.initial.items,
+          { ...f.initial.items[0], id: otherId, editing: true },
+        ],
+        editing: { entryId: otherId, draftText: "other draft" },
+      };
+      boundary.observe({
+        kind: "frame",
+        frame: { type: "d_pi_control_state", data: f.control() },
+      });
+      await vi.waitFor(() =>
+        expect(f.views.at(-1)?.control?.queueState?.editing?.entryId).toBe(
+          otherId,
+        ),
+      );
+    }
+    const traceId = crypto.randomUUID();
+    await expect(
+      f.runtime.execute(
+        RuntimeCommandSchema.parse({
+          kind: "manage-queue",
+          threadId: f.draft.threadId,
+          traceId,
+          connectionGeneration: f.generation,
+          command: {
+            action,
+            entryId: f.itemId,
+            revision: 1,
+            text: "replacement",
+          },
+        }),
+      ),
+    ).rejects.toThrow("Queue entry is not being edited");
+    expect(boundary.operation).not.toHaveBeenCalled();
+    expect(f.store.queueChanges.find(traceId)).toBeNull();
+  },
+);
+it.each([
+  { editable: false, truncated: false },
+  { editable: true, truncated: true },
+])(
+  "rejects begin-edit for a projected item with editable=$editable truncated=$truncated",
+  async (qualification) => {
+    const f = await running();
+    boundary.queue = {
+      ...f.initial,
+      items: f.initial.items.map((item) => ({ ...item, ...qualification })),
+    };
+    boundary.observe({
+      kind: "frame",
+      frame: { type: "d_pi_control_state", data: f.control() },
+    });
+    await vi.waitFor(() =>
+      expect(f.views.at(-1)?.control?.queueState?.items[0]).toMatchObject(
+        qualification,
+      ),
+    );
+    const traceId = crypto.randomUUID();
+    await expect(
+      f.runtime.execute(
+        RuntimeCommandSchema.parse({
+          kind: "manage-queue",
+          threadId: f.draft.threadId,
+          traceId,
+          connectionGeneration: f.generation,
+          command: { action: "begin-edit", entryId: f.itemId, revision: 1 },
+        }),
+      ),
+    ).rejects.toThrow("Unsupported queue content");
+    expect(boundary.operation).not.toHaveBeenCalled();
+    expect(f.store.queueChanges.find(traceId)).toBeNull();
+  },
+);
 it("persists queue intent before native mutation and publishes the native snapshot before acknowledging it", async () => {
   const f = await running();
   const command = f.command("manage-queue");

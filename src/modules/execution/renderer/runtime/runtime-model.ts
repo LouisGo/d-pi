@@ -243,12 +243,36 @@ export class RuntimeModel {
           };
     // Parse the public union once before crossing the bridge; no type assertion
     // can accidentally send a queue command as a configuration command.
-    const parsed = RuntimeCommandSchema.parse(command);
+    const parsed = RuntimeCommandSchema.safeParse(command);
+    if (!parsed.success) {
+      const oversized =
+        kind === "manage-queue" &&
+        parsed.error.issues.some(
+          (issue) =>
+            issue.path[0] === "command" &&
+            issue.path[1] === "text" &&
+            (issue.code === "too_big" || issue.code === "custom"),
+        );
+      this.store.setState({
+        view: {
+          ...view,
+          [field]: {
+            traceId,
+            status: "failed",
+            code: oversized ? "content-too-large" : "invalid-operation",
+          },
+          message: uiMessage(
+            oversized ? "queue.contentTooLarge" : "runtime.controlFailed",
+          ),
+        },
+      });
+      return;
+    }
     this.store.setState({
       view: { ...view, [field]: { traceId, status: "pending" } },
     });
     try {
-      const reply = await this.bridge.request(parsed);
+      const reply = await this.bridge.request(parsed.data);
       const current = this.store.getState();
       if (
         current.disposed ||

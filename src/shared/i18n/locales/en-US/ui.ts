@@ -1,4 +1,6 @@
 export const ui = {
+  "queue.contentTooLarge":
+    "Content exceeds the 256 KiB limit. Shorten it before saving; this input has not been saved, so resolve it before closing the window.",
   "subagent.reconciled":
     "Native settings inspected. The earlier result remains unknown; new explicit changes are available.",
   "queue.reconciled":

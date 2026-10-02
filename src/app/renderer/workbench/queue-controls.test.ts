@@ -209,6 +209,67 @@ it("edits the addressed native identity, preserves typing across earlier acknowl
   }
 });
 
+it.each(["中".repeat(90000), "🙂".repeat(70000), '"'.repeat(140000)])(
+  "preserves an oversized encoded draft, blocks save, and recovers after shortening %#",
+  async (text) => {
+    const mounted = await mountQueue();
+    try {
+      await act(async () =>
+        mounted.element
+          .querySelector<HTMLButtonElement>("[data-queue-action=begin-edit]")
+          ?.click(),
+      );
+      const input = mounted.element.querySelector("textarea");
+      if (!input) throw Error("missing editor");
+      const before = mounted.commands.length;
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(
+          HTMLTextAreaElement.prototype,
+          "value",
+        )?.set?.call(input, text);
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+      expect(input.value.length).toBe(text.length);
+      expect(mounted.commands.length).toBe(before);
+      expect(
+        mounted.model.getSnapshot()?.control?.queueState?.editing?.draftText,
+      ).toBe("same");
+      expect(
+        mounted.element.querySelector<HTMLButtonElement>(
+          "[data-queue-action=save-edit]",
+        )?.disabled,
+      ).toBe(true);
+      expect(
+        mounted.element.querySelector<HTMLButtonElement>(
+          "[data-queue-action=cancel-edit]",
+        )?.disabled,
+      ).toBe(false);
+      expect(
+        mounted.element.querySelector("[role=alert]")?.textContent,
+      ).toContain("256 KiB");
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(
+          HTMLTextAreaElement.prototype,
+          "value",
+        )?.set?.call(input, "缩短");
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+      expect(mounted.commands.length).toBe(before + 1);
+      expect(
+        mounted.model.getSnapshot()?.control?.queueState?.editing?.draftText,
+      ).toBe("缩短");
+      expect(
+        mounted.element.querySelector<HTMLButtonElement>(
+          "[data-queue-action=save-edit]",
+        )?.disabled,
+      ).toBe(false);
+      expect(mounted.element.querySelector("[role=alert]")).toBeNull();
+    } finally {
+      await mounted.cleanup();
+    }
+  },
+);
+
 it("shows confirmed host draft after view remount without cancelling native edit", async () => {
   const mounted = await mountQueue();
   try {

@@ -415,11 +415,12 @@ try {
     await evaluate(
       "document.querySelector('details[aria-label=\"子 Agent 设置\"]').open=false",
     );
-    await insert("QUEUED_ORIGINAL");
+    const queuedOriginal = "a".repeat(250000);
+    await insert(queuedOriginal);
     await click("排队发送");
     await wait(() =>
       evaluate(
-        "document.querySelector('[data-queue-entry]')?.textContent.includes('QUEUED_ORIGINAL')",
+        "document.querySelector('[data-queue-entry]')?.textContent.includes('aaaa')",
       ),
     );
     await evaluate(
@@ -431,6 +432,32 @@ try {
     await wait(() =>
       evaluate("!!document.querySelector('textarea[id^=queue-edit-]')"),
     );
+    assert.equal(
+      await evaluate(
+        "document.querySelector('textarea[id^=queue-edit-]').value.length",
+      ),
+      queuedOriginal.length,
+    );
+    await evaluate(
+      "document.querySelector('textarea[id^=queue-edit-]').select()",
+    );
+    await call("Input.insertText", { text: "中".repeat(90000) });
+    await wait(() =>
+      evaluate(
+        "document.querySelector('[data-queue-action=save-edit]').disabled && document.querySelector('[role=alert]')?.textContent.includes('256 KiB')",
+      ),
+    );
+    assert.equal(
+      await evaluate(
+        "document.querySelector('textarea[id^=queue-edit-]').value.length",
+      ),
+      90000,
+    );
+    assert.equal(
+      db.prepare("SELECT COUNT(*) AS count FROM queue_change").get().count,
+      0,
+    );
+    screenshots.push(await shot("m2-queue-oversized"));
     await evaluate(
       "document.querySelector('textarea[id^=queue-edit-]').select()",
     );
@@ -452,13 +479,16 @@ try {
     const journal = db
       .prepare("SELECT record FROM queue_change ORDER BY rowid DESC LIMIT 1")
       .get();
-    assert.equal(JSON.parse(journal.record).previousText, "QUEUED_ORIGINAL");
+    // Shortening the acknowledged draft frees enough snapshot budget to show
+    // the original again. The journal records the projection at save time.
+    assert.equal(JSON.parse(journal.record).previousText, queuedOriginal);
+    assert.equal(JSON.parse(journal.record).previousTruncated, false);
     assert.equal(JSON.parse(journal.record).command.text, "QUEUED_CHANGED");
     assert.equal(JSON.parse(journal.record).status, "acknowledged");
     const frozen = db
       .prepare("SELECT receipt FROM submission ORDER BY rowid DESC LIMIT 1")
       .get();
-    assert.equal(JSON.parse(frozen.receipt).text, "QUEUED_ORIGINAL");
+    assert.equal(JSON.parse(frozen.receipt).text, queuedOriginal);
     await evaluate(
       "document.querySelector('[data-queue-action=delete]').click()",
     );
@@ -470,6 +500,9 @@ try {
     );
     checks.push(
       "packaged GUI applies and clears future subagent defaults during current execution; native queue edit/save/delete retains frozen journal and does not trigger another model request",
+    );
+    checks.push(
+      "250000-character native draft remains editable after original projection truncation; oversized CJK input is retained with a visible unsaved warning and blocked save, then shortening saves with an honest journal",
     );
   }
   if (process.argv.includes("--continuity")) {

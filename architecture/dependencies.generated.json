@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "fedf38f7e1bd3a7f0713e2253c462615765e1e833e8aad090cbd383d4850410e",
+  "inputsHash": "5b7c520d74243050fa37446c1f0a6986f95ed40ddd9bf7900ab405ac73623cd0",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 284,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 101,
-      "lines": 15205,
+      "lines": 15273,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -102,7 +102,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 18,
-      "lines": 1562,
+      "lines": 1567,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -319,7 +319,7 @@
       ],
       "materialized": true,
       "files": 46,
-      "lines": 10721,
+      "lines": 10783,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -8283,6 +8283,18 @@
       "to": "src/app/renderer/components/ui/button.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/queue-controls.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/app/renderer/workbench/queue-controls.tsx",

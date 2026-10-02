@@ -27,9 +27,10 @@
       "e2e-convergence.md",
       "warm-session-liveness.md",
       "../review-seven-commits/spec.md",
-      "next-stage.md"
+      "next-stage.md",
+      "queue-configuration-review.md"
     ],
-    "next": "本轮05a纯文本队列/05b后续子Agent配置与06a证据切片工程完成，m2.11候选已交付待复试；下一步04附件/引用及父05其余能力，M2用户认可pending，冷旧Thread仍只读",
+    "next": "独立review确认两项队列P2并已修复，正在完成替代候选验证；下一步04附件/引用及父05其余能力，M2用户认可pending，冷旧Thread仍只读",
     "constraints": "2026-10-02用户授权下一阶段M2并行开发与中断后继续；本地commit/候选沿用M2授权，不将旧特定修复push扩大到本轮。保留原有环境对齐未提交改动；不公开发布、不扩M3，冷恢复只读，unknown不自动重发。"
   }
 ]
@@ -128,3 +129,5 @@
 2026-10-01：用户进一步明确要求修复 check:fast 锁解析阻塞并完整 commit/push；本轮 push 已获授权，取代前述本地限制。复用结构化 importer 读取支持 pnpm 12 的 pnpm/@pnpm/exe manager 文档，同时保持应用锁一致性和严格 manager 版本校验，11 项回归及 check:fast 通过。完整工程与远端状态见 [本轮记录](rendering-isolation.md)。用户体验认可与 M2 未交付范围不变。
 
 2026-10-02：本轮05a/05b/06a工程完成，clean m2.11候选交付；591行为、34架构、59工具、16项实际macOS包内检查与ZIP同源验证通过。[精确身份、证据、限制和试用](next-stage.md)。M2未完成范围与用户认可pending保留，原环境对齐未提交改动不纳入本轮commit，不push。
+
+2026-10-02：用户授权独立 subagent review，并修复发现的高价值问题。两名 reviewer 确认两项队列 P2，已按 TDD 修复并独立复核通过；完整检查及替代候选验证继续完成，旧候选证据保留。[本轮审查](queue-configuration-review.md)。无新增产品待决，用户认可仍 pending；不扩展附件与完整队列范围。

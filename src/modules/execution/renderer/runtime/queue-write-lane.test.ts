@@ -105,6 +105,39 @@ async function fixture() {
   };
 }
 
+it("rejects oversized encoded drafts visibly before transport without breaking the write lane", async () => {
+  const f = await fixture();
+  const text = "中".repeat(90000);
+  expect(text.length).toBeLessThan(262144);
+  await expect(
+    f.model.manageQueue({
+      action: "update-edit",
+      entryId: f.entryId,
+      revision: 10,
+      text,
+    }),
+  ).resolves.toBeUndefined();
+  expect(f.calls).toHaveLength(0);
+  expect(f.model.getSnapshot()?.queueOperation).toMatchObject({
+    status: "failed",
+    code: "content-too-large",
+  });
+  expect(f.model.getSnapshot()?.control?.queueState?.editing?.draftText).toBe(
+    "original",
+  );
+  const next = f.model.manageQueue({
+    action: "update-edit",
+    entryId: f.entryId,
+    revision: 10,
+    text: "缩短",
+  });
+  await turn();
+  expect(f.calls).toHaveLength(1);
+  f.confirm(0, 11, "缩短");
+  await next;
+  f.model.dispose();
+});
+
 it("serializes rapid draft updates with newly confirmed revisions; save follows the last draft", async () => {
   const f = await fixture();
   const first = f.model.manageQueue({
