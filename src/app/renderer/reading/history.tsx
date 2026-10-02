@@ -62,6 +62,9 @@ export function History({
   const page = selected ? nativePage.data : boundPage;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
+  const discovering = active && catalog.isFetching;
+  const awaitingCatalog = discovering && !catalog.data;
+  const reading = busy || (active && nativePage.isFetching);
   async function read(cursor: HistoryCursor | null) {
     if (selected) {
       setCursor(cursor);
@@ -82,17 +85,24 @@ export function History({
     <section className="history" aria-label={t("ui.history.sectionLabel")}>
       <details open>
         <summary>{t("ui.history.sectionLabel")}</summary>
+        {discovering && <p role="status">{t("ui.history.discovering")}</p>}
+        {reading && <p role="status">{t("ui.history.reading")}</p>}
         <p>{t("ui.history.projectDescription")}</p>
         <label>
           {t("ui.history.choose")}
           <select
             value={selected}
+            disabled={awaitingCatalog || busy}
             onChange={(event) => {
               setChoice(event.target.value);
               setCursor(null);
             }}
           >
-            <option value="">{t("ui.history.bound")}</option>
+            <option value="">
+              {t(
+                awaitingCatalog ? "ui.history.discovering" : "ui.history.bound",
+              )}
+            </option>
             {catalog.data?.kind === "catalog" &&
               catalog.data.sessions.map((session) => (
                 <option key={session.key} value={session.key}>
@@ -103,7 +113,7 @@ export function History({
         </label>
         <Button
           variant="ghost"
-          disabled={catalog.isFetching || nativePage.isFetching}
+          disabled={catalog.isFetching || nativePage.isFetching || busy}
           onClick={() => {
             void catalog.refetch();
             if (cursor) setCursor(null);
@@ -122,10 +132,10 @@ export function History({
           <p role="status">{t("ui.history.catalogUnavailable")}</p>
         )}
         <p className="muted">{t("ui.history.description")}</p>
-        {!selected && (
+        {!selected && !awaitingCatalog && (
           <Button
             variant="ghost"
-            disabled={busy}
+            disabled={busy || catalog.isFetching}
             onClick={() => void read(null)}
           >
             {t("ui.history.read")}

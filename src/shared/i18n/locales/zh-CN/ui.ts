@@ -1,4 +1,7 @@
 export const ui = {
+  "ui.history.discovering": "正在发现本项目历史…",
+  "ui.history.reading": "正在读取原生记录…",
+
   "config.error.configuration-unavailable":
     "无法读取或确认原生配置。请检查随包运行时，再刷新配置后重试。",
   "config.error.stale-target": "项目身份已变化。请回到目标项目后重试。",

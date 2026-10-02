@@ -202,3 +202,107 @@ it("refreshes a changed CLI history from the first page and can continue reading
     vi.unstubAllGlobals();
   }
 });
+
+it("announces discovery before offering a bound read, then announces the selected native page while it loads", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  let found: (() => void) | undefined;
+  let loaded: (() => void) | undefined;
+  const discovery = new Promise<void>((resolve) => {
+    found = resolve;
+  });
+  const reading = new Promise<void>((resolve) => {
+    loaded = resolve;
+  });
+  const key = "a".repeat(64);
+  const bridge: HistoryBridge = {
+    read: vi.fn(async () => ({ kind: "unavailable", reason: "missing" })),
+    projectList: async () => {
+      await discovery;
+      return {
+        kind: "catalog",
+        sessions: [
+          { key, sessionId: "cli", title: "Native session", modifiedAt: 1 },
+        ],
+        partial: false,
+      };
+    },
+    projectRead: async () => {
+      await reading;
+      return {
+        kind: "page",
+        entries: [
+          {
+            id: "one",
+            parentId: null,
+            role: "assistant",
+            text: "saved native text",
+          },
+        ],
+        next: null,
+        source: "fixture",
+        coverage: "append-order",
+        incompleteTail: false,
+        omitted: 0,
+      };
+    },
+  };
+  try {
+    await act(() =>
+      root.render(
+        createElement(
+          QueryClientProvider,
+          { client },
+          createElement(I18nProvider, {
+            initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" },
+            children: createElement(History, {
+              bridge,
+              threadId: "thread",
+              active: true,
+            }),
+          }),
+        ),
+      ),
+    );
+    expect(container.textContent).toContain(
+      "Discovering this project's history",
+    );
+    expect(
+      [...container.querySelectorAll("button")].some(
+        (b) => b.textContent === "Read native records",
+      ),
+    ).toBe(false);
+    expect(container.querySelector("select")?.disabled).toBe(true);
+    await act(async () => found?.());
+    await vi.waitFor(async () => {
+      await act(() => new Promise((resolve) => setTimeout(resolve, 10)));
+      expect(container.textContent).toContain("Reading native records");
+    });
+    expect(container.querySelector("select")?.value).toBe(key);
+    await act(async () => loaded?.());
+    await vi.waitFor(async () => {
+      await act(() => new Promise((resolve) => setTimeout(resolve, 10)));
+      expect(container.querySelector("article")?.textContent).toContain(
+        "saved native text",
+      );
+      expect(
+        [...container.querySelectorAll('[role="status"]')].some((e) =>
+          e.textContent?.includes("Reading native records"),
+        ),
+      ).toBe(false);
+    });
+    expect(bridge.read).not.toHaveBeenCalled();
+  } finally {
+    found?.();
+    loaded?.();
+    await act(() => root.unmount());
+    client.clear();
+    container.remove();
+    vi.unstubAllGlobals();
+  }
+});

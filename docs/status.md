@@ -42,8 +42,7 @@
 | [m2-first-release / 04 输入与附件](../.scratch/m2-first-release/issues/04-input-attachments.md) | claimed | 无；范围以所属规格为准 |
 | [m2-first-release / 05 队列与子 Agent](../.scratch/m2-first-release/issues/05-queue-subagent.md) | open | 无；范围以所属规格为准 |
 | [m2-first-release / 06 阅读与组合验收](../.scratch/m2-first-release/issues/06-reading-acceptance.md) | open | 无；范围以所属规格为准 |
-| [m2-first-release / 08 E2E 原生遥测与历史加载反馈](../.scratch/m2-first-release/issues/08-e2e-reading-feedback.md) | claimed | 无；范围以所属规格为准 |
-| [m2-first-release / 09 E2E 阅读空间与打开结果](../.scratch/m2-first-release/issues/09-e2e-reading-space.md) | open | 无；范围以所属规格为准 |
+| [m2-first-release / 09 E2E 阅读空间与打开结果](../.scratch/m2-first-release/issues/09-e2e-reading-space.md) | claimed | 无；范围以所属规格为准 |
 | [state-query-alignment / 04 集成验证与试用交接](../.scratch/state-query-alignment/issues/04-integration-verification.md) | claimed | 无；范围以所属规格为准 |
 
 ## 重要待决与继续边界
@@ -61,4 +60,4 @@
 - [类型安全桌面路由](../.scratch/router-integration/spec.md)：本地实施和提交；不 push、不改变 OMP 执行及冷恢复政策。
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 
-<!-- source-sha256: 4a9270ec4085ca6fed82263e5dc829201282603cba223e5acb82286c4e57b4dc; sources: 94 -->
+<!-- source-sha256: 9fee397263132e959ddf9e2ca6768e8265b170a4119a9d1b586be2f4d0564dc0; sources: 94 -->

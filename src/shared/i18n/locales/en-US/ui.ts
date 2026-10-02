@@ -1,4 +1,7 @@
 export const ui = {
+  "ui.history.discovering": "Discovering this project's history…",
+  "ui.history.reading": "Reading native records…",
+
   "config.error.configuration-unavailable":
     "Native configuration could not be read or confirmed. Check the bundled runtime and refresh configuration before retrying.",
   "config.error.stale-target":
