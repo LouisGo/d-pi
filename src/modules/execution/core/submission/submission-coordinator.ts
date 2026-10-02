@@ -50,8 +50,8 @@ export interface SubmissionDiagnostic {
 }
 // Conservative v18.3.0 physical-frame budget; not an observed native input limit.
 export const SUBMISSION_FRAME_BUDGET = 1024 * 1024;
-function frameFor(value: FrozenSubmission): string {
-  return `${JSON.stringify({ id: value.requestId, type: "prompt", message: value.text, streamingBehavior: value.delivery ?? "followUp" })}\n`;
+export function submissionFrame(value: FrozenSubmission): string {
+  return `${JSON.stringify({ id: value.requestId, type: "prompt", message: value.content?.message ?? value.text, ...(value.content?.images.length ? { images: value.content.images } : {}), streamingBehavior: value.delivery ?? "followUp" })}\n`;
 }
 export class SubmissionCoordinator {
   constructor(
@@ -63,7 +63,7 @@ export class SubmissionCoordinator {
     try {
       if (changesManagedSession(value.text))
         return this.failure("unsupported-native-command", value);
-      if (draftByteLength(frameFor(value)) > SUBMISSION_FRAME_BUDGET)
+      if (draftByteLength(submissionFrame(value)) > SUBMISSION_FRAME_BUDGET)
         return this.failure("content-too-large", value);
       if (!this.native.canDispatch(value.target))
         return this.failure("not-ready", value);
@@ -96,7 +96,7 @@ export class SubmissionCoordinator {
         this.store.rejectSubmission(id);
         return this.result(id);
       }
-      const frame = frameFor(receipt);
+      const frame = submissionFrame(receipt);
       if (draftByteLength(frame) > SUBMISSION_FRAME_BUDGET)
         return this.failure("content-too-large", context);
       if (!this.store.dispatchSubmission(id)) return this.result(id);
@@ -221,6 +221,8 @@ export class SubmissionCoordinator {
       .with("stale-event", () => "submission.staleEvent" as const)
       .with("revision-conflict", () => "submission.revisionConflict" as const)
       .with("queue-full", () => "submission.queueFull" as const)
+      .with("content-not-ready", () => "submission.contentNotReady" as const)
+      .with("image-unsupported", () => "submission.imageUnsupported" as const)
       .exhaustive();
     return {
       kind: "failed",

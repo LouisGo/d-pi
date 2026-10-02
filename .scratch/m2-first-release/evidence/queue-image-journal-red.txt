@@ -1,0 +1,55 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/modules/execution/main/queue/queue-change-repository.test.ts
+$ tsr generate
+(node:38200) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/lou/Learn/d-pi[39m
+
+ [31m❯[39m src/modules/execution/main/queue/queue-change-repository.test.ts [2m([22m[2m10 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 92[2mms[22m[39m
+   [32m✓[39m keeps limited queue text explicitly marked and rejects trace reuse as complete text[32m 13[2mms[22m[39m
+   [32m✓[39m persists frozen queue-change identity before dispatch without creating a submission[32m 8[2mms[22m[39m
+   [32m✓[39m treats an identical trace as idempotent and rejects reuse with another Thread, native identity or frozen content[32m 9[2mms[22m[39m
+   [32m✓[39m persists confirmed results and allows late evidence to settle unknown without erasing a confirmed terminal[32m 8[2mms[22m[39m
+   [32m✓[39m recovers only dispatching changes to unknown and leaves all native identities and frozen text intact[32m 9[2mms[22m[39m
+   [32m✓[39m rolls back an ACK persistence failure and does not report a confirmed result[32m 9[2mms[22m[39m
+   [32m✓[39m recovers interrupted changes in one transaction and rolls all rows back when one write fails[32m 9[2mms[22m[39m
+   [32m✓[39m rejects a stored record whose Thread or trace differs from its indexed ownership[32m 8[2mms[22m[39m
+   [32m✓[39m finds only the exact persisted trace and reports missing nonpersistent operations as absent[32m 8[2mms[22m[39m
+[31m   [31m×[31m persists original queue image identities and rejects reuse with different original images[39m[32m 11[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/modules/execution/main/queue/queue-change-repository.test.ts[2m > [22mpersists original queue image identities and rejects reuse with different original images
+[31m[1mAssertionError[22m: expected undefined to deeply equal [ { …(2) } ][39m
+
+[32m- Expected:[39m
+[
+  {
+    "id": "422aeb96-1359-435c-9772-c3f76f7be4e8",
+    "mimeType": "image/png",
+  },
+]
+
+[31m+ Received:[39m
+undefined
+
+[36m [2m❯[22m src/modules/execution/main/queue/queue-change-repository.test.ts:[2m339:64[22m[39m
+    [90m337|[39m       const prepared = {...value(h.first.threadId), previousImages: [{…
+    [90m338|[39m       h.changes.prepare(prepared);
+    [90m339|[39m       expect(h.changes.find(prepared.traceId)?.previousImages).toEqual…
+    [90m   |[39m                                                                [31m^[39m
+    [90m340|[39m       expect(() => h.changes.prepare({...prepared, previousImages: [{i…
+    [90m341|[39m       h.changes.recoverInterruptedChanges();
+[90m [2m❯[22m fixture src/modules/execution/main/queue/queue-change-repository.test.ts:[2m15:5[22m[39m
+[90m [2m❯[22m src/modules/execution/main/queue/queue-change-repository.test.ts:[2m334:3[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m9 passed[39m[22m[90m (10)[39m
+[2m   Start at [22m 22:22:42
+[2m   Duration [22m 276ms[2m (tests 43%, transform 36%, import 20%, worker 1%)[22m
+
+[ELIFECYCLE] Test failed. See above for more details.

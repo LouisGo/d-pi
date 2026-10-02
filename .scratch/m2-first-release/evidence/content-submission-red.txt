@@ -1,0 +1,69 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest --run tests/integration/submission-content.integration.test.ts
+$ tsr generate
+(node:99118) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/lou/Learn/d-pi[39m
+
+ [31m❯[39m tests/integration/submission-content.integration.test.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 35[2mms[22m[39m
+[31m   [31m×[31m persists frozen represented content independently of the draft and dispatches the actual image once[39m[32m 34[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/submission-content.integration.test.ts[2m > [22mpersists frozen represented content independently of the draft and dispatches the actual image once
+[31m[1mAssertionError[22m: expected { …(12) } to match object { content: { schemaVersion: 1, …(4) } }
+(16 matching properties omitted from actual)[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "content": {[39m
+[32m-     "images": [[39m
+[32m-       {[39m
+[32m-         "data": "aGVsbG8=",[39m
+[32m-         "mimeType": "image/png",[39m
+[32m-         "type": "image",[39m
+[32m-       },[39m
+[32m-     ],[39m
+[32m-     "message": "captured file text",[39m
+[32m-     "rawBytes": 5,[39m
+[32m-     "schemaVersion": 1,[39m
+[32m-     "sources": [],[39m
+[31m+   "acknowledgedAt": null,[39m
+[31m+   "createdAt": "2026-10-02T13:50:14.083Z",[39m
+[31m+   "outcome": "unobserved",[39m
+[31m+   "requestId": "0e85a091-cc5d-4e04-b237-12e721b88b60",[39m
+[31m+   "revision": 1,[39m
+[31m+   "state": "prepared",[39m
+[31m+   "submissionId": "e331706f-4f82-4444-8ab3-94b79f2f61d6",[39m
+[31m+   "target": {[39m
+[31m+     "configContextId": "test",[39m
+[31m+     "connectionGeneration": "e596f22a-5bc8-41e2-adee-d60ddf081ca3",[39m
+[31m+     "nativeSessionRef": "managed",[39m
+[31m+     "processInstanceId": "daff2444-67df-4712-8074-a75158c121a7",[39m
+[2m    },[22m
+[31m+   "text": "short attachment token",[39m
+[31m+   "threadId": "c220cf49-e7a4-4e98-8b05-784e09ba000c",[39m
+[31m+   "traceId": "fce85394-e752-42e7-9c9d-af52134fc5ae",[39m
+[31m+   "updatedAt": "2026-10-02T13:50:14.083Z",[39m
+[2m  }[22m
+
+[36m [2m❯[22m tests/integration/submission-content.integration.test.ts:[2m20:63[22m[39m
+    [90m 18|[39m     const coordinator = new SubmissionCoordinator(store.submissions, {…
+    [90m 19|[39m     expect(coordinator.prepare(frozen).kind).toBe("receipt");
+    [90m 20|[39m     expect(store.submissions.submission(frozen.submissionId)).toMatchO…
+    [90m   |[39m                                                               [31m^[39m
+    [90m 21|[39m     store.drafts.save(draft.threadId, 1, "later draft");
+    [90m 22|[39m     coordinator.dispatch(frozen.submissionId);
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m   Start at [22m 21:50:13
+[2m   Duration [22m 463ms[2m (import 52%, transform 39%, tests 9%, worker 1%)[22m
+
+[ELIFECYCLE] Test failed. See above for more details.

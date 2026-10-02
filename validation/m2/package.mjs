@@ -93,7 +93,10 @@ writeFileSync(
           id,
           name: id,
           reasoning: id === "fixture-b",
-          input: ["text"],
+          input:
+            process.argv.includes("--attachments") && id === "fixture-b"
+              ? ["text", "image"]
+              : ["text"],
           contextWindow: 128000,
           maxTokens: 1024,
           cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
@@ -260,7 +263,7 @@ async function insert(text) {
   await call("Input.insertText", { text });
   await wait(() =>
     evaluate(
-      `document.querySelector('[contenteditable=true]')?.textContent.includes(${JSON.stringify(text)})`,
+      `document.querySelector('[contenteditable=true]')?.editor.getText({blockSeparator:"\\n"}).includes(${JSON.stringify(text)})`,
     ),
   );
 }
@@ -302,6 +305,25 @@ async function shot(name) {
 }
 const routerValidation = process.argv.includes("--router");
 const checks = [];
+const imageFixture =
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC";
+async function dropAttachment(name, mimeType, data) {
+  const sourceFile = join(isolated.cwd, name);
+  writeFileSync(sourceFile, Buffer.from(data, "base64"));
+  const point = await evaluate(
+    `(()=>{const r=document.querySelector("[contenteditable=true]").getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()`,
+  );
+  const dragData = { items: [], files: [sourceFile], dragOperationsMask: 1 };
+  for (const type of ["dragEnter", "dragOver", "drop"]) {
+    await call("Input.dispatchDragEvent", { type, ...point, data: dragData });
+  }
+  await wait(() =>
+    evaluate(
+      `!![...document.querySelectorAll('.composer button')].find(b=>b.textContent===${JSON.stringify("移除 " + name)})`,
+    ),
+  );
+}
+
 const screenshots = [];
 const continuitySamples = [];
 try {
@@ -330,7 +352,7 @@ try {
   await click("应用到当前会话");
   await wait(() =>
     evaluate(
-      "document.querySelector('.model-controls').textContent.includes('fixture-b · high')",
+      "document.querySelector('.model-controls').textContent.includes('fixture/fixture-b') && document.querySelector('.model-controls').textContent.includes('high')",
     ),
   );
   await evaluate(
@@ -375,10 +397,250 @@ try {
     );
     assert.equal(requests.length, 0);
   }
+  if (process.argv.includes("--attachments")) {
+    await dropAttachment(
+      "large-source.txt",
+      "text/plain",
+      Buffer.from("PRIVATE_LARGE_SOURCE\n".repeat(250000)).toString("base64"),
+    );
+    await click("发送");
+    await wait(() =>
+      evaluate(
+        "document.querySelector('.composer').textContent.includes('编码后输入超出原生传输限制')",
+      ),
+    );
+    assert.equal(requests.length, 0);
+    assert.ok(
+      db
+        .prepare("SELECT body FROM thread WHERE id=?")
+        .get(a)
+        .body.includes("[[dpi-attachment:"),
+    );
+    screenshots.push(await shot("m2-large-source-refused"));
+    await click("移除 large-source.txt");
+    checks.push(
+      "valid large drag/paste bytes cross real preload/Main without Base64 stack overflow, stay private and in draft; actual encoded limit refuses sending without provider calls, and explicit removal permits continuing",
+    );
+    const objects = [
+      "<< /Type /Catalog /Pages 2 0 R >>",
+      "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+      "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 300 300] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
+      "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    ];
+    const stream = "BT /F1 12 Tf 30 200 Td (M2_PDF_ORIGINAL_TEXT) Tj ET\n";
+    objects.push(`<< /Length ${stream.length} >>\nstream\n${stream}endstream`);
+    let pdf = "%PDF-1.4\n",
+      offsets = [0];
+    for (const [i, object] of objects.entries()) {
+      offsets.push(Buffer.byteLength(pdf));
+      pdf += `${i + 1} 0 obj\n${object}\nendobj\n`;
+    }
+    const xref = Buffer.byteLength(pdf);
+    pdf += `xref\n0 6\n0000000000 65535 f \n${offsets
+      .slice(1)
+      .map((n) => String(n).padStart(10, "0") + " 00000 n ")
+      .join(
+        "\n",
+      )}\ntrailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
+    await dropAttachment(
+      "isolated.pdf",
+      "application/pdf",
+      Buffer.from(pdf).toString("base64"),
+    );
+    await wait(() =>
+      evaluate(
+        "document.querySelector('.composer').textContent.includes('仅使用抽取文字')",
+      ),
+    );
+    await click("预览 isolated.pdf");
+    await wait(() =>
+      evaluate(
+        "document.querySelector('dialog')?.textContent.includes('M2_PDF_ORIGINAL_TEXT')",
+      ),
+    );
+    const previewBox = await evaluate(
+      "(()=>{const r=document.querySelector('dialog').getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,viewportWidth:innerWidth,viewportHeight:innerHeight}})()",
+    );
+    assert.ok(
+      Math.abs(
+        previewBox.x + previewBox.width / 2 - previewBox.viewportWidth / 2,
+      ) < 2,
+    );
+    assert.ok(
+      Math.abs(
+        previewBox.y + previewBox.height / 2 - previewBox.viewportHeight / 2,
+      ) < 2,
+    );
+    assert.ok(
+      previewBox.x >= 0 &&
+        previewBox.y >= 0 &&
+        previewBox.x + previewBox.width <= previewBox.viewportWidth &&
+        previewBox.y + previewBox.height <= previewBox.viewportHeight,
+    );
+    screenshots.push(await shot("m2-pdf-coverage"));
+    await click("关闭预览");
+    await click("仅使用抽取文字");
+    await wait(() =>
+      evaluate(
+        "document.querySelector('.composer').textContent.includes('仅文字 PDF')",
+      ),
+    );
+    await click("移除 isolated.pdf");
+    checks.push(
+      "real packaged SDK converts PDF text, exposes unverified page coverage and requires explicit text-only choice; original PDF stays private after removing its draft reference",
+    );
+    await dropAttachment("isolated-image.png", "image/png", imageFixture);
+    await click("预览 isolated-image.png");
+    await wait(() =>
+      evaluate("document.querySelector('dialog img')?.naturalWidth>0"),
+    );
+    screenshots.push(await shot("m2-attachment-preview"));
+    await click("关闭预览");
+    await evaluate(
+      `window.desktop.runtime.request({kind:'select-model',threadId:${JSON.stringify(a)},traceId:crypto.randomUUID(),selection:{provider:'fixture',modelId:'fixture-a',thinking:{kind:'default'}}})`,
+    );
+    await click("发送");
+    await wait(() =>
+      evaluate("document.body.textContent.includes('不能完整保留图像输入')"),
+    );
+    assert.equal(requests.length, 0);
+    assert.ok(
+      db
+        .prepare("SELECT body FROM thread WHERE id=?")
+        .get(a)
+        .body.includes("[[dpi-attachment:"),
+    );
+    await evaluate(
+      `window.desktop.runtime.request({kind:'select-model',threadId:${JSON.stringify(a)},traceId:crypto.randomUUID(),selection:{provider:'fixture',modelId:'fixture-b',thinking:{kind:'effort',effort:'high'}}})`,
+    );
+    await wait(() =>
+      evaluate(
+        "document.querySelector('.model-controls').textContent.includes('fixture/fixture-b') && document.querySelector('.model-controls').textContent.includes('high')",
+      ),
+    );
+    await evaluate("document.querySelector('[contenteditable=true]').focus()");
+    for (const type of ["keyDown", "keyUp"])
+      await call("Input.dispatchKeyEvent", {
+        type,
+        key: "Enter",
+        code: "Enter",
+        windowsVirtualKeyCode: 13,
+        modifiers: 8,
+      });
+    await insert("@fixture");
+    assert.equal(
+      await evaluate(
+        "(()=>{const s=document.querySelector('.tiptap').editor.state.selection;return s.$from.parent.textBetween(0,s.$from.parentOffset)})()",
+      ),
+      "@fixture",
+    );
+    await wait(() =>
+      evaluate("!!document.querySelector('.composer [role=option]')"),
+    );
+    await evaluate(
+      "[...document.querySelectorAll('.composer [role=option]')].find(b=>b.textContent==='fixture.txt').click()",
+    );
+    await wait(() =>
+      evaluate(
+        "document.querySelector('.composer').textContent.includes('发送时读取')",
+      ),
+    );
+    assert.equal(
+      await evaluate(
+        "document.querySelector('.tiptap').editor.state.selection.$from.parent.textContent",
+      ),
+      "",
+    );
+    screenshots.push(await shot("m2-attachment-prepared"));
+    checks.push(
+      "packaged image preview decodes private original; text-only model refuses complete image input without a provider request or draft loss; @ project reference is inserted through real Composer search",
+    );
+  }
   await click("发送");
   await wait(() => requests.length === 1);
+  if (process.argv.includes("--attachments")) {
+    const blocks = requests[0].messages.flatMap((message) =>
+      Array.isArray(message.content) ? message.content : [],
+    );
+    assert.ok(blocks.some((part) => part.type === "image_url"));
+    assert.ok(
+      blocks.some(
+        (part) =>
+          part.type === "text" && part.text.includes("M2 isolated project"),
+      ),
+    );
+    const receipt = JSON.parse(
+      db
+        .prepare("SELECT receipt FROM submission ORDER BY rowid DESC LIMIT 1")
+        .get().receipt,
+    );
+    assert.equal(receipt.content.images.length, 1);
+    assert.ok(receipt.content.message.includes("M2 isolated project"));
+    await dropAttachment("queue-image.png", "image/png", imageFixture);
+    await insert("QUEUE_IMAGE_ORIGINAL");
+    await click("排队发送");
+    await wait(() =>
+      evaluate("!!document.querySelector('[data-queue-entry]')"),
+    );
+    await evaluate(
+      "document.querySelector('.runtime-panel details:has([data-queue-entry])').open=true",
+    );
+    await evaluate(
+      "document.querySelector('[data-queue-action=begin-edit]').click()",
+    );
+    await wait(() =>
+      evaluate(
+        "document.querySelector('textarea[id^=queue-edit-]')?.value.includes('QUEUE_IMAGE_ORIGINAL')",
+      ),
+    );
+    await evaluate(
+      "document.querySelector('textarea[id^=queue-edit-]').select()",
+    );
+    await call("Input.insertText", { text: "QUEUE_IMAGE_CHANGED" });
+    await wait(() =>
+      evaluate(
+        "!document.querySelector('[data-queue-action=save-edit]').disabled",
+      ),
+    );
+    assert.equal(
+      await evaluate(
+        "document.querySelector('[data-queue-entry] input[type=checkbox]').checked",
+      ),
+      true,
+    );
+    await evaluate(
+      "document.querySelector('[data-queue-entry] input[type=checkbox]').scrollIntoView({block:'center'})",
+    );
+    screenshots.push(await shot("m2-attachment-queue-edit"));
+    await evaluate(
+      "document.querySelector('[data-queue-action=save-edit]').click()",
+    );
+    await wait(() =>
+      evaluate(
+        "!document.querySelector('textarea[id^=queue-edit-]') && document.querySelector('[data-queue-entry]').textContent.includes('QUEUE_IMAGE_CHANGED')",
+      ),
+    );
+    const journal = JSON.parse(
+      db
+        .prepare("SELECT record FROM queue_change ORDER BY rowid DESC LIMIT 1")
+        .get().record,
+    );
+    assert.equal(journal.previousImages.length, 1);
+    assert.equal(journal.command.retainedImageIds.length, 1);
+    await evaluate(
+      "document.querySelector('[data-queue-action=delete]').click()",
+    );
+    await wait(() => evaluate("!document.querySelector('[data-queue-entry]')"));
+    assert.equal(requests.length, 1);
+    checks.push(
+      "packaged private image and @ frozen text actually reach provider; native queued image survives text edit/save with original frozen receipt and typed change journal; delete adds no provider calls",
+    );
+  }
   assert.equal(requests[0].model, "fixture-b");
   if (process.argv.includes("--queue-subagent")) {
+    const queueChangesBefore = db
+      .prepare("SELECT COUNT(*) AS count FROM queue_change")
+      .get().count;
     await wait(() =>
       evaluate(
         "document.querySelector('[name=subagent-agent]')?.options.length>0",
@@ -455,7 +717,7 @@ try {
     );
     assert.equal(
       db.prepare("SELECT COUNT(*) AS count FROM queue_change").get().count,
-      0,
+      queueChangesBefore,
     );
     await evaluate(
       "document.querySelector('[role=alert]').scrollIntoView({block:'center'})",

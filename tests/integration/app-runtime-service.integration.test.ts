@@ -100,6 +100,7 @@ async function running(
   withoutDraft = false,
   busyAfterReady = false,
   failFirstFork = false,
+  prepareContent?: ConstructorParameters<typeof RuntimeService>[8],
 ) {
   const root = realpathSync(
     mkdtempSync(join(tmpdir(), "d-pi-runtime-service-")),
@@ -163,7 +164,17 @@ async function running(
       throw Error("Draft unavailable");
     });
   }
-  const runtime = new RuntimeService(store, root, root, {}, () => {});
+  const runtime = new RuntimeService(
+    store,
+    root,
+    root,
+    {},
+    () => {},
+    undefined,
+    undefined,
+    undefined,
+    prepareContent,
+  );
   const act = (kind: "allow" | "start" | "revoke" | "inspect") =>
     runtime.execute({
       kind,
@@ -1010,3 +1021,29 @@ it.each(["revoke", "missing-directory"] as const)(
     ).toMatchObject({ kind: "receipt", receipt: { state: "prepared" } });
   },
 );
+
+it("locates reference preparation failure without a receipt or native dispatch and preserves the draft", async () => {
+  const attachmentId = crypto.randomUUID();
+  const prepareContent = vi.fn(async () => ({
+    ok: false as const,
+    reason: "pdf-coverage-gap" as const,
+    attachmentId,
+  }));
+  const fixture = await running(false, false, false, prepareContent);
+  const reply = await fixture.prepare();
+  expect(reply).toMatchObject({
+    kind: "failed",
+    code: "content-not-ready",
+    error: {
+      preparation: { reason: "pdf-coverage-gap", attachmentId },
+      message: { code: "attachment.reason.pdf-coverage-gap" },
+    },
+  });
+  expect(fixture.store.drafts.read(fixture.draft.threadId).text).toBe("A");
+  expect(fixture.store.submissions.list(fixture.draft.threadId)).toEqual([]);
+  expect(
+    fixture.postMessage.mock.calls.map(
+      ([raw]) => HostTransportCommandSchema.parse(raw).command.kind,
+    ),
+  ).not.toContain("dispatch");
+});

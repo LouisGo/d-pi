@@ -21,6 +21,7 @@ import type { LocaleBridge } from "../../modules/preferences/contracts/public";
 import { PreferencesSchema } from "../../modules/preferences/contracts/public";
 import { ThreadContextSchema } from "../../modules/threads/contracts/public";
 import { ThreadIdSchema, TraceIdSchema } from "../../shared/identity";
+import type { AttachmentBridge } from "./attachments";
 
 export {
   type LocaleBridge,
@@ -157,6 +158,7 @@ export function parseDesktopReply(command: Command, raw: unknown): Reply {
   return reply;
 }
 export interface DesktopBridge {
+  attachments?: AttachmentBridge;
   configuration?: ConfigurationBridge;
   locale?: LocaleBridge;
   history?: HistoryBridge;

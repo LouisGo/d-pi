@@ -31,6 +31,7 @@ const emptySubmissionStore = createStore<SubmissionView>()(() => ({
   receiptIds: [],
   receiptsById: new Map(),
   message: null,
+  preparationFailure: null,
 }));
 export function RuntimePanel({
   model,

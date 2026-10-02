@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { useStore } from "zustand";
 import { Button } from "@/components/ui/button";
-import type { QueueAction } from "../../../modules/execution/contracts/public";
+import type {
+  QueueAction,
+  QueueSnapshot,
+} from "../../../modules/execution/contracts/public";
 import { QueueTextSchema } from "../../../modules/execution/contracts/public";
 import type { RuntimeModel } from "../../../modules/execution/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
@@ -83,6 +86,11 @@ export function QueueControls({ model }: { model: RuntimeModel }) {
               · {index + 1}
             </strong>
             <p className="whitespace-pre-wrap break-words">{entry.text}</p>
+            {!!entry.imageCount && (
+              <p className="muted">
+                {t("queue.images", { count: entry.imageCount })}
+              </p>
+            )}
             {entry.truncated && <p className="muted">{t("queue.truncated")}</p>}
             {!entry.editable && !entry.truncated && (
               <p className="muted">{t("queue.contentReadOnly")}</p>
@@ -94,6 +102,8 @@ export function QueueControls({ model }: { model: RuntimeModel }) {
                 entryId={entry.id}
                 revision={queue.revision}
                 draftText={editing.draftText}
+                images={entry.images ?? []}
+                retainedImageIds={editing.retainedImageIds}
                 disabled={locked}
                 inputDisabled={!available || unreconciled}
               />
@@ -176,6 +186,8 @@ function QueueEditor({
   entryId,
   revision,
   draftText,
+  images,
+  retainedImageIds,
   disabled,
   inputDisabled,
 }: {
@@ -183,6 +195,8 @@ function QueueEditor({
   entryId: string;
   revision: number;
   draftText: string;
+  images: NonNullable<QueueSnapshot["items"][number]["images"]>;
+  retainedImageIds: string[] | undefined;
   disabled: boolean;
   inputDisabled: boolean;
 }) {
@@ -190,6 +204,10 @@ function QueueEditor({
   // Immediate typing belongs to this input. Reopening initializes from the native
   // instance's acknowledged draft; delayed earlier acknowledgements do not undo typing.
   const [text, setText] = useState(draftText);
+  const [retained, setRetained] = useState(
+    retainedImageIds ?? images.map((image) => image.id),
+  );
+  const imageSelection = images.length ? { retainedImageIds: retained } : {};
   const fitsBudget = QueueTextSchema.safeParse(text).success;
   return (
     <div className="flex flex-col gap-2">
@@ -208,9 +226,37 @@ function QueueEditor({
               entryId,
               revision,
               text: next,
+              ...imageSelection,
             });
         }}
       />
+      {images.map((image, index) => (
+        <label key={image.id} className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={retained.includes(image.id)}
+            disabled={inputDisabled}
+            onChange={(event) => {
+              const next = event.target.checked
+                ? [...retained, image.id]
+                : retained.filter((id) => id !== image.id);
+              setRetained(next);
+              if (fitsBudget)
+                void model.manageQueue({
+                  action: "update-edit",
+                  entryId,
+                  revision,
+                  text,
+                  retainedImageIds: next,
+                });
+            }}
+          />
+          {t("queue.retainImage", {
+            index: index + 1,
+            mimeType: image.mimeType,
+          })}
+        </label>
+      ))}
       {!fitsBudget && (
         <p role="alert" className="failure">
           {t("queue.contentTooLarge")}
@@ -219,13 +265,16 @@ function QueueEditor({
       <div className="flex flex-wrap gap-2">
         <Button
           data-queue-action="save-edit"
-          disabled={disabled || !text.trim() || !fitsBudget}
+          disabled={
+            disabled || (!text.trim() && !retained.length) || !fitsBudget
+          }
           onClick={() =>
             void model.manageQueue({
               action: "save-edit",
               entryId,
               revision,
               text,
+              ...imageSelection,
             })
           }
         >

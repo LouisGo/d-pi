@@ -1,0 +1,42 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest --run src/app/renderer/workbench/queue-controls.test.ts
+$ tsr generate
+(node:4925) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/lou/Learn/d-pi[39m
+
+ [31m❯[39m src/app/renderer/workbench/queue-controls.test.ts [2m([22m[2m9 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 75[2mms[22m[39m
+   [32m✓[39m renders separate native duplicate entries and disables only unsupported editing[32m 26[2mms[22m[39m
+   [32m✓[39m edits the addressed native identity, preserves typing across earlier acknowledgements, and saves latest text[32m 14[2mms[22m[39m
+   [32m✓[39m preserves an oversized encoded draft, blocks save, and recovers after shortening 0[32m 7[2mms[22m[39m
+   [32m✓[39m preserves an oversized encoded draft, blocks save, and recovers after shortening 1[32m 6[2mms[22m[39m
+   [32m✓[39m preserves an oversized encoded draft, blocks save, and recovers after shortening 2[32m 6[2mms[22m[39m
+   [32m✓[39m shows confirmed host draft after view remount without cancelling native edit[32m 3[2mms[22m[39m
+   [32m✓[39m pending and unknown disable writes; unknown offers inspect without retrying the mutation[32m 3[2mms[22m[39m
+   [32m✓[39m explicit inspection reconciles native snapshot and restores fresh operation buttons without replay[32m 4[2mms[22m[39m
+[31m   [31m×[31m allows image-only queue edits and only removes a native image through an explicit selection[39m[32m 4[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/app/renderer/workbench/queue-controls.test.ts[2m > [22mallows image-only queue edits and only removes a native image through an explicit selection
+[31m[1mAssertionError[22m: expected true to be false // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+[36m [2m❯[22m src/app/renderer/workbench/queue-controls.test.ts:[2m408:119[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m8 passed[39m[22m[90m (9)[39m
+[2m   Start at [22m 21:54:56
+[2m   Duration [22m 472ms[2m (environment 36%, transform 28%, tests 18%, import 18%)[22m
+
+[ELIFECYCLE] Test failed. See above for more details.

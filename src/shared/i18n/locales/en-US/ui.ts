@@ -1,4 +1,86 @@
 export const ui = {
+  "attachment.closePending":
+    "Some attachments are still being prepared or their original sources have not been stored. This window remains open. Resolve them in the relevant Thread before closing.",
+  "attachment.previewTruncated":
+    "Only the first 64 KiB is previewed. The original is retained in full; sending still checks the complete content limits.",
+  "attachment.referenceRetrySending":
+    "Sending reads this reference again. Restore the source or remove this reference, then send explicitly.",
+  "attachment.dismissFailedRequest": "Remove this failed attachment request",
+  "ui.submissions.frozenContent": "Frozen sent content",
+  "ui.submissions.copyContent": "Copy sent content",
+
+  "queue.images": "Images ({count})",
+  "queue.retainImage": "Keep image {index} ({mimeType})",
+
+  "attachment.add": "Attach files",
+  "attachment.reference": "@ Project file",
+  "attachment.hint":
+    "Paste images, drop files, or type @ to reference a project file.",
+  "attachment.preparing": "Preparing attachments…",
+  "attachment.ready": "Ready",
+  "attachment.failed": "Preparation failed",
+  "attachment.readAtSend": "Read when sending",
+  "attachment.remove": "Remove {name}",
+  "attachment.previous": "Move {name} earlier",
+  "attachment.next": "Move {name} later",
+  "attachment.retry": "Retry preparation",
+  "attachment.preview": "Preview {name}",
+  "attachment.closePreview": "Close preview",
+  "attachment.zoom": "Zoom",
+  "attachment.textOnly": "Use extracted text only",
+  "attachment.textOnlyNotice":
+    "Text-only PDF: images, charts and scanned content may be missing.",
+  "attachment.coverageGap":
+    "PDF extraction is incomplete. Preview the result before explicitly choosing text only, or remove this attachment.",
+  "attachment.library": "Imported files available to reference",
+  "attachment.insert": "Add to draft",
+  "attachment.searchLabel": "Find project files",
+  "attachment.searching": "Searching project files…",
+  "attachment.noMatches":
+    "No matching project files. Try a filename or relative path.",
+  "attachment.searchLimited":
+    "Search reached its limit. Enter a more specific path.",
+  "attachment.searchFailed": "File search failed. Edit the query to retry.",
+  "attachment.cancelSearch": "Close file search",
+  "attachment.transportFailed":
+    "Attachment request failed. Your draft is retained; retry the explicit operation.",
+  "attachment.missing":
+    "Attachment unavailable: {id}. Remove it or attach the source again.",
+  "attachment.reason.invalid-token":
+    "Invalid attachment reference. Remove it and attach again.",
+  "attachment.reason.attachment-not-found":
+    "Original attachment missing. Attach it again.",
+  "attachment.reason.source-too-large": "This source exceeds the 25 MiB limit.",
+  "attachment.reason.submission-too-large":
+    "Total original content exceeds 100 MiB.",
+  "attachment.reason.transport-too-large":
+    "Encoded input exceeds the native transport limit. Remove or reduce content; nothing was truncated.",
+  "attachment.reason.storage-full":
+    "Private content storage is full. Active inputs were retained.",
+  "attachment.reason.storage-unavailable":
+    "Private content storage unavailable. Retry preparation.",
+  "attachment.reason.content-corrupt":
+    "Stored content failed integrity verification. Attach the original again.",
+  "attachment.reason.unsupported-format":
+    "This file format has no supported content representation.",
+  "attachment.reason.invalid-encoding":
+    "Text is not valid UTF-8. Convert the source explicitly and attach again.",
+  "attachment.reason.invalid-image":
+    "Image content cannot be decoded. Attach a valid image.",
+  "attachment.reason.image-decoder-unavailable":
+    "The local image decoder is unavailable. Retry or attach a supported image.",
+  "attachment.reason.pdf-conversion-unavailable":
+    "The local PDF converter is unavailable. Retry preparation.",
+  "attachment.reason.pdf-conversion-failed":
+    "PDF conversion failed. Retry or attach another source.",
+  "attachment.reason.pdf-coverage-gap":
+    "PDF text extraction has coverage gaps.",
+  "attachment.reason.pdf-too-many-pages": "PDF exceeds the 100-page limit.",
+  "attachment.reason.reference-unavailable":
+    "Referenced file is missing or unreadable. Check the path or remove it.",
+  "attachment.reason.reference-denied":
+    "Referenced path is outside the allowed project boundary.",
+
   "queue.contentTooLarge":
     "Content exceeds the 256 KiB limit. Shorten it before saving; this input has not been saved, so resolve it before closing the window.",
   "subagent.reconciled":

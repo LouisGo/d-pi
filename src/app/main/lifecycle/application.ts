@@ -21,6 +21,7 @@ import {
   resolveLocale,
 } from "../../../shared/i18n/locale";
 import { uiMessage } from "../../../shared/messages/contracts";
+import { registerAttachmentIpc } from "../ipc/attachments";
 import { registerConfigurationIpc } from "../ipc/configuration";
 import { registerDraftIpc } from "../ipc/draft";
 import {
@@ -283,6 +284,11 @@ export function startDesktopApplication(mainDirectory: string): void {
             ? join(reply.source.directory, "sessions")
             : null;
         },
+      });
+      registerAttachmentIpc({
+        ...ipcSourceContext,
+        getService: () => services.attachments,
+        getDiagnostics: () => diagnostics,
       });
       registerFilesIpc(projectReadContext);
       registerGitIpc(projectReadContext);

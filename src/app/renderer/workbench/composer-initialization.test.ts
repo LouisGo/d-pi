@@ -1,4 +1,5 @@
 // @vitest-environment happy-dom
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { EditorOptions } from "@tiptap/core";
 import type { EditorView } from "@tiptap/pm/view";
 import { act, createElement } from "react";
@@ -11,6 +12,10 @@ import {
 import { DraftSchema } from "../../../modules/input/contracts/public";
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
 import { createI18n } from "../../../shared/i18n/create-i18n";
+import type {
+  AttachmentBridge,
+  AttachmentRequest,
+} from "../../contracts/attachments";
 import {
   type DesktopBridge,
   parseDesktopReply,
@@ -54,7 +59,10 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 
-async function setup(control?: RuntimeView["control"]) {
+async function setup(
+  control?: RuntimeView["control"],
+  attachments?: AttachmentBridge,
+) {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   let draft = DraftSchema.parse({
     schemaVersion: 1,
@@ -90,6 +98,7 @@ async function setup(control?: RuntimeView["control"]) {
     onCloseCancelled: () => () => {},
     completeClose: () => {},
   };
+  if (attachments) bridge.attachments = attachments;
   let runtimeView: RuntimeView | null = null;
   let deliverRuntime: (view: RuntimeView) => void = () => {};
   if (control) {
@@ -129,17 +138,23 @@ async function setup(control?: RuntimeView["control"]) {
   document.body.append(container);
   const root = createRoot(container);
   mounted.push({ root, container, model });
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
   const render = () =>
     act(() =>
       root.render(
-        createElement(I18nProvider, {
-          initialSnapshot: {
-            preference: "system",
-            resolvedLocale: "en-US",
-          },
-          children: createElement(Composer, {
-            thread: currentThread(),
-            model,
+        createElement(QueryClientProvider, {
+          client,
+          children: createElement(I18nProvider, {
+            initialSnapshot: {
+              preference: "system",
+              resolvedLocale: "en-US",
+            },
+            children: createElement(Composer, {
+              thread: currentThread(),
+              model,
+            }),
           }),
         }),
       ),
@@ -317,4 +332,115 @@ it("retains the legacy native queue cap when no full projection is available", a
   expect(fixture.container.textContent).toContain(
     i18n.t("composer.queueFull", { queued: 20, cap: 20 }),
   );
+});
+
+it("blocks Enter and both send controls while pasted image preparation is pending", async () => {
+  let finish: (reply: { kind: "attachments"; items: [] }) => void = () => {};
+  const attachments: AttachmentBridge = {
+    request: async (command) => {
+      if (command.kind === "import-bytes")
+        return new Promise((resolve) => {
+          finish = resolve;
+        });
+      return { kind: "attachments", items: [] };
+    },
+  };
+  const fixture = await setup(nativeControl(0), attachments);
+  const submission = fixture.thread.submission;
+  if (!submission) throw Error("missing submission");
+  const send = vi.spyOn(submission, "send").mockResolvedValue(undefined);
+  const editorProps = editorCalls.at(-1)?.editorProps;
+  const file = new File(["image"], "capture.png", { type: "image/png" });
+  const dispatch = vi.fn();
+  // Exact mixed source is handled by the real editor transaction in another test;
+  // here the clipboard text is empty so only image preparation is pending.
+  const view = { composing: false, dispatch } as unknown as EditorView;
+  await act(() =>
+    editorProps?.handlePaste?.(
+      view,
+      {
+        preventDefault: () => {},
+        clipboardData: { files: [file], getData: () => "" },
+      } as unknown as ClipboardEvent,
+      {} as never,
+    ),
+  );
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  });
+  await act(() =>
+    editorProps?.handleKeyDown?.(
+      view,
+      new KeyboardEvent("keydown", { key: "Enter" }),
+    ),
+  );
+  expect(send).not.toHaveBeenCalled();
+  const buttons = Array.from(
+    fixture.container.querySelectorAll("button"),
+  ).filter((button) =>
+    [i18n.t("composer.queueSend"), i18n.t("composer.steer")].includes(
+      button.textContent ?? "",
+    ),
+  );
+  expect(buttons).toHaveLength(2);
+  expect(buttons.every((button) => button.disabled)).toBe(true);
+  await act(async () => {
+    finish({ kind: "attachments", items: [] });
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  });
+  await act(() =>
+    editorProps?.handleKeyDown?.(
+      view,
+      new KeyboardEvent("keydown", { key: "Enter" }),
+    ),
+  );
+  expect(send).toHaveBeenCalledOnce();
+});
+
+it("preserves explicit plain paste even when the clipboard also contains image files", async () => {
+  const request = vi.fn(async (_command: AttachmentRequest) => ({
+    kind: "attachments" as const,
+    items: [],
+  }));
+  const fixture = await setup(undefined, { request });
+  const { Editor } = await import("@tiptap/core");
+  const { plainTextEditorOptions } = await import(
+    "../../../modules/input/renderer/public"
+  );
+  const editor = new Editor({
+    ...plainTextEditorOptions,
+    element: document.createElement("div"),
+  });
+  const handlers = editorCalls.at(-1)?.editorProps;
+  const data = new DataTransfer();
+  data.setData("text/plain", "literal **source**\nsecond line");
+  data.items.add(new File(["image"], "clipboard.png", { type: "image/png" }));
+  try {
+    await act(() =>
+      handlers?.handleKeyDown?.(
+        editor.view,
+        new KeyboardEvent("keydown", {
+          key: "v",
+          metaKey: true,
+          shiftKey: true,
+        }),
+      ),
+    );
+    await act(() =>
+      handlers?.handlePaste?.(
+        editor.view,
+        new ClipboardEvent("paste", { clipboardData: data }),
+        {} as never,
+      ),
+    );
+    expect(editor.getText({ blockSeparator: "\n" })).toBe(
+      "literal **source**\nsecond line",
+    );
+    expect(
+      request.mock.calls.every(([command]) => command.kind === "list"),
+    ).toBe(true);
+  } finally {
+    editor.destroy();
+  }
+  expect(fixture.container.textContent).not.toContain("Preparing attachments");
 });

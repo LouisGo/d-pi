@@ -9,6 +9,21 @@ export const QueueTextSchema = z
     (text) => utf8ByteLength(JSON.stringify(text)) <= 262144,
     "Queue text too large",
   );
+export const QueueImagesSchema = z
+  .array(
+    z.strictObject({
+      id: z.uuid(),
+      mimeType: z.string().regex(/^image\/[a-zA-Z0-9.+-]{1,58}$/),
+    }),
+  )
+  .max(64);
+const RetainedImageIdsSchema = z
+  .array(z.uuid())
+  .max(64)
+  .refine(
+    (ids) => new Set(ids).size === ids.length,
+    "Duplicate image identity",
+  );
 export const QueueActionSchema = z.discriminatedUnion("action", [
   z.strictObject({
     action: z.enum(["begin-edit", "cancel-edit", "delete"]),
@@ -26,6 +41,7 @@ export const QueueActionSchema = z.discriminatedUnion("action", [
     entryId: z.uuid(),
     revision: z.number().int().nonnegative(),
     text: QueueTextSchema,
+    retainedImageIds: RetainedImageIdsSchema.optional(),
   }),
 ]);
 export type QueueAction = z.infer<typeof QueueActionSchema>;
@@ -40,11 +56,17 @@ export const QueueSnapshotSchema = z.strictObject({
         editable: z.boolean(),
         editing: z.boolean(),
         truncated: z.boolean(),
+        images: QueueImagesSchema.optional(),
+        imageCount: z.number().int().nonnegative().optional(),
       }),
     )
     .max(128),
   editing: z
-    .strictObject({ entryId: z.uuid(), draftText: QueueTextSchema })
+    .strictObject({
+      entryId: z.uuid(),
+      draftText: QueueTextSchema,
+      retainedImageIds: RetainedImageIdsSchema.optional(),
+    })
     .nullable(),
   hiddenCount: z.number().int().nonnegative(),
   coverage: z.enum(["complete", "limited"]),
@@ -72,6 +94,7 @@ export const QueueChangeSchema = z.strictObject({
   target: SubmissionTargetSchema,
   command: QueueActionSchema,
   previousText: QueueTextSchema,
+  previousImages: QueueImagesSchema.optional(),
   previousTruncated: z.boolean().optional(),
   status: z.enum(["dispatching", "acknowledged", "failed", "unknown"]),
   createdAt: z.string(),

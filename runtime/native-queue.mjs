@@ -48,6 +48,33 @@ export class NativeQueueManager {
       ? this.session.agent.peekSteeringQueue()
       : this.session.agent.peekFollowUpQueue();
   }
+  text(message) {
+    if (message.role !== "user") return this.helpers.displayText(message);
+    return typeof message.content === "string"
+      ? message.content
+      : (message.content ?? [])
+          .filter((part) => part.type === "text")
+          .map((part) => part.text)
+          .join("");
+  }
+  images(message) {
+    return Array.isArray(message.content)
+      ? message.content.filter((part) => part.type === "image")
+      : [];
+  }
+  imageMetadata(message) {
+    const images = this.images(message);
+    if (!images.length) return {};
+    return {
+      imageCount: images.length,
+      images: images.slice(0, 64).map((part) => ({
+        id: this.id(part),
+        mimeType: /^image\/[a-zA-Z0-9.+-]{1,58}$/.test(part.mimeType)
+          ? part.mimeType
+          : "image/unknown",
+      })),
+    };
+  }
   snapshot() {
     const all = ["steering", "followUp"].flatMap((kind) =>
       this.read(kind)
@@ -55,14 +82,21 @@ export class NativeQueueManager {
         .map((message) => ({
           id: this.id(message),
           kind,
-          text: this.helpers.displayText(message),
+          text: this.text(message),
           editable: this.editable(message, kind),
           editing: this.editing?.entryId === this.id(message),
-          truncated: false,
+          truncated: this.images(message).length > 64,
+          ...this.imageMetadata(message),
         })),
     );
     const editing = this.editing
-      ? { entryId: this.editing.entryId, draftText: this.editing.draftText }
+      ? {
+          entryId: this.editing.entryId,
+          draftText: this.editing.draftText,
+          ...(this.images(this.editing.message).length
+            ? { retainedImageIds: this.editing.retainedImageIds }
+            : {}),
+        }
       : null;
     // Reserve metadata for every represented entry even once the text budget is spent.
     let remaining = 524288 - Buffer.byteLength(JSON.stringify(editing)) - 32768;
@@ -74,8 +108,10 @@ export class NativeQueueManager {
         entry.text = entry.text.slice(0, 2048);
         entry.editable = false;
         entry.truncated = true;
-        if (Buffer.byteLength(JSON.stringify(entry)) > remaining)
+        if (Buffer.byteLength(JSON.stringify(entry)) > remaining) {
           entry.text = "";
+          delete entry.images;
+        }
       }
       remaining -= Buffer.byteLength(JSON.stringify(entry)) + 1;
       return entry;
@@ -98,9 +134,17 @@ export class NativeQueueManager {
     return (
       message.role === "user" &&
       (typeof message.content === "string" ||
-        (message.content.length === 1 && message.content[0].type === "text")) &&
-      Buffer.byteLength(JSON.stringify(this.helpers.displayText(message))) <=
-        262144 &&
+        (Array.isArray(message.content) &&
+          message.content.every((part) =>
+            part.type === "text"
+              ? typeof part.text === "string"
+              : part.type === "image" &&
+                typeof part.data === "string" &&
+                /^image\/[a-zA-Z0-9.+-]{1,58}$/.test(part.mimeType),
+          ) &&
+          message.content.filter((part) => part.type === "text").length <= 1 &&
+          this.images(message).length <= 64)) &&
+      Buffer.byteLength(JSON.stringify(this.text(message))) <= 262144 &&
       !(index > 0 && this.helpers.isCompanion(native[index - 1]))
     );
   }
@@ -138,7 +182,10 @@ export class NativeQueueManager {
       this.editing = {
         entryId: command.entryId,
         message: target.message,
-        draftText: this.helpers.displayText(target.message),
+        draftText: this.text(target.message),
+        retainedImageIds: this.images(target.message).map((part) =>
+          this.id(part),
+        ),
       };
       this.revision++;
     } else if (command.action === "cancel-edit") {
@@ -150,15 +197,27 @@ export class NativeQueueManager {
     } else if (command.action === "update-edit") {
       this.requireEdit(command.entryId);
       this.validateText(command.text, true);
+      const retainedImageIds = this.validateImageSelection(
+        command.retainedImageIds,
+      );
       this.editing.draftText = command.text;
+      this.editing.retainedImageIds = retainedImageIds;
       this.revision++;
     } else if (command.action === "save-edit") {
       this.requireEdit(command.entryId);
       const text = command.text ?? this.editing.draftText;
-      this.validateText(text);
+      this.validateText(text, true);
+      const retainedImageIds = this.validateImageSelection(
+        command.retainedImageIds,
+      );
+      const images = this.images(target.message).filter((part) =>
+        retainedImageIds.includes(this.id(part)),
+      );
+      if (!text.trim() && !images.length)
+        throw new QueueOperationError("invalid-content");
       const replacement = {
         ...target.message,
-        content: [{ type: "text", text }],
+        content: this.replaceContent(target.message, text, retainedImageIds),
       };
       this.ids.set(replacement, command.entryId);
       const next = [...target.native];
@@ -198,6 +257,28 @@ export class NativeQueueManager {
   requireEdit(entryId) {
     if (this.editing?.entryId !== entryId)
       throw new QueueOperationError("not-editing");
+  }
+  validateImageSelection(ids = this.editing.retainedImageIds) {
+    const known = new Set(
+      this.images(this.editing.message).map((part) => this.id(part)),
+    );
+    if (
+      !Array.isArray(ids) ||
+      new Set(ids).size !== ids.length ||
+      ids.some((id) => !known.has(id))
+    )
+      throw new QueueOperationError("invalid-image-selection");
+    return [...ids];
+  }
+  replaceContent(message, text, retainedImageIds) {
+    if (typeof message.content === "string") return [{ type: "text", text }];
+    const content = message.content.flatMap((part) => {
+      if (part.type === "text") return text ? [{ ...part, text }] : [];
+      return retainedImageIds.includes(this.id(part)) ? [part] : [];
+    });
+    if (text && !message.content.some((part) => part.type === "text"))
+      content.unshift({ type: "text", text });
+    return content;
   }
   groupStart(native, index) {
     let start = index;

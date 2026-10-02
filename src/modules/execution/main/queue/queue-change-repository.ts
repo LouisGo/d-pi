@@ -16,6 +16,7 @@ export class QueueChangeRepository {
           existing.previousText !== value.previousText ||
           !!existing.previousTruncated !== !!value.previousTruncated ||
           !isDeepStrictEqual(existing.target, value.target) ||
+          !isDeepStrictEqual(existing.previousImages, value.previousImages) ||
           !isDeepStrictEqual(existing.command, value.command)
         )
           throw Error("Queue change identity conflict");
@@ -27,6 +28,9 @@ export class QueueChangeRepository {
         target: value.target,
         command: value.command,
         previousText: value.previousText,
+        ...(value.previousImages
+          ? { previousImages: value.previousImages }
+          : {}),
         ...(value.previousTruncated !== undefined
           ? { previousTruncated: value.previousTruncated }
           : {}),

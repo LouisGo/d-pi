@@ -10,6 +10,7 @@ import {
   RuntimeResourceError,
 } from "../../../../platform/omp/resources/public";
 import { uiMessage } from "../../../../shared/messages/contracts";
+import type { ContentPreparationResult } from "../../../input/contracts/public";
 import type {
   DirectoryIdentity,
   ThreadContext,
@@ -96,6 +97,10 @@ export class RuntimeService {
     ) => void = () => {},
     private readonly record: (event: DiagnosticEvent) => void = () => {},
     private readonly scopeThreadId?: string,
+    private readonly prepareContent?: (
+      threadId: string,
+      text: string,
+    ) => Promise<ContentPreparationResult>,
   ) {
     this.connection = new HostConnection(
       (message) => this.receive(message),
@@ -723,6 +728,7 @@ export class RuntimeService {
             target: this.target,
             command: command.command,
             previousText: entry.text,
+            ...(entry.images ? { previousImages: entry.images } : {}),
             previousTruncated: entry.truncated,
           });
         }
@@ -1075,6 +1081,7 @@ export class RuntimeService {
         traceId: command.traceId,
         revision: source.revision,
         text: source.text,
+        ...(source.content ? { content: source.content } : {}),
         retryOf: source.submissionId,
         ...(source.delivery ? { delivery: source.delivery } : {}),
         ...(source.origin ? { origin: source.origin } : {}),
@@ -1089,9 +1096,75 @@ export class RuntimeService {
       return this.coordinator.dispatch(command.submissionId);
     if (!this.target) throw Error("Native target unavailable");
     const { kind: _kind, ...value } = command;
+    const target = this.target;
+    const prepared = this.prepareContent
+      ? await this.prepareContent(command.threadId, command.text)
+      : null;
+    const code =
+      prepared && !prepared.ok
+        ? "content-not-ready"
+        : prepared?.ok &&
+            prepared.content.images.length &&
+            !this.view?.control?.imageSupport
+          ? "image-unsupported"
+          : null;
+    if (code)
+      return {
+        kind: "failed",
+        code,
+        error: {
+          errorId: randomUUID(),
+          traceId: command.traceId,
+          code,
+          observedAt: "main",
+          reportedBy: "app",
+          attribution: "unknown",
+          handlingOwner: "submission",
+          ...(prepared && !prepared.ok
+            ? {
+                preparation: {
+                  reason: prepared.reason,
+                  ...(prepared.attachmentId
+                    ? { attachmentId: prepared.attachmentId }
+                    : {}),
+                },
+              }
+            : {}),
+          recovery: "user_action",
+          message: uiMessage(
+            prepared && !prepared.ok
+              ? `attachment.reason.${prepared.reason}`
+              : "submission.imageUnsupported",
+          ),
+        },
+      };
+    // Preparation may outlive a grant, model, connection or Thread reassociation.
+    const identityAfterPreparation = await identifyDirectory(thread.directory);
+    const grantAfterPreparation = this.store.threads.executionGrant(
+      thread.workingDirectoryId,
+    );
+    if (
+      !grantAfterPreparation ||
+      !this.instanceDirectory ||
+      !sameDirectoryIdentity(grantAfterPreparation, identityAfterPreparation) ||
+      !sameDirectoryIdentity(this.instanceDirectory, identityAfterPreparation)
+    )
+      throw Error("Execution grant invalid after preparation");
+    const currentThread = this.store.threads.threadContext(command.threadId);
+    if (
+      !this.target ||
+      !sameSubmissionTarget(target, this.target) ||
+      this.view?.modelChanging ||
+      currentThread.directory !== thread.directory ||
+      currentThread.workingDirectoryId !== thread.workingDirectoryId
+    )
+      throw Error("Content preparation target changed");
     return this.coordinator.prepare({
       ...value,
-      target: this.target,
+      ...(prepared?.ok && prepared.content.sources.length
+        ? { content: prepared.content }
+        : {}),
+      target,
       requestId: randomUUID(),
     });
   }

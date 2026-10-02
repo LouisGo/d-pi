@@ -1,0 +1,16 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest --run src/app/main/wiring/attachment-service.test.ts src/modules/files/main/project-files.test.ts
+$ tsr generate
+(node:11323) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/lou/Learn/d-pi[39m
+
+ [32m✓[39m src/modules/files/main/project-files.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m src/app/main/wiring/attachment-service.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 16[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[32m7 passed[39m[22m[90m (7)[39m
+[2m   Start at [22m 21:59:44
+[2m   Duration [22m 372ms[2m (transform 49%, import 40%, tests 10%, worker 1%)[22m
+

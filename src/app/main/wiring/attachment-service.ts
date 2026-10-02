@@ -1,0 +1,175 @@
+import { constants } from "node:fs";
+import { open } from "node:fs/promises";
+import { basename, join } from "node:path";
+import {
+  listProjectFiles,
+  readProjectBytes,
+} from "../../../modules/files/main/public";
+import { AttachmentStore } from "../../../modules/input/main/public";
+import type {
+  AttachmentReply,
+  AttachmentRequest,
+} from "../../contracts/attachments";
+import type { AppStorage } from "./app-storage";
+import { convertPdfContent } from "./pdf-content";
+export function createAttachmentService(
+  storage: AppStorage,
+  dataDirectory: string,
+  resources: string,
+  validateImage: (bytes: Uint8Array) => boolean,
+  chooseFiles: (threadId: string) => Promise<string[] | null>,
+) {
+  const store = new AttachmentStore({
+    directory: join(dataDirectory, "content"),
+    database: storage.database,
+    validateImage,
+    convertPdf: (bytes) => convertPdfContent(resources, bytes),
+    readReference: async (threadId, path) => {
+      const thread = storage.threads.threadContext(threadId);
+      const reply = await readProjectBytes(
+        thread.directory,
+        path,
+        25 * 1024 * 1024,
+      );
+      const current = storage.threads.threadContext(threadId);
+      if (
+        current.directory !== thread.directory ||
+        current.workingDirectoryId !== thread.workingDirectoryId
+      )
+        throw Error("reference-denied");
+      if (reply.kind !== "bytes")
+        throw Error(
+          reply.kind === "unavailable" && reply.reason === "denied"
+            ? "reference-denied"
+            : "reference-unavailable",
+        );
+      return { bytes: reply.bytes, version: reply.version };
+    },
+  });
+  async function execute(command: AttachmentRequest): Promise<AttachmentReply> {
+    const thread = storage.threads.threadContext(command.threadId);
+    const attachments = (items: Awaited<ReturnType<typeof store.list>>) =>
+      ({ kind: "attachments", items }) as const;
+    switch (command.kind) {
+      case "list":
+        return attachments(await store.list(command.threadId));
+      case "import-bytes": {
+        const bytes = Buffer.from(command.dataBase64, "base64");
+        if (bytes.toString("base64") !== command.dataBase64)
+          return { kind: "unavailable", reason: "content-corrupt" };
+        return attachments([
+          await store.importBytes(command.threadId, {
+            name: command.name,
+            mimeType: command.mimeType,
+            bytes,
+            source: command.source,
+          }),
+        ]);
+      }
+      case "choose-import": {
+        const paths = await chooseFiles(command.threadId);
+        if (!paths) return { kind: "cancelled" };
+        const current = storage.threads.threadContext(command.threadId);
+        if (
+          current.directory !== thread.directory ||
+          current.workingDirectoryId !== thread.workingDirectoryId
+        )
+          throw Error("Foreign attachment Thread");
+        const items = [];
+        for (const path of paths) {
+          const handle = await open(
+            path,
+            constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK,
+          );
+          try {
+            const before = await handle.stat();
+            if (!before.isFile()) throw Error("reference-unavailable");
+            if (before.size > 25 * 1024 * 1024)
+              return { kind: "unavailable", reason: "source-too-large" };
+            const bytes = await handle.readFile();
+            const after = await handle.stat();
+            if (
+              before.size !== after.size ||
+              before.mtimeMs !== after.mtimeMs ||
+              before.ctimeMs !== after.ctimeMs
+            )
+              throw Error("reference-unavailable");
+            items.push(
+              await store.importBytes(command.threadId, {
+                name: basename(path),
+                mimeType: "",
+                bytes,
+                source: "file",
+              }),
+            );
+          } finally {
+            await handle.close();
+          }
+        }
+        return attachments(items);
+      }
+      case "add-reference":
+        return attachments([
+          await store.addReference(command.threadId, command.path),
+        ]);
+      case "preview":
+        return store.preview(command.threadId, command.id);
+      case "retry": {
+        const item = await store.retry(command.threadId, command.id);
+        return item
+          ? attachments([item])
+          : { kind: "unavailable", reason: "attachment-not-found" };
+      }
+      case "set-text-only": {
+        const item = await store.setTextOnly(
+          command.threadId,
+          command.id,
+          command.value,
+        );
+        return item
+          ? attachments([item])
+          : { kind: "unavailable", reason: "attachment-not-found" };
+      }
+      case "search-reference": {
+        const stack = [""];
+        const paths: string[] = [];
+        let visited = 0;
+        let limited = false;
+        const query = command.query.toLocaleLowerCase();
+        while (stack.length && visited < 5000 && paths.length < 100) {
+          const path = stack.pop();
+          if (path === undefined) break;
+          const reply = await listProjectFiles(thread.directory, path);
+          if (reply.kind !== "entries") {
+            limited = true;
+            continue;
+          }
+          limited ||= reply.truncated;
+          for (const entry of reply.entries) {
+            visited++;
+            if (visited > 5000) {
+              limited = true;
+              break;
+            }
+            if (entry.kind === "directory" && entry.name !== "node_modules")
+              stack.push(entry.path);
+            else if (
+              entry.kind === "file" &&
+              entry.path.toLocaleLowerCase().includes(query)
+            ) {
+              paths.push(entry.path);
+              if (paths.length === 100) break;
+            }
+          }
+        }
+        return {
+          kind: "search",
+          paths,
+          truncated: limited || stack.length > 0 || paths.length === 100,
+        };
+      }
+    }
+  }
+  return { store, execute };
+}
+export type AttachmentService = ReturnType<typeof createAttachmentService>;

@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "5b7c520d74243050fa37446c1f0a6986f95ed40ddd9bf7900ab405ac73623cd0",
+  "inputsHash": "03f7f26b876e0c2980345bb0ae6513bc3b47b4065291b18c4323c5d15cc0c5b7",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 284,
-    "scannedFiles": 284,
+    "sourceFiles": 303,
+    "scannedFiles": 303,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 101,
-      "lines": 15273,
+      "files": 109,
+      "lines": 17645,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -60,7 +60,7 @@
       ],
       "materialized": true,
       "files": 24,
-      "lines": 1502,
+      "lines": 1531,
       "publicEntries": [
         {
           "path": "src/platform/main/storage/public.ts",
@@ -102,7 +102,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 18,
-      "lines": 1567,
+      "lines": 1748,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -146,7 +146,7 @@
       ],
       "materialized": true,
       "files": 15,
-      "lines": 1947,
+      "lines": 1965,
       "publicEntries": [
         {
           "path": "src/modules/files/contracts/public.ts",
@@ -177,8 +177,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 22,
-      "lines": 2181,
+      "files": 32,
+      "lines": 4078,
       "publicEntries": [
         {
           "path": "src/modules/input/contracts/public.ts",
@@ -319,7 +319,7 @@
       ],
       "materialized": true,
       "files": 46,
-      "lines": 10783,
+      "lines": 10940,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -352,8 +352,8 @@
       ],
       "defaultEnvironment": "omp",
       "materialized": true,
-      "files": 8,
-      "lines": 1761,
+      "files": 9,
+      "lines": 1865,
       "publicEntries": [
         {
           "path": "runtime/host.mjs",
@@ -551,6 +551,12 @@
       "module": "app",
       "environment": "preload",
       "dependency": "configuration",
+      "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "preload",
+      "dependency": "input",
       "testOnly": false
     },
     {
@@ -912,6 +918,20 @@
     {
       "module": "app",
       "environment": "contracts",
+      "dependency": "input",
+      "targetEnvironment": "contracts",
+      "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "contracts",
+      "dependency": "shared",
+      "targetEnvironment": "shared",
+      "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "contracts",
       "dependency": "changes",
       "targetEnvironment": "contracts",
       "testOnly": false
@@ -947,13 +967,6 @@
     {
       "module": "app",
       "environment": "contracts",
-      "dependency": "input",
-      "targetEnvironment": "contracts",
-      "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "contracts",
       "dependency": "preferences",
       "targetEnvironment": "contracts",
       "testOnly": false
@@ -963,13 +976,6 @@
       "environment": "contracts",
       "dependency": "threads",
       "targetEnvironment": "contracts",
-      "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "contracts",
-      "dependency": "shared",
-      "targetEnvironment": "shared",
       "testOnly": false
     },
     {
@@ -1003,6 +1009,13 @@
     {
       "module": "app",
       "environment": "main",
+      "dependency": "platform",
+      "targetEnvironment": "main",
+      "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "main",
       "dependency": "configuration",
       "targetEnvironment": "contracts",
       "testOnly": false
@@ -1011,13 +1024,6 @@
       "module": "app",
       "environment": "main",
       "dependency": "configuration",
-      "targetEnvironment": "main",
-      "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "main",
-      "dependency": "platform",
       "targetEnvironment": "main",
       "testOnly": false
     },
@@ -1347,6 +1353,13 @@
       "module": "app",
       "environment": "renderer",
       "dependency": "input",
+      "targetEnvironment": "renderer",
+      "testOnly": true
+    },
+    {
+      "module": "app",
+      "environment": "renderer",
+      "dependency": "input",
       "targetEnvironment": "contracts",
       "testOnly": false
     },
@@ -1377,13 +1390,6 @@
       "dependency": "threads",
       "targetEnvironment": "contracts",
       "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "renderer",
-      "dependency": "input",
-      "targetEnvironment": "renderer",
-      "testOnly": true
     },
     {
       "module": "app",
@@ -1843,6 +1849,13 @@
     {
       "module": "execution",
       "environment": "main",
+      "dependency": "input",
+      "targetEnvironment": "contracts",
+      "testOnly": false
+    },
+    {
+      "module": "execution",
+      "environment": "main",
       "dependency": "threads",
       "targetEnvironment": "contracts",
       "testOnly": false
@@ -1852,13 +1865,6 @@
       "environment": "main",
       "dependency": "threads",
       "targetEnvironment": "main",
-      "testOnly": false
-    },
-    {
-      "module": "execution",
-      "environment": "main",
-      "dependency": "input",
-      "targetEnvironment": "contracts",
       "testOnly": false
     },
     {
@@ -1947,6 +1953,39 @@
     }
   ],
   "imports": [
+    {
+      "from": "src/app/contracts/attachments.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/contracts/attachments.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "../../modules/input/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/contracts/attachments.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
     {
       "from": "src/app/contracts/desktop-bridge.test.ts",
       "sourceModule": "app",
@@ -2105,6 +2144,18 @@
       "to": "src/shared/identity.ts",
       "targetModule": "shared",
       "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/app/contracts/desktop-bridge.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "./attachments",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/attachments.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/app/contracts/desktop-bridge.ts",
@@ -2421,6 +2472,63 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/main/lifecycle/application.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/ipc/attachments.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/attachments.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../platform/main/diagnostics/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/main/diagnostics/public.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/ipc/attachments.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../contracts/attachments",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/attachments.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/main/ipc/attachments.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../wiring/attachment-service",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/attachment-service.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/ipc/attachments.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "./context",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/ipc/context.ts",
       "targetModule": "app",
       "targetEnvironment": "main"
     },
@@ -3062,6 +3170,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "main",
       "test": false,
+      "specifier": "../ipc/attachments",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/ipc/attachments.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/lifecycle/application.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
       "specifier": "../ipc/configuration",
       "kind": "import",
       "resolution": "module",
@@ -3469,6 +3589,165 @@
       "targetEnvironment": "main"
     },
     {
+      "from": "src/app/main/wiring/attachment-service.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-service.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-service.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-service.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-service.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-service.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./app-storage",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/app-storage.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-service.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./attachment-service",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/attachment-service.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-service.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-service.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:fs/promises",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-service.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-service.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../modules/files/main/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/files/main/public.ts",
+      "targetModule": "files",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-service.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../modules/input/main/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/main/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-service.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../contracts/attachments",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/attachments.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-service.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "./app-storage",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/app-storage.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-service.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "./pdf-content",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/pdf-content.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
       "from": "src/app/main/wiring/desktop-command-service.ts",
       "sourceModule": "app",
       "sourceEnvironment": "main",
@@ -3674,6 +3953,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "main",
       "test": false,
+      "specifier": "./attachment-service",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/attachment-service.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/desktop-services.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
       "specifier": "./desktop-command-service",
       "kind": "import",
       "resolution": "module",
@@ -3752,6 +4043,45 @@
       "to": "src/app/main/wiring/desktop-command-service.ts",
       "targetModule": "app",
       "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/pdf-content.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:child_process",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/pdf-content.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/pdf-content.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/pdf-content.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../platform/omp/resources/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/omp/resources/public.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "omp"
     },
     {
       "from": "src/app/main/wiring/queue-storage.test.ts",
@@ -4115,6 +4445,27 @@
       "to": "src/app/main/wiring/app-storage.ts",
       "targetModule": "app",
       "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/preload/bridges/attachments.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": false,
+      "specifier": "electron",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/preload/bridges/attachments.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": false,
+      "specifier": "../../contracts/attachments",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/attachments.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/app/preload/bridges/configuration.ts",
@@ -4466,6 +4817,18 @@
       "to": "src/app/contracts/desktop-bridge.ts",
       "targetModule": "app",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/preload/index.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": false,
+      "specifier": "./bridges/attachments",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/preload/bridges/attachments.ts",
+      "targetModule": "app",
+      "targetEnvironment": "preload"
     },
     {
       "from": "src/app/preload/index.ts",
@@ -6795,6 +7158,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": true,
+      "specifier": "../../../modules/input/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/wiring/model.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
       "specifier": "../../../shared/identity",
       "kind": "import",
       "resolution": "module",
@@ -7121,6 +7496,231 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/app/renderer/workbench/attachment-controls.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tanstack/react-query",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tiptap/core",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react-dom/client",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/input/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/input/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../shared/i18n/create-i18n",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/i18n/create-i18n.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../contracts/attachments",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/attachments.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./attachment-controls",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/attachment-controls.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tanstack/react-query",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tiptap/core",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "zustand",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@/components/ui/button",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/ui/button.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/input/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/input/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../contracts/attachments",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/attachments.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
       "from": "src/app/renderer/workbench/composer-binding.test.ts",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -7380,6 +7980,15 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": true,
+      "specifier": "@tanstack/react-query",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-initialization.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
       "specifier": "@tiptap/core",
       "kind": "import",
       "resolution": "external"
@@ -7473,6 +8082,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": true,
+      "specifier": "../../contracts/attachments",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/attachments.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-initialization.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
       "specifier": "../../contracts/desktop-bridge",
       "kind": "import",
       "resolution": "module",
@@ -7503,6 +8124,27 @@
       "to": "src/app/renderer/workbench/composer.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-initialization.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/input/renderer/public",
+      "kind": "dynamic-import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-initialization.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tiptap/core",
+      "kind": "dynamic-import",
+      "resolution": "external"
     },
     {
       "from": "src/app/renderer/workbench/composer-initialization.test.ts",
@@ -7657,6 +8299,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/wiring/thread-model.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./attachment-controls",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/attachment-controls.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -10542,6 +11196,15 @@
       "targetEnvironment": "contracts"
     },
     {
+      "from": "src/modules/input/contracts/attachment.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
       "from": "src/modules/input/contracts/draft.ts",
       "sourceModule": "input",
       "sourceEnvironment": "contracts",
@@ -10596,6 +11259,18 @@
       "resolution": "module",
       "to": "src/modules/threads/contracts/public.ts",
       "targetModule": "threads",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/contracts/public.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "./attachment",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/attachment.ts",
+      "targetModule": "input",
       "targetEnvironment": "contracts"
     },
     {
@@ -10726,6 +11401,18 @@
       "sourceModule": "input",
       "sourceEnvironment": "core",
       "test": false,
+      "specifier": "./attachments/tokens",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/input/core/attachments/tokens.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/core/public.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": false,
       "specifier": "./draft-controller",
       "kind": "export",
       "resolution": "module",
@@ -10812,6 +11499,198 @@
       "targetEnvironment": "core"
     },
     {
+      "from": "src/modules/input/main/attachments/attachment-store.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/main/attachments/attachment-store.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:fs/promises",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/main/attachments/attachment-store.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/main/attachments/attachment-store.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/main/attachments/attachment-store.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:sqlite",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/main/attachments/attachment-store.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/main/attachments/attachment-store.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../core/attachments/tokens",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/attachments/tokens.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/main/attachments/attachment-store.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./attachment-store",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/main/attachments/attachment-store.ts",
+      "targetModule": "input",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/input/main/attachments/attachment-store.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/main/attachments/attachment-store.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/main/attachments/attachment-store.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:fs/promises",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/main/attachments/attachment-store.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/main/attachments/attachment-store.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "ts-pattern",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/main/attachments/attachment-store.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/main/attachments/attachment-store.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../../platform/main/storage/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/main/storage/public.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/input/main/attachments/attachment-store.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/main/attachments/attachment-store.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/main/attachments/attachment-store.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "./representation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/main/attachments/representation.ts",
+      "targetModule": "input",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/input/main/attachments/representation.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
       "from": "src/modules/input/main/draft-repository.ts",
       "sourceModule": "input",
       "sourceEnvironment": "main",
@@ -10864,6 +11743,18 @@
       "sourceModule": "input",
       "sourceEnvironment": "main",
       "test": false,
+      "specifier": "./attachments/attachment-store",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/input/main/attachments/attachment-store.ts",
+      "targetModule": "input",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/input/main/public.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": false,
       "specifier": "./draft-repository",
       "kind": "export",
       "resolution": "module",
@@ -10882,6 +11773,48 @@
       "to": "src/modules/input/main/draft-service.ts",
       "targetModule": "input",
       "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/input/renderer/attachments/attachment-imports.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/attachments/attachment-imports.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./attachment-imports",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/attachments/attachment-imports.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/attachments/attachment-imports.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "zustand/vanilla",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/attachments/attachment-imports.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/modules/input/renderer/clipboard/plain-text-paste.test.ts",
@@ -11314,10 +12247,34 @@
       "sourceModule": "input",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "../references/attachment-reference",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/attachment-reference.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/editor/plain-text-editor.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "../references/file-reference-node",
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/input/renderer/references/file-reference-node.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/public.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./attachments/attachment-imports",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/attachments/attachment-imports.ts",
       "targetModule": "input",
       "targetEnvironment": "renderer"
     },
@@ -11362,6 +12319,18 @@
       "sourceModule": "input",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "./references/attachment-reference",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/attachment-reference.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/public.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "./references/file-reference-node",
       "kind": "export",
       "resolution": "module",
@@ -11380,6 +12349,126 @@
       "to": "src/modules/input/renderer/references/selection-insert.ts",
       "targetModule": "input",
       "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-reference-boundaries.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tiptap/core",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-reference-boundaries.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-reference-boundaries.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../editor/plain-text-editor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/editor/plain-text-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-reference-boundaries.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./attachment-reference",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/attachment-reference.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-reference.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tiptap/core",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-reference.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tiptap/pm/state",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-reference.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-reference.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../editor/plain-text-editor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/editor/plain-text-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-reference.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./attachment-reference",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/attachment-reference.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-reference.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tiptap/core",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-reference.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tiptap/pm/state",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-reference.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
     },
     {
       "from": "src/modules/input/renderer/references/file-reference-node.ts",
@@ -14311,6 +15400,18 @@
       "sourceModule": "execution",
       "sourceEnvironment": "main",
       "test": false,
+      "specifier": "../../../input/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/main/runtime/runtime-service.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
       "specifier": "../../../threads/contracts/public",
       "kind": "import",
       "resolution": "module",
@@ -14437,6 +15538,15 @@
       "to": "src/modules/execution/main/transport/host-connection.ts",
       "targetModule": "execution",
       "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/execution/main/submission/submission-repository.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:util",
+      "kind": "import",
+      "resolution": "external"
     },
     {
       "from": "src/modules/execution/main/submission/submission-repository.ts",
@@ -15048,6 +16158,18 @@
       "targetEnvironment": "contracts"
     },
     {
+      "from": "src/modules/execution/renderer/submission/submission-model.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../contracts/public",
+      "kind": "dynamic-import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
       "from": "src/modules/execution/renderer/submission/submission-shortcut.test.ts",
       "sourceModule": "execution",
       "sourceEnvironment": "renderer",
@@ -15327,6 +16449,15 @@
       "test": false,
       "specifier": "@oh-my-pi/pi-coding-agent/modes/rpc/rpc-mode",
       "kind": "dynamic-import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/host.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "@oh-my-pi/pi-ai/providers/vision-guard",
+      "kind": "import",
       "resolution": "external"
     },
     {
@@ -15621,6 +16752,15 @@
       "kind": "import",
       "resolution": "unowned",
       "to": "scripts/testing/test-environment.mjs"
+    },
+    {
+      "from": "runtime/pdf-content.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "@oh-my-pi/pi-natives",
+      "kind": "import",
+      "resolution": "external"
     },
     {
       "from": "src/modules/configuration/contracts/model-selection.ts",

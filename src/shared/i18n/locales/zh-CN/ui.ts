@@ -1,4 +1,71 @@
 export const ui = {
+  "attachment.closePending":
+    "部分附件仍在准备，或原件尚未保存。窗口保持打开，请回到相关 Thread 处理附件后再关闭。",
+  "attachment.previewTruncated":
+    "这里只预览前 64 KiB，原件完整保留；发送仍会检查完整内容限制。",
+  "attachment.referenceRetrySending":
+    "发送时会重新读取此引用。请恢复原件或移除此引用，再显式发送。",
+  "attachment.dismissFailedRequest": "移除此失败的附件请求",
+  "ui.submissions.frozenContent": "实际发送的冻结内容",
+  "ui.submissions.copyContent": "复制发送内容",
+
+  "queue.images": "图片（{count}）",
+  "queue.retainImage": "保留图片 {index}（{mimeType}）",
+
+  "attachment.add": "添加附件",
+  "attachment.reference": "@ 项目文件",
+  "attachment.hint": "粘贴图片、拖入文件，或输入 @ 引用项目文件。",
+  "attachment.preparing": "正在准备附件…",
+  "attachment.ready": "已准备",
+  "attachment.failed": "准备失败",
+  "attachment.readAtSend": "发送时读取",
+  "attachment.remove": "移除 {name}",
+  "attachment.previous": "前移 {name}",
+  "attachment.next": "后移 {name}",
+  "attachment.retry": "重试准备",
+  "attachment.preview": "预览 {name}",
+  "attachment.closePreview": "关闭预览",
+  "attachment.zoom": "缩放",
+  "attachment.textOnly": "仅使用抽取文字",
+  "attachment.textOnlyNotice": "仅文字 PDF：可能遗漏图片、图表和扫描内容。",
+  "attachment.coverageGap":
+    "PDF 抽取存在覆盖缺口。请预览结果，明确选择仅文字，或移除此附件。",
+  "attachment.library": "可再次引用的已导入文件",
+  "attachment.insert": "加入草稿",
+  "attachment.searchLabel": "查找项目文件",
+  "attachment.searching": "正在查找项目文件…",
+  "attachment.noMatches": "未找到匹配文件。请尝试文件名或相对路径。",
+  "attachment.searchLimited": "搜索达到上限，请输入更具体的路径。",
+  "attachment.searchFailed": "文件搜索失败，请修改查询重试。",
+  "attachment.cancelSearch": "关闭文件搜索",
+  "attachment.transportFailed": "附件请求失败，草稿已保留；可显式重试此操作。",
+  "attachment.missing": "附件不可用：{id}。请移除或重新附加原件。",
+  "attachment.reason.invalid-token": "附件引用无效，请移除后重新附加。",
+  "attachment.reason.attachment-not-found": "原始附件丢失，请重新附加。",
+  "attachment.reason.source-too-large": "原件超出 25 MiB 限制。",
+  "attachment.reason.submission-too-large": "提交原始内容总量超出 100 MiB。",
+  "attachment.reason.transport-too-large":
+    "编码后输入超出原生传输限制。请移除或缩减内容；没有截断输入。",
+  "attachment.reason.storage-full": "私有内容存储已满，活跃输入仍保留。",
+  "attachment.reason.storage-unavailable": "私有内容存储不可用，请重试准备。",
+  "attachment.reason.content-corrupt":
+    "存储内容完整性校验失败，请重新附加原件。",
+  "attachment.reason.unsupported-format": "此文件格式尚无可支持的内容表示。",
+  "attachment.reason.invalid-encoding":
+    "文字不是有效 UTF-8。请明确转换原件后重新附加。",
+  "attachment.reason.invalid-image": "图片内容无法解码，请附加有效图片。",
+  "attachment.reason.image-decoder-unavailable":
+    "本地图片解码器不可用，请重试或附加支持的图片。",
+  "attachment.reason.pdf-conversion-unavailable":
+    "本地 PDF 转换器不可用，请重试准备。",
+  "attachment.reason.pdf-conversion-failed":
+    "PDF 转换失败，请重试或附加其他原件。",
+  "attachment.reason.pdf-coverage-gap": "PDF 文字抽取存在覆盖缺口。",
+  "attachment.reason.pdf-too-many-pages": "PDF 超出 100 页限制。",
+  "attachment.reason.reference-unavailable":
+    "引用文件丢失或无法读取，请检查路径或移除。",
+  "attachment.reason.reference-denied": "引用路径超出允许的项目边界。",
+
   "queue.contentTooLarge":
     "内容超出 256 KiB 限制，请缩短后保存；超限输入尚未保存，关闭窗口前请先处理。",
   "subagent.reconciled":

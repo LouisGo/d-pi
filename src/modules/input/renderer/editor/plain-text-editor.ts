@@ -11,6 +11,10 @@ import { UndoRedo } from "@tiptap/extensions";
 import { history } from "@tiptap/pm/history";
 import { EditorState } from "@tiptap/pm/state";
 import { parseDraftBlocks } from "../../core/references/serialize";
+import {
+  AttachmentReference,
+  attachmentParagraph,
+} from "../references/attachment-reference";
 import { FileReference } from "../references/file-reference-node";
 
 export const draftHistoryDepth = 50;
@@ -25,6 +29,7 @@ const extensions = [
     },
   }),
   FileReference,
+  AttachmentReference,
   UndoRedo.configure({ depth: draftHistoryDepth }),
 ];
 // Build the stable input schema without an Editor context. Cached documents and
@@ -49,10 +54,7 @@ export function draftDocument(text: string) {
     content: parseDraftBlocks(text).map((block) =>
       block.kind === "selection"
         ? { type: "fileReference", attrs: block.value }
-        : {
-            type: "paragraph",
-            content: block.text ? [{ type: "text", text: block.text }] : [],
-          },
+        : attachmentParagraph(block.text),
     ),
   };
 }

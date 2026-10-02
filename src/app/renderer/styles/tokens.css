@@ -15,6 +15,7 @@
   color-scheme: light;
   --background: #fcfcfd;
   --surface: #ffffff;
+  --overlay: rgb(0 0 0 / 45%);
   --sidebar: #f3f4f7;
   --accent: #e8edf9;
   --accent-foreground: #304a97;

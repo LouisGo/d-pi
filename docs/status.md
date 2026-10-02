@@ -40,7 +40,9 @@
 | [m2-first-release / 02 配置、认证与模型](../.scratch/m2-first-release/issues/02-configuration-models.md) | claimed | 无；范围以所属规格为准 |
 | [m2-first-release / 03 主流程与候选](../.scratch/m2-first-release/issues/03-entry-candidate.md) | claimed | [01](../.scratch/m2-first-release/issues/01-project-threads.md)、[02](../.scratch/m2-first-release/issues/02-configuration-models.md) |
 | [m2-first-release / 04 输入与附件](../.scratch/m2-first-release/issues/04-input-attachments.md) | claimed | 无；范围以所属规格为准 |
+| [m2-first-release / 04a 附件与发送时文件引用](../.scratch/m2-first-release/issues/04a-content-preparation.md) | claimed | 无；范围以所属规格为准 |
 | [m2-first-release / 05 队列与子 Agent](../.scratch/m2-first-release/issues/05-queue-subagent.md) | open | 无；范围以所属规格为准 |
+| [m2-first-release / 05c 原生队列附件内容编辑](../.scratch/m2-first-release/issues/05c-queue-content.md) | claimed | 无；范围以所属规格为准 |
 | [m2-first-release / 06 阅读与组合验收](../.scratch/m2-first-release/issues/06-reading-acceptance.md) | open | 无；范围以所属规格为准 |
 | [state-query-alignment / 04 集成验证与试用交接](../.scratch/state-query-alignment/issues/04-integration-verification.md) | claimed | 无；范围以所属规格为准 |
 
@@ -59,4 +61,4 @@
 - [类型安全桌面路由](../.scratch/router-integration/spec.md)：本地实施和提交；不 push、不改变 OMP 执行及冷恢复政策。
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 
-<!-- source-sha256: 3533924706f0568c12b246bd2f613f9c0c3f7965d2af99cbfb46ea789d79520c; sources: 98 -->
+<!-- source-sha256: 26b9e72c7f142419f947c8bd341d79b8b5f4e74972a8404c566dde3c479ae9be; sources: 100 -->

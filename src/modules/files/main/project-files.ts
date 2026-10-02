@@ -110,12 +110,15 @@ export async function listProjectFiles(
     return reasonOf(error);
   }
 }
-export async function readProjectFile(
+export async function readProjectBytes(
   root: string,
   path: string,
   maxBytes = MAX_VIEW_BYTES,
   afterRead?: () => Promise<void>,
-): Promise<FileReply> {
+): Promise<
+  | FileReply
+  | { kind: "bytes"; bytes: Uint8Array; version: string; capturedAt: string }
+> {
   try {
     const canonical = await canonicalRoot(root);
     if (typeof canonical !== "string") return canonical;
@@ -158,26 +161,40 @@ export async function readProjectFile(
         (await realpath(join(canonical, path))) !== resolved.target
       )
         return unavailable("changed");
-      if (buffer.includes(0)) return unavailable("binary");
-      let text: string;
-      try {
-        text = new TextDecoder("utf-8", { fatal: true }).decode(buffer);
-      } catch {
-        return unavailable("invalid-encoding");
-      }
       return {
-        kind: "text",
-        path,
-        text,
-        bytes: buffer.length,
+        kind: "bytes",
+        bytes: buffer,
         version: `sha256:${createHash("sha256").update(buffer).digest("hex")}`,
         capturedAt: new Date().toISOString(),
-        coverage: "complete",
       };
     } finally {
       await file.close();
     }
   } catch (error) {
     return reasonOf(error);
+  }
+}
+
+export async function readProjectFile(
+  root: string,
+  path: string,
+  maxBytes = MAX_VIEW_BYTES,
+  afterRead?: () => Promise<void>,
+): Promise<FileReply> {
+  const result = await readProjectBytes(root, path, maxBytes, afterRead);
+  if (result.kind !== "bytes") return result;
+  if (result.bytes.includes(0)) return unavailable("binary");
+  try {
+    return {
+      kind: "text",
+      path,
+      text: new TextDecoder("utf-8", { fatal: true }).decode(result.bytes),
+      bytes: result.bytes.byteLength,
+      version: result.version,
+      capturedAt: result.capturedAt,
+      coverage: "complete",
+    };
+  } catch {
+    return unavailable("invalid-encoding");
   }
 }

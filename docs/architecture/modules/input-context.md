@@ -5,7 +5,7 @@
 ## 当前工程落点（领域目录治理，2026-09-29）
 
 - 草稿合同与状态在 `src/modules/input/contracts/`，控制器与引用序列化在 `src/modules/input/core/`，草稿仓储与服务在 `src/modules/input/main/`，编辑器适配在 `src/modules/input/renderer/`。
-- M2 文字增量（2026-10-01）：普通剪贴板结构转为可编辑 Markdown；明确纯文本入口保留 literal source，剪贴板模板不挂载/不获取资源。标题、嵌套列表、表格、链接、代码/引用及一笔撤销/重做已由行为测试覆盖；附件粘贴暂明确拒绝整项，保留旧草稿，后续内容导入接入前不判 V1-04 完成。
+- M2 文字增量（2026-10-01）：普通剪贴板结构转为可编辑 Markdown；明确纯文本入口保留 literal source，剪贴板模板不挂载/不获取资源。标题、嵌套列表、表格、链接、代码/引用及一笔撤销/重做已由行为测试覆盖；2026-10-02 已接入附件粘贴/拖入与私有准备，详情见下方近期切片；V1-04 全集仍未完成。
 - 应用级 Composer 组合留在 `src/app/renderer/workbench/`，不复制草稿真相；提交收据与 OMP 消费仍归 execution。
 
 ## 范围与拥有者
@@ -52,3 +52,11 @@ M2：逐项补 @ 文件、截图、拖入图片/文件、PDF、预览与删除�
 AppModel 拥有窗口级 DraftEditorCache，input Renderer 缓存脱离 EditorView/DOM 及插件闭包的 EditorState。A→B→A 在匹配草稿 revision、消费序号和正文时恢复选区与撤销，两个 Thread 独立；发送消费、外部新版本及旧 Editor 迟到事件不能复活已提交正文。最多缓存 8 个 Thread、总 UTF-8 正文估算 4 MiB，LRU 淘汰只释放编辑历史；原生 history depth 50 沿用其批次裁剪，正文估算不承诺 undo/RSS 硬上限。窗口释放清缓存，reload/重启只恢复 Main 持久草稿，不持久化 ProseMirror 内部状态。真实 Tiptap/React 红绿与原生候选检查见[05](../../../.scratch/runtime-hardening-omp1845/issues/05-editor-continuity.md)。
 
 当前 Renderer 私有实现分别落在 `editor/`、`clipboard/`、`references/`；环境公开入口与草稿所有权不变。
+
+## 2026-10-02 附件与发送时引用切片
+
+input Main 的 AttachmentStore 管 schema 8 manifest、摘要原件/派生文件、准备与预算；Renderer AttachmentImports 属于 Thread，视图卸载不会取消导入，尚未私有落盘的原件在关闭时有保护。草稿只存原子短 token，不放二进制；@查询是只读Query，导入/重试/准备是显式副作用。
+
+导入文本和图片复制原件；@项目文件每次发送经 files 授权读取及身份复核，冻结内容交给 execution prepared 持久化。预览文本最多64KiB并显示截断；该预览不用于发送。固定OMP18.4.6提供PDF文字转换，实际图表/扫描覆盖不能保证，必须显式仅文字；没有实现完整页面渲染。未知格式、解码、容量、权限和覆盖失败定位附件，完整保留原输入。
+
+当前保守保留全部私有原件，摘要去重；引用计数释放、7天GC及全面一致性扫描仍在B4父票，达到1GiB明确拒绝新增。正式GUI包含附件管理、图片缩放、失败重试及@键盘选择；[本轮交付](../../../.scratch/m2-first-release/content-preparation.md)分别记录测试、SDK和macOS证据。

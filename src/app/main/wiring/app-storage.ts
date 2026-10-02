@@ -11,7 +11,7 @@ import { AppDatabase } from "../../../platform/main/storage/public";
 export class AppStorage {
   private closed = false;
   private constructor(
-    private readonly database: AppDatabase,
+    readonly database: AppDatabase,
     readonly threads: ThreadRepository,
     readonly drafts: DraftRepository,
     readonly submissions: SubmissionRepository,

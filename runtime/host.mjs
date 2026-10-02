@@ -12,6 +12,7 @@ const { runRpcMode } = await import(
   "@oh-my-pi/pi-coding-agent/modes/rpc/rpc-mode"
 );
 
+import { sendsImageInputOnWire } from "@oh-my-pi/pi-ai/providers/vision-guard";
 import {
   isHiddenUserCompanion,
   isUserAuthoredQueuedMessage,
@@ -50,6 +51,7 @@ let stopEpoch = 0;
 const encode = new TextEncoder();
 const output = (frame) => process.stdout.write(`${JSON.stringify(frame)}\n`);
 const state = () => ({
+  imageSupport: !!session.model && sendsImageInputOnWire(session.model),
   queueState: queue.snapshot(),
   paused,
   stopping,

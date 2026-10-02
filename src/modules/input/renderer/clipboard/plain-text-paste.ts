@@ -39,6 +39,9 @@ export const handlePlainTextPaste: NonNullable<EditorProps["handlePaste"]> = (
 export function createClipboardPaste(onUnsupported?: () => void) {
   let plain = false;
   return {
+    isPlain(): boolean {
+      return plain;
+    },
     keyDown(event: KeyboardEvent): void {
       plain =
         (event.metaKey || event.ctrlKey) &&

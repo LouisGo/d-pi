@@ -400,3 +400,56 @@ it("explicit inspection reconciles native snapshot and restores fresh operation 
     await mounted.cleanup();
   }
 });
+
+it("allows image-only queue edits and only removes a native image through an explicit selection", async () => {
+  const mounted = await mountQueue();
+  try {
+    const view = mounted.view();
+    const queue = view.control?.queueState;
+    if (!view.control || !queue) throw Error("fixture");
+    const imageId = crypto.randomUUID();
+    await mounted.publish({
+      ...view,
+      control: {
+        ...view.control,
+        queueState: {
+          ...queue,
+          editing: {
+            entryId: mounted.entryId,
+            draftText: "",
+            retainedImageIds: [imageId],
+          },
+          items: queue.items.map((entry) =>
+            entry.id === mounted.entryId
+              ? {
+                  ...entry,
+                  text: "",
+                  editing: true,
+                  images: [{ id: imageId, mimeType: "image/png" }],
+                  imageCount: 1,
+                }
+              : entry,
+          ),
+        },
+      },
+    });
+    const save = mounted.element.querySelector<HTMLButtonElement>(
+      "[data-queue-action=save-edit]",
+    );
+    expect(save?.disabled).toBe(false);
+    const retain = mounted.element.querySelector<HTMLInputElement>(
+      "input[type=checkbox]",
+    );
+    expect(retain?.checked).toBe(true);
+    await act(async () => retain?.click());
+    expect(save?.disabled).toBe(true);
+    await act(async () => retain?.click());
+    await act(async () => save?.click());
+    expect(mounted.commands.at(-1)).toMatchObject({
+      kind: "manage-queue",
+      command: { action: "save-edit", text: "", retainedImageIds: [imageId] },
+    });
+  } finally {
+    await mounted.cleanup();
+  }
+});

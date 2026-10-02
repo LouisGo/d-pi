@@ -20,7 +20,7 @@ import {
   type SubmissionRejectionReason,
 } from "../contracts/public";
 import { QueueSnapshotSchema } from "../contracts/queue";
-import { changesManagedSession } from "../core/public";
+import { changesManagedSession, submissionFrame } from "../core/public";
 import { PendingInteractions } from "./interactions/interactions";
 import { type NativeObservation, NativeSession } from "./native/native-session";
 
@@ -599,6 +599,8 @@ export function createSessionHost(
     if (!start || !state || !state.model) return "not-ready";
     if (!native || disconnected || closing) return "native-unavailable";
     if (changesManagedSession(value.text)) return "unsupported-native-command";
+    if (value.content?.images.length && !lastControl?.imageSupport)
+      return "image-unsupported";
     if (paused) return "paused";
     if (interactions.blocked) return "interaction-pending";
     if (
@@ -675,9 +677,7 @@ export function createSessionHost(
     });
     busy = true;
     try {
-      native.write(
-        `${JSON.stringify({ id: value.requestId, type: "prompt", message: value.text, streamingBehavior: value.delivery ?? "followUp" })}\n`,
-      );
+      native.write(submissionFrame(value));
     } catch {
       observe({ kind: "disconnected", reason: "write" });
     }

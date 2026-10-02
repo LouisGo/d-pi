@@ -84,7 +84,8 @@
           "execution",
           "files",
           "shared",
-          "configuration"
+          "configuration",
+          "input"
         ],
         "renderer": [
           "changes",

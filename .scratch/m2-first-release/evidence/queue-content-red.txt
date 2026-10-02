@@ -1,0 +1,89 @@
+✔ native object identities distinguish duplicate text and survive reorder; hidden messages are not editable entries (1.010541ms)
+✔ editing waits at native delivery, lets earlier messages proceed, and cancellation resumes original content (1.515709ms)
+✔ draft is owned outside the view and save replaces only its pending native entry (0.217167ms)
+✔ native reorder and delete keep hidden companions with their owner and reject stale/consumed entries (0.32125ms)
+✔ snapshot is bounded without truncating native contents and oversize entries cannot enter edit (4.2825ms)
+✔ edit racing awaited SDK preparation still blocks delivery; abort does not discard the saved draft (0.978916ms)
+✔ empty draft can survive view replacement but cannot be saved and lock stays active (0.131333ms)
+✖ mixed image payload exposes identities without bytes; edit retains original images and explicit removal changes only selected image (0.447459ms)
+✖ image-only entry has empty real text, saves while keeping an image, and refuses empty complete payload (0.097375ms)
+✖ foreign or duplicate image identities are rejected atomically; cancel restores complete mixed payload (0.12725ms)
+✔ unknown content, companion and multi-text image entries remain read-only while delete keeps full native grouping (0.116167ms)
+✖ image metadata remains bounded across queues and over-limit native image sets stay intact (0.886458ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 8
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 65.493542
+
+✖ failing tests:
+
+test at ../../../../../../../../Users/lou/Learn/d-pi/tests/tooling/native-queue.test.mjs:269:1
+✖ mixed image payload exposes identities without bytes; edit retains original images and explicit removal changes only selected image (0.447459ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///Users/lou/Learn/d-pi/tests/tooling/native-queue.test.mjs:274:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../../../../../../../../Users/lou/Learn/d-pi/tests/tooling/native-queue.test.mjs:291:1
+✖ image-only entry has empty real text, saves while keeping an image, and refuses empty complete payload (0.097375ms)
+  Error: unsupported-content
+      at NativeQueueManager.execute (file:///Users/lou/Learn/d-pi/runtime/native-queue.mjs:131:15)
+      at TestContext.<anonymous> (file:///Users/lou/Learn/d-pi/tests/tooling/native-queue.test.mjs:297:25)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'unsupported-content'
+  }
+
+test at ../../../../../../../../Users/lou/Learn/d-pi/tests/tooling/native-queue.test.mjs:305:1
+✖ foreign or duplicate image identities are rejected atomically; cancel restores complete mixed payload (0.12725ms)
+  TypeError: Cannot read properties of undefined (reading '0')
+      at TestContext.<anonymous> (file:///Users/lou/Learn/d-pi/tests/tooling/native-queue.test.mjs:309:69)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at ../../../../../../../../Users/lou/Learn/d-pi/tests/tooling/native-queue.test.mjs:335:1
+✖ image metadata remains bounded across queues and over-limit native image sets stay intact (0.886458ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  undefined !== 65
+  
+      at TestContext.<anonymous> (file:///Users/lou/Learn/d-pi/tests/tooling/native-queue.test.mjs:339:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 65,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

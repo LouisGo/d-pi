@@ -5,7 +5,7 @@
 ## 当前工程落点（领域目录治理，2026-09-29）
 
 - `src/platform/main/storage/database.ts` 只负责连接、PRAGMA、schema/备份迁移和事务原语；业务仓储分别位于 threads/input/preferences/execution 模块。
-- `src/app/main/wiring/app-storage.ts` 以一个 `AppDatabase` 组装仓储，并显式执行 `至少 v3 + WAL → submission recovery → 后续迁移至 v7 → queue change recovery → publish`；数据库构造不隐式修改业务收据。当前已为 v7 时不重复迁移或生成升级备份。
+- `src/app/main/wiring/app-storage.ts` 以一个 `AppDatabase` 组装仓储，并显式执行 `至少 v3 + WAL → submission recovery → 后续迁移至 v8 → queue change recovery → publish`；数据库构造不隐式修改业务收据。当前已为 v8 时不重复迁移或生成升级备份。
 - `src/platform/main/diagnostics/` 是轻量有界诊断设施；它不决定业务恢复，也不记录秘密、路径或正文作为诊断内容。
 
 
@@ -49,3 +49,5 @@ Main 集中拥有 SQLite 入口与写入调度；必要时把 I/O 交给 worker�
 用临时库验证：事务中断没有半份收据、版本冲突不覆盖新草稿、dispatching 后重启不重发、回执保存失败保留内容、文件与引用不一致有可解释结果、迁移失败可恢复。按实际驱动验证外键与事务持久性；慢写不冻结界面。
 
 预算、保留时间及日志分离沿用基础契约，不在本页另设数值。验证日志必须区分“事务返回成功”和“所选持久化配置经过崩溃恢复验证”。
+
+2026-10-02：schema 8 新增 input_attachment manifest；before-v8 保留已完成旧 submission 恢复的 schema 7，并保持 queue_change 原收据恢复顺序。私有内容原件不由迁移移动或删除。冻结提交 JSON可持久化完整代表文字、图片和来源；预算在派发前按真实编码检查。附件回收仍未实现，保守保留到容量明确拒绝，不把此切片声明为完整B4生命周期。

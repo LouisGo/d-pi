@@ -1,0 +1,50 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest --run src/app/main/wiring/attachment-service.test.ts
+$ tsr generate
+(node:11068) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/lou/Learn/d-pi[39m
+
+ [31m❯[39m src/app/main/wiring/attachment-service.test.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 18[2mms[22m[39m
+[31m   [31m×[31m freezes an @ image from the real authorised project read and rejects escaping symlinks[39m[32m 18[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/app/main/wiring/attachment-service.test.ts[2m > [22mfreezes an @ image from the real authorised project read and rejects escaping symlinks
+[31m[1mAssertionError[22m: expected { ok: false, …(2) } to match object { ok: true, …(1) }
+(2 matching properties omitted from actual)[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "content": {[39m
+[32m-     "images": [[39m
+[32m-       {[39m
+[32m-         "data": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aJ1EAAAAASUVORK5CYII=",[39m
+[32m-         "mimeType": "image/png",[39m
+[32m-       },[39m
+[32m-     ],[39m
+[32m-   },[39m
+[32m-   "ok": true,[39m
+[31m+   "ok": false,[39m
+[2m  }[22m
+
+[36m [2m❯[22m src/app/main/wiring/attachment-service.test.ts:[2m12:17[22m[39m
+    [90m 10|[39m  const bytes=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwC…
+    [90m 11|[39m  const item=await service.store.addReference(draft.threadId,'image.png…
+    [90m 12|[39m  expect(frozen).toMatchObject({ok:true,content:{images:[{data:bytes.to…
+    [90m   |[39m                 [31m^[39m
+    [90m 13|[39m  writeFileSync(join(root,'outside.txt'),'secret');symlinkSync(join(roo…
+    [90m 14|[39m  const outside=await service.store.addReference(draft.threadId,'escape…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m   Start at [22m 21:59:23
+[2m   Duration [22m 368ms[2m (transform 50%, import 44%, tests 6%)[22m
+
+[ELIFECYCLE] Test failed. See above for more details.

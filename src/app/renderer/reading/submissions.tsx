@@ -70,6 +70,31 @@ function SubmissionRecord({
                 : ""}
       </p>
       <pre>{receipt.text}</pre>
+      {receipt.content && (
+        <details>
+          <summary>{t("ui.submissions.frozenContent")}</summary>
+          <pre>{receipt.content.message}</pre>
+          {receipt.content.sources.map((source, index) => (
+            <p key={`${source.attachmentId}:${index}`}>
+              {source.name}
+              {source.path ? ` · ${source.path}` : ""}
+            </p>
+          ))}
+          {!!receipt.content.images.length && (
+            <p>{t("queue.images", { count: receipt.content.images.length })}</p>
+          )}
+          <Button
+            variant="ghost"
+            onClick={() =>
+              void navigator.clipboard.writeText(
+                receipt.content?.message ?? receipt.text,
+              )
+            }
+          >
+            {t("ui.submissions.copyContent")}
+          </Button>
+        </details>
+      )}
       {receipt.retryOf && (
         <p className="trace">
           {t("ui.submissions.retryOf", { id: receipt.retryOf })}

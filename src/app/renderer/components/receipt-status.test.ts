@@ -8,7 +8,9 @@ it.each(SubmissionRejectionReasonSchema.options)(
   (rejectionReason) => {
     const key = receiptStatusKey({ state: "rejected", rejectionReason });
     expect(key).toBe(
-      `ui.interaction.rejected.${rejectionReason.replace(/-([a-z])/g, (_, c) => c.toUpperCase())}`,
+      rejectionReason === "image-unsupported"
+        ? "submission.imageUnsupported"
+        : `ui.interaction.rejected.${rejectionReason.replace(/-([a-z])/g, (_, c) => c.toUpperCase())}`,
     );
     // The fallback returns the key itself, so a real translation must differ.
     for (const locale of ["en-US", "zh-CN"] as const)

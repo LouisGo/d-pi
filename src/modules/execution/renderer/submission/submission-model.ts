@@ -24,6 +24,9 @@ export interface SubmissionView {
   receiptIds: readonly string[];
   receiptsById: ReadonlyMap<string, SubmissionReceipt>;
   message: UiMessage | null;
+  preparationFailure:
+    | import("../../contracts/public").SubmissionFailure["preparation"]
+    | null;
 }
 // The published view is the whole store state: every publication is a partial
 // update that zustand shallow merges into the current view (see `publish`).
@@ -38,6 +41,7 @@ const submissionInitial: StateCreator<
   receiptIds: [],
   receiptsById: new Map(),
   message: null,
+  preparationFailure: null,
 });
 const createSubmissionStore = () =>
   createStore<SubmissionView>()(subscribeWithSelector(submissionInitial));
@@ -165,7 +169,10 @@ export class SubmissionModel {
   private accept(reply: SubmissionReply): void {
     if (this.disposed) return;
     if (reply.kind === "failed") {
-      this.publish({ message: reply.error.message });
+      this.publish({
+        message: reply.error.message,
+        preparationFailure: reply.error.preparation ?? null,
+      });
       return;
     }
     const incoming = reply.kind === "list" ? reply.receipts : [reply.receipt];
@@ -241,7 +248,7 @@ export class SubmissionModel {
   }
   async send(delivery: "followUp" | "steer" = "followUp"): Promise<void> {
     if (this.view.sending || this.disposed) return;
-    this.publish({ sending: true, message: null });
+    this.publish({ sending: true, message: null, preparationFailure: null });
     const submissionId = SubmissionIdSchema.parse(crypto.randomUUID());
     try {
       const captured = await this.draft.captureSubmission(
@@ -365,7 +372,7 @@ export class SubmissionModel {
   }
   async resend(originalId: SubmissionReceipt["submissionId"]): Promise<void> {
     if (this.view.sending || this.disposed) return;
-    this.publish({ sending: true, message: null });
+    this.publish({ sending: true, message: null, preparationFailure: null });
     try {
       this.accept(
         await this.bridge.request({
@@ -388,7 +395,7 @@ export class SubmissionModel {
     if (this.view.sending || this.disposed) return;
     const receipt = this.view.receiptsById.get(submissionId);
     if (receipt?.state !== "prepared") return;
-    this.publish({ sending: true, message: null });
+    this.publish({ sending: true, message: null, preparationFailure: null });
     // The explicit action sends the persisted original. Only reattach draft
     // consumption when it still denotes that exact saved edit; later B is independent.
     const captured = receipt.retryOf

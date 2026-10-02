@@ -59,7 +59,7 @@ await writeFile(
             id: "fixture",
             name: "fixture",
             reasoning: false,
-            input: ["text"],
+            input: ["text", "image"],
             contextWindow: 128000,
             maxTokens: 1024,
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
@@ -321,6 +321,120 @@ try {
     ).length >= 2,
     "original native hidden companions reach transcript with their batches",
   );
+  await request("set_follow_up_mode", { mode: "one-at-a-time" });
+  const png =
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=";
+  holdNext = true;
+  await request("prompt", { message: "IMAGE_START" });
+  await wait(() => calls === 9);
+  await request("follow_up", {
+    message: "IMAGE_ORIGINAL",
+    images: [
+      { type: "image", data: png, mimeType: "image/png" },
+      { type: "image", data: png, mimeType: "image/png" },
+    ],
+  });
+  await request("follow_up", { message: "IMAGE_DELETE" });
+  state = (await request("d_pi_state")).data.queueState;
+  const imageTarget = state.items.find(
+    (entry) => entry.text === "IMAGE_ORIGINAL",
+  );
+  assert.ok(imageTarget?.editable);
+  assert.equal(imageTarget.imageCount, 2);
+  assert.notEqual(
+    imageTarget.images[0].id,
+    imageTarget.images[1].id,
+    "same-byte attachments retain distinct identities",
+  );
+  assert.doesNotMatch(JSON.stringify(state), /iVBORw0KGgo/);
+  const deleted = state.items.find((entry) => entry.text === "IMAGE_DELETE");
+  state = (
+    await request("d_pi_queue", {
+      action: "move",
+      entryId: imageTarget.id,
+      revision: state.revision,
+      toIndex: 1,
+    })
+  ).data;
+  state = (
+    await request("d_pi_queue", {
+      action: "delete",
+      entryId: deleted.id,
+      revision: state.revision,
+    })
+  ).data;
+  state = (
+    await request("d_pi_queue", {
+      action: "begin-edit",
+      entryId: imageTarget.id,
+      revision: state.revision,
+    })
+  ).data;
+  state = (
+    await request("d_pi_queue", {
+      action: "update-edit",
+      entryId: imageTarget.id,
+      revision: state.revision,
+      text: "IMAGE_EDITED",
+      retainedImageIds: [imageTarget.images[1].id],
+    })
+  ).data;
+  releaseProvider();
+  await new Promise((resolve) => setTimeout(resolve, 350));
+  assert.equal(
+    calls,
+    9,
+    "claimed native mixed payload waits for explicit save",
+  );
+  state = (await request("d_pi_state")).data.queueState;
+  await request("d_pi_queue", {
+    action: "save-edit",
+    entryId: imageTarget.id,
+    revision: state.revision,
+    text: "IMAGE_EDITED",
+  });
+  await wait(() => calls === 10);
+  const imageRequest = JSON.parse(inputs[9]);
+  const lastUser = imageRequest.messages.findLast(
+    (message) => message.role === "user",
+  );
+  assert.equal(
+    lastUser.content.filter((part) => part.type === "image_url").length,
+    1,
+  );
+  assert.match(
+    lastUser.content.find((part) => part.type === "image_url").image_url.url,
+    /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/,
+  );
+  assert.equal(
+    lastUser.content.find((part) => part.type === "text").text,
+    "IMAGE_EDITED",
+  );
+  assert.doesNotMatch(inputs[9], /IMAGE_ORIGINAL|IMAGE_DELETE/);
+  await wait(() => {
+    const actual = frames.findLast(
+      (frame) => frame.type === "d_pi_control_state",
+    )?.data;
+    return actual?.queued === 0 && !actual.streaming;
+  });
+  state = (await request("d_pi_state")).data.queueState;
+  const staleId = crypto.randomUUID();
+  child.stdin.write(
+    `${JSON.stringify({ type: "d_pi_queue", id: staleId, command: { action: "delete", entryId: imageTarget.id, revision: state.revision } })}\n`,
+  );
+  await wait(() =>
+    frames.some((frame) => frame.type === "response" && frame.id === staleId),
+  );
+  assert.equal(
+    frames.find((frame) => frame.id === staleId).success,
+    false,
+    "consumed identity/stale revision rejects late operation without new request",
+  );
+  assert.equal(
+    frames.find((frame) => frame.id === staleId).error,
+    "entry-consumed",
+  );
+  assert.equal(calls, 10);
   if (process.env.D_PI_NATIVE_EVIDENCE) {
     const path = resolve(process.env.D_PI_NATIVE_EVIDENCE);
     await mkdir(join(path, ".."), { recursive: true });
@@ -333,7 +447,7 @@ try {
     );
   }
   console.log(
-    "PASS: native queue identities/edit draft/cancel/reorder/delete, target delivery hold without skipping, independent stop/save/continue on same fixed SDK session",
+    "PASS: native queue identities/edit draft/cancel/reorder/delete, target delivery hold without skipping, independent stop/save/continue; mixed image payload retained once at provider and late consumed identity rejected on fixed SDK session (10 localhost calls)",
   );
 } finally {
   child.stdin.end();

@@ -1,4 +1,9 @@
 export const domain = {
+  "submission.contentNotReady":
+    "附件尚未准备完成。完整原始输入已保留，请处理失败项后再发送。",
+  "submission.imageUnsupported":
+    "当前模型或传输不能完整保留图像输入。请选择兼容模型；完整原始输入已保留。",
+
   "runtime.evidenceGap":
     "部分原生证据未能保存或关联。缺少的结果保持未知，不会自动重发输入。",
   "runtime.processingInput": "正在处理输入…",

@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from "node:util";
 import type { AppDatabase } from "../../../../platform/main/storage/public";
 import type {
   DraftConsumptionWriter,
@@ -29,6 +30,7 @@ export class SubmissionRepository {
           existing.traceId !== value.traceId ||
           existing.revision !== value.revision ||
           existing.text !== value.text ||
+          !isDeepStrictEqual(existing.content, value.content) ||
           existing.delivery !== value.delivery ||
           existing.retryOf !== value.retryOf ||
           (existing.origin ?? "draft") !== (value.origin ?? "draft") ||
@@ -49,6 +51,7 @@ export class SubmissionRepository {
           !source ||
           source.threadId !== value.threadId ||
           source.text !== value.text ||
+          !isDeepStrictEqual(source.content, value.content) ||
           source.revision !== value.revision ||
           source.delivery !== value.delivery
         )
@@ -82,6 +85,7 @@ export class SubmissionRepository {
         traceId: value.traceId,
         revision: value.revision,
         text: value.text,
+        ...(value.content ? { content: value.content } : {}),
         requestId: value.requestId,
         target: value.target,
         ...(value.origin === undefined ? {} : { origin: value.origin }),

@@ -20,5 +20,6 @@ export {
   type SubmissionDiagnostic,
   type SubmissionResult,
   type SubmissionStore,
+  submissionFrame,
 } from "./submission/submission-coordinator";
 export { sameSubmissionTarget } from "./submission/target";

@@ -3,7 +3,10 @@ import { subscribeWithSelector } from "zustand/middleware";
 import { createStore } from "zustand/vanilla";
 import type { Failure } from "../../../modules/input/contracts/public";
 import type { DraftController } from "../../../modules/input/core/public";
-import { DraftEditorCache } from "../../../modules/input/renderer/public";
+import {
+  DraftEditorCache,
+  hasUnpersistedAttachmentSources,
+} from "../../../modules/input/renderer/public";
 import type { Preferences } from "../../../modules/preferences/contracts/public";
 import type { ThreadContext } from "../../../modules/threads/contracts/public";
 import type {
@@ -125,6 +128,9 @@ export class AppModel {
   get history() {
     return this.bridge.history;
   }
+  get attachments() {
+    return this.bridge.attachments;
+  }
   get files() {
     return this.bridge.files;
   }
@@ -154,6 +160,25 @@ export class AppModel {
       (this.state.kind === "ready" && this.state.threadTransition !== undefined)
     )
       return false;
+    if (hasUnpersistedAttachmentSources()) {
+      if (this.state.kind === "ready")
+        this.store.setState({
+          ...this.state,
+          notice: {
+            errorId: crypto.randomUUID(),
+            traceId: crypto.randomUUID(),
+            code: "invalid-request",
+            category: "validation",
+            observedAt: "renderer",
+            reportedBy: "app",
+            attribution: "unknown",
+            handlingOwner: "draft",
+            recovery: "user_action",
+            message: { code: "attachment.closePending" },
+          },
+        });
+      return false;
+    }
     const binding = this.editorBinding;
     if (binding && !binding.boundary.freeze()) return false;
     const attempt = { thread: this.activeThread, binding };

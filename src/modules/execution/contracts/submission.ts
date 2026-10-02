@@ -1,7 +1,11 @@
 import { z } from "zod";
 import { ThreadIdSchema, TraceIdSchema } from "../../../shared/identity";
 import { UiMessageSchema } from "../../../shared/messages/contracts";
-import { DraftTextSchema } from "../../input/contracts/public";
+import {
+  AttachmentFailureReasonSchema,
+  DraftTextSchema,
+  PreparedContentSchema,
+} from "../../input/contracts/public";
 
 export const SubmissionIdSchema = z.uuid().brand<"SubmissionId">();
 export const SubmissionTargetSchema = z.strictObject({
@@ -17,6 +21,7 @@ export const FrozenSubmissionSchema = z.strictObject({
   traceId: TraceIdSchema,
   revision: z.number().int().nonnegative(),
   text: DraftTextSchema,
+  content: PreparedContentSchema.optional(),
   delivery: z.enum(["followUp", "steer"]).optional(),
   // Provenance of the frozen text. Draft-bound submissions must match a saved
   // draft revision (same-revision and draft gates apply). Free text (e.g. a
@@ -37,6 +42,7 @@ export const SubmissionRejectionReasonSchema = z.enum([
   "interaction-pending",
   "stale-target",
   "correlation-limit",
+  "image-unsupported",
 ]);
 export type SubmissionRejectionReason = z.infer<
   typeof SubmissionRejectionReasonSchema
@@ -110,6 +116,12 @@ export type SubmissionReceipt = z.infer<typeof SubmissionReceiptSchema>;
 
 export class SubmissionConflict extends Error {}
 export const SubmissionFailureSchema = z.strictObject({
+  preparation: z
+    .strictObject({
+      reason: AttachmentFailureReasonSchema,
+      attachmentId: z.uuid().optional(),
+    })
+    .optional(),
   errorId: z.uuid(),
   traceId: TraceIdSchema,
   code: z.enum([
@@ -121,6 +133,8 @@ export const SubmissionFailureSchema = z.strictObject({
     "revision-conflict",
     "unsupported-native-command",
     "queue-full",
+    "content-not-ready",
+    "image-unsupported",
   ]),
   observedAt: z.literal("main"),
   reportedBy: z.literal("app"),

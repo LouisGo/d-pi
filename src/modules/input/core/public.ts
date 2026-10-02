@@ -1,3 +1,4 @@
+export { attachmentToken, readAttachmentTokens } from "./attachments/tokens";
 export {
   type CapturedDraft,
   DraftController,

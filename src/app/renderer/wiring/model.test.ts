@@ -8,6 +8,7 @@ import {
   type SaveReply,
 } from "../../../modules/input/contracts/public";
 import type { DraftController } from "../../../modules/input/core/public";
+import { AttachmentImports } from "../../../modules/input/renderer/public";
 import { ThreadIdSchema } from "../../../shared/identity";
 import {
   type Command,
@@ -340,4 +341,24 @@ it("keeps conversation projection lifecycle in the AppModel", async () => {
   expect(conversationConnections).toBe(2);
   expect(reading?.getSnapshot()).toEqual(readingBeforeDispose);
   expect(model.reading).toBeNull();
+});
+
+it("keeps unpersisted attachment originals on close until explicitly removed", async () => {
+  const input = await setup(async () => saved(1));
+  const imports = new AttachmentImports(async () => []);
+  const source = new File(["original"], "oversized.png");
+  Object.defineProperty(source, "size", { value: 25 * 1024 * 1024 + 1 });
+  imports.importFiles([source], "drop");
+  try {
+    expect(await input.model.prepareClose()).toBe(false);
+    expect(input.isEditable()).toBe(true);
+    expect(input.model.stateStore.getState()).toMatchObject({
+      kind: "ready",
+      notice: { message: { code: "attachment.closePending" } },
+    });
+  } finally {
+    for (const failure of imports.stateStore.getState().failures)
+      imports.removeFailure(failure.id);
+  }
+  expect(await input.model.prepareClose()).toBe(true);
 });

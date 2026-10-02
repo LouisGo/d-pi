@@ -113,6 +113,7 @@ describe("persistent submission handoff", () => {
           ["before-v5", 4],
           ["before-v6", 5],
           ["before-v7", 6],
+          ["before-v8", 7],
         ] as const) {
           const backup = new DatabaseSync(`${path}.${suffix}`, {
             readOnly: true,
@@ -138,7 +139,7 @@ describe("persistent submission handoff", () => {
         const ready = new DatabaseSync(path, { readOnly: true });
         try {
           expect(ready.prepare("PRAGMA user_version").get()?.user_version).toBe(
-            7,
+            8,
           );
           expect(ready.prepare("PRAGMA journal_mode").get()?.journal_mode).toBe(
             "wal",

@@ -82,6 +82,7 @@ function fixture(t) {
     "configuration-readonly.mjs",
     "model-selection.mjs",
     "native-queue.mjs",
+    "pdf-content.mjs",
     "native-subagent-configuration.mjs",
     "BUN-LICENSE.md",
   ])

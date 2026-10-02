@@ -1,4 +1,9 @@
 export const domain = {
+  "submission.contentNotReady":
+    "Attachments are not ready. The entire original input is retained; resolve failed items before sending.",
+  "submission.imageUnsupported":
+    "The selected model or transport cannot preserve image input. Choose a compatible model; the entire original input is retained.",
+
   "runtime.evidenceGap":
     "Some native evidence could not be saved or correlated. Missing results remain unknown; prompts are never resent automatically.",
   "runtime.processingInput": "Processing input…",

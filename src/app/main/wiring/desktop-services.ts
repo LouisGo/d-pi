@@ -1,7 +1,7 @@
 import { mkdirSync, mkdtempSync, realpathSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { app, type BrowserWindow, dialog, shell } from "electron";
+import { app, type BrowserWindow, dialog, nativeImage, shell } from "electron";
 import { NativeConfiguration } from "../../../modules/configuration/main/public";
 import { RuntimeService } from "../../../modules/execution/main/public";
 import {
@@ -11,6 +11,10 @@ import {
 import type { createI18n } from "../../../shared/i18n/create-i18n";
 import type { LocalePreference } from "../../../shared/i18n/locale";
 import { AppStorage } from "./app-storage";
+import {
+  type AttachmentService,
+  createAttachmentService,
+} from "./attachment-service";
 import { DesktopCommandService } from "./desktop-command-service";
 export function createDesktopServices(context: {
   mainDirectory: string;
@@ -22,6 +26,7 @@ export function createDesktopServices(context: {
   let store: AppStorage | undefined;
   let service: DesktopCommandService | undefined;
   let configuration: NativeConfiguration | undefined;
+  let attachments: AttachmentService | undefined;
   const runtimes = new Map<string, RuntimeService>();
   function getRuntime(threadId: string): RuntimeService | undefined {
     if (!store) return undefined;
@@ -44,6 +49,10 @@ export function createDesktopServices(context: {
           context.getWindow()?.webContents.send("submission:state", reply),
         (event) => context.getDiagnostics()?.record(event),
         threadId,
+        (id, text) =>
+          attachments
+            ? attachments.store.prepare(id, text)
+            : Promise.resolve({ ok: false, reason: "storage-unavailable" }),
       );
       runtimes.set(threadId, runtime);
     }
@@ -81,6 +90,22 @@ export function createDesktopServices(context: {
         (url) => shell.openExternal(url),
         (event) => context.getDiagnostics()?.record(event),
       );
+      attachments = createAttachmentService(
+        store,
+        data,
+        app.isPackaged
+          ? process.resourcesPath
+          : join(context.mainDirectory, "../../resources"),
+        (bytes) => !nativeImage.createFromBuffer(Buffer.from(bytes)).isEmpty(),
+        async () => {
+          const window = context.getWindow();
+          if (!window) return null;
+          const result = await dialog.showOpenDialog(window, {
+            properties: ["openFile", "multiSelections"],
+          });
+          return result.canceled ? null : result.filePaths;
+        },
+      );
       startupCauseCode = undefined;
     } catch (error) {
       startupCauseCode = diagnosticCode(error);
@@ -88,6 +113,9 @@ export function createDesktopServices(context: {
     }
   }
   return {
+    get attachments() {
+      return attachments;
+    },
     get store() {
       return store;
     },

@@ -28,6 +28,7 @@ it("admits a complete current-platform SDK launcher and refuses tampering withou
       "model-selection.mjs",
       "native-queue.mjs",
       "native-subagent-configuration.mjs",
+      "pdf-content.mjs",
     ]) {
       writeFileSync(join(root, "sdk", name), name);
       hashes[name] = createHash("sha256").update(name).digest("hex");
@@ -85,6 +86,7 @@ it("admits a complete current-platform SDK launcher and refuses tampering withou
     for (const name of [
       "native-queue.mjs",
       "native-subagent-configuration.mjs",
+      "pdf-content.mjs",
     ]) {
       writeFileSync(join(root, "sdk", name), "unexpected adapter edit");
       await expect(managedSdkRuntime(root)).rejects.toMatchObject({

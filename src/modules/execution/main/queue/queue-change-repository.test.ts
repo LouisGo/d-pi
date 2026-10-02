@@ -329,3 +329,31 @@ it("finds only the exact persisted trace and reports missing nonpersistent opera
       h.database.close();
     }
   }));
+
+it("persists original queue image identities and rejects reuse with different original images", () =>
+  fixture((path) => {
+    const h = open(path);
+    try {
+      const prepared = {
+        ...value(h.first.threadId),
+        previousImages: [{ id: randomUUID(), mimeType: "image/png" }],
+      };
+      h.changes.prepare(prepared);
+      expect(h.changes.find(prepared.traceId)?.previousImages).toEqual(
+        prepared.previousImages,
+      );
+      expect(() =>
+        h.changes.prepare({
+          ...prepared,
+          previousImages: [{ id: randomUUID(), mimeType: "image/png" }],
+        }),
+      ).toThrow("identity conflict");
+      h.changes.recoverInterruptedChanges();
+      expect(h.changes.find(prepared.traceId)).toMatchObject({
+        status: "unknown",
+        previousImages: prepared.previousImages,
+      });
+    } finally {
+      h.database.close();
+    }
+  }));

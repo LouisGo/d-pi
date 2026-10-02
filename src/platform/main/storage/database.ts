@@ -26,7 +26,8 @@ export class AppDatabase {
         version !== 4 &&
         version !== 5 &&
         version !== 6 &&
-        version !== 7
+        version !== 7 &&
+        version !== 8
       )
         throw new Error("Unsupported schema version");
       if (version === 0) {
@@ -70,7 +71,8 @@ export class AppDatabase {
         version !== 4 &&
         version !== 5 &&
         version !== 6 &&
-        version !== 7
+        version !== 7 &&
+        version !== 8
       ) {
         const temporary = `${path}.before-v3.${randomUUID()}.tmp`;
         try {
@@ -103,7 +105,8 @@ export class AppDatabase {
       this.originalVersion !== 4 &&
       this.originalVersion !== 5 &&
       this.originalVersion !== 6 &&
-      this.originalVersion !== 7
+      this.originalVersion !== 7 &&
+      this.originalVersion !== 8
     ) {
       const temporary = `${this.path}.before-v4.${randomUUID()}.tmp`;
       try {
@@ -121,7 +124,8 @@ export class AppDatabase {
     if (
       this.originalVersion !== 5 &&
       this.originalVersion !== 6 &&
-      this.originalVersion !== 7
+      this.originalVersion !== 7 &&
+      this.originalVersion !== 8
     ) {
       const temporary = `${this.path}.before-v5.${randomUUID()}.tmp`;
       try {
@@ -136,7 +140,11 @@ export class AppDatabase {
         ),
       );
     }
-    if (this.originalVersion !== 6 && this.originalVersion !== 7) {
+    if (
+      this.originalVersion !== 6 &&
+      this.originalVersion !== 7 &&
+      this.originalVersion !== 8
+    ) {
       const temporary = `${this.path}.before-v6.${randomUUID()}.tmp`;
       try {
         this.connection.prepare("VACUUM INTO ?").run(temporary);
@@ -148,7 +156,7 @@ export class AppDatabase {
       // The version guard prevents an older App silently dropping new outcomes.
       this.transaction(() => this.connection.exec("PRAGMA user_version=6;"));
     }
-    if (this.originalVersion !== 7) {
+    if (this.originalVersion !== 7 && this.originalVersion !== 8) {
       const temporary = `${this.path}.before-v7.${randomUUID()}.tmp`;
       try {
         this.connection.prepare("VACUUM INTO ?").run(temporary);
@@ -163,7 +171,25 @@ export class AppDatabase {
       `),
       );
     }
+    this.migrateAttachments();
   }
+  private migrateAttachments(): void {
+    if (this.originalVersion === 8) return;
+    const temporary = `${this.path}.before-v8.${randomUUID()}.tmp`;
+    try {
+      this.connection.prepare("VACUUM INTO ?").run(temporary);
+      renameSync(temporary, `${this.path}.before-v8`);
+    } finally {
+      rmSync(temporary, { force: true });
+    }
+    this.transaction(() =>
+      this.connection.exec(`
+      CREATE TABLE input_attachment(id TEXT PRIMARY KEY, thread_id TEXT NOT NULL REFERENCES thread(id), payload TEXT NOT NULL);
+      PRAGMA user_version=8;
+    `),
+    );
+  }
+
   transaction<T>(body: () => T): T {
     this.connection.exec("BEGIN IMMEDIATE");
     try {

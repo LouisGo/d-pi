@@ -133,3 +133,9 @@
 2026-10-02：用户授权独立 subagent review，并修复发现的高价值问题。两名 reviewer 确认两项队列 P2，已按 TDD 修复并独立复核通过；完整检查及替代候选验证继续完成，旧候选证据保留。[本轮审查](queue-configuration-review.md)。无新增产品待决，用户认可仍 pending；不扩展附件与完整队列范围。
 
 2026-10-02：独立review两项P2已修复并复核，clean m2.12替代候选交付；602行为、34架构、59工具和17项实际macOS包内检查通过，ZIP CRC与app.asar同源核对通过。见[本轮审查交付](queue-configuration-review.md#修复候选与试用)。m2.11保留历史快照，用户认可pending，原环境对齐未提交改动保留，不push。
+
+## 2026-10-02 附件引用与完整队列接续
+
+当前用户明确授权继续04/05，从成熟Agent交互细化最近可交付切片，安排3个职责与文件边界明确的subagent，主Agent接口整合与验收。交付范围为[04a](issues/04a-content-preparation.md)和[05c](issues/05c-queue-content.md)：私有附件准备/预览/管理、发送时文件引用冻结、实际模态及输入预算准入、原生队列混合内容编辑。正式GUI与无头逻辑一并交付；TDD、必要检查、隔离macOS验证、独立review及修复、可识别本地候选与commit均在授权内，不push。
+
+原有README/环境门禁及其工具测试/.scratch/environment-dependency-alignment改动完整保留，不纳入提交。OMP执行/队列/历史所有权不变，unknown不自动重发，冷旧Thread只读，不扩M3。无新的实质产品待决；PDF实际表示与覆盖以固定SDK/本应用验证为准，不能隐藏降级。工程实施中；上一候选m2.12继续为已交付基线，用户认可pending。

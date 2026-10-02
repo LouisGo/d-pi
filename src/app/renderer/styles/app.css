@@ -669,3 +669,42 @@
     max-width: 75ch;
   }
 }
+
+@layer components {
+  .attachment-preview-dialog {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    width: min(var(--content-width), calc(100vw - 2 * var(--panel-padding)));
+    height: fit-content;
+    max-height: calc(100dvh - 2 * var(--panel-padding));
+    padding: var(--panel-padding);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--foreground);
+    overflow: hidden;
+  }
+  .attachment-preview-dialog[open] {
+    display: flex;
+    flex-direction: column;
+    gap: var(--layout-gap);
+  }
+  .attachment-preview-dialog::backdrop {
+    background: var(--overlay);
+  }
+  .attachment-preview-dialog > .flex {
+    flex-shrink: 0;
+  }
+  .attachment-preview-content {
+    min-height: 0;
+    max-height: calc(
+      100dvh -
+      4 *
+      var(--panel-padding) -
+      3 *
+      var(--control-height)
+    );
+    overflow: auto;
+  }
+}

@@ -1,5 +1,6 @@
 import { EditorContent, useEditor } from "@tiptap/react";
 import {
+  useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -22,14 +23,20 @@ import { shouldSend } from "../../../modules/execution/renderer/public";
 import type { FrozenSelection } from "../../../modules/files/core/public";
 import {
   appendSelectionReference,
+  attachmentMention,
   createClipboardPaste,
   draftDocument,
   plainTextEditorOptions,
   replaceDraftText,
+  textPasteTransaction,
 } from "../../../modules/input/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import type { AppModel } from "../wiring/model";
 import type { ThreadModel } from "../wiring/thread-model";
+import {
+  type AttachmentActions,
+  AttachmentControls,
+} from "./attachment-controls";
 import { UrlDecoration } from "./url-decoration";
 export function Composer({
   thread,
@@ -52,6 +59,20 @@ export function Composer({
 }) {
   const { controller, submission, runtime } = thread;
   const { locale, t, formatMessage } = useI18n();
+  const subscribePreparation = useCallback(
+    (listener: () => void) =>
+      submission?.stateStore.subscribe(listener) ?? (() => {}),
+    [submission],
+  );
+  const getPreparation = useCallback(
+    () => submission?.stateStore.getState().preparationFailure ?? null,
+    [submission],
+  );
+  const preparationFailure = useSyncExternalStore(
+    subscribePreparation,
+    getPreparation,
+    getPreparation,
+  );
   const state = useSyncExternalStore(
     controller.subscribe,
     controller.getSnapshot,
@@ -59,6 +80,16 @@ export function Composer({
   );
   const [expanded, setExpanded] = useState(false);
   const [unsupportedPaste, setUnsupportedPaste] = useState(false);
+  const [attachmentBlocked, setAttachmentBlocked] = useState(false);
+  const [mention, setMention] =
+    useState<ReturnType<typeof attachmentMention>>(null);
+  const attachmentActions = useRef<AttachmentActions | null>(null);
+  const attachmentBlock = useRef(false);
+  const updateBlocked = useCallback((value: boolean) => {
+    attachmentBlock.current = value;
+    setAttachmentBlocked(value);
+  }, []);
+  const dismissMention = useCallback(() => setMention(null), []);
   const preference = useStore(model.stateStore, (appState) =>
     appState.kind === "ready"
       ? (appState.preferences.sendKey ?? "enter-send")
@@ -83,12 +114,44 @@ export function Composer({
         plainTextEditorOptions.onBeforeCreate({ editor });
         model.draftEditors.bind(editor, thread.key, controller);
       },
+      onSelectionUpdate: ({ editor }) => {
+        if (!editor.view.composing) setMention(attachmentMention(editor.state));
+      },
+      onUpdate: ({ editor }) => {
+        if (!editor.view.composing) setMention(attachmentMention(editor.state));
+      },
       editorProps: {
-        handlePaste: paste.handlePaste,
+        handlePaste: (view, event) => {
+          const files = Array.from(event.clipboardData?.files ?? []);
+          if (
+            !paste.isPlain() &&
+            files.length &&
+            model.attachments &&
+            attachmentActions.current
+          ) {
+            event.preventDefault();
+            attachmentActions.current.importFiles(files, "paste");
+            const text = event.clipboardData?.getData("text/plain");
+            if (text) view.dispatch(textPasteTransaction(view.state, text));
+            return true;
+          }
+          return paste.handlePaste(view, event);
+        },
+        handleDrop: (_view, event) => {
+          const files = Array.from(event.dataTransfer?.files ?? []);
+          if (!files.length || !attachmentActions.current) return false;
+          event.preventDefault();
+          attachmentActions.current.importFiles(files, "drop");
+          return true;
+        },
         handleKeyDown: (view, event) => {
           paste.keyDown(event);
           if (!model.isCurrentThread(thread)) return false;
           if (view.composing) return false;
+          if (attachmentActions.current?.handleMentionKey(event)) {
+            event.preventDefault();
+            return true;
+          }
           if (
             !shouldSend(
               event,
@@ -101,6 +164,7 @@ export function Composer({
           const runtimeView = runtime?.stateStore.getState().view;
           const receipts = submission?.stateStore.getState().receipts ?? [];
           if (
+            !attachmentBlock.current &&
             runtimeView &&
             !queueCapped(receipts, nativeQueueLength(runtimeView)) &&
             canSubmit(runtimeView)
@@ -215,6 +279,22 @@ export function Composer({
         />
       )}
       <EditorContent className="composer-editor" editor={editor} />
+      {model.attachments && (
+        <AttachmentControls
+          key={thread.key}
+          owner={controller}
+          preparationFailure={preparationFailure}
+          ref={attachmentActions}
+          bridge={model.attachments}
+          threadId={thread.context.threadId}
+          editor={editor}
+          text={controller.getTextSnapshot()}
+          isCurrent={() => model.isCurrentThread(thread)}
+          onBlocked={updateBlocked}
+          mention={mention}
+          dismissMention={dismissMention}
+        />
+      )}
       {unsupportedPaste && (
         <p role="alert" className="failure">
           {t("composer.paste.unsupported")}
@@ -244,7 +324,13 @@ export function Composer({
           </Button>
           {submission && runtime && (
             <SendButton
-              canSend={() => !!editor && !editor.view.composing}
+              contentBlocked={attachmentBlocked}
+              canSend={() =>
+                !!editor &&
+                !editor.view.composing &&
+                model.isCurrentThread(thread) &&
+                !attachmentBlock.current
+              }
               submission={submission}
               runtime={runtime}
             />
@@ -332,10 +418,12 @@ function nativeQueueLength(view: RuntimeView | null | undefined): number {
 }
 
 function SendButton({
+  contentBlocked,
   canSend,
   submission,
   runtime,
 }: {
+  contentBlocked: boolean;
   canSend: () => boolean;
   submission: NonNullable<AppModel["submission"]>;
   runtime: NonNullable<AppModel["runtime"]>;
@@ -349,7 +437,7 @@ function SendButton({
   return (
     <div className="flex gap-2">
       <Button
-        disabled={sending || capped || !canSubmit(state)}
+        disabled={contentBlocked || sending || capped || !canSubmit(state)}
         onMouseDown={(event) => event.preventDefault()}
         onClick={() => {
           if (canSend()) void submission.send();
@@ -360,7 +448,7 @@ function SendButton({
       {state?.busy && (
         <Button
           variant="ghost"
-          disabled={sending || capped || !canSubmit(state)}
+          disabled={contentBlocked || sending || capped || !canSubmit(state)}
           onMouseDown={(event) => event.preventDefault()}
           onClick={() => {
             if (canSend()) void submission.send("steer");

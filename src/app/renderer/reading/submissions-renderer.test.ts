@@ -15,6 +15,7 @@ import { Submissions } from "./submissions";
 
 const originalText = "用户提交原文\r\nKeep **Markdown** and 😀 unchanged";
 const refusalCopy = {
+  "image-unsupported": ["图像", "image"],
   "not-ready": ["会话尚未就绪", "session has no ready model"],
   "native-unavailable": ["原生会话未连接", "native session is not connected"],
   "unsupported-native-command": [

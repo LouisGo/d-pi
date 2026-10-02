@@ -7,6 +7,10 @@ import type { MessageKey } from "../../../shared/i18n/create-i18n";
 
 /** Native refusal causes, in the order the Host checks them. */
 const rejectionMessageKeys = {
+  "image-unsupported": {
+    submission: "submission.imageUnsupported",
+    followUp: "submission.imageUnsupported",
+  },
   "not-ready": {
     submission: "ui.submissions.rejected.notReady",
     followUp: "ui.interaction.rejected.notReady",
