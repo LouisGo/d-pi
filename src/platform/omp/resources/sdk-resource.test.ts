@@ -26,6 +26,8 @@ it("admits a complete current-platform SDK launcher and refuses tampering withou
       "configuration.mjs",
       "configuration-readonly.mjs",
       "model-selection.mjs",
+      "native-queue.mjs",
+      "native-subagent-configuration.mjs",
     ]) {
       writeFileSync(join(root, "sdk", name), name);
       hashes[name] = createHash("sha256").update(name).digest("hex");
@@ -80,6 +82,17 @@ it("admits a complete current-platform SDK launcher and refuses tampering withou
       binary: join(root, "sdk/bun"),
       entry: join(root, "sdk/host.mjs"),
     });
+    for (const name of [
+      "native-queue.mjs",
+      "native-subagent-configuration.mjs",
+    ]) {
+      writeFileSync(join(root, "sdk", name), "unexpected adapter edit");
+      await expect(managedSdkRuntime(root)).rejects.toMatchObject({
+        code: "resource-incompatible",
+      });
+      writeFileSync(join(root, "sdk", name), name);
+      await expect(managedSdkRuntime(root)).resolves.toBeDefined();
+    }
     writeFileSync(
       join(root, "sdk/node_modules/@oh-my-pi/pi-utils/package.json"),
       JSON.stringify({

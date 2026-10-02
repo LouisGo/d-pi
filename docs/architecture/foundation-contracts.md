@@ -42,6 +42,8 @@
 - 准备/派发前持久化失败不发命令；ACK 与消费标记事务失败不清稿。结果可先于 ACK 保存，不能绕过对应 revision 的 ACK 消费条件。重复结果幂等，晚到 success/拒绝不清除已有失败或结果证据。
 - Main 提交成功后按 evidenceId 确认 Host 的证据；提交失败显示覆盖缺口，同活 Host 至多保留 256 项未确认事实，按有界退避重送证据，绝不重写 prompt。未确认证据阻止正常 idle 回收/退出，即使 ACK 已保存且原生已闲置。重复 ACK 不占新缓存项；确认后至多保留 128 项、15 分钟的无正文身份以识别重复终态和迟到错误。缓存满、未决关联到期、无关联结果和 Host 再崩溃保留缺口，不承诺跨 Host 重放或零丢失。
 - App schema 6 在现有 submission 收据 JSON 中增加有限观察，不存原生事件账本。升级按既有顺序恢复再生成 before-v6 备份和发布版本，失败不删库。重启把 dispatching 与已 ACK 但无结果的 unobserved 解释为 unknown；ACK 时间、已消费 revision 和冻结原文保留，持久终态保留。旧 schema 的 unobserved 不猜成功，旧 App 拒绝 schema 6，不开放旧原生会话写恢复。
+- 当前 App schema 7 增加独立 `queue_change` 变更收据，保存待处理队列 destructive 操作的完整 target、trace、命令和原文；不覆写 submission，不作为自动消费队列或原生历史副本。派发前 dispatching 必须落盘，明确终态保留；失联或 ACK 持久化失败保持 unknown，不自动重发。begin/update/cancel 编辑暂缓控制不创建该持久变更记录。
+- 启动顺序保持 `open → 至少 v3 + WAL → submission recovery → 后续 schema 迁移（至 v7）→ queue change recovery → publish`。submission recovery 必须先于升级备份；before-v6 保留 schema 5，before-v7 保留 schema 6 及已恢复的 submission。`queue_change` 仅在 v7 后可用，其恢复只把 dispatching 转 unknown，不发送原生命令；任一恢复或迁移失败不发布 AppStorage、不删库重建。
 - ACK 丢失不能凭相同文本、队列长度或时间相近认定已确认；未知不自动重发。用户显式重新发送产生新 submissionId、关联原提交并提示可能重复；App ID 不创造 OMP exactly-once。重复点击/IPC 对同一 submissionId 只返回已知状态，不重复派发。重启 prepared 也不自动发送。
 - 冻结原文以可查看、复制的持久发送记录保留；不能依赖原生历史已保存它。S2 不回收这份唯一可靠副本。后续只有原生持久化及引用可恢复性已确认后才可解除临时保留，unknown 不受普通缓存 GC 影响。收据不另造模型执行历史。
 

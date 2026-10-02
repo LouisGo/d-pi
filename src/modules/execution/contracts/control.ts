@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { ThreadIdSchema, TraceIdSchema } from "../../../shared/identity";
+import { QueueSnapshotSchema } from "./queue";
 export const ControlStateSchema = z.object({
+  queueState: QueueSnapshotSchema.optional(),
   pendingAsync: z.boolean(),
   admitted: z.boolean(),
   paused: z.boolean(),

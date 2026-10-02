@@ -45,6 +45,8 @@ vi.mock("../../src/modules/execution/host/native/native-session", () => ({
       transport.writes.push(frame);
     }
     async request(command: string) {
+      if (command === "d_pi_subagent_state")
+        return { success: true, data: { agents: [] } };
       if (command === "d_pi_state")
         return {
           success: true,

@@ -10,6 +10,7 @@ import {
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import { Button } from "@/components/ui/button";
+import type { RuntimeView } from "../../../modules/execution/contracts/public";
 import {
   canSubmit,
   QUEUE_CAP,
@@ -101,7 +102,7 @@ export function Composer({
           const receipts = submission?.stateStore.getState().receipts ?? [];
           if (
             runtimeView &&
-            !queueCapped(receipts, runtimeView.control?.queue.length ?? 0) &&
+            !queueCapped(receipts, nativeQueueLength(runtimeView)) &&
             canSubmit(runtimeView)
           )
             void submission?.send();
@@ -323,6 +324,13 @@ export function Composer({
   );
 }
 
+function nativeQueueLength(view: RuntimeView | null | undefined): number {
+  const snapshot = view?.control?.queueState;
+  return snapshot
+    ? snapshot.items.length + snapshot.hiddenCount
+    : (view?.control?.queue.length ?? 0);
+}
+
 function SendButton({
   canSend,
   submission,
@@ -336,8 +344,8 @@ function SendButton({
   const sending = useStore(submission.stateStore, (value) => value.sending);
   const receipts = useStore(submission.stateStore, (value) => value.receipts);
   const state = useStore(runtime.stateStore, (value) => value.view);
-  const capped = queueCapped(receipts, state?.control?.queue.length ?? 0);
-  const queued = queueCount(receipts, state?.control?.queue.length ?? 0);
+  const capped = queueCapped(receipts, nativeQueueLength(state));
+  const queued = queueCount(receipts, nativeQueueLength(state));
   return (
     <div className="flex gap-2">
       <Button

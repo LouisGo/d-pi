@@ -1,6 +1,6 @@
 # 提交与执行交互
 
-日期：2026-10-01。深度：M1 核心与 OMP v18.4.6 原生结果加固；真实账户和完整队列 GUI 仍在 M2。依据 D-11/D-24；[基础契约 §2](../foundation-contracts.md#2-提交交接b2)为状态规则的唯一详细来源。返回[模块地图](README.md)，跨进程序列见[交接图](flows.md)。
+日期：2026-10-02。深度：M1 核心、OMP v18.4.6 原生结果加固与 M2 队列纯文本管理增量；完整附件编辑、真实账户及完整队列验收仍在 M2。依据 D-11/D-24；[基础契约 §2](../foundation-contracts.md#2-提交交接b2)为状态规则的唯一详细来源。返回[模块地图](README.md)，跨进程序列见[交接图](flows.md)。
 
 ## 当前工程落点（领域目录治理，2026-09-29）
 
@@ -20,7 +20,17 @@ Main 的提交协调拥有 App 收据和草稿交接；Host 的执行协调负�
 
 普通发送在繁忙时走原生排队追加，干预、停止和回答是明确的独立意图。App 不在原生队列前再造一套自动消费的持久执行队列。
 
-2026-09-27 用户新增明确的队列管理要求：可视化、直接编辑、删除及重排待处理内容。执行模块拥有这些操作的业务协调，阅读模块呈现真实队列投影，编辑内容复用输入准备管线；原生接口与消费竞争尚未验证。行为及证据边界集中见[基础契约 §2](../foundation-contracts.md#2-提交交接b2)，具体协议不能从现有 prompt/abort 能力推定。用户已确认进入编辑暂缓该条消费、保存后按新内容继续、取消恢复原内容；当前执行不受影响，轮到该条时等待，不跳过后项。暂缓属于执行侧控制，不能只存在于 Renderer。
+2026-09-27 用户新增明确的队列管理要求：可视化、直接编辑、删除及重排待处理内容。执行模块拥有这些操作的业务协调，阅读模块呈现真实队列投影，修改后的附件/引用仍须复用输入准备管线。行为及证据边界集中见[基础契约 §2](../foundation-contracts.md#2-提交交接b2)。用户已确认进入编辑暂缓该条消费、保存后按新内容继续、取消恢复原内容；当前执行不受影响，轮到该条时等待，不跳过后项。2026-10-02 的纯文本增量已按固定SDK核实接口与真实消费竞争；完整附件/custom编辑仍未交付。
+
+## M2 队列文本管理（2026-10-02）
+
+- `contracts/queue.ts` 提供 `QueueAction`、`QueueSnapshot`、`QueueChange` 与操作结果；Renderer经 `RuntimeModel.manageQueue`、Main `RuntimeService`、Host受限命令到 `runtime/native-queue.mjs`，同一trace及Thread/连接代次贯穿实际边界。OMP保留真实队列，App不建立自动消费队列。
+- 原生对象UUID区分同文重复项；revision与仍待处理身份在操作执行方复核。`ControlState.queueState` 提供items、宿主editing稿、coverage/hiddenCount；prepareQueuedMessages保留SDK准备，并在其前后阻止编辑对象所在批次commit。stop gate独立，保存/取消只解除编辑原因。保留原生one-at-a-time/all策略；all批次包含编辑项时整批等待，界面明示此边界。
+- 只允许无伴随项的单正文纯文本user编辑，附件/引用伴随项及custom条目不伪装为可编辑。删除和同种类排序携带隐藏companion group，不改变无关内部记录。单项文本编码预算256 KiB、快照整体512 KiB/128项；超预算显示截断及不可编辑，真实原生内容不截断。
+- Main在save/delete/move写OMP前持久记录独立QueueChange（schema 7、before-v7备份），保留trace、真实target、原生entryId、操作及previousText，不覆写冻结提交或旧收据。previousText来自投影，previousTruncated明示它是否仅为片段；截断操作仍作用于完整原生group。ACK持久化失败、断链或重开时未决变更保留unknown，不自动重写。begin/update/cancel的编辑状态由当前Host实例持有，不建立第二份原生队列事实。
+- Renderer编辑更新串行，update/save/cancel在同一编辑上下文采用最新确认revision；begin/delete/move保留用户看到的版本。旧Thread lane及旧连接结果不进入新目标。unknown先禁写，只有明确inspect取得真实Host新快照后Main置reconciled才允许新的显式操作；旧未知结果仍保留，不按文本或队列长度倒推成功。
+
+本增量工程完成与验证见[05a](../../../.scratch/m2-first-release/issues/05a-native-queue-management.md)、[队列证据](../../../.scratch/m2-first-release/queue-management.md)。Host实例与未保存稿不随视图卸载结束；真正退出或Host故障后的执行恢复继续遵守D-24只读边界。无头/React/SQLite与固定SDK localhost通过，不替代真实macOS关窗、视觉、候选试用或完整M2认可。
 
 ## 交接
 
@@ -43,7 +53,7 @@ Main 的提交协调拥有 App 收据和草稿交接；Host 的执行协调负�
 - 已持久 ACK 不因后来失败被撤销；业务接受与执行失败另有证据才标注，不能倒写为从未发送。后续失败保留原提交内容，不覆盖用户新草稿。
 - 相同 submissionId 的重复点击/IPC 返回已知状态，不重复派发。用户主动重新发送 unknown 内容须使用新 submissionId 并关联原提交，提示可能重复。
 - schema 6 保留已持久结果；重启把 dispatching、ACK 后仍 unobserved 的结果保守解释为 unknown，保留 ACK 时间/消费标记与原文。prepared 可由用户继续。ACK 丢失不能凭相同文本或相近时间认定接受，unknown 不自动重试。
-- prompt_result 可先于 ACK 入库，不消费草稿；完整 target 和合法派发状态必须匹配。ACK、prompt 结束与 session settled 分开，ACK 后 unobserved 或 completed 且 sessionSettled=false 不放行回收/退出，generic idle/agent_end 不给未知提交猜成功。Host 保留关联直到终态持久确认，迟到确认主动重采 idle；其间进程退出的缺失终态按 unknown 保留。原生 get_state.queuedMessages/queue_update 是队列展示来源，完整编辑/重排 GUI 留在 M2 05。
+- prompt_result 可先于 ACK 入库，不消费草稿；完整 target 和合法派发状态必须匹配。ACK、prompt 结束与 session settled 分开，ACK 后 unobserved 或 completed 且 sessionSettled=false 不放行回收/退出，generic idle/agent_end 不给未知提交猜成功。Host 保留关联直到终态持久确认，迟到确认主动重采 idle；其间进程退出的缺失终态按 unknown 保留。原生 get_state.queuedMessages/queue_update 提供基础观察，queueState补充当前真实待处理身份与编辑状态；完整附件编辑与组合验收仍留在 M2 05。
 - 停止回执只证明中断请求已返回；排队输入、待答交互和后台活动另按证据显示。用户确认停止须同时暂缓当前 Thread 后续队列，保留内容，待明确继续后恢复；不清队列、不回滚文件。实际消费阻断与恢复属于执行侧，原生 abort 本身不证明这些效果。
 
 ## 生命周期与第一批验收

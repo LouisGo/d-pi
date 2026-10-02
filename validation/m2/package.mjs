@@ -378,6 +378,111 @@ try {
   await click("发送");
   await wait(() => requests.length === 1);
   assert.equal(requests[0].model, "fixture-b");
+  if (process.argv.includes("--queue-subagent")) {
+    await wait(() =>
+      evaluate(
+        "document.querySelector('[name=subagent-agent]')?.options.length>0",
+      ),
+    );
+    await evaluate(
+      "document.querySelector('details[aria-label=\"子 Agent 设置\"]').open=true",
+    );
+    await evaluate(
+      `(()=>{const s=document.querySelector('[name=subagent-model]');s.value=${JSON.stringify(JSON.stringify(["fixture", "fixture-b"]))};s.dispatchEvent(new Event('change',{bubbles:true}));})()`,
+    );
+    await evaluate(
+      "(()=>{const s=document.querySelector('[name=subagent-thinking]');s.value='high';s.dispatchEvent(new Event('change',{bubbles:true}));})()",
+    );
+    await click("应用覆盖");
+    await wait(() =>
+      evaluate(
+        "document.querySelector('details[aria-label=\"子 Agent 设置\"]').textContent.includes('子 Agent 设置已更新。')",
+      ),
+    );
+    assert.ok(
+      await evaluate(
+        "document.querySelector('details[aria-label=\"子 Agent 设置\"]').textContent.includes('fixture/fixture-b · high')",
+      ),
+    );
+    assert.equal(requests.length, 1);
+    assert.ok(held);
+    await click("清除覆盖");
+    await wait(() =>
+      evaluate(
+        "document.querySelector('details[aria-label=\"子 Agent 设置\"]').textContent.includes('本实例覆盖: 沿用共享默认')",
+      ),
+    );
+    await evaluate(
+      "document.querySelector('details[aria-label=\"子 Agent 设置\"]').open=false",
+    );
+    await insert("QUEUED_ORIGINAL");
+    await click("排队发送");
+    await wait(() =>
+      evaluate(
+        "document.querySelector('[data-queue-entry]')?.textContent.includes('QUEUED_ORIGINAL')",
+      ),
+    );
+    await evaluate(
+      "document.querySelector('details[aria-label=\"待处理队列\"]').open=true",
+    );
+    await evaluate(
+      "document.querySelector('[data-queue-action=begin-edit]').click()",
+    );
+    await wait(() =>
+      evaluate("!!document.querySelector('textarea[id^=queue-edit-]')"),
+    );
+    await evaluate(
+      "document.querySelector('textarea[id^=queue-edit-]').focus()",
+    );
+    await call("Input.dispatchKeyEvent", {
+      type: "keyDown",
+      key: "a",
+      code: "KeyA",
+      modifiers: 4,
+    });
+    await call("Input.dispatchKeyEvent", {
+      type: "keyUp",
+      key: "a",
+      code: "KeyA",
+      modifiers: 4,
+    });
+    await call("Input.insertText", { text: "QUEUED_CHANGED" });
+    await wait(() =>
+      evaluate(
+        "document.querySelector('textarea[id^=queue-edit-]')?.value==='QUEUED_CHANGED' && !document.querySelector('[data-queue-action=cancel-edit]').disabled",
+      ),
+    );
+    await evaluate(
+      "document.querySelector('[data-queue-action=save-edit]').click()",
+    );
+    await wait(() =>
+      evaluate(
+        "!document.querySelector('textarea[id^=queue-edit-]') && document.querySelector('[data-queue-entry]')?.textContent.includes('QUEUED_CHANGED')",
+      ),
+    );
+    const journal = db
+      .prepare("SELECT record FROM queue_change ORDER BY rowid DESC LIMIT 1")
+      .get();
+    assert.equal(JSON.parse(journal.record).previousText, "QUEUED_ORIGINAL");
+    assert.equal(JSON.parse(journal.record).command.text, "QUEUED_CHANGED");
+    assert.equal(JSON.parse(journal.record).status, "acknowledged");
+    const frozen = db
+      .prepare("SELECT receipt FROM submission ORDER BY rowid DESC LIMIT 1")
+      .get();
+    assert.equal(JSON.parse(frozen.receipt).text, "QUEUED_ORIGINAL");
+    await evaluate(
+      "document.querySelector('[data-queue-action=delete]').click()",
+    );
+    await wait(() => evaluate("!document.querySelector('[data-queue-entry]')"));
+    assert.equal(requests.length, 1);
+    screenshots.push(await shot("m2-queue-subagent"));
+    await evaluate(
+      "document.querySelector('details[aria-label=\"待处理队列\"]').open=false",
+    );
+    checks.push(
+      "packaged GUI applies and clears future subagent defaults during current execution; native queue edit/save/delete retains frozen journal and does not trigger another model request",
+    );
+  }
   if (process.argv.includes("--continuity")) {
     assert.ok(
       JSON.stringify(requests[0]).includes("M2_FIRST_INPUT\\nLINE_TWO"),

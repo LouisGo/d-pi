@@ -6,6 +6,7 @@ import {
   type UiMessage,
   uiMessage,
 } from "../../../../shared/messages/contracts";
+import type { SubagentConfigurationCommand } from "../../../configuration/contracts/public";
 import type { Answer } from "../../contracts/interactions";
 import type {
   RuntimeBridge,
@@ -13,6 +14,8 @@ import type {
   RuntimeFailure,
   RuntimeView,
 } from "../../contracts/public";
+import type { QueueAction } from "../../contracts/queue";
+import { RuntimeCommandSchema } from "../../contracts/runtime";
 
 export interface RuntimeState {
   view: RuntimeView | null;
@@ -100,7 +103,13 @@ export class RuntimeModel {
   async act(
     kind: Exclude<
       RuntimeCommand["kind"],
-      "stop" | "continue" | "answer" | "dismiss" | "select-model"
+      | "stop"
+      | "continue"
+      | "answer"
+      | "dismiss"
+      | "select-model"
+      | "configure-subagent"
+      | "manage-queue"
     >,
   ): Promise<void> {
     const state = this.store.getState();
@@ -165,6 +174,125 @@ export class RuntimeModel {
       state.view,
       uiMessage("runtime.connectionUnknown"),
     );
+  }
+  private queueWrites: Promise<void> = Promise.resolve();
+  configureSubagent(command: SubagentConfigurationCommand): Promise<void> {
+    return this.nativeChange("configure-subagent", command);
+  }
+  manageQueue(command: QueueAction): Promise<void> {
+    const target = this.store.getState();
+    const generation = target.view?.connectionGeneration;
+    const write = this.queueWrites.then(async () => {
+      if (
+        this.store.getState().thread !== target.thread ||
+        this.store.getState().requestGeneration !== target.requestGeneration ||
+        this.getSnapshot()?.connectionGeneration !== generation
+      )
+        return;
+      const view = this.getSnapshot();
+      if (
+        !view?.control?.queueState ||
+        (view.queueOperation?.status === "unknown" &&
+          !view.queueOperation.reconciled)
+      )
+        return;
+      const revision =
+        command.action === "update-edit" ||
+        command.action === "save-edit" ||
+        command.action === "cancel-edit"
+          ? view.control.queueState.revision
+          : command.revision;
+      await this.nativeChange("manage-queue", { ...command, revision });
+    });
+    this.queueWrites = write.catch(() => {});
+    return write;
+  }
+  private async nativeChange(
+    kind: "configure-subagent" | "manage-queue",
+    value: SubagentConfigurationCommand | QueueAction,
+  ): Promise<void> {
+    const state = this.store.getState();
+    const view = state.view;
+    if (
+      state.disposed ||
+      !state.thread ||
+      !view?.connectionGeneration ||
+      !view.trusted ||
+      view.phase !== "ready"
+    )
+      return;
+    const field =
+      kind === "manage-queue" ? "queueOperation" : "subagentOperation";
+    if (view[field]?.status === "pending") return;
+    const traceId = crypto.randomUUID();
+    const command =
+      kind === "manage-queue"
+        ? {
+            kind,
+            threadId: state.thread,
+            traceId,
+            connectionGeneration: view.connectionGeneration,
+            command: value,
+          }
+        : {
+            kind,
+            threadId: state.thread,
+            traceId,
+            connectionGeneration: view.connectionGeneration,
+            command: value,
+          };
+    // Parse the public union once before crossing the bridge; no type assertion
+    // can accidentally send a queue command as a configuration command.
+    const parsed = RuntimeCommandSchema.parse(command);
+    this.store.setState({
+      view: { ...view, [field]: { traceId, status: "pending" } },
+    });
+    try {
+      const reply = await this.bridge.request(parsed);
+      const current = this.store.getState();
+      if (
+        current.disposed ||
+        current.thread !== state.thread ||
+        current.requestGeneration !== state.requestGeneration ||
+        current.view?.connectionGeneration !== view.connectionGeneration
+      )
+        return;
+      if (
+        reply.kind === "view" &&
+        reply.view.threadId === state.thread &&
+        reply.view.connectionGeneration === view.connectionGeneration
+      )
+        this.publish(reply.view);
+      else if (
+        reply.kind === "failed" &&
+        reply.error.traceId === traceId &&
+        current.view
+      )
+        this.store.setState({
+          view: {
+            ...current.view,
+            message: reply.error.message,
+            [field]: { traceId, status: "failed" },
+          },
+        });
+      else throw Error("Mismatched operation reply");
+    } catch {
+      const current = this.store.getState();
+      if (
+        current.disposed ||
+        current.thread !== state.thread ||
+        current.requestGeneration !== state.requestGeneration ||
+        current.view?.connectionGeneration !== view.connectionGeneration
+      )
+        return;
+      this.store.setState({
+        view: {
+          ...current.view,
+          [field]: { traceId, status: "unknown" },
+          message: uiMessage("runtime.controlUnknown"),
+        },
+      });
+    }
   }
   async control(kind: "stop" | "continue"): Promise<void> {
     const state = this.store.getState();

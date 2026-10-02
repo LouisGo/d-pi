@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import { Effect } from "effect";
 import { type UtilityProcess, utilityProcess } from "electron";
 import {
   type ProcessIdentity,
@@ -60,6 +61,64 @@ function hostProcess(): UtilityProcess {
 }
 // Process/transport ownership only. It cannot grant trust or persist business receipts.
 export class HostConnection {
+  private readonly operationWaiters = new Map<
+    string,
+    {
+      finish: (
+        result: Extract<HostMessage, { kind: "operation-result" }>,
+      ) => void;
+      unknown: Extract<HostMessage, { kind: "operation-result" }>;
+    }
+  >();
+  private finishOperations(): void {
+    for (const waiter of this.operationWaiters.values())
+      waiter.finish(waiter.unknown);
+    this.operationWaiters.clear();
+  }
+  operation(
+    command:
+      | Extract<HostCommand, { kind: "manage-queue" | "configure-subagent" }>
+      | { kind: "state"; traceId: string; connectionGeneration: string },
+  ): Promise<Extract<HostMessage, { kind: "operation-result" }>> {
+    const target = command.kind === "state" ? command : command.command;
+    const unknown = {
+      kind: "operation-result" as const,
+      traceId: target.traceId,
+      connectionGeneration: target.connectionGeneration,
+      operation: command.kind === "state" ? ("inspect" as const) : command.kind,
+      status: "unknown" as const,
+    };
+    return Effect.runPromise(
+      Effect.callback<
+        Extract<HostMessage, { kind: "operation-result" }>,
+        Error
+      >((resume) => {
+        this.operationWaiters.set(target.traceId, {
+          finish: (result) => {
+            if (
+              result.connectionGeneration === target.connectionGeneration &&
+              result.operation === unknown.operation
+            )
+              resume(Effect.succeed(result));
+          },
+          unknown,
+        });
+        try {
+          this.send(command);
+        } catch {
+          resume(Effect.succeed(unknown));
+        }
+        return Effect.sync(() => {
+          this.operationWaiters.delete(target.traceId);
+        });
+      }).pipe(
+        Effect.timeoutOrElse({
+          duration: 12000,
+          orElse: () => Effect.succeed(unknown),
+        }),
+      ),
+    );
+  }
   private scopeId: string | null = null;
   private startDispatched = false;
   get startAttempted(): boolean {
@@ -105,6 +164,7 @@ export class HostConnection {
         if (this.scopeId !== command.processInstanceId) return;
         scopes.delete(command.processInstanceId);
         this.scopeId = null;
+        this.finishOperations();
         this.exited(evidence);
         this.cleanup = nativeIdentity
           ? terminateManagedGroup(nativeIdentity)
@@ -185,6 +245,10 @@ export class HostConnection {
             }
           } else {
             this.receive(message);
+            if (message.kind === "operation-result")
+              this.operationWaiters.get(message.traceId)?.finish(message);
+            if (message.kind === "interrupted" || message.kind === "failed")
+              this.finishOperations();
             if (message.kind === "failed" || message.kind === "interrupted") {
               clearTimeout(timeout);
               reject(Error("Host unavailable"));

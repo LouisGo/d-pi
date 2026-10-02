@@ -1,4 +1,7 @@
-import { SubmissionRepository } from "../../../modules/execution/main/public";
+import {
+  QueueChangeRepository,
+  SubmissionRepository,
+} from "../../../modules/execution/main/public";
 import { DraftRepository } from "../../../modules/input/main/public";
 import { PreferenceRepository } from "../../../modules/preferences/main/public";
 import { ThreadRepository } from "../../../modules/threads/main/public";
@@ -13,6 +16,7 @@ export class AppStorage {
     readonly drafts: DraftRepository,
     readonly submissions: SubmissionRepository,
     readonly preferences: PreferenceRepository,
+    readonly queueChanges: QueueChangeRepository,
   ) {}
 
   static open(path: string): AppStorage {
@@ -26,12 +30,17 @@ export class AppStorage {
       // backups. Only a fully recovered and migrated instance is published.
       submissions.recoverInterruptedSubmissions();
       database.completeSchemaMigrations();
+      // queue_change exists only after v7. Normalize interrupted mutations
+      // before publishing; recovery never dispatches an OMP operation.
+      const queueChanges = new QueueChangeRepository(database);
+      queueChanges.recoverInterruptedChanges();
       return new AppStorage(
         database,
         threads,
         drafts,
         submissions,
         preferences,
+        queueChanges,
       );
     } catch (error) {
       database.close();

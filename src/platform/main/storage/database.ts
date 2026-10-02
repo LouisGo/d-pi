@@ -25,7 +25,8 @@ export class AppDatabase {
         version !== 3 &&
         version !== 4 &&
         version !== 5 &&
-        version !== 6
+        version !== 6 &&
+        version !== 7
       )
         throw new Error("Unsupported schema version");
       if (version === 0) {
@@ -64,7 +65,13 @@ export class AppDatabase {
           `);
         });
       }
-      if (version !== 3 && version !== 4 && version !== 5 && version !== 6) {
+      if (
+        version !== 3 &&
+        version !== 4 &&
+        version !== 5 &&
+        version !== 6 &&
+        version !== 7
+      ) {
         const temporary = `${path}.before-v3.${randomUUID()}.tmp`;
         try {
           this.connection.prepare("VACUUM INTO ?").run(temporary);
@@ -95,7 +102,8 @@ export class AppDatabase {
     if (
       this.originalVersion !== 4 &&
       this.originalVersion !== 5 &&
-      this.originalVersion !== 6
+      this.originalVersion !== 6 &&
+      this.originalVersion !== 7
     ) {
       const temporary = `${this.path}.before-v4.${randomUUID()}.tmp`;
       try {
@@ -110,7 +118,11 @@ export class AppDatabase {
         ),
       );
     }
-    if (this.originalVersion !== 5 && this.originalVersion !== 6) {
+    if (
+      this.originalVersion !== 5 &&
+      this.originalVersion !== 6 &&
+      this.originalVersion !== 7
+    ) {
       const temporary = `${this.path}.before-v5.${randomUUID()}.tmp`;
       try {
         this.connection.prepare("VACUUM INTO ?").run(temporary);
@@ -124,7 +136,7 @@ export class AppDatabase {
         ),
       );
     }
-    if (this.originalVersion !== 6) {
+    if (this.originalVersion !== 6 && this.originalVersion !== 7) {
       const temporary = `${this.path}.before-v6.${randomUUID()}.tmp`;
       try {
         this.connection.prepare("VACUUM INTO ?").run(temporary);
@@ -135,6 +147,21 @@ export class AppDatabase {
       // Receipts remain the finite App-owned fact; no native event/history ledger.
       // The version guard prevents an older App silently dropping new outcomes.
       this.transaction(() => this.connection.exec("PRAGMA user_version=6;"));
+    }
+    if (this.originalVersion !== 7) {
+      const temporary = `${this.path}.before-v7.${randomUUID()}.tmp`;
+      try {
+        this.connection.prepare("VACUUM INTO ?").run(temporary);
+        renameSync(temporary, `${this.path}.before-v7`);
+      } finally {
+        rmSync(temporary, { force: true });
+      }
+      this.transaction(() =>
+        this.connection.exec(`
+        CREATE TABLE queue_change(id TEXT PRIMARY KEY, thread_id TEXT NOT NULL REFERENCES thread(id), record TEXT NOT NULL);
+        PRAGMA user_version=7;
+      `),
+      );
     }
   }
   transaction<T>(body: () => T): T {

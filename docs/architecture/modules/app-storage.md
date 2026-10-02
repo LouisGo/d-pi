@@ -5,7 +5,7 @@
 ## 当前工程落点（领域目录治理，2026-09-29）
 
 - `src/platform/main/storage/database.ts` 只负责连接、PRAGMA、schema/备份迁移和事务原语；业务仓储分别位于 threads/input/preferences/execution 模块。
-- `src/app/main/wiring/app-storage.ts` 以一个 `AppDatabase` 组装仓储，并显式执行 `v3 + WAL → execution recovery → v4/v5/v6 → publish`；数据库构造不再隐式修改 `dispatching` 收据。
+- `src/app/main/wiring/app-storage.ts` 以一个 `AppDatabase` 组装仓储，并显式执行 `至少 v3 + WAL → submission recovery → 后续迁移至 v7 → queue change recovery → publish`；数据库构造不隐式修改业务收据。当前已为 v7 时不重复迁移或生成升级备份。
 - `src/platform/main/diagnostics/` 是轻量有界诊断设施；它不决定业务恢复，也不记录秘密、路径或正文作为诊断内容。
 
 
@@ -22,6 +22,7 @@ Main 集中拥有 SQLite 入口与写入调度；必要时把 I/O 交给 worker�
 | Thread / 目录关系、信任与读取授权 | Thread | 保持稳定 ID；按操作更新，不能用过时整份快照覆盖 |
 | 草稿 revision、附件来源与引用 | 输入 | 保存时比较预期 revision；冲突返回当前版本，不盲覆盖 |
 | 冻结内容包和提交收据 | 输入、执行 | prepared / dispatching 必须确认持久化后才继续派发；调用 ACK 与对应草稿消费标记原子保存；schema 6 在 receipt JSON 保存有限 typed 原生结果，保留冻结原文 |
+| 待处理队列的持久变更收据 | 执行 | schema 7 的 queue_change 独立保存完整身份、命令及原文；派发前持久化，不覆写 submission；begin/update/cancel 瞬时编辑控制不创建该收据 |
 | 无原生重读保证的必要展示补充 | 阅读 | 有原生关联、缺口和配额；不能变成第二份权威会话历史 |
 | 桌面偏好、面板/阅读位置 | 对应 UI 功能 | 容许已定义的偏好默认值，不用默认值修复损坏的业务记录 |
 
@@ -35,7 +36,9 @@ Main 集中拥有 SQLite 入口与写入调度；必要时把 I/O 交给 worker�
 4. 调用 ACK 与消费标记落盘后才确认 acknowledged 和清对应稿；业务接受须有独立证据。若业务已可能到达 OMP、回执写入失败，保留或在重启后恢复为 unknown，不因存储重试再次派发。
 5. S2 冻结原文的唯一可靠副本不回收。其他内容删除最后引用后按既有延迟规则回收；活跃草稿、准备提交、unknown，以及原生历史仍依赖的内容保留。回收不推断 accepted 意味着附件已由 OMP 自持久化。
 
-当前 schema 6 的 before-v6 备份保留完整 schema 5 数据；更高版本保护防止旧 App 默默丢新结果。启动恢复由 execution 显式拥有：dispatching 转调用 unknown；ACK 后未观测结果转 outcome unknown 并保留 acknowledgedAt/消费标记；已保存的 completed/aborted/error 观察保留。未确认的 Host 内存缓存不属于数据库持久承诺。
+当前 schema 7 的 before-v7 备份保留完整 schema 6 数据，历史 before-v6 仍为 schema 5；更高版本保护防止旧 App 默默丢新结果。启动恢复由 execution 显式拥有：submission 的 dispatching 转调用 unknown；ACK 后未观测结果转 outcome unknown 并保留 acknowledgedAt/消费标记；已保存的 completed/aborted/error 观察保留。此恢复先于后续迁移备份，所以 6→7 的 before-v7 已包含恢复后的 submission 与草稿消费标记，但尚无 queue_change 表。
+
+迁移完成后才构造 QueueChangeRepository，并在发布 AppStorage 前恢复 queue_change：仅 dispatching 转 unknown，已确认 acknowledged/failed 和原文保持。相同 trace 仅允许相同 Thread、target、命令与内容，不能混淆实例身份；ACK 保存失败不伪造确认，恢复绝不调用 OMP。原 submission 不由队列仓储修改。未确认的 Host 内存缓存不属于数据库持久承诺。对应回归见 `src/app/main/wiring/queue-storage.test.ts` 和 `tests/integration/queue-change-recovery.integration.test.ts`。
 
 启动按 schema 版本和必要引用检查恢复；缺失内容显式标出。迁移前可恢复备份，迁移失败不删库；未知更高版本只在确认兼容时只读，否则停止不兼容功能。不能靠全盘无限扫描恢复正常交互。
 

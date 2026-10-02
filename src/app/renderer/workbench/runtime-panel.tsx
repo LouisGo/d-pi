@@ -18,6 +18,7 @@ import {
   receiptNeedsAttention,
   receiptStatusKey,
 } from "../components/receipt-status";
+import { QueueControls } from "./queue-controls";
 export type FollowUpResult = {
   ok: boolean;
   message: UiMessage | null;
@@ -122,17 +123,18 @@ export function RuntimePanel({
                     background: state.control.background,
                   })}
             </p>
-            {state.control.queue.map((item, index) => (
-              <p key={`${item.kind}-${index}`}>
-                <strong>
-                  {item.kind === "steering"
-                    ? t("ui.runtime.steering")
-                    : t("ui.runtime.pending")}
-                  ：
-                </strong>
-                {item.text}
-              </p>
-            ))}
+            {!state.control.queueState &&
+              state.control.queue.map((item, index) => (
+                <p key={`${item.kind}-${index}`}>
+                  <strong>
+                    {item.kind === "steering"
+                      ? t("ui.runtime.steering")
+                      : t("ui.runtime.pending")}
+                    ：
+                  </strong>
+                  {item.text}
+                </p>
+              ))}
             <div className="flex gap-2">
               <Button
                 disabled={state.control.stopping || state.phase !== "ready"}
@@ -157,6 +159,7 @@ export function RuntimePanel({
             </div>
           </div>
         )}
+      <QueueControls model={model} />
       {state.interactions && (
         <section
           aria-label={t("ui.runtime.interactionsLabel")}

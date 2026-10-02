@@ -1,4 +1,53 @@
 export const ui = {
+  "subagent.reconciled":
+    "Native settings inspected. The earlier result remains unknown; new explicit changes are available.",
+  "queue.reconciled":
+    "Native queue inspected. The earlier operation remains unconfirmed; new explicit operations are available.",
+  "queue.heading": "Pending queue",
+  "queue.batchNotice":
+    "Native batch policy is preserved. A combined batch containing an edited item waits for Save or Cancel; current execution continues.",
+  "queue.pending": "Updating queue…",
+  "queue.unknown":
+    "Result unconfirmed. Your edit is retained. Inspect the native queue before another operation; no automatic retry.",
+  "queue.failed":
+    "Queue operation failed ({code}). Inspect the queue before continuing.",
+  "queue.inspect": "Inspect queue",
+  "queue.limited":
+    "Some content exceeds the display budget. Native content is intact; those items cannot be edited here.",
+  "queue.hidden": "{count} more items are not displayed.",
+  "queue.empty": "No pending content.",
+  "queue.steering": "Steering",
+  "queue.followUp": "Follow-up",
+  "queue.truncated": "Only a summary is shown; native content is intact.",
+  "queue.contentReadOnly":
+    "Attachments and native command entries cannot be edited here yet. They can still be deleted or reordered.",
+  "queue.edit": "Edit",
+  "queue.delete": "Delete",
+  "queue.up": "Move up",
+  "queue.down": "Move down",
+  "queue.editLabel": "Pending content",
+  "queue.save": "Save and release edit hold",
+  "queue.cancel": "Cancel edit",
+  "subagent.heading": "Subagent settings",
+  "subagent.notice":
+    "Applies only to subagents started later in this Thread. Running instances are unchanged; explicit native requests retain native precedence.",
+  "subagent.agent": "Subagent",
+  "subagent.chooseAgent": "Choose a subagent",
+  "subagent.sharedDefault": "Native effective model patterns",
+  "subagent.noPatterns": "No patterns configured",
+  "subagent.instanceOverride": "Instance override",
+  "subagent.inherited": "Use shared defaults",
+  "subagent.apply": "Apply override",
+  "subagent.clear": "Clear override",
+  "subagent.unavailable": "Start a trusted session to configure subagents.",
+  "subagent.none": "This session has no configurable subagents.",
+  "subagent.pending": "Updating subagent settings…",
+  "subagent.acknowledged": "Subagent settings updated.",
+  "subagent.failed":
+    "Subagent settings update failed. Check the current settings before retrying.",
+  "subagent.unknown":
+    "Update result unknown. Inspect the current override before another operation.",
+
   "ui.history.sourceDetails": "Source and reading scope",
   "ui.history.recordDetails": "Record identity",
   "ui.files.choose": "Choose a file or current diff",

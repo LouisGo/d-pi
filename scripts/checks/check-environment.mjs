@@ -38,6 +38,8 @@ export function inspectSdk(root, sdkRoot, declared) {
     "configuration.mjs",
     "configuration-readonly.mjs",
     "model-selection.mjs",
+    "native-queue.mjs",
+    "native-subagent-configuration.mjs",
     "BUN-LICENSE.md",
     "node_modules/@oh-my-pi/pi-coding-agent/package.json",
     "node_modules/@oh-my-pi/pi-utils/package.json",
@@ -77,6 +79,8 @@ export function inspectSdk(root, sdkRoot, declared) {
     "configuration.mjs",
     "configuration-readonly.mjs",
     "model-selection.mjs",
+    "native-queue.mjs",
+    "native-subagent-configuration.mjs",
   ]) {
     if (
       existsSync(join(sdkRoot, name)) &&

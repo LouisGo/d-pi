@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
+import { isDeepStrictEqual } from "node:util";
 import { match } from "ts-pattern";
 import type { DiagnosticEvent } from "../../../../platform/main/diagnostics/public";
 import { identifyDirectory } from "../../../../platform/node/filesystem/public";
@@ -30,10 +31,15 @@ import {
   canSubmit,
   queueCapped,
 } from "../../core/submission/submission-admission";
+import type { QueueChangeRepository } from "../queue/queue-change-repository";
 import type { SubmissionRepository } from "../submission/submission-repository";
 import { HostConnection } from "../transport/host-connection";
 
 type RuntimeStore = {
+  queueChanges: Pick<
+    QueueChangeRepository,
+    "prepare" | "finish" | "list" | "find"
+  >;
   threads: Pick<
     ThreadRepository,
     | "activeThread"
@@ -374,6 +380,10 @@ export class RuntimeService {
     message: Exclude<HostMessage, { kind: "ready" | "native-register" }>,
   ): void {
     match(message)
+      .with({ kind: "subagents" }, ({ connectionGeneration, state }) => {
+        if (connectionGeneration === this.currentConnectionGeneration)
+          this.update({ subagents: state });
+      })
       .with({ kind: "process-exit" }, ({ connectionGeneration, evidence }) => {
         if (connectionGeneration === this.currentConnectionGeneration)
           this.recordProcessExit(evidence);
@@ -413,8 +423,34 @@ export class RuntimeService {
       )
       .with(
         { kind: "operation-result" },
-        ({ traceId, connectionGeneration, operation, status }) => {
+        ({ traceId, connectionGeneration, operation, status, code }) => {
           if (connectionGeneration !== this.currentConnectionGeneration) return;
+          if (
+            operation === "manage-queue" ||
+            operation === "configure-subagent"
+          ) {
+            let observed = status;
+            if (operation === "manage-queue") {
+              try {
+                if (this.store.queueChanges.find(traceId))
+                  this.store.queueChanges.finish(traceId, status);
+              } catch {
+                observed = "unknown";
+              }
+            }
+            const field =
+              operation === "manage-queue"
+                ? "queueOperation"
+                : "subagentOperation";
+            if (this.view?.[field]?.traceId === traceId)
+              this.update({
+                [field]: {
+                  traceId,
+                  status: observed,
+                  ...(code ? { code } : {}),
+                },
+              });
+          }
           if (operation === "select-model")
             this.update({
               modelChanging: false,
@@ -597,6 +633,127 @@ export class RuntimeService {
           : uiMessage("runtime.preStartTrust"),
       };
     }
+    if (
+      command.kind === "manage-queue" ||
+      command.kind === "configure-subagent"
+    ) {
+      const field =
+        command.kind === "manage-queue"
+          ? "queueOperation"
+          : "subagentOperation";
+      if (command.kind === "manage-queue") {
+        const existing = this.store.queueChanges.find(command.traceId);
+        if (existing) {
+          if (
+            existing.threadId !== command.threadId ||
+            existing.target.connectionGeneration !==
+              command.connectionGeneration ||
+            !isDeepStrictEqual(existing.command, command.command)
+          )
+            throw Error("Queue change identity conflict");
+          if (
+            this.view.queueOperation &&
+            this.view.queueOperation.traceId !== command.traceId
+          )
+            return this.view;
+          this.update({
+            queueOperation: {
+              traceId: command.traceId,
+              status:
+                existing.status === "dispatching" ? "pending" : existing.status,
+            },
+          });
+          return this.view;
+        }
+      }
+      const assertOperationTarget = () => {
+        const operation = this.view?.[field];
+        if (operation?.status === "unknown" && operation.reconciled !== true)
+          throw Error("Unknown operation requires fresh state");
+        if (
+          !this.connection.connected ||
+          command.connectionGeneration !== this.currentConnectionGeneration ||
+          this.view?.phase !== "ready" ||
+          operation?.status === "pending"
+        )
+          throw Error("Stale operation target");
+      };
+      assertOperationTarget();
+      const identity = await identifyDirectory(thread.directory);
+      assertOperationTarget();
+      const grant = this.store.threads.executionGrant(
+        thread.workingDirectoryId,
+      );
+      if (
+        !grant ||
+        !this.instanceDirectory ||
+        !sameDirectoryIdentity(grant, identity) ||
+        !sameDirectoryIdentity(this.instanceDirectory, identity) ||
+        command.connectionGeneration !== this.currentConnectionGeneration
+      )
+        throw Error("Execution grant invalid");
+      if (command.kind === "manage-queue") {
+        const snapshot = this.view.control?.queueState;
+        const entry = snapshot?.items.find(
+          (item) => item.id === command.command.entryId,
+        );
+        if (
+          !snapshot ||
+          !entry ||
+          snapshot.revision !== command.command.revision
+        )
+          throw Error("Stale queue snapshot");
+        if (
+          (command.command.action === "save-edit" ||
+            command.command.action === "update-edit" ||
+            command.command.action === "begin-edit") &&
+          (!entry.editable || entry.truncated)
+        )
+          throw Error("Unsupported queue content");
+        if (["save-edit", "delete", "move"].includes(command.command.action)) {
+          if (!this.target) throw Error("Native identity unavailable");
+          this.store.queueChanges.prepare({
+            traceId: command.traceId,
+            threadId: command.threadId,
+            target: this.target,
+            command: command.command,
+            previousText: entry.text,
+            previousTruncated: entry.truncated,
+          });
+        }
+      }
+      this.update({
+        traceId: command.traceId,
+        [field]: { traceId: command.traceId, status: "pending" },
+      });
+      const response = await this.connection.operation(
+        command.kind === "manage-queue"
+          ? { kind: "manage-queue", command }
+          : { kind: "configure-subagent", command },
+      );
+      if (command.connectionGeneration !== this.currentConnectionGeneration)
+        return this.view;
+      let status = response.status;
+      if (command.kind === "manage-queue") {
+        try {
+          if (this.store.queueChanges.find(command.traceId))
+            this.store.queueChanges.finish(command.traceId, status);
+        } catch {
+          status = "unknown";
+        }
+      }
+      this.update({
+        [field]: {
+          traceId: command.traceId,
+          status,
+          ...(response.code ? { code: response.code } : {}),
+        },
+        ...(status === "unknown"
+          ? { message: uiMessage("runtime.controlUnknown") }
+          : {}),
+      });
+      return this.view;
+    }
     if (command.kind === "select-model") {
       if (
         this.store.threads.nativeSessionBinding(command.threadId) &&
@@ -691,7 +848,46 @@ export class RuntimeService {
       return this.view;
     }
     await match(command.kind)
-      .with("inspect", async () => {})
+      .with("inspect", async () => {
+        if (this.connection.connected && this.currentConnectionGeneration) {
+          if (
+            this.view?.queueOperation?.status !== "unknown" &&
+            this.view?.subagentOperation?.status !== "unknown"
+          ) {
+            this.connection.send({ kind: "state" });
+            return;
+          }
+          const generation = this.currentConnectionGeneration;
+          const result = await this.connection.operation({
+            kind: "state",
+            traceId: command.traceId,
+            connectionGeneration: generation,
+          });
+          if (
+            result.status === "acknowledged" &&
+            this.currentConnectionGeneration === generation
+          ) {
+            this.update({
+              ...(this.view?.queueOperation?.status === "unknown"
+                ? {
+                    queueOperation: {
+                      ...this.view.queueOperation,
+                      reconciled: true,
+                    },
+                  }
+                : {}),
+              ...(this.view?.subagentOperation?.status === "unknown"
+                ? {
+                    subagentOperation: {
+                      ...this.view.subagentOperation,
+                      reconciled: true,
+                    },
+                  }
+                : {}),
+            });
+          }
+        }
+      })
       .with("allow", async () => {
         const result = await this.admission.allow(
           command.threadId,
@@ -796,10 +992,13 @@ export class RuntimeService {
       (command.kind === "prepare" || command.kind === "resend") &&
       !existing
     ) {
+      const queueState = this.view?.control?.queueState;
       if (
         queueCapped(
           this.store.submissions.list(command.threadId),
-          this.view?.control?.queue.length ?? 0,
+          queueState
+            ? queueState.items.length + queueState.hiddenCount
+            : (this.view?.control?.queue.length ?? 0),
         )
       )
         return {
@@ -910,6 +1109,8 @@ export class RuntimeService {
     return (
       this.pendingEvidence.size > 0 ||
       this.executingIds.size > 0 ||
+      this.view?.queueOperation?.status === "pending" ||
+      this.view?.subagentOperation?.status === "pending" ||
       !!(
         control &&
         (control.stopping ||

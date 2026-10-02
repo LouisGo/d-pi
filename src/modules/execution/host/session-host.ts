@@ -7,6 +7,7 @@ import {
   type NativeFrame,
   NativeFrameTypes,
 } from "../../../platform/omp/protocol/public";
+import { SubagentConfigurationSnapshotSchema } from "../../configuration/contracts/public";
 import { type ControlState, ControlStateSchema } from "../contracts/control";
 import { defaultAnswerFor } from "../contracts/interactions";
 import type { FrozenSubmission, SubmissionEvent } from "../contracts/public";
@@ -18,6 +19,7 @@ import {
   NativeStateSchema,
   type SubmissionRejectionReason,
 } from "../contracts/public";
+import { QueueSnapshotSchema } from "../contracts/queue";
 import { changesManagedSession } from "../core/public";
 import { PendingInteractions } from "./interactions/interactions";
 import { type NativeObservation, NativeSession } from "./native/native-session";
@@ -60,6 +62,7 @@ export function createSessionHost(
   let observationVersion = 0;
   let lastDispatchId: string | null = null;
   let disconnected = false;
+  let successfulRefresh = 0;
   let refreshFlight: Promise<void> | null = null;
   const activeControl = (value: ControlState) =>
     !!(
@@ -480,6 +483,18 @@ export function createSessionHost(
           if (reply?.success !== true)
             throw Error("Native control unavailable");
           control = ControlStateSchema.parse(reply.data);
+          const subagentReply = await native?.request("d_pi_subagent_state");
+          if (disconnected || closing) return;
+          if (version !== observationVersion) continue;
+          if (subagentReply?.success !== true)
+            throw Error("Native subagent configuration unavailable");
+          send({
+            kind: "subagents",
+            connectionGeneration: start.connectionGeneration,
+            state: SubagentConfigurationSnapshotSchema.parse(
+              subagentReply.data,
+            ),
+          });
         }
         state = next;
         if (next.isSettled !== undefined) unsettledPrompt = !next.isSettled;
@@ -499,6 +514,7 @@ export function createSessionHost(
             state: control,
           });
         }
+        successfulRefresh++;
         send({
           kind: "state",
           state,
@@ -736,6 +752,71 @@ export function createSessionHost(
         return Promise.resolve();
       })
       .with(
+        { kind: "manage-queue" },
+        { kind: "configure-subagent" },
+        async ({ kind, command }) => {
+          if (
+            !native ||
+            !start ||
+            disconnected ||
+            closing ||
+            command.threadId !== start.threadId ||
+            command.connectionGeneration !== start.connectionGeneration
+          )
+            return;
+          let status: "acknowledged" | "failed" | "unknown" = "unknown";
+          let code: string | undefined;
+          try {
+            const response = await native.request(
+              kind === "manage-queue" ? "d_pi_queue" : "d_pi_subagent_config",
+              { command: command.command },
+            );
+            if (disconnected || closing) return;
+            if (response.success === true) {
+              if (kind === "manage-queue") {
+                const snapshot = QueueSnapshotSchema.parse(response.data);
+                if (!lastControl) await refresh();
+                if (!lastControl) throw Error("Native control unavailable");
+                send({
+                  kind: "control",
+                  connectionGeneration: start.connectionGeneration,
+                  state: { ...lastControl, queueState: snapshot },
+                });
+              } else
+                send({
+                  kind: "subagents",
+                  connectionGeneration: start.connectionGeneration,
+                  state: SubagentConfigurationSnapshotSchema.parse(
+                    response.data,
+                  ),
+                });
+              status = "acknowledged";
+            } else {
+              status =
+                response.error === "native-operation-failed"
+                  ? "unknown"
+                  : "failed";
+              if (
+                typeof response.error === "string" &&
+                /^[a-z0-9-]{1,64}$/.test(response.error)
+              )
+                code = response.error;
+            }
+            await refresh();
+          } catch {
+            status = "unknown";
+          }
+          send({
+            kind: "operation-result",
+            traceId: command.traceId,
+            connectionGeneration: command.connectionGeneration,
+            operation: kind,
+            status,
+            ...(code ? { code } : {}),
+          });
+        },
+      )
+      .with(
         { kind: "select-model" },
         async ({ command, connectionGeneration }) => {
           if (
@@ -865,7 +946,25 @@ export function createSessionHost(
           });
         await refresh();
       })
-      .with({ kind: "state" }, () => refresh())
+      .with({ kind: "state" }, async (command) => {
+        const version = successfulRefresh;
+        await refresh();
+        if (
+          command.traceId &&
+          command.connectionGeneration &&
+          command.connectionGeneration === start?.connectionGeneration
+        )
+          send({
+            kind: "operation-result",
+            traceId: command.traceId,
+            connectionGeneration: command.connectionGeneration,
+            operation: "inspect",
+            status:
+              successfulRefresh > version && !disconnected && !closing
+                ? "acknowledged"
+                : "unknown",
+          });
+      })
       .with({ kind: "close-idle" }, async () => {
         if (closing || disconnected) return;
         const version = observationVersion;

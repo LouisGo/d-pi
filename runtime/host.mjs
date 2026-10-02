@@ -12,8 +12,15 @@ const { runRpcMode } = await import(
   "@oh-my-pi/pi-coding-agent/modes/rpc/rpc-mode"
 );
 
+import {
+  isHiddenUserCompanion,
+  isUserAuthoredQueuedMessage,
+  queueChipText,
+} from "@oh-my-pi/pi-coding-agent/session/queued-messages";
 import { ConsumptionGate } from "./gate.js";
 import { applyModelSelection } from "./model-selection.mjs";
+import { NativeQueueManager } from "./native-queue.mjs";
+import { createSubagentConfiguration } from "./native-subagent-configuration.mjs";
 
 const { session, setToolUIContext, subagentEventBus } =
   await createAgentSession({
@@ -27,6 +34,14 @@ if (process.env.D_PI_MODEL_SELECTION) {
   await applyModelSelection(session, selection);
 }
 const gate = new ConsumptionGate();
+const queue = new NativeQueueManager(session, {
+  gate: new ConsumptionGate(),
+  isUserAuthored: isUserAuthoredQueuedMessage,
+  isCompanion: isHiddenUserCompanion,
+  displayText: queueChipText,
+});
+const subagents = createSubagentConfiguration(session);
+
 let paused = false;
 let stopping = false;
 let closing = false;
@@ -35,6 +50,7 @@ let stopEpoch = 0;
 const encode = new TextEncoder();
 const output = (frame) => process.stdout.write(`${JSON.stringify(frame)}\n`);
 const state = () => ({
+  queueState: queue.snapshot(),
   paused,
   stopping,
   pendingAsync: session.hasPendingAsyncWork(),
@@ -48,7 +64,8 @@ const state = () => ({
     .flatMap(([kind, texts]) =>
       texts.map((text) => ({ kind, text: text.slice(0, 2048) })),
     )
-    .slice(0, 64),
+    .slice(0, 16)
+    .map((item) => ({ ...item, text: item.text.slice(0, 512) })),
 });
 session.agent.addBeforeQueuedMessageDequeueHook((signal) => gate.wait(signal));
 session.agent.addBeforeModelCallHook((signal) => gate.wait(signal));
@@ -64,6 +81,27 @@ const timer = setInterval(publish, 200);
 timer.unref();
 async function control(frame, claimStop, epoch) {
   try {
+    if (
+      frame.type === "d_pi_queue" ||
+      frame.type === "d_pi_subagent_config" ||
+      frame.type === "d_pi_subagent_state"
+    ) {
+      const data =
+        frame.type === "d_pi_queue"
+          ? await queue.execute(frame.command)
+          : frame.type === "d_pi_subagent_config"
+            ? await subagents.apply(frame.command)
+            : await subagents.snapshot();
+      publish();
+      output({
+        type: "response",
+        command: frame.type,
+        id: frame.id,
+        success: true,
+        data,
+      });
+      return;
+    }
     if (frame.type === "d_pi_model") {
       if (
         session.isStreaming ||
@@ -110,13 +148,18 @@ async function control(frame, claimStop, epoch) {
       success: true,
       data: state(),
     });
-  } catch {
+  } catch (error) {
+    const code =
+      typeof error?.message === "string" &&
+      /^[a-z0-9-]{1,64}$/.test(error.message)
+        ? error.message
+        : "native-operation-failed";
     output({
       type: "response",
       command: frame.type,
       id: frame.id,
       success: false,
-      error: "SDK control failed",
+      error: code,
     });
   }
 }
@@ -140,9 +183,15 @@ const input = new ReadableStream({
         return;
       }
       if (
-        ["d_pi_stop", "d_pi_continue", "d_pi_state", "d_pi_model"].includes(
-          frame?.type,
-        )
+        [
+          "d_pi_stop",
+          "d_pi_continue",
+          "d_pi_state",
+          "d_pi_model",
+          "d_pi_queue",
+          "d_pi_subagent_config",
+          "d_pi_subagent_state",
+        ].includes(frame?.type)
       ) {
         const claimStop = frame.type === "d_pi_stop" && !paused;
         if (frame.type === "d_pi_stop") {

@@ -23,7 +23,7 @@
 | `src/shared/` | 稳定身份、消息 DTO、i18n formatter/catalog 和纯文本基础；Node 文件系统能力已归 `platform/node` |
 | `runtime/` | 随包 OMP/SDK 的薄宿主 `host.mjs` 和短生命周期配置/认证适配 `configuration.mjs`、无写读取 `configuration-readonly.mjs` 与原生能力映射 `model-selection.mjs`；不承载产品用例 |
 
-这是按功能与进程边界共同组织的单应用结构。机器边界单源为 [`architecture/modules.json`](../../../architecture/modules.json)，规则入口为 `pnpm check:architecture`，目录与依赖的稳定规则见[源码目录与依赖边界](../source-layout.md)；结构报告只提供维护提示，不把行数变成硬门槛。Thread 表自 v1 起保存草稿字段（schema 现为 v6），不因代码职责拆分而进行无收益的物理表迁移；恢复/控制行为继续按 S3 合同演进。`architecture/modules.json` 同时声明领域模块、`src/app`、`src/platform`、`src/shared` 和 `runtime` 的源码归属；报告应显示 `ownership=all-source-files`、`unowned=0`，以及 `checked=configured-module-files`、`owned-only=0`，例外清单为空。
+这是按功能与进程边界共同组织的单应用结构。机器边界单源为 [`architecture/modules.json`](../../../architecture/modules.json)，规则入口为 `pnpm check:architecture`，目录与依赖的稳定规则见[源码目录与依赖边界](../source-layout.md)；结构报告只提供维护提示，不把行数变成硬门槛。Thread 表自 v1 起保存草稿字段（schema 现为 v7），不因代码职责拆分而进行无收益的物理表迁移；恢复/控制行为继续按 S3 合同演进。`architecture/modules.json` 同时声明领域模块、`src/app`、`src/platform`、`src/shared` 和 `runtime` 的源码归属；报告应显示 `ownership=all-source-files`、`unowned=0`，以及 `checked=configured-module-files`、`owned-only=0`，例外清单为空。
 
 P1 落地的跨模块路径有两条：`files → input`（选区冻结与引用）与 `files → changes`（Git Diff 只读来源）。第三项不是跨模块依赖——应用级 Composer/FilePanel 留在 `src/app/renderer/workbench`，由 app 组合而不新增领域依赖。新增普通内部文件不要求修改清单；只有公开面、环境或跨模块依赖变化才更新机器配置。
 

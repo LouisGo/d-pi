@@ -29,6 +29,8 @@ const ManifestSchema = z.object({
     "configuration.mjs": z.string(),
     "configuration-readonly.mjs": z.string(),
     "model-selection.mjs": z.string(),
+    "native-queue.mjs": z.string(),
+    "native-subagent-configuration.mjs": z.string(),
   }),
 });
 export async function managedSdkRuntime(

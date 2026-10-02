@@ -20,6 +20,7 @@ import { Composer } from "./composer";
 import { FilePanel } from "./file-panel";
 import { ModelControls } from "./model-controls";
 import { RuntimePanel } from "./runtime-panel";
+import { SubagentControls } from "./subagent-controls";
 import type { WorkbenchProps } from "./types";
 
 type ThreadWorkbenchProps = WorkbenchProps & {
@@ -105,6 +106,13 @@ const ThreadContent = memo(function ThreadContent({
             thread={thread}
             bridge={model.configuration}
             disclosureRef={modelDisclosure}
+          />
+        )}
+        {model.configuration && (
+          <SubagentControls
+            key={thread.context.threadId}
+            thread={thread}
+            bridge={model.configuration}
           />
         )}
         {thread.runtime && (

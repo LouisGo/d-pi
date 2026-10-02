@@ -1,4 +1,50 @@
 export const ui = {
+  "subagent.reconciled":
+    "已核对原生配置。此前操作结果仍未知，可继续新的明确操作。",
+  "queue.reconciled":
+    "已核对原生队列。此前操作结果仍未确认，可继续新的明确操作。",
+  "queue.heading": "待处理队列",
+  "queue.batchNotice":
+    "保留原生批次策略；合并批次包含编辑项时，整批等待保存或取消。当前执行继续。",
+  "queue.pending": "正在更新队列…",
+  "queue.unknown":
+    "结果未确认。编辑内容保留，请先重新核对原生队列；不会自动重试。",
+  "queue.failed": "队列操作失败（{code}），请核对后继续。",
+  "queue.inspect": "重新核对队列",
+  "queue.limited":
+    "部分队列内容超出展示预算，未截断原生内容；这些条目不能直接编辑。",
+  "queue.hidden": "另有 {count} 项未展示。",
+  "queue.empty": "没有待处理内容。",
+  "queue.steering": "干预",
+  "queue.followUp": "后续输入",
+  "queue.truncated": "这里只展示摘要，原生内容完整保留。",
+  "queue.contentReadOnly":
+    "附件或原生命令条目暂不支持直接编辑，仍可删除或调整顺序。",
+  "queue.edit": "编辑",
+  "queue.delete": "删除",
+  "queue.up": "上移",
+  "queue.down": "下移",
+  "queue.editLabel": "待处理内容",
+  "queue.save": "保存并解除编辑暂缓",
+  "queue.cancel": "取消编辑",
+  "subagent.heading": "子 Agent 设置",
+  "subagent.notice":
+    "仅影响本 Thread 此后启动的子 Agent。已启动实例不变，显式原生请求仍按原生优先级生效。",
+  "subagent.agent": "子 Agent",
+  "subagent.chooseAgent": "选择子 Agent",
+  "subagent.sharedDefault": "原生有效模型模式",
+  "subagent.noPatterns": "未配置模式",
+  "subagent.instanceOverride": "本实例覆盖",
+  "subagent.inherited": "沿用共享默认",
+  "subagent.apply": "应用覆盖",
+  "subagent.clear": "清除覆盖",
+  "subagent.unavailable": "启动可信会话后才能配置子 Agent。",
+  "subagent.none": "当前会话没有可配置的子 Agent。",
+  "subagent.pending": "正在更新子 Agent 设置…",
+  "subagent.acknowledged": "子 Agent 设置已更新。",
+  "subagent.failed": "子 Agent 设置更新失败，请检查当前设置后重试。",
+  "subagent.unknown": "更新结果未知，请先核对当前覆盖，避免重复操作。",
+
   "ui.history.sourceDetails": "来源与读取范围",
   "ui.history.recordDetails": "记录标识",
   "ui.files.choose": "选择文件或当前差异",

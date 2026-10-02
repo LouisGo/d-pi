@@ -12,6 +12,7 @@ import { afterEach, expect, it, vi } from "vitest";
 import { AppStorage } from "../../src/app/main/wiring/app-storage";
 import {
   HostTransportCommandSchema,
+  RuntimeCommandSchema,
   RuntimeViewSchema,
   SubmissionIdSchema,
 } from "../../src/modules/execution/contracts/public";
@@ -32,6 +33,67 @@ vi.mock("../../src/platform/omp/resources/public", async (original) => ({
 const cleanup: (() => void)[] = [];
 afterEach(() => {
   for (const close of cleanup.splice(0)) close();
+});
+
+it("applies future subagent defaults on the exact busy instance and waits for native confirmation", async () => {
+  const fixture = await running(false, true);
+  const current = await fixture.act("inspect");
+  const original = fixture.postMessage.getMockImplementation();
+  fixture.postMessage.mockImplementation((raw: unknown) => {
+    original?.(raw);
+    const command = HostTransportCommandSchema.parse(raw).command;
+    if (command.kind === "configure-subagent")
+      queueMicrotask(() => {
+        fixture.host.emit("message", {
+          kind: "subagents",
+          connectionGeneration: command.command.connectionGeneration,
+          state: {
+            agents: [
+              {
+                name: "task",
+                description: "Task",
+                effectivePatterns: ["fixture/model"],
+                override: {
+                  provider: "fixture",
+                  modelId: "model",
+                  thinking: { kind: "default" },
+                },
+              },
+            ],
+          },
+        });
+        fixture.host.emit("message", {
+          kind: "operation-result",
+          traceId: command.command.traceId,
+          connectionGeneration: command.command.connectionGeneration,
+          operation: "configure-subagent",
+          status: "acknowledged",
+        });
+      });
+  });
+  const view = await fixture.runtime.execute(
+    RuntimeCommandSchema.parse({
+      kind: "configure-subagent",
+      threadId: fixture.draft.threadId,
+      traceId: crypto.randomUUID(),
+      connectionGeneration: current.connectionGeneration,
+      command: {
+        kind: "set",
+        agent: "task",
+        provider: "fixture",
+        modelId: "model",
+        thinking: { kind: "default" },
+      },
+    }),
+  );
+  expect(view.busy).toBe(true);
+  expect(view.subagents?.agents[0]?.override?.modelId).toBe("model");
+  expect(view.subagentOperation?.status).toBe("acknowledged");
+  expect(
+    fixture.postMessage.mock.calls.map(
+      ([raw]) => HostTransportCommandSchema.parse(raw).command.kind,
+    ),
+  ).not.toContain("control");
 });
 
 async function running(
@@ -357,6 +419,53 @@ it("refuses new queue entries beyond twenty while still dispatching counted ones
     kind: "receipt",
     receipt: { state: "dispatching" },
   });
+});
+
+it("counts hidden native queue entries at the admission cap without App receipts", async () => {
+  const fixture = await running();
+  const current = await fixture.act("inspect");
+  fixture.host.emit("message", {
+    kind: "control",
+    connectionGeneration: current.connectionGeneration,
+    state: {
+      paused: false,
+      stopping: false,
+      streaming: false,
+      compacting: false,
+      queued: 20,
+      queue: Array.from({ length: 16 }, () => ({
+        kind: "followUp",
+        text: "queued",
+      })),
+      queueState: {
+        revision: 1,
+        items: Array.from({ length: 16 }, () => ({
+          id: crypto.randomUUID(),
+          kind: "followUp",
+          text: "queued",
+          editable: true,
+          editing: false,
+          truncated: false,
+        })),
+        hiddenCount: 4,
+        coverage: "limited",
+        editing: null,
+      },
+      background: 0,
+      pendingAsync: false,
+      admitted: false,
+    },
+  });
+  expect(fixture.store.submissions.list(fixture.draft.threadId)).toHaveLength(
+    0,
+  );
+  expect(await fixture.prepare()).toMatchObject({
+    kind: "failed",
+    code: "queue-full",
+  });
+  expect(fixture.store.submissions.list(fixture.draft.threadId)).toHaveLength(
+    0,
+  );
 });
 
 it("returns a historical non-prepared receipt without a native write after the grant is revoked (A12 Main lock)", async () => {

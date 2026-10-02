@@ -1,13 +1,18 @@
 import { z } from "zod";
 import { ThreadIdSchema, TraceIdSchema } from "../../../shared/identity";
 import { UiMessageSchema } from "../../../shared/messages/contracts";
-import { ThinkingSelectionSchema } from "../../configuration/contracts/public";
+import {
+  SubagentConfigurationCommandSchema,
+  SubagentConfigurationSnapshotSchema,
+  ThinkingSelectionSchema,
+} from "../../configuration/contracts/public";
 import { ControlCommandSchema, ControlStateSchema } from "./control";
 import {
   AnswerCommandSchema,
   DismissCommandSchema,
   InteractionViewSchema,
 } from "./interactions";
+import { QueueCommandSchema, RuntimeOperationSchema } from "./queue";
 export const ModelSelectionSchema = z.strictObject({
   provider: z.string().min(1).max(256),
   modelId: z.string().min(1).max(512),
@@ -19,8 +24,17 @@ export const SelectModelCommandSchema = z.strictObject({
   traceId: TraceIdSchema,
   selection: ModelSelectionSchema,
 });
+export const ConfigureSubagentCommandSchema = z.strictObject({
+  kind: z.literal("configure-subagent"),
+  threadId: ThreadIdSchema,
+  traceId: TraceIdSchema,
+  connectionGeneration: z.uuid(),
+  command: SubagentConfigurationCommandSchema,
+});
 export const RuntimeCommandSchema = z.union([
   SelectModelCommandSchema,
+  ConfigureSubagentCommandSchema,
+  QueueCommandSchema,
   z.strictObject({
     kind: z.enum(["inspect", "allow", "start", "revoke"]),
     threadId: ThreadIdSchema,
@@ -37,6 +51,9 @@ export const RuntimeViewSchema = z.strictObject({
   configuration: UiMessageSchema,
   connectionGeneration: z.uuid().optional(),
   control: ControlStateSchema.optional(),
+  subagents: SubagentConfigurationSnapshotSchema.optional(),
+  subagentOperation: RuntimeOperationSchema.optional(),
+  queueOperation: RuntimeOperationSchema.optional(),
   interactions: InteractionViewSchema.optional(),
   revision: z.number().int().nonnegative(),
   phase: z.enum([

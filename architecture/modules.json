@@ -13,7 +13,10 @@
   "externalImportRules": [
     {
       "specifier": "^effect(?:$|/)",
-      "allowedFrom": ["^src/modules/execution/host/", "^src/modules/execution/main/transport/"],
+      "allowedFrom": [
+        "^src/modules/execution/host/",
+        "^src/modules/execution/main/transport/"
+      ],
       "reason": "D-39: Effect stays inside native lifecycle adapters"
     },
     {
@@ -327,7 +330,8 @@
         ],
         "host": [
           "platform",
-          "shared"
+          "shared",
+          "configuration"
         ],
         "main": [
           "input",
@@ -337,7 +341,8 @@
         ],
         "renderer": [
           "input",
-          "shared"
+          "shared",
+          "configuration"
         ]
       },
       "materialized": true
@@ -367,7 +372,9 @@
         "renderer/public.ts"
       ],
       "dependsOn": {
-        "contracts": ["shared"],
+        "contracts": [
+          "shared"
+        ],
         "main": [
           "platform",
           "threads"

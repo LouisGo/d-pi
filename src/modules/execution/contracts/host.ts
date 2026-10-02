@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SubagentConfigurationSnapshotSchema } from "../../configuration/contracts/public";
 import { DirectoryIdentitySchema } from "../../threads/contracts/public";
 import { ControlCommandSchema, ControlStateSchema } from "./control";
 import {
@@ -6,7 +7,11 @@ import {
   DismissCommandSchema,
   InteractionViewSchema,
 } from "./interactions";
-import { SelectModelCommandSchema } from "./runtime";
+import { QueueCommandSchema } from "./queue";
+import {
+  ConfigureSubagentCommandSchema,
+  SelectModelCommandSchema,
+} from "./runtime";
 import { FrozenSubmissionSchema, SubmissionEventSchema } from "./submission";
 export const NativeTerminationSchema = z.strictObject({
   reason: z.enum([
@@ -68,6 +73,14 @@ export type HostStart = z.infer<typeof HostStartSchema>;
 export const HostCommandSchema = z.discriminatedUnion("kind", [
   HostStartSchema,
   z.strictObject({
+    kind: z.literal("configure-subagent"),
+    command: ConfigureSubagentCommandSchema,
+  }),
+  z.strictObject({
+    kind: z.literal("manage-queue"),
+    command: QueueCommandSchema,
+  }),
+  z.strictObject({
     kind: z.literal("native-permit"),
     processInstanceId: z.uuid(),
     token: z.uuid(),
@@ -86,7 +99,11 @@ export const HostCommandSchema = z.discriminatedUnion("kind", [
     kind: z.literal("dispatch"),
     value: FrozenSubmissionSchema,
   }),
-  z.strictObject({ kind: z.literal("state") }),
+  z.strictObject({
+    kind: z.literal("state"),
+    traceId: z.uuid().optional(),
+    connectionGeneration: z.uuid().optional(),
+  }),
   z.strictObject({ kind: z.literal("replay-evidence") }),
   z.strictObject({
     kind: z.literal("confirm-evidence"),
@@ -116,6 +133,11 @@ export type NativeState = z.infer<typeof NativeStateSchema>;
 
 export type HostCommand = z.infer<typeof HostCommandSchema>;
 export const HostMessageSchema = z.discriminatedUnion("kind", [
+  z.strictObject({
+    kind: z.literal("subagents"),
+    connectionGeneration: z.uuid(),
+    state: SubagentConfigurationSnapshotSchema,
+  }),
   z.object({
     kind: z.literal("process-exit"),
     connectionGeneration: z.uuid(),
@@ -149,8 +171,15 @@ export const HostMessageSchema = z.discriminatedUnion("kind", [
       "stop",
       "continue",
       "select-model",
+      "configure-subagent",
+      "manage-queue",
+      "inspect",
     ]),
     status: z.enum(["acknowledged", "failed", "unknown"]),
+    code: z
+      .string()
+      .regex(/^[a-z0-9-]{1,64}$/)
+      .optional(),
   }),
   z.object({ kind: z.literal("interactions"), view: InteractionViewSchema }),
   z.object({

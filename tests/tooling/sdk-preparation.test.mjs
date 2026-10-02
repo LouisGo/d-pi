@@ -81,6 +81,8 @@ function fixture(t) {
     "configuration.mjs",
     "configuration-readonly.mjs",
     "model-selection.mjs",
+    "native-queue.mjs",
+    "native-subagent-configuration.mjs",
     "BUN-LICENSE.md",
   ])
     write(`runtime/${name}`, `fixture ${name}`);

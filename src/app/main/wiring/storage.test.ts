@@ -51,7 +51,7 @@ describe("real SQLite and directory service", () => {
       reopened.close();
       const migrated = new DatabaseSync(path, { readOnly: true });
       expect(migrated.prepare("PRAGMA user_version").get()?.user_version).toBe(
-        6,
+        7,
       );
       migrated.close();
       const backup = new DatabaseSync(`${path}.before-v5`, { readOnly: true });
@@ -100,7 +100,7 @@ describe("real SQLite and directory service", () => {
         store?.close();
       }
     }));
-  it("maps legacy SQLite directory identity while preserving native binding and draft through v6", () =>
+  it("maps legacy SQLite directory identity while preserving native binding and draft through v7", () =>
     fixture((path) => {
       const directoryId = "cf049bd1-0015-44c8-a3d8-cfce812c7b76";
       const threadId = "8e324701-bfa8-4f6d-b989-36d3793e57aa";
@@ -170,7 +170,7 @@ describe("real SQLite and directory service", () => {
       try {
         expect(
           unchanged.prepare("PRAGMA user_version").get()?.user_version,
-        ).toBe(6);
+        ).toBe(7);
         expect(
           unchanged
             .prepare("SELECT workspace_id,body FROM thread WHERE id=?")
@@ -330,7 +330,7 @@ it("backs up v5 before enabling typed native outcomes in v6 and reopens the new 
     const migrated = new DatabaseSync(path, { readOnly: true });
     try {
       expect(migrated.prepare("PRAGMA user_version").get()?.user_version).toBe(
-        6,
+        7,
       );
     } finally {
       migrated.close();

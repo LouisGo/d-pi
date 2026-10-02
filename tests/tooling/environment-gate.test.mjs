@@ -91,6 +91,8 @@ test("SDK inspection refuses stale locks, tampered files and missing bundled res
         "configuration.mjs": hash("fixture-configuration"),
         "configuration-readonly.mjs": hash("fixture-readonly"),
         "model-selection.mjs": hash("fixture-selection"),
+        "native-queue.mjs": hash("fixture-queue"),
+        "native-subagent-configuration.mjs": hash("fixture-subagents"),
       },
     }),
     "sdk/bun": "fixture-bun",
@@ -99,6 +101,8 @@ test("SDK inspection refuses stale locks, tampered files and missing bundled res
     "sdk/configuration.mjs": "fixture-configuration",
     "sdk/configuration-readonly.mjs": "fixture-readonly",
     "sdk/model-selection.mjs": "fixture-selection",
+    "sdk/native-queue.mjs": "fixture-queue",
+    "sdk/native-subagent-configuration.mjs": "fixture-subagents",
     "sdk/BUN-LICENSE.md": "fixture-license",
     "sdk/node_modules/@oh-my-pi/pi-coding-agent/package.json": JSON.stringify({
       name: "@oh-my-pi/pi-coding-agent",

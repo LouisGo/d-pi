@@ -110,7 +110,9 @@ async function running(diagnosticFailure = false) {
           ? state()
           : command.type === "d_pi_state"
             ? control
-            : { protocolVersion: 2 };
+            : command.type === "d_pi_subagent_state"
+              ? { agents: [] }
+              : { protocolVersion: 2 };
       queueMicrotask(() =>
         frames({
           type: "response",

@@ -159,6 +159,8 @@ try {
     "configuration.mjs",
     "configuration-readonly.mjs",
     "model-selection.mjs",
+    "native-queue.mjs",
+    "native-subagent-configuration.mjs",
   ])
     await cp(join("runtime", name), join(root, name));
   await cp("runtime/BUN-LICENSE.md", join(root, "BUN-LICENSE.md"));
@@ -170,6 +172,8 @@ try {
     "configuration.mjs",
     "configuration-readonly.mjs",
     "model-selection.mjs",
+    "native-queue.mjs",
+    "native-subagent-configuration.mjs",
   ])
     hashes[name] = createHash("sha256")
       .update(await readFile(join(root, name)))

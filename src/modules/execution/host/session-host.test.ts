@@ -31,6 +31,8 @@ vi.mock("./native/native-session", () => ({
       native.writes.push(frame);
     }
     async request(command: string) {
+      if (command === "d_pi_subagent_state")
+        return { success: true, data: { agents: [] } };
       if (command === "d_pi_state") return native.controlRequest();
       return {
         success: true,
@@ -495,6 +497,8 @@ it("refreshes the last known control from stop/continue replies so close-idle un
     .mockImplementation(async (command: string) => {
       if (command === "d_pi_stop" || command === "d_pi_continue")
         return { success: true, data: idle };
+      if (command === "d_pi_subagent_state")
+        return { success: true, data: { agents: [] } };
       if (command === "d_pi_state") return native.controlRequest();
       return {
         success: true,
@@ -571,6 +575,8 @@ it("acknowledges a superseded control call without applying its stale state (A9 
     .spyOn(NativeSession.prototype, "request")
     .mockImplementation(async (command: string) => {
       if (command === "d_pi_continue") return gate;
+      if (command === "d_pi_subagent_state")
+        return { success: true, data: { agents: [] } };
       if (command === "d_pi_state") return native.controlRequest();
       return {
         success: true,

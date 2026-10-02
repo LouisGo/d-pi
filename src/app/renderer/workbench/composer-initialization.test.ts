@@ -1,8 +1,13 @@
 // @vitest-environment happy-dom
 import type { EditorOptions } from "@tiptap/core";
+import type { EditorView } from "@tiptap/pm/view";
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
+import {
+  type RuntimeView,
+  RuntimeViewSchema,
+} from "../../../modules/execution/contracts/public";
 import { DraftSchema } from "../../../modules/input/contracts/public";
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
 import { createI18n } from "../../../shared/i18n/create-i18n";
@@ -49,7 +54,7 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 
-async function setup() {
+async function setup(control?: RuntimeView["control"]) {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   let draft = DraftSchema.parse({
     schemaVersion: 1,
@@ -85,6 +90,35 @@ async function setup() {
     onCloseCancelled: () => () => {},
     completeClose: () => {},
   };
+  let runtimeView: RuntimeView | null = null;
+  let deliverRuntime: (view: RuntimeView) => void = () => {};
+  if (control) {
+    bridge.runtime = {
+      subscribe: (listener) => {
+        deliverRuntime = listener;
+        return () => {};
+      },
+      request: async (command) => {
+        runtimeView = RuntimeViewSchema.parse({
+          threadId: command.threadId,
+          traceId: command.traceId,
+          revision: 0,
+          phase: "ready",
+          trusted: true,
+          busy: true,
+          model: "fixture/model",
+          configuration: { code: "runtime.configDefault" },
+          message: { code: "runtime.readyToSend" },
+          control,
+        });
+        return { kind: "view", view: runtimeView };
+      },
+    };
+    bridge.submission = {
+      request: async () => ({ kind: "list", receipts: [] }),
+      subscribe: () => () => {},
+    };
+  }
   const model = new AppModel(bridge);
   await model.start();
   const state = model.getSnapshot();
@@ -123,6 +157,15 @@ async function setup() {
     container,
     root,
     render,
+    publishControl: async (next: NonNullable<RuntimeView["control"]>) => {
+      if (!runtimeView) throw Error("missing runtime fixture");
+      runtimeView = {
+        ...runtimeView,
+        revision: runtimeView.revision + 1,
+        control: next,
+      };
+      await act(() => deliverRuntime(runtimeView as RuntimeView));
+    },
     changeThread: () => {
       draft = DraftSchema.parse({
         ...draft,
@@ -187,4 +230,91 @@ it("constructs the editor document for a replacement Thread controller", async (
     ["restored draft"],
     ["replacement Thread draft"],
   ]);
+});
+
+function nativeControl(
+  total: number,
+  visible = total,
+  projection = true,
+): NonNullable<RuntimeView["control"]> {
+  return {
+    paused: false,
+    stopping: false,
+    streaming: true,
+    compacting: false,
+    queued: total,
+    background: 0,
+    pendingAsync: false,
+    admitted: false,
+    queue: Array.from({ length: Math.min(total, 16) }, () => ({
+      text: "preview",
+      kind: "followUp" as const,
+    })),
+    ...(projection
+      ? {
+          queueState: {
+            revision: 0,
+            coverage:
+              visible < total ? ("limited" as const) : ("complete" as const),
+            hiddenCount: total - visible,
+            editing: null,
+            items: Array.from({ length: visible }, () => ({
+              id: crypto.randomUUID(),
+              kind: "followUp" as const,
+              text: "native",
+              editable: true,
+              editing: false,
+              truncated: false,
+            })),
+          },
+        }
+      : {}),
+  };
+}
+
+it("caps both send buttons and Enter using projected entries plus hidden native entries", async () => {
+  const fixture = await setup(nativeControl(20, 3));
+  const submission = fixture.thread.submission;
+  if (!submission) throw Error("missing submission");
+  const send = vi.spyOn(submission, "send").mockResolvedValue(undefined);
+  const buttons = () =>
+    Array.from(fixture.container.querySelectorAll("button")).filter((button) =>
+      [i18n.t("composer.queueSend"), i18n.t("composer.steer")].includes(
+        button.textContent ?? "",
+      ),
+    );
+  expect(buttons()).toHaveLength(2);
+  expect(buttons().every((button) => button.disabled)).toBe(true);
+  expect(fixture.container.textContent).toContain(
+    i18n.t("composer.queueFull", { queued: 20, cap: 20 }),
+  );
+  const enter = () =>
+    editorCalls
+      .at(-1)
+      ?.editorProps?.handleKeyDown?.(
+        { composing: false } as EditorView,
+        new KeyboardEvent("keydown", { key: "Enter" }),
+      );
+  enter();
+  expect(send).not.toHaveBeenCalled();
+  await fixture.publishControl(nativeControl(19));
+  expect(buttons().every((button) => !button.disabled)).toBe(true);
+  enter();
+  expect(send).toHaveBeenCalledOnce();
+});
+
+it("retains the legacy native queue cap when no full projection is available", async () => {
+  const control = nativeControl(20, 20, false);
+  control.queue = Array.from({ length: 20 }, () => ({
+    kind: "followUp",
+    text: "legacy",
+  }));
+  const fixture = await setup(control);
+  const button = Array.from(fixture.container.querySelectorAll("button")).find(
+    (button) => button.textContent === i18n.t("composer.queueSend"),
+  );
+  expect(button?.disabled).toBe(true);
+  expect(fixture.container.textContent).toContain(
+    i18n.t("composer.queueFull", { queued: 20, cap: 20 }),
+  );
 });

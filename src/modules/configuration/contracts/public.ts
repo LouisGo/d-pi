@@ -3,6 +3,7 @@ import {
   ThreadIdSchema,
   WorkingDirectoryIdSchema,
 } from "../../../shared/identity";
+import { EffortSchema } from "./model-selection";
 export const ConfigurationScopeSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("application") }),
   z.strictObject({
@@ -55,20 +56,12 @@ export const ConfigurationCommandSchema = z.discriminatedUnion("kind", [
   }),
 ]);
 export type ConfigurationCommand = z.infer<typeof ConfigurationCommandSchema>;
-export const EffortSchema = z.enum([
-  "minimal",
-  "low",
-  "medium",
-  "high",
-  "xhigh",
-  "max",
-]);
-export const ThinkingSelectionSchema = z.discriminatedUnion("kind", [
-  z.strictObject({ kind: z.literal("default") }),
-  z.strictObject({ kind: z.literal("off") }),
-  z.strictObject({ kind: z.literal("effort"), effort: EffortSchema }),
-]);
-export type ThinkingSelection = z.infer<typeof ThinkingSelectionSchema>;
+export {
+  EffortSchema,
+  type ThinkingSelection,
+  ThinkingSelectionSchema,
+} from "./model-selection";
+export * from "./subagent-configuration";
 export const ModelSummarySchema = z.strictObject({
   provider: z.string(),
   id: z.string(),

@@ -1,12 +1,12 @@
 # 宿主与 OMP 接入
 
-日期：2026-09-27。深度：M1 核心设计，接入待验证。依据 D-02/D-03/D-24/D-26；[进程 ADR](../../adr/0001-omp-session-client.md)、[基础契约 §1](../foundation-contracts.md#1-身份持久化与生命周期b1)。返回[模块地图](README.md)。
+日期：2026-10-02。深度：现有执行宿主、原生连接生命周期与 M2 队列纯文本管理接入；分层工程证据见下文，冷执行恢复与完整 M2 验收仍遵守各自规格。依据 D-02/D-03/D-24/D-26；[进程 ADR](../../adr/0001-omp-session-client.md)、[基础契约 §1](../foundation-contracts.md#1-身份持久化与生命周期b1)。返回[模块地图](README.md)。
 
 ## 当前工程落点（领域目录治理，2026-09-29）
 
 - M2 的 `src/app/host/index.ts` 按进程实例 scope 路由，一个 utility 监督多个独立 OMP；Main 按 Thread 持有 RuntimeService，切换 Renderer 视图不停止后台。单 scope 回收不关闭其他 scope。
 - `src/app/host/index.ts` 只做 utility 入口；执行 Host 实现在 `src/modules/execution/host/`，连接监督在 `src/modules/execution/main/transport/host-connection.ts`。
-- `src/platform/omp/protocol/` 持有原生帧合同和 decoder，`src/platform/omp/resources/` 持有 Runtime/官方 SDK 资源校验；`runtime/host.mjs` 只加载官方 SDK 并接入已确认的消费门控。
+- `src/platform/omp/protocol/` 持有原生帧合同和 decoder，`src/platform/omp/resources/` 持有 Runtime/官方 SDK 资源校验；`runtime/host.mjs` 加载官方 SDK，组合停止门控、原生队列文本管理和当前Thread的后续子Agent配置薄接入，官方执行循环与RPC driver不改写。
 - 阅读事件在 `src/modules/conversation/host/projection.ts` 归一化，Host 不把未经归一的 OMP 帧交给 Renderer。关闭 scope 的实际释放顺序是 NativeSession → 交互 → 投影 → 阅读端口（`session-host.ts` 先关原生会话再清理交互，最后经 `app/host` 释放 conversation scope）；顺序变化须同步本页与领域测试。
 - 2026-10-02 D-39：NativeSession 内部使用 Effect 4.0.0 Scope/Fiber 管 ready 与在途 RPC，超时/成功/失败/断链均释放等待关联；关闭先中断等待，再通过 finalizer 等待 EOF、真实 close 和身份核对后的组清理，3 秒期限后升级终止。外部仍为 Promise/NativeObservation，协议关联 Map、独立退出证据和 OMP 所有权不变。SessionHost 证据重送及 HostConnection 尚未迁移，验证见[Effect 规格](../../../.scratch/effect-native-lifecycle/spec.md)。
 
@@ -47,6 +47,10 @@ Main 拥有窗口、Host 监督及受限通道建立；一个 utility SessionHos
 ## S3 当前实现（2026-09-28）
 
 当前固定官方 SDK 18.4.6 在随包 Bun 1.3.14 中运行；`runtime/host.mjs` 是 App 自有薄适配。2026-10-01 用户授权仅在资源 staging 修正 sdk.ts 的 prelude 导入歧义，原文件和补丁哈希入 manifest，其余官方代码与所有权不变。正式 Host 使用该入口，原生 RPC driver 继续拥有标准命令和扩展 UI；仅增加消费前钩子、控制帧与有界状态观察。资源准备由 `scripts/runtime/prepare-sdk.mjs` 复制锁定依赖，打包显式保留 node_modules。控制和回答沿 Main 信任检查、Host 当前代次及 traceId 返回运输结果，正文不记诊断日志。
+
+2026-10-02 M2文本队列增量：App控制帧 `d_pi_queue` 经NativeSession既有唯一请求表关联，`d_pi_state` / `d_pi_control_state` 的queueState包含真实待处理UUID/revision、编辑稿与覆盖范围。Host在当前Thread/连接上校验并解析结果，再向Main报告operation-result，不把本地投影变动冒充原生确认。薄 `NativeQueueManager` 直接观察/修改官方队列对象；编辑等待包装SDK的queued preparation，保留原准备和原生批次策略；不在全局model-call gate加入编辑理由，因此当前执行继续。组件卸载不释放管理器或未保存稿；消费暂缓与停止各自解除。
+
+资源manifest复制并校验队列及子Agent适配模块；队列快照预算512 KiB/128项，受限表示通过truncated/hiddenCount/coverage明示，不截断真实原生队列。固定SDK/Bun/localhost的8次真实模型调用已验证逐项及all合并批次的等待、保存/取消、独立停止/继续和隐藏companions，详见[队列记录](../../../.scratch/m2-first-release/queue-management.md)。完整附件编辑、真实macOS关窗/视觉和冷执行恢复仍不由该证据覆盖。
 
 原生 session 放入 Main 指定目录；新启动与冷恢复分开，已有绑定缺执行全周期独占证据则只读。停止/退出的实际验收和限制以 [S3 交接](../../../.scratch/m1-s3-control-recovery/handoff.md) 为准。
 
