@@ -53,6 +53,14 @@ const ThreadContent = memo(function ThreadContent({
 }: ThreadWorkbenchProps) {
   const { thread, directoryAvailable } = threadSelection;
   const { submission } = thread;
+  const modelDisclosure = useRef<HTMLDetailsElement>(null);
+  const chooseModel = useCallback(() => {
+    const details = modelDisclosure.current;
+    if (!details) return;
+    details.open = true;
+    details.scrollIntoView({ block: "nearest" });
+    details.querySelector("select")?.focus();
+  }, []);
   const [selectionAttachment, setSelectionAttachment] = useState<{
     id: string;
     threadId: string;
@@ -81,7 +89,11 @@ const ThreadContent = memo(function ThreadContent({
         </div>
         {!directoryAvailable && <DirectoryUnavailable />}
         {model.configuration && (
-          <ModelControls thread={thread} bridge={model.configuration} />
+          <ModelControls
+            thread={thread}
+            bridge={model.configuration}
+            disclosureRef={modelDisclosure}
+          />
         )}
         {thread.runtime && (
           <RuntimePanel
@@ -155,6 +167,7 @@ const ThreadContent = memo(function ThreadContent({
         model={model}
         selectionAttachment={selectionAttachment}
         onAttachmentApplied={onAttachmentApplied}
+        onChooseModel={chooseModel}
       />
     </>
   );

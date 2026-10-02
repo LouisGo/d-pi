@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { type Ref, useState } from "react";
 import { useStore } from "zustand";
 import { Button } from "@/components/ui/button";
 import type {
@@ -28,9 +28,11 @@ function thinkingLabel(
 export function ModelControls({
   thread,
   bridge,
+  disclosureRef,
 }: {
   thread: ThreadModel;
   bridge: ConfigurationBridge;
+  disclosureRef?: Ref<HTMLDetailsElement>;
 }) {
   const { t } = useI18n();
   const runtime = thread.runtime;
@@ -57,6 +59,7 @@ export function ModelControls({
   return (
     <ModelSelectionState
       thread={thread}
+      disclosureRef={disclosureRef}
       runtime={runtime}
       models={models.slice(0, 200)}
       catalog={query.data?.models ?? []}
@@ -81,6 +84,7 @@ export function ModelControls({
 }
 function ModelSelectionState({
   runtime,
+  disclosureRef,
   models,
   catalog,
   selected: chosen,
@@ -98,6 +102,7 @@ function ModelSelectionState({
   t,
 }: {
   thread: ThreadModel;
+  disclosureRef: Ref<HTMLDetailsElement> | undefined;
   runtime: NonNullable<ThreadModel["runtime"]>;
   models: ConfigurationSnapshot["models"];
   catalog: ConfigurationSnapshot["models"];
@@ -154,7 +159,11 @@ function ModelSelectionState({
       ? !!target?.thinking.adjustable && !target.thinking.requiresEffort
       : !!target?.thinking.efforts.includes(level));
   return (
-    <details className="model-controls" aria-label={t("model.heading")}>
+    <details
+      ref={disclosureRef}
+      className="model-controls"
+      aria-label={t("model.heading")}
+    >
       <summary>
         {t(
           view?.phase === "interrupted"

@@ -15,6 +15,7 @@ import {
   QUEUE_CAP,
   queueCapped,
   queueCount,
+  submissionBlockReason,
 } from "../../../modules/execution/core/public";
 import { shouldSend } from "../../../modules/execution/renderer/public";
 import type { FrozenSelection } from "../../../modules/files/core/public";
@@ -34,6 +35,7 @@ export function Composer({
   model,
   selectionAttachment,
   onAttachmentApplied,
+  onChooseModel,
 }: {
   thread: ThreadModel;
   model: AppModel;
@@ -43,6 +45,7 @@ export function Composer({
     selection: Extract<FrozenSelection, { kind: "selection" }>;
   } | null;
   onAttachmentApplied?: (id: string) => void;
+  onChooseModel?: (() => void) | undefined;
 }) {
   const { controller, submission, runtime } = thread;
   const { locale, t, formatMessage } = useI18n();
@@ -200,7 +203,13 @@ export function Composer({
           {status}
         </span>
       </div>
-      {runtime && <ComposerReadiness runtime={runtime} model={model} />}
+      {runtime && (
+        <ComposerReadiness
+          runtime={runtime}
+          model={model}
+          onChooseModel={onChooseModel}
+        />
+      )}
       <EditorContent className="composer-editor" editor={editor} />
       {unsupportedPaste && (
         <p role="alert" className="failure">
@@ -361,9 +370,11 @@ function SendButton({
 function ComposerReadiness({
   runtime,
   model,
+  onChooseModel,
 }: {
   runtime: NonNullable<ThreadModel["runtime"]>;
   model: AppModel;
+  onChooseModel: (() => void) | undefined;
 }) {
   const { t } = useI18n();
   const view = useStore(runtime.stateStore, (state) => state.view);
@@ -371,21 +382,35 @@ function ComposerReadiness({
     model.stateStore,
     (state) => state.kind === "ready" && state.threadTransition === "unknown",
   );
-  if (canSubmit(view)) return null;
+  const reason = submissionBlockReason(view);
+  if (!reason) return null;
   const phase = view?.phase;
+  const message = match(reason)
+    .with("interrupted", () => "composer.blocked.readOnly" as const)
+    .with("allowed", () => "composer.blocked.start" as const)
+    .with("browse", "untrusted", () => "composer.blocked.allow" as const)
+    .with(
+      "loading",
+      "starting",
+      "failed",
+      () => "composer.blocked.wait" as const,
+    )
+    .with("model-changing", () => "composer.blocked.modelChanging" as const)
+    .with("no-model", () => "composer.blocked.noModel" as const)
+    .with("paused", () => "composer.blocked.paused" as const)
+    .with("stopping", () => "composer.blocked.stopping" as const)
+    .with(
+      "unsupported-interaction",
+      "interaction",
+      () => "composer.blocked.interaction" as const,
+    )
+    .exhaustive();
   return (
     <div className="composer-readiness" role="status">
-      <p>
-        {t(
-          phase === "interrupted"
-            ? "composer.blocked.readOnly"
-            : phase === "allowed"
-              ? "composer.blocked.start"
-              : phase === "browse"
-                ? "composer.blocked.allow"
-                : "composer.blocked.wait",
-        )}
-      </p>
+      <p>{t(message)}</p>
+      {reason === "no-model" && onChooseModel && (
+        <Button onClick={onChooseModel}>{t("composer.chooseModel")}</Button>
+      )}
       {phase === "interrupted" && (
         <Button disabled={busy} onClick={() => void model.newThread()}>
           {t("app.toolbar.newThread")}

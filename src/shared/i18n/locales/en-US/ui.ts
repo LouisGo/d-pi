@@ -1,4 +1,17 @@
 export const ui = {
+  "composer.chooseModel": "Select model",
+  "composer.blocked.noModel":
+    "No active model. Configure authentication above, then select an available model. Your draft is saved.",
+  "composer.blocked.modelChanging":
+    "Applying the model. Wait for its confirmation before sending.",
+  "composer.blocked.paused":
+    "The queue is paused. Continue it in execution controls before sending.",
+  "composer.blocked.stopping":
+    "Stopping the current execution. Wait for confirmation before sending.",
+  "composer.blocked.interaction":
+    "Resolve the pending or uncertain native interaction in execution controls before sending.",
+  "ui.runtime.phase.noModel": "OMP started · no active model",
+
   "ui.history.openCli": "View this project’s existing CLI history",
   "ui.history.projectDescription":
     "Read this project’s saved OMP CLI history. Viewing does not adopt or resume a native session.",
@@ -66,7 +79,7 @@ export const ui = {
   "model.heading": "Model",
   "model.search": "Search available models",
   "model.active": "Active native model",
-  "model.none": "Not started or not ready",
+  "model.none": "No active model",
   "model.next": "Use on start",
   "model.choose": "Choose a configured model",
   "model.thinking": "Thinking level",

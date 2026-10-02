@@ -78,7 +78,11 @@ export function RuntimePanel({
     .with("allowed", () => t("ui.runtime.phase.allowed"))
     .with("starting", () => t("ui.runtime.phase.starting"))
     .with("ready", () =>
-      state.busy ? t("ui.runtime.phase.busy") : t("ui.runtime.phase.ready"),
+      state.busy
+        ? t("ui.runtime.phase.busy")
+        : !state.model
+          ? t("ui.runtime.phase.noModel")
+          : t("ui.runtime.phase.ready"),
     )
     .with("interrupted", () => t("ui.runtime.phase.interrupted"))
     .with("failed", () => t("ui.runtime.phase.failed"))

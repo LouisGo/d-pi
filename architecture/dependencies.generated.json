@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "a3dc251442c6cb149ab15bde3c3cd1764d00ab7f685f26791708a7ea023840c9",
+  "inputsHash": "edd70f71613c4846d2630ec15c3a91e4ecd626fa34e7a979c4f306ea124bba68",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 266,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 95,
-      "lines": 12781,
+      "lines": 12859,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -102,7 +102,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 18,
-      "lines": 1368,
+      "lines": 1391,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -319,7 +319,7 @@
       ],
       "materialized": true,
       "files": 41,
-      "lines": 8860,
+      "lines": 8930,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -12502,6 +12502,15 @@
       "to": "src/modules/execution/core/submission/submission-admission.ts",
       "targetModule": "execution",
       "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/execution/core/submission/submission-admission.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "ts-pattern",
+      "kind": "import",
+      "resolution": "external"
     },
     {
       "from": "src/modules/execution/core/submission/submission-admission.ts",

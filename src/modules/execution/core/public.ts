@@ -10,6 +10,8 @@ export {
   QUEUE_CAP,
   queueCapped,
   queueCount,
+  type SubmissionBlockReason,
+  submissionBlockReason,
 } from "./submission/submission-admission";
 export {
   type NativeSubmissionPort,

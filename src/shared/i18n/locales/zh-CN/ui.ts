@@ -1,4 +1,14 @@
 export const ui = {
+  "composer.chooseModel": "选择模型",
+  "composer.blocked.noModel":
+    "尚无生效模型。请在顶部配置认证，再选择可用模型；草稿已保留。",
+  "composer.blocked.modelChanging": "正在应用模型，确认生效后可发送。",
+  "composer.blocked.paused": "队列已暂缓，请在执行控制中继续后再发送。",
+  "composer.blocked.stopping": "正在停止当前执行，确认停止后可发送。",
+  "composer.blocked.interaction":
+    "请先在执行控制中处理待答或结果不确定的原生交互。",
+  "ui.runtime.phase.noModel": "OMP 已启动 · 尚无生效模型",
+
   "ui.history.openCli": "查看此项目已有的 CLI 历史",
   "ui.history.projectDescription":
     "查看当前项目在 OMP CLI 中保存的历史；仅阅读，不接管或继续原生会话。",
@@ -58,7 +68,7 @@ export const ui = {
   "model.heading": "模型",
   "model.search": "查找可用模型",
   "model.active": "原生生效模型",
-  "model.none": "尚未启动或未就绪",
+  "model.none": "尚无生效模型",
   "model.next": "启动时使用",
   "model.choose": "选择已有可用模型",
   "model.thinking": "思考档位",

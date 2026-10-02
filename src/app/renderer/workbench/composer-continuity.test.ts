@@ -25,7 +25,10 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 
-async function setup(phase?: "interrupted" | "allowed") {
+async function setup(
+  phase?: "interrupted" | "allowed" | "ready",
+  onChooseModel?: () => void,
+) {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const first = DraftSchema.parse({
     schemaVersion: 1,
@@ -114,6 +117,7 @@ async function setup(phase?: "interrupted" | "allowed") {
             key: thread().key,
             thread: thread(),
             model,
+            onChooseModel,
           }),
         }),
       ),
@@ -238,5 +242,28 @@ it("offers a visible new-session exit beside the disabled send button for a reco
     .mockResolvedValue({ kind: "cancelled" });
   await act(() => button?.click());
   expect(create).toHaveBeenCalledOnce();
+  expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha omega");
+});
+
+it("explains a running session without a model and offers model selection without consuming its draft", async () => {
+  const choose = vi.fn();
+  const fixture = await setup("ready", choose);
+  const container = fixture.editor().view.dom.closest("section");
+  expect(container?.textContent).toContain("No active model");
+  const button = Array.from(container?.querySelectorAll("button") ?? []).find(
+    (b) => b.textContent === "Select model",
+  );
+  expect(button).toBeDefined();
+  await act(() => button?.click());
+  expect(choose).toHaveBeenCalledOnce();
+  await act(() =>
+    fixture.editor().view.dispatchEvent(
+      new KeyboardEvent("keydown", {
+        key: "Enter",
+        bubbles: true,
+        cancelable: true,
+      }),
+    ),
+  );
   expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha omega");
 });

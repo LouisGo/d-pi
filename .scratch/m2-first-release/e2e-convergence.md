@@ -16,3 +16,7 @@
 推进顺序：07 状态与认证反馈 → 08 原生事件与历史状态 → 09 阅读空间。按独立行为提交，不扩展附件、完整队列/子 Agent 或 M3。受影响决定：D-03/D-04/D-21/D-22/D-24/D-28/D-29/D-32/D-35/D-37/D-38；无新增重要产品决定。
 
 状态：正在实施。真实模型生成、供应商认证、macOS IME、用户体验认可均不由本次自动化代替。M2 仍 in-progress / feedback / pending。
+
+## A 提交状态（工程完成）
+
+统一 `submissionBlockReason` 与 `canSubmit`；无模型显示 OMP 已启动、尚无生效模型，Composer 提供选择入口，模型摘要不再显示未启动。3 组定向测试共 10 项通过，含真实 Tiptap Enter 不消费草稿；Renderer 类型通过。冷恢复与 busy follow-up 策略不变。

@@ -1,11 +1,18 @@
 import { expect, it } from "vitest";
 import { ThreadIdSchema, TraceIdSchema } from "../../../../shared/identity";
 import {
+  RuntimeViewSchema,
   SubmissionIdSchema,
   type SubmissionReceipt,
   SubmissionReceiptSchema,
 } from "../../contracts/public";
-import { QUEUE_CAP, queueCapped, queueCount } from "./submission-admission";
+import {
+  canSubmit,
+  QUEUE_CAP,
+  queueCapped,
+  queueCount,
+  submissionBlockReason,
+} from "./submission-admission";
 
 function receipt(state: SubmissionReceipt["state"]): SubmissionReceipt {
   return SubmissionReceiptSchema.parse({
@@ -61,4 +68,29 @@ it("caps the queue at twenty pending entries", () => {
       1,
     ),
   ).toBe(true);
+});
+
+it("keeps idle and busy native follow-ups admissible while explaining missing model and cold recovery", () => {
+  const ready = RuntimeViewSchema.parse({
+    threadId: crypto.randomUUID(),
+    traceId: crypto.randomUUID(),
+    revision: 0,
+    phase: "ready",
+    trusted: true,
+    busy: false,
+    model: "fixture/model",
+    configuration: { code: "runtime.configDefault" },
+    message: { code: "runtime.readyToSend" },
+  });
+  expect(canSubmit(ready)).toBe(true);
+  expect(canSubmit({ ...ready, busy: true })).toBe(true);
+  expect(submissionBlockReason({ ...ready, model: null })).toBe("no-model");
+  expect(canSubmit({ ...ready, model: null })).toBe(false);
+  expect(submissionBlockReason({ ...ready, phase: "interrupted" })).toBe(
+    "interrupted",
+  );
+  expect(canSubmit({ ...ready, phase: "interrupted" })).toBe(false);
+  expect(submissionBlockReason({ ...ready, modelChanging: true })).toBe(
+    "model-changing",
+  );
 });
