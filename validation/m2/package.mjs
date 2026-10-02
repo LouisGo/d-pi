@@ -457,6 +457,9 @@ try {
       db.prepare("SELECT COUNT(*) AS count FROM queue_change").get().count,
       0,
     );
+    await evaluate(
+      "document.querySelector('[role=alert]').scrollIntoView({block:'center'})",
+    );
     screenshots.push(await shot("m2-queue-oversized"));
     await evaluate(
       "document.querySelector('textarea[id^=queue-edit-]').select()",
@@ -466,6 +469,9 @@ try {
       evaluate(
         "document.querySelector('textarea[id^=queue-edit-]')?.value==='QUEUED_CHANGED' && !document.querySelector('[data-queue-action=cancel-edit]').disabled",
       ),
+    );
+    await evaluate(
+      "document.querySelector('textarea[id^=queue-edit-]').scrollIntoView({block:'center'})",
     );
     screenshots.push(await shot("m2-queue-edit"));
     await evaluate(

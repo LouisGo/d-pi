@@ -10,7 +10,7 @@
     "trial": "delivered",
     "acceptance": "pending",
     "current": true,
-    "build": "0.1.0-m2.11 / 0d45db98-54e50919",
+    "build": "0.1.0-m2.12 / 2e78dbec-b68b57ab",
     "pending": [
       "../m1-s3-control-recovery/issues/09-quit-discard-decision.md"
     ],
@@ -30,7 +30,7 @@
       "next-stage.md",
       "queue-configuration-review.md"
     ],
-    "next": "独立review确认两项队列P2并已修复，正在完成替代候选验证；下一步04附件/引用及父05其余能力，M2用户认可pending，冷旧Thread仍只读",
+    "next": "独立review两项队列P2修复与复核完成，m2.12候选已交付待复试；下一步04附件/引用及父05其余能力，M2用户认可pending，冷旧Thread仍只读",
     "constraints": "2026-10-02用户授权下一阶段M2并行开发与中断后继续；本地commit/候选沿用M2授权，不将旧特定修复push扩大到本轮。保留原有环境对齐未提交改动；不公开发布、不扩M3，冷恢复只读，unknown不自动重发。"
   }
 ]
@@ -57,7 +57,7 @@
 - 已定：D-02–D-08、D-10/D-11、D-20–D-27、D-28–D-37；沿用 OMP 执行、队列、原生历史、配置与凭据所有权，App 草稿/冻结原文/收据事务不改变。
 - 重要待决：无新增。[S3 09](../m1-s3-control-recovery/issues/09-quit-discard-decision.md)退出放弃队列待决，仅暂停对应出口；缺全周期单写证据的冷恢复只读，提供明确新建独立 Thread 出口，不冒称恢复旧执行。
 - 工程：正在实施；既有正确路径复用当前相关证据，新增缺口先失败行为测试。测试隔离 App 数据、OMP 配置、HOME、Git 配置、项目及网络；不继承个人凭据。真实供应商缺账户/费用授权仅暂停实测，不阻塞薄桥接及 fixture 验证。
-- 用户试用：当前交付 `0.1.0-m2.10 / c00f3dc5-e027fc01`、源码 `c00f3dc5`，实际包内与必要原生窗口验证通过；用户认可 pending。[精确身份、哈希、证据和步骤](navigation-continuity.md)。m2.9 的 Thread 切换闪烁已收到并处理，历史反馈/失败包仍保留，不用本轮通过覆盖原证据。每段可操作体验继续给出对应源码和包身份；Agent 验证不替代用户认可。
+- 用户试用：当前交付 `0.1.0-m2.12 / 2e78dbec-b68b57ab`、源码 `2e78dbe`，17项实际包内检查及ZIP同源验证通过；用户认可 pending。[精确身份、哈希、证据和步骤](queue-configuration-review.md#修复候选与试用)。m2.9 的 Thread 切换闪烁已收到并处理，历史反馈/失败包仍保留，不用本轮通过覆盖原证据。每段可操作体验继续给出对应源码和包身份；Agent 验证不替代用户认可。
 - 继续边界：本授权内持续实施，不重做基建审计。重大产品/权限/数据合同变化才对齐；签名、公证、公开分发及 M3 不纳入。
 
 ## 首版覆盖与近期任务
@@ -131,3 +131,5 @@
 2026-10-02：本轮05a/05b/06a工程完成，clean m2.11候选交付；591行为、34架构、59工具、16项实际macOS包内检查与ZIP同源验证通过。[精确身份、证据、限制和试用](next-stage.md)。M2未完成范围与用户认可pending保留，原环境对齐未提交改动不纳入本轮commit，不push。
 
 2026-10-02：用户授权独立 subagent review，并修复发现的高价值问题。两名 reviewer 确认两项队列 P2，已按 TDD 修复并独立复核通过；完整检查及替代候选验证继续完成，旧候选证据保留。[本轮审查](queue-configuration-review.md)。无新增产品待决，用户认可仍 pending；不扩展附件与完整队列范围。
+
+2026-10-02：独立review两项P2已修复并复核，clean m2.12替代候选交付；602行为、34架构、59工具和17项实际macOS包内检查通过，ZIP CRC与app.asar同源核对通过。见[本轮审查交付](queue-configuration-review.md#修复候选与试用)。m2.11保留历史快照，用户认可pending，原环境对齐未提交改动保留，不push。
