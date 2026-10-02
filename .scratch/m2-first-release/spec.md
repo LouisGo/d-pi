@@ -27,8 +27,8 @@
       "e2e-convergence.md",
       "../review-seven-commits/spec.md"
     ],
-    "next": "渲染订阅和偏好 busy 根因已修复，新 Thread 自动启动；当前源码、原生连续性与实际 OMP 包验证通过，用户复试待反馈，M2 未交付能力保持原票",
-    "constraints": "2026-10-01 用户已授权本轮完整 commit/push；不公开发布、不扩 M3；冷恢复只读，unknown 不自动重发；S3 退出放弃待决仅暂停依赖部分。"
+    "next": "真实无模型 GUI QA 的 A/B/D/E/F 高价值问题已分批修复并验证；用户按 E2E 收敛记录复试，C 冷退出续接仍是后续能力缺口，M2 未交付能力保持原票",
+    "constraints": "2026-10-02 用户授权本次报告收敛、分阶段 commit 和检查后 push；不公开发布、不扩 M3；冷恢复只读，unknown 不自动重发；S3 退出放弃待决仅暂停依赖部分。"
   }
 ]
 ```

@@ -1,0 +1,69 @@
+{
+  "platform": "darwin",
+  "mode": "built source Electron with emulated viewports; synthetic read-only project and v3 history",
+  "submissions": 0,
+  "nativeBindings": 0,
+  "modelGenerationRequests": 0,
+  "measurements": [
+    {
+      "name": "files-light-normal",
+      "width": 1180,
+      "height": 812,
+      "readingHeight": 170.421875,
+      "focusVisible": true,
+      "codeVisible": 61.921875,
+      "focused": "false",
+      "editorPreserved": true,
+      "draft": "Synthetic QA draftline twoline three",
+      "build": "Local draftProject execution requires approval0.1.0-m2.10 · e446725f-19b007e3"
+    },
+    {
+      "name": "files-light-normal-focused",
+      "width": 1180,
+      "height": 812,
+      "readingHeight": 671,
+      "focusVisible": true,
+      "codeVisible": 365.3984375,
+      "focused": "true",
+      "editorPreserved": true,
+      "draft": "Synthetic QA draftline twoline three",
+      "build": "Local draftProject execution requires approval0.1.0-m2.10 · e446725f-19b007e3"
+    },
+    {
+      "name": "files-dark-compact-minimum",
+      "width": 960,
+      "height": 640,
+      "readingHeight": 534,
+      "focusVisible": true,
+      "codeVisible": 288,
+      "focused": "true",
+      "editorPreserved": true,
+      "draft": "Synthetic QA draftline twoline three",
+      "build": "Local draftProject execution requires approval0.1.0-m2.10 · e446725f-19b007e3"
+    },
+    {
+      "name": "history-dark-compact-minimum",
+      "width": 960,
+      "height": 640,
+      "readingHeight": 534,
+      "focusVisible": true,
+      "codeVisible": null,
+      "focused": "true",
+      "editorPreserved": true,
+      "draft": "Synthetic QA draftline twoline three",
+      "build": "Local draftProject execution requires approval0.1.0-m2.10 · e446725f-19b007e3"
+    },
+    {
+      "name": "history-dark-compact-restored",
+      "width": 960,
+      "height": 640,
+      "readingHeight": 98.2265625,
+      "focusVisible": true,
+      "codeVisible": null,
+      "focused": "false",
+      "editorPreserved": true,
+      "draft": "Synthetic QA draftline twoline three",
+      "build": "Local draftProject execution requires approval0.1.0-m2.10 · e446725f-19b007e3"
+    }
+  ]
+}
