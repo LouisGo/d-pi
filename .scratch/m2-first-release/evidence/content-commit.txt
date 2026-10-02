@@ -1,0 +1,73 @@
+$ pnpm check:tools && pnpm lint && pnpm check:documentation && pnpm check:architecture && pnpm check:structure && pnpm check:status
+$ node scripts/checks/check-environment.mjs --tools-only
+Development Node: 24.21.0 (target 24.21.0)
+pnpm: 12.8.1 (target 12.8.1)
+Platform: darwin-arm64
+Installed exact dependencies: 47/47
+SKIP: fast tool check; native executables and SDK resources were not inspected
+PASS: development environment (0 issues)
+$ biome check .
+Checked 418 files in 60ms. No fixes applied.
+$ node scripts/checks/check-documentation.mjs
+PASS: documentation references (244 Markdown files; 17 historical snapshots excluded; external URLs not fetched)
+$ node scripts/architecture/check.mjs
+PASS: architecture boundaries (303 source files checked, TypeScript scanner)
+$ node scripts/architecture/report.mjs --check architecture/dependencies.generated.json
+PASS: generated structure report is current
+$ node scripts/tasks/project-status.mjs --check docs/status.md
+PASS: project status (17 slices, 84 tasks; engineering/trial/acceptance independent)
+[main 7f5d590] feat(m2): prepare attachments and preserve native queue images
+ 119 files changed, 9146 insertions(+), 157 deletions(-)
+ create mode 100644 .scratch/m2-first-release/content-preparation.md
+ create mode 100644 .scratch/m2-first-release/content-review.md
+ create mode 100644 .scratch/m2-first-release/evidence/attachment-migration-red.txt
+ create mode 100644 .scratch/m2-first-release/evidence/content-base64-green.txt
+ create mode 100644 .scratch/m2-first-release/evidence/content-base64-red.txt
+ create mode 100644 .scratch/m2-first-release/evidence/content-boundaries-green.txt
+ create mode 100644 .scratch/m2-first-release/evidence/content-build-progress.txt
+ create mode 100644 .scratch/m2-first-release/evidence/content-close-green.txt
+ create mode 100644 .scratch/m2-first-release/evidence/content-close-red.txt
+ create mode 100644 .scratch/m2-first-release/evidence/content-design-detector.json
+ create mode 100644 .scratch/m2-first-release/evidence/content-final-fast.txt
+ create mode 100644 .scratch/m2-first-release/evidence/content-full-check.txt
+ create mode 100644 .scratch/m2-first-release/evidence/content-pack-progress.txt
+ create mode 100644 .scratch/m2-first-release/evidence/content-reading-green.txt
+ create mode 100644 .scratch/m2-first-release/evidence/content-runtime-failure-green.txt
+ create mode 100644 .scratch/m2-first-release/evidence/content-sdk-build.txt
+ create mode 100644 .scratch/m2-first-release/evidence/content-submission-red.txt
+ create mode 100644 .scratch/m2-first-release/evidence/content-working-package-result.json
+ create mode 100644 .scratch/m2-first-release/evidence/content-working-package.txt
+ create mode 100644 .scratch/m2-first-release/evidence/queue-content-gui-green.txt
+ create mode 100644 .scratch/m2-first-release/evidence/queue-content-gui-red.txt
+ create mode 100644 .scratch/m2-first-release/evidence/queue-content-native-green.txt
+ create mode 100644 .scratch/m2-first-release/evidence/queue-content-red.txt
+ create mode 100644 .scratch/m2-first-release/evidence/queue-content-sdk-frames.jsonl
+ create mode 100644 .scratch/m2-first-release/evidence/queue-image-journal-green.txt
+ create mode 100644 .scratch/m2-first-release/evidence/queue-image-journal-red.txt
+ create mode 100644 .scratch/m2-first-release/evidence/reference-main-green.txt
+ create mode 100644 .scratch/m2-first-release/evidence/reference-main-red.txt
+ create mode 100644 .scratch/m2-first-release/issues/04a-content-preparation.md
+ create mode 100644 .scratch/m2-first-release/issues/05c-queue-content.md
+ create mode 100644 .scratch/m2-first-release/queue-content.md
+ create mode 100644 runtime/pdf-content.mjs
+ create mode 100644 src/app/contracts/attachments.ts
+ create mode 100644 src/app/main/ipc/attachments.ts
+ create mode 100644 src/app/main/wiring/attachment-service.test.ts
+ create mode 100644 src/app/main/wiring/attachment-service.ts
+ create mode 100644 src/app/main/wiring/pdf-content.ts
+ create mode 100644 src/app/preload/bridges/attachments.ts
+ create mode 100644 src/app/renderer/workbench/attachment-controls.test.ts
+ create mode 100644 src/app/renderer/workbench/attachment-controls.tsx
+ create mode 100644 src/modules/input/contracts/attachment.ts
+ create mode 100644 src/modules/input/core/attachments/tokens.ts
+ create mode 100644 src/modules/input/main/attachments/attachment-store.test.ts
+ create mode 100644 src/modules/input/main/attachments/attachment-store.ts
+ create mode 100644 src/modules/input/main/attachments/representation.ts
+ create mode 100644 src/modules/input/renderer/attachments/attachment-imports.test.ts
+ create mode 100644 src/modules/input/renderer/attachments/attachment-imports.ts
+ create mode 100644 src/modules/input/renderer/references/attachment-reference-boundaries.test.ts
+ create mode 100644 src/modules/input/renderer/references/attachment-reference.test.ts
+ create mode 100644 src/modules/input/renderer/references/attachment-reference.ts
+ create mode 100644 tests/integration/attachment-migration.integration.test.ts
+ create mode 100644 tests/integration/attachment-preview.integration.test.ts
+ create mode 100644 tests/integration/submission-content.integration.test.ts

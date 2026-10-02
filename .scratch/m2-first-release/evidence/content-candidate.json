@@ -1,0 +1,19 @@
+{
+  "build": {
+    "version": "0.1.0-m2.13",
+    "commit": "7f5d59099e2d01f9c0e77c80e389c15c5439148c",
+    "dirty": false,
+    "id": "7f5d5909-ac115847"
+  },
+  "app": "/Users/lou/Learn/d-pi/dist/content-m2.13-clean/mac-arm64/d-pi.app",
+  "zip": "/Users/lou/Learn/d-pi/dist/candidates/d-pi-0.1.0-m2.13-7f5d59-mac-arm64.zip",
+  "zipBytes": 430075063,
+  "zipSha256": "e649d9342287e2d1c9e776b3101f47594deed39cae9ddf4eb3f4452bee9d340a",
+  "asarSha256": "0be71f884e20a36692f6fdabf0829c2f5ec5a7bfa1d0740a33af5b1b805350d6",
+  "zipCrc": "passed",
+  "validatedAsarMatchesZip": true,
+  "macChecks": 18,
+  "result": "/Users/lou/Learn/d-pi/.scratch/m2-first-release/evidence/content-clean-package-result.json",
+  "signing": "unsigned local macOS arm64 candidate",
+  "acceptance": "pending"
+}

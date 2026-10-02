@@ -10,7 +10,7 @@
     "trial": "delivered",
     "acceptance": "pending",
     "current": true,
-    "build": "0.1.0-m2.12 / 2e78dbec-b68b57ab",
+    "build": "0.1.0-m2.13 / 7f5d5909-ac115847",
     "pending": [
       "../m1-s3-control-recovery/issues/09-quit-discard-decision.md"
     ],
@@ -28,9 +28,10 @@
       "warm-session-liveness.md",
       "../review-seven-commits/spec.md",
       "next-stage.md",
-      "queue-configuration-review.md"
+      "queue-configuration-review.md",
+      "content-preparation.md"
     ],
-    "next": "独立review两项队列P2修复与复核完成，m2.12候选已交付待复试；下一步04附件/引用及父05其余能力，M2用户认可pending，冷旧Thread仍只读",
+    "next": "04a附件引用与05c带图队列工程完成，m2.13候选已交付待试用；后续04的PDF视觉/OCR与B4回收、05完整子Agent生命周期等仍开放，M2用户认可pending，冷旧Thread只读",
     "constraints": "2026-10-02用户授权下一阶段M2并行开发与中断后继续；本地commit/候选沿用M2授权，不将旧特定修复push扩大到本轮。保留原有环境对齐未提交改动；不公开发布、不扩M3，冷恢复只读，unknown不自动重发。"
   }
 ]
@@ -57,7 +58,7 @@
 - 已定：D-02–D-08、D-10/D-11、D-20–D-27、D-28–D-37；沿用 OMP 执行、队列、原生历史、配置与凭据所有权，App 草稿/冻结原文/收据事务不改变。
 - 重要待决：无新增。[S3 09](../m1-s3-control-recovery/issues/09-quit-discard-decision.md)退出放弃队列待决，仅暂停对应出口；缺全周期单写证据的冷恢复只读，提供明确新建独立 Thread 出口，不冒称恢复旧执行。
 - 工程：正在实施；既有正确路径复用当前相关证据，新增缺口先失败行为测试。测试隔离 App 数据、OMP 配置、HOME、Git 配置、项目及网络；不继承个人凭据。真实供应商缺账户/费用授权仅暂停实测，不阻塞薄桥接及 fixture 验证。
-- 用户试用：当前交付 `0.1.0-m2.12 / 2e78dbec-b68b57ab`、源码 `2e78dbe`，17项实际包内检查及ZIP同源验证通过；用户认可 pending。[精确身份、哈希、证据和步骤](queue-configuration-review.md#修复候选与试用)。m2.9 的 Thread 切换闪烁已收到并处理，历史反馈/失败包仍保留，不用本轮通过覆盖原证据。每段可操作体验继续给出对应源码和包身份；Agent 验证不替代用户认可。
+- 用户试用：当前交付 `0.1.0-m2.13 / 7f5d5909-ac115847`、源码 `7f5d590`，18项实际干净包内检查及ZIP同源验证通过；用户认可 pending。[精确身份、哈希、证据和步骤](content-preparation.md#候选与试用)。m2.12及更早反馈/失败包保留历史证据，每段可操作体验给出对应源码和包身份；Agent验证不替代用户认可。
 - 继续边界：本授权内持续实施，不重做基建审计。重大产品/权限/数据合同变化才对齐；签名、公证、公开分发及 M3 不纳入。
 
 ## 首版覆盖与近期任务
@@ -138,4 +139,6 @@
 
 当前用户明确授权继续04/05，从成熟Agent交互细化最近可交付切片，安排3个职责与文件边界明确的subagent，主Agent接口整合与验收。交付范围为[04a](issues/04a-content-preparation.md)和[05c](issues/05c-queue-content.md)：私有附件准备/预览/管理、发送时文件引用冻结、实际模态及输入预算准入、原生队列混合内容编辑。正式GUI与无头逻辑一并交付；TDD、必要检查、隔离macOS验证、独立review及修复、可识别本地候选与commit均在授权内，不push。
 
-原有README/环境门禁及其工具测试/.scratch/environment-dependency-alignment改动完整保留，不纳入提交。OMP执行/队列/历史所有权不变，unknown不自动重发，冷旧Thread只读，不扩M3。无新的实质产品待决；PDF实际表示与覆盖以固定SDK/本应用验证为准，不能隐藏降级。工程实施中；上一候选m2.12继续为已交付基线，用户认可pending。
+原有README/环境门禁及其工具测试/.scratch/environment-dependency-alignment改动完整保留，不纳入提交。OMP执行/队列/历史所有权不变，unknown不自动重发，冷旧Thread只读，不扩M3。无新的实质产品待决；PDF实际表示与覆盖以固定SDK/本应用验证为准，不能隐藏降级。04a/05c工程完成，clean m2.13已交付待试用，用户认可pending；父04/05及M2未完成范围保持。
+
+2026-10-02：04a/05c已完成无头逻辑、正式GUI与独立审查问题修复；654行为、34架构、65工具、18项实际clean macOS包内检查及ZIP同源校验通过。新候选源码7f5d590，构建7f5d5909-ac115847；[试用与验证限制](content-preparation.md#候选与试用)。本地提交，不push，原环境对齐改动保留。PDF当前需明确仅文字、完整视觉/OCR与B4回收未完成，05完整子Agent生命周期仍开放，M2用户认可pending。
