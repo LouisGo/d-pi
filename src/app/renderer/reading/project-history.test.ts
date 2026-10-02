@@ -221,7 +221,10 @@ it("announces discovery before offering a bound read, then announces the selecte
   });
   const key = "a".repeat(64);
   const bridge: HistoryBridge = {
-    read: vi.fn(async () => ({ kind: "unavailable", reason: "missing" })),
+    read: vi.fn<HistoryBridge["read"]>(async () => ({
+      kind: "unavailable",
+      reason: "missing",
+    })),
     projectList: async () => {
       await discovery;
       return {

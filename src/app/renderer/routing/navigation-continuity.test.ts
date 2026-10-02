@@ -1,5 +1,7 @@
 // @vitest-environment happy-dom
+
 import { RouterProvider } from "@tanstack/react-router";
+import type { Editor } from "@tiptap/core";
 import { act, createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
@@ -316,4 +318,43 @@ it("restores the requested position after Composer mounting finalizes the readin
     getter.mockRestore();
     setter.mockRestore();
   }
+});
+
+it("focuses reading without remounting the draft editor or reading pane and restores controls", async () => {
+  const input = await fixture();
+  const pane = input.container.querySelector<HTMLElement>(".reading-pane");
+  const editorElement = input.container.querySelector<
+    HTMLElement & { editor: Editor }
+  >(".tiptap");
+  if (!editorElement || !pane) throw Error("missing work content");
+  const editor = editorElement.editor;
+  await act(() => editor.commands.setTextSelection({ from: 2, to: 6 }));
+  pane.scrollTop = 120;
+  pane.dispatchEvent(new Event("scroll"));
+  const focus = [...input.container.querySelectorAll("button")].find(
+    (b) => b.textContent === "Focus reading",
+  );
+  expect(focus).toBeDefined();
+  await act(() => focus?.click());
+  expect(
+    input.container
+      .querySelector(".thread-workspace")
+      ?.getAttribute("data-reading-focus"),
+  ).toBe("true");
+  expect(input.container.querySelector(".tiptap")).toBe(editorElement);
+  expect(input.container.querySelector(".reading-pane")).toBe(pane);
+  expect(editor.isDestroyed).toBe(false);
+  const restore = [...input.container.querySelectorAll("button")].find(
+    (b) => b.textContent === "Restore controls",
+  );
+  await act(() => restore?.click());
+  expect(
+    input.container
+      .querySelector(".thread-workspace")
+      ?.getAttribute("data-reading-focus"),
+  ).toBe("false");
+  expect(editor.state.selection.from).toBe(2);
+  expect(editor.state.selection.to).toBe(6);
+  expect(editor.getText()).toBe("first draft");
+  expect(pane.scrollTop).toBe(120);
 });

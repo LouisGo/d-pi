@@ -1,4 +1,14 @@
 export const ui = {
+  "ui.history.sourceDetails": "来源与读取范围",
+  "ui.history.recordDetails": "记录标识",
+  "ui.files.choose": "选择文件或当前差异",
+  "ui.files.readingFile": "正在读取文件…",
+  "ui.files.readingDiff": "正在读取差异…",
+  "ui.files.sampleDetails": "文件采样信息",
+
+  "app.reading.focus": "专注阅读",
+  "app.reading.restoreControls": "恢复控件",
+
   "ui.history.discovering": "正在发现本项目历史…",
   "ui.history.reading": "正在读取原生记录…",
 

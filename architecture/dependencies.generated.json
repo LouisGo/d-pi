@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "136b927ca755237578268f97406083737f20d93e7052f27c62dd391014b13098",
+  "inputsHash": "5c15e34c0f26c2e7d9b721d79ca11e75bad5cd811248c635c3a889b0e737ba23",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 266,
-    "scannedFiles": 266,
+    "sourceFiles": 267,
+    "scannedFiles": 267,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 95,
-      "lines": 12973,
+      "files": 96,
+      "lines": 13281,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -102,7 +102,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 18,
-      "lines": 1447,
+      "lines": 1467,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -286,7 +286,7 @@
       ],
       "materialized": true,
       "files": 17,
-      "lines": 1852,
+      "lines": 1853,
       "publicEntries": [
         {
           "path": "src/modules/conversation/contracts/public.ts",
@@ -1399,6 +1399,27 @@
       "environment": "renderer",
       "dependency": "changes",
       "targetEnvironment": "contracts",
+      "testOnly": true
+    },
+    {
+      "module": "app",
+      "environment": "renderer",
+      "dependency": "files",
+      "targetEnvironment": "contracts",
+      "testOnly": true
+    },
+    {
+      "module": "app",
+      "environment": "renderer",
+      "dependency": "threads",
+      "targetEnvironment": "contracts",
+      "testOnly": true
+    },
+    {
+      "module": "app",
+      "environment": "renderer",
+      "dependency": "changes",
+      "targetEnvironment": "contracts",
       "testOnly": false
     },
     {
@@ -1428,20 +1449,6 @@
       "dependency": "configuration",
       "targetEnvironment": "contracts",
       "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "renderer",
-      "dependency": "files",
-      "targetEnvironment": "contracts",
-      "testOnly": true
-    },
-    {
-      "module": "app",
-      "environment": "renderer",
-      "dependency": "threads",
-      "targetEnvironment": "contracts",
-      "testOnly": true
     },
     {
       "module": "platform",
@@ -5472,6 +5479,15 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": true,
+      "specifier": "@tiptap/core",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/routing/navigation-continuity.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
       "specifier": "react",
       "kind": "import",
       "resolution": "external"
@@ -7529,6 +7545,114 @@
       "resolution": "module",
       "to": "src/modules/files/renderer/public.ts",
       "targetModule": "files",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/file-opening.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tanstack/react-query",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/file-opening.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/file-opening.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react-dom/client",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/file-opening.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/file-opening.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/changes/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/changes/contracts/public.ts",
+      "targetModule": "changes",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/file-opening.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/files/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/files/contracts/public.ts",
+      "targetModule": "files",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/file-opening.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/files/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/files/renderer/public.ts",
+      "targetModule": "files",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/file-opening.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/file-opening.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/threads/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/threads/contracts/public.ts",
+      "targetModule": "threads",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/file-opening.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./file-panel",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/file-panel.tsx",
+      "targetModule": "app",
       "targetEnvironment": "renderer"
     },
     {

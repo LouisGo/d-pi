@@ -33,13 +33,19 @@ export function ThreadWorkbench({
   transitioning = false,
   ...props
 }: ThreadWorkbenchProps) {
+  const [readingFocus, setReadingFocus] = useState(false);
   return (
     <section
       className="thread-workspace"
       inert={transitioning}
       aria-busy={transitioning}
+      data-reading-focus={readingFocus}
     >
-      <ThreadContent {...props} />
+      <ThreadContent
+        {...props}
+        readingFocus={readingFocus}
+        onReadingFocusChange={setReadingFocus}
+      />
     </section>
   );
 }
@@ -50,7 +56,12 @@ const ThreadContent = memo(function ThreadContent({
   editor,
   readingView,
   onReadingViewChange,
-}: ThreadWorkbenchProps) {
+  readingFocus,
+  onReadingFocusChange,
+}: ThreadWorkbenchProps & {
+  readingFocus: boolean;
+  onReadingFocusChange: (value: boolean) => void;
+}) {
   const { thread, directoryAvailable } = threadSelection;
   const { submission } = thread;
   const modelDisclosure = useRef<HTMLDetailsElement>(null);
@@ -71,17 +82,18 @@ const ThreadContent = memo(function ThreadContent({
   }, []);
   const onAttach = useCallback(
     (selection: Extract<FrozenSelection, { kind: "selection" }>) => {
+      onReadingFocusChange(false);
       setSelectionAttachment({
         id: crypto.randomUUID(),
         threadId: thread.context.threadId,
         selection,
       });
     },
-    [thread],
+    [thread, onReadingFocusChange],
   );
   return (
     <>
-      <div className="thread-setup">
+      <div className="thread-setup" hidden={readingFocus}>
         <div className="directory-info" title={thread.context.directory}>
           <FolderIcon />
           <h1>{thread.context.directory.split("/").filter(Boolean).at(-1)}</h1>
@@ -112,6 +124,8 @@ const ThreadContent = memo(function ThreadContent({
       <ReadingNavigation
         readingView={readingView}
         onReadingViewChange={onReadingViewChange}
+        readingFocus={readingFocus}
+        onReadingFocusChange={onReadingFocusChange}
       />
       <div className="thread-reading">
         <ReadingPane
@@ -168,6 +182,7 @@ const ThreadContent = memo(function ThreadContent({
         selectionAttachment={selectionAttachment}
         onAttachmentApplied={onAttachmentApplied}
         onChooseModel={chooseModel}
+        hidden={readingFocus}
       />
     </>
   );
@@ -185,41 +200,59 @@ function DirectoryUnavailable() {
 function ReadingNavigation({
   readingView,
   onReadingViewChange,
-}: Pick<ThreadWorkbenchProps, "readingView" | "onReadingViewChange">) {
+  readingFocus,
+  onReadingFocusChange,
+}: Pick<ThreadWorkbenchProps, "readingView" | "onReadingViewChange"> & {
+  readingFocus: boolean;
+  onReadingFocusChange: (value: boolean) => void;
+}) {
   const { t } = useI18n();
   return (
     <nav
       className="reading-navigation"
       aria-label={t("app.reading.navigation")}
     >
-      <Button
-        variant="navigation"
-        aria-pressed={readingView === "conversation"}
-        onClick={() => onReadingViewChange("conversation")}
-      >
-        {t("ui.conversation.heading")}
-      </Button>
-      <Button
-        variant="navigation"
-        aria-pressed={readingView === "files"}
-        onClick={() => onReadingViewChange("files")}
-      >
-        {t("ui.files.section")}
-      </Button>
-      <Button
-        variant="navigation"
-        aria-pressed={readingView === "submissions"}
-        onClick={() => onReadingViewChange("submissions")}
-      >
-        {t("app.reading.submissions")}
-      </Button>
-      <Button
-        variant="navigation"
-        aria-pressed={readingView === "history"}
-        onClick={() => onReadingViewChange("history")}
-      >
-        {t("app.reading.history")}
-      </Button>
+      <div className="reading-tabs">
+        <Button
+          variant="navigation"
+          aria-pressed={readingView === "conversation"}
+          onClick={() => onReadingViewChange("conversation")}
+        >
+          {t("ui.conversation.heading")}
+        </Button>
+        <Button
+          variant="navigation"
+          aria-pressed={readingView === "files"}
+          onClick={() => onReadingViewChange("files")}
+        >
+          {t("ui.files.section")}
+        </Button>
+        <Button
+          variant="navigation"
+          aria-pressed={readingView === "submissions"}
+          onClick={() => onReadingViewChange("submissions")}
+        >
+          {t("app.reading.submissions")}
+        </Button>
+        <Button
+          variant="navigation"
+          aria-pressed={readingView === "history"}
+          onClick={() => onReadingViewChange("history")}
+        >
+          {t("app.reading.history")}
+        </Button>
+      </div>
+      <div className="reading-focus">
+        <Button
+          variant="ghost"
+          aria-pressed={readingFocus}
+          onClick={() => onReadingFocusChange(!readingFocus)}
+        >
+          {t(
+            readingFocus ? "app.reading.restoreControls" : "app.reading.focus",
+          )}
+        </Button>
+      </div>
     </nav>
   );
 }

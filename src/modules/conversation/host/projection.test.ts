@@ -145,8 +145,9 @@ it("keeps startup advisor-cost telemetry out of an empty conversation while pres
   expect(projection.snapshot().items).toEqual([]);
   expect(updates).toEqual([]);
   projection.accept({ type: "future_user_interaction" });
-  expect(projection.snapshot().items[0]?.notice?.params).toEqual({
-    eventType: "future_user_interaction",
+  expect(projection.snapshot().items[0]?.notice).toEqual({
+    code: "conversation.unsupportedNativeEvent",
+    params: { eventType: "future_user_interaction" },
   });
   projection.dispose();
 });

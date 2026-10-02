@@ -1,4 +1,14 @@
 export const ui = {
+  "ui.history.sourceDetails": "Source and reading scope",
+  "ui.history.recordDetails": "Record identity",
+  "ui.files.choose": "Choose a file or current diff",
+  "ui.files.readingFile": "Reading file…",
+  "ui.files.readingDiff": "Reading diff…",
+  "ui.files.sampleDetails": "File sample details",
+
+  "app.reading.focus": "Focus reading",
+  "app.reading.restoreControls": "Restore controls",
+
   "ui.history.discovering": "Discovering this project's history…",
   "ui.history.reading": "Reading native records…",
 
@@ -30,7 +40,7 @@ export const ui = {
 
   "composer.chooseModel": "Select model",
   "composer.blocked.noModel":
-    "No active model. Configure authentication above, then select an available model. Your draft is saved.",
+    "No active model. Configure authentication above, then select an available model. Your draft is preserved.",
   "composer.blocked.modelChanging":
     "Applying the model. Wait for its confirmation before sending.",
   "composer.blocked.paused":

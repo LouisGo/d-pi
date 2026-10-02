@@ -1,5 +1,12 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { type ComponentType, Suspense, useMemo, useState } from "react";
+import {
+  type ComponentType,
+  Suspense,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { match } from "ts-pattern";
 import { Button } from "@/components/ui/button";
 import type {
@@ -89,6 +96,8 @@ export function FilePanel({
   const { t } = useI18n();
   const client = useQueryClient();
   const [directory, setDirectory] = useState("");
+  const [browserOpen, setBrowserOpen] = useState(true);
+  const resultRef = useRef<HTMLElement>(null);
   const [filePath, setFilePath] = useState<string | undefined>(undefined);
   const [diffTarget, setDiffTarget] = useState<
     { scope: ChangeScope; path: string } | undefined
@@ -135,15 +144,23 @@ export function FilePanel({
     setSelected(null);
   };
   const openFile = (path: string) => {
+    setBrowserOpen(false);
     setFilePath(path);
     setActive("file");
     setSelected(null);
   };
   const openDiff = (scope: ChangeScope, path: string) => {
+    setBrowserOpen(false);
     setDiffTarget({ scope, path });
     setActive("diff");
     setSelected(null);
   };
+  const resultTarget = active === "file" ? filePath : diffTarget?.path;
+  useLayoutEffect(() => {
+    if (!resultTarget || browserOpen) return;
+    resultRef.current?.focus({ preventScroll: true });
+    resultRef.current?.scrollIntoView({ block: "start" });
+  }, [resultTarget, browserOpen, active]);
   const view = useMemo<CodeView | null>(() => {
     if (active === "file" && file?.kind === "text")
       return {
@@ -187,164 +204,201 @@ export function FilePanel({
     <section className="file-panel" aria-label={t("ui.files.section")}>
       <h2>{t("ui.files.section")}</h2>
       <p className="file-meta">{t("ui.files.readOnly")}</p>
-      <div className="file-browser">
-        <div className="flex gap-2">
-          <strong>{t("ui.files.tree")}</strong>
-          <Button variant="ghost" disabled={refreshing} onClick={refresh}>
-            {t("ui.files.refresh")}
-          </Button>
-          {directory && (
-            <Button
-              variant="ghost"
-              onClick={() =>
-                listDirectory(directory.split("/").slice(0, -1).join("/"))
-              }
-            >
-              {t("ui.files.up")}
+      <details
+        className="file-navigation"
+        open={browserOpen}
+        onToggle={(event) => setBrowserOpen(event.currentTarget.open)}
+      >
+        <summary>{t("ui.files.choose")}</summary>
+        <div className="file-browser">
+          <div className="flex gap-2">
+            <strong>{t("ui.files.tree")}</strong>
+            <Button variant="ghost" disabled={refreshing} onClick={refresh}>
+              {t("ui.files.refresh")}
             </Button>
-          )}
-        </div>
-        <p className="file-meta">/{directory}</p>
-        {listing.data?.kind === "unavailable" && (
-          <p role="status">{reason(listing.data.reason, t)}</p>
-        )}
-        {listing.data?.kind === "entries" && (
-          <div className="file-list">
-            {listing.data.entries.map((entry) => (
+            {directory && (
               <Button
-                key={entry.path}
                 variant="ghost"
                 onClick={() =>
-                  entry.kind === "directory"
-                    ? listDirectory(entry.path)
-                    : openFile(entry.path)
+                  listDirectory(directory.split("/").slice(0, -1).join("/"))
                 }
               >
-                {entry.kind === "directory" ? "▸ " : ""}
-                {entry.name}
+                {t("ui.files.up")}
               </Button>
-            ))}
+            )}
           </div>
-        )}
-        {listing.data?.kind === "entries" && listing.data.truncated && (
-          <p role="status">{t("ui.files.truncatedTree")}</p>
-        )}
-      </div>
-      <div className="git-panel">
-        <div className="flex gap-2">
-          <strong>{t("ui.files.gitHeading")}</strong>
-          <Button variant="ghost" disabled={refreshing} onClick={refresh}>
-            {t("ui.files.refresh")}
-          </Button>
-        </div>
-        <p className="file-meta">{t("ui.files.gitDisclaimer")}</p>
-        {changeList?.kind === "unavailable" && (
-          <p role="status">{reason(changeList.reason, t)}</p>
-        )}
-        {changeList?.kind === "changes" && (
-          <>
-            <p className="file-meta">
-              {changeList.repository} · HEAD{" "}
-              {changeList.head ?? t("ui.files.unborn")} ·{" "}
-              {changeList.capturedAt} · {t("ui.files.projectSample")}
-            </p>
-            <div className="change-list">
-              {changeList.entries.map((entry) => (
+          <p className="file-meta">/{directory}</p>
+          {listing.data?.kind === "unavailable" && (
+            <p role="status">{reason(listing.data.reason, t)}</p>
+          )}
+          {listing.data?.kind === "entries" && (
+            <div className="file-list">
+              {listing.data.entries.map((entry) => (
                 <Button
-                  key={`${entry.scope}:${entry.path}`}
+                  key={entry.path}
                   variant="ghost"
-                  onClick={() => openDiff(entry.scope, entry.path)}
+                  onClick={() =>
+                    entry.kind === "directory"
+                      ? listDirectory(entry.path)
+                      : openFile(entry.path)
+                  }
                 >
-                  {entry.scope === "head-index"
-                    ? t("ui.files.headIndex")
-                    : entry.scope === "index-worktree"
-                      ? t("ui.files.indexWorktree")
-                      : t("ui.files.untracked")}{" "}
-                  · {statusLabel(entry.status, t)} · {entry.path}
+                  {entry.kind === "directory" ? "▸ " : ""}
+                  {entry.name}
                 </Button>
               ))}
             </div>
-            {changeList.truncated && (
-              <p role="status">{t("ui.files.truncatedChanges")}</p>
+          )}
+          {listing.data?.kind === "entries" && listing.data.truncated && (
+            <p role="status">{t("ui.files.truncatedTree")}</p>
+          )}
+        </div>
+        <div className="git-panel">
+          <div className="flex gap-2">
+            <strong>{t("ui.files.gitHeading")}</strong>
+            <Button variant="ghost" disabled={refreshing} onClick={refresh}>
+              {t("ui.files.refresh")}
+            </Button>
+          </div>
+          <p className="file-meta">{t("ui.files.gitDisclaimer")}</p>
+          {changeList?.kind === "unavailable" && (
+            <p role="status">{reason(changeList.reason, t)}</p>
+          )}
+          {changeList?.kind === "changes" && (
+            <>
+              <p className="file-meta">
+                {changeList.repository} · HEAD{" "}
+                {changeList.head ?? t("ui.files.unborn")} ·{" "}
+                {changeList.capturedAt} · {t("ui.files.projectSample")}
+              </p>
+              <div className="change-list">
+                {changeList.entries.map((entry) => (
+                  <Button
+                    key={`${entry.scope}:${entry.path}`}
+                    variant="ghost"
+                    onClick={() => openDiff(entry.scope, entry.path)}
+                  >
+                    {entry.scope === "head-index"
+                      ? t("ui.files.headIndex")
+                      : entry.scope === "index-worktree"
+                        ? t("ui.files.indexWorktree")
+                        : t("ui.files.untracked")}{" "}
+                    · {statusLabel(entry.status, t)} · {entry.path}
+                  </Button>
+                ))}
+              </div>
+              {changeList.truncated && (
+                <p role="status">{t("ui.files.truncatedChanges")}</p>
+              )}
+              {!changeList.entries.length && (
+                <p className="muted">{t("ui.files.noChanges")}</p>
+              )}
+            </>
+          )}
+        </div>
+      </details>
+      <section
+        className="file-result"
+        ref={resultRef}
+        tabIndex={-1}
+        aria-label={resultTarget ?? t("ui.files.section")}
+      >
+        {resultTarget && (
+          <strong>
+            {resultTarget} ·{" "}
+            {t(
+              active === "file"
+                ? "ui.files.workingTree"
+                : "ui.files.gitHeading",
             )}
-            {!changeList.entries.length && (
-              <p className="muted">{t("ui.files.noChanges")}</p>
-            )}
+          </strong>
+        )}
+        {resultTarget &&
+          (active === "file" ? content.isFetching : diff.isFetching) && (
+            <p role="status">
+              {t(
+                active === "file"
+                  ? "ui.files.readingFile"
+                  : "ui.files.readingDiff",
+              )}
+            </p>
+          )}
+        {active === "file" && file?.kind === "unavailable" && (
+          <p role="status">{reason(file.reason, t)}</p>
+        )}
+        {active === "diff" && diffReply?.kind === "unavailable" && (
+          <p role="status">{reason(diffReply.reason, t)}</p>
+        )}
+        {active === "file" && file?.kind === "text" && (
+          <details className="file-meta">
+            <summary>{t("ui.files.sampleDetails")}</summary>
+            <p>
+              {file.path} · {t("ui.files.workingTree")} · {file.version} ·{" "}
+              {file.bytes} B · {file.capturedAt} · {t("ui.files.complete")}
+            </p>
+          </details>
+        )}
+        {active === "diff" && diffReply?.kind === "diff" && (
+          <>
+            <p className="file-meta">
+              {diffReply.path} · {diffReply.repository} · {diffReply.capturedAt}{" "}
+              · {t("ui.files.singleFileSample")}
+            </p>
+            <div className="diff-sources file-meta">
+              <span>{diffReply.left.source}</span>
+              <span>{diffReply.right.source}</span>
+            </div>
+            {diffReply.left.kind === "text" &&
+              diffReply.right.kind === "text" &&
+              diffReply.left.text === diffReply.right.text && (
+                <p className="file-meta">{t("ui.files.sameText")}</p>
+              )}
           </>
         )}
-      </div>
-      {active === "file" && file?.kind === "unavailable" && (
-        <p role="status">{reason(file.reason, t)}</p>
-      )}
-      {active === "diff" && diffReply?.kind === "unavailable" && (
-        <p role="status">{reason(diffReply.reason, t)}</p>
-      )}
-      {active === "file" && file?.kind === "text" && (
-        <p className="file-meta">
-          {file.path} · {t("ui.files.workingTree")} · {file.version} ·{" "}
-          {file.bytes} B · {file.capturedAt} · {t("ui.files.complete")}
-        </p>
-      )}
-      {active === "diff" && diffReply?.kind === "diff" && (
-        <>
-          <p className="file-meta">
-            {diffReply.path} · {diffReply.repository} · {diffReply.capturedAt} ·{" "}
-            {t("ui.files.singleFileSample")}
+        {view?.kind === "diff" && isDiffViewTooLarge(view) ? (
+          <p role="status">
+            {t("ui.files.diffTooLarge", {
+              left: view.left.text.length,
+              right: view.right.text.length,
+            })}
           </p>
-          <div className="diff-sources file-meta">
-            <span>{diffReply.left.source}</span>
-            <span>{diffReply.right.source}</span>
-          </div>
-          {diffReply.left.kind === "text" &&
-            diffReply.right.kind === "text" &&
-            diffReply.left.text === diffReply.right.text && (
-              <p className="file-meta">{t("ui.files.sameText")}</p>
+        ) : null}
+        {view && !(view.kind === "diff" && isDiffViewTooLarge(view)) && (
+          <>
+            {Editor ? (
+              <Suspense
+                fallback={<p role="status">{t("ui.files.loadingEditor")}</p>}
+              >
+                <Editor view={view} onSelection={setSelected} />
+              </Suspense>
+            ) : (
+              <p role="status">{t("ui.files.loadingEditor")}</p>
             )}
-        </>
-      )}
-      {view?.kind === "diff" && isDiffViewTooLarge(view) ? (
-        <p role="status">
-          {t("ui.files.diffTooLarge", {
-            left: view.left.text.length,
-            right: view.right.text.length,
-          })}
-        </p>
-      ) : null}
-      {view && !(view.kind === "diff" && isDiffViewTooLarge(view)) && (
-        <>
-          {Editor ? (
-            <Suspense
-              fallback={<p role="status">{t("ui.files.loadingEditor")}</p>}
-            >
-              <Editor view={view} onSelection={setSelected} />
-            </Suspense>
-          ) : (
-            <p role="status">{t("ui.files.loadingEditor")}</p>
-          )}
-          <div className="flex gap-2">
-            <Button
-              disabled={selected?.kind !== "selection"}
-              onClick={() => {
-                if (selected?.kind === "selection") onAttach(selected);
-              }}
-            >
-              {t("ui.files.attachSelection")}
-            </Button>
-            <span className="file-meta">
-              {selected?.kind === "invalid"
-                ? selected.reason === "too-large"
-                  ? t("ui.files.selectionTooLarge")
-                  : selected.reason === "range"
-                    ? t("ui.files.selectionRangeInvalid")
-                    : t("ui.files.selectionEmpty")
-                : t("ui.files.selectionFrozen")}
-            </span>
-            {selected?.kind === "selection" && (
-              <span className="file-meta">{`${selected.path}:${selected.startLine}:${selected.startColumn}-${selected.endLine}:${selected.endColumn} · ${selected.source}`}</span>
-            )}
-          </div>
-        </>
-      )}
+            <div className="flex gap-2">
+              <Button
+                disabled={selected?.kind !== "selection"}
+                onClick={() => {
+                  if (selected?.kind === "selection") onAttach(selected);
+                }}
+              >
+                {t("ui.files.attachSelection")}
+              </Button>
+              <span className="file-meta">
+                {selected?.kind === "invalid"
+                  ? selected.reason === "too-large"
+                    ? t("ui.files.selectionTooLarge")
+                    : selected.reason === "range"
+                      ? t("ui.files.selectionRangeInvalid")
+                      : t("ui.files.selectionEmpty")
+                  : t("ui.files.selectionFrozen")}
+              </span>
+              {selected?.kind === "selection" && (
+                <span className="file-meta">{`${selected.path}:${selected.startLine}:${selected.startColumn}-${selected.endLine}:${selected.endColumn} · ${selected.source}`}</span>
+              )}
+            </div>
+          </>
+        )}
+      </section>
       {refreshing && <p role="status">{t("ui.files.refreshing")}</p>}
       {transportError && (
         <div role="alert">

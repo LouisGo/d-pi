@@ -83,11 +83,11 @@ export function History({
   }
   return (
     <section className="history" aria-label={t("ui.history.sectionLabel")}>
-      <details open>
-        <summary>{t("ui.history.sectionLabel")}</summary>
-        {discovering && <p role="status">{t("ui.history.discovering")}</p>}
-        {reading && <p role="status">{t("ui.history.reading")}</p>}
-        <p>{t("ui.history.projectDescription")}</p>
+      <h2>{t("ui.history.sectionLabel")}</h2>
+      {discovering && <p role="status">{t("ui.history.discovering")}</p>}
+      {reading && <p role="status">{t("ui.history.reading")}</p>}
+
+      <div className="history-controls">
         <label>
           {t("ui.history.choose")}
           <select
@@ -122,55 +122,68 @@ export function History({
         >
           {t("config.refresh")}
         </Button>
-        {catalog.data?.kind === "catalog" && catalog.data.partial && (
-          <p role="status">{t("ui.history.catalogPartial")}</p>
-        )}
-        {(catalog.isError || nativePage.isError) && (
-          <p role="alert">{t("ui.history.readFailed")}</p>
-        )}
-        {catalog.data?.kind === "unavailable" && (
-          <p role="status">{t("ui.history.catalogUnavailable")}</p>
-        )}
+      </div>
+      {catalog.data?.kind === "catalog" && catalog.data.partial && (
+        <p role="status">{t("ui.history.catalogPartial")}</p>
+      )}
+      {(catalog.isError || nativePage.isError) && (
+        <p role="alert">{t("ui.history.readFailed")}</p>
+      )}
+      {catalog.data?.kind === "unavailable" && (
+        <p role="status">{t("ui.history.catalogUnavailable")}</p>
+      )}
+      <details className="history-source">
+        <summary>{t("ui.history.sourceDetails")}</summary>
+        <p className="muted">{t("ui.history.projectDescription")}</p>
         <p className="muted">{t("ui.history.description")}</p>
-        {!selected && !awaitingCatalog && (
-          <Button
-            variant="ghost"
-            disabled={busy || catalog.isFetching}
-            onClick={() => void read(null)}
-          >
-            {t("ui.history.read")}
-          </Button>
-        )}
-        {error && <p role="alert">{t("ui.history.readFailed")}</p>}
-        {page?.kind === "unavailable" && (
-          <p role="status">
-            {t("ui.history.unavailable", {
-              reason: match(page.reason)
-                .with("missing", () => t("ui.history.reason.missing"))
-                .with("denied", () => t("ui.history.reason.denied"))
-                .with("changed", () => t("ui.history.reason.changed"))
-                .with("unsupported", () => t("ui.history.reason.unsupported"))
-                .with("invalid", () => t("ui.history.reason.invalid"))
-                .with("cancelled", () => t("ui.history.reason.cancelled"))
-                .exhaustive(),
-            })}
-          </p>
-        )}
-        {page?.kind === "page" && (
-          <>
-            {page.incompleteTail && <p>{t("ui.history.incompleteTail")}</p>}
-            {page.omitted > 0 && (
-              <p>{t("ui.history.omitted", { count: page.omitted })}</p>
-            )}
-            {page.entries.map((entry) => (
-              <article className="message" key={entry.id}>
-                <strong>
-                  {match(entry.role)
-                    .with("user", () => t("ui.history.role.user"))
-                    .with("assistant", () => t("ui.history.role.assistant"))
-                    .with("tool", "toolResult", () => t("ui.history.role.tool"))
-                    .otherwise(() => entry.role)}
-                </strong>
+      </details>
+      {!selected && !awaitingCatalog && (
+        <Button
+          variant="ghost"
+          disabled={busy || catalog.isFetching}
+          onClick={() => void read(null)}
+        >
+          {t("ui.history.read")}
+        </Button>
+      )}
+      {error && <p role="alert">{t("ui.history.readFailed")}</p>}
+      {page?.kind === "unavailable" && (
+        <p role="status">
+          {t("ui.history.unavailable", {
+            reason: match(page.reason)
+              .with("missing", () => t("ui.history.reason.missing"))
+              .with("denied", () => t("ui.history.reason.denied"))
+              .with("changed", () => t("ui.history.reason.changed"))
+              .with("unsupported", () => t("ui.history.reason.unsupported"))
+              .with("invalid", () => t("ui.history.reason.invalid"))
+              .with("cancelled", () => t("ui.history.reason.cancelled"))
+              .exhaustive(),
+          })}
+        </p>
+      )}
+      {page?.kind === "page" && (
+        <>
+          {page.incompleteTail && <p>{t("ui.history.incompleteTail")}</p>}
+          {page.omitted > 0 && (
+            <p>{t("ui.history.omitted", { count: page.omitted })}</p>
+          )}
+          {page.entries.map((entry) => (
+            <article className="message" key={entry.id}>
+              <strong>
+                {match(entry.role)
+                  .with("user", () => t("ui.history.role.user"))
+                  .with("assistant", () => t("ui.history.role.assistant"))
+                  .with("tool", "toolResult", () => t("ui.history.role.tool"))
+                  .otherwise(() => entry.role)}
+              </strong>
+              <details className="history-record file-meta">
+                <summary>
+                  {t(
+                    entry.toolEvidence
+                      ? "ui.history.nativeToolEvidence"
+                      : "ui.history.recordDetails",
+                  )}
+                </summary>
                 <p className="trace">
                   {t("ui.history.parent", {
                     id: entry.id,
@@ -196,23 +209,21 @@ export function History({
                     </p>
                   </div>
                 )}
-                <Markdown text={entry.text} />
-              </article>
-            ))}
-            {page.next && (
-              <Button
-                disabled={busy || nativePage.isFetching}
-                onClick={() => void read(page.next)}
-              >
-                {t("ui.history.next")}
-              </Button>
-            )}
-            {!page.entries.length && !page.next && (
-              <p>{t("ui.history.empty")}</p>
-            )}
-          </>
-        )}
-      </details>
+              </details>
+              <Markdown text={entry.text} />
+            </article>
+          ))}
+          {page.next && (
+            <Button
+              disabled={busy || nativePage.isFetching}
+              onClick={() => void read(page.next)}
+            >
+              {t("ui.history.next")}
+            </Button>
+          )}
+          {!page.entries.length && !page.next && <p>{t("ui.history.empty")}</p>}
+        </>
+      )}
     </section>
   );
 }

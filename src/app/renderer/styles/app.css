@@ -95,6 +95,17 @@
     color: var(--muted-foreground);
     line-height: 1.6;
   }
+  .history-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--layout-gap);
+  }
+  .history-controls label {
+    display: grid;
+    min-width: 0;
+    gap: calc(var(--layout-gap) / 2);
+  }
   .history select {
     max-width: 100%;
     min-height: var(--control-height);
@@ -165,12 +176,28 @@
   }
   .reading-navigation {
     display: flex;
-    overflow-x: auto;
+    overflow: hidden;
     flex-wrap: nowrap;
     flex-shrink: 0;
     gap: calc(var(--layout-gap) / 4);
     padding-block: calc(var(--layout-gap) / 4);
     border-bottom: 1px solid var(--border);
+  }
+  .reading-tabs {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    overflow-x: auto;
+    gap: calc(var(--layout-gap) / 4);
+  }
+  .reading-focus {
+    margin-inline-start: auto;
+    flex-shrink: 0;
+  }
+  .composer[hidden],
+  .workbench:has(.thread-workspace[data-reading-focus="true"])
+    > .configuration-settings {
+    display: none;
   }
   .app-shell {
     display: flex;
@@ -555,6 +582,21 @@
     display: flex;
     flex-wrap: wrap;
     gap: calc(var(--layout-gap) / 2);
+  }
+  .file-result {
+    display: grid;
+    min-width: 0;
+    gap: var(--layout-gap);
+  }
+  .file-navigation summary,
+  .file-result summary,
+  .history-source summary,
+  .history-record summary {
+    cursor: pointer;
+  }
+  .file-result:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
   }
   .file-meta {
     color: var(--muted-foreground);

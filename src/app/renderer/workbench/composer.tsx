@@ -36,6 +36,7 @@ export function Composer({
   selectionAttachment,
   onAttachmentApplied,
   onChooseModel,
+  hidden = false,
 }: {
   thread: ThreadModel;
   model: AppModel;
@@ -46,6 +47,7 @@ export function Composer({
   } | null;
   onAttachmentApplied?: (id: string) => void;
   onChooseModel?: (() => void) | undefined;
+  hidden?: boolean;
 }) {
   const { controller, submission, runtime } = thread;
   const { locale, t, formatMessage } = useI18n();
@@ -194,6 +196,7 @@ export function Composer({
   return (
     <section
       className="composer"
+      hidden={hidden}
       data-expanded={expanded}
       aria-label={t("composer.sectionLabel")}
     >
