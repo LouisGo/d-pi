@@ -329,13 +329,30 @@ async function runChecks() {
     "left-collapse-returns-focus",
     "document.activeElement.getAttribute('aria-label')==='Open or collapse project navigation'",
   );
-  await click("Open or collapse project navigation");
+  await call("Input.dispatchKeyEvent", {
+    type: "keyDown",
+    key: "Enter",
+    code: "Enter",
+    text: "\r",
+    windowsVirtualKeyCode: 13,
+  });
+  await call("Input.dispatchKeyEvent", { type: "keyUp", key: "Enter" });
+  await evaluate("window.probe.pause()");
+  await check(
+    "keyboard-sidebar-restore-retains-navigation-focus",
+    "document.activeElement.getAttribute('aria-label')==='Open or collapse project navigation'",
+  );
   await check(
     "left-explicit-restore",
     "({width:document.querySelector('.primary-sidebar').getBoundingClientRect().width,saved:localStorage.getItem('d-pi.workbench-layout.v1')})",
     (v) => v.width >= 220,
   );
+  await evaluate("window.originalEditor.focus()");
   await resize(720, 540);
+  await check(
+    "navigation-relocation-does-not-steal-composer-focus",
+    "document.activeElement===window.originalEditor",
+  );
   await check(
     "minimum-window-protects-input-and-reading",
     "(()=>{const frame=document.querySelector('.window-frame'),r=document.querySelector('.reading-pane').getBoundingClientRect(),editor=document.querySelector('.composer').getBoundingClientRect();return {width:innerWidth,height:innerHeight,overflow:document.documentElement.scrollWidth>innerWidth,nav:document.querySelector('.primary-sidebar').getBoundingClientRect().width,reading:r.height,editorBottom:editor.bottom,bodyHeight:frame.getBoundingClientRect().height};})()",

@@ -73,6 +73,7 @@ export function WorkbenchFrame({
     [settingsOpen, reveal],
   );
   const focusedRegion = useRef<"sidebar" | "workspace" | "bottom" | null>(null);
+  const focusedNavigation = useRef<number | null>(null);
   const [overlay, setOverlay] = useState(false);
   const frame = useRef<HTMLDivElement>(null);
   const navigationTrigger = useRef<HTMLButtonElement>(null);
@@ -113,6 +114,7 @@ export function WorkbenchFrame({
   );
   const focusInHidden = useCallback(
     (region: "sidebar" | "workspace" | "bottom", visible: boolean) => {
+      if (region === "sidebar" && focusedNavigation.current !== null) return;
       if (
         !visible &&
         (focusedRegion.current === region ||
@@ -139,6 +141,16 @@ export function WorkbenchFrame({
     geometry.bottom.visible,
     focusInHidden,
   ]);
+  useLayoutEffect(() => {
+    const index = focusedNavigation.current;
+    if (index === null) return;
+    const button = frame.current?.querySelectorAll<HTMLButtonElement>(
+      ".header-navigation button",
+    )[index];
+    (button?.disabled ? navigationTrigger.current : button)?.focus({
+      preventScroll: true,
+    });
+  }, [geometry.sidebar.visible]);
   useLayoutEffect(() => {
     if (geometry.sidebar.visible) setOverlay(false);
   }, [geometry.sidebar.visible]);
@@ -188,6 +200,14 @@ export function WorkbenchFrame({
         onFocusCapture={(event) => {
           const target = event.target;
           if (!(target instanceof Element)) return;
+          const button = target.closest<HTMLButtonElement>(
+            ".header-navigation button",
+          );
+          const navigation = button?.closest(".header-navigation");
+          focusedNavigation.current =
+            navigation && button
+              ? [...navigation.querySelectorAll("button")].indexOf(button)
+              : null;
           focusedRegion.current =
             target.id === "navigation-split-separator"
               ? "sidebar"
