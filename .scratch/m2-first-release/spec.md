@@ -198,3 +198,5 @@
 用户明确要求“push，然后处理好相关的PR。随后给开启下一阶段的简短有力的prompt”。本次按完整PR收尾集成已有叠加PR #2（codex/interaction-policy→codex/m2-lifecycle），推送集成分支、建立本阶段到main的PR并在当前head检查通过后合并，核实远端main。该授权取代本阶段此前本地不push及交互策略此前不merge限制，不增加公开安装包发布、真实供应商费用或用户认可。
 
 长正文与交互策略的历史冲突保留来源隔离key、完整复制heading及data-selectable三者；结构报告重新生成，补正式ReadingBody在中央选择策略下四主题/密度真实鼠标拖选和翻段验证。已有m2.16 ZIP仍只对应c531558产品source，不冒称含后续交互策略集成；本次不重打包安装包。远端结果见[PR交付记录](pr-delivery.md)。
+
+2026-10-06：用户追加push/PR收尾完成。PR #2已合入2135856阶段分支；该head push/PR CI均success，PR #3已合并到远端main（mergeCommit6302ea6），本地main同步且无其它worktree改动。[远端状态与组合证据](pr-delivery.md)。仅交付记录后续文档提交；原m2.16 ZIP对应c531558、未重打包，M2及用户认可状态保持。

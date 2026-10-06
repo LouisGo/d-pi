@@ -6,4 +6,13 @@
 
 已有m2.16 ZIP对应c531558，不包含后续交互策略集成；本次PR交付不重打包，候选和用户认可状态保持。完整M2性能/故障、系统IME、PDF视觉/OCR及真实供应商仍开放；下一阶段从最终远端main和docs/status.md接续。
 
-组合原始证据：[check](evidence/pr-integration-check.txt)、[build](evidence/pr-integration-build.txt)、[native](evidence/pr-integration-native.json)、[native log](evidence/pr-integration-native.txt)、[截图](evidence/pr-integration-dark-compact.png)。远端head及main交付结果后续核实。
+组合原始证据：[check](evidence/pr-integration-check.txt)、[build](evidence/pr-integration-build.txt)、[native](evidence/pr-integration-native.json)、[native log](evidence/pr-integration-native.txt)、[截图](evidence/pr-integration-dark-compact.png)。远端结果已核实，见下方最终记录。
+
+## 最终远端结果
+
+- [PR #2](https://github.com/LouisGo/d-pi/pull/2)：MERGED，head cc0267e，mergeCommit 2135856e6ad885a73b1ed745d31b5f8731876274，目标codex/m2-lifecycle；原独立worktree干净且保留。
+- 集成分支已push，远端head 2135856e6ad885a73b1ed745d31b5f8731876274。该head [push CI](https://github.com/LouisGo/d-pi/actions/runs/37432574786)和[PR CI](https://github.com/LouisGo/d-pi/actions/runs/37432606959)均SUCCESS，涵盖固定SDK、环境、完整check与build；确认exact head及main目标后转ready/merge。
+- [PR #3](https://github.com/LouisGo/d-pi/pull/3)：MERGED，mergeCommit 6302ea6e9173552547b423ea6b83468777e4968e；远端main与本地main已核对相同并fast-forward同步。后续本次文档提交仅补充该交付结果和原始PR元数据，不改变已验产品源。
+- [PR #2机器状态](evidence/pr2-merged.json)、[PR #3机器状态及检查](evidence/pr3-merged.json)。阶段分支与交互策略分支未删除；用户认可及M2父票开放状态保持。
+
+后续从最新main、docs/status.md和所属spec核实范围，优先选择V1-00基础诊断导出与故障反馈闭环。已有日志writer/trace与已交付能力继续复用，不重建OMP日志或执行层，先交付最小有界、脱敏、可真实验收的功能路径。

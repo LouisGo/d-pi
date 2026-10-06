@@ -8,7 +8,7 @@
 
 - 此PR以main c8dbdbadf1a04ad2be54e01f1a509024c5d982ea为累计base，包含04b/05d/04c/06c/06d及PR #2。各切片有固定范围Spec/Standards独立评审及发现修复复核：[生命周期](.scratch/m2-first-release/lifecycle-review.md)、[目录引用](.scratch/m2-first-release/project-references-review.md)、[长正文](.scratch/m2-first-release/long-reading-review.md)、[交互策略](.scratch/interaction-policy/review.md)。组合冲突另由主Agent分别核对两轴，不冒称整段再次独立重审。
 - 生命周期clean m2.14实际包22项、引用clean m2.15实际包24项、长正文clean m2.16实际包21项均有对应source/build/hash和隔离HOME/数据/OMP/Git/localhost原始证据，未使用个人凭据或真实供应商费用。长正文产品source c531558：723行为/34架构/70tooling及完整工程检查通过，两个既有opt-in跳过；复制40784 UTF-16 units七段精确/restored，10MiB原生artifact经SDK先缩为41077 UTF-8 bytes，六段头尾阅读保留原生省略提示，不声称Host收到10MiB。
-- PR #2 fixed cc0267e的双轴review、711行为/完整check/build/真实Electron正文拖选/Monaco/Diff/portal及四主题密度证据保留，原PR CI通过；新增ReadingBody与中央策略组合的原生拖选/翻段验证。最终集成head完整检查/build与实际CI另由[远端交付记录](.scratch/m2-first-release/pr-delivery.md)和当前PR checks核实。
+- PR #2 fixed cc0267e的双轴review、711行为/完整check/build/真实Electron正文拖选/Monaco/Diff/portal及四主题密度证据保留，原PR CI通过；新增ReadingBody与中央策略组合的原生拖选/翻段验证。最终集成head `2135856e6ad885a73b1ed745d31b5f8731876274` 的完整check通过723行为/34架构/74tooling，build和补充原生组合专项通过；[push CI](https://github.com/LouisGo/d-pi/actions/runs/37432574786)与[PR CI](https://github.com/LouisGo/d-pi/actions/runs/37432606959)均success，覆盖固定环境/SDK验证/check/build。PR #2已由2135856合并，GitHub state=MERGED。
 - [m2.16候选/同源/试用](.scratch/m2-first-release/long-reading.md)严格只对应c531558，不包含后续交互策略；本次不重打包或公开发布安装包。工程完成、候选交付及用户认可分开，M2整体未完成。
 
 ## Merge Danger
