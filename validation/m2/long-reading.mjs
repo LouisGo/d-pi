@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { readFileSync, writeFileSync } from "node:fs";
+import { basename, dirname, join } from "node:path";
 import { captureClipboard } from "./clipboard.mjs";
 
 const initialText =
@@ -385,29 +385,82 @@ export async function validateLongReading({
     (message) => message.role === "tool",
   ).content;
   assert.equal(typeof toolContent, "string");
-  assert.equal(
-    Buffer.byteLength(toolContent),
-    toolBytes,
-    "the actual SDK tool payload must be exactly 10 MiB",
+  const sessionFile = db
+    .prepare("SELECT session_file FROM native_session WHERE thread_id=?")
+    .get(threadId).session_file;
+  const nativeTool = readFileSync(sessionFile, "utf8")
+    .trim()
+    .split("\n")
+    .map((line) => JSON.parse(line).message)
+    .find((message) => message?.toolName === "m2_long_output");
+  assert.ok(nativeTool);
+  const truncation = nativeTool.details.meta.truncation;
+  assert.equal(truncation.totalBytes, toolBytes);
+  assert.equal(truncation.direction, "middle");
+  assert.equal(nativeTool.details.fixtureBytes, toolBytes);
+  assert.match(truncation.artifactId, /^\d+$/);
+  const artifact = readFileSync(
+    join(
+      dirname(sessionFile),
+      basename(sessionFile, ".jsonl"),
+      `${truncation.artifactId}.m2_long_output.log`,
+    ),
   );
-  assert.ok(toolContent.endsWith("M2_TEN_MIB_TOOL_END__"));
+  assert.equal(artifact.length, toolBytes);
+  assert.ok(
+    artifact.subarray(0, 20).equals(Buffer.from("M2_TEN_MIB_TOOL_START")),
+  );
+  assert.ok(
+    artifact.subarray(-22).equals(Buffer.from("M2_TEN_MIB_TOOL_END__")),
+  );
+  const nativeText = nativeTool.content
+    .filter((part) => part.type === "text")
+    .map((part) => part.text)
+    .join("\n");
+  assert.equal(toolContent, nativeText);
+  assert.ok(toolContent.includes("elided. Read artifact://"));
   const toolReader = await evaluate(`(()=>{
     const article=[...document.querySelectorAll('.conversation article')].find(el=>el.textContent.includes('m2_long_output')&&el.textContent.includes('M2_TEN_MIB_TOOL_START'));
     if(!article) return null;
+    window.__longToolContainer=article.querySelector('[data-long-reading]');
     article.querySelector('details').open=true;
     const p=article.querySelector('[data-reading-text]');
     return p?{length:p.textContent.length,height:p.getBoundingClientRect().height,truncated:article.textContent.includes('显示已截断'),endShown:article.textContent.includes('M2_TEN_MIB_TOOL_END__')}:null;
   })()`);
   assert.ok(toolReader);
-  assert.ok(toolReader.length <= 16384 && toolReader.height <= 600);
-  assert.equal(toolReader.truncated, true);
+  assert.ok(toolReader.length <= 8192 && toolReader.height <= 600);
+  assert.equal(toolReader.truncated, false);
   assert.equal(toolReader.endShown, false);
+  const toolSegments = [];
+  for (let attempt = 0; attempt < 100; attempt++) {
+    const segment = await evaluate(`(()=>{
+      const container=window.__longToolContainer;
+      const texts=container.querySelectorAll('[data-reading-text]');
+      const next=[...container.querySelectorAll('button')].find(el=>el.textContent.trim()==='下一段');
+      return {text:texts[0]?.textContent,count:texts.length,next:!!next&&!next.disabled};
+    })()`);
+    assert.equal(segment.count, 1);
+    assert.ok(segment.text.length <= 8192);
+    toolSegments.push(segment.text);
+    if (!segment.next) break;
+    await evaluate(
+      "[...window.__longToolContainer.querySelectorAll('button')].find(el=>el.textContent.trim()==='下一段').click()",
+    );
+    await evaluate("new Promise(r=>requestAnimationFrame(r))");
+    assert.ok(attempt < 99, "tool pagination failed to terminate");
+  }
+  assert.equal(toolSegments.join(""), nativeText);
+  screenshots.push(await shot("m2-long-tool-native-gap"));
   metrics.tool = {
-    originalBytes: Buffer.byteLength(toolContent),
+    originalBytes: artifact.length,
+    originalSha256: createHash("sha256").update(artifact).digest("hex"),
+    obtainedBytes: Buffer.byteLength(nativeText),
+    nativeTruncation: truncation,
+    segments: toolSegments.map((text) => text.length),
     ...toolReader,
   };
   checks.push(
-    "actual packaged SDK 10 MiB tool output stays within the existing Host projection budget, exposes truncation and renders one bounded original segment without expanding the main list",
+    "actual packaged SDK tool produces a verified 10 MiB native artifact; SDK middle truncation remains explicit and all obtained head/tail text reconstructs exactly through bounded segments without changing native or Host budgets",
   );
   await selectThread(threadA);
   return metrics;
