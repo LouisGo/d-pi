@@ -418,6 +418,28 @@ export async function validateAttention(context) {
     "actual completed receipt is retained as completed/unread, with system and completion alerts disabled by default; native reply remains readable in its own Thread",
   );
 
+  // Previously visited Threads may legitimately be read when the native window
+  // has focus. Produce an explicit unread workload instead of relying on that.
+  metrics.budgetThreads = [];
+  for (let index = 0; index < 4; index++) {
+    const threadId = await newThread(context);
+    await insert(`M2_ATTENTION_BUDGET_${index}`);
+    await click("发送");
+    await wait(() => supplier.releases.has("completed"));
+    await selectThread(threadA);
+    supplier.release("completed");
+    await wait(async () =>
+      (await snapshot(evaluate)).entries.some(
+        (entry) =>
+          entry.threadId === threadId &&
+          entry.kind === "completed" &&
+          entry.unread,
+      ),
+    );
+    metrics.budgetThreads.push(threadId);
+  }
+  metrics.snapshots.budget = await snapshot(evaluate);
+
   await evaluate(
     "document.querySelector('details[data-attention-preferences]').open=true",
   );
@@ -433,7 +455,7 @@ export async function validateAttention(context) {
   metrics.persistedPreferences = { system: true, completion: true };
   metrics.systemCapability = (await snapshot(evaluate)).system;
   screenshots.push(await shot("m2-attention-preferences-dark-normal"));
-  await validateReminderBudget({ evaluate, shot, screenshots, metrics });
+  await validateReminderBudget({ evaluate, wait, shot, screenshots, metrics });
   await validateAppearance({
     evaluate,
     wait,
@@ -442,7 +464,7 @@ export async function validateAttention(context) {
     screenshots,
     metrics,
   });
-  await validateReminderBudget({ evaluate, shot, screenshots, metrics });
+  await validateReminderBudget({ evaluate, wait, shot, screenshots, metrics });
   checks.push(
     "shipped settings explicitly enable system/completion preferences; theme/density/language and representative narrow viewport remain bounded",
   );
@@ -556,7 +578,13 @@ export async function validateAttention(context) {
       1,
     );
     metrics.snapshots.reopened = reopened;
-    await validateReminderBudget({ evaluate, shot, screenshots, metrics });
+    await validateReminderBudget({
+      evaluate,
+      wait,
+      shot,
+      screenshots,
+      metrics,
+    });
     checks.push(
       "actual native window close/reopen retains the independent Main observer and a real completed receipt, with the same Main instance and no repeated provider request",
     );
@@ -571,10 +599,16 @@ export async function validateAttention(context) {
 
 async function validateReminderBudget({
   evaluate,
+  wait,
   shot,
   screenshots,
   metrics,
 }) {
+  await wait(() =>
+    evaluate(
+      "document.querySelectorAll('[data-attention-center] [data-attention-entry]').length>=4 && !!document.querySelector('.reading-pane:not([hidden])')",
+    ),
+  );
   const bounds = await evaluate(`(()=>{
     const center=document.querySelector('[data-attention-center]');
     const pane=document.querySelector('.reading-pane:not([hidden])');
@@ -596,6 +630,10 @@ async function validateReminderBudget({
   assert.ok(
     bounds.readingHeight >= bounds.lineHeight * 4,
     `reminders squeezed current reading: ${JSON.stringify(bounds)}`,
+  );
+  assert.ok(
+    bounds.centerScrollHeight > bounds.centerClientHeight,
+    "actual multi-Thread reminders must have independent internal scroll",
   );
   assert.equal(bounds.draft, "A_UNSENT_DRAFT");
   assert.ok(
@@ -630,7 +668,7 @@ async function validateAppearance({
     "[...document.querySelectorAll('.toolbar button')].find(el=>el.textContent.trim()==='紧凑密度').click()",
   );
   screenshots.push(await shot("m2-attention-preferences-light-compact"));
-  await validateReminderBudget({ evaluate, shot, screenshots, metrics });
+  await validateReminderBudget({ evaluate, wait, shot, screenshots, metrics });
   await evaluate(
     "(()=>{const el=document.querySelector('.toolbar select');el.value='en-US';el.dispatchEvent(new Event('change',{bubbles:true}))})()",
   );
@@ -656,7 +694,7 @@ async function validateAppearance({
   );
   metrics.narrowViewport = bounds;
   screenshots.push(await shot("m2-attention-preferences-english-narrow"));
-  await validateReminderBudget({ evaluate, shot, screenshots, metrics });
+  await validateReminderBudget({ evaluate, wait, shot, screenshots, metrics });
   await call("Emulation.clearDeviceMetricsOverride");
   await evaluate(
     "(()=>{const el=document.querySelector('.toolbar select');el.value='zh-CN';el.dispatchEvent(new Event('change',{bubbles:true}))})()",
