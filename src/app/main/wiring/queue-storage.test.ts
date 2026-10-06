@@ -15,7 +15,7 @@ it("publishes the queue change schema with a recoverable before-v7 backup", () =
     store.close();
     const db = new DatabaseSync(path, { readOnly: true });
     try {
-      expect(db.prepare("PRAGMA user_version").get()?.user_version).toBe(9);
+      expect(db.prepare("PRAGMA user_version").get()?.user_version).toBe(10);
       expect(
         db
           .prepare("SELECT name FROM sqlite_master WHERE name='queue_change'")
@@ -162,7 +162,7 @@ it("normalizes existing v6 dispatch and ACK receipts before publishing the befor
     const current = new DatabaseSync(path, { readOnly: true });
     try {
       expect(current.prepare("PRAGMA user_version").get()?.user_version).toBe(
-        9,
+        10,
       );
     } finally {
       current.close();

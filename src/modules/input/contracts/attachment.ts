@@ -36,6 +36,7 @@ export const AttachmentSchema = z
     capturedAt: z.string().datetime(),
     source: z.enum(["file", "paste", "drop", "reference"]),
     path: z.string().min(1).max(4096).optional(),
+    referenceKind: z.enum(["file", "directory"]).optional(),
     status: z.enum(["preparing", "ready", "failed"]),
     reason: AttachmentFailureReasonSchema.optional(),
     representation: z.enum([
@@ -104,6 +105,7 @@ export const PreparedContentSchema = z.strictObject({
       byteLength: z.number().int().nonnegative(),
       name: z.string().max(512),
       path: z.string().max(4096).optional(),
+      referenceKind: z.enum(["file", "directory"]).optional(),
       version: z.string().max(256).optional(),
     }),
   ),

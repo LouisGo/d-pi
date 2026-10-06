@@ -62,7 +62,7 @@ export class DraftRepository implements DraftReader, DraftConsumptionWriter {
         previous !== text &&
         (previous.includes("[[dpi-attachment:") ||
           text.includes("[[dpi-attachment:")) &&
-        this.db.prepare("PRAGMA user_version").get()?.user_version === 9
+        Number(this.db.prepare("PRAGMA user_version").get()?.user_version) >= 9
       ) {
         const ids = (body: string): Set<string> => {
           const parsed = readAttachmentTokens(body);

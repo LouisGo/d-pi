@@ -28,7 +28,8 @@ export class AppDatabase {
         version !== 6 &&
         version !== 7 &&
         version !== 8 &&
-        version !== 9
+        version !== 9 &&
+        version !== 10
       )
         throw new Error("Unsupported schema version");
       if (version === 0) {
@@ -74,7 +75,8 @@ export class AppDatabase {
         version !== 6 &&
         version !== 7 &&
         version !== 8 &&
-        version !== 9
+        version !== 9 &&
+        version !== 10
       ) {
         const temporary = `${path}.before-v3.${randomUUID()}.tmp`;
         try {
@@ -109,7 +111,8 @@ export class AppDatabase {
       this.originalVersion !== 6 &&
       this.originalVersion !== 7 &&
       this.originalVersion !== 8 &&
-      this.originalVersion !== 9
+      this.originalVersion !== 9 &&
+      this.originalVersion !== 10
     ) {
       const temporary = `${this.path}.before-v4.${randomUUID()}.tmp`;
       try {
@@ -129,7 +132,8 @@ export class AppDatabase {
       this.originalVersion !== 6 &&
       this.originalVersion !== 7 &&
       this.originalVersion !== 8 &&
-      this.originalVersion !== 9
+      this.originalVersion !== 9 &&
+      this.originalVersion !== 10
     ) {
       const temporary = `${this.path}.before-v5.${randomUUID()}.tmp`;
       try {
@@ -148,7 +152,8 @@ export class AppDatabase {
       this.originalVersion !== 6 &&
       this.originalVersion !== 7 &&
       this.originalVersion !== 8 &&
-      this.originalVersion !== 9
+      this.originalVersion !== 9 &&
+      this.originalVersion !== 10
     ) {
       const temporary = `${this.path}.before-v6.${randomUUID()}.tmp`;
       try {
@@ -164,7 +169,8 @@ export class AppDatabase {
     if (
       this.originalVersion !== 7 &&
       this.originalVersion !== 8 &&
-      this.originalVersion !== 9
+      this.originalVersion !== 9 &&
+      this.originalVersion !== 10
     ) {
       const temporary = `${this.path}.before-v7.${randomUUID()}.tmp`;
       try {
@@ -182,6 +188,7 @@ export class AppDatabase {
     }
     this.migrateAttachments();
     this.migrateContentLifecycle();
+    this.migrateReferenceKinds();
   }
   private migrateAttachments(): void {
     if (this.originalVersion >= 8) return;
@@ -201,7 +208,7 @@ export class AppDatabase {
   }
 
   private migrateContentLifecycle(): void {
-    if (this.originalVersion === 9) return;
+    if (this.originalVersion >= 9) return;
     const temporary = `${this.path}.before-v9.${randomUUID()}.tmp`;
     try {
       this.connection.prepare("VACUUM INTO ?").run(temporary);
@@ -241,6 +248,20 @@ export class AppDatabase {
       PRAGMA user_version=9;
     `),
     );
+  }
+
+  private migrateReferenceKinds(): void {
+    if (this.originalVersion >= 10) return;
+    const temporary = `${this.path}.before-v10.${randomUUID()}.tmp`;
+    try {
+      this.connection.prepare("VACUUM INTO ?").run(temporary);
+      renameSync(temporary, `${this.path}.before-v10`);
+    } finally {
+      rmSync(temporary, { force: true });
+    }
+    // Typed reference metadata changes persisted JSON contracts. Fence old
+    // strict readers before writing it; legacy records remain valid as files.
+    this.transaction(() => this.connection.exec("PRAGMA user_version=10;"));
   }
 
   transaction<T>(body: () => T): T {

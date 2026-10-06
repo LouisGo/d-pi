@@ -29,7 +29,9 @@ it("migrates attachment manifests after receipt recovery and reopens without los
     expect(reopened.prepare("SELECT id FROM input_attachment").get()).toEqual({
       id: "attachment",
     });
-    expect(reopened.prepare("PRAGMA user_version").get()?.user_version).toBe(9);
+    expect(reopened.prepare("PRAGMA user_version").get()?.user_version).toBe(
+      10,
+    );
     reopened.close();
   } finally {
     store.close();

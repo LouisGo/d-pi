@@ -94,3 +94,7 @@
 ## 证据与维护入口
 
 现行约束不依赖读者逐段推断历史。详细实现、构建与验证由[工作记录](README.md#工作记录)维护；[整理前快照](../.scratch/infrastructure-closure/evidence/decision-history.md)保留完整修订及授权经过，原始归档按 D-18 保持可追溯。2026-09-26 审计中的内容信任、RPC 输入分帧与模型模态补充仍在[基础契约 §4/§5/§9](architecture/foundation-contracts.md)，没有因整理撤回；无新增 ADR 或产品决定。
+
+## 2026-10-06：D-10 @目录与性能细化
+
+用户明确要求项目引用可选文件夹、文件/目录类型区分及性能写法；补充D-10，不取代D-24发送冻结、D-33最小Tiptap和D-37只读查询。目录沿用固定OMP直接条目清单语义，工程范围与验收见[04c](../.scratch/m2-first-release/issues/04c-project-reference-search.md)，不递归内联整个目录正文。

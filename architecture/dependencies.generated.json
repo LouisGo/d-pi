@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "dece900e028f16bc9c58b74ee44196dacad63a79343ed2c870308a32f8c7d6d5",
+  "inputsHash": "94882cc9ad7340bca75b2ae63b618166ad438631befd89e1ae180de62a2a1c23",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 315,
-    "scannedFiles": 315,
+    "sourceFiles": 317,
+    "scannedFiles": 317,
     "unscanned": []
   },
   "modules": [
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 112,
-      "lines": 18438,
+      "lines": 18779,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -60,7 +60,7 @@
       ],
       "materialized": true,
       "files": 25,
-      "lines": 1694,
+      "lines": 1715,
       "publicEntries": [
         {
           "path": "src/platform/main/storage/public.ts",
@@ -102,7 +102,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 18,
-      "lines": 1865,
+      "lines": 1874,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -145,8 +145,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 15,
-      "lines": 1965,
+      "files": 17,
+      "lines": 2770,
       "publicEntries": [
         {
           "path": "src/modules/files/contracts/public.ts",
@@ -178,7 +178,7 @@
       ],
       "materialized": true,
       "files": 33,
-      "lines": 4848,
+      "lines": 4874,
       "publicEntries": [
         {
           "path": "src/modules/input/contracts/public.ts",
@@ -918,6 +918,13 @@
     {
       "module": "app",
       "environment": "contracts",
+      "dependency": "files",
+      "targetEnvironment": "contracts",
+      "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "contracts",
       "dependency": "input",
       "targetEnvironment": "contracts",
       "testOnly": false
@@ -954,13 +961,6 @@
       "module": "app",
       "environment": "contracts",
       "dependency": "execution",
-      "targetEnvironment": "contracts",
-      "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "contracts",
-      "dependency": "files",
       "targetEnvironment": "contracts",
       "testOnly": false
     },
@@ -1408,6 +1408,13 @@
     {
       "module": "app",
       "environment": "renderer",
+      "dependency": "files",
+      "targetEnvironment": "contracts",
+      "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "renderer",
       "dependency": "execution",
       "targetEnvironment": "core",
       "testOnly": false
@@ -1459,13 +1466,6 @@
       "environment": "renderer",
       "dependency": "changes",
       "targetEnvironment": "renderer",
-      "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "renderer",
-      "dependency": "files",
-      "targetEnvironment": "contracts",
       "testOnly": false
     },
     {
@@ -1975,6 +1975,18 @@
       "specifier": "zod",
       "kind": "import",
       "resolution": "external"
+    },
+    {
+      "from": "src/app/contracts/attachments.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "../../modules/files/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/files/contracts/public.ts",
+      "targetModule": "files",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/app/contracts/attachments.ts",
@@ -3757,6 +3769,15 @@
       "to": "src/app/main/wiring/attachment-service.ts",
       "targetModule": "app",
       "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-service.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
     },
     {
       "from": "src/app/main/wiring/attachment-service.ts",
@@ -7940,6 +7961,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "../../../modules/files/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/files/contracts/public.ts",
+      "targetModule": "files",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "../../../modules/input/contracts/public",
       "kind": "import",
       "resolution": "module",
@@ -7982,6 +8015,18 @@
       "to": "src/app/contracts/attachments.ts",
       "targetModule": "app",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../components/icons/common",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/icons/common.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/app/renderer/workbench/composer-binding.test.ts",
@@ -11117,6 +11162,144 @@
       "targetEnvironment": "contracts"
     },
     {
+      "from": "src/modules/files/main/project-reference-search.test.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:fs/promises",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/files/main/project-reference-search.test.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:fs/promises",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/files/main/project-reference-search.test.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/files/main/project-reference-search.test.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/files/main/project-reference-search.test.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:perf_hooks",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/files/main/project-reference-search.test.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/files/main/project-reference-search.test.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/files/contracts/public.ts",
+      "targetModule": "files",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/files/main/project-reference-search.test.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./project-files",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/files/main/project-files.ts",
+      "targetModule": "files",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/files/main/project-reference-search.test.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./project-reference-search",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/files/main/project-reference-search.ts",
+      "targetModule": "files",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/files/main/project-reference-search.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/files/main/project-reference-search.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:fs/promises",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/files/main/project-reference-search.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/files/main/project-reference-search.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:perf_hooks",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/files/main/project-reference-search.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/files/contracts/public.ts",
+      "targetModule": "files",
+      "targetEnvironment": "contracts"
+    },
+    {
       "from": "src/modules/files/main/public.ts",
       "sourceModule": "files",
       "sourceEnvironment": "main",
@@ -11125,6 +11308,18 @@
       "kind": "export",
       "resolution": "module",
       "to": "src/modules/files/main/project-files.ts",
+      "targetModule": "files",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/files/main/public.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "./project-reference-search",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/files/main/project-reference-search.ts",
       "targetModule": "files",
       "targetEnvironment": "main"
     },
@@ -12849,6 +13044,18 @@
       "specifier": "zod",
       "kind": "import",
       "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-reference.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/modules/input/renderer/references/file-reference-node.ts",

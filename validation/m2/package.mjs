@@ -55,6 +55,12 @@ db.prepare("INSERT INTO workspace VALUES(?,?,'browse')").run(
 db.prepare("INSERT INTO thread VALUES(?,?,0,'')").run(a, workspace);
 db.prepare("INSERT INTO desktop VALUES(1,?,'dark','normal')").run(a);
 writeFileSync(join(isolated.cwd, "fixture.txt"), "M2 isolated project\n");
+if (process.argv.includes("--references")) {
+  const dir = join(isolated.cwd, "packages", "src", "@virtualList");
+  mkdirSync(join(dir, "utils"), { recursive: true });
+  for (let i = 0; i < 110; i++)
+    writeFileSync(join(dir, `${i}.ts`), "PRIVATE_DIRECTORY_FILE_BODY");
+}
 const secondProject = join(isolated.root, "Second Project");
 mkdirSync(secondProject);
 writeFileSync(join(secondProject, "second.txt"), "Second isolated project\n");
@@ -566,6 +572,62 @@ try {
         windowsVirtualKeyCode: 13,
         modifiers: 8,
       });
+    if (process.argv.includes("--references")) {
+      await insert("@@virtualList");
+      await wait(() =>
+        evaluate(
+          "document.querySelector('.composer [role=option]')?.dataset.referenceKind === 'directory'",
+        ),
+      );
+      const candidates = await evaluate(
+        "[...document.querySelectorAll('.composer [role=option]')].map(el=>({path:el.dataset.referencePath,kind:el.dataset.referenceKind,text:el.textContent}))",
+      );
+      assert.equal(candidates[0].path, "packages/src/@virtualList");
+      assert.ok(candidates.some((entry) => entry.kind === "file"));
+      assert.ok(candidates[0].text.includes("文件夹"));
+      screenshots.push(await shot("m2-reference-search-dark-normal"));
+      await evaluate(
+        "document.querySelector('button[aria-label=\"切换为浅色主题\"]').click()",
+      );
+      await click("紧凑密度");
+      screenshots.push(await shot("m2-reference-search-light-compact"));
+      await evaluate(
+        "document.querySelector('button[aria-label=\"切换为深色主题\"]').click()",
+      );
+      await click("正常密度");
+      // Candidate confirmation uses the real Composer keyboard priority and must not send.
+      await evaluate(
+        "document.querySelector('[contenteditable=true]').focus()",
+      );
+      for (const type of ["keyDown", "keyUp"])
+        await call("Input.dispatchKeyEvent", {
+          type,
+          key: "Enter",
+          code: "Enter",
+          windowsVirtualKeyCode: 13,
+        });
+      await wait(() =>
+        evaluate(
+          "!!document.querySelector('.tiptap [data-reference-kind=directory]')",
+        ),
+      );
+      assert.equal(requests.length, 0);
+      screenshots.push(await shot("m2-reference-directory-token"));
+      await evaluate(
+        "document.querySelector('[contenteditable=true]').focus()",
+      );
+      for (const type of ["keyDown", "keyUp"])
+        await call("Input.dispatchKeyEvent", {
+          type,
+          key: "Enter",
+          code: "Enter",
+          windowsVirtualKeyCode: 13,
+          modifiers: 8,
+        });
+      checks.push(
+        "packaged @@ search ranks matching folder ahead of 110 descendant files, shows typed folder/file rows in both themes/densities; Enter inserts a directory token without sending",
+      );
+    }
     await insert("@fixture");
     assert.equal(
       await evaluate(
@@ -577,7 +639,7 @@ try {
       evaluate("!!document.querySelector('.composer [role=option]')"),
     );
     await evaluate(
-      "[...document.querySelectorAll('.composer [role=option]')].find(b=>b.textContent==='fixture.txt').click()",
+      "[...document.querySelectorAll('.composer [role=option]')].find(b=>b.dataset.referencePath==='fixture.txt' && b.dataset.referenceKind==='file').click()",
     );
     await wait(() =>
       evaluate(
@@ -615,6 +677,22 @@ try {
     );
     assert.equal(receipt.content.images.length, 1);
     assert.ok(receipt.content.message.includes("M2 isolated project"));
+    if (process.argv.includes("--references")) {
+      const directory = receipt.content.sources.find(
+        (source) => source.referenceKind === "directory",
+      );
+      assert.ok(directory);
+      assert.equal(directory.path, "packages/src/@virtualList");
+      assert.equal(directory.converterVersion, "directory-listing-v1");
+      assert.ok(receipt.content.message.includes("directory listing"));
+      assert.ok(receipt.content.message.includes('"kind":"directory"'));
+      assert.ok(
+        !receipt.content.message.includes("PRIVATE_DIRECTORY_FILE_BODY"),
+      );
+      checks.push(
+        "packaged directory reference freezes direct names/kinds through real provider request and durable receipt without recursively reading file bodies",
+      );
+    }
     await dropAttachment("queue-image.png", "image/png", imageFixture);
     await insert("QUEUE_IMAGE_ORIGINAL");
     await click("排队发送");

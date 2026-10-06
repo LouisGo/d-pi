@@ -19,6 +19,8 @@ export const ui = {
   "attachment.preparing": "Preparing attachments…",
   "attachment.ready": "Ready",
   "attachment.failed": "Preparation failed",
+  "attachment.directoryAtSend":
+    "Freeze directory entries when sending; excludes file contents",
   "attachment.readAtSend": "Read when sending",
   "attachment.remove": "Remove {name}",
   "attachment.previous": "Move {name} earlier",
@@ -55,14 +57,17 @@ export const ui = {
     "The private content is missing or was cleared as unreferenced cache. Reattach the original.",
   "attachment.library": "Imported files available to reference",
   "attachment.insert": "Add to draft",
-  "attachment.searchLabel": "Find project files",
-  "attachment.searching": "Searching project files…",
+  "attachment.refreshSearch": "Refresh search",
+  "attachment.directoryKind": "Folder",
+  "attachment.fileKind": "File",
+  "attachment.searchLabel": "Find project files and folders",
+  "attachment.searching": "Searching project files and folders…",
   "attachment.noMatches":
     "No matching project files. Try a filename or relative path.",
   "attachment.searchLimited":
     "Search reached its limit. Enter a more specific path.",
   "attachment.searchFailed": "File search failed. Edit the query to retry.",
-  "attachment.cancelSearch": "Close file search",
+  "attachment.cancelSearch": "Close search",
   "attachment.transportFailed":
     "Attachment request failed. Your draft is retained; retry the explicit operation.",
   "attachment.missing":

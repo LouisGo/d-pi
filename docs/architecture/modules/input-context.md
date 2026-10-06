@@ -70,3 +70,9 @@ input Main 的 AttachmentStore 管 schema 8 manifest、schema 9 对象投影、�
 附件被加入/移出持久草稿时，DraftRepository 在同一草稿保存事务内保守刷新受影响原件及派生物的释放时钟；扫描间的短暂重新引用不会继承旧七天期限。仍由维护重新读取权威引用，引用计数不成为删除授权。
 
 附件 manifest 的可选 `draftBoundRevision` 是对应来源首次持久采用的 input 元数据，与草稿 CAS 同事务写入；重试发布旧 manifest 时保留该事实。维护在有界来源查询中据此解除同 Thread/attachmentId 的导入租约，不解除其他同摘要来源，也不把历史采用当作当前引用。冻结准备租约与原生自持久证明规则不变。
+
+## 2026-10-06 文件与目录引用
+
+用户明确要求@目录与文件区分。搜索DTO含path/name/kind，引用manifest及冻结来源的可选referenceKind为file/directory；旧manifest缺字段按file兼容。目录在发送准备时经files边界重新读取并冻结直接条目的JSON清单（名称与kind），不递归展开正文；超过500直接条目、越权或目录变化时失败保留输入，不把部分清单作为成功。原件库存/冻结租约继续保护实际发送的目录清单摘要；旧冻结内容不跟随磁盘变化。Renderer目录图标/类型文字与原子节点尾斜杠沿用同一类型。
+
+Main服务拥有files的ProjectReferenceSearch实例，与附件服务一同close/drain；Query仅缓存只读候选，150ms合并连续键入，等待或查询身份不一致时不可确认旧候选，显式刷新使Main缓存失效。文件发送仍冻结原文件正文；不改变OMP执行或unknown/cold恢复策略。

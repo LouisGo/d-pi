@@ -1,8 +1,10 @@
+import { createHash } from "node:crypto";
 import { constants } from "node:fs";
 import { open } from "node:fs/promises";
 import { basename, join } from "node:path";
 import {
   listProjectFiles,
+  ProjectReferenceSearch,
   readProjectBytes,
 } from "../../../modules/files/main/public";
 import { AttachmentStore } from "../../../modules/input/main/public";
@@ -20,6 +22,7 @@ export function createAttachmentService(
   validateImage: (bytes: Uint8Array) => boolean,
   chooseFiles: (threadId: string) => Promise<string[] | null>,
 ) {
+  const searches = new ProjectReferenceSearch();
   const store = new AttachmentStore({
     directory: join(dataDirectory, "content"),
     database: storage.database,
@@ -28,19 +31,34 @@ export function createAttachmentService(
     ),
     validateImage,
     convertPdf: (bytes) => convertPdfContent(resources, bytes),
-    readReference: async (threadId, path) => {
+    readReference: async (threadId, path, kind) => {
       const thread = storage.threads.threadContext(threadId);
-      const reply = await readProjectBytes(
-        thread.directory,
-        path,
-        25 * 1024 * 1024,
-      );
+      const reply =
+        kind === "directory"
+          ? await listProjectFiles(thread.directory, path)
+          : await readProjectBytes(thread.directory, path, 25 * 1024 * 1024);
       const current = storage.threads.threadContext(threadId);
       if (
         current.directory !== thread.directory ||
         current.workingDirectoryId !== thread.workingDirectoryId
       )
         throw Error("reference-denied");
+      if (kind === "directory" && reply.kind === "entries") {
+        if (reply.truncated) throw Error("source-too-large");
+        // Freeze direct entry names and kinds, never recursively inline file bodies.
+        // JSON escaping keeps control characters and delimiter-shaped names literal.
+        const bytes = new TextEncoder().encode(
+          JSON.stringify({
+            schemaVersion: 1,
+            path,
+            entries: reply.entries.map(({ name, kind }) => ({ name, kind })),
+          }),
+        );
+        return {
+          bytes,
+          version: `sha256:${createHash("sha256").update(bytes).digest("hex")}`,
+        };
+      }
       if (reply.kind !== "bytes")
         throw Error(
           reply.kind === "unavailable" && reply.reason === "denied"
@@ -129,7 +147,11 @@ export function createAttachmentService(
       }
       case "add-reference":
         return attachments([
-          await store.addReference(command.threadId, command.path),
+          await store.addReference(
+            command.threadId,
+            command.path,
+            command.referenceKind,
+          ),
         ]);
       case "preview":
         return store.preview(command.threadId, command.id);
@@ -150,42 +172,15 @@ export function createAttachmentService(
           : { kind: "unavailable", reason: "attachment-not-found" };
       }
       case "search-reference": {
-        const stack = [""];
-        const paths: string[] = [];
-        let visited = 0;
-        let limited = false;
-        const query = command.query.toLocaleLowerCase();
-        while (stack.length && visited < 5000 && paths.length < 100) {
-          const path = stack.pop();
-          if (path === undefined) break;
-          const reply = await listProjectFiles(thread.directory, path);
-          if (reply.kind !== "entries") {
-            limited = true;
-            continue;
-          }
-          limited ||= reply.truncated;
-          for (const entry of reply.entries) {
-            visited++;
-            if (visited > 5000) {
-              limited = true;
-              break;
-            }
-            if (entry.kind === "directory" && entry.name !== "node_modules")
-              stack.push(entry.path);
-            else if (
-              entry.kind === "file" &&
-              entry.path.toLocaleLowerCase().includes(query)
-            ) {
-              paths.push(entry.path);
-              if (paths.length === 100) break;
-            }
-          }
-        }
-        return {
-          kind: "search",
-          paths,
-          truncated: limited || stack.length > 0 || paths.length === 100,
-        };
+        if (command.refresh) searches.invalidate(thread.directory);
+        const result = await searches.search(thread.directory, command.query);
+        const current = storage.threads.threadContext(command.threadId);
+        if (
+          current.directory !== thread.directory ||
+          current.workingDirectoryId !== thread.workingDirectoryId
+        )
+          return { kind: "unavailable", reason: "reference-denied" };
+        return result;
       }
     }
   }
@@ -220,7 +215,7 @@ export function createAttachmentService(
     if (stopping) return stopping;
     if (timer) clearInterval(timer);
     timer = undefined;
-    stopping = store.close();
+    stopping = Promise.all([store.close(), searches.close()]).then(() => {});
     return stopping;
   }
   return { store, execute, startMaintenance, close };

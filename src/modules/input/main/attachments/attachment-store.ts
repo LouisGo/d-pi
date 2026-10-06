@@ -43,6 +43,7 @@ export interface AttachmentStoreOptions {
   readReference?: (
     threadId: string,
     path: string,
+    kind: "file" | "directory",
   ) => Promise<{ bytes: Uint8Array; version: string }>;
   validateImage?: (
     bytes: Uint8Array,
@@ -348,7 +349,11 @@ export class AttachmentStore {
       return this.convert(record, bytes);
     });
   }
-  async addReference(threadId: string, path: string): Promise<Attachment> {
+  async addReference(
+    threadId: string,
+    path: string,
+    referenceKind: "file" | "directory" = "file",
+  ): Promise<Attachment> {
     const id = randomUUID();
     return this.serialized(async () =>
       this.save({
@@ -362,6 +367,7 @@ export class AttachmentStore {
           byteLength: 0,
           capturedAt: new Date().toISOString(),
           source: "reference",
+          referenceKind,
           path,
           status: "ready",
           representation: "reference",
@@ -755,6 +761,7 @@ export class AttachmentStore {
           const value = await this.options.readReference(
             threadId,
             attachment.path,
+            attachment.referenceKind ?? "file",
           );
           bytes = value.bytes.slice();
           version = value.version;
@@ -771,13 +778,15 @@ export class AttachmentStore {
         return {
           ok: false,
           reason:
-            attachment.representation === "reference"
-              ? error instanceof Error && error.message === "reference-denied"
-                ? "reference-denied"
-                : "reference-unavailable"
-              : error instanceof Error && error.message === "content-missing"
-                ? "content-missing"
-                : "content-corrupt",
+            error instanceof Error && error.message === "source-too-large"
+              ? "source-too-large"
+              : attachment.representation === "reference"
+                ? error instanceof Error && error.message === "reference-denied"
+                  ? "reference-denied"
+                  : "reference-unavailable"
+                : error instanceof Error && error.message === "content-missing"
+                  ? "content-missing"
+                  : "content-corrupt",
           attachmentId: token.id,
         };
       }
@@ -818,8 +827,12 @@ export class AttachmentStore {
       cursor = token.position + token.token.length;
       const representation = identifyContent(
         bytes,
-        attachment.mimeType,
-        attachment.name,
+        attachment.referenceKind === "directory"
+          ? "text/plain"
+          : attachment.mimeType,
+        attachment.referenceKind === "directory"
+          ? "directory"
+          : attachment.name,
       );
       let outputRepresentation = attachment.representation;
       if (
@@ -852,7 +865,7 @@ export class AttachmentStore {
           };
         }
       } else if (representation.kind === "text")
-        content.message += `\n[${attachment.path ?? attachment.name}]\n${representation.text}\n[/attachment]\n`;
+        content.message += `\n[${attachment.path ?? attachment.name}${attachment.referenceKind === "directory" ? "; directory listing" : ""}]\n${representation.text}\n[/attachment]\n`;
       else if (representation.kind === "image") {
         if (attachment.representation === "reference") {
           if (!this.options.validateImage)
@@ -908,7 +921,9 @@ export class AttachmentStore {
           coverageGaps: [],
           converterVersion:
             representation.kind === "text"
-              ? representation.encoding
+              ? attachment.referenceKind === "directory"
+                ? "directory-listing-v1"
+                : representation.encoding
               : "original-image-v1",
         };
         delete attachment.reason;
@@ -930,6 +945,9 @@ export class AttachmentStore {
         byteLength: bytes.byteLength,
         name: attachment.name,
         ...(attachment.path ? { path: attachment.path } : {}),
+        ...(attachment.referenceKind
+          ? { referenceKind: attachment.referenceKind }
+          : {}),
         ...(version ? { version } : {}),
       });
     }

@@ -1,6 +1,7 @@
 import { Node } from "@tiptap/core";
 import type { EditorState, Transaction } from "@tiptap/pm/state";
 import { z } from "zod";
+import type { Attachment } from "../../contracts/public";
 
 const Id = z.uuid();
 export const AttachmentReference = Node.create({
@@ -10,7 +11,11 @@ export const AttachmentReference = Node.create({
   atom: true,
   selectable: true,
   addAttributes() {
-    return { id: { default: null }, name: { default: null } };
+    return {
+      id: { default: null },
+      name: { default: null },
+      referenceKind: { default: null },
+    };
   },
   renderHTML({ node }) {
     const id = Id.parse(node.attrs.id);
@@ -20,8 +25,9 @@ export const AttachmentReference = Node.create({
         class: "rounded-sm bg-muted px-1 text-foreground",
         contenteditable: "false",
         "data-attachment-id": id,
+        "data-reference-kind": node.attrs.referenceKind,
       },
-      `@${node.attrs.name ?? id.slice(0, 8)}`,
+      `@${node.attrs.name ?? id.slice(0, 8)}${node.attrs.referenceKind === "directory" ? "/" : ""}`,
     ];
   },
   renderText({ node }) {
@@ -49,7 +55,7 @@ export function attachmentParagraph(text: string) {
 
 export function insertAttachmentReference(
   state: EditorState,
-  item: { id: string; name: string },
+  item: Pick<Attachment, "id" | "name" | "referenceKind">,
   range?: { from: number; to: number },
 ): Transaction {
   const type = state.schema.nodes.attachmentReference;

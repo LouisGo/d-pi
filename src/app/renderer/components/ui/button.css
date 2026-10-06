@@ -43,6 +43,7 @@
     color: var(--foreground);
     background: var(--muted-hover);
   }
+  .ui-button-navigation[aria-selected="true"],
   .ui-button-navigation[aria-current="page"],
   .ui-button-navigation[aria-pressed="true"] {
     color: var(--accent-foreground);

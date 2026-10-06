@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ProjectReferenceEntrySchema } from "../../modules/files/contracts/public";
 import {
   AttachmentFailureReasonSchema,
   AttachmentSchema,
@@ -24,11 +25,13 @@ export const AttachmentRequestSchema = z.discriminatedUnion("kind", [
     ...identity,
     kind: z.literal("add-reference"),
     path: z.string().min(1).max(4096),
+    referenceKind: z.enum(["file", "directory"]).optional(),
   }),
   z.strictObject({
     ...identity,
     kind: z.literal("search-reference"),
     query: z.string().max(4096),
+    refresh: z.boolean().optional(),
   }),
   z.strictObject({
     ...identity,
@@ -52,7 +55,7 @@ export const AttachmentReplySchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("cancelled") }),
   z.strictObject({
     kind: z.literal("search"),
-    paths: z.array(z.string().max(4096)).max(100),
+    entries: z.array(ProjectReferenceEntrySchema).max(100),
     truncated: z.boolean(),
   }),
   z.strictObject({
