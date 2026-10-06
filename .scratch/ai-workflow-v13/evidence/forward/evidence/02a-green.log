@@ -1,0 +1,11 @@
+✔ trims identifiers while preserving letter suffixes and content (0.529917ms)
+✔ rejects empty and whitespace-only identifiers (0.212041ms)
+✔ rejects non-string identifiers without coercion (0.094042ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 51.027084

@@ -6,7 +6,7 @@
 
 - 当前范围与授权：用户本轮明确要求参考「对比v13工作流」、联网核对 Matt v1.3，并依据真实项目全面升级 AI 工作流；允许分段 commit 和独立 review subagent。包含仓库规则、skills、只读调度工具及必要验证。没有由此授权产品功能、全局 skills 更新、push、创建远端 PR 或合并 main。
 - 产品判断：无新增产品待决。沿用 D-19/D-26/D-28–D-30，授权、工程、试用与认可分开；OMP/App 的所有权不变。
-- 工程状态：实施中。真实起点已有 Markdown 任务依赖校验、生成看板、check:fast 和 macOS CI；缺当前切片的确定性 ready 集合、稳定执行/review/PR/retro 路由。
+- 工程状态：完成。确定性 ready 集合、执行/review/PR/retro 路由已交付；完整检查、独立两轴 review、串行与真实双 worker 隔离试跑通过。原有任务解析、生成看板与门禁继续复用。
 - 用户试用：本次为开发工作流，无 App 候选；以仓库命令和后续 Agent 可接手的入口交付。
 - 继续边界：本地实现、检查、review 与 commit 可继续；外部 Git 操作沿用当前会话授权，未授权时交付本地分支及 PR 草稿即可。M2 尚未完成范围和用户认可不改。
 
@@ -43,11 +43,11 @@
     "id": "ai-workflow-v13",
     "title": "AI 工作流升级",
     "phase": "基建",
-    "engineering": "in-progress",
+    "engineering": "complete",
     "trial": "not-applicable",
     "acceptance": "not-applicable",
-    "evidence": ["research.md"],
-    "next": "完成 DAG 计划、skills、双轴 review 与本地交接"
+    "evidence": ["handoff.md", "validation.md", "review.md", "research.md"],
+    "next": "后续当前授权切片沿用新入口；本轮交付本地分支，外部操作另按授权推进"
   }
 ]
 ```

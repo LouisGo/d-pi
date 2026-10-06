@@ -1,0 +1,662 @@
+diff --git a/.scratch/forward/evidence/02a-green.log b/.scratch/forward/evidence/02a-green.log
+new file mode 100644
+index 0000000..23026d8
+--- /dev/null
++++ b/.scratch/forward/evidence/02a-green.log
+@@ -0,0 +1,11 @@
++✔ trims identifiers while preserving letter suffixes and content (0.529917ms)
++✔ rejects empty and whitespace-only identifiers (0.212041ms)
++✔ rejects non-string identifiers without coercion (0.094042ms)
++ℹ tests 3
++ℹ suites 0
++ℹ pass 3
++ℹ fail 0
++ℹ cancelled 0
++ℹ skipped 0
++ℹ todo 0
++ℹ duration_ms 51.027084
+diff --git a/.scratch/forward/evidence/02a-integration-isolated.log b/.scratch/forward/evidence/02a-integration-isolated.log
+new file mode 100644
+index 0000000..93cf267
+--- /dev/null
++++ b/.scratch/forward/evidence/02a-integration-isolated.log
+@@ -0,0 +1,3 @@
++Exit prior to config file resolving
++cause
++double-loading config "/dev/null" as "global", previously loaded as "user"
+diff --git a/.scratch/forward/evidence/02a-integration.log b/.scratch/forward/evidence/02a-integration.log
+new file mode 100644
+index 0000000..a45de75
+--- /dev/null
++++ b/.scratch/forward/evidence/02a-integration.log
+@@ -0,0 +1,17 @@
++npm warn Unknown user config "home". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
++
++> test
++> node --test tests/*.test.mjs
++
++✔ preserves an existing identifier (0.392375ms)
++✔ trims identifiers while preserving letter suffixes and content (0.428917ms)
++✔ rejects empty and whitespace-only identifiers (0.205042ms)
++✔ rejects non-string identifiers without coercion (0.095708ms)
++ℹ tests 4
++ℹ suites 0
++ℹ pass 4
++ℹ fail 0
++ℹ cancelled 0
++ℹ skipped 0
++ℹ todo 0
++ℹ duration_ms 52.211416
+diff --git a/.scratch/forward/evidence/02a-red.log b/.scratch/forward/evidence/02a-red.log
+new file mode 100644
+index 0000000..9fc7e32
+--- /dev/null
++++ b/.scratch/forward/evidence/02a-red.log
+@@ -0,0 +1,35 @@
++node:internal/modules/esm/resolve:272
++    throw new ERR_MODULE_NOT_FOUND(
++          ^
++
++Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-workflow-forward-w8bbc4q1-wt-02a/src/normalize.mjs' imported from /private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-workflow-forward-w8bbc4q1-wt-02a/tests/normalize.test.mjs
++    at finalizeResolution (node:internal/modules/esm/resolve:272:11)
++    at moduleResolve (node:internal/modules/esm/resolve:879:10)
++    at defaultResolve (node:internal/modules/esm/resolve:1006:11)
++    at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
++    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
++    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
++    at #resolve (node:internal/modules/esm/loader:687:17)
++    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
++    at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33)
++    at ModuleJob.link (node:internal/modules/esm/module_job:381:17) {
++  code: 'ERR_MODULE_NOT_FOUND',
++  url: 'file:///private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-workflow-forward-w8bbc4q1-wt-02a/src/normalize.mjs'
++}
++
++Node.js v24.21.0
++✖ tests/normalize.test.mjs (40.205083ms)
++ℹ tests 1
++ℹ suites 0
++ℹ pass 0
++ℹ fail 1
++ℹ cancelled 0
++ℹ skipped 0
++ℹ todo 0
++ℹ duration_ms 46.050916
++
++✖ failing tests:
++
++test at tests/normalize.test.mjs:1:1
++✖ tests/normalize.test.mjs (40.205083ms)
++  'test failed'
+diff --git a/.scratch/forward/evidence/03-green.log b/.scratch/forward/evidence/03-green.log
+new file mode 100644
+index 0000000..890e820
+--- /dev/null
++++ b/.scratch/forward/evidence/03-green.log
+@@ -0,0 +1,10 @@
++✔ labels all supported task states (0.382542ms)
++✔ rejects unknown states without property lookup or coercion (0.22125ms)
++ℹ tests 2
++ℹ suites 0
++ℹ pass 2
++ℹ fail 0
++ℹ cancelled 0
++ℹ skipped 0
++ℹ todo 0
++ℹ duration_ms 49.80425
+diff --git a/.scratch/forward/evidence/03-integration.log b/.scratch/forward/evidence/03-integration.log
+new file mode 100644
+index 0000000..3de1716
+--- /dev/null
++++ b/.scratch/forward/evidence/03-integration.log
+@@ -0,0 +1,18 @@
++
++> test
++> node --test tests/*.test.mjs
++
++✔ preserves an existing identifier (0.38575ms)
++✔ labels all supported task states (0.409584ms)
++✔ rejects unknown states without property lookup or coercion (0.233375ms)
++✔ trims identifiers while preserving letter suffixes and content (0.557917ms)
++✔ rejects empty and whitespace-only identifiers (0.241333ms)
++✔ rejects non-string identifiers without coercion (0.107625ms)
++ℹ tests 6
++ℹ suites 0
++ℹ pass 6
++ℹ fail 0
++ℹ cancelled 0
++ℹ skipped 0
++ℹ todo 0
++ℹ duration_ms 52.537875
+diff --git a/.scratch/forward/evidence/03-red.log b/.scratch/forward/evidence/03-red.log
+new file mode 100644
+index 0000000..f9fc065
+--- /dev/null
++++ b/.scratch/forward/evidence/03-red.log
+@@ -0,0 +1,35 @@
++node:internal/modules/esm/resolve:272
++    throw new ERR_MODULE_NOT_FOUND(
++          ^
++
++Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-workflow-forward-w8bbc4q1-wt-03/src/labels.mjs' imported from /private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-workflow-forward-w8bbc4q1-wt-03/tests/labels.test.mjs
++    at finalizeResolution (node:internal/modules/esm/resolve:272:11)
++    at moduleResolve (node:internal/modules/esm/resolve:879:10)
++    at defaultResolve (node:internal/modules/esm/resolve:1006:11)
++    at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
++    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
++    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
++    at #resolve (node:internal/modules/esm/loader:687:17)
++    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
++    at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33)
++    at ModuleJob.link (node:internal/modules/esm/module_job:381:17) {
++  code: 'ERR_MODULE_NOT_FOUND',
++  url: 'file:///private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-workflow-forward-w8bbc4q1-wt-03/src/labels.mjs'
++}
++
++Node.js v24.21.0
++✖ tests/labels.test.mjs (39.185125ms)
++ℹ tests 1
++ℹ suites 0
++ℹ pass 0
++ℹ fail 1
++ℹ cancelled 0
++ℹ skipped 0
++ℹ todo 0
++ℹ duration_ms 43.718125
++
++✖ failing tests:
++
++test at tests/labels.test.mjs:1:1
++✖ tests/labels.test.mjs (39.185125ms)
++  'test failed'
+diff --git a/.scratch/forward/evidence/04-green.log b/.scratch/forward/evidence/04-green.log
+new file mode 100644
+index 0000000..f5ab0d7
+--- /dev/null
++++ b/.scratch/forward/evidence/04-green.log
+@@ -0,0 +1,11 @@
++✔ describes a trimmed identifier and its exact state label (0.485542ms)
++✔ composition preserves identifier and state validation (0.220292ms)
++✔ adding descriptions keeps echoId identity behavior (0.067125ms)
++ℹ tests 3
++ℹ suites 0
++ℹ pass 3
++ℹ fail 0
++ℹ cancelled 0
++ℹ skipped 0
++ℹ todo 0
++ℹ duration_ms 48.919
+diff --git a/.scratch/forward/evidence/04-red.log b/.scratch/forward/evidence/04-red.log
+new file mode 100644
+index 0000000..c36517e
+--- /dev/null
++++ b/.scratch/forward/evidence/04-red.log
+@@ -0,0 +1,25 @@
++file:///private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-workflow-forward-w8bbc4q1-wt-04/tests/describe.test.mjs:3
++import { describeTicket, echoId } from "../src/index.mjs";
++         ^^^^^^^^^^^^^^
++SyntaxError: The requested module '../src/index.mjs' does not provide an export named 'describeTicket'
++    at #asyncInstantiate (node:internal/modules/esm/module_job:455:21)
++    at async ModuleJob.run (node:internal/modules/esm/module_job:553:5)
++    at async node:internal/modules/esm/loader:647:26
++    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
++
++Node.js v24.21.0
++✖ tests/describe.test.mjs (40.849416ms)
++ℹ tests 1
++ℹ suites 0
++ℹ pass 0
++ℹ fail 1
++ℹ cancelled 0
++ℹ skipped 0
++ℹ todo 0
++ℹ duration_ms 46.804083
++
++✖ failing tests:
++
++test at tests/describe.test.mjs:1:1
++✖ tests/describe.test.mjs (40.849416ms)
++  'test failed'
+diff --git a/.scratch/forward/evidence/final-check.log b/.scratch/forward/evidence/final-check.log
+new file mode 100644
+index 0000000..8efdd0e
+--- /dev/null
++++ b/.scratch/forward/evidence/final-check.log
+@@ -0,0 +1,21 @@
++
++> check
++> node --test tests/*.test.mjs
++
++✔ describes a trimmed identifier and its exact state label (0.458ms)
++✔ composition preserves identifier and state validation (0.225958ms)
++✔ adding descriptions keeps echoId identity behavior (0.071459ms)
++✔ preserves an existing identifier (0.397958ms)
++✔ labels all supported task states (0.430459ms)
++✔ rejects unknown states without property lookup or coercion (0.244166ms)
++✔ trims identifiers while preserving letter suffixes and content (0.468459ms)
++✔ rejects empty and whitespace-only identifiers (0.219708ms)
++✔ rejects non-string identifiers without coercion (0.103959ms)
++ℹ tests 9
++ℹ suites 0
++ℹ pass 9
++ℹ fail 0
++ℹ cancelled 0
++ℹ skipped 0
++ℹ todo 0
++ℹ duration_ms 54.511917
+diff --git a/.scratch/forward/evidence/final-frontier.log b/.scratch/forward/evidence/final-frontier.log
+new file mode 100644
+index 0000000..a4f9b90
+--- /dev/null
++++ b/.scratch/forward/evidence/final-frontier.log
+@@ -0,0 +1,42 @@
++{
++  "spec": ".scratch/forward/spec.md",
++  "slice": "flow",
++  "notice": "Structural readiness only; verify authorization, leaf scope and write conflicts before dispatch.",
++  "ready": [],
++  "claimed": [
++    {
++      "id": "05",
++      "path": ".scratch/forward/issues/05-active.md",
++      "title": "05 Active worker",
++      "by": []
++    }
++  ],
++  "blocked": [],
++  "held": [
++    {
++      "id": "06",
++      "path": ".scratch/forward/issues/06-live.md",
++      "title": "06 Live service",
++      "status": "open",
++      "reason": "live-service product answer pending",
++      "by": []
++    }
++  ],
++  "resolved": [
++    {
++      "id": "02a",
++      "path": ".scratch/forward/issues/02a-normalize.md",
++      "title": "02a Normalize identifier"
++    },
++    {
++      "id": "03",
++      "path": ".scratch/forward/issues/03-label.md",
++      "title": "03 State label"
++    },
++    {
++      "id": "04",
++      "path": ".scratch/forward/issues/04-compose.md",
++      "title": "04 Compose description"
++    }
++  ]
++}
+diff --git a/.scratch/forward/evidence/final-status.log b/.scratch/forward/evidence/final-status.log
+new file mode 100644
+index 0000000..9e81932
+--- /dev/null
++++ b/.scratch/forward/evidence/final-status.log
+@@ -0,0 +1,2 @@
++$ node scripts/tasks/project-status.mjs --check docs/status.md
++PASS: project status (1 slices, 7 tasks; engineering/trial/acceptance independent)
+diff --git a/.scratch/forward/evidence/final-test.log b/.scratch/forward/evidence/final-test.log
+new file mode 100644
+index 0000000..0d3d605
+--- /dev/null
++++ b/.scratch/forward/evidence/final-test.log
+@@ -0,0 +1,21 @@
++
++> test
++> node --test tests/*.test.mjs
++
++✔ describes a trimmed identifier and its exact state label (0.61975ms)
++✔ composition preserves identifier and state validation (0.234792ms)
++✔ adding descriptions keeps echoId identity behavior (0.068708ms)
++✔ preserves an existing identifier (0.606375ms)
++✔ labels all supported task states (0.383833ms)
++✔ rejects unknown states without property lookup or coercion (0.223959ms)
++✔ trims identifiers while preserving letter suffixes and content (0.690375ms)
++✔ rejects empty and whitespace-only identifiers (0.215334ms)
++✔ rejects non-string identifiers without coercion (0.09475ms)
++ℹ tests 9
++ℹ suites 0
++ℹ pass 9
++ℹ fail 0
++ℹ cancelled 0
++ℹ skipped 0
++ℹ todo 0
++ℹ duration_ms 61.913417
+diff --git a/.scratch/forward/evidence/frontier-after-02a.log b/.scratch/forward/evidence/frontier-after-02a.log
+new file mode 100644
+index 0000000..f10f64a
+--- /dev/null
++++ b/.scratch/forward/evidence/frontier-after-02a.log
+@@ -0,0 +1,52 @@
++{
++  "spec": ".scratch/forward/spec.md",
++  "slice": "flow",
++  "notice": "Structural readiness only; verify authorization, leaf scope and write conflicts before dispatch.",
++  "ready": [],
++  "claimed": [
++    {
++      "id": "03",
++      "path": ".scratch/forward/issues/03-label.md",
++      "title": "03 State label",
++      "by": []
++    },
++    {
++      "id": "05",
++      "path": ".scratch/forward/issues/05-active.md",
++      "title": "05 Active worker",
++      "by": []
++    }
++  ],
++  "blocked": [
++    {
++      "id": "04",
++      "path": ".scratch/forward/issues/04-compose.md",
++      "title": "04 Compose description",
++      "by": [
++        {
++          "id": "03",
++          "path": ".scratch/forward/issues/03-label.md",
++          "title": "03 State label",
++          "status": "claimed"
++        }
++      ]
++    }
++  ],
++  "held": [
++    {
++      "id": "06",
++      "path": ".scratch/forward/issues/06-live.md",
++      "title": "06 Live service",
++      "status": "open",
++      "reason": "live-service product answer pending",
++      "by": []
++    }
++  ],
++  "resolved": [
++    {
++      "id": "02a",
++      "path": ".scratch/forward/issues/02a-normalize.md",
++      "title": "02a Normalize identifier"
++    }
++  ]
++}
+diff --git a/.scratch/forward/evidence/frontier-after-03.log b/.scratch/forward/evidence/frontier-after-03.log
+new file mode 100644
+index 0000000..38b8b5c
+--- /dev/null
++++ b/.scratch/forward/evidence/frontier-after-03.log
+@@ -0,0 +1,43 @@
++{
++  "spec": ".scratch/forward/spec.md",
++  "slice": "flow",
++  "notice": "Structural readiness only; verify authorization, leaf scope and write conflicts before dispatch.",
++  "ready": [
++    {
++      "id": "04",
++      "path": ".scratch/forward/issues/04-compose.md",
++      "title": "04 Compose description"
++    }
++  ],
++  "claimed": [
++    {
++      "id": "05",
++      "path": ".scratch/forward/issues/05-active.md",
++      "title": "05 Active worker",
++      "by": []
++    }
++  ],
++  "blocked": [],
++  "held": [
++    {
++      "id": "06",
++      "path": ".scratch/forward/issues/06-live.md",
++      "title": "06 Live service",
++      "status": "open",
++      "reason": "live-service product answer pending",
++      "by": []
++    }
++  ],
++  "resolved": [
++    {
++      "id": "02a",
++      "path": ".scratch/forward/issues/02a-normalize.md",
++      "title": "02a Normalize identifier"
++    },
++    {
++      "id": "03",
++      "path": ".scratch/forward/issues/03-label.md",
++      "title": "03 State label"
++    }
++  ]
++}
+diff --git a/.scratch/forward/issues/02a-normalize.md b/.scratch/forward/issues/02a-normalize.md
+index ca92733..a3ac068 100644
+--- a/.scratch/forward/issues/02a-normalize.md
++++ b/.scratch/forward/issues/02a-normalize.md
+@@ -1,4 +1,8 @@
+ # 02a Normalize identifier
+-Status: open
++Status: resolved
+ Blocked by: 01
+ Deliver src/normalize.mjs export normalizeId(value): nonempty string trimmed; non-string or whitespace-only throws TypeError. Preserve letter suffixes. Tests owned in tests/normalize.test.mjs.
++
++## Comments
++
++2026-10-06：独立工作提交 `73e16ec606f9bd55f403090d9d9364583ce11adc` 从记录 base 启动，仅写 `src/normalize.mjs` 和 `tests/normalize.test.mjs`，已串行集成到 `codex/flow`。先因目标模块不存在失败，再通过 3 个行为测试：修剪且保留字母后缀/内容、拒绝空与纯空白、拒绝非字符串且不强制转换。集成 `npm test` 4/4 通过，既有 echoId 保留。原始证据：[red](../evidence/02a-red.log)、[green](../evidence/02a-green.log)、[integration](../evidence/02a-integration.log)。纯 Node fixture，无 SDK/GUI 验收。
+diff --git a/.scratch/forward/issues/03-label.md b/.scratch/forward/issues/03-label.md
+index 1daad4b..066898a 100644
+--- a/.scratch/forward/issues/03-label.md
++++ b/.scratch/forward/issues/03-label.md
+@@ -1,4 +1,8 @@
+ # 03 State label
+-Status: open
++Status: resolved
+ Blocked by: 01
+ Deliver src/labels.mjs export stateLabel(status): open -> 待执行, claimed -> 处理中, resolved -> 已完成; unknown throws TypeError. Tests owned in tests/labels.test.mjs.
++
++## Comments
++
++2026-10-06：独立工作提交 `4edc7871e483f75fa3fb2608e25c0e16e021787d` 从记录 base 启动，仅写 `src/labels.mjs` 和 `tests/labels.test.mjs`，已串行集成到 `codex/flow`。目标模块不存在时真实失败，随后 2 个行为测试通过：精确映射三态，拒绝未知值、继承属性名和可被强制转换的值。集成 `npm test` 6/6 通过；原始证据：[red](../evidence/03-red.log)、[green](../evidence/03-green.log)、[integration](../evidence/03-integration.log)。纯 Node fixture。
+diff --git a/.scratch/forward/issues/04-compose.md b/.scratch/forward/issues/04-compose.md
+index 31f744d..eec1430 100644
+--- a/.scratch/forward/issues/04-compose.md
++++ b/.scratch/forward/issues/04-compose.md
+@@ -1,4 +1,8 @@
+ # 04 Compose description
+-Status: open
++Status: resolved
+ Blocked by: 02a, 03
+ Add describeTicket({id,status}) to src/index.mjs consuming normalizeId and stateLabel; returns trimmed-id + colon-space + Chinese label. Preserve echoId. Tests owned in tests/describe.test.mjs.
++
++## Comments
++
++2026-10-06：从已集成 02a/03 的 `d53a1d248f562bb1a31cd197e9e2371ccf442168` 启动，工作提交 `0d0ee136e77fc2d5d6e1e24793b5a6acf228ae45`，仅写 `src/index.mjs` 和 `tests/describe.test.mjs`，已串行集成为 `adce69e5bb9499562e90d64549913d9da248f250`。先因缺少 describeTicket export 失败；随后 3 个目标测试通过，覆盖精确组合、非法标识/状态拒绝及 echoId 原样返回。最终 `npm test` / `npm run check` 均 exit 0、9/9 通过。原始证据：[red](../evidence/04-red.log)、[green](../evidence/04-green.log)、[final test](../evidence/final-test.log)、[final check](../evidence/final-check.log)。源码直接消费两个公共函数，未复制其合同。纯 Node fixture，无 SDK/GUI 验收。
+diff --git a/.scratch/forward/spec.md b/.scratch/forward/spec.md
+index 8822baa..b275299 100644
+--- a/.scratch/forward/spec.md
++++ b/.scratch/forward/spec.md
+@@ -3,10 +3,30 @@
+ ## 推进与交接
+ Current authorized slice: ready leaf tickets in flow. Implement their behavior and integration locally; preserve existing echoId. Local commits/worktrees are authorized, no remote actions. 05 is claimed by a worker that is still active; do not reclaim it. 06 needs a live-service product answer and stays held. 07 is outside this slice. Pure engineering, trial/acceptance not applicable.
+ 
++### 2026-10-06 实施记录
++
++集成分支 `codex/flow`，固定 base `d7e3298977e37fbf79e4cd0cd75f66be2877f7b7`。管理状态由 `/root/forward_test` 单写。4 个并发槽均在使用，按 ready frontier 串行实现和本地两轴 review，不重复派发正在运行的 05。
++
++| 票 | 执行者 / 模式 | 独立 worktree | 分支 | 启动 integration SHA |
++| --- | --- | --- | --- | --- |
++| 02a | `/root/forward_test` / 串行 | `/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-workflow-forward-w8bbc4q1-wt-02a` | `codex/flow-02a` | `d7e3298977e37fbf79e4cd0cd75f66be2877f7b7` |
++| 03 | `/root/forward_test` / 串行 | `/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-workflow-forward-w8bbc4q1-wt-03` | `codex/flow-03` | `d7e3298977e37fbf79e4cd0cd75f66be2877f7b7` |
++| 04 | `/root/forward_test` / 串行 | `/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-workflow-forward-w8bbc4q1-wt-04` | `codex/flow-04` | `d53a1d248f562bb1a31cd197e9e2371ccf442168` |
++
++当前交付目标为 `normalizeId`、`stateLabel` 及依赖完成后的 `describeTicket`；先记录真实失败，再以通过测试和组合 review 验收。05 保留 claimed，06 的 live-service 产品问题未回答，07 范围外；这些边界不阻塞独立工程票。
++
++02a 已从 `73e16ec606f9bd55f403090d9d9364583ce11adc` 集成：3 个目标行为测试和含 echoId 的 4 个集成测试通过。证据见 [02a 票](issues/02a-normalize.md)。03 继续按原固定基点实现，04 仍依赖 03。
++
++03 已从 `4edc7871e483f75fa3fb2608e25c0e16e021787d` 集成：2 个目标测试和 6 个集成测试通过。证据见 [03 票](issues/03-label.md)。重算 frontier 后仅 04 可领取；从最新集成点启动。
++
++04 已集成为 `adce69e5bb9499562e90d64549913d9da248f250`：`describeTicket({id:" 02a ",status:"open"})` 返回 `02a: 待执行`，两个公共函数仍拥有各自验证；echoId 不变。最终 `npm test` / `npm run check` 均 9/9，exit 0，Node `v24.21.0`。02a/03/04 工程验收完成；flow 仍有 active 的 05 和 held 的 06，整体为 partial，试用/用户认可均 not-applicable。最终 frontier 无 ready，05 claimed，06 held，不重复领取也不空转。
++
++工具证据说明：首次 npm 调用输出个人配置警告，测试完成后有关闭延迟，最终 exit 0；没有主动读取个人配置文件。一次隔离配置重试误将 user/global 都指向 `/dev/null`，在运行测试前失败，保留 [失败日志](evidence/02a-integration-isolated.log)。最终两个 npm 命令将 user/global/cache 指向本 fixture 的不同路径并关闭 update notifier；未安装依赖或访问账号。该命令错误不作为行为红灯。
++
+ ```implementation-plan
+ [{"id":"flow","tickets":["02a","03","04","05","06"],"hold":{"06":"live-service product answer pending"}}]
+ ```
+ 
+ ```project-status
+-[{"id":"fixture","title":"Ticket description","phase":"基建","engineering":"in-progress","trial":"not-applicable","acceptance":"not-applicable","current":true,"next":"ready leaf tickets"}]
++[{"id":"fixture","title":"Ticket description","phase":"基建","engineering":"partial","trial":"not-applicable","acceptance":"not-applicable","current":true,"build":"adce69e5bb9499562e90d64549913d9da248f250","next":"05 active worker; 06 held for product answer"}]
+ ```
+diff --git a/docs/status.md b/docs/status.md
+index a490eeb..392ec45 100644
+--- a/docs/status.md
++++ b/docs/status.md
+@@ -2,13 +2,13 @@
+ 
+ 此页由所属规格的 `project-status` 块和任务的 `Status` / `Blocked by` 生成，禁止手工改进度。更新源后运行 `pnpm report:status:write`；`check` / `check:fast` 拒绝非法字段、依赖与陈旧结果。读取约定见 [任务约定](agents/issue-tracker.md#总看板读取约定)。
+ 
+-当前工作：[Ticket description](../.scratch/forward/spec.md)。ready leaf tickets
++当前工作：[Ticket description](../.scratch/forward/spec.md)。05 active worker; 06 held for product answer
+ 
+ 工程完成、交付试用与用户认可独立；下面的计划不构成阶段授权。G1 按受影响能力验证，M1 是内部闭环，M2 是首版，M3 是后续增强。
+ 
+ | 阶段 | 切片 / 规格 | 工程 | 试用 | 用户认可 | 构建 / 证据 | 下一步 |
+ | --- | --- | --- | --- | --- | --- | --- |
+-| 基建 | [Ticket description](../.scratch/forward/spec.md) | 实施中 | 不适用 | 不适用 | —  | ready leaf tickets |
++| 基建 | [Ticket description](../.scratch/forward/spec.md) | 部分完成 | 不适用 | 不适用 | adce69e5bb9499562e90d64549913d9da248f250  | 05 active worker; 06 held for product answer |
+ 
+ ## 当前任务与真实阻塞
+ 
+@@ -16,9 +16,6 @@
+ 
+ | 所属范围 / 任务 | 状态 | 未解决的工程依赖 |
+ | --- | --- | --- |
+-| [forward / 02a Normalize identifier](../.scratch/forward/issues/02a-normalize.md) | open | 无；范围以所属规格为准 |
+-| [forward / 03 State label](../.scratch/forward/issues/03-label.md) | open | 无；范围以所属规格为准 |
+-| [forward / 04 Compose description](../.scratch/forward/issues/04-compose.md) | open | [02a](../.scratch/forward/issues/02a-normalize.md)、[03](../.scratch/forward/issues/03-label.md) |
+ | [forward / 05 Active worker](../.scratch/forward/issues/05-active.md) | claimed | 无；范围以所属规格为准 |
+ | [forward / 06 Live service](../.scratch/forward/issues/06-live.md) | open | 无；范围以所属规格为准 |
+ | [forward / 07 Future feature](../.scratch/forward/issues/07-future.md) | open | 无；范围以所属规格为准 |
+@@ -26,4 +23,4 @@
+ ## 重要待决与继续边界
+ 
+ 
+-<!-- source-sha256: fe64345fe344b564f943381c4a3226b669a26cabb772963c5112db0fe3667bea; sources: 8 -->
++<!-- source-sha256: 33672e6733862bc306505e9eccf98e9f2ea1472f1b9182879ecfd95b6c660482; sources: 8 -->
+diff --git a/src/index.mjs b/src/index.mjs
+index a3c47c8..5cd6f57 100644
+--- a/src/index.mjs
++++ b/src/index.mjs
+@@ -1 +1,8 @@
++import { normalizeId } from "./normalize.mjs";
++import { stateLabel } from "./labels.mjs";
++
+ export function echoId(id) { return id; }
++
++export function describeTicket({ id, status }) {
++  return `${normalizeId(id)}: ${stateLabel(status)}`;
++}
+diff --git a/src/labels.mjs b/src/labels.mjs
+new file mode 100644
+index 0000000..d067dab
+--- /dev/null
++++ b/src/labels.mjs
+@@ -0,0 +1,8 @@
++export function stateLabel(status) {
++  switch (status) {
++    case "open": return "待执行";
++    case "claimed": return "处理中";
++    case "resolved": return "已完成";
++    default: throw new TypeError("Unknown task state");
++  }
++}
+diff --git a/src/normalize.mjs b/src/normalize.mjs
+new file mode 100644
+index 0000000..07872fd
+--- /dev/null
++++ b/src/normalize.mjs
+@@ -0,0 +1,6 @@
++export function normalizeId(value) {
++  if (typeof value !== "string" || value.trim().length === 0) {
++    throw new TypeError("Identifier must be a nonempty string");
++  }
++  return value.trim();
++}
+diff --git a/tests/describe.test.mjs b/tests/describe.test.mjs
+new file mode 100644
+index 0000000..65e03ec
+--- /dev/null
++++ b/tests/describe.test.mjs
+@@ -0,0 +1,19 @@
++import { test } from "node:test";
++import assert from "node:assert/strict";
++import { describeTicket, echoId } from "../src/index.mjs";
++
++test("describes a trimmed identifier and its exact state label", () => {
++  assert.equal(describeTicket({ id: " \t02a\n", status: "open" }), "02a: 待执行");
++  assert.equal(describeTicket({ id: "03", status: "claimed" }), "03: 处理中");
++  assert.equal(describeTicket({ id: " 04b ", status: "resolved" }), "04b: 已完成");
++});
++
++test("composition preserves identifier and state validation", () => {
++  assert.throws(() => describeTicket({ id: " \t", status: "open" }), TypeError);
++  assert.throws(() => describeTicket({ id: 4, status: "open" }), TypeError);
++  assert.throws(() => describeTicket({ id: "04", status: "unknown" }), TypeError);
++});
++
++test("adding descriptions keeps echoId identity behavior", () => {
++  assert.equal(echoId(" 02a "), " 02a ");
++});
+diff --git a/tests/labels.test.mjs b/tests/labels.test.mjs
+new file mode 100644
+index 0000000..9bf12d4
+--- /dev/null
++++ b/tests/labels.test.mjs
+@@ -0,0 +1,15 @@
++import { test } from "node:test";
++import assert from "node:assert/strict";
++import { stateLabel } from "../src/labels.mjs";
++
++test("labels all supported task states", () => {
++  assert.equal(stateLabel("open"), "待执行");
++  assert.equal(stateLabel("claimed"), "处理中");
++  assert.equal(stateLabel("resolved"), "已完成");
++});
++
++test("rejects unknown states without property lookup or coercion", () => {
++  for (const status of ["unknown", "OPEN", " open ", "", "toString", "__proto__", undefined, null, {}, ["open"]]) {
++    assert.throws(() => stateLabel(status), TypeError);
++  }
++});
+diff --git a/tests/normalize.test.mjs b/tests/normalize.test.mjs
+new file mode 100644
+index 0000000..09b2c25
+--- /dev/null
++++ b/tests/normalize.test.mjs
+@@ -0,0 +1,21 @@
++import { test } from "node:test";
++import assert from "node:assert/strict";
++import { normalizeId } from "../src/normalize.mjs";
++
++test("trims identifiers while preserving letter suffixes and content", () => {
++  assert.equal(normalizeId(" \t02a\n"), "02a");
++  assert.equal(normalizeId("task-04b"), "task-04b");
++  assert.equal(normalizeId("任务 07c"), "任务 07c");
++});
++
++test("rejects empty and whitespace-only identifiers", () => {
++  for (const value of ["", " \t\n", "\u00a0"]) {
++    assert.throws(() => normalizeId(value), TypeError);
++  }
++});
++
++test("rejects non-string identifiers without coercion", () => {
++  for (const value of [undefined, null, 2, true, [], {}, new String("02a")]) {
++    assert.throws(() => normalizeId(value), TypeError);
++  }
++});

@@ -1,0 +1,11 @@
+✔ describes a trimmed identifier and its exact state label (0.485542ms)
+✔ composition preserves identifier and state validation (0.220292ms)
+✔ adding descriptions keeps echoId identity behavior (0.067125ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 48.919

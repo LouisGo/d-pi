@@ -1,0 +1,11 @@
+✔ leftTag wraps the supplied id (0.866333ms)
+✔ leftTag preserves the 02a suffix (0.067ms)
+✔ leftTag preserves surrounding whitespace (0.059ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 68.693459
