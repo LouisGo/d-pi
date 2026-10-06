@@ -375,6 +375,7 @@ let agedAttachmentPath;
 let longReadingMetrics;
 let diagnosticsMetrics;
 let attentionMetrics;
+let workbenchLayout;
 try {
   await connect();
   if (process.argv.includes("--diagnostics"))
@@ -382,6 +383,30 @@ try {
   await wait(() =>
     evaluate("!!document.querySelector('[contenteditable=true]')"),
   );
+  if (process.argv.includes("--workbench")) {
+    workbenchLayout = await evaluate(
+      "(()=>{const h=document.querySelector('.primary-sidebar>.panel-header');return {top:h.getBoundingClientRect().top,inner:innerHeight,outer:outerHeight,controls:[...h.querySelectorAll('button')].map(b=>({name:b.getAttribute('aria-label')||b.title,left:b.getBoundingClientRect().left})),density:document.documentElement.hasAttribute('data-density'),workspace:document.querySelector('[data-layout-region=workspace]').getBoundingClientRect().width,bottom:document.querySelector('[data-layout-region=bottom]').getBoundingClientRect().height,icons:[...document.querySelectorAll('.ui-button-icon')].filter(b=>b.getBoundingClientRect().width>0&&getComputedStyle(b).visibility!=='hidden'&&!b.closest('[hidden],[inert]')).map(b=>{const r=b.getBoundingClientRect(),s=b.querySelector('svg').getBoundingClientRect(),i=b.querySelector('.ui-icon-button-indicator');return {name:b.getAttribute('aria-label')||b.title,dx:s.x+s.width/2-r.x-r.width/2,dy:s.y+s.height/2-r.y-r.height/2,overlay:!i||(getComputedStyle(i).position==='absolute'&&getComputedStyle(i).pointerEvents==='none')};})};})()",
+    );
+    assert.equal(workbenchLayout.top, 0);
+    assert.equal(workbenchLayout.inner, workbenchLayout.outer);
+    assert.deepEqual(
+      workbenchLayout.controls.map((c) => c.name),
+      ["后退", "前进", "打开或收起项目导航"],
+    );
+    assert.ok(workbenchLayout.controls[0].left >= 96);
+    assert.equal(workbenchLayout.density, false);
+    assert.ok(workbenchLayout.workspace < 1 && workbenchLayout.bottom < 1);
+    assert.ok(
+      workbenchLayout.icons.length >= 5 &&
+        workbenchLayout.icons.every(
+          (i) => Math.abs(i.dx) < 0.5 && Math.abs(i.dy) < 0.5 && i.overlay,
+        ),
+    );
+    checks.push(
+      "packaged workbench uses one native header, navigation after controls, compact default, closed empty hosts and centered icons with out-of-flow indicators",
+    );
+    screenshots.push(await shot("workbench-header"));
+  }
   await evaluate("document.querySelector('.configuration-settings').open=true");
   await wait(() =>
     evaluate(
@@ -1484,6 +1509,7 @@ try {
     longReading: longReadingMetrics,
     diagnostics: diagnosticsMetrics,
     attention: attentionMetrics,
+    workbench: workbenchLayout,
     attentionProviderCalls: attentionSupplier.requests.length,
     models: requests.map((r) => r.model),
     nativeSessions: db

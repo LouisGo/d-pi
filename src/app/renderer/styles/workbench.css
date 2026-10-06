@@ -345,9 +345,6 @@
   .startup {
     padding-block-start: calc(var(--header-height) + var(--panel-padding));
   }
-  .activity-rail .ui-button {
-    position: relative;
-  }
   .activity-indicator {
     position: absolute;
     inset-block-start: 0;

@@ -6,7 +6,7 @@
 
 - `pnpm check`：通过；806行为测试通过、2项既有可选原生smoke跳过；35架构测试与89 tooling测试通过。类型、Biome、设计、i18n、设计/源码边界、架构、文档、结构、状态门禁通过。
 - `pnpm lint:interaction`：通过。`pnpm validate:interaction` 实际Electron通过；当前统一默认尺寸，两主题、Portal、Monaco/Diff光标、选择、复制和阅读区段原生点击。该脚本的正式API不变；证据另存本目录，历史证据保留。
-- `node validation/m2/workbench.mjs`：50项通过，[原始结果](evidence/native.json)。实际Electron窗口1440×900、720×540、1920×1080；三边拖拽/阈值收起/显式恢复/取消无保存/键盘保存、缩窗不覆盖偏好、标签键盘与关闭焦点、独立底部滚动、主题颜色角色传播；原Tiptap/Thread controller/阅读viewport/Monaco实例保持；撤销重做、Chromium合成输入、设置往返阅读坐标、长草稿与中文最小窗口预算。补充custom header从原生内容顶端开始、三边收起回焦、设置期间未读保留/一级导航提示、通知打开会话、大窗口WorkArea不限正文宽度；50条记录含一次CDP输入到下一rAF的耗时采样，该采样不能证明长时帧率。
+- `node validation/m2/workbench.mjs`：56项通过，[原始结果](evidence/native.json)。实际Electron窗口1440×900、720×540、1920×1080；三边拖拽/阈值收起/显式恢复/取消无保存/键盘保存、缩窗不覆盖偏好、标签键盘与关闭焦点、独立底部滚动、主题颜色角色传播；原Tiptap/Thread controller/阅读viewport/Monaco实例保持；撤销重做、Chromium合成输入、设置往返阅读坐标、长草稿与中文最小窗口预算。补充custom header从原生内容顶端开始、三边收起回焦、设置期间未读保留/一级导航提示、通知打开会话、大窗口WorkArea不限正文宽度；56条记录含一次CDP输入到下一rAF的耗时采样，该采样不能证明长时帧率。
 - Impeccable detect：本轮新增外壳/控件与token无主要发现，[扫描结果](evidence/design-scan.json)。
 
 右/底样本只在validation/m2/workbench.html隔离入口注册，生产无内容时关闭；样本Monaco来自现有只读适配器，底部只是滚动文字，不是PTY。截图production-*指正式App组件但仍使用隔离业务数据，不能当真实账户/provider证据。isolated-*另外展示测试宿主。
@@ -24,3 +24,5 @@
 用户截图对应的导航位置断言 `navigation-controls-follow-native-window-controls` 在修复前返回false，修复后通过：后退、前进、侧栏开关顺序位于macOS安全区右侧，左栏顶端无区域标题，主区不重复历史控件；收起后的恢复回焦检查继续通过。
 
 新增键盘Enter恢复侧栏保留同一导航按钮焦点、缩窗导航换位不抢Composer焦点两项检查。原生包验证Router/草稿/附件/SDK/冷恢复已在381d105的干净包通过，新焦点修复后再生成并验证最终包。
+
+图标中心专项：全现有图标按钮修复前false（空wrapper与flex gap），修复后6组几何与命中断言通过；逐个记录dx/dy、绝对indicator和pointer-events、中心点命中，同步覆盖light/dark、中文窄窗、未读状态、右/底关闭及0/999+/禁用长辅助标签样本。测试样本只在隔离底部宿主，正式无新增功能控件。

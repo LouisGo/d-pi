@@ -20,8 +20,22 @@
       color var(--motion-control);
   }
   .ui-button-icon {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    gap: 0;
     width: var(--control-height);
     padding: 0;
+  }
+  .ui-icon-button-content {
+    display: grid;
+    place-items: center;
+  }
+  .ui-icon-button-indicator {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-end: 0;
+    pointer-events: none;
   }
   .ui-button svg {
     flex-shrink: 0;

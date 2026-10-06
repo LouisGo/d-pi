@@ -2,6 +2,7 @@ import { useContext } from "react";
 import { useStore } from "zustand";
 import { DarkThemeIcon, LightThemeIcon } from "@/components/icons/common";
 import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
 import {
   useI18n,
   useLocalePreference,
@@ -68,10 +69,10 @@ export function PreferenceToolbar({ model }: { model: AppModel }) {
             {t("app.language.saveFailed")}
           </span>
         )}
-        <Button
+        <IconButton
           variant="ghost"
           disabled={busy}
-          aria-label={
+          label={
             theme === "light"
               ? t("app.toolbar.darkTheme")
               : t("app.toolbar.lightTheme")
@@ -80,7 +81,7 @@ export function PreferenceToolbar({ model }: { model: AppModel }) {
           onClick={() => void model.preference("theme")}
         >
           {theme === "light" ? <DarkThemeIcon /> : <LightThemeIcon />}
-        </Button>
+        </IconButton>
       </div>
     </header>
   );

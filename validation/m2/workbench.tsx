@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "../../src/app/renderer/app";
+import { ChatIcon } from "../../src/app/renderer/components/icons/common";
+import { IconButton } from "../../src/app/renderer/components/ui/icon-button";
 import type { WorkspaceTab } from "../../src/app/renderer/components/ui/workspace-tabs";
 import type { WorkbenchHosts } from "../../src/app/renderer/shell/layout/hosts-context";
 import { QueryProvider } from "../../src/app/renderer/wiring/query-client";
@@ -45,11 +47,33 @@ const bottomSamples: WorkspaceTab[] = [
     id: "sample",
     title: "Isolated bottom container",
     content: (
-      <pre data-selectable>
-        {"Container scrolling sample; no PTY or browser is running.\n".repeat(
-          50,
-        )}
-      </pre>
+      <>
+        <IconButton
+          label="Numeric indicator fixture"
+          indicator={<span>999+</span>}
+        >
+          <ChatIcon />
+        </IconButton>
+        <IconButton label="Zero indicator fixture" indicator={0}>
+          <ChatIcon />
+        </IconButton>
+        <IconButton
+          label="Long accessible label does not occupy icon layout"
+          disabled
+          indicator={
+            <span role="status">
+              <span className="sr-only">Long accessible status</span>
+            </span>
+          }
+        >
+          <ChatIcon />
+        </IconButton>
+        <pre data-selectable>
+          {"Container scrolling sample; no PTY or browser is running.\n".repeat(
+            50,
+          )}
+        </pre>
+      </>
     ),
   },
 ];

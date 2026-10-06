@@ -233,10 +233,10 @@ export function WorkbenchFrame({
             label={t("app.layout.chat")}
             variant="navigation"
             aria-pressed={!settingsOpen}
+            indicator={conversationIndicator}
             onClick={closeSettings}
           >
             <ChatIcon />
-            {conversationIndicator}
           </IconButton>
           <div className="rail-spacer" />
           <IconButton

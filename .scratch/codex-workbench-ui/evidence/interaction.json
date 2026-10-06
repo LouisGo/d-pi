@@ -106,7 +106,7 @@
           "cursor": "default",
           "select": "none",
           "background": "rgba(0, 0, 0, 0)",
-          "color": "rgb(36, 39, 48)"
+          "color": "rgb(159, 162, 170)"
         },
         {
           "selector": "#probe-summary",
@@ -134,21 +134,21 @@
           "cursor": "default",
           "select": "none",
           "background": "rgba(0, 0, 0, 0)",
-          "color": "rgb(96, 103, 117)"
+          "color": "rgb(139, 147, 162)"
         },
         {
           "selector": "#probe-selected",
           "cursor": "default",
           "select": "none",
-          "background": "oklab(0.945204 0.000567406 -0.0153834)",
-          "color": "oklab(0.443905 -0.00601366 -0.134687)"
+          "background": "oklab(0.558387 -0.000738746 -0.0231233)",
+          "color": "oklab(0.694181 -0.00411615 -0.0961482)"
         },
         {
           "selector": "#probe-disabled",
           "cursor": "default",
           "select": "none",
-          "background": "rgb(55, 87, 188)",
-          "color": "rgb(255, 255, 255)"
+          "background": "rgb(126, 154, 230)",
+          "color": "rgb(108, 118, 140)"
         },
         {
           "selector": "#probe-portal",
@@ -162,7 +162,7 @@
           "cursor": "default",
           "select": "none",
           "background": "rgba(0, 0, 0, 0)",
-          "color": "rgb(36, 39, 48)"
+          "color": "rgb(159, 162, 170)"
         },
         {
           "selector": "#probe-check",

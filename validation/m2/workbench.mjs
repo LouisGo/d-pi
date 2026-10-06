@@ -231,7 +231,20 @@ async function capture(name) {
     Buffer.from(screenshot.data, "base64"),
   );
 }
+async function checkIconGeometry(name) {
+  await check(
+    name,
+    "([...document.querySelectorAll('.ui-button-icon')].filter(b=>b.getBoundingClientRect().width>0&&getComputedStyle(b).visibility!=='hidden'&&!b.closest('[hidden],[inert]')).map(b=>{const r=b.getBoundingClientRect(),s=b.querySelector('svg').getBoundingClientRect(),i=b.querySelector('.ui-icon-button-indicator');return {label:b.getAttribute('aria-label')||b.title,dx:s.x+s.width/2-r.x-r.width/2,dy:s.y+s.height/2-r.y-r.height/2,overlay:!i||(getComputedStyle(i).position==='absolute'&&getComputedStyle(i).pointerEvents==='none'),hit:document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.closest('button')===b};}))",
+    (buttons) =>
+      buttons.length > 0 &&
+      buttons.every(
+        (b) =>
+          Math.abs(b.dx) < 0.5 && Math.abs(b.dy) < 0.5 && b.overlay && b.hit,
+      ),
+  );
+}
 async function runChecks() {
+  await checkIconGeometry("all-icon-actions-centered-with-empty-attention");
   await check(
     "navigation-controls-follow-native-window-controls",
     "(()=>{const h=document.querySelector('.primary-sidebar > .panel-header'),b=h.querySelector('[title=Back]'),f=h.querySelector('[title=Forward]'),s=h.querySelector('[aria-label=\"Open or collapse project navigation\"]');return !!b&&!!f&&!!s&&b.getBoundingClientRect().left>=96&&b.getBoundingClientRect().left<f.getBoundingClientRect().left&&f.getBoundingClientRect().left<s.getBoundingClientRect().left&&!h.querySelector('strong')&&!document.querySelector('.conversation-header [title=Back]');})()",
@@ -266,6 +279,7 @@ async function runChecks() {
     "hidden-settings-retains-unread-and-visible-rail-indicator",
     "window.attentionProbe.snapshot().entries[0].unread===true && document.querySelector('.activity-indicator').hidden===false",
   );
+  await checkIconGeometry("all-icon-actions-centered-with-unread-attention");
   await evaluate("window.attentionProbe.emit(true)");
   await evaluate("window.probe.pause()");
   await check(
@@ -375,6 +389,7 @@ async function runChecks() {
   );
   await evaluate("window.probe.model.preference('theme')");
   await capture("production-dark-minimum");
+  await checkIconGeometry("all-icon-actions-centered-in-dark-narrow-window");
   await check(
     "responsive-preserves-user-intent",
     "JSON.parse(localStorage.getItem('d-pi.workbench-layout.v1')).sidebar.open",
@@ -548,6 +563,10 @@ async function runChecks() {
   );
   await evaluate("window.probe.model.preference('theme')");
   await capture("isolated-light-desktop");
+  await evaluate("window.bottomScroll.scrollTop=0");
+  await checkIconGeometry(
+    "all-icon-actions-centered-with-light-indicator-samples",
+  );
   const saved = await evaluate(
     "localStorage.getItem('d-pi.workbench-layout.v1')",
   );
@@ -576,13 +595,18 @@ async function runChecks() {
     "document.querySelector('.activity-rail button[aria-label=设置]')!==null && document.documentElement.scrollWidth===innerWidth && document.querySelector('.reading-pane').getBoundingClientRect().height>40",
   );
   await capture("isolated-light-minimum");
+  await checkIconGeometry("all-icon-actions-centered-in-chinese-narrow-window");
   await evaluate(
     "(()=>{const s=document.querySelector('.toolbar select');s.value='en-US';s.dispatchEvent(new Event('change',{bubbles:true}));})()",
   );
   await evaluate("window.probe.pause()");
   await resize(1440, 900);
   await evaluate("window.probe.model.preference('theme')");
+  await evaluate("window.bottomScroll.scrollTop=0");
   await capture("isolated-dark-desktop");
+  await checkIconGeometry(
+    "all-icon-actions-centered-with-tabs-and-indicator-samples",
+  );
   await resize(1920, 1080);
   await check(
     "work-area-is-not-reading-width-limited",
