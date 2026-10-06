@@ -316,7 +316,6 @@ export class AppModel {
           busy: false,
           notice: null,
         });
-        void this.attention.visible(thread?.context.threadId ?? null);
         void this.refreshThreads();
         return { kind: "applied" as const, selection: threadSelection };
       })

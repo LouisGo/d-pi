@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
 import {
+  constants,
   cpSync,
   existsSync,
   mkdirSync,
@@ -42,7 +43,11 @@ const source = resolve(
   process.argv[2] ?? "dist/m2-entry-candidate/mac-arm64/d-pi.app",
 );
 const bundle = join(isolated.root, "Package With Spaces", "d-pi.app");
-cpSync(source, bundle, { recursive: true, verbatimSymlinks: true });
+cpSync(source, bundle, {
+  recursive: true,
+  verbatimSymlinks: true,
+  mode: constants.COPYFILE_FICLONE,
+});
 const plist = join(bundle, "Contents/Info.plist");
 assert.equal(
   spawnSync(

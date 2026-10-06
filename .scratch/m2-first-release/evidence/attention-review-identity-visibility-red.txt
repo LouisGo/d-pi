@@ -1,0 +1,100 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/.codex/worktrees/a613/d-pi[39m
+
+ [31m❯[39m src/app/main/wiring/thread-attention.test.ts [2m([22m[2m14 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[32m 30[2mms[22m[39m
+   [32m✓[39m keeps a deduplicated background question without stealing focus and ignores late revisions[32m 6[2mms[22m[39m
+[31m   [31m×[31m renews attention for a new concurrent question even when its trace and kind are unchanged[39m[32m 5[2mms[22m[39m
+   [32m✓[39m does not mistake ACK or idle for completion and ignores an older submission finishing after newer dispatch[32m 2[2mms[22m[39m
+[31m   [31m×[31m promotes a completed receipt to an observed late failure and keeps failure on duplicate success[39m[32m 1[2mms[22m[39m
+   [32m✓[39m only trusted foreground context clears unread; stale native click targets latest event and awaits matching opened[32m 1[2mms[22m[39m
+   [32m✓[39m system failure and close do not consume App facts; dispose is idempotent[32m 0[2mms[22m[39m
+   [32m✓[39m caps observation and entries at 512 and declares a coverage gap[32m 12[2mms[22m[39m
+   [32m✓[39m coalesces a receipt failure and runtime failure carrying the same operation trace[32m 0[2mms[22m[39m
+   [32m✓[39m does not let unavailable native support break startup or ephemeral App reminders[32m 0[2mms[22m[39m
+   [32m✓[39m diagnoses native throw with the original event metadata without affecting attention[32m 1[2mms[22m[39m
+   [32m✓[39m reloads persisted notification preferences once storage becomes available without losing observed events[32m 0[2mms[22m[39m
+   [32m✓[39m retains the original trace on asynchronous native failure[32m 0[2mms[22m[39m
+   [32m✓[39m accepts distinct submissions prepared in the same millisecond without resurfacing old completion[32m 0[2mms[22m[39m
+   [32m✓[39m an already queued click after a question expires opens current Thread state without resurrecting the question[32m 0[2mms[22m[39m
+ [31m❯[39m src/app/renderer/shell/attention.test.ts [2m([22m[2m8 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 202[2mms[22m[39m
+   [32m✓[39m background event preserves focus and selection; click respects IME admission and exposes retry[32m 73[2mms[22m[39m
+[31m   [31m×[31m retains unread when Main selection changes before the visible route commits[39m[32m 11[2mms[22m[39m
+   [32m✓[39m system and completion preferences require explicit opt-in, supported is not authorization, unread badge is entity-scoped[32m 8[2mms[22m[39m
+   [32m✓[39m native click before ready can be retried, stale event opens current state without answering[32m 39[2mms[22m[39m
+   [32m✓[39m only an actually focused current Thread can be seen; a list row or background notification cannot[32m 7[2mms[22m[39m
+   [32m✓[39m retains a native open arriving during another navigation as an explicit retry[32m 30[2mms[22m[39m
+   [32m✓[39m failed Thread opens the current submission results pane[32m 6[2mms[22m[39m
+   [32m✓[39m a changed event during navigation selects the current result view rather than the obsolete failure[32m 26[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 3 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/app/main/wiring/thread-attention.test.ts[2m > [22mrenews attention for a new concurrent question even when its trace and kind are unchanged
+[31m[1mAssertionError[22m: expected { …(5) } to match object { kind: 'needs-answer', unread: true }
+(3 matching properties omitted from actual)[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[2m    "kind": "needs-answer",[22m
+[32m-   "unread": true,[39m
+[31m+   "unread": false,[39m
+[2m  }[22m
+
+[36m [2m❯[22m src/app/main/wiring/thread-attention.test.ts:[2m94:18[22m[39m
+    [90m 92|[39m   attention.observeRuntime(next);
+    [90m 93|[39m   const second = attention.snapshot().entries[0];
+    [90m 94|[39m   expect(second).toMatchObject({ kind: "needs-answer", unread: true });
+    [90m   |[39m                  [31m^[39m
+    [90m 95|[39m   expect(second?.eventId).not.toBe(first?.eventId);
+    [90m 96|[39m   expect(show).toHaveBeenCalledTimes(1);
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/app/main/wiring/thread-attention.test.ts[2m > [22mpromotes a completed receipt to an observed late failure and keeps failure on duplicate success
+[31m[1mAssertionError[22m: expected { …(5) } to match object { kind: 'failed', …(2) }
+(2 matching properties omitted from actual)[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "kind": "failed",[39m
+[31m+   "kind": "completed",[39m
+[2m    "traceId": "928fa007-b8c9-489b-a552-aa15fcecb26c",[22m
+[2m    "unread": true,[22m
+[2m  }[22m
+
+[36m [2m❯[22m src/app/main/wiring/thread-attention.test.ts:[2m162:19[22m[39m
+    [90m160|[39m   attention.observeReceipt(failed);
+    [90m161|[39m   const current = attention.snapshot().entries[0];
+    [90m162|[39m   expect(current).toMatchObject({ kind: "failed", traceId: completed.t…
+    [90m   |[39m                   [31m^[39m
+    [90m163|[39m   expect(current?.eventId).not.toBe(previous?.eventId);
+    [90m164|[39m   expect(show).toHaveBeenCalledTimes(1);
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/app/renderer/shell/attention.test.ts[2m > [22mretains unread when Main selection changes before the visible route commits
+[31m[1mAssertionError[22m: expected '/threads/fc005746-276e-43a0-8547-147d…' to be '/threads/8450fb95-7072-46bb-9571-b853…' // Object.is equality[39m
+
+Expected: [32m"/threads/[7m8450fb95-7072-46bb-9571-b853e8d8c701[27m"[39m
+Received: [31m"/threads/[7mfc005746-276e-43a0-8547-147d8c60bbef[27m"[39m
+
+[36m [2m❯[22m src/app/renderer/shell/attention.test.ts:[2m247:45[22m[39m
+    [90m245|[39m   const ui = await mount();
+    [90m246|[39m   await act(async () => { await ui.model.selectThread(ui.second.thread…
+    [90m247|[39m   expect(ui.router.state.location.pathname).toBe(`/threads/${ui.first.…
+    [90m   |[39m                                             [31m^[39m
+    [90m248|[39m   expect(ui.snapshot().entries[0]?.unread).toBe(true);
+    [90m249|[39m   expect(ui.request.mock.calls.some(([command]) => command.kind === "v…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m19 passed[39m[22m[90m (22)[39m
+[2m   Start at [22m 17:47:51
+[2m   Duration [22m 4.11s[2m (import 68%, transform 19%, environment 7%, tests 5%)[22m
+

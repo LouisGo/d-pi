@@ -67,6 +67,20 @@ async function mount() {
     openRequest: null,
   };
   const request = vi.fn<AttentionBridge["request"]>(async (command) => {
+    if (
+      command.kind === "visible" &&
+      command.threadId === active.threadId &&
+      document.hasFocus()
+    )
+      snapshot = {
+        ...snapshot,
+        revision: snapshot.revision + 1,
+        entries: snapshot.entries.map((entry) =>
+          entry.threadId === command.threadId
+            ? { ...entry, unread: false }
+            : entry,
+        ),
+      };
     if (command.kind === "preferences")
       snapshot = {
         ...snapshot,
@@ -232,6 +246,25 @@ it("background event preserves focus and selection; click respects IME admission
   expect(ui.model.attention.locationStore.getState().target?.threadId).toBe(
     ui.second.threadId,
   );
+});
+
+it("retains unread when Main selection changes before the visible route commits", async () => {
+  vi.spyOn(document, "hasFocus").mockReturnValue(true);
+  const ui = await mount();
+  const request = ui.request.getMockImplementation();
+  if (!request) throw Error("Missing fixture bridge");
+  const visiblePaths: string[] = [];
+  ui.request.mockImplementation(async (command) => {
+    if (command.kind === "visible" && command.threadId === ui.second.threadId)
+      visiblePaths.push(ui.router.state.location.pathname);
+    return request(command);
+  });
+  await ui.click(`[data-attention-open='${ui.second.threadId}']`);
+  expect(visiblePaths.length).toBeGreaterThan(0);
+  expect(
+    visiblePaths.every((path) => path === `/threads/${ui.second.threadId}`),
+  ).toBe(true);
+  expect(ui.snapshot().entries[0]?.unread).toBe(false);
 });
 it("system and completion preferences require explicit opt-in, supported is not authorization, unread badge is entity-scoped", async () => {
   const ui = await mount();

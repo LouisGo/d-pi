@@ -304,15 +304,16 @@ export async function validateAttention(context) {
   const staleReply = await evaluate(
     `window.desktop.attention.request(${JSON.stringify({ kind: "seen", traceId: staleTraceId, threadId: interactionThread, eventId: pendingEntry.eventId })})`,
   );
-  assert.equal(staleReply.kind, "snapshot");
+  assert.equal(staleReply.kind, "failed");
+  assert.equal(staleReply.code, "invalid-request");
   assert.equal(staleReply.traceId, staleTraceId);
-  assert.equal(staleReply.snapshot.openRequest, null);
+  assert.equal((await snapshot(evaluate)).openRequest, null);
   assert.equal(supplier.requests.length, providerCallsBeforeOldClick);
   assert.deepEqual(JSON.parse(readFileSync(answerFile, "utf8")), {
     confirmed: true,
   });
   checks.push(
-    "formal in-app attention click selects the correct Thread and focuses the actual native interaction; acknowledging the expired original event through the shipped public bridge does not reopen or resend the answered request (native stale-click handling is a separate evidence tier)",
+    "formal in-app attention click selects the correct Thread and focuses the actual native interaction; the shipped public bridge rejects a seen command for a nonactive Thread without reopening or resending the answered request (native stale-click handling is a separate evidence tier)",
   );
 
   const failThread = await newThread(context);

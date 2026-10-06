@@ -1,0 +1,33 @@
+$ pnpm check:tools && pnpm typecheck && pnpm lint && pnpm lint:design && pnpm lint:i18n && pnpm validate:design && node validation/s1/source-boundaries.mjs && pnpm check:architecture && pnpm check:documentation && pnpm check:structure && pnpm check:status && pnpm test:architecture && pnpm test:tooling && pnpm test
+$ node scripts/checks/check-environment.mjs --tools-only
+Development Node: 24.21.0 (target 24.21.0)
+pnpm: 12.8.1 (target 12.8.1)
+Platform: darwin-arm64
+Installed exact dependencies: 47/47
+SKIP: fast tool check; native executables and SDK resources were not inspected
+PASS: development environment (0 issues)
+$ pnpm routes:generate && tsc --noEmit && pnpm typecheck:core && pnpm typecheck:renderer && pnpm typecheck:main && pnpm typecheck:host && pnpm typecheck:preload
+$ tsr generate
+(node:4984) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+$ tsc --noEmit -p tsconfig.core.json
+$ tsc --noEmit -p tsconfig.renderer.json
+$ tsc --noEmit -p tsconfig.main.json
+$ tsc --noEmit -p tsconfig.host.json
+$ tsc --noEmit -p tsconfig.preload.json
+$ biome check .
+Checked 483 files in 123ms. No fixes applied.
+$ node scripts/checks/lint-design.mjs
+PASS: design lint
+$ node scripts/checks/check-i18n-copy.mjs
+$ node validation/s1/design-check.mjs
+PASS: CSS Modules, clsx/cva, shared variable accepted; six invalid design patterns rejected.
+PASS: token source, icon/domain and module environment boundaries (narrow source checks; architecture gate is authoritative for dependency graph).
+$ node scripts/architecture/check.mjs
+PASS: architecture boundaries (351 source files checked, TypeScript scanner)
+$ node scripts/checks/check-documentation.mjs
+PASS: documentation references (265 Markdown files; 17 historical snapshots excluded; external URLs not fetched)
+$ node scripts/architecture/report.mjs --check architecture/dependencies.generated.json
+STALE: /Users/louistation/.codex/worktrees/a613/d-pi/architecture/dependencies.generated.json; regenerate with --write after reviewing current source and permissions.
+[ELIFECYCLE] Command failed with exit code 1.
+[ELIFECYCLE] Command failed with exit code 1.

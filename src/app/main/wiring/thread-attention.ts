@@ -188,7 +188,7 @@ export class ThreadAttention {
       (generation !== prior?.generation ||
         pending.some((id) => !prior?.pending.includes(id)))
     )
-      this.add(view.threadId, view.traceId, "needs-answer");
+      this.add(view.threadId, view.traceId, "needs-answer", true);
     else if (
       !pending.length &&
       this.entries.get(view.threadId)?.kind === "needs-answer"
@@ -255,7 +255,8 @@ export class ThreadAttention {
     )
       return;
     const key = `${receipt.threadId}:${receipt.target.connectionGeneration}:${receipt.submissionId}`;
-    if (this.receipts.has(key)) return;
+    const priorOutcome = this.receipts.get(key);
+    if (priorOutcome === outcome || priorOutcome === "failed") return;
     this.receipts.set(key, outcome);
     this.bound(this.receipts);
     if (
@@ -294,9 +295,10 @@ export class ThreadAttention {
     threadId: ThreadId,
     traceId: AttentionEntry["traceId"],
     kind: AttentionEntry["kind"],
+    renew = false,
   ): void {
     const prior = this.entries.get(threadId);
-    if (prior?.kind === kind && prior.traceId === traceId) return;
+    if (!renew && prior?.kind === kind && prior.traceId === traceId) return;
     this.releases.get(threadId)?.();
     this.releases.delete(threadId);
     const entry: AttentionEntry = {

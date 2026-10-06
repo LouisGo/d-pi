@@ -1,0 +1,51 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/.codex/worktrees/a613/d-pi[39m
+
+ [31m❯[39m src/app/main/wiring/thread-attention.test.ts [2m([22m[2m13 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 29[2mms[22m[39m
+   [32m✓[39m keeps a deduplicated background question without stealing focus and ignores late revisions[32m 6[2mms[22m[39m
+   [32m✓[39m does not mistake ACK or idle for completion and ignores an older submission finishing after newer dispatch[32m 2[2mms[22m[39m
+[31m   [31m×[31m promotes a completed receipt to an observed late failure and keeps failure on duplicate success[39m[32m 5[2mms[22m[39m
+   [32m✓[39m only trusted foreground context clears unread; stale native click targets latest event and awaits matching opened[32m 1[2mms[22m[39m
+   [32m✓[39m system failure and close do not consume App facts; dispose is idempotent[32m 0[2mms[22m[39m
+   [32m✓[39m caps observation and entries at 512 and declares a coverage gap[32m 12[2mms[22m[39m
+   [32m✓[39m coalesces a receipt failure and runtime failure carrying the same operation trace[32m 0[2mms[22m[39m
+   [32m✓[39m does not let unavailable native support break startup or ephemeral App reminders[32m 0[2mms[22m[39m
+   [32m✓[39m diagnoses native throw with the original event metadata without affecting attention[32m 1[2mms[22m[39m
+   [32m✓[39m reloads persisted notification preferences once storage becomes available without losing observed events[32m 0[2mms[22m[39m
+   [32m✓[39m retains the original trace on asynchronous native failure[32m 0[2mms[22m[39m
+   [32m✓[39m accepts distinct submissions prepared in the same millisecond without resurfacing old completion[32m 0[2mms[22m[39m
+   [32m✓[39m an already queued click after a question expires opens current Thread state without resurrecting the question[32m 0[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/app/main/wiring/thread-attention.test.ts[2m > [22mpromotes a completed receipt to an observed late failure and keeps failure on duplicate success
+[31m[1mAssertionError[22m: expected { …(5) } to match object { kind: 'failed', …(2) }
+(2 matching properties omitted from actual)[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "kind": "failed",[39m
+[31m+   "kind": "completed",[39m
+[2m    "traceId": "f8ec81e4-fc60-4630-9773-0dc656bc9e28",[22m
+[2m    "unread": true,[22m
+[2m  }[22m
+
+[36m [2m❯[22m src/app/main/wiring/thread-attention.test.ts:[2m139:19[22m[39m
+    [90m137|[39m   attention.observeReceipt(failed);
+    [90m138|[39m   const current = attention.snapshot().entries[0];
+    [90m139|[39m   expect(current).toMatchObject({ kind: "failed", traceId: completed.t…
+    [90m   |[39m                   [31m^[39m
+    [90m140|[39m   expect(current?.eventId).not.toBe(previous?.eventId);
+    [90m141|[39m   expect(show).toHaveBeenCalledTimes(1);
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m12 passed[39m[22m[90m (13)[39m
+[2m   Start at [22m 17:46:45
+[2m   Duration [22m 285ms[2m (transform 54%, import 31%, tests 14%, worker 1%)[22m
+

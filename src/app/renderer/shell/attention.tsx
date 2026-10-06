@@ -159,7 +159,9 @@ function AttentionContent({ model }: { model: AppModel }) {
     const foreground = () =>
       document.visibilityState !== "hidden" && document.hasFocus();
     const synchronize = () => {
-      void model.attention.visible(current, true);
+      const visible =
+        foreground() && pathname === `/threads/${current}` ? current : null;
+      void model.attention.visible(visible, true);
       if (
         currentEntry?.unread &&
         foreground() &&

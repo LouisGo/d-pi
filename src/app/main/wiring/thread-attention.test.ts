@@ -76,6 +76,32 @@ it("keeps a deduplicated background question without stealing focus and ignores 
   expect(attention.snapshot().entries).toEqual([]);
 });
 
+it("renews attention for a new concurrent question even when its trace and kind are unchanged", () => {
+  const { attention, show } = fixture();
+  attention.setPreferences({ system: true, completion: false });
+  attention.setForeground(true);
+  attention.visible(threadId);
+  attention.observeRuntime(view());
+  const first = attention.snapshot().entries[0];
+  expect(first?.unread).toBe(false);
+  attention.setForeground(false);
+  attention.clearVisible();
+  const next = view(2);
+  if (!next.interactions) throw Error("Missing fixture interactions");
+  next.interactions.items.push({
+    ...next.interactions.items[0]!,
+    id: "second-native-question",
+  });
+  attention.observeRuntime(next);
+  const second = attention.snapshot().entries[0];
+  expect(second).toMatchObject({ kind: "needs-answer", unread: true });
+  expect(second?.eventId).not.toBe(first?.eventId);
+  expect(show).toHaveBeenCalledTimes(1);
+  attention.observeRuntime({ ...next, revision: 3 });
+  expect(attention.snapshot().entries[0]).toEqual(second);
+  expect(show).toHaveBeenCalledTimes(1);
+});
+
 it("does not mistake ACK or idle for completion and ignores an older submission finishing after newer dispatch", () => {
   const { attention } = fixture();
   attention.observeRuntime({ ...view(), busy: false, interactions: undefined });
@@ -124,6 +150,33 @@ function receipt(
     outcome,
   });
 }
+it("promotes a completed receipt to an observed late failure and keeps failure on duplicate success", () => {
+  const { attention, show } = fixture();
+  attention.setPreferences({ system: true, completion: false });
+  attention.observeRuntime({ ...view(), busy: false, interactions: undefined });
+  const completed = receipt("completed");
+  attention.observeReceipt(completed);
+  const previous = attention.snapshot().entries[0];
+  expect(previous?.kind).toBe("completed");
+  expect(show).not.toHaveBeenCalled();
+  const failed = SubmissionReceiptSchema.parse({
+    ...completed,
+    outcome: "failed",
+  });
+  attention.observeReceipt(failed);
+  const current = attention.snapshot().entries[0];
+  expect(current).toMatchObject({
+    kind: "failed",
+    traceId: completed.traceId,
+    unread: true,
+  });
+  expect(current?.eventId).not.toBe(previous?.eventId);
+  expect(show).toHaveBeenCalledTimes(1);
+  attention.observeReceipt(failed);
+  attention.observeReceipt(completed);
+  expect(attention.snapshot().entries[0]).toEqual(current);
+  expect(show).toHaveBeenCalledTimes(1);
+});
 it("only trusted foreground context clears unread; stale native click targets latest event and awaits matching opened", () => {
   let callbacks: NotificationCallbacks | undefined;
   const show = vi.fn((_text: unknown, value: NotificationCallbacks) => {
