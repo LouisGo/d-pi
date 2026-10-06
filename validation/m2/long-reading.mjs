@@ -171,9 +171,25 @@ export async function validateLongReading({
   const savedClipboard = spawnSync("/usr/bin/pbpaste", [], { env }).stdout;
   let completeObtainedText;
   try {
+    await call("Page.bringToFront");
     await evaluate(
-      `window.__longReadingText.closest('article').querySelector('.message-heading button').click()`,
+      `window.__longReadingText.closest('article').querySelector('.message-heading button').scrollIntoView({block:'nearest'})`,
     );
+    const point = await evaluate(
+      "(()=>{const r=window.__longReadingText.closest('article').querySelector('.message-heading button').getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()",
+    );
+    await call("Input.dispatchMouseEvent", {
+      type: "mousePressed",
+      button: "left",
+      clickCount: 1,
+      ...point,
+    });
+    await call("Input.dispatchMouseEvent", {
+      type: "mouseReleased",
+      button: "left",
+      clickCount: 1,
+      ...point,
+    });
     const copied = await wait(() => {
       const text = spawnSync("/usr/bin/pbpaste", [], {
         env,
