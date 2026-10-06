@@ -7,7 +7,7 @@ Installed exact dependencies: 47/47
 SKIP: fast tool check; native executables and SDK resources were not inspected
 PASS: development environment (0 issues)
 $ biome check .
-Checked 438 files in 85ms. No fixes applied.
+Checked 438 files in 123ms. No fixes applied.
 $ node scripts/checks/check-documentation.mjs
 PASS: documentation references (256 Markdown files; 17 historical snapshots excluded; external URLs not fetched)
 $ node scripts/architecture/check.mjs
