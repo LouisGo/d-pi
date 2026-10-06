@@ -10,7 +10,7 @@
     "trial": "delivered",
     "acceptance": "pending",
     "current": true,
-    "build": "0.1.0-m2.17 / ba0e7df1-808e60b8",
+    "build": "0.1.0-m2.18 / 9a8c2eea-7f1a67df",
     "pending": [
       "../m1-s3-control-recovery/issues/09-quit-discard-decision.md"
     ],
@@ -37,9 +37,11 @@
       "long-reading.md",
       "long-reading-review.md",
       "diagnostics.md",
-      "diagnostics-review.md"
+      "diagnostics-review.md",
+      "attention.md",
+      "attention-review.md"
     ],
-    "next": "m2.17诊断候选已交付；01a/01b/01c多Thread提醒正在实施与实机验收。M2尚未完成，PDF视觉/OCR、V1-00/B6组合、真实供应商与用户认可保持开放；冷旧Thread只读",
+    "next": "m2.18多Thread提醒候选已交付，01a/01b完成；01c待手动解锁Mac后补系统通知显示/点击及实际关窗重开。M2尚未完成，PDF视觉/OCR、V1-00/B6组合、真实供应商与用户认可保持开放；冷旧Thread只读",
     "constraints": "2026-10-06本轮从最新main继续M2，授权本地实现、候选、证据与提交；此前push/PR授权属于已交付阶段，本轮未push。不公开发布、不扩M3，冷恢复只读，unknown不自动重发；用户认可pending。"
   }
 ]
@@ -66,7 +68,7 @@
 - 已定：D-02–D-08、D-10/D-11、D-20–D-27、D-28–D-37；沿用 OMP 执行、队列、原生历史、配置与凭据所有权，App 草稿/冻结原文/收据事务不改变。
 - 重要待决：无新增。[S3 09](../m1-s3-control-recovery/issues/09-quit-discard-decision.md)退出放弃队列待决，仅暂停对应出口；缺全周期单写证据的冷恢复只读，提供明确新建独立 Thread 出口，不冒称恢复旧执行。
 - 工程：正在实施；既有正确路径复用当前相关证据，新增缺口先失败行为测试。测试隔离 App 数据、OMP 配置、HOME、Git 配置、项目及网络；不继承个人凭据。真实供应商缺账户/费用授权仅暂停实测，不阻塞薄桥接及 fixture 验证。
-- 用户试用：当前交付 `0.1.0-m2.17 / ba0e7df1-808e60b8`、产品源码 `ba0e7df`，21项实际干净包内检查、两轴独立review与ZIP同源验证通过；用户认可 pending。[精确身份、哈希、证据和步骤](diagnostics.md#候选与验证)。m2.16及更早交付/失败记录保留历史证据，每段可操作体验给出对应源码和包身份；Agent验证不替代用户认可。
+- 用户试用：当前交付 `0.1.0-m2.18 / 9a8c2eea-7f1a67df`、产品源码 `9a8c2ee`，16项实际干净包内检查、两轴独立review/修复及ZIP同源验证通过；01c系统通知/原生窗口仍待手动解锁Mac，用户认可pending。[精确身份、哈希、证据、限制和步骤](attention.md#最终候选与试用)。m2.17及更早交付/失败记录保留历史证据，每段可操作体验给出对应源码和包身份；Agent验证不替代用户认可。
 - 继续边界：本授权内持续实施，不重做基建审计。重大产品/权限/数据合同变化才对齐；签名、公证、公开分发及 M3 不纳入。
 
 ## 首版覆盖与近期任务
@@ -234,3 +236,6 @@
 验证辅助→attention_validation→/Users/louistation/.codex/worktrees/m2-attention-validation/d-pi→codex/m2-attention-validation，同起点3cbff7e，只写实际SDK/包内harness，不领取01c。
 
 2026-10-06 实机条件核实：固定Electron44.4.5的macOS系统通知使用UNNotification，官方要求应用签名；未签名构建可能触发failed且通知事件不可用。保留通用Electron适配、App提醒与类型化故障诊断；实际显示/点击证据单列，不把isSupported或开关开启当授权/送达。见[官方说明](https://www.electronjs.org/docs/latest/tutorial/notifications#macos)。不以模拟适配代替实机证据。
+
+
+2026-10-06：01a/01b实现与受影响工程验证完成。最终产品source `9a8c2ee`、clean m2.18构建`9a8c2eea-7f1a67df`，795行为/34架构/74工具通过（2既有opt-in跳过），双轴独立评审/修复/复核及16项实际macOS包内检查、ZIP CRC/app.asar同源通过。失败详情裁切由实际截图发现，独立确认、真实React先红后修复并在新候选按所有裁切祖先几何/截图验收；原失败证据保留。[交接](attention.md)、[评审](attention-review.md)、[本地PR body](attention-pr.md)。实际原生检查因Mac锁定、未收到手动解锁确认而checkpoint超时，没有模拟observed/click；01c保持claimed，系统通知显示/真实点击、实际关窗/同App重开待验。不将本段或M2整体宣称完成，用户认可pending，本地提交、不push、不扩M3。

@@ -24,3 +24,5 @@ base/merge-base `7c9e1fee48ccb467db359a18401d8a30ca57a04e`，首次固定head `4
 两个独立reviewer在固定d272bd6复核均无新增高价值问题，源码P2关闭；新版实际几何须候选验证。原harness已加强为状态段落完整落在window与所有overflow祖先有效可见交集内，不要求长正文全部在屏内：[原报](evidence/attention-review-spec-layout-original.md)、[Spec复核](evidence/attention-review-spec-layout-final.md)、[Standards复核](evidence/attention-review-standards-layout-final.md)。最终候选身份/实际几何结果见交接，不能以静态复核代替。
 
 布局修复后完整检查795行为/34架构/74工具通过、2既有opt-in跳过：[原始结果](evidence/attention-layout-engineering-check.txt)。
+
+最终clean产品source9a8c2eea41196b5584a46fcc575ed589a7cfe392与受评d272bd6生产/validation源相同；新候选16项实际包内检查通过，强化祖先裁切交集显示状态段落284–309.5落在193–728有效区域，截图实看失败详情可读。包/ZIP身份见[交接](attention.md)，原生显示/点击/窗口保持独立待验。
