@@ -1,0 +1,21 @@
+
+DevTools listening on ws://127.0.0.1:55000/devtools/browser/a0621e4f-6525-4675-8f30-ad00f859d962
+Failure evidence: /private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-jxo25h
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: last reminder must remain reachable by focus/scroll: {"entries":4,"theme":"light","density":"compact","viewport":1120,"centerHeight":60,"centerScrollHeight":120,"centerClientHeight":60,"readingHeight":78,"lineHeight":19.5,"lastReachable":false,"focusBounds":{"before":{"x":248,"y":57,"width":856,"height":60,"top":57,"right":1104,"bottom":117,"left":248},"after":{"x":248,"y":57,"width":856,"height":60,"top":57,"right":1104,"bottom":117,"left":248},"last":{"x":348.53125,"y":147,"width":95.2578125,"height":30,"top":147,"right":443.7890625,"bottom":177,"left":348.53125},"scrollTop":0,"active":true,"pixelRatio":2},"readingVisible":true,"editorVisible":true,"draft":"A_UNSENT_DRAFT"}
+    at validateReminderBudget (file:///Users/louistation/.codex/worktrees/a613/d-pi/validation/m2/attention.mjs:670:10)
+    at async validateAppearance (file:///Users/louistation/.codex/worktrees/a613/d-pi/validation/m2/attention.mjs:705:3)
+    at async validateAttention (file:///Users/louistation/.codex/worktrees/a613/d-pi/validation/m2/attention.mjs:480:3)
+    at async file:///Users/louistation/.codex/worktrees/a613/d-pi/validation/m2/package.mjs:1353:24 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.21.0

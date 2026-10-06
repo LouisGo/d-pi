@@ -4,6 +4,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { app, type BrowserWindow, dialog, nativeImage, shell } from "electron";
 import { NativeConfiguration } from "../../../modules/configuration/main/public";
+import type {
+  RuntimeView,
+  SubmissionReceipt,
+} from "../../../modules/execution/contracts/public";
 import { RuntimeService } from "../../../modules/execution/main/public";
 import {
   type Diagnostics,
@@ -23,6 +27,8 @@ export function createDesktopServices(context: {
   getDiagnostics: () => Diagnostics | undefined;
   currentT: () => ReturnType<typeof createI18n>["t"];
   applyStoredLocale: (preference: LocalePreference) => void;
+  onRuntimeView?: (view: RuntimeView) => void;
+  onSubmissionReceipt?: (receipt: SubmissionReceipt) => void;
 }) {
   let store: AppStorage | undefined;
   let service: DesktopCommandService | undefined;
@@ -45,9 +51,24 @@ export function createDesktopServices(context: {
           : join(context.mainDirectory, "../../resources"),
         app.getPath("userData"),
         process.env,
-        (view) => context.getWindow()?.webContents.send("runtime:state", view),
-        (reply) =>
-          context.getWindow()?.webContents.send("submission:state", reply),
+        (view) => {
+          try {
+            context.onRuntimeView?.(view);
+          } catch {
+            /* Observation cannot interrupt execution publication. */
+          }
+          context.getWindow()?.webContents.send("runtime:state", view);
+        },
+        (reply) => {
+          if (reply.kind === "receipt") {
+            try {
+              context.onSubmissionReceipt?.(reply.receipt);
+            } catch {
+              /* Observation is independent of receipt ownership. */
+            }
+          }
+          context.getWindow()?.webContents.send("submission:state", reply);
+        },
         (event) => context.getDiagnostics()?.record(event),
         threadId,
         (id, text) =>

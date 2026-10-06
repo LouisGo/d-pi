@@ -13,6 +13,14 @@ export const PreferencesSchema = z.strictObject({
 });
 export type Preferences = z.infer<typeof PreferencesSchema>;
 
+export const NotificationPreferencesSchema = z.strictObject({
+  system: z.boolean(),
+  completion: z.boolean(),
+});
+export type NotificationPreferences = z.infer<
+  typeof NotificationPreferencesSchema
+>;
+
 export const LocaleSetResultSchema = LocaleSnapshotSchema.extend({
   persisted: z.boolean(),
 });

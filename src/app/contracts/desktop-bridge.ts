@@ -23,6 +23,7 @@ import { ThreadContextSchema } from "../../modules/threads/contracts/public";
 import type { DiagnosticBridge } from "../../shared/diagnostics";
 import { ThreadIdSchema, TraceIdSchema } from "../../shared/identity";
 import type { AttachmentBridge } from "./attachments";
+import type { AttentionBridge } from "./attention";
 
 export {
   type LocaleBridge,
@@ -159,6 +160,7 @@ export function parseDesktopReply(command: Command, raw: unknown): Reply {
   return reply;
 }
 export interface DesktopBridge {
+  attention?: AttentionBridge;
   diagnostics?: DiagnosticBridge;
   attachments?: AttachmentBridge;
   configuration?: ConfigurationBridge;

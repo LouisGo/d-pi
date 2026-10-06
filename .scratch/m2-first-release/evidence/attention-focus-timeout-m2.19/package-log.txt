@@ -1,0 +1,13 @@
+
+DevTools listening on ws://127.0.0.1:52733/devtools/browser/a55ea128-e7a8-4217-af5d-bb467355ceac
+Failure evidence: /private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-aoX9sl
+file:///Users/louistation/.codex/worktrees/a613/d-pi/validation/m2/package.mjs:215
+  throw Error("M2 package timeout");
+        ^
+
+Error: M2 package timeout
+    at wait (file:///Users/louistation/.codex/worktrees/a613/d-pi/validation/m2/package.mjs:215:9)
+    at async validateAttention (file:///Users/louistation/.codex/worktrees/a613/d-pi/validation/m2/attention.mjs:284:3)
+    at async file:///Users/louistation/.codex/worktrees/a613/d-pi/validation/m2/package.mjs:1353:24
+
+Node.js v24.21.0

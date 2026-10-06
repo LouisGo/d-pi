@@ -1,0 +1,2 @@
+$ node scripts/architecture/check.mjs
+PASS: architecture boundaries (341 source files checked, TypeScript scanner)

@@ -1,0 +1,1 @@
+Actual unchanged m2.18 package reached the new geometry assertion. Five real Main reminders occupied160px and current readingHeight=0, lineHeight19.5, A_UNSENT_DRAFT preserved. This is budget RED evidence; the separate earlier interaction timeout is not.

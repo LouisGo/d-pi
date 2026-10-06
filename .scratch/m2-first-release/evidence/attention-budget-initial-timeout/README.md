@@ -1,0 +1,1 @@
+Initial budget TDD run ended at the earlier native-interaction focus wait before the new geometry assertion. This is NOT budget red evidence. Actual pending content exists in retained DOM; cause of focus timeout unconfirmed. Original app/source unchanged, no assertion relaxed.

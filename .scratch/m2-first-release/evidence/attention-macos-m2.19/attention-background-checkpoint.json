@@ -1,0 +1,9 @@
+{
+  "root": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-tk77Eu",
+  "operation": "background",
+  "instructions": "Observe only local.d-pi.m2-validation. Put another App in the foreground (do not quit d-pi). Record status observed and notes in evidenceFile, then create resumeFile. The harness releases the actual held provider response only after resume.",
+  "nativeThread": "3ca00f1a-49b0-4e72-8586-c042a9c3fcd9",
+  "evidenceFile": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-tk77Eu/attention-background-observation.json",
+  "resumeFile": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-tk77Eu/attention-background-continue",
+  "expiresAt": "2026-10-06T12:31:42.493Z"
+}

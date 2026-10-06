@@ -1,0 +1,37 @@
+
+ RUN  v5.0.2 /Users/louistation/.codex/worktrees/a613/d-pi
+
+ ❯ src/app/renderer/shell/attention.test.ts (9 tests | 1 failed) 179ms
+   × clears visible attention while a Thread selection is pending and restores the committed Thread 11ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/renderer/shell/attention.test.ts > clears visible attention while a Thread selection is pending and restores the committed Thread
+AssertionError: expected { kind: 'visible', …(2) } to match object { kind: 'visible', threadId: null }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "kind": "visible",
+-   "threadId": null,
++   "threadId": "b56333c7-acff-4600-add1-0976b87f1049",
+  }
+
+ ❯ src/app/renderer/shell/attention.test.ts:426:23
+    424|     await act(async () => { await Promise.resolve(); });
+    425|     expect(ui.model.getSnapshot()).toMatchObject({ threadTransition: "…
+    426|     expect(visible()).toMatchObject({ kind: "visible", threadId: null …
+       |                       ^
+    427|     await act(async () => { release(); await navigation; });
+    428|     expect(visible()).toMatchObject({ kind: "visible", threadId: ui.se…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 passed (9)
+   Start at  20:45:52
+   Duration  2.86s (import 68%, transform 20%, tests 6%, environment 6%)
+

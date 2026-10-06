@@ -72,6 +72,22 @@ it("reads persisted receipt acceptance and outcome independently with scoped cor
     truncated: false,
   });
 });
+it("preserves the application-owned notification failure code in a scoped redacted report", async () => {
+  const notification = {
+    ...event,
+    operation: "attention:notification",
+    stage: "failed",
+    code: "notification-unavailable",
+  };
+  const directory = await fixture({ "main.jsonl": line(notification) });
+  const snapshot = await readDiagnosticSnapshot(directory, {
+    ...filter,
+    traceId,
+    operation: "attention:notification",
+  });
+  expect(snapshot.records).toEqual([notification]);
+  expect(snapshot.coverage.redacted).toBe(0);
+});
 it("strips content and unsafe strings while preserving safe observation fields", async () => {
   const directory = await fixture({
     "main.jsonl": line({

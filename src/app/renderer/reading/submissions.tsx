@@ -48,7 +48,12 @@ function SubmissionRecord({
   const sending = useStore(model.stateStore, (state) => state.sending);
   if (!receipt) return null;
   return (
-    <article className="message" data-selectable>
+    <article
+      className="message"
+      data-selectable
+      data-attention-receipt-trace={receipt.traceId}
+      tabIndex={-1}
+    >
       <p>
         {receipt.state === "rejected"
           ? t(submissionRejectionKey(receipt.rejectionReason))

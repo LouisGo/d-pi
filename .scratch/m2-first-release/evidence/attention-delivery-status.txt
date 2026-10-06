@@ -1,0 +1,2 @@
+$ node scripts/tasks/project-status.mjs --write docs/status.md
+PASS: project status (18 slices, 99 tasks; engineering/trial/acceptance independent)

@@ -1,0 +1,5 @@
+{
+  "status": "observed",
+  "notes": "Actual Finder double-click on the exact isolated Package With Spaces/d-pi.app reopened the running test App. Fresh CUA AX confirms renderer URL under tk77Eu, version 0.1.0-m2.19, build 48cd01cc-42704447, Thread 4be5a416-6524-4e2a-96d8-3f821662e73c completed/unread, and A_UNSENT_DRAFT retained. Route: Finder, not Dock. Same Main identity and no resend are independently checked by harness after resume.",
+  "observedAt": "2026-10-06T12:32:08.006421+00:00"
+}

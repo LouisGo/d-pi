@@ -1,0 +1,14 @@
+
+DevTools listening on ws://127.0.0.1:55340/devtools/browser/a892fce4-11f5-4d6a-b8b3-eefaedc571ba
+Failure evidence: /private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-HgynS6
+file:///Users/louistation/.codex/worktrees/a613/d-pi/validation/m2/package.mjs:276
+    throw Error(JSON.stringify(reply.exceptionDetails));
+          ^
+
+Error: {"exceptionId":1,"text":"Uncaught","lineNumber":0,"columnNumber":48,"scriptId":"70","exception":{"type":"object","subtype":"error","className":"TypeError","description":"TypeError: Cannot read properties of null (reading 'focus')\n    at <anonymous>:1:49","objectId":"-3991555270753655798.5.2"}}
+    at evaluate (file:///Users/louistation/.codex/worktrees/a613/d-pi/validation/m2/package.mjs:276:11)
+    at async insert (file:///Users/louistation/.codex/worktrees/a613/d-pi/validation/m2/package.mjs:342:3)
+    at async validateAttention (file:///Users/louistation/.codex/worktrees/a613/d-pi/validation/m2/attention.mjs:341:3)
+    at async file:///Users/louistation/.codex/worktrees/a613/d-pi/validation/m2/package.mjs:1353:24
+
+Node.js v24.21.0

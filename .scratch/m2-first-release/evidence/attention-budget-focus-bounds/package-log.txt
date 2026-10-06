@@ -1,0 +1,21 @@
+
+DevTools listening on ws://127.0.0.1:54494/devtools/browser/e988b92e-fc60-4a63-8d74-c68efc66b277
+Failure evidence: /private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-ZaxY4P
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: last reminder must remain reachable by focus/scroll
+    at validateReminderBudget (file:///Users/louistation/.codex/worktrees/a613/d-pi/validation/m2/attention.mjs:668:10)
+    at async validateAppearance (file:///Users/louistation/.codex/worktrees/a613/d-pi/validation/m2/attention.mjs:700:3)
+    at async validateAttention (file:///Users/louistation/.codex/worktrees/a613/d-pi/validation/m2/attention.mjs:480:3)
+    at async file:///Users/louistation/.codex/worktrees/a613/d-pi/validation/m2/package.mjs:1353:24 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.21.0

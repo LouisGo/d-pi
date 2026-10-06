@@ -1,0 +1,21 @@
+{
+  "root": "/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-real-e2e-6VbAgQ",
+  "kind": "snapshot",
+  "coverage": "complete",
+  "issues": [],
+  "defaultModel": "openai-codex/gpt-5.6-luna:high",
+  "models": [
+    {
+      "id": "gpt-5.6-luna",
+      "name": "GPT-5.6-Luna",
+      "provider": "openai-codex",
+      "available": true,
+      "reason": null
+    }
+  ],
+  "source": {
+    "directory": "/Users/louistation/.omp/agent",
+    "profile": null,
+    "cwd": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-real-e2e-6VbAgQ/project"
+  }
+}

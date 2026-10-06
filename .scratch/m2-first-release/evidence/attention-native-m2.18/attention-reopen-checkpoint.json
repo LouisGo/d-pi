@@ -1,0 +1,9 @@
+{
+  "root": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-lHHVEy",
+  "operation": "reopen",
+  "instructions": "Reopen the same running isolated d-pi App from its Dock icon (do not launch a second candidate). Record observed/notes, then create resumeFile. Harness then checks retained Main identity, completed event and no repeat supplier request.",
+  "closedThread": "8ce06db1-d39f-44ab-a912-02bdbd8a44d4",
+  "evidenceFile": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-lHHVEy/attention-reopen-observation.json",
+  "resumeFile": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-lHHVEy/attention-reopen-continue",
+  "expiresAt": "2026-10-06T11:52:57.387Z"
+}

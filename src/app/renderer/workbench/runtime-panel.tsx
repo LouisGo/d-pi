@@ -92,6 +92,8 @@ export function RuntimePanel({
   return (
     <section
       className="runtime-panel"
+      data-attention-target="runtime"
+      tabIndex={-1}
       aria-label={t("ui.runtime.sectionLabel")}
     >
       <strong role="status">{label}</strong>
@@ -165,6 +167,8 @@ export function RuntimePanel({
         <section
           aria-label={t("ui.runtime.interactionsLabel")}
           className="native-interactions"
+          data-attention-target="interaction"
+          tabIndex={-1}
         >
           {state.interactions.unsupported && (
             <p role="alert">{t("ui.runtime.unsupportedInteraction")}</p>

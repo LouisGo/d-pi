@@ -1,0 +1,4 @@
+{
+  "status": "observed",
+  "notes": "Actual CUA Cmd+W on exact tk77Eu48cd01cc-42704447 window closed it; subsequent AX returned noWindowsAvailable. Independent CUA App inventory still lists local.d-pi.m2-validation isRunning=true, personal desktop/mainflow bundles not running. Current A_UNSENT_DRAFT and native3ca00f completed/unread/notification failure observed before close. App not quit; closed-mode actual supplier response still held until this resume."
+}

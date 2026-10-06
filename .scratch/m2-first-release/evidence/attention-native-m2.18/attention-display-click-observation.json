@@ -1,0 +1,4 @@
+{
+  "status": "unavailable",
+  "notes": "Real held localhost response completed in fixed SDK for Thread fdc016; shipped Main snapshot reports system=failed. CUA actual d-pi AX shows matching completed/unread sidebar and in-app reminder while current Thread A draft A_UNSENT_DRAFT remains. No actual system notification display or click observed; no notification callback manufactured. ControlCenter/SystemUIServer bindings timed out; NotificationCenter binding selected a widget rather than the notification panel, and CUA does not support the official Fn modifier. Full Notification Center contents were not inspected. Unsigned candidate; precise OS cause remains unknown."
+}

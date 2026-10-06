@@ -1,0 +1,18 @@
+{
+  "app": "/Users/louistation/.codex/worktrees/a613/d-pi/dist/attention-m2.19-verified-clean/mac-arm64/d-pi.app",
+  "testedApp": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-tk77Eu/Package With Spaces/d-pi.app",
+  "zip": "/Users/louistation/.codex/worktrees/a613/d-pi/dist/candidates/d-pi-0.1.0-m2.19-macos-arm64-48cd01cc.zip",
+  "sourceCommit": "48cd01cc60273d79e4ef2069389d585e8065e465",
+  "validationCommit": "adcd4d357e0400f3d6eeaeca4dcec4f6953e1820",
+  "version": "0.1.0-m2.19",
+  "buildId": "48cd01cc-42704447",
+  "dirty": false,
+  "asarSha256": "2b6ea246cb6bf6268b4aea7264231f4b81804d6e9a39f3aae217cb05e336318e",
+  "zipSha256": "9aae62610348d67335cc5590c9a698555236e039483639859e5edbe83ca0cf58",
+  "zipBytes": 430117894,
+  "zipCrc": "pass",
+  "sourceTestedCopyZipAsar": "identical",
+  "systemNotifications": "failed; actual display/click unavailable; root cause unknown",
+  "nativeWindow": "observed actual Cmd+W and exact-bundle Finder reopen; same Main; no repeated provider request",
+  "checks": 18
+}

@@ -1,0 +1,11 @@
+{
+  "root": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-tk77Eu",
+  "operation": "display-click",
+  "instructions": "Inspect actual macOS Notification Center for the isolated d-pi completion notification, verify it contains only generic text and the Thread short ID, and click it. Write evidenceFile {status:'observed',notes:'...'} only if both actual display AND click were observed. Otherwise write unavailable/unknown with concrete OS observation; do not manufacture notification callbacks. Create resumeFile afterwards.",
+  "nativeThread": "3ca00f1a-49b0-4e72-8586-c042a9c3fcd9",
+  "expectedShortId": "3ca00f",
+  "capability": "failed",
+  "evidenceFile": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-tk77Eu/attention-display-click-observation.json",
+  "resumeFile": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-tk77Eu/attention-display-click-continue",
+  "expiresAt": "2026-10-06T12:32:55.363Z"
+}

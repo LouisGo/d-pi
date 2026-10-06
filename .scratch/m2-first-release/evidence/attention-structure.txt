@@ -1,0 +1,1 @@
+Generated structure report: /Users/louistation/.codex/worktrees/a613/d-pi/architecture/dependencies.generated.json

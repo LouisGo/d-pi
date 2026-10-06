@@ -1,0 +1,7 @@
+$ pnpm routes:generate && tsc --noEmit && pnpm typecheck:core && pnpm typecheck:renderer && pnpm typecheck:main && pnpm typecheck:host && pnpm typecheck:preload
+$ tsr generate
+(node:3928) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+src/app/main/wiring/desktop-services.test.ts(76,71): error TS2339: Property 'receipt' does not exist on type '{ kind: "receipt"; receipt: { submissionId: string & $brand<"SubmissionId">; threadId: string & $brand<"ThreadId">; traceId: string; revision: number; text: string; ... 12 more ...; state: "prepared"; } | { ...; } | { ...; } | { ...; } | { ...; }; } | { ...; } | { ...; }'.
+  Property 'receipt' does not exist on type '{ kind: "failed"; code: "content-not-ready" | "content-too-large" | "image-unsupported" | "not-ready" | "queue-full" | "revision-conflict" | "stale-event" | "storage-unavailable" | "unknown-submission" | "unsupported-native-command"; error: { ...; }; }'.
+[ELIFECYCLE] Command failed with exit code 1.

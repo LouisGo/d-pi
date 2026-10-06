@@ -1,0 +1,13 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/.codex/worktrees/m2-attention-gui/d-pi[39m
+
+ [32m✓[39m src/app/renderer/workbench/attention-location.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/app/renderer/reading/submissions-renderer.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 73[2mms[22m[39m
+ [32m✓[39m src/app/renderer/shell/attention.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 136[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m3 passed[39m[22m[90m (3)[39m
+[2m      Tests [22m [1m[32m20 passed[39m[22m[90m (20)[39m
+[2m   Start at [22m 17:38:00
+[2m   Duration [22m 2.09s[2m (import 49%, transform 24%, environment 19%, tests 8%)[22m
+
