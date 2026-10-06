@@ -466,7 +466,13 @@ export async function validateLongReading({
     assert.ok(attempt < 99, "tool pagination failed to terminate");
   }
   assert.equal(toolSegments.join(""), nativeText);
+  await click("专注阅读");
+  await evaluate(
+    "window.__longToolContainer.querySelector('[data-reading-text]').scrollIntoView({block:'center'});true",
+  );
+  await evaluate("new Promise(r=>setTimeout(r,250))");
   screenshots.push(await shot("m2-long-tool-native-gap"));
+  await click("恢复控件");
   metrics.tool = {
     originalBytes: artifact.length,
     originalSha256: createHash("sha256").update(artifact).digest("hex"),
