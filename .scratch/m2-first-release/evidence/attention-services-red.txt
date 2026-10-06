@@ -1,0 +1,30 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/.codex/worktrees/a613/d-pi[39m
+
+ [31m❯[39m src/app/main/wiring/desktop-services.test.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 5[2mms[22m[39m
+[31m   [31m×[31m continues Main observation without a window and isolates observer failure from renderer publication[39m[32m 4[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/app/main/wiring/desktop-services.test.ts[2m > [22mcontinues Main observation without a window and isolates observer failure from renderer publication
+[31m[1mAssertionError[22m: expected "vi.fn()" to be called once with arguments: [ { …(2) } ][90m
+
+Number of calls: [1m0[22m
+[31m[39m
+[36m [2m❯[22m src/app/main/wiring/desktop-services.test.ts:[2m45:25[22m[39m
+    [90m 43|[39m   publishView(view);
+    [90m 44|[39m   publishReply(receipt);
+    [90m 45|[39m   expect(onRuntimeView).toHaveBeenCalledExactlyOnceWith(view);
+    [90m   |[39m                         [31m^[39m
+    [90m 46|[39m   expect(onSubmissionReceipt).toHaveBeenCalledExactlyOnceWith(receipt.…
+    [90m 47|[39m   expect(send).not.toHaveBeenCalled();
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m   Start at [22m 17:33:55
+[2m   Duration [22m 230ms[2m (import 51%, transform 44%, tests 3%, worker 2%)[22m
+

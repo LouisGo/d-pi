@@ -21,8 +21,10 @@ import {
   type LocaleSnapshot,
   resolveLocale,
 } from "../../../shared/i18n/locale";
+import { ThreadIdSchema } from "../../../shared/identity";
 import { uiMessage } from "../../../shared/messages/contracts";
 import { registerAttachmentIpc } from "../ipc/attachments";
+import { registerAttentionIpc } from "../ipc/attention";
 import { registerConfigurationIpc } from "../ipc/configuration";
 import { registerDiagnosticIpc } from "../ipc/diagnostics";
 import { registerDraftIpc } from "../ipc/draft";
@@ -39,9 +41,11 @@ import {
   registerHistoryIpc,
 } from "../ipc/project-reads";
 import { createDesktopServices } from "../wiring/desktop-services";
+import { ThreadAttention } from "../wiring/thread-attention";
 import { prepareDevelopmentTools } from "./development-tools";
 import { buildApplicationMenu } from "./menu";
 import { QuitCoordinator } from "./quit";
+import { ElectronSystemNotifications } from "./system-notifications";
 import { loadWindowRenderer, secureWindow } from "./window";
 
 export function startDesktopApplication(mainDirectory: string): void {
@@ -79,11 +83,16 @@ export function startDesktopApplication(mainDirectory: string): void {
     }
   }
   let diagnostics: Diagnostics | undefined;
+  let attention: ThreadAttention | undefined;
+  let attentionStore: typeof services.store;
+  let unsubscribeAttention: (() => void) | undefined;
   const services = createDesktopServices({
     mainDirectory,
     getWindow: () => window,
     getDiagnostics: () => diagnostics,
     currentT,
+    onRuntimeView: (view) => attention?.observeRuntime(view),
+    onSubmissionReceipt: (receipt) => attention?.observeReceipt(receipt),
     applyStoredLocale: (preference) => {
       if (!localeInteracted) applyLocale(preference, window !== null);
     },
@@ -177,10 +186,15 @@ export function startDesktopApplication(mainDirectory: string): void {
     current.webContents.on(
       "did-start-navigation",
       (_event, _url, _inPlace, isMainFrame) => {
-        if (isMainFrame) sourceGeneration++;
+        if (isMainFrame) {
+          sourceGeneration++;
+          attention?.clearVisible();
+        }
       },
     );
     secureWindow(current);
+    current.on("focus", () => attention?.setForeground(true));
+    current.on("blur", () => attention?.setForeground(false));
     current.once("ready-to-show", () => {
       current.show();
       if (diagnostics?.degraded) reportLoggingFailure();
@@ -192,12 +206,15 @@ export function startDesktopApplication(mainDirectory: string): void {
       }
     });
     current.on("closed", () => {
+      attention?.clearVisible();
+      attention?.setForeground(false);
       window = null;
       approved = false;
       if (closing) clearTimeout(closing.timer);
       closing = null;
     });
     current.webContents.on("render-process-gone", (_event, details) => {
+      attention?.clearVisible();
       diagnostics?.record({
         traceId: randomUUID(),
         requestId: randomUUID(),
@@ -243,7 +260,70 @@ export function startDesktopApplication(mainDirectory: string): void {
       diagnostics = new Diagnostics(join(data, "logs"), reportLoggingFailure);
       applyLocale("system", false);
       initializeStorage();
+      attentionStore = services.store;
+      attention = new ThreadAttention({
+        readPreferences: () => {
+          if (!services.store) throw Error("storage-unavailable");
+          return services.store.preferences.readNotifications();
+        },
+        savePreferences: (value) => {
+          if (!services.store) throw Error("storage-unavailable");
+          return services.store.preferences.saveNotifications(value);
+        },
+        systemNotifications: new ElectronSystemNotifications(),
+        getText: (key, values) => currentT()(key, values),
+        openWindow: () => {
+          if (!window) createWindow();
+          if (window?.isMinimized()) window.restore();
+          window?.show();
+          window?.focus();
+        },
+        onFailure: (entry) =>
+          diagnostics?.record({
+            traceId: entry.traceId,
+            requestId: entry.eventId,
+            threadId: entry.threadId,
+            connectionId: diagnostics.processInstanceId,
+            operation: "attention:notification",
+            stage: "failed",
+            code: "notification-unavailable",
+          }),
+      });
+      unsubscribeAttention = attention.subscribe((snapshot) => {
+        if (window && !window.webContents.isDestroyed())
+          window.webContents.send("attention:state", snapshot);
+      });
       const ipcSourceContext = { ipcMain, sourceValid };
+      registerAttentionIpc({
+        ...ipcSourceContext,
+        getSourceGeneration: () => sourceGeneration,
+        getAttention: () => {
+          initializeStorage();
+          if (attentionStore !== services.store) {
+            attentionStore = services.store;
+            attention?.reloadPreferences();
+          }
+          return attention;
+        },
+        isKnownThread: (id) => {
+          try {
+            return !!services.store?.threads.threadContext(id);
+          } catch {
+            return false;
+          }
+        },
+        getActiveThread: () => {
+          try {
+            return ThreadIdSchema.parse(
+              services.store?.threads.activeThread()?.threadId,
+            );
+          } catch {
+            return null;
+          }
+        },
+        getWriterId: () => diagnostics?.processInstanceId ?? "unavailable",
+        record: (event) => diagnostics?.record(event),
+      });
       registerDiagnosticIpc({
         ...ipcSourceContext,
         getSourceGeneration: () => sourceGeneration,
@@ -445,6 +525,8 @@ export function startDesktopApplication(mainDirectory: string): void {
       })()
         .then(() => {
           drained = true;
+          unsubscribeAttention?.();
+          attention?.dispose();
           services.configuration?.dispose();
           services.store?.close();
           // Let Electron unwind the prevented will-quit event before retrying Quit.

@@ -1,6 +1,6 @@
 # 01a Main多Thread提醒与偏好
 
-Status: open
+Status: claimed
 Blocked by: none
 
 所属授权、范围与验收见[spec](../spec.md#2026-10-06-多-thread-提醒切片)，本票为工程验收，用户认可独立维护。

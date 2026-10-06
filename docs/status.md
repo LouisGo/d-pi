@@ -38,8 +38,8 @@
 | [m1-interaction-hardening / 07 退出健壮性与 GUI 可访问补齐](../.scratch/m1-interaction-hardening/issues/07-quit-a11y.md) | open | 无；范围以所属规格为准 |
 | [m1-s3-control-recovery / 09 暂缓队列后的退出出口](../.scratch/m1-s3-control-recovery/issues/09-quit-discard-decision.md) | open | 无；范围以所属规格为准 |
 | [m2-first-release / 01 项目与 Thread](../.scratch/m2-first-release/issues/01-project-threads.md) | claimed | 无；范围以所属规格为准 |
-| [m2-first-release / 01a Main多Thread提醒与偏好](../.scratch/m2-first-release/issues/01a-thread-attention.md) | open | 无；范围以所属规格为准 |
-| [m2-first-release / 01b 多Thread提醒正式GUI](../.scratch/m2-first-release/issues/01b-thread-attention-gui.md) | open | 无；范围以所属规格为准 |
+| [m2-first-release / 01a Main多Thread提醒与偏好](../.scratch/m2-first-release/issues/01a-thread-attention.md) | claimed | 无；范围以所属规格为准 |
+| [m2-first-release / 01b 多Thread提醒正式GUI](../.scratch/m2-first-release/issues/01b-thread-attention-gui.md) | claimed | 无；范围以所属规格为准 |
 | [m2-first-release / 01c 提醒切片评审与macOS候选](../.scratch/m2-first-release/issues/01c-thread-attention.md) | open | [01a](../.scratch/m2-first-release/issues/01a-thread-attention.md)、[01b](../.scratch/m2-first-release/issues/01b-thread-attention-gui.md) |
 | [m2-first-release / 02 配置、认证与模型](../.scratch/m2-first-release/issues/02-configuration-models.md) | claimed | 无；范围以所属规格为准 |
 | [m2-first-release / 03 主流程与候选](../.scratch/m2-first-release/issues/03-entry-candidate.md) | claimed | [01](../.scratch/m2-first-release/issues/01-project-threads.md)、[02](../.scratch/m2-first-release/issues/02-configuration-models.md) |
@@ -63,4 +63,4 @@
 - [类型安全桌面路由](../.scratch/router-integration/spec.md)：本地实施和提交；不 push、不改变 OMP 执行及冷恢复政策。
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 
-<!-- source-sha256: 82077c19a442a29c5618e2100d9be3aa2f5d106d4e11d5f9f5c7e6ded0cf5ef7; sources: 116 -->
+<!-- source-sha256: 75ef56d8aea19399bc20467e4457d294f7de7e753eafb7980354eb8664467d81; sources: 116 -->

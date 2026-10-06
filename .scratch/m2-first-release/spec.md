@@ -228,3 +228,9 @@
 
 
 01a Main提醒归纳/原生适配与偏好持久化、01b正式GUI独立固定公共合同并行；主Agent统一合同/preload/版本/管理状态，串行集成、01c验证与交付。具体派发映射在领取时追加。
+
+派发：01a→attention_main→/Users/louistation/.codex/worktrees/m2-attention-main/d-pi→codex/m2-attention-main；01b→attention_gui→/Users/louistation/.codex/worktrees/m2-attention-gui/d-pi→codex/m2-attention-gui；固定公共合同基点3cbff7e。Main实现者写提醒协调/适配/IPC及偏好迁移；GUI实现者写Renderer模型/导航/正式视图及i18n。主Agent写preload、桌面装配、验证、管理状态与模块报告。
+
+验证辅助→attention_validation→/Users/louistation/.codex/worktrees/m2-attention-validation/d-pi→codex/m2-attention-validation，同起点3cbff7e，只写实际SDK/包内harness，不领取01c。
+
+2026-10-06 实机条件核实：固定Electron44.4.5的macOS系统通知使用UNNotification，官方要求应用签名；未签名构建可能触发failed且通知事件不可用。保留通用Electron适配、App提醒与类型化故障诊断；实际显示/点击证据单列，不把isSupported或开关开启当授权/送达。见[官方说明](https://www.electronjs.org/docs/latest/tutorial/notifications#macos)。不以模拟适配代替实机证据。

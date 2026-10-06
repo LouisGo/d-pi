@@ -17,11 +17,13 @@ export const AttentionSnapshotSchema = z.strictObject({
   preferences: NotificationPreferencesSchema,
   system: z.enum(["disabled", "available", "unavailable", "failed"]),
   coverageGap: z.boolean(),
-  openRequest: z.strictObject({
-    id: z.uuid(),
-    threadId: ThreadIdSchema,
-    eventId: z.uuid(),
-  }).nullable(),
+  openRequest: z
+    .strictObject({
+      id: z.uuid(),
+      threadId: ThreadIdSchema,
+      eventId: z.uuid(),
+    })
+    .nullable(),
 });
 export type AttentionSnapshot = z.infer<typeof AttentionSnapshotSchema>;
 export const AttentionCommandSchema = z.discriminatedUnion("kind", [
