@@ -34,6 +34,7 @@ export function SubagentMessage({ item }: { item: ConversationItem }) {
   return (
     <article
       className="message"
+      data-selectable
       data-subagent-id={agent.nativeId}
       data-subagent-status={agent.status}
       data-subagent-parent={agent.parentToolCallId}

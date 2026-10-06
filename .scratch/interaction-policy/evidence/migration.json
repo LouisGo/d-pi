@@ -1,0 +1,127 @@
+{
+  "base": "31cb91229852d8c6dfabb6e88fce06e78cbf6030",
+  "root": "/Users/louistation/MySpace/Life/d-pi",
+  "files": {
+    ".scratch/interaction-policy/evidence/check.log": {
+      "sha256": "a6e96ca759ad0a5f5e5dfb4ca82593b8fd92fe45f37eb5bf5982346927d4bc1f",
+      "tracked": false
+    },
+    ".scratch/interaction-policy/evidence/interaction-dark-compact.png": {
+      "sha256": "50fbf49f140220cc1714d92e30bcd3fdc0fe8b9449852dcf2783ee3e45adea0b",
+      "tracked": false
+    },
+    ".scratch/interaction-policy/evidence/native.json": {
+      "sha256": "1b7192f8a3f290fd042ec4984cd0ed7c0e0d1234d8971ae4c1c680dc3bdbd60a",
+      "tracked": false
+    },
+    ".scratch/interaction-policy/evidence/snapshot-check.log": {
+      "sha256": "dafbfed9ed313e117ed9f53642e3207b7867dc4dd64f258067074b764f10cc28",
+      "tracked": false
+    },
+    ".scratch/interaction-policy/evidence/snapshot.json": {
+      "sha256": "4be0ebb404c4e8c38dc2b2b40691e77f35e487ff0aa8360be7c7042b6cfd61e0",
+      "tracked": false
+    },
+    ".scratch/interaction-policy/spec.md": {
+      "sha256": "fc9fceb4bd8a057ab7d8c671dac0f28c5db951a0b8a9192710c0021eb88a3ef9",
+      "tracked": false
+    },
+    "docs/architecture/design-system.md": {
+      "sha256": "858d2cb070ac2efe5654656d9c50d408468882d177c4559b032305585095fed6",
+      "tracked": true
+    },
+    "docs/decisions.md": {
+      "sha256": "9e1cb9c1c71c95534ec88a58dd29a275bceec752a4d9f8286140641657127fdf",
+      "tracked": true
+    },
+    "package.json": {
+      "sha256": "9c83883bcc010c57658dd64bee1d339a820e60da686d1f9ac7441757a61186c8",
+      "tracked": true
+    },
+    "scripts/checks/interaction-policy.mjs": {
+      "sha256": "530c93f9f047fb20a14d7545cee99a8ae32aa16f781b076ff97c0faa4844e1bc",
+      "tracked": false
+    },
+    "scripts/checks/lint-design.mjs": {
+      "sha256": "ade979a07984e3ce9f8ef449d91ba08ac375e41d307a8b1c312ac49a4cafc65a",
+      "tracked": true
+    },
+    "src/app/renderer/components/ui/button.css": {
+      "sha256": "86878b552094fad5f65551e162e5d25897cd34ae7153940863cada08b64e12e3",
+      "tracked": true
+    },
+    "src/app/renderer/reading/conversation.tsx": {
+      "sha256": "9a6d0f5f6b6d722507b77cff42f1b148ac6811f5a86af698b5278bdf59b54c6f",
+      "tracked": true
+    },
+    "src/app/renderer/reading/history.tsx": {
+      "sha256": "38bcd7502a19774e958e0f2e409d26e375705c7965f2d0b79e90d210fe81d043",
+      "tracked": true
+    },
+    "src/app/renderer/reading/markdown.tsx": {
+      "sha256": "abc46655b9210057736b230b5ff5d428f9e850f75237bfa97cf76e19c2896aef",
+      "tracked": true
+    },
+    "src/app/renderer/reading/subagents.tsx": {
+      "sha256": "fee1a6dbc04633b97f4b21fb7d9f289cbeed9548b18c05a257e64c476e9d4998",
+      "tracked": true
+    },
+    "src/app/renderer/reading/submissions.tsx": {
+      "sha256": "2ddd8365aee4c83145d5b26ea34645231c7aea92fb7f8aea1735e0a65fce7878",
+      "tracked": true
+    },
+    "src/app/renderer/styles/app.css": {
+      "sha256": "6d54801cdfc0154f633cf615a778ce8b1d2308307a5b0c76f97093ab7da442ff",
+      "tracked": true
+    },
+    "src/app/renderer/styles/interaction.css": {
+      "sha256": "6e36eef49b559fecce3cb8cccfcb1a48fa86b8de81c2e075d0ccad8bce368988",
+      "tracked": false
+    },
+    "src/app/renderer/styles/tokens.css": {
+      "sha256": "f328f3d49d47e8bec59a8b3b401e161f8abede0014676da532b7db8c8757f30b",
+      "tracked": true
+    },
+    "src/app/renderer/workbench/queue-controls.tsx": {
+      "sha256": "40572fe8d6aa585bffc8e0a00080d55cabfab53130942ddfb0995b2485aa8505",
+      "tracked": true
+    },
+    "src/app/renderer/workbench/runtime-panel.tsx": {
+      "sha256": "240b09fe10d7b59f190cf7f8aa978d09bfc0d09c26399faf878d80005075f735",
+      "tracked": true
+    },
+    "src/modules/configuration/renderer/settings/authentication-progress.tsx": {
+      "sha256": "64c52a5b6fafb37fe211e1dc44a85e0c3b24afe12460899112b84f52651d2ba1",
+      "tracked": true
+    },
+    "src/modules/configuration/renderer/settings/settings.tsx": {
+      "sha256": "492d233d6a2794c86495b41956db2b4f7ccdb160a23ca5e0b6140989cdf5634c",
+      "tracked": true
+    },
+    "tests/tooling/interaction-policy.test.mjs": {
+      "sha256": "0a790771b85a209917bd78ce148118cef18658b179eae6c8b5ce74a432026634",
+      "tracked": false
+    },
+    "validation/m2/interaction-policy.mjs": {
+      "sha256": "519911947c9bb55fce531d62a9a69cf22d0796a26bccd4a726a156b0d22019cf",
+      "tracked": false
+    },
+    "validation/m2/interaction.html": {
+      "sha256": "47a653114f0ba8eff734418996041c475911c50cbcc5fa89a5c7aaba55ed94a3",
+      "tracked": false
+    },
+    "validation/m2/interaction.tsx": {
+      "sha256": "ae5ab55ebe83638c3c780ab51668eadb232be17dc3dbb3b2697a42f34003e483",
+      "tracked": false
+    }
+  },
+  "worktree": "/Users/louistation/.codex/worktrees/interaction-policy/d-pi",
+  "branch": "codex/interaction-policy",
+  "cleanup": "all 28 captured files copied with SHA-256 verification; only matching task-owned shared diffs restored to captured base; foreign untracked files retained",
+  "checks": {
+    "pnpm check": "exit 0; 711 application tests passed, 2 existing skips",
+    "pnpm validate:interaction": "exit 0",
+    "pnpm build": "exit 0"
+  },
+  "finalDelta": "file sampling metadata opt-in; native regression red then green; independent Spec/Standards re-review passed"
+}

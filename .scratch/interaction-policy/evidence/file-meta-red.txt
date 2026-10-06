@@ -1,0 +1,20 @@
+$ node validation/m2/interaction-policy.mjs
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: #probe-file-meta
+
+'default' !== 'text'
+
+    at file:///Users/louistation/.codex/worktrees/interaction-policy/d-pi/validation/m2/interaction-policy.mjs:195:12 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 'default',
+  expected: 'text',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.21.0
+[ELIFECYCLE] Command failed with exit code 1.

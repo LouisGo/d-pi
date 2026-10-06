@@ -22,8 +22,9 @@ export function AuthenticationProgress({
         <div role="status">
           {challenge && challenge.jobId === event.jobId && (
             <>
-              <p>{challenge.instructions}</p>
+              <p data-selectable>{challenge.instructions}</p>
               <button
+                className="ui-button ui-button-primary"
                 type="button"
                 onClick={() =>
                   void bridge.request({
@@ -38,7 +39,7 @@ export function AuthenticationProgress({
             </>
           )}
           {event.kind === "progress" && (
-            <p>{event.message || t("config.authWorking")}</p>
+            <p data-selectable>{event.message || t("config.authWorking")}</p>
           )}
           {event.kind === "prompt" && (
             <form
@@ -62,10 +63,13 @@ export function AuthenticationProgress({
                   onChange={(e) => setAnswer(e.target.value)}
                 />
               </label>
-              <button type="submit">{t("config.answer")}</button>
+              <button className="ui-button ui-button-primary" type="submit">
+                {t("config.answer")}
+              </button>
             </form>
           )}
           <button
+            className="ui-button ui-button-ghost"
             type="button"
             onClick={() =>
               void bridge.request({

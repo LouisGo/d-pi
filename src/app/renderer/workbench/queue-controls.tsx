@@ -85,7 +85,9 @@ export function QueueControls({ model }: { model: RuntimeModel }) {
               )}{" "}
               · {index + 1}
             </strong>
-            <p className="whitespace-pre-wrap break-words">{entry.text}</p>
+            <p data-selectable className="whitespace-pre-wrap break-words">
+              {entry.text}
+            </p>
             {!!entry.imageCount && (
               <p className="muted">
                 {t("queue.images", { count: entry.imageCount })}

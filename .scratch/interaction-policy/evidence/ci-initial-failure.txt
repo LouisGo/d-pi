@@ -1,0 +1,30 @@
+Run https://github.com/LouisGo/d-pi/actions/runs/37419933377 (ffddd67; pull_request)
+check	Run pnpm check	2026-10-06T05:46:24.1974040Z 205 |       expect(JSON.stringify(transcript.data.messages)).toContain(
+check	Run pnpm check	2026-10-06T05:46:24.1974960Z 206 |         "M2_SUBAGENT_CHILD_RESULT_",
+check	Run pnpm check	2026-10-06T05:46:24.1975850Z 207 |       );
+check	Run pnpm check	2026-10-06T05:46:24.1976210Z 208 |     }
+check	Run pnpm check	2026-10-06T05:46:24.1994400Z 209 |     expect((await request("get_subagents")).data.subagents).toEqual([]);
+check	Run pnpm check	2026-10-06T05:46:24.1995470Z 210 |     await writeFile(
+check	Run pnpm check	2026-10-06T05:46:24.1996020Z                 ^
+check	Run pnpm check	2026-10-06T05:46:24.1997750Z ENOENT: no such file or directory, open '/Users/runner/work/d-pi/d-pi/dist/validation/05d-native-sdk-frames.json'
+check	Run pnpm check	2026-10-06T05:46:24.1998980Z     path: "/Users/runner/work/d-pi/d-pi/dist/validation/05d-native-sdk-frames.json",
+check	Run pnpm check	2026-10-06T05:46:24.1999970Z  syscall: "open",
+check	Run pnpm check	2026-10-06T05:46:24.2000300Z    errno: -2,
+check	Run pnpm check	2026-10-06T05:46:24.2001500Z     code: "ENOENT"
+check	Run pnpm check	2026-10-06T05:46:24.2001920Z
+check	Run pnpm check	2026-10-06T05:46:24.2002870Z       at async <anonymous> (/Users/runner/work/d-pi/d-pi/resources/sdk/.subagent-observation-jNPQNl/native-subagent-observation.test.mjs:210:11)
+check	Run pnpm check	2026-10-06T05:46:24.2013240Z (fail) fixed SDK RPC observes two same-name tasks, final transcript and terminal registry removal [3459.88ms]
+check	Run pnpm check	2026-10-06T05:46:24.2013800Z
+check	Run pnpm check	2026-10-06T05:46:24.2014020Z  0 pass
+check	Run pnpm check	2026-10-06T05:46:24.2014430Z  1 fail
+check	Run pnpm check	2026-10-06T05:46:24.2014800Z  13 expect() calls
+check	Run pnpm check	2026-10-06T05:46:24.2015250Z Ran 1 test across 1 file. [3.81s]
+check	Run pnpm check	2026-10-06T05:46:24.2015720Z node:internal/errors:986
+check	Run pnpm check	2026-10-06T05:46:24.2016450Z   const err = new Error(message);
+check	Run pnpm check	2026-10-06T05:46:24.2017100Z               ^
+check	Run pnpm check	2026-10-06T05:46:24.2017340Z
+check	Run pnpm check	2026-10-06T05:46:24.2018400Z Error: Command failed: /Users/runner/work/d-pi/d-pi/resources/sdk/bun test /Users/runner/work/d-pi/d-pi/resources/sdk/.subagent-observation-jNPQNl/native-subagent-observation.test.mjs
+check	Run pnpm check	2026-10-06T05:46:24.2019340Z     at genericNodeError (node:internal/errors:986:15)
+check	Run pnpm check	2026-10-06T05:46:24.2019880Z     at wrappedFn (node:internal/errors:540:14)
+check	Run pnpm check	2026-10-06T05:46:24.2020710Z     at checkExecSyncError (node:child_process:942:11)
+check	Run pnpm check	2026-10-06T05:46:24.2021240Z     at execFileSync (node:child_process:978:15)

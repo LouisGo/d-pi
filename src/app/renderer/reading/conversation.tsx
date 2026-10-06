@@ -83,7 +83,7 @@ function ConversationMessage({
       </p>
     );
   return (
-    <article className="message">
+    <article className="message" data-selectable>
       <div className="message-heading">
         <strong>
           {item.label.kind === "literal"

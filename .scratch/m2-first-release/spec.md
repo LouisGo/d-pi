@@ -38,7 +38,7 @@
       "long-reading-review.md"
     ],
     "next": "06c/06d长正文有界阅读工程完成，m2.16候选交付待试用；PDF视觉/OCR与余下M2队列/子Agent/固定负载/故障组合验收开放，真实供应商试用与用户认可pending，冷旧Thread只读",
-    "constraints": "2026-10-02用户授权下一阶段M2并行开发与中断后继续；本地commit/候选沿用M2授权，不将旧特定修复push扩大到本轮。2026-10-06按已合并main重启本地全流程，默认Node24.21.0/pnpm12.8.1已对齐；不公开发布、不扩M3，冷恢复只读，unknown不自动重发。"
+    "constraints": "2026-10-06用户追加授权push及相关PR收尾；集成交互策略PR #2后将本阶段交付到main。Node24.21.0/pnpm12.8.1已对齐；不公开发布、不扩M3，冷恢复只读，unknown不自动重发；用户认可pending。"
   }
 ]
 ```
@@ -192,3 +192,9 @@
 派发：06c→bounded_reading→`/Users/louistation/.codex/worktrees/m2-long-reading-06c/d-pi`→`codex/m2-long-reading-06c`，固定起点`88e40303b1b13707e5717818df19ccf6ce3cd124`。主Agent沿用`codex/m2-lifecycle`负责validation/m2长正文harness及共享管理；写集不重叠。
 
 2026-10-06：06c/06d resolved。实时/原生历史/子Agent长正文按8192 UTF-16 units或120行有界分段，已封闭段DOM/选择/段内滚动在追加时保留，完整复制当前已取得原文。实际包Copy暴露窗口写权限拒绝，TDD后仅允许当前WebContents/主框架/当前文档的clipboard-sanitized-write并复核双权限入口。产品source `c531558` clean m2.16，验证harness `3fdb25f`；723行为/34架构/70tooling、两轴独立评审及21项实际包内检查通过，ZIP CRC/app.asar同源通过。40784 UTF-16 units复制7段并恢复剪贴板；10MiB原生工具artifact已核实，但固定SDK先缩为41077 UTF-8 bytes头尾原文，GUI六段保留省略/artifact提示，不冒称Host收到10MiB负载。[交接](long-reading.md)、[评审](long-reading-review.md)。父06/M2仍开放，固定负载/系统IME/故障全集及PDF视觉/OCR未验，用户认可pending，本地提交不push。
+
+## 2026-10-06 远端交付授权
+
+用户明确要求“push，然后处理好相关的PR。随后给开启下一阶段的简短有力的prompt”。本次按完整PR收尾集成已有叠加PR #2（codex/interaction-policy→codex/m2-lifecycle），推送集成分支、建立本阶段到main的PR并在当前head检查通过后合并，核实远端main。该授权取代本阶段此前本地不push及交互策略此前不merge限制，不增加公开安装包发布、真实供应商费用或用户认可。
+
+长正文与交互策略的历史冲突保留来源隔离key、完整复制heading及data-selectable三者；结构报告重新生成，补正式ReadingBody在中央选择策略下四主题/密度真实鼠标拖选和翻段验证。已有m2.16 ZIP仍只对应c531558产品source，不冒称含后续交互策略集成；本次不重打包安装包。远端结果见[PR交付记录](pr-delivery.md)。

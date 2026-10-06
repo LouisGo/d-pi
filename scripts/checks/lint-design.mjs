@@ -4,6 +4,7 @@ import {
   reportOxlintResult,
   runOxlint,
 } from "../architecture/oxlint-runner.mjs";
+import { checkInteractionPolicy } from "./interaction-policy.mjs";
 
 function parseOptions(argv) {
   const rootIndex = argv.indexOf("--root");
@@ -25,6 +26,11 @@ if (!existsSync(config)) {
     `FAIL: design lint could not run (configuration is missing: ${config}); no files were judged.`,
   );
   process.exit(2);
+}
+const interactionIssues = checkInteractionPolicy(root);
+if (interactionIssues.length) {
+  console.error(interactionIssues.join("\n"));
+  process.exit(1);
 }
 const roots = [join(root, "src/app/renderer")];
 const modulesRoot = join(root, "src/modules");

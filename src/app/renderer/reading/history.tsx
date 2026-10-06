@@ -170,6 +170,7 @@ export function History({
           {page.entries.map((entry) => (
             <article
               className="message"
+              data-selectable
               key={JSON.stringify([threadId, selected, page.source, entry.id])}
             >
               <div className="message-heading">
