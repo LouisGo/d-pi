@@ -23,3 +23,9 @@ Main与GUI保留原始红绿及补测日志，在集成后归档；单测证明�
 - 磁盘ENOSPC保留观测；仅移除本轮已提交且raw证据已跟踪的worker CLI worktrees，以及本会话m2.17已受测临时App重复件（确认与原候选/跟踪证据的app.asar同源）。原候选和原生/数据库/截图证据保留。新验证copy使用COPYFILE_FICLONE尽量减少APFS占盘，仍复核产品身份。
 
 补充实际诊断导出回归：通知失败类型码被既有白名单改unknown。根路径是新onFailure字段，先失败报告断言，再仅加入精确App自有码notification-unavailable后12Reader行为通过；未知自由码继续脱敏。harness原生检查点短ID提示统一Main实际6位（不改变App）。初次clean1a55722包自动16检查通过，原生检查因Mac锁定真实timeout；不冒称已完成01c。最终替代包另外记录。
+
+## 实际截图暴露的失败详情裁切
+
+672afdc干净包16项自动检查通过后，主Agent复看实际截图发现失败收据虽聚焦/展开，阅读容器却被setup/Composer挤压到仅能显示一小部分。独立Spec reviewer确认P2；原脚本仅判断window rectangle漏掉祖先裁切。原包/检查/截图保留于attention-macos-pre-layout，CRC通过的672afdc6 ZIP保留，不交付为最终修复包。
+
+真实React导航、SubmissionModel与收据fixture回归先红：匹配failed receipt后reading-focus仍false，未获得可读空间；见attention-reading-red.txt。最小实现仅当前submissions且实际匹配failed trace时启用现有阅读专注模式，RAF后定位；缺收据/runtime fallback与needs-answer恢复setup。Editor不卸载、草稿保留、可恢复controls；10相关测试green见attention-reading-green.txt。包内脚本改检查状态段落在window与所有overflow祖先有效可见交集内完整可读，不能仅凭focus/textContent通过。原始review见attention-review-spec-layout-original.md，后续替代包须重拍并通过强化断言。
