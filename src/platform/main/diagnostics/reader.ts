@@ -114,12 +114,23 @@ const codes = new Set([
   "EIO",
   "ENOSPC",
   "EROFS",
+  "ERR_SQLITE_ERROR",
   "SQLITE_BUSY",
   "SQLITE_FULL",
   "SQLITE_CORRUPT",
   "SQLITE_NOTADB",
   "SQLITE_CANTOPEN",
 ]);
+function knownCode(value: unknown): boolean {
+  if (typeof value !== "string") return false;
+  if (codes.has(value)) return true;
+  const numbered = /^([A-Z][A-Z0-9_]{0,63}):(-?\d{1,16})$/.exec(value);
+  return (
+    !!numbered &&
+    codes.has(numbered[1] ?? "") &&
+    Number.isSafeInteger(Number(numbered[2]))
+  );
+}
 const reasons = new Set([
   "watchdog-owner-changed",
   "watchdog-owner-missing",
@@ -172,7 +183,9 @@ function sanitize(raw: unknown) {
     if (
       candidate[key] !== undefined &&
       candidate[key] !== null &&
-      (typeof candidate[key] !== "string" || !known.has(candidate[key]))
+      (key === "code" || key === "causeCode"
+        ? !knownCode(candidate[key])
+        : typeof candidate[key] !== "string" || !known.has(candidate[key]))
     )
       candidate[key] = "unknown";
   }

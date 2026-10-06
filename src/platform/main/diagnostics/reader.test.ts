@@ -267,3 +267,15 @@ it("lets the existing Writer persist and close while a budgeted snapshot is scan
   expect(first.coverage.truncated).toBe(true);
   expect(persisted.records).toHaveLength(20);
 });
+it("retains the actual bounded SQLite cause code already emitted by Main", async () => {
+  const directory = await fixture({
+    "main.jsonl": line({
+      ...event,
+      stage: "failed",
+      code: "storage-unavailable",
+      causeCode: "ERR_SQLITE_ERROR:1",
+    }),
+  });
+  const snapshot = await readDiagnosticSnapshot(directory, filter);
+  expect(snapshot.records[0]?.causeCode).toBe("ERR_SQLITE_ERROR:1");
+});

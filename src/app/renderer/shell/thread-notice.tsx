@@ -22,10 +22,7 @@ export function ThreadNotice({ model }: { model: AppModel }) {
     <div role="alert" className="notice failure">
       {formatMessage(notice.message)}
       <span className="trace"> {notice.traceId}</span>
-      <Diagnostics
-        bridge={window.desktop?.diagnostics}
-        traceId={notice.traceId}
-      />
+      <Diagnostics traceId={notice.traceId} />
       {uncertain && (
         <>
           <p>{t("app.navigation.selectionUnknown")}</p>

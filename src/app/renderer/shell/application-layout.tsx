@@ -47,11 +47,8 @@ function StartupFailure({ model }: { model: AppModel }) {
       <p>{formatMessage(error.message)}</p>
       <p className="trace">{t("app.trace", { traceId: error.traceId })}</p>
       <p className="trace">{t("app.build", { buildId: BUILD_INFO.id })}</p>
-      <Diagnostics bridge={window.desktop?.diagnostics} />
-      <Diagnostics
-        bridge={window.desktop?.diagnostics}
-        traceId={error.traceId}
-      />
+      <Diagnostics />
+      <Diagnostics traceId={error.traceId} />
       <Button onClick={() => void model.start()}>{t("app.retry")}</Button>
     </main>
   );
@@ -97,7 +94,7 @@ function SidebarFooter() {
   const { t } = useI18n();
   return (
     <div className="sidebar-bottom">
-      <Diagnostics bridge={window.desktop?.diagnostics} />
+      <Diagnostics />
       <span className="muted">{t("app.sidebar.localDraft")}</span>
       <span className="muted">{t("app.executionNeedsApproval")}</span>
       <span className="trace muted" title={BUILD_INFO.commit}>

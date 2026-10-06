@@ -21,7 +21,10 @@ type Props = {
   traceId?: string | undefined;
 };
 type CommandResult = { text: string; traceId?: string };
-export function Diagnostics({ bridge, traceId }: Props) {
+export function Diagnostics({
+  bridge = globalThis.window?.desktop?.diagnostics,
+  traceId,
+}: Props) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
