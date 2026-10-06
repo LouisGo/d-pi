@@ -16,6 +16,10 @@ import {
   prepareAgedAttachment,
   validateAttachmentLifecycle,
 } from "./attachment-lifecycle.mjs";
+import {
+  createSubagentSupplier,
+  validateSubagentLifecycle,
+} from "./subagent-lifecycle.mjs";
 
 const isolated = createTestEnvironment({ prefix: "d-pi-m2-package-" });
 const source = resolve(
@@ -55,13 +59,20 @@ const secondProject = join(isolated.root, "Second Project");
 mkdirSync(secondProject);
 writeFileSync(join(secondProject, "second.txt"), "Second isolated project\n");
 const requests = [];
+const subagentSupplier = createSubagentSupplier();
 let held = null;
 const sockets = new Set();
 const server = createServer(async (req, res) => {
   let body = "";
   for await (const chunk of req) body += chunk;
   assert.equal(req.method, "POST");
-  requests.push(JSON.parse(body));
+  const request = JSON.parse(body);
+  if (
+    process.argv.includes("--lifecycle") &&
+    subagentSupplier.handle(request, res)
+  )
+    return;
+  requests.push(request);
   const frame = (delta, finish) => ({
     id: "fixture",
     object: "chat.completion.chunk",
@@ -113,7 +124,16 @@ writeFileSync(
   join(isolated.config, "config.yml"),
   JSON.stringify({
     autolearn: { enabled: false },
-    modelRoles: { default: "fixture/fixture-a", smol: "fixture/fixture-a" },
+    modelRoles: {
+      default: "fixture/fixture-a",
+      smol: "fixture/fixture-a",
+      ...(process.argv.includes("--lifecycle")
+        ? { task: "fixture/fixture-a" }
+        : {}),
+    },
+    ...(process.argv.includes("--lifecycle")
+      ? { task: { batch: true }, async: { enabled: false } }
+      : {}),
   }),
 );
 mkdirSync(join(isolated.config, "extensions"));
@@ -1124,6 +1144,23 @@ try {
     "composer and send action stay inside window; switching reading view preserves draft",
   );
   screenshots.push(await shot("m2-parallel-entry"));
+  if (process.argv.includes("--lifecycle")) {
+    await validateSubagentLifecycle({
+      supplier: subagentSupplier,
+      db,
+      evaluate,
+      wait,
+      click,
+      insert,
+      selectThread,
+      call,
+      shot,
+      checks,
+      screenshots,
+      threadA: a,
+      threadB: b,
+    });
+  }
   if (process.argv.includes("--inspect")) {
     const checkpoint = join(isolated.root, "inspect-checkpoint.json"),
       resume = join(isolated.root, "inspect-continue");
@@ -1232,6 +1269,7 @@ try {
     screenshots,
     continuitySamples,
     providerCalls: requests.length,
+    subagentProviderCalls: subagentSupplier.requests.length,
     models: requests.map((r) => r.model),
     nativeSessions: db
       .prepare("SELECT session_id,thread_id FROM native_session")
