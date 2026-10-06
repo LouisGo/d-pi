@@ -156,7 +156,7 @@
 用户要求使用刚合并的 AI 工作流，从最新 main 重新开启下一阶段；2026-10-06 已确认 PR #1 合入，基点 `c8dbdbadf1a04ad2be54e01f1a509024c5d982ea`，集成分支 `codex/m2-lifecycle`。本段选择 B4 附件引用/延迟回收/一致性与原生子 Agent 状态/结果观察两条可独立交付路径，随后集成与本地候选。沿用已有 M2 本地实现/commit/试用候选授权；不 push、不公开发布、不扩 M3。冷旧 Thread 只读、unknown 不自动重发，PDF 视觉/OCR与退出放弃原待决不进入本段。无新增产品待决。
 
 ```implementation-plan
-[{"id":"m2-lifecycle","tickets":["04b","05d","06b"]},{"id":"m2-long-reading","tickets":["06c","06d"]},{"id":"m2-diagnostics","tickets":["06e","06f","06g"]}]
+[{"id":"m2-lifecycle","tickets":["04b","05d","06b"]},{"id":"m2-long-reading","tickets":["06c","06d"]},{"id":"m2-diagnostics","tickets":["06e","06f","06g"]},{"id":"thread-attention","tickets":["01a","01b","01c"]}]
 ```
 
 - [04b](issues/04b-attachment-lifecycle.md)：私有内容引用/最后释放、延迟回收及正式检查/清理出口。
@@ -215,3 +215,16 @@
 
 
 2026-10-06：06e/06f/06g resolved。现有Main JSONL有界白名单读取、正式筛选/覆盖缺口/故障trace GUI、Main原生0600本地导出、可复制反馈模板完成。产品source `ba0e7df`、clean m2.17构建 `ba0e7df1-808e60b8`；751行为/34架构/74工具、两轴独立review与21项实际macOS包内检查通过，含真实保存/取消/剪贴板、Writer路径故障、损坏SQLite启动及8MiB预算。验证harness `49cfaa3` 仅修正初始采样等待，失败证据保留。ZIP CRC与app.asar同源通过。[交接](diagnostics.md)、[评审](diagnostics-review.md)、[本地PR body](diagnostics-pr.md)。整体V1-00/B6性能监控和父06/M2组合仍开放，用户认可pending；本地提交、不push、不扩M3。
+
+
+## 2026-10-06 多 Thread 提醒切片
+
+用户明确要求继续按工作流完成下阶段。本轮从干净7c9e1fe继续，集成分支codex/m2-thread-attention，工作目录/Users/louistation/.codex/worktrees/a613/d-pi。选择已确认M2提醒策略：后台待回答/失败不抢焦点的可点击应用内提醒；正常完成默认仅完成/未读；用户显式开启系统提醒与可选完成提醒，系统不可用/拒绝/失败保留应用内事实。Main依据实际RuntimeView与SubmissionReceipt归纳展示，通知不成为执行/处理事实，不读取业务正文或改变OMP调度。
+
+交付正式侧栏状态、应用内提醒、通知偏好与点击定位；Renderer reload/关窗后台保持Main观察，重复/迟到事件不重复提醒，过期点击展示当前状态不发送旧回答。优先通用Electron能力，不采用平台独占必需机制；macOS实际验证按已获系统权限表达送达限制。偏好归App SQLite；通知内容仅自有通用文案及受控Thread短ID，不包含路径、提示正文、答案或凭据。
+
+验收：TDD实际投影/收据、trusted IPC/preload、SQLite偏好、真实React焦点/导航/隔离；完整受影响门禁、双轴独立评审/修复、实际macOS候选/ZIP同源与本地提交。系统通知显示/点击须实际证据，OS权限或前台限制准确注明，不以模拟适配器宣称实际送达。不开真实付费供应商/个人账户、不push、不扩M3；用户认可pending，PDF视觉/OCR、冷执行恢复/退出待决与完整B6组合不纳入本段。
+
+
+
+01a Main提醒归纳/原生适配与偏好持久化、01b正式GUI独立固定公共合同并行；主Agent统一合同/preload/版本/管理状态，串行集成、01c验证与交付。具体派发映射在领取时追加。
