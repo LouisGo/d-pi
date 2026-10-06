@@ -44,7 +44,7 @@ let preferences: Preferences = {
 let locale: LocaleSnapshot = { preference: "en-US", resolvedLocale: "en-US" };
 let localeListener: ((value: LocaleSnapshot) => void) | undefined;
 const runtimeCommands: { kind: string; threadId: string }[] = [];
-const bridge: DesktopBridge = {
+export const bridge: DesktopBridge = {
   request: async (command) => {
     if (command.kind === "preferences") {
       await pause();
@@ -174,9 +174,10 @@ const bridge: DesktopBridge = {
         seq: 0,
         connectionGeneration: crypto.randomUUID(),
         gap: false,
-        items: [
-          {
-            id: 1,
+        items: Array.from(
+          { length: location.pathname.endsWith("/workbench.html") ? 3 : 1 },
+          (_, index) => ({
+            id: index + 1,
             role: "assistant",
             state: "complete",
             label: { kind: "literal", text: "OMP fixture" },
@@ -187,8 +188,8 @@ const bridge: DesktopBridge = {
                 (_, i) =>
                   `Fixture paragraph ${i}: **reading content stays stable**.`,
               ).join("\n\n"),
-          },
-        ],
+          }),
+        ),
       });
       return () => {};
     },
@@ -212,17 +213,23 @@ const bridge: DesktopBridge = {
   onCloseCancelled: () => () => {},
   completeClose: () => {},
 };
-const model = new AppModel(bridge);
-const root = document.getElementById("root");
-if (!root) throw Error("Missing root");
-createRoot(root).render(
-  <QueryProvider>
-    <I18nProvider bridge={bridge.locale} initialSnapshot={locale}>
-      <App model={model} />
-    </I18nProvider>
-  </QueryProvider>,
-);
-void model.start();
+export const model = new AppModel(bridge);
+export function mountRenderingFixture(
+  hosts?: import("../../src/app/renderer/shell/layout/hosts-context").WorkbenchHosts,
+) {
+  const root = document.getElementById("root");
+  if (!root) throw Error("Missing root");
+  const renderingRoot = createRoot(root);
+  renderingRoot.render(
+    <QueryProvider>
+      <I18nProvider bridge={bridge.locale} initialSnapshot={locale}>
+        <App model={model} {...(hosts ? { hosts } : {})} />
+      </I18nProvider>
+    </QueryProvider>,
+  );
+  void model.start();
+  return renderingRoot;
+}
 const probe = {
   model,
   runtimeCommands,
@@ -231,3 +238,5 @@ const probe = {
   pause,
 };
 Object.assign(window, { probe });
+
+if (!location.pathname.endsWith("workbench.html")) mountRenderingFixture();

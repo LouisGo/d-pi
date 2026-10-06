@@ -86,3 +86,29 @@ CSS Grid/Flex 负责排版与滚动边界；尺寸约束负责可用空间分配
 开工判断：第一轮范围、已确认规则、可逆工程默认和验收已足以启动；面板版本与最终阈值在实施中核实。未开始编码、未产生新构建，本会话成果为[新会话请求](next-session-prompt.md)及其依据。新会话需接续本轮设计成果、保留后续改动并核实最新基点；原 M2 状态与验收不变。
 
 本次开工准备验证：文档引用、项目状态与空白检查通过；新增开工计划/prompt 及研究文档的本地链接、锚点核对通过。规划足以启动基础布局，但应用取消密度切换、颜色派生与新几何仍未实现；当前没有新构建或产品 GUI 验收。
+
+
+## 2026-10-06 A 基础布局实施授权
+
+用户本轮明确授权 A0→A1→A2→A3 全范围实施及本地提交/试用，取代本规格早先“只研究”的会话限制。固定基点 `37e1a62b889fdfaa1db274b60bac69b98d54d23c`，原 checkout 无未提交文件，设计已在该提交内。相关会话空闲；实现单写 worktree `/Users/louistation/.codex/worktrees/codex-workbench-ui/d-pi`，分支 `codex/workbench-ui`。不 push/merge/公开发布，不发起真实账户请求。
+
+- 交付：默认紧凑的 Codex 式外壳与现有业务，右/底宿主只在有内容时开放。
+- 重要待决：无；底部横跨主会话/右区、固定拓扑沿用第一轮工程默认。
+- 工程：实施中。几何展示意图独立于 AppModel；主题/草稿/Thread 沿用原拥有者。
+- 验收：[第一轮范围](layout-first.md#4-验收范围)；纯规则/组件/隔离 Electron 与本地包分别记录。
+- 用户试用：尚未交付本切片构建，认可 pending；原 M2 状态不变。
+
+```implementation-plan
+[{"id":"foundation-shell","tickets":["01","02","03","04"]}]
+```
+
+```project-status
+[{"id":"codex-workbench-ui","title":"Codex 式工作台基础布局","phase":"基建","engineering":"in-progress","trial":"not-delivered","acceptance":"pending","evidence":["layout-first.md"],"next":"A0视觉与默认尺寸→A1几何适配→A2业务接线→A3 Electron验证","constraints":"仅本地实施/提交/试用；不push、merge、公开发布或发起真实账户请求。"}]
+```
+
+## 实施票
+
+- [01 最小视觉与默认尺寸](issues/01-visual-foundation.md)
+- [02 几何与面板适配](issues/02-panel-geometry.md)
+- [03 外壳与业务接线](issues/03-shell-wiring.md)
+- [04 验证与交付](issues/04-validation-delivery.md)

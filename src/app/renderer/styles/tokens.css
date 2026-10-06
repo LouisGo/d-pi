@@ -17,11 +17,19 @@
   --surface: #ffffff;
   --overlay: rgb(0 0 0 / 45%);
   --sidebar: #f3f4f7;
-  --accent: #e8edf9;
-  --accent-foreground: #304a97;
-  --primary-hover: #2c49a1;
-  --primary-active: #233b85;
-  --muted-hover: #e6e8ee;
+  --accent: color-mix(in srgb, var(--primary) 11%, var(--surface));
+  --accent-foreground: color-mix(
+    in srgb,
+    var(--primary) 78%,
+    var(--foreground)
+  );
+  --primary-hover: color-mix(in srgb, var(--primary) 90%, var(--foreground));
+  --primary-active: color-mix(in srgb, var(--primary) 78%, var(--foreground));
+  --muted-hover: color-mix(
+    in srgb,
+    var(--muted-foreground) 12%,
+    var(--surface)
+  );
   --foreground: #242730;
   --primary: #3757bc;
   --primary-foreground: #ffffff;
@@ -32,10 +40,10 @@
   --code-selection: #c5d5f8;
   --diff-added-background: #d6f0df;
   --diff-removed-background: #f6d9d6;
-  --control-height: 2rem;
-  --control-padding: 0.875rem;
-  --panel-padding: 1.25rem;
-  --layout-gap: 0.875rem;
+  --control-height: 1.875rem;
+  --control-padding: 0.625rem;
+  --panel-padding: 1rem;
+  --layout-gap: 0.625rem;
   --radius: 0.75rem;
   --radius-control: 0.5rem;
   --motion-control: 160ms;
@@ -47,7 +55,21 @@
   --text-body: 0.8125rem;
   --text-reading: 0.9375rem;
   --text-small: 0.75rem;
-  --sidebar-width: 14.5rem;
+  --rail-width: 3.25rem;
+  --header-height: 2.75rem;
+  --separator-size: 1px;
+  --sidebar-width: 17.5rem;
+  --sidebar-min: 13.75rem;
+  --sidebar-max: 26.25rem;
+  --conversation-min: 30rem;
+  --workspace-min: 20rem;
+  --workspace-default: 26rem;
+  --workspace-max: 50rem;
+  --bottom-min: 8.75rem;
+  --bottom-default: 13.75rem;
+  --conversation-min-height: 30rem;
+  --overlay-width: 20rem;
+  --shadow-overlay: 0 8px 24px rgb(0 0 0 / 16%);
   --content-width: 56rem;
   --editor-height: 4rem;
   --thread-setup-max-height: 26vh;
@@ -59,11 +81,6 @@
   --background: #181b22;
   --surface: #20242d;
   --sidebar: #1d2028;
-  --accent: #2c3855;
-  --accent-foreground: #c4d4ff;
-  --primary-hover: #bed1ff;
-  --primary-active: #8da9eb;
-  --muted-hover: #333945;
   --foreground: #e8ebf2;
   --primary: #a8c1ff;
   --primary-foreground: #162649;
@@ -75,23 +92,16 @@
   --diff-added-background: #244636;
   --diff-removed-background: #593530;
 }
-:root[data-density="compact"] {
-  --control-height: 1.875rem;
-  --control-padding: 0.625rem;
-  --panel-padding: 1rem;
-  --layout-gap: 0.625rem;
-}
-
-@media (max-width: 960px) {
-  :root {
-    --sidebar-width: 12rem;
-  }
-}
 @media (max-height: 680px) {
-  :root,
-  :root[data-density="compact"] {
+  :root {
     --panel-padding: 0.75rem;
     --layout-gap: 0.5rem;
     --editor-height: 2.5rem;
   }
+}
+
+/* Panel budgets derive from the actual conversation container. */
+.conversation-surface {
+  --thread-setup-max-height: min(26vh, 20cqh);
+  --composer-max-height: min(24vh, 10cqh);
 }

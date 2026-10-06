@@ -1,6 +1,7 @@
 @import "./tokens.css";
 @import "../components/ui/button.css";
 @import "./interaction.css";
+@import "./workbench.css";
 @layer base {
   body {
     margin: 0;

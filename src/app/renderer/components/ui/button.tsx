@@ -2,6 +2,7 @@
 import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { cva, type VariantProps } from "class-variance-authority";
 import { clsx } from "clsx";
+import type { ComponentPropsWithRef } from "react";
 
 const buttonVariants = cva("ui-button", {
   variants: {
@@ -14,7 +15,9 @@ const buttonVariants = cva("ui-button", {
   },
   defaultVariants: { variant: "default", size: "default" },
 });
-type Props = ButtonPrimitive.Props & VariantProps<typeof buttonVariants>;
+export type ButtonProps = ComponentPropsWithRef<"button"> &
+  VariantProps<typeof buttonVariants>;
+type Props = ButtonProps;
 export function Button({ className, variant, size, ...props }: Props) {
   return (
     <ButtonPrimitive

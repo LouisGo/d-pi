@@ -120,7 +120,7 @@ try {
   assert.deepEqual(cursors, [], "production App must not expose hand cursors");
   assert.equal(
     await evaluate(
-      "getComputedStyle(document.querySelector('.brand')).userSelect",
+      "getComputedStyle(document.querySelector('.rail-brand')).userSelect",
     ),
     "none",
   );
@@ -164,9 +164,9 @@ try {
     "#probe-checkbox-label",
   ];
   for (const theme of ["light", "dark"])
-    for (const density of ["normal", "compact"]) {
+    for (const density of ["default"]) {
       await evaluate(
-        `document.documentElement.dataset.theme=${JSON.stringify(theme)};document.documentElement.dataset.density=${JSON.stringify(density)}`,
+        `document.documentElement.dataset.theme=${JSON.stringify(theme)};delete document.documentElement.dataset.density`,
       );
       const styles = await evaluate(
         `(${JSON.stringify(selectors)}).map(s => {const el=document.querySelector(s),c=getComputedStyle(el);return {selector:s,cursor:c.cursor,select:c.userSelect,background:c.backgroundColor,color:c.color};})`,
@@ -374,9 +374,9 @@ try {
     ),
   );
   for (const theme of ["light", "dark"])
-    for (const density of ["normal", "compact"]) {
+    for (const density of ["default"]) {
       await evaluate(
-        `document.documentElement.dataset.theme=${JSON.stringify(theme)};document.documentElement.dataset.density=${JSON.stringify(density)}`,
+        `document.documentElement.dataset.theme=${JSON.stringify(theme)};delete document.documentElement.dataset.density`,
       );
       const styles = await evaluate(
         `(()=>{const p=document.querySelector('#bounded-interaction-fixture [data-reading-text]'),c=getComputedStyle(p);return {cursor:c.cursor,select:c.userSelect,length:p.textContent.length,controls:Array.from(document.querySelectorAll('#bounded-interaction-fixture .reading-segment-controls button')).map(b=>{const s=getComputedStyle(b);return {cursor:s.cursor,select:s.userSelect};})};})()`,
@@ -415,7 +415,7 @@ try {
   writeFileSync(output, JSON.stringify(facts, null, 2));
   const shot = await call("Page.captureScreenshot", { format: "png" });
   writeFileSync(
-    resolve(output, "../interaction-dark-compact.png"),
+    resolve(output, "../interaction-dark-default.png"),
     Buffer.from(shot.data, "base64"),
   );
 } finally {

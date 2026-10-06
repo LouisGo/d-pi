@@ -589,3 +589,36 @@ test("resolves directory index imports before checking cross-module privacy", ()
     rmSync(directory, { recursive: true, force: true });
   }
 });
+
+test("workbench panel primitives stay behind the owned UI adapter", () => {
+  const { externalImportRules } = JSON.parse(
+    readFileSync(join(repositoryRoot, "architecture/modules.json"), "utf8"),
+  );
+  for (const [path, allowed] of [
+    ["renderer/components/ui/resizable.tsx", true],
+    ["renderer/shell/direct-panel.tsx", false],
+  ]) {
+    const directory = fixture(
+      "workbench-panel-boundary",
+      { [`src/app/${path}`]: 'import "react-resizable-panels";\n' },
+      {
+        app: {
+          root: "src/app",
+          environments: ["renderer"],
+          public: [path],
+          dependsOn: [],
+        },
+      },
+      { externalImportRules },
+    );
+    const result = run(directory);
+    rmSync(directory, { recursive: true, force: true });
+    assert.equal(
+      result.status,
+      allowed ? 0 : 1,
+      `${path}: ${result.stdout}\n${result.stderr}`,
+    );
+    if (!allowed)
+      assert.match(result.stdout + result.stderr, /ARCH-ENVIRONMENT/);
+  }
+});

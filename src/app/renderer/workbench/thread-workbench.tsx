@@ -2,6 +2,7 @@ import {
   memo,
   type ReactNode,
   useCallback,
+  useContext,
   useLayoutEffect,
   useRef,
   useState,
@@ -16,6 +17,7 @@ import { Conversation } from "../reading/conversation";
 import { History } from "../reading/history";
 import { Submissions } from "../reading/submissions";
 import type { ReadingView } from "../routing/search";
+import { ConversationVisibilityContext } from "../shell/layout/conversation-visibility";
 import type { ThreadSelectionState } from "../wiring/model";
 import type { ThreadModel } from "../wiring/thread-model";
 import { locateAttention } from "./attention-location";
@@ -324,11 +326,12 @@ function ReadingPane({
   active: boolean;
   children: ReactNode;
 }) {
+  const visible = useContext(ConversationVisibilityContext);
   const ref = useRef<HTMLDivElement>(null);
   const restoring = useRef(false);
   useLayoutEffect(() => {
     const pane = ref.current;
-    if (!pane || !active) return;
+    if (!pane || !active || !visible) return;
     const top = thread.readingPositions.get(view) ?? 0;
     restoring.current = true;
     pane.scrollTop = top;
@@ -342,18 +345,27 @@ function ReadingPane({
       cancelAnimationFrame(frame);
       // React may already have hidden the viewport. Preserve its last visible
       // coordinate, and never persist an unfinished restoration's clamp.
-      if (!pane.hidden && !restoring.current)
+      if (
+        !pane.hidden &&
+        pane.getClientRects().length > 0 &&
+        !restoring.current
+      )
         thread.readingPositions.set(view, pane.scrollTop);
       restoring.current = false;
     };
-  }, [thread, view, active]);
+  }, [thread, view, active, visible]);
   return (
     <div
       ref={ref}
       className="reading-pane"
       hidden={!active}
       onScroll={(event) => {
-        if (active && !restoring.current)
+        if (
+          active &&
+          visible &&
+          event.currentTarget.getClientRects().length > 0 &&
+          !restoring.current
+        )
           thread.readingPositions.set(view, event.currentTarget.scrollTop);
       }}
     >

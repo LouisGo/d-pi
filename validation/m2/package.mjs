@@ -605,21 +605,21 @@ try {
       assert.equal(candidates[0].path, "packages/src/@virtualList");
       assert.ok(candidates.some((entry) => entry.kind === "file"));
       assert.ok(candidates[0].text.includes("文件夹"));
-      screenshots.push(await shot("m2-reference-search-dark-normal"));
+      screenshots.push(await shot("m2-reference-search-dark-default"));
       await evaluate(
         "document.querySelector('button[aria-label=\"切换为浅色主题\"]').click()",
       );
-      await click("紧凑密度");
+
       await wait(() =>
         evaluate(
           "[...document.querySelectorAll('.composer [role=option]')].every(el=>!el.disabled) && !document.querySelector('button[aria-label=\"切换为深色主题\"]').disabled",
         ),
       );
-      screenshots.push(await shot("m2-reference-search-light-compact"));
+      screenshots.push(await shot("m2-reference-search-light-default"));
       await evaluate(
         "document.querySelector('button[aria-label=\"切换为深色主题\"]').click()",
       );
-      await click("正常密度");
+
       await wait(() =>
         evaluate(
           "[...document.querySelectorAll('.composer [role=option]')].every(el=>!el.disabled) && !document.querySelector('button[aria-label=\"切换为浅色主题\"]').disabled",

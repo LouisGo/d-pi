@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "463e52ff74ba1a2277a1b14f512a24131191ce8b044977298042ac1b1095311f",
+  "inputsHash": "28543c166e11d11e9a3ea44b3a50f93f76010997994ef91db44a847e9f002dfd",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 351,
-    "scannedFiles": 351,
+    "sourceFiles": 362,
+    "scannedFiles": 362,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 143,
-      "lines": 24495,
+      "files": 154,
+      "lines": 25626,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -102,7 +102,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 19,
-      "lines": 2285,
+      "lines": 2325,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -262,7 +262,7 @@
       ],
       "materialized": true,
       "files": 7,
-      "lines": 297,
+      "lines": 298,
       "publicEntries": [
         {
           "path": "src/modules/preferences/contracts/public.ts",
@@ -5962,6 +5962,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "./shell/layout/hosts-context",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/layout/hosts-context.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/app.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "./workbench/editor-context",
       "kind": "import",
       "resolution": "module",
@@ -6103,6 +6115,129 @@
       "specifier": "clsx",
       "kind": "import",
       "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/ui/button.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/ui/icon-button.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@base-ui/react/tooltip",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/ui/icon-button.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./button",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/ui/button.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/components/ui/navigation-overlay.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@base-ui/react/dialog",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/ui/navigation-overlay.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/ui/navigation-overlay.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./button",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/ui/button.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/components/ui/resizable.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/ui/resizable.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react-resizable-panels",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/ui/workspace-tabs.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/ui/workspace-tabs.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../icons/common",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/icons/common.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/components/ui/workspace-tabs.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./button",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/ui/button.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/components/ui/workspace-tabs.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./icon-button",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/ui/icon-button.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/app/renderer/components/url-display.test.ts",
@@ -7979,6 +8114,30 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "./layout/hosts-context",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/layout/hosts-context.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/application-layout.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./layout/workbench-frame",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/layout/workbench-frame.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/application-layout.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "./preference-toolbar",
       "kind": "import",
       "resolution": "module",
@@ -8658,6 +8817,234 @@
       "to": "src/shared/i18n/create-i18n.ts",
       "targetModule": "shared",
       "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/app/renderer/shell/layout/conversation-visibility.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/shell/layout/geometry.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/shell/layout/geometry.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./geometry",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/layout/geometry.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/layout/hosts-context.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/shell/layout/hosts-context.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./workbench-frame",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/layout/workbench-frame.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/layout/model.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/shell/layout/model.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/layout/model.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/layout/model.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/shell/layout/model.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "zustand/vanilla",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/shell/layout/model.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./geometry",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/layout/geometry.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/layout/workbench-frame.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/shell/layout/workbench-frame.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "zustand",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/shell/layout/workbench-frame.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@/components/icons/common",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/icons/common.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/layout/workbench-frame.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@/components/ui/icon-button",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/ui/icon-button.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/layout/workbench-frame.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@/components/ui/navigation-overlay",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/ui/navigation-overlay.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/layout/workbench-frame.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@/components/ui/resizable",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/ui/resizable.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/layout/workbench-frame.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@/components/ui/workspace-tabs",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/ui/workspace-tabs.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/layout/workbench-frame.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/layout/workbench-frame.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./conversation-visibility",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/layout/conversation-visibility.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/layout/workbench-frame.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./geometry",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/layout/geometry.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/layout/workbench-frame.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/layout/model.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/app/renderer/shell/navigation-history.tsx",
@@ -11692,6 +12079,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/routing/search.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/thread-workbench.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../shell/layout/conversation-visibility",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/layout/conversation-visibility.ts",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },

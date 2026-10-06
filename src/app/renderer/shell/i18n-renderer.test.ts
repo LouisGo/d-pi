@@ -43,6 +43,10 @@ vi.mock("../reading/history", () => ({ History: () => null }));
 vi.mock("../reading/submissions", () => ({ Submissions: () => null }));
 vi.mock("../workbench/runtime-panel", () => ({ RuntimePanel: () => null }));
 vi.mock("@/components/icons/common", () => ({
+  ChatIcon: () => null,
+  SettingsIcon: () => null,
+  SidebarIcon: () => null,
+  CloseIcon: () => null,
   BackIcon: () => null,
   ForwardIcon: () => null,
   DarkThemeIcon: () => null,

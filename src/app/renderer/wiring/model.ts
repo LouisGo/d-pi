@@ -265,7 +265,8 @@ export class AppModel {
   private applyAppearance(value: Preferences): void {
     const { dataset } = document.documentElement;
     if (dataset.theme !== value.theme) dataset.theme = value.theme;
-    if (dataset.density !== value.density) dataset.density = value.density;
+    // Legacy density remains in the persistence DTO, never in UI geometry.
+    if (dataset.density !== undefined) delete dataset.density;
   }
   private fail(error: Failure): void {
     const state = this.state;
@@ -520,7 +521,7 @@ export class AppModel {
       binding?.boundary.release();
     return result;
   }
-  preference(key: Exclude<keyof Preferences, "locale">): Promise<void> {
+  preference(key: "theme" | "sendKey"): Promise<void> {
     const save = () => this.savePreference(key);
     const writing = this.preferenceWrite
       ? this.preferenceWrite.then(save)
@@ -531,9 +532,7 @@ export class AppModel {
     });
     return writing;
   }
-  private async savePreference(
-    key: Exclude<keyof Preferences, "locale">,
-  ): Promise<void> {
+  private async savePreference(key: "theme" | "sendKey"): Promise<void> {
     const state = this.state;
     if (this.disposed || state.kind !== "ready") return;
     const current = state.preferences;
@@ -549,13 +548,6 @@ export class AppModel {
           current.sendKey === "enter-newline"
             ? ("enter-send" as const)
             : ("enter-newline" as const),
-      }))
-      .with("density", () => ({
-        ...current,
-        density:
-          current.density === "normal"
-            ? ("compact" as const)
-            : ("normal" as const),
       }))
       .exhaustive();
     const traceId = crypto.randomUUID();

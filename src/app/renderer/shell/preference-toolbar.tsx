@@ -20,9 +20,6 @@ export function PreferenceToolbar({ model }: { model: AppModel }) {
   const theme = useStore(model.stateStore, (state) =>
     state.kind === "ready" ? state.preferences.theme : "light",
   );
-  const density = useStore(model.stateStore, (state) =>
-    state.kind === "ready" ? state.preferences.density : "normal",
-  );
   const busy = useStore(
     model.stateStore,
     (state) => state.kind === "ready" && state.threadTransition === "unknown",
@@ -37,6 +34,7 @@ export function PreferenceToolbar({ model }: { model: AppModel }) {
       >
         {t("app.toolbar.newThread")}
       </Button>
+      <ThreadHeaderTitle model={model} />
       <div className="flex gap-2">
         <select
           aria-label={t("app.toolbar.language")}
@@ -70,17 +68,20 @@ export function PreferenceToolbar({ model }: { model: AppModel }) {
         >
           {theme === "light" ? <DarkThemeIcon /> : <LightThemeIcon />}
         </Button>
-        <Button
-          variant="ghost"
-          disabled={busy}
-          onMouseDown={(event) => event.preventDefault()}
-          onClick={() => void model.preference("density")}
-        >
-          {density === "normal"
-            ? t("app.toolbar.compactDensity")
-            : t("app.toolbar.normalDensity")}
-        </Button>
       </div>
     </header>
   );
+}
+
+function ThreadHeaderTitle({ model }: { model: AppModel }) {
+  const directory = useStore(model.stateStore, (state) =>
+    state.kind === "ready" && state.threadSelection.kind === "thread"
+      ? state.threadSelection.thread.context.directory
+      : null,
+  );
+  return directory ? (
+    <span className="toolbar-title" title={directory}>
+      {directory.split("/").filter(Boolean).at(-1)}
+    </span>
+  ) : null;
 }
