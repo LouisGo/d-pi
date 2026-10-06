@@ -14,3 +14,5 @@ Blocked by: none
 2026-10-06继续：原生验收多提醒实际截图及独立Spec审查确认阅读区挤压，真实旧包几何red为5提醒/160px、readingHeight=0。重新claimed，按共享control-height预算独立滚动修正，后续实际候选几何与交互验收通过再关闭。
 
 2026-10-06最终：cap不足的真实red（9提醒64px、reading0）后，48cd01cc仅有提醒时预留4lh阅读下限，Composer保持；迟到Runtime inspect真实React红绿修复并避免后续状态夺焦。796行为/34架构/74工具通过，Spec/Standards独立复核无新增高价值问题。最终m2.19实际五组预算（9–10提醒/center64或60/reading78）全通过，最后提醒内部滚动与焦点可达、阅读/Composer完整可见、草稿及采样焦点恢复；18项实包检查通过。本票工程resolved，系统显示/点击仍由01c claimed，用户认可pending。见[当前交接](../attention.md)与[双轴评审](../attention-review.md)。
+
+2026-10-06 PR组合审查后追加修复：pending导航旧Thread新事件误已读P2经真实Main/React红绿、双轴增量复核及clean m2.20实际17项关闭，798完整行为通过；原票工程resolved保持，01c系统显示/点击独立开放。

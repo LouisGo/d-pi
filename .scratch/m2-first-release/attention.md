@@ -1,49 +1,42 @@
-# 多 Thread 提醒交接
+# 多 Thread 提醒当前交接
 
-2026-10-06，当前本地分支 `codex/m2-thread-attention`。已交付 clean m2.19 候选：Main 提醒投影、正式 GUI、阅读空间预算及迟到原生状态定位完成，两轴独立评审问题已修复。01a/01b 工程完成；01c 保持 claimed，实际系统通知显示/点击未验收。M2 工程 in-progress、trial delivered、用户认可 pending。本轮不 push、不扩 M3。
+2026-10-06，当前交付 clean `0.1.0-m2.20 / 3c4c1060-8b550d60`，产品source `3c4c1060cd7943cb435ac73da3d8bd03433d4954`，本地/远端分支 `codex/m2-thread-attention`。[Draft PR #4](https://github.com/LouisGo/d-pi/pull/4)覆盖基础诊断和提醒两个切片。01a/01b工程完成，01c系统显示/点击仍待验；M2实施中、已交付待试用、用户认可pending。已授权push/PR，未merge、不扩M3。
 
-## 已实现行为
+## 已实现与本次PR修复
 
-后台 Thread 待回答或失败，显示可点击应用内提醒和侧栏状态，不自动导航或抢焦点。完成默认只更新完成/未读；系统与完成提醒均需明确开启。点击待答进入当前真实交互，首次 Runtime 状态迟到时等待实际 DOM 就位，只在明确点击意图时定位，后续状态不夺回 Composer 焦点。失败点击定位同 trace 收据并展开，仅实际匹配收据时进入既有专注阅读，可恢复控件，Editor/草稿保留。过期点击查看当前状态，不作答或重发。
+Main复用实际Runtime/收据生成有界待答/失败/完成未读投影，观察独立于窗口/React；最多512项，超预算显示覆盖缺口。App内提醒不自动导航或抢焦点；点击使用既有保存/导航准入，定位实际交互或同trace失败收据，可恢复控件并保留Editor/草稿。完成默认仅侧栏状态，系统/完成提醒均明确opt-in；偏好属App SQLite，不写OMP共享配置。通知仅通用自有文案与短Thread ID，失败保留App状态和既有诊断trace；反馈不上传。
 
-多条提醒按共享 control-height 限制高度并独立滚动，为当前阅读保留至少四行；设置区域沿用既有独立滚动，Composer 保持可见。未截断或丢弃提醒。Main 复用真实 RuntimeView/SubmissionReceipt；ACK、busy=false 不作为完成。新问题使用新提醒身份，迟到终态失败可纠正完成；Renderer reload 或暂时无窗口保持独立观察。最多512项，溢出表达覆盖缺口。偏好独立存于 App SQLite；系统通知仅通用自有文案和六位 Thread ID，不读业务全文、秘密或 OMP 原生日志。
+提醒中心按共享控件token独立滚动，当前阅读至少四行，Composer保持可见。迟到首次Runtime inspect等待DOM就位，后续采样不夺焦。失败收据定位保留可读空间，过期点击不作答或重发。
 
-通知失败保留 App 内事实及可见反馈，复用既有诊断 trace，精确自有码 notification-unavailable 可脱敏导出。available 只表示能力，不能证明 OS 许可或送达。
+PR组合审查又确认一项P2：Main已select(B)但异步恢复尚未回复时，旧A可见标记使A新问题错误已读。真实SQLite/DesktopCommandService/ThreadAttention与正式React回归先红后绿。现Main在可见相关事件读取真实active owner，add/seen/foreground清未读都需身份一致，读取失败保守保留；Renderer在pending撤销可见声明。36相关通过、两轴独立复核关闭原问题且无新增高价值发现：[评审](attention-review.md)。不新增调度/队列事实、不改变cold只读或unknown不重发。
 
-## 验证与限制
+## 验证与证据边界
 
-完整 `pnpm check`：796行为、34架构、74工具通过，2既有 opt-in 跳过：[原始结果](evidence/attention-reminder-engineering-check.txt)。真实 React/RuntimeModel 迟到 inspect 先红后修复，相关19项通过；原预算红灯与验证脚本失败分开保存：[TDD记录](evidence/attention-reminder-continuation-tdd.md)、[双轴评审](attention-review.md)。没有以静态评审替代实际包验收。
+修复后完整`pnpm check`通过：798行为、34架构、74工具，2既有opt-in跳过；类型/设计/i18n/文档/模块/结构/看板通过。[原始检查](evidence/pr-switch-engineering-check.txt)。首次import排序及随后生成结构陈旧失败保留，按当前源纠正后全门禁通过，不掩盖失败。
 
-最终 `node validation/m2/package.mjs <clean-app> --attention --attention-inspect` 使用固定 SDK extension 与 localhost 供应商，18项检查通过：[完整结果](evidence/attention-macos-m2.19/m2-result.json)、[提醒结果](evidence/attention-macos-m2.19/attention-result.json)、[日志](evidence/attention-macos-m2.19/package-log.txt)、[原生操作](evidence/attention-macos-m2.19/native-actions.md)。隔离 HOME、OMP 配置、App 数据、Git 与项目，不继承个人凭据或调用付费供应商。实际待答、localhost HTTP400失败、完成均经过 SDK，不注入假 Runtime 事件。
+从干净3c4c106构建m2.20，执行实际Electron包`--attention`，17项受影响路径通过：[完整结果](evidence/attention-macos-m2.20/m2-result.json)、[提醒结果](evidence/attention-macos-m2.20/attention-result.json)、[日志](evidence/attention-macos-m2.20/package-log.txt)。隔离HOME/App数据/OMP配置/Git/项目，固定SDK+localhost供应商，不继承个人凭据或使用付费供应商。实际待答与HTTP400失败、正确Thread/交互/失败收据定位、双scope/草稿选择撤销、reload无重发、冷启动偏好与旧Thread只读通过。四组4条明确新unread提醒覆盖正常/紧凑/English560px/恢复布局：中心64/60px、scroll128/120px，reading78px/19.5px行高，阅读与完整Composer有效可见、最后项focus/内部滚动可达、原焦点恢复及草稿完整；截图实看。
 
-五组真实几何样本覆盖 dark/normal、light/compact、English 560px窄窗口、恢复正常布局、原生重开：9–10条提醒，center64/60px、scroll288/270/320px，reading78px（line-height19.5px，四行）；阅读和完整 Composer 在有效窗口内，最后提醒可聚焦并在中心内滚动可达，采样原焦点恢复且 A_UNSENT_DRAFT 保留。截图已实际查看，失败收据状态段284–309.5px完整位于193–728px祖先裁切交集内。[正常](evidence/attention-macos-m2.19/m2-attention-bounded-reminders-1-dark-normal-1120.png)、[紧凑](evidence/attention-macos-m2.19/m2-attention-bounded-reminders-2-light-compact-1120.png)、[窄窗口](evidence/attention-macos-m2.19/m2-attention-bounded-reminders-3-light-compact-560.png)、[原生重开](evidence/attention-macos-m2.19/m2-attention-bounded-reminders-5-dark-normal-1120.png)。
+**m2.20没有重跑原生inspect，也没有真实系统显示/点击证据。** 原m2.19实际CUA后台/Cmd+W关窗/Finder同Main重开无重发，以及system=failed/App可见反馈的18项记录保留在[历史快照](attention-m2.19.md)与[evidence](evidence/attention-macos-m2.19/m2-result.json)，不冒称属于3c4c106。系统失败根因unknown，未模拟callback，未签名/公证。01c继续claimed；已有成功关窗路径与系统送达未知分别说明。
 
-实际 CUA Cmd+W 关窗后无窗口且 App 仍运行；精确测试 bundle 经 Finder 双击重开，同一 Main instance e1ac2fd9-3b4a-4330-a663-5e7f6951ff54，后台 Thread 4be5a4 已完成/未读，closed 请求恰好一次，无重发。真实冷启动后通知偏好持久化，无过期点击回放，旧 Thread 继续只读。
-
-**系统提醒实际 failed，未观察到真实显示/点击，根因 unknown。** CUA 确认 App 内完成/未读、已开启偏好和“系统提醒未能显示”反馈；本次没有检查完整 Notification Center，没有模拟回调，openRequests=[]。候选未签名/公证，不能把未签名直接断言为故障根因。01c 保持 claimed，仅缺该独立原生证据；此前 Mac 锁定已解除，真实关窗重开已完成。
-
-Chromium组合事件不等同系统 IME；PDF视觉/OCR、V1-00/B6完整负载/故障组合、真实供应商试用及用户认可仍开放。unknown 不自动重发，冷旧 Thread 只读。
+Chromium composition不等同系统IME，隔离SDK不等同真实账户/用户认可。PDF视觉/OCR、完整V1-00/B6负载故障全集、真实供应商和M2最终组合仍开放：[整体进度](progress-2026-10-06.md)。
 
 ## 最终候选与试用
 
 | 项目 | 精确身份 |
 | --- | --- |
-| 产品源码 | `48cd01cc60273d79e4ef2069389d585e8065e465` |
-| Build | `0.1.0-m2.19 / 48cd01cc-42704447`，dirty=false |
-| 外部验证脚本 | `adcd4d357e0400f3d6eeaeca4dcec4f6953e1820` |
-| App | `/Users/louistation/.codex/worktrees/a613/d-pi/dist/attention-m2.19-verified-clean/mac-arm64/d-pi.app` |
-| ZIP | `/Users/louistation/.codex/worktrees/a613/d-pi/dist/candidates/d-pi-0.1.0-m2.19-macos-arm64-48cd01cc.zip` |
-| ZIP字节/SHA256 | 430117894 / `9aae62610348d67335cc5590c9a698555236e039483639859e5edbe83ca0cf58` |
-| app.asar SHA256 | `2b6ea246cb6bf6268b4aea7264231f4b81804d6e9a39f3aae217cb05e336318e` |
-| 环境 | macOS arm64；Node24.21.0/pnpm12.8.1/Electron44.4.5（内嵌Node24.21.0）/Bun1.3.14/OMP18.4.6 |
+| 产品source | `3c4c1060cd7943cb435ac73da3d8bd03433d4954` |
+| Build | `0.1.0-m2.20 / 3c4c1060-8b550d60`，dirty=false |
+| App | `/Users/louistation/.codex/worktrees/a613/d-pi/dist/attention-m2.20-pr-clean/mac-arm64/d-pi.app` |
+| ZIP | `/Users/louistation/.codex/worktrees/a613/d-pi/dist/candidates/d-pi-0.1.0-m2.20-macos-arm64-3c4c1060.zip` |
+| ZIP字节/SHA256 | 430118461 / `1011a3517f295b35d97c5f012222db2423880ab04222397499399ff61f5deabb` |
+| app.asar SHA256 | `8c51f1427708aa82d2cde00b9563a6780de5a13fd44f7d8143c354da74907231` |
+| 环境 | macOS arm64；Node24.21.0/pnpm12.8.1/Electron44.4.5/Bun1.3.14/OMP18.4.6 |
 
-从48cd01cc干净构建；其后提交仅验证脚本和证据，`git diff 48cd01cc..adcd4d3 -- src package.json`为空，未用后续 harness SHA 冒称产品构建来源。全部 ZIP entry CRC 通过，source App、受测含空格路径副本与 ZIP 中 app.asar 完全一致：[机器身份](evidence/attention-package-identity-m2.19.json)、[build](evidence/attention-m2.19-build.txt)、[pack](evidence/attention-m2.19-pack.txt)。旧 m2.18 及各失败候选/证据保留历史，不作为当前候选 green。[最终交接检查](evidence/attention-m2.19-delivery-fast.txt)。
+全部ZIP entry CRC通过，source App、受测含空格路径副本、ZIP app.asar完全一致：[机器身份](evidence/attention-package-identity-m2.20.json)、[build](evidence/attention-m2.20-build.txt)、[pack](evidence/attention-m2.20-pack.txt)。后续仅交接/评审/结构报告更新，产品身份仍为3c4c106，不能用PR文档提交冒称新构建。旧候选及失败证据保留。[交接检查](evidence/pr-delivery-fast.txt)。
 
-1. 启动上述 App，核对侧栏 build 为48cd01cc-42704447。
-2. 使用已有可用配置创建独立 Thread A/B，让 B 待答或失败，切回 A；提醒不抢焦点，A 草稿保留。点击进入 B 当前交互或可读失败收据，专注阅读可恢复控件；查看不回答或重发。
-3. 多条后台提醒时滚动提醒列表，核对最后一项可达、当前阅读与草稿保留；正常/紧凑与窄窗口均可试用。
-4. 完成默认静默；明确开启提醒偏好后查看能力/失败反馈。当前候选 OS 显示/点击尚未通过，App 内状态可用；用户真实供应商与日常体验复试独立，不构成已认可。
+1. 启动上述App，核对build3c4c1060-8b550d60。
+2. 已有可用配置下新建独立A/B，后台待答/失败，切回A；草稿焦点保留。切换期间旧Thread新事件应仍有未读提醒；点击定位当前交互/可读失败收据，恢复控件，查看不回答或重发。
+3. 多提醒内部滚动，最后项可达，当前阅读/草稿保持；正常/紧凑/窄窗均可试用。完成默认静默，明确开启偏好后系统能力不等于送达，App失败反馈保留。
+4. 用户真实供应商/日常体验复试独立，未推断认可。若要退回schema11以前，源码revert不能降级数据库，按PR回滚说明保留数据并使用升级前备份，不删库。
 
-01c 后续仅补真实 OS 显示/点击及其必要原因调查，按实际记录失败/不可用；不伪造回调，不借本次交付扩大签名权限。独立 M2 工程可按剩余票推进，无需重做已完成项。
-
-![实际失败收据定位](evidence/attention-macos-m2.19/m2-attention-click-failed-receipt.png)
+![修复后实际失败收据](evidence/attention-macos-m2.20/m2-attention-click-failed-receipt.png)

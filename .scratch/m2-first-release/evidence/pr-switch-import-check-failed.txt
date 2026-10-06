@@ -1,0 +1,57 @@
+$ pnpm check:tools && pnpm typecheck && pnpm lint && pnpm lint:design && pnpm lint:i18n && pnpm validate:design && node validation/s1/source-boundaries.mjs && pnpm check:architecture && pnpm check:documentation && pnpm check:structure && pnpm check:status && pnpm test:architecture && pnpm test:tooling && pnpm test
+$ node scripts/checks/check-environment.mjs --tools-only
+Development Node: 24.21.0 (target 24.21.0)
+pnpm: 12.8.1 (target 12.8.1)
+Platform: darwin-arm64
+Installed exact dependencies: 47/47
+SKIP: fast tool check; native executables and SDK resources were not inspected
+PASS: development environment (0 issues)
+$ pnpm routes:generate && tsc --noEmit && pnpm typecheck:core && pnpm typecheck:renderer && pnpm typecheck:main && pnpm typecheck:host && pnpm typecheck:preload
+$ tsr generate
+(node:44855) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+$ tsc --noEmit -p tsconfig.core.json
+$ tsc --noEmit -p tsconfig.renderer.json
+$ tsc --noEmit -p tsconfig.main.json
+$ tsc --noEmit -p tsconfig.host.json
+$ tsc --noEmit -p tsconfig.preload.json
+$ biome check .
+src/app/main/wiring/thread-attention.test.ts:1:1 assist/source/organizeImports  FIXABLE  ━━━━━━━━━━━
+
+  × Sort these imports.
+  
+   > 1 │ import { randomUUID } from "node:crypto";
+       │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   > 2 │ import { mkdtempSync, rmSync } from "node:fs";
+   > 3 │ import { tmpdir } from "node:os";
+   > 4 │ import { join } from "node:path";
+        ...
+  > 13 │ import { AppStorage } from "./app-storage";
+  > 14 │ import { DesktopCommandService } from "./desktop-command-service";
+       │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    15 │ 
+    16 │ const threadId = ThreadIdSchema.parse(randomUUID()),
+  
+  i Safe fix: Organize imports and exports (Biome)
+  
+     10  10 │   import { ThreadIdSchema, TraceIdSchema } from "../../../shared/identity";
+     11  11 │   import type { NotificationCallbacks } from "../lifecycle/system-notifications";
+     12     │ - import·{·ThreadAttention·}·from·"./thread-attention";
+     13     │ - import·{·AppStorage·}·from·"./app-storage";
+     14     │ - import·{·DesktopCommandService·}·from·"./desktop-command-service";
+         12 │ + import·{·AppStorage·}·from·"./app-storage";
+         13 │ + import·{·DesktopCommandService·}·from·"./desktop-command-service";
+         14 │ + import·{·ThreadAttention·}·from·"./thread-attention";
+     15  15 │   
+     16  16 │   const threadId = ThreadIdSchema.parse(randomUUID()),
+  
+
+Checked 483 files in 117ms. No fixes applied.
+Found 1 error.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+
+[ELIFECYCLE] Command failed with exit code 1.
+[ELIFECYCLE] Command failed with exit code 1.

@@ -14,3 +14,5 @@ Blocked by: 01a, 01b
 Mac已解锁。实际CUA后台、Cmd+W关闭窗口但App仍运行、Finder精确bundle重开已observed；harness独立核对同Main实例、真实completed/unread及closed供应商请求恰好一次，无重发；真实冷启动偏好保存且旧Thread只读。五组多提醒/阅读/Composer预算通过，01b已resolved。
 
 剩余仅本票要求的实际系统通知显示/点击：本次真实system=failed，App内失败反馈/完成未读保留，display-click unavailable、openRequests=[]；没有实际OS通知显示/点击，没有完整Notification Center观察，没有制造callback。失败根因unknown，候选未签名/公证。保持claimed；此前Mac锁定不是当前阻塞原因。该证据缺口不阻塞已完成App提醒试用或其他独立M2工程，用户认可与M2父范围继续pending。
+
+2026-10-06 PR追加竞态修复：source3c4c106、clean m2.20/build3c4c1060-8b550d60，798/34/74、双轴复核、17项新包及ZIP同源通过。m2.20未重复原生inspect；上文m2.19真实关窗及系统failed记录仍仅属于48cd01cc。系统显示/点击缺口未被本次修复关闭，继续claimed。当前候选及证据入口保持[attention](../attention.md)。

@@ -10,7 +10,7 @@
     "trial": "delivered",
     "acceptance": "pending",
     "current": true,
-    "build": "0.1.0-m2.19 / 48cd01cc-42704447",
+    "build": "0.1.0-m2.20 / 3c4c1060-8b550d60",
     "pending": [
       "../m1-s3-control-recovery/issues/09-quit-discard-decision.md"
     ],
@@ -42,7 +42,7 @@
       "attention-review.md",
       "progress-2026-10-06.md"
     ],
-    "next": "m2.19多Thread提醒候选已交付，01a/01b完成；真实关窗/Finder重开通过，01c系统提醒实际failed，显示/点击待验。M2尚未完成，PDF视觉/OCR、V1-00/B6组合、真实供应商与用户认可保持开放；冷旧Thread只读",
+    "next": "m2.20诊断/提醒候选已交付，PR#4为Draft；01a/01b完成，01c系统显示/点击待验（m2.19实际failed，关窗/Finder重开通过）。M2尚未完成，PDF视觉/OCR、V1-00/B6组合、真实供应商与用户认可保持开放；冷旧Thread只读",
     "constraints": "2026-10-06用户追加授权push当前本地成果并创建PR；PR#4为诊断和提醒两个切片，未授权merge。不公开发布、不扩M3，冷恢复只读，unknown不自动重发；用户认可pending。"
   }
 ]
@@ -69,7 +69,7 @@
 - 已定：D-02–D-08、D-10/D-11、D-20–D-27、D-28–D-37；沿用 OMP 执行、队列、原生历史、配置与凭据所有权，App 草稿/冻结原文/收据事务不改变。
 - 重要待决：无新增。[S3 09](../m1-s3-control-recovery/issues/09-quit-discard-decision.md)退出放弃队列待决，仅暂停对应出口；缺全周期单写证据的冷恢复只读，提供明确新建独立 Thread 出口，不冒称恢复旧执行。
 - 工程：正在实施；既有正确路径复用当前相关证据，新增缺口先失败行为测试。测试隔离 App 数据、OMP 配置、HOME、Git 配置、项目及网络；不继承个人凭据。真实供应商缺账户/费用授权仅暂停实测，不阻塞薄桥接及 fixture 验证。
-- 用户试用：当前交付 `0.1.0-m2.19 / 48cd01cc-42704447`、产品源码 `48cd01cc`，外部harness `adcd4d3`；18项实际干净包检查、两轴独立review/修复及ZIP同源通过。实际关窗/Finder重开同Main、无重发；系统提醒真实failed，显示/点击缺口由01c claimed保留，用户认可pending。[精确身份、哈希、证据、限制和步骤](attention.md#最终候选与试用)。旧候选及失败记录保留历史，每段体验对应实际源码与包；Agent验证不替代用户认可。
+- 用户试用：当前交付 `0.1.0-m2.20 / 3c4c1060-8b550d60`，产品source `3c4c106`；PR追加竞态真实红绿、798行为/34架构/74工具、双轴复核、17项修复后实际干净包及ZIP同源通过。m2.19的真实关窗/Finder重开同Main无重发及system=failed为其独立历史证据，不外推到新包；01c实际显示/点击仍claimed，用户认可pending。[精确身份、哈希、证据与步骤](attention.md#最终候选与试用)。
 - 继续边界：本授权内持续实施，不重做基建审计。重大产品/权限/数据合同变化才对齐；签名、公证、公开分发及 M3 不纳入。
 
 ## 首版覆盖与近期任务
@@ -249,3 +249,5 @@
 2026-10-06远端交付授权：用户明确要求先push本地内容、创建PR并核对，再报告M2整体和提供下阶段prompt。fetch核实origin/main1c9c30a是本分支祖先，初次推送f7dff7b含31个领先提交（基础诊断与多Thread提醒）；未含已在main的此前切片。创建[Draft PR #4](https://github.com/LouisGo/d-pi/pull/4)并attach当前任务；远端CI及整个真实PR范围增量双轴核对进行中，不以配置存在/PR创建宣称CI成功。仅push/建PR，未merge，不改变01c/M2/用户认可状态。[整体进度核对与推荐下段](progress-2026-10-06.md)。后续同步仅交接文档/评审证据，产品48cd01cc候选身份不变。
 
 2026-10-06 PR核对新增Spec P2：切换pending旧Thread新提醒会错误已读。已真实Main/SQLite与React红绿修复（36相关通过），独立增量复核/完整门禁及修复后实际包验证待补。本次必要修复在“push/PR确保没有问题”授权范围内，不关闭01c系统显示/点击或M2父票。
+
+2026-10-06 PR修复收尾：fixed3c4c106的Spec/Standards增量复核关闭P2、均无新增高价值发现，完整798/34/74通过，build及clean m2.20实际17项受影响包内检查/四组预算/冷偏好/旧Thread只读通过，ZIP CRC及source/testcopy/ZIP asar一致。原m2.19原生窗口/systemfailed证据保留独立身份，新包未重复inspect或OS显示/点击。最终交接/评审/生成结构报告同步后push PR#4；远端最终head的CI实时核实，不以首次f7dff7b CI通过代表后续提交。产品source保持3c4c106，01c/M2/user acceptance独立开放。

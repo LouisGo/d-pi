@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "fbb085f75800dde3cb002aef37fc379a239e5f35ff935f35ec95fc916dbfafc3",
+  "inputsHash": "463e52ff74ba1a2277a1b14f512a24131191ce8b044977298042ac1b1095311f",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 351,
@@ -5266,18 +5266,6 @@
       "sourceModule": "app",
       "sourceEnvironment": "main",
       "test": true,
-      "specifier": "./thread-attention",
-      "kind": "import",
-      "resolution": "module",
-      "to": "src/app/main/wiring/thread-attention.ts",
-      "targetModule": "app",
-      "targetEnvironment": "main"
-    },
-    {
-      "from": "src/app/main/wiring/thread-attention.test.ts",
-      "sourceModule": "app",
-      "sourceEnvironment": "main",
-      "test": true,
       "specifier": "./app-storage",
       "kind": "import",
       "resolution": "module",
@@ -5294,6 +5282,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/main/wiring/desktop-command-service.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/thread-attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./thread-attention",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/thread-attention.ts",
       "targetModule": "app",
       "targetEnvironment": "main"
     },

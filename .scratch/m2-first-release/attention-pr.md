@@ -8,11 +8,12 @@
 
 ## Evidence
 
-- TDD 与独立 Spec/Standards review 已覆盖两个切片及各产品修复：[诊断评审](https://github.com/LouisGo/d-pi/blob/codex/m2-thread-attention/.scratch/m2-first-release/diagnostics-review.md)、[提醒评审](https://github.com/LouisGo/d-pi/blob/codex/m2-thread-attention/.scratch/m2-first-release/attention-review.md)。真实失败包括阅读被提醒挤压、失败收据裁切、迟到Runtime状态丢失定位；均修复并复核。新 PR 组合复核与最终远端检查另由交接记录维护。
-- 最终生产源完整 `pnpm check`：796行为、34架构、74工具通过，2既有 opt-in 跳过；build、文档/看板/架构及最终 `check:fast` 通过。精确原始结果保存在上述交接链接。
+- TDD 与独立 Spec/Standards review 已覆盖两个切片及各产品修复：[诊断评审](https://github.com/LouisGo/d-pi/blob/codex/m2-thread-attention/.scratch/m2-first-release/diagnostics-review.md)、[提醒评审](https://github.com/LouisGo/d-pi/blob/codex/m2-thread-attention/.scratch/m2-first-release/attention-review.md)。真实失败包括阅读被提醒挤压、失败收据裁切、迟到Runtime状态丢失定位；均修复并复核。PR整体组合复核另发现pending导航旧Thread新事件误已读P2，真实Main/SQLite与React先红后绿；Main按实际active owner核对，Renderer pending撤销声明，固定3c4c106两轴复核关闭原问题、无新增高价值发现。
+- 修复后产品3c4c106完整 `pnpm check`：798行为、34架构、74工具通过，2既有 opt-in 跳过；build、文档/看板/架构及最终 `check:fast` 通过。精确原始结果保存在上述交接链接。
 - [诊断候选](https://github.com/LouisGo/d-pi/blob/codex/m2-thread-attention/.scratch/m2-first-release/diagnostics.md)：clean m2.17，21项实际隔离macOS检查；真实原生保存/取消、0600脱敏报告、反馈复制、Writer故障及启动损坏数据库入口。读取预算12文件/8MiB/20000行/64KiB单行/1500ms，导出最多2MiB。合成秘密/坏行样本明确标记，未冒充真实供应商故障。
-- [当前候选与试用](https://github.com/LouisGo/d-pi/blob/codex/m2-thread-attention/.scratch/m2-first-release/attention.md)：clean `0.1.0-m2.19 / 48cd01cc-42704447`，产品源码 `48cd01cc`；外部harness `adcd4d3`。18项实际固定SDK+localhost/macOS检查通过；真实后台、Cmd+W关窗而App仍运行、Finder精确bundle重开同Main、closed供应商请求恰好一次；真实冷启动偏好保存/旧Thread只读。五组9–10提醒预算与最后项focus/内部滚动、阅读/完整Composer/草稿及采样焦点恢复通过。全部ZIP CRC及source/受测副本/ZIP app.asar同源。
-- **已知限制：系统提醒实际 `failed`，App内失败反馈/状态可用，真实OS显示/点击未观察，根因unknown；没有模拟通知callback，未签名/公证。** Chromium composition不替代系统IME；隔离SDK样本不替代真实账户/付费供应商或用户认可。PDF视觉/OCR、完整V1-00/B6负载/故障组合仍未完成。
+- [当前候选与试用](https://github.com/LouisGo/d-pi/blob/codex/m2-thread-attention/.scratch/m2-first-release/attention.md)：clean `0.1.0-m2.20 / 3c4c1060-8b550d60`，产品源码 `3c4c106`。17项实际固定SDK+localhost/macOS检查通过，四组4提醒预算/末项focus内部滚动、阅读/完整Composer/草稿及采样焦点恢复、冷启动偏好/旧Thread只读通过。全部ZIP CRC与source/受测副本/ZIP app.asar同源。新包未重复原生inspect；此前m2.19产品48cd01cc的18项包含真实Cmd+W/Finder同Main重开无重发，作为独立历史证据保留，不外推为新包实测。
+
+- **已知限制：此前m2.19系统提醒实际 `failed`，新m2.20未重复OS检查，App内失败反馈/状态可用，真实OS显示/点击未观察，根因unknown；没有模拟通知callback，未签名/公证。** Chromium composition不替代系统IME；隔离SDK样本不替代真实账户/付费供应商或用户认可。PDF视觉/OCR、完整V1-00/B6负载/故障组合仍未完成。
 
 ## Merge Danger
 
