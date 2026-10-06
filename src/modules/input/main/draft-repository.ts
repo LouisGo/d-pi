@@ -87,7 +87,7 @@ export class DraftRepository implements DraftReader, DraftConsumptionWriter {
         const adopted = [...after].filter((value) => !before.has(value));
         if (adopted.length) {
           const bind =
-            this.db.prepare(`UPDATE input_attachment SET payload=json_set(payload,'$.draftBoundRevision',?)
+            this.db.prepare(`UPDATE input_attachment SET payload=json_set(payload,'$.draftBoundRevision',CAST(? AS INTEGER))
             WHERE id IN (SELECT value FROM json_each(?)) AND thread_id=? AND json_valid(payload)
               AND json_extract(payload,'$.draftBoundRevision') IS NULL`);
           for (let offset = 0; offset < adopted.length; offset += 128)

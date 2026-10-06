@@ -233,7 +233,7 @@ export class AttachmentStore {
     this.options.database.connection
       .prepare(
         `INSERT INTO input_attachment(id,thread_id,payload) VALUES(?,?,?) ON CONFLICT(id) DO UPDATE SET payload=CASE
-          WHEN json_valid(input_attachment.payload) AND json_type(input_attachment.payload,'$.draftBoundRevision')='integer'
+          WHEN json_valid(input_attachment.payload) AND json_type(input_attachment.payload,'$.draftBoundRevision') IN ('integer','real')
           THEN json_set(excluded.payload,'$.draftBoundRevision',json_extract(input_attachment.payload,'$.draftBoundRevision'))
           ELSE excluded.payload END`,
       )
