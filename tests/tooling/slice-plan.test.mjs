@@ -10,6 +10,8 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { test } from "node:test";
+import { checkDocumentation } from "../../scripts/checks/check-documentation.mjs";
+import { readProjectStatus } from "../../scripts/tasks/project-status.mjs";
 
 const script = resolve(
   import.meta.dirname,
@@ -176,4 +178,41 @@ test("invalid dependency graphs and missing slice selectors never produce a disp
   const missing = run(root, "not-found");
   assert.equal(missing.status, 2);
   assert.equal(missing.stdout, "");
+});
+
+test("plan validation is wired into both standard gates, including scopes without board rows", (t) => {
+  const { root, files } = fixture(t, [{ id: "next", tickets: ["99"] }], {
+    "01": "Status: open",
+  });
+  const paths = Object.keys(files);
+  assert.match(
+    checkDocumentation(root, paths).issues.join("\n"),
+    /SLICE-TICKETS.*missing task 99/,
+  );
+  assert.match(
+    readProjectStatus(root, paths).issues.join("\n"),
+    /SLICE-TICKETS.*missing task 99/,
+  );
+});
+
+test("plan edits invalidate the board fingerprint even when the spec has no project-status row", (t) => {
+  const { root, files } = fixture(t, [{ id: "next", tickets: ["01"] }], {
+    "01": "Status: open",
+  });
+  const summaryPath = ".scratch/summary/spec.md";
+  mkdirSync(dirname(join(root, summaryPath)), { recursive: true });
+  writeFileSync(
+    join(root, summaryPath),
+    '```project-status\n[{"id":"summary","title":"Summary","phase":"基建","engineering":"in-progress","trial":"not-applicable","acceptance":"not-applicable","current":true,"next":"continue"}]\n```\n',
+  );
+  const paths = [...Object.keys(files), summaryPath];
+  const before = readProjectStatus(root, paths);
+  assert.deepEqual(before.issues, []);
+  writeFileSync(
+    join(root, specPath),
+    '```implementation-plan\n[{"id":"next","tickets":["01"],"hold":{"01":"await answer"}}]\n```\n',
+  );
+  const after = readProjectStatus(root, paths);
+  assert.deepEqual(after.issues, []);
+  assert.notEqual(after.digest, before.digest);
 });

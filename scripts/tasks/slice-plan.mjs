@@ -11,6 +11,7 @@ export function readSlicePlans(
   taskResult = readTaskRecords(root, files),
 ) {
   const plans = [];
+  const sources = new Map();
   const issues = [...taskResult.issues];
   for (const sourcePath of [...files].sort()) {
     if (
@@ -24,6 +25,7 @@ export function readSlicePlans(
     ];
     const openings = [...source.matchAll(/^```implementation-plan\s*$/gm)]
       .length;
+    if (openings) sources.set(sourcePath, source);
     if (openings !== blocks.length)
       issues.push(`SLICE-JSON: ${sourcePath}: unclosed plan block`);
     if (!blocks.length) continue;
@@ -101,7 +103,7 @@ export function readSlicePlans(
       }
     }
   }
-  return { plans, issues };
+  return { plans, sources, issues };
 }
 
 export function describeSlicePlan(plan) {

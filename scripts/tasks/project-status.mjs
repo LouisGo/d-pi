@@ -54,11 +54,13 @@ function localTarget(root, source, path) {
 
 export function readProjectStatus(root, files) {
   const taskResult = readTaskRecords(root, files);
-  const issues = readSlicePlans(root, files, taskResult).issues;
+  const sliceResult = readSlicePlans(root, files, taskResult);
+  const issues = sliceResult.issues;
   const records = [];
-  const sources = new Map(
-    taskResult.tasks.map((task) => [task.path, task.source]),
-  );
+  const sources = new Map([
+    ...taskResult.tasks.map((task) => [task.path, task.source]),
+    ...sliceResult.sources,
+  ]);
   for (const sourcePath of [...files].sort()) {
     if (
       !/^\.scratch\/[^/]+\/spec\.md$/.test(sourcePath) ||
