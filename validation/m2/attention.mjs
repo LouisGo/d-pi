@@ -154,7 +154,7 @@ async function newThread({ click, db, wait, evaluate }) {
   });
   await wait(() =>
     evaluate(
-      "document.querySelector('.runtime-panel')?.textContent.includes('OMP 已就绪')",
+      `document.querySelector('.thread-navigation button[aria-current=page]')?.title.endsWith('${id}') && !!document.querySelector('[contenteditable=true]') && !document.querySelector('[contenteditable=true]').closest('[inert]') && document.querySelector('.runtime-panel')?.textContent.includes('OMP 已就绪')`,
     ),
   );
   return id;
@@ -649,7 +649,7 @@ async function validateReminderBudget({
     const lastReachable=!!lr && document.activeElement===last && lr.top>=cr.top && lr.bottom<=cr.bottom && lr.left>=cr.left && lr.right<=cr.right;
     last?.blur();previous?.focus({preventScroll:true});center.scrollTop=scroll;
     const focusRestored=document.activeElement===previous;
-    return {entries:center.querySelectorAll('[data-attention-entry]').length,theme:document.documentElement.dataset.theme,density:document.documentElement.dataset.density,viewport:innerWidth,centerHeight:cr.height,centerScrollHeight:center.scrollHeight,centerClientHeight:center.clientHeight,readingHeight:pr.height,lineHeight:parseFloat(style.lineHeight),lastReachable,focusBounds,focusRestored,readingVisible,editorVisible,draft:document.querySelector('.tiptap')?.textContent};
+    return {entries:center.querySelectorAll('[data-attention-entry]').length,theme:document.documentElement.dataset.theme,density:document.documentElement.dataset.density,viewport:innerWidth,centerHeight:cr.height,centerScrollHeight:center.scrollHeight,centerClientHeight:center.clientHeight,readingHeight:pr.height,lineHeight:parseFloat(style.lineHeight),lastReachable,focusBounds,focusRestored,priorFocus:previous?.tagName,readingVisible,editorVisible,draft:document.querySelector('.tiptap')?.textContent};
   })()`);
   assert.ok(
     bounds && bounds.entries >= 4,
