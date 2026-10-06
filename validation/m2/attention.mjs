@@ -474,7 +474,7 @@ export async function validateAttention(context) {
       "Inspect actual macOS Notification Center for the isolated d-pi completion notification, verify it contains only generic text and the Thread short ID, and click it. Write evidenceFile {status:'observed',notes:'...'} only if both actual display AND click were observed. Otherwise write unavailable/unknown with concrete OS observation; do not manufacture notification callbacks. Create resumeFile afterwards.",
       {
         nativeThread,
-        expectedShortId: nativeThread.slice(0, 8),
+        expectedShortId: nativeThread.slice(0, 6),
         capability: delivered.system,
       },
     );

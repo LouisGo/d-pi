@@ -1,0 +1,56 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/.codex/worktrees/a613/d-pi[39m
+
+ [31m❯[39m src/platform/main/diagnostics/reader.test.ts [2m([22m[2m12 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 935[2mms[22m[39m
+   [32m✓[39m reads persisted receipt acceptance and outcome independently with scoped correlation[32m 10[2mms[22m[39m
+[31m   [31m×[31m preserves the application-owned notification failure code in a scoped redacted report[39m[32m 6[2mms[22m[39m
+   [32m✓[39m strips content and unsafe strings while preserving safe observation fields[32m 4[2mms[22m[39m
+   [32m✓[39m returns latest persisted records across rotated files and flags the record limit[32m 3[2mms[22m[39m
+   [32m✓[39m skips malformed, oversized and incomplete records while retaining adjacent valid evidence[32m 5[2mms[22m[39m
+   [32m✓[39m caps the retained-file and scan-byte budgets and reads each file from its recent tail[32m 243[2mms[22m[39m
+   [32m✓[39m refuses rotated symlinks and non-files and reports unavailable evidence without rejecting[32m 2[2mms[22m[39m
+   [32m✓[39m preserves unknown stage evidence conservatively without exporting arbitrary stage content[32m 1[2mms[22m[39m
+   [32m✓[39m bounds directory enumeration and malformed-line scans even when no event matches[32m 156[2mms[22m[39m
+   [32m✓[39m filters operation and time with exact boundaries and refuses corrupted identity fields[32m 2[2mms[22m[39m
+   [33m[2m✓[22m[39m lets the existing Writer persist and close while a budgeted snapshot is scanning[33m 502[2mms[22m[39m
+   [32m✓[39m retains the actual bounded SQLite cause code already emitted by Main[32m 1[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/platform/main/diagnostics/reader.test.ts[2m > [22mpreserves the application-owned notification failure code in a scoped redacted report
+[31m[1mAssertionError[22m: expected [ { schemaVersion: 1, …(13) } ] to deeply equal [ { schemaVersion: 1, …(13) } ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -4,11 +4,11 @@[39m
+[2m        "commit": "4cf37b9",[22m
+[2m        "dirty": false,[22m
+[2m        "id": "4cf37b9a-a0123456",[22m
+[2m        "version": "0.1.0-m2.16",[22m
+[2m      },[22m
+[32m-     "code": "notification-unavailable",[39m
+[31m+     "code": "unknown",[39m
+[2m      "connectionId": "75dc76a3-f83e-49c9-84f1-8e6aad328309",[22m
+[2m      "operation": "attention:notification",[22m
+[2m      "outcome": "unknown",[22m
+[2m      "process": "main",[22m
+[2m      "processInstanceId": "75dc76a3-f83e-49c9-84f1-8e6aad328309",[22m
+
+[36m [2m❯[22m src/platform/main/diagnostics/reader.test.ts:[2m79:28[22m[39m
+    [90m 77|[39m   const directory = await fixture({ "main.jsonl": line(notification) }…
+    [90m 78|[39m   const snapshot = await readDiagnosticSnapshot(directory, { ...filter…
+    [90m 79|[39m   expect(snapshot.records).toEqual([notification]);
+    [90m   |[39m                            [31m^[39m
+    [90m 80|[39m   expect(snapshot.coverage.redacted).toBe(0);
+    [90m 81|[39m });
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m11 passed[39m[22m[90m (12)[39m
+[2m   Start at [22m 18:02:52
+[2m   Duration [22m 1.17s[2m (tests 86%, transform 7%, import 6%)[22m
+
