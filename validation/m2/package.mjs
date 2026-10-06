@@ -17,13 +17,13 @@ import {
   prepareAgedAttachment,
   validateAttachmentLifecycle,
 } from "./attachment-lifecycle.mjs";
-import { createCdpClient } from "./cdp.mjs";
 import {
   createAttentionSupplier,
   prepareAttentionExtension,
   validateAttention,
   validateAttentionCold,
 } from "./attention.mjs";
+import { createCdpClient } from "./cdp.mjs";
 import {
   prepareDiagnosticStartupFailure,
   validateDiagnostics,
