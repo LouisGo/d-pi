@@ -1,6 +1,6 @@
 # 06c 有界长正文阅读
 
-Status: claimed
+Status: resolved
 Blocked by: none
 
 M2 V1-07，D-16/D-24/D-26/D-28–D-30/D-32/D-35–D-37与B-03。授权与边界见[spec](../spec.md#2026-10-06-长输出分段阅读切片)。
@@ -16,3 +16,7 @@ TDD逐行为真红→绿，覆盖长单行/中文或surrogate边界/多行/复�
 ## 归属
 
 根单写共享管理状态。implementer写集：src/app/renderer/reading（不含无关submissions改造）、src/app/renderer/styles/app.css有界正文相关、src/shared/i18n/locales/{zh-CN,en-US}/ui.ts、docs/architecture/modules/conversation.md。不改input/interaction/OMP执行/存储/版本/模块清单。固定worker起点在spec派发记录维护。
+
+## Comments
+
+2026-10-06：工程完成并交付clean `0.1.0-m2.16 / c5315584-f375cd21`，产品source `c531558`、验证harness `3fdb25f`。723行为/34架构/70tooling、双轴独立review、21项实际隔离包内检查、ZIP CRC与app.asar同源通过；[候选/试用/边界](../long-reading.md)、[评审复核](../long-reading-review.md)。真实已取得长回复40784 UTF-16 units复制7段，剪贴板restored；SDK原生10MiB artifact缩减为41077 UTF-8 bytes，六段原文含缺口提示。父06/M2及用户认可不据此关闭。

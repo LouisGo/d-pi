@@ -15,4 +15,4 @@
 
 纯分段5次测量（Node24.21.0、本机、无GUI）：8Mi code units 中文长单行 26.69/22.12/18.13/17.96/18.17ms；6Mi code units 多行26/18.97/19.72/18.7/19.87ms。此为偏移计算成本，不代表整体Renderer/GUI性能验收。
 
-11. 实际 clean 67cb147 包 trusted 鼠标点击 Copy 报 `NotAllowedError / Write permission denied`。窗口权限 handler 统一拒绝请求，阻断既有 navigator.clipboard.writeText。新增窗口行为回归真实失败（clipboard-sanitized-write callback false 应为 true）→仅允许当前 WebContents/主框架/当前文档的写入，补完整 check/request 双入口→窗口+Main启动9 tests通过。读取、其它权限、其它 WebContents、子框架与来源不匹配均拒绝；实际修复包仍需后续同源验证。
+11. 实际 clean 67cb147 包 trusted 鼠标点击 Copy 报 `NotAllowedError / Write permission denied`。窗口权限 handler 统一拒绝请求，阻断既有 navigator.clipboard.writeText。新增窗口行为回归真实失败（clipboard-sanitized-write callback false 应为 true）→仅允许当前 WebContents/主框架/当前文档的写入，补完整 check/request 双入口→窗口+Main启动9 tests通过。读取、其它权限、其它 WebContents、子框架与来源不匹配均拒绝；最终c531558 clean包的trusted复制写入40784 UTF-16 units，精确包含未显示段和finalization；restore=restored，ZIP/app.asar同源核实通过。31项窗口/Main启动/安全集成回归通过，见window-permission-green和package-result。

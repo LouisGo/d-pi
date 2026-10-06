@@ -1,0 +1,3 @@
+Private named pasteboard only; general pasteboard never written.
+{"beforeCopyRejected":true,"identicalNewCopyPreserved":true,"multiformat":true,"binary":true,"textOverOneMiB":true,"newerCopyPreserved":true,"unmarkedCopyPreserved":true,"budgetRejected":true}
+{"privateArtifactsRemaining":0}

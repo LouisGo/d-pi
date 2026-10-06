@@ -1,0 +1,4 @@
+Historical helper run before removal of the unowned hash fallback. Superseded by long-reading-clipboard-final.txt.
+Private named pasteboard only; general pasteboard never written.
+{"beforeCopyRejected":true,"identicalNewCopyPreserved":true,"multiformat":true,"binary":true,"textOverOneMiB":true,"newerCopyPreserved":true,"interruptedCopy":true,"budgetRejected":true}
+{"privateArtifactsRemaining":0}
