@@ -152,7 +152,7 @@
 用户要求使用刚合并的 AI 工作流，从最新 main 重新开启下一阶段；2026-10-06 已确认 PR #1 合入，基点 `c8dbdbadf1a04ad2be54e01f1a509024c5d982ea`，集成分支 `codex/m2-lifecycle`。本段选择 B4 附件引用/延迟回收/一致性与原生子 Agent 状态/结果观察两条可独立交付路径，随后集成与本地候选。沿用已有 M2 本地实现/commit/试用候选授权；不 push、不公开发布、不扩 M3。冷旧 Thread 只读、unknown 不自动重发，PDF 视觉/OCR与退出放弃原待决不进入本段。无新增产品待决。
 
 ```implementation-plan
-[{"id":"m2-lifecycle","tickets":["04b","05d","06b"]}]
+[{"id":"m2-lifecycle","tickets":["04b","05d","06b"]},{"id":"m2-long-reading","tickets":["06c","06d"]}]
 ```
 
 - [04b](issues/04b-attachment-lifecycle.md)：私有内容引用/最后释放、延迟回收及正式检查/清理出口。
@@ -176,3 +176,13 @@
 用户明确要求优化@目录选择、文件/目录区分与性能，接续本地da9920d，[04c](issues/04c-project-reference-search.md)。沿用D-10/D-24/D-33/D-35/D-37；发送冻结与权限不变，目录参照固定OMP的直接条目清单，不递归读取全部正文。默认本地实施/commit/验证/候选，不push。当前m2.14保留已交付快照，04c验收后单独记录；不是重做已完成生命周期或开启PDF/OCR。
 
 2026-10-06：04c resolved。typed目录/文件引用、目录优先有界索引、150ms查询合并、目录直接清单冻结和schema10围栏完成；最终source31cb912 clean m2.15，711行为/34架构/70tooling、20,001条目测量、两轴独立修复复核及24项实际包内检查通过。[交接](project-references.md)、[评审](project-references-review.md)。M2整体仍in-progress/trial delivered/acceptance pending，不将父票其余范围或另一交互策略WIP标完成，不push。
+
+
+## 2026-10-06 长输出分段阅读切片
+
+本轮用户明确要求按已合并工作流继续下一段可用M2。基点 `df41925401d6f64cfe4ea73432ca00523f7a5a94`，沿用干净 `codex/m2-lifecycle`。选择V1-07当前可达缺口：实时/历史/子Agent长正文全量送入Markdown导致主列表及DOM膨胀。交付有界正文阅读、完整已取得原文复制及流式追加时已读分段/选择保留；不改变OMP历史/Host预算/水位，不以截断正文冒称全文。PDF完整视觉/OCR与父票组合验收另留；本段无新增重要产品待决。冷旧Thread只读、unknown不重发、退出放弃队列待决保持。授权含本地实现/提交/隔离SDK和实际GUI/本地候选，不push、不使用个人凭据或真实供应商付费请求，不扩M3。
+
+- [06c](issues/06c-bounded-long-reading.md)：长正文有界分段、正式实时/历史/子Agent接入，TDD与交互回归。
+- [06d](issues/06d-long-reading-candidate.md)：整段双轴独立评审、实际SDK/GUI包内验证、本地候选和交接。
+
+主Agent单写票/规格/生成看板/依赖报告/版本及候选；06c implementer在独立checkout固定起点实施，06d由主Agent串行集成验收。交互策略worktree不纳入本段。完整M2性能组合（3Thread/10000消息/30分钟/IME/故障全集）仍开放，本段仅验证受影响的长正文路径。
