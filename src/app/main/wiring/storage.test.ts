@@ -54,7 +54,7 @@ describe("real SQLite and directory service", () => {
       reopened.close();
       const migrated = new DatabaseSync(path, { readOnly: true });
       expect(migrated.prepare("PRAGMA user_version").get()?.user_version).toBe(
-        10,
+        11,
       );
       migrated.close();
       const backup = new DatabaseSync(`${path}.before-v5`, { readOnly: true });
@@ -173,7 +173,7 @@ describe("real SQLite and directory service", () => {
       try {
         expect(
           unchanged.prepare("PRAGMA user_version").get()?.user_version,
-        ).toBe(10);
+        ).toBe(11);
         expect(
           unchanged
             .prepare("SELECT workspace_id,body FROM thread WHERE id=?")
@@ -333,7 +333,7 @@ it("backs up v5 before enabling typed native outcomes in v6 and reopens the new 
     const migrated = new DatabaseSync(path, { readOnly: true });
     try {
       expect(migrated.prepare("PRAGMA user_version").get()?.user_version).toBe(
-        10,
+        11,
       );
     } finally {
       migrated.close();
@@ -354,7 +354,9 @@ it("a v6 backup publication failure preserves the v5 database and its draft inst
     store.drafts.save(draft.threadId, 0, "precious-original");
     store.close();
     const previous = new DatabaseSync(path);
-    previous.exec("PRAGMA user_version=5");
+    previous.exec(
+      "ALTER TABLE desktop DROP COLUMN notification_system; ALTER TABLE desktop DROP COLUMN notification_completion; PRAGMA user_version=5",
+    );
     previous.close();
     rmSync(`${path}.before-v6`);
     mkdirSync(`${path}.before-v6`);
@@ -382,14 +384,16 @@ it("backs up schema 9 before typed references and fences older readers without r
   initial.drafts.save(draft.threadId, 0, "old file reference remains");
   initial.close();
   const previous = new DatabaseSync(path);
-  previous.exec("PRAGMA user_version=9");
+  previous.exec(
+    "ALTER TABLE desktop DROP COLUMN notification_system; ALTER TABLE desktop DROP COLUMN notification_completion; PRAGMA user_version=9",
+  );
   previous.close();
   const migrated = openStorage(path);
   try {
     expect(
       migrated.database.connection.prepare("PRAGMA user_version").get()
         ?.user_version,
-    ).toBe(10);
+    ).toBe(11);
     expect(migrated.drafts.active()?.text).toBe("old file reference remains");
     const backup = new DatabaseSync(`${path}.before-v10`, { readOnly: true });
     try {

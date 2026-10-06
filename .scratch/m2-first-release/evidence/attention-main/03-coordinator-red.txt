@@ -1,0 +1,21 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/.codex/worktrees/m2-attention-main/d-pi[39m
+
+ [31m❯[39m src/app/main/wiring/thread-attention.test.ts [2m([22m[2m0 test[22m[2m)[22m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Suites 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/app/main/wiring/thread-attention.test.ts[2m [ src/app/main/wiring/thread-attention.test.ts ][22m
+[31m[1mError[22m: Cannot find module './thread-attention' imported from /Users/louistation/.codex/worktrees/m2-attention-main/d-pi/src/app/main/wiring/thread-attention.test.ts[39m
+[36m [2m❯[22m src/app/main/wiring/thread-attention.test.ts:[2m4:1[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [2mno tests[22m
+[2m   Start at [22m 17:28:19
+[2m   Duration [22m 272ms[2m (worker 97%, environment 3%)[22m
+

@@ -1,0 +1,27 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/.codex/worktrees/m2-attention-main/d-pi[39m
+
+ [31m❯[39m src/modules/preferences/main/preference-repository.test.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 12[2mms[22m[39m
+[31m   [31m×[31m migrates schema10 after recovery, preserving legacy preferences and backup[39m[32m 11[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/modules/preferences/main/preference-repository.test.ts[2m > [22mmigrates schema10 after recovery, preserving legacy preferences and backup
+[31m[1mTypeError[22m: store.preferences.readNotifications is not a function[39m
+[36m [2m❯[22m src/modules/preferences/main/preference-repository.test.ts:[2m20:30[22m[39m
+    [90m 18|[39m     prior.close();
+    [90m 19|[39m     const store = AppStorage.open(path);
+    [90m 20|[39m     expect(store.preferences.readNotifications()).toEqual({system:fals…
+    [90m   |[39m                              [31m^[39m
+    [90m 21|[39m     store.preferences.saveNotifications({system:true,completion:true});
+    [90m 22|[39m     store.preferences.save({theme:"light",density:"normal",locale:"zh-…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m   Start at [22m 17:27:33
+[2m   Duration [22m 676ms[2m (import 55%, transform 42%, tests 2%)[22m
+

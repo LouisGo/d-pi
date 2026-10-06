@@ -1,0 +1,1 @@
+PASS actual localhost transport: held HTTP400 and completed/native/closed SSE fixtures; unrelated baseline calls fall through. This checks harness fixture transport only, not production attention or SDK/native behavior.

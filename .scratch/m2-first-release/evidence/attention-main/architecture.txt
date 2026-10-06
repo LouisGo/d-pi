@@ -1,0 +1,3 @@
+$ node scripts/architecture/check.mjs
+ARCH-DEPENDENCY: preferences/main cannot depend on app: src/modules/preferences/main/preference-repository.test.ts -> src/app/main/wiring/app-storage.ts
+[ELIFECYCLE] Command failed with exit code 1.

@@ -39,7 +39,7 @@
       "diagnostics.md",
       "diagnostics-review.md"
     ],
-    "next": "06e/06f/06g基础诊断导出与故障反馈工程完成，m2.17候选已交付待试用；余下V1-00/B6性能与故障组合、M2开放项继续保留，真实供应商与用户认可pending，冷旧Thread只读",
+    "next": "m2.17诊断候选已交付；01a/01b/01c多Thread提醒正在实施与实机验收。M2尚未完成，PDF视觉/OCR、V1-00/B6组合、真实供应商与用户认可保持开放；冷旧Thread只读",
     "constraints": "2026-10-06本轮从最新main继续M2，授权本地实现、候选、证据与提交；此前push/PR授权属于已交付阶段，本轮未push。不公开发布、不扩M3，冷恢复只读，unknown不自动重发；用户认可pending。"
   }
 ]
