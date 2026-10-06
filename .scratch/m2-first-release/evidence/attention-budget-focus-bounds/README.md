@@ -1,0 +1,1 @@
+Actual48cd01cc candidate passed initial reading/draft/viewport/internal scroll, then light compact final-focus geometry failed. Preserve strict assertion; no green claimed. Probe actual after-focus rectangles and scroll precision before changing production or attributing root cause.

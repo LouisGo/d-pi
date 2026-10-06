@@ -644,9 +644,12 @@ async function validateReminderBudget({
     const buttons=center.querySelectorAll('[data-attention-open]'), last=buttons[buttons.length-1];
     last?.focus();
     const lr=last?.getBoundingClientRect();
+    const after=center.getBoundingClientRect();
+    const focusBounds={before:cr.toJSON(),after:after.toJSON(),last:lr?.toJSON(),scrollTop:center.scrollTop,active:document.activeElement===last,pixelRatio:devicePixelRatio};
     const lastReachable=!!lr && document.activeElement===last && lr.top>=cr.top && lr.bottom<=cr.bottom && lr.left>=cr.left && lr.right<=cr.right;
-    previous?.focus({preventScroll:true});center.scrollTop=scroll;
-    return {entries:center.querySelectorAll('[data-attention-entry]').length,theme:document.documentElement.dataset.theme,density:document.documentElement.dataset.density,viewport:innerWidth,centerHeight:cr.height,centerScrollHeight:center.scrollHeight,centerClientHeight:center.clientHeight,readingHeight:pr.height,lineHeight:parseFloat(style.lineHeight),lastReachable,readingVisible,editorVisible,draft:document.querySelector('.tiptap')?.textContent};
+    last?.blur();previous?.focus({preventScroll:true});center.scrollTop=scroll;
+    const focusRestored=document.activeElement===previous;
+    return {entries:center.querySelectorAll('[data-attention-entry]').length,theme:document.documentElement.dataset.theme,density:document.documentElement.dataset.density,viewport:innerWidth,centerHeight:cr.height,centerScrollHeight:center.scrollHeight,centerClientHeight:center.clientHeight,readingHeight:pr.height,lineHeight:parseFloat(style.lineHeight),lastReachable,focusBounds,focusRestored,readingVisible,editorVisible,draft:document.querySelector('.tiptap')?.textContent};
   })()`);
   assert.ok(
     bounds && bounds.entries >= 4,
@@ -667,7 +670,11 @@ async function validateReminderBudget({
   assert.equal(bounds.draft, "A_UNSENT_DRAFT");
   assert.ok(
     bounds.lastReachable,
-    "last reminder must remain reachable by focus/scroll",
+    `last reminder must remain reachable by focus/scroll: ${JSON.stringify(bounds)}`,
+  );
+  assert.ok(
+    bounds.focusRestored,
+    "budget probe must restore the actual prior active element",
   );
   (metrics.reminderBudgets ??= []).push(bounds);
   screenshots.push(
@@ -695,6 +702,9 @@ async function validateAppearance({
   );
   await evaluate(
     "[...document.querySelectorAll('.toolbar button')].find(el=>el.textContent.trim()==='紧凑密度').click()",
+  );
+  await wait(() =>
+    evaluate("document.documentElement.dataset.density==='compact'"),
   );
   screenshots.push(await shot("m2-attention-preferences-light-compact"));
   await validateReminderBudget({ evaluate, wait, shot, screenshots, metrics });
@@ -738,6 +748,9 @@ async function validateAppearance({
   );
   await evaluate(
     "[...document.querySelectorAll('.toolbar button')].find(el=>el.textContent.trim()==='正常密度').click()",
+  );
+  await wait(() =>
+    evaluate("document.documentElement.dataset.density==='normal'"),
   );
 }
 
