@@ -155,7 +155,9 @@ export function AttachmentControls({
   });
   const searchPending = settledQuery !== searchQuery || search.isFetching;
   const entries =
-    !searchPending && search.data?.kind === "search" ? search.data.entries : [];
+    !searchPending && !search.isError && search.data?.kind === "search"
+      ? search.data.entries
+      : [];
   const alive = useRef(true);
   useEffect(() => {
     alive.current = true;

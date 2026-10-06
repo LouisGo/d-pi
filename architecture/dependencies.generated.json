@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "37a7e4de92f2fcd55b7af0b4b9421dbb86a472a280bd48d755efb0a2f81e6ab2",
+  "inputsHash": "6076f80abfc1335e26c51a2cdda6c67950963958260d0b7eaf907b44ecd350be",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 317,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 112,
-      "lines": 18779,
+      "lines": 18803,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",

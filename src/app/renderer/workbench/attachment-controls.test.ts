@@ -951,4 +951,26 @@ it("coalesces quick @ edits, hides old-query results, consumes Enter while waiti
   await render("@virtualList/new");
   await vi.waitFor(() => expect(searches()).toHaveLength(4));
   expect(searches()[3]?.[0]).toMatchObject({ refresh: false });
+  await vi.waitFor(() =>
+    expect(container.textContent).toContain("src/@virtualList/new/"),
+  );
+  request.mockImplementation(async (command) => {
+    if (command.kind === "search-reference") throw Error("refresh failed");
+    return { kind: "attachments", items: [] };
+  });
+  await act(async () => refresh?.click());
+  await vi.waitFor(() =>
+    expect(container.querySelector('[role="alert"]')).not.toBeNull(),
+  );
+  expect(container.querySelector('[role="option"]')).toBeNull();
+  await act(async () => {
+    expect(
+      actions.current?.handleMentionKey(
+        new KeyboardEvent("keydown", { key: "Enter" }),
+      ),
+    ).toBe(true);
+  });
+  expect(
+    request.mock.calls.some(([command]) => command.kind === "add-reference"),
+  ).toBe(false);
 });
