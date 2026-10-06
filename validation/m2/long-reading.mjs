@@ -274,6 +274,14 @@ export async function validateLongReading({
   await click("原生历史");
   await wait(() =>
     evaluate(
+      "document.querySelector('.history select') && !document.querySelector('.history select').disabled",
+    ),
+  );
+  await evaluate(
+    "[...document.querySelectorAll('.history button')].find(el=>el.textContent.trim()==='读取原生记录'&&!el.disabled)?.click()",
+  );
+  await wait(() =>
+    evaluate(
       "document.querySelector('.history')?.textContent.includes('M2_LONG_REPLY_START')",
     ),
   );
