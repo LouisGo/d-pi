@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { constants } from "node:fs";
-import { open } from "node:fs/promises";
+import { lstat, open, realpath } from "node:fs/promises";
 import { basename, join } from "node:path";
 import {
   listProjectFiles,
@@ -33,10 +33,28 @@ export function createAttachmentService(
     convertPdf: (bytes) => convertPdfContent(resources, bytes),
     readReference: async (threadId, path, kind) => {
       const thread = storage.threads.threadContext(threadId);
+      const rootBefore = await lstat(thread.directory);
+      if (
+        !rootBefore.isDirectory() ||
+        (await realpath(thread.directory)) !== thread.directory
+      )
+        throw Error("reference-denied");
       const reply =
         kind === "directory"
           ? await listProjectFiles(thread.directory, path)
           : await readProjectBytes(thread.directory, path, 25 * 1024 * 1024);
+      const rootAfter = await lstat(thread.directory);
+      if (
+        !rootAfter.isDirectory() ||
+        (await realpath(thread.directory)) !== thread.directory
+      )
+        throw Error("reference-denied");
+      if (
+        rootAfter.dev !== rootBefore.dev ||
+        rootAfter.ino !== rootBefore.ino ||
+        rootAfter.ctimeMs !== rootBefore.ctimeMs
+      )
+        throw Error("reference-unavailable");
       const current = storage.threads.threadContext(threadId);
       if (
         current.directory !== thread.directory ||

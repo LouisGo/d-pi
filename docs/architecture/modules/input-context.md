@@ -76,3 +76,5 @@ input Main 的 AttachmentStore 管 schema 8 manifest、schema 9 对象投影、�
 用户明确要求@目录与文件区分。搜索DTO含path/name/kind，引用manifest及冻结来源的可选referenceKind为file/directory；旧manifest缺字段按file兼容。目录在发送准备时经files边界重新读取并冻结直接条目的JSON清单（名称与kind），不递归展开正文；超过500直接条目、越权或目录变化时失败保留输入，不把部分清单作为成功。原件库存/冻结租约继续保护实际发送的目录清单摘要；旧冻结内容不跟随磁盘变化。Renderer目录图标/类型文字与原子节点尾斜杠沿用同一类型。
 
 Main服务拥有files的ProjectReferenceSearch实例，与附件服务一同close/drain；Query仅缓存只读候选，150ms合并连续键入，等待或查询身份不一致时不可确认旧候选，显式刷新使Main缓存失效。文件发送仍冻结原文件正文；不改变OMP执行或unknown/cold恢复策略。
+
+04c 文件和目录发送读取共同保持 Thread 记录的规范项目根：读取前后检查根非 symlink、realpath 原值及 dev/ino/ctime，拒绝将变化后的外部规范路径当作原授权根。通用 files 浏览 API 的别名支持不构成附件发送授权；失败保留引用与草稿。
