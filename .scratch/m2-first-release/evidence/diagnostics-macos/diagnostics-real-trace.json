@@ -1,0 +1,134 @@
+{
+  "sampledAt": "2026-10-06T08:34:36.384Z",
+  "filter": {
+    "since": "2026-10-05T08:34:36.382Z",
+    "until": "2026-10-06T08:35:36.382Z",
+    "traceId": "db527103-294b-484b-a968-062b80e301e4",
+    "limit": 500
+  },
+  "records": [
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-06T08:34:36.021Z",
+      "process": "main",
+      "processInstanceId": "032d11b9-dd87-44c0-a0a1-254b85cf9858",
+      "build": {
+        "version": "0.1.0-m2.17",
+        "commit": "ba0e7df1511b15932d293679959c2b594c3ea29c",
+        "dirty": false,
+        "id": "ba0e7df1-808e60b8"
+      },
+      "traceId": "db527103-294b-484b-a968-062b80e301e4",
+      "requestId": "175281d8-3462-43b0-bf64-31d83d9e91a0",
+      "connectionId": "6c072b38-685a-49d8-9210-86b05e6bb449",
+      "operation": "submit",
+      "stage": "acknowledged",
+      "threadId": "d5989ca2-5027-41fb-9428-d824264e08fd",
+      "submissionId": "13299583-dfcd-4c97-9dcb-7906015a0580",
+      "nativeProcessInstanceId": "7da3f0b3-8ec8-4bc3-8a90-02ce672b881e",
+      "receiptState": "acknowledged",
+      "outcome": "completed"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-06T08:34:33.167Z",
+      "process": "main",
+      "processInstanceId": "032d11b9-dd87-44c0-a0a1-254b85cf9858",
+      "build": {
+        "version": "0.1.0-m2.17",
+        "commit": "ba0e7df1511b15932d293679959c2b594c3ea29c",
+        "dirty": false,
+        "id": "ba0e7df1-808e60b8"
+      },
+      "traceId": "db527103-294b-484b-a968-062b80e301e4",
+      "requestId": "175281d8-3462-43b0-bf64-31d83d9e91a0",
+      "connectionId": "6c072b38-685a-49d8-9210-86b05e6bb449",
+      "operation": "submit",
+      "stage": "acknowledged",
+      "threadId": "d5989ca2-5027-41fb-9428-d824264e08fd",
+      "submissionId": "13299583-dfcd-4c97-9dcb-7906015a0580",
+      "nativeProcessInstanceId": "7da3f0b3-8ec8-4bc3-8a90-02ce672b881e",
+      "receiptState": "acknowledged",
+      "outcome": "unobserved"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-06T08:34:33.155Z",
+      "process": "main",
+      "processInstanceId": "032d11b9-dd87-44c0-a0a1-254b85cf9858",
+      "build": {
+        "version": "0.1.0-m2.17",
+        "commit": "ba0e7df1511b15932d293679959c2b594c3ea29c",
+        "dirty": false,
+        "id": "ba0e7df1-808e60b8"
+      },
+      "traceId": "db527103-294b-484b-a968-062b80e301e4",
+      "requestId": "175281d8-3462-43b0-bf64-31d83d9e91a0",
+      "connectionId": "6c072b38-685a-49d8-9210-86b05e6bb449",
+      "operation": "submit",
+      "stage": "dispatching",
+      "threadId": "d5989ca2-5027-41fb-9428-d824264e08fd",
+      "submissionId": "13299583-dfcd-4c97-9dcb-7906015a0580",
+      "nativeProcessInstanceId": "7da3f0b3-8ec8-4bc3-8a90-02ce672b881e",
+      "receiptState": "dispatching",
+      "outcome": "unobserved"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-06T08:34:33.154Z",
+      "process": "main",
+      "processInstanceId": "032d11b9-dd87-44c0-a0a1-254b85cf9858",
+      "build": {
+        "version": "0.1.0-m2.17",
+        "commit": "ba0e7df1511b15932d293679959c2b594c3ea29c",
+        "dirty": false,
+        "id": "ba0e7df1-808e60b8"
+      },
+      "traceId": "db527103-294b-484b-a968-062b80e301e4",
+      "requestId": "175281d8-3462-43b0-bf64-31d83d9e91a0",
+      "connectionId": "6c072b38-685a-49d8-9210-86b05e6bb449",
+      "operation": "submit",
+      "stage": "dispatching",
+      "threadId": "d5989ca2-5027-41fb-9428-d824264e08fd",
+      "submissionId": "13299583-dfcd-4c97-9dcb-7906015a0580",
+      "nativeProcessInstanceId": "7da3f0b3-8ec8-4bc3-8a90-02ce672b881e",
+      "receiptState": "dispatching",
+      "outcome": "unobserved"
+    },
+    {
+      "schemaVersion": 1,
+      "time": "2026-10-06T08:34:33.150Z",
+      "process": "main",
+      "processInstanceId": "032d11b9-dd87-44c0-a0a1-254b85cf9858",
+      "build": {
+        "version": "0.1.0-m2.17",
+        "commit": "ba0e7df1511b15932d293679959c2b594c3ea29c",
+        "dirty": false,
+        "id": "ba0e7df1-808e60b8"
+      },
+      "traceId": "db527103-294b-484b-a968-062b80e301e4",
+      "requestId": "175281d8-3462-43b0-bf64-31d83d9e91a0",
+      "connectionId": "6c072b38-685a-49d8-9210-86b05e6bb449",
+      "operation": "submit",
+      "stage": "prepared",
+      "threadId": "d5989ca2-5027-41fb-9428-d824264e08fd",
+      "submissionId": "13299583-dfcd-4c97-9dcb-7906015a0580",
+      "nativeProcessInstanceId": "7da3f0b3-8ec8-4bc3-8a90-02ce672b881e",
+      "receiptState": "prepared",
+      "outcome": "unobserved"
+    }
+  ],
+  "coverage": {
+    "files": 1,
+    "bytes": 89399,
+    "lines": 179,
+    "malformed": 0,
+    "redacted": 1,
+    "unreadable": 0,
+    "truncated": false
+  },
+  "writer": {
+    "degraded": false,
+    "dropped": 0
+  }
+}

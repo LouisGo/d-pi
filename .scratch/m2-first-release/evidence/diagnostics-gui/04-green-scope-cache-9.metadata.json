@@ -1,0 +1,19 @@
+{
+  "cwd": "file:///Users/louistation/.codex/worktrees/m2-diagnostics-gui/d-pi",
+  "command": [
+    "/bin/zsh",
+    "-lc",
+    "python3 - <<'PY'\nfrom pathlib import Path\np=Path('src/app/renderer/shell/diagnostics-queries.ts');s=p.read_text().replace('retry: 0,','retry: 0,\\n    gcTime: 0,');p.write_text(s)\np=Path('src/app/renderer/shell/diagnostics.tsx');s=p.read_text().replace('const panel = useRef<HTMLElement>(null);','const panel = useRef<HTMLElement>(null);\\n  const applyButton = useRef<HTMLButtonElement>(null);\\n  const restoreApplyFocus = useRef(false);');s=s.replace('''  function apply(form: HTMLFormElement) {''','''  useEffect(() => {\n    if (filter && restoreApplyFocus.current) {\n      applyButton.current?.focus();\n      restoreApplyFocus.current = false;\n    }\n  }, [filter]);\n  function apply(form: HTMLFormElement) {''');s=s.replace('''    if (parsed.success) {\n      setFilter(parsed.data);''','''    if (parsed.success) {\n      restoreApplyFocus.current = true;\n      setFilter(parsed.data);''');s=s.replace('''        <Button type=\"submit\" data-diagnostics-apply disabled={busy}>''','''        <Button ref={applyButton} type=\"submit\" data-diagnostics-apply disabled={busy}>''');p.write_text(s)\nPY\npnpm exec biome check --write src/app/renderer/shell/diagnostics*\npnpm test src/app/renderer/shell/diagnostics.test.ts"
+  ],
+  "process_id": "62427",
+  "exit_code": 0,
+  "duration": {
+    "secs": 1,
+    "nanos": 700229917
+  },
+  "status": "completed",
+  "source_rollout": "/Users/louistation/.codex/sessions/2026/10/06/rollout-2026-10-06T16-12-13-01a11045-3339-7802-ba00-d6286999659a.jsonl",
+  "ordinal": 196,
+  "timestamp": "2026-10-06T08:22:46.431Z",
+  "export_note": "Original completed CommandExecution aggregated_output extracted from the session; no checks re-run."
+}

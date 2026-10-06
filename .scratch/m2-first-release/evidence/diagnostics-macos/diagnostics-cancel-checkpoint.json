@@ -1,0 +1,8 @@
+{
+  "root": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-N3TjGL",
+  "operation": "cancel",
+  "exportFile": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-N3TjGL/diagnostics-export.json",
+  "resumeFile": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-N3TjGL/diagnostics-cancel-continue",
+  "expiresAt": "2026-10-06T08:42:05.349Z",
+  "instructions": "Inspect this isolated App's actual macOS Save dialog and Cancel; confirm the visible cancellation status, then create resumeFile."
+}

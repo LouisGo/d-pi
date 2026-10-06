@@ -16,3 +16,5 @@ Blocked by: none
 2026-10-06：06b生命周期切片已集成并交付clean m2.14；22项实际macOS包内检查及双轴review通过。长输出/故障及余下V1组合验收仍开放。用户认可pending，见[本段交接](../lifecycle.md)。
 
 2026-10-06：06c/06d长正文阅读切片完成并交付clean m2.16；双轴review、21项实际包内检查与ZIP同源通过。SDK10MiB artifact与已取得约41KiB正文分别核验，不构成Host10MiB或完整M2负载验收。固定负载/故障全集及其余V1组合仍开放；用户认可pending，见[本段交接](../long-reading.md)。
+
+2026-10-06：06e/06f/06g基础诊断闭环工程完成，交付clean m2.17；751行为/34架构/74工具、两轴review、21项实际macOS及ZIP同源通过。整体V1-00/B6性能监控、固定M2负载/故障全集与其它V1组合仍开放；用户认可pending，见[交接](../diagnostics.md)。

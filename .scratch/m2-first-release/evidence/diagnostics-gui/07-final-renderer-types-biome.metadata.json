@@ -1,0 +1,19 @@
+{
+  "cwd": "file:///Users/louistation/.codex/worktrees/m2-diagnostics-gui/d-pi",
+  "command": [
+    "/bin/zsh",
+    "-lc",
+    "git config core.hooksPath; cat .githooks/pre-commit; git diff --check; pnpm exec biome check src/app/renderer/shell/diagnostics* src/app/renderer/shell/application-layout.tsx src/app/renderer/shell/thread-notice.tsx src/shared/i18n/locales/zh-CN/ui.ts src/shared/i18n/locales/en-US/ui.ts; pnpm exec tsc --noEmit -p tsconfig.renderer.json"
+  ],
+  "process_id": "87858",
+  "exit_code": 0,
+  "duration": {
+    "secs": 0,
+    "nanos": 516773416
+  },
+  "status": "completed",
+  "source_rollout": "/Users/louistation/.codex/sessions/2026/10/06/rollout-2026-10-06T16-12-13-01a11045-3339-7802-ba00-d6286999659a.jsonl",
+  "ordinal": 217,
+  "timestamp": "2026-10-06T08:24:01.784Z",
+  "export_note": "Original completed CommandExecution aggregated_output extracted from the session; no checks re-run."
+}

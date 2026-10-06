@@ -1,0 +1,290 @@
+{
+  "kind": "in-progress",
+  "actualTrace": "fe62fb9e-40b0-4b3c-975d-7dccecfd6fa4",
+  "actualThread": "dee88dcb-dfc3-496a-848a-1b20b1051e11",
+  "actualStages": [
+    "acknowledged",
+    "acknowledged",
+    "dispatching",
+    "dispatching",
+    "prepared"
+  ],
+  "initialWriter": {
+    "degraded": false,
+    "dropped": 0
+  },
+  "fixtureKind": "synthetic malformed/redaction/bounded-reader input, never provider or operation proof",
+  "snapshots": {
+    "sanitized": {
+      "sampledAt": "2026-10-06T08:31:30.350Z",
+      "filter": {
+        "since": "2026-10-05T08:31:30.349Z",
+        "until": "2026-10-06T08:32:30.349Z",
+        "traceId": "66991210-03c2-4e50-93df-aea3ae7e0275",
+        "limit": 500
+      },
+      "records": [
+        {
+          "schemaVersion": 1,
+          "time": "2026-10-06T08:31:30.348Z",
+          "process": "main",
+          "processInstanceId": "4a15098f-b172-415a-9dd5-9e245fa843d5",
+          "build": {
+            "version": "unknown",
+            "commit": "unknown",
+            "dirty": false,
+            "id": "unknown"
+          },
+          "traceId": "66991210-03c2-4e50-93df-aea3ae7e0275",
+          "requestId": "unknown",
+          "connectionId": "unknown",
+          "operation": "unknown",
+          "stage": "failed",
+          "threadId": "dee88dcb-dfc3-496a-848a-1b20b1051e11",
+          "code": "unknown",
+          "causeCode": "unknown"
+        },
+        {
+          "schemaVersion": 1,
+          "time": "2026-10-06T08:31:30.348Z",
+          "process": "main",
+          "processInstanceId": "a57a4952-8962-44ca-a68a-9c3edf62d90b",
+          "build": {
+            "version": "unknown",
+            "commit": "unknown",
+            "dirty": false,
+            "id": "unknown"
+          },
+          "traceId": "66991210-03c2-4e50-93df-aea3ae7e0275",
+          "requestId": "unknown",
+          "connectionId": "unknown",
+          "operation": "unknown",
+          "stage": "completed",
+          "threadId": "38a31335-bfe6-4e21-a813-49886528c4e7"
+        },
+        {
+          "schemaVersion": 1,
+          "time": "2026-10-06T08:31:30.348Z",
+          "process": "main",
+          "processInstanceId": "4a15098f-b172-415a-9dd5-9e245fa843d5",
+          "build": {
+            "version": "unknown",
+            "commit": "unknown",
+            "dirty": false,
+            "id": "unknown"
+          },
+          "traceId": "66991210-03c2-4e50-93df-aea3ae7e0275",
+          "requestId": "unknown",
+          "connectionId": "unknown",
+          "operation": "unknown",
+          "stage": "completed",
+          "threadId": "dee88dcb-dfc3-496a-848a-1b20b1051e11"
+        },
+        {
+          "schemaVersion": 1,
+          "time": "2026-10-06T08:31:30.348Z",
+          "process": "main",
+          "processInstanceId": "4a15098f-b172-415a-9dd5-9e245fa843d5",
+          "build": {
+            "version": "unknown",
+            "commit": "unknown",
+            "dirty": false,
+            "id": "unknown"
+          },
+          "traceId": "66991210-03c2-4e50-93df-aea3ae7e0275",
+          "requestId": "unknown",
+          "connectionId": "unknown",
+          "operation": "unknown",
+          "stage": "received",
+          "threadId": "dee88dcb-dfc3-496a-848a-1b20b1051e11"
+        }
+      ],
+      "coverage": {
+        "files": 2,
+        "bytes": 91407,
+        "lines": 185,
+        "malformed": 2,
+        "redacted": 5,
+        "unreadable": 0,
+        "truncated": false
+      },
+      "writer": {
+        "degraded": false,
+        "dropped": 0
+      }
+    },
+    "thread": {
+      "sampledAt": "2026-10-06T08:31:30.360Z",
+      "filter": {
+        "since": "2026-10-05T08:31:30.359Z",
+        "until": "2026-10-06T08:32:30.359Z",
+        "traceId": "66991210-03c2-4e50-93df-aea3ae7e0275",
+        "threadId": "38a31335-bfe6-4e21-a813-49886528c4e7",
+        "limit": 500
+      },
+      "records": [
+        {
+          "schemaVersion": 1,
+          "time": "2026-10-06T08:31:30.348Z",
+          "process": "main",
+          "processInstanceId": "a57a4952-8962-44ca-a68a-9c3edf62d90b",
+          "build": {
+            "version": "unknown",
+            "commit": "unknown",
+            "dirty": false,
+            "id": "unknown"
+          },
+          "traceId": "66991210-03c2-4e50-93df-aea3ae7e0275",
+          "requestId": "unknown",
+          "connectionId": "unknown",
+          "operation": "unknown",
+          "stage": "completed",
+          "threadId": "38a31335-bfe6-4e21-a813-49886528c4e7"
+        }
+      ],
+      "coverage": {
+        "files": 2,
+        "bytes": 91407,
+        "lines": 185,
+        "malformed": 2,
+        "redacted": 5,
+        "unreadable": 0,
+        "truncated": false
+      },
+      "writer": {
+        "degraded": false,
+        "dropped": 0
+      }
+    },
+    "writer": {
+      "sampledAt": "2026-10-06T08:31:30.371Z",
+      "filter": {
+        "since": "2026-10-05T08:31:30.370Z",
+        "until": "2026-10-06T08:32:30.371Z",
+        "traceId": "66991210-03c2-4e50-93df-aea3ae7e0275",
+        "processInstanceId": "a57a4952-8962-44ca-a68a-9c3edf62d90b",
+        "limit": 500
+      },
+      "records": [
+        {
+          "schemaVersion": 1,
+          "time": "2026-10-06T08:31:30.348Z",
+          "process": "main",
+          "processInstanceId": "a57a4952-8962-44ca-a68a-9c3edf62d90b",
+          "build": {
+            "version": "unknown",
+            "commit": "unknown",
+            "dirty": false,
+            "id": "unknown"
+          },
+          "traceId": "66991210-03c2-4e50-93df-aea3ae7e0275",
+          "requestId": "unknown",
+          "connectionId": "unknown",
+          "operation": "unknown",
+          "stage": "completed",
+          "threadId": "38a31335-bfe6-4e21-a813-49886528c4e7"
+        }
+      ],
+      "coverage": {
+        "files": 2,
+        "bytes": 91407,
+        "lines": 185,
+        "malformed": 2,
+        "redacted": 5,
+        "unreadable": 0,
+        "truncated": false
+      },
+      "writer": {
+        "degraded": false,
+        "dropped": 0
+      }
+    },
+    "stage": {
+      "sampledAt": "2026-10-06T08:31:30.382Z",
+      "filter": {
+        "since": "2026-10-05T08:31:30.381Z",
+        "until": "2026-10-06T08:32:30.381Z",
+        "traceId": "66991210-03c2-4e50-93df-aea3ae7e0275",
+        "stage": "received",
+        "limit": 500
+      },
+      "records": [
+        {
+          "schemaVersion": 1,
+          "time": "2026-10-06T08:31:30.348Z",
+          "process": "main",
+          "processInstanceId": "4a15098f-b172-415a-9dd5-9e245fa843d5",
+          "build": {
+            "version": "unknown",
+            "commit": "unknown",
+            "dirty": false,
+            "id": "unknown"
+          },
+          "traceId": "66991210-03c2-4e50-93df-aea3ae7e0275",
+          "requestId": "unknown",
+          "connectionId": "unknown",
+          "operation": "unknown",
+          "stage": "received",
+          "threadId": "dee88dcb-dfc3-496a-848a-1b20b1051e11"
+        }
+      ],
+      "coverage": {
+        "files": 2,
+        "bytes": 91407,
+        "lines": 185,
+        "malformed": 2,
+        "redacted": 5,
+        "unreadable": 0,
+        "truncated": false
+      },
+      "writer": {
+        "degraded": false,
+        "dropped": 0
+      }
+    },
+    "limited": {
+      "sampledAt": "2026-10-06T08:31:30.407Z",
+      "filter": {
+        "since": "2026-10-05T08:31:30.406Z",
+        "until": "2026-10-06T08:32:30.406Z",
+        "traceId": "66991210-03c2-4e50-93df-aea3ae7e0275",
+        "limit": 1
+      },
+      "records": [
+        {
+          "schemaVersion": 1,
+          "time": "2026-10-06T08:31:30.348Z",
+          "process": "main",
+          "processInstanceId": "4a15098f-b172-415a-9dd5-9e245fa843d5",
+          "build": {
+            "version": "unknown",
+            "commit": "unknown",
+            "dirty": false,
+            "id": "unknown"
+          },
+          "traceId": "66991210-03c2-4e50-93df-aea3ae7e0275",
+          "requestId": "unknown",
+          "connectionId": "unknown",
+          "operation": "unknown",
+          "stage": "failed",
+          "threadId": "dee88dcb-dfc3-496a-848a-1b20b1051e11",
+          "code": "unknown",
+          "causeCode": "unknown"
+        }
+      ],
+      "coverage": {
+        "files": 2,
+        "bytes": 91407,
+        "lines": 185,
+        "malformed": 2,
+        "redacted": 5,
+        "unreadable": 0,
+        "truncated": true
+      },
+      "writer": {
+        "degraded": false,
+        "dropped": 0
+      }
+    }
+  }
+}

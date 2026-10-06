@@ -1,0 +1,7 @@
+{
+  "root": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-N3TjGL",
+  "operation": "writer-warning",
+  "resumeFile": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-N3TjGL/diagnostics-writer-warning-continue",
+  "expiresAt": "2026-10-06T08:43:07.755Z",
+  "instructions": "Inspect the isolated App's actual native Writer failure warning and dismiss it. Do not repair the database or alter the product. Then create resumeFile."
+}

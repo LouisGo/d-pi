@@ -1,0 +1,39 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/MySpace/Life/d-pi[39m
+
+ [31m❯[39m src/app/main/ipc/diagnostics.test.ts [2m([22m[2m3 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 18[2mms[22m[39m
+   [32m✓[39m exports bounded metadata into a private local report only after native save consent[32m 8[2mms[22m[39m
+   [32m✓[39m cancelled save and invalid renderer never create an export or read logs[32m 3[2mms[22m[39m
+[31m   [31m×[31m navigation to the same URL during the save dialog cannot export into a new document[39m[32m 6[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/app/main/ipc/diagnostics.test.ts[2m > [22mnavigation to the same URL during the save dialog cannot export into a new document
+[31m[1mAssertionError[22m: expected { kind: 'exported', …(2) } to match object { kind: 'failed', …(1) }
+(2 matching properties omitted from actual)[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "kind": "failed",[39m
+[32m-   "reason": "source-changed",[39m
+[31m+   "kind": "exported",[39m
+[2m  }[22m
+
+[36m [2m❯[22m src/app/main/ipc/diagnostics.test.ts:[2m45:36[22m[39m
+    [90m 43|[39m it("navigation to the same URL during the save dialog cannot export in…
+    [90m 44|[39m  const f=setup();f.context.chooseDestination.mockImplementationOnce(as…
+    [90m 45|[39m  expect(await f.request("export")).toMatchObject({kind:"failed",reason…
+    [90m   |[39m                                    [31m^[39m
+    [90m 46|[39m  expect(readdirSync(f.directory)).toEqual([]);
+    [90m 47|[39m });
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m2 passed[39m[22m[90m (3)[39m
+[2m   Start at [22m 16:14:50
+[2m   Duration [22m 235ms[2m (import 54%, transform 30%, tests 13%, worker 3%)[22m

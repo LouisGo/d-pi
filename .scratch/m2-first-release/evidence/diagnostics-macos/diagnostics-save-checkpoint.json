@@ -1,0 +1,8 @@
+{
+  "root": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-N3TjGL",
+  "operation": "save",
+  "exportFile": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-N3TjGL/diagnostics-export.json",
+  "resumeFile": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-N3TjGL/diagnostics-save-continue",
+  "expiresAt": "2026-10-06T08:40:17.871Z",
+  "instructions": "Inspect this isolated App's actual macOS Save dialog; save to exportFile through the native UI, then create resumeFile. Do not patch the product bridge or dialog."
+}

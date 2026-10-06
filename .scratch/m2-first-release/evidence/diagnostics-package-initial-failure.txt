@@ -1,0 +1,15 @@
+
+DevTools listening on ws://127.0.0.1:59291/devtools/browser/d16df2f3-86a4-488e-b8d7-da4d3d3771f0
+sandbox_extension_issue_file failed for /private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-mpAeue/Package With Spaces/d-pi.app/Contents/Frameworks/d-pi Helper.app/Contents/Resources: 1 (Operation not permitted)
+Failure evidence: /private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-mpAeue
+file:///Users/louistation/MySpace/Life/d-pi/validation/m2/package.mjs:196
+  throw Error("M2 package timeout");
+        ^
+
+Error: M2 package timeout
+    at wait (file:///Users/louistation/MySpace/Life/d-pi/validation/m2/package.mjs:196:9)
+    at async apply (file:///Users/louistation/MySpace/Life/d-pi/validation/m2/diagnostics.mjs:152:3)
+    at async validateDiagnostics (file:///Users/louistation/MySpace/Life/d-pi/validation/m2/diagnostics.mjs:552:7)
+    at async file:///Users/louistation/MySpace/Life/d-pi/validation/m2/package.mjs:1317:26
+
+Node.js v24.21.0

@@ -1,0 +1,11 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/MySpace/Life/d-pi[39m
+
+ [32m✓[39m src/app/renderer/shell/i18n-renderer.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 53[2mms[22m[39m
+ [32m✓[39m src/app/renderer/shell/diagnostics.test.ts [2m([22m[2m10 tests[22m[2m)[22m[33m 595[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[32m11 passed[39m[22m[90m (11)[39m
+[2m   Start at [22m 16:28:08
+[2m   Duration [22m 1.24s[2m (tests 37%, transform 26%, import 19%, environment 18%)[22m

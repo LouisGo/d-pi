@@ -1,0 +1,15 @@
+{
+  "sourceCommit": "ba0e7df1511b15932d293679959c2b594c3ea29c",
+  "build": "ba0e7df1-808e60b8",
+  "version": "0.1.0-m2.17",
+  "dirty": false,
+  "candidate": "/Users/louistation/MySpace/Life/d-pi/dist/diagnostics-m2.17-clean/mac-arm64/d-pi.app",
+  "testedBundle": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-N3TjGL/Package With Spaces/d-pi.app",
+  "appAsarSha256": "dbd6409c9228869524ecea416f5348e9e2c4942391391a423ab6362d77cf4a4e",
+  "macosChecks": 21,
+  "zip": "/Users/louistation/MySpace/Life/d-pi/dist/candidates/d-pi-0.1.0-m2.17-macos-arm64-ba0e7df1.zip",
+  "zipBytes": 430108608,
+  "zipSha256": "965ee8a486e5266fb2a4e09d9034c4f649c465c474f88419ef8efdf237a5d69a",
+  "zipCrc": "all entries passed",
+  "zipAppAsarSha256": "dbd6409c9228869524ecea416f5348e9e2c4942391391a423ab6362d77cf4a4e"
+}

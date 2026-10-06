@@ -1,0 +1,11 @@
+{
+  "durationMs": 248.20891600000002,
+  "scanBytes": 8388608,
+  "rssDelta": 8814592,
+  "heapUsedDelta": 146368,
+  "externalDelta": 63103,
+  "retainedDescriptorsForFixture": 0,
+  "platform": "darwin",
+  "node": "v24.21.0",
+  "sampling": "one near-budget synthetic file; no B6 A/B claim"
+}

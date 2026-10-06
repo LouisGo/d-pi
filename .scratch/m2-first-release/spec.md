@@ -10,7 +10,7 @@
     "trial": "delivered",
     "acceptance": "pending",
     "current": true,
-    "build": "0.1.0-m2.16 / c5315584-f375cd21",
+    "build": "0.1.0-m2.17 / ba0e7df1-808e60b8",
     "pending": [
       "../m1-s3-control-recovery/issues/09-quit-discard-decision.md"
     ],
@@ -35,10 +35,12 @@
       "project-references.md",
       "project-references-review.md",
       "long-reading.md",
-      "long-reading-review.md"
+      "long-reading-review.md",
+      "diagnostics.md",
+      "diagnostics-review.md"
     ],
-    "next": "06c/06d长正文有界阅读工程完成，m2.16候选交付待试用；PDF视觉/OCR与余下M2队列/子Agent/固定负载/故障组合验收开放，真实供应商试用与用户认可pending，冷旧Thread只读",
-    "constraints": "2026-10-06用户追加授权push及相关PR收尾；集成交互策略PR #2后将本阶段交付到main。Node24.21.0/pnpm12.8.1已对齐；不公开发布、不扩M3，冷恢复只读，unknown不自动重发；用户认可pending。"
+    "next": "06e/06f/06g基础诊断导出与故障反馈工程完成，m2.17候选已交付待试用；余下V1-00/B6性能与故障组合、M2开放项继续保留，真实供应商与用户认可pending，冷旧Thread只读",
+    "constraints": "2026-10-06本轮从最新main继续M2，授权本地实现、候选、证据与提交；此前push/PR授权属于已交付阶段，本轮未push。不公开发布、不扩M3，冷恢复只读，unknown不自动重发；用户认可pending。"
   }
 ]
 ```
@@ -64,7 +66,7 @@
 - 已定：D-02–D-08、D-10/D-11、D-20–D-27、D-28–D-37；沿用 OMP 执行、队列、原生历史、配置与凭据所有权，App 草稿/冻结原文/收据事务不改变。
 - 重要待决：无新增。[S3 09](../m1-s3-control-recovery/issues/09-quit-discard-decision.md)退出放弃队列待决，仅暂停对应出口；缺全周期单写证据的冷恢复只读，提供明确新建独立 Thread 出口，不冒称恢复旧执行。
 - 工程：正在实施；既有正确路径复用当前相关证据，新增缺口先失败行为测试。测试隔离 App 数据、OMP 配置、HOME、Git 配置、项目及网络；不继承个人凭据。真实供应商缺账户/费用授权仅暂停实测，不阻塞薄桥接及 fixture 验证。
-- 用户试用：当前交付 `0.1.0-m2.16 / c5315584-f375cd21`、产品源码 `c531558`，21项实际干净包内检查、两轴独立review与ZIP同源验证通过；用户认可 pending。[精确身份、哈希、证据和步骤](long-reading.md#候选与验证)。m2.15及更早交付/失败记录保留历史证据，每段可操作体验给出对应源码和包身份；Agent验证不替代用户认可。
+- 用户试用：当前交付 `0.1.0-m2.17 / ba0e7df1-808e60b8`、产品源码 `ba0e7df`，21项实际干净包内检查、两轴独立review与ZIP同源验证通过；用户认可 pending。[精确身份、哈希、证据和步骤](diagnostics.md#候选与验证)。m2.16及更早交付/失败记录保留历史证据，每段可操作体验给出对应源码和包身份；Agent验证不替代用户认可。
 - 继续边界：本授权内持续实施，不重做基建审计。重大产品/权限/数据合同变化才对齐；签名、公证、公开分发及 M3 不纳入。
 
 ## 首版覆盖与近期任务
@@ -210,3 +212,6 @@
 06e读取器与06f正式GUI从固定公共合同基点独立worktree并行；主Agent承担合同、IPC/preload/保存服务、版本/验证harness/串行集成及06g候选。
 
 派发：06e→diagnostics_reader→`/Users/louistation/.codex/worktrees/m2-diagnostics-reader/d-pi`→`codex/m2-diagnostics-reader`；06f→diagnostics_gui→`/Users/louistation/.codex/worktrees/m2-diagnostics-gui/d-pi`→`codex/m2-diagnostics-gui`；验证辅助→diagnostics_validation→`/Users/louistation/.codex/worktrees/m2-diagnostics-validation/d-pi`→`codex/m2-diagnostics-validation`。三者固定基点`4cf37b9`，代码/GUI/验证写集隔离。主Agent单写合同、IPC、preload、管理状态及集成。
+
+
+2026-10-06：06e/06f/06g resolved。现有Main JSONL有界白名单读取、正式筛选/覆盖缺口/故障trace GUI、Main原生0600本地导出、可复制反馈模板完成。产品source `ba0e7df`、clean m2.17构建 `ba0e7df1-808e60b8`；751行为/34架构/74工具、两轴独立review与21项实际macOS包内检查通过，含真实保存/取消/剪贴板、Writer路径故障、损坏SQLite启动及8MiB预算。验证harness `49cfaa3` 仅修正初始采样等待，失败证据保留。ZIP CRC与app.asar同源通过。[交接](diagnostics.md)、[评审](diagnostics-review.md)、[本地PR body](diagnostics-pr.md)。整体V1-00/B6性能监控和父06/M2组合仍开放，用户认可pending；本地提交、不push、不扩M3。

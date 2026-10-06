@@ -1,0 +1,457 @@
+{
+  "actualTrace": "db527103-294b-484b-a968-062b80e301e4",
+  "actualThread": "d5989ca2-5027-41fb-9428-d824264e08fd",
+  "actualStages": [
+    "acknowledged",
+    "acknowledged",
+    "dispatching",
+    "dispatching",
+    "prepared"
+  ],
+  "initialWriter": {
+    "degraded": false,
+    "dropped": 0
+  },
+  "fixtureKind": "synthetic malformed/redaction/bounded-reader input, never provider or operation proof",
+  "snapshots": {
+    "sanitized": {
+      "sampledAt": "2026-10-06T08:34:36.404Z",
+      "filter": {
+        "since": "2026-10-05T08:34:36.403Z",
+        "until": "2026-10-06T08:35:36.403Z",
+        "traceId": "ad3a5417-20a2-49d3-8f0b-17a7372003b6",
+        "limit": 500
+      },
+      "records": [
+        {
+          "schemaVersion": 1,
+          "time": "2026-10-06T08:34:36.402Z",
+          "process": "main",
+          "processInstanceId": "04df7dc7-3d87-438c-b3d3-19ae27e0e882",
+          "build": {
+            "version": "unknown",
+            "commit": "unknown",
+            "dirty": false,
+            "id": "unknown"
+          },
+          "traceId": "ad3a5417-20a2-49d3-8f0b-17a7372003b6",
+          "requestId": "unknown",
+          "connectionId": "unknown",
+          "operation": "unknown",
+          "stage": "failed",
+          "threadId": "d5989ca2-5027-41fb-9428-d824264e08fd",
+          "code": "unknown",
+          "causeCode": "unknown"
+        },
+        {
+          "schemaVersion": 1,
+          "time": "2026-10-06T08:34:36.402Z",
+          "process": "main",
+          "processInstanceId": "bde234dc-feba-4d81-ab0f-a833dc3bbe8a",
+          "build": {
+            "version": "unknown",
+            "commit": "unknown",
+            "dirty": false,
+            "id": "unknown"
+          },
+          "traceId": "ad3a5417-20a2-49d3-8f0b-17a7372003b6",
+          "requestId": "unknown",
+          "connectionId": "unknown",
+          "operation": "unknown",
+          "stage": "completed",
+          "threadId": "85d8274d-a75f-4a02-bb42-91131d5e729e"
+        },
+        {
+          "schemaVersion": 1,
+          "time": "2026-10-06T08:34:36.402Z",
+          "process": "main",
+          "processInstanceId": "04df7dc7-3d87-438c-b3d3-19ae27e0e882",
+          "build": {
+            "version": "unknown",
+            "commit": "unknown",
+            "dirty": false,
+            "id": "unknown"
+          },
+          "traceId": "ad3a5417-20a2-49d3-8f0b-17a7372003b6",
+          "requestId": "unknown",
+          "connectionId": "unknown",
+          "operation": "unknown",
+          "stage": "completed",
+          "threadId": "d5989ca2-5027-41fb-9428-d824264e08fd"
+        },
+        {
+          "schemaVersion": 1,
+          "time": "2026-10-06T08:34:36.402Z",
+          "process": "main",
+          "processInstanceId": "04df7dc7-3d87-438c-b3d3-19ae27e0e882",
+          "build": {
+            "version": "unknown",
+            "commit": "unknown",
+            "dirty": false,
+            "id": "unknown"
+          },
+          "traceId": "ad3a5417-20a2-49d3-8f0b-17a7372003b6",
+          "requestId": "unknown",
+          "connectionId": "unknown",
+          "operation": "unknown",
+          "stage": "received",
+          "threadId": "d5989ca2-5027-41fb-9428-d824264e08fd"
+        }
+      ],
+      "coverage": {
+        "files": 2,
+        "bytes": 91407,
+        "lines": 185,
+        "malformed": 2,
+        "redacted": 5,
+        "unreadable": 0,
+        "truncated": false
+      },
+      "writer": {
+        "degraded": false,
+        "dropped": 0
+      }
+    },
+    "thread": {
+      "sampledAt": "2026-10-06T08:34:36.446Z",
+      "filter": {
+        "since": "2026-10-05T08:34:36.445Z",
+        "until": "2026-10-06T08:35:36.445Z",
+        "traceId": "ad3a5417-20a2-49d3-8f0b-17a7372003b6",
+        "threadId": "85d8274d-a75f-4a02-bb42-91131d5e729e",
+        "limit": 500
+      },
+      "records": [
+        {
+          "schemaVersion": 1,
+          "time": "2026-10-06T08:34:36.402Z",
+          "process": "main",
+          "processInstanceId": "bde234dc-feba-4d81-ab0f-a833dc3bbe8a",
+          "build": {
+            "version": "unknown",
+            "commit": "unknown",
+            "dirty": false,
+            "id": "unknown"
+          },
+          "traceId": "ad3a5417-20a2-49d3-8f0b-17a7372003b6",
+          "requestId": "unknown",
+          "connectionId": "unknown",
+          "operation": "unknown",
+          "stage": "completed",
+          "threadId": "85d8274d-a75f-4a02-bb42-91131d5e729e"
+        }
+      ],
+      "coverage": {
+        "files": 2,
+        "bytes": 91407,
+        "lines": 185,
+        "malformed": 2,
+        "redacted": 5,
+        "unreadable": 0,
+        "truncated": false
+      },
+      "writer": {
+        "degraded": false,
+        "dropped": 0
+      }
+    },
+    "writer": {
+      "sampledAt": "2026-10-06T08:34:36.457Z",
+      "filter": {
+        "since": "2026-10-05T08:34:36.457Z",
+        "until": "2026-10-06T08:35:36.457Z",
+        "traceId": "ad3a5417-20a2-49d3-8f0b-17a7372003b6",
+        "processInstanceId": "bde234dc-feba-4d81-ab0f-a833dc3bbe8a",
+        "limit": 500
+      },
+      "records": [
+        {
+          "schemaVersion": 1,
+          "time": "2026-10-06T08:34:36.402Z",
+          "process": "main",
+          "processInstanceId": "bde234dc-feba-4d81-ab0f-a833dc3bbe8a",
+          "build": {
+            "version": "unknown",
+            "commit": "unknown",
+            "dirty": false,
+            "id": "unknown"
+          },
+          "traceId": "ad3a5417-20a2-49d3-8f0b-17a7372003b6",
+          "requestId": "unknown",
+          "connectionId": "unknown",
+          "operation": "unknown",
+          "stage": "completed",
+          "threadId": "85d8274d-a75f-4a02-bb42-91131d5e729e"
+        }
+      ],
+      "coverage": {
+        "files": 2,
+        "bytes": 91407,
+        "lines": 185,
+        "malformed": 2,
+        "redacted": 5,
+        "unreadable": 0,
+        "truncated": false
+      },
+      "writer": {
+        "degraded": false,
+        "dropped": 0
+      }
+    },
+    "stage": {
+      "sampledAt": "2026-10-06T08:34:36.467Z",
+      "filter": {
+        "since": "2026-10-05T08:34:36.467Z",
+        "until": "2026-10-06T08:35:36.467Z",
+        "traceId": "ad3a5417-20a2-49d3-8f0b-17a7372003b6",
+        "stage": "received",
+        "limit": 500
+      },
+      "records": [
+        {
+          "schemaVersion": 1,
+          "time": "2026-10-06T08:34:36.402Z",
+          "process": "main",
+          "processInstanceId": "04df7dc7-3d87-438c-b3d3-19ae27e0e882",
+          "build": {
+            "version": "unknown",
+            "commit": "unknown",
+            "dirty": false,
+            "id": "unknown"
+          },
+          "traceId": "ad3a5417-20a2-49d3-8f0b-17a7372003b6",
+          "requestId": "unknown",
+          "connectionId": "unknown",
+          "operation": "unknown",
+          "stage": "received",
+          "threadId": "d5989ca2-5027-41fb-9428-d824264e08fd"
+        }
+      ],
+      "coverage": {
+        "files": 2,
+        "bytes": 91407,
+        "lines": 185,
+        "malformed": 2,
+        "redacted": 5,
+        "unreadable": 0,
+        "truncated": false
+      },
+      "writer": {
+        "degraded": false,
+        "dropped": 0
+      }
+    },
+    "limited": {
+      "sampledAt": "2026-10-06T08:34:36.495Z",
+      "filter": {
+        "since": "2026-10-05T08:34:36.494Z",
+        "until": "2026-10-06T08:35:36.494Z",
+        "traceId": "ad3a5417-20a2-49d3-8f0b-17a7372003b6",
+        "limit": 1
+      },
+      "records": [
+        {
+          "schemaVersion": 1,
+          "time": "2026-10-06T08:34:36.402Z",
+          "process": "main",
+          "processInstanceId": "04df7dc7-3d87-438c-b3d3-19ae27e0e882",
+          "build": {
+            "version": "unknown",
+            "commit": "unknown",
+            "dirty": false,
+            "id": "unknown"
+          },
+          "traceId": "ad3a5417-20a2-49d3-8f0b-17a7372003b6",
+          "requestId": "unknown",
+          "connectionId": "unknown",
+          "operation": "unknown",
+          "stage": "failed",
+          "threadId": "d5989ca2-5027-41fb-9428-d824264e08fd",
+          "code": "unknown",
+          "causeCode": "unknown"
+        }
+      ],
+      "coverage": {
+        "files": 2,
+        "bytes": 95845,
+        "lines": 194,
+        "malformed": 2,
+        "redacted": 5,
+        "unreadable": 0,
+        "truncated": true
+      },
+      "writer": {
+        "degraded": false,
+        "dropped": 0
+      }
+    },
+    "degraded": {
+      "sampledAt": "2026-10-06T08:41:14.578Z",
+      "filter": {
+        "since": "2026-10-05T08:41:14.577Z",
+        "until": "2026-10-06T08:42:14.577Z",
+        "traceId": "db527103-294b-484b-a968-062b80e301e4",
+        "limit": 500
+      },
+      "records": [
+        {
+          "schemaVersion": 1,
+          "time": "2026-10-06T08:34:36.021Z",
+          "process": "main",
+          "processInstanceId": "032d11b9-dd87-44c0-a0a1-254b85cf9858",
+          "build": {
+            "version": "0.1.0-m2.17",
+            "commit": "ba0e7df1511b15932d293679959c2b594c3ea29c",
+            "dirty": false,
+            "id": "ba0e7df1-808e60b8"
+          },
+          "traceId": "db527103-294b-484b-a968-062b80e301e4",
+          "requestId": "175281d8-3462-43b0-bf64-31d83d9e91a0",
+          "connectionId": "6c072b38-685a-49d8-9210-86b05e6bb449",
+          "operation": "submit",
+          "stage": "acknowledged",
+          "threadId": "d5989ca2-5027-41fb-9428-d824264e08fd",
+          "submissionId": "13299583-dfcd-4c97-9dcb-7906015a0580",
+          "nativeProcessInstanceId": "7da3f0b3-8ec8-4bc3-8a90-02ce672b881e",
+          "receiptState": "acknowledged",
+          "outcome": "completed"
+        },
+        {
+          "schemaVersion": 1,
+          "time": "2026-10-06T08:34:33.167Z",
+          "process": "main",
+          "processInstanceId": "032d11b9-dd87-44c0-a0a1-254b85cf9858",
+          "build": {
+            "version": "0.1.0-m2.17",
+            "commit": "ba0e7df1511b15932d293679959c2b594c3ea29c",
+            "dirty": false,
+            "id": "ba0e7df1-808e60b8"
+          },
+          "traceId": "db527103-294b-484b-a968-062b80e301e4",
+          "requestId": "175281d8-3462-43b0-bf64-31d83d9e91a0",
+          "connectionId": "6c072b38-685a-49d8-9210-86b05e6bb449",
+          "operation": "submit",
+          "stage": "acknowledged",
+          "threadId": "d5989ca2-5027-41fb-9428-d824264e08fd",
+          "submissionId": "13299583-dfcd-4c97-9dcb-7906015a0580",
+          "nativeProcessInstanceId": "7da3f0b3-8ec8-4bc3-8a90-02ce672b881e",
+          "receiptState": "acknowledged",
+          "outcome": "unobserved"
+        },
+        {
+          "schemaVersion": 1,
+          "time": "2026-10-06T08:34:33.155Z",
+          "process": "main",
+          "processInstanceId": "032d11b9-dd87-44c0-a0a1-254b85cf9858",
+          "build": {
+            "version": "0.1.0-m2.17",
+            "commit": "ba0e7df1511b15932d293679959c2b594c3ea29c",
+            "dirty": false,
+            "id": "ba0e7df1-808e60b8"
+          },
+          "traceId": "db527103-294b-484b-a968-062b80e301e4",
+          "requestId": "175281d8-3462-43b0-bf64-31d83d9e91a0",
+          "connectionId": "6c072b38-685a-49d8-9210-86b05e6bb449",
+          "operation": "submit",
+          "stage": "dispatching",
+          "threadId": "d5989ca2-5027-41fb-9428-d824264e08fd",
+          "submissionId": "13299583-dfcd-4c97-9dcb-7906015a0580",
+          "nativeProcessInstanceId": "7da3f0b3-8ec8-4bc3-8a90-02ce672b881e",
+          "receiptState": "dispatching",
+          "outcome": "unobserved"
+        },
+        {
+          "schemaVersion": 1,
+          "time": "2026-10-06T08:34:33.154Z",
+          "process": "main",
+          "processInstanceId": "032d11b9-dd87-44c0-a0a1-254b85cf9858",
+          "build": {
+            "version": "0.1.0-m2.17",
+            "commit": "ba0e7df1511b15932d293679959c2b594c3ea29c",
+            "dirty": false,
+            "id": "ba0e7df1-808e60b8"
+          },
+          "traceId": "db527103-294b-484b-a968-062b80e301e4",
+          "requestId": "175281d8-3462-43b0-bf64-31d83d9e91a0",
+          "connectionId": "6c072b38-685a-49d8-9210-86b05e6bb449",
+          "operation": "submit",
+          "stage": "dispatching",
+          "threadId": "d5989ca2-5027-41fb-9428-d824264e08fd",
+          "submissionId": "13299583-dfcd-4c97-9dcb-7906015a0580",
+          "nativeProcessInstanceId": "7da3f0b3-8ec8-4bc3-8a90-02ce672b881e",
+          "receiptState": "dispatching",
+          "outcome": "unobserved"
+        },
+        {
+          "schemaVersion": 1,
+          "time": "2026-10-06T08:34:33.150Z",
+          "process": "main",
+          "processInstanceId": "032d11b9-dd87-44c0-a0a1-254b85cf9858",
+          "build": {
+            "version": "0.1.0-m2.17",
+            "commit": "ba0e7df1511b15932d293679959c2b594c3ea29c",
+            "dirty": false,
+            "id": "ba0e7df1-808e60b8"
+          },
+          "traceId": "db527103-294b-484b-a968-062b80e301e4",
+          "requestId": "175281d8-3462-43b0-bf64-31d83d9e91a0",
+          "connectionId": "6c072b38-685a-49d8-9210-86b05e6bb449",
+          "operation": "submit",
+          "stage": "prepared",
+          "threadId": "d5989ca2-5027-41fb-9428-d824264e08fd",
+          "submissionId": "13299583-dfcd-4c97-9dcb-7906015a0580",
+          "nativeProcessInstanceId": "7da3f0b3-8ec8-4bc3-8a90-02ce672b881e",
+          "receiptState": "prepared",
+          "outcome": "unobserved"
+        }
+      ],
+      "coverage": {
+        "files": 1,
+        "bytes": 131647,
+        "lines": 264,
+        "malformed": 0,
+        "redacted": 4,
+        "unreadable": 0,
+        "truncated": false
+      },
+      "writer": {
+        "degraded": true,
+        "dropped": 4
+      }
+    }
+  },
+  "narrowViewport": {
+    "x": 16,
+    "right": 544,
+    "width": 528,
+    "viewport": 560,
+    "scroll": 526,
+    "client": 526,
+    "focus": true
+  },
+  "feedback": {
+    "length": 661,
+    "sha256": "e692ac4a586e9b43e4b4bba16c1234b4ee9b51956cdf5bc8c5bb271a12f15b78"
+  },
+  "clipboardRestoration": "restored",
+  "nativeExport": {
+    "save": "已导出：diagnostics-export.json 373fb9b4-dad2-49a7-95a9-f84a2dda6ba7查询此导出trace",
+    "sha256": "962663b3b94aa58a40726d76eee99fa7f945f380c3830a5637e060e1bd46c233",
+    "bytes": 3426,
+    "cancel": "已取消导出，没有保存文件。 04cab09d-7812-4498-b54c-80bbd496b996查询此导出trace"
+  },
+  "readBudget": {
+    "sourceBytes": 9437184,
+    "elapsedMs": 251.56137499999022,
+    "coverage": {
+      "files": 2,
+      "bytes": 8388608,
+      "lines": 259,
+      "malformed": 0,
+      "redacted": 5,
+      "unreadable": 0,
+      "truncated": true
+    }
+  },
+  "startupFailureData": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-N3TjGL/diagnostics-startup-failure"
+}

@@ -1,0 +1,11 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/MySpace/Life/d-pi[39m
+
+ [32m✓[39m src/platform/main/diagnostics/reader.test.ts [2m([22m[2m11 tests[22m[2m)[22m[33m 962[2mms[22m[39m
+   [33m[2m✓[22m[39m lets the existing Writer persist and close while a budgeted snapshot is scanning[33m 514[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m11 passed[39m[22m[90m (11)[39m
+[2m   Start at [22m 16:28:45
+[2m   Duration [22m 1.18s[2m (tests 88%, import 6%, transform 5%)[22m

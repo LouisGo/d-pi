@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "exportedAt": "2026-10-06T08:36:45.873Z",
+  "build": {
+    "version": "0.1.0-m2.17",
+    "commit": "ba0e7df1511b15932d293679959c2b594c3ea29c",
+    "dirty": false,
+    "id": "ba0e7df1-808e60b8"
+  },
+  "runtime": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "electron": "44.4.5",
+    "node": "24.21.0"
+  },
+  "attribution": "unknown",
+  "coverageNote": "Retained application metadata only; missing records do not prove an operation did not occur. No OMP content, native logs, paths or crash dumps are included.",
+  "snapshot": {
+    "sampledAt": "2026-10-06T08:35:17.872Z",
+    "filter": {
+      "since": "2026-10-05T08:34:37.000Z",
+      "until": "2026-10-06T08:35:37.000Z",
+      "traceId": "ad3a5417-20a2-49d3-8f0b-17a7372003b6",
+      "limit": 100
+    },
+    "records": [
+      {
+        "schemaVersion": 1,
+        "time": "2026-10-06T08:34:36.402Z",
+        "process": "main",
+        "processInstanceId": "04df7dc7-3d87-438c-b3d3-19ae27e0e882",
+        "build": {
+          "version": "unknown",
+          "commit": "unknown",
+          "dirty": false,
+          "id": "unknown"
+        },
+        "traceId": "ad3a5417-20a2-49d3-8f0b-17a7372003b6",
+        "requestId": "unknown",
+        "connectionId": "unknown",
+        "operation": "unknown",
+        "stage": "failed",
+        "threadId": "d5989ca2-5027-41fb-9428-d824264e08fd",
+        "code": "unknown",
+        "causeCode": "unknown"
+      },
+      {
+        "schemaVersion": 1,
+        "time": "2026-10-06T08:34:36.402Z",
+        "process": "main",
+        "processInstanceId": "bde234dc-feba-4d81-ab0f-a833dc3bbe8a",
+        "build": {
+          "version": "unknown",
+          "commit": "unknown",
+          "dirty": false,
+          "id": "unknown"
+        },
+        "traceId": "ad3a5417-20a2-49d3-8f0b-17a7372003b6",
+        "requestId": "unknown",
+        "connectionId": "unknown",
+        "operation": "unknown",
+        "stage": "completed",
+        "threadId": "85d8274d-a75f-4a02-bb42-91131d5e729e"
+      },
+      {
+        "schemaVersion": 1,
+        "time": "2026-10-06T08:34:36.402Z",
+        "process": "main",
+        "processInstanceId": "04df7dc7-3d87-438c-b3d3-19ae27e0e882",
+        "build": {
+          "version": "unknown",
+          "commit": "unknown",
+          "dirty": false,
+          "id": "unknown"
+        },
+        "traceId": "ad3a5417-20a2-49d3-8f0b-17a7372003b6",
+        "requestId": "unknown",
+        "connectionId": "unknown",
+        "operation": "unknown",
+        "stage": "completed",
+        "threadId": "d5989ca2-5027-41fb-9428-d824264e08fd"
+      },
+      {
+        "schemaVersion": 1,
+        "time": "2026-10-06T08:34:36.402Z",
+        "process": "main",
+        "processInstanceId": "04df7dc7-3d87-438c-b3d3-19ae27e0e882",
+        "build": {
+          "version": "unknown",
+          "commit": "unknown",
+          "dirty": false,
+          "id": "unknown"
+        },
+        "traceId": "ad3a5417-20a2-49d3-8f0b-17a7372003b6",
+        "requestId": "unknown",
+        "connectionId": "unknown",
+        "operation": "unknown",
+        "stage": "received",
+        "threadId": "d5989ca2-5027-41fb-9428-d824264e08fd"
+      }
+    ],
+    "coverage": {
+      "files": 2,
+      "bytes": 128705,
+      "lines": 260,
+      "malformed": 2,
+      "redacted": 8,
+      "unreadable": 0,
+      "truncated": false
+    },
+    "writer": {
+      "degraded": false,
+      "dropped": 0
+    }
+  }
+}

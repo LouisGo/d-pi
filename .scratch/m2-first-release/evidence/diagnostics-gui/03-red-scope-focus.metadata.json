@@ -1,0 +1,19 @@
+{
+  "cwd": "file:///Users/louistation/.codex/worktrees/m2-diagnostics-gui/d-pi",
+  "command": [
+    "/bin/zsh",
+    "-lc",
+    "python3 - <<'PY'\nfrom pathlib import Path\np=Path('src/app/renderer/shell/diagnostics.test.ts');s=p.read_text().replace('return { render, click, button };','return { render, click, button, client };');s+='''\nit(\"releases diagnostic scope cache on close and restores apply focus after changing scope\", async () => {\n  const bridge = successBridge(); const ui = await mount(bridge); await ui.click(\"诊断与反馈\");\n  await edit(\"traceId\", trace);\n  ui.button(\"应用筛选\")?.focus(); await ui.click(\"应用筛选\");\n  expect(document.activeElement).toBe(ui.button(\"应用筛选\"));\n  expect(ui.client.getQueryCache().getAll()).toHaveLength(1);\n  await ui.click(\"关闭诊断\"); await flush();\n  expect(ui.client.getQueryCache().getAll()).toHaveLength(0);\n});\n''';p.write_text(s)\nPY\npnpm test src/app/renderer/shell/diagnostics.test.ts"
+  ],
+  "process_id": "50681",
+  "exit_code": 1,
+  "duration": {
+    "secs": 1,
+    "nanos": 963502917
+  },
+  "status": "failed",
+  "source_rollout": "/Users/louistation/.codex/sessions/2026/10/06/rollout-2026-10-06T16-12-13-01a11045-3339-7802-ba00-d6286999659a.jsonl",
+  "ordinal": 189,
+  "timestamp": "2026-10-06T08:22:26.647Z",
+  "export_note": "Original completed CommandExecution aggregated_output extracted from the session; no checks re-run."
+}
