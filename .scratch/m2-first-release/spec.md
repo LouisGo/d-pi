@@ -239,3 +239,6 @@
 
 
 2026-10-06：01a/01b实现与受影响工程验证完成。最终产品source `9a8c2ee`、clean m2.18构建`9a8c2eea-7f1a67df`，795行为/34架构/74工具通过（2既有opt-in跳过），双轴独立评审/修复/复核及16项实际macOS包内检查、ZIP CRC/app.asar同源通过。失败详情裁切由实际截图发现，独立确认、真实React先红后修复并在新候选按所有裁切祖先几何/截图验收；原失败证据保留。[交接](attention.md)、[评审](attention-review.md)、[本地PR body](attention-pr.md)。实际原生检查因Mac锁定、未收到手动解锁确认而checkpoint超时，没有模拟observed/click；01c保持claimed，系统通知显示/真实点击、实际关窗/同App重开待验。不将本段或M2整体宣称完成，用户认可pending，本地提交、不push、不扩M3。
+
+
+2026-10-06用户要求继续：Mac已解锁，m2.18实际原生关窗/同App重开保持Main身份、后台完成/未读及无重复请求；系统通知真实failed，显示/点击未成功，App回退保留。原生多提醒场景又确认应用内提醒无高度预算挤压阅读，01b重开修正；旧包实际几何先红（5提醒160px、readingHeight=0），新m2.19候选按共享控件token与独立滚动验证normal/compact/窄窗口，原生证据保留。不改变OMP/通知事实，不使用签名密钥或个人账户，用户认可pending。

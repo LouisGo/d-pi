@@ -433,6 +433,7 @@ export async function validateAttention(context) {
   metrics.persistedPreferences = { system: true, completion: true };
   metrics.systemCapability = (await snapshot(evaluate)).system;
   screenshots.push(await shot("m2-attention-preferences-dark-normal"));
+  await validateReminderBudget({ evaluate, shot, screenshots, metrics });
   await validateAppearance({
     evaluate,
     wait,
@@ -441,8 +442,12 @@ export async function validateAttention(context) {
     screenshots,
     metrics,
   });
+  await validateReminderBudget({ evaluate, shot, screenshots, metrics });
   checks.push(
     "shipped settings explicitly enable system/completion preferences; theme/density/language and representative narrow viewport remain bounded",
+  );
+  checks.push(
+    "multiple real unread reminders preserve current reading space and draft across normal/compact and narrow layouts; the last reminder remains reachable through focus and internal scroll",
   );
 
   if (nativeInspection) {
@@ -530,7 +535,7 @@ export async function validateAttention(context) {
     metrics.native.closedWindow = await checkpoint(
       root,
       "reopen",
-      "Reopen the same running isolated d-pi App from its Dock icon (do not launch a second candidate). Record observed/notes, then create resumeFile. Harness then checks retained Main identity, completed event and no repeat supplier request.",
+      "Reopen the same running isolated d-pi App through its Dock icon or Finder double-click on this exact bundle (do not launch a second candidate). Record the actual route used. Record observed/notes, then create resumeFile. Harness then checks retained Main identity, completed event and no repeat supplier request.",
       { closedThread },
     );
     assert.equal(metrics.native.closedWindow.status, "observed");
@@ -551,6 +556,7 @@ export async function validateAttention(context) {
       1,
     );
     metrics.snapshots.reopened = reopened;
+    await validateReminderBudget({ evaluate, shot, screenshots, metrics });
     checks.push(
       "actual native window close/reopen retains the independent Main observer and a real completed receipt, with the same Main instance and no repeated provider request",
     );
@@ -561,6 +567,47 @@ export async function validateAttention(context) {
     JSON.stringify(metrics, null, 2) + "\n",
   );
   return metrics;
+}
+
+async function validateReminderBudget({
+  evaluate,
+  shot,
+  screenshots,
+  metrics,
+}) {
+  const bounds = await evaluate(`(()=>{
+    const center=document.querySelector('[data-attention-center]');
+    const pane=document.querySelector('.reading-pane:not([hidden])');
+    if(!center || !pane) return null;
+    const cr=center.getBoundingClientRect(), pr=pane.getBoundingClientRect();
+    const style=getComputedStyle(pane);
+    const previous=document.activeElement, scroll=center.scrollTop;
+    const buttons=center.querySelectorAll('[data-attention-open]'), last=buttons[buttons.length-1];
+    last?.focus();
+    const lr=last?.getBoundingClientRect();
+    const lastReachable=!!lr && document.activeElement===last && lr.top>=cr.top && lr.bottom<=cr.bottom && lr.left>=cr.left && lr.right<=cr.right;
+    previous?.focus({preventScroll:true});center.scrollTop=scroll;
+    return {entries:center.querySelectorAll('[data-attention-entry]').length,theme:document.documentElement.dataset.theme,density:document.documentElement.dataset.density,viewport:innerWidth,centerHeight:cr.height,centerScrollHeight:center.scrollHeight,centerClientHeight:center.clientHeight,readingHeight:pr.height,lineHeight:parseFloat(style.lineHeight),lastReachable,draft:document.querySelector('.tiptap')?.textContent};
+  })()`);
+  assert.ok(
+    bounds && bounds.entries >= 4,
+    "actual multi-Thread reminder sample is missing",
+  );
+  assert.ok(
+    bounds.readingHeight >= bounds.lineHeight * 4,
+    `reminders squeezed current reading: ${JSON.stringify(bounds)}`,
+  );
+  assert.equal(bounds.draft, "A_UNSENT_DRAFT");
+  assert.ok(
+    bounds.lastReachable,
+    "last reminder must remain reachable by focus/scroll",
+  );
+  (metrics.reminderBudgets ??= []).push(bounds);
+  screenshots.push(
+    await shot(
+      `m2-attention-bounded-reminders-${metrics.reminderBudgets.length}-${bounds.theme}-${bounds.density}-${bounds.viewport}`,
+    ),
+  );
 }
 
 async function validateAppearance({
@@ -583,6 +630,7 @@ async function validateAppearance({
     "[...document.querySelectorAll('.toolbar button')].find(el=>el.textContent.trim()==='紧凑密度').click()",
   );
   screenshots.push(await shot("m2-attention-preferences-light-compact"));
+  await validateReminderBudget({ evaluate, shot, screenshots, metrics });
   await evaluate(
     "(()=>{const el=document.querySelector('.toolbar select');el.value='en-US';el.dispatchEvent(new Event('change',{bubbles:true}))})()",
   );
@@ -608,6 +656,7 @@ async function validateAppearance({
   );
   metrics.narrowViewport = bounds;
   screenshots.push(await shot("m2-attention-preferences-english-narrow"));
+  await validateReminderBudget({ evaluate, shot, screenshots, metrics });
   await call("Emulation.clearDeviceMetricsOverride");
   await evaluate(
     "(()=>{const el=document.querySelector('.toolbar select');el.value='zh-CN';el.dispatchEvent(new Event('change',{bubbles:true}))})()",

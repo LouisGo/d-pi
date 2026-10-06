@@ -1,0 +1,4 @@
+{
+  "status": "observed",
+  "notes": "Dock native binding unavailable (CUA timeout), so used an alternative normal macOS reopen route: temporary Finder window Cmd+Shift+G to exact lHHVEy/Package With Spaces directory, then actual double-click on d-pi.app observed file URL. Did not run another candidate or shell-launch another process. CUA rebound exact local.d-pi.m2-validation: window reappeared at the same asar file URL/build9a8c2eea-7f1a67df. Thread8ce06d completed/unread, previous fdc016 completion/failed states and ThreadA draft remain. This is Finder reopen evidence, not Dock-click evidence; harness must independently confirm same Main instance and one provider request."
+}

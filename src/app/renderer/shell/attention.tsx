@@ -201,7 +201,7 @@ function AttentionContent({ model }: { model: AppModel }) {
     <section
       aria-label={t("attention.title")}
       data-attention-center
-      className="notice"
+      className="notice attention-center"
     >
       {failed && (
         <p role="alert" className="failure">

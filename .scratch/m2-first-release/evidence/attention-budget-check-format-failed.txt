@@ -1,0 +1,72 @@
+$ pnpm check:tools && pnpm typecheck && pnpm lint && pnpm lint:design && pnpm lint:i18n && pnpm validate:design && node validation/s1/source-boundaries.mjs && pnpm check:architecture && pnpm check:documentation && pnpm check:structure && pnpm check:status && pnpm test:architecture && pnpm test:tooling && pnpm test
+$ node scripts/checks/check-environment.mjs --tools-only
+Development Node: 24.21.0 (target 24.21.0)
+pnpm: 12.8.1 (target 12.8.1)
+Platform: darwin-arm64
+Installed exact dependencies: 47/47
+SKIP: fast tool check; native executables and SDK resources were not inspected
+PASS: development environment (0 issues)
+$ pnpm routes:generate && tsc --noEmit && pnpm typecheck:core && pnpm typecheck:renderer && pnpm typecheck:main && pnpm typecheck:host && pnpm typecheck:preload
+$ tsr generate
+(node:1318) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+$ tsc --noEmit -p tsconfig.core.json
+$ tsc --noEmit -p tsconfig.renderer.json
+$ tsc --noEmit -p tsconfig.main.json
+$ tsc --noEmit -p tsconfig.host.json
+$ tsc --noEmit -p tsconfig.preload.json
+$ biome check .
+validation/m2/attention.mjs format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    567 567 │   }
+    568 568 │   
+    569     │ - async·function·validateReminderBudget({·evaluate,·shot,·screenshots,·metrics·})·{
+        569 │ + async·function·validateReminderBudget({
+        570 │ + ··evaluate,
+        571 │ + ··shot,
+        572 │ + ··screenshots,
+        573 │ + ··metrics,
+        574 │ + })·{
+    570 575 │     const bounds = await evaluate(`(()=>{
+    571 576 │       const center=document.querySelector('[data-attention-center]');
+    ······· │ 
+    582 587 │   ...t:document.querySelector('.tiptap')?.textContent};
+    583 588 │     })()`);
+    584     │ - ··assert.ok(bounds·&&·bounds.entries·>=·4,·"actual·multi-Thread·reminder·sample·is·missing");
+    585     │ - ··assert.ok(bounds.readingHeight·>=·bounds.lineHeight·*·4,·`reminders·squeezed·current·reading:·${JSON.stringify(bounds)}`);
+        589 │ + ··assert.ok(
+        590 │ + ····bounds·&&·bounds.entries·>=·4,
+        591 │ + ····"actual·multi-Thread·reminder·sample·is·missing",
+        592 │ + ··);
+        593 │ + ··assert.ok(
+        594 │ + ····bounds.readingHeight·>=·bounds.lineHeight·*·4,
+        595 │ + ····`reminders·squeezed·current·reading:·${JSON.stringify(bounds)}`,
+        596 │ + ··);
+    586 597 │     assert.equal(bounds.draft, "A_UNSENT_DRAFT");
+    587     │ - ··assert.ok(bounds.lastReachable,·"last·reminder·must·remain·reachable·by·focus/scroll");
+        598 │ + ··assert.ok(
+        599 │ + ····bounds.lastReachable,
+        600 │ + ····"last·reminder·must·remain·reachable·by·focus/scroll",
+        601 │ + ··);
+    588 602 │     (metrics.reminderBudgets ??= []).push(bounds);
+    589     │ - ··screenshots.push(await·shot(`m2-attention-bounded-reminders-${bounds.theme}-${bounds.density}-${bounds.viewport}`));
+        603 │ + ··screenshots.push(
+        604 │ + ····await·shot(
+        605 │ + ······`m2-attention-bounded-reminders-${bounds.theme}-${bounds.density}-${bounds.viewport}`,
+        606 │ + ····),
+        607 │ + ··);
+    590 608 │   }
+    591 609 │   
+  
+
+Checked 483 files in 135ms. No fixes applied.
+Found 1 error.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+
+[ELIFECYCLE] Command failed with exit code 1.
+[ELIFECYCLE] Command failed with exit code 1.

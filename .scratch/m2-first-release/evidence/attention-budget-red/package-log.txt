@@ -1,0 +1,20 @@
+
+DevTools listening on ws://127.0.0.1:50522/devtools/browser/ea168bda-df18-4073-8db4-f11b4feb2798
+Failure evidence: /private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-rwnrUG
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: reminders squeezed current reading: {"entries":5,"centerHeight":160,"centerScrollHeight":160,"centerClientHeight":160,"readingHeight":0,"lineHeight":19.5,"draft":"A_UNSENT_DRAFT"}
+    at validateReminderBudget (file:///Users/louistation/.codex/worktrees/a613/d-pi/validation/m2/attention.mjs:577:10)
+    at async validateAttention (file:///Users/louistation/.codex/worktrees/a613/d-pi/validation/m2/attention.mjs:444:3)
+    at async file:///Users/louistation/.codex/worktrees/a613/d-pi/validation/m2/package.mjs:1353:24 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.21.0
