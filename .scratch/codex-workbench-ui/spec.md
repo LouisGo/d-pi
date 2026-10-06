@@ -94,16 +94,16 @@ CSS Grid/Flex 负责排版与滚动边界；尺寸约束负责可用空间分配
 
 - 交付：默认紧凑的 Codex 式外壳与现有业务，右/底宿主只在有内容时开放。
 - 重要待决：无；底部横跨主会话/右区、固定拓扑沿用第一轮工程默认。
-- 工程：实施中。几何展示意图独立于 AppModel；主题/草稿/Thread 沿用原拥有者。
+- 工程：外壳与反馈修复完成；完整工程门禁、56条隔离Electron和18项实际包检查通过。A3物理拖窗未确认成功，保持partial，见验证记录。几何展示意图独立于 AppModel；主题/草稿/Thread 沿用原拥有者。
 - 验收：[第一轮范围](layout-first.md#4-验收范围)；纯规则/组件/隔离 Electron 与本地包分别记录。
-- 用户试用：尚未交付本切片构建，认可 pending；原 M2 状态不变。
+- 用户试用：已交付0.1.0-workbench.1 / 91499e7f-7bca4f14本地候选；顶部导航与图标反馈已修复，认可pending；原M2状态不变。
 
 ```implementation-plan
 [{"id":"foundation-shell","tickets":["01","02","03","04"]}]
 ```
 
 ```project-status
-[{"id":"codex-workbench-ui","title":"Codex 式工作台基础布局","phase":"基建","engineering":"in-progress","trial":"not-delivered","acceptance":"pending","evidence":["layout-first.md"],"next":"A0视觉与默认尺寸→A1几何适配→A2业务接线→A3 Electron验证","constraints":"仅本地实施/提交/试用；不push、merge、公开发布或发起真实账户请求。"}]
+[{"id":"codex-workbench-ui","title":"Codex 式工作台基础布局","phase":"基建","engineering":"partial","trial":"delivered","acceptance":"pending","build":"0.1.0-workbench.1 / 91499e7f-7bca4f14","evidence":["handoff.md","validation.md","review.md"],"next":"本地候选试用；A3物理拖窗继续确认，系统IME/VoiceOver与长时性能未覆盖","constraints":"仅本地实施/提交/试用；不push、merge、公开发布或发起真实账户请求。"}]
 ```
 
 ## 实施票
@@ -115,6 +115,6 @@ CSS Grid/Flex 负责排版与滚动边界；尺寸约束负责可用空间分配
 
 ## 2026-10-07 顶栏补充要求
 
-用户明确要求 custom header bar 与 macOS 左侧原生控件处于同一行，不保留额外系统标题栏；空白区继续拖动窗口。Main使用hiddenInset保留原生关闭/最小化/全屏控制及原关闭保存协议；Renderer在原44px区域留出96px控件安全区，控件与分隔条no-drag。此项属于A基础布局，不新增窗口控制业务或跨平台支持承诺。当前修复及47项隔离Electron检查通过，包内/原生拖动验证继续由04完成。
+用户明确要求 custom header bar 与 macOS 左侧原生控件处于同一行，不保留额外系统标题栏；空白区继续拖动窗口。Main使用hiddenInset保留原生关闭/最小化/全屏控制及原关闭保存协议；Renderer在原44px区域留出96px控件安全区，控件与分隔条no-drag。此项属于A基础布局，不新增窗口控制业务或跨平台支持承诺。当前修复与后续图标反馈共56条隔离Electron、18项包内检查通过；物理拖窗未确认，继续由04维护。
 
 2026-10-07截图继续明确：原生控件右侧是后退/前进/侧栏导航；删除左顶栏区域文字。随后指出未读装饰导致图标偏心：在自有控件层分离图标与indicator插槽，角标/读屏状态不参与流；核查所有现有图标动作与数字0、999+、长辅助标签样本，作为同一A切片缺陷修复。

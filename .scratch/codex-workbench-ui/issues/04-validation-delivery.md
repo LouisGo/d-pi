@@ -12,3 +12,5 @@ Blocked by: 03
 ## Comments
 
 - 2026-10-06：主Agent单写集成，固定基点37e1a62。
+
+- 2026-10-07：完整check（806行为/35架构/89tooling）、interaction、build/package、56条隔离Electron与18项实际包检查通过；两轴独立审查通过，收到的顶部导航/图标居中反馈已修复。最终候选91499e7，dirty=false，见[交接](../handoff.md)。CUA原生zoom成功；物理drag未观察到坐标变化、原因unknown，该必需验证继续claimed，不伪报resolved。系统IME候选窗/VoiceOver/长时流式性能仍未覆盖。

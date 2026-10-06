@@ -1,6 +1,6 @@
 # A 基础布局验证
 
-实现固定提交：8823a3b76544bfbdd8a5be1511caf2baa0e48c9e；基点37e1a62b889fdfaa1db274b60bac69b98d54d23c。
+最终候选源提交：91499e7f73e15cf0c27906728c3cf361b8988cff；基点37e1a62b889fdfaa1db274b60bac69b98d54d23c。
 
 ## 工程与隔离 GUI
 
@@ -19,10 +19,16 @@
 
 ## 覆盖边界
 
-本页是工程/隔离GUI证据。真实包与固定官方SDK、macOS标题栏控件和物理拖动仍在04验证。Chromium composition覆盖合成事件，macOS系统输入法候选窗尚未覆盖；连续流式大历史的长时拖拽帧率与低端设备性能未测，资源未重建不等于流畅度证明。没有运行用户真实账户或计费请求；未知提交不重发，旧native session冷恢复仍只读。用户试用/认可单独维护。
+本页是工程/隔离GUI证据。最终包与固定官方SDK证据见下；物理拖窗继续在04待确认。Chromium composition覆盖合成事件，macOS系统输入法候选窗尚未覆盖；连续流式大历史的长时拖拽帧率与低端设备性能未测，资源未重建不等于流畅度证明。没有运行用户真实账户或计费请求；未知提交不重发，旧native session冷恢复仍只读。用户试用/认可单独维护。
 
 用户截图对应的导航位置断言 `navigation-controls-follow-native-window-controls` 在修复前返回false，修复后通过：后退、前进、侧栏开关顺序位于macOS安全区右侧，左栏顶端无区域标题，主区不重复历史控件；收起后的恢复回焦检查继续通过。
 
 新增键盘Enter恢复侧栏保留同一导航按钮焦点、缩窗导航换位不抢Composer焦点两项检查。原生包验证Router/草稿/附件/SDK/冷恢复已在381d105的干净包通过，新焦点修复后再生成并验证最终包。
 
 图标中心专项：全现有图标按钮修复前false（空wrapper与flex gap），修复后6组几何与命中断言通过；逐个记录dx/dy、绝对indicator和pointer-events、中心点命中，同步覆盖light/dark、中文窄窗、未读状态、右/底关闭及0/999+/禁用长辅助标签样本。测试样本只在隔离底部宿主，正式无新增功能控件。
+
+## 最终实际包
+
+`node validation/m2/package.mjs dist/workbench-ui/mac-arm64/d-pi.app --router --attachments --workbench`：18项通过，[原始结果](evidence/packaged.json)。固定SDK18.4.6、真实Main/preload/SessionHost/原生SDK及实际包运行；本地确定性supplier，无真实凭据/计费。包内commit=91499e7f73e15cf0c27906728c3cf361b8988cff，dirty=false，build=91499e7f-7bca4f14，asar SHA-256=c2c8d7e1534b49d5b34ab7cf9c046c38fe3ca310bf567304fda4fbff8c9d0aab。包括标题栏同内容顶沿、原生控件右侧导航、图标中心/绝对状态层、默认紧凑与无内容宿主关闭；Router/POP/IME准入、两原生scope、草稿/附件/撤销/阅读/重载连续性、冷恢复只读。
+
+CUA 原生检查以Main未变化的4cf3cee包执行：close/fullscreen/minimize控件可访问，zoom实际完成，窗口尺寸1728×1027。多次顶栏留白drag未观察到窗口坐标变化，系统记录Window move completed without beginning；原因未证实，**物理拖窗未确认成功**。截图期间CUA共享标记覆盖交通灯，不能声称红黄绿完整像素检验通过，[记录](evidence/native-window.json)。此前的CSS drag/no-drag断言只证明区域声明，A3该项继续开放。系统IME候选窗、VoiceOver实际播报与连续流式大历史长时帧率未测。
