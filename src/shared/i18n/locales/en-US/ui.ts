@@ -1,4 +1,9 @@
 export const ui = {
+  "ui.reading.originalSegments":
+    "Original text in segments; copy retains all currently available text.",
+  "ui.reading.previous": "Previous segment",
+  "ui.reading.next": "Next segment",
+  "ui.reading.segment": "Segment {current} of {total}",
   "attachment.closePending":
     "Some attachments are still being prepared or their original sources have not been stored. This window remains open. Resolve them in the relevant Thread before closing.",
   "attachment.previewTruncated":

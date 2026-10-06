@@ -2,7 +2,7 @@ import { match } from "ts-pattern";
 import { Button } from "@/components/ui/button";
 import type { ConversationItem } from "../../../modules/conversation/contracts/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import { Markdown } from "./markdown";
+import { ReadingBody } from "./reading-body";
 export function SubagentMessage({ item }: { item: ConversationItem }) {
   const { t } = useI18n();
   const agent = item.subagent;
@@ -80,7 +80,10 @@ export function SubagentMessage({ item }: { item: ConversationItem }) {
             : t("subagents.result")}
         </summary>
         {item.text ? (
-          <Markdown text={item.text} streaming={agent.status === "running"} />
+          <ReadingBody
+            text={item.text}
+            streaming={agent.status === "running"}
+          />
         ) : (
           <p>{t("subagents.noResult")}</p>
         )}

@@ -13,7 +13,7 @@ import {
   projectHistoryPageQuery,
 } from "../../../modules/conversation/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import { Markdown } from "./markdown";
+import { ReadingBody } from "./reading-body";
 
 type HistoryToolEvidenceMessage =
   | "ui.history.toolFailed"
@@ -168,14 +168,25 @@ export function History({
             <p>{t("ui.history.omitted", { count: page.omitted })}</p>
           )}
           {page.entries.map((entry) => (
-            <article className="message" key={entry.id}>
-              <strong>
-                {match(entry.role)
-                  .with("user", () => t("ui.history.role.user"))
-                  .with("assistant", () => t("ui.history.role.assistant"))
-                  .with("tool", "toolResult", () => t("ui.history.role.tool"))
-                  .otherwise(() => entry.role)}
-              </strong>
+            <article
+              className="message"
+              key={JSON.stringify([threadId, selected, page.source, entry.id])}
+            >
+              <div className="message-heading">
+                <strong>
+                  {match(entry.role)
+                    .with("user", () => t("ui.history.role.user"))
+                    .with("assistant", () => t("ui.history.role.assistant"))
+                    .with("tool", "toolResult", () => t("ui.history.role.tool"))
+                    .otherwise(() => entry.role)}
+                </strong>
+                <Button
+                  variant="ghost"
+                  onClick={() => void navigator.clipboard.writeText(entry.text)}
+                >
+                  {t("ui.conversation.copy")}
+                </Button>
+              </div>
               <details className="history-record file-meta">
                 <summary>
                   {t(
@@ -210,7 +221,7 @@ export function History({
                   </div>
                 )}
               </details>
-              <Markdown text={entry.text} />
+              <ReadingBody text={entry.text} />
             </article>
           ))}
           {page.next && (

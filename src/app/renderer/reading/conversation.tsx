@@ -2,7 +2,7 @@ import { useStore } from "zustand";
 import { Button } from "@/components/ui/button";
 import type { ConversationModel } from "../../../modules/conversation/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import { Markdown } from "./markdown";
+import { ReadingBody } from "./reading-body";
 import { SubagentMessage } from "./subagents";
 
 export function Conversation({
@@ -14,6 +14,11 @@ export function Conversation({
 }) {
   const { t } = useI18n();
   const itemIds = useStore(model.stateStore, (state) => state.itemIds);
+  const threadId = useStore(model.stateStore, (state) => state.threadId);
+  const generation = useStore(
+    model.stateStore,
+    (state) => state.view?.connectionGeneration,
+  );
   const gap = useStore(model.stateStore, (state) => state.view?.gap ?? false);
   const exhausted = useStore(
     model.stateStore,
@@ -48,7 +53,11 @@ export function Conversation({
         </Button>
       )}
       {itemIds.map((id) => (
-        <ConversationMessage key={id} id={id} model={model} />
+        <ConversationMessage
+          key={JSON.stringify([threadId, generation, id])}
+          id={id}
+          model={model}
+        />
       ))}
     </section>
   );
@@ -100,10 +109,13 @@ function ConversationMessage({
       ) : item.role === "tool" ? (
         <details>
           <summary>{t("ui.conversation.toolOutput")}</summary>
-          <pre>{item.text || t("ui.conversation.waitingResult")}</pre>
+          <ReadingBody
+            text={item.text || t("ui.conversation.waitingResult")}
+            raw
+          />
         </details>
       ) : (
-        <Markdown text={item.text} streaming={item.state === "streaming"} />
+        <ReadingBody text={item.text} streaming={item.state === "streaming"} />
       )}
       {item.truncated && (
         <p role="status">{formatMessage({ code: "conversation.truncated" })}</p>

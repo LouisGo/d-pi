@@ -533,6 +533,23 @@
     max-height: var(--editor-max-height);
     overflow: auto;
   }
+  .reading-segments {
+    min-width: 0;
+  }
+  .reading-segment-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: calc(var(--layout-gap) / 2);
+    font-size: var(--text-body);
+  }
+  .reading-segment-text {
+    max-height: var(--editor-max-height);
+    overflow: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-family: inherit;
+  }
   .composer[data-expanded="true"] {
     position: absolute;
     inset: 0;

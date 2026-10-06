@@ -1,4 +1,8 @@
 export const ui = {
+  "ui.reading.originalSegments": "原文分段显示；复制保留当前已取得的全部原文。",
+  "ui.reading.previous": "上一段",
+  "ui.reading.next": "下一段",
+  "ui.reading.segment": "第 {current} / {total} 段",
   "attachment.closePending":
     "部分附件仍在准备，或原件尚未保存。窗口保持打开，请回到相关 Thread 处理附件后再关闭。",
   "attachment.previewTruncated":
