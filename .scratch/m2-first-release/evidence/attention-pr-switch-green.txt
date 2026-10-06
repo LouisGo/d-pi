@@ -1,0 +1,9 @@
+
+ RUN  v5.0.2 /Users/louistation/.codex/worktrees/a613/d-pi
+
+
+ Test Files  4 passed (4)
+      Tests  36 passed (36)
+   Start at  20:46:32
+   Duration  3.54s (import 68%, transform 16%, tests 8%, environment 8%)
+

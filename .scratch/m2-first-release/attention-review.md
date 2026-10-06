@@ -36,3 +36,9 @@ base/merge-base `7c9e1fee48ccb467db359a18401d8a30ca57a04e`，首次固定head `4
 主Agent随后在同产品48cd01cc clean包、外部harness adcd4d3上补齐实际18项green；五组9–10提醒几何、原焦点恢复/最后项内部滚动/阅读与Composer可见及草稿保留通过，截图实看。真实Cmd+W/Finder同Main重开无重发、冷偏好持久化完成：[结果](evidence/attention-macos-m2.19/m2-result.json)。这是报告后的实包证据补齐，非静态review替代。01b resolved；系统failed且实际显示/点击未验，01c claimed。
 
 过程失败分开保留：早期两个待答focus timeout根因unknown，不作预算红灯；首次无center来自正常已读场景，后用4个正式GUI/SDK后台completion产生明确unread负载。焦点probe原helper恢复未核实可污染下一样本，修正为last.blur/恢复并断言真实prior；旧日志未记录prior，唯一实机根因不倒推。新Thread null editor race以实际current UUID+可编辑非inert+runtime ready等待修正。全部是验证可信度修补，未放宽实际几何/焦点断言或注入事件。[过程](evidence/attention-reminder-continuation-tdd.md)与各失败现场仍在。
+
+## PR完整组合范围追加审查
+
+用户授权push并创建PR#4，真实base/merge-base1c9c30a、固定head f7dff7b，31提交包含诊断及提醒两个切片。两个全新独立只读reviewer：[Spec原報](evidence/pr-spec-original.md)、[Standards原報](evidence/pr-standards-original.md)。Spec确认新增P2：A→B切换Main已经select(B)、异步restore未回复时，旧A仍是visible，A新待答/失败被直接unread=false；Standards无新增已证高价值缺陷，未证receipt顺序疑点不作为缺陷。
+
+主Agent真实SQLite+DesktopCommandService+ThreadAttention复现needs-answer unread=false红灯；真实React/AppModel/Router在pending仍声明A可见的回归红灯。Main仅在可见相关事件读取真实active owner（不在每个Runtime采样读库），add/seen/foreground清未读共用身份判断；读取失败保守保留未读。Renderer仅无transition时声明current，在pending发送null，恢复后以已提交route重新声明。真实类另覆盖failed、foreground往返、旧seen拒绝和回到A正常清未读；36相关green：[Main红灯](evidence/attention-pr-switch-red.txt)、[GUI红灯](evidence/attention-pr-switch-gui-red.txt)、[组合green](evidence/attention-pr-switch-green.txt)。独立增量复核/完整检查/新源实包验证随后补充，当前不假称已经完成。旧m2.19为修复前候选身份，不能代表该竞态修复已验证。

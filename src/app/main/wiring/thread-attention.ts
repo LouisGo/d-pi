@@ -12,6 +12,7 @@ import type {
 import type { SystemNotifications } from "../lifecycle/system-notifications";
 
 type Context = {
+  getActiveThread: () => ThreadId | null;
   readPreferences: () => NotificationPreferences;
   savePreferences: (value: NotificationPreferences) => void;
   systemNotifications: SystemNotifications;
@@ -136,8 +137,16 @@ export class ThreadAttention {
     this.visibleThread = threadId;
     this.clearCurrentUnread();
   }
+  private isVisible(threadId: ThreadId): boolean {
+    if (!this.foreground || this.visibleThread !== threadId) return false;
+    try {
+      return this.context.getActiveThread() === threadId;
+    } catch {
+      return false;
+    }
+  }
   private clearCurrentUnread(): void {
-    if (!this.foreground || !this.visibleThread) return;
+    if (!this.visibleThread || !this.isVisible(this.visibleThread)) return;
     const entry = this.entries.get(this.visibleThread);
     if (entry?.unread) {
       entry.unread = false;
@@ -148,8 +157,7 @@ export class ThreadAttention {
     const entry = this.entries.get(threadId);
     if (
       this.disposed ||
-      !this.foreground ||
-      this.visibleThread !== threadId ||
+      !this.isVisible(threadId) ||
       entry?.eventId !== eventId
     )
       return false;
@@ -306,7 +314,7 @@ export class ThreadAttention {
       traceId,
       kind,
       eventId: randomUUID(),
-      unread: !(this.foreground && this.visibleThread === threadId),
+      unread: !this.isVisible(threadId),
     };
     this.entries.delete(threadId);
     this.entries.set(threadId, entry);

@@ -67,7 +67,7 @@ function AttentionContent({ model }: { model: AppModel }) {
   const failed = useStore(model.attention.stateStore, (state) => state.failed);
   const current = useStore(model.stateStore, (state) =>
     state.kind === "ready" &&
-    state.threadTransition !== "unknown" &&
+    state.threadTransition === undefined &&
     state.threadSelection.kind === "thread"
       ? state.threadSelection.thread.context.threadId
       : null,

@@ -262,6 +262,8 @@ export function startDesktopApplication(mainDirectory: string): void {
       initializeStorage();
       attentionStore = services.store;
       attention = new ThreadAttention({
+        getActiveThread: () =>
+          services.store?.threads.activeThread()?.threadId ?? null,
         readPreferences: () => {
           if (!services.store) throw Error("storage-unavailable");
           return services.store.preferences.readNotifications();

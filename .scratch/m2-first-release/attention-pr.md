@@ -1,21 +1,21 @@
 ## Summary
 
-后台Thread等待回答或执行失败时，用户需要可点击且不抢焦点的提醒。本切片复用真实RuntimeView/SubmissionReceipt，在Main维护有界投影，正式GUI提供侧栏状态、应用内提醒、失败收据/当前交互定位及独立持久化通知偏好。完成默认只更新完成/未读，系统/完成通知须明确开启；reload、暂时无窗口仍观察，未知提交不重发。
+补齐 M2 的基础诊断导出/故障反馈和多 Thread 提醒。诊断面板复用现有 JSONL/trace，提供有界筛选、白名单脱敏、本地原生保存及可复制反馈模板；后台待回答/失败提供不抢焦点的应用内提醒，点击定位当前真实交互或失败收据。完成默认仅更新完成/未读，系统与完成通知须明确开启。
 
-所属[spec](spec.md#2026-10-06-多-thread-提醒切片)，[01a](issues/01a-thread-attention.md)、[01b](issues/01b-thread-attention-gui.md)、[01c](issues/01c-thread-attention.md)。本地分支codex/m2-thread-attention，base/merge-base为7c9e1fee48ccb467db359a18401d8a30ca57a04e；无远端PR，01c待原生验收，不声称整体切片已完成。
+多提醒独立滚动，为当前阅读保留四行并保持 Composer/草稿；迟到首次 Runtime inspect 就位后再定位，后续更新不夺焦。Main 观察独立于窗口/Renderer，通知不改变执行事实、回答或提交重发。
+
+目标 base 为 main `1c9c30a`。本 PR 同时包含之前未推送的诊断和提醒两个切片；附件、队列、子 Agent 与长正文的既有交付已在 base 中。所属 [M2 spec](https://github.com/LouisGo/d-pi/blob/codex/m2-thread-attention/.scratch/m2-first-release/spec.md)，诊断06e/06f/06g与提醒01a/01b工程完成。**01c实际系统通知显示/点击仍待验，M2整体与用户认可保持开放，因此本 PR 为 Draft。**
 
 ## Evidence
 
-真实TDD覆盖Main因果归纳、可信IPC/导航后复核、preload关联、SQLite偏好、正式React导航/订阅/焦点/编辑器保留；具体红绿和保留失败见[证据](evidence/attention-tdd.md)。独立Spec/Standards整体审查发现4项高价值问题，均修复并独立复核；诊断故障码脱敏增量亦独立复核。
-
-多提醒预算与迟到Runtime首样本定位也已TDD修复：独立滚动、当前阅读至少4行且Composer保留；等待实际interaction就位，后续状态不夺焦。五组实际9–10提醒预算通过，796行为/34架构/74工具和增量两轴review通过。产品source48cd01cc，外部harness adcd4d3。
-
-实际候选截图另发现失败收据被阅读容器裁切，已按新的真实React红灯修复：仅匹配failed收据时开启既有专注阅读；需要回答或收据缺失时保持runtime/setup可见。原脚本window rectangle断言改为状态段落在所有overflow祖先可见交集内可读，修复前结果完整保留。
-
-最终完整检查、精确clean产品source/build、实际macOS包内结果、截图、ZIP CRC/app.asar同源见[交接](attention.md)与[两轴报告](attention-review.md)。固定SDK+localhost供应商是实际SDK接入，未使用个人认证或付费供应商；Chromium组合事件不替代系统IME。最终m2.19实际18项检查通过，真实关窗/Finder重开同Main无重发与冷启动偏好持久化完成。系统通知实际failed，显示/点击未验收、根因unknown，App回退保留，01c保持claimed；用户认可pending，M2父范围未关闭。
+- TDD 与独立 Spec/Standards review 已覆盖两个切片及各产品修复：[诊断评审](https://github.com/LouisGo/d-pi/blob/codex/m2-thread-attention/.scratch/m2-first-release/diagnostics-review.md)、[提醒评审](https://github.com/LouisGo/d-pi/blob/codex/m2-thread-attention/.scratch/m2-first-release/attention-review.md)。真实失败包括阅读被提醒挤压、失败收据裁切、迟到Runtime状态丢失定位；均修复并复核。新 PR 组合复核与最终远端检查另由交接记录维护。
+- 最终生产源完整 `pnpm check`：796行为、34架构、74工具通过，2既有 opt-in 跳过；build、文档/看板/架构及最终 `check:fast` 通过。精确原始结果保存在上述交接链接。
+- [诊断候选](https://github.com/LouisGo/d-pi/blob/codex/m2-thread-attention/.scratch/m2-first-release/diagnostics.md)：clean m2.17，21项实际隔离macOS检查；真实原生保存/取消、0600脱敏报告、反馈复制、Writer故障及启动损坏数据库入口。读取预算12文件/8MiB/20000行/64KiB单行/1500ms，导出最多2MiB。合成秘密/坏行样本明确标记，未冒充真实供应商故障。
+- [当前候选与试用](https://github.com/LouisGo/d-pi/blob/codex/m2-thread-attention/.scratch/m2-first-release/attention.md)：clean `0.1.0-m2.19 / 48cd01cc-42704447`，产品源码 `48cd01cc`；外部harness `adcd4d3`。18项实际固定SDK+localhost/macOS检查通过；真实后台、Cmd+W关窗而App仍运行、Finder精确bundle重开同Main、closed供应商请求恰好一次；真实冷启动偏好保存/旧Thread只读。五组9–10提醒预算与最后项focus/内部滚动、阅读/完整Composer/草稿及采样焦点恢复通过。全部ZIP CRC及source/受测副本/ZIP app.asar同源。
+- **已知限制：系统提醒实际 `failed`，App内失败反馈/状态可用，真实OS显示/点击未观察，根因unknown；没有模拟通知callback，未签名/公证。** Chromium composition不替代系统IME；隔离SDK样本不替代真实账户/付费供应商或用户认可。PDF视觉/OCR、完整V1-00/B6负载/故障组合仍未完成。
 
 ## Merge Danger
 
-源码可revert，但SQLite schema11为持久化one-way door：升级前备份before-v11；旧候选拒绝打开新schema，单纯revert不会降级数据。需要退回旧版时先保留现有数据库/附件和新增工作，再在独立数据根验证升级前备份；不要覆盖新数据或删除数据库掩盖恢复失败。通知两个偏好字段与既有主题/密度/语言分开保存。
+SQLite schema11新增App通知偏好，属于持久化 one-way door：源码revert不降级数据库，旧候选会拒绝新schema。需要退回旧版时保留当前数据库/附件及新增工作，使用升级前 before-v11 备份在独立数据根验证，不覆盖新数据或删库掩盖恢复失败。
 
-影响链为Main真实观察→有界提醒投影→trusted IPC/preload→GUI定位、通用Electron Notification及应用窗口显式点击入口。观察/通知失败不改变执行、答案、历史或已持久化收据。不开新OMP调度器，不添加自动重试或上传；通知文案不含路径、业务正文或秘密。候选未签名/公证，系统available仅表达能力；原生送达限制单列，不能以模拟回调宣称通过。不push、不公开发布、不扩M3，合并或工程检查不替代用户认可。
+影响链为Main真实Runtime/收据→有界提醒投影→trusted IPC/preload→GUI定位/通用Notification与显式窗口入口，以及既有Writer→有界Reader→本地保存。诊断仅白名单导出，反馈不上传；不引入新OMP队列/执行事实或自动重试。unknown不自动重发，冷旧Thread继续只读。仅推送当前开发分支并创建PR，不合并、不公开发布、不扩M3；签名权限和真实个人账户未扩大。

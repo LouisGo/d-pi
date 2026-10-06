@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "da18dd1c3f9329592381b9ee1d160afedc9342b1a988f0b5c1539b3a87e4562a",
+  "inputsHash": "fbb085f75800dde3cb002aef37fc379a239e5f35ff935f35ec95fc916dbfafc3",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 351,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 143,
-      "lines": 24368,
+      "lines": 24495,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -5194,6 +5194,33 @@
       "sourceModule": "app",
       "sourceEnvironment": "main",
       "test": true,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/thread-attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/thread-attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/thread-attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
       "specifier": "vitest",
       "kind": "import",
       "resolution": "external"
@@ -5243,6 +5270,30 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/main/wiring/thread-attention.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/thread-attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./app-storage",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/app-storage.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/thread-attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./desktop-command-service",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/desktop-command-service.ts",
       "targetModule": "app",
       "targetEnvironment": "main"
     },

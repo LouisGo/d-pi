@@ -15,6 +15,7 @@ function setup() {
     record = vi.fn(),
     sourceValid = vi.fn(() => true);
   const attention = new ThreadAttention({
+    getActiveThread: () => threadId,
     readPreferences: () => ({ system: false, completion: false }),
     savePreferences,
     systemNotifications: { supported: () => true, show: () => () => {} },

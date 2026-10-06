@@ -39,10 +39,11 @@
       "diagnostics.md",
       "diagnostics-review.md",
       "attention.md",
-      "attention-review.md"
+      "attention-review.md",
+      "progress-2026-10-06.md"
     ],
     "next": "m2.19多Thread提醒候选已交付，01a/01b完成；真实关窗/Finder重开通过，01c系统提醒实际failed，显示/点击待验。M2尚未完成，PDF视觉/OCR、V1-00/B6组合、真实供应商与用户认可保持开放；冷旧Thread只读",
-    "constraints": "2026-10-06本轮从最新main继续M2，授权本地实现、候选、证据与提交；此前push/PR授权属于已交付阶段，本轮未push。不公开发布、不扩M3，冷恢复只读，unknown不自动重发；用户认可pending。"
+    "constraints": "2026-10-06用户追加授权push当前本地成果并创建PR；PR#4为诊断和提醒两个切片，未授权merge。不公开发布、不扩M3，冷恢复只读，unknown不自动重发；用户认可pending。"
   }
 ]
 ```
@@ -244,3 +245,7 @@
 2026-10-06用户要求继续：Mac已解锁，m2.18实际原生关窗/同App重开保持Main身份、后台完成/未读及无重复请求；系统通知真实failed，显示/点击未成功，App回退保留。原生多提醒场景又确认应用内提醒无高度预算挤压阅读，01b重开修正；旧包实际几何先红（5提醒160px、readingHeight=0），新m2.19候选按共享控件token与独立滚动验证normal/compact/窄窗口，原生证据保留。不改变OMP/通知事实，不使用签名密钥或个人账户，用户认可pending。
 
 2026-10-06最终继续交付：clean m2.19产品source48cd01cc/build48cd01cc-42704447，796行为/34架构/74工具通过。独立Spec/Standards复核关闭预算和迟到首次inspect两项P2；validation-only焦点采样恢复/新Thread编辑器就绪纠正均独立复核，生产source不变。外部harness adcd4d3对实际候选18项通过；五组9–10条提醒预算、阅读至少4行/完整Composer/草稿/末条内部滚动和原焦点恢复通过。真实后台、Cmd+W关闭/仍运行、精确Finder双击重开同Main且供应商无重发、冷启动偏好保存/旧Thread只读完成。ZIP CRC和source/受测副本/ZIP asar同源通过。01b重新resolved；01c仅剩真实系统显示/点击，本次system=failed、App回退反馈可见、根因unknown、未模拟callback，保持claimed。M2其余范围和用户认可独立开放；不push、不签名、不扩M3。[当前交接](attention.md)。
+
+2026-10-06远端交付授权：用户明确要求先push本地内容、创建PR并核对，再报告M2整体和提供下阶段prompt。fetch核实origin/main1c9c30a是本分支祖先，初次推送f7dff7b含31个领先提交（基础诊断与多Thread提醒）；未含已在main的此前切片。创建[Draft PR #4](https://github.com/LouisGo/d-pi/pull/4)并attach当前任务；远端CI及整个真实PR范围增量双轴核对进行中，不以配置存在/PR创建宣称CI成功。仅push/建PR，未merge，不改变01c/M2/用户认可状态。[整体进度核对与推荐下段](progress-2026-10-06.md)。后续同步仅交接文档/评审证据，产品48cd01cc候选身份不变。
+
+2026-10-06 PR核对新增Spec P2：切换pending旧Thread新提醒会错误已读。已真实Main/SQLite与React红绿修复（36相关通过），独立增量复核/完整门禁及修复后实际包验证待补。本次必要修复在“push/PR确保没有问题”授权范围内，不关闭01c系统显示/点击或M2父票。

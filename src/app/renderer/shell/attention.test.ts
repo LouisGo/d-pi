@@ -405,3 +405,49 @@ it("a changed event during navigation selects the current result view rather tha
   );
   expect(ui.host.textContent).toContain("这条提醒已过期");
 });
+
+it("clears visible attention while a Thread selection is pending and restores the committed Thread", async () => {
+  vi.spyOn(document, "hasFocus").mockReturnValue(true);
+  const ui = await mount();
+  await act(async () => {
+    await ui.router.navigate({
+      to: "/threads/$threadId",
+      params: { threadId: ui.first.threadId },
+    });
+  });
+  const visible = () =>
+    ui.request.mock.calls
+      .filter(([command]) => command.kind === "visible")
+      .at(-1)?.[0];
+  expect(visible()).toMatchObject({
+    kind: "visible",
+    threadId: ui.first.threadId,
+  });
+  const release = ui.holdSelection();
+  const navigation = ui.router.navigate({
+    to: "/threads/$threadId",
+    params: { threadId: ui.second.threadId },
+  });
+  try {
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(ui.model.getSnapshot()).toMatchObject({
+      threadTransition: "pending",
+    });
+    expect(visible()).toMatchObject({ kind: "visible", threadId: null });
+    await act(async () => {
+      release();
+      await navigation;
+    });
+    expect(visible()).toMatchObject({
+      kind: "visible",
+      threadId: ui.second.threadId,
+    });
+  } finally {
+    release();
+    await act(async () => {
+      await navigation;
+    });
+  }
+});

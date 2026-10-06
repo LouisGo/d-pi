@@ -1,4 +1,7 @@
 import { randomUUID } from "node:crypto";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { expect, it, vi } from "vitest";
 import {
   RuntimeViewSchema,
@@ -6,6 +9,8 @@ import {
 } from "../../../modules/execution/contracts/public";
 import { ThreadIdSchema, TraceIdSchema } from "../../../shared/identity";
 import type { NotificationCallbacks } from "../lifecycle/system-notifications";
+import { AppStorage } from "./app-storage";
+import { DesktopCommandService } from "./desktop-command-service";
 import { ThreadAttention } from "./thread-attention";
 
 const threadId = ThreadIdSchema.parse(randomUUID()),
@@ -42,6 +47,7 @@ function fixture() {
   const openWindow = vi.fn(),
     show = vi.fn(() => vi.fn());
   const attention = new ThreadAttention({
+    getActiveThread: () => threadId,
     readPreferences: () => ({ system: false, completion: false }),
     savePreferences: vi.fn(),
     systemNotifications: { supported: () => true, show },
@@ -185,6 +191,7 @@ it("only trusted foreground context clears unread; stale native click targets la
   });
   const openWindow = vi.fn();
   const attention = new ThreadAttention({
+    getActiveThread: () => threadId,
     readPreferences: () => ({ system: true, completion: false }),
     savePreferences: vi.fn(),
     systemNotifications: { supported: () => true, show },
@@ -227,6 +234,7 @@ it("system failure and close do not consume App facts; dispose is idempotent", (
   let callbacks: NotificationCallbacks | undefined;
   const release = vi.fn();
   const attention = new ThreadAttention({
+    getActiveThread: () => threadId,
     readPreferences: () => ({ system: true, completion: false }),
     savePreferences: vi.fn(),
     systemNotifications: {
@@ -275,6 +283,7 @@ it("coalesces a receipt failure and runtime failure carrying the same operation 
 });
 it("does not let unavailable native support break startup or ephemeral App reminders", () => {
   const attention = new ThreadAttention({
+    getActiveThread: () => threadId,
     readPreferences: () => ({ system: true, completion: false }),
     savePreferences: vi.fn(),
     systemNotifications: {
@@ -295,6 +304,7 @@ it("diagnoses native throw with the original event metadata without affecting at
     throw Error("diagnostic sink unavailable");
   });
   const attention = new ThreadAttention({
+    getActiveThread: () => threadId,
     readPreferences: () => ({ system: true, completion: false }),
     savePreferences: vi.fn(),
     systemNotifications: {
@@ -324,6 +334,7 @@ it("reloads persisted notification preferences once storage becomes available wi
     })
     .mockReturnValue({ system: true, completion: true });
   const attention = new ThreadAttention({
+    getActiveThread: () => threadId,
     readPreferences,
     savePreferences: vi.fn(),
     systemNotifications: { supported: () => true, show: () => () => {} },
@@ -344,6 +355,7 @@ it("retains the original trace on asynchronous native failure", () => {
   let callback: NotificationCallbacks | undefined;
   const onFailure = vi.fn();
   const attention = new ThreadAttention({
+    getActiveThread: () => threadId,
     readPreferences: () => ({ system: true, completion: false }),
     savePreferences: vi.fn(),
     systemNotifications: {
@@ -384,6 +396,7 @@ it("an already queued click after a question expires opens current Thread state 
   let callback: NotificationCallbacks | undefined;
   const openWindow = vi.fn();
   const attention = new ThreadAttention({
+    getActiveThread: () => threadId,
     readPreferences: () => ({ system: true, completion: false }),
     savePreferences: vi.fn(),
     systemNotifications: {
@@ -403,4 +416,61 @@ it("an already queued click after a question expires opens current Thread state 
   expect(openWindow).toHaveBeenCalledTimes(1);
   expect(attention.snapshot().openRequest?.threadId).toBe(threadId);
   expect(attention.snapshot().entries).toEqual([]);
+});
+
+it("retains an old Thread's new question while Main has selected another Thread before its reply", async () => {
+  const directory = mkdtempSync(join(tmpdir(), "d-pi-attention-switch-"));
+  const storage = AppStorage.open(join(directory, "app.sqlite"));
+  const first = storage.threads.create(directory);
+  const second = storage.threads.create(directory);
+  storage.threads.select(first.threadId);
+  const attention = new ThreadAttention({
+    readPreferences: () => ({ system: false, completion: false }),
+    savePreferences: () => {},
+    systemNotifications: { supported: () => true, show: () => () => {} },
+    getText: () => ({ title: "d-pi", body: "Thread" }),
+    openWindow: () => {},
+    getActiveThread: () => storage.threads.activeThread()?.threadId ?? null,
+  });
+  const service = new DesktopCommandService(storage, async () => directory);
+  try {
+    attention.setForeground(true);
+    attention.visible(first.threadId);
+    const selecting = service.execute({
+      kind: "select-thread",
+      threadId: second.threadId,
+      traceId: crypto.randomUUID(),
+    });
+    expect(storage.threads.activeThread()?.threadId).toBe(second.threadId);
+    attention.observeRuntime({ ...view(), threadId: first.threadId });
+    expect(attention.snapshot().entries[0]).toMatchObject({
+      threadId: first.threadId,
+      kind: "needs-answer",
+      unread: true,
+    });
+    expect(
+      attention.seen(first.threadId, attention.snapshot().entries[0]!.eventId),
+    ).toBe(false);
+    attention.setForeground(false);
+    attention.setForeground(true);
+    expect(attention.snapshot().entries[0]?.unread).toBe(true);
+    attention.observeRuntime({
+      ...view(2),
+      threadId: first.threadId,
+      interactions: undefined,
+      phase: "failed",
+    });
+    expect(attention.snapshot().entries[0]).toMatchObject({
+      kind: "failed",
+      unread: true,
+    });
+    expect((await selecting).kind).toBe("ready");
+    storage.threads.select(first.threadId);
+    attention.visible(first.threadId);
+    expect(attention.snapshot().entries[0]?.unread).toBe(false);
+  } finally {
+    attention.dispose();
+    storage.close();
+    rmSync(directory, { recursive: true, force: true });
+  }
 });
