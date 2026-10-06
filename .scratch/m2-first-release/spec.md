@@ -10,7 +10,7 @@
     "trial": "delivered",
     "acceptance": "pending",
     "current": true,
-    "build": "0.1.0-m2.14 / c5e424da-f02704bc",
+    "build": "0.1.0-m2.15 / 31cb9122-865978d1",
     "pending": [
       "../m1-s3-control-recovery/issues/09-quit-discard-decision.md"
     ],
@@ -31,9 +31,11 @@
       "queue-configuration-review.md",
       "content-preparation.md",
       "lifecycle.md",
-      "lifecycle-review.md"
+      "lifecycle-review.md",
+      "project-references.md",
+      "project-references-review.md"
     ],
-    "next": "04b附件回收与05d原生子Agent观察工程完成，m2.14候选交付待试用；后续PDF视觉/OCR与余下M2队列/子Agent/长输出/故障组合验收开放，真实供应商试用与用户认可pending，冷旧Thread只读",
+    "next": "04b/05d及04c文件目录引用优化工程完成，m2.15候选交付待试用；后续PDF视觉/OCR与余下M2队列/子Agent/长输出/故障组合验收开放，真实供应商试用与用户认可pending，冷旧Thread只读",
     "constraints": "2026-10-02用户授权下一阶段M2并行开发与中断后继续；本地commit/候选沿用M2授权，不将旧特定修复push扩大到本轮。2026-10-06按已合并main重启本地全流程，默认Node24.21.0/pnpm12.8.1已对齐；不公开发布、不扩M3，冷恢复只读，unknown不自动重发。"
   }
 ]
@@ -60,7 +62,7 @@
 - 已定：D-02–D-08、D-10/D-11、D-20–D-27、D-28–D-37；沿用 OMP 执行、队列、原生历史、配置与凭据所有权，App 草稿/冻结原文/收据事务不改变。
 - 重要待决：无新增。[S3 09](../m1-s3-control-recovery/issues/09-quit-discard-decision.md)退出放弃队列待决，仅暂停对应出口；缺全周期单写证据的冷恢复只读，提供明确新建独立 Thread 出口，不冒称恢复旧执行。
 - 工程：正在实施；既有正确路径复用当前相关证据，新增缺口先失败行为测试。测试隔离 App 数据、OMP 配置、HOME、Git 配置、项目及网络；不继承个人凭据。真实供应商缺账户/费用授权仅暂停实测，不阻塞薄桥接及 fixture 验证。
-- 用户试用：当前交付 `0.1.0-m2.14 / c5e424da-f02704bc`、产品源码 `c5e424d`，22项实际干净包内检查、两轴独立review与ZIP同源验证通过；用户认可 pending。[精确身份、哈希、证据和步骤](lifecycle.md#候选与验证)。m2.13及更早反馈/失败包保留历史证据，每段可操作体验给出对应源码和包身份；Agent验证不替代用户认可。
+- 用户试用：当前交付 `0.1.0-m2.15 / 31cb9122-865978d1`、产品源码 `31cb912`，24项实际干净包内检查、两轴独立review与ZIP同源验证通过；用户认可 pending。[精确身份、哈希、证据和步骤](project-references.md#候选与验证)。m2.13及更早反馈/失败包保留历史证据，每段可操作体验给出对应源码和包身份；Agent验证不替代用户认可。
 - 继续边界：本授权内持续实施，不重做基建审计。重大产品/权限/数据合同变化才对齐；签名、公证、公开分发及 M3 不纳入。
 
 ## 首版覆盖与近期任务
@@ -172,3 +174,5 @@
 ## 2026-10-06 文件与目录引用优化
 
 用户明确要求优化@目录选择、文件/目录区分与性能，接续本地da9920d，[04c](issues/04c-project-reference-search.md)。沿用D-10/D-24/D-33/D-35/D-37；发送冻结与权限不变，目录参照固定OMP的直接条目清单，不递归读取全部正文。默认本地实施/commit/验证/候选，不push。当前m2.14保留已交付快照，04c验收后单独记录；不是重做已完成生命周期或开启PDF/OCR。
+
+2026-10-06：04c resolved。typed目录/文件引用、目录优先有界索引、150ms查询合并、目录直接清单冻结和schema10围栏完成；最终source31cb912 clean m2.15，711行为/34架构/70tooling、20,001条目测量、两轴独立修复复核及24项实际包内检查通过。[交接](project-references.md)、[评审](project-references-review.md)。M2整体仍in-progress/trial delivered/acceptance pending，不将父票其余范围或另一交互策略WIP标完成，不push。

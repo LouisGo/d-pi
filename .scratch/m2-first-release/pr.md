@@ -1,22 +1,22 @@
 ## Summary
 
-持久草稿和冻结提交仍引用的附件不能被清理，释放后的私有内容也需要能够安全回收。本段新增 schema 9 inventory / epoch、权威引用检查、最后释放时钟、七天自动回收和正式检查/清理入口；故障明确指出原件/派生问题并保留输入。删除前在写锁内复核 epoch 与 owner，unknown、终态冻结及队列修改历史继续保留。
+持久草稿和冻结提交引用的附件需要安全回收；原生子 Agent 需要可辨别的状态/结果；@搜索原先只返回后代文件，无法选择匹配的目录。本地分支实现附件权威引用/最后释放/七天延迟回收及检查清理，投影原生子 Agent 的独立身份与可得结果，并加入 typed 文件/目录引用与目录 basename 优先的有界共享索引。
 
-原生子 Agent 通过固定 SDK 的活动注册、事件和 RPC transcript 投影任务/状态/可得结果；同名任务独立，切换与重连不重放，不提前完成主提交，不增加执行调度器。附件维护在 Main 退出前 drain。范围见 [spec](spec.md#2026-10-06-生命周期切片)、[04b](issues/04b-attachment-lifecycle.md)、[05d](issues/05d-subagent-observation.md)、[06b](issues/06b-lifecycle-candidate.md)。
+`@@virtualList`现在首先显示`@virtualList/`文件夹，文件/目录有图标与类型，类型贯穿 manifest/编辑节点/冻结来源。目录发送冻结直接名称/类型，非递归读取正文；500条目超限明确失败保留草稿。Main索引有singleflight/LRU/TTL与工作量/内存预算，Renderer150ms合并输入，等待/失败时旧候选不可确认，Enter只插入。文件/目录发送保持规范项目根，拒绝根变化/外部symlink；unknown不重发、冷旧Thread只读和OMP执行/队列/历史所有权保持。
 
 ## Evidence
 
-- 真实 base / merge-base `c8dbdbadf1a04ad2be54e01f1a509024c5d982ea`；最终产品源码 `c5e424da02245ed854c9ba3af514087826b6cc24`。分支 `codex/m2-lifecycle`；此文件为本地 body，后续证据/管理提交不改变候选源码。
-- `pnpm check`：691 行为、34 架构、70 tooling 通过，1 项既有 opt-in 跳过；六类型入口、lint/设计/i18n/文档/结构/状态通过。`pnpm build`、固定 OMP 18.4.6 的112 dependency units 准备通过。
-- 实际 red→green 覆盖最后释放采样空隙、迟到同摘要 lease、采用后立即移除、旧 manifest 并发发布、nullable/结构化 yield、维护信号与退出 drain；普通文字保存消除全附件库存扫描。布局依据是首个实际包74px失败，最终101.53125px通过；不把异步 DOM 断言时序当布局红灯。
-- 两名独立 reviewer 固定同 head 完成 Spec / Standards，发现均修复并独立复核，无未解决高价值问题；Spec隔离51/51，Standards来源预算/采用事实/性能独立探针通过。见 [评审](lifecycle-review.md)。reviewer 未独立重跑最终 macOS 包，根完成验收。
-- clean `0.1.0-m2.14 / c5e424da-f02704bc` 两轮实际 macOS包内22项通过；最终包含可见同名子 Agent 卡片/结构化结果、Thread/Renderer重连、冻结附件保护、自动七天回收与冷旧只读。固定原生 SDK RPC另有1 test /13 assertions通过。仅隔离 localhost供应商，无真实凭据/费用；新增系统输入法与实际断电未验证。
-- ZIP CRC、实际包与解压 app.asar SHA-256一致；[候选/试用/限制](lifecycle.md)、[机器证据](evidence/lifecycle-candidate.json)、[包内结果](evidence/lifecycle-package-result.json)。补截图时禁用删除按钮的harness超时已核实为未发出操作，补等待按钮可用后原断言通过，现场保留。
+- 累计分支main base/merge-base `c8dbdbadf1a04ad2be54e01f1a509024c5d982ea`；当前产品source `31cb91229852d8c6dfabb6e88fce06e78cbf6030`，分支`codex/m2-lifecycle`。04c单段评审base/merge-base `b290b36`；前段lifecycle与本段各有独立Spec/Standards评审及修复复核，未冒称本轮重审全累计分支。
+- 固定source隔离checkout：`pnpm check`711行为/34架构/70tooling通过，六类型、lint/设计/i18n/文档/结构/状态通过；两项opt-in跳过，20,001条目benchmark另行14/14执行。`pnpm build`及固定Electron44.4.5/Bun1.3.14/OMP18.4.6资源打包通过，原生SDK相关集成通过。
+- 实际red→green覆盖目录/类型缺口、目录及祖先改名恢复、刷新失败Enter隐藏旧候选、根替换拒绝和schema10生命周期兼容。上一段真实释放时钟、迟到lease、旧manifest发布与维护drain证据仍保留。
+- 20,001条目冷构建78.20ms，30次暖查询均值8.38ms、范围0.98–40.58ms，所有文件系统I/O为0。旧查询只覆盖首500后代，不能以不同覆盖宣称冷延迟倍数提升；测量为本机fixture。
+- clean `0.1.0-m2.15 / 31cb9122-865978d1`实际macOS包24项通过，包含目录优先/类型/Enter、真实目录清单请求及冻结typed source、附件回收、原生子Agent、队列、切换/reload/冷只读；仅隔离localhost，无个人凭据/费用。ZIP CRC与app.asar同源核对通过。[本轮候选/试用/限制](project-references.md)、[机器结果](evidence/references-package-result.json)、[评审](project-references-review.md)、[上一段](lifecycle.md)。
+- 主checkout其它交互策略WIP保留，未提交/混入候选；最终构建读取实际Main source/dirty身份，不靠输出目录名判断。本文件为本地body，本轮无push/远端PR。
 
 ## Merge Danger
 
-Door：代码/观察UI可回退；schema迁移及私有文件清理包含 one-way 效果。schema9迁移保存 before-v9数据库备份，库存计数是修复投影而非删除授权，删除前仍复核当前事实。垃圾回收只删除确认无引用私有内容，冻结与unknown不自动释放。
+Door：GUI/索引可回退；schema10迁移与前段私有文件清理包含one-way效果。before-v10在恢复后保留schema9库；typed JSON围栏防旧App默默丢类型，无新表。schema9库存投影不是删除授权，清理前仍复核当前owner/epoch，冻结与unknown不自动释放。
 
-Blast radius：App SQLite、私有附件原件/派生库存、Main维护/退出、SessionHost观察与Renderer展示；OMP执行/工具/队列/历史所有权保持，冷旧Thread继续只读。损坏/超预算保守拒删，未知临时文件保留。
+Blast radius：App SQLite、私有附件库存/冻结、Main文件授权/索引/维护/退出、SessionHost观察及Renderer展示。索引最多3项目/50k访问/4,194,304个UTF-16 code unit/深度64/5秒，最多100候选；部分范围和最终身份失败明确返回，不构成OS工具沙箱。目录仅直接条目且超500拒绝，不承诺递归正文。
 
-Rollback：关闭App后使用升级前数据库与配套私有内容副本，再切换兼容源码。单纯git revert不能降级schema，单独数据库备份不能恢复已清理的文件；SQLite与文件系统并非跨系统原子事务，重入窗口已验证。候选未签名/未公证，仅本地交付；远端CI未运行，本轮无远端PR。PDF视觉/OCR、余下M2组合验收与真实供应商试用保持开放，merge与工程通过都不代表用户认可。
+Rollback：关闭App后恢复升级前数据库与配套私有内容，再切换兼容代码；仅git revert不能降schema，数据库备份不能恢复已清理文件。SQLite与文件系统无跨系统原子事务，幂等重入窗口已验证。候选未签名/公证，仅本地；真实供应商、系统输入法/PDF视觉OCR、余下M2组合与用户认可pending，工程通过或merge不代表接受。

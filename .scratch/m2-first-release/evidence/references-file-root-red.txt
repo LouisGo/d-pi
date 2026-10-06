@@ -1,0 +1,36 @@
+
+ RUN  v5.0.2 /Users/louistation/MySpace/Life/d-pi
+
+ ❯ src/app/main/wiring/attachment-service.test.ts (6 tests | 1 failed) 354ms
+   × rejects a file reference when the recorded project root becomes a symlink 54ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/main/wiring/attachment-service.test.ts > rejects a file reference when the recorded project root becomes a symlink
+AssertionError: expected { ok: true, content: { …(5) } } to match object { ok: false, …(1) }
+(6 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": false,
+-   "reason": "reference-denied",
++   "ok": true,
+  }
+
+ ❯ src/app/main/wiring/attachment-service.test.ts:45:7
+     43|     expect(
+     44|       await service.store.prepare(draft.threadId, item.token),
+     45|     ).toMatchObject({ ok: false, reason: "reference-denied" });
+       |       ^
+     46|     expect((await service.store.list(draft.threadId))[0]?.token).toBe(
+     47|       item.token,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 passed (6)
+   Start at  13:25:53
+   Duration  991ms (tests 39%, import 31%, transform 29%)

@@ -1,0 +1,32 @@
+
+ RUN  v5.0.2 /Users/louistation/MySpace/Life/d-pi
+
+ ❯ src/app/main/wiring/attachment-service.test.ts (3 tests | 1 failed) 161ms
+   × freezes a typed directory listing at send, preserves it after edits and rejects foreign directory reads 18ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/main/wiring/attachment-service.test.ts > freezes a typed directory listing at send, preserves it after edits and rejects foreign directory reads
+AssertionError: expected undefined to be 'directory' // Object.is equality
+
+- Expected:
+"directory"
+
++ Received:
+undefined
+
+ ❯ src/app/main/wiring/attachment-service.test.ts:123:32
+    121|     const item = reply.items[0];
+    122|     if (!item) throw Error("missing item");
+    123|     expect(item.referenceKind).toBe("directory");
+       |                                ^
+    124|     const frozen = await service.store.prepare(draft.threadId, item.to…
+    125|     expect(frozen).toMatchObject({ ok: true, content: { sources: [{ pa…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  12:53:57
+   Duration  882ms (import 43%, transform 36%, tests 20%)

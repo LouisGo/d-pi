@@ -1,0 +1,92 @@
+
+ RUN  v5.0.2 /Users/louistation/MySpace/Life/d-pi
+
+stderr | src/app/renderer/workbench/attachment-controls.test.ts > coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/attachment-controls.test.ts > coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/attachment-controls.test.ts > coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/attachment-controls.test.ts > coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/attachment-controls.test.ts > coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ ❯ src/app/renderer/workbench/attachment-controls.test.ts (17 tests | 1 failed) 1940ms
+   × coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly 479ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/renderer/workbench/attachment-controls.test.ts > coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/app/renderer/workbench/attachment-controls.test.ts:975:5
+    973|   expect(
+    974|     request.mock.calls.some(([command]) => command.kind === "add-refer…
+    975|   ).toBe(false);
+       |     ^
+    976| });
+    977|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 16 passed (17)
+   Start at  13:21:47
+   Duration  4.61s (import 47%, tests 43%, environment 6%, transform 4%)
