@@ -4,7 +4,9 @@
 
 ## 推进与交接
 
-- 2026-10-06 后续授权：用户要求将 [M2 retro 候选](m2-retro-2026-10-06.md)按标准流程处理干净、留下正确的 M2 继续入口后停下。本轮从 `codex/m2-diagnostics@7c9e1fe` 建立 `codex/m2-retro-closure`，只落实测试参数防错、包内等待与证据交接三项；允许本地实现、验证、独立 review、提交与交接，不开始其它 M2 功能。历史 main/远端均为 `1c9c30a`，不能把诊断分支候选称作已合入 main；其它 worktree 保留。
+- 2026-10-06 后续授权：用户要求将 [M2 retro 候选](m2-retro-2026-10-06.md)按标准流程处理干净、留下正确的 M2 继续入口后停下。本轮从 `codex/m2-diagnostics@7c9e1fe` 建立 `codex/m2-retro-closure`，只落实测试参数防错、包内等待与证据交接三项；允许本地实现、验证、独立 review、提交与交接，不开始其它 M2 功能。本轮起点的本地 main/已知 origin/main均为 `1c9c30a`，不能把诊断分支候选称作已合入 main；其它 worktree 保留。
+
+- 后续工程结果：票04完成，三项applied；`b84ed9a`与`473dffe`通过目标回归、完整check/build、独立两轴复核和19项现有候选包内自动化重验。M2父票与acceptance不变，SDK资源丢失原因unknown，恢复同源原ZIP不生成新产品版本；[接手](m2-retro-handoff.md)、[验证](m2-retro-validation.md)。本轮仅本地整合，不将前一工作流PR特定授权沿用为本轮push授权，完成后停下。
 
 - 当前范围与授权：用户最初要求参考「对比v13工作流」、联网核对 Matt v1.3，并依据真实项目全面升级 AI 工作流；允许分段 commit 和独立 review subagent。包含仓库规则、skills、只读调度工具及必要验证。2026-10-06 用户在确认 PR/合入建议后明确要求「请直接开始，结束了叫我」，补充授权将本切片 push、创建 PR，并在最终 head CI 通过后合入 main。产品功能与全局 skills 更新仍不在本次范围。
 - 产品判断：无新增产品待决。沿用 D-19/D-26/D-28–D-30，授权、工程、试用与认可分开；OMP/App 的所有权不变。
@@ -50,8 +52,8 @@
     "engineering": "complete",
     "trial": "not-applicable",
     "acceptance": "not-applicable",
-    "evidence": ["handoff.md", "validation.md", "review.md", "research.md"],
-    "next": "后续已授权切片沿用新入口，按实际任务规模选择并行、review、PR 与 retro"
+    "evidence": ["handoff.md", "validation.md", "review.md", "research.md", "m2-retro-2026-10-06.md", "m2-retro-handoff.md", "m2-retro-validation.md", "m2-retro-review.md"],
+    "next": "M2 retro三项applied，票04工程完成；管理复核和本地整合后停下，后续按M2 spec与其它会话真实进度选定范围"
   }
 ]
 ```

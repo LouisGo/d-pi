@@ -37,7 +37,8 @@
       "long-reading.md",
       "long-reading-review.md",
       "diagnostics.md",
-      "diagnostics-review.md"
+      "diagnostics-review.md",
+      "../ai-workflow-v13/m2-retro-handoff.md"
     ],
     "next": "06e/06f/06g基础诊断导出与故障反馈工程完成，m2.17候选已交付待试用；余下V1-00/B6性能与故障组合、M2开放项继续保留，真实供应商与用户认可pending，冷旧Thread只读",
     "constraints": "2026-10-06本轮从最新main继续M2，授权本地实现、候选、证据与提交；此前push/PR授权属于已交付阶段，本轮未push。不公开发布、不扩M3，冷恢复只读，unknown不自动重发；用户认可pending。"
@@ -215,3 +216,7 @@
 
 
 2026-10-06：06e/06f/06g resolved。现有Main JSONL有界白名单读取、正式筛选/覆盖缺口/故障trace GUI、Main原生0600本地导出、可复制反馈模板完成。产品source `ba0e7df`、clean m2.17构建 `ba0e7df1-808e60b8`；751行为/34架构/74工具、两轴独立review与21项实际macOS包内检查通过，含真实保存/取消/剪贴板、Writer路径故障、损坏SQLite启动及8MiB预算。验证harness `49cfaa3` 仅修正初始采样等待，失败证据保留。ZIP CRC与app.asar同源通过。[交接](diagnostics.md)、[评审](diagnostics-review.md)、[本地PR body](diagnostics-pr.md)。整体V1-00/B6性能监控和父06/M2组合仍开放，用户认可pending；本地提交、不push、不扩M3。
+
+## 2026-10-06 工作流回流后的继续入口
+
+用户要求落实本轮retro、处理干净并留下正确的M2继续入口后停下。三项工程改进已落实，票04和验证归属[AI工作流spec](../ai-workflow-v13/spec.md)，不是新增M2产品功能；[接手说明](../ai-workflow-v13/m2-retro-handoff.md)记录真实基点、独立review、选定证据、现有候选资源恢复及其它会话分支。后续先核实本地HEAD、总看板和`codex/m2-thread-attention`所属会话的实际进度，再按当前明确范围继续，不能重复派发或用旧m2.11快照代替当前spec。父01/02/03/04/05/06与M2认可状态保持；本轮不启动下一阶段，不push或公开发布。

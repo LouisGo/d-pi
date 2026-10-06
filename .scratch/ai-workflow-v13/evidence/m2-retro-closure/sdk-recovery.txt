@@ -1,0 +1,16 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/MySpace/Life/d-pi[39m
+
+ [32m✓[39m tests/integration/subagent-observation.integration.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1890[2mms[22m[39m
+   [33m[2m✓[22m[39m projects actual fixed SDK localhost frames and restores the same native results through the Renderer model[33m 1889[2mms[22m[39m
+ [32m✓[39m src/modules/configuration/main/subagent-configuration.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 3031[2mms[22m[39m
+   [33m[2m✓[22m[39m native subagent configuration uses the fixed SDK in an isolated environment[33m 3030[2mms[22m[39m
+ [32m✓[39m tests/integration/configuration-sharing.integration.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 7581[2mms[22m[39m
+   [33m[2m✓[22m[39m shares native login and cached models both ways while CLI is open and from a desktop-only home[33m 7580[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m3 passed[39m[22m[90m (3)[39m
+[2m      Tests [22m [1m[32m3 passed[39m[22m[90m (3)[39m
+[2m   Start at [22m 21:17:25
+[2m   Duration [22m 7.69s[2m (tests 97%, import 2%, transform 1%)[22m
+

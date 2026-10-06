@@ -1,6 +1,6 @@
 # 04 M2 retro 回流与继续入口
 
-Status: claimed
+Status: resolved
 Blocked by: none
 
 范围及本轮授权见 [spec](../spec.md)；依据 [复盘](../m2-retro-2026-10-06.md)的三项 proposed。主 Agent 在 `codex/m2-retro-closure` 单写实现与管理状态，起点 `7c9e1fe`。
@@ -10,3 +10,5 @@ Blocked by: none
 验收：真实CLI限定范围/失败/不存在文件/合法选项与既有无参数入口；有界等待的延迟、缺失、异常、终止及清理；临时Git忽略证据负例和提交取回正例。完成受影响标准检查、固定整段 Spec/Standards 独立评审、本地 PR body、精确提交及 M2 后续入口；M2功能票与用户认可保持原状态。
 
 工程完成后停下，不继续实现下一功能，不清理其它会话的 checkout。
+
+完成：`b84ed9a`落实三项，`473dffe`修复独立双轴review确认的真实CDP期限竞争，两轴实现复核无新增高价值问题。15目标回归、751行为/34架构/89工具、完整check/build和原m2.17同源ZIP的19项包内自动化检查通过。首次SDK资源失败及恢复证据保留，原生2检查点本次未重跑，无新产品版本。最终证据、review、PR body与M2继续入口见[交接](../m2-retro-handoff.md)，后续只完成管理复核/本地整合即停下。M2父票和认可状态不变。

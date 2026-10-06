@@ -1,0 +1,16 @@
+{
+  "source": "unchanged original m2.17 ZIP; regenerated no product code",
+  "restoredAppAsarSha256": "dbd6409c9228869524ecea416f5348e9e2c4942391391a423ab6362d77cf4a4e",
+  "existingAppAsarSha256": "dbd6409c9228869524ecea416f5348e9e2c4942391391a423ab6362d77cf4a4e",
+  "checks": 19,
+  "nativeInspection": "not-run; existing original evidence retained",
+  "originalSdkTopPackagePresent": false,
+  "restoredSdkTopPackagePresent": true,
+  "zipSha256": "965ee8a486e5266fb2a4e09d9034c4f649c465c474f88419ef8efdf237a5d69a",
+  "zipVerified": true,
+  "canonicalCandidate": "/Users/louistation/MySpace/Life/d-pi/dist/diagnostics-m2.17-clean/mac-arm64/d-pi.app",
+  "preservedIncompleteCandidate": "/Users/louistation/MySpace/Life/d-pi/dist/validation/m2-retro-incomplete-candidate/d-pi.app",
+  "canonicalAppAsarSha256": "dbd6409c9228869524ecea416f5348e9e2c4942391391a423ab6362d77cf4a4e",
+  "canonicalSdkTopPackagePresent": true,
+  "lossCause": "unknown; restored from the unchanged original ZIP"
+}
