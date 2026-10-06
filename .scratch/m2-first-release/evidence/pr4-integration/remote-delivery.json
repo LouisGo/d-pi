@@ -1,0 +1,65 @@
+{
+  "pullRequest": {
+    "baseRefOid": "7031b9692ee38abeb2c856014e68a26a40748098",
+    "headRefOid": "aa3f9d8721fa9aacaa9f22d74774ca139ee3bd00",
+    "mergeCommit": {
+      "oid": "99d3bfb7f165beeadbd260b5deecf0e4229b1d53"
+    },
+    "mergedAt": "2026-10-06T13:49:16Z",
+    "state": "MERGED",
+    "url": "https://github.com/LouisGo/d-pi/pull/4"
+  },
+  "checks": [
+    {
+      "conclusion": "success",
+      "databaseId": 37473227901,
+      "event": "push",
+      "headSha": "aa3f9d8721fa9aacaa9f22d74774ca139ee3bd00",
+      "status": "completed",
+      "url": "https://github.com/LouisGo/d-pi/actions/runs/37473227901"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 37473233315,
+      "event": "pull_request",
+      "headSha": "aa3f9d8721fa9aacaa9f22d74774ca139ee3bd00",
+      "status": "completed",
+      "url": "https://github.com/LouisGo/d-pi/actions/runs/37473233315"
+    }
+  ],
+  "premergeGate": {
+    "baseRefOid": "7031b9692ee38abeb2c856014e68a26a40748098",
+    "headRefOid": "aa3f9d8721fa9aacaa9f22d74774ca139ee3bd00",
+    "isDraft": false,
+    "mergeStateStatus": "CLEAN",
+    "state": "OPEN",
+    "statusCheckRollup": [
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-06T13:48:02Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/LouisGo/d-pi/actions/runs/37473233315/job/112301890681",
+        "name": "check",
+        "startedAt": "2026-10-06T13:44:55Z",
+        "status": "COMPLETED",
+        "workflowName": "macOS arm64 checks"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-06T13:46:59Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/LouisGo/d-pi/actions/runs/37473227901/job/112301869788",
+        "name": "check",
+        "startedAt": "2026-10-06T13:44:49Z",
+        "status": "COMPLETED",
+        "workflowName": "macOS arm64 checks"
+      }
+    ]
+  },
+  "mainAtMerge": "99d3bfb7f165beeadbd260b5deecf0e4229b1d53",
+  "originMainAtMerge": "99d3bfb7f165beeadbd260b5deecf0e4229b1d53",
+  "treeAtMerge": "clean",
+  "remotePrFileList": "460/460 match reviewed 7031b96...aa3f9d8 after base refresh",
+  "cleanup": "completed remote PR branch deleted; own local cleanup/retro branches deleted; other checkout/local branch untouched",
+  "finalMetadata": "only persist review/CI/merge result and regenerate status; final source SHA is reported at handoff, no new product candidate"
+}

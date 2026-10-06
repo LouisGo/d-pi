@@ -11,4 +11,6 @@
 
 ## 管理追加复核
 
-保存本轮原始结果、最终PR body和交接来源后固定新提交核对，结论收到后另行记录。
+固定 `aa3f9d8721fa9aacaa9f22d74774ca139ee3bd00`，两轴追加覆盖`d83f8f0..aa3f9d8`的15文件，结合此前449文件整体，各0项高价值发现。9份清单原始输出从commit逐项取回SHA均匹配，798/34/89及2skip、17包内/四组预算、ZIP/asar/harness身份一致；独立与作者证明层级、01c/M2/unknown/schema11风险与UI入口准确。两轴各自固定树文档/状态检查exit0，没有独立重跑包/账户/通知或验证远端状态。
+
+主Agent随后刷新GitHub PR比较base到7031b96（原比较缓存仍是1c9c30a），GitHub分页文件API460项与本地固定差异完全匹配；该最终head的push及pull_request CI都success，非旧head结果。ready前检查精确base/head、全部check success和mergeState CLEAN；merge使用sha保护与merge方式，结果99d3bfb。见[远端机器结果](evidence/pr4-integration/remote-delivery.json)。最后追加这里只持久化评审和实际远端结果，不冒称预先独立review涵盖未来操作。

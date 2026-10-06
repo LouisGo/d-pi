@@ -45,7 +45,7 @@
       "real-provider-e2e.md",
       "pr4-integration.md"
     ],
-    "next": "m2.20诊断/提醒候选已交付，PR#4按最新授权整合与待合并；首次本机OpenAI GPT-5.6 Luna新Thread真实生成/GUI阅读完成。M2尚未完成，PDF视觉/OCR、01c系统显示/点击、V1-00/B6组合、其余真实账户/供应商路径及用户认可保持开放；冷旧Thread只读",
+    "next": "m2.20诊断/提醒候选已交付，PR#4已合入main，后续从最新main开始UI迭代；首次本机OpenAI GPT-5.6 Luna新Thread真实生成/GUI阅读完成。M2尚未完成，PDF视觉/OCR、01c系统显示/点击、V1-00/B6组合、其余真实账户/供应商路径及用户认可保持开放；冷旧Thread只读",
     "constraints": "2026-10-06最新授权先push并处理远端PR/提交、让main干净供后续UI开发；允许整合、验证后合并PR#4。不公开发布、不扩M3，冷恢复只读，unknown不自动重发；用户认可pending。"
   }
 ]
@@ -263,3 +263,5 @@
 ## 2026-10-06 UI 开发前远端收口
 
 用户最新要求“先push，然后处理干净远程PR和本次提交，让main干净，后续开始写UI”。据此先push本地main的诊断/retro成果7031b96，复用远端PR#4，将main回流与提醒分支最后保存的真实供应商验证记录ff52823整合；独立双轴复核、必要本地检查与最终head远端CI通过后合并并同步main。此授权取代本阶段先前不merge限制，保留原始历史来源。[整合与结果](pr4-integration.md)。01c实际OS显示/点击仍claimed、M2整体和用户认可未完成；不新增UI实现、不运行真实账户请求、不签名或公开发布。
+
+2026-10-06 UI前远端收口完成：先push main7031b96，PR#4更新为最终aa3f9d8，源级/管理级两轴独立复核均无高价值遗留，798行为/34架构/89工具、build与原m2.20同源ZIP的17项合并harness包内检查通过；最终head push/PR CI均success，已正常merge为99d3bfb并同步本地main。完成远端PR分支和本轮临时本地分支清理，未改其它会话checkout；最后仅提交本结果/看板并push。[精确结果](pr4-integration.md)。用户后续可从main开展UI；M2仍in-progress、trial delivered、acceptance pending，01c及其它父范围未被merge关闭。

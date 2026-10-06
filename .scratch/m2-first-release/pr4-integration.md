@@ -26,4 +26,8 @@
 
 ## 远端结果
 
-PR更新、最终head CI、合并提交、main同步与clean结果待实际操作后填写。临时整合branch仅在主checkout使用，原提醒worktree保留。
+[PR #4](https://github.com/LouisGo/d-pi/pull/4)已MERGED，最终head `aa3f9d8721fa9aacaa9f22d74774ca139ee3bd00`，base `7031b9692ee38abeb2c856014e68a26a40748098`，merge commit `99d3bfb7f165beeadbd260b5deecf0e4229b1d53`。最终head的[push CI](https://github.com/LouisGo/d-pi/actions/runs/37473227901)及[PR CI](https://github.com/LouisGo/d-pi/actions/runs/37473233315)均success，ready前精确核实base/head/check/CLEAN，使用sha保护正常merge。两轴管理复核无高价值发现；GitHub比较base刷新后[460个远端文件](evidence/pr4-integration/remote-pr-files.txt)与实际本地固定差异完全一致。
+
+fetch后本地主checkout以ff-only同步到远端main的99d3bfb，当时working tree clean/差异0。确认分支tip已被main包含后删除完成的远端`codex/m2-thread-attention`；删除本轮自己的本地`codex/m2-pr-cleanup`与`codex/m2-retro-closure`，原提醒worktree/本地分支及其它checkout保留，没有reset或删除其它会话工作。远端open PR列表为空。[机器记录](evidence/pr4-integration/remote-delivery.json)。最后仅追加本收尾结果、PR body和生成看板并push到main；最终metadata提交SHA与当前main/remote一致性在交付时核实，后续直接从最新main开始UI。
+
+本轮未启动新UI或其它功能，不改变M2父票/01c/用户认可；无新产品候选、签名或公开发布。
