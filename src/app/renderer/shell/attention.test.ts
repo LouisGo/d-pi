@@ -26,13 +26,16 @@ import {
   ThreadAttention,
 } from "./attention";
 
+import { ConversationVisibilityContext } from "./layout/conversation-visibility";
+
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
 const cleanup: (() => Promise<void>)[] = [];
 afterEach(async () => {
   for (const close of cleanup.splice(0)) await close();
   vi.restoreAllMocks();
 });
-async function mount() {
+async function mount(hidden = false) {
+  const reveal = vi.fn();
   const first = DraftSchema.parse({
     schemaVersion: 1,
     threadId: crypto.randomUUID(),
@@ -161,8 +164,8 @@ async function mount() {
         createElement(I18nProvider, {
           initialSnapshot: { preference: "zh-CN", resolvedLocale: "zh-CN" },
           children: createElement(
-            "div",
-            null,
+            ConversationVisibilityContext,
+            { value: { visible: !hidden, reveal } },
             createElement(AttentionCenter, { model }),
             createElement(AttentionPreferences, { model }),
             createElement(ThreadAttention, {
@@ -197,6 +200,7 @@ async function mount() {
   return {
     model,
     request,
+    reveal,
     first,
     second,
     host,
@@ -450,4 +454,51 @@ it("clears visible attention while a Thread selection is pending and restores th
       await navigation;
     });
   }
+});
+
+it("hidden settings never mark the current unread attention as seen", async () => {
+  vi.spyOn(document, "hasFocus").mockReturnValue(true);
+  const ui = await mount(true);
+  await act(async () =>
+    ui.router.navigate({
+      to: "/threads/$threadId",
+      params: { threadId: ui.first.threadId },
+      search: { view: "conversation" },
+    }),
+  );
+  const entry = {
+    ...ui.snapshot().entries[0]!,
+    threadId: ui.first.threadId,
+    unread: true,
+  };
+  await ui.emit({ entries: [entry] });
+  expect(ui.snapshot().entries[0]?.unread).toBe(true);
+  expect(
+    ui.request.mock.calls.some(
+      ([c]) => c.kind === "seen" && c.eventId === entry.eventId,
+    ),
+  ).toBe(false);
+  expect(
+    ui.request.mock.calls.filter(([c]) => c.kind === "visible").at(-1)?.[0],
+  ).toMatchObject({ threadId: null });
+});
+it("accepted notification intent reveals the same current conversation before locating", async () => {
+  const ui = await mount(true);
+  const entry = {
+    ...ui.snapshot().entries[0]!,
+    threadId: ui.first.threadId,
+    unread: true,
+  };
+  await ui.emit({
+    entries: [entry],
+    openRequest: {
+      id: crypto.randomUUID(),
+      threadId: entry.threadId,
+      eventId: entry.eventId,
+    },
+  });
+  await vi.waitFor(() => expect(ui.reveal).toHaveBeenCalledOnce());
+  expect(ui.model.attention.locationStore.getState().target?.threadId).toBe(
+    ui.first.threadId,
+  );
 });

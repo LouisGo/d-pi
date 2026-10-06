@@ -297,3 +297,60 @@
     display: none;
   }
 }
+
+@layer components {
+  .window-frame[data-macos="true"] .rail-brand {
+    color: transparent;
+    background: var(--surface);
+    width: 100%;
+    border-bottom: 1px solid var(--border);
+    -webkit-app-region: drag;
+  }
+  .window-frame[data-macos="true"] .activity-rail {
+    position: relative;
+    border-right: 0;
+  }
+  .window-frame[data-macos="true"] .activity-rail::after {
+    content: "";
+    position: absolute;
+    inset-block: var(--header-height) 0;
+    inset-inline-end: 0;
+    width: var(--separator-size);
+    background: var(--border);
+    pointer-events: none;
+  }
+  .window-frame[data-macos="true"] .primary-sidebar > .panel-header,
+  .window-frame[data-macos="true"][data-sidebar-visible="false"]
+    .conversation-header,
+  .ui-navigation-overlay[data-native-inset="true"] > .panel-header {
+    padding-inline-start: calc(
+      var(--window-controls-width) -
+      var(--rail-width) +
+      var(--layout-gap)
+    );
+  }
+  .window-drag-strip {
+    position: fixed;
+    inset: 0 0 auto;
+    height: var(--header-height);
+    -webkit-app-region: drag;
+  }
+  .startup {
+    padding-block-start: calc(var(--header-height) + var(--panel-padding));
+  }
+  .activity-rail .ui-button {
+    position: relative;
+  }
+  .activity-indicator {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-end: 0;
+    width: var(--attention-indicator-size);
+    height: var(--attention-indicator-size);
+    background: var(--primary);
+    border-radius: var(--radius-control);
+  }
+  .activity-indicator[hidden] {
+    display: none;
+  }
+}

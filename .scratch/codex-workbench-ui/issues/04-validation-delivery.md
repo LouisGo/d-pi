@@ -1,6 +1,6 @@
 # A3 验证与交付
 
-Status: open
+Status: claimed
 Blocked by: 03
 
 阶段：基建；范围/授权见[规格](../spec.md#2026-10-06-a-基础布局实施授权)。决定：D-16/D-32/D-33/D-37/D-38；OMP/unknown/冷恢复合同不变。

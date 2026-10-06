@@ -1,3 +1,6 @@
 import { createContext } from "react";
-// Visibility suspends DOM scroll recording; ThreadModel still owns positions.
-export const ConversationVisibilityContext = createContext(true);
+// Shell visibility controls presentation only; Thread retains reading/resources.
+export const ConversationVisibilityContext = createContext({
+  visible: true,
+  reveal: () => {},
+});

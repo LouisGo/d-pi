@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "28543c166e11d11e9a3ea44b3a50f93f76010997994ef91db44a847e9f002dfd",
+  "inputsHash": "03f784e47ed8a254104da5704fefa3e2f2c766d87964020c92380722b352b897",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 362,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 154,
-      "lines": 25626,
+      "lines": 25792,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -8290,6 +8290,18 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/app/renderer/shell/attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./layout/conversation-visibility",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/layout/conversation-visibility.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/app/renderer/shell/attention.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -8382,6 +8394,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/wiring/model.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/attention.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./layout/conversation-visibility",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/layout/conversation-visibility.ts",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -9060,6 +9084,15 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/shell/navigation-history.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "@/components/icons/common",
       "kind": "import",
       "resolution": "module",
@@ -9090,6 +9123,27 @@
       "to": "src/modules/preferences/renderer/public.ts",
       "targetModule": "preferences",
       "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/navigation-history.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./layout/conversation-visibility",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/layout/conversation-visibility.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/preference-toolbar.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
     },
     {
       "from": "src/app/renderer/shell/preference-toolbar.tsx",
@@ -9145,6 +9199,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/wiring/model.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/preference-toolbar.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./layout/conversation-visibility",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/layout/conversation-visibility.ts",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },

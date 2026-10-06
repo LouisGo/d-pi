@@ -1,0 +1,9 @@
+# A 基础布局双轴审查
+
+初次独立只读审查固定范围37e1a62b889fdfaa1db274b60bac69b98d54d23c…8823a3b76544bfbdd8a5be1511caf2baa0e48c9e，实际merge-base等于base。两个独立subagent分别覆盖Spec和Standards；主Agent核实后修复，正在固定新输入复核。
+
+- Spec P1：设置隐藏会话但注意力仍上报visible/seen，通知打开不切回会话。新增隐藏与通知回归确实失败；改为同一shell可见性context，Attention按真实可见状态上报、已通过原导航准入的显式通知打开才reveal；一级导航显示真实未读提示，窗口业务政策不变。25项相关测试和实际Electron隐藏期间未读/通知打开检查通过。
+- Spec P2：旧app.css同layer的.work-content max-width覆盖新规则。移除旧整区限宽，正文/Composer限宽保留；大窗口实际Electron断言WorkArea填满主区域且Composer不超896px通过。该修复前未单独跑该断言红灯，依据是固定源码与CSS覆盖顺序。
+- Standards P2：分隔条是区域外的sibling，折叠不回恢复入口。实际Electron左侧阈值关闭焦点断言失败；补充shell焦点区域跟踪（包括三条separator），三个阈值折叠回焦均通过。
+
+用户随后明确custom header要求，已补Main hiddenInset、原生控件安全区、空白drag/交互no-drag、启动状态拖动区；Main原关闭/草稿保存协议继续通过。完整check806行为/35架构/89tooling通过。该新增差异也纳入独立复核；实际macOS物理拖动仍由交付验证记录证明。

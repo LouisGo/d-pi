@@ -39,6 +39,7 @@ export function ThreadWorkbench({
   transitioning = false,
   ...props
 }: ThreadWorkbenchProps) {
+  const { visible } = useContext(ConversationVisibilityContext);
   const [readingFocus, setReadingFocus] = useState(false);
   const workspace = useRef<HTMLElement>(null);
   const target = useStore(props.model.attention.locationStore, (state) =>
@@ -61,6 +62,7 @@ export function ThreadWorkbench({
   const located = useRef<typeof target>(null);
   useLayoutEffect(() => {
     if (
+      !visible ||
       !target ||
       located.current === target ||
       transitioning ||
@@ -79,7 +81,7 @@ export function ThreadWorkbench({
         located.current = target;
     });
     return () => cancelAnimationFrame(frame);
-  }, [target, props.readingView, transitioning, runtimeReady]);
+  }, [target, props.readingView, transitioning, runtimeReady, visible]);
   return (
     <section
       ref={workspace}
@@ -326,7 +328,7 @@ function ReadingPane({
   active: boolean;
   children: ReactNode;
 }) {
-  const visible = useContext(ConversationVisibilityContext);
+  const { visible } = useContext(ConversationVisibilityContext);
   const ref = useRef<HTMLDivElement>(null);
   const restoring = useRef(false);
   useLayoutEffect(() => {

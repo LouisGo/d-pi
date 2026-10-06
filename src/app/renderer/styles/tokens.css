@@ -57,6 +57,8 @@
   --text-small: 0.75rem;
   --rail-width: 3.25rem;
   --header-height: 2.75rem;
+  --window-controls-width: 6rem;
+  --attention-indicator-size: 0.375rem;
   --separator-size: 1px;
   --sidebar-width: 17.5rem;
   --sidebar-min: 13.75rem;

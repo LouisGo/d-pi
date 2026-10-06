@@ -7,12 +7,14 @@ export function NavigationOverlay({
   title,
   closeLabel,
   returnFocus,
+  nativeInset,
   children,
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
   closeLabel: string;
+  nativeInset: boolean;
   returnFocus: RefObject<HTMLElement | null>;
   children: ReactNode;
 }) {
@@ -27,6 +29,7 @@ export function NavigationOverlay({
         <Dialog.Backdrop className="ui-overlay-backdrop" />
         <Dialog.Popup
           className="ui-navigation-overlay"
+          data-native-inset={nativeInset}
           finalFocus={returnFocus}
         >
           <div className="panel-header">

@@ -38,7 +38,7 @@ await new Promise((done) => ports.close(done));
 const main = join(isolated.root, "main.cjs");
 writeFileSync(
   main,
-  `const {app,BrowserWindow}=require('electron');app.setPath('userData',${JSON.stringify(isolated.data)});app.whenReady().then(()=>{const w=new BrowserWindow({width:1440,height:900,minWidth:720,minHeight:540,webPreferences:{sandbox:true,contextIsolation:true,nodeIntegration:false}});w.webContents.setWindowOpenHandler(()=>({action:'deny'}));w.loadURL(${JSON.stringify(url)});require('node:readline').createInterface({input:process.stdin}).on('line',line=>{const s=JSON.parse(line);if(s.focus)w.focus();else w.setSize(s.width,s.height);});});app.on('window-all-closed',()=>app.quit());`,
+  `const {app,BrowserWindow}=require('electron');app.setPath('userData',${JSON.stringify(isolated.data)});app.whenReady().then(()=>{const w=new BrowserWindow({width:1440,height:900,minWidth:720,minHeight:540,titleBarStyle:"hiddenInset",webPreferences:{sandbox:true,contextIsolation:true,nodeIntegration:false}});w.webContents.setWindowOpenHandler(()=>({action:'deny'}));w.loadURL(${JSON.stringify(url)});require('node:readline').createInterface({input:process.stdin}).on('line',line=>{const s=JSON.parse(line);if(s.focus)w.focus();else w.setSize(s.width,s.height);});});app.on('window-all-closed',()=>app.quit());`,
 );
 const child = spawn(
   realpathSync(
@@ -113,7 +113,18 @@ try {
     ),
   );
   await call("Page.enable");
+  await evaluate(
+    "window.inputFrames=[];document.addEventListener('pointermove',e=>{if(e.buttons!==1)return;const start=performance.now();requestAnimationFrame(()=>window.inputFrames.push(performance.now()-start));})",
+  );
   await runChecks();
+  results.push({
+    name: "scripted-input-to-next-frame-ms",
+    value: await evaluate(
+      "(()=>{const s=window.inputFrames.sort((a,b)=>a-b);return {count:s.length,median:s[Math.floor(s.length*.5)],p95:s[Math.floor(s.length*.95)],maximum:s.at(-1)};})()",
+    ),
+    limitation:
+      "CDP gesture input to rAF, not sustained frame-rate or system-input latency",
+  });
   mkdirSync(resolve(output, ".."), { recursive: true });
   writeFileSync(
     output,
@@ -226,6 +237,10 @@ async function runChecks() {
     "document.querySelector('[data-layout-region=workspace]').getBoundingClientRect().width<1 && document.querySelector('[data-layout-region=bottom]').getBoundingClientRect().height<1 && !document.querySelector('[aria-label=\"Restore workspace\"]')",
   );
   await check(
+    "custom-header-shares-native-content-top",
+    "innerHeight===900 && document.querySelector('.panel-header').getBoundingClientRect().top===0 && getComputedStyle(document.querySelector('.panel-header')).webkitAppRegion==='drag' && getComputedStyle(document.querySelector('.panel-header button')).webkitAppRegion==='no-drag'",
+  );
+  await check(
     "compact-default-from-legacy-normal",
     "getComputedStyle(document.querySelector('.toolbar button')).minHeight==='30px' && !document.documentElement.hasAttribute('data-density') && !document.body.textContent.includes('Compact density')",
   );
@@ -241,6 +256,18 @@ async function runChecks() {
     "document.querySelector('.settings-surface').hidden===false && !!document.querySelector('#settings-configuration .configuration-settings') && !!document.querySelector('#settings-attention') && !!document.querySelector('#settings-diagnostics')",
   );
 
+  await evaluate("window.attentionProbe.emit()");
+  await evaluate("window.probe.pause()");
+  await check(
+    "hidden-settings-retains-unread-and-visible-rail-indicator",
+    "window.attentionProbe.snapshot().entries[0].unread===true && document.querySelector('.activity-indicator').hidden===false",
+  );
+  await evaluate("window.attentionProbe.emit(true)");
+  await evaluate("window.probe.pause()");
+  await check(
+    "notification-intent-reveals-existing-conversation",
+    "document.querySelector('.conversation-body').hidden===false && document.querySelector('.settings-surface').hidden===true && window.originalEditor===document.querySelector('.tiptap')",
+  );
   await click("Conversation");
   await check(
     "settings-keep-editor-and-reading",
@@ -293,6 +320,10 @@ async function runChecks() {
   await check(
     "left-threshold-collapse",
     "document.querySelector('.primary-sidebar').getBoundingClientRect().width<1 && JSON.parse(localStorage.getItem('d-pi.workbench-layout.v1')).sidebar.open===false",
+  );
+  await check(
+    "left-collapse-returns-focus",
+    "document.activeElement.getAttribute('aria-label')==='Open or collapse project navigation'",
   );
   await click("Open or collapse project navigation");
   await check(
@@ -446,11 +477,19 @@ async function runChecks() {
     "right-threshold-close",
     "JSON.parse(localStorage.getItem('d-pi.workbench-layout.v1')).workspace.open===false",
   );
+  await check(
+    "right-collapse-returns-focus",
+    "document.activeElement.getAttribute('aria-label')==='Restore workspace'",
+  );
   await click("Restore workspace");
   await drag("bottom-split-separator", 500, "y");
   await check(
     "bottom-threshold-close",
     "JSON.parse(localStorage.getItem('d-pi.workbench-layout.v1')).bottom.open===false",
+  );
+  await check(
+    "bottom-collapse-returns-focus",
+    "document.activeElement.getAttribute('aria-label')==='Restore bottom panel'",
   );
   await click("Restore bottom panel");
   await check(
@@ -524,6 +563,10 @@ async function runChecks() {
   await evaluate("window.probe.model.preference('theme')");
   await capture("isolated-dark-desktop");
   await resize(1920, 1080);
+  await check(
+    "work-area-is-not-reading-width-limited",
+    "document.querySelector('.work-content').getBoundingClientRect().width===document.querySelector('.conversation-surface').getBoundingClientRect().width && document.querySelector('.work-content').getBoundingClientRect().width>896",
+  );
   await check(
     "large-window-geometry",
     "document.querySelector('.conversation-surface').getBoundingClientRect().width>=480 && document.querySelector('.composer').getBoundingClientRect().width<=896 && document.documentElement.scrollWidth===innerWidth",

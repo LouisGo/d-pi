@@ -34,10 +34,7 @@
 
 | 所属范围 / 任务 | 状态 | 未解决的工程依赖 |
 | --- | --- | --- |
-| [codex-workbench-ui / A0 最小视觉与默认尺寸](../.scratch/codex-workbench-ui/issues/01-visual-foundation.md) | claimed | 无；范围以所属规格为准 |
-| [codex-workbench-ui / A1 几何与面板适配](../.scratch/codex-workbench-ui/issues/02-panel-geometry.md) | open | [01](../.scratch/codex-workbench-ui/issues/01-visual-foundation.md) |
-| [codex-workbench-ui / A2 外壳与业务接线](../.scratch/codex-workbench-ui/issues/03-shell-wiring.md) | open | [02](../.scratch/codex-workbench-ui/issues/02-panel-geometry.md) |
-| [codex-workbench-ui / A3 验证与交付](../.scratch/codex-workbench-ui/issues/04-validation-delivery.md) | open | [03](../.scratch/codex-workbench-ui/issues/03-shell-wiring.md) |
+| [codex-workbench-ui / A3 验证与交付](../.scratch/codex-workbench-ui/issues/04-validation-delivery.md) | claimed | 无；范围以所属规格为准 |
 | [m1-interaction-hardening / 03 派发授权排序与 Host 目录复核](../.scratch/m1-interaction-hardening/issues/03-dispatch-authorization.md) | open | 无；范围以所属规格为准 |
 | [m1-interaction-hardening / 04 历史 busy 语义复核](../.scratch/m1-interaction-hardening/issues/04-history-busy.md) | open | 无；范围以所属规格为准 |
 | [m1-interaction-hardening / 07 退出健壮性与 GUI 可访问补齐](../.scratch/m1-interaction-hardening/issues/07-quit-a11y.md) | open | 无；范围以所属规格为准 |
@@ -67,4 +64,4 @@
 - [类型安全桌面路由](../.scratch/router-integration/spec.md)：本地实施和提交；不 push、不改变 OMP 执行及冷恢复政策。
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 
-<!-- source-sha256: 88fc1d2a1f2fa7aede10f0c91fb495ccf6765e560f1235aed14d8f20e7c43e79; sources: 122 -->
+<!-- source-sha256: 96e906b4e5af8586907c90ea590b1a76ab7da0f2675ece29dd8fc05029fab50d; sources: 122 -->

@@ -1,3 +1,4 @@
+import { useContext } from "react";
 import { useStore } from "zustand";
 import { DarkThemeIcon, LightThemeIcon } from "@/components/icons/common";
 import { Button } from "@/components/ui/button";
@@ -6,9 +7,11 @@ import {
   useLocalePreference,
 } from "../../../modules/preferences/renderer/public";
 import type { AppModel } from "../wiring/model";
+import { ConversationVisibilityContext } from "./layout/conversation-visibility";
 import { NavigationHistory } from "./navigation-history";
 
 export function PreferenceToolbar({ model }: { model: AppModel }) {
+  const { reveal } = useContext(ConversationVisibilityContext);
   const hasThread = useStore(
     model.stateStore,
     (state) =>
@@ -30,7 +33,10 @@ export function PreferenceToolbar({ model }: { model: AppModel }) {
       <Button
         variant="default"
         disabled={busy || !hasThread}
-        onClick={() => void model.newThread()}
+        onClick={() => {
+          reveal();
+          void model.newThread();
+        }}
       >
         {t("app.toolbar.newThread")}
       </Button>

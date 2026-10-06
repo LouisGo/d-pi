@@ -10,6 +10,7 @@ import { AppStorage } from "./wiring/app-storage";
 // is replaced so this test never opens a window or touches user data.
 const shell = vi.hoisted(() => ({
   directory: "",
+  windowOptions: {} as Record<string, unknown>,
   handlers: new Map<string, (event: unknown, raw: unknown) => unknown>(),
   listeners: new Map<string, (event: unknown, raw: unknown) => void>(),
   windowEvents: new Map<string, (event: unknown) => void>(),
@@ -43,6 +44,9 @@ vi.mock("electron", () => ({
     quit: shell.quit,
   },
   BrowserWindow: class {
+    constructor(options: Record<string, unknown>) {
+      shell.windowOptions = options;
+    }
     webContents = shell.contents;
     once = vi.fn();
     on = (name: string, listener: (event: unknown) => void) =>
@@ -78,6 +82,8 @@ it("uses the first preferred system language rather than the Chromium app locale
   vi.mocked(Menu.buildFromTemplate).mockClear();
   try {
     await import("./index");
+    if (process.platform === "darwin")
+      expect(shell.windowOptions.titleBarStyle).toBe("hiddenInset");
     const snapshot = shell.handlers.get("locale:snapshot");
     const set = shell.handlers.get("locale:set-preference");
     if (!snapshot || !set) throw Error("Missing locale IPC handlers");

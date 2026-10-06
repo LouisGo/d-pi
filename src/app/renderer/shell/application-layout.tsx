@@ -7,7 +7,11 @@ import { ConfigurationSettings } from "../../../modules/configuration/renderer/p
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import { BUILD_INFO } from "../../../shared/build-info";
 import type { AppModel } from "../wiring/model";
-import { AttentionCenter, AttentionPreferences } from "./attention";
+import {
+  AttentionCenter,
+  AttentionIndicator,
+  AttentionPreferences,
+} from "./attention";
 import { Diagnostics } from "./diagnostics";
 import { WorkbenchHostsContext } from "./layout/hosts-context";
 import { WorkbenchFrame } from "./layout/workbench-frame";
@@ -33,6 +37,7 @@ function StartupLoading() {
   const { t } = useI18n();
   return (
     <main className="startup" role="status">
+      <div className="window-drag-strip" aria-hidden="true" />
       {t("app.loading")}
     </main>
   );
@@ -46,6 +51,7 @@ function StartupFailure({ model }: { model: AppModel }) {
   if (!error) return null;
   return (
     <main className="startup failure">
+      <div className="window-drag-strip" aria-hidden="true" />
       <h1>{t("app.failure.title")}</h1>
       <p>{formatMessage(error.message)}</p>
       <p className="trace">{t("app.trace", { traceId: error.traceId })}</p>
@@ -63,6 +69,7 @@ function ReadyWorkbench({ model, children }: ApplicationLayoutProps) {
     <ShellFrame model={model}>
       <WorkbenchFrame
         {...hosts}
+        conversationIndicator={<AttentionIndicator model={model} />}
         sidebar={
           <>
             <ProjectThreads model={model} />

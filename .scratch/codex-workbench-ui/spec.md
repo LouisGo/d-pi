@@ -112,3 +112,7 @@ CSS Grid/Flex 负责排版与滚动边界；尺寸约束负责可用空间分配
 - [02 几何与面板适配](issues/02-panel-geometry.md)
 - [03 外壳与业务接线](issues/03-shell-wiring.md)
 - [04 验证与交付](issues/04-validation-delivery.md)
+
+## 2026-10-07 顶栏补充要求
+
+用户明确要求 custom header bar 与 macOS 左侧原生控件处于同一行，不保留额外系统标题栏；空白区继续拖动窗口。Main使用hiddenInset保留原生关闭/最小化/全屏控制及原关闭保存协议；Renderer在原44px区域留出96px控件安全区，控件与分隔条no-drag。此项属于A基础布局，不新增窗口控制业务或跨平台支持承诺。当前修复及47项隔离Electron检查通过，包内/原生拖动验证继续由04完成。
