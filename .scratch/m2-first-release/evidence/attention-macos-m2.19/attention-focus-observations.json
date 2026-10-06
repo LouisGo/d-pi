@@ -1,0 +1,90 @@
+[
+  {
+    "phase": "before-click",
+    "time": 92.60000014305115,
+    "focus": "<body><div id=\"root\"><div class=\"app-shell\" aria-busy=\"false\"><aside class=\"sidebar\"><div class=\"brand\">d-pi <span>M2</span></div><nav aria-label=\"项目\" class=\"thread-navigation\"><button type=\"button\" tabindex=\"0\" data-slot=\"button\" class=\"ui-button ui-button-primary\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" color=\"currentColor\" class=\"\" stroke-width=\"1.5\" stroke=\"currentColor\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M8 7H16.75C18.8567 7 ",
+    "inert": false,
+    "target": true,
+    "route": ""
+  },
+  {
+    "phase": "mutation",
+    "time": 96.70000004768372,
+    "focus": "<body><div id=\"root\"><div class=\"app-shell\" aria-busy=\"true\" inert=\"\"><aside class=\"sidebar\"><div class=\"brand\">d-pi <span>M2</span></div><nav aria-label=\"项目\" class=\"thread-navigation\"><button type=\"button\" tabindex=\"0\" data-slot=\"button\" class=\"ui-button ui-button-primary\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" color=\"currentColor\" class=\"\" stroke-width=\"1.5\" stroke=\"currentColor\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M8 7H16.75C18",
+    "inert": false,
+    "target": true,
+    "route": ""
+  },
+  {
+    "phase": "mutation",
+    "time": 100.5,
+    "focus": "<body><div id=\"root\"><div class=\"app-shell\" aria-busy=\"false\"><aside class=\"sidebar\"><div class=\"brand\">d-pi <span>M2</span></div><nav aria-label=\"项目\" class=\"thread-navigation\"><button type=\"button\" tabindex=\"0\" data-slot=\"button\" class=\"ui-button ui-button-primary\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" color=\"currentColor\" class=\"\" stroke-width=\"1.5\" stroke=\"currentColor\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M8 7H16.75C18.8567 7 ",
+    "inert": true,
+    "target": true,
+    "route": ""
+  },
+  {
+    "phase": "mutation",
+    "time": 107.20000004768372,
+    "focus": "<body><div id=\"root\"><div class=\"app-shell\" aria-busy=\"false\"><aside class=\"sidebar\"><div class=\"brand\">d-pi <span>M2</span></div><nav aria-label=\"项目\" class=\"thread-navigation\"><button type=\"button\" tabindex=\"0\" data-slot=\"button\" class=\"ui-button ui-button-primary\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" color=\"currentColor\" class=\"\" stroke-width=\"1.5\" stroke=\"currentColor\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M8 7H16.75C18.8567 7 ",
+    "inert": false,
+    "target": false,
+    "route": ""
+  },
+  {
+    "phase": "mutation",
+    "time": 108.40000009536743,
+    "focus": "<body><div id=\"root\"><div class=\"app-shell\" aria-busy=\"false\"><aside class=\"sidebar\"><div class=\"brand\">d-pi <span>M2</span></div><nav aria-label=\"项目\" class=\"thread-navigation\"><button type=\"button\" tabindex=\"0\" data-slot=\"button\" class=\"ui-button ui-button-primary\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" color=\"currentColor\" class=\"\" stroke-width=\"1.5\" stroke=\"currentColor\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M8 7H16.75C18.8567 7 ",
+    "inert": false,
+    "target": false,
+    "route": ""
+  },
+  {
+    "phase": "mutation",
+    "time": 110.5,
+    "focus": "<body><div id=\"root\"><div class=\"app-shell\" aria-busy=\"false\"><aside class=\"sidebar\"><div class=\"brand\">d-pi <span>M2</span></div><nav aria-label=\"项目\" class=\"thread-navigation\"><button type=\"button\" tabindex=\"0\" data-slot=\"button\" class=\"ui-button ui-button-primary\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" color=\"currentColor\" class=\"\" stroke-width=\"1.5\" stroke=\"currentColor\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M8 7H16.75C18.8567 7 ",
+    "inert": false,
+    "target": true,
+    "route": ""
+  },
+  {
+    "phase": "focusin",
+    "time": 112.79999995231628,
+    "focus": "<section aria-label=\"原生交互\" class=\"native-interactions\" data-attention-target=\"interaction\" tabindex=\"-1\"><article class=\"message\" data-selectable=\"true\" aria-label=\"M2 attention isolated confirmation\"><strong>M2 attention isolated confirmation</strong><p>Isolated fixture: no account, payment or production mutation.</p><div class=\"flex gap-2\"><button type=\"button\" tabindex=\"0\" data-slot=\"button\" class=\"ui-button ui-button-primary\">确认</button><button type=\"button\" tabindex=\"0\" data-slot=\"button\" c",
+    "inert": false,
+    "target": true,
+    "route": ""
+  },
+  {
+    "phase": "mutation",
+    "time": 115.70000004768372,
+    "focus": "<section aria-label=\"原生交互\" class=\"native-interactions\" data-attention-target=\"interaction\" tabindex=\"-1\"><article class=\"message\" data-selectable=\"true\" aria-label=\"M2 attention isolated confirmation\"><strong>M2 attention isolated confirmation</strong><p>Isolated fixture: no account, payment or production mutation.</p><div class=\"flex gap-2\"><button type=\"button\" tabindex=\"0\" data-slot=\"button\" class=\"ui-button ui-button-primary\">确认</button><button type=\"button\" tabindex=\"0\" data-slot=\"button\" c",
+    "inert": false,
+    "target": true,
+    "route": ""
+  },
+  {
+    "phase": "mutation",
+    "time": 116,
+    "focus": "<section aria-label=\"原生交互\" class=\"native-interactions\" data-attention-target=\"interaction\" tabindex=\"-1\"><article class=\"message\" data-selectable=\"true\" aria-label=\"M2 attention isolated confirmation\"><strong>M2 attention isolated confirmation</strong><p>Isolated fixture: no account, payment or production mutation.</p><div class=\"flex gap-2\"><button type=\"button\" tabindex=\"0\" data-slot=\"button\" class=\"ui-button ui-button-primary\">确认</button><button type=\"button\" tabindex=\"0\" data-slot=\"button\" c",
+    "inert": false,
+    "target": true,
+    "route": ""
+  },
+  {
+    "phase": "mutation",
+    "time": 137.60000014305115,
+    "focus": "<section aria-label=\"原生交互\" class=\"native-interactions\" data-attention-target=\"interaction\" tabindex=\"-1\"><article class=\"message\" data-selectable=\"true\" aria-label=\"M2 attention isolated confirmation\"><strong>M2 attention isolated confirmation</strong><p>Isolated fixture: no account, payment or production mutation.</p><div class=\"flex gap-2\"><button type=\"button\" tabindex=\"0\" data-slot=\"button\" class=\"ui-button ui-button-primary\">确认</button><button type=\"button\" tabindex=\"0\" data-slot=\"button\" c",
+    "inert": false,
+    "target": true,
+    "route": ""
+  },
+  {
+    "phase": "finish",
+    "time": 163.29999995231628,
+    "focus": "<section aria-label=\"原生交互\" class=\"native-interactions\" data-attention-target=\"interaction\" tabindex=\"-1\"><article class=\"message\" data-selectable=\"true\" aria-label=\"M2 attention isolated confirmation\"><strong>M2 attention isolated confirmation</strong><p>Isolated fixture: no account, payment or production mutation.</p><div class=\"flex gap-2\"><button type=\"button\" tabindex=\"0\" data-slot=\"button\" class=\"ui-button ui-button-primary\">确认</button><button type=\"button\" tabindex=\"0\" data-slot=\"button\" c",
+    "inert": false,
+    "target": true,
+    "route": ""
+  }
+]

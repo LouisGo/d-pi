@@ -8,9 +8,11 @@
 
 真实TDD覆盖Main因果归纳、可信IPC/导航后复核、preload关联、SQLite偏好、正式React导航/订阅/焦点/编辑器保留；具体红绿和保留失败见[证据](evidence/attention-tdd.md)。独立Spec/Standards整体审查发现4项高价值问题，均修复并独立复核；诊断故障码脱敏增量亦独立复核。
 
+多提醒预算与迟到Runtime首样本定位也已TDD修复：独立滚动、当前阅读至少4行且Composer保留；等待实际interaction就位，后续状态不夺焦。五组实际9–10提醒预算通过，796行为/34架构/74工具和增量两轴review通过。产品source48cd01cc，外部harness adcd4d3。
+
 实际候选截图另发现失败收据被阅读容器裁切，已按新的真实React红灯修复：仅匹配failed收据时开启既有专注阅读；需要回答或收据缺失时保持runtime/setup可见。原脚本window rectangle断言改为状态段落在所有overflow祖先可见交集内可读，修复前结果完整保留。
 
-最终完整检查、精确clean产品source/build、实际macOS包内结果、截图、ZIP CRC/app.asar同源见[交接](attention.md)与[两轴报告](attention-review.md)。固定SDK+localhost供应商是实际SDK接入，未使用个人认证或付费供应商；Chromium组合事件不替代系统IME。Mac锁定使原生通知显示/点击、实际关窗/同App重开未验收，01c保持claimed；用户认可pending，M2父范围未关闭。
+最终完整检查、精确clean产品source/build、实际macOS包内结果、截图、ZIP CRC/app.asar同源见[交接](attention.md)与[两轴报告](attention-review.md)。固定SDK+localhost供应商是实际SDK接入，未使用个人认证或付费供应商；Chromium组合事件不替代系统IME。最终m2.19实际18项检查通过，真实关窗/Finder重开同Main无重发与冷启动偏好持久化完成。系统通知实际failed，显示/点击未验收、根因unknown，App回退保留，01c保持claimed；用户认可pending，M2父范围未关闭。
 
 ## Merge Danger
 

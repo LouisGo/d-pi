@@ -10,7 +10,7 @@
     "trial": "delivered",
     "acceptance": "pending",
     "current": true,
-    "build": "0.1.0-m2.18 / 9a8c2eea-7f1a67df",
+    "build": "0.1.0-m2.19 / 48cd01cc-42704447",
     "pending": [
       "../m1-s3-control-recovery/issues/09-quit-discard-decision.md"
     ],
@@ -41,7 +41,7 @@
       "attention.md",
       "attention-review.md"
     ],
-    "next": "m2.18多Thread提醒候选已交付，01a/01b完成；01c待手动解锁Mac后补系统通知显示/点击及实际关窗重开。M2尚未完成，PDF视觉/OCR、V1-00/B6组合、真实供应商与用户认可保持开放；冷旧Thread只读",
+    "next": "m2.19多Thread提醒候选已交付，01a/01b完成；真实关窗/Finder重开通过，01c系统提醒实际failed，显示/点击待验。M2尚未完成，PDF视觉/OCR、V1-00/B6组合、真实供应商与用户认可保持开放；冷旧Thread只读",
     "constraints": "2026-10-06本轮从最新main继续M2，授权本地实现、候选、证据与提交；此前push/PR授权属于已交付阶段，本轮未push。不公开发布、不扩M3，冷恢复只读，unknown不自动重发；用户认可pending。"
   }
 ]
@@ -68,7 +68,7 @@
 - 已定：D-02–D-08、D-10/D-11、D-20–D-27、D-28–D-37；沿用 OMP 执行、队列、原生历史、配置与凭据所有权，App 草稿/冻结原文/收据事务不改变。
 - 重要待决：无新增。[S3 09](../m1-s3-control-recovery/issues/09-quit-discard-decision.md)退出放弃队列待决，仅暂停对应出口；缺全周期单写证据的冷恢复只读，提供明确新建独立 Thread 出口，不冒称恢复旧执行。
 - 工程：正在实施；既有正确路径复用当前相关证据，新增缺口先失败行为测试。测试隔离 App 数据、OMP 配置、HOME、Git 配置、项目及网络；不继承个人凭据。真实供应商缺账户/费用授权仅暂停实测，不阻塞薄桥接及 fixture 验证。
-- 用户试用：当前交付 `0.1.0-m2.18 / 9a8c2eea-7f1a67df`、产品源码 `9a8c2ee`，16项实际干净包内检查、两轴独立review/修复及ZIP同源验证通过；01c系统通知/原生窗口仍待手动解锁Mac，用户认可pending。[精确身份、哈希、证据、限制和步骤](attention.md#最终候选与试用)。m2.17及更早交付/失败记录保留历史证据，每段可操作体验给出对应源码和包身份；Agent验证不替代用户认可。
+- 用户试用：当前交付 `0.1.0-m2.19 / 48cd01cc-42704447`、产品源码 `48cd01cc`，外部harness `adcd4d3`；18项实际干净包检查、两轴独立review/修复及ZIP同源通过。实际关窗/Finder重开同Main、无重发；系统提醒真实failed，显示/点击缺口由01c claimed保留，用户认可pending。[精确身份、哈希、证据、限制和步骤](attention.md#最终候选与试用)。旧候选及失败记录保留历史，每段体验对应实际源码与包；Agent验证不替代用户认可。
 - 继续边界：本授权内持续实施，不重做基建审计。重大产品/权限/数据合同变化才对齐；签名、公证、公开分发及 M3 不纳入。
 
 ## 首版覆盖与近期任务
@@ -242,3 +242,5 @@
 
 
 2026-10-06用户要求继续：Mac已解锁，m2.18实际原生关窗/同App重开保持Main身份、后台完成/未读及无重复请求；系统通知真实failed，显示/点击未成功，App回退保留。原生多提醒场景又确认应用内提醒无高度预算挤压阅读，01b重开修正；旧包实际几何先红（5提醒160px、readingHeight=0），新m2.19候选按共享控件token与独立滚动验证normal/compact/窄窗口，原生证据保留。不改变OMP/通知事实，不使用签名密钥或个人账户，用户认可pending。
+
+2026-10-06最终继续交付：clean m2.19产品source48cd01cc/build48cd01cc-42704447，796行为/34架构/74工具通过。独立Spec/Standards复核关闭预算和迟到首次inspect两项P2；validation-only焦点采样恢复/新Thread编辑器就绪纠正均独立复核，生产source不变。外部harness adcd4d3对实际候选18项通过；五组9–10条提醒预算、阅读至少4行/完整Composer/草稿/末条内部滚动和原焦点恢复通过。真实后台、Cmd+W关闭/仍运行、精确Finder双击重开同Main且供应商无重发、冷启动偏好保存/旧Thread只读完成。ZIP CRC和source/受测副本/ZIP asar同源通过。01b重新resolved；01c仅剩真实系统显示/点击，本次system=failed、App回退反馈可见、根因unknown、未模拟callback，保持claimed。M2其余范围和用户认可独立开放；不push、不签名、不扩M3。[当前交接](attention.md)。

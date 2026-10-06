@@ -1,0 +1,4 @@
+{
+  "status": "unavailable",
+  "notes": "Actual Main snapshot after real SDK provider completion reports system=failed for Thread3ca00f. CUA exact48cd01cc-42704447 App independently shows3ca00f completed/unread in sidebar and in-app reminder; actual click on reminder settings shows both preferences enabled and system-reminder-could-not-display feedback. A_UNSENT_DRAFT preserved. No actual system notification display/click observed; full Notification Center not inspected in this run, no manufactured callback. Unsigned isolated bundle, exact OS cause unknown."
+}

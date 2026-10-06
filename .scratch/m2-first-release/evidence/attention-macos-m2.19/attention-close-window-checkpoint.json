@@ -1,0 +1,9 @@
+{
+  "root": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-tk77Eu",
+  "operation": "close-window",
+  "instructions": "Close the isolated d-pi window with its native close control, leaving the App running. Verify no d-pi window remains. Record evidenceFile status observed/notes, then create resumeFile. The actual provider response is still held until the window is closed.",
+  "closedThread": "4be5a416-6524-4e2a-96d8-3f821662e73c",
+  "evidenceFile": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-tk77Eu/attention-close-window-observation.json",
+  "resumeFile": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-tk77Eu/attention-close-window-continue",
+  "expiresAt": "2026-10-06T12:33:26.099Z"
+}

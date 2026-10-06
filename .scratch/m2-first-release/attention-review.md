@@ -26,3 +26,13 @@ base/merge-base `7c9e1fee48ccb467db359a18401d8a30ca57a04e`，首次固定head `4
 布局修复后完整检查795行为/34架构/74工具通过、2既有opt-in跳过：[原始结果](evidence/attention-layout-engineering-check.txt)。
 
 最终clean产品source9a8c2eea41196b5584a46fcc575ed589a7cfe392与受评d272bd6生产/validation源相同；新候选16项实际包内检查通过，强化祖先裁切交集显示状态段落284–309.5落在193–728有效区域，截图实看失败详情可读。包/ZIP身份见[交接](attention.md)，原生显示/点击/窗口保持独立待验。
+
+## macOS继续发现的预算与迟到状态定位
+
+旧m2.18实际多提醒阅读0的P2：[Spec原报](evidence/attention-review-spec-budget-original.md)。仅cap修正的63a578f仍出现9提醒center64/reading0；迟到首次inspect可达P2：[原报](evidence/attention-review-spec-focus-original.md)。产品48cd01cc补阅读4lh下限并等待实际Runtime首样本/transition结束，只有成功focus才记录意图，后续状态不夺焦。新真实React回归先红/19相关green；完整796行为/34架构/74工具通过。
+
+两轴固定增量独立复核分别覆盖预算cap、产品48cd01cc及validation-only 78b8631/adcd4d3：[预算Spec](evidence/attention-review-spec-budget-final.md)、[预算Standards](evidence/attention-review-standards-budget-final.md)、[最终Spec](evidence/attention-review-spec-reserve-final.md)、[最终Standards](evidence/attention-review-standards-reserve-final.md)。均未发现新增可触发高价值问题；原报告当时明确新包待验，保留原文不事后改为reviewer亲测。
+
+主Agent随后在同产品48cd01cc clean包、外部harness adcd4d3上补齐实际18项green；五组9–10提醒几何、原焦点恢复/最后项内部滚动/阅读与Composer可见及草稿保留通过，截图实看。真实Cmd+W/Finder同Main重开无重发、冷偏好持久化完成：[结果](evidence/attention-macos-m2.19/m2-result.json)。这是报告后的实包证据补齐，非静态review替代。01b resolved；系统failed且实际显示/点击未验，01c claimed。
+
+过程失败分开保留：早期两个待答focus timeout根因unknown，不作预算红灯；首次无center来自正常已读场景，后用4个正式GUI/SDK后台completion产生明确unread负载。焦点probe原helper恢复未核实可污染下一样本，修正为last.blur/恢复并断言真实prior；旧日志未记录prior，唯一实机根因不倒推。新Thread null editor race以实际current UUID+可编辑非inert+runtime ready等待修正。全部是验证可信度修补，未放宽实际几何/焦点断言或注入事件。[过程](evidence/attention-reminder-continuation-tdd.md)与各失败现场仍在。

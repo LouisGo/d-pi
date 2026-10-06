@@ -1,0 +1,770 @@
+{
+  "fixture": "fixed SDK extension + localhost provider; no fake runtime events",
+  "snapshots": {
+    "initial": {
+      "instanceId": "e1ac2fd9-3b4a-4330-a663-5e7f6951ff54",
+      "revision": 2,
+      "entries": [
+        {
+          "threadId": "08fb8658-1da1-4f5d-b1d7-75e4c574b170",
+          "eventId": "14787620-1a14-413a-a4ef-7ff1df92ab40",
+          "traceId": "5ad4f7e3-a8b9-4253-8051-89ee393503bf",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "ee2727f8-8632-408f-9c93-2155831e2816",
+          "eventId": "1394fe93-20b5-47d9-a4d4-5e1f153497ee",
+          "traceId": "8b3c31ac-efd1-4be3-8ead-06b2f98b936f",
+          "kind": "completed",
+          "unread": true
+        }
+      ],
+      "preferences": {
+        "system": false,
+        "completion": false
+      },
+      "system": "disabled",
+      "coverageGap": false,
+      "openRequest": null
+    },
+    "pending": {
+      "instanceId": "e1ac2fd9-3b4a-4330-a663-5e7f6951ff54",
+      "revision": 3,
+      "entries": [
+        {
+          "threadId": "08fb8658-1da1-4f5d-b1d7-75e4c574b170",
+          "eventId": "14787620-1a14-413a-a4ef-7ff1df92ab40",
+          "traceId": "5ad4f7e3-a8b9-4253-8051-89ee393503bf",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "ee2727f8-8632-408f-9c93-2155831e2816",
+          "eventId": "1394fe93-20b5-47d9-a4d4-5e1f153497ee",
+          "traceId": "8b3c31ac-efd1-4be3-8ead-06b2f98b936f",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "6789bae1-f999-4e76-b335-6079afe77a95",
+          "eventId": "235fde92-6497-4a9c-bee0-654dbd7f67dc",
+          "traceId": "437a99b8-124b-4ef7-9de2-3061a0e44656",
+          "kind": "needs-answer",
+          "unread": true
+        }
+      ],
+      "preferences": {
+        "system": false,
+        "completion": false
+      },
+      "system": "disabled",
+      "coverageGap": false,
+      "openRequest": null
+    },
+    "reloaded": {
+      "instanceId": "e1ac2fd9-3b4a-4330-a663-5e7f6951ff54",
+      "revision": 3,
+      "entries": [
+        {
+          "threadId": "08fb8658-1da1-4f5d-b1d7-75e4c574b170",
+          "eventId": "14787620-1a14-413a-a4ef-7ff1df92ab40",
+          "traceId": "5ad4f7e3-a8b9-4253-8051-89ee393503bf",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "ee2727f8-8632-408f-9c93-2155831e2816",
+          "eventId": "1394fe93-20b5-47d9-a4d4-5e1f153497ee",
+          "traceId": "8b3c31ac-efd1-4be3-8ead-06b2f98b936f",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "6789bae1-f999-4e76-b335-6079afe77a95",
+          "eventId": "235fde92-6497-4a9c-bee0-654dbd7f67dc",
+          "traceId": "437a99b8-124b-4ef7-9de2-3061a0e44656",
+          "kind": "needs-answer",
+          "unread": true
+        }
+      ],
+      "preferences": {
+        "system": false,
+        "completion": false
+      },
+      "system": "disabled",
+      "coverageGap": false,
+      "openRequest": null
+    },
+    "failed": {
+      "instanceId": "e1ac2fd9-3b4a-4330-a663-5e7f6951ff54",
+      "revision": 6,
+      "entries": [
+        {
+          "threadId": "08fb8658-1da1-4f5d-b1d7-75e4c574b170",
+          "eventId": "14787620-1a14-413a-a4ef-7ff1df92ab40",
+          "traceId": "5ad4f7e3-a8b9-4253-8051-89ee393503bf",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "ee2727f8-8632-408f-9c93-2155831e2816",
+          "eventId": "1394fe93-20b5-47d9-a4d4-5e1f153497ee",
+          "traceId": "8b3c31ac-efd1-4be3-8ead-06b2f98b936f",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "6789bae1-f999-4e76-b335-6079afe77a95",
+          "eventId": "cfa8f944-7a62-42e3-9aba-b8a44f0d8c4d",
+          "traceId": "ffb93fbc-dfe1-4cf4-b48c-a1fab95795c8",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "bc80b884-55a2-49ea-b180-bf89df4fe109",
+          "eventId": "6a2f87b7-2b5a-4d39-9b01-b02afd3fdc2c",
+          "traceId": "5b00549a-5820-40c7-ab70-9e3cbc4aecd8",
+          "kind": "failed",
+          "unread": true
+        }
+      ],
+      "preferences": {
+        "system": false,
+        "completion": false
+      },
+      "system": "disabled",
+      "coverageGap": false,
+      "openRequest": null
+    },
+    "completed": {
+      "instanceId": "e1ac2fd9-3b4a-4330-a663-5e7f6951ff54",
+      "revision": 7,
+      "entries": [
+        {
+          "threadId": "08fb8658-1da1-4f5d-b1d7-75e4c574b170",
+          "eventId": "14787620-1a14-413a-a4ef-7ff1df92ab40",
+          "traceId": "5ad4f7e3-a8b9-4253-8051-89ee393503bf",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "ee2727f8-8632-408f-9c93-2155831e2816",
+          "eventId": "1394fe93-20b5-47d9-a4d4-5e1f153497ee",
+          "traceId": "8b3c31ac-efd1-4be3-8ead-06b2f98b936f",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "6789bae1-f999-4e76-b335-6079afe77a95",
+          "eventId": "cfa8f944-7a62-42e3-9aba-b8a44f0d8c4d",
+          "traceId": "ffb93fbc-dfe1-4cf4-b48c-a1fab95795c8",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "bc80b884-55a2-49ea-b180-bf89df4fe109",
+          "eventId": "6a2f87b7-2b5a-4d39-9b01-b02afd3fdc2c",
+          "traceId": "5b00549a-5820-40c7-ab70-9e3cbc4aecd8",
+          "kind": "failed",
+          "unread": true
+        },
+        {
+          "threadId": "b68002ed-f5ac-4542-be61-7857da0c9486",
+          "eventId": "06ce4989-71ef-4048-917e-8fd3b95a266c",
+          "traceId": "6cf6689f-e16f-4d04-8fdb-c1b81ba2191e",
+          "kind": "completed",
+          "unread": true
+        }
+      ],
+      "preferences": {
+        "system": false,
+        "completion": false
+      },
+      "system": "disabled",
+      "coverageGap": false,
+      "openRequest": null
+    },
+    "budget": {
+      "instanceId": "e1ac2fd9-3b4a-4330-a663-5e7f6951ff54",
+      "revision": 11,
+      "entries": [
+        {
+          "threadId": "08fb8658-1da1-4f5d-b1d7-75e4c574b170",
+          "eventId": "14787620-1a14-413a-a4ef-7ff1df92ab40",
+          "traceId": "5ad4f7e3-a8b9-4253-8051-89ee393503bf",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "ee2727f8-8632-408f-9c93-2155831e2816",
+          "eventId": "1394fe93-20b5-47d9-a4d4-5e1f153497ee",
+          "traceId": "8b3c31ac-efd1-4be3-8ead-06b2f98b936f",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "6789bae1-f999-4e76-b335-6079afe77a95",
+          "eventId": "cfa8f944-7a62-42e3-9aba-b8a44f0d8c4d",
+          "traceId": "ffb93fbc-dfe1-4cf4-b48c-a1fab95795c8",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "bc80b884-55a2-49ea-b180-bf89df4fe109",
+          "eventId": "6a2f87b7-2b5a-4d39-9b01-b02afd3fdc2c",
+          "traceId": "5b00549a-5820-40c7-ab70-9e3cbc4aecd8",
+          "kind": "failed",
+          "unread": true
+        },
+        {
+          "threadId": "b68002ed-f5ac-4542-be61-7857da0c9486",
+          "eventId": "06ce4989-71ef-4048-917e-8fd3b95a266c",
+          "traceId": "6cf6689f-e16f-4d04-8fdb-c1b81ba2191e",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "6ad354ff-cc09-44fd-9e5e-fa65f04e2add",
+          "eventId": "0a472aff-5755-49cf-bae9-c3e877ff0a64",
+          "traceId": "cdbd5187-ad03-4487-ba08-42dcb80400dd",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "35a67aef-1110-4511-8754-cf715d9ff274",
+          "eventId": "9888321f-2ded-47e3-8230-983b6b588b73",
+          "traceId": "11daf678-9b5d-4156-a471-2f3e2f8f41b0",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "59f8ccfa-c77f-4108-9aeb-c9c75cbfa766",
+          "eventId": "9e6db3ea-065b-44fc-aee5-9adbc28bdb77",
+          "traceId": "28ecc3a5-c677-456e-a4de-ef938ba560d3",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "13ba7e22-b251-4341-a60c-40fa7c6cea9d",
+          "eventId": "447473d7-ed67-407a-9bfe-1075b774ce79",
+          "traceId": "c443d458-e878-485a-bafa-8345b1293498",
+          "kind": "completed",
+          "unread": true
+        }
+      ],
+      "preferences": {
+        "system": false,
+        "completion": false
+      },
+      "system": "disabled",
+      "coverageGap": false,
+      "openRequest": null
+    },
+    "native": {
+      "instanceId": "e1ac2fd9-3b4a-4330-a663-5e7f6951ff54",
+      "revision": 15,
+      "entries": [
+        {
+          "threadId": "08fb8658-1da1-4f5d-b1d7-75e4c574b170",
+          "eventId": "14787620-1a14-413a-a4ef-7ff1df92ab40",
+          "traceId": "5ad4f7e3-a8b9-4253-8051-89ee393503bf",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "ee2727f8-8632-408f-9c93-2155831e2816",
+          "eventId": "1394fe93-20b5-47d9-a4d4-5e1f153497ee",
+          "traceId": "8b3c31ac-efd1-4be3-8ead-06b2f98b936f",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "6789bae1-f999-4e76-b335-6079afe77a95",
+          "eventId": "cfa8f944-7a62-42e3-9aba-b8a44f0d8c4d",
+          "traceId": "ffb93fbc-dfe1-4cf4-b48c-a1fab95795c8",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "bc80b884-55a2-49ea-b180-bf89df4fe109",
+          "eventId": "6a2f87b7-2b5a-4d39-9b01-b02afd3fdc2c",
+          "traceId": "5b00549a-5820-40c7-ab70-9e3cbc4aecd8",
+          "kind": "failed",
+          "unread": true
+        },
+        {
+          "threadId": "b68002ed-f5ac-4542-be61-7857da0c9486",
+          "eventId": "06ce4989-71ef-4048-917e-8fd3b95a266c",
+          "traceId": "6cf6689f-e16f-4d04-8fdb-c1b81ba2191e",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "6ad354ff-cc09-44fd-9e5e-fa65f04e2add",
+          "eventId": "0a472aff-5755-49cf-bae9-c3e877ff0a64",
+          "traceId": "cdbd5187-ad03-4487-ba08-42dcb80400dd",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "35a67aef-1110-4511-8754-cf715d9ff274",
+          "eventId": "9888321f-2ded-47e3-8230-983b6b588b73",
+          "traceId": "11daf678-9b5d-4156-a471-2f3e2f8f41b0",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "59f8ccfa-c77f-4108-9aeb-c9c75cbfa766",
+          "eventId": "9e6db3ea-065b-44fc-aee5-9adbc28bdb77",
+          "traceId": "28ecc3a5-c677-456e-a4de-ef938ba560d3",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "13ba7e22-b251-4341-a60c-40fa7c6cea9d",
+          "eventId": "447473d7-ed67-407a-9bfe-1075b774ce79",
+          "traceId": "c443d458-e878-485a-bafa-8345b1293498",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "3ca00f1a-49b0-4e72-8586-c042a9c3fcd9",
+          "eventId": "531699c0-a086-4e98-8d19-fe4631b6c14c",
+          "traceId": "44414a8b-d71b-4fd9-9c68-76ae72f3b128",
+          "kind": "completed",
+          "unread": true
+        }
+      ],
+      "preferences": {
+        "system": true,
+        "completion": true
+      },
+      "system": "failed",
+      "coverageGap": false,
+      "openRequest": null
+    },
+    "reopened": {
+      "instanceId": "e1ac2fd9-3b4a-4330-a663-5e7f6951ff54",
+      "revision": 18,
+      "entries": [
+        {
+          "threadId": "08fb8658-1da1-4f5d-b1d7-75e4c574b170",
+          "eventId": "14787620-1a14-413a-a4ef-7ff1df92ab40",
+          "traceId": "5ad4f7e3-a8b9-4253-8051-89ee393503bf",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "ee2727f8-8632-408f-9c93-2155831e2816",
+          "eventId": "1394fe93-20b5-47d9-a4d4-5e1f153497ee",
+          "traceId": "8b3c31ac-efd1-4be3-8ead-06b2f98b936f",
+          "kind": "completed",
+          "unread": false
+        },
+        {
+          "threadId": "6789bae1-f999-4e76-b335-6079afe77a95",
+          "eventId": "cfa8f944-7a62-42e3-9aba-b8a44f0d8c4d",
+          "traceId": "ffb93fbc-dfe1-4cf4-b48c-a1fab95795c8",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "bc80b884-55a2-49ea-b180-bf89df4fe109",
+          "eventId": "6a2f87b7-2b5a-4d39-9b01-b02afd3fdc2c",
+          "traceId": "5b00549a-5820-40c7-ab70-9e3cbc4aecd8",
+          "kind": "failed",
+          "unread": true
+        },
+        {
+          "threadId": "b68002ed-f5ac-4542-be61-7857da0c9486",
+          "eventId": "06ce4989-71ef-4048-917e-8fd3b95a266c",
+          "traceId": "6cf6689f-e16f-4d04-8fdb-c1b81ba2191e",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "6ad354ff-cc09-44fd-9e5e-fa65f04e2add",
+          "eventId": "0a472aff-5755-49cf-bae9-c3e877ff0a64",
+          "traceId": "cdbd5187-ad03-4487-ba08-42dcb80400dd",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "35a67aef-1110-4511-8754-cf715d9ff274",
+          "eventId": "9888321f-2ded-47e3-8230-983b6b588b73",
+          "traceId": "11daf678-9b5d-4156-a471-2f3e2f8f41b0",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "59f8ccfa-c77f-4108-9aeb-c9c75cbfa766",
+          "eventId": "9e6db3ea-065b-44fc-aee5-9adbc28bdb77",
+          "traceId": "28ecc3a5-c677-456e-a4de-ef938ba560d3",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "13ba7e22-b251-4341-a60c-40fa7c6cea9d",
+          "eventId": "447473d7-ed67-407a-9bfe-1075b774ce79",
+          "traceId": "c443d458-e878-485a-bafa-8345b1293498",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "3ca00f1a-49b0-4e72-8586-c042a9c3fcd9",
+          "eventId": "531699c0-a086-4e98-8d19-fe4631b6c14c",
+          "traceId": "44414a8b-d71b-4fd9-9c68-76ae72f3b128",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "4be5a416-6524-4e2a-96d8-3f821662e73c",
+          "eventId": "fd187290-8b23-4520-8370-1bca851f6fd7",
+          "traceId": "579cd75c-a334-4a92-addd-4c7261fd14e4",
+          "kind": "completed",
+          "unread": true
+        }
+      ],
+      "preferences": {
+        "system": true,
+        "completion": true
+      },
+      "system": "failed",
+      "coverageGap": false,
+      "openRequest": null
+    },
+    "cold": {
+      "instanceId": "211c4c7f-4943-4eda-a576-7cda1d678010",
+      "revision": 0,
+      "entries": [],
+      "preferences": {
+        "system": true,
+        "completion": true
+      },
+      "system": "available",
+      "coverageGap": false,
+      "openRequest": null
+    }
+  },
+  "native": {
+    "displayClick": {
+      "status": "unavailable",
+      "notes": "Actual Main snapshot after real SDK provider completion reports system=failed for Thread3ca00f. CUA exact48cd01cc-42704447 App independently shows3ca00f completed/unread in sidebar and in-app reminder; actual click on reminder settings shows both preferences enabled and system-reminder-could-not-display feedback. A_UNSENT_DRAFT preserved. No actual system notification display/click observed; full Notification Center not inspected in this run, no manufactured callback. Unsigned isolated bundle, exact OS cause unknown."
+    },
+    "closedWindow": {
+      "status": "observed",
+      "notes": "Actual Finder double-click on the exact isolated Package With Spaces/d-pi.app reopened the running test App. Fresh CUA AX confirms renderer URL under tk77Eu, version 0.1.0-m2.19, build 48cd01cc-42704447, Thread 4be5a416-6524-4e2a-96d8-3f821662e73c completed/unread, and A_UNSENT_DRAFT retained. Route: Finder, not Dock. Same Main identity and no resend are independently checked by harness after resume.",
+      "observedAt": "2026-10-06T12:32:08.006421+00:00"
+    },
+    "prepare": {
+      "status": "observed",
+      "notes": "CUA exact local.d-pi.m2-validation shows48cd01cc-42704447 at exact tk77Eu asar URL, Thread A draft retained and native provider held. Finder user-changed guard was respected by fresh AX read; opened a new dedicated temporary Finder window via actual Cmd+N instead of using the user Downloads window. Actual new Recents window and focused list observed; App not quit. Result release occurs only after this resume."
+    },
+    "openRequests": [],
+    "close": {
+      "status": "observed",
+      "notes": "Actual CUA Cmd+W on exact tk77Eu48cd01cc-42704447 window closed it; subsequent AX returned noWindowsAvailable. Independent CUA App inventory still lists local.d-pi.m2-validation isRunning=true, personal desktop/mainflow bundles not running. Current A_UNSENT_DRAFT and native3ca00f completed/unread/notification failure observed before close. App not quit; closed-mode actual supplier response still held until this resume."
+    }
+  },
+  "failureDetail": {
+    "traceId": "5b00549a-5820-40c7-ab70-9e3cbc4aecd8",
+    "text": "已收到调用回执 · 原生返回失败M2_ATTENTION_FAILED作为新提交再次发送原提交可能已经执行，再次发送可能产生重复操作。请先核对原生历史；新草稿保持不变。恢复只读或队列暂停时不会派发。确认可能重复，重新发送复制提交原文",
+    "focused": true,
+    "detailsOpen": true,
+    "top": 264,
+    "bottom": 413.5,
+    "viewport": 748,
+    "readingTop": 193,
+    "readingBottom": 728,
+    "statusTop": 284,
+    "statusBottom": 309.5,
+    "visible": {
+      "top": 193,
+      "bottom": 728,
+      "left": 252,
+      "right": 1100
+    }
+  },
+  "budgetThreads": [
+    "6ad354ff-cc09-44fd-9e5e-fa65f04e2add",
+    "35a67aef-1110-4511-8754-cf715d9ff274",
+    "59f8ccfa-c77f-4108-9aeb-c9c75cbfa766",
+    "13ba7e22-b251-4341-a60c-40fa7c6cea9d"
+  ],
+  "persistedPreferences": {
+    "system": true,
+    "completion": true
+  },
+  "systemCapability": "available",
+  "reminderBudgets": [
+    {
+      "entries": 9,
+      "theme": "dark",
+      "density": "normal",
+      "viewport": 1120,
+      "centerHeight": 64,
+      "centerScrollHeight": 288,
+      "centerClientHeight": 64,
+      "readingHeight": 78,
+      "lineHeight": 19.5,
+      "lastReachable": true,
+      "focusBounds": {
+        "before": {
+          "x": 252,
+          "y": 67,
+          "width": 848,
+          "height": 64,
+          "top": 67,
+          "right": 1100,
+          "bottom": 131,
+          "left": 252
+        },
+        "after": {
+          "x": 252,
+          "y": 67,
+          "width": 848,
+          "height": 64,
+          "top": 67,
+          "right": 1100,
+          "bottom": 131,
+          "left": 252
+        },
+        "last": {
+          "x": 352.8359375,
+          "y": 99,
+          "width": 103.2578125,
+          "height": 32,
+          "top": 99,
+          "right": 456.09375,
+          "bottom": 131,
+          "left": 352.8359375
+        },
+        "scrollTop": 224,
+        "active": true,
+        "pixelRatio": 2
+      },
+      "focusRestored": true,
+      "priorFocus": "BODY",
+      "readingVisible": true,
+      "editorVisible": true,
+      "draft": "A_UNSENT_DRAFT"
+    },
+    {
+      "entries": 9,
+      "theme": "light",
+      "density": "compact",
+      "viewport": 1120,
+      "centerHeight": 60,
+      "centerScrollHeight": 270,
+      "centerClientHeight": 60,
+      "readingHeight": 78,
+      "lineHeight": 19.5,
+      "lastReachable": true,
+      "focusBounds": {
+        "before": {
+          "x": 248,
+          "y": 57,
+          "width": 856,
+          "height": 60,
+          "top": 57,
+          "right": 1104,
+          "bottom": 117,
+          "left": 248
+        },
+        "after": {
+          "x": 248,
+          "y": 57,
+          "width": 856,
+          "height": 60,
+          "top": 57,
+          "right": 1104,
+          "bottom": 117,
+          "left": 248
+        },
+        "last": {
+          "x": 348.8359375,
+          "y": 87,
+          "width": 95.2578125,
+          "height": 30,
+          "top": 87,
+          "right": 444.09375,
+          "bottom": 117,
+          "left": 348.8359375
+        },
+        "scrollTop": 210,
+        "active": true,
+        "pixelRatio": 2
+      },
+      "focusRestored": true,
+      "priorFocus": "BODY",
+      "readingVisible": true,
+      "editorVisible": true,
+      "draft": "A_UNSENT_DRAFT"
+    },
+    {
+      "entries": 9,
+      "theme": "light",
+      "density": "compact",
+      "viewport": 560,
+      "centerHeight": 60,
+      "centerScrollHeight": 270,
+      "centerClientHeight": 60,
+      "readingHeight": 78,
+      "lineHeight": 19.5,
+      "lastReachable": true,
+      "focusBounds": {
+        "before": {
+          "x": 208,
+          "y": 97,
+          "width": 336,
+          "height": 60,
+          "top": 97,
+          "right": 544,
+          "bottom": 157,
+          "left": 208
+        },
+        "after": {
+          "x": 208,
+          "y": 97,
+          "width": 336,
+          "height": 60,
+          "top": 97,
+          "right": 544,
+          "bottom": 157,
+          "left": 208
+        },
+        "last": {
+          "x": 336.140625,
+          "y": 127,
+          "width": 99.1953125,
+          "height": 30,
+          "top": 127,
+          "right": 435.3359375,
+          "bottom": 157,
+          "left": 336.140625
+        },
+        "scrollTop": 210,
+        "active": true,
+        "pixelRatio": 1
+      },
+      "focusRestored": true,
+      "priorFocus": "BODY",
+      "readingVisible": true,
+      "editorVisible": true,
+      "draft": "A_UNSENT_DRAFT"
+    },
+    {
+      "entries": 9,
+      "theme": "dark",
+      "density": "normal",
+      "viewport": 1120,
+      "centerHeight": 64,
+      "centerScrollHeight": 288,
+      "centerClientHeight": 64,
+      "readingHeight": 78,
+      "lineHeight": 19.5,
+      "lastReachable": true,
+      "focusBounds": {
+        "before": {
+          "x": 252,
+          "y": 67,
+          "width": 848,
+          "height": 64,
+          "top": 67,
+          "right": 1100,
+          "bottom": 131,
+          "left": 252
+        },
+        "after": {
+          "x": 252,
+          "y": 67,
+          "width": 848,
+          "height": 64,
+          "top": 67,
+          "right": 1100,
+          "bottom": 131,
+          "left": 252
+        },
+        "last": {
+          "x": 352.8359375,
+          "y": 99,
+          "width": 103.2578125,
+          "height": 32,
+          "top": 99,
+          "right": 456.09375,
+          "bottom": 131,
+          "left": 352.8359375
+        },
+        "scrollTop": 224,
+        "active": true,
+        "pixelRatio": 2
+      },
+      "focusRestored": true,
+      "priorFocus": "BODY",
+      "readingVisible": true,
+      "editorVisible": true,
+      "draft": "A_UNSENT_DRAFT"
+    },
+    {
+      "entries": 10,
+      "theme": "dark",
+      "density": "normal",
+      "viewport": 1120,
+      "centerHeight": 64,
+      "centerScrollHeight": 320,
+      "centerClientHeight": 64,
+      "readingHeight": 78,
+      "lineHeight": 19.5,
+      "lastReachable": true,
+      "focusBounds": {
+        "before": {
+          "x": 252,
+          "y": 67,
+          "width": 848,
+          "height": 64,
+          "top": 67,
+          "right": 1100,
+          "bottom": 131,
+          "left": 252
+        },
+        "after": {
+          "x": 252,
+          "y": 67,
+          "width": 848,
+          "height": 64,
+          "top": 67,
+          "right": 1100,
+          "bottom": 131,
+          "left": 252
+        },
+        "last": {
+          "x": 356.84375,
+          "y": 99,
+          "width": 103.2578125,
+          "height": 32,
+          "top": 99,
+          "right": 460.1015625,
+          "bottom": 131,
+          "left": 356.84375
+        },
+        "scrollTop": 256,
+        "active": true,
+        "pixelRatio": 2
+      },
+      "focusRestored": true,
+      "priorFocus": "BODY",
+      "readingVisible": true,
+      "editorVisible": true,
+      "draft": "A_UNSENT_DRAFT"
+    }
+  ],
+  "narrowViewport": {
+    "x": 20,
+    "right": 171,
+    "viewport": 560,
+    "scroll": 151,
+    "client": 151,
+    "text": "Notification settingsEnable system notificationsNotify on completionSystem notifications require an explicit opt-in. Completion updates the sidebar by default. In-app status remains available when system notifications are unavailable.System notifications are supported; macOS permissions and settings determine whether they appear."
+  }
+}
