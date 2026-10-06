@@ -353,10 +353,21 @@ export async function validateAttention(context) {
     const el=document.querySelector('[data-attention-receipt-trace="${failedEntry.traceId}"]');
     if(!el) return null;
     const r=el.getBoundingClientRect();
+    const pane=el.closest('.reading-pane');
+    const status=el.querySelector('p');
+    if(!pane || !status) return null;
+    const pr=pane.getBoundingClientRect(), sr=status.getBoundingClientRect();
     const details=el.closest('details');
     if(!details?.open || document.activeElement!==el || !el.getClientRects().length || getComputedStyle(el).visibility!=='visible' || !el.textContent.includes('原生返回失败')) return null;
     if(r.top>=innerHeight || r.bottom<=0 || r.width<=0) return null;
-    return {traceId:${JSON.stringify(failedEntry.traceId)},text:el.textContent,focused:true,detailsOpen:details.open,top:r.top,bottom:r.bottom,viewport:innerHeight};
+    let top=0,bottom=innerHeight,left=0,right=innerWidth;
+    for(let a=status.parentElement;a;a=a.parentElement){
+      const style=getComputedStyle(a), ar=a.getBoundingClientRect();
+      if(/auto|scroll|hidden|clip/.test(style.overflowY)){top=Math.max(top,ar.top);bottom=Math.min(bottom,ar.bottom)}
+      if(/auto|scroll|hidden|clip/.test(style.overflowX)){left=Math.max(left,ar.left);right=Math.min(right,ar.right)}
+    }
+    if(sr.top<top || sr.bottom>bottom || sr.left<left || sr.right>right || !status.textContent.includes('原生返回失败')) return null;
+    return {traceId:${JSON.stringify(failedEntry.traceId)},text:el.textContent,focused:true,detailsOpen:details.open,top:r.top,bottom:r.bottom,viewport:innerHeight,readingTop:pr.top,readingBottom:pr.bottom,statusTop:sr.top,statusBottom:sr.bottom,visible:{top,bottom,left,right}};
   })()`),
   );
   metrics.failureDetail = failureDetail;

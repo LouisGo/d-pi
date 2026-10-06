@@ -45,12 +45,18 @@ export function ThreadWorkbench({
   );
   useLayoutEffect(() => {
     if (!target) return;
-    setReadingFocus(false);
+    setReadingFocus(
+      target.kind === "failed" &&
+        props.readingView === "submissions" &&
+        !!workspace.current?.querySelector(
+          `[data-attention-receipt-trace="${target.traceId}"]`,
+        ),
+    );
     const frame = requestAnimationFrame(() => {
       if (workspace.current) locateAttention(workspace.current, target);
     });
     return () => cancelAnimationFrame(frame);
-  }, [target]);
+  }, [target, props.readingView]);
   return (
     <section
       ref={workspace}

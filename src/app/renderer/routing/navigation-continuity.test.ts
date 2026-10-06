@@ -5,6 +5,7 @@ import type { Editor } from "@tiptap/core";
 import { act, createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
+import { SubmissionReceiptSchema } from "../../../modules/execution/contracts/public";
 import { DraftSchema } from "../../../modules/input/contracts/public";
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
 import {
@@ -26,7 +27,7 @@ function deferred() {
   });
   return { promise, resolve };
 }
-async function fixture() {
+async function fixture(withFailedReceipt = false) {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const first = DraftSchema.parse({
     schemaVersion: 1,
@@ -48,7 +49,37 @@ async function fixture() {
   ]);
   let selected = first.threadId;
   let uncertain = false;
+  const failedReceipt = SubmissionReceiptSchema.parse({
+    submissionId: crypto.randomUUID(),
+    threadId: first.threadId,
+    traceId: crypto.randomUUID(),
+    requestId: crypto.randomUUID(),
+    revision: 0,
+    text: "failed request",
+    target: {
+      processInstanceId: crypto.randomUUID(),
+      connectionGeneration: crypto.randomUUID(),
+      configContextId: "fixture",
+      nativeSessionRef: "fixture",
+    },
+    state: "acknowledged",
+    acknowledgedAt: "2026-10-06T00:00:00Z",
+    createdAt: "2026-10-06T00:00:00Z",
+    updatedAt: "2026-10-06T00:00:00Z",
+    outcome: "failed",
+  });
   const bridge: DesktopBridge = {
+    ...(withFailedReceipt
+      ? {
+          submission: {
+            request: vi.fn(async () => ({
+              kind: "list" as const,
+              receipts: [failedReceipt],
+            })),
+            subscribe: () => () => {},
+          },
+        }
+      : {}),
     request: async (command) => {
       if (
         uncertain &&
@@ -105,6 +136,7 @@ async function fixture() {
     model,
     router: routing.router,
     container,
+    failedReceipt,
     loseSelection: () => {
       uncertain = true;
     },
@@ -146,6 +178,71 @@ it("keeps the application shell visible and mounted while a Thread route waits f
   expect(input.container.querySelector(".tiptap")?.textContent).toBe(
     "second draft",
   );
+});
+
+it("opens a failed attention receipt in readable space, preserves the editor and restores controls for a pending interaction", async () => {
+  const input = await fixture(true);
+  const editor = input.container.querySelector(".tiptap");
+  await act(() =>
+    input.router.navigate({
+      to: "/threads/$threadId",
+      params: { threadId: input.first.threadId },
+      search: { view: "submissions" },
+    }),
+  );
+  const entry = {
+    threadId: input.first.threadId,
+    eventId: crypto.randomUUID(),
+    traceId: input.failedReceipt.traceId,
+    kind: "failed" as const,
+    unread: true,
+  };
+  const receipt = input.container.querySelector<HTMLElement>(
+    `[data-attention-receipt-trace="${entry.traceId}"]`,
+  );
+  expect(receipt).not.toBeNull();
+  if (receipt) receipt.scrollIntoView = vi.fn();
+  await act(() => input.model.attention.locate(entry));
+  await act(
+    () =>
+      new Promise<void>((resolve) => requestAnimationFrame(() => resolve())),
+  );
+  expect(
+    input.container
+      .querySelector(".thread-workspace")
+      ?.getAttribute("data-reading-focus"),
+  ).toBe("true");
+  expect(receipt?.closest("details")?.open).toBe(true);
+  expect(document.activeElement).toBe(receipt);
+  expect(input.container.querySelector(".tiptap")).toBe(editor);
+  expect(editor?.textContent).toBe("first draft");
+  const restore = [...input.container.querySelectorAll("button")].find(
+    (button) => button.textContent === "Restore controls",
+  );
+  await act(() => restore?.click());
+  expect(
+    input.container.querySelector(".composer")?.hasAttribute("hidden"),
+  ).toBe(false);
+  await act(() =>
+    input.model.attention.locate({ ...entry, eventId: crypto.randomUUID() }),
+  );
+  await act(() =>
+    input.model.attention.locate({ ...entry, traceId: crypto.randomUUID() }),
+  );
+  expect(
+    input.container
+      .querySelector(".thread-workspace")
+      ?.getAttribute("data-reading-focus"),
+  ).toBe("false");
+  await act(() =>
+    input.model.attention.locate({ ...entry, kind: "needs-answer" }),
+  );
+  expect(
+    input.container
+      .querySelector(".thread-workspace")
+      ?.getAttribute("data-reading-focus"),
+  ).toBe("false");
+  expect(input.container.querySelector(".tiptap")).toBe(editor);
 });
 
 it("retains the frozen source workspace until the confirmed target route can replace it", async () => {
