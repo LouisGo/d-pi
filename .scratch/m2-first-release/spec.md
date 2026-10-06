@@ -156,3 +156,9 @@
 - [06b](issues/06b-lifecycle-candidate.md)：主 Agent 集成、双轴独立评审、检查、候选与本地 PR body。
 
 主 Agent 单写管理状态；两名 implementer 在独立 worktree 从固定 integration SHA 开始，允许写集分离，公共模块清单/状态/版本/validation 由主 Agent 整合。工程/候选/用户认可分别记录，父04/05/06未完成范围保持；本段未宣称 M2 完整验收。
+
+### 派发归属
+
+固定 worker 起点 `ade890c`；主 Agent 管 `codex/m2-lifecycle`，状态/模块清单/结构报告/版本与整段 validation。04b→attachment_lifecycle→`/Users/louistation/.codex/worktrees/m2-lifecycle-04b/d-pi`→`codex/m2-lifecycle-04b`；05d→subagent_observation→`/Users/louistation/.codex/worktrees/m2-lifecycle-05d/d-pi`→`codex/m2-lifecycle-05d`。两者同起点、不同目录与写集，领取后不追赶 integration tip。
+
+04b 写集：input/attachments、platform/main/storage、attachment IPC/service/preload/GUI、附件集成测试、i18n ui 与 shared/messages、输入/存储模块说明。05d 写集：conversation、execution Host、OMP 协议/资源、runtime 观察适配、SDK 准备、reading 子Agent视图、i18n domain、原生观察测试与模块说明。工作台挂接/共享样式/公开依赖清单由主 Agent 合并；新增共享合同需求先反馈，禁止 worker 写 spec/票状态/看板。

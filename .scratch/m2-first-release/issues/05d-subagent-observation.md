@@ -1,6 +1,6 @@
 # 05d 原生子 Agent 状态与结果观察
 
-Status: open
+Status: claimed
 Blocked by: none
 
 M2，父票[05](05-queue-subagent.md)，范围依据[spec](../spec.md#2026-10-06-生命周期切片)、D-27、V1-06 和 conversation 合同。

@@ -1,6 +1,6 @@
 # 04b 附件引用、回收与一致性
 
-Status: open
+Status: claimed
 Blocked by: none
 
 M2，父票[04](04-input-attachments.md)，范围依据[spec](../spec.md#2026-10-06-生命周期切片)和基础契约 B4。用户授权继续下一阶段；本轮从已合并工作流的 main 开始。

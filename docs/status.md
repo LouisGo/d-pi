@@ -41,9 +41,9 @@
 | [m2-first-release / 02 配置、认证与模型](../.scratch/m2-first-release/issues/02-configuration-models.md) | claimed | 无；范围以所属规格为准 |
 | [m2-first-release / 03 主流程与候选](../.scratch/m2-first-release/issues/03-entry-candidate.md) | claimed | [01](../.scratch/m2-first-release/issues/01-project-threads.md)、[02](../.scratch/m2-first-release/issues/02-configuration-models.md) |
 | [m2-first-release / 04 输入与附件](../.scratch/m2-first-release/issues/04-input-attachments.md) | claimed | 无；范围以所属规格为准 |
-| [m2-first-release / 04b 附件引用、回收与一致性](../.scratch/m2-first-release/issues/04b-attachment-lifecycle.md) | open | 无；范围以所属规格为准 |
+| [m2-first-release / 04b 附件引用、回收与一致性](../.scratch/m2-first-release/issues/04b-attachment-lifecycle.md) | claimed | 无；范围以所属规格为准 |
 | [m2-first-release / 05 队列与子 Agent](../.scratch/m2-first-release/issues/05-queue-subagent.md) | open | 无；范围以所属规格为准 |
-| [m2-first-release / 05d 原生子 Agent 状态与结果观察](../.scratch/m2-first-release/issues/05d-subagent-observation.md) | open | 无；范围以所属规格为准 |
+| [m2-first-release / 05d 原生子 Agent 状态与结果观察](../.scratch/m2-first-release/issues/05d-subagent-observation.md) | claimed | 无；范围以所属规格为准 |
 | [m2-first-release / 06 阅读与组合验收](../.scratch/m2-first-release/issues/06-reading-acceptance.md) | open | 无；范围以所属规格为准 |
 | [m2-first-release / 06b 生命周期切片集成与候选](../.scratch/m2-first-release/issues/06b-lifecycle-candidate.md) | open | [04b](../.scratch/m2-first-release/issues/04b-attachment-lifecycle.md)、[05d](../.scratch/m2-first-release/issues/05d-subagent-observation.md) |
 | [state-query-alignment / 04 集成验证与试用交接](../.scratch/state-query-alignment/issues/04-integration-verification.md) | claimed | 无；范围以所属规格为准 |
@@ -63,4 +63,4 @@
 - [类型安全桌面路由](../.scratch/router-integration/spec.md)：本地实施和提交；不 push、不改变 OMP 执行及冷恢复政策。
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 
-<!-- source-sha256: a354f1d9ebe177ecab12933c1612260908ecab61b8da2842ced0a73b8f9cc9e3; sources: 107 -->
+<!-- source-sha256: db73a51bc93cb4351e0b7728352da8975204f09b24ed110bf21509ca5ad3a66a; sources: 107 -->
