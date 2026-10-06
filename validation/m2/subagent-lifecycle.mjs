@@ -152,7 +152,20 @@ export async function validateSubagentLifecycle({
   );
   const running = await cards();
   assert.equal(new Set(running.map((card) => card.id)).size, 2);
+  const revealCards = async () => {
+    await evaluate(
+      "document.querySelector('[data-subagent-id]').scrollIntoView({block:'start'})",
+    );
+    await wait(() =>
+      evaluate(
+        "(()=>{const r=document.querySelector('[data-subagent-id]').getBoundingClientRect();return r.top>=0 && r.top<innerHeight && r.bottom>r.top})()",
+      ),
+    );
+  };
+  await click("专注阅读");
+  await revealCards();
   screenshots.push(await shot("m2-subagents-running"));
+  await click("恢复控件");
   await selectThread(threadB);
   assert.equal((await cards()).length, 0);
   await selectThread(threadId);
@@ -201,11 +214,14 @@ export async function validateSubagentLifecycle({
     completed.some((card) => card.text.includes("M2_SUBAGENT_RESULT_SECOND")),
   );
   assert.ok(completed.every((card) => !card.text.includes(".jsonl")));
+  await click("专注阅读");
+  await revealCards();
   screenshots.push(await shot("m2-subagents-completed"));
   await evaluate(
     "document.querySelector('button[aria-label=\"切换为浅色主题\"]').click()",
   );
   await click("紧凑密度");
+  await revealCards();
   screenshots.push(await shot("m2-subagents-light-compact"));
   assert.deepEqual(
     (await cards()).map((card) => card.id).sort(),
@@ -215,6 +231,7 @@ export async function validateSubagentLifecycle({
     "document.querySelector('button[aria-label=\"切换为深色主题\"]').click()",
   );
   await click("正常密度");
+  await click("恢复控件");
   await call("Page.reload");
   await wait(
     async () =>

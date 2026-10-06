@@ -1,0 +1,61 @@
+
+ RUN  v5.0.2 /Users/louistation/MySpace/Life/d-pi
+
+ ❯ src/modules/execution/host/native/subagent-observation.test.ts (4 tests | 1 failed) 12ms
+   × reads native identities reused by later parent calls without merging old transcript replies 5ms
+ ❯ src/modules/conversation/host/subagent-observation.test.ts (8 tests | 1 failed) 20ms
+   × shows streamed text and structured yield results without treating child agent_end as terminal 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/modules/conversation/host/subagent-observation.test.ts > shows streamed text and structured yield results without treating child agent_end as terminal
+AssertionError: expected 'null' to be 'Execution failed: exact cause' // Object.is equality
+
+Expected: "Execution failed: exact cause"
+Received: "null"
+
+ ❯ src/modules/conversation/host/subagent-observation.test.ts:222:41
+    220|       },
+    221|     });
+    222|     expect(p.snapshot().items[0]?.text).toBe(expected);
+       |                                         ^
+    223|     p.dispose();
+    224|   },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/modules/execution/host/native/subagent-observation.test.ts > reads native identities reused by later parent calls without merging old transcript replies
+AssertionError: expected [ { …(2) } ] to match object [ { …(2) } ]
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  [
+    {
+      "payload": {
+        "parentToolCallId": "new-parent",
+        "status": "available",
+-       "text": "Execution failed: exact cause",
++       "text": "null",
+      },
+      "type": "d_pi_subagent_transcript",
+    },
+  ]
+
+ ❯ src/modules/execution/host/native/subagent-observation.test.ts:170:20
+    168|     });
+    169|     await new Promise((resolve) => setTimeout(resolve, 0));
+    170|     expect(frames).toMatchObject([
+       |                    ^
+    171|       {
+    172|         type: "d_pi_subagent_transcript",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  2 failed | 10 passed (12)
+   Start at  12:16:04
+   Duration  259ms (transform 46%, import 42%, tests 10%, worker 2%)
+

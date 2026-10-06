@@ -1,0 +1,9 @@
+
+ RUN  v5.0.2 /Users/louistation/MySpace/Life/d-pi
+
+
+ Test Files  6 passed (6)
+      Tests  66 passed (66)
+   Start at  12:10:27
+   Duration  2.16s (tests 51%, transform 23%, import 21%, environment 5%)
+

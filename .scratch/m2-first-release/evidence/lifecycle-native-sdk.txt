@@ -1,0 +1,9 @@
+bun test v1.3.14 (0d9b296a)
+
+../../../../../../../../Users/louistation/MySpace/Life/d-pi/resources/sdk/.subagent-observation-TmwqnT/native-subagent-observation.test.mjs:
+(pass) fixed SDK RPC observes two same-name tasks, final transcript and terminal registry removal [1425.53ms]
+
+ 1 pass
+ 0 fail
+ 13 expect() calls
+Ran 1 test across 1 file. [1439.00ms]

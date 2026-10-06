@@ -1,0 +1,39 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/main/index.test.ts -t 'starts attachment maintenance'
+$ tsr generate
+(node:25441) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/louistation/MySpace/Life/d-pi
+
+ ❯ src/app/main/index.test.ts (8 tests | 1 failed | 7 skipped) 1301ms
+   ↓ uses the first preferred system language rather than the Chromium app locale
+   ↓ starts with system locale, rebuilds the native menu on interaction, and keeps a failed locale save visible
+   ↓ restores the saved language before building the native menu
+   ↓ retries a failed initial restore after the lock clears, preserving the same draft
+   ↓ a timed-out close receipt cannot close a later attempt, and failed saves retain the window
+   ↓ accepts only bounded bridge diagnostics from the active frame
+   ↓ runtime inspection is read-only, rejects foreign frames, and explicit allowance persists without starting OMP
+   × starts attachment maintenance once and drains it before closing SQLite on Quit 1300ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/main/index.test.ts > starts attachment maintenance once and drains it before closing SQLite on Quit
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ src/app/main/index.test.ts:472:53
+    470|   try {
+    471|     await import("./index");
+    472|     await vi.waitFor(() => expect(startMaintenance).toHaveBeenCalledTi…
+       |                                                     ^
+    473|     shell.events.get("will-quit")?.({ preventDefault: vi.fn() });
+    474|     await vi.waitFor(() => expect(close).toHaveBeenCalledTimes(1));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 skipped (8)
+   Start at  11:28:30
+   Duration  1.92s (tests 71%, import 15%, transform 13%)
+
+[ELIFECYCLE] Test failed. See above for more details.

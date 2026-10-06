@@ -1,0 +1,33 @@
+
+ RUN  v5.0.2 /Users/louistation/MySpace/Life/d-pi
+
+ ❯ tests/integration/attachment-lifecycle.integration.test.ts (19 tests | 1 failed | 18 skipped) 42ms
+   × manual cleanup releases a completed import that was durably used and removed before first scan 41ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/attachment-lifecycle.integration.test.ts > manual cleanup releases a completed import that was durably used and removed before first scan
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/integration/attachment-lifecycle.integration.test.ts:939:34
+    937|   storage.drafts.save(draft.threadId,1,"");
+    938|   const report=await service.store.cleanStorage(draft.threadId);
+    939|   expect(report.retainedObjects).toBe(0);
+       |                                  ^
+    940|   expect(report.deletedObjects).toBe(1);
+    941|  }finally{await service.close();storage.close();rmSync(data,{recursive…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 18 skipped (19)
+   Start at  12:23:27
+   Duration  624ms (transform 47%, import 45%, tests 8%)
+

@@ -666,6 +666,11 @@ try {
     );
     assert.equal(journal.previousImages.length, 1);
     assert.equal(journal.command.retainedImageIds.length, 1);
+    await wait(() =>
+      evaluate(
+        "document.querySelector('[data-queue-action=delete]')?.disabled === false",
+      ),
+    );
     await evaluate(
       "document.querySelector('[data-queue-action=delete]').click()",
     );
@@ -817,6 +822,11 @@ try {
       .prepare("SELECT receipt FROM submission ORDER BY rowid DESC LIMIT 1")
       .get();
     assert.equal(JSON.parse(frozen.receipt).text, queuedOriginal);
+    await wait(() =>
+      evaluate(
+        "document.querySelector('[data-queue-action=delete]')?.disabled === false",
+      ),
+    );
     await evaluate(
       "document.querySelector('[data-queue-action=delete]').click()",
     );

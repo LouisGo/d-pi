@@ -1,0 +1,32 @@
+{
+  "app": "/Users/louistation/MySpace/Life/d-pi/dist/lifecycle-m2.14-clean/mac-arm64/d-pi.app",
+  "zip": "/Users/louistation/MySpace/Life/d-pi/dist/candidates/d-pi-0.1.0-m2.14-c5e424d-mac-arm64.zip",
+  "zipBytes": 430090644,
+  "zipSha256": "c0c192d94842c3fedec1c25a55d704ed00f511077b0ba7734130ae72cfc98afc",
+  "asarSha256": "abae2825dc399b7e1f526d01164fc9d099bc1677a41b9cc6ef6656a5cfb15a19",
+  "extractedAsarSha256": "abae2825dc399b7e1f526d01164fc9d099bc1677a41b9cc6ef6656a5cfb15a19",
+  "validatedAsarMatchesZip": true,
+  "zipCrc": "passed",
+  "build": {
+    "version": "0.1.0-m2.14",
+    "commit": "c5e424da02245ed854c9ba3af514087826b6cc24",
+    "dirty": false,
+    "id": "c5e424da-f02704bc"
+  },
+  "base": "c8dbdbadf1a04ad2be54e01f1a509024c5d982ea",
+  "branch": "codex/m2-lifecycle",
+  "macChecks": 22,
+  "result": "/Users/louistation/MySpace/Life/d-pi/.scratch/m2-first-release/evidence/lifecycle-package-result.json",
+  "behaviorTests": 691,
+  "architectureTests": 34,
+  "toolingTests": 70,
+  "existingOptInSkipped": 1,
+  "sdk": "18.4.6",
+  "sdkDependencyUnits": 112,
+  "reviews": {
+    "spec": "passed at c5e424d; independent 51/51",
+    "standards": "passed at c5e424d; isolated adoption and performance probes"
+  },
+  "signing": "unsigned and unnotarized local macOS arm64 candidate",
+  "acceptance": "pending"
+}

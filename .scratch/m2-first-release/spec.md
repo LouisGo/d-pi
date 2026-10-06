@@ -10,7 +10,7 @@
     "trial": "delivered",
     "acceptance": "pending",
     "current": true,
-    "build": "0.1.0-m2.13 / 7f5d5909-ac115847",
+    "build": "0.1.0-m2.14 / c5e424da-f02704bc",
     "pending": [
       "../m1-s3-control-recovery/issues/09-quit-discard-decision.md"
     ],
@@ -29,10 +29,12 @@
       "../review-seven-commits/spec.md",
       "next-stage.md",
       "queue-configuration-review.md",
-      "content-preparation.md"
+      "content-preparation.md",
+      "lifecycle.md",
+      "lifecycle-review.md"
     ],
-    "next": "04a附件引用与05c带图队列工程完成，m2.13候选已交付待试用；后续04的PDF视觉/OCR与B4回收、05完整子Agent生命周期等仍开放，M2用户认可pending，冷旧Thread只读",
-    "constraints": "2026-10-02用户授权下一阶段M2并行开发与中断后继续；本地commit/候选沿用M2授权，不将旧特定修复push扩大到本轮。保留原有环境对齐未提交改动；不公开发布、不扩M3，冷恢复只读，unknown不自动重发。"
+    "next": "04b附件回收与05d原生子Agent观察工程完成，m2.14候选交付待试用；后续PDF视觉/OCR与余下M2队列/子Agent/长输出/故障组合验收开放，真实供应商试用与用户认可pending，冷旧Thread只读",
+    "constraints": "2026-10-02用户授权下一阶段M2并行开发与中断后继续；本地commit/候选沿用M2授权，不将旧特定修复push扩大到本轮。2026-10-06按已合并main重启本地全流程，默认Node24.21.0/pnpm12.8.1已对齐；不公开发布、不扩M3，冷恢复只读，unknown不自动重发。"
   }
 ]
 ```
@@ -58,7 +60,7 @@
 - 已定：D-02–D-08、D-10/D-11、D-20–D-27、D-28–D-37；沿用 OMP 执行、队列、原生历史、配置与凭据所有权，App 草稿/冻结原文/收据事务不改变。
 - 重要待决：无新增。[S3 09](../m1-s3-control-recovery/issues/09-quit-discard-decision.md)退出放弃队列待决，仅暂停对应出口；缺全周期单写证据的冷恢复只读，提供明确新建独立 Thread 出口，不冒称恢复旧执行。
 - 工程：正在实施；既有正确路径复用当前相关证据，新增缺口先失败行为测试。测试隔离 App 数据、OMP 配置、HOME、Git 配置、项目及网络；不继承个人凭据。真实供应商缺账户/费用授权仅暂停实测，不阻塞薄桥接及 fixture 验证。
-- 用户试用：当前交付 `0.1.0-m2.13 / 7f5d5909-ac115847`、源码 `7f5d590`，18项实际干净包内检查及ZIP同源验证通过；用户认可 pending。[精确身份、哈希、证据和步骤](content-preparation.md#候选与试用)。m2.12及更早反馈/失败包保留历史证据，每段可操作体验给出对应源码和包身份；Agent验证不替代用户认可。
+- 用户试用：当前交付 `0.1.0-m2.14 / c5e424da-f02704bc`、产品源码 `c5e424d`，22项实际干净包内检查、两轴独立review与ZIP同源验证通过；用户认可 pending。[精确身份、哈希、证据和步骤](lifecycle.md#候选与验证)。m2.13及更早反馈/失败包保留历史证据，每段可操作体验给出对应源码和包身份；Agent验证不替代用户认可。
 - 继续边界：本授权内持续实施，不重做基建审计。重大产品/权限/数据合同变化才对齐；签名、公证、公开分发及 M3 不纳入。
 
 ## 首版覆盖与近期任务
@@ -162,3 +164,7 @@
 固定 worker 起点 `ade890c`；主 Agent 管 `codex/m2-lifecycle`，状态/模块清单/结构报告/版本与整段 validation。04b→attachment_lifecycle→`/Users/louistation/.codex/worktrees/m2-lifecycle-04b/d-pi`→`codex/m2-lifecycle-04b`；05d→subagent_observation→`/Users/louistation/.codex/worktrees/m2-lifecycle-05d/d-pi`→`codex/m2-lifecycle-05d`。两者同起点、不同目录与写集，领取后不追赶 integration tip。
 
 04b 写集：input/attachments、platform/main/storage、attachment IPC/service/preload/GUI、附件集成测试、i18n ui 与 shared/messages、输入/存储模块说明。05d 写集：conversation、execution Host、OMP 协议/资源、runtime 观察适配、SDK 准备、reading 子Agent视图、i18n domain、原生观察测试与模块说明。工作台挂接/共享样式/公开依赖清单由主 Agent 合并；新增共享合同需求先反馈，禁止 worker 写 spec/票状态/看板。
+
+### 2026-10-06 工程与候选交付
+
+04b/05d/06b resolved：基于已合并main完整执行固定起点worker、串行集成、真实失败回归、两轴独立review/修复/复核、完整工程与实际macOS候选。产品源码c5e424d、clean构建c5e424da-f02704bc；691行为/34架构/70tooling、固定SDK及22项实际包内检查通过，ZIP CRC与app.asar同源核对通过。[交接](lifecycle.md)、[评审](lifecycle-review.md)、[本地PR body](pr.md)。本地提交未push，默认Node24.21.0/pnpm12.8.1已对齐；父04/05/06及M2未完成范围保持，真实供应商与用户认可pending。
