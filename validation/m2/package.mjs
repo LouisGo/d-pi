@@ -1439,6 +1439,17 @@ try {
     JSON.stringify({
       execution: subagentSupplier.requests,
       titles: subagentSupplier.titleRequests,
+      longReading: longReadingSupplier.requests.map((request) => ({
+        model: request.model,
+        tools: request.tools?.map((tool) => tool.function?.name),
+        toolBytes: request.messages
+          .filter((message) => message.role === "tool")
+          .map((message) =>
+            typeof message.content === "string"
+              ? Buffer.byteLength(message.content)
+              : null,
+          ),
+      })),
     }),
   );
   console.error("Failure evidence: " + isolated.root);
