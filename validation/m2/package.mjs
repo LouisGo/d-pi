@@ -16,6 +16,7 @@ import {
   prepareAgedAttachment,
   validateAttachmentLifecycle,
 } from "./attachment-lifecycle.mjs";
+import { createCdpClient } from "./cdp.mjs";
 import {
   prepareDiagnosticStartupFailure,
   validateDiagnostics,
@@ -30,11 +31,7 @@ import {
   createSubagentSupplier,
   validateSubagentLifecycle,
 } from "./subagent-lifecycle.mjs";
-import {
-  ValidationTransportError,
-  wait,
-  waitForEnabledAction,
-} from "./wait.mjs";
+import { wait, waitForEnabledAction } from "./wait.mjs";
 
 const isolated = createTestEnvironment({ prefix: "d-pi-m2-package-" });
 const source = resolve(
@@ -186,9 +183,8 @@ function launch(env = isolated.env) {
   return app;
 }
 let child = launch(),
-  socket;
-let seq = 0;
-const pending = new Map();
+  socket,
+  cdp;
 async function connect() {
   const target = await wait(async () => {
     try {
@@ -208,43 +204,10 @@ async function connect() {
     socket.onopen = r;
     socket.onerror = j;
   });
-  socket.onmessage = (e) => {
-    const m = JSON.parse(e.data);
-    if (m.id) {
-      const task = pending.get(m.id);
-      pending.delete(m.id);
-      m.error ? task?.reject(Error(m.error.message)) : task?.resolve(m.result);
-    }
-  };
-  socket.onclose = () => {
-    for (const task of pending.values())
-      task.reject(new ValidationTransportError("CDP closed"));
-    pending.clear();
-  };
+  cdp = createCdpClient(socket);
 }
 function call(method, params = {}) {
-  return new Promise((resolve, reject) => {
-    if (socket.readyState !== WebSocket.OPEN) {
-      reject(new ValidationTransportError("CDP closed"));
-      return;
-    }
-    const id = ++seq;
-    const timeout = setTimeout(() => {
-      pending.delete(id);
-      reject(new ValidationTransportError(`CDP ${method} timeout`));
-    }, 30000);
-    pending.set(id, {
-      resolve(value) {
-        clearTimeout(timeout);
-        resolve(value);
-      },
-      reject(error) {
-        clearTimeout(timeout);
-        reject(error);
-      },
-    });
-    socket.send(JSON.stringify({ id, method, params }));
-  });
+  return cdp.call(method, params);
 }
 async function evaluate(expression) {
   const reply = await call("Runtime.evaluate", {

@@ -1,0 +1,23 @@
+✔ a real unanswered CDP request keeps its transport cause at the wait deadline (46.4195ms)
+✔ a request responds normally and a closed socket terminates its active wait (1.118833ms)
+✔ standalone request timeouts and synchronous send failures retain their cause (11.58325ms)
+✔ cancelling one wait does not cancel another concurrent request (31.128458ms)
+✔ the wait deadline clears the longer CDP timer so its child can exit naturally (70.69775ms)
+✔ a failed package condition reports its phase and bounded last predicate error (12.910792ms)
+✔ an action must exist and finish its pending state before the next operation (105.193792ms)
+✔ a closed or timed-out transport is propagated instead of retried as a UI condition (0.378375ms)
+✔ a stalled predicate still has a bounded wait deadline (19.533667ms)
+✔ a missing or busy action reports its phase without requiring browser frames (31.271708ms)
+✔ transient predicate errors can recover and successful values are preserved (51.477667ms)
+✔ a Vitest separator cannot silently discard file filters and run other suites (49.006917ms)
+✔ direct filters and legal options execute only the selected test (540.914667ms)
+✔ no file filters still run the complete fixture suite (420.7965ms)
+✔ missing filters and failing selected tests keep a nonzero exit (696.431334ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1766.330292

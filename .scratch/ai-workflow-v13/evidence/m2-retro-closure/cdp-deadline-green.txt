@@ -1,0 +1,15 @@
+✔ a real unanswered CDP request keeps its transport cause at the wait deadline (44.943041ms)
+✔ a failed package condition reports its phase and bounded last predicate error (13.546125ms)
+✔ an action must exist and finish its pending state before the next operation (105.583375ms)
+✔ a closed or timed-out transport is propagated instead of retried as a UI condition (0.38925ms)
+✔ a stalled predicate still has a bounded wait deadline (20.536166ms)
+✔ a missing or busy action reports its phase without requiring browser frames (31.84625ms)
+✔ transient predicate errors can recover and successful values are preserved (51.615625ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 281.110375
