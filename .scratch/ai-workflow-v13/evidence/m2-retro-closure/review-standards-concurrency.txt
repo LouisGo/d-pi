@@ -1,0 +1,1 @@
+PASS: same-socket concurrent wait cancellation leaves other request intact; late success/error do not collide with later IDs

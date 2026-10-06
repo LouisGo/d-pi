@@ -1,0 +1,14 @@
+{
+  "fromLocalMain": "1c9c30afb83a01531b11b02d30f2dd8f7ff6f586",
+  "fastForwardTo": "99599926a149b917475a322c4f00f3851e291188",
+  "method": "git switch main; git merge --ff-only codex/m2-retro-closure",
+  "branch": "main",
+  "remoteActions": "none; no fetch/push/PR/remote merge",
+  "knownOriginMain": "1c9c30afb83a01531b11b02d30f2dd8f7ff6f586",
+  "scope": "includes already delivered diagnostics ancestors and reviewed retro tools; no integration of other M2 worktrees",
+  "priorEvidenceCommit": "99599926a149b917475a322c4f00f3851e291188",
+  "priorEvidenceFiles": 30,
+  "priorEvidenceRecoveredSha256": "30/30 matched; git ls-files, cat-file and show verified",
+  "finalMetadata": "review conclusions, local integration record and independently saved outputs; implementation remains 473dffe",
+  "stop": "no next M2 phase started"
+}

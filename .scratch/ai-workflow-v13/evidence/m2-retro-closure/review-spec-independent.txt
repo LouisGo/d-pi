@@ -1,0 +1,5 @@
+PASS: same-client concurrent deadline isolation and late response
+PASS: close terminates all requests and closed socket rejects
+{"elapsed":30002.240792,"type":"ValidationTransportError","message":"CDP Runtime.evaluate timeout"}
+
+Exit: 0

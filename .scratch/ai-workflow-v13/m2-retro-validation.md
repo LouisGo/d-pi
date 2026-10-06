@@ -16,7 +16,7 @@
 
 ## 集成验证
 
-- [目标回归](evidence/m2-retro-closure/targeted-final.txt)：15/15；[快速检查](evidence/m2-retro-closure/fast-fix.txt)通过。
+- [目标回归](evidence/m2-retro-closure/targeted-final.txt)：15/15；[实现快速检查](evidence/m2-retro-closure/fast-fix.txt)及[最终管理收尾快速检查](evidence/m2-retro-closure/fast-close.txt)通过。
 - [首次完整check](evidence/m2-retro-closure/check.txt)保留3项SDK相关失败。当前忽略的SDK资源缺顶层包入口且import修正hash不符，[环境负例](evidence/m2-retro-closure/environment-before.txt)→用现有 `pnpm runtime:sdk` [原子准备](evidence/m2-retro-closure/environment-prepare.txt)→[环境零问题](evidence/m2-retro-closure/environment-after.txt)，3项受影响SDK[回归通过](evidence/m2-retro-closure/sdk-recovery.txt)。资源丢失原因 unknown，不归因于本轮产品改动。
 - 修复后 [完整 `pnpm check`](evidence/m2-retro-closure/check-final.txt)通过：751行为、34架构、89工具；2项既有行为skip，类型/设计/i18n/文档/结构/状态门禁通过。[`pnpm build`](evidence/m2-retro-closure/build.txt)通过，保留既有Monaco chunk大小warning。
 - [首轮包内失败](evidence/m2-retro-closure/package.txt)保留：现存m2.17 App同样缺SDK包入口，模型列表不可用。原交付ZIP SHA与原身份一致且资源完整；从原ZIP解包后，[修订harness包内重验](evidence/m2-retro-closure/package-restored.txt)通过19项自动化检查，[结果](evidence/m2-retro-closure/m2-result.json)、[诊断结果](evidence/m2-retro-closure/diagnostics-result.json)。使用固定真实SDK、Electron GUI、隔离HOME/App/config与localhost供应商；无个人账号或真实供应商费用。命令 `node validation/m2/package.mjs dist/validation/m2-retro-restored-candidate/d-pi.app --diagnostics`。

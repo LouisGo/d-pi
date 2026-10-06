@@ -1,6 +1,6 @@
 # M2 retro 收口与后续入口
 
-2026-10-06。三项retro建议已经applied；实现 `b84ed9a`，真实CDP期限竞争补修 `473dffe`，起点 `7c9e1fe`，分支 `codex/m2-retro-closure`。本轮为工程工具及交接改进，无新产品候选。完成记录、验证、双轴独立review及本地提交后，将本轮与其已有诊断祖先快进整合到本地main；不push/建远端PR，不继续其它M2功能。最终提交与实际整合状态由本轮收尾结果给出。
+2026-10-06。三项retro建议已经applied；实现 `b84ed9a`，真实CDP期限竞争补修 `473dffe`，起点 `7c9e1fe`，分支 `codex/m2-retro-closure`。本轮为工程工具及交接改进，无新产品候选。记录、验证、双轴独立review及本地提交完成，本轮与其已有诊断祖先已从`main@1c9c30a`快进整合到本地main的`9959992`，最后仅追加复核结论/整合记录与已保存独立输出；[整合证据](evidence/m2-retro-closure/local-integration.json)。不push/建远端PR，不继续其它M2功能。最终main提交由`git log -1 main`及本轮收尾结果给出。
 
 ## 目录变化
 

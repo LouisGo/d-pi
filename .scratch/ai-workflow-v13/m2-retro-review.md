@@ -15,4 +15,8 @@
 
 ## 管理收尾复核
 
-最终证据、resolved状态、本地PR body和M2接手指针另行固定提交追加复核；记录待收到结论后补齐，不把实现复核冒称文档已核实。
+固定head `99599926a149b917475a322c4f00f3851e291188`，两轴追加覆盖`473dffe..9959992`全部23文件，结合实现覆盖整段51唯一文件；各自高价值发现0。两reviewer逐项核实提交内30份SHA证据、751/34/89和2skip、首次失败及恢复unknown、19当前包内/21历史及2原生not-run、M2父01–06字节未变、in-progress/delivered/pending、其它会话隔离及本地PR body。各自从固定树提取并建立独立Git index，文档引用/状态检查exit0。
+
+独立复现为保存输出重跑，原始字节随提交保留：[Spec](evidence/m2-retro-closure/review-spec-independent.txt)（30002.240792ms及exit0，不替代首轮30000.329ms）、[Standards期限](evidence/m2-retro-closure/review-standards-deadline.txt)（30000ms）、[Standards并发](evidence/m2-retro-closure/review-standards-concurrency.txt)。脚本仍在对应固定临时提取树，Spec路径`/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-retro-spec-recheck-llaoqjot/independent.mjs`，Standards路径`/tmp/d-pi-standards-final.3cvopY/review-evidence/`；可据实现固定commit重新提取工具运行，不把临时路径当永久证据。
+
+两轴没有核实当时尚未执行的本地main整合。主Agent随后实际fast-forward `main@1c9c30a`到`9959992`，未触碰其它worktree/远端；[整合记录](evidence/m2-retro-closure/local-integration.json)。本文件最终段和整合结果的追加仅持久化review/实际操作结果，不声称由reviewer预先审查；源码保持`473dffe`所评审状态。
