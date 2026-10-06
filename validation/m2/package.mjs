@@ -17,6 +17,11 @@ import {
   validateAttachmentLifecycle,
 } from "./attachment-lifecycle.mjs";
 import {
+  prepareDiagnosticStartupFailure,
+  validateDiagnostics,
+  validateDiagnosticsEntry,
+} from "./diagnostics.mjs";
+import {
   createLongReadingSupplier,
   prepareLongReadingExtension,
   validateLongReading,
@@ -165,11 +170,11 @@ await new Promise((r) => ports.listen(0, "127.0.0.1", r));
 const port = ports.address().port;
 await new Promise((r) => ports.close(r));
 const binary = join(bundle, "Contents/MacOS/d-pi");
-function launch() {
+function launch(env = isolated.env) {
   const app = spawn(
     binary,
     ["--lang=zh-CN", `--remote-debugging-port=${port}`],
-    { env: isolated.env, stdio: ["ignore", "pipe", "pipe"] },
+    { env, stdio: ["ignore", "pipe", "pipe"] },
   );
   app.stdout.resume();
   app.stderr.on("data", (chunk) => process.stderr.write(chunk));
@@ -384,8 +389,11 @@ const screenshots = [];
 const continuitySamples = [];
 let agedAttachmentPath;
 let longReadingMetrics;
+let diagnosticsMetrics;
 try {
   await connect();
+  if (process.argv.includes("--diagnostics"))
+    await validateDiagnosticsEntry({ evaluate, wait, checks });
   await wait(() =>
     evaluate("!!document.querySelector('[contenteditable=true]')"),
   );
@@ -1305,6 +1313,22 @@ try {
       temporary: isolated.root,
     });
   }
+  if (process.argv.includes("--diagnostics")) {
+    diagnosticsMetrics = await validateDiagnostics({
+      data: isolated.data,
+      root: isolated.root,
+      env: isolated.env,
+      threadA: a,
+      threadB: b,
+      evaluate,
+      wait,
+      call,
+      shot,
+      screenshots,
+      checks,
+      nativeInspection: process.argv.includes("--diagnostics-inspect"),
+    });
+  }
   if (process.argv.includes("--inspect")) {
     const checkpoint = join(isolated.root, "inspect-checkpoint.json"),
       resume = join(isolated.root, "inspect-continue");
@@ -1404,6 +1428,33 @@ try {
   assert.ok(!logs.includes("fixture-original"));
   const build = JSON.parse(logs.trim().split("\n")[0]).build;
   assert.equal(build.dirty, process.argv.includes("--working-tree"));
+  if (process.argv.includes("--diagnostics")) {
+    // Restart the same copied candidate under a second controlled App data root.
+    // Preserve the failed database bytes: diagnostics must never repair it.
+    child.kill("SIGKILL");
+    await wait(() => child.signalCode !== null);
+    socket.onclose = null;
+    socket.close();
+    const failureData = prepareDiagnosticStartupFailure(isolated.root);
+    child = launch({ ...isolated.env, D_PI_DATA_DIR: failureData });
+    await connect();
+    await validateDiagnosticsEntry({
+      evaluate,
+      wait,
+      checks,
+      startupFailure: true,
+    });
+    assert.equal(
+      readFileSync(join(failureData, "drafts.sqlite"), "utf8"),
+      "controlled-invalid-sqlite",
+    );
+    diagnosticsMetrics.startupFailureData = failureData;
+    screenshots.push(await shot("m2-diagnostics-startup-failure"));
+    writeFileSync(
+      join(isolated.root, "diagnostics-result.json"),
+      JSON.stringify(diagnosticsMetrics, null, 2) + "\n",
+    );
+  }
   const result = {
     source,
     bundle,
@@ -1417,6 +1468,7 @@ try {
     subagentTitleProviderCalls: subagentSupplier.titleRequests.length,
     longReadingProviderCalls: longReadingSupplier.requests.length,
     longReading: longReadingMetrics,
+    diagnostics: diagnosticsMetrics,
     models: requests.map((r) => r.model),
     nativeSessions: db
       .prepare("SELECT session_id,thread_id FROM native_session")
