@@ -1,0 +1,36 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/platform/main/diagnostics/reader.test.ts
+$ tsr generate
+(node:67679) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/.codex/worktrees/m2-diagnostics-reader/d-pi[39m
+
+ [31m❯[39m src/platform/main/diagnostics/reader.test.ts [2m([22m[2m4 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 22[2mms[22m[39m
+   [32m✓[39m reads persisted receipt acceptance and outcome independently with scoped correlation[32m 10[2mms[22m[39m
+   [32m✓[39m strips content and unsafe strings while preserving safe observation fields[32m 2[2mms[22m[39m
+   [32m✓[39m returns latest persisted records across rotated files and flags the record limit[32m 2[2mms[22m[39m
+[31m   [31m×[31m skips malformed, oversized and incomplete records while retaining adjacent valid evidence[39m[32m 7[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/platform/main/diagnostics/reader.test.ts[2m > [22mskips malformed, oversized and incomplete records while retaining adjacent valid evidence
+[31m[1mSyntaxError[22m: Expected property name or '}' in JSON at position 1 (line 1 column 2)[39m
+[36m [2m❯[22m readDiagnosticSnapshot src/platform/main/diagnostics/reader.ts:[2m74:38[22m[39m
+    [90m 72|[39m         if (!line) continue;
+    [90m 73|[39m         snapshot.coverage.lines++;
+    [90m 74|[39m         const parsed = sanitize(JSON.parse(line));
+    [90m   |[39m                                      [31m^[39m
+    [90m 75|[39m         if (parsed.redacted) snapshot.coverage.redacted++;
+    [90m 76|[39m         if (!parsed.record) { snapshot.coverage.malformed++; continue;…
+[90m [2m❯[22m src/platform/main/diagnostics/reader.test.ts:[2m52:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m3 passed[39m[22m[90m (4)[39m
+[2m   Start at [22m 16:17:43
+[2m   Duration [22m 199ms[2m (transform 41%, import 39%, tests 18%, worker 2%)[22m
+
+[ELIFECYCLE] Test failed. See above for more details.

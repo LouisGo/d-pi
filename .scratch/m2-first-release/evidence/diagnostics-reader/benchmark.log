@@ -1,0 +1,8 @@
+
+ RUN  v5.0.2 /Users/louistation/.codex/worktrees/m2-diagnostics-reader/d-pi
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  16:23:18
+   Duration  482ms (tests 75%, transform 12%, import 12%, worker 1%)

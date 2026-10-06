@@ -1,0 +1,68 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/platform/main/diagnostics/reader.test.ts
+$ tsr generate
+(node:68825) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/.codex/worktrees/m2-diagnostics-reader/d-pi[39m
+
+ [31m❯[39m src/platform/main/diagnostics/reader.test.ts [2m([22m[2m7 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 285[2mms[22m[39m
+   [32m✓[39m reads persisted receipt acceptance and outcome independently with scoped correlation[32m 10[2mms[22m[39m
+   [32m✓[39m strips content and unsafe strings while preserving safe observation fields[32m 2[2mms[22m[39m
+   [32m✓[39m returns latest persisted records across rotated files and flags the record limit[32m 2[2mms[22m[39m
+   [32m✓[39m skips malformed, oversized and incomplete records while retaining adjacent valid evidence[32m 8[2mms[22m[39m
+   [32m✓[39m caps the retained-file and scan-byte budgets and reads each file from its recent tail[32m 254[2mms[22m[39m
+   [32m✓[39m refuses rotated symlinks and non-files and reports unavailable evidence without rejecting[32m 2[2mms[22m[39m
+[31m   [31m×[31m preserves unknown stage evidence conservatively without exporting arbitrary stage content[39m[32m 5[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/platform/main/diagnostics/reader.test.ts[2m > [22mpreserves unknown stage evidence conservatively without exporting arbitrary stage content
+[31m[1mAssertionError[22m: expected [] to deeply equal [ { schemaVersion: 1, …(14) } ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "build": {[39m
+[32m-       "commit": "4cf37b9",[39m
+[32m-       "dirty": false,[39m
+[32m-       "id": "4cf37b9a-a0123456",[39m
+[32m-       "version": "0.1.0-m2.16",[39m
+[32m-     },[39m
+[32m-     "code": "host-exited",[39m
+[32m-     "connectionId": "75dc76a3-f83e-49c9-84f1-8e6aad328309",[39m
+[32m-     "observedAt": "preload",[39m
+[32m-     "operation": "submit",[39m
+[32m-     "outcome": "failed",[39m
+[32m-     "process": "main",[39m
+[32m-     "processInstanceId": "75dc76a3-f83e-49c9-84f1-8e6aad328309",[39m
+[32m-     "receiptState": "acknowledged",[39m
+[32m-     "requestId": "16c0e6f1-d0b8-4147-8088-9b13c6410ff2",[39m
+[32m-     "schemaVersion": 1,[39m
+[32m-     "stage": "unknown",[39m
+[32m-     "threadId": "9479dba2-b574-4611-a89f-925ba02e67aa",[39m
+[32m-     "time": "2026-10-06T10:00:00.000Z",[39m
+[32m-     "traceId": "16c0e6f1-d0b8-4147-8088-9b13c6410ff2",[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m src/platform/main/diagnostics/reader.test.ts:[2m185:28[22m[39m
+    [90m183|[39m   const directory = await fixture({ "main.jsonl": line({ ...event, sta…
+    [90m184|[39m   const snapshot = await readDiagnosticSnapshot(directory, filter);
+    [90m185|[39m   expect(snapshot.records).toEqual([{ ...event, stage: "unknown", outc…
+    [90m   |[39m                            [31m^[39m
+    [90m186|[39m   expect(snapshot.coverage.redacted).toBe(1);
+    [90m187|[39m });
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m6 passed[39m[22m[90m (7)[39m
+[2m   Start at [22m 16:20:47
+[2m   Duration [22m 494ms[2m (tests 70%, import 16%, transform 13%, worker 1%)[22m
+
+[ELIFECYCLE] Test failed. See above for more details.

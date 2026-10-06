@@ -1,0 +1,666 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/shell/diagnostics.test.ts
+$ tsr generate
+(node:69282) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/.codex/worktrees/m2-diagnostics-gui/d-pi[39m
+
+ [31m❯[39m src/app/renderer/shell/diagnostics.test.ts [2m([22m[2m9 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 626[2mms[22m[39m
+   [32m✓[39m opens only on intent, applies bounded trace and coverage, validates filters before IPC[32m 98[2mms[22m[39m
+   [32m✓[39m retains an identified old sample when explicit refresh fails, with failure trace[32m 34[2mms[22m[39m
+   [32m✓[39m exports only explicit intent once and reports cancellation, failure and exported trace[32m 84[2mms[22m[39m
+   [32m✓[39m drops late query and export from a closed or replaced scope[32m 119[2mms[22m[39m
+   [32m✓[39m copies controlled metadata and reproduction placeholders, reporting clipboard failure[32m 55[2mms[22m[39m
+   [32m✓[39m applies explicit local time, Thread, Writer, operation and stage without issuing intermediate reads[32m 73[2mms[22m[39m
+   [32m✓[39m renders typed records and restores trigger focus after Escape without background lifecycle effects[32m 44[2mms[22m[39m
+   [32m✓[39m keeps local reads available offline and never retries or leaks transport error text[32m 38[2mms[22m[39m
+[31m   [31m×[31m releases diagnostic scope cache on close and restores apply focus after changing scope[39m[32m 81[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/app/renderer/shell/diagnostics.test.ts[2m > [22mreleases diagnostic scope cache on close and restores apply focus after changing scope
+[31m[1mAssertionError[22m: expected <body><div>…(1)</div>
+…(1)</body> to be <button type="submit" …(4)></button> // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[31m+ <body>[39m
+[31m+   <div>[39m
+[31m+     <button[39m
+[31m+       aria-expanded="true"[39m
+[31m+       class="ui-button ui-button-ghost"[39m
+[31m+       data-diagnostics-trigger="global"[39m
+[31m+       data-slot="button"[39m
+[31m+       tabindex="0"[39m
+[31m+       type="button"[39m
+[31m+     >[39m
+[31m+       诊断与反馈[39m
+[31m+     </button>[39m
+[31m+   </div>[39m
+[31m+   <section[39m
+[31m+     aria-labelledby="_r_a_"[39m
+[31m+     class="_panel_59d30d"[39m
+[31m+     data-diagnostics-panel="true"[39m
+[31m+     tabindex="-1"[39m
+[31m+   >[39m
+[31m+     <header[39m
+[31m+       class="_heading_59d30d"[39m
+[31m+     >[39m
+[31m+       <h2[39m
+[31m+         id="_r_a_"[39m
+[31m+       >[39m
+[31m+         诊断与故障反馈[39m
+[31m+       </h2>[39m
+[2m        <button[22m
+[31m+         class="ui-button ui-button-ghost"[39m
+[31m+         data-diagnostics-close="true"[39m
+[31m+         data-slot="button"[39m
+[31m+         tabindex="0"[39m
+[31m+         type="button"[39m
+[31m+       >[39m
+[31m+         关闭诊断[39m
+[31m+       </button>[39m
+[31m+     </header>[39m
+[31m+     <p[39m
+[31m+       class="muted"[39m
+[31m+     >[39m
+[31m+       仅查询本机已落盘的保留日志。默认最近24小时、最多100条；导出由系统保存对话框确认，不自动上传。[39m
+[31m+     </p>[39m
+[31m+     <form[39m
+[31m+       class="_filters_59d30d"[39m
+[31m+       novalidate=""[39m
+[31m+     >[39m
+[31m+       <label>[39m
+[31m+         开始时间[39m
+[31m+         <input[39m
+[31m+           aria-label="开始时间"[39m
+[31m+           data-diagnostics-filter="since"[39m
+[31m+           name="since"[39m
+[31m+           step="1"[39m
+[31m+           type="datetime-local"[39m
+[31m+           value="2026-10-05T16:22:26"[39m
+[31m+         />[39m
+[31m+       </label>[39m
+[31m+       <label>[39m
+[31m+         结束时间[39m
+[31m+         <input[39m
+[31m+           aria-label="结束时间"[39m
+[31m+           data-diagnostics-filter="until"[39m
+[31m+           name="until"[39m
+[31m+           step="1"[39m
+[31m+           type="datetime-local"[39m
+[31m+           value="2026-10-06T16:22:26"[39m
+[31m+         />[39m
+[31m+       </label>[39m
+[31m+       <label>[39m
+[31m+         traceId[39m
+[31m+         <input[39m
+[31m+           aria-label="traceId"[39m
+[31m+           data-diagnostics-filter="traceId"[39m
+[31m+           name="traceId"[39m
+[31m+           value="a1cbcb4d-e59b-4163-b000-a10aa16798a2"[39m
+[31m+         />[39m
+[31m+       </label>[39m
+[31m+       <label>[39m
+[31m+         Thread ID[39m
+[31m+         <input[39m
+[31m+           aria-label="Thread ID"[39m
+[31m+           data-diagnostics-filter="threadId"[39m
+[31m+           name="threadId"[39m
+[31m+           value=""[39m
+[31m+         />[39m
+[31m+       </label>[39m
+[31m+       <label>[39m
+[31m+         Writer实例 ID[39m
+[31m+         <input[39m
+[31m+           aria-label="Writer实例 ID"[39m
+[31m+           data-diagnostics-filter="processInstanceId"[39m
+[31m+           name="processInstanceId"[39m
+[31m+           value=""[39m
+[31m+         />[39m
+[31m+       </label>[39m
+[31m+       <label>[39m
+[31m+         阶段[39m
+[31m+         <select[39m
+[31m+           aria-label="阶段"[39m
+[31m+           data-diagnostics-filter="stage"[39m
+[31m+           name="stage"[39m
+[31m+         >[39m
+[31m+           <option[39m
+[31m+             value=""[39m
+[31m+           >[39m
+[31m+             所有阶段[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="prepared"[39m
+[31m+           >[39m
+[31m+             prepared[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="dispatching"[39m
+[31m+           >[39m
+[31m+             dispatching[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="acknowledged"[39m
+[31m+           >[39m
+[31m+             acknowledged[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="unknown"[39m
+[31m+           >[39m
+[31m+             unknown[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="received"[39m
+[31m+           >[39m
+[31m+             received[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="completed"[39m
+[31m+           >[39m
+[31m+             completed[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="failed"[39m
+[31m+           >[39m
+[31m+             failed[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="renderer-gone"[39m
+[31m+           >[39m
+[31m+             renderer-gone[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="initiated"[39m
+[31m+           >[39m
+[31m+             initiated[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="confirmed"[39m
+[31m+           >[39m
+[31m+             confirmed[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="acknowledgement-failed"[39m
+[31m+           >[39m
+[31m+             acknowledgement-failed[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="disconnected"[39m
+[31m+           >[39m
+[31m+             disconnected[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="exited"[39m
+[31m+           >[39m
+[31m+             exited[39m
+[31m+           </option>[39m
+[31m+         </select>[39m
+[31m+       </label>[39m
+[31m+       <label>[39m
+[31m+         操作[39m
+[31m+         <select[39m
+[31m+           aria-label="操作"[39m
+[31m+           data-diagnostics-filter="operation"[39m
+[31m+           name="operation"[39m
+[31m+         >[39m
+[31m+           <option[39m
+[31m+             value=""[39m
+[31m+           >[39m
+[31m+             所有操作[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="unknown"[39m
+[31m+           >[39m
+[31m+             unknown[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="diagnostics:query"[39m
+[31m+           >[39m
+[31m+             diagnostics:query[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="diagnostics:export"[39m
+[31m+           >[39m
+[31m+             diagnostics:export[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="restore"[39m
+[31m+           >[39m
+[31m+             restore[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="choose-project"[39m
+[31m+           >[39m
+[31m+             choose-project[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="new-thread"[39m
+[31m+           >[39m
+[31m+             new-thread[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="select-thread"[39m
+[31m+           >[39m
+[31m+             select-thread[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="list-threads"[39m
+[31m+           >[39m
+[31m+             list-threads[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="save"[39m
+[31m+           >[39m
+[31m+             save[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="preferences"[39m
+[31m+           >[39m
+[31m+             preferences[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="window"[39m
+[31m+           >[39m
+[31m+             window[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="submit"[39m
+[31m+           >[39m
+[31m+             submit[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="locale:set-preference"[39m
+[31m+           >[39m
+[31m+             locale:set-preference[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="runtime:inspect"[39m
+[31m+           >[39m
+[31m+             runtime:inspect[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="runtime:allow"[39m
+[31m+           >[39m
+[31m+             runtime:allow[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="runtime:start"[39m
+[31m+           >[39m
+[31m+             runtime:start[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="runtime:revoke"[39m
+[31m+           >[39m
+[31m+             runtime:revoke[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="runtime:select-model"[39m
+[31m+           >[39m
+[31m+             runtime:select-model[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="runtime:configure-subagent"[39m
+[31m+           >[39m
+[31m+             runtime:configure-subagent[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="runtime:manage-queue"[39m
+[31m+           >[39m
+[31m+             runtime:manage-queue[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="runtime:answer"[39m
+[31m+           >[39m
+[31m+             runtime:answer[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="runtime:dismiss"[39m
+[31m+           >[39m
+[31m+             runtime:dismiss[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="runtime:stop"[39m
+[31m+           >[39m
+[31m+             runtime:stop[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="runtime:continue"[39m
+[31m+           >[39m
+[31m+             runtime:continue[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="runtime:host"[39m
+[31m+           >[39m
+[31m+             runtime:host[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="runtime:native-exit"[39m
+[31m+           >[39m
+[31m+             runtime:native-exit[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="runtime:utility-exit"[39m
+[31m+           >[39m
+[31m+             runtime:utility-exit[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="runtime:evidence"[39m
+[31m+           >[39m
+[31m+             runtime:evidence[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="configuration:snapshot"[39m
+[31m+           >[39m
+[31m+             configuration:snapshot[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="configuration:snapshot:adapter"[39m
+[31m+           >[39m
+[31m+             configuration:snapshot:adapter[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="configuration:save-key"[39m
+[31m+           >[39m
+[31m+             configuration:save-key[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="configuration:save-key:adapter"[39m
+[31m+           >[39m
+[31m+             configuration:save-key:adapter[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="configuration:login"[39m
+[31m+           >[39m
+[31m+             configuration:login[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="configuration:login:adapter"[39m
+[31m+           >[39m
+[31m+             configuration:login:adapter[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="configuration:answer"[39m
+[31m+           >[39m
+[31m+             configuration:answer[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="configuration:answer:adapter"[39m
+[31m+           >[39m
+[31m+             configuration:answer:adapter[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="configuration:cancel"[39m
+[31m+           >[39m
+[31m+             configuration:cancel[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="configuration:cancel:adapter"[39m
+[31m+           >[39m
+[31m+             configuration:cancel:adapter[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="configuration:open-login"[39m
+[31m+           >[39m
+[31m+             configuration:open-login[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="configuration:open-login:adapter"[39m
+[31m+           >[39m
+[31m+             configuration:open-login:adapter[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="configuration:snapshot:queue"[39m
+[31m+           >[39m
+[31m+             configuration:snapshot:queue[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="attachments:list"[39m
+[31m+           >[39m
+[31m+             attachments:list[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="attachments:choose-import"[39m
+[31m+           >[39m
+[31m+             attachments:choose-import[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="attachments:check-storage"[39m
+[31m+           >[39m
+[31m+             attachments:check-storage[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="attachments:clean-storage"[39m
+[31m+           >[39m
+[31m+             attachments:clean-storage[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="attachments:import-bytes"[39m
+[31m+           >[39m
+[31m+             attachments:import-bytes[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="attachments:add-reference"[39m
+[31m+           >[39m
+[31m+             attachments:add-reference[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="attachments:search-reference"[39m
+[31m+           >[39m
+[31m+             attachments:search-reference[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="attachments:preview"[39m
+[31m+           >[39m
+[31m+             attachments:preview[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="attachments:retry"[39m
+[31m+           >[39m
+[31m+             attachments:retry[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="attachments:set-text-only"[39m
+[31m+           >[39m
+[31m+             attachments:set-text-only[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="attachments:maintenance"[39m
+[31m+           >[39m
+[31m+             attachments:maintenance[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="history:project-list"[39m
+[31m+           >[39m
+[31m+             history:project-list[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="history:project-read"[39m
+[31m+           >[39m
+[31m+             history:project-read[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="files:list"[39m
+[31m+           >[39m
+[31m+             files:list[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="files:read"[39m
+[31m+           >[39m
+[31m+             files:read[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="git:list"[39m
+[31m+           >[39m
+[31m+             git:list[39m
+[31m+           </option>[39m
+[31m+           <option[39m
+[31m+             value="git:diff"[39m
+[31m+           >[39m
+[31m+             git:diff[39m
+[31m+           </option>[39m
+[31m+         </select>[39m
+[31m+       </label>[39m
+[31m+       <label>[39m
+[31m+         最多记录数[39m
+[31m+         <input[39m
+[31m+           aria-label="最多记录数"[39m
+[31m+           data-diagnostics-filter="limit"[39m
+[31m+           max="500"[39m
+[31m+           min="1"[39m
+[31m+           name="limit"[39m
+[31m+           type="number"[39m
+[31m+           value="100"[39m
+[31m+         />[39m
+[31m+       </label>[39m
+[31m+       <button[39m
+[2m          class="ui-button ui-button-primary"[22m
+[2m          data-diagnostics-apply="true"[22m
+[2m          data-slot="button"[22m
+[2m          tabindex="0"[22m
+[2m          type="submit"[22m
+[2m        >[22m
+[2m          应用筛选[22m
+[31m+       </button>[39m
+[31m+     </form>[39m
+[31m+     <div[39m
+[31m+       class="_actions_59d30d"[39m
+[31m+     >[39m
+[31m+       <button[39m
+[31m+         class="ui-button ui-button-ghost"[39m
+[31m+         data-diagnostics-refresh="true"[39m
+[31m+         data-slot="button"[39m
+[31m+         tabindex="0"[39m
+[31m+         type="button"[39m
+[31m+       >[39m
+[31m+         刷新[39m
+[31m+       </button>[39m
+[31m+       <button[39m
+[31m+         class="ui-button ui-button-primary"[39m
+[31m+         data-diagnostics-export="true"[39m
+[31m+         data-slot="button"[39m
+[31m+         tabindex="0"[39m
+[31m+         type="button"[39m
+[31m+       >[39m
+[31m+         脱敏导出[39m
+[2m        </button>[22m
+[31m+       <button[39m
+[31m+         class="ui-button ui-button-ghost"[39m
+[31m+         data-diagnostics-copy="true"[39m
+[31m+         data-slot="button"[39m
+[31m+         tabindex="0"[39m
+[31m+         type="button"[39m
+[31m+       >[39m
+[31m+         复制反馈模板[39m
+[31m+       </button>[39m
+[31m+     </div>[39m
+[31m+     <div[39m
+[31m+       data-diagnostics-snapshot="true"[39m
+[31m+       data-selectable="true"[39m
+[31m+     >[39m
+[31m+       <p[39m
+[31m+         class="trace"[39m
+[31m+       >[39m
+[31m+         采样 2026-10-06T00:00:00.000Z · 0 条记录[39m
+[31m+       </p>[39m
+[31m+       <p[39m
+[31m+         data-diagnostics-coverage="true"[39m
+[31m+       >[39m
+[31m+         覆盖：2 文件 / 300 字节 / 3 行；坏行 1；脱敏 2；不可读 1。[39m
+[31m+       </p>[39m
+[31m+       <p[39m
+[31m+         role="status"[39m
+[31m+       >[39m
+[31m+         已达到读取或条数预算，结果不完整。请缩小时间或筛选范围。[39m
+[31m+       </p>[39m
+[31m+       <p[39m
+[31m+         data-diagnostics-writer="true"[39m
+[31m+       >[39m
+[31m+         当前Writer已退化；丢弃 4 条。[39m
+[31m+       </p>[39m
+[31m+       <p[39m
+[31m+         class="muted"[39m
+[31m+       >[39m
+[31m+         记录顺序仅为读取线索；阶段不代表执行完成。无匹配不能证明操作未发生，轮转、丢弃或未接入阶段可能留下缺口。刷新仅重新读取已应用的时间范围。[39m
+[31m+       </p>[39m
+[31m+       <p>[39m
+[31m+         当前范围没有匹配记录。[39m
+[31m+       </p>[39m
+[31m+     </div>[39m
+[31m+     <label[39m
+[31m+       class="_feedback_59d30d"[39m
+[31m+     >[39m
+[31m+       反馈模板[39m
+[31m+       <textarea[39m
+[31m+         aria-label="反馈模板"[39m
+[31m+         data-diagnostics-feedback="true"[39m
+[31m+         readonly=""[39m
+[31m+         rows="7"[39m
+[31m+       >[39m
+[31m+         d-pi 故障反馈[39m
+[31m+[39m
+[31m+ 诊断元数据：[39m
+[31m+ {[39m
+[31m+   "build": {[39m
+[31m+     "version": "source",[39m
+[31m+     "commit": "unbundled",[39m
+[31m+     "dirty": true,[39m
+[31m+     "id": "unbundled"[39m
+[31m+   },[39m
+[31m+   "filter": {[39m
+[31m+     "since": "2026-10-05T08:22:26.000Z",[39m
+[31m+     "until": "2026-10-06T08:22:26.000Z",[39m
+[31m+     "traceId": "a1cbcb4d-e59b-4163-b000-a10aa16798a2",[39m
+[31m+     "limit": 100[39m
+[31m+   },[39m
+[31m+   "sampledAt": "2026-10-06T00:00:00.000Z",[39m
+[31m+   "coverage": {[39m
+[31m+     "files": 2,[39m
+[31m+     "bytes": 300,[39m
+[31m+     "lines": 3,[39m
+[31m+     "malformed": 1,[39m
+[31m+     "redacted": 2,[39m
+[31m+     "unreadable": 1,[39m
+[31m+     "truncated": true[39m
+[31m+   },[39m
+[31m+   "writer": {[39m
+[31m+     "degraded": true,[39m
+[31m+     "dropped": 4[39m
+[31m+   },[39m
+[31m+   "records": 0[39m
+[31m+ }[39m
+[31m+[39m
+[31m+ 复现步骤：[请填写][39m
+[31m+ 期待结果：[请填写][39m
+[31m+ 实际结果：[请填写][39m
+[31m+[39m
+[31m+       </textarea>[39m
+[31m+     </label>[39m
+[31m+     <p[39m
+[31m+       class="muted"[39m
+[31m+     >[39m
+[31m+       模板仅含受控诊断元数据。复现描述由你自行补充；提交前检查秘密及业务内容，并按需附上脱敏导出文件。[39m
+[31m+     </p>[39m
+[31m+   </section>[39m
+[31m+ </body>[39m
+
+[36m [2m❯[22m src/app/renderer/shell/diagnostics.test.ts:[2m360:34[22m[39m
+    [90m358|[39m   await edit("traceId", trace);
+    [90m359|[39m   ui.button("应用筛选")?.focus(); await ui.click("应用筛选");
+    [90m360|[39m   expect(document.activeElement).toBe(ui.button("应用筛选"));
+    [90m   |[39m                                  [31m^[39m
+    [90m361|[39m   expect(ui.client.getQueryCache().getAll()).toHaveLength(1);
+    [90m362|[39m   await ui.click("关闭诊断"); await flush();
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m8 passed[39m[22m[90m (9)[39m
+[2m   Start at [22m 16:22:25
+[2m   Duration [22m 1.25s[2m (tests 54%, environment 21%, transform 13%, import 12%)[22m
+
+[ELIFECYCLE] Test failed. See above for more details.

@@ -1,0 +1,86 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/platform/main/diagnostics/reader.test.ts
+$ tsr generate
+(node:67579) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/.codex/worktrees/m2-diagnostics-reader/d-pi[39m
+
+ [31m❯[39m src/platform/main/diagnostics/reader.test.ts [2m([22m[2m3 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 18[2mms[22m[39m
+   [32m✓[39m reads persisted receipt acceptance and outcome independently with scoped correlation[32m 9[2mms[22m[39m
+   [32m✓[39m strips content and unsafe strings while preserving safe observation fields[32m 2[2mms[22m[39m
+[31m   [31m×[31m returns latest persisted records across rotated files and flags the record limit[39m[32m 6[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/platform/main/diagnostics/reader.test.ts[2m > [22mreturns latest persisted records across rotated files and flags the record limit
+[31m[1mAssertionError[22m: expected [ { schemaVersion: 1, …(13) }, …(2) ] to deeply equal [ { schemaVersion: 1, …(13) } ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -15,9 +15,51 @@[39m
+[2m      "receiptState": "acknowledged",[22m
+[2m      "requestId": "16c0e6f1-d0b8-4147-8088-9b13c6410ff2",[22m
+[2m      "schemaVersion": 1,[22m
+[2m      "stage": "unknown",[22m
+[2m      "threadId": "9479dba2-b574-4611-a89f-925ba02e67aa",[22m
+[31m+     "time": "2026-10-06T09:00:00.000Z",[39m
+[31m+     "traceId": "16c0e6f1-d0b8-4147-8088-9b13c6410ff2",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "build": {[39m
+[31m+       "commit": "4cf37b9",[39m
+[31m+       "dirty": false,[39m
+[31m+       "id": "4cf37b9a-a0123456",[39m
+[31m+       "version": "0.1.0-m2.16",[39m
+[31m+     },[39m
+[31m+     "code": "host-exited",[39m
+[31m+     "connectionId": "75dc76a3-f83e-49c9-84f1-8e6aad328309",[39m
+[31m+     "operation": "submit",[39m
+[31m+     "outcome": "unknown",[39m
+[31m+     "process": "main",[39m
+[31m+     "processInstanceId": "75dc76a3-f83e-49c9-84f1-8e6aad328309",[39m
+[31m+     "receiptState": "acknowledged",[39m
+[31m+     "requestId": "16c0e6f1-d0b8-4147-8088-9b13c6410ff2",[39m
+[31m+     "schemaVersion": 1,[39m
+[31m+     "stage": "unknown",[39m
+[31m+     "threadId": "9479dba2-b574-4611-a89f-925ba02e67aa",[39m
+[31m+     "time": "2026-10-06T10:00:00.000Z",[39m
+[31m+     "traceId": "16c0e6f1-d0b8-4147-8088-9b13c6410ff2",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "build": {[39m
+[31m+       "commit": "4cf37b9",[39m
+[31m+       "dirty": false,[39m
+[31m+       "id": "4cf37b9a-a0123456",[39m
+[31m+       "version": "0.1.0-m2.16",[39m
+[31m+     },[39m
+[31m+     "code": "host-exited",[39m
+[31m+     "connectionId": "75dc76a3-f83e-49c9-84f1-8e6aad328309",[39m
+[31m+     "operation": "submit",[39m
+[31m+     "outcome": "unknown",[39m
+[31m+     "process": "main",[39m
+[31m+     "processInstanceId": "75dc76a3-f83e-49c9-84f1-8e6aad328309",[39m
+[31m+     "receiptState": "acknowledged",[39m
+[31m+     "requestId": "16c0e6f1-d0b8-4147-8088-9b13c6410ff2",[39m
+[31m+     "schemaVersion": 1,[39m
+[31m+     "stage": "unknown",[39m
+[31m+     "threadId": "9479dba2-b574-4611-a89f-925ba02e67aa",[39m
+[2m      "time": "2026-10-06T11:00:00.000Z",[22m
+[2m      "traceId": "16c0e6f1-d0b8-4147-8088-9b13c6410ff2",[22m
+[2m    },[22m
+[2m  ][22m
+
+[36m [2m❯[22m src/platform/main/diagnostics/reader.test.ts:[2m47:28[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m2 passed[39m[22m[90m (3)[39m
+[2m   Start at [22m 16:17:31
+[2m   Duration [22m 191ms[2m (transform 41%, import 41%, tests 16%, worker 2%)[22m
+
+[ELIFECYCLE] Test failed. See above for more details.

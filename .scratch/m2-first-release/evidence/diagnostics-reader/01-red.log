@@ -1,0 +1,32 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/platform/main/diagnostics/reader.test.ts
+$ tsr generate
+(node:66926) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/.codex/worktrees/m2-diagnostics-reader/d-pi[39m
+
+ [31m❯[39m src/platform/main/diagnostics/reader.test.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 5[2mms[22m[39m
+[31m   [31m×[31m reads persisted receipt acceptance and outcome independently with scoped correlation[39m[32m 4[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/platform/main/diagnostics/reader.test.ts[2m > [22mreads persisted receipt acceptance and outcome independently with scoped correlation
+[31m[1mTypeError[22m: readDiagnosticSnapshot is not a function[39m
+[36m [2m❯[22m src/platform/main/diagnostics/reader.test.ts:[2m29:26[22m[39m
+    [90m 27|[39m it("reads persisted receipt acceptance and outcome independently with …
+    [90m 28|[39m   const directory = await fixture({ "main.jsonl": line(event) + line({…
+    [90m 29|[39m   const snapshot = await readDiagnosticSnapshot(directory, { ...filter…
+    [90m   |[39m                          [31m^[39m
+    [90m 30|[39m   expect(DiagnosticSnapshotSchema.safeParse(snapshot).success).toBe(tr…
+    [90m 31|[39m   expect(snapshot.records).toEqual([event]);
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m   Start at [22m 16:15:45
+[2m   Duration [22m 204ms[2m (import 55%, transform 37%, tests 4%, worker 3%)[22m
+
+[ELIFECYCLE] Test failed. See above for more details.

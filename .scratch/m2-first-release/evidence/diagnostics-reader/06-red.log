@@ -1,0 +1,38 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/platform/main/diagnostics/reader.test.ts
+$ tsr generate
+(node:68100) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/.codex/worktrees/m2-diagnostics-reader/d-pi[39m
+
+ [31m❯[39m src/platform/main/diagnostics/reader.test.ts [2m([22m[2m6 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 281[2mms[22m[39m
+   [32m✓[39m reads persisted receipt acceptance and outcome independently with scoped correlation[32m 10[2mms[22m[39m
+   [32m✓[39m strips content and unsafe strings while preserving safe observation fields[32m 2[2mms[22m[39m
+   [32m✓[39m returns latest persisted records across rotated files and flags the record limit[32m 2[2mms[22m[39m
+   [32m✓[39m skips malformed, oversized and incomplete records while retaining adjacent valid evidence[32m 9[2mms[22m[39m
+   [32m✓[39m caps the retained-file and scan-byte budgets and reads each file from its recent tail[32m 253[2mms[22m[39m
+[31m   [31m×[31m refuses rotated symlinks and non-files and reports unavailable evidence without rejecting[39m[32m 4[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/platform/main/diagnostics/reader.test.ts[2m > [22mrefuses rotated symlinks and non-files and reports unavailable evidence without rejecting
+[31m[1mError[22m: ELOOP: too many symbolic links encountered, open '/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-test-Z7WgzG/tmp/d-pi-reader-jpZQcm/main-3.jsonl'[39m
+[36m [2m❯[22m readDiagnosticSnapshot src/platform/main/diagnostics/reader.ts:[2m83:20[22m[39m
+    [90m 81|[39m   for (const name of names) {
+    [90m 82|[39m     if (exhausted()) { snapshot.coverage.truncated = true; break; }
+    [90m 83|[39m     const handle = await open(join(directory, name), constants.O_RDONL…
+    [90m   |[39m                    [31m^[39m
+    [90m 84|[39m     try {
+    [90m 85|[39m       const info = await handle.stat();
+[90m [2m❯[22m src/platform/main/diagnostics/reader.test.ts:[2m70:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m5 passed[39m[22m[90m (6)[39m
+[2m   Start at [22m 16:19:14
+[2m   Duration [22m 463ms[2m (tests 74%, transform 13%, import 12%, worker 1%)[22m
+
+[ELIFECYCLE] Test failed. See above for more details.

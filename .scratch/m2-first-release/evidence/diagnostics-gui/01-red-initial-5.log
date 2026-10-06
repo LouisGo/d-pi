@@ -1,0 +1,89 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/shell/diagnostics.test.ts
+$ tsr generate
+(node:67023) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/.codex/worktrees/m2-diagnostics-gui/d-pi[39m
+
+ [31m❯[39m src/app/renderer/shell/diagnostics.test.ts [2m([22m[2m5 tests[22m[2m | [22m[31m5 failed[39m[2m)[22m[32m 60[2mms[22m[39m
+[31m   [31m×[31m opens only on intent, applies bounded trace and coverage, validates filters before IPC[39m[32m 27[2mms[22m[39m
+[31m   [31m×[31m retains an identified old sample when explicit refresh fails, with failure trace[39m[32m 16[2mms[22m[39m
+[31m   [31m×[31m exports only explicit intent once and reports cancellation, failure and exported trace[39m[32m 13[2mms[22m[39m
+[31m   [31m×[31m drops late query and export from a closed or replaced scope[39m[32m 1[2mms[22m[39m
+[31m   [31m×[31m copies controlled metadata and reproduction placeholders, reporting clipboard failure[39m[32m 1[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 5 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/app/renderer/shell/diagnostics.test.ts[2m > [22mopens only on intent, applies bounded trace and coverage, validates filters before IPC
+[31m[1mAssertionError[22m: 查看此故障诊断: expected undefined to be defined[39m
+[36m [2m❯[22m Object.click src/app/renderer/shell/diagnostics.test.ts:[2m27:90[22m[39m
+    [90m 25|[39m  cleanup.push(async () => {await act(async () => root.unmount()); clie…
+    [90m 26|[39m  const button = (text: string) => Array.from(document.querySelectorAll…
+    [90m 27|[39m  const click = async (text: string) => { const found = button(text); e…
+    [90m   |[39m                                                                                          [31m^[39m
+    [90m 28|[39m  return {render, click, button};
+    [90m 29|[39m }
+[90m [2m❯[22m src/app/renderer/shell/diagnostics.test.ts:[2m36:58[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/app/renderer/shell/diagnostics.test.ts[2m > [22mretains an identified old sample when explicit refresh fails, with failure trace
+[31m[1mAssertionError[22m: 刷新: expected undefined to be defined[39m
+[36m [2m❯[22m Object.click src/app/renderer/shell/diagnostics.test.ts:[2m27:90[22m[39m
+    [90m 25|[39m  cleanup.push(async () => {await act(async () => root.unmount()); clie…
+    [90m 26|[39m  const button = (text: string) => Array.from(document.querySelectorAll…
+    [90m 27|[39m  const click = async (text: string) => { const found = button(text); e…
+    [90m   |[39m                                                                                          [31m^[39m
+    [90m 28|[39m  return {render, click, button};
+    [90m 29|[39m }
+[90m [2m❯[22m src/app/renderer/shell/diagnostics.test.ts:[2m48:11[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/app/renderer/shell/diagnostics.test.ts[2m > [22mexports only explicit intent once and reports cancellation, failure and exported trace
+[31m[1mAssertionError[22m: 脱敏导出: expected undefined to be defined[39m
+[36m [2m❯[22m Object.click src/app/renderer/shell/diagnostics.test.ts:[2m27:90[22m[39m
+    [90m 25|[39m  cleanup.push(async () => {await act(async () => root.unmount()); clie…
+    [90m 26|[39m  const button = (text: string) => Array.from(document.querySelectorAll…
+    [90m 27|[39m  const click = async (text: string) => { const found = button(text); e…
+    [90m   |[39m                                                                                          [31m^[39m
+    [90m 28|[39m  return {render, click, button};
+    [90m 29|[39m }
+[90m [2m❯[22m src/app/renderer/shell/diagnostics.test.ts:[2m55:11[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/app/renderer/shell/diagnostics.test.ts[2m > [22mdrops late query and export from a closed or replaced scope
+[31m[1mAssertionError[22m: 查看此故障诊断: expected undefined to be defined[39m
+[36m [2m❯[22m Object.click src/app/renderer/shell/diagnostics.test.ts:[2m27:90[22m[39m
+    [90m 25|[39m  cleanup.push(async () => {await act(async () => root.unmount()); clie…
+    [90m 26|[39m  const button = (text: string) => Array.from(document.querySelectorAll…
+    [90m 27|[39m  const click = async (text: string) => { const found = button(text); e…
+    [90m   |[39m                                                                                          [31m^[39m
+    [90m 28|[39m  return {render, click, button};
+    [90m 29|[39m }
+[90m [2m❯[22m src/app/renderer/shell/diagnostics.test.ts:[2m63:124[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/app/renderer/shell/diagnostics.test.ts[2m > [22mcopies controlled metadata and reproduction placeholders, reporting clipboard failure
+[31m[1mAssertionError[22m: 查看此故障诊断: expected undefined to be defined[39m
+[36m [2m❯[22m Object.click src/app/renderer/shell/diagnostics.test.ts:[2m27:90[22m[39m
+    [90m 25|[39m  cleanup.push(async () => {await act(async () => root.unmount()); clie…
+    [90m 26|[39m  const button = (text: string) => Array.from(document.querySelectorAll…
+    [90m 27|[39m  const click = async (text: string) => { const found = button(text); e…
+    [90m   |[39m                                                                                          [31m^[39m
+    [90m 28|[39m  return {render, click, button};
+    [90m 29|[39m }
+[90m [2m❯[22m src/app/renderer/shell/diagnostics.test.ts:[2m72:81[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m5 failed[39m[22m[90m (5)[39m
+[2m   Start at [22m 16:15:59
+[2m   Duration [22m 639ms[2m (environment 50%, import 22%, transform 16%, tests 11%, worker 1%)[22m
+
+[ELIFECYCLE] Test failed. See above for more details.

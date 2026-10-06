@@ -1,0 +1,36 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/platform/main/diagnostics/reader.test.ts
+$ tsr generate
+(node:67922) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/.codex/worktrees/m2-diagnostics-reader/d-pi[39m
+
+ [31m❯[39m src/platform/main/diagnostics/reader.test.ts [2m([22m[2m5 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 61[2mms[22m[39m
+   [32m✓[39m reads persisted receipt acceptance and outcome independently with scoped correlation[32m 10[2mms[22m[39m
+   [32m✓[39m strips content and unsafe strings while preserving safe observation fields[32m 2[2mms[22m[39m
+   [32m✓[39m returns latest persisted records across rotated files and flags the record limit[32m 2[2mms[22m[39m
+   [32m✓[39m skips malformed, oversized and incomplete records while retaining adjacent valid evidence[32m 2[2mms[22m[39m
+[31m   [31m×[31m caps the retained-file and scan-byte budgets and reads each file from its recent tail[39m[32m 43[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/platform/main/diagnostics/reader.test.ts[2m > [22mcaps the retained-file and scan-byte budgets and reads each file from its recent tail
+[31m[1mAssertionError[22m: expected 18 to be less than or equal to 12[39m
+[36m [2m❯[22m src/platform/main/diagnostics/reader.test.ts:[2m61:35[22m[39m
+    [90m 59|[39m   const snapshot = await readDiagnosticSnapshot(await fixture(files), …
+    [90m 60|[39m   expect(snapshot.records[0]?.time).toBe("2026-10-06T23:00:00.000Z");
+    [90m 61|[39m   expect(snapshot.coverage.files).toBeLessThanOrEqual(12);
+    [90m   |[39m                                   [31m^[39m
+    [90m 62|[39m   expect(snapshot.coverage.bytes).toBeLessThanOrEqual(8 * 1024 * 1024);
+    [90m 63|[39m   expect(snapshot.coverage.truncated).toBe(true);
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m4 passed[39m[22m[90m (5)[39m
+[2m   Start at [22m 16:18:32
+[2m   Duration [22m 262ms[2m (import 36%, tests 34%, transform 28%, worker 2%)[22m
+
+[ELIFECYCLE] Test failed. See above for more details.

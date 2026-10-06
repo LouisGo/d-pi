@@ -1,0 +1,11 @@
+$ node scripts/checks/lint-design.mjs
+src/app/renderer/shell/diagnostics.tsx:202:17: error shadcn(no-unknown-classes): "diagnostics-panel" is not a class this project's Tailwind knows, so no CSS is generated for it. Fix the spelling, or declare it with @utility in src/app/renderer/styles/app.css.
+src/app/renderer/shell/diagnostics.tsx:213:25: error shadcn(no-unknown-classes): "diagnostics-heading" is not a class this project's Tailwind knows, so no CSS is generated for it. Fix the spelling, or declare it with @utility in src/app/renderer/styles/app.css.
+src/app/renderer/shell/diagnostics.tsx:221:19: error shadcn(no-unknown-classes): "diagnostics-filters" is not a class this project's Tailwind knows, so no CSS is generated for it. Fix the spelling, or declare it with @utility in src/app/renderer/styles/app.css.
+src/app/renderer/shell/diagnostics.tsx:327:22: error shadcn(no-unknown-classes): "diagnostics-actions" is not a class this project's Tailwind knows, so no CSS is generated for it. Fix the spelling, or declare it with @utility in src/app/renderer/styles/app.css.
+src/app/renderer/shell/diagnostics.tsx:431:27: error shadcn(no-unknown-classes): "diagnostics-records" is not a class this project's Tailwind knows, so no CSS is generated for it. Fix the spelling, or declare it with @utility in src/app/renderer/styles/app.css.
+src/app/renderer/shell/diagnostics.tsx:467:24: error shadcn(no-unknown-classes): "diagnostics-feedback" is not a class this project's Tailwind knows, so no CSS is generated for it. Fix the spelling, or declare it with @utility in src/app/renderer/styles/app.css.
+FAIL: design lint returned exit 1; inspect the diagnostics above
+[ELIFECYCLE] Command failed with exit code 1.
+$ node scripts/checks/check-i18n-copy.mjs
+[]

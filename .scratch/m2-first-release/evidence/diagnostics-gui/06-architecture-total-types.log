@@ -1,0 +1,12 @@
+ M src/app/renderer/shell/application-layout.tsx
+ M src/app/renderer/shell/thread-notice.tsx
+ M src/shared/diagnostics.ts
+ M src/shared/i18n/locales/en-US/ui.ts
+ M src/shared/i18n/locales/zh-CN/ui.ts
+?? src/app/renderer/shell/diagnostics-feedback.ts
+?? src/app/renderer/shell/diagnostics-queries.ts
+?? src/app/renderer/shell/diagnostics.module.css
+?? src/app/renderer/shell/diagnostics.test.ts
+?? src/app/renderer/shell/diagnostics.tsx
+$ node scripts/architecture/check.mjs
+PASS: architecture boundaries (328 source files checked, TypeScript scanner)
