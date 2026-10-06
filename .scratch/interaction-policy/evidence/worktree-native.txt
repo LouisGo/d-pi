@@ -1,0 +1,2 @@
+$ node validation/m2/interaction-policy.mjs
+PASS: isolated Electron App/portal/Monaco/Diff cursors, native drag selection, editor selection and visual interaction states

@@ -29,7 +29,7 @@
 - 动态 JS 数据流和所有未来第三方控件不属于静态扫描证明。当前最小 editor.api 未注册可见 context menu；相关作用域规则保留，但不冒称已验证不存在的原生菜单。
 - 最初共享工作区验证被并行修改打断；随后独立 worktree 以固定基线完成 pnpm check、pnpm build、pnpm validate:interaction。迁移时对 28 个捕获文件校验 SHA-256，只有仍匹配本次写入的共享差异被撤回，其他 chat 的文件保留；证据见 evidence/migration.json。较早临时源码快照的检查亦通过，见 evidence/snapshot.json，仅作历史记录。
 
-- 独立 Spec review 发现文件“采样详情”正文禁选，已补中央选择例外；原生验证先复现红灯，再确认正文可拖选而 summary 仍不可选。Standards 轴已覆盖模块边界、中央级联、门禁及隔离资源释放；最终复核见 review.md。
+- 独立 Spec review 发现文件“采样详情”正文禁选，已补中央选择例外；原生验证先复现红灯，再确认正文可拖选而 summary 仍不可选。补丁后 pnpm check:fast、pnpm typecheck、pnpm lint:design、pnpm build 和原生专项均再次通过，未重复无关应用测试。完整检查与回归红灯日志见 evidence/*.txt。Standards 轴已覆盖模块边界、中央级联、门禁及隔离资源释放；最终复核见 review.md。
 
 ## 用户试用
 

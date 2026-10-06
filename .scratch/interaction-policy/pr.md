@@ -6,11 +6,11 @@
 
 ## Evidence
 
-- 增量基线：`31cb91229852d8c6dfabb6e88fce06e78cbf6030`（`codex/m2-lifecycle`）；只纳入本次修改。
+- 增量基线：`31cb91229852d8c6dfabb6e88fce06e78cbf6030`（`codex/m2-lifecycle`）；只纳入本次修改。应用源码提交：`214619b1f4fdf4dc1db94936a26bc7cb0e2b2b39`；后续提交仅记录交接与原始证据。
 - 门禁先拦截 4 个 pointer 声明及 6 个未接入共享状态的原生按钮，修复后通过；正反例覆盖 CSS/工具类/静态命令式样式。
 - 独立 worktree：`pnpm check`、`pnpm build` 均 exit 0；120 个应用测试文件、711 项测试通过，2 项既有跳过。
 - `pnpm validate:interaction` exit 0：真实 Electron/正式 App 和组件，覆盖拖选、原生 Monaco 选区、Diff resize、控件后代、portal、四种主题/密度及视觉交互状态。桥接使用 fixture，无真实供应商认证/执行；未重打包安装包，用户试用尚未认可。
-- 原始证据：[完整检查](.scratch/interaction-policy/evidence/worktree-check.log)、[构建](.scratch/interaction-policy/evidence/worktree-build.log)、[原生结果](.scratch/interaction-policy/evidence/native.json)、[迁移记录](.scratch/interaction-policy/evidence/migration.json)。
+- 原始证据：[完整检查](.scratch/interaction-policy/evidence/worktree-check.txt)、[构建](.scratch/interaction-policy/evidence/worktree-build.txt)、[原生结果](.scratch/interaction-policy/evidence/native.json)、[迁移记录](.scratch/interaction-policy/evidence/migration.json)。
 - [双轴独立评审](.scratch/interaction-policy/review.md)：Spec 发现的文件采样正文选择遗漏已按原生红→绿修复并复核，Standards 无实质发现。四组主题/密度验证 cursor/select，视觉状态验证 dark/compact。
 
 ## Merge Danger
