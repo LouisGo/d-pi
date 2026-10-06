@@ -210,6 +210,35 @@ export async function validateLongReading({
   } finally {
     spawnSync("/usr/bin/pbcopy", [], { env, input: savedClipboard });
   }
+  await evaluate(
+    "window.__longReadingContainer=window.__longReadingText.closest('[data-long-reading]');[...window.__longReadingContainer.querySelectorAll('button')].find(el=>el.textContent.trim()==='下一段').focus();true",
+  );
+  for (const type of ["keyDown", "keyUp"])
+    await call("Input.dispatchKeyEvent", {
+      type,
+      key: "Enter",
+      code: "Enter",
+      windowsVirtualKeyCode: 13,
+    });
+  await wait(() =>
+    evaluate("window.__longReadingContainer.dataset.readingSegment==='1'"),
+  );
+  await evaluate(
+    "[...window.__longReadingContainer.querySelectorAll('button')].find(el=>el.textContent.trim()==='上一段').focus();true",
+  );
+  for (const type of ["keyDown", "keyUp"])
+    await call("Input.dispatchKeyEvent", {
+      type,
+      key: "Enter",
+      code: "Enter",
+      windowsVirtualKeyCode: 13,
+    });
+  await wait(() =>
+    evaluate("window.__longReadingContainer.dataset.readingSegment==='0'"),
+  );
+  checks.push(
+    "trusted Chromium keyboard Enter activates packaged previous/next segment controls",
+  );
   const segments = [];
   for (let attempt = 0; attempt < 100; attempt++) {
     const current = await evaluate(`(()=>{
