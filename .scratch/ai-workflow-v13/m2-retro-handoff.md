@@ -2,6 +2,8 @@
 
 2026-10-06。三项retro建议已经applied；实现 `b84ed9a`，真实CDP期限竞争补修 `473dffe`，起点 `7c9e1fe`，分支 `codex/m2-retro-closure`。本轮为工程工具及交接改进，无新产品候选。记录、验证、双轴独立review及本地提交完成，本轮与其已有诊断祖先已从`main@1c9c30a`快进整合到本地main的`9959992`，最后仅追加复核结论/整合记录与已保存独立输出；[整合证据](evidence/m2-retro-closure/local-integration.json)。不push/建远端PR，不继续其它M2功能。最终main提交由`git log -1 main`及本轮收尾结果给出。
 
+当前补充：用户随后授权push/处理远端PR并同步main供UI开发；先前本地停下和其它提醒分支未合入是上一轮快照。最新合并范围、结果与UI起点见[M2远端收口](../m2-first-release/pr4-integration.md)，当前M2继续入口以其和所属spec为准。
+
 ## 目录变化
 
 此前：`scripts/testing/test.mjs`原样传入Vitest参数，`validation/m2/package.mjs`内联CDP及wait，diagnostics/long-reading各自调用；worker交接没有选定证据的提交取回核对。

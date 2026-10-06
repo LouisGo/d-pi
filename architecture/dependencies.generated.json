@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "4976d6459de40c13c4df94318c566cfd818e4e098114be617541adbbd60cdf04",
+  "inputsHash": "463e52ff74ba1a2277a1b14f512a24131191ce8b044977298042ac1b1095311f",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 334,
-    "scannedFiles": 334,
+    "sourceFiles": 351,
+    "scannedFiles": 351,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 126,
-      "lines": 21205,
+      "files": 143,
+      "lines": 24495,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -60,7 +60,7 @@
       ],
       "materialized": true,
       "files": 27,
-      "lines": 2441,
+      "lines": 2483,
       "publicEntries": [
         {
           "path": "src/platform/main/storage/public.ts",
@@ -102,7 +102,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 19,
-      "lines": 2183,
+      "lines": 2285,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -262,7 +262,7 @@
       ],
       "materialized": true,
       "files": 7,
-      "lines": 264,
+      "lines": 297,
       "publicEntries": [
         {
           "path": "src/modules/preferences/contracts/public.ts",
@@ -943,6 +943,13 @@
     {
       "module": "app",
       "environment": "contracts",
+      "dependency": "preferences",
+      "targetEnvironment": "contracts",
+      "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "contracts",
       "dependency": "changes",
       "targetEnvironment": "contracts",
       "testOnly": false
@@ -965,13 +972,6 @@
       "module": "app",
       "environment": "contracts",
       "dependency": "execution",
-      "targetEnvironment": "contracts",
-      "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "contracts",
-      "dependency": "preferences",
       "targetEnvironment": "contracts",
       "testOnly": false
     },
@@ -1020,34 +1020,6 @@
     {
       "module": "app",
       "environment": "main",
-      "dependency": "configuration",
-      "targetEnvironment": "contracts",
-      "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "main",
-      "dependency": "configuration",
-      "targetEnvironment": "main",
-      "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "main",
-      "dependency": "execution",
-      "targetEnvironment": "contracts",
-      "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "main",
-      "dependency": "execution",
-      "targetEnvironment": "main",
-      "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "main",
       "dependency": "shared",
       "targetEnvironment": "shared",
       "testOnly": true
@@ -1057,6 +1029,34 @@
       "environment": "main",
       "dependency": "shared",
       "targetEnvironment": "shared",
+      "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "main",
+      "dependency": "configuration",
+      "targetEnvironment": "contracts",
+      "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "main",
+      "dependency": "configuration",
+      "targetEnvironment": "main",
+      "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "main",
+      "dependency": "execution",
+      "targetEnvironment": "contracts",
+      "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "main",
+      "dependency": "execution",
+      "targetEnvironment": "main",
       "testOnly": false
     },
     {
@@ -1180,6 +1180,13 @@
     },
     {
       "module": "app",
+      "environment": "main",
+      "dependency": "preferences",
+      "targetEnvironment": "contracts",
+      "testOnly": false
+    },
+    {
+      "module": "app",
       "environment": "preload",
       "dependency": "configuration",
       "targetEnvironment": "contracts",
@@ -1370,6 +1377,20 @@
     {
       "module": "app",
       "environment": "renderer",
+      "dependency": "threads",
+      "targetEnvironment": "contracts",
+      "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "renderer",
+      "dependency": "preferences",
+      "targetEnvironment": "contracts",
+      "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "renderer",
       "dependency": "input",
       "targetEnvironment": "renderer",
       "testOnly": true
@@ -1393,20 +1414,6 @@
       "environment": "renderer",
       "dependency": "input",
       "targetEnvironment": "renderer",
-      "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "renderer",
-      "dependency": "preferences",
-      "targetEnvironment": "contracts",
-      "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "renderer",
-      "dependency": "threads",
-      "targetEnvironment": "contracts",
       "testOnly": false
     },
     {
@@ -2024,6 +2031,39 @@
       "targetEnvironment": "shared"
     },
     {
+      "from": "src/app/contracts/attention.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/contracts/attention.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "../../modules/preferences/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/contracts/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/contracts/attention.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
       "from": "src/app/contracts/desktop-bridge.test.ts",
       "sourceModule": "app",
       "sourceEnvironment": "contracts",
@@ -2203,6 +2243,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/contracts/attachments.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/contracts/desktop-bridge.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "./attention",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/attention.ts",
       "targetModule": "app",
       "targetEnvironment": "contracts"
     },
@@ -2614,6 +2666,144 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/main/ipc/context.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/ipc/attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "electron",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/app/main/ipc/attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../wiring/thread-attention",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/thread-attention.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/ipc/attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./attention",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/ipc/attention.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/ipc/attention.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/attention.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "electron",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/attention.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "ts-pattern",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/attention.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../platform/main/diagnostics/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/main/diagnostics/public.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/ipc/attention.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/app/main/ipc/attention.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../contracts/attention",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/attention.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/main/ipc/attention.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../wiring/thread-attention",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/thread-attention.ts",
       "targetModule": "app",
       "targetEnvironment": "main"
     },
@@ -3384,6 +3574,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "main",
       "test": false,
+      "specifier": "../../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/app/main/lifecycle/application.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
       "specifier": "../../../shared/messages/contracts",
       "kind": "import",
       "resolution": "module",
@@ -3400,6 +3602,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/main/ipc/attachments.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/lifecycle/application.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../ipc/attention",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/ipc/attention.ts",
       "targetModule": "app",
       "targetEnvironment": "main"
     },
@@ -3492,6 +3706,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "main",
       "test": false,
+      "specifier": "../wiring/thread-attention",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/thread-attention.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/lifecycle/application.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
       "specifier": "./development-tools",
       "kind": "import",
       "resolution": "module",
@@ -3520,6 +3746,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/main/lifecycle/quit.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/lifecycle/application.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "./system-notifications",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/lifecycle/system-notifications.ts",
       "targetModule": "app",
       "targetEnvironment": "main"
     },
@@ -3648,6 +3886,45 @@
       "to": "src/app/main/lifecycle/quit.ts",
       "targetModule": "app",
       "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/lifecycle/system-notifications.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:events",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/lifecycle/system-notifications.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/lifecycle/system-notifications.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./system-notifications",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/lifecycle/system-notifications.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/lifecycle/system-notifications.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "electron",
+      "kind": "import",
+      "resolution": "external"
     },
     {
       "from": "src/app/main/lifecycle/window.test.ts",
@@ -4178,6 +4455,39 @@
       "targetEnvironment": "main"
     },
     {
+      "from": "src/app/main/wiring/desktop-services.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/desktop-services.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/main/wiring/desktop-services.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./desktop-services",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/desktop-services.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
       "from": "src/app/main/wiring/desktop-services.ts",
       "sourceModule": "app",
       "sourceEnvironment": "main",
@@ -4233,6 +4543,18 @@
       "to": "src/modules/configuration/main/public.ts",
       "targetModule": "configuration",
       "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/desktop-services.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/app/main/wiring/desktop-services.ts",
@@ -4387,6 +4709,72 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/main/wiring/desktop-command-service.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/notification-preferences.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/notification-preferences.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/notification-preferences.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/notification-preferences.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/notification-preferences.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:sqlite",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/notification-preferences.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/notification-preferences.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./app-storage",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/app-storage.ts",
       "targetModule": "app",
       "targetEnvironment": "main"
     },
@@ -4793,6 +5181,192 @@
       "targetEnvironment": "main"
     },
     {
+      "from": "src/app/main/wiring/thread-attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/thread-attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/thread-attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/thread-attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/thread-attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/thread-attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/main/wiring/thread-attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/app/main/wiring/thread-attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../lifecycle/system-notifications",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/lifecycle/system-notifications.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/thread-attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./app-storage",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/app-storage.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/thread-attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./desktop-command-service",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/desktop-command-service.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/thread-attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./thread-attention",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/thread-attention.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/thread-attention.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/thread-attention.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/main/wiring/thread-attention.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../modules/preferences/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/contracts/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/main/wiring/thread-attention.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/app/main/wiring/thread-attention.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../contracts/attention",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/attention.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/main/wiring/thread-attention.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../lifecycle/system-notifications",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/lifecycle/system-notifications.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
       "from": "src/app/preload/bridges/attachments.ts",
       "sourceModule": "app",
       "sourceEnvironment": "preload",
@@ -4810,6 +5384,48 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/contracts/attachments.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/preload/bridges/attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/preload/bridges/attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": true,
+      "specifier": "./attention",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/preload/bridges/attention.ts",
+      "targetModule": "app",
+      "targetEnvironment": "preload"
+    },
+    {
+      "from": "src/app/preload/bridges/attention.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": false,
+      "specifier": "electron",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/preload/bridges/attention.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": false,
+      "specifier": "../../contracts/attention",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/attention.ts",
       "targetModule": "app",
       "targetEnvironment": "contracts"
     },
@@ -5224,6 +5840,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/preload/bridges/attachments.ts",
+      "targetModule": "app",
+      "targetEnvironment": "preload"
+    },
+    {
+      "from": "src/app/preload/index.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": false,
+      "specifier": "./bridges/attention",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/preload/bridges/attention.ts",
       "targetModule": "app",
       "targetEnvironment": "preload"
     },
@@ -6499,6 +7127,30 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": true,
+      "specifier": "../../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/app/renderer/reading/submissions-renderer.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../workbench/attention-location",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/attention-location.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/submissions-renderer.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
       "specifier": "./submissions",
       "kind": "import",
       "resolution": "module",
@@ -6787,6 +7439,18 @@
       "specifier": "vitest",
       "kind": "import",
       "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/routing/navigation-continuity.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/app/renderer/routing/navigation-continuity.test.ts",
@@ -7123,6 +7787,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": true,
+      "specifier": "../../contracts/attention",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/attention.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/shell/appearance-subscriptions.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
       "specifier": "../../contracts/desktop-bridge",
       "kind": "import",
       "resolution": "module",
@@ -7279,6 +7955,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "./attention",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/attention.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/application-layout.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "./diagnostics",
       "kind": "import",
       "resolution": "module",
@@ -7319,6 +8007,222 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/shell/thread-notice.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tanstack/react-router",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/shell/attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/shell/attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react-dom/client",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/shell/attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/shell/attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/input/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/shell/attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../contracts/attention",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/attention.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/shell/attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../contracts/desktop-bridge",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/desktop-bridge.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/shell/attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../routing/router",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/routing/router.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../wiring/model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/wiring/model.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./attention",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/attention.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/attention.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tanstack/react-router",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/shell/attention.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/shell/attention.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "ts-pattern",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/shell/attention.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "zustand",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/shell/attention.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@/components/ui/button",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/ui/button.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/attention.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/attention.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/threads/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/threads/contracts/public.ts",
+      "targetModule": "threads",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/shell/attention.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../contracts/attention",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/attention.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/shell/attention.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../wiring/model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/wiring/model.ts",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -7949,6 +8853,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "./attention",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/attention.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/project-threads.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "./choose-project-button",
       "kind": "import",
       "resolution": "module",
@@ -8012,6 +8928,96 @@
       "to": "src/app/renderer/shell/diagnostics.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/wiring/attention-model.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/wiring/attention-model.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/app/renderer/wiring/attention-model.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../contracts/attention",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/attention.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/wiring/attention-model.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./attention-model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/wiring/attention-model.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/wiring/attention-model.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "zustand/vanilla",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/wiring/attention-model.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/preferences/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/contracts/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/wiring/attention-model.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/threads/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/threads/contracts/public.ts",
+      "targetModule": "threads",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/wiring/attention-model.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../contracts/attention",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/attention.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/app/renderer/wiring/m2-thread-switch.test.ts",
@@ -8372,6 +9378,18 @@
       "to": "src/app/contracts/desktop-bridge.ts",
       "targetModule": "app",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/wiring/model.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./attention-model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/wiring/attention-model.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/app/renderer/wiring/model.ts",
@@ -8804,6 +9822,63 @@
       "to": "src/app/renderer/components/icons/common.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/attention-location.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/attention-location.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/app/renderer/workbench/attention-location.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../contracts/attention",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/attention.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/attention-location.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./attention-location",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/attention-location.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/attention-location.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../contracts/attention",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/attention.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/app/renderer/workbench/composer-binding.test.ts",
@@ -10520,6 +11595,15 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "zustand",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/thread-workbench.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "@/components/icons/common",
       "kind": "import",
       "resolution": "module",
@@ -10632,6 +11716,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/wiring/thread-model.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/thread-workbench.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./attention-location",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/attention-location.ts",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },

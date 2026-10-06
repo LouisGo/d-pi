@@ -1,0 +1,2 @@
+$ node scripts/checks/lint-design.mjs
+PASS: design lint

@@ -11,8 +11,11 @@ import { SubmissionModel } from "../../../modules/execution/renderer/public";
 import { DraftSchema } from "../../../modules/input/contracts/public";
 import { DraftController } from "../../../modules/input/core/public";
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
+import { ThreadIdSchema } from "../../../shared/identity";
+import { locateAttention } from "../workbench/attention-location";
 import { Submissions } from "./submissions";
 
+const diagnosticTraceId = crypto.randomUUID();
 const originalText = "用户提交原文\r\nKeep **Markdown** and 😀 unchanged";
 const refusalCopy = {
   "image-unsupported": ["图像", "image"],
@@ -63,7 +66,7 @@ async function renderReceipt(
     ...status,
     submissionId: crypto.randomUUID(),
     threadId: draft.threadId,
-    traceId: crypto.randomUUID(),
+    traceId: diagnosticTraceId,
     revision: 0,
     text: originalText,
     requestId: crypto.randomUUID(),
@@ -177,3 +180,24 @@ it.each(["failed", "unknown"] as const)(
     }
   },
 );
+
+it("click location reveals and focuses the current failed receipt without dispatching", async () => {
+  const container = await renderReceipt("zh-CN", {
+    state: "acknowledged",
+    outcome: "failed",
+  });
+  expect(container.querySelector("details")?.open).toBe(false);
+  const record = container.querySelector<HTMLElement>("article");
+  if (!record) throw Error("missing record");
+  record.scrollIntoView = vi.fn();
+  locateAttention(container, {
+    threadId: ThreadIdSchema.parse(crypto.randomUUID()),
+    eventId: crypto.randomUUID(),
+    traceId: diagnosticTraceId,
+    kind: "failed",
+    unread: true,
+  });
+  expect(container.querySelector("details")?.open).toBe(true);
+  expect(document.activeElement).toBe(record);
+  expect(record.textContent).toContain("原生返回失败");
+});

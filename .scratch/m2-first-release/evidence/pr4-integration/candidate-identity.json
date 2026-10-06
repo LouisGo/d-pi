@@ -1,0 +1,17 @@
+{
+  "sourceCommit": "3c4c1060cd7943cb435ac73da3d8bd03433d4954",
+  "build": {
+    "version": "0.1.0-m2.20",
+    "commit": "3c4c1060cd7943cb435ac73da3d8bd03433d4954",
+    "dirty": false,
+    "id": "3c4c1060-8b550d60"
+  },
+  "zipSha256": "1011a3517f295b35d97c5f012222db2423880ab04222397499399ff61f5deabb",
+  "appAsarSha256": "8c51f1427708aa82d2cde00b9563a6780de5a13fd44f7d8143c354da74907231",
+  "testedSource": "/Users/louistation/MySpace/Life/d-pi/dist/validation/pr4-m2.20-candidate/d-pi.app",
+  "productSourceDiff": "git diff 3c4c106..3219e65 -- src runtime package.json empty",
+  "nativeInspection": "not-run; --attention-inspect omitted",
+  "checks": 17,
+  "resultRoot": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-f38vAm",
+  "harnessSource": "d83f8f0c3545e184603593a815d8be1291181255"
+}

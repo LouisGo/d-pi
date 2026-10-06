@@ -1,0 +1,15 @@
+
+DevTools listening on ws://127.0.0.1:54606/devtools/browser/87433e65-5239-4e30-895f-7af7cfaea7a3
+sandbox_extension_issue_file failed for /private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-hUE3b2/Package With Spaces/d-pi.app/Contents/Frameworks/d-pi Helper.app/Contents/Resources: 1 (Operation not permitted)
+{"checkpoint":"/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-hUE3b2/attention-background-checkpoint.json","root":"/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-hUE3b2","operation":"background","instructions":"Observe only local.d-pi.m2-validation. Put another App in the foreground (do not quit d-pi). Record status observed and notes in evidenceFile, then create resumeFile. The harness releases the actual held provider response only after resume.","nativeThread":"1ef093a2-94bb-4179-8581-69ab706a5c91","evidenceFile":"/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-hUE3b2/attention-background-observation.json","resumeFile":"/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-hUE3b2/attention-background-continue","expiresAt":"2026-10-06T10:00:51.796Z"}
+Failure evidence: /private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-hUE3b2
+file:///Users/louistation/.codex/worktrees/a613/d-pi/validation/m2/attention.mjs:121
+      throw Error(`Native attention ${operation} checkpoint timeout`);
+            ^
+
+Error: Native attention background checkpoint timeout
+    at checkpoint (file:///Users/louistation/.codex/worktrees/a613/d-pi/validation/m2/attention.mjs:121:13)
+    at async validateAttention (file:///Users/louistation/.codex/worktrees/a613/d-pi/validation/m2/attention.mjs:446:30)
+    at async file:///Users/louistation/.codex/worktrees/a613/d-pi/validation/m2/package.mjs:1353:24
+
+Node.js v24.21.0

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
 import {
+  constants,
   cpSync,
   existsSync,
   mkdirSync,
@@ -16,6 +17,12 @@ import {
   prepareAgedAttachment,
   validateAttachmentLifecycle,
 } from "./attachment-lifecycle.mjs";
+import {
+  createAttentionSupplier,
+  prepareAttentionExtension,
+  validateAttention,
+  validateAttentionCold,
+} from "./attention.mjs";
 import { createCdpClient } from "./cdp.mjs";
 import {
   prepareDiagnosticStartupFailure,
@@ -38,7 +45,11 @@ const source = resolve(
   process.argv[2] ?? "dist/m2-entry-candidate/mac-arm64/d-pi.app",
 );
 const bundle = join(isolated.root, "Package With Spaces", "d-pi.app");
-cpSync(source, bundle, { recursive: true, verbatimSymlinks: true });
+cpSync(source, bundle, {
+  recursive: true,
+  verbatimSymlinks: true,
+  mode: constants.COPYFILE_FICLONE,
+});
 const plist = join(bundle, "Contents/Info.plist");
 assert.equal(
   spawnSync(
@@ -79,6 +90,7 @@ writeFileSync(join(secondProject, "second.txt"), "Second isolated project\n");
 const requests = [];
 const subagentSupplier = createSubagentSupplier();
 const longReadingSupplier = createLongReadingSupplier();
+const attentionSupplier = createAttentionSupplier();
 let held = null;
 const sockets = new Set();
 const server = createServer(async (req, res) => {
@@ -94,6 +106,11 @@ const server = createServer(async (req, res) => {
   if (
     process.argv.includes("--lifecycle") &&
     subagentSupplier.handle(request, res)
+  )
+    return;
+  if (
+    process.argv.includes("--attention") &&
+    attentionSupplier.handle(request, res)
   )
     return;
   requests.push(request);
@@ -161,6 +178,8 @@ writeFileSync(
   }),
 );
 mkdirSync(join(isolated.config, "extensions"));
+if (process.argv.includes("--attention"))
+  prepareAttentionExtension(isolated.config, isolated.root);
 if (process.argv.includes("--long-reading"))
   prepareLongReadingExtension(isolated.config);
 writeFileSync(
@@ -355,6 +374,7 @@ const continuitySamples = [];
 let agedAttachmentPath;
 let longReadingMetrics;
 let diagnosticsMetrics;
+let attentionMetrics;
 try {
   await connect();
   if (process.argv.includes("--diagnostics"))
@@ -1296,6 +1316,25 @@ try {
       nativeInspection: process.argv.includes("--diagnostics-inspect"),
     });
   }
+  if (process.argv.includes("--attention")) {
+    attentionMetrics = await validateAttention({
+      supplier: attentionSupplier,
+      db,
+      evaluate,
+      wait,
+      click,
+      insert,
+      selectThread,
+      call,
+      shot,
+      checks,
+      screenshots,
+      threadA: a,
+      root: isolated.root,
+      connect,
+      nativeInspection: process.argv.includes("--attention-inspect"),
+    });
+  }
   if (process.argv.includes("--inspect")) {
     const checkpoint = join(isolated.root, "inspect-checkpoint.json"),
       resume = join(isolated.root, "inspect-continue");
@@ -1352,6 +1391,14 @@ try {
   socket.close();
   child = launch();
   await connect();
+  if (process.argv.includes("--attention"))
+    await validateAttentionCold({
+      evaluate,
+      wait,
+      checks,
+      root: isolated.root,
+      metrics: attentionMetrics,
+    });
   if (agedAttachmentPath) {
     await wait(() => !existsSync(agedAttachmentPath));
     checks.push(
@@ -1436,6 +1483,8 @@ try {
     longReadingProviderCalls: longReadingSupplier.requests.length,
     longReading: longReadingMetrics,
     diagnostics: diagnosticsMetrics,
+    attention: attentionMetrics,
+    attentionProviderCalls: attentionSupplier.requests.length,
     models: requests.map((r) => r.model),
     nativeSessions: db
       .prepare("SELECT session_id,thread_id FROM native_session")
@@ -1470,6 +1519,7 @@ try {
   writeFileSync(
     join(isolated.root, "supplier-requests.json"),
     JSON.stringify({
+      attention: attentionSupplier.requests,
       execution: subagentSupplier.requests,
       titles: subagentSupplier.titleRequests,
       longReading: longReadingSupplier.requests.map((request) => ({

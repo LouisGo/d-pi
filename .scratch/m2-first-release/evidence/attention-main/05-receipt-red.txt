@@ -1,0 +1,43 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/.codex/worktrees/m2-attention-main/d-pi[39m
+
+ [31m❯[39m src/app/main/wiring/thread-attention.test.ts [2m([22m[2m2 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 11[2mms[22m[39m
+   [32m✓[39m keeps a deduplicated background question without stealing focus and ignores late revisions[32m 5[2mms[22m[39m
+[31m   [31m×[31m does not mistake ACK or idle for completion and ignores an older submission finishing after newer dispatch[39m[32m 5[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/app/main/wiring/thread-attention.test.ts[2m > [22mdoes not mistake ACK or idle for completion and ignores an older submission finishing after newer dispatch
+[31m[1mAssertionError[22m: expected [ { …(5) } ] to deeply equal [][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   {[39m
+[31m+     "eventId": "dca33920-0c10-42cf-b39e-35a07be00a7f",[39m
+[31m+     "kind": "completed",[39m
+[31m+     "threadId": "712f3acb-94d3-489d-8b59-4ef0f1ddb7e3",[39m
+[31m+     "traceId": "96f0d903-2080-4ab4-a684-2cb54e99d363",[39m
+[31m+     "unread": true,[39m
+[31m+   },[39m
+[31m+ ][39m
+
+[36m [2m❯[22m src/app/main/wiring/thread-attention.test.ts:[2m16:127[22m[39m
+    [90m 14|[39m  const first=receipt("unobserved"), next={...receipt("unobserved"),sub…
+    [90m 15|[39m  attention.observeReceipt(first); expect(attention.snapshot().entries)…
+    [90m 16|[39m  attention.observeReceipt(next);attention.observeReceipt({...first,out…
+    [90m   |[39m                                                                                                                               [31m^[39m
+    [90m 17|[39m  attention.observeReceipt({...next,outcome:"completed"});expect(attent…
+    [90m 18|[39m  attention.observeReceipt({...next,outcome:"completed"});expect(attent…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (2)[39m
+[2m   Start at [22m 17:30:05
+[2m   Duration [22m 285ms[2m (transform 50%, import 43%, tests 6%, worker 2%)[22m
+

@@ -1,0 +1,1 @@
+Actual63a578f0-b482b2e5 package timed out at interaction focus before budget samples. Real route/confirmation DOM visible; assertion retained, root cause not established. Separate from old budget red; not a geometry result.

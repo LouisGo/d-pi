@@ -1,0 +1,9 @@
+# 多提醒预算与迟到原生状态定位：真实 TDD
+
+旧m2.18几何red：5条真实提醒160px、readingHeight0；独立Spec确认为P2。首次更早focus timeout单列，非预算red。
+
+共享control-height cap修正后，实际前台流程旧Thread已合法已读，首样本无center；添加4次正式GUI新Thread/真实SDK localhost请求，回A才release并确认completed+unread，未注入事件/改数据库。63a578f包仍真实几何red：9条center64/client64/scroll288、readingHeight0，末条focus可达与草稿保留，证明仅cap不足。修复增加仅有提醒时4lh阅读最低预算，让setup在既有独立滚动内收缩；几何断言保留并强化实际work viewport内reading/Composer完整可见。
+
+两轮实际包待答focus超时的根因仍unknown。独立固定63a578f审查发现可达P2：reload后新ThreadModel的Runtime inspect晚于唯一定位RAF，稍后补出interaction却无重新定位。真实React/实际RuntimeModel hold inspect回归先红（交互已出现但activeElement仍body），再最小等待runtime首次样本与transition解除；记录成功intent，同一后续runtime更新不反复夺焦。19相关行为green，后续完整/实际候选验证另行记录。红灯命令误带--导致跑全量，实际为795pass/1新目标失败/2既有skip，未将其冒称定向执行。
+
+包内有界focus观测至多150项focusin/out、childList/inert变化，并及时解绑；只观察，不发事件、不改变焦点或模拟系统callback。一次63a578f实际该路径通过，证据attention-budget-cap-insufficient/attention-focus-observations.json，不能反推先前两次timeout根因。

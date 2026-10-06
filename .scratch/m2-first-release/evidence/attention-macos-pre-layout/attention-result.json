@@ -1,0 +1,231 @@
+{
+  "fixture": "fixed SDK extension + localhost provider; no fake runtime events",
+  "snapshots": {
+    "initial": {
+      "instanceId": "b664fc54-4404-4fff-9a1c-5b17b119c143",
+      "revision": 2,
+      "entries": [
+        {
+          "threadId": "e9cda72b-6dd5-492e-89fa-902be66cda81",
+          "eventId": "21590261-268a-429e-99e8-b19d992d4a62",
+          "traceId": "aa3f418f-6a4b-43b0-b59a-8fa244ba49f7",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "5f33df34-b537-4d81-bcfa-b924e5353703",
+          "eventId": "7ffe4228-1d26-4a7f-9f11-212e36e61fd0",
+          "traceId": "3ad43f82-667b-4aff-93a2-2bfefda65af7",
+          "kind": "completed",
+          "unread": true
+        }
+      ],
+      "preferences": {
+        "system": false,
+        "completion": false
+      },
+      "system": "disabled",
+      "coverageGap": false,
+      "openRequest": null
+    },
+    "pending": {
+      "instanceId": "b664fc54-4404-4fff-9a1c-5b17b119c143",
+      "revision": 3,
+      "entries": [
+        {
+          "threadId": "e9cda72b-6dd5-492e-89fa-902be66cda81",
+          "eventId": "21590261-268a-429e-99e8-b19d992d4a62",
+          "traceId": "aa3f418f-6a4b-43b0-b59a-8fa244ba49f7",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "5f33df34-b537-4d81-bcfa-b924e5353703",
+          "eventId": "7ffe4228-1d26-4a7f-9f11-212e36e61fd0",
+          "traceId": "3ad43f82-667b-4aff-93a2-2bfefda65af7",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "9328ccd2-8d3d-4a92-9726-a27bd933b471",
+          "eventId": "52e1f36e-f872-4ab4-8d1a-855270981496",
+          "traceId": "cb807a6b-886d-403e-b8e6-cfa95784b5f3",
+          "kind": "needs-answer",
+          "unread": true
+        }
+      ],
+      "preferences": {
+        "system": false,
+        "completion": false
+      },
+      "system": "disabled",
+      "coverageGap": false,
+      "openRequest": null
+    },
+    "reloaded": {
+      "instanceId": "b664fc54-4404-4fff-9a1c-5b17b119c143",
+      "revision": 3,
+      "entries": [
+        {
+          "threadId": "e9cda72b-6dd5-492e-89fa-902be66cda81",
+          "eventId": "21590261-268a-429e-99e8-b19d992d4a62",
+          "traceId": "aa3f418f-6a4b-43b0-b59a-8fa244ba49f7",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "5f33df34-b537-4d81-bcfa-b924e5353703",
+          "eventId": "7ffe4228-1d26-4a7f-9f11-212e36e61fd0",
+          "traceId": "3ad43f82-667b-4aff-93a2-2bfefda65af7",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "9328ccd2-8d3d-4a92-9726-a27bd933b471",
+          "eventId": "52e1f36e-f872-4ab4-8d1a-855270981496",
+          "traceId": "cb807a6b-886d-403e-b8e6-cfa95784b5f3",
+          "kind": "needs-answer",
+          "unread": true
+        }
+      ],
+      "preferences": {
+        "system": false,
+        "completion": false
+      },
+      "system": "disabled",
+      "coverageGap": false,
+      "openRequest": null
+    },
+    "failed": {
+      "instanceId": "b664fc54-4404-4fff-9a1c-5b17b119c143",
+      "revision": 6,
+      "entries": [
+        {
+          "threadId": "e9cda72b-6dd5-492e-89fa-902be66cda81",
+          "eventId": "21590261-268a-429e-99e8-b19d992d4a62",
+          "traceId": "aa3f418f-6a4b-43b0-b59a-8fa244ba49f7",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "5f33df34-b537-4d81-bcfa-b924e5353703",
+          "eventId": "7ffe4228-1d26-4a7f-9f11-212e36e61fd0",
+          "traceId": "3ad43f82-667b-4aff-93a2-2bfefda65af7",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "9328ccd2-8d3d-4a92-9726-a27bd933b471",
+          "eventId": "9122a361-b9bb-43f5-87d9-c166d78cc78c",
+          "traceId": "045bcba4-a211-4896-a351-ea685fef4ad8",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "4d48f55c-9335-49f5-8ee7-e2eb530d2943",
+          "eventId": "6a0f28b4-916b-41c1-915b-656c18b1946f",
+          "traceId": "4cfd1fb9-eea6-430e-91ad-5b59f5835e64",
+          "kind": "failed",
+          "unread": true
+        }
+      ],
+      "preferences": {
+        "system": false,
+        "completion": false
+      },
+      "system": "disabled",
+      "coverageGap": false,
+      "openRequest": null
+    },
+    "completed": {
+      "instanceId": "b664fc54-4404-4fff-9a1c-5b17b119c143",
+      "revision": 7,
+      "entries": [
+        {
+          "threadId": "e9cda72b-6dd5-492e-89fa-902be66cda81",
+          "eventId": "21590261-268a-429e-99e8-b19d992d4a62",
+          "traceId": "aa3f418f-6a4b-43b0-b59a-8fa244ba49f7",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "5f33df34-b537-4d81-bcfa-b924e5353703",
+          "eventId": "7ffe4228-1d26-4a7f-9f11-212e36e61fd0",
+          "traceId": "3ad43f82-667b-4aff-93a2-2bfefda65af7",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "9328ccd2-8d3d-4a92-9726-a27bd933b471",
+          "eventId": "9122a361-b9bb-43f5-87d9-c166d78cc78c",
+          "traceId": "045bcba4-a211-4896-a351-ea685fef4ad8",
+          "kind": "completed",
+          "unread": true
+        },
+        {
+          "threadId": "4d48f55c-9335-49f5-8ee7-e2eb530d2943",
+          "eventId": "6a0f28b4-916b-41c1-915b-656c18b1946f",
+          "traceId": "4cfd1fb9-eea6-430e-91ad-5b59f5835e64",
+          "kind": "failed",
+          "unread": true
+        },
+        {
+          "threadId": "2bf8b42d-5edf-480b-833d-8f6e5b0d2105",
+          "eventId": "022584a6-97be-4873-bb84-03b69de93997",
+          "traceId": "e68cb2ad-ec91-48ee-ba4b-2c602759a713",
+          "kind": "completed",
+          "unread": true
+        }
+      ],
+      "preferences": {
+        "system": false,
+        "completion": false
+      },
+      "system": "disabled",
+      "coverageGap": false,
+      "openRequest": null
+    },
+    "cold": {
+      "instanceId": "dee46ade-8c37-42f3-94d2-62746de5713a",
+      "revision": 0,
+      "entries": [],
+      "preferences": {
+        "system": true,
+        "completion": true
+      },
+      "system": "available",
+      "coverageGap": false,
+      "openRequest": null
+    }
+  },
+  "native": {
+    "displayClick": {
+      "status": "not-exercised"
+    },
+    "closedWindow": {
+      "status": "not-exercised"
+    }
+  },
+  "failureDetail": {
+    "traceId": "4cfd1fb9-eea6-430e-91ad-5b59f5835e64",
+    "text": "已收到调用回执 · 原生返回失败M2_ATTENTION_FAILED作为新提交再次发送原提交可能已经执行，再次发送可能产生重复操作。请先核对原生历史；新草稿保持不变。恢复只读或队列暂停时不会派发。确认可能重复，重新发送复制提交原文",
+    "focused": true,
+    "detailsOpen": true,
+    "top": 444.2734375,
+    "bottom": 593.7734375,
+    "viewport": 748
+  },
+  "persistedPreferences": {
+    "system": true,
+    "completion": true
+  },
+  "systemCapability": "available",
+  "narrowViewport": {
+    "x": 20,
+    "right": 171,
+    "viewport": 560,
+    "scroll": 151,
+    "client": 151,
+    "text": "Notification settingsEnable system notificationsNotify on completionSystem notifications require an explicit opt-in. Completion updates the sidebar by default. In-app status remains available when system notifications are unavailable.System notifications are supported; macOS permissions and settings determine whether they appear."
+  }
+}

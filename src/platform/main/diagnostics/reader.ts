@@ -19,6 +19,7 @@ const operations = new Set<string>(DiagnosticOperationSchema.options);
 const codes = new Set([
   "read-unavailable",
   "export-unavailable",
+  "notification-unavailable",
   "source-changed",
   "cancelled",
   "unknown",

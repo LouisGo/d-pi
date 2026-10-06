@@ -1,0 +1,4 @@
+{
+  "status": "observed",
+  "notes": "CUA bound exact local.d-pi.m2-validation and verified clean 9a8c2eea-7f1a67df. Refreshed Finder state after user-changed guard, then actual Cmd+N opened a temporary Finder Recents window and its list held focus. Did not quit d-pi; actual native supplier remains held until resume."
+}

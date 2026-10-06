@@ -1,0 +1,57 @@
+Window: "d-pi", App: d-pi.
+0 standard window d-pi, Secondary Actions: Raise
+	1 container d-pi
+		2 container
+			3 HTML 内容 d-pi, URL: file:///private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-real-e2e-6VbAgQ/d-pi%20Real%20E2E.app/Contents/Resources/app.asar/out/renderer/index.html
+				4 container
+					5 text d-pi M2
+					6 container 项目
+						7 按钮 打开项目
+						8 text 项目
+						9 按钮 project 会话 1 · a64488 已完成, Help: /private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-real-e2e-6VbAgQ/project · a64488ec-21a2-492b-bd83-8fd1408e5aab
+							10 text project
+							11 container
+								12 text 会话 1  ·  a64488
+							13 text 已完成
+					14 开合三角标记 提醒设置
+						15 text 提醒设置
+					16 按钮 诊断与反馈
+					17 text 本地草稿 项目执行需授权
+					18 container 3c4c1060cd7943cb435ac73da3d8bd03433d4954
+						19 text 0.1.0-m2.20  ·  3c4c1060-8b550d60
+					20 container
+						21 按钮 (disabled) 后退
+						22 按钮 (disabled) 前进
+						23 按钮 新会话
+						24 弹出式按钮 Description: 界面语言, Value: 跟随系统
+							25 (selected) 跟随系统
+						26 按钮 切换为深色主题
+						27 按钮 紧凑密度
+					28 container
+						29 container 查看会话资料
+							30 切换按钮 会话, Value: 1
+							31 切换按钮 只读文件与当前差异, Value: 0
+							32 切换按钮 提交原文, Value: 0
+							33 切换按钮 原生历史, Value: 0
+							34 切换按钮 恢复控件, Value: 1
+						35 container 原生会话阅读
+							36 container 原生会话阅读
+								37 标题 会话, Value: 2
+									38 text 会话
+								39 container
+									40 text 原生输入
+									41 按钮 复制
+									42 text 这是 d-pi 真实模型端到端验证。不要调用任何工具，不要读取文件。请用一句中文回答 2+3 的结果，并在末尾原样附上验证标记 DPI_LIVE_20261006_6VbAgQ。
+								43 container
+									44 text OMP
+									45 按钮 复制
+									46 text 2+3 的结果是 5。DPI_LIVE_20261006_6VbAgQ
+								47 container
+									48 text 原生事件
+									49 按钮 复制
+									50 text 收到 session_settled。此类事件的完整交互尚未接入。
+	51 menu button Window sharing
+52 menu bar
+	53 d-pi
+	54 编辑
+	55 窗口

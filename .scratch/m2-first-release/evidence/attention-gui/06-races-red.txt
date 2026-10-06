@@ -1,0 +1,77 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/.codex/worktrees/m2-attention-gui/d-pi[39m
+
+ [31m❯[39m src/app/renderer/wiring/attention-model.test.ts [2m([22m[2m4 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 8[2mms[22m[39m
+   [32m✓[39m subscribes before sampling, preserves newest instance and revision, and closes independently of views[32m 1[2mms[22m[39m
+   [32m✓[39m keeps unchanged Thread entity references and sends explicit visible/seen/preferences/opened commands only[32m 1[2mms[22m[39m
+   [32m✓[39m shows failure without retry or losing the prior snapshot, then explicit refresh recovers[32m 0[2mms[22m[39m
+[31m   [31m×[31m does not return to a retired Main instance and explicit same-version refresh clears read failure[39m[32m 4[2mms[22m[39m
+ [31m❯[39m src/app/renderer/shell/attention.test.ts [2m([22m[2m5 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 138[2mms[22m[39m
+   [32m✓[39m background event preserves focus and selection; click respects IME admission and exposes retry[32m 64[2mms[22m[39m
+   [32m✓[39m system and completion preferences require explicit opt-in, supported is not authorization, unread badge is entity-scoped[32m 7[2mms[22m[39m
+   [32m✓[39m native click before ready can be retried, stale event opens current state without answering[32m 31[2mms[22m[39m
+   [32m✓[39m only an actually focused current Thread can be seen; a list row or background notification cannot[32m 5[2mms[22m[39m
+[31m   [31m×[31m retains a native open arriving during another navigation as an explicit retry[39m[32m 30[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 2 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/app/renderer/shell/attention.test.ts[2m > [22mretains a native open arriving during another navigation as an explicit retry
+[31m[1mAssertionError[22m: expected null not to be null[39m
+[36m [2m❯[22m src/app/renderer/shell/attention.test.ts:[2m104:62[22m[39m
+    [90m102|[39m  await act(async()=>{release();await new Promise(resolve=>setTimeout(r…
+    [90m103|[39m  expect(ui.request.mock.calls.some(([command])=>command.kind==="opened…
+    [90m104|[39m  expect(ui.host.querySelector("[data-attention-retry]")).not.toBeNull(…
+    [90m   |[39m                                                              [31m^[39m
+    [90m105|[39m  await ui.click("[data-attention-retry]");
+    [90m106|[39m  expect(ui.model.getSnapshot()).toMatchObject({threadSelection:{thread…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/app/renderer/wiring/attention-model.test.ts[2m > [22mdoes not return to a retired Main instance and explicit same-version refresh clears read failure
+[31m[1mAssertionError[22m: expected { …(7) } to be { …(7) } // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[2m    "coverageGap": false,[22m
+[2m    "entries": [[22m
+[2m      {[22m
+[32m-       "eventId": "62ce9f72-5fd0-403f-86aa-902851d76aea",[39m
+[31m+       "eventId": "e1a03db4-4e22-468e-8f02-63e4bb8a0ef3",[39m
+[2m        "kind": "needs-answer",[22m
+[2m        "threadId": "3e5ed779-843b-4fe2-ab0e-a0c31f90fa16",[22m
+[32m-       "traceId": "d01017a3-7f4c-4278-b0b7-5d9ddad1c2f4",[39m
+[31m+       "traceId": "5139c144-4eff-48a1-83cb-dfa2f94e020f",[39m
+[2m        "unread": true,[22m
+[2m      },[22m
+[2m    ],[22m
+[32m-   "instanceId": "e74e9d16-3f00-459d-82df-220dbabfbf4c",[39m
+[31m+   "instanceId": "8f595583-f24b-4750-b2f6-f7ed050833c0",[39m
+[2m    "openRequest": null,[22m
+[2m    "preferences": {[22m
+[2m      "completion": false,[22m
+[2m      "system": false,[22m
+[2m    },[22m
+[32m-   "revision": 1,[39m
+[31m+   "revision": 999,[39m
+[2m    "system": "disabled",[22m
+[2m  }[22m
+
+[36m [2m❯[22m src/app/renderer/wiring/attention-model.test.ts:[2m73:47[22m[39m
+    [90m 71|[39m  await model.start();
+    [90m 72|[39m  latest={...sample(),instanceId:crypto.randomUUID()};receive(latest);r…
+    [90m 73|[39m  expect(model.stateStore.getState().snapshot).toBe(latest);
+    [90m   |[39m                                               [31m^[39m
+    [90m 74|[39m  request.mockRejectedValueOnce(Error("read"));await model.refresh();ex…
+    [90m 75|[39m  await model.refresh();expect(model.stateStore.getState().failed).toBe…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m7 passed[39m[22m[90m (9)[39m
+[2m   Start at [22m 17:33:37
+[2m   Duration [22m 3.64s[2m (import 73%, transform 16%, environment 8%, tests 4%)[22m
+

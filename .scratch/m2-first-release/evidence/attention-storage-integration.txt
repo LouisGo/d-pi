@@ -1,0 +1,16 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/.codex/worktrees/a613/d-pi[39m
+
+ [32m✓[39m tests/integration/attachment-migration.integration.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 124[2mms[22m[39m
+ [32m✓[39m src/app/main/wiring/queue-storage.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 372[2mms[22m[39m
+ [32m✓[39m src/app/main/wiring/submission-storage.test.ts [2m([22m[2m13 tests[22m[2m)[22m[33m 999[2mms[22m[39m
+ [32m✓[39m src/app/main/wiring/storage.test.ts [2m([22m[2m11 tests[22m[2m)[22m[33m 1173[2mms[22m[39m
+   [32m✓[39m real SQLite and directory service [2m(7)[22m
+     [33m[2m✓[22m[39m locked writer reports failure without overwriting draft[33m 357[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m4 passed[39m[22m[90m (4)[39m
+[2m      Tests [22m [1m[32m27 passed[39m[22m[90m (27)[39m
+[2m   Start at [22m 17:40:25
+[2m   Duration [22m 2.04s[2m (tests 47%, import 28%, transform 24%)[22m
+

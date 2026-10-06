@@ -1,0 +1,65 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/.codex/worktrees/m2-attention-gui/d-pi[39m
+
+ [31m❯[39m src/app/renderer/workbench/attention-location.test.ts [2m([22m[2m0 test[22m[2m)[22m
+ [31m❯[39m src/app/renderer/shell/attention.test.ts [2m([22m[2m6 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 140[2mms[22m[39m
+   [32m✓[39m background event preserves focus and selection; click respects IME admission and exposes retry[32m 53[2mms[22m[39m
+   [32m✓[39m system and completion preferences require explicit opt-in, supported is not authorization, unread badge is entity-scoped[32m 7[2mms[22m[39m
+   [32m✓[39m native click before ready can be retried, stale event opens current state without answering[32m 31[2mms[22m[39m
+   [32m✓[39m only an actually focused current Thread can be seen; a list row or background notification cannot[32m 6[2mms[22m[39m
+   [32m✓[39m retains a native open arriving during another navigation as an explicit retry[32m 29[2mms[22m[39m
+[31m   [31m×[31m failed Thread opens the current submission results pane[39m[32m 14[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Suites 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/app/renderer/workbench/attention-location.test.ts[2m [ src/app/renderer/workbench/attention-location.test.ts ][22m
+[31m[1mError[22m: Failed to resolve import "./attention-location" from "../../../../../../../../Users/louistation/.codex/worktrees/m2-attention-gui/d-pi/src/app/renderer/workbench/attention-location.test.ts". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36m/Users/louistation/.codex/worktrees/m2-attention-gui/d-pi/src/app/renderer/workbench/attention-location.test.ts[39m:5:32
+[33m  1  |  import { expect, it, vi } from "vitest";
+  2  |  import { ThreadIdSchema } from "../../../shared/identity";
+  3  |  import { locateAttention } from "./attention-location";
+     |                                   ^
+  4  |  const entry = { threadId: ThreadIdSchema.parse(crypto.randomUUID()), eventId: crypto.randomUUID(), traceId: crypto.ra...
+  5  |  it("reveals only a current matching receipt and focuses its readable result, leaving stale details closed", () => {[39m
+[90m [2m❯[22m TransformPluginContext._formatLog node_modules/.pnpm/vite@7.3.6_@types+node@24.19.0_jiti@2.7.0_lightningcss@1.32.0/node_modules/vite/dist/node/chunks/config.js:[2m29079:43[22m[39m
+[90m [2m❯[22m TransformPluginContext.error node_modules/.pnpm/vite@7.3.6_@types+node@24.19.0_jiti@2.7.0_lightningcss@1.32.0/node_modules/vite/dist/node/chunks/config.js:[2m29076:14[22m[39m
+[90m [2m❯[22m normalizeUrl node_modules/.pnpm/vite@7.3.6_@types+node@24.19.0_jiti@2.7.0_lightningcss@1.32.0/node_modules/vite/dist/node/chunks/config.js:[2m27199:18[22m[39m
+[90m [2m❯[22m node_modules/.pnpm/vite@7.3.6_@types+node@24.19.0_jiti@2.7.0_lightningcss@1.32.0/node_modules/vite/dist/node/chunks/config.js:[2m27257:32[22m[39m
+[90m [2m❯[22m TransformPluginContext.transform node_modules/.pnpm/vite@7.3.6_@types+node@24.19.0_jiti@2.7.0_lightningcss@1.32.0/node_modules/vite/dist/node/chunks/config.js:[2m27225:4[22m[39m
+[90m [2m❯[22m EnvironmentPluginContainer.transform node_modules/.pnpm/vite@7.3.6_@types+node@24.19.0_jiti@2.7.0_lightningcss@1.32.0/node_modules/vite/dist/node/chunks/config.js:[2m28877:14[22m[39m
+[90m [2m❯[22m loadAndTransform node_modules/.pnpm/vite@7.3.6_@types+node@24.19.0_jiti@2.7.0_lightningcss@1.32.0/node_modules/vite/dist/node/chunks/config.js:[2m22746:26[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯[22m[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/app/renderer/shell/attention.test.ts[2m > [22mfailed Thread opens the current submission results pane
+[31m[1mAssertionError[22m: expected { view: 'conversation' } to match object { view: 'submissions' }[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "view": "submissions",[39m
+[31m+   "view": "conversation",[39m
+[2m  }[22m
+
+[36m [2m❯[22m src/app/renderer/shell/attention.test.ts:[2m113:42[22m[39m
+    [90m111|[39m  await ui.emit({entries:ui.snapshot().entries.map((entry)=>({...entry,…
+    [90m112|[39m  await ui.click(`[data-attention-open='${ui.second.threadId}']`);
+    [90m113|[39m  expect(ui.router.state.location.search).toMatchObject({view:"submissi…
+    [90m   |[39m                                          [31m^[39m
+    [90m114|[39m });
+    [90m115|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m5 passed[39m[22m[90m (6)[39m
+[2m   Start at [22m 17:37:23
+[2m   Duration [22m 3.84s[2m (import 67%, transform 15%, environment 14%, tests 3%)[22m
+

@@ -14,6 +14,7 @@ import type {
   DesktopBridge,
   ReplyFor,
 } from "../../contracts/desktop-bridge";
+import { AttentionModel } from "./attention-model";
 import { ThreadModel } from "./thread-model";
 
 export type ThreadSelectionState =
@@ -99,7 +100,10 @@ export class AppModel {
     thread: ThreadModel | null;
     binding: EditorBinding | null;
   } | null = null;
-  constructor(private readonly bridge: DesktopBridge) {}
+  readonly attention: AttentionModel;
+  constructor(private readonly bridge: DesktopBridge) {
+    this.attention = new AttentionModel(bridge.attention);
+  }
 
   private get state(): ViewState {
     return this.store.getState();
@@ -238,6 +242,7 @@ export class AppModel {
     for (const thread of this.threads.values()) thread.dispose();
     this.threads.clear();
     this.draftEditors.dispose();
+    this.attention.dispose();
   }
   getSnapshot = (): ViewState => this.store.getState();
   subscribe = (listener: () => void): (() => void) =>
@@ -330,6 +335,7 @@ export class AppModel {
   }
   async start(): Promise<void> {
     if (this.disposed) return;
+    void this.attention.start();
     const generation = ++this.requestGeneration;
     const traceId = crypto.randomUUID();
     try {

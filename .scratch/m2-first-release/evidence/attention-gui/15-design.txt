@@ -1,0 +1,4 @@
+$ node scripts/checks/lint-design.mjs
+src/app/renderer/shell/attention.tsx:184:17: error shadcn(no-unknown-classes): "thread-notice" is not a class this project's Tailwind knows, so no CSS is generated for it. Fix the spelling, or declare it with @utility in src/app/renderer/styles/app.css.
+FAIL: design lint returned exit 1; inspect the diagnostics above
+[ELIFECYCLE] Command failed with exit code 1.

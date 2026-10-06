@@ -93,6 +93,23 @@ export const PlainUiMessageCodeSchema = z.enum([
 export type PlainUiMessageCode = z.infer<typeof PlainUiMessageCodeSchema>;
 
 export const UiMessageSchema = z.union([
+  z.strictObject({
+    code: z.enum([
+      "attention.native.needsAnswer.title",
+      "attention.native.failed.title",
+      "attention.native.completed.title",
+      "attention.native.interrupted.title",
+    ]),
+  }),
+  z.strictObject({
+    code: z.enum([
+      "attention.native.needsAnswer.body",
+      "attention.native.failed.body",
+      "attention.native.completed.body",
+      "attention.native.interrupted.body",
+    ]),
+    params: z.strictObject({ thread: z.string().regex(/^[a-f0-9]{6}$/) }),
+  }),
   z.strictObject({ code: PlainUiMessageCodeSchema }),
   z.strictObject({
     code: z.literal("runtime.configProfile"),

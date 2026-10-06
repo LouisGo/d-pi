@@ -1,0 +1,20 @@
+
+DevTools listening on ws://127.0.0.1:51954/devtools/browser/97ce700f-ffdf-44e0-b0ac-3528b9b4cdb6
+Failure evidence: /private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-71pXu2
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: actual multi-Thread reminder sample is missing
+    at validateReminderBudget (file:///Users/louistation/.codex/worktrees/a613/d-pi/validation/m2/attention.mjs:592:10)
+    at async validateAttention (file:///Users/louistation/.codex/worktrees/a613/d-pi/validation/m2/attention.mjs:436:3)
+    at async file:///Users/louistation/.codex/worktrees/a613/d-pi/validation/m2/package.mjs:1353:24 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: null,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.21.0

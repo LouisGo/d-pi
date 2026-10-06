@@ -1,0 +1,26 @@
+[
+  {
+    "temporaryApp": "/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-OuQQpJ/Package With Spaces/d-pi.app",
+    "original": "/Users/louistation/MySpace/Life/d-pi/dist/lifecycle-m2.14-clean/mac-arm64/d-pi.app",
+    "asarSha256": "abae2825dc399b7e1f526d01164fc9d099bc1677a41b9cc6ef6656a5cfb15a19",
+    "build": {
+      "version": "0.1.0-m2.14",
+      "commit": "c5e424da02245ed854c9ba3af514087826b6cc24",
+      "dirty": false,
+      "id": "c5e424da-f02704bc"
+    },
+    "retained": "original candidate, all isolated databases/results/screenshots"
+  },
+  {
+    "temporaryApp": "/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-soqy0f/Package With Spaces/d-pi.app",
+    "original": "/Users/louistation/MySpace/Life/d-pi/dist/lifecycle-m2.14-clean/mac-arm64/d-pi.app",
+    "asarSha256": "abae2825dc399b7e1f526d01164fc9d099bc1677a41b9cc6ef6656a5cfb15a19",
+    "build": {
+      "version": "0.1.0-m2.14",
+      "commit": "c5e424da02245ed854c9ba3af514087826b6cc24",
+      "dirty": false,
+      "id": "c5e424da-f02704bc"
+    },
+    "retained": "original candidate, all isolated databases/results/screenshots"
+  }
+]

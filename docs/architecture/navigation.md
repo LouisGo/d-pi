@@ -25,3 +25,9 @@ Router 不在 beforeLoad/loader/preload 执行选择、保存、启动、发送�
 Router 1.170.41、plugin 1.168.42、CLI 1.167.40 精确锁定；CLI/plugin 版本各自发布，不要求数字相同。`tsr.config.json` 是生成配置的单源；electron-vite 的插件仅位于 Renderer 并在 React 插件之前，启用自动拆包。`pnpm typecheck`、`pnpm test` 在运行前生成路由树；`pnpm build` 的插件亦可从干净源码生成。
 
 架构门禁禁止 Router 运行时从非 Renderer 导入。生成文件仅豁免 Biome 的格式/静态规范，由生成器、类型检查与架构扫描覆盖。验证入口包括导航编译反例、实际 Router 与 AppModel 行为、编辑连续性、完整工程检查及隔离数据的打包 Electron 导航；工程通过与用户试用认可分别记录。
+
+## Thread 提醒定位（M2）
+
+Main 的 attention snapshot 是提醒状态单源；AppModel 持有 Renderer 镜像及释放，视图只订阅相关 Thread 实体。提醒采样不创建/重启 Thread 资源，正常完成默认仅更新侧栏完成/未读。系统提醒和完成提醒分别显式开启；系统支持不等于已授权或送达，系统不可用/失败时保留应用内状态。
+
+应用内与原生提醒点击共用现有 Router 准入。IME、保存或并发导航阻止切换时保留可重试操作，不强切或吞掉意图；原生 openRequest 在尝试后确认消费，阻止无限重放。过期点击仍打开当前 Thread，并按抵达后的当前事件选择阅读页签，不发送旧回答。待回答定位当前交互；失败进入提交结果，只有匹配当前 trace 的可得收据才展开并聚焦；缺少匹配收据时定位当前运行状态。已读仅在窗口实际聚焦、路由与已确认 Thread 对齐后提交 seen，侧栏显示或通知显示均不代表已读。

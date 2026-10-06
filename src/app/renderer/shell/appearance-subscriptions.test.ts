@@ -14,6 +14,10 @@ import type {
 } from "../../../modules/preferences/contracts/public";
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
 import { createI18n } from "../../../shared/i18n/create-i18n";
+import type {
+  AttentionBridge,
+  AttentionSnapshot,
+} from "../../contracts/attention";
 import {
   type Command,
   type DesktopBridge,
@@ -119,10 +123,12 @@ async function setup({
   start = true,
   restoreFails = false,
   empty = false,
+  attention,
 }: {
   start?: boolean;
   restoreFails?: boolean;
   empty?: boolean;
+  attention?: AttentionBridge;
 } = {}) {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   let draft = DraftSchema.parse({
@@ -146,6 +152,7 @@ async function setup({
     | undefined;
   let pendingChoice: ((reply: unknown) => void) | undefined;
   const bridge: DesktopBridge = {
+    ...(attention ? { attention } : {}),
     request: async (command) => {
       let reply: unknown;
       if (command.kind === "restore") {
@@ -657,4 +664,58 @@ it("does not clear a pending Thread transition when an independent preference sa
     kind: "ready",
     busy: false,
   });
+});
+
+it("Main attention samples update only the relevant badge and notice, preserving editor and reading resources", async () => {
+  let receive: (snapshot: AttentionSnapshot) => void = () => {};
+  let snapshot: AttentionSnapshot = {
+    instanceId: crypto.randomUUID(),
+    revision: 0,
+    entries: [],
+    preferences: { system: false, completion: false },
+    system: "disabled",
+    coverageGap: false,
+    openRequest: null,
+  };
+  const attention: AttentionBridge = {
+    subscribe: (listener) => {
+      receive = listener;
+      return () => {};
+    },
+    request: async (command) => ({
+      kind: "snapshot",
+      traceId: command.traceId,
+      snapshot,
+    }),
+  };
+  const { model } = await setup({ attention });
+  const other = model.threadListStore.getState().threads[1];
+  if (!other) throw Error("missing background Thread");
+  const counts = Object.fromEntries(
+    Object.entries(views).map(([key, view]) => [key, view.mock.calls.length]),
+  );
+  const controller = model.controller;
+  const reading = model.reading;
+  snapshot = {
+    ...snapshot,
+    revision: 1,
+    entries: [
+      {
+        threadId: other.threadId,
+        eventId: crypto.randomUUID(),
+        traceId: crypto.randomUUID(),
+        kind: "needs-answer",
+        unread: true,
+      },
+    ],
+  };
+  await act(async () => receive(snapshot));
+  expect(
+    document.querySelector(`[data-attention-thread='${other.threadId}']`)
+      ?.textContent,
+  ).toContain("Needs an answer");
+  for (const [key, view] of Object.entries(views))
+    expect(view.mock.calls.length, key).toBe(counts[key]);
+  expect(model.controller).toBe(controller);
+  expect(model.reading).toBe(reading);
 });

@@ -1,0 +1,4 @@
+{
+  "status": "observed",
+  "notes": "CUA exact isolated App verified notification preferences both enabled and the actual system failure message, matching fdc016 completed/unread and Thread A draft unchanged. Actual native Cmd+W closed the d-pi window; refreshed AX returned noWindowsAvailable. CUA running App inventory independently still reports local.d-pi.m2-validation isRunning=true; personal d-pi bundles are not running. Did not quit App or release provider until this observation."
+}

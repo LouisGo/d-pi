@@ -1,0 +1,18 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/.codex/worktrees/a613/d-pi[39m
+
+ [32m✓[39m src/app/main/wiring/thread-attention.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 45[2mms[22m[39m
+ [32m✓[39m src/app/renderer/shell/appearance-subscriptions.test.ts [2m([22m[2m16 tests[22m[2m)[22m[33m 429[2mms[22m[39m
+ [32m✓[39m src/app/renderer/shell/attention.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 228[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m3 passed[39m[22m[90m (3)[39m
+[2m      Tests [22m [1m[32m38 passed[39m[22m[90m (38)[39m
+[2m   Start at [22m 17:49:06
+[2m   Duration [22m 5.84s[2m (import 60%, transform 26%, environment 8%, tests 6%)[22m
+
+[2m  Transform [22m [33mtransforming modules took 3.12s[39m[2m · 26% of tracked time, re-done on every run[22m
+[2m            [22m [2mpersist transforms across runs with [22m[33mfsModuleCache: true[39m
+[2m            [22m [2mon CI this only helps when the cache directory is persisted between runs[22m
+[2m            [22m [2mlearn more: https://vitest.dev/guide/improving-performance#caching-between-reruns[22m
+

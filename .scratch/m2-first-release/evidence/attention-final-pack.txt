@@ -1,0 +1,11 @@
+  • electron-builder  version=26.15.3 os=27.2.0
+  • loaded configuration  file=/Users/louistation/.codex/worktrees/a613/d-pi/electron-builder.yml
+  • detected workspace root for project using packageManager field  pm=pnpm config=pnpm@12.8.1 resolved=/Users/louistation/.codex/worktrees/a613/d-pi projectDir=/Users/louistation/.codex/worktrees/a613/d-pi
+  • skipped dependencies rebuild  reason=npmRebuild is set to false
+  • packaging       platform=darwin arch=arm64 electron=44.4.5 appOutDir=dist/attention-m2.18-clean/mac-arm64
+  • using custom unpacked Electron distribution  electronDist=node_modules/electron/dist
+  • copying unpacked Electron  source=/Users/louistation/.codex/worktrees/a613/d-pi/node_modules/electron/dist/Electron.app destination=/Users/louistation/.codex/worktrees/a613/d-pi/dist/attention-m2.18-clean/mac-arm64/Electron.app
+  • searching for node modules  pm=pnpm searchDir=/Users/louistation/.codex/worktrees/a613/d-pi
+  • duplicate dependency references  dependencies=["@tiptap/pm@3.31.3","react-dom@19.3.0","use-sync-external-store@1.7.0","prosemirror-keymap@1.2.3","prosemirror-model@1.25.12","prosemirror-state@1.4.4","prosemirror-transform@1.12.2","prosemirror-view@1.42.6","remark-parse@11.0.0","unified@11.0.5","unist-util-visit@5.1.0","unist-util-visit-parents@6.0.2","@shikijs/types@3.23.0","@types/hast@3.0.5","devlop@1.1.0","hast-util-whitespace@3.0.0","unist-util-position@5.0.0","vfile-message@4.0.3","vfile@6.0.3","@types/mdast@4.0.4","mdast-util-from-markdown@2.0.3","mdast-util-to-hast@13.2.1","stringify-entities@4.0.4","unist-util-stringify-position@4.0.0","micromark-util-combine-extensions@2.0.1","micromark-util-decode-numeric-character-reference@2.0.2","micromark-util-normalize-identifier@2.0.1","micromark-util-character@2.1.1","micromark-util-classify-character@2.0.1","micromark-core-commonmark@2.0.4","micromark-factory-space@2.1.0","micromark-util-chunked@2.0.1","micromark-util-resolve-all@2.0.1","micromark-util-edit-map@1.0.0","micromark-util-subtokenize@2.1.0"]
+  • default Electron icon is used  reason=application icon is not set
+  • skipped macOS code signing  reason=identity explicitly is set to null

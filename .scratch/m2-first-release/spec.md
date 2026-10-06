@@ -10,7 +10,7 @@
     "trial": "delivered",
     "acceptance": "pending",
     "current": true,
-    "build": "0.1.0-m2.17 / ba0e7df1-808e60b8",
+    "build": "0.1.0-m2.20 / 3c4c1060-8b550d60",
     "pending": [
       "../m1-s3-control-recovery/issues/09-quit-discard-decision.md"
     ],
@@ -38,13 +38,20 @@
       "long-reading-review.md",
       "diagnostics.md",
       "diagnostics-review.md",
-      "../ai-workflow-v13/m2-retro-handoff.md"
+      "../ai-workflow-v13/m2-retro-handoff.md",
+      "attention.md",
+      "attention-review.md",
+      "progress-2026-10-06.md",
+      "real-provider-e2e.md",
+      "pr4-integration.md"
     ],
-    "next": "06e/06f/06g基础诊断导出与故障反馈工程完成，m2.17候选已交付待试用；余下V1-00/B6性能与故障组合、M2开放项继续保留，真实供应商与用户认可pending，冷旧Thread只读",
-    "constraints": "2026-10-06本轮从最新main继续M2，授权本地实现、候选、证据与提交；此前push/PR授权属于已交付阶段，本轮未push。不公开发布、不扩M3，冷恢复只读，unknown不自动重发；用户认可pending。"
+    "next": "m2.20诊断/提醒候选已交付，PR#4按最新授权整合与待合并；首次本机OpenAI GPT-5.6 Luna新Thread真实生成/GUI阅读完成。M2尚未完成，PDF视觉/OCR、01c系统显示/点击、V1-00/B6组合、其余真实账户/供应商路径及用户认可保持开放；冷旧Thread只读",
+    "constraints": "2026-10-06最新授权先push并处理远端PR/提交、让main干净供后续UI开发；允许整合、验证后合并PR#4。不公开发布、不扩M3，冷恢复只读，unknown不自动重发；用户认可pending。"
   }
 ]
 ```
+
+2026-10-06：用户明确授权用本机 OMP 的 GPT Luna 在独立 Thread 验证真实回答；已用现有 m2.20 正式候选与本机原生认证完成一次最小生成，GUI、原生历史和 completed 收据一致，见[首次真实供应商闭环](real-provider-e2e.md)。此次独立 App 数据/空白项目，不改变全局配置；不扩大为工具、附件、多供应商或付费批量测试授权。02/03/06 余下范围和用户认可保持开放。
 
 2026-10-02：用户授权基于 fe03c4f 真实 GUI 报告策略性收敛，高价值修复分阶段提交，丢弃当前工作区改动，检查完成后 push；用户自行手动复试。过滤判断与工程进度见 [E2E 收敛](e2e-convergence.md)及 07–09 票。报告未调用真实模型，不作为 Agent 全流程通过；D-24 冷恢复边界保留。
 
@@ -67,7 +74,7 @@
 - 已定：D-02–D-08、D-10/D-11、D-20–D-27、D-28–D-37；沿用 OMP 执行、队列、原生历史、配置与凭据所有权，App 草稿/冻结原文/收据事务不改变。
 - 重要待决：无新增。[S3 09](../m1-s3-control-recovery/issues/09-quit-discard-decision.md)退出放弃队列待决，仅暂停对应出口；缺全周期单写证据的冷恢复只读，提供明确新建独立 Thread 出口，不冒称恢复旧执行。
 - 工程：正在实施；既有正确路径复用当前相关证据，新增缺口先失败行为测试。测试隔离 App 数据、OMP 配置、HOME、Git 配置、项目及网络；不继承个人凭据。真实供应商缺账户/费用授权仅暂停实测，不阻塞薄桥接及 fixture 验证。
-- 用户试用：当前交付 `0.1.0-m2.17 / ba0e7df1-808e60b8`、产品源码 `ba0e7df`，21项实际干净包内检查、两轴独立review与ZIP同源验证通过；用户认可 pending。[精确身份、哈希、证据和步骤](diagnostics.md#候选与验证)。m2.16及更早交付/失败记录保留历史证据，每段可操作体验给出对应源码和包身份；Agent验证不替代用户认可。
+- 用户试用：当前交付 `0.1.0-m2.20 / 3c4c1060-8b550d60`，产品source `3c4c106`；PR追加竞态真实红绿、798行为/34架构/74工具、双轴复核、17项修复后实际干净包及ZIP同源通过。m2.19的真实关窗/Finder重开同Main无重发及system=failed为其独立历史证据，不外推到新包；01c实际显示/点击仍claimed，用户认可pending。[精确身份、哈希、证据与步骤](attention.md#最终候选与试用)。
 - 继续边界：本授权内持续实施，不重做基建审计。重大产品/权限/数据合同变化才对齐；签名、公证、公开分发及 M3 不纳入。
 
 ## 首版覆盖与近期任务
@@ -157,7 +164,7 @@
 用户要求使用刚合并的 AI 工作流，从最新 main 重新开启下一阶段；2026-10-06 已确认 PR #1 合入，基点 `c8dbdbadf1a04ad2be54e01f1a509024c5d982ea`，集成分支 `codex/m2-lifecycle`。本段选择 B4 附件引用/延迟回收/一致性与原生子 Agent 状态/结果观察两条可独立交付路径，随后集成与本地候选。沿用已有 M2 本地实现/commit/试用候选授权；不 push、不公开发布、不扩 M3。冷旧 Thread 只读、unknown 不自动重发，PDF 视觉/OCR与退出放弃原待决不进入本段。无新增产品待决。
 
 ```implementation-plan
-[{"id":"m2-lifecycle","tickets":["04b","05d","06b"]},{"id":"m2-long-reading","tickets":["06c","06d"]},{"id":"m2-diagnostics","tickets":["06e","06f","06g"]}]
+[{"id":"m2-lifecycle","tickets":["04b","05d","06b"]},{"id":"m2-long-reading","tickets":["06c","06d"]},{"id":"m2-diagnostics","tickets":["06e","06f","06g"]},{"id":"thread-attention","tickets":["01a","01b","01c"]}]
 ```
 
 - [04b](issues/04b-attachment-lifecycle.md)：私有内容引用/最后释放、延迟回收及正式检查/清理出口。
@@ -220,3 +227,39 @@
 ## 2026-10-06 工作流回流后的继续入口
 
 用户要求落实本轮retro、处理干净并留下正确的M2继续入口后停下。三项工程改进已落实，票04和验证归属[AI工作流spec](../ai-workflow-v13/spec.md)，不是新增M2产品功能；[接手说明](../ai-workflow-v13/m2-retro-handoff.md)记录真实基点、独立review、选定证据、现有候选资源恢复及其它会话分支。后续先核实本地HEAD、总看板和`codex/m2-thread-attention`所属会话的实际进度，再按当前明确范围继续，不能重复派发或用旧m2.11快照代替当前spec。父01/02/03/04/05/06与M2认可状态保持；本轮不启动下一阶段，不push或公开发布。
+
+## 2026-10-06 多 Thread 提醒切片
+
+用户明确要求继续按工作流完成下阶段。本轮从干净7c9e1fe继续，集成分支codex/m2-thread-attention，工作目录/Users/louistation/.codex/worktrees/a613/d-pi。选择已确认M2提醒策略：后台待回答/失败不抢焦点的可点击应用内提醒；正常完成默认仅完成/未读；用户显式开启系统提醒与可选完成提醒，系统不可用/拒绝/失败保留应用内事实。Main依据实际RuntimeView与SubmissionReceipt归纳展示，通知不成为执行/处理事实，不读取业务正文或改变OMP调度。
+
+交付正式侧栏状态、应用内提醒、通知偏好与点击定位；Renderer reload/关窗后台保持Main观察，重复/迟到事件不重复提醒，过期点击展示当前状态不发送旧回答。优先通用Electron能力，不采用平台独占必需机制；macOS实际验证按已获系统权限表达送达限制。偏好归App SQLite；通知内容仅自有通用文案及受控Thread短ID，不包含路径、提示正文、答案或凭据。
+
+验收：TDD实际投影/收据、trusted IPC/preload、SQLite偏好、真实React焦点/导航/隔离；完整受影响门禁、双轴独立评审/修复、实际macOS候选/ZIP同源与本地提交。系统通知显示/点击须实际证据，OS权限或前台限制准确注明，不以模拟适配器宣称实际送达。不开真实付费供应商/个人账户、不push、不扩M3；用户认可pending，PDF视觉/OCR、冷执行恢复/退出待决与完整B6组合不纳入本段。
+
+
+
+01a Main提醒归纳/原生适配与偏好持久化、01b正式GUI独立固定公共合同并行；主Agent统一合同/preload/版本/管理状态，串行集成、01c验证与交付。具体派发映射在领取时追加。
+
+派发：01a→attention_main→/Users/louistation/.codex/worktrees/m2-attention-main/d-pi→codex/m2-attention-main；01b→attention_gui→/Users/louistation/.codex/worktrees/m2-attention-gui/d-pi→codex/m2-attention-gui；固定公共合同基点3cbff7e。Main实现者写提醒协调/适配/IPC及偏好迁移；GUI实现者写Renderer模型/导航/正式视图及i18n。主Agent写preload、桌面装配、验证、管理状态与模块报告。
+
+验证辅助→attention_validation→/Users/louistation/.codex/worktrees/m2-attention-validation/d-pi→codex/m2-attention-validation，同起点3cbff7e，只写实际SDK/包内harness，不领取01c。
+
+2026-10-06 实机条件核实：固定Electron44.4.5的macOS系统通知使用UNNotification，官方要求应用签名；未签名构建可能触发failed且通知事件不可用。保留通用Electron适配、App提醒与类型化故障诊断；实际显示/点击证据单列，不把isSupported或开关开启当授权/送达。见[官方说明](https://www.electronjs.org/docs/latest/tutorial/notifications#macos)。不以模拟适配代替实机证据。
+
+
+2026-10-06：01a/01b实现与受影响工程验证完成。最终产品source `9a8c2ee`、clean m2.18构建`9a8c2eea-7f1a67df`，795行为/34架构/74工具通过（2既有opt-in跳过），双轴独立评审/修复/复核及16项实际macOS包内检查、ZIP CRC/app.asar同源通过。失败详情裁切由实际截图发现，独立确认、真实React先红后修复并在新候选按所有裁切祖先几何/截图验收；原失败证据保留。[交接](attention.md)、[评审](attention-review.md)、[本地PR body](attention-pr.md)。实际原生检查因Mac锁定、未收到手动解锁确认而checkpoint超时，没有模拟observed/click；01c保持claimed，系统通知显示/真实点击、实际关窗/同App重开待验。不将本段或M2整体宣称完成，用户认可pending，本地提交、不push、不扩M3。
+
+
+2026-10-06用户要求继续：Mac已解锁，m2.18实际原生关窗/同App重开保持Main身份、后台完成/未读及无重复请求；系统通知真实failed，显示/点击未成功，App回退保留。原生多提醒场景又确认应用内提醒无高度预算挤压阅读，01b重开修正；旧包实际几何先红（5提醒160px、readingHeight=0），新m2.19候选按共享控件token与独立滚动验证normal/compact/窄窗口，原生证据保留。不改变OMP/通知事实，不使用签名密钥或个人账户，用户认可pending。
+
+2026-10-06最终继续交付：clean m2.19产品source48cd01cc/build48cd01cc-42704447，796行为/34架构/74工具通过。独立Spec/Standards复核关闭预算和迟到首次inspect两项P2；validation-only焦点采样恢复/新Thread编辑器就绪纠正均独立复核，生产source不变。外部harness adcd4d3对实际候选18项通过；五组9–10条提醒预算、阅读至少4行/完整Composer/草稿/末条内部滚动和原焦点恢复通过。真实后台、Cmd+W关闭/仍运行、精确Finder双击重开同Main且供应商无重发、冷启动偏好保存/旧Thread只读完成。ZIP CRC和source/受测副本/ZIP asar同源通过。01b重新resolved；01c仅剩真实系统显示/点击，本次system=failed、App回退反馈可见、根因unknown、未模拟callback，保持claimed。M2其余范围和用户认可独立开放；不push、不签名、不扩M3。[当前交接](attention.md)。
+
+2026-10-06远端交付授权：用户明确要求先push本地内容、创建PR并核对，再报告M2整体和提供下阶段prompt。fetch核实origin/main1c9c30a是本分支祖先，初次推送f7dff7b含31个领先提交（基础诊断与多Thread提醒）；未含已在main的此前切片。创建[Draft PR #4](https://github.com/LouisGo/d-pi/pull/4)并attach当前任务；远端CI及整个真实PR范围增量双轴核对进行中，不以配置存在/PR创建宣称CI成功。仅push/建PR，未merge，不改变01c/M2/用户认可状态。[整体进度核对与推荐下段](progress-2026-10-06.md)。后续同步仅交接文档/评审证据，产品48cd01cc候选身份不变。
+
+2026-10-06 PR核对新增Spec P2：切换pending旧Thread新提醒会错误已读。已真实Main/SQLite与React红绿修复（36相关通过），独立增量复核/完整门禁及修复后实际包验证待补。本次必要修复在“push/PR确保没有问题”授权范围内，不关闭01c系统显示/点击或M2父票。
+
+2026-10-06 PR修复收尾：fixed3c4c106的Spec/Standards增量复核关闭P2、均无新增高价值发现，完整798/34/74通过，build及clean m2.20实际17项受影响包内检查/四组预算/冷偏好/旧Thread只读通过，ZIP CRC及source/testcopy/ZIP asar一致。原m2.19原生窗口/systemfailed证据保留独立身份，新包未重复inspect或OS显示/点击。最终交接/评审/生成结构报告同步后push PR#4；远端最终head的CI实时核实，不以首次f7dff7b CI通过代表后续提交。产品source保持3c4c106，01c/M2/user acceptance独立开放。
+
+## 2026-10-06 UI 开发前远端收口
+
+用户最新要求“先push，然后处理干净远程PR和本次提交，让main干净，后续开始写UI”。据此先push本地main的诊断/retro成果7031b96，复用远端PR#4，将main回流与提醒分支最后保存的真实供应商验证记录ff52823整合；独立双轴复核、必要本地检查与最终head远端CI通过后合并并同步main。此授权取代本阶段先前不merge限制，保留原始历史来源。[整合与结果](pr4-integration.md)。01c实际OS显示/点击仍claimed、M2整体和用户认可未完成；不新增UI实现、不运行真实账户请求、不签名或公开发布。

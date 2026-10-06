@@ -1,0 +1,38 @@
+
+ RUN  v5.0.2 /Users/louistation/.codex/worktrees/a613/d-pi
+
+ ❯ src/app/main/wiring/thread-attention.test.ts (15 tests | 1 failed) 52ms
+   × retains an old Thread's new question while Main has selected another Thread before its reply 30ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/main/wiring/thread-attention.test.ts > retains an old Thread's new question while Main has selected another Thread before its reply
+AssertionError: expected { …(5) } to match object { …(3) }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "kind": "needs-answer",
+    "threadId": "dad8a92d-ee11-427e-a1e6-63c0e6f85c54",
+-   "unread": true,
++   "unread": false,
+  }
+
+ ❯ src/app/main/wiring/thread-attention.test.ts:439:45
+    437|     expect(storage.threads.activeThread()?.threadId).toBe(second.threa…
+    438|     attention.observeRuntime({ ...view(), threadId: first.threadId });
+    439|     expect(attention.snapshot().entries[0]).toMatchObject({
+       |                                             ^
+    440|       threadId: first.threadId,
+    441|       kind: "needs-answer",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 14 passed (15)
+   Start at  20:44:55
+   Duration  802ms (import 48%, transform 44%, tests 7%)
+

@@ -1,0 +1,41 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/.codex/worktrees/a613/d-pi[39m
+
+ [31m❯[39m src/app/renderer/shell/attention.test.ts [2m([22m[2m8 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 177[2mms[22m[39m
+   [32m✓[39m background event preserves focus and selection; click respects IME admission and exposes retry[32m 55[2mms[22m[39m
+[31m   [31m×[31m retains unread when Main selection changes before the visible route commits[39m[32m 10[2mms[22m[39m
+   [32m✓[39m system and completion preferences require explicit opt-in, supported is not authorization, unread badge is entity-scoped[32m 6[2mms[22m[39m
+   [32m✓[39m native click before ready can be retried, stale event opens current state without answering[32m 35[2mms[22m[39m
+   [32m✓[39m only an actually focused current Thread can be seen; a list row or background notification cannot[32m 5[2mms[22m[39m
+   [32m✓[39m retains a native open arriving during another navigation as an explicit retry[32m 31[2mms[22m[39m
+   [32m✓[39m failed Thread opens the current submission results pane[32m 6[2mms[22m[39m
+   [32m✓[39m a changed event during navigation selects the current result view rather than the obsolete failure[32m 27[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/app/renderer/shell/attention.test.ts[2m > [22mretains unread when Main selection changes before the visible route commits
+[31m[1mAssertionError[22m: expected false to be true // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+[36m [2m❯[22m src/app/renderer/shell/attention.test.ts:[2m256:83[22m[39m
+    [90m254|[39m   await ui.click(`[data-attention-open='${ui.second.threadId}']`);
+    [90m255|[39m   expect(visiblePaths.length).toBeGreaterThan(0);
+    [90m256|[39m   expect(visiblePaths.every((path) => path === `/threads/${ui.second.t…
+    [90m   |[39m                                                                                   [31m^[39m
+    [90m257|[39m   expect(ui.snapshot().entries[0]?.unread).toBe(false);
+    [90m258|[39m });
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m7 passed[39m[22m[90m (8)[39m
+[2m   Start at [22m 17:48:48
+[2m   Duration [22m 3.54s[2m (import 72%, transform 15%, environment 8%, tests 5%)[22m
+
