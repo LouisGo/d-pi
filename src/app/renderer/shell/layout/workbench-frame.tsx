@@ -37,6 +37,7 @@ export function WorkbenchFrame({
   settingsNavigation,
   settings,
   toolbar,
+  navigationControls,
   children,
   workspace,
   bottom,
@@ -46,6 +47,7 @@ export function WorkbenchFrame({
   settingsNavigation: ReactNode;
   settings: ReactNode;
   toolbar: ReactNode;
+  navigationControls: ReactNode;
   children: ReactNode;
   workspace?: WorkspaceHost;
   bottom?: WorkspaceHost;
@@ -160,6 +162,20 @@ export function WorkbenchFrame({
       target?.focus({ preventScroll: true });
     });
   };
+  const navigation = (
+    <div className="header-navigation">
+      {navigationControls}
+      <IconButton
+        ref={navigationTrigger}
+        label={t("app.layout.sidebarToggle")}
+        variant="ghost"
+        aria-expanded={geometry.sidebar.visible || overlay}
+        onClick={toggleSidebar}
+      >
+        <SidebarIcon />
+      </IconButton>
+    </div>
+  );
   return (
     <ConversationVisibilityContext value={conversation}>
       <div
@@ -221,20 +237,13 @@ export function WorkbenchFrame({
           label={t("app.layout.sidebarResize")}
           onCommit={commitLeft}
           auxiliary={
-            <aside className="primary-sidebar" data-layout-region="sidebar">
+            <aside
+              className="primary-sidebar"
+              data-layout-region="sidebar"
+              aria-label={t("app.layout.sidebar")}
+            >
               <div className="panel-header">
-                <strong>
-                  {settingsOpen
-                    ? t("app.layout.settings")
-                    : t("app.layout.sidebar")}
-                </strong>
-                <IconButton
-                  label={t("app.layout.close")}
-                  variant="ghost"
-                  onClick={() => model.toggle("sidebar")}
-                >
-                  <CloseIcon />
-                </IconButton>
+                {geometry.sidebar.visible && navigation}
               </div>
               <div className="sidebar-scroll">{sidebarContent}</div>
             </aside>
@@ -284,15 +293,7 @@ export function WorkbenchFrame({
             >
               <div className="conversation-surface">
                 <div className="panel-header conversation-header">
-                  <IconButton
-                    ref={navigationTrigger}
-                    label={t("app.layout.sidebarToggle")}
-                    variant="ghost"
-                    aria-expanded={geometry.sidebar.visible || overlay}
-                    onClick={toggleSidebar}
-                  >
-                    <SidebarIcon />
-                  </IconButton>
+                  {!geometry.sidebar.visible && navigation}
                   {toolbar}
                   {!!workspace?.tabs.length && (
                     <IconButton

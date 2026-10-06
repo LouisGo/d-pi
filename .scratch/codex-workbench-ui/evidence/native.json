@@ -1,6 +1,10 @@
 {
   "checks": [
     {
+      "name": "navigation-controls-follow-native-window-controls",
+      "value": true
+    },
+    {
       "name": "production-empty-hosts-closed",
       "value": true
     },
@@ -281,11 +285,11 @@
       "value": {
         "count": 51,
         "median": 0.09999990463256836,
-        "p95": 3.5999999046325684,
-        "maximum": 5.1000001430511475
+        "p95": 3.799999952316284,
+        "maximum": 5.699999809265137
       },
       "limitation": "CDP gesture input to rAF, not sustained frame-rate or system-input latency"
     }
   ],
-  "stderr": "\nDevTools listening on ws://127.0.0.1:50751/devtools/browser/1b4dc9ad-56ca-4c6b-b155-96c6a5c24cca\n"
+  "stderr": "\nDevTools listening on ws://127.0.0.1:51797/devtools/browser/f0be8144-ff64-417e-a554-2cee990e54e8\n"
 }

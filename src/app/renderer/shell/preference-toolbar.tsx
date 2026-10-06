@@ -10,6 +10,14 @@ import type { AppModel } from "../wiring/model";
 import { ConversationVisibilityContext } from "./layout/conversation-visibility";
 import { NavigationHistory } from "./navigation-history";
 
+export function ThreadNavigationControls({ model }: { model: AppModel }) {
+  const busy = useStore(
+    model.stateStore,
+    (state) => state.kind === "ready" && state.threadTransition === "unknown",
+  );
+  return <NavigationHistory disabled={busy} />;
+}
+
 export function PreferenceToolbar({ model }: { model: AppModel }) {
   const { reveal } = useContext(ConversationVisibilityContext);
   const hasThread = useStore(
@@ -29,7 +37,6 @@ export function PreferenceToolbar({ model }: { model: AppModel }) {
   );
   return (
     <header className="toolbar">
-      <NavigationHistory disabled={busy} />
       <Button
         variant="default"
         disabled={busy || !hasThread}

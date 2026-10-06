@@ -15,7 +15,10 @@ import {
 import { Diagnostics } from "./diagnostics";
 import { WorkbenchHostsContext } from "./layout/hosts-context";
 import { WorkbenchFrame } from "./layout/workbench-frame";
-import { PreferenceToolbar } from "./preference-toolbar";
+import {
+  PreferenceToolbar,
+  ThreadNavigationControls,
+} from "./preference-toolbar";
 import { ProjectThreads } from "./project-threads";
 import { ThreadNotice } from "./thread-notice";
 
@@ -77,6 +80,7 @@ function ReadyWorkbench({ model, children }: ApplicationLayoutProps) {
           </>
         }
         toolbar={<PreferenceToolbar model={model} />}
+        navigationControls={<ThreadNavigationControls model={model} />}
         settingsNavigation={<SettingsNavigation />}
         settings={<SettingsSurface model={model} />}
       >

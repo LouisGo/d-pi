@@ -233,6 +233,10 @@ async function capture(name) {
 }
 async function runChecks() {
   await check(
+    "navigation-controls-follow-native-window-controls",
+    "(()=>{const h=document.querySelector('.primary-sidebar > .panel-header'),b=h.querySelector('[title=Back]'),f=h.querySelector('[title=Forward]'),s=h.querySelector('[aria-label=\"Open or collapse project navigation\"]');return !!b&&!!f&&!!s&&b.getBoundingClientRect().left>=96&&b.getBoundingClientRect().left<f.getBoundingClientRect().left&&f.getBoundingClientRect().left<s.getBoundingClientRect().left&&!h.querySelector('strong')&&!document.querySelector('.conversation-header [title=Back]');})()",
+  );
+  await check(
     "production-empty-hosts-closed",
     "document.querySelector('[data-layout-region=workspace]').getBoundingClientRect().width<1 && document.querySelector('[data-layout-region=bottom]').getBoundingClientRect().height<1 && !document.querySelector('[aria-label=\"Restore workspace\"]')",
   );

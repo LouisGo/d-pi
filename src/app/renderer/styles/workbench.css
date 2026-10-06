@@ -125,6 +125,13 @@
     padding: var(--layout-gap);
     scrollbar-gutter: stable;
   }
+  .header-navigation,
+  .header-navigation > .flex {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: calc(var(--layout-gap) / 2);
+  }
   .conversation-body {
     flex: 1;
     min-height: 0;
