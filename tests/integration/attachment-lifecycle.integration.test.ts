@@ -925,3 +925,93 @@ it("automatic cleanup honors seven days after a reference was briefly reacquired
     rmSync(data, { recursive: true, force: true });
   }
 });
+
+it("manual cleanup releases a completed import that was durably used and removed before first scan", async () => {
+  const data = mkdtempSync(join(tmpdir(), "dpi-import-release-"));
+  const storage = AppStorage.open(join(data, "app.sqlite"));
+  const service = createAttachmentService(
+    storage,
+    data,
+    "unused",
+    () => true,
+    async () => null,
+  );
+  try {
+    const draft = storage.drafts.create(data);
+    const item = await service.store.importBytes(draft.threadId, {
+      name: "finished.txt",
+      mimeType: "text/plain",
+      bytes: Buffer.from("released original"),
+      source: "file",
+    });
+    storage.drafts.save(draft.threadId, 0, item.token);
+    storage.drafts.save(draft.threadId, 1, "");
+    const report = await service.store.cleanStorage(draft.threadId);
+    expect(report.retainedObjects).toBe(0);
+    expect(report.deletedObjects).toBe(1);
+  } finally {
+    await service.close();
+    storage.close();
+    rmSync(data, { recursive: true, force: true });
+  }
+});
+
+it("preserves durable source adoption when an in-flight PDF retry publishes an older manifest", async () => {
+  const data = mkdtempSync(join(tmpdir(), "dpi-adoption-retry-"));
+  const storage = AppStorage.open(join(data, "app.sqlite"));
+  let release = () => {},
+    entered = () => {},
+    calls = 0;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const converting = new Promise<void>((resolve) => {
+    entered = resolve;
+  });
+  const store = new AttachmentStore({
+    directory: join(data, "content"),
+    database: storage.database,
+    lifecycle: createAttachmentReferences(storage, (thread, id) =>
+      store.referenceSource(thread, id),
+    ),
+    convertPdf: async () => {
+      if (++calls === 1) throw Error("initial failure");
+      entered();
+      await gate;
+      return {
+        text: "repaired PDF",
+        pageCount: 1,
+        pagesNeedingOcr: [],
+        hasVisualContent: false,
+        converterVersion: "fixture",
+      };
+    },
+  });
+  try {
+    const draft = storage.drafts.create(data);
+    const item = await store.importBytes(draft.threadId, {
+      name: "retry.pdf",
+      mimeType: "application/pdf",
+      bytes: Buffer.from("%PDF-1.7 original"),
+      source: "file",
+    });
+    const retry = store.retry(draft.threadId, item.id);
+    await converting;
+    storage.drafts.save(draft.threadId, 0, item.token);
+    storage.drafts.save(draft.threadId, 1, "");
+    release();
+    await retry;
+    expect(
+      store.referenceSource(draft.threadId, item.id)?.draftBoundRevision,
+    ).toBe(1);
+    expect((await store.cleanStorage(draft.threadId)).retainedObjects).toBe(0);
+    await expect(
+      access(join(data, "content", "objects", item.inputDigest!)),
+    ).rejects.toThrow();
+  } finally {
+    release();
+    await store.close();
+    storage.close();
+    rmSync(data, { recursive: true, force: true });
+  }
+});

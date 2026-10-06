@@ -21,6 +21,7 @@ export interface AttachmentReferenceQuery {
   reportThreadId?: string;
 }
 export interface AttachmentSource {
+  draftBoundRevision?: number | undefined;
   attachmentId: string;
   threadId: string;
   name: string;

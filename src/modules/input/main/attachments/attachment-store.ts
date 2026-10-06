@@ -63,6 +63,7 @@ export interface AttachmentImport {
   source: "file" | "paste" | "drop";
 }
 const RecordSchema = z.strictObject({
+  draftBoundRevision: z.number().int().nonnegative().optional(),
   attachment: AttachmentSchema,
   derivedDigest: z
     .string()
@@ -231,7 +232,10 @@ export class AttachmentStore {
     const parsed = RecordSchema.parse(record);
     this.options.database.connection
       .prepare(
-        "INSERT INTO input_attachment(id,thread_id,payload) VALUES(?,?,?) ON CONFLICT(id) DO UPDATE SET payload=excluded.payload",
+        `INSERT INTO input_attachment(id,thread_id,payload) VALUES(?,?,?) ON CONFLICT(id) DO UPDATE SET payload=CASE
+          WHEN json_valid(input_attachment.payload) AND json_type(input_attachment.payload,'$.draftBoundRevision')='integer'
+          THEN json_set(excluded.payload,'$.draftBoundRevision',json_extract(input_attachment.payload,'$.draftBoundRevision'))
+          ELSE excluded.payload END`,
       )
       .run(
         parsed.attachment.id,
@@ -264,6 +268,7 @@ export class AttachmentStore {
           name: record.attachment.name,
           inputDigest: record.attachment.inputDigest,
           derivedDigest: record.derivedDigest,
+          draftBoundRevision: record.draftBoundRevision,
         }
       : null;
   }

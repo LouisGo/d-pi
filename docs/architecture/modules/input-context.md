@@ -68,3 +68,5 @@ input Main 的 AttachmentStore 管 schema 8 manifest、schema 9 对象投影、�
 正式 GUI 沿用附件管理、图片缩放、失败重试及@键盘选择，并提供附件存储检查/清理与受影响来源报告。关闭先停止后台维护，拒绝新操作，等待已经进入 lane 的导入/准备/扫描完成再关闭目录与 SQLite；尚在选文件对话框/读取外部文件且未入 lane 的请求在关闭后拒绝进入。后台失败只上报窄失败信号，由 Main root 记录 storage-unavailable。
 
 附件被加入/移出持久草稿时，DraftRepository 在同一草稿保存事务内保守刷新受影响原件及派生物的释放时钟；扫描间的短暂重新引用不会继承旧七天期限。仍由维护重新读取权威引用，引用计数不成为删除授权。
+
+附件 manifest 的可选 `draftBoundRevision` 是对应来源首次持久采用的 input 元数据，与草稿 CAS 同事务写入；重试发布旧 manifest 时保留该事实。维护在有界来源查询中据此解除同 Thread/attachmentId 的导入租约，不解除其他同摘要来源，也不把历史采用当作当前引用。冻结准备租约与原生自持久证明规则不变。

@@ -25,7 +25,7 @@ export function createAttachmentReferences(
     | {
         key: string;
         version: number;
-        table: 0 | 1 | 2 | 3;
+        table: 0 | 1 | 2 | 3 | 4;
         cursor: number;
         counts: Map<string, number>;
         durable: Set<string>;
@@ -175,6 +175,23 @@ export function createAttachmentReferences(
         state.cursor = 0;
       }
     }
+    // Adoption is a durable per-source fact, even if a later draft edit removed
+    // the token before this scan. Never release another same-digest source.
+    while (
+      state.table === 3 &&
+      state.cursor < query.attachmentIds.length &&
+      visited < 128
+    ) {
+      const ref = query.attachmentIds[state.cursor++];
+      if (ref) {
+        const item = source(ref.threadId, ref.id);
+        if (typeof item?.draftBoundRevision === "number")
+          state.durable.add(`${ref.threadId}:${ref.id}`);
+      }
+      visited++;
+    }
+    if (state.table === 3 && state.cursor === query.attachmentIds.length)
+      state.table = 4;
     if (state.version !== version()) {
       progress = undefined;
       return {
@@ -189,7 +206,7 @@ export function createAttachmentReferences(
     }
     return {
       version: state.version,
-      complete: state.table === 3,
+      complete: state.table === 4,
       counts: [...state.counts].map(([digest, count]) => ({ digest, count })),
       durableAttachmentIds: [...state.durable],
       frozenDigests: [...state.frozen],
