@@ -38,4 +38,6 @@ export const main = {
   "main.quitActive.wait": "等待结束后退出",
   "main.quitActive.stop": "请求停止后退出",
   "main.quitActive.cancel": "取消退出",
+  "main.diagnostics.export": "保存脱敏诊断",
+  "main.diagnostics.report": "诊断报告",
 } as const;

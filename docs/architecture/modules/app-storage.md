@@ -60,3 +60,5 @@ App 的 attachment-service-references 装配跨仓储权威投影：分批读取
 内容删除先持久化 deleting，再在 BEGIN IMMEDIATE 内复核 epoch、删除规范摘要路径、同步目录并提交 deleted；复核到文件删除之间无异步等待。进程中断留下 deleting 时，下次批次复核全部引用后处理尚存/已丢失文件；SQLite 与文件系统不冒称跨介质原子事务。数据库不可用、引用不完整、文件失败均保守拒删或留下可恢复状态。对象/目录扫描、哈希读取均有界；未知名称与未发布临时文件不在此次自动清理范围。
 
 2026-10-06：schema 10 为文件/目录引用的 typed manifest 与冻结来源 JSON 设置兼容性围栏，无新表。before-v10 保留 schema 9 数据；旧 App 不得打开更高版本丢弃类型。已有无 referenceKind 的 manifest 仍按文件读取，草稿采用/释放事实在 schema 9 及以后继续原子保存。降级须使用升级前数据库及配套内容副本。
+
+2026-10-06：有界诊断读取与脱敏公开入口沿用 `platform/main/diagnostics/public.ts`，跨进程DTO单源 `shared/diagnostics.ts`；Main IPC控制日志目录及原生保存，Renderer按需采样/显示覆盖与反馈模板。未新增SQLite表、OMP事件存储或自动恢复/上传，采样不等待Writer并不保证未落盘尾部。预算与未完成监控目标见[诊断合同](../diagnostics.md)。

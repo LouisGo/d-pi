@@ -205,6 +205,8 @@
 
 用户本轮明确授权从最新main继续M2，优先V1-00基础诊断导出与故障反馈闭环、合理并行、TDD正式GUI、双轴独立评审修复、实际macOS验证、可用候选/证据/本地提交。已fetch核实main与origin/main同为`1c9c30a`且工作区干净，集成分支`codex/m2-diagnostics`。无新增重要产品待决；不扩M3，不自动上传、不使用个人凭据或真实供应商收费请求，本轮只本地交付。
 
-复用Main日志与现有trace，支持时间/trace/Thread/Writer实例/阶段及条数限制；只读扫描按文件/字节/行/耗时有界，不读取原生会话或崩溃dump。主进程控制本地保存对话框，导出白名单元数据与覆盖/坏行/脱敏/丢弃/退化信息，不包含路径、URL、秘密或业务全文。GUI提供全局入口及故障trace快捷入口、筛选/刷新、可读记录、导出与可复制反馈模板；反馈由用户审阅后自行提交。V1-00整体性能/监控全集与M2其它开放项不据此完成，用户认可独立pending。
+复用Main日志与现有trace，支持时间/trace/Thread/Writer实例/operation/阶段及条数限制；只读扫描按文件/字节/行/耗时有界，不读取原生会话或崩溃dump。主进程控制本地保存对话框，导出白名单元数据与覆盖/坏行/脱敏/丢弃/退化信息，不包含路径、URL、秘密或业务全文。GUI提供全局入口及故障trace快捷入口、筛选/刷新、可读记录、导出与可复制反馈模板；反馈由用户审阅后自行提交。V1-00整体性能/监控全集与M2其它开放项不据此完成，用户认可独立pending。
 
 06e读取器与06f正式GUI从固定公共合同基点独立worktree并行；主Agent承担合同、IPC/preload/保存服务、版本/验证harness/串行集成及06g候选。
+
+派发：06e→diagnostics_reader→`/Users/louistation/.codex/worktrees/m2-diagnostics-reader/d-pi`→`codex/m2-diagnostics-reader`；06f→diagnostics_gui→`/Users/louistation/.codex/worktrees/m2-diagnostics-gui/d-pi`→`codex/m2-diagnostics-gui`；验证辅助→diagnostics_validation→`/Users/louistation/.codex/worktrees/m2-diagnostics-validation/d-pi`→`codex/m2-diagnostics-validation`。三者固定基点`4cf37b9`，代码/GUI/验证写集隔离。主Agent单写合同、IPC、preload、管理状态及集成。

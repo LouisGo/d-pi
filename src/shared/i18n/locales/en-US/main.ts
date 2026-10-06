@@ -39,4 +39,6 @@ export const main = {
   "main.quitActive.wait": "Wait, then quit",
   "main.quitActive.stop": "Request stop, then quit",
   "main.quitActive.cancel": "Cancel quit",
+  "main.diagnostics.export": "Save redacted diagnostics",
+  "main.diagnostics.report": "Diagnostic report",
 } as const;

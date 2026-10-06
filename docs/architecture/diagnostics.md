@@ -185,9 +185,9 @@ CPU/内存、Main/Host 事件循环延迟和 Renderer 响应性作为低频或�
 
 首版先保证稳定日志位置、可读 JSONL、明确的字段/筛选说明，以及按 traceId/时间/Thread/operation 选择和脱敏导出所需的基础。允许开发者直接用通用文本/JSON 工具查看，不以 DevTools 控制台作为唯一证据。
 
-目前可直接读取 `app.getPath("userData")/logs/main.jsonl` 与 `main-<毫秒时间>.jsonl`。`D_PI_DATA_DIR` 会覆盖 userData；macOS 默认常见目录为 `~/Library/Application Support/d-pi/logs`，验证隔离目录按实际启动参数选择。现有应用没有打开日志目录/导出诊断入口，也没有独立日志查询服务。
+目前可直接读取 `app.getPath("userData")/logs/main.jsonl` 与 `main-<毫秒时间>.jsonl`。`D_PI_DATA_DIR` 会覆盖 userData；macOS 默认常见目录为 `~/Library/Application Support/d-pi/logs`，验证隔离目录按实际启动参数选择。2026-10-06起，M2诊断切片提供正式全局/故障trace入口、有界只读采样与本地脱敏JSON导出。Main拥有读取与原生保存，preload校验请求/回复及关联，Renderer只筛选、展示和发出导出意图；不新增日志Writer或业务恢复事实。实现及真实候选证据见[M2所属规格](../../.scratch/m2-first-release/spec.md#2026-10-06-基础诊断导出与故障反馈切片)，工程/试用/用户认可继续分开。
 
-应用以后可提供轻量“打开日志目录/导出诊断资料”入口；具体入口安排随首版设计，不要求先做实时日志页面。按范围读取、分页/流式查询接口是后续边界，不为将来 UI 提前建数据库。
+本轮只提供现有保留日志的按需采样和本地导出，不打开任意目录、不轮询、不读原生会话、凭据或崩溃dump。按时间、trace、Thread、Main Writer实例、operation及stage筛选，结果上限500条；导出使用同一受限读取器及白名单字段，不包含自由文本/路径/URL。用户可复制受控诊断元数据和反馈模板后自行补复现并提交，应用不自动上传。
 
 **专用日志界面是后续能力，不是首版或开工前置。** 后续可在既有结构上增加过滤、关联时间线、错误展开和指标摘要。没有查看器时也能诊断，主业务页面崩溃不丢失已落盘证据。
 

@@ -12,6 +12,7 @@ import { RuntimeFailureSchema } from "../../../modules/execution/contracts/publi
 import {
   Diagnostics,
   diagnosticCode,
+  readDiagnosticSnapshot,
 } from "../../../platform/main/diagnostics/public";
 import { RuntimeResourceError } from "../../../platform/omp/resources/public";
 import { createI18n } from "../../../shared/i18n/create-i18n";
@@ -23,6 +24,7 @@ import {
 import { uiMessage } from "../../../shared/messages/contracts";
 import { registerAttachmentIpc } from "../ipc/attachments";
 import { registerConfigurationIpc } from "../ipc/configuration";
+import { registerDiagnosticIpc } from "../ipc/diagnostics";
 import { registerDraftIpc } from "../ipc/draft";
 import {
   registerRuntimeConnectionIpc,
@@ -48,6 +50,7 @@ export function startDesktopApplication(mainDirectory: string): void {
   app.setName("d-pi");
   const locked = app.requestSingleInstanceLock();
   let window: BrowserWindow | null = null;
+  let sourceGeneration = 0;
   let localeSnapshot: LocaleSnapshot = {
     preference: "system",
     resolvedLocale: "en-US",
@@ -170,6 +173,13 @@ export function startDesktopApplication(mainDirectory: string): void {
       },
     });
     window = current;
+    sourceGeneration++;
+    current.webContents.on(
+      "did-start-navigation",
+      (_event, _url, _inPlace, isMainFrame) => {
+        if (isMainFrame) sourceGeneration++;
+      },
+    );
     secureWindow(current);
     current.once("ready-to-show", () => {
       current.show();
@@ -234,6 +244,32 @@ export function startDesktopApplication(mainDirectory: string): void {
       applyLocale("system", false);
       initializeStorage();
       const ipcSourceContext = { ipcMain, sourceValid };
+      registerDiagnosticIpc({
+        ...ipcSourceContext,
+        getSourceGeneration: () => sourceGeneration,
+        getWriterId: () => diagnostics?.processInstanceId ?? "unavailable",
+        read: (filter) =>
+          readDiagnosticSnapshot(join(data, "logs"), filter, {
+            degraded: diagnostics?.degraded ?? true,
+            dropped: diagnostics?.dropped ?? 0,
+          }),
+        record: (event) => diagnostics?.record(event),
+        chooseDestination: async () => {
+          const owner = window;
+          if (!owner) return null;
+          const result = await dialog.showSaveDialog(owner, {
+            title: currentT()("main.diagnostics.export"),
+            defaultPath: `d-pi-diagnostics-${Date.now()}.json`,
+            filters: [
+              {
+                name: currentT()("main.diagnostics.report"),
+                extensions: ["json"],
+              },
+            ],
+          });
+          return result.canceled ? null : (result.filePath ?? null);
+        },
+      });
       registerLocaleIpc({
         ...ipcSourceContext,
         getSnapshot: () => localeSnapshot,
