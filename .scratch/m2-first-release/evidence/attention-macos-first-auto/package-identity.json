@@ -1,0 +1,15 @@
+{
+  "app": "/Users/louistation/.codex/worktrees/a613/d-pi/dist/attention-m2.18-clean/mac-arm64/d-pi.app",
+  "zip": "/Users/louistation/.codex/worktrees/a613/d-pi/dist/candidates/d-pi-0.1.0-m2.18-macos-arm64-1a557225.zip",
+  "sourceCommit": "1a557225c6d6904bdd23752f84d403378e971844",
+  "version": "0.1.0-m2.18",
+  "buildId": "1a557225-344c54b0",
+  "dirty": false,
+  "asarSha256": "1ac711023a3136a59a062382bb9d6392f2d21a5c43f5de5320a4fe5f804b01c3",
+  "zipSha256": "fc7dc61ab8737a47bf7090bd2cbf1c6fcbb56409d6f7a46420e0816f1359a7ac",
+  "zipBytes": 430118199,
+  "zipCrc": "pass",
+  "sourceTestedCopyZipAsar": "identical",
+  "systemNotifications": "not-yet-observed",
+  "nativeInspection": "pending Mac unlock"
+}

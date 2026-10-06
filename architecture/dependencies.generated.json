@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "36159d566811fb38b616461ef56a31ba94cf5792b69df52a9a8e64c304cf700c",
+  "inputsHash": "e7745dab2a7bd978de7a2f63a76b82c7cd2135af7b2cbe079d3fa17fe32eb76e",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 351,
@@ -60,7 +60,7 @@
       ],
       "materialized": true,
       "files": 27,
-      "lines": 2466,
+      "lines": 2483,
       "publicEntries": [
         {
           "path": "src/platform/main/storage/public.ts",

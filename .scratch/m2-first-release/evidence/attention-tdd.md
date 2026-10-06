@@ -21,3 +21,5 @@ Main与GUI保留原始红绿及补测日志，在集成后归档；单测证明�
 - Standards harness P2：切回A后seen B应拒绝invalid-request，改正确期望并独立snapshot证明无open/无重发，没有放松IPC。
 - root38项受影响行为通过，全工程最终793行为/34架构/74工具通过。首次结构报告陈旧失败保留，生成后复跑通过。
 - 磁盘ENOSPC保留观测；仅移除本轮已提交且raw证据已跟踪的worker CLI worktrees，以及本会话m2.17已受测临时App重复件（确认与原候选/跟踪证据的app.asar同源）。原候选和原生/数据库/截图证据保留。新验证copy使用COPYFILE_FICLONE尽量减少APFS占盘，仍复核产品身份。
+
+补充实际诊断导出回归：通知失败类型码被既有白名单改unknown。根路径是新onFailure字段，先失败报告断言，再仅加入精确App自有码notification-unavailable后12Reader行为通过；未知自由码继续脱敏。harness原生检查点短ID提示统一Main实际6位（不改变App）。初次clean1a55722包自动16检查通过，原生检查因Mac锁定真实timeout；不冒称已完成01c。最终替代包另外记录。
