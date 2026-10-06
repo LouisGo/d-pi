@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 import { spawn } from "node:child_process";
-import { writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { mkdir, writeFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
 import { createInterface } from "node:readline";
 
 test("fixed SDK RPC observes two same-name tasks, final transcript and terminal registry removal", async () => {
@@ -207,6 +207,9 @@ test("fixed SDK RPC observes two same-name tasks, final transcript and terminal 
       );
     }
     expect((await request("get_subagents")).data.subagents).toEqual([]);
+    await mkdir(dirname(process.env.OBSERVATION_EVIDENCE_PATH), {
+      recursive: true,
+    });
     await writeFile(
       process.env.OBSERVATION_EVIDENCE_PATH,
       JSON.stringify(

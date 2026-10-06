@@ -15,3 +15,7 @@
 ## 证明范围
 
 reviewer 不重复主 Agent 的全量检查或 Electron 执行；工程结果不等于用户认可。四个主题/密度组合覆盖 cursor/select，视觉 hover/active/focus 断言位于 dark/compact。context menu 当前未注册，静态规则不证明任意动态 JS 或未来第三方 DOM。
+
+## CI 修复补充复核
+
+小范围采用主 Agent 本地分别覆盖两轴，范围为 runtime/native-subagent-observation-suite.mjs、native-subagent-observation.test.mjs、tests/integration/subagent-observation.integration.test.ts 及对应生成报告。Spec：仅修复必需 CI 干净输出目录缺陷，不改变产品/指针/选择行为。Standards：证据写入者负责创建父目录；输出路径只在隔离 fixture 传递，临时目录 finally 清理；原 SDK/投影断言保留，真实 red→green 与完整 check 均通过。无剩余发现。

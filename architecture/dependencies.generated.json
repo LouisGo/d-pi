@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "06c78d5b1b33c4ab4af44d313d510ab5569bf0a6d0ce5fb7f7df3c8bbdc3c50c",
+  "inputsHash": "198ab59290537ca37f9ef0abc1de47d86d77001bdb828afa64485ed5fd5cca69",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 317,
@@ -353,7 +353,7 @@
       "defaultEnvironment": "omp",
       "materialized": true,
       "files": 11,
-      "lines": 2126,
+      "lines": 2129,
       "publicEntries": [
         {
           "path": "runtime/host.mjs",

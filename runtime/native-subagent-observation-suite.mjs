@@ -9,7 +9,7 @@ const fixture = createTestEnvironment({
   prefix: "d-pi-subagent-observation-",
   fixtureEnv: {
     OBSERVATION_EVIDENCE_PATH: resolve(
-      "dist/validation/05d-native-sdk-frames.json",
+      process.argv[2] ?? "dist/validation/05d-native-sdk-frames.json",
     ),
   },
 });

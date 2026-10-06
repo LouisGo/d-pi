@@ -1,0 +1,28 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/.codex/worktrees/interaction-policy/d-pi[39m
+
+ [32m✓[39m src/platform/omp/resources/runtime-resource.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m src/modules/execution/renderer/runtime/runtime-store.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/modules/execution/renderer/runtime/runtime-model.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m src/modules/execution/renderer/runtime/queue-write-lane.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 46[2mms[22m[39m
+ [32m✓[39m src/modules/execution/core/runtime/admission.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 46[2mms[22m[39m
+ [32m✓[39m tests/integration/app-runtime-sdk-i18n.integration.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 78[2mms[22m[39m
+ [32m✓[39m tests/integration/runtime-host.integration.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 364[2mms[22m[39m
+ [32m✓[39m tests/integration/app-runtime-service.integration.test.ts [2m([22m[2m26 tests[22m[2m)[22m[33m 918[2mms[22m[39m
+ [32m✓[39m tests/integration/subagent-observation.integration.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 2106[2mms[22m[39m
+   [33m[2m✓[22m[39m projects actual fixed SDK localhost frames and restores the same native results through the Renderer model[33m 2104[2mms[22m[39m
+ [32m✓[39m tests/integration/runtime-causality.integration.test.ts [2m([22m[2m22 tests[22m[2m)[22m[33m 4458[2mms[22m[39m
+   [33m[2m✓[22m[39m replays bounded evidence in the same live Host after a SQLite failure without replaying prompt[33m 1154[2mms[22m[39m
+   [33m[2m✓[22m[39m idle cannot dispose unconfirmed terminal evidence after ACK was already committed[33m 597[2mms[22m[39m
+   [33m[2m✓[22m[39m a Host loss after Main write failure loses only memory evidence and reopens conservatively without resending[33m 2004[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m10 passed[39m[22m[90m (10)[39m
+[2m      Tests [22m [1m[32m76 passed[39m[22m[90m (76)[39m
+[2m   Start at [22m 13:55:26
+[2m   Duration [22m 5.80s[2m (tests 56%, transform 28%, import 15%, worker 1%)[22m
+
+[2m  Transform [22m [33mtransforming modules took 3.99s[39m[2m · 28% of tracked time, re-done on every run[22m
+[2m            [22m [2mpersist transforms across runs with [22m[33mfsModuleCache: true[39m
+[2m            [22m [2mon CI this only helps when the cache directory is persisted between runs[22m
+[2m            [22m [2mlearn more: https://vitest.dev/guide/improving-performance#caching-between-reruns[22m

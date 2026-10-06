@@ -11,8 +11,8 @@
 - 工程：实现、完整检查与专项验证已在独立 worktree 完成。分支 codex/interaction-policy，增量基线 31cb91229852d8c6dfabb6e88fce06e78cbf6030；按用户选择向 codex/m2-lifecycle 提 PR。
 - 待决：无。
 - 验收：源码门禁正反例；隔离 Electron 中实际计算样式、鼠标拖选、输入/Monaco 选区及点击/键盘反馈；受影响主题/密度；相关类型、lint、构建。隔离桥接不构成真实供应商验证。
-- 用户试用：尚未交付；工程通过不代表用户认可。
-- 继续边界：用户已选择向 codex/m2-lifecycle 提增量 PR，并明确允许先发布该基线分支；本次分支 push 与 Draft PR 已授权。不 merge、不发布安装包，用户认可仍待试用。
+- 用户试用：独立 worktree 与 PR 已交付；用户尚未确认试用或认可。
+- 继续边界：用户已选择向 codex/m2-lifecycle 提增量 PR，并明确允许先发布该基线分支；本次分支 push 与 PR 已授权；必需 CI 通过后进入 review。不 merge、不发布安装包，用户认可仍待试用。
 
 ## 实现结果
 
@@ -30,6 +30,10 @@
 - 最初共享工作区验证被并行修改打断；随后独立 worktree 以固定基线完成 pnpm check、pnpm build、pnpm validate:interaction。迁移时对 28 个捕获文件校验 SHA-256，只有仍匹配本次写入的共享差异被撤回，其他 chat 的文件保留；证据见 evidence/migration.json。较早临时源码快照的检查亦通过，见 evidence/snapshot.json，仅作历史记录。
 
 - 独立 Spec review 发现文件“采样详情”正文禁选，已补中央选择例外；原生验证先复现红灯，再确认正文可拖选而 summary 仍不可选。补丁后 pnpm check:fast、pnpm typecheck、pnpm lint:design、pnpm build 和原生专项均再次通过，未重复无关应用测试。完整检查与回归红灯日志见 evidence/*.txt。Standards 轴已覆盖模块边界、中央级联、门禁及隔离资源释放；最终复核见 review.md。
+
+## CI 收尾
+
+初次远端 CI 的 SDK 集成测试因 dist/validation 未创建而失败。本地先前手工预建目录掩盖了此干净 checkout 缺陷；未关闭或跳过检查。证据写入处现负责创建父目录，suite 允许显式输出路径，集成测试使用全新临时嵌套路径并在 finally 清理。真实固定 SDK 回归先 ENOENT 红灯，再 76 个集成测试通过；最终 pnpm check 的 711 个应用测试通过。原始证据：evidence/ci-initial-failure.txt、ci-output-red.txt、ci-output-green.txt、final-check.txt。远端最新 head 的实际 CI 与 ready 状态以 [PR #2](https://github.com/LouisGo/d-pi/pull/2) 为准。
 
 ## 用户试用
 
