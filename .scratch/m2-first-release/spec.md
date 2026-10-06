@@ -142,3 +142,17 @@
 原有README/环境门禁及其工具测试/.scratch/environment-dependency-alignment改动完整保留，不纳入提交。OMP执行/队列/历史所有权不变，unknown不自动重发，冷旧Thread只读，不扩M3。无新的实质产品待决；PDF实际表示与覆盖以固定SDK/本应用验证为准，不能隐藏降级。04a/05c工程完成，clean m2.13已交付待试用，用户认可pending；父04/05及M2未完成范围保持。
 
 2026-10-02：04a/05c已完成无头逻辑、正式GUI与独立审查问题修复；654行为、34架构、65工具、18项实际clean macOS包内检查及ZIP同源校验通过。新候选源码7f5d590，构建7f5d5909-ac115847；[试用与验证限制](content-preparation.md#候选与试用)。本地提交，不push，原环境对齐改动保留。PDF当前需明确仅文字、完整视觉/OCR与B4回收未完成，05完整子Agent生命周期仍开放，M2用户认可pending。
+
+## 2026-10-06 生命周期切片
+
+用户要求使用刚合并的 AI 工作流，从最新 main 重新开启下一阶段；2026-10-06 已确认 PR #1 合入，基点 `c8dbdbadf1a04ad2be54e01f1a509024c5d982ea`，集成分支 `codex/m2-lifecycle`。本段选择 B4 附件引用/延迟回收/一致性与原生子 Agent 状态/结果观察两条可独立交付路径，随后集成与本地候选。沿用已有 M2 本地实现/commit/试用候选授权；不 push、不公开发布、不扩 M3。冷旧 Thread 只读、unknown 不自动重发，PDF 视觉/OCR与退出放弃原待决不进入本段。无新增产品待决。
+
+```implementation-plan
+[{"id":"m2-lifecycle","tickets":["04b","05d","06b"]}]
+```
+
+- [04b](issues/04b-attachment-lifecycle.md)：私有内容引用/最后释放、延迟回收及正式检查/清理出口。
+- [05d](issues/05d-subagent-observation.md)：固定 OMP 原生子 Agent 身份、状态与可得结果的有界观察。
+- [06b](issues/06b-lifecycle-candidate.md)：主 Agent 集成、双轴独立评审、检查、候选与本地 PR body。
+
+主 Agent 单写管理状态；两名 implementer 在独立 worktree 从固定 integration SHA 开始，允许写集分离，公共模块清单/状态/版本/validation 由主 Agent 整合。工程/候选/用户认可分别记录，父04/05/06未完成范围保持；本段未宣称 M2 完整验收。
