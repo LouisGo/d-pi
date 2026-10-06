@@ -451,3 +451,45 @@ it("runtime inspection is read-only, rejects foreign frames, and explicit allowa
     rmSync(shell.directory, { recursive: true, force: true });
   }
 });
+
+it("starts attachment maintenance once and drains it before closing SQLite on Quit", async () => {
+  vi.resetModules();
+  shell.events.clear();
+  shell.quit.mockClear();
+  shell.directory = mkdtempSync(join(tmpdir(), "d-pi-attachment-quit-"));
+  const attachmentModule = await import("./wiring/attachment-service");
+  const factory = attachmentModule.createAttachmentService;
+  const startMaintenance = vi.fn();
+  let release = () => {};
+  const drained = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const close = vi.fn(() => drained);
+  const factorySpy = vi
+    .spyOn(attachmentModule, "createAttachmentService")
+    .mockImplementation((...args) => ({
+      ...factory(...args),
+      startMaintenance,
+      close,
+    }));
+  const storageModule = await import("./wiring/app-storage");
+  const databaseClose = vi.spyOn(storageModule.AppStorage.prototype, "close");
+  try {
+    await import("./index");
+    await vi.waitFor(() => expect(startMaintenance).toHaveBeenCalledTimes(1));
+    shell.events.get("will-quit")?.({ preventDefault: vi.fn() });
+    await vi.waitFor(() => expect(close).toHaveBeenCalledTimes(1));
+    expect(databaseClose).not.toHaveBeenCalled();
+    expect(shell.quit).not.toHaveBeenCalled();
+    release();
+    await vi.waitFor(() => expect(shell.quit).toHaveBeenCalledTimes(1));
+    expect(databaseClose).toHaveBeenCalledTimes(1);
+  } finally {
+    release();
+    shell.events.get("will-quit")?.({ preventDefault: vi.fn() });
+    await vi.waitFor(() => expect(shell.quit).toHaveBeenCalled());
+    factorySpy.mockRestore();
+    databaseClose.mockRestore();
+    rmSync(shell.directory, { recursive: true, force: true });
+  }
+});

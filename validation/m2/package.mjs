@@ -12,6 +12,10 @@ import { createServer } from "node:http";
 import { join, resolve } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { createTestEnvironment } from "../../scripts/testing/test-environment.mjs";
+import {
+  prepareAgedAttachment,
+  validateAttachmentLifecycle,
+} from "./attachment-lifecycle.mjs";
 
 const isolated = createTestEnvironment({ prefix: "d-pi-m2-package-" });
 const source = resolve(
@@ -326,6 +330,7 @@ async function dropAttachment(name, mimeType, data) {
 
 const screenshots = [];
 const continuitySamples = [];
+let agedAttachmentPath;
 try {
   await connect();
   await wait(() =>
@@ -421,6 +426,20 @@ try {
     checks.push(
       "valid large drag/paste bytes cross real preload/Main without Base64 stack overflow, stay private and in draft; actual encoded limit refuses sending without provider calls, and explicit removal permits continuing",
     );
+    if (process.argv.includes("--lifecycle")) {
+      await validateAttachmentLifecycle({
+        db,
+        data: isolated.data,
+        threadId: a,
+        evaluate,
+        wait,
+        click,
+        dropAttachment,
+        shot,
+        screenshots,
+        checks,
+      });
+    }
     const objects = [
       "<< /Type /Catalog /Pages 2 0 R >>",
       "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
@@ -635,6 +654,27 @@ try {
     checks.push(
       "packaged private image and @ frozen text actually reach provider; native queued image survives text edit/save with original frozen receipt and typed change journal; delete adds no provider calls",
     );
+    if (process.argv.includes("--lifecycle")) {
+      const result = await evaluate(
+        `window.desktop.attachments.request({kind:'clean-storage',threadId:${JSON.stringify(a)},traceId:crypto.randomUUID()})`,
+      );
+      assert.equal(result.kind, "storage-report");
+      const hash = createHash("sha256")
+        .update(Buffer.from(imageFixture, "base64"))
+        .digest("hex");
+      assert.ok(existsSync(join(isolated.data, "content", "objects", hash)));
+      assert.ok(
+        db
+          .prepare(
+            "SELECT reference_count FROM input_content_object WHERE digest=?",
+          )
+          .get(hash).reference_count > 0,
+      );
+      assert.equal(requests.length, 1);
+      checks.push(
+        "packaged cleanup retains private image originals referenced by frozen submission receipts and queue edit history after draft consumption and queue deletion",
+      );
+    }
   }
   assert.equal(requests[0].model, "fixture-b");
   if (process.argv.includes("--queue-subagent")) {
@@ -1123,12 +1163,29 @@ try {
     await selectThread(a);
     checks.push("native inspection checkpoint resumed");
   }
+  if (process.argv.includes("--lifecycle")) {
+    agedAttachmentPath = await prepareAgedAttachment({
+      db,
+      data: isolated.data,
+      threadId: a,
+      evaluate,
+      wait,
+      click,
+      dropAttachment,
+    });
+  }
   child.kill("SIGKILL");
   await wait(() => child.signalCode !== null);
   socket.onclose = null;
   socket.close();
   child = launch();
   await connect();
+  if (agedAttachmentPath) {
+    await wait(() => !existsSync(agedAttachmentPath));
+    checks.push(
+      "automatic packaged attachment maintenance collects a seven-day released orphan without a cleanup command, including after cold restart",
+    );
+  }
   await wait(() =>
     evaluate(
       "document.querySelector('.runtime-panel')?.textContent.includes('当前只读历史')",
