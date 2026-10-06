@@ -141,6 +141,11 @@ async function refresh(evaluate, wait) {
 }
 
 async function apply(evaluate, wait, traceId) {
+  // A newly opened panel samples automatically. Wait for that read before
+  // issuing another scope: Main deliberately bounds concurrent diagnostics.
+  await wait(() =>
+    evaluate(`!document.querySelector('${action("refresh")}')?.disabled`),
+  );
   await setField(
     evaluate,
     "until",
