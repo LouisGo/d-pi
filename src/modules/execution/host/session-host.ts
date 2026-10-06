@@ -23,6 +23,7 @@ import { QueueSnapshotSchema } from "../contracts/queue";
 import { changesManagedSession, submissionFrame } from "../core/public";
 import { PendingInteractions } from "./interactions/interactions";
 import { type NativeObservation, NativeSession } from "./native/native-session";
+import { NativeSubagentObservation } from "./native/subagent-observation";
 
 export interface HostMessagePort {
   start(): void;
@@ -52,6 +53,7 @@ export function createSessionHost(
   options: SessionHostOptions = {},
 ): SessionHost {
   let native: NativeSession | null = null;
+  let subagentObservation: NativeSubagentObservation | null = null;
   let start: HostStart | null = null;
   let permit: ((allowed: boolean) => void) | null = null;
   let state: NativeState | null = null;
@@ -275,6 +277,8 @@ export function createSessionHost(
     confirmedPrompts.clear();
   }
   function disposeHost(): void {
+    subagentObservation?.dispose();
+    subagentObservation = null;
     permit?.(false);
     permit = null;
     clearPrompts();
@@ -308,6 +312,12 @@ export function createSessionHost(
     if (event.kind === "disconnected") {
       if (closing) return;
       disconnected = true;
+      if (subagentObservation) {
+        subagentObservation.dispose();
+        options.onNativeFrame?.({
+          type: "d_pi_subagent_observation_unavailable",
+        });
+      }
       observationVersion++;
       for (const entry of prompts.values())
         publishEvidence({
@@ -324,6 +334,7 @@ export function createSessionHost(
     }
     if (disconnected || closing) return;
     const frame = event.frame;
+    subagentObservation?.accept(frame);
     if (isNativeFrameType(frame, NativeFrameTypes.dPiControlState) && start) {
       const control = ControlStateSchema.safeParse(frame.data);
       if (control.success) {
@@ -577,6 +588,16 @@ export function createSessionHost(
         observe,
       );
       await native.start();
+      if (value.sdkEntry) {
+        const instance = native;
+        subagentObservation = new NativeSubagentObservation(
+          (type, payload) => instance.request(type, payload),
+          (frame) => {
+            if (!disconnected && !closing) options.onNativeFrame?.(frame);
+          },
+        );
+        await subagentObservation.start();
+      }
       await refresh();
       if (!state?.sessionFile)
         throw Error("Native session reference unavailable");

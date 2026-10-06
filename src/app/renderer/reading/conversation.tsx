@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import type { ConversationModel } from "../../../modules/conversation/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import { Markdown } from "./markdown";
+import { SubagentMessage } from "./subagents";
 
 export function Conversation({
   model,
@@ -14,6 +15,10 @@ export function Conversation({
   const { t } = useI18n();
   const itemIds = useStore(model.stateStore, (state) => state.itemIds);
   const gap = useStore(model.stateStore, (state) => state.view?.gap ?? false);
+  const exhausted = useStore(
+    model.stateStore,
+    (state) => state.resyncExhausted,
+  );
   return (
     <section
       className="conversation"
@@ -31,6 +36,17 @@ export function Conversation({
         </>
       )}
       {gap && <p role="status">{t("ui.conversation.gap")}</p>}
+      {exhausted && (
+        <Button
+          variant="ghost"
+          onClick={() => {
+            const threadId = model.stateStore.getState().threadId;
+            if (threadId) model.connect(threadId);
+          }}
+        >
+          {t("subagents.reconnect")}
+        </Button>
+      )}
       {itemIds.map((id) => (
         <ConversationMessage key={id} id={id} model={model} />
       ))}
@@ -48,6 +64,15 @@ function ConversationMessage({
   const { t, formatMessage } = useI18n();
   const item = useStore(model.stateStore, (state) => state.itemsById.get(id));
   if (!item) return null;
+  if (item.subagent) return <SubagentMessage item={item} />;
+  if (item.subagentNotice)
+    return (
+      <p role="status">
+        {item.subagentNotice === "observation-limit"
+          ? t("subagents.observationLimit")
+          : t("subagents.observationUnavailable")}
+      </p>
+    );
   return (
     <article className="message">
       <div className="message-heading">

@@ -1,4 +1,40 @@
 export const domain = {
+  "subagents.observationLimit":
+    "活动任务超过快照观察预算，仅显示前 128 项。观察覆盖不完整。",
+  "subagents.unhandledEvent":
+    "子 Agent 事件 {eventType} 尚无专用视图，过程覆盖不完整。",
+
+  "subagents.reconnect": "重新连接阅读",
+  "subagents.heading": "子 Agent",
+  "subagents.pending": "等待开始",
+  "subagents.running": "执行中",
+  "subagents.completed": "已完成",
+  "subagents.failed": "失败",
+  "subagents.aborted": "已中止",
+  "subagents.unknown": "状态无法确认",
+  "subagents.copy": "复制结果",
+  "subagents.task": "查看任务",
+  "subagents.model": "原生模型",
+  "subagents.currentTool": "当前工具",
+  "subagents.progress": "进度片段",
+  "subagents.result": "查看可得结果",
+  "subagents.noResult": "尚未取得可读结果。",
+  "subagents.coverage":
+    "仅显示当前原生实例中已观察的任务。重新启动 Host 后，之前结束的子任务不在活动快照中；执行状态与主提交分别判断。",
+  "subagents.transcriptUnavailable":
+    "原生结果记录不可读。保留已观察的片段，完整结果未知。",
+  "subagents.transcriptTooLarge":
+    "原生记录超过读取预算。保留已观察的片段，完整结果未读取。",
+  "subagents.transcriptEmpty":
+    "原生记录尚无可读正文。已观察片段不代表完整结果。",
+  "subagents.transcriptReset": "原生记录已重置，结果覆盖可能不完整。",
+  "subagents.truncated": "显示结果已截断；原生内容未改动。",
+  "subagents.identityAmbiguous":
+    "此原生身份关联到多个任务，无法归属的事件未合并。",
+  "subagents.missingLifecycle": "未观察到此任务的开始，过程覆盖不完整。",
+  "subagents.observationUnavailable":
+    "子 Agent 观察不可用。先前的执行状态可能已过期，结果保持只读。",
+
   "submission.contentNotReady":
     "附件尚未准备完成。完整原始输入已保留，请处理失败项后再发送。",
   "submission.imageUnsupported":

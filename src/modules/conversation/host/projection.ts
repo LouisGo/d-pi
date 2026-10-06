@@ -12,6 +12,8 @@ import type {
   ConversationUpdate,
 } from "../contracts/public";
 
+import { SubagentProjection } from "./subagent-projection";
+
 const TextSchema = z.object({ type: z.literal("text"), text: z.string() });
 function textOf(content: unknown): string {
   if (typeof content === "string") return content;
@@ -24,6 +26,10 @@ function textOf(content: unknown): string {
     .join("\n");
 }
 export class ConversationProjection {
+  private readonly subagents = new SubagentProjection(
+    () => this.nextId++,
+    (item) => this.put(item),
+  );
   private items: ConversationItem[] = [];
   private nextId = 1;
   private sizes = new Map<number, number>();
@@ -41,6 +47,7 @@ export class ConversationProjection {
     private readonly budget = 8 * 1024 * 1024,
   ) {}
   accept(frame: NativeFrame): void {
+    if (this.subagents.accept(frame)) return;
     if (
       isNativeFrameType(
         frame,
@@ -233,6 +240,7 @@ export class ConversationProjection {
       this.gap = true;
     }
     const retained = new Set(this.items.map((value) => value.id));
+    this.subagents.retain(retained);
     for (const [key, id] of this.tools)
       if (!retained.has(id)) this.tools.delete(key);
     this.pending.set(item.id, item);

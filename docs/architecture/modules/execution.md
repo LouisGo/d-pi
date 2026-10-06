@@ -70,3 +70,7 @@ Main 收据和冻结内容跨窗口/重启保留。Host 的请求映射随原生
 2026-10-01 内部整理：core 按 runtime / submission，Main 按 runtime / transport / submission，Host 按 native / interactions，Renderer 按 runtime / submission 分组；SessionHost 与 RuntimeService 继续单独拥有各自共同因果状态。环境公开入口与既有事务、ACK、恢复合同不变。
 
 2026-10-02：04a/05c增量将 input 准备的不可变内容持久化在冻结提交，并经同一 submissionFrame 派发实际文字/图片；模型及真实传输 vision-guard 不支持图片时拒绝，准备后重新核实目录授权、Thread和目标身份。显式重发沿用原冻结内容，不重新读取磁盘；unknown仍不自动重发。原生队列支持单文字加图片/纯图片的保留、显式逐图移除和文本编辑，custom/伴随组保留只读及原顺序；Main变更记录包含原图片身份，旧submission原件不覆写。
+
+## M2 子 Agent 观察边界（2026-10-06）
+
+SDK Host 启动后由只读观察适配建立原生订阅与活动快照；同活 Host 继续观察并向 conversation 转交真实帧。子 Agent 状态、可得结果与已有后续创建配置、主提交收据各自独立，观察及阅读重连不启动、停止、恢复或结算执行。适配仅保存有界原生读取关联，真实身份/状态来自 OMP；同 nativeId 的后续 parentToolCallId/sessionFile 运行不能接收旧结果。固定 SDK localhost 的真实 task/yield 样本验证原生状态、活动 registry 移除与终态 transcript 保留，不替代真实供应商或用户试用。
