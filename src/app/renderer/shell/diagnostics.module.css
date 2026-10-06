@@ -1,0 +1,94 @@
+.panel {
+  box-sizing: border-box;
+  position: fixed;
+  z-index: 20;
+  inset: var(--panel-padding) var(--panel-padding) var(--panel-padding) auto;
+  width: min(var(--content-width), calc(100vw - 2 * var(--panel-padding)));
+  padding: var(--panel-padding);
+  overflow: auto;
+  background: var(--surface);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: var(--text-body);
+}
+.panel:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.heading,
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--layout-gap);
+  flex-wrap: wrap;
+}
+.heading {
+  justify-content: space-between;
+}
+.heading h2 {
+  font-size: var(--text-title);
+  margin: 0;
+}
+.filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--layout-gap);
+  margin-block: var(--layout-gap);
+}
+.filters label,
+.feedback {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--layout-gap) / 2);
+  min-width: 0;
+}
+.filters input,
+.filters select,
+.feedback textarea {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  background: var(--surface);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  padding: calc(var(--layout-gap) / 2) var(--control-padding);
+}
+.filters input,
+.filters select {
+  min-height: var(--control-height);
+}
+.filters input:focus-visible,
+.filters select:focus-visible,
+.feedback textarea:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.metadata {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: var(--text-small);
+}
+.feedback {
+  margin-block-start: var(--panel-padding);
+}
+.feedback textarea {
+  resize: vertical;
+}
+.records {
+  padding-inline-start: var(--panel-padding);
+}
+.records li {
+  padding-block: var(--layout-gap);
+  border-bottom: 1px solid var(--border);
+  overflow-wrap: anywhere;
+}
+.panel p {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+  .filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

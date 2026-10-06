@@ -600,4 +600,63 @@ export const ui = {
   "ui.history.toolUnknown": "The native result has no explicit success marker.",
   "ui.history.toolCoverage":
     "Covers text parts in the native record only; {count} non-text parts are omitted. Session source {source}.",
+  "ui.diagnostics.entry": "Diagnostics and feedback",
+  "ui.diagnostics.traceEntry": "Inspect this failure",
+  "ui.diagnostics.unavailable": "Diagnostics connection unavailable",
+  "ui.diagnostics.heading": "Diagnostics and failure feedback",
+  "ui.diagnostics.close": "Close diagnostics",
+  "ui.diagnostics.description":
+    "Query retained local logs already written to disk. Defaults to the last 24 hours and 100 records. A system save dialog confirms export; nothing is uploaded.",
+  "ui.diagnostics.since": "Since",
+  "ui.diagnostics.until": "Until",
+  "ui.diagnostics.trace": "traceId",
+  "ui.diagnostics.thread": "Thread ID",
+  "ui.diagnostics.writer": "Writer instance ID",
+  "ui.diagnostics.stage": "Stage",
+  "ui.diagnostics.allStages": "All stages",
+  "ui.diagnostics.limit": "Record limit",
+  "ui.diagnostics.apply": "Apply filters",
+  "ui.diagnostics.invalidFilter":
+    "Check the time range, UUIDs and record limit (1–500). No query was sent.",
+  "ui.diagnostics.refresh": "Refresh",
+  "ui.diagnostics.export": "Export redacted diagnostics",
+  "ui.diagnostics.exporting": "Exporting…",
+  "ui.diagnostics.copy": "Copy feedback template",
+  "ui.diagnostics.refreshing":
+    "Re-sampling; the previous sample remains visible.",
+  "ui.diagnostics.loading": "Reading diagnostics…",
+  "ui.diagnostics.staleFailure":
+    "Refresh failed; the previous sample remains visible: {reason}. Refresh to retry.",
+  "ui.diagnostics.readFailure":
+    "Diagnostics read failed: {reason}. Refresh to retry.",
+  "ui.diagnostics.exported": "Exported: {fileName}",
+  "ui.diagnostics.cancelled": "Export cancelled; no file was saved.",
+  "ui.diagnostics.commandFailed":
+    "Export failed: {reason}. It will not retry automatically.",
+  "ui.diagnostics.copied":
+    "Feedback template copied. Complete and review it before submitting.",
+  "ui.diagnostics.copyFailed":
+    "Copy failed. Select the template below and copy it manually.",
+  "ui.diagnostics.commandTrace": "Inspect export trace",
+  "ui.diagnostics.sample": "Sampled {time} · {count} records",
+  "ui.diagnostics.coverage":
+    "Coverage: {files} files / {bytes} bytes / {lines} lines; malformed {malformed}; redacted {redacted}; unreadable {unreadable}.",
+  "ui.diagnostics.truncated":
+    "A read or record budget was reached; results are incomplete. Narrow the time range or filters.",
+  "ui.diagnostics.writerDegraded":
+    "Current Writer degraded; {dropped} records dropped.",
+  "ui.diagnostics.writerHealthy":
+    "Current Writer healthy; {dropped} records dropped.",
+  "ui.diagnostics.interpretation":
+    "Record order is a reading aid; stages do not prove execution completed. No matches do not prove an operation never happened; rotation, drops or uninstrumented stages can leave gaps. Refresh re-reads the applied time range.",
+  "ui.diagnostics.empty": "No matching records in this scope.",
+  "ui.diagnostics.recordThread": "Thread: {threadId}",
+  "ui.diagnostics.feedback": "Feedback template",
+  "ui.diagnostics.feedbackHint":
+    "The template contains controlled diagnostic metadata only. Add reproduction details yourself; check for secrets and business content before submitting, and attach the redacted export if useful.",
+  "ui.diagnostics.template":
+    "d-pi failure feedback\n\nDiagnostic metadata:\n{metadata}\n\nReproduction steps: [fill in]\nExpected result: [fill in]\nActual result: [fill in]\n",
+  "ui.diagnostics.operation": "Operation",
+  "ui.diagnostics.allOperations": "All operations",
+  "ui.diagnostics.recordDetails": "Correlation and exit metadata",
 } as const;

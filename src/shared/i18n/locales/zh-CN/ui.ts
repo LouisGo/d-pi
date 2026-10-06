@@ -537,4 +537,56 @@ export const ui = {
   "ui.history.toolUnknown": "原生结果未提供明确成功标记。",
   "ui.history.toolCoverage":
     "仅覆盖原生记录中的文字部分；另有 {count} 个非文字部分。会话来源 {source}。",
+  "ui.diagnostics.entry": "诊断与反馈",
+  "ui.diagnostics.traceEntry": "查看此故障诊断",
+  "ui.diagnostics.unavailable": "诊断连接不可用",
+  "ui.diagnostics.heading": "诊断与故障反馈",
+  "ui.diagnostics.close": "关闭诊断",
+  "ui.diagnostics.description":
+    "仅查询本机已落盘的保留日志。默认最近24小时、最多100条；导出由系统保存对话框确认，不自动上传。",
+  "ui.diagnostics.since": "开始时间",
+  "ui.diagnostics.until": "结束时间",
+  "ui.diagnostics.trace": "traceId",
+  "ui.diagnostics.thread": "Thread ID",
+  "ui.diagnostics.writer": "Writer实例 ID",
+  "ui.diagnostics.stage": "阶段",
+  "ui.diagnostics.allStages": "所有阶段",
+  "ui.diagnostics.limit": "最多记录数",
+  "ui.diagnostics.apply": "应用筛选",
+  "ui.diagnostics.invalidFilter":
+    "请检查时间范围、UUID和条数（1–500）。未发起查询。",
+  "ui.diagnostics.refresh": "刷新",
+  "ui.diagnostics.export": "脱敏导出",
+  "ui.diagnostics.exporting": "正在导出…",
+  "ui.diagnostics.copy": "复制反馈模板",
+  "ui.diagnostics.refreshing": "正在重新采样；仍显示旧采样。",
+  "ui.diagnostics.loading": "正在读取诊断…",
+  "ui.diagnostics.staleFailure":
+    "刷新失败，仍显示旧采样：{reason}。可再次刷新。",
+  "ui.diagnostics.readFailure": "诊断读取失败：{reason}。可刷新重试。",
+  "ui.diagnostics.exported": "已导出：{fileName}",
+  "ui.diagnostics.cancelled": "已取消导出，没有保存文件。",
+  "ui.diagnostics.commandFailed": "导出失败：{reason}。不会自动重试。",
+  "ui.diagnostics.copied": "反馈模板已复制，请自行填写并审阅后提交。",
+  "ui.diagnostics.copyFailed": "复制失败，可在下方选择模板手动复制。",
+  "ui.diagnostics.commandTrace": "查询此导出trace",
+  "ui.diagnostics.sample": "采样 {time} · {count} 条记录",
+  "ui.diagnostics.coverage":
+    "覆盖：{files} 文件 / {bytes} 字节 / {lines} 行；坏行 {malformed}；脱敏 {redacted}；不可读 {unreadable}。",
+  "ui.diagnostics.truncated":
+    "已达到读取或条数预算，结果不完整。请缩小时间或筛选范围。",
+  "ui.diagnostics.writerDegraded": "当前Writer已退化；丢弃 {dropped} 条。",
+  "ui.diagnostics.writerHealthy": "当前Writer未退化；丢弃 {dropped} 条。",
+  "ui.diagnostics.interpretation":
+    "记录顺序仅为读取线索；阶段不代表执行完成。无匹配不能证明操作未发生，轮转、丢弃或未接入阶段可能留下缺口。刷新仅重新读取已应用的时间范围。",
+  "ui.diagnostics.empty": "当前范围没有匹配记录。",
+  "ui.diagnostics.recordThread": "Thread：{threadId}",
+  "ui.diagnostics.feedback": "反馈模板",
+  "ui.diagnostics.feedbackHint":
+    "模板仅含受控诊断元数据。复现描述由你自行补充；提交前检查秘密及业务内容，并按需附上脱敏导出文件。",
+  "ui.diagnostics.template":
+    "d-pi 故障反馈\n\n诊断元数据：\n{metadata}\n\n复现步骤：[请填写]\n期待结果：[请填写]\n实际结果：[请填写]\n",
+  "ui.diagnostics.operation": "操作",
+  "ui.diagnostics.allOperations": "所有操作",
+  "ui.diagnostics.recordDetails": "关联与退出元数据",
 } as const;

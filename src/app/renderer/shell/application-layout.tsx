@@ -7,6 +7,7 @@ import { ConfigurationSettings } from "../../../modules/configuration/renderer/p
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import { BUILD_INFO } from "../../../shared/build-info";
 import type { AppModel } from "../wiring/model";
+import { Diagnostics } from "./diagnostics";
 import { PreferenceToolbar } from "./preference-toolbar";
 import { ProjectThreads } from "./project-threads";
 import { ThreadNotice } from "./thread-notice";
@@ -46,6 +47,11 @@ function StartupFailure({ model }: { model: AppModel }) {
       <p>{formatMessage(error.message)}</p>
       <p className="trace">{t("app.trace", { traceId: error.traceId })}</p>
       <p className="trace">{t("app.build", { buildId: BUILD_INFO.id })}</p>
+      <Diagnostics bridge={window.desktop?.diagnostics} />
+      <Diagnostics
+        bridge={window.desktop?.diagnostics}
+        traceId={error.traceId}
+      />
       <Button onClick={() => void model.start()}>{t("app.retry")}</Button>
     </main>
   );
@@ -91,6 +97,7 @@ function SidebarFooter() {
   const { t } = useI18n();
   return (
     <div className="sidebar-bottom">
+      <Diagnostics bridge={window.desktop?.diagnostics} />
       <span className="muted">{t("app.sidebar.localDraft")}</span>
       <span className="muted">{t("app.executionNeedsApproval")}</span>
       <span className="trace muted" title={BUILD_INFO.commit}>

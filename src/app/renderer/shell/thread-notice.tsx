@@ -2,6 +2,7 @@ import { useStore } from "zustand";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import type { AppModel } from "../wiring/model";
+import { Diagnostics } from "./diagnostics";
 
 export function ThreadNotice({ model }: { model: AppModel }) {
   const { t, formatMessage } = useI18n();
@@ -21,6 +22,10 @@ export function ThreadNotice({ model }: { model: AppModel }) {
     <div role="alert" className="notice failure">
       {formatMessage(notice.message)}
       <span className="trace"> {notice.traceId}</span>
+      <Diagnostics
+        bridge={window.desktop?.diagnostics}
+        traceId={notice.traceId}
+      />
       {uncertain && (
         <>
           <p>{t("app.navigation.selectionUnknown")}</p>
