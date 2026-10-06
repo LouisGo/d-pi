@@ -186,3 +186,5 @@
 - [06d](issues/06d-long-reading-candidate.md)：整段双轴独立评审、实际SDK/GUI包内验证、本地候选和交接。
 
 主Agent单写票/规格/生成看板/依赖报告/版本及候选；06c implementer在独立checkout固定起点实施，06d由主Agent串行集成验收。交互策略worktree不纳入本段。完整M2性能组合（3Thread/10000消息/30分钟/IME/故障全集）仍开放，本段仅验证受影响的长正文路径。
+
+派发：06c→bounded_reading→`/Users/louistation/.codex/worktrees/m2-long-reading-06c/d-pi`→`codex/m2-long-reading-06c`，固定起点`88e40303b1b13707e5717818df19ccf6ce3cd124`。主Agent沿用`codex/m2-lifecycle`负责validation/m2长正文harness及共享管理；写集不重叠。

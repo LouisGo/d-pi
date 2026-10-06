@@ -17,6 +17,11 @@ import {
   validateAttachmentLifecycle,
 } from "./attachment-lifecycle.mjs";
 import {
+  createLongReadingSupplier,
+  prepareLongReadingExtension,
+  validateLongReading,
+} from "./long-reading.mjs";
+import {
   createSubagentSupplier,
   validateSubagentLifecycle,
 } from "./subagent-lifecycle.mjs";
@@ -66,6 +71,7 @@ mkdirSync(secondProject);
 writeFileSync(join(secondProject, "second.txt"), "Second isolated project\n");
 const requests = [];
 const subagentSupplier = createSubagentSupplier();
+const longReadingSupplier = createLongReadingSupplier();
 let held = null;
 const sockets = new Set();
 const server = createServer(async (req, res) => {
@@ -73,6 +79,11 @@ const server = createServer(async (req, res) => {
   for await (const chunk of req) body += chunk;
   assert.equal(req.method, "POST");
   const request = JSON.parse(body);
+  if (
+    process.argv.includes("--long-reading") &&
+    longReadingSupplier.handle(request, res)
+  )
+    return;
   if (
     process.argv.includes("--lifecycle") &&
     subagentSupplier.handle(request, res)
@@ -143,6 +154,8 @@ writeFileSync(
   }),
 );
 mkdirSync(join(isolated.config, "extensions"));
+if (process.argv.includes("--long-reading"))
+  prepareLongReadingExtension(isolated.config);
 writeFileSync(
   join(isolated.config, "extensions", "finalized.ts"),
   `export default function(pi){pi.on('assistant_message',event=>({content:event.message.content.map(part=>part.type==='text'?{...part,text:part.text+'_FINALIZED\\n\\n'+Array.from({length:80},(_,i)=>'Reading fixture line '+i).join('\\n\\n')}:part)}));}`,
@@ -357,6 +370,7 @@ async function dropAttachment(name, mimeType, data) {
 const screenshots = [];
 const continuitySamples = [];
 let agedAttachmentPath;
+let longReadingMetrics;
 try {
   await connect();
   await wait(() =>
@@ -1259,6 +1273,24 @@ try {
       threadB: b,
     });
   }
+  if (process.argv.includes("--long-reading")) {
+    longReadingMetrics = await validateLongReading({
+      supplier: longReadingSupplier,
+      db,
+      evaluate,
+      wait,
+      click,
+      insert,
+      selectThread,
+      call,
+      shot,
+      checks,
+      screenshots,
+      threadA: a,
+      threadB: b,
+      env: isolated.env,
+    });
+  }
   if (process.argv.includes("--inspect")) {
     const checkpoint = join(isolated.root, "inspect-checkpoint.json"),
       resume = join(isolated.root, "inspect-continue");
@@ -1369,6 +1401,8 @@ try {
     providerCalls: requests.length,
     subagentProviderCalls: subagentSupplier.requests.length,
     subagentTitleProviderCalls: subagentSupplier.titleRequests.length,
+    longReadingProviderCalls: longReadingSupplier.requests.length,
+    longReading: longReadingMetrics,
     models: requests.map((r) => r.model),
     nativeSessions: db
       .prepare("SELECT session_id,thread_id FROM native_session")
