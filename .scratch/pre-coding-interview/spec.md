@@ -25,7 +25,7 @@ status: interview-complete-validation-pending
 - [决定登记](../../docs/decisions.md)：D-01–D-35、B-* 与 P-* 的状态继续适用。
 - [基础方案](../../docs/product/first-release.md)：M2 首版交付。
 - [近期计划](../development-foundation/spec.md)：M1 切片与未完成的 G1 证据。
-- [领域上下文](../../CONTEXT.md)及相关 ADR：OMP 执行所有权、会话镜像和配置共享。
+- [领域上下文](../../GLOSSARY.md)及相关 ADR：OMP 执行所有权、会话镜像和配置共享。
 
 ## 收束结论（2026-09-27）
 

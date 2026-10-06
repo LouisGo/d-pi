@@ -21,7 +21,7 @@
 
 1. **项目拥有组件表达，成熟基础能力优先复用。**React + TypeScript + Tailwind CSS 是基础；我们定义设计变量、视觉语言、稳定组件 API 和状态展示规则，优先改造 shadcn/ui 源码并使用 Base UI 交互能力。自有组件层不要求从零重写控件或给每个 primitive 机械加壳；外部 API 不进入无头业务合同。复杂控件可对照 React Aria。
 2. **Beautiful UI 是重要的视觉与交互参考。**允许在核对依赖和许可证后选取、改造部分源码或素材，统一纳入自有组件 API 与设计变量。Tool UI 主要用于学习工具结果的结构化表达、校验和操作回执。两者都不拥有 OMP 执行状态。
-3. **OMP 拥有 Agent 执行、工具、排队、干预、停止和原生会话。**SessionHost 维护[会话镜像](../../CONTEXT.md)与同步；Renderer 负责展示和提交用户操作。任何 UI 组件都必须以真实 OMP 事件和交互请求为输入，按请求 ID、连接世代及过期状态回传回答，不以动画计时器推断任务进度。详见 [ADR-0001](../adr/0001-omp-session-client.md)。
+3. **OMP 拥有 Agent 执行、工具、排队、干预、停止和原生会话。**SessionHost 维护[会话镜像](../../GLOSSARY.md)与同步；Renderer 负责展示和提交用户操作。任何 UI 组件都必须以真实 OMP 事件和交互请求为输入，按请求 ID、连接世代及过期状态回传回答，不以动画计时器推断任务进度。详见 [ADR-0001](../adr/0001-omp-session-client.md)。
 4. **D-32 确认 Base UI 为默认交互基础。**取代先前“不作为默认底座”的结论。历史 [Button](https://github.com/LouisGo/d-pi/blob/6fab3efd0526d2d716d7939b75202a88f857078a/src/renderer/src/components/ui/button.tsx) 与 [components.json](https://github.com/LouisGo/d-pi/blob/6fab3efd0526d2d716d7939b75202a88f857078a/components.json)仍只证明旧依赖；当前采用依据是 09-26 用户确认，不直接恢复旧主题、旧组件或旧锁文件。引入 UI 源码时继续按 D-31 迁移 Hugeicons 并验收交互。
 
 候选分为“内容与性能”“Agent 交互与视觉”“组件质量与动效”“代码与进程通信”“长期数据层”。前两类与产品体验最接近，也仍需真实样本。采用某项候选时，查阅当天的上游文档与许可、在对应层做小范围验证、提交精确版本及锁文件，并将本页状态更新为“已采用”或记录放弃原因。这些采用条件指导后续评估，不额外扩大任务授权；与当前需求或既有决策发生无法确定的冲突时，必须先向用户确认。

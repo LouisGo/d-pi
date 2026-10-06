@@ -45,6 +45,7 @@
     "check:fast": "pnpm check:tools && pnpm lint && pnpm check:documentation && pnpm check:architecture && pnpm check:structure && pnpm check:status",
     "check:status": "node scripts/tasks/project-status.mjs --check docs/status.md",
     "report:status:write": "node scripts/tasks/project-status.mjs --write docs/status.md",
+    "plan:slice": "node scripts/tasks/slice-plan.mjs",
     "hooks:install": "node scripts/git-hooks.mjs install",
     "hooks:uninstall": "node scripts/git-hooks.mjs uninstall",
     "hooks:status": "node scripts/git-hooks.mjs status"

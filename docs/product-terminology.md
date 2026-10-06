@@ -1,6 +1,6 @@
 # 产品术语
 
-本页是 d-pi **自有 UI 用词**的单源；领域定义在 [CONTEXT.md](../CONTEXT.md)，使用规则见[国际化架构 §20](architecture/internationalization.md#20-terminology)。协议、用户输入、Agent 与工具输出保持原文，业务含义不在此重复定义。
+本页是 d-pi **自有 UI 用词**的单源；领域定义在 [GLOSSARY.md](../GLOSSARY.md)，使用规则见[国际化架构 §20](architecture/internationalization.md#20-terminology)。协议、用户输入、Agent 与工具输出保持原文，业务含义不在此重复定义。
 
 | 标准概念 | English UI | 简体中文 UI |
 | --- | --- | --- |

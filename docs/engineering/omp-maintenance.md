@@ -1,6 +1,6 @@
 # OMP 接入与资源维护
 
-本页说明固定接入的维护方法。领域定义见 [CONTEXT](../../CONTEXT.md)，配置合同见 [ADR-0002](../adr/0002-share-native-omp-config.md) 与 [基础契约 §3](../architecture/foundation-contracts.md#3-配置与首版认证b3)。实施、构建和试用状态由 [总看板](../status.md) 路由到所属规格；这里不维护第二份进度。
+本页说明固定接入的维护方法。领域定义见 [GLOSSARY](../../GLOSSARY.md)，配置合同见 [ADR-0002](../adr/0002-share-native-omp-config.md) 与 [基础契约 §3](../architecture/foundation-contracts.md#3-配置与首版认证b3)。实施、构建和试用状态由 [总看板](../status.md) 路由到所属规格；这里不维护第二份进度。
 
 ## 开发约定与产品运行资源
 

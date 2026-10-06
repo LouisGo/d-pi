@@ -13,9 +13,10 @@
 | 进程错误、trace 与故障阅读 | [诊断合同](architecture/diagnostics.md)及对应模块的实际接入路径 |
 | TypeScript、状态与查询的写法 | [TypeScript 合同](architecture/typescript.md)、[d-pi-typescript](../.agents/skills/d-pi-typescript/SKILL.md)、[d-pi-state-query](../.agents/skills/d-pi-state-query/SKILL.md)；合同维护政策，skill 维护有条件的写法 |
 | GUI 组件、样式、图标与外部源码 | [设计系统合同](architecture/design-system.md)、[固定源码依据](architecture/design-system-references.md)、[图标合同](architecture/icon-system.md)及[d-pi-design-system](../.agents/skills/d-pi-design-system/SKILL.md) |
-| 文案、语言和概念 | [国际化架构](architecture/internationalization.md)、[产品术语](product-terminology.md)、[CONTEXT](../CONTEXT.md)；[领域约定](agents/domain.md)约束术语和 ADR |
+| 文案、语言和概念 | [国际化架构](architecture/internationalization.md)、[产品术语](product-terminology.md)、[GLOSSARY](../GLOSSARY.md)；[领域约定](agents/domain.md)约束术语和 ADR |
 | 目录、公开面、允许依赖与门禁 | [源码边界](architecture/source-layout.md)、[d-pi-architecture](../.agents/skills/d-pi-architecture/SKILL.md)；`architecture/modules.json` 是机器单源，实际依赖与允许依赖分开 |
 | 功能拆票、状态更新和交付 | [任务约定](agents/issue-tracker.md)、[d-pi-headless-features](../.agents/skills/d-pi-headless-features/SKILL.md)；切片记录放 `.scratch/<feature>/` |
+| 执行、独立 review、PR 与 retro | [执行切片](../.agents/skills/d-pi-implement-slice/SKILL.md)、[双轴评审](../.agents/skills/d-pi-code-review/SKILL.md)、[PR](../.agents/skills/d-pi-pr/SKILL.md)、[复盘](../.agents/skills/d-pi-retro/SKILL.md)；调度与状态单源仍为任务约定 |
 
 日常只补目标模块、直接依赖和受影响合同，不先重建项目时间线。代码、观测与文档不符时分别报告实现事实、既定要求和证据缺口，不按当前行为自动改规格。
 

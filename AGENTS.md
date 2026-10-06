@@ -35,6 +35,10 @@
 
 | 任务 | 入口 |
 | --- | --- |
+| 执行已授权切片、并行 implement 与集成 | [d-pi-implement-slice](.agents/skills/d-pi-implement-slice/SKILL.md)、[任务约定](docs/agents/issue-tracker.md#授权切片与-ready-frontier)；多票用 `pnpm plan:slice`，主 Agent 单写管理状态 |
+| PR / 分支 / WIP 的独立评审 | [d-pi-code-review](.agents/skills/d-pi-code-review/SKILL.md)；固定真实范围，分别覆盖 Spec 与 Standards |
+| PR body 与工程收尾 | [d-pi-pr](.agents/skills/d-pi-pr/SKILL.md)、[PR 模板](.github/pull_request_template.md)；本地任务不依赖远端 PR 关闭 |
+| 请求复盘或已授权工作流优化 | [d-pi-retro](.agents/skills/d-pi-retro/SKILL.md)；依据真实会话建议/实施环境改进，不自动扩张规则 |
 | 功能规划、拆票、模块实现或架构评审 | [d-pi-headless-features](.agents/skills/d-pi-headless-features/SKILL.md)、[无头功能合同](docs/architecture/headless-features.md)、相关基础契约节；普通文档/skill 审计、纯文字或纯样式不触发 |
 | 模块与跨模块接入 | [模块地图](docs/architecture/modules/README.md)的目标模块及直接依赖，跨模块再读[交接图](docs/architecture/modules/flows.md) |
 | 领域归属、目录迁移、公开面或门禁 | [d-pi-architecture](.agents/skills/d-pi-architecture/SKILL.md)、`architecture/modules.json`、模块 `AGENTS.md` 与相关模块页；机器清单是单源 |
@@ -43,5 +47,5 @@
 | GUI 设计、样式、组件、主题/密度与布局性能、外部 UI 源码 | [d-pi-design-system](.agents/skills/d-pi-design-system/SKILL.md)按任务联动项目级 [impeccable](.agents/skills/impeccable/SKILL.md)，Agent 自行选择相关指令；[设计系统合同](docs/architecture/design-system.md)、[图标合同](docs/architecture/icon-system.md)；纯样式也适用 |
 | 跨进程操作、错误、性能 | [诊断合同](docs/architecture/diagnostics.md)及相关模块 |
 | 文案、语言和产品术语 | [国际化架构](docs/architecture/internationalization.md)、[产品术语](docs/product-terminology.md) |
-| 领域术语、ADR、本地任务 | [领域约定](docs/agents/domain.md)、`CONTEXT.md`、相关 ADR；工作记录按[任务约定](docs/agents/issue-tracker.md)放 `.scratch/<feature>/` |
+| 领域术语、ADR、本地任务 | [领域约定](docs/agents/domain.md)、[GLOSSARY](GLOSSARY.md)、相关 ADR；工作记录按[任务约定](docs/agents/issue-tracker.md)放 `.scratch/<feature>/` |
 | 重新评估既有方向或复用旧实现 | [架构总览](docs/architecture/overview.md)、[历史证据索引](docs/prototype/handoff.md)、[库雷达](docs/prototype/frontend-library-radar.md)的相关部分，保留理由与来源 |

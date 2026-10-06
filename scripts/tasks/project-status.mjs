@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { readSlicePlans } from "./slice-plan.mjs";
 import { readTaskRecords } from "./task-records.mjs";
 
 const phases = ["G1", "M1", "M2", "M3", "基建"];
@@ -53,7 +54,7 @@ function localTarget(root, source, path) {
 
 export function readProjectStatus(root, files) {
   const taskResult = readTaskRecords(root, files);
-  const issues = [...taskResult.issues];
+  const issues = readSlicePlans(root, files, taskResult).issues;
   const records = [];
   const sources = new Map(
     taskResult.tasks.map((task) => [task.path, task.source]),
