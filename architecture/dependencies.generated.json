@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "d1f744be05efcd4a13379a8b97cd8a9e3e276fc5941d46015c7c8f48b4d60c06",
+  "inputsHash": "977bc3c92b1f1600f76716103f485f6d0207bccc2059d745094d2e921ab513a9",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 323,
-    "scannedFiles": 323,
+    "sourceFiles": 324,
+    "scannedFiles": 324,
     "unscanned": []
   },
   "modules": [
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 118,
-      "lines": 19764,
+      "lines": 19766,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -101,8 +101,8 @@
       ],
       "defaultEnvironment": "shared",
       "materialized": true,
-      "files": 18,
-      "lines": 1883,
+      "files": 19,
+      "lines": 2006,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -110,6 +110,10 @@
         },
         {
           "path": "src/shared/draft-text.ts",
+          "exists": true
+        },
+        {
+          "path": "src/shared/diagnostics.ts",
           "exists": true
         },
         {
@@ -2158,6 +2162,18 @@
       "to": "src/modules/threads/contracts/public.ts",
       "targetModule": "threads",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/contracts/desktop-bridge.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "../../shared/diagnostics",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/diagnostics.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
     },
     {
       "from": "src/app/contracts/desktop-bridge.ts",
@@ -11007,6 +11023,27 @@
       "to": "src/platform/omp/resources/sdk-resource-guard.ts",
       "targetModule": "platform",
       "targetEnvironment": "omp"
+    },
+    {
+      "from": "src/shared/diagnostics.ts",
+      "sourceModule": "shared",
+      "sourceEnvironment": "shared",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/shared/diagnostics.ts",
+      "sourceModule": "shared",
+      "sourceEnvironment": "shared",
+      "test": false,
+      "specifier": "./identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
     },
     {
       "from": "src/shared/draft-text.ts",

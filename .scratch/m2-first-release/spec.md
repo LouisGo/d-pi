@@ -154,7 +154,7 @@
 用户要求使用刚合并的 AI 工作流，从最新 main 重新开启下一阶段；2026-10-06 已确认 PR #1 合入，基点 `c8dbdbadf1a04ad2be54e01f1a509024c5d982ea`，集成分支 `codex/m2-lifecycle`。本段选择 B4 附件引用/延迟回收/一致性与原生子 Agent 状态/结果观察两条可独立交付路径，随后集成与本地候选。沿用已有 M2 本地实现/commit/试用候选授权；不 push、不公开发布、不扩 M3。冷旧 Thread 只读、unknown 不自动重发，PDF 视觉/OCR与退出放弃原待决不进入本段。无新增产品待决。
 
 ```implementation-plan
-[{"id":"m2-lifecycle","tickets":["04b","05d","06b"]},{"id":"m2-long-reading","tickets":["06c","06d"]}]
+[{"id":"m2-lifecycle","tickets":["04b","05d","06b"]},{"id":"m2-long-reading","tickets":["06c","06d"]},{"id":"m2-diagnostics","tickets":["06e","06f","06g"]}]
 ```
 
 - [04b](issues/04b-attachment-lifecycle.md)：私有内容引用/最后释放、延迟回收及正式检查/清理出口。
@@ -200,3 +200,11 @@
 长正文与交互策略的历史冲突保留来源隔离key、完整复制heading及data-selectable三者；结构报告重新生成，补正式ReadingBody在中央选择策略下四主题/密度真实鼠标拖选和翻段验证。已有m2.16 ZIP仍只对应c531558产品source，不冒称含后续交互策略集成；本次不重打包安装包。远端结果见[PR交付记录](pr-delivery.md)。
 
 2026-10-06：用户追加push/PR收尾完成。PR #2已合入2135856阶段分支；该head push/PR CI均success，PR #3已合并到远端main（mergeCommit6302ea6），本地main同步且无其它worktree改动。[远端状态与组合证据](pr-delivery.md)。仅交付记录后续文档提交；原m2.16 ZIP对应c531558、未重打包，M2及用户认可状态保持。
+
+## 2026-10-06 基础诊断导出与故障反馈切片
+
+用户本轮明确授权从最新main继续M2，优先V1-00基础诊断导出与故障反馈闭环、合理并行、TDD正式GUI、双轴独立评审修复、实际macOS验证、可用候选/证据/本地提交。已fetch核实main与origin/main同为`1c9c30a`且工作区干净，集成分支`codex/m2-diagnostics`。无新增重要产品待决；不扩M3，不自动上传、不使用个人凭据或真实供应商收费请求，本轮只本地交付。
+
+复用Main日志与现有trace，支持时间/trace/Thread/Writer实例/阶段及条数限制；只读扫描按文件/字节/行/耗时有界，不读取原生会话或崩溃dump。主进程控制本地保存对话框，导出白名单元数据与覆盖/坏行/脱敏/丢弃/退化信息，不包含路径、URL、秘密或业务全文。GUI提供全局入口及故障trace快捷入口、筛选/刷新、可读记录、导出与可复制反馈模板；反馈由用户审阅后自行提交。V1-00整体性能/监控全集与M2其它开放项不据此完成，用户认可独立pending。
+
+06e读取器与06f正式GUI从固定公共合同基点独立worktree并行；主Agent承担合同、IPC/preload/保存服务、版本/验证harness/串行集成及06g候选。

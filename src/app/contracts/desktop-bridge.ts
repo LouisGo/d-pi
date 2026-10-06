@@ -20,6 +20,7 @@ import {
 import type { LocaleBridge } from "../../modules/preferences/contracts/public";
 import { PreferencesSchema } from "../../modules/preferences/contracts/public";
 import { ThreadContextSchema } from "../../modules/threads/contracts/public";
+import type { DiagnosticBridge } from "../../shared/diagnostics";
 import { ThreadIdSchema, TraceIdSchema } from "../../shared/identity";
 import type { AttachmentBridge } from "./attachments";
 
@@ -158,6 +159,7 @@ export function parseDesktopReply(command: Command, raw: unknown): Reply {
   return reply;
 }
 export interface DesktopBridge {
+  diagnostics?: DiagnosticBridge;
   attachments?: AttachmentBridge;
   configuration?: ConfigurationBridge;
   locale?: LocaleBridge;

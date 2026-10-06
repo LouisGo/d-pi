@@ -129,6 +129,7 @@
       "public": [
         "build-info.ts",
         "draft-text.ts",
+        "diagnostics.ts",
         "identity.ts",
         "text/utf8.ts",
         "i18n/create-i18n.ts",

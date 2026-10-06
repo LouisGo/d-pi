@@ -43,6 +43,9 @@
 | [m2-first-release / 04 输入与附件](../.scratch/m2-first-release/issues/04-input-attachments.md) | claimed | 无；范围以所属规格为准 |
 | [m2-first-release / 05 队列与子 Agent](../.scratch/m2-first-release/issues/05-queue-subagent.md) | open | 无；范围以所属规格为准 |
 | [m2-first-release / 06 阅读与组合验收](../.scratch/m2-first-release/issues/06-reading-acceptance.md) | open | 无；范围以所属规格为准 |
+| [m2-first-release / 06e 有界诊断读取与脱敏](../.scratch/m2-first-release/issues/06e-bounded-diagnostics.md) | claimed | 无；范围以所属规格为准 |
+| [m2-first-release / 06f 正式诊断GUI与反馈闭环](../.scratch/m2-first-release/issues/06f-diagnostics-feedback-gui.md) | claimed | 无；范围以所属规格为准 |
+| [m2-first-release / 06g 诊断切片集成与macOS候选](../.scratch/m2-first-release/issues/06g-diagnostics-candidate.md) | open | [06e](../.scratch/m2-first-release/issues/06e-bounded-diagnostics.md)、[06f](../.scratch/m2-first-release/issues/06f-diagnostics-feedback-gui.md) |
 | [state-query-alignment / 04 集成验证与试用交接](../.scratch/state-query-alignment/issues/04-integration-verification.md) | claimed | 无；范围以所属规格为准 |
 
 ## 重要待决与继续边界
@@ -60,4 +63,4 @@
 - [类型安全桌面路由](../.scratch/router-integration/spec.md)：本地实施和提交；不 push、不改变 OMP 执行及冷恢复政策。
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 
-<!-- source-sha256: 895a0e7d9002da7739a9ffb6e4b8334fad72c98a29ed2de469ab0f33ec9ffcad; sources: 110 -->
+<!-- source-sha256: 8fcadffbd4f64fd61f6862c3bb97071b190ef3007af267e914ec5ffa93a9eaa1; sources: 113 -->
