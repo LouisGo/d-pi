@@ -225,7 +225,20 @@ async function connect() {
 function call(method, params = {}) {
   return new Promise((resolve, reject) => {
     const id = ++seq;
-    pending.set(id, { resolve, reject });
+    const timeout = setTimeout(() => {
+      pending.delete(id);
+      reject(Error(`CDP ${method} timeout`));
+    }, 30000);
+    pending.set(id, {
+      resolve(value) {
+        clearTimeout(timeout);
+        resolve(value);
+      },
+      reject(error) {
+        clearTimeout(timeout);
+        reject(error);
+      },
+    });
     socket.send(JSON.stringify({ id, method, params }));
   });
 }

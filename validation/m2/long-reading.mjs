@@ -279,7 +279,7 @@ export async function validateLongReading({
       window.__longReadingContainer=container;
       const texts=container.querySelectorAll('[data-reading-text]');
       const next=[...container.querySelectorAll('button')].find(el=>el.textContent.trim()==='下一段');
-      return {text:texts[0]?.textContent,count:texts.length,next:!!next&&!next.disabled};
+      return {text:texts[0]?.textContent,count:texts.length,index:Number(container.dataset.readingSegment),next:!!next&&!next.disabled};
     })()`);
     assert.ok(current);
     assert.equal(current.count, 1);
@@ -289,7 +289,11 @@ export async function validateLongReading({
     await evaluate(
       "[...window.__longReadingContainer.querySelectorAll('button')].find(el=>el.textContent.trim()==='下一段').click()",
     );
-    await evaluate("new Promise(r=>requestAnimationFrame(r))");
+    await wait(() =>
+      evaluate(
+        `window.__longReadingContainer.dataset.readingSegment==='${current.index + 1}'`,
+      ),
+    );
     assert.ok(attempt < 99, "reader pagination failed to terminate");
   }
   assert.equal(segments.join(""), completeObtainedText);
@@ -298,7 +302,11 @@ export async function validateLongReading({
     await evaluate(
       "[...window.__longReadingContainer.querySelectorAll('button')].find(el=>el.textContent.trim()==='上一段').click()",
     );
-    await evaluate("new Promise(r=>requestAnimationFrame(r))");
+    await wait(() =>
+      evaluate(
+        `window.__longReadingContainer.dataset.readingSegment==='${segments.length - 2 - attempt}'`,
+      ),
+    );
   }
   await evaluate(
     "window.__longReadingText=window.__longReadingContainer.querySelector('[data-reading-text]');window.__longReadingNode=window.__longReadingText.firstChild;true",
@@ -441,7 +449,7 @@ export async function validateLongReading({
       const container=window.__longToolContainer;
       const texts=container.querySelectorAll('[data-reading-text]');
       const next=[...container.querySelectorAll('button')].find(el=>el.textContent.trim()==='下一段');
-      return {text:texts[0]?.textContent,count:texts.length,next:!!next&&!next.disabled};
+      return {text:texts[0]?.textContent,count:texts.length,index:Number(container.dataset.readingSegment),next:!!next&&!next.disabled};
     })()`);
     assert.equal(segment.count, 1);
     assert.ok(segment.text.length <= 8192);
@@ -450,7 +458,11 @@ export async function validateLongReading({
     await evaluate(
       "[...window.__longToolContainer.querySelectorAll('button')].find(el=>el.textContent.trim()==='下一段').click()",
     );
-    await evaluate("new Promise(r=>requestAnimationFrame(r))");
+    await wait(() =>
+      evaluate(
+        `window.__longToolContainer.dataset.readingSegment==='${segment.index + 1}'`,
+      ),
+    );
     assert.ok(attempt < 99, "tool pagination failed to terminate");
   }
   assert.equal(toolSegments.join(""), nativeText);
