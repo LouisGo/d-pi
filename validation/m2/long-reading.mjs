@@ -432,7 +432,7 @@ export async function validateLongReading({
   assert.equal(toolContent, nativeText);
   assert.ok(toolContent.includes("elided. Read artifact://"));
   const toolReader = await evaluate(`(()=>{
-    const article=[...document.querySelectorAll('.conversation article')].find(el=>el.textContent.includes('m2_long_output')&&el.textContent.includes('M2_TEN_MIB_TOOL_START'));
+    const article=[...document.querySelectorAll('.conversation article')].find(el=>el.querySelector('details')&&el.textContent.includes('M2_TEN_MIB_TOOL_START'));
     if(!article) return null;
     window.__longToolContainer=article.querySelector('[data-long-reading]');
     article.querySelector('details').open=true;
