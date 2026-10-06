@@ -343,11 +343,23 @@ export async function validateAttention(context) {
       `document.querySelector('.thread-navigation button[aria-current=page]')?.title.endsWith('${failThread}')`,
     ),
   );
-  assert.ok(
-    await evaluate(
-      "document.querySelector('[data-attention-target=result]')?.textContent.length>0",
-    ),
+  const failedEntry = failed.entries.find(
+    (entry) =>
+      entry.threadId === failThread && entry.kind === "failed" && entry.unread,
   );
+  const failureDetail = await wait(() =>
+    evaluate(`(()=>{
+    const el=document.querySelector('[data-attention-receipt-trace="${failedEntry.traceId}"]');
+    if(!el) return null;
+    const r=el.getBoundingClientRect();
+    const details=el.closest('details');
+    if(!details?.open || document.activeElement!==el || !el.getClientRects().length || getComputedStyle(el).visibility!=='visible' || !el.textContent.includes('原生返回失败')) return null;
+    if(r.top>=innerHeight || r.bottom<=0 || r.width<=0) return null;
+    return {traceId:${JSON.stringify(failedEntry.traceId)},text:el.textContent,focused:true,detailsOpen:details.open,top:r.top,bottom:r.bottom,viewport:innerHeight};
+  })()`),
+  );
+  metrics.failureDetail = failureDetail;
+  screenshots.push(await shot("m2-attention-click-failed-receipt"));
   checks.push(
     "actual localhost HTTP400 travels through fixed SDK into a failed attention entry; background failure retains foreground work and click locates actual failure/result",
   );
@@ -371,6 +383,11 @@ export async function validateAttention(context) {
   });
   assert.deepEqual(completed.preferences, { system: false, completion: false });
   metrics.snapshots.completed = completed;
+  await wait(() =>
+    evaluate(
+      `!!document.querySelector('[data-attention-thread="${completedThread}"][data-attention-kind="completed"][data-attention-unread="true"]')`,
+    ),
+  );
   assert.equal(
     await evaluate(
       `!!document.querySelector('[data-attention-center] [data-attention-entry="${completed.entries.find((item) => item.threadId === completedThread && item.kind === "completed").eventId}"]')`,
@@ -430,6 +447,11 @@ export async function validateAttention(context) {
       "background",
       "Observe only local.d-pi.m2-validation. Put another App in the foreground (do not quit d-pi). Record status observed and notes in evidenceFile, then create resumeFile. The harness releases the actual held provider response only after resume.",
       { nativeThread },
+    );
+    assert.equal(
+      metrics.native.prepare.status,
+      "observed",
+      "background scenario requires actual foreground change",
     );
     await evaluate(
       "window.__attentionNativeOpens=[];window.__attentionNativeUnsubscribe=window.desktop.attention.subscribe(s=>{if(s.openRequest)window.__attentionNativeOpens.push(s.openRequest)});true",
@@ -506,7 +528,10 @@ export async function validateAttention(context) {
     assert.equal(reopened.instanceId, initial.instanceId);
     assert.ok(
       reopened.entries.some(
-        (item) => item.threadId === closedThread && item.kind === "completed",
+        (item) =>
+          item.threadId === closedThread &&
+          item.kind === "completed" &&
+          item.unread,
       ),
     );
     assert.equal(
