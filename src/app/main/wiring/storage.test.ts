@@ -25,7 +25,10 @@ describe("real SQLite and directory service", () => {
       db.exec(`
         CREATE TABLE desktop(id INTEGER PRIMARY KEY CHECK(id=1), active_thread TEXT, theme TEXT NOT NULL, density TEXT NOT NULL, send_key TEXT);
         INSERT INTO desktop VALUES(1,NULL,'dark','compact','enter-newline');
-        CREATE TABLE submission(id TEXT PRIMARY KEY, receipt TEXT NOT NULL);
+        CREATE TABLE workspace(id TEXT PRIMARY KEY,directory TEXT NOT NULL UNIQUE,execution_trust TEXT);
+        CREATE TABLE thread(id TEXT PRIMARY KEY,workspace_id TEXT REFERENCES workspace(id),revision INTEGER,body TEXT);
+        CREATE TABLE submission(id TEXT PRIMARY KEY,thread_id TEXT REFERENCES thread(id),receipt TEXT NOT NULL);
+        CREATE TABLE draft_consumption(thread_id TEXT REFERENCES thread(id),revision INTEGER,submission_id TEXT REFERENCES submission(id));
         PRAGMA user_version=4;
       `);
       db.close();
@@ -170,7 +173,7 @@ describe("real SQLite and directory service", () => {
       try {
         expect(
           unchanged.prepare("PRAGMA user_version").get()?.user_version,
-        ).toBe(8);
+        ).toBe(9);
         expect(
           unchanged
             .prepare("SELECT workspace_id,body FROM thread WHERE id=?")

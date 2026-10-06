@@ -1,6 +1,6 @@
 # 04b 附件引用、回收与一致性
 
-Status: claimed
+Status: resolved
 Blocked by: none
 
 M2，父票[04](04-input-attachments.md)，范围依据[spec](../spec.md#2026-10-06-生命周期切片)和基础契约 B4。用户授权继续下一阶段；本轮从已合并工作流的 main 开始。
@@ -10,3 +10,11 @@ M2，父票[04](04-input-attachments.md)，范围依据[spec](../spec.md#2026-10
 SQLite 事务不冒充文件系统事务；删除前重新核实权威引用，准备中和迟到导入不被回收。扫描/回收有界、可重入，失败不清空数据库或原始收据。提供正式 GUI 查看检查结果与显式清理出口，不把附件列表直接当活引用；原件摘要去重但各来源独立。按 TDD 覆盖共享原件、草稿消费/后续编辑、冻结/unknown、崩溃窗口、磁盘缺失/损坏及清理竞争；实际 SQLite/文件服务/GUI 接线单独验收。
 
 不扩 PDF 视觉/OCR、执行恢复或原生历史回收。纯工程票可 resolved，用户认可由 spec 维护。
+
+## 工程结果（2026-10-06）
+
+固定 worker `3df0f28` 从 `ade890c` 开始，集成提交 `26aa57e`；写集核实后串行合入。schema 9 内容对象投影、可续扫的权威引用核实、导入/准备 lease、7 天维护、锁内删除复核及正式 GUI 已接通。根接入后台失败窄诊断与退出 drain，再关闭 SQLite。
+
+worker 50/50 定向行为、全部类型入口、Biome/设计/i18n/架构通过；根集成 66 项中 64 首次通过，两个旧 schema fixture 的缺表/版本期望纠正后 storage 10/10 通过。失败与通过证据保存在 `dist/validation/m2-lifecycle/04b/`、`integrated-attachment.log`、`integrated-schema-green.log`。整段独立 review、完整检查及实际 macOS 候选由 06b 完成。
+
+保守边界：终态/unknown 冻结记录仍保留 App 依赖；损坏或超过单 owner 2MiB 安全预算时拒删，部分扫描提示继续检查。崩溃窗口是持久状态 fixture，未证明真实断电。未扩 PDF 视觉/OCR 或冷执行恢复。

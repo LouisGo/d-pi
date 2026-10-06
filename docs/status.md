@@ -41,10 +41,9 @@
 | [m2-first-release / 02 配置、认证与模型](../.scratch/m2-first-release/issues/02-configuration-models.md) | claimed | 无；范围以所属规格为准 |
 | [m2-first-release / 03 主流程与候选](../.scratch/m2-first-release/issues/03-entry-candidate.md) | claimed | [01](../.scratch/m2-first-release/issues/01-project-threads.md)、[02](../.scratch/m2-first-release/issues/02-configuration-models.md) |
 | [m2-first-release / 04 输入与附件](../.scratch/m2-first-release/issues/04-input-attachments.md) | claimed | 无；范围以所属规格为准 |
-| [m2-first-release / 04b 附件引用、回收与一致性](../.scratch/m2-first-release/issues/04b-attachment-lifecycle.md) | claimed | 无；范围以所属规格为准 |
 | [m2-first-release / 05 队列与子 Agent](../.scratch/m2-first-release/issues/05-queue-subagent.md) | open | 无；范围以所属规格为准 |
 | [m2-first-release / 06 阅读与组合验收](../.scratch/m2-first-release/issues/06-reading-acceptance.md) | open | 无；范围以所属规格为准 |
-| [m2-first-release / 06b 生命周期切片集成与候选](../.scratch/m2-first-release/issues/06b-lifecycle-candidate.md) | open | [04b](../.scratch/m2-first-release/issues/04b-attachment-lifecycle.md) |
+| [m2-first-release / 06b 生命周期切片集成与候选](../.scratch/m2-first-release/issues/06b-lifecycle-candidate.md) | claimed | 无；范围以所属规格为准 |
 | [state-query-alignment / 04 集成验证与试用交接](../.scratch/state-query-alignment/issues/04-integration-verification.md) | claimed | 无；范围以所属规格为准 |
 
 ## 重要待决与继续边界
@@ -62,4 +61,4 @@
 - [类型安全桌面路由](../.scratch/router-integration/spec.md)：本地实施和提交；不 push、不改变 OMP 执行及冷恢复政策。
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 
-<!-- source-sha256: 1dcb4f4840a8c6b12ac57b5962f53fbade1f79d0e21550b51d04e92d07831c2d; sources: 107 -->
+<!-- source-sha256: 13ab70505b073bfbb9e6f6fa4f2fc256811ee21d269b0768e19659594013fbd7; sources: 107 -->
