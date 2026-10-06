@@ -3,7 +3,7 @@ import type { AttentionEntry } from "../../contracts/attention";
 export function locateAttention(
   workspace: HTMLElement,
   entry: AttentionEntry,
-): void {
+): boolean {
   const receipt =
     entry.kind === "failed"
       ? workspace.querySelector<HTMLElement>(
@@ -20,7 +20,7 @@ export function locateAttention(
           : "[data-attention-target=result]",
     ) ??
     workspace.querySelector<HTMLElement>("[data-attention-target=runtime]");
-  if (!target) return;
+  if (!target) return false;
   if (receipt) {
     let ancestor = receipt.parentElement;
     while (ancestor && ancestor !== workspace) {
@@ -30,4 +30,5 @@ export function locateAttention(
   }
   target.scrollIntoView({ block: "nearest" });
   target.focus({ preventScroll: true });
+  return document.activeElement === target;
 }

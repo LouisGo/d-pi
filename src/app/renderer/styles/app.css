@@ -501,6 +501,9 @@
     overflow-y: auto;
     overscroll-behavior: contain;
   }
+  .workbench:has(> .attention-center) .thread-reading {
+    min-height: 4lh;
+  }
   .startup {
     padding: var(--panel-padding);
     display: grid;

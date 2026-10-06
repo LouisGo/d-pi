@@ -5,7 +5,11 @@ import type { Editor } from "@tiptap/core";
 import { act, createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
-import { SubmissionReceiptSchema } from "../../../modules/execution/contracts/public";
+import {
+  type RuntimeBridge,
+  type RuntimeView,
+  SubmissionReceiptSchema,
+} from "../../../modules/execution/contracts/public";
 import { DraftSchema } from "../../../modules/input/contracts/public";
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
 import {
@@ -27,7 +31,7 @@ function deferred() {
   });
   return { promise, resolve };
 }
-async function fixture(withFailedReceipt = false) {
+async function fixture(withFailedReceipt = false, runtime?: RuntimeBridge) {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const first = DraftSchema.parse({
     schemaVersion: 1,
@@ -69,6 +73,7 @@ async function fixture(withFailedReceipt = false) {
     outcome: "failed",
   });
   const bridge: DesktopBridge = {
+    ...(runtime ? { runtime } : {}),
     ...(withFailedReceipt
       ? {
           submission: {
@@ -454,4 +459,98 @@ it("focuses reading without remounting the draft editor or reading pane and rest
   expect(editor.state.selection.to).toBe(6);
   expect(editor.getText()).toBe("first draft");
   expect(pane.scrollTop).toBe(120);
+});
+
+it("locates a pending interaction after a delayed inspect without stealing focus on later runtime samples", async () => {
+  const gate = deferred();
+  let hold = false;
+  let latest: RuntimeView | null = null;
+  const listeners = new Set<(view: RuntimeView) => void>();
+  const input = await fixture(false, {
+    request: async ({ threadId, traceId }) => {
+      if (hold) await gate.promise;
+      latest = {
+        threadId,
+        traceId,
+        configuration: { code: "runtime.configDefault" },
+        revision: 1,
+        phase: "ready",
+        trusted: true,
+        busy: hold,
+        model: "fixture",
+        message: { code: "runtime.readyToSend" },
+        ...(hold
+          ? {
+              interactions: {
+                connectionGeneration: crypto.randomUUID(),
+                unsupported: false,
+                items: [
+                  {
+                    id: "delayed-question",
+                    method: "confirm",
+                    title: "Delayed question",
+                    status: "pending",
+                    expiresAt: null,
+                  },
+                ],
+              },
+            }
+          : {}),
+      };
+      return { kind: "view", view: latest };
+    },
+    subscribe: (listener) => {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+  });
+  hold = true;
+  await act(() =>
+    input.router.navigate({
+      to: "/threads/$threadId",
+      params: { threadId: input.second.threadId },
+      search: { view: "conversation" },
+    }),
+  );
+  await act(() =>
+    input.model.attention.locate({
+      threadId: input.second.threadId,
+      eventId: crypto.randomUUID(),
+      traceId: crypto.randomUUID(),
+      kind: "needs-answer",
+      unread: true,
+    }),
+  );
+  await act(
+    () =>
+      new Promise<void>((resolve) => requestAnimationFrame(() => resolve())),
+  );
+  expect(
+    input.container.querySelector("[data-attention-target=interaction]"),
+  ).toBeNull();
+  await act(async () => {
+    gate.resolve();
+    await gate.promise;
+  });
+  await act(
+    () =>
+      new Promise<void>((resolve) => requestAnimationFrame(() => resolve())),
+  );
+  const interaction = input.container.querySelector(
+    "[data-attention-target=interaction]",
+  );
+  expect(interaction).not.toBeNull();
+  expect(document.activeElement).toBe(interaction);
+  const editor = input.container.querySelector<HTMLElement>(".tiptap");
+  editor?.focus();
+  await act(() => {
+    if (latest)
+      for (const listener of listeners)
+        listener({ ...latest, revision: 2, busy: false });
+  });
+  await act(
+    () =>
+      new Promise<void>((resolve) => requestAnimationFrame(() => resolve())),
+  );
+  expect(document.activeElement).toBe(editor);
 });

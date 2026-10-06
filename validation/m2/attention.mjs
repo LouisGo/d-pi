@@ -271,6 +271,16 @@ export async function validateAttention(context) {
   checks.push(
     "actual fixed-SDK background confirm preserves foreground draft/focus/selection, real native sessions and deduplicated Main event identity across Renderer reload; no answer is sent by attention",
   );
+  await evaluate(`(()=>{
+    const samples=[];
+    const sample=(phase)=>{if(samples.length<150)samples.push({phase,time:performance.now(),focus:document.activeElement?.outerHTML.slice(0,500),inert:document.querySelector('.thread-workspace')?.inert,target:!!document.querySelector('[data-attention-target=interaction]'),route:location.hash})};
+    const focus=(event)=>sample(event.type);
+    document.addEventListener('focusin',focus,true);document.addEventListener('focusout',focus,true);
+    const observer=new MutationObserver(()=>sample('mutation'));
+    observer.observe(document.getElementById('root'),{subtree:true,childList:true,attributes:true,attributeFilter:['inert']});
+    sample('before-click');
+    window.__attentionFocusProbe=()=>{sample('finish');observer.disconnect();document.removeEventListener('focusin',focus,true);document.removeEventListener('focusout',focus,true);delete window.__attentionFocusProbe;return samples;};return true;
+  })()`);
   await clickSelector(
     evaluate,
     wait,
@@ -281,11 +291,22 @@ export async function validateAttention(context) {
       `document.querySelector('.thread-navigation button[aria-current=page]')?.title.endsWith('${interactionThread}') && document.querySelector('.native-interactions')?.textContent.includes(${JSON.stringify(dialogTitle)})`,
     ),
   );
-  await wait(() =>
-    evaluate(
-      "!!document.activeElement?.closest('[data-attention-target=interaction]')",
-    ),
-  );
+  try {
+    await wait(() =>
+      evaluate(
+        "!!document.activeElement?.closest('[data-attention-target=interaction]')",
+      ),
+    );
+  } finally {
+    writeFileSync(
+      join(root, "attention-focus-observations.json"),
+      JSON.stringify(
+        await evaluate("window.__attentionFocusProbe()"),
+        null,
+        2,
+      ) + "\n",
+    );
+  }
   screenshots.push(await shot("m2-attention-click-native-dialog"));
   await click("确认");
   await wait(() => existsSync(answerFile));
@@ -614,6 +635,10 @@ async function validateReminderBudget({
     const pane=document.querySelector('.reading-pane:not([hidden])');
     if(!center || !pane) return null;
     const cr=center.getBoundingClientRect(), pr=pane.getBoundingClientRect();
+    const wr=document.querySelector('.work-content').getBoundingClientRect();
+    const er=document.querySelector('.composer').getBoundingClientRect();
+    const readingVisible=pr.top>=Math.max(0,wr.top) && pr.bottom<=Math.min(innerHeight,wr.bottom);
+    const editorVisible=er.top>=Math.max(0,wr.top) && er.bottom<=Math.min(innerHeight,wr.bottom) && er.left>=0 && er.right<=innerWidth;
     const style=getComputedStyle(pane);
     const previous=document.activeElement, scroll=center.scrollTop;
     const buttons=center.querySelectorAll('[data-attention-open]'), last=buttons[buttons.length-1];
@@ -621,7 +646,7 @@ async function validateReminderBudget({
     const lr=last?.getBoundingClientRect();
     const lastReachable=!!lr && document.activeElement===last && lr.top>=cr.top && lr.bottom<=cr.bottom && lr.left>=cr.left && lr.right<=cr.right;
     previous?.focus({preventScroll:true});center.scrollTop=scroll;
-    return {entries:center.querySelectorAll('[data-attention-entry]').length,theme:document.documentElement.dataset.theme,density:document.documentElement.dataset.density,viewport:innerWidth,centerHeight:cr.height,centerScrollHeight:center.scrollHeight,centerClientHeight:center.clientHeight,readingHeight:pr.height,lineHeight:parseFloat(style.lineHeight),lastReachable,draft:document.querySelector('.tiptap')?.textContent};
+    return {entries:center.querySelectorAll('[data-attention-entry]').length,theme:document.documentElement.dataset.theme,density:document.documentElement.dataset.density,viewport:innerWidth,centerHeight:cr.height,centerScrollHeight:center.scrollHeight,centerClientHeight:center.clientHeight,readingHeight:pr.height,lineHeight:parseFloat(style.lineHeight),lastReachable,readingVisible,editorVisible,draft:document.querySelector('.tiptap')?.textContent};
   })()`);
   assert.ok(
     bounds && bounds.entries >= 4,
@@ -630,6 +655,10 @@ async function validateReminderBudget({
   assert.ok(
     bounds.readingHeight >= bounds.lineHeight * 4,
     `reminders squeezed current reading: ${JSON.stringify(bounds)}`,
+  );
+  assert.ok(
+    bounds.readingVisible && bounds.editorVisible,
+    "reading and Composer must stay inside the actual work viewport",
   );
   assert.ok(
     bounds.centerScrollHeight > bounds.centerClientHeight,

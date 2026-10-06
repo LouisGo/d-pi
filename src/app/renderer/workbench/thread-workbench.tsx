@@ -5,6 +5,7 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
 import { useStore } from "zustand";
 import { FolderIcon } from "@/components/icons/common";
@@ -43,8 +44,27 @@ export function ThreadWorkbench({
       ? state.target
       : null,
   );
+  const runtime = props.threadSelection.thread.runtime;
+  const subscribeReady = useCallback(
+    (listener: () => void) =>
+      runtime?.subscribeTo((state) => state.view !== null, listener) ??
+      (() => {}),
+    [runtime],
+  );
+  const getReady = useCallback(
+    () => !runtime || runtime.getSnapshot() !== null,
+    [runtime],
+  );
+  const runtimeReady = useSyncExternalStore(subscribeReady, getReady);
+  const located = useRef<typeof target>(null);
   useLayoutEffect(() => {
-    if (!target) return;
+    if (
+      !target ||
+      located.current === target ||
+      transitioning ||
+      (target.kind === "needs-answer" && !runtimeReady)
+    )
+      return;
     setReadingFocus(
       target.kind === "failed" &&
         props.readingView === "submissions" &&
@@ -53,10 +73,11 @@ export function ThreadWorkbench({
         ),
     );
     const frame = requestAnimationFrame(() => {
-      if (workspace.current) locateAttention(workspace.current, target);
+      if (workspace.current && locateAttention(workspace.current, target))
+        located.current = target;
     });
     return () => cancelAnimationFrame(frame);
-  }, [target, props.readingView]);
+  }, [target, props.readingView, transitioning, runtimeReady]);
   return (
     <section
       ref={workspace}
