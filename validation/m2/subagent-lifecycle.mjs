@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 export function createSubagentSupplier() {
   const requests = [];
   const releases = new Map();
+  const titleRequests = [];
   function handle(request, response) {
     const user = request.messages
       .filter((message) => message.role === "user")
@@ -18,7 +19,19 @@ export function createSubagentSupplier() {
       text.includes("M2_SUBAGENT_CHILD_" + name),
     );
     if (!child && !text.includes("M2_SUBAGENT_PARENT")) return false;
-    requests.push({ scope: child ?? "PARENT", request });
+    const isTitle =
+      !request.tools?.length &&
+      child &&
+      request.messages.some(
+        (message) =>
+          message.role === "system" &&
+          typeof message.content === "string" &&
+          message.content.startsWith("# Task\nLabel the delegated work"),
+      );
+    (isTitle ? titleRequests : requests).push({
+      scope: child ?? "PARENT",
+      request,
+    });
     const frame = (delta, finish) => ({
       id: "subagent-fixture",
       object: "chat.completion.chunk",
@@ -33,7 +46,13 @@ export function createSubagentSupplier() {
       write({}, reason);
       response.end("data: [DONE]\n\n");
     };
-    if (child) {
+    if (isTitle) {
+      write({
+        role: "assistant",
+        content: `<title>Validate ${child.toLowerCase()} child</title>`,
+      });
+      finish();
+    } else if (child) {
       const output = "M2_SUBAGENT_RESULT_" + child;
       write({
         role: "assistant",
@@ -90,7 +109,7 @@ export function createSubagentSupplier() {
     }
     return true;
   }
-  return { handle, requests, releases };
+  return { handle, requests, titleRequests, releases };
 }
 
 export async function validateSubagentLifecycle({
@@ -144,6 +163,11 @@ export async function validateSubagentLifecycle({
     supplier.requests.length,
     3,
     "reconnect dispatched another parent or child request",
+  );
+  assert.equal(
+    supplier.titleRequests.length,
+    2,
+    "reconnect repeated native title requests",
   );
   supplier.releases.get("FIRST")();
   await wait(async () =>

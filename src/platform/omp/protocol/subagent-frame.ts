@@ -91,7 +91,7 @@ export function nativeSubagentResultText(content: unknown): string {
       .safeParse(part);
     if (parsed.success) {
       const data = parsed.data.arguments.data;
-      if (data !== undefined)
+      if (data !== undefined && data !== null)
         return typeof data === "string" ? data : JSON.stringify(data);
       if (parsed.data.arguments.error) return parsed.data.arguments.error;
     }

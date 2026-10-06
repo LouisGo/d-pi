@@ -169,48 +169,60 @@ it("keeps same native task name across parent calls and does not attribute owner
   );
   p.dispose();
 });
-it("shows streamed text and structured yield results without treating child agent_end as terminal", () => {
-  const p = new ConversationProjection(crypto.randomUUID(), () => {});
-  p.accept(lifecycle());
-  p.accept({
-    type: "subagent_event",
-    payload: {
-      id: "same-name",
-      event: {
-        type: "message_update",
-        assistantMessageEvent: { type: "text_delta", delta: "partial" },
-      },
-    },
-  });
-  expect(p.snapshot().items[0]?.text).toBe("partial");
-  p.accept({
-    type: "subagent_event",
-    payload: { id: "same-name", event: { type: "agent_end" } },
-  });
-  expect(p.snapshot().items[0]?.subagent?.status).toBe("running");
-  p.accept({
-    type: "subagent_event",
-    payload: {
-      id: "same-name",
-      event: {
-        type: "message_end",
-        message: {
-          role: "assistant",
-          content: [
-            { type: "text", text: "Finished." },
-            {
-              type: "toolCall",
-              name: "yield",
-              arguments: { data: { answer: 42 }, error: null, type: null },
-            },
-          ],
+it.each([
+  {
+    args: { data: { answer: 42 }, error: null, type: null },
+    expected: '{"answer":42}',
+  },
+  {
+    args: { data: null, error: "Execution failed: exact cause", type: null },
+    expected: "Execution failed: exact cause",
+  },
+])(
+  "shows streamed text and structured yield results without treating child agent_end as terminal",
+  ({ args, expected }) => {
+    const p = new ConversationProjection(crypto.randomUUID(), () => {});
+    p.accept(lifecycle());
+    p.accept({
+      type: "subagent_event",
+      payload: {
+        id: "same-name",
+        event: {
+          type: "message_update",
+          assistantMessageEvent: { type: "text_delta", delta: "partial" },
         },
       },
-    },
-  });
-  expect(p.snapshot().items[0]?.text).toBe('{"answer":42}');
-  p.dispose();
-});
+    });
+    expect(p.snapshot().items[0]?.text).toBe("partial");
+    p.accept({
+      type: "subagent_event",
+      payload: { id: "same-name", event: { type: "agent_end" } },
+    });
+    expect(p.snapshot().items[0]?.subagent?.status).toBe("running");
+    p.accept({
+      type: "subagent_event",
+      payload: {
+        id: "same-name",
+        event: {
+          type: "message_end",
+          message: {
+            role: "assistant",
+            content: [
+              { type: "text", text: "Finished." },
+              {
+                type: "toolCall",
+                name: "yield",
+                arguments: args,
+              },
+            ],
+          },
+        },
+      },
+    });
+    expect(p.snapshot().items[0]?.text).toBe(expected);
+    p.dispose();
+  },
+);
 it("makes unknown child events and oversized native snapshots visible rather than discarding them silently", () => {
   const p = new ConversationProjection(crypto.randomUUID(), () => {});
   p.accept(lifecycle());

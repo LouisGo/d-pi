@@ -6,6 +6,7 @@ import {
   type DraftReader,
   DraftSchema,
 } from "../contracts/public";
+import { readAttachmentTokens } from "../core/public";
 export class DraftRepository implements DraftReader, DraftConsumptionWriter {
   constructor(
     private readonly database: AppDatabase,
@@ -63,17 +64,41 @@ export class DraftRepository implements DraftReader, DraftConsumptionWriter {
           text.includes("[[dpi-attachment:")) &&
         this.db.prepare("PRAGMA user_version").get()?.user_version === 9
       ) {
-        this.db
-          .prepare(`UPDATE input_content_object SET last_released_at=? WHERE digest IN (
-          SELECT CASE WHEN json_valid(payload) THEN json_extract(payload,'$.attachment.inputDigest') END
-          FROM input_attachment WHERE thread_id=? AND json_valid(payload)
-            AND (instr(?,json_extract(payload,'$.attachment.token'))>0) != (instr(?,json_extract(payload,'$.attachment.token'))>0)
-          UNION
-          SELECT CASE WHEN json_valid(payload) THEN json_extract(payload,'$.derivedDigest') END
-          FROM input_attachment WHERE thread_id=? AND json_valid(payload)
-            AND (instr(?,json_extract(payload,'$.attachment.token'))>0) != (instr(?,json_extract(payload,'$.attachment.token'))>0)
-        )`)
-          .run(Date.now(), id, previous, text, id, previous, text);
+        const ids = (body: string): Set<string> => {
+          const parsed = readAttachmentTokens(body);
+          if (parsed.ok) return new Set(parsed.tokens.map((token) => token.id));
+          // A malformed marker keeps authority scans conservative. Still retain
+          // valid references nearby when correcting that input; validate each
+          // fixed-size candidate through the same token grammar.
+          return new Set(
+            [...body.matchAll(/\[\[dpi-attachment:[^\]]{36}\]\]/g)].flatMap(
+              ([candidate]) => {
+                const token = readAttachmentTokens(candidate);
+                return token.ok ? token.tokens.map((item) => item.id) : [];
+              },
+            ),
+          );
+        };
+        const before = ids(previous),
+          after = ids(text);
+        const changed = [...before]
+          .filter((value) => !after.has(value))
+          .concat([...after].filter((value) => !before.has(value)));
+        if (changed.length) {
+          const update =
+            this.db.prepare(`UPDATE input_content_object SET last_released_at=? WHERE digest IN (
+            SELECT CASE WHEN json_valid(payload) THEN json_extract(payload,'$.attachment.inputDigest') END
+            FROM input_attachment WHERE id IN (SELECT value FROM json_each(?)) AND thread_id=?
+            UNION
+            SELECT CASE WHEN json_valid(payload) THEN json_extract(payload,'$.derivedDigest') END
+            FROM input_attachment WHERE id IN (SELECT value FROM json_each(?)) AND thread_id=?
+          )`);
+          const now = Date.now();
+          for (let offset = 0; offset < changed.length; offset += 128) {
+            const batch = JSON.stringify(changed.slice(offset, offset + 128));
+            update.run(now, batch, id, batch, id);
+          }
+        }
       }
       return expectedRevision + 1;
     };

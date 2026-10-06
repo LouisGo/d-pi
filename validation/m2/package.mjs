@@ -1270,6 +1270,7 @@ try {
     continuitySamples,
     providerCalls: requests.length,
     subagentProviderCalls: subagentSupplier.requests.length,
+    subagentTitleProviderCalls: subagentSupplier.titleRequests.length,
     models: requests.map((r) => r.model),
     nativeSessions: db
       .prepare("SELECT session_id,thread_id FROM native_session")
@@ -1301,6 +1302,13 @@ try {
       await evaluate("document.body.textContent"),
     );
   } catch {}
+  writeFileSync(
+    join(isolated.root, "supplier-requests.json"),
+    JSON.stringify({
+      execution: subagentSupplier.requests,
+      titles: subagentSupplier.titleRequests,
+    }),
+  );
   console.error("Failure evidence: " + isolated.root);
   throw error;
 } finally {

@@ -98,73 +98,85 @@ it("limits transcript reads and names missing/large evidence without pretending 
   ]);
   observation.dispose();
 });
-it("reads native identities reused by later parent calls without merging old transcript replies", async () => {
-  const frames: NativeFrame[] = [];
-  const request = vi.fn(
-    async (_type: string, _payload?: unknown): Promise<NativeFrame> => ({
-      type: "response",
-      success: true,
-      data: {
-        sessionFile: "/native/new.jsonl",
-        fromByte: 0,
-        nextByte: 100,
-        reset: false,
-        messages: [
-          {
-            role: "assistant",
-            content: [
-              { type: "text", text: "Finished." },
-              {
-                type: "toolCall",
-                name: "yield",
-                arguments: {
-                  data: { result: "NEW_RUN_RESULT" },
-                  error: null,
-                  type: null,
-                },
-              },
-            ],
-          },
-        ],
-      },
-    }),
-  );
-  const observation = new NativeSubagentObservation(
-    request,
-    (frame) => frames.push(frame),
-    async () => ({ size: 100 }),
-  );
-  observation.accept({
-    type: "subagent_lifecycle",
-    payload: { ...owner, status: "started" },
-  });
-  observation.accept({
-    type: "subagent_lifecycle",
-    payload: { ...owner, status: "completed" },
-  });
-  const next = {
-    ...owner,
-    parentToolCallId: "new-parent",
-    sessionFile: "/native/new.jsonl",
-  };
-  observation.accept({
-    type: "subagent_lifecycle",
-    payload: { ...next, status: "started" },
-  });
-  observation.accept({
-    type: "subagent_lifecycle",
-    payload: { ...next, status: "completed" },
-  });
-  await new Promise((resolve) => setTimeout(resolve, 0));
-  expect(frames).toMatchObject([
-    {
-      type: "d_pi_subagent_transcript",
-      payload: {
-        parentToolCallId: "new-parent",
-        status: "available",
-        text: '{"result":"NEW_RUN_RESULT"}',
-      },
+it.each([
+  {
+    args: {
+      data: { result: "NEW_RUN_RESULT" },
+      error: null,
+      type: null,
     },
-  ]);
-  observation.dispose();
-});
+    expected: '{"result":"NEW_RUN_RESULT"}',
+  },
+  {
+    args: { data: null, error: "Execution failed: exact cause", type: null },
+    expected: "Execution failed: exact cause",
+  },
+])(
+  "reads native identities reused by later parent calls without merging old transcript replies",
+  async ({ args, expected }) => {
+    const frames: NativeFrame[] = [];
+    const request = vi.fn(
+      async (_type: string, _payload?: unknown): Promise<NativeFrame> => ({
+        type: "response",
+        success: true,
+        data: {
+          sessionFile: "/native/new.jsonl",
+          fromByte: 0,
+          nextByte: 100,
+          reset: false,
+          messages: [
+            {
+              role: "assistant",
+              content: [
+                { type: "text", text: "Finished." },
+                {
+                  type: "toolCall",
+                  name: "yield",
+                  arguments: args,
+                },
+              ],
+            },
+          ],
+        },
+      }),
+    );
+    const observation = new NativeSubagentObservation(
+      request,
+      (frame) => frames.push(frame),
+      async () => ({ size: 100 }),
+    );
+    observation.accept({
+      type: "subagent_lifecycle",
+      payload: { ...owner, status: "started" },
+    });
+    observation.accept({
+      type: "subagent_lifecycle",
+      payload: { ...owner, status: "completed" },
+    });
+    const next = {
+      ...owner,
+      parentToolCallId: "new-parent",
+      sessionFile: "/native/new.jsonl",
+    };
+    observation.accept({
+      type: "subagent_lifecycle",
+      payload: { ...next, status: "started" },
+    });
+    observation.accept({
+      type: "subagent_lifecycle",
+      payload: { ...next, status: "completed" },
+    });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(frames).toMatchObject([
+      {
+        type: "d_pi_subagent_transcript",
+        payload: {
+          parentToolCallId: "new-parent",
+          status: "available",
+          text: expected,
+        },
+      },
+    ]);
+    observation.dispose();
+  },
+);
