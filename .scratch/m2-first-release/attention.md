@@ -1,6 +1,6 @@
 # 多 Thread 提醒当前交接
 
-2026-10-06，当前交付 clean `0.1.0-m2.20 / 3c4c1060-8b550d60`，产品source `3c4c1060cd7943cb435ac73da3d8bd03433d4954`，本地/远端分支 `codex/m2-thread-attention`。[Draft PR #4](https://github.com/LouisGo/d-pi/pull/4)覆盖基础诊断和提醒两个切片。01a/01b工程完成，01c系统显示/点击仍待验；M2实施中、已交付待试用、用户认可pending。已授权push/PR，未merge、不扩M3。
+2026-10-06，当前交付 clean `0.1.0-m2.20 / 3c4c1060-8b550d60`，产品source `3c4c1060cd7943cb435ac73da3d8bd03433d4954`，本地/远端分支 `codex/m2-thread-attention`。[PR #4](https://github.com/LouisGo/d-pi/pull/4)原覆盖诊断和提醒；基础诊断/retro现已push到main，最新授权按最终检查后合并提醒，见[远端收口](pr4-integration.md)。01a/01b工程完成，01c系统显示/点击仍待验；M2实施中、已交付待试用、用户认可pending。合并结果以远端收口记录为准，不扩M3。
 
 ## 已实现与本次PR修复
 

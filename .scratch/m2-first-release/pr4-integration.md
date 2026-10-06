@@ -10,7 +10,13 @@
 
 ## 验证与独立review
 
-原独立诊断、提醒及retro两轴报告与TDD原始输出均保留：[诊断](diagnostics-review.md)、[提醒](attention-review.md)、[retro](../ai-workflow-v13/m2-retro-review.md)。本轮固定整合head再覆盖PR实际范围/公共harness、手工合并与记录准确性；完整check/build及受影响实际候选harness验证、最终head CI结果在完成后追加。不把既有head CI冒称新head通过。
+原独立诊断、提醒及retro两轴报告与TDD原始输出均保留：[诊断](diagnostics-review.md)、[提醒](attention-review.md)、[retro](../ai-workflow-v13/m2-retro-review.md)。本轮固定整合head `3219e65`及import排序追加 `d83f8f0`进行Spec/Standards两轴只读独立review，覆盖PR实际范围/公共harness、手工合并与记录准确性；[本轮评审](pr4-review.md)两轴最终代码结论均为0高价值发现，独立79/118行为与各15工具回归及固定文档/状态/架构检查通过；最终管理追加另行固定核对。首轮完整check仅因自动合并后的import排序门禁失败，保留[失败](evidence/pr4-integration/check.txt)，只移动import后重跑。
+
+[完整check](evidence/pr4-integration/check-final.txt)通过：798行为/34架构/89工具，2既有opt-in skip及所有类型/设计/i18n/文档/结构/状态门禁；[build](evidence/pr4-integration/build.txt)通过，保留既有Monaco chunk warning。整合产品src/runtime/package相对`3c4c106`无差异，公共harness为两边实际合并的版本。
+
+原m2.20 ZIP SHA及app.asar按[历史身份](evidence/attention-package-identity-m2.20.json)核实后，解到root独立`dist/validation/pr4-m2.20-candidate/d-pi.app`，不写其它worktree。`node validation/m2/package.mjs dist/validation/pr4-m2.20-candidate/d-pi.app --attention` [实际运行](evidence/pr4-integration/package-attention.txt)17项通过，[结果](evidence/pr4-integration/m2-result.json)、[提醒](evidence/pr4-integration/attention-result.json)、[原焦点采样](evidence/pr4-integration/attention-focus-observations.json)、[身份](evidence/pr4-integration/candidate-identity.json)。固定SDK、真实Electron GUI及localhost，隔离HOME/App/OMP配置/项目，不继承个人认证；未运行`--attention-inspect`或重跑真实供应商，本次不外推OS显示/点击或原m2.19窗口证据。
+
+本轮选定原始证据保留字节，不清洗ANSI或行尾空白；手写文档/source diff检查排除`.scratch/**/evidence/**`。交付前stage并从commit逐项核实SHA：[清单](evidence/pr4-integration/sha256.json)。最终head CI另按实时run核实，不把既有head CI冒称新head通过。
 
 ## 后续 UI 与边界
 

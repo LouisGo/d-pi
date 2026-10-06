@@ -1,22 +1,19 @@
 ## Summary
 
-补齐 M2 的基础诊断导出/故障反馈和多 Thread 提醒。诊断面板复用现有 JSONL/trace，提供有界筛选、白名单脱敏、本地原生保存及可复制反馈模板；后台待回答/失败提供不抢焦点的应用内提醒，点击定位当前真实交互或失败收据。完成默认仅更新完成/未读，系统与完成通知须明确开启。
+接入多 Thread 的应用内待答/失败提醒、完成/未读状态、显式通知偏好和真实目标导航。提醒不抢焦点，多条提醒独立滚动并保留阅读与 Composer；Main观察不依赖窗口，不改变OMP执行、回答或提交事实。
 
-多提醒独立滚动，为当前阅读保留四行并保持 Composer/草稿；迟到首次 Runtime inspect 就位后再定位，后续更新不夺焦。Main 观察独立于窗口/Renderer，通知不改变执行事实、回答或提交重发。
-
-目标 base 为 main `1c9c30a`。本 PR 同时包含之前未推送的诊断和提醒两个切片；附件、队列、子 Agent 与长正文的既有交付已在 base 中。所属 [M2 spec](https://github.com/LouisGo/d-pi/blob/codex/m2-thread-attention/.scratch/m2-first-release/spec.md)，诊断06e/06f/06g与提醒01a/01b工程完成。**01c实际系统通知显示/点击仍待验，M2整体与用户认可保持开放，因此本 PR 为 Draft。**
+本PR当前base为main `7031b96`，基础诊断和retro已先push进入main。整合保留提醒分支产品与候选、最后的真实Luna生成记录，以及main最新有界wait/CDP取消和证据交接；不重复交付诊断或创建第二个PR。当前产品源码与 `3c4c106` 相同，无新产品构建。所属[spec](https://github.com/LouisGo/d-pi/blob/codex/m2-thread-attention/.scratch/m2-first-release/spec.md)，[整合记录](https://github.com/LouisGo/d-pi/blob/codex/m2-thread-attention/.scratch/m2-first-release/pr4-integration.md)。用户最新授权检查后合并，01c和M2认可仍独立开放。
 
 ## Evidence
 
-- TDD 与独立 Spec/Standards review 已覆盖两个切片及各产品修复：[诊断评审](https://github.com/LouisGo/d-pi/blob/codex/m2-thread-attention/.scratch/m2-first-release/diagnostics-review.md)、[提醒评审](https://github.com/LouisGo/d-pi/blob/codex/m2-thread-attention/.scratch/m2-first-release/attention-review.md)。真实失败包括阅读被提醒挤压、失败收据裁切、迟到Runtime状态丢失定位；均修复并复核。PR整体组合复核另发现pending导航旧Thread新事件误已读P2，真实Main/SQLite与React先红后绿；Main按实际active owner核对，Renderer pending撤销声明，固定3c4c106两轴复核关闭原问题、无新增高价值发现。
-- 修复后产品3c4c106完整 `pnpm check`：798行为、34架构、74工具通过，2既有 opt-in 跳过；build、文档/看板/架构及最终 `check:fast` 通过。精确原始结果保存在上述交接链接。
-- [诊断候选](https://github.com/LouisGo/d-pi/blob/codex/m2-thread-attention/.scratch/m2-first-release/diagnostics.md)：clean m2.17，21项实际隔离macOS检查；真实原生保存/取消、0600脱敏报告、反馈复制、Writer故障及启动损坏数据库入口。读取预算12文件/8MiB/20000行/64KiB单行/1500ms，导出最多2MiB。合成秘密/坏行样本明确标记，未冒充真实供应商故障。
-- [当前候选与试用](https://github.com/LouisGo/d-pi/blob/codex/m2-thread-attention/.scratch/m2-first-release/attention.md)：clean `0.1.0-m2.20 / 3c4c1060-8b550d60`，产品源码 `3c4c106`。17项实际固定SDK+localhost/macOS检查通过，四组4提醒预算/末项focus内部滚动、阅读/完整Composer/草稿及采样焦点恢复、冷启动偏好/旧Thread只读通过。全部ZIP CRC与source/受测副本/ZIP app.asar同源。新包未重复原生inspect；此前m2.19产品48cd01cc的18项包含真实Cmd+W/Finder同Main重开无重发，作为独立历史证据保留，不外推为新包实测。
-
-- **已知限制：此前m2.19系统提醒实际 `failed`，新m2.20未重复OS检查，App内失败反馈/状态可用，真实OS显示/点击未观察，根因unknown；没有模拟通知callback，未签名/公证。** Chromium composition不替代系统IME；隔离SDK样本不替代真实账户/付费供应商或用户认可。PDF视觉/OCR、完整V1-00/B6负载/故障组合仍未完成。
+- 历史TDD与独立双轴评审保留：[提醒](https://github.com/LouisGo/d-pi/blob/codex/m2-thread-attention/.scratch/m2-first-release/attention-review.md)、[retro](https://github.com/LouisGo/d-pi/blob/codex/m2-thread-attention/.scratch/ai-workflow-v13/m2-retro-review.md)。主流程真实Main/SQLite与React修复包括pending导航期间错误清未读，原问题经独立复核关闭。
+- 本轮整合的完整 `pnpm check` 通过，798行为/34架构/89工具及类型/设计/i18n/文档/状态门禁，2项既有opt-in跳过；首次自动合并import顺序门禁失败保留，局部排序后完整重跑。build及整合harness的17项实际包内检查通过；Spec/Standards独立整段复核均无高价值发现，分别独立79/118应用及各15工具回归通过；精确范围与证据在[整合记录](https://github.com/LouisGo/d-pi/blob/codex/m2-thread-attention/.scratch/m2-first-release/pr4-integration.md)按最终结果更新，远端CI须对当前head核实。
+- 既有clean候选 `0.1.0-m2.20 / 3c4c1060-8b550d60`，17项固定SDK+localhost/macOS验证及ZIP/asar身份：[交接](https://github.com/LouisGo/d-pi/blob/codex/m2-thread-attention/.scratch/m2-first-release/attention.md)。此次复用原ZIP核验，不重打包，不重复原生inspect；m2.19真实关窗/Finder同Main重开及systemfailed的18项记录仍为对应旧source历史。
+- [首次真实Luna闭环](https://github.com/LouisGo/d-pi/blob/codex/m2-thread-attention/.scratch/m2-first-release/real-provider-e2e.md)：既有OpenAI认证、新独立Thread、真实回答/GUI/收据/原生历史一致。本轮仅整合已保存证据，不发新账户请求；未覆盖新认证、工具、附件、多供应商或完整自开发闭环。
+- 系统通知实际显示/点击仍未观察，m2.19真实failed、根因unknown，m2.20未重复OS检查，App回退可用。01c保持claimed，PDF视觉/OCR、完整B6/系统IME/其余真实账户组合与用户认可待验。合并工程源码不关闭这些验收项。
 
 ## Merge Danger
 
-SQLite schema11新增App通知偏好，属于持久化 one-way door：源码revert不降级数据库，旧候选会拒绝新schema。需要退回旧版时保留当前数据库/附件及新增工作，使用升级前 before-v11 备份在独立数据根验证，不覆盖新数据或删库掩盖恢复失败。
+SQLite schema11通知偏好是持久化one-way：源码revert不降数据库，旧候选拒绝新schema。回退保留当前数据库、附件及新增工作，用升级前before-v11备份在独立数据根验证，不覆盖当前数据或删库。影响链为Main Runtime/收据→提醒投影→trusted IPC/preload→GUI导航/通用通知与窗口入口，默认系统/完成通知关闭；不新建OMP队列、不自动重试unknown，冷旧Thread只读。
 
-影响链为Main真实Runtime/收据→有界提醒投影→trusted IPC/preload→GUI定位/通用Notification与显式窗口入口，以及既有Writer→有界Reader→本地保存。诊断仅白名单导出，反馈不上传；不引入新OMP队列/执行事实或自动重试。unknown不自动重发，冷旧Thread继续只读。仅推送当前开发分支并创建PR，不合并、不公开发布、不扩M3；签名权限和真实个人账户未扩大。
+本轮整合工具/文档为可逆修改，main回流不会改变现有候选身份或发出模型请求。按最新授权在最终head检查/CI通过后合并到main；不签名、公证、公开发布或扩大真实账户授权。
