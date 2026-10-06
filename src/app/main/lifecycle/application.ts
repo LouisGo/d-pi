@@ -271,7 +271,19 @@ export function startDesktopApplication(mainDirectory: string): void {
           return services.store.preferences.saveNotifications(value);
         },
         systemNotifications: new ElectronSystemNotifications(),
-        getText: (key, values) => currentT()(key, values),
+        getText: (kind, thread) => {
+          const names = {
+            "needs-answer": "needsAnswer",
+            failed: "failed",
+            completed: "completed",
+            interrupted: "interrupted",
+          } as const;
+          const name = names[kind];
+          return {
+            title: currentT()(`attention.native.${name}.title`),
+            body: currentT()(`attention.native.${name}.body`, { thread }),
+          };
+        },
         openWindow: () => {
           if (!window) createWindow();
           if (window?.isMinimized()) window.restore();
