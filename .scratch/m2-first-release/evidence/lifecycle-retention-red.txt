@@ -1,0 +1,33 @@
+
+ RUN  v5.0.2 /Users/louistation/MySpace/Life/d-pi
+
+ ❯ tests/integration/attachment-lifecycle.integration.test.ts (18 tests | 1 failed | 17 skipped) 62ms
+   × automatic cleanup honors seven days after a reference was briefly reacquired 61ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/attachment-lifecycle.integration.test.ts > automatic cleanup honors seven days after a reference was briefly reacquired
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/integration/attachment-lifecycle.integration.test.ts:905:33
+    903|   const report=await service.store.collectGarbage();
+    904|   clock.mockRestore();
+    905|   expect(report.deletedObjects).toBe(0);
+       |                                 ^
+    906|   await expect(access(join(data,"content","objects",item.inputDigest!)…
+    907|  } finally {await service.close(); storage.close(); rmSync(data,{recur…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 17 skipped (18)
+   Start at  12:10:12
+   Duration  711ms (import 45%, transform 44%, tests 10%)
+

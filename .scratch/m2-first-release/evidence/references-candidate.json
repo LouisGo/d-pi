@@ -1,0 +1,25 @@
+{
+  "source": "31cb91229852d8c6dfabb6e88fce06e78cbf6030",
+  "build": {
+    "version": "0.1.0-m2.15",
+    "commit": "31cb91229852d8c6dfabb6e88fce06e78cbf6030",
+    "dirty": false,
+    "id": "31cb9122-865978d1"
+  },
+  "zip": "dist/candidates/d-pi-0.1.0-m2.15-31cb912-mac-arm64.zip",
+  "zipBytes": 430093527,
+  "zipSha256": "90b8828a243a56ed684377f98708107da2ced5e508b4b0127d54f2bdea3f8d33",
+  "appAsarSha256": "cdaf452acc59648bde6d92623cd189eb871db32d17874304e4c5df2778afe0bf",
+  "zipDecompressedAppAsarSha256": "cdaf452acc59648bde6d92623cd189eb871db32d17874304e4c5df2778afe0bf",
+  "zipCrc": "passed",
+  "check": {
+    "behavior": 711,
+    "architecture": 34,
+    "tooling": 70,
+    "optInSkipped": 2
+  },
+  "packageChecks": 24,
+  "benchmark": "references-benchmark.json",
+  "candidateCheckout": "/Users/louistation/.codex/worktrees/project-reference-candidate/d-pi",
+  "localOnly": true
+}

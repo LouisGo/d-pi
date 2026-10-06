@@ -20,6 +20,7 @@
   --accent: #e8edf9;
   --accent-foreground: #304a97;
   --primary-hover: #2c49a1;
+  --primary-active: #233b85;
   --muted-hover: #e6e8ee;
   --foreground: #242730;
   --primary: #3757bc;
@@ -61,6 +62,7 @@
   --accent: #2c3855;
   --accent-foreground: #c4d4ff;
   --primary-hover: #bed1ff;
+  --primary-active: #8da9eb;
   --muted-hover: #333945;
   --foreground: #e8ebf2;
   --primary: #a8c1ff;

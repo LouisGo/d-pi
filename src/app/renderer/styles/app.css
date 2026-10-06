@@ -1,5 +1,6 @@
 @import "./tokens.css";
 @import "../components/ui/button.css";
+@import "./interaction.css";
 @layer base {
   body {
     margin: 0;
@@ -39,7 +40,7 @@
     color: var(--muted-foreground);
   }
   .configuration-settings summary {
-    cursor: pointer;
+    cursor: default;
     font-weight: 500;
     line-height: 1.6;
   }
@@ -122,7 +123,7 @@
   .model-controls summary,
   .code-tools summary,
   .runtime-source summary {
-    cursor: pointer;
+    cursor: default;
     font-weight: 500;
   }
   .model-controls[open] > :not(summary) {
@@ -533,6 +534,23 @@
     max-height: var(--editor-max-height);
     overflow: auto;
   }
+  .reading-segments {
+    min-width: 0;
+  }
+  .reading-segment-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: calc(var(--layout-gap) / 2);
+    font-size: var(--text-body);
+  }
+  .reading-segment-text {
+    max-height: var(--editor-max-height);
+    overflow: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-family: inherit;
+  }
   .composer[data-expanded="true"] {
     position: absolute;
     inset: 0;
@@ -592,7 +610,7 @@
   .file-result summary,
   .history-source summary,
   .history-record summary {
-    cursor: pointer;
+    cursor: default;
   }
   .file-result:focus-visible {
     outline: 2px solid var(--primary);

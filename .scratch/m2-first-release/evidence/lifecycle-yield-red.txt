@@ -1,0 +1,61 @@
+
+ RUN  v5.0.2 /Users/louistation/MySpace/Life/d-pi
+
+ ❯ src/modules/execution/host/native/subagent-observation.test.ts (3 tests | 1 failed) 11ms
+   × reads native identities reused by later parent calls without merging old transcript replies 6ms
+ ❯ src/modules/conversation/host/subagent-observation.test.ts (7 tests | 1 failed) 18ms
+   × shows streamed text and structured yield results without treating child agent_end as terminal 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/modules/conversation/host/subagent-observation.test.ts > shows streamed text and structured yield results without treating child agent_end as terminal
+AssertionError: expected 'Finished.' to be '{"answer":42}' // Object.is equality
+
+Expected: "{"answer":42}"
+Received: "Finished."
+
+ ❯ src/modules/conversation/host/subagent-observation.test.ts:211:39
+    209|     },
+    210|   });
+    211|   expect(p.snapshot().items[0]?.text).toBe('{"answer":42}');
+       |                                       ^
+    212|   p.dispose();
+    213| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/modules/execution/host/native/subagent-observation.test.ts > reads native identities reused by later parent calls without merging old transcript replies
+AssertionError: expected [ { …(2) } ] to match object [ { …(2) } ]
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  [
+    {
+      "payload": {
+        "parentToolCallId": "new-parent",
+        "status": "available",
+-       "text": "{\"result\":\"NEW_RUN_RESULT\"}",
++       "text": "Finished.",
+      },
+      "type": "d_pi_subagent_transcript",
+    },
+  ]
+
+ ❯ src/modules/execution/host/native/subagent-observation.test.ts:155:18
+    153|   });
+    154|   await new Promise((resolve) => setTimeout(resolve, 0));
+    155|   expect(frames).toMatchObject([
+       |                  ^
+    156|     {
+    157|       type: "d_pi_subagent_transcript",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  2 failed | 8 passed (10)
+   Start at  12:07:05
+   Duration  227ms (transform 51%, import 36%, tests 11%, worker 2%)
+

@@ -54,3 +54,18 @@ G1 验证运行中历史读取、无 Agent 历史浏览、压缩/分支后的来
 样本覆盖：先订阅后快照的交错、重复/缺失/旧代次事件、流式时阅读和选中旧内容、单工具大输出、子 Agent 完成后记录仍可找、关窗后重开及恢复缺口。用同一记录样本检查实时与重建结果，并复用于卡片展示；卡片合并或裁剪后，工具证据与已冻结引用仍保持一致。无头测试与真实滚动/选择/性能证据分开。
 
 M3 PNG 分享复用确定版本的选中内容，按排版/分页输出图片；具体渲染方式与长内容分页在该切片设计，不新增 AI 绘图或在线发布服务。
+
+## M2 原生子 Agent 观察（2026-10-06）
+
+`ConversationItem.subagent` 在既有 snapshot/update 水位中表达 OMP 原生 ID、parentToolCallId、独立状态与可得结果。Host 用 `(id, parentToolCallId, sessionFile)` 区分同名任务的不同运行，路径不进入 Renderer DTO；无拥有者字段的原生事件遇到同 ID 多个运行时不猜归属，保留 partial 原因，具备拥有者的 progress/transcript 仍可更新。主/子 `agent_end` 不结算子任务，只有原生 lifecycle/progress 的具体状态作为观察证据。
+
+投影共用原阅读 8 MiB/1000 项预算，单个结果最多 64 KiB，截断或未知子事件明确展示。初始 `get_subagents` 最多消费 128 个活动任务，超出显示覆盖不足；终态保留在同活 Host 的有界镜像，Host 重启后不能从活动快照重建之前已完成任务。Renderer 连续缺号最多自动重连 3 次，之后保留 gap 与显式重新连接阅读入口；重连只重建订阅，不控制原生执行。正式 `reading/subagents.tsx` 复用消息阅读及 Markdown，提供身份、状态、任务、原生模型与可得结果；视图卸载仅释放订阅。
+
+## M2 有界长正文阅读（2026-10-06）
+
+正式实时消息、工具输出、原生历史与子 Agent 结果共用 `reading/reading-body.tsx`。短正文保留原 Markdown / 工具原文表示；超过一段预算的正文明确采用原文分段，每段最多 8192 UTF-16 code units、120 行，保留 surrogate pair 和 CRLF 边界。`reading-segments.ts` 只计算既有正文的偏移，不复制或持久化另一份正文；主列表只挂载当前段，段内高度沿用现有阅读／编辑器高度 token，提供可键盘进入的滚动区及上一段／下一段控件。复制使用投影／历史条目的全部已有原文，历史页补行头复制；Host 截断、历史 omitted / incompleteTail 与子 Agent 覆盖提示保持，不宣称取得完整原生记录。
+
+页码属于阅读组件本地状态。实时记录按 Thread、Host `connectionGeneration` 与 item ID 隔离；同 Host 重连保持页码，新 Host 或 Thread 重置。历史记录按 Thread、所选原生会话、`page.source` 与 entry ID 隔离。流式追加不自动翻段，已封闭段的切片和 DOM 不变，保留选择与段内滚动；正在增长的末段仍有界，新增段由用户显式进入。正文缩短时立即夹紧页码，后续追加不恢复失效的旧选择。短正文首次跨入分段表示会改变渲染格式，稳定选择承诺针对已进入分段后的封闭旧段。
+
+此接入只改变 Renderer 呈现，不扩大 Host / OMP 预算、不重读历史、不改变执行或持久化。分段规则、实际 React 挂载的 DOM／选择／滚动和来源隔离有自动回归；真实 Electron 几何、键盘与剪贴板，以及完整 M2 性能组合另由对应候选记录维护。
+复制使用 Renderer 的 `navigator.clipboard.writeText`；应用窗口仅允许当前 WebContents、主框架、当前文档的 `clipboard-sanitized-write`，check/request 两入口一致。剪贴板读取和其它浏览器权限保持拒绝；此权限不授予模型工具或原生 OMP 文件访问能力。

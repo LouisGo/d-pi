@@ -1,0 +1,6 @@
+{
+  "expectedBytes": 2097152,
+  "capturedBytes": 1114112,
+  "status": null,
+  "error": "ENOBUFS"
+}

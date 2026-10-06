@@ -1,0 +1,5 @@
+Command: unzip -t dist/candidates/d-pi-0.1.0-m2.16-c531558-mac-arm64.zip
+Exit: 0
+    testing: __MACOSX/d-pi.app/._Contents   OK
+No errors detected in compressed data of dist/candidates/d-pi-0.1.0-m2.16-c531558-mac-arm64.zip.
+Full local log: dist/validation/m2-long-reading/zip-integrity.txt

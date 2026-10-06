@@ -1,0 +1,8 @@
+{
+  "outcome": "no-frame-in-1000ms",
+  "visibility": "hidden",
+  "page": "1",
+  "stalledMethod": "Runtime.evaluate awaitPromise requestAnimationFrame",
+  "clipboardPrivateArtifacts": 0,
+  "action": "closed only isolated app and terminated own stalled harness"
+}

@@ -1,4 +1,9 @@
 export const ui = {
+  "ui.reading.originalSegments":
+    "Original text in segments; copy retains all currently available text.",
+  "ui.reading.previous": "Previous segment",
+  "ui.reading.next": "Next segment",
+  "ui.reading.segment": "Segment {current} of {total}",
   "attachment.closePending":
     "Some attachments are still being prepared or their original sources have not been stored. This window remains open. Resolve them in the relevant Thread before closing.",
   "attachment.previewTruncated":
@@ -19,6 +24,8 @@ export const ui = {
   "attachment.preparing": "Preparing attachments…",
   "attachment.ready": "Ready",
   "attachment.failed": "Preparation failed",
+  "attachment.directoryAtSend":
+    "Freeze directory entries when sending; excludes file contents",
   "attachment.readAtSend": "Read when sending",
   "attachment.remove": "Remove {name}",
   "attachment.previous": "Move {name} earlier",
@@ -32,16 +39,40 @@ export const ui = {
     "Text-only PDF: images, charts and scanned content may be missing.",
   "attachment.coverageGap":
     "PDF extraction is incomplete. Preview the result before explicitly choosing text only, or remove this attachment.",
+  "attachment.storage": "Attachments and storage",
+  "attachment.checkStorage": "Check stored attachments",
+  "attachment.cleanStorage": "Clear unreferenced cache",
+  "attachment.storagePolicy":
+    "Drafts, pending imports and frozen receipts are retained. Automatic cleanup waits seven days after the last reference is released; manual cleanup removes unreferenced cached originals and conversions.",
+  "attachment.storageSummary":
+    "Checked {checked}; retained {retained}; unreferenced {unused}; remaining to check {remaining}.",
+  "attachment.storageDeleted":
+    "Removed {count} cached objects ({bytes} bytes).",
+  "attachment.storageOriginal": "Original",
+  "attachment.storageDerived": "Conversion",
+  "attachment.storageReferencePending":
+    "Reference inspection is incomplete. This batch is retained; continue checking or cleaning to finish inspection.",
+  "attachment.storageDiscoveryPending":
+    "More files may remain to discover. Continue checking to complete this bounded scan.",
+  "attachment.storageIssuesTruncated":
+    "More affected sources exist. Continue checking or reattach unavailable originals.",
+  "attachment.storageReattach":
+    "Reattach a missing or damaged original. Retry preparation to rebuild a conversion.",
+  "attachment.reason.content-missing":
+    "The private content is missing or was cleared as unreferenced cache. Reattach the original.",
   "attachment.library": "Imported files available to reference",
   "attachment.insert": "Add to draft",
-  "attachment.searchLabel": "Find project files",
-  "attachment.searching": "Searching project files…",
+  "attachment.refreshSearch": "Refresh search",
+  "attachment.directoryKind": "Folder",
+  "attachment.fileKind": "File",
+  "attachment.searchLabel": "Find project files and folders",
+  "attachment.searching": "Searching project files and folders…",
   "attachment.noMatches":
     "No matching project files. Try a filename or relative path.",
   "attachment.searchLimited":
     "Search reached its limit. Enter a more specific path.",
   "attachment.searchFailed": "File search failed. Edit the query to retry.",
-  "attachment.cancelSearch": "Close file search",
+  "attachment.cancelSearch": "Close search",
   "attachment.transportFailed":
     "Attachment request failed. Your draft is retained; retry the explicit operation.",
   "attachment.missing":

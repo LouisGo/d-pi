@@ -97,7 +97,7 @@ function receiptState(path: string, submissionId: string): unknown {
 }
 
 describe("persistent submission handoff", () => {
-  it("recovers interrupted receipts before all v4–v7 backups and returns a ready store", () =>
+  it("recovers interrupted receipts before all v4–v10 backups and returns a ready store", () =>
     fixture((path) => {
       const submissionId = stageInterruptedRun(path);
       expect(receiptState(path, submissionId)).toBe("dispatching");
@@ -114,6 +114,8 @@ describe("persistent submission handoff", () => {
           ["before-v6", 5],
           ["before-v7", 6],
           ["before-v8", 7],
+          ["before-v9", 8],
+          ["before-v10", 9],
         ] as const) {
           const backup = new DatabaseSync(`${path}.${suffix}`, {
             readOnly: true,
@@ -139,7 +141,7 @@ describe("persistent submission handoff", () => {
         const ready = new DatabaseSync(path, { readOnly: true });
         try {
           expect(ready.prepare("PRAGMA user_version").get()?.user_version).toBe(
-            8,
+            10,
           );
           expect(ready.prepare("PRAGMA journal_mode").get()?.journal_mode).toBe(
             "wal",

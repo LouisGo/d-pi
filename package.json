@@ -1,6 +1,6 @@
 {
   "name": "d-pi",
-  "version": "0.1.0-m2.13",
+  "version": "0.1.0-m2.16",
   "private": true,
   "type": "module",
   "description": "d-pi desktop client",
@@ -42,13 +42,15 @@
     "check:documentation": "node scripts/checks/check-documentation.mjs",
     "check:structure": "node scripts/architecture/report.mjs --check architecture/dependencies.generated.json",
     "report:structure:write": "node scripts/architecture/report.mjs --write architecture/dependencies.generated.json",
-    "check:fast": "pnpm check:tools && pnpm lint && pnpm check:documentation && pnpm check:architecture && pnpm check:structure && pnpm check:status",
+    "check:fast": "pnpm check:tools && pnpm lint && pnpm lint:interaction && pnpm check:documentation && pnpm check:architecture && pnpm check:structure && pnpm check:status",
     "check:status": "node scripts/tasks/project-status.mjs --check docs/status.md",
     "report:status:write": "node scripts/tasks/project-status.mjs --write docs/status.md",
     "plan:slice": "node scripts/tasks/slice-plan.mjs",
     "hooks:install": "node scripts/git-hooks.mjs install",
     "hooks:uninstall": "node scripts/git-hooks.mjs uninstall",
-    "hooks:status": "node scripts/git-hooks.mjs status"
+    "hooks:status": "node scripts/git-hooks.mjs status",
+    "lint:interaction": "node scripts/checks/interaction-policy.mjs",
+    "validate:interaction": "node validation/m2/interaction-policy.mjs"
   },
   "dependencies": {
     "@base-ui/react": "1.8.0",

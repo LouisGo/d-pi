@@ -12,6 +12,19 @@ import { createServer } from "node:http";
 import { join, resolve } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { createTestEnvironment } from "../../scripts/testing/test-environment.mjs";
+import {
+  prepareAgedAttachment,
+  validateAttachmentLifecycle,
+} from "./attachment-lifecycle.mjs";
+import {
+  createLongReadingSupplier,
+  prepareLongReadingExtension,
+  validateLongReading,
+} from "./long-reading.mjs";
+import {
+  createSubagentSupplier,
+  validateSubagentLifecycle,
+} from "./subagent-lifecycle.mjs";
 
 const isolated = createTestEnvironment({ prefix: "d-pi-m2-package-" });
 const source = resolve(
@@ -47,17 +60,36 @@ db.prepare("INSERT INTO workspace VALUES(?,?,'browse')").run(
 db.prepare("INSERT INTO thread VALUES(?,?,0,'')").run(a, workspace);
 db.prepare("INSERT INTO desktop VALUES(1,?,'dark','normal')").run(a);
 writeFileSync(join(isolated.cwd, "fixture.txt"), "M2 isolated project\n");
+if (process.argv.includes("--references")) {
+  const dir = join(isolated.cwd, "packages", "src", "@virtualList");
+  mkdirSync(join(dir, "utils"), { recursive: true });
+  for (let i = 0; i < 110; i++)
+    writeFileSync(join(dir, `${i}.ts`), "PRIVATE_DIRECTORY_FILE_BODY");
+}
 const secondProject = join(isolated.root, "Second Project");
 mkdirSync(secondProject);
 writeFileSync(join(secondProject, "second.txt"), "Second isolated project\n");
 const requests = [];
+const subagentSupplier = createSubagentSupplier();
+const longReadingSupplier = createLongReadingSupplier();
 let held = null;
 const sockets = new Set();
 const server = createServer(async (req, res) => {
   let body = "";
   for await (const chunk of req) body += chunk;
   assert.equal(req.method, "POST");
-  requests.push(JSON.parse(body));
+  const request = JSON.parse(body);
+  if (
+    process.argv.includes("--long-reading") &&
+    longReadingSupplier.handle(request, res)
+  )
+    return;
+  if (
+    process.argv.includes("--lifecycle") &&
+    subagentSupplier.handle(request, res)
+  )
+    return;
+  requests.push(request);
   const frame = (delta, finish) => ({
     id: "fixture",
     object: "chat.completion.chunk",
@@ -109,10 +141,21 @@ writeFileSync(
   join(isolated.config, "config.yml"),
   JSON.stringify({
     autolearn: { enabled: false },
-    modelRoles: { default: "fixture/fixture-a", smol: "fixture/fixture-a" },
+    modelRoles: {
+      default: "fixture/fixture-a",
+      smol: "fixture/fixture-a",
+      ...(process.argv.includes("--lifecycle")
+        ? { task: "fixture/fixture-a" }
+        : {}),
+    },
+    ...(process.argv.includes("--lifecycle")
+      ? { task: { batch: true }, async: { enabled: false } }
+      : {}),
   }),
 );
 mkdirSync(join(isolated.config, "extensions"));
+if (process.argv.includes("--long-reading"))
+  prepareLongReadingExtension(isolated.config);
 writeFileSync(
   join(isolated.config, "extensions", "finalized.ts"),
   `export default function(pi){pi.on('assistant_message',event=>({content:event.message.content.map(part=>part.type==='text'?{...part,text:part.text+'_FINALIZED\\n\\n'+Array.from({length:80},(_,i)=>'Reading fixture line '+i).join('\\n\\n')}:part)}));}`,
@@ -182,7 +225,20 @@ async function connect() {
 function call(method, params = {}) {
   return new Promise((resolve, reject) => {
     const id = ++seq;
-    pending.set(id, { resolve, reject });
+    const timeout = setTimeout(() => {
+      pending.delete(id);
+      reject(Error(`CDP ${method} timeout`));
+    }, 30000);
+    pending.set(id, {
+      resolve(value) {
+        clearTimeout(timeout);
+        resolve(value);
+      },
+      reject(error) {
+        clearTimeout(timeout);
+        reject(error);
+      },
+    });
     socket.send(JSON.stringify({ id, method, params }));
   });
 }
@@ -326,6 +382,8 @@ async function dropAttachment(name, mimeType, data) {
 
 const screenshots = [];
 const continuitySamples = [];
+let agedAttachmentPath;
+let longReadingMetrics;
 try {
   await connect();
   await wait(() =>
@@ -421,6 +479,20 @@ try {
     checks.push(
       "valid large drag/paste bytes cross real preload/Main without Base64 stack overflow, stay private and in draft; actual encoded limit refuses sending without provider calls, and explicit removal permits continuing",
     );
+    if (process.argv.includes("--lifecycle")) {
+      await validateAttachmentLifecycle({
+        db,
+        data: isolated.data,
+        threadId: a,
+        evaluate,
+        wait,
+        click,
+        dropAttachment,
+        shot,
+        screenshots,
+        checks,
+      });
+    }
     const objects = [
       "<< /Type /Catalog /Pages 2 0 R >>",
       "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
@@ -527,6 +599,72 @@ try {
         windowsVirtualKeyCode: 13,
         modifiers: 8,
       });
+    if (process.argv.includes("--references")) {
+      await insert("@@virtualList");
+      await wait(() =>
+        evaluate(
+          "document.querySelector('.composer [role=option]')?.dataset.referenceKind === 'directory'",
+        ),
+      );
+      const candidates = await evaluate(
+        "[...document.querySelectorAll('.composer [role=option]')].map(el=>({path:el.dataset.referencePath,kind:el.dataset.referenceKind,text:el.textContent}))",
+      );
+      assert.equal(candidates[0].path, "packages/src/@virtualList");
+      assert.ok(candidates.some((entry) => entry.kind === "file"));
+      assert.ok(candidates[0].text.includes("文件夹"));
+      screenshots.push(await shot("m2-reference-search-dark-normal"));
+      await evaluate(
+        "document.querySelector('button[aria-label=\"切换为浅色主题\"]').click()",
+      );
+      await click("紧凑密度");
+      await wait(() =>
+        evaluate(
+          "[...document.querySelectorAll('.composer [role=option]')].every(el=>!el.disabled) && !document.querySelector('button[aria-label=\"切换为深色主题\"]').disabled",
+        ),
+      );
+      screenshots.push(await shot("m2-reference-search-light-compact"));
+      await evaluate(
+        "document.querySelector('button[aria-label=\"切换为深色主题\"]').click()",
+      );
+      await click("正常密度");
+      await wait(() =>
+        evaluate(
+          "[...document.querySelectorAll('.composer [role=option]')].every(el=>!el.disabled) && !document.querySelector('button[aria-label=\"切换为浅色主题\"]').disabled",
+        ),
+      );
+      // Candidate confirmation uses the real Composer keyboard priority and must not send.
+      await evaluate(
+        "document.querySelector('[contenteditable=true]').focus()",
+      );
+      for (const type of ["keyDown", "keyUp"])
+        await call("Input.dispatchKeyEvent", {
+          type,
+          key: "Enter",
+          code: "Enter",
+          windowsVirtualKeyCode: 13,
+        });
+      await wait(() =>
+        evaluate(
+          "!!document.querySelector('.tiptap [data-reference-kind=directory]')",
+        ),
+      );
+      assert.equal(requests.length, 0);
+      screenshots.push(await shot("m2-reference-directory-token"));
+      await evaluate(
+        "document.querySelector('[contenteditable=true]').focus()",
+      );
+      for (const type of ["keyDown", "keyUp"])
+        await call("Input.dispatchKeyEvent", {
+          type,
+          key: "Enter",
+          code: "Enter",
+          windowsVirtualKeyCode: 13,
+          modifiers: 8,
+        });
+      checks.push(
+        "packaged @@ search ranks matching folder ahead of 110 descendant files, shows typed folder/file rows in both themes/densities; Enter inserts a directory token without sending",
+      );
+    }
     await insert("@fixture");
     assert.equal(
       await evaluate(
@@ -538,7 +676,7 @@ try {
       evaluate("!!document.querySelector('.composer [role=option]')"),
     );
     await evaluate(
-      "[...document.querySelectorAll('.composer [role=option]')].find(b=>b.textContent==='fixture.txt').click()",
+      "[...document.querySelectorAll('.composer [role=option]')].find(b=>b.dataset.referencePath==='fixture.txt' && b.dataset.referenceKind==='file').click()",
     );
     await wait(() =>
       evaluate(
@@ -576,6 +714,22 @@ try {
     );
     assert.equal(receipt.content.images.length, 1);
     assert.ok(receipt.content.message.includes("M2 isolated project"));
+    if (process.argv.includes("--references")) {
+      const directory = receipt.content.sources.find(
+        (source) => source.referenceKind === "directory",
+      );
+      assert.ok(directory);
+      assert.equal(directory.path, "packages/src/@virtualList");
+      assert.equal(directory.converterVersion, "directory-listing-v1");
+      assert.ok(receipt.content.message.includes("directory listing"));
+      assert.ok(receipt.content.message.includes('"kind":"directory"'));
+      assert.ok(
+        !receipt.content.message.includes("PRIVATE_DIRECTORY_FILE_BODY"),
+      );
+      checks.push(
+        "packaged directory reference freezes direct names/kinds through real provider request and durable receipt without recursively reading file bodies",
+      );
+    }
     await dropAttachment("queue-image.png", "image/png", imageFixture);
     await insert("QUEUE_IMAGE_ORIGINAL");
     await click("排队发送");
@@ -627,6 +781,11 @@ try {
     );
     assert.equal(journal.previousImages.length, 1);
     assert.equal(journal.command.retainedImageIds.length, 1);
+    await wait(() =>
+      evaluate(
+        "document.querySelector('[data-queue-action=delete]')?.disabled === false",
+      ),
+    );
     await evaluate(
       "document.querySelector('[data-queue-action=delete]').click()",
     );
@@ -635,6 +794,27 @@ try {
     checks.push(
       "packaged private image and @ frozen text actually reach provider; native queued image survives text edit/save with original frozen receipt and typed change journal; delete adds no provider calls",
     );
+    if (process.argv.includes("--lifecycle")) {
+      const result = await evaluate(
+        `window.desktop.attachments.request({kind:'clean-storage',threadId:${JSON.stringify(a)},traceId:crypto.randomUUID()})`,
+      );
+      assert.equal(result.kind, "storage-report");
+      const hash = createHash("sha256")
+        .update(Buffer.from(imageFixture, "base64"))
+        .digest("hex");
+      assert.ok(existsSync(join(isolated.data, "content", "objects", hash)));
+      assert.ok(
+        db
+          .prepare(
+            "SELECT reference_count FROM input_content_object WHERE digest=?",
+          )
+          .get(hash).reference_count > 0,
+      );
+      assert.equal(requests.length, 1);
+      checks.push(
+        "packaged cleanup retains private image originals referenced by frozen submission receipts and queue edit history after draft consumption and queue deletion",
+      );
+    }
   }
   assert.equal(requests[0].model, "fixture-b");
   if (process.argv.includes("--queue-subagent")) {
@@ -757,6 +937,11 @@ try {
       .prepare("SELECT receipt FROM submission ORDER BY rowid DESC LIMIT 1")
       .get();
     assert.equal(JSON.parse(frozen.receipt).text, queuedOriginal);
+    await wait(() =>
+      evaluate(
+        "document.querySelector('[data-queue-action=delete]')?.disabled === false",
+      ),
+    );
     await evaluate(
       "document.querySelector('[data-queue-action=delete]').click()",
     );
@@ -1084,6 +1269,42 @@ try {
     "composer and send action stay inside window; switching reading view preserves draft",
   );
   screenshots.push(await shot("m2-parallel-entry"));
+  if (process.argv.includes("--lifecycle")) {
+    await validateSubagentLifecycle({
+      supplier: subagentSupplier,
+      db,
+      evaluate,
+      wait,
+      click,
+      insert,
+      selectThread,
+      call,
+      shot,
+      checks,
+      screenshots,
+      threadA: a,
+      threadB: b,
+    });
+  }
+  if (process.argv.includes("--long-reading")) {
+    longReadingMetrics = await validateLongReading({
+      supplier: longReadingSupplier,
+      db,
+      evaluate,
+      wait,
+      click,
+      insert,
+      selectThread,
+      call,
+      shot,
+      checks,
+      screenshots,
+      threadA: a,
+      threadB: b,
+      env: isolated.env,
+      temporary: isolated.root,
+    });
+  }
   if (process.argv.includes("--inspect")) {
     const checkpoint = join(isolated.root, "inspect-checkpoint.json"),
       resume = join(isolated.root, "inspect-continue");
@@ -1123,12 +1344,29 @@ try {
     await selectThread(a);
     checks.push("native inspection checkpoint resumed");
   }
+  if (process.argv.includes("--lifecycle")) {
+    agedAttachmentPath = await prepareAgedAttachment({
+      db,
+      data: isolated.data,
+      threadId: a,
+      evaluate,
+      wait,
+      click,
+      dropAttachment,
+    });
+  }
   child.kill("SIGKILL");
   await wait(() => child.signalCode !== null);
   socket.onclose = null;
   socket.close();
   child = launch();
   await connect();
+  if (agedAttachmentPath) {
+    await wait(() => !existsSync(agedAttachmentPath));
+    checks.push(
+      "automatic packaged attachment maintenance collects a seven-day released orphan without a cleanup command, including after cold restart",
+    );
+  }
   await wait(() =>
     evaluate(
       "document.querySelector('.runtime-panel')?.textContent.includes('当前只读历史')",
@@ -1175,6 +1413,10 @@ try {
     screenshots,
     continuitySamples,
     providerCalls: requests.length,
+    subagentProviderCalls: subagentSupplier.requests.length,
+    subagentTitleProviderCalls: subagentSupplier.titleRequests.length,
+    longReadingProviderCalls: longReadingSupplier.requests.length,
+    longReading: longReadingMetrics,
     models: requests.map((r) => r.model),
     nativeSessions: db
       .prepare("SELECT session_id,thread_id FROM native_session")
@@ -1206,6 +1448,24 @@ try {
       await evaluate("document.body.textContent"),
     );
   } catch {}
+  writeFileSync(
+    join(isolated.root, "supplier-requests.json"),
+    JSON.stringify({
+      execution: subagentSupplier.requests,
+      titles: subagentSupplier.titleRequests,
+      longReading: longReadingSupplier.requests.map((request) => ({
+        model: request.model,
+        tools: request.tools?.map((tool) => tool.function?.name),
+        toolBytes: request.messages
+          .filter((message) => message.role === "tool")
+          .map((message) =>
+            typeof message.content === "string"
+              ? Buffer.byteLength(message.content)
+              : null,
+          ),
+      })),
+    }),
+  );
   console.error("Failure evidence: " + isolated.root);
   throw error;
 } finally {

@@ -98,122 +98,142 @@ it("mounts the formal attachment controls and removes a failed atomic reference 
   expect(editor.getText({ blockSeparator: "\n" })).toBe("before  after");
 });
 
-it("isolates a late @ search and inserts the chosen full path as one undoable reference", async () => {
-  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
-  const editor = new Editor({
-    ...plainTextEditorOptions,
-    element: document.createElement("div"),
-    content: draftDocument("review @src"),
-  });
-  editor.commands.setTextSelection(12);
-  const client = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
-  });
-  const container = document.createElement("div");
-  document.body.append(container);
-  const root = createRoot(container);
-  cleanups.push(async () => {
-    await act(() => root.unmount());
-    editor.destroy();
-    client.clear();
-    container.remove();
-  });
-  let finishSearch: (value: {
-    kind: "search";
-    paths: string[];
-    truncated: boolean;
-  }) => void = () => {};
-  let searched = false;
-  const actions = {
-    current: null as import("./attachment-controls").AttachmentActions | null,
-  };
-  const item = {
-    schemaVersion: 1 as const,
-    id,
-    threadId: id,
-    token: `[[dpi-attachment:${id}]]`,
-    name: "src/a@b.ts",
-    mimeType: "text/plain",
-    byteLength: 0,
-    capturedAt: new Date().toISOString(),
-    source: "reference" as const,
-    path: "src/a@b.ts",
-    status: "ready" as const,
-    representation: "reference" as const,
-    coverageGaps: [],
-    textOnly: false,
-  };
-  const request = vi.fn(
-    async (
-      command: import("../../contracts/attachments").AttachmentRequest,
-    ): Promise<import("../../contracts/attachments").AttachmentReply> => {
-      if (command.kind === "search-reference") {
-        searched = true;
-        return new Promise((resolve) => {
-          finishSearch = resolve;
-        });
-      }
-      if (command.kind === "add-reference")
-        return { kind: "attachments", items: [item] };
-      return { kind: "attachments", items: [] };
-    },
-  );
-  let current = true;
-  const render = (
-    mention: ReturnType<
-      typeof import("../../../modules/input/renderer/public").attachmentMention
-    >,
-  ) =>
-    act(() =>
-      root.render(
-        createElement(QueryClientProvider, {
-          client,
-          children: createElement(AttachmentControls, {
-            bridge: { request },
-            threadId: id,
-            editor,
-            text: "review @src",
-            isCurrent: () => current,
-            onBlocked: () => {},
-            mention,
-            dismissMention: () => {},
-            ref: actions,
+it.each([
+  { path: "src/a@b.ts", kind: "file" as const },
+  { path: "src/@virtualList", kind: "directory" as const },
+])(
+  "isolates late @ searches and inserts a typed $kind as one undoable reference",
+  async ({ path, kind }) => {
+    vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+    const editor = new Editor({
+      ...plainTextEditorOptions,
+      element: document.createElement("div"),
+      content: draftDocument("review @src"),
+    });
+    editor.commands.setTextSelection(12);
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    cleanups.push(async () => {
+      await act(() => root.unmount());
+      editor.destroy();
+      client.clear();
+      container.remove();
+    });
+    let finishSearch: (value: {
+      kind: "search";
+      entries: { path: string; name: string; kind: "file" | "directory" }[];
+      truncated: boolean;
+    }) => void = () => {};
+    let searched = false;
+    const actions = {
+      current: null as import("./attachment-controls").AttachmentActions | null,
+    };
+    const item = {
+      schemaVersion: 1 as const,
+      id,
+      threadId: id,
+      token: `[[dpi-attachment:${id}]]`,
+      name: path,
+      referenceKind: kind,
+      mimeType: "text/plain",
+      byteLength: 0,
+      capturedAt: new Date().toISOString(),
+      source: "reference" as const,
+      path,
+      status: "ready" as const,
+      representation: "reference" as const,
+      coverageGaps: [],
+      textOnly: false,
+    };
+    const request = vi.fn(
+      async (
+        command: import("../../contracts/attachments").AttachmentRequest,
+      ): Promise<import("../../contracts/attachments").AttachmentReply> => {
+        if (command.kind === "search-reference") {
+          searched = true;
+          return new Promise((resolve) => {
+            finishSearch = resolve;
+          });
+        }
+        if (command.kind === "add-reference")
+          return { kind: "attachments", items: [item] };
+        return { kind: "attachments", items: [] };
+      },
+    );
+    let current = true;
+    const render = (
+      mention: ReturnType<
+        typeof import("../../../modules/input/renderer/public").attachmentMention
+      >,
+    ) =>
+      act(() =>
+        root.render(
+          createElement(QueryClientProvider, {
+            client,
+            children: createElement(AttachmentControls, {
+              bridge: { request },
+              threadId: id,
+              editor,
+              text: "review @src",
+              isCurrent: () => current,
+              onBlocked: () => {},
+              mention,
+              dismissMention: () => {},
+              ref: actions,
+            }),
           }),
-        }),
+        ),
+      );
+    await render({ from: 8, to: 12, query: "src" });
+    await vi.waitFor(() => expect(searched).toBe(true));
+    await render(null);
+    await act(() =>
+      finishSearch({
+        kind: "search",
+        entries: [{ path: "src/stale.ts", name: "stale.ts", kind: "file" }],
+        truncated: false,
+      }),
+    );
+    expect(container.textContent).not.toContain("src/stale.ts");
+    await render({ from: 8, to: 12, query: "src" });
+    await act(() =>
+      finishSearch({
+        kind: "search",
+        entries: [{ path, name: path.split("/").at(-1) ?? path, kind }],
+        truncated: false,
+      }),
+    );
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+    expect(
+      container.querySelector(`[data-reference-kind="${kind}"]`)?.textContent,
+    ).toContain(path);
+    await act(async () => {
+      actions.current?.handleMentionKey(
+        new KeyboardEvent("keydown", { key: "Enter" }),
+      );
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+    expect(
+      request.mock.calls.some(
+        ([command]) =>
+          command.kind === "add-reference" &&
+          command.path === path &&
+          command.referenceKind === kind,
       ),
-    );
-  await render({ from: 8, to: 12, query: "src" });
-  await vi.waitFor(() => expect(searched).toBe(true));
-  await render(null);
-  await act(() =>
-    finishSearch({ kind: "search", paths: ["src/stale.ts"], truncated: false }),
-  );
-  expect(container.textContent).not.toContain("src/stale.ts");
-  await render({ from: 8, to: 12, query: "src" });
-  await act(() =>
-    finishSearch({ kind: "search", paths: ["src/a@b.ts"], truncated: false }),
-  );
-  await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 20));
-  });
-  await act(async () => {
-    actions.current?.handleMentionKey(
-      new KeyboardEvent("keydown", { key: "Enter" }),
-    );
-    await new Promise((resolve) => setTimeout(resolve, 20));
-  });
-  expect(
-    request.mock.calls.some(
-      ([command]) =>
-        command.kind === "add-reference" && command.path === "src/a@b.ts",
-    ),
-  ).toBe(true);
-  expect(editor.getText()).toBe(`review ${item.token}`);
-  expect(editor.state.doc.firstChild?.child(1).isAtom).toBe(true);
-  editor.commands.undo();
-  expect(editor.getText()).toBe("review @src");
-  current = false;
-});
+    ).toBe(true);
+    expect(editor.getText()).toBe(`review ${item.token}`);
+    expect(editor.state.doc.firstChild?.child(1).isAtom).toBe(true);
+    editor.commands.undo();
+    expect(editor.getText()).toBe("review @src");
+    current = false;
+  },
+);
 
 it("identifies a ready reference that failed during send-time freezing without rewriting its preparation state", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
@@ -730,3 +750,227 @@ it.each(["success", "cancelled"] as const)(
     expect(editor.getText()).toContain("original draft");
   },
 );
+
+it("offers storage checking and explicit unreferenced cleanup, locates broken originals, and preserves editor input", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const editor = new Editor({
+    ...plainTextEditorOptions,
+    element: document.createElement("div"),
+    content: draftDocument("my preserved draft"),
+  });
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  cleanups.push(async () => {
+    await act(() => root.unmount());
+    editor.destroy();
+    client.clear();
+    container.remove();
+  });
+  const request = vi.fn(
+    async (
+      command: import("../../contracts/attachments").AttachmentRequest,
+    ): Promise<AttachmentReply> => {
+      if (command.kind === "check-storage" || command.kind === "clean-storage")
+        return {
+          kind: "storage-report",
+          checkedObjects: 2,
+          remainingObjects: 0,
+          retainedObjects: 1,
+          unreferencedObjects: 1,
+          deletedObjects: command.kind === "clean-storage" ? 1 : 0,
+          deletedBytes: 3,
+          issues: [
+            {
+              attachmentId: id,
+              name: "lost original.txt",
+              object: "original",
+              reason: "content-missing",
+            },
+          ],
+          issuesTruncated: false,
+        };
+      return {
+        kind: "attachments",
+        items: [
+          {
+            schemaVersion: 1,
+            id,
+            threadId: id,
+            token: `[[dpi-attachment:${id}]]`,
+            name: "saved.txt",
+            mimeType: "text/plain",
+            byteLength: 3,
+            capturedAt: new Date().toISOString(),
+            source: "file",
+            status: "ready",
+            representation: "text",
+            coverageGaps: [],
+            textOnly: false,
+          },
+        ],
+      };
+    },
+  );
+  await act(async () => {
+    root.render(
+      createElement(QueryClientProvider, {
+        client,
+        children: createElement(AttachmentControls, {
+          bridge: { request },
+          threadId: id,
+          editor,
+          text: "my preserved draft",
+          isCurrent: () => true,
+          onBlocked: () => {},
+          mention: null,
+          dismissMention: () => {},
+        }),
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  });
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  });
+  const check = container.querySelector<HTMLButtonElement>(
+    '[data-attachment-storage-action="check"]',
+  );
+  expect(check).not.toBeNull();
+  expect(check?.closest("details")?.textContent).toContain("saved.txt");
+  await act(async () => {
+    check?.click();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  });
+  expect(
+    container.querySelector("[data-attachment-storage-report]")?.textContent,
+  ).toContain("lost original.txt");
+  const clean = container.querySelector<HTMLButtonElement>(
+    '[data-attachment-storage-action="clean"]',
+  );
+  await act(async () => {
+    clean?.click();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  });
+  expect(
+    request.mock.calls.filter(([command]) => command.kind === "clean-storage"),
+  ).toHaveLength(1);
+  expect(editor.getText()).toBe("my preserved draft");
+});
+
+it("coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  const actions = {
+    current: null as import("./attachment-controls").AttachmentActions | null,
+  };
+  cleanups.push(async () => {
+    await act(() => root.unmount());
+    client.clear();
+    container.remove();
+  });
+  const request = vi.fn(
+    async (
+      command: import("../../contracts/attachments").AttachmentRequest,
+    ): Promise<AttachmentReply> =>
+      command.kind === "search-reference"
+        ? {
+            kind: "search",
+            entries: [
+              {
+                path: `src/${command.query}`,
+                name: command.query,
+                kind: "directory",
+              },
+            ],
+            truncated: false,
+          }
+        : { kind: "attachments", items: [] },
+  );
+  const render = (query: string) =>
+    act(() =>
+      root.render(
+        createElement(QueryClientProvider, {
+          client,
+          children: createElement(AttachmentControls, {
+            threadId: id,
+            bridge: { request },
+            editor: null,
+            text: "",
+            isCurrent: () => true,
+            onBlocked: () => {},
+            mention: { query, from: 0, to: query.length + 1 },
+            dismissMention: () => {},
+            ref: actions,
+          }),
+        }),
+      ),
+    );
+  const searches = () =>
+    request.mock.calls.filter(
+      ([command]) => command.kind === "search-reference",
+    );
+  await render("@v");
+  await vi.waitFor(() => expect(searches()).toHaveLength(1));
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  });
+  for (const query of ["@vi", "@vir", "@virt", "@virtual", "@virtualList"])
+    await render(query);
+  expect(container.textContent).not.toContain("src/@v");
+  expect(
+    actions.current?.handleMentionKey(
+      new KeyboardEvent("keydown", { key: "Enter" }),
+    ),
+  ).toBe(true);
+  expect(
+    request.mock.calls.some(([command]) => command.kind === "add-reference"),
+  ).toBe(false);
+  await vi.waitFor(() => expect(searches()).toHaveLength(2));
+  await vi.waitFor(() =>
+    expect(container.textContent).toContain("src/@virtualList/"),
+  );
+  expect(searches()[1]?.[0]).toMatchObject({
+    query: "@virtualList",
+    refresh: false,
+  });
+  const refresh = [...container.querySelectorAll("button")].find(
+    (button) => button.textContent === "Refresh search",
+  );
+  await act(async () => refresh?.click());
+  await vi.waitFor(() => expect(searches()).toHaveLength(3));
+  expect(searches()[2]?.[0]).toMatchObject({ refresh: true });
+  await render("@virtualList/new");
+  await vi.waitFor(() => expect(searches()).toHaveLength(4));
+  expect(searches()[3]?.[0]).toMatchObject({ refresh: false });
+  await vi.waitFor(() =>
+    expect(container.textContent).toContain("src/@virtualList/new/"),
+  );
+  request.mockImplementation(async (command) => {
+    if (command.kind === "search-reference") throw Error("refresh failed");
+    return { kind: "attachments", items: [] };
+  });
+  await act(async () => refresh?.click());
+  await vi.waitFor(() =>
+    expect(container.querySelector('[role="alert"]')).not.toBeNull(),
+  );
+  expect(container.querySelector('[role="option"]')).toBeNull();
+  await act(async () => {
+    expect(
+      actions.current?.handleMentionKey(
+        new KeyboardEvent("keydown", { key: "Enter" }),
+      ),
+    ).toBe(true);
+  });
+  expect(
+    request.mock.calls.some(([command]) => command.kind === "add-reference"),
+  ).toBe(false);
+});

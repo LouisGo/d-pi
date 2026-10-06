@@ -20,7 +20,10 @@ const shell = vi.hoisted(() => ({
     send: vi.fn<(channel: string, ...args: unknown[]) => void>(),
     setWindowOpenHandler: vi.fn(),
     on: vi.fn(),
-    session: { setPermissionRequestHandler: vi.fn() },
+    session: {
+      setPermissionRequestHandler: vi.fn(),
+      setPermissionCheckHandler: vi.fn(),
+    },
   },
   quit: vi.fn(),
   systemLocale: "en-US",
@@ -448,6 +451,60 @@ it("runtime inspection is read-only, rejects foreign frames, and explicit allowa
   } finally {
     shell.events.get("will-quit")?.({ preventDefault: vi.fn() });
     await vi.waitFor(() => expect(shell.quit).toHaveBeenCalled());
+    rmSync(shell.directory, { recursive: true, force: true });
+  }
+});
+
+it("starts attachment maintenance once and drains it before closing SQLite on Quit", async () => {
+  vi.resetModules();
+  shell.events.clear();
+  shell.quit.mockClear();
+  shell.directory = mkdtempSync(join(tmpdir(), "d-pi-attachment-quit-"));
+  const attachmentModule = await import("./wiring/attachment-service");
+  const factory = attachmentModule.createAttachmentService;
+  const startMaintenance = vi.fn<(onFailure?: () => void) => void>();
+  let release = () => {};
+  const drained = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const close = vi.fn(() => drained);
+  const factorySpy = vi
+    .spyOn(attachmentModule, "createAttachmentService")
+    .mockImplementation((...args) => ({
+      ...factory(...args),
+      startMaintenance,
+      close,
+    }));
+  const storageModule = await import("./wiring/app-storage");
+  const databaseClose = vi.spyOn(storageModule.AppStorage.prototype, "close");
+  try {
+    await import("./index");
+    await vi.waitFor(() => expect(startMaintenance).toHaveBeenCalledTimes(1));
+    startMaintenance.mock.calls[0]?.[0]?.();
+    shell.events.get("will-quit")?.({ preventDefault: vi.fn() });
+    await vi.waitFor(() => expect(close).toHaveBeenCalledTimes(1));
+    expect(databaseClose).not.toHaveBeenCalled();
+    expect(shell.quit).not.toHaveBeenCalled();
+    release();
+    await vi.waitFor(() => expect(shell.quit).toHaveBeenCalledTimes(1));
+    expect(databaseClose).toHaveBeenCalledTimes(1);
+    const logs = readFileSync(join(shell.directory, "logs/main.jsonl"), "utf8")
+      .trim()
+      .split("\n")
+      .map((line) => JSON.parse(line));
+    expect(logs).toContainEqual(
+      expect.objectContaining({
+        operation: "attachments:maintenance",
+        stage: "failed",
+        code: "storage-unavailable",
+      }),
+    );
+  } finally {
+    release();
+    shell.events.get("will-quit")?.({ preventDefault: vi.fn() });
+    await vi.waitFor(() => expect(shell.quit).toHaveBeenCalled());
+    factorySpy.mockRestore();
+    databaseClose.mockRestore();
     rmSync(shell.directory, { recursive: true, force: true });
   }
 });

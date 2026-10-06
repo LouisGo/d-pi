@@ -41,6 +41,7 @@ export const Markdown = memo(function Markdown({
 }) {
   return (
     <Streamdown
+      data-selectable
       plugins={plugins}
       controls={false}
       mode={streaming ? "streaming" : "static"}

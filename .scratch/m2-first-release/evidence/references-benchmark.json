@@ -1,0 +1,47 @@
+{
+  "fixtureEntries": 20001,
+  "before": {
+    "queries": 3,
+    "source": "b290b36:src/app/main/wiring/attachment-service.ts:152-192",
+    "matches": 100,
+    "firstKind": "file",
+    "truncated": true,
+    "ms": [
+      18.67841700000008,
+      16.445832999999993,
+      18.235790999999836
+    ],
+    "io": {
+      "readdir": 6,
+      "lstat": 1503,
+      "realpath": 24,
+      "stat": 12
+    },
+    "coverage": "Two whole directories were readdir-ed each query; only first 500 sorted descendants were classified, only first 100 matching files were returned. After builds all 20,001 entries, including the directory: latency is not an equal-coverage speedup claim."
+  },
+  "coldMs": 78.1963330000001,
+  "coldIO": {
+    "open": 2,
+    "handleStat": 4,
+    "directoryRead": 20003,
+    "directoryClose": 2,
+    "handleClose": 2,
+    "opendir": 2,
+    "lstat": 7,
+    "realpath": 8
+  },
+  "warmQueries": 30,
+  "warmMs": {
+    "min": 0.9785410000001775,
+    "max": 40.577958999999964,
+    "mean": 8.375723566666677
+  },
+  "warmIO": {
+    "open": 0,
+    "handleStat": 0,
+    "directoryRead": 0,
+    "opendir": 0,
+    "lstat": 0,
+    "realpath": 0
+  }
+}

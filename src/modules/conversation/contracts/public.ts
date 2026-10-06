@@ -6,14 +6,50 @@ export const ConversationLabelSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("literal"), text: z.string() }),
   z.strictObject({ kind: z.literal("message"), value: UiMessageSchema }),
 ]);
+export const SubagentObservationSchema = z.strictObject({
+  nativeId: z.string().max(512),
+  parentToolCallId: z.string().max(512).optional(),
+  status: z.enum([
+    "pending",
+    "running",
+    "completed",
+    "failed",
+    "aborted",
+    "unknown",
+  ]),
+  task: z.string().max(2048),
+  description: z.string().max(512),
+  currentTool: z.string().max(120),
+  unhandledEvent: z.string().max(120).optional(),
+  model: z.string().max(256),
+  resultSource: z.enum(["none", "progress", "live", "transcript"]),
+  coverage: z.enum(["observed", "partial"]),
+  reason: z
+    .enum([
+      "transcript-unavailable",
+      "transcript-too-large",
+      "transcript-empty",
+      "transcript-reset",
+      "truncated",
+      "identity-ambiguous",
+      "missing-lifecycle",
+      "observation-unavailable",
+    ])
+    .optional(),
+});
+export type SubagentObservation = z.infer<typeof SubagentObservationSchema>;
 export const ConversationItemSchema = z.strictObject({
   id: z.number().int().nonnegative(),
-  role: z.enum(["user", "assistant", "tool", "notice"]),
+  role: z.enum(["user", "assistant", "tool", "notice", "subagent"]),
   text: z.string(),
   state: z.enum(["streaming", "complete", "failed"]),
   label: ConversationLabelSchema,
   notice: UiMessageSchema.optional(),
   truncated: z.boolean().optional(),
+  subagent: SubagentObservationSchema.optional(),
+  subagentNotice: z
+    .enum(["observation-unavailable", "observation-limit"])
+    .optional(),
 });
 export type ConversationItem = z.infer<typeof ConversationItemSchema>;
 export const ConversationSnapshotSchema = z.strictObject({

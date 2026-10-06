@@ -13,6 +13,7 @@ export interface ConversationState {
   threadId: string | null;
   epoch: number;
   resyncing: boolean;
+  resyncExhausted: boolean;
 }
 
 const initial: StateCreator<
@@ -26,6 +27,7 @@ const initial: StateCreator<
   threadId: null,
   epoch: 0,
   resyncing: false,
+  resyncExhausted: false,
 });
 
 const createConversationStore = () =>
@@ -42,6 +44,7 @@ export class ConversationModel {
   readonly stateStore: ConversationStateStore = this.store;
   private remove: (() => void) | null = null;
   private disposed = false;
+  private recoveryAttempts = 0;
   constructor(private readonly port: ConversationPort) {}
   getSnapshot = (): ConversationSnapshot | null => this.store.getState().view;
   subscribe = (listener: () => void): (() => void) =>
@@ -76,6 +79,10 @@ export class ConversationModel {
     });
   }
   connect(threadId: string): void {
+    this.recoveryAttempts = 0;
+    this.connectInternal(threadId);
+  }
+  private connectInternal(threadId: string): void {
     if (this.disposed) return;
     this.remove?.();
     this.remove = null;
@@ -86,6 +93,7 @@ export class ConversationModel {
       threadId,
       epoch,
       resyncing: false,
+      resyncExhausted: false,
       ...(previous.threadId !== threadId
         ? { view: null, itemIds: [], itemsById: new Map() }
         : {}),
@@ -115,16 +123,22 @@ export class ConversationModel {
         return;
       if (event.seq !== view.seq + 1) {
         this.store.setState({ view: { ...view, gap: true } });
+        if (this.recoveryAttempts >= 3) {
+          this.store.setState({ resyncing: false, resyncExhausted: true });
+          return;
+        }
         if (!this.store.getState().resyncing) {
+          this.recoveryAttempts++;
           this.store.setState({ resyncing: true });
           void Promise.resolve().then(() => {
             const current = this.store.getState();
             if (epoch === current.epoch && current.threadId)
-              this.connect(current.threadId);
+              this.connectInternal(current.threadId);
           });
         }
         return;
       }
+      this.recoveryAttempts = 0;
       const items = view.items.filter(
         (entry) => entry.id >= event.droppedBefore,
       );

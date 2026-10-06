@@ -1,0 +1,15 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/main/index.test.ts -t 'starts attachment maintenance'
+$ tsr generate
+(node:32834) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/louistation/MySpace/Life/d-pi
+
+ ✓ src/app/main/index.test.ts (8 tests | 7 skipped) 298ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 7 skipped (8)
+   Start at  11:41:19
+   Duration  879ms (tests 37%, import 33%, transform 29%)
+

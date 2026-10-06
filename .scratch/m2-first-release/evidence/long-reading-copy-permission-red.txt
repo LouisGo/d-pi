@@ -1,0 +1,30 @@
+
+DevTools listening on ws://127.0.0.1:63712/devtools/browser/b9929968-7754-4e7c-8e06-f3188209e34b
+Failure evidence: /private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-kuFZBR
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: native Copy action rejected
++ actual - expected
+
++ {
++   message: "Failed to execute 'writeText' on 'Clipboard': Write permission denied.",
++   name: 'NotAllowedError'
++ }
+- undefined
+
+    at validateLongReading (file:///Users/louistation/MySpace/Life/d-pi/validation/m2/long-reading.mjs:222:12)
+    at async file:///Users/louistation/MySpace/Life/d-pi/validation/m2/package.mjs:1277:26 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: {
+    name: 'NotAllowedError',
+    message: "Failed to execute 'writeText' on 'Clipboard': Write permission denied."
+  },
+  expected: undefined,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.21.0

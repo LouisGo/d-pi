@@ -55,8 +55,26 @@ AppModel 拥有窗口级 DraftEditorCache，input Renderer 缓存脱离 EditorVi
 
 ## 2026-10-02 附件与发送时引用切片
 
-input Main 的 AttachmentStore 管 schema 8 manifest、摘要原件/派生文件、准备与预算；Renderer AttachmentImports 属于 Thread，视图卸载不会取消导入，尚未私有落盘的原件在关闭时有保护。草稿只存原子短 token，不放二进制；@查询是只读Query，导入/重试/准备是显式副作用。
+input Main 的 AttachmentStore 管 schema 8 manifest、schema 9 对象投影、摘要原件/派生文件、准备与预算；Renderer AttachmentImports 属于 Thread，视图卸载不会取消导入，尚未私有落盘的原件在关闭时有保护。草稿只存原子短 token，不放二进制；@查询是只读Query，导入/重试/准备是显式副作用。
 
 导入文本和图片复制原件；@项目文件每次发送经 files 授权读取及身份复核，冻结内容交给 execution prepared 持久化。预览文本最多64KiB并显示截断；该预览不用于发送。固定OMP18.4.6提供PDF文字转换，实际图表/扫描覆盖不能保证，必须显式仅文字；没有实现完整页面渲染。未知格式、解码、容量、权限和覆盖失败定位附件，完整保留原输入。
 
-当前保守保留全部私有原件，摘要去重；引用计数释放、7天GC及全面一致性扫描仍在B4父票，达到1GiB明确拒绝新增。正式GUI包含附件管理、图片缩放、失败重试及@键盘选择；[本轮交付](../../../.scratch/m2-first-release/content-preparation.md)分别记录测试、SDK和macOS证据。
+原件按摘要去重，来源仍保留各自 attachment identity。App 装配提供持久草稿、全部冻结提交收据与 queue_change 原来源的权威引用投影，input 不跨领域查询执行表。终态收据没有原生历史自持久证明，依赖永不因终态自动释放；unknown 不重发，冷 Thread 继续只读。
+
+最后引用释放后至少保留7天；正式 GUI 的附件存储检查/清理可立即清除已确认无引用的原件与派生物。独立来源导入租约保护 RPC 完成到同一来源 token 持久化之间的窗口，共享摘要其他来源的持久引用不能接管该租约；本次进程中从未持久化的已完成导入保留到冷启动。准备中的冻结摘要保留到对应冻结收据持久化，检查、清理与导入/准备沿同一 lane 顺序执行。
+
+检查流式校验对象摘要并分别标注原件/派生物缺失或损坏；保留草稿 token、manifest 和冻结收据以支持显式重试、重附与同摘要重新导入修复。每批最多32个对象、约32MiB 文件、32条 manifest 和128个权威 owner；来源报告最多128条。可续扫发现/引用未完成时报告进度并保守拒删，损坏/过大 owner 数据同样拒删。达到1GiB仍明确拒绝新增，不扩 PDF 视觉或 OCR。
+
+正式 GUI 沿用附件管理、图片缩放、失败重试及@键盘选择，并提供附件存储检查/清理与受影响来源报告。关闭先停止后台维护，拒绝新操作，等待已经进入 lane 的导入/准备/扫描完成再关闭目录与 SQLite；尚在选文件对话框/读取外部文件且未入 lane 的请求在关闭后拒绝进入。后台失败只上报窄失败信号，由 Main root 记录 storage-unavailable。
+
+附件被加入/移出持久草稿时，DraftRepository 在同一草稿保存事务内保守刷新受影响原件及派生物的释放时钟；扫描间的短暂重新引用不会继承旧七天期限。仍由维护重新读取权威引用，引用计数不成为删除授权。
+
+附件 manifest 的可选 `draftBoundRevision` 是对应来源首次持久采用的 input 元数据，与草稿 CAS 同事务写入；重试发布旧 manifest 时保留该事实。维护在有界来源查询中据此解除同 Thread/attachmentId 的导入租约，不解除其他同摘要来源，也不把历史采用当作当前引用。冻结准备租约与原生自持久证明规则不变。
+
+## 2026-10-06 文件与目录引用
+
+用户明确要求@目录与文件区分。搜索DTO含path/name/kind，引用manifest及冻结来源的可选referenceKind为file/directory；旧manifest缺字段按file兼容。目录在发送准备时经files边界重新读取并冻结直接条目的JSON清单（名称与kind），不递归展开正文；超过500直接条目、越权或目录变化时失败保留输入，不把部分清单作为成功。原件库存/冻结租约继续保护实际发送的目录清单摘要；旧冻结内容不跟随磁盘变化。Renderer目录图标/类型文字与原子节点尾斜杠沿用同一类型。
+
+Main服务拥有files的ProjectReferenceSearch实例，与附件服务一同close/drain；Query仅缓存只读候选，150ms合并连续键入，等待或查询身份不一致时不可确认旧候选，显式刷新使Main缓存失效。文件发送仍冻结原文件正文；不改变OMP执行或unknown/cold恢复策略。
+
+04c 文件和目录发送读取共同保持 Thread 记录的规范项目根：读取前后检查根非 symlink、realpath 原值及 dev/ino/ctime，拒绝将变化后的外部规范路径当作原授权根。通用 files 浏览 API 的别名支持不构成附件发送授权；失败保留引用与草稿。

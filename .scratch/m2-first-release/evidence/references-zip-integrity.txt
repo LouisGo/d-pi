@@ -1,0 +1,4 @@
+完整原始输出：dist/validation/project-references/zip-integrity.log
+    testing: __MACOSX/d-pi.app/Contents/._PkgInfo   OK
+    testing: __MACOSX/d-pi.app/._Contents   OK
+No errors detected in compressed data of dist/candidates/d-pi-0.1.0-m2.15-31cb912-mac-arm64.zip.

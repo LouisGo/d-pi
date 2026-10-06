@@ -2,6 +2,12 @@ import { z } from "zod";
 import { TraceIdSchema } from "../../../shared/identity";
 
 export const ProjectPathSchema = z.string().max(4096);
+export const ProjectReferenceEntrySchema = z.strictObject({
+  path: ProjectPathSchema,
+  name: z.string().max(512),
+  kind: z.enum(["file", "directory"]),
+});
+export type ProjectReferenceEntry = z.infer<typeof ProjectReferenceEntrySchema>;
 export const FileRequestSchema = z.discriminatedUnion("kind", [
   z.strictObject({
     kind: z.literal("list"),

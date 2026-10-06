@@ -10,7 +10,7 @@
     "trial": "delivered",
     "acceptance": "pending",
     "current": true,
-    "build": "0.1.0-m2.13 / 7f5d5909-ac115847",
+    "build": "0.1.0-m2.16 / c5315584-f375cd21",
     "pending": [
       "../m1-s3-control-recovery/issues/09-quit-discard-decision.md"
     ],
@@ -29,10 +29,16 @@
       "../review-seven-commits/spec.md",
       "next-stage.md",
       "queue-configuration-review.md",
-      "content-preparation.md"
+      "content-preparation.md",
+      "lifecycle.md",
+      "lifecycle-review.md",
+      "project-references.md",
+      "project-references-review.md",
+      "long-reading.md",
+      "long-reading-review.md"
     ],
-    "next": "04a附件引用与05c带图队列工程完成，m2.13候选已交付待试用；后续04的PDF视觉/OCR与B4回收、05完整子Agent生命周期等仍开放，M2用户认可pending，冷旧Thread只读",
-    "constraints": "2026-10-02用户授权下一阶段M2并行开发与中断后继续；本地commit/候选沿用M2授权，不将旧特定修复push扩大到本轮。保留原有环境对齐未提交改动；不公开发布、不扩M3，冷恢复只读，unknown不自动重发。"
+    "next": "06c/06d长正文有界阅读工程完成，m2.16候选交付待试用；PDF视觉/OCR与余下M2队列/子Agent/固定负载/故障组合验收开放，真实供应商试用与用户认可pending，冷旧Thread只读",
+    "constraints": "2026-10-06用户追加授权push及相关PR收尾；集成交互策略PR #2后将本阶段交付到main。Node24.21.0/pnpm12.8.1已对齐；不公开发布、不扩M3，冷恢复只读，unknown不自动重发；用户认可pending。"
   }
 ]
 ```
@@ -58,7 +64,7 @@
 - 已定：D-02–D-08、D-10/D-11、D-20–D-27、D-28–D-37；沿用 OMP 执行、队列、原生历史、配置与凭据所有权，App 草稿/冻结原文/收据事务不改变。
 - 重要待决：无新增。[S3 09](../m1-s3-control-recovery/issues/09-quit-discard-decision.md)退出放弃队列待决，仅暂停对应出口；缺全周期单写证据的冷恢复只读，提供明确新建独立 Thread 出口，不冒称恢复旧执行。
 - 工程：正在实施；既有正确路径复用当前相关证据，新增缺口先失败行为测试。测试隔离 App 数据、OMP 配置、HOME、Git 配置、项目及网络；不继承个人凭据。真实供应商缺账户/费用授权仅暂停实测，不阻塞薄桥接及 fixture 验证。
-- 用户试用：当前交付 `0.1.0-m2.13 / 7f5d5909-ac115847`、源码 `7f5d590`，18项实际干净包内检查及ZIP同源验证通过；用户认可 pending。[精确身份、哈希、证据和步骤](content-preparation.md#候选与试用)。m2.12及更早反馈/失败包保留历史证据，每段可操作体验给出对应源码和包身份；Agent验证不替代用户认可。
+- 用户试用：当前交付 `0.1.0-m2.16 / c5315584-f375cd21`、产品源码 `c531558`，21项实际干净包内检查、两轴独立review与ZIP同源验证通过；用户认可 pending。[精确身份、哈希、证据和步骤](long-reading.md#候选与验证)。m2.15及更早交付/失败记录保留历史证据，每段可操作体验给出对应源码和包身份；Agent验证不替代用户认可。
 - 继续边界：本授权内持续实施，不重做基建审计。重大产品/权限/数据合同变化才对齐；签名、公证、公开分发及 M3 不纳入。
 
 ## 首版覆盖与近期任务
@@ -142,3 +148,53 @@
 原有README/环境门禁及其工具测试/.scratch/environment-dependency-alignment改动完整保留，不纳入提交。OMP执行/队列/历史所有权不变，unknown不自动重发，冷旧Thread只读，不扩M3。无新的实质产品待决；PDF实际表示与覆盖以固定SDK/本应用验证为准，不能隐藏降级。04a/05c工程完成，clean m2.13已交付待试用，用户认可pending；父04/05及M2未完成范围保持。
 
 2026-10-02：04a/05c已完成无头逻辑、正式GUI与独立审查问题修复；654行为、34架构、65工具、18项实际clean macOS包内检查及ZIP同源校验通过。新候选源码7f5d590，构建7f5d5909-ac115847；[试用与验证限制](content-preparation.md#候选与试用)。本地提交，不push，原环境对齐改动保留。PDF当前需明确仅文字、完整视觉/OCR与B4回收未完成，05完整子Agent生命周期仍开放，M2用户认可pending。
+
+## 2026-10-06 生命周期切片
+
+用户要求使用刚合并的 AI 工作流，从最新 main 重新开启下一阶段；2026-10-06 已确认 PR #1 合入，基点 `c8dbdbadf1a04ad2be54e01f1a509024c5d982ea`，集成分支 `codex/m2-lifecycle`。本段选择 B4 附件引用/延迟回收/一致性与原生子 Agent 状态/结果观察两条可独立交付路径，随后集成与本地候选。沿用已有 M2 本地实现/commit/试用候选授权；不 push、不公开发布、不扩 M3。冷旧 Thread 只读、unknown 不自动重发，PDF 视觉/OCR与退出放弃原待决不进入本段。无新增产品待决。
+
+```implementation-plan
+[{"id":"m2-lifecycle","tickets":["04b","05d","06b"]},{"id":"m2-long-reading","tickets":["06c","06d"]}]
+```
+
+- [04b](issues/04b-attachment-lifecycle.md)：私有内容引用/最后释放、延迟回收及正式检查/清理出口。
+- [05d](issues/05d-subagent-observation.md)：固定 OMP 原生子 Agent 身份、状态与可得结果的有界观察。
+- [06b](issues/06b-lifecycle-candidate.md)：主 Agent 集成、双轴独立评审、检查、候选与本地 PR body。
+
+主 Agent 单写管理状态；两名 implementer 在独立 worktree 从固定 integration SHA 开始，允许写集分离，公共模块清单/状态/版本/validation 由主 Agent 整合。工程/候选/用户认可分别记录，父04/05/06未完成范围保持；本段未宣称 M2 完整验收。
+
+### 派发归属
+
+固定 worker 起点 `ade890c`；主 Agent 管 `codex/m2-lifecycle`，状态/模块清单/结构报告/版本与整段 validation。04b→attachment_lifecycle→`/Users/louistation/.codex/worktrees/m2-lifecycle-04b/d-pi`→`codex/m2-lifecycle-04b`；05d→subagent_observation→`/Users/louistation/.codex/worktrees/m2-lifecycle-05d/d-pi`→`codex/m2-lifecycle-05d`。两者同起点、不同目录与写集，领取后不追赶 integration tip。
+
+04b 写集：input/attachments、platform/main/storage、attachment IPC/service/preload/GUI、附件集成测试、i18n ui 与 shared/messages、输入/存储模块说明。05d 写集：conversation、execution Host、OMP 协议/资源、runtime 观察适配、SDK 准备、reading 子Agent视图、i18n domain、原生观察测试与模块说明。工作台挂接/共享样式/公开依赖清单由主 Agent 合并；新增共享合同需求先反馈，禁止 worker 写 spec/票状态/看板。
+
+### 2026-10-06 工程与候选交付
+
+04b/05d/06b resolved：基于已合并main完整执行固定起点worker、串行集成、真实失败回归、两轴独立review/修复/复核、完整工程与实际macOS候选。产品源码c5e424d、clean构建c5e424da-f02704bc；691行为/34架构/70tooling、固定SDK及22项实际包内检查通过，ZIP CRC与app.asar同源核对通过。[交接](lifecycle.md)、[评审](lifecycle-review.md)、[本地PR body](pr.md)。本地提交未push，默认Node24.21.0/pnpm12.8.1已对齐；父04/05/06及M2未完成范围保持，真实供应商与用户认可pending。
+
+## 2026-10-06 文件与目录引用优化
+
+用户明确要求优化@目录选择、文件/目录区分与性能，接续本地da9920d，[04c](issues/04c-project-reference-search.md)。沿用D-10/D-24/D-33/D-35/D-37；发送冻结与权限不变，目录参照固定OMP的直接条目清单，不递归读取全部正文。默认本地实施/commit/验证/候选，不push。当前m2.14保留已交付快照，04c验收后单独记录；不是重做已完成生命周期或开启PDF/OCR。
+
+2026-10-06：04c resolved。typed目录/文件引用、目录优先有界索引、150ms查询合并、目录直接清单冻结和schema10围栏完成；最终source31cb912 clean m2.15，711行为/34架构/70tooling、20,001条目测量、两轴独立修复复核及24项实际包内检查通过。[交接](project-references.md)、[评审](project-references-review.md)。M2整体仍in-progress/trial delivered/acceptance pending，不将父票其余范围或另一交互策略WIP标完成，不push。
+
+
+## 2026-10-06 长输出分段阅读切片
+
+本轮用户明确要求按已合并工作流继续下一段可用M2。基点 `df41925401d6f64cfe4ea73432ca00523f7a5a94`，沿用干净 `codex/m2-lifecycle`。选择V1-07当前可达缺口：实时/历史/子Agent长正文全量送入Markdown导致主列表及DOM膨胀。交付有界正文阅读、完整已取得原文复制及流式追加时已读分段/选择保留；不改变OMP历史/Host预算/水位，不以截断正文冒称全文。PDF完整视觉/OCR与父票组合验收另留；本段无新增重要产品待决。冷旧Thread只读、unknown不重发、退出放弃队列待决保持。授权含本地实现/提交/隔离SDK和实际GUI/本地候选，不push、不使用个人凭据或真实供应商付费请求，不扩M3。
+
+- [06c](issues/06c-bounded-long-reading.md)：长正文有界分段、正式实时/历史/子Agent接入，TDD与交互回归。
+- [06d](issues/06d-long-reading-candidate.md)：整段双轴独立评审、实际SDK/GUI包内验证、本地候选和交接。
+
+主Agent单写票/规格/生成看板/依赖报告/版本及候选；06c implementer在独立checkout固定起点实施，06d由主Agent串行集成验收。交互策略worktree不纳入本段。完整M2性能组合（3Thread/10000消息/30分钟/IME/故障全集）仍开放，本段仅验证受影响的长正文路径。
+
+派发：06c→bounded_reading→`/Users/louistation/.codex/worktrees/m2-long-reading-06c/d-pi`→`codex/m2-long-reading-06c`，固定起点`88e40303b1b13707e5717818df19ccf6ce3cd124`。主Agent沿用`codex/m2-lifecycle`负责validation/m2长正文harness及共享管理；写集不重叠。
+
+2026-10-06：06c/06d resolved。实时/原生历史/子Agent长正文按8192 UTF-16 units或120行有界分段，已封闭段DOM/选择/段内滚动在追加时保留，完整复制当前已取得原文。实际包Copy暴露窗口写权限拒绝，TDD后仅允许当前WebContents/主框架/当前文档的clipboard-sanitized-write并复核双权限入口。产品source `c531558` clean m2.16，验证harness `3fdb25f`；723行为/34架构/70tooling、两轴独立评审及21项实际包内检查通过，ZIP CRC/app.asar同源通过。40784 UTF-16 units复制7段并恢复剪贴板；10MiB原生工具artifact已核实，但固定SDK先缩为41077 UTF-8 bytes头尾原文，GUI六段保留省略/artifact提示，不冒称Host收到10MiB负载。[交接](long-reading.md)、[评审](long-reading-review.md)。父06/M2仍开放，固定负载/系统IME/故障全集及PDF视觉/OCR未验，用户认可pending，本地提交不push。
+
+## 2026-10-06 远端交付授权
+
+用户明确要求“push，然后处理好相关的PR。随后给开启下一阶段的简短有力的prompt”。本次按完整PR收尾集成已有叠加PR #2（codex/interaction-policy→codex/m2-lifecycle），推送集成分支、建立本阶段到main的PR并在当前head检查通过后合并，核实远端main。该授权取代本阶段此前本地不push及交互策略此前不merge限制，不增加公开安装包发布、真实供应商费用或用户认可。
+
+长正文与交互策略的历史冲突保留来源隔离key、完整复制heading及data-selectable三者；结构报告重新生成，补正式ReadingBody在中央选择策略下四主题/密度真实鼠标拖选和翻段验证。已有m2.16 ZIP仍只对应c531558产品source，不冒称含后续交互策略集成；本次不重打包安装包。远端结果见[PR交付记录](pr-delivery.md)。

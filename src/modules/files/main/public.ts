@@ -4,3 +4,4 @@ export {
   readProjectBytes,
   readProjectFile,
 } from "./project-files";
+export { ProjectReferenceSearch } from "./project-reference-search";

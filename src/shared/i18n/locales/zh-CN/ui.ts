@@ -1,4 +1,8 @@
 export const ui = {
+  "ui.reading.originalSegments": "原文分段显示；复制保留当前已取得的全部原文。",
+  "ui.reading.previous": "上一段",
+  "ui.reading.next": "下一段",
+  "ui.reading.segment": "第 {current} / {total} 段",
   "attachment.closePending":
     "部分附件仍在准备，或原件尚未保存。窗口保持打开，请回到相关 Thread 处理附件后再关闭。",
   "attachment.previewTruncated":
@@ -13,11 +17,12 @@ export const ui = {
   "queue.retainImage": "保留图片 {index}（{mimeType}）",
 
   "attachment.add": "添加附件",
-  "attachment.reference": "@ 项目文件",
-  "attachment.hint": "粘贴图片、拖入文件，或输入 @ 引用项目文件。",
+  "attachment.reference": "@ 项目文件与文件夹",
+  "attachment.hint": "粘贴图片、拖入文件，或输入 @ 引用项目文件或文件夹。",
   "attachment.preparing": "正在准备附件…",
   "attachment.ready": "已准备",
   "attachment.failed": "准备失败",
+  "attachment.directoryAtSend": "发送时冻结目录条目，不含文件正文",
   "attachment.readAtSend": "发送时读取",
   "attachment.remove": "移除 {name}",
   "attachment.previous": "前移 {name}",
@@ -30,14 +35,37 @@ export const ui = {
   "attachment.textOnlyNotice": "仅文字 PDF：可能遗漏图片、图表和扫描内容。",
   "attachment.coverageGap":
     "PDF 抽取存在覆盖缺口。请预览结果，明确选择仅文字，或移除此附件。",
+  "attachment.storage": "附件与存储",
+  "attachment.checkStorage": "检查存储附件",
+  "attachment.cleanStorage": "清理未引用缓存",
+  "attachment.storagePolicy":
+    "保留草稿、尚待应用的导入和冻结收据依赖。自动清理在最后引用释放七天后执行；手动清理会移除未引用的缓存原件和转换内容。",
+  "attachment.storageSummary":
+    "已检查 {checked} 项，保留 {retained} 项，未引用 {unused} 项，待续检 {remaining} 项。",
+  "attachment.storageDeleted": "已清理 {count} 项缓存（{bytes} 字节）。",
+  "attachment.storageOriginal": "原件",
+  "attachment.storageDerived": "转换内容",
+  "attachment.storageReferencePending":
+    "引用检查尚未完成，本批内容保持保留；可继续检查或清理以完成核对。",
+  "attachment.storageDiscoveryPending":
+    "文件发现仍在进行，可继续检查以完成本轮分批扫描。",
+  "attachment.storageIssuesTruncated":
+    "还有其他受影响来源。可继续检查，或重新附加不可用的原件。",
+  "attachment.storageReattach":
+    "原件丢失或损坏时请重新附加；转换内容不可用时可重试准备。",
+  "attachment.reason.content-missing":
+    "私有内容丢失或已作为未引用缓存清理，请重新附加原件。",
   "attachment.library": "可再次引用的已导入文件",
   "attachment.insert": "加入草稿",
-  "attachment.searchLabel": "查找项目文件",
-  "attachment.searching": "正在查找项目文件…",
-  "attachment.noMatches": "未找到匹配文件。请尝试文件名或相对路径。",
+  "attachment.refreshSearch": "刷新搜索",
+  "attachment.directoryKind": "文件夹",
+  "attachment.fileKind": "文件",
+  "attachment.searchLabel": "查找项目文件或文件夹",
+  "attachment.searching": "正在查找项目文件或文件夹…",
+  "attachment.noMatches": "未找到匹配文件或文件夹。请尝试名称或相对路径。",
   "attachment.searchLimited": "搜索达到上限，请输入更具体的路径。",
-  "attachment.searchFailed": "文件搜索失败，请修改查询重试。",
-  "attachment.cancelSearch": "关闭文件搜索",
+  "attachment.searchFailed": "搜索失败，请刷新或修改查询重试。",
+  "attachment.cancelSearch": "关闭搜索",
   "attachment.transportFailed": "附件请求失败，草稿已保留；可显式重试此操作。",
   "attachment.missing": "附件不可用：{id}。请移除或重新附加原件。",
   "attachment.reason.invalid-token": "附件引用无效，请移除后重新附加。",

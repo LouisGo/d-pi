@@ -25,7 +25,10 @@ describe("real SQLite and directory service", () => {
       db.exec(`
         CREATE TABLE desktop(id INTEGER PRIMARY KEY CHECK(id=1), active_thread TEXT, theme TEXT NOT NULL, density TEXT NOT NULL, send_key TEXT);
         INSERT INTO desktop VALUES(1,NULL,'dark','compact','enter-newline');
-        CREATE TABLE submission(id TEXT PRIMARY KEY, receipt TEXT NOT NULL);
+        CREATE TABLE workspace(id TEXT PRIMARY KEY,directory TEXT NOT NULL UNIQUE,execution_trust TEXT);
+        CREATE TABLE thread(id TEXT PRIMARY KEY,workspace_id TEXT REFERENCES workspace(id),revision INTEGER,body TEXT);
+        CREATE TABLE submission(id TEXT PRIMARY KEY,thread_id TEXT REFERENCES thread(id),receipt TEXT NOT NULL);
+        CREATE TABLE draft_consumption(thread_id TEXT REFERENCES thread(id),revision INTEGER,submission_id TEXT REFERENCES submission(id));
         PRAGMA user_version=4;
       `);
       db.close();
@@ -51,7 +54,7 @@ describe("real SQLite and directory service", () => {
       reopened.close();
       const migrated = new DatabaseSync(path, { readOnly: true });
       expect(migrated.prepare("PRAGMA user_version").get()?.user_version).toBe(
-        8,
+        10,
       );
       migrated.close();
       const backup = new DatabaseSync(`${path}.before-v5`, { readOnly: true });
@@ -170,7 +173,7 @@ describe("real SQLite and directory service", () => {
       try {
         expect(
           unchanged.prepare("PRAGMA user_version").get()?.user_version,
-        ).toBe(8);
+        ).toBe(10);
         expect(
           unchanged
             .prepare("SELECT workspace_id,body FROM thread WHERE id=?")
@@ -330,7 +333,7 @@ it("backs up v5 before enabling typed native outcomes in v6 and reopens the new 
     const migrated = new DatabaseSync(path, { readOnly: true });
     try {
       expect(migrated.prepare("PRAGMA user_version").get()?.user_version).toBe(
-        8,
+        10,
       );
     } finally {
       migrated.close();
@@ -370,3 +373,32 @@ it("a v6 backup publication failure preserves the v5 database and its draft inst
       retained.close();
     }
   }));
+
+it("backs up schema 9 before typed references and fences older readers without rewriting drafts", () => {
+  const root = mkdtempSync(join(tmpdir(), "dpi-reference-format-"));
+  const path = join(root, "app.sqlite");
+  const initial = openStorage(path);
+  const draft = initial.drafts.create(root);
+  initial.drafts.save(draft.threadId, 0, "old file reference remains");
+  initial.close();
+  const previous = new DatabaseSync(path);
+  previous.exec("PRAGMA user_version=9");
+  previous.close();
+  const migrated = openStorage(path);
+  try {
+    expect(
+      migrated.database.connection.prepare("PRAGMA user_version").get()
+        ?.user_version,
+    ).toBe(10);
+    expect(migrated.drafts.active()?.text).toBe("old file reference remains");
+    const backup = new DatabaseSync(`${path}.before-v10`, { readOnly: true });
+    try {
+      expect(backup.prepare("PRAGMA user_version").get()?.user_version).toBe(9);
+    } finally {
+      backup.close();
+    }
+  } finally {
+    migrated.close();
+    rmSync(root, { recursive: true, force: true });
+  }
+});

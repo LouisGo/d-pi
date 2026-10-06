@@ -2,7 +2,8 @@ import { useStore } from "zustand";
 import { Button } from "@/components/ui/button";
 import type { ConversationModel } from "../../../modules/conversation/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import { Markdown } from "./markdown";
+import { ReadingBody } from "./reading-body";
+import { SubagentMessage } from "./subagents";
 
 export function Conversation({
   model,
@@ -13,7 +14,16 @@ export function Conversation({
 }) {
   const { t } = useI18n();
   const itemIds = useStore(model.stateStore, (state) => state.itemIds);
+  const threadId = useStore(model.stateStore, (state) => state.threadId);
+  const generation = useStore(
+    model.stateStore,
+    (state) => state.view?.connectionGeneration,
+  );
   const gap = useStore(model.stateStore, (state) => state.view?.gap ?? false);
+  const exhausted = useStore(
+    model.stateStore,
+    (state) => state.resyncExhausted,
+  );
   return (
     <section
       className="conversation"
@@ -31,8 +41,23 @@ export function Conversation({
         </>
       )}
       {gap && <p role="status">{t("ui.conversation.gap")}</p>}
+      {exhausted && (
+        <Button
+          variant="ghost"
+          onClick={() => {
+            const threadId = model.stateStore.getState().threadId;
+            if (threadId) model.connect(threadId);
+          }}
+        >
+          {t("subagents.reconnect")}
+        </Button>
+      )}
       {itemIds.map((id) => (
-        <ConversationMessage key={id} id={id} model={model} />
+        <ConversationMessage
+          key={JSON.stringify([threadId, generation, id])}
+          id={id}
+          model={model}
+        />
       ))}
     </section>
   );
@@ -48,8 +73,17 @@ function ConversationMessage({
   const { t, formatMessage } = useI18n();
   const item = useStore(model.stateStore, (state) => state.itemsById.get(id));
   if (!item) return null;
+  if (item.subagent) return <SubagentMessage item={item} />;
+  if (item.subagentNotice)
+    return (
+      <p role="status">
+        {item.subagentNotice === "observation-limit"
+          ? t("subagents.observationLimit")
+          : t("subagents.observationUnavailable")}
+      </p>
+    );
   return (
-    <article className="message">
+    <article className="message" data-selectable>
       <div className="message-heading">
         <strong>
           {item.label.kind === "literal"
@@ -75,10 +109,13 @@ function ConversationMessage({
       ) : item.role === "tool" ? (
         <details>
           <summary>{t("ui.conversation.toolOutput")}</summary>
-          <pre>{item.text || t("ui.conversation.waitingResult")}</pre>
+          <ReadingBody
+            text={item.text || t("ui.conversation.waitingResult")}
+            raw
+          />
         </details>
       ) : (
-        <Markdown text={item.text} streaming={item.state === "streaming"} />
+        <ReadingBody text={item.text} streaming={item.state === "streaming"} />
       )}
       {item.truncated && (
         <p role="status">{formatMessage({ code: "conversation.truncated" })}</p>

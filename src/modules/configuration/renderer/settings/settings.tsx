@@ -42,6 +42,7 @@ export function ConfigurationSettings({
           )}
           <div className="flex gap-2">
             <button
+              className="ui-button ui-button-primary"
               type="button"
               disabled={busy || active}
               onClick={() =>
@@ -55,6 +56,7 @@ export function ConfigurationSettings({
               {t("config.openaiLogin")}
             </button>
             <button
+              className="ui-button ui-button-ghost"
               type="button"
               disabled={busy}
               onClick={() => void query.refetch()}
@@ -83,7 +85,11 @@ export function ConfigurationSettings({
                 onChange={(e) => setKey(e.target.value)}
               />
             </label>
-            <button type="submit" disabled={!key.trim() || busy || active}>
+            <button
+              className="ui-button ui-button-primary"
+              type="submit"
+              disabled={!key.trim() || busy || active}
+            >
               {t("config.saveKey")}
             </button>
           </form>

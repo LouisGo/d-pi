@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { mkdirSync, mkdtempSync, realpathSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -106,6 +107,19 @@ export function createDesktopServices(context: {
           return result.canceled ? null : result.filePaths;
         },
       );
+      attachments.startMaintenance(() => {
+        const diagnostics = context.getDiagnostics();
+        if (!diagnostics) return;
+        const traceId = randomUUID();
+        diagnostics.record({
+          traceId,
+          requestId: traceId,
+          connectionId: diagnostics.processInstanceId,
+          operation: "attachments:maintenance",
+          stage: "failed",
+          code: "storage-unavailable",
+        });
+      });
       startupCauseCode = undefined;
     } catch (error) {
       startupCauseCode = diagnosticCode(error);

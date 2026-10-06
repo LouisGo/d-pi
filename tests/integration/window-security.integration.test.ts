@@ -15,11 +15,15 @@ const desktop = vi.hoisted(() => ({
   loadFile: vi.fn<(path: string) => Promise<void>>(() => Promise.resolve()),
   quit: vi.fn(),
   contents: {
+    getURL: () => "file:///app/renderer/index.html",
     mainFrame: {},
     send: vi.fn(),
     setWindowOpenHandler: vi.fn(),
     on: vi.fn(),
-    session: { setPermissionRequestHandler: vi.fn() },
+    session: {
+      setPermissionRequestHandler: vi.fn(),
+      setPermissionCheckHandler: vi.fn(),
+    },
   },
 }));
 

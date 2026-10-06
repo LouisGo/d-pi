@@ -1,13 +1,18 @@
 import { z } from "zod";
+import { ProjectReferenceEntrySchema } from "../../modules/files/contracts/public";
 import {
   AttachmentFailureReasonSchema,
   AttachmentSchema,
+  AttachmentStorageReportSchema,
 } from "../../modules/input/contracts/public";
 import { ThreadIdSchema, TraceIdSchema } from "../../shared/identity";
 
 const identity = { threadId: ThreadIdSchema, traceId: TraceIdSchema };
 export const AttachmentRequestSchema = z.discriminatedUnion("kind", [
-  z.strictObject({ ...identity, kind: z.enum(["list", "choose-import"]) }),
+  z.strictObject({
+    ...identity,
+    kind: z.enum(["list", "choose-import", "check-storage", "clean-storage"]),
+  }),
   z.strictObject({
     ...identity,
     kind: z.literal("import-bytes"),
@@ -20,11 +25,13 @@ export const AttachmentRequestSchema = z.discriminatedUnion("kind", [
     ...identity,
     kind: z.literal("add-reference"),
     path: z.string().min(1).max(4096),
+    referenceKind: z.enum(["file", "directory"]).optional(),
   }),
   z.strictObject({
     ...identity,
     kind: z.literal("search-reference"),
     query: z.string().max(4096),
+    refresh: z.boolean().optional(),
   }),
   z.strictObject({
     ...identity,
@@ -40,6 +47,7 @@ export const AttachmentRequestSchema = z.discriminatedUnion("kind", [
 ]);
 export type AttachmentRequest = z.infer<typeof AttachmentRequestSchema>;
 export const AttachmentReplySchema = z.discriminatedUnion("kind", [
+  AttachmentStorageReportSchema,
   z.strictObject({
     kind: z.literal("attachments"),
     items: z.array(AttachmentSchema),
@@ -47,7 +55,7 @@ export const AttachmentReplySchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("cancelled") }),
   z.strictObject({
     kind: z.literal("search"),
-    paths: z.array(z.string().max(4096)).max(100),
+    entries: z.array(ProjectReferenceEntrySchema).max(100),
     truncated: z.boolean(),
   }),
   z.strictObject({

@@ -55,6 +55,7 @@ export const PlainUiMessageCodeSchema = z.enum([
   "attachment.reason.storage-full",
   "attachment.reason.storage-unavailable",
   "attachment.reason.content-corrupt",
+  "attachment.reason.content-missing",
   "attachment.reason.unsupported-format",
   "attachment.reason.invalid-encoding",
   "attachment.reason.invalid-image",

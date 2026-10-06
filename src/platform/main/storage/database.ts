@@ -27,7 +27,9 @@ export class AppDatabase {
         version !== 5 &&
         version !== 6 &&
         version !== 7 &&
-        version !== 8
+        version !== 8 &&
+        version !== 9 &&
+        version !== 10
       )
         throw new Error("Unsupported schema version");
       if (version === 0) {
@@ -72,7 +74,9 @@ export class AppDatabase {
         version !== 5 &&
         version !== 6 &&
         version !== 7 &&
-        version !== 8
+        version !== 8 &&
+        version !== 9 &&
+        version !== 10
       ) {
         const temporary = `${path}.before-v3.${randomUUID()}.tmp`;
         try {
@@ -106,7 +110,9 @@ export class AppDatabase {
       this.originalVersion !== 5 &&
       this.originalVersion !== 6 &&
       this.originalVersion !== 7 &&
-      this.originalVersion !== 8
+      this.originalVersion !== 8 &&
+      this.originalVersion !== 9 &&
+      this.originalVersion !== 10
     ) {
       const temporary = `${this.path}.before-v4.${randomUUID()}.tmp`;
       try {
@@ -125,7 +131,9 @@ export class AppDatabase {
       this.originalVersion !== 5 &&
       this.originalVersion !== 6 &&
       this.originalVersion !== 7 &&
-      this.originalVersion !== 8
+      this.originalVersion !== 8 &&
+      this.originalVersion !== 9 &&
+      this.originalVersion !== 10
     ) {
       const temporary = `${this.path}.before-v5.${randomUUID()}.tmp`;
       try {
@@ -143,7 +151,9 @@ export class AppDatabase {
     if (
       this.originalVersion !== 6 &&
       this.originalVersion !== 7 &&
-      this.originalVersion !== 8
+      this.originalVersion !== 8 &&
+      this.originalVersion !== 9 &&
+      this.originalVersion !== 10
     ) {
       const temporary = `${this.path}.before-v6.${randomUUID()}.tmp`;
       try {
@@ -156,7 +166,12 @@ export class AppDatabase {
       // The version guard prevents an older App silently dropping new outcomes.
       this.transaction(() => this.connection.exec("PRAGMA user_version=6;"));
     }
-    if (this.originalVersion !== 7 && this.originalVersion !== 8) {
+    if (
+      this.originalVersion !== 7 &&
+      this.originalVersion !== 8 &&
+      this.originalVersion !== 9 &&
+      this.originalVersion !== 10
+    ) {
       const temporary = `${this.path}.before-v7.${randomUUID()}.tmp`;
       try {
         this.connection.prepare("VACUUM INTO ?").run(temporary);
@@ -172,9 +187,11 @@ export class AppDatabase {
       );
     }
     this.migrateAttachments();
+    this.migrateContentLifecycle();
+    this.migrateReferenceKinds();
   }
   private migrateAttachments(): void {
-    if (this.originalVersion === 8) return;
+    if (this.originalVersion >= 8) return;
     const temporary = `${this.path}.before-v8.${randomUUID()}.tmp`;
     try {
       this.connection.prepare("VACUUM INTO ?").run(temporary);
@@ -188,6 +205,63 @@ export class AppDatabase {
       PRAGMA user_version=8;
     `),
     );
+  }
+
+  private migrateContentLifecycle(): void {
+    if (this.originalVersion >= 9) return;
+    const temporary = `${this.path}.before-v9.${randomUUID()}.tmp`;
+    try {
+      this.connection.prepare("VACUUM INTO ?").run(temporary);
+      renameSync(temporary, `${this.path}.before-v9`);
+    } finally {
+      rmSync(temporary, { force: true });
+    }
+    this.transaction(() =>
+      this.connection.exec(`
+      CREATE TABLE input_content_object(
+        digest TEXT PRIMARY KEY,
+        byte_length INTEGER NOT NULL CHECK(byte_length>=0),
+        reference_count INTEGER NOT NULL DEFAULT 0 CHECK(reference_count>=0),
+        last_released_at INTEGER,
+        state TEXT NOT NULL DEFAULT 'available' CHECK(state IN ('available','deleting','deleted')),
+        problem TEXT CHECK(problem IN ('content-missing','content-corrupt','storage-unavailable')),
+        checked_at INTEGER
+      );
+      CREATE INDEX input_attachment_original_digest ON input_attachment(CASE WHEN json_valid(payload) THEN json_extract(payload,'$.attachment.inputDigest') END);
+      CREATE INDEX input_attachment_derived_digest ON input_attachment(CASE WHEN json_valid(payload) THEN json_extract(payload,'$.derivedDigest') END);
+      CREATE TABLE input_content_epoch(id INTEGER PRIMARY KEY CHECK(id=1),revision INTEGER NOT NULL,manifest_revision INTEGER NOT NULL);
+      INSERT INTO input_content_epoch VALUES(1,0,0);
+      ${[
+        "thread",
+        "draft_consumption",
+        "submission",
+        "queue_change",
+        "input_attachment",
+      ]
+        .flatMap((table) =>
+          ["INSERT", "UPDATE", "DELETE"].map(
+            (operation) =>
+              `CREATE TRIGGER input_epoch_${table}_${operation.toLowerCase()} AFTER ${operation} ON ${table} BEGIN UPDATE input_content_epoch SET revision=revision+1${table === "input_attachment" ? ",manifest_revision=manifest_revision+1" : ""} WHERE id=1; END;`,
+          ),
+        )
+        .join("\n")}
+      PRAGMA user_version=9;
+    `),
+    );
+  }
+
+  private migrateReferenceKinds(): void {
+    if (this.originalVersion >= 10) return;
+    const temporary = `${this.path}.before-v10.${randomUUID()}.tmp`;
+    try {
+      this.connection.prepare("VACUUM INTO ?").run(temporary);
+      renameSync(temporary, `${this.path}.before-v10`);
+    } finally {
+      rmSync(temporary, { force: true });
+    }
+    // Typed reference metadata changes persisted JSON contracts. Fence old
+    // strict readers before writing it; legacy records remain valid as files.
+    this.transaction(() => this.connection.exec("PRAGMA user_version=10;"));
   }
 
   transaction<T>(body: () => T): T {

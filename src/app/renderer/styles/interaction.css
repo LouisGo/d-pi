@@ -1,0 +1,171 @@
+/* App interaction policy. Opt content in with data-selectable; controls opt out. */
+@layer base {
+  html {
+    cursor: default;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  :where(
+    [data-selectable],
+    .trace,
+    .failure,
+    .thread-identity,
+    .directory-info > span,
+    .file-meta:not(details),
+    details.file-meta > :not(summary),
+    .file-result > [role="status"],
+    .diff-sources,
+    .runtime-source > p,
+    .runtime-source > span,
+    .attachment-preview-content,
+    [role="alert"],
+    textarea,
+    input:not(
+      [type="button"],
+      [type="submit"],
+      [type="reset"],
+      [type="checkbox"],
+      [type="radio"],
+      [type="range"],
+      [type="color"],
+      [type="file"],
+      [type="hidden"]
+    ),
+    [contenteditable="true"]
+  ) {
+    -webkit-user-select: text;
+    user-select: text;
+    cursor: text;
+  }
+
+  /* Important is limited to control semantics: vendor utilities/inline cursors
+     must not restore a hand cursor, including in body-level portals. */
+  :is(
+    button,
+    [role="button"],
+    a[href],
+    summary,
+    select,
+    option,
+    [role="tab"],
+    [role="menuitem"],
+    [role="menuitemcheckbox"],
+    [role="menuitemradio"],
+    [role="option"],
+    [role="checkbox"],
+    [role="radio"],
+    input[type="checkbox"],
+    input[type="radio"],
+    input[type="button"],
+    input[type="submit"],
+    input[type="reset"],
+    input[type="file"],
+    input[type="color"],
+    label:has(input:is([type="checkbox"], [type="radio"])),
+    .message-heading,
+    .url-icon
+  ) {
+    cursor: default !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+  }
+  :is(
+      button,
+      [role="button"],
+      a[href],
+      summary,
+      select,
+      [role="tab"],
+      [role="menuitem"],
+      [role="option"],
+      .message-heading,
+      .url-icon
+    )
+    * {
+    cursor: default !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+  }
+
+  :where(
+    a[href],
+    summary,
+    select,
+    input[type="checkbox"],
+    input[type="radio"]
+  ):focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: var(--radius-control);
+  }
+  a[href] {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: calc(var(--layout-gap) / 4);
+  }
+  a[href]:hover {
+    color: var(--primary-hover);
+    text-decoration-thickness: 2px;
+  }
+  a[href]:active {
+    color: var(--accent-foreground);
+  }
+  :where(summary) {
+    border-radius: var(--radius-control);
+  }
+  :where(summary):hover {
+    color: var(--foreground);
+    background: var(--muted-hover);
+  }
+  :where(summary):active {
+    color: var(--accent-foreground);
+    background: var(--accent);
+  }
+  :where(select):not(:disabled):hover {
+    border-color: var(--primary);
+  }
+  :where(select):not(:disabled):active {
+    border-color: var(--accent-foreground);
+  }
+  :where(input[type="checkbox"], input[type="radio"]) {
+    accent-color: var(--primary);
+  }
+  :where(
+    label:has(input:is([type="checkbox"], [type="radio"]):not(:disabled))
+  ):hover {
+    color: var(--primary);
+  }
+  :where(
+    label:has(input:is([type="checkbox"], [type="radio"]):not(:disabled))
+  ):active {
+    color: var(--accent-foreground);
+  }
+}
+
+/* Monaco 0.57 owns its DOM selection. Its unlayered and dynamic cursor styles
+   require a scoped adapter; do not force user-select on view lines or widgets. */
+@layer components {
+  :where(.monaco-readonly, .monaco-hover, .monaco-menu-container),
+  :where(.monaco-readonly, .monaco-hover, .monaco-menu-container) * {
+    cursor: default !important;
+  }
+  :where(.monaco-readonly)
+    :is(.view-lines, .view-line, .view-line *, textarea, input),
+  :where(.monaco-hover) :is([data-selectable], input, textarea),
+  :where(.monaco-menu-container) :is(input, textarea) {
+    cursor: text !important;
+  }
+  :where(.monaco-readonly) .monaco-sash.vertical {
+    cursor: ew-resize !important;
+  }
+  :where(.monaco-readonly) .monaco-sash.horizontal {
+    cursor: ns-resize !important;
+  }
+  :where(.monaco-readonly) .monaco-sash.disabled {
+    cursor: default !important;
+  }
+  :where(.monaco-readonly) :is(.detected-link-active, .mtkoverflow) {
+    cursor: default !important;
+  }
+}

@@ -1,0 +1,94 @@
+
+ RUN  v5.0.2 /Users/louistation/MySpace/Life/d-pi
+
+ ❯ src/modules/files/main/project-reference-search.test.ts (14 tests | 2 failed | 1 skipped) 77ms
+   × moving and restoring a self directory while opening its iterator cannot publish mismatched entries 9ms
+   × moving and restoring a ancestor directory while opening its iterator cannot publish mismatched entries 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/modules/files/main/project-reference-search.test.ts > moving and restoring a self directory while opening its iterator cannot publish mismatched entries
+AssertionError: promise resolved "{ kind: 'search', …(2) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "entries": [
++     {
++       "kind": "directory",
++       "name": "src",
++       "path": "src",
++     },
++     {
++       "kind": "directory",
++       "name": "nested",
++       "path": "src/nested",
++     },
++   ],
++   "kind": "search",
++   "truncated": true,
+  }
+
+ ❯ src/modules/files/main/project-reference-search.test.ts:276:43
+    274|       return directory;
+    275|     });
+    276|     await expect(search().search(root, "")).rejects.toThrow("changed");
+       |                                           ^
+    277|   },
+    278| );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/modules/files/main/project-reference-search.test.ts > moving and restoring a ancestor directory while opening its iterator cannot publish mismatched entries
+AssertionError: promise resolved "{ kind: 'search', …(2) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "entries": [
++     {
++       "kind": "directory",
++       "name": "src",
++       "path": "src",
++     },
++     {
++       "kind": "directory",
++       "name": "nested",
++       "path": "src/nested",
++     },
++     {
++       "kind": "directory",
++       "name": "deep",
++       "path": "src/nested/deep",
++     },
++     {
++       "kind": "file",
++       "name": "unrelated.ts",
++       "path": "src/nested/deep/unrelated.ts",
++     },
++   ],
++   "kind": "search",
++   "truncated": false,
+  }
+
+ ❯ src/modules/files/main/project-reference-search.test.ts:276:43
+    274|       return directory;
+    275|     });
+    276|     await expect(search().search(root, "")).rejects.toThrow("changed");
+       |                                           ^
+    277|   },
+    278| );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 11 passed | 1 skipped (14)
+   Start at  13:17:59
+   Duration  314ms (tests 35%, import 33%, transform 31%, worker 1%)

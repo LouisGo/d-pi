@@ -1,0 +1,16 @@
+{
+  "sourceCommit": "c531558406e3c3b7da4544be8df55fe92d40530f",
+  "validationCommit": "3fdb25f5c96f8b126d9b75fcbb1eaa7e8198dd6e",
+  "version": "0.1.0-m2.16",
+  "buildId": "c5315584-f375cd21",
+  "dirty": false,
+  "zip": "/Users/louistation/MySpace/Life/d-pi/dist/candidates/d-pi-0.1.0-m2.16-c531558-mac-arm64.zip",
+  "zipBytes": 430094907,
+  "zipSha256": "c9d4adbfc76ca1f8c7a0af8719c861231a5e8d43e783875f459cfeeb06d797a7",
+  "app": "/Users/louistation/MySpace/Life/d-pi/dist/long-reading-m2.16-final-clean/mac-arm64/d-pi.app",
+  "appAsarSha256": "69b24c046a884c3d2b9aec7efa678cfa0209dd437c710a16f66aff8b2cfb37c8",
+  "zipAppAsarSha256": "69b24c046a884c3d2b9aec7efa678cfa0209dd437c710a16f66aff8b2cfb37c8",
+  "zipCRC": "unzip -t exit 0; No errors detected",
+  "signed": false,
+  "notarized": false
+}

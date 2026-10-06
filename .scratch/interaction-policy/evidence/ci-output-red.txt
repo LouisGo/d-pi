@@ -1,0 +1,85 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/.codex/worktrees/interaction-policy/d-pi[39m
+
+ [32m✓[39m src/platform/omp/resources/runtime-resource.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/modules/execution/renderer/runtime/runtime-store.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/modules/execution/renderer/runtime/runtime-model.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/modules/execution/renderer/runtime/queue-write-lane.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m src/modules/execution/core/runtime/admission.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/integration/app-runtime-sdk-i18n.integration.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 105[2mms[22m[39m
+ [32m✓[39m tests/integration/runtime-host.integration.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 429[2mms[22m[39m
+ [32m✓[39m tests/integration/app-runtime-service.integration.test.ts [2m([22m[2m26 tests[22m[2m)[22m[33m 949[2mms[22m[39m
+ [31m❯[39m tests/integration/subagent-observation.integration.test.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 2248[2mms[22m[39m
+[31m   [31m×[31m projects actual fixed SDK localhost frames and restores the same native results through the Renderer model[39m[33m 2247[2mms[22m[39m
+ [32m✓[39m tests/integration/runtime-causality.integration.test.ts [2m([22m[2m22 tests[22m[2m)[22m[33m 4535[2mms[22m[39m
+   [33m[2m✓[22m[39m replays bounded evidence in the same live Host after a SQLite failure without replaying prompt[33m 1164[2mms[22m[39m
+   [33m[2m✓[22m[39m idle cannot dispose unconfirmed terminal evidence after ACK was already committed[33m 599[2mms[22m[39m
+   [33m[2m✓[22m[39m a Host loss after Main write failure loses only memory evidence and reopens conservatively without resending[33m 2019[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/subagent-observation.integration.test.ts[2m > [22mprojects actual fixed SDK localhost frames and restores the same native results through the Renderer model
+[31m[1mError[22m: Command failed: /Users/louistation/.nvm/versions/node/v24.21.0/bin/node /Users/louistation/.codex/worktrees/interaction-policy/d-pi/runtime/native-subagent-observation-suite.mjs /private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-test-cE8S6D/tmp/d-pi-observation-evidence-uLDdVG/new/nested/frames.json
+
+../../../../../../../../../../Users/louistation/.codex/worktrees/interaction-policy/d-pi/resources/sdk/.subagent-observation-ZKMZr8/native-subagent-observation.test.mjs:
+205 |       expect(JSON.stringify(transcript.data.messages)).toContain(
+206 |         "M2_SUBAGENT_CHILD_RESULT_",
+207 |       );
+208 |     }
+209 |     expect((await request("get_subagents")).data.subagents).toEqual([]);
+210 |     await writeFile(
+                ^
+ENOENT: no such file or directory, open '/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-test-cE8S6D/tmp/d-pi-observation-evidence-uLDdVG/new/nested/frames.json'
+    path: "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-test-cE8S6D/tmp/d-pi-observation-evidence-uLDdVG/new/nested/frames.json",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+      at async <anonymous> (/Users/louistation/.codex/worktrees/interaction-policy/d-pi/resources/sdk/.subagent-observation-ZKMZr8/native-subagent-observation.test.mjs:210:11)
+(fail) fixed SDK RPC observes two same-name tasks, final transcript and terminal registry removal [2025.48ms]
+
+ 0 pass
+ 1 fail
+ 13 expect() calls
+Ran 1 test across 1 file. [2.16s]
+node:internal/errors:986
+  const err = new Error(message);
+              ^
+
+Error: Command failed: /Users/louistation/.codex/worktrees/interaction-policy/d-pi/resources/sdk/bun test /Users/louistation/.codex/worktrees/interaction-policy/d-pi/resources/sdk/.subagent-observation-ZKMZr8/native-subagent-observation.test.mjs
+    at genericNodeError (node:internal/errors:986:15)
+    at wrappedFn (node:internal/errors:540:14)
+    at checkExecSyncError (node:child_process:942:11)
+    at execFileSync (node:child_process:978:15)
+    at file:///Users/louistation/.codex/worktrees/interaction-policy/d-pi/runtime/native-subagent-observation-suite.mjs:24:3
+    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)
+    at async node:internal/modules/esm/loader:647:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  status: 1,
+  signal: null,
+  output: [ null, null, null ],
+  pid: 8777,
+  stdout: null,
+  stderr: null
+}
+
+Node.js v24.21.0
+[39m
+[90m [2m❯[22m <anonymous> resources/sdk/.subagent-observation-ZKMZr8/native-subagent-observation.test.mjs:[2m210:11[22m[39m
+[90m [2m❯[22m runtime/native-subagent-observation-suite.mjs:[2m24:3[22m[39m
+[36m [2m❯[22m tests/integration/subagent-observation.integration.test.ts:[2m19:7[22m[39m
+    [90m 17|[39m     try {
+    [90m 18|[39m       expect(existsSync(dirname(evidencePath))).toBe(false);
+    [90m 19|[39m       execFileSync(
+    [90m   |[39m       [31m^[39m
+    [90m 20|[39m         process.execPath,
+    [90m 21|[39m         [
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m9 passed[39m[22m[90m (10)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m75 passed[39m[22m[90m (76)[39m
+[2m   Start at [22m 13:54:56
+[2m   Duration [22m 5.38s[2m (tests 66%, transform 18%, import 16%)[22m

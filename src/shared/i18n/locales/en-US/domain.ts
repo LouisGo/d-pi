@@ -1,4 +1,43 @@
 export const domain = {
+  "subagents.observationLimit":
+    "The active snapshot exceeds the observation budget. Only the first 128 tasks are shown; coverage is incomplete.",
+  "subagents.unhandledEvent":
+    "Subagent event {eventType} has no dedicated view yet. Process coverage is incomplete.",
+
+  "subagents.reconnect": "Reconnect reading",
+  "subagents.heading": "Subagent",
+  "subagents.pending": "Pending",
+  "subagents.running": "Running",
+  "subagents.completed": "Completed",
+  "subagents.failed": "Failed",
+  "subagents.aborted": "Aborted",
+  "subagents.unknown": "Status unknown",
+  "subagents.copy": "Copy result",
+  "subagents.task": "View task",
+  "subagents.model": "Native model",
+  "subagents.currentTool": "Current tool",
+  "subagents.progress": "Progress excerpt",
+  "subagents.result": "View available result",
+  "subagents.noResult": "No readable result is available yet.",
+  "subagents.coverage":
+    "Only tasks observed in this native instance are shown. Completed tasks before a Host restart are absent from the active snapshot; their status is separate from the main submission.",
+  "subagents.transcriptUnavailable":
+    "The native result record is unreadable. Observed excerpts remain; the full result is unknown.",
+  "subagents.transcriptTooLarge":
+    "The native record exceeds the read budget. Observed excerpts remain; the full result was not read.",
+  "subagents.transcriptEmpty":
+    "The native record has no readable text yet. Observed excerpts do not prove a complete result.",
+  "subagents.transcriptReset":
+    "The native record was reset. Result coverage may be incomplete.",
+  "subagents.truncated":
+    "The displayed result is truncated; native content is unchanged.",
+  "subagents.identityAmbiguous":
+    "This native identity refers to multiple tasks. Unattributed events were not merged.",
+  "subagents.missingLifecycle":
+    "The start of this task was not observed. Process coverage is incomplete.",
+  "subagents.observationUnavailable":
+    "Subagent observation is unavailable. Previously observed execution status may be stale; results remain read-only.",
+
   "submission.contentNotReady":
     "Attachments are not ready. The entire original input is retained; resolve failed items before sending.",
   "submission.imageUnsupported":

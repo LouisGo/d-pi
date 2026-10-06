@@ -11,10 +11,12 @@ import {
 import { useStore } from "zustand";
 import { Button } from "@/components/ui/button";
 import type { SubmissionFailure } from "../../../modules/execution/contracts/public";
+import type { ProjectReferenceEntry } from "../../../modules/files/contracts/public";
 import type {
   Attachment,
   AttachmentFailureReason,
   AttachmentPreview,
+  AttachmentStorageReport,
 } from "../../../modules/input/contracts/public";
 import {
   AttachmentImports,
@@ -27,6 +29,7 @@ import type {
   AttachmentBridge,
   AttachmentRequest,
 } from "../../contracts/attachments";
+import { FileIcon, FolderIcon } from "../components/icons/common";
 
 export type AttachmentActions = {
   importFiles(files: File[], source: "paste" | "drop"): void;
@@ -86,6 +89,8 @@ export function AttachmentControls({
   const ids = attachmentIds(text);
   const active = ids.map((id) => items.find((item) => item.id === id));
   const unused = items.filter((item) => !ids.includes(item.id));
+  const [storageReport, setStorageReport] =
+    useState<AttachmentStorageReport | null>(null);
   const [pending, setPending] = useState(0);
   const [failed, setFailed] = useState<AttachmentRequestFailure | null>(null);
   const [feedback, setFeedback] = useState<AttachmentRequestFailure | null>(
@@ -122,20 +127,37 @@ export function AttachmentControls({
   } | null>(null);
   const searchOpen = manualSearch || !!mention;
   const searchQuery = mention?.query ?? query;
+  const [settledQuery, setSettledQuery] = useState(searchQuery);
+  useEffect(() => {
+    if (!searchOpen) return;
+    const timer = setTimeout(() => setSettledQuery(searchQuery), 150);
+    return () => clearTimeout(timer);
+  }, [searchOpen, searchQuery]);
+  const refreshSearch = useRef(false);
   const search = useQuery({
-    queryKey: ["input-reference-search", threadId, searchQuery],
-    queryFn: () =>
-      bridge.request({
+    queryKey: ["input-reference-search", threadId, settledQuery],
+    queryFn: () => {
+      const refresh = refreshSearch.current;
+      refreshSearch.current = false;
+      return bridge.request({
         kind: "search-reference",
         threadId,
         traceId: crypto.randomUUID(),
-        query: searchQuery,
-      }),
-    enabled: searchOpen,
+        query: settledQuery,
+        refresh,
+      });
+    },
+    enabled: searchOpen && settledQuery === searchQuery,
+    staleTime: 0,
+    gcTime: 60000,
     networkMode: "always",
     retry: false,
   });
-  const paths = search.data?.kind === "search" ? search.data.paths : [];
+  const searchPending = settledQuery !== searchQuery || search.isFetching;
+  const entries =
+    !searchPending && !search.isError && search.data?.kind === "search"
+      ? search.data.entries
+      : [];
   const alive = useRef(true);
   useEffect(() => {
     alive.current = true;
@@ -179,10 +201,15 @@ export function AttachmentControls({
     editor.state.doc.descendants((node, position) => {
       if (node.type.name !== "attachmentReference") return;
       const item = items.find((item) => item.id === node.attrs.id);
-      if (item && node.attrs.name !== item.name)
+      if (
+        item &&
+        (node.attrs.name !== item.name ||
+          node.attrs.referenceKind !== (item.referenceKind ?? null))
+      )
         tr.setNodeMarkup(position, undefined, {
           ...node.attrs,
           name: item.name,
+          referenceKind: item.referenceKind ?? null,
         });
     });
     if (tr.docChanged) editor.view.dispatch(tr.setMeta("addToHistory", false));
@@ -231,7 +258,10 @@ export function AttachmentControls({
         traceId: crypto.randomUUID(),
       });
       if (!alive.current) return;
-      if (reply.kind === "attachments") {
+      if (reply.kind === "storage-report") {
+        setStorageReport(reply);
+        await client.invalidateQueries({ queryKey: listKey });
+      } else if (reply.kind === "attachments") {
         if (add) for (const item of reply.items) insert(item, range);
         if (retryingFailure)
           setFailed((current) =>
@@ -266,9 +296,14 @@ export function AttachmentControls({
   function importFiles(files: File[], source: "paste" | "drop") {
     if (isCurrent()) imports.importFiles(files, source);
   }
-  function chooseReference(path: string) {
+  function chooseReference(entry: ProjectReferenceEntry) {
+    if (searchPending || !isCurrent() || pending > 0 || failed) return;
     const range = mention ? { from: mention.from, to: mention.to } : undefined;
-    void run({ kind: "add-reference", path }, true, range);
+    void run(
+      { kind: "add-reference", path: entry.path, referenceKind: entry.kind },
+      true,
+      range,
+    );
     setManualSearch(false);
     dismissMention();
   }
@@ -283,15 +318,16 @@ export function AttachmentControls({
       }
       if (["ArrowDown", "ArrowUp"].includes(event.key)) {
         setSelected((value) =>
-          paths.length
-            ? (value + (event.key === "ArrowDown" ? 1 : -1) + paths.length) %
-              paths.length
+          entries.length
+            ? (value + (event.key === "ArrowDown" ? 1 : -1) + entries.length) %
+              entries.length
             : 0,
         );
         return true;
       }
-      if (event.key === "Enter" && paths[selected]) {
-        chooseReference(paths[selected]);
+      if (event.key === "Enter") {
+        const entry = entries[selected];
+        if (entry) chooseReference(entry);
         return true;
       }
       return false;
@@ -353,6 +389,111 @@ export function AttachmentControls({
             : t("attachment.hint")}
         </span>
       </div>
+      <details>
+        <summary>{t("attachment.storage")}</summary>
+        <div className="grid gap-2 py-2">
+          <p className="muted">{t("attachment.storagePolicy")}</p>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="ghost"
+              data-attachment-storage-action="check"
+              disabled={pending > 0 || importing > 0}
+              onClick={() => void run({ kind: "check-storage" })}
+            >
+              {t("attachment.checkStorage")}
+            </Button>
+            <Button
+              variant="ghost"
+              data-attachment-storage-action="clean"
+              disabled={pending > 0 || importing > 0}
+              onClick={() => void run({ kind: "clean-storage" })}
+            >
+              {t("attachment.cleanStorage")}
+            </Button>
+          </div>
+          {storageReport && (
+            <div
+              data-attachment-storage-report=""
+              className="grid gap-2"
+              role="status"
+              aria-live="polite"
+            >
+              <p>
+                {t("attachment.storageSummary", {
+                  checked: storageReport.checkedObjects,
+                  retained: storageReport.retainedObjects,
+                  unused: storageReport.unreferencedObjects,
+                  remaining: storageReport.remainingObjects,
+                })}
+              </p>
+              <p>
+                {t("attachment.storageDeleted", {
+                  count: storageReport.deletedObjects,
+                  bytes: storageReport.deletedBytes,
+                })}
+              </p>
+              {storageReport.issues.length > 0 && (
+                <>
+                  <ul className="grid max-h-40 gap-1 overflow-auto">
+                    {storageReport.issues.map((issue) => (
+                      <li
+                        key={`${issue.attachmentId}:${issue.object}:${issue.digest ?? ""}`}
+                        className="break-all"
+                      >
+                        <strong>{issue.name}</strong> ·{" "}
+                        {t(
+                          issue.object === "original"
+                            ? "attachment.storageOriginal"
+                            : "attachment.storageDerived",
+                        )}
+                        : {t(`attachment.reason.${issue.reason}`)}
+                      </li>
+                    ))}
+                  </ul>
+                  <p>{t("attachment.storageReattach")}</p>
+                  <Button
+                    variant="ghost"
+                    disabled={
+                      pending > 0 || importing > 0 || !editor || !!failed
+                    }
+                    onClick={() => void run({ kind: "choose-import" }, true)}
+                  >
+                    {t("attachment.add")}
+                  </Button>
+                </>
+              )}
+              {(storageReport.manifestScanIncomplete ||
+                storageReport.referenceScanIncomplete) && (
+                <p>{t("attachment.storageReferencePending")}</p>
+              )}
+              {storageReport.discoveryPending && (
+                <p>{t("attachment.storageDiscoveryPending")}</p>
+              )}
+              {storageReport.issuesTruncated && (
+                <p>{t("attachment.storageIssuesTruncated")}</p>
+              )}
+            </div>
+          )}
+          {!!unused.length && (
+            <details>
+              <summary>{t("attachment.library")}</summary>
+              <div className="grid max-h-40 gap-2 overflow-auto">
+                {unused.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between gap-2"
+                  >
+                    <span className="break-all">{item.name}</span>
+                    <Button variant="ghost" onClick={() => insert(item)}>
+                      {t("attachment.insert")}
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </details>
+          )}
+        </div>
+      </details>
       {(failed || list.isError) && (
         <div role="alert" className="flex flex-wrap items-center gap-2">
           <p className="failure">
@@ -411,9 +552,9 @@ export function AttachmentControls({
               autoFocus
             />
           )}
-          {search.isFetching ? (
+          {searchPending ? (
             <p role="status">{t("attachment.searching")}</p>
-          ) : search.isError ? (
+          ) : search.isError || search.data?.kind === "unavailable" ? (
             <p role="alert">{t("attachment.searchFailed")}</p>
           ) : (
             <div
@@ -421,25 +562,53 @@ export function AttachmentControls({
               role="listbox"
               aria-label={t("attachment.searchLabel")}
             >
-              {paths.map((path, index) => (
+              {entries.map((entry, index) => (
                 <Button
-                  key={path}
+                  key={entry.path}
+                  data-reference-kind={entry.kind}
+                  data-reference-path={entry.path}
+                  className="justify-start text-left"
                   variant={selected === index ? "navigation" : "ghost"}
                   role="option"
                   disabled={pending > 0 || !!failed}
                   aria-selected={selected === index}
                   onMouseDown={(event) => event.preventDefault()}
-                  onClick={() => chooseReference(path)}
+                  onClick={() => chooseReference(entry)}
                 >
-                  {path}
+                  {entry.kind === "directory" ? (
+                    <FolderIcon className="shrink-0" />
+                  ) : (
+                    <FileIcon className="shrink-0" />
+                  )}
+                  <span className="min-w-0 flex-1 whitespace-normal break-all">
+                    {entry.path}
+                    {entry.kind === "directory" ? "/" : ""}
+                  </span>
+                  <span className="shrink-0 text-muted-foreground">
+                    {t(
+                      entry.kind === "directory"
+                        ? "attachment.directoryKind"
+                        : "attachment.fileKind",
+                    )}
+                  </span>
                 </Button>
               ))}
-              {!paths.length && <p>{t("attachment.noMatches")}</p>}
+              {!entries.length && <p>{t("attachment.noMatches")}</p>}
             </div>
           )}
-          {search.data?.kind === "search" && search.data.truncated && (
-            <p>{t("attachment.searchLimited")}</p>
-          )}
+          {!searchPending &&
+            search.data?.kind === "search" &&
+            search.data.truncated && <p>{t("attachment.searchLimited")}</p>}
+          <Button
+            variant="ghost"
+            disabled={searchPending}
+            onClick={() => {
+              refreshSearch.current = true;
+              void search.refetch();
+            }}
+          >
+            {t("attachment.refreshSearch")}
+          </Button>
           <Button
             variant="ghost"
             onClick={() => {
@@ -510,10 +679,23 @@ export function AttachmentControls({
               {item ? (
                 <>
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <strong className="break-all">{item.name}</strong>
+                    <strong className="flex items-center gap-2 break-all">
+                      {item.source === "reference" &&
+                        (item.referenceKind === "directory" ? (
+                          <FolderIcon />
+                        ) : (
+                          <FileIcon />
+                        ))}
+                      {item.name}
+                      {item.referenceKind === "directory" ? "/" : ""}
+                    </strong>
                     <span className="muted">
                       {item.source === "reference"
-                        ? t("attachment.readAtSend")
+                        ? t(
+                            item.referenceKind === "directory"
+                              ? "attachment.directoryAtSend"
+                              : "attachment.readAtSend",
+                          )
                         : t(`attachment.${item.status}`)}
                       {item.source !== "reference" && (
                         <> · {Math.ceil(item.byteLength / 1024)} KiB</>
@@ -608,24 +790,6 @@ export function AttachmentControls({
             </li>
           ))}
         </ol>
-      )}
-      {!!unused.length && (
-        <details>
-          <summary>{t("attachment.library")}</summary>
-          <div className="grid max-h-40 gap-2 overflow-auto">
-            {unused.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between gap-2"
-              >
-                <span className="break-all">{item.name}</span>
-                <Button variant="ghost" onClick={() => insert(item)}>
-                  {t("attachment.insert")}
-                </Button>
-              </div>
-            ))}
-          </div>
-        </details>
       )}
       {preview && (
         <AttachmentPreviewDialog

@@ -1,6 +1,7 @@
 import {
   ArrowLeft01Icon,
   ArrowRight01Icon,
+  File01Icon,
   Folder01Icon,
   GithubIcon,
   Globe02Icon,
@@ -11,6 +12,19 @@ import { HugeiconsIcon } from "@hugeicons/react";
 export interface IconProps {
   size?: 16 | 18 | 20 | 24;
   className?: string;
+}
+export function FileIcon({ size = 16, className }: IconProps) {
+  return (
+    <HugeiconsIcon
+      icon={File01Icon}
+      size={size}
+      className={className}
+      strokeWidth={1.5}
+      color="currentColor"
+      aria-hidden={true}
+      focusable={false}
+    />
+  );
 }
 export function FolderIcon({ size = 16, className }: IconProps) {
   return (

@@ -53,7 +53,7 @@
 | D-29 | 规则独立于 React/视图，以明确契约组合；业务与应用生命周期不依赖页面或 hook 挂载 | 2026-09-25 确认；规则、协调/接入、投影/查询、React 绑定与视图分工见[无头功能合同](architecture/headless-features.md)，延续 D-02 |
 | D-30 | 不引入 XState | 2026-09-25 明确排除该候选；使用 TypeScript 显式状态转换和局部协调，不自研通用状态机框架 |
 | D-31 | GUI 主图标用 Hugeicons，建立自有 Icon Layer | 2026-09-25 取代 Lucide 提议；免费 Stroke Rounded、自有语义 API、私有 SVG、无头边界及可访问性见[图标合同](architecture/icon-system.md) |
-| D-32 | Base UI 为默认基础交互，积极复用 shadcn/ui 源码；共享设计事实只有一份权威定义，主题/密度集中传播 | 2026-09-26 取代 B-02 的 Base UI 否定结论，Radix 不再为并列默认；09-27 样式澄清：Tailwind/CSS Modules/普通 CSS 按工程判断选择组合，没有场景到技术的强制映射；权威值与派生关系单源，局部样式可就近存放。自有 API/token、Hugeicons 与 OMP 所有权不变。见[设计系统合同](architecture/design-system.md) |
+| D-32 | Base UI 为默认基础交互，积极复用 shadcn/ui 源码；共享设计事实只有一份权威定义，主题/密度集中传播 | 2026-09-26 取代 B-02 的 Base UI 否定结论，Radix 不再为并列默认；09-27 样式澄清：Tailwind/CSS Modules/普通 CSS 按工程判断选择组合，没有场景到技术的强制映射；权威值与派生关系单源，局部样式可就近存放。自有 API/token、Hugeicons 与 OMP 所有权不变。2026-10-06 用户确认全应用禁用手形指针、组件视觉点击反馈、默认禁选及显式内容例外，保留 text/resize，见设计系统合同。见[设计系统合同](architecture/design-system.md) |
 | D-33 | Composer 用最小 Tiptap 与项目业务扩展，按需使用底层 ProseMirror | 2026-09-26 取代 P-02 的直接 ProseMirror 优先及旧 Lexical 默认路线；不预装整套富文本产品，输入体验单独验收 |
 | D-34 | App 自有结构化数据用 SQLite，Main 集中拥有持久化 | 2026-09-26 取代“文件起步、不足再评估数据库”；数据库事务不覆盖附件文件或 OMP 接受，驱动与 Drizzle 分别判断。见[基础契约 §1](architecture/foundation-contracts.md#1-身份持久化与生命周期b1) |
 | D-35 | ts-pattern 为应用业务分支默认范式，Zod v4 标准版为数据边界标准 | 2026-09-26 取代 ts-pattern 仅为复杂分支候选；判别联合、穷尽处理、schema 推导、严格类型与窄接口见[TypeScript 合同](architecture/typescript.md)和[项目 skill](../.agents/skills/d-pi-typescript/SKILL.md)，不用类型技巧或无意义包装代替业务模型 |
@@ -94,3 +94,7 @@
 ## 证据与维护入口
 
 现行约束不依赖读者逐段推断历史。详细实现、构建与验证由[工作记录](README.md#工作记录)维护；[整理前快照](../.scratch/infrastructure-closure/evidence/decision-history.md)保留完整修订及授权经过，原始归档按 D-18 保持可追溯。2026-09-26 审计中的内容信任、RPC 输入分帧与模型模态补充仍在[基础契约 §4/§5/§9](architecture/foundation-contracts.md)，没有因整理撤回；无新增 ADR 或产品决定。
+
+## 2026-10-06：D-10 @目录与性能细化
+
+用户明确要求项目引用可选文件夹、文件/目录类型区分及性能写法；补充D-10，不取代D-24发送冻结、D-33最小Tiptap和D-37只读查询。目录沿用固定OMP直接条目清单语义，工程范围与验收见[04c](../.scratch/m2-first-release/issues/04c-project-reference-search.md)，不递归内联整个目录正文。

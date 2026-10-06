@@ -11,7 +11,8 @@
     font-size: var(--text-body);
     font-weight: 500;
     white-space: nowrap;
-    cursor: pointer;
+    cursor: default;
+    user-select: none;
     border: 1px solid transparent;
     line-height: 1.4;
     transition:
@@ -32,9 +33,6 @@
   .ui-button-primary:hover:not(:disabled) {
     background: var(--primary-hover);
   }
-  .ui-button-primary:active:not(:disabled) {
-    background: var(--primary);
-  }
   .ui-button-navigation {
     color: var(--muted-foreground);
     background: transparent;
@@ -43,10 +41,25 @@
     color: var(--foreground);
     background: var(--muted-hover);
   }
+  .ui-button-navigation[aria-selected="true"],
   .ui-button-navigation[aria-current="page"],
   .ui-button-navigation[aria-pressed="true"] {
     color: var(--accent-foreground);
     background: var(--accent);
+  }
+  .ui-button-navigation:is(
+    [aria-selected="true"],
+    [aria-current="page"],
+    [aria-pressed="true"]
+  ):hover:not(:disabled) {
+    border-color: var(--primary);
+  }
+  .ui-button-navigation:is(
+    [aria-selected="true"],
+    [aria-current="page"],
+    [aria-pressed="true"]
+  ):active:not(:disabled) {
+    border-color: var(--accent-foreground);
   }
   .ui-button-ghost {
     color: var(--foreground);
@@ -54,6 +67,14 @@
   }
   .ui-button-ghost:hover:not(:disabled) {
     background: var(--muted-hover);
+  }
+  .ui-button-primary:active:not(:disabled) {
+    background: var(--primary-active);
+  }
+  .ui-button-ghost:active:not(:disabled),
+  .ui-button-navigation:active:not(:disabled) {
+    color: var(--accent-foreground);
+    background: var(--accent);
   }
   .ui-button:focus-visible {
     outline: 2px solid var(--primary);
