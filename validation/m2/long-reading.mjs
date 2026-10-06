@@ -149,7 +149,7 @@ export async function validateLongReading({
   supplier.append();
   await wait(() =>
     evaluate(
-      "document.querySelector('.runtime-panel')?.textContent.includes('OMP 已就绪')",
+      "document.querySelector('.runtime-panel')?.textContent.includes('OMP 已就绪') && window.__longReadingText.closest('article').querySelector('.message-heading > span')?.textContent === ''",
     ),
   );
   assert.deepEqual(
