@@ -1,4 +1,45 @@
 export const ui = {
+  "attention.title": "Thread attention",
+  "attention.needsAnswer": "Needs an answer",
+  "attention.failed": "Execution failed",
+  "attention.completed": "Completed",
+  "attention.interrupted": "Interrupted",
+  "attention.unread": "Unread",
+  "attention.open": "View Thread",
+  "attention.preferences": "Notification settings",
+  "attention.enableSystem": "Enable system notifications",
+  "attention.enableCompletion": "Notify on completion",
+  "attention.systemHint":
+    "System notifications require an explicit opt-in. Completion updates the sidebar by default. In-app status remains available when system notifications are unavailable.",
+  "attention.systemDisabled": "System notifications are disabled.",
+  "attention.systemAvailable":
+    "System notifications are supported; macOS permissions and settings determine whether they appear.",
+  "attention.systemUnavailable":
+    "System notifications are unavailable. Check in-app status.",
+  "attention.systemFailed":
+    "System notifications could not be shown. Check in-app status.",
+  "attention.readFailed":
+    "Attention status could not be read or saved. Retry; the last sample is retained.",
+  "attention.coverageGap":
+    "Attention status does not cover every Thread. Open the relevant Thread to check.",
+  "attention.navigationBlocked":
+    "The Thread has not changed. Finish IME composition, save the draft, or complete the current action, then retry.",
+  "attention.retryOpen": "Retry opening Thread",
+  "attention.stale":
+    "This notification has expired or changed. The Thread shows its current state.",
+  "attention.native.needsAnswer.title": "d-pi: An answer is needed",
+  "attention.native.needsAnswer.body":
+    "Thread {thread} has updated. Open d-pi to view its current state.",
+  "attention.native.failed.title": "d-pi: A task failed",
+  "attention.native.failed.body":
+    "Thread {thread} has updated. Open d-pi to view its current state.",
+  "attention.native.completed.title": "d-pi: A task completed",
+  "attention.native.completed.body":
+    "Thread {thread} has updated. Open d-pi to view its current state.",
+  "attention.native.interrupted.title": "d-pi: A task was interrupted",
+  "attention.native.interrupted.body":
+    "Thread {thread} has updated. Open d-pi to view its current state.",
+
   "ui.reading.originalSegments":
     "Original text in segments; copy retains all currently available text.",
   "ui.reading.previous": "Previous segment",

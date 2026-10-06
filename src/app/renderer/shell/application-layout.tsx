@@ -7,6 +7,7 @@ import { ConfigurationSettings } from "../../../modules/configuration/renderer/p
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import { BUILD_INFO } from "../../../shared/build-info";
 import type { AppModel } from "../wiring/model";
+import { AttentionCenter, AttentionPreferences } from "./attention";
 import { Diagnostics } from "./diagnostics";
 import { PreferenceToolbar } from "./preference-toolbar";
 import { ProjectThreads } from "./project-threads";
@@ -63,11 +64,12 @@ function ReadyWorkbench({ model, children }: ApplicationLayoutProps) {
           d-pi <span>M2</span>
         </div>
         <ProjectThreads model={model} />
-        <SidebarFooter />
+        <SidebarFooter model={model} />
       </aside>
       <main className="workbench">
         <PreferenceToolbar model={model} />
         <ThreadNotice model={model} />
+        <AttentionCenter model={model} />
         <ThreadConfiguration model={model} />
         <div className="work-content">{children ?? <Outlet />}</div>
       </main>
@@ -90,10 +92,11 @@ function ShellFrame({ model, children }: ApplicationLayoutProps) {
   );
 }
 
-function SidebarFooter() {
+function SidebarFooter({ model }: { model: AppModel }) {
   const { t } = useI18n();
   return (
     <div className="sidebar-bottom">
+      <AttentionPreferences model={model} />
       <Diagnostics />
       <span className="muted">{t("app.sidebar.localDraft")}</span>
       <span className="muted">{t("app.executionNeedsApproval")}</span>

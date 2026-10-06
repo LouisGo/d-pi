@@ -5,6 +5,7 @@ import { FolderIcon } from "@/components/icons/common";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import type { AppModel } from "../wiring/model";
+import { ThreadAttention } from "./attention";
 import { ChooseProjectButton } from "./choose-project-button";
 
 export function ProjectThreads({ model }: { model: AppModel }) {
@@ -98,6 +99,7 @@ const ThreadButton = memo(function ThreadButton({
         <small>
           {t("app.thread.label", { number })} · {threadId.slice(0, 6)}
         </small>
+        <ThreadAttention model={model} threadId={threadId} />
       </span>
     </Button>
   );

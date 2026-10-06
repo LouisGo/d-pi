@@ -1,4 +1,41 @@
 export const ui = {
+  "attention.title": "Thread 提醒",
+  "attention.needsAnswer": "待回答",
+  "attention.failed": "执行失败",
+  "attention.completed": "已完成",
+  "attention.interrupted": "执行中断",
+  "attention.unread": "未读",
+  "attention.open": "查看 Thread",
+  "attention.preferences": "提醒设置",
+  "attention.enableSystem": "开启系统提醒",
+  "attention.enableCompletion": "提醒正常完成",
+  "attention.systemHint":
+    "系统提醒需要显式开启。正常完成默认只更新侧栏；系统提醒不可用时，应用内状态仍保留。",
+  "attention.systemDisabled": "系统提醒未开启。",
+  "attention.systemAvailable":
+    "系统支持提醒；是否显示由 macOS 权限和系统设置决定。",
+  "attention.systemUnavailable": "系统提醒不可用，请查看应用内状态。",
+  "attention.systemFailed": "系统提醒未能显示，请查看应用内状态。",
+  "attention.readFailed": "提醒状态读取或保存失败，可重试；上次采样仍保留。",
+  "attention.coverageGap":
+    "部分 Thread 的提醒状态未覆盖，请进入相应 Thread 核实。",
+  "attention.navigationBlocked":
+    "尚未切换 Thread。请完成输入法编辑、草稿保存或当前操作后重试。",
+  "attention.retryOpen": "重试进入 Thread",
+  "attention.stale": "这条提醒已过期或状态已变化；当前 Thread 显示现有状态。",
+  "attention.native.needsAnswer.title": "d-pi：有任务待回答",
+  "attention.native.needsAnswer.body":
+    "Thread {thread} 状态已更新。打开 d-pi 查看当前状态。",
+  "attention.native.failed.title": "d-pi：任务失败",
+  "attention.native.failed.body":
+    "Thread {thread} 状态已更新。打开 d-pi 查看当前状态。",
+  "attention.native.completed.title": "d-pi：任务完成",
+  "attention.native.completed.body":
+    "Thread {thread} 状态已更新。打开 d-pi 查看当前状态。",
+  "attention.native.interrupted.title": "d-pi：任务中断",
+  "attention.native.interrupted.body":
+    "Thread {thread} 状态已更新。打开 d-pi 查看当前状态。",
+
   "ui.reading.originalSegments": "原文分段显示；复制保留当前已取得的全部原文。",
   "ui.reading.previous": "上一段",
   "ui.reading.next": "下一段",

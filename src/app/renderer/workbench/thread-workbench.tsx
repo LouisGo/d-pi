@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useStore } from "zustand";
 import { FolderIcon } from "@/components/icons/common";
 import { Button } from "@/components/ui/button";
 import type { FrozenSelection } from "../../../modules/files/core/public";
@@ -16,6 +17,7 @@ import { Submissions } from "../reading/submissions";
 import type { ReadingView } from "../routing/search";
 import type { ThreadSelectionState } from "../wiring/model";
 import type { ThreadModel } from "../wiring/thread-model";
+import { locateAttention } from "./attention-location";
 import { Composer } from "./composer";
 import { FilePanel } from "./file-panel";
 import { ModelControls } from "./model-controls";
@@ -35,8 +37,23 @@ export function ThreadWorkbench({
   ...props
 }: ThreadWorkbenchProps) {
   const [readingFocus, setReadingFocus] = useState(false);
+  const workspace = useRef<HTMLElement>(null);
+  const target = useStore(props.model.attention.locationStore, (state) =>
+    state.target?.threadId === props.threadSelection.thread.context.threadId
+      ? state.target
+      : null,
+  );
+  useLayoutEffect(() => {
+    if (!target) return;
+    setReadingFocus(false);
+    const frame = requestAnimationFrame(() => {
+      if (workspace.current) locateAttention(workspace.current, target);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [target]);
   return (
     <section
+      ref={workspace}
       className="thread-workspace"
       inert={transitioning}
       aria-busy={transitioning}
@@ -135,7 +152,11 @@ const ThreadContent = memo(function ThreadContent({
         readingFocus={readingFocus}
         onReadingFocusChange={onReadingFocusChange}
       />
-      <div className="thread-reading">
+      <div
+        className="thread-reading"
+        data-attention-target="result"
+        tabIndex={-1}
+      >
         <ReadingPane
           thread={thread}
           view="conversation"
