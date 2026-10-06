@@ -33,6 +33,7 @@
 
 | 所属范围 / 任务 | 状态 | 未解决的工程依赖 |
 | --- | --- | --- |
+| [ai-workflow-v13 / 04 M2 retro 回流与继续入口](../.scratch/ai-workflow-v13/issues/04-m2-retro-closure.md) | claimed | 无；范围以所属规格为准 |
 | [m1-interaction-hardening / 03 派发授权排序与 Host 目录复核](../.scratch/m1-interaction-hardening/issues/03-dispatch-authorization.md) | open | 无；范围以所属规格为准 |
 | [m1-interaction-hardening / 04 历史 busy 语义复核](../.scratch/m1-interaction-hardening/issues/04-history-busy.md) | open | 无；范围以所属规格为准 |
 | [m1-interaction-hardening / 07 退出健壮性与 GUI 可访问补齐](../.scratch/m1-interaction-hardening/issues/07-quit-a11y.md) | open | 无；范围以所属规格为准 |
@@ -60,4 +61,4 @@
 - [类型安全桌面路由](../.scratch/router-integration/spec.md)：本地实施和提交；不 push、不改变 OMP 执行及冷恢复政策。
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 
-<!-- source-sha256: 9933586326628538f0b00a7aeac0407248a84ad55b357ec05c6a823351e6d1b8; sources: 113 -->
+<!-- source-sha256: cd5b28afe1a3e185e129a96d35d873d7ea01bfb187fa579a687b4e3300cce8a7; sources: 114 -->

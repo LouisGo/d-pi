@@ -1,0 +1,12 @@
+✔ a Vitest separator cannot silently discard file filters and run other suites (52.869042ms)
+✔ direct filters and legal options execute only the selected test (552.191459ms)
+✔ no file filters still run the complete fixture suite (449.605958ms)
+✔ missing filters and failing selected tests keep a nonzero exit (740.71275ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1924.559458

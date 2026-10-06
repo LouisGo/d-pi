@@ -1,0 +1,18 @@
+✔ a failed package condition reports its phase and bounded last predicate error (12.30075ms)
+✔ an action must exist and finish its pending state before the next operation (104.16875ms)
+✔ a closed or timed-out transport is propagated instead of retried as a UI condition (0.354916ms)
+✔ a stalled predicate still has a bounded wait deadline (20.621625ms)
+✔ a missing or busy action reports its phase without requiring browser frames (31.541834ms)
+✔ transient predicate errors can recover and successful values are preserved (51.190667ms)
+✔ a Vitest separator cannot silently discard file filters and run other suites (44.918ms)
+✔ direct filters and legal options execute only the selected test (540.369041ms)
+✔ no file filters still run the complete fixture suite (385.260875ms)
+✔ missing filters and failing selected tests keep a nonzero exit (664.008167ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1690.616708

@@ -14,6 +14,10 @@
 
 模块公开入口和允许依赖来自 [architecture/modules.json](../../architecture/modules.json)，运行环境兼容与禁止工具依赖由通用 checker 执行；依赖版本来自声明与锁文件。门禁只维护已确认基础依赖的必要集合/家族关系，不另写散文决定 DSL。代表性的 store 订阅、资源身份与 Query 离线/重试测试继续在标准套件中，依赖存在本身不证明职责接入。
 
+限定行为测试使用 `pnpm test src/app/main/ipc/diagnostics.test.ts`，或在路由已生成时直接 `node scripts/testing/test.mjs vitest <files>`；不加独立 `--`，固定 Vitest 会忽略其后的文件筛选，runner 因此在启动前返回2并提示正确命令。无文件参数仍走完整套件，文件不存在或目标失败保留非零退出。
+
+包内脚本复用 [M2 有界等待](../../validation/m2/wait.mjs)：等待操作存在且可用，以及所属请求/消息已完成，不用界面出现或隐藏窗口下一帧替代完成事实。等待可传场景标签，超时只保留有界最后错误/未完成状态；CDP关闭/超时直接传播。具体结果与预算断言仍由各场景维护，不增加固定sleep或改变产品并发策略。
+
 ## 显式安装的提交 hook
 
 `pnpm hooks:install` 安装 Git 元数据里的 dispatcher，再调用仓库 [.githooks/pre-commit](../../.githooks/pre-commit)；原 hook 文件及配置值保留，先执行原 pre-commit，再运行本 checkout 的 `check:fast`，其余原 hooks 继续转发。安装不改全局配置、不启用新的 worktree 配置；其他 linked worktrees 继续原 hook。

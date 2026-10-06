@@ -1,0 +1,36 @@
+✔ a failed package condition reports its phase and bounded last predicate error (11.885875ms)
+✖ a closed or timed-out transport is propagated instead of retried as a UI condition (21.2145ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 81.969792
+
+✖ failing tests:
+
+test at tests/tooling/package-wait.test.mjs:26:1
+✖ a closed or timed-out transport is propagated instead of retried as a UI condition (21.2145ms)
+  AssertionError [ERR_ASSERTION]: The validation function is expected to return "true". Received false
+  
+  Caught error:
+  
+  Error: M2 package timeout [diagnostic refresh]: last=not evaluated; last error=Error: CDP closed
+      at async TestContext.<anonymous> (file:///Users/louistation/MySpace/Life/d-pi/tests/tooling/package-wait.test.mjs:30:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: Error: M2 package timeout [diagnostic refresh]: last=not evaluated; last error=Error: CDP closed
+        at timeoutError (file:///Users/louistation/MySpace/Life/d-pi/validation/m2/wait.mjs:17:7)
+        at wait (file:///Users/louistation/MySpace/Life/d-pi/validation/m2/wait.mjs:49:9)
+        at async waitForActual (node:assert:646:5)
+        at async strict.rejects (node:assert:769:25)
+        at async TestContext.<anonymous> (file:///Users/louistation/MySpace/Life/d-pi/tests/tooling/package-wait.test.mjs:30:5)
+        at async Test.run (node:internal/test_runner/test:1409:7)
+        at async Test.processPendingSubtests (node:internal/test_runner/test:974:7),
+    operator: 'rejects',
+    diff: 'simple'
+  }

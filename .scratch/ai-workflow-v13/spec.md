@@ -4,6 +4,8 @@
 
 ## 推进与交接
 
+- 2026-10-06 后续授权：用户要求将 [M2 retro 候选](m2-retro-2026-10-06.md)按标准流程处理干净、留下正确的 M2 继续入口后停下。本轮从 `codex/m2-diagnostics@7c9e1fe` 建立 `codex/m2-retro-closure`，只落实测试参数防错、包内等待与证据交接三项；允许本地实现、验证、独立 review、提交与交接，不开始其它 M2 功能。历史 main/远端均为 `1c9c30a`，不能把诊断分支候选称作已合入 main；其它 worktree 保留。
+
 - 当前范围与授权：用户最初要求参考「对比v13工作流」、联网核对 Matt v1.3，并依据真实项目全面升级 AI 工作流；允许分段 commit 和独立 review subagent。包含仓库规则、skills、只读调度工具及必要验证。2026-10-06 用户在确认 PR/合入建议后明确要求「请直接开始，结束了叫我」，补充授权将本切片 push、创建 PR，并在最终 head CI 通过后合入 main。产品功能与全局 skills 更新仍不在本次范围。
 - 产品判断：无新增产品待决。沿用 D-19/D-26/D-28–D-30，授权、工程、试用与认可分开；OMP/App 的所有权不变。
 - 工程状态：完成。确定性 ready 集合、执行/review/PR/retro 路由已交付；完整检查、独立两轴 review、串行与真实双 worker 隔离试跑通过。原有任务解析、生成看板与门禁继续复用。
@@ -25,13 +27,15 @@
 
 ```implementation-plan
 [
-  {"id": "workflow-v13", "tickets": ["01", "02", "03"]}
+  {"id": "workflow-v13", "tickets": ["01", "02", "03"]},
+  {"id": "m2-retro-closure", "tickets": ["04"]}
 ]
 ```
 
 - [01 确定性切片计划](issues/01-slice-plan.md)
 - [02 工作流规则与 skills](issues/02-workflow-skills.md)
 - [03 验证、独立 review 与交接](issues/03-verify-handoff.md)
+- [04 M2 retro 回流与继续入口](issues/04-m2-retro-closure.md)
 
 ## 依据与取舍
 

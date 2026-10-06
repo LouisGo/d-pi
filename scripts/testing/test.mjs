@@ -8,6 +8,12 @@ if (!["vitest", "node"].includes(suite))
   throw new Error(
     "Usage: node scripts/testing/test.mjs vitest [arguments] | node [test files]",
   );
+if (suite === "vitest" && args.includes("--")) {
+  process.stderr.write(
+    "FAIL: Vitest file filters after -- are ignored; do not use --. Use pnpm test <files> or node scripts/testing/test.mjs vitest <files>. Tests did not start.\n",
+  );
+  process.exit(2);
+}
 const sandbox = createTestEnvironment({
   toolPaths: [resolve(root, "node_modules/.bin")],
   // Native smoke stays an explicit opt-in. Credentials are never inherited.

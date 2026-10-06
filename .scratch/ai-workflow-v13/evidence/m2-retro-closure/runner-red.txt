@@ -1,0 +1,42 @@
+✖ a Vitest separator cannot silently discard file filters and run other suites (557.649875ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 622.17575
+
+✖ failing tests:
+
+test at tests/tooling/test-runner.test.mjs:40:1
+✖ a Vitest separator cannot silently discard file filters and run other suites (557.649875ms)
+  AssertionError [ERR_ASSERTION]: 
+  [31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Suites 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+  
+  [41m[1m FAIL [22m[49m other.test.mjs[2m [ other.test.mjs ][22m
+  [31m[1mError[22m: OUT_OF_SCOPE_FIXTURE[39m
+  [36m [2m❯[22m other.test.mjs:[2m1:7[22m[39m
+      [90m  1|[39m throw new Error('OUT_OF_SCOPE_FIXTURE');
+      [90m   |[39m       [31m^[39m
+      [90m  2|[39m
+  
+  [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+  
+  
+  
+  1 !== 2
+  
+      at TestContext.<anonymous> (file:///Users/louistation/MySpace/Life/d-pi/tests/tooling/test-runner.test.mjs:43:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

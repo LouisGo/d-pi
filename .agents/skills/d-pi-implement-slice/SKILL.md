@@ -22,7 +22,7 @@ Worker 输入最少包含：spec 的相关节、票路径、基点/集成分支�
 
 ## 集成循环
 
-- Worker 交付 commit SHA、变更范围、实际测试与未覆盖项。Worker 不负责追赶移动的 integration tip、不合入集成分支，也不写共享管理状态；遇公共合同变化报告给主 Agent。
+- Worker 交付 commit SHA、变更范围、实际测试与未覆盖项。声明随提交保留的证据给出准确路径，交付前用 `git ls-files --error-unmatch -- <选定证据路径>` 核实已暂存/跟踪，主 Agent 用 `git cat-file -e <commit>:<path>` 核实能从提交取回；磁盘存在不等于交付。被忽略的选定工程证据可显式 force-add 或用局部例外，运行日志与业务内容不自动收录。Worker 不负责追赶移动的 integration tip、不合入集成分支，也不写共享管理状态；遇公共合同变化报告给主 Agent。
 - 主 Agent 一次只合入一个结果。核实 commit 来自记录的起点与分支、未带范围外修改；用 merge/cherry-pick 等适合当前历史的方式集成。Git 无冲突还需检查跨票语义一致、接口和资源释放，不能据 merge 成功 resolved。
 - 完成该票验收、更新票和 spec 后再生成看板；重算 frontier，让依赖票从最新 integration SHA 启动。集成期间已运行的独立 worker 保持原基点，主 Agent 承担新旧合同整合。
 - 冲突先判断所有权与合同。普通冲突自主解决；确有收益才派独立 merger/fixer。无法证实正确时保留 worktree 和 blocker，继续其他不依赖工作；不丢弃失败现场。

@@ -154,10 +154,13 @@ export async function validateLongReading({
   assert.ok(first.length <= 16384 && first.length < initialText.length);
   assert.ok(first.height > 0 && first.height <= 600);
   supplier.append();
-  await wait(() =>
-    evaluate(
-      "document.querySelector('.runtime-panel')?.textContent.includes('OMP 已就绪') && window.__longReadingText.closest('article').querySelector('.message-heading > span')?.textContent === ''",
-    ),
+  await wait(
+    () =>
+      evaluate(
+        "document.querySelector('.runtime-panel')?.textContent.includes('OMP 已就绪') && window.__longReadingText.closest('article').querySelector('.message-heading > span')?.textContent === ''",
+      ),
+    30000,
+    "long reading finalized message",
   );
   assert.deepEqual(
     await evaluate(`(()=>{

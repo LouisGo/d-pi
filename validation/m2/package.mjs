@@ -30,6 +30,11 @@ import {
   createSubagentSupplier,
   validateSubagentLifecycle,
 } from "./subagent-lifecycle.mjs";
+import {
+  ValidationTransportError,
+  wait,
+  waitForEnabledAction,
+} from "./wait.mjs";
 
 const isolated = createTestEnvironment({ prefix: "d-pi-m2-package-" });
 const source = resolve(
@@ -184,17 +189,6 @@ let child = launch(),
   socket;
 let seq = 0;
 const pending = new Map();
-async function wait(fn, timeout = 30000) {
-  const until = Date.now() + timeout;
-  while (Date.now() < until) {
-    try {
-      const value = await fn();
-      if (value) return value;
-    } catch {}
-    await new Promise((r) => setTimeout(r, 50));
-  }
-  throw Error("M2 package timeout");
-}
 async function connect() {
   const target = await wait(async () => {
     try {
@@ -223,16 +217,21 @@ async function connect() {
     }
   };
   socket.onclose = () => {
-    for (const task of pending.values()) task.reject(Error("CDP closed"));
+    for (const task of pending.values())
+      task.reject(new ValidationTransportError("CDP closed"));
     pending.clear();
   };
 }
 function call(method, params = {}) {
   return new Promise((resolve, reject) => {
+    if (socket.readyState !== WebSocket.OPEN) {
+      reject(new ValidationTransportError("CDP closed"));
+      return;
+    }
     const id = ++seq;
     const timeout = setTimeout(() => {
       pending.delete(id);
-      reject(Error(`CDP ${method} timeout`));
+      reject(new ValidationTransportError(`CDP ${method} timeout`));
     }, 30000);
     pending.set(id, {
       resolve(value) {
@@ -258,10 +257,13 @@ async function evaluate(expression) {
   return reply.result.value;
 }
 async function click(text) {
-  await wait(() =>
-    evaluate(
-      `Array.from(document.querySelectorAll('button')).some(b=>b.textContent.trim()===${JSON.stringify(text)}&&!b.disabled)`,
-    ),
+  await wait(
+    () =>
+      evaluate(
+        `Array.from(document.querySelectorAll('button')).some(b=>b.textContent.trim()===${JSON.stringify(text)}&&!b.disabled)`,
+      ),
+    30000,
+    `button available: ${text}`,
   );
   await evaluate(
     `Array.from(document.querySelectorAll('button')).find(b=>b.textContent.trim()===${JSON.stringify(text)}).click()`,
@@ -789,10 +791,11 @@ try {
     );
     assert.equal(journal.previousImages.length, 1);
     assert.equal(journal.command.retainedImageIds.length, 1);
-    await wait(() =>
-      evaluate(
-        "document.querySelector('[data-queue-action=delete]')?.disabled === false",
-      ),
+    await waitForEnabledAction(
+      evaluate,
+      wait,
+      "[data-queue-action=delete]",
+      "queue save completed before delete",
     );
     await evaluate(
       "document.querySelector('[data-queue-action=delete]').click()",
@@ -945,10 +948,11 @@ try {
       .prepare("SELECT receipt FROM submission ORDER BY rowid DESC LIMIT 1")
       .get();
     assert.equal(JSON.parse(frozen.receipt).text, queuedOriginal);
-    await wait(() =>
-      evaluate(
-        "document.querySelector('[data-queue-action=delete]')?.disabled === false",
-      ),
+    await waitForEnabledAction(
+      evaluate,
+      wait,
+      "[data-queue-action=delete]",
+      "lifecycle queue save completed before delete",
     );
     await evaluate(
       "document.querySelector('[data-queue-action=delete]').click()",

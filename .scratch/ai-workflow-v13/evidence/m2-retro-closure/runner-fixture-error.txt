@@ -1,0 +1,45 @@
+✖ a Vitest separator cannot silently discard file filters and run other suites (102.343542ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 158.016459
+
+✖ failing tests:
+
+test at tests/tooling/test-runner.test.mjs:34:1
+✖ a Vitest separator cannot silently discard file filters and run other suites (102.343542ms)
+  AssertionError [ERR_ASSERTION]: file:///Users/louistation/MySpace/Life/d-pi/node_modules/.pnpm/vitest@5.0.2_@opentelemetry+api@1.9.1_@types+node@24.19.0_happy-dom@20.14.5_vite@7.3.6__dc8baee799a7e98ce75d50c0e726861f/node_modules/vitest/dist/chunks/cac.BLbEtnDd.js:2220
+  			throw new Error(`Expected a single value for option "${command}", received [${received}]`);
+  			      ^
+  
+  Error: Expected a single value for option "-r, --root <path>", received ["/Users/louistation/MySpace/Life/d-pi", "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-test-cSbTQO/work"]
+      at transform (file:///Users/louistation/MySpace/Life/d-pi/node_modules/.pnpm/vitest@5.0.2_@opentelemetry+api@1.9.1_@types+node@24.19.0_happy-dom@20.14.5_vite@7.3.6__dc8baee799a7e98ce75d50c0e726861f/node_modules/vitest/dist/chunks/cac.BLbEtnDd.js:2220:10)
+      at setDotProp (file:///Users/louistation/MySpace/Life/d-pi/node_modules/.pnpm/vitest@5.0.2_@opentelemetry+api@1.9.1_@types+node@24.19.0_happy-dom@20.14.5_vite@7.3.6__dc8baee799a7e98ce75d50c0e726861f/node_modules/vitest/dist/chunks/cac.BLbEtnDd.js:208:22)
+      at CAC.mri (file:///Users/louistation/MySpace/Life/d-pi/node_modules/.pnpm/vitest@5.0.2_@opentelemetry+api@1.9.1_@types+node@24.19.0_happy-dom@20.14.5_vite@7.3.6__dc8baee799a7e98ce75d50c0e726861f/node_modules/vitest/dist/chunks/cac.BLbEtnDd.js:592:9)
+      at CAC.parse (file:///Users/louistation/MySpace/Life/d-pi/node_modules/.pnpm/vitest@5.0.2_@opentelemetry+api@1.9.1_@types+node@24.19.0_happy-dom@20.14.5_vite@7.3.6__dc8baee799a7e98ce75d50c0e726861f/node_modules/vitest/dist/chunks/cac.BLbEtnDd.js:509:27)
+      at file:///Users/louistation/MySpace/Life/d-pi/node_modules/.pnpm/vitest@5.0.2_@opentelemetry+api@1.9.1_@types+node@24.19.0_happy-dom@20.14.5_vite@7.3.6__dc8baee799a7e98ce75d50c0e726861f/node_modules/vitest/dist/cli.js:10:13
+      at ModuleJob.run (node:internal/modules/esm/module_job:561:25)
+      at async node:internal/modules/esm/loader:647:26
+      at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+  
+  Node.js v24.21.0
+  
+  
+  1 !== 2
+  
+      at TestContext.<anonymous> (file:///Users/louistation/MySpace/Life/d-pi/tests/tooling/test-runner.test.mjs:37:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

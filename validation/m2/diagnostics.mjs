@@ -12,6 +12,7 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { captureClipboard } from "./clipboard.mjs";
+import { waitForEnabledAction } from "./wait.mjs";
 
 const secret = "M2_DIAGNOSTIC_PRIVATE_SECRET";
 const panel = "[data-diagnostics-panel]";
@@ -126,25 +127,34 @@ async function setField(evaluate, name, value) {
 }
 
 async function refresh(evaluate, wait) {
-  await wait(() =>
-    evaluate(`!document.querySelector('${action("refresh")}')?.disabled`),
+  await waitForEnabledAction(
+    evaluate,
+    wait,
+    action("refresh"),
+    "diagnostics refresh available",
   );
   const previous = await evaluate(
     "document.querySelector('[data-diagnostics-snapshot]')?.textContent",
   );
   await evaluate(`document.querySelector('${action("refresh")}').click()`);
-  await wait(() =>
-    evaluate(
-      `!!document.querySelector('[data-diagnostics-snapshot]') && !document.querySelector('${action("refresh")}')?.disabled && document.querySelector('[data-diagnostics-snapshot]').textContent!==${JSON.stringify(previous)}`,
-    ),
+  await wait(
+    () =>
+      evaluate(
+        `!!document.querySelector('[data-diagnostics-snapshot]') && document.querySelector('${action("refresh")}')?.disabled === false && document.querySelector('[data-diagnostics-snapshot]').textContent!==${JSON.stringify(previous)}`,
+      ),
+    30000,
+    "diagnostics refreshed snapshot",
   );
 }
 
 async function apply(evaluate, wait, traceId) {
   // A newly opened panel samples automatically. Wait for that read before
   // issuing another scope: Main deliberately bounds concurrent diagnostics.
-  await wait(() =>
-    evaluate(`!document.querySelector('${action("refresh")}')?.disabled`),
+  await waitForEnabledAction(
+    evaluate,
+    wait,
+    action("refresh"),
+    "diagnostics initial sampling",
   );
   await setField(
     evaluate,
@@ -154,10 +164,13 @@ async function apply(evaluate, wait, traceId) {
     ),
   );
   await evaluate("document.querySelector('[data-diagnostics-apply]').click()");
-  await wait(() =>
-    evaluate(
-      `document.querySelector('[data-diagnostics-feedback]')?.value.includes(${JSON.stringify(traceId)}) && !!document.querySelector('[data-diagnostics-snapshot]') && !document.querySelector('${action("refresh")}')?.disabled`,
-    ),
+  await wait(
+    () =>
+      evaluate(
+        `document.querySelector('[data-diagnostics-feedback]')?.value.includes(${JSON.stringify(traceId)}) && !!document.querySelector('[data-diagnostics-snapshot]') && document.querySelector('${action("refresh")}')?.disabled === false`,
+      ),
+    30000,
+    "diagnostics applied scope snapshot",
   );
 }
 

@@ -1,0 +1,32 @@
+✖ a failed package condition reports its phase and bounded last predicate error (52.678333ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 118.285875
+
+✖ failing tests:
+
+test at tests/tooling/package-wait.test.mjs:5:1
+✖ a failed package condition reports its phase and bounded last predicate error (52.678333ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /diagnostics initial sampling/. Input:
+  
+  'M2 package timeout'
+  
+      at Object.<anonymous> (file:///Users/louistation/MySpace/Life/d-pi/tests/tooling/package-wait.test.mjs:15:14)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///Users/louistation/MySpace/Life/d-pi/tests/tooling/package-wait.test.mjs:6:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'M2 package timeout',
+    expected: /diagnostics initial sampling/,
+    operator: 'match',
+    diff: 'simple'
+  }
