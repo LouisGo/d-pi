@@ -37,7 +37,7 @@ export function createSubagentSupplier() {
       const output = "M2_SUBAGENT_RESULT_" + child;
       write({
         role: "assistant",
-        content: output,
+        content: `Finished ${child}.`,
         tool_calls: [
           {
             index: 0,
@@ -45,7 +45,11 @@ export function createSubagentSupplier() {
             type: "function",
             function: {
               name: "yield",
-              arguments: JSON.stringify({ data: output }),
+              arguments: JSON.stringify({
+                data: output,
+                error: null,
+                type: null,
+              }),
             },
           },
         ],

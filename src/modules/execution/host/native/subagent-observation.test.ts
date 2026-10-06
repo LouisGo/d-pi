@@ -113,10 +113,15 @@ it("reads native identities reused by later parent calls without merging old tra
           {
             role: "assistant",
             content: [
+              { type: "text", text: "Finished." },
               {
                 type: "toolCall",
                 name: "yield",
-                arguments: { data: { result: "NEW_RUN_RESULT" } },
+                arguments: {
+                  data: { result: "NEW_RUN_RESULT" },
+                  error: null,
+                  type: null,
+                },
               },
             ],
           },

@@ -880,3 +880,48 @@ it("serializes active import and queued cleanup, and drains them before closing"
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+it("automatic cleanup honors seven days after a reference was briefly reacquired", async () => {
+  const data = mkdtempSync(join(tmpdir(), "dpi-retention-repro-"));
+  const storage = AppStorage.open(join(data, "app.sqlite"));
+  const service = createAttachmentService(
+    storage,
+    data,
+    "unused",
+    () => true,
+    async () => null,
+  );
+  try {
+    const draft = storage.drafts.create(data);
+    const item = await service.store.importBytes(draft.threadId, {
+      name: "existing.txt",
+      mimeType: "text/plain",
+      bytes: Buffer.from("keep me"),
+      source: "file",
+    });
+    storage.drafts.save(draft.threadId, 0, item.token);
+    await service.store.checkStorage(draft.threadId);
+    storage.drafts.save(draft.threadId, 1, "");
+    await service.store.collectGarbage();
+    const now = Date.now();
+    storage.database.connection
+      .prepare("UPDATE input_content_object SET last_released_at=?")
+      .run(now - 7 * 86400000 + 500);
+    const previousPass = await service.store.collectGarbage();
+    expect(previousPass.deletedObjects).toBe(0);
+    // Both durable edits occur between the minute-based maintenance passes.
+    storage.drafts.save(draft.threadId, 2, item.token);
+    storage.drafts.save(draft.threadId, 3, "");
+    const clock = vi.spyOn(Date, "now").mockReturnValue(now + 1000);
+    const report = await service.store.collectGarbage();
+    clock.mockRestore();
+    expect(report.deletedObjects).toBe(0);
+    await expect(
+      access(join(data, "content", "objects", item.inputDigest!)),
+    ).resolves.toBeUndefined();
+  } finally {
+    await service.close();
+    storage.close();
+    rmSync(data, { recursive: true, force: true });
+  }
+});

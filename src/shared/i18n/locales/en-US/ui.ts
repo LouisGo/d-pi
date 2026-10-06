@@ -32,7 +32,7 @@ export const ui = {
     "Text-only PDF: images, charts and scanned content may be missing.",
   "attachment.coverageGap":
     "PDF extraction is incomplete. Preview the result before explicitly choosing text only, or remove this attachment.",
-  "attachment.storage": "Attachment storage",
+  "attachment.storage": "Attachments and storage",
   "attachment.checkStorage": "Check stored attachments",
   "attachment.cleanStorage": "Clear unreferenced cache",
   "attachment.storagePolicy":

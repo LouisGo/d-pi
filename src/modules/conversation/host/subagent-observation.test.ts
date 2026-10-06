@@ -197,10 +197,11 @@ it("shows streamed text and structured yield results without treating child agen
         message: {
           role: "assistant",
           content: [
+            { type: "text", text: "Finished." },
             {
               type: "toolCall",
               name: "yield",
-              arguments: { data: { answer: 42 } },
+              arguments: { data: { answer: 42 }, error: null, type: null },
             },
           ],
         },

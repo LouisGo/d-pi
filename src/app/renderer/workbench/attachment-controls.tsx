@@ -444,6 +444,24 @@ export function AttachmentControls({
               )}
             </div>
           )}
+          {!!unused.length && (
+            <details>
+              <summary>{t("attachment.library")}</summary>
+              <div className="grid max-h-40 gap-2 overflow-auto">
+                {unused.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between gap-2"
+                  >
+                    <span className="break-all">{item.name}</span>
+                    <Button variant="ghost" onClick={() => insert(item)}>
+                      {t("attachment.insert")}
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </details>
+          )}
         </div>
       </details>
       {(failed || list.isError) && (
@@ -701,24 +719,6 @@ export function AttachmentControls({
             </li>
           ))}
         </ol>
-      )}
-      {!!unused.length && (
-        <details>
-          <summary>{t("attachment.library")}</summary>
-          <div className="grid max-h-40 gap-2 overflow-auto">
-            {unused.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between gap-2"
-              >
-                <span className="break-all">{item.name}</span>
-                <Button variant="ghost" onClick={() => insert(item)}>
-                  {t("attachment.insert")}
-                </Button>
-              </div>
-            ))}
-          </div>
-        </details>
       )}
       {preview && (
         <AttachmentPreviewDialog

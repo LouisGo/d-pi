@@ -78,7 +78,6 @@ export function nativeSubagentResultText(content: unknown): string {
       return parsed.success ? [parsed.data.text] : [];
     })
     .join("\n");
-  if (prose) return prose;
   for (const part of content) {
     const parsed = z
       .object({
@@ -86,7 +85,7 @@ export function nativeSubagentResultText(content: unknown): string {
         name: z.literal("yield"),
         arguments: z.object({
           data: z.unknown().optional(),
-          error: z.string().optional(),
+          error: z.string().nullish(),
         }),
       })
       .safeParse(part);
@@ -97,5 +96,5 @@ export function nativeSubagentResultText(content: unknown): string {
       if (parsed.data.arguments.error) return parsed.data.arguments.error;
     }
   }
-  return "";
+  return prose;
 }

@@ -18,3 +18,5 @@ SQLite 事务不冒充文件系统事务；删除前重新核实权威引用，�
 worker 50/50 定向行为、全部类型入口、Biome/设计/i18n/架构通过；根集成 66 项中 64 首次通过，两个旧 schema fixture 的缺表/版本期望纠正后 storage 10/10 通过。失败与通过证据保存在 `dist/validation/m2-lifecycle/04b/`、`integrated-attachment.log`、`integrated-schema-green.log`。整段独立 review、完整检查及实际 macOS 候选由 06b 完成。
 
 保守边界：终态/unknown 冻结记录仍保留 App 依赖；损坏或超过单 owner 2MiB 安全预算时拒删，部分扫描提示继续检查。崩溃窗口是持久状态 fixture，未证明真实断电。未扩 PDF 视觉/OCR 或冷执行恢复。
+
+独立评审后补充（2026-10-06）：扫描间重新引用/移除的七天时钟由 DraftRepository 在同一保存事务中更新受影响原件/派生摘要；计数仍是投影，不据此删文件。实际包内默认阅读高度回归已将存储和附件库归并入口，待新包复核。整段最终独立复核和候选结果见 06b 交接。

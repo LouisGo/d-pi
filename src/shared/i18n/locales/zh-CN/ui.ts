@@ -30,7 +30,7 @@ export const ui = {
   "attachment.textOnlyNotice": "仅文字 PDF：可能遗漏图片、图表和扫描内容。",
   "attachment.coverageGap":
     "PDF 抽取存在覆盖缺口。请预览结果，明确选择仅文字，或移除此附件。",
-  "attachment.storage": "附件存储",
+  "attachment.storage": "附件与存储",
   "attachment.checkStorage": "检查存储附件",
   "attachment.cleanStorage": "清理未引用缓存",
   "attachment.storagePolicy":

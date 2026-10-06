@@ -773,7 +773,26 @@ it("offers storage checking and explicit unreferenced cleanup, locates broken or
           ],
           issuesTruncated: false,
         };
-      return { kind: "attachments", items: [] };
+      return {
+        kind: "attachments",
+        items: [
+          {
+            schemaVersion: 1,
+            id,
+            threadId: id,
+            token: `[[dpi-attachment:${id}]]`,
+            name: "saved.txt",
+            mimeType: "text/plain",
+            byteLength: 3,
+            capturedAt: new Date().toISOString(),
+            source: "file",
+            status: "ready",
+            representation: "text",
+            coverageGaps: [],
+            textOnly: false,
+          },
+        ],
+      };
     },
   );
   await act(async () => {
@@ -794,10 +813,14 @@ it("offers storage checking and explicit unreferenced cleanup, locates broken or
     );
     await new Promise((resolve) => setTimeout(resolve, 20));
   });
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  });
   const check = container.querySelector<HTMLButtonElement>(
     '[data-attachment-storage-action="check"]',
   );
   expect(check).not.toBeNull();
+  expect(check?.closest("details")?.textContent).toContain("saved.txt");
   await act(async () => {
     check?.click();
     await new Promise((resolve) => setTimeout(resolve, 20));

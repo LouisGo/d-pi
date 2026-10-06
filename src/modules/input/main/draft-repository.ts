@@ -43,13 +43,43 @@ export class DraftRepository implements DraftReader, DraftConsumptionWriter {
       : draft;
   }
   save(id: string, expectedRevision: number, text: string): number | null {
-    const result = this.db
-      .prepare(
-        "UPDATE thread SET body=?,revision=revision+1 WHERE id=? AND revision=?",
-      )
-      .run(text, id, expectedRevision);
-    return result.changes === 1 ? expectedRevision + 1 : null;
+    const save = () => {
+      const previous = this.db
+        .prepare("SELECT body FROM thread WHERE id=? AND revision=?")
+        .get(id, expectedRevision)?.body;
+      const result = this.db
+        .prepare(
+          "UPDATE thread SET body=?,revision=revision+1 WHERE id=? AND revision=?",
+        )
+        .run(text, id, expectedRevision);
+      if (result.changes !== 1) return null;
+      // A reference can be added and removed between maintenance passes. Keep
+      // its latest durable change in the same transaction as the draft write.
+      // Counts remain a scan projection; this timestamp can only delay GC.
+      if (
+        typeof previous === "string" &&
+        previous !== text &&
+        (previous.includes("[[dpi-attachment:") ||
+          text.includes("[[dpi-attachment:")) &&
+        this.db.prepare("PRAGMA user_version").get()?.user_version === 9
+      ) {
+        this.db
+          .prepare(`UPDATE input_content_object SET last_released_at=? WHERE digest IN (
+          SELECT CASE WHEN json_valid(payload) THEN json_extract(payload,'$.attachment.inputDigest') END
+          FROM input_attachment WHERE thread_id=? AND json_valid(payload)
+            AND (instr(?,json_extract(payload,'$.attachment.token'))>0) != (instr(?,json_extract(payload,'$.attachment.token'))>0)
+          UNION
+          SELECT CASE WHEN json_valid(payload) THEN json_extract(payload,'$.derivedDigest') END
+          FROM input_attachment WHERE thread_id=? AND json_valid(payload)
+            AND (instr(?,json_extract(payload,'$.attachment.token'))>0) != (instr(?,json_extract(payload,'$.attachment.token'))>0)
+        )`)
+          .run(Date.now(), id, previous, text, id, previous, text);
+      }
+      return expectedRevision + 1;
+    };
+    return this.db.isTransaction ? save() : this.database.transaction(save);
   }
+
   consume(threadId: string, revision: number, submissionId: string): void {
     this.db
       .prepare("INSERT INTO draft_consumption VALUES(?,?,?)")
