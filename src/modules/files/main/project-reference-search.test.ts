@@ -239,9 +239,7 @@ test("a directory replaced during sampling never publishes its unverified batch"
       });
       return directory;
     });
-  const result = await search().search(root, "");
-  expect(result.truncated).toBe(true);
-  expect(result.entries.map((entry) => entry.path)).toEqual(["src"]);
+  await expect(search().search(root, "")).rejects.toThrow("root changed");
 });
 
 test("character budget omits oversized candidates with explicit partial coverage", async () => {
@@ -253,6 +251,35 @@ test("character budget omits oversized candidates with explicit partial coverage
     truncated: true,
   });
 });
+
+test.each(["self", "ancestor"] as const)(
+  "moving and restoring a %s directory while opening its iterator cannot publish mismatched entries",
+  async (mode) => {
+    const root = await fixture();
+    const other = await fixture();
+    const source = join(root, "src", "nested");
+    await mkdir(join(source, "deep"), { recursive: true });
+    await mkdir(join(other, "deep"));
+    const target = mode === "self" ? source : join(source, "deep");
+    await writeFile(join(target, "inside.ts"), "");
+    await writeFile(
+      join(mode === "self" ? other : join(other, "deep"), "unrelated.ts"),
+      "",
+    );
+    const actualOpen = (await vi.importActual<typeof fs>("node:fs/promises"))
+      .opendir;
+    vi.mocked(fs.opendir).mockImplementation(async (...args) => {
+      if (args[0] !== target) return actualOpen(...args);
+      await rename(source, join(root, "src", "saved"));
+      await symlink(other, source);
+      const directory = await actualOpen(...args);
+      await fs.unlink(source);
+      await rename(join(root, "src", "saved"), source);
+      return directory;
+    });
+    await expect(search().search(root, "")).rejects.toThrow("changed");
+  },
+);
 
 test("root replaced by another directory at the same canonical path cannot mix project snapshots", async () => {
   const parent = await fixture();
@@ -460,7 +487,7 @@ test.runIf(process.env.D_PI_REFERENCE_BENCH === "1")(
     };
     expect(cold.entries[0]?.kind).toBe("directory");
     expect(afterCold.opendir).toBe(2);
-    expect(afterCold.lstat).toBe(5);
+    expect(afterCold.lstat).toBe(7);
     expect(warmIO).toEqual({
       open: 0,
       handleStat: 0,

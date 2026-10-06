@@ -52,7 +52,7 @@ M3 再设计编辑缓冲、保存冲突、撤销与语言服务进程归属。�
 
 `main/public.ts` 的 `ProjectReferenceSearch` 由 Main 装配持有，返回 `ProjectReferenceEntry`（相对 `path`、`name`、`kind: file | directory`）。候选是查询提示，不能授权读取或保证磁盘仍是采样时状态；Thread 的工作目录身份由装配在查询前复核，冻结引用仍要独立验证目标。目录与文件的持久引用及冻结语义归输入模块。
 
-首次搜索以 `opendir` 流式宽度优先构建，同项目并发共享构建；普通文件通过 Dirent 分类，不逐项 `lstat`。只排除 `.git` 与 `node_modules`，不跟随 symlink，不读取文件正文。目录句柄以 `O_DIRECTORY | O_NOFOLLOW` 打开，读取前后检查目录实际路径、句柄/路径的设备与 inode、mtime；通过检查才发布整批候选，整个构建结束后再次核对项目根的设备与 inode，拒绝同路径根替换。变化或不可读取的子树弃用整批并标 `truncated`，根目录失败直接拒绝。Node 的 `opendir` 没有 `NOFOLLOW` 参数，因此它与目录句柄之间不是原子打开；并发替换通过身份复核拒绝批次，不声称建立 OS 沙箱。
+首次搜索以 `opendir` 流式宽度优先构建，同项目并发共享构建；普通文件通过 Dirent 分类，不逐项 `lstat`。只排除 `.git` 与 `node_modules`，不跟随 symlink，不读取文件正文。目录句柄以 `O_DIRECTORY | O_NOFOLLOW` 打开，读取前后检查目录实际路径、句柄/路径的设备与 inode、mtime/ctime；通过检查才发布整批候选，整个构建结束后再次核对项目根的设备、inode/ctime，并复核所有已采样目录的设备、inode/ctime，拒绝同路径根替换和目录/祖先改名后恢复。变化或不可读取的子树弃用整批并标 `truncated`，根目录失败、最终身份/ctime复核失败或5秒验证预算耗尽直接拒绝，不发布混合快照。Node 的 `opendir` 没有 `NOFOLLOW` 参数，因此它与目录句柄之间不是原子打开；并发替换通过身份复核拒绝批次，不声称建立 OS 沙箱。
 
 最多保留 3 个项目的 LRU，每项目最多访问/保留 50,000 项、原始及小写匹配字符串合计 4,194,304 个 UTF-16 code unit（约 8 MiB，另有有界记录/队列开销），最深 64 层、单次构建最多 5 秒。预算耗尽、不可读取子树及输出超限均显式 `truncated`，不冒称覆盖全项目。所有缓存槽正在构建时新增项目查询拒绝 busy，避免无界排队；失败构建不缓存。关闭拒绝新查询、等待已有构建关闭目录与句柄后释放缓存，无后台 watcher 或定时轮询。
 

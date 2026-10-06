@@ -173,10 +173,16 @@ export class ProjectReferenceSearch {
       throw new Error("Project reference root changed");
     const queue = [{ path: "", depth: 0 }];
     const entries: IndexedEntry[] = [];
+    const observed: {
+      path: string;
+      dev: number;
+      ino: number;
+      ctimeMs: number;
+    }[] = [];
     let characters = 0;
     let visited = 0;
     let truncated = false;
-    let rootIdentity: { dev: number; ino: number } | undefined;
+    let rootIdentity: { dev: number; ino: number; ctimeMs: number } | undefined;
     const started = performance.now();
     for (let cursor = 0; cursor < queue.length; cursor += 1) {
       if (
@@ -204,7 +210,11 @@ export class ProjectReferenceSearch {
           const before = await file.stat();
           if (!before.isDirectory()) throw new Error("Not a directory");
           if (!current.path)
-            rootIdentity = { dev: before.dev, ino: before.ino };
+            rootIdentity = {
+              dev: before.dev,
+              ino: before.ino,
+              ctimeMs: before.ctimeMs,
+            };
           const directory = await opendir(full, { bufferSize: 128 });
           try {
             const sampled = await lstat(full);
@@ -215,6 +225,12 @@ export class ProjectReferenceSearch {
               (await realpath(full)) !== full
             )
               throw new Error("Directory changed");
+            observed.push({
+              path: current.path,
+              dev: before.dev,
+              ino: before.ino,
+              ctimeMs: before.ctimeMs,
+            });
             while (
               visited < this.#maxEntries &&
               performance.now() - started <= MAX_BUILD_MS
@@ -270,6 +286,8 @@ export class ProjectReferenceSearch {
               pathAfter.dev !== before.dev ||
               pathAfter.ino !== before.ino ||
               after.mtimeMs !== before.mtimeMs ||
+              after.ctimeMs !== before.ctimeMs ||
+              pathAfter.ctimeMs !== before.ctimeMs ||
               (await realpath(full)) !== full
             )
               throw new Error("Directory changed");
@@ -293,9 +311,25 @@ export class ProjectReferenceSearch {
       !rootAfter.isDirectory() ||
       rootAfter.dev !== rootIdentity.dev ||
       rootAfter.ino !== rootIdentity.ino ||
+      rootAfter.ctimeMs !== rootIdentity.ctimeMs ||
       (await realpath(root)) !== root
     )
       throw new Error("Project reference root changed");
+    // Parents are sampled before their children. A later move-and-restore of
+    // any ancestor changes its ctime, even when its inode/path return unchanged.
+    // Recheck every sampled directory before publishing the complete snapshot.
+    for (const sample of observed) {
+      if (performance.now() - started > MAX_BUILD_MS)
+        throw new Error("Project reference validation budget exceeded");
+      const current = await lstat(join(root, sample.path));
+      if (
+        !current.isDirectory() ||
+        current.dev !== sample.dev ||
+        current.ino !== sample.ino ||
+        current.ctimeMs !== sample.ctimeMs
+      )
+        throw new Error("Project reference directory changed");
+    }
     return { entries, truncated, builtAt: performance.now() };
   }
 }

@@ -590,11 +590,21 @@ try {
         "document.querySelector('button[aria-label=\"切换为浅色主题\"]').click()",
       );
       await click("紧凑密度");
+      await wait(() =>
+        evaluate(
+          "[...document.querySelectorAll('.composer [role=option]')].every(el=>!el.disabled) && !document.querySelector('button[aria-label=\"切换为深色主题\"]').disabled",
+        ),
+      );
       screenshots.push(await shot("m2-reference-search-light-compact"));
       await evaluate(
         "document.querySelector('button[aria-label=\"切换为深色主题\"]').click()",
       );
       await click("正常密度");
+      await wait(() =>
+        evaluate(
+          "[...document.querySelectorAll('.composer [role=option]')].every(el=>!el.disabled) && !document.querySelector('button[aria-label=\"切换为浅色主题\"]').disabled",
+        ),
+      );
       // Candidate confirmation uses the real Composer keyboard priority and must not send.
       await evaluate(
         "document.querySelector('[contenteditable=true]').focus()",
