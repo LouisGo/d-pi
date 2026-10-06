@@ -168,7 +168,7 @@ export function History({
             <p>{t("ui.history.omitted", { count: page.omitted })}</p>
           )}
           {page.entries.map((entry) => (
-            <article className="message" key={entry.id}>
+            <article className="message" data-selectable key={entry.id}>
               <strong>
                 {match(entry.role)
                   .with("user", () => t("ui.history.role.user"))

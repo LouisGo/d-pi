@@ -57,6 +57,20 @@ Base UI 负责基础交互，shadcn 源码接入后统一使用本项目 token�
 
 体系可以演进，但变更必须解释影响范围；新增 token 要有语义、来源、主题/密度行为和使用处，避免每个像素一个 token。重大视觉方向、默认行为或范围变化按 AGENTS.md 先与用户对齐；常规复用与局部工程实现自行处理。不能通过关规则或放宽组件合同迁就一次违规实现。
 
+## 指针、点击反馈与文本选择（2026-10-06）
+
+用户已确认的全应用规则：点击目标禁止手形 `cursor: pointer`，统一为 `default`；输入/内容选择的 `text`、编辑器分隔条的 resize 等功能性指针保留。基础样式单源为 `src/app/renderer/styles/interaction.css`，由应用样式入口加载，覆盖 body 级 portal。
+
+- 组件默认外观须能识别操作入口，hover/active/selected/disabled/focus-visible 分别表达含义。共享 Button 管理主操作、ghost、navigation 与 icon；主操作按下色来自 `--primary-active`，其他状态复用现有主题 token。折叠标题沿用原生 disclosure，文字链接默认有颜色及下划线。
+- 默认 `user-select: none`。需要阅读/复制的正文、工具输出、历史、收据、原生交互及队列文本由内容拥有者加 `data-selectable`；输入/textarea/contenteditable 按原生语义开放。trace、Thread 身份、目录路径、file-meta 内容、运行来源、附件预览和 alert 是中央规则登记的内容例外，不按所有 p/span 或整个工作区开放。
+- 可选择区域内的按钮、链接、summary、导航/选项及其控件标签仍不可选；消息 heading 与装饰图标也不参与正文选择。新内容区域优先使用 `data-selectable`，不另写 select-text/all/auto、内联 userSelect 或局部 user-select 例外。
+- configuration 模块不能反向导入 app 私有 Button。其原生按钮使用静态 `ui-button` 加 `ui-button-primary/ghost/navigation` 接入同一份共享样式，保留原有表单/disabled 行为；不另建颜色或交互状态。其他 app 视图使用共享 React Button。
+- Monaco 0.57 的 unlayered CSS 与动态 inline cursor 由中央适配规则限定到 editor/hover/menu 作用域覆盖。普通点击目标和编辑器使用窄范围 important；编辑区 text、sash resize 明确恢复。不对整个应用使用 `* { cursor: default !important }`，不覆盖 Monaco 自有选区机制。
+
+源码门禁 `pnpm lint:interaction` 检查 CSS、工具类、静态内联/命令式赋值和原生按钮的共享样式接入；在 `check:fast` 与 `lint:design`（因此完整 `check`）中执行。CSS 文本选择例外只允许中央规则定义，违规失败。扫描只证明可静态识别的自有代码，不冒称能解释任意动态 JS 或第三方 DOM。
+
+修改中央规则、相关控件、内容标记或升级 UI 依赖时运行 `pnpm validate:interaction`：隔离 Electron 使用正式 App/组件及真实 Monaco/Diff，验证 computed cursor、默认不可选与鼠标拖选例外、Monaco 键盘选区、控件/portal 覆盖、hover/active/disabled/focus-visible 和主题/密度。测试桥接使用 fixture，不认证、不执行 OMP，也不代表真实供应商或用户认可。实现与本轮证据见[交互规范规格](../../.scratch/interaction-policy/spec.md)。
+
 ## 可执行检查
 
 用户已要求将 `@shadcn/lint` + Oxlint 从条件接入提升为 S1 正式 GUI 的必备检查。Biome 继续负责通用 lint/格式化，TypeScript 负责类型检查；Oxlint 限于设计系统规则，不复制通用 lint 或引入 ESLint/Prettier。

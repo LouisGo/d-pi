@@ -333,7 +333,7 @@ function NativeDialog({
     void model.answer(item.id, response);
   };
   return (
-    <article className="message" aria-label={item.title}>
+    <article className="message" data-selectable aria-label={item.title}>
       <strong>{item.title}</strong>
       {item.message && <p>{item.message}</p>}
       {defaulted && (

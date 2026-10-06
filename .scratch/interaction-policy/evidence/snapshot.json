@@ -1,0 +1,35 @@
+{
+  "sourceBase": "c45cd273dc3f7ad3bd99602a5cd3c780055ff74b",
+  "snapshot": "/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-interaction-review-fofpb3_1",
+  "overlaidFiles": [
+    "docs/architecture/design-system.md",
+    "docs/decisions.md",
+    "package.json",
+    "scripts/checks/lint-design.mjs",
+    "scripts/checks/interaction-policy.mjs",
+    "tests/tooling/interaction-policy.test.mjs",
+    "src/app/renderer/styles/interaction.css",
+    "src/app/renderer/styles/app.css",
+    "src/app/renderer/styles/tokens.css",
+    "src/app/renderer/components/ui/button.css",
+    "src/app/renderer/reading/conversation.tsx",
+    "src/app/renderer/reading/history.tsx",
+    "src/app/renderer/reading/markdown.tsx",
+    "src/app/renderer/reading/subagents.tsx",
+    "src/app/renderer/reading/submissions.tsx",
+    "src/app/renderer/workbench/queue-controls.tsx",
+    "src/app/renderer/workbench/runtime-panel.tsx",
+    "src/modules/configuration/renderer/settings/authentication-progress.tsx",
+    "src/modules/configuration/renderer/settings/settings.tsx",
+    "validation/m2/interaction-policy.mjs",
+    "validation/m2/interaction.html",
+    "validation/m2/interaction.tsx",
+    ".scratch/interaction-policy/spec.md"
+  ],
+  "excludedConcurrentChanges": [
+    "src/app/main/wiring/attachment-service.ts",
+    "src/app/main/wiring/attachment-service.test.ts"
+  ],
+  "dependencies": "isolated copy-on-write clones of existing pinned node_modules and prepared SDK",
+  "checkResult": "exit 0; 709 application tests passed, 2 existing skips"
+}
