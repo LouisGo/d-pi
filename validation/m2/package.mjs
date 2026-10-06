@@ -1289,6 +1289,7 @@ try {
       threadA: a,
       threadB: b,
       env: isolated.env,
+      temporary: isolated.root,
     });
   }
   if (process.argv.includes("--inspect")) {

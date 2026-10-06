@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { captureClipboard } from "./clipboard.mjs";
 
 const initialText =
   "M2_LONG_REPLY_START\n" +
@@ -109,6 +110,7 @@ export async function validateLongReading({
   threadA,
   threadB,
   env,
+  temporary,
 }) {
   const metrics = {};
   await click("新会话");
@@ -168,7 +170,15 @@ export async function validateLongReading({
     "packaged native streaming appends without replacing the selected old long-message segment or its DOM/scroll position",
   );
 
-  const savedClipboard = spawnSync("/usr/bin/pbpaste", [], { env }).stdout;
+  const expectedText =
+    initialText +
+    appendedText +
+    "_FINALIZED\n\n" +
+    Array.from(
+      { length: 80 },
+      (_, index) => `Reading fixture line ${index}`,
+    ).join("\n\n");
+  const clipboard = captureClipboard({ env, temporary });
   let completeObtainedText;
   try {
     await call("Page.bringToFront");
@@ -178,6 +188,7 @@ export async function validateLongReading({
     const point = await evaluate(
       "(()=>{const r=window.__longReadingText.closest('article').querySelector('.message-heading button').getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()",
     );
+    clipboard.beforeCopy();
     await call("Input.dispatchMouseEvent", {
       type: "mousePressed",
       button: "left",
@@ -191,16 +202,17 @@ export async function validateLongReading({
       ...point,
     });
     const copied = await wait(() => {
-      const text = spawnSync("/usr/bin/pbpaste", [], {
+      const result = spawnSync("/usr/bin/pbpaste", [], {
         env,
         encoding: "utf8",
         maxBuffer: 16 * 1024 * 1024,
-      }).stdout;
-      return text?.includes("M2_LONG_REPLY_APPENDED") ? text : null;
+      });
+      assert.equal(result.error, undefined);
+      assert.equal(result.status, 0);
+      return result.stdout === expectedText ? result.stdout : null;
     });
-    assert.ok(copied.startsWith(initialText));
-    assert.ok(copied.includes(appendedText));
-    assert.ok(copied.includes("_FINALIZED"));
+    clipboard.markOwnedCopy(expectedText);
+    assert.equal(copied, expectedText);
     metrics.copiedLength = copied.length;
     completeObtainedText = copied;
     metrics.copiedSha256 = createHash("sha256").update(copied).digest("hex");
@@ -208,7 +220,7 @@ export async function validateLongReading({
       "real packaged copy action writes complete obtained long native reply to macOS clipboard including undisplayed later segments and finalization",
     );
   } finally {
-    spawnSync("/usr/bin/pbcopy", [], { env, input: savedClipboard });
+    metrics.clipboardRestoration = clipboard.restore(expectedText).kind;
   }
   await evaluate(
     "window.__longReadingContainer=window.__longReadingText.closest('[data-long-reading]');[...window.__longReadingContainer.querySelectorAll('button')].find(el=>el.textContent.trim()==='下一段').focus();true",
