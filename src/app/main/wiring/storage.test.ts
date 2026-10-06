@@ -51,7 +51,7 @@ describe("real SQLite and directory service", () => {
       reopened.close();
       const migrated = new DatabaseSync(path, { readOnly: true });
       expect(migrated.prepare("PRAGMA user_version").get()?.user_version).toBe(
-        8,
+        9,
       );
       migrated.close();
       const backup = new DatabaseSync(`${path}.before-v5`, { readOnly: true });
@@ -330,7 +330,7 @@ it("backs up v5 before enabling typed native outcomes in v6 and reopens the new 
     const migrated = new DatabaseSync(path, { readOnly: true });
     try {
       expect(migrated.prepare("PRAGMA user_version").get()?.user_version).toBe(
-        8,
+        9,
       );
     } finally {
       migrated.close();

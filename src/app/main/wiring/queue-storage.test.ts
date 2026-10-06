@@ -15,7 +15,7 @@ it("publishes the queue change schema with a recoverable before-v7 backup", () =
     store.close();
     const db = new DatabaseSync(path, { readOnly: true });
     try {
-      expect(db.prepare("PRAGMA user_version").get()?.user_version).toBe(8);
+      expect(db.prepare("PRAGMA user_version").get()?.user_version).toBe(9);
       expect(
         db
           .prepare("SELECT name FROM sqlite_master WHERE name='queue_change'")
@@ -76,8 +76,15 @@ it("normalizes existing v6 dispatch and ACK receipts before publishing the befor
     // Recreate that exact schema boundary from the actual storage implementation.
     const v6 = new DatabaseSync(path);
     try {
+      for (const trigger of v6
+        .prepare(
+          "SELECT name FROM sqlite_master WHERE type='trigger' AND name LIKE 'input_epoch_%'",
+        )
+        .all()) {
+        v6.exec(`DROP TRIGGER "${String(trigger.name).replaceAll('"', '""')}"`);
+      }
       v6.exec(
-        "DROP TABLE input_attachment; DROP TABLE queue_change; PRAGMA user_version=6;",
+        "DROP TABLE input_content_epoch; DROP TABLE input_content_object; DROP TABLE input_attachment; DROP TABLE queue_change; PRAGMA user_version=6;",
       );
       expect(
         v6
@@ -155,7 +162,7 @@ it("normalizes existing v6 dispatch and ACK receipts before publishing the befor
     const current = new DatabaseSync(path, { readOnly: true });
     try {
       expect(current.prepare("PRAGMA user_version").get()?.user_version).toBe(
-        8,
+        9,
       );
     } finally {
       current.close();

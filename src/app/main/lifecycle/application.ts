@@ -404,6 +404,7 @@ export function startDesktopApplication(mainDirectory: string): void {
         await Promise.all(
           [...services.runtimes.values()].map((runtime) => runtime.closeIdle()),
         );
+        await services.attachments?.close();
         await diagnostics?.close();
       })()
         .then(() => {

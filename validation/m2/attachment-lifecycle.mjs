@@ -27,6 +27,21 @@ export async function validateAttachmentLifecycle({
     evaluate(`window.desktop.attachments.request({
     kind:${JSON.stringify(kind)},threadId:${JSON.stringify(threadId)},traceId:crypto.randomUUID()
   })`);
+  const persisted = (name) =>
+    wait(() => {
+      const row = db
+        .prepare(
+          "SELECT id FROM input_attachment WHERE thread_id=? AND json_extract(payload,'$.attachment.name')=? ORDER BY rowid DESC LIMIT 1",
+        )
+        .get(threadId, name);
+      return (
+        row &&
+        db
+          .prepare("SELECT body FROM thread WHERE id=?")
+          .get(threadId)
+          .body.includes(`[[dpi-attachment:${row.id}]]`)
+      );
+    });
   const retained = Buffer.from("M2_LIFECYCLE_PRIVATE_ORIGINAL\n");
   await dropAttachment(
     "lifecycle-retained.txt",
@@ -41,6 +56,12 @@ export async function validateAttachmentLifecycle({
   );
   let report = await request("check-storage");
   assert.equal(report.kind, "storage-report");
+  await evaluate(
+    "document.querySelector('[data-attachment-storage-action=clean]').closest('details').open=true",
+  );
+  await evaluate(
+    "document.querySelector('[data-attachment-storage-action=clean]').scrollIntoView({block:'nearest'})",
+  );
   await evaluate(
     "document.querySelector('[data-attachment-storage-action=clean]').click()",
   );
@@ -83,6 +104,7 @@ export async function validateAttachmentLifecycle({
     "text/plain",
     retained.toString("base64"),
   );
+  await persisted("lifecycle-repair.txt");
   report = await request("check-storage");
   assert.ok(
     !report.issues.some(
@@ -99,6 +121,7 @@ export async function validateAttachmentLifecycle({
     "text/plain",
     retained.toString("base64"),
   );
+  await persisted("lifecycle-repaired.txt");
   report = await request("check-storage");
   assert.ok(
     !report.issues.some(
@@ -124,6 +147,9 @@ export async function validateAttachmentLifecycle({
   assert.equal(report.kind, "storage-report");
   assert.ok(report.deletedObjects > 0);
   assert.ok(!existsSync(objectPath(retained)));
+  await evaluate(
+    "document.querySelector('[data-attachment-storage-action=clean]').closest('details').open=false",
+  );
   checks.push(
     "packaged attachment cleanup protects current persistent drafts; missing/corrupt originals are reported without input loss, exact reimport repairs shared bytes, and explicit cleanup removes only released objects",
   );
@@ -146,6 +172,20 @@ export async function prepareAgedAttachment({
     "text/plain",
     aged.toString("base64"),
   );
+  await wait(() => {
+    const row = db
+      .prepare(
+        "SELECT id FROM input_attachment WHERE thread_id=? AND json_extract(payload,'$.attachment.name')='lifecycle-aged.txt' ORDER BY rowid DESC LIMIT 1",
+      )
+      .get(threadId);
+    return (
+      row &&
+      db
+        .prepare("SELECT body FROM thread WHERE id=?")
+        .get(threadId)
+        .body.includes(`[[dpi-attachment:${row.id}]]`)
+    );
+  });
   await click("移除 lifecycle-aged.txt");
   await wait(
     () =>

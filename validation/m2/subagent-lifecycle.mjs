@@ -174,6 +174,19 @@ export async function validateSubagentLifecycle({
   );
   assert.ok(completed.every((card) => !card.text.includes(".jsonl")));
   screenshots.push(await shot("m2-subagents-completed"));
+  await evaluate(
+    "document.querySelector('button[aria-label=\"切换为浅色主题\"]').click()",
+  );
+  await click("紧凑密度");
+  screenshots.push(await shot("m2-subagents-light-compact"));
+  assert.deepEqual(
+    (await cards()).map((card) => card.id).sort(),
+    running.map((card) => card.id).sort(),
+  );
+  await evaluate(
+    "document.querySelector('button[aria-label=\"切换为深色主题\"]').click()",
+  );
+  await click("正常密度");
   await call("Page.reload");
   await wait(
     async () =>

@@ -459,7 +459,7 @@ it("starts attachment maintenance once and drains it before closing SQLite on Qu
   shell.directory = mkdtempSync(join(tmpdir(), "d-pi-attachment-quit-"));
   const attachmentModule = await import("./wiring/attachment-service");
   const factory = attachmentModule.createAttachmentService;
-  const startMaintenance = vi.fn();
+  const startMaintenance = vi.fn<(onFailure?: () => void) => void>();
   let release = () => {};
   const drained = new Promise<void>((resolve) => {
     release = resolve;
@@ -477,6 +477,7 @@ it("starts attachment maintenance once and drains it before closing SQLite on Qu
   try {
     await import("./index");
     await vi.waitFor(() => expect(startMaintenance).toHaveBeenCalledTimes(1));
+    startMaintenance.mock.calls[0]?.[0]?.();
     shell.events.get("will-quit")?.({ preventDefault: vi.fn() });
     await vi.waitFor(() => expect(close).toHaveBeenCalledTimes(1));
     expect(databaseClose).not.toHaveBeenCalled();
@@ -484,6 +485,17 @@ it("starts attachment maintenance once and drains it before closing SQLite on Qu
     release();
     await vi.waitFor(() => expect(shell.quit).toHaveBeenCalledTimes(1));
     expect(databaseClose).toHaveBeenCalledTimes(1);
+    const logs = readFileSync(join(shell.directory, "logs/main.jsonl"), "utf8")
+      .trim()
+      .split("\n")
+      .map((line) => JSON.parse(line));
+    expect(logs).toContainEqual(
+      expect.objectContaining({
+        operation: "attachments:maintenance",
+        stage: "failed",
+        code: "storage-unavailable",
+      }),
+    );
   } finally {
     release();
     shell.events.get("will-quit")?.({ preventDefault: vi.fn() });

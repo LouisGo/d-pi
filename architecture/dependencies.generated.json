@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "03f7f26b876e0c2980345bb0ae6513bc3b47b4065291b18c4323c5d15cc0c5b7",
+  "inputsHash": "34226ad50e61382f3dfcfae065a2371ae4c6f17ab2718cf5522edd23da7fd7dc",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 303,
-    "scannedFiles": 303,
+    "sourceFiles": 313,
+    "scannedFiles": 313,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 109,
-      "lines": 17645,
+      "files": 111,
+      "lines": 17956,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -59,8 +59,8 @@
         "omp"
       ],
       "materialized": true,
-      "files": 24,
-      "lines": 1531,
+      "files": 25,
+      "lines": 1642,
       "publicEntries": [
         {
           "path": "src/platform/main/storage/public.ts",
@@ -102,7 +102,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 18,
-      "lines": 1748,
+      "lines": 1823,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -285,8 +285,8 @@
         "main"
       ],
       "materialized": true,
-      "files": 17,
-      "lines": 1853,
+      "files": 20,
+      "lines": 2559,
       "publicEntries": [
         {
           "path": "src/modules/conversation/contracts/public.ts",
@@ -318,8 +318,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 46,
-      "lines": 10940,
+      "files": 48,
+      "lines": 11321,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -352,8 +352,8 @@
       ],
       "defaultEnvironment": "omp",
       "materialized": true,
-      "files": 9,
-      "lines": 1865,
+      "files": 11,
+      "lines": 2126,
       "publicEntries": [
         {
           "path": "runtime/host.mjs",
@@ -1298,6 +1298,13 @@
       "environment": "renderer",
       "dependency": "preferences",
       "targetEnvironment": "renderer",
+      "testOnly": true
+    },
+    {
+      "module": "app",
+      "environment": "renderer",
+      "dependency": "conversation",
+      "targetEnvironment": "host",
       "testOnly": true
     },
     {
@@ -2448,6 +2455,42 @@
       "kind": "dynamic-import",
       "resolution": "module",
       "to": "src/app/main/index.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/index.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./index",
+      "kind": "dynamic-import",
+      "resolution": "module",
+      "to": "src/app/main/index.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/index.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./wiring/attachment-service",
+      "kind": "dynamic-import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/attachment-service.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/index.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./wiring/app-storage",
+      "kind": "dynamic-import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/app-storage.ts",
       "targetModule": "app",
       "targetEnvironment": "main"
     },
@@ -3839,6 +3882,15 @@
       "to": "src/app/main/wiring/app-storage.ts",
       "targetModule": "app",
       "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/desktop-services.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
     },
     {
       "from": "src/app/main/wiring/desktop-services.ts",
@@ -5357,6 +5409,18 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/app/renderer/reading/conversation.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./subagents",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/reading/subagents.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/app/renderer/reading/history.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -5614,6 +5678,138 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/reading/history.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/subagents-renderer.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/subagents-renderer.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react-dom/client",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/subagents-renderer.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/subagents-renderer.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/conversation/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/core/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/app/renderer/reading/subagents-renderer.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/conversation/host/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/host/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "host"
+    },
+    {
+      "from": "src/app/renderer/reading/subagents-renderer.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/subagents-renderer.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./conversation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/reading/conversation.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/subagents.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "ts-pattern",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/subagents.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@/components/ui/button",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/ui/button.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/subagents.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/conversation/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/contracts/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/reading/subagents.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/subagents.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./markdown",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/reading/markdown.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -10115,6 +10311,27 @@
       "targetEnvironment": "omp"
     },
     {
+      "from": "src/platform/omp/protocol/public.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "./subagent-frame",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/platform/omp/protocol/subagent-frame.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "omp"
+    },
+    {
+      "from": "src/platform/omp/protocol/subagent-frame.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
       "from": "src/platform/omp/resources/public.ts",
       "sourceModule": "platform",
       "sourceEnvironment": "omp",
@@ -13341,6 +13558,27 @@
       "targetEnvironment": "core"
     },
     {
+      "from": "src/modules/conversation/core/subagent-reconnect.test.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/core/subagent-reconnect.test.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "./model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/core/model.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "core"
+    },
+    {
       "from": "src/modules/conversation/core/subscription.test.ts",
       "sourceModule": "conversation",
       "sourceEnvironment": "core",
@@ -13452,6 +13690,18 @@
       "targetEnvironment": "contracts"
     },
     {
+      "from": "src/modules/conversation/host/projection.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "./subagent-projection",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/host/subagent-projection.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "host"
+    },
+    {
       "from": "src/modules/conversation/host/public.ts",
       "sourceModule": "conversation",
       "sourceEnvironment": "host",
@@ -13543,6 +13793,60 @@
       "to": "src/modules/conversation/host/projection.ts",
       "targetModule": "conversation",
       "targetEnvironment": "host"
+    },
+    {
+      "from": "src/modules/conversation/host/subagent-observation.test.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "host",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/host/subagent-observation.test.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "host",
+      "test": true,
+      "specifier": "./projection",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/host/projection.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "host"
+    },
+    {
+      "from": "src/modules/conversation/host/subagent-projection.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/host/subagent-projection.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "../../../platform/omp/protocol/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/omp/protocol/public.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "omp"
+    },
+    {
+      "from": "src/modules/conversation/host/subagent-projection.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/contracts/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/modules/conversation/main/native-history.test.ts",
@@ -14856,6 +15160,69 @@
       "targetEnvironment": "host"
     },
     {
+      "from": "src/modules/execution/host/native/subagent-observation.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/host/native/subagent-observation.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": true,
+      "specifier": "../../../../platform/omp/protocol/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/omp/protocol/public.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "omp"
+    },
+    {
+      "from": "src/modules/execution/host/native/subagent-observation.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": true,
+      "specifier": "./subagent-observation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/host/native/subagent-observation.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "host"
+    },
+    {
+      "from": "src/modules/execution/host/native/subagent-observation.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "node:fs/promises",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/host/native/subagent-observation.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/host/native/subagent-observation.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "../../../../platform/omp/protocol/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/omp/protocol/public.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "omp"
+    },
+    {
       "from": "src/modules/execution/host/public.ts",
       "sourceModule": "execution",
       "sourceEnvironment": "host",
@@ -15116,6 +15483,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/execution/host/native/native-session.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "host"
+    },
+    {
+      "from": "src/modules/execution/host/session-host.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "./native/subagent-observation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/host/native/subagent-observation.ts",
       "targetModule": "execution",
       "targetEnvironment": "host"
     },
@@ -16706,6 +17085,97 @@
       "to": "runtime/native-subagent-configuration.mjs",
       "targetModule": "runtime",
       "targetEnvironment": "omp"
+    },
+    {
+      "from": "runtime/native-subagent-observation-suite.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "node:child_process",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/native-subagent-observation-suite.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/native-subagent-observation-suite.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/native-subagent-observation-suite.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "node:url",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/native-subagent-observation-suite.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "../scripts/testing/test-environment.mjs",
+      "kind": "import",
+      "resolution": "unowned",
+      "to": "scripts/testing/test-environment.mjs"
+    },
+    {
+      "from": "runtime/native-subagent-observation.test.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": true,
+      "specifier": "bun:test",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/native-subagent-observation.test.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": true,
+      "specifier": "node:child_process",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/native-subagent-observation.test.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": true,
+      "specifier": "node:fs/promises",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/native-subagent-observation.test.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/native-subagent-observation.test.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": true,
+      "specifier": "node:readline",
+      "kind": "import",
+      "resolution": "external"
     },
     {
       "from": "runtime/native-subagent-suite.mjs",
