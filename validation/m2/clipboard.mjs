@@ -10,7 +10,8 @@ const source = fileURLToPath(new URL("./clipboard.swift", import.meta.url));
 /**
  * Capture before any Copy. Native stdout contains only status/counts.
  * Use beforeCopy() before each click, markOwnedCopy(expectedText) after success,
- * and restore(lastExpectedText) in finally (also handles assertions before mark).
+ * and restore() in finally. Unmarked content is preserved, even if it matches
+ * the fixture text; text equality alone cannot prove clipboard ownership.
  * restore() always removes the private snapshot, and skips newer user copies.
  */
 export function captureClipboard(options) {
@@ -83,10 +84,10 @@ function createSnapshot({ env, temporary, pasteboardName }, fixtureBinary) {
   return {
     beforeCopy: () => invoke("before"),
     markOwnedCopy: (expectedText) => invoke("mark", expectedText),
-    restore(expectedText) {
+    restore() {
       if (disposed) return { kind: "disposed" };
       try {
-        return invoke("restore", expectedText);
+        return invoke("restore");
       } finally {
         disposed = true;
         rmSync(directory, { recursive: true, force: true });
@@ -175,8 +176,8 @@ export function validateClipboardSnapshot({ env, temporary }) {
       throw Error("New identical user Copy was overwritten");
     capture = createSnapshot({ env, temporary, pasteboardName: name }, binary);
     invoke("fixture", "owned");
-    if (capture.restore(expected).kind !== "restored")
-      throw Error("Interrupted Copy restore failed");
+    if (capture.restore(expected).kind !== "preserved-new-content")
+      throw Error("Unmarked identical user Copy was overwritten");
     invoke("fixture", "oversized");
     const oversizedCount = invoke("count").changeCount;
     let rejected = false;
@@ -194,7 +195,7 @@ export function validateClipboardSnapshot({ env, temporary }) {
       binary: true,
       textOverOneMiB: true,
       newerCopyPreserved: true,
-      interruptedCopy: true,
+      unmarkedCopyPreserved: true,
       budgetRejected: true,
     };
   } finally {

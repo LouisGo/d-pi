@@ -13,14 +13,17 @@ const initialText =
       `Reading ${index}: 中文🙂 ${"bounded original text ".repeat(6)}\n`,
   ).join("");
 const appendedText =
-  "\nM2_LONG_REPLY_APPENDED\n" + "append 🙂 中文\n".repeat(160);
+  "\nM2_LONG_REPLY_APPENDED\n" +
+  Array.from({ length: 160 }, (_, index) => `append ${index} 🙂 中文\n`).join(
+    "",
+  );
 const toolBytes = 10 * 1024 * 1024;
 
 export function prepareLongReadingExtension(config) {
   writeFileSync(
     join(config, "extensions", "long-reading.ts"),
     `export default function(pi) {
-      pi.registerTool({name:'m2_long_output',label:'M2 long output',description:'Isolated deterministic output fixture',parameters:pi.zod.object({}),
+      pi.registerTool({name:'m2_long_output',label:'M2 long output',loadMode:'essential',description:'Isolated deterministic output fixture',parameters:pi.zod.object({}),
         async execute(){return {content:[{type:'text',text:'M2_TEN_MIB_TOOL_START'+ 'T'.repeat(${toolBytes} - 42)+'M2_TEN_MIB_TOOL_END__'}],details:{fixtureBytes:${toolBytes}}};}
       });
     }`,
@@ -220,7 +223,7 @@ export async function validateLongReading({
       "real packaged copy action writes complete obtained long native reply to macOS clipboard including undisplayed later segments and finalization",
     );
   } finally {
-    metrics.clipboardRestoration = clipboard.restore(expectedText).kind;
+    metrics.clipboardRestoration = clipboard.restore().kind;
   }
   await evaluate(
     "window.__longReadingContainer=window.__longReadingText.closest('[data-long-reading]');[...window.__longReadingContainer.querySelectorAll('button')].find(el=>el.textContent.trim()==='下一段').focus();true",

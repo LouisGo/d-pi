@@ -127,9 +127,6 @@ do {
         } else if FileManager.default.fileExists(atPath: request.owned) {
             let owned = try load(request.owned)
             result = ["kind": board.changeCount == owned.changeCount ? try restore(board, original, owned, request.budget) : "preserved-new-content"]
-        } else if request.expectedHash != nil, let current = try? snapshot(board, request.budget), matchesText(board, request.expectedHash), current.changeCount == board.changeCount {
-            // A Copy assertion may have thrown before mark; exact fixture text is still eligible.
-            result = ["kind": try restore(board, original, current, request.budget)]
         } else {
             result = ["kind": "preserved-new-content"]
         }
