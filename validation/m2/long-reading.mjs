@@ -186,6 +186,9 @@ export async function validateLongReading({
   try {
     await call("Page.bringToFront");
     await evaluate(
+      "window.__longCopyFailure=null;window.__longCopyRejection=e=>{window.__longCopyFailure={name:e.reason?.name,message:e.reason?.message};e.preventDefault()};window.addEventListener('unhandledrejection',window.__longCopyRejection);true",
+    );
+    await evaluate(
       `window.__longReadingText.closest('article').querySelector('.message-heading button').scrollIntoView({block:'nearest'})`,
     );
     const point = await evaluate(
@@ -204,7 +207,9 @@ export async function validateLongReading({
       clickCount: 1,
       ...point,
     });
-    const copied = await wait(() => {
+    const obtained = await wait(async () => {
+      const failure = await evaluate("window.__longCopyFailure");
+      if (failure) return { failure };
       const result = spawnSync("/usr/bin/pbpaste", [], {
         env,
         encoding: "utf8",
@@ -212,8 +217,10 @@ export async function validateLongReading({
       });
       assert.equal(result.error, undefined);
       assert.equal(result.status, 0);
-      return result.stdout === expectedText ? result.stdout : null;
+      return result.stdout === expectedText ? { text: result.stdout } : null;
     });
+    assert.equal(obtained.failure, undefined, "native Copy action rejected");
+    const copied = obtained.text;
     clipboard.markOwnedCopy(expectedText);
     assert.equal(copied, expectedText);
     metrics.copiedLength = copied.length;
@@ -224,6 +231,9 @@ export async function validateLongReading({
     );
   } finally {
     metrics.clipboardRestoration = clipboard.restore().kind;
+    await evaluate(
+      "window.removeEventListener('unhandledrejection',window.__longCopyRejection);true",
+    );
   }
   await evaluate(
     "window.__longReadingContainer=window.__longReadingText.closest('[data-long-reading]');[...window.__longReadingContainer.querySelectorAll('button')].find(el=>el.textContent.trim()==='下一段').focus();true",

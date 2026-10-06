@@ -20,7 +20,10 @@ const shell = vi.hoisted(() => ({
     send: vi.fn<(channel: string, ...args: unknown[]) => void>(),
     setWindowOpenHandler: vi.fn(),
     on: vi.fn(),
-    session: { setPermissionRequestHandler: vi.fn() },
+    session: {
+      setPermissionRequestHandler: vi.fn(),
+      setPermissionCheckHandler: vi.fn(),
+    },
   },
   quit: vi.fn(),
   systemLocale: "en-US",

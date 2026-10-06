@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "d31f3f3447d675771d086e1f555abb0cae9e6ebe1dab1f2282caa9e7c44f922c",
+  "inputsHash": "0dbc8557f15a8fce967938d8feeab2c212b3012b7649ad4cc2160d3d10401bf4",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 322,
-    "scannedFiles": 322,
+    "sourceFiles": 323,
+    "scannedFiles": 323,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 117,
-      "lines": 19658,
+      "files": 118,
+      "lines": 19759,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -3470,6 +3470,36 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/main/lifecycle/quit.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/lifecycle/window.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "electron",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/lifecycle/window.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/lifecycle/window.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./window",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/lifecycle/window.ts",
       "targetModule": "app",
       "targetEnvironment": "main"
     },

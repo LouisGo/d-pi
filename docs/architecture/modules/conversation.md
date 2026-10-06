@@ -68,3 +68,4 @@ M3 PNG 分享复用确定版本的选中内容，按排版/分页输出图片；
 页码属于阅读组件本地状态。实时记录按 Thread、Host `connectionGeneration` 与 item ID 隔离；同 Host 重连保持页码，新 Host 或 Thread 重置。历史记录按 Thread、所选原生会话、`page.source` 与 entry ID 隔离。流式追加不自动翻段，已封闭段的切片和 DOM 不变，保留选择与段内滚动；正在增长的末段仍有界，新增段由用户显式进入。正文缩短时立即夹紧页码，后续追加不恢复失效的旧选择。短正文首次跨入分段表示会改变渲染格式，稳定选择承诺针对已进入分段后的封闭旧段。
 
 此接入只改变 Renderer 呈现，不扩大 Host / OMP 预算、不重读历史、不改变执行或持久化。分段规则、实际 React 挂载的 DOM／选择／滚动和来源隔离有自动回归；真实 Electron 几何、键盘与剪贴板，以及完整 M2 性能组合另由对应候选记录维护。
+复制使用 Renderer 的 `navigator.clipboard.writeText`；应用窗口仅允许当前 WebContents、主框架、当前文档的 `clipboard-sanitized-write`，check/request 两入口一致。剪贴板读取和其它浏览器权限保持拒绝；此权限不授予模型工具或原生 OMP 文件访问能力。

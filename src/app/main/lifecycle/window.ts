@@ -33,8 +33,22 @@ export function secureWindow(current: BrowserWindow): void {
   current.webContents.on("will-attach-webview", (event) =>
     event.preventDefault(),
   );
+  const allowsClipboardWrite = (
+    contents: BrowserWindow["webContents"] | null,
+    permission: string,
+    details: { isMainFrame: boolean; requestingUrl?: string },
+  ) =>
+    contents === current.webContents &&
+    permission === "clipboard-sanitized-write" &&
+    details.isMainFrame &&
+    details.requestingUrl === current.webContents.getURL();
+  current.webContents.session.setPermissionCheckHandler(
+    (contents, permission, _origin, details) =>
+      allowsClipboardWrite(contents, permission, details),
+  );
   current.webContents.session.setPermissionRequestHandler(
-    (_contents, _permission, callback) => callback(false),
+    (contents, permission, callback, details) =>
+      callback(allowsClipboardWrite(contents, permission, details)),
   );
 }
 export function loadWindowRenderer(
