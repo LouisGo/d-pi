@@ -168,3 +168,7 @@
 ### 2026-10-06 工程与候选交付
 
 04b/05d/06b resolved：基于已合并main完整执行固定起点worker、串行集成、真实失败回归、两轴独立review/修复/复核、完整工程与实际macOS候选。产品源码c5e424d、clean构建c5e424da-f02704bc；691行为/34架构/70tooling、固定SDK及22项实际包内检查通过，ZIP CRC与app.asar同源核对通过。[交接](lifecycle.md)、[评审](lifecycle-review.md)、[本地PR body](pr.md)。本地提交未push，默认Node24.21.0/pnpm12.8.1已对齐；父04/05/06及M2未完成范围保持，真实供应商与用户认可pending。
+
+## 2026-10-06 文件与目录引用优化
+
+用户明确要求优化@目录选择、文件/目录区分与性能，接续本地da9920d，[04c](issues/04c-project-reference-search.md)。沿用D-10/D-24/D-33/D-35/D-37；发送冻结与权限不变，目录参照固定OMP的直接条目清单，不递归读取全部正文。默认本地实施/commit/验证/候选，不push。当前m2.14保留已交付快照，04c验收后单独记录；不是重做已完成生命周期或开启PDF/OCR。
