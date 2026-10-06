@@ -69,7 +69,7 @@ it("continues Main observation without a window and isolates observer failure fr
   const receipt = {
     kind: "receipt",
     receipt: { threadId: view.threadId },
-  } as SubmissionReply;
+  } as Extract<SubmissionReply, { kind: "receipt" }>;
   publishView(view);
   publishReply(receipt);
   expect(onRuntimeView).toHaveBeenCalledExactlyOnceWith(view);

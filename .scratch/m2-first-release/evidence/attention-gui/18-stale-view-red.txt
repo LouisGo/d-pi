@@ -1,0 +1,42 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/.codex/worktrees/m2-attention-gui/d-pi[39m
+
+ [31m❯[39m src/app/renderer/shell/attention.test.ts [2m([22m[2m7 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 164[2mms[22m[39m
+   [32m✓[39m background event preserves focus and selection; click respects IME admission and exposes retry[32m 51[2mms[22m[39m
+   [32m✓[39m system and completion preferences require explicit opt-in, supported is not authorization, unread badge is entity-scoped[32m 7[2mms[22m[39m
+   [32m✓[39m native click before ready can be retried, stale event opens current state without answering[32m 31[2mms[22m[39m
+   [32m✓[39m only an actually focused current Thread can be seen; a list row or background notification cannot[32m 9[2mms[22m[39m
+   [32m✓[39m retains a native open arriving during another navigation as an explicit retry[32m 29[2mms[22m[39m
+   [32m✓[39m failed Thread opens the current submission results pane[32m 4[2mms[22m[39m
+[31m   [31m×[31m a changed event during navigation selects the current result view rather than the obsolete failure[39m[32m 32[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/app/renderer/shell/attention.test.ts[2m > [22ma changed event during navigation selects the current result view rather than the obsolete failure
+[31m[1mAssertionError[22m: expected { view: 'submissions' } to match object { view: 'conversation' }[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "view": "conversation",[39m
+[31m+   "view": "submissions",[39m
+[2m  }[22m
+
+[36m [2m❯[22m src/app/renderer/shell/attention.test.ts:[2m349:42[22m[39m
+    [90m347|[39m  await ui.emit({entries:ui.snapshot().entries.map((entry)=>({...entry,…
+    [90m348|[39m  await act(async()=>{release();await new Promise(resolve=>setTimeout(r…
+    [90m349|[39m  expect(ui.router.state.location.search).toMatchObject({view:"conversa…
+    [90m   |[39m                                          [31m^[39m
+    [90m350|[39m  expect(ui.model.attention.locationStore.getState().target?.kind).toBe…
+    [90m351|[39m  expect(ui.host.textContent).toContain("这条提醒已过期");
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m6 passed[39m[22m[90m (7)[39m
+[2m   Start at [22m 17:39:05
+[2m   Duration [22m 3.51s[2m (import 72%, transform 15%, environment 8%, tests 5%)[22m
+

@@ -1,0 +1,13 @@
+$ pnpm routes:generate && tsc --noEmit && pnpm typecheck:core && pnpm typecheck:renderer && pnpm typecheck:main && pnpm typecheck:host && pnpm typecheck:preload
+$ tsr generate
+(node:479) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+src/app/renderer/shell/appearance-subscriptions.test.ts(154,9): error TS2375: Type '{ attention: AttentionBridge | undefined; request: <C extends Command>(command: C) => Promise<ReplyFor<C>>; runtime: { request: ({ threadId, traceId }: { kind: "configure-subagent"; threadId: string & $brand<...>; traceId: string; connectionGeneration: string; command: { ...; } | { ...; }; } | ... 5 more ... | { ......' is not assignable to type 'DesktopBridge' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'attention' are incompatible.
+    Type 'AttentionBridge | undefined' is not assignable to type 'AttentionBridge'.
+      Type 'undefined' is not assignable to type 'AttentionBridge'.
+src/app/renderer/shell/attention.test.ts(167,3): error TS2412: Type 'RouteComponent | undefined' is not assignable to type 'RouteComponent' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the type of the target.
+  Type 'undefined' is not assignable to type 'RouteComponent'.
+src/app/renderer/shell/attention.test.ts(174,5): error TS2412: Type 'RouteComponent | undefined' is not assignable to type 'RouteComponent' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the type of the target.
+  Type 'undefined' is not assignable to type 'RouteComponent'.
+[ELIFECYCLE] Command failed with exit code 1.

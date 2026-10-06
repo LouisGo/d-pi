@@ -1,0 +1,24 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/.codex/worktrees/m2-attention-gui/d-pi[39m
+
+ [32m✓[39m src/app/renderer/wiring/attention-model.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/app/renderer/workbench/attention-location.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 42[2mms[22m[39m
+ [32m✓[39m src/app/renderer/wiring/model-navigation.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/app/renderer/wiring/model.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m src/app/renderer/reading/submissions-renderer.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 84[2mms[22m[39m
+ [32m✓[39m src/app/renderer/shell/i18n-renderer.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32m✓[39m src/app/renderer/shell/diagnostics.test.ts [2m([22m[2m10 tests[22m[2m)[22m[33m 647[2mms[22m[39m
+ [32m✓[39m src/app/renderer/shell/appearance-subscriptions.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 194[2mms[22m[39m
+ [32m✓[39m src/app/renderer/shell/attention.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 199[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m9 passed[39m[22m[90m (9)[39m
+[2m      Tests [22m [1m[32m64 passed[39m[22m[90m (64)[39m
+[2m   Start at [22m 17:40:01
+[2m   Duration [22m 4.43s[2m (import 44%, transform 38%, environment 10%, tests 8%)[22m
+
+[2m  Transform [22m [33mtransforming modules took 6.15s[39m[2m · 38% of tracked time, re-done on every run[22m
+[2m            [22m [2mpersist transforms across runs with [22m[33mfsModuleCache: true[39m
+[2m            [22m [2mon CI this only helps when the cache directory is persisted between runs[22m
+[2m            [22m [2mlearn more: https://vitest.dev/guide/improving-performance#caching-between-reruns[22m
+
