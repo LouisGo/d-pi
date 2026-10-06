@@ -70,9 +70,9 @@ it("bounds native history records and copies all available original text while r
     expect(
       container.querySelector("[data-reading-text]")?.textContent?.length,
     ).toBeLessThanOrEqual(8192);
-    const button = [...container.querySelectorAll("article button")].find(
-      (button) => button.textContent === "Copy",
-    );
+    const button = [
+      ...container.querySelectorAll<HTMLButtonElement>("article button"),
+    ].find((button) => button.textContent === "Copy");
     if (!button) throw Error("missing history copy button");
     await act(() => button.click());
     expect(copy).toHaveBeenCalledWith(text);

@@ -97,6 +97,11 @@ it.each(["tool", "subagent"] as const)(
                 ? {
                     subagent: {
                       nativeId: "child",
+                      task: "fixture task",
+                      description: "fixture child",
+                      currentTool: "",
+                      model: "fixture",
+                      coverage: "partial" as const,
                       status: "completed" as const,
                       resultSource: "transcript" as const,
                       reason: "truncated" as const,
