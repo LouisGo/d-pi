@@ -18,13 +18,15 @@ const appendedText =
     "",
   );
 const toolBytes = 10 * 1024 * 1024;
+const toolStart = "M2_TEN_MIB_TOOL_START";
+const toolEnd = "M2_TEN_MIB_TOOL_END__";
 
 export function prepareLongReadingExtension(config) {
   writeFileSync(
     join(config, "extensions", "long-reading.ts"),
     `export default function(pi) {
       pi.registerTool({name:'m2_long_output',label:'M2 long output',loadMode:'essential',description:'Isolated deterministic output fixture',parameters:pi.zod.object({}),
-        async execute(){return {content:[{type:'text',text:'M2_TEN_MIB_TOOL_START'+ 'T'.repeat(${toolBytes} - 42)+'M2_TEN_MIB_TOOL_END__'}],details:{fixtureBytes:${toolBytes}}};}
+        async execute(){return {content:[{type:'text',text:${JSON.stringify(toolStart)}+ 'T'.repeat(${toolBytes - Buffer.byteLength(toolStart + toolEnd)})+${JSON.stringify(toolEnd)}}],details:{fixtureBytes:${toolBytes}}};}
       });
     }`,
   );
@@ -408,10 +410,12 @@ export async function validateLongReading({
   );
   assert.equal(artifact.length, toolBytes);
   assert.ok(
-    artifact.subarray(0, 20).equals(Buffer.from("M2_TEN_MIB_TOOL_START")),
+    artifact
+      .subarray(0, Buffer.byteLength(toolStart))
+      .equals(Buffer.from(toolStart)),
   );
   assert.ok(
-    artifact.subarray(-22).equals(Buffer.from("M2_TEN_MIB_TOOL_END__")),
+    artifact.subarray(-Buffer.byteLength(toolEnd)).equals(Buffer.from(toolEnd)),
   );
   const nativeText = nativeTool.content
     .filter((part) => part.type === "text")
