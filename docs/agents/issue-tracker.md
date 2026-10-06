@@ -38,11 +38,62 @@ Ticket 的 resolved 表示该票声明的交付与验证完成，不自动代表
 
 接手时先看当前 spec 的“推进与交接”，再看相关票和决定；缺失关键答复依据时保留未知，不用接手者的推测补成共识。切片交付、收到答复或结束一轮工作时更新实际状态，不只在聊天中报告。规则和状态保存在仓库，跨机器仍需同步包含这些修改的版本；本地文件已写入不等于已提交或已推送。
 
+## 授权切片与 Ready Frontier
+
+Spec 可以长期演化，执行单位是本轮已授权、可验收的切片。先读“推进与交接”，选择最近要交付的 leaf 票；包含多个行为或已有子票的父票先细化，不直接交给一个 implementer。生成票或计划均不增加授权；重要产品待决只暂缓依赖它的工作。
+
+多票调度时，在所属 spec 维护一个 `implementation-plan` JSON 数组块，记录切片 ID、选中的票与可选的暂缓原因；它不复制状态或依赖。旧规格和单票小修不强制补计划。例：
+
+```implementation-plan
+[
+  {
+    "id": "next-slice",
+    "tickets": ["04a", "05b", "06"],
+    "hold": {"06": "等待该票所需的产品答复；依据见推进与交接"}
+  }
+]
+```
+
+字段及校验单源见 [slice-plan.mjs](../../scripts/tasks/slice-plan.mjs)：`id` 为 spec 内唯一 slug，`tickets` 为非空且不重复的同范围票 ID，`hold` 可选，键必须在选票中且理由非空。只读运行：
+
+```sh
+pnpm plan:slice -- .scratch/<feature>/spec.md --slice <slice-id>
+```
+
+**Ready Frontier 是集合**：计划选中、`Status: open`、所有 `Blocked by` 已 resolved、无 hold 的票。命令还输出 claimed、blocked、held、resolved，依赖即使不在选票中也不能忽略。计划之外的 open 票不会自动加入；命令不领取票、不创建 worktree、不推断授权或 leaf 粒度。文档与看板门禁拒绝非法计划和依赖，计划块变化同时触发看板来源指纹更新。
+
+主 Agent 在 dispatch 前核实当前用户授权、验收条件和写集/共享接口；ready 只是结构候选。共享文件、配置、资源或尚未稳定的合同可能要求串行，必要时先交付公共接口票再 fan-out。编号只用于稳定展示，不决定独占执行顺序，也不为追求并发拆无价值的碎票。
+
+## 执行归属与集成
+
+按 [d-pi-implement-slice](../../.agents/skills/d-pi-implement-slice/SKILL.md)执行，既有工程 skills 继续负责具体实现。小而独立的修复可单 Agent 完成；多票/跨边界切片使用固定基点和一个 `codex/<slice>` 集成分支。接手已有合适分支，不机械新建。
+
+| 拥有者 | 写入范围 |
+| --- | --- |
+| 主 Agent / orchestrator | 领取与释放、票 Status、spec 授权/计划/交接、生成看板、集成分支、整体验证与最终交付 |
+| implementer | 分配的代码、测试及相关文档写集；独立 worktree/分支中的提交、行为证据和未解决项；不写共享任务状态或合入集成分支 |
+| reviewer | 固定范围只读审查与发现；不与 implementer 共用修改工作树，不自行扩范围修复 |
+
+主 Agent 先将待派发票标 claimed，记录 ticket→Agent→worktree→branch→起点 SHA 的必要映射在 spec 的推进记录中。给 worker 的指针包括当前 spec 对应节、票、合同/模块入口和可写范围，不复制整份开发历史。并行写者必须各有工作目录；工具无法隔离时串行执行，不把共享 cwd 当作自动隔离。
+
+Worker 完成只表示实现待集成：提供 commit SHA、测试与原始结果、未覆盖项、范围外修改及遗留风险。主 Agent 串行集成，检查语义冲突与真实源状态，完成该票声明的验收后才 resolved；新依赖可由最新集成点启动。合并失败不算完成，普通冲突由主 Agent处理，重大语义歧义回到合同。不得 reset/stash 用户改动或删除未保存工作来制造干净状态。
+
+重接 claimed 票时先核实原 Agent/分支与已保存工作，继续或释放后再派发，不能重复执行。某票受阻时保留原因，继续其他 ready；没有 ready 时区分运行中、真实 blocker、hold 和图已完成，不空转。Review 发现改变已完成证据的问题时，重新打开受影响票并同步其依赖票状态，保持“resolved 的依赖均完成”约束。
+
+集成后的整段差异按 [d-pi-code-review](../../.agents/skills/d-pi-code-review/SKILL.md)审查；局部票评审不替代组合合同。验证按风险选择现有入口，检查失败先分类，环境无法运行时保留未验证项，不更改目标迁就结果。清理 worktree 前确认提交/合入和需保留的证据；App 管理的 worktree 用 archive，普通 Git worktree 按已保存状态移除，失败或未合入的工作保留可恢复位置。
+
+## Review、PR 与 Retro 收尾
+
+- Review 保留 Spec 与 Standards 两轴的范围、结论和限制，优先高价值、可触发、有依据的问题；具体固定差异与独立 reviewer 方法由 [review skill](../../.agents/skills/d-pi-code-review/SKILL.md)维护。
+- PR 是切片的工程审查载体，可选；本仓库的本地票不依赖 PR 关闭。明确要求或已有授权时才 push/创建远端 PR，可在已有领先提交后开 Draft；否则交付本地分支与可审查 PR 草稿。通过 GitHub/CLI 创建后在 Codex 中 attach。具体 body/CI/ready 规则由 [PR skill](../../.agents/skills/d-pi-pr/SKILL.md)维护。
+- PR 合并本身不证明工程验证、真实 GUI、用户试用或认可。满足票的工程验收才 resolved，spec 的 engineering/trial/acceptance 仍分别更新；待验收父票继续开放。
+- 收尾、反复失败或重要 review 发现时，可记录可复用的 retro 候选及证据。请求复盘时按 [d-pi-retro](../../.agents/skills/d-pi-retro/SKILL.md)分析；默认建议，由用户选择或在现有明确升级授权内实施，不自动执行整套复盘或写新规则。无可复用问题时可以无改动结束。
+
 ## 可选的 Wayfinder / to-tickets
 
 仅在用户要求或当前任务已采用对应流程时使用；skill 不可用时按上述约定手工完成，不安装为本仓库的前置依赖。
 
-Wayfinder 可用 `.scratch/<effort>/map.md` 汇总 Notes / Decisions-so-far / Fog；每个问题仍放在 `issues/NN-<slug>.md`。`Type:` 可为 `research` / `prototype` / `grilling` / `task`，状态沿用上表。Frontier 是编号最小的未阻塞 `open` 票；领取后标 `claimed`。解决后在票中追加 `## Answer` 并标 `resolved`，再把摘要和链接写入 map 的 Decisions-so-far。只有实际需要这种导航时才维护 map。
+Wayfinder 可用 `.scratch/<effort>/map.md` 汇总 Notes / Decisions-so-far / Fog；每个问题仍放在 `issues/NN-<slug>.md`。`Type:` 可为 `research` / `prototype` / `grilling` / `task`，状态沿用上表。Frontier 沿用上面的集合定义；单问题探索可取其中一票，写集独立时再并行。解决后在票中追加 `## Answer` 并标 `resolved`，再把摘要和链接写入 map 的 Decisions-so-far。只有实际需要这种导航时才维护 map。
 
 ## 总看板读取约定
 

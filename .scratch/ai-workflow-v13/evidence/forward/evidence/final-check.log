@@ -1,0 +1,21 @@
+
+> check
+> node --test tests/*.test.mjs
+
+✔ describes a trimmed identifier and its exact state label (0.458ms)
+✔ composition preserves identifier and state validation (0.225958ms)
+✔ adding descriptions keeps echoId identity behavior (0.071459ms)
+✔ preserves an existing identifier (0.397958ms)
+✔ labels all supported task states (0.430459ms)
+✔ rejects unknown states without property lookup or coercion (0.244166ms)
+✔ trims identifiers while preserving letter suffixes and content (0.468459ms)
+✔ rejects empty and whitespace-only identifiers (0.219708ms)
+✔ rejects non-string identifiers without coercion (0.103959ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 54.511917

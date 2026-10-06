@@ -1,0 +1,4 @@
+interface:
+  display_name: "d-pi 双轴评审"
+  short_description: "固定 PR、分支或 WIP 的实际差异，独立核对规格与规范，只报告有依据的高价值问题"
+  default_prompt: "使用 $d-pi-code-review 评审指定差异，分别说明 Spec 与 Standards 的发现和覆盖限制。"

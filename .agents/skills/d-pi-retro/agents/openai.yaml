@@ -1,0 +1,4 @@
+interface:
+  display_name: "d-pi 工作流复盘"
+  short_description: "依据真实会话、失败和评审证据改进导航、检查与判断规则，按现有授权控制回流"
+  default_prompt: "使用 $d-pi-retro 复盘当前会话，提出少量证据支持的工作环境改进，并按已授权范围实施。"

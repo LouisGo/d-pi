@@ -2,7 +2,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, extname, relative, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { readTaskRecords } from "../tasks/task-records.mjs";
+import { readSlicePlans } from "../tasks/slice-plan.mjs";
 
 // Historical snapshots keep original paths. Links from current documents to
 // those snapshots are checked; their contents are not rewritten or gated.
@@ -59,7 +59,7 @@ function anchorsOf(source) {
 }
 
 export function checkDocumentation(root, files) {
-  const issues = readTaskRecords(root, files).issues;
+  const issues = readSlicePlans(root, files).issues;
   const decisionsPath = resolve(root, "docs/decisions.md");
   const decisions = existsSync(decisionsPath)
     ? readFileSync(decisionsPath, "utf8")

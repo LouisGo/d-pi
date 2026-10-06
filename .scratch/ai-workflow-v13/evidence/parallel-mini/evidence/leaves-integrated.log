@@ -1,0 +1,14 @@
+✔ leftTag wraps the supplied id (0.945209ms)
+✔ leftTag preserves the 02a suffix (0.071417ms)
+✔ leftTag preserves surrounding whitespace (0.057ms)
+✔ rightTag wraps an identifier in R() (1.508042ms)
+✔ rightTag preserves the 02a suffix (0.078333ms)
+✔ rightTag preserves whitespace (0.0645ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 64.251625

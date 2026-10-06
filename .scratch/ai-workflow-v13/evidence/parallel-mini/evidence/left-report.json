@@ -1,0 +1,147 @@
+{
+  "ticket": "01",
+  "designatedCwd": "/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-workflow-forward-w8bbc4q1-mini-left",
+  "cwd": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-workflow-forward-w8bbc4q1-mini-left",
+  "base": "ba096ffc120a7b59f8bb383f3398fec8bfa8ddea",
+  "fixedIntegrationSha": "ba096ffc120a7b59f8bb383f3398fec8bfa8ddea",
+  "branch": "codex/parallel-mini-left",
+  "commit": "da5c25acbbbec37c21bc2cc52d2ebba5d505cfd1",
+  "allowedWriteSet": [
+    ".scratch/parallel-mini/src/left.mjs",
+    ".scratch/parallel-mini/tests/left.test.mjs",
+    ".scratch/parallel-mini/evidence/left-*"
+  ],
+  "actualChangedPaths": [
+    ".scratch/parallel-mini/evidence/left-green.log",
+    ".scratch/parallel-mini/evidence/left-red.log",
+    ".scratch/parallel-mini/evidence/left-report.json",
+    ".scratch/parallel-mini/src/left.mjs",
+    ".scratch/parallel-mini/tests/left.test.mjs"
+  ],
+  "events": [
+    {
+      "name": "preparation-recovery",
+      "timestamp": "2026-10-06T02:42:59.468Z",
+      "previousCommandExitCode": 1,
+      "reason": "Evidence directory was absent; created parent directory for the authorized left-report.json path."
+    },
+    {
+      "name": "ready",
+      "timestamp": "2026-10-06T02:42:59.469Z",
+      "exitCode": 0,
+      "cwd": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-workflow-forward-w8bbc4q1-mini-left",
+      "branch": "codex/parallel-mini-left",
+      "head": "ba096ffc120a7b59f8bb383f3398fec8bfa8ddea"
+    },
+    {
+      "name": "go-red-received",
+      "timestamp": "2026-10-06T02:43:44.978Z"
+    },
+    {
+      "name": "red-start",
+      "timestamp": "2026-10-06T02:43:44.978Z",
+      "cwd": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-workflow-forward-w8bbc4q1-mini-left",
+      "command": [
+        "/Users/louistation/.nvm/versions/node/v24.21.0/bin/node",
+        "--test",
+        ".scratch/parallel-mini/tests/left.test.mjs"
+      ],
+      "sourceAbsent": true
+    },
+    {
+      "name": "red-finish",
+      "timestamp": "2026-10-06T02:43:45.064Z",
+      "exitCode": 1,
+      "signal": null,
+      "expectedMissingModuleFailure": true
+    },
+    {
+      "name": "go-green-received",
+      "timestamp": "2026-10-06T02:45:09.132Z"
+    },
+    {
+      "name": "implementation-start",
+      "timestamp": "2026-10-06T02:45:09.133Z",
+      "cwd": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-workflow-forward-w8bbc4q1-mini-left",
+      "base": "ba096ffc120a7b59f8bb383f3398fec8bfa8ddea"
+    },
+    {
+      "name": "source-write",
+      "timestamp": "2026-10-06T02:45:09.134Z",
+      "path": ".scratch/parallel-mini/src/left.mjs",
+      "bytes": 53
+    },
+    {
+      "name": "green-start",
+      "timestamp": "2026-10-06T02:45:09.134Z",
+      "cwd": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-workflow-forward-w8bbc4q1-mini-left",
+      "command": [
+        "/Users/louistation/.nvm/versions/node/v24.21.0/bin/node",
+        "--test",
+        ".scratch/parallel-mini/tests/left.test.mjs"
+      ]
+    },
+    {
+      "name": "green-finish",
+      "timestamp": "2026-10-06T02:45:09.227Z",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "commit-start",
+      "timestamp": "2026-10-06T02:46:08.108Z",
+      "kind": "implementation",
+      "paths": [
+        ".scratch/parallel-mini/src/left.mjs",
+        ".scratch/parallel-mini/tests/left.test.mjs",
+        ".scratch/parallel-mini/evidence/left-red.log",
+        ".scratch/parallel-mini/evidence/left-green.log"
+      ]
+    },
+    {
+      "name": "commit",
+      "timestamp": "2026-10-06T02:46:08.179Z",
+      "kind": "implementation",
+      "exitCode": 0,
+      "sha": "da5c25acbbbec37c21bc2cc52d2ebba5d505cfd1",
+      "parent": "ba096ffc120a7b59f8bb383f3398fec8bfa8ddea",
+      "cwd": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-workflow-forward-w8bbc4q1-mini-left"
+    },
+    {
+      "name": "evidence-commit-start",
+      "timestamp": "2026-10-06T02:46:08.197Z",
+      "paths": [
+        ".scratch/parallel-mini/evidence/left-report.json"
+      ],
+      "recordsImplementationCommit": "da5c25acbbbec37c21bc2cc52d2ebba5d505cfd1"
+    }
+  ],
+  "redExitCode": 1,
+  "greenExitCode": 0,
+  "sourceExistsAtReady": false,
+  "phaseNote": "Ready is identity and contract verification only. Coordination waits are separate from test and implementation activity.",
+  "coordinationWaits": [
+    {
+      "checkpoint": "ready-to-go-red",
+      "startedAt": "2026-10-06T02:42:59.469Z",
+      "messageHandledAt": "2026-10-06T02:43:44.978Z",
+      "codeActivity": false
+    },
+    {
+      "checkpoint": "red-done-to-go-green",
+      "startedAt": "2026-10-06T02:43:45.064Z",
+      "messageHandledAt": "2026-10-06T02:45:09.132Z",
+      "codeActivity": false
+    }
+  ],
+  "redLog": ".scratch/parallel-mini/evidence/left-red.log",
+  "redTestsExecuted": false,
+  "greenLog": ".scratch/parallel-mini/evidence/left-green.log",
+  "implementationCommit": "da5c25acbbbec37c21bc2cc52d2ebba5d505cfd1",
+  "commitExitCode": 0,
+  "uncovered": [
+    "rightTag/pairTag integration is owned by later tickets",
+    "No App/runtime/provider validation; this ticket is a pure Node workflow fixture"
+  ],
+  "evidenceCommitRef": "codex/parallel-mini-left HEAD contains this report; final SHA is supplied in worker handoff to avoid self-reference"
+}

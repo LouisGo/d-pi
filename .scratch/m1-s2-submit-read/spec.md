@@ -212,7 +212,7 @@ prepared/dispatching/ACK 观察/acknowledged 持久化/输入交接分别可追�
 
 ## Further Notes
 
-依据入口：[M1 计划](../development-foundation/spec.md)、[基础方案](../../docs/product/first-release.md)、[基础契约](../../docs/architecture/foundation-contracts.md)、[模块与交接](../../docs/architecture/modules/flows.md)、[领域术语](../../CONTEXT.md)、[决定登记](../../docs/decisions.md)、[S1 巩固](../m1-s1-project-draft/hardening.md)。详细来源与核对范围见 [证据记录](evidence.md)。
+依据入口：[M1 计划](../development-foundation/spec.md)、[基础方案](../../docs/product/first-release.md)、[基础契约](../../docs/architecture/foundation-contracts.md)、[模块与交接](../../docs/architecture/modules/flows.md)、[领域术语](../../GLOSSARY.md)、[决定登记](../../docs/decisions.md)、[S1 巩固](../m1-s1-project-draft/hardening.md)。详细来源与核对范围见 [证据记录](evidence.md)。
 
 按用户当前指令，to-spec 的逐测试边界询问、长故事清单和外部发布模板不机械执行：本地落盘即 tracker 发布，故事只保留实际用户价值，常规工程选择自行完成。没有把尚未回答的建议写为用户确认。
 

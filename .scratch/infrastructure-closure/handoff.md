@@ -4,7 +4,7 @@
 
 ## 标准术语与实际迁移
 
-领域定义单源 [CONTEXT](../../CONTEXT.md)，自有 UI 用词单源 [产品术语](../../docs/product-terminology.md)，机器边界单源 [modules.json](../../architecture/modules.json)。本轮依据实际所有权收敛命名，没有增加实体或改变产品含义。
+领域定义单源 [CONTEXT](../../GLOSSARY.md)，自有 UI 用词单源 [产品术语](../../docs/product-terminology.md)，机器边界单源 [modules.json](../../architecture/modules.json)。本轮依据实际所有权收敛命名，没有增加实体或改变产品含义。
 
 - 源码领域 `workspace` → `threads`，`WorkspaceService` → `ProjectSelectionService`；目录身份为 `workingDirectoryId`，原生关联为 `NativeSessionBinding`。SQLite `workspace` / `workspace_id` 保留原物理格式，在仓储映射；旧 v5 数据与 schema 版本未迁移。
 - App 就绪选择为 `ThreadSelectionState` / `threadSelection`，布局为 `ThreadWorkbench` / `.workbench`，文件阅读为 `FilePanel` / `.file-panel`；接口、测试描述、CSS 与验证消费者同步。

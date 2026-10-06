@@ -36,7 +36,7 @@
 
 ## 标准及迁移范围
 
-依据 [CONTEXT](../../CONTEXT.md)、[产品术语](../../docs/product-terminology.md)、D-02/D-03/D-08/D-20–D-26/D-28–D-37 与 B-01，按真实所有权核对。`workspace` 表实际是目录级共享记录；代码用工作目录身份，Thread 是 App 工作单元，原生会话绑定独立。源码领域 `workspace` → `threads`，`WorkspaceService` → `ProjectSelectionService`；App 就绪选择状态、文件阅读面板按各自职责命名，不把 UI 布局或项目实体冒称目录。SQLite v1–v5 表/列保留，仓储 SQL 映射；原生协议、持久提交身份及历史原始证据不变。不新建 Project/Run/检查点实体，不做无收益迁表。
+依据 [CONTEXT](../../GLOSSARY.md)、[产品术语](../../docs/product-terminology.md)、D-02/D-03/D-08/D-20–D-26/D-28–D-37 与 B-01，按真实所有权核对。`workspace` 表实际是目录级共享记录；代码用工作目录身份，Thread 是 App 工作单元，原生会话绑定独立。源码领域 `workspace` → `threads`，`WorkspaceService` → `ProjectSelectionService`；App 就绪选择状态、文件阅读面板按各自职责命名，不把 UI 布局或项目实体冒称目录。SQLite v1–v5 表/列保留，仓储 SQL 映射；原生协议、持久提交身份及历史原始证据不变。不新建 Project/Run/检查点实体，不做无收益迁表。
 
 CONTEXT 只维护定义，产品术语只维护自有 UI 用词，模块清单只维护机器边界。能力文档按领域/跨领域主题组织；D-ID、历史任务路径与固定证据保留。决定整理保留日期、理由、来源与取代关系，实施日志移回工作记录，不制造逐条 ADR。
 

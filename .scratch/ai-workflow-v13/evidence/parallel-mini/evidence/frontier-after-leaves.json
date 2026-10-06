@@ -1,0 +1,27 @@
+{
+  "spec": ".scratch/parallel-mini/spec.md",
+  "slice": "parallel-mini",
+  "notice": "Structural readiness only; verify authorization, leaf scope and write conflicts before dispatch.",
+  "ready": [
+    {
+      "id": "03",
+      "path": ".scratch/parallel-mini/issues/03-pair.md",
+      "title": "03 Pair tag"
+    }
+  ],
+  "claimed": [],
+  "blocked": [],
+  "held": [],
+  "resolved": [
+    {
+      "id": "01",
+      "path": ".scratch/parallel-mini/issues/01-left.md",
+      "title": "01 Left tag"
+    },
+    {
+      "id": "02",
+      "path": ".scratch/parallel-mini/issues/02-right.md",
+      "title": "02 Right tag"
+    }
+  ]
+}

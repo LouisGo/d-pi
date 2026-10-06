@@ -1,0 +1,11 @@
+✔ rightTag wraps an identifier in R() (0.715125ms)
+✔ rightTag preserves the 02a suffix (0.072042ms)
+✔ rightTag preserves whitespace (0.06275ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 68.672791

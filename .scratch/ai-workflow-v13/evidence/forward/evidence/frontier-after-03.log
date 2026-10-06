@@ -1,0 +1,43 @@
+{
+  "spec": ".scratch/forward/spec.md",
+  "slice": "flow",
+  "notice": "Structural readiness only; verify authorization, leaf scope and write conflicts before dispatch.",
+  "ready": [
+    {
+      "id": "04",
+      "path": ".scratch/forward/issues/04-compose.md",
+      "title": "04 Compose description"
+    }
+  ],
+  "claimed": [
+    {
+      "id": "05",
+      "path": ".scratch/forward/issues/05-active.md",
+      "title": "05 Active worker",
+      "by": []
+    }
+  ],
+  "blocked": [],
+  "held": [
+    {
+      "id": "06",
+      "path": ".scratch/forward/issues/06-live.md",
+      "title": "06 Live service",
+      "status": "open",
+      "reason": "live-service product answer pending",
+      "by": []
+    }
+  ],
+  "resolved": [
+    {
+      "id": "02a",
+      "path": ".scratch/forward/issues/02a-normalize.md",
+      "title": "02a Normalize identifier"
+    },
+    {
+      "id": "03",
+      "path": ".scratch/forward/issues/03-label.md",
+      "title": "03 State label"
+    }
+  ]
+}

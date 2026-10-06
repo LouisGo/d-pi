@@ -1,0 +1,97 @@
+{
+  "worker": "mini_right",
+  "cwd": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-workflow-forward-w8bbc4q1-mini-right",
+  "requestedCwd": "/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-workflow-forward-w8bbc4q1-mini-right",
+  "branch": "codex/parallel-mini-right",
+  "base": "ba096ffc120a7b59f8bb383f3398fec8bfa8ddea",
+  "integrationBase": "ba096ffc120a7b59f8bb383f3398fec8bfa8ddea",
+  "allowedWriteSet": [
+    ".scratch/parallel-mini/src/right.mjs",
+    ".scratch/parallel-mini/tests/right.test.mjs",
+    ".scratch/parallel-mini/evidence/right-*"
+  ],
+  "actualChanges": [
+    ".scratch/parallel-mini/evidence/right-green.log",
+    ".scratch/parallel-mini/evidence/right-red.log",
+    ".scratch/parallel-mini/evidence/right-report.json",
+    ".scratch/parallel-mini/src/right.mjs",
+    ".scratch/parallel-mini/tests/right.test.mjs"
+  ],
+  "events": [
+    {
+      "event": "ready",
+      "timestamp": "2026-10-06T02:42:45.869Z",
+      "identityCheckExitCode": 0
+    },
+    {
+      "event": "red-start",
+      "timestamp": "2026-10-06T02:43:41.213Z",
+      "activity": "write-behavior-test-and-run"
+    },
+    {
+      "event": "test-write-start",
+      "timestamp": "2026-10-06T02:43:41.221Z",
+      "path": ".scratch/parallel-mini/tests/right.test.mjs"
+    },
+    {
+      "event": "test-write-finish",
+      "timestamp": "2026-10-06T02:43:41.222Z",
+      "path": ".scratch/parallel-mini/tests/right.test.mjs"
+    },
+    {
+      "event": "red-finish",
+      "timestamp": "2026-10-06T02:43:41.329Z",
+      "exitCode": 1,
+      "signal": null,
+      "expectedFailure": "ERR_MODULE_NOT_FOUND for src/right.mjs",
+      "log": ".scratch/parallel-mini/evidence/right-red.log"
+    },
+    {
+      "event": "implementation-start",
+      "timestamp": "2026-10-06T02:44:53.413Z",
+      "activity": "minimal-rightTag-implementation"
+    },
+    {
+      "event": "implementation-write-start",
+      "timestamp": "2026-10-06T02:44:53.419Z",
+      "path": ".scratch/parallel-mini/src/right.mjs"
+    },
+    {
+      "event": "implementation-write-finish",
+      "timestamp": "2026-10-06T02:44:53.419Z",
+      "path": ".scratch/parallel-mini/src/right.mjs"
+    },
+    {
+      "event": "green-finish",
+      "timestamp": "2026-10-06T02:44:53.526Z",
+      "exitCode": 0,
+      "signal": null,
+      "tests": 3,
+      "log": ".scratch/parallel-mini/evidence/right-green.log"
+    },
+    {
+      "event": "commit-start",
+      "timestamp": "2026-10-06T02:45:34.844Z",
+      "cwd": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-workflow-forward-w8bbc4q1-mini-right",
+      "base": "ba096ffc120a7b59f8bb383f3398fec8bfa8ddea",
+      "actualChanges": [
+        ".scratch/parallel-mini/evidence/right-green.log",
+        ".scratch/parallel-mini/evidence/right-red.log",
+        ".scratch/parallel-mini/evidence/right-report.json",
+        ".scratch/parallel-mini/src/right.mjs",
+        ".scratch/parallel-mini/tests/right.test.mjs"
+      ]
+    },
+    {
+      "event": "commit",
+      "timestamp": "2026-10-06T02:45:34.925Z",
+      "commit": "6e5cb02b302491d123592a88e6a8623b5d8968b3",
+      "exitCode": 0,
+      "role": "implementation-with-tests-and-logs",
+      "output": "[codex/parallel-mini-right 6e5cb02] Implement parallel mini right tag with red-green evidence\n 5 files changed, 160 insertions(+)\n create mode 100644 .scratch/parallel-mini/evidence/right-green.log\n create mode 100644 .scratch/parallel-mini/evidence/right-red.log\n create mode 100644 .scratch/parallel-mini/evidence/right-report.json\n create mode 100644 .scratch/parallel-mini/src/right.mjs\n create mode 100644 .scratch/parallel-mini/tests/right.test.mjs"
+    }
+  ],
+  "coordination": "Ready-to-go-red and red-finish-to-go-green waits are coordination only. Test and implementation write events record the actual synchronous filesystem writes; no artificial delay was added.",
+  "commit": "6e5cb02b302491d123592a88e6a8623b5d8968b3",
+  "delivery": "The final head is a subsequent evidence-only commit that stores this implementation commit event. Its SHA is supplied in the worker handoff to avoid a self-referential report."
+}

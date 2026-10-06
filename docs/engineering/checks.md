@@ -10,6 +10,7 @@
 | `pnpm check:environment` | 显式启动已安装 Electron/Bun 并核实固定 SDK manifest、资源哈希和异常启动环境 |
 | `pnpm validate:sdk` | 现有固定 SDK 的停止/继续/消费竞争与同 ID ACK 后失败；localhost fixture，无个人凭据，不冒充供应商验收 |
 | `pnpm build` | Main、preload、Renderer 构建；不等于打包、原生或用户试用验收 |
+| `pnpm plan:slice -- .scratch/<feature>/spec.md --slice <id>` | 只读列当前计划选票的 ready/claimed/blocked/held/resolved，不执行任务或推断授权；格式与依赖校验已接入 documentation/status |
 
 模块公开入口和允许依赖来自 [architecture/modules.json](../../architecture/modules.json)，运行环境兼容与禁止工具依赖由通用 checker 执行；依赖版本来自声明与锁文件。门禁只维护已确认基础依赖的必要集合/家族关系，不另写散文决定 DSL。代表性的 store 订阅、资源身份与 Query 离线/重试测试继续在标准套件中，依赖存在本身不证明职责接入。
 

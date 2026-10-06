@@ -1,0 +1,14 @@
+{"name":"green-start","timestamp":"2026-10-06T02:45:09.134Z","cwd":"/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-workflow-forward-w8bbc4q1-mini-left","command":["/Users/louistation/.nvm/versions/node/v24.21.0/bin/node","--test",".scratch/parallel-mini/tests/left.test.mjs"]}
+✔ leftTag wraps the supplied id (0.411209ms)
+✔ leftTag preserves the 02a suffix (0.061167ms)
+✔ leftTag preserves surrounding whitespace (0.057709ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 54.952792
+
+{"name":"green-finish","timestamp":"2026-10-06T02:45:09.227Z","exitCode":0,"signal":null}

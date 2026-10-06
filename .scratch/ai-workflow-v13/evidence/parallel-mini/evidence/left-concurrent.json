@@ -1,0 +1,11 @@
+{
+  "actor": "main concurrent validation",
+  "cwd": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-workflow-forward-w8bbc4q1-mini-left",
+  "startedAt": "2026-10-06T02:46:40.923Z",
+  "finishedAt": "2026-10-06T02:46:41.044Z",
+  "command": [
+    "--test",
+    ".scratch/parallel-mini/tests/left.test.mjs"
+  ],
+  "exitCode": 0
+}

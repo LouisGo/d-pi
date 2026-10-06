@@ -1,0 +1,16 @@
+✔ leftTag wraps the supplied id (0.488ms)
+✔ leftTag preserves the 02a suffix (0.065625ms)
+✔ leftTag preserves surrounding whitespace (0.061459ms)
+✔ fan-in combines both leaf tags and preserves the letter suffix (0.434041ms)
+✔ fan-in preserves the input used by both leaves (0.071666ms)
+✔ rightTag wraps an identifier in R() (0.44575ms)
+✔ rightTag preserves the 02a suffix (0.067166ms)
+✔ rightTag preserves whitespace (0.059958ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 60.133167
