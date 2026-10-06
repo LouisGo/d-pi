@@ -1,0 +1,140 @@
+{
+  "researchDate": "2026-10-06",
+  "referenceApplicationsRun": false,
+  "productionSourceChanged": false,
+  "purpose": "Component authoring and d-pi public API encapsulation research",
+  "filesCaptured": [
+    {
+      "repo": "slev12397/beautiful-ui",
+      "commit": "44a274e598395ab61e7c96c26fda2758780253b7",
+      "path": "LICENSE",
+      "url": "https://github.com/slev12397/beautiful-ui/blob/44a274e598395ab61e7c96c26fda2758780253b7/LICENSE",
+      "sha256": "dcd98784bcd83e727fad4612bfdd20d1363860149e2ca6829f546273b2f8d063",
+      "lines": 21
+    },
+    {
+      "repo": "slev12397/beautiful-ui",
+      "commit": "44a274e598395ab61e7c96c26fda2758780253b7",
+      "path": "README.md",
+      "url": "https://github.com/slev12397/beautiful-ui/blob/44a274e598395ab61e7c96c26fda2758780253b7/README.md",
+      "sha256": "f01febd374c50eb3d41c4ffc09132c63b0f78127186d59f4f57d589c3c3b2a2b",
+      "lines": 152
+    },
+    {
+      "repo": "slev12397/beautiful-ui",
+      "commit": "44a274e598395ab61e7c96c26fda2758780253b7",
+      "path": "components/primitives/PromptBar.tsx",
+      "url": "https://github.com/slev12397/beautiful-ui/blob/44a274e598395ab61e7c96c26fda2758780253b7/components/primitives/PromptBar.tsx",
+      "sha256": "1f2ff02adae3f1fe80b00fd0ef1c54c3558e8638502c1b7d71b1d0000dfceb5a",
+      "lines": 712
+    },
+    {
+      "repo": "slev12397/beautiful-ui",
+      "commit": "44a274e598395ab61e7c96c26fda2758780253b7",
+      "path": "components/primitives/TaskRows.tsx",
+      "url": "https://github.com/slev12397/beautiful-ui/blob/44a274e598395ab61e7c96c26fda2758780253b7/components/primitives/TaskRows.tsx",
+      "sha256": "7a81c2a264528405826b8ac9db9e92d4c14ef6fa3fcdb39010022df3cf4c0920",
+      "lines": 274
+    },
+    {
+      "repo": "assistant-ui/tool-ui",
+      "commit": "49a870286facdbf28160cd647f0d337ebdc9b275",
+      "path": "README.md",
+      "url": "https://github.com/assistant-ui/tool-ui/blob/49a870286facdbf28160cd647f0d337ebdc9b275/README.md",
+      "sha256": "997e202c0912c67c36f723d6d5143f82c06c369f37504b31e27eec26a1afb16e",
+      "lines": 57
+    },
+    {
+      "repo": "assistant-ui/tool-ui",
+      "commit": "49a870286facdbf28160cd647f0d337ebdc9b275",
+      "path": "apps/www/components/tool-ui/approval-card/approval-card.tsx",
+      "url": "https://github.com/assistant-ui/tool-ui/blob/49a870286facdbf28160cd647f0d337ebdc9b275/apps/www/components/tool-ui/approval-card/approval-card.tsx",
+      "sha256": "8296c5d067175d680f030977427ad0c82e10a675fc5082badd29adcd2e43d843",
+      "lines": 212
+    },
+    {
+      "repo": "assistant-ui/tool-ui",
+      "commit": "49a870286facdbf28160cd647f0d337ebdc9b275",
+      "path": "apps/www/components/tool-ui/approval-card/_adapter.tsx",
+      "url": "https://github.com/assistant-ui/tool-ui/blob/49a870286facdbf28160cd647f0d337ebdc9b275/apps/www/components/tool-ui/approval-card/_adapter.tsx",
+      "sha256": "5f3d233a943fbed5daf56be93746a347eb048d87beb43a2c5e181a59003fc4b8",
+      "lines": 11
+    },
+    {
+      "repo": "assistant-ui/tool-ui",
+      "commit": "49a870286facdbf28160cd647f0d337ebdc9b275",
+      "path": "apps/www/components/tool-ui/approval-card/schema.ts",
+      "url": "https://github.com/assistant-ui/tool-ui/blob/49a870286facdbf28160cd647f0d337ebdc9b275/apps/www/components/tool-ui/approval-card/schema.ts",
+      "sha256": "24bbd43864838ef518ea8b2ef27f06d0d955551e9fe884356b7685e4a6317fa7",
+      "lines": 54
+    },
+    {
+      "repo": "assistant-ui/tool-ui",
+      "commit": "49a870286facdbf28160cd647f0d337ebdc9b275",
+      "path": "apps/www/components/tool-ui/shared/action-buttons.tsx",
+      "url": "https://github.com/assistant-ui/tool-ui/blob/49a870286facdbf28160cd647f0d337ebdc9b275/apps/www/components/tool-ui/shared/action-buttons.tsx",
+      "sha256": "5e837e96082d8a9982063c45a59502d2bd4c5d07eb703f252f85a5f06938b505",
+      "lines": 100
+    },
+    {
+      "repo": "assistant-ui/tool-ui",
+      "commit": "49a870286facdbf28160cd647f0d337ebdc9b275",
+      "path": "apps/www/components/tool-ui/shared/actions-config.ts",
+      "url": "https://github.com/assistant-ui/tool-ui/blob/49a870286facdbf28160cd647f0d337ebdc9b275/apps/www/components/tool-ui/shared/actions-config.ts",
+      "sha256": "fc3f34e25e328cc2e39f4808fe5fc0c7ca7cc3571c850081983426310f1baad6",
+      "lines": 48
+    },
+    {
+      "repo": "slev12397/beautiful-ui",
+      "commit": "44a274e598395ab61e7c96c26fda2758780253b7",
+      "path": "components/atoms/Button.tsx",
+      "url": "https://github.com/slev12397/beautiful-ui/blob/44a274e598395ab61e7c96c26fda2758780253b7/components/atoms/Button.tsx",
+      "sha256": "1d939f68820366648a7b3292b88001da41253154bc49494be60cb8188100f0b0",
+      "lines": 47
+    },
+    {
+      "repo": "slev12397/beautiful-ui",
+      "commit": "44a274e598395ab61e7c96c26fda2758780253b7",
+      "path": "components/primitives/ToolChips.tsx",
+      "url": "https://github.com/slev12397/beautiful-ui/blob/44a274e598395ab61e7c96c26fda2758780253b7/components/primitives/ToolChips.tsx",
+      "sha256": "dc06a0ec805825622bf622f0f56cc8305f79751fe7fcb55727a59869b443c9c8",
+      "lines": 336
+    },
+    {
+      "repo": "assistant-ui/tool-ui",
+      "commit": "49a870286facdbf28160cd647f0d337ebdc9b275",
+      "path": "LICENSE.md",
+      "url": "https://github.com/assistant-ui/tool-ui/blob/49a870286facdbf28160cd647f0d337ebdc9b275/LICENSE.md",
+      "sha256": "71fd4b7b76d27a09af2e8b2bedf14e51f4c229e32b59654d327cc24dc63e60d7",
+      "lines": 21
+    },
+    {
+      "repo": "assistant-ui/tool-ui",
+      "commit": "49a870286facdbf28160cd647f0d337ebdc9b275",
+      "path": "apps/www/components/tool-ui/shared/_adapter.tsx",
+      "url": "https://github.com/assistant-ui/tool-ui/blob/49a870286facdbf28160cd647f0d337ebdc9b275/apps/www/components/tool-ui/shared/_adapter.tsx",
+      "sha256": "9cb3994eb838db5351b994e3b2d08b379e59311ca032a3f1faff85629b844016",
+      "lines": 12
+    },
+    {
+      "repo": "assistant-ui/tool-ui",
+      "commit": "49a870286facdbf28160cd647f0d337ebdc9b275",
+      "path": "apps/www/components/tool-ui/shared/use-action-buttons.tsx",
+      "url": "https://github.com/assistant-ui/tool-ui/blob/49a870286facdbf28160cd647f0d337ebdc9b275/apps/www/components/tool-ui/shared/use-action-buttons.tsx",
+      "sha256": "e94961a388927a016fa6c4c1bb095c5330c850995dbdc4e7e0704349ce45013a",
+      "lines": 153
+    }
+  ],
+  "fetchFailures": [
+    {
+      "repo": "slev12397/beautiful-ui",
+      "path": "components/primitives/Button.tsx",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "repo": "assistant-ui/tool-ui",
+      "path": "LICENSE",
+      "error": "HTTP Error 404: Not Found"
+    }
+  ]
+}
