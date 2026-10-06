@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "ca4b174b15e973da49925e62365a36e939fb264935cf3b29ff1424b6d3fd178d",
+  "inputsHash": "c36511b74cb4e333f951d951a68abf3a09d47756ec8e52ea3d6abbeea9dc6d06",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 317,
-    "scannedFiles": 317,
+    "sourceFiles": 322,
+    "scannedFiles": 322,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 112,
-      "lines": 18865,
+      "files": 117,
+      "lines": 19653,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -102,7 +102,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 18,
-      "lines": 1874,
+      "lines": 1883,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -1268,6 +1268,13 @@
     {
       "module": "app",
       "environment": "renderer",
+      "dependency": "preferences",
+      "targetEnvironment": "renderer",
+      "testOnly": true
+    },
+    {
+      "module": "app",
+      "environment": "renderer",
       "dependency": "conversation",
       "targetEnvironment": "core",
       "testOnly": true
@@ -1298,13 +1305,6 @@
       "environment": "renderer",
       "dependency": "conversation",
       "targetEnvironment": "main",
-      "testOnly": true
-    },
-    {
-      "module": "app",
-      "environment": "renderer",
-      "dependency": "preferences",
-      "targetEnvironment": "renderer",
       "testOnly": true
     },
     {
@@ -5320,6 +5320,165 @@
       "to": "src/app/renderer/styles/app.css"
     },
     {
+      "from": "src/app/renderer/reading/bounded-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tanstack/react-query",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/bounded-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/bounded-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react-dom/client",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/bounded-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/bounded-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/conversation/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/contracts/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/reading/bounded-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/bounded-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./history",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/reading/history.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/bounded-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/conversation/core/public",
+      "kind": "dynamic-import",
+      "resolution": "module",
+      "to": "src/modules/conversation/core/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/app/renderer/reading/bounded-reading-renderer.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/bounded-reading-renderer.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react-dom/client",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/bounded-reading-renderer.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/bounded-reading-renderer.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/conversation/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/core/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/app/renderer/reading/bounded-reading-renderer.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/bounded-reading-renderer.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./conversation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/reading/conversation.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/bounded-reading-renderer.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./reading-body",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/reading/reading-body.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/app/renderer/reading/conversation-i18n.test.ts",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -5489,10 +5648,10 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
-      "specifier": "./markdown",
+      "specifier": "./reading-body",
       "kind": "import",
       "resolution": "module",
-      "to": "src/app/renderer/reading/markdown.tsx",
+      "to": "src/app/renderer/reading/reading-body.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -5588,10 +5747,10 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
-      "specifier": "./markdown",
+      "specifier": "./reading-body",
       "kind": "import",
       "resolution": "module",
-      "to": "src/app/renderer/reading/markdown.tsx",
+      "to": "src/app/renderer/reading/reading-body.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -5770,6 +5929,84 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/app/renderer/reading/reading-body.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/reading-body.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@/components/ui/button",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/ui/button.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/reading-body.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/reading-body.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./markdown",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/reading/markdown.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/reading-body.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./reading-segments",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/reading/reading-segments.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/reading-segments.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/reading-segments.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./reading-segments",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/reading/reading-segments.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/app/renderer/reading/subagents-renderer.test.ts",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -5894,10 +6131,10 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
-      "specifier": "./markdown",
+      "specifier": "./reading-body",
       "kind": "import",
       "resolution": "module",
-      "to": "src/app/renderer/reading/markdown.tsx",
+      "to": "src/app/renderer/reading/reading-body.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
