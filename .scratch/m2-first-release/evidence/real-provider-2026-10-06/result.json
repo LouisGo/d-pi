@@ -1,0 +1,72 @@
+{
+  "verifiedAt": "2026-10-06T13:06:34.624Z",
+  "candidate": {
+    "build": "0.1.0-m2.20 / 3c4c1060-8b550d60",
+    "source": "3c4c1060cd7943cb435ac73da3d8bd03433d4954",
+    "appAsarSha256": "8c51f1427708aa82d2cde00b9563a6780de5a13fd44f7d8143c354da74907231"
+  },
+  "isolation": {
+    "root": "/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-real-e2e-6VbAgQ",
+    "appData": "/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-real-e2e-6VbAgQ/data",
+    "project": "/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-real-e2e-6VbAgQ/project",
+    "nativeConfiguration": "reused existing OMP configuration; no credential export; no fixture supplier"
+  },
+  "binding": {
+    "thread_id": "a64488ec-21a2-492b-bd83-8fd1408e5aab",
+    "config_context": "937c37511d9137728b762865032dbd1249cb47970ba9fdda6fe9c578c40c2b5b",
+    "session_file": "/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-real-e2e-6VbAgQ/data/native-sessions/a64488ec-21a2-492b-bd83-8fd1408e5aab/2026-10-06T13-04-59-875Z_01a11151-3fe3-7000-ac5e-2e9891720ec6.jsonl",
+    "session_id": "01a11151-3fe3-7000-ac5e-2e9891720ec6"
+  },
+  "receipt": {
+    "submissionId": "2f171dca-4592-4c10-a94b-ad9cfba9a0ea",
+    "threadId": "a64488ec-21a2-492b-bd83-8fd1408e5aab",
+    "traceId": "d8f2ce90-fc5b-49c7-9d81-b10d2f49ab20",
+    "revision": 1,
+    "text": "这是 d-pi 真实模型端到端验证。不要调用任何工具，不要读取文件。请用一句中文回答 2+3 的结果，并在末尾原样附上验证标记 DPI_LIVE_20261006_6VbAgQ。",
+    "delivery": "followUp",
+    "target": {
+      "processInstanceId": "d73a0248-f49b-4908-8de2-a787b949aa87",
+      "connectionGeneration": "269a0bba-c89c-421e-8845-72754abf7af7",
+      "configContextId": "937c37511d9137728b762865032dbd1249cb47970ba9fdda6fe9c578c40c2b5b",
+      "nativeSessionRef": "/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-real-e2e-6VbAgQ/data/native-sessions/a64488ec-21a2-492b-bd83-8fd1408e5aab/2026-10-06T13-04-59-875Z_01a11151-3fe3-7000-ac5e-2e9891720ec6.jsonl"
+    },
+    "requestId": "324e53e4-7cc0-44a6-9983-4e78b5242b94",
+    "createdAt": "2026-10-06T13:05:09.172Z",
+    "updatedAt": "2026-10-06T13:05:16.016Z",
+    "state": "acknowledged",
+    "acknowledgedAt": "2026-10-06T13:05:09.195Z",
+    "outcome": "completed",
+    "promptResult": {
+      "status": "completed",
+      "agentInvoked": true,
+      "sessionSettled": true,
+      "source": "native-prompt-result"
+    }
+  },
+  "assistant": {
+    "nativeEntryId": "ff5f74b5",
+    "timestamp": "2026-10-06T13:05:15.995Z",
+    "provider": "openai-codex",
+    "model": "gpt-5.6-luna",
+    "thinkingLevel": "high",
+    "stopReason": "stop",
+    "text": "2+3 的结果是 5。DPI_LIVE_20261006_6VbAgQ",
+    "usage": {
+      "input": 6132,
+      "output": 71,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "totalTokens": 6203,
+      "reasoningTokens": 42
+    }
+  },
+  "observedCounts": {
+    "appSubmissions": 1,
+    "nativeUserMessages": 1,
+    "nativeAssistantMessages": 1,
+    "toolCalls": 0
+  },
+  "nativeFileSha256": "068dcab8428dc28799c516135c82bbfeed47bb9f57f6e3677e281446a5337fa8",
+  "durationMs": 6844,
+  "checks": "All assertions passed; GUI input and send through CUA; answer verified in native GUI, App SQLite and OMP native history"
+}

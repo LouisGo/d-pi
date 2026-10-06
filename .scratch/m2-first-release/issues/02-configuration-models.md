@@ -9,6 +9,8 @@ Blocked by: none
 
 ## Comments
 
+2026-10-06：获本轮真实调用授权后，现有本机 OpenAI 认证与 GPT-5.6 Luna/high 已通过正式 m2.20 GUI 新 Thread 生成/阅读及原生收据核对，见[真实闭环](../real-provider-e2e.md)。不等于新增登录、DeepSeek 或全部配置组合验收，本票保持 claimed。
+
 2026-09-30：M2 明确授权接续 S5；这是工程票，用户认可在 spec 单独维护。
 
 2026-10-01：本次 OMP 18.4.6 加固已完成 scope/trace/source 身份、原生整条无写读取和真实 metadata 推理选择/回读三项缺口，见[加固配置票](../../runtime-hardening-omp1845/issues/02-configuration-contract.md)。Finder来源选择/修复、真实两条账户认证及子 Agent Thread覆盖仍在本票/05，不因局部修复关闭完整02。

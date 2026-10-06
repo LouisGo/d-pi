@@ -40,13 +40,16 @@
       "diagnostics-review.md",
       "attention.md",
       "attention-review.md",
-      "progress-2026-10-06.md"
+      "progress-2026-10-06.md",
+      "real-provider-e2e.md"
     ],
-    "next": "m2.20诊断/提醒候选已交付，PR#4为Draft；01a/01b完成，01c系统显示/点击待验（m2.19实际failed，关窗/Finder重开通过）。M2尚未完成，PDF视觉/OCR、V1-00/B6组合、真实供应商与用户认可保持开放；冷旧Thread只读",
+    "next": "m2.20诊断/提醒候选已交付，PR#4为Draft；首次本机OpenAI GPT-5.6 Luna新Thread真实生成/GUI阅读完成。M2尚未完成，PDF视觉/OCR、01c系统显示/点击、V1-00/B6组合、其余真实账户/供应商路径及用户认可保持开放；冷旧Thread只读",
     "constraints": "2026-10-06用户追加授权push当前本地成果并创建PR；PR#4为诊断和提醒两个切片，未授权merge。不公开发布、不扩M3，冷恢复只读，unknown不自动重发；用户认可pending。"
   }
 ]
 ```
+
+2026-10-06：用户明确授权用本机 OMP 的 GPT Luna 在独立 Thread 验证真实回答；已用现有 m2.20 正式候选与本机原生认证完成一次最小生成，GUI、原生历史和 completed 收据一致，见[首次真实供应商闭环](real-provider-e2e.md)。此次独立 App 数据/空白项目，不改变全局配置；不扩大为工具、附件、多供应商或付费批量测试授权。02/03/06 余下范围和用户认可保持开放。
 
 2026-10-02：用户授权基于 fe03c4f 真实 GUI 报告策略性收敛，高价值修复分阶段提交，丢弃当前工作区改动，检查完成后 push；用户自行手动复试。过滤判断与工程进度见 [E2E 收敛](e2e-convergence.md)及 07–09 票。报告未调用真实模型，不作为 Agent 全流程通过；D-24 冷恢复边界保留。
 
