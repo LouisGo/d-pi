@@ -244,6 +244,8 @@ export async function validateLongReading({
       key: "Enter",
       code: "Enter",
       windowsVirtualKeyCode: 13,
+      nativeVirtualKeyCode: 36,
+      ...(type === "keyDown" ? { text: "\r", unmodifiedText: "\r" } : {}),
     });
   await wait(() =>
     evaluate("window.__longReadingContainer.dataset.readingSegment==='1'"),
@@ -257,6 +259,8 @@ export async function validateLongReading({
       key: "Enter",
       code: "Enter",
       windowsVirtualKeyCode: 13,
+      nativeVirtualKeyCode: 36,
+      ...(type === "keyDown" ? { text: "\r", unmodifiedText: "\r" } : {}),
     });
   await wait(() =>
     evaluate("window.__longReadingContainer.dataset.readingSegment==='0'"),
