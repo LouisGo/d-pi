@@ -254,6 +254,24 @@ test("character budget omits oversized candidates with explicit partial coverage
   });
 });
 
+test("root replaced by another directory at the same canonical path cannot mix project snapshots", async () => {
+  const parent = await fixture();
+  const root = join(parent, "project");
+  await mkdir(join(root, "src"), { recursive: true });
+  await writeFile(join(root, "src", "old.ts"), "");
+  const actualOpen = (await vi.importActual<typeof fs>("node:fs/promises"))
+    .opendir;
+  vi.mocked(fs.opendir)
+    .mockImplementationOnce(actualOpen)
+    .mockImplementationOnce(async (...args) => {
+      await rename(root, join(parent, "old-project"));
+      await mkdir(join(root, "src"), { recursive: true });
+      await writeFile(join(root, "src", "new.ts"), "");
+      return actualOpen(...args);
+    });
+  await expect(search().search(root, "")).rejects.toThrow("root changed");
+});
+
 test("concurrent project builds cannot grow beyond bounded cache slots, and close drains every open handle", async () => {
   const roots = await Promise.all([fixture(), fixture(), fixture()]);
   const actualOpen = (await vi.importActual<typeof fs>("node:fs/promises"))
@@ -442,7 +460,7 @@ test.runIf(process.env.D_PI_REFERENCE_BENCH === "1")(
     };
     expect(cold.entries[0]?.kind).toBe("directory");
     expect(afterCold.opendir).toBe(2);
-    expect(afterCold.lstat).toBe(4);
+    expect(afterCold.lstat).toBe(5);
     expect(warmIO).toEqual({
       open: 0,
       handleStat: 0,

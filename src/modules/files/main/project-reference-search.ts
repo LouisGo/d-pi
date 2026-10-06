@@ -176,6 +176,7 @@ export class ProjectReferenceSearch {
     let characters = 0;
     let visited = 0;
     let truncated = false;
+    let rootIdentity: { dev: number; ino: number } | undefined;
     const started = performance.now();
     for (let cursor = 0; cursor < queue.length; cursor += 1) {
       if (
@@ -202,6 +203,8 @@ export class ProjectReferenceSearch {
         try {
           const before = await file.stat();
           if (!before.isDirectory()) throw new Error("Not a directory");
+          if (!current.path)
+            rootIdentity = { dev: before.dev, ino: before.ino };
           const directory = await opendir(full, { bufferSize: 128 });
           try {
             const sampled = await lstat(full);
@@ -284,7 +287,14 @@ export class ProjectReferenceSearch {
         truncated = true;
       }
     }
-    if ((await realpath(root)) !== root)
+    const rootAfter = await lstat(root);
+    if (
+      !rootIdentity ||
+      !rootAfter.isDirectory() ||
+      rootAfter.dev !== rootIdentity.dev ||
+      rootAfter.ino !== rootIdentity.ino ||
+      (await realpath(root)) !== root
+    )
       throw new Error("Project reference root changed");
     return { entries, truncated, builtAt: performance.now() };
   }
