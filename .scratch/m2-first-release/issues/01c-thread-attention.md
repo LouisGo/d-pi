@@ -1,6 +1,6 @@
 # 01c 提醒切片评审与macOS候选
 
-Status: open
+Status: claimed
 Blocked by: 01a, 01b
 
 所属授权、范围与验收见[spec](../spec.md#2026-10-06-多-thread-提醒切片)，本票为工程验收，用户认可独立维护。
