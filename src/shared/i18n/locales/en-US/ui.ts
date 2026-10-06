@@ -32,6 +32,27 @@ export const ui = {
     "Text-only PDF: images, charts and scanned content may be missing.",
   "attachment.coverageGap":
     "PDF extraction is incomplete. Preview the result before explicitly choosing text only, or remove this attachment.",
+  "attachment.storage": "Attachment storage",
+  "attachment.checkStorage": "Check stored attachments",
+  "attachment.cleanStorage": "Clear unreferenced cache",
+  "attachment.storagePolicy":
+    "Drafts, pending imports and frozen receipts are retained. Automatic cleanup waits seven days after the last reference is released; manual cleanup removes unreferenced cached originals and conversions.",
+  "attachment.storageSummary":
+    "Checked {checked}; retained {retained}; unreferenced {unused}; remaining to check {remaining}.",
+  "attachment.storageDeleted":
+    "Removed {count} cached objects ({bytes} bytes).",
+  "attachment.storageOriginal": "Original",
+  "attachment.storageDerived": "Conversion",
+  "attachment.storageReferencePending":
+    "Reference inspection is incomplete. This batch is retained; continue checking or cleaning to finish inspection.",
+  "attachment.storageDiscoveryPending":
+    "More files may remain to discover. Continue checking to complete this bounded scan.",
+  "attachment.storageIssuesTruncated":
+    "More affected sources exist. Continue checking or reattach unavailable originals.",
+  "attachment.storageReattach":
+    "Reattach a missing or damaged original. Retry preparation to rebuild a conversion.",
+  "attachment.reason.content-missing":
+    "The private content is missing or was cleared as unreferenced cache. Reattach the original.",
   "attachment.library": "Imported files available to reference",
   "attachment.insert": "Add to draft",
   "attachment.searchLabel": "Find project files",

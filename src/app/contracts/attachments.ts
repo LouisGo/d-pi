@@ -2,12 +2,16 @@ import { z } from "zod";
 import {
   AttachmentFailureReasonSchema,
   AttachmentSchema,
+  AttachmentStorageReportSchema,
 } from "../../modules/input/contracts/public";
 import { ThreadIdSchema, TraceIdSchema } from "../../shared/identity";
 
 const identity = { threadId: ThreadIdSchema, traceId: TraceIdSchema };
 export const AttachmentRequestSchema = z.discriminatedUnion("kind", [
-  z.strictObject({ ...identity, kind: z.enum(["list", "choose-import"]) }),
+  z.strictObject({
+    ...identity,
+    kind: z.enum(["list", "choose-import", "check-storage", "clean-storage"]),
+  }),
   z.strictObject({
     ...identity,
     kind: z.literal("import-bytes"),
@@ -40,6 +44,7 @@ export const AttachmentRequestSchema = z.discriminatedUnion("kind", [
 ]);
 export type AttachmentRequest = z.infer<typeof AttachmentRequestSchema>;
 export const AttachmentReplySchema = z.discriminatedUnion("kind", [
+  AttachmentStorageReportSchema,
   z.strictObject({
     kind: z.literal("attachments"),
     items: z.array(AttachmentSchema),

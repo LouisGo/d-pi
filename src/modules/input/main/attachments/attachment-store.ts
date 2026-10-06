@@ -22,10 +22,14 @@ import {
   type PreparedContent,
 } from "../../contracts/public";
 import { attachmentToken, readAttachmentTokens } from "../../core/public";
+import {
+  type AttachmentReferenceReader,
+  ContentLifecycle,
+} from "./content-lifecycle";
 import { type ImageMime, identifyContent } from "./representation";
 
 const PdfConversionSchema = z.strictObject({
-  text: z.string(),
+  text: z.string().max(1048576),
   pageCount: z.number().int().positive(),
   pagesNeedingOcr: z.array(z.number().int().positive()).max(100),
   hasVisualContent: z.boolean(),
@@ -34,6 +38,7 @@ const PdfConversionSchema = z.strictObject({
 export type PdfConversion = z.infer<typeof PdfConversionSchema>;
 export interface AttachmentStoreOptions {
   directory: string;
+  lifecycle?: AttachmentReferenceReader;
   database: Pick<AppDatabase, "connection">;
   readReference?: (
     threadId: string,
@@ -76,10 +81,68 @@ const DEFAULT_LIMITS = {
 export class AttachmentStore {
   private tail: Promise<void> = Promise.resolve();
   private readonly limits;
+  private readonly lifecycle?: ContentLifecycle;
+  private closed = false;
   constructor(private readonly options: AttachmentStoreOptions) {
     this.limits = options.limits ?? DEFAULT_LIMITS;
+    if (options.lifecycle)
+      this.lifecycle = new ContentLifecycle({
+        directory: options.directory,
+        database: options.database,
+        references: options.lifecycle,
+        maxObjectBytes: Math.max(this.limits.sourceBytes, 1048576),
+        manifestVersion: () =>
+          Number(
+            this.options.database.connection
+              .prepare(
+                "SELECT manifest_revision FROM input_content_epoch WHERE id=1",
+              )
+              .get()?.manifest_revision,
+          ),
+        scanManifests: (cursor) => {
+          const rows = this.options.database.connection
+            .prepare(
+              "SELECT rowid,id,thread_id,CASE WHEN length(payload)<=65536 THEN payload END AS payload FROM input_attachment WHERE rowid>? ORDER BY rowid LIMIT 33",
+            )
+            .all(cursor);
+          const items = rows.slice(0, 32).map((row) => {
+            const record = RecordSchema.parse(JSON.parse(String(row.payload)));
+            if (
+              record.attachment.id !== row.id ||
+              record.attachment.threadId !== row.thread_id
+            )
+              throw Error("Attachment manifest identity mismatch");
+            return record;
+          });
+          return {
+            items,
+            cursor: Number(
+              rows[Math.min(rows.length, 32) - 1]?.rowid ?? cursor,
+            ),
+            complete: rows.length <= 32,
+          };
+        },
+        issueManifests: (hashes, threadId) => {
+          if (!hashes.length) return { items: [], complete: true };
+          const slots = hashes.map(() => "?").join(",");
+          const rows = this.options.database.connection
+            .prepare(
+              `SELECT id,thread_id,payload FROM input_attachment WHERE ${threadId ? "thread_id=? AND " : ""}(CASE WHEN json_valid(payload) THEN json_extract(payload,'$.attachment.inputDigest') END IN (${slots}) OR CASE WHEN json_valid(payload) THEN json_extract(payload,'$.derivedDigest') END IN (${slots})) LIMIT 129`,
+            )
+            .all(...(threadId ? [threadId] : []), ...hashes, ...hashes);
+          return {
+            items: rows
+              .slice(0, 128)
+              .map((row) =>
+                RecordSchema.parse(JSON.parse(String(row.payload))),
+              ),
+            complete: rows.length <= 128,
+          };
+        },
+      });
   }
   private serialized<T>(operation: () => Promise<T>): Promise<T> {
+    if (this.closed) return Promise.reject(Error("Attachment storage closed"));
     const result = this.tail.then(operation);
     this.tail = result.then(
       () => {},
@@ -87,7 +150,10 @@ export class AttachmentStore {
     );
     return result;
   }
-  private async put(bytes: Uint8Array): Promise<string> {
+  private async put(
+    bytes: Uint8Array,
+    importOwner?: { threadId: string; id: string },
+  ): Promise<string> {
     const hash = digest(bytes);
     const objects = join(this.options.directory, "objects");
     await mkdir(objects, { recursive: true, mode: 0o700 });
@@ -95,7 +161,12 @@ export class AttachmentStore {
     await chmod(objects, 0o700);
     const target = join(objects, hash);
     try {
-      if (digest(await this.readObject(hash)) === hash) return hash;
+      if (digest(await this.readObject(hash)) === hash) {
+        this.lifecycle?.register(hash, bytes.byteLength);
+        if (importOwner)
+          this.lifecycle?.pinImport(importOwner.threadId, importOwner.id, hash);
+        return hash;
+      }
     } catch {
       /* Import can repair the exact original blob. */
     }
@@ -125,9 +196,21 @@ export class AttachmentStore {
     } finally {
       await rm(temporary, { force: true });
     }
+    this.lifecycle?.register(hash, bytes.byteLength);
+    if (importOwner)
+      this.lifecycle?.pinImport(importOwner.threadId, importOwner.id, hash);
     return hash;
   }
   private async readObject(hash: string): Promise<Uint8Array> {
+    try {
+      return await this.readVerifiedObject(hash);
+    } catch (error) {
+      if (error instanceof Error && "code" in error && error.code === "ENOENT")
+        throw Error("content-missing");
+      throw error;
+    }
+  }
+  private async readVerifiedObject(hash: string): Promise<Uint8Array> {
     const handle = await open(
       join(this.options.directory, "objects", hash),
       constants.O_RDONLY | constants.O_NOFOLLOW,
@@ -138,6 +221,7 @@ export class AttachmentStore {
         throw new Error("content-corrupt");
       const bytes = await handle.readFile();
       if (digest(bytes) !== hash) throw new Error("content-corrupt");
+      this.lifecycle?.register(hash, bytes.byteLength);
       return bytes;
     } finally {
       await handle.close();
@@ -171,15 +255,60 @@ export class AttachmentStore {
       ? parsed.data
       : null;
   }
-  async list(threadId: string): Promise<Attachment[]> {
+  referenceSource(threadId: string, id: string) {
+    const record = this.read(threadId, id);
+    return record
+      ? {
+          attachmentId: id,
+          threadId,
+          name: record.attachment.name,
+          inputDigest: record.attachment.inputDigest,
+          derivedDigest: record.derivedDigest,
+        }
+      : null;
+  }
+  checkStorage(threadId: string) {
+    return this.serialized(() => {
+      if (!this.lifecycle) throw Error("Attachment lifecycle unavailable");
+      return this.lifecycle.run("check", threadId);
+    });
+  }
+  cleanStorage(threadId: string) {
+    return this.serialized(() => {
+      if (!this.lifecycle) throw Error("Attachment lifecycle unavailable");
+      return this.lifecycle.run("manual", threadId);
+    });
+  }
+  collectGarbage() {
+    return this.serialized(() => {
+      if (!this.lifecycle) throw Error("Attachment lifecycle unavailable");
+      return this.lifecycle.run("automatic");
+    });
+  }
+  async close(): Promise<void> {
+    this.closed = true;
+    await this.tail;
+    await this.lifecycle?.close();
+  }
+  list(threadId: string): Promise<Attachment[]> {
+    return this.serialized(async () => this.listItems(threadId));
+  }
+  private listItems(threadId: string): Attachment[] {
     const rows = this.options.database.connection
       .prepare(
         "SELECT payload FROM input_attachment WHERE thread_id=? ORDER BY rowid",
       )
       .all(threadId);
-    return rows.map(
-      (row) => RecordSchema.parse(JSON.parse(String(row.payload))).attachment,
-    );
+    return rows.map((row) => {
+      const record = RecordSchema.parse(JSON.parse(String(row.payload)));
+      const reason = this.lifecycle?.failure([
+        record.attachment.inputDigest,
+        record.derivedDigest,
+      ]);
+      return reason && record.attachment.source !== "reference"
+        ? { ...record.attachment, status: "failed" as const, reason }
+        : record.attachment;
+    });
   }
   async importBytes(
     threadId: string,
@@ -206,7 +335,7 @@ export class AttachmentStore {
       textOnly: false,
     });
     return this.serialized(async () => {
-      const hash = await this.put(bytes);
+      const hash = await this.put(bytes, base);
       const record: StoredRecord = {
         attachment: { ...base, inputDigest: hash },
       };
@@ -216,24 +345,26 @@ export class AttachmentStore {
   }
   async addReference(threadId: string, path: string): Promise<Attachment> {
     const id = randomUUID();
-    return this.save({
-      attachment: AttachmentSchema.parse({
-        schemaVersion: 1,
-        id,
-        threadId,
-        token: attachmentToken(id),
-        name: path.split("/").at(-1) ?? path,
-        mimeType: "",
-        byteLength: 0,
-        capturedAt: new Date().toISOString(),
-        source: "reference",
-        path,
-        status: "ready",
-        representation: "reference",
-        coverageGaps: [],
-        textOnly: false,
+    return this.serialized(async () =>
+      this.save({
+        attachment: AttachmentSchema.parse({
+          schemaVersion: 1,
+          id,
+          threadId,
+          token: attachmentToken(id),
+          name: path.split("/").at(-1) ?? path,
+          mimeType: "",
+          byteLength: 0,
+          capturedAt: new Date().toISOString(),
+          source: "reference",
+          path,
+          status: "ready",
+          representation: "reference",
+          coverageGaps: [],
+          textOnly: false,
+        }),
       }),
-    });
+    );
   }
   private async convert(
     record: StoredRecord,
@@ -335,6 +466,7 @@ export class AttachmentStore {
             throw new Error("invalid-pdf");
           const derivedDigest = await this.put(
             new TextEncoder().encode(result.text),
+            attachment,
           );
           const ready = coverageGaps.length === 0 || attachment.textOnly;
           return this.save({
@@ -385,13 +517,16 @@ export class AttachmentStore {
           record,
           await this.readObject(record.attachment.inputDigest),
         );
-      } catch {
+      } catch (error) {
         return this.save({
           ...record,
           attachment: {
             ...record.attachment,
             status: "failed",
-            reason: "content-corrupt",
+            reason:
+              error instanceof Error && error.message === "content-missing"
+                ? "content-missing"
+                : "content-corrupt",
           },
         });
       }
@@ -433,7 +568,13 @@ export class AttachmentStore {
       return this.save({ ...record, attachment });
     });
   }
-  async preview(threadId: string, id: string): Promise<AttachmentPreview> {
+  preview(threadId: string, id: string): Promise<AttachmentPreview> {
+    return this.serialized(() => this.previewContent(threadId, id));
+  }
+  private async previewContent(
+    threadId: string,
+    id: string,
+  ): Promise<AttachmentPreview> {
     const record = this.read(threadId, id);
     if (!record) return { kind: "unavailable", reason: "attachment-not-found" };
     try {
@@ -463,8 +604,14 @@ export class AttachmentStore {
             kind: "unavailable",
             reason: record.attachment.reason ?? "unsupported-format",
           };
-    } catch {
-      return { kind: "unavailable", reason: "content-corrupt" };
+    } catch (error) {
+      return {
+        kind: "unavailable",
+        reason:
+          error instanceof Error && error.message === "content-missing"
+            ? "content-missing"
+            : "content-corrupt",
+      };
     }
   }
   private textPreview(
@@ -516,6 +663,7 @@ export class AttachmentStore {
       attachment.converterVersion = result.converterVersion;
       const derivedDigest = await this.put(
         new TextEncoder().encode(result.text),
+        attachment,
       );
       const ready = attachment.textOnly || attachment.coverageGaps.length === 0;
       const updated: StoredRecord = {
@@ -542,7 +690,20 @@ export class AttachmentStore {
     threadId: string,
     text: string,
   ): Promise<ContentPreparationResult> {
-    return this.serialized(() => this.prepareContent(threadId, text));
+    return this.serialized(async () => {
+      const result = await this.prepareContent(threadId, text);
+      if (result.ok)
+        this.lifecycle?.pinPreparation(
+          result.content.sources.flatMap((source) => {
+            const record = this.read(threadId, source.attachmentId);
+            return [
+              source.inputDigest,
+              ...(record?.derivedDigest ? [record.derivedDigest] : []),
+            ];
+          }),
+        );
+      return result;
+    });
   }
   private async prepareContent(
     threadId: string,
@@ -609,7 +770,9 @@ export class AttachmentStore {
               ? error instanceof Error && error.message === "reference-denied"
                 ? "reference-denied"
                 : "reference-unavailable"
-              : "content-corrupt",
+              : error instanceof Error && error.message === "content-missing"
+                ? "content-missing"
+                : "content-corrupt",
           attachmentId: token.id,
         };
       }
@@ -673,10 +836,13 @@ export class AttachmentStore {
           };
         try {
           content.message += `\n[${attachment.name}; PDF text${attachment.textOnly ? "; explicit text-only" : ""}]\n${new TextDecoder().decode(await this.readObject(record.derivedDigest))}\n[/attachment]\n`;
-        } catch {
+        } catch (error) {
           return {
             ok: false,
-            reason: "content-corrupt",
+            reason:
+              error instanceof Error && error.message === "content-missing"
+                ? "content-missing"
+                : "content-corrupt",
             attachmentId: token.id,
           };
         }
@@ -746,6 +912,9 @@ export class AttachmentStore {
       content.sources.push({
         attachmentId: attachment.id,
         inputDigest: digest(bytes),
+        ...(record.derivedDigest
+          ? { derivedDigest: record.derivedDigest }
+          : {}),
         representation: outputRepresentation,
         converterVersion:
           attachment.converterVersion ??

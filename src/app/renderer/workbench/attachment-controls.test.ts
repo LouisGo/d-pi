@@ -730,3 +730,90 @@ it.each(["success", "cancelled"] as const)(
     expect(editor.getText()).toContain("original draft");
   },
 );
+
+it("offers storage checking and explicit unreferenced cleanup, locates broken originals, and preserves editor input", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const editor = new Editor({
+    ...plainTextEditorOptions,
+    element: document.createElement("div"),
+    content: draftDocument("my preserved draft"),
+  });
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  cleanups.push(async () => {
+    await act(() => root.unmount());
+    editor.destroy();
+    client.clear();
+    container.remove();
+  });
+  const request = vi.fn(
+    async (
+      command: import("../../contracts/attachments").AttachmentRequest,
+    ): Promise<AttachmentReply> => {
+      if (command.kind === "check-storage" || command.kind === "clean-storage")
+        return {
+          kind: "storage-report",
+          checkedObjects: 2,
+          remainingObjects: 0,
+          retainedObjects: 1,
+          unreferencedObjects: 1,
+          deletedObjects: command.kind === "clean-storage" ? 1 : 0,
+          deletedBytes: 3,
+          issues: [
+            {
+              attachmentId: id,
+              name: "lost original.txt",
+              object: "original",
+              reason: "content-missing",
+            },
+          ],
+          issuesTruncated: false,
+        };
+      return { kind: "attachments", items: [] };
+    },
+  );
+  await act(async () => {
+    root.render(
+      createElement(QueryClientProvider, {
+        client,
+        children: createElement(AttachmentControls, {
+          bridge: { request },
+          threadId: id,
+          editor,
+          text: "my preserved draft",
+          isCurrent: () => true,
+          onBlocked: () => {},
+          mention: null,
+          dismissMention: () => {},
+        }),
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  });
+  const check = container.querySelector<HTMLButtonElement>(
+    '[data-attachment-storage-action="check"]',
+  );
+  expect(check).not.toBeNull();
+  await act(async () => {
+    check?.click();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  });
+  expect(
+    container.querySelector("[data-attachment-storage-report]")?.textContent,
+  ).toContain("lost original.txt");
+  const clean = container.querySelector<HTMLButtonElement>(
+    '[data-attachment-storage-action="clean"]',
+  );
+  await act(async () => {
+    clean?.click();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  });
+  expect(
+    request.mock.calls.filter(([command]) => command.kind === "clean-storage"),
+  ).toHaveLength(1);
+  expect(editor.getText()).toBe("my preserved draft");
+});

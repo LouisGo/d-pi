@@ -15,6 +15,7 @@ import type {
   Attachment,
   AttachmentFailureReason,
   AttachmentPreview,
+  AttachmentStorageReport,
 } from "../../../modules/input/contracts/public";
 import {
   AttachmentImports,
@@ -86,6 +87,8 @@ export function AttachmentControls({
   const ids = attachmentIds(text);
   const active = ids.map((id) => items.find((item) => item.id === id));
   const unused = items.filter((item) => !ids.includes(item.id));
+  const [storageReport, setStorageReport] =
+    useState<AttachmentStorageReport | null>(null);
   const [pending, setPending] = useState(0);
   const [failed, setFailed] = useState<AttachmentRequestFailure | null>(null);
   const [feedback, setFeedback] = useState<AttachmentRequestFailure | null>(
@@ -231,7 +234,10 @@ export function AttachmentControls({
         traceId: crypto.randomUUID(),
       });
       if (!alive.current) return;
-      if (reply.kind === "attachments") {
+      if (reply.kind === "storage-report") {
+        setStorageReport(reply);
+        await client.invalidateQueries({ queryKey: listKey });
+      } else if (reply.kind === "attachments") {
         if (add) for (const item of reply.items) insert(item, range);
         if (retryingFailure)
           setFailed((current) =>
@@ -353,6 +359,93 @@ export function AttachmentControls({
             : t("attachment.hint")}
         </span>
       </div>
+      <details>
+        <summary>{t("attachment.storage")}</summary>
+        <div className="grid gap-2 py-2">
+          <p className="muted">{t("attachment.storagePolicy")}</p>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="ghost"
+              data-attachment-storage-action="check"
+              disabled={pending > 0 || importing > 0}
+              onClick={() => void run({ kind: "check-storage" })}
+            >
+              {t("attachment.checkStorage")}
+            </Button>
+            <Button
+              variant="ghost"
+              data-attachment-storage-action="clean"
+              disabled={pending > 0 || importing > 0}
+              onClick={() => void run({ kind: "clean-storage" })}
+            >
+              {t("attachment.cleanStorage")}
+            </Button>
+          </div>
+          {storageReport && (
+            <div
+              data-attachment-storage-report=""
+              className="grid gap-2"
+              role="status"
+              aria-live="polite"
+            >
+              <p>
+                {t("attachment.storageSummary", {
+                  checked: storageReport.checkedObjects,
+                  retained: storageReport.retainedObjects,
+                  unused: storageReport.unreferencedObjects,
+                  remaining: storageReport.remainingObjects,
+                })}
+              </p>
+              <p>
+                {t("attachment.storageDeleted", {
+                  count: storageReport.deletedObjects,
+                  bytes: storageReport.deletedBytes,
+                })}
+              </p>
+              {storageReport.issues.length > 0 && (
+                <>
+                  <ul className="grid max-h-40 gap-1 overflow-auto">
+                    {storageReport.issues.map((issue) => (
+                      <li
+                        key={`${issue.attachmentId}:${issue.object}:${issue.digest ?? ""}`}
+                        className="break-all"
+                      >
+                        <strong>{issue.name}</strong> ·{" "}
+                        {t(
+                          issue.object === "original"
+                            ? "attachment.storageOriginal"
+                            : "attachment.storageDerived",
+                        )}
+                        : {t(`attachment.reason.${issue.reason}`)}
+                      </li>
+                    ))}
+                  </ul>
+                  <p>{t("attachment.storageReattach")}</p>
+                  <Button
+                    variant="ghost"
+                    disabled={
+                      pending > 0 || importing > 0 || !editor || !!failed
+                    }
+                    onClick={() => void run({ kind: "choose-import" }, true)}
+                  >
+                    {t("attachment.add")}
+                  </Button>
+                </>
+              )}
+              {(storageReport.manifestScanIncomplete ||
+                storageReport.referenceScanIncomplete) && (
+                <p>{t("attachment.storageReferencePending")}</p>
+              )}
+              {storageReport.discoveryPending && (
+                <p>{t("attachment.storageDiscoveryPending")}</p>
+              )}
+              {storageReport.issuesTruncated && (
+                <p>{t("attachment.storageIssuesTruncated")}</p>
+              )}
+            </div>
+          )}
+        </div>
+      </details>
       {(failed || list.isError) && (
         <div role="alert" className="flex flex-wrap items-center gap-2">
           <p className="failure">

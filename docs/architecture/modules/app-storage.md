@@ -5,7 +5,7 @@
 ## 当前工程落点（领域目录治理，2026-09-29）
 
 - `src/platform/main/storage/database.ts` 只负责连接、PRAGMA、schema/备份迁移和事务原语；业务仓储分别位于 threads/input/preferences/execution 模块。
-- `src/app/main/wiring/app-storage.ts` 以一个 `AppDatabase` 组装仓储，并显式执行 `至少 v3 + WAL → submission recovery → 后续迁移至 v8 → queue change recovery → publish`；数据库构造不隐式修改业务收据。当前已为 v8 时不重复迁移或生成升级备份。
+- `src/app/main/wiring/app-storage.ts` 以一个 `AppDatabase` 组装仓储，并显式执行 `至少 v3 + WAL → submission recovery → 后续迁移至 v9 → queue change recovery → publish`；数据库构造不隐式修改业务收据。当前已为 v9 时不重复迁移或生成升级备份。
 - `src/platform/main/diagnostics/` 是轻量有界诊断设施；它不决定业务恢复，也不记录秘密、路径或正文作为诊断内容。
 
 
@@ -50,4 +50,11 @@ Main 集中拥有 SQLite 入口与写入调度；必要时把 I/O 交给 worker�
 
 预算、保留时间及日志分离沿用基础契约，不在本页另设数值。验证日志必须区分“事务返回成功”和“所选持久化配置经过崩溃恢复验证”。
 
-2026-10-02：schema 8 新增 input_attachment manifest；before-v8 保留已完成旧 submission 恢复的 schema 7，并保持 queue_change 原收据恢复顺序。私有内容原件不由迁移移动或删除。冻结提交 JSON可持久化完整代表文字、图片和来源；预算在派发前按真实编码检查。附件回收仍未实现，保守保留到容量明确拒绝，不把此切片声明为完整B4生命周期。
+2026-10-02：schema 8 新增 input_attachment manifest；before-v8 保留已完成旧 submission 恢复的 schema 7，并保持 queue_change 原收据恢复顺序。私有内容原件不由迁移移动或删除。冻结提交 JSON可持久化完整代表文字、图片和来源；预算在派发前按真实编码检查。此阶段仍保守保留；后续生命周期实现见下方2026-10-06说明。
+
+
+2026-10-06：schema 9 新增 input_content_object（摘要、字节数、引用投影、最后释放时间、校验问题与 available/deleting/deleted 状态）及 input_content_epoch。before-v9 在 submission 恢复后保留 schema 8，随后执行原 queue_change 恢复；不改变执行收据语义。thread、消费标记、submission、queue_change、input_attachment 变更只递增失效 epoch，manifest 独立 epoch 支持可续扫发现。摘要表达式索引以 json_valid 保护损坏 manifest。
+
+App 的 attachment-service-references 装配跨仓储权威投影：分批读取持久草稿（排除已消费版本）、全部状态冻结 submission、queue_change 前后原文与来源，单批最多128个 owner/4MiB JSON，单 owner 最多2MiB；仅累计当前最多32个候选摘要及有限来源。引用投影是可修复缓存，删除前仍核对权威 epoch；owner 未扫完、epoch 变化或损坏数据时不删除。终态收据依赖无自持久证明，不自动释放。manifest 按 rowid 每批32条发现，当前候选来源按摘要索引查询，来源报告截断不会作为删除依据。
+
+内容删除先持久化 deleting，再在 BEGIN IMMEDIATE 内复核 epoch、删除规范摘要路径、同步目录并提交 deleted；复核到文件删除之间无异步等待。进程中断留下 deleting 时，下次批次复核全部引用后处理尚存/已丢失文件；SQLite 与文件系统不冒称跨介质原子事务。数据库不可用、引用不完整、文件失败均保守拒删或留下可恢复状态。对象/目录扫描、哈希读取均有界；未知名称与未发布临时文件不在此次自动清理范围。

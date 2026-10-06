@@ -30,6 +30,26 @@ export const ui = {
   "attachment.textOnlyNotice": "仅文字 PDF：可能遗漏图片、图表和扫描内容。",
   "attachment.coverageGap":
     "PDF 抽取存在覆盖缺口。请预览结果，明确选择仅文字，或移除此附件。",
+  "attachment.storage": "附件存储",
+  "attachment.checkStorage": "检查存储附件",
+  "attachment.cleanStorage": "清理未引用缓存",
+  "attachment.storagePolicy":
+    "保留草稿、尚待应用的导入和冻结收据依赖。自动清理在最后引用释放七天后执行；手动清理会移除未引用的缓存原件和转换内容。",
+  "attachment.storageSummary":
+    "已检查 {checked} 项，保留 {retained} 项，未引用 {unused} 项，待续检 {remaining} 项。",
+  "attachment.storageDeleted": "已清理 {count} 项缓存（{bytes} 字节）。",
+  "attachment.storageOriginal": "原件",
+  "attachment.storageDerived": "转换内容",
+  "attachment.storageReferencePending":
+    "引用检查尚未完成，本批内容保持保留；可继续检查或清理以完成核对。",
+  "attachment.storageDiscoveryPending":
+    "文件发现仍在进行，可继续检查以完成本轮分批扫描。",
+  "attachment.storageIssuesTruncated":
+    "还有其他受影响来源。可继续检查，或重新附加不可用的原件。",
+  "attachment.storageReattach":
+    "原件丢失或损坏时请重新附加；转换内容不可用时可重试准备。",
+  "attachment.reason.content-missing":
+    "私有内容丢失或已作为未引用缓存清理，请重新附加原件。",
   "attachment.library": "可再次引用的已导入文件",
   "attachment.insert": "加入草稿",
   "attachment.searchLabel": "查找项目文件",

@@ -9,6 +9,7 @@ export const AttachmentFailureReasonSchema = z.enum([
   "storage-full",
   "storage-unavailable",
   "content-corrupt",
+  "content-missing",
   "unsupported-format",
   "invalid-encoding",
   "invalid-image",
@@ -93,6 +94,10 @@ export const PreparedContentSchema = z.strictObject({
     z.strictObject({
       attachmentId: z.uuid(),
       inputDigest: z.string().regex(/^[a-f0-9]{64}$/),
+      derivedDigest: z
+        .string()
+        .regex(/^[a-f0-9]{64}$/)
+        .optional(),
       representation: AttachmentSchema.shape.representation,
       converterVersion: z.string().max(128),
       coverageGaps: z.array(z.string().max(128)),
@@ -112,3 +117,38 @@ export type AttachmentPreview =
   | { kind: "image"; dataUrl: string }
   | { kind: "text"; text: string; truncated?: boolean | undefined }
   | { kind: "unavailable"; reason: AttachmentFailureReason };
+
+export const AttachmentStorageReportSchema = z.strictObject({
+  kind: z.literal("storage-report"),
+  checkedObjects: z.number().int().nonnegative(),
+  remainingObjects: z.number().int().nonnegative(),
+  retainedObjects: z.number().int().nonnegative(),
+  unreferencedObjects: z.number().int().nonnegative(),
+  deletedObjects: z.number().int().nonnegative(),
+  deletedBytes: z.number().int().nonnegative(),
+  issues: z
+    .array(
+      z.strictObject({
+        attachmentId: z.uuid(),
+        name: z.string().max(512),
+        digest: z
+          .string()
+          .regex(/^[a-f0-9]{64}$/)
+          .optional(),
+        object: z.enum(["original", "derived"]),
+        reason: z.enum([
+          "content-missing",
+          "content-corrupt",
+          "storage-unavailable",
+        ]),
+      }),
+    )
+    .max(128),
+  issuesTruncated: z.boolean(),
+  discoveryPending: z.boolean().optional(),
+  manifestScanIncomplete: z.boolean().optional(),
+  referenceScanIncomplete: z.boolean().optional(),
+});
+export type AttachmentStorageReport = z.infer<
+  typeof AttachmentStorageReportSchema
+>;

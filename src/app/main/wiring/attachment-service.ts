@@ -11,6 +11,7 @@ import type {
   AttachmentRequest,
 } from "../../contracts/attachments";
 import type { AppStorage } from "./app-storage";
+import { createAttachmentReferences } from "./attachment-service-references";
 import { convertPdfContent } from "./pdf-content";
 export function createAttachmentService(
   storage: AppStorage,
@@ -22,6 +23,9 @@ export function createAttachmentService(
   const store = new AttachmentStore({
     directory: join(dataDirectory, "content"),
     database: storage.database,
+    lifecycle: createAttachmentReferences(storage, (threadId, id) =>
+      store.referenceSource(threadId, id),
+    ),
     validateImage,
     convertPdf: (bytes) => convertPdfContent(resources, bytes),
     readReference: async (threadId, path) => {
@@ -47,10 +51,25 @@ export function createAttachmentService(
     },
   });
   async function execute(command: AttachmentRequest): Promise<AttachmentReply> {
+    if (stopping) throw Error("Attachment storage closed");
     const thread = storage.threads.threadContext(command.threadId);
     const attachments = (items: Awaited<ReturnType<typeof store.list>>) =>
       ({ kind: "attachments", items }) as const;
     switch (command.kind) {
+      case "check-storage":
+        return store
+          .checkStorage(command.threadId)
+          .catch(
+            () =>
+              ({ kind: "unavailable", reason: "storage-unavailable" }) as const,
+          );
+      case "clean-storage":
+        return store
+          .cleanStorage(command.threadId)
+          .catch(
+            () =>
+              ({ kind: "unavailable", reason: "storage-unavailable" }) as const,
+          );
       case "list":
         return attachments(await store.list(command.threadId));
       case "import-bytes": {
@@ -170,6 +189,40 @@ export function createAttachmentService(
       }
     }
   }
-  return { store, execute };
+  let timer: ReturnType<typeof setInterval> | undefined;
+  let stopping: Promise<void> | undefined;
+  function startMaintenance(onFailure?: () => void): void {
+    if (timer || stopping) return;
+    let collecting = false;
+    const collect = () => {
+      if (collecting) return;
+      collecting = true;
+      void store
+        .collectGarbage()
+        .then((report) => {
+          if (
+            report.issues.some((item) => item.reason === "storage-unavailable")
+          )
+            onFailure?.();
+        })
+        .catch(() => {
+          onFailure?.();
+        })
+        .finally(() => {
+          collecting = false;
+        });
+    };
+    collect();
+    timer = setInterval(collect, 60000);
+    timer.unref();
+  }
+  function close(): Promise<void> {
+    if (stopping) return stopping;
+    if (timer) clearInterval(timer);
+    timer = undefined;
+    stopping = store.close();
+    return stopping;
+  }
+  return { store, execute, startMaintenance, close };
 }
 export type AttachmentService = ReturnType<typeof createAttachmentService>;
