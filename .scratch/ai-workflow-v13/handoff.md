@@ -54,4 +54,6 @@ scripts/tasks/slice-plan.mjs        只读选票/依赖候选、计划校验与�
 
 主 Agent 独立重跑9/9与8/8，核对最终 frontier、clean、保护票无 diff 和两叶 commit 均已进入集成历史。五个 worker checkout 在确认 clean/已集成后清理，分支和提交保留；两个集成 checkout 保留。固定来源与文件 SHA-256 见 [证据清单](evidence/snapshot-manifest.json)，原始 [forward review](evidence/forward/review.md) / [命令记录](evidence/forward/evidence/executor-command-record.md) 和 [并行集成记录](evidence/parallel-mini/evidence/orchestrator.md)已保存到仓库。首次 npm 默认读取个人配置的执行偏差及修正也保留，未借此增加全项目规则。03 已关闭。
 
-本次只升级开发工作流；App、OMP 资源、lockfile 与 M2 试用/认可未改变。当前没有远端 PR/CI 或 main 合并声明，提交 hook 实测未安装，当前提交用显式 check:fast 验证。全局定制 skills 保留；历史证据未因改名重写，现行链接已同步。
+本次只升级开发工作流；App、OMP 资源、lockfile 与 M2 试用/认可未改变。初次本地交接 `3851773` 尚无远端 PR/CI 或 main 合并；提交 hook 实测未安装，本轮提交用显式 check:fast 验证。全局定制 skills 保留；历史证据未因改名重写，现行链接已同步。
+
+2026-10-06 外部交付续接：用户明确授权将本切片创建 PR，等待最终 head CI 通过后合入 main。实际 PR、CI 与 merge 结果以 GitHub 关联 PR 和本轮最终回复为准；上述本地验证与原始 fixture 快照不改写为远端验证。

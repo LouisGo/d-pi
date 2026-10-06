@@ -4,11 +4,11 @@
 
 ## 推进与交接
 
-- 当前范围与授权：用户本轮明确要求参考「对比v13工作流」、联网核对 Matt v1.3，并依据真实项目全面升级 AI 工作流；允许分段 commit 和独立 review subagent。包含仓库规则、skills、只读调度工具及必要验证。没有由此授权产品功能、全局 skills 更新、push、创建远端 PR 或合并 main。
+- 当前范围与授权：用户最初要求参考「对比v13工作流」、联网核对 Matt v1.3，并依据真实项目全面升级 AI 工作流；允许分段 commit 和独立 review subagent。包含仓库规则、skills、只读调度工具及必要验证。2026-10-06 用户在确认 PR/合入建议后明确要求「请直接开始，结束了叫我」，补充授权将本切片 push、创建 PR，并在最终 head CI 通过后合入 main。产品功能与全局 skills 更新仍不在本次范围。
 - 产品判断：无新增产品待决。沿用 D-19/D-26/D-28–D-30，授权、工程、试用与认可分开；OMP/App 的所有权不变。
 - 工程状态：完成。确定性 ready 集合、执行/review/PR/retro 路由已交付；完整检查、独立两轴 review、串行与真实双 worker 隔离试跑通过。原有任务解析、生成看板与门禁继续复用。
 - 用户试用：本次为开发工作流，无 App 候选；以仓库命令和后续 Agent 可接手的入口交付。
-- 继续边界：本地实现、检查、review 与 commit 可继续；外部 Git 操作沿用当前会话授权，未授权时交付本地分支及 PR 草稿即可。M2 尚未完成范围和用户认可不改。
+- 继续边界：本切片的本地实现、检查、review、commit 与上述 PR/合入可继续；核实最终 head、CI 和远端结果后交付。M2 尚未完成范围和用户认可不改。
 
 ## 目标与验收
 
@@ -47,7 +47,7 @@
     "trial": "not-applicable",
     "acceptance": "not-applicable",
     "evidence": ["handoff.md", "validation.md", "review.md", "research.md"],
-    "next": "后续当前授权切片沿用新入口；本轮交付本地分支，外部操作另按授权推进"
+    "next": "后续已授权切片沿用新入口，按实际任务规模选择并行、review、PR 与 retro"
   }
 ]
 ```
