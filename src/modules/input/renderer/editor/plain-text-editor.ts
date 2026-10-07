@@ -16,6 +16,7 @@ import {
   attachmentParagraph,
 } from "../references/attachment-reference";
 import { FileReference } from "../references/file-reference-node";
+import { EditActionHistory } from "./edit-action-history";
 
 export const draftHistoryDepth = 50;
 const extensions = [
@@ -30,6 +31,7 @@ const extensions = [
   }),
   FileReference,
   AttachmentReference,
+  EditActionHistory,
   UndoRedo.configure({ depth: draftHistoryDepth }),
 ];
 // Build the stable input schema without an Editor context. Cached documents and
@@ -68,7 +70,18 @@ export function replaceDraftText(editor: Editor, text: string): boolean {
   return replaced;
 }
 
+const historyClearListeners = new WeakMap<Editor, Set<() => void>>();
+export function onDraftHistoryClear(
+  editor: Editor,
+  listener: () => void,
+): () => void {
+  const listeners = historyClearListeners.get(editor) ?? new Set();
+  listeners.add(listener);
+  historyClearListeners.set(editor, listeners);
+  return () => listeners.delete(listener);
+}
 export function clearDraftHistory(editor: Editor): void {
+  for (const listener of historyClearListeners.get(editor) ?? []) listener();
   editor.view.updateState(
     EditorState.create({
       schema: editor.state.schema,

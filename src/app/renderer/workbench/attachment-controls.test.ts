@@ -6,7 +6,9 @@ import { act, createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
 import type { Attachment } from "../../../modules/input/contracts/public";
+import { AttachmentModel } from "../../../modules/input/core/public";
 import {
+  AttachmentImports,
   draftDocument,
   plainTextEditorOptions,
 } from "../../../modules/input/renderer/public";
@@ -14,6 +16,35 @@ import { createI18n } from "../../../shared/i18n/create-i18n";
 import { ThreadIdSchema } from "../../../shared/identity";
 import type { AttachmentReply } from "../../contracts/attachments";
 import { AttachmentControls } from "./attachment-controls";
+
+// Fixture owns the Thread resources; views only receive the same instances.
+const resources = new WeakMap<
+  object,
+  { model: AttachmentModel; imports: AttachmentImports }
+>();
+function controls(
+  props: Omit<Parameters<typeof AttachmentControls>[0], "model" | "imports"> & {
+    owner?: object;
+  },
+) {
+  const key = props.owner ?? props.editor ?? props.bridge;
+  let owned = resources.get(key);
+  if (!owned) {
+    const model = new AttachmentModel(props.bridge, props.threadId);
+    const imports = new AttachmentImports(async (input) => {
+      const reply = await model.run({ kind: "import-bytes", ...input }, true);
+      if (reply?.kind !== "attachments") throw Error("Import failed");
+      return reply.items;
+    });
+    owned = { model, imports };
+    resources.set(key, owned);
+    cleanups.push(async () => {
+      model.dispose();
+      imports.dispose();
+    });
+  }
+  return createElement(AttachmentControls, { ...props, ...owned });
+}
 
 vi.mock("../../../modules/preferences/renderer/public", () => ({
   useI18n: () => createI18n("en-US"),
@@ -71,7 +102,7 @@ it("mounts the formal attachment controls and removes a failed atomic reference 
     root.render(
       createElement(QueryClientProvider, {
         client,
-        children: createElement(AttachmentControls, {
+        children: controls({
           bridge,
           threadId: id,
           editor,
@@ -174,7 +205,7 @@ it.each([
         root.render(
           createElement(QueryClientProvider, {
             client,
-            children: createElement(AttachmentControls, {
+            children: controls({
               bridge: { request },
               threadId: id,
               editor,
@@ -275,7 +306,7 @@ it("identifies a ready reference that failed during send-time freezing without r
     root.render(
       createElement(QueryClientProvider, {
         client,
-        children: createElement(AttachmentControls, {
+        children: controls({
           bridge: {
             request: async (): Promise<AttachmentReply> => ({
               kind: "attachments",
@@ -353,7 +384,7 @@ it("permits explicit re-preparation of a failed @PDF after text-only consent whi
     root.render(
       createElement(QueryClientProvider, {
         client,
-        children: createElement(AttachmentControls, {
+        children: controls({
           bridge: {
             request: async (): Promise<AttachmentReply> => ({
               kind: "attachments",
@@ -426,7 +457,7 @@ it("opens a natively modal preview with an accessible filename heading and keeps
     root.render(
       createElement(QueryClientProvider, {
         client,
-        children: createElement(AttachmentControls, {
+        children: controls({
           bridge: {
             request: async (command): Promise<AttachmentReply> =>
               command.kind === "preview"
@@ -490,7 +521,7 @@ it("reports the typed oversized-source rejection instead of a transport failure 
     root.render(
       createElement(QueryClientProvider, {
         client,
-        children: createElement(AttachmentControls, {
+        children: controls({
           bridge: {
             request: async (command): Promise<AttachmentReply> =>
               command.kind === "choose-import"
@@ -597,7 +628,7 @@ it.each([
       root.render(
         createElement(QueryClientProvider, {
           client,
-          children: createElement(AttachmentControls, {
+          children: controls({
             bridge: { request },
             threadId: id,
             editor,
@@ -707,7 +738,7 @@ it.each(["success", "cancelled"] as const)(
       root.render(
         createElement(QueryClientProvider, {
           client,
-          children: createElement(AttachmentControls, {
+          children: controls({
             bridge: { request },
             threadId: id,
             editor,
@@ -819,7 +850,7 @@ it("offers storage checking and explicit unreferenced cleanup, locates broken or
     root.render(
       createElement(QueryClientProvider, {
         client,
-        children: createElement(AttachmentControls, {
+        children: controls({
           bridge: { request },
           threadId: id,
           editor,
@@ -900,7 +931,7 @@ it("coalesces quick @ edits, hides old-query results, consumes Enter while waiti
       root.render(
         createElement(QueryClientProvider, {
           client,
-          children: createElement(AttachmentControls, {
+          children: controls({
             threadId: id,
             bridge: { request },
             editor: null,
@@ -973,4 +1004,92 @@ it("coalesces quick @ edits, hides old-query results, consumes Enter while waiti
   expect(
     request.mock.calls.some(([command]) => command.kind === "add-reference"),
   ).toBe(false);
+});
+
+it("retains an unresolved required-source failure after replacing its view with the same Thread owner", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const owner = {};
+  const editor = new Editor({
+    ...plainTextEditorOptions,
+    element: document.createElement("div"),
+    content: draftDocument("retained draft"),
+  });
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  const onBlocked = vi.fn();
+  let choose = 0;
+  const bridge = {
+    request: async (
+      command: import("../../contracts/attachments").AttachmentRequest,
+    ): Promise<AttachmentReply> =>
+      command.kind === "choose-import"
+        ? (choose++, { kind: "unavailable", reason: "source-too-large" })
+        : { kind: "attachments", items: [] },
+  };
+  const props = {
+    owner,
+    bridge,
+    threadId: id,
+    editor,
+    text: "retained draft",
+    isCurrent: () => true,
+    onBlocked,
+    mention: null,
+    dismissMention: () => {},
+  };
+  const mount = async () =>
+    act(async () => {
+      root.render(
+        createElement(QueryClientProvider, {
+          client,
+          children: controls(props),
+        }),
+      );
+      await new Promise((r) => setTimeout(r, 25));
+    });
+  try {
+    await mount();
+    const attach = Array.from(container.querySelectorAll("button")).find(
+      (x) => x.textContent === "Attach files",
+    );
+    expect(attach).toBeDefined();
+    await act(async () => {
+      attach!.click();
+      await new Promise((r) => setTimeout(r, 25));
+    });
+    expect(onBlocked).toHaveBeenLastCalledWith(true);
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+      "25 MiB limit",
+    );
+    expect(choose).toBe(1);
+    expect(editor.getText()).toBe("retained draft");
+    await act(() => root.render(null));
+    onBlocked.mockClear();
+    await mount();
+    console.log(
+      JSON.stringify({
+        afterRemount: {
+          blocked: onBlocked.mock.calls.at(-1)?.[0],
+          failureVisible:
+            container.querySelector('[role="alert"]')?.textContent ?? null,
+          chooseRequests: choose,
+          text: editor.getText(),
+        },
+      }),
+    );
+    expect(onBlocked).toHaveBeenLastCalledWith(true);
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+      "25 MiB limit",
+    );
+  } finally {
+    await act(() => root.unmount());
+    editor.destroy();
+    client.clear();
+    container.remove();
+    vi.unstubAllGlobals();
+  }
 });

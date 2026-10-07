@@ -65,3 +65,19 @@ it("retains oversized source handles for explicit removal and never reads or tra
   });
   expect(prepare).not.toHaveBeenCalled();
 });
+
+it("retains the actual failed File when a retry is attempted through a frozen source lease", () => {
+  const model = new AttachmentImports(async () => []);
+  const source = new File(["contents"], "large.png");
+  Object.defineProperty(source, "size", { value: 25 * 1024 * 1024 + 1 });
+  model.importFiles([source], "drop");
+  const failed = model.stateStore.getState().failures[0];
+  if (!failed) throw Error("no failure");
+  const release = model.freezeSources();
+  model.retry(failed.id);
+  expect(model.stateStore.getState().failures[0]).toBe(failed);
+  release();
+  release();
+  expect(model.stateStore.getState().acceptingSources).toBe(true);
+  model.dispose();
+});

@@ -138,6 +138,16 @@ export const ui = {
   "attachment.reason.content-missing":
     "私有内容丢失或已作为未引用缓存清理，请重新附加原件。",
   "attachment.library": "可再次引用的已导入文件",
+  "draft.inactiveClosePending":
+    "请从侧栏切回会话 {thread}，保存未确认的输入或解决其保存失败后再关闭。",
+  "attachment.historyLeaseFailed":
+    "无法保护撤销所需的附件。请先重试，再保存或发送。",
+  "attachment.historyCleared":
+    "输入历史已达上限，撤销历史已清除，草稿正文仍保留。",
+  "attachment.historyRetry": "重试附件保护",
+  "attachment.awaitingInsertion":
+    "{name} 已准备，请加入草稿或移除此待加入来源后再发送。",
+  "attachment.discardPrepared": "移除此待加入来源",
   "attachment.insert": "加入草稿",
   "attachment.refreshSearch": "刷新搜索",
   "attachment.directoryKind": "文件夹",

@@ -133,6 +133,7 @@ export class SubmissionModel {
     private readonly bridge: SubmissionBridge,
     private readonly threadId: ThreadId,
     private readonly draft: DraftController,
+    private readonly canPrepareInput: () => boolean = () => true,
   ) {
     this.remove = bridge.subscribe((reply) => this.accept(reply));
     void this.refresh();
@@ -248,13 +249,18 @@ export class SubmissionModel {
   }
   async send(delivery: "followUp" | "steer" = "followUp"): Promise<void> {
     if (this.view.sending || this.disposed) return;
+    if (!this.canPrepareInput()) {
+      this.publish({ message: uiMessage("submission.unsentDraft") });
+      return;
+    }
     this.publish({ sending: true, message: null, preparationFailure: null });
     const submissionId = SubmissionIdSchema.parse(crypto.randomUUID());
     try {
       const captured = await this.draft.captureSubmission(
         submissionId,
         async (value) => {
-          if (this.disposed || !value.text.trim()) return false;
+          if (this.disposed || !this.canPrepareInput() || !value.text.trim())
+            return false;
           const reply = await this.bridge.request({
             kind: "prepare",
             threadId: this.threadId,
@@ -278,6 +284,10 @@ export class SubmissionModel {
         return;
       }
       this.captured = captured;
+      if (!this.canPrepareInput()) {
+        this.publish({ message: uiMessage("submission.unsentDraft") });
+        return;
+      }
       this.accept(
         await this.bridge.request({
           kind: "dispatch",

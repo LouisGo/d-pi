@@ -61,6 +61,13 @@ export class ContentLifecycle {
     string,
     { threadId: string; id: string; digests: Set<string> }
   >();
+  private readonly editorHistories = new Map<string, Set<string>>();
+  private transientEpoch = 0;
+  setEditorHistory(id: string, digests: Set<string> | null): void {
+    if (digests) this.editorHistories.set(id, digests);
+    else this.editorHistories.delete(id);
+    this.transientEpoch++;
+  }
   private readonly pendingPreparations = new Set<string>();
   private directory: Dir | undefined;
   private scanStarted = 0;
@@ -147,6 +154,8 @@ export class ContentLifecycle {
       if (frozen.has(hash)) this.pendingPreparations.delete(hash);
       else add(hash);
     }
+    for (const hashes of this.editorHistories.values())
+      for (const hash of hashes) add(hash);
     return counts;
   }
   private reconcile(
@@ -243,6 +252,7 @@ export class ContentLifecycle {
           sources: [],
           sourcesTruncated: false,
         } as AttachmentReferences);
+    let referenceEpoch = this.transientEpoch;
     let currentRefs = snapshot.complete
       ? this.reconcile(snapshot, candidates)
       : new Map<string, number>();
@@ -315,9 +325,13 @@ export class ContentLifecycle {
       if (mode === "check" || problem === "storage-unavailable") continue;
       // Re-read the actual owners after every awaited read. The short unlink
       // has no await: no Main write can interleave between check and deletion.
-      if (snapshot.version !== this.options.references.version()) {
+      if (
+        snapshot.version !== this.options.references.version() ||
+        referenceEpoch !== this.transientEpoch
+      ) {
         snapshot = await this.options.references.read(query);
         if (!snapshot.complete) break;
+        referenceEpoch = this.transientEpoch;
         currentRefs = this.reconcile(snapshot, candidates);
       }
       const current = this.db
@@ -342,7 +356,10 @@ export class ContentLifecycle {
         try {
           // Block other SQLite writers during the short final unlink. Recheck
           // the authoritative epoch under that lock; no await follows.
-          if (snapshot.version !== this.options.references.version()) {
+          if (
+            snapshot.version !== this.options.references.version() ||
+            referenceEpoch !== this.transientEpoch
+          ) {
             this.db.exec("ROLLBACK");
             continue;
           }
@@ -476,6 +493,8 @@ export class ContentLifecycle {
     };
   }
   async close(): Promise<void> {
+    this.editorHistories.clear();
+    this.transientEpoch++;
     await this.directory?.close();
     this.directory = undefined;
   }

@@ -78,6 +78,11 @@ export function Composer({
     controller.getSnapshot,
     controller.getSnapshot,
   );
+  const history = useSyncExternalStore(
+    model.draftEditors.subscribe,
+    () => model.draftEditors.historyState(thread.key),
+    () => model.draftEditors.historyState(thread.key),
+  );
   const [expanded, setExpanded] = useState(false);
   const [unsupportedPaste, setUnsupportedPaste] = useState(false);
   const [attachmentBlocked, setAttachmentBlocked] = useState(false);
@@ -280,10 +285,11 @@ export function Composer({
         />
       )}
       <EditorContent className="composer-editor" editor={editor} />
-      {model.attachments && (
+      {thread.attachments && thread.attachmentImports && model.attachments && (
         <AttachmentControls
           key={thread.key}
-          owner={controller}
+          model={thread.attachments}
+          imports={thread.attachmentImports}
           preparationFailure={preparationFailure}
           ref={attachmentActions}
           bridge={model.attachments}
@@ -299,6 +305,29 @@ export function Composer({
       {unsupportedPaste && (
         <p role="alert" className="failure">
           {t("composer.paste.unsupported")}
+        </p>
+      )}
+      {history.failed && (
+        <div role="alert" className="flex flex-wrap items-center gap-2">
+          <p className="failure">{t("attachment.historyLeaseFailed")}</p>
+          <Button
+            variant="ghost"
+            disabled={history.pending}
+            onClick={() =>
+              void model.draftEditors
+                .retryHistory(thread.key)
+                .then((protectedAssets) => {
+                  if (protectedAssets) void controller.retry();
+                })
+            }
+          >
+            {t("attachment.historyRetry")}
+          </Button>
+        </div>
+      )}
+      {history.limited && (
+        <p role="status" className="muted">
+          {t("attachment.historyCleared")}
         </p>
       )}
       <div className="composer-footer">
@@ -325,7 +354,9 @@ export function Composer({
           </Button>
           {submission && runtime && (
             <SendButton
-              contentBlocked={attachmentBlocked}
+              contentBlocked={
+                attachmentBlocked || history.pending || history.failed
+              }
               canSend={() =>
                 !!editor &&
                 !editor.view.composing &&

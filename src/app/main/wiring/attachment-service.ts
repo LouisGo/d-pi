@@ -86,12 +86,34 @@ export function createAttachmentService(
       return { bytes: reply.bytes, version: reply.version };
     },
   });
-  async function execute(command: AttachmentRequest): Promise<AttachmentReply> {
+  async function execute(
+    command: AttachmentRequest,
+    owner?: string,
+  ): Promise<AttachmentReply> {
     if (stopping) throw Error("Attachment storage closed");
     const thread = storage.threads.threadContext(command.threadId);
     const attachments = (items: Awaited<ReturnType<typeof store.list>>) =>
       ({ kind: "attachments", items }) as const;
     switch (command.kind) {
+      case "history-open":
+        return owner
+          ? store.openEditorHistory(owner, command.threadId, command.epoch)
+          : { kind: "unavailable", reason: "reference-denied" };
+      case "history-update":
+        return owner
+          ? store.updateEditorHistory(
+              owner,
+              command.threadId,
+              command.leaseId,
+              command.version,
+              command.ids,
+            )
+          : { kind: "unavailable", reason: "reference-denied" };
+      case "history-release":
+        return owner
+          ? store.releaseEditorHistory(owner, command.threadId, command.leaseId)
+          : { kind: "unavailable", reason: "reference-denied" };
+
       case "check-storage":
         return store
           .checkStorage(command.threadId)

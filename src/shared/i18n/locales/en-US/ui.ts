@@ -150,6 +150,16 @@ export const ui = {
   "attachment.reason.content-missing":
     "The private content is missing or was cleared as unreferenced cache. Reattach the original.",
   "attachment.library": "Imported files available to reference",
+  "draft.inactiveClosePending":
+    "Select conversation {thread} in the sidebar and save or resolve its unconfirmed input before closing.",
+  "attachment.historyLeaseFailed":
+    "Undo assets could not be protected. Retry before saving or sending.",
+  "attachment.historyCleared":
+    "The input history limit was reached. Undo history was cleared; your draft is preserved.",
+  "attachment.historyRetry": "Retry asset protection",
+  "attachment.awaitingInsertion":
+    "{name} is prepared. Add it to the draft or remove this pending source before sending.",
+  "attachment.discardPrepared": "Remove this pending source",
   "attachment.insert": "Add to draft",
   "attachment.refreshSearch": "Refresh search",
   "attachment.directoryKind": "Folder",

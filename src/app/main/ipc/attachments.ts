@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import type { WebContents } from "electron";
 import type { Diagnostics } from "../../../platform/main/diagnostics/public";
 import { AttachmentRequestSchema } from "../../contracts/attachments";
 import type { AttachmentService } from "../wiring/attachment-service";
@@ -11,6 +12,38 @@ export function registerAttachmentIpc(
       | undefined;
   },
 ) {
+  const documents = new Map<WebContents, string>();
+  const observed = new WeakSet<WebContents>();
+  const navigating = new WeakSet<WebContents>();
+  function ownerFor(sender: WebContents): string | undefined {
+    if (navigating.has(sender)) return undefined;
+    let owner = documents.get(sender);
+    if (!owner) {
+      owner = randomUUID();
+      documents.set(sender, owner);
+    }
+    if (!observed.has(sender)) {
+      observed.add(sender);
+      const release = () => {
+        const current = documents.get(sender);
+        if (current)
+          context.getService()?.store.releaseEditorHistories(current);
+        documents.delete(sender);
+      };
+      sender.on("destroyed", release);
+      sender.on("render-process-gone", release);
+      sender.on("did-start-navigation", (details) => {
+        if (details.isMainFrame && !details.isSameDocument) {
+          navigating.add(sender);
+          release();
+        }
+      });
+      sender.on("did-frame-finish-load", (_event, isMainFrame) => {
+        if (isMainFrame) navigating.delete(sender);
+      });
+    }
+    return owner;
+  }
   context.ipcMain.handle("attachments:request", async (event, raw: unknown) => {
     if (!context.sourceValid(event)) throw Error("Invalid attachment source");
     const command = AttachmentRequestSchema.parse(raw);
@@ -27,7 +60,7 @@ export function registerAttachmentIpc(
     try {
       const service = context.getService();
       if (!service) throw Error("Attachment storage unavailable");
-      const reply = await service.execute(command);
+      const reply = await service.execute(command, ownerFor(event.sender));
       diagnostics?.record({
         ...identity,
         stage: reply.kind === "unavailable" ? "failed" : "completed",

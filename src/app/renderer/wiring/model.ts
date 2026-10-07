@@ -85,7 +85,7 @@ export function transportFailure(traceId: string): Failure {
   };
 }
 export class AppModel {
-  readonly draftEditors = new DraftEditorCache();
+  readonly draftEditors: DraftEditorCache;
   private readonly store: AppStore = createAppStore();
   readonly stateStore: AppStateStore = this.store;
   readonly threadListStore = createStore<{
@@ -109,9 +109,11 @@ export class AppModel {
   private closeAttempt: {
     thread: ThreadModel | null;
     binding: EditorBinding | null;
+    releaseSources: () => void;
   } | null = null;
   readonly attention: AttentionModel;
   constructor(private readonly bridge: DesktopBridge) {
+    this.draftEditors = new DraftEditorCache(undefined, bridge.attachments);
     this.attention = new AttentionModel(bridge.attention);
   }
 
@@ -212,34 +214,68 @@ export class AppModel {
         binding?.boundary.release();
     }
   }
+  private closeInputMessage(): Failure["message"] | null {
+    const inactive = Array.from(this.threads.values()).find(
+      (thread) =>
+        thread !== this.activeThread &&
+        thread.controller.getSnapshot().kind !== "saved",
+    );
+    if (inactive)
+      return {
+        code: "draft.inactiveClosePending",
+        params: { thread: inactive.context.threadId.slice(0, 6) },
+      };
+    if (
+      hasUnpersistedAttachmentSources() ||
+      Array.from(this.threads.values()).some(
+        (thread) => !thread.canPrepareInput(),
+      )
+    )
+      return { code: "attachment.closePending" };
+    return null;
+  }
+  private showCloseBlocked(message: Failure["message"]): void {
+    if (this.state.kind !== "ready") return;
+    this.store.setState({
+      ...this.state,
+      notice: {
+        errorId: crypto.randomUUID(),
+        traceId: crypto.randomUUID(),
+        code: "invalid-request",
+        category: "validation",
+        observedAt: "renderer",
+        reportedBy: "app",
+        attribution: "unknown",
+        handlingOwner: "draft",
+        recovery: "user_action",
+        message,
+      },
+    });
+  }
   async prepareClose(): Promise<boolean> {
     if (
       this.disposed ||
+      this.closeAttempt !== null ||
       (this.state.kind === "ready" && this.state.threadTransition !== undefined)
     )
       return false;
-    if (hasUnpersistedAttachmentSources()) {
-      if (this.state.kind === "ready")
-        this.store.setState({
-          ...this.state,
-          notice: {
-            errorId: crypto.randomUUID(),
-            traceId: crypto.randomUUID(),
-            code: "invalid-request",
-            category: "validation",
-            observedAt: "renderer",
-            reportedBy: "app",
-            attribution: "unknown",
-            handlingOwner: "draft",
-            recovery: "user_action",
-            message: { code: "attachment.closePending" },
-          },
-        });
+    const blocked = this.closeInputMessage();
+    if (blocked) {
+      this.showCloseBlocked(blocked);
       return false;
     }
     const binding = this.editorBinding;
     if (binding && !binding.boundary.freeze()) return false;
-    const attempt = { thread: this.activeThread, binding };
+    const sourceReleases = Array.from(this.threads.values(), (thread) =>
+      thread.freezeInputSources(),
+    );
+    const attempt = {
+      thread: this.activeThread,
+      binding,
+      releaseSources: () => {
+        for (const release of sourceReleases) release();
+      },
+    };
     this.closeAttempt = attempt;
     const saved = await (attempt.thread?.controller.flush() ??
       Promise.resolve(true));
@@ -248,17 +284,27 @@ export class AppModel {
       this.closeAttempt !== attempt ||
       this.activeThread !== attempt.thread ||
       this.editorBinding !== binding
-    )
+    ) {
+      attempt.releaseSources();
       return false;
+    }
+    const rechecked = this.closeInputMessage();
+    if (rechecked) {
+      this.showCloseBlocked(rechecked);
+      this.cancelClose();
+      return false;
+    }
     if (!saved) {
       binding?.boundary.release();
       this.closeAttempt = null;
+      attempt.releaseSources();
     }
     return saved;
   }
   cancelClose(): void {
     const attempt = this.closeAttempt;
     this.closeAttempt = null;
+    attempt?.releaseSources();
     if (
       attempt?.binding &&
       this.editorBinding === attempt.binding &&
@@ -295,6 +341,7 @@ export class AppModel {
     );
     this.requestGeneration++;
     this.editorBinding = null;
+    this.closeAttempt?.releaseSources();
     this.closeAttempt = null;
     this.store.setState({ kind: "disposed" }, true);
     for (const thread of this.threads.values()) thread.dispose();
@@ -388,6 +435,7 @@ export class AppModel {
         this.applyAppearance(appearance);
         if (previous !== thread) {
           this.editorBinding = null;
+          this.closeAttempt?.releaseSources();
           this.closeAttempt = null;
         }
         this.publish({

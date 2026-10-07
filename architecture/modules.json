@@ -196,7 +196,8 @@
       "dependsOn": {
         "contracts": [
           "shared",
-          "threads"
+          "threads",
+          "files"
         ],
         "core": [
           "files",

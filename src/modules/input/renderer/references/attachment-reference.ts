@@ -62,8 +62,14 @@ export function insertAttachmentReference(
   if (!type) throw Error("Attachment reference schema unavailable");
   const node = type.create(item);
   return range
-    ? state.tr.replaceWith(range.from, range.to, node).scrollIntoView()
-    : state.tr.replaceSelectionWith(node).scrollIntoView();
+    ? state.tr
+        .replaceWith(range.from, range.to, node)
+        .setMeta("dpiIndependentAction", true)
+        .scrollIntoView()
+    : state.tr
+        .replaceSelectionWith(node)
+        .setMeta("dpiIndependentAction", true)
+        .scrollIntoView();
 }
 
 export function attachmentMention(

@@ -47,6 +47,7 @@ export const PlainUiMessageCodeSchema = z.enum([
   "submission.queueFull",
   "submission.contentNotReady",
   "attachment.closePending",
+  "attachment.historyLeaseFailed",
   "attachment.reason.invalid-token",
   "attachment.reason.attachment-not-found",
   "attachment.reason.source-too-large",
@@ -93,6 +94,10 @@ export const PlainUiMessageCodeSchema = z.enum([
 export type PlainUiMessageCode = z.infer<typeof PlainUiMessageCodeSchema>;
 
 export const UiMessageSchema = z.union([
+  z.strictObject({
+    code: z.literal("draft.inactiveClosePending"),
+    params: z.strictObject({ thread: z.string().regex(/^[a-f0-9]{6}$/) }),
+  }),
   z.strictObject({
     code: z.enum([
       "attention.native.needsAnswer.title",

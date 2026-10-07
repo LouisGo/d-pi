@@ -26,6 +26,7 @@ import {
   type AttachmentReferenceReader,
   ContentLifecycle,
 } from "./content-lifecycle";
+import { EditorHistoryLeases } from "./editor-history";
 import { type ImageMime, identifyContent } from "./representation";
 
 const PdfConversionSchema = z.strictObject({
@@ -85,7 +86,20 @@ export class AttachmentStore {
   private readonly limits;
   private readonly lifecycle?: ContentLifecycle;
   private closed = false;
+  private readonly editorHistories: EditorHistoryLeases;
   constructor(private readonly options: AttachmentStoreOptions) {
+    this.editorHistories = new EditorHistoryLeases({
+      manifest: (threadId, id) => this.read(threadId, id),
+      objectBytes: (digest) =>
+        Number(
+          this.options.database.connection
+            .prepare(
+              "SELECT byte_length FROM input_content_object WHERE digest=?",
+            )
+            .get(digest)?.byte_length ?? 0,
+        ),
+      pin: (id, digests) => this.lifecycle?.setEditorHistory(id, digests),
+    });
     this.limits = options.limits ?? DEFAULT_LIMITS;
     if (options.lifecycle)
       this.lifecycle = new ContentLifecycle({
@@ -273,6 +287,28 @@ export class AttachmentStore {
         }
       : null;
   }
+  openEditorHistory(owner: string, threadId: string, epoch: string) {
+    if (this.closed || !this.lifecycle)
+      return { kind: "unavailable", reason: "storage-unavailable" } as const;
+    return this.editorHistories.open(owner, threadId, epoch);
+  }
+  updateEditorHistory(
+    owner: string,
+    threadId: string,
+    leaseId: string,
+    version: number,
+    ids: string[],
+  ) {
+    if (this.closed)
+      return { kind: "unavailable", reason: "storage-unavailable" } as const;
+    return this.editorHistories.update(owner, threadId, leaseId, version, ids);
+  }
+  releaseEditorHistory(owner: string, threadId: string, leaseId: string) {
+    return this.editorHistories.release(owner, threadId, leaseId);
+  }
+  releaseEditorHistories(owner: string): void {
+    this.editorHistories.releaseOwner(owner);
+  }
   checkStorage(threadId: string) {
     return this.serialized(() => {
       if (!this.lifecycle) throw Error("Attachment lifecycle unavailable");
@@ -293,6 +329,7 @@ export class AttachmentStore {
   }
   async close(): Promise<void> {
     this.closed = true;
+    this.editorHistories.dispose();
     await this.tail;
     await this.lifecycle?.close();
   }

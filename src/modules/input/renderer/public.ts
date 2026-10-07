@@ -14,6 +14,12 @@ export {
   replaceDraftText,
 } from "./editor/plain-text-editor";
 export {
+  createAttachmentEditor,
+  moveAttachmentReference,
+  removeAttachmentReference,
+  syncAttachmentLabels,
+} from "./references/attachment-editor";
+export {
   attachmentIds,
   attachmentMention,
   insertAttachmentReference,

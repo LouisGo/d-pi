@@ -312,6 +312,20 @@ it.each(["file-picker", "drop"])(
         return new Promise((resolve) => {
           complete = resolve;
         });
+      if (command.kind === "history-open")
+        return {
+          kind: "history-lease",
+          leaseId: crypto.randomUUID(),
+          version: 0,
+        };
+      if (command.kind === "history-update")
+        return {
+          kind: "history-lease",
+          leaseId: command.leaseId,
+          version: command.version,
+        };
+      if (command.kind === "history-release")
+        return { kind: "history-released" };
       return { kind: "attachments", items };
     };
     const fixture = await setup(undefined, undefined, { request });
@@ -372,5 +386,91 @@ it.each(["file-picker", "drop"])(
       expect(await fixture.model.prepareViewNavigation()).toBe(true),
     );
     expect(fixture.model.controller).toBe(fixture.thread().controller);
+  },
+);
+
+it.each(["limit", "failure"] as const)(
+  "makes history protection %s observable in the real Composer while preserving its source body",
+  async (mode) => {
+    let items: import("../../../modules/input/contracts/public").Attachment[] =
+      [];
+    let failure = mode === "failure";
+    const bridge: AttachmentBridge = {
+      request: async (command) => {
+        if (command.kind === "history-open")
+          return {
+            kind: "history-lease",
+            leaseId: crypto.randomUUID(),
+            version: 0,
+          };
+        if (command.kind === "history-update")
+          return mode === "limit"
+            ? { kind: "history-limit" }
+            : failure
+              ? { kind: "unavailable", reason: "storage-unavailable" }
+              : {
+                  kind: "history-lease",
+                  leaseId: command.leaseId,
+                  version: command.version,
+                };
+        if (command.kind === "history-release")
+          return { kind: "history-released" };
+        return { kind: "attachments", items };
+      },
+    };
+    const fixture = await setup(undefined, undefined, bridge);
+    const id = crypto.randomUUID();
+    const item = AttachmentSchema.parse({
+      schemaVersion: 1,
+      id,
+      token: `[[dpi-attachment:${id}]]`,
+      threadId: fixture.first.threadId,
+      name: "original.txt",
+      mimeType: "text/plain",
+      byteLength: 4,
+      capturedAt: new Date().toISOString(),
+      source: "paste",
+      status: "ready",
+      representation: "text",
+      coverageGaps: [],
+      textOnly: true,
+    });
+    items = [item];
+    const button = Array.from(
+      fixture.container.querySelectorAll("button"),
+    ).find((button) => button.textContent === "Attach files");
+    if (!button) throw Error("missing attach action");
+    await act(async () => {
+      button.click();
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+    expect(fixture.editor().getText()).toContain(item.token);
+    if (mode === "limit") {
+      expect(fixture.container.textContent).toContain(
+        "Undo history was cleared; your draft is preserved",
+      );
+      expect(fixture.editor().can().undo()).toBe(false);
+      await act(async () =>
+        expect(await fixture.thread().controller.flush()).toBe(true),
+      );
+    } else {
+      await act(async () =>
+        expect(await fixture.thread().controller.flush()).toBe(false),
+      );
+      expect(fixture.thread().controller.getSnapshot()).toMatchObject({
+        kind: "failed",
+        error: {
+          recovery: "retry_safe",
+          message: { code: "attachment.historyLeaseFailed" },
+        },
+      });
+      expect(fixture.editor().can().undo()).toBe(true);
+      expect(fixture.container.textContent).toContain("Retry asset protection");
+      failure = false;
+      await act(async () =>
+        expect(await fixture.thread().controller.retry()).toBe(true),
+      );
+    }
+    expect(fixture.thread().controller.getTextSnapshot()).toContain(item.token);
   },
 );
