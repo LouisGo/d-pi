@@ -66,7 +66,7 @@ function setup(target: boolean) {
     () => [new DOMRect(0, 0, 400, 200)] as unknown as DOMRectList,
   );
   vi.spyOn(HTMLElement.prototype, "scrollIntoView").mockImplementation(
-    function () {
+    function (this: HTMLElement) {
       const pane = this.closest<HTMLElement>(".reading-pane");
       if (pane) pane.scrollTop = 600;
     },

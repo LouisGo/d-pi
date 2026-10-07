@@ -74,6 +74,12 @@
   --switch-height: 1.375rem;
   --switch-padding: 0.1875rem;
   --switch-thumb-size: 1rem;
+  --tab-icon-size: 1rem;
+  --checkbox-size: 1rem;
+  --checkbox-mark-width: 0.3rem;
+  --checkbox-mark-height: 0.55rem;
+  --checkbox-mixed-width: 0.5rem;
+  --slider-thumb-size: 1rem;
   --control-height: 1.875rem;
   --control-padding: 0.625rem;
   --panel-padding: 1rem;
