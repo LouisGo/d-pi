@@ -220,11 +220,10 @@ export function createTrustedClipboard(options: {
       .then(async (reply) => {
         if (reply?.kind === "clipboard-imported") {
           if (!current()) {
-            void request({
-              ...identity(),
+            await options.model.run({
               kind: "clipboard-discard",
               ids: reply.items.map((item) => item.id),
-            }).catch(() => {});
+            });
             if (!disposed && options.isCurrent()) options.onFeedback("failed");
             return;
           }

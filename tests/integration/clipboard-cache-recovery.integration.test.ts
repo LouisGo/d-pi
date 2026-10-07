@@ -835,3 +835,123 @@ it("keeps a reinserted clone protected when new epoch update fails while old cle
     await f.close();
   }
 });
+
+it.each(["edit", "adapter-dispose", "editor-destroy"])(
+  "retains a failed late unused-clone discard for its live Thread owner after %s",
+  async (change) => {
+    const f = await handoffFixture();
+    const execute = f.service.execute;
+    let release: () => void = () => {},
+      imported: () => void = () => {};
+    let failDiscard = true,
+      discarded = 0;
+    let lateIds: string[] = [];
+    const importedReady = new Promise<void>((resolve) => {
+      imported = resolve;
+    });
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    f.service.execute = async (cmd, owner) => {
+      if (cmd.kind === "clipboard-discard") {
+        discarded++;
+        expect(cmd.ids).toEqual(lateIds);
+        expect(cmd.threadId).toBe(f.target.threadId);
+        if (failDiscard)
+          return { kind: "unavailable", reason: "storage-unavailable" };
+      }
+      const reply = await execute(cmd, owner);
+      if (
+        cmd.kind === "clipboard-import" &&
+        reply.kind === "clipboard-imported"
+      ) {
+        lateIds = reply.items.map((item) => item.id);
+        imported();
+        await gate;
+      }
+      return reply;
+    };
+    try {
+      const item = (await f.service.store.list(f.source.threadId))[0]!;
+      const reserved = await f.service.execute(
+        {
+          kind: "clipboard-reserve",
+          threadId: f.source.threadId,
+          traceId: crypto.randomUUID(),
+        },
+        "late-source-doc",
+      );
+      if (reserved.kind !== "clipboard-tickets" || !reserved.tickets[0])
+        throw Error("ticket");
+      const ticket = reserved.tickets[0];
+      expect(
+        await f.service.execute(
+          {
+            kind: "clipboard-export",
+            threadId: f.source.threadId,
+            traceId: crypto.randomUUID(),
+            ticket,
+            text: item.token,
+            ids: [item.id],
+          },
+          "late-source-doc",
+        ),
+      ).toMatchObject({ kind: "clipboard-exported" });
+      const event = {
+        clipboardData: {
+          types: [CLIPBOARD_MIME, "text/plain"],
+          files: [],
+          getData: (kind: string) =>
+            kind === CLIPBOARD_MIME ? JSON.stringify(ticket) : "image",
+        },
+        preventDefault() {},
+      } as unknown as ClipboardEvent;
+      expect(f.clipboard.paste(f.editor.view, event)).toBe(true);
+      await importedReady;
+      if (change === "edit") f.editor.commands.insertContent(" changed");
+      else if (change === "adapter-dispose") f.clipboard.dispose();
+      else f.editor.destroy();
+      release();
+      await f.clipboard.settled();
+      expect(discarded).toBe(1);
+      expect(f.model.getReadiness()).toEqual({
+        kind: "blocked",
+        reason: "failed-source",
+      });
+      expect(f.model.stateStore.getState().failed?.command).toEqual({
+        kind: "clipboard-discard",
+        ids: lateIds,
+      });
+      expect(
+        await f.model.run({ kind: "clipboard-import", ticket }),
+      ).toBeNull();
+      expect(
+        f.editor.isDestroyed || !f.editor.getText().includes(lateIds[0]!),
+      ).toBe(true);
+      // Remove all independent snapshot/body/Undo references. The failed,
+      // never inserted clone alone must now keep its real private object alive.
+      f.service.store.releaseEditorHistories("late-source-doc");
+      f.controller.edit("changed");
+      if (!f.editor.isDestroyed)
+        expect(replaceDraftText(f.editor, "changed")).toBe(true);
+      expect(await f.cache.clearHistory(f.target.threadId)).toBe(true);
+      expect(await f.controller.flush()).toBe(true);
+      expect(
+        (await f.service.store.cleanStorage(f.target.threadId)).deletedObjects,
+      ).toBe(0);
+      expect(existsSync(f.object)).toBe(true);
+      failDiscard = false;
+      expect(await f.model.retryFailure()).toMatchObject({ kind: "cancelled" });
+      expect(discarded).toBe(2);
+      expect(f.model.getReadiness()).toEqual({ kind: "ready" });
+      expect(
+        (await f.service.store.cleanStorage(f.target.threadId)).deletedObjects,
+      ).toBe(1);
+      expect(existsSync(f.object)).toBe(false);
+    } finally {
+      release();
+      f.service.execute = execute;
+      await f.close();
+    }
+  },
+);

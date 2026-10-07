@@ -35,3 +35,11 @@ T3固定10f39eb9ac80c9a4b7f5097575dd2addc3b6f631的apps/web/src/composer-undo-gr
 全部资源样本为真实Tiptap+DraftController+Cache+Main服务+preload Zod+临时SQLite/私有对象；未写默认OS clipboard、未访问账户/远端。Main服务fixture不是正式应用GUI用户验收。完整check/build、两轴增量review和冻结选区Composer实际拒绝结果由主Agent在集成SHA执行；无新业务正文事实、无修改readonly/发送恢复边界。
 
 必要UI交接：附件失败卡片的移除失败操作对clipboard-discard应隐藏/禁用，必要清理仅重试可解除，model已保守拒绝dismiss。Composer冻结选区的dispatch实际结果由root接线，本worker不改该工作台实现。
+
+## 迟到未使用clone清理（基点307850b后续）
+
+正文/选区/generation/前台身份失效与拒绝dispatch同属原Thread责任；adapter/Editor销毁不等于Thread owner销毁。活着的AttachmentModel应统一持有必要discard并等待Main实际终态，不使用fire-and-forget；真实model disposed继续按可信document释放原合同，不复活owner。原failed-command队列、原IDs/Thread和失败期间拒绝新import保持。此补丁只写input源码/测试及本证据，不扩wire、诊断或工作台。
+
+17:50:40新增真实Main/preload/PM/SQLite三变体（同Thread普通edit、adapter.dispose、Editor.destroy且Thread model仍活）：基点旧迟到分支均错误ready/failednull，三红。最小改动仅把current=false分支的direct fire-and-forget改为await原model.run clipboard-discard；17:51:06三绿。测试记录真实Main import原IDs与原Thread，延迟reply后使编辑身份失效，首次discard unavailable不执行Main；失败期拒绝继续import。移除所有独立snapshot/body/Undo引用并保存普通正文后GC0（仅未插入clone保留），显式retry只discard，Main cancelled ACK→ready→GC1/对象实际不存在。adapter/Editor卸载仍由活Thread负责；原Model disposed late-result/document-release实现未改。
+
+17:52:03最终5文件33tests全绿（可信clipboard/AttachmentModel单元与三真实handoff integration），root tsc、renderer strict types、两文件Biome和diff-check均过。无Main/DTO/failure/operation或工作台变更；真实OS clipboard与完整集成门禁仍由root统一执行。
