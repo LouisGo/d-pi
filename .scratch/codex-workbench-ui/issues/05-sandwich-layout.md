@@ -1,6 +1,6 @@
 # 05 顶中底基础布局与状态栏
 
-Status: claimed
+Status: resolved
 Type: task
 Blocked by: none
 
@@ -15,3 +15,8 @@ Blocked by: none
 ## 验收
 
 全宽预算、最小窗口自动暂藏/恢复、拖拽过程与右/底宿主的顶底对齐；设置与开发入口始终可恢复；主会话/输入资源保持；light/dark、中英、键盘及原生标题栏预算。消息数量仅代表当前有界实时投影，不伪称全历史轮数；未接入的 token/cache/context 不展示为 0。完整工程门禁、受影响隔离 Electron、Spec/Standards review；不等同用户认可。
+
+
+## 工程结果
+
+源码 `bded41f`。当前票的布局、真实状态、窗口/主题/键盘与资源行为已通过工程和隔离GUI验证，双轴review的2个P2已修复复核；[交接与证据](../sandwich-validation.md)、[独立审查](../sandwich-review.md)。本票resolved表示工程交付，原A3物理拖窗/系统IME/VoiceOver/长时性能与用户认可不提升。

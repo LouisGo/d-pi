@@ -1,0 +1,119 @@
+{
+  "version": "isolated-workbench",
+  "scenario": "sandwich",
+  "passed": true,
+  "checks": [
+    {
+      "name": "no-rail-or-home-icon",
+      "value": true
+    },
+    {
+      "name": "global-top-middle-bottom-align",
+      "value": true
+    },
+    {
+      "name": "wide-settings-narrow-tools-fixed-below-scroll",
+      "value": true
+    },
+    {
+      "name": "dock-does-not-scroll",
+      "value": true
+    },
+    {
+      "name": "quick-preview-shows-real-state-and-scope",
+      "value": true
+    },
+    {
+      "name": "quick-preview-escape-restores-trigger",
+      "value": true
+    },
+    {
+      "name": "settings-keeps-editor-and-controller",
+      "value": true
+    },
+    {
+      "name": "settings-escape-before-host-actions",
+      "value": true
+    },
+    {
+      "name": "three-segments-with-bottom-panel-align",
+      "value": true
+    },
+    {
+      "name": "sidebar-drag-aligns-global-tracks",
+      "value": true
+    },
+    {
+      "name": "workspace-drag-aligns-global-tracks",
+      "value": true
+    },
+    {
+      "name": "tracks-follow-live-drag-before-commit",
+      "value": true
+    },
+    {
+      "name": "workspace-body-focus-restored-on-temporary-hide",
+      "value": true
+    },
+    {
+      "name": "light-statusbar-theme-and-geometry",
+      "value": true
+    },
+    {
+      "name": "light-minimum-window-status-and-input",
+      "value": true
+    },
+    {
+      "name": "light-hidden-navigation-restores-both-actions",
+      "value": true
+    },
+    {
+      "name": "light-overlay-settings-transition",
+      "value": true
+    },
+    {
+      "name": "light-overlay-settings-focus-fallback",
+      "value": true
+    },
+    {
+      "name": "dark-statusbar-theme-and-geometry",
+      "value": true
+    },
+    {
+      "name": "dark-minimum-window-status-and-input",
+      "value": true
+    },
+    {
+      "name": "dark-hidden-navigation-restores-both-actions",
+      "value": true
+    },
+    {
+      "name": "dark-overlay-settings-transition",
+      "value": true
+    },
+    {
+      "name": "dark-overlay-settings-focus-fallback",
+      "value": true
+    },
+    {
+      "name": "layout-preserves-editor-controller",
+      "value": true
+    },
+    {
+      "name": "overlay-developer-transition-closes-navigation",
+      "value": true
+    },
+    {
+      "name": "overlay-developer-transition-focuses-visible-action",
+      "value": true
+    },
+    {
+      "name": "developer-return-keeps-thread-controller-and-draft",
+      "value": true
+    }
+  ],
+  "stderr": "\nDevTools listening on ws://127.0.0.1:64283/devtools/browser/a3e50337-8844-45b9-9d17-f45087c1292c\n",
+  "limitations": [
+    "isolated GUI fixture; not packaged or system IME evidence"
+  ]
+}

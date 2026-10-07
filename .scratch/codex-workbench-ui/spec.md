@@ -103,7 +103,7 @@ CSS Grid/Flex 负责排版与滚动边界；尺寸约束负责可用空间分配
 ```
 
 ```project-status
-[{"id":"codex-workbench-ui","title":"Codex 式工作台基础布局","phase":"基建","engineering":"in-progress","trial":"not-delivered","acceptance":"pending","build":"Dev / codex/sandwich-layout","evidence":["sandwich-validation.md"],"next":"三层布局与状态栏实施/验证；原A3物理拖窗、系统IME/VoiceOver与长时性能仍未覆盖","constraints":"用户已授权本UI分支push、PR及合并；不公开发布或发起真实账户请求。"}]
+[{"id":"codex-workbench-ui","title":"Codex 式工作台基础布局","phase":"基建","engineering":"partial","trial":"delivered","acceptance":"pending","build":"Dev / codex/sandwich-layout","evidence":["sandwich-validation.md"],"next":"Dev试用三层布局；原A3物理拖窗、系统IME/VoiceOver与长时性能仍未覆盖","constraints":"用户已授权本UI分支push、PR及合并；不公开发布或发起真实账户请求。"}]
 ```
 
 ## 实施票
@@ -143,5 +143,6 @@ CSS Grid/Flex 负责排版与滚动边界；尺寸约束负责可用空间分配
 - 范围与授权：用户要求开始实现并同步相关文档；[05](issues/05-sandwich-layout.md)。
 - 固定基点：d4f380c；单 Agent 实现，隔离 worktree `/Users/louistation/.codex/worktrees/sandwich-layout/d-pi`，分支 `codex/sandwich-layout`。
 - 重要待决：无。token/cache/context 当前无完整公开投影，先展示真实执行/模型/队列与有界消息概况，不扩大原生指标接入。
-- 工程：进行中；试用：尚未交付本次布局；认可：pending。
+- 工程：05完成，源码/验证提交bded41f；完整门禁、三层27项、组件27项与原工作台68条隔离Electron记录通过，独立双轴review发现的2个P2已修复并复核。父规格因原A3缺口保持partial。
+- 试用：已交付本worktree的Dev入口，见[三层验证与交接](sandwich-validation.md)；本轮未打包/push/创建远端PR；认可：pending。
 - 验证与继续边界：按 05 验收，保留 OMP/Main/Thread 所有权、unknown 与已有恢复政策；不扩张 M3、自由 docking 或账号请求。
