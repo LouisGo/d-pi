@@ -219,7 +219,10 @@ export async function validateTrustedClipboard({
           clone.frozenReference.kind,
           index === 0 ? "file" : "directory",
         );
-        assert.equal(clone.frozenReference.version, clone.inputDigest);
+        assert.equal(
+          clone.frozenReference.version,
+          `sha256:${clone.inputDigest}`,
+        );
         const capturedAt = Date.parse(clone.frozenReference.capturedAt);
         assert.ok(capturedAt >= copyStartedAt && capturedAt <= copyReadyAt);
       }
