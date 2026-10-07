@@ -3,7 +3,11 @@ import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { match } from "ts-pattern";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import { Button } from "../../../modules/ui/renderer/public";
+import {
+  Button,
+  Select,
+  type SelectOption,
+} from "../../../modules/ui/renderer/public";
 import {
   type DiagnosticBridge,
   type DiagnosticFilter,
@@ -295,35 +299,33 @@ function DiagnosticPanel({
         </label>
         <label>
           {t("ui.diagnostics.stage")}
-          <select
-            data-diagnostics-filter="stage"
+          <DiagnosticSelect
             name="stage"
-            aria-label={t("ui.diagnostics.stage")}
-            defaultValue={filter.stage ?? ""}
-          >
-            <option value="">{t("ui.diagnostics.allStages")}</option>
-            {DiagnosticStageSchema.options.map((stage) => (
-              <option key={stage} value={stage}>
-                {stage}
-              </option>
-            ))}
-          </select>
+            label={t("ui.diagnostics.stage")}
+            initialValue={filter.stage ?? ""}
+            options={[
+              { value: "", label: t("ui.diagnostics.allStages") },
+              ...DiagnosticStageSchema.options.map((value) => ({
+                value,
+                label: value,
+              })),
+            ]}
+          />
         </label>
         <label>
           {t("ui.diagnostics.operation")}
-          <select
-            data-diagnostics-filter="operation"
+          <DiagnosticSelect
             name="operation"
-            aria-label={t("ui.diagnostics.operation")}
-            defaultValue={filter.operation ?? ""}
-          >
-            <option value="">{t("ui.diagnostics.allOperations")}</option>
-            {DiagnosticOperationSchema.options.map((operation) => (
-              <option key={operation} value={operation}>
-                {operation}
-              </option>
-            ))}
-          </select>
+            label={t("ui.diagnostics.operation")}
+            initialValue={filter.operation ?? ""}
+            options={[
+              { value: "", label: t("ui.diagnostics.allOperations") },
+              ...DiagnosticOperationSchema.options.map((value) => ({
+                value,
+                label: value,
+              })),
+            ]}
+          />
         </label>
         <label>
           {t("ui.diagnostics.limit")}
@@ -502,5 +504,28 @@ function DiagnosticPanel({
       </label>
       <p className="muted">{t("ui.diagnostics.feedbackHint")}</p>
     </section>
+  );
+}
+
+function DiagnosticSelect({
+  name,
+  label,
+  initialValue,
+  options,
+}: {
+  name: string;
+  label: string;
+  initialValue: string;
+  options: SelectOption<string>[];
+}) {
+  const [value, change] = useState(initialValue);
+  return (
+    <Select
+      name={name}
+      value={value}
+      options={options}
+      onValueChange={change}
+      aria-label={label}
+    />
   );
 }

@@ -10,8 +10,8 @@ export const componentCatalog = [
   {
     name: "Select",
     category: "forms",
-    purpose: "受控选项，下拉内容经 Portal 展示。",
-    forms: "selected / disabled / 键盘与焦点",
+    purpose: "三项及以上优先下拉；默认向下展开，支持弹层内快速搜索。",
+    forms: "selected / disabled / searchable / 键盘与焦点",
   },
   {
     name: "Switch",
@@ -28,7 +28,7 @@ export const componentCatalog = [
   {
     name: "ChoiceGroup",
     category: "forms",
-    purpose: "在有限选项中直接选择，支持视觉预览。",
+    purpose: "在两个明确值之间直接切换，选中项使用轻量胶囊底色。",
     forms: "selected · unselected / disabled / radio keyboard",
   },
   {
@@ -106,6 +106,10 @@ export const copy = {
 
 export const demoLabels = {
   select: "默认行为",
+  optionC: "选项 C",
+  searchableSelect: "可搜索选择",
+  searchOptions: "搜索选项",
+  noOptions: "没有匹配的选项",
   optionA: "选项 A",
   optionB: "选项 B",
   switch: "开启功能",

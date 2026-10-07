@@ -173,7 +173,7 @@ it("refreshes a changed CLI history from the first page and can continue reading
         (button) => button.textContent === "Next page",
       )?.disabled,
     ).toBe(true);
-    releaseRefresh();
+    await act(async () => releaseRefresh());
     await vi.waitFor(async () => {
       await act(() => new Promise((resolve) => setTimeout(resolve, 10)));
       expect(
@@ -280,13 +280,18 @@ it("announces discovery before offering a bound read, then announces the selecte
         (b) => b.textContent === "Read native records",
       ),
     ).toBe(false);
-    expect(container.querySelector("select")?.disabled).toBe(true);
+    expect(
+      container.querySelector<HTMLButtonElement>("[data-slot=select]")
+        ?.disabled,
+    ).toBe(true);
     await act(async () => found?.());
     await vi.waitFor(async () => {
       await act(() => new Promise((resolve) => setTimeout(resolve, 10)));
       expect(container.textContent).toContain("Reading native records");
     });
-    expect(container.querySelector("select")?.value).toBe(key);
+    expect(
+      container.querySelector<HTMLButtonElement>("[data-slot=select]")?.value,
+    ).toBe(key);
     await act(async () => loaded?.());
     await vi.waitFor(async () => {
       await act(() => new Promise((resolve) => setTimeout(resolve, 10)));

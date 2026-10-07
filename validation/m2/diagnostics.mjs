@@ -117,6 +117,16 @@ async function close(evaluate, wait) {
 }
 
 async function setField(evaluate, name, value) {
+  if (name === "stage" || name === "operation") {
+    await evaluate(`document.querySelector('button[name="${name}"]').click()`);
+    await evaluate(
+      `new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))`,
+    );
+    await evaluate(
+      `Array.from(document.querySelectorAll('.ui-select-positioner:not([hidden]) [role=option]')).find(el=>el.dataset.value===${JSON.stringify(value)}).click()`,
+    );
+    return;
+  }
   await evaluate(`(()=>{
     const el=document.querySelector('${field(name)}');
     if(!el) throw Error('Missing diagnostic field: ${name}');

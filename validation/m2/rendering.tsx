@@ -1,3 +1,4 @@
+import { installControlFocusVisibility } from "../../src/modules/ui/renderer/public";
 import { createRoot } from "react-dom/client";
 import {
   type DesktopBridge,
@@ -331,3 +332,5 @@ if (
   !location.pathname.endsWith("settings.html")
 )
   mountRenderingFixture();
+
+installControlFocusVisibility(document);

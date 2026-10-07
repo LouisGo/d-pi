@@ -75,6 +75,10 @@ light/dark 两套主题都必须覆盖所有自有界面，包括 Portal、空�
 
 Base UI 负责基础交互，shadcn 源码接入后统一使用本项目 token、Icon Layer 与组件 API。引用外部源码不豁免颜色/尺寸规则。
 
+### 选择组件约定（2026-10-07）
+
+用户组件专项要求：Select 类选择浮层默认在触发器下方，与触发器分离；仅下方空间不足时由碰撞处理翻转。ChoiceGroup 用于两个明确值，使用无外框的文本胶囊，选中项柔和底色，保留 radio 语义及键盘焦点；超过两个选项使用 Select。长列表或按名称查找的场景使用带弹层内快速搜索框、独立滚动列表和无结果反馈的选择组件，搜索本身不改变值。具体接入和验证见[选择组件专项](../../.scratch/selection-components/spec.md)。
+
 ### 自有组件库与实现选择（2026-10-06）
 
 用户明确要求：采用外部 UI 能力时至少经过一层 d-pi 自有封装，应用中的组件消费者只使用 d-pi 组件库的公开 API。Beautiful UI、Tool UI 是组件写法、组合与交互表达的重要参考，不是直接引入整套库的决定。这是 D-32/B-02 自有 API 基线的进一步明确；基础交互仍以 Base UI 与 shadcn 官方 Base UI 源码为主。
@@ -122,7 +126,7 @@ Base UI / 选择性改造的上游源码 / 专用渲染与编辑能力
 用户已确认的全应用规则：点击目标禁止手形 `cursor: pointer`，统一为 `default`；输入/内容选择的 `text`、编辑器分隔条的 resize 等功能性指针保留。基础样式单源为 `src/app/renderer/styles/interaction.css`，由应用样式入口加载，覆盖 body 级 portal。
 
 - 组件默认外观须能识别操作入口，hover/active/selected/disabled/focus-visible 分别表达含义。共享 Button 管理主操作、ghost、navigation 与 icon；主操作按下色来自 `--primary-active`，其他状态复用现有主题 token。折叠标题沿用原生 disclosure，文字链接默认有颜色及下划线。
-- 鼠标 hover/active 使用背景与文字反馈，不因选中状态新增彩色 border、outline 或 ring shadow。键盘 `:focus-visible` 保留统一主题焦点轮廓；普通鼠标按钮焦点 `:focus:not(:focus-visible)` 不显示轮廓。输入框的原生 focus-visible 判定、编辑器 caret 和浮层焦点协议继续保留，不能全局禁用焦点提示。
+- 2026-10-07 用户明确要求并直接修复存量控件：默认、普通 focus、hover、active 不显示 outline；只允许键盘/无障碍的 `:focus-visible` 提示。中央 CSS 对所有元素（含 Portal 与第三方内部控件）禁止非 focus-visible 的 outline；共享交互入口标记指针焦点，补足文本输入框鼠标点击也可能匹配 focus-visible 的浏览器行为。键盘导航/激活或独立无障碍焦点移动解除指针标记。鼠标反馈使用背景与文字，不新增彩色 border 或 ring shadow；保留 caret、焦点协议与无障碍语义。
 - 默认 `user-select: none`。需要阅读/复制的正文、工具输出、历史、收据、原生交互及队列文本由内容拥有者加 `data-selectable`；输入/textarea/contenteditable 按原生语义开放。trace、Thread 身份、目录路径、file-meta 内容、运行来源、附件预览和 alert 是中央规则登记的内容例外，不按所有 p/span 或整个工作区开放。
 - 可选择区域内的按钮、链接、summary、导航/选项及其控件标签仍不可选；消息 heading 与装饰图标也不参与正文选择。新内容区域优先使用 `data-selectable`，不另写 select-text/all/auto、内联 userSelect 或局部 user-select 例外。
 - configuration 模块不能反向导入 app 私有 Button。其原生按钮使用静态 `ui-button` 加 `ui-button-primary/ghost/navigation` 接入同一份共享样式，保留原有表单/disabled 行为；不另建颜色或交互状态。其他 app 视图使用共享 React Button。
@@ -177,7 +181,7 @@ S1 当时除草稿功能外，要求交付最小 token 源、normal/compact 映�
 
 主题偏好增加 `system`，light/dark 仍是两套实际颜色映射；跟随系统由 AppModel 观察 `prefers-color-scheme`，OS 变化只更新解析后的根主题，不回写用户偏好或重建业务资源。三种偏好分别使用太阳、月亮、显示器图标，切换顺序 light→dark→system→light。旧 light/dark 与 density 字段兼容读取，默认布局继续紧凑。
 
-根据用户要求，应用控件不绘制 CSS outline/ring；共享键盘焦点使用已有背景/文字角色表达，保留 focus-visible、Tab、原生控件及读屏语义。主动作聚焦使用 primary-active，ghost/navigation 聚焦使用 muted-hover/foreground；分隔条聚焦使用 primary。该要求取代此前 outline 形式，不关闭设计 lint，也不去掉焦点能力。
+2026-10-07 最新用户要求进一步明确：普通 focus、hover、active 默认不绘制 outline；通过 Tab 或其他无障碍手段获得的可见焦点可使用共享主题轮廓，取代此前所有控件一律无 outline 的描述。背景/文字反馈继续保留；分隔条可使用已有主题色表达键盘焦点，不强制增加轮廓。不关闭设计 lint，也不去掉焦点能力。
 
 
 ## 三层工作台布局（2026-10-07）

@@ -1,18 +1,34 @@
 // Project-owned controls: Base UI 1.8.0 public primitives; shadcn Base composition.
 
+import { Combobox } from "@base-ui/react/combobox";
 import { Radio } from "@base-ui/react/radio";
 import { RadioGroup } from "@base-ui/react/radio-group";
 import { Select as SelectPrimitive } from "@base-ui/react/select";
 import { Switch as SwitchPrimitive } from "@base-ui/react/switch";
 import { clsx } from "clsx";
-import { type ComponentPropsWithRef, type ReactNode, useId } from "react";
+import {
+  type ComponentPropsWithRef,
+  type ReactNode,
+  useId,
+  useRef,
+  useState,
+} from "react";
 
-export type SelectOption<T extends string> = { value: T; label: string };
+import { SearchIcon } from "./components/icons/common";
+
+export type SelectOption<T extends string> = {
+  value: T;
+  label: string;
+  disabled?: boolean;
+  searchText?: string;
+};
 export type SelectProps<T extends string> = {
   value: T;
+  search?: { label: string; empty: string };
   options: readonly SelectOption<T>[];
   onValueChange: (value: T) => void;
   id?: string | undefined;
+  name?: string | undefined;
   disabled?: boolean | undefined;
   "aria-label"?: string | undefined;
   "aria-describedby"?: string | undefined;
@@ -22,21 +38,48 @@ export function Select<T extends string>({
   options,
   onValueChange,
   id,
+  name,
   disabled,
+  search,
   ...aria
 }: SelectProps<T>) {
+  if (search)
+    return (
+      <SearchSelect
+        value={value}
+        options={options}
+        onValueChange={onValueChange}
+        id={id}
+        name={name}
+        disabled={disabled}
+        search={search}
+        {...aria}
+      />
+    );
   return (
     <SelectPrimitive.Root<T>
       value={value}
       items={options}
       disabled={disabled}
       id={id}
-      onValueChange={(next) => {
+      name={name}
+      onValueChange={(next, details) => {
+        // Metadata may invalidate a controlled value. Require an explicit choice;
+        // hidden-input reconciliation must not silently replace that intention.
+        if (
+          details.reason === "none" &&
+          !options.some((option) => option.value === value)
+        ) {
+          details.cancel();
+          return;
+        }
         if (next !== null) onValueChange(next);
       }}
     >
       <SelectPrimitive.Trigger
         {...aria}
+        name={name}
+        value={value}
         className="ui-select"
         data-slot="select"
       >
@@ -47,6 +90,8 @@ export function Select<T extends string>({
       </SelectPrimitive.Trigger>
       <SelectPrimitive.Portal>
         <SelectPrimitive.Positioner
+          side="bottom"
+          alignItemWithTrigger={false}
           sideOffset={6}
           align="end"
           className="ui-select-positioner"
@@ -57,6 +102,8 @@ export function Select<T extends string>({
                 <SelectPrimitive.Item
                   key={option.value}
                   value={option.value}
+                  data-value={option.value}
+                  disabled={option.disabled}
                   className="ui-select-option"
                 >
                   <SelectPrimitive.ItemText>
@@ -139,13 +186,12 @@ export function FormField({
     </div>
   );
 }
-// i18n-ignore: Generic type intersection, no rendered copy.
-export type ChoiceOption<T extends string> = SelectOption<T> & {
-  preview?: ReactNode;
-};
+// i18n-ignore: Generic type, no rendered copy.
+export type ChoiceOption<T extends string> = SelectOption<T>;
 export type ChoiceGroupProps<T extends string> = {
   value: T;
-  options: readonly ChoiceOption<T>[];
+  // i18n-ignore: Fixed-size generic tuple, no rendered copy.
+  options: readonly [ChoiceOption<T>, ChoiceOption<T>];
   onValueChange: (value: T) => void;
   disabled?: boolean | undefined;
   "aria-label": string;
@@ -167,16 +213,102 @@ export function ChoiceGroup<T extends string>({
           key={option.value}
           value={option.value}
           aria-label={option.label}
+          disabled={option.disabled}
           className="ui-choice-option"
         >
-          <span className="ui-choice-control">
-            {option.preview ?? <span>{option.label}</span>}
-          </span>
-          {option.preview && (
-            <span className="ui-choice-label">{option.label}</span>
-          )}
+          {option.label}
         </Radio.Root>
       ))}
     </RadioGroup>
+  );
+}
+
+function SearchSelect<T extends string>({
+  value,
+  options,
+  onValueChange,
+  id,
+  name,
+  disabled,
+  search,
+  ...aria
+}: SelectProps<T> & { search: { label: string; empty: string } }) {
+  const [query, setQuery] = useState("");
+  const input = useRef<HTMLInputElement>(null);
+  const selected = options.find((option) => option.value === value) ?? null;
+  const filtered = options.filter((option) =>
+    `${option.label} ${option.searchText ?? ""}`
+      .toLocaleLowerCase()
+      .includes(query.toLocaleLowerCase().trim()),
+  );
+  return (
+    <Combobox.Root<SelectOption<T>>
+      name={name}
+      items={filtered}
+      filter={null}
+      value={selected}
+      inputValue={query}
+      onInputValueChange={setQuery}
+      onOpenChange={() => setQuery("")}
+      onValueChange={(next) => {
+        if (next && !next.disabled) onValueChange(next.value);
+      }}
+      isItemEqualToValue={(a, b) => a.value === b.value}
+      disabled={disabled}
+    >
+      <Combobox.Trigger
+        {...aria}
+        id={id}
+        name={name}
+        value={value}
+        className="ui-select"
+        data-slot="select"
+      >
+        {selected?.label}
+        <Combobox.Icon className="ui-select-chevron">{null}</Combobox.Icon>
+      </Combobox.Trigger>
+      <Combobox.Portal>
+        <Combobox.Positioner
+          side="bottom"
+          align="end"
+          sideOffset={6}
+          className="ui-select-positioner"
+        >
+          <Combobox.Popup
+            className="ui-select-popup ui-search-select-popup"
+            initialFocus={input}
+          >
+            <div className="ui-select-search-bar">
+              <SearchIcon className="ui-select-search-icon" />
+              <Combobox.Input
+                ref={input}
+                className="ui-input ui-select-search"
+                aria-label={search.label}
+                placeholder={search.label}
+              />
+            </div>
+            <Combobox.Empty className="ui-select-empty">
+              {search.empty}
+            </Combobox.Empty>
+            <Combobox.List className="ui-select-list">
+              {(option: SelectOption<T>) => (
+                <Combobox.Item
+                  key={option.value}
+                  value={option}
+                  data-value={option.value}
+                  disabled={option.disabled}
+                  className="ui-select-option"
+                >
+                  {option.label}
+                  <Combobox.ItemIndicator className="ui-select-indicator">
+                    {null}
+                  </Combobox.ItemIndicator>
+                </Combobox.Item>
+              )}
+            </Combobox.List>
+          </Combobox.Popup>
+        </Combobox.Positioner>
+      </Combobox.Portal>
+    </Combobox.Root>
   );
 }

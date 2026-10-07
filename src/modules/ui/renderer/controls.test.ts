@@ -82,7 +82,6 @@ it("names choices and exposes the selected value without cycling through other v
         createElement(ChoiceGroup, {
           value: "light",
           options: [
-            { value: "system", label: "System" },
             { value: "light", label: "Light" },
             { value: "dark", label: "Dark" },
           ],
@@ -117,6 +116,56 @@ it("names choices and exposes the selected value without cycling through other v
     expect(host.querySelector("[role=combobox]")?.textContent).toContain(
       "English",
     );
+  } finally {
+    await act(() => root.unmount());
+    host.remove();
+  }
+});
+
+it("opens a searchable picker with filtering and keeps selection until an option is chosen", async () => {
+  Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
+  const host = document.createElement("div");
+  document.body.append(host);
+  const root = createRoot(host);
+  const change = vi.fn();
+  try {
+    await act(() =>
+      root.render(
+        createElement(Select, {
+          value: "a",
+          options: [
+            { value: "a", label: "Alpha" },
+            { value: "b", label: "Beta" },
+          ],
+          onValueChange: change,
+          "aria-label": "Model",
+          search: { label: "Search models", empty: "No models" },
+        }),
+      ),
+    );
+    await act(() => host.querySelector<HTMLElement>("button")?.click());
+    const input = document.querySelector<HTMLInputElement>(
+      'input[aria-label="Search models"]',
+    );
+    expect(input).not.toBeNull();
+    await act(() => {
+      const setter = Object.getOwnPropertyDescriptor(
+        HTMLInputElement.prototype,
+        "value",
+      )?.set;
+      setter?.call(input, "Beta");
+      input?.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    expect(
+      Array.from(document.querySelectorAll("[role=option]")).map(
+        (el) => el.textContent,
+      ),
+    ).toEqual(["Beta"]);
+    expect(change).not.toHaveBeenCalled();
+    await act(() =>
+      document.querySelector<HTMLElement>("[role=option]")?.click(),
+    );
+    expect(change).toHaveBeenCalledExactlyOnceWith("b");
   } finally {
     await act(() => root.unmount());
     host.remove();

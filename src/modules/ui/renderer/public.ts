@@ -21,3 +21,7 @@ export {
   SettingsPage,
   type SettingsPageProps,
 } from "./settings";
+
+export { SearchIcon } from "./components/icons/common";
+
+export { installControlFocusVisibility } from "./focus-visibility";
