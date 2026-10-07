@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "ddb22b49fbfa9dfde46697c9b7100faae65fa2ccd6be980908341da10b38e81c",
+  "inputsHash": "f7d9bb7c53209061b61a7a692740ba1938b701b992b627abc556868d46b3a119",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 383,
-    "scannedFiles": 383,
+    "sourceFiles": 384,
+    "scannedFiles": 384,
     "unscanned": []
   },
   "modules": [
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 170,
-      "lines": 28631,
+      "lines": 28688,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -59,8 +59,8 @@
         "omp"
       ],
       "materialized": true,
-      "files": 27,
-      "lines": 2483,
+      "files": 28,
+      "lines": 2939,
       "publicEntries": [
         {
           "path": "src/platform/main/storage/public.ts",
@@ -102,7 +102,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 19,
-      "lines": 2456,
+      "lines": 2494,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -13479,6 +13479,15 @@
       "sourceModule": "platform",
       "sourceEnvironment": "main",
       "test": true,
+      "specifier": "node:fs/promises",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/main/diagnostics/diagnostics.test.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "main",
+      "test": true,
       "specifier": "node:os",
       "kind": "import",
       "resolution": "external"
@@ -13545,10 +13554,73 @@
       "sourceModule": "platform",
       "sourceEnvironment": "main",
       "test": false,
+      "specifier": "ts-pattern",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/main/diagnostics/diagnostics.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "main",
+      "test": false,
       "specifier": "../../../shared/build-info",
       "kind": "import",
       "resolution": "module",
       "to": "src/shared/build-info.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/platform/main/diagnostics/diagnostics.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../shared/diagnostics",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/diagnostics.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/platform/main/diagnostics/diagnostics.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "./metadata",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/main/diagnostics/metadata.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/platform/main/diagnostics/metadata.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:util",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/main/diagnostics/metadata.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/main/diagnostics/metadata.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../shared/diagnostics",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/diagnostics.ts",
       "targetModule": "shared",
       "targetEnvironment": "shared"
     },
@@ -13689,30 +13761,24 @@
       "sourceModule": "platform",
       "sourceEnvironment": "main",
       "test": false,
-      "specifier": "node:util",
-      "kind": "import",
-      "resolution": "external"
-    },
-    {
-      "from": "src/platform/main/diagnostics/reader.ts",
-      "sourceModule": "platform",
-      "sourceEnvironment": "main",
-      "test": false,
-      "specifier": "zod",
-      "kind": "import",
-      "resolution": "external"
-    },
-    {
-      "from": "src/platform/main/diagnostics/reader.ts",
-      "sourceModule": "platform",
-      "sourceEnvironment": "main",
-      "test": false,
       "specifier": "../../../shared/diagnostics",
       "kind": "import",
       "resolution": "module",
       "to": "src/shared/diagnostics.ts",
       "targetModule": "shared",
       "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/platform/main/diagnostics/reader.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "./metadata",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/main/diagnostics/metadata.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "main"
     },
     {
       "from": "src/platform/main/storage/database.ts",

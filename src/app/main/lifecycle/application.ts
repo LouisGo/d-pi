@@ -346,10 +346,11 @@ export function startDesktopApplication(mainDirectory: string): void {
         getSourceGeneration: () => sourceGeneration,
         getWriterId: () => diagnostics?.processInstanceId ?? "unavailable",
         read: (filter) =>
-          readDiagnosticSnapshot(join(data, "logs"), filter, {
-            degraded: diagnostics?.degraded ?? true,
-            dropped: diagnostics?.dropped ?? 0,
-          }),
+          readDiagnosticSnapshot(
+            join(data, "logs"),
+            filter,
+            diagnostics?.health() ?? { degraded: true, dropped: 0 },
+          ),
         record: (event) => diagnostics?.record(event),
         chooseDestination: async () => {
           const owner = window;

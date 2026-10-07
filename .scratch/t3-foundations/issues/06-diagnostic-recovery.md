@@ -10,3 +10,5 @@ Blocked by: none
 ## Comments
 
 - 2026-10-07：已建立文档与契约，尚未声明实现通过。当前已由主 Agent 领取；worker 固定工作树与基点在 spec 记录。
+
+- 2026-10-07：完整06实现与39项受影响回归/类型/快速门禁通过，成本和限制见[证据](../evidence/06-diagnostics.md)。保持claimed，待最终集成与独立两轴review后结算，不先称整段验收完成。

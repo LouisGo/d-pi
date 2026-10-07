@@ -20,6 +20,19 @@
 [{"id":"foundations","tickets":["01","02","03","04","05","06","07"],"hold":{"04":"动态文件/目录搬运涉及版本及跨项目权限，等待本轮用户选择；先完成03和其他独立票"}}]
 ```
 
+## 固定基点派发
+
+三个 implementer 均从文档契约提交 `851d3e59aa4782266a50a7e55bb63048ec5459dc` 开始，分别单写隔离 worktree：
+
+| 票 | Worker / 工作树 | 集成规则 |
+| --- | --- | --- |
+| 01 | research_native，`/Users/louistation/.codex/worktrees/t3-native/d-pi` | 原生与回放提交完成后由主 Agent cherry-pick |
+| 02 | research_reads，`/Users/louistation/.codex/worktrees/t3-reads/d-pi` | 读取及必要旧 wire fixture；application wiring 冲突串行处理 |
+| 03 | research_input_reading，`/Users/louistation/.codex/worktrees/t3-input/d-pi` | 输入及历史资产，补必要中英文输入 key；不自动实施04/05 |
+| 06 | 主 Agent，集成工作树 | 诊断及单源目录/状态；后续负责串行接棒 |
+
+各自运行受影响验证并保留红绿/真实边界证据，不写其他票或共享生成状态；主 Agent 才更新规格、票、看板和集成。
+
 ## 设计目标与退出条件
 
 | ID | 目标与唯一拥有者 | 完整退出条件 |

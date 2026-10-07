@@ -659,6 +659,11 @@ export const ui = {
     "已达到读取或条数预算，结果不完整。请缩小时间或筛选范围。",
   "ui.diagnostics.writerDegraded": "当前Writer已退化；丢弃 {dropped} 条。",
   "ui.diagnostics.writerHealthy": "当前Writer未退化；丢弃 {dropped} 条。",
+  "ui.diagnostics.notProvided": "未提供",
+  "ui.diagnostics.writerCounters":
+    "累计：未确认追加 {uncertain} 条；保留清理失败 {retentionFailures} 次；拒收 {rejected} 条；关闭达限 {drainTimedOut} 次。当前在途 {inFlight} 条。",
+  "ui.diagnostics.writerRecovery":
+    "最近恢复：{time}。历史计数保留，恢复不会补写原事件。",
   "ui.diagnostics.interpretation":
     "记录顺序仅为读取线索；阶段不代表执行完成。无匹配不能证明操作未发生，轮转、丢弃或未接入阶段可能留下缺口。刷新仅重新读取已应用的时间范围。",
   "ui.diagnostics.empty": "当前范围没有匹配记录。",

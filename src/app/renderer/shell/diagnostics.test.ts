@@ -392,3 +392,36 @@ it("discards a completed late read cache after its observer has closed", async (
   expect(ui.client.getQueryCache().getAll()).toHaveLength(0);
   expect(document.querySelector("[data-diagnostics-panel]")).toBeNull();
 });
+
+it("distinguishes recovered current health from cumulative gaps and active I/O", async () => {
+  const bridge = successBridge();
+  bridge.request.mockImplementationOnce(async (command) => ({
+    kind: "snapshot",
+    traceId: command.traceId,
+    snapshot: {
+      ...snapshot(command.filter),
+      writer: {
+        degraded: false,
+        dropped: 4,
+        uncertain: 2,
+        retentionFailures: 3,
+        rejected: 1,
+        drainTimedOut: 1,
+        inFlight: 100,
+        lastRecovery: {
+          startedAt: "2026-10-06T00:00:00.000Z",
+          recoveredAt: "2026-10-06T00:01:00.000Z",
+          dropped: 4,
+          uncertain: 2,
+          retentionFailures: 3,
+        },
+      },
+    },
+  }));
+  const ui = await mount(bridge);
+  await ui.click("诊断与反馈");
+  expect(document.body.textContent).toContain("未确认追加 2");
+  expect(document.body.textContent).toContain("清理失败 3");
+  expect(document.body.textContent).toContain("在途 100");
+  expect(document.body.textContent).toContain("最近恢复");
+});

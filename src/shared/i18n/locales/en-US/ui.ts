@@ -736,6 +736,11 @@ export const ui = {
     "Current Writer degraded; {dropped} records dropped.",
   "ui.diagnostics.writerHealthy":
     "Current Writer healthy; {dropped} records dropped.",
+  "ui.diagnostics.notProvided": "not provided",
+  "ui.diagnostics.writerCounters":
+    "Totals: unconfirmed appends {uncertain}; retention failures {retentionFailures}; rejected records {rejected}; close deadlines {drainTimedOut}. Currently in flight: {inFlight} records.",
+  "ui.diagnostics.writerRecovery":
+    "Last recovery: {time}. Historical counts remain; recovery does not replay original events.",
   "ui.diagnostics.interpretation":
     "Record order is a reading aid; stages do not prove execution completed. No matches do not prove an operation never happened; rotation, drops or uninstrumented stages can leave gaps. Refresh re-reads the applied time range.",
   "ui.diagnostics.empty": "No matching records in this scope.",

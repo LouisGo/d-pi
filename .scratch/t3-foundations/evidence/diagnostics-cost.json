@@ -1,0 +1,125 @@
+{
+  "base": "598323321c8c2ba6eb177097e2042510c3b79d87",
+  "node": "v24.21.0",
+  "platform": "darwin",
+  "arch": "arm64",
+  "eventsPerSample": 10000,
+  "eventsPerBurst": 100,
+  "runs": 5,
+  "samples": {
+    "off": [
+      {
+        "recordBurstMedianMs": 0.0005830000000059954,
+        "recordBurstP95Ms": 0.0007919999999899119,
+        "steadyHeapDeltaBytes": 15904,
+        "dropped": 0
+      },
+      {
+        "recordBurstMedianMs": 0.0005830000000059954,
+        "recordBurstP95Ms": 0.0007080000000314612,
+        "steadyHeapDeltaBytes": -2128,
+        "dropped": 0
+      },
+      {
+        "recordBurstMedianMs": 0.0005830000000059954,
+        "recordBurstP95Ms": 0.0007500000000391083,
+        "steadyHeapDeltaBytes": 16648,
+        "dropped": 0
+      },
+      {
+        "recordBurstMedianMs": 0.0005830000000059954,
+        "recordBurstP95Ms": 0.0007080000000314612,
+        "steadyHeapDeltaBytes": -65120,
+        "dropped": 0
+      },
+      {
+        "recordBurstMedianMs": 0.0005830000000059954,
+        "recordBurstP95Ms": 0.0006670000000212895,
+        "steadyHeapDeltaBytes": 16648,
+        "dropped": 0
+      }
+    ],
+    "baseline": [
+      {
+        "recordBurstMedianMs": 0.16741700000000037,
+        "recordBurstP95Ms": 0.24679200000002766,
+        "steadyHeapDeltaBytes": -49592,
+        "dropped": 0
+      },
+      {
+        "recordBurstMedianMs": 0.1644579999999678,
+        "recordBurstP95Ms": 0.2091250000000855,
+        "steadyHeapDeltaBytes": 61232,
+        "dropped": 0
+      },
+      {
+        "recordBurstMedianMs": 0.16945800000007694,
+        "recordBurstP95Ms": 0.19916699999998855,
+        "steadyHeapDeltaBytes": -5120,
+        "dropped": 0
+      },
+      {
+        "recordBurstMedianMs": 0.1662499999999909,
+        "recordBurstP95Ms": 0.22383300000001327,
+        "steadyHeapDeltaBytes": 19888,
+        "dropped": 0
+      },
+      {
+        "recordBurstMedianMs": 0.1713750000001255,
+        "recordBurstP95Ms": 0.2287499999999909,
+        "steadyHeapDeltaBytes": -4456,
+        "dropped": 0
+      }
+    ],
+    "current": [
+      {
+        "recordBurstMedianMs": 0.7862499999999955,
+        "recordBurstP95Ms": 1.6519590000000335,
+        "steadyHeapDeltaBytes": 126336,
+        "dropped": 0
+      },
+      {
+        "recordBurstMedianMs": 0.6890829999999823,
+        "recordBurstP95Ms": 0.8779580000000351,
+        "steadyHeapDeltaBytes": 43368,
+        "dropped": 0
+      },
+      {
+        "recordBurstMedianMs": 0.7544579999999996,
+        "recordBurstP95Ms": 1.0586669999999003,
+        "steadyHeapDeltaBytes": 119624,
+        "dropped": 0
+      },
+      {
+        "recordBurstMedianMs": 0.713207999999895,
+        "recordBurstP95Ms": 1.1781250000000227,
+        "steadyHeapDeltaBytes": 12448,
+        "dropped": 0
+      },
+      {
+        "recordBurstMedianMs": 0.7602500000000418,
+        "recordBurstP95Ms": 1.040707999999995,
+        "steadyHeapDeltaBytes": 122944,
+        "dropped": 0
+      }
+    ]
+  },
+  "medians": {
+    "off": {
+      "burstMedianMs": 0.0005830000000059954,
+      "burstP95Ms": 0.0007080000000314612,
+      "steadyHeapDeltaBytes": 15904
+    },
+    "baseline": {
+      "burstMedianMs": 0.16741700000000037,
+      "burstP95Ms": 0.22383300000001327,
+      "steadyHeapDeltaBytes": -4456
+    },
+    "current": {
+      "burstMedianMs": 0.7544579999999996,
+      "burstP95Ms": 1.0586669999999003,
+      "steadyHeapDeltaBytes": 119624
+    }
+  },
+  "limits": "Producer-only fixed metadata cost; excludes GUI input, native stream, task completion and full B6 combination acceptance."
+}
