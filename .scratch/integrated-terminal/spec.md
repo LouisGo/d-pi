@@ -4,7 +4,7 @@
 
 ## 推进与交接
 
-- 当前授权：完成集成终端架构、全部直接相关文档与实现依赖/验收标准。2026-10-07 后续用户明确“直接按照 B 方案”，并允许后续按需直接引入 xterm.js；不再比较替代方案。**本次没有终端功能代码、终端依赖安装、push或合并授权。** 计划/拆票/未回复不构成开发授权。
+- 当前授权：完成集成终端架构、全部直接相关文档与实现依赖/验收标准。2026-10-07 后续用户明确“直接按照 B 方案”，并允许后续按需直接引入 xterm.js；不再比较替代方案。最初仅授权文档；2026-10-07用户追加“没有问题的话，本地PR到main”，授权复核后本地合入main。**仍没有终端功能代码、终端依赖新增或远端push/合并授权。** 计划/拆票/未回复不构成开发授权。
 - 已定事项：D-40/[ADR-0003](../../docs/adr/0003-terminal-host.md)确定专用TerminalHost utility process、node-pty、主页面xterm.js、受限MessagePort与有界输出；D-13底部面板/Command+`、D-02 OMP所有权、D-05 macOS、D-21/D-22诊断、D-25/D-26阶段、D-28–D-30按功能交付、D-35/D-37类型/状态及D-39有限Effect范围继续有效。
 - 文档交付：契约、验证设计、固定源码核实、ADR、任务DAG及入口同步已形成；具体检查与变更理由见[交接](handoff.md)。终端功能工程未实施，无GUI/性能/native验收结果。
 - 用户试用：尚不可试用。方案确认不等于功能、性能或GUI认可；本轮不改变M2首版验收范围。
@@ -56,7 +56,7 @@
 计划块只调度未来开发票，Blocked by只记真实工程依赖；重要产品待决和授权以正文/hold为准。当前Ready Frontier应为空；命令输出不授权实施。后续实现可按独立写集合理隔离，主Agent串行整合共享协议与状态，不混入原会话的T3改动。
 
 ```project-status
-[{"id":"integrated-terminal","title":"集成终端 B 方案","phase":"M3","engineering":"planned","trial":"not-delivered","acceptance":"pending","evidence":["handoff.md","../../docs/architecture/terminal.md","../../docs/validation/terminal.md"],"next":"B与xterm路线已确认、文档已交付；待关联/退出产品答复及后续开发授权。","constraints":"本次仅方案与文档；不开发终端、不新增终端依赖、不push或合并；不扩大M2或D-39。"}]
+[{"id":"integrated-terminal","title":"集成终端 B 方案","phase":"M3","engineering":"planned","trial":"not-delivered","acceptance":"pending","evidence":["handoff.md","../../docs/architecture/terminal.md","../../docs/validation/terminal.md"],"next":"B与xterm路线已确认、文档已交付；待关联/退出产品答复及后续开发授权。","constraints":"本次仅方案与文档；不开发终端、不新增终端依赖、不远端push/合并；本地合入main已授权；不扩大M2或D-39。"}]
 ```
 
 ## 初期方案与后续增强

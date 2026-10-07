@@ -31,3 +31,7 @@ Main管目录/信任准入、宿主监督与退出；专用TerminalHost管理nod
 运行`pnpm report:status:write`时，pnpm自动从本地store补齐了隔离worktree的既有锁定依赖；没有新增终端包，package/lockfile没有变化。后续直接以Node运行聚合脚本，不重复环境补齐。
 
 功能工程状态仍planned，试用not-delivered，认可pending。T-P1（目录/Thread组织及显式新建）、T-P2（单终端结束与App退出交互）只记录推荐；未回复不是认可。native ABI、启动前登记、查询应答隔离、屏幕硬界和系统IME/性能要在实现票取得证据，不能用此次文档检查冒充。前会话T3改动不在本写集内，原checkout保持不变。
+
+## 后续本地集成授权
+
+2026-10-07用户追加“没有问题的话，本地PR到main”。原文档阶段无合并授权的记录为历史快照；当前spec/生成看板已同步允许复核后本地合入main，仍不授权终端实现或远端push/合并。两轴只读独立review无阻塞发现，授权补充后快速检查通过；具体范围与限制见[本地PR记录](pr.md)。实际来源head/目标main合并结果由Git记录核实。
