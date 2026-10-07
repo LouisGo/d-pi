@@ -8,8 +8,8 @@
 - 新授权：一级功能栏设置图标上方加入 tools icon；悬停显示开发者工具菜单，当前为组件看板，后续可增加工具；开发者区域可使用固定中文，保持简单，重点在看板内容。授权实施及标准本地工作流；本轮没有远端 push/PR/merge 授权。
 - 已定方向：D-31/D-32 自有图标/组件/token、light/dark、默认紧凑布局，D-38 类型安全路由；保留当前 focus-visible 轮廓与鼠标反馈规则。新增 HoverMenu 薄封装 Base UI，不引入依赖。
 - 重要待决：无。工具菜单同时支持点击/键盘打开、Esc关闭、移动到菜单不闪退。
-- 工程：首轮已交付；按用户本轮三点反馈修正中（续作基点 `71bb9fbf571f2c1508a552d79bac855e6b1e0187`，主 Agent 串行实施03）。主 Agent 在 `codex/component-dashboard` 隔离 worktree 单写集成；01由主 Agent负责，02委派 gallery Agent，在 `/Users/louistation/.codex/worktrees/component-dashboard-gallery/d-pi` / `codex/component-dashboard-gallery` 固定同一基点实现；整段独立Spec/Standards评审。
-- 用户试用：首轮候选已交付并收到布局/维护反馈；新候选待交付，认可pending。
+- 工程：两轮已完成；本轮三点修正的完整check、build/package、独立双轴复审及26项Electron通过（续作基点 `71bb9fbf571f2c1508a552d79bac855e6b1e0187`，主 Agent 串行实施03）。主 Agent 在 `codex/component-dashboard` 隔离 worktree 单写集成；01由主 Agent负责，02委派 gallery Agent，在 `/Users/louistation/.codex/worktrees/component-dashboard-gallery/d-pi` / `codex/component-dashboard-gallery` 固定同一基点实现；整段独立Spec/Standards评审。
+- 用户试用：首轮布局/维护反馈已落实，新候选已交付见[交接](handoff.md)；认可pending。
 - 验收：真实 Router/AppModel 证明工具导航不选择/释放Thread、位置不会被无关模型通知拉回、退出可恢复会话；进入工具路由需完成原编辑冻结/flush，IME、保存失败或附件/引用输入尚未完成及失败待处理时保留原位置；组件行为测试及隔离Electron真实渲染证明菜单悬停/键盘、全量展示、重置、弹层/页签/拖拽、light/dark与窄窗几何。
 - 继续边界：不补未实现组件、不接业务命令、不改执行/存储/认证，不公开发布。示例仅用本地演示状态。
 
@@ -33,7 +33,7 @@
 ```
 
 ```project-status
-[{"id":"component-dashboard","title":"开发者工具与基础组件看板","phase":"基建","engineering":"in-progress","trial":"feedback","acceptance":"pending","build":"232f76bc-5dedc932","evidence":["handoff.md","validation.md","review.md"],"next":"落实图标自动收录、右侧常驻锚点和独立工具工作区","constraints":"仅本地实施与交付；开发者区域固定中文；不改变Thread执行与持久化。"}]
+[{"id":"component-dashboard","title":"开发者工具与基础组件看板","phase":"基建","engineering":"complete","trial":"delivered","acceptance":"pending","build":"e97c5a05-b19549d5","evidence":["handoff.md","validation.md","review.md"],"next":"用户试用修正版图标预览、常驻目录与独立工作区；认可pending","constraints":"仅本地实施与交付；开发者区域固定中文；不改变Thread执行与持久化。"}]
 ```
 
 ## 实施票

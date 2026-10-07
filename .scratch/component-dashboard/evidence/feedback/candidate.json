@@ -1,0 +1,12 @@
+{
+  "source": "/Users/louistation/.codex/worktrees/component-dashboard/d-pi/dist/component-dashboard-feedback/mac-arm64/d-pi.app",
+  "build": {
+    "version": "0.1.0-workbench.3",
+    "commit": "e97c5a05e40fc27ef809ee551943b1be5010c068",
+    "dirty": false,
+    "id": "e97c5a05-b19549d5"
+  },
+  "asarSha256": "544b507914e1c85a53669545c3b61043cabf59c4eb72de78379b5b2fbd8640e0",
+  "reviewedCodeHead": "823bbc18a2acb406afd4309d31e8d96003af5b47",
+  "base": "71bb9fbf571f2c1508a552d79bac855e6b1e0187"
+}

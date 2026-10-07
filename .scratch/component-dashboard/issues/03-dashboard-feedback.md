@@ -1,6 +1,6 @@
 # 03 用户反馈修正
 
-Status: claimed
+Status: resolved
 Blocked by: none
 
 阶段：基建；依据：所属[规格](../spec.md)的本轮用户反馈；主Agent串行实施，基点71bb9fb。
@@ -10,3 +10,5 @@ Blocked by: none
 写集：developer组件/目录/CSS/测试、routes/routing的布局元信息、ApplicationLayout/WorkbenchFrame/PreferenceToolbar、相关合同、受影响GUI验证与本地候选；不改变Thread/OMP/存储所有权。
 
 验收：新增图标导出无需改看板的回归；真实App路由覆盖/返回资源保留；宽/中/窄窗口内容与目录几何、滚动后目录常驻、实际点击分类/组件锚点、搜索和弹层保留。
+
+完成：三项反馈落地，先红后绿、完整check、独立Spec/Standards复审、26项Electron及本地候选验证通过；见[最新交接](../handoff.md)、[验证](../validation.md)。用户认可由父规格单独维护。

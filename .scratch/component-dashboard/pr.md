@@ -1,15 +1,15 @@
-# feat(renderer): add developer tools and interactive component dashboard
+# feat(renderer): add developer workspace and interactive component dashboard
 
 ## Summary
 
-基础组件分散在不同视图，无法集中检查形态与交互。设置上方新增可悬停/点击/键盘操作的Tools入口，进入类型安全 `/dev/components` 路由；4类收录8组已实现基础组件/图标，直接复用真实组件，支持全量索引、搜索、状态演示及局部重置。开发者区域固定中文，沿用主题/token。
+基础组件分散，无法集中查看形态与交互。设置上方Tools菜单可悬停/点击/键盘打开，进入注册的 `/dev/components` 独立开发者工作区，覆盖Thread列表及内容区，只共享一级功能栏/native标题栏/history/theme。左侧真实组件预览，右侧常驻竖向分组锚点；搜索同步过滤目录和内容，互动组件独立重置，固定中文/共享主题。
 
-视图导航先检查输入意图、冻结并flush，完成后再次准入；未完成附件/引用及失败请求保留原Composer，避免丢掉异步插入。工具页保留Thread资源，无关模型通知保持位置，返回会话恢复草稿。依据[spec](spec.md)、[01](issues/01-tools-routing.md)、[02](issues/02-component-gallery.md)。
+图标从本项目公开Icon Layer自动收录，新增普通图标及类别模块不额外维护看板名单，只作20px静态预览。工具导航先检查附件/引用输入意图，再冻结/flush并复查，未完成输入保留原Composer；工具页保留Thread资源和布局意图，返回恢复会话。依据[spec](spec.md)及[03反馈票](issues/03-dashboard-feedback.md)。
 
 ## Evidence
 
-[验证记录](validation.md)：完整check（824单测、35architecture、93tooling通过，2项跳过）、19项真实Renderer Electron检查、最终build/package与4项包内原生工作台检查。TDD先证实目标缺口，再实现；Spec/Standards独立[评审](review.md)发现并修复一个附件准入P2，复审无遗留高价值问题。候选源232f76bcce22e37e6cf765298d9d6f15af8817ec，dirty=false，[身份](evidence/candidate.json)。系统IME/VoiceOver及真实provider未覆盖，用户认可pending。
+[验证](validation.md)：完整check（826单测、35architecture、93tooling通过，2项跳过），26项真实Renderer Electron检查（独立工作区、右侧目录常驻/锚点、宽中窄、真实交互和返回资源/侧栏宽度），最终production build/目录包与4项包内原生工作台检查。目标缺口先真实失败再实现；两轮Spec/Standards独立[评审](review.md)无遗留高价值问题。候选源e97c5a05e40fc27ef809ee551943b1be5010c068，dirty=false，[身份](evidence/feedback/candidate.json)。包内交互覆盖层级及系统IME/VoiceOver/真实provider未覆盖项见验证记录；用户认可pending。
 
 ## Merge Danger
 
-Two-way：纯应用视图/路由与局部准入，无数据迁移、权限或新依赖；回滚此范围即可撤销入口和看板。影响一级功能栏、注册路由及Composer工具导航准入；未完成输入拒绝切换，Thread选择/关闭/执行合同保持既有行为。未公开发布；本地草稿，尚未push或创建远端PR。合并不代表用户认可。
+Two-way：应用视图/路由元信息与局部准入，无数据迁移、权限或新依赖；撤销本范围即可撤销入口和看板。影响一级功能栏、Route工作区布局及Composer工具导航准入；卸载仅视图资源，Thread/OMP/存储归属和原选择/关闭规则不变。Icon Layer全量本项目导入仅开发者看板例外，产品消费者继续静态具名。原main未改动，本地草稿未push/建远端PR；合并不代表用户认可。
