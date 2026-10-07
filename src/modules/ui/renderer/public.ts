@@ -23,3 +23,5 @@ export {
 } from "./settings";
 
 export { SearchIcon } from "./components/icons/common";
+
+export { installControlFocusVisibility } from "./focus-visibility";

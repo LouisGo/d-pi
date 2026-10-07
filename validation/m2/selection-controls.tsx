@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { createRoot } from "react-dom/client";
-import { ChoiceGroup, Select } from "../../src/modules/ui/renderer/public";
+import {
+  ChoiceGroup,
+  Select,
+  installControlFocusVisibility,
+} from "../../src/modules/ui/renderer/public";
 import "../../src/app/renderer/styles/app.css";
+
+installControlFocusVisibility(document);
 
 const options = [
   { value: "standard", label: "Standard" },

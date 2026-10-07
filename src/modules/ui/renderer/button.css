@@ -15,9 +15,14 @@
     user-select: none;
     border: 1px solid transparent;
     line-height: 1.4;
+    outline: none;
     transition:
       background-color var(--motion-control),
       color var(--motion-control);
+  }
+  .ui-button:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-ring-offset);
   }
   .ui-button-icon {
     position: relative;

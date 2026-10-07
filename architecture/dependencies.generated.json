@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "ede9cf568218a5d80f762dce4dc1e521cc7e4b68b76147a75b7d0b32258fe568",
+  "inputsHash": "0110f6dd35c2eed0d5abf52487225ac7b1dff7e390b13289adb2ec07108d2844",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 384,
-    "scannedFiles": 384,
+    "sourceFiles": 385,
+    "scannedFiles": 385,
     "unscanned": []
   },
   "modules": [
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 170,
-      "lines": 28656,
+      "lines": 28659,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -400,8 +400,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 6,
-      "lines": 648,
+      "files": 7,
+      "lines": 708,
       "publicEntries": [
         {
           "path": "src/modules/ui/renderer/public.ts",
@@ -6798,6 +6798,18 @@
       "resolution": "module",
       "to": "src/modules/preferences/renderer/public.ts",
       "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/main.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../modules/ui/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
       "targetEnvironment": "renderer"
     },
     {
@@ -22034,6 +22046,18 @@
       "kind": "export",
       "resolution": "module",
       "to": "src/modules/ui/renderer/components/icons/common.tsx",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/ui/renderer/public.ts",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./focus-visibility",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/focus-visibility.ts",
       "targetModule": "ui",
       "targetEnvironment": "renderer"
     },

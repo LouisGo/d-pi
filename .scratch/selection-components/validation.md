@@ -19,3 +19,7 @@
 搜索框左侧加入统一SearchIcon，使用共享主题颜色；搜索行改为图示的下划线样式，Popup通过`initialFocus`显式聚焦输入ref，打开即可输入。图标实现置于UI的Icon Layer，App图标具名出口复用该公开面，UI不反向依赖App。同步现有验证脚本选择器与清理旧样式，未重跑测试、GUI、构建或检查。因此上述通过证据对应补充修改之前，截图不包含最后新增SearchIcon。
 
 工程修改已本地提交；主工作区在本轮期间有新的并发提交，保留隔离分支待集成，未改写主工作区。用户认可pending。
+
+## 存量组件 outline 修正（用户后续要求）
+
+已修改全局 interaction.css 和 Button/Select/TextInput/Switch/ChoiceGroup 现有默认样式：非focus-visible及指针来源一律不显示outline。共享监听器在正式入口安装，并接入隔离Renderer入口；Tab/方向键/键盘激活及独立焦点移动释放指针标记。更新AGENTS与设计合同，取代历史一律无outline描述。按用户要求只改代码，未运行检查、测试、GUI或构建，本轮效果尚未实测。

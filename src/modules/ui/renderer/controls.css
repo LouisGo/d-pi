@@ -8,6 +8,7 @@
     background: var(--surface);
     color: var(--foreground);
     font: inherit;
+    outline: none;
     max-width: 100%;
   }
   .ui-select {
@@ -83,6 +84,7 @@
     font-size: var(--text-small);
   }
   .ui-switch {
+    outline: none;
     width: var(--switch-width);
     height: var(--switch-height);
     padding: var(--switch-padding);
@@ -120,6 +122,7 @@
     flex-wrap: wrap;
   }
   .ui-choice-option {
+    outline: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
