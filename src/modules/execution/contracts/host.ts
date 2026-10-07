@@ -7,6 +7,7 @@ import {
   DismissCommandSchema,
   InteractionViewSchema,
 } from "./interactions";
+import { NativeFailureSummarySchema } from "./native-failure";
 import { QueueCommandSchema } from "./queue";
 import {
   ConfigureSubagentCommandSchema,
@@ -176,6 +177,7 @@ export const HostMessageSchema = z.discriminatedUnion("kind", [
       "inspect",
     ]),
     status: z.enum(["acknowledged", "failed", "unknown"]),
+    nativeFailure: NativeFailureSummarySchema.optional(),
     code: z
       .string()
       .regex(/^[a-z0-9-]{1,64}$/)
@@ -204,8 +206,16 @@ export const HostMessageSchema = z.discriminatedUnion("kind", [
     busy: z.boolean(),
     pendingInteraction: z.boolean(),
   }),
-  z.object({ kind: z.literal("failed"), code: z.string() }),
-  z.object({ kind: z.literal("interrupted"), reason: z.string() }),
+  z.object({
+    kind: z.literal("failed"),
+    code: z.string(),
+    nativeFailure: NativeFailureSummarySchema.optional(),
+  }),
+  z.object({
+    kind: z.literal("interrupted"),
+    reason: z.string(),
+    nativeFailure: NativeFailureSummarySchema.optional(),
+  }),
 ]);
 export type HostMessage = z.infer<typeof HostMessageSchema>;
 
