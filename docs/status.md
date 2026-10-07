@@ -18,7 +18,7 @@
 | M3 | [M3 后续增强](../.scratch/development-foundation/spec.md) | 未实施 | 未交付 | 待认可 | —  | 未启动，保留边界 |
 | M3 | [集成终端 B 方案](../.scratch/integrated-terminal/spec.md) | 未实施 | 未交付 | 待认可 | — [证据1](../.scratch/integrated-terminal/handoff.md) · [证据2](architecture/terminal.md) · [证据3](validation/terminal.md) | B与xterm路线已确认、文档已交付；待关联/退出产品答复及后续开发授权。 |
 | 基建 | [AI 工作流升级](../.scratch/ai-workflow-v13/spec.md) | 工程完成 | 不适用 | 不适用 | — [证据1](../.scratch/ai-workflow-v13/handoff.md) · [证据2](../.scratch/ai-workflow-v13/validation.md) · [证据3](../.scratch/ai-workflow-v13/review.md) · [证据4](../.scratch/ai-workflow-v13/research.md) · [证据5](../.scratch/ai-workflow-v13/m2-retro-2026-10-06.md) · [证据6](../.scratch/ai-workflow-v13/m2-retro-handoff.md) · [证据7](../.scratch/ai-workflow-v13/m2-retro-validation.md) · [证据8](../.scratch/ai-workflow-v13/m2-retro-review.md) · [证据9](../.scratch/ai-workflow-v13/validation-retro-2026-10-07.md) | 2026-10-07按风险验证与窄场景入口工程完成、独立两轴复核通过；PR#7合并后从main进入下一阶段 |
-| 基建 | [Beautiful UI 基础视觉体系升级](../.scratch/beautiful-ui-system/spec.md) | 实施中 | 未交付 | 待认可 | —  | 完成基础控件与真实入口对齐，必要GUI验证及独立评审后Dev交付 |
+| 基建 | [Beautiful UI 基础视觉体系升级](../.scratch/beautiful-ui-system/spec.md) | 工程完成 | 已交付待试用 | 待认可 | — [证据1](../.scratch/beautiful-ui-system/handoff.md) · [证据2](../.scratch/beautiful-ui-system/review.md) · [证据3](../.scratch/beautiful-ui-system/evidence/native-observations.json) | 用户在Dev组件看板及真实入口试用统一视觉体系；认可pending |
 | 基建 | [Codex 式工作台基础布局](../.scratch/codex-workbench-ui/spec.md) | 部分完成 | 已交付待试用 | 待认可 | Dev / codex/thread-layout / 16568d3 [证据1](../.scratch/codex-workbench-ui/feedback-handoff.md) · [证据2](../.scratch/codex-workbench-ui/thread-surface-handoff.md) · [证据3](../.scratch/codex-workbench-ui/sandwich-validation.md) · [证据4](../.scratch/codex-workbench-ui/baseline-refinement.md) | Dev试用Thread工具Modal、TabStrip独立组合与搜索焦点修正；后续消息/Composer细化等用户指令，原A3缺口仍开放 |
 | 基建 | [开发者工具与基础组件看板](../.scratch/component-dashboard/spec.md) | 工程完成 | 已交付待试用 | 待认可 | e97c5a05-b19549d5 [证据1](../.scratch/component-dashboard/handoff.md) · [证据2](../.scratch/component-dashboard/validation.md) · [证据3](../.scratch/component-dashboard/review.md) | 用户试用修正版图标预览、常驻目录与独立工作区；认可pending |
 | 基建 | [领域目录治理](../.scratch/domain-directory-governance/spec.md) | 工程完成 | 不适用 | 不适用 | — [证据1](../.scratch/domain-directory-governance/handoff.md) | 沿用模块机器清单，目录规模不作为硬门槛 |
@@ -39,7 +39,6 @@
 
 | 所属范围 / 任务 | 状态 | 未解决的工程依赖 |
 | --- | --- | --- |
-| [beautiful-ui-system / 01 基础视觉与交互体系升级](../.scratch/beautiful-ui-system/issues/01-foundation-upgrade.md) | claimed | 无；范围以所属规格为准 |
 | [codex-workbench-ui / A3 验证与交付](../.scratch/codex-workbench-ui/issues/04-validation-delivery.md) | claimed | 无；范围以所属规格为准 |
 | [integrated-terminal / 01 可信 PTY 与受管生命周期](../.scratch/integrated-terminal/issues/01-managed-pty.md) | open | 无；范围以所属规格为准 |
 | [integrated-terminal / 02 受限会话协议与屏幕恢复](../.scratch/integrated-terminal/issues/02-session-protocol.md) | open | [01](../.scratch/integrated-terminal/issues/01-managed-pty.md) |
@@ -68,6 +67,7 @@
 - [S5 组合验收](../.scratch/m1-s5-combination-acceptance/spec.md)：不 push、不公开发布、不扩 M2/M3；冷恢复只读，unknown 不自动重发；暂停队列放弃出口继续待决。
 - [M2 首版](../.scratch/m2-first-release/spec.md)：2026-10-06最新授权先push并处理远端PR/提交、让main干净供后续UI开发；允许整合、验证后合并PR#4。不公开发布、不扩M3，冷恢复只读，unknown不自动重发；用户认可pending。
 - [集成终端 B 方案](../.scratch/integrated-terminal/spec.md)：本次仅方案与文档；不开发终端、不新增终端依赖、不远端push/合并；本地合入main已授权；不扩大M2或D-39。
+- [Beautiful UI 基础视觉体系升级](../.scratch/beautiful-ui-system/spec.md)：本地源码交付；GUI证据为隔离Electron真实Renderer，不是provider或固定包验收。
 - [Codex 式工作台基础布局](../.scratch/codex-workbench-ui/spec.md)：用户已授权本UI分支push、PR及合并；不公开发布或发起真实账户请求。
 - [开发者工具与基础组件看板](../.scratch/component-dashboard/spec.md)：仅本地实施与交付；开发者区域固定中文；不改变Thread执行与持久化。
 - [Effect 原生连接生命周期](../.scratch/effect-native-lifecycle/spec.md)：Effect 限定 execution/host 与 execution/main/transport；unknown 不自动重发，冷恢复只读。
@@ -79,4 +79,4 @@
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 - [T3 研究与基础重构](../.scratch/t3-foundations/spec.md)：unknown 不重发，冷恢复只读；native/live 无可靠原生身份时保持独立来源；M3 能力仅作设计储备
 
-<!-- source-sha256: 5b9b6cff9103b2ef69979d104f993854a1e76655d63b7854dd38297ad0ba70e3; sources: 150 -->
+<!-- source-sha256: 499295776bf806d2141c8a396d1d567bd28609b63ca7150587c5e2c696b593a1; sources: 150 -->

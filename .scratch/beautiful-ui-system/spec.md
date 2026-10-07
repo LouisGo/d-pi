@@ -12,10 +12,10 @@ D-31/D-32 延续 Base UI、自有公开 API、Hugeicons、light/dark 和唯一�
 
 验收：控件组合协调、light/dark 和窄窗可用、hover/active/selected/disabled/invalid 与 focus-visible 区分；鼠标无 outline，键盘可见；Select 搜索不改值、Esc 返回焦点；Checkbox/Slider/Disclosure 保留原生键盘及表单语义。实机验证仅覆盖本轮变化；不请求真实 provider、不打包、不远端发布。
 
-工程：实施中。试用：未交付。用户认可：pending。
+工程：完成。试用：源码 Dev 已交付，见[交接](handoff.md)。用户认可：pending。65 项定向测试、Renderer 类型检查、构建与相关门禁通过；隔离 Electron 完成本轮必要的视觉和键盘交互观测。评审与证据边界见[评审记录](review.md)。
 
 ```project-status
-[{"id":"beautiful-ui-system","title":"Beautiful UI 基础视觉体系升级","phase":"基建","engineering":"in-progress","trial":"not-delivered","acceptance":"pending","next":"完成基础控件与真实入口对齐，必要GUI验证及独立评审后Dev交付"}]
+[{"id":"beautiful-ui-system","title":"Beautiful UI 基础视觉体系升级","phase":"基建","engineering":"complete","trial":"delivered","acceptance":"pending","evidence":["handoff.md","review.md","evidence/native-observations.json"],"next":"用户在Dev组件看板及真实入口试用统一视觉体系；认可pending","constraints":"本地源码交付；GUI证据为隔离Electron真实Renderer，不是provider或固定包验收。"}]
 ```
 
 任务：[01](issues/01-foundation-upgrade.md)。
