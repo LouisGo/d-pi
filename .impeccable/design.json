@@ -1,0 +1,399 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-07T14:39:31.141768Z",
+  "title": "Design System: d-pi",
+  "extensions": {
+    "colorMeta": {
+      "background": {
+        "role": "neutral",
+        "displayName": "background",
+        "canonical": "var(--background)"
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "surface",
+        "canonical": "var(--surface)"
+      },
+      "sidebar": {
+        "role": "neutral",
+        "displayName": "sidebar",
+        "canonical": "var(--sidebar)"
+      },
+      "statusbar-background": {
+        "role": "neutral",
+        "displayName": "statusbar-background",
+        "canonical": "var(--statusbar-background)"
+      },
+      "foreground": {
+        "role": "neutral",
+        "displayName": "foreground",
+        "canonical": "var(--foreground)"
+      },
+      "primary": {
+        "role": "primary",
+        "displayName": "primary",
+        "canonical": "var(--primary)"
+      },
+      "primary-foreground": {
+        "role": "primary",
+        "displayName": "primary-foreground",
+        "canonical": "var(--primary-foreground)"
+      },
+      "primary-hover": {
+        "role": "primary",
+        "displayName": "primary-hover",
+        "canonical": "var(--primary-hover)"
+      },
+      "primary-active": {
+        "role": "primary",
+        "displayName": "primary-active",
+        "canonical": "var(--primary-active)"
+      },
+      "emphasis": {
+        "role": "primary",
+        "displayName": "emphasis",
+        "canonical": "var(--emphasis)"
+      },
+      "emphasis-foreground": {
+        "role": "primary",
+        "displayName": "emphasis-foreground",
+        "canonical": "var(--emphasis-foreground)"
+      },
+      "emphasis-hover": {
+        "role": "primary",
+        "displayName": "emphasis-hover",
+        "canonical": "var(--emphasis-hover)"
+      },
+      "emphasis-active": {
+        "role": "primary",
+        "displayName": "emphasis-active",
+        "canonical": "var(--emphasis-active)"
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "accent",
+        "canonical": "var(--accent)"
+      },
+      "accent-foreground": {
+        "role": "primary",
+        "displayName": "accent-foreground",
+        "canonical": "var(--accent-foreground)"
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "muted",
+        "canonical": "var(--muted)"
+      },
+      "muted-foreground": {
+        "role": "neutral",
+        "displayName": "muted-foreground",
+        "canonical": "var(--muted-foreground)"
+      },
+      "muted-hover": {
+        "role": "neutral",
+        "displayName": "muted-hover",
+        "canonical": "var(--muted-hover)"
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "border",
+        "canonical": "var(--border)"
+      },
+      "border-strong": {
+        "role": "neutral",
+        "displayName": "border-strong",
+        "canonical": "var(--border-strong)"
+      },
+      "control-border": {
+        "role": "neutral",
+        "displayName": "control-border",
+        "canonical": "var(--control-border)"
+      },
+      "border-soft": {
+        "role": "neutral",
+        "displayName": "border-soft",
+        "canonical": "var(--border-soft)"
+      },
+      "field": {
+        "role": "neutral",
+        "displayName": "field",
+        "canonical": "var(--field)"
+      },
+      "placeholder": {
+        "role": "neutral",
+        "displayName": "placeholder",
+        "canonical": "var(--placeholder)"
+      },
+      "destructive": {
+        "role": "neutral",
+        "displayName": "destructive",
+        "canonical": "var(--destructive)"
+      },
+      "overlay": {
+        "role": "neutral",
+        "displayName": "overlay",
+        "canonical": "var(--overlay)"
+      },
+      "code-selection": {
+        "role": "neutral",
+        "displayName": "code-selection",
+        "canonical": "var(--code-selection)"
+      },
+      "diff-added-background": {
+        "role": "neutral",
+        "displayName": "diff-added-background",
+        "canonical": "var(--diff-added-background)"
+      },
+      "diff-removed-background": {
+        "role": "neutral",
+        "displayName": "diff-removed-background",
+        "canonical": "var(--diff-removed-background)"
+      }
+    },
+    "typographyMeta": {
+      "heading": {
+        "displayName": "heading",
+        "purpose": "页面标题"
+      },
+      "title": {
+        "displayName": "title",
+        "purpose": "区域标题"
+      },
+      "body": {
+        "displayName": "body",
+        "purpose": "界面正文"
+      },
+      "reading": {
+        "displayName": "reading",
+        "purpose": "消息阅读与输入正文"
+      },
+      "small": {
+        "displayName": "small",
+        "purpose": "辅助信息与 Tooltip"
+      },
+      "control": {
+        "displayName": "control",
+        "purpose": "控件文字与行高"
+      }
+    },
+    "shadows": [
+      {
+        "name": "control",
+        "value": "var(--shadow-control)",
+        "purpose": "控件实体的浅层深度"
+      },
+      {
+        "name": "raised",
+        "value": "var(--shadow-raised)",
+        "purpose": "Select/菜单浮层"
+      },
+      {
+        "name": "overlay",
+        "value": "var(--shadow-overlay)",
+        "purpose": "Modal/Tooltip/状态预览"
+      },
+      {
+        "name": "inset",
+        "value": "var(--shadow-inset)",
+        "purpose": "集中内凹角色；按真实消费者使用"
+      },
+      {
+        "name": "filled",
+        "value": "var(--shadow-filled)",
+        "purpose": "primary 按钮填充深度"
+      }
+    ],
+    "motion": [
+      {
+        "name": "control",
+        "value": "var(--motion-control)",
+        "purpose": "控件状态 transition"
+      },
+      {
+        "name": "popup",
+        "value": "var(--motion-popup)",
+        "purpose": "浮层 opacity/scale transition"
+      },
+      {
+        "name": "ease-out",
+        "value": "var(--ease-out)",
+        "purpose": "共享缓动"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Button default",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "中性主操作",
+      "html": "<button class=\"ds-button ds-button-primary\">中性主操作</button>",
+      "css": ".ds-button {display: inline-flex; align-items: center; justify-content: center; gap: calc(var(--layout-gap) / 2); min-height: var(--control-height); flex-shrink: 0; padding: 0 calc(var(--control-padding) + var(--spacing) / 2); border-radius: var(--radius-pill); font-size: var(--text-body); font-weight: 500; white-space: nowrap; cursor: default; user-select: none; border: 1px solid transparent; line-height: var(--control-line-height); outline: none; transition: background-color var(--motion-control) var(--ease-out), color var(--motion-control) var(--ease-out), transform var(--motion-control) var(--ease-out), box-shadow var(--motion-control) var(--ease-out);} .ds-button:focus-visible {outline: var(--focus-ring); outline-offset: var(--focus-ring-offset);} .ds-button:active:not(:disabled) {transform: scale(0.97);} .ds-button:disabled {opacity: 0.5; cursor: default;} .ds-button-primary {color: var(--primary-foreground); background: var(--primary); box-shadow: var(--shadow-filled);} .ds-button-primary:hover:not(:disabled) {background: var(--primary-hover);} .ds-button-primary:active:not(:disabled) {background: var(--primary-active);} @media (prefers-reduced-motion: reduce) { .ds-button { transition: none; } }"
+    },
+    {
+      "name": "Button accent",
+      "kind": "button",
+      "refersTo": "button-emphasis",
+      "description": "蓝色强调动作；真实 API 为 accent",
+      "html": "<button class=\"ds-button ds-button-accent\">蓝色强调动作</button>",
+      "css": ".ds-button {display: inline-flex; align-items: center; justify-content: center; gap: calc(var(--layout-gap) / 2); min-height: var(--control-height); flex-shrink: 0; padding: 0 calc(var(--control-padding) + var(--spacing) / 2); border-radius: var(--radius-pill); font-size: var(--text-body); font-weight: 500; white-space: nowrap; cursor: default; user-select: none; border: 1px solid transparent; line-height: var(--control-line-height); outline: none; transition: background-color var(--motion-control) var(--ease-out), color var(--motion-control) var(--ease-out), transform var(--motion-control) var(--ease-out), box-shadow var(--motion-control) var(--ease-out);} .ds-button:focus-visible {outline: var(--focus-ring); outline-offset: var(--focus-ring-offset);} .ds-button:active:not(:disabled) {transform: scale(0.97);} .ds-button:disabled {opacity: 0.5; cursor: default;} .ds-button-accent {color: var(--emphasis-foreground); background: var(--emphasis);} .ds-button-accent:hover:not(:disabled) {background: var(--emphasis-hover);} .ds-button-accent:active:not(:disabled) {background: var(--emphasis-active);} @media (prefers-reduced-motion: reduce) { .ds-button { transition: none; } }"
+    },
+    {
+      "name": "Button secondary",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "次要实体动作",
+      "html": "<button class=\"ds-button ds-button-secondary\">次要实体动作</button>",
+      "css": ".ds-button {display: inline-flex; align-items: center; justify-content: center; gap: calc(var(--layout-gap) / 2); min-height: var(--control-height); flex-shrink: 0; padding: 0 calc(var(--control-padding) + var(--spacing) / 2); border-radius: var(--radius-pill); font-size: var(--text-body); font-weight: 500; white-space: nowrap; cursor: default; user-select: none; border: 1px solid transparent; line-height: var(--control-line-height); outline: none; transition: background-color var(--motion-control) var(--ease-out), color var(--motion-control) var(--ease-out), transform var(--motion-control) var(--ease-out), box-shadow var(--motion-control) var(--ease-out);} .ds-button:focus-visible {outline: var(--focus-ring); outline-offset: var(--focus-ring-offset);} .ds-button:active:not(:disabled) {transform: scale(0.97);} .ds-button:disabled {opacity: 0.5; cursor: default;} .ds-button-secondary {background: var(--surface); color: var(--foreground); border-color: var(--border-strong); box-shadow: var(--shadow-control);} .ds-button-secondary:hover:not(:disabled) {background: var(--muted-hover);} .ds-button-secondary:active:not(:disabled) {background: var(--accent); color: var(--accent-foreground);} @media (prefers-reduced-motion: reduce) { .ds-button { transition: none; } }"
+    },
+    {
+      "name": "Button ghost",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "透明轻动作",
+      "html": "<button class=\"ds-button ds-button-ghost\">透明轻动作</button>",
+      "css": ".ds-button {display: inline-flex; align-items: center; justify-content: center; gap: calc(var(--layout-gap) / 2); min-height: var(--control-height); flex-shrink: 0; padding: 0 calc(var(--control-padding) + var(--spacing) / 2); border-radius: var(--radius-pill); font-size: var(--text-body); font-weight: 500; white-space: nowrap; cursor: default; user-select: none; border: 1px solid transparent; line-height: var(--control-line-height); outline: none; transition: background-color var(--motion-control) var(--ease-out), color var(--motion-control) var(--ease-out), transform var(--motion-control) var(--ease-out), box-shadow var(--motion-control) var(--ease-out);} .ds-button:focus-visible {outline: var(--focus-ring); outline-offset: var(--focus-ring-offset);} .ds-button:active:not(:disabled) {transform: scale(0.97);} .ds-button:disabled {opacity: 0.5; cursor: default;} .ds-button-ghost {color: var(--foreground); background: transparent;} .ds-button-ghost:hover:not(:disabled) {background: var(--muted-hover);} .ds-button-ghost:active:not(:disabled),\n  .ds-button-navigation:active:not(:disabled) {color: var(--accent-foreground); background: var(--accent);} @media (prefers-reduced-motion: reduce) { .ds-button { transition: none; } }"
+    },
+    {
+      "name": "Button navigation",
+      "kind": "nav",
+      "refersTo": "button-navigation",
+      "description": "导航位置反馈",
+      "html": "<button class=\"ds-button ds-button-navigation\">导航位置反馈</button>",
+      "css": ".ds-button {display: inline-flex; align-items: center; justify-content: center; gap: calc(var(--layout-gap) / 2); min-height: var(--control-height); flex-shrink: 0; padding: 0 calc(var(--control-padding) + var(--spacing) / 2); border-radius: var(--radius-pill); font-size: var(--text-body); font-weight: 500; white-space: nowrap; cursor: default; user-select: none; border: 1px solid transparent; line-height: var(--control-line-height); outline: none; transition: background-color var(--motion-control) var(--ease-out), color var(--motion-control) var(--ease-out), transform var(--motion-control) var(--ease-out), box-shadow var(--motion-control) var(--ease-out);} .ds-button:focus-visible {outline: var(--focus-ring); outline-offset: var(--focus-ring-offset);} .ds-button:active:not(:disabled) {transform: scale(0.97);} .ds-button:disabled {opacity: 0.5; cursor: default;} .ds-button-navigation {border-radius: var(--radius-control); color: var(--muted-foreground); background: transparent;} .ds-button-navigation:hover:not(:disabled) {color: var(--foreground); background: var(--muted-hover);} .ds-button-navigation:active:not(:disabled) {color: var(--accent-foreground); background: var(--accent);} .ds-button-ghost:active:not(:disabled),\n  .ds-button-navigation:active:not(:disabled) {color: var(--accent-foreground); background: var(--accent);} .ds-button-navigation[aria-selected=\"true\"],\n  .ds-button-navigation[aria-current=\"page\"],\n  .ds-button-navigation[aria-pressed=\"true\"] {color: var(--accent-foreground); background: var(--accent);} .ds-button-navigation:active:not(:disabled),\n  .ds-button-status:active:not(:disabled) {transform: none;} @media (prefers-reduced-motion: reduce) { .ds-button { transition: none; } }"
+    },
+    {
+      "name": "Button destructive",
+      "kind": "button",
+      "refersTo": "button-destructive",
+      "description": "破坏操作",
+      "html": "<button class=\"ds-button ds-button-destructive\">破坏操作</button>",
+      "css": ".ds-button {display: inline-flex; align-items: center; justify-content: center; gap: calc(var(--layout-gap) / 2); min-height: var(--control-height); flex-shrink: 0; padding: 0 calc(var(--control-padding) + var(--spacing) / 2); border-radius: var(--radius-pill); font-size: var(--text-body); font-weight: 500; white-space: nowrap; cursor: default; user-select: none; border: 1px solid transparent; line-height: var(--control-line-height); outline: none; transition: background-color var(--motion-control) var(--ease-out), color var(--motion-control) var(--ease-out), transform var(--motion-control) var(--ease-out), box-shadow var(--motion-control) var(--ease-out);} .ds-button:focus-visible {outline: var(--focus-ring); outline-offset: var(--focus-ring-offset);} .ds-button:active:not(:disabled) {transform: scale(0.97);} .ds-button:disabled {opacity: 0.5; cursor: default;} .ds-button-destructive {color: var(--destructive); background: var(--surface); border-color: var(--border);} .ds-button-destructive:hover:not(:disabled) {background: color-mix(in srgb, var(--destructive) 9%, var(--surface));} .ds-button-destructive:active:not(:disabled) {background: color-mix(in srgb, var(--destructive) 16%, var(--surface));} @media (prefers-reduced-motion: reduce) { .ds-button { transition: none; } }"
+    },
+    {
+      "name": "TextInput",
+      "kind": "input",
+      "refersTo": "text-input",
+      "description": "真实原生输入外观；标签与错误由 FormField 组合。",
+      "html": "<label>名称<input class=\"ds-input\" placeholder=\"输入名称\"></label>",
+      "css": ".ds-select,\n  .ds-input {min-height: var(--control-height); height: var(--control-height); padding: 0 var(--control-padding); border: 1px solid var(--border); border-radius: var(--radius-control); background: var(--field); color: var(--foreground); font: inherit; line-height: var(--control-line-height); transition: background-color var(--motion-control) var(--ease-out), border-color var(--motion-control) var(--ease-out), box-shadow var(--motion-control) var(--ease-out); outline: none; max-width: 100%;} .ds-input {min-height: var(--control-height); height: var(--control-height); padding: 0 var(--control-padding); border: 1px solid var(--border); border-radius: var(--radius-control); background: var(--field); color: var(--foreground); font: inherit; line-height: var(--control-line-height); transition: background-color var(--motion-control) var(--ease-out), border-color var(--motion-control) var(--ease-out), box-shadow var(--motion-control) var(--ease-out); outline: none; max-width: 100%;} .ds-input:hover:not(:disabled):not([readonly]) {border-color: var(--border-strong);} .ds-input::placeholder {color: var(--placeholder); opacity: 1;} .ds-input[readonly] {background: var(--background);} .ds-input[aria-invalid=\"true\"] {border-color: var(--destructive);} .ds-input:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-ring-offset); } .ds-input:disabled { opacity: 0.5; } @media (prefers-reduced-motion: reduce) { .ds-input { transition: none; } }"
+    },
+    {
+      "name": "TextArea",
+      "kind": "input",
+      "refersTo": "text-area",
+      "description": "真实多行输入配方，保留草稿与原生 resize。",
+      "html": "<label>草稿<textarea class=\"ds-input ds-textarea\">保留的草稿</textarea></label>",
+      "css": ".ds-select,\n  .ds-input {min-height: var(--control-height); height: var(--control-height); padding: 0 var(--control-padding); border: 1px solid var(--border); border-radius: var(--radius-control); background: var(--field); color: var(--foreground); font: inherit; line-height: var(--control-line-height); transition: background-color var(--motion-control) var(--ease-out), border-color var(--motion-control) var(--ease-out), box-shadow var(--motion-control) var(--ease-out); outline: none; max-width: 100%;} .ds-input {min-height: var(--control-height); height: var(--control-height); padding: 0 var(--control-padding); border: 1px solid var(--border); border-radius: var(--radius-control); background: var(--field); color: var(--foreground); font: inherit; line-height: var(--control-line-height); transition: background-color var(--motion-control) var(--ease-out), border-color var(--motion-control) var(--ease-out), box-shadow var(--motion-control) var(--ease-out); outline: none; max-width: 100%;} .ds-input:hover:not(:disabled):not([readonly]) {border-color: var(--border-strong);} .ds-input::placeholder {color: var(--placeholder); opacity: 1;} .ds-input[readonly] {background: var(--background);} .ds-input[aria-invalid=\"true\"] {border-color: var(--destructive);} .ds-input:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-ring-offset); } .ds-input:disabled { opacity: 0.5; } @media (prefers-reduced-motion: reduce) { .ds-input { transition: none; } } .ds-textarea {height: auto; min-height: var(--editor-height); padding-block: calc(var(--spacing) * 2); resize: vertical; line-height: 1.6;}"
+    },
+    {
+      "name": "Checkbox",
+      "kind": "input",
+      "refersTo": "checkbox",
+      "description": "原生 checkbox：未选、选中、disabled 与 indeterminate 外观。",
+      "html": "<label><input type=\"checkbox\" class=\"ds-checkbox\"> 启用选项</label>",
+      "css": ".ds-checkbox {appearance: none; display: inline-grid; place-content: center; vertical-align: middle; flex-shrink: 0; width: 1rem; height: 1rem; margin: 0; border: 1px solid var(--control-border); border-radius: calc(var(--radius-chip) / 2); color: var(--primary-foreground); background: var(--surface); box-shadow: var(--shadow-control); transition: background-color var(--motion-control) var(--ease-out), border-color var(--motion-control) var(--ease-out);} .ds-checkbox::before {content: \"\"; width: 0.3rem; height: 0.55rem; border: solid currentColor; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg) translate(-1px, -1px); opacity: 0;} .ds-checkbox:checked {background: var(--primary); border-color: var(--primary);} .ds-checkbox:checked::before {opacity: 1;} .ds-checkbox:indeterminate {background: var(--primary); border-color: var(--primary);} .ds-checkbox:indeterminate::before {width: 0.5rem; height: 0; border-width: 0 0 1.5px; transform: none; opacity: 1;} .ds-checkbox:hover:not(:disabled) {border-color: var(--foreground);} .ds-checkbox:active:not(:disabled) {scale: 0.94;} .ds-checkbox:disabled {opacity: 0.5;} .ds-checkbox:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-ring-offset); } @media (prefers-reduced-motion: reduce) { .ds-checkbox { transition: none; } }"
+    },
+    {
+      "name": "Slider",
+      "kind": "input",
+      "refersTo": "slider",
+      "description": "Electron 的原生 range；支持真实 min/max/step。",
+      "html": "<label>缩放<input type=\"range\" class=\"ds-slider\" min=\"100\" max=\"300\" step=\"25\" value=\"175\"></label>",
+      "css": ".ds-slider {appearance: none; vertical-align: middle; height: var(--control-height); background: transparent; min-width: 0; max-width: 100%; accent-color: var(--primary);} .ds-slider::-webkit-slider-runnable-track {height: var(--spacing); background: var(--border-strong); border-radius: var(--radius-pill);} .ds-slider::-webkit-slider-thumb {appearance: none; width: 1rem; height: 1rem; margin-top: calc(var(--spacing) * -1.5); background: var(--primary); border-radius: var(--radius-pill); box-shadow: var(--shadow-control); transition: scale var(--motion-control) var(--ease-out);} .ds-slider:hover:not(:disabled)::-webkit-slider-thumb {scale: 1.1;} .ds-slider:active:not(:disabled)::-webkit-slider-thumb {scale: 1.15;} .ds-slider:disabled {opacity: 0.5;} .ds-slider:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-ring-offset); } @media (prefers-reduced-motion: reduce) { .ds-slider::-webkit-slider-thumb { transition: none; } }"
+    },
+    {
+      "name": "Disclosure",
+      "kind": "custom",
+      "refersTo": "disclosure",
+      "description": "真实 details/summary；此样本可原生展开。",
+      "html": "<details class=\"ds-disclosure\"><summary class=\"ds-disclosure-trigger\">详情</summary><p>展开的详情内容</p></details>",
+      "css": ".ds-disclosure {min-width: 0;} .ds-disclosure-trigger {padding: calc(var(--spacing) * 1.5) calc(var(--spacing) * 2); border-radius: var(--radius-control); color: var(--muted-foreground); font-weight: 500; line-height: var(--control-line-height); transition: background-color var(--motion-control) var(--ease-out), color var(--motion-control) var(--ease-out);} .ds-disclosure[open] > .ds-disclosure-trigger {color: var(--foreground);} .ds-disclosure-trigger::marker {color: var(--muted-foreground); font-size: var(--text-small);} .ds-disclosure-trigger:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-ring-offset); } @media (prefers-reduced-motion: reduce) { .ds-disclosure-trigger { transition: none; } }"
+    },
+    {
+      "name": "Select trigger",
+      "kind": "input",
+      "refersTo": "select",
+      "description": "真实触发器的静态外观；完整搜索、选择和焦点逻辑由 Select<T>/Base UI 提供。",
+      "html": "<button type=\"button\" class=\"ds-select\" aria-label=\"模型\">模型 A<span class=\"ds-select-chevron\" aria-hidden=\"true\"></span></button>",
+      "css": ".ds-select,\n  .ds-input {min-height: var(--control-height); height: var(--control-height); padding: 0 var(--control-padding); border: 1px solid var(--border); border-radius: var(--radius-control); background: var(--field); color: var(--foreground); font: inherit; line-height: var(--control-line-height); transition: background-color var(--motion-control) var(--ease-out), border-color var(--motion-control) var(--ease-out), box-shadow var(--motion-control) var(--ease-out); outline: none; max-width: 100%;} .ds-select {display: inline-flex; align-items: center; justify-content: space-between; gap: calc(var(--spacing) * 3); min-width: calc(var(--spacing) * 32);} .ds-select:hover:not(:disabled) {background: var(--muted-hover);} .ds-select-chevron {width: calc(var(--spacing) * 1.8); height: calc(var(--spacing) * 1.8); border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg) translateY(-2px); color: var(--muted-foreground);} .ds-select:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-ring-offset); } @media (prefers-reduced-motion: reduce) { .ds-select { transition: none; } }"
+    },
+    {
+      "name": "Switch",
+      "kind": "custom",
+      "refersTo": "switch",
+      "description": "Base UI 受控 Switch 的静态 checked 外观。",
+      "html": "<button class=\"ds-switch\" type=\"button\" role=\"switch\" aria-checked=\"true\" aria-label=\"自动保存\" data-checked><span class=\"ds-switch-thumb\"></span></button>",
+      "css": ".ds-switch {outline: none; width: var(--switch-width); height: var(--switch-height); padding: var(--switch-padding); display: inline-flex; align-items: center; border: 0; border-radius: var(--switch-height); background: var(--border-strong); flex-shrink: 0; transition: background-color var(--motion-control) var(--ease-out), filter var(--motion-control);} .ds-switch:hover:not([data-disabled]) {filter: brightness(0.94);} .ds-switch:active:not([data-disabled]) .ds-switch-thumb {scale: 0.93;} .ds-switch[data-checked] {background: var(--primary);} .ds-switch-thumb {scale: 0.93;} .ds-switch[data-checked] .ds-switch-thumb {transform: translateX( calc( var(--switch-width) - var(--switch-thumb-size) - var(--switch-padding) * 2 ) );} .ds-switch:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-ring-offset); } @media (prefers-reduced-motion: reduce) { .ds-switch, .ds-switch-thumb { transition: none; } }"
+    },
+    {
+      "name": "ChoiceGroup",
+      "kind": "custom",
+      "refersTo": "choice-option-selected",
+      "description": "两个选项的 Radio 组合静态预览，运行时由 Base UI 管理键盘。",
+      "html": "<div class=\"ds-choice-group\" role=\"radiogroup\" aria-label=\"输入方式\"><button class=\"ds-choice-option\" role=\"radio\" aria-checked=\"true\" data-checked>立即</button><button class=\"ds-choice-option\" role=\"radio\" aria-checked=\"false\">稍后</button></div>",
+      "css": ".ds-choice-group {display: inline-flex; gap: var(--spacing); flex-wrap: wrap;} .ds-choice-option {outline: none; display: inline-flex; align-items: center; justify-content: center; min-height: var(--control-height); padding: calc(var(--spacing) * 1.5) var(--control-padding); border-radius: var(--control-height); color: var(--muted-foreground); line-height: var(--control-line-height); transition: background-color var(--motion-control) var(--ease-out), color var(--motion-control) var(--ease-out), transform var(--motion-control) var(--ease-out);} .ds-choice-option[data-checked] {background: var(--muted); color: var(--foreground);} .ds-choice-option:hover:not([data-disabled]) {background: var(--muted-hover); color: var(--foreground);} .ds-choice-option:active:not([data-disabled]) {transform: scale(0.97);} .ds-choice-option:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-ring-offset); } @media (prefers-reduced-motion: reduce) { .ds-choice-option { transition: none; } }"
+    },
+    {
+      "name": "Tooltip",
+      "kind": "custom",
+      "refersTo": "tooltip",
+      "description": "真实 Tooltip 表面的静态样本，触发、Esc 与 portal 由 Base UI 提供。",
+      "html": "<div class=\"ds-tooltip\" role=\"tooltip\">显示完整构建信息</div>",
+      "css": ".ds-tooltip {padding: calc(var(--layout-gap) / 2) var(--control-padding); color: var(--foreground); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-control); font-size: var(--text-small); box-shadow: var(--shadow-overlay);} .ds-tooltip { transition: opacity var(--motion-popup) var(--ease-out), scale var(--motion-popup) var(--ease-out); } .ds-tooltip:is([data-starting-style], [data-ending-style]) { opacity: 0; scale: 0.98; } @media (prefers-reduced-motion: reduce) { .ds-tooltip { transition: none; } }"
+    },
+    {
+      "name": "File panel",
+      "kind": "card",
+      "refersTo": "file-panel",
+      "description": "既有文件面板容器外观，未建立新的 Card API。",
+      "html": "<section class=\"ds-file-panel\"><strong>文件</strong><p>共享边界和面板间距。</p></section>",
+      "css": ".ds-file-panel {border: 1px solid var(--border); border-radius: var(--radius); padding: var(--panel-padding);}"
+    }
+  ],
+  "narrative": {
+    "northStar": "清晰的紧凑工作台",
+    "overview": "d-pi 的基础视觉体系跟随本轮已授权的 Beautiful UI 对照：常规动作以中性对比组织，蓝色只承担明确强调与可见焦点，柔和选中底面表达当前位置。共享基础控件、配套浮层与业务组合使用同一套角色。\n\n工作区域以 Operate 的扫描与操作效率为中心，阅读区域沿用较舒适的文字角色。胶囊文字动作、较小圆角的输入与图标动作、克制边界和浅层阴影形成连续的视觉语法；light/dark 分别在集中主题源中映射。既定产品布局、编辑器、执行状态和资源生命周期继续沿用。",
+    "keyCharacteristics": [
+      "唯一紧凑布局，默认控件高度消费 --control-height。",
+      "中性 primary、蓝色 emphasis、柔和 accent 分工明确。",
+      "文字动作胶囊化，输入、图标与导航使用控件圆角。",
+      "颜色、尺寸、深度和动效从同一 CSS 来源传播。"
+    ],
+    "rules": [
+      {
+        "name": "One Source",
+        "body": "共享视觉值只在 tokens.css 定义；frontmatter、sidecar、Tailwind 与组件均引用该来源，不复制等值色板或尺寸表。",
+        "section": "colors"
+      },
+      {
+        "name": "Three Roles",
+        "body": "primary 表达常规主操作，emphasis 表达明确强调，accent 表达柔和选中底面；不要按当前颜色互换用途。",
+        "section": "colors"
+      },
+      {
+        "name": "Shallow Depth",
+        "body": "工作区依靠底面和边界分层，阴影留给有相应角色的控件与浮层，不逐层包装卡片。",
+        "section": "elevation"
+      },
+      {
+        "name": "Visible Focus",
+        "body": "outline 只用于键盘或无障碍的可见焦点；普通 focus、hover、active 和鼠标输入焦点不绘制 outline。",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "Do 使用公开组件的真实 variant/size 与同源 token，调用方只安排允许的布局。",
+      "Do 同时考虑 light/dark、长文阅读、窄窗、disabled/invalid 与键盘可见焦点。",
+      "Do 保留原生输入、范围、展开及 Base UI 的键盘与焦点语义。",
+      "Do 用现有尺寸标尺组合控件；需要新共享角色时在 tokens.css 定义并检查消费者。"
+    ],
+    "donts": [
+      "Don't 在页面、DESIGN.md 或 sidecar 另建等值视觉常量。",
+      "Don't 将 Button 的 accent API 与 --accent 选中底面混为一谈。",
+      "Don't 给导航/状态行添加按下位移，或把普通鼠标焦点改成 outline。",
+      "Don't 为局部页面重绘共享控件、关闭设计 lint、引入第二套图标库或恢复密度切换。",
+      "Don't 把截图、工程检查或设计工具结果写成用户认可、真实 provider 或固定包验证。"
+    ]
+  }
+}
