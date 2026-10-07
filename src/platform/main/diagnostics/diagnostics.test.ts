@@ -38,6 +38,25 @@ it("flood remains bounded and persisted lines retain correlation", async () => {
   });
   rmSync(directory, { recursive: true, force: true });
 });
+it("preserves the new editor history operation's identity at the raw persistence boundary", async () => {
+  const directory = mkdtempSync(join(tmpdir(), "d-pi-history-log-"));
+  const logger = new Diagnostics(directory);
+  try {
+    logger.record({
+      ...context,
+      operation: "attachments:history-update",
+      threadId: crypto.randomUUID(),
+    });
+    await logger.close();
+    expect(
+      JSON.parse(readFileSync(join(directory, "main.jsonl"), "utf8")),
+    ).toMatchObject({ ...context, operation: "attachments:history-update" });
+  } finally {
+    await logger.close();
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 it("writer failure is visible, bounded and does not reject business flow", async () => {
   const directory = mkdtempSync(join(tmpdir(), "d-pi-logs-"));
   const path = join(directory, "not-directory");

@@ -94,7 +94,7 @@ T3 的 [timelineScrollAnchoring](https://github.com/pingdotgg/t3code/blob/10f39e
 
 ## 九 确定性回放与可测收益
 
-T3 的 [ProviderReplayGate](https://github.com/pingdotgg/t3code/blob/10f39eb9ac80c9a4b7f5097575dd2addc3b6f631/apps/server/src/orchestration-v2/testkit/ProviderReplayGate.testkit.ts)在标记处等待测试释放。[PiAdapterV2 testkit](https://github.com/pingdotgg/t3code/blob/10f39eb9ac80c9a4b7f5097575dd2addc3b6f631/apps/server/src/orchestration-v2/testkit/PiAdapterV2.testkit.ts)是 stdio transcript controller，固定版并未将通用 replayGate 接到 Pi registry；真实 gate 集成可查 [CodexAdapterV2 testkit](https://github.com/pingdotgg/t3code/blob/10f39eb9ac80c9a4b7f5097575dd2addc3b6f631/apps/server/src/orchestration-v2/testkit/CodexAdapterV2.testkit.ts)。因此借鉴两种机制的组合，不能宣称复制了 Pi 已有 gate。
+T3 的 [ProviderReplayGate](https://github.com/pingdotgg/t3code/blob/10f39eb9ac80c9a4b7f5097575dd2addc3b6f631/apps/server/src/orchestration-v2/testkit/ProviderReplayGate.testkit.ts)在标记处等待测试释放。[PiAdapterV2 testkit](https://github.com/pingdotgg/t3code/blob/10f39eb9ac80c9a4b7f5097575dd2addc3b6f631/apps/server/src/orchestration-v2/Adapters/PiAdapterV2.testkit.ts)是 stdio transcript controller，固定版并未将通用 replayGate 接到 Pi registry；真实 gate 集成可查 [CodexAdapterV2 testkit](https://github.com/pingdotgg/t3code/blob/10f39eb9ac80c9a4b7f5097575dd2addc3b6f631/apps/server/src/orchestration-v2/Adapters/CodexAdapterV2.testkit.ts)。因此借鉴两种机制的组合，不能宣称复制了 Pi 已有 gate。
 
 d-pi 的回放必须驱动当前 FrameDecoder/schema、Host 观察和 ConversationProjection，而非另一套测试 reducer。首批为 ACK 后断流、Stop 后尾事件与物理退出、旧 generation 迟到响应；再复用现有 unknown/truncated chunk/并发 Thread 样本。test-only transport 不进入生产写通道，不执行模型网络、Git 写或真实 prompt。真实 SDK smoke 与 fixture 各自回答协议漂移和确定性行为。
 

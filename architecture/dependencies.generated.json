@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "4ab8a2f19f339f5da5406980e0ab7b5ecfada9a771e8dd1d2b3c8edcd9b2e9ff",
+  "inputsHash": "613e80984e59adc9babe5f33c1ce7a49fcc6b695022adee7d55edce788b6a560",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 416,
@@ -60,7 +60,7 @@
       ],
       "materialized": true,
       "files": 28,
-      "lines": 2939,
+      "lines": 2958,
       "publicEntries": [
         {
           "path": "src/platform/main/storage/public.ts",
@@ -102,7 +102,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 20,
-      "lines": 2653,
+      "lines": 2656,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
