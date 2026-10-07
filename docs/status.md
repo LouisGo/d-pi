@@ -16,6 +16,7 @@
 | M1 | [S5 组合验收](../.scratch/m1-s5-combination-acceptance/spec.md) | 工程完成 | 已反馈待处理/复试 | 待认可 | 0.1.0-s5.0 / 4b003e84-4c6aa4ad [证据1](../.scratch/m1-s5-combination-acceptance/handoff.md) · [证据2](../.scratch/m1-s5-combination-acceptance/evidence/acceptance.md) · [证据3](../.scratch/m1-s5-combination-acceptance/evidence/final-s5-result.json) · [证据4](../.scratch/m1-s5-combination-acceptance/evidence/frozen-review.md) | M1 工程完成、用户未认可；入口反馈由已授权 M2 接续处理 |
 | M2 | [M2 首版](../.scratch/m2-first-release/spec.md) | 实施中 | 已交付待试用 | 待认可 | 0.1.0-m2.20 / 3c4c1060-8b550d60 [证据1](product/first-release.md) · [证据2](../.scratch/m2-first-release/handoff-entry.md) · [证据3](../.scratch/runtime-hardening-omp1845/handoff.md) · [证据4](../.scratch/m2-first-release/configuration-sharing.md) · [证据5](../.scratch/m2-first-release/mainflow-feedback.md) · [证据6](../.scratch/m2-first-release/progress-audit.md) · [证据7](../.scratch/m2-first-release/navigation-continuity.md) · [证据8](../.scratch/m2-first-release/development-tools.md) · [证据9](../.scratch/m2-first-release/rendering-isolation.md) · [证据10](../.scratch/m2-first-release/e2e-convergence.md) · [证据11](../.scratch/m2-first-release/warm-session-liveness.md) · [证据12](../.scratch/review-seven-commits/spec.md) · [证据13](../.scratch/m2-first-release/next-stage.md) · [证据14](../.scratch/m2-first-release/queue-configuration-review.md) · [证据15](../.scratch/m2-first-release/content-preparation.md) · [证据16](../.scratch/m2-first-release/lifecycle.md) · [证据17](../.scratch/m2-first-release/lifecycle-review.md) · [证据18](../.scratch/m2-first-release/project-references.md) · [证据19](../.scratch/m2-first-release/project-references-review.md) · [证据20](../.scratch/m2-first-release/long-reading.md) · [证据21](../.scratch/m2-first-release/long-reading-review.md) · [证据22](../.scratch/m2-first-release/diagnostics.md) · [证据23](../.scratch/m2-first-release/diagnostics-review.md) · [证据24](../.scratch/ai-workflow-v13/m2-retro-handoff.md) · [证据25](../.scratch/m2-first-release/attention.md) · [证据26](../.scratch/m2-first-release/attention-review.md) · [证据27](../.scratch/m2-first-release/progress-2026-10-06.md) · [证据28](../.scratch/m2-first-release/real-provider-e2e.md) · [证据29](../.scratch/m2-first-release/pr4-integration.md) | m2.20诊断/提醒候选已交付，PR#4已合入main，后续从最新main开始UI迭代；首次本机OpenAI GPT-5.6 Luna新Thread真实生成/GUI阅读完成。M2尚未完成，PDF视觉/OCR、01c系统显示/点击、V1-00/B6组合、其余真实账户/供应商路径及用户认可保持开放；冷旧Thread只读 |
 | M3 | [M3 后续增强](../.scratch/development-foundation/spec.md) | 未实施 | 未交付 | 待认可 | —  | 未启动，保留边界 |
+| M3 | [集成终端 B 方案](../.scratch/integrated-terminal/spec.md) | 未实施 | 未交付 | 待认可 | — [证据1](../.scratch/integrated-terminal/handoff.md) · [证据2](architecture/terminal.md) · [证据3](validation/terminal.md) | B与xterm路线已确认、文档已交付；待关联/退出产品答复及后续开发授权。 |
 | 基建 | [AI 工作流升级](../.scratch/ai-workflow-v13/spec.md) | 工程完成 | 不适用 | 不适用 | — [证据1](../.scratch/ai-workflow-v13/handoff.md) · [证据2](../.scratch/ai-workflow-v13/validation.md) · [证据3](../.scratch/ai-workflow-v13/review.md) · [证据4](../.scratch/ai-workflow-v13/research.md) · [证据5](../.scratch/ai-workflow-v13/m2-retro-2026-10-06.md) · [证据6](../.scratch/ai-workflow-v13/m2-retro-handoff.md) · [证据7](../.scratch/ai-workflow-v13/m2-retro-validation.md) · [证据8](../.scratch/ai-workflow-v13/m2-retro-review.md) · [证据9](../.scratch/ai-workflow-v13/validation-retro-2026-10-07.md) | 2026-10-07按风险验证与窄场景入口工程完成、独立两轴复核通过；PR#7合并后从main进入下一阶段 |
 | 基建 | [Codex 式工作台基础布局](../.scratch/codex-workbench-ui/spec.md) | 部分完成 | 已交付待试用 | 待认可 | Dev / codex/sandwich-layout [证据1](../.scratch/codex-workbench-ui/sandwich-validation.md) · [证据2](../.scratch/codex-workbench-ui/baseline-refinement.md) | Dev试用三层布局；原A3物理拖窗、系统IME/VoiceOver与长时性能仍未覆盖 |
 | 基建 | [开发者工具与基础组件看板](../.scratch/component-dashboard/spec.md) | 工程完成 | 已交付待试用 | 待认可 | e97c5a05-b19549d5 [证据1](../.scratch/component-dashboard/handoff.md) · [证据2](../.scratch/component-dashboard/validation.md) · [证据3](../.scratch/component-dashboard/review.md) | 用户试用修正版图标预览、常驻目录与独立工作区；认可pending |
@@ -37,6 +38,12 @@
 | 所属范围 / 任务 | 状态 | 未解决的工程依赖 |
 | --- | --- | --- |
 | [codex-workbench-ui / A3 验证与交付](../.scratch/codex-workbench-ui/issues/04-validation-delivery.md) | claimed | 无；范围以所属规格为准 |
+| [integrated-terminal / 01 可信 PTY 与受管生命周期](../.scratch/integrated-terminal/issues/01-managed-pty.md) | open | 无；范围以所属规格为准 |
+| [integrated-terminal / 02 受限会话协议与屏幕恢复](../.scratch/integrated-terminal/issues/02-session-protocol.md) | open | [01](../.scratch/integrated-terminal/issues/01-managed-pty.md) |
+| [integrated-terminal / 03 有界输出与背压](../.scratch/integrated-terminal/issues/03-output-control.md) | open | [02](../.scratch/integrated-terminal/issues/02-session-protocol.md) |
+| [integrated-terminal / 04 正式工作台终端](../.scratch/integrated-terminal/issues/04-workbench-terminal.md) | open | [03](../.scratch/integrated-terminal/issues/03-output-control.md) |
+| [integrated-terminal / 05 多终端、撤销与组合退出](../.scratch/integrated-terminal/issues/05-multiple-shutdown.md) | open | [04](../.scratch/integrated-terminal/issues/04-workbench-terminal.md) |
+| [integrated-terminal / 06 组合验证与 Dev 交付](../.scratch/integrated-terminal/issues/06-validation-delivery.md) | open | [05](../.scratch/integrated-terminal/issues/05-multiple-shutdown.md) |
 | [m1-interaction-hardening / 03 派发授权排序与 Host 目录复核](../.scratch/m1-interaction-hardening/issues/03-dispatch-authorization.md) | open | 无；范围以所属规格为准 |
 | [m1-interaction-hardening / 04 历史 busy 语义复核](../.scratch/m1-interaction-hardening/issues/04-history-busy.md) | open | 无；范围以所属规格为准 |
 | [m1-interaction-hardening / 07 退出健壮性与 GUI 可访问补齐](../.scratch/m1-interaction-hardening/issues/07-quit-a11y.md) | open | 无；范围以所属规格为准 |
@@ -57,6 +64,7 @@
 - [S3 控制、交互与恢复](../.scratch/m1-s3-control-recovery/spec.md)：冷恢复仅只读，unknown 不自动重发；退出非空队列尚无放弃出口。
 - [S5 组合验收](../.scratch/m1-s5-combination-acceptance/spec.md)：不 push、不公开发布、不扩 M2/M3；冷恢复只读，unknown 不自动重发；暂停队列放弃出口继续待决。
 - [M2 首版](../.scratch/m2-first-release/spec.md)：2026-10-06最新授权先push并处理远端PR/提交、让main干净供后续UI开发；允许整合、验证后合并PR#4。不公开发布、不扩M3，冷恢复只读，unknown不自动重发；用户认可pending。
+- [集成终端 B 方案](../.scratch/integrated-terminal/spec.md)：本次仅方案与文档；不开发终端、不新增终端依赖、不push或合并；不扩大M2或D-39。
 - [Codex 式工作台基础布局](../.scratch/codex-workbench-ui/spec.md)：用户已授权本UI分支push、PR及合并；不公开发布或发起真实账户请求。
 - [开发者工具与基础组件看板](../.scratch/component-dashboard/spec.md)：仅本地实施与交付；开发者区域固定中文；不改变Thread执行与持久化。
 - [Effect 原生连接生命周期](../.scratch/effect-native-lifecycle/spec.md)：Effect 限定 execution/host 与 execution/main/transport；unknown 不自动重发，冷恢复只读。
@@ -67,4 +75,4 @@
 - [类型安全桌面路由](../.scratch/router-integration/spec.md)：本地实施和提交；不 push、不改变 OMP 执行及冷恢复政策。
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 
-<!-- source-sha256: 4436d3aa5fbec1d0bb57349000829c36133784e840566cf29ee8b7a3b771692b; sources: 130 -->
+<!-- source-sha256: 0b4ac5ad6f461e432ac88b70837c1e25a89da363ba5a8398760f653362ff7899; sources: 138 -->

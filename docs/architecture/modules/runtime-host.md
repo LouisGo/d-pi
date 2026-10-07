@@ -13,6 +13,8 @@
 
 ## 范围与拥有者
 
+本页 Host 指承载 OMP 连接的 SessionHost。D-40 用户集成终端由独立[TerminalHost](terminal.md)管理，不能复用本页 OMP scope、原生请求关联或输出读取器。终端故障不重启本页资源；组合退出由 Main 汇总两侧真实状态，详见[终端契约](../terminal.md)。
+
 Main 拥有窗口、Host 监督及受限通道建立；一个 utility SessionHost 监督多个独立 OMP，每个活跃顶层会话对应一个 OMP。子 Agent 的创建和执行仍由 OMP 管。普通连续对话复用进程，关闭/刷新窗口不结束它。
 
 本模块解码 stdio、区分协议帧与错误、维护唯一的原生请求关联表并报告进程/连接事件。stdout 只有一个协议读取入口；诊断只取脱敏元信息。[执行模块](execution.md)解释接受与交互，并提供关联保留/释放的业务条件，不另建竞争请求表；[阅读模块](conversation.md)维护投影，不让每个页面重复解析协议。

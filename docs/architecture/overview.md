@@ -8,6 +8,8 @@
 
 - Electron Main 管窗口、系统集成与进程监督；utility SessionHost 管 OMP 连接、请求关联、会话镜像与同步；OMP 管执行、工具和原生会话；Renderer 管交互。依据 [ADR-0001](../adr/0001-omp-session-client.md)。
 - 沿用一个 utility SessionHost 管多个 OMP 的基线，接受 Host 公共故障域。
+
+- D-40 集成终端采用独立 TerminalHost utility process 管用户 PTY/shell，Main 管准入与监督，主页面 Renderer 用 xterm.js；不会将用户终端塞入 SessionHost。当前仅方案/文档，输出、快照/背压、故障与实现顺序见[终端契约](terminal.md)及[所属规格](../../.scratch/integrated-terminal/spec.md)。
 - 一个活跃顶层会话对应一个独立 OMP 进程，同一会话连续对话复用进程；不是每条消息启动新进程。多会话并行已有[限定实测](../validation/runtime-feasibility.md)，子 Agent 仍由 OMP 管理。
 - Renderer/preload 与 SessionHost 使用受限 MessagePort；Main 建立通道，不逐条转发流式内容。2026-09-28 用户确认官方 SDK 薄宿主路线：独立 Bun 进程运行未修改的固定 OMP SDK，App 薄宿主经 stdio 连接 SessionHost；不直接把 Bun SDK 塞入 Electron Node utility process。接入依据见[S3 规格](../../.scratch/m1-s3-control-recovery/spec.md)，薄宿主信封不冒称 OMP 官方 CLI RPC 全集。
 - 不为 OMP 接入另建 HTTP Server。编辑器已选 Monaco，不引入完整 VSCode 工作台服务作为默认架构。
