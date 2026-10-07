@@ -1,0 +1,17 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/developer/components/component-dashboard.test.ts src/app/renderer/shell/appearance-subscriptions.test.ts src/app/renderer/routing/router.test.ts
+$ tsr generate
+(node:72522) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/.codex/worktrees/component-dashboard/d-pi[39m
+
+ [32m✓[39m src/app/renderer/developer/components/component-dashboard.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 405[2mms[22m[39m
+ [32m✓[39m src/app/renderer/routing/router.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 248[2mms[22m[39m
+ [32m✓[39m src/app/renderer/shell/appearance-subscriptions.test.ts [2m([22m[2m19 tests[22m[2m)[22m[33m 720[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m3 passed[39m[22m[90m (3)[39m
+[2m      Tests [22m [1m[32m35 passed[39m[22m[90m (35)[39m
+[2m   Start at [22m 11:40:04
+[2m   Duration [22m 4.46s[2m (import 67%, tests 11%, transform 11%, environment 11%)[22m
+

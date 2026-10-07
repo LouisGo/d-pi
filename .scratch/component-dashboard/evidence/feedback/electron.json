@@ -1,0 +1,115 @@
+{
+  "version": "isolated-workbench",
+  "scenario": "components",
+  "passed": true,
+  "checks": [
+    {
+      "name": "tools-above-settings",
+      "value": true
+    },
+    {
+      "name": "hover-opens-tools",
+      "value": true
+    },
+    {
+      "name": "hover-travel-keeps-menu",
+      "value": true
+    },
+    {
+      "name": "all-real-components-visible",
+      "value": true
+    },
+    {
+      "name": "thread-resource-preserved",
+      "value": true
+    },
+    {
+      "name": "shared-component-styles-preserved",
+      "value": true
+    },
+    {
+      "name": "developer-route-covers-thread-workspace",
+      "value": true
+    },
+    {
+      "name": "icons-read-only-and-auto-collected",
+      "value": true
+    },
+    {
+      "name": "right-anchor-category",
+      "value": true
+    },
+    {
+      "name": "right-anchor-component",
+      "value": true
+    },
+    {
+      "name": "button-feedback",
+      "value": true
+    },
+    {
+      "name": "tab-switch",
+      "value": true
+    },
+    {
+      "name": "navigation-dialog-open",
+      "value": true
+    },
+    {
+      "name": "navigation-esc-close",
+      "value": true
+    },
+    {
+      "name": "settings-dialog-open",
+      "value": true
+    },
+    {
+      "name": "settings-esc-close",
+      "value": true
+    },
+    {
+      "name": "real-split-drag",
+      "value": 150
+    },
+    {
+      "name": "split-reset",
+      "value": 120
+    },
+    {
+      "name": "search-empty",
+      "value": true
+    },
+    {
+      "name": "dark-theme",
+      "value": true
+    },
+    {
+      "name": "intermediate-right-navigation",
+      "value": true
+    },
+    {
+      "name": "narrow-without-horizontal-overflow",
+      "value": true
+    },
+    {
+      "name": "narrow-navigation-stays-visible-after-scroll",
+      "value": true
+    },
+    {
+      "name": "keyboard-tools-esc",
+      "value": true
+    },
+    {
+      "name": "return-restores-sidebar-width",
+      "value": true
+    },
+    {
+      "name": "return-retains-draft-and-resource",
+      "value": true
+    }
+  ],
+  "stderr": "\nDevTools listening on ws://127.0.0.1:54491/devtools/browser/af46ab8d-3f96-417a-accf-a5bb9405e96b\n",
+  "limitations": [
+    "isolated GUI fixture; not packaged or system IME evidence"
+  ]
+}

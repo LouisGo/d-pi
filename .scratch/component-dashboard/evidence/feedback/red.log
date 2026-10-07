@@ -1,0 +1,463 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/developer/components/component-dashboard.test.ts src/app/renderer/shell/appearance-subscriptions.test.ts
+$ tsr generate
+(node:72258) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/.codex/worktrees/component-dashboard/d-pi[39m
+
+ [31m❯[39m src/app/renderer/developer/components/component-dashboard.test.ts [2m([22m[2m9 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[33m 405[2mms[22m[39m
+   [32m✓[39m shows every existing foundation component as a real preview by default[32m 82[2mms[22m[39m
+   [32m✓[39m uses independent real button and icon interactions and resets only the selected demo[32m 48[2mms[22m[39m
+   [32m✓[39m switches and closes real workspace tabs with keyboard navigation and restores them[32m 36[2mms[22m[39m
+   [32m✓[39m opens real portaled dialogs, interacts locally and resets the selected choice[32m 68[2mms[22m[39m
+   [32m✓[39m hides and restores real split panels[32m 32[2mms[22m[39m
+   [32m✓[39m includes an optional menu preview in category navigation, search and reset[32m 32[2mms[22m[39m
+   [32m✓[39m filters by purpose and form, explains no matches and restores the full catalog[32m 49[2mms[22m[39m
+[31m   [31m×[31m groups every component in the separate right navigation with existing anchor targets[39m[32m 30[2mms[22m[39m
+[31m   [31m×[31m automatically shows new Icon Layer exports without a gallery entry and keeps icons read-only[39m[32m 26[2mms[22m[39m
+ [31m❯[39m src/app/renderer/shell/appearance-subscriptions.test.ts [2m([22m[2m19 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 690[2mms[22m[39m
+   [32m✓[39m places Thread creation and project opening in the sidebar and settings in a modal over mounted work[32m 130[2mms[22m[39m
+   [32m✓[39m keeps normal controls and Thread views untouched while saving a theme[32m 73[2mms[22m[39m
+   [32m✓[39m does not execute sidebar Thread rows for theme or shortcut save busy updates[32m 30[2mms[22m[39m
+   [32m✓[39m translates controls without executing the workspace's unrelated business views[32m 33[2mms[22m[39m
+   [32m✓[39m does not mutate appearance attributes when only the send shortcut changes[32m 23[2mms[22m[39m
+   [32m✓[39m ignores legacy density and exposes only the default compact appearance[32m 23[2mms[22m[39m
+   [32m✓[39m isolates theme busy and failed-save notices while preserving the previous preference[32m 32[2mms[22m[39m
+   [32m✓[39m writes only the appearance attribute that changes[32m 23[2mms[22m[39m
+   [32m✓[39m updates the owning Thread resources when the working directory identity changes[32m 45[2mms[22m[39m
+   [32m✓[39m consumes an attachment once and prevents old Thread callbacks from populating a replacement composer[32m 47[2mms[22m[39m
+   [32m✓[39m passes a newly loaded editor adapter through without replacing the Thread[32m 29[2mms[22m[39m
+   [32m✓[39m retains loading, repeated failure details and disposal without a root state subscription[32m 3[2mms[22m[39m
+   [32m✓[39m freezes the shell for a real pending project choice without dimming each control[32m 19[2mms[22m[39m
+   [32m✓[39m still updates localized workbench text when the language context changes[32m 32[2mms[22m[39m
+   [32m✓[39m applies a preference receipt to the current App after Thread navigation without cancelling either operation[32m 24[2mms[22m[39m
+   [32m✓[39m serializes rapid preference changes without blocking navigation or losing earlier fields[32m 17[2mms[22m[39m
+   [32m✓[39m does not clear a pending Thread transition when an independent preference save fails[32m 17[2mms[22m[39m
+   [32m✓[39m Main attention samples update only the relevant badge and notice, preserving editor and reading resources[32m 25[2mms[22m[39m
+[31m   [31m×[31m opens the developer route across the complete workspace and restores the Thread view on return[39m[32m 64[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 3 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/app/renderer/shell/appearance-subscriptions.test.ts[2m > [22mopens the developer route across the complete workspace and restores the Thread view on return
+[31m[1mAssertionError[22m: expected <aside …(3)>…(2)</aside> to be null[39m
+
+[32m- Expected:[39m
+null
+
+[31m+ Received:[39m
+<aside
+  aria-label="Project navigation"
+  class="primary-sidebar"
+  data-layout-region="sidebar"
+>
+  <div
+    class="panel-header"
+  >
+    <div
+      class="header-navigation"
+    >
+      <div
+        class="flex gap-2"
+      >
+        <button
+          class="ui-button ui-button-icon ui-button-ghost"
+          data-slot="button"
+          tabindex="0"
+          title="Back"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class=""
+            color="currentColor"
+            fill="none"
+            focusable="false"
+            height="16"
+            stroke="currentColor"
+            stroke-width="1.5"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M15 6C15 6 9.00001 10.4189 9 12C8.99999 13.5812 15 18 15 18"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+            />
+          </svg>
+          <span
+            class="sr-only"
+          >
+            Back
+          </span>
+        </button>
+        <button
+          class="ui-button ui-button-icon ui-button-ghost"
+          data-disabled=""
+          data-slot="button"
+          disabled=""
+          tabindex="0"
+          title="Forward"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class=""
+            color="currentColor"
+            fill="none"
+            focusable="false"
+            height="16"
+            stroke="currentColor"
+            stroke-width="1.5"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M9.00005 6C9.00005 6 15 10.4189 15 12C15 13.5812 9 18 9 18"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+            />
+          </svg>
+          <span
+            class="sr-only"
+          >
+            Forward
+          </span>
+        </button>
+      </div>
+      <button
+        aria-expanded="true"
+        aria-label="Open or collapse project navigation"
+        class="ui-button ui-button-icon ui-button-ghost"
+        data-base-ui-tooltip-trigger=""
+        data-slot="button"
+        id="base-ui-_r_l4_"
+        tabindex="0"
+        type="button"
+      >
+        <span
+          class="ui-icon-button-content"
+        >
+          <svg
+            aria-hidden="true"
+            class=""
+            color="currentColor"
+            fill="none"
+            focusable="false"
+            height="16"
+            stroke="currentColor"
+            stroke-width="1.5"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M20.1088 20.1088C18.7175 21.5 16.4783 21.5 12 21.5C7.52166 21.5 5.28249 21.5 3.89124 20.1088C2.5 18.7175 2.5 16.4783 2.5 12C2.5 7.52166 2.5 5.28248 3.89124 3.89124C5.28249 2.5 7.52166 2.5 12 2.5C16.4783 2.5 18.7175 2.5 20.1088 3.89124C21.5 5.28249 21.5 7.52166 21.5 12C21.5 16.4783 21.5 18.7175 20.1088 20.1088Z"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+            />
+            <path
+              d="M9 21.5L9 2.5"
+              stroke="currentColor"
+              stroke-width="1.5"
+            />
+          </svg>
+        </span>
+      </button>
+    </div>
+  </div>
+  <div
+    class="sidebar-scroll"
+  >
+    <nav
+      aria-label="Projects"
+      class="thread-navigation"
+    >
+      <button
+        class="ui-button ui-button-ghost"
+        data-new-thread="true"
+        data-slot="button"
+        tabindex="0"
+        type="button"
+      >
+        <svg
+          aria-hidden="true"
+          class=""
+          color="currentColor"
+          fill="none"
+          focusable="false"
+          height="16"
+          stroke="currentColor"
+          stroke-width="1.5"
+          viewBox="0 0 24 24"
+          width="16"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M12.001 5.00003V19.002"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.5"
+          />
+          <path
+            d="M19.002 12.002L4.99998 12.002"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.5"
+          />
+        </svg>
+        New Thread
+      </button>
+      <div
+        class="sidebar-label"
+      >
+        <span>
+          Projects
+        </span>
+        <button
+          aria-label="Choose a project and create a draft"
+          class="ui-button ui-button-icon ui-button-ghost"
+          data-base-ui-tooltip-trigger=""
+          data-choose-project="true"
+          data-slot="button"
+          id="base-ui-_r_l6_"
+          tabindex="0"
+          type="button"
+        >
+          <span
+            class="ui-icon-button-content"
+          >
+            <svg
+              aria-hidden="true"
+              class=""
+              color="currentColor"
+              fill="none"
+              focusable="false"
+              height="16"
+              stroke="currentColor"
+              stroke-width="1.5"
+              viewBox="0 0 24 24"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12.001 5.00003V19.002"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+              />
+              <path
+                d="M19.002 12.002L4.99998 12.002"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+              />
+            </svg>
+          </span>
+        </button>
+      </div>
+      <fieldset
+        class="thread-buttons"
+      >
+        <button
+          aria-current="page"
+          class="ui-button ui-button-navigation"
+          data-slot="button"
+          data-thread-navigation="true"
+          tabindex="0"
+          title="/fixture/project-1 · 264b51b0-651b-4b1e-a047-9228bad15b2c"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class=""
+            color="currentColor"
+            fill="none"
+            focusable="false"
+            height="16"
+            stroke="currentColor"
+            stroke-width="1.5"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M8 7H16.75C18.8567 7 19.91 7 20.6667 7.50559C20.9943 7.72447 21.2755 8.00572 21.4944 8.33329C22 9.08996 22 10.1433 22 12.25C22 15.7612 22 17.5167 21.1573 18.7779C20.7926 19.3238 20.3238 19.7926 19.7779 20.1573C18.5167 21 16.7612 21 13.25 21H12C7.28595 21 4.92893 21 3.46447 19.5355C2 18.0711 2 15.714 2 11V7.94427C2 6.1278 2 5.21956 2.38032 4.53806C2.65142 4.05227 3.05227 3.65142 3.53806 3.38032C4.21956 3 5.1278 3 6.94427 3C8.10802 3 8.6899 3 9.19926 3.19101C10.3622 3.62712 10.8418 4.68358 11.3666 5.73313L12 7"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-width="1.5"
+            />
+          </svg>
+          <span
+            class="thread-name"
+          >
+            project-1
+            <small>
+              Thread 3
+               · 
+              264b51
+            </small>
+          </span>
+        </button>
+        <button
+          class="ui-button ui-button-navigation"
+          data-slot="button"
+          data-thread-navigation="true"
+          tabindex="0"
+          title="/fixture/project-2 · 9da49a43-9b2e-4b08-bb07-e3d883d9b8e6"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class=""
+            color="currentColor"
+            fill="none"
+            focusable="false"
+            height="16"
+            stroke="currentColor"
+            stroke-width="1.5"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M8 7H16.75C18.8567 7 19.91 7 20.6667 7.50559C20.9943 7.72447 21.2755 8.00572 21.4944 8.33329C22 9.08996 22 10.1433 22 12.25C22 15.7612 22 17.5167 21.1573 18.7779C20.7926 19.3238 20.3238 19.7926 19.7779 20.1573C18.5167 21 16.7612 21 13.25 21H12C7.28595 21 4.92893 21 3.46447 19.5355C2 18.0711 2 15.714 2 11V7.94427C2 6.1278 2 5.21956 2.38032 4.53806C2.65142 4.05227 3.05227 3.65142 3.53806 3.38032C4.21956 3 5.1278 3 6.94427 3C8.10802 3 8.6899 3 9.19926 3.19101C10.3622 3.62712 10.8418 4.68358 11.3666 5.73313L12 7"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-width="1.5"
+            />
+          </svg>
+          <span
+            class="thread-name"
+          >
+            project-2
+            <small>
+              Thread 2
+               · 
+              9da49a
+            </small>
+          </span>
+        </button>
+        <button
+          class="ui-button ui-button-navigation"
+          data-slot="button"
+          data-thread-navigation="true"
+          tabindex="0"
+          title="/fixture/project-3 · dfd10174-ed9c-45de-abe6-dedebc6449ce"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class=""
+            color="currentColor"
+            fill="none"
+            focusable="false"
+            height="16"
+            stroke="currentColor"
+            stroke-width="1.5"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M8 7H16.75C18.8567 7 19.91 7 20.6667 7.50559C20.9943 7.72447 21.2755 8.00572 21.4944 8.33329C22 9.08996 22 10.1433 22 12.25C22 15.7612 22 17.5167 21.1573 18.7779C20.7926 19.3238 20.3238 19.7926 19.7779 20.1573C18.5167 21 16.7612 21 13.25 21H12C7.28595 21 4.92893 21 3.46447 19.5355C2 18.0711 2 15.714 2 11V7.94427C2 6.1278 2 5.21956 2.38032 4.53806C2.65142 4.05227 3.05227 3.65142 3.53806 3.38032C4.21956 3 5.1278 3 6.94427 3C8.10802 3 8.6899 3 9.19926 3.19101C10.3622 3.62712 10.8418 4.68358 11.3666 5.73313L12 7"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-width="1.5"
+            />
+          </svg>
+          <span
+            class="thread-name"
+          >
+            project-3
+            <small>
+              Thread 1
+               · 
+              dfd101
+            </small>
+          </span>
+        </button>
+      </fieldset>
+    </nav>
+    <div
+      class="sidebar-bottom"
+    >
+      <span
+        class="muted"
+      >
+        Local draft
+      </span>
+      <span
+        class="muted"
+      >
+        Project execution requires approval
+      </span>
+      <span
+        class="trace muted"
+        title="unbundled"
+      >
+        source
+         · 
+        unbundled
+      </span>
+    </div>
+  </div>
+</aside>
+
+[36m [2m❯[22m src/app/renderer/shell/appearance-subscriptions.test.ts:[2m766:63[22m[39m
+    [90m764|[39m   await act(async () => { menu.click(); await new Promise((resolve) =>…
+    [90m765|[39m   expect(fixture.container.querySelector("[data-component-dashboard]")…
+    [90m766|[39m   expect(fixture.container.querySelector(".primary-sidebar")).toBeNull…
+    [90m   |[39m                                                               [31m^[39m
+    [90m767|[39m   expect(fixture.container.querySelector("#navigation-split")).toBeNul…
+    [90m768|[39m   expect(fixture.container.querySelector("[data-developer-workspace]")…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/app/renderer/developer/components/component-dashboard.test.ts[2m > [22mgroups every component in the separate right navigation with existing anchor targets
+[31m[1mAssertionError[22m: expected null not to be null[39m
+[36m [2m❯[22m src/app/renderer/developer/components/component-dashboard.test.ts:[2m262:59[22m[39m
+    [90m260|[39m   const { container } = await setup(createElement("span", null, "Menu …
+    [90m261|[39m   const index = container.querySelector('nav[aria-label="组件索引"]');
+    [90m262|[39m   expect(index?.closest("[data-gallery-navigation]")).not.toBeNull();
+    [90m   |[39m                                                           [31m^[39m
+    [90m263|[39m   expect(container.querySelector("header nav")).toBeNull();
+    [90m264|[39m   for (const link of index?.querySelectorAll("a") ?? [])
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/app/renderer/developer/components/component-dashboard.test.ts[2m > [22mautomatically shows new Icon Layer exports without a gallery entry and keeps icons read-only
+[31m[1mAssertionError[22m: expected 'Icon Layer应用实际使用的语义图标，继承当前主题颜色。重置16 ·…' to contain 'FutureIcon'[39m
+
+Expected: [32m"FutureIcon"[39m
+Received: [31m"Icon Layer应用实际使用的语义图标，继承当前主题颜色。重置16 · 18 · 20 · 24 px / WebsiteIcon github · generic16 px18 px20 px24 pxAddIconBackIconForwardIconFileIconFolderIconCloseIconChatIconSettingsIconToolsIconSidebarIconLightThemeIconDarkThemeIconSystemThemeIconWebsiteIcon / githubWebsiteIcon / generic16 px18 px20 px24 px"[39m
+
+[36m [2m❯[22m src/app/renderer/developer/components/component-dashboard.test.ts:[2m284:30[22m[39m
+    [90m282|[39m   const { container } = await setup();
+    [90m283|[39m   const icons = container.querySelector("[data-component='Icon Layer']…
+    [90m284|[39m   expect(icons?.textContent).toContain("FutureIcon");
+    [90m   |[39m                              [31m^[39m
+    [90m285|[39m   expect(icons?.querySelector("svg[data-new-icon]")).not.toBeNull();
+    [90m286|[39m   expect(icons?.querySelector("button")).toBeNull();
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m25 passed[39m[22m[90m (28)[39m
+[2m   Start at [22m 11:38:48
+[2m   Duration [22m 4.28s[2m (import 68%, tests 14%, transform 9%, environment 9%)[22m
+
+[ELIFECYCLE] Test failed. See above for more details.
