@@ -1,0 +1,16 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: R13 history navigation returns keyboard focus to visible Thread tools: false
+    at check (file:///Users/louistation/.codex/worktrees/long-reading-loop/d-pi/validation/m2/reading-loop.mjs:124:12)
+    at async file:///Users/louistation/.codex/worktrees/long-reading-loop/d-pi/validation/m2/reading-loop.mjs:257:3 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.21.0

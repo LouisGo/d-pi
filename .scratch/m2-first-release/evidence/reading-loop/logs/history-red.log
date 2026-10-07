@@ -1,0 +1,36 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/reading/history-loop.test.ts
+$ tsr generate
+(node:73589) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/louistation/.codex/worktrees/long-reading-loop/d-pi
+
+ ❯ src/app/renderer/reading/history-loop.test.ts (1 test | 1 failed) 58ms
+   × explains the read-only saved order and refresh scope, and returns to live without reading or binding 57ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/renderer/reading/history-loop.test.ts > explains the read-only saved order and refresh scope, and returns to live without reading or binding
+AssertionError: expected 'Read-only native session historyHisto…' to contain 'Native history is read-only and paged…'
+
+Expected: "Native history is read-only and paged in saved order"
+Received: "Read-only native session historyHistory sourceThis d-pi session’s native recordRefreshSource and reading scopeRead this project’s saved OMP CLI history. Viewing does not adopt or resume a native session.Text is paged in file append order, with branch identifiers preserved. This is not the current model context. Reading does not start OMP.Read native records"
+
+ ❯ src/app/renderer/reading/history-loop.test.ts:45:33
+     43|   const { container, onReturnLive } = await mount(bridge);
+     44|   await settle();
+     45|   expect(container.textContent).toContain("Native history is read-only…
+       |                                 ^
+     46|   expect(container.textContent).toContain("Refresh reads this source a…
+     47|   expect(container.textContent).toContain("The bound session history h…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  23:24:39
+   Duration  3.30s (import 81%, environment 11%, transform 6%, tests 2%)
+
+[ELIFECYCLE] Test failed. See above for more details.

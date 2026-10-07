@@ -1,0 +1,37 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/reading/markdown.test.ts -t 'escaped closing bracket'
+$ tsr generate
+(node:79297) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/louistation/.codex/worktrees/long-reading-body/d-pi
+
+ ❯ src/app/renderer/reading/markdown.test.ts (6 tests | 1 failed | 5 skipped) 52ms
+   ↓ preserves completed Markdown prefix nodes, selection and nested code position when the same message finishes
+   ↓ resolves a reference link whose definition arrives with final text without losing the final tail
+   × resolves an escaped closing bracket in a late reference definition 51ms
+   ↓ closes a streamed fence and renders the complete final text outside that fence
+   ↓ supports late footnote definitions in their whole-document parse scope
+   ↓ shows interrupted received text without keeping a synthesized closing delimiter
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/renderer/reading/markdown.test.ts > resolves an escaped closing bracket in a late reference definition
+AssertionError: the given combination of arguments (undefined and string) is invalid for this assertion. You can use an array, a map, an object, a set, a string, or a weakset instead of a string
+ ❯ src/app/renderer/reading/markdown.test.ts:117:103
+    115|     await fixture.render(prefix, true);
+    116|     await fixture.render(prefix + "[read\\]ing]: https://example.com/e…
+    117|     expect(fixture.container.querySelector('span[title="https://exampl…
+       |                                                                                                       ^
+    118|   } finally {
+    119|     await fixture.dispose();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 skipped (6)
+   Start at  23:35:52
+   Duration  2.98s (import 82%, environment 10%, transform 6%, tests 2%)
+
+[ELIFECYCLE] Test failed. See above for more details.
