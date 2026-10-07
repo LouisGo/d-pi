@@ -31,7 +31,7 @@ const demos: Record<ComponentName, ComponentType> = {
   SettingsGroup: SettingsGroupDemo,
   Button: ButtonDemo,
   IconButton: IconButtonDemo,
-  WorkspaceTabs: TabsDemo,
+  TabStrip: TabsDemo,
   ResizableSplit: SplitDemo,
   NavigationOverlay: NavigationDemo,
   SettingsModal: SettingsDemo,

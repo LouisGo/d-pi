@@ -283,6 +283,7 @@ export const ui = {
   "ui.files.readingDiff": "Reading diff…",
   "ui.files.sampleDetails": "File sample details",
 
+  "app.reading.tools": "Thread tools",
   "app.reading.focus": "Focus reading",
   "app.reading.restoreControls": "Restore controls",
 
@@ -448,6 +449,7 @@ export const ui = {
   "composer.paste.hint": "⌘⇧V paste plain text",
   "composer.editorLabel": "Draft body",
   "composer.sectionLabel": "Persistent text draft",
+  "composer.inputOptions": "Input options",
   "composer.heading": "Draft",
   "composer.status.saved": "Saved on this device",
   "composer.status.dirty": "Waiting to save…",
@@ -482,8 +484,7 @@ export const ui = {
   "ui.conversation.imageNotLoaded": "not loaded",
   "ui.conversation.sectionLabel": "Native session reader",
   "ui.conversation.heading": "Conversation",
-  "ui.conversation.empty":
-    "OMP responses and tool results will appear here after you send.",
+  "ui.conversation.empty": "Start a conversation below.",
   "ui.conversation.gap":
     "Some content is missing from this view. Read the native history below to check it.",
   "ui.conversation.streaming": "In progress",

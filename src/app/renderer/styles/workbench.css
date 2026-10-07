@@ -312,24 +312,6 @@
     overscroll-behavior: contain;
     padding: var(--panel-padding);
   }
-  .workspace-tabs {
-    display: flex;
-    flex: 1;
-    min-width: 0;
-    overflow-x: auto;
-    -webkit-app-region: no-drag;
-  }
-  .workspace-tab {
-    display: flex;
-    min-width: 0;
-    flex-shrink: 0;
-    align-items: center;
-  }
-  .workspace-tab > [role="tab"] {
-    max-width: var(--overlay-width);
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
   .ui-tooltip {
     padding: calc(var(--layout-gap) / 2) var(--control-padding);
     color: var(--foreground);
@@ -479,5 +461,69 @@
   .settings-navigation {
     flex-direction: row;
     overflow-x: auto;
+  }
+}
+
+@layer components {
+  .thread-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex-shrink: 0;
+    gap: var(--layout-gap);
+    font-size: var(--text-small);
+    color: var(--muted-foreground);
+  }
+  .thread-reading .runtime-panel {
+    max-width: var(--content-width);
+    margin: 0 auto var(--layout-gap);
+  }
+  .thread-reading .conversation > .muted {
+    padding-block: var(--panel-padding);
+  }
+  .thread-workspace > .composer {
+    max-height: 60%;
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  .thread-workspace > .composer[data-expanded="true"] {
+    max-height: none;
+  }
+}
+
+@layer components {
+  .thread-reading {
+    display: flex;
+    flex-direction: column;
+  }
+  .thread-reading > .reading-pane {
+    flex: 1;
+    min-height: 0;
+    height: auto;
+  }
+  .thread-reading > .runtime-panel {
+    flex-shrink: 0;
+    width: 100%;
+    max-height: 40%;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+}
+
+@layer components {
+  .composer-help {
+    margin-inline-end: auto;
+    max-width: 100%;
+  }
+  .composer-help > summary {
+    cursor: default;
+    padding: calc(var(--layout-gap) / 2);
+  }
+  .composer-help > p {
+    margin-block: calc(var(--layout-gap) / 2);
+  }
+  .runtime-panel > [hidden] {
+    display: none;
   }
 }

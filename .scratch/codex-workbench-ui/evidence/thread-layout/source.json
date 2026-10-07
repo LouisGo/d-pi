@@ -1,0 +1,14 @@
+{
+  "sourceCommit": "6202f2eb2ef81d185646fd49457191284133083a",
+  "baseCommit": "56f0b0a",
+  "t3Commit": "611132c171f3a821bd2e32f22261135cef6330ac",
+  "scope": "isolated Electron fixture",
+  "sha256": {
+    "thread-dark-720.png": "47ee022289870d3f92fb7e9c742d74a8653f5368cc2b0e6c24144cb63fff2558",
+    "thread-dark-1440.png": "5c293047572b259dea37d55408e8a3c3b7ed6a40cdc28b6866baa927135400fb",
+    "thread-light-720.png": "8f21047bcd2edcfc382f5586bd7145cb52f29d989f958fb6b5201f58272f2ca2",
+    "native.json": "f5242edc9c9d20d2cef671cdf926139dd6273880baa0df1281dee254df78c15b",
+    "thread-tools-dark-720.png": "f1ae66773e0576958db5a2f1ba8033f650bcd6448b7e31053254e84cc809cc86",
+    "thread-light-1440.png": "66e592f658c35c76fa7d5f336f7a5bf3a6a6205cdc7e950c8c67a1eb9c1fbdcd"
+  }
+}

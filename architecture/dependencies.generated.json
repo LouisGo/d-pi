@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "6281dbe42fe5df4d8426d22564de23da19509e4a13deb949006da277e8d85e77",
+  "inputsHash": "cbeddccbac0a342f8191d43e01505b67e3b48876dddce1dccac2678829dffff0",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 425,
-    "scannedFiles": 425,
+    "sourceFiles": 428,
+    "scannedFiles": 428,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 179,
-      "lines": 31876,
+      "files": 181,
+      "lines": 32327,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -102,7 +102,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 20,
-      "lines": 2692,
+      "lines": 2695,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -404,8 +404,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 7,
-      "lines": 706,
+      "files": 8,
+      "lines": 759,
       "publicEntries": [
         {
           "path": "src/modules/ui/renderer/public.ts",
@@ -6701,6 +6701,48 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/app/renderer/components/ui/modal.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@base-ui/react/dialog",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/ui/modal.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/ui/modal.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../icons/common",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/icons/common.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/components/ui/modal.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./icon-button",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/ui/icon-button.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/app/renderer/components/ui/navigation-overlay.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -6842,7 +6884,55 @@
       "targetEnvironment": "renderer"
     },
     {
-      "from": "src/app/renderer/components/ui/workspace-tabs.tsx",
+      "from": "src/app/renderer/components/ui/tab-strip.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/ui/tab-strip.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react-dom/client",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/ui/tab-strip.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/ui/tab-strip.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./tab-strip",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/ui/tab-strip.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/components/ui/tab-strip.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@base-ui/react/button",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/ui/tab-strip.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
@@ -6851,7 +6941,7 @@
       "resolution": "external"
     },
     {
-      "from": "src/app/renderer/components/ui/workspace-tabs.tsx",
+      "from": "src/app/renderer/components/ui/tab-strip.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
@@ -6863,7 +6953,7 @@
       "targetEnvironment": "renderer"
     },
     {
-      "from": "src/app/renderer/components/ui/workspace-tabs.tsx",
+      "from": "src/app/renderer/components/ui/tab-strip.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
@@ -6871,18 +6961,6 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/components/icons/common.tsx",
-      "targetModule": "app",
-      "targetEnvironment": "renderer"
-    },
-    {
-      "from": "src/app/renderer/components/ui/workspace-tabs.tsx",
-      "sourceModule": "app",
-      "sourceEnvironment": "renderer",
-      "test": false,
-      "specifier": "./icon-button",
-      "kind": "import",
-      "resolution": "module",
-      "to": "src/app/renderer/components/ui/icon-button.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -7108,10 +7186,10 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
-      "specifier": "../../components/ui/workspace-tabs",
+      "specifier": "../../components/ui/tab-strip",
       "kind": "import",
       "resolution": "module",
-      "to": "src/app/renderer/components/ui/workspace-tabs.tsx",
+      "to": "src/app/renderer/components/ui/tab-strip.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -10330,10 +10408,10 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
-      "specifier": "@/components/ui/workspace-tabs",
+      "specifier": "@/components/ui/tab-strip",
       "kind": "import",
       "resolution": "module",
-      "to": "src/app/renderer/components/ui/workspace-tabs.tsx",
+      "to": "src/app/renderer/components/ui/tab-strip.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -13842,6 +13920,18 @@
       "resolution": "module",
       "to": "src/modules/ui/renderer/public.ts",
       "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/thread-workbench.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../components/ui/modal",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/ui/modal.tsx",
+      "targetModule": "app",
       "targetEnvironment": "renderer"
     },
     {
@@ -24408,6 +24498,27 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/ui/renderer/components/icons/common.tsx",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/ui/renderer/focus-visibility.test.ts",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/ui/renderer/focus-visibility.test.ts",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./focus-visibility",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/focus-visibility.ts",
       "targetModule": "ui",
       "targetEnvironment": "renderer"
     },

@@ -18,7 +18,7 @@
 | M3 | [M3 后续增强](../.scratch/development-foundation/spec.md) | 未实施 | 未交付 | 待认可 | —  | 未启动，保留边界 |
 | M3 | [集成终端 B 方案](../.scratch/integrated-terminal/spec.md) | 未实施 | 未交付 | 待认可 | — [证据1](../.scratch/integrated-terminal/handoff.md) · [证据2](architecture/terminal.md) · [证据3](validation/terminal.md) | B与xterm路线已确认、文档已交付；待关联/退出产品答复及后续开发授权。 |
 | 基建 | [AI 工作流升级](../.scratch/ai-workflow-v13/spec.md) | 工程完成 | 不适用 | 不适用 | — [证据1](../.scratch/ai-workflow-v13/handoff.md) · [证据2](../.scratch/ai-workflow-v13/validation.md) · [证据3](../.scratch/ai-workflow-v13/review.md) · [证据4](../.scratch/ai-workflow-v13/research.md) · [证据5](../.scratch/ai-workflow-v13/m2-retro-2026-10-06.md) · [证据6](../.scratch/ai-workflow-v13/m2-retro-handoff.md) · [证据7](../.scratch/ai-workflow-v13/m2-retro-validation.md) · [证据8](../.scratch/ai-workflow-v13/m2-retro-review.md) · [证据9](../.scratch/ai-workflow-v13/validation-retro-2026-10-07.md) | 2026-10-07按风险验证与窄场景入口工程完成、独立两轴复核通过；PR#7合并后从main进入下一阶段 |
-| 基建 | [Codex 式工作台基础布局](../.scratch/codex-workbench-ui/spec.md) | 部分完成 | 已交付待试用 | 待认可 | Dev / codex/sandwich-layout [证据1](../.scratch/codex-workbench-ui/sandwich-validation.md) · [证据2](../.scratch/codex-workbench-ui/baseline-refinement.md) | Dev试用三层布局；原A3物理拖窗、系统IME/VoiceOver与长时性能仍未覆盖 |
+| 基建 | [Codex 式工作台基础布局](../.scratch/codex-workbench-ui/spec.md) | 部分完成 | 已交付待试用 | 待认可 | Dev / codex/thread-layout / 16568d3 [证据1](../.scratch/codex-workbench-ui/feedback-handoff.md) · [证据2](../.scratch/codex-workbench-ui/thread-surface-handoff.md) · [证据3](../.scratch/codex-workbench-ui/sandwich-validation.md) · [证据4](../.scratch/codex-workbench-ui/baseline-refinement.md) | Dev试用Thread工具Modal、TabStrip独立组合与搜索焦点修正；后续消息/Composer细化等用户指令，原A3缺口仍开放 |
 | 基建 | [开发者工具与基础组件看板](../.scratch/component-dashboard/spec.md) | 工程完成 | 已交付待试用 | 待认可 | e97c5a05-b19549d5 [证据1](../.scratch/component-dashboard/handoff.md) · [证据2](../.scratch/component-dashboard/validation.md) · [证据3](../.scratch/component-dashboard/review.md) | 用户试用修正版图标预览、常驻目录与独立工作区；认可pending |
 | 基建 | [领域目录治理](../.scratch/domain-directory-governance/spec.md) | 工程完成 | 不适用 | 不适用 | — [证据1](../.scratch/domain-directory-governance/handoff.md) | 沿用模块机器清单，目录规模不作为硬门槛 |
 | 基建 | [Effect 原生连接生命周期](../.scratch/effect-native-lifecycle/spec.md) | 工程完成 | 不适用 | 不适用 | — [证据1](../.scratch/effect-native-lifecycle/issues/01-native-lifecycle.md) · [证据2](../.scratch/effect-native-lifecycle/validation.md) · [证据3](../.scratch/effect-native-lifecycle/evidence/process-supervision.json) | NativeSession 接入完成；SessionHost 与 Main transport 后续按实际替代收益接入 |
@@ -77,4 +77,4 @@
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 - [T3 研究与基础重构](../.scratch/t3-foundations/spec.md)：unknown 不重发，冷恢复只读；native/live 无可靠原生身份时保持独立来源；M3 能力仅作设计储备
 
-<!-- source-sha256: 189927965959c79592900a33f0526a334ad86ac0dbaade5a632484e33250bdb2; sources: 146 -->
+<!-- source-sha256: 11e68191df53ea3801585562030c12f1bd01bfdba1b44a850896755025a897a6; sources: 148 -->

@@ -9,7 +9,13 @@ import type { RuntimeModel } from "../../../modules/execution/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import { Button } from "../../../modules/ui/renderer/public";
 
-export function QueueControls({ model }: { model: RuntimeModel }) {
+export function QueueControls({
+  model,
+  hiddenEmpty = false,
+}: {
+  model: RuntimeModel;
+  hiddenEmpty?: boolean;
+}) {
   const { t } = useI18n();
   const queue = useStore(
     model.stateStore,
@@ -23,7 +29,15 @@ export function QueueControls({ model }: { model: RuntimeModel }) {
     model.stateStore,
     (state) => state.view?.phase === "ready" && state.view.trusted,
   );
-  if (!queue) return null;
+  if (
+    !queue ||
+    (hiddenEmpty &&
+      !queue.items.length &&
+      !queue.hiddenCount &&
+      !queue.editing &&
+      !operation)
+  )
+    return null;
   const pending = operation?.status === "pending";
   const unknown = operation?.status === "unknown";
   const unreconciled = unknown && !operation.reconciled;

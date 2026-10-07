@@ -221,7 +221,7 @@ it("opens a failed attention receipt in readable space, preserves the editor and
   expect(document.activeElement).toBe(receipt);
   expect(input.container.querySelector(".tiptap")).toBe(editor);
   expect(editor?.textContent).toBe("first draft");
-  const restore = [...input.container.querySelectorAll("button")].find(
+  const restore = [...document.querySelectorAll("button")].find(
     (button) => button.textContent === "Restore controls",
   );
   await act(() => restore?.click());
@@ -433,7 +433,7 @@ it("focuses reading without remounting the draft editor or reading pane and rest
   await act(() => editor.commands.setTextSelection({ from: 2, to: 6 }));
   pane.scrollTop = 120;
   pane.dispatchEvent(new Event("scroll"));
-  const focus = [...input.container.querySelectorAll("button")].find(
+  const focus = [...document.querySelectorAll("button")].find(
     (b) => b.textContent === "Focus reading",
   );
   expect(focus).toBeDefined();
@@ -446,7 +446,7 @@ it("focuses reading without remounting the draft editor or reading pane and rest
   expect(input.container.querySelector(".tiptap")).toBe(editorElement);
   expect(input.container.querySelector(".reading-pane")).toBe(pane);
   expect(editor.isDestroyed).toBe(false);
-  const restore = [...input.container.querySelectorAll("button")].find(
+  const restore = [...document.querySelectorAll("button")].find(
     (b) => b.textContent === "Restore controls",
   );
   await act(() => restore?.click());
@@ -553,4 +553,103 @@ it("locates a pending interaction after a delayed inspect without stealing focus
       new Promise<void>((resolve) => requestAnimationFrame(() => resolve())),
   );
   expect(document.activeElement).toBe(editor);
+});
+
+it("opens Thread tools as a dialog and preserves the editor and panes after closing", async () => {
+  const input = await fixture();
+  const trigger = input.container.querySelector<HTMLButtonElement>(
+    "[data-thread-tools-trigger]",
+  );
+  expect(trigger).not.toBeNull();
+  expect(document.querySelector(".ui-modal:not([hidden])")).toBeNull();
+  const editor = input.container.querySelector(".tiptap");
+  const panes = [...input.container.querySelectorAll(".reading-pane")];
+  await act(() => trigger?.click());
+  expect(document.querySelector(".ui-modal")?.getAttribute("role")).toBe(
+    "dialog",
+  );
+  expect(document.querySelector(".ui-modal .thread-setup")).not.toBeNull();
+  await act(() =>
+    document
+      .querySelector<HTMLButtonElement>(".ui-modal-header button")
+      ?.click(),
+  );
+  expect(input.container.querySelector(".tiptap")).toBe(editor);
+  expect([...input.container.querySelectorAll(".reading-pane")]).toEqual(panes);
+  expect(editor?.textContent).toBe("first draft");
+});
+
+it("discloses healthy runtime inspection without hiding Stop when execution becomes active", async () => {
+  let receive: ((view: RuntimeView) => void) | undefined;
+  let latest: RuntimeView | undefined;
+  const commands: string[] = [];
+  const input = await fixture(false, {
+    request: async ({ kind, threadId, traceId }) => {
+      commands.push(kind);
+      latest = {
+        threadId,
+        traceId,
+        connectionGeneration: crypto.randomUUID(),
+        revision: 1,
+        phase: "ready",
+        trusted: true,
+        busy: false,
+        model: "fixture",
+        configuration: { code: "runtime.configDefault" },
+        message: { code: "runtime.readyToSend" },
+      };
+      return { kind: "view", view: latest };
+    },
+    subscribe: (listener) => {
+      receive = listener;
+      return () => {
+        receive = undefined;
+      };
+    },
+  });
+  expect(input.container.querySelector(".runtime-panel")).toBeNull();
+  const editor = input.container.querySelector(".tiptap");
+  const tools = input.container.querySelector<HTMLButtonElement>(
+    "[data-thread-tools-trigger]",
+  );
+  if (!tools) throw Error("missing tools");
+  await act(() => tools.click());
+  expect(
+    document.querySelector(".ui-modal [data-runtime-inspector]"),
+  ).not.toBeNull();
+  expect(input.container.querySelector(".runtime-panel")).toBeNull();
+  await act(() =>
+    document
+      .querySelector<HTMLButtonElement>(".ui-modal-header button")
+      ?.click(),
+  );
+  expect(input.container.querySelector(".runtime-panel")).toBeNull();
+  if (!latest || !receive) throw Error("missing runtime observation");
+  const busy: RuntimeView = {
+    ...latest,
+    revision: 2,
+    busy: true,
+    control: {
+      pendingAsync: false,
+      admitted: true,
+      paused: false,
+      stopping: false,
+      streaming: true,
+      compacting: false,
+      queued: 0,
+      background: 0,
+      queue: [],
+    },
+  };
+  await act(() => receive?.(busy));
+  const stop = [
+    ...input.container.querySelectorAll<HTMLButtonElement>(
+      ".runtime-panel button",
+    ),
+  ].find((button) => button.textContent === "Stop and pause queue");
+  expect(stop).toBeDefined();
+  expect(document.querySelector(".ui-modal:not([hidden])")).toBeNull();
+  await act(() => stop?.click());
+  expect(commands.filter((command) => command === "stop")).toHaveLength(1);
+  expect(input.container.querySelector(".tiptap")).toBe(editor);
 });

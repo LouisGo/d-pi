@@ -14,6 +14,7 @@ import {
 import {
   AddIcon,
   ChatIcon,
+  FileIcon,
   SettingsIcon,
   SidebarIcon,
 } from "../../components/icons/common";
@@ -21,7 +22,7 @@ import { IconButton } from "../../components/ui/icon-button";
 import { NavigationOverlay } from "../../components/ui/navigation-overlay";
 import { ResizableSplit } from "../../components/ui/resizable";
 import { SettingsModal } from "../../components/ui/settings-modal";
-import { WorkspaceTabs } from "../../components/ui/workspace-tabs";
+import { TabStrip } from "../../components/ui/tab-strip";
 import { demoLabels as labels } from "./catalog";
 import styles from "./component-dashboard.module.css";
 import { iconPreviews } from "./icon-catalog";
@@ -145,14 +146,30 @@ export function IconButtonDemo() {
   );
 }
 const initialTabs = [
-  { id: "files", title: labels.files, content: labels.files },
-  { id: "preview", title: labels.preview, content: labels.preview },
-  { id: "settings", title: labels.settings, content: labels.settings },
+  {
+    id: "files",
+    title: labels.files,
+    icon: <FileIcon />,
+    content: labels.files,
+  },
+  {
+    id: "preview",
+    title: labels.preview,
+    icon: <ChatIcon />,
+    content: labels.preview,
+  },
+  {
+    id: "settings",
+    title: labels.settings,
+    icon: <SettingsIcon />,
+    content: labels.settings,
+  },
 ];
 export function TabsDemo() {
   const [tabs, setTabs] = useState(initialTabs);
   const [selected, setSelected] = useState<string | null>("files");
   const fallback = useRef<HTMLDivElement>(null);
+  const sequence = useRef(0);
   const active = tabs.find((tab) => tab.id === selected);
   return (
     <div
@@ -160,17 +177,39 @@ export function TabsDemo() {
       ref={fallback}
       tabIndex={-1}
     >
-      <WorkspaceTabs
+      <TabStrip
         id="gallery-tabs"
-        tabs={tabs}
+        label="TabStrip"
+        tabs={tabs.map((tab) => ({
+          ...tab,
+          panelId: `gallery-tabs-content-${tab.id}`,
+        }))}
         selected={selected}
         onSelect={setSelected}
-        onClose={(id) => {
-          const next = tabs.filter((tab) => tab.id !== id);
-          setTabs(next);
-          if (selected === id) setSelected(next[0]?.id ?? null);
+        close={{
+          onClose: (id) => {
+            const next = tabs.filter((tab) => tab.id !== id);
+            setTabs(next);
+            if (selected === id) setSelected(next[0]?.id ?? null);
+          },
+          label: labels.closeTab,
         }}
-        closeLabel={labels.closeTab}
+        add={{
+          label: labels.addTab,
+          onAdd: () => {
+            const id = `new-${++sequence.current}`;
+            setTabs([
+              ...tabs,
+              {
+                id,
+                title: `${labels.files} ${sequence.current}`,
+                icon: <FileIcon />,
+                content: id,
+              },
+            ]);
+            setSelected(id);
+          },
+        }}
         onEmpty={() => fallback.current?.focus()}
       />
       {active ? (

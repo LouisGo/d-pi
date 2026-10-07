@@ -52,10 +52,11 @@ export const componentCatalog = [
     forms: "tooltip / 0 · 999+ · 状态角标 / disabled",
   },
   {
-    name: "WorkspaceTabs",
+    name: "TabStrip",
     category: "layout",
-    purpose: "切换、关闭工作页签，使用方向键、Home 和 End 导航。",
-    forms: "selected · unselected / 可关闭 / 空状态",
+    purpose:
+      "通用标签导航，内容面板由调用方组合；支持切换、关闭、新增及方向键导航。",
+    forms: "selected · hover / 图标切换关闭 / 新增 / 键盘导航",
   },
   {
     name: "ResizableSplit",
@@ -141,6 +142,7 @@ export const demoLabels = {
   preview: "预览",
   settings: "设置",
   closeTab: (title: string) => `关闭 ${title}`,
+  addTab: "新增页签",
   tabBody: "当前页签：",
   tabEmpty: "页签已全部关闭，重置可恢复。",
   horizontal: "横向 / start",
