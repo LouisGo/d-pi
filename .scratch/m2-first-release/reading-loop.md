@@ -91,3 +91,9 @@ synthetic fixture 1000 retained 短条目输入→下一帧采样20次，P95=8.5
 ## 复审与交付
 
 独立 [Spec/Standards review](reading-loop-review.md)；[本地 PR body](reading-loop-pr.md)。最终72c5e77文档/证据增量复审也由两个独立reviewer通过，无高价值问题。日志仅移除ANSI和末空行；本地 PR 合 main 与 push 必须核对实际目标端后补记，不能用计划或工程通过代替。
+
+### 本地合入与远端核实
+
+2026-10-08：最终本地PR分支 `8081910`，正常no-ff合入干净main `5dc8f65`，merge为 `289d36d3dcef18e81fd8c4a31d15913a7487387f`。`git push origin main` 成功（原origin/main7906f255），随后 `git ls-remote --heads origin main`、本地HEAD/origin/main三者核实相同，工作区干净。没有force push、重写旧提交或创建GitHub PR；本地PR body和独立复审随源码保存。
+
+06h/06i/06j已resolved，当前切片engineering complete / trial delivered / acceptance pending；M2父范围保持in-progress。之后只有本交付状态记录，受测生产源码保持不变，最终记录提交的远端SHA在本轮回复列明。[机器记录](evidence/reading-loop/delivery.json)。三个worker/review工作区已由Codex归档，集成工作区随后归档；需要试用时从主工作区 `pnpm dev` 启动。

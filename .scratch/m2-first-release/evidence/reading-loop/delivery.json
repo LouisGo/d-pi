@@ -1,0 +1,23 @@
+{
+  "verifiedAtUtc": "2026-10-07T16:33:48.006737+00:00",
+  "kind": "implementation delivery, subsequent closing records are documentation only",
+  "localPrHead": "8081910",
+  "mergeCommit": "289d36d3dcef18e81fd8c4a31d15913a7487387f",
+  "remoteMainObserved": "289d36d3dcef18e81fd8c4a31d15913a7487387f",
+  "previousRemoteMain": "7906f2553746801fddc892290b38b4269a69bd6e",
+  "remote": "git@github.com:LouisGo/d-pi.git",
+  "pushCompleted": true,
+  "verifiedBy": "git ls-remote --heads origin main; local HEAD and origin/main match",
+  "worktreeCleanAtVerification": true,
+  "checkSource": "7e16f9921de6732f8ab696a924e2c57bb3cc39ca",
+  "chromiumSource": "d987f98a8cd7aafb432ab51f15244e8b04ccb618",
+  "chromiumDirty": false,
+  "providerDevSource": "c04e245941a8df7a4f882ffcde46082b6d0eb816",
+  "reviewSource": "72c5e7796aebb576863c1bcb92320262fb6a9e64",
+  "highValueReviewFindingsRemaining": 0,
+  "engineering": "complete",
+  "trial": "delivered",
+  "acceptance": "pending",
+  "fixedPackageProduced": false,
+  "ciVerified": false
+}

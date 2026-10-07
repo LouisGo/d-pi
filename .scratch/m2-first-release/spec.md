@@ -54,7 +54,7 @@
     "id": "long-reading-loop",
     "title": "首个长会话阅读闭环",
     "phase": "M2",
-    "engineering": "in-progress",
+    "engineering": "complete",
     "trial": "delivered",
     "acceptance": "pending",
     "current": true,
@@ -65,7 +65,7 @@
       "reading-loop-review.md",
       "reading-loop-pr.md"
     ],
-    "next": "R1–R15实现与检查、真实Luna/dev及Chromium验证完成，独立双轴无高价值遗留；本地PR合main/push与目标端核对进行中。M2父范围与用户认可保持开放。",
+    "next": "首个长会话阅读闭环已本地PR合main并push，远端源码289d36d已核实；从main pnpm dev试用。R1–R15、双轴无高价值遗留、真实Luna/Dev及干净Chromium证据已交付；用户认可pending，M2父范围仍开放。",
     "constraints": "2026-10-07当前明确授权本地PR合main并push，允许现有OMP Luna与并行工作。live/native分源，预算和冷恢复只读保留；不公开发布、不扩M3。"
   }
 ]
@@ -296,3 +296,5 @@
 本轮 leaf：[06h](issues/06h-live-reading-loop.md)、[06i](issues/06i-body-final-render.md)、[06j](issues/06j-reading-integration.md)。集成 `codex/long-reading-loop`，工作区 `/Users/louistation/.codex/worktrees/long-reading-loop/d-pi`。06h 由 live worker 在 `long-reading-live/d-pi` / `codex/long-reading-live` 实施；06i 由 body worker 在 `long-reading-body/d-pi` / `codex/long-reading-body` 实施；均固定6daf80e。主Agent单写票/spec/看板、i18n、历史与集成证据，worker不合入集成。
 
 验收 R1–R15 见蓝图；已正确行为补回归不伪造红灯，缺口逐行为红绿。实机验证回答 Chromium 几何/选择/最终语义及真实 provider 到达风险，纯DOM替身不足；操作覆盖完成或发现具体失败即停止扩大样本。
+
+2026-10-08：首个长会话阅读闭环实现、相关TDD与合并最新main后的1062行为/35架构/96工具检查、build/fast、真实Dev Luna/历史与干净Chromium24项通过，两个独立reviewer最终72c5e77均无高价值问题。本地PR分支8081910合main为289d36d3dcef18e81fd8c4a31d15913a7487387f，push成功且ls-remote核实相同；06h/06i/06j工程resolved。本次交付不关闭M2其它范围或用户认可，不冒称固定包。[完整交接](reading-loop.md)。
