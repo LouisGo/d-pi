@@ -613,10 +613,10 @@
     padding-inline: var(--layout-gap);
     scrollbar-gutter: stable;
   }
-  .runtime-source[open] {
+  .runtime-source:has(> .ui-disclosure[open]) {
     grid-column: 1 / -1;
   }
-  .runtime-source[open] > :not(summary) {
+  .runtime-source > .ui-disclosure[open] > :not(summary) {
     display: block;
     margin-top: calc(var(--layout-gap) / 2);
   }

@@ -65,4 +65,4 @@
 
 ## 2026-10-07 基础体系升级
 
-用户确认 Beautiful UI 从写法参考提升为本轮直接视觉和动效对照，工程接入仍采用自有 API、统一 token 与 Base UI。固定源码提交 `44a274e598395ab61e7c96c26fda2758780253b7`；对照中性主按钮、蓝色强调按钮、胶囊文字动作、不同表面的边界与浅层阴影及短按压反馈。来源与研究见[已有调研](../../.scratch/codex-workbench-ui/research.md#7-beautiful-ui-实物调研2026-10-06)及[升级规格](../../.scratch/beautiful-ui-system/spec.md)；不移植示例计时器、假运行状态或整套组件库。
+用户确认 Beautiful UI 从写法参考提升为本轮直接视觉和动效对照，工程接入仍采用自有 API、统一 token 与 Base UI。固定源码提交 `44a274e598395ab61e7c96c26fda2758780253b7`；对照中性主按钮、蓝色强调按钮、胶囊文字动作、不同表面的边界与浅层阴影及短按压反馈。来源与研究见[已有调研](../../.scratch/codex-workbench-ui/research.md#7-beautiful-ui--tool-ui组件写法与自有封装)及[升级规格](../../.scratch/beautiful-ui-system/spec.md)；不移植示例计时器、假运行状态或整套组件库。

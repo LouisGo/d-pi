@@ -30,8 +30,16 @@
     var(--emphasis) 78%,
     var(--foreground)
   );
-  --primary-hover: color-mix(in srgb, var(--primary) 90%, var(--foreground));
-  --primary-active: color-mix(in srgb, var(--emphasis) 78%, var(--foreground));
+  --primary-hover: color-mix(
+    in srgb,
+    var(--primary) 88%,
+    var(--primary-foreground)
+  );
+  --primary-active: color-mix(
+    in srgb,
+    var(--primary) 78%,
+    var(--primary-foreground)
+  );
   --muted-hover: color-mix(
     in srgb,
     var(--muted-foreground) 12%,
@@ -39,7 +47,7 @@
   );
   --foreground: var(--preview-light-foreground);
   --primary: #27292e;
-  --emphasis: #287de0;
+  --emphasis: #246fca;
   --emphasis-foreground: #ffffff;
   --emphasis-hover: color-mix(in srgb, var(--emphasis) 90%, var(--foreground));
   --emphasis-active: color-mix(in srgb, var(--emphasis) 78%, var(--foreground));
@@ -50,6 +58,7 @@
   --muted-foreground: #646870;
   --border: #e6e7eb;
   --border-strong: #d8dae0;
+  --control-border: #8a8d95;
   --border-soft: #eff0f2;
   --field: #f7f7f8;
   --placeholder: #6b6f77;
@@ -137,6 +146,7 @@
   --muted-foreground: #adb0b8;
   --border: #383a40;
   --border-strong: #4a4d55;
+  --control-border: #797d88;
   --border-soft: #2e3035;
   --field: #28292e;
   --placeholder: #a2a6af;

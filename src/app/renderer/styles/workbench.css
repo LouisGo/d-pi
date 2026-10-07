@@ -516,11 +516,7 @@
     margin-inline-end: auto;
     max-width: 100%;
   }
-  .composer-help > summary {
-    cursor: default;
-    padding: calc(var(--layout-gap) / 2);
-  }
-  .composer-help > p {
+  .composer-help > .ui-disclosure > p {
     margin-block: calc(var(--layout-gap) / 2);
   }
   .runtime-panel > [hidden] {

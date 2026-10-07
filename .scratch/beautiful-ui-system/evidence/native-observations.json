@@ -21,5 +21,10 @@
     "system IME",
     "physical drag resize; narrow window launched at fixed 720 width"
   ],
-  "capture_notes": "Native OS window sharing pill is system chrome. dark-narrow-controls is a closed-state control composition, not an open select. Initial light/dark-forms captures predate final demo width adjustment; final narrow-forms captures show the adjusted grid."
+  "capture_notes": "Final reviewed correction batch recaptured both fixed window widths and themes. dark-narrow-controls is closed-state composition. Native OS sharing pill and cursor highlight are system chrome. Captures use the source Renderer and mock IPC, not a packaged candidate.",
+  "correction_confirmation": [
+    "light emphasis contrast and neutral hover/active source verified by contrast.mjs",
+    "Checkbox default boundary uses control-border in both themes",
+    "Button/TabStrip/Disclosure geometry and native interaction paths unchanged"
+  ]
 }
