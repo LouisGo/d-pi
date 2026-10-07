@@ -1,6 +1,37 @@
 import { queryOptions } from "@tanstack/react-query";
 import type { HistoryBridge, HistoryCursor } from "../contracts/public";
 
+export interface BoundHistoryAttempt {
+  readonly id: string;
+  readonly cursor: HistoryCursor | null;
+}
+export function boundHistoryPageQuery(
+  bridge: HistoryBridge,
+  threadId: string,
+  attempt: BoundHistoryAttempt | null,
+) {
+  return queryOptions({
+    queryKey: [
+      "bound-native-history-page",
+      threadId,
+      attempt?.id ?? null,
+      attempt?.cursor ?? null,
+    ] as const,
+    enabled: attempt !== null,
+    networkMode: "always",
+    retry: false,
+    gcTime: 0,
+    queryFn: async ({ signal }) => {
+      if (!attempt) return null;
+      signal.throwIfAborted();
+      const page = await bridge.read(threadId, attempt.cursor);
+      // This is local attempt cancellation; the existing native I/O is not abortable.
+      signal.throwIfAborted();
+      return page;
+    },
+  });
+}
+
 export function projectHistoryCatalogQuery(
   bridge: HistoryBridge,
   threadId: string,

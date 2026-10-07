@@ -1,5 +1,9 @@
 import { useStore } from "zustand";
-import type { ConversationModel } from "../../../modules/conversation/core/public";
+import {
+  type ConversationModel,
+  type ReadingPositions,
+  readingSourceKey,
+} from "../../../modules/conversation/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import { Button } from "../../../modules/ui/renderer/public";
 import { ReadingBody } from "./reading-body";
@@ -8,9 +12,11 @@ import { SubagentMessage } from "./subagents";
 export function Conversation({
   model,
   onHistory,
+  positions,
 }: {
   model: ConversationModel;
   onHistory?: () => void;
+  positions?: ReadingPositions | undefined;
 }) {
   const { t } = useI18n();
   const itemIds = useStore(model.stateStore, (state) => state.itemIds);
@@ -24,9 +30,14 @@ export function Conversation({
     model.stateStore,
     (state) => state.resyncExhausted,
   );
+  const source =
+    threadId && generation
+      ? readingSourceKey({ kind: "live", threadId, generation })
+      : undefined;
   return (
     <section
       className="conversation"
+      data-reading-source={source}
       aria-label={t("ui.conversation.sectionLabel")}
     >
       <h2>{t("ui.conversation.heading")}</h2>
@@ -57,6 +68,8 @@ export function Conversation({
           key={JSON.stringify([threadId, generation, id])}
           id={id}
           model={model}
+          positions={positions}
+          source={source}
         />
       ))}
     </section>
@@ -66,24 +79,32 @@ export function Conversation({
 function ConversationMessage({
   id,
   model,
+  positions,
+  source,
 }: {
   id: number;
   model: ConversationModel;
+  positions?: ReadingPositions | undefined;
+  source?: string | undefined;
 }) {
   const { t, formatMessage } = useI18n();
   const item = useStore(model.stateStore, (state) => state.itemsById.get(id));
   if (!item) return null;
-  if (item.subagent) return <SubagentMessage item={item} />;
+  const position =
+    positions && source
+      ? { positions, key: JSON.stringify([source, id]) }
+      : undefined;
+  if (item.subagent) return <SubagentMessage item={item} position={position} />;
   if (item.subagentNotice)
     return (
-      <p role="status">
+      <p role="status" data-reading-row={id}>
         {item.subagentNotice === "observation-limit"
           ? t("subagents.observationLimit")
           : t("subagents.observationUnavailable")}
       </p>
     );
   return (
-    <article className="message" data-selectable>
+    <article className="message" data-selectable data-reading-row={id}>
       <div className="message-heading">
         <strong>
           {item.label.kind === "literal"
@@ -112,10 +133,15 @@ function ConversationMessage({
           <ReadingBody
             text={item.text || t("ui.conversation.waitingResult")}
             raw
+            position={position}
           />
         </details>
       ) : (
-        <ReadingBody text={item.text} streaming={item.state === "streaming"} />
+        <ReadingBody
+          text={item.text}
+          streaming={item.state === "streaming"}
+          position={position}
+        />
       )}
       {item.truncated && (
         <p role="status">{formatMessage({ code: "conversation.truncated" })}</p>

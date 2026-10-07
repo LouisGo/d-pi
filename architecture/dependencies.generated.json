@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "f7d9bb7c53209061b61a7a692740ba1938b701b992b627abc556868d46b3a119",
+  "inputsHash": "4c40ea6a0fc4695f638ab2a89ace01d3ae795fe379029afaf481f7965365347f",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 384,
-    "scannedFiles": 384,
+    "sourceFiles": 389,
+    "scannedFiles": 389,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 170,
-      "lines": 28688,
+      "files": 172,
+      "lines": 29191,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -289,8 +289,8 @@
         "main"
       ],
       "materialized": true,
-      "files": 20,
-      "lines": 2572,
+      "files": 23,
+      "lines": 2986,
       "publicEntries": [
         {
           "path": "src/modules/conversation/contracts/public.ts",
@@ -7238,6 +7238,15 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "zustand",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/history.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "../../../modules/conversation/contracts/public",
       "kind": "import",
       "resolution": "module",
@@ -7468,6 +7477,51 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/app/renderer/reading/reading-anchor.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/reading-anchor.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/conversation/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/core/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/app/renderer/reading/reading-anchor.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./reading-anchor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/reading/reading-anchor.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/reading-anchor.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/conversation/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/core/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "core"
+    },
+    {
       "from": "src/app/renderer/reading/reading-body.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -7475,6 +7529,27 @@
       "specifier": "react",
       "kind": "import",
       "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/reading-body.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "zustand",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/reading-body.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/conversation/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/core/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "core"
     },
     {
       "from": "src/app/renderer/reading/reading-body.tsx",
@@ -17466,6 +17541,48 @@
       "targetEnvironment": "contracts"
     },
     {
+      "from": "src/modules/conversation/core/bound-history-attempt.test.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "@tanstack/react-query",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/core/bound-history-attempt.test.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/core/bound-history-attempt.test.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/contracts/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/conversation/core/bound-history-attempt.test.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "./history-queries",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/core/history-queries.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "core"
+    },
+    {
       "from": "src/modules/conversation/core/history-queries.ts",
       "sourceModule": "conversation",
       "sourceEnvironment": "core",
@@ -17572,6 +17689,78 @@
       "to": "src/modules/conversation/core/model.ts",
       "targetModule": "conversation",
       "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/conversation/core/public.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "./reading-position",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/conversation/core/reading-position.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/conversation/core/reading-position.test.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/core/reading-position.test.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "./reading-position",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/core/reading-position.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/conversation/core/reading-position.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "ts-pattern",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/core/reading-position.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "zustand/middleware",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/core/reading-position.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "zustand/vanilla",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/core/reading-position.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/contracts/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/modules/conversation/core/subagent-reconnect.test.ts",

@@ -1,15 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { match } from "ts-pattern";
+import { useStore } from "zustand";
 import type {
   HistoryBridge,
   HistoryCursor,
   HistoryEntry,
-  HistoryPage,
 } from "../../../modules/conversation/contracts/public";
 import {
+  type BoundHistoryAttempt,
+  boundHistoryPageQuery,
   projectHistoryCatalogQuery,
   projectHistoryPageQuery,
+  ReadingPositions,
+  readingSourceKey,
 } from "../../../modules/conversation/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import { Button } from "../../../modules/ui/renderer/public";
@@ -33,22 +37,29 @@ export function historyToolEvidenceMessage(
     .exhaustive();
 }
 
-export function History({
-  bridge,
-  threadId,
-  active,
-}: {
+interface HistoryProps {
   bridge: HistoryBridge;
   threadId: string;
   active: boolean;
-}) {
+  positions?: ReadingPositions;
+}
+export function History(props: HistoryProps) {
+  return <HistoryContent key={props.threadId} {...props} />;
+}
+function HistoryContent({ bridge, threadId, active, positions }: HistoryProps) {
+  const [localPositions] = useState(() => new ReadingPositions());
+  useEffect(() => () => localPositions.dispose(), [localPositions]);
+  const owner = positions ?? localPositions;
+  const history = useStore(owner.stateStore, (state) => state.history);
+  const { choice, cursor } = history;
+  const [boundAttempt, setBoundAttempt] = useState<BoundHistoryAttempt | null>(
+    () => (history.readBound ? { id: crypto.randomUUID(), cursor } : null),
+  );
   const { t } = useI18n();
   const catalog = useQuery({
     ...projectHistoryCatalogQuery(bridge, threadId),
     enabled: active,
   });
-  const [choice, setChoice] = useState<string | null>(null);
-  const [cursor, setCursor] = useState<HistoryCursor | null>(null);
   const selected =
     choice ??
     (catalog.data?.kind === "catalog"
@@ -58,31 +69,44 @@ export function History({
     ...projectHistoryPageQuery(bridge, threadId, selected || null, cursor),
     enabled: active && !!selected,
   });
-  const [boundPage, setPage] = useState<HistoryPage | null>(null);
-  const page = selected ? nativePage.data : boundPage;
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState(false);
+  const boundPage = useQuery({
+    ...boundHistoryPageQuery(bridge, threadId, boundAttempt),
+    enabled: active && !selected && boundAttempt !== null,
+  });
+  useEffect(() => {
+    if (choice === null && selected)
+      owner.rememberHistory({ ...history, choice: selected });
+  }, [choice, selected, history, owner]);
+  const page = selected ? nativePage.data : boundPage.data;
+  const busy = !selected && active && boundPage.isFetching;
   const discovering = active && catalog.isFetching;
   const awaitingCatalog = discovering && !catalog.data;
   const reading = busy || (active && nativePage.isFetching);
-  async function read(cursor: HistoryCursor | null) {
-    if (selected) {
-      setCursor(cursor);
-      return;
-    }
-    if (busy) return;
-    setBusy(true);
-    setError(false);
-    try {
-      setPage(await bridge.read(threadId, cursor));
-    } catch {
-      setError(true);
-    } finally {
-      setBusy(false);
-    }
+  function read(nextCursor: HistoryCursor | null) {
+    owner.rememberHistory({
+      ...history,
+      cursor: nextCursor,
+      readBound: !selected,
+    });
+    if (!selected)
+      setBoundAttempt({ id: crypto.randomUUID(), cursor: nextCursor });
   }
+  const source =
+    page?.kind === "page"
+      ? readingSourceKey({
+          kind: "native",
+          threadId,
+          sessionKey: selected || "bound",
+          source: page.source,
+          pageOffset: cursor?.offset ?? 0,
+        })
+      : undefined;
   return (
-    <section className="history" aria-label={t("ui.history.sectionLabel")}>
+    <section
+      className="history"
+      data-reading-source={source}
+      aria-label={t("ui.history.sectionLabel")}
+    >
       <h2>{t("ui.history.sectionLabel")}</h2>
       {discovering && <p role="status">{t("ui.history.discovering")}</p>}
       {reading && <p role="status">{t("ui.history.reading")}</p>}
@@ -94,8 +118,12 @@ export function History({
             value={selected}
             disabled={awaitingCatalog || busy}
             onChange={(event) => {
-              setChoice(event.target.value);
-              setCursor(null);
+              owner.rememberHistory({
+                choice: event.target.value,
+                cursor: null,
+                readBound: false,
+              });
+              setBoundAttempt(null);
             }}
           >
             <option value="">
@@ -116,8 +144,9 @@ export function History({
           disabled={catalog.isFetching || nativePage.isFetching || busy}
           onClick={() => {
             void catalog.refetch();
-            if (cursor) setCursor(null);
+            if (cursor) read(null);
             else if (selected) void nativePage.refetch();
+            else if (history.readBound) read(null);
           }}
         >
           {t("config.refresh")}
@@ -126,7 +155,7 @@ export function History({
       {catalog.data?.kind === "catalog" && catalog.data.partial && (
         <p role="status">{t("ui.history.catalogPartial")}</p>
       )}
-      {(catalog.isError || nativePage.isError) && (
+      {(catalog.isError || nativePage.isError || boundPage.isError) && (
         <p role="alert">{t("ui.history.readFailed")}</p>
       )}
       {catalog.data?.kind === "unavailable" && (
@@ -146,7 +175,6 @@ export function History({
           {t("ui.history.read")}
         </Button>
       )}
-      {error && <p role="alert">{t("ui.history.readFailed")}</p>}
       {page?.kind === "unavailable" && (
         <p role="status">
           {t("ui.history.unavailable", {
@@ -171,6 +199,7 @@ export function History({
             <article
               className="message"
               data-selectable
+              data-reading-row={entry.id}
               key={JSON.stringify([threadId, selected, page.source, entry.id])}
             >
               <div className="message-heading">
@@ -222,7 +251,14 @@ export function History({
                   </div>
                 )}
               </details>
-              <ReadingBody text={entry.text} />
+              <ReadingBody
+                text={entry.text}
+                position={
+                  positions && source
+                    ? { positions, key: JSON.stringify([source, entry.id]) }
+                    : undefined
+                }
+              />
             </article>
           ))}
           {page.next && (

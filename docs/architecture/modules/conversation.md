@@ -69,3 +69,11 @@ M3 PNG 分享复用确定版本的选中内容，按排版/分页输出图片；
 
 此接入只改变 Renderer 呈现，不扩大 Host / OMP 预算、不重读历史、不改变执行或持久化。分段规则、实际 React 挂载的 DOM／选择／滚动和来源隔离有自动回归；真实 Electron 几何、键盘与剪贴板，以及完整 M2 性能组合另由对应候选记录维护。
 复制使用 Renderer 的 `navigator.clipboard.writeText`；应用窗口仅允许当前 WebContents、主框架、当前文档的 `clipboard-sanitized-write`，check/request 两入口一致。剪贴板读取和其它浏览器权限保持拒绝；此权限不授予模型工具或原生 OMP 文件访问能力。
+
+## T3 基础重构：内容锚点与读取 attempt（2026-10-07）
+
+Thread 拥有有界的阅读位置账本，不保存正文或执行事实。实时位置以真实 connectionGeneration 隔离，原生历史以 session key、实际 page.source 与 cursor offset 隔离；恢复 hydrate 只建立来源基线，不构造新轮次。锚点保存 row ID、行内偏移、像素 fallback 和 atEnd；上方阅读随布局/流式更新恢复同一内容，只有原先位于底部才跟随真实尾部。行消失或缩短时夹紧到可用范围，来源改变不借用旧来源位置。每 Thread 最多32个来源锚点、128个分段正文位置，LRU 淘汰最旧；来源/正文key及row ID最多4096 UTF-16 units，超限身份退回像素/局部分段，不缓存超长字符串；Thread释放时清空并拒绝迟到写入。
+
+Renderer DOM adapter 拥有 ResizeObserver/MutationObserver/rAF 与几何测量，卸载/隐藏停止测量，不用 hidden 零坐标覆盖可见位置。视图/Thread返回保留正文分段选择与段内滚动；只读位置不控制 OMP。仍保留有界正文 DOM 和当前已封闭段的选择，不按文字/顺序猜测 native/live 合并。
+
+原生项目分页继续交给 Query 按来源/key/cursor 拥有；绑定历史读取也进入 Query，每次用户读取建立独立 attempt（同cursor重试仍不同），旧返回或 finally 不更新新attempt的忙碌/错误/页内容。未支持物理取消的历史 I/O 不冒称已终止；视图释放只防止迟到结果接管当前来源。合同与工程证据归 [T3 基础规格](../../../.scratch/t3-foundations/spec.md)。
