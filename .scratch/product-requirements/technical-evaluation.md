@@ -53,7 +53,7 @@ Electron 当前不建议使用 webview 标签；iframe 又会受目标网站嵌�
 
 ## 5. 终端与 Git
 
-终端首选 [xterm.js](https://xtermjs.org/)提供显示与输入，配合 [node-pty](https://github.com/microsoft/node-pty)提供真实伪终端。node-pty 涉及原生构建与 Electron 兼容性，且官方说明并非线程安全；不能直接把它当成普通 JS 工作随意放到共享 worker 中。后续验证 shell 输入、resize、Ctrl-C、输出流控及随包运行。
+2026-10-07 D-40已将终端部分确认为 B：专用 TerminalHost utility process 承载 node-pty/shell，主页面 Renderer 使用 xterm.js，Main负责执行信任、准入与监督，输出走受限MessagePort。终端不再保持泛化候选比较；native ABI、屏幕恢复、背压与故障单源见[终端契约](../../docs/architecture/terminal.md)及[验证设计](../../docs/validation/terminal.md)，本次只交付方案/文档，后续在功能开发授权内直接接入。原评估其他部分的状态不受影响。
 
 2026-09-25 用户确认 Git Panel 自建 OMP 业务 GUI，底层 Git 复用成熟实现，不建设完整通用 Git 客户端。“20% / 80%”是职责划分，不是工时估算；撤回寻找完整可嵌入 Git GUI 的前置任务。
 

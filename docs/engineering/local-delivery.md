@@ -38,6 +38,8 @@ Dev / preview 使用按 checkout 路径区分的持久 App 数据，沿用共享
 
 ## 未实施与待决定
 
+D-40集成终端尚未包含在当前构建/包中。其node-pty ABI、TerminalHost入口、native/helper真实资源路径与将来的签名盘点见[终端契约 §8](../architecture/terminal.md#8-macos-原生构建诊断与实现约束)，验收见[终端验证](../validation/terminal.md)；不将现有OMP SDK包验证当成PTY包证据。
+
 | 事项 | 状态 | 下一步所需条件 |
 | --- | --- | --- |
 | 项目自身许可证 | 待权利人决定；根目录没有项目 LICENSE，package 没有 license 声明 | 权利人确认许可与分发范围后再落地。第三方 notices 或 `private=true` 均不构成项目许可选择。 |

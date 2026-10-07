@@ -34,6 +34,8 @@ Main 的 Thread 功能管理项目/目录关系、稳定 threadId、workingDirec
 
 文件模块只取规范化资源上下文和必要授权信息；它自己在打开文件时校验实际目标。宿主启动时检查执行信任。共享授权解析逻辑可复用，但不建设规则语言或万能权限服务。
 
+D-40 [用户终端](terminal.md)消费同一工作目录身份与项目执行信任，Main在创建时固定上下文，TerminalHost在spawn处复核；不因App文件读取授权获得执行权。撤销、目录重关联与删除需考虑存活终端引用，不能把终端私有列表或shell的OSC cwd当作threads的目录真相；具体规则见[终端契约 §2](../terminal.md#2-目录信任与-shell-环境)，产品关联粒度仍由[终端规格](../../../.scratch/integrated-terminal/spec.md#产品待决)决定。
+
 ## 生命周期与失败
 
 - Thread 跨窗口和重启存在，原生 OMP 实例按宿主规则回收；“当前未启动”不是“Thread 已删除”。

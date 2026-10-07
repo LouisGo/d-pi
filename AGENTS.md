@@ -33,6 +33,8 @@
 
 ## 按任务读取
 
+集成终端D-40/B的方案与后续实施从[所属规格](.scratch/integrated-terminal/spec.md)、[终端模块](docs/architecture/modules/terminal.md)进入；详细协议/输出/清理只读[终端契约](docs/architecture/terminal.md)，验收只读[验证设计](docs/validation/terminal.md)。当前仅文档交付，计划不授权终端开发。
+
 | 任务 | 入口 |
 | --- | --- |
 | 执行已授权切片、并行 implement 与集成 | [d-pi-implement-slice](.agents/skills/d-pi-implement-slice/SKILL.md)、[任务约定](docs/agents/issue-tracker.md#授权切片与-ready-frontier)；多票用 `pnpm plan:slice`，主 Agent 单写管理状态 |
