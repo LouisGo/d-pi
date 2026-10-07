@@ -4,6 +4,8 @@
 
 完整独立结论在[research](research.md)，目标与认可状态单源在[spec](spec.md)，逐次红绿、两轴review及完整检查在[07](evidence/07-integration.md)，本地可审查[PR草稿](pr.md)。未push、创建远端PR、merge或发布。
 
+用户授权的附赠[工作流复盘](retro.md)只回流共享规则修复的消费者追踪指引；不改变以上生产源或试用证据。
+
 ## 当前结果与固定版本
 
 六组结果已接入正式路径：Host原生typed failure与任务生命周期；Main只读operation和Files/Git资源取消；Thread附件来源及Undo/GC保护；可信结构化复制和原项目内容冻结；按内容/来源隔离的阅读锚点；Writer源头安全与故障恢复。沿用OMP执行/原生历史、接受与消费原子事务、unknown不重发和冷恢复只读；Effect限于既定执行边界。
