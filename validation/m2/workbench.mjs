@@ -16,6 +16,7 @@ const { scenario, path: outputPath } = parseValidationScenario(
     focus: [],
     components: [],
     sandwich: [],
+    chrome: [],
   },
 );
 const isolated = createTestEnvironment({ prefix: "d-pi-workbench-" });
@@ -124,7 +125,9 @@ try {
     ),
   );
   await call("Page.enable");
-  if (scenario === "sandwich") {
+  if (scenario === "chrome") {
+    await runChromeChecks();
+  } else if (scenario === "sandwich") {
     await runSandwichChecks();
   } else if (scenario === "components") {
     await runComponentChecks();
@@ -1095,7 +1098,8 @@ async function runSandwichChecks() {
     const header=r('.window-header'),footer=r('.window-statusbar'),status=r('.statusbar-conversation'),mainHeader=r('.conversation-header');
     return footer.height===28 && footer.bottom===innerHeight && header.top===0 && header.height===44 &&
       Math.abs(status.left-main.left)<1 && Math.abs(mainHeader.left-main.left)<1 &&
-      Math.abs(status.right-(right.width>0?right.left-1:innerWidth))<1 && sidebar.top===44 && main.top>=44;
+      Math.abs(status.right-(right.width>0?right.left-parseFloat(getComputedStyle(document.querySelector('#workspace-split-separator')).width):innerWidth))<1 &&
+      Math.abs(sidebar.top-header.bottom-parseFloat(getComputedStyle(document.querySelector('.window-frame')).rowGap))<1 && main.top>=header.bottom;
   })()`;
   await check(
     "no-rail-or-home-icon",
@@ -1104,7 +1108,7 @@ async function runSandwichChecks() {
   await check("global-top-middle-bottom-align", aligned);
   await check(
     "wide-settings-narrow-tools-fixed-below-scroll",
-    `(()=>{const r=s=>document.querySelector(s).getBoundingClientRect(),settings=r('.sidebar-actions [aria-label=Settings]'),tools=r('.sidebar-tools'),dock=r('.sidebar-actions'),sidebar=r('.primary-sidebar'),scroll=r('.sidebar-scroll'),footer=r('.window-statusbar');return settings.width>tools.width && settings.right<=tools.left && dock.bottom===sidebar.bottom && sidebar.bottom===footer.top && scroll.bottom<=dock.top;})()`,
+    `(()=>{const r=s=>document.querySelector(s).getBoundingClientRect(),settings=r('.sidebar-actions [aria-label=Settings]'),tools=r('.sidebar-tools'),dock=r('.sidebar-actions'),sidebar=r('.primary-sidebar'),scroll=r('.sidebar-scroll'),footer=r('.window-statusbar');return settings.width>tools.width && settings.right<=tools.left && dock.bottom===sidebar.bottom && Math.abs(footer.top-sidebar.bottom-parseFloat(getComputedStyle(document.querySelector(".window-frame")).rowGap))<1 && scroll.bottom<=dock.top;})()`,
   );
   await evaluate(
     "window.sandwichEditor=document.querySelector('.tiptap');window.sandwichController=window.probe.model.controller;window.sandwichDock=document.querySelector('.sidebar-actions').getBoundingClientRect().top;document.querySelector('.sidebar-scroll').scrollTop=99999",
@@ -1235,4 +1239,42 @@ async function runSandwichChecks() {
     "developer-return-keeps-thread-controller-and-draft",
     "window.sandwichController===window.probe.model.controller && document.querySelector('.tiptap').textContent.includes('A unsent draft')",
   );
+}
+
+async function runChromeChecks() {
+  // One bounded visual pass for the revised surfaces and transparent spacing.
+  await evaluate("window.hostProbe.enable()");
+  await evaluate("window.probe.pause()");
+  await click("Restore workspace");
+  await click("Restore bottom panel");
+  for (const theme of ["light", "dark"]) {
+    await evaluate(
+      `document.documentElement.dataset.theme=${JSON.stringify(theme)}`,
+    );
+    for (const [width, height] of [
+      [1440, 900],
+      [720, 540],
+    ]) {
+      await resize(width, height);
+      await call("Input.dispatchMouseEvent", {
+        type: "mouseMoved",
+        x: 220,
+        y: 120,
+      });
+      await check(
+        `${theme}-${width}-continuous-footer-transparent-spacing`,
+        `(()=>{
+          const frame=document.querySelector('.window-frame'),header=document.querySelector('.window-header'),footer=document.querySelector('.window-statusbar');
+          const css=e=>getComputedStyle(e),r=e=>e.getBoundingClientRect(),transparent=c=>c==='rgba(0, 0, 0, 0)';
+          const gaps=[...document.querySelectorAll('.window-content .ui-resize-separator')].filter(e=>r(e).width>0&&r(e).height>0&&!e.closest('[inert]'));
+          return r(footer).height===28&&r(footer).bottom===innerHeight&&css(footer).backgroundColor!==css(header).backgroundColor&&
+            css(footer).borderTopWidth==='0px'&&parseFloat(css(frame).rowGap)===4&&
+            [...footer.children].every(e=>transparent(css(e).backgroundColor)&&css(e).borderLeftWidth==='0px'&&css(e).borderRightWidth==='0px')&&
+            [...header.children].every(e=>css(e).borderBottomWidth==='0px')&&
+            gaps.every(e=>transparent(css(e).backgroundColor))&&document.documentElement.scrollWidth===innerWidth;
+        })()`,
+      );
+      await capture(`chrome-${theme}-${width}`);
+    }
+  }
 }

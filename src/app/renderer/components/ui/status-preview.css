@@ -1,6 +1,6 @@
 @layer components {
   .ui-button-status {
-    height: calc(var(--statusbar-height) - var(--separator-size));
+    height: var(--statusbar-height);
     min-height: 0;
     min-width: 0;
     padding-inline: calc(var(--layout-gap) / 2);

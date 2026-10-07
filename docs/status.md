@@ -66,4 +66,4 @@
 - [类型安全桌面路由](../.scratch/router-integration/spec.md)：本地实施和提交；不 push、不改变 OMP 执行及冷恢复政策。
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 
-<!-- source-sha256: 0ee89f8ba493966e57593cc52e3f5a3a833d632799b9baee36654ea124cea802; sources: 127 -->
+<!-- source-sha256: 45e10e20a7e0855787fc052ba01bdb57c6d5e82df98b5ac1540a1e564a2e067d; sources: 127 -->

@@ -1,0 +1,27 @@
+{
+  "version": "isolated-workbench",
+  "scenario": "chrome",
+  "passed": true,
+  "checks": [
+    {
+      "name": "light-1440-continuous-footer-transparent-spacing",
+      "value": true
+    },
+    {
+      "name": "light-720-continuous-footer-transparent-spacing",
+      "value": true
+    },
+    {
+      "name": "dark-1440-continuous-footer-transparent-spacing",
+      "value": true
+    },
+    {
+      "name": "dark-720-continuous-footer-transparent-spacing",
+      "value": true
+    }
+  ],
+  "stderr": "\nDevTools listening on ws://127.0.0.1:65400/devtools/browser/8e71d965-da0e-451d-a174-9841a3c3964e\n",
+  "limitations": [
+    "isolated GUI fixture; not packaged or system IME evidence"
+  ]
+}
