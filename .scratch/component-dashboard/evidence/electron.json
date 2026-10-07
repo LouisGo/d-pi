@@ -80,7 +80,7 @@
       "value": true
     }
   ],
-  "stderr": "\nDevTools listening on ws://127.0.0.1:50690/devtools/browser/3a08c786-fcf4-4561-b59f-30ecd17f32d1\n",
+  "stderr": "\nDevTools listening on ws://127.0.0.1:51033/devtools/browser/11795fda-208c-4933-9b26-ce86e694dda9\n",
   "limitations": [
     "isolated GUI fixture; not packaged or system IME evidence"
   ]

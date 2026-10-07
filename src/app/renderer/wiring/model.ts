@@ -63,7 +63,11 @@ type RestoreReply = ReplyFor<
     { kind: "restore" | "choose-project" | "select-thread" | "new-thread" }
   >
 >;
-type EditorBoundary = { freeze: () => boolean; release: () => void };
+type EditorBoundary = {
+  freeze: () => boolean;
+  release: () => void;
+  canLeaveView?: () => boolean;
+};
 type EditorBinding = { owner: ThreadModel; boundary: EditorBoundary };
 
 export function transportFailure(traceId: string): Failure {
@@ -179,11 +183,13 @@ export class AppModel {
     const thread = this.activeThread;
     const binding = this.editorBinding;
     const generation = this.requestGeneration;
+    if (binding?.boundary.canLeaveView?.() === false) return false;
     if (binding && !binding.boundary.freeze()) return false;
     try {
       const saved = await (thread?.controller.flush() ?? Promise.resolve(true));
       return (
         saved &&
+        binding?.boundary.canLeaveView?.() !== false &&
         !this.disposed &&
         generation === this.requestGeneration &&
         this.activeThread === thread &&

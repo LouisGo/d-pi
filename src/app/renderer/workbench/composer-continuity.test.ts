@@ -1,13 +1,22 @@
 // @vitest-environment happy-dom
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { Editor } from "@tiptap/core";
 import { closeHistory } from "@tiptap/pm/history";
+import { Slice } from "@tiptap/pm/model";
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
 import { RuntimeViewSchema } from "../../../modules/execution/contracts/public";
-import { DraftSchema } from "../../../modules/input/contracts/public";
+import {
+  AttachmentSchema,
+  DraftSchema,
+} from "../../../modules/input/contracts/public";
 import { replaceDraftText } from "../../../modules/input/renderer/public";
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
+import type {
+  AttachmentBridge,
+  AttachmentReply,
+} from "../../contracts/attachments";
 import {
   type DesktopBridge,
   parseDesktopReply,
@@ -15,11 +24,17 @@ import {
 import { AppModel } from "../wiring/model";
 import { Composer } from "./composer";
 
-const mounted: { root: Root; container: HTMLElement; model: AppModel }[] = [];
+const mounted: {
+  root: Root;
+  container: HTMLElement;
+  model: AppModel;
+  client: QueryClient;
+}[] = [];
 afterEach(async () => {
-  for (const { root, container, model } of mounted.splice(0)) {
+  for (const { root, container, model, client } of mounted.splice(0)) {
     await act(() => root.unmount());
     model.dispose();
+    client.clear();
     container.remove();
   }
   vi.unstubAllGlobals();
@@ -28,6 +43,7 @@ afterEach(async () => {
 async function setup(
   phase?: "interrupted" | "allowed" | "ready",
   onChooseModel?: () => void,
+  attachments?: AttachmentBridge,
 ) {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const first = DraftSchema.parse({
@@ -78,6 +94,7 @@ async function setup(
     onCloseCancelled: () => () => {},
     completeClose: () => {},
   };
+  if (attachments) bridge.attachments = attachments;
   if (phase)
     bridge.runtime = {
       subscribe: () => () => {},
@@ -101,7 +118,10 @@ async function setup(
   const container = document.createElement("div");
   document.body.append(container);
   const root = createRoot(container);
-  mounted.push({ root, container, model });
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  mounted.push({ root, container, model, client });
   function thread() {
     const state = model.getSnapshot();
     if (state.kind !== "ready" || state.threadSelection.kind !== "thread")
@@ -111,13 +131,16 @@ async function setup(
   const render = () =>
     act(() =>
       root.render(
-        createElement(I18nProvider, {
-          initialSnapshot: { preference: "system", resolvedLocale: "en-US" },
-          children: createElement(Composer, {
-            key: thread().key,
-            thread: thread(),
-            model,
-            onChooseModel,
+        createElement(QueryClientProvider, {
+          client,
+          children: createElement(I18nProvider, {
+            initialSnapshot: { preference: "system", resolvedLocale: "en-US" },
+            children: createElement(Composer, {
+              key: thread().key,
+              thread: thread(),
+              model,
+              onChooseModel,
+            }),
           }),
         }),
       ),
@@ -134,7 +157,17 @@ async function setup(
     await act(() => model.selectThread(id));
     await render();
   };
-  return { model, first, second, drafts, thread, render, editor, select };
+  return {
+    model,
+    first,
+    second,
+    drafts,
+    thread,
+    render,
+    editor,
+    select,
+    container,
+  };
 }
 
 it("preserves A's middle selection and independent undo/redo across A → B → A with fresh views", async () => {
@@ -267,3 +300,77 @@ it("explains a running session without a model and offers model selection withou
   );
   expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha omega");
 });
+
+it.each(["file-picker", "drop"])(
+  "keeps a pending %s insertion in its real Composer before admitting the developer view",
+  async (source) => {
+    let complete!: (reply: AttachmentReply) => void;
+    let items: import("../../../modules/input/contracts/public").Attachment[] =
+      [];
+    const request: AttachmentBridge["request"] = async (command) => {
+      if (command.kind === "choose-import" || command.kind === "import-bytes")
+        return new Promise((resolve) => {
+          complete = resolve;
+        });
+      return { kind: "attachments", items };
+    };
+    const fixture = await setup(undefined, undefined, { request });
+    const attach = Array.from(
+      fixture.container.querySelectorAll("button"),
+    ).find((button) => button.textContent === "Attach files");
+    if (!attach) throw Error("missing real attachment control");
+    let admitted = true;
+    await act(async () => {
+      if (source === "file-picker") attach.click();
+      else {
+        const event = new DragEvent("drop", {
+          bubbles: true,
+          cancelable: true,
+        });
+        Object.defineProperty(event, "dataTransfer", {
+          value: {
+            files: [new File(["text"], "pending.txt", { type: "text/plain" })],
+          },
+        });
+        const view = fixture.editor().view;
+        view.someProp("handleDrop", (handle) =>
+          handle(view, event, Slice.empty, false),
+        );
+      }
+      // Same event turn: do not depend on React's pending-state effect having run.
+      admitted = await fixture.model.prepareViewNavigation();
+    });
+    expect(admitted).toBe(false);
+    expect(fixture.editor().isEditable).toBe(true);
+    await act(() => new Promise((resolve) => setTimeout(resolve, 20)));
+    const id = crypto.randomUUID();
+    items = [
+      AttachmentSchema.parse({
+        schemaVersion: 1,
+        id,
+        token: `[[dpi-attachment:${id}]]`,
+        threadId: fixture.first.threadId,
+        name: "pending.txt",
+        mimeType: "text/plain",
+        byteLength: 4,
+        capturedAt: new Date().toISOString(),
+        source: "file",
+        status: "ready",
+        representation: "text",
+        coverageGaps: [],
+        textOnly: true,
+      }),
+    ];
+    await act(async () => {
+      complete({ kind: "attachments", items });
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+    expect(fixture.thread().controller.getTextSnapshot()).toContain(
+      items[0]?.token,
+    );
+    await act(async () =>
+      expect(await fixture.model.prepareViewNavigation()).toBe(true),
+    );
+    expect(fixture.model.controller).toBe(fixture.thread().controller);
+  },
+);

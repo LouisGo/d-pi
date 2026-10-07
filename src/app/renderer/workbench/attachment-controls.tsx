@@ -32,6 +32,7 @@ import type {
 import { FileIcon, FolderIcon } from "../components/icons/common";
 
 export type AttachmentActions = {
+  canLeaveView(): boolean;
   importFiles(files: File[], source: "paste" | "drop"): void;
   handleMentionKey(event: KeyboardEvent): boolean;
 };
@@ -92,7 +93,9 @@ export function AttachmentControls({
   const [storageReport, setStorageReport] =
     useState<AttachmentStorageReport | null>(null);
   const [pending, setPending] = useState(0);
+  const pendingRequests = useRef(0);
   const [failed, setFailed] = useState<AttachmentRequestFailure | null>(null);
+  const failedRequest = useRef<AttachmentRequestFailure | null>(null);
   const [feedback, setFeedback] = useState<AttachmentRequestFailure | null>(
     null,
   );
@@ -244,12 +247,15 @@ export function AttachmentControls({
     // A new import cannot replace an unresolved required source. Only the
     // explicit retry button may resolve that specific failed request.
     if (blocking && failed && failed !== retryingFailure) return;
+    pendingRequests.current += 1;
     setPending((value) => value + 1);
     setFeedback(null);
     const reject = (reason: AttachmentFailureReason | null) => {
       const failure = { command, reason, ...(range ? { range } : {}) };
-      if (blocking) setFailed(failure);
-      else setFeedback(failure);
+      if (blocking) {
+        failedRequest.current = failure;
+        setFailed(failure);
+      } else setFeedback(failure);
     };
     try {
       const reply = await bridge.request({
@@ -263,10 +269,10 @@ export function AttachmentControls({
         await client.invalidateQueries({ queryKey: listKey });
       } else if (reply.kind === "attachments") {
         if (add) for (const item of reply.items) insert(item, range);
-        if (retryingFailure)
-          setFailed((current) =>
-            current === retryingFailure ? null : current,
-          );
+        if (retryingFailure && failedRequest.current === retryingFailure) {
+          failedRequest.current = null;
+          setFailed(null);
+        }
         await client.invalidateQueries({ queryKey: listKey });
       } else if (
         reply.kind === "image" ||
@@ -281,6 +287,7 @@ export function AttachmentControls({
     } catch {
       if (alive.current) reject(null);
     } finally {
+      pendingRequests.current -= 1;
       if (alive.current) setPending((value) => value - 1);
     }
   }
@@ -308,6 +315,15 @@ export function AttachmentControls({
     dismissMention();
   }
   useImperativeHandle(ref, () => ({
+    canLeaveView: () => {
+      const sources = imports.stateStore.getState();
+      return (
+        pendingRequests.current === 0 &&
+        !failedRequest.current &&
+        sources.pending === 0 &&
+        sources.failures.length === 0
+      );
+    },
     importFiles: (files, source) => void importFiles(files, source),
     handleMentionKey: (event) => {
       if (!searchOpen || event.isComposing) return false;
@@ -512,7 +528,13 @@ export function AttachmentControls({
               >
                 {t("attachment.retry")}
               </Button>
-              <Button variant="ghost" onClick={() => setFailed(null)}>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  failedRequest.current = null;
+                  setFailed(null);
+                }}
+              >
                 {t("attachment.dismissFailedRequest")}
               </Button>
             </>

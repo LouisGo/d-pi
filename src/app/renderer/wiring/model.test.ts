@@ -394,3 +394,28 @@ it("does not release a close freeze when a pending view navigation loses ownersh
   input.model.cancelClose();
   expect(input.isEditable()).toBe(true);
 });
+
+it("rechecks unfinished view input after the save and releases its own freeze when admission fails", async () => {
+  const receipt = deferredReceipt();
+  const input = await setup(() => receipt.promise);
+  let pending = false;
+  let editable = true;
+  input.model.attachEditorBoundary(input.controller, {
+    canLeaveView: () => !pending,
+    freeze: () => {
+      editable = false;
+      return true;
+    },
+    release: () => {
+      editable = true;
+    },
+  });
+  input.controller.edit("save with a new attachment intent");
+  const admission = input.model.prepareViewNavigation();
+  pending = true;
+  receipt.resolve(saved(1));
+  expect(await admission).toBe(false);
+  expect(editable).toBe(true);
+  pending = false;
+  expect(await input.model.prepareViewNavigation()).toBe(true);
+});

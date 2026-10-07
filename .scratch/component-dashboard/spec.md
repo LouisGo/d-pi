@@ -10,7 +10,7 @@
 - 重要待决：无。工具菜单同时支持点击/键盘打开、Esc关闭、移动到菜单不闪退。
 - 工程：实施中。主 Agent 在 `codex/component-dashboard` 隔离 worktree 单写集成；01由主 Agent负责，02委派 gallery Agent，在 `/Users/louistation/.codex/worktrees/component-dashboard-gallery/d-pi` / `codex/component-dashboard-gallery` 固定同一基点实现；整段独立Spec/Standards评审。
 - 用户试用：尚未交付，认可pending。
-- 验收：真实 Router/AppModel 证明工具导航不选择/释放Thread、位置不会被无关模型通知拉回、退出可恢复会话；进入工具路由需完成原编辑冻结/flush，IME或保存失败时保留原位置；组件行为测试及隔离Electron真实渲染证明菜单悬停/键盘、全量展示、重置、弹层/页签/拖拽、light/dark与窄窗几何。
+- 验收：真实 Router/AppModel 证明工具导航不选择/释放Thread、位置不会被无关模型通知拉回、退出可恢复会话；进入工具路由需完成原编辑冻结/flush，IME、保存失败或附件/引用输入尚未完成及失败待处理时保留原位置；组件行为测试及隔离Electron真实渲染证明菜单悬停/键盘、全量展示、重置、弹层/页签/拖拽、light/dark与窄窗几何。
 - 继续边界：不补未实现组件、不接业务命令、不改执行/存储/认证，不公开发布。示例仅用本地演示状态。
 
 ## 范围与组成

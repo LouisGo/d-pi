@@ -233,6 +233,7 @@ export function Composer({
   useLayoutEffect(() => {
     if (!editor) return;
     const boundary = {
+      canLeaveView: () => attachmentActions.current?.canLeaveView() ?? true,
       freeze: () => {
         if (editor.view.composing) return false;
         editor.setEditable(false, false);
