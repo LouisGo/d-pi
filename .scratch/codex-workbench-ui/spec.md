@@ -103,7 +103,7 @@ CSS Grid/Flex 负责排版与滚动边界；尺寸约束负责可用空间分配
 ```
 
 ```project-status
-[{"id":"codex-workbench-ui","title":"Codex 式工作台基础布局","phase":"基建","engineering":"partial","trial":"delivered","acceptance":"pending","build":"Dev / codex/thread-layout / 6202f2e","evidence":["thread-surface-handoff.md","sandwich-validation.md","baseline-refinement.md"],"next":"Dev试用Thread消息/Composer基础布局与工具收纳；下一轮等待用户指令，原A3缺口仍开放","constraints":"用户已授权本UI分支push、PR及合并；不公开发布或发起真实账户请求。"}]
+[{"id":"codex-workbench-ui","title":"Codex 式工作台基础布局","phase":"基建","engineering":"partial","trial":"delivered","acceptance":"pending","build":"Dev / codex/thread-layout / 16568d3","evidence":["feedback-handoff.md","thread-surface-handoff.md","sandwich-validation.md","baseline-refinement.md"],"next":"Dev试用Thread工具Modal、TabStrip独立组合与搜索焦点修正；后续消息/Composer细化等用户指令，原A3缺口仍开放","constraints":"用户已授权本UI分支push、PR及合并；不公开发布或发起真实账户请求。"}]
 ```
 
 ## 实施票
@@ -168,3 +168,12 @@ CSS Grid/Flex 负责排版与滚动边界；尺寸约束负责可用空间分配
 - 基点 `56f0b0a`；独立工作树 `/Users/louistation/.codex/worktrees/thread-layout/d-pi`，分支 `codex/thread-layout`。主 Agent 串行完成，不改当前 main；本轮不推送远端。
 - 重要待决：无。运行、提交和恢复政策继续沿用原合同；必要操作/失败提醒保持可达，不用隐藏错误实现视觉干净。
 - 工程：06工程完成，源码 `6202f2e`；[交接与试用](thread-surface-handoff.md)。46项受影响回归、11项隔离Electron及类型/设计/i18n/构建/环境通过。原A3保持partial；用户试用与认可待反馈，后续消息/Composer细化等待下一步指令。
+
+
+## 2026-10-07 后续反馈：工具弹窗与通用标签条
+
+用户当前明确授权 [07](issues/07-thread-tools-tabs-focus.md)：保留有用 Thread 工具并改为弹窗，修复鼠标打开搜索后的自动聚焦 outline，按参考截图改善标签条并解除内容容器绑定。取代06的 details 工具展开呈现；不扩大消息/Composer 或业务能力。
+
+固定基点 a0c62e3，沿用 codex/thread-layout 隔离工作树；主 Agent 串行实施。TabStrip 只负责导航和回调，PanelHost/调用方拥有面板、资源和关闭策略。共享焦点策略继续区分指针与键盘/辅助技术。验收与试用证据见[反馈交接](feedback-handoff.md)，用户认可继续 pending。
+
+07 工程完成，源16568d3；33项受影响回归、22项工作台隔离Electron及搜索控件原生场景、静态门禁和构建通过。[反馈交接](feedback-handoff.md)包含源码身份和限制；原A3/用户认可不提升，本分支尚未合入main。

@@ -1,11 +1,13 @@
 ## Summary
 
-Thread主区曾直接铺开目录/模型/子Agent/运行快照/阅读导航。本切片将默认界面整理为消息滚动区与底部Composer，保留按需Thread工具及必要运行操作。范围见[06](issues/06-thread-surface.md)。
+Thread 主区整理为消息滚动区与底部 Composer；有用的模型、子 Agent、运行检查与记录入口收纳到 Modal，停止/待答/队列异常继续可见。搜索框鼠标打开后的自动聚焦继承指针来源，键盘焦点仍显示主题轮廓。
+
+WorkspaceTabs 替换为通用 TabStrip，仅负责标签、选择/关闭/新增与键盘导航，内容及资源由调用方组合。选中使用轻量底色，悬停用关闭按钮替换同位置图标且宽度不变。
 
 ## Evidence
 
-源码6202f2e；[交接](thread-surface-handoff.md)记录真实红绿、46项受影响回归、11项隔离Electron、类型/设计/i18n/构建/环境及本地两轴复核。GUI使用模拟桥接，不代表真实provider或用户认可。独立开发资源可直接pnpm dev。
+最终实现源16568d3；[反馈交接](feedback-handoff.md)记录33项受影响回归、22项隔离Electron工作台检查、搜索原生场景、类型/设计/i18n/快速工程门禁/构建及本地两轴复核。[06交接](thread-surface-handoff.md)保留前一段基础布局证据。GUI使用模拟桥接，不代表真实provider、固定包或用户认可。
 
 ## Merge Danger
 
-Two-way：仅Renderer布局/呈现和验证fixture，无持久化迁移、权限或资源所有权变化。影响Thread工具入口、运行操作展示及Composer几何；revert可恢复旧呈现，草稿/会话数据不被删除。本地分支交付，无远端PR/CI或合并声明。
+Two-way：Renderer呈现及验证fixture，无持久化迁移或执行业务变化。影响Thread工具入口、标签交互与焦点来源判定；revert可恢复旧呈现，资源及数据仍归既有拥有者。本地分支交付，尚未合入main；原A3物理拖窗缺口保留。

@@ -274,3 +274,10 @@ src/modules/preferences/        App偏好合同与存储
 上述 components 仍是 app 内落点，不授权模块反向 import app。模块需要共享基础/配套组件时，先按架构合同确定可被依赖的公共 renderer UI 归属，再迁移/开放入口；不能复制第二套组件或把所有功能重新导出到单一入口解决依赖问题。应用只消费自有组件是已确认要求，具体跨模块公共路径仍待实际切片落实。
 
 最近落地应选择一个闭环，例如“打开文件→右页签显示→拖宽/收起→恢复→引用选区→主草稿连续”，同时实现它需要的外壳/技术/业务接入。不要将上述地图排成“所有基础组件、再所有store、再所有hooks、最后GUI”的横向大工程。
+
+
+## 2026-10-07 通用标签条落地
+
+`TabStrip` / `TabItem` 是 app 内自有通用 widget，替代 `WorkspaceTabs`。API 不携带 content，只接收标签身份、图标、可选 panelId、选择以及关闭/新增回调。调用方可以组合任意内容容器；工作台的 `WorkspaceTab` 由宿主在 TabItem 上附加 content，不将文件/PTY/browser 生命周期放入标签条。当前提供方向键/Home/End/Delete、禁用/不可关闭与焦点回落；重排和溢出菜单仍按实际业务后续推进。
+
+标签动作属于 widget 自有封装，内部使用固定 Base UI Button 公开 API 与共享按钮 token；消费者不能覆盖基础 Button 的视觉。Thread 工具使用自有通用 Modal 包装固定 Base UI Dialog，与设置弹窗同一主题/焦点合同。具体范围和证据见[07](issues/07-thread-tools-tabs-focus.md)。
