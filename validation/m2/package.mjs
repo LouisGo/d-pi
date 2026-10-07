@@ -34,15 +34,38 @@ import {
   prepareLongReadingExtension,
   validateLongReading,
 } from "./long-reading.mjs";
+import { parseValidationScenario } from "./scenario.mjs";
 import {
   createSubagentSupplier,
   validateSubagentLifecycle,
 } from "./subagent-lifecycle.mjs";
 import { wait, waitForEnabledAction } from "./wait.mjs";
 
+const { scenario, path: sourcePath } = parseValidationScenario(
+  process.argv.slice(2),
+  {
+    all: [
+      "--attachments",
+      "--attention",
+      "--attention-inspect",
+      "--continuity",
+      "--diagnostics",
+      "--diagnostics-inspect",
+      "--inspect",
+      "--lifecycle",
+      "--long-reading",
+      "--queue-subagent",
+      "--references",
+      "--router",
+      "--workbench",
+      "--working-tree",
+    ],
+    workbench: ["--workbench", "--working-tree"],
+  },
+);
 const isolated = createTestEnvironment({ prefix: "d-pi-m2-package-" });
 const source = resolve(
-  process.argv[2] ?? "dist/m2-entry-candidate/mac-arm64/d-pi.app",
+  sourcePath ?? "dist/m2-entry-candidate/mac-arm64/d-pi.app",
 );
 const bundle = join(isolated.root, "Package With Spaces", "d-pi.app");
 cpSync(source, bundle, {
@@ -369,14 +392,14 @@ let longReadingMetrics;
 let diagnosticsMetrics;
 let attentionMetrics;
 let workbenchLayout;
-try {
+async function runValidation() {
   await connect();
   if (process.argv.includes("--diagnostics"))
     await validateDiagnosticsEntry({ evaluate, wait, checks });
   await wait(() =>
     evaluate("!!document.querySelector('[contenteditable=true]')"),
   );
-  if (process.argv.includes("--workbench")) {
+  if (scenario === "workbench" || process.argv.includes("--workbench")) {
     workbenchLayout = await evaluate(
       "(()=>{const h=document.querySelector('.primary-sidebar>.panel-header');return {top:h.getBoundingClientRect().top,inner:innerHeight,outer:outerHeight,controls:[...h.querySelectorAll('button')].map(b=>({name:b.getAttribute('aria-label')||b.title,left:b.getBoundingClientRect().left})),density:document.documentElement.hasAttribute('data-density'),workspace:document.querySelector('[data-layout-region=workspace]').getBoundingClientRect().width,bottom:document.querySelector('[data-layout-region=bottom]').getBoundingClientRect().height,icons:[...document.querySelectorAll('.ui-button-icon')].filter(b=>b.getBoundingClientRect().width>0&&getComputedStyle(b).visibility!=='hidden'&&!b.closest('[hidden],[inert]')).map(b=>{const r=b.getBoundingClientRect(),s=b.querySelector('svg').getBoundingClientRect(),i=b.querySelector('.ui-icon-button-indicator');return {name:b.getAttribute('aria-label')||b.title,dx:s.x+s.width/2-r.x-r.width/2,dy:s.y+s.height/2-r.y-r.height/2,overlay:!i||(getComputedStyle(i).position==='absolute'&&getComputedStyle(i).pointerEvents==='none')};})};})()",
     );
@@ -438,6 +461,24 @@ try {
   checks.push(
     "settings Modal retains an operable diagnostics panel within its focus scope",
   );
+  if (scenario === "workbench") {
+    await click("关闭");
+    assert.equal(
+      requests.length,
+      0,
+      "workbench scope must not send provider requests",
+    );
+    assert.equal(
+      db.prepare("SELECT count(*) n FROM native_session").get().n,
+      0,
+      "workbench scope must not create execution sessions",
+    );
+    checks.push(
+      "workbench-only validation finishes without execution, reload or cold recovery",
+    );
+    await finish();
+    return;
+  }
   await evaluate("document.querySelector('.configuration-settings').open=true");
   await wait(() =>
     evaluate(
@@ -1494,11 +1535,6 @@ try {
     "cold old native sessions remain read-only, preserve drafts; explicit new independent Thread is available",
   );
   screenshots.push(await shot("m2-cold-new-thread"));
-  const logs = readFileSync(join(isolated.data, "logs/main.jsonl"), "utf8");
-  assert.ok(!logs.includes("M2_FIRST_INPUT"));
-  assert.ok(!logs.includes("fixture-original"));
-  const build = JSON.parse(logs.trim().split("\n")[0]).build;
-  assert.equal(build.dirty, process.argv.includes("--working-tree"));
   if (process.argv.includes("--diagnostics")) {
     // Restart the same copied candidate under a second controlled App data root.
     // Preserve the failed database bytes: diagnostics must never repair it.
@@ -1526,7 +1562,16 @@ try {
       JSON.stringify(diagnosticsMetrics, null, 2) + "\n",
     );
   }
+  await finish(inputLayout);
+}
+async function finish(inputLayout) {
+  const logs = readFileSync(join(isolated.data, "logs/main.jsonl"), "utf8");
+  assert.ok(!logs.includes("M2_FIRST_INPUT"));
+  assert.ok(!logs.includes("fixture-original"));
+  const build = JSON.parse(logs.trim().split("\n")[0]).build;
+  assert.equal(build.dirty, process.argv.includes("--working-tree"));
   const result = {
+    scenario,
     source,
     bundle,
     build,
@@ -1552,7 +1597,9 @@ try {
       .update(readFileSync(join(source, "Contents/Resources/app.asar")))
       .digest("hex"),
     limitations: [
-      "localhost deterministic supplier, no real credentials/billing",
+      scenario === "workbench"
+        ? "workbench header/theme/Modal only; execution, reload and cold recovery not run"
+        : "localhost deterministic supplier, no real credentials/billing",
       "native inspection evidence recorded separately",
       "M2 V1-04 and queue/subagent/read-performance increments remain open",
     ],
@@ -1566,6 +1613,9 @@ try {
   );
   void call("Browser.close").catch(() => {});
   await wait(() => child.exitCode !== null);
+}
+try {
+  await runValidation();
 } catch (error) {
   try {
     screenshots.push(await shot("m2-failure"));

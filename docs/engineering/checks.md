@@ -35,3 +35,16 @@
 - 门禁自身负例在 `test:architecture` / `test:tooling`，验证目标错误确实失败；日志中预期的 FAIL 属于这些负例，最终测试结果另看退出码。
 
 已有资源或路径未变化时不重复原生全矩阵；改到实际入口、随包资源或可见行为时补针对性证据。工程通过、Agent 实际 GUI 观察与用户试用继续分开。
+
+## 按场景运行 GUI 验证
+
+先按[无头功能合同的验证选择](../architecture/headless-features.md#日常改动的验证选择2026-10-07)判断是否需要 GUI/包内证据，再选场景；不将以下命令组合成每次改动必跑清单。
+
+| 当前缺口 | 入口 | 覆盖与限制 |
+| --- | --- | --- |
+| 导航和设置按钮的鼠标/键盘焦点 | `node validation/m2/workbench.mjs <output.json> --scenario=focus` | 两主题 rail、Thread 行、设置导航的真实 CDP 鼠标与 Tab/Shift+Tab、Esc 回焦；不跑几何/草稿/拖拽/性能矩阵，不是系统 IME 验收 |
+| 工作台整体几何与资源连续性 | `node validation/m2/workbench.mjs <output.json>` | 保留既有完整隔离 Electron GUI 场景；明确选择时可用 `--scenario=all` |
+| 当前包的顶栏、主题持久化与设置诊断焦点 | `node validation/m2/package.mjs <d-pi.app> --scenario=workbench` | 真实 Main/preload 的工作台检查；断言零供应商请求、零执行会话，不启动执行/重载/冷恢复；不代表完整 M2 验收 |
+| 包内执行/恢复与需要的功能增量 | `node validation/m2/package.mjs <d-pi.app> [增量 flags]` | 默认保留既有完整基础流程；`--router`、`--attachments`、`--workbench` 等是增量，不是范围过滤器 |
+
+`--scenario=<name>` 可在路径前后出现；未知/重复 selector、不支持的 flag 或多个路径在启动前失败，不静默退回完整流程。窄包内场景仅允许兼容的 `--workbench` / `--working-tree`，不与 `--inspect` 或其他功能增量混用。范围和实际结果写入结果 JSON；未运行的层级不能算通过。包内场景仍需要已有可运行 macOS 包，但不为纯测试驱动修改重新打产品包。

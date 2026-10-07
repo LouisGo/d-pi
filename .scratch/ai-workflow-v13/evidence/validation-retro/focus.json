@@ -1,0 +1,307 @@
+{
+  "version": "isolated-workbench",
+  "scenario": "focus",
+  "passed": true,
+  "checks": [
+    {
+      "name": "light-rail-pointer-vs-keyboard-focus",
+      "resting": {
+        "outline": "none",
+        "width": "3px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": false,
+        "active": false,
+        "current": "<body><div id=\"root\"><div class=\"app-shell\" aria-busy=\"false\"><div data-macos=\"true\" data-sidebar-visible=\"true\" class=\"window-frame\" data-layout-settings=\"false\"><nav class=\"activ"
+      },
+      "hover": {
+        "outline": "none",
+        "width": "3px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": false,
+        "active": false,
+        "current": "<body><div id=\"root\"><div class=\"app-shell\" aria-busy=\"false\"><div data-macos=\"true\" data-sidebar-visible=\"true\" class=\"window-frame\" data-layout-settings=\"false\"><nav class=\"activ"
+      },
+      "active": {
+        "outline": "none",
+        "width": "3px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": false,
+        "active": true,
+        "current": "<button type=\"button\" tabindex=\"0\" aria-pressed=\"true\" aria-label=\"Conversation\" id=\"base-ui-_r_1_\" data-base-ui-tooltip-trigger=\"\" data-slot=\"button\" class=\"ui-button ui-button-ic"
+      },
+      "clicked": {
+        "outline": "none",
+        "width": "3px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": false,
+        "active": false,
+        "current": "<div contenteditable=\"true\" role=\"textbox\" aria-label=\"Draft body\" aria-multiline=\"true\" spellcheck=\"false\" translate=\"no\" class=\"tiptap ProseMirror ProseMirror-focused\" tabindex=\""
+      },
+      "keyboard": {
+        "outline": "solid",
+        "width": "2px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": true,
+        "active": true,
+        "current": "<button type=\"button\" tabindex=\"0\" aria-pressed=\"true\" aria-label=\"Conversation\" id=\"base-ui-_r_1_\" data-base-ui-tooltip-trigger=\"\" data-slot=\"button\" class=\"ui-button ui-button-ic"
+      }
+    },
+    {
+      "name": "light-thread-pointer-vs-keyboard-focus",
+      "resting": {
+        "outline": "none",
+        "width": "3px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": false,
+        "active": false,
+        "current": "<body><div id=\"root\"><div class=\"app-shell\" aria-busy=\"false\"><div data-macos=\"true\" data-sidebar-visible=\"true\" class=\"window-frame\" data-layout-settings=\"false\"><nav class=\"activ"
+      },
+      "hover": {
+        "outline": "none",
+        "width": "3px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": false,
+        "active": false,
+        "current": "<body><div id=\"root\"><div class=\"app-shell\" aria-busy=\"false\"><div data-macos=\"true\" data-sidebar-visible=\"true\" class=\"window-frame\" data-layout-settings=\"false\"><nav class=\"activ"
+      },
+      "active": {
+        "outline": "none",
+        "width": "3px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": false,
+        "active": true,
+        "current": "<button type=\"button\" tabindex=\"0\" data-thread-navigation=\"true\" aria-current=\"page\" title=\"/isolated/rendering · 775c370c-b100-49bc-bdd1-bfc0be593edf\" data-slot=\"button\" class=\"ui"
+      },
+      "clicked": {
+        "outline": "none",
+        "width": "3px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": false,
+        "active": true,
+        "current": "<button type=\"button\" tabindex=\"0\" data-thread-navigation=\"true\" aria-current=\"page\" title=\"/isolated/rendering · 775c370c-b100-49bc-bdd1-bfc0be593edf\" data-slot=\"button\" class=\"ui"
+      },
+      "keyboard": {
+        "outline": "solid",
+        "width": "2px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": true,
+        "active": true,
+        "current": "<button type=\"button\" tabindex=\"0\" data-thread-navigation=\"true\" aria-current=\"page\" title=\"/isolated/rendering · 775c370c-b100-49bc-bdd1-bfc0be593edf\" data-slot=\"button\" class=\"ui"
+      }
+    },
+    {
+      "name": "dark-rail-pointer-vs-keyboard-focus",
+      "resting": {
+        "outline": "none",
+        "width": "3px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": false,
+        "active": false,
+        "current": "<body><div id=\"root\"><div class=\"app-shell\" aria-busy=\"false\"><div data-macos=\"true\" data-sidebar-visible=\"true\" class=\"window-frame\" data-layout-settings=\"false\"><nav class=\"activ"
+      },
+      "hover": {
+        "outline": "none",
+        "width": "3px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": false,
+        "active": false,
+        "current": "<body><div id=\"root\"><div class=\"app-shell\" aria-busy=\"false\"><div data-macos=\"true\" data-sidebar-visible=\"true\" class=\"window-frame\" data-layout-settings=\"false\"><nav class=\"activ"
+      },
+      "active": {
+        "outline": "none",
+        "width": "3px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": false,
+        "active": true,
+        "current": "<button type=\"button\" tabindex=\"0\" aria-pressed=\"true\" aria-label=\"Conversation\" id=\"base-ui-_r_1_\" data-base-ui-tooltip-trigger=\"\" data-slot=\"button\" class=\"ui-button ui-button-ic"
+      },
+      "clicked": {
+        "outline": "none",
+        "width": "3px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": false,
+        "active": false,
+        "current": "<div contenteditable=\"true\" role=\"textbox\" aria-label=\"Draft body\" aria-multiline=\"true\" spellcheck=\"false\" translate=\"no\" class=\"tiptap ProseMirror ProseMirror-focused\" tabindex=\""
+      },
+      "keyboard": {
+        "outline": "solid",
+        "width": "2px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": true,
+        "active": true,
+        "current": "<button type=\"button\" tabindex=\"0\" aria-pressed=\"true\" aria-label=\"Conversation\" id=\"base-ui-_r_1_\" data-base-ui-tooltip-trigger=\"\" data-slot=\"button\" class=\"ui-button ui-button-ic"
+      }
+    },
+    {
+      "name": "dark-thread-pointer-vs-keyboard-focus",
+      "resting": {
+        "outline": "none",
+        "width": "3px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": false,
+        "active": false,
+        "current": "<body><div id=\"root\"><div class=\"app-shell\" aria-busy=\"false\"><div data-macos=\"true\" data-sidebar-visible=\"true\" class=\"window-frame\" data-layout-settings=\"false\"><nav class=\"activ"
+      },
+      "hover": {
+        "outline": "none",
+        "width": "3px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": false,
+        "active": false,
+        "current": "<body><div id=\"root\"><div class=\"app-shell\" aria-busy=\"false\"><div data-macos=\"true\" data-sidebar-visible=\"true\" class=\"window-frame\" data-layout-settings=\"false\"><nav class=\"activ"
+      },
+      "active": {
+        "outline": "none",
+        "width": "3px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": false,
+        "active": true,
+        "current": "<button type=\"button\" tabindex=\"0\" data-thread-navigation=\"true\" aria-current=\"page\" title=\"/isolated/rendering · 775c370c-b100-49bc-bdd1-bfc0be593edf\" data-slot=\"button\" class=\"ui"
+      },
+      "clicked": {
+        "outline": "none",
+        "width": "3px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": false,
+        "active": true,
+        "current": "<button type=\"button\" tabindex=\"0\" data-thread-navigation=\"true\" aria-current=\"page\" title=\"/isolated/rendering · 775c370c-b100-49bc-bdd1-bfc0be593edf\" data-slot=\"button\" class=\"ui"
+      },
+      "keyboard": {
+        "outline": "solid",
+        "width": "2px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": true,
+        "active": true,
+        "current": "<button type=\"button\" tabindex=\"0\" data-thread-navigation=\"true\" aria-current=\"page\" title=\"/isolated/rendering · 775c370c-b100-49bc-bdd1-bfc0be593edf\" data-slot=\"button\" class=\"ui"
+      }
+    },
+    {
+      "name": "light-settings-pointer-vs-keyboard-focus",
+      "resting": {
+        "outline": "none",
+        "width": "3px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": false,
+        "active": false,
+        "current": "<body style=\"overflow: hidden;\"><div id=\"root\" data-base-ui-inert=\"\"><div class=\"app-shell\" aria-busy=\"false\"><div data-macos=\"true\" data-sidebar-visible=\"true\" class=\"window-frame"
+      },
+      "hover": {
+        "outline": "none",
+        "width": "3px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": false,
+        "active": false,
+        "current": "<body style=\"overflow: hidden;\"><div id=\"root\" data-base-ui-inert=\"\"><div class=\"app-shell\" aria-busy=\"false\"><div data-macos=\"true\" data-sidebar-visible=\"true\" class=\"window-frame"
+      },
+      "active": {
+        "outline": "none",
+        "width": "3px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": false,
+        "active": true,
+        "current": "<button type=\"button\" tabindex=\"0\" data-slot=\"button\" class=\"ui-button ui-button-navigation\">Appearance</button>"
+      },
+      "clicked": {
+        "outline": "none",
+        "width": "3px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": false,
+        "active": true,
+        "current": "<button type=\"button\" tabindex=\"0\" data-slot=\"button\" class=\"ui-button ui-button-navigation\">Appearance</button>"
+      },
+      "keyboard": {
+        "outline": "solid",
+        "width": "2px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": true,
+        "active": true,
+        "current": "<button type=\"button\" tabindex=\"0\" data-slot=\"button\" class=\"ui-button ui-button-navigation\">Appearance</button>"
+      }
+    },
+    {
+      "name": "light-settings-escape-returns-focus",
+      "value": true
+    },
+    {
+      "name": "dark-settings-pointer-vs-keyboard-focus",
+      "resting": {
+        "outline": "none",
+        "width": "3px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": false,
+        "active": false,
+        "current": "<body style=\"overflow: hidden;\"><div id=\"root\" data-base-ui-inert=\"\"><div class=\"app-shell\" aria-busy=\"false\"><div data-macos=\"true\" data-sidebar-visible=\"true\" class=\"window-frame"
+      },
+      "hover": {
+        "outline": "none",
+        "width": "3px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": false,
+        "active": false,
+        "current": "<body style=\"overflow: hidden;\"><div id=\"root\" data-base-ui-inert=\"\"><div class=\"app-shell\" aria-busy=\"false\"><div data-macos=\"true\" data-sidebar-visible=\"true\" class=\"window-frame"
+      },
+      "active": {
+        "outline": "none",
+        "width": "3px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": false,
+        "active": true,
+        "current": "<button type=\"button\" tabindex=\"0\" data-slot=\"button\" class=\"ui-button ui-button-navigation\">Appearance</button>"
+      },
+      "clicked": {
+        "outline": "none",
+        "width": "3px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": false,
+        "active": true,
+        "current": "<button type=\"button\" tabindex=\"0\" data-slot=\"button\" class=\"ui-button ui-button-navigation\">Appearance</button>"
+      },
+      "keyboard": {
+        "outline": "solid",
+        "width": "2px",
+        "border": "rgba(0, 0, 0, 0)",
+        "shadow": "none",
+        "focusVisible": true,
+        "active": true,
+        "current": "<button type=\"button\" tabindex=\"0\" data-slot=\"button\" class=\"ui-button ui-button-navigation\">Appearance</button>"
+      }
+    },
+    {
+      "name": "dark-settings-escape-returns-focus",
+      "value": true
+    }
+  ],
+  "stderr": "\nDevTools listening on ws://127.0.0.1:61917/devtools/browser/ba9e46f6-1e95-404e-b713-7a8ad91a6040\nsandbox_extension_issue_file failed for /Users/louistation/.codex/worktrees/validation-workflow/d-pi/node_modules/.pnpm/electron@44.4.5_supports-color@7.2.0/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/Resources: 1 (Operation not permitted)\n",
+  "limitations": [
+    "pointer/keyboard focus only; geometry, continuity and performance not run"
+  ]
+}

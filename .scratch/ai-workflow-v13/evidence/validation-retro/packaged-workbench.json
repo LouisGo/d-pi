@@ -1,0 +1,23 @@
+{
+  "scenario": "workbench",
+  "build": {
+    "version": "0.1.0-workbench.3",
+    "commit": "f9cc66e13fb638a95f9931fa6fe81241585c43c4",
+    "dirty": false,
+    "id": "f9cc66e1-f83299df"
+  },
+  "checks": [
+    "packaged workbench uses one native header, navigation after controls, compact default, closed empty hosts and centered icons with out-of-flow indicators",
+    "packaged Main persists system theme and retains the three-mode cycle with legacy density unchanged",
+    "settings Modal retains an operable diagnostics panel within its focus scope",
+    "workbench-only validation finishes without execution, reload or cold recovery"
+  ],
+  "providerCalls": 0,
+  "nativeSessions": [],
+  "limitations": [
+    "workbench header/theme/Modal only; execution, reload and cold recovery not run",
+    "native inspection evidence recorded separately",
+    "M2 V1-04 and queue/subagent/read-performance increments remain open"
+  ],
+  "sourceAsarSha256": "096644593d1a77b87f29ed4d84198e096dd34e56791568ad2c1ea6e4379c5e6a"
+}
