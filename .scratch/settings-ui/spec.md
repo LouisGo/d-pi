@@ -34,6 +34,8 @@ ui/renderer/public.ts 是跨模块公开面，无 IPC/store/i18n 依赖；文案
 
 ## 本轮进度
 
+2026-10-07 后续授权：已将已验证的 `64f9043` fast-forward 合入本地 main，无冲突；主 checkout 可直接 Dev 试用，见 [main 集成记录](handoff.md#本地-main-集成2026-10-07)。用户认可保持 pending。
+
 01/02 工程完成；完整检查836项通过、2项条件跳过，构建及8项隔离 Electron 场景通过，6张画面已核实。独立 Spec/Standards 无实质发现，过渡中截图已刷新并由 reviewer 复核。组件看板收录新控件组合，沿用原 catalog 搜索与重置。普通 CSS 间距消费 Tailwind `--spacing`。生产实现 d02201c，验证补充 b0a7ab6；Dev 交付，用户反馈待收。
 
 ```project-status
