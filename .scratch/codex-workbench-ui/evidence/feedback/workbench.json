@@ -1,0 +1,99 @@
+{
+  "version": "isolated-workbench",
+  "scenario": "feedback",
+  "passed": true,
+  "checks": [
+    {
+      "name": "modal-light-1440-bounded",
+      "value": true
+    },
+    {
+      "name": "modal-light-1440-focus-contained",
+      "value": true
+    },
+    {
+      "name": "modal-light-1440-focus-and-resources-return",
+      "value": true
+    },
+    {
+      "name": "modal-light-720-bounded",
+      "value": true
+    },
+    {
+      "name": "modal-light-720-focus-contained",
+      "value": true
+    },
+    {
+      "name": "modal-light-720-focus-and-resources-return",
+      "value": true
+    },
+    {
+      "name": "modal-dark-1440-bounded",
+      "value": true
+    },
+    {
+      "name": "modal-dark-1440-focus-contained",
+      "value": true
+    },
+    {
+      "name": "modal-dark-1440-focus-and-resources-return",
+      "value": true
+    },
+    {
+      "name": "modal-dark-720-bounded",
+      "value": true
+    },
+    {
+      "name": "modal-dark-720-focus-contained",
+      "value": true
+    },
+    {
+      "name": "modal-dark-720-focus-and-resources-return",
+      "value": true
+    },
+    {
+      "name": "tabs-composed-separate-panel",
+      "value": true
+    },
+    {
+      "name": "tabs-selected-icon-before-hover",
+      "value": true
+    },
+    {
+      "name": "tabs-hover-replaces-icon-with-close",
+      "value": true
+    },
+    {
+      "name": "tabs-hover-no-shift",
+      "value": 69
+    },
+    {
+      "name": "tabs-close-hit-target",
+      "value": true
+    },
+    {
+      "name": "tabs-close-selects-fallback-and-preserves-content",
+      "value": true
+    },
+    {
+      "name": "tabs-add-is-caller-owned",
+      "value": true
+    },
+    {
+      "name": "tabs-keyboard-end-focus",
+      "value": true
+    },
+    {
+      "name": "tabs-keyboard-home-focus",
+      "value": true
+    },
+    {
+      "name": "tabs-dark-minimum-bounded",
+      "value": true
+    }
+  ],
+  "stderr": "\nDevTools listening on ws://127.0.0.1:59455/devtools/browser/4e7735d2-14a7-4e44-b756-4aaa7159ec53\n",
+  "limitations": [
+    "isolated GUI fixture; not packaged or system IME evidence"
+  ]
+}

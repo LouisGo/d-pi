@@ -6,6 +6,8 @@
 @import "../components/ui/hover-menu.css";
 @import "./interaction.css";
 @import "./workbench.css";
+@import "../components/ui/tab-strip.css";
+@import "../components/ui/modal.css";
 @import "../components/ui/status-preview.css";
 @layer base {
   body {

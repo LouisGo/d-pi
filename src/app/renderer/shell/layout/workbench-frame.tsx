@@ -16,15 +16,13 @@ import { IconButton } from "@/components/ui/icon-button";
 import { NavigationOverlay } from "@/components/ui/navigation-overlay";
 import { ResizableSplit } from "@/components/ui/resizable";
 import { SettingsModal } from "@/components/ui/settings-modal";
-import {
-  type WorkspaceTab,
-  WorkspaceTabs,
-} from "@/components/ui/workspace-tabs";
+import { type TabItem, TabStrip } from "@/components/ui/tab-strip";
 import { useI18n } from "../../../../modules/preferences/renderer/public";
 import { Button } from "../../../../modules/ui/renderer/public";
 import { ConversationVisibilityContext } from "./conversation-visibility";
 import { solveGeometry } from "./geometry";
 import { createLayoutModel, readLayoutTokens } from "./model";
+export type WorkspaceTab = TabItem & { content: ReactNode };
 export type WorkspaceHost = {
   tabs: WorkspaceTab[];
   selected: string | null;
@@ -530,14 +528,20 @@ function HostHeader({
   const { t } = useI18n();
   return (
     <>
-      <WorkspaceTabs
+      <TabStrip
         id={id}
+        label={title}
         onEmpty={onEmpty}
-        tabs={host?.tabs ?? []}
+        tabs={(host?.tabs ?? []).map((tab) => ({
+          ...tab,
+          panelId: `${id}-content-${tab.id}`,
+        }))}
         selected={host?.selected ?? ""}
         onSelect={host?.onSelect ?? (() => {})}
-        onClose={host?.onClose ?? (() => {})}
-        closeLabel={(title) => t("app.layout.closeTab", { title })}
+        close={{
+          onClose: host?.onClose ?? (() => {}),
+          label: (title) => t("app.layout.closeTab", { title }),
+        }}
       />
       <IconButton
         variant="ghost"

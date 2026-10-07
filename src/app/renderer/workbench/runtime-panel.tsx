@@ -4,6 +4,7 @@ import { useStore } from "zustand";
 import { createStore } from "zustand/vanilla";
 import type {
   Interaction,
+  RuntimeView,
   SubmissionReceipt,
 } from "../../../modules/execution/contracts/public";
 import type {
@@ -107,19 +108,15 @@ export function RuntimePanel({
       tabIndex={-1}
       aria-label={t("ui.runtime.sectionLabel")}
     >
-      <strong role="status" hidden={!inspection && state.phase === "ready"}>
-        {label}
-      </strong>
-      <details className="runtime-source" hidden={!inspection}>
-        <summary>{t("ui.runtime.details")}</summary>
-        <span className="muted">{formatMessage(state.configuration)}</span>
-        {state.phase === "ready" && <p>{formatMessage(state.message)}</p>}
-        {state.evidenceCoverage === "gap" && (
-          <p>{formatMessage({ code: "runtime.evidenceGap" })}</p>
-        )}
-      </details>
-      {state.phase !== "ready" && (
-        <p className="muted">{formatMessage(state.message)}</p>
+      {inspection ? (
+        <RuntimeInspection model={model} />
+      ) : (
+        state.phase !== "ready" && (
+          <div>
+            <strong role="status">{label}</strong>
+            <p className="muted">{formatMessage(state.message)}</p>
+          </div>
+        )
       )}
       {state.control &&
         (state.busy ||
@@ -244,34 +241,72 @@ export function RuntimePanel({
           )}
         </section>
       )}
-      <div
-        className="flex gap-2"
-        hidden={!inspection && state.phase !== "failed"}
-      >
-        {!state.trusted && (
-          <Button
-            disabled={state.phase === "starting"}
-            onClick={() => void model.act("allow")}
-          >
-            {t("ui.runtime.allow")}
-          </Button>
-        )}
-        {state.trusted &&
-          (state.phase === "allowed" || state.phase === "failed") && (
-            <Button onClick={() => void model.act("start")}>
-              {t("ui.runtime.start")}
-            </Button>
-          )}
-        {state.trusted && (
-          <Button variant="ghost" onClick={() => void model.act("revoke")}>
-            {t("ui.runtime.revoke")}
-          </Button>
-        )}
-        <Button variant="ghost" onClick={() => void model.act("inspect")}>
-          {t("ui.runtime.inspect")}
-        </Button>
-      </div>
+      {!inspection && state.phase === "failed" && (
+        <RuntimeActions model={model} state={state} />
+      )}
     </section>
+  );
+}
+
+export function RuntimeInspection({ model }: { model: RuntimeModel }) {
+  const { t, formatMessage } = useI18n();
+  const state = useStore(model.stateStore, (value) => value.view);
+  if (!state) return <p role="status">{t("ui.runtime.loading")}</p>;
+  const label = runtimePhaseLabel(state, t);
+  return (
+    <section
+      data-runtime-inspector=""
+      aria-label={t("ui.runtime.sectionLabel")}
+    >
+      <strong role="status">{label}</strong>
+      <details className="runtime-source">
+        <summary>{t("ui.runtime.details")}</summary>
+        <span className="muted">{formatMessage(state.configuration)}</span>
+        {state.phase === "ready" && <p>{formatMessage(state.message)}</p>}
+        {state.evidenceCoverage === "gap" && (
+          <p>{formatMessage({ code: "runtime.evidenceGap" })}</p>
+        )}
+      </details>
+      {state.phase !== "ready" && (
+        <p className="muted">{formatMessage(state.message)}</p>
+      )}
+      <RuntimeActions model={model} state={state} />
+    </section>
+  );
+}
+function RuntimeActions({
+  model,
+  state,
+}: {
+  model: RuntimeModel;
+  state: RuntimeView;
+}) {
+  const { t } = useI18n();
+  return (
+    <div className="flex gap-2">
+      {!state.trusted && (
+        <Button
+          disabled={state.phase === "starting"}
+          onClick={() => void model.act("allow")}
+        >
+          {t("ui.runtime.allow")}
+        </Button>
+      )}
+      {state.trusted &&
+        (state.phase === "allowed" || state.phase === "failed") && (
+          <Button onClick={() => void model.act("start")}>
+            {t("ui.runtime.start")}
+          </Button>
+        )}
+      {state.trusted && (
+        <Button variant="ghost" onClick={() => void model.act("revoke")}>
+          {t("ui.runtime.revoke")}
+        </Button>
+      )}
+      <Button variant="ghost" onClick={() => void model.act("inspect")}>
+        {t("ui.runtime.inspect")}
+      </Button>
+    </div>
   );
 }
 

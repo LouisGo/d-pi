@@ -52,7 +52,7 @@ it("shows every existing foundation component as a real preview by default", asy
     "FormField",
     "ChoiceGroup",
     "SettingsGroup",
-    "WorkspaceTabs",
+    "TabStrip",
     "ResizableSplit",
     "NavigationOverlay",
     "SettingsModal",
@@ -62,9 +62,7 @@ it("shows every existing foundation component as a real preview by default", asy
     container.querySelector("[data-component='Button'] [data-slot='button']"),
   ).not.toBeNull();
   expect(
-    container.querySelector(
-      "[data-component='WorkspaceTabs'] [role='tablist']",
-    ),
+    container.querySelector("[data-component='TabStrip'] [role='tablist']"),
   ).not.toBeNull();
   expect(
     container.querySelectorAll(
@@ -111,7 +109,7 @@ it("uses independent real button and icon interactions and resets only the selec
 
 it("switches and closes real workspace tabs with keyboard navigation and restores them", async () => {
   const { container, button } = await setup();
-  const section = container.querySelector("[data-component='WorkspaceTabs']");
+  const section = container.querySelector("[data-component='TabStrip']");
   if (!section) throw Error("missing tabs preview");
   await act(() => button("预览", section).click());
   expect(section.querySelector("[role='tabpanel']")?.textContent).toBe(
@@ -134,7 +132,7 @@ it("switches and closes real workspace tabs with keyboard navigation and restore
   await act(() => button("关闭 文件", section).click());
   await act(() => button("关闭 预览", section).click());
   expect(section.textContent).toContain("页签已全部关闭，重置可恢复。");
-  await act(() => button("重置 WorkspaceTabs").click());
+  await act(() => button("重置 TabStrip").click());
   expect(section.querySelectorAll("[role='tab']")).toHaveLength(3);
   expect(section.querySelector("[role='tabpanel']")?.textContent).toBe(
     "当前页签：文件",
@@ -248,7 +246,7 @@ it("filters by purpose and form, explains no matches and restores the full catal
     [...container.querySelectorAll("[data-component]")].map((node) =>
       node.getAttribute("data-component"),
     ),
-  ).toEqual(["WorkspaceTabs", "ResizableSplit"]);
+  ).toEqual(["TabStrip", "ResizableSplit"]);
   await search(" GHOST ");
   expect(container.querySelectorAll("[data-component]")).toHaveLength(1);
   await search("does-not-exist");
@@ -280,7 +278,7 @@ it("groups every component in the separate right navigation with existing anchor
     "FormField",
     "ChoiceGroup",
     "SettingsGroup",
-    "WorkspaceTabs",
+    "TabStrip",
     "ResizableSplit",
     "NavigationOverlay",
     "SettingsModal",

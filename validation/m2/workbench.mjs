@@ -18,6 +18,7 @@ const { scenario, path: outputPath } = parseValidationScenario(
     sandwich: [],
     chrome: [],
     thread: [],
+    feedback: [],
   },
 );
 const isolated = createTestEnvironment({ prefix: "d-pi-workbench-" });
@@ -42,7 +43,7 @@ const vite = await createViteServer({
   server: { host: "127.0.0.1", port: 0, watch: null, hmr: false },
 });
 await vite.listen();
-const url = `http://127.0.0.1:${vite.httpServer.address().port}/validation/m2/workbench.html${scenario === "thread" ? "?thread-layout" : ""}`;
+const url = `http://127.0.0.1:${vite.httpServer.address().port}/validation/m2/workbench.html${["thread", "feedback"].includes(scenario) ? "?thread-layout" : ""}`;
 const ports = createServer();
 await new Promise((done) => ports.listen(0, "127.0.0.1", done));
 const port = ports.address().port;
@@ -126,7 +127,9 @@ try {
     ),
   );
   await call("Page.enable");
-  if (scenario === "thread") {
+  if (scenario === "feedback") {
+    await runFeedbackChecks();
+  } else if (scenario === "thread") {
     await runThreadChecks();
   } else if (scenario === "chrome") {
     await runChromeChecks();
@@ -274,9 +277,14 @@ async function check(name, expression, predicate = (value) => value === true) {
   assert.ok(predicate(value), `${name}: ${JSON.stringify(value)}`);
   results.push({ name, value });
 }
-async function capture(name) {
+async function capture(name, retainPointer = false) {
   await new Promise((done) => setTimeout(done, 300));
-  await call("Input.dispatchMouseEvent", { type: "mouseMoved", x: 20, y: 400 });
+  if (!retainPointer)
+    await call("Input.dispatchMouseEvent", {
+      type: "mouseMoved",
+      x: 20,
+      y: 400,
+    });
   mkdirSync(resolve(output, ".."), { recursive: true });
   const screenshot = await call("Page.captureScreenshot", { format: "png" });
   writeFileSync(
@@ -922,7 +930,7 @@ async function runComponentChecks() {
   );
   await check(
     "all-real-components-visible",
-    `["Button","IconButton","WorkspaceTabs","ResizableSplit","NavigationOverlay","SettingsModal","Icon Layer","HoverMenu"].every(name=>document.querySelector('[data-component="'+name+'"]'))`,
+    `["Button","IconButton","TabStrip","ResizableSplit","NavigationOverlay","SettingsModal","Icon Layer","HoverMenu"].every(name=>document.querySelector('[data-component="'+name+'"]'))`,
   );
   await check(
     "thread-resource-preserved",
@@ -1344,7 +1352,7 @@ async function runThreadChecks() {
         `(()=>{
         const r=s=>document.querySelector(s).getBoundingClientRect();
         const workspace=r('.thread-workspace'),reading=r('.thread-reading'),composer=r('.composer');
-        return {workspace:workspace.toJSON(),reading:reading.toJSON(),composer:composer.toJSON(),open:document.querySelector('.thread-tools').open,setup:document.querySelector('.thread-setup').getBoundingClientRect().height};
+        return {workspace:workspace.toJSON(),reading:reading.toJSON(),composer:composer.toJSON(),open:!!document.querySelector('.ui-modal:not([hidden])'),setup:document.querySelector('.thread-setup').getBoundingClientRect().height};
       })()`,
         (v) =>
           v.reading.height > 60 &&
@@ -1367,18 +1375,20 @@ async function runThreadChecks() {
       await capture(`thread-${theme}-${width}`);
     }
   }
-  await evaluate("document.querySelector('.thread-tools').open=true");
+  await evaluate(
+    "document.querySelector('[data-thread-tools-trigger]').click()",
+  );
   await wait(() =>
     evaluate(
-      "document.querySelector('.thread-tools-body').getBoundingClientRect().height>0",
+      "document.querySelector('.ui-modal').getBoundingClientRect().height>0",
     ),
   );
   await check(
     "thread-tools-bounded",
-    `(()=>{const body=document.querySelector('.thread-tools-body').getBoundingClientRect(),workspace=document.querySelector('.thread-workspace').getBoundingClientRect();return body.left>=workspace.left && body.right<=workspace.right && body.bottom<=workspace.bottom;})()`,
+    `(()=>{const body=document.querySelector('.ui-modal').getBoundingClientRect(),workspace=document.querySelector('.thread-workspace').getBoundingClientRect();return body.left>=0 && body.right<=innerWidth && body.top>=0 && body.bottom<=innerHeight;})()`,
   );
   await capture("thread-tools-dark-720");
-  await evaluate("document.querySelector('.thread-tools').open=false");
+  await evaluate("document.querySelector('.ui-modal-header button').click()");
   await check(
     "thread-tools-preserve-resources",
     "window.threadLayoutEditor===document.querySelector('.tiptap') && window.threadLayoutController===window.probe.model.controller && window.threadLayoutPane===document.querySelector('.reading-pane')",
@@ -1390,4 +1400,141 @@ async function runThreadChecks() {
     "thread-long-draft-preserves-reading-space",
     `(()=>{const reading=document.querySelector('.thread-reading').getBoundingClientRect(),composer=document.querySelector('.composer').getBoundingClientRect(),workspace=document.querySelector('.thread-workspace').getBoundingClientRect();return reading.height>60 && composer.bottom<=workspace.bottom+1 && composer.height<=workspace.height*.6+1;})()`,
   );
+}
+
+async function pointerClick(selector) {
+  child.stdin.write(JSON.stringify({ focus: true }) + "\n");
+  await call("Page.bringToFront");
+  const r = await rect(selector);
+  const x = r.x + r.width / 2,
+    y = r.y + r.height / 2;
+  await call("Input.dispatchMouseEvent", { type: "mouseMoved", x, y });
+  await evaluate("window.probe.pause()");
+  for (const type of ["mousePressed", "mouseReleased"]) {
+    await call("Input.dispatchMouseEvent", {
+      type,
+      x,
+      y,
+      button: "left",
+      clickCount: 1,
+    });
+  }
+  await evaluate("window.probe.pause()");
+}
+async function runFeedbackChecks() {
+  await evaluate(
+    "window.savedEditor=document.querySelector('.tiptap');window.savedController=window.probe.model.controller;window.savedPane=document.querySelector('.reading-pane');true",
+  );
+  for (const theme of ["light", "dark"]) {
+    await evaluate(`window.probe.model.preference("theme", "${theme}")`);
+    for (const [width, height] of [
+      [1440, 900],
+      [720, 540],
+    ]) {
+      await resize(width, height);
+      await pointerClick("[data-thread-tools-trigger]");
+      await wait(() =>
+        evaluate("!!document.querySelector('.ui-modal:not([hidden])')"),
+      );
+      await check(
+        `modal-${theme}-${width}-bounded`,
+        `(()=>{const r=document.querySelector('.ui-modal').getBoundingClientRect(),body=document.querySelector('.ui-modal-body');return r.width>400 && r.left>=0 && r.right<=innerWidth && r.top>=0 && r.bottom<=innerHeight && getComputedStyle(body).overflowY==='auto' && !!document.querySelector('.ui-modal [data-runtime-inspector]');})()`,
+      );
+      await wait(() =>
+        evaluate(
+          "document.querySelector('.ui-modal').contains(document.activeElement)",
+        ),
+      );
+      await check(
+        `modal-${theme}-${width}-focus-contained`,
+        "document.querySelector('.ui-modal').contains(document.activeElement)",
+      );
+      await capture(`tools-modal-${theme}-${width}`);
+      await key("Escape", "Escape");
+      await wait(() =>
+        evaluate("!document.querySelector('.ui-modal:not([hidden])')"),
+      );
+      await check(
+        `modal-${theme}-${width}-focus-and-resources-return`,
+        "document.activeElement===document.querySelector('[data-thread-tools-trigger]') && window.savedEditor===document.querySelector('.tiptap') && window.savedPane===document.querySelector('.reading-pane') && window.savedController===window.probe.model.controller",
+      );
+    }
+  }
+  await resize(1440, 900);
+  await evaluate("window.probe.model.preference('theme', 'light')");
+  await pointerClick('.sidebar-tools button[aria-label="开发者工具"]');
+  await wait(() => evaluate("!!document.querySelector('[role=menuitem]')"));
+  await pointerClick("[role=menuitem]");
+  await wait(() =>
+    evaluate("!!document.querySelector('[data-component=TabStrip]')"),
+  );
+  await evaluate(
+    "document.querySelector('[data-component=TabStrip]').scrollIntoView({block:'center'});true",
+  );
+  await call("Input.dispatchMouseEvent", { type: "mouseMoved", x: 20, y: 400 });
+  await check(
+    "tabs-composed-separate-panel",
+    "!!document.querySelector('[data-component=TabStrip] [role=tabpanel]') && !document.querySelector('.tab-strip [role=tabpanel]')",
+  );
+  await pointerClick("#gallery-tabs-tab-preview");
+  await call("Input.dispatchMouseEvent", { type: "mouseMoved", x: 20, y: 400 });
+  await check(
+    "tabs-selected-icon-before-hover",
+    "document.querySelector('#gallery-tabs-tab-preview').getAttribute('aria-selected')==='true' && getComputedStyle(document.querySelector('#gallery-tabs-tab-preview .tab-strip-icon')).visibility==='visible' && getComputedStyle(document.querySelector('#gallery-tabs-tab-preview').nextElementSibling).opacity==='0'",
+  );
+  await capture("tabs-light-selected");
+  const r = await rect("#gallery-tabs-tab-preview");
+  await call("Input.dispatchMouseEvent", {
+    type: "mouseMoved",
+    x: r.x + r.width / 2,
+    y: r.y + r.height / 2,
+  });
+  await check(
+    "tabs-hover-replaces-icon-with-close",
+    "getComputedStyle(document.querySelector('#gallery-tabs-tab-preview .tab-strip-icon')).visibility==='hidden' && getComputedStyle(document.querySelector('#gallery-tabs-tab-preview').nextElementSibling).opacity==='1'",
+  );
+  await check(
+    "tabs-hover-no-shift",
+    "document.querySelector('#gallery-tabs-tab-preview').getBoundingClientRect().width",
+    (v) => v === r.width,
+  );
+  await capture("tabs-light-hover", true);
+  await check(
+    "tabs-close-hit-target",
+    "(()=>{const b=document.querySelector('#gallery-tabs-tab-preview + button'),r=b.getBoundingClientRect();return document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.closest('button')===b;})()",
+  );
+  await pointerClick("#gallery-tabs-tab-preview + button");
+  await check(
+    "tabs-close-selects-fallback-and-preserves-content",
+    "!document.querySelector('#gallery-tabs-tab-preview') && document.querySelector('#gallery-tabs-tab-files').getAttribute('aria-selected')==='true' && !!document.querySelector('#gallery-tabs-content-files')",
+  );
+  await pointerClick('[data-component=TabStrip] button[aria-label="新增页签"]');
+  await check(
+    "tabs-add-is-caller-owned",
+    "document.querySelectorAll('[data-component=TabStrip] [role=tab]').length===3 && document.querySelector('#gallery-tabs-tab-new-1').getAttribute('aria-selected')==='true' && !!document.querySelector('#gallery-tabs-content-new-1')",
+  );
+  await key("Tab", "Tab");
+  await evaluate(
+    "document.querySelector('#gallery-tabs-tab-files').focus();true",
+  );
+  await key("End", "End");
+  await check(
+    "tabs-keyboard-end-focus",
+    "document.activeElement.id==='gallery-tabs-tab-new-1' && document.activeElement.getAttribute('aria-selected')==='true' && parseFloat(getComputedStyle(document.activeElement).outlineWidth)>0",
+  );
+  await key("Home", "Home");
+  await check(
+    "tabs-keyboard-home-focus",
+    "document.activeElement.id==='gallery-tabs-tab-files' && !!document.querySelector('#gallery-tabs-content-files')",
+  );
+  await evaluate("window.probe.model.preference('theme', 'dark')");
+  await resize(720, 540);
+  await evaluate(
+    "document.querySelector('[data-component=TabStrip]').scrollIntoView({block:'center'});true",
+  );
+  await check(
+    "tabs-dark-minimum-bounded",
+    "document.documentElement.dataset.theme==='dark' && document.documentElement.scrollWidth===innerWidth && document.querySelector('[data-component=TabStrip] .tab-strip').getBoundingClientRect().right<=innerWidth",
+  );
+  await capture("tabs-dark-minimum");
 }

@@ -312,24 +312,6 @@
     overscroll-behavior: contain;
     padding: var(--panel-padding);
   }
-  .workspace-tabs {
-    display: flex;
-    flex: 1;
-    min-width: 0;
-    overflow-x: auto;
-    -webkit-app-region: no-drag;
-  }
-  .workspace-tab {
-    display: flex;
-    min-width: 0;
-    flex-shrink: 0;
-    align-items: center;
-  }
-  .workspace-tab > [role="tab"] {
-    max-width: var(--overlay-width);
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
   .ui-tooltip {
     padding: calc(var(--layout-gap) / 2) var(--control-padding);
     color: var(--foreground);
@@ -492,37 +474,6 @@
     font-size: var(--text-small);
     color: var(--muted-foreground);
   }
-  .thread-tools > summary {
-    padding: calc(var(--layout-gap) / 2) var(--control-padding);
-    border-radius: var(--radius-control);
-    cursor: default;
-  }
-  .thread-tools > summary:hover {
-    background: var(--accent);
-    color: var(--accent-foreground);
-  }
-  .thread-tools-body {
-    position: absolute;
-    inset-inline: var(--layout-gap);
-    inset-block-start: var(--control-height);
-    z-index: 2;
-    max-height: min(50%, var(--thread-setup-max-height));
-    overflow: auto;
-    overscroll-behavior: contain;
-    padding: var(--panel-padding);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--surface);
-    color: var(--foreground);
-  }
-  .thread-tools-body .thread-setup {
-    max-height: none;
-    overflow: visible;
-  }
-  .thread-tools-body .reading-navigation {
-    margin-top: var(--layout-gap);
-    border-bottom: 0;
-  }
   .thread-reading .runtime-panel {
     max-width: var(--content-width);
     margin: 0 auto var(--layout-gap);
@@ -561,9 +512,6 @@
 }
 
 @layer components {
-  .thread-tools:not([open]) > .thread-tools-body {
-    display: none;
-  }
   .composer-help {
     margin-inline-end: auto;
     max-width: 100%;

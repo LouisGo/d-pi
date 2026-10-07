@@ -39,9 +39,16 @@ export function installControlFocusVisibility(document: Document) {
     // A distinct focus move without a related pointer press can come from
     // assistive technology or programmatic keyboard navigation. Let the
     // browser's :focus-visible decision apply to that destination.
+    const fromTrigger =
+      event.relatedTarget instanceof Element &&
+      !!pointerTarget &&
+      (pointerTarget.contains(event.relatedTarget) ||
+        event.relatedTarget.contains(pointerTarget));
     if (
       !pointerTarget ||
-      (!pointerTarget.contains(target) && !target.contains(pointerTarget))
+      (!pointerTarget.contains(target) &&
+        !target.contains(pointerTarget) &&
+        !fromTrigger)
     ) {
       clearPointerFocus();
     }

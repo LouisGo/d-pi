@@ -13,6 +13,7 @@ import { FolderIcon } from "@/components/icons/common";
 import type { FrozenSelection } from "../../../modules/files/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import { Button } from "../../../modules/ui/renderer/public";
+import { Modal } from "../components/ui/modal";
 import { Conversation } from "../reading/conversation";
 import { History } from "../reading/history";
 import { attachReadingAnchor } from "../reading/reading-anchor";
@@ -25,7 +26,7 @@ import { locateAttention } from "./attention-location";
 import { Composer } from "./composer";
 import { FilePanel } from "./file-panel";
 import { ModelControls } from "./model-controls";
-import { RuntimePanel } from "./runtime-panel";
+import { RuntimeInspection, RuntimePanel } from "./runtime-panel";
 import { SubagentControls } from "./subagent-controls";
 import type { WorkbenchProps } from "./types";
 
@@ -115,17 +116,18 @@ const ThreadContent = memo(function ThreadContent({
   const { thread, directoryAvailable } = threadSelection;
   const { submission } = thread;
   const { t } = useI18n();
-  const toolsDisclosure = useRef<HTMLDetailsElement>(null);
+  const toolsTrigger = useRef<HTMLButtonElement>(null);
+  const toolsReturnFocus = useRef<HTMLElement | null>(null);
   const [toolsOpen, setToolsOpen] = useState(false);
+  const [choosingModel, setChoosingModel] = useState(false);
   const modelDisclosure = useRef<HTMLDetailsElement>(null);
   const chooseModel = useCallback(() => {
-    const details = modelDisclosure.current;
-    if (!details) return;
-    if (toolsDisclosure.current) toolsDisclosure.current.open = true;
+    toolsReturnFocus.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : toolsTrigger.current;
+    setChoosingModel(true);
     setToolsOpen(true);
-    details.open = true;
-    details.scrollIntoView({ block: "nearest" });
-    details.querySelector<HTMLElement>("[data-slot=select]")?.focus();
   }, []);
   const [selectionAttachment, setSelectionAttachment] = useState<{
     id: string;
@@ -149,13 +151,32 @@ const ThreadContent = memo(function ThreadContent({
   return (
     <>
       <div className="thread-toolbar">
-        <details
-          ref={toolsDisclosure}
-          className="thread-tools"
-          onToggle={(event) => setToolsOpen(event.currentTarget.open)}
+        <Button
+          ref={toolsTrigger}
+          variant="ghost"
+          data-thread-tools-trigger=""
+          onClick={(event) => {
+            toolsReturnFocus.current = event.currentTarget;
+            setChoosingModel(false);
+            setToolsOpen(true);
+          }}
         >
-          <summary>{t("app.reading.tools")}</summary>
-          <div className="thread-tools-body">
+          {t("app.reading.tools")}
+        </Button>
+        <Modal
+          open={toolsOpen}
+          onClose={() => setToolsOpen(false)}
+          title={t("app.reading.tools")}
+          closeLabel={t("app.layout.close")}
+          returnFocus={toolsReturnFocus}
+          initialFocus={() => {
+            const details = modelDisclosure.current;
+            if (!choosingModel || !details) return null;
+            details.open = true;
+            return details.querySelector<HTMLElement>("[data-slot=select]");
+          }}
+        >
+          <div className="thread-tools-content">
             <div className="thread-setup">
               <div className="directory-info" title={thread.context.directory}>
                 <FolderIcon />
@@ -179,12 +200,11 @@ const ThreadContent = memo(function ThreadContent({
                 />
               )}
             </div>
+            {thread.runtime && <RuntimeInspection model={thread.runtime} />}
             <ReadingNavigation
               readingView={readingView}
               onReadingViewChange={(view) => {
                 onReadingViewChange(view);
-                if (toolsDisclosure.current)
-                  toolsDisclosure.current.open = false;
                 setToolsOpen(false);
               }}
             />
@@ -193,15 +213,13 @@ const ThreadContent = memo(function ThreadContent({
               aria-pressed={readingFocus}
               onClick={() => {
                 onReadingFocusChange(!readingFocus);
-                if (toolsDisclosure.current)
-                  toolsDisclosure.current.open = false;
                 setToolsOpen(false);
               }}
             >
               {t("app.reading.focus")}
             </Button>
           </div>
-        </details>
+        </Modal>
         {readingFocus && (
           <Button variant="ghost" onClick={() => onReadingFocusChange(false)}>
             {t("app.reading.restoreControls")}
@@ -218,7 +236,7 @@ const ThreadContent = memo(function ThreadContent({
           <RuntimePanel
             model={thread.runtime}
             submission={thread.submission}
-            inspection={toolsOpen}
+            inspection={false}
             // Post-default user answers become a new steering instruction
             // (2026-09-28 decision), not a follow-up.
             onFollowUp={

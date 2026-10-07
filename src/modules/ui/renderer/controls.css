@@ -169,9 +169,6 @@
     background: transparent;
     padding-inline: 0;
   }
-  .ui-select-search:focus-visible {
-    outline: none;
-  }
   .ui-select-list {
     overflow-y: auto;
     min-height: 0;

@@ -174,6 +174,13 @@ try {
           await evaluate("document.activeElement.getAttribute('aria-label')"),
           "Search models",
         );
+        assert.equal(
+          await evaluate(
+            "getComputedStyle(document.activeElement).outlineStyle",
+          ),
+          "none",
+          "pointer autofocus must not show an outline",
+        );
         await call("Input.insertText", { text: "Fast" });
         await wait(() =>
           evaluate(
@@ -236,6 +243,26 @@ try {
   );
   await shot("dark-narrow-search");
   await key("Escape", "Escape", 27);
+  await wait(() =>
+    evaluate(
+      "!document.querySelector('.ui-select-positioner:not([hidden]) .ui-select-popup') && document.activeElement.id==='search'",
+    ),
+  );
+  await key("Tab", "Tab", 9);
+  await evaluate("document.getElementById('search').focus();true");
+  await key("ArrowDown", "ArrowDown", 40);
+  await wait(() =>
+    evaluate("document.activeElement.matches('.ui-select-search')"),
+  );
+  assert.ok(
+    await evaluate(
+      "document.activeElement.matches(':focus-visible') && getComputedStyle(document.activeElement).outlineStyle!=='none' && parseFloat(getComputedStyle(document.activeElement).outlineWidth)>0",
+    ),
+    "keyboard-opened search preserves visible focus",
+  );
+  await shot("keyboard-search-focus");
+  await key("Escape", "Escape", 27);
+
   await click("document.querySelector('[role=radio][aria-label=Standard]')");
   await key("ArrowRight", "ArrowRight", 39);
   await wait(() =>
@@ -259,6 +286,8 @@ try {
           "keyboard selection",
           "empty state",
           "escape focus",
+          "pointer autofocus without outline",
+          "keyboard search focus retained",
           "radio arrow keys",
           "light/dark",
           "narrow bounds",
