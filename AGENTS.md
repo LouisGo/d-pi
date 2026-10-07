@@ -27,7 +27,7 @@
 
 ## 常用命令与验证
 
-环境准备、SDK 资源与启动顺序见[README](README.md#环境准备与启动)。快速本地检查为 `pnpm check:fast`（显式安装的提交 hook 调用），完整检查为 `pnpm check`、`pnpm build`；边界任务按需用 `pnpm check:architecture`、`pnpm test:architecture`、`pnpm report:structure`。
+环境准备、SDK 资源与 Dev 启动见[README](README.md#环境准备与启动)，日常试用默认 `pnpm dev`；构建预览、固定包及旧产物清理按[本地交付](docs/engineering/local-delivery.md#选择运行与交付方式)选择。快速本地检查为 `pnpm check:fast`（显式安装的提交 hook 调用），完整检查为 `pnpm check`、`pnpm build`；边界任务按需用 `pnpm check:architecture`、`pnpm test:architecture`、`pnpm report:structure`。
 
 功能与缺陷遵循 TDD：目标缺口先失败测试，再最小实现；既有正确行为补测不伪造红灯。优先固定官方源码、文档和已有证据，关键未知才做最小实验；自动化证明常规行为，Computer use 仅补必要原生/视觉证据或响应用户明确要求。按风险完成必要检查，足够即交付，不逐票重跑无关矩阵。详细规则见[无头功能合同](docs/architecture/headless-features.md)。
 

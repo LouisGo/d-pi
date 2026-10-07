@@ -1,0 +1,298 @@
+{
+  "date": "2026-10-07",
+  "baseCommit": "4d4266ad2105360c936dd26593aae334a065e4fd",
+  "scope": "当前Git worktree的dist生成App/ZIP；未扫描或清理用户数据、依赖或系统安装目录",
+  "baselineZipSha256": "1011a3517f295b35d97c5f012222db2423880ab04222397499399ff61f5deabb",
+  "freeKiBBefore": 68658332,
+  "items": [
+    {
+      "path": "/Users/louistation/MySpace/Life/d-pi/dist/candidates/d-pi-0.1.0-m2.16-c531558-mac-arm64.zip",
+      "kib": 420016,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/MySpace/Life/d-pi/dist/candidates/d-pi-0.1.0-m2.17-macos-arm64-ba0e7df1.zip",
+      "kib": 420028,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/MySpace/Life/d-pi/dist/configuration-sharing-m2.8/mac-arm64/d-pi.app",
+      "kib": 371716,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/MySpace/Life/d-pi/dist/diagnostics-m2.17-clean/mac-arm64/d-pi.app",
+      "kib": 1302656,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/MySpace/Life/d-pi/dist/e2e-convergence-7ae6962/mac-arm64/d-pi.app",
+      "kib": 371948,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/MySpace/Life/d-pi/dist/lifecycle-m2.14-clean/mac-arm64/d-pi.app",
+      "kib": 372180,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/MySpace/Life/d-pi/dist/long-reading-m2.16-final-clean/mac-arm64/d-pi.app",
+      "kib": 372168,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/MySpace/Life/d-pi/dist/m2-entry-candidate/mac-arm64/d-pi.app",
+      "kib": 371656,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/MySpace/Life/d-pi/dist/mac-arm64/d-pi.app",
+      "kib": 296952,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/MySpace/Life/d-pi/dist/mainflow-m2.9/mac-arm64/d-pi.app",
+      "kib": 371732,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/MySpace/Life/d-pi/dist/mainflow-ui-check/d-pi.app",
+      "kib": 371700,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/MySpace/Life/d-pi/dist/navigation-failed/d-pi-0.1.0-m2.10-2ebe0383-mac-arm64.zip",
+      "kib": 418588,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/MySpace/Life/d-pi/dist/navigation-m2.10/mac-arm64/d-pi.app",
+      "kib": 371800,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/MySpace/Life/d-pi/dist/project-organization/mac-arm64/d-pi.app",
+      "kib": 371832,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/MySpace/Life/d-pi/dist/project-organization-d7412ce/mac-arm64/d-pi.app",
+      "kib": 371832,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/MySpace/Life/d-pi/dist/reference-m2.15-clean/mac-arm64/d-pi.app",
+      "kib": 372164,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/MySpace/Life/d-pi/dist/rendering-verification/mac-arm64/d-pi.app",
+      "kib": 614552,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/MySpace/Life/d-pi/dist/review-seven-18a6ef6/mac-arm64/d-pi.app",
+      "kib": 371732,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/MySpace/Life/d-pi/dist/router-integration/mac-arm64/d-pi.app",
+      "kib": 371828,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/MySpace/Life/d-pi/dist/runtime-hardening-omp1846/mac-arm64/d-pi.app",
+      "kib": 371716,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/MySpace/Life/d-pi/dist/s1-candidate/mac-arm64/d-pi.app",
+      "kib": 296196,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/MySpace/Life/d-pi/dist/validation/m2-retro-incomplete-candidate/d-pi.app",
+      "kib": 372228,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/MySpace/Life/d-pi/dist/validation/m2-retro-restored-candidate/d-pi.app",
+      "kib": 1302656,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/MySpace/Life/d-pi/dist/validation/pr4-m2.20-candidate/d-pi.app",
+      "kib": 1302696,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/.codex/worktrees/a613/d-pi/dist/attention-m2.18-clean/mac-arm64/d-pi.app",
+      "kib": 1302696,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/.codex/worktrees/a613/d-pi/dist/attention-m2.19-clean/mac-arm64/d-pi.app",
+      "kib": 1302776,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/.codex/worktrees/a613/d-pi/dist/attention-m2.19-final-clean/mac-arm64/d-pi.app",
+      "kib": 1302776,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/.codex/worktrees/a613/d-pi/dist/attention-m2.19-verified-clean/mac-arm64/d-pi.app",
+      "kib": 1302776,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/.codex/worktrees/a613/d-pi/dist/attention-m2.20-pr-clean/mac-arm64/d-pi.app",
+      "kib": 1302776,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/.codex/worktrees/a613/d-pi/dist/candidates/d-pi-0.1.0-m2.18-macos-arm64-1a557225.zip",
+      "kib": 420040,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/.codex/worktrees/a613/d-pi/dist/candidates/d-pi-0.1.0-m2.18-macos-arm64-672afdc6.zip",
+      "kib": 420040,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/.codex/worktrees/a613/d-pi/dist/candidates/d-pi-0.1.0-m2.18-macos-arm64-9a8c2eea.zip",
+      "kib": 420040,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/.codex/worktrees/a613/d-pi/dist/candidates/d-pi-0.1.0-m2.19-macos-arm64-48cd01cc.zip",
+      "kib": 420040,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/.codex/worktrees/a613/d-pi/dist/candidates/d-pi-0.1.0-m2.19-macos-arm64-63a578f0.zip",
+      "kib": 420040,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/.codex/worktrees/a613/d-pi/dist/candidates/d-pi-0.1.0-m2.19-macos-arm64-e649ae44.zip",
+      "kib": 420040,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/.codex/worktrees/a613/d-pi/dist/candidates/d-pi-0.1.0-m2.20-macos-arm64-3c4c1060.zip",
+      "kib": 420040,
+      "action": "keep",
+      "reason": "M2 m2.20待验收原始ZIP；哈希与历史身份一致，替代重复解包副本"
+    },
+    {
+      "path": "/Users/louistation/.codex/worktrees/codex-workbench-ui/d-pi/dist/workbench-ui/mac-arm64/d-pi.app",
+      "kib": 1302956,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/.codex/worktrees/codex-workbench-ui/d-pi/dist/workbench-ui-focus/mac-arm64/d-pi.app",
+      "kib": 1302956,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/.codex/worktrees/component-dashboard/d-pi/dist/component-dashboard-feedback/mac-arm64/d-pi.app",
+      "kib": 1303016,
+      "action": "keep",
+      "reason": "当前运行中的组件看板试用候选"
+    },
+    {
+      "path": "/Users/louistation/.codex/worktrees/component-dashboard/d-pi/dist/mac-arm64/d-pi.app",
+      "kib": 1303016,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    },
+    {
+      "path": "/Users/louistation/.codex/worktrees/input-attachment-headless/d-pi/dist/headless-input-validation/mac-arm64/d-pi.app",
+      "kib": 1302652,
+      "action": "delete",
+      "reason": "已被当前M2/工作台源码及候选取代的旧包或重复验证副本",
+      "deleted": true
+    }
+  ],
+  "freeKiBAfter": 92395700,
+  "deletedApps": 30,
+  "deletedArchives": 9,
+  "note": "目录du为共享块可能重复计入的统计；df空间变化只是本轮系统观测，不精确归因。仅清理盘点的产物本身，未删除父目录/构建日志。"
+}

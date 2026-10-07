@@ -21,4 +21,4 @@ Spec/Standards review 的独立结论和来源随 Evidence 链接，不需要重
 
 转 ready 前核实最终 diff、适当检查、独立 review 及必需 CI；远端 CI 从该 head 的实际 run 读取，配置存在不算通过。CI 未运行/失败/权限不可用时保留 Draft 和原因；无 CI 要求的场景明确说明验证覆盖。没有 PR 则报告本地验证，不能声称 ready/merged。
 
-用户请求 merge 时核实确切 head、目标分支、阻塞检查与风险决定，并按现有授权操作；完成后核实目标端状态。PR merge 不自动关闭验收父票，不更新 acceptance 为 accepted。具体候选交付继续沿用所属功能合同。
+用户请求 merge 时核实确切 head、目标分支、阻塞检查与风险决定，并按现有授权操作；完成后核实目标端状态。PR merge 不自动关闭验收父票，不更新 acceptance 为 accepted。具体试用按[本地交付](../../../docs/engineering/local-delivery.md#选择运行与交付方式)选择；Dev 是日常默认，打包不是创建/ready/合并 PR 的通用前置，包内验收只在对应证据缺口需要时运行。

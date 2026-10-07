@@ -2,6 +2,8 @@
 
 工程命令单源在 [package.json](../../package.json)，开发 Node 在 [.node-version](../../.node-version)，pnpm 在 `packageManager`。按 [README](../../README.md#环境准备与启动)准备；实际版本、结果和未覆盖项在所属规格及 [总看板](../status.md)读取。
 
+日常运行默认 `pnpm dev`；需要监听 Main/preload 时 `pnpm dev:watch`，只需运行编译结果时 `pnpm preview`。首次准备、每轮验证和交付是不同步骤，不把下表串成每次编辑或收尾的必跑链。固定包的触发条件与数据边界见[本地交付](local-delivery.md#选择运行与交付方式)。CI 的完整检查继续保留，不能推导出本地每轮都要打包/E2E/Computer use。
+
 | 入口 | 责任与运行成本 |
 | --- | --- |
 | `pnpm check:tools` | 开发工具、必需基础依赖声明、精确版本、根 lock importer 与同族版本一致；不启动原生资源 |

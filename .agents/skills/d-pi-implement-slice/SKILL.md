@@ -29,6 +29,8 @@ Worker 输入最少包含：spec 的相关节、票路径、基点/集成分支�
 
 ## 整段交付
 
+可运行体验默认交付 `pnpm dev` 的源码和试用步骤；只有[本地交付](../../../docs/engineering/local-delivery.md#选择运行与交付方式)中的固定候选或打包差异需要才生成包。创建 worktree/PR、完成切片本身不触发打包；验证按受影响行为选择，不为收尾机械重跑完整原生/E2E/Computer use。
+
 运行受影响的确定性检查，再按[d-pi-code-review](../d-pi-code-review/SKILL.md)固定整个集成范围，独立 Spec/Standards review；核实发现并修复，修改后更新受影响检查和评审覆盖。需要真实 GUI 的验收仍按原功能合同，不以工具层通过替代。
 
 按[d-pi-pr](../d-pi-pr/SKILL.md)准备可审查收尾；没有远端操作授权仍可交付本地分支和 body。记录工程状态、实际候选/试用、未完成父票和下一步，清理仅限已保存且可恢复的 worktree。证据支持的环境改进可记为 retro 候选，不自动加载或实施 retro。

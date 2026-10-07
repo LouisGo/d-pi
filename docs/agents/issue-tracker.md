@@ -86,7 +86,7 @@ Worker 完成只表示实现待集成：提供 commit SHA、测试与原始结�
 
 - Review 保留 Spec 与 Standards 两轴的范围、结论和限制，优先高价值、可触发、有依据的问题；具体固定差异与独立 reviewer 方法由 [review skill](../../.agents/skills/d-pi-code-review/SKILL.md)维护。
 - PR 是切片的工程审查载体，可选；本仓库的本地票不依赖 PR 关闭。明确要求或已有授权时才 push/创建远端 PR，可在已有领先提交后开 Draft；否则交付本地分支与可审查 PR 草稿。通过 GitHub/CLI 创建后在 Codex 中 attach。具体 body/CI/ready 规则由 [PR skill](../../.agents/skills/d-pi-pr/SKILL.md)维护。
-- PR 合并本身不证明工程验证、真实 GUI、用户试用或认可。满足票的工程验收才 resolved，spec 的 engineering/trial/acceptance 仍分别更新；待验收父票继续开放。
+- PR 合并本身不证明工程验证、真实 GUI、用户试用或认可。满足票的工程验收才 resolved，spec 的 engineering/trial/acceptance 仍分别更新；待验收父票继续开放。日常试用默认 Dev，固定包的用途与交接要求见[本地交付](../engineering/local-delivery.md#选择运行与交付方式)，不将历史候选步骤套用到每次收尾。
 - 收尾、反复失败或重要 review 发现时，可记录可复用的 retro 候选及证据。请求复盘时按 [d-pi-retro](../../.agents/skills/d-pi-retro/SKILL.md)分析；默认建议，由用户选择或在现有明确升级授权内实施，不自动执行整套复盘或写新规则。无可复用问题时可以无改动结束。
 
 ## 可选的 Wayfinder / to-tickets

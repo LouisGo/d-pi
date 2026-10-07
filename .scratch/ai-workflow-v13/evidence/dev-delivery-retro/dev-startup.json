@@ -1,0 +1,16 @@
+{
+  "mode": "DEV",
+  "command": "pnpm dev",
+  "source": "/Users/louistation/MySpace/Life/d-pi",
+  "sourceBase": "4d4266ad2105360c936dd26593aae334a065e4fd",
+  "dirtyAtStartup": true,
+  "dataDirectory": "/Users/louistation/.d-pi/dev/d-pi-290bf7a6186d",
+  "appDataCreated": true,
+  "electronPids": [
+    80229
+  ],
+  "rendererUrl": "http://localhost:5173/",
+  "viteClientStatus": 200,
+  "observed": "Main/preload development build成功；Renderer dev server启动；React Developer Tools loaded；未发起provider执行，也未声称GUI/E2E/包内验收",
+  "probeNote": "首次urllib继承代理返回502；仅对本机端口探测禁用代理后200，未修改App/OMP代理配置"
+}

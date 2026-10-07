@@ -11,7 +11,9 @@
   },
   "scripts": {
     "routes:generate": "tsr generate",
-    "dev": "electron-vite dev",
+    "dev": "node scripts/development/launch.mjs dev",
+    "dev:watch": "node scripts/development/launch.mjs dev --watch",
+    "preview": "node scripts/development/launch.mjs preview",
     "build": "electron-vite build",
     "typecheck": "pnpm routes:generate && tsc --noEmit && pnpm typecheck:core && pnpm typecheck:renderer && pnpm typecheck:main && pnpm typecheck:host && pnpm typecheck:preload",
     "lint": "biome check .",

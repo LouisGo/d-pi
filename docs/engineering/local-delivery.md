@@ -2,11 +2,31 @@
 
 本页说明现有工程入口和未完成的分发事项，便于在进入公开试用前接手。是否实施和发布仍由所属规格及用户授权确定；`pnpm package:mac` 成功不构成公开发布、产品认可或其他平台支持。
 
+## 选择运行与交付方式
+
+2026-10-07 用户确认：日常开发和本机反馈默认使用 Dev；创建功能、PR、worktree、提交或工作收尾都不自动打包，也不自动重跑真实供应商、完整 E2E 或 Computer use。此调整取代将历史候选交接步骤套用到每轮开发的做法，必要的验证仍按[风险与证据缺口](../architecture/headless-features.md#日常改动的验证选择2026-10-07)选择。
+
+| 当前目的 | 入口 | 交付与验证 |
+| --- | --- | --- |
+| 开发、修改 GUI、当前源码的本机试用 | `pnpm dev`；需要 Main/preload 自动监听时 `pnpm dev:watch` | 交付源码目录、commit/WIP 状态、启动命令和操作步骤；Renderer HMR，Main/preload 重启语义见 README |
+| 确认生产编译、资源引用或优化差异，但无需独立 App | `pnpm build`；需要运行构建结果时 `pnpm preview` | 构建 `out/`，preview 使用开发数据；仍依赖 checkout 和 SDK，不声称包内行为已验证 |
+| 需要脱离 checkout 运行的固定候选，或验证只有打包才有的差异 | `pnpm package:mac` | 例如 `app.isPackaged`、asar/extraResources、随包 SDK、安装/签名/分发路径；说明具体用途后生成固定包，验证受影响部分 |
+
+里程碑只有确需独立、可复现的候选交付或组合验收时才打包；里程碑编号本身不构成理由。真实 Electron/SDK 检查可以直接使用开发资源，GUI 验收不等于包内验收。可运行体验应及时交付 Dev 试用，不为等固定包延迟反馈。历史 spec/交接中的包身份和测试矩阵保留为当时证据，不作为新一轮工作的默认步骤；当前用户明确要求和确有打包差异的验收继续适用。
+
+Dev / preview 使用按 checkout 路径区分的持久 App 数据，沿用共享 OMP 原生配置；具体覆盖方式与边界见 [README](../../README.md#配置与数据边界)。版本号沿用 `package.json`，不因新功能、PR 或 worktree 自动递增。Dev 是持续变化的源码，不承诺 dirty=false 或固定产物哈希；冻结候选才核对包内身份，源码交付后的提交也不冒称包已更新。
+
+## 本地产物保留与清理
+
+固定包产生后记录保留用途：当前正在试用的候选、尚需复现问题或必要对照基线。替代候选可用后清理无用途旧包、ZIP 和重复验证副本，不为每个 PR/worktree 留一份永久包。清理前核对当前交接和运行进程，保留正在运行的 App；有明确原始 ZIP 时通常无需再保留多份解包副本。
+
+清理范围是 `dist/` 中确认的生成产物，不连带删除 App 数据、原生配置/会话、源码、依赖或仍供 Dev 使用的 SDK。记录实际删除和保留路径及原因；历史证据不改写，在新记录注明旧路径已退役。磁盘统计需区分逻辑大小与 APFS 克隆/共享块，不能用目录大小之和声称实际回收空间，也不称为运行内存。
+
 ## 当前具备什么
 
 | 事项 | 现状与事实入口 |
 | --- | --- |
-| 包版本 | [package.json](../../package.json) 为 `0.1.0-m2.7`、`private=true`，用于 OMP 18.4.6 加固本地候选。切片编号、Git SHA、build ID 与包版本分别记录；本地切片提交不自动递增发行版本。 |
+| 包版本 | 以 [package.json](../../package.json) 为单源，当前 `private=true`。切片编号、Git SHA、build ID 与包版本分别记录；本地切片提交不自动递增发行版本。 |
 | 构建身份 | [构建配置](../../electron.vite.config.ts)注入 version、commit、dirty 和随机 build ID；无 Git 导出保留 unknown/dirty。对应构建和试用状态见 [总看板](../status.md) 路由到的交接。 |
 | 本地打包 | `pnpm package:mac` 安装固定 Electron、准备固定 SDK、构建，再用 [electron-builder](../../electron-builder.yml)生成 macOS 目录包。当前经过验证的是 macOS arm64；Windows/Linux 与其他架构未承诺支持。 |
 | 第三方声明 | [THIRD_PARTY_NOTICES](../../THIRD_PARTY_NOTICES.md)随 App 打包，保留改编 UI 来源与依赖许可；SDK 闭包的原始许可证文件随 `sdk/node_modules` 保留，Bun 原始说明随 `sdk/BUN-LICENSE.md` 保留。[OMP 资源维护](omp-maintenance.md)说明准备过程。 |
@@ -31,6 +51,6 @@
 
 ## 交付时核对
 
-记录实际 commit、dirty、build ID、App 路径/哈希、支持平台、检查及审阅证据，分别写明工程通过、已交付待试用和用户认可。实际 CI 执行结果、真实供应商、系统输入法、签名/公证及用户试用没有证据时保留未验证状态。
+Dev 交付记录实际源码目录、commit/WIP 状态、启动命令、数据目录及操作步骤；不要求 App 路径、包哈希或生产 build ID。固定包交付才记录包内 commit、dirty、build ID、App 路径/哈希和平台。两者均记录相关检查及审阅证据，分别写明工程通过、已交付待试用和用户认可。实际 CI、真实供应商、系统输入法、签名/公证及用户试用没有证据时保留未验证状态；不为填满记录而重复验证。
 
 当前 [S3 退出队列放弃出口](../../.scratch/m1-s3-control-recovery/issues/09-quit-discard-decision.md)仍待决：停止保留并暂停队列，没有“放弃剩余输入后正常退出”动作。基建收口不修改退出/清队列策略，也不由本页解除恢复单写门槛或授权 S5/M2。

@@ -8,16 +8,22 @@
 
 本轮开发环境目标为 **Node 24.21.0 / pnpm 12.8.1**，分别以 `.node-version` 与 `packageManager` 为单一入口。`package.json` 的 Node 最低声明不代表所有满足版本均已验证。开发 Node、Electron 内嵌 Node、OMP 宿主 Bun 各自独立；固定依赖与资源版本由锁文件和资源 manifest 核对。
 
+首次 clone 或新 worktree 先准备依赖和资源；已有环境只在依赖、SDK/宿主或平台变化时更新对应资源：
+
 ```sh
 pnpm install --frozen-lockfile
-pnpm hooks:install
 pnpm exec install-electron
 pnpm runtime:sdk
 pnpm check:environment
-pnpm check
-pnpm build
+```
+
+日常开发与本机试用默认直接启动 Dev，无需先跑完整检查、`build` 或打包：
+
+```sh
 pnpm dev
 ```
+
+Renderer 使用 HMR。Main/preload 修改默认重启 Dev；需要自动监听时用 `pnpm dev:watch`，Main 重建会重启应用，preload 重建会重载页面，运行中的执行应先结束。`pnpm preview` 构建并运行 `out/`，用于检查构建差异，不生成 `.app`。同一 checkout 的 Dev 与 preview 共用开发数据，切换前先退出当前实例。验证按[工程入口](docs/engineering/checks.md)选择；何时需要固定包以[本地交付](docs/engineering/local-delivery.md#选择运行与交付方式)为准。创建 PR/worktree 或完成一轮工作本身不触发打包。
 
 | 命令 | 前置与结果 |
 | --- | --- |
@@ -28,7 +34,9 @@ pnpm dev
 | `pnpm check` | 快速工具环境、类型、代码/设计/i18n、文档引用、架构及报告新鲜度、门禁负例与隔离自动测试；检查通过不等于 GUI 或用户试用通过 |
 | `pnpm check:fast` | 快速工具/依赖、Biome、文档/任务、模块边界及报告新鲜度；显式安装的提交 hook 调用，不启动原生进程或打包 |
 | `pnpm build` | 构建 Electron Main/preload/Renderer 到 `out/`；不单独准备 SDK 或生成 `.app` |
-| `pnpm dev` | 启动开发态应用；需先准备匹配本机平台/架构的 SDK 资源 |
+| `pnpm dev` | 启动带 Renderer HMR 的开发态应用；需已有匹配本机平台/架构的 SDK；终端显示源码和独立开发数据目录 |
+| `pnpm dev:watch` | 在 Dev 基础上监听 Main/preload；会重启应用/重载页面 |
+| `pnpm preview` | 构建并运行未打包的应用，使用该 checkout 的开发数据；不准备 SDK 或生成 `.app` |
 | `pnpm package:mac` | 先准备 SDK、构建，再生成未签名的本地 macOS 应用目录；产物在 `dist/`，实际构建标识以交接为准 |
 
 当前已验证交付平台为 macOS arm64，未承诺 Windows/Linux、其他架构、签名或公证。`resources/sdk`、`out` 与 `dist` 都是可重建产物，不把作者机器的资源目录当干净环境前置。独立环境验证与实际证据由重写任务记录维护。
@@ -49,7 +57,9 @@ pnpm dev
 
 项目默认仅浏览；用户明确允许执行并启动后，才加载 OMP 原生项目配置/扩展。App 偏好与 SQLite/日志和 OMP 原生配置、会话记录各有所有者，详见[配置 ADR](docs/adr/0002-share-native-omp-config.md)。
 
-`D_PI_DATA_DIR=/绝对路径` 只隔离 App 数据，**不会隔离 OMP 配置与会话**。测试与干净启动需要同时隔离原生配置、会话目录和项目上下文，使用受控环境。`ELECTRON_RUN_AS_NODE` 会改变 Electron 启动语义；启动失败时先核对环境与资源，不删除数据库解决迁移或恢复问题。
+`pnpm dev` / `dev:watch` / `preview` 默认把 App 数据放在 `~/.d-pi/dev/<checkout名>-<路径哈希>/`，同一路径持续复用，不同 worktree 分开；保留旧候选数据，不自动迁移。终端输出实际源码路径和数据路径，Dev 的版本/build ID 是启动快照，HMR 后不能当作固定源码身份。
+
+`D_PI_DATA_DIR=/绝对路径 pnpm dev` 可显式覆盖开发数据目录。App 数据隔离**不等于完整 OMP 配置与会话隔离**：原生配置及环境变量继续沿用现有解析策略，不复制认证，不改 profile；保存共享原生设置仍影响使用同一配置的 CLI。测试与干净启动需要同时隔离原生配置、会话目录和项目上下文，使用受控环境。`ELECTRON_RUN_AS_NODE` 会改变 Electron 启动语义；启动失败时先核对环境与资源，不删除数据库解决迁移或恢复问题。
 
 unknown 提交不自动重发；恢复缺执行全周期单写证据时继续只读。内容阅读与可执行状态分开，具体恢复门槛和已覆盖路径见[S3 规格](.scratch/m1-s3-control-recovery/spec.md)及相关交接。
 
