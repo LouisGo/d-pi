@@ -75,6 +75,8 @@ clipboard snapshot 只从当次可信源的选中依赖建立；私有资产经 
 
 2026-10-07编辑准入合同补充：当预算保护拒绝PM事务时，适配器按实际文档判断是否插入，不能把dispatch/command布尔当作应用确认。未插入clipboard clone须交回Main释放，附件来源仍可重试；冻结选区请求保持待应用，恢复准入后再尝试，确认进入正文后才通知已应用。提交消费与采用持久版本是窄可信替换，保留现有原子消费/清史语义，不允许一般用户事务绕过预算。
 
+2026-10-07迟到结果清理补充：Main已成功导入但因正文、选区、generation或前台身份变化而未插入的clone，也属于原Thread的必要清理责任；只要Thread owner仍存活，就与PM拒插共用可见失败、原ID和实际ACK重试，不能直接fire-and-forget RPC。Editor/clipboard adapter销毁不等于Thread owner销毁。Thread owner真正释放后的迟到结果按可信document释放合同处理，不重新开放已销毁owner；限时未使用的clipboard ticket与已创建clone的清理责任分别处理。
+
 ### 阅读来源与详情
 
 ReadingAnchor 使用 source scope、rowId、offsetWithinRow、pixel fallback 与 atEnd；live scope含真实generation，native含session/source/page。Thread owns anchor，Renderer owns DOM/ResizeObserver，恢复不改执行事实。当前 history/live 无原生共同身份，本轮不合并；现有详情从当前投影读，不能为已截断内容创建伪重读接口。未来独立详情必须返回 actual revision/coverage，T3 cache revision不是精确版本证据。
