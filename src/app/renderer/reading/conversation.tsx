@@ -16,9 +16,11 @@ import { SubagentMessage } from "./subagents";
 export function Conversation({
   model,
   positions,
+  onOpenHistory,
 }: {
   model: ConversationModel;
   positions?: ReadingPositions | undefined;
+  onOpenHistory?: (() => void) | undefined;
 }) {
   const { t } = useI18n();
   const itemIds = useStore(model.stateStore, (state) => state.itemIds);
@@ -28,6 +30,10 @@ export function Conversation({
     (state) => state.view?.connectionGeneration,
   );
   const gap = useStore(model.stateStore, (state) => state.view?.gap ?? false);
+  const truncated = useStore(
+    model.stateStore,
+    (state) => state.view?.items.some((item) => item.truncated) ?? false,
+  );
   const exhausted = useStore(
     model.stateStore,
     (state) => state.resyncExhausted,
@@ -48,6 +54,11 @@ export function Conversation({
         </>
       )}
       {gap && <p role="status">{t("ui.conversation.gap")}</p>}
+      {(gap || truncated) && onOpenHistory && (
+        <Button variant="ghost" onClick={onOpenHistory}>
+          {t("ui.conversation.openHistory")}
+        </Button>
+      )}
       {exhausted && (
         <Button
           variant="ghost"
