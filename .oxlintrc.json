@@ -5,7 +5,8 @@
   "jsPlugins": ["@shadcn/lint"],
   "settings": {
     "shadcn": {
-      "ui": "@/components/ui"
+      "ui": "@/components/ui",
+      "componentImports": ["(?:^|/)modules/ui/renderer/public$"]
     }
   },
   "rules": {

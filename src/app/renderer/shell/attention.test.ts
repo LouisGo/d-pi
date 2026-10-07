@@ -275,7 +275,7 @@ it("system and completion preferences require explicit opt-in, supported is not 
   const system = ui.host.querySelector<HTMLInputElement>(
     "[data-attention-system]",
   );
-  expect(system?.checked).toBe(false);
+  expect(system?.getAttribute("aria-checked")).toBe("false");
   expect(ui.host.textContent).toContain("待回答 · 未读");
   await ui.click("[data-attention-system]");
   expect(
@@ -501,4 +501,18 @@ it("accepted notification intent reveals the same current conversation before lo
   expect(ui.model.attention.locationStore.getState().target?.threadId).toBe(
     ui.first.threadId,
   );
+});
+
+it("saves each notification switch without changing the other preference", async () => {
+  const ui = await mount();
+  await ui.click("[data-attention-system][role=switch]");
+  expect(ui.snapshot().preferences).toEqual({
+    system: true,
+    completion: false,
+  });
+  await ui.click("[data-attention-completion][role=switch]");
+  expect(ui.snapshot().preferences).toEqual({ system: true, completion: true });
+  expect(
+    ui.request.mock.calls.filter(([command]) => command.kind === "preferences"),
+  ).toHaveLength(2);
 });

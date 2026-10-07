@@ -2,8 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { match } from "ts-pattern";
-import { Button } from "@/components/ui/button";
 import { useI18n } from "../../../modules/preferences/renderer/public";
+import { Button } from "../../../modules/ui/renderer/public";
 import {
   type DiagnosticBridge,
   type DiagnosticFilter,

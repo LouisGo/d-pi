@@ -1,8 +1,8 @@
 import { useRouter, useRouterState } from "@tanstack/react-router";
 import { useContext } from "react";
 import { BackIcon, ForwardIcon } from "@/components/icons/common";
-import { Button } from "@/components/ui/button";
 import { useI18n } from "../../../modules/preferences/renderer/public";
+import { Button } from "../../../modules/ui/renderer/public";
 import { ConversationVisibilityContext } from "./layout/conversation-visibility";
 
 export function NavigationHistory({ disabled }: { disabled: boolean }) {

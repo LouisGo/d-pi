@@ -7,12 +7,9 @@ import {
   LightThemeIcon,
   SystemThemeIcon,
 } from "@/components/icons/common";
-import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
-import {
-  useI18n,
-  useLocalePreference,
-} from "../../../modules/preferences/renderer/public";
+import { useI18n } from "../../../modules/preferences/renderer/public";
+import { Button } from "../../../modules/ui/renderer/public";
 import type { AppModel } from "../wiring/model";
 import { ConversationVisibilityContext } from "./layout/conversation-visibility";
 import { NavigationHistory } from "./navigation-history";
@@ -100,45 +97,6 @@ function ThemeToggle({ model }: { model: AppModel }) {
     >
       {icon}
     </IconButton>
-  );
-}
-
-export function AppearanceSettings({ model }: { model: AppModel }) {
-  const { t } = useI18n();
-  const { preference, setPreference, persistenceFailed } =
-    useLocalePreference();
-  const busy = useStore(
-    model.stateStore,
-    (state) => state.kind === "ready" && state.threadTransition === "unknown",
-  );
-  return (
-    <>
-      <label className="settings-preference-row">
-        <span>{t("app.toolbar.language")}</span>
-        <select
-          value={preference}
-          disabled={busy}
-          onChange={(event) => {
-            const value = event.currentTarget.value;
-            if (value === "system" || value === "zh-CN" || value === "en-US")
-              void setPreference(value);
-          }}
-        >
-          <option value="system">{t("app.toolbar.systemLanguage")}</option>
-          <option value="zh-CN">{t("app.toolbar.chinese")}</option>
-          <option value="en-US">{t("app.toolbar.english")}</option>
-        </select>
-      </label>
-      {persistenceFailed && (
-        <p role="alert" className="failure">
-          {t("app.language.saveFailed")}
-        </p>
-      )}
-      <div className="settings-preference-row">
-        <span>{t("app.layout.theme")}</span>
-        <ThemeToggle model={model} />
-      </div>
-    </>
   );
 }
 

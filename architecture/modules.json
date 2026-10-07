@@ -103,7 +103,8 @@
           "preferences",
           "shared",
           "threads",
-          "configuration"
+          "configuration",
+          "ui"
         ]
       }
     },
@@ -389,9 +390,21 @@
           "threads"
         ],
         "renderer": [
-          "preferences"
+          "preferences",
+          "ui"
         ]
       },
+      "materialized": true
+    },
+    "ui": {
+      "root": "src/modules/ui",
+      "environments": [
+        "renderer"
+      ],
+      "public": [
+        "renderer/public.ts"
+      ],
+      "dependsOn": [],
       "materialized": true
     }
   }

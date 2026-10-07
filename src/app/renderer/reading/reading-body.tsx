@@ -1,6 +1,6 @@
 import { useId, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { useI18n } from "../../../modules/preferences/renderer/public";
+import { Button } from "../../../modules/ui/renderer/public";
 import { Markdown } from "./markdown";
 import { readingSegments } from "./reading-segments";
 

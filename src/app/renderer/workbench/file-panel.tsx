@@ -8,7 +8,6 @@ import {
   useState,
 } from "react";
 import { match } from "ts-pattern";
-import { Button } from "@/components/ui/button";
 import type {
   ChangeScope,
   GitBridge,
@@ -37,6 +36,7 @@ import {
 } from "../../../modules/files/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import type { ThreadContext } from "../../../modules/threads/contracts/public";
+import { Button } from "../../../modules/ui/renderer/public";
 import { readInFlight } from "./refresh-state";
 
 type EditorComponent = ComponentType<{

@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { type Ref, useState } from "react";
 import { useStore } from "zustand";
-import { Button } from "@/components/ui/button";
 import type {
   ConfigurationBridge,
   ConfigurationSnapshot,
@@ -9,6 +8,7 @@ import type {
 } from "../../../modules/configuration/contracts/public";
 import { configurationSnapshotQuery } from "../../../modules/configuration/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
+import { Button } from "../../../modules/ui/renderer/public";
 import type { ThreadModel } from "../wiring/thread-model";
 
 type ThinkingChoice =

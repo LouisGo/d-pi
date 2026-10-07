@@ -10,7 +10,6 @@ import {
 } from "react";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
-import { Button } from "@/components/ui/button";
 import type { RuntimeView } from "../../../modules/execution/contracts/public";
 import {
   canSubmit,
@@ -31,6 +30,7 @@ import {
   textPasteTransaction,
 } from "../../../modules/input/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
+import { Button } from "../../../modules/ui/renderer/public";
 import type { AppModel } from "../wiring/model";
 import type { ThreadModel } from "../wiring/thread-model";
 import {

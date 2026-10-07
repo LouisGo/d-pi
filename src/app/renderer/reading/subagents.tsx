@@ -1,7 +1,7 @@
 import { match } from "ts-pattern";
-import { Button } from "@/components/ui/button";
 import type { ConversationItem } from "../../../modules/conversation/contracts/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
+import { Button } from "../../../modules/ui/renderer/public";
 import { ReadingBody } from "./reading-body";
 export function SubagentMessage({ item }: { item: ConversationItem }) {
   const { t } = useI18n();

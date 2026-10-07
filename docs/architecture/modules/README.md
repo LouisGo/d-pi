@@ -13,6 +13,7 @@
 | `src/modules/input/` | 草稿合同、草稿控制器、冻结引用序列化与输入编辑器适配；提交收据和 OMP 消费仍归 execution |
 | `src/modules/changes/` | Git 只读合同、读取实现与 Renderer 查询面；复用 files 的公开读取能力，不推断作者或写 Git |
 | `src/modules/threads/` | Thread、目录身份、项目选择、执行信任和原生记录绑定；`main/public.ts` 提供应用组合入口 |
+| `src/modules/ui/` | 跨模块 Renderer 控件、表单与配置布局；公开面 `renderer/public.ts`，不拥有业务状态或主题副本 |
 | `src/modules/preferences/` | App 主题、密度、发送方式和 locale 合同/仓储/Renderer provider；不拥有 OMP 配置 |
 | `src/modules/configuration/` | 原生配置摘要、认证命令/临时 job 和 Renderer 查询/设置桥接；OMP 拥有配置与凭据，读取 scope/trace/source 固定、无写摘要与明确 partial 覆盖见[加固规格](../../../.scratch/runtime-hardening-omp1845/spec.md) |
 | `src/modules/conversation/` | 实时阅读合同、核心订阅模型、Host 投影/端口作用域和原生历史读取；不启动或恢复执行 |

@@ -1,6 +1,6 @@
 import { Menu } from "@base-ui/react/menu";
 import type { ReactNode } from "react";
-import { Button } from "./button";
+import { Button } from "../../../../modules/ui/renderer/public";
 
 export type HoverMenuItem = {
   id: string;

@@ -1,5 +1,8 @@
 @import "./tokens.css";
-@import "../components/ui/button.css";
+@import "../../../modules/ui/renderer/button.css";
+@import "../../../modules/ui/renderer/controls.css";
+@import "../../../modules/ui/renderer/settings.css";
+@import "../shell/settings/settings.css";
 @import "../components/ui/hover-menu.css";
 @import "./interaction.css";
 @import "./workbench.css";

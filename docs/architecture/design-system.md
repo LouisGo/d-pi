@@ -109,7 +109,7 @@ Base UI / 选择性改造的上游源码 / 专用渲染与编辑能力
 
 “自有组件库”是项目拥有的公开组件层，不要求立刻发 npm 包、建 monorepo 或将所有业务组件集中到一个 barrel。基础与配套组件提供按能力的明确入口，业务组合继续按功能归属组织并通过自有公开入口使用；不以统一库名制造反向依赖。
 
-当前 `src/app/renderer/components/ui/button.tsx` 已有 Base UI 封装，但仍直接组合上游 Props，不能据此宣称完整公开能力已收敛。基础目录目前是 app 私有；configuration 等模块不能反向导入它。其现有原生按钮共享 CSS 是存量过渡方式，不代表已满足最终自有组件入口要求。后续相关切片先确定跨模块可依赖的 renderer UI 公共归属，再迁移消费者；不复制第二套 Button 或绕过 `architecture/modules.json`。
+2026-10-07 设置切片将跨模块基础 UI 归属落实到 `src/modules/ui/renderer/public.ts`：迁移原有 Button，并提供选择、开关、输入、表单关联与配置布局。App 与 configuration 直接消费公开面，业务文案、认证与持久事实留在原拥有者；App 专用 Modal、图标和工作台部件继续位于 app。UI 模块不拥有 IPC、业务 store 或独立主题值。具体名称/API 见[设置切片](../../.scratch/settings-ui/spec.md)。
 
 后续接入须检查消费者导入边界，以及组件的主题/密度、焦点/键盘、状态和资源保留。直接依赖外部 UI 的允许位置限于自有实现/适配内部，边界检查按实际落点接入现有门禁。本轮只确认写法和文档要求，尚未新增导入规则、迁移存量组件或安装依赖。来源比较见[固定源码依据](design-system-references.md#ai-组件的写法与配套组织2026-10-06)。
 

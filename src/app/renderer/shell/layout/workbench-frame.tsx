@@ -12,7 +12,6 @@ import {
   SettingsIcon,
   SidebarIcon,
 } from "@/components/icons/common";
-import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { NavigationOverlay } from "@/components/ui/navigation-overlay";
 import { ResizableSplit } from "@/components/ui/resizable";
@@ -22,6 +21,7 @@ import {
   WorkspaceTabs,
 } from "@/components/ui/workspace-tabs";
 import { useI18n } from "../../../../modules/preferences/renderer/public";
+import { Button } from "../../../../modules/ui/renderer/public";
 import { ConversationVisibilityContext } from "./conversation-visibility";
 import { solveGeometry } from "./geometry";
 import { createLayoutModel, readLayoutTokens } from "./model";

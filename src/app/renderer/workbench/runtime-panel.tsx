@@ -2,7 +2,6 @@ import { useState } from "react";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import { createStore } from "zustand/vanilla";
-import { Button } from "@/components/ui/button";
 import type {
   Interaction,
   SubmissionReceipt,
@@ -13,6 +12,7 @@ import type {
   SubmissionView,
 } from "../../../modules/execution/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
+import { Button } from "../../../modules/ui/renderer/public";
 import type { UiMessage } from "../../../shared/messages/contracts";
 import {
   receiptNeedsAttention,

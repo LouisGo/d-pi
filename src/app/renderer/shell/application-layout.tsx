@@ -2,27 +2,26 @@ import { Outlet } from "@tanstack/react-router";
 import { type ReactNode, useContext } from "react";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
-import { Button } from "@/components/ui/button";
-import { ConfigurationSettings } from "../../../modules/configuration/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
+import { Button } from "../../../modules/ui/renderer/public";
 import { BUILD_INFO } from "../../../shared/build-info";
 import type { AppModel } from "../wiring/model";
-import {
-  AttentionCenter,
-  AttentionIndicator,
-  AttentionPreferences,
-} from "./attention";
+import { AttentionCenter, AttentionIndicator } from "./attention";
 import { ConversationStatus } from "./conversation-status";
 import { DeveloperTools, useConversationNavigation } from "./developer-tools";
 import { Diagnostics } from "./diagnostics";
 import { WorkbenchHostsContext } from "./layout/hosts-context";
 import { WorkbenchFrame } from "./layout/workbench-frame";
 import {
-  AppearanceSettings,
   PreferenceToolbar,
   ThreadNavigationControls,
 } from "./preference-toolbar";
 import { ProjectThreads } from "./project-threads";
+import {
+  SettingsNavigation,
+  SettingsProvider,
+  SettingsSurface,
+} from "./settings/settings";
 import { ThreadNotice } from "./thread-notice";
 
 type ApplicationLayoutProps = { model: AppModel; children?: ReactNode };
@@ -74,40 +73,42 @@ function ReadyWorkbench({ model, children }: ApplicationLayoutProps) {
   const conversationNavigation = useConversationNavigation(model);
   return (
     <ShellFrame model={model}>
-      <WorkbenchFrame
-        {...hosts}
-        {...conversationNavigation}
-        developerTools={<DeveloperTools />}
-        conversationIndicator={<AttentionIndicator model={model} />}
-        sidebar={<ProjectThreads model={model} />}
-        status={<ConversationStatus model={model} />}
-        version={
-          <span
-            title={`${BUILD_INFO.version} · ${BUILD_INFO.id} · ${BUILD_INFO.commit}`}
-          >
-            {BUILD_INFO.version}
-          </span>
-        }
-        toolbar={
-          <PreferenceToolbar
-            model={model}
-            title={conversationNavigation.developerTitle}
-          />
-        }
-        navigationControls={<ThreadNavigationControls model={model} />}
-        settingsNavigation={<SettingsNavigation />}
-        settings={<SettingsSurface model={model} />}
-      >
-        {conversationNavigation.developerActive ? (
-          (children ?? <Outlet />)
-        ) : (
-          <main className="workbench">
-            <ThreadNotice model={model} />
-            <AttentionCenter model={model} />
-            <div className="work-content">{children ?? <Outlet />}</div>
-          </main>
-        )}
-      </WorkbenchFrame>
+      <SettingsProvider>
+        <WorkbenchFrame
+          {...hosts}
+          {...conversationNavigation}
+          developerTools={<DeveloperTools />}
+          conversationIndicator={<AttentionIndicator model={model} />}
+          sidebar={<ProjectThreads model={model} />}
+          status={<ConversationStatus model={model} />}
+          version={
+            <span
+              title={`${BUILD_INFO.version} · ${BUILD_INFO.id} · ${BUILD_INFO.commit}`}
+            >
+              {BUILD_INFO.version}
+            </span>
+          }
+          toolbar={
+            <PreferenceToolbar
+              model={model}
+              title={conversationNavigation.developerTitle}
+            />
+          }
+          navigationControls={<ThreadNavigationControls model={model} />}
+          settingsNavigation={<SettingsNavigation />}
+          settings={<SettingsSurface model={model} />}
+        >
+          {conversationNavigation.developerActive ? (
+            (children ?? <Outlet />)
+          ) : (
+            <main className="workbench">
+              <ThreadNotice model={model} />
+              <AttentionCenter model={model} />
+              <div className="work-content">{children ?? <Outlet />}</div>
+            </main>
+          )}
+        </WorkbenchFrame>
+      </SettingsProvider>
     </ShellFrame>
   );
 }
@@ -124,81 +125,5 @@ function ShellFrame({ model, children }: ApplicationLayoutProps) {
     >
       {children}
     </div>
-  );
-}
-
-function ThreadConfiguration({ model }: { model: AppModel }) {
-  const threadSelection = useStore(model.stateStore, (state) =>
-    state.kind === "ready" ? state.threadSelection : null,
-  );
-  const unknown = useStore(
-    model.stateStore,
-    (state) => state.kind === "ready" && state.threadTransition === "unknown",
-  );
-  const thread =
-    threadSelection?.kind === "thread" ? threadSelection.thread : null;
-  return (
-    <>
-      {model.configuration && !unknown && (
-        <ConfigurationSettings
-          bridge={model.configuration}
-          scope={
-            thread
-              ? {
-                  kind: "thread",
-                  threadId: thread.context.threadId,
-                  workingDirectoryId: thread.context.workingDirectoryId,
-                }
-              : { kind: "application" }
-          }
-        />
-      )}
-    </>
-  );
-}
-
-function SettingsNavigation() {
-  const { t } = useI18n();
-  return (
-    <nav className="settings-navigation" aria-label={t("app.layout.settings")}>
-      {(
-        ["appearance", "configuration", "attention", "diagnostics"] as const
-      ).map((section) => (
-        <Button
-          key={section}
-          variant="navigation"
-          onClick={() =>
-            document
-              .getElementById(`settings-${section}`)
-              ?.scrollIntoView({ block: "start" })
-          }
-        >
-          {t(`app.layout.${section}`)}
-        </Button>
-      ))}
-    </nav>
-  );
-}
-function SettingsSurface({ model }: { model: AppModel }) {
-  const { t } = useI18n();
-  return (
-    <>
-      <section id="settings-appearance" className="settings-section">
-        <h2>{t("app.layout.appearance")}</h2>
-        <AppearanceSettings model={model} />
-      </section>
-      <section id="settings-configuration" className="settings-section">
-        <h2>{t("app.layout.configuration")}</h2>
-        <ThreadConfiguration model={model} />
-      </section>
-      <section id="settings-attention" className="settings-section">
-        <h2>{t("app.layout.attention")}</h2>
-        <AttentionPreferences model={model} />
-      </section>
-      <section id="settings-diagnostics" className="settings-section">
-        <h2>{t("app.layout.diagnostics")}</h2>
-        <Diagnostics contained />
-      </section>
-    </>
   );
 }

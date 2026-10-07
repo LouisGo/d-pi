@@ -1,6 +1,6 @@
 import { Popover } from "@base-ui/react/popover";
 import type { ReactNode } from "react";
-import { Button } from "./button";
+import { Button } from "../../../../modules/ui/renderer/public";
 
 // A compact status action with a themed, keyboard accessible detail surface.
 export function StatusPreview({

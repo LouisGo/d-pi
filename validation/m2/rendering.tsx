@@ -82,6 +82,8 @@ const attention: AttentionBridge = {
         openRequest:
           command.kind === "opened" ? null : attentionSnapshot.openRequest,
       };
+    if (command.kind === "preferences")
+      attentionSnapshot = { ...attentionSnapshot, preferences: command.value };
     return {
       kind: "snapshot",
       traceId: command.traceId,
@@ -91,7 +93,10 @@ const attention: AttentionBridge = {
 };
 const runtimeCommands: { kind: string; threadId: string }[] = [];
 export const bridge: DesktopBridge = {
-  ...(location.pathname.endsWith("/workbench.html") ? { attention } : {}),
+  ...(location.pathname.endsWith("/workbench.html") ||
+  location.pathname.endsWith("/settings.html")
+    ? { attention }
+    : {}),
   request: async (command) => {
     if (command.kind === "preferences") {
       await pause();
@@ -317,4 +322,8 @@ Object.assign(window, {
   },
 });
 
-if (!location.pathname.endsWith("workbench.html")) mountRenderingFixture();
+if (
+  !location.pathname.endsWith("workbench.html") &&
+  !location.pathname.endsWith("settings.html")
+)
+  mountRenderingFixture();

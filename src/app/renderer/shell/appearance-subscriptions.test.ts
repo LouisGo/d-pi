@@ -357,7 +357,7 @@ it("places Thread creation and project opening in the sidebar and settings in a 
   await act(() => fixture.button(i18n.t("app.layout.settings")).click());
   const modal = document.querySelector(".ui-settings-modal");
   expect(modal?.getAttribute("role")).toBe("dialog");
-  expect(modal?.querySelector("#settings-appearance select")).not.toBeNull();
+  expect(modal?.querySelector("[role=radiogroup]")).not.toBeNull();
   expect(fixture.container.querySelector(".conversation-body")).toBe(work);
   expect(work?.hasAttribute("hidden")).toBe(false);
   expect(fixture.model.controller).toBe(controller);
@@ -629,14 +629,22 @@ it("still updates localized workbench text when the language context changes", a
     i18n.t("ui.conversation.heading"),
   );
   await act(() => fixture.button(i18n.t("app.layout.settings")).click());
-  const language = document.querySelector<HTMLSelectElement>(
-    "#settings-appearance select",
+  const general = Array.from(
+    document.querySelectorAll<HTMLButtonElement>(".settings-navigation button"),
+  ).find((button) => button.textContent?.trim() === i18n.t("settings.general"));
+  await act(() => general?.click());
+  const language = document.querySelector<HTMLElement>(
+    ".ui-settings-page:not([hidden]) [role=combobox]",
   );
   if (!language) throw Error("missing language selector");
-  await act(async () => {
-    language.value = "zh-CN";
-    language.dispatchEvent(new Event("change", { bubbles: true }));
-  });
+  await act(() => language.click());
+  const chinese = Array.from(
+    document.querySelectorAll<HTMLElement>("[role=option]"),
+  ).find((option) =>
+    option.textContent?.includes(i18n.t("app.toolbar.chinese")),
+  );
+  if (!chinese) throw Error("missing Chinese option");
+  await act(async () => chinese.click());
   expect(fixture.container.textContent).toContain(
     createI18n("zh-CN").t("ui.conversation.heading"),
   );
@@ -901,4 +909,22 @@ it("clears the prior Thread status and keeps missing metrics distinct from zero"
   expect(preview?.textContent).not.toContain("old-thread-model");
   expect(preview?.textContent).toContain("Unavailable");
   expect(preview?.textContent).toContain("/fixture/second");
+});
+
+it("saves an explicit theme target in one write while keeping Thread resources intact", async () => {
+  const fixture = await setup();
+  const controller = fixture.model.controller;
+  let saving: Promise<void> | undefined;
+  await act(() => {
+    saving = fixture.model.preference("theme", "system");
+  });
+  await act(async () => {
+    fixture.settle();
+    await saving;
+  });
+  expect(fixture.model.getSnapshot()).toMatchObject({
+    kind: "ready",
+    preferences: { theme: "system" },
+  });
+  expect(fixture.model.controller).toBe(controller);
 });

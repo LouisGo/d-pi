@@ -32,7 +32,7 @@ vi.mock("../../../modules/preferences/renderer/public", async () => {
   const { createI18n } = await import("../../../shared/i18n/create-i18n");
   return { useI18n: () => createI18n("en-US") };
 });
-vi.mock("@/components/ui/button", () => ({
+vi.mock("../../../modules/ui/renderer/public", () => ({
   Button: ({ children }: { children: ReactNode }) =>
     createElement("button", null, children),
 }));

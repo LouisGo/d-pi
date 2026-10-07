@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { match } from "ts-pattern";
-import { Button } from "@/components/ui/button";
 import type {
   HistoryBridge,
   HistoryCursor,
@@ -13,6 +12,7 @@ import {
   projectHistoryPageQuery,
 } from "../../../modules/conversation/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
+import { Button } from "../../../modules/ui/renderer/public";
 import { ReadingBody } from "./reading-body";
 
 type HistoryToolEvidenceMessage =

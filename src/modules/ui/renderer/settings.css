@@ -1,0 +1,85 @@
+@layer components {
+  .ui-settings-page {
+    width: 100%;
+    max-width: var(--content-width);
+    margin-inline: auto;
+    display: grid;
+    gap: calc(var(--spacing) * 8);
+  }
+  .ui-settings-page[hidden] {
+    display: none;
+  }
+  .ui-settings-page-header {
+    display: grid;
+    gap: calc(var(--spacing) * 2);
+    margin-bottom: calc(var(--spacing) * 2);
+  }
+  .ui-settings-page-header h2 {
+    font-size: var(--text-heading);
+    font-weight: 600;
+    letter-spacing: var(--tracking-heading);
+  }
+  .ui-settings-page-header p,
+  .ui-settings-group-header p {
+    color: var(--muted-foreground);
+  }
+  .ui-settings-group {
+    min-width: 0;
+  }
+  .ui-settings-group-header {
+    display: grid;
+    gap: calc(var(--spacing) * 1.5);
+    margin-bottom: calc(var(--spacing) * 3);
+  }
+  .ui-settings-group-header h3 {
+    font-size: var(--text-body);
+    font-weight: 600;
+    margin: 0;
+  }
+  .ui-settings-group-content {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding-inline: var(--panel-padding);
+    min-width: 0;
+  }
+  .ui-setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: calc(var(--spacing) * 6);
+    padding-block: calc(var(--spacing) * 4);
+    min-width: 0;
+  }
+  .ui-setting-row + .ui-setting-row {
+    border-top: 1px solid var(--border);
+  }
+  .ui-setting-copy {
+    flex: 1;
+    min-width: 0;
+    display: grid;
+    gap: calc(var(--spacing) * 1);
+  }
+  .ui-setting-label,
+  .ui-setting-copy > label {
+    font-weight: 500;
+  }
+  .ui-setting-description {
+    color: var(--muted-foreground);
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+  .ui-setting-control {
+    flex: 0 1 auto;
+    max-width: 100%;
+    min-width: 0;
+  }
+}
+@media (max-width: 760px) {
+  .ui-setting-row {
+    flex-wrap: wrap;
+    gap: calc(var(--spacing) * 3);
+  }
+  .ui-setting-copy {
+    flex-basis: calc(var(--spacing) * 56);
+  }
+}

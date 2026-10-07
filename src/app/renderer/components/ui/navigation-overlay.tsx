@@ -1,6 +1,6 @@
 import { Dialog } from "@base-ui/react/dialog";
 import type { ReactNode, RefObject } from "react";
-import { Button } from "./button";
+import { Button } from "../../../../modules/ui/renderer/public";
 export function NavigationOverlay({
   open,
   onClose,

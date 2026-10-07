@@ -1,6 +1,6 @@
 import { type ReactNode, useRef } from "react";
+import { Button } from "../../../../modules/ui/renderer/public";
 import { CloseIcon } from "../icons/common";
-import { Button } from "./button";
 import { IconButton } from "./icon-button";
 export type WorkspaceTab = { id: string; title: string; content: ReactNode };
 export function WorkspaceTabs({

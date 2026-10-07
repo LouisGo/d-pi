@@ -56,7 +56,7 @@ vi.mock("@/components/icons/common", async (importOriginal) => ({
   FolderIcon: () => null,
   LightThemeIcon: () => null,
 }));
-vi.mock("@/components/ui/button", () => ({
+vi.mock("../../../modules/ui/renderer/public", () => ({
   Button: ({ children }: { children: ReactNode }) =>
     createElement("button", null, children),
 }));

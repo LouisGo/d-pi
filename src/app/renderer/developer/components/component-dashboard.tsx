@@ -1,5 +1,5 @@
 import { type ComponentType, type ReactNode, useState } from "react";
-import { Button } from "../../components/ui/button";
+import { Button } from "../../../../modules/ui/renderer/public";
 import {
   type ComponentName,
   categories,
@@ -10,15 +10,25 @@ import {
 import styles from "./component-dashboard.module.css";
 import {
   ButtonDemo,
+  ChoiceGroupDemo,
+  FormFieldDemo,
   IconButtonDemo,
   IconsDemo,
   NavigationDemo,
+  SelectDemo,
   SettingsDemo,
+  SettingsGroupDemo,
   SplitDemo,
+  SwitchDemo,
   TabsDemo,
 } from "./demos";
 
 const demos: Record<ComponentName, ComponentType> = {
+  Select: SelectDemo,
+  Switch: SwitchDemo,
+  FormField: FormFieldDemo,
+  ChoiceGroup: ChoiceGroupDemo,
+  SettingsGroup: SettingsGroupDemo,
   Button: ButtonDemo,
   IconButton: IconButtonDemo,
   WorkspaceTabs: TabsDemo,

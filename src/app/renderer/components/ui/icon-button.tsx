@@ -1,6 +1,9 @@
 import { Tooltip } from "@base-ui/react/tooltip";
 import type { ReactNode } from "react";
-import { Button, type ButtonProps } from "./button";
+import {
+  Button,
+  type ButtonProps,
+} from "../../../../modules/ui/renderer/public";
 // Project API: one native button, named action, root-themed portaled hint.
 export function IconButton({
   label,

@@ -1,8 +1,8 @@
 import { useStore } from "zustand";
 import { AddIcon, FolderIcon } from "@/components/icons/common";
-import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { useI18n } from "../../../modules/preferences/renderer/public";
+import { Button } from "../../../modules/ui/renderer/public";
 import type { AppModel } from "../wiring/model";
 
 export function ChooseProjectButton({

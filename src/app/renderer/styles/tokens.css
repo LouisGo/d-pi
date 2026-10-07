@@ -14,7 +14,7 @@
 :root {
   color-scheme: light;
   --background: #fcfcfd;
-  --surface: #ffffff;
+  --surface: var(--preview-light-background);
   --overlay: rgb(0 0 0 / 45%);
   --sidebar: #f3f4f7;
   --statusbar-background: color-mix(
@@ -35,7 +35,7 @@
     var(--muted-foreground) 12%,
     var(--surface)
   );
-  --foreground: #242730;
+  --foreground: var(--preview-light-foreground);
   --primary: #3757bc;
   --focus-ring: 2px solid var(--primary);
   --focus-ring-offset: 2px;
@@ -47,6 +47,14 @@
   --code-selection: #c5d5f8;
   --diff-added-background: #d6f0df;
   --diff-removed-background: #f6d9d6;
+  --preview-light-background: #ffffff;
+  --preview-light-foreground: #242730;
+  --preview-dark-background: #20242d;
+  --preview-dark-foreground: #e8ebf2;
+  --switch-width: 2.375rem;
+  --switch-height: 1.375rem;
+  --switch-padding: 0.1875rem;
+  --switch-thumb-size: 1rem;
   --control-height: 1.875rem;
   --control-padding: 0.625rem;
   --panel-padding: 1rem;
@@ -92,14 +100,14 @@
 :root[data-theme="dark"] {
   color-scheme: dark;
   --background: #181b22;
-  --surface: #20242d;
+  --surface: var(--preview-dark-background);
   --sidebar: #1d2028;
   --statusbar-background: color-mix(
     in srgb,
     var(--surface) 92%,
     var(--foreground)
   );
-  --foreground: #e8ebf2;
+  --foreground: var(--preview-dark-foreground);
   --primary: #a8c1ff;
   --primary-foreground: #162649;
   --muted: #272c36;

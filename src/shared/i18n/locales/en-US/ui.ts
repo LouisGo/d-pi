@@ -1,4 +1,52 @@
 export const ui = {
+  "settings.commandEnterKey": "⌘ + Enter",
+  "settings.configurationDescription":
+    "Manage provider authentication and inspect the native configuration used by the current Thread.",
+  "settings.visualStyle": "Visual style",
+  "settings.themeDescription":
+    "Choose the display mode. System follows the macOS appearance.",
+  "settings.themeSystem": "System",
+  "settings.themeLight": "Light",
+  "settings.themeDark": "Dark",
+  "settings.general": "General",
+  "settings.application": "Application",
+  "settings.languageDescription":
+    "Changes the d-pi interface language. Model responses and native content keep their own language.",
+  "settings.composer": "Input and sending",
+  "settings.sendKey": "Send shortcut",
+  "settings.sendKeyDescription":
+    "Choose how to send from the regular composer. IME composition never sends a message.",
+  "settings.enterSend": "Enter to send",
+  "settings.commandEnterSend": "⌘ Enter to send",
+  "settings.expandedComposer": "Expanded composer",
+  "settings.expandedDescription":
+    "When expanded, ⌘ Enter sends and Enter inserts a new line. Collapsing restores your preference.",
+  "settings.appearanceDescription": "Make your workspace comfortable to use.",
+  "settings.generalDescription":
+    "Manage interface language and everyday input.",
+  "settings.attentionDescription":
+    "Stay informed when an answer is needed, a run fails, or work finishes.",
+  "settings.diagnosticsDescription":
+    "Inspect runtime records, investigate problems, and export feedback.",
+  "settings.configurationUnavailable":
+    "Configuration is unavailable. Finish switching Threads and try again.",
+  "settings.diagnosticsTools": "Troubleshooting",
+  "settings.diagnosticsRowDescription":
+    "Filter diagnostics by time and operation. Review the feedback before exporting.",
+  "settings.accounts": "Accounts and authentication",
+  "settings.openaiAccount": "OpenAI account",
+  "settings.openaiDescription":
+    "Sign in with your browser. The native Runtime stores authentication.",
+  "settings.deepseekAccount": "DeepSeek",
+  "settings.nativeConfiguration": "Native configuration",
+  "settings.nativeDescription":
+    "Read the configuration source and authentication for this context. Existing usable configuration is reused.",
+  "settings.systemNotificationDescription":
+    "When the window is in the background, notify about requests for input and execution failures.",
+  "settings.completionDescription":
+    "Include successful completion in notifications. By default, only the sidebar status is updated.",
+  "settings.saving": "Saving…",
+
   "attention.title": "Thread attention",
   "attention.needsAnswer": "Needs an answer",
   "attention.failed": "Execution failed",

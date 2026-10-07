@@ -1,6 +1,6 @@
 import { useStore } from "zustand";
-import { Button } from "@/components/ui/button";
 import { useI18n } from "../../../modules/preferences/renderer/public";
+import { Button } from "../../../modules/ui/renderer/public";
 import type { AppModel } from "../wiring/model";
 import { Diagnostics } from "./diagnostics";
 

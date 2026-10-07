@@ -2,9 +2,14 @@ import { useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
-import { Button } from "@/components/ui/button";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import type { ThreadContext } from "../../../modules/threads/contracts/public";
+import {
+  Button,
+  SettingRow,
+  SettingsGroup,
+  Switch,
+} from "../../../modules/ui/renderer/public";
 import type { AttentionEntry } from "../../contracts/attention";
 import type { AppModel } from "../wiring/model";
 
@@ -274,43 +279,55 @@ function AttentionPreferenceContent({ model }: { model: AppModel }) {
     (state) => state.snapshot,
   );
   const saving = useStore(model.attention.stateStore, (state) => state.saving);
+  const failed = useStore(model.attention.stateStore, (state) => state.failed);
   if (!model.attention.available) return null;
   return (
-    <details data-attention-preferences>
-      <summary>{t("attention.preferences")}</summary>
-      <label className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          data-attention-system
-          checked={snapshot?.preferences.system ?? false}
-          disabled={!snapshot || saving}
-          onChange={(event) => {
-            if (snapshot)
-              void model.attention.preferences({
-                ...snapshot.preferences,
-                system: event.currentTarget.checked,
-              });
-          }}
-        />
-        {t("attention.enableSystem")}
-      </label>
-      <label className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          data-attention-completion
-          checked={snapshot?.preferences.completion ?? false}
-          disabled={!snapshot || saving}
-          onChange={(event) => {
-            if (snapshot)
-              void model.attention.preferences({
-                ...snapshot.preferences,
-                completion: event.currentTarget.checked,
-              });
-          }}
-        />
-        {t("attention.enableCompletion")}
-      </label>
+    <div data-attention-preferences className="settings-notice">
+      <SettingsGroup title={t("attention.preferences")}>
+        <SettingRow
+          label={t("attention.enableSystem")}
+          description={t("settings.systemNotificationDescription")}
+        >
+          <Switch
+            data-attention-system
+            aria-label={t("attention.enableSystem")}
+            checked={snapshot?.preferences.system ?? false}
+            disabled={!snapshot || saving}
+            onCheckedChange={(checked) => {
+              if (snapshot)
+                void model.attention.preferences({
+                  ...snapshot.preferences,
+                  system: checked,
+                });
+            }}
+          />
+        </SettingRow>
+        <SettingRow
+          label={t("attention.enableCompletion")}
+          description={t("settings.completionDescription")}
+        >
+          <Switch
+            data-attention-completion
+            aria-label={t("attention.enableCompletion")}
+            checked={snapshot?.preferences.completion ?? false}
+            disabled={!snapshot || saving}
+            onCheckedChange={(checked) => {
+              if (snapshot)
+                void model.attention.preferences({
+                  ...snapshot.preferences,
+                  completion: checked,
+                });
+            }}
+          />
+        </SettingRow>
+      </SettingsGroup>
       <p className="muted">{t("attention.systemHint")}</p>
+      {saving && <p role="status">{t("settings.saving")}</p>}
+      {failed && (
+        <p role="alert" className="failure">
+          {t("attention.readFailed")}
+        </p>
+      )}
       {snapshot && (
         <p role="status">
           {match(snapshot.system)
@@ -321,7 +338,7 @@ function AttentionPreferenceContent({ model }: { model: AppModel }) {
             .exhaustive()}
         </p>
       )}
-    </details>
+    </div>
   );
 }
 

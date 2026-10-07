@@ -1,4 +1,5 @@
 import { useI18n } from "../../../preferences/renderer/public";
+import { Button, FormField, TextInput } from "../../../ui/renderer/public";
 import type { ConfigurationBridge } from "../../contracts/public";
 import type { useAuthentication } from "./use-authentication";
 
@@ -23,8 +24,8 @@ export function AuthenticationProgress({
           {challenge && challenge.jobId === event.jobId && (
             <>
               <p data-selectable>{challenge.instructions}</p>
-              <button
-                className="ui-button ui-button-primary"
+              <Button
+                variant="secondary"
                 type="button"
                 onClick={() =>
                   void bridge.request({
@@ -35,7 +36,7 @@ export function AuthenticationProgress({
                 }
               >
                 {t("config.openBrowser")}
-              </button>
+              </Button>
             </>
           )}
           {event.kind === "progress" && (
@@ -43,6 +44,7 @@ export function AuthenticationProgress({
           )}
           {event.kind === "prompt" && (
             <form
+              className="settings-form"
               onSubmit={(e) => {
                 e.preventDefault();
                 void bridge.request({
@@ -54,22 +56,24 @@ export function AuthenticationProgress({
                 setAnswer("");
               }}
             >
-              <label>
-                {event.message}
-                <input
-                  type={event.secret ? "password" : "text"}
-                  autoComplete="off"
-                  value={answer}
-                  onChange={(e) => setAnswer(e.target.value)}
-                />
-              </label>
-              <button className="ui-button ui-button-primary" type="submit">
-                {t("config.answer")}
-              </button>
+              <FormField label={event.message}>
+                {({ id, describedBy, invalid }) => (
+                  <TextInput
+                    id={id}
+                    aria-describedby={describedBy}
+                    aria-invalid={invalid}
+                    type={event.secret ? "password" : "text"}
+                    autoComplete="off"
+                    value={answer}
+                    onChange={(e) => setAnswer(e.target.value)}
+                  />
+                )}
+              </FormField>
+              <Button type="submit">{t("config.answer")}</Button>
             </form>
           )}
-          <button
-            className="ui-button ui-button-ghost"
+          <Button
+            variant="ghost"
             type="button"
             onClick={() =>
               void bridge.request({
@@ -80,7 +84,7 @@ export function AuthenticationProgress({
             }
           >
             {t("config.cancel")}
-          </button>
+          </Button>
         </div>
       )}
       {event?.kind === "finished" && (

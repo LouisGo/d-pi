@@ -2,6 +2,7 @@ import { Dialog } from "@base-ui/react/dialog";
 import { type ReactNode, type RefObject, useRef } from "react";
 import { CloseIcon } from "../icons/common";
 import { IconButton } from "./icon-button";
+import { SettingsVisibilityContext } from "./settings-visibility";
 
 // d-pi owns the presentation and focus contract; callers provide existing settings.
 export function SettingsModal({
@@ -48,7 +49,11 @@ export function SettingsModal({
           </div>
           <div className="settings-modal-body">
             <aside className="settings-modal-navigation">{navigation}</aside>
-            <div className="settings-surface">{children}</div>
+            <div className="settings-surface">
+              <SettingsVisibilityContext.Provider value={open}>
+                {children}
+              </SettingsVisibilityContext.Provider>
+            </div>
           </div>
         </Dialog.Popup>
       </Dialog.Portal>

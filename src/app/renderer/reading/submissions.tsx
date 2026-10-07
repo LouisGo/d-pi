@@ -1,7 +1,7 @@
 import { useStore } from "zustand";
-import { Button } from "@/components/ui/button";
 import type { SubmissionModel } from "../../../modules/execution/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
+import { Button } from "../../../modules/ui/renderer/public";
 import { submissionRejectionKey } from "../components/receipt-status";
 
 export function Submissions({ model }: { model: SubmissionModel }) {

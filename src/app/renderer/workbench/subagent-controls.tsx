@@ -3,7 +3,6 @@ import { useState } from "react";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
-import { Button } from "@/components/ui/button";
 import type {
   ConfigurationBridge,
   SubagentConfigurationCommand,
@@ -11,6 +10,7 @@ import type {
 } from "../../../modules/configuration/contracts/public";
 import { configurationSnapshotQuery } from "../../../modules/configuration/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
+import { Button } from "../../../modules/ui/renderer/public";
 import type { ThreadModel } from "../wiring/thread-model";
 
 type ThinkingChoice =

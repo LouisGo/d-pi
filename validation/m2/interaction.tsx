@@ -1,11 +1,11 @@
 import "./rendering.js";
 import { createRoot } from "react-dom/client";
-import { Button } from "../../src/app/renderer/components/ui/button";
 import { Markdown } from "../../src/app/renderer/reading/markdown";
 import { ReadingBody } from "../../src/app/renderer/reading/reading-body";
 import type { FrozenSelection } from "../../src/modules/files/core/public";
 import { MonacoViewer } from "../../src/modules/files/renderer/editor/monaco-viewer";
 import { I18nProvider } from "../../src/modules/preferences/renderer/public";
+import { Button } from "../../src/modules/ui/renderer/public";
 
 const probe = {
   clicks: 0,

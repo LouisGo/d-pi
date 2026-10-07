@@ -1,12 +1,22 @@
 import { clsx } from "clsx";
 import { type ReactNode, useRef, useState } from "react";
 import {
+  Button,
+  ChoiceGroup,
+  FormField,
+  Select,
+  SettingRow,
+  SettingsGroup,
+  SettingsPage,
+  Switch,
+  TextInput,
+} from "../../../../modules/ui/renderer/public";
+import {
   AddIcon,
   ChatIcon,
   SettingsIcon,
   SidebarIcon,
 } from "../../components/icons/common";
-import { Button } from "../../components/ui/button";
 import { IconButton } from "../../components/ui/icon-button";
 import { NavigationOverlay } from "../../components/ui/navigation-overlay";
 import { ResizableSplit } from "../../components/ui/resizable";
@@ -33,6 +43,9 @@ export function ButtonDemo() {
         <Sample label="default">
           <Button onClick={() => setCount(count + 1)}>{labels.primary}</Button>
         </Sample>
+        <Sample label="secondary">
+          <Button variant="secondary">{labels.ghost}</Button>
+        </Sample>
         <Sample label="ghost">
           <Button variant="ghost" onClick={() => setCount(count + 1)}>
             {labels.ghost}
@@ -56,13 +69,15 @@ export function ButtonDemo() {
             <AddIcon />
           </Button>
         </Sample>
-        {(["default", "ghost", "navigation"] as const).map((variant) => (
-          <Sample key={variant} label={`${variant} / disabled`}>
-            <Button variant={variant} disabled>
-              {labels.disabled}
-            </Button>
-          </Sample>
-        ))}
+        {(["default", "secondary", "ghost", "navigation"] as const).map(
+          (variant) => (
+            <Sample key={variant} label={`${variant} / disabled`}>
+              <Button variant={variant} disabled>
+                {labels.disabled}
+              </Button>
+            </Sample>
+          ),
+        )}
       </div>
       <output
         className={styles["gallery-feedback"]}
@@ -324,5 +339,128 @@ export function IconsDemo() {
         </Sample>
       ))}
     </div>
+  );
+}
+
+export function SelectDemo() {
+  const [value, change] = useState("a");
+  const options = [
+    { value: "a", label: labels.optionA },
+    { value: "b", label: labels.optionB },
+  ];
+  return (
+    <div className={styles["gallery-samples"]}>
+      <Sample label="selected">
+        <Select
+          value={value}
+          options={options}
+          onValueChange={change}
+          aria-label={labels.select}
+        />
+      </Sample>
+      <Sample label="disabled">
+        <Select
+          value={value}
+          options={options}
+          onValueChange={change}
+          aria-label={labels.select}
+          disabled
+        />
+      </Sample>
+    </div>
+  );
+}
+export function SwitchDemo() {
+  const [checked, change] = useState(false);
+  return (
+    <div className={styles["gallery-samples"]}>
+      <Sample label="controlled">
+        <Switch
+          checked={checked}
+          onCheckedChange={change}
+          aria-label={labels.switch}
+        />
+      </Sample>
+      <Sample label="disabled / checked">
+        <Switch
+          checked
+          onCheckedChange={change}
+          aria-label={labels.switch}
+          disabled
+        />
+      </Sample>
+    </div>
+  );
+}
+export function FormFieldDemo() {
+  return (
+    <div className={styles["gallery-samples"]}>
+      {(["text", "password"] as const).map((type) => (
+        <Sample key={type} label={type}>
+          <FormField label={labels.field} description={labels.fieldDescription}>
+            {({ id, describedBy, invalid }) => (
+              <TextInput
+                id={id}
+                aria-describedby={describedBy}
+                aria-invalid={invalid}
+                type={type}
+              />
+            )}
+          </FormField>
+        </Sample>
+      ))}
+      <Sample label="invalid">
+        <FormField label={labels.field} error={labels.fieldError}>
+          {({ id, describedBy, invalid }) => (
+            <TextInput
+              id={id}
+              aria-describedby={describedBy}
+              aria-invalid={invalid}
+            />
+          )}
+        </FormField>
+      </Sample>
+    </div>
+  );
+}
+export function ChoiceGroupDemo() {
+  const [value, change] = useState("a");
+  return (
+    <ChoiceGroup
+      value={value}
+      onValueChange={change}
+      aria-label={labels.mode}
+      options={[
+        { value: "a", label: labels.optionA },
+        { value: "b", label: labels.optionB },
+      ]}
+    />
+  );
+}
+export function SettingsGroupDemo() {
+  const [value, change] = useState("a");
+  return (
+    <SettingsPage
+      id="settings-layout-demo"
+      title={labels.settingsPageTitle}
+      description={labels.settingsDescription}
+    >
+      <SettingsGroup title={labels.settingsGroup}>
+        <SettingRow
+          label={labels.settingsRow}
+          description={labels.settingsRowDescription}
+        >
+          <Select
+            value={value}
+            onValueChange={change}
+            aria-label={labels.select}
+            options={[
+              { value: "a", label: labels.optionA },
+              { value: "b", label: labels.optionB },
+            ]}
+          />
+        </SettingRow>
+      </SettingsGroup>
+    </SettingsPage>
   );
 }

@@ -10,9 +10,9 @@ import {
 } from "react";
 import { useStore } from "zustand";
 import { FolderIcon } from "@/components/icons/common";
-import { Button } from "@/components/ui/button";
 import type { FrozenSelection } from "../../../modules/files/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
+import { Button } from "../../../modules/ui/renderer/public";
 import { Conversation } from "../reading/conversation";
 import { History } from "../reading/history";
 import { Submissions } from "../reading/submissions";

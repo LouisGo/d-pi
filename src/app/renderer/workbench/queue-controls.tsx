@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useStore } from "zustand";
-import { Button } from "@/components/ui/button";
 import type {
   QueueAction,
   QueueSnapshot,
@@ -8,6 +7,7 @@ import type {
 import { QueueTextSchema } from "../../../modules/execution/contracts/public";
 import type { RuntimeModel } from "../../../modules/execution/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
+import { Button } from "../../../modules/ui/renderer/public";
 
 export function QueueControls({ model }: { model: RuntimeModel }) {
   const { t } = useI18n();

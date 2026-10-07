@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button';
+import { Button } from '../../../src/modules/ui/renderer/public';
 import styles from './sample.module.css';
 import { clsx } from 'clsx';
 import { cva } from 'class-variance-authority';

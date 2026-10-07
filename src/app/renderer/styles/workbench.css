@@ -283,20 +283,6 @@
     overscroll-behavior: contain;
     padding: var(--panel-padding);
   }
-  .settings-section {
-    max-width: var(--content-width);
-    margin: 0 auto var(--panel-padding);
-  }
-  .settings-section > h2 {
-    margin-bottom: var(--layout-gap);
-    font-size: var(--text-title);
-  }
-  .settings-section .configuration-settings {
-    margin: 0;
-  }
-  .settings-section .configuration-content {
-    max-height: none;
-  }
   .settings-navigation {
     display: flex;
     flex-direction: column;
@@ -479,28 +465,6 @@
     border-right: 1px solid var(--border);
     overflow: auto;
     overscroll-behavior: contain;
-  }
-  .settings-preference-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--layout-gap);
-    min-height: var(--header-height);
-    border-bottom: 1px solid var(--border);
-  }
-  .settings-preference-row select {
-    min-height: var(--control-height);
-    max-width: 100%;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface);
-    color: var(--foreground);
-    padding-inline: var(--control-padding);
-    font: inherit;
-  }
-  .settings-preference-row select:focus-visible {
-    background: var(--accent);
-    color: var(--accent-foreground);
   }
 }
 @media (max-width: 760px) {

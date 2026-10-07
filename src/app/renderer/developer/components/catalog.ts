@@ -1,16 +1,49 @@
 // i18n-ignore: Developer-only catalog; user authorized fixed Chinese copy.
 export const categories = [
   { id: "actions", label: "操作与反馈" },
+  { id: "forms", label: "表单与配置" },
   { id: "layout", label: "导航与布局" },
   { id: "overlays", label: "弹层与菜单" },
   { id: "icons", label: "图标" },
 ] as const;
 export const componentCatalog = [
   {
+    name: "Select",
+    category: "forms",
+    purpose: "受控选项，下拉内容经 Portal 展示。",
+    forms: "selected / disabled / 键盘与焦点",
+  },
+  {
+    name: "Switch",
+    category: "forms",
+    purpose: "明确开启或关闭一项配置。",
+    forms: "checked · unchecked / disabled",
+  },
+  {
+    name: "FormField",
+    category: "forms",
+    purpose: "统一 TextInput、标签、说明与错误关联。",
+    forms: "text · password / disabled · invalid / description",
+  },
+  {
+    name: "ChoiceGroup",
+    category: "forms",
+    purpose: "在有限选项中直接选择，支持视觉预览。",
+    forms: "selected · unselected / disabled / radio keyboard",
+  },
+  {
+    name: "SettingsGroup",
+    category: "forms",
+    purpose: "组合设置页、分组与配置行。",
+    forms:
+      "SettingsPage · SettingsGroup · SettingRow / label · description · control",
+  },
+  {
     name: "Button",
     category: "actions",
     purpose: "主操作、轻量操作和导航选择。",
-    forms: "default · ghost · navigation / default · icon / disabled · pressed",
+    forms:
+      "default · secondary · ghost · navigation / default · icon / disabled · pressed",
   },
   {
     name: "IconButton",
@@ -72,6 +105,19 @@ export const copy = {
 };
 
 export const demoLabels = {
+  select: "默认行为",
+  optionA: "选项 A",
+  optionB: "选项 B",
+  switch: "开启功能",
+  field: "配置内容",
+  fieldDescription: "标签和说明自动关联到输入框。",
+  fieldError: "示例错误：内容不符合要求。",
+  mode: "显示方式",
+  settingsPageTitle: "配置组件",
+  settingsDescription: "只使用本地示例状态。",
+  settingsGroup: "通用设置",
+  settingsRow: "默认选项",
+  settingsRowDescription: "说明与控件共享同一配置行。",
   primary: "主操作",
   ghost: "轻量操作",
   navigation: "导航选择",

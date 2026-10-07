@@ -303,3 +303,98 @@ it("keeps save progress and a typed stale-target failure outside the scroll area
     element.remove();
   }
 });
+
+it("keeps page authentication subscribed while inactive, queries only on activation, and restores the same challenge", async () => {
+  Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  const element = document.createElement("div");
+  document.body.append(element);
+  const root = createRoot(element);
+  const scope = { kind: "application" } as const;
+  const source = { directory: "/isolated", cwd: "/fixture", profile: null };
+  const jobId = crypto.randomUUID();
+  let receive: ((event: ConfigurationEvent) => void) | undefined;
+  let traceId = "";
+  const bridge: ConfigurationBridge = {
+    subscribe(listener) {
+      receive = listener;
+      return () => {
+        receive = undefined;
+      };
+    },
+    request: vi.fn<ConfigurationBridge["request"]>(async (command) => {
+      if (command.kind === "login") {
+        traceId = command.traceId;
+        return { kind: "started", scope, source, traceId, jobId };
+      }
+      return {
+        kind: "snapshot",
+        scope,
+        source,
+        traceId: command.traceId,
+        coverage: "complete",
+        issues: [],
+        models: [],
+        defaultModel: null,
+        openaiAuthenticated: false,
+        deepseekAuthenticated: false,
+        catalogError: false,
+      };
+    }),
+  };
+  const render = (active: boolean) =>
+    act(() =>
+      root.render(
+        createElement(
+          QueryClientProvider,
+          { client },
+          createElement(I18nProvider, {
+            initialSnapshot: { preference: "zh-CN", resolvedLocale: "zh-CN" },
+            children: createElement(ConfigurationSettings, {
+              bridge,
+              scope,
+              presentation: "page",
+              active,
+            }),
+          }),
+        ),
+      ),
+    );
+  try {
+    await render(false);
+    expect(bridge.request).not.toHaveBeenCalled();
+    await render(true);
+    await vi.waitFor(() => expect(bridge.request).toHaveBeenCalled());
+    const login = Array.from(element.querySelectorAll("button")).find(
+      (button) => button.textContent?.trim() === "登录 OpenAI 账户",
+    );
+    await act(async () => login?.click());
+    await render(false);
+    expect(receive).toBeDefined();
+    await act(() =>
+      receive?.({
+        kind: "challenge",
+        jobId,
+        scope,
+        source,
+        traceId,
+        url: "https://auth.openai.com/oauth/authorize",
+        instructions: "native challenge",
+      }),
+    );
+    await render(true);
+    expect(element.textContent).toContain("native challenge");
+    expect(element.textContent).toContain("在系统浏览器登录");
+    expect(
+      vi
+        .mocked(bridge.request)
+        .mock.calls.filter(([command]) => command.kind === "login"),
+    ).toHaveLength(1);
+  } finally {
+    await act(() => root.unmount());
+    client.clear();
+    element.remove();
+  }
+});

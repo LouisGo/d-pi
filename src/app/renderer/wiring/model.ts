@@ -601,8 +601,16 @@ export class AppModel {
       binding?.boundary.release();
     return result;
   }
-  preference(key: "theme" | "sendKey"): Promise<void> {
-    const save = () => this.savePreference(key);
+  preference(
+    ...args:
+      | [key: "theme", target?: Preferences["theme"]]
+      | [key: "sendKey", target?: Preferences["sendKey"]]
+  ): Promise<void> {
+    const change =
+      args[0] === "theme"
+        ? { kind: "theme" as const, target: args[1] }
+        : { kind: "sendKey" as const, target: args[1] };
+    const save = () => this.savePreference(change);
     const writing = this.preferenceWrite
       ? this.preferenceWrite.then(save)
       : save();
@@ -612,25 +620,34 @@ export class AppModel {
     });
     return writing;
   }
-  private async savePreference(key: "theme" | "sendKey"): Promise<void> {
+  private async savePreference(
+    change:
+      | { kind: "theme"; target: Preferences["theme"] | undefined }
+      | { kind: "sendKey"; target: Preferences["sendKey"] },
+  ): Promise<void> {
     const state = this.state;
     if (this.disposed || state.kind !== "ready") return;
     const current = state.preferences;
-    const value = match(key)
-      .with("theme", () => ({
+    if (change.target !== undefined && current[change.kind] === change.target)
+      return;
+    const value = match(change)
+      .with({ kind: "theme" }, ({ target }) => ({
         ...current,
-        theme: match(current.theme)
-          .with("light", () => "dark" as const)
-          .with("dark", () => "system" as const)
-          .with("system", () => "light" as const)
-          .exhaustive(),
+        theme:
+          target ??
+          match(current.theme)
+            .with("light", () => "dark" as const)
+            .with("dark", () => "system" as const)
+            .with("system", () => "light" as const)
+            .exhaustive(),
       }))
-      .with("sendKey", () => ({
+      .with({ kind: "sendKey" }, ({ target }) => ({
         ...current,
         sendKey:
-          current.sendKey === "enter-newline"
+          target ??
+          (current.sendKey === "enter-newline"
             ? ("enter-send" as const)
-            : ("enter-newline" as const),
+            : ("enter-newline" as const)),
       }))
       .exhaustive();
     const traceId = crypto.randomUUID();

@@ -1,4 +1,49 @@
 export const ui = {
+  "settings.commandEnterKey": "⌘ + Enter",
+  "settings.configurationDescription":
+    "管理模型服务认证，并查看当前 Thread 使用的原生配置。",
+  "settings.visualStyle": "视觉风格",
+  "settings.themeDescription":
+    "选择应用的显示模式。跟随系统会随 macOS 外观自动切换。",
+  "settings.themeSystem": "跟随系统",
+  "settings.themeLight": "浅色",
+  "settings.themeDark": "深色",
+  "settings.general": "通用",
+  "settings.application": "应用",
+  "settings.languageDescription":
+    "用于 d-pi 界面，不改变模型回复和原生内容的语言。",
+  "settings.composer": "输入与发送",
+  "settings.sendKey": "发送快捷键",
+  "settings.sendKeyDescription":
+    "设置普通输入区的发送方式。输入法组词期间不会发送。",
+  "settings.enterSend": "Enter 发送",
+  "settings.commandEnterSend": "⌘ Enter 发送",
+  "settings.expandedComposer": "展开输入区",
+  "settings.expandedDescription":
+    "展开后使用 ⌘ Enter 发送，Enter 换行；收起后恢复上述设置。",
+  "settings.appearanceDescription": "让工作界面适应你的使用习惯。",
+  "settings.generalDescription": "管理界面语言与日常输入方式。",
+  "settings.attentionDescription": "在需要回答、执行异常或完成时保持知情。",
+  "settings.diagnosticsDescription": "查看运行记录，定位问题并导出反馈材料。",
+  "settings.configurationUnavailable":
+    "当前配置上下文不可用，请完成 Thread 切换后重试。",
+  "settings.diagnosticsTools": "问题排查",
+  "settings.diagnosticsRowDescription":
+    "按时间和操作筛选诊断，导出前查看反馈内容。",
+  "settings.accounts": "账户与认证",
+  "settings.openaiAccount": "OpenAI 账户",
+  "settings.openaiDescription":
+    "使用浏览器完成账户登录，认证由原生 Runtime 保存。",
+  "settings.deepseekAccount": "DeepSeek",
+  "settings.nativeConfiguration": "原生配置",
+  "settings.nativeDescription":
+    "读取当前上下文的配置来源与认证状态。已有可用配置继续复用。",
+  "settings.systemNotificationDescription":
+    "在窗口不处于前台时，提醒需要回答和执行异常。",
+  "settings.completionDescription":
+    "将正常完成也纳入提醒，默认仅更新侧栏状态。",
+  "settings.saving": "正在保存…",
+
   "attention.title": "Thread 提醒",
   "attention.needsAnswer": "待回答",
   "attention.failed": "执行失败",

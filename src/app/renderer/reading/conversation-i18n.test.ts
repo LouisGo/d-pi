@@ -25,7 +25,7 @@ vi.mock("../../../modules/preferences/renderer/public", async () => {
 });
 
 vi.mock("@/components/icons/common", () => ({ WebsiteIcon: () => null }));
-vi.mock("@/components/ui/button", () => ({
+vi.mock("../../../modules/ui/renderer/public", () => ({
   Button: ({ children }: { children: ReactNode }) =>
     createElement("button", null, children),
 }));
