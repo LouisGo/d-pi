@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "613e80984e59adc9babe5f33c1ce7a49fcc6b695022adee7d55edce788b6a560",
+  "inputsHash": "7a4ec9f6fbe2d0e6bf3c20a03aab1fbb69be1fe22d53a6651d1e4745b7befbdc",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 416,
@@ -217,7 +217,7 @@
       ],
       "materialized": true,
       "files": 11,
-      "lines": 2376,
+      "lines": 2418,
       "publicEntries": [
         {
           "path": "src/modules/changes/contracts/public.ts",

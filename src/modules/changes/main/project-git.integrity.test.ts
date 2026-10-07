@@ -32,6 +32,48 @@ function output(data: Buffer, options: SpawnOptions, exit = 0) {
     options,
   );
 }
+it("preserves a second-sample size failure instead of reporting an observed content change", async () => {
+  const root = await fixture();
+  const reader = createProjectGitReader();
+  try {
+    expect(
+      await reader.diff(
+        root,
+        "untracked",
+        "sample.txt",
+        undefined,
+        async () => {
+          await writeFile(
+            join(root, "sample.txt"),
+            "x".repeat(5 * 1024 * 1024 + 1),
+          );
+        },
+      ),
+    ).toEqual({ kind: "unavailable", reason: "too-large" });
+  } finally {
+    await reader.close();
+  }
+});
+it("preserves a final repository absence instead of inventing a changed baseline", async () => {
+  const root = await fixture();
+  const reader = createProjectGitReader();
+  try {
+    expect(
+      await reader.diff(
+        root,
+        "untracked",
+        "sample.txt",
+        undefined,
+        async () => {
+          await rm(join(root, ".git"), { recursive: true, force: true });
+        },
+      ),
+    ).toEqual({ kind: "unavailable", reason: "not-git" });
+  } finally {
+    await reader.close();
+  }
+});
+
 it.each([
   {
     name: "failed config",

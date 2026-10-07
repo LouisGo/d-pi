@@ -21,3 +21,5 @@
 ## 剩余
 
 04独立clipboard、动态引用选择、评审修复/刷新、最终组合check/build及Dev交付尚未结算。工程/trial/acceptance继续分别维护，当前总任务未满足退出标准。
+
+Spec轴冻结范围发现1个P2：Git二次采样把unavailable统称changed。主Agent追加真实超5MiB文件、移除临时仓库元数据两个回归，均先失败（too-large/not-git→changed），修复先保留真实unavailable后23个Git回归及Main类型通过。Standards轴已证实同PDF ID重试产生新derivedDigest未补旧历史lease；保持claimed，由03 worker隔离修复，未宣称已通过。

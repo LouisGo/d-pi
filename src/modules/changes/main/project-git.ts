@@ -556,16 +556,16 @@ function createReadAttempt(
               !(scope === "index-worktree" && entry.status === "deleted")
             ? await worktree()
             : right;
+      if (isUnavailable(repeatLeft)) return repeatLeft;
+      if (isUnavailable(repeatRight)) return repeatRight;
       if (
-        isUnavailable(repeatLeft) ||
-        isUnavailable(repeatRight) ||
         JSON.stringify(left) !== JSON.stringify(repeatLeft) ||
         JSON.stringify(right) !== JSON.stringify(repeatRight)
       )
         return unavailable("changed");
       const after = await listGitChanges(base);
+      if (after.kind !== "changes") return after;
       if (
-        after.kind !== "changes" ||
         after.repository !== listing.repository ||
         after.head !== listing.head ||
         JSON.stringify(after.entries) !== JSON.stringify(listing.entries)
