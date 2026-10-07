@@ -314,7 +314,13 @@ export function IconsDemo() {
     <div className={styles["gallery-icon-grid"]} data-gallery-icons>
       {iconPreviews.map(({ key, name, Icon }) => (
         <Sample key={key} label={name}>
-          <Icon size={20} />
+          <div className={styles["gallery-samples"]}>
+            {([16, 18, 20, 24] as const).map((size) => (
+              <Sample key={size} label={`${size} px`}>
+                <Icon size={size} />
+              </Sample>
+            ))}
+          </div>
         </Sample>
       ))}
     </div>

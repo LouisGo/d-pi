@@ -46,7 +46,7 @@ export const componentCatalog = [
     name: "Icon Layer",
     category: "icons",
     purpose: "自动收录项目 Icon Layer 的公开图标，仅作预览。",
-    forms: "20 px / currentColor / 新增图标自动出现",
+    forms: "16 · 18 · 20 · 24 px / currentColor / 新增图标自动出现",
   },
 ] as const;
 export type ComponentName = (typeof componentCatalog)[number]["name"];
