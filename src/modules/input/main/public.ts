@@ -10,6 +10,7 @@ export type {
   AttachmentReferences,
   AttachmentSource,
 } from "./attachments/content-lifecycle";
+export { EditorHistoryLimitError } from "./attachments/editor-history";
 export { DraftRepository } from "./draft-repository";
 export {
   type DraftSaveRequest,

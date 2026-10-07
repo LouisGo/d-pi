@@ -7,6 +7,7 @@ export const AttachmentFailureReasonSchema = z.enum([
   "submission-too-large",
   "transport-too-large",
   "storage-full",
+  "editor-history-limit",
   "storage-unavailable",
   "content-corrupt",
   "content-missing",

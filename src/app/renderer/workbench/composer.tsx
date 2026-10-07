@@ -300,6 +300,7 @@ export function Composer({
           onBlocked={updateBlocked}
           mention={mention}
           dismissMention={dismissMention}
+          onClearHistory={() => model.draftEditors.clearHistory(thread.key)}
         />
       )}
       {unsupportedPaste && (

@@ -8,6 +8,8 @@ ThreadModel 组合无 DOM 的 AttachmentModel，统一拥有来源请求、失�
 
 窗口 editor epoch 在 Main 注册有限的历史资产租约，验证真实 Thread manifest，保护该 epoch 中曾可撤销的来源超集；租约不得通过剪贴板路径或摘要直接授权读取。历史清除、缓存淘汰和窗口释放解除租约。取得保护后才能持久化移除最后引用；失败时保留待保存正文和历史，阻止提交、切换和关闭，显式重试可恢复。最多 9 个 epoch（当前编辑器和 8 个缓存），每个 128 个来源、所有 epoch 合计 256 MiB 不重复对象；达限不静默删除 Undo 负载，按既有编辑缓存合同清除该 epoch 历史后再释放，当前正文保持。资产二进制不进入撤销栈。
 
+同一 attachment ID 的 Main manifest 在重试或发送准备时可能新增 input/derived digest。Main 在发布处同步预检所有持有该 Thread/ID 的历史 epochs，按 Renderer document 的 distinct-object 预算原子补齐保护，并触发 transient epoch；保持旧摘要超集与 Renderer version，不依赖视图重新 observe ID。超预算拒绝发布，旧 manifest/lease/Undo 不变，返回准确 `editor-history-limit`；用户可显式清除当前 Undo 并等待旧 Main lease 释放后重试，不自动清历史来完成附件重试。新增对象尚未采用时仍按原导入/准备租约合同处理。
+
 Main 将 transient lease epoch 纳入 GC 在 await 后及实际 unlink 前的所有权复核，记录集合是删除防护而非第二份资产权威。租约由当前 Renderer document 及 Main service 生命周期持有，渲染器 reload 或服务关闭释放；草稿/收据/unknown 的持久引用仍按原合同保护。租约 acquire/update/release 走类型化附件入口，重复释放幂等，旧 epoch 请求不能改写新 epoch；原草稿 DTO、SQLite 接受事务与 OMP 执行不变。
 
 日期：2026-09-27。深度：M1 文字/选区主干，M2 全部指定输入。依据 D-10/D-24/D-33；[Composer 方案](../../product/first-release.md#2-composer最小-tiptap-与项目业务扩展)、[基础契约 §4](../foundation-contracts.md#4-内容包与附件b4)。返回[模块地图](README.md)。

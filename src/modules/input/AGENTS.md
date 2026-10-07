@@ -13,3 +13,5 @@ Renderer 按 `editor/`（编辑器与窗口缓存）、`clipboard/`（纯文本/
 附件协调规则在 `core/attachments/attachment-model.ts`，浏览器 File/FileReader 接入在 `renderer/attachments/`，编辑交易在 `renderer/references/attachment-editor.ts`。Thread 应用作用域创建模型；组件只绑定/订阅，不再用组件 useState 或 WeakMap 拥有附件请求失败。
 
 编辑 epoch 的依赖超集由 core/attachments/editor-history-model.ts 管理，Renderer 缓存只从公开事务 before/doc 观察 ID；Main 验证 manifest 后建立有界租约。持久化前等待租约确认，失败保留正文/撤销并显式重试，达限明确提示并清历史。所有历史结束/缓存淘汰/窗口结束都释放租约，GC 的 transient epoch 要在实际 unlink 前复核。
+
+同 ID 重试/引用准备产生新摘要时，Main manifest 发布同步刷新全部对应历史租约；预算超限不部分发布/补 pin，保留原 manifest 和 Undo，用准确失败原因请求显式清史恢复。Renderer ID 去重不是资产版本稳定性的证明。

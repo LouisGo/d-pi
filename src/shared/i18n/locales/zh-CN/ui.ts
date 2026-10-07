@@ -166,6 +166,10 @@ export const ui = {
   "attachment.reason.submission-too-large": "提交原始内容总量超出 100 MiB。",
   "attachment.reason.transport-too-large":
     "编码后输入超出原生传输限制。请移除或缩减内容；没有截断输入。",
+  "attachment.reason.editor-history-limit":
+    "准备此版本会超出撤销资产上限。已保存的附件与撤销历史均保留。",
+  "attachment.clearHistory": "清除撤销历史，然后重新发送",
+  "attachment.clearHistoryRetry": "清除撤销历史并重试",
   "attachment.reason.storage-full": "私有内容存储已满，活跃输入仍保留。",
   "attachment.reason.storage-unavailable": "私有内容存储不可用，请重试准备。",
   "attachment.reason.content-corrupt":

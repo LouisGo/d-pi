@@ -1,7 +1,8 @@
 import { existsSync, mkdtempSync, realpathSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
+import { EditorHistoryLimitError } from "../../../modules/input/main/public";
 import { AppStorage } from "./app-storage";
 import { createAttachmentService } from "./attachment-service";
 
@@ -141,6 +142,40 @@ it("binds leases to Main manifests, a document and Thread, bounds epoch count an
         )
       ).kind,
     ).toBe("history-lease");
+  } finally {
+    await service.close();
+    storage.close();
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+it("reports a history publication budget refusal accurately rather than as a PDF conversion failure", async () => {
+  const root = realpathSync(mkdtempSync(join(tmpdir(), "dpi-history-reply-")));
+  const storage = AppStorage.open(join(root, "app.sqlite"));
+  const service = createAttachmentService(
+    storage,
+    root,
+    "unused",
+    () => true,
+    async () => null,
+  );
+  try {
+    const draft = storage.drafts.create(root);
+    const retry = vi
+      .spyOn(service.store, "retry")
+      .mockRejectedValue(new EditorHistoryLimitError());
+    expect(
+      await service.execute(
+        {
+          kind: "retry",
+          threadId: draft.threadId,
+          id: crypto.randomUUID(),
+          traceId: crypto.randomUUID(),
+        },
+        "document",
+      ),
+    ).toEqual({ kind: "unavailable", reason: "editor-history-limit" });
+    retry.mockRestore();
   } finally {
     await service.close();
     storage.close();

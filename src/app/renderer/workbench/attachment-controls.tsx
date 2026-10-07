@@ -56,6 +56,7 @@ export function AttachmentControls({
   model,
   imports,
   preparationFailure,
+  onClearHistory,
   ref,
 }: {
   bridge: AttachmentBridge;
@@ -69,6 +70,7 @@ export function AttachmentControls({
   model: AttachmentModel;
   imports: AttachmentImports;
   preparationFailure?: SubmissionFailure["preparation"] | null;
+  onClearHistory?: () => Promise<boolean>;
   ref?: Ref<AttachmentActions>;
 }) {
   const { t } = useI18n();
@@ -493,6 +495,22 @@ export function AttachmentControls({
           >
             {t("attachment.retry")}
           </Button>
+          {feedback.reason === "editor-history-limit" && onClearHistory && (
+            <Button
+              variant="ghost"
+              disabled={
+                sourceFrozen || pending > 0 || !editor || editor.view.composing
+              }
+              onClick={() => {
+                if (!isCurrent()) return;
+                void onClearHistory().then((cleared) => {
+                  if (cleared && isCurrent()) void run(feedback.command);
+                });
+              }}
+            >
+              {t("attachment.clearHistoryRetry")}
+            </Button>
+          )}
           <Button variant="ghost" onClick={() => model.dismissFeedback()}>
             {t("attachment.dismissFailedRequest")}
           </Button>
@@ -589,6 +607,23 @@ export function AttachmentControls({
               t("attachment.add")}
           </strong>
           <p>{t(`attachment.reason.${preparationFailure.reason}`)}</p>
+          {preparationFailure.reason === "editor-history-limit" &&
+            onClearHistory && (
+              <Button
+                variant="ghost"
+                disabled={
+                  sourceFrozen ||
+                  pending > 0 ||
+                  !editor ||
+                  editor.view.composing
+                }
+                onClick={() => {
+                  if (isCurrent()) void onClearHistory();
+                }}
+              >
+                {t("attachment.clearHistory")}
+              </Button>
+            )}
           {preparationFailure.reason === "reference-unavailable" ||
           preparationFailure.reason === "reference-denied" ? (
             <p>{t("attachment.referenceRetrySending")}</p>

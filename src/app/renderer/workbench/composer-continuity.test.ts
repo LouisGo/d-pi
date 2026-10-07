@@ -474,3 +474,105 @@ it.each(["limit", "failure"] as const)(
     expect(fixture.thread().controller.getTextSnapshot()).toContain(item.token);
   },
 );
+
+it("keeps publication-limit Undo until explicit recovery and waits for Main lease release before retry", async () => {
+  let items: import("../../../modules/input/contracts/public").Attachment[] =
+    [];
+  let finishRelease: () => void = () => {};
+  const release = new Promise<void>((resolve) => {
+    finishRelease = resolve;
+  });
+  let released = false,
+    retries = 0;
+  const bridge: AttachmentBridge = {
+    request: async (command) => {
+      if (command.kind === "history-open")
+        return {
+          kind: "history-lease",
+          leaseId: crypto.randomUUID(),
+          version: 0,
+        };
+      if (command.kind === "history-update")
+        return {
+          kind: "history-lease",
+          leaseId: command.leaseId,
+          version: command.version,
+        };
+      if (command.kind === "history-release") {
+        await release;
+        released = true;
+        return { kind: "history-released" };
+      }
+      if (command.kind === "retry") {
+        retries++;
+        if (!released)
+          return { kind: "unavailable", reason: "editor-history-limit" };
+        items = items.map((item) => {
+          const updated = { ...item, status: "ready" as const };
+          delete updated.reason;
+          return updated;
+        });
+      }
+      return { kind: "attachments", items };
+    },
+  };
+  const fixture = await setup(undefined, undefined, bridge);
+  const id = crypto.randomUUID();
+  items = [
+    AttachmentSchema.parse({
+      schemaVersion: 1,
+      id,
+      threadId: fixture.first.threadId,
+      token: `[[dpi-attachment:${id}]]`,
+      name: "retry.pdf",
+      mimeType: "application/pdf",
+      byteLength: 4,
+      capturedAt: new Date().toISOString(),
+      source: "paste",
+      status: "failed",
+      reason: "pdf-conversion-failed",
+      representation: "pdf-text",
+      coverageGaps: [],
+      textOnly: false,
+    }),
+  ];
+  const button = (label: string) =>
+    Array.from(fixture.container.querySelectorAll("button")).find(
+      (button) => button.textContent === label,
+    );
+  await act(async () => {
+    button("Attach files")?.click();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  });
+  await act(async () => {
+    await fixture.thread().controller.flush();
+  });
+  const body = fixture.editor().getText();
+  expect(fixture.editor().can().undo()).toBe(true);
+  await act(async () => {
+    button("Retry preparation")?.click();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  });
+  expect(retries).toBe(1);
+  expect(fixture.container.textContent).toContain(
+    "The saved attachment and undo history are preserved",
+  );
+  expect(fixture.editor().can().undo()).toBe(true);
+  expect(fixture.editor().getText()).toBe(body);
+  const recover = button("Clear undo history and retry");
+  expect(recover).toBeDefined();
+  await act(async () => {
+    recover?.click();
+    await Promise.resolve();
+  });
+  expect(fixture.editor().can().undo()).toBe(false);
+  expect(fixture.editor().getText()).toBe(body);
+  expect(retries).toBe(1);
+  await act(async () => {
+    finishRelease();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  });
+  expect(retries).toBe(2);
+  expect(released).toBe(true);
+  expect(fixture.editor().getText()).toBe(body);
+});

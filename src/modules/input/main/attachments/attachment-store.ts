@@ -26,7 +26,7 @@ import {
   type AttachmentReferenceReader,
   ContentLifecycle,
 } from "./content-lifecycle";
-import { EditorHistoryLeases } from "./editor-history";
+import { EditorHistoryLeases, EditorHistoryLimitError } from "./editor-history";
 import { type ImageMime, identifyContent } from "./representation";
 
 const PdfConversionSchema = z.strictObject({
@@ -51,6 +51,7 @@ export interface AttachmentStoreOptions {
     mimeType: ImageMime,
   ) => boolean | Promise<boolean>;
   convertPdf?: (bytes: Uint8Array) => Promise<PdfConversion>;
+  editorHistoryLimits?: { epochs: number; ids: number; bytes: number };
   limits?: {
     sourceBytes: number;
     submissionBytes: number;
@@ -89,6 +90,9 @@ export class AttachmentStore {
   private readonly editorHistories: EditorHistoryLeases;
   constructor(private readonly options: AttachmentStoreOptions) {
     this.editorHistories = new EditorHistoryLeases({
+      ...(options.editorHistoryLimits
+        ? { limits: options.editorHistoryLimits }
+        : {}),
       manifest: (threadId, id) => this.read(threadId, id),
       objectBytes: (digest) =>
         Number(
@@ -245,18 +249,23 @@ export class AttachmentStore {
   }
   private save(record: StoredRecord): Attachment {
     const parsed = RecordSchema.parse(record);
-    this.options.database.connection
-      .prepare(
-        `INSERT INTO input_attachment(id,thread_id,payload) VALUES(?,?,?) ON CONFLICT(id) DO UPDATE SET payload=CASE
+    if (
+      !this.editorHistories.publishManifest(parsed, () => {
+        this.options.database.connection
+          .prepare(
+            `INSERT INTO input_attachment(id,thread_id,payload) VALUES(?,?,?) ON CONFLICT(id) DO UPDATE SET payload=CASE
           WHEN json_valid(input_attachment.payload) AND json_type(input_attachment.payload,'$.draftBoundRevision') IN ('integer','real')
           THEN json_set(excluded.payload,'$.draftBoundRevision',json_extract(input_attachment.payload,'$.draftBoundRevision'))
           ELSE excluded.payload END`,
-      )
-      .run(
-        parsed.attachment.id,
-        parsed.attachment.threadId,
-        JSON.stringify(parsed),
-      );
+          )
+          .run(
+            parsed.attachment.id,
+            parsed.attachment.threadId,
+            JSON.stringify(parsed),
+          );
+      })
+    )
+      throw new EditorHistoryLimitError(parsed.attachment.id);
     return parsed.attachment;
   }
   private read(threadId: string, id: string): StoredRecord | null {
@@ -529,6 +538,7 @@ export class AttachmentStore {
             derivedDigest,
           });
         } catch (error) {
+          if (error instanceof EditorHistoryLimitError) throw error;
           return this.save({
             ...record,
             attachment: {
@@ -566,6 +576,7 @@ export class AttachmentStore {
           await this.readObject(record.attachment.inputDigest),
         );
       } catch (error) {
+        if (error instanceof EditorHistoryLimitError) throw error;
         return this.save({
           ...record,
           attachment: {
@@ -727,6 +738,8 @@ export class AttachmentStore {
         ? { ok: true, text: result.text, record: updated }
         : { ok: false, reason: "pdf-coverage-gap" };
     } catch (error) {
+      if (error instanceof EditorHistoryLimitError)
+        return { ok: false, reason: "editor-history-limit" };
       return failed(
         error instanceof Error && error.message === "storage-full"
           ? "storage-full"
@@ -739,18 +752,27 @@ export class AttachmentStore {
     text: string,
   ): Promise<ContentPreparationResult> {
     return this.serialized(async () => {
-      const result = await this.prepareContent(threadId, text);
-      if (result.ok)
-        this.lifecycle?.pinPreparation(
-          result.content.sources.flatMap((source) => {
-            const record = this.read(threadId, source.attachmentId);
-            return [
-              source.inputDigest,
-              ...(record?.derivedDigest ? [record.derivedDigest] : []),
-            ];
-          }),
-        );
-      return result;
+      try {
+        const result = await this.prepareContent(threadId, text);
+        if (result.ok)
+          this.lifecycle?.pinPreparation(
+            result.content.sources.flatMap((source) => {
+              const record = this.read(threadId, source.attachmentId);
+              return [
+                source.inputDigest,
+                ...(record?.derivedDigest ? [record.derivedDigest] : []),
+              ];
+            }),
+          );
+        return result;
+      } catch (error) {
+        if (!(error instanceof EditorHistoryLimitError)) throw error;
+        return {
+          ok: false,
+          reason: "editor-history-limit",
+          ...(error.attachmentId ? { attachmentId: error.attachmentId } : {}),
+        };
+      }
     });
   }
   private async prepareContent(

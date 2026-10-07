@@ -185,6 +185,10 @@ export const ui = {
     "Total original content exceeds 100 MiB.",
   "attachment.reason.transport-too-large":
     "Encoded input exceeds the native transport limit. Remove or reduce content; nothing was truncated.",
+  "attachment.reason.editor-history-limit":
+    "Preparing this version would exceed the undo asset limit. The saved attachment and undo history are preserved.",
+  "attachment.clearHistory": "Clear undo history, then send again",
+  "attachment.clearHistoryRetry": "Clear undo history and retry",
   "attachment.reason.storage-full":
     "Private content storage is full. Active inputs were retained.",
   "attachment.reason.storage-unavailable":

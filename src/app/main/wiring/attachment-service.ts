@@ -7,7 +7,10 @@ import {
   ProjectReferenceSearch,
   readProjectBytes,
 } from "../../../modules/files/main/public";
-import { AttachmentStore } from "../../../modules/input/main/public";
+import {
+  AttachmentStore,
+  EditorHistoryLimitError,
+} from "../../../modules/input/main/public";
 import type {
   AttachmentReply,
   AttachmentRequest,
@@ -196,10 +199,16 @@ export function createAttachmentService(
       case "preview":
         return store.preview(command.threadId, command.id);
       case "retry": {
-        const item = await store.retry(command.threadId, command.id);
-        return item
-          ? attachments([item])
-          : { kind: "unavailable", reason: "attachment-not-found" };
+        try {
+          const item = await store.retry(command.threadId, command.id);
+          return item
+            ? attachments([item])
+            : { kind: "unavailable", reason: "attachment-not-found" };
+        } catch (error) {
+          if (error instanceof EditorHistoryLimitError)
+            return { kind: "unavailable", reason: "editor-history-limit" };
+          throw error;
+        }
       }
       case "set-text-only": {
         const item = await store.setTextOnly(

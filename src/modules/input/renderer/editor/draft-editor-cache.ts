@@ -42,6 +42,13 @@ export class DraftEditorCache {
   async retryHistory(key: string): Promise<boolean> {
     return this.histories.get(key)?.model.retry() ?? true;
   }
+  async clearHistory(key: string): Promise<boolean> {
+    if (this.disposed || this.activeEditors.get(key)?.view.composing)
+      return false;
+    this.clearKeyHistory(key);
+    // Wait for the prior Main lease release before retrying publication.
+    return this.histories.get(key)?.model.ensure() ?? true;
+  }
   private releaseHistory(key: string): void {
     const history = this.histories.get(key);
     if (!history) return;

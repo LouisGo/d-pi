@@ -61,3 +61,24 @@ node scripts/testing/test.mjs vitest src/modules/input src/app/renderer/workbenc
 - app/attachments 为 input/contracts 的窄 re-export。architecture/modules.json 仅添加 input/contracts→files/contracts 的真实 DTO 依赖。
 - 按主 Agent 明确授权修改 `src/shared/messages/contracts.ts` 的 `attachment.historyLeaseFailed`、`draft.inactiveClosePending`，以及 `src/shared/i18n/locales/en-US/ui.ts`、`zh-CN/ui.ts` 的输入状态/历史租约文案。
 - 未改 execution host/main、共享 diagnostics/application、状态/spec/ticket、SQLite schema、生成结构文件；未 push/integrate。主 Agent 串行集成后负责全局结构/state 门禁、Spec/Standards 独立评审及可用 trial。
+
+
+## 2026-10-07 独立评审 P2 修复：同 ID 新派生摘要
+
+修复基点 `86367673059070e27a06619188ee585c0f76bb18`，隔离分支 `codex/t3-history-repair`。没有带主集成 WIP，也没有改只读 review snapshot。独立 Standards review 提供的真实 Tiptap/Cache/Controller/SQLite/AttachmentStore 用例在此基点重现：15:34:58 `deletedObjects=1`，PDF 初次 conversion failed→同 ID 进入 epoch→retry 成功→删除/flush/clean→Undo 后 prepare `content-missing`。旧实现仅在 observe 新 ID 时注册，不能把 ID 稳定当成 digest 稳定；此前03工程检查不足以发现该差额。
+
+Main `save(manifest)` 现在经 `EditorHistoryLeases.publishManifest` 同步发布：先为所有相同 Thread/ID 的 live/cache epochs 计算旧+新 input/derived digest 超集，按每 document 的 distinct-object 预算一次预检；通过后无 await 地写 SQL、更新全部 pin/transientEpoch。Renderer version 不被 Main 内部发布消耗，旧摘要继续保护。不依赖 Renderer 重新 observe 同 ID，也不扩大任意 digest/path 授权。
+
+超预算不执行 SQL 回调、不补任何 owner 的部分 pin、不清 Undo；旧 manifest 原字节保持。准确类型为 `editor-history-limit`，retry IPC 与 prepare 均返回真实原因，不归 `pdf-conversion-failed`。新增生成但未发布的对象沿原 import/preparation orphan/GC 合同处理。默认128来源/9epochs/256MiB不变；Main-only editorHistoryLimits 与原限额注入一样仅供确定的小预算行为测试。明确恢复入口“清除撤销历史并重试”，真实 Editor 清史后等待旧 Main lease release，随后才 retry；prepare 限额失败提供清史后由用户重新发送，未自动 dispatch。
+
+当前源码修改允许的附件控件、Composer 的一行 clear 回调、cache 窄 clearHistory 入口，以及 retry service 的窄 typed 映射。按追加授权修改 reason enum、typed messages、zh/en reason/恢复文案；主 Agent 独立维护诊断码。未动 clipboard、ThreadModel、reading、状态/spec 或生成结构。
+
+验证与红绿：
+
+- 原复现15:39:30转绿，clean删除0、Undo后真实prepare成功。最终 `input-history-retry.integration.test.ts` 两个真实行为：正常保护，以及20字节预算拒绝发布/SQL unchanged/body+Undo kept→显式clearHistory awaitrelease→retry/prepare成功。
+- Registry 初始新发布行为红灯15:37:53，随后绿；覆盖多个 epochs/owners、distinct dedup、client version 连续、新增 input/derived摘要超限时无SQL或部分pin、释放后不复活旧lease。
+- GC实际8MiB对象在 awaited read 时同ID发布新derived：pin触发transientEpoch复读，文件保留；lease释放后两个实际对象均unlink。仅暂时移除publication pin的 mutation 在15:44:51真实红灯 `deletedObjects expected0 actual1`，try/finally立即恢复源码；日志 `/tmp/d-pi-history-publication-gc-mutation-red.log`，mutation未提交。
+- 新真实Composer/PM/React测试：限额失败不清Undo，只有点击明确恢复才清；Main release延迟期间retry计数不增加，release完成后才retry，正文保持。现有连续性11项通过。
+- 最终针对性回归15:45:27：12 files /87 tests passed，涵盖Main registry/GC/store/service、真实cache/Composer/附件控件与4个相关集成文件。Main/Renderer/Core及测试根严格typecheck、Biome575files、i18n、architecture416files、design lint、impeccable detect、git diff --check通过。未重复全功能矩阵或真实provider验收；既有@query act提示仍在且断言通过。
+
+复现日志 `/tmp/d-pi-history-repair-red.log`；Main registry 红灯 `/tmp/d-pi-history-registry-red.log`。本修复待主 Agent 串行集成并复查，不把局部通过等同于全体重构目标已验收。

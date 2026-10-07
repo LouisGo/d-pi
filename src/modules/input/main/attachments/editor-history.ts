@@ -10,6 +10,11 @@ type Lease = {
   digests: Map<string, number>;
   ids: Set<string>;
 };
+export class EditorHistoryLimitError extends Error {
+  constructor(readonly attachmentId?: string) {
+    super("editor-history-limit");
+  }
+}
 /** Bounded, document-owned transient authority. Only Main manifests grant pins. */
 export class EditorHistoryLeases {
   private readonly leases = new Map<string, Lease>();
@@ -81,16 +86,7 @@ export class EditorHistoryLeases {
           );
       }
     }
-    const total = new Map<string, number>();
-    for (const [id, entry] of this.leases) {
-      if (entry.owner !== owner) continue;
-      for (const [hash, bytes] of id === leaseId ? digests : entry.digests)
-        total.set(hash, Math.max(total.get(hash) ?? 0, bytes));
-    }
-    if (
-      [...total.values()].reduce((sum, bytes) => sum + bytes, 0) >
-      this.limits.bytes
-    )
+    if (!this.withinBudget(owner, new Map([[leaseId, digests]])))
       return { kind: "history-limit" };
     lease.ids = sourceIds;
     lease.digests = digests;
@@ -99,6 +95,58 @@ export class EditorHistoryLeases {
     // invalidate an already-running GC while that collector awaits file reads.
     this.options.pin(leaseId, new Set(digests.keys()));
     return { kind: "history-lease", leaseId, version };
+  }
+  private withinBudget(
+    owner: string,
+    changes: Map<string, Map<string, number>>,
+  ): boolean {
+    const total = new Map<string, number>();
+    for (const [id, entry] of this.leases) {
+      if (entry.owner !== owner) continue;
+      for (const [hash, bytes] of changes.get(id) ?? entry.digests)
+        total.set(hash, Math.max(total.get(hash) ?? 0, bytes));
+    }
+    return (
+      [...total.values()].reduce((sum, bytes) => sum + bytes, 0) <=
+      this.limits.bytes
+    );
+  }
+  /** Main-only manifest publication. No await may separate publication and pins. */
+  publishManifest(manifest: ContentManifest, publish: () => void): boolean {
+    const changes = new Map<string, Map<string, number>>();
+    const owners = new Set<string>();
+    for (const [id, lease] of this.leases) {
+      if (
+        lease.threadId !== manifest.attachment.threadId ||
+        !lease.ids.has(manifest.attachment.id)
+      )
+        continue;
+      const digests = new Map(lease.digests);
+      for (const hash of [
+        manifest.attachment.inputDigest,
+        manifest.derivedDigest,
+      ]) {
+        if (hash)
+          digests.set(
+            hash,
+            this.options.objectBytes(hash) || manifest.attachment.byteLength,
+          );
+      }
+      changes.set(id, digests);
+      owners.add(lease.owner);
+    }
+    for (const owner of owners)
+      if (!this.withinBudget(owner, changes)) return false;
+    // Preserve all previous digests: the same ID may refer to earlier undoable
+    // representations. A rejected publish mutates neither SQL nor any owner.
+    publish();
+    for (const [id, digests] of changes) {
+      const lease = this.leases.get(id);
+      if (!lease) continue;
+      lease.digests = digests;
+      this.options.pin(id, new Set(digests.keys()));
+    }
+    return true;
   }
   release(owner: string, threadId: string, leaseId: string): AttachmentReply {
     const lease = this.leases.get(leaseId);
