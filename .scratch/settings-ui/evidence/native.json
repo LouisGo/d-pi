@@ -1,12 +1,12 @@
 {
   "kind": "isolated-Electron-App-fixture",
   "screenshots": [
-    "/Users/louistation/.codex/worktrees/settings-ui/d-pi/.scratch/settings-ui/evidence/appearance-light.png",
-    "/Users/louistation/.codex/worktrees/settings-ui/d-pi/.scratch/settings-ui/evidence/general-select.png",
-    "/Users/louistation/.codex/worktrees/settings-ui/d-pi/.scratch/settings-ui/evidence/configuration-light.png",
-    "/Users/louistation/.codex/worktrees/settings-ui/d-pi/.scratch/settings-ui/evidence/appearance-dark.png",
-    "/Users/louistation/.codex/worktrees/settings-ui/d-pi/.scratch/settings-ui/evidence/notifications-dark.png",
-    "/Users/louistation/.codex/worktrees/settings-ui/d-pi/.scratch/settings-ui/evidence/configuration-narrow-dark.png"
+    ".scratch/settings-ui/evidence/appearance-light.png",
+    ".scratch/settings-ui/evidence/general-select.png",
+    ".scratch/settings-ui/evidence/configuration-light.png",
+    ".scratch/settings-ui/evidence/appearance-dark.png",
+    ".scratch/settings-ui/evidence/notifications-dark.png",
+    ".scratch/settings-ui/evidence/configuration-narrow-dark.png"
   ],
   "portal": {
     "inDialog": false,

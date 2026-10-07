@@ -3,7 +3,7 @@ import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { mkdirSync, realpathSync, writeFileSync } from "node:fs";
 import { createServer } from "node:net";
-import { join, resolve } from "node:path";
+import { join, relative, resolve } from "node:path";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { createServer as createViteServer } from "vite";
@@ -132,15 +132,18 @@ try {
     );
     await wait(() =>
       evaluate(
-        `document.querySelector('.ui-settings-page:not([hidden]) h2').textContent===${JSON.stringify(label)}`,
+        `document.querySelector('.ui-settings-page:not([hidden]) h2').textContent===${JSON.stringify(label)} && document.querySelectorAll('.settings-navigation [aria-current=page]').length===1 && document.querySelector('.settings-navigation [aria-current=page]').textContent.trim()===${JSON.stringify(label)}`,
       ),
     );
   };
   const shot = async (name) => {
+    await evaluate(
+      "Promise.all(document.getAnimations().filter(a=>a instanceof CSSTransition).map(a=>a.finished.catch(()=>{}))).then(()=>new Promise(done=>requestAnimationFrame(()=>requestAnimationFrame(done))))",
+    );
     const result = await call("Page.captureScreenshot", { format: "png" });
     const file = join(outputDirectory, `${name}.png`);
     writeFileSync(file, Buffer.from(result.data, "base64"));
-    screenshots.push(file);
+    screenshots.push(relative(process.cwd(), file));
   };
   await click("document.querySelector('button[aria-label=Settings]')");
   await wait(() => evaluate("!!document.querySelector('.ui-settings-modal')"));
@@ -213,7 +216,7 @@ try {
   await click("document.querySelector('[data-attention-system]')");
   await wait(() =>
     evaluate(
-      "document.querySelector('[data-attention-system]').getAttribute('aria-checked')==='true'",
+      "document.querySelector('[data-attention-system]').getAttribute('aria-checked')==='true' && document.querySelector('[data-attention-system]').getAttribute('aria-disabled')!=='true'",
     ),
   );
   await shot("notifications-dark");

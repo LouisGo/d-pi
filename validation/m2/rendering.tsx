@@ -83,7 +83,11 @@ const attention: AttentionBridge = {
           command.kind === "opened" ? null : attentionSnapshot.openRequest,
       };
     if (command.kind === "preferences")
-      attentionSnapshot = { ...attentionSnapshot, preferences: command.value };
+      attentionSnapshot = {
+        ...attentionSnapshot,
+        preferences: command.value,
+        system: command.value.system ? "unavailable" : "disabled",
+      };
     return {
       kind: "snapshot",
       traceId: command.traceId,
