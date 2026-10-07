@@ -182,6 +182,29 @@ it("outer wheel takes ownership before scroll dispatch so an old frame cannot re
   }
 });
 
+it("captures user navigation in a newly committed source before its restore frame", () => {
+  const fixture = anchorFixture();
+  try {
+    fixture.flush();
+    fixture.pane
+      .querySelector("section")
+      ?.setAttribute("data-reading-source", "b");
+    fixture.grow();
+    fixture.pane.dispatchEvent(
+      new WheelEvent("wheel", { deltaY: -30, bubbles: true }),
+    );
+    fixture.pane.scrollTop = 190;
+    fixture.adapter.capture();
+    fixture.grow();
+    fixture.flush();
+    expect(fixture.pane.scrollTop).toBe(190);
+    expect(fixture.positions.get("b")?.pixel).toBe(190);
+    expect(fixture.positions.get("a")?.pixel).toBe(230);
+  } finally {
+    fixture.cleanup();
+  }
+});
+
 it("lets a nested raw region consume wheel without cancelling the outer restoration", () => {
   const fixture = anchorFixture();
   try {

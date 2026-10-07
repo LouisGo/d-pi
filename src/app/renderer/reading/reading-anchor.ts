@@ -99,6 +99,10 @@ export function attachReadingAnchor({
   };
   const takeOwnership = () => {
     if (!visible()) return;
+    // Explicit outer input belongs to the committed DOM source even when its
+    // first restore frame has not run. Ordinary late scroll events still do not
+    // adopt a changed source in capture().
+    currentSource = source();
     expectedTop = null;
     restoring = false;
     capture();
