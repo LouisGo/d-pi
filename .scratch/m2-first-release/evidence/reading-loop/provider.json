@@ -1,0 +1,93 @@
+{
+  "sourceCommit": "c04e245941a8df7a4f882ffcde46082b6d0eb816",
+  "mode": "pnpm dev, actual Main / Host / Bun / existing OMP provider; isolated App data, inherited current OMP account configuration",
+  "modelObserved": "openai-codex/gpt-5.6-luna",
+  "thinkingObserved": "high",
+  "requests": [
+    {
+      "submissionId": "21e03e3e-26e6-401a-a3ac-efeb7f2aec9b",
+      "threadId": "6c612863-069e-4f8a-bc15-b0e6d5c2e77a",
+      "state": "acknowledged",
+      "outcome": "completed",
+      "traceId": "180f2af9-6499-472a-ba16-9438fde66c4e"
+    },
+    {
+      "submissionId": "eb4994f1-c04d-4c24-aa93-1ccf6bd95585",
+      "threadId": "6c612863-069e-4f8a-bc15-b0e6d5c2e77a",
+      "state": "acknowledged",
+      "outcome": "completed",
+      "traceId": "7c74ba3a-275c-499f-9204-0131342d967f"
+    },
+    {
+      "submissionId": "2cf630d3-10ef-4e6b-9eee-492a44bb94c4",
+      "threadId": "ea6a5e3d-c01f-4df1-aa78-963802ea0f7d",
+      "state": "acknowledged",
+      "outcome": "completed",
+      "traceId": "051992b6-25d3-4405-ad3c-260759cca5f8"
+    }
+  ],
+  "threads": [
+    {
+      "threadId": "6c612863-069e-4f8a-bc15-b0e6d5c2e77a",
+      "nativeSessionId": "01a11712-5ae4-7000-8387-170e51f74ec7",
+      "assistantMessages": [
+        {
+          "nativeMessageId": "1adb48ec",
+          "characters": 6595,
+          "lineCount": 141,
+          "sha256": "1edb2836fd885e49ea6f247b5eb2f420b85e5ceecba16999e7ebf73e49cff1a0",
+          "finalMarkers": [
+            "LUNA_LONG_FINAL"
+          ],
+          "provider": "openai-codex",
+          "model": "gpt-5.6-luna",
+          "stopReason": "stop"
+        },
+        {
+          "nativeMessageId": "ad94a9c0",
+          "characters": 8817,
+          "lineCount": 221,
+          "sha256": "ae58741b1719beeccc339f7b65bf165bb465fb533b435fc6dfd552da19ad24b1",
+          "finalMarkers": [
+            "LUNA_STREAM_FINAL"
+          ],
+          "provider": "openai-codex",
+          "model": "gpt-5.6-luna",
+          "stopReason": "stop"
+        }
+      ]
+    },
+    {
+      "threadId": "ea6a5e3d-c01f-4df1-aa78-963802ea0f7d",
+      "nativeSessionId": "01a11714-1bf9-7000-8979-fe551fa7c270",
+      "assistantMessages": [
+        {
+          "nativeMessageId": "31a5b804",
+          "characters": 325,
+          "lineCount": 21,
+          "sha256": "f075b35585c55ccba43b3727fd68ce754fa300a5e137efb29fe2271d5d51aaeb",
+          "finalMarkers": [
+            "LUNA_MARKDOWN_FINAL"
+          ],
+          "provider": "openai-codex",
+          "model": "gpt-5.6-luna",
+          "stopReason": "stop"
+        }
+      ]
+    }
+  ],
+  "nativeHistoryUI": {
+    "boundRead": true,
+    "messageCount": 4,
+    "nonMessageOmitted": 3,
+    "savedOrderReadOnly": true,
+    "returnSameLiveSource": true,
+    "returnedOldBodyPage": 1,
+    "returnedListTop": 0,
+    "focusVisibleTools": true
+  },
+  "limits": [
+    "Native user scroll/streaming overlap was attempted but not asserted as a real-provider race result; deterministic TDD and real Electron synthetic updates cover it.",
+    "Provider prompts requested no tools or file access. These samples prove response/reading and native-history paths, not self-development."
+  ]
+}

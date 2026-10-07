@@ -1,0 +1,135 @@
+{
+  "commit": "d987f98a8cd7aafb432ab51f15244e8b04ccb618",
+  "dirty": false,
+  "passed": true,
+  "platform": "darwin",
+  "mode": "real Electron, production components/models, isolated synthetic bridge; no provider or Main history I/O",
+  "results": [
+    {
+      "name": "R1 retained live end follows a same-item update",
+      "result": true
+    },
+    {
+      "name": "unchanged snapshot does not announce output",
+      "result": true
+    },
+    {
+      "name": "R2离尾同实体正文更新提示且不拉回",
+      "result": true
+    },
+    {
+      "name": "R2 width change keeps row offset",
+      "result": true
+    },
+    {
+      "name": "R14 list bottom does not turn the raw segment",
+      "result": true
+    },
+    {
+      "name": "R14 manual latest selects effective final segment",
+      "result": true
+    },
+    {
+      "name": "R14 append does not change chosen segment",
+      "result": true
+    },
+    {
+      "name": "R6 closed raw node range and inner scroll survive append",
+      "result": true
+    },
+    {
+      "name": "R8 gap opens existing tools and identifies history",
+      "result": true
+    },
+    {
+      "name": "R13 history navigation returns keyboard focus to visible Thread tools",
+      "result": true
+    },
+    {
+      "name": "R8 native partial saved-order scope",
+      "result": true
+    },
+    {
+      "name": "R10 changed is not empty and refresh scope remains clear",
+      "result": true
+    },
+    {
+      "name": "R13 returning live keeps a visible keyboard focus",
+      "result": true
+    },
+    {
+      "name": "R8R15 same live source anchor and body choice return",
+      "result": true
+    },
+    {
+      "name": "R5 Thread B owns a separate source and hint",
+      "result": true
+    },
+    {
+      "name": "R5 Thread A returns to its source row and raw page",
+      "result": true
+    },
+    {
+      "name": "R7 final Markdown preserves stable node range and code scroll",
+      "result": true
+    },
+    {
+      "name": "R7R12 final stable Selection copies to native pasteboard",
+      "result": true
+    },
+    {
+      "name": "R12 whole long body Copy includes undisplayed segments",
+      "result": {
+        "copiedCharacters": 1410941,
+        "owned": true
+      }
+    },
+    {
+      "name": "native clipboard restoration",
+      "result": "restored"
+    },
+    {
+      "name": "R13 editor identity remains through tools and history",
+      "result": true
+    },
+    {
+      "name": "R5 new generation resets source position and hint",
+      "result": true
+    },
+    {
+      "name": "1000 retained short rows input frame sample",
+      "result": {
+        "retainedItems": 1000,
+        "mountedItems": 1000,
+        "nodes": 7660,
+        "inputFrameP95": 8.5,
+        "samples": [
+          5.900000095367432,
+          6.099999904632568,
+          7.599999904632568,
+          7.8999998569488525,
+          8.200000047683716,
+          8.200000047683716,
+          8.299999952316284,
+          8.299999952316284,
+          8.299999952316284,
+          8.299999952316284,
+          8.299999952316284,
+          8.299999952316284,
+          8.300000190734863,
+          8.300000190734863,
+          8.399999856948853,
+          8.399999856948853,
+          8.400000095367432,
+          8.400000095367432,
+          8.5,
+          8.800000190734863
+        ]
+      }
+    },
+    {
+      "name": "R11 fixture root unmount completes",
+      "result": true
+    }
+  ]
+}

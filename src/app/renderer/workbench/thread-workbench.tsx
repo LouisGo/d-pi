@@ -1,6 +1,6 @@
 import {
   memo,
-  type ReactNode,
+  type RefObject,
   useCallback,
   useContext,
   useLayoutEffect,
@@ -16,12 +16,12 @@ import { Button } from "../../../modules/ui/renderer/public";
 import { Modal } from "../components/ui/modal";
 import { Conversation } from "../reading/conversation";
 import { History } from "../reading/history";
-import { attachReadingAnchor } from "../reading/reading-anchor";
+import type { attachReadingAnchor } from "../reading/reading-anchor";
+import { ReadingPane } from "../reading/reading-pane";
 import { Submissions } from "../reading/submissions";
 import type { ReadingView } from "../routing/search";
 import { ConversationVisibilityContext } from "../shell/layout/conversation-visibility";
 import type { ThreadSelectionState } from "../wiring/model";
-import type { ThreadModel } from "../wiring/thread-model";
 import { locateAttention } from "./attention-location";
 import { Composer } from "./composer";
 import { FilePanel } from "./file-panel";
@@ -62,6 +62,23 @@ export function ThreadWorkbench({
   );
   const runtimeReady = useSyncExternalStore(subscribeReady, getReady);
   const located = useRef<typeof target>(null);
+  const attentionFrame = useRef<number | null>(null);
+  const scheduledTarget = useRef<typeof target>(null);
+  const onReadingTakeover = useCallback(() => {
+    if (attentionFrame.current === null) return;
+    cancelAnimationFrame(attentionFrame.current);
+    attentionFrame.current = null;
+    located.current = scheduledTarget.current;
+  }, []);
+  const receiptAnchor = useRef<ReturnType<typeof attachReadingAnchor> | null>(
+    null,
+  );
+  const onReceiptAnchorChange = useCallback(
+    (adapter: ReturnType<typeof attachReadingAnchor> | null) => {
+      receiptAnchor.current = adapter;
+    },
+    [],
+  );
   useLayoutEffect(() => {
     if (
       !visible ||
@@ -79,10 +96,29 @@ export function ThreadWorkbench({
         ),
     );
     const frame = requestAnimationFrame(() => {
-      if (workspace.current && locateAttention(workspace.current, target))
+      attentionFrame.current = null;
+      const location = workspace.current;
+      if (!location) return;
+      const locate = () => locateAttention(location, target);
+      const receiptInPane =
+        target.kind === "failed" &&
+        props.readingView === "submissions" &&
+        location.querySelector(
+          `[data-attention-receipt-trace="${target.traceId}"]`,
+        );
+      if (
+        receiptInPane && receiptAnchor.current
+          ? receiptAnchor.current.position(locate)
+          : locate()
+      )
         located.current = target;
     });
-    return () => cancelAnimationFrame(frame);
+    attentionFrame.current = frame;
+    scheduledTarget.current = target;
+    return () => {
+      cancelAnimationFrame(frame);
+      if (attentionFrame.current === frame) attentionFrame.current = null;
+    };
   }, [target, props.readingView, transitioning, runtimeReady, visible]);
   return (
     <section
@@ -96,6 +132,8 @@ export function ThreadWorkbench({
         {...props}
         readingFocus={readingFocus}
         onReadingFocusChange={setReadingFocus}
+        onReceiptAnchorChange={onReceiptAnchorChange}
+        onReadingTakeover={onReadingTakeover}
       />
     </section>
   );
@@ -109,9 +147,15 @@ const ThreadContent = memo(function ThreadContent({
   onReadingViewChange,
   readingFocus,
   onReadingFocusChange,
+  onReceiptAnchorChange,
+  onReadingTakeover,
 }: ThreadWorkbenchProps & {
   readingFocus: boolean;
   onReadingFocusChange: (value: boolean) => void;
+  onReadingTakeover: () => void;
+  onReceiptAnchorChange: (
+    adapter: ReturnType<typeof attachReadingAnchor> | null,
+  ) => void;
 }) {
   const { thread, directoryAvailable } = threadSelection;
   const { submission } = thread;
@@ -120,12 +164,24 @@ const ThreadContent = memo(function ThreadContent({
   const toolsReturnFocus = useRef<HTMLElement | null>(null);
   const [toolsOpen, setToolsOpen] = useState(false);
   const [choosingModel, setChoosingModel] = useState(false);
+  const [choosingHistory, setChoosingHistory] = useState(false);
+  const historyTrigger = useRef<HTMLButtonElement>(null);
+  const openHistoryTools = useCallback(() => {
+    toolsReturnFocus.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : toolsTrigger.current;
+    setChoosingModel(false);
+    setChoosingHistory(true);
+    setToolsOpen(true);
+  }, []);
   const modelDisclosure = useRef<HTMLDetailsElement>(null);
   const chooseModel = useCallback(() => {
     toolsReturnFocus.current =
       document.activeElement instanceof HTMLElement
         ? document.activeElement
         : toolsTrigger.current;
+    setChoosingHistory(false);
     setChoosingModel(true);
     setToolsOpen(true);
   }, []);
@@ -157,6 +213,7 @@ const ThreadContent = memo(function ThreadContent({
           data-thread-tools-trigger=""
           onClick={(event) => {
             toolsReturnFocus.current = event.currentTarget;
+            setChoosingHistory(false);
             setChoosingModel(false);
             setToolsOpen(true);
           }}
@@ -170,6 +227,7 @@ const ThreadContent = memo(function ThreadContent({
           closeLabel={t("app.layout.close")}
           returnFocus={toolsReturnFocus}
           initialFocus={() => {
+            if (choosingHistory) return historyTrigger.current;
             const details = modelDisclosure.current;
             if (!choosingModel || !details) return null;
             details.open = true;
@@ -203,7 +261,11 @@ const ThreadContent = memo(function ThreadContent({
             {thread.runtime && <RuntimeInspection model={thread.runtime} />}
             <ReadingNavigation
               readingView={readingView}
+              historyButtonRef={historyTrigger}
               onReadingViewChange={(view) => {
+                // The originating live/history control may become hidden when
+                // changing views. Return to the stable toolbar trigger.
+                toolsReturnFocus.current = toolsTrigger.current;
                 onReadingViewChange(view);
                 setToolsOpen(false);
               }}
@@ -248,18 +310,22 @@ const ThreadContent = memo(function ThreadContent({
         )}
         <ReadingPane
           thread={thread}
+          onTakeover={onReadingTakeover}
           view="conversation"
+          onOpenHistory={openHistoryTools}
           active={readingView === "conversation"}
         >
           {thread.reading && (
             <Conversation
               model={thread.reading}
               positions={thread.readingSources}
+              onOpenHistory={openHistoryTools}
             />
           )}
         </ReadingPane>
         <ReadingPane
           thread={thread}
+          onTakeover={onReadingTakeover}
           view="files"
           active={readingView === "files"}
         >
@@ -275,13 +341,16 @@ const ThreadContent = memo(function ThreadContent({
         </ReadingPane>
         <ReadingPane
           thread={thread}
+          onTakeover={onReadingTakeover}
           view="submissions"
+          onAdapterChange={onReceiptAnchorChange}
           active={readingView === "submissions"}
         >
           {submission && <Submissions model={submission} />}
         </ReadingPane>
         <ReadingPane
           thread={thread}
+          onTakeover={onReadingTakeover}
           view="history"
           active={readingView === "history"}
         >
@@ -291,6 +360,10 @@ const ThreadContent = memo(function ThreadContent({
               positions={thread.readingSources}
               active={readingView === "history"}
               threadId={thread.context.threadId}
+              onReturnLive={() => {
+                onReadingViewChange("conversation");
+                toolsTrigger.current?.focus({ preventScroll: true });
+              }}
             />
           )}
         </ReadingPane>
@@ -319,7 +392,10 @@ function DirectoryUnavailable() {
 function ReadingNavigation({
   readingView,
   onReadingViewChange,
-}: Pick<ThreadWorkbenchProps, "readingView" | "onReadingViewChange">) {
+  historyButtonRef,
+}: Pick<ThreadWorkbenchProps, "readingView" | "onReadingViewChange"> & {
+  historyButtonRef: RefObject<HTMLButtonElement | null>;
+}) {
   const { t } = useI18n();
   return (
     <nav
@@ -350,6 +426,8 @@ function ReadingNavigation({
         </Button>
         <Button
           variant="navigation"
+          ref={historyButtonRef}
+          data-reading-view="history"
           aria-pressed={readingView === "history"}
           onClick={() => onReadingViewChange("history")}
         >
@@ -357,47 +435,5 @@ function ReadingNavigation({
         </Button>
       </div>
     </nav>
-  );
-}
-
-function ReadingPane({
-  thread,
-  view,
-  active,
-  children,
-}: {
-  thread: ThreadModel;
-  view: ReadingView;
-  active: boolean;
-  children: ReactNode;
-}) {
-  const { visible } = useContext(ConversationVisibilityContext);
-  const ref = useRef<HTMLDivElement>(null);
-  const anchor = useRef<ReturnType<typeof attachReadingAnchor> | null>(null);
-  useLayoutEffect(() => {
-    const pane = ref.current;
-    if (!pane || !active || !visible) return;
-    const adapter = attachReadingAnchor({
-      pane,
-      positions: thread.readingSources,
-      isVisible: () => active && visible,
-      pixel: () => thread.readingPositions.get(view) ?? 0,
-      rememberPixel: (top) => thread.readingPositions.set(view, top),
-    });
-    anchor.current = adapter;
-    return () => {
-      adapter.dispose();
-      if (anchor.current === adapter) anchor.current = null;
-    };
-  }, [thread, view, active, visible]);
-  return (
-    <div
-      ref={ref}
-      className="reading-pane"
-      hidden={!active}
-      onScroll={() => anchor.current?.capture()}
-    >
-      {children}
-    </div>
   );
 }

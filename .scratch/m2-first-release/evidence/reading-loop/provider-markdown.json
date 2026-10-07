@@ -1,0 +1,10 @@
+{
+  "source": "[\"live\",\"ea6a5e3d-c01f-4df1-aa78-963802ea0f7d\",\"97b7b057-4751-4b26-9cb3-551477756c0a\"]",
+  "finalMarker": true,
+  "strong": "stable-selection",
+  "codeLines": "const status = \"ready\";console.log(status);return true;",
+  "tableRows": 2,
+  "referenceResolved": "reference https://example.com/reference",
+  "inProgress": false,
+  "editorEmpty": true
+}

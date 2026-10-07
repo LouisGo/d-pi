@@ -1,4 +1,19 @@
 export const ui = {
+  "ui.reading.latest": "Latest segment",
+  "ui.conversation.newOutput": "New output",
+  "ui.conversation.toBottom": "Back to list bottom",
+  "ui.conversation.retainedTail":
+    "Go to the retained live list bottom; keep the current body segment.",
+  "ui.conversation.openHistory": "View native history",
+  "ui.history.readOnlyCoverage":
+    "Native history is read-only and paged in saved order, separately from the live list.",
+  "ui.history.refreshStart":
+    "Refresh reads this source again from its first page.",
+  "ui.history.returnLive": "Return to live reading",
+  "ui.history.catalogUnavailableReason":
+    "Project history discovery is unavailable: {reason}. You can still try the bound d-pi session record.",
+  "ui.history.notRead": "The bound session history has not been read yet.",
+
   "attachment.clipboardFallback":
     "Structured content fell back to readable text. Dynamic references do not transfer file access.",
   "attachment.clipboardFailed":
@@ -486,7 +501,7 @@ export const ui = {
   "ui.conversation.heading": "Conversation",
   "ui.conversation.empty": "Start a conversation below.",
   "ui.conversation.gap":
-    "Some content is missing from this view. Read the native history below to check it.",
+    "The live view has a gap. Check native history; returning to the bottom does not fill it.",
   "ui.conversation.streaming": "In progress",
   "ui.conversation.failed": "Failed",
   "ui.conversation.copy": "Copy",

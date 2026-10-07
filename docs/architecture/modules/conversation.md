@@ -77,3 +77,11 @@ Thread 拥有有界的阅读位置账本，不保存正文或执行事实。实�
 Renderer DOM adapter 拥有 ResizeObserver/MutationObserver/rAF 与几何测量，卸载/隐藏停止测量，不用 hidden 零坐标覆盖可见位置。视图/Thread返回保留正文分段选择与段内滚动；只读位置不控制 OMP。仍保留有界正文 DOM 和当前已封闭段的选择，不按文字/顺序猜测 native/live 合并。
 
 原生项目分页继续交给 Query 按来源/key/cursor 拥有；绑定历史读取也进入 Query，每次用户读取建立独立 attempt（同cursor重试仍不同），旧返回或 finally 不更新新attempt的忙碌/错误/页内容。未支持物理取消的历史 I/O 不冒称已终止；视图释放只防止迟到结果接管当前来源。合同与工程证据归 [T3 基础规格](../../../.scratch/t3-foundations/spec.md)。
+
+## 首个长会话阅读闭环（2026-10-08）
+
+外层列表回底由同一 DOM adapter 即时执行，取消旧恢复并重新跟随当前 live 已保留尾部；不补 gap、不切来源，也不改变正文段选择。用户外层 wheel、导航键和滚动条输入优先于待发定位；嵌套 raw/代码滚动自身可消费时、编辑器/IME 输入时不误接管外层。attention 实际定位通过同一适配器提交；隐藏/dispose 取消帧并释放观察、监听和订阅。
+
+新输出提示是当前可见来源一次阅读期间的布尔状态：同实体有效正文变化或新增正文可置位；相同快照、loading及完成元数据不置位，回底/已跟随清除，切来源/Thread/重新进入重建基线。段页旁的“最新段”由用户显式按当前有效末段选择，后续追加仍保留选择。gap/截断经既有Thread tools进入分开的原生历史，返回保持同来源账本位置及可见工具焦点；历史按保存顺序、只读与部分覆盖展示，刷新明确重读起始页，未读取/空页/不可用类型分开。
+
+短 Markdown 完成关闭 incomplete 补写并保持稳定 Block 前缀；迟到引用/脚注需要全短文解析作用域。语义改变、跨分段阈值或卸载重挂不承诺DOM/Selection存活，封闭raw段仍保留原合同。Main/Host/Bun、历史所有权与预算未改变。[行为矩阵、源码身份及实际Dev/Chromium证据](../../../.scratch/m2-first-release/reading-loop.md)。

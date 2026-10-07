@@ -1,0 +1,16 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/reading/reading-anchor.test.ts src/app/renderer/reading/reading-pane.test.ts src/app/renderer/workbench/thread-workbench.test.ts
+$ tsr generate
+(node:96167) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/louistation/.codex/worktrees/long-reading-loop/d-pi
+
+ ✓ src/app/renderer/reading/reading-anchor.test.ts (9 tests) 16ms
+ ✓ src/app/renderer/reading/reading-pane.test.ts (1 test) 50ms
+ ✓ src/app/renderer/workbench/thread-workbench.test.ts (3 tests) 93ms
+
+ Test Files  3 passed (3)
+      Tests  13 passed (13)
+   Start at  23:54:31
+   Duration  3.05s (import 73%, environment 15%, transform 10%, tests 3%)

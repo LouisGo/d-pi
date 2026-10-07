@@ -47,11 +47,18 @@ interface HistoryProps {
   threadId: string;
   active: boolean;
   positions?: ReadingPositions;
+  onReturnLive?: (() => void) | undefined;
 }
 export function History(props: HistoryProps) {
   return <HistoryContent key={props.threadId} {...props} />;
 }
-function HistoryContent({ bridge, threadId, active, positions }: HistoryProps) {
+function HistoryContent({
+  bridge,
+  threadId,
+  active,
+  positions,
+  onReturnLive,
+}: HistoryProps) {
   const [localPositions] = useState(() => new ReadingPositions());
   useEffect(() => () => localPositions.dispose(), [localPositions]);
   const owner = positions ?? localPositions;
@@ -113,6 +120,12 @@ function HistoryContent({ bridge, threadId, active, positions }: HistoryProps) {
       aria-label={t("ui.history.sectionLabel")}
     >
       <h2>{t("ui.history.sectionLabel")}</h2>
+      <p className="muted">{t("ui.history.readOnlyCoverage")}</p>
+      {onReturnLive && (
+        <Button variant="ghost" onClick={onReturnLive}>
+          {t("ui.history.returnLive")}
+        </Button>
+      )}
       {discovering && <p role="status">{t("ui.history.discovering")}</p>}
       {reading && <p role="status">{t("ui.history.reading")}</p>}
 
@@ -151,6 +164,7 @@ function HistoryContent({ bridge, threadId, active, positions }: HistoryProps) {
         </label>
         <Button
           variant="ghost"
+          title={t("ui.history.refreshStart")}
           disabled={catalog.isFetching || nativePage.isFetching || busy}
           onClick={() => {
             void catalog.refetch();
@@ -162,6 +176,7 @@ function HistoryContent({ bridge, threadId, active, positions }: HistoryProps) {
           {t("config.refresh")}
         </Button>
       </div>
+      <p className="muted">{t("ui.history.refreshStart")}</p>
       {catalog.data?.kind === "catalog" && catalog.data.partial && (
         <p role="status">{t("ui.history.catalogPartial")}</p>
       )}
@@ -169,7 +184,15 @@ function HistoryContent({ bridge, threadId, active, positions }: HistoryProps) {
         <p role="alert">{t("ui.history.readFailed")}</p>
       )}
       {catalog.data?.kind === "unavailable" && (
-        <p role="status">{t("ui.history.catalogUnavailable")}</p>
+        <p role="status">
+          {t("ui.history.catalogUnavailableReason", {
+            reason: match(catalog.data.reason)
+              .with("missing", () => t("ui.history.reason.missing"))
+              .with("denied", () => t("ui.history.reason.denied"))
+              .with("invalid", () => t("ui.history.reason.invalid"))
+              .exhaustive(),
+          })}
+        </p>
       )}
       <div className="history-source">
         <Disclosure>
@@ -179,13 +202,16 @@ function HistoryContent({ bridge, threadId, active, positions }: HistoryProps) {
         </Disclosure>
       </div>
       {!selected && !awaitingCatalog && (
-        <Button
-          variant="ghost"
-          disabled={busy || catalog.isFetching}
-          onClick={() => void read(null)}
-        >
-          {t("ui.history.read")}
-        </Button>
+        <>
+          {!boundAttempt && <p className="muted">{t("ui.history.notRead")}</p>}
+          <Button
+            variant="ghost"
+            disabled={busy || catalog.isFetching}
+            onClick={() => void read(null)}
+          >
+            {t("ui.history.read")}
+          </Button>
+        </>
       )}
       {page?.kind === "unavailable" && (
         <p role="status">

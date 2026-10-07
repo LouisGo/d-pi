@@ -159,7 +159,9 @@ it.each(["file", "diff"] as const)(
       if (!target) throw Error("missing file/diff target");
       await act(() => target.click());
       expect(
-        container.querySelector<HTMLDetailsElement>(".file-navigation")?.open,
+        container.querySelector<HTMLDetailsElement>(
+          ".file-navigation > [data-slot=disclosure]",
+        )?.open,
       ).toBe(false);
       const result = container.querySelector(".file-result");
       expect(result).not.toBeNull();
@@ -172,8 +174,9 @@ it.each(["file", "diff"] as const)(
           kind === "file" ? "file result" : "diff result",
         );
       });
-      const details =
-        container.querySelector<HTMLDetailsElement>(".file-navigation");
+      const details = container.querySelector<HTMLDetailsElement>(
+        ".file-navigation > [data-slot=disclosure]",
+      );
       if (!details) throw Error("missing browser");
       await act(() => {
         details.open = true;

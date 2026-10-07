@@ -1,0 +1,47 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/reading/reading-anchor.test.ts -t 'newly committed source'
+$ tsr generate
+(node:95228) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/louistation/.codex/worktrees/long-reading-loop/d-pi
+
+ ❯ src/app/renderer/reading/reading-anchor.test.ts (9 tests | 1 failed | 8 skipped) 10ms
+   ↓ restores row-relative position across geometry changes and isolates a new source
+   ↓ outer wheel takes ownership before scroll dispatch so an old frame cannot reset the gesture
+   × captures user navigation in a newly committed source before its restore frame 9ms
+   ↓ lets a nested raw region consume wheel without cancelling the outer restoration
+   ↓ keyboard and scrollbar gestures cancel queued positioning, but editing and IME keys do not
+   ↓ explicit list bottom is immediate, cancels old restoration, preserves body page, and follows later output
+   ↓ hidden and disposed panes stop pending DOM work and cannot accept a late positioning command
+   ↓ commits an explicit pane location so a subsequent content restoration cannot undo it
+   ↓ a retained anchor clamped to the current list end resumes follow for later output
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/renderer/reading/reading-anchor.test.ts > captures user navigation in a newly committed source before its restore frame
+AssertionError: expected +0 to be 190 // Object.is equality
+
+- Expected
++ Received
+
+- 190
++ 0
+
+ ❯ src/app/renderer/reading/reading-anchor.test.ts:196:36
+    194|     fixture.grow();
+    195|     fixture.flush();
+    196|     expect(fixture.pane.scrollTop).toBe(190);
+       |                                    ^
+    197|     expect(fixture.positions.get("b")?.pixel).toBe(190);
+    198|     expect(fixture.positions.get("a")?.pixel).toBe(230);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 skipped (9)
+   Start at  23:53:20
+   Duration  482ms (environment 73%, transform 15%, import 7%, tests 3%, worker 1%)
+
+[ELIFECYCLE] Test failed. See above for more details.

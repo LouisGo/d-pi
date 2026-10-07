@@ -1,0 +1,10 @@
+file:///Users/louistation/.codex/worktrees/long-reading-loop/d-pi/validation/m2/clipboard.mjs:56
+      throw Error(`Clipboard ${operation} failed`);
+            ^
+
+Error: Clipboard mark failed
+    at invoke (file:///Users/louistation/.codex/worktrees/long-reading-loop/d-pi/validation/m2/clipboard.mjs:56:13)
+    at Object.markOwnedCopy (file:///Users/louistation/.codex/worktrees/long-reading-loop/d-pi/validation/m2/clipboard.mjs:86:38)
+    at file:///Users/louistation/.codex/worktrees/long-reading-loop/d-pi/validation/m2/reading-loop.mjs:378:13
+
+Node.js v24.21.0

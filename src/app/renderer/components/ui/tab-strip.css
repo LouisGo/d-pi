@@ -1,6 +1,5 @@
 @layer components {
   .tab-strip {
-    --tab-icon-size: 1rem;
     display: flex;
     align-items: center;
     min-width: 0;

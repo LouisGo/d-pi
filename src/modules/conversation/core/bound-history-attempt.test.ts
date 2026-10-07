@@ -57,3 +57,70 @@ it("keeps a same-cursor retry's busy/data ownership when an old unmounted read r
     client.clear();
   }
 });
+
+it.each([
+  ["success", "before"],
+  ["success", "after"],
+  ["failure", "before"],
+  ["failure", "after"],
+] as const)(
+  "ignores an old same-cursor %s settling %s the current attempt",
+  async (outcome, order) => {
+    const pending: {
+      resolve: (page: HistoryPage) => void;
+      reject: (error: Error) => void;
+    }[] = [];
+    const bridge: HistoryBridge = {
+      projectList: async () => ({
+        kind: "catalog",
+        sessions: [],
+        partial: false,
+      }),
+      projectRead: async () => ({ kind: "unavailable", reason: "missing" }),
+      read: () =>
+        new Promise<HistoryPage>((resolve, reject) =>
+          pending.push({ resolve, reject }),
+        ),
+    };
+    const client = new QueryClient();
+    const first = new QueryObserver(
+      client,
+      boundHistoryPageQuery(bridge, "thread", { id: "old", cursor: null }),
+    );
+    const stopFirst = first.subscribe(() => {});
+    await vi.waitFor(() => expect(pending).toHaveLength(1));
+    stopFirst();
+    const current = new QueryObserver(
+      client,
+      boundHistoryPageQuery(bridge, "thread", { id: "new", cursor: null }),
+    );
+    const stopCurrent = current.subscribe(() => {});
+    const result: HistoryPage = { kind: "unavailable", reason: "changed" };
+    const old = () =>
+      outcome === "failure"
+        ? pending[0]?.reject(Error("old connection failed"))
+        : pending[0]?.resolve({ kind: "unavailable", reason: "denied" });
+    try {
+      await vi.waitFor(() => expect(pending).toHaveLength(2));
+      if (order === "before") {
+        old();
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        expect(current.getCurrentResult().isFetching).toBe(true);
+        expect(current.getCurrentResult().data).toBeUndefined();
+        expect(current.getCurrentResult().isError).toBe(false);
+      }
+      pending[1]?.resolve(result);
+      await vi.waitFor(() =>
+        expect(current.getCurrentResult().data).toEqual(result),
+      );
+      if (order === "after") old();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(current.getCurrentResult().data).toEqual(result);
+      expect(current.getCurrentResult().isFetching).toBe(false);
+      expect(current.getCurrentResult().isError).toBe(false);
+    } finally {
+      stopCurrent();
+      client.clear();
+    }
+  },
+);

@@ -12,18 +12,27 @@ export function attachReadingAnchor({
   isVisible,
   pixel,
   rememberPixel,
+  onTakeover,
 }: {
   pane: HTMLElement;
   positions: ReadingPositions;
   isVisible: () => boolean;
   pixel: () => number;
   rememberPixel: (top: number) => void;
+  onTakeover?: (() => void) | undefined;
 }) {
   let disposed = false;
   let frame: number | null = null;
   let restoring = false;
   let expectedTop: number | null = null;
   let currentSource: string | null = null;
+  let atEnd = false;
+  const listeners = new Set<() => void>();
+  const publishAtEnd = (next: boolean) => {
+    if (atEnd === next) return;
+    atEnd = next;
+    for (const listener of listeners) listener();
+  };
   const visible = () =>
     !disposed &&
     isVisible() &&
@@ -68,7 +77,7 @@ export function attachReadingAnchor({
     const row = rows[low - 1];
     return row ? geometry(row) : null;
   };
-  const capture = () => {
+  const capture = (notifyTakeover = true) => {
     if (!visible()) return;
     const top = pane.scrollTop;
     if ((restoring || expectedTop !== null) && top === expectedTop) {
@@ -81,14 +90,79 @@ export function attachReadingAnchor({
       frame = null;
     }
     restoring = false;
+    if (notifyTakeover) onTakeover?.();
     if (source() !== currentSource) return;
     rememberPixel(top);
-    if (currentSource)
-      positions.remember(
-        currentSource,
-        captureReadingAnchor(viewport(), currentRow()),
-      );
+    const anchor = captureReadingAnchor(viewport(), currentRow());
+    if (currentSource) positions.remember(currentSource, anchor);
+    publishAtEnd(anchor.atEnd);
   };
+  const takeOwnership = () => {
+    if (!visible()) return;
+    // Explicit outer input belongs to the committed DOM source even when its
+    // first restore frame has not run. Ordinary late scroll events still do not
+    // adopt a changed source in capture().
+    currentSource = source();
+    expectedTop = null;
+    restoring = false;
+    capture();
+  };
+  const consumedWithin = (target: EventTarget | null, direction: number) => {
+    let element = target instanceof HTMLElement ? target : null;
+    while (element && element !== pane) {
+      const style = getComputedStyle(element);
+      if (
+        /auto|scroll|overlay/.test(style.overflowY) &&
+        element.scrollHeight > element.clientHeight
+      ) {
+        const max = element.scrollHeight - element.clientHeight;
+        if (
+          (direction < 0 && element.scrollTop > 0) ||
+          (direction > 0 && element.scrollTop < max) ||
+          /contain|none/.test(
+            style.overscrollBehaviorY || style.overscrollBehavior,
+          )
+        )
+          return true;
+      }
+      element = element.parentElement;
+    }
+    return false;
+  };
+  const wheel = (event: WheelEvent) => {
+    if (event.deltaY !== 0 && !consumedWithin(event.target, event.deltaY))
+      takeOwnership();
+  };
+  const keydown = (event: KeyboardEvent) => {
+    const target = event.target instanceof HTMLElement ? event.target : null;
+    if (
+      event.isComposing ||
+      event.keyCode === 229 ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      target?.closest(
+        "input, textarea, select, [contenteditable]:not([contenteditable=false])",
+      ) ||
+      (event.key === " " && target?.closest("button, a, summary"))
+    )
+      return;
+    const direction =
+      /^(ArrowUp|PageUp|Home)$/.test(event.key) ||
+      (event.key === " " && event.shiftKey)
+        ? -1
+        : /^(ArrowDown|PageDown|End| )$/.test(event.key)
+          ? 1
+          : 0;
+    if (direction && !consumedWithin(event.target, direction)) takeOwnership();
+  };
+  const pointerdown = (event: PointerEvent) => {
+    // Native scrollbar dragging targets the pane; text selection targets its content.
+    if (event.target === pane) takeOwnership();
+  };
+  pane.addEventListener("wheel", wheel, { passive: true });
+  pane.addEventListener("keydown", keydown);
+  pane.addEventListener("pointerdown", pointerdown);
   const apply = () => {
     if (!visible()) return;
     currentSource = source();
@@ -108,6 +182,13 @@ export function attachReadingAnchor({
     }
     pane.scrollTop = top;
     expectedTop = pane.scrollTop;
+    const reachedEnd = captureReadingAnchor(viewport(), null).atEnd;
+    if (currentSource && anchor && anchor.atEnd !== reachedEnd)
+      positions.remember(
+        currentSource,
+        captureReadingAnchor(viewport(), currentRow()),
+      );
+    publishAtEnd(reachedEnd);
   };
   const refresh = () => {
     if (!visible() || frame !== null) return;
@@ -149,14 +230,45 @@ export function attachReadingAnchor({
   });
   return {
     capture,
+    getSnapshot: () => atEnd,
+    subscribe: (listener: () => void) => {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+    position(action: () => boolean): boolean {
+      if (!visible()) return false;
+      takeOwnership();
+      const positioned = action();
+      expectedTop = null;
+      capture(false);
+      expectedTop = pane.scrollTop;
+      return positioned;
+    },
+    toBottom() {
+      if (!visible()) return;
+      takeOwnership();
+      currentSource = source();
+      pane.scrollTop = Math.max(0, pane.scrollHeight - pane.clientHeight);
+      const anchor = captureReadingAnchor(viewport(), currentRow());
+      rememberPixel(pane.scrollTop);
+      if (currentSource) positions.remember(currentSource, anchor);
+      expectedTop = pane.scrollTop;
+      publishAtEnd(anchor.atEnd);
+    },
     dispose() {
       if (disposed) return;
-      if (!restoring && expectedTop === null) capture();
+      if (!restoring && expectedTop === null) capture(false);
       disposed = true;
       if (frame !== null) cancelAnimationFrame(frame);
       frame = null;
       resize?.disconnect();
       mutation.disconnect();
+      listeners.clear();
+      pane.removeEventListener("wheel", wheel);
+      pane.removeEventListener("keydown", keydown);
+      pane.removeEventListener("pointerdown", pointerdown);
     },
   };
 }

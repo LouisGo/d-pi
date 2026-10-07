@@ -80,6 +80,7 @@ vi.mock("../reading/submissions", () => ({
   },
 }));
 vi.mock("../workbench/runtime-panel", () => ({
+  RuntimeInspection: () => null,
   RuntimePanel: (props: unknown) => {
     views.runtime(props);
     return null;
@@ -306,6 +307,7 @@ async function setup({
   };
   return {
     model,
+    bridge,
     container,
     button,
     render,
@@ -430,12 +432,60 @@ it("does not execute sidebar Thread rows for theme or shortcut save busy updates
   }
 });
 
-it("translates controls without executing the workspace's unrelated business views", async () => {
+it("translates controls with one locale repaint while preserving Thread resources and business operations", async () => {
   const fixture = await setup();
   const before = renderCounts();
+  const state = fixture.model.getSnapshot();
+  const { runtime, submission, conversation, files, git, history } =
+    fixture.bridge;
+  if (!runtime || !submission || !conversation || !files || !git || !history)
+    throw Error("missing business ports");
+  const operations = [
+    vi.spyOn(fixture.bridge, "request"),
+    vi.spyOn(runtime, "request"),
+    vi.spyOn(runtime, "subscribe"),
+    vi.spyOn(submission, "request"),
+    vi.spyOn(submission, "subscribe"),
+    vi.spyOn(conversation, "connect"),
+    vi.spyOn(files, "request"),
+    vi.spyOn(files, "cancel"),
+    vi.spyOn(git, "request"),
+    vi.spyOn(git, "cancel"),
+    vi.spyOn(history, "read"),
+    vi.spyOn(history, "projectList"),
+    vi.spyOn(history, "projectRead"),
+  ];
+  const resources = [
+    () => views.conversation.mock.calls.at(-1)?.[0].model,
+    () => views.conversation.mock.calls.at(-1)?.[0].positions,
+    () => views.history.mock.calls.at(-1)?.[0].bridge,
+    () => views.history.mock.calls.at(-1)?.[0].positions,
+    () => views.history.mock.calls.at(-1)?.[0].threadId,
+    () => views.submissions.mock.calls.at(-1)?.[0].model,
+    () => views.runtime.mock.calls.at(-1)?.[0].model,
+    () => views.composer.mock.calls.at(-1)?.[0].thread,
+    () => views.composer.mock.calls.at(-1)?.[0].model,
+    () => views.files.mock.calls.at(-1)?.[0].resource,
+    () => views.files.mock.calls.at(-1)?.[0].files,
+    () => views.files.mock.calls.at(-1)?.[0].git,
+  ];
+  const previousResources = resources.map((read) => read());
   await act(() => fixture.changeLanguage());
-  expect(fixture.container.textContent).toContain("原生历史");
-  expect(renderCounts()).toEqual(before);
+  expect(
+    document.querySelector(".thread-tools-content .reading-navigation")
+      ?.textContent,
+  ).toContain("原生历史");
+  // Locale affects each view's chrome. It may repaint once, but cannot replace
+  // the owning Thread or re-run its business requests and subscriptions.
+  expect(renderCounts()).toEqual(
+    Object.fromEntries(
+      Object.entries(before).map(([name, count]) => [name, count + 1]),
+    ),
+  );
+  expect(fixture.model.getSnapshot()).toBe(state);
+  for (const [index, read] of resources.entries())
+    expect(read()).toBe(previousResources[index]);
+  for (const operation of operations) expect(operation).not.toHaveBeenCalled();
 });
 
 it("does not mutate appearance attributes when only the send shortcut changes", async () => {
@@ -539,7 +589,10 @@ it("updates the owning Thread resources when the working directory identity chan
     throw Error("missing replacement Thread");
   const { thread } = state.threadSelection;
   expect(thread.controller).not.toBe(previous);
-  expect(fixture.container.textContent).toContain("/fixture/second");
+  expect(
+    document.querySelector(".thread-tools-content .directory-info")
+      ?.textContent,
+  ).toContain("/fixture/second");
   expect(views.composer.mock.calls.at(-1)?.[0]).toMatchObject({ thread });
   expect(views.files.mock.calls.at(-1)?.[0]).toMatchObject({
     resource: thread.context,
@@ -639,9 +692,10 @@ it("freezes the shell for a real pending project choice without dimming each con
 
 it("still updates localized workbench text when the language context changes", async () => {
   const fixture = await setup();
-  expect(fixture.container.textContent).toContain(
-    i18n.t("ui.conversation.heading"),
-  );
+  expect(
+    document.querySelector(".thread-tools-content .reading-navigation")
+      ?.textContent,
+  ).toContain(i18n.t("ui.conversation.heading"));
   await act(() => fixture.button(i18n.t("app.layout.settings")).click());
   const general = Array.from(
     document.querySelectorAll<HTMLButtonElement>(".settings-navigation button"),
@@ -659,9 +713,10 @@ it("still updates localized workbench text when the language context changes", a
   );
   if (!chinese) throw Error("missing Chinese option");
   await act(async () => chinese.click());
-  expect(fixture.container.textContent).toContain(
-    createI18n("zh-CN").t("ui.conversation.heading"),
-  );
+  expect(
+    document.querySelector(".thread-tools-content .reading-navigation")
+      ?.textContent,
+  ).toContain(createI18n("zh-CN").t("ui.conversation.heading"));
 });
 
 it("applies a preference receipt to the current App after Thread navigation without cancelling either operation", async () => {
