@@ -31,7 +31,7 @@ Main 拥有窗口、Host 监督及受限通道建立；一个 utility SessionHos
 
 ## 生命周期与失败
 
-2026-10-07 T3 基础切片的新增合同：NativeSession 的普通 Error rejection 附带有限 NativeFailureSummary，区分 spawn/protocol/write/timeout/local interruption/unavailable 及输入/请求预算；可信 Host/Main 仅映射固定 code/causeCode，不传播原始 Cause、stderr 或异常全文。每个 Host 的后台等待与 deadline 绑定局部 Scope，scheduled handle 完成即释放；断链结束自动重播但保留待持久确认的 evidence，重播不写 prompt。刷新继续 singleFlight，并在每次 await 后复核 observationVersion/dispatch 身份。取消局部等待不发送 abort，所有业务 unknown/ACK、物理 close/groupStopped 门槛保持不变。
+2026-10-07 T3 基础切片的新增合同：NativeSession 可辨认的原生边界失败以普通 Error rejection 附带有限 NativeFailureSummary，区分 spawn/protocol/write/timeout/local interruption/unavailable 及输入/请求预算；本地编码或应用观察者缺陷保持 unknown 归因。可信 Host/Main 仅映射固定 code/causeCode，不传播原始 Cause、stderr 或异常全文。每个 Host 的后台等待与 deadline 绑定局部 Scope，scheduled handle 完成即释放；断链结束自动重播但保留待持久确认的 evidence，重播不写 prompt。刷新继续 singleFlight，并在每次 await 后复核 observationVersion/dispatch 身份。取消局部等待不发送 abort，所有业务 unknown/ACK、物理 close/groupStopped 门槛保持不变。
 
 确定性回放仅替换 process/stdio 接缝，实际 FrameDecoder、NativeSession、SessionHost、ConversationProjection 及 Main/SQLite 收据事务继续运行；Gate 在入站标记前等待明确释放，同批帧不插入额外 await。测试样本不证明供应商、OS 停止或 GUI；真实进程检查独立保留。目标与证据见 [01](../../../.scratch/t3-foundations/issues/01-native-scope-replay.md)。
 

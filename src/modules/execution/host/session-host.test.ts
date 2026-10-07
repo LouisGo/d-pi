@@ -2,6 +2,7 @@ import { afterEach, expect, it, vi } from "vitest";
 import { ThreadIdSchema } from "../../../shared/identity";
 import type { HostMessage, HostStart } from "../contracts/public";
 import { FrozenSubmissionSchema } from "../contracts/public";
+import { NativeRequestFailure } from "./native/native-request-failure";
 import type {
   NativeObservation,
   NativeSessionOptions,
@@ -33,7 +34,12 @@ vi.mock("./native/native-session", () => ({
     async request(command: string) {
       if (command === "d_pi_subagent_state")
         return { success: true, data: { agents: [] } };
-      if (command === "d_pi_state") return native.controlRequest();
+      if (
+        command === "d_pi_state" ||
+        command === "d_pi_stop" ||
+        command === "d_pi_continue"
+      )
+        return native.controlRequest();
       return {
         success: true,
         data: {
@@ -1094,6 +1100,150 @@ it("bounds unconfirmed evidence, reports cache pressure and only replays facts",
     initial,
   );
   expect(native.writes).toEqual([]);
+  native.observers[0]?.({ kind: "exited" });
+});
+
+it("ends automatic evidence waiting on disconnect while retaining facts for explicit durable replay", async () => {
+  vi.useFakeTimers();
+  const messages: HostMessage[] = [];
+  const host = createSessionHost((message) => messages.push(message), vi.fn());
+  const start: HostStart = {
+    kind: "start",
+    threadId: ThreadIdSchema.parse(crypto.randomUUID()),
+    traceId: crypto.randomUUID(),
+    processInstanceId: crypto.randomUUID(),
+    connectionGeneration: crypto.randomUUID(),
+    configContextId: "fixture",
+    binary: "/fixture/omp",
+    identity: { directory: "/project", device: "1", inode: "2" },
+    environment: {},
+    sessionDirectory: "/sessions",
+  };
+  await host.handle(start);
+  await host.handle({
+    kind: "dispatch",
+    value: FrozenSubmissionSchema.parse({
+      submissionId: crypto.randomUUID(),
+      threadId: start.threadId,
+      traceId: crypto.randomUUID(),
+      requestId: crypto.randomUUID(),
+      revision: 0,
+      text: "frozen",
+      target: {
+        processInstanceId: start.processInstanceId,
+        connectionGeneration: crypto.randomUUID(),
+        configContextId: "fixture",
+        nativeSessionRef: "/sessions/session.jsonl",
+      },
+    }),
+  });
+  const facts = messages.filter((message) => message.kind === "submission");
+  expect(facts).toHaveLength(1);
+  native.observers[0]?.({ kind: "disconnected", reason: "protocol" });
+  messages.length = 0;
+  await vi.advanceTimersByTimeAsync(30000);
+  expect(messages.filter((message) => message.kind === "submission")).toEqual(
+    [],
+  );
+  await host.handle({ kind: "replay-evidence" });
+  expect(messages.filter((message) => message.kind === "submission")).toEqual(
+    facts,
+  );
+  expect(native.writes).toEqual([]);
+  native.observers[0]?.({ kind: "exited" });
+});
+
+it("keeps malformed control data as a protocol failure with the caller trace and unknown operation outcome", async () => {
+  const messages: HostMessage[] = [];
+  const host = createSessionHost((message) => messages.push(message), vi.fn());
+  const start: HostStart = {
+    kind: "start",
+    threadId: ThreadIdSchema.parse(crypto.randomUUID()),
+    traceId: crypto.randomUUID(),
+    processInstanceId: crypto.randomUUID(),
+    connectionGeneration: crypto.randomUUID(),
+    configContextId: "fixture",
+    binary: "/fixture/omp",
+    identity: { directory: "/project", device: "1", inode: "2" },
+    environment: {},
+    sessionDirectory: "/sessions",
+  };
+  await host.handle(start);
+  native.controlRequest.mockResolvedValueOnce({
+    success: true,
+    data: { background: "API_KEY=secret" },
+  });
+  const traceId = crypto.randomUUID();
+  await host.handle({
+    kind: "control",
+    command: {
+      kind: "stop",
+      threadId: ThreadIdSchema.parse(start.threadId),
+      connectionGeneration: start.connectionGeneration,
+      traceId,
+    },
+  });
+  expect(messages).toContainEqual({
+    kind: "operation-result",
+    traceId,
+    connectionGeneration: start.connectionGeneration,
+    operation: "stop",
+    status: "unknown",
+    nativeFailure: { kind: "protocol", operation: "d_pi_stop" },
+  });
+  expect(JSON.stringify(messages)).not.toContain("API_KEY");
+  native.observers[0]?.({ kind: "exited" });
+});
+
+it("preserves the input-budget reason when a frozen prompt write cannot be confirmed", async () => {
+  const messages: HostMessage[] = [];
+  const host = createSessionHost((message) => messages.push(message), vi.fn());
+  const start: HostStart = {
+    kind: "start",
+    threadId: ThreadIdSchema.parse(crypto.randomUUID()),
+    traceId: crypto.randomUUID(),
+    processInstanceId: crypto.randomUUID(),
+    connectionGeneration: crypto.randomUUID(),
+    configContextId: "fixture",
+    binary: "/fixture/omp",
+    identity: { directory: "/project", device: "1", inode: "2" },
+    environment: {},
+    sessionDirectory: "/sessions",
+  };
+  await host.handle(start);
+  const failure = {
+    kind: "write" as const,
+    operation: "write" as const,
+    budget: "input-budget" as const,
+  };
+  const write = vi
+    .spyOn(NativeSession.prototype, "write")
+    .mockImplementationOnce(() => {
+      throw new NativeRequestFailure(failure, "Native input budget exceeded");
+    });
+  await host.handle({
+    kind: "dispatch",
+    value: FrozenSubmissionSchema.parse({
+      submissionId: crypto.randomUUID(),
+      threadId: start.threadId,
+      traceId: crypto.randomUUID(),
+      requestId: crypto.randomUUID(),
+      revision: 0,
+      text: "frozen",
+      target: {
+        processInstanceId: start.processInstanceId,
+        connectionGeneration: start.connectionGeneration,
+        configContextId: "fixture",
+        nativeSessionRef: "/sessions/session.jsonl",
+      },
+    }),
+  });
+  expect(messages).toContainEqual({
+    kind: "interrupted",
+    reason: "write",
+    nativeFailure: failure,
+  });
+  write.mockRestore();
   native.observers[0]?.({ kind: "exited" });
 });
 
