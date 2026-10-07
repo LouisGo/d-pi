@@ -1,0 +1,376 @@
+[
+  {
+    "originalLine": 100,
+    "type": "response_item",
+    "output": [
+      {
+        "type": "input_text",
+        "text": "Script completed\nWall time 1.0 seconds\nOutput:\n"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"93dbb4\",\"wall_time_seconds\":0.885639792,\"exit_code\":1,\"original_token_count\":575,\"output\":\"$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/reading/reading-anchor.test.ts\\n$ tsr generate\\n(node:74074) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency\\n(Use `node --trace-warnings ...` to show where the warning was created)\\nSKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch\\n\\n\\u001b[1m\\u001b[30m\\u001b[46m RUN \\u001b[49m\\u001b[39m\\u001b[22m \\u001b[36mv5.0.2 \\u001b[39m\\u001b[90m/Users/louistation/.codex/worktrees/long-reading-live/d-pi\\u001b[39m\\n\\n \\u001b[31m❯\\u001b[39m src/app/renderer/reading/reading-anchor.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m2 tests\\u001b[22m\\u001b[2m | \\u001b[22m\\u001b[31m1 failed\\u001b[39m\\u001b[2m)\\u001b[22m\\u001b[32m 12\\u001b[2mms\\u001b[22m\\u001b[39m\\n   \\u001b[32m✓\\u001b[39m restores row-relative position across geometry changes and isolates a new source\\u001b[32m 6\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\u001b[31m   \\u001b[31m×\\u001b[31m outer wheel takes ownership before scroll dispatch so an old frame cannot reset the gesture\\u001b[39m\\u001b[32m 5\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\n\\u001b[31m⎯⎯⎯⎯⎯⎯⎯\\u001b[39m\\u001b[1m\\u001b[41m Failed Tests 1 \\u001b[49m\\u001b[22m\\u001b[31m⎯⎯⎯⎯⎯⎯⎯\\u001b[39m\\n\\n\\u001b[41m\\u001b[1m FAIL \\u001b[22m\\u001b[49m src/app/renderer/reading/reading-anchor.test.ts\\u001b[2m > \\u001b[22mouter wheel takes ownership before scroll dispatch so an old frame cannot reset the gesture\\n\\u001b[31m\\u001b[1mAssertionError\\u001b[22m: expected 1 to be +0 // Object.is equality\\u001b[39m\\n\\n\\u001b[32m- Expected\\u001b[39m\\n\\u001b[31m+ Received\\u001b[39m\\n\\n\\u001b[32m- 0\\u001b[39m\\n\\u001b[31m+ 1\\u001b[39m\\n\\n\\u001b[36m \\u001b[2m❯\\u001b[22m src/app/renderer/reading/reading-anchor.test.ts:\\u001b[2m132:33\\u001b[22m\\u001b[39m\\n    \\u001b[90m130|\\u001b[39m     expect(fixture.frames.size).toBe(1);\\n    \\u001b[90m131|\\u001b[39m     fixture.pane.dispatchEvent(new WheelEvent(\\\"wheel\\\", { deltaY: -40, …\\n    \\u001b[90m132|\\u001b[39m     expect(fixture.frames.size).toBe(0);\\n    \\u001b[90m   |\\u001b[39m                                 \\u001b[31m^\\u001b[39m\\n    \\u001b[90m133|\\u001b[39m     fixture.flush();\\n    \\u001b[90m134|\\u001b[39m     fixture.pane.scrollTop = 190;\\n\\n\\u001b[31m\\u001b[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\\u001b[22m\\u001b[39m\\n\\n\\n\\u001b[2m Test Files \\u001b[22m \\u001b[1m\\u001b[31m1 failed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m      Tests \\u001b[22m \\u001b[1m\\u001b[31m1 failed\\u001b[39m\\u001b[22m\\u001b[2m | \\u001b[22m\\u001b[1m\\u001b[32m1 passed\\u001b[39m\\u001b[22m\\u001b[90m (2)\\u001b[39m\\n\\u001b[2m   Start at \\u001b[22m 23:25:45\\n\\u001b[2m   Duration \\u001b[22m 329ms\\u001b[2m (environment 64%, transform 20%, import 10%, tests 5%, worker 1%)\\u001b[22m\\n\\n[ELIFECYCLE] Test failed. See above for more details.\\n\"}"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"5a6280\",\"wall_time_seconds\":0.000005875,\"exit_code\":0,\"original_token_count\":201,\"output\":\"(node:74012) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency\\n(Use `node --trace-warnings ...` to show where the warning was created)\\nSKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch\\n\\n\\u001b[1m\\u001b[30m\\u001b[46m RUN \\u001b[49m\\u001b[39m\\u001b[22m \\u001b[36mv5.0.2 \\u001b[39m\\u001b[90m/Users/louistation/.codex/worktrees/long-reading-live/d-pi\\u001b[39m\\n\\n \\u001b[32m✓\\u001b[39m src/app/renderer/reading/reading-anchor.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m2 tests\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[32m 8\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\n\\u001b[2m Test Files \\u001b[22m \\u001b[1m\\u001b[32m1 passed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m      Tests \\u001b[22m \\u001b[1m\\u001b[32m2 passed\\u001b[39m\\u001b[22m\\u001b[90m (2)\\u001b[39m\\n\\u001b[2m   Start at \\u001b[22m 23:25:40\\n\\u001b[2m   Duration \\u001b[22m 466ms\\u001b[2m (environment 73%, transform 14%, import 11%, tests 2%, worker 1%)\\u001b[22m\\n\\n\"}"
+      }
+    ]
+  },
+  {
+    "originalLine": 107,
+    "type": "response_item",
+    "output": [
+      {
+        "type": "input_text",
+        "text": "Script completed\nWall time 1.0 seconds\nOutput:\n"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"106ab7\",\"wall_time_seconds\":0.889964583,\"exit_code\":0,\"original_token_count\":232,\"output\":\"$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/reading/reading-anchor.test.ts\\n$ tsr generate\\n(node:74175) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency\\n(Use `node --trace-warnings ...` to show where the warning was created)\\nSKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch\\n\\n\\u001b[1m\\u001b[30m\\u001b[46m RUN \\u001b[49m\\u001b[39m\\u001b[22m \\u001b[36mv5.0.2 \\u001b[39m\\u001b[90m/Users/louistation/.codex/worktrees/long-reading-live/d-pi\\u001b[39m\\n\\n \\u001b[32m✓\\u001b[39m src/app/renderer/reading/reading-anchor.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m2 tests\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[32m 7\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\n\\u001b[2m Test Files \\u001b[22m \\u001b[1m\\u001b[32m1 passed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m      Tests \\u001b[22m \\u001b[1m\\u001b[32m2 passed\\u001b[39m\\u001b[22m\\u001b[90m (2)\\u001b[39m\\n\\u001b[2m   Start at \\u001b[22m 23:26:07\\n\\u001b[2m   Duration \\u001b[22m 319ms\\u001b[2m (environment 62%, transform 21%, import 11%, tests 3%, worker 2%)\\u001b[22m\\n\\n\"}"
+      }
+    ]
+  },
+  {
+    "originalLine": 112,
+    "type": "response_item",
+    "output": [
+      {
+        "type": "input_text",
+        "text": "Script completed\nWall time 1.1 seconds\nOutput:\n"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"9f51a2\",\"wall_time_seconds\":0.899714541,\"exit_code\":1,\"original_token_count\":601,\"output\":\"$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/reading/reading-anchor.test.ts\\n$ tsr generate\\n(node:74346) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency\\n(Use `node --trace-warnings ...` to show where the warning was created)\\nSKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch\\n\\n\\u001b[1m\\u001b[30m\\u001b[46m RUN \\u001b[49m\\u001b[39m\\u001b[22m \\u001b[36mv5.0.2 \\u001b[39m\\u001b[90m/Users/louistation/.codex/worktrees/long-reading-live/d-pi\\u001b[39m\\n\\n \\u001b[31m❯\\u001b[39m src/app/renderer/reading/reading-anchor.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m3 tests\\u001b[22m\\u001b[2m | \\u001b[22m\\u001b[31m1 failed\\u001b[39m\\u001b[2m)\\u001b[22m\\u001b[32m 12\\u001b[2mms\\u001b[22m\\u001b[39m\\n   \\u001b[32m✓\\u001b[39m restores row-relative position across geometry changes and isolates a new source\\u001b[32m 5\\u001b[2mms\\u001b[22m\\u001b[39m\\n   \\u001b[32m✓\\u001b[39m outer wheel takes ownership before scroll dispatch so an old frame cannot reset the gesture\\u001b[32m 1\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\u001b[31m   \\u001b[31m×\\u001b[31m lets a nested raw region consume wheel without cancelling the outer restoration\\u001b[39m\\u001b[32m 5\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\n\\u001b[31m⎯⎯⎯⎯⎯⎯⎯\\u001b[39m\\u001b[1m\\u001b[41m Failed Tests 1 \\u001b[49m\\u001b[22m\\u001b[31m⎯⎯⎯⎯⎯⎯⎯\\u001b[39m\\n\\n\\u001b[41m\\u001b[1m FAIL \\u001b[22m\\u001b[49m src/app/renderer/reading/reading-anchor.test.ts\\u001b[2m > \\u001b[22mlets a nested raw region consume wheel without cancelling the outer restoration\\n\\u001b[31m\\u001b[1mAssertionError\\u001b[22m: expected +0 to be 1 // Object.is equality\\u001b[39m\\n\\n\\u001b[32m- Expected\\u001b[39m\\n\\u001b[31m+ Received\\u001b[39m\\n\\n\\u001b[32m- 1\\u001b[39m\\n\\u001b[31m+ 0\\u001b[39m\\n\\n\\u001b[36m \\u001b[2m❯\\u001b[22m src/app/renderer/reading/reading-anchor.test.ts:\\u001b[2m151:33\\u001b[22m\\u001b[39m\\n    \\u001b[90m149|\\u001b[39m     raw.scrollTop = 40;\\n    \\u001b[90m150|\\u001b[39m     raw.dispatchEvent(new WheelEvent(\\\"wheel\\\", { deltaY: 30, bubbles: t…\\n    \\u001b[90m151|\\u001b[39m     expect(fixture.frames.size).toBe(1);\\n    \\u001b[90m   |\\u001b[39m                                 \\u001b[31m^\\u001b[39m\\n    \\u001b[90m152|\\u001b[39m     fixture.flush();\\n    \\u001b[90m153|\\u001b[39m     expect(fixture.pane.scrollTop).toBe(230);\\n\\n\\u001b[31m\\u001b[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\\u001b[22m\\u001b[39m\\n\\n\\n\\u001b[2m Test Files \\u001b[22m \\u001b[1m\\u001b[31m1 failed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m      Tests \\u001b[22m \\u001b[1m\\u001b[31m1 failed\\u001b[39m\\u001b[22m\\u001b[2m | \\u001b[22m\\u001b[1m\\u001b[32m2 passed\\u001b[39m\\u001b[22m\\u001b[90m (3)\\u001b[39m\\n\\u001b[2m   Start at \\u001b[22m 23:26:17\\n\\u001b[2m   Duration \\u001b[22m 325ms\\u001b[2m (environment 63%, transform 20%, import 10%, tests 5%, worker 1%)\\u001b[22m\\n\\n[ELIFECYCLE] Test failed. See above for more details.\\n\"}"
+      }
+    ]
+  },
+  {
+    "originalLine": 117,
+    "type": "response_item",
+    "output": [
+      {
+        "type": "input_text",
+        "text": "Script completed\nWall time 1.1 seconds\nOutput:\n"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"b87b87\",\"wall_time_seconds\":0.913863583,\"exit_code\":0,\"original_token_count\":232,\"output\":\"$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/reading/reading-anchor.test.ts\\n$ tsr generate\\n(node:74422) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency\\n(Use `node --trace-warnings ...` to show where the warning was created)\\nSKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch\\n\\n\\u001b[1m\\u001b[30m\\u001b[46m RUN \\u001b[49m\\u001b[39m\\u001b[22m \\u001b[36mv5.0.2 \\u001b[39m\\u001b[90m/Users/louistation/.codex/worktrees/long-reading-live/d-pi\\u001b[39m\\n\\n \\u001b[32m✓\\u001b[39m src/app/renderer/reading/reading-anchor.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m3 tests\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[32m 10\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\n\\u001b[2m Test Files \\u001b[22m \\u001b[1m\\u001b[32m1 passed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m      Tests \\u001b[22m \\u001b[1m\\u001b[32m3 passed\\u001b[39m\\u001b[22m\\u001b[90m (3)\\u001b[39m\\n\\u001b[2m   Start at \\u001b[22m 23:26:29\\n\\u001b[2m   Duration \\u001b[22m 318ms\\u001b[2m (environment 63%, transform 21%, import 11%, tests 4%, worker 1%)\\u001b[22m\\n\\n\"}"
+      }
+    ]
+  },
+  {
+    "originalLine": 125,
+    "type": "response_item",
+    "output": [
+      {
+        "type": "input_text",
+        "text": "Script completed\nWall time 1.1 seconds\nOutput:\n"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"dd0bce\",\"wall_time_seconds\":0.895674875,\"exit_code\":1,\"original_token_count\":647,\"output\":\"$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/reading/reading-anchor.test.ts\\n$ tsr generate\\n(node:74728) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency\\n(Use `node --trace-warnings ...` to show where the warning was created)\\nSKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch\\n\\n\\u001b[1m\\u001b[30m\\u001b[46m RUN \\u001b[49m\\u001b[39m\\u001b[22m \\u001b[36mv5.0.2 \\u001b[39m\\u001b[90m/Users/louistation/.codex/worktrees/long-reading-live/d-pi\\u001b[39m\\n\\n \\u001b[31m❯\\u001b[39m src/app/renderer/reading/reading-anchor.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m4 tests\\u001b[22m\\u001b[2m | \\u001b[22m\\u001b[31m1 failed\\u001b[39m\\u001b[2m)\\u001b[22m\\u001b[32m 15\\u001b[2mms\\u001b[22m\\u001b[39m\\n   \\u001b[32m✓\\u001b[39m restores row-relative position across geometry changes and isolates a new source\\u001b[32m 6\\u001b[2mms\\u001b[22m\\u001b[39m\\n   \\u001b[32m✓\\u001b[39m outer wheel takes ownership before scroll dispatch so an old frame cannot reset the gesture\\u001b[32m 1\\u001b[2mms\\u001b[22m\\u001b[39m\\n   \\u001b[32m✓\\u001b[39m lets a nested raw region consume wheel without cancelling the outer restoration\\u001b[32m 4\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\u001b[31m   \\u001b[31m×\\u001b[31m keyboard and scrollbar gestures cancel queued positioning, but editing and IME keys do not\\u001b[39m\\u001b[32m 4\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\n\\u001b[31m⎯⎯⎯⎯⎯⎯⎯\\u001b[39m\\u001b[1m\\u001b[41m Failed Tests 1 \\u001b[49m\\u001b[22m\\u001b[31m⎯⎯⎯⎯⎯⎯⎯\\u001b[39m\\n\\n\\u001b[41m\\u001b[1m FAIL \\u001b[22m\\u001b[49m src/app/renderer/reading/reading-anchor.test.ts\\u001b[2m > \\u001b[22mkeyboard and scrollbar gestures cancel queued positioning, but editing and IME keys do not\\n\\u001b[31m\\u001b[1mAssertionError\\u001b[22m: expected 1 to be +0 // Object.is equality\\u001b[39m\\n\\n\\u001b[32m- Expected\\u001b[39m\\n\\u001b[31m+ Received\\u001b[39m\\n\\n\\u001b[32m- 0\\u001b[39m\\n\\u001b[31m+ 1\\u001b[39m\\n\\n\\u001b[36m \\u001b[2m❯\\u001b[22m src/app/renderer/reading/reading-anchor.test.ts:\\u001b[2m166:33\\u001b[22m\\u001b[39m\\n    \\u001b[90m164|\\u001b[39m     expect(fixture.frames.size).toBe(1);\\n    \\u001b[90m165|\\u001b[39m     fixture.pane.dispatchEvent(new KeyboardEvent(\\\"keydown\\\", { key: \\\"Pa…\\n    \\u001b[90m166|\\u001b[39m     expect(fixture.frames.size).toBe(0);\\n    \\u001b[90m   |\\u001b[39m                                 \\u001b[31m^\\u001b[39m\\n    \\u001b[90m167|\\u001b[39m     fixture.grow();\\n    \\u001b[90m168|\\u001b[39m     fixture.pane.dispatchEvent(new PointerEvent(\\\"pointerdown\\\", { bubbl…\\n\\n\\u001b[31m\\u001b[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\\u001b[22m\\u001b[39m\\n\\n\\n\\u001b[2m Test Files \\u001b[22m \\u001b[1m\\u001b[31m1 failed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m      Tests \\u001b[22m \\u001b[1m\\u001b[31m1 failed\\u001b[39m\\u001b[22m\\u001b[2m | \\u001b[22m\\u001b[1m\\u001b[32m3 passed\\u001b[39m\\u001b[22m\\u001b[90m (4)\\u001b[39m\\n\\u001b[2m   Start at \\u001b[22m 23:27:23\\n\\u001b[2m   Duration \\u001b[22m 321ms\\u001b[2m (environment 62%, transform 20%, import 11%, tests 6%, worker 1%)\\u001b[22m\\n\\n[ELIFECYCLE] Test failed. See above for more details.\\n\"}"
+      }
+    ]
+  },
+  {
+    "originalLine": 130,
+    "type": "response_item",
+    "output": [
+      {
+        "type": "input_text",
+        "text": "Script completed\nWall time 1.1 seconds\nOutput:\n"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"3de5d6\",\"wall_time_seconds\":0.931257833,\"exit_code\":0,\"original_token_count\":232,\"output\":\"$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/reading/reading-anchor.test.ts\\n$ tsr generate\\n(node:74847) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency\\n(Use `node --trace-warnings ...` to show where the warning was created)\\nSKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch\\n\\n\\u001b[1m\\u001b[30m\\u001b[46m RUN \\u001b[49m\\u001b[39m\\u001b[22m \\u001b[36mv5.0.2 \\u001b[39m\\u001b[90m/Users/louistation/.codex/worktrees/long-reading-live/d-pi\\u001b[39m\\n\\n \\u001b[32m✓\\u001b[39m src/app/renderer/reading/reading-anchor.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m4 tests\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[32m 14\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\n\\u001b[2m Test Files \\u001b[22m \\u001b[1m\\u001b[32m1 passed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m      Tests \\u001b[22m \\u001b[1m\\u001b[32m4 passed\\u001b[39m\\u001b[22m\\u001b[90m (4)\\u001b[39m\\n\\u001b[2m   Start at \\u001b[22m 23:27:38\\n\\u001b[2m   Duration \\u001b[22m 335ms\\u001b[2m (environment 62%, transform 21%, import 11%, tests 5%, worker 1%)\\u001b[22m\\n\\n\"}"
+      }
+    ]
+  },
+  {
+    "originalLine": 137,
+    "type": "response_item",
+    "output": [
+      {
+        "type": "input_text",
+        "text": "Script completed\nWall time 1.1 seconds\nOutput:\n"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"dad126\",\"wall_time_seconds\":0.898430208,\"exit_code\":1,\"original_token_count\":671,\"output\":\"$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/reading/reading-anchor.test.ts\\n$ tsr generate\\n(node:74947) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency\\n(Use `node --trace-warnings ...` to show where the warning was created)\\nSKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch\\n\\n\\u001b[1m\\u001b[30m\\u001b[46m RUN \\u001b[49m\\u001b[39m\\u001b[22m \\u001b[36mv5.0.2 \\u001b[39m\\u001b[90m/Users/louistation/.codex/worktrees/long-reading-live/d-pi\\u001b[39m\\n\\n \\u001b[31m❯\\u001b[39m src/app/renderer/reading/reading-anchor.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m5 tests\\u001b[22m\\u001b[2m | \\u001b[22m\\u001b[31m1 failed\\u001b[39m\\u001b[2m)\\u001b[22m\\u001b[32m 17\\u001b[2mms\\u001b[22m\\u001b[39m\\n   \\u001b[32m✓\\u001b[39m restores row-relative position across geometry changes and isolates a new source\\u001b[32m 7\\u001b[2mms\\u001b[22m\\u001b[39m\\n   \\u001b[32m✓\\u001b[39m outer wheel takes ownership before scroll dispatch so an old frame cannot reset the gesture\\u001b[32m 1\\u001b[2mms\\u001b[22m\\u001b[39m\\n   \\u001b[32m✓\\u001b[39m lets a nested raw region consume wheel without cancelling the outer restoration\\u001b[32m 3\\u001b[2mms\\u001b[22m\\u001b[39m\\n   \\u001b[32m✓\\u001b[39m keyboard and scrollbar gestures cancel queued positioning, but editing and IME keys do not\\u001b[32m 2\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\u001b[31m   \\u001b[31m×\\u001b[31m explicit list bottom is immediate, cancels old restoration, preserves body page, and follows later output\\u001b[39m\\u001b[32m 2\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\n\\u001b[31m⎯⎯⎯⎯⎯⎯⎯\\u001b[39m\\u001b[1m\\u001b[41m Failed Tests 1 \\u001b[49m\\u001b[22m\\u001b[31m⎯⎯⎯⎯⎯⎯⎯\\u001b[39m\\n\\n\\u001b[41m\\u001b[1m FAIL \\u001b[22m\\u001b[49m src/app/renderer/reading/reading-anchor.test.ts\\u001b[2m > \\u001b[22mexplicit list bottom is immediate, cancels old restoration, preserves body page, and follows later output\\n\\u001b[31m\\u001b[1mTypeError\\u001b[22m: fixture.adapter.subscribe is not a function\\u001b[39m\\n\\u001b[36m \\u001b[2m❯\\u001b[22m src/app/renderer/reading/reading-anchor.test.ts:\\u001b[2m179:37\\u001b[22m\\u001b[39m\\n    \\u001b[90m177|\\u001b[39m     fixture.positions.rememberBody(\\\"body-a\\\", { page: 2, scrollTop: 37 …\\n    \\u001b[90m178|\\u001b[39m     fixture.flush(); fixture.grow();\\n    \\u001b[90m179|\\u001b[39m     const release = fixture.adapter.subscribe(listener);\\n    \\u001b[90m   |\\u001b[39m                                     \\u001b[31m^\\u001b[39m\\n    \\u001b[90m180|\\u001b[39m     expect(fixture.adapter.getSnapshot()).toBe(false);\\n    \\u001b[90m181|\\u001b[39m     fixture.adapter.toBottom();\\n\\n\\u001b[31m\\u001b[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\\u001b[22m\\u001b[39m\\n\\n\\n\\u001b[2m Test Files \\u001b[22m \\u001b[1m\\u001b[31m1 failed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m      Tests \\u001b[22m \\u001b[1m\\u001b[31m1 failed\\u001b[39m\\u001b[22m\\u001b[2m | \\u001b[22m\\u001b[1m\\u001b[32m4 passed\\u001b[39m\\u001b[22m\\u001b[90m (5)\\u001b[39m\\n\\u001b[2m   Start at \\u001b[22m 23:27:53\\n\\u001b[2m   Duration \\u001b[22m 363ms\\u001b[2m (environment 62%, transform 20%, import 11%, tests 6%, worker 1%)\\u001b[22m\\n\\n[ELIFECYCLE] Test failed. See above for more details.\\n\"}"
+      }
+    ]
+  },
+  {
+    "originalLine": 151,
+    "type": "response_item",
+    "output": [
+      {
+        "type": "input_text",
+        "text": "Script completed\nWall time 1.0 seconds\nOutput:\n"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"616d3d\",\"wall_time_seconds\":0.000013417,\"exit_code\":0,\"original_token_count\":97,\"output\":\" \\u001b[32m✓\\u001b[39m src/app/renderer/reading/reading-anchor.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m5 tests\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[32m 13\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\n\\u001b[2m Test Files \\u001b[22m \\u001b[1m\\u001b[32m1 passed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m      Tests \\u001b[22m \\u001b[1m\\u001b[32m5 passed\\u001b[39m\\u001b[22m\\u001b[90m (5)\\u001b[39m\\n\\u001b[2m   Start at \\u001b[22m 23:28:14\\n\\u001b[2m   Duration \\u001b[22m 405ms\\u001b[2m (environment 69%, transform 16%, import 10%, tests 4%, worker 1%)\\u001b[22m\\n\\n\"}"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"8c0bbf\",\"wall_time_seconds\":0.833573125,\"exit_code\":0,\"original_token_count\":232,\"output\":\"$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/reading/reading-anchor.test.ts\\n$ tsr generate\\n(node:75233) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency\\n(Use `node --trace-warnings ...` to show where the warning was created)\\nSKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch\\n\\n\\u001b[1m\\u001b[30m\\u001b[46m RUN \\u001b[49m\\u001b[39m\\u001b[22m \\u001b[36mv5.0.2 \\u001b[39m\\u001b[90m/Users/louistation/.codex/worktrees/long-reading-live/d-pi\\u001b[39m\\n\\n \\u001b[32m✓\\u001b[39m src/app/renderer/reading/reading-anchor.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m6 tests\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[32m 14\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\n\\u001b[2m Test Files \\u001b[22m \\u001b[1m\\u001b[32m1 passed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m      Tests \\u001b[22m \\u001b[1m\\u001b[32m6 passed\\u001b[39m\\u001b[22m\\u001b[90m (6)\\u001b[39m\\n\\u001b[2m   Start at \\u001b[22m 23:28:27\\n\\u001b[2m   Duration \\u001b[22m 306ms\\u001b[2m (environment 61%, transform 21%, import 11%, tests 6%, worker 1%)\\u001b[22m\\n\\n\"}"
+      }
+    ]
+  },
+  {
+    "originalLine": 184,
+    "type": "response_item",
+    "output": [
+      {
+        "type": "input_text",
+        "text": "Script completed\nWall time 1.0 seconds\nOutput:\n"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"43e0b6\",\"wall_time_seconds\":0.869451542,\"exit_code\":1,\"original_token_count\":534,\"output\":\"$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/reading/live-reading.test.ts\\n$ tsr generate\\n(node:75559) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency\\n(Use `node --trace-warnings ...` to show where the warning was created)\\nSKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch\\n\\n\\u001b[1m\\u001b[30m\\u001b[46m RUN \\u001b[49m\\u001b[39m\\u001b[22m \\u001b[36mv5.0.2 \\u001b[39m\\u001b[90m/Users/louistation/.codex/worktrees/long-reading-live/d-pi\\u001b[39m\\n\\n \\u001b[31m❯\\u001b[39m src/app/renderer/reading/live-reading.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m1 test\\u001b[22m\\u001b[2m | \\u001b[22m\\u001b[31m1 failed\\u001b[39m\\u001b[2m)\\u001b[22m\\u001b[32m 7\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\u001b[31m   \\u001b[31m×\\u001b[31m announces same-entity body output while away without requiring new message IDs\\u001b[39m\\u001b[32m 6\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\n\\u001b[31m⎯⎯⎯⎯⎯⎯⎯\\u001b[39m\\u001b[1m\\u001b[41m Failed Tests 1 \\u001b[49m\\u001b[22m\\u001b[31m⎯⎯⎯⎯⎯⎯⎯\\u001b[39m\\n\\n\\u001b[41m\\u001b[1m FAIL \\u001b[22m\\u001b[49m src/app/renderer/reading/live-reading.test.ts\\u001b[2m > \\u001b[22mannounces same-entity body output while away without requiring new message IDs\\n\\u001b[31m\\u001b[1mAssertionError\\u001b[22m: expected last \\\"vi.fn()\\\" call to have been called with [ true ]\\u001b[39m\\n\\n\\u001b[32m- Expected\\u001b[39m\\n\\u001b[31m+ Received\\u001b[39m\\n\\n\\u001b[2m  [\\u001b[22m\\n\\u001b[32m-   true,\\u001b[39m\\n\\u001b[31m+   false,\\u001b[39m\\n\\u001b[2m  ]\\u001b[22m\\n\\n\\u001b[36m \\u001b[2m❯\\u001b[22m src/app/renderer/reading/live-reading.test.ts:\\u001b[2m22:24\\u001b[22m\\u001b[39m\\n    \\u001b[90m 20|\\u001b[39m   try {\\n    \\u001b[90m 21|\\u001b[39m     f.deliver({ kind: \\\"update\\\", connectionGeneration: \\\"gen-a\\\", seq: 1,…\\n    \\u001b[90m 22|\\u001b[39m     expect(f.onChange).toHaveBeenLastCalledWith(true);\\n    \\u001b[90m   |\\u001b[39m                        \\u001b[31m^\\u001b[39m\\n    \\u001b[90m 23|\\u001b[39m     f.end(true);\\n    \\u001b[90m 24|\\u001b[39m     expect(f.onChange).toHaveBeenLastCalledWith(false);\\n\\n\\u001b[31m\\u001b[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\\u001b[22m\\u001b[39m\\n\\n\\n\\u001b[2m Test Files \\u001b[22m \\u001b[1m\\u001b[31m1 failed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m      Tests \\u001b[22m \\u001b[1m\\u001b[31m1 failed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m   Start at \\u001b[22m 23:29:31\\n\\u001b[2m   Duration \\u001b[22m 207ms\\u001b[2m (transform 51%, import 39%, tests 6%, worker 3%)\\u001b[22m\\n\\n[ELIFECYCLE] Test failed. See above for more details.\\n\"}"
+      }
+    ]
+  },
+  {
+    "originalLine": 191,
+    "type": "response_item",
+    "output": [
+      {
+        "type": "input_text",
+        "text": "Script completed\nWall time 0.9 seconds\nOutput:\n"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"ff3b61\",\"wall_time_seconds\":0.730729875,\"exit_code\":0,\"original_token_count\":227,\"output\":\"$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/reading/live-reading.test.ts\\n$ tsr generate\\n(node:75681) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency\\n(Use `node --trace-warnings ...` to show where the warning was created)\\nSKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch\\n\\n\\u001b[1m\\u001b[30m\\u001b[46m RUN \\u001b[49m\\u001b[39m\\u001b[22m \\u001b[36mv5.0.2 \\u001b[39m\\u001b[90m/Users/louistation/.codex/worktrees/long-reading-live/d-pi\\u001b[39m\\n\\n \\u001b[32m✓\\u001b[39m src/app/renderer/reading/live-reading.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m1 test\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[32m 3\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\n\\u001b[2m Test Files \\u001b[22m \\u001b[1m\\u001b[32m1 passed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m      Tests \\u001b[22m \\u001b[1m\\u001b[32m1 passed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m   Start at \\u001b[22m 23:29:46\\n\\u001b[2m   Duration \\u001b[22m 154ms\\u001b[2m (transform 60%, import 33%, worker 3%, tests 3%)\\u001b[22m\\n\\n\"}"
+      }
+    ]
+  },
+  {
+    "originalLine": 198,
+    "type": "response_item",
+    "output": [
+      {
+        "type": "input_text",
+        "text": "Script completed\nWall time 1.0 seconds\nOutput:\n"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"e61fe5\",\"wall_time_seconds\":0.811382708,\"exit_code\":0,\"original_token_count\":227,\"output\":\"$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/reading/live-reading.test.ts\\n$ tsr generate\\n(node:75800) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency\\n(Use `node --trace-warnings ...` to show where the warning was created)\\nSKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch\\n\\n\\u001b[1m\\u001b[30m\\u001b[46m RUN \\u001b[49m\\u001b[39m\\u001b[22m \\u001b[36mv5.0.2 \\u001b[39m\\u001b[90m/Users/louistation/.codex/worktrees/long-reading-live/d-pi\\u001b[39m\\n\\n \\u001b[32m✓\\u001b[39m src/app/renderer/reading/live-reading.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m4 tests\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[32m 4\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\n\\u001b[2m Test Files \\u001b[22m \\u001b[1m\\u001b[32m1 passed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m      Tests \\u001b[22m \\u001b[1m\\u001b[32m4 passed\\u001b[39m\\u001b[22m\\u001b[90m (4)\\u001b[39m\\n\\u001b[2m   Start at \\u001b[22m 23:30:20\\n\\u001b[2m   Duration \\u001b[22m 156ms\\u001b[2m (transform 60%, import 33%, tests 4%, worker 3%)\\u001b[22m\\n\\n\"}"
+      }
+    ]
+  },
+  {
+    "originalLine": 237,
+    "type": "response_item",
+    "output": [
+      {
+        "type": "input_text",
+        "text": "Script completed\nWall time 1.2 seconds\nOutput:\n"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"d3d508\",\"wall_time_seconds\":0.000006458,\"exit_code\":1,\"original_token_count\":408,\"output\":\" \\u001b[31m❯\\u001b[39m src/app/renderer/reading/reading-pane.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m1 test\\u001b[22m\\u001b[2m | \\u001b[22m\\u001b[31m1 failed\\u001b[39m\\u001b[2m)\\u001b[22m\\u001b[32m 37\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\u001b[31m   \\u001b[31m×\\u001b[31m shows a reachable list-bottom action and a new-output prompt for same-entity appends without turning raw segments\\u001b[39m\\u001b[32m 37\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\n\\u001b[31m⎯⎯⎯⎯⎯⎯⎯\\u001b[39m\\u001b[1m\\u001b[41m Failed Tests 1 \\u001b[49m\\u001b[22m\\u001b[31m⎯⎯⎯⎯⎯⎯⎯\\u001b[39m\\n\\n\\u001b[41m\\u001b[1m FAIL \\u001b[22m\\u001b[49m src/app/renderer/reading/reading-pane.test.ts\\u001b[2m > \\u001b[22mshows a reachable list-bottom action and a new-output prompt for same-entity appends without turning raw segments\\n\\u001b[31m\\u001b[1mAssertionError\\u001b[22m: expected undefined to be defined\\u001b[39m\\n\\u001b[36m \\u001b[2m❯\\u001b[22m src/app/renderer/reading/reading-pane.test.ts:\\u001b[2m38:20\\u001b[22m\\u001b[39m\\n    \\u001b[90m 36|\\u001b[39m     pane.scrollTop = 230; await act(() => pane.dispatchEvent(new Event…\\n    \\u001b[90m 37|\\u001b[39m     const bottom = [...host.querySelectorAll(\\\"button\\\")].find((node) =>…\\n    \\u001b[90m 38|\\u001b[39m     expect(bottom).toBeDefined();\\n    \\u001b[90m   |\\u001b[39m                    \\u001b[31m^\\u001b[39m\\n    \\u001b[90m 39|\\u001b[39m     expect(host.textContent).not.toContain(\\\"New output\\\");\\n    \\u001b[90m 40|\\u001b[39m     await act(() => deliver({ kind: \\\"update\\\", connectionGeneration: \\\"h…\\n\\n\\u001b[31m\\u001b[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\\u001b[22m\\u001b[39m\\n\\n\\n\\u001b[2m Test Files \\u001b[22m \\u001b[1m\\u001b[31m1 failed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m      Tests \\u001b[22m \\u001b[1m\\u001b[31m1 failed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m   Start at \\u001b[22m 23:31:47\\n\\u001b[2m   Duration \\u001b[22m 2.80s\\u001b[2m (import 82%, environment 9%, transform 7%, tests 1%)\\u001b[22m\\n\\n[ELIFECYCLE] Test failed. See above for more details.\\n\"}"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"f857ed\",\"wall_time_seconds\":1.001686083,\"session_id\":6586,\"original_token_count\":135,\"output\":\"$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/reading/reading-pane.test.ts\\n$ tsr generate\\n(node:76834) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency\\n(Use `node --trace-warnings ...` to show where the warning was created)\\nSKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch\\n\\n\\u001b[1m\\u001b[30m\\u001b[46m RUN \\u001b[49m\\u001b[39m\\u001b[22m \\u001b[36mv5.0.2 \\u001b[39m\\u001b[90m/Users/louistation/.codex/worktrees/long-reading-live/d-pi\\u001b[39m\\n\\n\"}"
+      }
+    ]
+  },
+  {
+    "originalLine": 244,
+    "type": "response_item",
+    "output": [
+      {
+        "type": "input_text",
+        "text": "Script completed\nWall time 1.2 seconds\nOutput:\n"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"af5045\",\"wall_time_seconds\":0.000009292,\"exit_code\":0,\"original_token_count\":94,\"output\":\" \\u001b[32m✓\\u001b[39m src/app/renderer/reading/reading-pane.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m1 test\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[32m 43\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\n\\u001b[2m Test Files \\u001b[22m \\u001b[1m\\u001b[32m1 passed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m      Tests \\u001b[22m \\u001b[1m\\u001b[32m1 passed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m   Start at \\u001b[22m 23:32:12\\n\\u001b[2m   Duration \\u001b[22m 1.78s\\u001b[2m (import 77%, transform 12%, environment 8%, tests 3%)\\u001b[22m\\n\\n\"}"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"b59a84\",\"wall_time_seconds\":1.001975792,\"session_id\":98013,\"original_token_count\":11,\"output\":\"$ tsc --noEmit -p tsconfig.renderer.json\\n\"}"
+      }
+    ]
+  },
+  {
+    "originalLine": 290,
+    "type": "response_item",
+    "output": [
+      {
+        "type": "input_text",
+        "text": "Script completed\nWall time 0.0 seconds\nOutput:\n"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"baa365\",\"wall_time_seconds\":0.000009916,\"exit_code\":1,\"original_token_count\":383,\"output\":\" \\u001b[31m❯\\u001b[39m src/app/renderer/workbench/thread-workbench.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m1 test\\u001b[22m\\u001b[2m | \\u001b[22m\\u001b[31m1 failed\\u001b[39m\\u001b[2m)\\u001b[22m\\u001b[32m 63\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\u001b[31m   \\u001b[31m×\\u001b[31m keeps an explicitly located failure receipt after its disclosure schedules content restoration\\u001b[39m\\u001b[32m 62\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\n\\u001b[31m⎯⎯⎯⎯⎯⎯⎯\\u001b[39m\\u001b[1m\\u001b[41m Failed Tests 1 \\u001b[49m\\u001b[22m\\u001b[31m⎯⎯⎯⎯⎯⎯⎯\\u001b[39m\\n\\n\\u001b[41m\\u001b[1m FAIL \\u001b[22m\\u001b[49m src/app/renderer/workbench/thread-workbench.test.ts\\u001b[2m > \\u001b[22mkeeps an explicitly located failure receipt after its disclosure schedules content restoration\\n\\u001b[31m\\u001b[1mAssertionError\\u001b[22m: expected 50 to be 600 // Object.is equality\\u001b[39m\\n\\n\\u001b[32m- Expected\\u001b[39m\\n\\u001b[31m+ Received\\u001b[39m\\n\\n\\u001b[32m- 600\\u001b[39m\\n\\u001b[31m+ 50\\u001b[39m\\n\\n\\u001b[36m \\u001b[2m❯\\u001b[22m src/app/renderer/workbench/thread-workbench.test.ts:\\u001b[2m50:28\\u001b[22m\\u001b[39m\\n    \\u001b[90m 48|\\u001b[39m     expect(pane.scrollTop).toBe(600);\\n    \\u001b[90m 49|\\u001b[39m     await f.flush();\\n    \\u001b[90m 50|\\u001b[39m     expect(pane.scrollTop).toBe(600);\\n    \\u001b[90m   |\\u001b[39m                            \\u001b[31m^\\u001b[39m\\n    \\u001b[90m 51|\\u001b[39m   } finally { await f.cleanup(); }\\n    \\u001b[90m 52|\\u001b[39m });\\n\\n\\u001b[31m\\u001b[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\\u001b[22m\\u001b[39m\\n\\n\\n\\u001b[2m Test Files \\u001b[22m \\u001b[1m\\u001b[31m1 failed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m      Tests \\u001b[22m \\u001b[1m\\u001b[31m1 failed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m   Start at \\u001b[22m 23:34:54\\n\\u001b[2m   Duration \\u001b[22m 3.53s\\u001b[2m (import 79%, transform 11%, environment 8%, tests 2%)\\u001b[22m\\n\\n[ELIFECYCLE] Test failed. See above for more details.\\n\"}"
+      }
+    ]
+  },
+  {
+    "originalLine": 308,
+    "type": "response_item",
+    "output": [
+      {
+        "type": "input_text",
+        "text": "Script completed\nWall time 1.2 seconds\nOutput:\n"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"a8de9e\",\"wall_time_seconds\":0.000012833,\"exit_code\":0,\"original_token_count\":95,\"output\":\" \\u001b[32m✓\\u001b[39m src/app/renderer/workbench/thread-workbench.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m1 test\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[32m 60\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\n\\u001b[2m Test Files \\u001b[22m \\u001b[1m\\u001b[32m1 passed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m      Tests \\u001b[22m \\u001b[1m\\u001b[32m1 passed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m   Start at \\u001b[22m 23:35:33\\n\\u001b[2m   Duration \\u001b[22m 1.72s\\u001b[2m (import 65%, transform 21%, environment 9%, tests 4%)\\u001b[22m\\n\\n\"}"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"7cc0ff\",\"wall_time_seconds\":1.002186292,\"session_id\":88154,\"original_token_count\":136,\"output\":\"$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/workbench/thread-workbench.test.ts\\n$ tsr generate\\n(node:79087) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency\\n(Use `node --trace-warnings ...` to show where the warning was created)\\nSKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch\\n\\n\\u001b[1m\\u001b[30m\\u001b[46m RUN \\u001b[49m\\u001b[39m\\u001b[22m \\u001b[36mv5.0.2 \\u001b[39m\\u001b[90m/Users/louistation/.codex/worktrees/long-reading-live/d-pi\\u001b[39m\\n\\n\"}"
+      }
+    ]
+  },
+  {
+    "originalLine": 315,
+    "type": "response_item",
+    "output": [
+      {
+        "type": "input_text",
+        "text": "Script completed\nWall time 1.2 seconds\nOutput:\n"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"389c44\",\"wall_time_seconds\":0.000007125,\"exit_code\":1,\"original_token_count\":456,\"output\":\" \\u001b[31m❯\\u001b[39m src/app/renderer/workbench/thread-workbench.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m2 tests\\u001b[22m\\u001b[2m | \\u001b[22m\\u001b[31m1 failed\\u001b[39m\\u001b[2m)\\u001b[22m\\u001b[32m 81\\u001b[2mms\\u001b[22m\\u001b[39m\\n   \\u001b[32m✓\\u001b[39m keeps an explicitly located failure receipt after its disclosure schedules content restoration\\u001b[32m 64\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\u001b[31m   \\u001b[31m×\\u001b[31m lets a newer outer reading gesture cancel a queued attention location before it can move focus or scroll\\u001b[39m\\u001b[32m 17\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\n\\u001b[31m⎯⎯⎯⎯⎯⎯⎯\\u001b[39m\\u001b[1m\\u001b[41m Failed Tests 1 \\u001b[49m\\u001b[22m\\u001b[31m⎯⎯⎯⎯⎯⎯⎯\\u001b[39m\\n\\n\\u001b[41m\\u001b[1m FAIL \\u001b[22m\\u001b[49m src/app/renderer/workbench/thread-workbench.test.ts\\u001b[2m > \\u001b[22mlets a newer outer reading gesture cancel a queued attention location before it can move focus or scroll\\n\\u001b[31m\\u001b[1mAssertionError\\u001b[22m: expected 600 to be 200 // Object.is equality\\u001b[39m\\n\\n\\u001b[32m- Expected\\u001b[39m\\n\\u001b[31m+ Received\\u001b[39m\\n\\n\\u001b[32m- 200\\u001b[39m\\n\\u001b[31m+ 600\\u001b[39m\\n\\n\\u001b[36m \\u001b[2m❯\\u001b[22m src/app/renderer/workbench/thread-workbench.test.ts:\\u001b[2m64:28\\u001b[22m\\u001b[39m\\n    \\u001b[90m 62|\\u001b[39m     await act(() => pane.dispatchEvent(new Event(\\\"scroll\\\")));\\n    \\u001b[90m 63|\\u001b[39m     await f.flush();\\n    \\u001b[90m 64|\\u001b[39m     expect(pane.scrollTop).toBe(200);\\n    \\u001b[90m   |\\u001b[39m                            \\u001b[31m^\\u001b[39m\\n    \\u001b[90m 65|\\u001b[39m     expect(document.activeElement?.getAttribute(\\\"data-attention-receip…\\n    \\u001b[90m 66|\\u001b[39m   } finally { await f.cleanup(); }\\n\\n\\u001b[31m\\u001b[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\\u001b[22m\\u001b[39m\\n\\n\\n\\u001b[2m Test Files \\u001b[22m \\u001b[1m\\u001b[31m1 failed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m      Tests \\u001b[22m \\u001b[1m\\u001b[31m1 failed\\u001b[39m\\u001b[22m\\u001b[2m | \\u001b[22m\\u001b[1m\\u001b[32m1 passed\\u001b[39m\\u001b[22m\\u001b[90m (2)\\u001b[39m\\n\\u001b[2m   Start at \\u001b[22m 23:35:47\\n\\u001b[2m   Duration \\u001b[22m 3.23s\\u001b[2m (import 76%, transform 12%, environment 9%, tests 3%)\\u001b[22m\\n\\n[ELIFECYCLE] Test failed. See above for more details.\\n\"}"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"91683b\",\"wall_time_seconds\":1.001946875,\"session_id\":17872,\"original_token_count\":148,\"output\":\"$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/workbench/thread-workbench.test.ts src/app/renderer/reading/reading-anchor.test.ts\\n$ tsr generate\\n(node:80100) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency\\n(Use `node --trace-warnings ...` to show where the warning was created)\\nSKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch\\n\\n\\u001b[1m\\u001b[30m\\u001b[46m RUN \\u001b[49m\\u001b[39m\\u001b[22m \\u001b[36mv5.0.2 \\u001b[39m\\u001b[90m/Users/louistation/.codex/worktrees/long-reading-live/d-pi\\u001b[39m\\n\\n\"}"
+      }
+    ]
+  },
+  {
+    "originalLine": 322,
+    "type": "response_item",
+    "output": [
+      {
+        "type": "input_text",
+        "text": "Script completed\nWall time 1.2 seconds\nOutput:\n"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"fbe71a\",\"wall_time_seconds\":0.000007458,\"exit_code\":0,\"original_token_count\":127,\"output\":\" \\u001b[32m✓\\u001b[39m src/app/renderer/reading/reading-anchor.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m7 tests\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[32m 15\\u001b[2mms\\u001b[22m\\u001b[39m\\n \\u001b[32m✓\\u001b[39m src/app/renderer/workbench/thread-workbench.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m2 tests\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[32m 69\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\n\\u001b[2m Test Files \\u001b[22m \\u001b[1m\\u001b[32m2 passed\\u001b[39m\\u001b[22m\\u001b[90m (2)\\u001b[39m\\n\\u001b[2m      Tests \\u001b[22m \\u001b[1m\\u001b[32m9 passed\\u001b[39m\\u001b[22m\\u001b[90m (9)\\u001b[39m\\n\\u001b[2m   Start at \\u001b[22m 23:36:25\\n\\u001b[2m   Duration \\u001b[22m 3.03s\\u001b[2m (import 68%, environment 16%, transform 13%, tests 3%)\\u001b[22m\\n\\n\"}"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"e8c33f\",\"wall_time_seconds\":1.0023865,\"session_id\":72064,\"original_token_count\":136,\"output\":\"$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/workbench/thread-workbench.test.ts\\n$ tsr generate\\n(node:80287) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency\\n(Use `node --trace-warnings ...` to show where the warning was created)\\nSKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch\\n\\n\\u001b[1m\\u001b[30m\\u001b[46m RUN \\u001b[49m\\u001b[39m\\u001b[22m \\u001b[36mv5.0.2 \\u001b[39m\\u001b[90m/Users/louistation/.codex/worktrees/long-reading-live/d-pi\\u001b[39m\\n\\n\"}"
+      }
+    ]
+  },
+  {
+    "originalLine": 329,
+    "type": "response_item",
+    "output": [
+      {
+        "type": "input_text",
+        "text": "Script completed\nWall time 1.2 seconds\nOutput:\n"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"019b5f\",\"wall_time_seconds\":0.00000825,\"exit_code\":1,\"original_token_count\":461,\"output\":\" \\u001b[31m❯\\u001b[39m src/app/renderer/workbench/thread-workbench.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m3 tests\\u001b[22m\\u001b[2m | \\u001b[22m\\u001b[31m1 failed\\u001b[39m\\u001b[2m)\\u001b[22m\\u001b[32m 80\\u001b[2mms\\u001b[22m\\u001b[39m\\n   \\u001b[32m✓\\u001b[39m keeps an explicitly located failure receipt after its disclosure schedules content restoration\\u001b[32m 58\\u001b[2mms\\u001b[22m\\u001b[39m\\n   \\u001b[32m✓\\u001b[39m lets a newer outer reading gesture cancel a queued attention location before it can move focus or scroll\\u001b[32m 11\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\u001b[31m   \\u001b[31m×\\u001b[31m opens the existing Thread tools at native history from a live coverage gap and returns to the same live pane\\u001b[39m\\u001b[32m 10\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\n\\u001b[31m⎯⎯⎯⎯⎯⎯⎯\\u001b[39m\\u001b[1m\\u001b[41m Failed Tests 1 \\u001b[49m\\u001b[22m\\u001b[31m⎯⎯⎯⎯⎯⎯⎯\\u001b[39m\\n\\n\\u001b[41m\\u001b[1m FAIL \\u001b[22m\\u001b[49m src/app/renderer/workbench/thread-workbench.test.ts\\u001b[2m > \\u001b[22mopens the existing Thread tools at native history from a live coverage gap and returns to the same live pane\\n\\u001b[31m\\u001b[1mAssertionError\\u001b[22m: expected undefined to be defined\\u001b[39m\\n\\u001b[36m \\u001b[2m❯\\u001b[22m src/app/renderer/workbench/thread-workbench.test.ts:\\u001b[2m75:22\\u001b[22m\\u001b[39m\\n    \\u001b[90m 73|\\u001b[39m     await f.render();\\n    \\u001b[90m 74|\\u001b[39m     const gapEntry = [...f.host.querySelectorAll(\\\"button\\\")].find((butt…\\n    \\u001b[90m 75|\\u001b[39m     expect(gapEntry).toBeDefined();\\n    \\u001b[90m   |\\u001b[39m                      \\u001b[31m^\\u001b[39m\\n    \\u001b[90m 76|\\u001b[39m     await act(() => gapEntry?.click());\\n    \\u001b[90m 77|\\u001b[39m     await f.flush();\\n\\n\\u001b[31m\\u001b[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\\u001b[22m\\u001b[39m\\n\\n\\n\\u001b[2m Test Files \\u001b[22m \\u001b[1m\\u001b[31m1 failed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m      Tests \\u001b[22m \\u001b[1m\\u001b[31m1 failed\\u001b[39m\\u001b[22m\\u001b[2m | \\u001b[22m\\u001b[1m\\u001b[32m2 passed\\u001b[39m\\u001b[22m\\u001b[90m (3)\\u001b[39m\\n\\u001b[2m   Start at \\u001b[22m 23:36:46\\n\\u001b[2m   Duration \\u001b[22m 2.31s\\u001b[2m (import 73%, transform 17%, environment 7%, tests 4%)\\u001b[22m\\n\\n[ELIFECYCLE] Test failed. See above for more details.\\n\"}"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"e40fe5\",\"wall_time_seconds\":1.001569958,\"session_id\":63384,\"original_token_count\":136,\"output\":\"$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/workbench/thread-workbench.test.ts\\n$ tsr generate\\n(node:80661) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency\\n(Use `node --trace-warnings ...` to show where the warning was created)\\nSKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch\\n\\n\\u001b[1m\\u001b[30m\\u001b[46m RUN \\u001b[49m\\u001b[39m\\u001b[22m \\u001b[36mv5.0.2 \\u001b[39m\\u001b[90m/Users/louistation/.codex/worktrees/long-reading-live/d-pi\\u001b[39m\\n\\n\"}"
+      }
+    ]
+  },
+  {
+    "originalLine": 337,
+    "type": "response_item",
+    "output": [
+      {
+        "type": "input_text",
+        "text": "Script completed\nWall time 0.1 seconds\nOutput:\n"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"d29aff\",\"wall_time_seconds\":0.000009208,\"exit_code\":0,\"original_token_count\":96,\"output\":\" \\u001b[32m✓\\u001b[39m src/app/renderer/workbench/thread-workbench.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m3 tests\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[32m 107\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\n\\u001b[2m Test Files \\u001b[22m \\u001b[1m\\u001b[32m1 passed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m      Tests \\u001b[22m \\u001b[1m\\u001b[32m3 passed\\u001b[39m\\u001b[22m\\u001b[90m (3)\\u001b[39m\\n\\u001b[2m   Start at \\u001b[22m 23:37:05\\n\\u001b[2m   Duration \\u001b[22m 1.77s\\u001b[2m (import 63%, transform 22%, environment 9%, tests 6%)\\u001b[22m\\n\\n\"}"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"93a446\",\"wall_time_seconds\":0.00000775,\"exit_code\":0,\"original_token_count\":453,\"output\":\"        createElement(I18nProvider, {\\n          initialSnapshot: { preference: \\\"en-US\\\", resolvedLocale: \\\"en-US\\\" },\\n          children: createElement(ReadingPane, {\\n            thread,\\n            view: \\\"conversation\\\",\\n            active: true,\\n            children: createElement(Conversation, { model, positions }),\\n          }),\\n        }),\\n      ),\\n    );\\n    const pane = host.querySelector<HTMLElement>(\\\".reading-pane\\\");\\n    if (!pane) throw Error(\\\"missing pane\\\");\\n    Object.defineProperties(pane, {\\n      clientHeight: { value: 200 },\\n      scrollHeight: { value: 1000 },\\n    });\\n    await act(() => {\\n      const callbacks = [...frames.values()];\\n      frames.clear();\\n      for (const callback of callbacks) callback(0);\\n    });\\n    pane.scrollTop = 230;\\n    await act(() => pane.dispatchEvent(new Event(\\\"scroll\\\")));\\n    const bottom = [...host.querySelectorAll(\\\"button\\\")].find(\\n      (node) => node.textContent === \\\"Back to list bottom\\\",\\n    );\\n    expect(bottom).toBeDefined();\\n    expect(host.textContent).not.toContain(\\\"New output\\\");\\n    await act(() =>\\n      deliver({\\n        kind: \\\"update\\\",\\n        connectionGeneration: \\\"host\\\",\\n        seq: 1,\\n        gap: false,\\n        droppedBefore: 0,\\n        item: { ...item, text: text + \\\"more\\\" },\\n      }),\\n    );\\n    expect(host.textContent).toContain(\\\"New output\\\");\\n    expect(pane.scrollTop).toBe(230);\\n    await act(() => bottom?.click());\\n    expect(pane.scrollTop).toBe(800);\\n    expect(host.textContent).not.toContain(\\\"New output\\\");\\n    expect(\\n      host\\n        .querySelector(\\\"[data-reading-segment]\\\")\\n        ?.getAttribute(\\\"data-reading-segment\\\"),\\n    ).toBe(\\\"0\\\");\\n  } finally {\\n    await act(() => root.unmount());\\n    model.dispose();\\n    positions.dispose();\\n    host.remove();\\n    vi.restoreAllMocks();\\n    vi.unstubAllGlobals();\\n  }\\n});\\n\"}"
+      }
+    ]
+  },
+  {
+    "originalLine": 386,
+    "type": "response_item",
+    "output": [
+      {
+        "type": "input_text",
+        "text": "Script completed\nWall time 1.0 seconds\nOutput:\n"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"c5e827\",\"wall_time_seconds\":0.000016625,\"exit_code\":1,\"original_token_count\":628,\"output\":\" \\u001b[31m❯\\u001b[39m src/app/renderer/reading/reading-anchor.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m8 tests\\u001b[22m\\u001b[2m | \\u001b[22m\\u001b[31m1 failed\\u001b[39m\\u001b[2m)\\u001b[22m\\u001b[32m 18\\u001b[2mms\\u001b[22m\\u001b[39m\\n   \\u001b[32m✓\\u001b[39m restores row-relative position across geometry changes and isolates a new source\\u001b[32m 6\\u001b[2mms\\u001b[22m\\u001b[39m\\n   \\u001b[32m✓\\u001b[39m outer wheel takes ownership before scroll dispatch so an old frame cannot reset the gesture\\u001b[32m 1\\u001b[2mms\\u001b[22m\\u001b[39m\\n   \\u001b[32m✓\\u001b[39m lets a nested raw region consume wheel without cancelling the outer restoration\\u001b[32m 3\\u001b[2mms\\u001b[22m\\u001b[39m\\n   \\u001b[32m✓\\u001b[39m keyboard and scrollbar gestures cancel queued positioning, but editing and IME keys do not\\u001b[32m 2\\u001b[2mms\\u001b[22m\\u001b[39m\\n   \\u001b[32m✓\\u001b[39m explicit list bottom is immediate, cancels old restoration, preserves body page, and follows later output\\u001b[32m 1\\u001b[2mms\\u001b[22m\\u001b[39m\\n   \\u001b[32m✓\\u001b[39m hidden and disposed panes stop pending DOM work and cannot accept a late positioning command\\u001b[32m 0\\u001b[2mms\\u001b[22m\\u001b[39m\\n   \\u001b[32m✓\\u001b[39m commits an explicit pane location so a subsequent content restoration cannot undo it\\u001b[32m 0\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\u001b[31m   \\u001b[31m×\\u001b[31m a retained anchor clamped to the current list end resumes follow for later output\\u001b[39m\\u001b[32m 4\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\n\\u001b[31m⎯⎯⎯⎯⎯⎯⎯\\u001b[39m\\u001b[1m\\u001b[41m Failed Tests 1 \\u001b[49m\\u001b[22m\\u001b[31m⎯⎯⎯⎯⎯⎯⎯\\u001b[39m\\n\\n\\u001b[41m\\u001b[1m FAIL \\u001b[22m\\u001b[49m src/app/renderer/reading/reading-anchor.test.ts\\u001b[2m > \\u001b[22ma retained anchor clamped to the current list end resumes follow for later output\\n\\u001b[31m\\u001b[1mAssertionError\\u001b[22m: expected 230 to be 900 // Object.is equality\\u001b[39m\\n\\n\\u001b[32m- Expected\\u001b[39m\\n\\u001b[31m+ Received\\u001b[39m\\n\\n\\u001b[32m- 900\\u001b[39m\\n\\u001b[31m+ 230\\u001b[39m\\n\\n\\u001b[36m \\u001b[2m❯\\u001b[22m src/app/renderer/reading/reading-anchor.test.ts:\\u001b[2m314:36\\u001b[22m\\u001b[39m\\n    \\u001b[90m312|\\u001b[39m     expect(fixture.adapter.getSnapshot()).toBe(true);\\n    \\u001b[90m313|\\u001b[39m     fixture.setHeight(1100); fixture.flush();\\n    \\u001b[90m314|\\u001b[39m     expect(fixture.pane.scrollTop).toBe(900);\\n    \\u001b[90m   |\\u001b[39m                                    \\u001b[31m^\\u001b[39m\\n    \\u001b[90m315|\\u001b[39m   } finally { fixture.cleanup(); }\\n    \\u001b[90m316|\\u001b[39m });\\n\\n\\u001b[31m\\u001b[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\\u001b[22m\\u001b[39m\\n\\n\\n\\u001b[2m Test Files \\u001b[22m \\u001b[1m\\u001b[31m1 failed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m      Tests \\u001b[22m \\u001b[1m\\u001b[31m1 failed\\u001b[39m\\u001b[22m\\u001b[2m | \\u001b[22m\\u001b[1m\\u001b[32m7 passed\\u001b[39m\\u001b[22m\\u001b[90m (8)\\u001b[39m\\n\\u001b[2m   Start at \\u001b[22m 23:39:14\\n\\u001b[2m   Duration \\u001b[22m 439ms\\u001b[2m (environment 68%, transform 16%, import 10%, tests 5%, worker 1%)\\u001b[22m\\n\\n[ELIFECYCLE] Test failed. See above for more details.\\n\"}"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"62fb36\",\"wall_time_seconds\":0.843155542,\"exit_code\":0,\"original_token_count\":232,\"output\":\"$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/reading/reading-anchor.test.ts\\n$ tsr generate\\n(node:82351) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency\\n(Use `node --trace-warnings ...` to show where the warning was created)\\nSKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch\\n\\n\\u001b[1m\\u001b[30m\\u001b[46m RUN \\u001b[49m\\u001b[39m\\u001b[22m \\u001b[36mv5.0.2 \\u001b[39m\\u001b[90m/Users/louistation/.codex/worktrees/long-reading-live/d-pi\\u001b[39m\\n\\n \\u001b[32m✓\\u001b[39m src/app/renderer/reading/reading-anchor.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m8 tests\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[32m 15\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\n\\u001b[2m Test Files \\u001b[22m \\u001b[1m\\u001b[32m1 passed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m      Tests \\u001b[22m \\u001b[1m\\u001b[32m8 passed\\u001b[39m\\u001b[22m\\u001b[90m (8)\\u001b[39m\\n\\u001b[2m   Start at \\u001b[22m 23:39:25\\n\\u001b[2m   Duration \\u001b[22m 313ms\\u001b[2m (environment 59%, transform 23%, import 11%, tests 6%, worker 1%)\\u001b[22m\\n\\n\"}"
+      }
+    ]
+  },
+  {
+    "originalLine": 413,
+    "type": "response_item",
+    "output": [
+      {
+        "type": "input_text",
+        "text": "Script completed\nWall time 1.2 seconds\nOutput:\n"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"9901b6\",\"wall_time_seconds\":0.000006792,\"exit_code\":0,\"original_token_count\":93,\"output\":\" \\u001b[32m✓\\u001b[39m src/app/renderer/reading/reading-pane.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m1 test\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[32m 50\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\n\\u001b[2m Test Files \\u001b[22m \\u001b[1m\\u001b[32m1 passed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m      Tests \\u001b[22m \\u001b[1m\\u001b[32m1 passed\\u001b[39m\\u001b[22m\\u001b[90m (1)\\u001b[39m\\n\\u001b[2m   Start at \\u001b[22m 23:40:27\\n\\u001b[2m   Duration \\u001b[22m 2.72s\\u001b[2m (import 81%, environment 9%, transform 8%, tests 2%)\\u001b[22m\\n\\n\"}"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"6781fb\",\"wall_time_seconds\":1.0026825,\"session_id\":77194,\"original_token_count\":174,\"output\":\"Checked 11 files in 28ms. Fixed 3 files.\\n$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/reading src/app/renderer/workbench/thread-workbench.test.ts src/app/renderer/workbench/attention-location.test.ts src/modules/conversation/core\\n$ tsr generate\\n(node:83145) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency\\n(Use `node --trace-warnings ...` to show where the warning was created)\\nSKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch\\n\\n\\u001b[1m\\u001b[30m\\u001b[46m RUN \\u001b[49m\\u001b[39m\\u001b[22m \\u001b[36mv5.0.2 \\u001b[39m\\u001b[90m/Users/louistation/.codex/worktrees/long-reading-live/d-pi\\u001b[39m\\n\\n\"}"
+      }
+    ]
+  },
+  {
+    "originalLine": 459,
+    "type": "response_item",
+    "output": [
+      {
+        "type": "input_text",
+        "text": "Script completed\nWall time 0.2 seconds\nOutput:\n"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"266455\",\"wall_time_seconds\":0.000008667,\"exit_code\":0,\"original_token_count\":1652,\"output\":\" \\u001b[32m✓\\u001b[39m src/app/renderer/reading/reading-anchor.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m8 tests\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[32m 19\\u001b[2mms\\u001b[22m\\u001b[39m\\n \\u001b[32m✓\\u001b[39m src/modules/conversation/core/bound-history-attempt.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m5 tests\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[33m 311\\u001b[2mms\\u001b[22m\\u001b[39m\\n \\u001b[32m✓\\u001b[39m src/modules/conversation/core/reading-position.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m4 tests\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[32m 6\\u001b[2mms\\u001b[22m\\u001b[39m\\n \\u001b[32m✓\\u001b[39m src/modules/conversation/core/model.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m3 tests\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[32m 15\\u001b[2mms\\u001b[22m\\u001b[39m\\n \\u001b[32m✓\\u001b[39m src/app/renderer/workbench/attention-location.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m2 tests\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[32m 8\\u001b[2mms\\u001b[22m\\u001b[39m\\n \\u001b[32m✓\\u001b[39m src/modules/conversation/core/subagent-reconnect.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m1 test\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[32m 5\\u001b[2mms\\u001b[22m\\u001b[39m\\n \\u001b[32m✓\\u001b[39m src/app/renderer/reading/conversation-loop.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m2 tests\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[32m 44\\u001b[2mms\\u001b[22m\\u001b[39m\\n \\u001b[32m✓\\u001b[39m src/app/renderer/reading/reading-pane.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m1 test\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[32m 68\\u001b[2mms\\u001b[22m\\u001b[39m\\n \\u001b[32m✓\\u001b[39m src/app/renderer/reading/bounded-reading-renderer.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m9 tests\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[32m 111\\u001b[2mms\\u001b[22m\\u001b[39m\\n \\u001b[32m✓\\u001b[39m src/app/renderer/reading/bounded-history.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m3 tests\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[32m 240\\u001b[2mms\\u001b[22m\\u001b[39m\\n \\u001b[32m✓\\u001b[39m src/app/renderer/workbench/thread-workbench.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m3 tests\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[32m 106\\u001b[2mms\\u001b[22m\\u001b[39m\\n \\u001b[32m✓\\u001b[39m src/app/renderer/reading/history-loop.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m6 tests\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[32m 137\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\u001b[90mstderr\\u001b[2m | src/app/renderer/reading/project-history.test.ts\\u001b[2m > \\u001b[22m\\u001b[2mrefreshes a changed CLI history from the first page and can continue reading its new version\\n\\u001b[22m\\u001b[39mAn update to HistoryContent inside a test was not wrapped in act(...).\\n\\nWhen testing, code that causes React state updates should be wrapped into act(...):\\n\\nact(() => {\\n  /* fire events that update state */\\n});\\n/* assert on the output */\\n\\nThis ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act\\n\\n\\u001b[90mstderr\\u001b[2m | src/app/renderer/reading/project-history.test.ts\\u001b[2m > \\u001b[22m\\u001b[2mrefreshes a changed CLI history from the first page and can continue reading its new version\\n\\u001b[22m\\u001b[39mAn update to SelectValue inside a test was not wrapped in act(...).\\n\\nWhen testing, code that causes React state updates should be wrapped into act(...):\\n\\nact(() => {\\n  /* fire events that update state */\\n});\\n/* assert on the output */\\n\\nThis ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act\\n\\n \\u001b[32m✓\\u001b[39m src/app/renderer/reading/project-history.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m3 tests\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[33m 323\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\n\\u001b[2m Test Files \\u001b[22m \\u001b[1m\\u001b[32m15 passed\\u001b[39m\\u001b[22m\\u001b[90m (15)\\u001b[39m\\n\\u001b[2m      Tests \\u001b[22m \\u001b[1m\\u001b[32m56 passed\\u001b[39m\\u001b[22m\\u001b[90m (56)\\u001b[39m\\n\\u001b[2m   Start at \\u001b[22m 23:42:03\\n\\u001b[2m   Duration \\u001b[22m 4.07s\\u001b[2m (import 78%, environment 8%, transform 8%, tests 5%)\\u001b[22m\\n\\n$ node scripts/testing/test.mjs node tests/architecture/*.test.mjs\\n✔ public entries must be source files, not directories or prose (133.731708ms)\\n✔ renderer rejects Electron subpath imports (59.661584ms)\\n✔ TanStack React Router is confined to the Renderer environment (740.69025ms)\\n✔ production rejects test packages and helpers in test directories (64.108416ms)\\n✔ Effect is limited to execution Host and Main transport, with no unstable ecosystem (488.237042ms)\\n✔ unreadable manifests are tooling failures, not boundary violations (58.668208ms)\\n✔ accepts a public type-only cross-module dependency (60.983833ms)\\n✔ rejects a private cross-module import (63.073958ms)\\n✔ rejects an unregistered cross-module dependency (62.505834ms)\\n✔ rejects a public cross-module entry from the wrong environment (67.559708ms)\\n✔ checks the runtime module and rejects Electron in the OMP environment (56.907041ms)\\n✔ rejects forbidden external dependencies in shared, core and OMP environments (171.83575ms)\\n✔ allows supported external packages in platform-independent environments (61.379625ms)\\n✔ rejects a core import of a Node runtime and a file cycle (116.958ms)\\n✔ rejects production test-helper imports and non-literal dynamic imports (60.559125ms)\\n✔ supports flat shared roots and explicit test-only public entries (57.702833ms)\\n✔ rejects source files outside configured modules and owned roots (59.7125ms)\\n✔ resolves directory index imports before checking cross-module privacy (57.754291ms)\\n✔ workbench panel primitives stay behind the owned UI adapter (119.688125ms)\\nFAIL: design lint crashed — /Users/louistation/.nvm/versions/node/v24.21.0/bin/node was killed by SIGTRAP before it judged any file.\\nThis is a tooling failure, not a rule result. On Node 24.17.0 the oxlint JS-plugin worker dies with SIGTRAP; it must run on a Node build where JS plugins load.\\nnode v24.21.0\\n\\n\\nFAIL: design lint is unavailable — could not run oxlint-that-does-not-exist (spawnSync oxlint-that-does-not-exist ENOENT).\\nThis is a tooling failure, not a rule result. On Node 24.17.0 the oxlint JS-plugin worker dies with SIGTRAP; it must run on a Node build where JS plugins load.\\nnode v24.21.0\\n\\n\\n✔ a killed oxlint is a tooling failure, not a clean lint (149.281ms)\\n✔ a missing oxlint binary is reported instead of passing (0.961583ms)\\n✔ a missing configuration is a tooling failure, not a rule result (58.115042ms)\\n✔ a real violation still fails the gate with the rule name (231.37675ms)\\n✔ the root has no design violation to report (836.030083ms)\\n✔ the design fixture check names a crash instead of an assertion diff (638.578125ms)\\n✔ reports entry, production, test, and CSS size hints separately (78.65775ms)\\n✔ separates declared permissions from observed source dependencies and scan gaps (70.432667ms)\\n✔ rejects a generated report after source or permissions change (317.72825ms)\\n✔ i18n copy check scans migrated module Renderer files (42.581375ms)\\n✔ Tailwind source configuration includes migrated Renderer roots (0.216292ms)\\n✔ design lint executes against a migrated module Renderer root (136.740542ms)\\n✔ Tailwind emits a utility used only by a module Renderer (119.266167ms)\\n✔ core has a dedicated typecheck without DOM or Node ambient types (1.834083ms)\\n✔ process-specific typechecks declare their ambient environment explicitly (0.718ms)\\n✔ the real core typecheck rejects DOM globals (114.724709ms)\\nℹ tests 35\\nℹ suites 0\\nℹ pass 35\\nℹ fail 0\\nℹ cancelled 0\\nℹ skipped 0\\nℹ todo 0\\nℹ duration_ms 4175.812042\\n\"}"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"cb8313\",\"wall_time_seconds\":0.038018167,\"exit_code\":0,\"original_token_count\":166,\"output\":\"[codex/long-reading-live 34987ba] feat(reading): complete live list navigation and user takeover\\n 11 files changed, 1382 insertions(+), 55 deletions(-)\\n create mode 100644 src/app/renderer/reading/conversation-loop.test.ts\\n create mode 100644 src/app/renderer/reading/live-reading-controls.tsx\\n create mode 100644 src/app/renderer/reading/live-reading.test.ts\\n create mode 100644 src/app/renderer/reading/live-reading.ts\\n create mode 100644 src/app/renderer/reading/reading-pane.test.ts\\n create mode 100644 src/app/renderer/reading/reading-pane.tsx\\n create mode 100644 src/app/renderer/workbench/thread-workbench.test.ts\\n34987ba5f5b042efd8ae95cc09a450d4f5018d51\\n\"}"
+      }
+    ]
+  },
+  {
+    "originalLine": 644,
+    "type": "response_item",
+    "output": [
+      {
+        "type": "input_text",
+        "text": "Script completed\nWall time 0.2 seconds\nOutput:\n"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"1dcbb6\",\"wall_time_seconds\":0.000012,\"exit_code\":0,\"original_token_count\":161,\"output\":\" \\u001b[32m✓\\u001b[39m src/app/renderer/workbench/composer-binding.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m2 tests\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[32m 32\\u001b[2mms\\u001b[22m\\u001b[39m\\n \\u001b[32m✓\\u001b[39m src/app/renderer/workbench/file-opening.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m2 tests\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[32m 101\\u001b[2mms\\u001b[22m\\u001b[39m\\n \\u001b[32m✓\\u001b[39m src/app/renderer/shell/appearance-subscriptions.test.ts \\u001b[2m(\\u001b[22m\\u001b[2m23 tests\\u001b[22m\\u001b[2m)\\u001b[22m\\u001b[33m 1138\\u001b[2mms\\u001b[22m\\u001b[39m\\n\\n\\u001b[2m Test Files \\u001b[22m \\u001b[1m\\u001b[32m3 passed\\u001b[39m\\u001b[22m\\u001b[90m (3)\\u001b[39m\\n\\u001b[2m      Tests \\u001b[22m \\u001b[1m\\u001b[32m27 passed\\u001b[39m\\u001b[22m\\u001b[90m (27)\\u001b[39m\\n\\u001b[2m   Start at \\u001b[22m 23:58:44\\n\\u001b[2m   Duration \\u001b[22m 4.77s\\u001b[2m (import 68%, transform 14%, tests 12%, environment 6%)\\u001b[22m\\n\\n\"}"
+      },
+      {
+        "type": "input_text",
+        "text": "{\"chunk_id\":\"578121\",\"wall_time_seconds\":0.000008209,\"exit_code\":0,\"original_token_count\":11,\"output\":\"Checked 3 files in 9ms. No fixes applied.\\n\"}"
+      }
+    ]
+  }
+]

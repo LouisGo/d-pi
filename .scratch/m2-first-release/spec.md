@@ -9,7 +9,7 @@
     "engineering": "in-progress",
     "trial": "delivered",
     "acceptance": "pending",
-    "current": true,
+    "current": false,
     "build": "0.1.0-m2.20 / 3c4c1060-8b550d60",
     "pending": [
       "../m1-s3-control-recovery/issues/09-quit-discard-decision.md"
@@ -43,10 +43,30 @@
       "attention-review.md",
       "progress-2026-10-06.md",
       "real-provider-e2e.md",
-      "pr4-integration.md"
+      "pr4-integration.md",
+      "reading-loop.md",
+      "reading-loop-review.md"
     ],
     "next": "m2.20诊断/提醒候选已交付，PR#4已合入main，后续从最新main开始UI迭代；首次本机OpenAI GPT-5.6 Luna新Thread真实生成/GUI阅读完成。M2尚未完成，PDF视觉/OCR、01c系统显示/点击、V1-00/B6组合、其余真实账户/供应商路径及用户认可保持开放；冷旧Thread只读",
     "constraints": "2026-10-06最新授权先push并处理远端PR/提交、让main干净供后续UI开发；允许整合、验证后合并PR#4。不公开发布、不扩M3，冷恢复只读，unknown不自动重发；用户认可pending。"
+  },
+  {
+    "id": "long-reading-loop",
+    "title": "首个长会话阅读闭环",
+    "phase": "M2",
+    "engineering": "in-progress",
+    "trial": "delivered",
+    "acceptance": "pending",
+    "current": true,
+    "build": "Dev c04e245 / Chromium d987f98",
+    "pending": [],
+    "evidence": [
+      "reading-loop.md",
+      "reading-loop-review.md",
+      "reading-loop-pr.md"
+    ],
+    "next": "R1–R15实现与检查、真实Luna/dev及Chromium验证完成，独立双轴无高价值遗留；本地PR合main/push与目标端核对进行中。M2父范围与用户认可保持开放。",
+    "constraints": "2026-10-07当前明确授权本地PR合main并push，允许现有OMP Luna与并行工作。live/native分源，预算和冷恢复只读保留；不公开发布、不扩M3。"
   }
 ]
 ```
