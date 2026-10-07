@@ -1,6 +1,7 @@
 import { match } from "ts-pattern";
 import { DRAFT_MAX_BYTES, draftByteLength } from "../../../shared/draft-text";
 import { createId } from "../../../shared/identity";
+import { uiMessage } from "../../../shared/messages/contracts";
 import type { Draft, Failure, SaveReply } from "../contracts/draft";
 export type SaveState =
   | { kind: "saved" }
@@ -41,6 +42,26 @@ export class DraftController {
     finish: (value: CapturedDraft | null) => void;
   } | null = null;
   private captured: CapturedDraft | null = null;
+  private retrySaveBarrier = false;
+  private saveBarrier: {
+    ready: () => boolean;
+    prepare: (retry: boolean) => Promise<boolean>;
+  } | null = null;
+  get threadId() {
+    return this.draft.threadId;
+  }
+  canSaveInput(): boolean {
+    return !this.saveBarrier || this.saveBarrier.ready();
+  }
+  registerSaveBarrier(barrier: {
+    ready: () => boolean;
+    prepare: (retry: boolean) => Promise<boolean>;
+  }): () => void {
+    this.saveBarrier = barrier;
+    return () => {
+      if (this.saveBarrier === barrier) this.saveBarrier = null;
+    };
+  }
   private attempted: {
     revision: number;
     sequence: number;
@@ -101,6 +122,7 @@ export class DraftController {
       this.state.error.recovery === "reconcile_first"
     )
       return Promise.resolve(false);
+    this.retrySaveBarrier = true;
     this.publish({ kind: "dirty" });
     return this.flush();
   }
@@ -151,6 +173,22 @@ export class DraftController {
       const snapshot = capture ?? this.pending;
       if (!snapshot) break;
       if (!this.checkSize(snapshot.text)) return false;
+      const retryBarrier = this.retrySaveBarrier;
+      this.retrySaveBarrier = false;
+      if (this.saveBarrier && !(await this.saveBarrier.prepare(retryBarrier))) {
+        this.publish({
+          kind: "failed",
+          error: {
+            ...this.onTransportError(),
+            recovery: "retry_safe",
+            message: uiMessage("attachment.historyLeaseFailed"),
+          },
+        });
+        this.capture?.finish(null);
+        this.capture = null;
+        return false;
+      }
+      if (this.disposed) return false;
       this.publish({ kind: "saving" });
       this.attempted = { ...snapshot, revision: this.revision };
       let result: SaveReply;

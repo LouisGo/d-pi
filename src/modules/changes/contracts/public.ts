@@ -1,5 +1,11 @@
 import { z } from "zod";
 import { TraceIdSchema } from "../../../shared/identity";
+import {
+  type ReadCancelReply,
+  type ReadIdentity,
+  type ReadResponse,
+  readResponseSchema,
+} from "../../../shared/read-operation";
 import { ProjectPathSchema } from "../../files/contracts/public";
 
 export const ChangeScopeSchema = z.enum([
@@ -12,11 +18,13 @@ export const GitRequestSchema = z.discriminatedUnion("kind", [
   z.strictObject({
     kind: z.literal("list"),
     traceId: TraceIdSchema,
+    operationId: z.uuid(),
     threadId: z.uuid(),
   }),
   z.strictObject({
     kind: z.literal("diff"),
     traceId: TraceIdSchema,
+    operationId: z.uuid(),
     threadId: z.uuid(),
     scope: ChangeScopeSchema,
     path: ProjectPathSchema,
@@ -85,6 +93,8 @@ export const GitReplySchema = z.discriminatedUnion("kind", [
   }),
 ]);
 export type GitReply = z.infer<typeof GitReplySchema>;
+export const GitResponseSchema = readResponseSchema(GitReplySchema);
 export interface GitBridge {
-  request(command: GitRequest): Promise<GitReply>;
+  request(command: GitRequest): Promise<ReadResponse<GitReply>>;
+  cancel(command: ReadIdentity): Promise<ReadCancelReply>;
 }

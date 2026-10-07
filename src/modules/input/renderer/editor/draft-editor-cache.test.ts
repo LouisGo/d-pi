@@ -174,3 +174,62 @@ it("retains a finite configured history and restores only draft text in a new wi
   expect(reloaded.getText()).toBe(`${"x".repeat(120)}body`);
   expect(reloaded.can().undo()).toBe(false);
 });
+
+it("awaits Main history protection before persisting a removal and releases cached epochs on eviction and disposal", async () => {
+  const leaseId = crypto.randomUUID();
+  const id = crypto.randomUUID();
+  const token = `[[dpi-attachment:${id}]]`;
+  let resolve: (
+    value: import("../../contracts/public").AttachmentReply,
+  ) => void = () => {};
+  const calls: import("../../contracts/public").AttachmentRequest[] = [];
+  const bridge: import("../../contracts/public").AttachmentBridge = {
+    request: async (command) => {
+      calls.push(command);
+      if (command.kind === "history-open")
+        return { kind: "history-lease", leaseId, version: 0 };
+      if (command.kind === "history-update")
+        return new Promise((done) => {
+          resolve = done;
+        });
+      return { kind: "history-released" };
+    },
+  };
+  const cache = new DraftEditorCache(
+    { threads: 1, documentBytes: 100000 },
+    bridge,
+  );
+  const draft = controller(token);
+  const editor = attach(cache, "a", draft);
+  editor.commands.selectAll();
+  editor.commands.deleteSelection();
+  let saved = false;
+  const saving = draft.flush().then(() => {
+    saved = true;
+  });
+  await Promise.resolve();
+  await Promise.resolve();
+  await Promise.resolve();
+  expect(saved).toBe(false);
+  expect(
+    calls.some(
+      (command) =>
+        command.kind === "history-update" && command.ids.includes(id),
+    ),
+  ).toBe(true);
+  resolve({ kind: "history-lease", leaseId, version: 1 });
+  await saving;
+  expect(editor.commands.undo()).toBe(true);
+  expect(editor.getText()).toBe(token);
+  editor.destroy();
+  const second = attach(cache, "b", controller());
+  second.commands.insertContent("other");
+  await controllers.at(-1)?.flush();
+  second.destroy();
+  await Promise.resolve();
+  await Promise.resolve();
+  expect(calls.some((command) => command.kind === "history-release")).toBe(
+    true,
+  );
+  cache.dispose();
+});

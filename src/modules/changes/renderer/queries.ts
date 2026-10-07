@@ -1,5 +1,11 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { queryOptions, useQuery } from "@tanstack/react-query";
+import {
+  ReadCancelledError,
+  ReadOperationError,
+  readRetry,
+  requestReadOperation,
+} from "../../../shared/read-operation";
 import type { ThreadContext } from "../../threads/contracts/public";
 import type {
   ChangeScope,
@@ -26,7 +32,9 @@ export const gitKeys = {
 export class GitReadError extends Error {
   readonly traceId: string;
   readonly operation: "git:list" | "git:diff";
-  readonly attribution = "unknown";
+  readonly attribution: "main" | "unknown";
+  readonly code: string;
+  readonly retryable: boolean;
   readonly reply: GitReply | undefined;
 
   constructor(
@@ -38,17 +46,42 @@ export class GitReadError extends Error {
       "cause" in observation ? { cause: observation.cause } : undefined,
     );
     this.name = "GitReadError";
+    this.attribution =
+      "cause" in observation && observation.cause instanceof ReadOperationError
+        ? (observation.cause.failure?.attribution ?? "unknown")
+        : "unknown";
+    this.code =
+      "cause" in observation && observation.cause instanceof ReadOperationError
+        ? observation.cause.code
+        : "failed";
+    this.retryable =
+      "cause" in observation
+        ? observation.cause instanceof ReadOperationError &&
+          observation.cause.retryable
+        : false;
     this.traceId = request.traceId;
     this.operation = request.kind === "list" ? "git:list" : "git:diff";
     this.reply = "reply" in observation ? observation.reply : undefined;
   }
 }
 
-async function sample(git: GitBridge, request: GitRequest): Promise<GitReply> {
+async function sample(
+  git: GitBridge,
+  request: GitRequest,
+  signal?: AbortSignal,
+): Promise<GitReply> {
   let reply: GitReply;
   try {
-    reply = await git.request(request);
+    reply = await requestReadOperation(
+      {
+        request: () => git.request(request),
+        cancel: (identity) => git.cancel(identity),
+      },
+      request,
+      signal,
+    );
   } catch (cause) {
+    if (cause instanceof ReadCancelledError) throw cause;
     throw new GitReadError(request, { cause });
   }
   if (reply.kind === "unavailable" && reply.reason === "failed")
@@ -56,12 +89,21 @@ async function sample(git: GitBridge, request: GitRequest): Promise<GitReply> {
   return reply;
 }
 
-export function readChanges(git: GitBridge, resource: ThreadContext) {
-  return sample(git, {
-    kind: "list",
-    traceId: crypto.randomUUID(),
-    threadId: resource.threadId,
-  });
+export function readChanges(
+  git: GitBridge,
+  resource: ThreadContext,
+  signal?: AbortSignal,
+) {
+  return sample(
+    git,
+    {
+      kind: "list",
+      traceId: crypto.randomUUID(),
+      operationId: crypto.randomUUID(),
+      threadId: resource.threadId,
+    },
+    signal,
+  );
 }
 
 export function readDiff(
@@ -69,14 +111,20 @@ export function readDiff(
   resource: ThreadContext,
   scope: ChangeScope,
   path: string,
+  signal?: AbortSignal,
 ) {
-  return sample(git, {
-    kind: "diff",
-    traceId: crypto.randomUUID(),
-    threadId: resource.threadId,
-    scope,
-    path,
-  });
+  return sample(
+    git,
+    {
+      kind: "diff",
+      traceId: crypto.randomUUID(),
+      operationId: crypto.randomUUID(),
+      threadId: resource.threadId,
+      scope,
+      path,
+    },
+    signal,
+  );
 }
 
 export function refreshGit(client: QueryClient, resource: ThreadContext): void {
@@ -89,7 +137,8 @@ export const gitQueryOptions = {
   changes(git: GitBridge, resource: ThreadContext) {
     return queryOptions({
       queryKey: gitKeys.changes(resource),
-      queryFn: () => readChanges(git, resource),
+      queryFn: ({ signal }) => readChanges(git, resource, signal),
+      retry: readRetry,
       ...localRead,
     });
   },
@@ -101,10 +150,11 @@ export const gitQueryOptions = {
   ) {
     return queryOptions({
       queryKey: gitKeys.diff(resource, scope, path ?? null),
-      queryFn: () =>
+      queryFn: ({ signal }) =>
         path === undefined
           ? Promise.resolve(null)
-          : readDiff(git, resource, scope, path),
+          : readDiff(git, resource, scope, path, signal),
+      retry: readRetry,
       enabled: path !== undefined,
       ...localRead,
     });

@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { Editor } from "@tiptap/core";
 import { closeHistory } from "@tiptap/pm/history";
 import { Slice } from "@tiptap/pm/model";
+import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
@@ -128,7 +129,10 @@ async function setup(
       throw Error("missing selected thread");
     return state.threadSelection.thread;
   }
-  const render = () =>
+  const render = (
+    selectionAttachment?: Parameters<typeof Composer>[0]["selectionAttachment"],
+    onAttachmentApplied?: (id: string) => void,
+  ) =>
     act(() =>
       root.render(
         createElement(QueryClientProvider, {
@@ -140,6 +144,10 @@ async function setup(
               thread: thread(),
               model,
               onChooseModel,
+              ...(selectionAttachment !== undefined
+                ? { selectionAttachment }
+                : {}),
+              ...(onAttachmentApplied ? { onAttachmentApplied } : {}),
             }),
           }),
         }),
@@ -169,6 +177,46 @@ async function setup(
     container,
   };
 }
+
+it("keeps a frozen selection pending when PM rejects insertion and applies it once after recovery", async () => {
+  const fixture = await setup();
+  const key = new PluginKey("reject-frozen-context");
+  fixture
+    .editor()
+    .registerPlugin(
+      new Plugin({ key, filterTransaction: (tr) => !tr.docChanged }),
+    );
+  const attachment = {
+    id: crypto.randomUUID(),
+    threadId: fixture.first.threadId,
+    selection: {
+      kind: "selection" as const,
+      path: "example.ts",
+      source: "working-tree",
+      version: "fixture-v1",
+      text: "const frozen = 1;",
+      startLine: 1,
+      startColumn: 1,
+      endLine: 1,
+      endColumn: 18,
+    },
+  };
+  const applied = vi.fn();
+  await fixture.render(attachment, applied);
+  expect(fixture.editor().getText()).toBe(fixture.first.text);
+  expect(applied).not.toHaveBeenCalled();
+  fixture.editor().unregisterPlugin(key);
+  await fixture.render({ ...attachment }, applied);
+  const references: unknown[] = [];
+  fixture.editor().state.doc.descendants((node) => {
+    if (node.type.name === "fileReference") references.push(node.attrs);
+  });
+  expect(references).toHaveLength(1);
+  expect(references[0]).toMatchObject(attachment.selection);
+  expect(applied).toHaveBeenCalledExactlyOnceWith(attachment.id);
+  await fixture.render({ ...attachment }, applied);
+  expect(applied).toHaveBeenCalledTimes(1);
+});
 
 it("preserves A's middle selection and independent undo/redo across A → B → A with fresh views", async () => {
   const fixture = await setup();
@@ -312,6 +360,20 @@ it.each(["file-picker", "drop"])(
         return new Promise((resolve) => {
           complete = resolve;
         });
+      if (command.kind === "history-open")
+        return {
+          kind: "history-lease",
+          leaseId: crypto.randomUUID(),
+          version: 0,
+        };
+      if (command.kind === "history-update")
+        return {
+          kind: "history-lease",
+          leaseId: command.leaseId,
+          version: command.version,
+        };
+      if (command.kind === "history-release")
+        return { kind: "history-released" };
       return { kind: "attachments", items };
     };
     const fixture = await setup(undefined, undefined, { request });
@@ -374,3 +436,269 @@ it.each(["file-picker", "drop"])(
     expect(fixture.model.controller).toBe(fixture.thread().controller);
   },
 );
+
+it.each(["limit", "failure"] as const)(
+  "makes history protection %s observable in the real Composer while preserving its source body",
+  async (mode) => {
+    let items: import("../../../modules/input/contracts/public").Attachment[] =
+      [];
+    let failure = mode === "failure";
+    const bridge: AttachmentBridge = {
+      request: async (command) => {
+        if (command.kind === "history-open")
+          return {
+            kind: "history-lease",
+            leaseId: crypto.randomUUID(),
+            version: 0,
+          };
+        if (command.kind === "history-update")
+          return mode === "limit"
+            ? { kind: "history-limit" }
+            : failure
+              ? { kind: "unavailable", reason: "storage-unavailable" }
+              : {
+                  kind: "history-lease",
+                  leaseId: command.leaseId,
+                  version: command.version,
+                };
+        if (command.kind === "history-release")
+          return { kind: "history-released" };
+        return { kind: "attachments", items };
+      },
+    };
+    const fixture = await setup(undefined, undefined, bridge);
+    const id = crypto.randomUUID();
+    const item = AttachmentSchema.parse({
+      schemaVersion: 1,
+      id,
+      token: `[[dpi-attachment:${id}]]`,
+      threadId: fixture.first.threadId,
+      name: "original.txt",
+      mimeType: "text/plain",
+      byteLength: 4,
+      capturedAt: new Date().toISOString(),
+      source: "paste",
+      status: "ready",
+      representation: "text",
+      coverageGaps: [],
+      textOnly: true,
+    });
+    items = [item];
+    const button = Array.from(
+      fixture.container.querySelectorAll("button"),
+    ).find((button) => button.textContent === "Attach files");
+    if (!button) throw Error("missing attach action");
+    await act(async () => {
+      button.click();
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+    expect(fixture.editor().getText()).toContain(item.token);
+    if (mode === "limit") {
+      expect(fixture.container.textContent).toContain(
+        "Undo history was cleared; your draft is preserved",
+      );
+      expect(fixture.editor().can().undo()).toBe(false);
+      await act(async () =>
+        expect(await fixture.thread().controller.flush()).toBe(true),
+      );
+    } else {
+      await act(async () =>
+        expect(await fixture.thread().controller.flush()).toBe(false),
+      );
+      expect(fixture.thread().controller.getSnapshot()).toMatchObject({
+        kind: "failed",
+        error: {
+          recovery: "retry_safe",
+          message: { code: "attachment.historyLeaseFailed" },
+        },
+      });
+      expect(fixture.editor().can().undo()).toBe(true);
+      expect(fixture.container.textContent).toContain("Retry asset protection");
+      failure = false;
+      await act(async () =>
+        expect(await fixture.thread().controller.retry()).toBe(true),
+      );
+    }
+    expect(fixture.thread().controller.getTextSnapshot()).toContain(item.token);
+  },
+);
+
+it("keeps publication-limit Undo until explicit recovery and waits for Main lease release before retry", async () => {
+  let items: import("../../../modules/input/contracts/public").Attachment[] =
+    [];
+  let finishRelease: () => void = () => {};
+  const release = new Promise<void>((resolve) => {
+    finishRelease = resolve;
+  });
+  let released = false,
+    retries = 0;
+  const bridge: AttachmentBridge = {
+    request: async (command) => {
+      if (command.kind === "history-open")
+        return {
+          kind: "history-lease",
+          leaseId: crypto.randomUUID(),
+          version: 0,
+        };
+      if (command.kind === "history-update")
+        return {
+          kind: "history-lease",
+          leaseId: command.leaseId,
+          version: command.version,
+        };
+      if (command.kind === "history-release") {
+        await release;
+        released = true;
+        return { kind: "history-released" };
+      }
+      if (command.kind === "retry") {
+        retries++;
+        if (!released)
+          return { kind: "unavailable", reason: "editor-history-limit" };
+        items = items.map((item) => {
+          const updated = { ...item, status: "ready" as const };
+          delete updated.reason;
+          return updated;
+        });
+      }
+      return { kind: "attachments", items };
+    },
+  };
+  const fixture = await setup(undefined, undefined, bridge);
+  const id = crypto.randomUUID();
+  items = [
+    AttachmentSchema.parse({
+      schemaVersion: 1,
+      id,
+      threadId: fixture.first.threadId,
+      token: `[[dpi-attachment:${id}]]`,
+      name: "retry.pdf",
+      mimeType: "application/pdf",
+      byteLength: 4,
+      capturedAt: new Date().toISOString(),
+      source: "paste",
+      status: "failed",
+      reason: "pdf-conversion-failed",
+      representation: "pdf-text",
+      coverageGaps: [],
+      textOnly: false,
+    }),
+  ];
+  const button = (label: string) =>
+    Array.from(fixture.container.querySelectorAll("button")).find(
+      (button) => button.textContent === label,
+    );
+  await act(async () => {
+    button("Attach files")?.click();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  });
+  await act(async () => {
+    await fixture.thread().controller.flush();
+  });
+  const body = fixture.editor().getText();
+  expect(fixture.editor().can().undo()).toBe(true);
+  await act(async () => {
+    button("Retry preparation")?.click();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  });
+  expect(retries).toBe(1);
+  expect(fixture.container.textContent).toContain(
+    "The saved attachment and undo history are preserved",
+  );
+  expect(fixture.editor().can().undo()).toBe(true);
+  expect(fixture.editor().getText()).toBe(body);
+  const recover = button("Clear undo history and retry");
+  expect(recover).toBeDefined();
+  await act(async () => {
+    recover?.click();
+    await Promise.resolve();
+  });
+  expect(fixture.editor().can().undo()).toBe(false);
+  expect(fixture.editor().getText()).toBe(body);
+  expect(retries).toBe(1);
+  await act(async () => {
+    finishRelease();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  });
+  expect(retries).toBe(2);
+  expect(released).toBe(true);
+  expect(fixture.editor().getText()).toBe(body);
+});
+
+it("connects synchronous copy and awaited structured paste in real Composer views as one user action", async () => {
+  const snapshots = new Map<string, string>();
+  let completeExport!: () => void;
+  const ready = new Promise<void>((resolve) => {
+    completeExport = resolve;
+  });
+  const bridge: AttachmentBridge = {
+    request: async (command) => {
+      if (command.kind === "clipboard-reserve")
+        return {
+          kind: "clipboard-tickets",
+          tickets: Array.from({ length: 2 }, () => ({
+            version: 1,
+            instanceId: crypto.randomUUID(),
+            handleId: crypto.randomUUID(),
+            expiresAt: Date.now() + 10000,
+          })),
+        };
+      if (command.kind === "clipboard-export") {
+        snapshots.set(command.ticket.handleId, command.text);
+        await ready;
+        return { kind: "clipboard-exported", degraded: false };
+      }
+      if (command.kind === "clipboard-import") {
+        await ready;
+        return {
+          kind: "clipboard-imported",
+          text: snapshots.get(command.ticket.handleId) ?? "",
+          items: [],
+          degraded: false,
+        };
+      }
+      return { kind: "attachments", items: [] };
+    },
+  };
+  const fixture = await setup(undefined, undefined, bridge);
+  const formats = new Map<string, string>();
+  const event = {
+    clipboardData: {
+      types: ["text/plain", "application/x-dpi-context-fragment+json"],
+      files: [],
+      setData: (type: string, value: string) => formats.set(type, value),
+      getData: (type: string) => formats.get(type) ?? "",
+    },
+    preventDefault() {},
+  } as unknown as ClipboardEvent;
+  await act(() => {
+    fixture.editor().commands.selectAll();
+    const handle = fixture.editor().options.editorProps?.handleDOMEvents?.copy;
+    expect(handle?.(fixture.editor().view, event)).toBe(true);
+  });
+  expect(formats.get("application/x-dpi-context-fragment+json")).toContain(
+    "handleId",
+  );
+  await fixture.select(fixture.second.threadId);
+  await act(() => {
+    const handler = fixture.editor().options.editorProps?.handlePaste;
+    expect(
+      handler?.(
+        fixture.editor().view,
+        event,
+        new Slice(fixture.editor().state.doc.content, 0, 0),
+      ),
+    ).toBe(true);
+  });
+  expect(fixture.thread().attachments?.stateStore.getState().pending).toBe(1);
+  await act(async () => {
+    completeExport();
+    await ready;
+  });
+  expect(fixture.editor().getText()).toBe("alpha omegabravo");
+  expect(fixture.thread().attachments?.stateStore.getState().pending).toBe(0);
+  await act(() => {
+    expect(fixture.editor().commands.undo()).toBe(true);
+  });
+  expect(fixture.editor().getText()).toBe("bravo");
+});

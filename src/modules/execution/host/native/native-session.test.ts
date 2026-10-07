@@ -9,7 +9,69 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, it, vi } from "vitest";
 import { readProcessIdentity } from "../../../../platform/node/processes/public";
+import { NativeRequestFailure } from "./native-request-failure";
 import { type NativeObservation, NativeSession } from "./native-session";
+
+it("keeps native spawn failure distinct from local interruption and refuses reads before startup", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "d-pi-native-spawn-failure-"));
+  const session = new NativeSession(
+    {
+      binary: join(dir, "missing-native"),
+      directory: dir,
+      environment: {},
+      sessionDirectory: dir,
+    },
+    () => {},
+  );
+  try {
+    await expect(session.request("get_state")).rejects.toMatchObject({
+      failure: { kind: "unavailable", operation: "get_state" },
+    });
+    await expect(session.start()).rejects.toMatchObject({
+      failure: { kind: "spawn", operation: "startup" },
+    });
+  } finally {
+    await session.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+it("keeps an application observation defect unknown instead of attributing it to the native protocol", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "d-pi-native-observation-defect-"));
+  const entry = join(dir, "fixture.cjs");
+  writeFileSync(
+    entry,
+    `console.log(JSON.stringify({type:'ready'}));require('node:readline').createInterface({input:process.stdin}).on('line',line=>{const c=JSON.parse(line);console.log(JSON.stringify(c.type==='get_state'?{type:'observer_trigger'}:{type:'response',id:c.id,command:c.type,success:true}));}).on('close',()=>process.exit(0));`,
+  );
+  const events: NativeObservation[] = [];
+  const session = new NativeSession(
+    {
+      binary: process.execPath,
+      entry,
+      directory: dir,
+      environment: { PATH: process.env.PATH },
+      sessionDirectory: dir,
+    },
+    (event) => {
+      if (event.kind === "frame" && event.frame.type === "observer_trigger")
+        throw Error("API_KEY=secret");
+      events.push(event);
+    },
+  );
+  try {
+    await session.start();
+    const failure: unknown = await session
+      .request("get_state")
+      .catch((error: unknown) => error);
+    expect(failure).toBeInstanceOf(Error);
+    expect(failure).not.toBeInstanceOf(NativeRequestFailure);
+    expect(events).toContainEqual({ kind: "disconnected", reason: "unknown" });
+    expect(JSON.stringify(events)).not.toContain("API_KEY");
+  } finally {
+    await session.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
 
 it("keeps two registered sessions queryable through repeated owner probe timeouts", async () => {
   const dir = mkdtempSync(join(tmpdir(), "d-pi-native-live-owner-"));
@@ -210,7 +272,11 @@ require('node:readline').createInterface({input:process.stdin}).on('line',line=>
       data: { sessionId: "session" },
     });
     await session.close();
-    expect(events).toContainEqual({ kind: "disconnected", reason: "exit" });
+    expect(events).toContainEqual({
+      kind: "disconnected",
+      reason: "exit",
+      failure: { kind: "unavailable", operation: "unknown" },
+    });
     expect(events.filter((event) => event.kind === "exited")).toEqual([
       {
         kind: "exited",
@@ -265,13 +331,21 @@ require('node:readline').createInterface({input:process.stdin}).on('line',line=>
     );
     try {
       await session.start();
-      await expect(session.request(command)).rejects.toThrow(
-        "Native connection interrupted",
-      );
+      await expect(session.request(command)).rejects.toMatchObject({
+        failure: {
+          kind: "protocol",
+          operation: "unknown",
+          requestId: expect.any(String),
+        },
+      });
       await session.close();
       await session.close();
       expect(events.filter((event) => event.kind !== "frame")).toEqual([
-        { kind: "disconnected", reason: "protocol" },
+        {
+          kind: "disconnected",
+          reason: "protocol",
+          failure: { kind: "protocol", operation: "unknown" },
+        },
         {
           kind: "exited",
           evidence: {
@@ -422,19 +496,45 @@ require('node:readline').createInterface({input:process.stdin}).on('line',line=>
   );
   try {
     await session.start();
+    const circular: Record<string, unknown> = {};
+    circular.self = circular;
+    const encodingFailure: unknown = await session
+      .request("get_state", circular)
+      .catch((error: unknown) => error);
+    expect(encodingFailure).toBeInstanceOf(Error);
+    expect(encodingFailure).not.toBeInstanceOf(NativeRequestFailure);
     await expect(
       session.request("hold", { message: "x".repeat(1048576) }),
-    ).rejects.toThrow("Native input budget exceeded");
+    ).rejects.toMatchObject({
+      failure: {
+        kind: "write",
+        operation: "unknown",
+        budget: "input-budget",
+        requestId: expect.any(String),
+      },
+    });
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
     const requests = Array.from({ length: 64 }, () =>
       session.request("hold").catch((error: unknown) => error),
     );
-    await expect(session.request("hold")).rejects.toThrow(
-      "Native connection unavailable",
-    );
+    await expect(session.request("hold")).rejects.toMatchObject({
+      failure: {
+        kind: "unavailable",
+        operation: "unknown",
+        budget: "request-limit",
+      },
+    });
     await vi.advanceTimersByTimeAsync(30000);
     for (const result of await Promise.all(requests))
-      expect(result).toMatchObject({ message: "Native command timed out" });
+      expect(result).toMatchObject({
+        message: "Native command timed out",
+        failure: {
+          kind: "timeout",
+          operation: "unknown",
+          timeoutMs: 30000,
+          requestId: expect.any(String),
+        },
+      });
     vi.useRealTimers();
     expect(await session.request("flush")).toMatchObject({
       data: { seen: 64 },
@@ -442,6 +542,68 @@ require('node:readline').createInterface({input:process.stdin}).on('line',line=>
     expect(await session.request("get_state")).toMatchObject({ success: true });
   } finally {
     vi.useRealTimers();
+    await session.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+it("cancels only the local wait, releases its slot and never writes abort or resends a late reply", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "d-pi-native-abort-"));
+  const entry = join(dir, "fixture.cjs");
+  writeFileSync(
+    entry,
+    `console.log(JSON.stringify({type:'ready'}));
+const held=[];const commands=[];
+require('node:readline').createInterface({input:process.stdin}).on('line',line=>{
+ const c=JSON.parse(line);commands.push(c.type);
+ const reply=(c,data)=>console.log(JSON.stringify({type:'response',id:c.id,command:c.type,success:true,data}));
+ if(c.type==='get_state')held.push(c);
+ else if(c.type==='inspect')reply(c,commands);
+ else if(c.type==='flush'){for(const pending of held.splice(0))reply(pending);reply(c);}
+ else reply(c);
+}).on('close',()=>process.exit(0));`,
+  );
+  const session = new NativeSession(
+    {
+      binary: process.execPath,
+      entry,
+      directory: dir,
+      environment: { PATH: process.env.PATH },
+      sessionDirectory: dir,
+    },
+    () => {},
+  );
+  try {
+    await session.start();
+    const controller = new AbortController();
+    const cancelled = session.request(
+      "get_state",
+      {},
+      { signal: controller.signal },
+    );
+    const rejection = expect(cancelled).rejects.toMatchObject({
+      failure: {
+        kind: "interrupted",
+        operation: "get_state",
+        requestId: expect.any(String),
+      },
+    });
+    const remaining = Array.from({ length: 63 }, () =>
+      session.request("get_state").catch((error: unknown) => error),
+    );
+    controller.abort();
+    await rejection;
+    const inspection = await session.request("inspect");
+    expect(inspection.data).toEqual([
+      "negotiate_protocol",
+      ...Array.from({ length: 64 }, () => "get_state"),
+      "inspect",
+    ]);
+    await session.request("flush");
+    for (const response of await Promise.all(remaining))
+      expect(response).toMatchObject({ success: true });
+    expect((await session.request("inspect")).data).not.toContain("abort");
+  } finally {
     await session.close();
     rmSync(dir, { recursive: true, force: true });
   }
@@ -475,9 +637,9 @@ it("closes the native process when ready times out", async () => {
   );
   try {
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
-    const starting = expect(session.start()).rejects.toThrow(
-      "Native startup timed out",
-    );
+    const starting = expect(session.start()).rejects.toMatchObject({
+      failure: { kind: "timeout", operation: "startup", timeoutMs: 30000 },
+    });
     await loading;
     await vi.advanceTimersByTimeAsync(30000);
     vi.useRealTimers();

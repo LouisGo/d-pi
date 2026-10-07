@@ -20,7 +20,13 @@ it("counts a first sample as in flight", async () => {
   });
   let release: (reply: FileReply) => void = () => {};
   const bridge: FileBridge = {
-    request: () => new Promise<FileReply>((accept) => (release = accept)),
+    request: async (command) => ({
+      kind: "completed",
+      operationId: command.operationId,
+      traceId: command.traceId,
+      reply: await new Promise<FileReply>((accept) => (release = accept)),
+    }),
+    cancel: async (command) => ({ kind: "acknowledged", ...command }),
   };
   const observer = new QueryObserver(
     client,
@@ -46,7 +52,13 @@ it("does not count a disabled query as in flight", () => {
     defaultOptions: { queries: { retry: false } },
   });
   const bridge: FileBridge = {
-    request: () => Promise.resolve({} as FileReply),
+    request: async (command) => ({
+      kind: "completed",
+      operationId: command.operationId,
+      traceId: command.traceId,
+      reply: {} as FileReply,
+    }),
+    cancel: async (command) => ({ kind: "acknowledged", ...command }),
   };
   const observer = new QueryObserver(
     client,

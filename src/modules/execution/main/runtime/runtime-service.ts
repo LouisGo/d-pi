@@ -18,6 +18,10 @@ import type {
 import type { ThreadRepository } from "../../../threads/main/public";
 import type { HostMessage, ProcessExitEvidence } from "../../contracts/host";
 import {
+  type NativeFailureSummary,
+  nativeFailureCode,
+} from "../../contracts/native-failure";
+import {
   type FrozenSubmission,
   type SubmissionCommand,
   type SubmissionReply,
@@ -293,6 +297,7 @@ export class RuntimeService {
   private recordHost(
     stage: "disconnected" | "exited" | "failed",
     reason?: string,
+    nativeFailure?: NativeFailureSummary,
   ): void {
     if (!this.view || !this.currentConnectionGeneration) return;
     // Only known adapter codes are safe to persist; raw upstream errors may
@@ -320,6 +325,9 @@ export class RuntimeService {
         operation: "runtime:host",
         stage,
         ...(reason === undefined ? {} : { code }),
+        ...(nativeFailure
+          ? { causeCode: nativeFailureCode(nativeFailure) }
+          : {}),
       });
     } catch {
       /* Diagnostic failure cannot change execution or recovery. */
@@ -428,7 +436,14 @@ export class RuntimeService {
       )
       .with(
         { kind: "operation-result" },
-        ({ traceId, connectionGeneration, operation, status, code }) => {
+        ({
+          traceId,
+          connectionGeneration,
+          operation,
+          status,
+          code,
+          nativeFailure,
+        }) => {
           if (connectionGeneration !== this.currentConnectionGeneration) return;
           if (
             operation === "manage-queue" ||
@@ -474,6 +489,9 @@ export class RuntimeService {
             connectionId: connectionGeneration,
             operation: `runtime:${operation}`,
             stage: status,
+            ...(nativeFailure
+              ? { causeCode: nativeFailureCode(nativeFailure) }
+              : {}),
             ...(this.view ? { threadId: this.view.threadId } : {}),
             ...(this.target
               ? { nativeProcessInstanceId: this.target.processInstanceId }
@@ -579,6 +597,7 @@ export class RuntimeService {
         this.recordHost(
           failure.kind === "interrupted" ? "disconnected" : "failed",
           failure.kind === "interrupted" ? failure.reason : failure.code,
+          failure.nativeFailure,
         );
         this.update({
           phase: "interrupted",

@@ -6,14 +6,48 @@ import { act, createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
 import type { Attachment } from "../../../modules/input/contracts/public";
+import { AttachmentModel } from "../../../modules/input/core/public";
 import {
+  AttachmentImports,
   draftDocument,
   plainTextEditorOptions,
 } from "../../../modules/input/renderer/public";
 import { createI18n } from "../../../shared/i18n/create-i18n";
 import { ThreadIdSchema } from "../../../shared/identity";
-import type { AttachmentReply } from "../../contracts/attachments";
+import type {
+  AttachmentReply,
+  AttachmentRequest,
+} from "../../contracts/attachments";
 import { AttachmentControls } from "./attachment-controls";
+
+// Fixture owns the Thread resources; views only receive the same instances.
+const resources = new WeakMap<
+  object,
+  { model: AttachmentModel; imports: AttachmentImports }
+>();
+function controls(
+  props: Omit<Parameters<typeof AttachmentControls>[0], "model" | "imports"> & {
+    owner?: object;
+  },
+) {
+  const key = props.owner ?? props.editor ?? props.bridge;
+  let owned = resources.get(key);
+  if (!owned) {
+    const model = new AttachmentModel(props.bridge, props.threadId);
+    const imports = new AttachmentImports(async (input) => {
+      const reply = await model.run({ kind: "import-bytes", ...input }, true);
+      if (reply?.kind !== "attachments") throw Error("Import failed");
+      return reply.items;
+    });
+    owned = { model, imports };
+    resources.set(key, owned);
+    cleanups.push(async () => {
+      model.dispose();
+      imports.dispose();
+    });
+  }
+  return createElement(AttachmentControls, { ...props, ...owned });
+}
 
 vi.mock("../../../modules/preferences/renderer/public", () => ({
   useI18n: () => createI18n("en-US"),
@@ -24,6 +58,161 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 const id = ThreadIdSchema.parse("f9b0037d-1b8b-4f82-988c-7ca64f93fa37");
+it("distinguishes frozen provenance from live references in the formal controls", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const token = `[[dpi-attachment:${id}]]`;
+  const editor = new Editor({
+    ...plainTextEditorOptions,
+    element: document.createElement("div"),
+    content: draftDocument(token),
+  });
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  cleanups.push(async () => {
+    await act(() => root.unmount());
+    editor.destroy();
+    client.clear();
+    container.remove();
+  });
+  const item: Attachment = {
+    schemaVersion: 1,
+    id,
+    threadId: id,
+    token,
+    name: "original.txt",
+    mimeType: "text/plain",
+    byteLength: 12,
+    source: "paste",
+    status: "ready",
+    representation: "text",
+    coverageGaps: [],
+    textOnly: false,
+    capturedAt: "2026-10-07T00:00:00.000Z",
+    inputDigest: "a".repeat(64),
+    path: "src/original.txt",
+    referenceKind: "file",
+    frozenReference: {
+      projectPath: "/actual/source/project",
+      path: "src/original.txt",
+      kind: "file",
+      version: "source-version-1",
+      capturedAt: "2026-10-07T00:00:00.000Z",
+    },
+  };
+  const bridge = {
+    request: async () => ({ kind: "attachments" as const, items: [item] }),
+  };
+  await act(async () => {
+    root.render(
+      createElement(QueryClientProvider, {
+        client,
+        children: controls({
+          bridge,
+          threadId: id,
+          editor,
+          text: token,
+          isCurrent: () => true,
+          onBlocked: () => {},
+          mention: null,
+          dismissMention: () => {},
+        }),
+      }),
+    );
+  });
+  await act(async () => {
+    await vi.waitFor(() =>
+      expect(container.textContent).toContain("original.txt"),
+    );
+  });
+  expect(container.textContent).toContain("Frozen on copy");
+  expect(container.textContent).toContain("/actual/source/project");
+  expect(container.textContent).toContain("source-version-1");
+  expect(container.textContent).toContain("2026-10-07T00:00:00.000Z");
+  expect(container.textContent).not.toContain("Read when sending");
+});
+it("offers only retry for an unfinished clipboard cleanup and confirms its original IDs", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const editor = new Editor({
+    ...plainTextEditorOptions,
+    element: document.createElement("div"),
+    content: draftDocument("body"),
+  });
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  cleanups.push(async () => {
+    await act(() => root.unmount());
+    editor.destroy();
+    client.clear();
+    container.remove();
+  });
+  const attempts: string[][] = [];
+  const bridge = {
+    request: vi.fn(
+      async (command: AttachmentRequest): Promise<AttachmentReply> => {
+        if (command.kind === "clipboard-discard") {
+          attempts.push(command.ids);
+          return attempts.length === 1
+            ? { kind: "unavailable", reason: "storage-unavailable" }
+            : { kind: "cancelled" };
+        }
+        return { kind: "attachments", items: [] };
+      },
+    ),
+  };
+  await act(() => {
+    root.render(
+      createElement(QueryClientProvider, {
+        client,
+        children: controls({
+          bridge,
+          threadId: id,
+          editor,
+          text: "body",
+          isCurrent: () => true,
+          onBlocked: () => {},
+          mention: null,
+          dismissMention: () => {},
+        }),
+      }),
+    );
+  });
+  const owned = resources.get(editor);
+  if (!owned) throw Error("missing Thread-owned attachment model");
+  const cloneId = crypto.randomUUID();
+  await act(() =>
+    owned.model.run({ kind: "clipboard-discard", ids: [cloneId] }),
+  );
+  expect(owned.model.getReadiness().kind).toBe("blocked");
+  const buttons = Array.from(container.querySelectorAll("button"));
+  const { t } = createI18n("en-US");
+  expect(
+    buttons.some(
+      (button) =>
+        button.textContent?.trim() === t("attachment.dismissFailedRequest"),
+    ),
+  ).toBe(false);
+  const retry = buttons.find(
+    (button) => button.textContent?.trim() === t("attachment.retry"),
+  );
+  expect(retry).toBeDefined();
+  await act(async () => {
+    retry?.click();
+    await vi.waitFor(() =>
+      expect(owned.model.stateStore.getState().failed).toBeNull(),
+    );
+  });
+  expect(attempts).toEqual([[cloneId], [cloneId]]);
+  expect(owned.model.getReadiness().kind).toBe("ready");
+  expect(editor.getText()).toBe("body");
+});
 it("mounts the formal attachment controls and removes a failed atomic reference without changing surrounding text", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const token = `[[dpi-attachment:${id}]]`;
@@ -71,7 +260,7 @@ it("mounts the formal attachment controls and removes a failed atomic reference 
     root.render(
       createElement(QueryClientProvider, {
         client,
-        children: createElement(AttachmentControls, {
+        children: controls({
           bridge,
           threadId: id,
           editor,
@@ -174,7 +363,7 @@ it.each([
         root.render(
           createElement(QueryClientProvider, {
             client,
-            children: createElement(AttachmentControls, {
+            children: controls({
               bridge: { request },
               threadId: id,
               editor,
@@ -275,7 +464,7 @@ it("identifies a ready reference that failed during send-time freezing without r
     root.render(
       createElement(QueryClientProvider, {
         client,
-        children: createElement(AttachmentControls, {
+        children: controls({
           bridge: {
             request: async (): Promise<AttachmentReply> => ({
               kind: "attachments",
@@ -353,7 +542,7 @@ it("permits explicit re-preparation of a failed @PDF after text-only consent whi
     root.render(
       createElement(QueryClientProvider, {
         client,
-        children: createElement(AttachmentControls, {
+        children: controls({
           bridge: {
             request: async (): Promise<AttachmentReply> => ({
               kind: "attachments",
@@ -426,7 +615,7 @@ it("opens a natively modal preview with an accessible filename heading and keeps
     root.render(
       createElement(QueryClientProvider, {
         client,
-        children: createElement(AttachmentControls, {
+        children: controls({
           bridge: {
             request: async (command): Promise<AttachmentReply> =>
               command.kind === "preview"
@@ -490,7 +679,7 @@ it("reports the typed oversized-source rejection instead of a transport failure 
     root.render(
       createElement(QueryClientProvider, {
         client,
-        children: createElement(AttachmentControls, {
+        children: controls({
           bridge: {
             request: async (command): Promise<AttachmentReply> =>
               command.kind === "choose-import"
@@ -597,7 +786,7 @@ it.each([
       root.render(
         createElement(QueryClientProvider, {
           client,
-          children: createElement(AttachmentControls, {
+          children: controls({
             bridge: { request },
             threadId: id,
             editor,
@@ -707,7 +896,7 @@ it.each(["success", "cancelled"] as const)(
       root.render(
         createElement(QueryClientProvider, {
           client,
-          children: createElement(AttachmentControls, {
+          children: controls({
             bridge: { request },
             threadId: id,
             editor,
@@ -819,7 +1008,7 @@ it("offers storage checking and explicit unreferenced cleanup, locates broken or
     root.render(
       createElement(QueryClientProvider, {
         client,
-        children: createElement(AttachmentControls, {
+        children: controls({
           bridge: { request },
           threadId: id,
           editor,
@@ -900,7 +1089,7 @@ it("coalesces quick @ edits, hides old-query results, consumes Enter while waiti
       root.render(
         createElement(QueryClientProvider, {
           client,
-          children: createElement(AttachmentControls, {
+          children: controls({
             threadId: id,
             bridge: { request },
             editor: null,
@@ -973,4 +1162,92 @@ it("coalesces quick @ edits, hides old-query results, consumes Enter while waiti
   expect(
     request.mock.calls.some(([command]) => command.kind === "add-reference"),
   ).toBe(false);
+});
+
+it("retains an unresolved required-source failure after replacing its view with the same Thread owner", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const owner = {};
+  const editor = new Editor({
+    ...plainTextEditorOptions,
+    element: document.createElement("div"),
+    content: draftDocument("retained draft"),
+  });
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  const onBlocked = vi.fn();
+  let choose = 0;
+  const bridge = {
+    request: async (
+      command: import("../../contracts/attachments").AttachmentRequest,
+    ): Promise<AttachmentReply> =>
+      command.kind === "choose-import"
+        ? (choose++, { kind: "unavailable", reason: "source-too-large" })
+        : { kind: "attachments", items: [] },
+  };
+  const props = {
+    owner,
+    bridge,
+    threadId: id,
+    editor,
+    text: "retained draft",
+    isCurrent: () => true,
+    onBlocked,
+    mention: null,
+    dismissMention: () => {},
+  };
+  const mount = async () =>
+    act(async () => {
+      root.render(
+        createElement(QueryClientProvider, {
+          client,
+          children: controls(props),
+        }),
+      );
+      await new Promise((r) => setTimeout(r, 25));
+    });
+  try {
+    await mount();
+    const attach = Array.from(container.querySelectorAll("button")).find(
+      (x) => x.textContent === "Attach files",
+    );
+    expect(attach).toBeDefined();
+    await act(async () => {
+      attach!.click();
+      await new Promise((r) => setTimeout(r, 25));
+    });
+    expect(onBlocked).toHaveBeenLastCalledWith(true);
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+      "25 MiB limit",
+    );
+    expect(choose).toBe(1);
+    expect(editor.getText()).toBe("retained draft");
+    await act(() => root.render(null));
+    onBlocked.mockClear();
+    await mount();
+    console.log(
+      JSON.stringify({
+        afterRemount: {
+          blocked: onBlocked.mock.calls.at(-1)?.[0],
+          failureVisible:
+            container.querySelector('[role="alert"]')?.textContent ?? null,
+          chooseRequests: choose,
+          text: editor.getText(),
+        },
+      }),
+    );
+    expect(onBlocked).toHaveBeenLastCalledWith(true);
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+      "25 MiB limit",
+    );
+  } finally {
+    await act(() => root.unmount());
+    editor.destroy();
+    client.clear();
+    container.remove();
+    vi.unstubAllGlobals();
+  }
 });

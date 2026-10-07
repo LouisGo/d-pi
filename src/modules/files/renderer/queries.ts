@@ -1,5 +1,11 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { queryOptions, useQuery } from "@tanstack/react-query";
+import {
+  ReadCancelledError,
+  ReadOperationError,
+  readRetry,
+  requestReadOperation,
+} from "../../../shared/read-operation";
 import type { ThreadContext } from "../../threads/contracts/public";
 import type { FileBridge, FileReply, FileRequest } from "../contracts/public";
 
@@ -23,7 +29,9 @@ export const fileKeys = {
 export class FileReadError extends Error {
   readonly traceId: string;
   readonly operation: "files:list" | "files:read";
-  readonly attribution = "unknown";
+  readonly attribution: "main" | "unknown";
+  readonly code: string;
+  readonly retryable: boolean;
   readonly reply: FileReply | undefined;
 
   constructor(
@@ -35,6 +43,19 @@ export class FileReadError extends Error {
       "cause" in observation ? { cause: observation.cause } : undefined,
     );
     this.name = "FileReadError";
+    this.attribution =
+      "cause" in observation && observation.cause instanceof ReadOperationError
+        ? (observation.cause.failure?.attribution ?? "unknown")
+        : "unknown";
+    this.code =
+      "cause" in observation && observation.cause instanceof ReadOperationError
+        ? observation.cause.code
+        : "failed";
+    this.retryable =
+      "cause" in observation
+        ? observation.cause instanceof ReadOperationError &&
+          observation.cause.retryable
+        : false;
     this.traceId = request.traceId;
     this.operation = request.kind === "list" ? "files:list" : "files:read";
     this.reply = "reply" in observation ? observation.reply : undefined;
@@ -44,11 +65,20 @@ export class FileReadError extends Error {
 async function sample(
   files: FileBridge,
   request: FileRequest,
+  signal?: AbortSignal,
 ): Promise<FileReply> {
   let reply: FileReply;
   try {
-    reply = await files.request(request);
+    reply = await requestReadOperation(
+      {
+        request: () => files.request(request),
+        cancel: (identity) => files.cancel(identity),
+      },
+      request,
+      signal,
+    );
   } catch (cause) {
+    if (cause instanceof ReadCancelledError) throw cause;
     throw new FileReadError(request, { cause });
   }
   if (reply.kind === "unavailable" && reply.reason === "failed")
@@ -61,26 +91,38 @@ export function listDirectory(
   files: FileBridge,
   resource: ThreadContext,
   path: string,
+  signal?: AbortSignal,
 ) {
-  return sample(files, {
-    kind: "list",
-    traceId: crypto.randomUUID(),
-    threadId: resource.threadId,
-    path,
-  });
+  return sample(
+    files,
+    {
+      kind: "list",
+      traceId: crypto.randomUUID(),
+      operationId: crypto.randomUUID(),
+      threadId: resource.threadId,
+      path,
+    },
+    signal,
+  );
 }
 
 export function readFile(
   files: FileBridge,
   resource: ThreadContext,
   path: string,
+  signal?: AbortSignal,
 ) {
-  return sample(files, {
-    kind: "read",
-    traceId: crypto.randomUUID(),
-    threadId: resource.threadId,
-    path,
-  });
+  return sample(
+    files,
+    {
+      kind: "read",
+      traceId: crypto.randomUUID(),
+      operationId: crypto.randomUUID(),
+      threadId: resource.threadId,
+      path,
+    },
+    signal,
+  );
 }
 
 export function refreshFiles(
@@ -97,7 +139,8 @@ export const fileQueryOptions = {
   listing(files: FileBridge, resource: ThreadContext, path: string) {
     return queryOptions({
       queryKey: fileKeys.listing(resource, path),
-      queryFn: () => listDirectory(files, resource, path),
+      queryFn: ({ signal }) => listDirectory(files, resource, path, signal),
+      retry: readRetry,
       ...localRead,
     });
   },
@@ -110,10 +153,11 @@ export const fileQueryOptions = {
       queryKey: fileKeys.content(resource, path ?? null),
       // enabled only gates automatic observation. fetchQuery/refetch can
       // still call this function, so absence must also be handled here.
-      queryFn: () =>
+      queryFn: ({ signal }) =>
         path === undefined
           ? Promise.resolve(null)
-          : readFile(files, resource, path),
+          : readFile(files, resource, path, signal),
+      retry: readRetry,
       enabled: path !== undefined,
       ...localRead,
     });

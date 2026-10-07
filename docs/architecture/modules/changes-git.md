@@ -26,7 +26,7 @@ Git 视图负责选择比较对象和业务操作；[文件/Monaco](files-editor
 
 ## 读路径的查询与缓存
 
-`renderer/public.ts` 暴露 Git 的 Query key、请求构造与 `useChanges`/`useDiff`；key 使用真实 ThreadContext（Thread、工作目录身份、实际目录）、scope 与路径，选中另一资源或另一侧不会串结果；未选中的显式 fetch/refetch 不发 IPC。GitReadError 保留该次请求的 trace/operation 及业务回包或 transport cause。本地采样按 D-37 显式使用 `networkMode: 'always'`；`unavailable`（非 Git/缺失/拒绝/二进制/超限/冲突/变化中）作为业务结论如实显示，不作为可重试错误；只有采样失败（`unavailable("failed")`）在查询层转成可重试错误。刷新为显式动作，不做定时轮询；缓存不改变来源与覆盖字段，也不能把旧采样冒充当前 Git 状态。
+`renderer/public.ts` 暴露 Git 的 Query key、请求构造与 `useChanges`/`useDiff`；key 使用真实 ThreadContext（Thread、工作目录身份、实际目录）、scope 与路径，选中另一资源或另一侧不会串结果；未选中的显式 fetch/refetch 不发 IPC。GitReadError 保留该次请求的 trace/operation 及业务回包或 transport cause。本地采样按 D-37 显式使用 `networkMode: 'always'`；`unavailable`（非 Git/缺失/拒绝/二进制/超限/冲突/变化中）作为业务结论如实显示，不作为可重试错误；wire typed failure 由查询层按受控 code/retryable 判定是否重试；旧 `unavailable("failed")` 仍转成归因 unknown 的错误，但不会自动重试。刷新为显式动作，不做定时轮询；缓存不改变来源与覆盖字段，也不能把旧采样冒充当前 Git 状态。
 
 ## 生命周期与失败
 
@@ -41,3 +41,13 @@ M1 交付 HEAD ↔ index、index ↔ 工作区及未跟踪文件状态；工具�
 通过标准：左右来源可追溯、没有伪造前文或作者、所有路径保持只读。工作区当前状态不倒填为崩溃前或工具运行前的快照。
 
 M3 按场景加入暂存/提交/分支等 Git 写操作及 worktree 管理；worktree 的目录关联仍归 Thread。Agent Changes、Run Changes、Review、Revert 只预留来源字段和组合点，Run 起止、归属、Review 对应版本、Revert 对象和并发条件需在该切片确定。原生会话回退不等于文件回滚，不提前选 Git 命令或建全工作区快照平台。
+
+## 共享读取资源与完整结果（T3 基础重构，2026-10-07）
+
+Git 沿用 files 的只读 operation/cancel DTO、可信 sender/Thread 准入、Query shared observer 和取消生命周期。Main 创建唯一专用 Git runner，所有 list/diff 共用；不引入新 Effect 范围，不改 OMP 或 Git index/worktree。
+
+真实子进程最多4个，等待 spawn 的命令最多32个，过期/取消排队请求不 spawn；预算满返回不重试的 busy。每命令10秒，整体 operation最多30秒。许可从spawn前持续到真实child close和输出收束；abort callback不能提前释放。取消/timeout发送所属child的TERM，500ms未关闭升级KILL；close拒绝新请求、取消队列与活跃操作并等待所有实际资源收束。
+
+stdout分别沿用config key（NUL name-only）1MiB、状态4MiB、正文5MiB发布预算（runner额外1024字节用于拒绝超限），stderr最多64KiB；超限终止并返回too-large，机器结果不截断解析。raw bytes完成后才严格UTF-8/NUL/字段校验，不完整状态/rename/config或不可表示路径是malformed-output，不是完整数据。config防护读取失败必须fail closed；只有已证无HEAD返回null。前后样本读取失败保留实际failure，只有成功样本不一致返回changed。runner无内部重试，Query只重试明确timeout/io/可确认transient exit。
+
+原路径授权、symlink/FIFO拒绝、filter/fsmonitor/external-diff/textconv防护、SHA-256、HEAD/index/worktree来源和双采样复核保留。诊断只记录trace/operation、安全有限code和阶段，不保存原始stdout/stderr/path/args。

@@ -26,7 +26,7 @@ Diff 组件不读取 Git、不决定基线或作者，也不决定回退操作�
 
 ## 读路径的查询、缓存与编辑器边界
 
-`renderer/public.ts` 暴露文件的 Query key、请求构造与 `useDirectoryListing`/`useFileContent`；key 使用真实 ThreadContext（Thread、工作目录身份、实际目录）和路径，切换资源不会让迟到结果覆盖当前文件。本地读取按 D-37 显式使用 `networkMode: 'always'`，不因 Renderer 判定离线而暂停；返回值中的 `unavailable`（缺失/拒绝/二进制/编码/超限/变化中）是业务结论而非可重试错误，只有采样失败（`unavailable("failed")`）由查询层转成可重试错误，其余 reason 保持终局结论。刷新是显式动作，不做定时轮询；查询缓存不是磁盘真相，缓存命中不伪报成功。重试窗口内界面显示"正在重新采样"并禁用刷新按钮，避免旧采样被当成本次刷新的结果。列表查询的 key 必须能区分"未选中"与根目录：`""` 是合法根路径，因此列表不设 `enabled` 门控，门控只用于"未选中"确实合法的单文件查询；未选中的显式 fetch/refetch 也由执行函数阻止 IPC。FileReadError 保留该次请求的 trace/operation 及业务回包或 transport cause。
+`renderer/public.ts` 暴露文件的 Query key、请求构造与 `useDirectoryListing`/`useFileContent`；key 使用真实 ThreadContext（Thread、工作目录身份、实际目录）和路径，切换资源不会让迟到结果覆盖当前文件。本地读取按 D-37 显式使用 `networkMode: 'always'`，不因 Renderer 判定离线而暂停；返回值中的 `unavailable`（缺失/拒绝/二进制/编码/超限/变化中）是业务结论而非可重试错误，wire typed failure 由查询层按受控 code/retryable 判定是否重试；旧 `unavailable("failed")` 仍转成归因 unknown 的错误，但不会自动重试，其余 reason 保持终局结论。刷新是显式动作，不做定时轮询；查询缓存不是磁盘真相，缓存命中不伪报成功。重试窗口内界面显示"正在重新采样"并禁用刷新按钮，避免旧采样被当成本次刷新的结果。列表查询的 key 必须能区分"未选中"与根目录：`""` 是合法根路径，因此列表不设 `enabled` 门控，门控只用于"未选中"确实合法的单文件查询；未选中的显式 fetch/refetch 也由执行函数阻止 IPC。FileReadError 保留该次请求的 trace/operation 及业务回包或 transport cause。
 
 Monaco 适配不进入任何静态导入面：它以 `loadFileEditor()` 形式由本模块公开，Renderer 入口调用一次并作为组件注入工作台，业务模块与应用外壳都不静态引用编辑器包。编辑器包在模块顶层访问 `window`，无头测试不得加载它。
 
@@ -59,3 +59,13 @@ M3 再设计编辑缓冲、保存冲突、撤销与语言服务进程归属。�
 暖查询只读内存，检查整个有界快照后维护 top-100；目录 basename 精确和前缀匹配优先，再按文件 basename 和相关路径匹配，不先截取 100 个后代再排序。只做 trim、斜线规范化及大小写匹配，保留文件名内部的 `@`。快照 TTL 为 30 秒（单调时钟），过期在下一次查询刷新；`invalidate(root)` 提供显式刷新，构建中失效会合并为后续一次构建，旧构建不成为刷新后的缓存。返回 DTO 为副本，消费方不能修改索引。
 
 验证覆盖目录优先、并发/暖查询 I/O、TTL/显式失效、项目隔离/LRU/容量、symlink、目录并发替换、关闭及 DTO 边界。实际 20,001 项 fixture 的冷/暖 I/O 与耗时见本切片工程证据；不将临时目录性能当作所有真实工程的延迟保证。
+
+## 读取操作与取消（T3 基础重构，2026-10-07）
+
+每次实际 Query invocation 分配 UUID operationId，与同次 traceId 一起经过 request/cancel 的 strict DTO；不进入资源 key。AbortSignal 留在 Renderer helper。Main 在首个 await 前绑定可信 sender/frame、原 ThreadContext、controller 与终止 promise；start 复核 active Thread，cancel 只检查原 sender/operation，因此切 Thread 后仍可取消旧操作。已终止取消幂等，在途重复 start 拒绝，不能用取消获取 PID 或跨 sender 控制。
+
+Query 同 key 共享一次操作；离开一个 observer 仅释放订阅，最后一个离开由 Query signal 取消。wire completed/cancelled/failed 与业务 FileReply 分开；preload 同时校验结构与 trace/operation 关联。取消不显示错误或重试；timeout/io/output-read/已证 transient exit 最多重试3次，busy/授权/坏回复/坏机器输出不重试。源销毁、主 frame 重载和退出停止所属读取，新窗口不接管旧操作。
+
+文件读取在不可抢占的 syscall 前后检查取消，正文分块读取，finally 关闭句柄；不以 Promise.race 丢弃仍在途句柄。目录用 opendir 流式遍历，维护排序后的最多500项；完整遍历后保持原排序语义。扫描最多50,000项、原始名称最多4 MiB UTF-8、整体5秒，达限时 truncated 表示受限采样，不能声称完整遍历。目录、文件和路径身份复核继续成立。
+
+Main 每 sender 最多16个及应用最多32个并行只读 operation，包含排队与在途资源；整体 operation deadline 30秒。每次操作终止后释放登记；正常 cancel/quit 等待底层资源 finally，而不伪报立刻抢占系统 I/O。预算为初始工程值，实际同负载证据在02切片保存。

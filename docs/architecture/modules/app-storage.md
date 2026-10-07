@@ -62,3 +62,5 @@ App 的 attachment-service-references 装配跨仓储权威投影：分批读取
 2026-10-06：schema 10 为文件/目录引用的 typed manifest 与冻结来源 JSON 设置兼容性围栏，无新表。before-v10 保留 schema 9 数据；旧 App 不得打开更高版本丢弃类型。已有无 referenceKind 的 manifest 仍按文件读取，草稿采用/释放事实在 schema 9 及以后继续原子保存。降级须使用升级前数据库及配套内容副本。
 
 2026-10-06：有界诊断读取与脱敏公开入口沿用 `platform/main/diagnostics/public.ts`，跨进程DTO单源 `shared/diagnostics.ts`；Main IPC控制日志目录及原生保存，Renderer按需采样/显示覆盖与反馈模板。未新增SQLite表、OMP事件存储或自动恢复/上传，采样不等待Writer并不保证未落盘尾部。预算与未完成监控目标见[诊断合同](../diagnostics.md)。
+
+2026-10-07：Writer 在序列化前选择数据字段并注入可信身份；读取/导出仍独立过滤。快照兼容旧的 degraded/dropped，并表达追加未确认、清理失败、拒收、关闭达限、在途及最近恢复，不新增 SQLite 事实。实现与统计口径见[诊断合同](../diagnostics.md#2026-10-07-t3-基础重构writer-安全与恢复合同)。

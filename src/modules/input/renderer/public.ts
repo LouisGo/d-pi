@@ -7,12 +7,19 @@ export {
   handlePlainTextPaste,
   textPasteTransaction,
 } from "./clipboard/plain-text-paste";
+export { createTrustedClipboard } from "./clipboard/trusted-clipboard";
 export { DraftEditorCache } from "./editor/draft-editor-cache";
 export {
   draftDocument,
   plainTextEditorOptions,
   replaceDraftText,
 } from "./editor/plain-text-editor";
+export {
+  createAttachmentEditor,
+  moveAttachmentReference,
+  removeAttachmentReference,
+  syncAttachmentLabels,
+} from "./references/attachment-editor";
 export {
   attachmentIds,
   attachmentMention,

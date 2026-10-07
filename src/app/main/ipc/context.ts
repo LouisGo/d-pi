@@ -4,10 +4,12 @@ import type {
   IpcMainInvokeEvent,
   MessageChannelMain,
 } from "electron";
+import type { ProjectGitReader } from "../../../modules/changes/main/public";
 import type { RuntimeFailure } from "../../../modules/execution/contracts/public";
 import type { RuntimeService } from "../../../modules/execution/main/public";
 import type { Diagnostics } from "../../../platform/main/diagnostics/public";
 import type { AppStorage } from "../wiring/app-storage";
+import type { ProjectReadOperations } from "./project-reads.operations";
 
 export type IpcEvent = IpcMainEvent | IpcMainInvokeEvent;
 
@@ -35,6 +37,8 @@ export type SubmissionContext = IpcSourceContext & {
 
 export type ProjectReadContext = Omit<IpcSourceContext, "ipcMain"> & {
   ipcMain: Pick<IpcMain, "handle">;
+  reads: ProjectReadOperations;
+  gitReader: ProjectGitReader;
   getStore: () => AppStorage | undefined;
   getDiagnostics: () =>
     | Pick<Diagnostics, "processInstanceId" | "record">

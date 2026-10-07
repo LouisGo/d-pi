@@ -7,5 +7,7 @@ export function appendSelectionReference(
 ): Transaction {
   const reference = state.schema.nodes.fileReference;
   if (!reference) throw new Error("Composer file reference schema unavailable");
-  return state.tr.insert(state.doc.content.size, reference.create(value));
+  return state.tr
+    .insert(state.doc.content.size, reference.create(value))
+    .setMeta("dpiIndependentAction", true);
 }

@@ -1,5 +1,11 @@
 import { z } from "zod";
 import { TraceIdSchema } from "../../../shared/identity";
+import {
+  type ReadCancelReply,
+  type ReadIdentity,
+  type ReadResponse,
+  readResponseSchema,
+} from "../../../shared/read-operation";
 
 export const ProjectPathSchema = z.string().max(4096);
 export const ProjectReferenceEntrySchema = z.strictObject({
@@ -12,12 +18,14 @@ export const FileRequestSchema = z.discriminatedUnion("kind", [
   z.strictObject({
     kind: z.literal("list"),
     traceId: TraceIdSchema,
+    operationId: z.uuid(),
     threadId: z.uuid(),
     path: ProjectPathSchema,
   }),
   z.strictObject({
     kind: z.literal("read"),
     traceId: TraceIdSchema,
+    operationId: z.uuid(),
     threadId: z.uuid(),
     path: ProjectPathSchema,
   }),
@@ -60,6 +68,8 @@ export const FileReplySchema = z.discriminatedUnion("kind", [
   }),
 ]);
 export type FileReply = z.infer<typeof FileReplySchema>;
+export const FileResponseSchema = readResponseSchema(FileReplySchema);
 export interface FileBridge {
-  request(command: FileRequest): Promise<FileReply>;
+  request(command: FileRequest): Promise<ReadResponse<FileReply>>;
+  cancel(command: ReadIdentity): Promise<ReadCancelReply>;
 }

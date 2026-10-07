@@ -1,4 +1,8 @@
 export const ui = {
+  "attachment.clipboardFallback":
+    "Structured content fell back to readable text. Dynamic references do not transfer file access.",
+  "attachment.clipboardFailed":
+    "Structured clipboard could not complete. Try again; readable text remains available.",
   "settings.commandEnterKey": "⌘ + Enter",
   "settings.configurationDescription":
     "Manage provider authentication and inspect the native configuration used by the current Thread.",
@@ -115,6 +119,12 @@ export const ui = {
   "attachment.failed": "Preparation failed",
   "attachment.directoryAtSend":
     "Freeze directory entries when sending; excludes file contents",
+  "attachment.frozenOnCopy": "Frozen on copy",
+  "attachment.frozenSource": "Source at copy",
+  "attachment.frozenProject": "Source project",
+  "attachment.frozenPath": "Source path",
+  "attachment.frozenVersion": "Source version",
+  "attachment.frozenTime": "Captured at",
   "attachment.readAtSend": "Read when sending",
   "attachment.remove": "Remove {name}",
   "attachment.previous": "Move {name} earlier",
@@ -150,6 +160,16 @@ export const ui = {
   "attachment.reason.content-missing":
     "The private content is missing or was cleared as unreferenced cache. Reattach the original.",
   "attachment.library": "Imported files available to reference",
+  "draft.inactiveClosePending":
+    "Select conversation {thread} in the sidebar and save or resolve its unconfirmed input before closing.",
+  "attachment.historyLeaseFailed":
+    "Undo assets could not be protected. Retry before saving or sending.",
+  "attachment.historyCleared":
+    "The input history limit was reached. Undo history was cleared; your draft is preserved.",
+  "attachment.historyRetry": "Retry asset protection",
+  "attachment.awaitingInsertion":
+    "{name} is prepared. Add it to the draft or remove this pending source before sending.",
+  "attachment.discardPrepared": "Remove this pending source",
   "attachment.insert": "Add to draft",
   "attachment.refreshSearch": "Refresh search",
   "attachment.directoryKind": "Folder",
@@ -175,6 +195,10 @@ export const ui = {
     "Total original content exceeds 100 MiB.",
   "attachment.reason.transport-too-large":
     "Encoded input exceeds the native transport limit. Remove or reduce content; nothing was truncated.",
+  "attachment.reason.editor-history-limit":
+    "Preparing this version would exceed the undo asset limit. The saved attachment and undo history are preserved.",
+  "attachment.clearHistory": "Clear undo history, then send again",
+  "attachment.clearHistoryRetry": "Clear undo history and retry",
   "attachment.reason.storage-full":
     "Private content storage is full. Active inputs were retained.",
   "attachment.reason.storage-unavailable":
@@ -736,6 +760,11 @@ export const ui = {
     "Current Writer degraded; {dropped} records dropped.",
   "ui.diagnostics.writerHealthy":
     "Current Writer healthy; {dropped} records dropped.",
+  "ui.diagnostics.notProvided": "not provided",
+  "ui.diagnostics.writerCounters":
+    "Totals: unconfirmed appends {uncertain}; retention failures {retentionFailures}; rejected records {rejected}; close deadlines {drainTimedOut}. Currently in flight: {inFlight} records.",
+  "ui.diagnostics.writerRecovery":
+    "Last recovery: {time}. Historical counts remain; recovery does not replay original events.",
   "ui.diagnostics.interpretation":
     "Record order is a reading aid; stages do not prove execution completed. No matches do not prove an operation never happened; rotation, drops or uninstrumented stages can leave gaps. Refresh re-reads the applied time range.",
   "ui.diagnostics.empty": "No matching records in this scope.",

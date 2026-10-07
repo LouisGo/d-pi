@@ -1,7 +1,7 @@
 import type { IpcRenderer } from "electron";
 import {
-  GitReplySchema,
   GitRequestSchema,
+  GitResponseSchema,
 } from "../../../modules/changes/contracts/public";
 import {
   HistoryPageSchema,
@@ -10,13 +10,36 @@ import {
   ProjectHistoryRequestSchema,
 } from "../../../modules/conversation/contracts/public";
 import {
-  FileReplySchema,
   FileRequestSchema,
+  FileResponseSchema,
 } from "../../../modules/files/contracts/public";
+import {
+  ReadCancellationSchema,
+  ReadCancelReplySchema,
+  type ReadIdentity,
+  ReadOperationError,
+  type ReadResponse,
+} from "../../../shared/read-operation";
 import type { DesktopBridge } from "../../contracts/desktop-bridge";
 export function createProjectReadBridge(
   ipcRenderer: IpcRenderer,
 ): Pick<DesktopBridge, "history" | "files" | "git"> {
+  async function cancel(
+    channel: "files:cancel" | "git:cancel",
+    command: ReadIdentity,
+  ) {
+    const value = ReadCancellationSchema.parse(command);
+    const response = ReadCancelReplySchema.safeParse(
+      await ipcRenderer.invoke(channel, value),
+    );
+    if (
+      !response.success ||
+      response.data.operationId !== value.operationId ||
+      response.data.traceId !== value.traceId
+    )
+      throw new ReadOperationError("invalid-reply");
+    return response.data;
+  }
   return {
     history: {
       async projectList(threadId) {
@@ -55,20 +78,39 @@ export function createProjectReadBridge(
       },
     },
     files: {
+      cancel: (command) => cancel("files:cancel", command),
       async request(command) {
         const value = FileRequestSchema.parse(command);
-        return FileReplySchema.parse(
+        const response = FileResponseSchema.safeParse(
           await ipcRenderer.invoke("files:request", value),
         );
+        if (!response.success) throw new ReadOperationError("invalid-reply");
+        return correlated(value, response.data);
       },
     },
     git: {
+      cancel: (command) => cancel("git:cancel", command),
       async request(command) {
         const value = GitRequestSchema.parse(command);
-        return GitReplySchema.parse(
+        const response = GitResponseSchema.safeParse(
           await ipcRenderer.invoke("git:request", value),
         );
+        if (!response.success) throw new ReadOperationError("invalid-reply");
+        return correlated(value, response.data);
       },
     },
   };
+}
+
+function correlated<T>(
+  identity: ReadIdentity,
+  response: ReadResponse<T>,
+): ReadResponse<T> {
+  const returned = response.kind === "failed" ? response.error : response;
+  if (
+    returned.operationId !== identity.operationId ||
+    returned.traceId !== identity.traceId
+  )
+    throw new ReadOperationError("invalid-reply");
+  return response;
 }

@@ -1,0 +1,87 @@
+{
+  "platform": "darwin",
+  "mode": "built source Electron with emulated viewports; synthetic read-only project and v3 history",
+  "submissions": 0,
+  "nativeBindings": 0,
+  "modelGenerationRequests": 0,
+  "measurements": [
+    {
+      "name": "conversation-dark-minimum",
+      "width": 960,
+      "height": 640,
+      "readingHeight": 493,
+      "focusVisible": true,
+      "codeVisible": null,
+      "focused": "true",
+      "editorPreserved": true,
+      "draft": "Synthetic QA draftline twoline three"
+    },
+    {
+      "name": "history-dark-compact-minimum",
+      "width": 960,
+      "height": 640,
+      "readingHeight": 493,
+      "focusVisible": true,
+      "codeVisible": null,
+      "focused": "true",
+      "editorPreserved": true,
+      "draft": "Synthetic QA draftline twoline three"
+    },
+    {
+      "name": "history-dark-compact-restored",
+      "width": 960,
+      "height": 640,
+      "readingHeight": 113.8046875,
+      "focusVisible": true,
+      "codeVisible": null,
+      "focused": "false",
+      "editorPreserved": true,
+      "draft": "Synthetic QA draftline twoline three"
+    }
+  ],
+  "anchorMeasurements": [
+    {
+      "name": "before",
+      "rowId": "anchor-10",
+      "offset": 40.21875,
+      "scrollTop": 6279.5,
+      "source": "[\"native\",\"15fdd5c3-1098-409d-a831-602b2686cbe0\",\"0bc93385ebd8d380c837b0924760f5998d6c223dcfd32dd35d73bc5f59e4884c\",\"e31b1441725748544c437db961aaff19585f37d7c684279df7026772a8d66906\",0]"
+    },
+    {
+      "name": "width-change",
+      "rowId": "anchor-10",
+      "offset": 40.21875,
+      "scrollTop": 6175.5,
+      "source": "[\"native\",\"15fdd5c3-1098-409d-a831-602b2686cbe0\",\"0bc93385ebd8d380c837b0924760f5998d6c223dcfd32dd35d73bc5f59e4884c\",\"e31b1441725748544c437db961aaff19585f37d7c684279df7026772a8d66906\",0]"
+    },
+    {
+      "name": "composer-hidden",
+      "rowId": "anchor-10",
+      "offset": 40.21875,
+      "scrollTop": 6175.5,
+      "source": "[\"native\",\"15fdd5c3-1098-409d-a831-602b2686cbe0\",\"0bc93385ebd8d380c837b0924760f5998d6c223dcfd32dd35d73bc5f59e4884c\",\"e31b1441725748544c437db961aaff19585f37d7c684279df7026772a8d66906\",0]"
+    },
+    {
+      "name": "view-return",
+      "rowId": "anchor-10",
+      "offset": 40.21875,
+      "scrollTop": 6234.5,
+      "source": "[\"native\",\"15fdd5c3-1098-409d-a831-602b2686cbe0\",\"0bc93385ebd8d380c837b0924760f5998d6c223dcfd32dd35d73bc5f59e4884c\",\"e31b1441725748544c437db961aaff19585f37d7c684279df7026772a8d66906\",0]"
+    },
+    {
+      "name": "thread-return",
+      "rowId": "anchor-10",
+      "offset": 40.21875,
+      "scrollTop": 6264,
+      "source": "[\"native\",\"15fdd5c3-1098-409d-a831-602b2686cbe0\",\"0bc93385ebd8d380c837b0924760f5998d6c223dcfd32dd35d73bc5f59e4884c\",\"e31b1441725748544c437db961aaff19585f37d7c684279df7026772a8d66906\",0]"
+    }
+  ],
+  "clipboard": {
+    "nativeTransport": true,
+    "newTargetId": true,
+    "sameDigest": true,
+    "singleUndo": true,
+    "redoSameId": true,
+    "pasteboardRestore": "restored"
+  }
+}

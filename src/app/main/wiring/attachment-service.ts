@@ -7,7 +7,10 @@ import {
   ProjectReferenceSearch,
   readProjectBytes,
 } from "../../../modules/files/main/public";
-import { AttachmentStore } from "../../../modules/input/main/public";
+import {
+  AttachmentStore,
+  EditorHistoryLimitError,
+} from "../../../modules/input/main/public";
 import type {
   AttachmentReply,
   AttachmentRequest,
@@ -61,6 +64,17 @@ export function createAttachmentService(
         current.workingDirectoryId !== thread.workingDirectoryId
       )
         throw Error("reference-denied");
+      const sourceCurrent = () => {
+        try {
+          const actual = storage.threads.threadContext(threadId);
+          return (
+            actual.directory === thread.directory &&
+            actual.workingDirectoryId === thread.workingDirectoryId
+          );
+        } catch {
+          return false;
+        }
+      };
       if (kind === "directory" && reply.kind === "entries") {
         if (reply.truncated) throw Error("source-too-large");
         // Freeze direct entry names and kinds, never recursively inline file bodies.
@@ -74,6 +88,8 @@ export function createAttachmentService(
         );
         return {
           bytes,
+          projectPath: thread.directory,
+          current: sourceCurrent,
           version: `sha256:${createHash("sha256").update(bytes).digest("hex")}`,
         };
       }
@@ -83,15 +99,74 @@ export function createAttachmentService(
             ? "reference-denied"
             : "reference-unavailable",
         );
-      return { bytes: reply.bytes, version: reply.version };
+      return {
+        bytes: reply.bytes,
+        version: reply.version,
+        projectPath: thread.directory,
+        current: sourceCurrent,
+      };
     },
   });
-  async function execute(command: AttachmentRequest): Promise<AttachmentReply> {
+  async function execute(
+    command: AttachmentRequest,
+    owner?: string,
+  ): Promise<AttachmentReply> {
     if (stopping) throw Error("Attachment storage closed");
     const thread = storage.threads.threadContext(command.threadId);
     const attachments = (items: Awaited<ReturnType<typeof store.list>>) =>
       ({ kind: "attachments", items }) as const;
     switch (command.kind) {
+      case "clipboard-reserve":
+        return owner
+          ? store.reserveClipboard(owner, command.threadId)
+          : { kind: "clipboard-unavailable", reason: "invalid" };
+      case "clipboard-export":
+        return owner
+          ? store.exportClipboard(
+              owner,
+              command.threadId,
+              command.ticket,
+              command.text,
+              command.ids,
+            )
+          : { kind: "clipboard-unavailable", reason: "invalid" };
+      case "clipboard-import":
+        return owner
+          ? store.importClipboard(owner, command.threadId, command.ticket)
+          : { kind: "clipboard-unavailable", reason: "invalid" };
+      case "clipboard-release":
+        return owner
+          ? store.releaseClipboard(owner, command.threadId, command.tickets)
+          : { kind: "clipboard-unavailable", reason: "invalid" };
+      case "clipboard-discard":
+        return owner
+          ? store.discardClipboard(owner, command.threadId, command.ids)
+          : { kind: "clipboard-unavailable", reason: "invalid" };
+      case "history-open":
+        return owner
+          ? store.openEditorHistory(owner, command.threadId, command.epoch)
+          : { kind: "unavailable", reason: "reference-denied" };
+      case "history-update":
+        return owner
+          ? store.updateEditorHistory(
+              owner,
+              command.threadId,
+              command.leaseId,
+              command.version,
+              command.ids,
+            )
+          : { kind: "unavailable", reason: "reference-denied" };
+      case "history-release":
+        return owner
+          ? store.releaseEditorHistory(
+              owner,
+              command.threadId,
+              command.leaseId,
+              command.releaseIds,
+              command.retainIds,
+            )
+          : { kind: "unavailable", reason: "reference-denied" };
+
       case "check-storage":
         return store
           .checkStorage(command.threadId)
@@ -174,10 +249,16 @@ export function createAttachmentService(
       case "preview":
         return store.preview(command.threadId, command.id);
       case "retry": {
-        const item = await store.retry(command.threadId, command.id);
-        return item
-          ? attachments([item])
-          : { kind: "unavailable", reason: "attachment-not-found" };
+        try {
+          const item = await store.retry(command.threadId, command.id);
+          return item
+            ? attachments([item])
+            : { kind: "unavailable", reason: "attachment-not-found" };
+        } catch (error) {
+          if (error instanceof EditorHistoryLimitError)
+            return { kind: "unavailable", reason: "editor-history-limit" };
+          throw error;
+        }
       }
       case "set-text-only": {
         const item = await store.setTextOnly(

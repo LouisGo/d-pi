@@ -2,8 +2,14 @@ import { match } from "ts-pattern";
 import type { ConversationItem } from "../../../modules/conversation/contracts/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import { Button } from "../../../modules/ui/renderer/public";
-import { ReadingBody } from "./reading-body";
-export function SubagentMessage({ item }: { item: ConversationItem }) {
+import { ReadingBody, type ReadingBodyBinding } from "./reading-body";
+export function SubagentMessage({
+  item,
+  position,
+}: {
+  item: ConversationItem;
+  position?: ReadingBodyBinding | undefined;
+}) {
   const { t } = useI18n();
   const agent = item.subagent;
   if (!agent) return null;
@@ -35,6 +41,7 @@ export function SubagentMessage({ item }: { item: ConversationItem }) {
     <article
       className="message"
       data-selectable
+      data-reading-row={item.id}
       data-subagent-id={agent.nativeId}
       data-subagent-status={agent.status}
       data-subagent-parent={agent.parentToolCallId}
@@ -83,6 +90,7 @@ export function SubagentMessage({ item }: { item: ConversationItem }) {
         {item.text ? (
           <ReadingBody
             text={item.text}
+            position={position}
             streaming={agent.status === "running"}
           />
         ) : (

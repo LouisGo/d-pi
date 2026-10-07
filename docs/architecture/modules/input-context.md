@@ -1,5 +1,17 @@
 # 输入与上下文
 
+## T3 基础输入重构合同（2026-10-07）
+
+ThreadModel 组合无 DOM 的 AttachmentModel，统一拥有来源请求、失败、显式重试和未插入的准备结果；浏览器 FileReader 留在 Renderer adapter。正式控件仅订阅并发出意图，卸载不销毁来源。Main 操作回复中的准备状态保留最多 128 项只读投影，按当前 DraftController token IDs 检查已知失败/未覆盖 PDF，移除正文中的来源不会被无用资产阻塞；恢复或淘汰后的未知资产始终由 Main prepare 权威校验，查询列表不形成第二份可写事实。发送在草稿捕获前、捕获准备时及捕获返回后复核同一 readiness。关窗冻结所有活 Thread 的来源入口，保存后再次核对，只有当前幂等 attempt lease 可释放；导航期间沿用原输入屏障。Main save 仍只接受 active Thread；正常切换先 flush，inactive owner 收到迟到正文而未确认时，关闭拒绝并给出侧栏已有会话短 ID，切回保存或解决该 owner 的失败后再重试，不扩大后台写权限。
+
+编辑事务在 history 应用前按输入、删除和独立用户动作分组；IME replacement 仍是输入，粘贴/剪切/拖入/插入或重排引用各自成组，元数据刷新不入 history。消费和外部版本替换清除历史，窗口缓存继续按 revision/sequence/text/schema 恢复；不引入第二份可写正文。
+
+窗口 editor epoch 在 Main 注册有限的历史资产租约，验证真实 Thread manifest，保护该 epoch 中曾可撤销的来源超集；租约不得通过剪贴板路径或摘要直接授权读取。历史清除、缓存淘汰和窗口释放解除租约。取得保护后才能持久化移除最后引用；失败时保留待保存正文和历史，阻止提交、切换和关闭，显式重试可恢复。最多 9 个 epoch（当前编辑器和 8 个缓存），每个 128 个来源、所有 epoch 合计 256 MiB 不重复对象；达限不静默删除 Undo 负载，按既有编辑缓存合同清除该 epoch 历史后再释放，当前正文保持。资产二进制不进入撤销栈。
+
+同一 attachment ID 的 Main manifest 在重试或发送准备时可能新增 input/derived digest。Main 在发布处同步预检所有持有该 Thread/ID 的历史 epochs，按 Renderer document 的 distinct-object 预算原子补齐保护，并触发 transient epoch；保持旧摘要超集与 Renderer version，不依赖视图重新 observe ID。超预算拒绝发布，旧 manifest/lease/Undo 不变，返回准确 `editor-history-limit`；用户可显式清除当前 Undo 并等待旧 Main lease 释放后重试，不自动清历史来完成附件重试。新增对象尚未采用时仍按原导入/准备租约合同处理。
+
+Main 将 transient lease epoch 纳入 GC 在 await 后及实际 unlink 前的所有权复核，记录集合是删除防护而非第二份资产权威。租约由当前 Renderer document 及 Main service 生命周期持有，渲染器 reload 或服务关闭释放；草稿/收据/unknown 的持久引用仍按原合同保护。租约 acquire/update/release 走类型化附件入口，重复释放幂等，旧 epoch 请求不能改写新 epoch；原草稿 DTO、SQLite 接受事务与 OMP 执行不变。
+
 日期：2026-09-27。深度：M1 文字/选区主干，M2 全部指定输入。依据 D-10/D-24/D-33；[Composer 方案](../../product/first-release.md#2-composer最小-tiptap-与项目业务扩展)、[基础契约 §4](../foundation-contracts.md#4-内容包与附件b4)。返回[模块地图](README.md)。
 
 ## 当前工程落点（领域目录治理，2026-09-29）
@@ -78,3 +90,44 @@ input Main 的 AttachmentStore 管 schema 8 manifest、schema 9 对象投影、�
 Main服务拥有files的ProjectReferenceSearch实例，与附件服务一同close/drain；Query仅缓存只读候选，150ms合并连续键入，等待或查询身份不一致时不可确认旧候选，显式刷新使Main缓存失效。文件发送仍冻结原文件正文；不改变OMP执行或unknown/cold恢复策略。
 
 04c 文件和目录发送读取共同保持 Thread 记录的规范项目根：读取前后检查根非 symlink、realpath 原值及 dev/ino/ctime，拒绝将变化后的外部规范路径当作原授权根。通用 files 浏览 API 的别名支持不构成附件发送授权；失败保留引用与草稿。
+
+
+## 可信结构化剪贴板（T3 foundations 04）
+
+2026-10-07用户已选择动态引用复制时冻结来源/版本。新合同在[spec](../../../.scratch/t3-foundations/spec.md#用户选项1复制冻结来源与版本)：Main按原Thread真实manifest沿原readReference权限捕获有界完整文件/直接目录清单，保留版本及来源并存入私有对象，export ready后目标永不回读项目。目标新ID与真实摘要（含PDF派生）参与snapshot→import→正文/history→持久采用保护；仅源数据可用且所有预算准入才发布，失败不生成半成品。正式GUI区分“复制时冻结”和原动态“发送时读取”。本段为已确认要求，实施状态以spec为准。
+
+Copy/cut 同步捕获实际选区，写入 Main 预发 ticket（`version:1, instanceId, handleId, expiresAt`）的私有 MIME 与 HTML fallback；plain flavor 始终可读，附件显示名称和标识，不输出可解析的原 UUID token。无可用 ticket 时只复制可读文本并提示。随后异步export绑定一次性ticket：export仅包含实际选中节点的IDs，正文中的其他UUID token降级；Main校验依赖闭包和源Thread真实manifest。私有ready text/image/pdf-text按输入及派生摘要验证，冻结选区只搬自包含原文。动态@文件/目录沿原Thread的readReference权限、来源身份与格式/覆盖规则捕获可用私有表示；原manifest仍保持动态。冻结来源记录projectPath/path/kind/version/capturedAt，数据只作溯源；再次复制已冻结资产不重新读项目。来源不可用或准备失败沿显式可读fallback，不发布半个目标片段。
+
+快照属于 Main 当前 app instance 和可信 Renderer document，Thread 切换不会撤销已复制快照；完整 document navigation、renderer 退出及 App service close 全部释放。每 document 最多 8 tickets、全局 32；ticket TTL 120 秒（reserved/pending/ready 都适用），每快照 32 个依赖及 1 MiB 选中文字、64 MiB 私有对象，全局 128 MiB。等待 export 每 ticket 最多 4、全局 16、最长 3 秒；队列内工作晚于 TTL/释放不会再发布或克隆。import（含等待/排队/执行）每 document 最多 4、全局 16，未持久采用的克隆交接最多 128，已采用时解除交接保护；timer 上限等于 ticket/等待预算，close 清除 timer 并结束等待。复制请求同步pin已有源digest，异步prepare在Main串行资源lane内按真实input/derived对象核验并同步重查预算、来源及TTL后补齐snapshot pin，再发布ready；失败释放该ticket全部pin/预算。GC不得穿过准备与发布的交接；现有editor epoch和持久草稿继续保护cut/保存前的源资产。
+
+Paste 只解析严格版本和有界 envelope；未知、过期、伪造、跨 instance、准备失败、预算耗尽均显示可读 fallback。Main 校验目标 Thread；整片段验证成功后一个SQLite事务建立新目标附件ID，保留完整输入/派生record、冻结来源与私有对象去重。目标preview/prepare/reopen仅消费私有快照，不再回读源项目或目标同名路径，不访问任意路径或URL。Renderer 用原 Thread 的 AttachmentModel 跟踪 pending，并在同一消费 sequence、同一 editor doc/selection、仍 editable/current 且 source 未被冻结时执行一次 PM paste transaction；全部内容一次 Undo/Redo。迟到结果不落入别的 Thread 或已消费草稿，未使用克隆释放 import pin。显式纯文本粘贴仍消费 text/plain。正文唯一可写拥有者、保存和 03 history lease 不变。
+
+公开 wire 使用现有 AttachmentBridge 的 clipboard-reserve/export/import/release/discard 命令与 clipboard-tickets/exported/imported/unavailable 判别结果。Clipboard failure 独立于附件内容失败（invalid/expired/busy/failed），不泄露 path、stderr 或业务全文到诊断。窗口内 adapter 只拥有可丢弃 ticket pool 和当前 paste attempt，没有第二份草稿或资产事实。
+
+
+### Clipboard clone 交接与历史结束
+
+成功插入尚未持久采用的 clone 继续由 Main 原 import pin 保护，不能提前仅交给异步 Undo lease。显式清史、缓存淘汰和 epoch 替换通过既有 `history-release` 发送可选 `leaseId`、`releaseIds`（该 epoch 的依赖候选，包括尚未确认或失败的 update）和 `retainIds`（当前真实正文依赖）。无 lease 的候选也可结束；旧调用缺字段只释放已验证的 lease，不新增 clone 删除授权。两个 ID 数组最多 80,000，覆盖 4 MiB 草稿正文 token 的上限；仅 ID 投影，不保存第二份正文。
+
+Main 在同一个同步步骤释放可信 owner/Thread 的历史 lease，并仅回收该 owner/Thread 候选中不在 retainIds、也不被其他有效 Main epoch 引用的未采用 clipboard clone：解除原 import pin 和 128 交接额度。当前正文 clone 继续沿原 pin 保护，无重新申请历史 lease 的窗口；普通 PDF 等资产的显式清史/重试预算合同不变。可 Redo 时不结束 epoch，保持其 clone 保护。重复清史保留用于后续清理的当前 ID 候选；缓存淘汰以 DraftController 的真实当前正文提供保留集合，document close 仍释放全部 document 临时资源。清理 RPC 失败保守留 pin，来源保存屏障等待完成并允许显式重试。
+
+
+清理恢复独立于当前 epoch 的更新：未完成的 lease/candidate cleanup 记录保留真实 leaseId 和候选集合，跨 reset 不丢失；新 epoch 成功 update 不能解除旧 cleanup 失败或保存屏障。update 的失败也独立保留，只有相应 update 成功或其 epoch 实际结束、以及所有 cleanup 实际完成后来源才 ready。显式 retry 和再次清史恢复所有未完成记录；每次清理重试以最新当前正文 ID 投影与当前 epoch 的保守 Undo/Redo 依赖共同提供 retainIds，包括尚未确认或失败的 update，不能使用旧清史时的正文快照删除新依赖。依然不保存第二份正文，分片 wire 上限和普通 PDF 清史预算恢复合同不变。
+
+
+Cache 的 epoch 淘汰与 cleanup owner 销毁分开：未确认的结束保留无头 owner 与该 Thread Controller 的保存屏障，重绑和显式 retry 仍能恢复；仅全部 Main ACK 后移除。窗口最多9个 history owner（active、inactive cache、pending cleanup 合计），沿 document 的9epoch预算；达限不新增 owner、不丢义务，来源保持 history failed/limited，保存屏障拒绝持久采用。显式 retry 先恢复已退休 owner，再准入新 owner；未保存正文仍由原 import pin保护。退休状态不保留 Editor/EditorState 或正文副本，关闭文档仍由 Main统一释放。
+
+
+待准入投影另有硬预算：最多9个 Controller、全窗口 candidate IDs 总计80,000；普通待准入 epoch 超128依赖时沿既有显式限额清史规则结束Undo。预算不足时 PM admission plugin 在 docChanged 前拒绝普通编辑，并通过独立 editable prop 表达暂不可编辑，不改变原 Thread readonly 选项；保存/clear/retry不会假成功。slot 的正常在途释放表现 pending，Main ACK 自动 drain 待准入来源，先移交真正 before/doc 的依赖并确认，才恢复保存；真实失败保持可重试。投影只有准入、实际ACK后的清理、或document disposal能移除，视图/EditorState淘汰不丢candidate。
+
+`replaceDraftText` 是窄可信应用正文替换，消费确认与useStored沿显式PM meta通过admission预算门，不授予普通输入/clipboard该meta；替换后核对实际PM目标正文并清除旧Undo epoch。新可信正文来自现有Controller/App权威引用，仍可读；旧candidate义务保留，不能因一次command返回true而假称正文已替换。同Thread Controller重绑先以新实际正文接棒retention和保存屏障，旧controller/已销毁Editor不成为释放权威。
+
+PM准入过滤可能拒绝dispatch；附件adapter必须核对实际doc是否等于目标transaction.doc，拒绝时返回false、让Thread AttachmentModel保留uninserted-source。可信clipboard同样核对实际doc，失败时明确反馈并等待Main discard未使用clone，不能把一笔被拒绝的dispatch当作已插入交接。
+
+拒绝插入后的discard由Thread AttachmentModel持有必要清理失败，与已有源失败排队并保留原ids；一次unavailable/transport不能变成ready，显式retry只重试discard且仅其Main cancelled ACK解除义务，不重跑import。存在清理失败时不再申请clipboard import，Main每document最多4在途/128handoff给清理集合硬上界；普通源失败仍独立保留。必要cleanup不能用移除失败动作放弃，只能Main ACK或原document最终释放。
+
+GUI 对必要 clipboard-discard 失败仅提供重试，隐藏移除失败请求动作。冻结选区也以实际 PM 目标文档确认应用；被拒绝时保留待应用意图，history 准入状态恢复后再尝试，同一请求确认后只应用一次。
+
+Main 成功导入后，若因正文、选区、generation、前台身份或adapter/Editor销毁而未插入，同样由仍存活的原Thread AttachmentModel持有discard、失败及重试责任。失效的adapter不得绕过owner直接忽略RPC失败，也不得把clone重新插入新草稿。真正Thread owner销毁与可信Main document释放分别核对，不把二者笼统视为等价。
+
+historyState供React外部订阅读取。没有history owner时的empty、pending admission、failed/limited admission均返回稳定快照；在途Main释放不得每次创建新对象。实际ACK后订阅通知状态变化，正常第十Thread自动从pending准入并恢复保存，无React更新循环。

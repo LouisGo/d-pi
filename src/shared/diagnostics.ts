@@ -5,6 +5,7 @@ export const DiagnosticOperationSchema = z.enum([
   "unknown",
   "diagnostics:query",
   "diagnostics:export",
+  "diagnostics:writer",
   "attention:snapshot",
   "attention:preferences",
   "attention:visible",
@@ -61,6 +62,14 @@ export const DiagnosticOperationSchema = z.enum([
   "attachments:retry",
   "attachments:set-text-only",
   "attachments:maintenance",
+  "attachments:history-open",
+  "attachments:history-update",
+  "attachments:history-release",
+  "attachments:clipboard-reserve",
+  "attachments:clipboard-export",
+  "attachments:clipboard-import",
+  "attachments:clipboard-release",
+  "attachments:clipboard-discard",
   "history:project-list",
   "history:project-read",
   "files:list",
@@ -100,6 +109,35 @@ export const DiagnosticFilterSchema = z
   });
 export type DiagnosticFilter = z.infer<typeof DiagnosticFilterSchema>;
 const boundedCode = z.string().max(96);
+const count = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
+export const DiagnosticWriterGapSchema = z.strictObject({
+  startedAt: z.iso.datetime(),
+  recoveredAt: z.iso.datetime(),
+  dropped: count,
+  uncertain: count,
+  retentionFailures: count,
+});
+export type DiagnosticWriterGap = z.infer<typeof DiagnosticWriterGapSchema>;
+export const DiagnosticWriterHealthSchema = z.strictObject({
+  degraded: z.boolean(),
+  dropped: count,
+  // Optional only for compatibility with snapshots produced before this contract.
+  uncertain: count.optional(),
+  retentionFailures: count.optional(),
+  rejected: count.optional(),
+  drainTimedOut: count.optional(),
+  inFlight: count.optional(),
+  episode: z
+    .strictObject({
+      startedAt: z.iso.datetime(),
+      reason: z.enum(["prewrite", "append", "retention"]),
+    })
+    .optional(),
+  lastRecovery: DiagnosticWriterGapSchema.optional(),
+});
+export type DiagnosticWriterHealth = z.infer<
+  typeof DiagnosticWriterHealthSchema
+>;
 export const DiagnosticRecordSchema = z.strictObject({
   schemaVersion: z.literal(1),
   time: z.iso.datetime(),
@@ -135,6 +173,7 @@ export const DiagnosticRecordSchema = z.strictObject({
   exitSignal: boundedCode.nullable().optional(),
   terminationReason: boundedCode.nullable().optional(),
   requestedExitCode: z.number().int().nullable().optional(),
+  writerGap: DiagnosticWriterGapSchema.optional(),
 });
 export type DiagnosticRecord = z.infer<typeof DiagnosticRecordSchema>;
 export const DiagnosticSnapshotSchema = z.strictObject({
@@ -150,10 +189,7 @@ export const DiagnosticSnapshotSchema = z.strictObject({
     unreadable: z.number().int().nonnegative(),
     truncated: z.boolean(),
   }),
-  writer: z.strictObject({
-    degraded: z.boolean(),
-    dropped: z.number().int().nonnegative(),
-  }),
+  writer: DiagnosticWriterHealthSchema,
 });
 export type DiagnosticSnapshot = z.infer<typeof DiagnosticSnapshotSchema>;
 export const DiagnosticRequestSchema = z.strictObject({

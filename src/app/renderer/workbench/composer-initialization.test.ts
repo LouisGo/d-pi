@@ -360,7 +360,11 @@ it("blocks Enter and both send controls while pasted image preparation is pendin
       view,
       {
         preventDefault: () => {},
-        clipboardData: { files: [file], getData: () => "" },
+        clipboardData: {
+          types: ["text/plain"],
+          files: [file],
+          getData: () => "",
+        },
       } as unknown as ClipboardEvent,
       {} as never,
     ),
@@ -437,7 +441,10 @@ it("preserves explicit plain paste even when the clipboard also contains image f
       "literal **source**\nsecond line",
     );
     expect(
-      request.mock.calls.every(([command]) => command.kind === "list"),
+      request.mock.calls.every(
+        ([command]) =>
+          command.kind === "list" || command.kind === "clipboard-reserve",
+      ),
     ).toBe(true);
   } finally {
     editor.destroy();

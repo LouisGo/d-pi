@@ -24,6 +24,7 @@ import {
   appendSelectionReference,
   attachmentMention,
   createClipboardPaste,
+  createTrustedClipboard,
   draftDocument,
   plainTextEditorOptions,
   replaceDraftText,
@@ -78,8 +79,16 @@ export function Composer({
     controller.getSnapshot,
     controller.getSnapshot,
   );
+  const history = useSyncExternalStore(
+    model.draftEditors.subscribe,
+    () => model.draftEditors.historyState(thread.key),
+    () => model.draftEditors.historyState(thread.key),
+  );
   const [expanded, setExpanded] = useState(false);
   const [unsupportedPaste, setUnsupportedPaste] = useState(false);
+  const [clipboardFeedback, setClipboardFeedback] = useState<
+    "fallback" | "failed" | null
+  >(null);
   const [attachmentBlocked, setAttachmentBlocked] = useState(false);
   const [mention, setMention] =
     useState<ReturnType<typeof attachmentMention>>(null);
@@ -105,6 +114,23 @@ export function Composer({
     () => createClipboardPaste(() => setUnsupportedPaste(true)),
     [controller],
   );
+  const trustedClipboard = useMemo(
+    () =>
+      model.attachments && thread.attachments
+        ? createTrustedClipboard({
+            bridge: model.attachments,
+            model: thread.attachments,
+            isCurrent: () => model.isCurrentThread(thread),
+            sequence: () => controller.getEditorSnapshot().sequence,
+            onFeedback: setClipboardFeedback,
+          })
+        : null,
+    [controller, model, thread],
+  );
+  useEffect(() => {
+    trustedClipboard?.start();
+    return () => trustedClipboard?.dispose();
+  }, [trustedClipboard]);
   const editor = useEditor(
     {
       ...plainTextEditorOptions,
@@ -122,6 +148,8 @@ export function Composer({
       },
       editorProps: {
         handlePaste: (view, event) => {
+          if (!paste.isPlain() && trustedClipboard?.paste(view, event))
+            return true;
           const files = Array.from(event.clipboardData?.files ?? []);
           if (
             !paste.isPlain() &&
@@ -173,6 +201,14 @@ export function Composer({
           return true;
         },
         handleDOMEvents: {
+          copy: (view, event) =>
+            trustedClipboard?.copy(view, event, false) ?? false,
+          cut: (view, event) =>
+            trustedClipboard?.copy(view, event, true) ?? false,
+          focus: () => {
+            void trustedClipboard?.warm();
+            return false;
+          },
           blur: () => {
             paste.reset();
             return false;
@@ -194,6 +230,10 @@ export function Composer({
     },
     [controller],
   );
+  useEffect(
+    () => (editor ? trustedClipboard?.bindEditor(editor) : undefined),
+    [editor, trustedClipboard],
+  );
   const lastAttachment = useRef<string | null>(null);
   useEffect(() => {
     if (
@@ -206,9 +246,12 @@ export function Composer({
     const apply = () => {
       if (!model.isCurrentThread(thread) || editor.isDestroyed) return;
       if (editor.view.composing) return;
-      editor.view.dispatch(
-        appendSelectionReference(editor.state, selectionAttachment.selection),
+      const transaction = appendSelectionReference(
+        editor.state,
+        selectionAttachment.selection,
       );
+      editor.view.dispatch(transaction);
+      if (!editor.state.doc.eq(transaction.doc)) return;
       lastAttachment.current = selectionAttachment.id;
       editor.commands.focus("end");
       onAttachmentApplied?.(selectionAttachment.id);
@@ -217,7 +260,16 @@ export function Composer({
       editor.view.dom.addEventListener("compositionend", apply, { once: true });
     else apply();
     return () => editor.view.dom.removeEventListener("compositionend", apply);
-  }, [editor, selectionAttachment, model, thread, onAttachmentApplied]);
+  }, [
+    editor,
+    selectionAttachment,
+    model,
+    thread,
+    onAttachmentApplied,
+    history.pending,
+    history.failed,
+    history.limited,
+  ]);
   useEffect(() => {
     if (!editor) return;
     editor.setOptions({
@@ -280,10 +332,11 @@ export function Composer({
         />
       )}
       <EditorContent className="composer-editor" editor={editor} />
-      {model.attachments && (
+      {thread.attachments && thread.attachmentImports && model.attachments && (
         <AttachmentControls
           key={thread.key}
-          owner={controller}
+          model={thread.attachments}
+          imports={thread.attachmentImports}
           preparationFailure={preparationFailure}
           ref={attachmentActions}
           bridge={model.attachments}
@@ -294,11 +347,44 @@ export function Composer({
           onBlocked={updateBlocked}
           mention={mention}
           dismissMention={dismissMention}
+          onClearHistory={() => model.draftEditors.clearHistory(thread.key)}
         />
+      )}
+      {clipboardFeedback && (
+        <p role="status" className="muted">
+          {t(
+            clipboardFeedback === "fallback"
+              ? "attachment.clipboardFallback"
+              : "attachment.clipboardFailed",
+          )}
+        </p>
       )}
       {unsupportedPaste && (
         <p role="alert" className="failure">
           {t("composer.paste.unsupported")}
+        </p>
+      )}
+      {history.failed && (
+        <div role="alert" className="flex flex-wrap items-center gap-2">
+          <p className="failure">{t("attachment.historyLeaseFailed")}</p>
+          <Button
+            variant="ghost"
+            disabled={history.pending}
+            onClick={() =>
+              void model.draftEditors
+                .retryHistory(thread.key)
+                .then((protectedAssets) => {
+                  if (protectedAssets) void controller.retry();
+                })
+            }
+          >
+            {t("attachment.historyRetry")}
+          </Button>
+        </div>
+      )}
+      {history.limited && (
+        <p role="status" className="muted">
+          {t("attachment.historyCleared")}
         </p>
       )}
       <div className="composer-footer">
@@ -325,7 +411,9 @@ export function Composer({
           </Button>
           {submission && runtime && (
             <SendButton
-              contentBlocked={attachmentBlocked}
+              contentBlocked={
+                attachmentBlocked || history.pending || history.failed
+              }
               canSend={() =>
                 !!editor &&
                 !editor.view.composing &&

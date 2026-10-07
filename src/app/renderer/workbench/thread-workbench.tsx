@@ -15,6 +15,7 @@ import { useI18n } from "../../../modules/preferences/renderer/public";
 import { Button } from "../../../modules/ui/renderer/public";
 import { Conversation } from "../reading/conversation";
 import { History } from "../reading/history";
+import { attachReadingAnchor } from "../reading/reading-anchor";
 import { Submissions } from "../reading/submissions";
 import type { ReadingView } from "../routing/search";
 import { ConversationVisibilityContext } from "../shell/layout/conversation-visibility";
@@ -196,6 +197,7 @@ const ThreadContent = memo(function ThreadContent({
           {thread.reading && (
             <Conversation
               model={thread.reading}
+              positions={thread.readingSources}
               onHistory={() => onReadingViewChange("history")}
             />
           )}
@@ -230,6 +232,7 @@ const ThreadContent = memo(function ThreadContent({
           {model.history && (
             <History
               bridge={model.history}
+              positions={thread.readingSources}
               active={readingView === "history"}
               threadId={thread.context.threadId}
             />
@@ -330,30 +333,21 @@ function ReadingPane({
 }) {
   const { visible } = useContext(ConversationVisibilityContext);
   const ref = useRef<HTMLDivElement>(null);
-  const restoring = useRef(false);
+  const anchor = useRef<ReturnType<typeof attachReadingAnchor> | null>(null);
   useLayoutEffect(() => {
     const pane = ref.current;
     if (!pane || !active || !visible) return;
-    const top = thread.readingPositions.get(view) ?? 0;
-    restoring.current = true;
-    pane.scrollTop = top;
-    // Composer mounts after this pane's layout effect. Restore again before
-    // paint, once its geometry is present, without recording an initial clamp.
-    const frame = requestAnimationFrame(() => {
-      pane.scrollTop = top;
-      restoring.current = false;
+    const adapter = attachReadingAnchor({
+      pane,
+      positions: thread.readingSources,
+      isVisible: () => active && visible,
+      pixel: () => thread.readingPositions.get(view) ?? 0,
+      rememberPixel: (top) => thread.readingPositions.set(view, top),
     });
+    anchor.current = adapter;
     return () => {
-      cancelAnimationFrame(frame);
-      // React may already have hidden the viewport. Preserve its last visible
-      // coordinate, and never persist an unfinished restoration's clamp.
-      if (
-        !pane.hidden &&
-        pane.getClientRects().length > 0 &&
-        !restoring.current
-      )
-        thread.readingPositions.set(view, pane.scrollTop);
-      restoring.current = false;
+      adapter.dispose();
+      if (anchor.current === adapter) anchor.current = null;
     };
   }, [thread, view, active, visible]);
   return (
@@ -361,15 +355,7 @@ function ReadingPane({
       ref={ref}
       className="reading-pane"
       hidden={!active}
-      onScroll={(event) => {
-        if (
-          active &&
-          visible &&
-          event.currentTarget.getClientRects().length > 0 &&
-          !restoring.current
-        )
-          thread.readingPositions.set(view, event.currentTarget.scrollTop);
-      }}
+      onScroll={() => anchor.current?.capture()}
     >
       {children}
     </div>

@@ -30,6 +30,7 @@
 | 基建 | [类型安全桌面路由](../.scratch/router-integration/spec.md) | 工程完成 | 已交付待试用 | 待认可 | 0.1.0-m2.9 / acf535c4-88948e3f [证据1](../.scratch/router-integration/issues/01-routing.md) · [证据2](../.scratch/router-integration/review.md) · [证据3](../.scratch/router-integration/handoff.md) · [证据4](../.scratch/router-integration/evidence/native-result.json) | 试用本地 macOS 候选：页签、会话切换和前进后退；用户认可待反馈 |
 | 基建 | [设置页与配置组件](../.scratch/settings-ui/spec.md) | 工程完成 | 已交付待试用 | 待认可 | Dev / codex/settings-ui / d02201c + b0a7ab6 [证据1](../.scratch/settings-ui/handoff.md) · [证据2](../.scratch/settings-ui/validation.md) · [证据3](../.scratch/settings-ui/review.md) | 等待设置页 Dev 试用反馈 |
 | 基建 | [状态与查询对齐](../.scratch/state-query-alignment/spec.md) | 工程完成 | 已交付待试用 | 待认可 | 441b27b4-1525b713（随重写包） [证据1](../.scratch/rewrite-preparation/handoff.md) · [证据2](../.scratch/state-query-alignment/issues/04-integration-verification.md) | 04 含试用验收，继续 claimed 等待反馈 |
+| 基建 | [T3 研究与基础重构](../.scratch/t3-foundations/spec.md) | 工程完成 | 已交付待试用 | 待认可 | 组合源a20a9c2；check/build通过；历史macOS证据b49c413 [证据1](../.scratch/t3-foundations/research.md) · [证据2](../.scratch/t3-foundations/handoff.md) · [证据3](../.scratch/t3-foundations/evidence/07-integration.md) · [证据4](../.scratch/t3-foundations/local-main-integration.md) | 从main按handoff试用并收集反馈；用户认可仍pending |
 
 ## 当前任务与真实阻塞
 
@@ -74,5 +75,6 @@
 - [核心重写及外观补修](../.scratch/rewrite-preparation/spec.md)：同题复测未证明接手效率提升；真实供应商、系统 IME 与用户体验未认可。
 - [类型安全桌面路由](../.scratch/router-integration/spec.md)：本地实施和提交；不 push、不改变 OMP 执行及冷恢复政策。
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
+- [T3 研究与基础重构](../.scratch/t3-foundations/spec.md)：unknown 不重发，冷恢复只读；native/live 无可靠原生身份时保持独立来源；M3 能力仅作设计储备
 
-<!-- source-sha256: 7ba11af5910db753c5e160da96cbf81286415715cfe8065776df3424c7bfdc5b; sources: 138 -->
+<!-- source-sha256: 189927965959c79592900a33f0526a334ad86ac0dbaade5a632484e33250bdb2; sources: 146 -->

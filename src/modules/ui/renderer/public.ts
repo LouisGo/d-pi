@@ -1,4 +1,5 @@
 export { Button, type ButtonProps } from "./button";
+export { SearchIcon } from "./components/icons/common";
 export {
   ChoiceGroup,
   type ChoiceGroupProps,
@@ -13,6 +14,7 @@ export {
   TextInput,
   type TextInputProps,
 } from "./controls";
+export { installControlFocusVisibility } from "./focus-visibility";
 export {
   SettingRow,
   type SettingRowProps,
@@ -21,7 +23,3 @@ export {
   SettingsPage,
   type SettingsPageProps,
 } from "./settings";
-
-export { SearchIcon } from "./components/icons/common";
-
-export { installControlFocusVisibility } from "./focus-visibility";

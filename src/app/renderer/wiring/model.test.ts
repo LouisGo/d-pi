@@ -45,11 +45,13 @@ afterEach(() => {
 async function setup(
   save: (command: SaveCommand) => Promise<SaveReply>,
   restored: () => Draft = () => draft,
+  attachments?: DesktopBridge["attachments"],
 ) {
   // Only the document theme surface and the process boundary are substituted;
   // AppModel and DraftController collaborate without React or native UI.
   vi.stubGlobal("document", { documentElement: { dataset: {} } });
   const bridge: DesktopBridge = {
+    ...(attachments ? { attachments } : {}),
     request: async (command) => {
       const input: Command = command;
       const raw = await match(input)
@@ -64,10 +66,19 @@ async function setup(
           },
         }))
         .with({ kind: "save" }, save)
+        .with({ kind: "select-thread" }, async () => ({
+          kind: "ready" as const,
+          draft: restored(),
+          directoryAvailable: true,
+          preferences: {
+            theme: "light" as const,
+            density: "normal" as const,
+            locale: "system" as const,
+          },
+        }))
         .with(
           { kind: "choose-project" },
           { kind: "list-threads" },
-          { kind: "select-thread" },
           { kind: "new-thread" },
           { kind: "preferences" },
           () => {
@@ -418,4 +429,207 @@ it("rechecks unfinished view input after the save and releases its own freeze wh
   expect(editable).toBe(true);
   pending = false;
   expect(await input.model.prepareViewNavigation()).toBe(true);
+});
+
+it("blocks application close for a failed required source even after its view detaches", async () => {
+  const input = await setup(
+    async () => saved(1),
+    () => draft,
+    {
+      request: async () => ({
+        kind: "unavailable",
+        reason: "source-too-large",
+      }),
+    },
+  );
+  const selected = input.model.stateStore.getState();
+  if (selected.kind !== "ready") throw Error("not ready");
+  const selection = selected.threadSelection;
+  if (selection.kind !== "thread") throw Error("not selected");
+  const sources = selection.thread.attachments;
+  if (!sources) throw Error("no attachment model");
+  await sources.run({ kind: "choose-import" }, true);
+  expect(await input.model.prepareClose()).toBe(false);
+  expect(input.isEditable()).toBe(true);
+  sources.removeFailure();
+  expect(await input.model.prepareClose()).toBe(true);
+  input.model.dispose();
+});
+
+it("freezes source intents across the close save barrier and restores them on cancellation", async () => {
+  const receipt = deferredReceipt();
+  const request = vi.fn(
+    async (): Promise<
+      import("../../contracts/attachments").AttachmentReply
+    > => ({ kind: "unavailable", reason: "source-too-large" }),
+  );
+  const input = await setup(
+    () => receipt.promise,
+    () => draft,
+    { request },
+  );
+  const state = input.model.stateStore.getState();
+  if (state.kind !== "ready" || state.threadSelection.kind !== "thread")
+    throw Error("not ready");
+  const sources = state.threadSelection.thread.attachments;
+  const imports = state.threadSelection.thread.attachmentImports;
+  if (!sources || !imports) throw Error("missing sources");
+  input.controller.edit("unsaved input");
+  const closing = input.model.prepareClose();
+  expect(await sources.run({ kind: "choose-import" }, true)).toBeNull();
+  imports.importFiles([new File(["original"], "file.txt")], "drop");
+  expect(request).not.toHaveBeenCalled();
+  expect(imports.stateStore.getState().pending).toBe(0);
+  expect(imports.stateStore.getState().failures).toEqual([]);
+  input.model.cancelClose();
+  expect(input.isEditable()).toBe(true);
+  await sources.run({ kind: "choose-import" }, true);
+  expect(request).toHaveBeenCalledTimes(1);
+  receipt.resolve(saved(1));
+  expect(await closing).toBe(false);
+  input.model.dispose();
+});
+
+it("rechecks unresolved sources after saving and releases the failed close attempt", async () => {
+  const receipt = deferredReceipt();
+  const input = await setup(() => receipt.promise);
+  const outside = new AttachmentImports(async () => []);
+  const source = new File(["original"], "oversized.txt");
+  Object.defineProperty(source, "size", { value: 25 * 1024 * 1024 + 1 });
+  input.controller.edit("unsaved input");
+  const closing = input.model.prepareClose();
+  outside.importFiles([source], "drop");
+  try {
+    receipt.resolve(saved(1));
+    expect(await closing).toBe(false);
+    expect(input.isEditable()).toBe(true);
+  } finally {
+    outside.dispose();
+    input.model.dispose();
+  }
+});
+
+it("keeps source entry points frozen after a successful close until explicit cancellation", async () => {
+  const request = vi.fn(
+    async (): Promise<
+      import("../../contracts/attachments").AttachmentReply
+    > => ({ kind: "cancelled" }),
+  );
+  const input = await setup(
+    async () => saved(1),
+    () => draft,
+    { request },
+  );
+  const state = input.model.stateStore.getState();
+  if (state.kind !== "ready" || state.threadSelection.kind !== "thread")
+    throw Error("not ready");
+  const sources = state.threadSelection.thread.attachments;
+  if (!sources) throw Error("missing sources");
+  expect(await input.model.prepareClose()).toBe(true);
+  expect(await sources.run({ kind: "choose-import" }, true)).toBeNull();
+  expect(request).not.toHaveBeenCalled();
+  expect(await input.model.prepareClose()).toBe(false);
+  input.model.cancelClose();
+  expect(sources.stateStore.getState().acceptingSources).toBe(true);
+  expect(await sources.run({ kind: "choose-import" }, true)).toEqual({
+    kind: "cancelled",
+  });
+  input.model.dispose();
+});
+
+it("refuses close for late unconfirmed input on an inactive Thread, then admits normal confirmed owners on retry", async () => {
+  let selected = draft;
+  const stored = new Map([[draft.threadId, draft]]);
+  const second = DraftSchema.parse({
+    ...draft,
+    threadId: crypto.randomUUID(),
+    text: "second",
+  });
+  stored.set(second.threadId, second);
+  const input = await setup(
+    async (command) => {
+      const saved = {
+        kind: "saved" as const,
+        threadId: command.threadId,
+        revision: command.expectedRevision + 1,
+      };
+      const old = stored.get(command.threadId);
+      if (!old) throw Error("missing draft");
+      stored.set(command.threadId, {
+        ...old,
+        text: command.text,
+        revision: saved.revision,
+      });
+      return saved;
+    },
+    () => stored.get(selected.threadId) ?? selected,
+  );
+  input.controller.edit("confirmed before switching");
+  selected = second;
+  expect(await input.model.selectThread(second.threadId)).toMatchObject({
+    kind: "applied",
+  });
+  expect(await input.model.prepareClose()).toBe(true);
+  input.model.cancelClose();
+  // A retained old view or completion must keep its own unconfirmed body.
+  input.controller.edit("late input on first");
+  expect(await input.model.prepareClose()).toBe(false);
+  expect(input.controller.getTextSnapshot()).toBe("late input on first");
+  selected = draft;
+  expect(await input.model.selectThread(draft.threadId)).toMatchObject({
+    kind: "applied",
+  });
+  expect(await input.model.prepareClose()).toBe(true);
+  input.model.cancelClose();
+  expect(input.controller.getTextSnapshot()).toBe("late input on first");
+  input.model.dispose();
+});
+
+it("rechecks inactive late input after the active close save and releases every owner for retry", async () => {
+  let selected = draft;
+  const second = DraftSchema.parse({
+    ...draft,
+    threadId: crypto.randomUUID(),
+    text: "second",
+  });
+  const receipt = deferredReceipt();
+  const input = await setup(
+    async (command) =>
+      command.threadId === second.threadId
+        ? receipt.promise
+        : saved(command.expectedRevision + 1),
+    () => selected,
+    { request: async () => ({ kind: "cancelled" }) },
+  );
+  selected = second;
+  expect(await input.model.selectThread(second.threadId)).toMatchObject({
+    kind: "applied",
+  });
+  const state = input.model.stateStore.getState();
+  if (state.kind !== "ready" || state.threadSelection.kind !== "thread")
+    throw Error("not selected");
+  const active = state.threadSelection.thread;
+  active.controller.edit("active close body");
+  const closing = input.model.prepareClose();
+  expect(active.attachments?.stateStore.getState().acceptingSources).toBe(
+    false,
+  );
+  input.controller.edit("late completion body on A");
+  receipt.resolve({ kind: "saved", threadId: second.threadId, revision: 1 });
+  expect(await closing).toBe(false);
+  const blocked = input.model.stateStore.getState();
+  if (blocked.kind !== "ready") throw Error("not ready");
+  expect(blocked.notice?.message).toEqual({
+    code: "draft.inactiveClosePending",
+    params: { thread: draft.threadId.slice(0, 6) },
+  });
+  expect(active.attachments?.stateStore.getState().acceptingSources).toBe(true);
+  selected = draft;
+  expect(await input.model.selectThread(draft.threadId)).toMatchObject({
+    kind: "applied",
+  });
+  expect(await input.model.prepareClose()).toBe(true);
+  input.model.cancelClose();
+  expect(input.controller.getTextSnapshot()).toBe("late completion body on A");
+  input.model.dispose();
 });

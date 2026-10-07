@@ -1,6 +1,11 @@
 import { type ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { Cause, Deferred, Effect, Exit, Fiber, Scope } from "effect";
+import * as Cause from "effect/Cause";
+import * as Deferred from "effect/Deferred";
+import * as Effect from "effect/Effect";
+import * as Exit from "effect/Exit";
+import * as Fiber from "effect/Fiber";
+import * as Scope from "effect/Scope";
 import {
   type ProcessIdentity,
   readProcessIdentity,
@@ -15,7 +20,12 @@ import {
   NativeTerminationSchema,
   type ProcessExitEvidence,
 } from "../../contracts/host";
+import type { NativeFailureSummary } from "../../contracts/native-failure";
 import { nativeBootstrap } from "./native-bootstrap";
+import {
+  NativeRequestFailure,
+  nativeOperation,
+} from "./native-request-failure";
 
 export interface NativeSessionOptions {
   binary: string;
@@ -31,15 +41,31 @@ export interface NativeSessionOptions {
 export type NativeObservation =
   | { kind: "frame"; frame: NativeFrame }
   | { kind: "exited"; groupStopped?: boolean; evidence?: ProcessExitEvidence }
-  | { kind: "disconnected"; reason: "spawn" | "protocol" | "exit" | "write" };
+  | {
+      kind: "disconnected";
+      reason: "spawn" | "protocol" | "exit" | "write" | "unknown";
+      failure?: NativeFailureSummary;
+    };
 interface Pending {
   command: string;
   resume: (result: Effect.Effect<NativeFrame, Error>) => void;
+}
+class NativeObservationFailure extends Error {
+  constructor() {
+    super("Native observation failed");
+  }
 }
 export class NativeSession {
   private child: ChildProcessWithoutNullStreams | null = null;
   private readonly pending = new Map<string, Pending>();
   private closed = false;
+  private transportFailure:
+    | "spawn"
+    | "protocol"
+    | "write"
+    | "unavailable"
+    | "unknown"
+    | null = null;
   private readonly ready = Deferred.makeUnsafe<void>();
   private readonly scope = Scope.makeUnsafe();
   private shutdown: Promise<void> | null = null;
@@ -70,27 +96,51 @@ export class NativeSession {
   }
   async start(): Promise<void> {
     if (this.child || this.closed || this.shutdown)
-      throw new Error("Native instance already used");
-    const decoder = new FrameDecoder((frame) => this.frame(frame));
-    const child = spawn(
-      this.options.binary,
-      this.options.entry
-        ? ["-e", nativeBootstrap, "--", this.options.entry]
-        : ["--mode", "rpc-ui", "--no-title", ...(this.options.extraArgs ?? [])],
-      {
-        cwd: this.options.directory,
-        env: {
-          ...this.options.environment,
-          PI_CODING_AGENT_SESSION_DIR: this.options.sessionDirectory,
-          D_PI_PROCESS_SUPERVISION: JSON.stringify({
-            ...this.options.supervision,
-            token: this.token,
-          }),
+      throw new NativeRequestFailure(
+        { kind: "unavailable", operation: "startup" },
+        "Native instance already used",
+      );
+    const decoder = new FrameDecoder((frame) => {
+      // FrameDecoder calls its consumer synchronously. A valid frame whose
+      // application observer throws cannot establish a native protocol fault.
+      try {
+        this.frame(frame);
+      } catch {
+        throw new NativeObservationFailure();
+      }
+    });
+    let child: ChildProcessWithoutNullStreams;
+    try {
+      child = spawn(
+        this.options.binary,
+        this.options.entry
+          ? ["-e", nativeBootstrap, "--", this.options.entry]
+          : [
+              "--mode",
+              "rpc-ui",
+              "--no-title",
+              ...(this.options.extraArgs ?? []),
+            ],
+        {
+          cwd: this.options.directory,
+          env: {
+            ...this.options.environment,
+            PI_CODING_AGENT_SESSION_DIR: this.options.sessionDirectory,
+            D_PI_PROCESS_SUPERVISION: JSON.stringify({
+              ...this.options.supervision,
+              token: this.token,
+            }),
+          },
+          stdio: ["pipe", "pipe", "pipe"],
+          detached: process.platform !== "win32",
         },
-        stdio: ["pipe", "pipe", "pipe"],
-        detached: process.platform !== "win32",
-      },
-    );
+      );
+    } catch {
+      throw new NativeRequestFailure(
+        { kind: "spawn", operation: "startup" },
+        "Native spawn failed",
+      );
+    }
     this.child = child;
     this.closePromise = new Promise<void>((resolve) =>
       child.once("close", (exitCode, signal) => {
@@ -127,8 +177,10 @@ export class NativeSession {
     child.stdout.on("data", (bytes: Buffer) => {
       try {
         decoder.push(bytes);
-      } catch {
-        this.disconnect("protocol");
+      } catch (error: unknown) {
+        this.disconnect(
+          error instanceof NativeObservationFailure ? "unknown" : "protocol",
+        );
         child.stdin.end();
       }
     });
@@ -149,16 +201,26 @@ export class NativeSession {
         Deferred.await(this.ready).pipe(
           Effect.timeoutOrElse({
             duration: 30000,
-            orElse: () => Effect.fail(new Error("Native startup timed out")),
+            orElse: () =>
+              Effect.fail(
+                new NativeRequestFailure(
+                  { kind: "timeout", operation: "startup", timeoutMs: 30000 },
+                  "Native startup timed out",
+                ),
+              ),
           }),
         ),
         "Native startup interrupted",
+        "startup",
       );
       const response = await this.request("negotiate_protocol", {
         protocolVersion: 2,
       });
       if (response.success !== true)
-        throw new Error("Native protocol negotiation failed");
+        throw new NativeRequestFailure(
+          { kind: "protocol", operation: "negotiate_protocol" },
+          "Native protocol negotiation failed",
+        );
     } catch (error) {
       await this.close();
       throw error;
@@ -227,43 +289,114 @@ export class NativeSession {
   request(
     command: string,
     fields: Record<string, unknown> = {},
+    options: { signal?: AbortSignal } = {},
   ): Promise<NativeFrame> {
+    if (options.signal?.aborted)
+      return Promise.reject(
+        new NativeRequestFailure(
+          { kind: "interrupted", operation: nativeOperation(command) },
+          "Native connection interrupted",
+        ),
+      );
     if (this.closed || this.shutdown || !this.child || this.pending.size >= 64)
-      return Promise.reject(new Error("Native connection unavailable"));
+      return Promise.reject(
+        new NativeRequestFailure(
+          {
+            kind: "unavailable",
+            operation: nativeOperation(command),
+            ...(this.pending.size >= 64 ? { budget: "request-limit" } : {}),
+          },
+          "Native connection unavailable",
+        ),
+      );
     const id = randomUUID();
+    let frame: string;
+    try {
+      frame = `${JSON.stringify({ ...fields, id, type: command })}\n`;
+    } catch {
+      return Promise.reject(Error("Native request encoding failed"));
+    }
     const response = Effect.callback<NativeFrame, Error>((resume) => {
       this.pending.set(id, { command, resume });
       try {
-        this.write(`${JSON.stringify({ ...fields, id, type: command })}\n`);
+        this.write(frame);
       } catch (error) {
         resume(
           Effect.fail(
-            error instanceof Error ? error : new Error("Native write failed"),
+            error instanceof NativeRequestFailure
+              ? new NativeRequestFailure(
+                  {
+                    ...error.failure,
+                    operation: nativeOperation(command),
+                    requestId: id,
+                  },
+                  error.message,
+                )
+              : Error("Native write failed"),
           ),
         );
       }
     }).pipe(
       Effect.timeoutOrElse({
         duration: 30000,
-        orElse: () => Effect.fail(new Error("Native command timed out")),
+        orElse: () =>
+          Effect.fail(
+            new NativeRequestFailure(
+              {
+                kind: "timeout",
+                operation: nativeOperation(command),
+                requestId: id,
+                timeoutMs: 30000,
+              },
+              "Native command timed out",
+            ),
+          ),
       }),
       Effect.ensuring(Effect.sync(() => this.pending.delete(id))),
     );
-    return this.run(response, "Native connection interrupted");
+    return this.run(
+      response,
+      "Native connection interrupted",
+      command,
+      id,
+      options.signal,
+    );
   }
   // Effect stays inside this adapter. Preserve ordinary Error rejection and
   // distinguish local interruption from request timeout or write failure.
   private async run<A>(
     effect: Effect.Effect<A, Error>,
     interrupted: string,
+    operation: string,
+    requestId?: string,
+    signal?: AbortSignal,
   ): Promise<A> {
     const fiber = Effect.runSync(
       Effect.forkIn(effect, this.scope, { startImmediately: true }),
     );
-    const result = await Effect.runPromiseExit(Fiber.join(fiber));
+    const interrupt = () => {
+      void Effect.runPromise(Fiber.interrupt(fiber));
+    };
+    signal?.addEventListener("abort", interrupt, { once: true });
+    if (signal?.aborted) interrupt();
+    const result = await Effect.runPromiseExit(Fiber.join(fiber)).finally(
+      () => {
+        signal?.removeEventListener("abort", interrupt);
+      },
+    );
     if (Exit.isSuccess(result)) return result.value;
-    if (result.cause.reasons.every(Cause.isInterruptReason))
-      throw new Error(interrupted);
+    if (result.cause.reasons.every(Cause.isInterruptReason)) {
+      if (this.transportFailure === "unknown")
+        throw new NativeObservationFailure();
+      throw new NativeRequestFailure(
+        {
+          kind: this.transportFailure ?? "interrupted",
+          operation: nativeOperation(operation),
+          ...(requestId ? { requestId } : {}),
+        },
+        interrupted,
+      );
+    }
     throw Cause.squash(result.cause);
   }
   write(frame: string): void {
@@ -273,21 +406,41 @@ export class NativeSession {
       !this.child ||
       this.child.stdin.destroyed
     )
-      throw new Error("Native connection closed");
+      throw new NativeRequestFailure(
+        { kind: "unavailable", operation: "write" },
+        "Native connection closed",
+      );
     if (
       Buffer.byteLength(frame) > 1048576 ||
       this.child.stdin.writableLength > 1048576
     )
-      throw new Error("Native input budget exceeded");
-    this.child.stdin.write(frame);
+      throw new NativeRequestFailure(
+        { kind: "write", operation: "write", budget: "input-budget" },
+        "Native input budget exceeded",
+      );
+    try {
+      this.child.stdin.write(frame);
+    } catch {
+      throw new NativeRequestFailure(
+        { kind: "write", operation: "write" },
+        "Native write failed",
+      );
+    }
   }
   private disconnect(
     reason: Extract<NativeObservation, { kind: "disconnected" }>["reason"],
   ): void {
     if (this.closed) return;
+    this.transportFailure = reason === "exit" ? "unavailable" : reason;
     this.closed = true;
     void this.close();
-    this.observe({ kind: "disconnected", reason });
+    this.observe({
+      kind: "disconnected",
+      reason,
+      ...(this.transportFailure === "unknown"
+        ? {}
+        : { failure: { kind: this.transportFailure, operation: "unknown" } }),
+    });
   }
   // Owner calls this only for failed startup or verified idle shutdown. Busy close is S3.
   close(): Promise<void> {

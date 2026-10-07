@@ -5,7 +5,7 @@ import {
 } from "@tanstack/react-query";
 import { expect, it } from "vitest";
 import { ThreadContextSchema } from "../../threads/contracts/public";
-import type { GitBridge, GitReply } from "../contracts/public";
+import type { GitBridge, GitReply, GitRequest } from "../contracts/public";
 import { gitQueryOptions, refreshGit } from "./queries";
 
 const resource = ThreadContextSchema.parse({
@@ -17,12 +17,12 @@ const resource = ThreadContextSchema.parse({
 it("isolates Git snapshots by working directory identity and path with stable resource keys", async () => {
   const client_ = client();
   let repository = "first";
-  const bridge: GitBridge = {
+  const bridge: SampleGitBridge = {
     request: () => Promise.resolve(changes(repository)),
   };
   const fetch = (context: typeof resource) =>
     client_.fetchQuery({
-      ...gitQueryOptions.changes(bridge, context),
+      ...gitQueryOptions.changes(wireBridge(bridge), context),
       staleTime: Infinity,
     });
   await fetch(resource);
@@ -45,14 +45,14 @@ it("isolates Git snapshots by working directory identity and path with stable re
 it("never sends an unselected Git diff through fetchQuery or refetch", async () => {
   const client_ = client();
   let requests = 0;
-  const bridge: GitBridge = {
+  const bridge: SampleGitBridge = {
     request: () => {
       requests += 1;
       return Promise.resolve({ kind: "unavailable", reason: "missing" });
     },
   };
   const options = gitQueryOptions.diff(
-    bridge,
+    wireBridge(bridge),
     resource,
     "index-worktree",
     undefined,
@@ -71,7 +71,7 @@ it("retains a failed Git sample's trace and reply with unknown attribution", asy
   const client_ = client();
   const failed: GitReply = { kind: "unavailable", reason: "failed" };
   let requestedTrace: string | undefined;
-  const bridge: GitBridge = {
+  const bridge: SampleGitBridge = {
     request: (request) => {
       requestedTrace = request.traceId;
       return Promise.resolve(failed);
@@ -79,7 +79,12 @@ it("retains a failed Git sample's trace and reply with unknown attribution", asy
   };
   const result = await new QueryObserver(
     client_,
-    gitQueryOptions.diff(bridge, resource, "index-worktree", "broken.ts"),
+    gitQueryOptions.diff(
+      wireBridge(bridge),
+      resource,
+      "index-worktree",
+      "broken.ts",
+    ),
   ).refetch();
   expect(result.error).toMatchObject({
     traceId: requestedTrace,
@@ -116,13 +121,15 @@ const diff = (
 });
 
 function client(): QueryClient {
-  return new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return new QueryClient({
+    defaultOptions: { queries: { retry: false, retryDelay: 0 } },
+  });
 }
 
 it("runs local Git reads while Query reports the renderer offline", async () => {
   const client_ = client();
   let requests = 0;
-  const bridge: GitBridge = {
+  const bridge: SampleGitBridge = {
     request: () => {
       requests += 1;
       return Promise.resolve({ kind: "unavailable", reason: "not-git" });
@@ -133,7 +140,7 @@ it("runs local Git reads while Query reports the renderer offline", async () => 
   try {
     const observer = new QueryObserver(
       client_,
-      gitQueryOptions.changes(bridge, resource),
+      gitQueryOptions.changes(wireBridge(bridge), resource),
     );
     const release = observer.subscribe(() => {});
     await observer.refetch();
@@ -152,7 +159,7 @@ it("runs local Git reads while Query reports the renderer offline", async () => 
 
 it("keeps Git diff selections in separate cache entries", async () => {
   const client_ = client();
-  const bridge: GitBridge = {
+  const bridge: SampleGitBridge = {
     request: (command) =>
       Promise.resolve(
         command.kind === "diff"
@@ -162,11 +169,16 @@ it("keeps Git diff selections in separate cache entries", async () => {
   };
   const first = new QueryObserver(
     client_,
-    gitQueryOptions.diff(bridge, resource, "index-worktree", "a.ts"),
+    gitQueryOptions.diff(
+      wireBridge(bridge),
+      resource,
+      "index-worktree",
+      "a.ts",
+    ),
   );
   const second = new QueryObserver(
     client_,
-    gitQueryOptions.diff(bridge, resource, "untracked", "b.ts"),
+    gitQueryOptions.diff(wireBridge(bridge), resource, "untracked", "b.ts"),
   );
   const releaseFirst = first.subscribe(() => {});
   const releaseSecond = second.subscribe(() => {});
@@ -190,12 +202,12 @@ it("keeps Git diff selections in separate cache entries", async () => {
 it("invalidates the active Git thread scope and samples again", async () => {
   const client_ = client();
   let index = 0;
-  const bridge: GitBridge = {
+  const bridge: SampleGitBridge = {
     request: () => Promise.resolve(changes(`sample-${++index}`)),
   };
   const observer = new QueryObserver(
     client_,
-    gitQueryOptions.changes(bridge, resource),
+    gitQueryOptions.changes(wireBridge(bridge), resource),
   );
   const release = observer.subscribe(() => {});
   await observer.refetch();
@@ -218,18 +230,31 @@ it("retries a failed Git sample but keeps a Git conclusion terminal", async () =
   });
   let sampleAttempts = 0;
   const flaky: GitBridge = {
-    request: () => {
+    request: async (command) => {
       sampleAttempts += 1;
-      return Promise.resolve(
-        sampleAttempts === 1
-          ? ({ kind: "unavailable", reason: "failed" } as GitReply)
-          : changes("recovered"),
-      );
+      return sampleAttempts === 1
+        ? {
+            kind: "failed",
+            error: {
+              operationId: command.operationId,
+              traceId: command.traceId,
+              code: "process-exit",
+              retryable: true,
+              attribution: "main",
+            },
+          }
+        : {
+            kind: "completed",
+            operationId: command.operationId,
+            traceId: command.traceId,
+            reply: changes("recovered"),
+          };
     },
+    cancel: async (identity) => ({ kind: "acknowledged", ...identity }),
   };
   const list = new QueryObserver(
     client_,
-    gitQueryOptions.changes(flaky, resource),
+    gitQueryOptions.changes(wireBridge(flaky), resource),
   );
   const releaseList = list.subscribe(() => {});
   await list.refetch();
@@ -239,7 +264,7 @@ it("retries a failed Git sample but keeps a Git conclusion terminal", async () =
   });
 
   let conclusionAttempts = 0;
-  const notRepository: GitBridge = {
+  const notRepository: SampleGitBridge = {
     request: () => {
       conclusionAttempts += 1;
       return Promise.resolve({
@@ -252,7 +277,7 @@ it("retries a failed Git sample but keeps a Git conclusion terminal", async () =
   const conclusion = new QueryObserver(
     client_,
     gitQueryOptions.changes(
-      notRepository,
+      wireBridge(notRepository),
       ThreadContextSchema.parse({ ...resource, threadId: crypto.randomUUID() }),
     ),
   );
@@ -265,3 +290,26 @@ it("retries a failed Git sample but keeps a Git conclusion terminal", async () =
   releaseConclusion();
   client_.clear();
 });
+
+type SampleGitBridge = { request: (command: GitRequest) => Promise<GitReply> };
+function wireBridge(bridge: SampleGitBridge | GitBridge): GitBridge {
+  return {
+    async request(command) {
+      const result = await bridge.request(command);
+      return result.kind === "completed" ||
+        result.kind === "cancelled" ||
+        result.kind === "failed"
+        ? result
+        : {
+            kind: "completed",
+            operationId: command.operationId,
+            traceId: command.traceId,
+            reply: result,
+          };
+    },
+    cancel: (command) =>
+      "cancel" in bridge
+        ? bridge.cancel(command)
+        : Promise.resolve({ kind: "acknowledged", ...command }),
+  };
+}

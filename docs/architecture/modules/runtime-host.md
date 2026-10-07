@@ -8,7 +8,7 @@
 - `src/app/host/index.ts` 只做 utility 入口；执行 Host 实现在 `src/modules/execution/host/`，连接监督在 `src/modules/execution/main/transport/host-connection.ts`。
 - `src/platform/omp/protocol/` 持有原生帧合同和 decoder，`src/platform/omp/resources/` 持有 Runtime/官方 SDK 资源校验；`runtime/host.mjs` 加载官方 SDK，组合停止门控、原生队列文本管理和当前Thread的后续子Agent配置薄接入，官方执行循环与RPC driver不改写。
 - 阅读事件在 `src/modules/conversation/host/projection.ts` 归一化，Host 不把未经归一的 OMP 帧交给 Renderer。关闭 scope 的实际释放顺序是 NativeSession → 交互 → 投影 → 阅读端口（`session-host.ts` 先关原生会话再清理交互，最后经 `app/host` 释放 conversation scope）；顺序变化须同步本页与领域测试。
-- 2026-10-02 D-39：NativeSession 内部使用 Effect 4.0.0 Scope/Fiber 管 ready 与在途 RPC，超时/成功/失败/断链均释放等待关联；关闭先中断等待，再通过 finalizer 等待 EOF、真实 close 和身份核对后的组清理，3 秒期限后升级终止。外部仍为 Promise/NativeObservation，协议关联 Map、独立退出证据和 OMP 所有权不变。SessionHost 证据重送及 HostConnection 尚未迁移，验证见[Effect 规格](../../../.scratch/effect-native-lifecycle/spec.md)。
+- 2026-10-02 D-39：NativeSession 内部使用 Effect 4.0.0 Scope/Fiber 管 ready 与在途 RPC，超时/成功/失败/断链均释放等待关联；关闭先中断等待，再通过 finalizer 等待 EOF、真实 close 和身份核对后的组清理，3 秒期限后升级终止。外部仍为 Promise/NativeObservation，协议关联 Map、独立退出证据和 OMP 所有权不变。当时 SessionHost 证据重送及 HostConnection 尚未迁移，验证见[Effect 规格](../../../.scratch/effect-native-lifecycle/spec.md)；当前 Host task Scope 合同见下文。
 
 
 ## 范围与拥有者
@@ -32,6 +32,10 @@ Main 拥有窗口、Host 监督及受限通道建立；一个 utility SessionHos
 新状态由 Host 通过既有受限 MessagePort 送 Renderer；Main 不逐条转发流。Main 与 Host 的提交/持久化协作是另一条受限通道，详见[时序](flows.md)。
 
 ## 生命周期与失败
+
+2026-10-07 T3 基础切片的新增合同：NativeSession 可辨认的原生边界失败以普通 Error rejection 附带有限 NativeFailureSummary，区分 spawn/protocol/write/timeout/local interruption/unavailable 及输入/请求预算；本地编码或应用观察者缺陷保持 unknown 归因。可信 Host/Main 仅映射固定 code/causeCode，不传播原始 Cause、stderr 或异常全文。每个 Host 的后台等待与 deadline 绑定局部 Scope，scheduled handle 完成即释放；断链结束自动重播但保留待持久确认的 evidence，重播不写 prompt。刷新继续 singleFlight，并在每次 await 后复核 observationVersion/dispatch 身份。取消局部等待不发送 abort，所有业务 unknown/ACK、物理 close/groupStopped 门槛保持不变。
+
+确定性回放仅替换 process/stdio 接缝，实际 FrameDecoder、NativeSession、SessionHost、ConversationProjection 及 Main/SQLite 收据事务继续运行；Gate 在入站标记前等待明确释放，同批帧不插入额外 await。测试样本不证明供应商、OS 停止或 GUI；真实进程检查独立保留。目标与证据见 [01](../../../.scratch/t3-foundations/issues/01-native-scope-replay.md)。
 
 - Main 创建 Host，Host 为已准入的 Thread 创建/恢复 OMP。历史浏览走只读路径，不为浏览启动 Agent 或加载项目可执行扩展。
 - 每次实例/连接变化更新身份，旧代次响应不进入当前状态。单 OMP 崩溃只中断该 Thread；Host 崩溃影响其全部连接，先处理可证实属于本次实例的残留再允许恢复。

@@ -1,4 +1,8 @@
 export const ui = {
+  "attachment.clipboardFallback":
+    "结构化内容已降级为可读文本；动态文件引用不会复制读取权限。",
+  "attachment.clipboardFailed":
+    "结构化剪贴板未能完成，请重试；可读文本仍可粘贴。",
   "settings.commandEnterKey": "⌘ + Enter",
   "settings.configurationDescription":
     "管理模型服务认证，并查看当前 Thread 使用的原生配置。",
@@ -105,6 +109,12 @@ export const ui = {
   "attachment.ready": "已准备",
   "attachment.failed": "准备失败",
   "attachment.directoryAtSend": "发送时冻结目录条目，不含文件正文",
+  "attachment.frozenOnCopy": "复制时冻结",
+  "attachment.frozenSource": "复制时的来源",
+  "attachment.frozenProject": "来源项目",
+  "attachment.frozenPath": "来源路径",
+  "attachment.frozenVersion": "来源版本",
+  "attachment.frozenTime": "捕获时间",
   "attachment.readAtSend": "发送时读取",
   "attachment.remove": "移除 {name}",
   "attachment.previous": "前移 {name}",
@@ -138,6 +148,16 @@ export const ui = {
   "attachment.reason.content-missing":
     "私有内容丢失或已作为未引用缓存清理，请重新附加原件。",
   "attachment.library": "可再次引用的已导入文件",
+  "draft.inactiveClosePending":
+    "请从侧栏切回会话 {thread}，保存未确认的输入或解决其保存失败后再关闭。",
+  "attachment.historyLeaseFailed":
+    "无法保护撤销所需的附件。请先重试，再保存或发送。",
+  "attachment.historyCleared":
+    "输入历史已达上限，撤销历史已清除，草稿正文仍保留。",
+  "attachment.historyRetry": "重试附件保护",
+  "attachment.awaitingInsertion":
+    "{name} 已准备，请加入草稿或移除此待加入来源后再发送。",
+  "attachment.discardPrepared": "移除此待加入来源",
   "attachment.insert": "加入草稿",
   "attachment.refreshSearch": "刷新搜索",
   "attachment.directoryKind": "文件夹",
@@ -156,6 +176,10 @@ export const ui = {
   "attachment.reason.submission-too-large": "提交原始内容总量超出 100 MiB。",
   "attachment.reason.transport-too-large":
     "编码后输入超出原生传输限制。请移除或缩减内容；没有截断输入。",
+  "attachment.reason.editor-history-limit":
+    "准备此版本会超出撤销资产上限。已保存的附件与撤销历史均保留。",
+  "attachment.clearHistory": "清除撤销历史，然后重新发送",
+  "attachment.clearHistoryRetry": "清除撤销历史并重试",
   "attachment.reason.storage-full": "私有内容存储已满，活跃输入仍保留。",
   "attachment.reason.storage-unavailable": "私有内容存储不可用，请重试准备。",
   "attachment.reason.content-corrupt":
@@ -659,6 +683,11 @@ export const ui = {
     "已达到读取或条数预算，结果不完整。请缩小时间或筛选范围。",
   "ui.diagnostics.writerDegraded": "当前Writer已退化；丢弃 {dropped} 条。",
   "ui.diagnostics.writerHealthy": "当前Writer未退化；丢弃 {dropped} 条。",
+  "ui.diagnostics.notProvided": "未提供",
+  "ui.diagnostics.writerCounters":
+    "累计：未确认追加 {uncertain} 条；保留清理失败 {retentionFailures} 次；拒收 {rejected} 条；关闭达限 {drainTimedOut} 次。当前在途 {inFlight} 条。",
+  "ui.diagnostics.writerRecovery":
+    "最近恢复：{time}。历史计数保留，恢复不会补写原事件。",
   "ui.diagnostics.interpretation":
     "记录顺序仅为读取线索；阶段不代表执行完成。无匹配不能证明操作未发生，轮转、丢弃或未接入阶段可能留下缺口。刷新仅重新读取已应用的时间范围。",
   "ui.diagnostics.empty": "当前范围没有匹配记录。",

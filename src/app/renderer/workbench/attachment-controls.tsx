@@ -13,15 +13,21 @@ import type { SubmissionFailure } from "../../../modules/execution/contracts/pub
 import type { ProjectReferenceEntry } from "../../../modules/files/contracts/public";
 import type {
   Attachment,
-  AttachmentFailureReason,
   AttachmentPreview,
   AttachmentStorageReport,
 } from "../../../modules/input/contracts/public";
+import type {
+  AttachmentIntent,
+  AttachmentModel,
+} from "../../../modules/input/core/public";
+import type { AttachmentImports } from "../../../modules/input/renderer/public";
 import {
-  AttachmentImports,
   attachmentIds,
   attachmentMention,
-  insertAttachmentReference,
+  createAttachmentEditor,
+  moveAttachmentReference,
+  removeAttachmentReference,
+  syncAttachmentLabels,
 } from "../../../modules/input/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import { Button } from "../../../modules/ui/renderer/public";
@@ -36,20 +42,7 @@ export type AttachmentActions = {
   importFiles(files: File[], source: "paste" | "drop"): void;
   handleMentionKey(event: KeyboardEvent): boolean;
 };
-const importModels = new WeakMap<object, AttachmentImports>();
-
 type Mention = ReturnType<typeof attachmentMention>;
-type AttachmentIntent<T = AttachmentRequest> = T extends AttachmentRequest
-  ? Omit<T, "threadId" | "traceId">
-  : never;
-type AttachmentRequestFailure = {
-  command: AttachmentIntent;
-  reason: AttachmentFailureReason | null;
-  range?: { from: number; to: number };
-};
-function blocksSubmission(command: AttachmentIntent): boolean {
-  return command.kind === "choose-import" || command.kind === "add-reference";
-}
 
 export function AttachmentControls({
   bridge,
@@ -60,8 +53,10 @@ export function AttachmentControls({
   onBlocked,
   mention,
   dismissMention,
-  owner,
+  model,
+  imports,
   preparationFailure,
+  onClearHistory,
   ref,
 }: {
   bridge: AttachmentBridge;
@@ -72,8 +67,10 @@ export function AttachmentControls({
   onBlocked: (blocked: boolean) => void;
   mention: Mention;
   dismissMention: () => void;
-  owner?: object;
+  model: AttachmentModel;
+  imports: AttachmentImports;
   preparationFailure?: SubmissionFailure["preparation"] | null;
+  onClearHistory?: () => Promise<boolean>;
   ref?: Ref<AttachmentActions>;
 }) {
   const { t } = useI18n();
@@ -92,35 +89,23 @@ export function AttachmentControls({
   const unused = items.filter((item) => !ids.includes(item.id));
   const [storageReport, setStorageReport] =
     useState<AttachmentStorageReport | null>(null);
-  const [pending, setPending] = useState(0);
-  const pendingRequests = useRef(0);
-  const [failed, setFailed] = useState<AttachmentRequestFailure | null>(null);
-  const failedRequest = useRef<AttachmentRequestFailure | null>(null);
-  const [feedback, setFeedback] = useState<AttachmentRequestFailure | null>(
-    null,
+  const accepting = useStore(
+    model.stateStore,
+    (state) => state.acceptingSources,
   );
-  const fallbackOwner = useRef({});
-  const modelOwner = owner ?? fallbackOwner.current;
-  const [imports] = useState(() => {
-    const existing = importModels.get(modelOwner);
-    if (existing) return existing;
-    const created = new AttachmentImports(async (input) => {
-      const reply = await bridge.request({
-        kind: "import-bytes",
-        ...input,
-        threadId,
-        traceId: crypto.randomUUID(),
-      });
-      if (reply.kind !== "attachments")
-        throw Error("Attachment import did not complete");
-      return reply.items;
-    });
-    importModels.set(modelOwner, created);
-    return created;
-  });
+  const acceptingFiles = useStore(
+    imports.stateStore,
+    (state) => state.acceptingSources,
+  );
+  const sourceFrozen = !accepting || !acceptingFiles;
+  const pending = useStore(model.stateStore, (state) => state.pending);
+  const failed = useStore(model.stateStore, (state) => state.failed);
+  const feedback = useStore(model.stateStore, (state) => state.feedback);
+  const insertions = useStore(model.stateStore, (state) => state.insertions);
+  const completion = useStore(model.stateStore, (state) => state.completion);
   const importing = useStore(imports.stateStore, (state) => state.pending);
   const fileFailures = useStore(imports.stateStore, (state) => state.failures);
-  const completion = useStore(imports.stateStore, (state) => state.completion);
+
   const [manualSearch, setManualSearch] = useState(false);
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(0);
@@ -175,6 +160,7 @@ export function AttachmentControls({
     onBlocked(
       pending > 0 ||
         !!failed ||
+        insertions.length > 0 ||
         importing > 0 ||
         fileFailures.length > 0 ||
         (ids.length > 0 &&
@@ -189,6 +175,7 @@ export function AttachmentControls({
   }, [
     pending,
     failed,
+    insertions,
     importing,
     fileFailures,
     text,
@@ -198,104 +185,43 @@ export function AttachmentControls({
     onBlocked,
   ]);
   useEffect(() => {
-    if (!editor || editor.isDestroyed || editor.view.composing || !items.length)
-      return;
-    const tr = editor.state.tr;
-    editor.state.doc.descendants((node, position) => {
-      if (node.type.name !== "attachmentReference") return;
-      const item = items.find((item) => item.id === node.attrs.id);
-      if (
-        item &&
-        (node.attrs.name !== item.name ||
-          node.attrs.referenceKind !== (item.referenceKind ?? null))
-      )
-        tr.setNodeMarkup(position, undefined, {
-          ...node.attrs,
-          name: item.name,
-          referenceKind: item.referenceKind ?? null,
-        });
-    });
-    if (tr.docChanged) editor.view.dispatch(tr.setMeta("addToHistory", false));
+    if (editor) syncAttachmentLabels(editor, items);
   }, [editor, list.data, text]);
-
-  function insert(item: Attachment, range?: { from: number; to: number }) {
-    if (!editor || editor.isDestroyed || !isCurrent()) return;
-    const apply = () => {
-      if (editor.isDestroyed || !isCurrent()) return;
-      if (
-        range &&
-        (editor.state.selection.from !== range.to ||
-          attachmentMention(editor.state)?.from !== range.from)
-      )
-        return;
-      editor.view.dispatch(
-        insertAttachmentReference(editor.state, item, range),
-      );
-      editor.commands.focus();
+  useEffect(() => {
+    if (!editor || editor.isDestroyed) return;
+    const detach = model.attachEditor(
+      createAttachmentEditor(editor, isCurrent),
+    );
+    const flush = () => model.flushInsertions();
+    editor.view.dom.addEventListener("compositionend", flush);
+    return () => {
+      detach();
+      editor.view.dom.removeEventListener("compositionend", flush);
     };
-    if (editor.view.composing)
-      editor.view.dom.addEventListener("compositionend", apply, { once: true });
-    else apply();
+  }, [model, editor, isCurrent]);
+  function insert(item: Attachment) {
+    if (isCurrent()) model.insert(item);
   }
   async function run(
     command: AttachmentIntent,
     add = false,
     range?: { from: number; to: number },
-    retryingFailure?: AttachmentRequestFailure,
   ) {
-    const blocking = blocksSubmission(command);
-    // A new import cannot replace an unresolved required source. Only the
-    // explicit retry button may resolve that specific failed request.
-    if (blocking && failed && failed !== retryingFailure) return;
-    pendingRequests.current += 1;
-    setPending((value) => value + 1);
-    setFeedback(null);
-    const reject = (reason: AttachmentFailureReason | null) => {
-      const failure = { command, reason, ...(range ? { range } : {}) };
-      if (blocking) {
-        failedRequest.current = failure;
-        setFailed(failure);
-      } else setFeedback(failure);
-    };
-    try {
-      const reply = await bridge.request({
-        ...command,
-        threadId,
-        traceId: crypto.randomUUID(),
-      });
-      if (!alive.current) return;
-      if (reply.kind === "storage-report") {
-        setStorageReport(reply);
-        await client.invalidateQueries({ queryKey: listKey });
-      } else if (reply.kind === "attachments") {
-        if (add) for (const item of reply.items) insert(item, range);
-        if (retryingFailure && failedRequest.current === retryingFailure) {
-          failedRequest.current = null;
-          setFailed(null);
-        }
-        await client.invalidateQueries({ queryKey: listKey });
-      } else if (
-        reply.kind === "image" ||
+    if (!isCurrent()) return;
+    const reply = await model.run(command, add, range);
+    if (!alive.current || !reply) return;
+    if (reply.kind === "storage-report") setStorageReport(reply);
+    else if (
+      command.kind === "preview" &&
+      "id" in command &&
+      (reply.kind === "image" ||
         reply.kind === "text" ||
-        reply.kind === "unavailable"
-      ) {
-        if (command.kind === "preview" && "id" in command) {
-          const item = items.find((item) => item.id === command.id);
-          if (item) setPreview({ item, content: reply });
-        } else if (reply.kind === "unavailable") reject(reply.reason);
-      }
-    } catch {
-      if (alive.current) reject(null);
-    } finally {
-      pendingRequests.current -= 1;
-      if (alive.current) setPending((value) => value - 1);
+        reply.kind === "unavailable")
+    ) {
+      const item = items.find((item) => item.id === command.id);
+      if (item) setPreview({ item, content: reply });
     }
   }
-  useEffect(() => {
-    return imports.subscribeCompleted((items) => {
-      for (const item of items) insert(item);
-    });
-  }, [imports, editor, isCurrent]);
   useEffect(() => {
     if (completion > 0 || preparationFailure)
       void client.invalidateQueries({ queryKey: listKey });
@@ -318,8 +244,7 @@ export function AttachmentControls({
     canLeaveView: () => {
       const sources = imports.stateStore.getState();
       return (
-        pendingRequests.current === 0 &&
-        !failedRequest.current &&
+        model.getReadiness().kind === "ready" &&
         sources.pending === 0 &&
         sources.failures.length === 0
       );
@@ -350,42 +275,35 @@ export function AttachmentControls({
     },
   }));
   function remove(id: string) {
-    if (!editor || editor.isDestroyed || editor.view.composing || !isCurrent())
+    if (
+      !editor ||
+      editor.isDestroyed ||
+      !editor.isEditable ||
+      editor.view.composing ||
+      !isCurrent()
+    )
       return;
-    const tr = editor.state.tr;
-    const positions: number[] = [];
-    editor.state.doc.descendants((node, position) => {
-      if (node.type.name === "attachmentReference" && node.attrs.id === id)
-        positions.push(position);
-    });
-    for (const position of positions.reverse())
-      tr.delete(position, position + 1);
-    editor.view.dispatch(tr);
-    editor.commands.focus();
+    removeAttachmentReference(editor, id);
   }
   function move(index: number, direction: -1 | 1) {
-    if (!editor || editor.isDestroyed || editor.view.composing || !isCurrent())
+    if (
+      !editor ||
+      editor.isDestroyed ||
+      !editor.isEditable ||
+      editor.view.composing ||
+      !isCurrent()
+    )
       return;
-    const nodes: { position: number; attrs: Record<string, unknown> }[] = [];
-    editor.state.doc.descendants((node, position) => {
-      if (node.type.name === "attachmentReference")
-        nodes.push({ position, attrs: node.attrs });
-    });
-    const a = nodes[index];
-    const b = nodes[index + direction];
-    if (!a || !b) return;
-    editor.view.dispatch(
-      editor.state.tr
-        .setNodeMarkup(a.position, undefined, b.attrs)
-        .setNodeMarkup(b.position, undefined, a.attrs),
-    );
+    moveAttachmentReference(editor, index, direction);
   }
   return (
     <div className="grid gap-2 px-3 pb-2">
       <div className="flex flex-wrap items-center gap-2">
         <Button
           variant="ghost"
-          disabled={pending > 0 || importing > 0 || !editor || !!failed}
+          disabled={
+            sourceFrozen || pending > 0 || importing > 0 || !editor || !!failed
+          }
           onMouseDown={(event) => event.preventDefault()}
           onClick={() => void run({ kind: "choose-import" }, true)}
         >
@@ -393,7 +311,7 @@ export function AttachmentControls({
         </Button>
         <Button
           variant="ghost"
-          disabled={!editor || !!failed}
+          disabled={sourceFrozen || !editor || !!failed}
           onMouseDown={(event) => event.preventDefault()}
           onClick={() => setManualSearch((value) => !value)}
         >
@@ -413,7 +331,7 @@ export function AttachmentControls({
             <Button
               variant="ghost"
               data-attachment-storage-action="check"
-              disabled={pending > 0 || importing > 0}
+              disabled={sourceFrozen || pending > 0 || importing > 0}
               onClick={() => void run({ kind: "check-storage" })}
             >
               {t("attachment.checkStorage")}
@@ -421,7 +339,7 @@ export function AttachmentControls({
             <Button
               variant="ghost"
               data-attachment-storage-action="clean"
-              disabled={pending > 0 || importing > 0}
+              disabled={sourceFrozen || pending > 0 || importing > 0}
               onClick={() => void run({ kind: "clean-storage" })}
             >
               {t("attachment.cleanStorage")}
@@ -470,7 +388,11 @@ export function AttachmentControls({
                   <Button
                     variant="ghost"
                     disabled={
-                      pending > 0 || importing > 0 || !editor || !!failed
+                      sourceFrozen ||
+                      pending > 0 ||
+                      importing > 0 ||
+                      !editor ||
+                      !!failed
                     }
                     onClick={() => void run({ kind: "choose-import" }, true)}
                   >
@@ -500,7 +422,11 @@ export function AttachmentControls({
                     className="flex items-center justify-between gap-2"
                   >
                     <span className="break-all">{item.name}</span>
-                    <Button variant="ghost" onClick={() => insert(item)}>
+                    <Button
+                      variant="ghost"
+                      disabled={sourceFrozen}
+                      onClick={() => insert(item)}
+                    >
                       {t("attachment.insert")}
                     </Button>
                   </div>
@@ -510,6 +436,28 @@ export function AttachmentControls({
           )}
         </div>
       </details>
+      {insertions.map(({ item }) => (
+        <div
+          key={item.id}
+          role="status"
+          className="flex flex-wrap items-center gap-2"
+        >
+          <span>{t("attachment.awaitingInsertion", { name: item.name })}</span>
+          <Button
+            variant="ghost"
+            disabled={sourceFrozen || !editor}
+            onClick={() => insert(item)}
+          >
+            {t("attachment.insert")}
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={() => model.removeInsertion(item.id)}
+          >
+            {t("attachment.discardPrepared")}
+          </Button>
+        </div>
+      ))}
       {(failed || list.isError) && (
         <div role="alert" className="flex flex-wrap items-center gap-2">
           <p className="failure">
@@ -521,22 +469,16 @@ export function AttachmentControls({
             <>
               <Button
                 variant="ghost"
-                disabled={pending > 0}
-                onClick={() =>
-                  void run(failed.command, true, failed.range, failed)
-                }
+                disabled={sourceFrozen || pending > 0}
+                onClick={() => void model.retryFailure()}
               >
                 {t("attachment.retry")}
               </Button>
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  failedRequest.current = null;
-                  setFailed(null);
-                }}
-              >
-                {t("attachment.dismissFailedRequest")}
-              </Button>
+              {failed.command.kind !== "clipboard-discard" && (
+                <Button variant="ghost" onClick={() => model.removeFailure()}>
+                  {t("attachment.dismissFailedRequest")}
+                </Button>
+              )}
             </>
           )}
         </div>
@@ -550,12 +492,28 @@ export function AttachmentControls({
           </p>
           <Button
             variant="ghost"
-            disabled={pending > 0}
+            disabled={sourceFrozen || pending > 0}
             onClick={() => void run(feedback.command)}
           >
             {t("attachment.retry")}
           </Button>
-          <Button variant="ghost" onClick={() => setFeedback(null)}>
+          {feedback.reason === "editor-history-limit" && onClearHistory && (
+            <Button
+              variant="ghost"
+              disabled={
+                sourceFrozen || pending > 0 || !editor || editor.view.composing
+              }
+              onClick={() => {
+                if (!isCurrent()) return;
+                void onClearHistory().then((cleared) => {
+                  if (cleared && isCurrent()) void run(feedback.command);
+                });
+              }}
+            >
+              {t("attachment.clearHistoryRetry")}
+            </Button>
+          )}
+          <Button variant="ghost" onClick={() => model.dismissFeedback()}>
             {t("attachment.dismissFailedRequest")}
           </Button>
         </div>
@@ -592,7 +550,7 @@ export function AttachmentControls({
                   className="justify-start text-left"
                   variant={selected === index ? "navigation" : "ghost"}
                   role="option"
-                  disabled={pending > 0 || !!failed}
+                  disabled={sourceFrozen || pending > 0 || !!failed}
                   aria-selected={selected === index}
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => chooseReference(entry)}
@@ -651,6 +609,23 @@ export function AttachmentControls({
               t("attachment.add")}
           </strong>
           <p>{t(`attachment.reason.${preparationFailure.reason}`)}</p>
+          {preparationFailure.reason === "editor-history-limit" &&
+            onClearHistory && (
+              <Button
+                variant="ghost"
+                disabled={
+                  sourceFrozen ||
+                  pending > 0 ||
+                  !editor ||
+                  editor.view.composing
+                }
+                onClick={() => {
+                  if (isCurrent()) void onClearHistory();
+                }}
+              >
+                {t("attachment.clearHistory")}
+              </Button>
+            )}
           {preparationFailure.reason === "reference-unavailable" ||
           preparationFailure.reason === "reference-denied" ? (
             <p>{t("attachment.referenceRetrySending")}</p>
@@ -702,7 +677,7 @@ export function AttachmentControls({
                 <>
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <strong className="flex items-center gap-2 break-all">
-                      {item.source === "reference" &&
+                      {(item.source === "reference" || item.frozenReference) &&
                         (item.referenceKind === "directory" ? (
                           <FolderIcon />
                         ) : (
@@ -712,18 +687,39 @@ export function AttachmentControls({
                       {item.referenceKind === "directory" ? "/" : ""}
                     </strong>
                     <span className="muted">
-                      {item.source === "reference"
-                        ? t(
-                            item.referenceKind === "directory"
-                              ? "attachment.directoryAtSend"
-                              : "attachment.readAtSend",
-                          )
-                        : t(`attachment.${item.status}`)}
+                      {item.frozenReference
+                        ? t("attachment.frozenOnCopy")
+                        : item.source === "reference"
+                          ? t(
+                              item.referenceKind === "directory"
+                                ? "attachment.directoryAtSend"
+                                : "attachment.readAtSend",
+                            )
+                          : t(`attachment.${item.status}`)}
                       {item.source !== "reference" && (
                         <> · {Math.ceil(item.byteLength / 1024)} KiB</>
                       )}
                     </span>
                   </div>
+                  {item.frozenReference && (
+                    <details className="muted" data-selectable>
+                      <summary>{t("attachment.frozenSource")}</summary>
+                      <dl className="grid gap-1 break-all">
+                        <dt>{t("attachment.frozenProject")}</dt>
+                        <dd>{item.frozenReference.projectPath}</dd>
+                        <dt>{t("attachment.frozenPath")}</dt>
+                        <dd>{item.frozenReference.path}</dd>
+                        <dt>{t("attachment.frozenVersion")}</dt>
+                        <dd>{item.frozenReference.version}</dd>
+                        <dt>{t("attachment.frozenTime")}</dt>
+                        <dd>
+                          <time dateTime={item.frozenReference.capturedAt}>
+                            {item.frozenReference.capturedAt}
+                          </time>
+                        </dd>
+                      </dl>
+                    </details>
+                  )}
                   {item.reason && (
                     <p className="failure" role="status">
                       {t(`attachment.reason.${item.reason}`)}
@@ -739,7 +735,7 @@ export function AttachmentControls({
                   <div className="flex flex-wrap gap-2">
                     <Button
                       variant="ghost"
-                      disabled={pending > 0}
+                      disabled={sourceFrozen || pending > 0}
                       onClick={() => void run({ kind: "preview", id: item.id })}
                     >
                       {t("attachment.preview", { name: item.name })}
@@ -747,7 +743,7 @@ export function AttachmentControls({
                     {item.status === "failed" && (
                       <Button
                         variant="ghost"
-                        disabled={pending > 0}
+                        disabled={sourceFrozen || pending > 0}
                         onClick={() => void run({ kind: "retry", id: item.id })}
                       >
                         {t("attachment.retry")}
@@ -759,7 +755,7 @@ export function AttachmentControls({
                       !item.textOnly && (
                         <Button
                           variant="ghost"
-                          disabled={pending > 0}
+                          disabled={sourceFrozen || pending > 0}
                           onClick={() =>
                             void run({
                               kind: "set-text-only",
@@ -774,7 +770,7 @@ export function AttachmentControls({
                     <Button
                       variant="ghost"
                       aria-label={t("attachment.previous", { name: item.name })}
-                      disabled={index === 0}
+                      disabled={sourceFrozen || index === 0}
                       onClick={() => move(index, -1)}
                     >
                       {t("attachment.previous", { name: item.name })}
@@ -782,7 +778,7 @@ export function AttachmentControls({
                     <Button
                       variant="ghost"
                       aria-label={t("attachment.next", { name: item.name })}
-                      disabled={index === active.length - 1}
+                      disabled={sourceFrozen || index === active.length - 1}
                       onClick={() => move(index, 1)}
                     >
                       {t("attachment.next", { name: item.name })}

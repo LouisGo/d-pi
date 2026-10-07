@@ -1037,3 +1037,120 @@ it("merges terminal evidence after ACK and preserves it through a stale unknown 
     promptResult: { status: "error" },
   });
 });
+
+it("rechecks the composed input gate inside the draft capture barrier, independent of any UI", async () => {
+  const draft = DraftSchema.parse({
+    schemaVersion: 1,
+    threadId: crypto.randomUUID(),
+    workingDirectoryId: crypto.randomUUID(),
+    directory: "/fixture",
+    revision: 0,
+    text: "keep my draft",
+  });
+  let finishSave: (
+    reply: import("../../../input/contracts/public").SaveReply,
+  ) => void = () => {};
+  const controller = new DraftController(
+    draft,
+    () =>
+      new Promise((resolve) => {
+        finishSave = resolve;
+      }),
+    () => {
+      throw Error("unexpected failure");
+    },
+  );
+  const request = vi.fn(
+    async (): Promise<SubmissionReply> => ({ kind: "list", receipts: [] }),
+  );
+  let ready = false;
+  const model = new SubmissionModel(
+    { request, subscribe: () => () => {} },
+    draft.threadId,
+    controller,
+    () => ready,
+  );
+  await model.send();
+  expect(request.mock.calls).toHaveLength(1);
+  expect(controller.getTextSnapshot()).toBe("keep my draft");
+  ready = true;
+  controller.edit("new draft");
+  const sending = model.send();
+  ready = false;
+  finishSave({ kind: "saved", threadId: draft.threadId, revision: 1 });
+  await sending;
+  expect(request.mock.calls).toHaveLength(1);
+  expect(controller.getTextSnapshot()).toBe("new draft");
+  model.dispose();
+  controller.dispose();
+});
+
+it("rechecks input readiness after Main prepares the capture and preserves its honest prepared receipt without dispatch", async () => {
+  const draft = DraftSchema.parse({
+    schemaVersion: 1,
+    threadId: crypto.randomUUID(),
+    workingDirectoryId: crypto.randomUUID(),
+    directory: "/fixture",
+    revision: 0,
+    text: "draft",
+  });
+  const controller = new DraftController(
+    draft,
+    async (revision) => ({
+      kind: "saved",
+      threadId: draft.threadId,
+      revision: revision + 1,
+    }),
+    () => {
+      throw Error("unexpected failure");
+    },
+  );
+  let ready = true;
+  const commands: string[] = [];
+  const model = new SubmissionModel(
+    {
+      subscribe: () => () => {},
+      request: async (command) => {
+        commands.push(command.kind);
+        if (command.kind === "list") return { kind: "list", receipts: [] };
+        if (command.kind !== "prepare") throw Error("unexpected dispatch");
+        const { kind: _kind, ...frozen } = command;
+        ready = false;
+        return {
+          kind: "receipt",
+          receipt: preparedReceipt({
+            ...frozen,
+            requestId: crypto.randomUUID(),
+            target: {
+              processInstanceId: crypto.randomUUID(),
+              connectionGeneration: crypto.randomUUID(),
+              configContextId: "cfg",
+              nativeSessionRef: "session",
+            },
+            state: "prepared",
+            acknowledgedAt: null,
+            outcome: "unobserved",
+            createdAt: "1",
+            updatedAt: "1",
+          }),
+        };
+      },
+    },
+    draft.threadId,
+    controller,
+    () => ready,
+  );
+  try {
+    await model.send();
+    expect(commands).toEqual(["list", "prepare"]);
+    expect(controller.getTextSnapshot()).toBe("draft");
+    expect(model.stateStore.getState()).toMatchObject({
+      sending: false,
+      message: { code: "submission.unsentDraft" },
+      receipts: [{ state: "prepared" }],
+    });
+  } finally {
+    model.dispose();
+    controller.dispose();
+  }
+});

@@ -446,6 +446,29 @@ function DiagnosticPanel({
               { dropped: query.data.writer.dropped },
             )}
           </p>
+          <p data-diagnostics-writer-counters>
+            {t("ui.diagnostics.writerCounters", {
+              uncertain:
+                query.data.writer.uncertain ?? t("ui.diagnostics.notProvided"),
+              retentionFailures:
+                query.data.writer.retentionFailures ??
+                t("ui.diagnostics.notProvided"),
+              rejected:
+                query.data.writer.rejected ?? t("ui.diagnostics.notProvided"),
+              drainTimedOut:
+                query.data.writer.drainTimedOut ??
+                t("ui.diagnostics.notProvided"),
+              inFlight:
+                query.data.writer.inFlight ?? t("ui.diagnostics.notProvided"),
+            })}
+          </p>
+          {query.data.writer.lastRecovery && (
+            <p data-diagnostics-writer-recovery>
+              {t("ui.diagnostics.writerRecovery", {
+                time: query.data.writer.lastRecovery.recoveredAt,
+              })}
+            </p>
+          )}
           <p className="muted">{t("ui.diagnostics.interpretation")}</p>
           {query.data.records.length === 0 ? (
             <p>{t("ui.diagnostics.empty")}</p>

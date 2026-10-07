@@ -18,14 +18,26 @@ import {
   type AttachmentFailureReason,
   type AttachmentPreview,
   AttachmentSchema,
+  type ClipboardTicket,
   type ContentPreparationResult,
   type PreparedContent,
 } from "../../contracts/public";
-import { attachmentToken, readAttachmentTokens } from "../../core/public";
+import {
+  attachmentToken,
+  parseDraftBlocks,
+  readAttachmentTokens,
+  serializeReference,
+} from "../../core/public";
+import {
+  type ClipboardSnapshot,
+  ClipboardSnapshotError,
+  ClipboardSnapshots,
+} from "./clipboard-snapshots";
 import {
   type AttachmentReferenceReader,
   ContentLifecycle,
 } from "./content-lifecycle";
+import { EditorHistoryLeases, EditorHistoryLimitError } from "./editor-history";
 import { type ImageMime, identifyContent } from "./representation";
 
 const PdfConversionSchema = z.strictObject({
@@ -44,12 +56,18 @@ export interface AttachmentStoreOptions {
     threadId: string,
     path: string,
     kind: "file" | "directory",
-  ) => Promise<{ bytes: Uint8Array; version: string }>;
+  ) => Promise<{
+    bytes: Uint8Array;
+    version: string;
+    projectPath?: string;
+    current?: () => boolean;
+  }>;
   validateImage?: (
     bytes: Uint8Array,
     mimeType: ImageMime,
   ) => boolean | Promise<boolean>;
   convertPdf?: (bytes: Uint8Array) => Promise<PdfConversion>;
+  editorHistoryLimits?: { epochs: number; ids: number; bytes: number };
   limits?: {
     sourceBytes: number;
     submissionBytes: number;
@@ -85,7 +103,36 @@ export class AttachmentStore {
   private readonly limits;
   private readonly lifecycle?: ContentLifecycle;
   private closed = false;
+  private readonly clipboard: ClipboardSnapshots<StoredRecord>;
+  private readonly clipboardPending = new Map<string, number>();
+  private readonly clipboardImports = new Map<
+    string,
+    { owner: string; threadId: string }
+  >();
+  private readonly editorHistories: EditorHistoryLeases;
   constructor(private readonly options: AttachmentStoreOptions) {
+    this.clipboard = new ClipboardSnapshots({
+      capture: (threadId, text, ids) =>
+        this.captureClipboard(threadId, text, ids),
+      verify: (snapshot, commit, current) =>
+        this.serialized(() => this.prepareClipboard(snapshot, commit, current)),
+      pin: (id, hashes) => this.lifecycle?.setEditorHistory(id, hashes),
+    });
+    this.editorHistories = new EditorHistoryLeases({
+      ...(options.editorHistoryLimits
+        ? { limits: options.editorHistoryLimits }
+        : {}),
+      manifest: (threadId, id) => this.read(threadId, id),
+      objectBytes: (digest) =>
+        Number(
+          this.options.database.connection
+            .prepare(
+              "SELECT byte_length FROM input_content_object WHERE digest=?",
+            )
+            .get(digest)?.byte_length ?? 0,
+        ),
+      pin: (id, digests) => this.lifecycle?.setEditorHistory(id, digests),
+    });
     this.limits = options.limits ?? DEFAULT_LIMITS;
     if (options.lifecycle)
       this.lifecycle = new ContentLifecycle({
@@ -231,18 +278,23 @@ export class AttachmentStore {
   }
   private save(record: StoredRecord): Attachment {
     const parsed = RecordSchema.parse(record);
-    this.options.database.connection
-      .prepare(
-        `INSERT INTO input_attachment(id,thread_id,payload) VALUES(?,?,?) ON CONFLICT(id) DO UPDATE SET payload=CASE
+    if (
+      !this.editorHistories.publishManifest(parsed, () => {
+        this.options.database.connection
+          .prepare(
+            `INSERT INTO input_attachment(id,thread_id,payload) VALUES(?,?,?) ON CONFLICT(id) DO UPDATE SET payload=CASE
           WHEN json_valid(input_attachment.payload) AND json_type(input_attachment.payload,'$.draftBoundRevision') IN ('integer','real')
           THEN json_set(excluded.payload,'$.draftBoundRevision',json_extract(input_attachment.payload,'$.draftBoundRevision'))
           ELSE excluded.payload END`,
-      )
-      .run(
-        parsed.attachment.id,
-        parsed.attachment.threadId,
-        JSON.stringify(parsed),
-      );
+          )
+          .run(
+            parsed.attachment.id,
+            parsed.attachment.threadId,
+            JSON.stringify(parsed),
+          );
+      })
+    )
+      throw new EditorHistoryLimitError(parsed.attachment.id);
     return parsed.attachment;
   }
   private read(threadId: string, id: string): StoredRecord | null {
@@ -273,6 +325,409 @@ export class AttachmentStore {
         }
       : null;
   }
+  openEditorHistory(owner: string, threadId: string, epoch: string) {
+    if (this.closed || !this.lifecycle)
+      return { kind: "unavailable", reason: "storage-unavailable" } as const;
+    return this.editorHistories.open(owner, threadId, epoch);
+  }
+  updateEditorHistory(
+    owner: string,
+    threadId: string,
+    leaseId: string,
+    version: number,
+    ids: string[],
+  ) {
+    if (this.closed)
+      return { kind: "unavailable", reason: "storage-unavailable" } as const;
+    return this.editorHistories.update(owner, threadId, leaseId, version, ids);
+  }
+  releaseEditorHistory(
+    owner: string,
+    threadId: string,
+    leaseId?: string,
+    releaseIds?: string[],
+    retainIds: string[] = [],
+  ) {
+    const dependencies = leaseId
+      ? this.editorHistories.dependencyIds(owner, threadId, leaseId)
+      : [];
+    const reply = leaseId
+      ? this.editorHistories.release(owner, threadId, leaseId)
+      : ({ kind: "history-released" } as const);
+    if (reply.kind !== "history-released" || releaseIds === undefined)
+      return reply;
+    const candidates = new Set([...dependencies, ...releaseIds]);
+    const retained = new Set(retainIds);
+    // Synchronous with lease release: retained body clones keep their original
+    // import pins throughout. Other epochs and documents remain authoritative.
+    for (const [id, item] of this.clipboardImports) {
+      if (
+        item.owner === owner &&
+        item.threadId === threadId &&
+        candidates.has(id) &&
+        !retained.has(id) &&
+        !this.editorHistories.retains(threadId, id)
+      ) {
+        this.lifecycle?.releaseImport(threadId, id);
+        this.clipboardImports.delete(id);
+      }
+    }
+    return reply;
+  }
+  releaseEditorHistories(owner: string): void {
+    this.editorHistories.releaseOwner(owner);
+    this.clipboard.releaseOwner(owner);
+    for (const [id, item] of this.clipboardImports)
+      if (item.owner === owner) {
+        this.lifecycle?.releaseImport(item.threadId, id);
+        this.clipboardImports.delete(id);
+      }
+  }
+  reserveClipboard(owner: string, threadId: string) {
+    return this.clipboard.reserve(owner, threadId);
+  }
+  exportClipboard(
+    owner: string,
+    threadId: string,
+    ticket: ClipboardTicket,
+    text: string,
+    ids: string[],
+  ) {
+    return this.clipboard.export(owner, threadId, ticket, text, ids);
+  }
+  releaseClipboard(
+    owner: string,
+    threadId: string,
+    tickets: ClipboardTicket[],
+  ) {
+    this.clipboard.releaseReserved(owner, threadId, tickets);
+    return { kind: "cancelled" } as const;
+  }
+  discardClipboard(owner: string, threadId: string, ids: string[]) {
+    for (const id of ids) {
+      const item = this.clipboardImports.get(id);
+      if (item?.owner === owner && item.threadId === threadId) {
+        this.lifecycle?.releaseImport(threadId, id);
+        this.clipboardImports.delete(id);
+      }
+    }
+    return { kind: "cancelled" } as const;
+  }
+  private captureClipboard(
+    threadId: string,
+    text: string,
+    ids: string[],
+  ): ClipboardSnapshot<StoredRecord> {
+    if (Buffer.byteLength(text) > 1048576) throw Error("clipboard-too-large");
+    const selected = new Set(ids);
+    if (selected.size !== ids.length || selected.size > 32)
+      throw Error("invalid-selection");
+    const encountered = new Set<string>();
+    const records = new Map<string, StoredRecord>();
+    const digests = new Set<string>();
+    let bytes = Buffer.byteLength(text),
+      degraded = false;
+    const body = parseDraftBlocks(text)
+      .map((block) => {
+        if (block.kind === "selection") return serializeReference(block.value);
+        const parsed = readAttachmentTokens(block.text);
+        if (!parsed.ok) throw Error("invalid-token");
+        let value = block.text;
+        for (const token of [...parsed.tokens].reverse()) {
+          if (!selected.has(token.id)) {
+            degraded = true;
+            value =
+              value.slice(0, token.position) +
+              "[d-pi:attachment unavailable]" +
+              value.slice(token.position + token.token.length);
+            continue;
+          }
+          encountered.add(token.id);
+          const record = this.read(threadId, token.id);
+          if (!record) throw Error("attachment-not-found");
+          const item = record.attachment;
+          if (
+            item.source !== "reference" &&
+            (item.status !== "ready" ||
+              !["text", "image", "pdf-text"].includes(item.representation) ||
+              !item.inputDigest)
+          ) {
+            degraded = true;
+            // Names are readable data, never token authority in the destination.
+            const name = item.name.replace(
+              /\[\[dpi-attachment:/g,
+              "[attachment:",
+            );
+            value =
+              value.slice(0, token.position) +
+              `[d-pi:attachment ${name}]` +
+              value.slice(token.position + token.token.length);
+          } else {
+            records.set(item.id, record);
+            if (item.source !== "reference") {
+              for (const hash of [item.inputDigest, record.derivedDigest]) {
+                if (!hash || digests.has(hash)) continue;
+                digests.add(hash);
+                bytes += this.objectBytes(
+                  hash,
+                  hash === item.inputDigest ? item.byteLength : 0,
+                );
+              }
+            }
+          }
+        }
+        return value;
+      })
+      .join("\n");
+    if (encountered.size !== selected.size) throw Error("invalid-selection");
+    if (Buffer.byteLength(body) > 1048576) throw Error("clipboard-too-large");
+    return {
+      text: body,
+      records: [...records.values()],
+      digests,
+      bytes,
+      degraded,
+    };
+  }
+  private objectBytes(hash: string, fallback?: number): number {
+    const value = this.options.database.connection
+      .prepare("SELECT byte_length FROM input_content_object WHERE digest=?")
+      .get(hash)?.byte_length;
+    if (value === undefined) {
+      if (fallback !== undefined) return fallback;
+      throw Error("content-missing");
+    }
+    return Number(value);
+  }
+  private async prepareClipboard(
+    snapshot: ClipboardSnapshot<StoredRecord>,
+    commit: (snapshot: ClipboardSnapshot<StoredRecord>) => void,
+    current: () => boolean,
+  ): Promise<void> {
+    // Legacy object metadata can be repaired only by reading and verifying the private object.
+    if (!current()) throw new ClipboardSnapshotError("expired");
+    await this.verifyClipboard(snapshot, current);
+    const prepared: ClipboardSnapshot<StoredRecord> = {
+      ...snapshot,
+      records: [],
+      digests: new Set(),
+      bytes: Buffer.byteLength(snapshot.text),
+    };
+    const sources: {
+      original: Attachment;
+      current?: (() => boolean) | undefined;
+    }[] = [];
+    for (const originalRecord of snapshot.records) {
+      if (!current()) throw new ClipboardSnapshotError("expired");
+      let record = originalRecord;
+      const original = record.attachment;
+      if (original.source === "reference") {
+        if (!this.options.readReference || !original.path)
+          throw Error("reference-unavailable");
+        const value = await this.options.readReference(
+          original.threadId,
+          original.path,
+          original.referenceKind ?? "file",
+        );
+        if (!current()) throw new ClipboardSnapshotError("expired");
+        if (
+          !value.projectPath ||
+          value.bytes.byteLength > this.limits.sourceBytes
+        )
+          throw Error("reference-unavailable");
+        const bytes = value.bytes.slice();
+        const inputDigest = await this.put(bytes);
+        const frozen = AttachmentSchema.parse({
+          ...original,
+          source: "paste",
+          status: "preparing",
+          representation: "unsupported",
+          reason: undefined,
+          inputDigest,
+          byteLength: bytes.byteLength,
+          mimeType: original.referenceKind === "directory" ? "text/plain" : "",
+          frozenReference: {
+            projectPath: value.projectPath,
+            path: original.path,
+            kind: original.referenceKind ?? "file",
+            version: value.version,
+            capturedAt: new Date().toISOString(),
+          },
+        });
+        record = await this.describe(
+          { attachment: frozen },
+          bytes,
+          false,
+          current,
+        );
+        if (record.attachment.status !== "ready")
+          throw Error("reference-unavailable");
+        if (original.referenceKind === "directory")
+          record.attachment.converterVersion = "directory-listing-v1";
+        sources.push({ original, current: value.current });
+      }
+      prepared.records.push(record);
+      for (const hash of [
+        record.attachment.inputDigest,
+        record.derivedDigest,
+      ]) {
+        if (!hash || prepared.digests.has(hash)) continue;
+        prepared.digests.add(hash);
+        prepared.bytes += this.objectBytes(hash);
+      }
+      if (prepared.bytes > 64 * 1024 * 1024)
+        throw new ClipboardSnapshotError("busy");
+    }
+    await this.verifyClipboard(prepared, current);
+    for (const { original, current: sourceCurrent } of sources) {
+      const actual = this.read(original.threadId, original.id)?.attachment;
+      if (
+        !actual ||
+        actual.source !== "reference" ||
+        actual.path !== original.path ||
+        actual.referenceKind !== original.referenceKind ||
+        (sourceCurrent && !sourceCurrent())
+      )
+        throw Error("reference-unavailable");
+    }
+    // Publication and final pins occur before the serialized resource lane can admit GC.
+    commit(prepared);
+  }
+  private async verifyClipboard(
+    snapshot: ClipboardSnapshot<StoredRecord>,
+    current?: () => boolean,
+  ): Promise<void> {
+    for (const hash of snapshot.digests) {
+      if (current && !current()) throw new ClipboardSnapshotError("expired");
+      const bytes = await this.readVerifiedObject(hash);
+      if (current && !current()) throw new ClipboardSnapshotError("expired");
+      if (
+        bytes.byteLength > this.limits.sourceBytes ||
+        snapshot.records.some(
+          (record) =>
+            record.attachment.source !== "reference" &&
+            record.attachment.inputDigest === hash &&
+            record.attachment.byteLength !== bytes.byteLength,
+        )
+      )
+        throw Error("content-corrupt");
+    }
+  }
+  async importClipboard(
+    owner: string,
+    threadId: string,
+    ticket: ClipboardTicket,
+  ) {
+    if (this.closed)
+      return { kind: "clipboard-unavailable", reason: "invalid" } as const;
+    const pending = this.clipboardPending.get(owner) ?? 0;
+    if (
+      pending >= 4 ||
+      [...this.clipboardPending.values()].reduce(
+        (sum, count) => sum + count,
+        0,
+      ) >= 16
+    )
+      return { kind: "clipboard-unavailable", reason: "busy" } as const;
+    this.clipboardPending.set(owner, pending + 1);
+    try {
+      const acquired = await this.clipboard.acquire(ticket, owner);
+      if (acquired.kind !== "snapshot") return acquired;
+      return await this.serialized(async () => {
+        try {
+          if (!acquired.valid())
+            return {
+              kind: "clipboard-unavailable",
+              reason: "expired",
+            } as const;
+          await this.verifyClipboard(acquired.snapshot, acquired.valid);
+          if (!acquired.valid())
+            return {
+              kind: "clipboard-unavailable",
+              reason: "expired",
+            } as const;
+          for (const [id, pending] of this.clipboardImports) {
+            if (
+              this.read(pending.threadId, id)?.draftBoundRevision !== undefined
+            ) {
+              this.lifecycle?.releaseImport(pending.threadId, id);
+              this.clipboardImports.delete(id);
+            }
+          }
+          if (
+            this.clipboardImports.size + acquired.snapshot.records.length >
+            128
+          )
+            return { kind: "clipboard-unavailable", reason: "busy" } as const;
+          const mapping = new Map<string, string>();
+          const items: Attachment[] = [];
+          const db = this.options.database.connection;
+          db.exec("BEGIN IMMEDIATE");
+          try {
+            for (const record of acquired.snapshot.records) {
+              const id = randomUUID();
+              mapping.set(record.attachment.id, id);
+              items.push(
+                this.save({
+                  ...(record.derivedDigest
+                    ? { derivedDigest: record.derivedDigest }
+                    : {}),
+                  attachment: {
+                    ...record.attachment,
+                    id,
+                    threadId,
+                    token: attachmentToken(id),
+                    source: "paste",
+                    capturedAt: new Date().toISOString(),
+                  },
+                }),
+              );
+            }
+            db.exec("COMMIT");
+          } catch (error) {
+            db.exec("ROLLBACK");
+            throw error;
+          }
+          for (const item of items) {
+            if (item.inputDigest)
+              this.lifecycle?.pinImport(threadId, item.id, item.inputDigest);
+            const derived = this.read(threadId, item.id)?.derivedDigest;
+            if (derived) this.lifecycle?.pinImport(threadId, item.id, derived);
+            this.clipboardImports.set(item.id, { owner, threadId });
+          }
+          const text = parseDraftBlocks(acquired.snapshot.text)
+            .map((block) =>
+              block.kind === "selection"
+                ? serializeReference(block.value)
+                : block.text.replace(
+                    /\[\[dpi-attachment:([0-9a-f-]{36})\]\]/g,
+                    (token, id: string) =>
+                      mapping.has(id)
+                        ? attachmentToken(mapping.get(id) ?? "")
+                        : token,
+                  ),
+            )
+            .join("\n");
+          return {
+            kind: "clipboard-imported",
+            text,
+            items,
+            degraded: acquired.snapshot.degraded,
+          } as const;
+        } catch (error) {
+          return {
+            kind: "clipboard-unavailable",
+            reason:
+              error instanceof ClipboardSnapshotError ? error.reason : "failed",
+          } as const;
+        }
+      });
+    } finally {
+      const remaining = (this.clipboardPending.get(owner) ?? 1) - 1;
+      if (remaining) this.clipboardPending.set(owner, remaining);
+      else this.clipboardPending.delete(owner);
+    }
+  }
   checkStorage(threadId: string) {
     return this.serialized(() => {
       if (!this.lifecycle) throw Error("Attachment lifecycle unavailable");
@@ -293,6 +748,11 @@ export class AttachmentStore {
   }
   async close(): Promise<void> {
     this.closed = true;
+    this.editorHistories.dispose();
+    this.clipboard.close();
+    for (const [id, item] of this.clipboardImports)
+      this.lifecycle?.releaseImport(item.threadId, id);
+    this.clipboardImports.clear();
     await this.tail;
     await this.lifecycle?.close();
   }
@@ -381,37 +841,46 @@ export class AttachmentStore {
     record: StoredRecord,
     bytes: Uint8Array,
   ): Promise<Attachment> {
-    const representation = identifyContent(
+    return this.save(await this.describe(record, bytes));
+  }
+  private identifyStoredContent(record: StoredRecord, bytes: Uint8Array) {
+    return identifyContent(
       bytes,
       record.attachment.mimeType,
-      record.attachment.name,
+      record.attachment.frozenReference?.kind === "directory"
+        ? "directory"
+        : record.attachment.name,
     );
+  }
+  private async describe(
+    record: StoredRecord,
+    bytes: Uint8Array,
+    pinImport = true,
+    current?: () => boolean,
+  ): Promise<StoredRecord> {
+    const representation = this.identifyStoredContent(record, bytes);
     const attachment = { ...record.attachment, coverageGaps: [] as string[] };
     delete attachment.reason;
     return match(representation)
-      .returnType<Promise<Attachment>>()
-      .with({ kind: "failed" }, async ({ reason }) =>
-        this.save({
-          ...record,
-          attachment: {
-            ...attachment,
-            status: "failed",
-            reason,
-            representation: "unsupported",
-          },
-        }),
-      )
-      .with({ kind: "text" }, async ({ encoding }) =>
-        this.save({
-          ...record,
-          attachment: {
-            ...attachment,
-            status: "ready",
-            representation: "text",
-            converterVersion: encoding,
-          },
-        }),
-      )
+      .returnType<Promise<StoredRecord>>()
+      .with({ kind: "failed" }, async ({ reason }) => ({
+        ...record,
+        attachment: {
+          ...attachment,
+          status: "failed",
+          reason,
+          representation: "unsupported",
+        },
+      }))
+      .with({ kind: "text" }, async ({ encoding }) => ({
+        ...record,
+        attachment: {
+          ...attachment,
+          status: "ready",
+          representation: "text",
+          converterVersion: encoding,
+        },
+      }))
       .with({ kind: "image" }, async ({ mimeType }) => {
         let reason: AttachmentFailureReason | undefined;
         try {
@@ -423,7 +892,8 @@ export class AttachmentStore {
         } catch {
           reason = "invalid-image";
         }
-        return this.save({
+        if (current && !current()) throw new ClipboardSnapshotError("expired");
+        return {
           ...record,
           attachment: {
             ...attachment,
@@ -433,11 +903,11 @@ export class AttachmentStore {
             converterVersion: "original-image-v1",
             ...(reason ? { reason } : {}),
           },
-        });
+        };
       })
       .with({ kind: "pdf" }, async () => {
         if (!this.options.convertPdf)
-          return this.save({
+          return {
             ...record,
             attachment: {
               ...attachment,
@@ -445,11 +915,13 @@ export class AttachmentStore {
               reason: "pdf-conversion-unavailable",
               representation: "pdf-text",
             },
-          });
+          };
         try {
           const result = PdfConversionSchema.parse(
             await this.options.convertPdf(bytes),
           );
+          if (current && !current())
+            throw new ClipboardSnapshotError("expired");
           const coverageGaps = [
             ...(result.hasVisualContent ? ["visual-content"] : []),
             ...Array.from(
@@ -459,7 +931,7 @@ export class AttachmentStore {
             ),
           ];
           if (result.pageCount > 100)
-            return this.save({
+            return {
               ...record,
               attachment: {
                 ...attachment,
@@ -468,7 +940,7 @@ export class AttachmentStore {
                 representation: "pdf-text",
                 coverageGaps,
               },
-            });
+            };
           if (
             !Number.isInteger(result.pageCount) ||
             result.pageCount < 1 ||
@@ -477,10 +949,10 @@ export class AttachmentStore {
             throw new Error("invalid-pdf");
           const derivedDigest = await this.put(
             new TextEncoder().encode(result.text),
-            attachment,
+            pinImport ? attachment : undefined,
           );
           const ready = coverageGaps.length === 0 || attachment.textOnly;
-          return this.save({
+          return {
             attachment: {
               ...attachment,
               status: ready ? "ready" : "failed",
@@ -490,9 +962,14 @@ export class AttachmentStore {
               converterVersion: result.converterVersion,
             },
             derivedDigest,
-          });
+          };
         } catch (error) {
-          return this.save({
+          if (
+            error instanceof EditorHistoryLimitError ||
+            error instanceof ClipboardSnapshotError
+          )
+            throw error;
+          return {
             ...record,
             attachment: {
               ...attachment,
@@ -503,7 +980,7 @@ export class AttachmentStore {
                   : "pdf-conversion-failed",
               representation: "pdf-text",
             },
-          });
+          };
         }
       })
       .exhaustive();
@@ -529,6 +1006,7 @@ export class AttachmentStore {
           await this.readObject(record.attachment.inputDigest),
         );
       } catch (error) {
+        if (error instanceof EditorHistoryLimitError) throw error;
         return this.save({
           ...record,
           attachment: {
@@ -604,11 +1082,7 @@ export class AttachmentStore {
           kind: "image",
           dataUrl: `data:${record.attachment.mimeType};base64,${Buffer.from(bytes).toString("base64")}`,
         };
-      const content = identifyContent(
-        bytes,
-        record.attachment.mimeType,
-        record.attachment.name,
-      );
+      const content = this.identifyStoredContent(record, bytes);
       return content.kind === "text"
         ? this.textPreview(content.text)
         : {
@@ -690,6 +1164,8 @@ export class AttachmentStore {
         ? { ok: true, text: result.text, record: updated }
         : { ok: false, reason: "pdf-coverage-gap" };
     } catch (error) {
+      if (error instanceof EditorHistoryLimitError)
+        return { ok: false, reason: "editor-history-limit" };
       return failed(
         error instanceof Error && error.message === "storage-full"
           ? "storage-full"
@@ -702,18 +1178,27 @@ export class AttachmentStore {
     text: string,
   ): Promise<ContentPreparationResult> {
     return this.serialized(async () => {
-      const result = await this.prepareContent(threadId, text);
-      if (result.ok)
-        this.lifecycle?.pinPreparation(
-          result.content.sources.flatMap((source) => {
-            const record = this.read(threadId, source.attachmentId);
-            return [
-              source.inputDigest,
-              ...(record?.derivedDigest ? [record.derivedDigest] : []),
-            ];
-          }),
-        );
-      return result;
+      try {
+        const result = await this.prepareContent(threadId, text);
+        if (result.ok)
+          this.lifecycle?.pinPreparation(
+            result.content.sources.flatMap((source) => {
+              const record = this.read(threadId, source.attachmentId);
+              return [
+                source.inputDigest,
+                ...(record?.derivedDigest ? [record.derivedDigest] : []),
+              ];
+            }),
+          );
+        return result;
+      } catch (error) {
+        if (!(error instanceof EditorHistoryLimitError)) throw error;
+        return {
+          ok: false,
+          reason: "editor-history-limit",
+          ...(error.attachmentId ? { attachmentId: error.attachmentId } : {}),
+        };
+      }
     });
   }
   private async prepareContent(
@@ -749,7 +1234,7 @@ export class AttachmentStore {
           attachmentId: token.id,
         };
       let bytes: Uint8Array;
-      let version: string | undefined;
+      let version: string | undefined = attachment.frozenReference?.version;
       try {
         if (attachment.representation === "reference") {
           if (!this.options.readReference || !attachment.path)
@@ -949,6 +1434,9 @@ export class AttachmentStore {
           ? { referenceKind: attachment.referenceKind }
           : {}),
         ...(version ? { version } : {}),
+        ...(attachment.frozenReference
+          ? { frozenReference: attachment.frozenReference }
+          : {}),
       });
     }
     content.message += text.slice(cursor);

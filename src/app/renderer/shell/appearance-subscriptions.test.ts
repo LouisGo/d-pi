@@ -215,9 +215,23 @@ async function setup({
       subscribe: () => () => {},
     },
     files: {
-      request: async () => ({ kind: "unavailable", reason: "missing" }),
+      request: async (command) => ({
+        kind: "completed",
+        operationId: command.operationId,
+        traceId: command.traceId,
+        reply: { kind: "unavailable", reason: "missing" },
+      }),
+      cancel: async (command) => ({ kind: "acknowledged", ...command }),
     },
-    git: { request: async () => ({ kind: "unavailable", reason: "not-git" }) },
+    git: {
+      request: async (command) => ({
+        kind: "completed",
+        operationId: command.operationId,
+        traceId: command.traceId,
+        reply: { kind: "unavailable", reason: "not-git" },
+      }),
+      cancel: async (command) => ({ kind: "acknowledged", ...command }),
+    },
     history: {
       read: async () => ({ kind: "unavailable", reason: "missing" }),
       projectList: async () => ({

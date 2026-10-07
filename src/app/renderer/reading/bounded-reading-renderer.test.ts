@@ -2,7 +2,10 @@
 import { act, createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { expect, it, vi } from "vitest";
-import { ConversationModel } from "../../../modules/conversation/core/public";
+import {
+  ConversationModel,
+  ReadingPositions,
+} from "../../../modules/conversation/core/public";
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
 import { Conversation } from "./conversation";
 import { ReadingBody } from "./reading-body";
@@ -14,6 +17,94 @@ vi.mock("./markdown", () => ({
     return createElement("p", { "data-markdown": true }, text);
   },
 }));
+
+it("restores a Thread/source's segment and inner offset after remount without borrowing another source", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const positions = new ReadingPositions();
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  const text = "a".repeat(8192) + "b".repeat(8192) + "c".repeat(8192);
+  const render = (key: string) =>
+    act(() =>
+      root.render(
+        createElement(I18nProvider, {
+          initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" },
+          children: createElement(ReadingBody, {
+            text,
+            position: { positions, key },
+          }),
+        }),
+      ),
+    );
+  try {
+    await render("source-a:row");
+    const next = [...container.querySelectorAll("button")].find(
+      (button) => button.textContent === "Next segment",
+    );
+    await act(() => next?.click());
+    const body = container.querySelector<HTMLElement>("[data-reading-text]");
+    if (!body) throw Error("missing body");
+    body.scrollTop = 45;
+    await act(() => body.dispatchEvent(new Event("scroll")));
+    await act(() => root.render(null));
+    await render("source-b:row");
+    expect(
+      container
+        .querySelector("[data-reading-segment]")
+        ?.getAttribute("data-reading-segment"),
+    ).toBe("0");
+    await render("source-a:row");
+    expect(
+      container
+        .querySelector("[data-reading-segment]")
+        ?.getAttribute("data-reading-segment"),
+    ).toBe("1");
+    expect(
+      container.querySelector<HTMLElement>("[data-reading-text]")?.scrollTop,
+    ).toBe(45);
+  } finally {
+    await act(() => root.unmount());
+    container.remove();
+    vi.unstubAllGlobals();
+  }
+});
+
+it("keeps segment navigation usable when a position key exceeds the retention budget", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const positions = new ReadingPositions();
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  try {
+    await act(() =>
+      root.render(
+        createElement(I18nProvider, {
+          initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" },
+          children: createElement(ReadingBody, {
+            text: "a".repeat(17000),
+            position: { positions, key: "x".repeat(4097) },
+          }),
+        }),
+      ),
+    );
+    const next = [...container.querySelectorAll("button")].find(
+      (button) => button.textContent === "Next segment",
+    );
+    await act(() => next?.click());
+    expect(
+      container
+        .querySelector("[data-reading-segment]")
+        ?.getAttribute("data-reading-segment"),
+    ).toBe("1");
+    expect(positions.stateStore.getState().bodies.size).toBe(0);
+  } finally {
+    await act(() => root.unmount());
+    positions.dispose();
+    container.remove();
+    vi.unstubAllGlobals();
+  }
+});
 
 it("uses bounded original-text segments for giant messages while retaining Markdown for short messages", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);

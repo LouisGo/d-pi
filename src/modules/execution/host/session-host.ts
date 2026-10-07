@@ -10,6 +10,7 @@ import {
 import { SubagentConfigurationSnapshotSchema } from "../../configuration/contracts/public";
 import { type ControlState, ControlStateSchema } from "../contracts/control";
 import { defaultAnswerFor } from "../contracts/interactions";
+import type { NativeFailureSummary } from "../contracts/native-failure";
 import type { FrozenSubmission, SubmissionEvent } from "../contracts/public";
 import {
   type HostCommand,
@@ -21,7 +22,9 @@ import {
 } from "../contracts/public";
 import { QueueSnapshotSchema } from "../contracts/queue";
 import { changesManagedSession, submissionFrame } from "../core/public";
+import { HostScope, type ScopedDeadline } from "./host-scope";
 import { PendingInteractions } from "./interactions/interactions";
+import { nativeData, nativeFailureOf } from "./native/native-request-failure";
 import { type NativeObservation, NativeSession } from "./native/native-session";
 import { NativeSubagentObservation } from "./native/subagent-observation";
 
@@ -46,12 +49,24 @@ export interface SessionHostOptions {
 export interface SessionHost {
   handle(command: HostCommand, port?: HostMessagePort): Promise<void>;
 }
-// One owner per utility instance. Merely importing this module creates no processes or listeners.
+// One owner per native instance scope. Importing creates no processes or listeners.
 export function createSessionHost(
   send: (message: HostMessage) => void,
   exit: (code: number) => void,
   options: SessionHostOptions = {},
 ): SessionHost {
+  const failureFields = (error: unknown) => {
+    const nativeFailure = nativeFailureOf(error);
+    return nativeFailure ? { nativeFailure } : {};
+  };
+  const tasks = new HostScope((error) => {
+    if (!closing && !disconnected)
+      send({
+        kind: "failed",
+        code: "runtime-unavailable",
+        ...failureFields(error),
+      });
+  });
   let native: NativeSession | null = null;
   let subagentObservation: NativeSubagentObservation | null = null;
   let start: HostStart | null = null;
@@ -84,16 +99,16 @@ export function createSessionHost(
   // silently drops later ones, so a default once written cannot be withdrawn.
   const APP_DEFAULT_ANSWER_MS = 120_000;
   const NATIVE_EXPIRY_MARGIN_MS = 1_000;
-  const defaultAnswerTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  const defaultAnswerTimers = new Map<string, ScopedDeadline>();
   function clearDefaultAnswerTimer(id: string): void {
     const timer = defaultAnswerTimers.get(id);
     if (timer) {
-      clearTimeout(timer);
+      timer.cancel();
       defaultAnswerTimers.delete(id);
     }
   }
   function clearDefaultAnswerTimers(): void {
-    for (const timer of defaultAnswerTimers.values()) clearTimeout(timer);
+    for (const timer of defaultAnswerTimers.values()) timer.cancel();
     defaultAnswerTimers.clear();
   }
   async function fireDefaultAnswer(id: string): Promise<void> {
@@ -149,14 +164,14 @@ export function createSessionHost(
           ? Date.now() + APP_DEFAULT_ANSWER_MS
           : dialog.expiresAt - NATIVE_EXPIRY_MARGIN_MS;
       const delay = Math.max(0, latest - Date.now());
-      const timer = setTimeout(
-        () => {
-          defaultAnswerTimers.delete(id);
-          void fireDefaultAnswer(id);
-        },
+      const timer = tasks.deadline(
         Math.min(delay, 2147483647),
+        async () => {
+          defaultAnswerTimers.delete(id);
+          await fireDefaultAnswer(id);
+        },
+        true,
       );
-      timer.unref();
       defaultAnswerTimers.set(id, timer);
     }
   }
@@ -182,8 +197,8 @@ export function createSessionHost(
       responseConfirmed: boolean;
       accepted: boolean;
       terminalConfirmed: boolean;
-      timer: ReturnType<typeof setTimeout>;
-      acknowledgementTimer: ReturnType<typeof setTimeout>;
+      timer: ScopedDeadline;
+      acknowledgementTimer: ScopedDeadline;
     }
   >();
   // Keep only recent confirmed identities, never their frozen text. Native late
@@ -225,7 +240,7 @@ export function createSessionHost(
   }
   // Only evidence is replayed; frozen prompts are never written again.
   const evidence = new Map<string, SubmissionEvent>();
-  let evidenceRetry: ReturnType<typeof setTimeout> | null = null;
+  let evidenceRetry: ScopedDeadline | null = null;
   let retryDelay = 1000;
   function replayEvidence(): void {
     for (const [evidenceId, event] of evidence)
@@ -233,13 +248,17 @@ export function createSessionHost(
   }
   function scheduleEvidenceRetry(): void {
     if (!evidence.size || evidenceRetry || disconnected || closing) return;
-    evidenceRetry = setTimeout(() => {
-      evidenceRetry = null;
-      replayEvidence();
-      retryDelay = Math.min(retryDelay * 2, 30000);
-      scheduleEvidenceRetry();
-    }, retryDelay);
-    evidenceRetry.unref();
+    evidenceRetry = tasks.deadline(
+      retryDelay,
+      () => {
+        evidenceRetry = null;
+        if (disconnected || closing || !evidence.size) return;
+        replayEvidence();
+        retryDelay = Math.min(retryDelay * 2, 30000);
+        scheduleEvidenceRetry();
+      },
+      true,
+    );
   }
   function publishEvidence(event: SubmissionEvent): void {
     for (const [evidenceId, previous] of evidence) {
@@ -270,19 +289,20 @@ export function createSessionHost(
   }
   function clearPrompts(): void {
     for (const entry of prompts.values()) {
-      clearTimeout(entry.timer);
-      clearTimeout(entry.acknowledgementTimer);
+      entry.timer.cancel();
+      entry.acknowledgementTimer.cancel();
     }
     prompts.clear();
     confirmedPrompts.clear();
   }
   function disposeHost(): void {
+    void tasks.close();
     subagentObservation?.dispose();
     subagentObservation = null;
     permit?.(false);
     permit = null;
     clearPrompts();
-    if (evidenceRetry) clearTimeout(evidenceRetry);
+    if (evidenceRetry) evidenceRetry.cancel();
     evidenceRetry = null;
     evidence.clear();
     clearDefaultAnswerTimers();
@@ -312,6 +332,7 @@ export function createSessionHost(
     if (event.kind === "disconnected") {
       if (closing) return;
       disconnected = true;
+      void tasks.close();
       if (subagentObservation) {
         subagentObservation.dispose();
         options.onNativeFrame?.({
@@ -329,7 +350,11 @@ export function createSessionHost(
       clearPrompts();
       interactions.disconnect();
       clearDefaultAnswerTimers();
-      send({ kind: "interrupted", reason: event.reason });
+      send({
+        kind: "interrupted",
+        reason: event.reason,
+        ...(event.failure ? { nativeFailure: event.failure } : {}),
+      });
       return;
     }
     if (disconnected || closing) return;
@@ -394,7 +419,7 @@ export function createSessionHost(
       if (value && typeof frame.success === "boolean") {
         observationVersion++;
         if (entry) {
-          clearTimeout(entry.acknowledgementTimer);
+          entry.acknowledgementTimer.cancel();
           entry.responded = true;
           entry.accepted ||= frame.success;
         }
@@ -471,78 +496,88 @@ export function createSessionHost(
   function refresh(): Promise<void> {
     if (refreshFlight) return refreshFlight;
     if (disconnected || closing) return Promise.resolve();
-    refreshFlight = refreshState().finally(() => {
-      refreshFlight = null;
-    });
+    refreshFlight = tasks
+      .run((signal) => refreshState(signal))
+      .catch((error: unknown) => {
+        if (!disconnected && !closing)
+          send({
+            kind: "interrupted",
+            reason: "state-unavailable",
+            ...failureFields(error),
+          });
+      })
+      .finally(() => {
+        refreshFlight = null;
+      });
     return refreshFlight;
   }
-  async function refreshState(): Promise<void> {
-    try {
-      while (!disconnected && !closing) {
-        const version = observationVersion;
-        const afterSubmissionId = lastDispatchId;
-        const response = await native?.request("get_state");
+  async function refreshState(signal: AbortSignal): Promise<void> {
+    while (!disconnected && !closing) {
+      const version = observationVersion;
+      const afterSubmissionId = lastDispatchId;
+      const response = await native?.request("get_state", {}, { signal });
+      if (disconnected || closing) return;
+      if (version !== observationVersion) continue;
+      if (response?.success !== true) throw Error("Native state unavailable");
+      const next = nativeData(NativeStateSchema, response, "get_state");
+      let control: ControlState | null = null;
+      if (start?.sdkEntry) {
+        const reply = await native?.request("d_pi_state", {}, { signal });
         if (disconnected || closing) return;
         if (version !== observationVersion) continue;
-        if (response?.success !== true) throw Error("Native state unavailable");
-        const next = NativeStateSchema.parse(response.data);
-        let control: ControlState | null = null;
-        if (start?.sdkEntry) {
-          const reply = await native?.request("d_pi_state");
-          if (disconnected || closing) return;
-          if (version !== observationVersion) continue;
-          if (reply?.success !== true)
-            throw Error("Native control unavailable");
-          control = ControlStateSchema.parse(reply.data);
-          const subagentReply = await native?.request("d_pi_subagent_state");
-          if (disconnected || closing) return;
-          if (version !== observationVersion) continue;
-          if (subagentReply?.success !== true)
-            throw Error("Native subagent configuration unavailable");
-          send({
-            kind: "subagents",
-            connectionGeneration: start.connectionGeneration,
-            state: SubagentConfigurationSnapshotSchema.parse(
-              subagentReply.data,
-            ),
-          });
-        }
-        state = next;
-        if (next.isSettled !== undefined) unsettledPrompt = !next.isSettled;
-        busy =
-          unsettledPrompt ||
-          next.hasPendingAsyncWork === true ||
-          next.isStreaming ||
-          next.isCompacting ||
-          next.queuedMessageCount > 0 ||
-          !!(control && activeControl(control));
-        if (control && start) {
-          paused = control.paused;
-          lastControl = control;
-          send({
-            kind: "control",
-            connectionGeneration: start.connectionGeneration,
-            state: control,
-          });
-        }
-        successfulRefresh++;
+        if (reply?.success !== true) throw Error("Native control unavailable");
+        control = nativeData(ControlStateSchema, reply, "d_pi_state");
+        const subagentReply = await native?.request(
+          "d_pi_subagent_state",
+          {},
+          { signal },
+        );
+        if (disconnected || closing) return;
+        if (version !== observationVersion) continue;
+        if (subagentReply?.success !== true)
+          throw Error("Native subagent configuration unavailable");
         send({
-          kind: "state",
-          state,
-          pendingInteraction: interactions.pending,
-          busy,
+          kind: "subagents",
+          connectionGeneration: start.connectionGeneration,
+          state: nativeData(
+            SubagentConfigurationSnapshotSchema,
+            subagentReply,
+            "d_pi_subagent_state",
+          ),
         });
-        if (!busy && !interactions.pending && start && prompts.size === 0)
-          send({
-            kind: "idle-confirmed",
-            connectionGeneration: start.connectionGeneration,
-            afterSubmissionId,
-          });
-        return;
       }
-    } catch {
-      if (!disconnected && !closing)
-        send({ kind: "interrupted", reason: "state-unavailable" });
+      state = next;
+      if (next.isSettled !== undefined) unsettledPrompt = !next.isSettled;
+      busy =
+        unsettledPrompt ||
+        next.hasPendingAsyncWork === true ||
+        next.isStreaming ||
+        next.isCompacting ||
+        next.queuedMessageCount > 0 ||
+        !!(control && activeControl(control));
+      if (control && start) {
+        paused = control.paused;
+        lastControl = control;
+        send({
+          kind: "control",
+          connectionGeneration: start.connectionGeneration,
+          state: control,
+        });
+      }
+      successfulRefresh++;
+      send({
+        kind: "state",
+        state,
+        pendingInteraction: interactions.pending,
+        busy,
+      });
+      if (!busy && !interactions.pending && start && prompts.size === 0)
+        send({
+          kind: "idle-confirmed",
+          connectionGeneration: start.connectionGeneration,
+          afterSubmissionId,
+        });
+      return;
     }
   }
   async function launch(value: HostStart): Promise<void> {
@@ -591,7 +626,8 @@ export function createSessionHost(
       if (value.sdkEntry) {
         const instance = native;
         subagentObservation = new NativeSubagentObservation(
-          (type, payload) => instance.request(type, payload),
+          (type, payload) =>
+            tasks.run((signal) => instance.request(type, payload, { signal })),
           (frame) => {
             if (!disconnected && !closing) options.onNativeFrame?.(frame);
           },
@@ -653,7 +689,8 @@ export function createSessionHost(
       return;
     }
     if (!native) return;
-    const timer = setTimeout(() => {
+    const timer = tasks.deadline(15 * 60_000, () => {
+      if (closing || disconnected) return;
       const entry = prompts.get(value.requestId);
       if (entry && !entry.responded)
         publishEvidence({
@@ -662,7 +699,7 @@ export function createSessionHost(
           requestId: value.requestId,
           target: value.target,
         });
-      if (entry) clearTimeout(entry.acknowledgementTimer);
+      if (entry) entry.acknowledgementTimer.cancel();
       prompts.delete(value.requestId);
       if (start)
         send({
@@ -676,8 +713,9 @@ export function createSessionHost(
         requestId: value.requestId,
         traceId: value.traceId,
       });
-    }, 15 * 60_000);
-    const acknowledgementTimer = setTimeout(() => {
+    });
+    const acknowledgementTimer = tasks.deadline(30000, () => {
+      if (closing || disconnected) return;
       const entry = prompts.get(value.requestId);
       if (entry && !entry.responded)
         publishEvidence({
@@ -686,7 +724,7 @@ export function createSessionHost(
           requestId: value.requestId,
           target: value.target,
         });
-    }, 30000);
+    });
     prompts.set(value.requestId, {
       value,
       responded: false,
@@ -699,8 +737,13 @@ export function createSessionHost(
     busy = true;
     try {
       native.write(submissionFrame(value));
-    } catch {
-      observe({ kind: "disconnected", reason: "write" });
+    } catch (error: unknown) {
+      const failure = nativeFailureOf(error);
+      observe({
+        kind: "disconnected",
+        reason: "write",
+        ...(failure ? { failure } : {}),
+      });
     }
   }
 
@@ -749,8 +792,8 @@ export function createSessionHost(
                 if (!entry.accepted) entry.terminalConfirmed = true;
               }
               if (entry.responseConfirmed && entry.terminalConfirmed) {
-                clearTimeout(entry.timer);
-                clearTimeout(entry.acknowledgementTimer);
+                entry.timer.cancel();
+                entry.acknowledgementTimer.cancel();
                 rememberConfirmed(entry.value);
                 prompts.delete(event.requestId);
                 // Main may confirm after the terminal's idle sample finished.
@@ -760,7 +803,7 @@ export function createSessionHost(
             }
           }
           if (!evidence.size && evidenceRetry) {
-            clearTimeout(evidenceRetry);
+            evidenceRetry.cancel();
             evidenceRetry = null;
             retryDelay = 1000;
           }
@@ -787,15 +830,24 @@ export function createSessionHost(
             return;
           let status: "acknowledged" | "failed" | "unknown" = "unknown";
           let code: string | undefined;
+          let nativeFailure: NativeFailureSummary | undefined;
           try {
-            const response = await native.request(
-              kind === "manage-queue" ? "d_pi_queue" : "d_pi_subagent_config",
-              { command: command.command },
+            const instance = native;
+            const response = await tasks.run((signal) =>
+              instance.request(
+                kind === "manage-queue" ? "d_pi_queue" : "d_pi_subagent_config",
+                { command: command.command },
+                { signal },
+              ),
             );
             if (disconnected || closing) return;
             if (response.success === true) {
               if (kind === "manage-queue") {
-                const snapshot = QueueSnapshotSchema.parse(response.data);
+                const snapshot = nativeData(
+                  QueueSnapshotSchema,
+                  response,
+                  "d_pi_queue",
+                );
                 if (!lastControl) await refresh();
                 if (!lastControl) throw Error("Native control unavailable");
                 send({
@@ -807,8 +859,10 @@ export function createSessionHost(
                 send({
                   kind: "subagents",
                   connectionGeneration: start.connectionGeneration,
-                  state: SubagentConfigurationSnapshotSchema.parse(
-                    response.data,
+                  state: nativeData(
+                    SubagentConfigurationSnapshotSchema,
+                    response,
+                    "d_pi_subagent_config",
                   ),
                 });
               status = "acknowledged";
@@ -824,8 +878,9 @@ export function createSessionHost(
                 code = response.error;
             }
             await refresh();
-          } catch {
+          } catch (error: unknown) {
             status = "unknown";
+            nativeFailure = nativeFailureOf(error);
           }
           send({
             kind: "operation-result",
@@ -834,6 +889,7 @@ export function createSessionHost(
             operation: kind,
             status,
             ...(code ? { code } : {}),
+            ...(nativeFailure ? { nativeFailure } : {}),
           });
         },
       )
@@ -848,6 +904,7 @@ export function createSessionHost(
           )
             return;
           let status: "acknowledged" | "failed" | "unknown" = "unknown";
+          let nativeFailure: NativeFailureSummary | undefined;
           try {
             if (
               busy ||
@@ -856,14 +913,15 @@ export function createSessionHost(
               (lastControl && activeControl(lastControl))
             )
               throw Error("Active Thread");
-            const result = await native.request(
-              "d_pi_model",
-              command.selection,
+            const instance = native;
+            const result = await tasks.run((signal) =>
+              instance.request("d_pi_model", command.selection, { signal }),
             );
             status = result.success === true ? "acknowledged" : "failed";
             await refresh();
-          } catch {
+          } catch (error: unknown) {
             status = "unknown";
+            nativeFailure = nativeFailureOf(error);
           }
           send({
             kind: "operation-result",
@@ -871,6 +929,7 @@ export function createSessionHost(
             connectionGeneration,
             operation: "select-model",
             status,
+            ...(nativeFailure ? { nativeFailure } : {}),
           });
         },
       )
@@ -929,9 +988,13 @@ export function createSessionHost(
         )
           return;
         const version = ++observationVersion;
-        const reply = await native.request(
-          command.kind === "stop" ? "d_pi_stop" : "d_pi_continue",
-          { traceId: command.traceId },
+        const instance = native;
+        const reply = await tasks.run((signal) =>
+          instance.request(
+            command.kind === "stop" ? "d_pi_stop" : "d_pi_continue",
+            { traceId: command.traceId },
+            { signal },
+          ),
         );
         if (disconnected || closing) return;
         if (reply.success !== true) {
@@ -944,7 +1007,11 @@ export function createSessionHost(
           });
           return;
         }
-        const control = ControlStateSchema.parse(reply.data);
+        const control = nativeData(
+          ControlStateSchema,
+          reply,
+          command.kind === "stop" ? "d_pi_stop" : "d_pi_continue",
+        );
         // Keep the last known control fresh: the close-idle fallback without
         // a live query reads it, so a stale active value would refuse an idle
         // close (and vice versa) after stop/continue changed the state.
@@ -990,7 +1057,10 @@ export function createSessionHost(
         if (closing || disconnected) return;
         const version = observationVersion;
         if (start?.sdkEntry && native) {
-          const latest = await native.request("d_pi_state");
+          const instance = native;
+          const latest = await tasks.run((signal) =>
+            instance.request("d_pi_state", {}, { signal }),
+          );
           if (closing || disconnected) return;
           if (version !== observationVersion) {
             // A later native observation invalidates this shutdown evidence too.
@@ -999,7 +1069,7 @@ export function createSessionHost(
             return;
           }
           if (latest.success !== true) throw Error("Cannot verify shutdown");
-          const actual = ControlStateSchema.parse(latest.data);
+          const actual = nativeData(ControlStateSchema, latest, "d_pi_state");
           if (
             actual.streaming ||
             actual.compacting ||
@@ -1032,11 +1102,12 @@ export function createSessionHost(
         }
         closing = true;
         await native?.close();
+        await tasks.close();
         disposeHost();
         exit(0);
       })
       .exhaustive()
-      .catch(async () => {
+      .catch(async (error: unknown) => {
         if (closing || disconnected) return;
         if (
           command.kind === "answer" ||
@@ -1049,8 +1120,13 @@ export function createSessionHost(
             connectionGeneration: command.command.connectionGeneration,
             operation: command.command.kind,
             status: "unknown",
+            ...failureFields(error),
           });
-        send({ kind: "failed", code: "runtime-unavailable" });
+        send({
+          kind: "failed",
+          code: "runtime-unavailable",
+          ...failureFields(error),
+        });
         if (command.kind === "start") {
           closing = true;
           await native?.close();

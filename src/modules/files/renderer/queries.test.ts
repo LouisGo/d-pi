@@ -6,7 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { expect, it } from "vitest";
 import { ThreadContextSchema } from "../../threads/contracts/public";
-import type { FileBridge, FileReply } from "../contracts/public";
+import type { FileBridge, FileReply, FileRequest } from "../contracts/public";
 import { fileKeys, fileQueryOptions, refreshFiles } from "./queries";
 
 const resource = ThreadContextSchema.parse({
@@ -19,7 +19,7 @@ it("isolates snapshots by the working directory identity and path, while ignorin
   const client_ = client();
   let current = "first";
   let requests = 0;
-  const createBridge = (): FileBridge => ({
+  const createBridge = (): SampleFileBridge => ({
     request: () => {
       requests += 1;
       return Promise.resolve(text("same.ts", current));
@@ -28,7 +28,7 @@ it("isolates snapshots by the working directory identity and path, while ignorin
   const first = createBridge();
   const fetch = (context: typeof resource, bridge = first) =>
     client_.fetchQuery({
-      ...fileQueryOptions.content(bridge, context, "same.ts"),
+      ...fileQueryOptions.content(wireBridge(bridge), context, "same.ts"),
       staleTime: Infinity,
     });
   await fetch(resource);
@@ -52,13 +52,17 @@ it("isolates snapshots by the working directory identity and path, while ignorin
 it("never sends an unselected file read through fetchQuery or refetch", async () => {
   const client_ = client();
   let requests = 0;
-  const bridge: FileBridge = {
+  const bridge: SampleFileBridge = {
     request: () => {
       requests += 1;
       return Promise.resolve({ kind: "unavailable", reason: "not-file" });
     },
   };
-  const options = fileQueryOptions.content(bridge, resource, undefined);
+  const options = fileQueryOptions.content(
+    wireBridge(bridge),
+    resource,
+    undefined,
+  );
   await client_.fetchQuery(options);
   const observer = new QueryObserver(client_, options);
   const release = observer.subscribe(() => {});
@@ -73,7 +77,7 @@ it("retains the request trace and original failed sample without inventing attri
   const client_ = client();
   let requestedTrace: string | undefined;
   const failed: FileReply = { kind: "unavailable", reason: "failed" };
-  const bridge: FileBridge = {
+  const bridge: SampleFileBridge = {
     request: (request) => {
       requestedTrace = request.traceId;
       return Promise.resolve(failed);
@@ -81,7 +85,7 @@ it("retains the request trace and original failed sample without inventing attri
   };
   const observer = new QueryObserver(
     client_,
-    fileQueryOptions.content(bridge, resource, "broken.ts"),
+    fileQueryOptions.content(wireBridge(bridge), resource, "broken.ts"),
   );
   const result: QueryObserverResult = await observer.refetch();
   expect(result.error).toMatchObject({
@@ -97,7 +101,7 @@ it("retains the actual bridge rejection as cause with the request identity", asy
   const client_ = client();
   const cause = Error("fixture bridge disconnected");
   let requestedTrace: string | undefined;
-  const bridge: FileBridge = {
+  const bridge: SampleFileBridge = {
     request: (request) => {
       requestedTrace = request.traceId;
       return Promise.reject(cause);
@@ -105,7 +109,7 @@ it("retains the actual bridge rejection as cause with the request identity", asy
   };
   const result = await new QueryObserver(
     client_,
-    fileQueryOptions.content(bridge, resource, "disconnected.ts"),
+    fileQueryOptions.content(wireBridge(bridge), resource, "disconnected.ts"),
   ).refetch();
   expect(result.error).toMatchObject({
     traceId: requestedTrace,
@@ -138,13 +142,15 @@ const entries = (paths: string[]): FileReply => ({
 });
 
 function client(): QueryClient {
-  return new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return new QueryClient({
+    defaultOptions: { queries: { retry: false, retryDelay: 0 } },
+  });
 }
 
 it("keeps concurrent paths in separate cache entries so a late reply cannot overwrite the view", async () => {
   const client_ = client();
   let finishSlow: (reply: FileReply) => void = () => {};
-  const bridge: FileBridge = {
+  const bridge: SampleFileBridge = {
     request: ({ path }) =>
       path === "slow.ts"
         ? new Promise<FileReply>((accept) => {
@@ -154,11 +160,11 @@ it("keeps concurrent paths in separate cache entries so a late reply cannot over
   };
   const fast = new QueryObserver(
     client_,
-    fileQueryOptions.content(bridge, resource, "fast.ts"),
+    fileQueryOptions.content(wireBridge(bridge), resource, "fast.ts"),
   );
   const slow = new QueryObserver(
     client_,
-    fileQueryOptions.content(bridge, resource, "slow.ts"),
+    fileQueryOptions.content(wireBridge(bridge), resource, "slow.ts"),
   );
   const releaseFast = fast.subscribe(() => {});
   const releaseSlow = slow.subscribe(() => {});
@@ -179,7 +185,7 @@ it("keeps concurrent paths in separate cache entries so a late reply cannot over
 it("treats a business unavailable reply as data rather than a retryable failure", async () => {
   const client_ = client();
   let attempts = 0;
-  const bridge: FileBridge = {
+  const bridge: SampleFileBridge = {
     request: () => {
       attempts += 1;
       return Promise.resolve({ kind: "unavailable", reason: "missing" });
@@ -187,7 +193,7 @@ it("treats a business unavailable reply as data rather than a retryable failure"
   };
   const observer = new QueryObserver(
     client_,
-    fileQueryOptions.content(bridge, resource, "gone.ts"),
+    fileQueryOptions.content(wireBridge(bridge), resource, "gone.ts"),
   );
   const release = observer.subscribe(() => {});
   await observer.refetch();
@@ -204,7 +210,7 @@ it("invalidating the thread scope makes an active query sample the source again"
   const client_ = client();
   const replies = [entries(["a.ts"]), entries([])];
   let index = 0;
-  const bridge: FileBridge = {
+  const bridge: SampleFileBridge = {
     request: () => {
       const reply = replies[Math.min(index, replies.length - 1)];
       index += 1;
@@ -214,7 +220,7 @@ it("invalidating the thread scope makes an active query sample the source again"
   };
   const observer = new QueryObserver(
     client_,
-    fileQueryOptions.listing(bridge, resource, ""),
+    fileQueryOptions.listing(wireBridge(bridge), resource, ""),
   );
   const release = observer.subscribe(() => {});
   await observer.refetch();
@@ -235,7 +241,7 @@ it("does not serve a cached listing from another thread", async () => {
     ...resource,
     threadId: crypto.randomUUID(),
   });
-  const bridge: FileBridge = {
+  const bridge: SampleFileBridge = {
     request: ({ threadId: requested }) =>
       Promise.resolve(
         entries([requested === resource.threadId ? "1.ts" : "2.ts"]),
@@ -243,11 +249,11 @@ it("does not serve a cached listing from another thread", async () => {
   };
   const first = new QueryObserver(
     client_,
-    fileQueryOptions.listing(bridge, resource, ""),
+    fileQueryOptions.listing(wireBridge(bridge), resource, ""),
   );
   const second = new QueryObserver(
     client_,
-    fileQueryOptions.listing(bridge, other, ""),
+    fileQueryOptions.listing(wireBridge(bridge), other, ""),
   );
   const releaseFirst = first.subscribe(() => {});
   const releaseSecond = second.subscribe(() => {});
@@ -267,7 +273,7 @@ it("does not serve a cached listing from another thread", async () => {
 it("runs local file reads while Query reports the renderer offline", async () => {
   const client_ = client();
   let requests = 0;
-  const bridge: FileBridge = {
+  const bridge: SampleFileBridge = {
     request: () => {
       requests += 1;
       return Promise.resolve(entries(["offline.ts"]));
@@ -278,7 +284,7 @@ it("runs local file reads while Query reports the renderer offline", async () =>
   try {
     const observer = new QueryObserver(
       client_,
-      fileQueryOptions.listing(bridge, resource, ""),
+      fileQueryOptions.listing(wireBridge(bridge), resource, ""),
     );
     const release = observer.subscribe(() => {});
     await observer.refetch();
@@ -296,23 +302,39 @@ it("retries a transient sampling failure instead of treating it as a terminal re
     defaultOptions: { queries: { retry: 2, retryDelay: 0 } },
   });
   let attempts = 0;
+  const ids: string[] = [];
   const bridge: FileBridge = {
-    request: () => {
+    request: async (command) => {
       attempts += 1;
-      return Promise.resolve(
-        attempts === 1
-          ? { kind: "unavailable", reason: "failed" }
-          : text("flaky.ts", "eventually"),
-      );
+      ids.push(command.operationId);
+      return attempts === 1
+        ? {
+            kind: "failed",
+            error: {
+              operationId: command.operationId,
+              traceId: command.traceId,
+              code: "io",
+              retryable: true,
+              attribution: "main",
+            },
+          }
+        : {
+            kind: "completed",
+            operationId: command.operationId,
+            traceId: command.traceId,
+            reply: text("flaky.ts", "eventually"),
+          };
     },
+    cancel: async (identity) => ({ kind: "acknowledged", ...identity }),
   };
   const observer = new QueryObserver(
     client_,
-    fileQueryOptions.content(bridge, resource, "flaky.ts"),
+    fileQueryOptions.content(wireBridge(bridge), resource, "flaky.ts"),
   );
   const release = observer.subscribe(() => {});
   await observer.refetch();
   expect(attempts).toBe(2);
+  expect(new Set(ids).size).toBe(2);
   expect(observer.getCurrentResult().data).toMatchObject({
     text: "eventually",
   });
@@ -327,18 +349,28 @@ it("stops retrying a sampling failure once the attempts are exhausted", async ()
   });
   let attempts = 0;
   const bridge: FileBridge = {
-    request: () => {
+    request: async (command) => {
       attempts += 1;
-      return Promise.resolve({ kind: "unavailable", reason: "failed" });
+      return {
+        kind: "failed",
+        error: {
+          operationId: command.operationId,
+          traceId: command.traceId,
+          code: "timeout",
+          retryable: true,
+          attribution: "main",
+        },
+      };
     },
+    cancel: async (identity) => ({ kind: "acknowledged", ...identity }),
   };
   const observer = new QueryObserver(
     client_,
-    fileQueryOptions.content(bridge, resource, "broken.ts"),
+    fileQueryOptions.content(wireBridge(bridge), resource, "broken.ts"),
   );
   const release = observer.subscribe(() => {});
   await observer.refetch();
-  expect(attempts).toBe(3);
+  expect(attempts).toBe(4);
   expect(observer.getCurrentResult().isError).toBe(true);
   release();
   client_.clear();
@@ -349,7 +381,7 @@ it("keeps a business unavailable reason as a single terminal sample", async () =
     defaultOptions: { queries: { retry: 2, retryDelay: 0 } },
   });
   let attempts = 0;
-  const bridge: FileBridge = {
+  const bridge: SampleFileBridge = {
     request: () => {
       attempts += 1;
       return Promise.resolve({ kind: "unavailable", reason: "denied" });
@@ -357,7 +389,7 @@ it("keeps a business unavailable reason as a single terminal sample", async () =
   };
   const observer = new QueryObserver(
     client_,
-    fileQueryOptions.content(bridge, resource, "denied.ts"),
+    fileQueryOptions.content(wireBridge(bridge), resource, "denied.ts"),
   );
   const release = observer.subscribe(() => {});
   await observer.refetch();
@@ -370,3 +402,95 @@ it("keeps a business unavailable reason as a single terminal sample", async () =
   release();
   client_.clear();
 });
+
+it("cancels the shared file operation only after its last observer leaves", async () => {
+  const client_ = client();
+  const cancels: string[] = [];
+  let operationId = "";
+  const bridge = {
+    request: (request: { operationId: string; traceId: string }) => {
+      operationId = request.operationId;
+      return new Promise(() => {});
+    },
+    cancel: (request: { operationId: string; traceId: string }) => {
+      cancels.push(request.operationId);
+      return Promise.resolve({ kind: "acknowledged", ...request });
+    },
+  } as unknown as FileBridge;
+  const options = fileQueryOptions.content(
+    wireBridge(bridge),
+    resource,
+    "shared.ts",
+  );
+  const one = new QueryObserver(client_, options);
+  const two = new QueryObserver(client_, options);
+  const releaseOne = one.subscribe(() => {});
+  const releaseTwo = two.subscribe(() => {});
+  releaseOne();
+  await Promise.resolve();
+  expect(cancels).toEqual([]);
+  releaseTwo();
+  await Promise.resolve();
+  expect(operationId).toMatch(/^[0-9a-f-]{36}$/);
+  expect(cancels).toEqual([operationId]);
+  client_.clear();
+});
+
+it.each(["busy", "malformed-output", "failed"] as const)(
+  "does not retry %s even when an incorrect peer labels it retryable",
+  async (code) => {
+    const client_ = client();
+    const identities: string[] = [];
+    const bridge: FileBridge = {
+      request: async (command) => {
+        identities.push(command.operationId);
+        return {
+          kind: "failed",
+          error: {
+            operationId: command.operationId,
+            traceId: command.traceId,
+            code,
+            retryable: true,
+            attribution: code === "failed" ? "unknown" : "main",
+          },
+        };
+      },
+      cancel: async (identity) => ({ kind: "acknowledged", ...identity }),
+    };
+    const result = await new QueryObserver(
+      client_,
+      fileQueryOptions.content(bridge, resource, "failure.ts"),
+    ).refetch();
+    expect(identities).toHaveLength(1);
+    expect(result.error).toMatchObject({
+      code,
+      attribution: code === "failed" ? "unknown" : "main",
+    });
+    client_.clear();
+  },
+);
+
+type SampleFileBridge = {
+  request: (command: FileRequest) => Promise<FileReply>;
+};
+function wireBridge(bridge: SampleFileBridge | FileBridge): FileBridge {
+  return {
+    async request(command) {
+      const result = await bridge.request(command);
+      return result.kind === "completed" ||
+        result.kind === "cancelled" ||
+        result.kind === "failed"
+        ? result
+        : {
+            kind: "completed",
+            operationId: command.operationId,
+            traceId: command.traceId,
+            reply: result,
+          };
+    },
+    cancel: (command) =>
+      "cancel" in bridge
+        ? bridge.cancel(command)
+        : Promise.resolve({ kind: "acknowledged", ...command }),
+  };
+}
