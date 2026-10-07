@@ -74,10 +74,10 @@ export function DarkThemeIcon({ size = 16, className }: IconProps) {
 }
 
 export function WebsiteIcon({
-  brand,
+  brand = "generic",
   size = 16,
   className,
-}: IconProps & { brand: "github" | "generic" }) {
+}: IconProps & { brand?: "github" | "generic" }) {
   return (
     <HugeiconsIcon
       icon={brand === "github" ? GithubIcon : Globe02Icon}

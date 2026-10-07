@@ -76,8 +76,8 @@ export function WorkbenchFrame({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const reveal = useCallback(() => setSettingsOpen(false), []);
   const conversation = useMemo(
-    () => ({ visible: !settingsOpen, reveal }),
-    [settingsOpen, reveal],
+    () => ({ visible: !settingsOpen && !developerActive, reveal }),
+    [settingsOpen, developerActive, reveal],
   );
   const focusedRegion = useRef<"sidebar" | "workspace" | "bottom" | null>(null);
   const focusedNavigation = useRef<number | null>(null);
@@ -205,7 +205,7 @@ export function WorkbenchFrame({
           typeof navigator !== "undefined" &&
           navigator.userAgent.includes("Mac OS")
         }
-        data-sidebar-visible={geometry.sidebar.visible}
+        data-sidebar-visible={!developerActive && geometry.sidebar.visible}
         onFocusCapture={(event) => {
           const target = event.target;
           if (!(target instanceof Element)) return;
@@ -259,109 +259,121 @@ export function WorkbenchFrame({
             <SettingsIcon />
           </IconButton>
         </nav>
-        <ResizableSplit
-          id="navigation-split"
-          axis="horizontal"
-          side="start"
-          {...geometry.sidebar}
-          min={tokens.constraints.sidebarMin}
-          label={t("app.layout.sidebarResize")}
-          onCommit={commitLeft}
-          auxiliary={
-            <aside
-              className="primary-sidebar"
-              data-layout-region="sidebar"
-              aria-label={t("app.layout.sidebar")}
-            >
-              <div className="panel-header">
-                {geometry.sidebar.visible && navigation}
-              </div>
-              <div className="sidebar-scroll">{sidebarContent}</div>
-            </aside>
-          }
-        >
+        {developerActive ? (
+          <div className="conversation-surface" data-developer-workspace>
+            <div className="panel-header conversation-header">
+              <div className="header-navigation">{navigationControls}</div>
+              {toolbar}
+            </div>
+            <div ref={work} className="conversation-body">
+              {children}
+            </div>
+          </div>
+        ) : (
           <ResizableSplit
-            id="bottom-split"
-            axis="vertical"
-            side="end"
-            {...geometry.bottom}
-            min={tokens.constraints.bottomMin}
-            label={t("app.layout.bottomResize")}
-            onCommit={commitBottom}
+            id="navigation-split"
+            axis="horizontal"
+            side="start"
+            {...geometry.sidebar}
+            min={tokens.constraints.sidebarMin}
+            label={t("app.layout.sidebarResize")}
+            onCommit={commitLeft}
             auxiliary={
-              <PanelHost
-                id="bottom"
-                host={bottom}
-                title={t("app.layout.bottom")}
-                visible={geometry.bottom.visible}
-                onHide={() => model.toggle("bottom")}
-                onEmpty={() =>
-                  navigationTrigger.current?.focus({ preventScroll: true })
-                }
-              />
+              <aside
+                className="primary-sidebar"
+                data-layout-region="sidebar"
+                aria-label={t("app.layout.sidebar")}
+              >
+                <div className="panel-header">
+                  {geometry.sidebar.visible && navigation}
+                </div>
+                <div className="sidebar-scroll">{sidebarContent}</div>
+              </aside>
             }
           >
             <ResizableSplit
-              id="workspace-split"
-              axis="horizontal"
+              id="bottom-split"
+              axis="vertical"
               side="end"
-              {...geometry.workspace}
-              min={tokens.constraints.workspaceMin}
-              label={t("app.layout.workspaceResize")}
-              onCommit={commitRight}
+              {...geometry.bottom}
+              min={tokens.constraints.bottomMin}
+              label={t("app.layout.bottomResize")}
+              onCommit={commitBottom}
               auxiliary={
                 <PanelHost
-                  id="workspace"
-                  host={workspace}
-                  title={t("app.layout.workspace")}
-                  visible={geometry.workspace.visible}
-                  onHide={() => model.toggle("workspace")}
+                  id="bottom"
+                  host={bottom}
+                  title={t("app.layout.bottom")}
+                  visible={geometry.bottom.visible}
+                  onHide={() => model.toggle("bottom")}
                   onEmpty={() =>
                     navigationTrigger.current?.focus({ preventScroll: true })
                   }
                 />
               }
             >
-              <div className="conversation-surface">
-                <div className="panel-header conversation-header">
-                  {!geometry.sidebar.visible && navigation}
-                  {toolbar}
-                  {!!workspace?.tabs.length && (
-                    <IconButton
-                      ref={workspaceTrigger}
-                      label={t("app.layout.showWorkspace")}
-                      variant="navigation"
-                      aria-pressed={intent.workspace.open}
-                      onClick={() => model.toggle("workspace")}
-                    >
-                      <SidebarIcon />
-                    </IconButton>
+              <ResizableSplit
+                id="workspace-split"
+                axis="horizontal"
+                side="end"
+                {...geometry.workspace}
+                min={tokens.constraints.workspaceMin}
+                label={t("app.layout.workspaceResize")}
+                onCommit={commitRight}
+                auxiliary={
+                  <PanelHost
+                    id="workspace"
+                    host={workspace}
+                    title={t("app.layout.workspace")}
+                    visible={geometry.workspace.visible}
+                    onHide={() => model.toggle("workspace")}
+                    onEmpty={() =>
+                      navigationTrigger.current?.focus({ preventScroll: true })
+                    }
+                  />
+                }
+              >
+                <div className="conversation-surface">
+                  <div className="panel-header conversation-header">
+                    {!geometry.sidebar.visible && navigation}
+                    {toolbar}
+                    {!!workspace?.tabs.length && (
+                      <IconButton
+                        ref={workspaceTrigger}
+                        label={t("app.layout.showWorkspace")}
+                        variant="navigation"
+                        aria-pressed={intent.workspace.open}
+                        onClick={() => model.toggle("workspace")}
+                      >
+                        <SidebarIcon />
+                      </IconButton>
+                    )}
+                    {!!bottom?.tabs.length && (
+                      <IconButton
+                        ref={bottomTrigger}
+                        label={t("app.layout.showBottom")}
+                        variant="navigation"
+                        aria-pressed={intent.bottom.open}
+                        onClick={() => model.toggle("bottom")}
+                      >
+                        <SidebarIcon />
+                      </IconButton>
+                    )}
+                  </div>
+                  {(geometry.workspace.temporary ||
+                    geometry.bottom.temporary) && (
+                    <p className="layout-notice" role="status">
+                      {t("app.layout.temporarilyHidden")}
+                    </p>
                   )}
-                  {!!bottom?.tabs.length && (
-                    <IconButton
-                      ref={bottomTrigger}
-                      label={t("app.layout.showBottom")}
-                      variant="navigation"
-                      aria-pressed={intent.bottom.open}
-                      onClick={() => model.toggle("bottom")}
-                    >
-                      <SidebarIcon />
-                    </IconButton>
-                  )}
+                  <div ref={work} className="conversation-body">
+                    {children}
+                  </div>
                 </div>
-                {(geometry.workspace.temporary ||
-                  geometry.bottom.temporary) && (
-                  <p className="layout-notice" role="status">
-                    {t("app.layout.temporarilyHidden")}
-                  </p>
-                )}
-                <div ref={work} className="conversation-body">
-                  {children}
-                </div>
-              </div>
+              </ResizableSplit>
             </ResizableSplit>
           </ResizableSplit>
-        </ResizableSplit>
+        )}
         <SettingsModal
           open={settingsOpen}
           onClose={reveal}
@@ -373,7 +385,7 @@ export function WorkbenchFrame({
           {settings}
         </SettingsModal>
         <NavigationOverlay
-          open={overlay}
+          open={!developerActive && overlay}
           onClose={() => setOverlay(false)}
           title={t("app.layout.sidebar")}
           closeLabel={t("app.layout.close")}

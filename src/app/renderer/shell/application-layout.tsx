@@ -84,16 +84,25 @@ function ReadyWorkbench({ model, children }: ApplicationLayoutProps) {
             <SidebarFooter model={model} />
           </>
         }
-        toolbar={<PreferenceToolbar model={model} />}
+        toolbar={
+          <PreferenceToolbar
+            model={model}
+            title={conversationNavigation.developerTitle}
+          />
+        }
         navigationControls={<ThreadNavigationControls model={model} />}
         settingsNavigation={<SettingsNavigation />}
         settings={<SettingsSurface model={model} />}
       >
-        <main className="workbench">
-          <ThreadNotice model={model} />
-          <AttentionCenter model={model} />
-          <div className="work-content">{children ?? <Outlet />}</div>
-        </main>
+        {conversationNavigation.developerActive ? (
+          (children ?? <Outlet />)
+        ) : (
+          <main className="workbench">
+            <ThreadNotice model={model} />
+            <AttentionCenter model={model} />
+            <div className="work-content">{children ?? <Outlet />}</div>
+          </main>
+        )}
       </WorkbenchFrame>
     </ShellFrame>
   );

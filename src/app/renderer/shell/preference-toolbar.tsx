@@ -51,10 +51,20 @@ export function NewThreadButton({ model }: { model: AppModel }) {
   );
 }
 
-export function PreferenceToolbar({ model }: { model: AppModel }) {
+export function PreferenceToolbar({
+  model,
+  title,
+}: {
+  model: AppModel;
+  title?: string | undefined;
+}) {
   return (
     <header className="toolbar">
-      <ThreadHeaderTitle model={model} />
+      {title ? (
+        <span className="toolbar-title">{title}</span>
+      ) : (
+        <ThreadHeaderTitle model={model} />
+      )}
       <ThemeToggle model={model} />
     </header>
   );

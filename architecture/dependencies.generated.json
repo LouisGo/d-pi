@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "60b6bde3c2ce2a2737526933da90ba6c6178870b5ecd70eb4828b64ffced36f6",
+  "inputsHash": "9a630ad0f5bef90eb2bdaba0ac24091fb3a5b7be818c29f934323006ab82e829",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 372,
-    "scannedFiles": 372,
+    "sourceFiles": 373,
+    "scannedFiles": 373,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 164,
-      "lines": 27639,
+      "files": 165,
+      "lines": 27723,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -6420,6 +6420,18 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/app/renderer/developer/components/component-dashboard.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../components/icons/common",
+      "kind": "dynamic-import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/icons/common.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/app/renderer/developer/components/component-dashboard.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -6597,6 +6609,39 @@
       "kind": "import",
       "resolution": "unowned",
       "to": "src/app/renderer/developer/components/component-dashboard.module.css"
+    },
+    {
+      "from": "src/app/renderer/developer/components/demos.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./icon-catalog",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/developer/components/icon-catalog.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/developer/components/icon-catalog.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/developer/components/icon-catalog.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../components/icons/common",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/icons/common.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/app/renderer/developer/hover-menu-preview.tsx",

@@ -45,8 +45,8 @@ export const componentCatalog = [
   {
     name: "Icon Layer",
     category: "icons",
-    purpose: "应用实际使用的语义图标，继承当前主题颜色。",
-    forms: "16 · 18 · 20 · 24 px / WebsiteIcon github · generic",
+    purpose: "自动收录项目 Icon Layer 的公开图标，仅作预览。",
+    forms: "20 px / currentColor / 新增图标自动出现",
   },
 ] as const;
 export type ComponentName = (typeof componentCatalog)[number]["name"];
@@ -58,8 +58,7 @@ export const menuEntry = {
 };
 export const copy = {
   title: "基础组件看板",
-  intro:
-    "浏览已有组件的形态与状态，直接操作体验。演示状态独立，重置后可重新开始。",
+  intro: "查看组件形态与状态，直接体验交互。",
   search: "搜索组件",
   index: "组件索引",
   searchHint: "名称、用途、形态…",
@@ -114,5 +113,4 @@ export const demoLabels = {
   about: "关于",
   overlayHint: "这是本地演示，选择选项不会影响真实应用。",
   choice: (value: string) => `当前选项：${value}`,
-  iconSize: "图标预览尺寸",
 };

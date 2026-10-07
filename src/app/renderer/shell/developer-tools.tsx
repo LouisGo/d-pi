@@ -4,11 +4,17 @@ import { ToolsIcon } from "../components/icons/common";
 import { HoverMenu } from "../components/ui/hover-menu";
 import type { AppModel } from "../wiring/model";
 
+function useDeveloperWorkspace() {
+  return useRouterState({
+    select: (state) =>
+      state.matches.find((match) => match.staticData.workspace === "developer")
+        ?.staticData,
+  });
+}
+
 export function DeveloperTools() {
   const navigate = useNavigate();
-  const selected = useRouterState({
-    select: (state) => state.location.pathname === "/dev/components",
-  });
+  const selected = useDeveloperWorkspace() !== undefined;
   return (
     <HoverMenu
       // i18n-ignore: developer tools use fixed Chinese by user request
@@ -33,9 +39,8 @@ export function DeveloperTools() {
 
 export function useConversationNavigation(model: AppModel) {
   const navigate = useNavigate();
-  const developerActive = useRouterState({
-    select: (state) => state.location.pathname === "/dev/components",
-  });
+  const workspace = useDeveloperWorkspace();
+  const developerActive = workspace !== undefined;
   const threadId = useStore(model.stateStore, (state) =>
     state.kind === "ready" && state.threadSelection.kind === "thread"
       ? state.threadSelection.thread.context.threadId
@@ -43,6 +48,7 @@ export function useConversationNavigation(model: AppModel) {
   );
   return {
     developerActive,
+    developerTitle: workspace?.title,
     onConversation: () => {
       if (!developerActive) return;
       if (threadId)

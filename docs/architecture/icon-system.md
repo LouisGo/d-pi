@@ -44,7 +44,7 @@ export interface IconProps {
 }
 ```
 
-当前实现使用内联联合而不导出 `IconSize` 别名；个别语义图标（如 `WebsiteIcon`）另接受窄的 `brand` 判别值。新增缺口按此形态扩展，不因为文档示例而补一个未被使用的导出。
+当前实现使用内联联合而不导出 `IconSize` 别名；个别语义图标（如 `WebsiteIcon`）另接受窄的 `brand` 判别值；WebsiteIcon省略brand时默认generic，支持与其他语义图标一致的无参数预览。新增缺口按此形态扩展，不因为文档示例而补一个未被使用的导出。
 
 - 默认 `size=16`、`color="currentColor"`、`aria-hidden={true}`、`focusable={false}`；宽高随 size。统一线宽初始取 1.5，由 Icon Layer 管理，实际小尺寸可读性在 GUI 阶段验收后统一调整，不假定外部库默认值等于项目规范。
 - 不继承全部 SVG/vendor props，不向消费者暴露 icon 数据、strokeWidth、absoluteStrokeWidth、fill、替换字形或动画开关；若组件库真的需要 ref 等能力，按具体调用场景增加窄接口，不能直接透传整包属性。
@@ -78,3 +78,10 @@ Icon Layer 位于 `src/app/renderer/components/icons/`。按实际 GUI 切片扩
 4. 在真实使用规模下检查重复渲染、SVG 数量与动画成本；无需给每个无状态 Icon 加 memo/store，也不承诺未实测的体积和帧率。首次基础验收后，新增图标以相关视觉/语义检查为主，封装或构建机制改变时才重测裁剪。
 
 以上第 1–3 项已按 S1 切片执行：导入边界检查、真实 Electron 视觉样例（16/18/20/24、浅深主题、normal/compact）与生产 bundle 裁剪对照均有记录，见 [S1 验证记录](../../.scratch/m1-s1-project-draft/validation.md)。第 4 项的真实使用规模性能观察随功能推进。换库决定已经确定，具体字形、视觉密度和封装实现以实际 GUI 场景校正；不能用文档审查代替视觉验收。
+
+
+## 开发者看板的自动收录（2026-10-07）
+
+用户要求图标仅作轻量预览，新增图标不额外维护看板名单。`/dev/components` 的图标预览通过 Vite 的静态glob读取本项目公开 Icon Layer 模块（排除测试与私有目录），自动展示具名 `*Icon` 导出，20px/currentColor，不提供尺寸切换或重置。新增普通图标或公开类别模块只在Icon Layer定义一次。
+
+此范围是开发者预览对全量本项目导入的明确例外，不枚举供应商全集，也不形成业务侧 `<Icon name>` 入口；普通产品消费者继续静态具名导入。公开图标允许按标准IconProps默认渲染；需要参数的语义变体由图标自身提供默认形态，预览不猜业务数据。用户授权本地开发者工具包含在本轮试用包中，以上历史S1“开发样例不进发布包”证据不代替当前范围。

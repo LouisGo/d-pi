@@ -4,6 +4,11 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
 import { ComponentDashboard } from "./component-dashboard";
 
+vi.mock("../../components/icons/common", async (original) => ({
+  ...(await original<typeof import("../../components/icons/common")>()),
+  FutureIcon: () => createElement("svg", { "data-new-icon": true }),
+}));
+
 const mounted: { root: Root; container: HTMLElement }[] = [];
 afterEach(async () => {
   for (const { root, container } of mounted.splice(0)) {
@@ -63,7 +68,7 @@ it("shows every existing foundation component as a real preview by default", asy
   ).toHaveLength(2);
   expect(
     container.querySelectorAll("[data-component='Icon Layer'] svg").length,
-  ).toBeGreaterThanOrEqual(16);
+  ).toBeGreaterThan(0);
 });
 
 it("uses independent real button and icon interactions and resets only the selected demo", async () => {
@@ -161,7 +166,7 @@ it("opens real portaled dialogs, interacts locally and resets the selected choic
   ).toContain("当前选项：外观");
 });
 
-it("hides and restores real split panels and resets icon preview sizes", async () => {
+it("hides and restores real split panels", async () => {
   const { container, button } = await setup();
   const section = container.querySelector("[data-component='ResizableSplit']");
   if (!section) throw Error("missing split preview");
@@ -182,14 +187,6 @@ it("hides and restores real split panels and resets icon preview sizes", async (
       .querySelector("#gallery-horizontal-separator")
       ?.getAttribute("aria-disabled"),
   ).not.toBe("true");
-  await act(() => button("24 px").click());
-  expect(
-    container.querySelector("[data-gallery-icons] svg")?.getAttribute("width"),
-  ).toBe("24");
-  await act(() => button("重置 Icon Layer").click());
-  expect(
-    container.querySelector("[data-gallery-icons] svg")?.getAttribute("width"),
-  ).toBe("20");
 });
 
 it("includes an optional menu preview in category navigation, search and reset", async () => {
@@ -257,11 +254,19 @@ it("filters by purpose and form, explains no matches and restores the full catal
   expect(container.querySelectorAll("[data-component]")).toHaveLength(7);
 });
 
-it("lists every component in the header index before scrolling through previews", async () => {
+it("groups every component in the separate right navigation with existing anchor targets", async () => {
   const { container } = await setup(createElement("span", null, "Menu sample"));
   const index = container.querySelector('nav[aria-label="组件索引"]');
+  expect(index?.closest("[data-gallery-navigation]")).not.toBeNull();
+  expect(container.querySelector("header nav")).toBeNull();
+  for (const link of index?.querySelectorAll("a") ?? [])
+    expect(
+      container.querySelector(link.getAttribute("href") ?? ""),
+    ).not.toBeNull();
   expect(
-    [...(index?.querySelectorAll("a") ?? [])].map((link) => link.textContent),
+    [...(index?.querySelectorAll("a[data-component-anchor]") ?? [])].map(
+      (link) => link.textContent,
+    ),
   ).toEqual([
     "Button",
     "IconButton",
@@ -269,7 +274,15 @@ it("lists every component in the header index before scrolling through previews"
     "ResizableSplit",
     "NavigationOverlay",
     "SettingsModal",
-    "Icon Layer",
     "HoverMenu",
+    "Icon Layer",
   ]);
+});
+
+it("automatically shows new Icon Layer exports without a gallery entry and keeps icons read-only", async () => {
+  const { container } = await setup();
+  const icons = container.querySelector("[data-component='Icon Layer']");
+  expect(icons?.textContent).toContain("FutureIcon");
+  expect(icons?.querySelector("svg[data-new-icon]")).not.toBeNull();
+  expect(icons?.querySelector("button")).toBeNull();
 });

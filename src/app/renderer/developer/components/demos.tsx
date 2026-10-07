@@ -2,19 +2,9 @@ import { clsx } from "clsx";
 import { type ReactNode, useRef, useState } from "react";
 import {
   AddIcon,
-  BackIcon,
   ChatIcon,
-  CloseIcon,
-  DarkThemeIcon,
-  FileIcon,
-  FolderIcon,
-  ForwardIcon,
-  LightThemeIcon,
   SettingsIcon,
   SidebarIcon,
-  SystemThemeIcon,
-  ToolsIcon,
-  WebsiteIcon,
 } from "../../components/icons/common";
 import { Button } from "../../components/ui/button";
 import { IconButton } from "../../components/ui/icon-button";
@@ -24,6 +14,7 @@ import { SettingsModal } from "../../components/ui/settings-modal";
 import { WorkspaceTabs } from "../../components/ui/workspace-tabs";
 import { demoLabels as labels } from "./catalog";
 import styles from "./component-dashboard.module.css";
+import { iconPreviews } from "./icon-catalog";
 
 function Sample({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -318,60 +309,14 @@ export function SettingsDemo() {
     </>
   );
 }
-const icons = [
-  { name: "AddIcon", Icon: AddIcon },
-  { name: "BackIcon", Icon: BackIcon },
-  { name: "ForwardIcon", Icon: ForwardIcon },
-  { name: "FileIcon", Icon: FileIcon },
-  { name: "FolderIcon", Icon: FolderIcon },
-  { name: "CloseIcon", Icon: CloseIcon },
-  { name: "ChatIcon", Icon: ChatIcon },
-  { name: "SettingsIcon", Icon: SettingsIcon },
-  { name: "ToolsIcon", Icon: ToolsIcon },
-  { name: "SidebarIcon", Icon: SidebarIcon },
-  { name: "LightThemeIcon", Icon: LightThemeIcon },
-  { name: "DarkThemeIcon", Icon: DarkThemeIcon },
-  { name: "SystemThemeIcon", Icon: SystemThemeIcon },
-];
 export function IconsDemo() {
-  const [size, setSize] = useState<16 | 18 | 20 | 24>(20);
   return (
-    <>
-      <div
-        className={styles["gallery-demo-toolbar"]}
-        role="group"
-        aria-label={labels.iconSize}
-      >
-        {([16, 18, 20, 24] as const).map((value) => (
-          <Button
-            key={value}
-            variant="navigation"
-            aria-pressed={size === value}
-            onClick={() => setSize(value)}
-          >
-            {value} px
-          </Button>
-        ))}
-      </div>
-      <div className={styles["gallery-icon-grid"]} data-gallery-icons>
-        {icons.map(({ name, Icon }) => (
-          <Sample key={name} label={name}>
-            <Icon size={size} />
-          </Sample>
-        ))}
-        {(["github", "generic"] as const).map((brand) => (
-          <Sample key={brand} label={`WebsiteIcon / ${brand}`}>
-            <WebsiteIcon brand={brand} size={size} />
-          </Sample>
-        ))}
-      </div>
-      <div className={styles["gallery-samples"]}>
-        {([16, 18, 20, 24] as const).map((value) => (
-          <Sample key={value} label={`${value} px`}>
-            <FileIcon size={value} />
-          </Sample>
-        ))}
-      </div>
-    </>
+    <div className={styles["gallery-icon-grid"]} data-gallery-icons>
+      {iconPreviews.map(({ key, name, Icon }) => (
+        <Sample key={key} label={name}>
+          <Icon size={20} />
+        </Sample>
+      ))}
+    </div>
   );
 }

@@ -750,3 +750,42 @@ it("Main attention samples update only the relevant badge and notice, preserving
   expect(model.controller).toBe(controller);
   expect(model.reading).toBe(reading);
 });
+
+it("opens the developer route across the complete workspace and restores the Thread view on return", async () => {
+  const fixture = await setup();
+  const controller = fixture.model.controller;
+  expect(fixture.container.querySelector(".primary-sidebar")).not.toBeNull();
+  const tools = fixture.container.querySelector<HTMLButtonElement>(
+    "button[aria-label='开发者工具']",
+  );
+  if (!tools) throw Error("missing tools entry");
+  await act(() => tools.click());
+  const menu = document.querySelector<HTMLDivElement>("[role='menuitem']");
+  if (!menu) throw Error("missing tools option");
+  await act(async () => {
+    menu.click();
+    await new Promise((resolve) => setTimeout(resolve, 30));
+  });
+  expect(
+    fixture.container.querySelector("[data-component-dashboard]"),
+  ).not.toBeNull();
+  expect(fixture.container.querySelector(".primary-sidebar")).toBeNull();
+  expect(fixture.container.querySelector("#navigation-split")).toBeNull();
+  expect(
+    fixture.container.querySelector("[data-developer-workspace]"),
+  ).not.toBeNull();
+  expect(fixture.model.controller).toBe(controller);
+  const conversation = fixture.container.querySelector<HTMLButtonElement>(
+    "button[aria-label='Conversation']",
+  );
+  if (!conversation) throw Error("missing conversation entry");
+  await act(async () => {
+    conversation.click();
+    await new Promise((resolve) => setTimeout(resolve, 30));
+  });
+  expect(fixture.container.querySelector(".primary-sidebar")).not.toBeNull();
+  expect(
+    fixture.container.querySelector("[data-component-dashboard]"),
+  ).toBeNull();
+  expect(fixture.model.controller).toBe(controller);
+});
