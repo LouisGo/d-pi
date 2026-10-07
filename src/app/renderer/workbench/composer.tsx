@@ -31,7 +31,12 @@ import {
   textPasteTransaction,
 } from "../../../modules/input/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import { Button } from "../../../modules/ui/renderer/public";
+import {
+  Button,
+  Disclosure,
+  DisclosureTrigger,
+  TextArea,
+} from "../../../modules/ui/renderer/public";
 import type { AppModel } from "../wiring/model";
 import type { ThreadModel } from "../wiring/thread-model";
 import {
@@ -389,22 +394,24 @@ export function Composer({
         </p>
       )}
       <div className="composer-footer">
-        <details className="composer-help">
-          <summary>{t("composer.inputOptions")}</summary>
-          <p>
-            {expanded || preference === "enter-newline"
-              ? t("composer.shortcut.newline")
-              : t("composer.shortcut.send")}{" "}
-            {t("composer.shortcut.undo")} · {t("composer.paste.hint")}
-          </p>
-          <Button
-            variant="ghost"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => void model.preference("sendKey")}
-          >
-            {t("composer.switchShortcut")}
-          </Button>
-        </details>
+        <div className="composer-help">
+          <Disclosure>
+            <DisclosureTrigger>{t("composer.inputOptions")}</DisclosureTrigger>
+            <p>
+              {expanded || preference === "enter-newline"
+                ? t("composer.shortcut.newline")
+                : t("composer.shortcut.send")}{" "}
+              {t("composer.shortcut.undo")} · {t("composer.paste.hint")}
+            </p>
+            <Button
+              variant="ghost"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => void model.preference("sendKey")}
+            >
+              {t("composer.switchShortcut")}
+            </Button>
+          </Disclosure>
+        </div>
         <div className="flex flex-wrap gap-2">
           <Button
             variant="ghost"
@@ -433,25 +440,29 @@ export function Composer({
       {state.kind === "conflict" && (
         <div className="failure" role="alert">
           <p>{t("composer.conflict.description")}</p>
-          <details>
-            <summary>{t("composer.conflict.compare")}</summary>
+          <Disclosure>
+            <DisclosureTrigger>
+              {t("composer.conflict.compare")}
+            </DisclosureTrigger>
             <label>
               {t("composer.conflict.current")}
-              <textarea
-                className="draft-comparison"
+              <TextArea
+                className="my-2.5 block"
+                data-draft-comparison
                 readOnly
                 value={state.localText}
               />
             </label>
             <label>
               {t("composer.conflict.saved")}
-              <textarea
-                className="draft-comparison"
+              <TextArea
+                className="my-2.5 block"
+                data-draft-comparison
                 readOnly
                 value={state.stored.text}
               />
             </label>
-          </details>
+          </Disclosure>
           <div className="flex flex-wrap gap-2">
             <Button onClick={() => void controller.keepLocal()}>
               {t("composer.conflict.keepCurrent")}
@@ -530,6 +541,7 @@ function SendButton({
   return (
     <div className="flex gap-2">
       <Button
+        variant="accent"
         disabled={contentBlocked || sending || capped || !canSubmit(state)}
         onMouseDown={(event) => event.preventDefault()}
         onClick={() => {

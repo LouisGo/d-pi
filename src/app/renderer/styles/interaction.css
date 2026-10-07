@@ -12,12 +12,12 @@
     .failure,
     .thread-identity,
     .directory-info > span,
-    .file-meta:not(details),
-    details.file-meta > :not(summary),
+    .file-meta:not(:has(> .ui-disclosure)),
+    .file-meta > .ui-disclosure > :not(summary),
     .file-result > [role="status"],
     .diff-sources,
-    .runtime-source > p,
-    .runtime-source > span,
+    .runtime-source > .ui-disclosure > p,
+    .runtime-source > .ui-disclosure > span,
     .attachment-preview-content,
     [role="alert"],
     textarea,
@@ -102,17 +102,14 @@
   ):focus-visible {
     outline: var(--focus-ring);
     outline-offset: var(--focus-ring-offset);
-    background: var(--accent);
-    color: var(--accent-foreground);
-    border-radius: var(--radius-control);
   }
   a[href] {
-    color: var(--primary);
+    color: var(--emphasis);
     text-decoration: underline;
     text-underline-offset: calc(var(--layout-gap) / 4);
   }
   a[href]:hover {
-    color: var(--primary-hover);
+    color: var(--emphasis-hover);
     text-decoration-thickness: 2px;
   }
   a[href]:active {
@@ -137,12 +134,12 @@
     color: var(--accent-foreground);
   }
   :where(input[type="checkbox"], input[type="radio"]) {
-    accent-color: var(--primary);
+    accent-color: var(--emphasis);
   }
   :where(
     label:has(input:is([type="checkbox"], [type="radio"]):not(:disabled))
   ):hover {
-    color: var(--primary);
+    color: var(--emphasis);
   }
   :where(
     label:has(input:is([type="checkbox"], [type="radio"]):not(:disabled))

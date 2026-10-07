@@ -16,6 +16,18 @@ export {
 } from "./controls";
 export { installControlFocusVisibility } from "./focus-visibility";
 export {
+  Checkbox,
+  type CheckboxProps,
+  Disclosure,
+  type DisclosureProps,
+  DisclosureTrigger,
+  type DisclosureTriggerProps,
+  Slider,
+  type SliderProps,
+  TextArea,
+  type TextAreaProps,
+} from "./primitives";
+export {
   SettingRow,
   type SettingRowProps,
   SettingsGroup,

@@ -1,7 +1,11 @@
 import { match } from "ts-pattern";
 import type { ConversationItem } from "../../../modules/conversation/contracts/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import { Button } from "../../../modules/ui/renderer/public";
+import {
+  Button,
+  Disclosure,
+  DisclosureTrigger,
+} from "../../../modules/ui/renderer/public";
 import { ReadingBody, type ReadingBodyBinding } from "./reading-body";
 export function SubagentMessage({
   item,
@@ -66,10 +70,10 @@ export function SubagentMessage({
       </p>
       {agent.description && <p>{agent.description}</p>}
       {agent.task && (
-        <details>
-          <summary>{t("subagents.task")}</summary>
+        <Disclosure>
+          <DisclosureTrigger>{t("subagents.task")}</DisclosureTrigger>
           <pre>{agent.task}</pre>
-        </details>
+        </Disclosure>
       )}
       {agent.model && (
         <p>
@@ -81,12 +85,14 @@ export function SubagentMessage({
           {t("subagents.currentTool")} · {agent.currentTool}
         </p>
       )}
-      <details open={agent.status !== "running" && agent.status !== "pending"}>
-        <summary>
+      <Disclosure
+        open={agent.status !== "running" && agent.status !== "pending"}
+      >
+        <DisclosureTrigger>
           {agent.resultSource === "progress"
             ? t("subagents.progress")
             : t("subagents.result")}
-        </summary>
+        </DisclosureTrigger>
         {item.text ? (
           <ReadingBody
             text={item.text}
@@ -96,7 +102,7 @@ export function SubagentMessage({
         ) : (
           <p>{t("subagents.noResult")}</p>
         )}
-      </details>
+      </Disclosure>
       {reason && <p role="status">{reason}</p>}
       {agent.unhandledEvent && (
         <p role="status">

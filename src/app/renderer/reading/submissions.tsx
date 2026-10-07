@@ -1,7 +1,11 @@
 import { useStore } from "zustand";
 import type { SubmissionModel } from "../../../modules/execution/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import { Button } from "../../../modules/ui/renderer/public";
+import {
+  Button,
+  Disclosure,
+  DisclosureTrigger,
+} from "../../../modules/ui/renderer/public";
 import { submissionRejectionKey } from "../components/receipt-status";
 
 export function Submissions({ model }: { model: SubmissionModel }) {
@@ -18,10 +22,10 @@ export function Submissions({ model }: { model: SubmissionModel }) {
           {formatMessage(message)}
         </p>
       )}
-      <details>
-        <summary>
+      <Disclosure>
+        <DisclosureTrigger>
           {t("ui.submissions.summary", { count: receiptIds.length })}
-        </summary>
+        </DisclosureTrigger>
         <p className="muted">{t("ui.submissions.warning")}</p>
         <Button variant="ghost" onClick={() => void model.refresh()}>
           {t("ui.submissions.checkStatus")}
@@ -29,7 +33,7 @@ export function Submissions({ model }: { model: SubmissionModel }) {
         {receiptIds.map((id) => (
           <SubmissionRecord key={id} id={id} model={model} />
         ))}
-      </details>
+      </Disclosure>
     </section>
   );
 }
@@ -76,8 +80,10 @@ function SubmissionRecord({
       </p>
       <pre>{receipt.text}</pre>
       {receipt.content && (
-        <details>
-          <summary>{t("ui.submissions.frozenContent")}</summary>
+        <Disclosure>
+          <DisclosureTrigger>
+            {t("ui.submissions.frozenContent")}
+          </DisclosureTrigger>
           <pre>{receipt.content.message}</pre>
           {receipt.content.sources.map((source, index) => (
             <p key={`${source.attachmentId}:${index}`}>
@@ -98,7 +104,7 @@ function SubmissionRecord({
           >
             {t("ui.submissions.copyContent")}
           </Button>
-        </details>
+        </Disclosure>
       )}
       {receipt.retryOf && (
         <p className="trace">
@@ -120,8 +126,10 @@ function SubmissionRecord({
         receipt.outcome === "unknown" ||
         receipt.outcome === "failed" ||
         receipt.outcome === "aborted") && (
-        <details>
-          <summary>{t("ui.submissions.resendTitle")}</summary>
+        <Disclosure>
+          <DisclosureTrigger>
+            {t("ui.submissions.resendTitle")}
+          </DisclosureTrigger>
           <p role="alert">{t("ui.submissions.resendWarning")}</p>
           <Button
             disabled={sending}
@@ -129,7 +137,7 @@ function SubmissionRecord({
           >
             {t("ui.submissions.resendConfirm")}
           </Button>
-        </details>
+        </Disclosure>
       )}
       <Button
         variant="ghost"

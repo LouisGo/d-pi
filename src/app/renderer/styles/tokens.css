@@ -6,6 +6,8 @@
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-emphasis: var(--emphasis);
+  --color-emphasis-foreground: var(--emphasis-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
@@ -13,44 +15,52 @@
 }
 :root {
   color-scheme: light;
-  --background: #fcfcfd;
+  --background: #fafafa;
   --surface: var(--preview-light-background);
   --overlay: rgb(0 0 0 / 45%);
-  --sidebar: #f3f4f7;
+  --sidebar: #f4f4f5;
   --statusbar-background: color-mix(
     in srgb,
     var(--sidebar) 35%,
     var(--surface)
   );
-  --accent: color-mix(in srgb, var(--primary) 11%, var(--surface));
+  --accent: color-mix(in srgb, var(--emphasis) 10%, var(--surface));
   --accent-foreground: color-mix(
     in srgb,
-    var(--primary) 78%,
+    var(--emphasis) 78%,
     var(--foreground)
   );
   --primary-hover: color-mix(in srgb, var(--primary) 90%, var(--foreground));
-  --primary-active: color-mix(in srgb, var(--primary) 78%, var(--foreground));
+  --primary-active: color-mix(in srgb, var(--emphasis) 78%, var(--foreground));
   --muted-hover: color-mix(
     in srgb,
     var(--muted-foreground) 12%,
     var(--surface)
   );
   --foreground: var(--preview-light-foreground);
-  --primary: #3757bc;
-  --focus-ring: 2px solid var(--primary);
+  --primary: #27292e;
+  --emphasis: #287de0;
+  --emphasis-foreground: #ffffff;
+  --emphasis-hover: color-mix(in srgb, var(--emphasis) 90%, var(--foreground));
+  --emphasis-active: color-mix(in srgb, var(--emphasis) 78%, var(--foreground));
+  --focus-ring: 2px solid var(--emphasis);
   --focus-ring-offset: 2px;
   --primary-foreground: #ffffff;
-  --muted: #f0f2f6;
-  --muted-foreground: #606775;
-  --border: #dfe3eb;
+  --muted: #ededf0;
+  --muted-foreground: #646870;
+  --border: #e6e7eb;
+  --border-strong: #d8dae0;
+  --border-soft: #eff0f2;
+  --field: #f7f7f8;
+  --placeholder: #6b6f77;
   --destructive: #b3261e;
   --code-selection: #c5d5f8;
   --diff-added-background: #d6f0df;
   --diff-removed-background: #f6d9d6;
   --preview-light-background: #ffffff;
-  --preview-light-foreground: #242730;
-  --preview-dark-background: #20242d;
-  --preview-dark-foreground: #e8ebf2;
+  --preview-light-foreground: #27292e;
+  --preview-dark-background: #232428;
+  --preview-dark-foreground: #f2f3f5;
   --switch-width: 2.375rem;
   --switch-height: 1.375rem;
   --switch-padding: 0.1875rem;
@@ -60,8 +70,19 @@
   --panel-padding: 1rem;
   --layout-gap: 0.625rem;
   --radius: 0.75rem;
+  --radius-window: 0.875rem;
+  --radius-chip: 0.375rem;
+  --radius-pill: 999px;
   --radius-control: 0.5rem;
-  --motion-control: 160ms;
+  --motion-control: 150ms;
+  --motion-popup: 180ms;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --control-line-height: 1.4;
+  --shadow-control: 0 1px 2px rgb(0 0 0 / 6%);
+  --shadow-raised: 0 2px 6px rgb(0 0 0 / 6%), 0 6px 16px rgb(0 0 0 / 4%);
+  --shadow-inset: inset 0 1px 2px rgb(0 0 0 / 4%);
+  --shadow-filled: inset 0 1px 0 rgb(255 255 255 / 12%);
+  --scrollbar: #b8bbc3;
   --text-title: 1.125rem;
   --text-heading: 1.5rem;
   --tracking-brand: -0.03em;
@@ -90,7 +111,7 @@
   --settings-navigation-width: 11rem;
   --settings-minimum-height: 32rem;
   --overlay-width: 20rem;
-  --shadow-overlay: 0 8px 24px rgb(0 0 0 / 16%);
+  --shadow-overlay: 0 4px 12px rgb(0 0 0 / 6%), 0 16px 40px rgb(0 0 0 / 10%);
   --content-width: 56rem;
   --editor-height: 4rem;
   --thread-setup-max-height: 26vh;
@@ -99,20 +120,31 @@
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --background: #181b22;
+  --background: #191a1d;
   --surface: var(--preview-dark-background);
-  --sidebar: #1d2028;
+  --sidebar: #1d1e21;
   --statusbar-background: color-mix(
     in srgb,
     var(--surface) 92%,
     var(--foreground)
   );
   --foreground: var(--preview-dark-foreground);
-  --primary: #a8c1ff;
-  --primary-foreground: #162649;
-  --muted: #272c36;
-  --muted-foreground: #a5adbd;
-  --border: #363c49;
+  --primary: #f2f3f5;
+  --emphasis: #599df4;
+  --emphasis-foreground: #101e32;
+  --primary-foreground: #232428;
+  --muted: #2d2e33;
+  --muted-foreground: #adb0b8;
+  --border: #383a40;
+  --border-strong: #4a4d55;
+  --border-soft: #2e3035;
+  --field: #28292e;
+  --placeholder: #a2a6af;
+  --scrollbar: #555861;
+  --shadow-control: 0 1px 2px rgb(0 0 0 / 28%);
+  --shadow-raised: 0 2px 6px rgb(0 0 0 / 20%), 0 6px 16px rgb(0 0 0 / 16%);
+  --shadow-overlay: 0 4px 12px rgb(0 0 0 / 24%), 0 16px 40px rgb(0 0 0 / 28%);
+  --shadow-inset: inset 0 1px 2px rgb(0 0 0 / 20%);
   --destructive: #ffb4ab;
   --code-selection: #34538d;
   --diff-added-background: #244636;

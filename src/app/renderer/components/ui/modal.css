@@ -10,9 +10,10 @@
     max-height: calc(100vh - var(--header-height) - var(--panel-padding) * 2);
     overflow: hidden;
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: var(--radius-window);
     color: var(--foreground);
     background: var(--surface);
+    box-shadow: var(--shadow-overlay);
   }
   .ui-modal[hidden] {
     display: none;

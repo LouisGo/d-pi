@@ -1,5 +1,5 @@
 import { type ComponentType, type ReactNode, useState } from "react";
-import { Button } from "../../../../modules/ui/renderer/public";
+import { Button, TextInput } from "../../../../modules/ui/renderer/public";
 import {
   type ComponentName,
   categories,
@@ -22,8 +22,27 @@ import {
   SwitchDemo,
   TabsDemo,
 } from "./demos";
+import {
+  CheckboxDemo,
+  DisclosureDemo,
+  ModalDemo,
+  SliderDemo,
+  StatusPreviewDemo,
+  TextAreaDemo,
+  TextInputDemo,
+  TooltipDemo,
+} from "./foundation-demos";
 
 const demos: Record<ComponentName, ComponentType> = {
+  Checkbox: CheckboxDemo,
+  TextInput: TextInputDemo,
+  TextArea: TextAreaDemo,
+  Slider: SliderDemo,
+  Disclosure: DisclosureDemo,
+  Modal: ModalDemo,
+  StatusPreview: StatusPreviewDemo,
+  Tooltip: TooltipDemo,
+
   Select: SelectDemo,
   Switch: SwitchDemo,
   FormField: FormFieldDemo,
@@ -124,7 +143,7 @@ export function ComponentDashboard({
           <p>{copy.intro}</p>
           <label className={styles["gallery-search"]}>
             <span>{copy.search}</span>
-            <input
+            <TextInput
               type="search"
               aria-label={copy.search}
               placeholder={copy.searchHint}

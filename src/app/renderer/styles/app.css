@@ -1,6 +1,7 @@
 @import "./tokens.css";
 @import "../../../modules/ui/renderer/button.css";
 @import "../../../modules/ui/renderer/controls.css";
+@import "../../../modules/ui/renderer/primitives.css";
 @import "../../../modules/ui/renderer/settings.css";
 @import "../shell/settings/settings.css";
 @import "../components/ui/hover-menu.css";
@@ -10,6 +11,15 @@
 @import "../components/ui/modal.css";
 @import "../components/ui/status-preview.css";
 @layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  html {
+    scrollbar-color: var(--scrollbar) transparent;
+    scrollbar-width: thin;
+  }
   body {
     margin: 0;
     background: var(--background);
@@ -17,12 +27,17 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     line-height: 1.5;
     font-size: var(--text-body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
   button,
   input,
   select,
   textarea {
     font: inherit;
+  }
+  :where(input, textarea, [contenteditable="true"]) {
+    caret-color: var(--emphasis);
   }
   ::selection {
     background: var(--code-selection);
@@ -80,24 +95,6 @@
     gap: calc(var(--layout-gap) / 2);
     min-width: 0;
   }
-  .configuration-content input,
-  .model-fields input,
-  .model-fields select {
-    background: var(--background);
-    color: var(--foreground);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    min-height: var(--control-height);
-    padding-inline: var(--control-padding);
-    max-width: 100%;
-  }
-  .configuration-content input:focus-visible,
-  .configuration-content button:focus-visible,
-  .model-fields input:focus-visible,
-  .model-fields select:focus-visible {
-    background: var(--accent);
-    color: var(--accent-foreground);
-  }
   .model-controls {
     margin-bottom: calc(var(--layout-gap) / 2);
     padding: calc(var(--layout-gap) / 2) 0;
@@ -115,26 +112,13 @@
     min-width: 0;
     gap: calc(var(--layout-gap) / 2);
   }
-  .history select {
-    max-width: 100%;
-    min-height: var(--control-height);
-    background: var(--background);
-    color: var(--foreground);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding-inline: var(--control-padding);
-  }
-  .history select:focus-visible {
-    background: var(--accent);
-    color: var(--accent-foreground);
-  }
   .model-controls summary,
   .code-tools summary,
   .runtime-source summary {
     cursor: default;
     font-weight: 500;
   }
-  .model-controls[open] > :not(summary) {
+  .model-controls > .ui-disclosure[open] > :not(summary) {
     margin-top: var(--layout-gap);
   }
   .code-tools {
@@ -458,20 +442,6 @@
   .trace {
     overflow-wrap: anywhere;
     font-size: var(--text-small);
-  }
-  .draft-comparison,
-  .native-answer {
-    display: block;
-    width: 100%;
-    min-height: var(--editor-height);
-    padding: var(--layout-gap);
-    margin-block: var(--layout-gap);
-    color: var(--foreground);
-    background: var(--background);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    font: inherit;
-    resize: vertical;
   }
   .notice {
     margin: var(--panel-padding);

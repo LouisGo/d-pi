@@ -47,13 +47,21 @@ it("shows every existing foundation component as a real preview by default", asy
   ).toEqual([
     "Button",
     "IconButton",
+    "Checkbox",
+    "TextInput",
+    "TextArea",
+    "Slider",
     "Select",
     "Switch",
     "FormField",
     "ChoiceGroup",
     "SettingsGroup",
+    "Disclosure",
     "TabStrip",
     "ResizableSplit",
+    "Modal",
+    "StatusPreview",
+    "Tooltip",
     "NavigationOverlay",
     "SettingsModal",
     "Icon Layer",
@@ -196,7 +204,7 @@ it("includes an optional menu preview in category navigation, search and reset",
   const { container, button } = await setup(
     createElement("button", null, "菜单演示"),
   );
-  expect(container.querySelectorAll("[data-component]")).toHaveLength(13);
+  expect(container.querySelectorAll("[data-component]")).toHaveLength(21);
   expect(
     container.querySelector("#gallery-overlays [data-component='HoverMenu']"),
   ).not.toBeNull();
@@ -221,7 +229,7 @@ it("includes an optional menu preview in category navigation, search and reset",
   ).not.toBeNull();
   expect(
     container.querySelector("[data-gallery-title]")?.textContent,
-  ).toContain("1 / 13 项");
+  ).toContain("1 / 21 项");
 });
 
 it("filters by purpose and form, explains no matches and restores the full catalog", async () => {
@@ -246,7 +254,7 @@ it("filters by purpose and form, explains no matches and restores the full catal
     [...container.querySelectorAll("[data-component]")].map((node) =>
       node.getAttribute("data-component"),
     ),
-  ).toEqual(["TabStrip", "ResizableSplit"]);
+  ).toEqual(["Slider", "TabStrip", "ResizableSplit"]);
   await search(" GHOST ");
   expect(container.querySelectorAll("[data-component]")).toHaveLength(1);
   await search("does-not-exist");
@@ -254,7 +262,7 @@ it("filters by purpose and form, explains no matches and restores the full catal
   expect(container.querySelectorAll("[data-component]")).toHaveLength(0);
   await act(() => button("清空搜索").click());
   expect(input.value).toBe("");
-  expect(container.querySelectorAll("[data-component]")).toHaveLength(12);
+  expect(container.querySelectorAll("[data-component]")).toHaveLength(20);
 });
 
 it("groups every component in the separate right navigation with existing anchor targets", async () => {
@@ -273,13 +281,21 @@ it("groups every component in the separate right navigation with existing anchor
   ).toEqual([
     "Button",
     "IconButton",
+    "Checkbox",
+    "TextInput",
+    "TextArea",
+    "Slider",
     "Select",
     "Switch",
     "FormField",
     "ChoiceGroup",
     "SettingsGroup",
+    "Disclosure",
     "TabStrip",
     "ResizableSplit",
+    "Modal",
+    "StatusPreview",
+    "Tooltip",
     "NavigationOverlay",
     "SettingsModal",
     "HoverMenu",

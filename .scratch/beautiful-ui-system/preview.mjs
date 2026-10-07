@@ -1,0 +1,23 @@
+import { spawn } from 'node:child_process';
+import { cpSync, realpathSync, writeFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import { createServer } from 'vite';
+import { createTestEnvironment } from '../../scripts/testing/test-environment.mjs';
+const isolated = createTestEnvironment({prefix:'d-pi-beautiful-'});
+const vite = await createServer({configFile:false,root:resolve('.'),cacheDir:join(isolated.root,'vite-cache'),optimizeDeps:{entries:[resolve('validation/m2/workbench.html')]},plugins:[react(),tailwindcss()],define:{__D_PI_BUILD__:JSON.stringify({version:'beautiful-ui-renderer-fixture',commit:'7906f255',dirty:true,id:'beautiful-ui-isolated'})},resolve:{alias:{'@':resolve('src/app/renderer')}},server:{host:'127.0.0.1',port:0}});
+await vite.listen();
+const url = `http://127.0.0.1:${vite.httpServer.address().port}/validation/m2/workbench.html`;
+const appPath = join(isolated.root,'Beautiful Preview.app');
+cpSync(realpathSync('node_modules/electron/dist/Electron.app'),appPath,{recursive:true,verbatimSymlinks:true});
+const {execFileSync} = await import('node:child_process');
+execFileSync('/usr/libexec/PlistBuddy',['-c','Set :CFBundleIdentifier dev.d-pi.beautiful-preview',join(appPath,'Contents/Info.plist')]);
+execFileSync('/usr/libexec/PlistBuddy',['-c','Set :CFBundleName Beautiful Preview',join(appPath,'Contents/Info.plist')]);
+const main = join(isolated.root,'main.cjs');
+writeFileSync(main, `const {app,BrowserWindow}=require('electron');app.setPath('userData',${JSON.stringify(isolated.data)});app.whenReady().then(()=>{const w=new BrowserWindow({title:'d-pi Beautiful UI isolated preview',width:${Number(process.argv[2] ?? 1440)},height:900,minWidth:720,minHeight:540,titleBarStyle:'hiddenInset',webPreferences:{sandbox:true,contextIsolation:true,nodeIntegration:false}});w.on('page-title-updated',e=>e.preventDefault());w.webContents.setWindowOpenHandler(()=>({action:'deny'}));w.loadURL(${JSON.stringify(url)});});app.on('window-all-closed',()=>app.quit());`);
+const child = spawn(join(appPath,'Contents/MacOS/Electron'),[main],{env:isolated.env,stdio:['ignore','inherit','inherit']});
+console.log(JSON.stringify({url,pid:child.pid,appPath,isolated:true}));
+let closing = false;
+async function close(){if(closing)return;closing=true;child.kill();await vite.close();await new Promise(done=>setTimeout(done,500));try{isolated.cleanup()}catch(e){console.error(e.message)}process.exit(0)}
+process.on('SIGINT',close);process.on('SIGTERM',close);child.on('exit',close);

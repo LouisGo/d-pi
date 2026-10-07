@@ -161,11 +161,11 @@
   .ui-resize-separator:hover,
   .ui-resize-separator:focus-visible,
   .ui-resize-separator[data-separator="active"] {
-    background: var(--primary);
+    background: var(--emphasis);
   }
   .ui-resize-separator:focus-visible {
     outline: none;
-    background: var(--primary);
+    background: var(--emphasis);
     z-index: 2;
   }
   .primary-sidebar,
@@ -388,7 +388,7 @@
     inset-inline-end: 0;
     width: var(--attention-indicator-size);
     height: var(--attention-indicator-size);
-    background: var(--primary);
+    background: var(--emphasis);
     border-radius: var(--radius-control);
   }
   .activity-indicator[hidden] {
@@ -411,7 +411,7 @@
     flex-direction: column;
     overflow: hidden;
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: var(--radius-window);
     background: var(--surface);
     color: var(--foreground);
     box-shadow: var(--shadow-overlay);
@@ -525,5 +525,58 @@
   }
   .runtime-panel > [hidden] {
     display: none;
+  }
+}
+
+/* Shared portaled surfaces use Base UI lifecycle attributes and geometry. */
+@layer components {
+  .ui-select-positioner,
+  [data-base-ui-portal] {
+    isolation: isolate;
+  }
+  .ui-tooltip,
+  .ui-hover-menu,
+  .ui-status-preview,
+  .ui-modal,
+  .ui-settings-modal,
+  .ui-navigation-overlay {
+    transition:
+      opacity var(--motion-popup) var(--ease-out),
+      scale var(--motion-popup) var(--ease-out);
+  }
+  .ui-tooltip,
+  .ui-status-preview {
+    transform-origin: var(--transform-origin);
+  }
+  :is(
+    .ui-tooltip,
+    .ui-hover-menu,
+    .ui-status-preview,
+    .ui-modal,
+    .ui-settings-modal
+  ):is([data-starting-style], [data-ending-style]) {
+    opacity: 0;
+    scale: 0.98;
+  }
+  .ui-overlay-backdrop {
+    transition: opacity var(--motion-popup) var(--ease-out);
+  }
+  :is(.ui-overlay-backdrop, .ui-navigation-overlay):is(
+    [data-starting-style],
+    [data-ending-style]
+  ) {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-tooltip,
+  .ui-hover-menu,
+  .ui-hover-menu-item,
+  .ui-status-preview,
+  .ui-modal,
+  .ui-settings-modal,
+  .ui-navigation-overlay,
+  .ui-overlay-backdrop {
+    transition: none;
   }
 }

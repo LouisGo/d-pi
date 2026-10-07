@@ -4,9 +4,11 @@
     max-width: calc(100vw - var(--panel-padding) * 2);
     padding: calc(var(--layout-gap) / 2);
     border: 1px solid var(--border);
-    border-radius: var(--radius-control);
+    border-radius: var(--radius);
     background: var(--surface);
     color: var(--foreground);
+    box-shadow: var(--shadow-raised);
+    transform-origin: var(--transform-origin);
   }
   .ui-hover-menu-item {
     display: flex;
@@ -15,6 +17,10 @@
     padding: var(--layout-gap) var(--control-padding);
     border-radius: var(--radius-control);
     cursor: default;
+    line-height: var(--control-line-height);
+    transition:
+      background-color var(--motion-control) var(--ease-out),
+      color var(--motion-control) var(--ease-out);
   }
   .ui-hover-menu-item[data-highlighted] {
     background: var(--accent);

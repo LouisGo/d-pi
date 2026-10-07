@@ -19,8 +19,11 @@
     position: relative;
     flex-shrink: 0;
     min-width: 0;
-    border-radius: var(--radius);
+    border-radius: var(--radius-control);
     color: var(--muted-foreground);
+    transition:
+      background-color var(--motion-control) var(--ease-out),
+      color var(--motion-control) var(--ease-out);
   }
   .tab-strip-item[data-selected="true"] {
     background: var(--muted);
@@ -78,5 +81,11 @@
   }
   .panel-header > .tab-strip {
     flex: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-strip-item {
+    transition: none;
   }
 }

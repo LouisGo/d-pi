@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useI18n } from "../../../preferences/renderer/public";
 import {
   Button,
+  Disclosure,
+  DisclosureTrigger,
   FormField,
   SettingRow,
   SettingsGroup,
@@ -166,13 +168,13 @@ export function ConfigurationSettings({
       {feedback}
     </div>
   ) : (
-    <details
+    <Disclosure
       className="configuration-settings"
       onToggle={(e) => setOpen(e.currentTarget.open)}
     >
-      <summary>{t("config.heading")}</summary>
+      <DisclosureTrigger>{t("config.heading")}</DisclosureTrigger>
       {content}
       {feedback}
-    </details>
+    </Disclosure>
   );
 }
