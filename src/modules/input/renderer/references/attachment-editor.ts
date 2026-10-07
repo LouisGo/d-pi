@@ -26,9 +26,9 @@ export function createAttachmentEditor(
           attachmentMention(editor.state)?.from !== range.from)
       )
         return false;
-      editor.view.dispatch(
-        insertAttachmentReference(editor.state, item, range),
-      );
+      const tr = insertAttachmentReference(editor.state, item, range);
+      editor.view.dispatch(tr);
+      if (!editor.state.doc.eq(tr.doc)) return false;
       editor.commands.focus();
       return true;
     },

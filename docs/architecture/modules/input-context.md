@@ -108,3 +108,18 @@ Paste 只解析严格版本和有界 envelope；未知、过期、伪造、跨 i
 成功插入尚未持久采用的 clone 继续由 Main 原 import pin 保护，不能提前仅交给异步 Undo lease。显式清史、缓存淘汰和 epoch 替换通过既有 `history-release` 发送可选 `leaseId`、`releaseIds`（该 epoch 的依赖候选，包括尚未确认或失败的 update）和 `retainIds`（当前真实正文依赖）。无 lease 的候选也可结束；旧调用缺字段只释放已验证的 lease，不新增 clone 删除授权。两个 ID 数组最多 80,000，覆盖 4 MiB 草稿正文 token 的上限；仅 ID 投影，不保存第二份正文。
 
 Main 在同一个同步步骤释放可信 owner/Thread 的历史 lease，并仅回收该 owner/Thread 候选中不在 retainIds、也不被其他有效 Main epoch 引用的未采用 clipboard clone：解除原 import pin 和 128 交接额度。当前正文 clone 继续沿原 pin 保护，无重新申请历史 lease 的窗口；普通 PDF 等资产的显式清史/重试预算合同不变。可 Redo 时不结束 epoch，保持其 clone 保护。重复清史保留用于后续清理的当前 ID 候选；缓存淘汰以 DraftController 的真实当前正文提供保留集合，document close 仍释放全部 document 临时资源。清理 RPC 失败保守留 pin，来源保存屏障等待完成并允许显式重试。
+
+
+清理恢复独立于当前 epoch 的更新：未完成的 lease/candidate cleanup 记录保留真实 leaseId 和候选集合，跨 reset 不丢失；新 epoch 成功 update 不能解除旧 cleanup 失败或保存屏障。update 的失败也独立保留，只有相应 update 成功或其 epoch 实际结束、以及所有 cleanup 实际完成后来源才 ready。显式 retry 和再次清史恢复所有未完成记录；每次清理重试以最新当前正文 ID 投影与当前 epoch 的保守 Undo/Redo 依赖共同提供 retainIds，包括尚未确认或失败的 update，不能使用旧清史时的正文快照删除新依赖。依然不保存第二份正文，分片 wire 上限和普通 PDF 清史预算恢复合同不变。
+
+
+Cache 的 epoch 淘汰与 cleanup owner 销毁分开：未确认的结束保留无头 owner 与该 Thread Controller 的保存屏障，重绑和显式 retry 仍能恢复；仅全部 Main ACK 后移除。窗口最多9个 history owner（active、inactive cache、pending cleanup 合计），沿 document 的9epoch预算；达限不新增 owner、不丢义务，来源保持 history failed/limited，保存屏障拒绝持久采用。显式 retry 先恢复已退休 owner，再准入新 owner；未保存正文仍由原 import pin保护。退休状态不保留 Editor/EditorState 或正文副本，关闭文档仍由 Main统一释放。
+
+
+待准入投影另有硬预算：最多9个 Controller、全窗口 candidate IDs 总计80,000；普通待准入 epoch 超128依赖时沿既有显式限额清史规则结束Undo。预算不足时 PM admission plugin 在 docChanged 前拒绝普通编辑，并通过独立 editable prop 表达暂不可编辑，不改变原 Thread readonly 选项；保存/clear/retry不会假成功。slot 的正常在途释放表现 pending，Main ACK 自动 drain 待准入来源，先移交真正 before/doc 的依赖并确认，才恢复保存；真实失败保持可重试。投影只有准入、实际ACK后的清理、或document disposal能移除，视图/EditorState淘汰不丢candidate。
+
+`replaceDraftText` 是窄可信应用正文替换，消费确认与useStored沿显式PM meta通过admission预算门，不授予普通输入/clipboard该meta；替换后核对实际PM目标正文并清除旧Undo epoch。新可信正文来自现有Controller/App权威引用，仍可读；旧candidate义务保留，不能因一次command返回true而假称正文已替换。同Thread Controller重绑先以新实际正文接棒retention和保存屏障，旧controller/已销毁Editor不成为释放权威。
+
+PM准入过滤可能拒绝dispatch；附件adapter必须核对实际doc是否等于目标transaction.doc，拒绝时返回false、让Thread AttachmentModel保留uninserted-source。可信clipboard同样核对实际doc，失败时明确反馈并等待Main discard未使用clone，不能把一笔被拒绝的dispatch当作已插入交接。
+
+拒绝插入后的discard由Thread AttachmentModel持有必要清理失败，与已有源失败排队并保留原ids；一次unavailable/transport不能变成ready，显式retry只重试discard且仅其Main cancelled ACK解除义务，不重跑import。存在清理失败时不再申请clipboard import，Main每document最多4在途/128handoff给清理集合硬上界；普通源失败仍独立保留。必要cleanup不能用移除失败动作放弃，只能Main ACK或原document最终释放。

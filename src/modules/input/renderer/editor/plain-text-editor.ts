@@ -63,9 +63,13 @@ export function draftDocument(text: string) {
 
 export function replaceDraftText(editor: Editor, text: string): boolean {
   if (editor.view.composing) return false;
-  const replaced = editor.commands.setContent(draftDocument(text), {
-    emitUpdate: false,
-  });
+  const doc = editor.schema.nodeFromJSON(draftDocument(text));
+  const replaced =
+    editor
+      .chain()
+      .setMeta("dpiTrustedDraftReplacement", true)
+      .setContent(doc, { emitUpdate: false })
+      .run() && editor.state.doc.eq(doc);
   if (replaced) clearDraftHistory(editor);
   return replaced;
 }

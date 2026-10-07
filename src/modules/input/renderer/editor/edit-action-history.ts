@@ -1,6 +1,18 @@
-import { Extension } from "@tiptap/core";
+import { type Editor, Extension } from "@tiptap/core";
 import { closeHistory, isHistoryTransaction } from "@tiptap/pm/history";
-import { Plugin } from "@tiptap/pm/state";
+import { Plugin, type Transaction } from "@tiptap/pm/state";
+
+const admissions = new WeakMap<
+  Editor,
+  (transaction?: Transaction) => boolean
+>();
+export function bindHistoryAdmission(
+  editor: Editor,
+  admit: (transaction?: Transaction) => boolean,
+): () => void {
+  admissions.set(editor, admit);
+  return () => admissions.delete(editor);
+}
 
 type Action = "input" | "delete" | "independent";
 export const EditActionHistory = Extension.create({
@@ -11,6 +23,7 @@ export const EditActionHistory = Extension.create({
     return [
       new Plugin({
         props: {
+          editable: () => admissions.get(this.editor)?.() ?? true,
           handleDOMEvents: {
             keydown: (_view, event) => {
               if (event.key === "Backspace" || event.key === "Delete")
@@ -26,7 +39,9 @@ export const EditActionHistory = Extension.create({
             },
           },
         },
-        filterTransaction(tr) {
+        filterTransaction: (tr) => {
+          if (tr.docChanged && admissions.get(this.editor)?.(tr) === false)
+            return false;
           if (!tr.docChanged || tr.getMeta("addToHistory") === false)
             return true;
           if (isHistoryTransaction(tr)) {

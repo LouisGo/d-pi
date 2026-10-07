@@ -2,8 +2,13 @@ import { createStore } from "zustand/vanilla";
 import { createId, type ThreadId } from "../../../../shared/identity";
 import type { AttachmentBridge } from "../../contracts/public";
 
-type Release = { leaseId?: string; releaseIds: string[]; retainIds: string[] };
-
+type Cleanup = {
+  leaseId?: string;
+  ids: Set<string>;
+  revision: number;
+  queued: boolean;
+  failed: boolean;
+};
 type State = { pending: boolean; failed: boolean; limited: boolean };
 /** Headless editor epoch. It stores dependency IDs, never a second draft body. */
 export class EditorHistoryModel {
@@ -18,22 +23,37 @@ export class EditorHistoryModel {
   > = this.store;
   private epoch = createId();
   private ids = new Set<string>();
-  // Cleanup candidates only; this is not a new epoch or editable body.
+  // Cleanup candidates/current-body projection, never another editable body.
   private cleanupIds = new Set<string>();
-  private failedRelease: Release | null = null;
+  private currentIds = new Set<string>();
+  private readonly cleanups = new Map<string, Cleanup>();
+  private updateFailed = false;
+  private pending = 0;
   private leaseId: string | null = null;
   private version = 0;
   private generation = 0;
   private tail: Promise<void> = Promise.resolve();
   private disposed = false;
+  private completed = false;
   constructor(
     private readonly bridge: AttachmentBridge,
     readonly threadId: ThreadId,
     private readonly clearHistory: () => void,
+    private readonly readCurrentIds?: () => Iterable<string>,
   ) {}
+  private publish(): void {
+    this.store.setState({
+      pending: this.pending > 0,
+      failed:
+        this.updateFailed ||
+        [...this.cleanups.values()].some((cleanup) => cleanup.failed),
+    });
+  }
   ready(): boolean {
     const state = this.store.getState();
-    return !this.disposed && !state.pending && !state.failed;
+    return (
+      (!this.disposed || this.completed) && !state.pending && !state.failed
+    );
   }
   observe(ids: Iterable<string>): void {
     if (this.disposed) return;
@@ -59,10 +79,11 @@ export class EditorHistoryModel {
     const generation = this.generation;
     const version = ++this.version;
     const ids = [...this.ids];
-    this.store.setState({ pending: true, failed: false });
+    this.pending++;
+    this.publish();
     this.tail = this.tail.then(async () => {
-      if (this.disposed || generation !== this.generation) return;
       try {
+        if (this.disposed || generation !== this.generation) return;
         if (!this.leaseId) {
           const opened = await this.bridge.request({
             kind: "history-open",
@@ -70,13 +91,13 @@ export class EditorHistoryModel {
             traceId: createId(),
             epoch: this.epoch,
           });
-          if (opened.kind === "history-lease") {
-            if (this.disposed || generation !== this.generation) {
-              await this.release(opened.leaseId);
-              return;
-            }
-            this.leaseId = opened.leaseId;
-          } else if (opened.kind === "history-limit") {
+          if (this.disposed || generation !== this.generation) {
+            if (opened.kind === "history-lease")
+              this.addCleanup(opened.leaseId, ids);
+            return;
+          }
+          if (opened.kind === "history-lease") this.leaseId = opened.leaseId;
+          else if (opened.kind === "history-limit") {
             this.limit();
             return;
           } else throw Error("Editor history unavailable");
@@ -96,16 +117,13 @@ export class EditorHistoryModel {
         }
         if (reply.kind !== "history-lease" || reply.version < version)
           throw Error("Editor history not protected");
+        this.updateFailed = false;
       } catch {
         if (!this.disposed && generation === this.generation)
-          this.store.setState({ failed: true });
+          this.updateFailed = true;
       } finally {
-        if (
-          !this.disposed &&
-          generation === this.generation &&
-          version === this.version
-        )
-          this.store.setState({ pending: false });
+        this.pending--;
+        this.publish();
       }
     });
   }
@@ -117,61 +135,73 @@ export class EditorHistoryModel {
     }
   }
   async retry(): Promise<boolean> {
-    if (this.store.getState().failed) {
-      if (this.failedRelease) this.enqueueRelease(this.failedRelease);
-      else this.enqueue();
-    }
+    await this.ensure();
+    for (const [key, cleanup] of this.cleanups)
+      this.enqueueCleanup(key, cleanup);
+    if (this.updateFailed) this.enqueue();
     return this.ensure();
   }
-  private async release(leaseId: string): Promise<void> {
-    // Main also releases document leases on reload, process exit and disposal.
-    // A transport failure cannot turn an old lease into a new authority.
-    try {
-      await this.bridge.request({
-        kind: "history-release",
-        threadId: this.threadId,
-        traceId: createId(),
-        leaseId,
-      });
-    } catch {}
+  private protectedIds(): Set<string> {
+    // Latest current body plus this epoch's conservative Undo/Redo superset,
+    // including IDs whose Main update is still pending or failed.
+    return new Set([
+      ...(this.readCurrentIds?.() ?? this.currentIds),
+      ...this.ids,
+    ]);
   }
-  private enqueueRelease(plan: Release): void {
-    const generation = this.generation;
-    this.store.setState({ pending: true, failed: false });
+  private addCleanup(leaseId: string | undefined, ids: Iterable<string>): void {
+    const key = leaseId ?? "candidates";
+    const cleanup = this.cleanups.get(key) ?? {
+      ...(leaseId ? { leaseId } : {}),
+      ids: new Set<string>(),
+      revision: 0,
+      queued: false,
+      failed: false,
+    };
+    for (const id of ids) cleanup.ids.add(id);
+    cleanup.revision++;
+    this.cleanups.set(key, cleanup);
+    this.enqueueCleanup(key, cleanup);
+  }
+  private enqueueCleanup(key: string, cleanup: Cleanup): void {
+    if (cleanup.queued) return;
+    cleanup.queued = true;
+    this.pending++;
+    this.publish();
     this.tail = this.tail.then(async () => {
       try {
-        // Multiple rapid resets may accumulate candidates from several bodies.
-        // Each wire request stays bounded; only the first releases the lease.
-        for (
-          let start = 0;
-          start < Math.max(1, plan.releaseIds.length);
-          start += 80000
-        ) {
-          const reply = await this.bridge.request({
-            kind: "history-release",
-            threadId: this.threadId,
-            traceId: createId(),
-            ...(start === 0 && plan.leaseId ? { leaseId: plan.leaseId } : {}),
-            releaseIds: plan.releaseIds.slice(start, start + 80000),
-            retainIds: plan.retainIds,
-          });
-          if (reply.kind !== "history-released")
-            throw Error("Editor history release unavailable");
-        }
-        if (generation === this.generation) {
-          const retained = new Set(plan.retainIds);
-          for (const id of plan.releaseIds)
+        for (;;) {
+          const revision = cleanup.revision;
+          const ids = [...cleanup.ids];
+          for (let start = 0; start < Math.max(1, ids.length); start += 80000) {
+            const reply = await this.bridge.request({
+              kind: "history-release",
+              threadId: this.threadId,
+              traceId: createId(),
+              ...(start === 0 && cleanup.leaseId
+                ? { leaseId: cleanup.leaseId }
+                : {}),
+              releaseIds: ids.slice(start, start + 80000),
+              retainIds: [...this.protectedIds()],
+            });
+            if (reply.kind !== "history-released")
+              throw Error("Editor history release unavailable");
+          }
+          // A reset while IPC awaited may have added another cleanup intent.
+          // Replay idempotently with its latest dependencies before clearing it.
+          if (revision !== cleanup.revision) continue;
+          const retained = this.protectedIds();
+          for (const id of ids)
             if (!retained.has(id)) this.cleanupIds.delete(id);
-          this.failedRelease = null;
+          this.cleanups.delete(key);
+          break;
         }
       } catch {
-        if (generation === this.generation) {
-          this.failedRelease = plan;
-          this.store.setState({ failed: true });
-        }
+        cleanup.failed = true;
       } finally {
-        if (generation === this.generation && this.version === 0)
-          this.store.setState({ pending: false });
+        cleanup.queued = false;
+        this.pending--;
+        this.publish();
       }
     });
   }
@@ -180,18 +210,35 @@ export class EditorHistoryModel {
     this.epoch = createId();
     this.version = 0;
     this.ids = new Set();
-    const retained = [...new Set(retainIds)];
-    for (const id of retained) this.cleanupIds.add(id);
+    this.currentIds = new Set(retainIds);
+    for (const id of this.currentIds) this.cleanupIds.add(id);
     const leaseId = this.leaseId ?? undefined;
     this.leaseId = null;
-    this.failedRelease = null;
-    this.store.setState({ pending: false, failed: false });
+    // The ended epoch needs no update retry. Unfinished cleanups, including its
+    // real Main lease ID, remain independent until Main actually releases them.
+    this.updateFailed = false;
     if (leaseId || this.cleanupIds.size)
-      this.enqueueRelease({
-        ...(leaseId ? { leaseId } : {}),
-        releaseIds: [...this.cleanupIds],
-        retainIds: retained,
-      });
+      this.addCleanup(leaseId, this.cleanupIds);
+    for (const [key, cleanup] of this.cleanups)
+      this.enqueueCleanup(key, cleanup);
+    this.publish();
+  }
+  adopt(
+    candidates: Iterable<string>,
+    currentIds: Iterable<string>,
+    epochIds: Iterable<string>,
+  ): void {
+    this.currentIds = new Set(currentIds);
+    for (const id of candidates) this.cleanupIds.add(id);
+    this.observe(epochIds);
+    if (this.cleanupIds.size) this.addCleanup(undefined, this.cleanupIds);
+  }
+  finish(): boolean {
+    if (this.pending || this.cleanups.size || this.leaseId || this.ids.size)
+      return false;
+    this.completed = true;
+    this.disposed = true;
+    return true;
   }
   dispose(retainIds: Iterable<string> = []): void {
     if (this.disposed) return;

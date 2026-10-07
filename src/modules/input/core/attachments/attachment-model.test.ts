@@ -196,3 +196,50 @@ it("keeps an imported manifest failure in headless readiness while that source i
   expect(model.getReadiness([item.id])).toEqual({ kind: "ready" });
   model.dispose();
 });
+
+it("preserves another required source failure while rejected clipboard cleanup waits for its own ACK", async () => {
+  let chooseFailed = true,
+    discardFailed = true;
+  const id = crypto.randomUUID();
+  const model = new AttachmentModel(
+    {
+      request: async (cmd) => {
+        if (cmd.kind === "choose-import")
+          return chooseFailed
+            ? { kind: "unavailable", reason: "source-too-large" }
+            : { kind: "attachments", items: [] };
+        return discardFailed
+          ? { kind: "unavailable", reason: "storage-unavailable" }
+          : { kind: "cancelled" };
+      },
+    },
+    threadId,
+  );
+  await model.run({ kind: "choose-import" });
+  await model.run({ kind: "clipboard-discard", ids: [id] });
+  expect(model.stateStore.getState().failed?.command.kind).toBe(
+    "choose-import",
+  );
+  chooseFailed = false;
+  await model.retryFailure();
+  expect(model.stateStore.getState().failed?.command).toEqual({
+    kind: "clipboard-discard",
+    ids: [id],
+  });
+  expect(
+    await model.run({
+      kind: "clipboard-import",
+      ticket: {
+        version: 1,
+        instanceId: crypto.randomUUID(),
+        handleId: crypto.randomUUID(),
+        expiresAt: Date.now() + 10000,
+      },
+    }),
+  ).toBeNull();
+  model.removeFailure();
+  expect(model.getReadiness().kind).toBe("blocked");
+  discardFailed = false;
+  expect(await model.retryFailure()).toMatchObject({ kind: "cancelled" });
+  expect(model.getReadiness()).toEqual({ kind: "ready" });
+});

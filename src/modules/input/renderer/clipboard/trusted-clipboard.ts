@@ -217,7 +217,7 @@ export function createTrustedClipboard(options: {
       view.state.selection.eq(selection);
     flight = options.model
       .run({ kind: "clipboard-import", ticket })
-      .then((reply) => {
+      .then(async (reply) => {
         if (reply?.kind === "clipboard-imported") {
           if (!current()) {
             void request({
@@ -255,6 +255,14 @@ export function createTrustedClipboard(options: {
               .setMeta("dpiIndependentAction", true)
               .scrollIntoView(),
           );
+          if (!view.state.doc.eq(tr.doc)) {
+            await options.model.run({
+              kind: "clipboard-discard",
+              ids: reply.items.map((item) => item.id),
+            });
+            if (!disposed && options.isCurrent()) options.onFeedback("failed");
+            return;
+          }
           if (reply.degraded) options.onFeedback("fallback");
         } else if (current()) {
           view.dispatch(textPasteTransaction(view.state, fallback));

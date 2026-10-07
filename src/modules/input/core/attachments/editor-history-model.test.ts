@@ -78,7 +78,6 @@ it("releases a late Main open after its history epoch has been replaced, without
     "history-open",
     "history-release",
     "history-release",
-    "history-release",
   ]);
   expect(commands.at(-1)).toMatchObject({
     kind: "history-release",
@@ -151,4 +150,46 @@ it("keeps current clone candidates across repeated resets and awaits an explicit
     retainIds: [],
   });
   model.dispose();
+});
+
+it("keeps a failed late Main lease release through another reset and retries its actual lease ID", async () => {
+  const leaseId = crypto.randomUUID(),
+    id = crypto.randomUUID();
+  let opened!: (reply: AttachmentReply) => void,
+    fail = true;
+  const requests: AttachmentRequest[] = [];
+  const model = new EditorHistoryModel(
+    {
+      request: async (command) => {
+        requests.push(command);
+        if (command.kind === "history-open")
+          return new Promise((resolve) => {
+            opened = resolve;
+          });
+        if (command.kind === "history-release" && command.leaseId && fail)
+          return { kind: "unavailable", reason: "storage-unavailable" };
+        return { kind: "history-released" };
+      },
+    },
+    threadId,
+    () => {},
+  );
+  model.observe([id]);
+  await Promise.resolve();
+  model.reset();
+  opened({ kind: "history-lease", leaseId, version: 0 });
+  expect(await model.ensure()).toBe(false);
+  model.reset();
+  expect(await model.ensure()).toBe(false);
+  fail = false;
+  expect(await model.retry()).toBe(true);
+  expect(
+    requests.filter(
+      (cmd) => cmd.kind === "history-release" && cmd.leaseId === leaseId,
+    ),
+  ).toHaveLength(3);
+  expect(model.stateStore.getState()).toMatchObject({
+    pending: false,
+    failed: false,
+  });
 });
