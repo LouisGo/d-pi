@@ -3,8 +3,16 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { expect, it, vi } from "vitest";
-import type { GitBridge } from "../../../modules/changes/contracts/public";
-import type { FileBridge } from "../../../modules/files/contracts/public";
+import type {
+  GitBridge,
+  GitReply,
+  GitRequest,
+} from "../../../modules/changes/contracts/public";
+import type {
+  FileBridge,
+  FileReply,
+  FileRequest,
+} from "../../../modules/files/contracts/public";
 import type { CodeView } from "../../../modules/files/renderer/public";
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
 import { ThreadContextSchema } from "../../../modules/threads/contracts/public";
@@ -29,7 +37,9 @@ it.each(["file", "diff"] as const)(
     const gate = new Promise<void>((resolve) => {
       finish = resolve;
     });
-    const files: FileBridge = {
+    const fileSamples: {
+      request: (command: FileRequest) => Promise<FileReply>;
+    } = {
       request: async (command) => {
         if (command.kind === "list")
           return {
@@ -50,49 +60,68 @@ it.each(["file", "diff"] as const)(
         };
       },
     };
-    const git: GitBridge = {
-      request: async (command) => {
-        if (command.kind === "list")
+    const gitSamples: { request: (command: GitRequest) => Promise<GitReply> } =
+      {
+        request: async (command) => {
+          if (command.kind === "list")
+            return {
+              kind: "changes",
+              repository: "/fixture",
+              head: "fixture",
+              capturedAt: "fixture",
+              coverage: "project-paths-current-sample",
+              entries: [
+                {
+                  path: "README.md",
+                  scope: "index-worktree",
+                  status: "modified",
+                },
+              ],
+              truncated: false,
+            };
+          await gate;
           return {
-            kind: "changes",
+            kind: "diff",
             repository: "/fixture",
-            head: "fixture",
+            path: command.path,
+            scope: command.scope,
             capturedAt: "fixture",
-            coverage: "project-paths-current-sample",
-            entries: [
-              {
-                path: "README.md",
-                scope: "index-worktree",
-                status: "modified",
-              },
-            ],
-            truncated: false,
+            head: "fixture",
+            coverage: "single-file-current-sample",
+            left: {
+              kind: "text",
+              text: "old text",
+              source: "index",
+              version: "left",
+              coverage: "complete",
+            },
+            right: {
+              kind: "text",
+              text: "diff result",
+              source: "worktree",
+              version: "right",
+              coverage: "complete",
+            },
           };
-        await gate;
-        return {
-          kind: "diff",
-          repository: "/fixture",
-          path: command.path,
-          scope: command.scope,
-          capturedAt: "fixture",
-          head: "fixture",
-          coverage: "single-file-current-sample",
-          left: {
-            kind: "text",
-            text: "old text",
-            source: "index",
-            version: "left",
-            coverage: "complete",
-          },
-          right: {
-            kind: "text",
-            text: "diff result",
-            source: "worktree",
-            version: "right",
-            coverage: "complete",
-          },
-        };
-      },
+        },
+      };
+    const files: FileBridge = {
+      request: async (command) => ({
+        kind: "completed",
+        operationId: command.operationId,
+        traceId: command.traceId,
+        reply: await fileSamples.request(command),
+      }),
+      cancel: async (command) => ({ kind: "acknowledged", ...command }),
+    };
+    const git: GitBridge = {
+      request: async (command) => ({
+        kind: "completed",
+        operationId: command.operationId,
+        traceId: command.traceId,
+        reply: await gitSamples.request(command),
+      }),
+      cancel: async (command) => ({ kind: "acknowledged", ...command }),
     };
     const Editor = ({ view }: { view: CodeView }) =>
       createElement(

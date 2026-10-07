@@ -5,10 +5,6 @@ import {
   GitRequestSchema,
 } from "../../../modules/changes/contracts/public";
 import {
-  listGitChanges,
-  readGitChange,
-} from "../../../modules/changes/main/public";
-import {
   HistoryRequestSchema,
   ProjectHistoryRequestSchema,
 } from "../../../modules/conversation/contracts/public";
@@ -26,6 +22,13 @@ import {
   listProjectFiles,
   readProjectFile,
 } from "../../../modules/files/main/public";
+import {
+  ReadCancellationSchema,
+  ReadCancelledError,
+  type ReadIdentity,
+  ReadOperationError,
+  type ReadResponse,
+} from "../../../shared/read-operation";
 import type { AppStorage } from "../wiring/app-storage";
 import type { ProjectReadContext } from "./context";
 
@@ -53,13 +56,20 @@ function activeThreadFor(
 /** Snapshot one request context before I/O; never infer a start from its reply. */
 async function recordRead<T extends { kind: string; reason?: string }>(
   context: ProjectReadContext,
-  request: { traceId: string; threadId: string; operation: string },
+  request: {
+    traceId: string;
+    threadId: string;
+    operation: string;
+    operationId?: string;
+  },
   sample: () => Promise<T>,
 ): Promise<T> {
   const diagnostics = context.getDiagnostics();
   const requestContext = {
-    ...request,
-    requestId: randomUUID(),
+    traceId: request.traceId,
+    threadId: request.threadId,
+    operation: request.operation,
+    requestId: request.operationId ?? randomUUID(),
     connectionId: diagnostics?.processInstanceId ?? randomUUID(),
   };
   const started = performance.now();
@@ -80,7 +90,12 @@ async function recordRead<T extends { kind: string; reason?: string }>(
     diagnostics?.record({
       ...requestContext,
       stage: "failed",
-      code: "failed",
+      code:
+        error instanceof ReadCancelledError
+          ? "cancelled"
+          : error instanceof ReadOperationError
+            ? error.code
+            : "failed",
       durationMs: performance.now() - started,
     });
     throw error;
@@ -137,50 +152,94 @@ export function registerHistoryIpc(context: ProjectReadContext): void {
   });
 }
 
+export { ProjectReadOperations } from "./project-reads.operations";
+
+function verifyRead(
+  context: ProjectReadContext,
+  event: Parameters<ProjectReadContext["sourceValid"]>[0],
+  threadId: string,
+) {
+  if (!context.sourceValid(event))
+    throw new ReadOperationError("invalid-source");
+  const thread = context.getStore()?.threads.activeThread();
+  if (!thread || thread.threadId !== threadId)
+    throw new ReadOperationError("foreign-thread");
+  return thread;
+}
 export function registerFilesIpc(context: ProjectReadContext): void {
-  context.ipcMain.handle("files:request", async (event, raw: unknown) => {
+  context.ipcMain.handle("files:request", (event, raw: unknown) => {
     const command: FileRequest = FileRequestSchema.parse(raw);
-    const thread = activeThreadFor(
-      context,
-      event,
-      "Invalid file source",
-      command.threadId,
-    );
-    return recordRead<FileReply>(
-      context,
-      {
-        traceId: command.traceId,
-        threadId: command.threadId,
-        operation: `files:${command.kind}`,
-      },
-      () =>
-        command.kind === "list"
-          ? listProjectFiles(thread.directory, command.path)
-          : readProjectFile(thread.directory, command.path),
-    );
+    return context.reads.run<FileReply>(event, command, async (signal) => {
+      const thread = verifyRead(context, event, command.threadId);
+      return recordRead<FileReply>(
+        context,
+        {
+          traceId: command.traceId,
+          operationId: command.operationId,
+          threadId: command.threadId,
+          operation: `files:${command.kind}`,
+        },
+        () =>
+          command.kind === "list"
+            ? listProjectFiles(thread.directory, command.path, signal)
+            : readProjectFile(
+                thread.directory,
+                command.path,
+                undefined,
+                undefined,
+                signal,
+              ),
+      );
+    });
+  });
+  context.ipcMain.handle("files:cancel", (event, raw: unknown) => {
+    const command = ReadCancellationSchema.parse(raw);
+    if (!context.sourceValid(event))
+      throw new ReadOperationError("invalid-source");
+    context.reads.cancel(event, command);
+    return { kind: "acknowledged", ...command };
   });
 }
-
 export function registerGitIpc(context: ProjectReadContext): void {
-  context.ipcMain.handle("git:request", async (event, raw: unknown) => {
+  context.ipcMain.handle("git:request", (event, raw: unknown) => {
     const command: GitRequest = GitRequestSchema.parse(raw);
-    const thread = activeThreadFor(
-      context,
-      event,
-      "Invalid Git source",
-      command.threadId,
-    );
-    return recordRead<GitReply>(
-      context,
-      {
-        traceId: command.traceId,
-        threadId: command.threadId,
-        operation: `git:${command.kind}`,
-      },
-      () =>
-        command.kind === "list"
-          ? listGitChanges(thread.directory)
-          : readGitChange(thread.directory, command.scope, command.path),
-    );
+    return context.reads.run<GitReply>(event, command, async (signal) => {
+      const thread = verifyRead(context, event, command.threadId);
+      const validate = () => {
+        const current = verifyRead(context, event, command.threadId);
+        if (
+          current.workingDirectoryId !== thread.workingDirectoryId ||
+          current.directory !== thread.directory
+        )
+          throw new ReadOperationError("owner-released");
+      };
+      return recordRead<GitReply>(
+        context,
+        {
+          traceId: command.traceId,
+          operationId: command.operationId,
+          threadId: command.threadId,
+          operation: `git:${command.kind}`,
+        },
+        () =>
+          command.kind === "list"
+            ? context.gitReader.list(thread.directory, signal, validate)
+            : context.gitReader.diff(
+                thread.directory,
+                command.scope,
+                command.path,
+                signal,
+                undefined,
+                validate,
+              ),
+      );
+    });
+  });
+  context.ipcMain.handle("git:cancel", (event, raw: unknown) => {
+    const command = ReadCancellationSchema.parse(raw);
+    if (!context.sourceValid(event))
+      throw new ReadOperationError("invalid-source");
+    context.reads.cancel(event, command);
+    return { kind: "acknowledged", ...command };
   });
 }

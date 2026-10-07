@@ -134,3 +134,36 @@ test("rejects a FIFO without blocking and keeps serving normal files", async () 
     text: "hello\n",
   });
 });
+
+test("does not publish a captured file when its owning read is cancelled", async () => {
+  const root = await fixture();
+  await writeFile(join(root, "cancel.txt"), "captured");
+  const controller = new AbortController();
+  await expect(
+    readProjectFile(
+      root,
+      "cancel.txt",
+      1024,
+      async () => {
+        controller.abort();
+      },
+      controller.signal,
+    ),
+  ).rejects.toMatchObject({ name: "AbortError" });
+  // A new independent attempt can still acquire and read the same file.
+  await expect(readProjectFile(root, "cancel.txt")).resolves.toMatchObject({
+    kind: "text",
+    text: "captured",
+  });
+});
+
+test("does not relabel an unknown capture callback defect as retryable filesystem I/O", async () => {
+  const root = await fixture();
+  await writeFile(join(root, "defect.txt"), "captured");
+  const cause = Error("private callback defect");
+  await expect(
+    readProjectFile(root, "defect.txt", 1024, async () => {
+      throw cause;
+    }),
+  ).rejects.toBe(cause);
+});

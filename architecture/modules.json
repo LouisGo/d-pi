@@ -142,7 +142,8 @@
         "text/utf8.ts",
         "i18n/create-i18n.ts",
         "i18n/locale.ts",
-        "messages/contracts.ts"
+        "messages/contracts.ts",
+        "read-operation.ts"
       ],
       "dependsOn": []
     },
@@ -167,10 +168,13 @@
         "core": [
           "shared"
         ],
-        "main": [],
+        "main": [
+          "shared"
+        ],
         "renderer": [
           "preferences",
-          "threads"
+          "threads",
+          "shared"
         ]
       },
       "materialized": true
@@ -227,7 +231,8 @@
           "shared"
         ],
         "main": [
-          "files"
+          "files",
+          "shared"
         ],
         "renderer": [
           "shared",

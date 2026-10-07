@@ -8,6 +8,7 @@ import {
   MessageChannelMain,
 } from "electron";
 import { z } from "zod";
+import { createProjectGitReader } from "../../../modules/changes/main/public";
 import { RuntimeFailureSchema } from "../../../modules/execution/contracts/public";
 import {
   Diagnostics,
@@ -36,6 +37,7 @@ import {
 
 import { registerLocaleIpc } from "../ipc/locale";
 import {
+  ProjectReadOperations,
   registerFilesIpc,
   registerGitIpc,
   registerHistoryIpc,
@@ -55,6 +57,8 @@ export function startDesktopApplication(mainDirectory: string): void {
   const locked = app.requestSingleInstanceLock();
   let window: BrowserWindow | null = null;
   let sourceGeneration = 0;
+  const reads = new ProjectReadOperations();
+  const gitReader = createProjectGitReader();
   let localeSnapshot: LocaleSnapshot = {
     preference: "system",
     resolvedLocale: "en-US",
@@ -185,12 +189,14 @@ export function startDesktopApplication(mainDirectory: string): void {
       },
     });
     window = current;
+    const senderId = current.webContents.id;
     sourceGeneration++;
     current.webContents.on(
       "did-start-navigation",
       (_event, _url, _inPlace, isMainFrame) => {
         if (isMainFrame) {
           sourceGeneration++;
+          reads.releaseSender(senderId);
           attention?.clearVisible();
         }
       },
@@ -209,6 +215,7 @@ export function startDesktopApplication(mainDirectory: string): void {
       }
     });
     current.on("closed", () => {
+      reads.releaseSender(senderId);
       attention?.clearVisible();
       attention?.setForeground(false);
       window = null;
@@ -217,6 +224,7 @@ export function startDesktopApplication(mainDirectory: string): void {
       closing = null;
     });
     current.webContents.on("render-process-gone", (_event, details) => {
+      reads.releaseSender(senderId);
       attention?.clearVisible();
       diagnostics?.record({
         traceId: randomUUID(),
@@ -393,6 +401,8 @@ export function startDesktopApplication(mainDirectory: string): void {
         createMessageChannel: () => new MessageChannelMain(),
       });
       const projectReadContext = {
+        reads,
+        gitReader,
         ...ipcSourceContext,
         getStore: () => services.store,
         getDiagnostics: () => diagnostics,
@@ -538,6 +548,7 @@ export function startDesktopApplication(mainDirectory: string): void {
         await Promise.all(
           [...services.runtimes.values()].map((runtime) => runtime.closeIdle()),
         );
+        await Promise.all([reads.close(), gitReader.close()]);
         await services.attachments?.close();
         await diagnostics?.close();
       })()
