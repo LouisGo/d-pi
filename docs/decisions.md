@@ -1,6 +1,6 @@
 # 产品与技术决定登记
 
-更新：2026-10-01。本页是现行决定、状态、依据与取代关系的索引；详细行为以所链接合同为准。领域定义见 [GLOSSARY](../GLOSSARY.md)，界面用词见[产品术语](product-terminology.md)，完整需求与阶段见[需求](product/requirements.md)及[首版方案](product/first-release.md)。授权、工程完成、用户试用与认可由[所属规格](README.md#工作记录)维护，不由决定状态推导。
+更新：2026-10-07。本页是现行决定、状态、依据与取代关系的索引；详细行为以所链接合同为准。领域定义见 [GLOSSARY](../GLOSSARY.md)，界面用词见[产品术语](product-terminology.md)，完整需求与阶段见[需求](product/requirements.md)及[首版方案](product/first-release.md)。授权、工程完成、用户试用与认可由[所属规格](README.md#工作记录)维护，不由决定状态推导。
 
 2026-10-01：用户明确将 OMP 升级目标固定为 **v18.4.5**，并认可[升级与边界加固规格](../.scratch/runtime-hardening-omp1845/spec.md)的完整推荐范围，包含编辑连续性；允许合理分工与适量 sub agent 并行实施。沿用 D-02/D-03 的官方 SDK 薄宿主与原生配置所有权，不改 D-08 并发与 D-24 冷恢复边界。当前实装仍为 18.3.0，方案认可不代表实现或产品试用完成；本会话先提交工作区，实施在新会话开始。
 
@@ -61,6 +61,7 @@
 | D-37 | Zustand 管 Renderer 展示状态及细粒度订阅，TanStack Query 管只读异步查询缓存；两库为锁定基础依赖，不按功能无限推迟 | 2026-09-29 用户确认既有自写 model + 直接 IPC 是实现缺口，保留外部行为迁移；取代[development-foundation](../.scratch/development-foundation/spec.md) 09-28 “不为名录补齐状态库”（`3faea9d` 未获用户确认的工程侧写法），并细化 B-01。镜像/缓存不拥有 OMP 执行、队列或历史；命令未知不交由 Query 自动重发，vanilla store 与 React 绑定分离。版本/迁移见[对齐规格](../.scratch/state-query-alignment/spec.md)，写法见[状态与查询 skill](../.agents/skills/d-pi-state-query/SKILL.md)及[无头合同 §4](architecture/headless-features.md#4-对外合同与状态工具) |
 | D-38 | TanStack Router 管应用导航，注册路由树完整推导目标、params/search；路由属于 app/renderer，业务生命周期独立 | 2026-10-01 用户授权完整接入并要求无断言的顺畅类型推导、独立 review 和分批本地提交。memory history、文件路由、业务确认后导航、阅读页签保留挂载；不在 loader/preload 执行命令，不改变 Main/OMP 所有权。范围及验证见[路由规格](../.scratch/router-integration/spec.md) |
 | D-39 | Effect v4 稳定核心用于原生连接生命周期，先接入 NativeSession | 2026-10-02 用户授权引入、验证后 commit/push，取代 P-05 中 Effect 仅为候选的状态。锁定 4.0.0；限定 execution/host 与 execution/main/transport，内部 Scope/Fiber/超时/释放，对外 Promise/DTO。不接管 OMP 执行、不重发 unknown，不替换 Zod/ts-pattern/Renderer 状态与查询。当前落地与验收见[Effect 规格](../.scratch/effect-native-lifecycle/spec.md)，不以选型授权推断全层迁移完成 |
+| D-40 | 集成终端采用 B：专用 TerminalHost utility process + node-pty，主页面 Renderer 用 xterm.js，输出走受限 MessagePort | 2026-10-07 用户明确要求直接按 B 修改方案/文档，后续按需直接引入 xterm.js，终端部分取代 P-04 候选状态。Main 管目录/执行信任、准入与监督，TerminalHost 管用户 PTY/shell、有界屏幕与输出，独立于 SessionHost/OMP；处理确认/背压/生命周期见[终端契约](architecture/terminal.md)与[ADR-0003](adr/0003-terminal-host.md)。本次仅文档，不授权功能开发/新增终端依赖，不扩 M2 或 D-39；产品待决与实际状态见[终端规格](../.scratch/integrated-terminal/spec.md) |
 
 ## 沿用基线与提议
 
@@ -73,7 +74,7 @@
 | P-01 | 已收敛 | 用户授权划分阶段，首版按 D-26 与[首版方案](product/first-release.md)；不代表依赖或性能已验收 |
 | P-02 | 已被 D-33 取代 | 原直接 ProseMirror 优先、最小 Tiptap 有条件对照；2026-09-26 用户确认最小 Tiptap，不再作为备用默认。旧研究理由保留在[历史快照](../.scratch/infrastructure-closure/evidence/decision-history.md) |
 | P-03 | 已转为确认 | 2026-09-25 用户接受准确标注来源的 Diff 交付顺序，见 D-20；保留编号追溯原提议 |
-| P-04 | 提议，图标部分已取代 | Node/TypeScript 宿主、不自研第二后端语言；WebContentsView、xterm.js/node-pty、PNG capturePage 等仍按候选状态，Lucide 部分由 2026-09-25 D-31 取代。见[技术评估](../.scratch/product-requirements/technical-evaluation.md) |
+| P-04 | 提议，图标/终端部分已取代 | Node/TypeScript 宿主、不自研第二后端语言；WebContentsView、PNG capturePage 等仍按候选状态；Lucide 由 D-31 取代，xterm.js/node-pty 与专用 TerminalHost 于 2026-10-07 由 D-40 确认。其余部分不受影响，见[技术评估](../.scratch/product-requirements/technical-evaluation.md) |
 | P-05 | 部分已确认 | 2026-09-26 [技术审议](architecture/technology-selection-review.md)的 Base UI/Tiptap/SQLite 由 D-32–D-34 确认，ts-pattern/Zod v4 由 D-35 提升为规范；2026-10-02 Effect 由 D-39 限定范围采纳。Drizzle、Pino/electron-log、Execa 等仍按各自候选状态，局部采纳不等于整套批准 |
 
 ## D-24 提交与恢复的现行修订

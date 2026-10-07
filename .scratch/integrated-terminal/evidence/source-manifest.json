@@ -1,0 +1,211 @@
+{
+  "checkedOn": "2026-10-07",
+  "kind": "source-inspection-only",
+  "latestHeadsClaimed": false,
+  "dPiBaseCommit": "598323321c8c2ba6eb177097e2042510c3b79d87",
+  "repositories": [
+    {
+      "repository": "microsoft/vscode",
+      "commit": "50f37bcc26c75b91937883a8974c969af300d4d4",
+      "treeVerified": true,
+      "files": [
+        {
+          "path": "src/vs/platform/terminal/electron-main/electronPtyHostStarter.ts",
+          "rawUrl": "https://raw.githubusercontent.com/microsoft/vscode/50f37bcc26c75b91937883a8974c969af300d4d4/src/vs/platform/terminal/electron-main/electronPtyHostStarter.ts",
+          "blobUrl": "https://github.com/microsoft/vscode/blob/50f37bcc26c75b91937883a8974c969af300d4d4/src/vs/platform/terminal/electron-main/electronPtyHostStarter.ts",
+          "bytes": 5630,
+          "sha256": "20776b27d13f59641b0d51407fa8e0b48874e36d6226876253e3f0c3d6963e47"
+        },
+        {
+          "path": "src/vs/platform/terminal/node/ptyHostService.ts",
+          "rawUrl": "https://raw.githubusercontent.com/microsoft/vscode/50f37bcc26c75b91937883a8974c969af300d4d4/src/vs/platform/terminal/node/ptyHostService.ts",
+          "blobUrl": "https://github.com/microsoft/vscode/blob/50f37bcc26c75b91937883a8974c969af300d4d4/src/vs/platform/terminal/node/ptyHostService.ts",
+          "bytes": 19407,
+          "sha256": "1dd03ae3ecdc72906320a5370d0109d2a5671a806581fd14f56aed1bd6e82e9f"
+        },
+        {
+          "path": "src/vs/platform/terminal/node/terminalProcess.ts",
+          "rawUrl": "https://raw.githubusercontent.com/microsoft/vscode/50f37bcc26c75b91937883a8974c969af300d4d4/src/vs/platform/terminal/node/terminalProcess.ts",
+          "blobUrl": "https://github.com/microsoft/vscode/blob/50f37bcc26c75b91937883a8974c969af300d4d4/src/vs/platform/terminal/node/terminalProcess.ts",
+          "bytes": 27183,
+          "sha256": "963666fcc058f0b37822184821ff17b6e71b9f59b1b7edec58bbb376770276d7"
+        },
+        {
+          "path": "src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts",
+          "rawUrl": "https://raw.githubusercontent.com/microsoft/vscode/50f37bcc26c75b91937883a8974c969af300d4d4/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts",
+          "blobUrl": "https://github.com/microsoft/vscode/blob/50f37bcc26c75b91937883a8974c969af300d4d4/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts",
+          "bytes": 51533,
+          "sha256": "cc17146425966d2a2a3df1b6fafaecc45f1492937e74e0e98502262992862db3"
+        }
+      ]
+    },
+    {
+      "repository": "pingdotgg/t3code",
+      "commit": "cd41c4ada0c70cc2eec95ecd7266f3dab010c58c",
+      "treeVerified": true,
+      "files": [
+        {
+          "path": "apps/desktop/src/backend/DesktopBackendConfiguration.ts",
+          "rawUrl": "https://raw.githubusercontent.com/pingdotgg/t3code/cd41c4ada0c70cc2eec95ecd7266f3dab010c58c/apps/desktop/src/backend/DesktopBackendConfiguration.ts",
+          "blobUrl": "https://github.com/pingdotgg/t3code/blob/cd41c4ada0c70cc2eec95ecd7266f3dab010c58c/apps/desktop/src/backend/DesktopBackendConfiguration.ts",
+          "bytes": 40913,
+          "sha256": "e1abd97c3a4f47c2569f74f4c1426fb2259c77c395dee241eceea56534edcce0"
+        },
+        {
+          "path": "apps/desktop/src/backend/DesktopBackendManager.ts",
+          "rawUrl": "https://raw.githubusercontent.com/pingdotgg/t3code/cd41c4ada0c70cc2eec95ecd7266f3dab010c58c/apps/desktop/src/backend/DesktopBackendManager.ts",
+          "blobUrl": "https://github.com/pingdotgg/t3code/blob/cd41c4ada0c70cc2eec95ecd7266f3dab010c58c/apps/desktop/src/backend/DesktopBackendManager.ts",
+          "bytes": 45618,
+          "sha256": "0d5e12955f4bcb549fc5be4eb209452f5fbb9ba72ea7cb9de4763d8946b381ab"
+        },
+        {
+          "path": "apps/desktop/src/backend/DesktopBackendPool.ts",
+          "rawUrl": "https://raw.githubusercontent.com/pingdotgg/t3code/cd41c4ada0c70cc2eec95ecd7266f3dab010c58c/apps/desktop/src/backend/DesktopBackendPool.ts",
+          "blobUrl": "https://github.com/pingdotgg/t3code/blob/cd41c4ada0c70cc2eec95ecd7266f3dab010c58c/apps/desktop/src/backend/DesktopBackendPool.ts",
+          "bytes": 22492,
+          "sha256": "971613d81212723848ace31c709259ca3a1eb8780354ba74da504dcd02d3d8fd"
+        },
+        {
+          "path": "apps/desktop/src/main.ts",
+          "rawUrl": "https://raw.githubusercontent.com/pingdotgg/t3code/cd41c4ada0c70cc2eec95ecd7266f3dab010c58c/apps/desktop/src/main.ts",
+          "blobUrl": "https://github.com/pingdotgg/t3code/blob/cd41c4ada0c70cc2eec95ecd7266f3dab010c58c/apps/desktop/src/main.ts",
+          "bytes": 10992,
+          "sha256": "8bac357ffd03ec4d89722cdbd2d04a3c447b706c0e3a8d4cc9bca9618779cfb7"
+        },
+        {
+          "path": "apps/server/src/terminal/Manager.ts",
+          "rawUrl": "https://raw.githubusercontent.com/pingdotgg/t3code/cd41c4ada0c70cc2eec95ecd7266f3dab010c58c/apps/server/src/terminal/Manager.ts",
+          "blobUrl": "https://github.com/pingdotgg/t3code/blob/cd41c4ada0c70cc2eec95ecd7266f3dab010c58c/apps/server/src/terminal/Manager.ts",
+          "bytes": 106533,
+          "sha256": "dfe89eea9b0ae333410fa184c77f76c858580a00811de48471aa4b5d8a616e34"
+        },
+        {
+          "path": "apps/server/src/terminal/NodePtyAdapter.ts",
+          "rawUrl": "https://raw.githubusercontent.com/pingdotgg/t3code/cd41c4ada0c70cc2eec95ecd7266f3dab010c58c/apps/server/src/terminal/NodePtyAdapter.ts",
+          "blobUrl": "https://github.com/pingdotgg/t3code/blob/cd41c4ada0c70cc2eec95ecd7266f3dab010c58c/apps/server/src/terminal/NodePtyAdapter.ts",
+          "bytes": 10323,
+          "sha256": "21b2ea0e2990ded1eb5d8b31a219bafd0aee90471a7d414112b256c2d2b8afe4"
+        },
+        {
+          "path": "apps/server/src/terminal/OutputProtocol.ts",
+          "rawUrl": "https://raw.githubusercontent.com/pingdotgg/t3code/cd41c4ada0c70cc2eec95ecd7266f3dab010c58c/apps/server/src/terminal/OutputProtocol.ts",
+          "blobUrl": "https://github.com/pingdotgg/t3code/blob/cd41c4ada0c70cc2eec95ecd7266f3dab010c58c/apps/server/src/terminal/OutputProtocol.ts",
+          "bytes": 2360,
+          "sha256": "80aaf13645c5f1a41c63b62847a8669597e086ae7a8563e85974a9daf075a7aa"
+        },
+        {
+          "path": "apps/web/src/components/ThreadTerminalDrawer.tsx",
+          "rawUrl": "https://raw.githubusercontent.com/pingdotgg/t3code/cd41c4ada0c70cc2eec95ecd7266f3dab010c58c/apps/web/src/components/ThreadTerminalDrawer.tsx",
+          "blobUrl": "https://github.com/pingdotgg/t3code/blob/cd41c4ada0c70cc2eec95ecd7266f3dab010c58c/apps/web/src/components/ThreadTerminalDrawer.tsx",
+          "bytes": 69436,
+          "sha256": "130b79913ea50770a9d8925bdc85bfd06067ff4ecc5b14992dc3fe9f58235772"
+        },
+        {
+          "path": "apps/web/src/terminal/ghostty/runtime.ts",
+          "rawUrl": "https://raw.githubusercontent.com/pingdotgg/t3code/cd41c4ada0c70cc2eec95ecd7266f3dab010c58c/apps/web/src/terminal/ghostty/runtime.ts",
+          "blobUrl": "https://github.com/pingdotgg/t3code/blob/cd41c4ada0c70cc2eec95ecd7266f3dab010c58c/apps/web/src/terminal/ghostty/runtime.ts",
+          "bytes": 8397,
+          "sha256": "2df8c4d7af327e47b6dcbf3fcb3935029e1f2acc209224acc383c97f9fe260d4"
+        }
+      ]
+    },
+    {
+      "repository": "deepseek-ai/deepseek-harness",
+      "commit": "5badb15009ae1756c3afe0ae0cef1faafc290ccc",
+      "treeVerified": true,
+      "files": [
+        {
+          "path": "apps/desktop/src/host-process.ts",
+          "rawUrl": "https://raw.githubusercontent.com/deepseek-ai/deepseek-harness/5badb15009ae1756c3afe0ae0cef1faafc290ccc/apps/desktop/src/host-process.ts",
+          "blobUrl": "https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/apps/desktop/src/host-process.ts",
+          "bytes": 14849,
+          "sha256": "6b9d3e558f526b7832020fb43d6682a07a68bf2d5657f26951f50a4f3eabfa28"
+        },
+        {
+          "path": "apps/desktop/src/main.ts",
+          "rawUrl": "https://raw.githubusercontent.com/deepseek-ai/deepseek-harness/5badb15009ae1756c3afe0ae0cef1faafc290ccc/apps/desktop/src/main.ts",
+          "blobUrl": "https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/apps/desktop/src/main.ts",
+          "bytes": 67842,
+          "sha256": "1fd424f16514d82d79665e0e8a1e2448dd8636126d3a37be7fa888d883b6ea3a"
+        },
+        {
+          "path": "apps/desktop/src/node-environment.ts",
+          "rawUrl": "https://raw.githubusercontent.com/deepseek-ai/deepseek-harness/5badb15009ae1756c3afe0ae0cef1faafc290ccc/apps/desktop/src/node-environment.ts",
+          "blobUrl": "https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/apps/desktop/src/node-environment.ts",
+          "bytes": 820,
+          "sha256": "cd760fede0ea4838269b09f9d68fd95dde2956d3542f16ed2a6b9629b02339bf"
+        },
+        {
+          "path": "apps/desktop-host/src/index.ts",
+          "rawUrl": "https://raw.githubusercontent.com/deepseek-ai/deepseek-harness/5badb15009ae1756c3afe0ae0cef1faafc290ccc/apps/desktop-host/src/index.ts",
+          "blobUrl": "https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/apps/desktop-host/src/index.ts",
+          "bytes": 6237,
+          "sha256": "a16e37fa194f34f4140a1c87ca897a27a3979eef76770fef28af49b5a38715a1"
+        },
+        {
+          "path": "packages/api/terminal-controller/src/stream.ts",
+          "rawUrl": "https://raw.githubusercontent.com/deepseek-ai/deepseek-harness/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/api/terminal-controller/src/stream.ts",
+          "blobUrl": "https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/api/terminal-controller/src/stream.ts",
+          "bytes": 2370,
+          "sha256": "4baffa2cc5bb73fd9bdfff45bc283d5f89d3ab4bce7a3fbf62f4ca28e92b05ab"
+        },
+        {
+          "path": "packages/api/terminal-controller/src/terminal.ts",
+          "rawUrl": "https://raw.githubusercontent.com/deepseek-ai/deepseek-harness/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/api/terminal-controller/src/terminal.ts",
+          "blobUrl": "https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/api/terminal-controller/src/terminal.ts",
+          "bytes": 8793,
+          "sha256": "d15068dac87b0bb4d74972e8ab7a16ebb0e2f9bf251efbab2820bdbf69a35e2a"
+        },
+        {
+          "path": "packages/api/terminal-controller/src/types.ts",
+          "rawUrl": "https://raw.githubusercontent.com/deepseek-ai/deepseek-harness/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/api/terminal-controller/src/types.ts",
+          "blobUrl": "https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/api/terminal-controller/src/types.ts",
+          "bytes": 2811,
+          "sha256": "3300e92d1bb28190ccc70eddfc315cc7ecbab15bad3d7b445f3ab01edf52f9f2"
+        },
+        {
+          "path": "packages/client/ui-sidebar-terminal/src/client/terminal.tsx",
+          "rawUrl": "https://raw.githubusercontent.com/deepseek-ai/deepseek-harness/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/client/ui-sidebar-terminal/src/client/terminal.tsx",
+          "blobUrl": "https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/client/ui-sidebar-terminal/src/client/terminal.tsx",
+          "bytes": 8067,
+          "sha256": "0d2e5fdd3dd91cd5f86cf5f0dc3f95d7c0e7cad5905e8aa5a9958ded98bd9051"
+        },
+        {
+          "path": "packages/subprocess/subprocess-local/src/terminal.ts",
+          "rawUrl": "https://raw.githubusercontent.com/deepseek-ai/deepseek-harness/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/subprocess/subprocess-local/src/terminal.ts",
+          "blobUrl": "https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/subprocess/subprocess-local/src/terminal.ts",
+          "bytes": 20055,
+          "sha256": "31e7c9fab5c147cb7a95284755f2e90ab54450ff5dfb6b9713c05ce3ea9060fc"
+        }
+      ]
+    },
+    {
+      "repository": "zed-industries/zed",
+      "commit": "8323e2327761aa297bb80b2eb0c9acc20bca4eb9",
+      "treeVerified": true,
+      "files": [
+        {
+          "path": "crates/terminal/src/alacritty.rs",
+          "rawUrl": "https://raw.githubusercontent.com/zed-industries/zed/8323e2327761aa297bb80b2eb0c9acc20bca4eb9/crates/terminal/src/alacritty.rs",
+          "blobUrl": "https://github.com/zed-industries/zed/blob/8323e2327761aa297bb80b2eb0c9acc20bca4eb9/crates/terminal/src/alacritty.rs",
+          "bytes": 38658,
+          "sha256": "5a2aaeaf144ba870dee701f87577c5f2cf470e875a1cb94e355395c1969a5f81"
+        },
+        {
+          "path": "crates/terminal/src/terminal.rs",
+          "rawUrl": "https://raw.githubusercontent.com/zed-industries/zed/8323e2327761aa297bb80b2eb0c9acc20bca4eb9/crates/terminal/src/terminal.rs",
+          "blobUrl": "https://github.com/zed-industries/zed/blob/8323e2327761aa297bb80b2eb0c9acc20bca4eb9/crates/terminal/src/terminal.rs",
+          "bytes": 238553,
+          "sha256": "e08eacce83ed93786028eb6f7997c696540fa60dca5cba08991b23d93fe64ff7"
+        },
+        {
+          "path": "crates/terminal_view/src/terminal_element.rs",
+          "rawUrl": "https://raw.githubusercontent.com/zed-industries/zed/8323e2327761aa297bb80b2eb0c9acc20bca4eb9/crates/terminal_view/src/terminal_element.rs",
+          "blobUrl": "https://github.com/zed-industries/zed/blob/8323e2327761aa297bb80b2eb0c9acc20bca4eb9/crates/terminal_view/src/terminal_element.rs",
+          "bytes": 115887,
+          "sha256": "23be77e7db816062f12741d7e9cfe04d01b759ed8e880be8dbfbff36fb9c9821"
+        }
+      ]
+    }
+  ]
+}

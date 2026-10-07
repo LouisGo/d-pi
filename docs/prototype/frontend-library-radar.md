@@ -6,6 +6,8 @@
 
 ## 当前状态与变化
 
+2026-10-07：终端部分由D-40确认B与xterm.js路线，进入[终端契约](../architecture/terminal.md)/[所属规格](../../.scratch/integrated-terminal/spec.md)，不再从旧库候选推导当前方向；此次文档交付不代表终端实装。
+
 - React + TypeScript + Tailwind CSS、自有组件 API 与设计变量继续沿用；Base UI 为默认基础交互，积极复用 shadcn/ui 源码。React Aria 是复杂交互对照，Radix 仅在具体适配需要时局部评估。
 - 保留 Beautiful UI 与 Tool UI 作为组件写法、组合与交互表达的重要参考，允许选择性源码改造，不直接引入整套库。2026-10-06 用户明确至少经过一层 d-pi 自有封装，应用消费者只使用自有组件 API；两者都不替换 OMP 状态所有权。
 - 2026-10-06 视觉要求：基础/配套/业务组件的角色、token 与状态表达一致，light/dark 必备；取消密度切换，原 compact 尺寸成为唯一默认紧凑布局，旧双密度建设被取代。规则以[设计系统合同](../architecture/design-system.md)为准，不带入上游独立色板、圆角或密度体系。

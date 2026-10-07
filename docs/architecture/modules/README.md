@@ -56,7 +56,7 @@ P1 落地的跨模块路径有两条：`files → input`（选区冻结与引用
 | [变化记录与 Git](changes-git.md) | `src/modules/changes` | Git 状态与对比基线、工具修改证据、Diff 业务输入 | M1 只读；M3 Git 写入与完整变化管理 |
 | [Side Chat](side-chat.md) | 无（M3 设计，未登记模块） | 独立问答、上下文快照、只读工具、显式同步和回送 | M3 边界；实际只读能力需先验证 |
 | [内置浏览器](browser.md) | 无（M3 设计，未登记模块） | 预览、标签页、共享持久登录与后续 AI 操作 | M3 边界；不阻塞首版登录 |
-| [集成终端](terminal.md) | 无（M3 设计，未登记模块） | 用户终端会话、进程、输入输出和释放 | M3 边界；不接管 OMP 工具命令 |
+| [集成终端](terminal.md) | 无（M3 设计，未登记模块） | 用户终端会话；Main 准入/监督，专用 TerminalHost 的 PTY/输出，主页面 xterm.js | D-40/B 已确认，契约/任务已形成；实施未授权，不接管 OMP 工具命令 |
 
 模块页名是能力名，不等于 `architecture/modules.json` 的领域模块名，也不一一对应源码目录：`threads`、`files-editor`→`files`、`input-context`→`input`、`changes-git`→`changes` 是同一领域的不同称呼；`runtime-host` 与 `app-storage` 跨 `runtime`/`execution`/`platform`/`app` 组合；`configuration` 已是机器清单中的领域模块，`side-chat`、`browser`、`terminal` 尚没有同名模块。领域模块与环境依赖的机器单源始终是 [`architecture/modules.json`](../../../architecture/modules.json)。
 
@@ -91,6 +91,7 @@ flowchart TB
 | --- | --- | --- |
 | Agent 执行、真实队列、工具、原生历史与记忆 | OMP | 宿主接入读取/操作原生能力；App 不能以镜像覆盖原生事实 |
 | Host/OMP 进程及连接身份 | 宿主模块；Main 监督 Host，Host 监督 OMP | Thread 关联实例，执行/阅读消费身份与事件 |
+| 用户 PTY/shell、终端屏幕与输出水位 | 拟由 terminal / 专用 TerminalHost 拥有（D-40，未实现） | Main 准入/监督与目录关联；Renderer 受限订阅/输入；详见[终端契约](../terminal.md)，不并入 SessionHost/OMP |
 | Thread、目录关系、项目执行信任、App 文件授权 | Thread 模块 / Main | 存储模块落盘；实际操作方在可信宿主复核，界面缓存不授予权限 |
 | 原生配置与凭据 | OMP 原生实现；配置模块适配 | 其他模块只取一致上下文和必要摘要，SQLite 不复制凭据 |
 | 编辑正文、选区、撤销 | 输入模块的 Tiptap 实例 / Renderer | 通过版本化草稿 DTO 保存；React 不再维护第二份可写正文 |

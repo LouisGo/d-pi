@@ -1,0 +1,85 @@
+{
+  "spec": ".scratch/integrated-terminal/spec.md",
+  "slice": "terminal-first-usable",
+  "notice": "Structural readiness only; verify authorization, leaf scope and write conflicts before dispatch.",
+  "ready": [],
+  "claimed": [],
+  "blocked": [
+    {
+      "id": "02",
+      "path": ".scratch/integrated-terminal/issues/02-session-protocol.md",
+      "title": "02 受限会话协议与屏幕恢复",
+      "by": [
+        {
+          "id": "01",
+          "path": ".scratch/integrated-terminal/issues/01-managed-pty.md",
+          "title": "01 可信 PTY 与受管生命周期",
+          "status": "open"
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "path": ".scratch/integrated-terminal/issues/03-output-control.md",
+      "title": "03 有界输出与背压",
+      "by": [
+        {
+          "id": "02",
+          "path": ".scratch/integrated-terminal/issues/02-session-protocol.md",
+          "title": "02 受限会话协议与屏幕恢复",
+          "status": "open"
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "path": ".scratch/integrated-terminal/issues/04-workbench-terminal.md",
+      "title": "04 正式工作台终端",
+      "by": [
+        {
+          "id": "03",
+          "path": ".scratch/integrated-terminal/issues/03-output-control.md",
+          "title": "03 有界输出与背压",
+          "status": "open"
+        }
+      ]
+    },
+    {
+      "id": "05",
+      "path": ".scratch/integrated-terminal/issues/05-multiple-shutdown.md",
+      "title": "05 多终端、撤销与组合退出",
+      "by": [
+        {
+          "id": "04",
+          "path": ".scratch/integrated-terminal/issues/04-workbench-terminal.md",
+          "title": "04 正式工作台终端",
+          "status": "open"
+        }
+      ]
+    },
+    {
+      "id": "06",
+      "path": ".scratch/integrated-terminal/issues/06-validation-delivery.md",
+      "title": "06 组合验证与 Dev 交付",
+      "by": [
+        {
+          "id": "05",
+          "path": ".scratch/integrated-terminal/issues/05-multiple-shutdown.md",
+          "title": "05 多终端、撤销与组合退出",
+          "status": "open"
+        }
+      ]
+    }
+  ],
+  "held": [
+    {
+      "id": "01",
+      "path": ".scratch/integrated-terminal/issues/01-managed-pty.md",
+      "title": "01 可信 PTY 与受管生命周期",
+      "status": "open",
+      "reason": "尚无终端开发授权；关联与最小退出准入待T-P1/T-P2答复，依据见推进与交接。",
+      "by": []
+    }
+  ],
+  "resolved": []
+}

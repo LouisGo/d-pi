@@ -4,6 +4,8 @@
 
 ## 运行位置与通道
 
+本节图为既有 OMP 链路，Host 指 SessionHost。D-40 集成终端是独立的未来接入，见本页[终端交接](#集成终端交接d-40已确认设计未实现)，不将图中 SessionHost 改作用户 PTY 宿主。
+
 ```mermaid
 flowchart TB
   R["Renderer<br/>视图 / 客户端镜像"] -->|preload：草稿、提交、文件、设置| M["Main<br/>宿主功能 / 持久化入口"]
@@ -110,3 +112,19 @@ sequenceDiagram
 5. 关闭/重开走订阅恢复；真正退出检查执行、队列、待答和后台活动。重启依据原生记录和 App 收据解释状态，不重放未知提交。
 
 这条路径同时检验基础设施和业务模块；不要求先建完全部基础库、所有无头功能或 M3 面板。
+
+## 集成终端交接（D-40，已确认设计、未实现）
+
+```mermaid
+flowchart LR
+  R[主页面 Renderer / xterm.js] -->|preload: create / list / attach / end| M[Main: 准入 / 目录 / 监督 / 退出]
+  M -->|许可 / 实例登记 / revoke / shutdown| T[专用 utility TerminalHost]
+  T -->|状态 / 真实退出 / 清理结果| M
+  R -->|受限 MessagePort: input / resize / applied ACK| T
+  T -->|snapshot / delta / state| R
+  T -->|node-pty / 受管实例| P[用户 shell / 进程组]
+  P -->|用户命令可能读写| F[同一工作目录 / 文件系统]
+  O[SessionHost / OMP] -->|OMP工具可能读写| F
+```
+
+创建从Main固定Thread/工作目录与执行信任开始，Host登记受管shell后报告真实状态；Main只建通道，不中转每块输出。attach在Host同序列取得屏幕/watermark，Renderer处理确认后消费增量与开放输入；隐藏只detach，end才清理。Host丢失后Main核查旧实例清理，新建是新shell，不接回旧PTY或重放输入。详细信封、背压与退出规则单源见[终端契约](../terminal.md)，依赖与产品待决见[终端规格](../../../.scratch/integrated-terminal/spec.md)。
