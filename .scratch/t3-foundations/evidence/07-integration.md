@@ -65,3 +65,9 @@ Standards独立关闭原PDF P2：固定 `ae9cb2c…e795933`，原真实PM/SQLite
 同轮 `node validation/m2/reading-layout.mjs --anchors --clipboard` 退出0。重新使用实际生产Main/preload/Renderer、PNG decoder、SQLite、真实Chromium/macOS pasteboard，复制文字+私有图片到另一Thread：newTargetId/sameDigest/singleUndo/redoSameId均true，原剪贴板 `restored`；relative anchor drift=0，absolute=0.21875px，宽度/隐藏Composer/视图及Thread返回均保持anchor-10。数据库submissions/nativeBindings与modelGenerationRequests全0，临时数据和子进程已清理。最终原始样本 [electron-clipboard-geometry-final.json](electron-clipboard-geometry-final.json)，原15:56样本保留。没有model网络、账户、实际OS PDF转换器、远端CI、安装包或用户认可证据。
 
 工程结算：01/02/03/05/06 resolved，04独立范围完成、动态@文件/目录语义保持hold，07只依赖04而保持open。已实施范围由[handoff](../handoff.md)按该工作树Dev交付待试用，用户反馈/认可pending。原checkout保持clean基点5983233；集成分支未push/创建远端PR/merge或发布，worker工作树已通过App归档，集成树保留用于继续。完整目标未全部实现，因此不宣称用户要求的总退出标准已经达到。
+
+## 用户选项1后续
+
+用户明确回复“1”，已于f328f0e登记D-10复制冻结选择并移除hold，d6c9654补基础/模块合同，d132693记录隔离派发。已有477b854工程结果仍是此前独立范围的快照，不把产品选择本身算实现完成。
+
+Root e93cea0新增 `--frozen-references` 原生probe：保留原阅读A/B并增加不同项目第三Thread，源image+@textfile+@direct-directory；真实Copy后等待Main实际导入/unused discard确认export ready，再删除原file、改变原dir，native paste至同名异内容目标，核对private preview/GUI/一次UndoRedo。最初错误把阅读B换differentproject，因该project没有history夹具在进入clipboard前超时；是探针布置失败且未写OS clipboard，不算产品红灯。修正后旧built477实际在ClipboardEvent/Main链路得到 `Frozen export unavailable`（尚无动态冻结/降级），18:28有效red，日志 `/tmp/d-pi-t3-frozen-electron-red.log`。finally保留原pasteboard恢复逻辑，但失败日志未采集restore.kind，不预宣称此次确切恢复结果；最终green再明确核实。

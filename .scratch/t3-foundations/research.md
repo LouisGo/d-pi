@@ -72,6 +72,8 @@ d-pi 已有 Main preview + import-bytes 可重新授权图片并生成目标 ID�
 
 动态文件/目录的跨 Thread 复制涉及版本、权限和用户预期，不能隐藏在codec内。先提出复制时冻结、发送时读取原项目、仅同目录搬运三种选择；2026-10-07用户明确回复选项1，采用复制时冻结来源及版本。Main按原Thread授权捕获完整有界内容，目标只消费私有快照；目录沿已有直接清单语义。冻结选区始终保留原文、坐标和版本；普通输入、原动态@引用的发送读取和已冻结提交行为不受此次复制选择影响，权限没有由外部clipboard声明取得。
 
+选项1后的补充源码核查：[ComposerContext](https://github.com/pingdotgg/t3code/blob/10f39eb9ac80c9a4b7f5097575dd2addc3b6f631/packages/contracts/src/composerContext.ts)的FileContextRecord是attachment ID/name/MIME/size绑定，未提供原项目动态path/version冻结接口；[ChatComposer](https://github.com/pingdotgg/t3code/blob/10f39eb9ac80c9a4b7f5097575dd2addc3b6f631/apps/web/src/components/chat/ChatComposer.tsx)约3128–3240经源environment asset URL和client fetch搬运实际内容，用target key防迟到串入，并让未解决chip先进入草稿。d-pi采用来源身份、实际内容、新ID及迟到复核的原则，但沿Main私有存储与全部ready后单事务插入，复制冻结属于用户确认的本地合同；不能将上游attachment搬运或URL访问视为已实现动态引用的复制时刻快照。
+
 剪贴板导入完成后一次事务插入同版正文/引用；迟到导入不进入新 Thread 或已消费的新草稿。失败不得产生半段成功却可发送的输入。未使用的成功导入交给 Main 的引用/清理机制，不声称 SQLite 与文件 I/O 天然原子。测试核对仅选中依赖、冲突 ID、格式损坏/超限、Thread 切换、Undo/Redo、清理、发送快照及旧草稿兼容。
 
 ## 七 内容锚点和阅读来源
