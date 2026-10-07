@@ -17,6 +17,13 @@ mkdirSync(output, { recursive: true });
 const threadId = randomUUID();
 const otherThreadId = randomUUID();
 const directoryId = randomUUID();
+const frozenReferences = process.argv.includes("--frozen-references");
+const targetDirectory = frozenReferences
+  ? join(isolated.root, "clipboard-target")
+  : isolated.cwd;
+const targetDirectoryId = frozenReferences ? randomUUID() : directoryId;
+const clipboardThreadId = frozenReferences ? randomUUID() : otherThreadId;
+if (frozenReferences) mkdirSync(targetDirectory, { recursive: true });
 const db = new DatabaseSync(join(isolated.data, "drafts.sqlite"));
 db.exec(
   "CREATE TABLE workspace(id TEXT PRIMARY KEY,directory TEXT NOT NULL UNIQUE,execution_trust TEXT NOT NULL);CREATE TABLE thread(id TEXT PRIMARY KEY,workspace_id TEXT NOT NULL,revision INTEGER NOT NULL,body TEXT NOT NULL);CREATE TABLE desktop(id INTEGER PRIMARY KEY,active_thread TEXT,theme TEXT NOT NULL,density TEXT NOT NULL);PRAGMA user_version=1;",
@@ -25,6 +32,11 @@ db.prepare("INSERT INTO workspace VALUES(?,?,'browse')").run(
   directoryId,
   isolated.cwd,
 );
+if (frozenReferences)
+  db.prepare("INSERT INTO workspace VALUES(?,?,'browse')").run(
+    targetDirectoryId,
+    targetDirectory,
+  );
 db.prepare("INSERT INTO thread VALUES(?,?,0,?)").run(
   threadId,
   directoryId,
@@ -35,6 +47,12 @@ db.prepare("INSERT INTO thread VALUES(?,?,0,?)").run(
   directoryId,
   "Other synthetic QA draft",
 );
+if (frozenReferences)
+  db.prepare("INSERT INTO thread VALUES(?,?,0,?)").run(
+    clipboardThreadId,
+    targetDirectoryId,
+    "Frozen target synthetic QA draft",
+  );
 db.prepare("INSERT INTO desktop VALUES(1,?,'light','normal')").run(threadId);
 db.close();
 writeFileSync(
@@ -319,7 +337,9 @@ try {
         wait,
         isolated,
         threadId,
-        otherThreadId,
+        otherThreadId: clipboardThreadId,
+        frozenReferences,
+        targetDirectory,
       })
     : undefined;
   const finalDb = new DatabaseSync(join(isolated.data, "drafts.sqlite"), {

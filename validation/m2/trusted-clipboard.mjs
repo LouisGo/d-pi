@@ -1,5 +1,11 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { join } from "node:path";
 import { captureClipboard } from "./clipboard.mjs";
 
@@ -12,7 +18,26 @@ export async function validateTrustedClipboard({
   isolated,
   threadId,
   otherThreadId,
+  frozenReferences = false,
+  targetDirectory,
 }) {
+  const fileName = "clipboard-source.txt";
+  const directoryName = "clipboard-source-dir";
+  if (frozenReferences) {
+    assert.notEqual(targetDirectory, isolated.cwd);
+    writeFileSync(join(isolated.cwd, fileName), "ORIGIN_BEFORE_COPY");
+    mkdirSync(join(isolated.cwd, directoryName));
+    writeFileSync(
+      join(isolated.cwd, directoryName, "origin-entry.txt"),
+      "DO_NOT_INLINE_THIS_BODY",
+    );
+    writeFileSync(join(targetDirectory, fileName), "TARGET_NEVER_READ");
+    mkdirSync(join(targetDirectory, directoryName));
+    writeFileSync(
+      join(targetDirectory, directoryName, "target-only.txt"),
+      "TARGET_NEVER_READ",
+    );
+  }
   const png =
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC";
   const item = await evaluate(`(async()=>{
@@ -20,9 +45,20 @@ export async function validateTrustedClipboard({
     if(reply.kind!=='attachments'||reply.items[0]?.status!=='ready')throw Error('Fixture private image not ready');
     const draft=await window.desktop.request({kind:'restore',traceId:crypto.randomUUID()});
     if(draft.kind!=='ready'||draft.draft?.threadId!==${JSON.stringify(threadId)})throw Error('Fixture draft unavailable');
-    const saved=await window.desktop.request({kind:'save',threadId:${JSON.stringify(threadId)},traceId:crypto.randomUUID(),expectedRevision:draft.draft.revision,text:'Structured QA '+reply.items[0].token+' tail'});
+    const references=[];
+    if(${JSON.stringify(frozenReferences)}){
+      for(const [path,referenceKind] of ${JSON.stringify([
+        [fileName, "file"],
+        [directoryName, "directory"],
+      ])}){
+        const reference=await window.desktop.attachments.request({kind:'add-reference',threadId:${JSON.stringify(threadId)},traceId:crypto.randomUUID(),path,referenceKind});
+        if(reference.kind!=='attachments'||reference.items[0]?.status!=='ready')throw Error('Fixture reference unavailable');
+        references.push(reference.items[0]);
+      }
+    }
+    const saved=await window.desktop.request({kind:'save',threadId:${JSON.stringify(threadId)},traceId:crypto.randomUUID(),expectedRevision:draft.draft.revision,text:'Structured QA '+[reply.items[0],...references].map(item=>item.token).join(' ')+' tail'});
     if(saved.kind!=='saved')throw Error('Fixture save failed');
-    return {id:reply.items[0].id,digest:reply.items[0].inputDigest};
+    return {id:reply.items[0].id,digest:reply.items[0].inputDigest,ids:[reply.items[0],...references].map(item=>item.id)};
   })()`);
   const reloadAt = Date.now();
   await call("Page.reload");
@@ -59,7 +95,7 @@ export async function validateTrustedClipboard({
       const editor=document.querySelector('.tiptap');editor.focus();
       const range=document.createRange();range.selectNodeContents(editor);
       const selection=getSelection();selection.removeAllRanges();selection.addRange(range);
-      document.addEventListener('copy',event=>{window.__qaCopied={plain:event.clipboardData.getData('text/plain'),ticket:!!event.clipboardData.getData('application/x-dpi-context-fragment+json')};},{once:true});
+      document.addEventListener('copy',event=>{const envelope=event.clipboardData.getData('application/x-dpi-context-fragment+json');window.__qaCopied={plain:event.clipboardData.getData('text/plain'),ticket:!!envelope,envelope};},{once:true});
       return true;
     })()`);
     await evaluate(
@@ -89,6 +125,25 @@ export async function validateTrustedClipboard({
       pasteboard.markOwnedCopy(copied.plain);
     assert.equal(copied?.ticket, true);
     assert.ok(copied.plain.includes("Structured QA"));
+    if (frozenReferences) {
+      // Await a real imported reply, then discard these unused clones. This
+      // proves export is ready before changing the source, rather than racing
+      // the copy request's bounded asynchronous freeze phase.
+      const ready = await evaluate(`(async()=>{
+        const reply=await window.desktop.attachments.request({kind:'clipboard-import',threadId:${JSON.stringify(otherThreadId)},traceId:crypto.randomUUID(),ticket:JSON.parse(window.__qaCopied.envelope)});
+        if(reply.kind!=='clipboard-imported'||reply.degraded||reply.items.length!==3||reply.items.some(item=>item.status!=='ready'))throw Error('Frozen export unavailable');
+        const ack=await window.desktop.attachments.request({kind:'clipboard-discard',threadId:${JSON.stringify(otherThreadId)},traceId:crypto.randomUUID(),ids:reply.items.map(item=>item.id)});
+        if(ack.kind!=='cancelled')throw Error('Readiness clone cleanup unconfirmed');
+        return true;
+      })()`);
+      assert.equal(ready, true);
+      rmSync(join(isolated.cwd, fileName));
+      rmSync(join(isolated.cwd, directoryName, "origin-entry.txt"));
+      writeFileSync(
+        join(isolated.cwd, directoryName, "changed-entry.txt"),
+        "ORIGIN_AFTER_COPY",
+      );
+    }
     await evaluate(
       `document.querySelector('.thread-navigation button[title$="${otherThreadId}"]').click()`,
     );
@@ -123,19 +178,50 @@ export async function validateTrustedClipboard({
     });
     await wait(() =>
       evaluate(
-        "document.querySelectorAll('.tiptap [data-attachment-id]').length===1",
+        `document.querySelectorAll('.tiptap [data-attachment-id]').length===${frozenReferences ? 3 : 1}`,
       ),
     );
     assert.equal(await evaluate("window.__qaPasteTicket"), true);
-    const targetId = await evaluate(
-      "document.querySelector('.tiptap [data-attachment-id]').dataset.attachmentId",
+    const targetIds = await evaluate(
+      "Array.from(document.querySelectorAll('.tiptap [data-attachment-id]'),node=>node.dataset.attachmentId)",
     );
+    const targetId = targetIds[0];
     assert.notEqual(targetId, item.id);
+    assert.equal(targetIds.length, item.ids.length);
+    assert.ok(targetIds.every((id) => !item.ids.includes(id)));
     const privateClone = await evaluate(`(async()=>{
       const reply=await window.desktop.attachments.request({kind:'list',threadId:${JSON.stringify(otherThreadId)},traceId:crypto.randomUUID()});
       return reply.kind==='attachments'&&reply.items.some(item=>item.id===${JSON.stringify(targetId)}&&item.inputDigest===${JSON.stringify(item.digest)}&&item.status==='ready');
     })()`);
     assert.equal(privateClone, true);
+    let frozen;
+    if (frozenReferences) {
+      const previews = await evaluate(`(async()=>{
+        const values=[];
+        for(const id of ${JSON.stringify(targetIds.slice(1))})values.push(await window.desktop.attachments.request({kind:'preview',threadId:${JSON.stringify(otherThreadId)},traceId:crypto.randomUUID(),id}));
+        return values;
+      })()`);
+      assert.equal(previews[0]?.kind, "text");
+      assert.equal(previews[0]?.text, "ORIGIN_BEFORE_COPY");
+      assert.equal(previews[1]?.kind, "text");
+      assert.ok(previews[1].text.includes("origin-entry.txt"));
+      assert.ok(!previews[1].text.includes("changed-entry.txt"));
+      assert.ok(!previews[1].text.includes("target-only.txt"));
+      assert.ok(!previews[1].text.includes("DO_NOT_INLINE_THIS_BODY"));
+      await wait(() =>
+        evaluate(
+          "/复制时冻结|Frozen on copy/i.test(document.body.textContent)",
+        ),
+      );
+      frozen = {
+        differentProjects: true,
+        deletedSourcePreserved: true,
+        directorySnapshotPreserved: true,
+        targetSamePathsIgnored: true,
+        directEntriesOnly: true,
+        frozenLabelVisible: true,
+      };
+    }
     await call("Input.dispatchKeyEvent", {
       type: "keyDown",
       key: "z",
@@ -179,14 +265,14 @@ export async function validateTrustedClipboard({
     });
     await wait(() =>
       evaluate(
-        "document.querySelectorAll('.tiptap [data-attachment-id]').length===1",
+        `document.querySelectorAll('.tiptap [data-attachment-id]').length===${frozenReferences ? 3 : 1}`,
       ),
     );
-    assert.equal(
+    assert.deepEqual(
       await evaluate(
-        "document.querySelector('.tiptap [data-attachment-id]').dataset.attachmentId",
+        "Array.from(document.querySelectorAll('.tiptap [data-attachment-id]'),node=>node.dataset.attachmentId)",
       ),
-      targetId,
+      targetIds,
     );
     result = {
       nativeTransport: true,
@@ -194,6 +280,7 @@ export async function validateTrustedClipboard({
       sameDigest: true,
       singleUndo: true,
       redoSameId: true,
+      ...(frozen ? { frozenReferences: frozen } : {}),
     };
   } finally {
     restore = pasteboard.restore();
