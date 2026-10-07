@@ -1,0 +1,51 @@
+{
+  "version": "isolated-workbench",
+  "scenario": "chrome",
+  "passed": true,
+  "checks": [
+    {
+      "name": "light-1440-continuous-footer-transparent-spacing",
+      "value": true
+    },
+    {
+      "name": "light-navigation-split-separator-half-pixel-flush-and-draggable",
+      "value": true
+    },
+    {
+      "name": "light-workspace-split-separator-half-pixel-flush-and-draggable",
+      "value": true
+    },
+    {
+      "name": "light-bottom-split-separator-half-pixel-flush-and-draggable",
+      "value": true
+    },
+    {
+      "name": "light-720-continuous-footer-transparent-spacing",
+      "value": true
+    },
+    {
+      "name": "dark-1440-continuous-footer-transparent-spacing",
+      "value": true
+    },
+    {
+      "name": "dark-navigation-split-separator-half-pixel-flush-and-draggable",
+      "value": true
+    },
+    {
+      "name": "dark-workspace-split-separator-half-pixel-flush-and-draggable",
+      "value": true
+    },
+    {
+      "name": "dark-bottom-split-separator-half-pixel-flush-and-draggable",
+      "value": true
+    },
+    {
+      "name": "dark-720-continuous-footer-transparent-spacing",
+      "value": true
+    }
+  ],
+  "stderr": "\nDevTools listening on ws://127.0.0.1:51499/devtools/browser/b30b3499-7122-4afa-a0ce-5504375ceec9\n",
+  "limitations": [
+    "isolated GUI fixture; not packaged or system IME evidence"
+  ]
+}

@@ -1266,14 +1266,53 @@ async function runChromeChecks() {
         `(()=>{
           const frame=document.querySelector('.window-frame'),header=document.querySelector('.window-header'),footer=document.querySelector('.window-statusbar');
           const css=e=>getComputedStyle(e),r=e=>e.getBoundingClientRect(),transparent=c=>c==='rgba(0, 0, 0, 0)';
+          const sidebar=document.querySelector('.primary-sidebar');
           const gaps=[...document.querySelectorAll('.window-content .ui-resize-separator')].filter(e=>r(e).width>0&&r(e).height>0&&!e.closest('[inert]'));
+          const context=document.createElement('canvas').getContext('2d');
+          const luminance=color=>{
+            context.fillStyle=color;context.fillRect(0,0,1,1);
+            const rgb=[...context.getImageData(0,0,1,1).data].slice(0,3).map(v=>v/255).map(v=>v<=0.04045?v/12.92:((v+0.055)/1.055)**2.4);
+            return rgb[0]*0.2126+rgb[1]*0.7152+rgb[2]*0.0722;
+          };
+          const footerLight=luminance(css(footer).backgroundColor),textLight=luminance(css(footer).color);
+          const contrast=(Math.max(footerLight,textLight)+0.05)/(Math.min(footerLight,textLight)+0.05);
           return r(footer).height===28&&r(footer).bottom===innerHeight&&css(footer).backgroundColor!==css(header).backgroundColor&&
             css(footer).borderTopWidth==='0px'&&parseFloat(css(frame).rowGap)===4&&
             [...footer.children].every(e=>transparent(css(e).backgroundColor)&&css(e).borderLeftWidth==='0px'&&css(e).borderRightWidth==='0px')&&
             [...header.children].every(e=>css(e).borderBottomWidth==='0px')&&
-            gaps.every(e=>transparent(css(e).backgroundColor))&&document.documentElement.scrollWidth===innerWidth;
+            gaps.every(e=>transparent(css(e).backgroundColor))&&document.documentElement.scrollWidth===innerWidth&&
+            footerLight>luminance(css(sidebar).backgroundColor)&&contrast>=4.5&&
+            css(sidebar).borderRadius==='0px'&&css(sidebar).boxShadow==='none'&&
+            (r(sidebar).width>0?css(frame).backgroundImage!=='none':css(frame).backgroundImage==='none');
         })()`,
       );
+      if (width === 1440) {
+        for (const [id, axis] of [
+          ["navigation-split-separator", "x"],
+          ["workspace-split-separator", "x"],
+          ["bottom-split-separator", "y"],
+        ]) {
+          const before = await rect(`#${id}`);
+          await drag(id, 8, axis);
+          await check(
+            `${theme}-${id}-half-pixel-flush-and-draggable`,
+            `(()=>{
+              const separator=document.getElementById(${JSON.stringify(id)});
+              separator.focus();
+              const css=getComputedStyle(separator),r=separator.getBoundingClientRect(),
+                previous=separator.previousElementSibling.getBoundingClientRect(),
+                next=separator.nextElementSibling.getBoundingClientRect();
+              const horizontal=${JSON.stringify(axis)}==='x';
+              const attached=horizontal?Math.abs(previous.right-r.left)<0.1&&Math.abs(r.right-next.left)<0.1:
+                Math.abs(previous.bottom-r.top)<0.1&&Math.abs(r.bottom-next.top)<0.1;
+              const before=${JSON.stringify(before)};
+              return attached&&(horizontal?r.width:r.height)===0.5&&css.backgroundColor!=='rgba(0, 0, 0, 0)'&&
+                css.outlineStyle==='none'&&Math.abs((horizontal?r.x:r.y)-(horizontal?before.x:before.y))>4;
+            })()`,
+          );
+          await evaluate("document.activeElement.blur()");
+        }
+      }
       await capture(`chrome-${theme}-${width}`);
     }
   }

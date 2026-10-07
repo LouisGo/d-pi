@@ -103,7 +103,7 @@ CSS Grid/Flex 负责排版与滚动边界；尺寸约束负责可用空间分配
 ```
 
 ```project-status
-[{"id":"codex-workbench-ui","title":"Codex 式工作台基础布局","phase":"基建","engineering":"partial","trial":"delivered","acceptance":"pending","build":"Dev / codex/sandwich-layout","evidence":["sandwich-validation.md"],"next":"Dev试用三层布局；原A3物理拖窗、系统IME/VoiceOver与长时性能仍未覆盖","constraints":"用户已授权本UI分支push、PR及合并；不公开发布或发起真实账户请求。"}]
+[{"id":"codex-workbench-ui","title":"Codex 式工作台基础布局","phase":"基建","engineering":"partial","trial":"delivered","acceptance":"pending","build":"Dev / codex/sandwich-layout","evidence":["sandwich-validation.md","baseline-refinement.md"],"next":"Dev试用三层布局；原A3物理拖窗、系统IME/VoiceOver与长时性能仍未覆盖","constraints":"用户已授权本UI分支push、PR及合并；不公开发布或发起真实账户请求。"}]
 ```
 
 ## 实施票
@@ -153,3 +153,8 @@ CSS Grid/Flex 负责排版与滚动边界；尺寸约束负责可用空间分配
 用户明确指出上一版底栏按正文列着色并绘制分割线导致层级混乱，授权完整调整该区域并要求不反复验证。最新澄清：底部需要一个完整连续区域，颜色与顶部略有区分。实现用统一muted状态底色、透明分段与4px区域留白，移除相关结构边框及功能导航顶部线；顶层surface、底层muted通过既有主题token区分。此条取代05初版视觉实现，不改变28px状态栏、布局意图和状态数据合同。
 
 本轮只做一次针对性静态/两主题视觉检查，记录于[视觉反馈交接](chrome-feedback.md)；不重复前轮完整门禁/双轴review，不将旧GUI记录称为当前样式验收。
+
+
+## 2026-10-07 从a86dc5a重新细化
+
+用户要求完整回退，已将HEAD恢复为a86dc5a；随后明确从该基线优化三项：0.5px引导线沿用主题色且必须贴合相邻区域、Thread背景填满上下间隙、状态栏light较Thread更浅且dark相应调整。实际面板分隔占位也改为0.5px，避免在4px空隙中间画细线；命中区独立保留。顶中底4px预算沿用并在Thread列填色，状态栏用独立主题token，保持28px。没有重新引入撤回的圆角/阴影或透明引导线方案。[本轮交接](baseline-refinement.md)，一次针对性检查，不重跑全量矩阵。
