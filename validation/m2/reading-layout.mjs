@@ -13,6 +13,7 @@ const isolated = createTestEnvironment({ prefix: "d-pi-reading-layout-" });
 const output = resolve("out/qa-convergence");
 mkdirSync(output, { recursive: true });
 const threadId = randomUUID();
+const otherThreadId = randomUUID();
 const directoryId = randomUUID();
 const db = new DatabaseSync(join(isolated.data, "drafts.sqlite"));
 db.exec(
@@ -26,6 +27,11 @@ db.prepare("INSERT INTO thread VALUES(?,?,0,?)").run(
   threadId,
   directoryId,
   "Synthetic QA draft\nline two\nline three",
+);
+db.prepare("INSERT INTO thread VALUES(?,?,0,?)").run(
+  otherThreadId,
+  directoryId,
+  "Other synthetic QA draft",
 );
 db.prepare("INSERT INTO desktop VALUES(1,?,'light','normal')").run(threadId);
 db.close();
@@ -61,6 +67,19 @@ writeFileSync(
           "Reading sample.\n\n".repeat(30),
       },
     },
+    ...Array.from({ length: 24 }, (_, index) => ({
+      type: "message",
+      id: `anchor-${index}`,
+      parentId: "qa-assistant",
+      message: {
+        role: "assistant",
+        content:
+          `Anchor fixture ${index}.\n\n` +
+          "Synthetic offline geometry text that wraps when the viewport changes. ".repeat(
+            16,
+          ),
+      },
+    })),
   ]
     .map((value) => JSON.stringify(value))
     .join("\n") + "\n",
@@ -129,7 +148,7 @@ async function measure(name) {
     const focusRect=focus.getBoundingClientRect();
     const nav=document.querySelector('.reading-navigation').getBoundingClientRect();
     const codeRect=code?.getBoundingClientRect();
-    return {width:innerWidth,height:innerHeight,readingHeight:rect.height,focusVisible:focusRect.left>=nav.left&&focusRect.right<=nav.right,codeVisible:codeRect?Math.max(0,Math.min(rect.bottom,codeRect.bottom)-Math.max(rect.top,codeRect.top)):null,focused:document.querySelector('.thread-workspace').dataset.readingFocus,editorPreserved:window.__qaEditor===document.querySelector('.tiptap'),draft:document.querySelector('.tiptap').textContent,build:document.querySelector('.sidebar-bottom').textContent};
+    return {width:innerWidth,height:innerHeight,readingHeight:rect.height,focusVisible:focusRect.left>=nav.left&&focusRect.right<=nav.right,codeVisible:codeRect?Math.max(0,Math.min(rect.bottom,codeRect.bottom)-Math.max(rect.top,codeRect.top)):null,focused:document.querySelector('.thread-workspace').dataset.readingFocus,editorPreserved:window.__qaEditor===document.querySelector('.tiptap'),draft:document.querySelector('.tiptap').textContent};
   })()`);
   assert.equal(value.focusVisible, true);
   assert.equal(value.editorPreserved, true);
@@ -185,31 +204,38 @@ try {
     deviceScaleFactor: 1,
     mobile: false,
   });
-  await click("Read-only files and current changes");
-  await wait(() =>
-    evaluate(
-      "!![...document.querySelectorAll('.file-list button')].find(b=>b.textContent==='README.md')",
-    ),
-  );
-  await click("README.md");
-  await wait(() =>
-    evaluate("!!document.querySelector('.monaco-readonly .monaco-editor')"),
-  );
-  const normal = await measure("files-light-normal");
-  await click("Focus reading");
-  const focused = await measure("files-light-normal-focused");
-  assert.ok(focused.readingHeight > normal.readingHeight + 150);
+  if (!process.argv.includes("--anchors")) {
+    await click("Read-only files and current changes");
+    await wait(() =>
+      evaluate(
+        "!![...document.querySelectorAll('.file-list button')].find(b=>b.textContent==='README.md')",
+      ),
+    );
+    await click("README.md");
+    await wait(() =>
+      evaluate("!!document.querySelector('.monaco-readonly .monaco-editor')"),
+    );
+    const normal = await measure("files-light-normal");
+    await click("Focus reading");
+    const focused = await measure("files-light-normal-focused");
+    assert.ok(focused.readingHeight > normal.readingHeight + 150);
+  } else {
+    await click("Focus reading");
+  }
   await evaluate(
     "document.querySelector('button[aria-label=\"Switch to dark theme\"]').click()",
   );
-  await click("Compact density");
   await call("Emulation.setDeviceMetricsOverride", {
     width: 960,
     height: 640,
     deviceScaleFactor: 1,
     mobile: false,
   });
-  await measure("files-dark-compact-minimum");
+  await measure(
+    process.argv.includes("--anchors")
+      ? "conversation-dark-minimum"
+      : "files-dark-compact-minimum",
+  );
   await click("Native history");
   await wait(() => evaluate("!!document.querySelector('.history article')"));
   assert.equal(
@@ -221,6 +247,69 @@ try {
   await measure("history-dark-compact-minimum");
   await click("Restore controls");
   await measure("history-dark-compact-restored");
+  const anchorMeasurements = [];
+  const anchor = () =>
+    evaluate(`(() => {
+    const pane=document.querySelector('.reading-pane:not([hidden])');
+    const row=pane.querySelector('[data-reading-row="anchor-10"]');
+    if(!row)throw Error('Missing content anchor');
+    const top=row.getBoundingClientRect().top-pane.getBoundingClientRect().top-pane.clientTop+pane.scrollTop;
+    return {rowId:row.dataset.readingRow,offset:pane.scrollTop-top,scrollTop:pane.scrollTop,source:pane.querySelector('[data-reading-source]').dataset.readingSource};
+  })()`);
+  await evaluate(`(() => {
+    const pane=document.querySelector('.reading-pane:not([hidden])');
+    const row=pane.querySelector('[data-reading-row="anchor-10"]');
+    pane.scrollTop=row.getBoundingClientRect().top-pane.getBoundingClientRect().top-pane.clientTop+pane.scrollTop+40;
+    return true;
+  })()`);
+  await evaluate("new Promise(resolve=>setTimeout(resolve,80))");
+  anchorMeasurements.push({ name: "before", ...(await anchor()) });
+  await call("Emulation.setDeviceMetricsOverride", {
+    width: 1180,
+    height: 812,
+    deviceScaleFactor: 1,
+    mobile: false,
+  });
+  await evaluate("new Promise(resolve=>setTimeout(resolve,100))");
+  anchorMeasurements.push({ name: "width-change", ...(await anchor()) });
+  await click("Focus reading");
+  await evaluate("new Promise(resolve=>setTimeout(resolve,100))");
+  anchorMeasurements.push({ name: "composer-hidden", ...(await anchor()) });
+  await click("Conversation");
+  await click("Native history");
+  await evaluate("new Promise(resolve=>setTimeout(resolve,100))");
+  anchorMeasurements.push({ name: "view-return", ...(await anchor()) });
+  await evaluate(
+    `document.querySelector('.thread-navigation button[title$="${otherThreadId}"]').click()`,
+  );
+  await wait(() =>
+    evaluate(
+      `document.querySelector('.thread-navigation button[aria-current=page]')?.title.endsWith('${otherThreadId}')`,
+    ),
+  );
+  await click("Native history");
+  await wait(() => evaluate("!!document.querySelector('.history article')"));
+  await evaluate("new Promise(resolve=>setTimeout(resolve,100))");
+  const other = await anchor();
+  assert.notEqual(other.source, anchorMeasurements[0].source);
+  assert.ok(other.scrollTop <= 1);
+  await evaluate(
+    `document.querySelector('.thread-navigation button[title$="${threadId}"]').click()`,
+  );
+  await wait(() =>
+    evaluate(
+      `document.querySelector('.thread-navigation button[aria-current=page]')?.title.endsWith('${threadId}')`,
+    ),
+  );
+  await click("Native history");
+  await wait(() => evaluate("!!document.querySelector('.history article')"));
+  await evaluate("new Promise(resolve=>setTimeout(resolve,100))");
+  anchorMeasurements.push({ name: "thread-return", ...(await anchor()) });
+  for (const value of anchorMeasurements) {
+    assert.equal(value.rowId, "anchor-10");
+    assert.ok(Math.abs(value.offset - 40) <= 2, JSON.stringify(value));
+    assert.equal(value.source, anchorMeasurements[0].source);
+  }
   const finalDb = new DatabaseSync(join(isolated.data, "drafts.sqlite"), {
     readOnly: true,
   });
@@ -240,6 +329,7 @@ try {
     nativeBindings: 0,
     modelGenerationRequests: 0,
     measurements,
+    anchorMeasurements,
   };
   writeFileSync(
     join(output, "result.json"),

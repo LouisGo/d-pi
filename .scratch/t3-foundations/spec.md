@@ -8,7 +8,7 @@
 - 受影响决定：D-02/D-03/D-10/D-21/D-22/D-24/D-26/D-28–D-30/D-33/D-35/D-37/D-38/D-39。保留 OMP 执行/历史、Main 持久化、Host 连接关联、Renderer 交互；不扩 Effect 到 Files/Changes，不换 Atom/Schema，不引入 XState。
 - 结果：六组可操作/可观测目标及其组合工程验收，逐项满足下面的退出条件；既有 M2 供应商/PDF/系统通知/用户认可等开放父票不由本轮自动关闭。
 - 重要待决：跨 Thread 动态 @文件/目录的复制语义，已通过本轮文本选项询问用户：复制时冻结来源、发送时读取原项目或限制同工作目录。只暂缓 04 中依赖该选择的部分；原引用行为、附件 owner/关闭/Undo 保护、私有图片及冻结选区的基础合同可独立准备。
-- 工程：研究完成，契约与票已建立，实施中。当前尚未声明任何新行为通过。
+- 工程：01/02/03/05/06 已串行集成并通过各自受影响检查，组合与独立两轴复核进行中；04 独立部分继续实施，动态引用复制语义仍待决。
 - 试用：尚未交付；完成后的默认入口为该工作树 `pnpm dev`，不为本轮机械打包。工程验证、真实系统检查及用户认可分别记录。
 - 执行：主 Agent 单写状态、契约、集成和诊断；独立 worker 固定各自基点/工作树实现原生、读取和输入，串行集成后推进依赖票。派发映射在实施时追加。不得把研究工作树当自动隔离。
 
@@ -55,7 +55,7 @@
 
 ### 只读 operation 与取消
 
-每次实际 queryFn invocation 创建 UUID operationId（不进入资源 Query key），同 attempt 保持 trace。request/cancel 为 strict 可序列化 DTO；AbortSignal 留在 Renderer helper。Main 在首个 await 前注册可信 sender/frame、原 ThreadContext、controller 与终止 promise；start 仍复核 active Thread，cancel 只核对原 sender/operation。重载/源释放/退出取消所属操作，禁止 PID 输入、跨 sender 接管和重复 start。
+每次实际 queryFn invocation 创建 UUID operationId（不进入资源 Query key），同 attempt 保持 trace。request/cancel 为 strict 可序列化 DTO；AbortSignal 留在 Renderer helper。Main 在首个 await 前注册可信 sender/frame、原 ThreadContext、controller 与终止 promise；start 仍复核 active Thread，cancel 只核对原 sender/operation。重载/源释放/退出取消所属操作，禁止 PID 输入、跨 sender 接管和在途同 ID 重复 start；终态释放 operation 登记，不保留无界 tombstone。
 
 新 wire 结果区分 completed(reply)、cancelled、failed(typed code/retryable/trace/operation)，preload 校验形状及关联，domain unavailable 仍是读取结论。timeout/io/已证 transient exit 可以沿用有界 Query retry；busy/无效来源/重复操作/坏机器输出/invalid-reply 不 retry；取消不 toast。queued 执行前复核身份，所有实际资源释放后才结算终态。Git active、queue、operation 及整体 deadline 的初始数值和基线实测随 02 记录；不把 T3 常量当最优值。
 
@@ -94,3 +94,5 @@ record 在 stringify 前只选择允许字段和值，Writer 自己填时间/构
 - [05 阅读内容锚点](issues/05-reading-anchors.md)
 - [06 安全诊断与恢复](issues/06-diagnostic-recovery.md)
 - [07 组合验证与交付](issues/07-integration-delivery.md)
+
+04 独立实现由 research_reads 从集成提交 `7f407de` 切 `codex/t3-clipboard` 接棒；05 由主 Agent 完成正式 Thread/ReadingPane 接线。两者不共享写入路径。

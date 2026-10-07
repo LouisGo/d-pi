@@ -53,8 +53,8 @@
 | [t3-foundations / 01 原生连接与确定性回放](../.scratch/t3-foundations/issues/01-native-scope-replay.md) | claimed | 无；范围以所属规格为准 |
 | [t3-foundations / 02 读取取消与资源合同](../.scratch/t3-foundations/issues/02-read-resources.md) | claimed | 无；范围以所属规格为准 |
 | [t3-foundations / 03 输入生命周期与历史资产](../.scratch/t3-foundations/issues/03-input-lifetime.md) | claimed | 无；范围以所属规格为准 |
-| [t3-foundations / 04 可信结构化剪贴板](../.scratch/t3-foundations/issues/04-structured-clipboard.md) | open | [03](../.scratch/t3-foundations/issues/03-input-lifetime.md) |
-| [t3-foundations / 05 阅读内容锚点](../.scratch/t3-foundations/issues/05-reading-anchors.md) | open | [03](../.scratch/t3-foundations/issues/03-input-lifetime.md) |
+| [t3-foundations / 04 可信结构化剪贴板](../.scratch/t3-foundations/issues/04-structured-clipboard.md) | claimed | 无；范围以所属规格为准 |
+| [t3-foundations / 05 阅读内容锚点](../.scratch/t3-foundations/issues/05-reading-anchors.md) | claimed | 无；范围以所属规格为准 |
 | [t3-foundations / 06 安全诊断与恢复](../.scratch/t3-foundations/issues/06-diagnostic-recovery.md) | claimed | 无；范围以所属规格为准 |
 | [t3-foundations / 07 组合验证与交付](../.scratch/t3-foundations/issues/07-integration-delivery.md) | open | [01](../.scratch/t3-foundations/issues/01-native-scope-replay.md)、[02](../.scratch/t3-foundations/issues/02-read-resources.md)、[03](../.scratch/t3-foundations/issues/03-input-lifetime.md)、[04](../.scratch/t3-foundations/issues/04-structured-clipboard.md)、[05](../.scratch/t3-foundations/issues/05-reading-anchors.md)、[06](../.scratch/t3-foundations/issues/06-diagnostic-recovery.md) |
 
@@ -76,4 +76,4 @@
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 - [T3 研究与基础重构](../.scratch/t3-foundations/spec.md)：unknown 不重发，冷恢复只读；native/live 无可靠原生身份时保持独立来源；M3 能力仅作设计储备
 
-<!-- source-sha256: 8b2958f646dad857fbdb4893ab7d5b8310cc78a657840a95fb07fd305bde6031; sources: 138 -->
+<!-- source-sha256: 8bff290ede8f863ec00a91494c6795c64c30d8de3a1628deebbec150c02fcd60; sources: 138 -->

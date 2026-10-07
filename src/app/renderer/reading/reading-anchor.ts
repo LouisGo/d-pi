@@ -29,9 +29,11 @@ export function attachReadingAnchor({
     isVisible() &&
     !pane.hidden &&
     pane.getClientRects().length > 0;
-  const source = () =>
-    pane.querySelector<HTMLElement>("[data-reading-source]")?.dataset
-      .readingSource ?? null;
+  const source = () => {
+    const key = pane.querySelector<HTMLElement>("[data-reading-source]")
+      ?.dataset.readingSource;
+    return key && key.length <= 4096 ? key : null;
+  };
   const geometry = (row: HTMLElement): ReadingRow | null => {
     const id = row.dataset.readingRow;
     if (!id) return null;

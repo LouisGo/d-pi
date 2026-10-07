@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "4c40ea6a0fc4695f638ab2a89ace01d3ae795fe379029afaf481f7965365347f",
+  "inputsHash": "4ab8a2f19f339f5da5406980e0ab7b5ecfada9a771e8dd1d2b3c8edcd9b2e9ff",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 389,
-    "scannedFiles": 389,
+    "sourceFiles": 416,
+    "scannedFiles": 416,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 172,
-      "lines": 29191,
+      "files": 177,
+      "lines": 30747,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -101,8 +101,8 @@
       ],
       "defaultEnvironment": "shared",
       "materialized": true,
-      "files": 19,
-      "lines": 2494,
+      "files": 20,
+      "lines": 2653,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -135,6 +135,10 @@
         {
           "path": "src/shared/messages/contracts.ts",
           "exists": true
+        },
+        {
+          "path": "src/shared/read-operation.ts",
+          "exists": true
         }
       ],
       "testPublicEntries": []
@@ -149,8 +153,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 17,
-      "lines": 2831,
+      "files": 18,
+      "lines": 3173,
       "publicEntries": [
         {
           "path": "src/modules/files/contracts/public.ts",
@@ -181,8 +185,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 33,
-      "lines": 4874,
+      "files": 44,
+      "lines": 6451,
       "publicEntries": [
         {
           "path": "src/modules/input/contracts/public.ts",
@@ -212,8 +216,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 7,
-      "lines": 1403,
+      "files": 11,
+      "lines": 2376,
       "publicEntries": [
         {
           "path": "src/modules/changes/contracts/public.ts",
@@ -322,8 +326,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 48,
-      "lines": 11338,
+      "files": 53,
+      "lines": 12364,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -672,6 +676,12 @@
     },
     {
       "module": "files",
+      "environment": "main",
+      "dependency": "shared",
+      "testOnly": false
+    },
+    {
+      "module": "files",
       "environment": "renderer",
       "dependency": "preferences",
       "testOnly": false
@@ -680,6 +690,12 @@
       "module": "files",
       "environment": "renderer",
       "dependency": "threads",
+      "testOnly": false
+    },
+    {
+      "module": "files",
+      "environment": "renderer",
+      "dependency": "shared",
       "testOnly": false
     },
     {
@@ -692,6 +708,12 @@
       "module": "input",
       "environment": "contracts",
       "dependency": "threads",
+      "testOnly": false
+    },
+    {
+      "module": "input",
+      "environment": "contracts",
+      "dependency": "files",
       "testOnly": false
     },
     {
@@ -746,6 +768,12 @@
       "module": "changes",
       "environment": "main",
       "dependency": "files",
+      "testOnly": false
+    },
+    {
+      "module": "changes",
+      "environment": "main",
+      "dependency": "shared",
       "testOnly": false
     },
     {
@@ -951,14 +979,14 @@
     {
       "module": "app",
       "environment": "contracts",
-      "dependency": "files",
+      "dependency": "input",
       "targetEnvironment": "contracts",
       "testOnly": false
     },
     {
       "module": "app",
       "environment": "contracts",
-      "dependency": "input",
+      "dependency": "preferences",
       "targetEnvironment": "contracts",
       "testOnly": false
     },
@@ -967,13 +995,6 @@
       "environment": "contracts",
       "dependency": "shared",
       "targetEnvironment": "shared",
-      "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "contracts",
-      "dependency": "preferences",
-      "targetEnvironment": "contracts",
       "testOnly": false
     },
     {
@@ -1001,6 +1022,13 @@
       "module": "app",
       "environment": "contracts",
       "dependency": "execution",
+      "targetEnvironment": "contracts",
+      "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "contracts",
+      "dependency": "files",
       "targetEnvironment": "contracts",
       "testOnly": false
     },
@@ -1077,6 +1105,13 @@
     {
       "module": "app",
       "environment": "main",
+      "dependency": "changes",
+      "targetEnvironment": "main",
+      "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "main",
       "dependency": "execution",
       "targetEnvironment": "contracts",
       "testOnly": false
@@ -1100,13 +1135,6 @@
       "environment": "main",
       "dependency": "changes",
       "targetEnvironment": "contracts",
-      "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "main",
-      "dependency": "changes",
-      "targetEnvironment": "main",
       "testOnly": false
     },
     {
@@ -1315,15 +1343,15 @@
     {
       "module": "app",
       "environment": "renderer",
-      "dependency": "preferences",
-      "targetEnvironment": "renderer",
+      "dependency": "conversation",
+      "targetEnvironment": "core",
       "testOnly": true
     },
     {
       "module": "app",
       "environment": "renderer",
-      "dependency": "conversation",
-      "targetEnvironment": "core",
+      "dependency": "preferences",
+      "targetEnvironment": "renderer",
       "testOnly": true
     },
     {
@@ -1566,6 +1594,13 @@
     },
     {
       "module": "files",
+      "environment": "main",
+      "dependency": "shared",
+      "targetEnvironment": "shared",
+      "testOnly": false
+    },
+    {
+      "module": "files",
       "environment": "renderer",
       "dependency": "preferences",
       "targetEnvironment": "renderer",
@@ -1577,6 +1612,13 @@
       "dependency": "threads",
       "targetEnvironment": "contracts",
       "testOnly": true
+    },
+    {
+      "module": "files",
+      "environment": "renderer",
+      "dependency": "shared",
+      "targetEnvironment": "shared",
+      "testOnly": false
     },
     {
       "module": "files",
@@ -1595,9 +1637,23 @@
     {
       "module": "input",
       "environment": "contracts",
+      "dependency": "files",
+      "targetEnvironment": "contracts",
+      "testOnly": false
+    },
+    {
+      "module": "input",
+      "environment": "contracts",
       "dependency": "threads",
       "targetEnvironment": "contracts",
       "testOnly": false
+    },
+    {
+      "module": "input",
+      "environment": "core",
+      "dependency": "shared",
+      "targetEnvironment": "shared",
+      "testOnly": true
     },
     {
       "module": "input",
@@ -1630,6 +1686,13 @@
     {
       "module": "input",
       "environment": "main",
+      "dependency": "platform",
+      "targetEnvironment": "main",
+      "testOnly": true
+    },
+    {
+      "module": "input",
+      "environment": "main",
       "dependency": "threads",
       "targetEnvironment": "main",
       "testOnly": false
@@ -1672,6 +1735,20 @@
     {
       "module": "changes",
       "environment": "main",
+      "dependency": "shared",
+      "targetEnvironment": "shared",
+      "testOnly": true
+    },
+    {
+      "module": "changes",
+      "environment": "main",
+      "dependency": "shared",
+      "targetEnvironment": "shared",
+      "testOnly": false
+    },
+    {
+      "module": "changes",
+      "environment": "main",
       "dependency": "files",
       "targetEnvironment": "main",
       "testOnly": false
@@ -1682,6 +1759,13 @@
       "dependency": "threads",
       "targetEnvironment": "contracts",
       "testOnly": true
+    },
+    {
+      "module": "changes",
+      "environment": "renderer",
+      "dependency": "shared",
+      "targetEnvironment": "shared",
+      "testOnly": false
     },
     {
       "module": "changes",
@@ -2033,45 +2117,12 @@
       "sourceModule": "app",
       "sourceEnvironment": "contracts",
       "test": false,
-      "specifier": "zod",
-      "kind": "import",
-      "resolution": "external"
-    },
-    {
-      "from": "src/app/contracts/attachments.ts",
-      "sourceModule": "app",
-      "sourceEnvironment": "contracts",
-      "test": false,
-      "specifier": "../../modules/files/contracts/public",
-      "kind": "import",
-      "resolution": "module",
-      "to": "src/modules/files/contracts/public.ts",
-      "targetModule": "files",
-      "targetEnvironment": "contracts"
-    },
-    {
-      "from": "src/app/contracts/attachments.ts",
-      "sourceModule": "app",
-      "sourceEnvironment": "contracts",
-      "test": false,
       "specifier": "../../modules/input/contracts/public",
-      "kind": "import",
+      "kind": "export",
       "resolution": "module",
       "to": "src/modules/input/contracts/public.ts",
       "targetModule": "input",
       "targetEnvironment": "contracts"
-    },
-    {
-      "from": "src/app/contracts/attachments.ts",
-      "sourceModule": "app",
-      "sourceEnvironment": "contracts",
-      "test": false,
-      "specifier": "../../shared/identity",
-      "kind": "import",
-      "resolution": "module",
-      "to": "src/shared/identity.ts",
-      "targetModule": "shared",
-      "targetEnvironment": "shared"
     },
     {
       "from": "src/app/contracts/attention.ts",
@@ -2656,11 +2707,113 @@
       "targetEnvironment": "main"
     },
     {
+      "from": "src/app/main/ipc/attachments.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:events",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/attachments.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/attachments.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/attachments.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/attachments.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/attachments.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../contracts/attachments",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/attachments.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/main/ipc/attachments.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../wiring/app-storage",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/app-storage.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/ipc/attachments.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../wiring/attachment-service",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/attachment-service.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/ipc/attachments.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./attachments",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/ipc/attachments.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
       "from": "src/app/main/ipc/attachments.ts",
       "sourceModule": "app",
       "sourceEnvironment": "main",
       "test": false,
       "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/attachments.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "electron",
       "kind": "import",
       "resolution": "external"
     },
@@ -2921,6 +3074,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "main",
       "test": false,
+      "specifier": "../../../modules/changes/main/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/changes/main/public.ts",
+      "targetModule": "changes",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/ipc/context.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
       "specifier": "../../../modules/execution/contracts/public",
       "kind": "import",
       "resolution": "module",
@@ -2961,6 +3126,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/main/wiring/app-storage.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/ipc/context.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "./project-reads.operations",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/ipc/project-reads.operations.ts",
       "targetModule": "app",
       "targetEnvironment": "main"
     },
@@ -3319,6 +3496,27 @@
       "targetEnvironment": "main"
     },
     {
+      "from": "src/app/main/ipc/project-reads.operations.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "electron",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/project-reads.operations.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../shared/read-operation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/read-operation.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
       "from": "src/app/main/ipc/project-reads.test.ts",
       "sourceModule": "app",
       "sourceEnvironment": "main",
@@ -3437,18 +3635,6 @@
       "sourceModule": "app",
       "sourceEnvironment": "main",
       "test": false,
-      "specifier": "../../../modules/changes/main/public",
-      "kind": "import",
-      "resolution": "module",
-      "to": "src/modules/changes/main/public.ts",
-      "targetModule": "changes",
-      "targetEnvironment": "main"
-    },
-    {
-      "from": "src/app/main/ipc/project-reads.ts",
-      "sourceModule": "app",
-      "sourceEnvironment": "main",
-      "test": false,
       "specifier": "../../../modules/conversation/contracts/public",
       "kind": "import",
       "resolution": "module",
@@ -3491,6 +3677,18 @@
       "to": "src/modules/files/main/public.ts",
       "targetModule": "files",
       "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/ipc/project-reads.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../shared/read-operation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/read-operation.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
     },
     {
       "from": "src/app/main/ipc/project-reads.ts",
@@ -3551,6 +3749,18 @@
       "specifier": "zod",
       "kind": "import",
       "resolution": "external"
+    },
+    {
+      "from": "src/app/main/lifecycle/application.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../modules/changes/main/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/changes/main/public.ts",
+      "targetModule": "changes",
+      "targetEnvironment": "main"
     },
     {
       "from": "src/app/main/lifecycle/application.ts",
@@ -4174,6 +4384,66 @@
       "resolution": "module",
       "to": "src/platform/main/storage/public.ts",
       "targetModule": "platform",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./app-storage",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/app-storage.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./attachment-service",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/attachment-service.ts",
+      "targetModule": "app",
       "targetEnvironment": "main"
     },
     {
@@ -5680,6 +5950,36 @@
       "targetEnvironment": "contracts"
     },
     {
+      "from": "src/app/preload/bridges/project-reads.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": true,
+      "specifier": "electron",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/preload/bridges/project-reads.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/preload/bridges/project-reads.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": true,
+      "specifier": "./project-reads",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/preload/bridges/project-reads.ts",
+      "targetModule": "app",
+      "targetEnvironment": "preload"
+    },
+    {
       "from": "src/app/preload/bridges/project-reads.ts",
       "sourceModule": "app",
       "sourceEnvironment": "preload",
@@ -5723,6 +6023,18 @@
       "to": "src/modules/files/contracts/public.ts",
       "targetModule": "files",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/preload/bridges/project-reads.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": false,
+      "specifier": "../../../shared/read-operation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/read-operation.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
     },
     {
       "from": "src/app/preload/bridges/project-reads.ts",
@@ -6911,6 +7223,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": true,
+      "specifier": "../../../modules/conversation/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/core/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/app/renderer/reading/bounded-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
       "specifier": "../../../modules/preferences/renderer/public",
       "kind": "import",
       "resolution": "module",
@@ -6929,18 +7253,6 @@
       "to": "src/app/renderer/reading/history.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
-    },
-    {
-      "from": "src/app/renderer/reading/bounded-history.test.ts",
-      "sourceModule": "app",
-      "sourceEnvironment": "renderer",
-      "test": true,
-      "specifier": "../../../modules/conversation/core/public",
-      "kind": "dynamic-import",
-      "resolution": "module",
-      "to": "src/modules/conversation/core/public.ts",
-      "targetModule": "conversation",
-      "targetEnvironment": "core"
     },
     {
       "from": "src/app/renderer/reading/bounded-reading-renderer.test.ts",
@@ -10838,6 +11150,30 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/app/renderer/wiring/model.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../contracts/attachments",
+      "kind": "dynamic-import",
+      "resolution": "module",
+      "to": "src/app/contracts/attachments.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/wiring/model.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../contracts/attachments",
+      "kind": "dynamic-import",
+      "resolution": "module",
+      "to": "src/app/contracts/attachments.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
       "from": "src/app/renderer/wiring/model.ts",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -10979,6 +11315,63 @@
       "resolution": "external"
     },
     {
+      "from": "src/app/renderer/wiring/thread-attachments.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/wiring/thread-attachments.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/wiring/thread-attachments.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/input/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/wiring/thread-attachments.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../contracts/desktop-bridge",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/desktop-bridge.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/wiring/thread-attachments.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./thread-model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/wiring/thread-model.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/app/renderer/wiring/thread-model.ts",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -11037,6 +11430,18 @@
       "to": "src/modules/input/core/public.ts",
       "targetModule": "input",
       "targetEnvironment": "core"
+    },
+    {
+      "from": "src/app/renderer/wiring/thread-model.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/input/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/app/renderer/wiring/thread-model.ts",
@@ -11193,6 +11598,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": true,
+      "specifier": "../../../modules/input/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
       "specifier": "../../../modules/input/renderer/public",
       "kind": "import",
       "resolution": "module",
@@ -11319,6 +11736,30 @@
       "to": "src/modules/input/contracts/public.ts",
       "targetModule": "input",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/input/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/input/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/app/renderer/workbench/attachment-controls.tsx",
@@ -13287,6 +13728,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "../reading/reading-anchor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/reading/reading-anchor.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/thread-workbench.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "../reading/submissions",
       "kind": "import",
       "resolution": "module",
@@ -14712,6 +15165,36 @@
       "resolution": "external"
     },
     {
+      "from": "src/shared/read-operation.ts",
+      "sourceModule": "shared",
+      "sourceEnvironment": "shared",
+      "test": false,
+      "specifier": "ts-pattern",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/shared/read-operation.ts",
+      "sourceModule": "shared",
+      "sourceEnvironment": "shared",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/shared/read-operation.ts",
+      "sourceModule": "shared",
+      "sourceEnvironment": "shared",
+      "test": false,
+      "specifier": "./identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
       "from": "src/modules/files/contracts/public.ts",
       "sourceModule": "files",
       "sourceEnvironment": "contracts",
@@ -14729,6 +15212,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/modules/files/contracts/public.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "../../../shared/read-operation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/read-operation.ts",
       "targetModule": "shared",
       "targetEnvironment": "shared"
     },
@@ -14875,6 +15370,18 @@
       "sourceModule": "files",
       "sourceEnvironment": "main",
       "test": false,
+      "specifier": "../../../shared/read-operation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/read-operation.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/modules/files/main/project-files.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "main",
+      "test": false,
       "specifier": "../contracts/public",
       "kind": "import",
       "resolution": "module",
@@ -15041,6 +15548,63 @@
       "kind": "export",
       "resolution": "module",
       "to": "src/modules/files/main/project-reference-search.ts",
+      "targetModule": "files",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/files/main/read-resources.test.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:child_process",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/files/main/read-resources.test.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:fs/promises",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/files/main/read-resources.test.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/files/main/read-resources.test.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/files/main/read-resources.test.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/files/main/read-resources.test.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./project-files",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/files/main/project-files.ts",
       "targetModule": "files",
       "targetEnvironment": "main"
     },
@@ -15376,6 +15940,18 @@
       "sourceModule": "files",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "../../../shared/read-operation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/read-operation.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/modules/files/renderer/queries.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "../../threads/contracts/public",
       "kind": "import",
       "resolution": "module",
@@ -15393,6 +15969,51 @@
       "resolution": "module",
       "to": "src/modules/files/contracts/public.ts",
       "targetModule": "files",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/contracts/attachment-bridge.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/contracts/attachment-bridge.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "../../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/modules/input/contracts/attachment-bridge.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "../../files/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/files/contracts/public.ts",
+      "targetModule": "files",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/contracts/attachment-bridge.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "./attachment",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/attachment.ts",
+      "targetModule": "input",
       "targetEnvironment": "contracts"
     },
     {
@@ -15478,10 +16099,178 @@
       "sourceModule": "input",
       "sourceEnvironment": "contracts",
       "test": false,
+      "specifier": "./attachment-bridge",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/attachment-bridge.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/contracts/public.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "contracts",
+      "test": false,
       "specifier": "./draft",
       "kind": "export",
       "resolution": "module",
       "to": "src/modules/input/contracts/draft.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/core/attachments/attachment-model.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/core/attachments/attachment-model.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "../../../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/modules/input/core/attachments/attachment-model.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/core/attachments/attachment-model.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "./attachment-model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/attachments/attachment-model.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/core/attachments/attachment-model.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "zustand/vanilla",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/core/attachments/attachment-model.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "../../../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/modules/input/core/attachments/attachment-model.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/core/attachments/editor-history-model.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/core/attachments/editor-history-model.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "../../../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/modules/input/core/attachments/editor-history-model.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/core/attachments/editor-history-model.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "./editor-history-model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/attachments/editor-history-model.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/core/attachments/editor-history-model.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "zustand/vanilla",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/core/attachments/editor-history-model.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "../../../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/modules/input/core/attachments/editor-history-model.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
       "targetModule": "input",
       "targetEnvironment": "contracts"
     },
@@ -15589,12 +16378,48 @@
       "sourceModule": "input",
       "sourceEnvironment": "core",
       "test": false,
+      "specifier": "../../../shared/messages/contracts",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/messages/contracts.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/modules/input/core/draft-controller.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": false,
       "specifier": "../contracts/draft",
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/input/contracts/draft.ts",
       "targetModule": "input",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/core/public.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "./attachments/attachment-model",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/input/core/attachments/attachment-model.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/core/public.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "./attachments/editor-history-model",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/input/core/attachments/editor-history-model.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
     },
     {
       "from": "src/modules/input/core/public.ts",
@@ -15883,10 +16708,91 @@
       "sourceModule": "input",
       "sourceEnvironment": "main",
       "test": false,
+      "specifier": "./editor-history",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/main/attachments/editor-history.ts",
+      "targetModule": "input",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/input/main/attachments/attachment-store.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": false,
       "specifier": "./representation",
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/input/main/attachments/representation.ts",
+      "targetModule": "input",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/input/main/attachments/content-lifecycle.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/main/attachments/content-lifecycle.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/main/attachments/content-lifecycle.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/main/attachments/content-lifecycle.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/main/attachments/content-lifecycle.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/main/attachments/content-lifecycle.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../../../platform/main/storage/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/main/storage/public.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/input/main/attachments/content-lifecycle.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./content-lifecycle",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/main/attachments/content-lifecycle.ts",
       "targetModule": "input",
       "targetEnvironment": "main"
     },
@@ -15949,6 +16855,72 @@
       "to": "src/modules/input/contracts/public.ts",
       "targetModule": "input",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/main/attachments/editor-history.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/main/attachments/editor-history.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/main/attachments/editor-history.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./editor-history",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/main/attachments/editor-history.ts",
+      "targetModule": "input",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/input/main/attachments/editor-history.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/main/attachments/editor-history.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/main/attachments/editor-history.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "./content-lifecycle",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/main/attachments/content-lifecycle.ts",
+      "targetModule": "input",
+      "targetEnvironment": "main"
     },
     {
       "from": "src/modules/input/main/attachments/representation.ts",
@@ -16444,6 +17416,30 @@
       "sourceModule": "input",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/renderer/editor/draft-editor-cache.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../core/attachments/editor-history-model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/attachments/editor-history-model.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/renderer/editor/draft-editor-cache.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "../../core/draft-controller",
       "kind": "import",
       "resolution": "module",
@@ -16462,6 +17458,75 @@
       "to": "src/modules/input/renderer/editor/plain-text-editor.ts",
       "targetModule": "input",
       "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/editor/edit-action-history.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tiptap/core",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/editor/edit-action-history.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/editor/edit-action-history.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../clipboard/plain-text-paste",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/clipboard/plain-text-paste.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/editor/edit-action-history.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./plain-text-editor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/editor/plain-text-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/editor/edit-action-history.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tiptap/core",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/editor/edit-action-history.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tiptap/pm/history",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/editor/edit-action-history.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tiptap/pm/state",
+      "kind": "import",
+      "resolution": "external"
     },
     {
       "from": "src/modules/input/renderer/editor/plain-text-editor.ts",
@@ -16563,6 +17628,18 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/modules/input/renderer/editor/plain-text-editor.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./edit-action-history",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/editor/edit-action-history.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/modules/input/renderer/public.ts",
       "sourceModule": "input",
       "sourceEnvironment": "renderer",
@@ -16615,6 +17692,18 @@
       "sourceModule": "input",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "./references/attachment-editor",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/attachment-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/public.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "./references/attachment-reference",
       "kind": "export",
       "resolution": "module",
@@ -16643,6 +17732,51 @@
       "kind": "export",
       "resolution": "module",
       "to": "src/modules/input/renderer/references/selection-insert.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-editor.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tiptap/core",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-editor.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-editor.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../core/attachments/attachment-model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/attachments/attachment-model.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-editor.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./attachment-reference",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/attachment-reference.ts",
       "targetModule": "input",
       "targetEnvironment": "renderer"
     },
@@ -16930,12 +18064,153 @@
       "sourceModule": "changes",
       "sourceEnvironment": "contracts",
       "test": false,
+      "specifier": "../../../shared/read-operation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/read-operation.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/modules/changes/contracts/public.ts",
+      "sourceModule": "changes",
+      "sourceEnvironment": "contracts",
+      "test": false,
       "specifier": "../../files/contracts/public",
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/files/contracts/public.ts",
       "targetModule": "files",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/changes/main/git-read-runner.test.ts",
+      "sourceModule": "changes",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:child_process",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/changes/main/git-read-runner.test.ts",
+      "sourceModule": "changes",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/changes/main/git-read-runner.test.ts",
+      "sourceModule": "changes",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../../shared/read-operation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/read-operation.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/modules/changes/main/git-read-runner.test.ts",
+      "sourceModule": "changes",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./git-read-runner",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/changes/main/git-read-runner.ts",
+      "targetModule": "changes",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/changes/main/git-read-runner.ts",
+      "sourceModule": "changes",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:child_process",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/changes/main/git-read-runner.ts",
+      "sourceModule": "changes",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../shared/read-operation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/read-operation.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/modules/changes/main/project-git.integrity.test.ts",
+      "sourceModule": "changes",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:child_process",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/changes/main/project-git.integrity.test.ts",
+      "sourceModule": "changes",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:fs/promises",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/changes/main/project-git.integrity.test.ts",
+      "sourceModule": "changes",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/changes/main/project-git.integrity.test.ts",
+      "sourceModule": "changes",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/changes/main/project-git.integrity.test.ts",
+      "sourceModule": "changes",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:util",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/changes/main/project-git.integrity.test.ts",
+      "sourceModule": "changes",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/changes/main/project-git.integrity.test.ts",
+      "sourceModule": "changes",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./project-git",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/changes/main/project-git.ts",
+      "targetModule": "changes",
+      "targetEnvironment": "main"
     },
     {
       "from": "src/modules/changes/main/project-git.test.ts",
@@ -17008,15 +18283,6 @@
       "sourceModule": "changes",
       "sourceEnvironment": "main",
       "test": false,
-      "specifier": "node:child_process",
-      "kind": "import",
-      "resolution": "external"
-    },
-    {
-      "from": "src/modules/changes/main/project-git.ts",
-      "sourceModule": "changes",
-      "sourceEnvironment": "main",
-      "test": false,
       "specifier": "node:crypto",
       "kind": "import",
       "resolution": "external"
@@ -17044,6 +18310,18 @@
       "sourceModule": "changes",
       "sourceEnvironment": "main",
       "test": false,
+      "specifier": "../../../shared/read-operation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/read-operation.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/modules/changes/main/project-git.ts",
+      "sourceModule": "changes",
+      "sourceEnvironment": "main",
+      "test": false,
       "specifier": "../../files/main/public",
       "kind": "import",
       "resolution": "module",
@@ -17064,6 +18342,18 @@
       "targetEnvironment": "contracts"
     },
     {
+      "from": "src/modules/changes/main/project-git.ts",
+      "sourceModule": "changes",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "./git-read-runner",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/changes/main/git-read-runner.ts",
+      "targetModule": "changes",
+      "targetEnvironment": "main"
+    },
+    {
       "from": "src/modules/changes/main/public.ts",
       "sourceModule": "changes",
       "sourceEnvironment": "main",
@@ -17072,6 +18362,63 @@
       "kind": "export",
       "resolution": "module",
       "to": "src/modules/changes/main/project-git.ts",
+      "targetModule": "changes",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/changes/main/read-resources-benchmark.test.ts",
+      "sourceModule": "changes",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:child_process",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/changes/main/read-resources-benchmark.test.ts",
+      "sourceModule": "changes",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:fs/promises",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/changes/main/read-resources-benchmark.test.ts",
+      "sourceModule": "changes",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/changes/main/read-resources-benchmark.test.ts",
+      "sourceModule": "changes",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/changes/main/read-resources-benchmark.test.ts",
+      "sourceModule": "changes",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/changes/main/read-resources-benchmark.test.ts",
+      "sourceModule": "changes",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./git-read-runner",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/changes/main/git-read-runner.ts",
       "targetModule": "changes",
       "targetEnvironment": "main"
     },
@@ -17158,6 +18505,18 @@
       "specifier": "@tanstack/react-query",
       "kind": "import",
       "resolution": "external"
+    },
+    {
+      "from": "src/modules/changes/renderer/queries.ts",
+      "sourceModule": "changes",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../shared/read-operation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/read-operation.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
     },
     {
       "from": "src/modules/changes/renderer/queries.ts",
@@ -18406,6 +19765,18 @@
       "sourceModule": "execution",
       "sourceEnvironment": "contracts",
       "test": false,
+      "specifier": "./native-failure",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/native-failure.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/contracts/host.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "contracts",
+      "test": false,
       "specifier": "./queue",
       "kind": "import",
       "resolution": "module",
@@ -18480,6 +19851,57 @@
       "targetEnvironment": "shared"
     },
     {
+      "from": "src/modules/execution/contracts/native-failure.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "contracts",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/contracts/native-failure.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "contracts",
+      "test": true,
+      "specifier": "./host",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/host.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/contracts/native-failure.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "contracts",
+      "test": true,
+      "specifier": "./native-failure",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/native-failure.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/contracts/native-failure.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "ts-pattern",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/contracts/native-failure.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
       "from": "src/modules/execution/contracts/public.ts",
       "sourceModule": "execution",
       "sourceEnvironment": "contracts",
@@ -18512,6 +19934,18 @@
       "kind": "export",
       "resolution": "module",
       "to": "src/modules/execution/contracts/interactions.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/contracts/public.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "./native-failure",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/native-failure.ts",
       "targetModule": "execution",
       "targetEnvironment": "contracts"
     },
@@ -19074,6 +20508,72 @@
       "targetEnvironment": "contracts"
     },
     {
+      "from": "src/modules/execution/host/host-scope.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/host/host-scope.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": true,
+      "specifier": "./host-scope",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/host/host-scope.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "host"
+    },
+    {
+      "from": "src/modules/execution/host/host-scope.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "effect/Cause",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/host/host-scope.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "effect/Effect",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/host/host-scope.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "effect/Exit",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/host/host-scope.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "effect/Fiber",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/host/host-scope.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "effect/Scope",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
       "from": "src/modules/execution/host/interactions/interactions.test.ts",
       "sourceModule": "execution",
       "sourceEnvironment": "host",
@@ -19149,6 +20649,27 @@
       "targetEnvironment": "host"
     },
     {
+      "from": "src/modules/execution/host/native/native-request-failure.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/host/native/native-request-failure.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "../../contracts/native-failure",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/native-failure.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
       "from": "src/modules/execution/host/native/native-session.test.ts",
       "sourceModule": "execution",
       "sourceEnvironment": "host",
@@ -19201,6 +20722,18 @@
       "sourceModule": "execution",
       "sourceEnvironment": "host",
       "test": true,
+      "specifier": "./native-request-failure",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/host/native/native-request-failure.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "host"
+    },
+    {
+      "from": "src/modules/execution/host/native/native-session.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": true,
       "specifier": "./native-session",
       "kind": "import",
       "resolution": "module",
@@ -19231,7 +20764,52 @@
       "sourceModule": "execution",
       "sourceEnvironment": "host",
       "test": false,
-      "specifier": "effect",
+      "specifier": "effect/Cause",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/host/native/native-session.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "effect/Deferred",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/host/native/native-session.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "effect/Effect",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/host/native/native-session.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "effect/Exit",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/host/native/native-session.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "effect/Fiber",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/host/native/native-session.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "effect/Scope",
       "kind": "import",
       "resolution": "external"
     },
@@ -19288,10 +20866,34 @@
       "sourceModule": "execution",
       "sourceEnvironment": "host",
       "test": false,
+      "specifier": "../../contracts/native-failure",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/native-failure.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/host/native/native-session.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
       "specifier": "./native-bootstrap",
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/execution/host/native/native-bootstrap.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "host"
+    },
+    {
+      "from": "src/modules/execution/host/native/native-session.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "./native-request-failure",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/host/native/native-request-failure.ts",
       "targetModule": "execution",
       "targetEnvironment": "host"
     },
@@ -19501,6 +21103,18 @@
       "sourceModule": "execution",
       "sourceEnvironment": "host",
       "test": true,
+      "specifier": "./native/native-request-failure",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/host/native/native-request-failure.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "host"
+    },
+    {
+      "from": "src/modules/execution/host/session-host.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": true,
       "specifier": "./native/native-session",
       "kind": "import",
       "resolution": "module",
@@ -19624,6 +21238,18 @@
       "sourceModule": "execution",
       "sourceEnvironment": "host",
       "test": false,
+      "specifier": "../contracts/native-failure",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/native-failure.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/host/session-host.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
       "specifier": "../contracts/public",
       "kind": "import",
       "resolution": "module",
@@ -19672,10 +21298,34 @@
       "sourceModule": "execution",
       "sourceEnvironment": "host",
       "test": false,
+      "specifier": "./host-scope",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/host/host-scope.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "host"
+    },
+    {
+      "from": "src/modules/execution/host/session-host.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
       "specifier": "./interactions/interactions",
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/execution/host/interactions/interactions.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "host"
+    },
+    {
+      "from": "src/modules/execution/host/session-host.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "./native/native-request-failure",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/host/native/native-request-failure.ts",
       "targetModule": "execution",
       "targetEnvironment": "host"
     },
@@ -20024,6 +21674,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/execution/contracts/host.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/main/runtime/runtime-service.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../contracts/native-failure",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/native-failure.ts",
       "targetModule": "execution",
       "targetEnvironment": "contracts"
     },
@@ -20665,6 +22327,18 @@
       "to": "src/modules/execution/renderer/submission/submission-model.ts",
       "targetModule": "execution",
       "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/execution/renderer/submission/submission-model.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../input/contracts/public",
+      "kind": "dynamic-import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/modules/execution/renderer/submission/submission-model.ts",

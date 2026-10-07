@@ -1,4 +1,7 @@
-import { ConversationModel } from "../../../modules/conversation/core/public";
+import {
+  ConversationModel,
+  ReadingPositions,
+} from "../../../modules/conversation/core/public";
 import type { RuntimeView } from "../../../modules/execution/contracts/public";
 import {
   RuntimeModel,
@@ -27,6 +30,7 @@ export class ThreadModel {
   readonly reading: ConversationModel | null = null;
   /** View coordinates only; native history/content remain owned by OMP. */
   readonly readingPositions = new Map<ReadingView, number>();
+  readonly readingSources = new ReadingPositions();
   private previousRuntimeView: RuntimeView | null = null;
   private runtimeReadingUnsubscribe: (() => void) | null = null;
   private disposed = false;
@@ -159,6 +163,7 @@ export class ThreadModel {
     if (this.disposed) return;
     this.disposed = true;
     this.readingPositions.clear();
+    this.readingSources.dispose();
     this.submission?.dispose();
     this.attachments?.dispose();
     this.attachmentImports?.dispose();

@@ -1,7 +1,7 @@
 # 05 阅读内容锚点
 
-Status: open
-Blocked by: 03
+Status: claimed
+Blocked by: none
 
 阶段：基建，改善既有 M2 路径。范围、授权、唯一拥有者、跨边界合同、完整验收与未覆盖层级以 [spec](../spec.md) 中目标 05 为准；证据与取舍见 [独立研究](../research.md)。
 
@@ -10,3 +10,5 @@ Blocked by: 03
 ## Comments
 
 - 2026-10-07：已建立文档与契约，尚未声明实现通过。
+
+- 2026-10-07：实现已串行集成；逐项工程证据见 [记录](../evidence/05-reading.md)，等待07组合检查和独立两轴复核后结算。
