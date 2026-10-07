@@ -247,6 +247,16 @@ export async function validateTrustedClipboard({
           "/复制时冻结|Frozen on copy/i.test(document.body.textContent)",
         ),
       );
+      const provenanceVisible = await evaluate(`(()=>{
+        const versions=${JSON.stringify(clones.map((clone) => clone.frozenReference.version))};
+        const details=Array.from(document.querySelectorAll('details')).filter(node=>versions.some(version=>node.textContent.includes(version))&&node.querySelector('time'));
+        if(details.length!==2)return false;
+        for(const node of details)node.querySelector('summary').click();
+        const visible=details.every(node=>node.open&&node.querySelector('dl').getBoundingClientRect().height>0);
+        document.querySelector('.tiptap').focus();
+        return visible;
+      })()`);
+      assert.equal(provenanceVisible, true);
       frozen = {
         differentProjects: true,
         deletedSourcePreserved: true,
@@ -255,6 +265,7 @@ export async function validateTrustedClipboard({
         directEntriesOnly: true,
         frozenLabelVisible: true,
         provenanceVerified: true,
+        provenanceDetailsVisible: true,
         fileVersion: clones[0].frozenReference.version,
         directoryVersion: clones[1].frozenReference.version,
       };
