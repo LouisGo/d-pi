@@ -9,6 +9,8 @@ export const ui = {
     "原生历史只读，按保存顺序分页显示，与实时列表分别呈现。",
   "ui.history.refreshStart": "刷新会从当前来源的起始页重新读取。",
   "ui.history.returnLive": "返回实时阅读",
+  "ui.history.catalogUnavailableReason":
+    "无法发现项目历史：{reason}。仍可尝试读取当前 d-pi 绑定的记录。",
   "ui.history.notRead": "尚未读取绑定会话的原生历史。",
 
   "attachment.clipboardFallback":

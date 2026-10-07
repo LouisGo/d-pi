@@ -10,6 +10,8 @@ export const ui = {
   "ui.history.refreshStart":
     "Refresh reads this source again from its first page.",
   "ui.history.returnLive": "Return to live reading",
+  "ui.history.catalogUnavailableReason":
+    "Project history discovery is unavailable: {reason}. You can still try the bound d-pi session record.",
   "ui.history.notRead": "The bound session history has not been read yet.",
 
   "attachment.clipboardFallback":
@@ -499,7 +501,7 @@ export const ui = {
   "ui.conversation.heading": "Conversation",
   "ui.conversation.empty": "Start a conversation below.",
   "ui.conversation.gap":
-    "Some content is missing from this view. Read the native history below to check it.",
+    "The live view has a gap. Check native history; returning to the bottom does not fill it.",
   "ui.conversation.streaming": "In progress",
   "ui.conversation.failed": "Failed",
   "ui.conversation.copy": "Copy",
