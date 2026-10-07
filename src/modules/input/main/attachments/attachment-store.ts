@@ -852,7 +852,9 @@ export class AttachmentStore {
     const representation = identifyContent(
       bytes,
       record.attachment.mimeType,
-      record.attachment.name,
+      record.attachment.frozenReference?.kind === "directory"
+        ? "directory"
+        : record.attachment.name,
     );
     const attachment = { ...record.attachment, coverageGaps: [] as string[] };
     delete attachment.reason;
