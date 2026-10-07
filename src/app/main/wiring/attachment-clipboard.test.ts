@@ -128,7 +128,7 @@ it("copies only owned selected private images, freezes through cut/GC, remaps ev
   }
 });
 
-it("refuses foreign source assets/forged instance and makes dynamic references readable without transporting the source token", async () => {
+it("refuses foreign source assets, forged instances and missing references without creating partial target assets", async () => {
   const root = realpathSync(mkdtempSync(join(tmpdir(), "dpi-clipboard-auth-")));
   const storage = AppStorage.open(join(root, "app.sqlite"));
   const service = createAttachmentService(
@@ -180,7 +180,7 @@ it("refuses foreign source assets/forged instance and makes dynamic references r
         },
         "document",
       ),
-    ).toMatchObject({ kind: "clipboard-exported", degraded: true });
+    ).toMatchObject({ kind: "clipboard-unavailable", reason: "failed" });
     const imported = await service.execute(
       {
         threadId: target.threadId,
@@ -191,14 +191,10 @@ it("refuses foreign source assets/forged instance and makes dynamic references r
       "target-document",
     );
     expect(imported).toMatchObject({
-      kind: "clipboard-imported",
-      items: [],
-      degraded: true,
+      kind: "clipboard-unavailable",
+      reason: "invalid",
     });
-    if (imported.kind === "clipboard-imported") {
-      expect(imported.text).toBe("[d-pi:dynamic-reference README.md]");
-      expect(imported.text).not.toContain(ref.id);
-    }
+    expect(await service.store.list(target.threadId)).toEqual([]);
     expect(
       await service.execute(
         {
