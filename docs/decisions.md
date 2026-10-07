@@ -38,7 +38,7 @@
 | D-14 | Diff 是跨场景组件；Git Panel 自建 OMP 业务 GUI，Git 机制复用 | 2026-09-25 不建设完整通用 Git 客户端，不等待完整 Git GUI 大库；20/80 非工时承诺 |
 | D-15 | 从设计起点预留 Agent Changes / Run Changes / Review / Revert | Run 边界、修改归属与 Revert 效果未确认，不能先绑定命令；当前来源合同由 D-20 约束 |
 | D-16 | Codex 式常规布局，暂不分屏；统一图标；基础复制和段落 PNG 导出 | 取代自由分屏作为当前要求；图标库由 D-31 确认，PNG 导出实现未定，PNG 不是 AI 绘图 |
-| D-17 | Biome 替代 ESLint/Prettier；S1 首个正式 GUI 接入 @shadcn/lint + Oxlint 设计检查 | 2026-09-27 取代条件接入设计 lint 的时机；不得关闭规则迁就违规，不覆盖用户项目格式化。见[设计系统合同](architecture/design-system.md) |
+| D-17 | Biome 替代 ESLint/Prettier；S1 首个正式 GUI 接入 @shadcn/lint + Oxlint 设计检查 | 2026-09-27 取代条件接入设计 lint 的时机；不得关闭规则迁就违规，不覆盖用户项目格式化。2026-10-07 用户明确设置采用大Modal、语言移入设置、新会话与项目加号归侧栏；主题增加system及独立图标，应用控件取消outline，以共享背景/文字表达键盘焦点。见[设计系统合同](architecture/design-system.md) |
 | D-18 | 保留旧基线证据，逐项复用，不直接恢复旧 UI | 2026-09-30 用户选择精准瘦身，取代归档“保持原样不动”和“整理不等于删除”的绝对表述；保留 26 个证据文件，移除 23 个无引用脚手架。保留文件与源提交一致，裁剪路径/哈希/理由及取回方式见[归档说明](archive/pre-reset/README.md)与 [manifest 的 pruned](archive/pre-reset/manifest.json)；归档仍非现行实现或执行指令 |
 | D-19 | 方案先收敛并记录，再按用户明确阶段授权实施 | 2026-09-25 的“仅设计与调查”描述当时范围，后续明确授权可取代它；不由 Agent 自认批准，不以历史阶段限制覆盖新授权 |
 | D-20 | 首版 Diff 交付 Git 当前差异与有原生证据的工具修改，明确标注来源；完整 Run Changes 和逐次归属后续 | 2026-09-25 用户接受“先保证差异来源准确”，由 P-03 转为确认；不将全部目录变化冒称 AI 改动。见[变化来源合同](product/first-release.md#3-变化记录先明确证据再展示-diff) |

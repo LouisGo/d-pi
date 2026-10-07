@@ -16,6 +16,7 @@ import { Diagnostics } from "./diagnostics";
 import { WorkbenchHostsContext } from "./layout/hosts-context";
 import { WorkbenchFrame } from "./layout/workbench-frame";
 import {
+  AppearanceSettings,
   PreferenceToolbar,
   ThreadNavigationControls,
 } from "./preference-toolbar";
@@ -156,21 +157,21 @@ function SettingsNavigation() {
   const { t } = useI18n();
   return (
     <nav className="settings-navigation" aria-label={t("app.layout.settings")}>
-      {(["configuration", "attention", "diagnostics"] as const).map(
-        (section) => (
-          <Button
-            key={section}
-            variant="navigation"
-            onClick={() =>
-              document
-                .getElementById(`settings-${section}`)
-                ?.scrollIntoView({ block: "start" })
-            }
-          >
-            {t(`app.layout.${section}`)}
-          </Button>
-        ),
-      )}
+      {(
+        ["appearance", "configuration", "attention", "diagnostics"] as const
+      ).map((section) => (
+        <Button
+          key={section}
+          variant="navigation"
+          onClick={() =>
+            document
+              .getElementById(`settings-${section}`)
+              ?.scrollIntoView({ block: "start" })
+          }
+        >
+          {t(`app.layout.${section}`)}
+        </Button>
+      ))}
     </nav>
   );
 }
@@ -178,6 +179,10 @@ function SettingsSurface({ model }: { model: AppModel }) {
   const { t } = useI18n();
   return (
     <>
+      <section id="settings-appearance" className="settings-section">
+        <h2>{t("app.layout.appearance")}</h2>
+        <AppearanceSettings model={model} />
+      </section>
       <section id="settings-configuration" className="settings-section">
         <h2>{t("app.layout.configuration")}</h2>
         <ThreadConfiguration model={model} />
@@ -188,7 +193,7 @@ function SettingsSurface({ model }: { model: AppModel }) {
       </section>
       <section id="settings-diagnostics" className="settings-section">
         <h2>{t("app.layout.diagnostics")}</h2>
-        <Diagnostics />
+        <Diagnostics contained />
       </section>
     </>
   );

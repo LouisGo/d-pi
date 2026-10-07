@@ -323,6 +323,33 @@ function renderCounts() {
   );
 }
 
+it("places Thread creation and project opening in the sidebar and settings in a modal over mounted work", async () => {
+  const fixture = await setup();
+  const sidebar = fixture.container.querySelector(".primary-sidebar");
+  expect(sidebar?.querySelector("[data-new-thread]")?.textContent).toContain(
+    i18n.t("app.toolbar.newThread"),
+  );
+  expect(
+    sidebar?.querySelector(".sidebar-label button")?.getAttribute("aria-label"),
+  ).toBe(i18n.t("app.empty.choose"));
+  expect(fixture.container.querySelector(".toolbar select")).toBeNull();
+  const work = fixture.container.querySelector(".conversation-body");
+  const controller = fixture.model.controller;
+  await act(() => fixture.button(i18n.t("app.layout.settings")).click());
+  const modal = document.querySelector(".ui-settings-modal");
+  expect(modal?.getAttribute("role")).toBe("dialog");
+  expect(modal?.querySelector("#settings-appearance select")).not.toBeNull();
+  expect(fixture.container.querySelector(".conversation-body")).toBe(work);
+  expect(work?.hasAttribute("hidden")).toBe(false);
+  expect(fixture.model.controller).toBe(controller);
+  const close = modal?.querySelector<HTMLButtonElement>("[aria-label='Close']");
+  if (!close) throw Error("missing modal close");
+  await act(() => close.click());
+  expect(
+    document.querySelector(".ui-settings-modal")?.hasAttribute("hidden"),
+  ).toBe(true);
+});
+
 it("keeps normal controls and Thread views untouched while saving a theme", async () => {
   const fixture = await setup();
   const initial = renderCounts();
@@ -339,7 +366,9 @@ it("keeps normal controls and Thread views untouched while saving a theme", asyn
     fixture.settle();
     await saving;
   });
-  expect(fixture.button(i18n.t("app.toolbar.lightTheme")).disabled).toBe(false);
+  expect(fixture.button(i18n.t("app.toolbar.systemTheme")).disabled).toBe(
+    false,
+  );
   expect(document.documentElement.dataset.theme).toBe("dark");
   expect(renderCounts()).toEqual(initial);
 });
@@ -580,7 +609,10 @@ it("still updates localized workbench text when the language context changes", a
   expect(fixture.container.textContent).toContain(
     i18n.t("ui.conversation.heading"),
   );
-  const language = fixture.container.querySelector("select");
+  await act(() => fixture.button(i18n.t("app.layout.settings")).click());
+  const language = document.querySelector<HTMLSelectElement>(
+    "#settings-appearance select",
+  );
   if (!language) throw Error("missing language selector");
   await act(async () => {
     language.value = "zh-CN";

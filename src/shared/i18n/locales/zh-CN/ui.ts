@@ -642,8 +642,10 @@ export const ui = {
   "app.layout.showBottom": "恢复底部面板",
   "app.layout.temporarilyHidden":
     "窗口空间不足，面板暂时隐藏。扩大窗口可恢复。",
-  "app.layout.appearance": "外观与语言",
+  "app.layout.appearance": "外观",
   "app.layout.configuration": "配置",
   "app.layout.attention": "提醒",
   "app.layout.diagnostics": "诊断",
+  "app.toolbar.systemTheme": "跟随系统外观",
+  "app.layout.theme": "主题",
 } as const;

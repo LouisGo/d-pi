@@ -239,16 +239,17 @@ async function evaluate(expression) {
   return reply.result.value;
 }
 async function click(text) {
+  const predicate = `b => (b.textContent.trim() === ${JSON.stringify(text)} || b.getAttribute('aria-label') === ${JSON.stringify(text)}) && !b.disabled && !b.closest('[hidden],[inert]') && b.getBoundingClientRect().width > 0 && getComputedStyle(b).visibility !== 'hidden'`;
   await wait(
     () =>
       evaluate(
-        `Array.from(document.querySelectorAll('button')).some(b=>b.textContent.trim()===${JSON.stringify(text)}&&!b.disabled)`,
+        `Array.from(document.querySelectorAll('button')).some(${predicate})`,
       ),
     30000,
     `button available: ${text}`,
   );
   await evaluate(
-    `Array.from(document.querySelectorAll('button')).find(b=>b.textContent.trim()===${JSON.stringify(text)}).click()`,
+    `Array.from(document.querySelectorAll('button')).find(${predicate}).click()`,
   );
 }
 async function selectThread(id) {
@@ -406,7 +407,45 @@ try {
       "packaged workbench uses one native header, navigation after controls, compact default, closed empty hosts and centered icons with out-of-flow indicators",
     );
     screenshots.push(await shot("workbench-header"));
+    await click("跟随系统外观");
+    await wait(() =>
+      evaluate(
+        "!!document.querySelector('.toolbar [data-theme-preference=system]')",
+      ),
+    );
+    assert.equal(
+      db.prepare("SELECT theme FROM desktop WHERE id=1").get().theme,
+      "system",
+    );
+    await click("切换为浅色主题");
+    await wait(() =>
+      evaluate("document.documentElement.dataset.theme==='light'"),
+    );
+    await click("切换为深色主题");
+    await wait(() =>
+      evaluate("document.documentElement.dataset.theme==='dark'"),
+    );
+    checks.push(
+      "packaged Main persists system theme and retains the three-mode cycle with legacy density unchanged",
+    );
   }
+  await click("设置");
+  await evaluate(
+    "document.querySelector('[data-diagnostics-trigger=global]').click()",
+  );
+  await wait(() =>
+    evaluate("!!document.querySelector('[data-diagnostics-panel]')"),
+  );
+  assert.equal(
+    await evaluate(
+      "(()=>{const p=document.querySelector('[data-diagnostics-panel]'),input=p.querySelector('input');input.focus();return !!p.closest('.ui-settings-modal')&&document.activeElement===input;})()",
+    ),
+    true,
+  );
+  await evaluate("document.querySelector('[data-diagnostics-close]').click()");
+  checks.push(
+    "settings Modal retains an operable diagnostics panel within its focus scope",
+  );
   await evaluate("document.querySelector('.configuration-settings').open=true");
   await wait(() =>
     evaluate(
@@ -434,6 +473,7 @@ try {
   await evaluate(
     "document.querySelector('.configuration-settings').open=false",
   );
+  await click("关闭");
   await click("允许执行并启动");
   await wait(() =>
     evaluate(

@@ -16,6 +16,7 @@ import {
 import { IconButton } from "@/components/ui/icon-button";
 import { NavigationOverlay } from "@/components/ui/navigation-overlay";
 import { ResizableSplit } from "@/components/ui/resizable";
+import { SettingsModal } from "@/components/ui/settings-modal";
 import {
   type WorkspaceTab,
   WorkspaceTabs,
@@ -76,6 +77,7 @@ export function WorkbenchFrame({
   const focusedNavigation = useRef<number | null>(null);
   const [overlay, setOverlay] = useState(false);
   const frame = useRef<HTMLDivElement>(null);
+  const settingsTrigger = useRef<HTMLButtonElement>(null);
   const navigationTrigger = useRef<HTMLButtonElement>(null);
   const workspaceTrigger = useRef<HTMLButtonElement>(null);
   const bottomTrigger = useRef<HTMLButtonElement>(null);
@@ -154,7 +156,7 @@ export function WorkbenchFrame({
   useLayoutEffect(() => {
     if (geometry.sidebar.visible) setOverlay(false);
   }, [geometry.sidebar.visible]);
-  const sidebarContent = settingsOpen ? settingsNavigation : sidebar;
+  const sidebarContent = sidebar;
   const toggleSidebar = () => {
     if (
       !geometry.sidebar.visible &&
@@ -240,6 +242,7 @@ export function WorkbenchFrame({
           </IconButton>
           <div className="rail-spacer" />
           <IconButton
+            ref={settingsTrigger}
             label={t("app.layout.settings")}
             variant="navigation"
             aria-pressed={settingsOpen}
@@ -344,26 +347,27 @@ export function WorkbenchFrame({
                     {t("app.layout.temporarilyHidden")}
                   </p>
                 )}
-                <div
-                  ref={work}
-                  className="conversation-body"
-                  hidden={settingsOpen}
-                >
+                <div ref={work} className="conversation-body">
                   {children}
-                </div>
-                <div className="settings-surface" hidden={!settingsOpen}>
-                  {settings}
                 </div>
               </div>
             </ResizableSplit>
           </ResizableSplit>
         </ResizableSplit>
+        <SettingsModal
+          open={settingsOpen}
+          onClose={reveal}
+          title={t("app.layout.settings")}
+          closeLabel={t("app.layout.close")}
+          returnFocus={settingsTrigger}
+          navigation={settingsNavigation}
+        >
+          {settings}
+        </SettingsModal>
         <NavigationOverlay
           open={overlay}
           onClose={() => setOverlay(false)}
-          title={
-            settingsOpen ? t("app.layout.settings") : t("app.layout.sidebar")
-          }
+          title={t("app.layout.sidebar")}
           closeLabel={t("app.layout.close")}
           returnFocus={navigationTrigger}
           nativeInset={
@@ -375,7 +379,9 @@ export function WorkbenchFrame({
             onClick={(event) => {
               if (
                 event.target instanceof Element &&
-                event.target.closest("[data-thread-navigation]")
+                event.target.closest(
+                  "[data-thread-navigation], [data-new-thread], [data-choose-project]",
+                )
               )
                 setOverlay(false);
             }}

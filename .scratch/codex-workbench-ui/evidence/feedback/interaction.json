@@ -1,0 +1,438 @@
+{
+  "states": [
+    {
+      "theme": "light",
+      "density": "default",
+      "styles": [
+        {
+          "selector": "#probe-body",
+          "cursor": "default",
+          "select": "none",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(36, 39, 48)"
+        },
+        {
+          "selector": "#probe-icon svg",
+          "cursor": "default",
+          "select": "none",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(36, 39, 48)"
+        },
+        {
+          "selector": "#probe-summary",
+          "cursor": "default",
+          "select": "none",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(36, 39, 48)"
+        },
+        {
+          "selector": "#probe-file-summary",
+          "cursor": "default",
+          "select": "none",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(96, 103, 117)"
+        },
+        {
+          "selector": "#probe-link",
+          "cursor": "default",
+          "select": "none",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(55, 87, 188)"
+        },
+        {
+          "selector": "#probe-navigation",
+          "cursor": "default",
+          "select": "none",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(96, 103, 117)"
+        },
+        {
+          "selector": "#probe-selected",
+          "cursor": "default",
+          "select": "none",
+          "background": "color(srgb 0.913725 0.927529 0.971098)",
+          "color": "color(srgb 0.199294 0.299765 0.616471)"
+        },
+        {
+          "selector": "#probe-disabled",
+          "cursor": "default",
+          "select": "none",
+          "background": "rgb(55, 87, 188)",
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "selector": "#probe-portal",
+          "cursor": "default",
+          "select": "none",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(36, 39, 48)"
+        },
+        {
+          "selector": "#probe-reading-button",
+          "cursor": "default",
+          "select": "none",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(36, 39, 48)"
+        },
+        {
+          "selector": "#probe-check",
+          "cursor": "default",
+          "select": "none",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(36, 39, 48)"
+        },
+        {
+          "selector": "#probe-checkbox-label",
+          "cursor": "default",
+          "select": "none",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(36, 39, 48)"
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "density": "default",
+      "styles": [
+        {
+          "selector": "#probe-body",
+          "cursor": "default",
+          "select": "none",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(232, 235, 242)"
+        },
+        {
+          "selector": "#probe-icon svg",
+          "cursor": "default",
+          "select": "none",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(43, 46, 55)"
+        },
+        {
+          "selector": "#probe-summary",
+          "cursor": "default",
+          "select": "none",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(232, 235, 242)"
+        },
+        {
+          "selector": "#probe-file-summary",
+          "cursor": "default",
+          "select": "none",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(165, 173, 189)"
+        },
+        {
+          "selector": "#probe-link",
+          "cursor": "default",
+          "select": "none",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(168, 193, 255)"
+        },
+        {
+          "selector": "#probe-navigation",
+          "cursor": "default",
+          "select": "none",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(98, 105, 120)"
+        },
+        {
+          "selector": "#probe-selected",
+          "cursor": "default",
+          "select": "none",
+          "background": "oklab(0.923733 0.000494904 -0.015813)",
+          "color": "oklab(0.457798 -0.00590833 -0.132548)"
+        },
+        {
+          "selector": "#probe-disabled",
+          "cursor": "default",
+          "select": "none",
+          "background": "rgb(59, 91, 190)",
+          "color": "rgb(247, 247, 249)"
+        },
+        {
+          "selector": "#probe-portal",
+          "cursor": "default",
+          "select": "none",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(232, 235, 242)"
+        },
+        {
+          "selector": "#probe-reading-button",
+          "cursor": "default",
+          "select": "none",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(43, 46, 55)"
+        },
+        {
+          "selector": "#probe-check",
+          "cursor": "default",
+          "select": "none",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(232, 235, 242)"
+        },
+        {
+          "selector": "#probe-checkbox-label",
+          "cursor": "default",
+          "select": "none",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(232, 235, 242)"
+        }
+      ]
+    },
+    {
+      "selector": "#probe-button",
+      "resting": {
+        "background": "rgb(168, 193, 255)",
+        "color": "rgb(22, 38, 73)",
+        "outline": "none",
+        "decoration": "none",
+        "border": "rgba(0, 0, 0, 0)"
+      },
+      "hovered": {
+        "background": "color(srgb 0.683922 0.773333 0.994902)",
+        "color": "rgb(22, 38, 73)",
+        "outline": "none",
+        "decoration": "none",
+        "border": "rgba(0, 0, 0, 0)"
+      },
+      "pressed": {
+        "background": "color(srgb 0.714039 0.793098 0.988784)",
+        "color": "rgb(22, 38, 73)",
+        "outline": "none",
+        "decoration": "none",
+        "border": "rgba(0, 0, 0, 0)"
+      },
+      "focused": {
+        "background": "color(srgb 0.714039 0.793098 0.988784)",
+        "color": "rgb(22, 38, 73)",
+        "outline": "none",
+        "decoration": "none",
+        "border": "rgba(0, 0, 0, 0)"
+      }
+    },
+    {
+      "selector": "#probe-icon",
+      "resting": {
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(232, 235, 242)",
+        "outline": "none",
+        "decoration": "none",
+        "border": "rgba(0, 0, 0, 0)"
+      },
+      "hovered": {
+        "background": "color(srgb 0.188078 0.205647 0.244235)",
+        "color": "rgb(232, 235, 242)",
+        "outline": "none",
+        "decoration": "none",
+        "border": "rgba(0, 0, 0, 0)"
+      },
+      "pressed": {
+        "background": "color(srgb 0.184157 0.208902 0.267059)",
+        "color": "color(srgb 0.714039 0.793098 0.988784)",
+        "outline": "none",
+        "decoration": "none",
+        "border": "rgba(0, 0, 0, 0)"
+      },
+      "focused": {
+        "background": "color(srgb 0.188078 0.205647 0.244235)",
+        "color": "rgb(232, 235, 242)",
+        "outline": "none",
+        "decoration": "none",
+        "border": "rgba(0, 0, 0, 0)"
+      }
+    },
+    {
+      "selector": "#probe-summary",
+      "resting": {
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(232, 235, 242)",
+        "outline": "none",
+        "decoration": "none",
+        "border": "rgb(232, 235, 242)"
+      },
+      "hovered": {
+        "background": "color(srgb 0.188078 0.205647 0.244235)",
+        "color": "rgb(232, 235, 242)",
+        "outline": "none",
+        "decoration": "none",
+        "border": "rgb(232, 235, 242)"
+      },
+      "pressed": {
+        "background": "color(srgb 0.184157 0.208902 0.267059)",
+        "color": "color(srgb 0.714039 0.793098 0.988784)",
+        "outline": "none",
+        "decoration": "none",
+        "border": "color(srgb 0.714039 0.793098 0.988784)"
+      },
+      "focused": {
+        "background": "color(srgb 0.184157 0.208902 0.267059)",
+        "color": "color(srgb 0.714039 0.793098 0.988784)",
+        "outline": "none",
+        "decoration": "none",
+        "border": "color(srgb 0.714039 0.793098 0.988784)"
+      }
+    },
+    {
+      "selector": "#probe-link",
+      "resting": {
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(168, 193, 255)",
+        "outline": "none",
+        "decoration": "underline",
+        "border": "rgb(168, 193, 255)"
+      },
+      "hovered": {
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "color(srgb 0.683922 0.773333 0.994902)",
+        "outline": "none",
+        "decoration": "underline",
+        "border": "color(srgb 0.683922 0.773333 0.994902)"
+      },
+      "pressed": {
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "color(srgb 0.714039 0.793098 0.988784)",
+        "outline": "none",
+        "decoration": "underline",
+        "border": "color(srgb 0.714039 0.793098 0.988784)"
+      },
+      "focused": {
+        "background": "color(srgb 0.184157 0.208902 0.267059)",
+        "color": "rgb(168, 193, 255)",
+        "outline": "none",
+        "decoration": "underline",
+        "border": "rgb(168, 193, 255)"
+      }
+    },
+    {
+      "selector": "#probe-navigation",
+      "resting": {
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(165, 173, 189)",
+        "outline": "none",
+        "decoration": "none",
+        "border": "rgba(0, 0, 0, 0)"
+      },
+      "hovered": {
+        "background": "color(srgb 0.188078 0.205647 0.244235)",
+        "color": "rgb(232, 235, 242)",
+        "outline": "none",
+        "decoration": "none",
+        "border": "rgba(0, 0, 0, 0)"
+      },
+      "pressed": {
+        "background": "color(srgb 0.184157 0.208902 0.267059)",
+        "color": "color(srgb 0.714039 0.793098 0.988784)",
+        "outline": "none",
+        "decoration": "none",
+        "border": "rgba(0, 0, 0, 0)"
+      },
+      "focused": {
+        "background": "color(srgb 0.188078 0.205647 0.244235)",
+        "color": "rgb(232, 235, 242)",
+        "outline": "none",
+        "decoration": "none",
+        "border": "rgba(0, 0, 0, 0)"
+      }
+    },
+    {
+      "selector": "#probe-selected",
+      "resting": {
+        "background": "color(srgb 0.184157 0.208902 0.267059)",
+        "color": "color(srgb 0.714039 0.793098 0.988784)",
+        "outline": "none",
+        "decoration": "none",
+        "border": "rgba(0, 0, 0, 0)"
+      },
+      "hovered": {
+        "background": "color(srgb 0.188078 0.205647 0.244235)",
+        "color": "rgb(232, 235, 242)",
+        "outline": "none",
+        "decoration": "none",
+        "border": "rgb(168, 193, 255)"
+      },
+      "pressed": {
+        "background": "color(srgb 0.184157 0.208902 0.267059)",
+        "color": "color(srgb 0.714039 0.793098 0.988784)",
+        "outline": "none",
+        "decoration": "none",
+        "border": "color(srgb 0.714039 0.793098 0.988784)"
+      },
+      "focused": {
+        "background": "color(srgb 0.188078 0.205647 0.244235)",
+        "color": "rgb(232, 235, 242)",
+        "outline": "none",
+        "decoration": "none",
+        "border": "rgba(0, 0, 0, 0)"
+      }
+    },
+    {
+      "boundedReading": true,
+      "theme": "light",
+      "density": "default",
+      "styles": {
+        "cursor": "text",
+        "select": "text",
+        "length": 8192,
+        "controls": [
+          {
+            "cursor": "default",
+            "select": "none"
+          },
+          {
+            "cursor": "default",
+            "select": "none"
+          }
+        ]
+      }
+    },
+    {
+      "boundedReading": true,
+      "theme": "dark",
+      "density": "default",
+      "styles": {
+        "cursor": "text",
+        "select": "text",
+        "length": 8192,
+        "controls": [
+          {
+            "cursor": "default",
+            "select": "none"
+          },
+          {
+            "cursor": "default",
+            "select": "none"
+          }
+        ]
+      }
+    }
+  ],
+  "selection": [
+    {
+      "selector": "#probe-body",
+      "text": ""
+    },
+    {
+      "selector": "#probe-reading-button",
+      "text": ""
+    },
+    {
+      "selector": "#probe-text",
+      "text": "Readable content supports native selection and c"
+    },
+    {
+      "selector": "#probe-file-meta",
+      "text": "project/probe.ts · raw:fixture · 2026-10-06"
+    },
+    {
+      "selector": "#bounded-interaction-fixture [data-reading-text]",
+      "text": "selectable content 中文🙂 Bounded selectab"
+    },
+    {
+      "selector": "#bounded-interaction-fixture [data-reading-text]",
+      "text": "selectable content 中文🙂 Bounded selectab"
+    }
+  ],
+  "monacoContextMenu": false,
+  "boundedReadingNavigation": true
+}

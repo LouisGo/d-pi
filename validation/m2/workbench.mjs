@@ -152,7 +152,7 @@ async function resize(width, height) {
 }
 async function click(label) {
   await evaluate(
-    `document.querySelector('button[aria-label=${JSON.stringify(label)}]')?.click()`,
+    `(()=>{const scope=document.querySelector('.ui-settings-modal:not([hidden])')??document;const button=[...scope.querySelectorAll('button')].find(b=>b.getAttribute('aria-label')===${JSON.stringify(label)}&&!b.disabled&&!b.closest('[hidden],[inert]')&&b.getBoundingClientRect().width>0);if(!button)throw Error('Missing visible action: '+${JSON.stringify(label)});button.click();})()`,
   );
   await evaluate("window.probe.pause()");
 }
@@ -234,7 +234,7 @@ async function capture(name) {
 async function checkIconGeometry(name) {
   await check(
     name,
-    "([...document.querySelectorAll('.ui-button-icon')].filter(b=>b.getBoundingClientRect().width>0&&getComputedStyle(b).visibility!=='hidden'&&!b.closest('[hidden],[inert]')).map(b=>{const r=b.getBoundingClientRect(),s=b.querySelector('svg').getBoundingClientRect(),i=b.querySelector('.ui-icon-button-indicator');return {label:b.getAttribute('aria-label')||b.title,dx:s.x+s.width/2-r.x-r.width/2,dy:s.y+s.height/2-r.y-r.height/2,overlay:!i||(getComputedStyle(i).position==='absolute'&&getComputedStyle(i).pointerEvents==='none'),hit:document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.closest('button')===b};}))",
+    "([...document.querySelectorAll('.ui-button-icon')].filter(b=>b.getBoundingClientRect().width>0&&getComputedStyle(b).visibility!=='hidden'&&!b.closest('[hidden],[inert],[aria-hidden=true]')).map(b=>{const r=b.getBoundingClientRect(),s=b.querySelector('svg').getBoundingClientRect(),i=b.querySelector('.ui-icon-button-indicator'),modal=document.querySelector('.ui-settings-modal:not([hidden])'),covered=!!modal&&!modal.contains(b);return {label:b.getAttribute('aria-label')||b.title,dx:s.x+s.width/2-r.x-r.width/2,dy:s.y+s.height/2-r.y-r.height/2,overlay:!i||(getComputedStyle(i).position==='absolute'&&getComputedStyle(i).pointerEvents==='none'),covered,hit:covered?document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.closest('button')!==b:document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.closest('button')===b};}))",
     (buttons) =>
       buttons.length > 0 &&
       buttons.every(
@@ -269,8 +269,20 @@ async function runChecks() {
   await capture("production-light-desktop");
   await click("Settings");
   await check(
+    "settings-modal-backdrop-focus-and-geometry",
+    "(()=>{const p=document.querySelector('.ui-settings-modal'),r=p.getBoundingClientRect(),b=document.querySelector('.ui-overlay-backdrop').getBoundingClientRect();return p.getAttribute('role')==='dialog'&&p.contains(document.activeElement)&&r.left>0&&r.right<innerWidth&&r.top>0&&r.bottom<innerHeight&&b.width===innerWidth&&b.height===innerHeight&&!document.querySelector('.toolbar select')&&!!document.querySelector('.primary-sidebar [data-new-thread]')&&!!document.querySelector('.sidebar-label button');})()",
+  );
+  await capture("settings-light-desktop");
+  await key("Escape", "Escape");
+  await check(
+    "settings-escape-returns-focus",
+    "({hidden:document.querySelector('.ui-settings-modal').hidden,active:document.activeElement.outerHTML})",
+    (v) => v.hidden && v.active.includes('aria-label=\"Settings\"'),
+  );
+  await click("Settings");
+  await check(
     "settings-reuses-existing-capabilities",
-    "document.querySelector('.settings-surface').hidden===false && !!document.querySelector('#settings-configuration .configuration-settings') && !!document.querySelector('#settings-attention') && !!document.querySelector('#settings-diagnostics')",
+    "document.querySelector('.ui-settings-modal').hidden===false && document.querySelector('.conversation-body').hidden===false && !!document.querySelector('#settings-configuration .configuration-settings') && !!document.querySelector('#settings-attention') && !!document.querySelector('#settings-diagnostics')",
   );
 
   await evaluate("window.attentionProbe.emit()");
@@ -284,7 +296,7 @@ async function runChecks() {
   await evaluate("window.probe.pause()");
   await check(
     "notification-intent-reveals-existing-conversation",
-    "document.querySelector('.conversation-body').hidden===false && document.querySelector('.settings-surface').hidden===true && window.originalEditor===document.querySelector('.tiptap')",
+    "document.querySelector('.conversation-body').hidden===false && document.querySelector('.ui-settings-modal').hidden===true && window.originalEditor===document.querySelector('.tiptap')",
   );
   await click("Conversation");
   await check(
@@ -388,7 +400,39 @@ async function runChecks() {
     "!document.querySelector('.ui-navigation-overlay') && document.activeElement.getAttribute('aria-label')==='Open or collapse project navigation'",
   );
   await evaluate("window.probe.model.preference('theme')");
+  await evaluate("window.probe.model.preference('theme')");
+  await call("Emulation.setEmulatedMedia", {
+    features: [{ name: "prefers-color-scheme", value: "dark" }],
+  });
+  await wait(() =>
+    evaluate(
+      "document.documentElement.dataset.theme==='dark' && !!document.querySelector('.toolbar [data-theme-preference=system] svg')",
+    ),
+  );
+  await check(
+    "system-theme-uses-own-icon-and-dark-OS-resolution",
+    "window.probe.model.getSnapshot().preferences.theme==='system'&&document.documentElement.dataset.theme==='dark'&&!!document.querySelector('.toolbar [data-theme-preference=system] svg')",
+  );
+  await call("Emulation.setEmulatedMedia", {
+    features: [{ name: "prefers-color-scheme", value: "light" }],
+  });
+  await wait(() =>
+    evaluate("document.documentElement.dataset.theme==='light'"),
+  );
+  await check(
+    "system-theme-follows-OS-without-changing-preference",
+    "document.documentElement.dataset.theme==='light'&&window.probe.model.getSnapshot().preferences.theme==='system'",
+  );
+  await evaluate("window.probe.model.preference('theme');");
+  await evaluate("window.probe.model.preference('theme');");
   await capture("production-dark-minimum");
+  await click("Settings");
+  await capture("settings-dark-minimum");
+  await check(
+    "settings-actions-have-no-outline",
+    "[...document.querySelectorAll('.ui-settings-modal button,.ui-settings-modal select')].every(b=>{b.focus();return getComputedStyle(b).outlineStyle==='none';})",
+  );
+  await click("Close");
   await checkIconGeometry("all-icon-actions-centered-in-dark-narrow-window");
   await check(
     "responsive-preserves-user-intent",
@@ -475,7 +519,7 @@ async function runChecks() {
     "window.bottomScroll.scrollTop===100 && window.originalReading.scrollTop===120",
   );
   await evaluate(`(async()=>{
-    const root=document.documentElement,nav=document.querySelector('.activity-rail [aria-pressed=true]'),action=document.querySelector('.toolbar .ui-button-primary'),muted=document.querySelector('.save-status');
+    const root=document.documentElement,nav=document.querySelector('.activity-rail [aria-pressed=true]'),action=document.querySelector('.composer .ui-button-primary'),muted=document.querySelector('.save-status');
     const colors=()=>({action:getComputedStyle(action).backgroundColor,nav:getComputedStyle(nav).backgroundColor,text:getComputedStyle(muted).color});
     window.roleBefore=colors();root.style.setProperty('--primary','#895020');root.style.setProperty('--muted-foreground','#445566');
     await new Promise(r=>setTimeout(r,200));window.roleAfter=colors();root.style.removeProperty('--primary');root.style.removeProperty('--muted-foreground');
@@ -561,7 +605,9 @@ async function runChecks() {
     "chromium-composition-does-not-recreate-editor",
     "window.originalEditor===document.querySelector('.tiptap') && window.originalEditor.textContent.includes('中文')",
   );
-  await evaluate("window.probe.model.preference('theme')");
+  await evaluate(
+    "(async()=>{while(window.probe.model.getSnapshot().preferences.theme!=='light')await window.probe.model.preference('theme');})()",
+  );
   await capture("isolated-light-desktop");
   await evaluate("window.bottomScroll.scrollTop=0");
   await checkIconGeometry(
@@ -586,9 +632,16 @@ async function runChecks() {
     (v) => v.reading > 40 && v.editorBottom <= v.height,
   );
   await key("z", "KeyZ", 4);
-  await evaluate(
-    "(()=>{const s=document.querySelector('.toolbar select');s.value='zh-CN';s.dispatchEvent(new Event('change',{bubbles:true}));})()",
+  await click("Settings");
+  await check(
+    "narrow-settings-modal-remains-bounded",
+    "(()=>{const r=document.querySelector('.ui-settings-modal').getBoundingClientRect();return r.left>0&&r.right<innerWidth&&r.top>0&&r.bottom<innerHeight&&document.querySelector('.settings-surface').clientHeight>100;})()",
   );
+  await evaluate(
+    "(()=>{const s=document.querySelector('#settings-appearance select');s.value='zh-CN';s.dispatchEvent(new Event('change',{bubbles:true}));})()",
+  );
+  await capture("settings-light-minimum-chinese");
+  await click("关闭");
   await evaluate("window.probe.pause()");
   await check(
     "minimum-chinese-actions-reachable",
@@ -596,9 +649,11 @@ async function runChecks() {
   );
   await capture("isolated-light-minimum");
   await checkIconGeometry("all-icon-actions-centered-in-chinese-narrow-window");
+  await click("设置");
   await evaluate(
-    "(()=>{const s=document.querySelector('.toolbar select');s.value='en-US';s.dispatchEvent(new Event('change',{bubbles:true}));})()",
+    "(()=>{const s=document.querySelector('#settings-appearance select');s.value='en-US';s.dispatchEvent(new Event('change',{bubbles:true}));})()",
   );
+  await click("Close");
   await evaluate("window.probe.pause()");
   await resize(1440, 900);
   await evaluate("window.probe.model.preference('theme')");

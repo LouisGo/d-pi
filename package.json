@@ -1,6 +1,6 @@
 {
   "name": "d-pi",
-  "version": "0.1.0-workbench.1",
+  "version": "0.1.0-workbench.2",
   "private": true,
   "type": "module",
   "description": "d-pi desktop client",

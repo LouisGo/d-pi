@@ -716,8 +716,10 @@ export const ui = {
   "app.layout.showBottom": "Restore bottom panel",
   "app.layout.temporarilyHidden":
     "Panel temporarily hidden for available space. Enlarge the window to restore it.",
-  "app.layout.appearance": "Appearance and language",
+  "app.layout.appearance": "Appearance",
   "app.layout.configuration": "Configuration",
   "app.layout.attention": "Notifications",
   "app.layout.diagnostics": "Diagnostics",
+  "app.toolbar.systemTheme": "Follow system appearance",
+  "app.layout.theme": "Theme",
 } as const;

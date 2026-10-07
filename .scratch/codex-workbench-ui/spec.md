@@ -103,7 +103,7 @@ CSS Grid/Flex 负责排版与滚动边界；尺寸约束负责可用空间分配
 ```
 
 ```project-status
-[{"id":"codex-workbench-ui","title":"Codex 式工作台基础布局","phase":"基建","engineering":"partial","trial":"delivered","acceptance":"pending","build":"0.1.0-workbench.1 / 91499e7f-7bca4f14","evidence":["handoff.md","validation.md","review.md"],"next":"本地候选试用；A3物理拖窗继续确认，系统IME/VoiceOver与长时性能未覆盖","constraints":"仅本地实施/提交/试用；不push、merge、公开发布或发起真实账户请求。"}]
+[{"id":"codex-workbench-ui","title":"Codex 式工作台基础布局","phase":"基建","engineering":"partial","trial":"delivered","acceptance":"pending","build":"0.1.0-workbench.1 / 91499e7f-7bca4f14","evidence":["handoff.md","validation.md","review.md"],"next":"本地候选试用；A3物理拖窗继续确认，系统IME/VoiceOver与长时性能未覆盖","constraints":"用户已授权本UI分支push、PR及合并；不公开发布或发起真实账户请求。"}]
 ```
 
 ## 实施票
@@ -118,3 +118,11 @@ CSS Grid/Flex 负责排版与滚动边界；尺寸约束负责可用空间分配
 用户明确要求 custom header bar 与 macOS 左侧原生控件处于同一行，不保留额外系统标题栏；空白区继续拖动窗口。Main使用hiddenInset保留原生关闭/最小化/全屏控制及原关闭保存协议；Renderer在原44px区域留出96px控件安全区，控件与分隔条no-drag。此项属于A基础布局，不新增窗口控制业务或跨平台支持承诺。当前修复与后续图标反馈共56条隔离Electron、18项包内检查通过；物理拖窗未确认，继续由04维护。
 
 2026-10-07截图继续明确：原生控件右侧是后退/前进/侧栏导航；删除左顶栏区域文字。随后指出未读装饰导致图标偏心：在自有控件层分离图标与indicator插槽，角标/读屏状态不参与流；核查所有现有图标动作与数字0、999+、长辅助标签样本，作为同一A切片缺陷修复。
+
+## 2026-10-07 试用反馈与远端授权
+
+用户明确授权“直接 push 并通过这个 UI 相关的 PR”，取代早先仅本地交付的 push/merge 限制；完成当前反馈修正、必要验证与审查后推送本 UI 分支，等待实际 CI，通过后合并 main。公开发布与真实账户请求不在此授权内；合并不替代用户认可或物理拖窗验收。
+
+本轮新增要求：设置改为遮罩上的大 Modal；新会话移到第二列 Thread 导航顶部；打开项目为 Projects 分类标题右侧的加号；主题补 system 偏好与独立图标；语言选择只在设置中；取消所有应用控件 outline，统一键盘焦点背景/文字状态；继续调整层级、对齐及窄窗细节。沿用 A 范围、业务准入与资源连续性，不扩张 Composer/M3。
+
+功能回归已记录真实红灯：AppModel 二次主题切换原来得到 light 而非 system；真实 App 挂载原来没有侧栏新会话/项目加号和设置 Modal。修正后两项及原有相关行为通过，实际 Electron 验证另记录。

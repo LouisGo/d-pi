@@ -1,8 +1,10 @@
 import {
+  Add01Icon,
   ArrowLeft01Icon,
   ArrowRight01Icon,
   BubbleChatIcon,
   Cancel01Icon,
+  ComputerIcon,
   File01Icon,
   Folder01Icon,
   GithubIcon,
@@ -159,6 +161,33 @@ export function CloseIcon({ size = 16, className }: IconProps) {
   return (
     <HugeiconsIcon
       icon={Cancel01Icon}
+      size={size}
+      className={className}
+      strokeWidth={1.5}
+      color="currentColor"
+      aria-hidden={true}
+      focusable={false}
+    />
+  );
+}
+
+export function AddIcon({ size = 16, className }: IconProps) {
+  return (
+    <HugeiconsIcon
+      icon={Add01Icon}
+      size={size}
+      className={className}
+      strokeWidth={1.5}
+      color="currentColor"
+      aria-hidden={true}
+      focusable={false}
+    />
+  );
+}
+export function SystemThemeIcon({ size = 16, className }: IconProps) {
+  return (
+    <HugeiconsIcon
+      icon={ComputerIcon}
       size={size}
       className={className}
       strokeWidth={1.5}

@@ -76,8 +76,8 @@
     background: var(--primary);
   }
   .ui-resize-separator:focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: -1px;
+    outline: none;
+    background: var(--primary);
     z-index: 2;
   }
   .primary-sidebar,
@@ -118,6 +118,8 @@
     -webkit-app-region: no-drag;
   }
   .sidebar-scroll {
+    display: flex;
+    flex-direction: column;
     flex: 1;
     min-height: 0;
     overflow: auto;
@@ -138,10 +140,6 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-  }
-  .conversation-body[hidden],
-  .settings-surface[hidden] {
-    display: none;
   }
   .conversation-surface > .conversation-header {
     overflow: visible;
@@ -170,12 +168,6 @@
   }
   .conversation-surface {
     container-type: size;
-  }
-  .conversation-header .toolbar select {
-    max-width: var(--overlay-width);
-  }
-  .conversation-header .toolbar .flex:first-child {
-    gap: 0;
   }
   .work-content {
     max-width: none;
@@ -225,6 +217,9 @@
   }
   .settings-navigation .ui-button {
     justify-content: flex-start;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .layout-notice {
     padding: calc(var(--layout-gap) / 2) var(--panel-padding);
@@ -288,9 +283,19 @@
     box-shadow: var(--shadow-overlay);
     outline: none;
   }
+  .sidebar-scroll > * {
+    flex-shrink: 0;
+  }
+  .thread-navigation > [data-new-thread] {
+    width: 100%;
+    justify-content: flex-start;
+  }
   .thread-navigation .sidebar-label {
-    margin-top: var(--layout-gap);
-    padding: var(--layout-gap) var(--control-padding) 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: var(--panel-padding);
+    padding-inline-start: var(--control-padding);
     color: var(--muted-foreground);
     font-size: var(--text-small);
   }
@@ -356,5 +361,95 @@
   }
   .activity-indicator[hidden] {
     display: none;
+  }
+}
+
+@layer components {
+  .ui-settings-modal {
+    position: fixed;
+    inset-block-start: 50%;
+    inset-inline-start: 50%;
+    transform: translate(-50%, -50%);
+    width: min(var(--settings-width), calc(100vw - var(--panel-padding) * 2));
+    height: min(
+      calc(100vh - var(--header-height) - var(--panel-padding) * 2),
+      max(var(--settings-minimum-height), 80vh)
+    );
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--foreground);
+    box-shadow: var(--shadow-overlay);
+    outline: none;
+  }
+  .ui-settings-modal[hidden],
+  .ui-overlay-backdrop[hidden] {
+    display: none;
+  }
+  .settings-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    height: var(--header-height);
+    padding-inline: var(--panel-padding);
+    border-bottom: 1px solid var(--border);
+    -webkit-app-region: no-drag;
+  }
+  .settings-modal-header h2 {
+    font-size: var(--text-title);
+    font-weight: 550;
+  }
+  .settings-modal-body {
+    display: grid;
+    grid-template-columns: var(--settings-navigation-width) minmax(0, 1fr);
+    flex: 1;
+    min-height: 0;
+  }
+  .settings-modal-navigation {
+    background: var(--sidebar);
+    padding: var(--layout-gap);
+    border-right: 1px solid var(--border);
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  .settings-preference-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--layout-gap);
+    min-height: var(--header-height);
+    border-bottom: 1px solid var(--border);
+  }
+  .settings-preference-row select {
+    min-height: var(--control-height);
+    max-width: 100%;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--surface);
+    color: var(--foreground);
+    padding-inline: var(--control-padding);
+    font: inherit;
+  }
+  .settings-preference-row select:focus-visible {
+    background: var(--accent);
+    color: var(--accent-foreground);
+  }
+}
+@media (max-width: 760px) {
+  .settings-modal-body {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .settings-modal-navigation {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .settings-navigation {
+    flex-direction: row;
+    overflow-x: auto;
   }
 }

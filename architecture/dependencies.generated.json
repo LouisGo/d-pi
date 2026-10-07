@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "96f0fe32759b46e1ad1c0a69d1072fac002a8ba0614ab8f6f7fc465be1ec10de",
+  "inputsHash": "87153f2a9511ce9a938ddc577ddf05985677739e00fa69a9f111871ad225fbf3",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 362,
-    "scannedFiles": 362,
+    "sourceFiles": 363,
+    "scannedFiles": 363,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 154,
-      "lines": 25838,
+      "files": 155,
+      "lines": 26123,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -102,7 +102,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 19,
-      "lines": 2325,
+      "lines": 2329,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -6204,6 +6204,48 @@
       "resolution": "external"
     },
     {
+      "from": "src/app/renderer/components/ui/settings-modal.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@base-ui/react/dialog",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/ui/settings-modal.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/ui/settings-modal.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../icons/common",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/icons/common.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/components/ui/settings-modal.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./icon-button",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/ui/icon-button.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/app/renderer/components/ui/workspace-tabs.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -8456,6 +8498,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "@/components/ui/icon-button",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/ui/icon-button.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/choose-project-button.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "../../../modules/preferences/renderer/public",
       "kind": "import",
       "resolution": "module",
@@ -9024,6 +9078,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "@/components/ui/settings-modal",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/ui/settings-modal.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/layout/workbench-frame.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "@/components/ui/workspace-tabs",
       "kind": "import",
       "resolution": "module",
@@ -9151,6 +9217,15 @@
       "sourceEnvironment": "renderer",
       "test": false,
       "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/shell/preference-toolbar.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "ts-pattern",
       "kind": "import",
       "resolution": "external"
     },
@@ -9343,6 +9418,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/shell/choose-project-button.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/project-threads.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./preference-toolbar",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/preference-toolbar.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },

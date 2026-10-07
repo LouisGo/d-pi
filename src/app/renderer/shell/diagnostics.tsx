@@ -19,11 +19,13 @@ import { DiagnosticReadError, diagnosticQuery } from "./diagnostics-queries";
 type Props = {
   bridge?: DiagnosticBridge | undefined;
   traceId?: string | undefined;
+  contained?: boolean;
 };
 type CommandResult = { text: string; traceId?: string };
 export function Diagnostics({
   bridge = globalThis.window?.desktop?.diagnostics,
   traceId,
+  contained = false,
 }: Props) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
@@ -49,15 +51,19 @@ export function Diagnostics({
       )}
       {open &&
         bridge &&
-        createPortal(
-          <DiagnosticPanel
-            key={traceId ?? "global"}
-            bridge={bridge}
-            traceId={traceId}
-            close={close}
-          />,
-          document.body,
-        )}
+        (contained ? (
+          <DiagnosticPanel bridge={bridge} traceId={traceId} close={close} />
+        ) : (
+          createPortal(
+            <DiagnosticPanel
+              key={traceId ?? "global"}
+              bridge={bridge}
+              traceId={traceId}
+              close={close}
+            />,
+            document.body,
+          )
+        ))}
     </>
   );
 }

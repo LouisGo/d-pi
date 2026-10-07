@@ -345,7 +345,12 @@ try {
       focused = await state(selector, ["focus-visible"]);
     assert.notDeepEqual(hovered, resting, `${selector}: hover feedback`);
     assert.notDeepEqual(pressed, hovered, `${selector}: press feedback`);
-    assert.equal(focused.outline, "solid", `${selector}: keyboard focus`);
+    assert.equal(focused.outline, "none", `${selector}: no outline`);
+    assert.notDeepEqual(
+      focused,
+      resting,
+      `${selector}: keyboard focus feedback`,
+    );
     facts.states.push({ selector, resting, hovered, pressed, focused });
     await state(selector, []);
   }

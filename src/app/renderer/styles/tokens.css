@@ -70,6 +70,9 @@
   --bottom-min: 8.75rem;
   --bottom-default: 13.75rem;
   --conversation-min-height: 30rem;
+  --settings-width: 60rem;
+  --settings-navigation-width: 11rem;
+  --settings-minimum-height: 32rem;
   --overlay-width: 20rem;
   --shadow-overlay: 0 8px 24px rgb(0 0 0 / 16%);
   --content-width: 56rem;

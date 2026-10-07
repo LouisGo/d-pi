@@ -90,9 +90,17 @@
     color: var(--accent-foreground);
     background: var(--accent);
   }
+  .ui-button:focus,
   .ui-button:focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
+    outline: none;
+  }
+  .ui-button-primary:focus-visible:not(:disabled) {
+    background: var(--primary-active);
+  }
+  .ui-button-ghost:focus-visible:not(:disabled),
+  .ui-button-navigation:focus-visible:not(:disabled) {
+    background: var(--muted-hover);
+    color: var(--foreground);
   }
   .ui-button:disabled {
     opacity: 0.5;

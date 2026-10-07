@@ -169,3 +169,11 @@ S1 当时除草稿功能外，要求交付最小 token 源、normal/compact 映�
 流式内容和弹层按实际风险检查。Monaco/Diff 的映射已随 S4 交付（`src/modules/files/renderer/editor/monaco-viewer.tsx` 从 token 构造主题）；存量密度监听随取消切换按实际影响处理，后续终端等在各自切片补适配。密度切换历史测试不是当前新布局的必跑矩阵，不因为收敛密度删除仍有价值的主题、几何、输入与恢复检查。
 
 这些通过后才能声称在所测范围内具备统一换肤和密度能力；S1结果已记录，不能外推为所有未来组件均已验收。
+
+## 2026-10-07 工作台体验修正
+
+用户明确要求设置以遮罩上的大 Modal 展示，背景会话/编辑器保持挂载；语言设置在 Modal 外观区单独一行。新会话位于上下文侧栏顶部，打开项目是项目分类标题右侧的加号。设置弹层由 d-pi 自有 API 包装 Base UI Dialog，提供焦点限制、Esc/遮罩关闭和返回入口，窄窗内部导航改为横排、内容独立滚动。
+
+主题偏好增加 `system`，light/dark 仍是两套实际颜色映射；跟随系统由 AppModel 观察 `prefers-color-scheme`，OS 变化只更新解析后的根主题，不回写用户偏好或重建业务资源。三种偏好分别使用太阳、月亮、显示器图标，切换顺序 light→dark→system→light。旧 light/dark 与 density 字段兼容读取，默认布局继续紧凑。
+
+根据用户要求，应用控件不绘制 CSS outline/ring；共享键盘焦点使用已有背景/文字角色表达，保留 focus-visible、Tab、原生控件及读屏语义。主动作聚焦使用 primary-active，ghost/navigation 聚焦使用 muted-hover/foreground；分隔条聚焦使用 primary。该要求取代此前 outline 形式，不关闭设计 lint，也不去掉焦点能力。

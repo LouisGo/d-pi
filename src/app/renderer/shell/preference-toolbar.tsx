@@ -1,6 +1,12 @@
 import { useContext } from "react";
+import { match } from "ts-pattern";
 import { useStore } from "zustand";
-import { DarkThemeIcon, LightThemeIcon } from "@/components/icons/common";
+import {
+  AddIcon,
+  DarkThemeIcon,
+  LightThemeIcon,
+  SystemThemeIcon,
+} from "@/components/icons/common";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import {
@@ -19,16 +25,43 @@ export function ThreadNavigationControls({ model }: { model: AppModel }) {
   return <NavigationHistory disabled={busy} />;
 }
 
-export function PreferenceToolbar({ model }: { model: AppModel }) {
+export function NewThreadButton({ model }: { model: AppModel }) {
   const { reveal } = useContext(ConversationVisibilityContext);
-  const hasThread = useStore(
+  const { t } = useI18n();
+  const enabled = useStore(
     model.stateStore,
     (state) =>
-      state.kind === "ready" && state.threadSelection.kind === "thread",
+      state.kind === "ready" &&
+      state.threadSelection.kind === "thread" &&
+      state.threadTransition !== "unknown",
   );
+  return (
+    <Button
+      data-new-thread
+      variant="ghost"
+      disabled={!enabled}
+      onClick={() => {
+        reveal();
+        void model.newThread();
+      }}
+    >
+      <AddIcon />
+      {t("app.toolbar.newThread")}
+    </Button>
+  );
+}
+
+export function PreferenceToolbar({ model }: { model: AppModel }) {
+  return (
+    <header className="toolbar">
+      <ThreadHeaderTitle model={model} />
+      <ThemeToggle model={model} />
+    </header>
+  );
+}
+
+function ThemeToggle({ model }: { model: AppModel }) {
   const { t } = useI18n();
-  const { preference, setPreference, persistenceFailed } =
-    useLocalePreference();
   const theme = useStore(model.stateStore, (state) =>
     state.kind === "ready" ? state.preferences.theme : "light",
   );
@@ -36,22 +69,43 @@ export function PreferenceToolbar({ model }: { model: AppModel }) {
     model.stateStore,
     (state) => state.kind === "ready" && state.threadTransition === "unknown",
   );
+  const label = match(theme)
+    .with("light", () => t("app.toolbar.darkTheme"))
+    .with("dark", () => t("app.toolbar.systemTheme"))
+    .with("system", () => t("app.toolbar.lightTheme"))
+    .exhaustive();
+  const icon = match(theme)
+    .with("light", () => <LightThemeIcon />)
+    .with("dark", () => <DarkThemeIcon />)
+    .with("system", () => <SystemThemeIcon />)
+    .exhaustive();
   return (
-    <header className="toolbar">
-      <Button
-        variant="default"
-        disabled={busy || !hasThread}
-        onClick={() => {
-          reveal();
-          void model.newThread();
-        }}
-      >
-        {t("app.toolbar.newThread")}
-      </Button>
-      <ThreadHeaderTitle model={model} />
-      <div className="flex gap-2">
+    <IconButton
+      variant="ghost"
+      disabled={busy}
+      label={label}
+      data-theme-preference={theme}
+      onMouseDown={(event) => event.preventDefault()}
+      onClick={() => void model.preference("theme")}
+    >
+      {icon}
+    </IconButton>
+  );
+}
+
+export function AppearanceSettings({ model }: { model: AppModel }) {
+  const { t } = useI18n();
+  const { preference, setPreference, persistenceFailed } =
+    useLocalePreference();
+  const busy = useStore(
+    model.stateStore,
+    (state) => state.kind === "ready" && state.threadTransition === "unknown",
+  );
+  return (
+    <>
+      <label className="settings-preference-row">
+        <span>{t("app.toolbar.language")}</span>
         <select
-          aria-label={t("app.toolbar.language")}
           value={preference}
           disabled={busy}
           onChange={(event) => {
@@ -64,26 +118,17 @@ export function PreferenceToolbar({ model }: { model: AppModel }) {
           <option value="zh-CN">{t("app.toolbar.chinese")}</option>
           <option value="en-US">{t("app.toolbar.english")}</option>
         </select>
-        {persistenceFailed && (
-          <span role="alert" className="failure">
-            {t("app.language.saveFailed")}
-          </span>
-        )}
-        <IconButton
-          variant="ghost"
-          disabled={busy}
-          label={
-            theme === "light"
-              ? t("app.toolbar.darkTheme")
-              : t("app.toolbar.lightTheme")
-          }
-          onMouseDown={(event) => event.preventDefault()}
-          onClick={() => void model.preference("theme")}
-        >
-          {theme === "light" ? <DarkThemeIcon /> : <LightThemeIcon />}
-        </IconButton>
+      </label>
+      {persistenceFailed && (
+        <p role="alert" className="failure">
+          {t("app.language.saveFailed")}
+        </p>
+      )}
+      <div className="settings-preference-row">
+        <span>{t("app.layout.theme")}</span>
+        <ThemeToggle model={model} />
       </div>
-    </header>
+    </>
   );
 }
 
@@ -93,9 +138,9 @@ function ThreadHeaderTitle({ model }: { model: AppModel }) {
       ? state.threadSelection.thread.context.directory
       : null,
   );
-  return directory ? (
-    <span className="toolbar-title" title={directory}>
-      {directory.split("/").filter(Boolean).at(-1)}
+  return (
+    <span className="toolbar-title" title={directory ?? undefined}>
+      {directory?.split("/").filter(Boolean).at(-1)}
     </span>
-  ) : null;
+  );
 }

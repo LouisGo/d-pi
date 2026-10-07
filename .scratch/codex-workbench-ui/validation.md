@@ -32,3 +32,11 @@
 `node validation/m2/package.mjs dist/workbench-ui/mac-arm64/d-pi.app --router --attachments --workbench`：18项通过，[原始结果](evidence/packaged.json)。固定SDK18.4.6、真实Main/preload/SessionHost/原生SDK及实际包运行；本地确定性supplier，无真实凭据/计费。包内commit=91499e7f73e15cf0c27906728c3cf361b8988cff，dirty=false，build=91499e7f-7bca4f14，asar SHA-256=c2c8d7e1534b49d5b34ab7cf9c046c38fe3ca310bf567304fda4fbff8c9d0aab。包括标题栏同内容顶沿、原生控件右侧导航、图标中心/绝对状态层、默认紧凑与无内容宿主关闭；Router/POP/IME准入、两原生scope、草稿/附件/撤销/阅读/重载连续性、冷恢复只读。
 
 CUA 原生检查以Main未变化的4cf3cee包执行：close/fullscreen/minimize控件可访问，zoom实际完成，窗口尺寸1728×1027。多次顶栏留白drag未观察到窗口坐标变化，系统记录Window move completed without beginning；原因未证实，**物理拖窗未确认成功**。截图期间CUA共享标记覆盖交通灯，不能声称红黄绿完整像素检验通过，[记录](evidence/native-window.json)。此前的CSS drag/no-drag断言只证明区域声明，A3该项继续开放。系统IME候选窗、VoiceOver实际播报与连续流式大历史长时帧率未测。
+
+## 2026-10-07 七项试用反馈修正
+
+两项新增行为回归真实先失败后通过：主题二次切换原为 light，要求 system；真实 App 原无侧栏新会话/分类加号/独立设置 Modal。相关 39 项测试通过，默认外观和业务资源订阅隔离继续成立。
+
+[新隔离 Electron 记录](evidence/feedback/native.json)62 条通过（61 项断言及 1 项输入到下一 rAF 采样）：Modal 形态/遮罩尺寸/初始焦点、Esc 返回设置入口、背景会话保持挂载和阅读坐标、通知打开退出 Modal、窄窗与中文、三态主题及 OS media 变化、各类控件无 outline、现有几何/面板/图标/输入连续性。初始 Close Tooltip 会先消费 Escape，调整 Modal 初始焦点到类别导航后单次 Esc 关闭通过；宽泛 Thread 按钮样式导致新增项目加号偏心，限制到真实 Thread 行后同一实际中心检查通过。
+
+[统一交互记录](evidence/feedback/interaction.json)通过：按钮、图标、navigation、选中按钮、summary 和 link 均无 outline，仍有可区分的键盘焦点背景/文字；保留选择、复制及 Monaco/Diff 合同。截图见[桌面设置](evidence/feedback/settings-light-desktop.png)、[中文窄窗设置](evidence/feedback/settings-light-minimum-chinese.png)。诊断采用包含式呈现，留在 Modal 焦点范围；包内 Main 操作另行验证。OS 外观变化由 CDP media 模拟，未改动系统全局设置。
