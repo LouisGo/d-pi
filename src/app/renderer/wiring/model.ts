@@ -93,6 +93,12 @@ export class AppModel {
   }));
   private readonly threads = new Map<string, ThreadModel>();
   private disposed = false;
+  private systemAppearance: MediaQueryList | null = null;
+  private appearancePreference: Preferences["theme"] = "light";
+  private readonly updateSystemAppearance = () => {
+    if (this.disposed || this.appearancePreference !== "system") return;
+    this.writeTheme(this.systemAppearance?.matches ? "dark" : "light");
+  };
   private requestGeneration = 0;
   private preferenceWrite: Promise<void> | null = null;
   private editorBinding: EditorBinding | null = null;
@@ -235,6 +241,10 @@ export class AppModel {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
+    this.systemAppearance?.removeEventListener(
+      "change",
+      this.updateSystemAppearance,
+    );
     this.requestGeneration++;
     this.editorBinding = null;
     this.closeAttempt = null;
@@ -264,8 +274,31 @@ export class AppModel {
   }
   private applyAppearance(value: Preferences): void {
     const { dataset } = document.documentElement;
-    if (dataset.theme !== value.theme) dataset.theme = value.theme;
-    if (dataset.density !== value.density) dataset.density = value.density;
+    this.appearancePreference = value.theme;
+    if (
+      !this.systemAppearance &&
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function"
+    ) {
+      this.systemAppearance = window.matchMedia("(prefers-color-scheme: dark)");
+      this.systemAppearance.addEventListener(
+        "change",
+        this.updateSystemAppearance,
+      );
+    }
+    this.writeTheme(
+      value.theme === "system"
+        ? this.systemAppearance?.matches
+          ? "dark"
+          : "light"
+        : value.theme,
+    );
+    // Legacy density remains in the persistence DTO, never in UI geometry.
+    if (dataset.density !== undefined) delete dataset.density;
+  }
+  private writeTheme(theme: "light" | "dark"): void {
+    const { dataset } = document.documentElement;
+    if (dataset.theme !== theme) dataset.theme = theme;
   }
   private fail(error: Failure): void {
     const state = this.state;
@@ -520,7 +553,7 @@ export class AppModel {
       binding?.boundary.release();
     return result;
   }
-  preference(key: Exclude<keyof Preferences, "locale">): Promise<void> {
+  preference(key: "theme" | "sendKey"): Promise<void> {
     const save = () => this.savePreference(key);
     const writing = this.preferenceWrite
       ? this.preferenceWrite.then(save)
@@ -531,17 +564,18 @@ export class AppModel {
     });
     return writing;
   }
-  private async savePreference(
-    key: Exclude<keyof Preferences, "locale">,
-  ): Promise<void> {
+  private async savePreference(key: "theme" | "sendKey"): Promise<void> {
     const state = this.state;
     if (this.disposed || state.kind !== "ready") return;
     const current = state.preferences;
     const value = match(key)
       .with("theme", () => ({
         ...current,
-        theme:
-          current.theme === "dark" ? ("light" as const) : ("dark" as const),
+        theme: match(current.theme)
+          .with("light", () => "dark" as const)
+          .with("dark", () => "system" as const)
+          .with("system", () => "light" as const)
+          .exhaustive(),
       }))
       .with("sendKey", () => ({
         ...current,
@@ -549,13 +583,6 @@ export class AppModel {
           current.sendKey === "enter-newline"
             ? ("enter-send" as const)
             : ("enter-newline" as const),
-      }))
-      .with("density", () => ({
-        ...current,
-        density:
-          current.density === "normal"
-            ? ("compact" as const)
-            : ("normal" as const),
       }))
       .exhaustive();
     const traceId = crypto.randomUUID();

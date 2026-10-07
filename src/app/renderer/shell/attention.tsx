@@ -1,5 +1,5 @@
 import { useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,8 @@ import { useI18n } from "../../../modules/preferences/renderer/public";
 import type { ThreadContext } from "../../../modules/threads/contracts/public";
 import type { AttentionEntry } from "../../contracts/attention";
 import type { AppModel } from "../wiring/model";
+
+import { ConversationVisibilityContext } from "./layout/conversation-visibility";
 
 function kindKey(kind: AttentionEntry["kind"]) {
   return match(kind)
@@ -55,6 +57,9 @@ export function AttentionCenter({ model }: { model: AppModel }) {
 }
 function AttentionContent({ model }: { model: AppModel }) {
   const { t } = useI18n();
+  const { visible: conversationVisible, reveal } = useContext(
+    ConversationVisibilityContext,
+  );
   const navigate = useNavigate();
   const router = useRouter();
   const pathname = useRouterState({
@@ -139,6 +144,7 @@ function AttentionContent({ model }: { model: AppModel }) {
           });
           if (!mounted.current) return;
         }
+        reveal();
         setStale(!entry || entry.eventId !== intent.eventId);
         // A historical notification is only a navigation intent. Locate the current
         // interaction/result, never answer the event carried by a stale click.
@@ -147,7 +153,7 @@ function AttentionContent({ model }: { model: AppModel }) {
         opening.current = false;
       }
     },
-    [model, navigate, router],
+    [model, navigate, router, reveal],
   );
   useEffect(() => {
     const request = snapshot?.openRequest;
@@ -160,10 +166,15 @@ function AttentionContent({ model }: { model: AppModel }) {
       document.visibilityState !== "hidden" && document.hasFocus();
     const synchronize = () => {
       const visible =
-        foreground() && pathname === `/threads/${current}` ? current : null;
+        conversationVisible &&
+        foreground() &&
+        pathname === `/threads/${current}`
+          ? current
+          : null;
       void model.attention.visible(visible, true);
       if (
         currentEntry?.unread &&
+        conversationVisible &&
         foreground() &&
         pathname === `/threads/${current}`
       )
@@ -181,7 +192,7 @@ function AttentionContent({ model }: { model: AppModel }) {
       window.removeEventListener("blur", blur);
       document.removeEventListener("visibilitychange", synchronize);
     };
-  }, [current, currentEntry, model, pathname]);
+  }, [current, currentEntry, model, pathname, conversationVisible]);
   if (!model.attention.available) return null;
   const entries =
     snapshot?.entries.filter(
@@ -311,5 +322,32 @@ function AttentionPreferenceContent({ model }: { model: AppModel }) {
         </p>
       )}
     </details>
+  );
+}
+
+export function AttentionIndicator({ model }: { model: AppModel }) {
+  return model.attention?.available ? <UnreadIndicator model={model} /> : null;
+}
+function UnreadIndicator({ model }: { model: AppModel }) {
+  const { t } = useI18n();
+  const unread = useStore(
+    model.attention.stateStore,
+    (state) =>
+      state.snapshot?.entries.some(
+        (entry) =>
+          entry.unread &&
+          (entry.kind !== "completed" ||
+            state.snapshot?.preferences.completion),
+      ) ?? false,
+  );
+  return (
+    <span role="status" aria-live="polite">
+      <span
+        className="activity-indicator"
+        hidden={!unread}
+        aria-hidden="true"
+      />
+      <span className="sr-only">{unread ? t("attention.unread") : ""}</span>
+    </span>
   );
 }

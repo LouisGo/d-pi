@@ -1,0 +1,38 @@
+{
+  "sourceCommit": "93e18a5593df93806528d6858b173536ea5abb20",
+  "build": "93e18a55-5aafdac5",
+  "environment": "isolated real package; fixed SDK; loopback supplier",
+  "checks": [
+    "Native Settings opens the large backdrop Modal; Appearance receives initial focus",
+    "Theme action changes dark to system; distinct monitor icon appears in toolbar and settings, resolving to OS light",
+    "Native diagnostics entry opens contained panel; traceId field accepts focus; Escape closes diagnostics and returns its trigger",
+    "Second Escape closes Settings and returns the left Settings trigger",
+    "Project category plus opens the native choose-project directory dialog; Cancel retains A_UNSENT_DRAFT"
+  ],
+  "drag": {
+    "from": [
+      800,
+      22
+    ],
+    "to": [
+      860,
+      72
+    ],
+    "before": {
+      "x": 304,
+      "y": 105,
+      "width": 1120,
+      "height": 780
+    },
+    "after": {
+      "x": 304,
+      "y": 105,
+      "width": 1120,
+      "height": 780,
+      "editor": "A_UNSENT_DRAFT"
+    },
+    "confirmed": false,
+    "reason": "unknown; no native window position change observed"
+  },
+  "limitation": "CUA sharing badge replaces native traffic-light pixels; system IME candidate window and VoiceOver not verified"
+}

@@ -1,11 +1,17 @@
 import {
+  Add01Icon,
   ArrowLeft01Icon,
   ArrowRight01Icon,
+  BubbleChatIcon,
+  Cancel01Icon,
+  ComputerIcon,
   File01Icon,
   Folder01Icon,
   GithubIcon,
   Globe02Icon,
+  LayoutLeftIcon,
   Moon02Icon,
+  Settings01Icon,
   Sun03Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -102,6 +108,86 @@ export function ForwardIcon({ size = 16, className }: IconProps) {
   return (
     <HugeiconsIcon
       icon={ArrowRight01Icon}
+      size={size}
+      className={className}
+      strokeWidth={1.5}
+      color="currentColor"
+      aria-hidden={true}
+      focusable={false}
+    />
+  );
+}
+
+export function ChatIcon({ size = 20, className }: IconProps) {
+  return (
+    <HugeiconsIcon
+      icon={BubbleChatIcon}
+      size={size}
+      className={className}
+      strokeWidth={1.5}
+      color="currentColor"
+      aria-hidden={true}
+      focusable={false}
+    />
+  );
+}
+export function SettingsIcon({ size = 20, className }: IconProps) {
+  return (
+    <HugeiconsIcon
+      icon={Settings01Icon}
+      size={size}
+      className={className}
+      strokeWidth={1.5}
+      color="currentColor"
+      aria-hidden={true}
+      focusable={false}
+    />
+  );
+}
+export function SidebarIcon({ size = 16, className }: IconProps) {
+  return (
+    <HugeiconsIcon
+      icon={LayoutLeftIcon}
+      size={size}
+      className={className}
+      strokeWidth={1.5}
+      color="currentColor"
+      aria-hidden={true}
+      focusable={false}
+    />
+  );
+}
+export function CloseIcon({ size = 16, className }: IconProps) {
+  return (
+    <HugeiconsIcon
+      icon={Cancel01Icon}
+      size={size}
+      className={className}
+      strokeWidth={1.5}
+      color="currentColor"
+      aria-hidden={true}
+      focusable={false}
+    />
+  );
+}
+
+export function AddIcon({ size = 16, className }: IconProps) {
+  return (
+    <HugeiconsIcon
+      icon={Add01Icon}
+      size={size}
+      className={className}
+      strokeWidth={1.5}
+      color="currentColor"
+      aria-hidden={true}
+      focusable={false}
+    />
+  );
+}
+export function SystemThemeIcon({ size = 16, className }: IconProps) {
+  return (
+    <HugeiconsIcon
+      icon={ComputerIcon}
       size={size}
       className={className}
       strokeWidth={1.5}

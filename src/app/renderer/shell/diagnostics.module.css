@@ -13,8 +13,7 @@
   font-size: var(--text-body);
 }
 .panel:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
+  outline: none;
 }
 .heading,
 .actions {
@@ -62,8 +61,9 @@
 .filters input:focus-visible,
 .filters select:focus-visible,
 .feedback textarea:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
+  outline: none;
+  background: var(--accent);
+  color: var(--accent-foreground);
 }
 .metadata {
   white-space: pre-wrap;

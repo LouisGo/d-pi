@@ -15,6 +15,8 @@ const output = resolve(
 const vite = await createViteServer({
   configFile: false,
   root: resolve("."),
+  cacheDir: join(isolated.root, "vite-cache"),
+  optimizeDeps: { entries: [resolve("validation/m2/rendering.html")] },
   plugins: [react(), tailwindcss()],
   define: {
     __D_PI_BUILD__: JSON.stringify({
@@ -119,9 +121,9 @@ try {
   await evaluate("window.probe.pause()");
   await evaluate(`document.querySelector('.reading-pane').scrollTop=300`);
   await evaluate(
-    `window.begin=()=>{const original={shell:document.querySelector('.app-shell'),sidebar:document.querySelector('.sidebar'),toolbar:document.querySelector('.toolbar'),editor:document.querySelector('.tiptap'),body:document.querySelector('.conversation pre')};const buttons=[...document.querySelectorAll('button')];const opacities=buttons.map(b=>getComputedStyle(b).opacity);const samples=[];let running=true;const sample=()=>samples.push({shell:original.shell===document.querySelector('.app-shell'),sidebar:original.sidebar===document.querySelector('.sidebar'),toolbar:original.toolbar===document.querySelector('.toolbar'),editor:original.editor===document.querySelector('.tiptap'),body:original.body===document.querySelector('.conversation pre'),workspace:!!document.querySelector('.thread-workspace')?.getBoundingClientRect().height,scroll:document.querySelector('.reading-pane')?.scrollTop,buttonsStable:buttons.every(b=>b.isConnected),opacitiesStable:buttons.every((b,i)=>!b.isConnected||getComputedStyle(b).opacity===opacities[i]),opacityChanges:buttons.flatMap((b,i)=>b.isConnected&&getComputedStyle(b).opacity!==opacities[i]?[{text:b.textContent,navigationHistory:b.parentElement===document.querySelector('.toolbar > div'),original:opacities[i],current:getComputedStyle(b).opacity}]:[]),buttonDisabled:buttons.filter(b=>b.matches(':disabled')).length});const observer=new MutationObserver(sample);observer.observe(document.getElementById('root'),{subtree:true,childList:true,attributes:true});const tick=()=>{if(!running)return;sample();requestAnimationFrame(tick);};tick();window.end=()=>{running=false;observer.disconnect();return samples;};};`,
+    `window.begin=()=>{const original={shell:document.querySelector('.app-shell'),sidebar:document.querySelector('.primary-sidebar'),toolbar:document.querySelector('.toolbar'),editor:document.querySelector('.tiptap'),body:document.querySelector('.conversation pre')};const buttons=[...document.querySelectorAll('button')];const opacities=buttons.map(b=>getComputedStyle(b).opacity);const samples=[];let running=true;const sample=()=>samples.push({shell:original.shell===document.querySelector('.app-shell'),sidebar:original.sidebar===document.querySelector('.primary-sidebar'),toolbar:original.toolbar===document.querySelector('.toolbar'),editor:original.editor===document.querySelector('.tiptap'),body:original.body===document.querySelector('.conversation pre'),workspace:!!document.querySelector('.thread-workspace')?.getBoundingClientRect().height,scroll:document.querySelector('.reading-pane')?.scrollTop,buttonsStable:buttons.every(b=>b.isConnected),opacitiesStable:buttons.every((b,i)=>!b.isConnected||getComputedStyle(b).opacity===opacities[i]),opacityChanges:buttons.flatMap((b,i)=>b.isConnected&&getComputedStyle(b).opacity!==opacities[i]?[{text:b.textContent,navigationHistory:b.parentElement===document.querySelector('.toolbar > div'),original:opacities[i],current:getComputedStyle(b).opacity}]:[]),buttonDisabled:buttons.filter(b=>b.matches(':disabled')).length});const observer=new MutationObserver(sample);observer.observe(document.getElementById('root'),{subtree:true,childList:true,attributes:true});const tick=()=>{if(!running)return;sample();requestAnimationFrame(tick);};tick();window.end=()=>{running=false;observer.disconnect();return samples;};};`,
   );
-  for (const key of ["theme", "sendKey", "density"]) {
+  for (const key of ["theme", "sendKey"]) {
     await evaluate("window.begin()");
     await evaluate(`window.probe.model.preference(${JSON.stringify(key)})`);
     await evaluate("window.probe.pause()");

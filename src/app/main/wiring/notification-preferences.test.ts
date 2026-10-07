@@ -35,8 +35,9 @@ it("migrates schema10 after recovery, preserving legacy preferences and backup",
     });
     expect(store.preferences.read()).toEqual({
       theme: "light",
-      density: "normal",
+      density: "compact",
       locale: "zh-CN",
+      sendKey: undefined,
     });
     store.close();
     const reopened = AppStorage.open(path);

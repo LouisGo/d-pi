@@ -1,5 +1,5 @@
 import { Outlet } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { type ReactNode, useContext } from "react";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import { Button } from "@/components/ui/button";
@@ -7,9 +7,19 @@ import { ConfigurationSettings } from "../../../modules/configuration/renderer/p
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import { BUILD_INFO } from "../../../shared/build-info";
 import type { AppModel } from "../wiring/model";
-import { AttentionCenter, AttentionPreferences } from "./attention";
+import {
+  AttentionCenter,
+  AttentionIndicator,
+  AttentionPreferences,
+} from "./attention";
 import { Diagnostics } from "./diagnostics";
-import { PreferenceToolbar } from "./preference-toolbar";
+import { WorkbenchHostsContext } from "./layout/hosts-context";
+import { WorkbenchFrame } from "./layout/workbench-frame";
+import {
+  AppearanceSettings,
+  PreferenceToolbar,
+  ThreadNavigationControls,
+} from "./preference-toolbar";
 import { ProjectThreads } from "./project-threads";
 import { ThreadNotice } from "./thread-notice";
 
@@ -31,6 +41,7 @@ function StartupLoading() {
   const { t } = useI18n();
   return (
     <main className="startup" role="status">
+      <div className="window-drag-strip" aria-hidden="true" />
       {t("app.loading")}
     </main>
   );
@@ -44,6 +55,7 @@ function StartupFailure({ model }: { model: AppModel }) {
   if (!error) return null;
   return (
     <main className="startup failure">
+      <div className="window-drag-strip" aria-hidden="true" />
       <h1>{t("app.failure.title")}</h1>
       <p>{formatMessage(error.message)}</p>
       <p className="trace">{t("app.trace", { traceId: error.traceId })}</p>
@@ -56,23 +68,29 @@ function StartupFailure({ model }: { model: AppModel }) {
 }
 
 function ReadyWorkbench({ model, children }: ApplicationLayoutProps) {
+  const hosts = useContext(WorkbenchHostsContext);
   return (
     <ShellFrame model={model}>
-      <aside className="sidebar">
-        <div className="brand">
-          {/* i18n-ignore: product brand and release marker */}
-          d-pi <span>M2</span>
-        </div>
-        <ProjectThreads model={model} />
-        <SidebarFooter model={model} />
-      </aside>
-      <main className="workbench">
-        <PreferenceToolbar model={model} />
-        <ThreadNotice model={model} />
-        <AttentionCenter model={model} />
-        <ThreadConfiguration model={model} />
-        <div className="work-content">{children ?? <Outlet />}</div>
-      </main>
+      <WorkbenchFrame
+        {...hosts}
+        conversationIndicator={<AttentionIndicator model={model} />}
+        sidebar={
+          <>
+            <ProjectThreads model={model} />
+            <SidebarFooter model={model} />
+          </>
+        }
+        toolbar={<PreferenceToolbar model={model} />}
+        navigationControls={<ThreadNavigationControls model={model} />}
+        settingsNavigation={<SettingsNavigation />}
+        settings={<SettingsSurface model={model} />}
+      >
+        <main className="workbench">
+          <ThreadNotice model={model} />
+          <AttentionCenter model={model} />
+          <div className="work-content">{children ?? <Outlet />}</div>
+        </main>
+      </WorkbenchFrame>
     </ShellFrame>
   );
 }
@@ -96,8 +114,6 @@ function SidebarFooter({ model }: { model: AppModel }) {
   const { t } = useI18n();
   return (
     <div className="sidebar-bottom">
-      <AttentionPreferences model={model} />
-      <Diagnostics />
       <span className="muted">{t("app.sidebar.localDraft")}</span>
       <span className="muted">{t("app.executionNeedsApproval")}</span>
       <span className="trace muted" title={BUILD_INFO.commit}>
@@ -133,6 +149,52 @@ function ThreadConfiguration({ model }: { model: AppModel }) {
           }
         />
       )}
+    </>
+  );
+}
+
+function SettingsNavigation() {
+  const { t } = useI18n();
+  return (
+    <nav className="settings-navigation" aria-label={t("app.layout.settings")}>
+      {(
+        ["appearance", "configuration", "attention", "diagnostics"] as const
+      ).map((section) => (
+        <Button
+          key={section}
+          variant="navigation"
+          onClick={() =>
+            document
+              .getElementById(`settings-${section}`)
+              ?.scrollIntoView({ block: "start" })
+          }
+        >
+          {t(`app.layout.${section}`)}
+        </Button>
+      ))}
+    </nav>
+  );
+}
+function SettingsSurface({ model }: { model: AppModel }) {
+  const { t } = useI18n();
+  return (
+    <>
+      <section id="settings-appearance" className="settings-section">
+        <h2>{t("app.layout.appearance")}</h2>
+        <AppearanceSettings model={model} />
+      </section>
+      <section id="settings-configuration" className="settings-section">
+        <h2>{t("app.layout.configuration")}</h2>
+        <ThreadConfiguration model={model} />
+      </section>
+      <section id="settings-attention" className="settings-section">
+        <h2>{t("app.layout.attention")}</h2>
+        <AttentionPreferences model={model} />
+      </section>
+      <section id="settings-diagnostics" className="settings-section">
+        <h2>{t("app.layout.diagnostics")}</h2>
+        <Diagnostics contained />
+      </section>
     </>
   );
 }

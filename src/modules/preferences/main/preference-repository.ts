@@ -23,8 +23,8 @@ export class PreferenceRepository {
   }
   save(value: Preferences): void {
     this.db
-      .prepare("UPDATE desktop SET theme=?,density=?,send_key=? WHERE id=1")
-      .run(value.theme, value.density, value.sendKey ?? null);
+      .prepare("UPDATE desktop SET theme=?,send_key=? WHERE id=1")
+      .run(value.theme, value.sendKey ?? null);
   }
   readNotifications(): NotificationPreferences {
     const row = this.db

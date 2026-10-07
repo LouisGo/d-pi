@@ -239,17 +239,10 @@ async function evaluate(expression) {
   return reply.result.value;
 }
 async function click(text) {
-  await wait(
-    () =>
-      evaluate(
-        `Array.from(document.querySelectorAll('button')).some(b=>b.textContent.trim()===${JSON.stringify(text)}&&!b.disabled)`,
-      ),
-    30000,
-    `button available: ${text}`,
-  );
-  await evaluate(
-    `Array.from(document.querySelectorAll('button')).find(b=>b.textContent.trim()===${JSON.stringify(text)}).click()`,
-  );
+  // A visible text action wins over a homonymous icon (e.g. reading vs rail Conversation).
+  const lookup = `(()=>{const scope=document.querySelector('.ui-settings-modal:not([hidden])')??document;const buttons=[...scope.querySelectorAll('button')].filter(b=>!b.disabled&&!b.closest('[hidden],[inert]')&&b.getBoundingClientRect().width>0&&getComputedStyle(b).visibility!=='hidden');return buttons.find(b=>b.textContent.trim()===${JSON.stringify(text)})??buttons.find(b=>b.getAttribute('aria-label')===${JSON.stringify(text)});})()`;
+  await wait(() => evaluate(`!!${lookup}`), 30000, `button available: ${text}`);
+  await evaluate(`(${lookup}).click()`);
 }
 async function selectThread(id) {
   if (process.argv.includes("--continuity"))
@@ -375,6 +368,7 @@ let agedAttachmentPath;
 let longReadingMetrics;
 let diagnosticsMetrics;
 let attentionMetrics;
+let workbenchLayout;
 try {
   await connect();
   if (process.argv.includes("--diagnostics"))
@@ -382,12 +376,75 @@ try {
   await wait(() =>
     evaluate("!!document.querySelector('[contenteditable=true]')"),
   );
+  if (process.argv.includes("--workbench")) {
+    workbenchLayout = await evaluate(
+      "(()=>{const h=document.querySelector('.primary-sidebar>.panel-header');return {top:h.getBoundingClientRect().top,inner:innerHeight,outer:outerHeight,controls:[...h.querySelectorAll('button')].map(b=>({name:b.getAttribute('aria-label')||b.title,left:b.getBoundingClientRect().left})),density:document.documentElement.hasAttribute('data-density'),workspace:document.querySelector('[data-layout-region=workspace]').getBoundingClientRect().width,bottom:document.querySelector('[data-layout-region=bottom]').getBoundingClientRect().height,icons:[...document.querySelectorAll('.ui-button-icon')].filter(b=>b.getBoundingClientRect().width>0&&getComputedStyle(b).visibility!=='hidden'&&!b.closest('[hidden],[inert]')).map(b=>{const r=b.getBoundingClientRect(),s=b.querySelector('svg').getBoundingClientRect(),i=b.querySelector('.ui-icon-button-indicator');return {name:b.getAttribute('aria-label')||b.title,dx:s.x+s.width/2-r.x-r.width/2,dy:s.y+s.height/2-r.y-r.height/2,overlay:!i||(getComputedStyle(i).position==='absolute'&&getComputedStyle(i).pointerEvents==='none')};})};})()",
+    );
+    assert.equal(workbenchLayout.top, 0);
+    assert.equal(workbenchLayout.inner, workbenchLayout.outer);
+    assert.deepEqual(
+      workbenchLayout.controls.map((c) => c.name),
+      ["后退", "前进", "打开或收起项目导航"],
+    );
+    assert.ok(workbenchLayout.controls[0].left >= 96);
+    assert.equal(workbenchLayout.density, false);
+    assert.ok(workbenchLayout.workspace < 1 && workbenchLayout.bottom < 1);
+    assert.ok(
+      workbenchLayout.icons.length >= 5 &&
+        workbenchLayout.icons.every(
+          (i) => Math.abs(i.dx) < 0.5 && Math.abs(i.dy) < 0.5 && i.overlay,
+        ),
+    );
+    checks.push(
+      "packaged workbench uses one native header, navigation after controls, compact default, closed empty hosts and centered icons with out-of-flow indicators",
+    );
+    screenshots.push(await shot("workbench-header"));
+    await click("跟随系统外观");
+    await wait(() =>
+      evaluate(
+        "!!document.querySelector('.toolbar [data-theme-preference=system]')",
+      ),
+    );
+    assert.equal(
+      db.prepare("SELECT theme FROM desktop WHERE id=1").get().theme,
+      "system",
+    );
+    await click("切换为浅色主题");
+    await wait(() =>
+      evaluate("document.documentElement.dataset.theme==='light'"),
+    );
+    await click("切换为深色主题");
+    await wait(() =>
+      evaluate("document.documentElement.dataset.theme==='dark'"),
+    );
+    checks.push(
+      "packaged Main persists system theme and retains the three-mode cycle with legacy density unchanged",
+    );
+  }
+  await click("设置");
+  await evaluate(
+    "document.querySelector('[data-diagnostics-trigger=global]').click()",
+  );
+  await wait(() =>
+    evaluate("!!document.querySelector('[data-diagnostics-panel]')"),
+  );
+  assert.equal(
+    await evaluate(
+      "(()=>{const p=document.querySelector('[data-diagnostics-panel]'),input=p.querySelector('input');input.focus();return !!p.closest('.ui-settings-modal')&&document.activeElement===input;})()",
+    ),
+    true,
+  );
+  await evaluate("document.querySelector('[data-diagnostics-close]').click()");
+  checks.push(
+    "settings Modal retains an operable diagnostics panel within its focus scope",
+  );
   await evaluate("document.querySelector('.configuration-settings').open=true");
   await wait(() =>
     evaluate(
       "document.querySelector('.configuration-settings').textContent.includes('OpenAI') && !document.querySelector('.configuration-settings').textContent.includes('正在读取')",
     ),
   );
+  await click("关闭");
   await wait(() =>
     evaluate(
       "document.querySelector('.model-controls select')?.options.length===3",
@@ -605,21 +662,21 @@ try {
       assert.equal(candidates[0].path, "packages/src/@virtualList");
       assert.ok(candidates.some((entry) => entry.kind === "file"));
       assert.ok(candidates[0].text.includes("文件夹"));
-      screenshots.push(await shot("m2-reference-search-dark-normal"));
+      screenshots.push(await shot("m2-reference-search-dark-default"));
       await evaluate(
         "document.querySelector('button[aria-label=\"切换为浅色主题\"]').click()",
       );
-      await click("紧凑密度");
+
       await wait(() =>
         evaluate(
           "[...document.querySelectorAll('.composer [role=option]')].every(el=>!el.disabled) && !document.querySelector('button[aria-label=\"切换为深色主题\"]').disabled",
         ),
       );
-      screenshots.push(await shot("m2-reference-search-light-compact"));
+      screenshots.push(await shot("m2-reference-search-light-default"));
       await evaluate(
         "document.querySelector('button[aria-label=\"切换为深色主题\"]').click()",
       );
-      await click("正常密度");
+
       await wait(() =>
         evaluate(
           "[...document.querySelectorAll('.composer [role=option]')].every(el=>!el.disabled) && !document.querySelector('button[aria-label=\"切换为浅色主题\"]').disabled",
@@ -1484,6 +1541,7 @@ try {
     longReading: longReadingMetrics,
     diagnostics: diagnosticsMetrics,
     attention: attentionMetrics,
+    workbench: workbenchLayout,
     attentionProviderCalls: attentionSupplier.requests.length,
     models: requests.map((r) => r.model),
     nativeSessions: db

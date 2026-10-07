@@ -58,6 +58,47 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+it("cycles through system appearance, follows OS changes without saving, and releases the observer", async () => {
+  const dataset: Record<string, string> = {};
+  vi.stubGlobal("document", { documentElement: { dataset } });
+  let listener: (() => void) | undefined;
+  const media = {
+    matches: true,
+    addEventListener: vi.fn((_event: string, callback: () => void) => {
+      listener = callback;
+    }),
+    removeEventListener: vi.fn(),
+  };
+  vi.stubGlobal("window", { matchMedia: () => media });
+  const saves: string[] = [];
+  const model = new AppModel(
+    bridge(async (command) => {
+      if (command.kind === "preferences") {
+        saves.push(command.value.theme);
+        return { kind: "preferences-saved", value: command.value };
+      }
+      return ready();
+    }),
+  );
+  await model.start();
+  await model.preference("theme");
+  await model.preference("theme");
+  expect(saves).toEqual(["dark", "system"]);
+  expect(theme(model)).toBe("system");
+  expect(dataset.theme).toBe("dark");
+  media.matches = false;
+  listener?.();
+  expect(dataset.theme).toBe("light");
+  expect(saves).toHaveLength(2);
+  await model.preference("theme");
+  expect(saves).toEqual(["dark", "system", "light"]);
+  media.matches = true;
+  listener?.();
+  expect(dataset.theme).toBe("light");
+  model.dispose();
+  expect(media.removeEventListener).toHaveBeenCalledWith("change", listener);
+});
+
 it("notifies a selected projection only when that projection changes", async () => {
   vi.stubGlobal("document", { documentElement: { dataset: {} } });
   const restore = deferred();

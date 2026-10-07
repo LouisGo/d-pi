@@ -1,0 +1,19 @@
+# A 基础布局双轴审查
+
+初次独立只读审查固定范围37e1a62b889fdfaa1db274b60bac69b98d54d23c…8823a3b76544bfbdd8a5be1511caf2baa0e48c9e，实际merge-base等于base。两个独立subagent分别覆盖Spec和Standards；主Agent核实后修复；两个独立审查分别复核8823a3b…31f76a7，均通过，无新增高价值问题。
+
+- Spec P1：设置隐藏会话但注意力仍上报visible/seen，通知打开不切回会话。新增隐藏与通知回归确实失败；改为同一shell可见性context，Attention按真实可见状态上报、已通过原导航准入的显式通知打开才reveal；一级导航显示真实未读提示，窗口业务政策不变。25项相关测试和实际Electron隐藏期间未读/通知打开检查通过。
+- Spec P2：旧app.css同layer的.work-content max-width覆盖新规则。移除旧整区限宽，正文/Composer限宽保留；大窗口实际Electron断言WorkArea填满主区域且Composer不超896px通过。该修复前未单独跑该断言红灯，依据是固定源码与CSS覆盖顺序。
+- Standards P2：分隔条是区域外的sibling，折叠不回恢复入口。实际Electron左侧阈值关闭焦点断言失败；补充shell焦点区域跟踪（包括三条separator），三个阈值折叠回焦均通过。
+
+用户随后明确custom header要求，已补Main hiddenInset、原生控件安全区、空白drag/交互no-drag、启动状态拖动区；Main原关闭/草稿保存协议继续通过。完整check806行为/35架构/89tooling通过。该新增差异也纳入独立复核；实际macOS物理拖动仍由交付验证记录证明。
+
+2026-10-07截图补充：原生控件右侧改为后退/前进/侧栏开关，删除左侧区域名称与重复关闭按钮。窄窗或侧栏收起时同一组控件放在主区最左侧安全区；原Router准入与业务资源不变。新Electron位置断言先失败后通过，共48条记录。该新增差异另行冻结复核。
+
+381d105 的新增导航差异经 Spec 独立复核通过；Standards 指出导航组换位时恢复方向可能丢焦点。主Agent补真实Chromium Enter恢复断言，修复前false，修复后通过；Frame记录具体导航按钮焦点归属，在位置切换后恢复同一动作，缩窗不抢Composer焦点。后续固定提交再复核。
+
+4cf3cee的导航焦点修复经Standards独立复核通过。用户截图发现未读空状态wrapper占flex流与gap导致偏心；主Agent实际Electron全图标中心回归先false，修复自有IconButton独立图标/indicator插槽与共享icon尺寸。数字0采用显式null/undefined判断，避免truthy条件把裸0放回文档流；主题动作同用IconButton，历史箭头的隐藏标签继续排除流。图标/文字项目行沿用不收缩图标加正文，未把正文状态当作角标挪动。新增验证覆盖两个主题、窄窗/中文、未读有无、关闭按钮、数值0/999+和禁用长辅助标签样本；56条Electron记录通过。
+
+最终新增图标差异固定4cf3cee…91499e7：Spec与Standards均独立只读复核通过，无新增高价值问题；0插槽、指针命中、按钮名称/ref/Tooltip/状态播报保留。VoiceOver实际播报未独立验证。91499e7为最终候选源提交，后续仅验证/交接文档。
+
+2026-10-07 七项试用反馈的新增冻结范围3045d46…93e18a5593df93806528d6858b173536ea5abb20：Spec与Standards两个独立只读复核均通过，无新增高价值缺陷。Spec独立复跑29项模型/实际App订阅/语言测试通过；双方核对Modal自有封装与焦点、背景资源保持、侧栏动作准入、语言窄订阅、system持久化/解析主题/监听释放及outline替代焦点。实际包与原生操作由主Agent继续核实，不把既有验证缺口或用户认可记为完成。

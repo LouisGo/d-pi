@@ -23,6 +23,13 @@
       "specifier": "^(?:effect/unstable(?:$|/)|@effect/)",
       "allowedFrom": [],
       "reason": "D-39: only the stable core package is adopted"
+    },
+    {
+      "specifier": "^react-resizable-panels(?:$|/)",
+      "allowedFrom": [
+        "^src/app/renderer/components/ui/resizable\\.tsx$"
+      ],
+      "reason": "D-32: panel primitives stay behind the project-owned UI adapter"
     }
   ],
   "unresolved": {

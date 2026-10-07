@@ -7,7 +7,8 @@
 ## 当前状态与变化
 
 - React + TypeScript + Tailwind CSS、自有组件 API 与设计变量继续沿用；Base UI 为默认基础交互，积极复用 shadcn/ui 源码。React Aria 是复杂交互对照，Radix 仅在具体适配需要时局部评估。
-- 保留 Beautiful UI 的重要视觉参考地位，以及 Tool UI 的工具结果表达参考；两者都不替换 OMP 状态所有权。
+- 保留 Beautiful UI 与 Tool UI 作为组件写法、组合与交互表达的重要参考，允许选择性源码改造，不直接引入整套库。2026-10-06 用户明确至少经过一层 d-pi 自有封装，应用消费者只使用自有组件 API；两者都不替换 OMP 状态所有权。
+- 2026-10-06 视觉要求：基础/配套/业务组件的角色、token 与状态表达一致，light/dark 必备；取消密度切换，原 compact 尺寸成为唯一默认紧凑布局，旧双密度建设被取代。规则以[设计系统合同](../architecture/design-system.md)为准，不带入上游独立色板、圆角或密度体系。
 - 当前修订：Biome 取代 ESLint + Prettier；S1 接入 @shadcn/lint 与限定设计检查范围的 Oxlint。Streamdown + Shiki 统一内容渲染，不额外维护业务 react-markdown 入口。
 - 继续保留 Virtua / React Virtuoso / TanStack Virtual、Motion、Pacer、birpc、LiveStore 等候选及采用条件；保留候选不等于预装依赖。
 - Monaco 已定；Composer 由 D-33 确认最小 Tiptap 与业务扩展。SQLite 用于 App 结构化存储，ts-pattern/Zod v4 按[TypeScript 合同](../architecture/typescript.md)执行。Git Panel、内置浏览器与终端的范围不变，见[增量技术评估](../../.scratch/product-requirements/technical-evaluation.md)。选型确认不等于集成通过。
@@ -19,8 +20,8 @@
 
 ## 先读：组件与 Runtime 的边界
 
-1. **项目拥有组件表达，成熟基础能力优先复用。**React + TypeScript + Tailwind CSS 是基础；我们定义设计变量、视觉语言、稳定组件 API 和状态展示规则，优先改造 shadcn/ui 源码并使用 Base UI 交互能力。自有组件层不要求从零重写控件或给每个 primitive 机械加壳；外部 API 不进入无头业务合同。复杂控件可对照 React Aria。
-2. **Beautiful UI 是重要的视觉与交互参考。**允许在核对依赖和许可证后选取、改造部分源码或素材，统一纳入自有组件 API 与设计变量。Tool UI 主要用于学习工具结果的结构化表达、校验和操作回执。两者都不拥有 OMP 执行状态。
+1. **项目拥有组件表达，成熟基础能力优先复用。**React + TypeScript + Tailwind CSS 是基础；基础交互继续优先 Base UI 与 shadcn 官方 Base UI 源码。所有借用的 UI 实现至少封装为 d-pi 自有组件，应用只使用自有公开 API；不从零重写成熟能力，也不以改名转导出代替封装。具体写法与导入边界单源见[设计系统合同](../architecture/design-system.md#自有组件库与实现选择2026-10-06)。复杂控件可对照 React Aria。
+2. **Beautiful UI 与 Tool UI 是组件写法的重要参考。**比较部件组合、状态输入、动作回调、样式归属与配套组件分工；先用自有组件组合，源码贴近需求且适配成本合理时再选择性改造。Beautiful UI 偏 AI 输入/过程表达，Tool UI 偏结构化结果/交互；两者都不拥有 OMP 执行状态，也不作为应用直接消费的组件 API。固定源码比较见[依据](../architecture/design-system-references.md#ai-组件的写法与配套组织2026-10-06)。
 3. **OMP 拥有 Agent 执行、工具、排队、干预、停止和原生会话。**SessionHost 维护[会话镜像](../../GLOSSARY.md)与同步；Renderer 负责展示和提交用户操作。任何 UI 组件都必须以真实 OMP 事件和交互请求为输入，按请求 ID、连接世代及过期状态回传回答，不以动画计时器推断任务进度。详见 [ADR-0001](../adr/0001-omp-session-client.md)。
 4. **D-32 确认 Base UI 为默认交互基础。**取代先前“不作为默认底座”的结论。历史 [Button](https://github.com/LouisGo/d-pi/blob/6fab3efd0526d2d716d7939b75202a88f857078a/src/renderer/src/components/ui/button.tsx) 与 [components.json](https://github.com/LouisGo/d-pi/blob/6fab3efd0526d2d716d7939b75202a88f857078a/components.json)仍只证明旧依赖；当前采用依据是 09-26 用户确认，不直接恢复旧主题、旧组件或旧锁文件。引入 UI 源码时继续按 D-31 迁移 Hugeicons 并验收交互。
 
@@ -114,8 +115,8 @@
 
 1. 从用户可见的问题和当前 [阶段计划](../architecture/overview.md)出发，定位本页候选及比较对象；核对 OMP 是否已提供该能力，确定是展示、交互、传输还是 App 自有数据问题。
 2. 查看候选的官方文档、源码、当前版本和许可证。Beautiful UI／Tool UI 按组件审查源码、样式和传递依赖；不得将演示数据、计时器或第三方运行时所有权直接复制进正式流程。
-3. 用真实 OMP 或保真协议样本验证上述采用条件，并记录相较现有实现的具体收益与代价。性能候选需要可复用的长输出／长历史样本。
-4. 采用后写明包名、固定版本、实际入口文件、验证证据和剩余限制，更新本页状态与锁文件。尚未采用的候选保持可查，不预装依赖。
+3. 比较已有组件组合、底层薄封装、选择性源码改造三种方式；确定 d-pi 公开入口与内部适配边界后，用真实 OMP 或保真协议样本验证相关采用条件，记录收益与代价。性能候选需要可复用的长输出／长历史样本。
+4. 采用后写明实际方式、固定来源/版本、许可、适配改动、自有公开入口、验证证据和剩余限制，更新本页状态；仅实际新增依赖时更新锁文件。检查消费者没有绕过自有入口。尚未采用的候选保持可查，不预装依赖。
 
 ## 图标来源（D-31，2026-09-25）
 

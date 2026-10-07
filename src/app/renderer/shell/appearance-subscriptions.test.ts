@@ -323,6 +323,33 @@ function renderCounts() {
   );
 }
 
+it("places Thread creation and project opening in the sidebar and settings in a modal over mounted work", async () => {
+  const fixture = await setup();
+  const sidebar = fixture.container.querySelector(".primary-sidebar");
+  expect(sidebar?.querySelector("[data-new-thread]")?.textContent).toContain(
+    i18n.t("app.toolbar.newThread"),
+  );
+  expect(
+    sidebar?.querySelector(".sidebar-label button")?.getAttribute("aria-label"),
+  ).toBe(i18n.t("app.empty.choose"));
+  expect(fixture.container.querySelector(".toolbar select")).toBeNull();
+  const work = fixture.container.querySelector(".conversation-body");
+  const controller = fixture.model.controller;
+  await act(() => fixture.button(i18n.t("app.layout.settings")).click());
+  const modal = document.querySelector(".ui-settings-modal");
+  expect(modal?.getAttribute("role")).toBe("dialog");
+  expect(modal?.querySelector("#settings-appearance select")).not.toBeNull();
+  expect(fixture.container.querySelector(".conversation-body")).toBe(work);
+  expect(work?.hasAttribute("hidden")).toBe(false);
+  expect(fixture.model.controller).toBe(controller);
+  const close = modal?.querySelector<HTMLButtonElement>("[aria-label='Close']");
+  if (!close) throw Error("missing modal close");
+  await act(() => close.click());
+  expect(
+    document.querySelector(".ui-settings-modal")?.hasAttribute("hidden"),
+  ).toBe(true);
+});
+
 it("keeps normal controls and Thread views untouched while saving a theme", async () => {
   const fixture = await setup();
   const initial = renderCounts();
@@ -339,7 +366,9 @@ it("keeps normal controls and Thread views untouched while saving a theme", asyn
     fixture.settle();
     await saving;
   });
-  expect(fixture.button(i18n.t("app.toolbar.lightTheme")).disabled).toBe(false);
+  expect(fixture.button(i18n.t("app.toolbar.systemTheme")).disabled).toBe(
+    false,
+  );
   expect(document.documentElement.dataset.theme).toBe("dark");
   expect(renderCounts()).toEqual(initial);
 });
@@ -397,48 +426,47 @@ it("does not mutate appearance attributes when only the send shortcut changes", 
     );
     expect(attributes).toEqual([]);
     expect(document.documentElement.dataset.theme).toBe("light");
-    expect(document.documentElement.dataset.density).toBe("normal");
+    expect(document.documentElement.dataset.density).toBeUndefined();
   } finally {
     observer.disconnect();
   }
 });
 
-it("isolates density, busy and failed-save notices while preserving the previous preference", async () => {
+it("ignores legacy density and exposes only the default compact appearance", async () => {
+  const fixture = await setup();
+  expect(document.documentElement.dataset.density).toBeUndefined();
+  expect(fixture.container.textContent).not.toContain(
+    i18n.t("app.toolbar.compactDensity"),
+  );
+  expect(fixture.container.textContent).not.toContain(
+    i18n.t("app.toolbar.normalDensity"),
+  );
+});
+
+it("isolates theme busy and failed-save notices while preserving the previous preference", async () => {
   const fixture = await setup();
   const initial = renderCounts();
-  const compactButton = () =>
-    Array.from(fixture.container.querySelectorAll("button")).find(
-      (button) => button.textContent === i18n.t("app.toolbar.compactDensity"),
-    );
   let saving: Promise<void> | undefined;
   await act(() => {
-    saving = fixture.model.preference("density");
+    saving = fixture.model.preference("theme");
   });
-  expect(compactButton()?.disabled).toBe(false);
-  expect(fixture.container.querySelector("select")?.disabled).toBe(false);
   expect(renderCounts()).toEqual(initial);
   await act(async () => {
     fixture.settle(true);
     await saving;
   });
-  expect(compactButton()?.disabled).toBe(false);
-  expect(fixture.container.querySelector("select")?.disabled).toBe(false);
-  expect(document.documentElement.dataset.density).toBe("normal");
+  expect(document.documentElement.dataset.theme).toBe("light");
   expect(fixture.container.querySelector(".notice")?.textContent).toContain(
     i18n.t("draft.storageUnavailable"),
   );
   expect(renderCounts()).toEqual(initial);
-
   await act(async () => {
-    const retry = fixture.model.preference("density");
+    const retry = fixture.model.preference("theme");
     fixture.settle();
     await retry;
   });
-  expect(document.documentElement.dataset.density).toBe("compact");
+  expect(document.documentElement.dataset.theme).toBe("dark");
   expect(fixture.container.querySelector(".notice")).toBeNull();
-  expect(fixture.container.textContent).toContain(
-    i18n.t("app.toolbar.normalDensity"),
-  );
   expect(renderCounts()).toEqual(initial);
 });
 
@@ -453,7 +481,7 @@ it("writes only the appearance attribute that changes", async () => {
     attributeFilter: ["data-theme", "data-density"],
   });
   try {
-    for (const key of ["theme", "density"] as const) {
+    for (const key of ["theme"] as const) {
       await act(async () => {
         const saving = fixture.model.preference(key);
         fixture.settle();
@@ -463,7 +491,7 @@ it("writes only the appearance attribute that changes", async () => {
     attributes.push(
       ...observer.takeRecords().map((record) => record.attributeName),
     );
-    expect(attributes).toEqual(["data-theme", "data-density"]);
+    expect(attributes).toEqual(["data-theme"]);
   } finally {
     observer.disconnect();
   }
@@ -581,7 +609,10 @@ it("still updates localized workbench text when the language context changes", a
   expect(fixture.container.textContent).toContain(
     i18n.t("ui.conversation.heading"),
   );
-  const language = fixture.container.querySelector("select");
+  await act(() => fixture.button(i18n.t("app.layout.settings")).click());
+  const language = document.querySelector<HTMLSelectElement>(
+    "#settings-appearance select",
+  );
   if (!language) throw Error("missing language selector");
   await act(async () => {
     language.value = "zh-CN";
@@ -616,10 +647,10 @@ it("applies a preference receipt to the current App after Thread navigation with
 it("serializes rapid preference changes without blocking navigation or losing earlier fields", async () => {
   const fixture = await setup();
   let theme: Promise<void> | undefined;
-  let density: Promise<void> | undefined;
+  let shortcut: Promise<void> | undefined;
   await act(() => {
     theme = fixture.model.preference("theme");
-    density = fixture.model.preference("density");
+    shortcut = fixture.model.preference("sendKey");
   });
   expect(fixture.model.getSnapshot()).toMatchObject({
     kind: "ready",
@@ -632,10 +663,10 @@ it("serializes rapid preference changes without blocking navigation or losing ea
   expect(document.documentElement.dataset.theme).toBe("dark");
   await act(async () => {
     fixture.settle();
-    await density;
+    await shortcut;
   });
   expect(fixture.model.getSnapshot()).toMatchObject({
-    preferences: { theme: "dark", density: "compact" },
+    preferences: { theme: "dark", sendKey: "enter-newline" },
   });
 });
 

@@ -173,6 +173,9 @@ export function startDesktopApplication(mainDirectory: string): void {
       minWidth: 720,
       minHeight: 540,
       title: "d-pi",
+      ...(process.platform === "darwin"
+        ? { titleBarStyle: "hiddenInset" as const }
+        : {}),
       show: false,
       webPreferences: {
         preload: join(mainDirectory, "../preload/index.cjs"),

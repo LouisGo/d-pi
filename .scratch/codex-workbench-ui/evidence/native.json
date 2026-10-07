@@ -1,0 +1,739 @@
+{
+  "checks": [
+    {
+      "name": "all-icon-actions-centered-with-empty-attention",
+      "value": [
+        {
+          "label": "Conversation",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Settings",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Back",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Forward",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Open or collapse project navigation",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Switch to dark theme",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "navigation-controls-follow-native-window-controls",
+      "value": true
+    },
+    {
+      "name": "production-empty-hosts-closed",
+      "value": true
+    },
+    {
+      "name": "custom-header-shares-native-content-top",
+      "value": true
+    },
+    {
+      "name": "compact-default-from-legacy-normal",
+      "value": true
+    },
+    {
+      "name": "settings-reuses-existing-capabilities",
+      "value": true
+    },
+    {
+      "name": "hidden-settings-retains-unread-and-visible-rail-indicator",
+      "value": true
+    },
+    {
+      "name": "all-icon-actions-centered-with-unread-attention",
+      "value": [
+        {
+          "label": "Conversation",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Settings",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Back",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Forward",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Open or collapse project navigation",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Switch to dark theme",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "notification-intent-reveals-existing-conversation",
+      "value": true
+    },
+    {
+      "name": "settings-keep-editor-and-reading",
+      "value": {
+        "editor": true,
+        "controller": true,
+        "scroll": 150
+      }
+    },
+    {
+      "name": "left-resize-persists-only-user-size",
+      "value": 344.98851
+    },
+    {
+      "name": "pointercancel-restores-no-write",
+      "beforeCancel": {
+        "x": 52,
+        "y": 0,
+        "width": 344.9921875,
+        "height": 900
+      },
+      "afterCancel": {
+        "x": 52,
+        "y": 0,
+        "width": 344.9921875,
+        "height": 900
+      }
+    },
+    {
+      "name": "keyboard-resize-after-cancel",
+      "value": {
+        "width": 275.640625,
+        "saved": 275.63851
+      }
+    },
+    {
+      "name": "collapse-preview-drag-back",
+      "value": true
+    },
+    {
+      "name": "left-threshold-collapse",
+      "value": true
+    },
+    {
+      "name": "left-collapse-returns-focus",
+      "value": true
+    },
+    {
+      "name": "keyboard-sidebar-restore-retains-navigation-focus",
+      "value": true
+    },
+    {
+      "name": "left-explicit-restore",
+      "value": {
+        "width": 275.640625,
+        "saved": "{\"sidebar\":{\"open\":true,\"size\":275.63851},\"workspace\":{\"open\":false,\"size\":416},\"bottom\":{\"open\":false,\"size\":220}}"
+      }
+    },
+    {
+      "name": "navigation-relocation-does-not-steal-composer-focus",
+      "value": true
+    },
+    {
+      "name": "minimum-window-protects-input-and-reading",
+      "value": {
+        "width": 720,
+        "height": 540,
+        "overflow": false,
+        "nav": 0,
+        "reading": 125.4140625,
+        "editorBottom": 528,
+        "bodyHeight": 540
+      }
+    },
+    {
+      "name": "narrow-navigation-overlay",
+      "value": true
+    },
+    {
+      "name": "overlay-returns-focus",
+      "value": true
+    },
+    {
+      "name": "all-icon-actions-centered-in-dark-narrow-window",
+      "value": [
+        {
+          "label": "Conversation",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Settings",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Back",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Forward",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Open or collapse project navigation",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Switch to light theme",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "responsive-preserves-user-intent",
+      "value": true
+    },
+    {
+      "name": "automatic-sidebar-restore",
+      "value": true
+    },
+    {
+      "name": "isolated-three-regions-open",
+      "value": true
+    },
+    {
+      "name": "right-and-bottom-user-resize",
+      "value": {
+        "right": 471.14769,
+        "bottom": 259.99979
+      }
+    },
+    {
+      "name": "workspace-cancel-no-write",
+      "before": {
+        "x": 968.6953125,
+        "y": 0,
+        "width": 471.3046875,
+        "height": 639
+      },
+      "after": {
+        "x": 968.6953125,
+        "y": 0,
+        "width": 471.3046875,
+        "height": 639
+      }
+    },
+    {
+      "name": "workspace-keyboard-persists",
+      "value": {
+        "size": 526.5234375,
+        "saved": 526.8211090625
+      }
+    },
+    {
+      "name": "bottom-cancel-no-write",
+      "before": {
+        "x": 328.640625,
+        "y": 640,
+        "width": 1111.359375,
+        "height": 260
+      },
+      "after": {
+        "x": 328.640625,
+        "y": 640,
+        "width": 1111.359375,
+        "height": 260
+      }
+    },
+    {
+      "name": "bottom-keyboard-persists",
+      "value": {
+        "size": 304.953125,
+        "saved": 304.94979
+      }
+    },
+    {
+      "name": "bottom-scroll-independent",
+      "value": true
+    },
+    {
+      "name": "central-primary-and-muted-propagate",
+      "value": {
+        "before": {
+          "action": "rgb(168, 193, 255)",
+          "nav": "color(srgb 0.184157 0.208902 0.267059)",
+          "text": "rgb(165, 173, 189)"
+        },
+        "after": {
+          "action": "rgb(137, 80, 32)",
+          "nav": "color(srgb 0.170784 0.160157 0.170863)",
+          "text": "rgb(68, 85, 102)"
+        }
+      }
+    },
+    {
+      "name": "headers-share-panel-geometry",
+      "value": {
+        "top": [
+          0,
+          0,
+          0
+        ],
+        "height": [
+          44,
+          44,
+          44
+        ],
+        "rightEdge": 967.84375,
+        "rightStart": 968.84375
+      }
+    },
+    {
+      "name": "drag-keeps-editor-controller-reading-and-monaco",
+      "value": true
+    },
+    {
+      "name": "tab-keyboard-selection",
+      "value": true
+    },
+    {
+      "name": "tab-return-preserves-monaco",
+      "value": true
+    },
+    {
+      "name": "right-threshold-close",
+      "value": true
+    },
+    {
+      "name": "right-collapse-returns-focus",
+      "value": true
+    },
+    {
+      "name": "bottom-threshold-close",
+      "value": true
+    },
+    {
+      "name": "bottom-collapse-returns-focus",
+      "value": true
+    },
+    {
+      "name": "restore-preserves-views",
+      "value": true
+    },
+    {
+      "name": "undo-through-shell",
+      "value": true
+    },
+    {
+      "name": "redo-through-shell",
+      "value": true
+    },
+    {
+      "name": "chromium-composition-does-not-recreate-editor",
+      "value": true
+    },
+    {
+      "name": "all-icon-actions-centered-with-light-indicator-samples",
+      "value": [
+        {
+          "label": "Conversation",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Settings",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Back",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Forward",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Open or collapse project navigation",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Switch to dark theme",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Restore workspace",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Restore bottom panel",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Close Isolated source container",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Close Isolated details container",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Close",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Close Isolated bottom container",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Close",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Numeric indicator fixture",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Zero indicator fixture",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Long accessible label does not occupy icon layout",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "minimum-with-hosts-temporary-hidden-no-preference-loss",
+      "value": true
+    },
+    {
+      "name": "minimum-long-draft-preserves-reading-budget",
+      "value": {
+        "reading": 86.9140625,
+        "editorBottom": 528,
+        "height": 540,
+        "editor": 54,
+        "maximum": "54px",
+        "setup": 108,
+        "readingOuter": 86.9140625
+      }
+    },
+    {
+      "name": "minimum-chinese-actions-reachable",
+      "value": true
+    },
+    {
+      "name": "all-icon-actions-centered-in-chinese-narrow-window",
+      "value": [
+        {
+          "label": "会话",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "设置",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "后退",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "前进",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "打开或收起项目导航",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "切换为深色主题",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "恢复工作区",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "恢复底部面板",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "all-icon-actions-centered-with-tabs-and-indicator-samples",
+      "value": [
+        {
+          "label": "Conversation",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Settings",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Back",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Forward",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Open or collapse project navigation",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Switch to light theme",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Restore workspace",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Restore bottom panel",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Close Isolated source container",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Close Isolated details container",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Close",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Close Isolated bottom container",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Close",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Numeric indicator fixture",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Zero indicator fixture",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        },
+        {
+          "label": "Long accessible label does not occupy icon layout",
+          "dx": 0,
+          "dy": 0,
+          "overlay": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "work-area-is-not-reading-width-limited",
+      "value": true
+    },
+    {
+      "name": "large-window-geometry",
+      "value": true
+    },
+    {
+      "name": "close-tab-does-not-close-host-and-focuses-neighbor",
+      "value": true
+    },
+    {
+      "name": "last-tab-closes-empty-host",
+      "value": true
+    },
+    {
+      "name": "scripted-input-to-next-frame-ms",
+      "value": {
+        "count": 51,
+        "median": 0.09999990463256836,
+        "p95": 3.700000047683716,
+        "maximum": 5.400000095367432
+      },
+      "limitation": "CDP gesture input to rAF, not sustained frame-rate or system-input latency"
+    }
+  ],
+  "stderr": "\nDevTools listening on ws://127.0.0.1:54487/devtools/browser/affe9278-2433-4a15-bbbe-3a83f22b961e\n"
+}

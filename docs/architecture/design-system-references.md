@@ -13,7 +13,7 @@
 
 借鉴：延用已有语义 token 名称和 Base UI 组件结构，组件变体集中定义，状态通过正式 data 属性表达；CSS 文件与 Tailwind 可以共同组织组件样式。源码借用时按实际规模取用，不整包引入全部样式。
 
-边界：Nova/Lyra 是上游视觉风格，差异不只是密度，不直接充当 d-pi 的 normal/compact 开关；目前未选择其中一种外观。根作用域组织和变体方式可复用，密度映射仍需针对 d-pi 验证。不同版本可能将类写在 TSX 或独立样式表，接入时锁版本，不混用两套产物。不能因此新造样式生成器或跨组件主题引擎。
+边界：Nova/Lyra 是上游视觉风格，差异不只是密度，不能把上游两套风格当作密度实现；目前未选择其中一种外观。根作用域组织和变体方式可复用，默认尺寸需针对 d-pi 验证；2026-10-06 已取消 normal/compact 切换，采用唯一默认紧凑布局。不同版本可能将类写在 TSX 或独立样式表，接入时锁版本，不混用两套产物。不能因此新造样式生成器或跨组件主题引擎。
 
 ## 首选：Base UI 官方 CSS Modules
 
@@ -48,3 +48,17 @@
 - 选择方式、token 唯一入口、级联层与 lint 例外等**规则**由[设计系统合同](design-system.md)规定；本页只记录源码中观察到的做法与出处，不复制规则。
 
 正式引用源码时记录来源、commit、许可和本地改动理由，保留必要许可声明。本轮仅记录来源和模式，不固定额外依赖、具体风格或全量文件结构。
+
+## AI 组件的写法与配套组织（2026-10-06）
+
+本次补充只读源码比较，未安装、运行或复制生产组件。Beautiful UI 固定 `44a274e598395ab61e7c96c26fda2758780253b7`；Tool UI 固定 `49a870286facdbf28160cd647f0d337ebdc9b275`。两者根许可证均为 MIT；实际复制时仍需核对选中文件及传递依赖。抓取范围/哈希见[补充清单](../../.scratch/codex-workbench-ui/evidence/component-source-manifest.json)。
+
+| 所读源码 | 可参考的写法 | d-pi 采用判断 |
+| --- | --- | --- |
+| Beautiful UI [Button](https://github.com/slev12397/beautiful-ui/blob/44a274e598395ab61e7c96c26fda2758780253b7/components/atoms/Button.tsx) | 原生 button + cva variant/size；视觉角色由组件管理 | 当前已有 Base UI Button，不另复制一套。上游 ink/canvas 色板、任意尺寸及外观需改为 d-pi token/variant |
+| Beautiful UI [PromptBar](https://github.com/slev12397/beautiful-ui/blob/44a274e598395ab61e7c96c26fda2758780253b7/components/primitives/PromptBar.tsx) / [TaskRows](https://github.com/slev12397/beautiful-ui/blob/44a274e598395ab61e7c96c26fda2758780253b7/components/primitives/TaskRows.tsx) | 输入周边组合、状态行层次和动效 | 所读源码含演示步骤/计时器，PromptBar 还有 glimm 接入；优先借鉴结构，用自有配套组件组合，不替换 Tiptap 或复制演示运行状态 |
+| Tool UI [ApprovalCard](https://github.com/assistant-ui/tool-ui/blob/49a870286facdbf28160cd647f0d337ebdc9b275/apps/www/components/tool-ui/approval-card/approval-card.tsx) / [schema](https://github.com/assistant-ui/tool-ui/blob/49a870286facdbf28160cd647f0d337ebdc9b275/apps/www/components/tool-ui/approval-card/schema.ts) | 可序列化数据与回调分开；交互卡片与结果呈现分开 | 可作为配套交互结构参考；schema 不替代 OMP 请求/世代/过期校验，原有批准/拒绝类型不等于 d-pi 全部交互 |
+| Tool UI [shared adapter](https://github.com/assistant-ui/tool-ui/blob/49a870286facdbf28160cd647f0d337ebdc9b275/apps/www/components/tool-ui/shared/_adapter.tsx) / [card adapter](https://github.com/assistant-ui/tool-ui/blob/49a870286facdbf28160cd647f0d337ebdc9b275/apps/www/components/tool-ui/approval-card/_adapter.tsx) | 将 Button、Separator、cn 等项目依赖集中在适配入口 | 可借鉴依赖替换点；改接 d-pi 自有组件。仅替换导入尚不足以形成稳定的 d-pi 公开 API |
+| Tool UI [ActionButtons](https://github.com/assistant-ui/tool-ui/blob/49a870286facdbf28160cd647f0d337ebdc9b275/apps/www/components/tool-ui/shared/action-buttons.tsx) / [useActionButtons](https://github.com/assistant-ui/tool-ui/blob/49a870286facdbf28160cd647f0d337ebdc9b275/apps/www/components/tool-ui/shared/use-action-buttons.tsx) | 动作描述、显示、局部防重复和异步回调分工 | 本地交互瞬态不能成为执行事实；源码从调用层覆盖 Button 圆角/padding，不能原样带入 d-pi，应转为共享 variant；确认倒计时仅在产品语义需要时采用 |
+
+结论：基础控件薄封装 Base UI/shadcn；可复用的 AI 配套表达先使用自有控件组合，再按适配成本选择源码改造；业务绑定保留在所属功能。Beautiful UI/Tool UI 是重要写法参考，不成为应用直接消费的 API。所有实现方式都遵守[自有组件合同](design-system.md#自有组件库与实现选择2026-10-06)，本页不新增并列规则或第二套组件技术路线。

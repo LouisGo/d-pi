@@ -7,6 +7,7 @@ import { useI18n } from "../../../modules/preferences/renderer/public";
 import type { AppModel } from "../wiring/model";
 import { ThreadAttention } from "./attention";
 import { ChooseProjectButton } from "./choose-project-button";
+import { NewThreadButton } from "./preference-toolbar";
 
 export function ProjectThreads({ model }: { model: AppModel }) {
   const { t } = useI18n();
@@ -14,8 +15,11 @@ export function ProjectThreads({ model }: { model: AppModel }) {
   const failed = useStore(model.threadListStore, (state) => state.failed);
   return (
     <nav aria-label={t("app.sidebar.projects")} className="thread-navigation">
-      <ChooseProjectButton model={model} />
-      <div className="sidebar-label">{t("app.sidebar.projects")}</div>
+      <NewThreadButton model={model} />
+      <div className="sidebar-label">
+        <span>{t("app.sidebar.projects")}</span>
+        <ChooseProjectButton model={model} iconOnly />
+      </div>
       {failed && (
         <p role="alert" className="failure">
           {t("app.thread.listFailed")}
@@ -83,6 +87,7 @@ const ThreadButton = memo(function ThreadButton({
   return (
     <Button
       variant="navigation"
+      data-thread-navigation
       aria-current={selected ? "page" : undefined}
       title={directory + " · " + threadId}
       onClick={() =>

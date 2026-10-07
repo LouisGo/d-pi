@@ -1,6 +1,6 @@
 {
   "name": "d-pi",
-  "version": "0.1.0-m2.20",
+  "version": "0.1.0-workbench.2",
   "private": true,
   "type": "module",
   "description": "d-pi desktop client",
@@ -73,6 +73,7 @@
     "monaco-editor": "0.57.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "react-resizable-panels": "4.14.2",
     "streamdown": "2.6.0",
     "ts-pattern": "5.9.0",
     "zod": "4.6.5",

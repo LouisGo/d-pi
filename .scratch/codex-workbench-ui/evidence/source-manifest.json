@@ -1,0 +1,437 @@
+{
+  "researchDate": "2026-10-06",
+  "localHead": "1f591f43d47e6bb3019536764bb79ca639235bcb",
+  "referenceApplicationsRun": false,
+  "productionSourceChanged": false,
+  "repositories": [
+    {
+      "name": "microsoft/vscode",
+      "commit": "36072ebc06acbde5c3ad005a4d7abbad1c9882d6",
+      "treeComplete": true,
+      "filesCaptured": [
+        {
+          "path": "LICENSE.txt",
+          "url": "https://github.com/microsoft/vscode/blob/36072ebc06acbde5c3ad005a4d7abbad1c9882d6/LICENSE.txt",
+          "sha256": "9480271317925265e806a9a196aaa33410a962fa9d4d1e248a4a5187bc8c9df9",
+          "lines": 21
+        },
+        {
+          "path": "src/vs/base/browser/ui/sash/sash.ts",
+          "url": "https://github.com/microsoft/vscode/blob/36072ebc06acbde5c3ad005a4d7abbad1c9882d6/src/vs/base/browser/ui/sash/sash.ts",
+          "sha256": "95c13f4374a847976c08a1c83d72714ce27a89da1ca8423760f7ae1ecbcd59e6",
+          "lines": 708
+        },
+        {
+          "path": "src/vs/base/browser/ui/splitview/splitview.ts",
+          "url": "https://github.com/microsoft/vscode/blob/36072ebc06acbde5c3ad005a4d7abbad1c9882d6/src/vs/base/browser/ui/splitview/splitview.ts",
+          "sha256": "f356800ec6e1e456a55e7a6ab6f049e74ae1d5aafaeccbc125cd88e42af4c4a4",
+          "lines": 1510
+        },
+        {
+          "path": "src/vs/sessions/LAYOUT.md",
+          "url": "https://github.com/microsoft/vscode/blob/36072ebc06acbde5c3ad005a4d7abbad1c9882d6/src/vs/sessions/LAYOUT.md",
+          "sha256": "215f275f93430fafabaf4477338f1795940012ef54a48503c149ef3dfe2c80bb",
+          "lines": 141
+        },
+        {
+          "path": "src/vs/workbench/browser/layout.ts",
+          "url": "https://github.com/microsoft/vscode/blob/36072ebc06acbde5c3ad005a4d7abbad1c9882d6/src/vs/workbench/browser/layout.ts",
+          "sha256": "3686b7da2067cdfa1cbb54ce1e8b23d34748b6655021d3a4c58a76e6b533fe0d",
+          "lines": 3247
+        }
+      ]
+    },
+    {
+      "name": "deepseek-ai/deepseek-harness",
+      "commit": "5badb15009ae1756c3afe0ae0cef1faafc290ccc",
+      "treeComplete": true,
+      "filesCaptured": [
+        {
+          "path": "LICENSE",
+          "url": "https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/LICENSE",
+          "sha256": "ebb4f09972aee8608be255debaf78451a68e95c290f55c240dec2ecfa16ea6be",
+          "lines": 21
+        },
+        {
+          "path": "apps/desktop/README.md",
+          "url": "https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/apps/desktop/README.md",
+          "sha256": "8fd42b578356161061743477447714b253c185ea58b7c2705587731129ca94af",
+          "lines": 491
+        },
+        {
+          "path": "packages/client/ui-conversation/src/client/skeleton/control-row-layout.ts",
+          "url": "https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/client/ui-conversation/src/client/skeleton/control-row-layout.ts",
+          "sha256": "4d8e50b98ed790259f0c33e44fcc3406676369544a2fe75f1efb44401a4b87ed",
+          "lines": 39
+        },
+        {
+          "path": "packages/client/ui-dockkit/src/components/PaneTree.tsx",
+          "url": "https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/client/ui-dockkit/src/components/PaneTree.tsx",
+          "sha256": "b3504195fc149c86447e9c66da43bf0eea290d05c0dda25932e0d98495ce42b6",
+          "lines": 60
+        },
+        {
+          "path": "packages/client/ui-dockkit/src/components/TabLayout.tsx",
+          "url": "https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/client/ui-dockkit/src/components/TabLayout.tsx",
+          "sha256": "ea6305089a7697214a3dba28ca0c364253721b5b67533fc5245bad3036e990be",
+          "lines": 157
+        },
+        {
+          "path": "packages/client/ui-dockkit/src/contract/types.ts",
+          "url": "https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/client/ui-dockkit/src/contract/types.ts",
+          "sha256": "1cd9b883e63e9437c42af58a994633d30692c6cdb581b59499f91d2bd37f244b",
+          "lines": 201
+        },
+        {
+          "path": "packages/client/ui-dockkit/src/engine/constraints.ts",
+          "url": "https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/client/ui-dockkit/src/engine/constraints.ts",
+          "sha256": "1530328c10435e0278f67fd4e1689a43c35c60e2bb1ac4d86fee9b21c5e09c15",
+          "lines": 104
+        },
+        {
+          "path": "packages/client/ui-dockkit/src/engine/controller.ts",
+          "url": "https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/client/ui-dockkit/src/engine/controller.ts",
+          "sha256": "44045b13ed82ff502cb502f24d50d72e539c7df9b9ba9d66d1b295b730db0a8f",
+          "lines": 315
+        },
+        {
+          "path": "packages/client/ui-layout/src/client/AppFrame.module.css",
+          "url": "https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/client/ui-layout/src/client/AppFrame.module.css",
+          "sha256": "f0bce7eb34595a249c7865b5e0542cfae175a50804060af46344aba906e6789c",
+          "lines": 290
+        },
+        {
+          "path": "packages/client/ui-layout/src/client/AppFrame.tsx",
+          "url": "https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/client/ui-layout/src/client/AppFrame.tsx",
+          "sha256": "c45f1ed8ba134bba265af4ac1f9786067f686b8572a13e3617d489cf929644ea",
+          "lines": 307
+        },
+        {
+          "path": "packages/client/ui-layout/src/client/columns.ts",
+          "url": "https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/client/ui-layout/src/client/columns.ts",
+          "sha256": "db5e8fda5eef38ee4760e97ec15b0271f7f20639af5d936bdc78a36dd5a75e88",
+          "lines": 59
+        },
+        {
+          "path": "packages/client/ui-layout/src/client/stores.ts",
+          "url": "https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/client/ui-layout/src/client/stores.ts",
+          "sha256": "b2b34de29bb7ff749323aeae94d7dc6758debe6f5cdd2dc3985da485a9d239a1",
+          "lines": 146
+        }
+      ]
+    },
+    {
+      "name": "zai-org/ZCode",
+      "commit": "29628c9acdb81b703bbd4080c207a0e7ce5e276e",
+      "treeComplete": true,
+      "filesCaptured": [
+        {
+          "path": "LICENSE",
+          "url": "https://github.com/zai-org/ZCode/blob/29628c9acdb81b703bbd4080c207a0e7ce5e276e/LICENSE",
+          "sha256": "606c36baf38b973227273df12a74930e4b4137280eea835c5cd623aa4553c13b",
+          "lines": 202
+        },
+        {
+          "path": "packages/ui/package.json",
+          "url": "https://github.com/zai-org/ZCode/blob/29628c9acdb81b703bbd4080c207a0e7ce5e276e/packages/ui/package.json",
+          "sha256": "220e916077604008bb6ffea19d6bdf7148c4b09472bea251248a230ba3c69bf5",
+          "lines": 99
+        },
+        {
+          "path": "packages/ui/src/app-shell/WorkspaceShellLayout.tsx",
+          "url": "https://github.com/zai-org/ZCode/blob/29628c9acdb81b703bbd4080c207a0e7ce5e276e/packages/ui/src/app-shell/WorkspaceShellLayout.tsx",
+          "sha256": "57ab98aaf8f6953f7a31575b201546982d9b1d7969c1e426f4b9921b2c4e2210",
+          "lines": 1974
+        },
+        {
+          "path": "packages/ui/src/app-shell/sidePaneLayout.ts",
+          "url": "https://github.com/zai-org/ZCode/blob/29628c9acdb81b703bbd4080c207a0e7ce5e276e/packages/ui/src/app-shell/sidePaneLayout.ts",
+          "sha256": "18d0bd2bc9d2ed697a67b5b3960af2bd82e470437fd911ed9d09c6ae0570c469",
+          "lines": 29
+        },
+        {
+          "path": "packages/ui/src/app-shell/useAnimatedResizablePanel.ts",
+          "url": "https://github.com/zai-org/ZCode/blob/29628c9acdb81b703bbd4080c207a0e7ce5e276e/packages/ui/src/app-shell/useAnimatedResizablePanel.ts",
+          "sha256": "ae5ea4512b17c5c8a756fde46533b91db9062bff5687151d9b32eb48550c68ce",
+          "lines": 137
+        },
+        {
+          "path": "packages/ui/src/components/ui/resizable.tsx",
+          "url": "https://github.com/zai-org/ZCode/blob/29628c9acdb81b703bbd4080c207a0e7ce5e276e/packages/ui/src/components/ui/resizable.tsx",
+          "sha256": "83425c34fb76c35276e6dbf8d7ad0ee860b4536ba9d4cfd8e8a60aec3b7cabc4",
+          "lines": 116
+        },
+        {
+          "path": "packages/ui/src/lib/workspaceSidebarResizeState.ts",
+          "url": "https://github.com/zai-org/ZCode/blob/29628c9acdb81b703bbd4080c207a0e7ce5e276e/packages/ui/src/lib/workspaceSidebarResizeState.ts",
+          "sha256": "77328ad8b11e042e9009f9fc01d4f63c853278d9b71f6fb19568d21bf501d8f5",
+          "lines": 35
+        },
+        {
+          "path": "packages/ui/src/prompt-editor/useComposerToolbarFit.ts",
+          "url": "https://github.com/zai-org/ZCode/blob/29628c9acdb81b703bbd4080c207a0e7ce5e276e/packages/ui/src/prompt-editor/useComposerToolbarFit.ts",
+          "sha256": "aa266ce1cf06e2e27e0c21ebfd86715893bc941a3407be500dce0f5d3749d3fb",
+          "lines": 104
+        },
+        {
+          "path": "packages/ui/src/v4/ConversationComposer.tsx",
+          "url": "https://github.com/zai-org/ZCode/blob/29628c9acdb81b703bbd4080c207a0e7ce5e276e/packages/ui/src/v4/ConversationComposer.tsx",
+          "sha256": "9bfa3d1365cfa7bf10e45d521a3d7201381aa27697c79b4f33b356cd2f4a3c2d",
+          "lines": 2387
+        },
+        {
+          "path": "packages/ui/src/v4/composer/V4ComposerToolbar.tsx",
+          "url": "https://github.com/zai-org/ZCode/blob/29628c9acdb81b703bbd4080c207a0e7ce5e276e/packages/ui/src/v4/composer/V4ComposerToolbar.tsx",
+          "sha256": "fb0e3863fd51487d43e8201c19407b16ead3d53731d5eac7a1697412cfacacbf",
+          "lines": 1096
+        }
+      ]
+    },
+    {
+      "name": "anomalyco/opencode",
+      "commit": "3f393d78bfc3f0826b2c7080e57964c235704695",
+      "treeComplete": true,
+      "filesCaptured": [
+        {
+          "path": "LICENSE",
+          "url": "https://github.com/anomalyco/opencode/blob/3f393d78bfc3f0826b2c7080e57964c235704695/LICENSE",
+          "sha256": "625f0f619133f89bbbb2abe37369613dfa1885eba1e50d02170deb62bb42cb6b",
+          "lines": 21
+        },
+        {
+          "path": "packages/app/src/context/layout.tsx",
+          "url": "https://github.com/anomalyco/opencode/blob/3f393d78bfc3f0826b2c7080e57964c235704695/packages/app/src/context/layout.tsx",
+          "sha256": "87f810cafc6aba1e49a0d17f40aa5bb7574530ece83f021cd6c605d328a08cc7",
+          "lines": 1081
+        },
+        {
+          "path": "packages/app/src/pages/layout/sidebar-shell.tsx",
+          "url": "https://github.com/anomalyco/opencode/blob/3f393d78bfc3f0826b2c7080e57964c235704695/packages/app/src/pages/layout/sidebar-shell.tsx",
+          "sha256": "8c2c2df1e047153222a877840f61399c67b7f4e68fbba6b126856247c6de6982",
+          "lines": 125
+        },
+        {
+          "path": "packages/app/src/pages/session/composer/session-composer-region.tsx",
+          "url": "https://github.com/anomalyco/opencode/blob/3f393d78bfc3f0826b2c7080e57964c235704695/packages/app/src/pages/session/composer/session-composer-region.tsx",
+          "sha256": "85d871ac8d64e0a586afa613d66d3b822a298d8eb2f9ce62ffcef52d3f8658fc",
+          "lines": 168
+        },
+        {
+          "path": "packages/app/src/pages/session/session-layout.ts",
+          "url": "https://github.com/anomalyco/opencode/blob/3f393d78bfc3f0826b2c7080e57964c235704695/packages/app/src/pages/session/session-layout.ts",
+          "sha256": "9eb298e7c4b066171bd6eaf511496bc8de7e994f84d7bc371e4980a89a1e54e3",
+          "lines": 30
+        },
+        {
+          "path": "packages/app/src/pages/session/session-panel-layout.ts",
+          "url": "https://github.com/anomalyco/opencode/blob/3f393d78bfc3f0826b2c7080e57964c235704695/packages/app/src/pages/session/session-panel-layout.ts",
+          "sha256": "85a158d8e431797417a83dabf16d90b81b76173276446bb4c0157e93afe824ee",
+          "lines": 6
+        },
+        {
+          "path": "packages/ui/src/components/resize-handle.tsx",
+          "url": "https://github.com/anomalyco/opencode/blob/3f393d78bfc3f0826b2c7080e57964c235704695/packages/ui/src/components/resize-handle.tsx",
+          "sha256": "44981b87a497a876d3e31a7299e6cf34c367a071552e24accd87591091f9bb0d",
+          "lines": 102
+        }
+      ]
+    },
+    {
+      "name": "MoonshotAI/kimi-code",
+      "commit": "21406fb4c805cc8c715e6d1f16ad3fb5f25f4fe3",
+      "treeComplete": true,
+      "filesCaptured": [
+        {
+          "path": "LICENSE",
+          "url": "https://github.com/MoonshotAI/kimi-code/blob/21406fb4c805cc8c715e6d1f16ad3fb5f25f4fe3/LICENSE",
+          "sha256": "23cc68e17992e0b512ae2e80afc5787d7d8e0fbfbdb4fff54ec0245508fa400e",
+          "lines": 21
+        },
+        {
+          "path": "README.md",
+          "url": "https://github.com/MoonshotAI/kimi-code/blob/21406fb4c805cc8c715e6d1f16ad3fb5f25f4fe3/README.md",
+          "sha256": "50ea102c7003c746244c69cb78cbd5b1e9158311e5e4e028aee8a2afee698c4c",
+          "lines": 126
+        },
+        {
+          "path": "apps/vis/web/src/components/layout/AppShell.tsx",
+          "url": "https://github.com/MoonshotAI/kimi-code/blob/21406fb4c805cc8c715e6d1f16ad3fb5f25f4fe3/apps/vis/web/src/components/layout/AppShell.tsx",
+          "sha256": "25b77df0327f194e1319a4dc0264a1a5dee0116bea392c53779461084c8c4cd4",
+          "lines": 144
+        },
+        {
+          "path": "apps/vis/web/src/components/layout/TabBar.tsx",
+          "url": "https://github.com/MoonshotAI/kimi-code/blob/21406fb4c805cc8c715e6d1f16ad3fb5f25f4fe3/apps/vis/web/src/components/layout/TabBar.tsx",
+          "sha256": "ba884cd4a08d6784292770bc20208b9fed4ecc5bde1522402916b2f4419576b4",
+          "lines": 56
+        }
+      ]
+    },
+    {
+      "name": "bvaughn/react-resizable-panels",
+      "commit": "8c0573b7938b50c868ae837813fda8945e36b596",
+      "treeComplete": true,
+      "filesCaptured": [
+        {
+          "path": "LICENSE.md",
+          "url": "https://github.com/bvaughn/react-resizable-panels/blob/8c0573b7938b50c868ae837813fda8945e36b596/LICENSE.md",
+          "sha256": "a8f1e0280bf14adcf5d017547db85eb5c3bac0feb1690ca98650874002eaa8ea",
+          "lines": 21
+        },
+        {
+          "path": "README.md",
+          "url": "https://github.com/bvaughn/react-resizable-panels/blob/8c0573b7938b50c868ae837813fda8945e36b596/README.md",
+          "sha256": "d27812bc8cf8a5e07f0a58bcf68a8f48cc3cac4d22f917777e62662ab61c231c",
+          "lines": 819
+        },
+        {
+          "path": "package.json",
+          "url": "https://github.com/bvaughn/react-resizable-panels/blob/8c0573b7938b50c868ae837813fda8945e36b596/package.json",
+          "sha256": "80bf5fb17b31a769a73e346a70a68565bf4696abe62d6d39f42c9b4a96a77bd5",
+          "lines": 124
+        }
+      ]
+    }
+  ],
+  "localFiles": [
+    {
+      "path": "src/app/renderer/shell/application-layout.tsx",
+      "sha256": "5f17aa3e1c793ea5997ffe5733a971c6af25395871db704f97874fde8e5c9bbb"
+    },
+    {
+      "path": "src/app/renderer/shell/project-threads.tsx",
+      "sha256": "14c0c104c0fb7350a866a3a562f8ce5e9f022d4d6511e8b7d8592c6d2c13d36e"
+    },
+    {
+      "path": "src/app/renderer/workbench/thread-workbench.tsx",
+      "sha256": "7be045390a42701e566e14c8d5ee94c158ba7dfc6f31b63c07a942e9e24c274e"
+    },
+    {
+      "path": "src/app/renderer/workbench/composer.tsx",
+      "sha256": "311e0b964a8f6ea1108d09850333778c6540973ae297f1160907f667a24b571a"
+    },
+    {
+      "path": "src/app/renderer/workbench/attachment-controls.tsx",
+      "sha256": "1ad2572aba0d3f2931777ec8dbc4d57012e0927a189848dae84c866b4ce4a883"
+    },
+    {
+      "path": "src/app/renderer/workbench/model-controls.tsx",
+      "sha256": "9dbe165d215f06eb44172de8470b7ee68ad3ba27776ea1a8dfb250ea6f850dd9"
+    },
+    {
+      "path": "src/app/renderer/workbench/file-panel.tsx",
+      "sha256": "d624d0cb758558cfce1a3598823fd0224982d89102f9c30e7fb4dde0cb281e0c"
+    },
+    {
+      "path": "src/app/renderer/workbench/runtime-panel.tsx",
+      "sha256": "fcca82546b1ce298447ef8a5d53481ab8d729f51fa8804844d3fffe7e04ba1c6"
+    },
+    {
+      "path": "src/app/renderer/workbench/queue-controls.tsx",
+      "sha256": "40572fe8d6aa585bffc8e0a00080d55cabfab53130942ddfb0995b2485aa8505"
+    },
+    {
+      "path": "src/app/renderer/styles/app.css",
+      "sha256": "88e363ff48bd851b70147c1627362f40587539e423f3c22da9e90e8434c2ba74"
+    },
+    {
+      "path": "src/app/renderer/styles/tokens.css",
+      "sha256": "f328f3d49d47e8bec59a8b3b401e161f8abede0014676da532b7db8c8757f30b"
+    },
+    {
+      "path": "src/app/renderer/routing/search.ts",
+      "sha256": "6ae8def5c9dd0409edd39fa4efff38e23887cd742542fe887bc353ffd6bf664b"
+    },
+    {
+      "path": "src/app/main/lifecycle/application.ts",
+      "sha256": "23f3d2da610bfc89b8b8d3d0abfda38b018b23ea708c660002217b1ef7a3d705"
+    },
+    {
+      "path": "package.json",
+      "sha256": "ef121218cb1a39d83da3e7c1af931ba32c56a309d5752149cbb764770a073a42"
+    }
+  ],
+  "screenshots": [
+    {
+      "number": 1,
+      "sourceFile": "codex-clipboard-237ec22d-b3c8-4b9c-99af-6d3fb14ecacc.png",
+      "originalWidth": 3436,
+      "originalHeight": 2052,
+      "sha256": "77b92aa6f498345f545ec1ea828f66d75b56b07db41933abf4ae54592bebed8e",
+      "copiedIntoRepository": false
+    },
+    {
+      "number": 2,
+      "sourceFile": "codex-clipboard-aec704ef-6d67-4d0b-b9eb-07eeebaa6cb9.png",
+      "originalWidth": 1542,
+      "originalHeight": 1378,
+      "sha256": "508374a888c9629504f35e1fd886de1f2435f8861deb395d32f00ac30456ed3a",
+      "copiedIntoRepository": false
+    },
+    {
+      "number": 3,
+      "sourceFile": "codex-clipboard-dcb32a94-8410-468d-99b6-f133b8c2f7d3.png",
+      "originalWidth": 3436,
+      "originalHeight": 2052,
+      "sha256": "3bb53e2c8fd9ce63c8231a37cb4eacfedad9e42dab01c4e4cf0e52645c23446b",
+      "copiedIntoRepository": false
+    },
+    {
+      "number": 4,
+      "sourceFile": "codex-clipboard-a6f33c09-f929-4a85-a8d9-93f2ce1d0385.png",
+      "originalWidth": 3436,
+      "originalHeight": 2052,
+      "sha256": "d0b78b4a0878f2e21c6fc7c7dafaa540687be253d528743d120ab0e8e5ad894f",
+      "copiedIntoRepository": false
+    },
+    {
+      "number": 5,
+      "sourceFile": "codex-clipboard-aaf7dbd6-b5a3-479b-aaa6-e2fc46af16a7.png",
+      "originalWidth": 866,
+      "originalHeight": 512,
+      "sha256": "96fb02340fe9e3b429dcf3ba3fe468e8c2711dbed85312dde9fdcce1b21c02a8",
+      "copiedIntoRepository": false
+    },
+    {
+      "number": 6,
+      "sourceFile": "codex-clipboard-3dbf83d7-56fa-4ca4-bf8d-f34d753c4634.png",
+      "originalWidth": 1560,
+      "originalHeight": 1282,
+      "sha256": "4bf6d64b20a822b3e104ec9c09a9a1fc7f215ac876cc265f91eeb4d1f9e6b3c1",
+      "copiedIntoRepository": false
+    },
+    {
+      "number": 7,
+      "sourceFile": "codex-clipboard-d8f6bcdf-127e-4c6b-8a4d-f0ff8ec2d39c.png",
+      "originalWidth": 1520,
+      "originalHeight": 1556,
+      "sha256": "2bd5724a2b4b4de84e1ddcdb1628e53335f76ac658b53da6c55b53d0f0884681",
+      "copiedIntoRepository": false
+    },
+    {
+      "number": 8,
+      "sourceFile": "codex-clipboard-b8c88a79-6d7e-4d7c-b1db-ef613b020c7a.png",
+      "originalWidth": 640,
+      "originalHeight": 612,
+      "sha256": "6eacc1ffd0189a103efd2d39cc3d5387d55f6e84c4d6f667a810c094165144ae",
+      "copiedIntoRepository": false
+    },
+    {
+      "number": 9,
+      "sourceFile": "codex-clipboard-0aee2f09-60b5-4c06-b22b-da07a3510825.png",
+      "originalWidth": 3436,
+      "originalHeight": 2052,
+      "sha256": "489d848a93b5621df71413a2f882c6c2426bb3f173aec5b2a8160b969937be42",
+      "copiedIntoRepository": false
+    },
+    {
+      "number": 10,
+      "sourceFile": "codex-clipboard-ab2599a8-9724-4ef0-8be1-54190dcef1c5.png",
+      "originalWidth": 3436,
+      "originalHeight": 2052,
+      "sha256": "ee8e0bfc8289f89c44a4cb921bec4eef069e15e96fe5bfeb499b2d4346770560",
+      "copiedIntoRepository": false
+    }
+  ],
+  "inspectionCoverage": "Relevant files and excerpts; specific findings and limits are documented in research.md. Captured files are not all reviewed line by line."
+}

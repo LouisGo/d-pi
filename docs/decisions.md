@@ -38,7 +38,7 @@
 | D-14 | Diff 是跨场景组件；Git Panel 自建 OMP 业务 GUI，Git 机制复用 | 2026-09-25 不建设完整通用 Git 客户端，不等待完整 Git GUI 大库；20/80 非工时承诺 |
 | D-15 | 从设计起点预留 Agent Changes / Run Changes / Review / Revert | Run 边界、修改归属与 Revert 效果未确认，不能先绑定命令；当前来源合同由 D-20 约束 |
 | D-16 | Codex 式常规布局，暂不分屏；统一图标；基础复制和段落 PNG 导出 | 取代自由分屏作为当前要求；图标库由 D-31 确认，PNG 导出实现未定，PNG 不是 AI 绘图 |
-| D-17 | Biome 替代 ESLint/Prettier；S1 首个正式 GUI 接入 @shadcn/lint + Oxlint 设计检查 | 2026-09-27 取代条件接入设计 lint 的时机；不得关闭规则迁就违规，不覆盖用户项目格式化。见[设计系统合同](architecture/design-system.md) |
+| D-17 | Biome 替代 ESLint/Prettier；S1 首个正式 GUI 接入 @shadcn/lint + Oxlint 设计检查 | 2026-09-27 取代条件接入设计 lint 的时机；不得关闭规则迁就违规，不覆盖用户项目格式化。2026-10-07 用户明确设置采用大Modal、语言移入设置、新会话与项目加号归侧栏；主题增加system及独立图标，应用控件取消outline，以共享背景/文字表达键盘焦点。见[设计系统合同](architecture/design-system.md) |
 | D-18 | 保留旧基线证据，逐项复用，不直接恢复旧 UI | 2026-09-30 用户选择精准瘦身，取代归档“保持原样不动”和“整理不等于删除”的绝对表述；保留 26 个证据文件，移除 23 个无引用脚手架。保留文件与源提交一致，裁剪路径/哈希/理由及取回方式见[归档说明](archive/pre-reset/README.md)与 [manifest 的 pruned](archive/pre-reset/manifest.json)；归档仍非现行实现或执行指令 |
 | D-19 | 方案先收敛并记录，再按用户明确阶段授权实施 | 2026-09-25 的“仅设计与调查”描述当时范围，后续明确授权可取代它；不由 Agent 自认批准，不以历史阶段限制覆盖新授权 |
 | D-20 | 首版 Diff 交付 Git 当前差异与有原生证据的工具修改，明确标注来源；完整 Run Changes 和逐次归属后续 | 2026-09-25 用户接受“先保证差异来源准确”，由 P-03 转为确认；不将全部目录变化冒称 AI 改动。见[变化来源合同](product/first-release.md#3-变化记录先明确证据再展示-diff) |
@@ -53,7 +53,7 @@
 | D-29 | 规则独立于 React/视图，以明确契约组合；业务与应用生命周期不依赖页面或 hook 挂载 | 2026-09-25 确认；规则、协调/接入、投影/查询、React 绑定与视图分工见[无头功能合同](architecture/headless-features.md)，延续 D-02 |
 | D-30 | 不引入 XState | 2026-09-25 明确排除该候选；使用 TypeScript 显式状态转换和局部协调，不自研通用状态机框架 |
 | D-31 | GUI 主图标用 Hugeicons，建立自有 Icon Layer | 2026-09-25 取代 Lucide 提议；免费 Stroke Rounded、自有语义 API、私有 SVG、无头边界及可访问性见[图标合同](architecture/icon-system.md) |
-| D-32 | Base UI 为默认基础交互，积极复用 shadcn/ui 源码；共享设计事实只有一份权威定义，主题/密度集中传播 | 2026-09-26 取代 B-02 的 Base UI 否定结论，Radix 不再为并列默认；09-27 样式澄清：Tailwind/CSS Modules/普通 CSS 按工程判断选择组合，没有场景到技术的强制映射；权威值与派生关系单源，局部样式可就近存放。自有 API/token、Hugeicons 与 OMP 所有权不变。2026-10-06 用户确认全应用禁用手形指针、组件视觉点击反馈、默认禁选及显式内容例外，保留 text/resize，见设计系统合同。见[设计系统合同](architecture/design-system.md) |
+| D-32 | Base UI 为默认基础交互，积极复用 shadcn/ui 源码；共享设计事实只有一份权威定义，主题集中传播；默认紧凑布局，取消密度切换 | 2026-09-26 取代 B-02 的 Base UI 否定结论，Radix 不再为并列默认；09-27 样式澄清：Tailwind/CSS Modules/普通 CSS 按工程判断选择组合，没有场景到技术的强制映射；权威值与派生关系单源，局部样式可就近存放。自有 API/token、Hugeicons 与 OMP 所有权不变。2026-10-06 用户要求基础/配套/业务组件视觉成体系，light/dark 必备、颜色角色同源联动；取消 normal/compact 切换，以原 compact 尺寸作为唯一默认布局，取代双密度建设/往返验收，旧证据及持久字段读取兼容保留；字段不再决定 UI 密度。2026-10-06 用户明确所有借用的 UI 能力至少经一层 d-pi 自有封装，应用消费者只使用自有组件 API；Beautiful UI/Tool UI 为写法与选择性源码参考，不默认引入整套库。2026-10-06 用户确认全应用禁用手形指针、组件视觉点击反馈、默认禁选及显式内容例外，保留 text/resize，见设计系统合同。见[设计系统合同](architecture/design-system.md) |
 | D-33 | Composer 用最小 Tiptap 与项目业务扩展，按需使用底层 ProseMirror | 2026-09-26 取代 P-02 的直接 ProseMirror 优先及旧 Lexical 默认路线；不预装整套富文本产品，输入体验单独验收 |
 | D-34 | App 自有结构化数据用 SQLite，Main 集中拥有持久化 | 2026-09-26 取代“文件起步、不足再评估数据库”；数据库事务不覆盖附件文件或 OMP 接受，驱动与 Drizzle 分别判断。见[基础契约 §1](architecture/foundation-contracts.md#1-身份持久化与生命周期b1) |
 | D-35 | ts-pattern 为应用业务分支默认范式，Zod v4 标准版为数据边界标准 | 2026-09-26 取代 ts-pattern 仅为复杂分支候选；判别联合、穷尽处理、schema 推导、严格类型与窄接口见[TypeScript 合同](architecture/typescript.md)和[项目 skill](../.agents/skills/d-pi-typescript/SKILL.md)，不用类型技巧或无意义包装代替业务模型 |

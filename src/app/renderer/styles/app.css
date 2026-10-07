@@ -1,6 +1,7 @@
 @import "./tokens.css";
 @import "../components/ui/button.css";
 @import "./interaction.css";
+@import "./workbench.css";
 @layer base {
   body {
     margin: 0;
@@ -21,8 +22,9 @@
     color: var(--foreground);
   }
   summary:focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
+    outline: none;
+    background: var(--accent);
+    color: var(--accent-foreground);
     border-radius: var(--radius-control);
   }
   h1,
@@ -87,8 +89,9 @@
   .configuration-content button:focus-visible,
   .model-fields input:focus-visible,
   .model-fields select:focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
+    outline: none;
+    background: var(--accent);
+    color: var(--accent-foreground);
   }
   .model-controls {
     margin-bottom: calc(var(--layout-gap) / 2);
@@ -117,8 +120,9 @@
     padding-inline: var(--control-padding);
   }
   .history select:focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
+    outline: none;
+    background: var(--accent);
+    color: var(--accent-foreground);
   }
   .model-controls summary,
   .code-tools summary,
@@ -251,7 +255,7 @@
     gap: calc(var(--layout-gap) / 2);
     min-width: 0;
   }
-  .thread-navigation button {
+  .thread-navigation [data-thread-navigation] {
     justify-content: flex-start;
     text-align: start;
     white-space: normal;
@@ -301,25 +305,11 @@
     border-bottom: 1px solid var(--border);
     background: var(--surface);
   }
-  .toolbar select {
-    min-height: var(--control-height);
-    padding-inline: calc(var(--control-padding) / 2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface);
-    color: var(--foreground);
-    font: inherit;
-  }
-  .toolbar select:focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
-  }
   .work-content {
     flex: 1;
     min-height: 0;
     overflow: hidden;
     width: 100%;
-    max-width: var(--content-width);
     margin-inline: auto;
     padding: var(--panel-padding);
   }
@@ -428,8 +418,9 @@
     white-space: pre;
   }
   .tiptap:focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: -2px;
+    outline: none;
+    background: var(--accent);
+    color: var(--accent-foreground);
     border-radius: var(--radius-control);
   }
   .composer-footer {
@@ -505,7 +496,8 @@
     min-height: 4lh;
   }
   .startup {
-    padding: var(--panel-padding);
+    padding-inline: var(--panel-padding);
+    padding-block-end: var(--panel-padding);
     display: grid;
     gap: var(--layout-gap);
   }
@@ -622,8 +614,9 @@
     cursor: default;
   }
   .file-result:focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
+    outline: none;
+    background: var(--accent);
+    color: var(--accent-foreground);
   }
   .file-meta {
     color: var(--muted-foreground);
@@ -646,9 +639,6 @@
 }
 
 @layer components {
-  .toolbar > button {
-    margin-inline-end: auto;
-  }
   .composer-footer > span {
     flex: 1 1 100%;
   }

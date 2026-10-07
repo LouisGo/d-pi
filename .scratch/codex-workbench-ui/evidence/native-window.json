@@ -1,0 +1,41 @@
+{
+  "sourceCommit": "4cf3ceedf083eb47812403f7275ea7c5b9c49c25",
+  "unchangedInFinal": [
+    "src/app/main/lifecycle/application.ts",
+    "src/app/renderer/styles/workbench.css drag/no-drag rules"
+  ],
+  "nativeControlsObserved": [
+    "close",
+    "full screen / zoom",
+    "minimize"
+  ],
+  "zoom": "AX zoom the window completed; resulting dimensions recorded below",
+  "drag": {
+    "from": [
+      1000,
+      40
+    ],
+    "to": [
+      1120,
+      140
+    ],
+    "before": {
+      "x": 0,
+      "y": 33,
+      "width": 1728,
+      "height": 1027,
+      "focus": "<div class=\"thread-reading\" data-attention-target=\"result\" tabindex=\"-1\"><div class=\"reading-pane\"><section class=\"conversation\" aria-label=\"原生会话阅读\"><h2>会话</h2><article class=\"message\" data-selectable=\"true\"><div class=\"message-heading\"><strong>原生事件</strong><span></span><button type=\"button\" tabinde"
+    },
+    "after": {
+      "x": 0,
+      "y": 33,
+      "width": 1728,
+      "height": 1027,
+      "focus": "<div class=\"thread-reading\" data-attention-target=\"result\" tabindex=\"-1\"><div class=\"reading-pane\"><section class=\"conversation\" aria-label=\"原生会话阅读\"><h2>会话</h2><article class=\"message\" data-selectable=\"true\"><div class=\"message-heading\"><strong>原生事件</strong><span></span><button type=\"button\" tabinde"
+    },
+    "confirmed": false,
+    "systemLog": "Warning: Window move completed without beginning",
+    "reason": "unknown"
+  },
+  "captureLimitation": "CUA window sharing badge replaces traffic lights during capture; no claim of unobscured traffic-light pixel verification"
+}
