@@ -3,7 +3,9 @@ import { existsSync, mkdtempSync, realpathSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Editor } from "@tiptap/core";
-import { expect, it } from "vitest";
+import { act, createElement, useSyncExternalStore } from "react";
+import { createRoot } from "react-dom/client";
+import { expect, it, vi } from "vitest";
 import { AppStorage } from "../../src/app/main/wiring/app-storage";
 import { createAttachmentService } from "../../src/app/main/wiring/attachment-service";
 import { createAttachmentBridge } from "../../src/app/preload/bridges/attachments";
@@ -529,6 +531,52 @@ it("naturally admits the tenth normal Thread after the LRU owner's real Main ACK
     expect(target.editor.getText()).toBe(target.item.token);
   } finally {
     await f.close();
+  }
+});
+
+it("renders the tenth Thread's pending history and its real Main ACK without a React update loop", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const f = await ownerBudgetFixture(8, false);
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  try {
+    for (let i = 0; i < 9; i++) {
+      const source = await f.create();
+      source.editor.view.dispatch(source.editor.state.tr.insertText("a", 2));
+      expect(await source.controller.flush()).toBe(true);
+      if (i === 8) f.hold();
+      source.editor.destroy();
+    }
+    const target = await f.create();
+    function HistoryView() {
+      const state = useSyncExternalStore(f.cache.subscribe, () =>
+        f.cache.historyState(target.threadId),
+      );
+      return createElement(
+        "div",
+        { "aria-busy": state.pending },
+        state.pending ? "waiting" : state.failed ? "failed" : "ready",
+      );
+    }
+    await act(() => root.render(createElement(HistoryView)));
+    expect(container.textContent).toBe("waiting");
+    expect(f.cache.historyState(target.threadId)).toBe(
+      f.cache.historyState(target.threadId),
+    );
+    await act(async () => {
+      f.resume();
+      expect(await target.controller.flush()).toBe(true);
+    });
+    expect(container.textContent).toBe("ready");
+    expect(container.firstElementChild?.getAttribute("aria-busy")).toBe(
+      "false",
+    );
+  } finally {
+    await act(() => root.unmount());
+    container.remove();
+    await f.close();
+    vi.unstubAllGlobals();
   }
 });
 

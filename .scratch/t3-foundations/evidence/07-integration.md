@@ -49,3 +49,7 @@ Standards独立关闭原PDF P2：固定 `ae9cb2c…e795933`，原真实PM/SQLite
 17:23–17:24，针对新PM事务拒绝入口，主Agent先补编辑准入合同并用真实Composer/ProseMirror filter重现：冻结选区未进入正文，但onAttachmentApplied已经调用一次，12pass/1fail。修复以实际文档核对插入结果，失败保留请求；history准入状态改变会重新尝试，同ID确认后只应用一次。相同真实用例及现有Composer连续性13tests通过，日志 `/tmp/d-pi-t3-context-admission-red.log`、`/tmp/d-pi-t3-context-admission-green.log`。该证明是PM拒绝接缝，最终预算真实路径仍交固定集成源独立评审，不伪称Main失败恢复已通过。
 
 恢复修复源 `a2ce81d22aac27bc689a03d13b19a198d4811f0f` 串行集成为 `447e318`，完整[修复证据](04-clipboard-recovery.md)保留真实红绿及窗口9 history owner、9 waiting source/80,000 candidates预算和正常ACK自动准入。主Agent另完成必要失败GUI接棒：新core已保留discard原ids，原失败卡片仍显示不能生效的移除动作；真实UI18pass/1fail，隐藏该动作后可点击重试，以相同ids收到cancelled ACK才ready，正文不变。Composer与附件GUI组合 **2files/32tests通过**，Renderer严格类型、Biome通过；日志 `/tmp/d-pi-t3-cleanup-controls-red.log`、`/tmp/d-pi-t3-cleanup-controls-green.log`。最终固定集成源的两轴review及完整门禁继续追加，工程票尚未依作者绿灯结算。
+
+17:47–17:50，两轴固定 `466e08c…307850b`，原清理恢复反例均转绿（Spec 8files/66tests，Standards 9files/60tests，architecture423）。同时独立确认迟到导入的discard绕过model，RPC失败时ready且无重试入口；Standards的4×32clones真实样本再次耗尽128额度，GC0。先追加迟到清理合同，再由worker窄修。Spec另外在正常第十Thread、旧LRU release在途时用真实React复现 `Maximum update depth exceeded`，原因是pending admission的getSnapshot每次创建新对象；不是故障注入或act warning。
+
+17:51–17:52，主Agent复用真实PM/Main/preload/SQLite正常10thThread场景，真实React先失败（1failed/12skipped），改为稳定pending快照后可以显示waiting并在真实Main ACK后自动ready，无需用户retry。缓存、Composer及该集成回归 **3files/32tests通过**；Biome通过。日志 `/tmp/d-pi-t3-history-snapshot-red.log`、`/tmp/d-pi-t3-history-snapshot-green.log`。后续固定修复源仍须独立复审和完整检查。

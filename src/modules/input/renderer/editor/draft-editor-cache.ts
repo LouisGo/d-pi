@@ -50,6 +50,7 @@ type Entry = {
 type Binding = { key: string; controller: DraftController; token: symbol };
 
 const emptyHistoryState = { pending: false, failed: false, limited: false };
+const pendingHistoryState = { pending: true, failed: false, limited: false };
 type History = {
   model: EditorHistoryModel;
   controller: DraftController;
@@ -87,7 +88,7 @@ export class DraftEditorCache {
           ![...this.histories.values()].some(
             (h) => h.model.stateStore.getState().failed,
           )
-          ? { pending: true, failed: false, limited: false }
+          ? pendingHistoryState
           : admissionState
         : emptyHistoryState)
     );
