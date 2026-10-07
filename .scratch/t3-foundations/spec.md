@@ -8,16 +8,16 @@
 - 受影响决定：D-02/D-03/D-10/D-21/D-22/D-24/D-26/D-28–D-30/D-33/D-35/D-37/D-38/D-39。保留 OMP 执行/历史、Main 持久化、Host 连接关联、Renderer 交互；不扩 Effect 到 Files/Changes，不换 Atom/Schema，不引入 XState。
 - 结果：六组可操作/可观测目标及其组合工程验收，逐项满足下面的退出条件；既有 M2 供应商/PDF/系统通知/用户认可等开放父票不由本轮自动关闭。
 - 重要待决：跨 Thread 动态 @文件/目录的复制语义，已通过本轮文本选项询问用户：复制时冻结来源、发送时读取原项目或限制同工作目录。只暂缓 04 中依赖该选择的部分；原引用行为、附件 owner/关闭/Undo 保护、私有图片及冻结选区的基础合同可独立准备。
-- 工程：01/02/03/05/06 与04独立部分已串行集成，完整check/build及真实macOS剪贴板通过。独立两轴评审已关闭Git失败归因、PDF同ID新派生摘要保护及正常清史后的clipboard克隆额度回收；冻结466e08c仍有清理失败恢复P2：后续编辑、再次清史或缓存淘汰会丢失未完成清理责任。正在隔离修复并补三条真实回归，动态引用复制语义仍待决，不宣布完整退出。
-- 试用：尚未交付；完成后的默认入口为该工作树 `pnpm dev`，不为本轮机械打包。工程验证、真实系统检查及用户认可分别记录。
+- 工程：01/02/03/05/06与04独立部分已串行集成并完成工程验收。生产源冻结477b854；其后0a7e9a5仅刷新看板生成哈希。完整check为172files/989tests通过、2tests跳过，build通过；真实macOS复制/跨Thread粘贴/一次Undo/Redo与阅读锚点通过，原剪贴板已恢复。两轴独立复核已关闭Git失败归因、PDF同ID新摘要保护、正常clone额度回收、失败cleanup跨reset/eviction、迟到discard和第十Thread React快照问题，无未处理高价值问题。04动态引用语义仍待决，07仅剩该依赖，不宣布完整退出。
+- 试用：已交付上述独立范围待试用；版本及具体步骤见[handoff](handoff.md)。默认该工作树 `pnpm dev`，未机械打包；用户尚未反馈或明确认可。工程验证、真实系统检查及用户认可分别记录。
 - 执行：主 Agent 单写状态、契约、集成和诊断；独立 worker 固定各自基点/工作树实现原生、读取和输入，串行集成后推进依赖票。派发映射在实施时追加。不得把研究工作树当自动隔离。
 
 ```project-status
-[{"id":"t3-foundations","title":"T3 研究与基础重构","phase":"基建","engineering":"in-progress","trial":"not-delivered","acceptance":"pending","evidence":["research.md"],"next":"按六组合同完成实施与组合收益验证；动态引用复制语义等待用户选择","constraints":"unknown 不重发，冷恢复只读；native/live 无可靠原生身份时保持独立来源；M3 能力仅作设计储备"}]
+[{"id":"t3-foundations","title":"T3 研究与基础重构","phase":"基建","engineering":"partial","trial":"delivered","acceptance":"pending","build":"Dev生产源477b854","evidence":["research.md","handoff.md","evidence/07-integration.md"],"next":"等待动态引用的版本/权限语义选择，随后完成04依赖部分及07整体结算；独立范围已交付待试用","constraints":"unknown 不重发，冷恢复只读；native/live 无可靠原生身份时保持独立来源；M3 能力仅作设计储备"}]
 ```
 
 ```implementation-plan
-[{"id":"foundations","tickets":["01","02","03","04","05","06","07"],"hold":{"04":"动态文件/目录搬运涉及版本及跨项目权限，等待本轮用户选择；先完成03和其他独立票"}}]
+[{"id":"foundations","tickets":["01","02","03","04","05","06","07"],"hold":{"04":"动态文件/目录搬运涉及版本及跨项目权限，等待本轮用户选择；03及其他独立票已完成"}}]
 ```
 
 ## 固定基点派发

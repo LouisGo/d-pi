@@ -1,6 +1,6 @@
 # 03 输入生命周期与历史资产
 
-Status: claimed
+Status: resolved
 Blocked by: none
 
 阶段：基建，改善既有 M2 路径。范围、授权、唯一拥有者、跨边界合同、完整验收与未覆盖层级以 [spec](../spec.md) 中目标 03 为准；证据与取舍见 [独立研究](../research.md)。
@@ -12,3 +12,5 @@ Blocked by: none
 - 2026-10-07：已建立文档与契约，尚未声明实现通过。当前已由主 Agent 领取；worker 固定工作树与基点在 spec 记录。
 
 - 2026-10-07：实现已串行集成；逐项工程证据见 [记录](../evidence/03-input.md)，等待07组合检查和独立两轴复核后结算。
+
+- 2026-10-07：工程验收已完成。PDF同ID新摘要、历史GC/Undo、失败cleanup跨reset/eviction及有界准入、必要discard及真实React接缝均已独立复核闭环；冻结477b854及完整989tests/check/build、真实Electron证据见[07](../evidence/07-integration.md)。04动态引用选择不改变本票状态；用户认可由spec单独维护。

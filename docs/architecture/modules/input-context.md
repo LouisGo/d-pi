@@ -125,3 +125,7 @@ PM准入过滤可能拒绝dispatch；附件adapter必须核对实际doc是否等
 拒绝插入后的discard由Thread AttachmentModel持有必要清理失败，与已有源失败排队并保留原ids；一次unavailable/transport不能变成ready，显式retry只重试discard且仅其Main cancelled ACK解除义务，不重跑import。存在清理失败时不再申请clipboard import，Main每document最多4在途/128handoff给清理集合硬上界；普通源失败仍独立保留。必要cleanup不能用移除失败动作放弃，只能Main ACK或原document最终释放。
 
 GUI 对必要 clipboard-discard 失败仅提供重试，隐藏移除失败请求动作。冻结选区也以实际 PM 目标文档确认应用；被拒绝时保留待应用意图，history 准入状态恢复后再尝试，同一请求确认后只应用一次。
+
+Main 成功导入后，若因正文、选区、generation、前台身份或adapter/Editor销毁而未插入，同样由仍存活的原Thread AttachmentModel持有discard、失败及重试责任。失效的adapter不得绕过owner直接忽略RPC失败，也不得把clone重新插入新草稿。真正Thread owner销毁与可信Main document释放分别核对，不把二者笼统视为等价。
+
+historyState供React外部订阅读取。没有history owner时的empty、pending admission、failed/limited admission均返回稳定快照；在途Main释放不得每次创建新对象。实际ACK后订阅通知状态变化，正常第十Thread自动从pending准入并恢复保存，无React更新循环。

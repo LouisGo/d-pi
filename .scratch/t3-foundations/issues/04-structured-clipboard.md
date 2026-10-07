@@ -12,3 +12,5 @@ Blocked by: none
 - 2026-10-07：已建立文档与契约，尚未声明实现通过。
 
 - 2026-10-07：03已集成，独立图片/冻结选区/可信handle部分开始实施；动态引用语义依照spec待决，仅暂停依赖部分。
+
+- 2026-10-07：独立图片/冻结选区/可信handle、正常额度回收、失败与迟到清理、一次Undo/Redo均已实施并通过两轴独立复核、完整check/build及真实macOS复制链路；证据见[04](../evidence/04-clipboard.md)、[恢复](../evidence/04-clipboard-recovery.md)和[07](../evidence/07-integration.md)。仅动态@文件/目录版本与权限选择未收到，依赖部分保持hold，本票不提前resolved。

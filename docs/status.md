@@ -29,7 +29,7 @@
 | 基建 | [类型安全桌面路由](../.scratch/router-integration/spec.md) | 工程完成 | 已交付待试用 | 待认可 | 0.1.0-m2.9 / acf535c4-88948e3f [证据1](../.scratch/router-integration/issues/01-routing.md) · [证据2](../.scratch/router-integration/review.md) · [证据3](../.scratch/router-integration/handoff.md) · [证据4](../.scratch/router-integration/evidence/native-result.json) | 试用本地 macOS 候选：页签、会话切换和前进后退；用户认可待反馈 |
 | 基建 | [设置页与配置组件](../.scratch/settings-ui/spec.md) | 工程完成 | 已交付待试用 | 待认可 | Dev / codex/settings-ui / d02201c + b0a7ab6 [证据1](../.scratch/settings-ui/handoff.md) · [证据2](../.scratch/settings-ui/validation.md) · [证据3](../.scratch/settings-ui/review.md) | 等待设置页 Dev 试用反馈 |
 | 基建 | [状态与查询对齐](../.scratch/state-query-alignment/spec.md) | 工程完成 | 已交付待试用 | 待认可 | 441b27b4-1525b713（随重写包） [证据1](../.scratch/rewrite-preparation/handoff.md) · [证据2](../.scratch/state-query-alignment/issues/04-integration-verification.md) | 04 含试用验收，继续 claimed 等待反馈 |
-| 基建 | [T3 研究与基础重构](../.scratch/t3-foundations/spec.md) | 实施中 | 未交付 | 待认可 | — [证据1](../.scratch/t3-foundations/research.md) | 按六组合同完成实施与组合收益验证；动态引用复制语义等待用户选择 |
+| 基建 | [T3 研究与基础重构](../.scratch/t3-foundations/spec.md) | 部分完成 | 已交付待试用 | 待认可 | Dev生产源477b854 [证据1](../.scratch/t3-foundations/research.md) · [证据2](../.scratch/t3-foundations/handoff.md) · [证据3](../.scratch/t3-foundations/evidence/07-integration.md) | 等待动态引用的版本/权限语义选择，随后完成04依赖部分及07整体结算；独立范围已交付待试用 |
 
 ## 当前任务与真实阻塞
 
@@ -50,9 +50,8 @@
 | [m2-first-release / 05 队列与子 Agent](../.scratch/m2-first-release/issues/05-queue-subagent.md) | open | 无；范围以所属规格为准 |
 | [m2-first-release / 06 阅读与组合验收](../.scratch/m2-first-release/issues/06-reading-acceptance.md) | open | 无；范围以所属规格为准 |
 | [state-query-alignment / 04 集成验证与试用交接](../.scratch/state-query-alignment/issues/04-integration-verification.md) | claimed | 无；范围以所属规格为准 |
-| [t3-foundations / 03 输入生命周期与历史资产](../.scratch/t3-foundations/issues/03-input-lifetime.md) | claimed | 无；范围以所属规格为准 |
 | [t3-foundations / 04 可信结构化剪贴板](../.scratch/t3-foundations/issues/04-structured-clipboard.md) | claimed | 无；范围以所属规格为准 |
-| [t3-foundations / 07 组合验证与交付](../.scratch/t3-foundations/issues/07-integration-delivery.md) | open | [03](../.scratch/t3-foundations/issues/03-input-lifetime.md)、[04](../.scratch/t3-foundations/issues/04-structured-clipboard.md) |
+| [t3-foundations / 07 组合验证与交付](../.scratch/t3-foundations/issues/07-integration-delivery.md) | open | [04](../.scratch/t3-foundations/issues/04-structured-clipboard.md) |
 
 ## 重要待决与继续边界
 
@@ -72,4 +71,4 @@
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 - [T3 研究与基础重构](../.scratch/t3-foundations/spec.md)：unknown 不重发，冷恢复只读；native/live 无可靠原生身份时保持独立来源；M3 能力仅作设计储备
 
-<!-- source-sha256: 5cc95ac6d1174e2957c558bcecbd6810b817dfa421d51860b2957da9c5c004ed; sources: 138 -->
+<!-- source-sha256: 6188c742f2096ef4557960b949a27b6cc96840b975ce0cc7a84b75a7fc3bb41a; sources: 138 -->

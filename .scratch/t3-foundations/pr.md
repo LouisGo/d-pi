@@ -4,11 +4,13 @@
 
 现在这些行为分别归 Host、Main 只读 operation、Thread 附件模型、Main history/clipboard lease、Thread 内容锚点和 Main Writer。保留 OMP 执行与历史、接受/消费事务、unknown 不重发和冷恢复只读，Effect 限于已确认的执行边界。研究、合同和范围见 [research](research.md)、[spec](spec.md) 与七张本地票。
 
-跨 Thread 动态文件/目录的复制语义仍待用户选择；私有图片和冻结选区搬运独立实施，动态引用目前显式可读降级，不暗读目标项目同名文件。冻结466e08c已修复正常清史后的clone额度回收，仍有后续编辑、再次清史或缓存淘汰丢失未完成cleanup的恢复P2，正在隔离修复，最终review尚不能通过。总目标尚未结算，本文件是本地可审查草稿。
+跨 Thread 私有图片和冻结选区采用Main可信handle、新目标ID与一次Undo/Redo；未持久clone在正文/历史接棒后有界回收，必要清理失败及迟到结果由原Thread保留重试责任。正常历史释放在途自动恢复，React快照稳定。动态文件/目录的版本与跨项目权限语义仍待用户选择，目前明确可读降级；只有该依赖未实施，04/07与总目标尚未整体结算。本文件是本地可审查草稿。
 
 ## Evidence
 
 固定基点 `598323321c8c2ba6eb177097e2042510c3b79d87`，分支 `codex/t3-foundations`；最终工程输入、组合检查及独立 Spec/Standards 结论见 [07](evidence/07-integration.md)。每个目标的真实失败、回归与限制分别保存在 [01](evidence/01-native.md)、[02](evidence/02-reads.md)、[03](evidence/03-input.md)、[05](evidence/05-reading.md)、[06](evidence/06-diagnostics.md)。
+
+生产源 `477b85459a4e779044ec499c684b5047e31f9b14` 的build通过；仅看板哈希更新后的0a7e9a5完整check退出0（172files/989tests通过，2tests跳过）。两轴已关闭全部已证实P2，最终增量Spec 4files/40tests、Standards 4files/19tests通过，未发现新高价值问题。真实macOS剪贴板/目标新ID/一次Undo及Redo和阅读锚点复核通过，原剪贴板已恢复；未执行model请求。
 
 真实 Git 负载下 active child 峰值24→4，排队20且输出一致；取消后资源结算约1.74–3.18ms，原自然结束约286–297ms。真实文件句柄回到0。实际 PM/SQLite 的删除→保存→clean→Undo 能重新准备原资源，同 ID PDF 新派生摘要也保护。真实 Electron 宽度变化、Composer 隐藏、视图/Thread 返回保持同内容条目偏移，原像素恢复约104px漂移，现约0.22px绝对误差。
 

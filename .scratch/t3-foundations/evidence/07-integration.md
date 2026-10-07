@@ -53,3 +53,15 @@ Standards独立关闭原PDF P2：固定 `ae9cb2c…e795933`，原真实PM/SQLite
 17:47–17:50，两轴固定 `466e08c…307850b`，原清理恢复反例均转绿（Spec 8files/66tests，Standards 9files/60tests，architecture423）。同时独立确认迟到导入的discard绕过model，RPC失败时ready且无重试入口；Standards的4×32clones真实样本再次耗尽128额度，GC0。先追加迟到清理合同，再由worker窄修。Spec另外在正常第十Thread、旧LRU release在途时用真实React复现 `Maximum update depth exceeded`，原因是pending admission的getSnapshot每次创建新对象；不是故障注入或act warning。
 
 17:51–17:52，主Agent复用真实PM/Main/preload/SQLite正常10thThread场景，真实React先失败（1failed/12skipped），改为稳定pending快照后可以显示waiting并在真实Main ACK后自动ready，无需用户retry。缓存、Composer及该集成回归 **3files/32tests通过**；Biome通过。日志 `/tmp/d-pi-t3-history-snapshot-red.log`、`/tmp/d-pi-t3-history-snapshot-green.log`。后续固定修复源仍须独立复审和完整检查。
+
+## 当前最终验收（独立范围）
+
+迟到清理修复源 `fb540bf9cc67c6bf5e8a69d3a0ff43200621e98d` 集成为 `d07d3eb`；生产源最终冻结 `477b85459a4e779044ec499c684b5047e31f9b14`，工作树干净。两轴都固定 `307850b…477b854` 并核实merge-base：Spec原迟到discard与React循环反例转绿、原跨编辑/reset/eviction三条恢复反例继续绿，新增同Thread真实卸载/重挂后仍使用原IDs，仅discard ACK才ready/保存，GC删除1；受影响4files/40tests通过。Standards独立128clone样本四轮各32：每轮首次discard失败保持blocked，新import不启动，retry相同IDs获Main ACK后ready；四轮后继续import成功，完整有界GC续扫物理删除1。旧release失败恢复与cache/React接缝共4files/19tests、architecture423通过。所有已证实P2已关闭，无新可触发高价值问题；两位未重复root完整门禁或原生probe。
+
+证据校正：307的128clone复现中单批GC0不能独自证明pin泄漏，manifest数量超过扫描预算时需要续扫。当时quota busy、ready及retry=null已足以确认责任缺失；最终闭环使用真实ACK、额度恢复和完整有界续扫，不能将单批计数当物理回收总量。只有存活Thread的adapter/Editor卸载及重挂路径在此次闭环；不将任意ThreadModel.dispose与Main document释放等同。
+
+17:55–17:57最终组合：`pnpm build`在477b854退出0，保留既有PURE/chunk-size警告。首次完整check于status门禁停止，原因仅新增spec合同后看板生成哈希尚未刷新；`pnpm report:status:write`生成并提交0a7e9a5后，重新完整 `pnpm check` 退出0。全环境type、lint/design/i18n、source、architecture423、文档/结构/status、架构负例/tooling和全仓测试均过，**172files passed/1skipped，989tests passed/2skipped**，测试阶段17.74s（17:55:31开始）。默认opt-in/platform跳过仍不算通过。日志 `/tmp/d-pi-t3-recovery-check.log`、`/tmp/d-pi-t3-recovery-build.log`；0a7e9a5与477生产代码相同，后续交接提交只改文档/证据。
+
+同轮 `node validation/m2/reading-layout.mjs --anchors --clipboard` 退出0。重新使用实际生产Main/preload/Renderer、PNG decoder、SQLite、真实Chromium/macOS pasteboard，复制文字+私有图片到另一Thread：newTargetId/sameDigest/singleUndo/redoSameId均true，原剪贴板 `restored`；relative anchor drift=0，absolute=0.21875px，宽度/隐藏Composer/视图及Thread返回均保持anchor-10。数据库submissions/nativeBindings与modelGenerationRequests全0，临时数据和子进程已清理。最终原始样本 [electron-clipboard-geometry-final.json](electron-clipboard-geometry-final.json)，原15:56样本保留。没有model网络、账户、实际OS PDF转换器、远端CI、安装包或用户认可证据。
+
+工程结算：01/02/03/05/06 resolved，04独立范围完成、动态@文件/目录语义保持hold，07只依赖04而保持open。已实施范围由[handoff](../handoff.md)按该工作树Dev交付待试用，用户反馈/认可pending。原checkout保持clean基点5983233；集成分支未push/创建远端PR/merge或发布，worker工作树已通过App归档，集成树保留用于继续。完整目标未全部实现，因此不宣称用户要求的总退出标准已经达到。
