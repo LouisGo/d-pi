@@ -66,7 +66,7 @@ Main/Host/Bun 执行、原生历史所有权、unknown 不重发、冷恢复只�
 
 ## 检查与真实 UI
 
-`pnpm check` 在最新 main 组合通过：183 文件通过、1 文件跳过，1062 行为测试通过、2 测试跳过；架构35、工具96；类型/格式/设计/i18n/边界/文档/结构/状态门禁通过。既有跳过分别是需 D_PI_NATIVE_SMOKE 的完整 native CLI smoke，以及需 D_PI_REFERENCE_BENCH 的项目引用10k条目性能基准。实际环境检查核实 Node24.21.0、pnpm12.8.1、Bun1.3.14、Electron44.4.5、OMP18.4.6，锁文件不变。[完整检查日志](evidence/reading-loop/logs/check-merged.log)。合并后 `pnpm build` 通过，保留既有大chunk警告；interaction / fast 检查结果见交付记录，未把 lint 的通过当视觉认可。
+`pnpm check` 在最新 main 组合通过：183 文件通过、1 文件跳过，1062 行为测试通过、2 测试跳过；架构35、工具96；类型/格式/设计/i18n/边界/文档/结构/状态门禁通过。既有跳过分别是需 D_PI_NATIVE_SMOKE 的完整 native CLI smoke，以及需 D_PI_REFERENCE_BENCH 的项目引用10k条目性能基准。实际环境检查核实 Node24.21.0、pnpm12.8.1、Bun1.3.14、Electron44.4.5、OMP18.4.6，锁文件不变。[完整检查日志](evidence/reading-loop/logs/check-merged.log)。合并后 `pnpm build` 通过，保留既有大chunk警告；`pnpm check:fast`（包含 interaction）通过，结果见已提交 fast-docs.log，未把 lint 的通过当视觉认可。
 
 实际 `pnpm dev` 使用本轮隔离 App 数据、沿用现有 OMP 认证和 `openai-codex/gpt-5.6-luna high`。两个新 QA Thread、三次限定请求，无工具/文件动作。A 收到6595字符/141行和8817字符/221行，B 收到代码/表格/引用325字符最终文；全部收据 acknowledged/completed，与 native message、stopReason=stop 一致。[provider.json](evidence/reading-loop/provider.json) 保存受控身份、hash、标记，没有凭据/思考全文。
 
@@ -90,4 +90,4 @@ synthetic fixture 1000 retained 短条目输入→下一帧采样20次，P95=8.5
 
 ## 复审与交付
 
-独立 [Spec/Standards review](reading-loop-review.md)；[本地 PR body](reading-loop-pr.md)。本地 PR 合 main 与 push 必须核对实际目标端后补记，不能用计划或工程通过代替。
+独立 [Spec/Standards review](reading-loop-review.md)；[本地 PR body](reading-loop-pr.md)。最终72c5e77文档/证据增量复审也由两个独立reviewer通过，无高价值问题。日志仅移除ANSI和末空行；本地 PR 合 main 与 push 必须核对实际目标端后补记，不能用计划或工程通过代替。

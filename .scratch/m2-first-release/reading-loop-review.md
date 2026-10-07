@@ -15,3 +15,9 @@ Spec 在 `ce47707` 找到 P2：新来源 DOM 已提交但初次 restore 尚未�
 - `d987f98a8cd7aafb432ab51f15244e8b04ccb618`：Spec 固定干净HEAD复核全部阅读行为及harness增量，0个高价值遗留。等待只观察控件/提示、不写滚动或来源，≤2px锚点、A→B→A、generation、用户接管和生命周期断言保留；复制依然验证native pointer命中、hash与ownership。此次未独立跑Chromium/clipboard，主层干净HEAD 24项实际复验通过。此前单次R2只观察到undefined且原result被覆盖，根因无法确认；3帧缺少两路React提交完成信号是合理推断，不能写成已证实产品竞态。
 
 尚未实测的OS/物理输入/包/长稳边界见[交接](reading-loop.md#实质边界)。没有把范围外未知项写成已证实缺陷；没有用无问题评审代替用户认可。
+
+## 最终文档与证据复核
+
+2026-10-08，两个独立reviewer对干净 `72c5e7796aebb576863c1bcb92320262fb6a9e64` 复核harness、交接、spec、票、PR及已提交证据，均0个高价值问题。Spec核实授权/未验证/用户认可与06h06i resolved、06j claimed；Standards核实实际完成等待不弱化断言、Copy不重新触发且保留ownership/finally恢复、干净d987的24项及1062/35/96数字一致。未重跑UI/clipboard，主层实际证据独立保存。
+
+主层后续仅整理5个日志末空行并记录此结论；日志移除了ANSI和末空行，没有改变检查结果，最终diff check通过。合入/push与06j关闭由主层核对实际目标端。

@@ -16,4 +16,3 @@ SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 
       Tests  39 passed (39)
    Start at  00:02:35
    Duration  4.73s (import 67%, transform 13%, tests 12%, environment 8%)
-

@@ -631,4 +631,3 @@ stdout | src/app/main/lifecycle/development-tools.test.ts > loads React DevTools
 
     Isolate  184 workers spawned · ~148ms startup each (spawn + environment, per file)
              at least ~2.89s faster with isolate: false — reuses workers across files instead of one per file
-
