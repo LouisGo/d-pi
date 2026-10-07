@@ -8,6 +8,7 @@ import react from "@vitejs/plugin-react";
 import { createServer as createViteServer } from "vite";
 import { createTestEnvironment } from "../../scripts/testing/test-environment.mjs";
 import { createCdpClient } from "./cdp.mjs";
+import { captureClipboard } from "./clipboard.mjs";
 
 const isolated = createTestEnvironment({ prefix: "d-pi-reading-loop-" });
 const output = resolve(".scratch/m2-first-release/evidence/reading-loop");
@@ -65,6 +66,7 @@ child.stderr.on("data", (data) => {
   stderr = (stderr + data).slice(-8192);
 });
 let socket;
+let clipboard;
 const results = [];
 let passed = false;
 async function wait(fn) {
@@ -310,8 +312,58 @@ try {
   await frames();
   await check(
     "R7 final Markdown preserves stable node range and code scroll",
-    "window.__md.isConnected && getSelection().toString()===window.__mdSelection && window.__code.isConnected && window.__code.scrollLeft===window.__codeLeft && document.querySelector('[data-reading-row=\"1\"]').textContent.includes('FINAL_MARKDOWN_TAIL')",
+    "window.__md.isConnected && getSelection().toString()===window.__mdSelection && window.__code.isConnected && window.__codeLeft>0 && window.__code.scrollLeft===window.__codeLeft && document.querySelector('[data-reading-row=\"1\"]').textContent.includes('FINAL_MARKDOWN_TAIL')",
   );
+  clipboard = captureClipboard({
+    env: isolated.env,
+    temporary: isolated.temporary,
+  });
+  clipboard.beforeCopy();
+  await call("Input.dispatchKeyEvent", {
+    type: "keyDown",
+    key: "c",
+    code: "KeyC",
+    modifiers: 4,
+    commands: ["copy"],
+  });
+  await call("Input.dispatchKeyEvent", {
+    type: "keyUp",
+    key: "c",
+    code: "KeyC",
+    modifiers: 4,
+  });
+  clipboard.markOwnedCopy(await evaluate("window.__mdSelection"));
+  results.push({
+    name: "R7R12 final stable Selection copies to native pasteboard",
+    result: true,
+  });
+  const expectedCopy = await evaluate("window.readingProbe.text(25)");
+  const point = await evaluate(
+    "(()=>{const b=document.querySelector('[data-reading-row=\"25\"] .message-heading button');b.scrollIntoView({block:'nearest'});const r=b.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()",
+  );
+  clipboard.beforeCopy();
+  await call("Input.dispatchMouseEvent", {
+    type: "mousePressed",
+    button: "left",
+    clickCount: 1,
+    ...point,
+  });
+  await call("Input.dispatchMouseEvent", {
+    type: "mouseReleased",
+    button: "left",
+    clickCount: 1,
+    ...point,
+  });
+  await frames();
+  clipboard.markOwnedCopy(expectedCopy);
+  results.push({
+    name: "R12 whole long body Copy includes undisplayed segments",
+    result: { copiedCharacters: expectedCopy.length, owned: true },
+  });
+  results.push({
+    name: "native clipboard restoration",
+    result: clipboard.restore().kind,
+  });
   await click("Thread tools");
   await click("Native history");
   await click("Return to live reading");
@@ -352,6 +404,7 @@ try {
   );
   passed = true;
 } finally {
+  clipboard?.restore();
   writeFileSync(
     join(output, "result.json"),
     JSON.stringify(

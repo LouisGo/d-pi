@@ -174,6 +174,8 @@ Object.assign(window, {
       historyReason = reason;
     },
     reads: () => reads,
+    text: (id: number) =>
+      states.get(active())?.items.find((item) => item.id === id)?.text,
     manyRows: () => {
       const threadId = active(),
         view = states.get(threadId);
