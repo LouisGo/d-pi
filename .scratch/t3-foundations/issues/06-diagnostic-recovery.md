@@ -1,6 +1,6 @@
 # 06 安全诊断与恢复
 
-Status: claimed
+Status: resolved
 Blocked by: none
 
 阶段：基建，改善既有 M2 路径。范围、授权、唯一拥有者、跨边界合同、完整验收与未覆盖层级以 [spec](../spec.md) 中目标 06 为准；证据与取舍见 [独立研究](../research.md)。
@@ -14,3 +14,5 @@ Blocked by: none
 - 2026-10-07：完整06实现与39项受影响回归/类型/快速门禁通过，成本和限制见[证据](../evidence/06-diagnostics.md)。保持claimed，待最终集成与独立两轴review后结算，不先称整段验收完成。
 
 - 2026-10-07：实现已串行集成；逐项工程证据见 [记录](../evidence/06-diagnostics.md)，等待07组合检查和独立两轴复核后结算。
+
+- 2026-10-07：本票工程验收已完成，完整check/build及固定组合两轴review未留本票高价值问题；实际证据见[06-diagnostics](../evidence/06-diagnostics.md)和[组合复核](../evidence/07-integration.md)。03/04清理恢复及动态引用选择不改变本票状态；用户认可仍由spec单独维护。
