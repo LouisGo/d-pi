@@ -8,12 +8,12 @@
 - 受影响决定：D-02/D-03/D-10/D-21/D-22/D-24/D-26/D-28–D-30/D-33/D-35/D-37/D-38/D-39。保留 OMP 执行/历史、Main 持久化、Host 连接关联、Renderer 交互；不扩 Effect 到 Files/Changes，不换 Atom/Schema，不引入 XState。
 - 结果：六组可操作/可观测目标及其组合工程验收，逐项满足下面的退出条件；既有 M2 供应商/PDF/系统通知/用户认可等开放父票不由本轮自动关闭。
 - 产品判断：2026-10-07用户回复“1”，明确选择跨Thread动态@文件/目录复制时冻结来源及版本，已登记D-10补充；本切片无重要待决。保留原草稿动态引用的发送读取行为，不扩大跨项目权限。
-- 工程：01/02/03/05/06与04原独立部分已完成工程验收；已交付生产源477b854的172files/989tests、build及真实macOS复制/Undo/锚点通过，两轴已关闭全部已证实问题。用户选项1已解除04 hold，剩余冻结引用正在从文档合同基点d6c9654隔离实施；新代码需刷新必要检查和两轴复核，07尚不宣布完整退出。
-- 试用：已交付上述独立范围待试用；版本及具体步骤见[handoff](handoff.md)。默认该工作树 `pnpm dev`，未机械打包；用户尚未反馈或明确认可。工程验证、真实系统检查及用户认可分别记录。
+- 工程：01–07全部完成工程验收，生产源固定b49c413；174files/1010tests、完整check/build、真实跨项目macOS冻结复制/来源展示/Undo及阅读锚点通过。最终独立Spec/Standards复核关闭目录格式及预览问题，无未处理高价值发现；完整退出证据见07。
+- 试用：全部选定范围已Dev交付待试用；版本及具体步骤见[handoff](handoff.md)。默认该工作树 `pnpm dev`，未机械打包；用户尚未反馈或明确认可。工程验证、真实系统检查及用户认可分别记录。
 - 执行：主 Agent 单写状态、契约、集成和诊断；独立 worker 固定各自基点/工作树实现原生、读取和输入，串行集成后推进依赖票。派发映射在实施时追加。不得把研究工作树当自动隔离。
 
 ```project-status
-[{"id":"t3-foundations","title":"T3 研究与基础重构","phase":"基建","engineering":"in-progress","trial":"delivered","acceptance":"pending","build":"已交付Dev源477b854；冻结复制实施中","evidence":["research.md","handoff.md","evidence/07-integration.md"],"next":"按用户选项1完成动态引用复制冻结、两轴复核和07整体结算；已有独立范围已交付待试用","constraints":"unknown 不重发，冷恢复只读；native/live 无可靠原生身份时保持独立来源；M3 能力仅作设计储备"}]
+[{"id":"t3-foundations","title":"T3 研究与基础重构","phase":"基建","engineering":"complete","trial":"delivered","acceptance":"pending","build":"Dev源b49c413；check/build及真实macOS冻结复制通过","evidence":["research.md","handoff.md","evidence/07-integration.md"],"next":"按handoff试用全部既定重构结果并收集反馈；用户认可仍pending","constraints":"unknown 不重发，冷恢复只读；native/live 无可靠原生身份时保持独立来源；M3 能力仅作设计储备"}]
 ```
 
 ```implementation-plan
@@ -67,7 +67,7 @@ DraftController 仍是正文保存/消费唯一协调器；Tiptap/EditorState �
 
 Main history lease 绑定可信窗口+editor epoch+Thread，验证真实 manifest 及有限 ID 集合；可保守保护该 epoch 曾进入撤销历史的超集，直至历史清除/缓存淘汰。数量与资产预算有界，达限不得静默让仍可 Undo 的资源消失。GC 纳入 transient pin epoch，在 await 和实际 unlink 前复核，不能仅看之前的 SQLite 引用快照。
 
-clipboard snapshot 只从当次可信源的选中依赖建立；私有资产经 Main 内部引用复制、核验摘要和 lease 接棒，正文/token 一次事务映射，冻结选区保真。动态引用语义在用户选择后细化，不能暗读目标项目同名文件。失败/Undo/消费后的晚结果只归原操作，不自动重新插入；fallback 显示未搬运的上下文而不静默漏发。
+clipboard snapshot 只从当次可信源的选中依赖建立；私有资产经 Main 内部引用复制、核验摘要和 lease 接棒，正文/token 一次事务映射，冻结选区保真。动态引用按下述已确认选项1冻结，不能暗读目标项目同名文件。失败/Undo/消费后的晚结果只归原操作，不自动重新插入；fallback 显示未搬运的上下文而不静默漏发。
 
 ### 用户选项1：复制冻结来源与版本
 
@@ -119,3 +119,5 @@ record 在 stringify 前只选择允许字段和值，Writer 自己填时间/构
 04 独立实现由 research_reads 从集成提交 `7f407de` 切 `codex/t3-clipboard` 接棒；05 由主 Agent 完成正式 Thread/ReadingPane 接线。两者不共享写入路径。
 
 2026-10-07选项1派发：research_reads从 `d6c9654` 固定基点在 `/Users/louistation/.codex/worktrees/t3-frozen-references/d-pi` / `codex/t3-clipboard-frozen` 实施04剩余Main/DTO/正式GUI及测试；仅写允许的input、附件app接线/GUI和locale必要key与04证据，不写共享管理文档。主Agent单写研究/契约/状态、原生validation脚本及串行集成。原三个worker工作树已归档，不混用旧构建输出。
+
+2026-10-07最终结算：选项1剩余04已实现、独立两轴无未处理高价值问题，生产源b49c413完整gate/build和真实macOS跨项目冻结复制/来源详情/UndoRedo通过；01–07全部resolved。trial delivered与acceptance pending分开，未自动关闭本轮范围外的M2父票或授权M3。4座worker已App归档，集成树供Dev试用，原checkout保持clean固定5983233；没有远端或发行操作。

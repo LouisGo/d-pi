@@ -71,3 +71,21 @@ Standards独立关闭原PDF P2：固定 `ae9cb2c…e795933`，原真实PM/SQLite
 用户明确回复“1”，已于f328f0e登记D-10复制冻结选择并移除hold，d6c9654补基础/模块合同，d132693记录隔离派发。已有477b854工程结果仍是此前独立范围的快照，不把产品选择本身算实现完成。
 
 Root e93cea0新增 `--frozen-references` 原生probe：保留原阅读A/B并增加不同项目第三Thread，源image+@textfile+@direct-directory；真实Copy后等待Main实际导入/unused discard确认export ready，再删除原file、改变原dir，native paste至同名异内容目标，核对private preview/GUI/一次UndoRedo。最初错误把阅读B换differentproject，因该project没有history夹具在进入clipboard前超时；是探针布置失败且未写OS clipboard，不算产品红灯。修正后旧built477实际在ClipboardEvent/Main链路得到 `Frozen export unavailable`（尚无动态冻结/降级），18:28有效red，日志 `/tmp/d-pi-t3-frozen-electron-red.log`。finally保留原pasteboard恢复逻辑，但失败日志未采集restore.kind，不预宣称此次确切恢复结果；最终green再明确核实。
+
+## 选项1实施与最终固定源复核
+
+18:56实施源`e381f0da4fe460ffd44a99f4be8c1234b939831b`从d6c9654隔离完成，由root串行集成为f214de4；证据提交4ed36ae集成为2cd31a5，[04冻结证据](04-frozen-references.md)及全部新用例已入Git。真实Main/preload/SQLite两项目、实际PM/Controller/Cache、来源删除/同名冲突/再次复制/重开/原动态新版本、异步预算与失败回收、SDK PDF文本抽取及textOnly同意、TTL/document/来源身份、旧记录与正式GUI均有明确工程证据。原件和PDF派生完整record/pin一起接棒，没有扩大Effect/读取权限或新增诊断operation/code。SDK实际保留visual/OCR-page coverage缺口，不声称页面渲染或OCR识别。
+
+首次root完整矩阵发现1条旧Main测试仍按动态降级合同断言；实际源README.md不存在，选项1需要export failed、import invalid且目标manifest空。8d11bba更新该测试，foreign/forged防护仍在，3tests通过；自动结构报告随后a48b1da刷新。不是用测试迁就生产缺陷，而是明确被用户替换的旧语义。
+
+两轴固定e3eef733→新源，Spec独立真实Main发现documents.pdf目录被扩展名误判PDF，原动态prepare成功但freeze失败。root新真实Main参数反例得到1failed/2passed；0cfd182修复export。二次独立Spec/Standards都发现正式preview遗漏同规则；root增加实际Preview RPC断言再得到1failed/2passed。最终b49c413以private identifyStoredContent集中两入口的已知directory格式，真实name/path保留；普通PDF保持原严格规则。root相关5files/41tests通过，原始红绿日志分别在`/tmp/d-pi-t3-directory-format-{red,green}.log`和`/tmp/d-pi-t3-directory-preview-{red,green}.log`，Git内[3目录反例](../../../tests/integration/clipboard-directory-format.integration.test.ts)可从提交取回。
+
+最终生产源`b49c413f99ff417172a9f44b6cd124f1d222dd1f`两轴通过，merge-base均为e3eef733。Spec整体59项覆盖后，最终3files/19tests（原Preview及实际SDK PDF PM/Undo/save/GC）全部通过，清史Main ACK后GC实际删除5对象；原恢复P2继续关闭。Standards整体8files/70tests后，最终5files/36tests和architecture423通过，额外普通.pdf文本伪装仍拒绝、partial-copy不发布半成品/post-put document释放不复活快照且实际GC可回收。两轴无未处理高价值发现；其检查不替代root完整gate或原生probe，不将重叠测试数相加。
+
+19:10最终`pnpm check`与`pnpm build`均退出0。全环境type、lint/design/i18n、source、architecture423、documentation/structure/status、architecture负例/tooling和全仓测试通过：174files passed/1skipped、1010tests passed/2skipped，测试阶段19.04s（19:10:01开始）。既有opt-in/platform跳过仍不算通过；fixture中的故意工具崩溃负例、既有React act/MaxListeners及chunk-size警告不改作功能失败或消除规则。日志`/tmp/d-pi-t3-frozen-check-final.log`、`/tmp/d-pi-t3-frozen-build-final.log`。built Main内嵌commit=b49c413、dirty=false、build id=b49c413f-63f67e9e；后续仅文档/证据/状态，不改此生产源。
+
+原生新场景首轮在Clipboard保护工具before检查失败，于Copy前中止；不是冻结功能反例，没有写入该轮OS剪贴板。当前按最终固定构建重试，实际结果和清理/恢复口径追加后再结算04/07。
+
+19:11–19:14最终`node validation/m2/reading-layout.mjs --anchors --clipboard --frozen-references`退出0，运行上述clean b49c413构建。实际生产Main/preload/Renderer、SQLite、PNG decoder、Chromium和macOS pasteboard：复制image+动态@file+@directory到另一个不同项目；确认export ready后删除源file、改变源dir，目标同名异内容仍不影响私有preview。differentProjects/deletedSourcePreserved/directorySnapshotPreserved/targetSamePathsIgnored/directEntriesOnly全部true。正式GUI“复制时冻结”可见，实际展开来源详情可见；真实bridge核对来源project/path/kind、reader.version（sha256:真实inputDigest）、capture time位于COPY请求至ready。nativeTransport/newTargetId/sameDigest/singleUndo/redoSameId全部true，一次Undo/Redo整个3依赖片段及目标IDs保持。原剪贴板实际restored，未打印或留存用户剪贴板内容；临时目录、数据和子进程最终清理。submissions/nativeBindings/modelGenerationRequests均0。完整原始样本[electron-frozen-references-final.json](electron-frozen-references-final.json)入Git，保留前两份历史原始样本。
+
+该轮阅读width change/Composer hidden/view return/Thread return均维持anchor-10、offset 40.21875；relative drift=0，绝对偏差0.21875px。只有离线合成项目/history与真实桌面边界被证明，不等同个人账户/provider执行、OS PDF页面渲染/OCR、远端CI、安装包或用户认可。工程目标01–07全部resolved、当前Dev交付；产品无重要待决，trial delivered、acceptance pending。原checkout仍clean固定5983233，集成树保留。4座已集成worker工作树均由App归档并已核实；未push/创建远端PR/merge/发布。

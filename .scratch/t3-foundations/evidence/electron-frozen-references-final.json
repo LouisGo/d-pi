@@ -1,0 +1,99 @@
+{
+  "platform": "darwin",
+  "mode": "built source Electron with emulated viewports; synthetic read-only project and v3 history",
+  "submissions": 0,
+  "nativeBindings": 0,
+  "modelGenerationRequests": 0,
+  "measurements": [
+    {
+      "name": "conversation-dark-minimum",
+      "width": 960,
+      "height": 640,
+      "readingHeight": 493,
+      "focusVisible": true,
+      "codeVisible": null,
+      "focused": "true",
+      "editorPreserved": true,
+      "draft": "Synthetic QA draftline twoline three"
+    },
+    {
+      "name": "history-dark-compact-minimum",
+      "width": 960,
+      "height": 640,
+      "readingHeight": 493,
+      "focusVisible": true,
+      "codeVisible": null,
+      "focused": "true",
+      "editorPreserved": true,
+      "draft": "Synthetic QA draftline twoline three"
+    },
+    {
+      "name": "history-dark-compact-restored",
+      "width": 960,
+      "height": 640,
+      "readingHeight": 113.8046875,
+      "focusVisible": true,
+      "codeVisible": null,
+      "focused": "false",
+      "editorPreserved": true,
+      "draft": "Synthetic QA draftline twoline three"
+    }
+  ],
+  "anchorMeasurements": [
+    {
+      "name": "before",
+      "rowId": "anchor-10",
+      "offset": 40.21875,
+      "scrollTop": 6279.5,
+      "source": "[\"native\",\"914d960b-cef0-4c23-9dc0-55fcbacbad16\",\"6abb76f87e1146da6a4be00bde5d59dd5139ad0c44a697cd18780f04bb844e0a\",\"cb651176fe8d71e03d9c2933a7703b531181bc03c12b8de701a4d8c85b8c6c0c\",0]"
+    },
+    {
+      "name": "width-change",
+      "rowId": "anchor-10",
+      "offset": 40.21875,
+      "scrollTop": 6175.5,
+      "source": "[\"native\",\"914d960b-cef0-4c23-9dc0-55fcbacbad16\",\"6abb76f87e1146da6a4be00bde5d59dd5139ad0c44a697cd18780f04bb844e0a\",\"cb651176fe8d71e03d9c2933a7703b531181bc03c12b8de701a4d8c85b8c6c0c\",0]"
+    },
+    {
+      "name": "composer-hidden",
+      "rowId": "anchor-10",
+      "offset": 40.21875,
+      "scrollTop": 6175.5,
+      "source": "[\"native\",\"914d960b-cef0-4c23-9dc0-55fcbacbad16\",\"6abb76f87e1146da6a4be00bde5d59dd5139ad0c44a697cd18780f04bb844e0a\",\"cb651176fe8d71e03d9c2933a7703b531181bc03c12b8de701a4d8c85b8c6c0c\",0]"
+    },
+    {
+      "name": "view-return",
+      "rowId": "anchor-10",
+      "offset": 40.21875,
+      "scrollTop": 6234.5,
+      "source": "[\"native\",\"914d960b-cef0-4c23-9dc0-55fcbacbad16\",\"6abb76f87e1146da6a4be00bde5d59dd5139ad0c44a697cd18780f04bb844e0a\",\"cb651176fe8d71e03d9c2933a7703b531181bc03c12b8de701a4d8c85b8c6c0c\",0]"
+    },
+    {
+      "name": "thread-return",
+      "rowId": "anchor-10",
+      "offset": 40.21875,
+      "scrollTop": 6264,
+      "source": "[\"native\",\"914d960b-cef0-4c23-9dc0-55fcbacbad16\",\"6abb76f87e1146da6a4be00bde5d59dd5139ad0c44a697cd18780f04bb844e0a\",\"cb651176fe8d71e03d9c2933a7703b531181bc03c12b8de701a4d8c85b8c6c0c\",0]"
+    }
+  ],
+  "clipboard": {
+    "nativeTransport": true,
+    "newTargetId": true,
+    "sameDigest": true,
+    "singleUndo": true,
+    "redoSameId": true,
+    "frozenReferences": {
+      "differentProjects": true,
+      "deletedSourcePreserved": true,
+      "directorySnapshotPreserved": true,
+      "targetSamePathsIgnored": true,
+      "directEntriesOnly": true,
+      "frozenLabelVisible": true,
+      "provenanceVerified": true,
+      "provenanceDetailsVisible": true,
+      "fileVersion": "sha256:ca094e121f96b31820eb33218f6f8cc69bf78bfb245e3fbeb9f0030111fdef18",
+      "directoryVersion": "sha256:98c1eb74e714256f975bbc71dbe1f78c4732ffcb6fd440c4f29d4951be9c0d38"
+    },
+    "pasteboardRestore": "restored"
+  }
+}
