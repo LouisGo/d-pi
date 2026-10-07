@@ -1,6 +1,6 @@
 # A 基础布局验证
 
-最终候选源提交：91499e7f73e15cf0c27906728c3cf361b8988cff；基点37e1a62b889fdfaa1db274b60bac69b98d54d23c。
+历史候选源提交：91499e7f73e15cf0c27906728c3cf361b8988cff；基点37e1a62b889fdfaa1db274b60bac69b98d54d23c。
 
 ## 工程与隔离 GUI
 
@@ -40,3 +40,13 @@ CUA 原生检查以Main未变化的4cf3cee包执行：close/fullscreen/minimize�
 [新隔离 Electron 记录](evidence/feedback/native.json)62 条通过（61 项断言及 1 项输入到下一 rAF 采样）：Modal 形态/遮罩尺寸/初始焦点、Esc 返回设置入口、背景会话保持挂载和阅读坐标、通知打开退出 Modal、窄窗与中文、三态主题及 OS media 变化、各类控件无 outline、现有几何/面板/图标/输入连续性。初始 Close Tooltip 会先消费 Escape，调整 Modal 初始焦点到类别导航后单次 Esc 关闭通过；宽泛 Thread 按钮样式导致新增项目加号偏心，限制到真实 Thread 行后同一实际中心检查通过。
 
 [统一交互记录](evidence/feedback/interaction.json)通过：按钮、图标、navigation、选中按钮、summary 和 link 均无 outline，仍有可区分的键盘焦点背景/文字；保留选择、复制及 Monaco/Diff 合同。截图见[桌面设置](evidence/feedback/settings-light-desktop.png)、[中文窄窗设置](evidence/feedback/settings-light-minimum-chinese.png)。诊断采用包含式呈现，留在 Modal 焦点范围；包内 Main 操作另行验证。OS 外观变化由 CDP media 模拟，未改动系统全局设置。
+
+## 2026-10-07 新版最终包与原生操作
+
+应用源93e18a5593df93806528d6858b173536ea5abb20；0.1.0-workbench.2 / 93e18a55-5aafdac5，dirty=false。完整 pnpm check：808行为、35架构、89tooling通过，2项既有可选native smoke跳过；pnpm build 与 macOS arm64 打包通过。app.asar SHA-256：f5d6aaf359c4216c321299b47a70ce43b069237c3e3f67a68b6ae314cfdae61c。
+
+`node validation/m2/package.mjs dist/workbench-ui/mac-arm64/d-pi.app --router --attachments --workbench --inspect`成功；[21条结果](evidence/feedback/packaged.json)包括20项实际检查及1项原生检查点恢复。真实 Main/preload/SessionHost/SDK18.4.6、本地 supplier；新增 Main 保存 system、三态循环兼容旧 density、Modal 内诊断可聚焦；Router/IME准入、附件原件与冻结、草稿/撤销/阅读、双原生scope、重载不重发和冷只读通过。2次 supplier 请求均 localhost fixture，没有真实账户或计费请求。
+
+测试驱动先误匹配同名的一级导航图标而非阅读“会话”按钮，随后试图在 Modal 覆盖时点击背景模型动作；修正为可见文字优先、图标 aria-label 兜底、开放 Modal 限定查找范围，并在背景操作前关闭 Modal，同一包完整回归通过。此修正只改变 validation 驱动，不是应用修复或应用源新构建。
+
+[CUA原生记录](evidence/feedback/native-cua.json)：实际打开设置 Modal、切 system 独立图标、诊断 traceId 输入聚焦、第一 Esc 关闭诊断/第二 Esc 关闭设置并回焦、Projects 加号打开原生目录选择、取消后同一 Thread 草稿 A_UNSENT_DRAFT 保留。物理顶栏 drag 前后均 x304/y105/1120×780，未确认移动；窗口日志仍有 Window move completed without beginning，原因unknown。系统IME候选窗/VoiceOver/长时流式性能未覆盖，04继续claimed。

@@ -14,3 +14,5 @@ Blocked by: 03
 - 2026-10-06：主Agent单写集成，固定基点37e1a62。
 
 - 2026-10-07：完整check（806行为/35架构/89tooling）、interaction、build/package、56条隔离Electron与18项实际包检查通过；两轴独立审查通过，收到的顶部导航/图标居中反馈已修复。最终候选91499e7，dirty=false，见[交接](../handoff.md)。CUA原生zoom成功；物理drag未观察到坐标变化、原因unknown，该必需验证继续claimed，不伪报resolved。系统IME候选窗/VoiceOver/长时流式性能仍未覆盖。
+
+- 2026-10-07 反馈修正版：源93e18a5干净包workbench.2，808/35/89完整检查、62条隔离记录及21条包内记录通过；原生Modal/诊断焦点与Esc、项目目录选择和草稿保留通过。物理drag仍未确认，继续claimed；远端push/PR/merge按用户明确授权推进，合并不提升认可状态。

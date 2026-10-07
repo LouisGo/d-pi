@@ -103,7 +103,7 @@ CSS Grid/Flex 负责排版与滚动边界；尺寸约束负责可用空间分配
 ```
 
 ```project-status
-[{"id":"codex-workbench-ui","title":"Codex 式工作台基础布局","phase":"基建","engineering":"partial","trial":"delivered","acceptance":"pending","build":"0.1.0-workbench.1 / 91499e7f-7bca4f14","evidence":["handoff.md","validation.md","review.md"],"next":"本地候选试用；A3物理拖窗继续确认，系统IME/VoiceOver与长时性能未覆盖","constraints":"用户已授权本UI分支push、PR及合并；不公开发布或发起真实账户请求。"}]
+[{"id":"codex-workbench-ui","title":"Codex 式工作台基础布局","phase":"基建","engineering":"partial","trial":"delivered","acceptance":"pending","build":"0.1.0-workbench.2 / 93e18a55-5aafdac5","evidence":["handoff.md","validation.md","review.md"],"next":"本地候选试用；A3物理拖窗继续确认，系统IME/VoiceOver与长时性能未覆盖","constraints":"用户已授权本UI分支push、PR及合并；不公开发布或发起真实账户请求。"}]
 ```
 
 ## 实施票
@@ -126,3 +126,5 @@ CSS Grid/Flex 负责排版与滚动边界；尺寸约束负责可用空间分配
 本轮新增要求：设置改为遮罩上的大 Modal；新会话移到第二列 Thread 导航顶部；打开项目为 Projects 分类标题右侧的加号；主题补 system 偏好与独立图标；语言选择只在设置中；取消所有应用控件 outline，统一键盘焦点背景/文字状态；继续调整层级、对齐及窄窗细节。沿用 A 范围、业务准入与资源连续性，不扩张 Composer/M3。
 
 功能回归已记录真实红灯：AppModel 二次主题切换原来得到 light 而非 system；真实 App 挂载原来没有侧栏新会话/项目加号和设置 Modal。修正后两项及原有相关行为通过，实际 Electron 验证另记录。
+
+新版试用候选：0.1.0-workbench.2 / 93e18a55-5aafdac5，源提交93e18a5593df93806528d6858b173536ea5abb20、dirty=false。808行为/35架构/89tooling，62条隔离Electron记录，21条实际包记录（20项检查与1项原生检查点恢复）通过；原生操作确认Modal、内层诊断Esc顺序、项目加号目录选择与草稿保留。物理drag仍未观察到坐标变化，原因unknown，04/engineering/acceptance状态不提升。

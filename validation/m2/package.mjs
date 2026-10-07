@@ -239,18 +239,10 @@ async function evaluate(expression) {
   return reply.result.value;
 }
 async function click(text) {
-  const predicate = `b => (b.textContent.trim() === ${JSON.stringify(text)} || b.getAttribute('aria-label') === ${JSON.stringify(text)}) && !b.disabled && !b.closest('[hidden],[inert]') && b.getBoundingClientRect().width > 0 && getComputedStyle(b).visibility !== 'hidden'`;
-  await wait(
-    () =>
-      evaluate(
-        `Array.from(document.querySelectorAll('button')).some(${predicate})`,
-      ),
-    30000,
-    `button available: ${text}`,
-  );
-  await evaluate(
-    `Array.from(document.querySelectorAll('button')).find(${predicate}).click()`,
-  );
+  // A visible text action wins over a homonymous icon (e.g. reading vs rail Conversation).
+  const lookup = `(()=>{const scope=document.querySelector('.ui-settings-modal:not([hidden])')??document;const buttons=[...scope.querySelectorAll('button')].filter(b=>!b.disabled&&!b.closest('[hidden],[inert]')&&b.getBoundingClientRect().width>0&&getComputedStyle(b).visibility!=='hidden');return buttons.find(b=>b.textContent.trim()===${JSON.stringify(text)})??buttons.find(b=>b.getAttribute('aria-label')===${JSON.stringify(text)});})()`;
+  await wait(() => evaluate(`!!${lookup}`), 30000, `button available: ${text}`);
+  await evaluate(`(${lookup}).click()`);
 }
 async function selectThread(id) {
   if (process.argv.includes("--continuity"))
@@ -452,6 +444,7 @@ try {
       "document.querySelector('.configuration-settings').textContent.includes('OpenAI') && !document.querySelector('.configuration-settings').textContent.includes('正在读取')",
     ),
   );
+  await click("关闭");
   await wait(() =>
     evaluate(
       "document.querySelector('.model-controls select')?.options.length===3",
@@ -473,7 +466,6 @@ try {
   await evaluate(
     "document.querySelector('.configuration-settings').open=false",
   );
-  await click("关闭");
   await click("允许执行并启动");
   await wait(() =>
     evaluate(
