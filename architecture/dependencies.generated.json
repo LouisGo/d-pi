@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "4d00d05b247dad23ffa0321262ec042433549fd6a65ae13ca871eece02fa1553",
+  "inputsHash": "6281dbe42fe5df4d8426d22564de23da19509e4a13deb949006da277e8d85e77",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 425,
@@ -405,7 +405,7 @@
       ],
       "materialized": true,
       "files": 7,
-      "lines": 708,
+      "lines": 706,
       "publicEntries": [
         {
           "path": "src/modules/ui/renderer/public.ts",
@@ -24428,30 +24428,6 @@
       "sourceModule": "ui",
       "sourceEnvironment": "renderer",
       "test": false,
-      "specifier": "./controls",
-      "kind": "export",
-      "resolution": "module",
-      "to": "src/modules/ui/renderer/controls.tsx",
-      "targetModule": "ui",
-      "targetEnvironment": "renderer"
-    },
-    {
-      "from": "src/modules/ui/renderer/public.ts",
-      "sourceModule": "ui",
-      "sourceEnvironment": "renderer",
-      "test": false,
-      "specifier": "./settings",
-      "kind": "export",
-      "resolution": "module",
-      "to": "src/modules/ui/renderer/settings.tsx",
-      "targetModule": "ui",
-      "targetEnvironment": "renderer"
-    },
-    {
-      "from": "src/modules/ui/renderer/public.ts",
-      "sourceModule": "ui",
-      "sourceEnvironment": "renderer",
-      "test": false,
       "specifier": "./components/icons/common",
       "kind": "export",
       "resolution": "module",
@@ -24464,10 +24440,34 @@
       "sourceModule": "ui",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "./controls",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/controls.tsx",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/ui/renderer/public.ts",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "./focus-visibility",
       "kind": "export",
       "resolution": "module",
       "to": "src/modules/ui/renderer/focus-visibility.ts",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/ui/renderer/public.ts",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./settings",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/settings.tsx",
       "targetModule": "ui",
       "targetEnvironment": "renderer"
     },

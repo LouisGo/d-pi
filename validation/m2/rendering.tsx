@@ -1,4 +1,3 @@
-import { installControlFocusVisibility } from "../../src/modules/ui/renderer/public";
 import { createRoot } from "react-dom/client";
 import {
   type DesktopBridge,
@@ -11,6 +10,7 @@ import { RuntimeViewSchema } from "../../src/modules/execution/contracts/public"
 import { DraftSchema } from "../../src/modules/input/contracts/public";
 import type { Preferences } from "../../src/modules/preferences/contracts/public";
 import { I18nProvider } from "../../src/modules/preferences/renderer/public";
+import { installControlFocusVisibility } from "../../src/modules/ui/renderer/public";
 import type { LocaleSnapshot } from "../../src/shared/i18n/locale";
 import "../../src/app/renderer/styles/app.css";
 
