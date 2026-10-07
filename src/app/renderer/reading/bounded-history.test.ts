@@ -91,12 +91,15 @@ it("restores the selected native session, page and segment after A to B to A rem
   try {
     await render("A");
     await waitText("A/0/0:");
-    const select = container.querySelector("select");
+    const select =
+      container.querySelector<HTMLButtonElement>("[data-slot=select]");
     if (!select) throw Error("missing history session selector");
-    await act(() => {
-      select.value = keys[1] ?? "";
-      select.dispatchEvent(new Event("change", { bubbles: true }));
-    });
+    await act(() => select.click());
+    const option = document.querySelector<HTMLElement>(
+      `[role=option][data-value="${keys[1]}"]`,
+    );
+    if (!option) throw Error("missing second native session option");
+    await act(() => option.click());
     await waitText("A/1/0:");
     await click("Next page");
     await waitText("A/1/100:");
@@ -111,7 +114,9 @@ it("restores the selected native session, page and segment after A to B to A rem
     await render("A");
     await vi.waitFor(async () => {
       await act(() => new Promise((resolve) => setTimeout(resolve, 10)));
-      expect(container.querySelector("select")?.value).toBe(keys[1]);
+      expect(
+        container.querySelector<HTMLButtonElement>("[data-slot=select]")?.value,
+      ).toBe(keys[1]);
       expect(
         container
           .querySelector("[data-reading-segment]")

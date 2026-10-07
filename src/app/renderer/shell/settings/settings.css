@@ -47,59 +47,6 @@
     background: var(--muted);
     color: var(--foreground);
   }
-  .theme-preview {
-    display: flex;
-    width: calc(var(--spacing) * 27);
-    height: calc(var(--spacing) * 18);
-    border-radius: var(--radius-control);
-    overflow: hidden;
-    background: var(--preview-light-background);
-    color: var(--preview-light-foreground);
-  }
-  .theme-preview[data-mode="dark"] {
-    background: var(--preview-dark-background);
-    color: var(--preview-dark-foreground);
-  }
-  .theme-preview-sidebar {
-    width: 24%;
-    background: currentColor;
-    opacity: 0.12;
-  }
-  .theme-preview-main {
-    flex: 1;
-    display: grid;
-    align-content: center;
-    gap: calc(var(--spacing) * 1.4);
-    padding: calc(var(--spacing) * 2);
-  }
-  .theme-preview-line {
-    height: calc(var(--spacing) * 0.8);
-    border-radius: var(--radius-control);
-    background: currentColor;
-    opacity: 0.25;
-    width: 75%;
-  }
-  .theme-preview-line:nth-child(2) {
-    width: 90%;
-    background: var(--primary);
-    opacity: 1;
-  }
-  .theme-preview-line:nth-child(3) {
-    width: 55%;
-  }
-  .theme-preview-input {
-    border: 1px solid currentColor;
-    opacity: 0.3;
-    border-radius: var(--radius-control);
-    height: calc(var(--spacing) * 2.4);
-    margin-top: calc(var(--spacing) * 0.8);
-  }
-  .theme-preview[data-mode="system"] > .theme-preview {
-    width: 50%;
-    border-radius: 0;
-  }
-}
-@media (max-width: 760px) {
   .settings-surface {
     padding: var(--panel-padding);
   }

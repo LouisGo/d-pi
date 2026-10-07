@@ -209,7 +209,13 @@ try {
   );
   await shot("configuration-light");
   await section("Appearance");
-  await click("document.querySelector('[role=radio][aria-label=Dark]')");
+  await click(
+    "document.querySelector('.ui-settings-page:not([hidden]) [data-slot=select]')",
+  );
+  await wait(() =>
+    evaluate("!!document.querySelector('[role=option][data-value=dark]')"),
+  );
+  await click("document.querySelector('[role=option][data-value=dark]')");
   await wait(() => evaluate("document.documentElement.dataset.theme==='dark'"));
   await shot("appearance-dark");
   await section("Notifications");

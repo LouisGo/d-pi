@@ -1,0 +1,95 @@
+{
+  "kind": "isolated-Electron-App-fixture",
+  "screenshots": [
+    ".scratch/selection-components/evidence/appearance-light.png",
+    ".scratch/selection-components/evidence/general-select.png",
+    ".scratch/selection-components/evidence/configuration-light.png",
+    ".scratch/selection-components/evidence/appearance-dark.png",
+    ".scratch/selection-components/evidence/notifications-dark.png",
+    ".scratch/selection-components/evidence/configuration-narrow-dark.png"
+  ],
+  "portal": {
+    "inDialog": false,
+    "bounds": {
+      "x": 878,
+      "y": 346,
+      "width": 128,
+      "height": 120.5,
+      "top": 346,
+      "right": 1006,
+      "bottom": 466.5,
+      "left": 878
+    },
+    "height": 788
+  },
+  "bounds": [
+    {
+      "name": "settings-modal-navigation",
+      "x": 17,
+      "y": 117,
+      "width": 606,
+      "height": 65,
+      "top": 117,
+      "right": 623,
+      "bottom": 182,
+      "left": 17
+    },
+    {
+      "name": "ui-setting-row",
+      "x": 50,
+      "y": 353.5,
+      "width": 540,
+      "height": 94.5,
+      "top": 353.5,
+      "right": 590,
+      "bottom": 448,
+      "left": 50
+    },
+    {
+      "name": "ui-setting-row",
+      "x": 50,
+      "y": 448,
+      "width": 540,
+      "height": 136,
+      "top": 448,
+      "right": 590,
+      "bottom": 584,
+      "left": 50
+    },
+    {
+      "name": "ui-input",
+      "x": 382.2734375,
+      "y": 492.5,
+      "width": 207.7265625,
+      "height": 33.5,
+      "top": 492.5,
+      "right": 590,
+      "bottom": 526,
+      "left": 382.2734375
+    },
+    {
+      "name": "ui-setting-row",
+      "x": 50,
+      "y": 641.5,
+      "width": 540,
+      "height": 94.5,
+      "top": 641.5,
+      "right": 590,
+      "bottom": 736,
+      "left": 50
+    }
+  ],
+  "checks": [
+    "one-page",
+    "select-portal",
+    "keyboard-escape-focus",
+    "explicit-theme-persistence",
+    "notification-save",
+    "narrow-bounds",
+    "Thread-resource-preservation",
+    "Modal-return-focus"
+  ],
+  "limitations": [
+    "mocked bridges; no real authentication or OS notification"
+  ]
+}

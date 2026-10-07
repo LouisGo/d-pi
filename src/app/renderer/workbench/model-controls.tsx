@@ -8,7 +8,7 @@ import type {
 } from "../../../modules/configuration/contracts/public";
 import { configurationSnapshotQuery } from "../../../modules/configuration/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import { Button } from "../../../modules/ui/renderer/public";
+import { Button, Select } from "../../../modules/ui/renderer/public";
 import type { ThreadModel } from "../wiring/thread-model";
 
 type ThinkingChoice =
@@ -43,25 +43,18 @@ export function ModelControls({
       workingDirectoryId: thread.context.workingDirectoryId,
     }),
   );
-  const [search, setSearch] = useState("");
   const [showUnavailable, setShowUnavailable] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [level, setLevel] = useState<ThinkingChoice | null>(null);
   const models =
-    query.data?.models.filter(
-      (m) =>
-        (m.available || showUnavailable) &&
-        `${m.provider}/${m.id} ${m.name}`
-          .toLowerCase()
-          .includes(search.toLowerCase()),
-    ) ?? [];
+    query.data?.models.filter((m) => m.available || showUnavailable) ?? [];
   if (!runtime) return null;
   return (
     <ModelSelectionState
       thread={thread}
       disclosureRef={disclosureRef}
       runtime={runtime}
-      models={models.slice(0, 200)}
+      models={models}
       catalog={query.data?.models ?? []}
       selected={selected}
       select={(value) => {
@@ -70,8 +63,6 @@ export function ModelControls({
       }}
       level={level}
       setLevel={setLevel}
-      search={search}
-      setSearch={setSearch}
       loading={query.isFetching}
       failed={query.isError || !!query.data?.catalogError}
       showUnavailable={showUnavailable}
@@ -91,8 +82,6 @@ function ModelSelectionState({
   select,
   level: chosenLevel,
   setLevel,
-  search,
-  setSearch,
   loading,
   failed,
   refresh,
@@ -110,8 +99,6 @@ function ModelSelectionState({
   select: (value: string) => void;
   level: ThinkingChoice | null;
   setLevel: (value: ThinkingChoice) => void;
-  search: string;
-  setSearch: (value: string) => void;
   loading: boolean;
   failed: boolean;
   refresh: () => void;
@@ -202,54 +189,42 @@ function ModelSelectionState({
       </label>
       <div className="model-fields">
         <label>
-          {t("model.search")}
-          <input value={search} onChange={(e) => setSearch(e.target.value)} />
-        </label>
-        <label>
           {t("model.heading")}
-          <select
+          <Select
             value={selected}
             disabled={disabled || loading}
-            onChange={(e) => select(e.target.value)}
-          >
-            <option value="">{t("model.choose")}</option>
-            {visibleModels.map((m) => (
-              <option
-                key={JSON.stringify([m.provider, m.id])}
-                value={JSON.stringify([m.provider, m.id])}
-                disabled={!m.available}
-              >
-                {m.provider} / {m.name}
-                {m.reason ? ` · ${t(`model.reason.${m.reason}`)}` : ""}
-              </option>
-            ))}
-          </select>
+            onValueChange={select}
+            aria-label={t("model.heading")}
+            search={{ label: t("model.search"), empty: t("model.noAvailable") }}
+            options={[
+              { value: "", label: t("model.choose") },
+              ...visibleModels.map((m) => ({
+                value: JSON.stringify([m.provider, m.id]),
+                label: `${m.provider} / ${m.name}${m.reason ? ` · ${t(`model.reason.${m.reason}`)}` : ""}`,
+                searchText: m.id,
+                disabled: !m.available,
+              })),
+            ]}
+          />
         </label>
         <label>
           {t("model.thinking")}
-          <select
+          <Select<ThinkingChoice>
             disabled={disabled || !target?.thinking.adjustable}
             value={level}
-            onChange={(e) => {
-              const value = e.target.value;
-              if (
-                value === "default" ||
-                value === "off" ||
-                target?.thinking.efforts.some((effort) => effort === value)
-              )
-                setLevel(value as ThinkingChoice);
-            }}
-          >
-            <option value="default">{t("model.defaultThinking")}</option>
-            {target?.thinking.adjustable && !target.thinking.requiresEffort && (
-              <option value="off">{t("model.offThinking")}</option>
-            )}
-            {target?.thinking.efforts.map((value) => (
-              <option key={value} value={value}>
-                {value}
-              </option>
-            ))}
-          </select>
+            aria-label={t("model.thinking")}
+            onValueChange={setLevel}
+            options={[
+              { value: "default", label: t("model.defaultThinking") },
+              ...(target?.thinking.adjustable && !target.thinking.requiresEffort
+                ? [{ value: "off" as const, label: t("model.offThinking") }]
+                : []),
+              ...(target?.thinking.efforts.map((value) => ({
+                value,
+                label: value,
+              })) ?? []),
+            ]}
+          />
         </label>
         <Button
           disabled={!target?.available || disabled || loading || !validThinking}

@@ -267,6 +267,17 @@ async function click(text) {
   await wait(() => evaluate(`!!${lookup}`), 30000, `button available: ${text}`);
   await evaluate(`(${lookup}).click()`);
 }
+async function chooseControl(selector, value) {
+  await evaluate(`document.querySelector(${JSON.stringify(selector)}).click()`);
+  await wait(() =>
+    evaluate(
+      `Array.from(document.querySelectorAll('.ui-select-positioner:not([hidden]) [role=option]')).some(el=>el.dataset.value===${JSON.stringify(value)})`,
+    ),
+  );
+  await evaluate(
+    `Array.from(document.querySelectorAll('.ui-select-positioner:not([hidden]) [role=option]')).find(el=>el.dataset.value===${JSON.stringify(value)}).click()`,
+  );
+}
 async function selectThread(id) {
   if (process.argv.includes("--continuity"))
     await evaluate(`(()=>{
@@ -488,15 +499,17 @@ async function runValidation() {
   await click("关闭");
   await wait(() =>
     evaluate(
-      "document.querySelector('.model-controls select')?.options.length===3",
+      "document.querySelectorAll('.model-controls [data-slot=select]').length===2",
     ),
   );
   await evaluate("document.querySelector('.model-controls').open=true");
-  await evaluate(
-    `(()=>{const s=document.querySelector('.model-controls select');s.value=${JSON.stringify(JSON.stringify(["fixture", "fixture-b"]))};s.dispatchEvent(new Event('change',{bubbles:true}));})()`,
+  await chooseControl(
+    ".model-controls [data-slot=select]",
+    JSON.stringify(["fixture", "fixture-b"]),
   );
-  await evaluate(
-    "(()=>{const s=document.querySelectorAll('.model-controls select')[1];s.value='high';s.dispatchEvent(new Event('change',{bubbles:true}));})()",
+  await chooseControl(
+    ".model-controls label:nth-of-type(2) [data-slot=select]",
+    "high",
   );
   await click("应用到当前会话");
   await wait(() =>
@@ -915,18 +928,17 @@ async function runValidation() {
       .get().count;
     await wait(() =>
       evaluate(
-        "document.querySelector('[name=subagent-agent]')?.options.length>0",
+        "!!document.querySelector('button[name=subagent-agent]')?.value",
       ),
     );
     await evaluate(
       "document.querySelector('details[aria-label=\"子 Agent 设置\"]').open=true",
     );
-    await evaluate(
-      `(()=>{const s=document.querySelector('[name=subagent-model]');s.value=${JSON.stringify(JSON.stringify(["fixture", "fixture-b"]))};s.dispatchEvent(new Event('change',{bubbles:true}));})()`,
+    await chooseControl(
+      "button[name=subagent-model]",
+      JSON.stringify(["fixture", "fixture-b"]),
     );
-    await evaluate(
-      "(()=>{const s=document.querySelector('[name=subagent-thinking]');s.value='high';s.dispatchEvent(new Event('change',{bubbles:true}));})()",
-    );
+    await chooseControl("button[name=subagent-thinking]", "high");
     await click("应用覆盖");
     await wait(() =>
       evaluate(

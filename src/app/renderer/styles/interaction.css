@@ -96,23 +96,6 @@
     select,
     input,
     textarea,
-    [contenteditable="true"],
-    [role="tab"],
-    [role="menuitem"],
-    [role="option"],
-    [role="dialog"],
-    [role="separator"]
-  ):focus:not(:focus-visible) {
-    outline: none;
-  }
-  :where(
-    button,
-    [role="button"],
-    a[href],
-    summary,
-    select,
-    input,
-    textarea,
     [role="tab"],
     [role="menuitem"],
     [role="option"]
@@ -193,4 +176,12 @@
   :where(.monaco-readonly) :is(.detected-link-active, .mtkoverflow) {
     cursor: default !important;
   }
+}
+
+/* Global outline boundary, including portals and vendor controls. This narrowly
+   scoped important declaration is intentional: component hover/active/focus
+   rules cannot bypass the accessibility-only outline contract. */
+:where(*):not(:focus-visible),
+:root[data-pointer-focus="true"] :where(*) {
+  outline: none !important;
 }

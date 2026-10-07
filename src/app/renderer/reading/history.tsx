@@ -16,7 +16,7 @@ import {
   readingSourceKey,
 } from "../../../modules/conversation/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import { Button } from "../../../modules/ui/renderer/public";
+import { Button, Select } from "../../../modules/ui/renderer/public";
 import { ReadingBody } from "./reading-body";
 
 type HistoryToolEvidenceMessage =
@@ -114,30 +114,35 @@ function HistoryContent({ bridge, threadId, active, positions }: HistoryProps) {
       <div className="history-controls">
         <label>
           {t("ui.history.choose")}
-          <select
+          <Select
             value={selected}
             disabled={awaitingCatalog || busy}
-            onChange={(event) => {
+            aria-label={t("ui.history.choose")}
+            onValueChange={(value) => {
               owner.rememberHistory({
-                choice: event.target.value,
+                choice: value,
                 cursor: null,
                 readBound: false,
               });
               setBoundAttempt(null);
             }}
-          >
-            <option value="">
-              {t(
-                awaitingCatalog ? "ui.history.discovering" : "ui.history.bound",
-              )}
-            </option>
-            {catalog.data?.kind === "catalog" &&
-              catalog.data.sessions.map((session) => (
-                <option key={session.key} value={session.key}>
-                  {session.title} · {session.sessionId.slice(0, 8)}
-                </option>
-              ))}
-          </select>
+            options={[
+              {
+                value: "",
+                label: t(
+                  awaitingCatalog
+                    ? "ui.history.discovering"
+                    : "ui.history.bound",
+                ),
+              },
+              ...(catalog.data?.kind === "catalog"
+                ? catalog.data.sessions.map((session) => ({
+                    value: session.key,
+                    label: `${session.title} · ${session.sessionId.slice(0, 8)}`,
+                  }))
+                : []),
+            ]}
+          />
         </label>
         <Button
           variant="ghost"

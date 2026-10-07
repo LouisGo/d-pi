@@ -3,6 +3,7 @@ import {
   browserLocaleFallback,
   I18nProvider,
 } from "../../modules/preferences/renderer/public";
+import { installControlFocusVisibility } from "../../modules/ui/renderer/public";
 import type { DesktopBridge } from "../contracts/desktop-bridge";
 import { App } from "./app";
 import { AppModel } from "./wiring/model";
@@ -15,6 +16,8 @@ declare global {
     desktop: DesktopBridge;
   }
 }
+const disposeFocusVisibility = installControlFocusVisibility(document);
+window.addEventListener("unload", disposeFocusVisibility, { once: true });
 const model = new AppModel(window.desktop);
 window.addEventListener("unload", () => model.dispose(), { once: true });
 window.desktop.onCloseRequest((token) => {

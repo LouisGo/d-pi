@@ -164,40 +164,53 @@ it("renders native effort metadata and sends default, off and minimal as distinc
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 40));
     });
-    const selects = element.querySelectorAll("select");
+    const selects =
+      element.querySelectorAll<HTMLButtonElement>("[data-slot=select]");
     const model = selects[0],
       thinking = selects[1];
     if (!model || !thinking) throw Error("missing selectors");
     expect(model.value).toBe(JSON.stringify(["fixture", "minimal"]));
     expect(thinking.value).toBe("off");
+    const pick = async (control: HTMLButtonElement, value: string) => {
+      await act(() => control.click());
+      const item = Array.from(
+        document.querySelectorAll<HTMLElement>("[role=option]"),
+      ).find((el) => el.dataset.value === value);
+      if (!item) throw Error(`missing option ${value}`);
+      await act(() => item.click());
+    };
     const choose = async (id: string) =>
-      act(async () => {
-        model.value = JSON.stringify(["fixture", id]);
-        model.dispatchEvent(new Event("change", { bubbles: true }));
-      });
-    const options = () =>
-      Array.from(thinking.options).map((option) => option.value);
+      pick(model, JSON.stringify(["fixture", id]));
+    const options = async () => {
+      if (thinking.disabled) return ["default"];
+      await act(() => thinking.click());
+      const values = Array.from(
+        document.querySelectorAll<HTMLElement>("[role=option]"),
+      ).map((el) => el.dataset.value);
+      await act(() =>
+        document.activeElement?.dispatchEvent(
+          new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+        ),
+      );
+      return values;
+    };
     await choose("deepseek");
-    expect(options()).toEqual(["default", "off", "low", "high", "max"]);
+    expect(await options()).toEqual(["default", "off", "low", "high", "max"]);
     await choose("required");
-    expect(options()).toEqual(["default", "low", "high"]);
+    expect(await options()).toEqual(["default", "low", "high"]);
     await choose("fixed");
     expect(thinking.disabled).toBe(true);
-    expect(options()).toEqual(["default"]);
+    expect(await options()).toEqual(["default"]);
     await choose("plain");
     expect(thinking.disabled).toBe(true);
-    expect(options()).toEqual(["default"]);
+    expect(await options()).toEqual(["default"]);
     await choose("minimal");
-    expect(options()).toEqual(["default", "off", "minimal", "low"]);
+    expect(await options()).toEqual(["default", "off", "minimal", "low"]);
     const apply = () =>
       Array.from(element.querySelectorAll("button")).find(
         (button) => button.textContent?.trim() === "应用到当前会话",
       );
-    const selectThinking = async (value: string) =>
-      act(async () => {
-        thinking.value = value;
-        thinking.dispatchEvent(new Event("change", { bubbles: true }));
-      });
+    const selectThinking = async (value: string) => pick(thinking, value);
     await act(async () => apply()?.click());
     await selectThinking("off");
     await act(async () => apply()?.click());
@@ -240,7 +253,7 @@ it("renders native effort metadata and sends default, off and minimal as distinc
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 40));
     });
-    expect(options()).toEqual(["default", "off", "low"]);
+    expect(await options()).toEqual(["default", "off", "low"]);
     expect(apply()?.disabled).toBe(true);
     await selectThinking("default");
     expect(apply()?.disabled).toBe(false);

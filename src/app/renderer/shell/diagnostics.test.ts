@@ -260,19 +260,21 @@ it("applies explicit local time, Thread, Writer, operation and stage without iss
   await edit("结束时间", "2026-10-06T12:00:00");
   await edit("Thread ID", trace);
   await edit("Writer实例 ID", otherTrace);
-  await act(async () => {
-    const stage = document.querySelector<HTMLSelectElement>(
-      '[data-diagnostics-filter="stage"]',
+  for (const [name, value] of [
+    ["stage", "failed"],
+    ["operation", "submit"],
+  ]) {
+    await act(() =>
+      document
+        .querySelector<HTMLButtonElement>(`button[name="${name}"]`)
+        ?.click(),
     );
-    const operation = document.querySelector<HTMLSelectElement>(
-      '[data-diagnostics-filter="operation"]',
-    );
-    if (!stage || !operation) throw Error("missing selector");
-    stage.value = "failed";
-    operation.value = "submit";
-    stage.dispatchEvent(new Event("change", { bubbles: true }));
-    operation.dispatchEvent(new Event("change", { bubbles: true }));
-  });
+    const item = Array.from(
+      document.querySelectorAll<HTMLElement>("[role=option]"),
+    ).find((el) => el.dataset.value === value);
+    if (!item) throw Error("missing filter option");
+    await act(() => item.click());
+  }
   expect(bridge.request).toHaveBeenCalledTimes(1);
   await ui.click("应用筛选");
   expect(bridge.request.mock.calls.at(-1)?.[0].filter).toMatchObject({
