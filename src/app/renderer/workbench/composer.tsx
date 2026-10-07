@@ -246,9 +246,12 @@ export function Composer({
     const apply = () => {
       if (!model.isCurrentThread(thread) || editor.isDestroyed) return;
       if (editor.view.composing) return;
-      editor.view.dispatch(
-        appendSelectionReference(editor.state, selectionAttachment.selection),
+      const transaction = appendSelectionReference(
+        editor.state,
+        selectionAttachment.selection,
       );
+      editor.view.dispatch(transaction);
+      if (!editor.state.doc.eq(transaction.doc)) return;
       lastAttachment.current = selectionAttachment.id;
       editor.commands.focus("end");
       onAttachmentApplied?.(selectionAttachment.id);
@@ -257,7 +260,16 @@ export function Composer({
       editor.view.dom.addEventListener("compositionend", apply, { once: true });
     else apply();
     return () => editor.view.dom.removeEventListener("compositionend", apply);
-  }, [editor, selectionAttachment, model, thread, onAttachmentApplied]);
+  }, [
+    editor,
+    selectionAttachment,
+    model,
+    thread,
+    onAttachmentApplied,
+    history.pending,
+    history.failed,
+    history.limited,
+  ]);
   useEffect(() => {
     if (!editor) return;
     editor.setOptions({

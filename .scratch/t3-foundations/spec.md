@@ -73,6 +73,8 @@ clipboard snapshot 只从当次可信源的选中依赖建立；私有资产经 
 
 2026-10-07清理恢复合同补充：未确认完成的release计划独立于新epoch的update结果，保留原leaseId、候选ID与可信document/Thread归属，直到Main明确确认完成。新编辑成功不得掩盖旧cleanup失败，再次reset不能覆盖未完成计划；缓存淘汰可释放Editor，但必须由有界的无头owner继续持有清理责任与重试入口，不能靠重入Thread伪造恢复。重试保留ID按实际当前正文及当前epoch历史复核，包含失败/未确认更新可能依赖的来源；不以旧retain快照删除新正文。保存/显式重试仅在必要update与cleanup均确认后成功，typed retry_safe失败继续可见。待清理任务有明确预算，达限不能静默遗失责任或无限保留退役Editor。
 
+2026-10-07编辑准入合同补充：当预算保护拒绝PM事务时，适配器按实际文档判断是否插入，不能把dispatch/command布尔当作应用确认。未插入clipboard clone须交回Main释放，附件来源仍可重试；冻结选区请求保持待应用，恢复准入后再尝试，确认进入正文后才通知已应用。提交消费与采用持久版本是窄可信替换，保留现有原子消费/清史语义，不允许一般用户事务绕过预算。
+
 ### 阅读来源与详情
 
 ReadingAnchor 使用 source scope、rowId、offsetWithinRow、pixel fallback 与 atEnd；live scope含真实generation，native含session/source/page。Thread owns anchor，Renderer owns DOM/ResizeObserver，恢复不改执行事实。当前 history/live 无原生共同身份，本轮不合并；现有详情从当前投影读，不能为已截断内容创建伪重读接口。未来独立详情必须返回 actual revision/coverage，T3 cache revision不是精确版本证据。

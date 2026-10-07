@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { Editor } from "@tiptap/core";
 import { closeHistory } from "@tiptap/pm/history";
 import { Slice } from "@tiptap/pm/model";
+import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
@@ -128,7 +129,10 @@ async function setup(
       throw Error("missing selected thread");
     return state.threadSelection.thread;
   }
-  const render = () =>
+  const render = (
+    selectionAttachment?: Parameters<typeof Composer>[0]["selectionAttachment"],
+    onAttachmentApplied?: (id: string) => void,
+  ) =>
     act(() =>
       root.render(
         createElement(QueryClientProvider, {
@@ -140,6 +144,10 @@ async function setup(
               thread: thread(),
               model,
               onChooseModel,
+              ...(selectionAttachment !== undefined
+                ? { selectionAttachment }
+                : {}),
+              ...(onAttachmentApplied ? { onAttachmentApplied } : {}),
             }),
           }),
         }),
@@ -169,6 +177,46 @@ async function setup(
     container,
   };
 }
+
+it("keeps a frozen selection pending when PM rejects insertion and applies it once after recovery", async () => {
+  const fixture = await setup();
+  const key = new PluginKey("reject-frozen-context");
+  fixture
+    .editor()
+    .registerPlugin(
+      new Plugin({ key, filterTransaction: (tr) => !tr.docChanged }),
+    );
+  const attachment = {
+    id: crypto.randomUUID(),
+    threadId: fixture.first.threadId,
+    selection: {
+      kind: "selection" as const,
+      path: "example.ts",
+      source: "working-tree",
+      version: "fixture-v1",
+      text: "const frozen = 1;",
+      startLine: 1,
+      startColumn: 1,
+      endLine: 1,
+      endColumn: 18,
+    },
+  };
+  const applied = vi.fn();
+  await fixture.render(attachment, applied);
+  expect(fixture.editor().getText()).toBe(fixture.first.text);
+  expect(applied).not.toHaveBeenCalled();
+  fixture.editor().unregisterPlugin(key);
+  await fixture.render({ ...attachment }, applied);
+  const references: unknown[] = [];
+  fixture.editor().state.doc.descendants((node) => {
+    if (node.type.name === "fileReference") references.push(node.attrs);
+  });
+  expect(references).toHaveLength(1);
+  expect(references[0]).toMatchObject(attachment.selection);
+  expect(applied).toHaveBeenCalledExactlyOnceWith(attachment.id);
+  await fixture.render({ ...attachment }, applied);
+  expect(applied).toHaveBeenCalledTimes(1);
+});
 
 it("preserves A's middle selection and independent undo/redo across A → B → A with fresh views", async () => {
   const fixture = await setup();
