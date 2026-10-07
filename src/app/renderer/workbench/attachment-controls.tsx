@@ -474,9 +474,11 @@ export function AttachmentControls({
               >
                 {t("attachment.retry")}
               </Button>
-              <Button variant="ghost" onClick={() => model.removeFailure()}>
-                {t("attachment.dismissFailedRequest")}
-              </Button>
+              {failed.command.kind !== "clipboard-discard" && (
+                <Button variant="ghost" onClick={() => model.removeFailure()}>
+                  {t("attachment.dismissFailedRequest")}
+                </Button>
+              )}
             </>
           )}
         </div>

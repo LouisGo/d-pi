@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "08e3617870d9c3b91d74358ca58d3a946f3fca20d139ac430d0df57abeded492",
+  "inputsHash": "250403f8e1ac2fc3c16d02f858104f6af77a37e35fd26d8f43d1567ceb57a1aa",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 423,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 179,
-      "lines": 31588,
+      "lines": 31732,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -186,7 +186,7 @@
       ],
       "materialized": true,
       "files": 49,
-      "lines": 8132,
+      "lines": 8563,
       "publicEntries": [
         {
           "path": "src/modules/input/contracts/public.ts",
@@ -12157,6 +12157,15 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": true,
+      "specifier": "@tiptap/pm/state",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-continuity.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
       "specifier": "react",
       "kind": "import",
       "resolution": "external"
@@ -17892,6 +17901,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/input/renderer/references/attachment-reference.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/editor/draft-editor-cache.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./edit-action-history",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/editor/edit-action-history.ts",
       "targetModule": "input",
       "targetEnvironment": "renderer"
     },

@@ -123,3 +123,5 @@ Cache 的 epoch 淘汰与 cleanup owner 销毁分开：未确认的结束保留�
 PM准入过滤可能拒绝dispatch；附件adapter必须核对实际doc是否等于目标transaction.doc，拒绝时返回false、让Thread AttachmentModel保留uninserted-source。可信clipboard同样核对实际doc，失败时明确反馈并等待Main discard未使用clone，不能把一笔被拒绝的dispatch当作已插入交接。
 
 拒绝插入后的discard由Thread AttachmentModel持有必要清理失败，与已有源失败排队并保留原ids；一次unavailable/transport不能变成ready，显式retry只重试discard且仅其Main cancelled ACK解除义务，不重跑import。存在清理失败时不再申请clipboard import，Main每document最多4在途/128handoff给清理集合硬上界；普通源失败仍独立保留。必要cleanup不能用移除失败动作放弃，只能Main ACK或原document最终释放。
+
+GUI 对必要 clipboard-discard 失败仅提供重试，隐藏移除失败请求动作。冻结选区也以实际 PM 目标文档确认应用；被拒绝时保留待应用意图，history 准入状态恢复后再尝试，同一请求确认后只应用一次。

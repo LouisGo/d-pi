@@ -14,7 +14,10 @@ import {
 } from "../../../modules/input/renderer/public";
 import { createI18n } from "../../../shared/i18n/create-i18n";
 import { ThreadIdSchema } from "../../../shared/identity";
-import type { AttachmentReply } from "../../contracts/attachments";
+import type {
+  AttachmentReply,
+  AttachmentRequest,
+} from "../../contracts/attachments";
 import { AttachmentControls } from "./attachment-controls";
 
 // Fixture owns the Thread resources; views only receive the same instances.
@@ -55,6 +58,85 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 const id = ThreadIdSchema.parse("f9b0037d-1b8b-4f82-988c-7ca64f93fa37");
+it("offers only retry for an unfinished clipboard cleanup and confirms its original IDs", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const editor = new Editor({
+    ...plainTextEditorOptions,
+    element: document.createElement("div"),
+    content: draftDocument("body"),
+  });
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  cleanups.push(async () => {
+    await act(() => root.unmount());
+    editor.destroy();
+    client.clear();
+    container.remove();
+  });
+  const attempts: string[][] = [];
+  const bridge = {
+    request: vi.fn(
+      async (command: AttachmentRequest): Promise<AttachmentReply> => {
+        if (command.kind === "clipboard-discard") {
+          attempts.push(command.ids);
+          return attempts.length === 1
+            ? { kind: "unavailable", reason: "storage-unavailable" }
+            : { kind: "cancelled" };
+        }
+        return { kind: "attachments", items: [] };
+      },
+    ),
+  };
+  await act(() => {
+    root.render(
+      createElement(QueryClientProvider, {
+        client,
+        children: controls({
+          bridge,
+          threadId: id,
+          editor,
+          text: "body",
+          isCurrent: () => true,
+          onBlocked: () => {},
+          mention: null,
+          dismissMention: () => {},
+        }),
+      }),
+    );
+  });
+  const owned = resources.get(editor);
+  if (!owned) throw Error("missing Thread-owned attachment model");
+  const cloneId = crypto.randomUUID();
+  await act(() =>
+    owned.model.run({ kind: "clipboard-discard", ids: [cloneId] }),
+  );
+  expect(owned.model.getReadiness().kind).toBe("blocked");
+  const buttons = Array.from(container.querySelectorAll("button"));
+  const { t } = createI18n("en-US");
+  expect(
+    buttons.some(
+      (button) =>
+        button.textContent?.trim() === t("attachment.dismissFailedRequest"),
+    ),
+  ).toBe(false);
+  const retry = buttons.find(
+    (button) => button.textContent?.trim() === t("attachment.retry"),
+  );
+  expect(retry).toBeDefined();
+  await act(async () => {
+    retry?.click();
+    await vi.waitFor(() =>
+      expect(owned.model.stateStore.getState().failed).toBeNull(),
+    );
+  });
+  expect(attempts).toEqual([[cloneId], [cloneId]]);
+  expect(owned.model.getReadiness().kind).toBe("ready");
+  expect(editor.getText()).toBe("body");
+});
 it("mounts the formal attachment controls and removes a failed atomic reference without changing surrounding text", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const token = `[[dpi-attachment:${id}]]`;
