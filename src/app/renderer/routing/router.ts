@@ -7,6 +7,7 @@ import { routeTree } from "./route-tree.gen";
 export function createAppRouting(model: AppModel) {
   let selecting = false;
   let connected = false;
+  let developerThread: string | null = null;
   const history = createDesktopHistory(admit, () => {
     queueMicrotask(() => {
       void router.load();
@@ -49,6 +50,21 @@ export function createAppRouting(model: AppModel) {
     if (state.threadTransition === "unknown" || selecting) return false;
     if (next.pathname === "/") return state.threadSelection.kind === "empty";
     const [, rawParams, foundRoute] = router.getMatchedRoutes(next.pathname);
+    if (foundRoute?.id === "/dev/components") {
+      selecting = true;
+      try {
+        if (!(await model.prepareViewNavigation())) return false;
+        const ready = model.getSnapshot();
+        if (ready.kind !== "ready") return false;
+        developerThread =
+          ready.threadSelection.kind === "thread"
+            ? ready.threadSelection.thread.context.threadId
+            : null;
+        return true;
+      } finally {
+        selecting = false;
+      }
+    }
     if (foundRoute?.id !== "/threads/$threadId") return false;
     const parsed = ThreadIdSchema.safeParse(rawParams.threadId);
     if (!parsed.success) return false;
@@ -76,6 +92,13 @@ export function createAppRouting(model: AppModel) {
     if (committing) {
       pendingReplace ||= replace;
       return;
+    }
+    if (history.location.pathname === "/dev/components") {
+      const selected =
+        state.threadSelection.kind === "thread"
+          ? state.threadSelection.thread.context.threadId
+          : null;
+      if (selected === developerThread) return;
     }
     if (state.threadSelection.kind === "thread") {
       const threadId = state.threadSelection.thread.context.threadId;

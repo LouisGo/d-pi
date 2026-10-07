@@ -61,6 +61,7 @@ export const copy = {
   intro:
     "浏览已有组件的形态与状态，直接操作体验。演示状态独立，重置后可重新开始。",
   search: "搜索组件",
+  index: "组件索引",
   searchHint: "名称、用途、形态…",
   all: "全部",
   empty: "没有匹配的组件",

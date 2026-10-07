@@ -164,6 +164,48 @@ export class AppModel {
       if (this.editorBinding === binding) this.editorBinding = null;
     };
   }
+  // A developer page replaces only the view. Save pending input before its
+  // editor unmounts, without selecting a Thread or touching execution resources.
+  async prepareViewNavigation(): Promise<boolean> {
+    const state = this.state;
+    if (
+      this.disposed ||
+      state.kind !== "ready" ||
+      state.busy ||
+      state.threadTransition !== undefined ||
+      this.closeAttempt
+    )
+      return false;
+    const thread = this.activeThread;
+    const binding = this.editorBinding;
+    const generation = this.requestGeneration;
+    if (binding && !binding.boundary.freeze()) return false;
+    try {
+      const saved = await (thread?.controller.flush() ?? Promise.resolve(true));
+      return (
+        saved &&
+        !this.disposed &&
+        generation === this.requestGeneration &&
+        this.activeThread === thread &&
+        this.editorBinding === binding &&
+        this.state.kind === "ready" &&
+        !this.state.busy &&
+        this.state.threadTransition === undefined &&
+        !this.closeAttempt
+      );
+    } finally {
+      // A later selection/close may now own the freeze; do not release its lease.
+      if (
+        !this.disposed &&
+        generation === this.requestGeneration &&
+        this.editorBinding === binding &&
+        !this.closeAttempt &&
+        this.state.kind === "ready" &&
+        this.state.threadTransition === undefined
+      )
+        binding?.boundary.release();
+    }
+  }
   async prepareClose(): Promise<boolean> {
     if (
       this.disposed ||

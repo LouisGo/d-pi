@@ -20,6 +20,12 @@ Main 保存 Thread 选择，AppModel 拥有 ThreadModel 及编辑/运行/提交�
 
 Router 不在 beforeLoad/loader/preload 执行选择、保存、启动、发送、停止等命令。新建 Thread、选项目等命令仍由 AppModel 发起，完成后导航到真实身份。同 Thread search 切换保留工作台、Composer 与四个阅读面板挂载，延续 DOM 滚动、编辑撤销、待应用附件及 Query 缓存。每 Thread 的阅读坐标归应用 ThreadModel，仅在本 Renderer 生命周期内恢复，切换不共享坐标，也不复制 OMP 历史正文。Query 的 scope/key、只读重试政策沿用原合同。
 
+## 开发者工具路由（2026-10-07）
+
+用户授权新增 `/dev/components`，展示已开发基础组件的分类、真实形态和交互，开发者区域使用固定中文。一级功能栏的工具菜单悬停、点击或键盘打开，当前仅组件看板；后续工具按实际授权加入。
+
+工具页没有 Thread 选择或执行副作用。进入前由 AppModel 的 `prepareViewNavigation` 核对可操作状态、冻结编辑、flush 草稿并释放本次冻结；IME、保存失败、关闭预约或资源代次变化拒绝导航。页面卸载只释放视图资源，原 ThreadModel 继续存活。无关模型通知保持工具路由，明确新建/选择了另一 Thread 时重新同步真实身份。工具页可通过一级会话入口及后退/前进回到会话，沿用已有编辑状态捕获和恢复。
+
 ## 生成与验证
 
 Router 1.170.41、plugin 1.168.42、CLI 1.167.40 精确锁定；CLI/plugin 版本各自发布，不要求数字相同。`tsr.config.json` 是生成配置的单源；electron-vite 的插件仅位于 Renderer 并在 React 插件之前，启用自动拆包。`pnpm typecheck`、`pnpm test` 在运行前生成路由树；`pnpm build` 的插件亦可从干净源码生成。

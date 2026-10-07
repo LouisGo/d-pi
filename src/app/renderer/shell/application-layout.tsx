@@ -12,6 +12,7 @@ import {
   AttentionIndicator,
   AttentionPreferences,
 } from "./attention";
+import { DeveloperTools, useConversationNavigation } from "./developer-tools";
 import { Diagnostics } from "./diagnostics";
 import { WorkbenchHostsContext } from "./layout/hosts-context";
 import { WorkbenchFrame } from "./layout/workbench-frame";
@@ -69,10 +70,13 @@ function StartupFailure({ model }: { model: AppModel }) {
 
 function ReadyWorkbench({ model, children }: ApplicationLayoutProps) {
   const hosts = useContext(WorkbenchHostsContext);
+  const conversationNavigation = useConversationNavigation(model);
   return (
     <ShellFrame model={model}>
       <WorkbenchFrame
         {...hosts}
+        {...conversationNavigation}
+        developerTools={<DeveloperTools />}
         conversationIndicator={<AttentionIndicator model={model} />}
         sidebar={
           <>

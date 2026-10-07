@@ -43,6 +43,9 @@ export function WorkbenchFrame({
   workspace,
   bottom,
   conversationIndicator,
+  developerTools,
+  developerActive = false,
+  onConversation,
 }: {
   sidebar: ReactNode;
   settingsNavigation: ReactNode;
@@ -53,6 +56,9 @@ export function WorkbenchFrame({
   workspace?: WorkspaceHost;
   bottom?: WorkspaceHost;
   conversationIndicator?: ReactNode;
+  developerTools?: ReactNode;
+  developerActive?: boolean;
+  onConversation?: () => void;
 }) {
   const { t } = useI18n();
   const [tokens] = useState(readLayoutTokens);
@@ -169,6 +175,7 @@ export function WorkbenchFrame({
   };
   const closeSettings = () => {
     setSettingsOpen(false);
+    onConversation?.();
     requestAnimationFrame(() => {
       const target =
         work.current?.querySelector<HTMLElement>(".tiptap") ??
@@ -234,13 +241,14 @@ export function WorkbenchFrame({
           <IconButton
             label={t("app.layout.chat")}
             variant="navigation"
-            aria-pressed={!settingsOpen}
+            aria-pressed={!settingsOpen && !developerActive}
             indicator={conversationIndicator}
             onClick={closeSettings}
           >
             <ChatIcon />
           </IconButton>
           <div className="rail-spacer" />
+          {developerTools}
           <IconButton
             ref={settingsTrigger}
             label={t("app.layout.settings")}

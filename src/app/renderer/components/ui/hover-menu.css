@@ -1,0 +1,30 @@
+@layer components {
+  .ui-hover-menu {
+    min-width: var(--settings-navigation-width);
+    max-width: calc(100vw - var(--panel-padding) * 2);
+    padding: calc(var(--layout-gap) / 2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--surface);
+    color: var(--foreground);
+  }
+  .ui-hover-menu-item {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--layout-gap) / 3);
+    padding: var(--layout-gap) var(--control-padding);
+    border-radius: var(--radius-control);
+    cursor: default;
+  }
+  .ui-hover-menu-item[data-highlighted] {
+    background: var(--accent);
+    color: var(--accent-foreground);
+  }
+  .ui-hover-menu-item[data-disabled] {
+    opacity: 0.5;
+  }
+  .ui-hover-menu-description {
+    font-size: var(--text-small);
+    color: var(--muted-foreground);
+  }
+}

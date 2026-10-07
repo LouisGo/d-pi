@@ -14,6 +14,7 @@ const { scenario, path: outputPath } = parseValidationScenario(
   {
     all: [],
     focus: [],
+    components: [],
   },
 );
 const isolated = createTestEnvironment({ prefix: "d-pi-workbench-" });
@@ -122,7 +123,9 @@ try {
     ),
   );
   await call("Page.enable");
-  if (scenario === "focus") {
+  if (scenario === "components") {
+    await runComponentChecks();
+  } else if (scenario === "focus") {
     await runFocusChecks();
   } else {
     await evaluate(
@@ -831,5 +834,171 @@ async function runChecks() {
   await check(
     "last-tab-closes-empty-host",
     "document.querySelector('[data-layout-region=workspace]').getBoundingClientRect().width<1 && !document.querySelector('[aria-label=\"Restore workspace\"]') && document.activeElement.getAttribute('aria-label')==='Open or collapse project navigation'",
+  );
+}
+
+async function runComponentChecks() {
+  // DOM tests cannot prove portaled hover hit-testing, drag geometry or themes.
+  // This scenario uses the real app/components with isolated IPC fixtures only.
+  await evaluate("window.componentController=window.probe.model.controller");
+  const trigger = '.activity-rail button[aria-label="开发者工具"]';
+  await check(
+    "tools-above-settings",
+    `(()=>{const rail=document.querySelector('.activity-rail');const tools=rail.querySelector('[aria-label="开发者工具"]');const settings=rail.querySelector('[aria-label="Settings"]');return tools && settings && tools.getBoundingClientRect().bottom<=settings.getBoundingClientRect().top;})()`,
+  );
+  const r = await rect(trigger);
+  await call("Input.dispatchMouseEvent", {
+    type: "mouseMoved",
+    x: r.x + r.width / 2,
+    y: r.y + r.height / 2,
+  });
+  await wait(() => evaluate("!!document.querySelector('[role=\"menu\"]')"));
+  await check(
+    "hover-opens-tools",
+    'document.querySelector(\'[role="menuitem"]\').textContent.includes("组件看板")',
+  );
+  const item = await rect('[role="menuitem"]');
+  await call("Input.dispatchMouseEvent", {
+    type: "mouseMoved",
+    x: item.x + item.width / 2,
+    y: item.y + item.height / 2,
+  });
+  await evaluate("window.probe.pause()");
+  await check(
+    "hover-travel-keeps-menu",
+    "!!document.querySelector('[role=\"menuitem\"]')",
+  );
+  await call("Input.dispatchMouseEvent", {
+    type: "mousePressed",
+    x: item.x + item.width / 2,
+    y: item.y + item.height / 2,
+    button: "left",
+    clickCount: 1,
+  });
+  await call("Input.dispatchMouseEvent", {
+    type: "mouseReleased",
+    x: item.x + item.width / 2,
+    y: item.y + item.height / 2,
+    button: "left",
+    clickCount: 1,
+  });
+  await wait(() =>
+    evaluate('!!document.querySelector("[data-component-dashboard]")'),
+  );
+  await check(
+    "all-real-components-visible",
+    `["Button","IconButton","WorkspaceTabs","ResizableSplit","NavigationOverlay","SettingsModal","Icon Layer","HoverMenu"].every(name=>document.querySelector('[data-component="'+name+'"]'))`,
+  );
+  await check(
+    "thread-resource-preserved",
+    "window.probe.model.controller===window.componentController",
+  );
+  await check(
+    "shared-component-styles-preserved",
+    `(()=>{const button=document.querySelector('[data-component="Button"] .ui-button-primary');const style=getComputedStyle(button);const probe=document.createElement('span');probe.style.background='var(--primary)';document.body.append(probe);const expected=getComputedStyle(probe).backgroundColor;probe.remove();return style.backgroundColor===expected && parseFloat(style.minHeight)>=20 && parseFloat(getComputedStyle(document.querySelector('[data-component-dashboard]')).fontSize)>0;})()`,
+  );
+  await capture("components-light-wide");
+  await evaluate(
+    `(()=>{const button=[...document.querySelectorAll('[data-component="Button"] button')].find(b=>b.textContent==='主操作');button.click();})()`,
+  );
+  await evaluate("window.probe.pause()");
+  await check(
+    "button-feedback",
+    'document.querySelector(\'[aria-label="按钮反馈"]\').textContent.includes("1")',
+  );
+  await evaluate(
+    `document.querySelector('[role="tab"][id="gallery-tabs-tab-preview"]').click()`,
+  );
+  await check(
+    "tab-switch",
+    'document.querySelector(\'[role="tab"][id="gallery-tabs-tab-preview"]\').getAttribute("aria-selected")==="true"',
+  );
+  for (const [name, openLabel, closeLabel, popup] of [
+    ["navigation", "打开导航抽屉", "关闭导航抽屉", ".ui-navigation-overlay"],
+    [
+      "settings",
+      "打开设置弹层",
+      "关闭设置弹层",
+      ".ui-settings-modal:not([hidden])",
+    ],
+  ]) {
+    await evaluate(
+      `(()=>{const button=[...document.querySelectorAll('[data-component] button')].find(b=>b.textContent===${JSON.stringify(openLabel)});button.scrollIntoView({block:'center'});button.click();})()`,
+    );
+    await wait(() =>
+      evaluate(`!!document.querySelector(${JSON.stringify(popup)})`),
+    );
+    await check(
+      `${name}-dialog-open`,
+      `document.querySelector(${JSON.stringify(popup)}).getAttribute('role')==='dialog'`,
+    );
+    await key("Escape", "Escape");
+    await evaluate("window.probe.pause()");
+    await check(
+      `${name}-esc-close`,
+      `!document.querySelector(${JSON.stringify(popup)}) || document.querySelector(${JSON.stringify(popup)}).hidden`,
+    );
+  }
+  await evaluate(
+    `document.querySelector('[data-component="ResizableSplit"]').scrollIntoView({block:'center'})`,
+  );
+  await evaluate("window.probe.pause()");
+  const before = await evaluate(
+    'document.querySelector("#gallery-horizontal-aux").getBoundingClientRect().width',
+  );
+  await drag("gallery-horizontal-separator", 30);
+  await check(
+    "real-split-drag",
+    'document.querySelector("#gallery-horizontal-aux").getBoundingClientRect().width',
+    (value) => value > before + 10,
+  );
+  await evaluate(
+    `document.querySelector('[aria-label="重置 ResizableSplit"]').click()`,
+  );
+  await check(
+    "split-reset",
+    'document.querySelector("#gallery-horizontal-aux").getBoundingClientRect().width',
+    (value) => Math.abs(value - before) < 3,
+  );
+  await evaluate(
+    `(()=>{const input=document.querySelector('[aria-label="搜索组件"]');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input,'不存在的组件');input.dispatchEvent(new Event('input',{bubbles:true}));})()`,
+  );
+  await evaluate("window.probe.pause()");
+  await check(
+    "search-empty",
+    'document.querySelector("[data-component-dashboard]").textContent.includes("没有")',
+  );
+  await evaluate(
+    `(()=>{const input=document.querySelector('[aria-label="搜索组件"]');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input,'');input.dispatchEvent(new Event('input',{bubbles:true}));})()`,
+  );
+  await evaluate("window.probe.pause()");
+  await evaluate(
+    'document.querySelector("[data-component-dashboard]").scrollTop=0',
+  );
+  await evaluate("window.probe.model.preference('theme')");
+  await check("dark-theme", 'document.documentElement.dataset.theme==="dark"');
+  await capture("components-dark-wide");
+  await resize(720, 540);
+  await check(
+    "narrow-without-horizontal-overflow",
+    '(()=>{const page=document.querySelector("[data-component-dashboard]");return page.scrollWidth<=page.clientWidth+1;})()',
+  );
+  await capture("components-dark-narrow");
+  await evaluate(
+    `${JSON.stringify(trigger)} && document.querySelector(${JSON.stringify(trigger)}).focus()`,
+  );
+  await key("ArrowDown", "ArrowDown");
+  await wait(() => evaluate("!!document.querySelector('[role=\"menu\"]')"));
+  await key("Escape", "Escape");
+  await evaluate("window.probe.pause()");
+  await check(
+    "keyboard-tools-esc",
+    `document.querySelector(${JSON.stringify(trigger)}).getAttribute('aria-expanded')==='false'`,
+  );
+  await click("Conversation");
+  await wait(() => evaluate('!!document.querySelector(".tiptap")'));
+  await check(
+    "return-retains-draft-and-resource",
+    'window.probe.model.controller===window.componentController && document.querySelector(".tiptap").textContent.includes("A unsent draft")',
   );
 }

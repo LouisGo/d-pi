@@ -13,6 +13,7 @@ import {
   SettingsIcon,
   SidebarIcon,
   SystemThemeIcon,
+  ToolsIcon,
   WebsiteIcon,
 } from "../../components/icons/common";
 import { Button } from "../../components/ui/button";
@@ -326,6 +327,7 @@ const icons = [
   { name: "CloseIcon", Icon: CloseIcon },
   { name: "ChatIcon", Icon: ChatIcon },
   { name: "SettingsIcon", Icon: SettingsIcon },
+  { name: "ToolsIcon", Icon: ToolsIcon },
   { name: "SidebarIcon", Icon: SidebarIcon },
   { name: "LightThemeIcon", Icon: LightThemeIcon },
   { name: "DarkThemeIcon", Icon: DarkThemeIcon },

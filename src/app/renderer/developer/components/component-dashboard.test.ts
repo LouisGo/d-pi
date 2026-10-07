@@ -256,3 +256,20 @@ it("filters by purpose and form, explains no matches and restores the full catal
   expect(input.value).toBe("");
   expect(container.querySelectorAll("[data-component]")).toHaveLength(7);
 });
+
+it("lists every component in the header index before scrolling through previews", async () => {
+  const { container } = await setup(createElement("span", null, "Menu sample"));
+  const index = container.querySelector('nav[aria-label="组件索引"]');
+  expect(
+    [...(index?.querySelectorAll("a") ?? [])].map((link) => link.textContent),
+  ).toEqual([
+    "Button",
+    "IconButton",
+    "WorkspaceTabs",
+    "ResizableSplit",
+    "NavigationOverlay",
+    "SettingsModal",
+    "Icon Layer",
+    "HoverMenu",
+  ]);
+});

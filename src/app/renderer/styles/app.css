@@ -1,5 +1,6 @@
 @import "./tokens.css";
 @import "../components/ui/button.css";
+@import "../components/ui/hover-menu.css";
 @import "./interaction.css";
 @import "./workbench.css";
 @layer base {

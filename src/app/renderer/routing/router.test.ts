@@ -51,6 +51,15 @@ async function fixture() {
         if (!target) throw Error("missing Thread");
         active = target;
       }
+      if (command.kind === "preferences")
+        return parseDesktopReply(command, {
+          kind: "preferences",
+          preferences: {
+            theme: command.value.theme,
+            density: "normal",
+            locale: "system",
+          },
+        });
       if (command.kind === "new-thread") active = second;
       if (
         command.kind === "restore" ||
@@ -248,4 +257,41 @@ it("repairs navigation when a command selects a new Thread while a reading navig
   expect(
     input.commands.filter((command) => command === "new-thread"),
   ).toHaveLength(1);
+});
+
+it("opens the developer dashboard without changing Thread resources and keeps it on unrelated notifications", async () => {
+  const input = await fixture();
+  const controller = input.model.controller;
+  const initial = input.commands.slice();
+  await input.router.navigate({ to: "/dev/components" });
+  expect(input.router.state.location.pathname).toBe("/dev/components");
+  expect(input.model.controller).toBe(controller);
+  expect(input.commands).toEqual(initial);
+  await input.model.preference("theme");
+  expect(input.router.state.location.pathname).toBe("/dev/components");
+  input.router.history.back();
+  await expect
+    .poll(() => input.router.state.location.pathname)
+    .toBe(`/threads/${input.first.threadId}`);
+  expect(input.model.controller).toBe(controller);
+  input.router.history.forward();
+  await expect
+    .poll(() => input.router.state.location.pathname)
+    .toBe("/dev/components");
+  await input.model.newThread();
+  await expect
+    .poll(() => input.router.state.location.pathname)
+    .toBe(`/threads/${input.second.threadId}`);
+});
+
+it("refuses developer navigation while the editor is composing, then permits it after composition", async () => {
+  const input = await fixture();
+  input.compose(true);
+  await input.router.navigate({ to: "/dev/components" });
+  expect(input.router.state.location.pathname).toBe(
+    `/threads/${input.first.threadId}`,
+  );
+  input.compose(false);
+  await input.router.navigate({ to: "/dev/components" });
+  expect(input.router.state.location.pathname).toBe("/dev/components");
 });

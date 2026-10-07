@@ -124,6 +124,16 @@ export function ComponentDashboard({
             </a>
           ))}
         </nav>
+        <nav className={styles["gallery-index"]} aria-label={copy.index}>
+          {[...visible, ...(menuVisible ? [menuEntry] : [])].map((entry) => (
+            <a
+              key={entry.name}
+              href={`#gallery-title-${entry.name.replaceAll(" ", "-")}`}
+            >
+              {entry.name}
+            </a>
+          ))}
+        </nav>
       </header>
       <div className={styles["gallery-content"]}>
         {count === 0 && (

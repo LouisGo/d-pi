@@ -13,6 +13,7 @@ import {
   Moon02Icon,
   Settings01Icon,
   Sun03Icon,
+  ToolsIcon as ToolsIconData,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 export interface IconProps {
@@ -188,6 +189,20 @@ export function SystemThemeIcon({ size = 16, className }: IconProps) {
   return (
     <HugeiconsIcon
       icon={ComputerIcon}
+      size={size}
+      className={className}
+      strokeWidth={1.5}
+      color="currentColor"
+      aria-hidden={true}
+      focusable={false}
+    />
+  );
+}
+
+export function ToolsIcon({ size = 20, className }: IconProps) {
+  return (
+    <HugeiconsIcon
+      icon={ToolsIconData}
       size={size}
       className={className}
       strokeWidth={1.5}

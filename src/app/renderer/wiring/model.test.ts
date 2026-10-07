@@ -362,3 +362,35 @@ it("keeps unpersisted attachment originals on close until explicitly removed", a
   }
   expect(await input.model.prepareClose()).toBe(true);
 });
+
+it("saves before replacing a view, refuses failed saves and preserves the editable Thread", async () => {
+  let fail = true;
+  const input = await setup(async () => {
+    if (fail) throw Error("storage offline");
+    return saved(1);
+  });
+  input.controller.edit("view navigation draft");
+  expect(await input.model.prepareViewNavigation()).toBe(false);
+  expect(input.isEditable()).toBe(true);
+  expect(input.model.controller).toBe(input.controller);
+  fail = false;
+  await input.model.reconcileDraft();
+  expect(await input.model.prepareViewNavigation()).toBe(true);
+  expect(input.isEditable()).toBe(true);
+  expect(input.model.controller).toBe(input.controller);
+});
+
+it("does not release a close freeze when a pending view navigation loses ownership", async () => {
+  const receipt = deferredReceipt();
+  const input = await setup(() => receipt.promise);
+  input.controller.edit("shared pending save");
+  const navigation = input.model.prepareViewNavigation();
+  await Promise.resolve();
+  const close = input.model.prepareClose();
+  receipt.resolve(saved(1));
+  expect(await navigation).toBe(false);
+  expect(await close).toBe(true);
+  expect(input.isEditable()).toBe(false);
+  input.model.cancelClose();
+  expect(input.isEditable()).toBe(true);
+});

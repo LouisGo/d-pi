@@ -1,0 +1,87 @@
+{
+  "version": "isolated-workbench",
+  "scenario": "components",
+  "passed": true,
+  "checks": [
+    {
+      "name": "tools-above-settings",
+      "value": true
+    },
+    {
+      "name": "hover-opens-tools",
+      "value": true
+    },
+    {
+      "name": "hover-travel-keeps-menu",
+      "value": true
+    },
+    {
+      "name": "all-real-components-visible",
+      "value": true
+    },
+    {
+      "name": "thread-resource-preserved",
+      "value": true
+    },
+    {
+      "name": "shared-component-styles-preserved",
+      "value": true
+    },
+    {
+      "name": "button-feedback",
+      "value": true
+    },
+    {
+      "name": "tab-switch",
+      "value": true
+    },
+    {
+      "name": "navigation-dialog-open",
+      "value": true
+    },
+    {
+      "name": "navigation-esc-close",
+      "value": true
+    },
+    {
+      "name": "settings-dialog-open",
+      "value": true
+    },
+    {
+      "name": "settings-esc-close",
+      "value": true
+    },
+    {
+      "name": "real-split-drag",
+      "value": 149.703125
+    },
+    {
+      "name": "split-reset",
+      "value": 119.8828125
+    },
+    {
+      "name": "search-empty",
+      "value": true
+    },
+    {
+      "name": "dark-theme",
+      "value": true
+    },
+    {
+      "name": "narrow-without-horizontal-overflow",
+      "value": true
+    },
+    {
+      "name": "keyboard-tools-esc",
+      "value": true
+    },
+    {
+      "name": "return-retains-draft-and-resource",
+      "value": true
+    }
+  ],
+  "stderr": "\nDevTools listening on ws://127.0.0.1:50690/devtools/browser/3a08c786-fcf4-4561-b59f-30ecd17f32d1\n",
+  "limitations": [
+    "isolated GUI fixture; not packaged or system IME evidence"
+  ]
+}

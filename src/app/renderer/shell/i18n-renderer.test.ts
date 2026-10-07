@@ -42,7 +42,8 @@ vi.mock("../reading/conversation", () => ({ Conversation: () => null }));
 vi.mock("../reading/history", () => ({ History: () => null }));
 vi.mock("../reading/submissions", () => ({ Submissions: () => null }));
 vi.mock("../workbench/runtime-panel", () => ({ RuntimePanel: () => null }));
-vi.mock("@/components/icons/common", () => ({
+vi.mock("@/components/icons/common", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../components/icons/common")>()),
   AddIcon: () => null,
   SystemThemeIcon: () => null,
   ChatIcon: () => null,
