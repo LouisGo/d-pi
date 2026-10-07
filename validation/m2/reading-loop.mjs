@@ -121,6 +121,12 @@ try {
   }
   async function check(name, expression) {
     const value = await evaluate(expression);
+    if (!value) {
+      const diagnostic = await evaluate(
+        "(()=>{const p=[...document.querySelectorAll('.reading-pane')].find(p=>p.getClientRects().length&&!p.hidden),c=p?.querySelector('.conversation'),s=window.probe.model.getSnapshot(),t=s.kind==='ready'&&s.threadSelection.kind==='thread'?s.threadSelection.thread:null;return {top:p?.scrollTop,height:p?.scrollHeight,viewport:p?.clientHeight,source:c?.dataset.readingSource,anchor:t?.readingSources.get(c?.dataset.readingSource),footer:document.querySelector('[data-live-reading-controls]')?.textContent,rowCount:c?.querySelectorAll('article').length,fonts:document.fonts.status}})()",
+      );
+      results.push({ name, result: false, diagnostic });
+    }
     assert.ok(value, name + ": " + JSON.stringify(value));
     results.push({ name, result: value });
   }
@@ -171,6 +177,9 @@ try {
       ";p.scrollTop=r.getBoundingClientRect().top-p.getBoundingClientRect().top-p.clientTop+p.scrollTop+40})()",
   );
   await frames();
+  // Native scroll dispatch and React's external-store commit are separate
+  // operations. Establish off-tail ownership before publishing more output.
+  await wait(() => evaluate("!!document.querySelector('[data-list-bottom]')"));
   await evaluate("window.__offset=" + offset(10));
   await evaluate("window.readingProbe.sameSnapshot()");
   await frames();
@@ -179,6 +188,11 @@ try {
     "!document.querySelector('[data-live-reading-controls]')?.textContent.includes('New output')",
   );
   await evaluate("window.readingProbe.append(1,'\\nMore effective text')");
+  await wait(() =>
+    evaluate(
+      "document.querySelector('[data-live-reading-controls]')?.textContent.includes('New output')",
+    ),
+  );
   await frames();
   await check(
     "R2离尾同实体正文更新提示且不拉回",
@@ -346,14 +360,26 @@ try {
     code: "KeyC",
     modifiers: 4,
   });
-  clipboard.markOwnedCopy(await evaluate("window.__mdSelection"));
+  const markCopy = async (expected) =>
+    wait(() => {
+      try {
+        return clipboard.markOwnedCopy(expected);
+      } catch {
+        return false;
+      }
+    });
+  await markCopy(await evaluate("window.__mdSelection"));
   results.push({
     name: "R7R12 final stable Selection copies to native pasteboard",
     result: true,
   });
   const expectedCopy = await evaluate("window.readingProbe.text(25)");
+  await evaluate(
+    "document.querySelector('[data-reading-row=\"25\"] .message-heading button').scrollIntoView({block:'center'})",
+  );
+  await frames();
   const point = await evaluate(
-    "(()=>{const b=document.querySelector('[data-reading-row=\"25\"] .message-heading button');b.scrollIntoView({block:'nearest'});const r=b.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()",
+    "(()=>{const b=document.querySelector('[data-reading-row=\"25\"] .message-heading button');const r=b.getBoundingClientRect();const x=r.x+r.width/2,y=r.y+r.height/2;if(document.elementFromPoint(x,y)?.closest('button')!==b)throw Error('Copy button is not the native pointer target');return {x,y}})()",
   );
   clipboard.beforeCopy();
   await call("Input.dispatchMouseEvent", {
@@ -368,8 +394,9 @@ try {
     clickCount: 1,
     ...point,
   });
-  await frames();
-  clipboard.markOwnedCopy(expectedCopy);
+  // writeText() resolves asynchronously through the native pasteboard; frame
+  // count is not its completion signal. Hash verification also proves full copy.
+  await markCopy(expectedCopy);
   results.push({
     name: "R12 whole long body Copy includes undisplayed segments",
     result: { copiedCharacters: expectedCopy.length, owned: true },
