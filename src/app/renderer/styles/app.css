@@ -22,7 +22,6 @@
     color: var(--foreground);
   }
   summary:focus-visible {
-    outline: none;
     background: var(--accent);
     color: var(--accent-foreground);
     border-radius: var(--radius-control);
@@ -89,7 +88,6 @@
   .configuration-content button:focus-visible,
   .model-fields input:focus-visible,
   .model-fields select:focus-visible {
-    outline: none;
     background: var(--accent);
     color: var(--accent-foreground);
   }
@@ -120,7 +118,6 @@
     padding-inline: var(--control-padding);
   }
   .history select:focus-visible {
-    outline: none;
     background: var(--accent);
     color: var(--accent-foreground);
   }
@@ -418,7 +415,6 @@
     white-space: pre;
   }
   .tiptap:focus-visible {
-    outline: none;
     background: var(--accent);
     color: var(--accent-foreground);
     border-radius: var(--radius-control);
@@ -614,7 +610,8 @@
     cursor: default;
   }
   .file-result:focus-visible {
-    outline: none;
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-ring-offset);
     background: var(--accent);
     color: var(--accent-foreground);
   }

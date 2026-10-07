@@ -61,7 +61,6 @@
 .filters input:focus-visible,
 .filters select:focus-visible,
 .feedback textarea:focus-visible {
-  outline: none;
   background: var(--accent);
   color: var(--accent-foreground);
 }

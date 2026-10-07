@@ -76,7 +76,8 @@
     background: var(--primary);
   }
   .ui-resize-separator:focus-visible {
-    outline: none;
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-ring-offset);
     background: var(--primary);
     z-index: 2;
   }

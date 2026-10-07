@@ -17,3 +17,5 @@
 最终新增图标差异固定4cf3cee…91499e7：Spec与Standards均独立只读复核通过，无新增高价值问题；0插槽、指针命中、按钮名称/ref/Tooltip/状态播报保留。VoiceOver实际播报未独立验证。91499e7为最终候选源提交，后续仅验证/交接文档。
 
 2026-10-07 七项试用反馈的新增冻结范围3045d46…93e18a5593df93806528d6858b173536ea5abb20：Spec与Standards两个独立只读复核均通过，无新增高价值缺陷。Spec独立复跑29项模型/实际App订阅/语言测试通过；双方核对Modal自有封装与焦点、背景资源保持、侧栏动作准入、语言窄订阅、system持久化/解析主题/监听释放及outline替代焦点。实际包与原生操作由主Agent继续核实，不把既有验证缺口或用户认可记为完成。
+
+2026-10-07 鼠标描边纠正按小改动进行主Agent本地分轴复核（不冒称新的独立子Agent审查）：Spec 对照本次用户两张截图及澄清，核查navigation选中hover/active边框移除、Tab outline恢复、两个主题和设置控件；Standards 核查单源focus角色/级联、未禁用focus-visible、共享variant覆盖rail/Thread、无业务/资源/持久化改动。真实鼠标与Tab矩阵及受影响门禁通过；VoiceOver实际播报与原A3物理拖窗缺口仍开放。

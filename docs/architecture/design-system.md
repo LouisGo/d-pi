@@ -122,6 +122,7 @@ Base UI / 选择性改造的上游源码 / 专用渲染与编辑能力
 用户已确认的全应用规则：点击目标禁止手形 `cursor: pointer`，统一为 `default`；输入/内容选择的 `text`、编辑器分隔条的 resize 等功能性指针保留。基础样式单源为 `src/app/renderer/styles/interaction.css`，由应用样式入口加载，覆盖 body 级 portal。
 
 - 组件默认外观须能识别操作入口，hover/active/selected/disabled/focus-visible 分别表达含义。共享 Button 管理主操作、ghost、navigation 与 icon；主操作按下色来自 `--primary-active`，其他状态复用现有主题 token。折叠标题沿用原生 disclosure，文字链接默认有颜色及下划线。
+- 鼠标 hover/active 使用背景与文字反馈，不因选中状态新增彩色 border、outline 或 ring shadow。键盘 `:focus-visible` 保留统一主题焦点轮廓；普通鼠标按钮焦点 `:focus:not(:focus-visible)` 不显示轮廓。输入框的原生 focus-visible 判定、编辑器 caret 和浮层焦点协议继续保留，不能全局禁用焦点提示。
 - 默认 `user-select: none`。需要阅读/复制的正文、工具输出、历史、收据、原生交互及队列文本由内容拥有者加 `data-selectable`；输入/textarea/contenteditable 按原生语义开放。trace、Thread 身份、目录路径、file-meta 内容、运行来源、附件预览和 alert 是中央规则登记的内容例外，不按所有 p/span 或整个工作区开放。
 - 可选择区域内的按钮、链接、summary、导航/选项及其控件标签仍不可选；消息 heading 与装饰图标也不参与正文选择。新内容区域优先使用 `data-selectable`，不另写 select-text/all/auto、内联 userSelect 或局部 user-select 例外。
 - configuration 模块不能反向导入 app 私有 Button。其原生按钮使用静态 `ui-button` 加 `ui-button-primary/ghost/navigation` 接入同一份共享样式，保留原有表单/disabled 行为；不另建颜色或交互状态。其他 app 视图使用共享 React Button。

@@ -94,6 +94,10 @@ const probe = {
           <Button id="probe-selected" variant="navigation" aria-current="page">
             Selected
           </Button>
+          <select id="probe-select" defaultValue="en">
+            <option value="en">English</option>
+            <option value="zh">简体中文</option>
+          </select>
           <label id="probe-checkbox-label">
             <input id="probe-check" type="checkbox" />
             Toggle
