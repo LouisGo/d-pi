@@ -29,3 +29,5 @@ D-31/D-32 延续 Base UI、自有公开 API、Hugeicons、light/dark 和唯一�
 ## 本地 main 集成
 
 2026-10-07 用户明确要求“本地 pr 进 main”，授权将本地 `codex/beautiful-ui-system` 整段交付合入 main；不扩展为远端 push/PR/发布或产品认可。基点 `7906f25`，已验证交付 head `58f3330`；本地说明见[pr.md](pr.md)。
+
+本地 main 已通过 merge commit `82afd091ab1aad40cab635272e30d9ccffe46188` 合入来源 head `cdcddcf`，无冲突。合并提交的树与来源分支完全一致；合并后重新生成看板并核对文档/状态/结构门禁。工程与试用状态保持，用户认可仍 pending。

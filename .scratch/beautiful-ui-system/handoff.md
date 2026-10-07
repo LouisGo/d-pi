@@ -42,3 +42,7 @@ ChoiceGroup 已跟随用户图 2：整体胶囊轨道、内嵌选中表面与轻
 按用户最新反馈完全撤回视频参考的列表跟随动效：删除未提交的动效原语、列表组件及实验测试/演示/截图，Thread 列表、设置导航和组件索引恢复 `4792632` 的代码。未保留跟随背景、测量/监听或额外列表 API；首轮视觉体系升级继续有效。
 
 追加验证：[14 项相关测试](evidence/choice-tests.txt)、[相关门禁](evidence/choice-checks.txt)、[最终代码构建](evidence/choice-build.txt)均通过。[原生观测](evidence/choice-native.json)及浅色/深色/键盘三张截图对应最终追加代码；Right 从 Drive 跳过禁用 Dots 选中 Orbit，键盘焦点环完整。旧宽窗表单图属于首轮交付，ChoiceGroup 最终外观以追加截图为准。未重复 provider 或打包验证。
+
+## 本地集成结果
+
+2026-10-07 已按用户授权合入 `/Users/louistation/MySpace/Life/d-pi` 的本地 main，merge commit `82afd09`，来源 head `cdcddcf`。无冲突，合并树与来源完全一致；文档/状态/结构门禁在 main 核对。main 可直接 `pnpm dev` 试用。未推送远端；合并不将 acceptance 改为 accepted。
