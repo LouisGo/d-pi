@@ -94,6 +94,8 @@ Main服务拥有files的ProjectReferenceSearch实例，与附件服务一同clos
 
 ## 可信结构化剪贴板（T3 foundations 04 独立部分）
 
+2026-10-07用户已选择动态引用复制时冻结来源/版本，取代下段最初独立范围的待决/降级限制。新合同在[spec](../../../.scratch/t3-foundations/spec.md#用户选项1复制冻结来源与版本)：Main按原Thread真实manifest沿原readReference权限捕获有界完整文件/直接目录清单，保留版本及来源并存入私有对象，export ready后目标永不回读项目。目标新ID与真实摘要（含PDF派生）参与snapshot→import→正文/history→持久采用保护；仅源数据可用且所有预算准入才发布，失败不生成半成品。正式GUI区分“复制时冻结”和原动态“发送时读取”。本段为已确认要求，实施状态以spec为准。
+
 Copy/cut 同步捕获实际选区，写入 Main 预发 ticket（`version:1, instanceId, handleId, expiresAt`）的私有 MIME 与 HTML fallback；plain flavor 始终可读，附件显示名称和标识，不输出可解析的原 UUID token。无可用 ticket 时只复制可读文本并提示。随后异步 export 绑定一次性 ticket：export 仅包含实际选中节点的 IDs，正文中的其他 UUID token 降级；Main 校验依赖闭包和源 Thread 的 manifest，私有 ready 图片按 digest 验证，冻结选区只搬自包含原文。动态 @文件/目录及其他附件显示 `[d-pi:dynamic-reference 名称]` / `[d-pi:attachment 名称]`，不扩读取权限；跨 Thread 动态引用的产品语义仍待决定。
 
 快照属于 Main 当前 app instance 和可信 Renderer document，Thread 切换不会撤销已复制快照；完整 document navigation、renderer 退出及 App service close 全部释放。每 document 最多 8 tickets、全局 32；ticket TTL 120 秒（reserved/pending/ready 都适用），每快照 32 个依赖及 1 MiB 选中文字、64 MiB 私有对象，全局 128 MiB。等待 export 每 ticket 最多 4、全局 16、最长 3 秒；队列内工作晚于 TTL/释放不会再发布或克隆。import（含等待/排队/执行）每 document 最多 4、全局 16，未持久采用的克隆交接最多 128，已采用时解除交接保护；timer 上限等于 ticket/等待预算，close 清除 timer 并结束等待。复制时同步 pin 源 digest，异步检查不允许 GC 穿过交接；现有 editor epoch 和持久草稿继续保护 cut/保存前的源资产。
