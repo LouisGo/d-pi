@@ -2,7 +2,7 @@
 
 ## 推进与交接
 
-2026-10-07 用户明确授权：按四张截图风格做好设置页，先拆名称、职责、类型/API，再实现，遵循现有规范并参考 UI 库。基点为 main；实施分支 codex/settings-ui，独立 worktree settings-ui/d-pi。范围为已有设置项与实际所需共享组件；不新增截图产品的权限、记忆、字体、快捷键编辑等业务。重要待决：无。D-17/D-32/D-35/D-37 和唯一紧凑布局保持。工程接入与隔离 Electron 场景完成，整段检查与评审进行中；用户认可 pending。
+2026-10-07 用户明确授权：按四张截图风格做好设置页，先拆名称、职责、类型/API，再实现，遵循现有规范并参考 UI 库。基点为 main；实施分支 codex/settings-ui，独立 worktree settings-ui/d-pi。范围为已有设置项与实际所需共享组件；不新增截图产品的权限、记忆、字体、快捷键编辑等业务。重要待决：无。D-17/D-32/D-35/D-37 和唯一紧凑布局保持。工程接入、完整检查与独立两轴评审完成，已交付 Dev 待试用，用户认可 pending。见 [交接](handoff.md)、[验证](validation.md)、[评审](review.md)。
 
 ## 设计与组件合同（实现前固定）
 
@@ -34,8 +34,8 @@ ui/renderer/public.ts 是跨模块公开面，无 IPC/store/i18n 依赖；文案
 
 ## 本轮进度
 
-01 共享控件工程完成；02 页面接入、42项受影响行为与6张隔离 Electron 画面已通过，正在整段检查/评审。组件看板收录 Select、Switch、FormField/TextInput、ChoiceGroup、SettingsGroup/SettingRow/SettingsPage，沿用原 catalog 搜索与重置。普通 CSS 间距使用 Tailwind `--spacing`，不复制独立标尺。
+01/02 工程完成；完整检查836项通过、2项条件跳过，构建及8项隔离 Electron 场景通过，6张画面已核实。独立 Spec/Standards 无实质发现，过渡中截图已刷新并由 reviewer 复核。组件看板收录新控件组合，沿用原 catalog 搜索与重置。普通 CSS 间距消费 Tailwind `--spacing`。生产实现 d02201c，验证补充 b0a7ab6；Dev 交付，用户反馈待收。
 
 ```project-status
-[{"id":"settings-ui","title":"设置页与配置组件","phase":"基建","engineering":"in-progress","trial":"not-delivered","acceptance":"pending","evidence":["spec.md"],"next":"完成组合检查与独立两轴评审，交付 Dev 试用"}]
+[{"id":"settings-ui","title":"设置页与配置组件","phase":"基建","engineering":"complete","trial":"delivered","acceptance":"pending","build":"Dev / codex/settings-ui / d02201c + b0a7ab6","evidence":["handoff.md","validation.md","review.md"],"next":"等待设置页 Dev 试用反馈"}]
 ```
