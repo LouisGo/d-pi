@@ -306,7 +306,7 @@ try {
   await evaluate(
     "(()=>{const p=" +
       pane +
-      ";p.scrollTop=0;const first=p.querySelector('[data-reading-row=\"1\"]');const strong=first.querySelector('[data-streamdown=\"strong\"]');if(!strong)throw Error('Synthetic Markdown not present: '+first.outerHTML.slice(0,2500));window.__md=strong.firstChild;const code=first.querySelector('[data-streamdown=\"code-block-body\"]');window.__code=code;code.scrollLeft=40;window.__codeLeft=code.scrollLeft;const r=document.createRange();r.setStart(strong.firstChild,0);r.setEnd(strong.firstChild,8);getSelection().removeAllRanges();getSelection().addRange(r);window.__mdSelection=getSelection().toString()})()",
+      ";p.scrollTop=0;const first=p.querySelector('[data-reading-row=\"1\"]');const strong=first.querySelector('[data-streamdown=\"strong\"]');if(!strong)throw Error('Synthetic Markdown not present: '+first.outerHTML.slice(0,2500));window.__md=strong.firstChild;const code=first.querySelector('pre');window.__code=code;code.scrollLeft=40;window.__codeLeft=code.scrollLeft;const r=document.createRange();r.setStart(strong.firstChild,0);r.setEnd(strong.firstChild,8);getSelection().removeAllRanges();getSelection().addRange(r);window.__mdSelection=getSelection().toString()})()",
   );
   await evaluate("window.readingProbe.complete()");
   await frames();
