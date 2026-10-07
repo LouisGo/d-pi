@@ -8,7 +8,7 @@
 - 受影响决定：D-02/D-03/D-10/D-21/D-22/D-24/D-26/D-28–D-30/D-33/D-35/D-37/D-38/D-39。保留 OMP 执行/历史、Main 持久化、Host 连接关联、Renderer 交互；不扩 Effect 到 Files/Changes，不换 Atom/Schema，不引入 XState。
 - 结果：六组可操作/可观测目标及其组合工程验收，逐项满足下面的退出条件；既有 M2 供应商/PDF/系统通知/用户认可等开放父票不由本轮自动关闭。
 - 产品判断：2026-10-07用户回复“1”，明确选择跨Thread动态@文件/目录复制时冻结来源及版本，已登记D-10补充；本切片无重要待决。保留原草稿动态引用的发送读取行为，不扩大跨项目权限。
-- 工程：01/02/03/05/06与04独立部分已串行集成并完成工程验收。生产源冻结477b854；其后0a7e9a5仅刷新看板生成哈希。完整check为172files/989tests通过、2tests跳过，build通过；真实macOS复制/跨Thread粘贴/一次Undo/Redo与阅读锚点通过，原剪贴板已恢复。两轴独立复核已关闭Git失败归因、PDF同ID新摘要保护、正常clone额度回收、失败cleanup跨reset/eviction、迟到discard和第十Thread React快照问题，无未处理高价值问题。04动态引用语义仍待决，07仅剩该依赖，不宣布完整退出。
+- 工程：01/02/03/05/06与04原独立部分已完成工程验收；已交付生产源477b854的172files/989tests、build及真实macOS复制/Undo/锚点通过，两轴已关闭全部已证实问题。用户选项1已解除04 hold，剩余冻结引用正在从文档合同基点d6c9654隔离实施；新代码需刷新必要检查和两轴复核，07尚不宣布完整退出。
 - 试用：已交付上述独立范围待试用；版本及具体步骤见[handoff](handoff.md)。默认该工作树 `pnpm dev`，未机械打包；用户尚未反馈或明确认可。工程验证、真实系统检查及用户认可分别记录。
 - 执行：主 Agent 单写状态、契约、集成和诊断；独立 worker 固定各自基点/工作树实现原生、读取和输入，串行集成后推进依赖票。派发映射在实施时追加。不得把研究工作树当自动隔离。
 
@@ -117,3 +117,5 @@ record 在 stringify 前只选择允许字段和值，Writer 自己填时间/构
 - [07 组合验证与交付](issues/07-integration-delivery.md)
 
 04 独立实现由 research_reads 从集成提交 `7f407de` 切 `codex/t3-clipboard` 接棒；05 由主 Agent 完成正式 Thread/ReadingPane 接线。两者不共享写入路径。
+
+2026-10-07选项1派发：research_reads从 `d6c9654` 固定基点在 `/Users/louistation/.codex/worktrees/t3-frozen-references/d-pi` / `codex/t3-clipboard-frozen` 实施04剩余Main/DTO/正式GUI及测试；仅写允许的input、附件app接线/GUI和locale必要key与04证据，不写共享管理文档。主Agent单写研究/契约/状态、原生validation脚本及串行集成。原三个worker工作树已归档，不混用旧构建输出。
