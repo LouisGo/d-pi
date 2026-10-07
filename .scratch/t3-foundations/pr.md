@@ -4,7 +4,7 @@
 
 现在这些行为分别归 Host、Main 只读 operation、Thread 附件模型、Main history/clipboard lease、Thread 内容锚点和 Main Writer。保留 OMP 执行与历史、接受/消费事务、unknown 不重发和冷恢复只读，Effect 限于已确认的执行边界。研究、合同和范围见 [research](research.md)、[spec](spec.md) 与七张本地票。
 
-跨 Thread 私有图片和冻结选区采用Main可信handle、新目标ID与一次Undo/Redo；未持久clone在正文/历史接棒后有界回收，必要清理失败及迟到结果由原Thread保留重试责任。正常历史释放在途自动恢复，React快照稳定。动态文件/目录的版本与跨项目权限语义仍待用户选择，目前明确可读降级；只有该依赖未实施，04/07与总目标尚未整体结算。本文件是本地可审查草稿。
+跨 Thread 私有图片和冻结选区采用Main可信handle、新目标ID与一次Undo/Redo；未持久clone在正文/历史接棒后有界回收，必要清理失败及迟到结果由原Thread保留重试责任。正常历史释放在途自动恢复，React快照稳定。用户已选择动态文件/目录复制时冻结来源与版本，原动态引用仍发送时读取；剩余冻结实现和验证进行中，04/07尚未整体结算。本文件是本地可审查草稿。
 
 ## Evidence
 
@@ -18,6 +18,6 @@ Writer 的原始落盘和读出过滤独立防护、故障统计/恢复正确；
 
 ## Merge Danger
 
-主要是可逆的代码与 wire 合同改变，SQLite schema 未改变；Renderer/Main/preload 要使用同一构建。影响链包括 Host 等待、只读取消、附件导入/保存/清理/撤销、阅读布局和诊断。GC 是不可逆的实际文件删除，但必须依据持久引用和瞬态 lease 在实际 unlink 前复核；回滚代码不能恢复已经合法清理的对象。新 history/clipboard lease 为进程内临时权限，不让外部路径/URL授予读取权限。
+代码与wire合同改变，SQLite schema未改变；Renderer/Main/preload要使用同一构建。新增冻结来源为optional JSON字段，新构建继续读旧记录，旧strict schema可能拒绝新字段，不能将schema未迁移描述为双向回滚兼容。影响链包括Host等待、只读取消、附件导入/保存/清理/撤销、阅读布局和诊断。GC是不可逆的实际文件删除，必须依据持久引用和瞬态lease在实际unlink前复核；回滚代码不能恢复已经合法清理的对象。history/clipboard lease为进程内临时权限，溯源路径和版本不授予读取权限。
 
-回滚应退出新构建后恢复基点，并保留 App 数据和原生历史；不要删库或重发 unknown。已写且安全过滤的诊断历史继续按原格式读取。分支尚未 push，未创建远端 PR、merge 或发布；工程检查不替代试用和用户认可。
+回退先退出新构建并保留App数据和原生历史；若已写入冻结字段，旧构建不能直接沿用该数据副本，需使用回退前留存的兼容数据快照或实现明确迁移。不要删库或重发unknown。已写且安全过滤的诊断历史继续按原格式读取。分支尚未push，未创建远端PR、merge或发布；工程检查不替代试用和用户认可。
