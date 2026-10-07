@@ -103,7 +103,7 @@ CSS Grid/Flex 负责排版与滚动边界；尺寸约束负责可用空间分配
 ```
 
 ```project-status
-[{"id":"codex-workbench-ui","title":"Codex 式工作台基础布局","phase":"基建","engineering":"partial","trial":"delivered","acceptance":"pending","build":"0.1.0-workbench.2 / 93e18a55-5aafdac5","evidence":["handoff.md","validation.md","review.md"],"next":"本地候选试用；A3物理拖窗继续确认，系统IME/VoiceOver与长时性能未覆盖","constraints":"用户已授权本UI分支push、PR及合并；不公开发布或发起真实账户请求。"}]
+[{"id":"codex-workbench-ui","title":"Codex 式工作台基础布局","phase":"基建","engineering":"partial","trial":"delivered","acceptance":"pending","build":"0.1.0-workbench.3 / f9cc66e1-f83299df","evidence":["handoff.md","validation.md","review.md"],"next":"本地候选试用；A3物理拖窗继续确认，系统IME/VoiceOver与长时性能未覆盖","constraints":"用户已授权本UI分支push、PR及合并；不公开发布或发起真实账户请求。"}]
 ```
 
 ## 实施票
@@ -132,3 +132,5 @@ CSS Grid/Flex 负责排版与滚动边界；尺寸约束负责可用空间分配
 ## 2026-10-07 指针描边纠正
 
 用户截图明确上一轮理解错误：要求移除 hover/active 的不一致描边，保留 Tab 无障碍焦点 outline。此前“取消所有应用控件 outline”是作者误解，不是用户认可的合同；以本条澄清取代。实际原因是 navigation 选中按钮 hover/active 修改 border-color，覆盖 rail 与 Thread 行；在共享组件移除该状态边框，并恢复主题同源的 focus-visible 轮廓。验证必须分别覆盖真实鼠标移动/按下/点击和 Tab 导航，不能只断言 outlineStyle=none。沿用本 UI 修复的提交/PR/合并授权，其余 A3 验证缺口继续开放。
+
+指针反馈修正版候选：源 f9cc66e13fb638a95f9931fa6fe81241585c43c4、dirty=false、0.1.0-workbench.3 / f9cc66e1-f83299df，68条隔离Electron与14条包内记录（13检查+checkpoint）通过，原生CUA确认鼠标点击无蓝框、Tab焦点轮廓、实际坐标点击退出轮廓。其后仅证据/交接文档；用户认可与原物理拖窗缺口保持pending/partial。

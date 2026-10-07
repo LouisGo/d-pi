@@ -60,3 +60,7 @@ CUA 原生检查以Main未变化的4cf3cee包执行：close/fullscreen/minimize�
 [工作台68条记录](evidence/pointer-focus/native.json)通过：67项断言/矩阵与1项输入到rAF采样。真实 CDP 鼠标 move/down/up/click，以及 Tab/Shift+Tab，覆盖两主题的一级导航、当前Thread、设置导航；hover/active/点击不新增描边，键盘回到同一按钮时 solid 轮廓可见。Modal 可见且启用的控件另验证键盘轮廓；原几何、图标中心、IME、撤销和资源保持检查继续通过。驱动修正了“点击会话一定留在该按钮”的错误假设（原拥有者会回焦Composer），按真实 Tab 顺序查找目标并等待焦点稳定；初始 Modal 单次 Esc 与后续状态矩阵独立验证，未改业务焦点行为。
 
 pnpm check:fast、lint:design、Impeccable机械扫描通过。本修正范围为CSS与验证驱动，未改变App业务或持久化结构；新的实际包与远端CI另按固定source记录。旧“所有outline消失”记录是已被用户纠正的历史预期，不代表当前合同。
+
+指针修正实际包：源f9cc66e13fb638a95f9931fa6fe81241585c43c4、dirty=false，0.1.0-workbench.3 / f9cc66e1-f83299df。pnpm build 与 macOS arm64打包通过；asar SHA-256 096644593d1a77b87f29ed4d84198e096dd34e56791568ad2c1ea6e4379c5e6a。`package.mjs ... --workbench --inspect`[14条记录](evidence/pointer-focus/packaged.json)通过（13检查+checkpoint），含 Main system 持久化、Modal诊断焦点、原生SDK、独立Thread/草稿/撤销/合成IME/阅读/重载/冷只读。此新版未重跑可选Router/附件增量，之前版本的相应证据保留而不冒称此次覆盖。
+
+[CUA原生检查](evidence/pointer-focus/native-cua.json)确认同一Thread行鼠标点击无蓝框，Tab/Shift+Tab回到该行显示轮廓，使用截图坐标385/490的实际指针点击退出轮廓。AX press不用于证明指针模式退出；此次没有重新宣称物理拖窗或系统IME/VoiceOver已通过。

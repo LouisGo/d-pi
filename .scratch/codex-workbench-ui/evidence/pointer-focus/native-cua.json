@@ -1,0 +1,16 @@
+{
+  "sourceCommit": "f9cc66e13fb638a95f9931fa6fe81241585c43c4",
+  "build": "f9cc66e1-f83299df",
+  "environment": "isolated macOS arm64 real package; SDK18.4.6; loopback supplier",
+  "checks": [
+    "Thread row pointer click: selected background without blue border/outline",
+    "Native Tab and Shift+Tab: same Thread row focused with visible outline",
+    "Actual coordinate click at screenshot pixel385/490: keyboard outline exits, selected background remains",
+    "A_UNSENT_DRAFT and native finalized reading content retained"
+  ],
+  "limits": [
+    "native hover/active timing matrix recorded separately by CDP",
+    "AX press is not relied on to reset browser pointer modality",
+    "no VoiceOver or system IME candidate-window verification; prior native drag gap remains open"
+  ]
+}
