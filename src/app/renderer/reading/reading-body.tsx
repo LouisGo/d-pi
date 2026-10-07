@@ -116,6 +116,11 @@ function BodyContent({
   useLayoutEffect(() => {
     if (body.current) body.current.scrollTop = getScrollTop();
   }, [page, getScrollTop]);
+  const showSegment = (next: number) => {
+    setChoice(next);
+    // Explicit body navigation also resets a currently selected tail segment.
+    if (body.current) body.current.scrollTop = 0;
+  };
   if (segments.length <= 1)
     return raw ? (
       <pre>{text}</pre>
@@ -136,7 +141,7 @@ function BodyContent({
           variant="ghost"
           aria-controls={regionId}
           disabled={page === 0}
-          onClick={() => setChoice(page - 1)}
+          onClick={() => showSegment(page - 1)}
         >
           {t("ui.reading.previous")}
         </Button>
@@ -150,9 +155,16 @@ function BodyContent({
           variant="ghost"
           aria-controls={regionId}
           disabled={page === segments.length - 1}
-          onClick={() => setChoice(page + 1)}
+          onClick={() => showSegment(page + 1)}
         >
           {t("ui.reading.next")}
+        </Button>
+        <Button
+          variant="ghost"
+          aria-controls={regionId}
+          onClick={() => showSegment(segments.length - 1)}
+        >
+          {t("ui.reading.latest")}
         </Button>
       </div>
       <pre

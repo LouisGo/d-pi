@@ -18,6 +18,92 @@ vi.mock("./markdown", () => ({
   },
 }));
 
+it.each(["local", "remembered"] as const)(
+  "manually opens the current latest segment and resets its inner position for a %s body without following later segments",
+  async (kind) => {
+    vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+    const positions = new ReadingPositions();
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    const render = (text: string) =>
+      act(() =>
+        root.render(
+          createElement(I18nProvider, {
+            initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" },
+            children: createElement(ReadingBody, {
+              text,
+              position:
+                kind === "remembered"
+                  ? { positions, key: "source:row" }
+                  : undefined,
+            }),
+          }),
+        ),
+      );
+    const latest = () => {
+      const button = [...container.querySelectorAll("button")].find(
+        (button) => button.textContent === "Latest segment",
+      );
+      if (!button) throw Error("missing latest segment button");
+      return button;
+    };
+    try {
+      await render("short");
+      expect(container.querySelector("button")).toBeNull();
+      const text = "a".repeat(8192 * 200) + "current tail";
+      await render(text);
+      const first = container.querySelector<HTMLElement>("[data-reading-text]");
+      if (!first) throw Error("missing first segment");
+      expect(latest().getAttribute("aria-controls")).toBe(first.id);
+      first.scrollTop = 57;
+      await act(() => first.dispatchEvent(new Event("scroll")));
+      await act(() => latest().click());
+      const tail = container.querySelector<HTMLElement>("[data-reading-text]");
+      if (!tail) throw Error("missing tail segment");
+      expect(
+        container
+          .querySelector("[data-reading-segment]")
+          ?.getAttribute("data-reading-segment"),
+      ).toBe("200");
+      expect(tail.textContent).toBe("current tail");
+      expect(tail.scrollTop).toBe(0);
+      tail.scrollTop = 81;
+      await act(() => tail.dispatchEvent(new Event("scroll")));
+      await act(() => latest().click());
+      expect(tail.scrollTop).toBe(0);
+      await render(text + "b".repeat(9000));
+      expect(container.querySelector("[data-reading-text]")).toBe(tail);
+      expect(
+        container
+          .querySelector("[data-reading-segment]")
+          ?.getAttribute("data-reading-segment"),
+      ).toBe("200");
+      await act(() => latest().click());
+      expect(
+        container
+          .querySelector("[data-reading-segment]")
+          ?.getAttribute("data-reading-segment"),
+      ).toBe("201");
+      await render("short again");
+      await render(text);
+      expect(
+        container
+          .querySelector("[data-reading-segment]")
+          ?.getAttribute("data-reading-segment"),
+      ).toBe("0");
+      expect(positions.stateStore.getState().bodies.size).toBe(
+        kind === "remembered" ? 1 : 0,
+      );
+    } finally {
+      await act(() => root.unmount());
+      positions.dispose();
+      container.remove();
+      vi.unstubAllGlobals();
+    }
+  },
+);
+
 it("restores a Thread/source's segment and inner offset after remount without borrowing another source", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const positions = new ReadingPositions();
@@ -417,7 +503,7 @@ it("makes the bounded scroll region keyboard reachable with its current segment 
       [...container.querySelectorAll("button")].map(
         (button) => button.textContent,
       ),
-    ).toEqual(["上一段", "下一段"]);
+    ).toEqual(["上一段", "下一段", "最新段"]);
   } finally {
     await act(() => root.unmount());
     container.remove();
