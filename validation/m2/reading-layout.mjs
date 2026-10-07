@@ -1,5 +1,6 @@
-// Bounded real-Electron layout probe. Read-only synthetic project/history;
-// no credential input, execution approval, model request or computer-use loop.
+// Bounded real-Electron probe with isolated synthetic project/history. Optional
+// clipboard mode writes a private fixture and restores the native pasteboard.
+// No credential input, execution approval, model request or computer-use loop.
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
@@ -8,6 +9,7 @@ import { createServer } from "node:http";
 import { join, resolve } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { createTestEnvironment } from "../../scripts/testing/test-environment.mjs";
+import { validateTrustedClipboard } from "./trusted-clipboard.mjs";
 
 const isolated = createTestEnvironment({ prefix: "d-pi-reading-layout-" });
 const output = resolve("out/qa-convergence");
@@ -310,6 +312,16 @@ try {
     assert.ok(Math.abs(value.offset - 40) <= 2, JSON.stringify(value));
     assert.equal(value.source, anchorMeasurements[0].source);
   }
+  const clipboard = process.argv.includes("--clipboard")
+    ? await validateTrustedClipboard({
+        call,
+        evaluate,
+        wait,
+        isolated,
+        threadId,
+        otherThreadId,
+      })
+    : undefined;
   const finalDb = new DatabaseSync(join(isolated.data, "drafts.sqlite"), {
     readOnly: true,
   });
@@ -330,6 +342,7 @@ try {
     modelGenerationRequests: 0,
     measurements,
     anchorMeasurements,
+    ...(clipboard ? { clipboard } : {}),
   };
   writeFileSync(
     join(output, "result.json"),

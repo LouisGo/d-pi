@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "08d3c939e9c931db9eef3b5718a77846384f385393042742a012267efb66194b",
+  "inputsHash": "5a00459c7c415cf73a8c49ffc30dbf1e7f65dd55f51d63f11088269d3e2c3926",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 416,
-    "scannedFiles": 416,
+    "sourceFiles": 423,
+    "scannedFiles": 423,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 177,
-      "lines": 30747,
+      "files": 179,
+      "lines": 31582,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -102,7 +102,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 20,
-      "lines": 2661,
+      "lines": 2680,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -185,8 +185,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 44,
-      "lines": 6451,
+      "files": 49,
+      "lines": 7952,
       "publicEntries": [
         {
           "path": "src/modules/input/contracts/public.ts",
@@ -1197,6 +1197,13 @@
       "module": "app",
       "environment": "main",
       "dependency": "input",
+      "targetEnvironment": "main",
+      "testOnly": true
+    },
+    {
+      "module": "app",
+      "environment": "main",
+      "dependency": "input",
       "targetEnvironment": "core",
       "testOnly": false
     },
@@ -1224,13 +1231,6 @@
     {
       "module": "app",
       "environment": "main",
-      "dependency": "input",
-      "targetEnvironment": "main",
-      "testOnly": true
-    },
-    {
-      "module": "app",
-      "environment": "main",
       "dependency": "threads",
       "targetEnvironment": "main",
       "testOnly": true
@@ -1241,6 +1241,13 @@
       "dependency": "preferences",
       "targetEnvironment": "contracts",
       "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "preload",
+      "dependency": "shared",
+      "targetEnvironment": "shared",
+      "testOnly": true
     },
     {
       "module": "app",
@@ -1283,13 +1290,6 @@
       "dependency": "files",
       "targetEnvironment": "contracts",
       "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "preload",
-      "dependency": "shared",
-      "targetEnvironment": "shared",
-      "testOnly": true
     },
     {
       "module": "app",
@@ -1696,6 +1696,13 @@
       "dependency": "threads",
       "targetEnvironment": "main",
       "testOnly": false
+    },
+    {
+      "module": "input",
+      "environment": "renderer",
+      "dependency": "shared",
+      "targetEnvironment": "shared",
+      "testOnly": true
     },
     {
       "module": "input",
@@ -4387,6 +4394,66 @@
       "targetEnvironment": "main"
     },
     {
+      "from": "src/app/main/wiring/attachment-clipboard.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-clipboard.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-clipboard.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-clipboard.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-clipboard.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./app-storage",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/app-storage.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-clipboard.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./attachment-service",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/attachment-service.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
       "from": "src/app/main/wiring/attachment-history.test.ts",
       "sourceModule": "app",
       "sourceEnvironment": "main",
@@ -4421,6 +4488,18 @@
       "specifier": "vitest",
       "kind": "import",
       "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../../modules/input/main/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/main/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "main"
     },
     {
       "from": "src/app/main/wiring/attachment-history.test.ts",
@@ -5678,6 +5757,39 @@
       "to": "src/app/main/lifecycle/system-notifications.ts",
       "targetModule": "app",
       "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/preload/bridges/attachments.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/preload/bridges/attachments.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": true,
+      "specifier": "../../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/app/preload/bridges/attachments.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": true,
+      "specifier": "./attachments",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/preload/bridges/attachments.ts",
+      "targetModule": "app",
+      "targetEnvironment": "preload"
     },
     {
       "from": "src/app/preload/bridges/attachments.ts",
@@ -16017,7 +16129,28 @@
       "targetEnvironment": "contracts"
     },
     {
+      "from": "src/modules/input/contracts/attachment-bridge.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "./clipboard",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/clipboard.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
       "from": "src/modules/input/contracts/attachment.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/contracts/clipboard.ts",
       "sourceModule": "input",
       "sourceEnvironment": "contracts",
       "test": false,
@@ -16103,6 +16236,18 @@
       "kind": "export",
       "resolution": "module",
       "to": "src/modules/input/contracts/attachment-bridge.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/contracts/public.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "./clipboard",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/clipboard.ts",
       "targetModule": "input",
       "targetEnvironment": "contracts"
     },
@@ -16696,6 +16841,18 @@
       "sourceModule": "input",
       "sourceEnvironment": "main",
       "test": false,
+      "specifier": "./clipboard-snapshots",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/main/attachments/clipboard-snapshots.ts",
+      "targetModule": "input",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/input/main/attachments/attachment-store.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": false,
       "specifier": "./content-lifecycle",
       "kind": "import",
       "resolution": "module",
@@ -16726,6 +16883,48 @@
       "to": "src/modules/input/main/attachments/representation.ts",
       "targetModule": "input",
       "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/input/main/attachments/clipboard-snapshots.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/main/attachments/clipboard-snapshots.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./clipboard-snapshots",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/main/attachments/clipboard-snapshots.ts",
+      "targetModule": "input",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/input/main/attachments/clipboard-snapshots.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/main/attachments/clipboard-snapshots.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/modules/input/main/attachments/content-lifecycle.test.ts",
@@ -16789,10 +16988,34 @@
       "sourceModule": "input",
       "sourceEnvironment": "main",
       "test": true,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/main/attachments/content-lifecycle.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": true,
       "specifier": "./content-lifecycle",
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/input/main/attachments/content-lifecycle.ts",
+      "targetModule": "input",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/input/main/attachments/content-lifecycle.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./editor-history",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/main/attachments/editor-history.ts",
       "targetModule": "input",
       "targetEnvironment": "main"
     },
@@ -17015,6 +17238,18 @@
       "kind": "export",
       "resolution": "module",
       "to": "src/modules/input/main/attachments/content-lifecycle.ts",
+      "targetModule": "input",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/input/main/public.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "./attachments/editor-history",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/input/main/attachments/editor-history.ts",
       "targetModule": "input",
       "targetEnvironment": "main"
     },
@@ -17301,6 +17536,195 @@
       "test": true,
       "specifier": "./plain-text-paste",
       "kind": "dynamic-import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/clipboard/plain-text-paste.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/clipboard/trusted-clipboard.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tiptap/core",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/clipboard/trusted-clipboard.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/clipboard/trusted-clipboard.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/modules/input/renderer/clipboard/trusted-clipboard.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/renderer/clipboard/trusted-clipboard.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/renderer/clipboard/trusted-clipboard.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../core/attachments/attachment-model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/attachments/attachment-model.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/renderer/clipboard/trusted-clipboard.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../core/references/serialize",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/references/serialize.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/renderer/clipboard/trusted-clipboard.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../editor/plain-text-editor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/editor/plain-text-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/clipboard/trusted-clipboard.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./trusted-clipboard",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/clipboard/trusted-clipboard.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/clipboard/trusted-clipboard.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tiptap/core",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/clipboard/trusted-clipboard.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tiptap/pm/model",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/clipboard/trusted-clipboard.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tiptap/pm/view",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/clipboard/trusted-clipboard.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/modules/input/renderer/clipboard/trusted-clipboard.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/renderer/clipboard/trusted-clipboard.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../core/attachments/attachment-model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/attachments/attachment-model.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/renderer/clipboard/trusted-clipboard.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../editor/plain-text-editor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/editor/plain-text-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/clipboard/trusted-clipboard.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./plain-text-paste",
+      "kind": "import",
       "resolution": "module",
       "to": "src/modules/input/renderer/clipboard/plain-text-paste.ts",
       "targetModule": "input",
@@ -17660,6 +18084,18 @@
       "kind": "export",
       "resolution": "module",
       "to": "src/modules/input/renderer/clipboard/plain-text-paste.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/public.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./clipboard/trusted-clipboard",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/clipboard/trusted-clipboard.ts",
       "targetModule": "input",
       "targetEnvironment": "renderer"
     },

@@ -20,6 +20,18 @@
 
 ## 剩余
 
-04独立clipboard、动态引用选择、评审修复/刷新、最终组合check/build及Dev交付尚未结算。工程/trial/acceptance继续分别维护，当前总任务未满足退出标准。
+该冻结前缀时04独立clipboard、动态引用选择、评审修复/刷新、最终组合check/build及Dev交付尚未结算。后续结果在以下追加记录，工程/trial/acceptance继续分别维护。
 
 Spec轴冻结范围发现1个P2：Git二次采样把unavailable统称changed。主Agent追加真实超5MiB文件、移除临时仓库元数据两个回归，均先失败（too-large/not-git→changed），修复先保留真实unavailable后23个Git回归及Main类型通过。Standards轴已证实同PDF ID重试产生新derivedDigest未补旧历史lease；保持claimed，由03 worker隔离修复，未宣称已通过。
+
+## 最终已实施代码与组合验证
+
+冻结生产代码 `fb7f5baf4d7547a90c8d008947815b4e0d742c3c`：03修复源 `3780cb1` 集成为 `e795933`，04独立源 `4678ec1` 集成为 `fb7f5ba`。Composer连续性测试冲突保留两项独立行为；Main同步publishManifest、editor-history-limit、clearHistory回调与clipboard constructor/release/close均保留，未改变SQLite schema。
+
+2026-10-07 15:54–15:55，生成结构后完整 `pnpm check` 退出0：全环境类型、lint/design/i18n、source边界、architecture423files、文档/结构/status、架构负例/tooling和全仓测试通过。Vitest **169 files passed /1 skipped，959 tests passed /2 skipped**，测试阶段17.28s。`pnpm build` 退出0，保留既有PURE/chunk-size警告。没有远端CI/发布包/实际供应商和用户认可证据；默认opt-in跳过不算功能通过。
+
+2026-10-07 15:56，`node validation/m2/reading-layout.mjs --anchors --clipboard` 退出0。真实生产Main/preload/Renderer + 1×1 PNG原生decoder、SQLite、Chromium ClipboardEvent和macOS通用pasteboard：本源文字+实际图片复制→另一Thread原生粘贴，target ID不同、input digest相同、ready；一个原生Undo移除整段、Redo恢复相同target ID。系统剪贴板通过私有MIME或HTML envelope到达目标，未分别声称两种flavor或其它App roundtrip均保真。helper在测试前保存原全部formats，在finally按changeCount/owned hash核对，实际结果 `restored`，私有临时文件已删除；不输出原剪贴板内容。
+
+同次probe复核宽度、Composer隐藏、view返回和Thread A→B→A，anchor-10偏移40.21875保持（相对漂移0，绝对误差0.21875px）。实际数据库 submissions/nativeBindings均0，没有model request。原始结果 [electron-clipboard-geometry.json](electron-clipboard-geometry.json)。第一次probe的 `document.execCommand('copy')` 因无浏览器用户动作返回false，是验证脚本接缝失败且未写剪贴板；改用实际CDP编辑键命令后通过，未改产品实现去适应测试。
+
+Standards独立关闭原PDF P2：固定 `ae9cb2c…e795933`，原真实PM/SQLite失败复现转绿，GC删除0、Undo后prepare成功；预算/GC交错/显式清史及Composer接线共8 files/37tests通过。Spec已独立关闭Git P2（`70b5528`，4files/45tests）。最终04与组合增量两轴review继续记录在下方。
