@@ -1,6 +1,6 @@
 # 06 Thread 主区基础布局与工具收纳
 
-Status: claimed
+Status: resolved
 Type: task
 Blocked by: none
 
@@ -19,3 +19,7 @@ Blocked by: none
 ## 验证记录
 
 新增默认关闭测试先在旧实现失败（找不到 thread-tools），最小实现后通过。其余结果随收尾追加；用户试用与认可仍待反馈。
+
+## 工程结果
+
+源 `6202f2e`；本票工程与隔离Electron验收完成，[交接](../thread-surface-handoff.md)保留检查、两轴本地复核和试用方式。用户认可与原A3缺口不提升。

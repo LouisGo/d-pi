@@ -103,7 +103,7 @@ CSS Grid/Flex 负责排版与滚动边界；尺寸约束负责可用空间分配
 ```
 
 ```project-status
-[{"id":"codex-workbench-ui","title":"Codex 式工作台基础布局","phase":"基建","engineering":"partial","trial":"delivered","acceptance":"pending","build":"Dev / codex/sandwich-layout","evidence":["sandwich-validation.md","baseline-refinement.md"],"next":"Dev试用三层布局；原A3物理拖窗、系统IME/VoiceOver与长时性能仍未覆盖","constraints":"用户已授权本UI分支push、PR及合并；不公开发布或发起真实账户请求。"}]
+[{"id":"codex-workbench-ui","title":"Codex 式工作台基础布局","phase":"基建","engineering":"partial","trial":"delivered","acceptance":"pending","build":"Dev / codex/thread-layout / 6202f2e","evidence":["thread-surface-handoff.md","sandwich-validation.md","baseline-refinement.md"],"next":"Dev试用Thread消息/Composer基础布局与工具收纳；下一轮等待用户指令，原A3缺口仍开放","constraints":"用户已授权本UI分支push、PR及合并；不公开发布或发起真实账户请求。"}]
 ```
 
 ## 实施票
@@ -167,4 +167,4 @@ CSS Grid/Flex 负责排版与滚动边界；尺寸约束负责可用空间分配
 - T3 本地参考：`/Users/louistation/MySpace/Life/t3code`，远端 `https://github.com/pingdotgg/t3code.git`，2026-10-07 clone 的 main 为 `611132c171f3a821bd2e32f22261135cef6330ac`；干净且与 origin/main 一致。参考 `apps/web/src/components/ChatView.tsx` 的消息区域与 Composer lane 分工，不复制其 overlay 或业务体系。
 - 基点 `56f0b0a`；独立工作树 `/Users/louistation/.codex/worktrees/thread-layout/d-pi`，分支 `codex/thread-layout`。主 Agent 串行完成，不改当前 main；本轮不推送远端。
 - 重要待决：无。运行、提交和恢复政策继续沿用原合同；必要操作/失败提醒保持可达，不用隐藏错误实现视觉干净。
-- 工程：实施中；验收见 06。试用/用户认可保持待反馈，不提升原 A3 的未验证项目。
+- 工程：06工程完成，源码 `6202f2e`；[交接与试用](thread-surface-handoff.md)。46项受影响回归、11项隔离Electron及类型/设计/i18n/构建/环境通过。原A3保持partial；用户试用与认可待反馈，后续消息/Composer细化等待下一步指令。
