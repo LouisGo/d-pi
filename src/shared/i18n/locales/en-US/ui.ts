@@ -1,4 +1,8 @@
 export const ui = {
+  "attachment.clipboardFallback":
+    "Structured content fell back to readable text. Dynamic references do not transfer file access.",
+  "attachment.clipboardFailed":
+    "Structured clipboard could not complete. Try again; readable text remains available.",
   "settings.commandEnterKey": "⌘ + Enter",
   "settings.configurationDescription":
     "Manage provider authentication and inspect the native configuration used by the current Thread.",

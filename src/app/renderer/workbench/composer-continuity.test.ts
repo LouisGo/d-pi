@@ -576,3 +576,81 @@ it("keeps publication-limit Undo until explicit recovery and waits for Main leas
   expect(released).toBe(true);
   expect(fixture.editor().getText()).toBe(body);
 });
+
+it("connects synchronous copy and awaited structured paste in real Composer views as one user action", async () => {
+  const snapshots = new Map<string, string>();
+  let completeExport!: () => void;
+  const ready = new Promise<void>((resolve) => {
+    completeExport = resolve;
+  });
+  const bridge: AttachmentBridge = {
+    request: async (command) => {
+      if (command.kind === "clipboard-reserve")
+        return {
+          kind: "clipboard-tickets",
+          tickets: Array.from({ length: 2 }, () => ({
+            version: 1,
+            instanceId: crypto.randomUUID(),
+            handleId: crypto.randomUUID(),
+            expiresAt: Date.now() + 10000,
+          })),
+        };
+      if (command.kind === "clipboard-export") {
+        snapshots.set(command.ticket.handleId, command.text);
+        await ready;
+        return { kind: "clipboard-exported", degraded: false };
+      }
+      if (command.kind === "clipboard-import") {
+        await ready;
+        return {
+          kind: "clipboard-imported",
+          text: snapshots.get(command.ticket.handleId) ?? "",
+          items: [],
+          degraded: false,
+        };
+      }
+      return { kind: "attachments", items: [] };
+    },
+  };
+  const fixture = await setup(undefined, undefined, bridge);
+  const formats = new Map<string, string>();
+  const event = {
+    clipboardData: {
+      types: ["text/plain", "application/x-dpi-context-fragment+json"],
+      files: [],
+      setData: (type: string, value: string) => formats.set(type, value),
+      getData: (type: string) => formats.get(type) ?? "",
+    },
+    preventDefault() {},
+  } as unknown as ClipboardEvent;
+  await act(() => {
+    fixture.editor().commands.selectAll();
+    const handle = fixture.editor().options.editorProps?.handleDOMEvents?.copy;
+    expect(handle?.(fixture.editor().view, event)).toBe(true);
+  });
+  expect(formats.get("application/x-dpi-context-fragment+json")).toContain(
+    "handleId",
+  );
+  await fixture.select(fixture.second.threadId);
+  await act(() => {
+    const handler = fixture.editor().options.editorProps?.handlePaste;
+    expect(
+      handler?.(
+        fixture.editor().view,
+        event,
+        new Slice(fixture.editor().state.doc.content, 0, 0),
+      ),
+    ).toBe(true);
+  });
+  expect(fixture.thread().attachments?.stateStore.getState().pending).toBe(1);
+  await act(async () => {
+    completeExport();
+    await ready;
+  });
+  expect(fixture.editor().getText()).toBe("alpha omegabravo");
+  expect(fixture.thread().attachments?.stateStore.getState().pending).toBe(0);
+  await act(() => {
+    expect(fixture.editor().commands.undo()).toBe(true);
+  });
+  expect(fixture.editor().getText()).toBe("bravo");
+});

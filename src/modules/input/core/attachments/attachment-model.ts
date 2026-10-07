@@ -174,8 +174,19 @@ export class AttachmentModel {
         threadId: this.threadId,
         traceId: this.createTraceId(),
       });
-      if (this.disposed) return null;
-      if (reply.kind === "attachments") {
+      if (this.disposed) {
+        if (reply.kind === "clipboard-imported")
+          void this.bridge
+            .request({
+              kind: "clipboard-discard",
+              threadId: this.threadId,
+              traceId: this.createTraceId(),
+              ids: reply.items.map((item) => item.id),
+            })
+            .catch(() => {});
+        return null;
+      }
+      if (reply.kind === "attachments" || reply.kind === "clipboard-imported") {
         for (const item of reply.items) {
           if (item.threadId !== this.threadId) continue;
           this.assetReadiness.delete(item.id);

@@ -130,6 +130,10 @@ export class ContentLifecycle {
     pin.digests.add(hash);
     this.pendingImports.set(key, pin);
   }
+  releaseImport(threadId: string, id: string): void {
+    this.pendingImports.delete(`${threadId}:${id}`);
+    this.transientEpoch++;
+  }
   pinPreparation(hashes: string[]): void {
     for (const hash of hashes) this.pendingPreparations.add(hash);
   }

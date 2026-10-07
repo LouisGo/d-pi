@@ -15,7 +15,8 @@ export function createAttachmentBridge(
           await ipcRenderer.invoke("attachments:request", request),
         );
         if (
-          reply.kind === "attachments" &&
+          (reply.kind === "attachments" ||
+            reply.kind === "clipboard-imported") &&
           reply.items.some((item) => item.threadId !== request.threadId)
         )
           throw Error("Foreign attachment reply");

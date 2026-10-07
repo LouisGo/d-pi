@@ -63,8 +63,15 @@ export function registerAttachmentIpc(
       const reply = await service.execute(command, ownerFor(event.sender));
       diagnostics?.record({
         ...identity,
-        stage: reply.kind === "unavailable" ? "failed" : "completed",
-        ...(reply.kind === "unavailable" ? { code: reply.reason } : {}),
+        stage:
+          reply.kind === "unavailable" || reply.kind === "clipboard-unavailable"
+            ? "failed"
+            : "completed",
+        ...(reply.kind === "unavailable"
+          ? { code: reply.reason }
+          : reply.kind === "clipboard-unavailable"
+            ? { code: `clipboard-${reply.reason}` }
+            : {}),
         durationMs: performance.now() - started,
       });
       return reply;

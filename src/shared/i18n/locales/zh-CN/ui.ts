@@ -1,4 +1,8 @@
 export const ui = {
+  "attachment.clipboardFallback":
+    "结构化内容已降级为可读文本；动态文件引用不会复制读取权限。",
+  "attachment.clipboardFailed":
+    "结构化剪贴板未能完成，请重试；可读文本仍可粘贴。",
   "settings.commandEnterKey": "⌘ + Enter",
   "settings.configurationDescription":
     "管理模型服务认证，并查看当前 Thread 使用的原生配置。",

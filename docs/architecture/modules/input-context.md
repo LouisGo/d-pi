@@ -90,3 +90,14 @@ input Main 的 AttachmentStore 管 schema 8 manifest、schema 9 对象投影、�
 Main服务拥有files的ProjectReferenceSearch实例，与附件服务一同close/drain；Query仅缓存只读候选，150ms合并连续键入，等待或查询身份不一致时不可确认旧候选，显式刷新使Main缓存失效。文件发送仍冻结原文件正文；不改变OMP执行或unknown/cold恢复策略。
 
 04c 文件和目录发送读取共同保持 Thread 记录的规范项目根：读取前后检查根非 symlink、realpath 原值及 dev/ino/ctime，拒绝将变化后的外部规范路径当作原授权根。通用 files 浏览 API 的别名支持不构成附件发送授权；失败保留引用与草稿。
+
+
+## 可信结构化剪贴板（T3 foundations 04 独立部分）
+
+Copy/cut 同步捕获实际选区，写入 Main 预发 ticket（`version:1, instanceId, handleId, expiresAt`）的私有 MIME 与 HTML fallback；plain flavor 始终可读，附件显示名称和标识，不输出可解析的原 UUID token。无可用 ticket 时只复制可读文本并提示。随后异步 export 绑定一次性 ticket：export 仅包含实际选中节点的 IDs，正文中的其他 UUID token 降级；Main 校验依赖闭包和源 Thread 的 manifest，私有 ready 图片按 digest 验证，冻结选区只搬自包含原文。动态 @文件/目录及其他附件显示 `[d-pi:dynamic-reference 名称]` / `[d-pi:attachment 名称]`，不扩读取权限；跨 Thread 动态引用的产品语义仍待决定。
+
+快照属于 Main 当前 app instance 和可信 Renderer document，Thread 切换不会撤销已复制快照；完整 document navigation、renderer 退出及 App service close 全部释放。每 document 最多 8 tickets、全局 32；ticket TTL 120 秒（reserved/pending/ready 都适用），每快照 32 个依赖及 1 MiB 选中文字、64 MiB 私有对象，全局 128 MiB。等待 export 每 ticket 最多 4、全局 16、最长 3 秒；队列内工作晚于 TTL/释放不会再发布或克隆。import（含等待/排队/执行）每 document 最多 4、全局 16，未持久采用的克隆交接最多 128，已采用时解除交接保护；timer 上限等于 ticket/等待预算，close 清除 timer 并结束等待。复制时同步 pin 源 digest，异步检查不允许 GC 穿过交接；现有 editor epoch 和持久草稿继续保护 cut/保存前的源资产。
+
+Paste 只解析严格版本和有界 envelope；未知、过期、伪造、跨 instance、准备失败、预算耗尽均显示可读 fallback。Main 校验目标 Thread；整片段验证成功后一个 SQLite 事务建立新目标图片 ID，保留私有对象去重，不访问任意路径或 URL。Renderer 用原 Thread 的 AttachmentModel 跟踪 pending，并在同一消费 sequence、同一 editor doc/selection、仍 editable/current 且 source 未被冻结时执行一次 PM paste transaction；全部内容一次 Undo/Redo。迟到结果不落入别的 Thread 或已消费草稿，未使用克隆释放 import pin。显式纯文本粘贴仍消费 text/plain。正文唯一可写拥有者、保存和 03 history lease 不变。
+
+公开 wire 使用现有 AttachmentBridge 的 clipboard-reserve/export/import/release/discard 命令与 clipboard-tickets/exported/imported/unavailable 判别结果。Clipboard failure 独立于附件内容失败（invalid/expired/busy/failed），不泄露 path、stderr 或业务全文到诊断。窗口内 adapter 只拥有可丢弃 ticket pool 和当前 paste attempt，没有第二份草稿或资产事实。

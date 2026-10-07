@@ -7,8 +7,33 @@ import {
   AttachmentStorageReportSchema,
 } from "./attachment";
 
+import { ClipboardFailureSchema, ClipboardTicketSchema } from "./clipboard";
+
 const identity = { threadId: ThreadIdSchema, traceId: TraceIdSchema };
 export const AttachmentRequestSchema = z.discriminatedUnion("kind", [
+  z.strictObject({ ...identity, kind: z.literal("clipboard-reserve") }),
+  z.strictObject({
+    ...identity,
+    kind: z.literal("clipboard-export"),
+    ticket: ClipboardTicketSchema,
+    text: z.string().max(1048576),
+    ids: z.array(z.uuid()).max(32),
+  }),
+  z.strictObject({
+    ...identity,
+    kind: z.literal("clipboard-import"),
+    ticket: ClipboardTicketSchema,
+  }),
+  z.strictObject({
+    ...identity,
+    kind: z.literal("clipboard-release"),
+    tickets: z.array(ClipboardTicketSchema).max(8),
+  }),
+  z.strictObject({
+    ...identity,
+    kind: z.literal("clipboard-discard"),
+    ids: z.array(z.uuid()).max(32),
+  }),
   z.strictObject({
     ...identity,
     kind: z.literal("history-open"),
@@ -65,6 +90,24 @@ export const AttachmentRequestSchema = z.discriminatedUnion("kind", [
 export type AttachmentRequest = z.infer<typeof AttachmentRequestSchema>;
 export const AttachmentReplySchema = z.discriminatedUnion("kind", [
   AttachmentStorageReportSchema,
+  z.strictObject({
+    kind: z.literal("clipboard-tickets"),
+    tickets: z.array(ClipboardTicketSchema).max(2),
+  }),
+  z.strictObject({
+    kind: z.literal("clipboard-exported"),
+    degraded: z.boolean(),
+  }),
+  z.strictObject({
+    kind: z.literal("clipboard-imported"),
+    text: z.string().max(1048576),
+    items: z.array(AttachmentSchema).max(32),
+    degraded: z.boolean(),
+  }),
+  z.strictObject({
+    kind: z.literal("clipboard-unavailable"),
+    reason: ClipboardFailureSchema,
+  }),
   z.strictObject({
     kind: z.literal("history-lease"),
     leaseId: z.uuid(),

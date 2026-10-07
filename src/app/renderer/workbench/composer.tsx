@@ -24,6 +24,7 @@ import {
   appendSelectionReference,
   attachmentMention,
   createClipboardPaste,
+  createTrustedClipboard,
   draftDocument,
   plainTextEditorOptions,
   replaceDraftText,
@@ -85,6 +86,9 @@ export function Composer({
   );
   const [expanded, setExpanded] = useState(false);
   const [unsupportedPaste, setUnsupportedPaste] = useState(false);
+  const [clipboardFeedback, setClipboardFeedback] = useState<
+    "fallback" | "failed" | null
+  >(null);
   const [attachmentBlocked, setAttachmentBlocked] = useState(false);
   const [mention, setMention] =
     useState<ReturnType<typeof attachmentMention>>(null);
@@ -110,6 +114,23 @@ export function Composer({
     () => createClipboardPaste(() => setUnsupportedPaste(true)),
     [controller],
   );
+  const trustedClipboard = useMemo(
+    () =>
+      model.attachments && thread.attachments
+        ? createTrustedClipboard({
+            bridge: model.attachments,
+            model: thread.attachments,
+            isCurrent: () => model.isCurrentThread(thread),
+            sequence: () => controller.getEditorSnapshot().sequence,
+            onFeedback: setClipboardFeedback,
+          })
+        : null,
+    [controller, model, thread],
+  );
+  useEffect(() => {
+    trustedClipboard?.start();
+    return () => trustedClipboard?.dispose();
+  }, [trustedClipboard]);
   const editor = useEditor(
     {
       ...plainTextEditorOptions,
@@ -127,6 +148,8 @@ export function Composer({
       },
       editorProps: {
         handlePaste: (view, event) => {
+          if (!paste.isPlain() && trustedClipboard?.paste(view, event))
+            return true;
           const files = Array.from(event.clipboardData?.files ?? []);
           if (
             !paste.isPlain() &&
@@ -178,6 +201,14 @@ export function Composer({
           return true;
         },
         handleDOMEvents: {
+          copy: (view, event) =>
+            trustedClipboard?.copy(view, event, false) ?? false,
+          cut: (view, event) =>
+            trustedClipboard?.copy(view, event, true) ?? false,
+          focus: () => {
+            void trustedClipboard?.warm();
+            return false;
+          },
           blur: () => {
             paste.reset();
             return false;
@@ -198,6 +229,10 @@ export function Composer({
       },
     },
     [controller],
+  );
+  useEffect(
+    () => (editor ? trustedClipboard?.bindEditor(editor) : undefined),
+    [editor, trustedClipboard],
   );
   const lastAttachment = useRef<string | null>(null);
   useEffect(() => {
@@ -302,6 +337,15 @@ export function Composer({
           dismissMention={dismissMention}
           onClearHistory={() => model.draftEditors.clearHistory(thread.key)}
         />
+      )}
+      {clipboardFeedback && (
+        <p role="status" className="muted">
+          {t(
+            clipboardFeedback === "fallback"
+              ? "attachment.clipboardFallback"
+              : "attachment.clipboardFailed",
+          )}
+        </p>
       )}
       {unsupportedPaste && (
         <p role="alert" className="failure">

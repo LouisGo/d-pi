@@ -78,12 +78,34 @@ it.each(["destroyed", "render-process-gone", "navigation"])(
       expect(
         (await service.store.cleanStorage(draft.threadId)).deletedObjects,
       ).toBe(0);
+      const reserved = await request({
+        ...identity,
+        kind: "clipboard-reserve",
+      });
+      if (reserved.kind !== "clipboard-tickets" || !reserved.tickets[0])
+        throw Error("no clipboard ticket");
+      const clipboardWait = request({
+        ...identity,
+        kind: "clipboard-import",
+        ticket: reserved.tickets[0],
+      });
       if (eventName === "navigation")
         sender.emit("did-start-navigation", {
           isMainFrame: true,
           isSameDocument: false,
         });
       else sender.emit(eventName);
+      expect(await clipboardWait).toMatchObject({
+        kind: "clipboard-unavailable",
+        reason: "invalid",
+      });
+      expect(
+        await request({
+          ...identity,
+          kind: "clipboard-import",
+          ticket: reserved.tickets[0],
+        }),
+      ).toMatchObject({ kind: "clipboard-unavailable" });
       expect(
         (await service.store.cleanStorage(draft.threadId)).deletedObjects,
       ).toBe(1);

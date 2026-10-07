@@ -98,6 +98,32 @@ export function createAttachmentService(
     const attachments = (items: Awaited<ReturnType<typeof store.list>>) =>
       ({ kind: "attachments", items }) as const;
     switch (command.kind) {
+      case "clipboard-reserve":
+        return owner
+          ? store.reserveClipboard(owner, command.threadId)
+          : { kind: "clipboard-unavailable", reason: "invalid" };
+      case "clipboard-export":
+        return owner
+          ? store.exportClipboard(
+              owner,
+              command.threadId,
+              command.ticket,
+              command.text,
+              command.ids,
+            )
+          : { kind: "clipboard-unavailable", reason: "invalid" };
+      case "clipboard-import":
+        return owner
+          ? store.importClipboard(owner, command.threadId, command.ticket)
+          : { kind: "clipboard-unavailable", reason: "invalid" };
+      case "clipboard-release":
+        return owner
+          ? store.releaseClipboard(owner, command.threadId, command.tickets)
+          : { kind: "clipboard-unavailable", reason: "invalid" };
+      case "clipboard-discard":
+        return owner
+          ? store.discardClipboard(owner, command.threadId, command.ids)
+          : { kind: "clipboard-unavailable", reason: "invalid" };
       case "history-open":
         return owner
           ? store.openEditorHistory(owner, command.threadId, command.epoch)

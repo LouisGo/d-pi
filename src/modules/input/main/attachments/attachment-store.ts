@@ -18,10 +18,20 @@ import {
   type AttachmentFailureReason,
   type AttachmentPreview,
   AttachmentSchema,
+  type ClipboardTicket,
   type ContentPreparationResult,
   type PreparedContent,
 } from "../../contracts/public";
-import { attachmentToken, readAttachmentTokens } from "../../core/public";
+import {
+  attachmentToken,
+  parseDraftBlocks,
+  readAttachmentTokens,
+  serializeReference,
+} from "../../core/public";
+import {
+  type ClipboardSnapshot,
+  ClipboardSnapshots,
+} from "./clipboard-snapshots";
 import {
   type AttachmentReferenceReader,
   ContentLifecycle,
@@ -87,8 +97,21 @@ export class AttachmentStore {
   private readonly limits;
   private readonly lifecycle?: ContentLifecycle;
   private closed = false;
+  private readonly clipboard: ClipboardSnapshots<StoredRecord>;
+  private readonly clipboardPending = new Map<string, number>();
+  private readonly clipboardImports = new Map<
+    string,
+    { owner: string; threadId: string }
+  >();
   private readonly editorHistories: EditorHistoryLeases;
   constructor(private readonly options: AttachmentStoreOptions) {
+    this.clipboard = new ClipboardSnapshots({
+      capture: (threadId, text, ids) =>
+        this.captureClipboard(threadId, text, ids),
+      verify: (snapshot) =>
+        this.serialized(() => this.verifyClipboard(snapshot)),
+      pin: (id, hashes) => this.lifecycle?.setEditorHistory(id, hashes),
+    });
     this.editorHistories = new EditorHistoryLeases({
       ...(options.editorHistoryLimits
         ? { limits: options.editorHistoryLimits }
@@ -317,6 +340,234 @@ export class AttachmentStore {
   }
   releaseEditorHistories(owner: string): void {
     this.editorHistories.releaseOwner(owner);
+    this.clipboard.releaseOwner(owner);
+    for (const [id, item] of this.clipboardImports)
+      if (item.owner === owner) {
+        this.lifecycle?.releaseImport(item.threadId, id);
+        this.clipboardImports.delete(id);
+      }
+  }
+  reserveClipboard(owner: string, threadId: string) {
+    return this.clipboard.reserve(owner, threadId);
+  }
+  exportClipboard(
+    owner: string,
+    threadId: string,
+    ticket: ClipboardTicket,
+    text: string,
+    ids: string[],
+  ) {
+    return this.clipboard.export(owner, threadId, ticket, text, ids);
+  }
+  releaseClipboard(
+    owner: string,
+    threadId: string,
+    tickets: ClipboardTicket[],
+  ) {
+    this.clipboard.releaseReserved(owner, threadId, tickets);
+    return { kind: "cancelled" } as const;
+  }
+  discardClipboard(owner: string, threadId: string, ids: string[]) {
+    for (const id of ids) {
+      const item = this.clipboardImports.get(id);
+      if (item?.owner === owner && item.threadId === threadId) {
+        this.lifecycle?.releaseImport(threadId, id);
+        this.clipboardImports.delete(id);
+      }
+    }
+    return { kind: "cancelled" } as const;
+  }
+  private captureClipboard(
+    threadId: string,
+    text: string,
+    ids: string[],
+  ): ClipboardSnapshot<StoredRecord> {
+    if (Buffer.byteLength(text) > 1048576) throw Error("clipboard-too-large");
+    const selected = new Set(ids);
+    if (selected.size !== ids.length || selected.size > 32)
+      throw Error("invalid-selection");
+    const encountered = new Set<string>();
+    const records = new Map<string, StoredRecord>();
+    const digests = new Set<string>();
+    let bytes = Buffer.byteLength(text),
+      degraded = false;
+    const body = parseDraftBlocks(text)
+      .map((block) => {
+        if (block.kind === "selection") return serializeReference(block.value);
+        const parsed = readAttachmentTokens(block.text);
+        if (!parsed.ok) throw Error("invalid-token");
+        let value = block.text;
+        for (const token of [...parsed.tokens].reverse()) {
+          if (!selected.has(token.id)) {
+            degraded = true;
+            value =
+              value.slice(0, token.position) +
+              "[d-pi:attachment unavailable]" +
+              value.slice(token.position + token.token.length);
+            continue;
+          }
+          encountered.add(token.id);
+          const record = this.read(threadId, token.id);
+          if (!record) throw Error("attachment-not-found");
+          const item = record.attachment;
+          if (
+            item.source === "reference" ||
+            item.status !== "ready" ||
+            item.representation !== "image" ||
+            !item.inputDigest
+          ) {
+            degraded = true;
+            // Names are readable data, never token authority in the destination.
+            const name = item.name.replace(
+              /\[\[dpi-attachment:/g,
+              "[attachment:",
+            );
+            value =
+              value.slice(0, token.position) +
+              `[d-pi:${item.source === "reference" ? "dynamic-reference" : "attachment"} ${name}]` +
+              value.slice(token.position + token.token.length);
+          } else {
+            records.set(item.id, record);
+            if (!digests.has(item.inputDigest)) {
+              digests.add(item.inputDigest);
+              bytes += item.byteLength;
+            }
+          }
+        }
+        return value;
+      })
+      .join("\n");
+    if (encountered.size !== selected.size) throw Error("invalid-selection");
+    if (Buffer.byteLength(body) > 1048576) throw Error("clipboard-too-large");
+    return {
+      text: body,
+      records: [...records.values()],
+      digests,
+      bytes,
+      degraded,
+    };
+  }
+  private async verifyClipboard(
+    snapshot: ClipboardSnapshot<StoredRecord>,
+  ): Promise<void> {
+    for (const hash of snapshot.digests) {
+      const bytes = await this.readVerifiedObject(hash);
+      if (
+        bytes.byteLength > this.limits.sourceBytes ||
+        snapshot.records.some(
+          (record) =>
+            record.attachment.inputDigest === hash &&
+            record.attachment.byteLength !== bytes.byteLength,
+        )
+      )
+        throw Error("content-corrupt");
+    }
+  }
+  async importClipboard(
+    owner: string,
+    threadId: string,
+    ticket: ClipboardTicket,
+  ) {
+    if (this.closed)
+      return { kind: "clipboard-unavailable", reason: "invalid" } as const;
+    const pending = this.clipboardPending.get(owner) ?? 0;
+    if (
+      pending >= 4 ||
+      [...this.clipboardPending.values()].reduce(
+        (sum, count) => sum + count,
+        0,
+      ) >= 16
+    )
+      return { kind: "clipboard-unavailable", reason: "busy" } as const;
+    this.clipboardPending.set(owner, pending + 1);
+    try {
+      const acquired = await this.clipboard.acquire(ticket, owner);
+      if (acquired.kind !== "snapshot") return acquired;
+      return await this.serialized(async () => {
+        try {
+          if (!acquired.valid())
+            return {
+              kind: "clipboard-unavailable",
+              reason: "expired",
+            } as const;
+          await this.verifyClipboard(acquired.snapshot);
+          if (!acquired.valid())
+            return {
+              kind: "clipboard-unavailable",
+              reason: "expired",
+            } as const;
+          for (const [id, pending] of this.clipboardImports) {
+            if (
+              this.read(pending.threadId, id)?.draftBoundRevision !== undefined
+            ) {
+              this.lifecycle?.releaseImport(pending.threadId, id);
+              this.clipboardImports.delete(id);
+            }
+          }
+          if (
+            this.clipboardImports.size + acquired.snapshot.records.length >
+            128
+          )
+            return { kind: "clipboard-unavailable", reason: "busy" } as const;
+          const mapping = new Map<string, string>();
+          const items: Attachment[] = [];
+          const db = this.options.database.connection;
+          db.exec("BEGIN IMMEDIATE");
+          try {
+            for (const record of acquired.snapshot.records) {
+              const id = randomUUID();
+              mapping.set(record.attachment.id, id);
+              items.push(
+                this.save({
+                  attachment: {
+                    ...record.attachment,
+                    id,
+                    threadId,
+                    token: attachmentToken(id),
+                    source: "paste",
+                    capturedAt: new Date().toISOString(),
+                  },
+                }),
+              );
+            }
+            db.exec("COMMIT");
+          } catch (error) {
+            db.exec("ROLLBACK");
+            throw error;
+          }
+          for (const item of items) {
+            if (item.inputDigest)
+              this.lifecycle?.pinImport(threadId, item.id, item.inputDigest);
+            this.clipboardImports.set(item.id, { owner, threadId });
+          }
+          const text = parseDraftBlocks(acquired.snapshot.text)
+            .map((block) =>
+              block.kind === "selection"
+                ? serializeReference(block.value)
+                : block.text.replace(
+                    /\[\[dpi-attachment:([0-9a-f-]{36})\]\]/g,
+                    (token, id: string) =>
+                      mapping.has(id)
+                        ? attachmentToken(mapping.get(id) ?? "")
+                        : token,
+                  ),
+            )
+            .join("\n");
+          return {
+            kind: "clipboard-imported",
+            text,
+            items,
+            degraded: acquired.snapshot.degraded,
+          } as const;
+        } catch {
+          return { kind: "clipboard-unavailable", reason: "failed" } as const;
+        }
+      });
+    } finally {
+      const remaining = (this.clipboardPending.get(owner) ?? 1) - 1;
+      if (remaining) this.clipboardPending.set(owner, remaining);
+      else this.clipboardPending.delete(owner);
+    }
   }
   checkStorage(threadId: string) {
     return this.serialized(() => {
@@ -339,6 +590,10 @@ export class AttachmentStore {
   async close(): Promise<void> {
     this.closed = true;
     this.editorHistories.dispose();
+    this.clipboard.close();
+    for (const [id, item] of this.clipboardImports)
+      this.lifecycle?.releaseImport(item.threadId, id);
+    this.clipboardImports.clear();
     await this.tail;
     await this.lifecycle?.close();
   }
