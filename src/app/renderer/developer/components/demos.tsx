@@ -486,15 +486,17 @@ export function FormFieldDemo() {
   );
 }
 export function ChoiceGroupDemo() {
-  const [value, change] = useState("a");
+  const [value, change] = useState("drive");
   return (
     <ChoiceGroup
       value={value}
       onValueChange={change}
       aria-label={labels.mode}
       options={[
-        { value: "a", label: labels.optionA },
-        { value: "b", label: labels.optionB },
+        { value: "drive", label: labels.choiceDrive },
+        { value: "dots", label: labels.choiceDots, disabled: true },
+        { value: "orbit", label: labels.choiceOrbit },
+        { value: "surfer", label: labels.choiceSurfer, disabled: true },
       ]}
     />
   );

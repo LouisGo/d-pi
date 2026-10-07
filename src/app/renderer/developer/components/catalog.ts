@@ -76,7 +76,7 @@ export const componentCatalog = [
   {
     name: "ChoiceGroup",
     category: "forms",
-    purpose: "在两个明确值之间直接切换，选中项使用轻量胶囊底色。",
+    purpose: "在互斥值之间直接切换，整体胶囊轨道中嵌入选中块。",
     forms: "selected · unselected / disabled / radio keyboard",
   },
   {
@@ -154,6 +154,10 @@ export const copy = {
 };
 
 export const demoLabels = {
+  choiceDrive: "Drive",
+  choiceDots: "Dots",
+  choiceOrbit: "Orbit",
+  choiceSurfer: "Surfer",
   select: "默认行为",
   optionC: "选项 C",
   searchableSelect: "可搜索选择",

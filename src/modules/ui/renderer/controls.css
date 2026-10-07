@@ -151,34 +151,42 @@
   }
   .ui-choice-group {
     display: inline-flex;
-    gap: var(--spacing);
-    flex-wrap: wrap;
+    gap: calc(var(--spacing) / 2);
+    padding: calc(var(--spacing) / 2);
+    border-radius: var(--radius-pill);
+    background: var(--muted);
+    max-width: 100%;
+    overflow-x: auto;
   }
   .ui-choice-option {
     outline: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: var(--control-height);
-    padding: calc(var(--spacing) * 1.5) var(--control-padding);
-    border-radius: var(--control-height);
+    min-height: calc(var(--control-height) - var(--spacing));
+    flex-shrink: 0;
+    padding: 0 var(--control-padding);
+    border: 1px solid transparent;
+    border-radius: var(--radius-pill);
     color: var(--muted-foreground);
     line-height: var(--control-line-height);
     transition:
       background-color var(--motion-control) var(--ease-out),
       color var(--motion-control) var(--ease-out),
-      transform var(--motion-control) var(--ease-out);
+      box-shadow var(--motion-control) var(--ease-out);
   }
   .ui-choice-option[data-checked] {
-    background: var(--muted);
+    background: var(--surface);
     color: var(--foreground);
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-control);
   }
-  .ui-choice-option:hover:not([data-disabled]) {
+  .ui-choice-option:hover:not([data-disabled]):not([data-checked]) {
     background: var(--muted-hover);
     color: var(--foreground);
   }
   .ui-choice-option:active:not([data-disabled]) {
-    transform: scale(0.97);
+    background: var(--background);
   }
   .ui-select-popup:is([data-starting-style], [data-ending-style]) {
     opacity: 0;
@@ -232,6 +240,9 @@
   :is(.ui-select, .ui-input, .ui-switch, .ui-choice-option):focus-visible {
     outline: var(--focus-ring);
     outline-offset: var(--focus-ring-offset);
+  }
+  .ui-choice-group .ui-choice-option:focus-visible {
+    outline-offset: calc(-1 * var(--focus-ring-offset));
   }
   :is(.ui-select, .ui-input, .ui-switch, .ui-choice-option):disabled,
   .ui-choice-option[data-disabled],

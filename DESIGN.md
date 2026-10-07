@@ -178,11 +178,11 @@ components:
     rounded: "{rounded.pill}"
     height: "var(--switch-height)"
   choice-option-selected:
-    backgroundColor: "{colors.muted}"
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.foreground}"
     typography: "{typography.control}"
     rounded: "{rounded.pill}"
-    height: "var(--control-height)"
+    height: "calc(var(--control-height) - var(--spacing))"
   disclosure:
     textColor: "{colors.muted-foreground}"
     rounded: "{rounded.control}"
@@ -299,7 +299,7 @@ d-pi 的基础视觉体系跟随本轮已授权的 Beautiful UI 对照：常规�
 
 `Select<T>` 使用真实 `value`、`options`、`onValueChange`，可选 `search` 切换为 Combobox 搜索组合。搜索仅过滤选项；搜索文字不自动改受控值，Esc 与焦点回返由现有基础交互负责。浮层用 surface、容器圆角、raised 阴影，选项高亮消费 accent。
 
-`Switch` 的 checked 轨道使用 primary，实体滑块使用 surface；`ChoiceGroup<T>` 为两个选项的 Radio 组合，选中使用 muted 与 foreground，保留 radio 的方向键语义。不要把它们描述为通用多选 API。
+`Switch` 的 checked 轨道使用 primary，实体滑块使用 surface；`ChoiceGroup<T>` 是至少两个互斥选项的 Radio 组合。整体胶囊轨道使用 muted，选中块内嵌 surface、轻边界与控件阴影，保留 radio 的方向键语义和禁用项；窄空间可横向滚动。长列表仍优先 Select，不将 ChoiceGroup 描述为多选 API。2026-10-07 用户参考图 2 取代原二值无外框胶囊样式。
 
 ### Checkbox / Slider
 

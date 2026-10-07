@@ -190,8 +190,8 @@ export function FormField({
 export type ChoiceOption<T extends string> = SelectOption<T>;
 export type ChoiceGroupProps<T extends string> = {
   value: T;
-  // i18n-ignore: Fixed-size generic tuple, no rendered copy.
-  options: readonly [ChoiceOption<T>, ChoiceOption<T>];
+  // i18n-ignore: At least two exclusive choices, no rendered copy.
+  options: readonly [ChoiceOption<T>, ChoiceOption<T>, ...ChoiceOption<T>[]];
   onValueChange: (value: T) => void;
   disabled?: boolean | undefined;
   "aria-label": string;

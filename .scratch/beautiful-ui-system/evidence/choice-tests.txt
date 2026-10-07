@@ -1,0 +1,48 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/modules/ui/renderer/controls.test.ts src/app/renderer/developer/components/component-dashboard.test.ts
+$ tsr generate
+(node:68339) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/louistation/.codex/worktrees/beautiful-ui-system/d-pi
+
+stderr | src/modules/ui/renderer/controls.test.ts > keeps four segmented choices controlled and skips disabled options with the keyboard
+An update to Sample inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to RadioGroup inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to CompositeRoot inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ ✓ src/modules/ui/renderer/controls.test.ts (5 tests) 117ms
+ ✓ src/app/renderer/developer/components/component-dashboard.test.ts (9 tests) 711ms
+
+ Test Files  2 passed (2)
+      Tests  14 passed (14)
+   Start at  23:05:32
+   Duration  3.45s (import 72%, tests 14%, environment 9%, transform 5%)
+

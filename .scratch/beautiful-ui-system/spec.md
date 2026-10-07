@@ -19,3 +19,7 @@ D-31/D-32 延续 Base UI、自有公开 API、Hugeicons、light/dark 和唯一�
 ```
 
 任务：[01](issues/01-foundation-upgrade.md)。
+
+## 2026-10-07 追加反馈
+
+用户最初授权 ChoiceGroup 跟随图 2 的整体胶囊轨道与内嵌选中块，并尝试视频所示列表连续背景；随后明确分组标题/导航切换触发过多移动，要求没有良好优化依据时完全删除视频参考的动效，只保留 ChoiceGroup。最终采用删除：撤销共享跟随背景、列表包装及所有场景接入，恢复原列表反馈；本次追加交付只保留 ChoiceGroup（至少两项互斥、保留受控值/Radio 语义），取代原二值无外框配方。见[02](issues/02-list-and-choice-feedback.md)。首轮交付证据不冒称证明追加改动。
