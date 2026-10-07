@@ -17,3 +17,5 @@ review_standards在初轮发现两个P2：嵌套split受控像素与旧axis缓�
 ## 证据层级
 
 [交接](sandwich-validation.md)提供作者完整工程/隔离GUI结果与未覆盖项。此review不声称真实供应商、用户试用、系统IME/VoiceOver、物理拖窗或最终发行完成。
+
+收尾复核核对三份JSON为27/27/68通过，工程日志为830行为通过/2skip、35架构与96tooling通过，构建成功。指出navigation合同残留“一级会话入口”文案，已在ed21297改为顶栏“返回会话”，文档检查通过。最终作者快速门禁日志见[check:fast](evidence/sandwich/fast.log)；不声称review Agent独立重跑门禁。
