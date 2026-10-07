@@ -395,7 +395,7 @@ try {
   );
   await evaluate("window.probe.model.preference('theme','dark')");
   await frames();
-  await shot("dark-final-markdown");
+  await shot("dark-reading");
   await evaluate("window.readingProbe.manyRows()");
   await wait(() =>
     evaluate(
