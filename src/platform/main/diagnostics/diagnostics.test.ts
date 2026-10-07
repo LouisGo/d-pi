@@ -38,24 +38,30 @@ it("flood remains bounded and persisted lines retain correlation", async () => {
   });
   rmSync(directory, { recursive: true, force: true });
 });
-it("preserves the new editor history operation's identity at the raw persistence boundary", async () => {
-  const directory = mkdtempSync(join(tmpdir(), "d-pi-history-log-"));
-  const logger = new Diagnostics(directory);
-  try {
-    logger.record({
-      ...context,
-      operation: "attachments:history-update",
-      threadId: crypto.randomUUID(),
-    });
-    await logger.close();
-    expect(
-      JSON.parse(readFileSync(join(directory, "main.jsonl"), "utf8")),
-    ).toMatchObject({ ...context, operation: "attachments:history-update" });
-  } finally {
-    await logger.close();
-    rmSync(directory, { recursive: true, force: true });
-  }
-});
+it.each([
+  { operation: "attachments:history-update" },
+  { operation: "attachments:clipboard-import", code: "clipboard-expired" },
+])(
+  "preserves the owned $operation identity at the raw persistence boundary",
+  async (owned) => {
+    const directory = mkdtempSync(join(tmpdir(), "d-pi-history-log-"));
+    const logger = new Diagnostics(directory);
+    try {
+      logger.record({
+        ...context,
+        ...owned,
+        threadId: crypto.randomUUID(),
+      });
+      await logger.close();
+      expect(
+        JSON.parse(readFileSync(join(directory, "main.jsonl"), "utf8")),
+      ).toMatchObject({ ...context, ...owned });
+    } finally {
+      await logger.close();
+      rmSync(directory, { recursive: true, force: true });
+    }
+  },
+);
 
 it("writer failure is visible, bounded and does not reject business flow", async () => {
   const directory = mkdtempSync(join(tmpdir(), "d-pi-logs-"));
