@@ -97,6 +97,7 @@
     input,
     textarea,
     [role="tab"],
+    [role="menu"],
     [role="menuitem"],
     [role="option"]
   ):focus-visible {

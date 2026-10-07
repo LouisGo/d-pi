@@ -178,7 +178,11 @@ export function startDesktopApplication(mainDirectory: string): void {
       minHeight: 540,
       title: "d-pi",
       ...(process.platform === "darwin"
-        ? { titleBarStyle: "hiddenInset" as const }
+        ? {
+            titleBarStyle: "hiddenInset" as const,
+            // Center the native 14px buttons in the Renderer’s 44px header.
+            trafficLightPosition: { x: 12, y: 15 },
+          }
         : {}),
       show: false,
       webPreferences: {
