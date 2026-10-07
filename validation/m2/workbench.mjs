@@ -15,6 +15,7 @@ const { scenario, path: outputPath } = parseValidationScenario(
     all: [],
     focus: [],
     components: [],
+    sandwich: [],
   },
 );
 const isolated = createTestEnvironment({ prefix: "d-pi-workbench-" });
@@ -123,7 +124,9 @@ try {
     ),
   );
   await call("Page.enable");
-  if (scenario === "components") {
+  if (scenario === "sandwich") {
+    await runSandwichChecks();
+  } else if (scenario === "components") {
     await runComponentChecks();
   } else if (scenario === "focus") {
     await runFocusChecks();
@@ -179,7 +182,7 @@ async function resize(width, height) {
 }
 async function click(label) {
   await evaluate(
-    `(()=>{const scope=document.querySelector('.ui-settings-modal:not([hidden])')??document;const button=[...scope.querySelectorAll('button')].find(b=>b.getAttribute('aria-label')===${JSON.stringify(label)}&&!b.disabled&&!b.closest('[hidden],[inert]')&&b.getBoundingClientRect().width>0);if(!button)throw Error('Missing visible action: '+${JSON.stringify(label)});button.click();})()`,
+    `(()=>{const scope=document.querySelector('.ui-settings-modal:not([hidden])')??document;const button=[...scope.querySelectorAll('button')].find(b=>b.getAttribute('aria-label')===${JSON.stringify(label)}&&!b.disabled&&!b.closest('[hidden],[inert]')&&b.getBoundingClientRect().width>0);if(!button)throw Error('Missing visible action: '+${JSON.stringify(label)});button.focus();button.click();})()`,
   );
   await evaluate("window.probe.pause()");
 }
@@ -351,8 +354,8 @@ async function runNavigationFocusChecks() {
       `document.documentElement.dataset.theme=${JSON.stringify(theme)}`,
     );
     await checkPointerAndKeyboard(
-      '.activity-rail button[aria-pressed="true"]',
-      `${theme}-rail-pointer-vs-keyboard-focus`,
+      '[data-thread-navigation][aria-current="page"]',
+      `${theme}-navigation-pointer-vs-keyboard-focus`,
     );
     await checkPointerAndKeyboard(
       '[data-thread-navigation][aria-current="page"]',
@@ -385,7 +388,7 @@ async function runChecks() {
   await checkIconGeometry("all-icon-actions-centered-with-empty-attention");
   await check(
     "navigation-controls-follow-native-window-controls",
-    "(()=>{const h=document.querySelector('.primary-sidebar > .panel-header'),b=h.querySelector('[title=Back]'),f=h.querySelector('[title=Forward]'),s=h.querySelector('[aria-label=\"Open or collapse project navigation\"]');return !!b&&!!f&&!!s&&b.getBoundingClientRect().left>=96&&b.getBoundingClientRect().left<f.getBoundingClientRect().left&&f.getBoundingClientRect().left<s.getBoundingClientRect().left&&!h.querySelector('strong')&&!document.querySelector('.conversation-header [title=Back]');})()",
+    "(()=>{const h=document.querySelector('.sidebar-header'),b=h.querySelector('[title=Back]'),f=h.querySelector('[title=Forward]'),s=h.querySelector('[aria-label=\"Open or collapse project navigation\"]');return !!b&&!!f&&!!s&&b.getBoundingClientRect().left>=96&&b.getBoundingClientRect().left<f.getBoundingClientRect().left&&f.getBoundingClientRect().left<s.getBoundingClientRect().left&&!h.querySelector('strong')&&!document.querySelector('.conversation-header [title=Back]');})()",
   );
   await check(
     "production-empty-hosts-closed",
@@ -440,7 +443,6 @@ async function runChecks() {
     "notification-intent-reveals-existing-conversation",
     "document.querySelector('.conversation-body').hidden===false && document.querySelector('.ui-settings-modal').hidden===true && window.originalEditor===document.querySelector('.tiptap')",
   );
-  await click("Conversation");
   await check(
     "settings-keep-editor-and-reading",
     "({editor:window.originalEditor===document.querySelector('.tiptap'),controller:window.originalController===window.probe.model.controller,scroll:window.originalReading.scrollTop})",
@@ -527,18 +529,18 @@ async function runChecks() {
     (value) =>
       value.width === 720 &&
       !value.overflow &&
-      value.nav < 1 &&
+      value.nav >= 220 &&
       value.reading > 40 &&
       value.editorBottom <= value.bodyHeight + 1,
   );
   await click("Open or collapse project navigation");
   await check(
-    "narrow-navigation-overlay",
-    "!!document.querySelector('.ui-navigation-overlay') && document.querySelector('.ui-navigation-overlay').getBoundingClientRect().right<innerWidth",
+    "minimum-window-navigation-collapse",
+    "document.querySelector('.primary-sidebar').getBoundingClientRect().width<1",
   );
-  await key("Escape", "Escape");
+  await click("Open or collapse project navigation");
   await check(
-    "overlay-returns-focus",
+    "minimum-window-navigation-restores-focus",
     "!document.querySelector('.ui-navigation-overlay') && document.activeElement.getAttribute('aria-label')==='Open or collapse project navigation'",
   );
   await evaluate("window.probe.model.preference('theme')");
@@ -671,7 +673,7 @@ async function runChecks() {
     "window.bottomScroll.scrollTop===100 && window.originalReading.scrollTop===120",
   );
   await evaluate(`(async()=>{
-    const root=document.documentElement,nav=document.querySelector('.activity-rail [aria-pressed=true]'),action=document.querySelector('.composer .ui-button-primary'),muted=document.querySelector('.save-status');
+    const root=document.documentElement,nav=document.querySelector('[data-thread-navigation][aria-current=page]'),action=document.querySelector('.composer .ui-button-primary'),muted=document.querySelector('.save-status');
     const colors=()=>({action:getComputedStyle(action).backgroundColor,nav:getComputedStyle(nav).backgroundColor,text:getComputedStyle(muted).color});
     window.roleBefore=colors();root.style.setProperty('--primary','#895020');root.style.setProperty('--muted-foreground','#445566');
     await new Promise(r=>setTimeout(r,200));window.roleAfter=colors();root.style.removeProperty('--primary');root.style.removeProperty('--muted-foreground');
@@ -797,7 +799,7 @@ async function runChecks() {
   await evaluate("window.probe.pause()");
   await check(
     "minimum-chinese-actions-reachable",
-    "document.querySelector('.activity-rail button[aria-label=设置]')!==null && document.documentElement.scrollWidth===innerWidth && document.querySelector('.reading-pane').getBoundingClientRect().height>40",
+    "document.querySelector('.sidebar-actions button[aria-label=设置]')!==null && document.documentElement.scrollWidth===innerWidth && document.querySelector('.reading-pane').getBoundingClientRect().height>40",
   );
   await capture("isolated-light-minimum");
   await checkIconGeometry("all-icon-actions-centered-in-chinese-narrow-window");
@@ -843,10 +845,10 @@ async function runComponentChecks() {
   await evaluate(
     "window.componentController=window.probe.model.controller;window.componentSidebarWidth=document.querySelector('.primary-sidebar').getBoundingClientRect().width",
   );
-  const trigger = '.activity-rail button[aria-label="开发者工具"]';
+  const trigger = '.sidebar-tools button[aria-label="开发者工具"]';
   await check(
-    "tools-above-settings",
-    `(()=>{const rail=document.querySelector('.activity-rail');const tools=rail.querySelector('[aria-label="开发者工具"]');const settings=rail.querySelector('[aria-label="Settings"]');return tools && settings && tools.getBoundingClientRect().bottom<=settings.getBoundingClientRect().top;})()`,
+    "settings-left-tools-right",
+    `(()=>{const rail=document.querySelector('.sidebar-actions');const tools=rail.querySelector('[aria-label="开发者工具"]');const settings=rail.querySelector('[aria-label="Settings"]');return tools && settings && tools.getBoundingClientRect().left>=settings.getBoundingClientRect().right && settings.getBoundingClientRect().width>tools.getBoundingClientRect().width;})()`,
   );
   // Enter from outside after startup layout has settled, even when the OS
   // pointer was already resting on this rail position from a previous run.
@@ -909,7 +911,7 @@ async function runComponentChecks() {
   );
   await check(
     "developer-route-covers-thread-workspace",
-    `(()=>{const page=document.querySelector('[data-developer-workspace]');const frame=document.querySelector('.window-frame');const rail=document.querySelector('.activity-rail');return page && !document.querySelector('.primary-sidebar') && !document.querySelector('#navigation-split') && !document.querySelector('[data-layout-region="workspace"]') && page.getBoundingClientRect().left<=rail.getBoundingClientRect().right+1 && page.getBoundingClientRect().right>=frame.getBoundingClientRect().right-1 && document.querySelector('.toolbar-title').textContent==='组件看板';})()`,
+    `(()=>{const page=document.querySelector('[data-developer-workspace]');const frame=document.querySelector('.window-frame');return page && document.querySelector('.primary-sidebar').getBoundingClientRect().width<1 && document.querySelector('[data-layout-region="workspace"]').getBoundingClientRect().width<1 && page.getBoundingClientRect().left<1 && page.getBoundingClientRect().right>=frame.getBoundingClientRect().right-1 && document.querySelector('.toolbar-title').textContent==='组件看板';})()`,
   );
   await check(
     "icons-read-only-and-auto-collected",
@@ -935,7 +937,7 @@ async function runComponentChecks() {
   await evaluate('document.querySelector("[data-gallery-main]").scrollTop=0');
   await capture("components-light-wide");
   await evaluate(
-    `(()=>{const button=[...document.querySelectorAll('[data-component="Button"] button')].find(b=>b.textContent==='主操作');button.click();})()`,
+    `(()=>{const button=[...document.querySelectorAll('[data-component="Button"] button')].find(b=>b.textContent==='主操作');button.focus();button.click();})()`,
   );
   await evaluate("window.probe.pause()");
   await check(
@@ -959,7 +961,7 @@ async function runComponentChecks() {
     ],
   ]) {
     await evaluate(
-      `(()=>{const button=[...document.querySelectorAll('[data-component] button')].find(b=>b.textContent===${JSON.stringify(openLabel)});button.scrollIntoView({block:'center'});button.click();})()`,
+      `(()=>{const button=[...document.querySelectorAll('[data-component] button')].find(b=>b.textContent===${JSON.stringify(openLabel)});button.scrollIntoView({block:'center'});button.focus();button.click();})()`,
     );
     await wait(() =>
       evaluate(`!!document.querySelector(${JSON.stringify(popup)})`),
@@ -991,6 +993,7 @@ async function runComponentChecks() {
   await evaluate(
     `document.querySelector('[aria-label="重置 ResizableSplit"]').click()`,
   );
+  await evaluate("window.probe.pause()");
   await check(
     "split-reset",
     'document.querySelector("#gallery-horizontal-aux").getBoundingClientRect().width',
@@ -1048,7 +1051,7 @@ async function runComponentChecks() {
     "keyboard-tools-esc",
     `document.querySelector(${JSON.stringify(trigger)}).getAttribute('aria-expanded')==='false'`,
   );
-  await click("Conversation");
+  await click("Back to conversation");
   await wait(() => evaluate('!!document.querySelector(".tiptap")'));
   await resize(1440, 900);
   await check(
@@ -1058,5 +1061,127 @@ async function runComponentChecks() {
   await check(
     "return-retains-draft-and-resource",
     'window.probe.model.controller===window.componentController && document.querySelector(".tiptap").textContent.includes("A unsent draft")',
+  );
+}
+
+async function runSandwichChecks() {
+  child.stdin.write(JSON.stringify({ focus: true }) + "\n");
+  await call("Page.bringToFront");
+  const aligned = `(()=>{
+    const r=s=>document.querySelector(s).getBoundingClientRect();
+    const sidebar=r('.primary-sidebar'),main=r('.conversation-surface'),right=r('[data-layout-region=workspace]');
+    const header=r('.window-header'),footer=r('.window-statusbar'),status=r('.statusbar-conversation'),mainHeader=r('.conversation-header');
+    return footer.height===28 && footer.bottom===innerHeight && header.top===0 && header.height===44 &&
+      Math.abs(status.left-main.left)<1 && Math.abs(mainHeader.left-main.left)<1 &&
+      Math.abs(status.right-(right.width>0?right.left-1:innerWidth))<1 && sidebar.top===44 && main.top>=44;
+  })()`;
+  await check(
+    "no-rail-or-home-icon",
+    "!document.querySelector('.activity-rail') && !document.querySelector('button[aria-label=Conversation]')",
+  );
+  await check("global-top-middle-bottom-align", aligned);
+  await check(
+    "wide-settings-narrow-tools-fixed-below-scroll",
+    `(()=>{const r=s=>document.querySelector(s).getBoundingClientRect(),settings=r('.sidebar-actions [aria-label=Settings]'),tools=r('.sidebar-tools'),dock=r('.sidebar-actions'),sidebar=r('.primary-sidebar'),scroll=r('.sidebar-scroll'),footer=r('.window-statusbar');return settings.width>tools.width && settings.right<=tools.left && dock.bottom===sidebar.bottom && sidebar.bottom===footer.top && scroll.bottom<=dock.top;})()`,
+  );
+  await evaluate(
+    "window.sandwichEditor=document.querySelector('.tiptap');window.sandwichController=window.probe.model.controller;window.sandwichDock=document.querySelector('.sidebar-actions').getBoundingClientRect().top;document.querySelector('.sidebar-scroll').scrollTop=99999",
+  );
+  await check(
+    "dock-does-not-scroll",
+    "document.querySelector('.sidebar-actions').getBoundingClientRect().top===window.sandwichDock",
+  );
+  await click("Conversation quick preview");
+  await check(
+    "quick-preview-shows-real-state-and-scope",
+    "document.querySelector('.ui-status-preview').textContent.includes('Current message window') && document.querySelector('.ui-status-preview').textContent.includes('current live window') && !document.querySelector('.ui-status-preview').textContent.includes('tokens')",
+  );
+  await key("Escape", "Escape");
+  await check(
+    "quick-preview-escape-restores-trigger",
+    "document.activeElement.getAttribute('aria-label')==='Conversation quick preview'",
+  );
+  await click("Settings");
+  await check(
+    "settings-keeps-editor-and-controller",
+    "window.sandwichEditor===document.querySelector('.tiptap') && window.sandwichController===window.probe.model.controller",
+  );
+  await key("Escape", "Escape");
+  await evaluate("window.hostProbe.enable()");
+  await evaluate("window.probe.pause()");
+  await check(
+    "settings-escape-before-host-actions",
+    "document.querySelector('.ui-settings-modal').hidden",
+  );
+  await click("Restore workspace");
+  await click("Restore bottom panel");
+  await check("three-segments-with-bottom-panel-align", aligned);
+  await drag("navigation-split-separator", 40);
+  await check("sidebar-drag-aligns-global-tracks", aligned);
+  await drag("workspace-split-separator", -40);
+  await check("workspace-drag-aligns-global-tracks", aligned);
+  // Inspect alignment while a gesture is still active, before size persistence.
+  const split = await rect("#navigation-split-separator");
+  const x = split.x + split.width / 2,
+    y = split.y + split.height / 2;
+  await call("Input.dispatchMouseEvent", { type: "mouseMoved", x, y });
+  await call("Input.dispatchMouseEvent", {
+    type: "mousePressed",
+    x,
+    y,
+    button: "left",
+    buttons: 1,
+    clickCount: 1,
+  });
+  await call("Input.dispatchMouseEvent", {
+    type: "mouseMoved",
+    x: x + 15,
+    y,
+    button: "left",
+    buttons: 1,
+  });
+  await evaluate("window.probe.pause()");
+  await check("tracks-follow-live-drag-before-commit", aligned);
+  await call("Input.dispatchMouseEvent", {
+    type: "mouseReleased",
+    x: x + 15,
+    y,
+    button: "left",
+    buttons: 0,
+    clickCount: 1,
+  });
+  await evaluate("window.probe.pause()");
+  for (const theme of ["light", "dark"]) {
+    await evaluate(
+      `document.documentElement.dataset.theme=${JSON.stringify(theme)}`,
+    );
+    await check(`${theme}-statusbar-theme-and-geometry`, aligned);
+    await capture(`sandwich-${theme}-desktop`);
+    await resize(720, 540);
+    await check(
+      `${theme}-minimum-window-status-and-input`,
+      "document.querySelector('.window-statusbar').getBoundingClientRect().height===28 && document.querySelector('.composer').getBoundingClientRect().bottom<=document.querySelector('.window-statusbar').getBoundingClientRect().top && document.documentElement.scrollWidth===innerWidth",
+    );
+    await click("Open or collapse project navigation");
+    await check(
+      `${theme}-hidden-navigation-restores-both-actions`,
+      "!!document.querySelector('.ui-navigation-overlay .sidebar-actions [aria-label=Settings]') && !!document.querySelector('.ui-navigation-overlay .sidebar-tools [aria-label=开发者工具]')",
+    );
+    await click("Settings");
+    await check(
+      `${theme}-overlay-settings-transition`,
+      "document.querySelector('.ui-settings-modal').hidden===false && !document.querySelector('.ui-navigation-overlay')",
+    );
+    await key("Escape", "Escape");
+    await check(
+      `${theme}-overlay-settings-focus-fallback`,
+      "document.activeElement.getAttribute('aria-label')==='Open or collapse project navigation'",
+    );
+    await capture(`sandwich-${theme}-minimum`);
+    await resize(1440, 900);
+  }
+  await check(
+    "layout-preserves-editor-controller",
+    "window.sandwichEditor===document.querySelector('.tiptap') && window.sandwichController===window.probe.model.controller",
   );
 }

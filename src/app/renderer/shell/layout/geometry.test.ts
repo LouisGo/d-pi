@@ -2,7 +2,6 @@ import { expect, it } from "vitest";
 import { solveGeometry } from "./geometry";
 
 const constraints = {
-  rail: 52,
   separator: 1,
   sidebarMin: 220,
   sidebarMax: 420,
@@ -67,7 +66,24 @@ it("does not reopen a manually closed panel and clamps an oversized preference o
     { workspace: true, bottom: true },
   );
   expect(result.sidebar.visible).toBe(false);
-  expect(result.workspace.size).toBeLessThanOrEqual(467);
+  expect(result.workspace.size).toBeLessThanOrEqual(519);
   expect(result.bottom.visible).toBe(false);
   expect(manual.workspace.size).toBe(790);
+});
+
+it("uses the full window width after removing the activity rail", () => {
+  const result = solveGeometry(
+    { width: 720, height: 540 },
+    intent,
+    constraints,
+    {
+      workspace: false,
+      bottom: false,
+    },
+  );
+  expect(result.sidebar.visible).toBe(true);
+  expect(result.sidebar.size).toBeGreaterThanOrEqual(220);
+  expect(
+    720 - result.sidebar.size - constraints.separator,
+  ).toBeGreaterThanOrEqual(480);
 });

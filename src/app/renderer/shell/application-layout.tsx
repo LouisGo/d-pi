@@ -12,6 +12,7 @@ import {
   AttentionIndicator,
   AttentionPreferences,
 } from "./attention";
+import { ConversationStatus } from "./conversation-status";
 import { DeveloperTools, useConversationNavigation } from "./developer-tools";
 import { Diagnostics } from "./diagnostics";
 import { WorkbenchHostsContext } from "./layout/hosts-context";
@@ -78,11 +79,14 @@ function ReadyWorkbench({ model, children }: ApplicationLayoutProps) {
         {...conversationNavigation}
         developerTools={<DeveloperTools />}
         conversationIndicator={<AttentionIndicator model={model} />}
-        sidebar={
-          <>
-            <ProjectThreads model={model} />
-            <SidebarFooter model={model} />
-          </>
+        sidebar={<ProjectThreads model={model} />}
+        status={<ConversationStatus model={model} />}
+        version={
+          <span
+            title={`${BUILD_INFO.version} · ${BUILD_INFO.id} · ${BUILD_INFO.commit}`}
+          >
+            {BUILD_INFO.version}
+          </span>
         }
         toolbar={
           <PreferenceToolbar
@@ -119,19 +123,6 @@ function ShellFrame({ model, children }: ApplicationLayoutProps) {
       aria-busy={transition === "pending"}
     >
       {children}
-    </div>
-  );
-}
-
-function SidebarFooter({ model }: { model: AppModel }) {
-  const { t } = useI18n();
-  return (
-    <div className="sidebar-bottom">
-      <span className="muted">{t("app.sidebar.localDraft")}</span>
-      <span className="muted">{t("app.executionNeedsApproval")}</span>
-      <span className="trace muted" title={BUILD_INFO.commit}>
-        {BUILD_INFO.version} · {BUILD_INFO.id}
-      </span>
     </div>
   );
 }

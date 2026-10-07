@@ -1,32 +1,110 @@
 @layer components {
   .window-frame {
     display: grid;
-    grid-template-columns: var(--rail-width) minmax(0, 1fr);
+    grid-template-rows: var(--header-height) minmax(0, 1fr) var(
+        --statusbar-height
+      );
     width: 100%;
     height: 100%;
     min-width: 0;
     min-height: 0;
     overflow: hidden;
   }
-  .activity-rail {
+  .window-header,
+  .window-statusbar {
+    display: grid;
+    grid-template-columns: var(--navigation-column, 0px) minmax(0, 1fr) var(
+        --workspace-column,
+        0px
+      );
+    min-width: 0;
+  }
+  .window-header > [hidden],
+  .window-statusbar > [hidden] {
+    display: none;
+  }
+  .conversation-header {
+    grid-column: 2;
+    container-type: inline-size;
+  }
+  .workspace-header {
+    grid-column: 3;
+  }
+  .window-content,
+  .main-panels {
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .main-content {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: var(--layout-gap);
-    background: var(--sidebar);
-    border-right: 1px solid var(--border);
-    padding-bottom: var(--layout-gap);
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
   }
-  .rail-brand {
-    display: grid;
-    place-items: center;
-    height: var(--header-height);
-    font-size: var(--text-title);
-    font-weight: 650;
-    color: var(--muted-foreground);
-  }
-  .rail-spacer {
+  .main-panels {
     flex: 1;
+  }
+  .sidebar-actions {
+    display: flex;
+    flex-shrink: 0;
+    align-items: stretch;
+    gap: calc(var(--layout-gap) / 2);
+    padding: var(--layout-gap);
+    border-top: 1px solid var(--border);
+    background: var(--sidebar);
+  }
+  .sidebar-actions > .ui-button {
+    flex: 1;
+    min-width: 0;
+    justify-content: flex-start;
+  }
+  .sidebar-tools {
+    flex-shrink: 0;
+  }
+  .window-statusbar {
+    height: var(--statusbar-height);
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted-foreground);
+    font-size: var(--text-small);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .window-statusbar > div {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    padding-inline: var(--layout-gap);
+  }
+  .statusbar-version {
+    border-right: 1px solid var(--border);
+    background: var(--sidebar);
+  }
+  .statusbar-version > span,
+  .statusbar-inline-version {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .statusbar-inline-version {
+    flex-shrink: 0;
+    max-width: 35%;
+    margin-inline-end: var(--layout-gap);
+  }
+  .statusbar-conversation {
+    grid-column: 2;
+  }
+  .statusbar-conversation > span {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .statusbar-workspace {
+    grid-column: 3;
+    border-left: 1px solid var(--border);
   }
   .ui-split {
     min-width: 0;
@@ -273,9 +351,9 @@
   }
   .ui-navigation-overlay {
     position: fixed;
-    inset-block: 0;
-    inset-inline-start: var(--rail-width);
-    width: min(var(--overlay-width), calc(100vw - var(--rail-width)));
+    inset-block: 0 var(--statusbar-height);
+    inset-inline-start: 0;
+    width: min(var(--overlay-width), 100vw);
     background: var(--sidebar);
     color: var(--foreground);
     display: flex;
@@ -300,9 +378,6 @@
     color: var(--muted-foreground);
     font-size: var(--text-small);
   }
-  .sidebar-bottom {
-    padding: var(--layout-gap) var(--control-padding);
-  }
 }
 
 @container (max-width: 540px) {
@@ -312,33 +387,12 @@
 }
 
 @layer components {
-  .window-frame[data-macos="true"] .rail-brand {
-    color: transparent;
-    background: var(--surface);
-    width: 100%;
-    border-bottom: 1px solid var(--border);
-    -webkit-app-region: drag;
-  }
-  .window-frame[data-macos="true"] .activity-rail {
-    position: relative;
-    border-right: 0;
-  }
-  .window-frame[data-macos="true"] .activity-rail::after {
-    content: "";
-    position: absolute;
-    inset-block: var(--header-height) 0;
-    inset-inline-end: 0;
-    width: var(--separator-size);
-    background: var(--border);
-    pointer-events: none;
-  }
-  .window-frame[data-macos="true"] .primary-sidebar > .panel-header,
+  .window-frame[data-macos="true"] .sidebar-header,
   .window-frame[data-macos="true"][data-sidebar-visible="false"]
     .conversation-header,
   .ui-navigation-overlay[data-native-inset="true"] > .panel-header {
     padding-inline-start: calc(
-      var(--window-controls-width) -
-      var(--rail-width) +
+      var(--window-controls-width) +
       var(--layout-gap)
     );
   }

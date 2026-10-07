@@ -1,7 +1,6 @@
 export type Region = "sidebar" | "workspace" | "bottom";
 export type LayoutIntent = Record<Region, { open: boolean; size: number }>;
 export type LayoutConstraints = {
-  rail: number;
   separator: number;
   sidebarMin: number;
   sidebarMax: number;
@@ -26,7 +25,7 @@ export function solveGeometry(
   c: LayoutConstraints,
   content: { workspace: boolean; bottom: boolean },
 ): WorkbenchGeometry {
-  const width = Math.max(0, box.width - c.rail);
+  const width = Math.max(0, box.width);
   let left = intent.sidebar.open;
   let right = intent.workspace.open && content.workspace;
   if (

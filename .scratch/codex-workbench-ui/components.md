@@ -17,7 +17,7 @@
 | 单元 | 对应功能 | 自有状态/边界 | 出现位置 |
 | --- | --- | --- | --- |
 | Button / IconButton | 点击、焦点、加载/禁用呈现、可访问名称 | 沿用现有 Button variant/size；禁用不能替代执行方核验 | 全部工具栏/动作 |
-| Tooltip | 补充图标名称、快捷键提示 | 不承载关键错误、权限解释或可点击内容 | 一级栏、分隔条、操作按钮 |
+| Tooltip | 补充图标名称、快捷键提示 | 不承载关键错误、权限解释或可点击内容 | 横向功能导航、分隔条、操作按钮 |
 | Menu | 菜单项、分组、子菜单、勾选与键盘移动 | 只发出动作；目标身份由调用者冻结 | 头像、加号、更多操作 |
 | ContextMenu | 右键/键盘菜单入口 | 固定打开时的目标 ID/版本，不读取后来变更的选中项替代目标 | Thread、页签、文件、消息 |
 | Popover | 锚定控件的复杂说明/选择面 | 可含交互，负责定位与焦点；不当作无焦点 Tooltip | 模型、权限说明、引用预览 |
@@ -66,9 +66,10 @@ modal 是交互行为，Dialog 是组件，confirm 是业务意图；不为三�
 | WindowFrame | 固定工作台区域与窗口内容盒，输出几何轨道 | 窗口展示状态、tokens | 新增外壳；不订阅全部消息 |
 | WindowHeader | 对齐窗口控制、导航、标题与工作页签 | 同一组有效尺寸；Main 窗口能力适配 | 新增外壳；可点击区域与窗口 drag 分开 |
 | NavigationControls | 前进/后退、左侧开关 | 现有 Router 准入 + layout 意图 | 前进后退存量；IME/保存失败仍可阻止导航 |
-| ActivityRail | 首页/聊天、后续功能入口和底部个人入口 | 应用路由/可用功能定义 | 新增外壳；无能力时不展示能点开的假页面 |
+| SidebarActions | Thread 列表底部宽设置入口与窄开发工具入口 | 设置 Modal / 开发路由意图 | 取代 ActivityRail；无会话 icon，不随列表滚动 |
+| WindowStatusbar / StatusPreview | 全局 28px 状态栏、版本与对话快速预览 | 实时列宽及当前 Thread 只读投影 | 消息数量为有界窗口，缺失值区别 0；不接管执行或采样 |
 | PersonalMenu | 个人/连接配置入口、设置/帮助 | 实际 App 账户或配置摘要 | 新增外壳；不复制 Codex Pro/Usage/Logout 等未有语义 |
-| PrimarySidebar | 当前应用功能的第二级导航容器 | 左栏偏好/可见性，当前导航类型 | 新增外壳；内容可以是 Thread 或设置分类 |
+| PrimarySidebar | 项目/Thread 导航容器 | 左栏偏好/可见性，当前导航类型 | 新增外壳；内容为项目/Thread；设置分类位于 Modal 内 |
 | ThreadNavigationHeader | 搜索、创建会话、选项目、过滤入口 | threads 的查询/命令，应用导航 | 部分存量；创建先取得真实身份再导航 |
 | ProjectPicker / NewThreadSetup | 选择项目/实际目录、配置新会话目标，表达已有worktree关联 | threads/configuration原有命令；明确用户选择 | 存量选择入口重组；成功后显示真实Thread，不由Dialog自行造临时身份 |
 | ProjectSection | 按真实项目/工作目录分组，折叠与更多 | 同一 Thread 列表的派生视图 | 新增组合；同名目录保留真实身份，worktree 不混同 |
@@ -81,7 +82,7 @@ modal 是交互行为，Dialog 是组件，confirm 是业务意图；不为三�
 | BottomPanel | 底部页签、内容、高度和收起入口 | 底部展示状态；未来 terminal 的受限接口 | 新增外壳；没有终端时不展示伪终端 |
 | SettingsSurface / SettingsNavigation | 设置分类路由、搜索、表单与长内容滚动 | preferences/configuration；App 路由 | 改为独立页面是建议，现有折叠设置迁入时保留语义 |
 
-设置业务按实际功能分面：AppearanceSettings（light/dark 与阅读角色；当前不提供密度切换）、InputSettings（发送快捷键）、NotificationSettings（现有提醒政策）、ConfigurationSettings/AuthenticationFlow（原生配置摘要与两条新增认证入口）、ProjectAccessSettings（执行信任与App读取范围）。这些表单复用各自已有合同，不整合为一份可写“全局设置对象”。插件/技能管理、Schedule/Space页面只保留一级导航的扩展位置，等实际需求和能力确定再细拆。
+设置业务按实际功能分面：AppearanceSettings（light/dark 与阅读角色；当前不提供密度切换）、InputSettings（发送快捷键）、NotificationSettings（现有提醒政策）、ConfigurationSettings/AuthenticationFlow（原生配置摘要与两条新增认证入口）、ProjectAccessSettings（执行信任与App读取范围）。这些表单复用各自已有合同，不整合为一份可写“全局设置对象”。插件/技能管理、Schedule/Space页面只保留未来应用导航的扩展位置，等实际需求和能力确定再细拆。
 
 首页空态与活动会话共用 Composer 能力，位置不同：空态围绕主要输入居中，活动会话贴在阅读区域底部。位置变化不创建第二个可独立编辑的草稿或 editor；采用稳定宿主的布局变化，或经适配器保持同一编辑资源。不能只把两个条件渲染分支看作“同一个组件名”就宣称撤销连续。
 
@@ -247,7 +248,7 @@ Query 与 Zustand 不双写同一事实；只读查询按现有 key/scope/失效
 src/app/renderer/
 ├── shell/
 │   ├── layout/                  窗口区域/约束/拖拽接入/偏好投影
-│   ├── navigation/              一级栏、上下文侧栏、项目/最近列表
+│   ├── navigation/              横向功能导航、上下文侧栏、项目/最近列表
 │   └── settings/                低频设置页面的应用组合
 ├── workbench/
 │   ├── composer/                输入组合、编辑绑定、附件/模型/动作

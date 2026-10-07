@@ -18,6 +18,7 @@ import {
   receiptNeedsAttention,
   receiptStatusKey,
 } from "../components/receipt-status";
+import { runtimePhaseLabel } from "../components/runtime-phase";
 import { QueueControls } from "./queue-controls";
 export type FollowUpResult = {
   ok: boolean;
@@ -75,20 +76,7 @@ export function RuntimePanel({
         {t("ui.runtime.loading")}
       </p>
     );
-  const label = match(state.phase)
-    .with("browse", () => t("ui.runtime.phase.browse"))
-    .with("allowed", () => t("ui.runtime.phase.allowed"))
-    .with("starting", () => t("ui.runtime.phase.starting"))
-    .with("ready", () =>
-      state.busy
-        ? t("ui.runtime.phase.busy")
-        : !state.model
-          ? t("ui.runtime.phase.noModel")
-          : t("ui.runtime.phase.ready"),
-    )
-    .with("interrupted", () => t("ui.runtime.phase.interrupted"))
-    .with("failed", () => t("ui.runtime.phase.failed"))
-    .exhaustive();
+  const label = runtimePhaseLabel(state, t);
   return (
     <section
       className="runtime-panel"

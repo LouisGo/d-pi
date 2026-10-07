@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "3517ca6df31199f17fde2b876a6c07708088d7269ef08369b854234432e61a40",
+  "inputsHash": "23098eadb4b24ebb228576cbd6e5e7bb950cf00d8ae563085e59e48c23d10d7e",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 373,
-    "scannedFiles": 373,
+    "sourceFiles": 376,
+    "scannedFiles": 376,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 165,
-      "lines": 27729,
+      "files": 168,
+      "lines": 28123,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -102,7 +102,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 19,
-      "lines": 2329,
+      "lines": 2363,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -6090,6 +6090,39 @@
       "targetEnvironment": "shared"
     },
     {
+      "from": "src/app/renderer/components/runtime-phase.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "ts-pattern",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/runtime-phase.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/components/runtime-phase.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../shared/i18n/create-i18n",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/i18n/create-i18n.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
       "from": "src/app/renderer/components/ui/button.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -6311,6 +6344,36 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/components/ui/icon-button.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/components/ui/status-preview.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@base-ui/react/popover",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/ui/status-preview.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/ui/status-preview.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./button",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/ui/button.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -8311,6 +8374,30 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": true,
+      "specifier": "../../../modules/conversation/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/contracts/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/shell/appearance-subscriptions.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/shell/appearance-subscriptions.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
       "specifier": "../../../modules/files/core/public",
       "kind": "import",
       "resolution": "module",
@@ -8555,6 +8642,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/shell/attention.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/application-layout.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./conversation-status",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/conversation-status.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -8948,6 +9047,108 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/wiring/model.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/conversation-status.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "zustand",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/shell/conversation-status.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "zustand/vanilla",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/shell/conversation-status.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/conversation/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/contracts/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/shell/conversation-status.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/shell/conversation-status.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/conversation-status.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../components/runtime-phase",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/runtime-phase.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/conversation-status.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../components/ui/status-preview",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/ui/status-preview.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/conversation-status.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../wiring/model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/wiring/model.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/conversation-status.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../wiring/thread-model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/wiring/thread-model.ts",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -9522,6 +9723,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/components/icons/common.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/layout/workbench-frame.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@/components/ui/button",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/ui/button.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -12408,6 +12621,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/components/receipt-status.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/runtime-panel.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../components/runtime-phase",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/runtime-phase.ts",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },

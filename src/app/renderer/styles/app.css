@@ -3,6 +3,7 @@
 @import "../components/ui/hover-menu.css";
 @import "./interaction.css";
 @import "./workbench.css";
+@import "../components/ui/status-preview.css";
 @layer base {
   body {
     margin: 0;
@@ -272,19 +273,6 @@
     font-size: var(--text-small);
     color: inherit;
     font-weight: 400;
-  }
-  .sidebar-bottom {
-    margin-top: auto;
-    display: flex;
-    flex-direction: column;
-    gap: calc(var(--layout-gap) / 2);
-    padding: var(--layout-gap) var(--control-padding) 0;
-    border-top: 1px solid var(--border);
-    font-size: var(--text-small);
-    line-height: 1.6;
-  }
-  .sidebar-bottom .trace {
-    flex-basis: 100%;
   }
   .workbench {
     display: flex;

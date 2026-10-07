@@ -8,11 +8,11 @@ import {
 } from "react";
 import { useStore } from "zustand";
 import {
-  ChatIcon,
   CloseIcon,
   SettingsIcon,
   SidebarIcon,
 } from "@/components/icons/common";
+import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { NavigationOverlay } from "@/components/ui/navigation-overlay";
 import { ResizableSplit } from "@/components/ui/resizable";
@@ -44,6 +44,8 @@ export function WorkbenchFrame({
   bottom,
   conversationIndicator,
   developerTools,
+  status,
+  version,
   developerActive = false,
   onConversation,
 }: {
@@ -57,6 +59,8 @@ export function WorkbenchFrame({
   bottom?: WorkspaceHost;
   conversationIndicator?: ReactNode;
   developerTools?: ReactNode;
+  status?: ReactNode;
+  version?: ReactNode;
   developerActive?: boolean;
   onConversation?: () => void;
 }) {
@@ -88,8 +92,9 @@ export function WorkbenchFrame({
   const workspaceTrigger = useRef<HTMLButtonElement>(null);
   const bottomTrigger = useRef<HTMLButtonElement>(null);
   const work = useRef<HTMLDivElement>(null);
+  const body = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
-    const host = frame.current;
+    const host = body.current;
     if (!host) return;
     const measure = () => {
       const rect = host.getBoundingClientRect();
@@ -104,10 +109,17 @@ export function WorkbenchFrame({
     observer.observe(host);
     return () => observer.disconnect();
   }, []);
-  const geometry = solveGeometry(box, intent, tokens.constraints, {
-    workspace: !!workspace?.tabs.length,
-    bottom: !!bottom?.tabs.length,
-  });
+  const geometry = solveGeometry(
+    box,
+    developerActive
+      ? { ...intent, sidebar: { ...intent.sidebar, open: false } }
+      : intent,
+    tokens.constraints,
+    {
+      workspace: !developerActive && !!workspace?.tabs.length,
+      bottom: !developerActive && !!bottom?.tabs.length,
+    },
+  );
   const commitLeft = useCallback(
     (size: number) => model.commit("sidebar", size),
     [model],
@@ -126,9 +138,11 @@ export function WorkbenchFrame({
       if (
         !visible &&
         (focusedRegion.current === region ||
-          frame.current
-            ?.querySelector(`[data-layout-region="${region}"]`)
-            ?.contains(document.activeElement))
+          Array.from(
+            frame.current?.querySelectorAll(
+              `[data-layout-region="${region}"], [data-header-region="${region}"]`,
+            ) ?? [],
+          ).some((host) => host.contains(document.activeElement)))
       ) {
         ({
           sidebar: navigationTrigger,
@@ -162,26 +176,15 @@ export function WorkbenchFrame({
   useLayoutEffect(() => {
     if (geometry.sidebar.visible) setOverlay(false);
   }, [geometry.sidebar.visible]);
-  const sidebarContent = sidebar;
   const toggleSidebar = () => {
     if (
       !geometry.sidebar.visible &&
       (geometry.sidebar.temporary ||
-        box.width - tokens.constraints.rail <
+        box.width <
           tokens.constraints.sidebarMin + tokens.constraints.conversationMin)
     )
       setOverlay(true);
     else model.toggle("sidebar");
-  };
-  const closeSettings = () => {
-    setSettingsOpen(false);
-    onConversation?.();
-    requestAnimationFrame(() => {
-      const target =
-        work.current?.querySelector<HTMLElement>(".tiptap") ??
-        work.current?.querySelector<HTMLElement>("button");
-      target?.focus({ preventScroll: true });
-    });
   };
   const navigation = (
     <div className="header-navigation">
@@ -190,12 +193,66 @@ export function WorkbenchFrame({
         ref={navigationTrigger}
         label={t("app.layout.sidebarToggle")}
         variant="ghost"
+        indicator={conversationIndicator}
         aria-expanded={geometry.sidebar.visible || overlay}
         onClick={toggleSidebar}
       >
         <SidebarIcon />
       </IconButton>
     </div>
+  );
+  // The panel library owns live drag sizes. Mirror actual column widths into
+  // header/footer CSS tracks without publishing a second layout store.
+  useLayoutEffect(() => {
+    const root = frame.current;
+    if (!root) return;
+    const left = root.querySelector<HTMLElement>(".primary-sidebar");
+    const right = root.querySelector<HTMLElement>(
+      '[data-layout-region="workspace"]',
+    );
+    const synchronize = () => {
+      for (const [name, host, visible] of [
+        ["--navigation-column", left, geometry.sidebar.visible],
+        [
+          "--workspace-column",
+          right,
+          geometry.workspace.visible && !developerActive,
+        ],
+      ] as const) {
+        const width = visible ? (host?.getBoundingClientRect().width ?? 0) : 0;
+        const value = `${width > 0 ? width + tokens.constraints.separator : 0}px`;
+        if (root.style.getPropertyValue(name) !== value)
+          root.style.setProperty(name, value);
+      }
+    };
+    synchronize();
+    const observer = new ResizeObserver(synchronize);
+    if (left) observer.observe(left);
+    if (right) observer.observe(right);
+    return () => observer.disconnect();
+  }, [
+    geometry.sidebar.visible,
+    geometry.workspace.visible,
+    developerActive,
+    tokens,
+  ]);
+  const actions = (trigger: "sidebar" | "overlay") => (
+    <nav className="sidebar-actions" aria-label={t("app.layout.navigation")}>
+      <Button
+        ref={trigger === "sidebar" ? settingsTrigger : undefined}
+        variant="navigation"
+        aria-label={t("app.layout.settings")}
+        aria-pressed={settingsOpen}
+        onClick={() => {
+          setOverlay(false);
+          setSettingsOpen(true);
+        }}
+      >
+        <SettingsIcon />
+        {t("app.layout.settings")}
+      </Button>
+      <div className="sidebar-tools">{developerTools}</div>
+    </nav>
   );
   return (
     <ConversationVisibilityContext value={conversation}>
@@ -205,17 +262,20 @@ export function WorkbenchFrame({
           typeof navigator !== "undefined" &&
           navigator.userAgent.includes("Mac OS")
         }
-        data-sidebar-visible={!developerActive && geometry.sidebar.visible}
+        data-sidebar-visible={geometry.sidebar.visible}
+        data-workspace-visible={geometry.workspace.visible && !developerActive}
+        className="window-frame"
+        data-layout-settings={settingsOpen}
         onFocusCapture={(event) => {
           const target = event.target;
           if (!(target instanceof Element)) return;
           const button = target.closest<HTMLButtonElement>(
             ".header-navigation button",
           );
-          const navigation = button?.closest(".header-navigation");
+          const nav = button?.closest(".header-navigation");
           focusedNavigation.current =
-            navigation && button
-              ? [...navigation.querySelectorAll("button")].indexOf(button)
+            nav && button
+              ? [...nav.querySelectorAll("button")].indexOf(button)
               : null;
           focusedRegion.current =
             target.id === "navigation-split-separator"
@@ -227,49 +287,77 @@ export function WorkbenchFrame({
                   : ((["sidebar", "workspace", "bottom"] as const).find(
                       (region) =>
                         frame.current
-                          ?.querySelector(`[data-layout-region="${region}"]`)
+                          ?.querySelector(
+                            `[data-layout-region="${region}"], [data-header-region="${region}"]`,
+                          )
                           ?.contains(target),
                     ) ?? null);
         }}
-        className="window-frame"
-        data-layout-settings={settingsOpen}
       >
-        <nav className="activity-rail" aria-label={t("app.layout.navigation")}>
-          <div className="rail-brand" aria-hidden="true">
-            {/* i18n-ignore: product brand */}d
-          </div>
-          <IconButton
-            label={t("app.layout.chat")}
-            variant="navigation"
-            aria-pressed={!settingsOpen && !developerActive}
-            indicator={conversationIndicator}
-            onClick={closeSettings}
+        <header className="window-header">
+          <div
+            className="panel-header sidebar-header"
+            hidden={!geometry.sidebar.visible}
           >
-            <ChatIcon />
-          </IconButton>
-          <div className="rail-spacer" />
-          {developerTools}
-          <IconButton
-            ref={settingsTrigger}
-            label={t("app.layout.settings")}
-            variant="navigation"
-            aria-pressed={settingsOpen}
-            onClick={() => setSettingsOpen(true)}
-          >
-            <SettingsIcon />
-          </IconButton>
-        </nav>
-        {developerActive ? (
-          <div className="conversation-surface" data-developer-workspace>
-            <div className="panel-header conversation-header">
-              <div className="header-navigation">{navigationControls}</div>
-              {toolbar}
-            </div>
-            <div ref={work} className="conversation-body">
-              {children}
-            </div>
+            {geometry.sidebar.visible && navigation}
           </div>
-        ) : (
+          <div className="panel-header conversation-header">
+            {!geometry.sidebar.visible &&
+              (developerActive ? (
+                <div className="header-navigation">{navigationControls}</div>
+              ) : (
+                navigation
+              ))}
+            {developerActive && (
+              <Button
+                variant="ghost"
+                aria-label={t("app.layout.backToConversation")}
+                onClick={onConversation}
+              >
+                {t("app.layout.backToConversation")}
+              </Button>
+            )}
+            {toolbar}
+            {!!workspace?.tabs.length && !developerActive && (
+              <IconButton
+                ref={workspaceTrigger}
+                label={t("app.layout.showWorkspace")}
+                variant="navigation"
+                aria-pressed={intent.workspace.open}
+                onClick={() => model.toggle("workspace")}
+              >
+                <SidebarIcon />
+              </IconButton>
+            )}
+            {!!bottom?.tabs.length && !developerActive && (
+              <IconButton
+                ref={bottomTrigger}
+                label={t("app.layout.showBottom")}
+                variant="navigation"
+                aria-pressed={intent.bottom.open}
+                onClick={() => model.toggle("bottom")}
+              >
+                <SidebarIcon />
+              </IconButton>
+            )}
+          </div>
+          <div
+            className="panel-header workspace-header"
+            data-header-region="workspace"
+            hidden={!geometry.workspace.visible || developerActive}
+          >
+            <HostHeader
+              id="workspace"
+              onEmpty={() =>
+                navigationTrigger.current?.focus({ preventScroll: true })
+              }
+              host={workspace}
+              title={t("app.layout.workspace")}
+              onHide={() => model.toggle("workspace")}
+            />
+          </div>
+        </header>
+        <div ref={body} className="window-content">
           <ResizableSplit
             id="navigation-split"
             axis="horizontal"
@@ -284,108 +372,114 @@ export function WorkbenchFrame({
                 data-layout-region="sidebar"
                 aria-label={t("app.layout.sidebar")}
               >
-                <div className="panel-header">
-                  {geometry.sidebar.visible && navigation}
-                </div>
-                <div className="sidebar-scroll">{sidebarContent}</div>
+                <div className="sidebar-scroll">{sidebar}</div>
+                {actions("sidebar")}
               </aside>
             }
           >
-            <ResizableSplit
-              id="bottom-split"
-              axis="vertical"
-              side="end"
-              {...geometry.bottom}
-              min={tokens.constraints.bottomMin}
-              label={t("app.layout.bottomResize")}
-              onCommit={commitBottom}
-              auxiliary={
-                <PanelHost
-                  id="bottom"
-                  host={bottom}
-                  title={t("app.layout.bottom")}
-                  visible={geometry.bottom.visible}
-                  onHide={() => model.toggle("bottom")}
-                  onEmpty={() =>
-                    navigationTrigger.current?.focus({ preventScroll: true })
+            <div className="main-content">
+              {!developerActive &&
+                (geometry.workspace.temporary || geometry.bottom.temporary) && (
+                  <p className="layout-notice" role="status">
+                    {t("app.layout.temporarilyHidden")}
+                  </p>
+                )}
+              <div className="main-panels">
+                <ResizableSplit
+                  id="bottom-split"
+                  axis="vertical"
+                  side="end"
+                  {...geometry.bottom}
+                  visible={geometry.bottom.visible && !developerActive}
+                  min={tokens.constraints.bottomMin}
+                  label={t("app.layout.bottomResize")}
+                  onCommit={commitBottom}
+                  auxiliary={
+                    <PanelHost
+                      id="bottom"
+                      host={bottom}
+                      title={t("app.layout.bottom")}
+                      visible={geometry.bottom.visible && !developerActive}
+                      onHide={() => model.toggle("bottom")}
+                      onEmpty={() =>
+                        navigationTrigger.current?.focus({
+                          preventScroll: true,
+                        })
+                      }
+                    />
                   }
-                />
-              }
-            >
-              <ResizableSplit
-                id="workspace-split"
-                axis="horizontal"
-                side="end"
-                {...geometry.workspace}
-                min={tokens.constraints.workspaceMin}
-                label={t("app.layout.workspaceResize")}
-                onCommit={commitRight}
-                auxiliary={
-                  <PanelHost
-                    id="workspace"
-                    host={workspace}
-                    title={t("app.layout.workspace")}
-                    visible={geometry.workspace.visible}
-                    onHide={() => model.toggle("workspace")}
-                    onEmpty={() =>
-                      navigationTrigger.current?.focus({ preventScroll: true })
+                >
+                  <ResizableSplit
+                    id="workspace-split"
+                    axis="horizontal"
+                    side="end"
+                    {...geometry.workspace}
+                    visible={geometry.workspace.visible && !developerActive}
+                    min={tokens.constraints.workspaceMin}
+                    label={t("app.layout.workspaceResize")}
+                    onCommit={commitRight}
+                    auxiliary={
+                      <PanelHost
+                        id="workspace"
+                        host={workspace}
+                        title={t("app.layout.workspace")}
+                        withHeader={false}
+                        visible={geometry.workspace.visible && !developerActive}
+                        onHide={() => model.toggle("workspace")}
+                        onEmpty={() =>
+                          navigationTrigger.current?.focus({
+                            preventScroll: true,
+                          })
+                        }
+                      />
                     }
-                  />
-                }
-              >
-                <div className="conversation-surface">
-                  <div className="panel-header conversation-header">
-                    {!geometry.sidebar.visible && navigation}
-                    {toolbar}
-                    {!!workspace?.tabs.length && (
-                      <IconButton
-                        ref={workspaceTrigger}
-                        label={t("app.layout.showWorkspace")}
-                        variant="navigation"
-                        aria-pressed={intent.workspace.open}
-                        onClick={() => model.toggle("workspace")}
-                      >
-                        <SidebarIcon />
-                      </IconButton>
-                    )}
-                    {!!bottom?.tabs.length && (
-                      <IconButton
-                        ref={bottomTrigger}
-                        label={t("app.layout.showBottom")}
-                        variant="navigation"
-                        aria-pressed={intent.bottom.open}
-                        onClick={() => model.toggle("bottom")}
-                      >
-                        <SidebarIcon />
-                      </IconButton>
-                    )}
-                  </div>
-                  {(geometry.workspace.temporary ||
-                    geometry.bottom.temporary) && (
-                    <p className="layout-notice" role="status">
-                      {t("app.layout.temporarilyHidden")}
-                    </p>
-                  )}
-                  <div ref={work} className="conversation-body">
-                    {children}
-                  </div>
-                </div>
-              </ResizableSplit>
-            </ResizableSplit>
+                  >
+                    <div
+                      className="conversation-surface"
+                      data-developer-workspace={developerActive || undefined}
+                    >
+                      <div ref={work} className="conversation-body">
+                        {children}
+                      </div>
+                    </div>
+                  </ResizableSplit>
+                </ResizableSplit>
+              </div>
+            </div>
           </ResizableSplit>
-        )}
+        </div>
+        <footer
+          className="window-statusbar"
+          aria-label={t("app.layout.statusbar")}
+        >
+          <div className="statusbar-version" hidden={!geometry.sidebar.visible}>
+            {version}
+          </div>
+          <div className="statusbar-conversation">
+            {!geometry.sidebar.visible && (
+              <span className="statusbar-inline-version">{version}</span>
+            )}
+            {!developerActive && status}
+          </div>
+          <div
+            className="statusbar-workspace"
+            hidden={!geometry.workspace.visible || developerActive}
+          />
+        </footer>
         <SettingsModal
           open={settingsOpen}
-          onClose={reveal}
+          onClose={() => setSettingsOpen(false)}
           title={t("app.layout.settings")}
           closeLabel={t("app.layout.close")}
-          returnFocus={settingsTrigger}
+          returnFocus={
+            geometry.sidebar.visible ? settingsTrigger : navigationTrigger
+          }
           navigation={settingsNavigation}
         >
           {settings}
         </SettingsModal>
         <NavigationOverlay
-          open={!developerActive && overlay}
+          open={overlay}
           onClose={() => setOverlay(false)}
           title={t("app.layout.sidebar")}
           closeLabel={t("app.layout.close")}
@@ -394,25 +488,64 @@ export function WorkbenchFrame({
             typeof navigator !== "undefined" &&
             navigator.userAgent.includes("Mac OS")
           }
+          footer={actions("overlay")}
         >
           <div
             onClick={(event) => {
+              const target = event.target;
               if (
-                event.target instanceof Element &&
-                event.target.closest(
+                target instanceof Element &&
+                target.closest(
                   "[data-thread-navigation], [data-new-thread], [data-choose-project]",
                 )
               )
                 setOverlay(false);
             }}
           >
-            {sidebarContent}
+            {sidebar}
           </div>
         </NavigationOverlay>
       </div>
     </ConversationVisibilityContext>
   );
 }
+
+function HostHeader({
+  id,
+  onEmpty,
+  host,
+  title,
+  onHide,
+}: {
+  id: string;
+  onEmpty: () => void;
+  host: WorkspaceHost | undefined;
+  title: string;
+  onHide: () => void;
+}) {
+  const { t } = useI18n();
+  return (
+    <>
+      <WorkspaceTabs
+        id={id}
+        onEmpty={onEmpty}
+        tabs={host?.tabs ?? []}
+        selected={host?.selected ?? ""}
+        onSelect={host?.onSelect ?? (() => {})}
+        onClose={host?.onClose ?? (() => {})}
+        closeLabel={(title) => t("app.layout.closeTab", { title })}
+      />
+      <IconButton
+        variant="ghost"
+        label={t("app.layout.close")}
+        onClick={onHide}
+      >
+        <CloseIcon />
+      </IconButton>
+    </>
+  );
+}
+
 function PanelHost({
   id,
   title,
@@ -420,6 +553,7 @@ function PanelHost({
   visible,
   onHide,
   onEmpty,
+  withHeader = true,
 }: {
   id: string;
   title: string;
@@ -427,6 +561,7 @@ function PanelHost({
   visible: boolean;
   onHide: () => void;
   onEmpty: () => void;
+  withHeader?: boolean;
 }) {
   const { t } = useI18n();
   return (
@@ -436,24 +571,17 @@ function PanelHost({
       aria-label={title}
       inert={!visible}
     >
-      <div className="panel-header">
-        <WorkspaceTabs
-          id={id}
-          tabs={host?.tabs ?? []}
-          selected={host?.selected ?? null}
-          onSelect={host?.onSelect ?? (() => {})}
-          onClose={host?.onClose ?? (() => {})}
-          onEmpty={onEmpty}
-          closeLabel={(title) => t("app.layout.closeTab", { title })}
-        />
-        <IconButton
-          variant="ghost"
-          label={t("app.layout.close")}
-          onClick={onHide}
-        >
-          <CloseIcon />
-        </IconButton>
-      </div>
+      {withHeader && (
+        <div className="panel-header">
+          <HostHeader
+            id={id}
+            onEmpty={onEmpty}
+            host={host}
+            title={title}
+            onHide={onHide}
+          />
+        </div>
+      )}
       <div className="workspace-host-body">
         {host?.tabs.map((tab) => (
           <div

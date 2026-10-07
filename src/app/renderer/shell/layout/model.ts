@@ -23,7 +23,6 @@ export function readLayoutTokens() {
     return (parseFloat(raw) || 0) * (raw.endsWith("rem") ? font : 1);
   };
   const constraints: LayoutConstraints = {
-    rail: px("--rail-width"),
     separator: px("--separator-size"),
     sidebarMin: px("--sidebar-min"),
     sidebarMax: px("--sidebar-max"),

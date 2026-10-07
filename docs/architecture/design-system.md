@@ -178,3 +178,12 @@ S1 当时除草稿功能外，要求交付最小 token 源、normal/compact 映�
 主题偏好增加 `system`，light/dark 仍是两套实际颜色映射；跟随系统由 AppModel 观察 `prefers-color-scheme`，OS 变化只更新解析后的根主题，不回写用户偏好或重建业务资源。三种偏好分别使用太阳、月亮、显示器图标，切换顺序 light→dark→system→light。旧 light/dark 与 density 字段兼容读取，默认布局继续紧凑。
 
 根据用户要求，应用控件不绘制 CSS outline/ring；共享键盘焦点使用已有背景/文字角色表达，保留 focus-visible、Tab、原生控件及读屏语义。主动作聚焦使用 primary-active，ghost/navigation 聚焦使用 muted-hover/foreground；分隔条聚焦使用 primary。该要求取代此前 outline 形式，不关闭设计 lint，也不去掉焦点能力。
+
+
+## 三层工作台布局（2026-10-07）
+
+D-16 当前布局以用户本轮确认为准，取代一级竖栏与四列推荐：顶层导航/title 标签固定，中层左项目/Thread、主内容和可选右区，底层全局状态栏固定 28px（`--statusbar-height` 单源）。中层自身预算扣除上下固定行；底部工具宿主属于中层，不推挤顶栏或覆盖状态栏。
+
+Thread 列表底部的横向功能导航独立于状态栏，设置占宽区并打开既有 Modal，开发者工具占窄区且菜单向上展开；不展示 Home/会话 icon。列表滚动不移动导航。侧栏收起通过顶部导航覆盖层恢复两项入口；由导航覆盖层转设置时关闭前者并保留可用焦点返回点。开发者页保持全宽内容，返回会话用顶栏文字动作，Thread 资源与布局意图保留。
+
+顶栏/状态栏分段跟随面板实际列宽，包括正在拖拽的尺寸；左/右收起不保留空段。版本在左段，左段不可见时移入主段，完整构建标识通过详情提示保留。对话概况消费既有只读 Thread/Runtime/Conversation 投影，独立订阅，不把流式 token 更新传播到整个工作台。快速预览可点击/键盘打开、Esc关闭；portal沿用主题、焦点和选择合同。缺失值不显示为0，有界实时用户/助手消息数不称为全部轮数；缺口保留提示。未接入的 token、缓存命中率、上下文占用不展示估算数值，未来右段只承载所属区域状态。实施和验证见[05](../../.scratch/codex-workbench-ui/issues/05-sandwich-layout.md)。

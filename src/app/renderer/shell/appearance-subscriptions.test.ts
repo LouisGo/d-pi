@@ -1,7 +1,10 @@
 // @vitest-environment happy-dom
+
 import { act, type ComponentType, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
+import type { ConversationEvent } from "../../../modules/conversation/contracts/public";
+import type { RuntimeView } from "../../../modules/execution/contracts/public";
 import {
   captureSelection,
   type FrozenSelection,
@@ -151,6 +154,8 @@ async function setup({
       }
     | undefined;
   let pendingChoice: ((reply: unknown) => void) | undefined;
+  let receiveRuntime: (view: RuntimeView) => void = () => {};
+  let receiveReading: (event: ConversationEvent) => void = () => {};
   const bridge: DesktopBridge = {
     ...(attention ? { attention } : {}),
     request: async (command) => {
@@ -194,9 +199,17 @@ async function setup({
           message: { code: "runtime.configUnknown" },
         },
       }),
-      subscribe: () => () => {},
+      subscribe: (listener) => {
+        receiveRuntime = listener;
+        return () => {};
+      },
     },
-    conversation: { connect: () => () => {} },
+    conversation: {
+      connect: (_id, listener) => {
+        receiveReading = listener;
+        return () => {};
+      },
+    },
     submission: {
       request: async () => ({ kind: "list", receipts: [] }),
       subscribe: () => () => {},
@@ -282,6 +295,12 @@ async function setup({
     container,
     button,
     render,
+    emitRuntime: (patch: Partial<RuntimeView>) => {
+      const current = model.runtime?.getSnapshot();
+      if (!current) throw Error("missing runtime");
+      receiveRuntime({ ...current, revision: current.revision + 1, ...patch });
+    },
+    emitReading: (event: ConversationEvent) => receiveReading(event),
     changeLanguage: () =>
       localeListener?.({ preference: "zh-CN", resolvedLocale: "zh-CN" }),
     settle: (failed = false) => {
@@ -769,14 +788,23 @@ it("opens the developer route across the complete workspace and restores the Thr
   expect(
     fixture.container.querySelector("[data-component-dashboard]"),
   ).not.toBeNull();
-  expect(fixture.container.querySelector(".primary-sidebar")).toBeNull();
-  expect(fixture.container.querySelector("#navigation-split")).toBeNull();
+  expect(
+    fixture.container
+      .querySelector(".window-frame")
+      ?.getAttribute("data-sidebar-visible"),
+  ).toBe("false");
+  expect(
+    fixture.container
+      .querySelector(".primary-sidebar")
+      ?.closest("[aria-hidden]")
+      ?.getAttribute("aria-hidden"),
+  ).toBe("true");
   expect(
     fixture.container.querySelector("[data-developer-workspace]"),
   ).not.toBeNull();
   expect(fixture.model.controller).toBe(controller);
   const conversation = fixture.container.querySelector<HTMLButtonElement>(
-    "button[aria-label='Conversation']",
+    "button[aria-label='Back to conversation']",
   );
   if (!conversation) throw Error("missing conversation entry");
   await act(async () => {
@@ -788,4 +816,89 @@ it("opens the developer route across the complete workspace and restores the Thr
     fixture.container.querySelector("[data-component-dashboard]"),
   ).toBeNull();
   expect(fixture.model.controller).toBe(controller);
+});
+
+it("shows a fixed navigation dock without a home icon and separates it from conversation status", async () => {
+  const fixture = await setup();
+  expect(fixture.container.querySelector(".activity-rail")).toBeNull();
+  expect(
+    fixture.container.querySelector("button[aria-label='Conversation']"),
+  ).toBeNull();
+  const sidebar = fixture.container.querySelector(".primary-sidebar");
+  expect(
+    sidebar?.querySelector(".sidebar-actions [aria-label='Settings']"),
+  ).not.toBeNull();
+  expect(
+    sidebar?.querySelector(".sidebar-tools [aria-label='开发者工具']"),
+  ).not.toBeNull();
+  expect(sidebar?.querySelector(".sidebar-scroll .sidebar-actions")).toBeNull();
+  expect(
+    fixture.container.querySelector(
+      ".window-statusbar [aria-label='Conversation quick preview']",
+    ),
+  ).not.toBeNull();
+  expect(fixture.container.querySelector(".sidebar-bottom")).toBeNull();
+});
+
+it("updates real conversation status without rendering the workspace and never counts tools as conversation rounds", async () => {
+  const fixture = await setup();
+  const generation = crypto.randomUUID();
+  const snapshot: ConversationEvent = {
+    kind: "snapshot",
+    connectionGeneration: generation,
+    seq: 0,
+    gap: false,
+    items: (["user", "assistant", "tool", "notice", "subagent"] as const).map(
+      (role, id) => ({
+        id,
+        role,
+        text: "live text",
+        state: "complete",
+        label: { kind: "literal", text: role },
+      }),
+    ),
+  };
+  const before = renderCounts();
+  await act(() => {
+    fixture.emitRuntime({
+      phase: "ready",
+      busy: true,
+      model: "fixture-model",
+      control: {
+        pendingAsync: false,
+        admitted: true,
+        paused: false,
+        stopping: false,
+        streaming: true,
+        compacting: false,
+        queued: 3,
+        background: 2,
+        queue: [],
+      },
+    });
+    fixture.emitReading(snapshot);
+  });
+  const status = fixture.button("Conversation quick preview");
+  expect(status.textContent).toContain("OMP is working");
+  expect(status.textContent).toContain("2 messages");
+  expect(status.textContent).toContain("3 queued");
+  expect(renderCounts()).toEqual(before);
+  await act(() => status.click());
+  const preview = document.querySelector(".ui-status-preview");
+  expect(preview?.textContent).toContain("fixture-model");
+  expect(preview?.textContent).toContain("current live window");
+  expect(preview?.textContent).not.toContain("tokens");
+  await act(() => fixture.emitReading({ ...snapshot, seq: 1, gap: true }));
+  expect(preview?.textContent).toContain("synchronization gap");
+});
+
+it("clears the prior Thread status and keeps missing metrics distinct from zero", async () => {
+  const fixture = await setup();
+  await act(() => fixture.emitRuntime({ model: "old-thread-model" }));
+  await act(async () => fixture.changeThread());
+  await act(() => fixture.button("Conversation quick preview").click());
+  const preview = document.querySelector(".ui-status-preview");
+  expect(preview?.textContent).not.toContain("old-thread-model");
+  expect(preview?.textContent).toContain("Unavailable");
+  expect(preview?.textContent).toContain("/fixture/second");
 });

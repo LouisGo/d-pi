@@ -1,0 +1,52 @@
+@layer components {
+  .ui-button-status {
+    height: calc(var(--statusbar-height) - var(--separator-size));
+    min-height: 0;
+    min-width: 0;
+    padding-inline: calc(var(--layout-gap) / 2);
+    border-radius: 0;
+    color: var(--muted-foreground);
+    font-size: var(--text-small);
+    line-height: 1;
+    overflow: hidden;
+    justify-content: flex-start;
+  }
+  .ui-button-status > span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ui-status-preview {
+    width: min(var(--overlay-width), calc(100vw - var(--panel-padding) * 2));
+    padding: var(--panel-padding);
+    background: var(--surface);
+    color: var(--foreground);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    box-shadow: var(--shadow-overlay);
+    font-size: var(--text-body);
+    outline: none;
+    overflow-wrap: anywhere;
+  }
+  .ui-status-preview h2 {
+    font-size: var(--text-body);
+    font-weight: 550;
+    margin-bottom: var(--layout-gap);
+  }
+  .ui-status-preview dl {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--layout-gap);
+  }
+  .ui-status-preview dt {
+    color: var(--muted-foreground);
+  }
+  .ui-status-preview dd {
+    margin: 0;
+  }
+  .ui-status-preview p {
+    margin-top: var(--layout-gap);
+    color: var(--muted-foreground);
+    font-size: var(--text-small);
+  }
+}

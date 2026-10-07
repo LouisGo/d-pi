@@ -722,4 +722,22 @@ export const ui = {
   "app.layout.diagnostics": "Diagnostics",
   "app.toolbar.systemTheme": "Follow system appearance",
   "app.layout.theme": "Theme",
+  "app.layout.statusbar": "Status bar",
+  "app.layout.backToConversation": "Back to conversation",
+  "app.status.switching": "Switching conversation",
+  "app.status.noConversation": "No conversation selected",
+  "app.status.unavailable": "Unavailable",
+  "app.status.preview": "Conversation quick preview",
+  "app.status.messages": "{count} messages",
+  "app.status.queued": "{count} queued",
+  "app.status.execution": "Execution",
+  "app.status.model": "Model",
+  "app.status.messagesLabel": "Current message window",
+  "app.status.queueLabel": "Queued messages",
+  "app.status.background": "Background tasks",
+  "app.status.directory": "Working directory",
+  "app.status.messagesScope":
+    "Message count covers user and assistant messages in the current live window.",
+  "app.status.messagesGap":
+    "The live window has a synchronization gap; the message count may be incomplete.",
 } as const;

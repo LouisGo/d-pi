@@ -9,6 +9,7 @@ export function NavigationOverlay({
   returnFocus,
   nativeInset,
   children,
+  footer,
 }: {
   open: boolean;
   onClose: () => void;
@@ -17,6 +18,7 @@ export function NavigationOverlay({
   nativeInset: boolean;
   returnFocus: RefObject<HTMLElement | null>;
   children: ReactNode;
+  footer?: ReactNode;
 }) {
   return (
     <Dialog.Root
@@ -39,6 +41,7 @@ export function NavigationOverlay({
             </Button>
           </div>
           <div className="sidebar-scroll">{children}</div>
+          {footer}
         </Dialog.Popup>
       </Dialog.Portal>
     </Dialog.Root>

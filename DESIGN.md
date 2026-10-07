@@ -16,7 +16,7 @@
 
 ## Layout
 
-项目导航固定在侧栏，工作区依次呈现配置入口、项目与运行状态、阅读导航／内容和底部 Composer。辅助区域使用分隔线与中性底面，避免每一层都套卡片。长设置按预算独立滚动，阅读导航在窄窗口横向滚动；输入操作允许换行，最小窗口的布局预算由共享 token 调整。空工作区保留明确的项目入口。上述是存量组合；目标四区域与底部宿主见[布局方案](.scratch/codex-workbench-ui/layout.md)，第一轮范围见[布局开工计划](.scratch/codex-workbench-ui/layout-first.md)。取消密度切换，原 compact 尺寸作为唯一默认紧凑布局，light/dark 均必备；窗口布局及第三方编辑器适配遵守[设计系统合同](docs/architecture/design-system.md)；控件密度与阅读字号分别判断。现有实现是证据，不意味着用户已认可全部体验。
+整窗为顶层导航/title标签、中间内容、底层固定28px状态栏。左侧项目/Thread列表独立滚动，底部固定横向设置（宽）与开发者工具（窄），不展示 Home/会话 icon，不保留最左竖栏。状态栏版本段、对话段与可选右段跟随实时列宽；底部工具宿主位于中层内容下方，不替代状态栏。设置用大 Modal，背景资源保持。侧栏暂藏时导航覆盖层保留设置/工具，版本移到主状态段。当前拓扑和状态数据范围见[布局方案](.scratch/codex-workbench-ui/layout.md)与[设计系统合同](docs/architecture/design-system.md)。默认紧凑布局和light/dark继续沿用；布局变化不重建业务模型或编辑器。
 
 ## Components
 

@@ -1,6 +1,6 @@
 # Codex 式工作台：布局研究与组件职责方案
 
-日期：2026-10-06。d-pi 源码基点：`1f591f4`。本轮为设计与调查成果，不是产品实现。2026-10-06 后续澄清已确认自有组件封装要求；布局依赖和具体布局行为仍为建议。
+日期：2026-10-06。d-pi 源码基点：`1f591f4`。初轮为设计与调查成果；历史段落按日期保留，当前授权与推进以文末“三层布局”节为准。2026-10-06 后续澄清已确认自有组件封装要求；布局依赖和具体布局行为仍为建议。
 
 ## 推进与交接
 
@@ -103,7 +103,7 @@ CSS Grid/Flex 负责排版与滚动边界；尺寸约束负责可用空间分配
 ```
 
 ```project-status
-[{"id":"codex-workbench-ui","title":"Codex 式工作台基础布局","phase":"基建","engineering":"partial","trial":"delivered","acceptance":"pending","build":"0.1.0-workbench.3 / f9cc66e1-f83299df","evidence":["handoff.md","validation.md","review.md"],"next":"本地候选试用；A3物理拖窗继续确认，系统IME/VoiceOver与长时性能未覆盖","constraints":"用户已授权本UI分支push、PR及合并；不公开发布或发起真实账户请求。"}]
+[{"id":"codex-workbench-ui","title":"Codex 式工作台基础布局","phase":"基建","engineering":"in-progress","trial":"not-delivered","acceptance":"pending","build":"Dev / codex/sandwich-layout","evidence":["sandwich-validation.md"],"next":"三层布局与状态栏实施/验证；原A3物理拖窗、系统IME/VoiceOver与长时性能仍未覆盖","constraints":"用户已授权本UI分支push、PR及合并；不公开发布或发起真实账户请求。"}]
 ```
 
 ## 实施票
@@ -134,3 +134,14 @@ CSS Grid/Flex 负责排版与滚动边界；尺寸约束负责可用空间分配
 用户截图明确上一轮理解错误：要求移除 hover/active 的不一致描边，保留 Tab 无障碍焦点 outline。此前“取消所有应用控件 outline”是作者误解，不是用户认可的合同；以本条澄清取代。实际原因是 navigation 选中按钮 hover/active 修改 border-color，覆盖 rail 与 Thread 行；在共享组件移除该状态边框，并恢复主题同源的 focus-visible 轮廓。验证必须分别覆盖真实鼠标移动/按下/点击和 Tab 导航，不能只断言 outlineStyle=none。沿用本 UI 修复的提交/PR/合并授权，其余 A3 验证缺口继续开放。
 
 指针反馈修正版候选：源 f9cc66e13fb638a95f9931fa6fe81241585c43c4、dirty=false、0.1.0-workbench.3 / f9cc66e1-f83299df，68条隔离Electron与14条包内记录（13检查+checkpoint）通过，原生CUA确认鼠标点击无蓝框、Tab焦点轮廓、实际坐标点击退出轮廓。其后仅证据/交接文档；用户认可与原物理拖窗缺口保持pending/partial。
+
+
+## 2026-10-07 当前切片：三层布局与横向功能导航
+
+用户明确认可：原一级竖栏移到 Thread 列表区底部固定横排，上方列表独立滚动；目前只有 Home，会话 icon 删除。左侧宽区域打开设置 Modal，右侧窄区域为开发者工具。整窗为顶层导航/标签、中层工作内容、底层固定 28px 状态栏；底部分段跟随上方实时列宽，版本在左，对话概况在主区。未来右侧段只承载所属区域状态。本条取代本文及 layout/layout-first/components 中的四列与 ActivityRail 当前执行口径，旧验证记录保留为历史。
+
+- 范围与授权：用户要求开始实现并同步相关文档；[05](issues/05-sandwich-layout.md)。
+- 固定基点：d4f380c；单 Agent 实现，隔离 worktree `/Users/louistation/.codex/worktrees/sandwich-layout/d-pi`，分支 `codex/sandwich-layout`。
+- 重要待决：无。token/cache/context 当前无完整公开投影，先展示真实执行/模型/队列与有界消息概况，不扩大原生指标接入。
+- 工程：进行中；试用：尚未交付本次布局；认可：pending。
+- 验证与继续边界：按 05 验收，保留 OMP/Main/Thread 所有权、unknown 与已有恢复政策；不扩张 M3、自由 docking 或账号请求。
