@@ -10,7 +10,7 @@ import type {
 } from "../../../modules/configuration/contracts/public";
 import { configurationSnapshotQuery } from "../../../modules/configuration/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import { Button } from "../../../modules/ui/renderer/public";
+import { Button, Select } from "../../../modules/ui/renderer/public";
 import type { ThreadModel } from "../wiring/thread-model";
 
 type ThinkingChoice =
@@ -110,21 +110,22 @@ function LiveSubagentControls({
           <div className="model-fields">
             <label>
               {t("subagent.agent")}
-              <select
+              <Select
                 name="subagent-agent"
                 value={agent.name}
                 disabled={disabled}
-                onChange={(event) => {
-                  setChosenAgent(event.target.value);
+                aria-label={t("subagent.agent")}
+                onValueChange={(value) => {
+                  setChosenAgent(value);
                   setChoice(null);
                 }}
-              >
-                {agents?.map((item) => (
-                  <option key={item.name} value={item.name}>
-                    {item.name}
-                  </option>
-                ))}
-              </select>
+                options={
+                  agents?.map((item) => ({
+                    value: item.name,
+                    label: item.name,
+                  })) ?? []
+                }
+              />
             </label>
           </div>
           <p className="break-words">{agent.description}</p>
@@ -141,64 +142,59 @@ function LiveSubagentControls({
           <div className="model-fields">
             <label>
               {t("model.heading")}
-              <select
+              <Select
                 name="subagent-model"
                 value={selected}
                 disabled={disabled || query.isFetching}
-                onChange={(event) =>
+                aria-label={t("model.heading")}
+                search={{
+                  label: t("model.search"),
+                  empty: t("model.noAvailable"),
+                }}
+                onValueChange={(value) =>
                   setChoice({
                     agent: agent.name,
-                    model: event.target.value,
+                    model: value,
                     thinking: "default",
                   })
                 }
-              >
-                <option value="">{t("model.choose")}</option>
-                {query.data?.models.map((model) => (
-                  <option
-                    key={JSON.stringify([model.provider, model.id])}
-                    value={JSON.stringify([model.provider, model.id])}
-                    disabled={!model.available}
-                  >
-                    {model.provider} / {model.name}
-                    {model.reason
-                      ? ` · ${t(`model.reason.${model.reason}`)}`
-                      : ""}
-                  </option>
-                ))}
-              </select>
+                options={[
+                  { value: "", label: t("model.choose") },
+                  ...(query.data?.models.map((model) => ({
+                    value: JSON.stringify([model.provider, model.id]),
+                    label: `${model.provider} / ${model.name}${model.reason ? ` · ${t(`model.reason.${model.reason}`)}` : ""}`,
+                    searchText: model.id,
+                    disabled: !model.available,
+                  })) ?? []),
+                ]}
+              />
             </label>
             <label>
               {t("model.thinking")}
-              <select
+              <Select<ThinkingChoice>
                 name="subagent-thinking"
                 value={level}
                 disabled={disabled || !target?.thinking.adjustable}
-                onChange={(event) => {
-                  const value = event.target.value;
-                  if (
-                    value === "default" ||
-                    value === "off" ||
-                    target?.thinking.efforts.some((effort) => effort === value)
-                  )
-                    setChoice({
-                      agent: agent.name,
-                      model: selected,
-                      thinking: value as ThinkingChoice,
-                    });
-                }}
-              >
-                <option value="default">{t("model.defaultThinking")}</option>
-                {target?.thinking.adjustable &&
-                  !target.thinking.requiresEffort && (
-                    <option value="off">{t("model.offThinking")}</option>
-                  )}
-                {target?.thinking.efforts.map((effort) => (
-                  <option key={effort} value={effort}>
-                    {effort}
-                  </option>
-                ))}
-              </select>
+                aria-label={t("model.thinking")}
+                onValueChange={(value) =>
+                  setChoice({
+                    agent: agent.name,
+                    model: selected,
+                    thinking: value,
+                  })
+                }
+                options={[
+                  { value: "default", label: t("model.defaultThinking") },
+                  ...(target?.thinking.adjustable &&
+                  !target.thinking.requiresEffort
+                    ? [{ value: "off" as const, label: t("model.offThinking") }]
+                    : []),
+                  ...(target?.thinking.efforts.map((value) => ({
+                    value,
+                    label: value,
+                  })) ?? []),
+                ]}
+              />
             </label>
             <Button
               data-action="apply"

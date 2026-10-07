@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "ddb22b49fbfa9dfde46697c9b7100faae65fa2ccd6be980908341da10b38e81c",
+  "inputsHash": "ede9cf568218a5d80f762dce4dc1e521cc7e4b68b76147a75b7d0b32258fe568",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 383,
-    "scannedFiles": 383,
+    "sourceFiles": 384,
+    "scannedFiles": 384,
     "unscanned": []
   },
   "modules": [
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 170,
-      "lines": 28631,
+      "lines": 28656,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -400,8 +400,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 5,
-      "lines": 443,
+      "files": 6,
+      "lines": 648,
       "publicEntries": [
         {
           "path": "src/modules/ui/renderer/public.ts",
@@ -1266,36 +1266,36 @@
     {
       "module": "app",
       "environment": "renderer",
-      "dependency": "execution",
-      "targetEnvironment": "contracts",
-      "testOnly": true
-    },
-    {
-      "module": "app",
-      "environment": "renderer",
-      "dependency": "shared",
-      "targetEnvironment": "shared",
-      "testOnly": true
-    },
-    {
-      "module": "app",
-      "environment": "renderer",
-      "dependency": "execution",
-      "targetEnvironment": "contracts",
-      "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "renderer",
-      "dependency": "shared",
-      "targetEnvironment": "shared",
-      "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "renderer",
       "dependency": "ui",
       "targetEnvironment": "renderer",
+      "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "renderer",
+      "dependency": "execution",
+      "targetEnvironment": "contracts",
+      "testOnly": true
+    },
+    {
+      "module": "app",
+      "environment": "renderer",
+      "dependency": "shared",
+      "targetEnvironment": "shared",
+      "testOnly": true
+    },
+    {
+      "module": "app",
+      "environment": "renderer",
+      "dependency": "execution",
+      "targetEnvironment": "contracts",
+      "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "renderer",
+      "dependency": "shared",
+      "targetEnvironment": "shared",
       "testOnly": false
     },
     {
@@ -6053,6 +6053,18 @@
       "specifier": "@hugeicons/react",
       "kind": "import",
       "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/icons/common.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../../modules/ui/renderer/public",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/app/renderer/components/receipt-status.test.ts",
@@ -21846,6 +21858,24 @@
       "resolution": "external"
     },
     {
+      "from": "src/modules/ui/renderer/components/icons/common.tsx",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@hugeicons/core-free-icons",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/ui/renderer/components/icons/common.tsx",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@hugeicons/react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
       "from": "src/modules/ui/renderer/controls.test.ts",
       "sourceModule": "ui",
       "sourceEnvironment": "renderer",
@@ -21883,6 +21913,15 @@
       "to": "src/modules/ui/renderer/public.ts",
       "targetModule": "ui",
       "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/ui/renderer/controls.tsx",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@base-ui/react/combobox",
+      "kind": "import",
+      "resolution": "external"
     },
     {
       "from": "src/modules/ui/renderer/controls.tsx",
@@ -21939,6 +21978,18 @@
       "resolution": "external"
     },
     {
+      "from": "src/modules/ui/renderer/controls.tsx",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./components/icons/common",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/components/icons/common.tsx",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/modules/ui/renderer/public.ts",
       "sourceModule": "ui",
       "sourceEnvironment": "renderer",
@@ -21971,6 +22022,18 @@
       "kind": "export",
       "resolution": "module",
       "to": "src/modules/ui/renderer/settings.tsx",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/ui/renderer/public.ts",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./components/icons/common",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/components/icons/common.tsx",
       "targetModule": "ui",
       "targetEnvironment": "renderer"
     },

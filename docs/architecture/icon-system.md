@@ -54,7 +54,7 @@ export interface IconProps {
 
 ## 文件组织与接入规则
 
-Icon Layer 位于 `src/app/renderer/components/icons/`。按实际 GUI 切片扩展：只建当前使用的类别模块，出现真实缺口时才建 `_custom/`，不预建空目录、不包全图库。
+Icon Layer 位于 `src/app/renderer/components/icons/`；跨模块 UI 自用图标位于 `src/modules/ui/renderer/components/icons/`，App 的具名出口复用 UI 公开 API（如 SearchIcon），避免 UI 反向依赖 App。按实际 GUI 切片扩展：只建当前使用的类别模块，出现真实缺口时才建 `_custom/`，不预建空目录、不包全图库。
 
 - 外部包只允许从 Icon Layer 内导入；feature/通用 UI 从类别模块静态导入具名组件，例如 `icons/common`、`icons/git`。避免全量入口和循环依赖，不导入 `_custom` 或内部 factory。
 - 内部用静态具名导入，只导出当前使用的语义图标。不 `import *` 整包、不按字符串枚举全图库、不默认提供 `<Icon name="…" />` 万能入口。

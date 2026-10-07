@@ -21,3 +21,5 @@ export {
   SettingsPage,
   type SettingsPageProps,
 } from "./settings";
+
+export { SearchIcon } from "./components/icons/common";

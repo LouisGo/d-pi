@@ -212,3 +212,5 @@ export function ToolsIcon({ size = 20, className }: IconProps) {
     />
   );
 }
+
+export { SearchIcon } from "../../../../modules/ui/renderer/public";

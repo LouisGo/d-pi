@@ -347,6 +347,7 @@ export function SelectDemo() {
   const options = [
     { value: "a", label: labels.optionA },
     { value: "b", label: labels.optionB },
+    { value: "c", label: labels.optionC },
   ];
   return (
     <div className={styles["gallery-samples"]}>
@@ -356,6 +357,15 @@ export function SelectDemo() {
           options={options}
           onValueChange={change}
           aria-label={labels.select}
+        />
+      </Sample>
+      <Sample label="searchable">
+        <Select
+          value={value}
+          options={options}
+          onValueChange={change}
+          aria-label={labels.searchableSelect}
+          search={{ label: labels.searchOptions, empty: labels.noOptions }}
         />
       </Sample>
       <Sample label="disabled">

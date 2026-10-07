@@ -243,17 +243,19 @@ async function setup(client = new QueryClient()) {
   };
 }
 function select(element: HTMLElement, field: string) {
-  const control = element.querySelector<HTMLSelectElement>(
-    `select[name="${field}"]`,
+  const control = element.querySelector<HTMLButtonElement>(
+    `button[name="${field}"]`,
   );
   if (!control) throw Error(`missing ${field} control`);
   return control;
 }
-async function change(control: HTMLSelectElement, value: string) {
-  await act(async () => {
-    control.value = value;
-    control.dispatchEvent(new Event("change", { bubbles: true }));
-  });
+async function change(control: HTMLButtonElement, value: string) {
+  await act(() => control.click());
+  const item = Array.from(
+    document.querySelectorAll<HTMLElement>("[role=option]"),
+  ).find((el) => el.dataset.value === value);
+  if (!item) throw Error(`missing option ${value}`);
+  await act(() => item.click());
 }
 
 it("keeps future subagent configuration available during a trusted live Thread's main execution", async () => {
@@ -358,15 +360,14 @@ it("uses the selected subagent model's native efforts and requires an explicit v
   try {
     const model = select(h.element, "subagent-model");
     const thinking = select(h.element, "subagent-thinking");
-    const options = () =>
-      Array.from(thinking.options).map((option) => option.value);
+    const options = async () => await optionValues(thinking);
     await change(model, JSON.stringify(["fixture", "required"]));
-    expect(options()).toEqual(["default", "low", "high"]);
+    expect(await options()).toEqual(["default", "low", "high"]);
     await change(model, JSON.stringify(["fixture", "fixed"]));
     expect(thinking.disabled).toBe(true);
-    expect(options()).toEqual(["default"]);
+    expect(await options()).toEqual(["default"]);
     await change(model, JSON.stringify(["fixture", "minimal"]));
-    expect(options()).toEqual(["default", "off", "minimal", "low"]);
+    expect(await options()).toEqual(["default", "off", "minimal", "low"]);
     await change(thinking, "minimal");
     await act(async () => {
       h.client.setQueryData<ConfigurationSnapshot>(
@@ -392,7 +393,7 @@ it("uses the selected subagent model's native efforts and requires an explicit v
       );
       await new Promise((resolve) => setTimeout(resolve, 30));
     });
-    expect(options()).toEqual(["default", "off", "low"]);
+    expect(await options()).toEqual(["default", "off", "low"]);
     expect(
       h.element.querySelector<HTMLButtonElement>("button[data-action='apply']")
         ?.disabled,
@@ -731,3 +732,17 @@ it("blocks new subagent writes until an unknown operation has been checked again
     await h.dispose();
   }
 });
+
+async function optionValues(control: HTMLButtonElement) {
+  if (control.disabled) return ["default"];
+  await act(() => control.click());
+  const values = Array.from(
+    document.querySelectorAll<HTMLElement>("[role=option]"),
+  ).map((el) => el.dataset.value);
+  await act(() =>
+    document.activeElement?.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+    ),
+  );
+  return values;
+}

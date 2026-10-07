@@ -43,7 +43,6 @@
   min-width: 0;
 }
 .filters input,
-.filters select,
 .feedback textarea {
   width: 100%;
   min-width: 0;
@@ -54,12 +53,10 @@
   border-radius: var(--radius-control);
   padding: calc(var(--layout-gap) / 2) var(--control-padding);
 }
-.filters input,
-.filters select {
+.filters input {
   min-height: var(--control-height);
 }
 .filters input:focus-visible,
-.filters select:focus-visible,
 .feedback textarea:focus-visible {
   background: var(--accent);
   color: var(--accent-foreground);
@@ -90,4 +87,9 @@
   .filters {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+.filters button[data-slot="select"] {
+  width: 100%;
+  min-width: 0;
 }

@@ -119,7 +119,7 @@ const ThreadContent = memo(function ThreadContent({
     if (!details) return;
     details.open = true;
     details.scrollIntoView({ block: "nearest" });
-    details.querySelector("select")?.focus();
+    details.querySelector<HTMLElement>("[data-slot=select]")?.focus();
   }, []);
   const [selectionAttachment, setSelectionAttachment] = useState<{
     id: string;

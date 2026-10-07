@@ -1,0 +1,193 @@
+{
+  "kind": "isolated-Electron-real-controls",
+  "geometry": [
+    {
+      "id": "top",
+      "theme": "light",
+      "anchor": {
+        "x": 32,
+        "y": 32,
+        "width": 128,
+        "height": 33.5,
+        "top": 32,
+        "right": 160,
+        "bottom": 65.5,
+        "left": 32
+      },
+      "popup": {
+        "x": 32,
+        "y": 71.5,
+        "width": 128,
+        "height": 120.5,
+        "top": 71.5,
+        "right": 160,
+        "bottom": 192,
+        "left": 32
+      },
+      "side": "bottom",
+      "width": 1120,
+      "height": 788
+    },
+    {
+      "id": "bottom",
+      "theme": "light",
+      "anchor": {
+        "x": 960,
+        "y": 738.5,
+        "width": 128,
+        "height": 33.5,
+        "top": 738.5,
+        "right": 1088,
+        "bottom": 772,
+        "left": 960
+      },
+      "popup": {
+        "x": 960,
+        "y": 612,
+        "width": 128,
+        "height": 120.5,
+        "top": 612,
+        "right": 1088,
+        "bottom": 732.5,
+        "left": 960
+      },
+      "side": "top",
+      "width": 1120,
+      "height": 788
+    },
+    {
+      "id": "search",
+      "theme": "light",
+      "anchor": {
+        "x": 32,
+        "y": 145,
+        "width": 128,
+        "height": 33.5,
+        "top": 145,
+        "right": 160,
+        "bottom": 178.5,
+        "left": 32
+      },
+      "popup": {
+        "x": 32,
+        "y": 184.5,
+        "width": 288,
+        "height": 158,
+        "top": 184.5,
+        "right": 320,
+        "bottom": 342.5,
+        "left": 32
+      },
+      "side": "bottom",
+      "width": 1120,
+      "height": 788
+    },
+    {
+      "id": "top",
+      "theme": "dark",
+      "anchor": {
+        "x": 32,
+        "y": 32,
+        "width": 128,
+        "height": 33.5,
+        "top": 32,
+        "right": 160,
+        "bottom": 65.5,
+        "left": 32
+      },
+      "popup": {
+        "x": 32,
+        "y": 71.5,
+        "width": 128,
+        "height": 120.5,
+        "top": 71.5,
+        "right": 160,
+        "bottom": 192,
+        "left": 32
+      },
+      "side": "bottom",
+      "width": 1120,
+      "height": 788
+    },
+    {
+      "id": "bottom",
+      "theme": "dark",
+      "anchor": {
+        "x": 960,
+        "y": 738.5,
+        "width": 128,
+        "height": 33.5,
+        "top": 738.5,
+        "right": 1088,
+        "bottom": 772,
+        "left": 960
+      },
+      "popup": {
+        "x": 960,
+        "y": 612,
+        "width": 128,
+        "height": 120.5,
+        "top": 612,
+        "right": 1088,
+        "bottom": 732.5,
+        "left": 960
+      },
+      "side": "top",
+      "width": 1120,
+      "height": 788
+    },
+    {
+      "id": "search",
+      "theme": "dark",
+      "anchor": {
+        "x": 32,
+        "y": 145,
+        "width": 128,
+        "height": 33.5,
+        "top": 145,
+        "right": 160,
+        "bottom": 178.5,
+        "left": 32
+      },
+      "popup": {
+        "x": 32,
+        "y": 184.5,
+        "width": 288,
+        "height": 158,
+        "top": 184.5,
+        "right": 320,
+        "bottom": 342.5,
+        "left": 32
+      },
+      "side": "bottom",
+      "width": 1120,
+      "height": 788
+    }
+  ],
+  "screenshots": [
+    ".scratch/selection-components/evidence/light-top.png",
+    ".scratch/selection-components/evidence/light-bottom.png",
+    ".scratch/selection-components/evidence/light-search.png",
+    ".scratch/selection-components/evidence/light-search-empty.png",
+    ".scratch/selection-components/evidence/dark-top.png",
+    ".scratch/selection-components/evidence/dark-bottom.png",
+    ".scratch/selection-components/evidence/dark-search.png",
+    ".scratch/selection-components/evidence/dark-search-empty.png",
+    ".scratch/selection-components/evidence/dark-narrow-search.png"
+  ],
+  "checks": [
+    "bottom placement",
+    "edge flip",
+    "no trigger overlap",
+    "search filtering",
+    "keyboard selection",
+    "empty state",
+    "escape focus",
+    "radio arrow keys",
+    "light/dark",
+    "narrow bounds"
+  ],
+  "limitations": [
+    "isolated controls; no real provider requests"
+  ]
+}
