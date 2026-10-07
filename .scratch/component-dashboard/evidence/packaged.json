@@ -1,0 +1,107 @@
+{
+  "scenario": "workbench",
+  "source": "/Users/louistation/.codex/worktrees/component-dashboard/d-pi/dist/mac-arm64/d-pi.app",
+  "bundle": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-goA5QM/Package With Spaces/d-pi.app",
+  "build": {
+    "version": "0.1.0-workbench.3",
+    "commit": "232f76bcce22e37e6cf765298d9d6f15af8817ec",
+    "dirty": false,
+    "id": "232f76bc-5dedc932"
+  },
+  "root": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-goA5QM",
+  "checks": [
+    "packaged workbench uses one native header, navigation after controls, compact default, closed empty hosts and centered icons with out-of-flow indicators",
+    "packaged Main persists system theme and retains the three-mode cycle with legacy density unchanged",
+    "settings Modal retains an operable diagnostics panel within its focus scope",
+    "workbench-only validation finishes without execution, reload or cold recovery"
+  ],
+  "screenshots": [
+    "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-m2-package-goA5QM/workbench-header.png"
+  ],
+  "continuitySamples": [],
+  "providerCalls": 0,
+  "subagentProviderCalls": 0,
+  "subagentTitleProviderCalls": 0,
+  "longReadingProviderCalls": 0,
+  "workbench": {
+    "top": 0,
+    "inner": 780,
+    "outer": 780,
+    "controls": [
+      {
+        "name": "后退",
+        "left": 106
+      },
+      {
+        "name": "前进",
+        "left": 144
+      },
+      {
+        "name": "打开或收起项目导航",
+        "left": 179
+      }
+    ],
+    "density": false,
+    "workspace": 0,
+    "bottom": 0,
+    "icons": [
+      {
+        "name": "会话",
+        "dx": 0,
+        "dy": 0,
+        "overlay": true
+      },
+      {
+        "name": "开发者工具",
+        "dx": 0,
+        "dy": 0,
+        "overlay": true
+      },
+      {
+        "name": "设置",
+        "dx": 0,
+        "dy": 0,
+        "overlay": true
+      },
+      {
+        "name": "后退",
+        "dx": 0,
+        "dy": 0,
+        "overlay": true
+      },
+      {
+        "name": "前进",
+        "dx": 0,
+        "dy": 0,
+        "overlay": true
+      },
+      {
+        "name": "打开或收起项目导航",
+        "dx": 0,
+        "dy": 0,
+        "overlay": true
+      },
+      {
+        "name": "打开项目",
+        "dx": 0,
+        "dy": 0,
+        "overlay": true
+      },
+      {
+        "name": "跟随系统外观",
+        "dx": 0,
+        "dy": 0,
+        "overlay": true
+      }
+    ]
+  },
+  "attentionProviderCalls": 0,
+  "models": [],
+  "nativeSessions": [],
+  "sourceAsarSha256": "f6d214d0890c9edee2f54725c2caa6c2df8504e6c42270af0cfcb45c8e2cc1a0",
+  "limitations": [
+    "workbench header/theme/Modal only; execution, reload and cold recovery not run",
+    "native inspection evidence recorded separately",
+    "M2 V1-04 and queue/subagent/read-performance increments remain open"
+  ]
+}

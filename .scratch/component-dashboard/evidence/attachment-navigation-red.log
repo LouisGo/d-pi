@@ -1,0 +1,45 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/workbench/composer-continuity.test.ts
+$ tsr generate
+(node:64440) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/louistation/.codex/worktrees/component-dashboard/d-pi[39m
+
+ [31m❯[39m src/app/renderer/workbench/composer-continuity.test.ts [2m([22m[2m7 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 191[2mms[22m[39m
+   [32m✓[39m preserves A's middle selection and independent undo/redo across A → B → A with fresh views[32m 116[2mms[22m[39m
+   [32m✓[39m cannot undo accepted submission consumption in the current editor or after a switch[32m 23[2mms[22m[39m
+   [32m✓[39m uses an externally updated draft version on return and discards the previous undo[32m 14[2mms[22m[39m
+   [32m✓[39m Shift+Enter inserts a source line in the real composer and remains undoable[32m 8[2mms[22m[39m
+   [32m✓[39m offers a visible new-session exit beside the disabled send button for a recovered read-only thread[32m 8[2mms[22m[39m
+   [32m✓[39m explains a running session without a model and offers model selection without consuming its draft[32m 5[2mms[22m[39m
+[31m   [31m×[31m keeps a pending attachment insertion in its real Composer before admitting the developer view[39m[32m 17[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/app/renderer/workbench/composer-continuity.test.ts[2m > [22mkeeps a pending attachment insertion in its real Composer before admitting the developer view
+[31m[1mAssertionError[22m: expected true to be false // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+[36m [2m❯[22m src/app/renderer/workbench/composer-continuity.test.ts:[2m296:20[22m[39m
+    [90m294|[39m     admitted = await fixture.model.prepareViewNavigation();
+    [90m295|[39m   });
+    [90m296|[39m   expect(admitted).toBe(false);
+    [90m   |[39m                    [31m^[39m
+    [90m297|[39m   expect(fixture.editor().isEditable).toBe(true);
+    [90m298|[39m   const id = crypto.randomUUID();
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m6 passed[39m[22m[90m (7)[39m
+[2m   Start at [22m 11:21:25
+[2m   Duration [22m 4.16s[2m (import 77%, transform 10%, environment 9%, tests 5%)[22m
+
+[ELIFECYCLE] Test failed. See above for more details.

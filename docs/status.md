@@ -18,7 +18,7 @@
 | M3 | [M3 后续增强](../.scratch/development-foundation/spec.md) | 未实施 | 未交付 | 待认可 | —  | 未启动，保留边界 |
 | 基建 | [AI 工作流升级](../.scratch/ai-workflow-v13/spec.md) | 工程完成 | 不适用 | 不适用 | — [证据1](../.scratch/ai-workflow-v13/handoff.md) · [证据2](../.scratch/ai-workflow-v13/validation.md) · [证据3](../.scratch/ai-workflow-v13/review.md) · [证据4](../.scratch/ai-workflow-v13/research.md) · [证据5](../.scratch/ai-workflow-v13/m2-retro-2026-10-06.md) · [证据6](../.scratch/ai-workflow-v13/m2-retro-handoff.md) · [证据7](../.scratch/ai-workflow-v13/m2-retro-validation.md) · [证据8](../.scratch/ai-workflow-v13/m2-retro-review.md) · [证据9](../.scratch/ai-workflow-v13/validation-retro-2026-10-07.md) | 2026-10-07按风险验证与窄场景入口工程完成、独立两轴复核通过；PR#7合并后从main进入下一阶段 |
 | 基建 | [Codex 式工作台基础布局](../.scratch/codex-workbench-ui/spec.md) | 部分完成 | 已交付待试用 | 待认可 | 0.1.0-workbench.3 / f9cc66e1-f83299df [证据1](../.scratch/codex-workbench-ui/handoff.md) · [证据2](../.scratch/codex-workbench-ui/validation.md) · [证据3](../.scratch/codex-workbench-ui/review.md) | 本地候选试用；A3物理拖窗继续确认，系统IME/VoiceOver与长时性能未覆盖 |
-| 基建 | [开发者工具与基础组件看板](../.scratch/component-dashboard/spec.md) | 实施中 | 未交付 | 待认可 | — [证据1](../.scratch/component-dashboard/spec.md) | 完成工具入口、分类交互看板及独立评审验证 |
+| 基建 | [开发者工具与基础组件看板](../.scratch/component-dashboard/spec.md) | 工程完成 | 已交付待试用 | 待认可 | 232f76bc-5dedc932 [证据1](../.scratch/component-dashboard/handoff.md) · [证据2](../.scratch/component-dashboard/validation.md) · [证据3](../.scratch/component-dashboard/review.md) | 用户试用组件看板与工具入口；认可pending |
 | 基建 | [领域目录治理](../.scratch/domain-directory-governance/spec.md) | 工程完成 | 不适用 | 不适用 | — [证据1](../.scratch/domain-directory-governance/handoff.md) | 沿用模块机器清单，目录规模不作为硬门槛 |
 | 基建 | [Effect 原生连接生命周期](../.scratch/effect-native-lifecycle/spec.md) | 工程完成 | 不适用 | 不适用 | — [证据1](../.scratch/effect-native-lifecycle/issues/01-native-lifecycle.md) · [证据2](../.scratch/effect-native-lifecycle/validation.md) · [证据3](../.scratch/effect-native-lifecycle/evidence/process-supervision.json) | NativeSession 接入完成；SessionHost 与 Main transport 后续按实际替代收益接入 |
 | 基建 | [国际化基础](../.scratch/i18n-foundation/spec.md) | 工程完成 | 已交付待试用 | 待认可 | 0.1.0-i18n.0 [证据1](../.scratch/i18n-foundation/handoff.md) | 等待热切换与输入体验反馈 |
@@ -36,8 +36,6 @@
 | 所属范围 / 任务 | 状态 | 未解决的工程依赖 |
 | --- | --- | --- |
 | [codex-workbench-ui / A3 验证与交付](../.scratch/codex-workbench-ui/issues/04-validation-delivery.md) | claimed | 无；范围以所属规格为准 |
-| [component-dashboard / 01 工具入口与路由](../.scratch/component-dashboard/issues/01-tools-routing.md) | claimed | 无；范围以所属规格为准 |
-| [component-dashboard / 02 分类交互看板](../.scratch/component-dashboard/issues/02-component-gallery.md) | claimed | 无；范围以所属规格为准 |
 | [m1-interaction-hardening / 03 派发授权排序与 Host 目录复核](../.scratch/m1-interaction-hardening/issues/03-dispatch-authorization.md) | open | 无；范围以所属规格为准 |
 | [m1-interaction-hardening / 04 历史 busy 语义复核](../.scratch/m1-interaction-hardening/issues/04-history-busy.md) | open | 无；范围以所属规格为准 |
 | [m1-interaction-hardening / 07 退出健壮性与 GUI 可访问补齐](../.scratch/m1-interaction-hardening/issues/07-quit-a11y.md) | open | 无；范围以所属规格为准 |
@@ -68,4 +66,4 @@
 - [类型安全桌面路由](../.scratch/router-integration/spec.md)：本地实施和提交；不 push、不改变 OMP 执行及冷恢复政策。
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 
-<!-- source-sha256: f3c9b510a2675d4acff86bbf54787ce5881e7f612447fa535f4c459d16e90e83; sources: 125 -->
+<!-- source-sha256: 5e4dcf0fbed12aa33f5a5ce7a6e14d72d78164699d30eeac336611c901aca0ac; sources: 125 -->
