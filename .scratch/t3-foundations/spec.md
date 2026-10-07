@@ -7,17 +7,17 @@
 - 授权：用户本轮明确要求完整消化研究材料、独立研究与思考、写完整结论，随后文档/契约先行实施全部既定重构优化目标，功能不受影响且确保正向收益。该授权涵盖以下工程目标及必要回归、组合验证、本地提交和可审查交付；远端 push/PR/merge/公开发行并未由本轮要求指定。
 - 受影响决定：D-02/D-03/D-10/D-21/D-22/D-24/D-26/D-28–D-30/D-33/D-35/D-37/D-38/D-39。保留 OMP 执行/历史、Main 持久化、Host 连接关联、Renderer 交互；不扩 Effect 到 Files/Changes，不换 Atom/Schema，不引入 XState。
 - 结果：六组可操作/可观测目标及其组合工程验收，逐项满足下面的退出条件；既有 M2 供应商/PDF/系统通知/用户认可等开放父票不由本轮自动关闭。
-- 重要待决：跨 Thread 动态 @文件/目录的复制语义，已通过本轮文本选项询问用户：复制时冻结来源、发送时读取原项目或限制同工作目录。只暂缓 04 中依赖该选择的部分；原引用行为、附件 owner/关闭/Undo 保护、私有图片及冻结选区的基础合同可独立准备。
+- 产品判断：2026-10-07用户回复“1”，明确选择跨Thread动态@文件/目录复制时冻结来源及版本，已登记D-10补充；本切片无重要待决。保留原草稿动态引用的发送读取行为，不扩大跨项目权限。
 - 工程：01/02/03/05/06与04独立部分已串行集成并完成工程验收。生产源冻结477b854；其后0a7e9a5仅刷新看板生成哈希。完整check为172files/989tests通过、2tests跳过，build通过；真实macOS复制/跨Thread粘贴/一次Undo/Redo与阅读锚点通过，原剪贴板已恢复。两轴独立复核已关闭Git失败归因、PDF同ID新摘要保护、正常clone额度回收、失败cleanup跨reset/eviction、迟到discard和第十Thread React快照问题，无未处理高价值问题。04动态引用语义仍待决，07仅剩该依赖，不宣布完整退出。
 - 试用：已交付上述独立范围待试用；版本及具体步骤见[handoff](handoff.md)。默认该工作树 `pnpm dev`，未机械打包；用户尚未反馈或明确认可。工程验证、真实系统检查及用户认可分别记录。
 - 执行：主 Agent 单写状态、契约、集成和诊断；独立 worker 固定各自基点/工作树实现原生、读取和输入，串行集成后推进依赖票。派发映射在实施时追加。不得把研究工作树当自动隔离。
 
 ```project-status
-[{"id":"t3-foundations","title":"T3 研究与基础重构","phase":"基建","engineering":"partial","trial":"delivered","acceptance":"pending","build":"Dev生产源477b854","evidence":["research.md","handoff.md","evidence/07-integration.md"],"next":"等待动态引用的版本/权限语义选择，随后完成04依赖部分及07整体结算；独立范围已交付待试用","constraints":"unknown 不重发，冷恢复只读；native/live 无可靠原生身份时保持独立来源；M3 能力仅作设计储备"}]
+[{"id":"t3-foundations","title":"T3 研究与基础重构","phase":"基建","engineering":"in-progress","trial":"delivered","acceptance":"pending","build":"已交付Dev源477b854；冻结复制实施中","evidence":["research.md","handoff.md","evidence/07-integration.md"],"next":"按用户选项1完成动态引用复制冻结、两轴复核和07整体结算；已有独立范围已交付待试用","constraints":"unknown 不重发，冷恢复只读；native/live 无可靠原生身份时保持独立来源；M3 能力仅作设计储备"}]
 ```
 
 ```implementation-plan
-[{"id":"foundations","tickets":["01","02","03","04","05","06","07"],"hold":{"04":"动态文件/目录搬运涉及版本及跨项目权限，等待本轮用户选择；03及其他独立票已完成"}}]
+[{"id":"foundations","tickets":["01","02","03","04","05","06","07"]}]
 ```
 
 ## 固定基点派发
@@ -68,6 +68,19 @@ DraftController 仍是正文保存/消费唯一协调器；Tiptap/EditorState �
 Main history lease 绑定可信窗口+editor epoch+Thread，验证真实 manifest 及有限 ID 集合；可保守保护该 epoch 曾进入撤销历史的超集，直至历史清除/缓存淘汰。数量与资产预算有界，达限不得静默让仍可 Undo 的资源消失。GC 纳入 transient pin epoch，在 await 和实际 unlink 前复核，不能仅看之前的 SQLite 引用快照。
 
 clipboard snapshot 只从当次可信源的选中依赖建立；私有资产经 Main 内部引用复制、核验摘要和 lease 接棒，正文/token 一次事务映射，冻结选区保真。动态引用语义在用户选择后细化，不能暗读目标项目同名文件。失败/Undo/消费后的晚结果只归原操作，不自动重新插入；fallback 显示未搬运的上下文而不静默漏发。
+
+### 用户选项1：复制冻结来源与版本
+
+2026-10-07已确认，取代上一段及推进记录中的待决状态。COPY事件提交选中文字及实际依赖IDs，Main从原Thread真实manifest固定来源；在有界异步export准备阶段沿现有readReference权限/身份/前后样本检查捕获源内容及版本。这是复制请求的冻结时点，不声称跨进程异步I/O能读取OS按键瞬间的磁盘快照；一旦export ready，内容、版本与来源保持不变。粘贴可以等待既有3s export桥，超时明确降级。
+
+- 原动态manifest与原草稿保持发送时读取语义；仅clipboard snapshot及目标新manifest使用私有冻结内容，不能把copy当作原草稿的发送/消费。
+- 文件沿现有格式识别、图片校验及PDF覆盖规则建立可用表示，保留真实输入/派生摘要、转换版本和有限来源信息；目录仅完整直接条目JSON清单及内容摘要版本，超过既有列表预算不得当完整捕获。已冻结的引用再次复制继续复用其原冻结内容与版本，不重新读取磁盘。
+- 原项目修改、删除、改名，或目标存在同名路径，都不影响已ready快照；paste/preview/prepare/reopen只读Main私有对象，不回读原项目或目标项目。来源path/kind/version/capture time是溯源数据，不授予读取权限；外部剪贴板不能伪造冻结manifest。
+- 只捕获选中依赖；严格沿现有32依赖、1MiB文字、64MiB单快照、128MiB全局及128clone交接预算。异步准备过程中重查TTL/document/Thread来源身份，失败不发布半成品或部分目标manifest，不部分获取预算/pin；使用原失败/可读降级。
+- 复制冻结资产（含PDF派生对象）全程参与snapshot pin→import pin→当前正文/Undo/Redo→持久采用，所有摘要在真实GC unlink前保护。过期/文档释放、失败/迟到/拒插、显式清史和缓存淘汰沿既有实际ACK责任释放，不丢原IDs。
+- 正式GUI明确区分目标复制冻结与原动态“发送时读取”，可查看真实来源与版本；不因字段名/类型新建额外权限，也不重建一套输入正文或转换状态。
+
+验收使用真实Main/preload/PM/SQLite和两个不同项目：COPY ready后改/删原file、改变目录清单、目标同名不同内容，paste/prepare仍为COPY时版本；原动态准备仍读新版本。覆盖再次复制/重开、选中依赖裁剪、未知/失败/超限/过期、转换/derived pin、late/discard/retry及delete→save→GC→Undo/Redo。纯模型不代替正式GUI接线，必要时原生probe扩展这条新路径，停止于证明真实ClipboardEvent/显示/Undo即可，不执行模型网络。
 
 2026-10-07最终Spec复现补充：成功粘贴的未持久克隆不能永久停留在import handoff。Main按可信document/Thread、实际编辑epoch与当前正文的保留ID核对接棒；仍可Redo、cached history或未保存当前正文保持真实pin。明确清史/缓存淘汰后已无正文及任何history依赖的未采用克隆必须解除pin与额度；新epoch接棒不得出现GC保护空窗，不通过重载/关窗恢复正常粘贴。
 

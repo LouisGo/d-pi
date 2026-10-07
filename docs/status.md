@@ -29,7 +29,7 @@
 | 基建 | [类型安全桌面路由](../.scratch/router-integration/spec.md) | 工程完成 | 已交付待试用 | 待认可 | 0.1.0-m2.9 / acf535c4-88948e3f [证据1](../.scratch/router-integration/issues/01-routing.md) · [证据2](../.scratch/router-integration/review.md) · [证据3](../.scratch/router-integration/handoff.md) · [证据4](../.scratch/router-integration/evidence/native-result.json) | 试用本地 macOS 候选：页签、会话切换和前进后退；用户认可待反馈 |
 | 基建 | [设置页与配置组件](../.scratch/settings-ui/spec.md) | 工程完成 | 已交付待试用 | 待认可 | Dev / codex/settings-ui / d02201c + b0a7ab6 [证据1](../.scratch/settings-ui/handoff.md) · [证据2](../.scratch/settings-ui/validation.md) · [证据3](../.scratch/settings-ui/review.md) | 等待设置页 Dev 试用反馈 |
 | 基建 | [状态与查询对齐](../.scratch/state-query-alignment/spec.md) | 工程完成 | 已交付待试用 | 待认可 | 441b27b4-1525b713（随重写包） [证据1](../.scratch/rewrite-preparation/handoff.md) · [证据2](../.scratch/state-query-alignment/issues/04-integration-verification.md) | 04 含试用验收，继续 claimed 等待反馈 |
-| 基建 | [T3 研究与基础重构](../.scratch/t3-foundations/spec.md) | 部分完成 | 已交付待试用 | 待认可 | Dev生产源477b854 [证据1](../.scratch/t3-foundations/research.md) · [证据2](../.scratch/t3-foundations/handoff.md) · [证据3](../.scratch/t3-foundations/evidence/07-integration.md) | 等待动态引用的版本/权限语义选择，随后完成04依赖部分及07整体结算；独立范围已交付待试用 |
+| 基建 | [T3 研究与基础重构](../.scratch/t3-foundations/spec.md) | 实施中 | 已交付待试用 | 待认可 | 已交付Dev源477b854；冻结复制实施中 [证据1](../.scratch/t3-foundations/research.md) · [证据2](../.scratch/t3-foundations/handoff.md) · [证据3](../.scratch/t3-foundations/evidence/07-integration.md) | 按用户选项1完成动态引用复制冻结、两轴复核和07整体结算；已有独立范围已交付待试用 |
 
 ## 当前任务与真实阻塞
 
@@ -71,4 +71,4 @@
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 - [T3 研究与基础重构](../.scratch/t3-foundations/spec.md)：unknown 不重发，冷恢复只读；native/live 无可靠原生身份时保持独立来源；M3 能力仅作设计储备
 
-<!-- source-sha256: 6188c742f2096ef4557960b949a27b6cc96840b975ce0cc7a84b75a7fc3bb41a; sources: 138 -->
+<!-- source-sha256: d099933940c46bcfa73c6d3465afa4377f51d13e180a24c4643f7ec003018541; sources: 138 -->
