@@ -1,5 +1,6 @@
 @layer components {
   .tab-strip {
+    --tab-icon-size: 1rem;
     display: flex;
     align-items: center;
     min-width: 0;
@@ -44,14 +45,21 @@
     display: grid;
     place-items: center;
     flex-shrink: 0;
-    width: 1rem;
-    height: 1rem;
+    width: var(--tab-icon-size);
+    height: var(--tab-icon-size);
+  }
+  /* The slot owns icon geometry; SVG defaults may otherwise overflow it. */
+  .tab-strip-icon > svg,
+  .tab-strip-close > svg {
+    display: block;
+    width: var(--tab-icon-size);
+    height: var(--tab-icon-size);
   }
   .tab-strip-close {
     position: absolute;
     inset-inline-start: var(--control-padding);
     inset-block: 0;
-    width: calc(1rem + 2px);
+    width: calc(var(--tab-icon-size) + 2px);
     padding: 0;
     min-height: 0;
     opacity: 0;

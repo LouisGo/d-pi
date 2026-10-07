@@ -23,3 +23,10 @@
 - Standards：自有 widget/Dialog API、共享 token/全局焦点、portal 与模态焦点返回、Runtime 展示订阅、调用方资源所有权、关闭后的键盘焦点、公开依赖及生成结构核对通过；没有未解决的高价值发现。
 
 已核实主 checkout 仍为56f0b0a且干净。本轮本地分支交付，没有远端 PR/CI 或 main 合并。UI fixture 使用独立数据与模拟 IPC；未请求真实 provider，不代表包内验收、系统 IME/VoiceOver 或用户认可。A3 物理拖窗缺口继续保留。
+
+
+## 2026-10-07 图标尺寸补充修正
+
+用户截图指出标签左侧图标大小和对齐不一致。根因：TabStrip 仅限制图标槽为1rem，没有限制SVG；File/Close默认16px，Settings/Chat默认20px，SVG溢出槽位并影响网格居中。现在由TabStrip统一槽位、SVG与关闭图标的尺寸，其他场景的Icon Layer默认尺寸不改。
+
+按用户明确要求，只修改源码并commit，未重跑测试、lint、构建或GUI验证；上面的验证记录仍属于16568d3，不外推到这次补充修正。
