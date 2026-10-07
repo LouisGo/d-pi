@@ -11,11 +11,9 @@ import { SubagentMessage } from "./subagents";
 
 export function Conversation({
   model,
-  onHistory,
   positions,
 }: {
   model: ConversationModel;
-  onHistory?: () => void;
   positions?: ReadingPositions | undefined;
 }) {
   const { t } = useI18n();
@@ -40,15 +38,9 @@ export function Conversation({
       data-reading-source={source}
       aria-label={t("ui.conversation.sectionLabel")}
     >
-      <h2>{t("ui.conversation.heading")}</h2>
       {!itemIds.length && (
         <>
           <p className="muted">{t("ui.conversation.empty")}</p>
-          {onHistory && (
-            <Button variant="ghost" onClick={onHistory}>
-              {t("ui.history.openCli")}
-            </Button>
-          )}
         </>
       )}
       {gap && <p role="status">{t("ui.conversation.gap")}</p>}

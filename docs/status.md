@@ -39,6 +39,7 @@
 | 所属范围 / 任务 | 状态 | 未解决的工程依赖 |
 | --- | --- | --- |
 | [codex-workbench-ui / A3 验证与交付](../.scratch/codex-workbench-ui/issues/04-validation-delivery.md) | claimed | 无；范围以所属规格为准 |
+| [codex-workbench-ui / 06 Thread 主区基础布局与工具收纳](../.scratch/codex-workbench-ui/issues/06-thread-surface.md) | claimed | 无；范围以所属规格为准 |
 | [integrated-terminal / 01 可信 PTY 与受管生命周期](../.scratch/integrated-terminal/issues/01-managed-pty.md) | open | 无；范围以所属规格为准 |
 | [integrated-terminal / 02 受限会话协议与屏幕恢复](../.scratch/integrated-terminal/issues/02-session-protocol.md) | open | [01](../.scratch/integrated-terminal/issues/01-managed-pty.md) |
 | [integrated-terminal / 03 有界输出与背压](../.scratch/integrated-terminal/issues/03-output-control.md) | open | [02](../.scratch/integrated-terminal/issues/02-session-protocol.md) |
@@ -77,4 +78,4 @@
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 - [T3 研究与基础重构](../.scratch/t3-foundations/spec.md)：unknown 不重发，冷恢复只读；native/live 无可靠原生身份时保持独立来源；M3 能力仅作设计储备
 
-<!-- source-sha256: 189927965959c79592900a33f0526a334ad86ac0dbaade5a632484e33250bdb2; sources: 146 -->
+<!-- source-sha256: 5604a73508f4638ca68f1d3980a9bbc9f06e18b1524bdcd41c2b390f80a33bac; sources: 147 -->

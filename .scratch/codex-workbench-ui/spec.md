@@ -158,3 +158,13 @@ CSS Grid/Flex 负责排版与滚动边界；尺寸约束负责可用空间分配
 ## 2026-10-07 从a86dc5a重新细化
 
 用户要求完整回退，已将HEAD恢复为a86dc5a；随后明确从该基线优化三项：0.5px引导线沿用主题色且必须贴合相邻区域、Thread背景填满上下间隙、状态栏light较Thread更浅且dark相应调整。实际面板分隔占位也改为0.5px，避免在4px空隙中间画细线；命中区独立保留。顶中底4px预算沿用并在Thread列填色，状态栏用独立主题token，保持28px。没有重新引入撤回的圆角/阴影或透明引导线方案。[本轮交接](baseline-refinement.md)，一次针对性检查，不重跑全量矩阵。
+
+
+## 2026-10-07 当前切片：Thread 主区收纳
+
+用户本轮明确授权 [06](issues/06-thread-surface.md)：先克隆 T3 最新 main 至项目同级，再完成干净的 Thread 基础布局。默认上方消息滚动区、下方 Composer；配置、子 Agent 与检查信息收进 Thread 工具，文件/收据/历史保留按需入口。暂不深入消息展示和 Composer 功能。
+
+- T3 本地参考：`/Users/louistation/MySpace/Life/t3code`，远端 `https://github.com/pingdotgg/t3code.git`，2026-10-07 clone 的 main 为 `611132c171f3a821bd2e32f22261135cef6330ac`；干净且与 origin/main 一致。参考 `apps/web/src/components/ChatView.tsx` 的消息区域与 Composer lane 分工，不复制其 overlay 或业务体系。
+- 基点 `56f0b0a`；独立工作树 `/Users/louistation/.codex/worktrees/thread-layout/d-pi`，分支 `codex/thread-layout`。主 Agent 串行完成，不改当前 main；本轮不推送远端。
+- 重要待决：无。运行、提交和恢复政策继续沿用原合同；必要操作/失败提醒保持可达，不用隐藏错误实现视觉干净。
+- 工程：实施中；验收见 06。试用/用户认可保持待反馈，不提升原 A3 的未验证项目。

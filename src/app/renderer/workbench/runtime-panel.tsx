@@ -38,8 +38,10 @@ export function RuntimePanel({
   model,
   submission,
   onFollowUp,
+  inspection = true,
 }: {
   model: RuntimeModel;
+  inspection?: boolean;
   submission?: SubmissionModel | null;
   onFollowUp: ((text: string) => Promise<FollowUpResult>) | undefined;
 }) {
@@ -71,11 +73,32 @@ export function RuntimePanel({
     void submission?.continuePrepared(submissionId);
   };
   if (!state)
-    return (
+    return inspection ? (
       <p className="muted" role="status">
         {t("ui.runtime.loading")}
       </p>
+    ) : null;
+  const actionable =
+    state.busy ||
+    state.control?.paused ||
+    state.control?.queued ||
+    state.control?.stopping ||
+    state.control?.background ||
+    state.control?.queueState?.editing ||
+    state.control?.queueState?.items.length ||
+    state.control?.queueState?.hiddenCount ||
+    state.queueOperation?.status === "unknown" ||
+    state.queueOperation?.status === "failed" ||
+    state.phase === "failed" ||
+    state.phase === "interrupted" ||
+    state.interactions?.unsupported ||
+    state.interactions?.items.some(
+      (item) =>
+        item.status === "pending" ||
+        item.status === "unknown" ||
+        (item.status === "sent" && item.defaultAnswered),
     );
+  if (!inspection && !actionable) return null;
   const label = runtimePhaseLabel(state, t);
   return (
     <section
@@ -84,8 +107,10 @@ export function RuntimePanel({
       tabIndex={-1}
       aria-label={t("ui.runtime.sectionLabel")}
     >
-      <strong role="status">{label}</strong>
-      <details className="runtime-source">
+      <strong role="status" hidden={!inspection && state.phase === "ready"}>
+        {label}
+      </strong>
+      <details className="runtime-source" hidden={!inspection}>
         <summary>{t("ui.runtime.details")}</summary>
         <span className="muted">{formatMessage(state.configuration)}</span>
         {state.phase === "ready" && <p>{formatMessage(state.message)}</p>}
@@ -150,7 +175,7 @@ export function RuntimePanel({
             </div>
           </div>
         )}
-      <QueueControls model={model} />
+      <QueueControls model={model} hiddenEmpty={!inspection} />
       {state.interactions && (
         <section
           aria-label={t("ui.runtime.interactionsLabel")}
@@ -189,7 +214,7 @@ export function RuntimePanel({
               item.status !== "unknown" &&
               !(item.status === "sent" && item.defaultAnswered),
           ) && (
-            <details>
+            <details hidden={!inspection}>
               <summary>{t("ui.runtime.interactionRecords")}</summary>
               <div className="native-interactions">
                 {state.interactions.items
@@ -219,7 +244,10 @@ export function RuntimePanel({
           )}
         </section>
       )}
-      <div className="flex gap-2">
+      <div
+        className="flex gap-2"
+        hidden={!inspection && state.phase !== "failed"}
+      >
         {!state.trusted && (
           <Button
             disabled={state.phase === "starting"}

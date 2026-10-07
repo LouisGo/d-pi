@@ -554,3 +554,101 @@ it("locates a pending interaction after a delayed inspect without stealing focus
   );
   expect(document.activeElement).toBe(editor);
 });
+
+it("keeps Thread tools closed by default and preserves the editor and reading panes across disclosure", async () => {
+  const input = await fixture();
+  const tools =
+    input.container.querySelector<HTMLDetailsElement>(".thread-tools");
+  expect(tools).not.toBeNull();
+  expect(tools?.open).toBe(false);
+  const editor = input.container.querySelector(".tiptap");
+  const panes = [...input.container.querySelectorAll(".reading-pane")];
+  expect(
+    input.container.querySelector(".thread-setup")?.closest("details"),
+  ).toBe(tools);
+  if (!tools) throw Error("missing Thread tools");
+  await act(async () => {
+    tools.open = true;
+    await new Promise((done) => setTimeout(done, 0));
+  });
+  await act(async () => {
+    tools.open = false;
+    await new Promise((done) => setTimeout(done, 0));
+  });
+  expect(input.container.querySelector(".tiptap")).toBe(editor);
+  expect([...input.container.querySelectorAll(".reading-pane")]).toEqual(panes);
+  expect(editor?.textContent).toBe("first draft");
+});
+
+it("discloses healthy runtime inspection without hiding Stop when execution becomes active", async () => {
+  let receive: ((view: RuntimeView) => void) | undefined;
+  let latest: RuntimeView | undefined;
+  const commands: string[] = [];
+  const input = await fixture(false, {
+    request: async ({ kind, threadId, traceId }) => {
+      commands.push(kind);
+      latest = {
+        threadId,
+        traceId,
+        connectionGeneration: crypto.randomUUID(),
+        revision: 1,
+        phase: "ready",
+        trusted: true,
+        busy: false,
+        model: "fixture",
+        configuration: { code: "runtime.configDefault" },
+        message: { code: "runtime.readyToSend" },
+      };
+      return { kind: "view", view: latest };
+    },
+    subscribe: (listener) => {
+      receive = listener;
+      return () => {
+        receive = undefined;
+      };
+    },
+  });
+  expect(input.container.querySelector(".runtime-panel")).toBeNull();
+  const editor = input.container.querySelector(".tiptap");
+  const tools =
+    input.container.querySelector<HTMLDetailsElement>(".thread-tools");
+  if (!tools) throw Error("missing tools");
+  await act(async () => {
+    tools.open = true;
+    await new Promise((done) => setTimeout(done, 0));
+  });
+  expect(input.container.querySelector(".runtime-panel")).not.toBeNull();
+  await act(async () => {
+    tools.open = false;
+    await new Promise((done) => setTimeout(done, 0));
+  });
+  expect(input.container.querySelector(".runtime-panel")).toBeNull();
+  if (!latest || !receive) throw Error("missing runtime observation");
+  const busy: RuntimeView = {
+    ...latest,
+    revision: 2,
+    busy: true,
+    control: {
+      pendingAsync: false,
+      admitted: true,
+      paused: false,
+      stopping: false,
+      streaming: true,
+      compacting: false,
+      queued: 0,
+      background: 0,
+      queue: [],
+    },
+  };
+  await act(() => receive?.(busy));
+  const stop = [
+    ...input.container.querySelectorAll<HTMLButtonElement>(
+      ".runtime-panel button",
+    ),
+  ].find((button) => button.textContent === "Stop and pause queue");
+  expect(stop).toBeDefined();
+  expect(tools.open).toBe(false);
+  await act(() => stop?.click());
+  expect(commands.filter((command) => command === "stop")).toHaveLength(1);
+  expect(input.container.querySelector(".tiptap")).toBe(editor);
+});

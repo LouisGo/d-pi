@@ -255,6 +255,7 @@ export const ui = {
   "ui.files.readingDiff": "正在读取差异…",
   "ui.files.sampleDetails": "文件采样信息",
 
+  "app.reading.tools": "Thread 工具",
   "app.reading.focus": "专注阅读",
   "app.reading.restoreControls": "恢复控件",
 
@@ -404,6 +405,7 @@ export const ui = {
   "composer.paste.hint": "⌘⇧V 纯文本粘贴",
   "composer.editorLabel": "草稿正文",
   "composer.sectionLabel": "持久文字草稿",
+  "composer.inputOptions": "输入选项",
   "composer.heading": "草稿",
   "composer.status.saved": "已保存到此设备",
   "composer.status.dirty": "等待保存…",
@@ -438,7 +440,7 @@ export const ui = {
   "ui.conversation.imageNotLoaded": "未加载",
   "ui.conversation.sectionLabel": "原生会话阅读",
   "ui.conversation.heading": "会话",
-  "ui.conversation.empty": "发送后，OMP 的回复和工具结果会显示在这里。",
+  "ui.conversation.empty": "从下方输入，开始对话。",
   "ui.conversation.gap": "当前显示有缺口，可在下方读取原生记录核对。",
   "ui.conversation.streaming": "进行中",
   "ui.conversation.failed": "失败",

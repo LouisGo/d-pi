@@ -114,10 +114,15 @@ const ThreadContent = memo(function ThreadContent({
 }) {
   const { thread, directoryAvailable } = threadSelection;
   const { submission } = thread;
+  const { t } = useI18n();
+  const toolsDisclosure = useRef<HTMLDetailsElement>(null);
+  const [toolsOpen, setToolsOpen] = useState(false);
   const modelDisclosure = useRef<HTMLDetailsElement>(null);
   const chooseModel = useCallback(() => {
     const details = modelDisclosure.current;
     if (!details) return;
+    if (toolsDisclosure.current) toolsDisclosure.current.open = true;
+    setToolsOpen(true);
     details.open = true;
     details.scrollIntoView({ block: "nearest" });
     details.querySelector<HTMLElement>("[data-slot=select]")?.focus();
@@ -143,31 +148,77 @@ const ThreadContent = memo(function ThreadContent({
   );
   return (
     <>
-      <div className="thread-setup" hidden={readingFocus}>
-        <div className="directory-info" title={thread.context.directory}>
-          <FolderIcon />
-          <h1>{thread.context.directory.split("/").filter(Boolean).at(-1)}</h1>
-          <span className="muted">{thread.context.directory}</span>
-        </div>
+      <div className="thread-toolbar">
+        <details
+          ref={toolsDisclosure}
+          className="thread-tools"
+          onToggle={(event) => setToolsOpen(event.currentTarget.open)}
+        >
+          <summary>{t("app.reading.tools")}</summary>
+          <div className="thread-tools-body">
+            <div className="thread-setup">
+              <div className="directory-info" title={thread.context.directory}>
+                <FolderIcon />
+                <h1>
+                  {thread.context.directory.split("/").filter(Boolean).at(-1)}
+                </h1>
+                <span className="muted">{thread.context.directory}</span>
+              </div>
+              {model.configuration && (
+                <ModelControls
+                  thread={thread}
+                  bridge={model.configuration}
+                  disclosureRef={modelDisclosure}
+                />
+              )}
+              {model.configuration && (
+                <SubagentControls
+                  key={thread.context.threadId}
+                  thread={thread}
+                  bridge={model.configuration}
+                />
+              )}
+            </div>
+            <ReadingNavigation
+              readingView={readingView}
+              onReadingViewChange={(view) => {
+                onReadingViewChange(view);
+                if (toolsDisclosure.current)
+                  toolsDisclosure.current.open = false;
+                setToolsOpen(false);
+              }}
+            />
+            <Button
+              variant="ghost"
+              aria-pressed={readingFocus}
+              onClick={() => {
+                onReadingFocusChange(!readingFocus);
+                if (toolsDisclosure.current)
+                  toolsDisclosure.current.open = false;
+                setToolsOpen(false);
+              }}
+            >
+              {t("app.reading.focus")}
+            </Button>
+          </div>
+        </details>
+        {readingFocus && (
+          <Button variant="ghost" onClick={() => onReadingFocusChange(false)}>
+            {t("app.reading.restoreControls")}
+          </Button>
+        )}
+      </div>
+      <div
+        className="thread-reading"
+        data-attention-target="result"
+        tabIndex={-1}
+      >
         {!directoryAvailable && <DirectoryUnavailable />}
-        {model.configuration && (
-          <ModelControls
-            thread={thread}
-            bridge={model.configuration}
-            disclosureRef={modelDisclosure}
-          />
-        )}
-        {model.configuration && (
-          <SubagentControls
-            key={thread.context.threadId}
-            thread={thread}
-            bridge={model.configuration}
-          />
-        )}
         {thread.runtime && (
           <RuntimePanel
             model={thread.runtime}
             submission={thread.submission}
+            inspection={toolsOpen}
             // Post-default user answers become a new steering instruction
             // (2026-09-28 decision), not a follow-up.
             onFollowUp={
@@ -177,18 +228,6 @@ const ThreadContent = memo(function ThreadContent({
             }
           />
         )}
-      </div>
-      <ReadingNavigation
-        readingView={readingView}
-        onReadingViewChange={onReadingViewChange}
-        readingFocus={readingFocus}
-        onReadingFocusChange={onReadingFocusChange}
-      />
-      <div
-        className="thread-reading"
-        data-attention-target="result"
-        tabIndex={-1}
-      >
         <ReadingPane
           thread={thread}
           view="conversation"
@@ -198,7 +237,6 @@ const ThreadContent = memo(function ThreadContent({
             <Conversation
               model={thread.reading}
               positions={thread.readingSources}
-              onHistory={() => onReadingViewChange("history")}
             />
           )}
         </ReadingPane>
@@ -263,12 +301,7 @@ function DirectoryUnavailable() {
 function ReadingNavigation({
   readingView,
   onReadingViewChange,
-  readingFocus,
-  onReadingFocusChange,
-}: Pick<ThreadWorkbenchProps, "readingView" | "onReadingViewChange"> & {
-  readingFocus: boolean;
-  onReadingFocusChange: (value: boolean) => void;
-}) {
+}: Pick<ThreadWorkbenchProps, "readingView" | "onReadingViewChange">) {
   const { t } = useI18n();
   return (
     <nav
@@ -303,17 +336,6 @@ function ReadingNavigation({
           onClick={() => onReadingViewChange("history")}
         >
           {t("app.reading.history")}
-        </Button>
-      </div>
-      <div className="reading-focus">
-        <Button
-          variant="ghost"
-          aria-pressed={readingFocus}
-          onClick={() => onReadingFocusChange(!readingFocus)}
-        >
-          {t(
-            readingFocus ? "app.reading.restoreControls" : "app.reading.focus",
-          )}
         </Button>
       </div>
     </nav>

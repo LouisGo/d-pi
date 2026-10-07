@@ -17,6 +17,7 @@ const { scenario, path: outputPath } = parseValidationScenario(
     components: [],
     sandwich: [],
     chrome: [],
+    thread: [],
   },
 );
 const isolated = createTestEnvironment({ prefix: "d-pi-workbench-" });
@@ -41,7 +42,7 @@ const vite = await createViteServer({
   server: { host: "127.0.0.1", port: 0, watch: null, hmr: false },
 });
 await vite.listen();
-const url = `http://127.0.0.1:${vite.httpServer.address().port}/validation/m2/workbench.html`;
+const url = `http://127.0.0.1:${vite.httpServer.address().port}/validation/m2/workbench.html${scenario === "thread" ? "?thread-layout" : ""}`;
 const ports = createServer();
 await new Promise((done) => ports.listen(0, "127.0.0.1", done));
 const port = ports.address().port;
@@ -125,7 +126,9 @@ try {
     ),
   );
   await call("Page.enable");
-  if (scenario === "chrome") {
+  if (scenario === "thread") {
+    await runThreadChecks();
+  } else if (scenario === "chrome") {
     await runChromeChecks();
   } else if (scenario === "sandwich") {
     await runSandwichChecks();
@@ -1316,4 +1319,75 @@ async function runChromeChecks() {
       await capture(`chrome-${theme}-${width}`);
     }
   }
+}
+
+async function runThreadChecks() {
+  await evaluate(
+    `window.threadLayoutEditor=document.querySelector('.tiptap');window.threadLayoutController=window.probe.model.controller;window.threadLayoutPane=document.querySelector('.reading-pane');true;`,
+  );
+  for (const theme of ["light", "dark"]) {
+    if (
+      await evaluate(`document.documentElement.dataset.theme !== '${theme}'`)
+    ) {
+      await evaluate("window.probe.model.preference('theme')");
+    }
+    for (const [width, height] of [
+      [1440, 900],
+      [720, 540],
+    ]) {
+      child.stdin.write(JSON.stringify({ width, height }) + "\n");
+      await wait(() =>
+        evaluate(`innerWidth===${width} && innerHeight===${height}`),
+      );
+      await check(
+        `thread-${theme}-${width}-two-regions`,
+        `(()=>{
+        const r=s=>document.querySelector(s).getBoundingClientRect();
+        const workspace=r('.thread-workspace'),reading=r('.thread-reading'),composer=r('.composer');
+        return {workspace:workspace.toJSON(),reading:reading.toJSON(),composer:composer.toJSON(),open:document.querySelector('.thread-tools').open,setup:document.querySelector('.thread-setup').getBoundingClientRect().height};
+      })()`,
+        (v) =>
+          v.reading.height > 60 &&
+          v.composer.height > 60 &&
+          v.reading.bottom <= v.composer.top &&
+          v.composer.bottom <= v.workspace.bottom + 1 &&
+          v.composer.width <= v.workspace.width &&
+          !v.open,
+      );
+      await check(
+        `thread-${theme}-${width}-scroll-boundaries`,
+        `(()=>{
+        const pane=document.querySelector('.reading-pane');
+        const composer=document.querySelector('.composer').getBoundingClientRect().top;
+        pane.scrollTop=800;pane.dispatchEvent(new Event('scroll'));
+        return pane.scrollTop>0 && document.querySelector('.composer').getBoundingClientRect().top===composer &&
+          document.documentElement.scrollWidth===innerWidth && document.documentElement.scrollHeight===innerHeight;
+      })()`,
+      );
+      await capture(`thread-${theme}-${width}`);
+    }
+  }
+  await evaluate("document.querySelector('.thread-tools').open=true");
+  await wait(() =>
+    evaluate(
+      "document.querySelector('.thread-tools-body').getBoundingClientRect().height>0",
+    ),
+  );
+  await check(
+    "thread-tools-bounded",
+    `(()=>{const body=document.querySelector('.thread-tools-body').getBoundingClientRect(),workspace=document.querySelector('.thread-workspace').getBoundingClientRect();return body.left>=workspace.left && body.right<=workspace.right && body.bottom<=workspace.bottom;})()`,
+  );
+  await capture("thread-tools-dark-720");
+  await evaluate("document.querySelector('.thread-tools').open=false");
+  await check(
+    "thread-tools-preserve-resources",
+    "window.threadLayoutEditor===document.querySelector('.tiptap') && window.threadLayoutController===window.probe.model.controller && window.threadLayoutPane===document.querySelector('.reading-pane')",
+  );
+  await evaluate(
+    "document.querySelector('.tiptap').editor.commands.setContent('<p>'+('Long draft line<br>'.repeat(100))+'</p>')",
+  );
+  await check(
+    "thread-long-draft-preserves-reading-space",
+    `(()=>{const reading=document.querySelector('.thread-reading').getBoundingClientRect(),composer=document.querySelector('.composer').getBoundingClientRect(),workspace=document.querySelector('.thread-workspace').getBoundingClientRect();return reading.height>60 && composer.bottom<=workspace.bottom+1 && composer.height<=workspace.height*.6+1;})()`,
+  );
 }

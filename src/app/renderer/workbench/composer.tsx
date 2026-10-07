@@ -318,12 +318,13 @@ export function Composer({
       data-expanded={expanded}
       aria-label={t("composer.sectionLabel")}
     >
-      <div className="composer-heading">
-        <h2>{t("composer.heading")}</h2>
-        <span role="status" className="save-status">
-          {status}
-        </span>
-      </div>
+      {state.kind !== "saved" && (
+        <div className="composer-heading">
+          <span role="status" className="save-status">
+            {status}
+          </span>
+        </div>
+      )}
       {runtime && (
         <ComposerReadiness
           runtime={runtime}
@@ -388,12 +389,22 @@ export function Composer({
         </p>
       )}
       <div className="composer-footer">
-        <span>
-          {expanded || preference === "enter-newline"
-            ? t("composer.shortcut.newline")
-            : t("composer.shortcut.send")}{" "}
-          {t("composer.shortcut.undo")} · {t("composer.paste.hint")}
-        </span>
+        <details className="composer-help">
+          <summary>{t("composer.inputOptions")}</summary>
+          <p>
+            {expanded || preference === "enter-newline"
+              ? t("composer.shortcut.newline")
+              : t("composer.shortcut.send")}{" "}
+            {t("composer.shortcut.undo")} · {t("composer.paste.hint")}
+          </p>
+          <Button
+            variant="ghost"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => void model.preference("sendKey")}
+          >
+            {t("composer.switchShortcut")}
+          </Button>
+        </details>
         <div className="flex flex-wrap gap-2">
           <Button
             variant="ghost"
@@ -401,13 +412,6 @@ export function Composer({
             onClick={() => setExpanded((value) => !value)}
           >
             {expanded ? t("composer.collapse") : t("composer.expand")}
-          </Button>
-          <Button
-            variant="ghost"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => void model.preference("sendKey")}
-          >
-            {t("composer.switchShortcut")}
           </Button>
           {submission && runtime && (
             <SendButton

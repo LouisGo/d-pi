@@ -481,3 +481,101 @@
     overflow-x: auto;
   }
 }
+
+@layer components {
+  .thread-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex-shrink: 0;
+    gap: var(--layout-gap);
+    font-size: var(--text-small);
+    color: var(--muted-foreground);
+  }
+  .thread-tools > summary {
+    padding: calc(var(--layout-gap) / 2) var(--control-padding);
+    border-radius: var(--radius-control);
+    cursor: default;
+  }
+  .thread-tools > summary:hover {
+    background: var(--accent);
+    color: var(--accent-foreground);
+  }
+  .thread-tools-body {
+    position: absolute;
+    inset-inline: var(--layout-gap);
+    inset-block-start: var(--control-height);
+    z-index: 2;
+    max-height: min(50%, var(--thread-setup-max-height));
+    overflow: auto;
+    overscroll-behavior: contain;
+    padding: var(--panel-padding);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--foreground);
+  }
+  .thread-tools-body .thread-setup {
+    max-height: none;
+    overflow: visible;
+  }
+  .thread-tools-body .reading-navigation {
+    margin-top: var(--layout-gap);
+    border-bottom: 0;
+  }
+  .thread-reading .runtime-panel {
+    max-width: var(--content-width);
+    margin: 0 auto var(--layout-gap);
+  }
+  .thread-reading .conversation > .muted {
+    padding-block: var(--panel-padding);
+  }
+  .thread-workspace > .composer {
+    max-height: 60%;
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  .thread-workspace > .composer[data-expanded="true"] {
+    max-height: none;
+  }
+}
+
+@layer components {
+  .thread-reading {
+    display: flex;
+    flex-direction: column;
+  }
+  .thread-reading > .reading-pane {
+    flex: 1;
+    min-height: 0;
+    height: auto;
+  }
+  .thread-reading > .runtime-panel {
+    flex-shrink: 0;
+    width: 100%;
+    max-height: 40%;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+}
+
+@layer components {
+  .thread-tools:not([open]) > .thread-tools-body {
+    display: none;
+  }
+  .composer-help {
+    margin-inline-end: auto;
+    max-width: 100%;
+  }
+  .composer-help > summary {
+    cursor: default;
+    padding: calc(var(--layout-gap) / 2);
+  }
+  .composer-help > p {
+    margin-block: calc(var(--layout-gap) / 2);
+  }
+  .runtime-panel > [hidden] {
+    display: none;
+  }
+}

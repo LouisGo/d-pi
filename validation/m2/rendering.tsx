@@ -208,16 +208,21 @@ export const bridge: DesktopBridge = {
           traceId: command.traceId,
           revision: command.kind === "start" ? 1 : 0,
           phase:
-            command.kind === "start"
+            location.search === "?thread-layout"
               ? "ready"
-              : drafts.some(
-                    (d) => d.threadId === command.threadId && d.text !== "",
-                  )
-                ? "interrupted"
-                : "allowed",
+              : command.kind === "start"
+                ? "ready"
+                : drafts.some(
+                      (d) => d.threadId === command.threadId && d.text !== "",
+                    )
+                  ? "interrupted"
+                  : "allowed",
           trusted: true,
           busy: false,
-          model: command.kind === "start" ? "fixture/model" : null,
+          model:
+            location.search === "?thread-layout" || command.kind === "start"
+              ? "fixture/model"
+              : null,
           configuration: { code: "runtime.configDefault" },
           message: { code: "runtime.previousSessionReadOnly" },
         }),
