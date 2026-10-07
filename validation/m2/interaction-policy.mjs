@@ -326,33 +326,74 @@ try {
     });
     await new Promise((done) => setTimeout(done, 200));
     return evaluate(
-      `(()=>{const c=getComputedStyle(document.querySelector(${JSON.stringify(selector)}));return {background:c.backgroundColor,color:c.color,outline:c.outlineStyle,decoration:c.textDecorationLine,border:c.borderColor};})()`,
+      `(()=>{const c=getComputedStyle(document.querySelector(${JSON.stringify(selector)}));return {background:c.backgroundColor,color:c.color,outline:c.outlineStyle,outlineWidth:c.outlineWidth,outlineColor:c.outlineColor,shadow:c.boxShadow,decoration:c.textDecorationLine,border:c.borderWidth==='0px'||c.borderStyle==='none'?'none':c.borderColor};})()`,
     );
   }
   await call("DOM.enable");
   await call("CSS.enable");
-  for (const selector of [
-    "#probe-button",
-    "#probe-icon",
-    "#probe-summary",
-    "#probe-link",
-    "#probe-navigation",
-    "#probe-selected",
-  ]) {
-    const resting = await state(selector, []),
-      hovered = await state(selector, ["hover"]),
-      pressed = await state(selector, ["hover", "active"]),
-      focused = await state(selector, ["focus-visible"]);
-    assert.notDeepEqual(hovered, resting, `${selector}: hover feedback`);
-    assert.notDeepEqual(pressed, hovered, `${selector}: press feedback`);
-    assert.equal(focused.outline, "none", `${selector}: no outline`);
-    assert.notDeepEqual(
-      focused,
-      resting,
-      `${selector}: keyboard focus feedback`,
+  for (const theme of ["light", "dark"]) {
+    await evaluate(
+      `document.documentElement.dataset.theme=${JSON.stringify(theme)}`,
     );
-    facts.states.push({ selector, resting, hovered, pressed, focused });
-    await state(selector, []);
+    for (const selector of [
+      "#probe-select",
+      "#probe-selected",
+      "#probe-button",
+      "#probe-icon",
+      "#probe-summary",
+      "#probe-link",
+      "#probe-navigation",
+    ]) {
+      const resting = await state(selector, []),
+        hovered = await state(selector, ["hover"]),
+        pressed = await state(selector, ["hover", "active"]),
+        focused = await state(selector, ["focus-visible"]);
+      assert.notDeepEqual(hovered, resting, `${selector}: hover feedback`);
+      assert.notDeepEqual(pressed, hovered, `${selector}: press feedback`);
+      for (const [name, pointer] of [
+        ["hover", hovered],
+        ["active", pressed],
+      ]) {
+        assert.equal(
+          pointer.outline,
+          "none",
+          `${selector}: ${name} has no focus outline`,
+        );
+        assert.equal(
+          pointer.border,
+          resting.border,
+          `${selector}: ${name} does not add a border`,
+        );
+        assert.equal(
+          pointer.shadow,
+          resting.shadow,
+          `${selector}: ${name} does not add a ring shadow`,
+        );
+      }
+      assert.equal(
+        focused.outline,
+        "solid",
+        `${selector}: keyboard focus outline`,
+      );
+      assert.ok(
+        parseFloat(focused.outlineWidth) >= 2,
+        `${selector}: visible keyboard ring`,
+      );
+      assert.notDeepEqual(
+        focused,
+        resting,
+        `${selector}: keyboard focus feedback`,
+      );
+      facts.states.push({
+        theme,
+        selector,
+        resting,
+        hovered,
+        pressed,
+        focused,
+      });
+      await state(selector, []);
+    }
   }
   assert.deepEqual(
     await state("#probe-disabled", []),

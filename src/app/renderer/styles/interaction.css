@@ -102,10 +102,12 @@
     [role="option"],
     [role="dialog"],
     [role="separator"]
-  ):is(:focus, :focus-visible) {
+  ):focus:not(:focus-visible) {
     outline: none;
   }
   :where(
+    button,
+    [role="button"],
     a[href],
     summary,
     select,
@@ -115,7 +117,8 @@
     [role="menuitem"],
     [role="option"]
   ):focus-visible {
-    outline: none;
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-ring-offset);
     background: var(--accent);
     color: var(--accent-foreground);
     border-radius: var(--radius-control);
@@ -144,10 +147,11 @@
     background: var(--accent);
   }
   :where(select):not(:disabled):hover {
-    border-color: var(--primary);
+    background: var(--muted-hover);
   }
   :where(select):not(:disabled):active {
-    border-color: var(--accent-foreground);
+    background: var(--accent);
+    color: var(--accent-foreground);
   }
   :where(input[type="checkbox"], input[type="radio"]) {
     accent-color: var(--primary);

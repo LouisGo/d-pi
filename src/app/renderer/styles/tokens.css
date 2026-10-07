@@ -32,6 +32,8 @@
   );
   --foreground: #242730;
   --primary: #3757bc;
+  --focus-ring: 2px solid var(--primary);
+  --focus-ring-offset: 2px;
   --primary-foreground: #ffffff;
   --muted: #f0f2f6;
   --muted-foreground: #606775;

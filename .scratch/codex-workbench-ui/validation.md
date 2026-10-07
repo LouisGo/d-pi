@@ -50,3 +50,17 @@ CUA 原生检查以Main未变化的4cf3cee包执行：close/fullscreen/minimize�
 测试驱动先误匹配同名的一级导航图标而非阅读“会话”按钮，随后试图在 Modal 覆盖时点击背景模型动作；修正为可见文字优先、图标 aria-label 兜底、开放 Modal 限定查找范围，并在背景操作前关闭 Modal，同一包完整回归通过。此修正只改变 validation 驱动，不是应用修复或应用源新构建。
 
 [CUA原生记录](evidence/feedback/native-cua.json)：实际打开设置 Modal、切 system 独立图标、诊断 traceId 输入聚焦、第一 Esc 关闭诊断/第二 Esc 关闭设置并回焦、Projects 加号打开原生目录选择、取消后同一 Thread 草稿 A_UNSENT_DRAFT 保留。物理顶栏 drag 前后均 x304/y105/1120×780，未确认移动；窗口日志仍有 Window move completed without beginning，原因unknown。系统IME候选窗/VoiceOver/长时流式性能未覆盖，04继续claimed。
+
+## 2026-10-07 鼠标描边与键盘焦点纠正
+
+用户明确保留 Tab outline，移除 hover/active 的不一致描边。真实根因是共享 navigation variant 在选中 + hover/active 时设置彩色 border，不是焦点 outline。新增边框回归先失败（[红灯](evidence/pointer-focus/red-navigation.txt)），移除两条边框状态后通过。中央规则由禁止全部 outline 改为只抑制普通指针焦点；focus-visible 使用同一 primary 角色与统一轮廓 token，恢复 Button、链接、summary、select、input、textarea、分隔条、文件结果和诊断字段的键盘提示，编辑器仍用 caret，浮层容器保持原焦点协议。select 的 hover/active 不再改变 border-color。
+
+[交互检查](evidence/pointer-focus/interaction.json)通过，两主题实际绘制的边框/outline/shadow、hover/active/disabled/focus-visible、Portal 和 Monaco/Diff 选择合同分别验证；零宽或 none 的 border-color 随 currentColor 变化不等于绘制描边。新增普通 select 样本不含业务操作。
+
+[工作台68条记录](evidence/pointer-focus/native.json)通过：67项断言/矩阵与1项输入到rAF采样。真实 CDP 鼠标 move/down/up/click，以及 Tab/Shift+Tab，覆盖两主题的一级导航、当前Thread、设置导航；hover/active/点击不新增描边，键盘回到同一按钮时 solid 轮廓可见。Modal 可见且启用的控件另验证键盘轮廓；原几何、图标中心、IME、撤销和资源保持检查继续通过。驱动修正了“点击会话一定留在该按钮”的错误假设（原拥有者会回焦Composer），按真实 Tab 顺序查找目标并等待焦点稳定；初始 Modal 单次 Esc 与后续状态矩阵独立验证，未改业务焦点行为。
+
+pnpm check:fast、lint:design、Impeccable机械扫描通过。本修正范围为CSS与验证驱动，未改变App业务或持久化结构；新的实际包与远端CI另按固定source记录。旧“所有outline消失”记录是已被用户纠正的历史预期，不代表当前合同。
+
+指针修正实际包：源f9cc66e13fb638a95f9931fa6fe81241585c43c4、dirty=false，0.1.0-workbench.3 / f9cc66e1-f83299df。pnpm build 与 macOS arm64打包通过；asar SHA-256 096644593d1a77b87f29ed4d84198e096dd34e56791568ad2c1ea6e4379c5e6a。`package.mjs ... --workbench --inspect`[14条记录](evidence/pointer-focus/packaged.json)通过（13检查+checkpoint），含 Main system 持久化、Modal诊断焦点、原生SDK、独立Thread/草稿/撤销/合成IME/阅读/重载/冷只读。此新版未重跑可选Router/附件增量，之前版本的相应证据保留而不冒称此次覆盖。
+
+[CUA原生检查](evidence/pointer-focus/native-cua.json)确认同一Thread行鼠标点击无蓝框，Tab/Shift+Tab回到该行显示轮廓，使用截图坐标385/490的实际指针点击退出轮廓。AX press不用于证明指针模式退出；此次没有重新宣称物理拖窗或系统IME/VoiceOver已通过。

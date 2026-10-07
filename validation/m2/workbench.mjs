@@ -162,6 +162,7 @@ async function key(key, code, modifiers = 0) {
     key,
     code,
     modifiers,
+    windowsVirtualKeyCode: key === "Tab" ? 9 : undefined,
   });
   await call("Input.dispatchKeyEvent", { type: "keyUp", key, code, modifiers });
 }
@@ -243,7 +244,96 @@ async function checkIconGeometry(name) {
       ),
   );
 }
+async function checkPointerAndKeyboard(selector, name) {
+  child.stdin.write(JSON.stringify({ focus: true }) + "\n");
+  await call("Page.bringToFront");
+  await call("Input.dispatchMouseEvent", { type: "mouseMoved", x: 700, y: 20 });
+  await evaluate("document.activeElement?.blur()");
+  const style = () =>
+    evaluate(
+      `(()=>{const b=document.querySelector(${JSON.stringify(selector)}),c=getComputedStyle(b);return {outline:c.outlineStyle,width:c.outlineWidth,border:c.borderColor,shadow:c.boxShadow,focusVisible:b.matches(':focus-visible'),active:document.activeElement===b,current:document.activeElement.outerHTML.slice(0,180)};})()`,
+    );
+  const resting = await style();
+  const r = await rect(selector),
+    x = r.x + r.width / 2,
+    y = r.y + r.height / 2;
+  await call("Input.dispatchMouseEvent", { type: "mouseMoved", x, y });
+  await new Promise((done) => setTimeout(done, 200));
+  const hover = await style();
+  await call("Input.dispatchMouseEvent", {
+    type: "mousePressed",
+    x,
+    y,
+    button: "left",
+    buttons: 1,
+    clickCount: 1,
+  });
+  const active = await style();
+  await call("Input.dispatchMouseEvent", {
+    type: "mouseReleased",
+    x,
+    y,
+    button: "left",
+    buttons: 0,
+    clickCount: 1,
+  });
+  await evaluate("window.probe.pause()");
+  const clicked = await style();
+  for (const [state, value] of [
+    ["hover", hover],
+    ["active", active],
+    ["clicked", clicked],
+  ]) {
+    assert.equal(value.outline, "none", `${name}: ${state} no outline`);
+    assert.equal(
+      value.border,
+      resting.border,
+      `${name}: ${state} stable border`,
+    );
+    assert.equal(
+      value.shadow,
+      resting.shadow,
+      `${name}: ${state} no added shadow ring`,
+    );
+  }
+  // Some actions legitimately hand focus to Composer; reach the target via real Tab navigation.
+  let keyboard;
+  for (let attempt = 0; attempt < 40; attempt++) {
+    await key("Tab", "Tab");
+    await evaluate("window.probe.pause()");
+    keyboard = await style();
+    if (keyboard.active) break;
+  }
+  await key("Tab", "Tab", 8);
+  await evaluate("window.probe.pause()");
+  await key("Tab", "Tab");
+  await evaluate("window.probe.pause()");
+  keyboard = await style();
+  assert.ok(
+    keyboard.active &&
+      keyboard.focusVisible &&
+      keyboard.outline === "solid" &&
+      parseFloat(keyboard.width) >= 2,
+    `${name}: Tab round-trip restores a visible keyboard outline ${JSON.stringify({ clicked, keyboard })}`,
+  );
+  results.push({ name, resting, hover, active, clicked, keyboard });
+}
 async function runChecks() {
+  for (const theme of ["light", "dark"]) {
+    await evaluate(
+      `document.documentElement.dataset.theme=${JSON.stringify(theme)}`,
+    );
+    await checkPointerAndKeyboard(
+      '.activity-rail button[aria-pressed="true"]',
+      `${theme}-rail-pointer-vs-keyboard-focus`,
+    );
+    await checkPointerAndKeyboard(
+      '[data-thread-navigation][aria-current="page"]',
+      `${theme}-thread-pointer-vs-keyboard-focus`,
+    );
+    await capture(`${theme}-keyboard-focus`);
+  }
+  await evaluate("document.documentElement.dataset.theme='light'");
   await checkIconGeometry("all-icon-actions-centered-with-empty-attention");
   await check(
     "navigation-controls-follow-native-window-controls",
@@ -280,6 +370,10 @@ async function runChecks() {
     (v) => v.hidden && v.active.includes('aria-label=\"Settings\"'),
   );
   await click("Settings");
+  await checkPointerAndKeyboard(
+    ".settings-navigation button",
+    "light-settings-pointer-vs-keyboard-focus",
+  );
   await check(
     "settings-reuses-existing-capabilities",
     "document.querySelector('.ui-settings-modal').hidden===false && document.querySelector('.conversation-body').hidden===false && !!document.querySelector('#settings-configuration .configuration-settings') && !!document.querySelector('#settings-attention') && !!document.querySelector('#settings-diagnostics')",
@@ -427,10 +521,20 @@ async function runChecks() {
   await evaluate("window.probe.model.preference('theme');");
   await capture("production-dark-minimum");
   await click("Settings");
+  await checkPointerAndKeyboard(
+    ".settings-navigation button",
+    "dark-settings-pointer-vs-keyboard-focus",
+  );
   await capture("settings-dark-minimum");
+  await key("Tab", "Tab");
   await check(
-    "settings-actions-have-no-outline",
-    "[...document.querySelectorAll('.ui-settings-modal button,.ui-settings-modal select')].every(b=>{b.focus();return getComputedStyle(b).outlineStyle==='none';})",
+    "settings-actions-retain-keyboard-focus-outline",
+    "[...document.querySelectorAll('.ui-settings-modal button,.ui-settings-modal select')].filter(b=>!b.disabled&&b.getBoundingClientRect().width>0).map(b=>{b.focus();return {label:b.textContent||b.getAttribute('aria-label'),visible:b.matches(':focus-visible'),outline:getComputedStyle(b).outlineStyle,width:getComputedStyle(b).outlineWidth};})",
+    (controls) =>
+      controls.length >= 5 &&
+      controls.every(
+        (c) => c.visible && c.outline === "solid" && parseFloat(c.width) >= 2,
+      ),
   );
   await click("Close");
   await checkIconGeometry("all-icon-actions-centered-in-dark-narrow-window");

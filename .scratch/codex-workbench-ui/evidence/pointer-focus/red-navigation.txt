@@ -1,0 +1,21 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: #probe-selected: hover does not add a border
++ actual - expected
+
++ 'rgb(168, 193, 255)'
+- 'rgba(0, 0, 0, 0)'
+      ^
+
+    at file:///Users/louistation/.codex/worktrees/codex-workbench-ui/d-pi/validation/m2/interaction-policy.mjs:350:14 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 'rgb(168, 193, 255)',
+  expected: 'rgba(0, 0, 0, 0)',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.21.0

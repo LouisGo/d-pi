@@ -61,20 +61,6 @@
     color: var(--accent-foreground);
     background: var(--accent);
   }
-  .ui-button-navigation:is(
-    [aria-selected="true"],
-    [aria-current="page"],
-    [aria-pressed="true"]
-  ):hover:not(:disabled) {
-    border-color: var(--primary);
-  }
-  .ui-button-navigation:is(
-    [aria-selected="true"],
-    [aria-current="page"],
-    [aria-pressed="true"]
-  ):active:not(:disabled) {
-    border-color: var(--accent-foreground);
-  }
   .ui-button-ghost {
     color: var(--foreground);
     background: transparent;
@@ -89,18 +75,6 @@
   .ui-button-navigation:active:not(:disabled) {
     color: var(--accent-foreground);
     background: var(--accent);
-  }
-  .ui-button:focus,
-  .ui-button:focus-visible {
-    outline: none;
-  }
-  .ui-button-primary:focus-visible:not(:disabled) {
-    background: var(--primary-active);
-  }
-  .ui-button-ghost:focus-visible:not(:disabled),
-  .ui-button-navigation:focus-visible:not(:disabled) {
-    background: var(--muted-hover);
-    color: var(--foreground);
   }
   .ui-button:disabled {
     opacity: 0.5;
