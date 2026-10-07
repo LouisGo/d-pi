@@ -33,7 +33,7 @@ hover/active/selected/disabled/invalid 区分；普通鼠标焦点不绘制 outl
 
 `node .scratch/beautiful-ui-system/preview.mjs 1440` 或 `720` 启动隔离 fixture，Ctrl-C 退出并清理自身临时环境。该入口用于复现组件证据；用户日常试用使用 `pnpm dev`。`node .scratch/beautiful-ui-system/contrast.mjs` 复算颜色门槛。截图中的系统共享提示/指针高亮属于 macOS，不是应用样式。
 
-本轮仅本地提交与 Dev 交付；未推送、创建远端 PR 或合入 main。
+截至交付 head `58f3330`，本轮仅本地提交与 Dev 交付。后续 2026-10-07 用户已授权本地 main 集成，范围及验证见[本地 PR 说明](pr.md)；未授权远端 push 或发布。
 
 ## 追加反馈最终结果
 

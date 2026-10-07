@@ -84,4 +84,3 @@ stdout | src/app/renderer/workbench/attachment-controls.test.ts > retains an unr
       Tests  61 passed (61)
    Start at  22:29:34
    Duration  5.61s (import 68%, tests 14%, environment 9%, transform 9%)
-

@@ -45,4 +45,3 @@ This ensures that you're testing the behavior the user would see in the browser.
       Tests  14 passed (14)
    Start at  23:05:32
    Duration  3.45s (import 72%, tests 14%, environment 9%, transform 5%)
-
