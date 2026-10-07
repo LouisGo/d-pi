@@ -18,7 +18,7 @@
 
 搜索框左侧加入统一SearchIcon，使用共享主题颜色；搜索行改为图示的下划线样式，Popup通过`initialFocus`显式聚焦输入ref，打开即可输入。图标实现置于UI的Icon Layer，App图标具名出口复用该公开面，UI不反向依赖App。同步现有验证脚本选择器与清理旧样式，未重跑测试、GUI、构建或检查。因此上述通过证据对应补充修改之前，截图不包含最后新增SearchIcon。
 
-工程修改已本地提交；主工作区在本轮期间有新的并发提交，保留隔离分支待集成，未改写主工作区。用户认可pending。
+用户2026-10-07授权本地PR到main；已将`codex/selection-components`合入本地main，合并提交`abaea1316d4f45daaf145c139a9e1cee59a934af`，保留main上的终端B文档提交。未push、未创建远端PR；用户认可pending。
 
 ## 存量组件 outline 修正（用户后续要求）
 
