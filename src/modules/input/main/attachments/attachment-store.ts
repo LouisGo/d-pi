@@ -843,19 +843,22 @@ export class AttachmentStore {
   ): Promise<Attachment> {
     return this.save(await this.describe(record, bytes));
   }
-  private async describe(
-    record: StoredRecord,
-    bytes: Uint8Array,
-    pinImport = true,
-    current?: () => boolean,
-  ): Promise<StoredRecord> {
-    const representation = identifyContent(
+  private identifyStoredContent(record: StoredRecord, bytes: Uint8Array) {
+    return identifyContent(
       bytes,
       record.attachment.mimeType,
       record.attachment.frozenReference?.kind === "directory"
         ? "directory"
         : record.attachment.name,
     );
+  }
+  private async describe(
+    record: StoredRecord,
+    bytes: Uint8Array,
+    pinImport = true,
+    current?: () => boolean,
+  ): Promise<StoredRecord> {
+    const representation = this.identifyStoredContent(record, bytes);
     const attachment = { ...record.attachment, coverageGaps: [] as string[] };
     delete attachment.reason;
     return match(representation)
@@ -1079,11 +1082,7 @@ export class AttachmentStore {
           kind: "image",
           dataUrl: `data:${record.attachment.mimeType};base64,${Buffer.from(bytes).toString("base64")}`,
         };
-      const content = identifyContent(
-        bytes,
-        record.attachment.mimeType,
-        record.attachment.name,
-      );
+      const content = this.identifyStoredContent(record, bytes);
       return content.kind === "text"
         ? this.textPreview(content.text)
         : {

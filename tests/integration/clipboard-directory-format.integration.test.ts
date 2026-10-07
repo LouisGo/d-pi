@@ -83,6 +83,19 @@ it.each(["documents.pdf", "images.png", "lists.docx"])(
         },
       });
       expect(item.id).not.toBe(directory.id);
+      const preview = await service.execute(
+        {
+          kind: "preview",
+          threadId: target.threadId,
+          traceId: crypto.randomUUID(),
+          id: item.id,
+        },
+        "target",
+      );
+      expect(preview).toMatchObject({
+        kind: "text",
+        text: expect.stringContaining("one.txt"),
+      });
       const prepared = await service.store.prepare(target.threadId, item.token);
       expect(prepared).toMatchObject({ ok: true });
       if (!prepared.ok) throw Error("Frozen directory failed to prepare");
