@@ -4,7 +4,7 @@
 
 现在这些行为分别归 Host、Main 只读 operation、Thread 附件模型、Main history/clipboard lease、Thread 内容锚点和 Main Writer。保留 OMP 执行与历史、接受/消费事务、unknown 不重发和冷恢复只读，Effect 限于已确认的执行边界。研究、合同和范围见 [research](research.md)、[spec](spec.md) 与七张本地票。
 
-跨 Thread 动态文件/目录的复制语义仍待用户选择；私有图片和冻结选区搬运独立交付，动态引用目前显式可读降级，不暗读目标项目同名文件。总目标尚未结算，本文件是本地可审查草稿。
+跨 Thread 动态文件/目录的复制语义仍待用户选择；私有图片和冻结选区搬运独立实施，动态引用目前显式可读降级，不暗读目标项目同名文件。最终Spec还确认未采用clipboard clone在Undo/清史后占额度的P2，正在隔离修复，最终review尚不能通过。总目标尚未结算，本文件是本地可审查草稿。
 
 ## Evidence
 

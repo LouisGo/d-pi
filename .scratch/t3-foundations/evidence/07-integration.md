@@ -35,3 +35,5 @@ Spec轴冻结范围发现1个P2：Git二次采样把unavailable统称changed。�
 同次probe复核宽度、Composer隐藏、view返回和Thread A→B→A，anchor-10偏移40.21875保持（相对漂移0，绝对误差0.21875px）。实际数据库 submissions/nativeBindings均0，没有model request。原始结果 [electron-clipboard-geometry.json](electron-clipboard-geometry.json)。第一次probe的 `document.execCommand('copy')` 因无浏览器用户动作返回false，是验证脚本接缝失败且未写剪贴板；改用实际CDP编辑键命令后通过，未改产品实现去适应测试。
 
 Standards独立关闭原PDF P2：固定 `ae9cb2c…e795933`，原真实PM/SQLite失败复现转绿，GC删除0、Undo后prepare成功；预算/GC交错/显式清史及Composer接线共8 files/37tests通过。Spec已独立关闭Git P2（`70b5528`，4files/45tests）。最终04与组合增量两轴review继续记录在下方。
+
+最终Standards冻结base5983233→fb7f5ba，15files61tests、architecture423通过，没有新material问题；新增独立late-clone真实Main/PM/SQLite交错证明目标编辑后不插入，discard后解除source引用真实GC删除1对象。最终Spec同源13files60tests通过，但另一个独立实际回归确认P2：32源图×4次paste→立即Undo→保存空稿→显式清史/awaitrelease，第5次仍typedbusy；只有document release解除128个未采用clone。复现 `/tmp/d-pi-t3-spec-final.vGCMWQ/tests/integration/spec-review-clipboard-handoff.test.ts`；production尚未修复时16:00:05真实红灯。review不能通过，保持票claimed；worker由8280951固定基点隔离修复。完整check/native系统通过未涵盖此差额，不能代替独立审查结论。
