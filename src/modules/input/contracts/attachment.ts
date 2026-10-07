@@ -25,6 +25,14 @@ export const AttachmentFailureReasonSchema = z.enum([
 export type AttachmentFailureReason = z.infer<
   typeof AttachmentFailureReasonSchema
 >;
+export const FrozenReferenceSchema = z.strictObject({
+  projectPath: z.string().min(1).max(4096),
+  path: z.string().min(1).max(4096),
+  kind: z.enum(["file", "directory"]),
+  version: z.string().min(1).max(256),
+  capturedAt: z.string().datetime(),
+});
+export type FrozenReference = z.infer<typeof FrozenReferenceSchema>;
 export const AttachmentSchema = z
   .strictObject({
     schemaVersion: z.literal(1),
@@ -54,6 +62,7 @@ export const AttachmentSchema = z
       .regex(/^[a-f0-9]{64}$/)
       .optional(),
     converterVersion: z.string().max(128).optional(),
+    frozenReference: FrozenReferenceSchema.optional(),
   })
   .superRefine((attachment, ctx) => {
     if (attachment.token !== `[[dpi-attachment:${attachment.id}]]`)
@@ -79,6 +88,17 @@ export const AttachmentSchema = z
         code: "custom",
         message: "reference-path-required",
         path: ["path"],
+      });
+    if (
+      attachment.frozenReference &&
+      (attachment.source === "reference" ||
+        attachment.representation === "reference" ||
+        !attachment.inputDigest)
+    )
+      ctx.addIssue({
+        code: "custom",
+        message: "invalid-frozen-reference",
+        path: ["frozenReference"],
       });
   });
 export type Attachment = z.infer<typeof AttachmentSchema>;
@@ -108,6 +128,7 @@ export const PreparedContentSchema = z.strictObject({
       path: z.string().max(4096).optional(),
       referenceKind: z.enum(["file", "directory"]).optional(),
       version: z.string().max(256).optional(),
+      frozenReference: FrozenReferenceSchema.optional(),
     }),
   ),
   rawBytes: z.number().int().nonnegative(),

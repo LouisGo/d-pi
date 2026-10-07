@@ -677,7 +677,7 @@ export function AttachmentControls({
                 <>
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <strong className="flex items-center gap-2 break-all">
-                      {item.source === "reference" &&
+                      {(item.source === "reference" || item.frozenReference) &&
                         (item.referenceKind === "directory" ? (
                           <FolderIcon />
                         ) : (
@@ -687,18 +687,39 @@ export function AttachmentControls({
                       {item.referenceKind === "directory" ? "/" : ""}
                     </strong>
                     <span className="muted">
-                      {item.source === "reference"
-                        ? t(
-                            item.referenceKind === "directory"
-                              ? "attachment.directoryAtSend"
-                              : "attachment.readAtSend",
-                          )
-                        : t(`attachment.${item.status}`)}
+                      {item.frozenReference
+                        ? t("attachment.frozenOnCopy")
+                        : item.source === "reference"
+                          ? t(
+                              item.referenceKind === "directory"
+                                ? "attachment.directoryAtSend"
+                                : "attachment.readAtSend",
+                            )
+                          : t(`attachment.${item.status}`)}
                       {item.source !== "reference" && (
                         <> · {Math.ceil(item.byteLength / 1024)} KiB</>
                       )}
                     </span>
                   </div>
+                  {item.frozenReference && (
+                    <details className="muted" data-selectable>
+                      <summary>{t("attachment.frozenSource")}</summary>
+                      <dl className="grid gap-1 break-all">
+                        <dt>{t("attachment.frozenProject")}</dt>
+                        <dd>{item.frozenReference.projectPath}</dd>
+                        <dt>{t("attachment.frozenPath")}</dt>
+                        <dd>{item.frozenReference.path}</dd>
+                        <dt>{t("attachment.frozenVersion")}</dt>
+                        <dd>{item.frozenReference.version}</dd>
+                        <dt>{t("attachment.frozenTime")}</dt>
+                        <dd>
+                          <time dateTime={item.frozenReference.capturedAt}>
+                            {item.frozenReference.capturedAt}
+                          </time>
+                        </dd>
+                      </dl>
+                    </details>
+                  )}
                   {item.reason && (
                     <p className="failure" role="status">
                       {t(`attachment.reason.${item.reason}`)}

@@ -58,6 +58,82 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 const id = ThreadIdSchema.parse("f9b0037d-1b8b-4f82-988c-7ca64f93fa37");
+it("distinguishes frozen provenance from live references in the formal controls", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const token = `[[dpi-attachment:${id}]]`;
+  const editor = new Editor({
+    ...plainTextEditorOptions,
+    element: document.createElement("div"),
+    content: draftDocument(token),
+  });
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  cleanups.push(async () => {
+    await act(() => root.unmount());
+    editor.destroy();
+    client.clear();
+    container.remove();
+  });
+  const item: Attachment = {
+    schemaVersion: 1,
+    id,
+    threadId: id,
+    token,
+    name: "original.txt",
+    mimeType: "text/plain",
+    byteLength: 12,
+    source: "paste",
+    status: "ready",
+    representation: "text",
+    coverageGaps: [],
+    textOnly: false,
+    capturedAt: "2026-10-07T00:00:00.000Z",
+    inputDigest: "a".repeat(64),
+    path: "src/original.txt",
+    referenceKind: "file",
+    frozenReference: {
+      projectPath: "/actual/source/project",
+      path: "src/original.txt",
+      kind: "file",
+      version: "source-version-1",
+      capturedAt: "2026-10-07T00:00:00.000Z",
+    },
+  };
+  const bridge = {
+    request: async () => ({ kind: "attachments" as const, items: [item] }),
+  };
+  await act(async () => {
+    root.render(
+      createElement(QueryClientProvider, {
+        client,
+        children: controls({
+          bridge,
+          threadId: id,
+          editor,
+          text: token,
+          isCurrent: () => true,
+          onBlocked: () => {},
+          mention: null,
+          dismissMention: () => {},
+        }),
+      }),
+    );
+  });
+  await act(async () => {
+    await vi.waitFor(() =>
+      expect(container.textContent).toContain("original.txt"),
+    );
+  });
+  expect(container.textContent).toContain("Frozen on copy");
+  expect(container.textContent).toContain("/actual/source/project");
+  expect(container.textContent).toContain("source-version-1");
+  expect(container.textContent).toContain("2026-10-07T00:00:00.000Z");
+  expect(container.textContent).not.toContain("Read when sending");
+});
 it("offers only retry for an unfinished clipboard cleanup and confirms its original IDs", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const editor = new Editor({

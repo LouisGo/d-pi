@@ -30,6 +30,7 @@ import {
 } from "../../core/public";
 import {
   type ClipboardSnapshot,
+  ClipboardSnapshotError,
   ClipboardSnapshots,
 } from "./clipboard-snapshots";
 import {
@@ -55,7 +56,12 @@ export interface AttachmentStoreOptions {
     threadId: string,
     path: string,
     kind: "file" | "directory",
-  ) => Promise<{ bytes: Uint8Array; version: string }>;
+  ) => Promise<{
+    bytes: Uint8Array;
+    version: string;
+    projectPath?: string;
+    current?: () => boolean;
+  }>;
   validateImage?: (
     bytes: Uint8Array,
     mimeType: ImageMime,
@@ -108,8 +114,8 @@ export class AttachmentStore {
     this.clipboard = new ClipboardSnapshots({
       capture: (threadId, text, ids) =>
         this.captureClipboard(threadId, text, ids),
-      verify: (snapshot) =>
-        this.serialized(() => this.verifyClipboard(snapshot)),
+      verify: (snapshot, commit, current) =>
+        this.serialized(() => this.prepareClipboard(snapshot, commit, current)),
       pin: (id, hashes) => this.lifecycle?.setEditorHistory(id, hashes),
     });
     this.editorHistories = new EditorHistoryLeases({
@@ -441,10 +447,10 @@ export class AttachmentStore {
           if (!record) throw Error("attachment-not-found");
           const item = record.attachment;
           if (
-            item.source === "reference" ||
-            item.status !== "ready" ||
-            item.representation !== "image" ||
-            !item.inputDigest
+            item.source !== "reference" &&
+            (item.status !== "ready" ||
+              !["text", "image", "pdf-text"].includes(item.representation) ||
+              !item.inputDigest)
           ) {
             degraded = true;
             // Names are readable data, never token authority in the destination.
@@ -454,13 +460,19 @@ export class AttachmentStore {
             );
             value =
               value.slice(0, token.position) +
-              `[d-pi:${item.source === "reference" ? "dynamic-reference" : "attachment"} ${name}]` +
+              `[d-pi:attachment ${name}]` +
               value.slice(token.position + token.token.length);
           } else {
             records.set(item.id, record);
-            if (!digests.has(item.inputDigest)) {
-              digests.add(item.inputDigest);
-              bytes += item.byteLength;
+            if (item.source !== "reference") {
+              for (const hash of [item.inputDigest, record.derivedDigest]) {
+                if (!hash || digests.has(hash)) continue;
+                digests.add(hash);
+                bytes += this.objectBytes(
+                  hash,
+                  hash === item.inputDigest ? item.byteLength : 0,
+                );
+              }
             }
           }
         }
@@ -477,15 +489,123 @@ export class AttachmentStore {
       degraded,
     };
   }
+  private objectBytes(hash: string, fallback?: number): number {
+    const value = this.options.database.connection
+      .prepare("SELECT byte_length FROM input_content_object WHERE digest=?")
+      .get(hash)?.byte_length;
+    if (value === undefined) {
+      if (fallback !== undefined) return fallback;
+      throw Error("content-missing");
+    }
+    return Number(value);
+  }
+  private async prepareClipboard(
+    snapshot: ClipboardSnapshot<StoredRecord>,
+    commit: (snapshot: ClipboardSnapshot<StoredRecord>) => void,
+    current: () => boolean,
+  ): Promise<void> {
+    // Legacy object metadata can be repaired only by reading and verifying the private object.
+    if (!current()) throw new ClipboardSnapshotError("expired");
+    await this.verifyClipboard(snapshot, current);
+    const prepared: ClipboardSnapshot<StoredRecord> = {
+      ...snapshot,
+      records: [],
+      digests: new Set(),
+      bytes: Buffer.byteLength(snapshot.text),
+    };
+    const sources: {
+      original: Attachment;
+      current?: (() => boolean) | undefined;
+    }[] = [];
+    for (const originalRecord of snapshot.records) {
+      if (!current()) throw new ClipboardSnapshotError("expired");
+      let record = originalRecord;
+      const original = record.attachment;
+      if (original.source === "reference") {
+        if (!this.options.readReference || !original.path)
+          throw Error("reference-unavailable");
+        const value = await this.options.readReference(
+          original.threadId,
+          original.path,
+          original.referenceKind ?? "file",
+        );
+        if (!current()) throw new ClipboardSnapshotError("expired");
+        if (
+          !value.projectPath ||
+          value.bytes.byteLength > this.limits.sourceBytes
+        )
+          throw Error("reference-unavailable");
+        const bytes = value.bytes.slice();
+        const inputDigest = await this.put(bytes);
+        const frozen = AttachmentSchema.parse({
+          ...original,
+          source: "paste",
+          status: "preparing",
+          representation: "unsupported",
+          reason: undefined,
+          inputDigest,
+          byteLength: bytes.byteLength,
+          mimeType: original.referenceKind === "directory" ? "text/plain" : "",
+          frozenReference: {
+            projectPath: value.projectPath,
+            path: original.path,
+            kind: original.referenceKind ?? "file",
+            version: value.version,
+            capturedAt: new Date().toISOString(),
+          },
+        });
+        record = await this.describe(
+          { attachment: frozen },
+          bytes,
+          false,
+          current,
+        );
+        if (record.attachment.status !== "ready")
+          throw Error("reference-unavailable");
+        if (original.referenceKind === "directory")
+          record.attachment.converterVersion = "directory-listing-v1";
+        sources.push({ original, current: value.current });
+      }
+      prepared.records.push(record);
+      for (const hash of [
+        record.attachment.inputDigest,
+        record.derivedDigest,
+      ]) {
+        if (!hash || prepared.digests.has(hash)) continue;
+        prepared.digests.add(hash);
+        prepared.bytes += this.objectBytes(hash);
+      }
+      if (prepared.bytes > 64 * 1024 * 1024)
+        throw new ClipboardSnapshotError("busy");
+    }
+    await this.verifyClipboard(prepared, current);
+    for (const { original, current: sourceCurrent } of sources) {
+      const actual = this.read(original.threadId, original.id)?.attachment;
+      if (
+        !actual ||
+        actual.source !== "reference" ||
+        actual.path !== original.path ||
+        actual.referenceKind !== original.referenceKind ||
+        (sourceCurrent && !sourceCurrent())
+      )
+        throw Error("reference-unavailable");
+    }
+    // Publication and final pins occur before the serialized resource lane can admit GC.
+    commit(prepared);
+  }
   private async verifyClipboard(
     snapshot: ClipboardSnapshot<StoredRecord>,
+    current?: () => boolean,
   ): Promise<void> {
     for (const hash of snapshot.digests) {
+      if (current && !current()) throw new ClipboardSnapshotError("expired");
       const bytes = await this.readVerifiedObject(hash);
+      if (current && !current()) throw new ClipboardSnapshotError("expired");
       if (
         bytes.byteLength > this.limits.sourceBytes ||
         snapshot.records.some(
           (record) =>
+            record.attachment.source !== "reference" &&
             record.attachment.inputDigest === hash &&
             record.attachment.byteLength !== bytes.byteLength,
         )
@@ -520,7 +640,7 @@ export class AttachmentStore {
               kind: "clipboard-unavailable",
               reason: "expired",
             } as const;
-          await this.verifyClipboard(acquired.snapshot);
+          await this.verifyClipboard(acquired.snapshot, acquired.valid);
           if (!acquired.valid())
             return {
               kind: "clipboard-unavailable",
@@ -549,6 +669,9 @@ export class AttachmentStore {
               mapping.set(record.attachment.id, id);
               items.push(
                 this.save({
+                  ...(record.derivedDigest
+                    ? { derivedDigest: record.derivedDigest }
+                    : {}),
                   attachment: {
                     ...record.attachment,
                     id,
@@ -568,6 +691,8 @@ export class AttachmentStore {
           for (const item of items) {
             if (item.inputDigest)
               this.lifecycle?.pinImport(threadId, item.id, item.inputDigest);
+            const derived = this.read(threadId, item.id)?.derivedDigest;
+            if (derived) this.lifecycle?.pinImport(threadId, item.id, derived);
             this.clipboardImports.set(item.id, { owner, threadId });
           }
           const text = parseDraftBlocks(acquired.snapshot.text)
@@ -589,8 +714,12 @@ export class AttachmentStore {
             items,
             degraded: acquired.snapshot.degraded,
           } as const;
-        } catch {
-          return { kind: "clipboard-unavailable", reason: "failed" } as const;
+        } catch (error) {
+          return {
+            kind: "clipboard-unavailable",
+            reason:
+              error instanceof ClipboardSnapshotError ? error.reason : "failed",
+          } as const;
         }
       });
     } finally {
@@ -712,6 +841,14 @@ export class AttachmentStore {
     record: StoredRecord,
     bytes: Uint8Array,
   ): Promise<Attachment> {
+    return this.save(await this.describe(record, bytes));
+  }
+  private async describe(
+    record: StoredRecord,
+    bytes: Uint8Array,
+    pinImport = true,
+    current?: () => boolean,
+  ): Promise<StoredRecord> {
     const representation = identifyContent(
       bytes,
       record.attachment.mimeType,
@@ -720,29 +857,25 @@ export class AttachmentStore {
     const attachment = { ...record.attachment, coverageGaps: [] as string[] };
     delete attachment.reason;
     return match(representation)
-      .returnType<Promise<Attachment>>()
-      .with({ kind: "failed" }, async ({ reason }) =>
-        this.save({
-          ...record,
-          attachment: {
-            ...attachment,
-            status: "failed",
-            reason,
-            representation: "unsupported",
-          },
-        }),
-      )
-      .with({ kind: "text" }, async ({ encoding }) =>
-        this.save({
-          ...record,
-          attachment: {
-            ...attachment,
-            status: "ready",
-            representation: "text",
-            converterVersion: encoding,
-          },
-        }),
-      )
+      .returnType<Promise<StoredRecord>>()
+      .with({ kind: "failed" }, async ({ reason }) => ({
+        ...record,
+        attachment: {
+          ...attachment,
+          status: "failed",
+          reason,
+          representation: "unsupported",
+        },
+      }))
+      .with({ kind: "text" }, async ({ encoding }) => ({
+        ...record,
+        attachment: {
+          ...attachment,
+          status: "ready",
+          representation: "text",
+          converterVersion: encoding,
+        },
+      }))
       .with({ kind: "image" }, async ({ mimeType }) => {
         let reason: AttachmentFailureReason | undefined;
         try {
@@ -754,7 +887,8 @@ export class AttachmentStore {
         } catch {
           reason = "invalid-image";
         }
-        return this.save({
+        if (current && !current()) throw new ClipboardSnapshotError("expired");
+        return {
           ...record,
           attachment: {
             ...attachment,
@@ -764,11 +898,11 @@ export class AttachmentStore {
             converterVersion: "original-image-v1",
             ...(reason ? { reason } : {}),
           },
-        });
+        };
       })
       .with({ kind: "pdf" }, async () => {
         if (!this.options.convertPdf)
-          return this.save({
+          return {
             ...record,
             attachment: {
               ...attachment,
@@ -776,11 +910,13 @@ export class AttachmentStore {
               reason: "pdf-conversion-unavailable",
               representation: "pdf-text",
             },
-          });
+          };
         try {
           const result = PdfConversionSchema.parse(
             await this.options.convertPdf(bytes),
           );
+          if (current && !current())
+            throw new ClipboardSnapshotError("expired");
           const coverageGaps = [
             ...(result.hasVisualContent ? ["visual-content"] : []),
             ...Array.from(
@@ -790,7 +926,7 @@ export class AttachmentStore {
             ),
           ];
           if (result.pageCount > 100)
-            return this.save({
+            return {
               ...record,
               attachment: {
                 ...attachment,
@@ -799,7 +935,7 @@ export class AttachmentStore {
                 representation: "pdf-text",
                 coverageGaps,
               },
-            });
+            };
           if (
             !Number.isInteger(result.pageCount) ||
             result.pageCount < 1 ||
@@ -808,10 +944,10 @@ export class AttachmentStore {
             throw new Error("invalid-pdf");
           const derivedDigest = await this.put(
             new TextEncoder().encode(result.text),
-            attachment,
+            pinImport ? attachment : undefined,
           );
           const ready = coverageGaps.length === 0 || attachment.textOnly;
-          return this.save({
+          return {
             attachment: {
               ...attachment,
               status: ready ? "ready" : "failed",
@@ -821,10 +957,14 @@ export class AttachmentStore {
               converterVersion: result.converterVersion,
             },
             derivedDigest,
-          });
+          };
         } catch (error) {
-          if (error instanceof EditorHistoryLimitError) throw error;
-          return this.save({
+          if (
+            error instanceof EditorHistoryLimitError ||
+            error instanceof ClipboardSnapshotError
+          )
+            throw error;
+          return {
             ...record,
             attachment: {
               ...attachment,
@@ -835,7 +975,7 @@ export class AttachmentStore {
                   : "pdf-conversion-failed",
               representation: "pdf-text",
             },
-          });
+          };
         }
       })
       .exhaustive();
@@ -1093,7 +1233,7 @@ export class AttachmentStore {
           attachmentId: token.id,
         };
       let bytes: Uint8Array;
-      let version: string | undefined;
+      let version: string | undefined = attachment.frozenReference?.version;
       try {
         if (attachment.representation === "reference") {
           if (!this.options.readReference || !attachment.path)
@@ -1293,6 +1433,9 @@ export class AttachmentStore {
           ? { referenceKind: attachment.referenceKind }
           : {}),
         ...(version ? { version } : {}),
+        ...(attachment.frozenReference
+          ? { frozenReference: attachment.frozenReference }
+          : {}),
       });
     }
     content.message += text.slice(cursor);

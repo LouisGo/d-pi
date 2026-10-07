@@ -119,6 +119,12 @@ export const ui = {
   "attachment.failed": "Preparation failed",
   "attachment.directoryAtSend":
     "Freeze directory entries when sending; excludes file contents",
+  "attachment.frozenOnCopy": "Frozen on copy",
+  "attachment.frozenSource": "Source at copy",
+  "attachment.frozenProject": "Source project",
+  "attachment.frozenPath": "Source path",
+  "attachment.frozenVersion": "Source version",
+  "attachment.frozenTime": "Captured at",
   "attachment.readAtSend": "Read when sending",
   "attachment.remove": "Remove {name}",
   "attachment.previous": "Move {name} earlier",

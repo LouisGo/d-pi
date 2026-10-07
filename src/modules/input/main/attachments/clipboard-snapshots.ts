@@ -8,6 +8,11 @@ export type ClipboardSnapshot<T> = {
   bytes: number;
   degraded: boolean;
 };
+export class ClipboardSnapshotError extends Error {
+  constructor(readonly reason: ClipboardFailure) {
+    super(reason);
+  }
+}
 type Entry<T> = {
   ticket: ClipboardTicket;
   owner: string;
@@ -35,7 +40,11 @@ export class ClipboardSnapshots<T> {
         text: string,
         ids: string[],
       ): ClipboardSnapshot<T>;
-      verify(snapshot: ClipboardSnapshot<T>): Promise<void>;
+      verify(
+        snapshot: ClipboardSnapshot<T>,
+        commit: (snapshot: ClipboardSnapshot<T>) => void,
+        current: () => boolean,
+      ): Promise<void>;
       pin(id: string, digests: Set<string> | null): void;
       limits?: {
         ttlMs: number;
@@ -138,10 +147,37 @@ export class ClipboardSnapshots<T> {
       entry.snapshot = snapshot;
       entry.state = "pending";
       this.options.pin(ticket.handleId, snapshot.digests);
-      const verification = this.options.verify(snapshot).then(
-        () => null,
-        () => "failed" as const,
-      );
+      let committed = false;
+      const current = () =>
+        this.entry(ticket) === entry && entry.state === "pending";
+      const commit = (prepared: ClipboardSnapshot<T>) => {
+        if (!current()) throw new ClipboardSnapshotError("expired");
+        const occupied = [...this.entries.values()].reduce(
+          (sum, item) =>
+            sum + (item === entry ? 0 : (item.snapshot?.bytes ?? 0)),
+          0,
+        );
+        if (
+          prepared.records.length > 32 ||
+          prepared.bytes > 64 * 1024 * 1024 ||
+          occupied + prepared.bytes > this.limits.bytes
+        )
+          throw new ClipboardSnapshotError("busy");
+        entry.snapshot = prepared;
+        this.options.pin(ticket.handleId, prepared.digests);
+        committed = true;
+      };
+      const verification = this.options
+        .verify(snapshot, commit, current)
+        .then(() => {
+          if (!committed) commit(snapshot);
+          return null;
+        })
+        .catch((error: unknown) =>
+          error instanceof ClipboardSnapshotError
+            ? error.reason
+            : ("failed" as const),
+        );
       const failure = await Promise.race([verification, entry.released]);
       if (failure) {
         this.remove(ticket.handleId, failure);
@@ -152,7 +188,7 @@ export class ClipboardSnapshots<T> {
       for (const finish of [...entry.waiters.keys()]) finish();
       return {
         kind: "clipboard-exported",
-        degraded: snapshot.degraded,
+        degraded: entry.snapshot.degraded,
       } as const;
     } catch {
       this.remove(ticket.handleId, "failed");

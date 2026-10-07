@@ -64,6 +64,17 @@ export function createAttachmentService(
         current.workingDirectoryId !== thread.workingDirectoryId
       )
         throw Error("reference-denied");
+      const sourceCurrent = () => {
+        try {
+          const actual = storage.threads.threadContext(threadId);
+          return (
+            actual.directory === thread.directory &&
+            actual.workingDirectoryId === thread.workingDirectoryId
+          );
+        } catch {
+          return false;
+        }
+      };
       if (kind === "directory" && reply.kind === "entries") {
         if (reply.truncated) throw Error("source-too-large");
         // Freeze direct entry names and kinds, never recursively inline file bodies.
@@ -77,6 +88,8 @@ export function createAttachmentService(
         );
         return {
           bytes,
+          projectPath: thread.directory,
+          current: sourceCurrent,
           version: `sha256:${createHash("sha256").update(bytes).digest("hex")}`,
         };
       }
@@ -86,7 +99,12 @@ export function createAttachmentService(
             ? "reference-denied"
             : "reference-unavailable",
         );
-      return { bytes: reply.bytes, version: reply.version };
+      return {
+        bytes: reply.bytes,
+        version: reply.version,
+        projectPath: thread.directory,
+        current: sourceCurrent,
+      };
     },
   });
   async function execute(

@@ -1,6 +1,115 @@
 import { expect, it, vi } from "vitest";
 import { ClipboardSnapshots } from "./clipboard-snapshots";
 
+it("atomically admits asynchronously expanded bytes and releases a rejected final snapshot", async () => {
+  const pins = new Map<string, Set<string>>();
+  const manager = new ClipboardSnapshots({
+    capture: (_thread, text) => ({
+      text,
+      records: [text],
+      bytes: 1,
+      digests: new Set<string>(),
+      degraded: false,
+    }),
+    verify: async (snapshot, commit) => {
+      commit({ ...snapshot, bytes: 20, digests: new Set([snapshot.text]) });
+    },
+    pin: (id, value) => {
+      if (value) pins.set(id, value);
+      else pins.delete(id);
+    },
+    limits: {
+      ttlMs: 1000,
+      waitMs: 100,
+      tickets: 8,
+      ownerTickets: 4,
+      bytes: 30,
+    },
+  });
+  try {
+    const first = manager.reserve("source", "thread"),
+      second = manager.reserve("other", "thread");
+    if (
+      first.kind !== "clipboard-tickets" ||
+      second.kind !== "clipboard-tickets" ||
+      !first.tickets[0] ||
+      !second.tickets[0]
+    )
+      throw Error("tickets");
+    expect(
+      await manager.export("source", "thread", first.tickets[0], "one"),
+    ).toMatchObject({ kind: "clipboard-exported" });
+    expect(
+      await manager.export("other", "thread", second.tickets[0], "two"),
+    ).toMatchObject({ reason: "busy" });
+    expect([...pins.values()].map((value) => [...value])).toEqual([["one"]]);
+    expect(await manager.acquire(second.tickets[0])).toMatchObject({
+      reason: "invalid",
+    });
+  } finally {
+    manager.close();
+  }
+});
+
+it.each(["TTL", "document"])(
+  "does not resurrect a frozen snapshot or its derived pins after %s release",
+  async (kind) => {
+    vi.useFakeTimers();
+    let finish!: () => void;
+    const pins = new Map<string, Set<string>>();
+    const manager = new ClipboardSnapshots({
+      capture: (_thread, text) => ({
+        text,
+        records: [text],
+        bytes: 1,
+        digests: new Set(["original"]),
+        degraded: false,
+      }),
+      verify: async (snapshot, commit) => {
+        await new Promise<void>((resolve) => {
+          finish = resolve;
+        });
+        commit({
+          ...snapshot,
+          bytes: 2,
+          digests: new Set(["original", "derived"]),
+        });
+      },
+      pin: (id, value) => {
+        if (value) pins.set(id, value);
+        else pins.delete(id);
+      },
+      limits: { ttlMs: 20, waitMs: 10, tickets: 4, ownerTickets: 2, bytes: 30 },
+    });
+    try {
+      const reserved = manager.reserve("source", "thread");
+      if (reserved.kind !== "clipboard-tickets" || !reserved.tickets[0])
+        throw Error("tickets");
+      const pending = manager.export(
+        "source",
+        "thread",
+        reserved.tickets[0],
+        "one",
+      );
+      if (kind === "TTL") await vi.advanceTimersByTimeAsync(21);
+      else manager.releaseOwner("source");
+      expect(await pending).toMatchObject({
+        reason: kind === "TTL" ? "expired" : "invalid",
+      });
+      finish();
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(pins.size).toBe(0);
+      expect(await manager.acquire(reserved.tickets[0])).toMatchObject({
+        kind: "clipboard-unavailable",
+      });
+    } finally {
+      manager.close();
+      vi.useRealTimers();
+    }
+  },
+);
+
 it("bounds reserved/pending tickets, waiters and bytes, expires pending exports and releases all waits/pins on close", async () => {
   vi.useFakeTimers();
   let finish!: () => void;
