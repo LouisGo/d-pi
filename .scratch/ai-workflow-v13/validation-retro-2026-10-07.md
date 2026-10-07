@@ -1,6 +1,6 @@
 # 按风险验证与窄场景入口
 
-日期：2026-10-07。状态：applied（工程验证与 PR 收尾结果见下文）。基点：efd192f4d5b965b4ad7ee46ee010634806e78604。
+日期：2026-10-07。状态：applied（工程验证完成；PR关联检查与合并状态在目标端核实）。基点：efd192f4d5b965b4ad7ee46ee010634806e78604。
 
 ## 范围与授权
 
@@ -20,4 +20,23 @@
 
 TDD：参数路径/范围拒绝与启动前拒绝先失败（3个目标行为失败，默认完整行为保持通过），再最小实现。文档调整与完整入口兼容属于回归验证，不制造应用行为红灯。
 
-实际命令、结果、独立两轴review和实现commit在收尾时补充。
+## 工程结果
+
+实现提交：`b31ff78e621ce799cbc218192e51052fb553a040`。Node 24.21.0 / pnpm 12.8.1 / macOS arm64。
+
+- `node scripts/testing/test.mjs node tests/tooling/*.test.mjs`：93项通过；范围参数正/负例包含在标准tooling入口中。
+- `pnpm check:fast`、文档门禁和 `git diff --check` 通过。
+- `node validation/m2/workbench.mjs <output> --scenario=focus`：8项真实Electron/CDP检查通过，[结果](evidence/validation-retro/focus.json)。
+- `node validation/m2/workbench.mjs <output>`：默认完整入口68条记录通过，[检查名称与范围摘要](evidence/validation-retro/workbench-all-summary.json)；原始JSON保留于本机 `/tmp/d-pi-validation-workflow-workbench-all-raw.json`，不把摘要替代原始观测。
+- `node validation/m2/package.mjs <既有f9cc66e候选> --scenario=workbench`：4项通过，供应商请求0、执行会话0，[结果](evidence/validation-retro/packaged-workbench.json)。
+- `node validation/m2/package.mjs <同一候选> --workbench`：默认完整基础流程13项通过，localhost fixture请求2，[兼容结果](evidence/validation-retro/packaged-all.json)。未重跑其他功能增量，系统原生交互与用户认可未验证。
+
+完整原生路径只因本次验证驱动的控制流/共享收尾变化做一次兼容回归。后续小改动按受影响风险选择窄场景，不将本轮命令集合变为新的必跑清单。源码不含产品改动；无需安装提交hook或重打App。
+
+## 独立复核与交付
+
+Spec与Standards分别由两个只读独立reviewer审查 `efd192f4…b31ff78e`，实际merge-base为efd192f4；双方均无高价值发现，并各自复跑4项参数测试通过。Spec覆盖12个变更文件、当前请求/D-28及相关合同；Standards覆盖三个验证脚本、测试、隔离环境和CDP/等待直接依赖。双方未独立重跑GUI或完整矩阵，不把主Agent证据改称reviewer实测。随后仅补本验证结果、完整GUI摘要及交接，主Agent核对其与实际命令输出一致。
+
+[PR #7](https://github.com/LouisGo/d-pi/pull/7)承载本轮交付，具体最终head的CI与合并状态以该PR的实际checks/merge记录核实；合并前要求最终head的必要检查通过。[实现commit](https://github.com/LouisGo/d-pi/commit/b31ff78e621ce799cbc218192e51052fb553a040)未改变应用行为。
+
+后续从包含本PR的干净main继续原功能规格。Agent先选择受影响的最低充分验证；需要升级时说明具体缺口和停止条件。产品试用、系统IME/物理拖窗/VoiceOver与M2认可仍由原规格维护。

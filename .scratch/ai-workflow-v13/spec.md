@@ -53,7 +53,7 @@
     "trial": "not-applicable",
     "acceptance": "not-applicable",
     "evidence": ["handoff.md", "validation.md", "review.md", "research.md", "m2-retro-2026-10-06.md", "m2-retro-handoff.md", "m2-retro-validation.md", "m2-retro-review.md", "validation-retro-2026-10-07.md"],
-    "next": "2026-10-07按风险验证与窄场景入口已实施，验证及PR收尾进行中；完成后从main进入下一阶段"
+    "next": "2026-10-07按风险验证与窄场景入口工程完成、独立两轴复核通过；PR#7合并后从main进入下一阶段"
   }
 ]
 ```
