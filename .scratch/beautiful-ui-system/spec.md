@@ -18,8 +18,10 @@ D-31/D-32 延续 Base UI、自有公开 API、Hugeicons、light/dark 和唯一�
 [{"id":"beautiful-ui-system","title":"Beautiful UI 基础视觉体系升级","phase":"基建","engineering":"complete","trial":"delivered","acceptance":"pending","evidence":["handoff.md","review.md","evidence/native-observations.json"],"next":"用户在Dev组件看板及真实入口试用统一视觉体系；认可pending","constraints":"本地源码交付；GUI证据为隔离Electron真实Renderer，不是provider或固定包验收。"}]
 ```
 
-任务：[01](issues/01-foundation-upgrade.md)。
+任务：[01](issues/01-foundation-upgrade.md)、[02](issues/02-list-and-choice-feedback.md)。
 
 ## 2026-10-07 追加反馈
 
 用户最初授权 ChoiceGroup 跟随图 2 的整体胶囊轨道与内嵌选中块，并尝试视频所示列表连续背景；随后明确分组标题/导航切换触发过多移动，要求没有良好优化依据时完全删除视频参考的动效，只保留 ChoiceGroup。最终采用删除：撤销共享跟随背景、列表包装及所有场景接入，恢复原列表反馈；本次追加交付只保留 ChoiceGroup（至少两项互斥、保留受控值/Radio 语义），取代原二值无外框配方。见[02](issues/02-list-and-choice-feedback.md)。首轮交付证据不冒称证明追加改动。
+
+追加工程完成，最终代码 `cdd7f5d`；14 项相关测试、最终代码构建、类型/设计/交互及相关门禁通过，light/dark 与禁用项方向键跳过经隔离 Electron 观测。源码 Dev 已交付，用户认可 pending。

@@ -6,7 +6,7 @@
 
 - 源码目录：`/Users/louistation/.codex/worktrees/beautiful-ui-system/d-pi`。
 - 分支：`codex/beautiful-ui-system`；基点 `7906f2553746801fddc892290b38b4269a69bd6e`。
-- 实现提交 `1573c3154fdd193246d002079f97078cc3b4c48e`，最终代码修正 `cae44367ef5e4d6d1176314c83e405c722bca576`，设计规范提交 `1a75147`；其后提交仅补交接/状态/证据。
+- 基础实现提交 `1573c3154fdd193246d002079f97078cc3b4c48e`，基础代码修正 `cae44367ef5e4d6d1176314c83e405c722bca576`，设计规范提交 `1a75147`；追加 ChoiceGroup 最终代码/规范为 `cdd7f5d`。其后提交仅补交接/状态/证据。
 - 在上述目录执行 `pnpm dev`。默认 App 数据目录为 `/Users/louistation/.d-pi/dev/d-pi-4ff1e52c08b9`；实际覆盖以启动终端为准。OMP 原生配置继续沿用项目策略。原 checkout 未修改。
 - 进入开发者工具的组件看板 `/dev/components`，切换 light/dark，试用按钮、输入、选择、原生控件、浮层，再回到会话/设置检查真实入口。无需发送模型请求。
 
@@ -34,3 +34,11 @@ hover/active/selected/disabled/invalid 区分；普通鼠标焦点不绘制 outl
 `node .scratch/beautiful-ui-system/preview.mjs 1440` 或 `720` 启动隔离 fixture，Ctrl-C 退出并清理自身临时环境。该入口用于复现组件证据；用户日常试用使用 `pnpm dev`。`node .scratch/beautiful-ui-system/contrast.mjs` 复算颜色门槛。截图中的系统共享提示/指针高亮属于 macOS，不是应用样式。
 
 本轮仅本地提交与 Dev 交付；未推送、创建远端 PR 或合入 main。
+
+## 追加反馈最终结果
+
+ChoiceGroup 已跟随用户图 2：整体胶囊轨道、内嵌选中表面与轻边界/阴影，允许至少两项互斥，保持 Base UI 受控 Radio、禁用项和键盘语义。看板提供 Drive/Dots/Orbit/Surfer 示例，真实设置入口同源更新。
+
+按用户最新反馈完全撤回视频参考的列表跟随动效：删除未提交的动效原语、列表组件及实验测试/演示/截图，Thread 列表、设置导航和组件索引恢复 `4792632` 的代码。未保留跟随背景、测量/监听或额外列表 API；首轮视觉体系升级继续有效。
+
+追加验证：[14 项相关测试](evidence/choice-tests.txt)、[相关门禁](evidence/choice-checks.txt)、[最终代码构建](evidence/choice-build.txt)均通过。[原生观测](evidence/choice-native.json)及浅色/深色/键盘三张截图对应最终追加代码；Right 从 Drive 跳过禁用 Dots 选中 Orbit，键盘焦点环完整。旧宽窗表单图属于首轮交付，ChoiceGroup 最终外观以追加截图为准。未重复 provider 或打包验证。

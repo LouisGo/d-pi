@@ -25,3 +25,13 @@
 ## 主 Agent 结论
 
 评审意见已落实；65 项定向测试、相关工程门禁及必要原生观测支持本轮源码 Dev 交付。用户认可仍 pending。证据与复现入口见[交接](handoff.md)。
+
+## 追加 ChoiceGroup 与列表实验撤回
+
+固定范围 `4792632 → cdd7f5d`。用户最新要求决定最终范围：撤回视频参考的列表跟随动效，仅保留图 2 ChoiceGroup。未提交的实验已删除，消费者恢复 base。
+
+- Spec 独立复核 clear：源码差异限于 ChoiceGroup 配方、至少两项 tuple、四项演示及键盘测试；导航/业务列表/UI 导出与 base 一致，无动效组件、消费者或演示残留；真实设置仍二项、保存路径不变，决定取代关系已同步。
+- Standards 独立复核无发现：自有 Base UI API、共享 token、两主题/reduced-motion、局部 CSS 范围与内偏移键盘焦点符合合同，全局 pointer-focus 禁止 outline 继续生效；未见列表 API 或生命周期变更。
+- 视觉独立收尾 disposition: ship，无 material fixes。三张最终截图有效；连续轨道/内嵌选中面、轻边界、disabled 与完整 Orbit 焦点环符合参考，紧凑字阶/尺寸按项目合同适配，文档与实现一致。结论只覆盖追加 ChoiceGroup。
+
+追加 14 项相关测试通过（包含首轮已测的相关行为和新增四项 Radio 键盘验证），不是另加 14 项独立覆盖；最终代码构建和相关门禁通过。追加截图与原生记录见[交接](handoff.md)。
