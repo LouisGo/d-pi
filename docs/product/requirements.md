@@ -230,3 +230,5 @@ D-22：同一次操作在 Renderer、Main、utility 等实际经过的应用层�
 ### 2026-09-26 技术选型确认
 
 用户确认 Base UI、最小 Tiptap 和 SQLite，取代此前相关待定/否定结论，并要求 ts-pattern 尽用于应用业务分支、用好 Zod v4。登记 D-32–D-35，工程细则见[TypeScript 合同](../architecture/typescript.md)。只改变技术路线与写法标准，不改变首版范围、OMP 所有权或真实验收要求。
+
+2026-10-07 用户确认基础组件视觉和交互跟随 Beautiful UI，补齐实际使用中缺少的控件；中性常规主操作、蓝色强调与浅层深度配方替代之前默认蓝色主按钮。组件公开面、主题和单源约束沿用 D-32，详见[升级规格](../../.scratch/beautiful-ui-system/spec.md)。

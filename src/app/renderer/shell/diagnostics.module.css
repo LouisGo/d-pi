@@ -9,7 +9,8 @@
   background: var(--surface);
   color: var(--foreground);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-window);
+  box-shadow: var(--shadow-overlay);
   font-size: var(--text-body);
 }
 .panel:focus-visible {
@@ -46,20 +47,6 @@
 .feedback textarea {
   width: 100%;
   min-width: 0;
-  box-sizing: border-box;
-  background: var(--surface);
-  color: var(--foreground);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-control);
-  padding: calc(var(--layout-gap) / 2) var(--control-padding);
-}
-.filters input {
-  min-height: var(--control-height);
-}
-.filters input:focus-visible,
-.feedback textarea:focus-visible {
-  background: var(--accent);
-  color: var(--accent-foreground);
 }
 .metadata {
   white-space: pre-wrap;

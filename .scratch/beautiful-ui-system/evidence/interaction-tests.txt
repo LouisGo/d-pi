@@ -1,0 +1,16 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/modules/ui/renderer/focus-visibility.test.ts src/app/renderer/components/ui/hover-menu.test.ts src/app/renderer/components/ui/tab-strip.test.ts
+$ tsr generate
+(node:60456) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/louistation/.codex/worktrees/beautiful-ui-system/d-pi
+
+ ✓ src/modules/ui/renderer/focus-visibility.test.ts (2 tests) 4ms
+ ✓ src/app/renderer/components/ui/tab-strip.test.ts (1 test) 24ms
+ ✓ src/app/renderer/components/ui/hover-menu.test.ts (1 test) 62ms
+
+ Test Files  3 passed (3)
+      Tests  4 passed (4)
+   Start at  22:30:26
+   Duration  1.35s (import 73%, environment 17%, transform 6%, tests 3%, worker 1%)

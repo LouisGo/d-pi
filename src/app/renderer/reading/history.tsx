@@ -16,7 +16,12 @@ import {
   readingSourceKey,
 } from "../../../modules/conversation/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import { Button, Select } from "../../../modules/ui/renderer/public";
+import {
+  Button,
+  Disclosure,
+  DisclosureTrigger,
+  Select,
+} from "../../../modules/ui/renderer/public";
 import { ReadingBody } from "./reading-body";
 
 type HistoryToolEvidenceMessage =
@@ -166,11 +171,13 @@ function HistoryContent({ bridge, threadId, active, positions }: HistoryProps) {
       {catalog.data?.kind === "unavailable" && (
         <p role="status">{t("ui.history.catalogUnavailable")}</p>
       )}
-      <details className="history-source">
-        <summary>{t("ui.history.sourceDetails")}</summary>
-        <p className="muted">{t("ui.history.projectDescription")}</p>
-        <p className="muted">{t("ui.history.description")}</p>
-      </details>
+      <div className="history-source">
+        <Disclosure>
+          <DisclosureTrigger>{t("ui.history.sourceDetails")}</DisclosureTrigger>
+          <p className="muted">{t("ui.history.projectDescription")}</p>
+          <p className="muted">{t("ui.history.description")}</p>
+        </Disclosure>
+      </div>
       {!selected && !awaitingCatalog && (
         <Button
           variant="ghost"
@@ -222,40 +229,42 @@ function HistoryContent({ bridge, threadId, active, positions }: HistoryProps) {
                   {t("ui.conversation.copy")}
                 </Button>
               </div>
-              <details className="history-record file-meta">
-                <summary>
-                  {t(
-                    entry.toolEvidence
-                      ? "ui.history.nativeToolEvidence"
-                      : "ui.history.recordDetails",
+              <div className="history-record file-meta">
+                <Disclosure>
+                  <DisclosureTrigger>
+                    {t(
+                      entry.toolEvidence
+                        ? "ui.history.nativeToolEvidence"
+                        : "ui.history.recordDetails",
+                    )}
+                  </DisclosureTrigger>
+                  <p className="trace">
+                    {t("ui.history.parent", {
+                      id: entry.id,
+                      parentId: entry.parentId ?? t("ui.history.root"),
+                    })}
+                  </p>
+                  {entry.toolEvidence && (
+                    <div className="file-meta">
+                      <strong>{t("ui.history.nativeToolEvidence")}</strong>
+                      <p>
+                        {t("ui.history.toolCall", {
+                          toolName: entry.toolEvidence.toolName,
+                          toolCallId: entry.toolEvidence.toolCallId,
+                          recordId: entry.id,
+                        })}
+                      </p>
+                      <p>{t(historyToolEvidenceMessage(entry.toolEvidence))}</p>
+                      <p>
+                        {t("ui.history.toolCoverage", {
+                          count: entry.toolEvidence.nonTextParts,
+                          source: page.source.slice(0, 16),
+                        })}
+                      </p>
+                    </div>
                   )}
-                </summary>
-                <p className="trace">
-                  {t("ui.history.parent", {
-                    id: entry.id,
-                    parentId: entry.parentId ?? t("ui.history.root"),
-                  })}
-                </p>
-                {entry.toolEvidence && (
-                  <div className="file-meta">
-                    <strong>{t("ui.history.nativeToolEvidence")}</strong>
-                    <p>
-                      {t("ui.history.toolCall", {
-                        toolName: entry.toolEvidence.toolName,
-                        toolCallId: entry.toolEvidence.toolCallId,
-                        recordId: entry.id,
-                      })}
-                    </p>
-                    <p>{t(historyToolEvidenceMessage(entry.toolEvidence))}</p>
-                    <p>
-                      {t("ui.history.toolCoverage", {
-                        count: entry.toolEvidence.nonTextParts,
-                        source: page.source.slice(0, 16),
-                      })}
-                    </p>
-                  </div>
-                )}
-              </details>
+                </Disclosure>
+              </div>
               <ReadingBody
                 text={entry.text}
                 position={

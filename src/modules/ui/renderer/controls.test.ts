@@ -171,3 +171,53 @@ it("opens a searchable picker with filtering and keeps selection until an option
     host.remove();
   }
 });
+
+it("keeps four segmented choices controlled and skips disabled options with the keyboard", async () => {
+  Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
+  const host = document.createElement("div");
+  document.body.append(host);
+  const root = createRoot(host);
+  const change = vi.fn();
+  function Sample() {
+    const [value, setValue] = useState("drive");
+    return createElement(ChoiceGroup, {
+      value,
+      options: [
+        { value: "drive", label: "Drive" },
+        { value: "dots", label: "Dots", disabled: true },
+        { value: "orbit", label: "Orbit" },
+        { value: "surfer", label: "Surfer", disabled: true },
+      ],
+      "aria-label": "Mode",
+      onValueChange: (next) => {
+        change(next);
+        setValue(next);
+      },
+    });
+  }
+  try {
+    await act(() => root.render(createElement(Sample)));
+    const drive = host.querySelector<HTMLElement>(
+      "[role=radio][aria-label=Drive]",
+    );
+    const orbit = host.querySelector<HTMLElement>(
+      "[role=radio][aria-label=Orbit]",
+    );
+    await act(() => drive?.focus());
+    await act(() =>
+      drive?.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }),
+      ),
+    );
+    expect(orbit?.getAttribute("aria-checked")).toBe("true");
+    expect(document.activeElement).toBe(orbit);
+    expect(change).toHaveBeenCalledExactlyOnceWith("orbit");
+    await act(() =>
+      host.querySelector<HTMLElement>("[role=radio][aria-label=Dots]")?.click(),
+    );
+    expect(change).toHaveBeenCalledOnce();
+  } finally {
+    await act(() => root.unmount());
+    host.remove();
+  }
+});

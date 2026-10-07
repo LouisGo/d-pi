@@ -30,7 +30,13 @@ import {
   syncAttachmentLabels,
 } from "../../../modules/input/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import { Button } from "../../../modules/ui/renderer/public";
+import {
+  Button,
+  Disclosure,
+  DisclosureTrigger,
+  Slider,
+  TextInput,
+} from "../../../modules/ui/renderer/public";
 import type {
   AttachmentBridge,
   AttachmentRequest,
@@ -323,8 +329,8 @@ export function AttachmentControls({
             : t("attachment.hint")}
         </span>
       </div>
-      <details>
-        <summary>{t("attachment.storage")}</summary>
+      <Disclosure>
+        <DisclosureTrigger>{t("attachment.storage")}</DisclosureTrigger>
         <div className="grid gap-2 py-2">
           <p className="muted">{t("attachment.storagePolicy")}</p>
           <div className="flex flex-wrap gap-2">
@@ -413,8 +419,8 @@ export function AttachmentControls({
             </div>
           )}
           {!!unused.length && (
-            <details>
-              <summary>{t("attachment.library")}</summary>
+            <Disclosure>
+              <DisclosureTrigger>{t("attachment.library")}</DisclosureTrigger>
               <div className="grid max-h-40 gap-2 overflow-auto">
                 {unused.map((item) => (
                   <div
@@ -432,10 +438,10 @@ export function AttachmentControls({
                   </div>
                 ))}
               </div>
-            </details>
+            </Disclosure>
           )}
         </div>
-      </details>
+      </Disclosure>
       {insertions.map(({ item }) => (
         <div
           key={item.id}
@@ -525,7 +531,7 @@ export function AttachmentControls({
           aria-label={t("attachment.searchLabel")}
         >
           {manualSearch && (
-            <input
+            <TextInput
               aria-label={t("attachment.searchLabel")}
               value={query}
               onChange={(event) => setQuery(event.target.value)}
@@ -702,23 +708,27 @@ export function AttachmentControls({
                     </span>
                   </div>
                   {item.frozenReference && (
-                    <details className="muted" data-selectable>
-                      <summary>{t("attachment.frozenSource")}</summary>
-                      <dl className="grid gap-1 break-all">
-                        <dt>{t("attachment.frozenProject")}</dt>
-                        <dd>{item.frozenReference.projectPath}</dd>
-                        <dt>{t("attachment.frozenPath")}</dt>
-                        <dd>{item.frozenReference.path}</dd>
-                        <dt>{t("attachment.frozenVersion")}</dt>
-                        <dd>{item.frozenReference.version}</dd>
-                        <dt>{t("attachment.frozenTime")}</dt>
-                        <dd>
-                          <time dateTime={item.frozenReference.capturedAt}>
-                            {item.frozenReference.capturedAt}
-                          </time>
-                        </dd>
-                      </dl>
-                    </details>
+                    <div className="muted">
+                      <Disclosure data-selectable>
+                        <DisclosureTrigger>
+                          {t("attachment.frozenSource")}
+                        </DisclosureTrigger>
+                        <dl className="grid gap-1 break-all">
+                          <dt>{t("attachment.frozenProject")}</dt>
+                          <dd>{item.frozenReference.projectPath}</dd>
+                          <dt>{t("attachment.frozenPath")}</dt>
+                          <dd>{item.frozenReference.path}</dd>
+                          <dt>{t("attachment.frozenVersion")}</dt>
+                          <dd>{item.frozenReference.version}</dd>
+                          <dt>{t("attachment.frozenTime")}</dt>
+                          <dd>
+                            <time dateTime={item.frozenReference.capturedAt}>
+                              {item.frozenReference.capturedAt}
+                            </time>
+                          </dd>
+                        </dl>
+                      </Disclosure>
+                    </div>
                   )}
                   {item.reason && (
                     <p className="failure" role="status">
@@ -858,8 +868,7 @@ function AttachmentPreviewDialog({
         <>
           <label className="flex items-center gap-2">
             {t("attachment.zoom")}
-            <input
-              type="range"
+            <Slider
               min="25"
               max="300"
               step="25"

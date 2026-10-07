@@ -6,19 +6,21 @@
     gap: calc(var(--layout-gap) / 2);
     min-height: var(--control-height);
     flex-shrink: 0;
-    padding: calc(var(--layout-gap) / 3) var(--control-padding);
-    border-radius: var(--radius-control);
+    padding: 0 calc(var(--control-padding) + var(--spacing) / 2);
+    border-radius: var(--radius-pill);
     font-size: var(--text-body);
     font-weight: 500;
     white-space: nowrap;
     cursor: default;
     user-select: none;
     border: 1px solid transparent;
-    line-height: 1.4;
+    line-height: var(--control-line-height);
     outline: none;
     transition:
-      background-color var(--motion-control),
-      color var(--motion-control);
+      background-color var(--motion-control) var(--ease-out),
+      color var(--motion-control) var(--ease-out),
+      transform var(--motion-control) var(--ease-out),
+      box-shadow var(--motion-control) var(--ease-out);
   }
   .ui-button:focus-visible {
     outline: var(--focus-ring);
@@ -26,6 +28,7 @@
   }
   .ui-button-icon {
     position: relative;
+    border-radius: var(--radius-control);
     display: inline-grid;
     place-items: center;
     gap: 0;
@@ -48,11 +51,13 @@
   .ui-button-primary {
     color: var(--primary-foreground);
     background: var(--primary);
+    box-shadow: var(--shadow-filled);
   }
   .ui-button-primary:hover:not(:disabled) {
     background: var(--primary-hover);
   }
   .ui-button-navigation {
+    border-radius: var(--radius-control);
     color: var(--muted-foreground);
     background: transparent;
   }
@@ -80,6 +85,34 @@
   .ui-button-navigation:active:not(:disabled) {
     color: var(--accent-foreground);
     background: var(--accent);
+  }
+  .ui-button:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+  .ui-button-navigation:active:not(:disabled),
+  .ui-button-status:active:not(:disabled) {
+    transform: none;
+  }
+  .ui-button-accent {
+    color: var(--emphasis-foreground);
+    background: var(--emphasis);
+  }
+  .ui-button-accent:hover:not(:disabled) {
+    background: var(--emphasis-hover);
+  }
+  .ui-button-accent:active:not(:disabled) {
+    background: var(--emphasis-active);
+  }
+  .ui-button-destructive {
+    color: var(--destructive);
+    background: var(--surface);
+    border-color: var(--border);
+  }
+  .ui-button-destructive:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--destructive) 9%, var(--surface));
+  }
+  .ui-button-destructive:active:not(:disabled) {
+    background: color-mix(in srgb, var(--destructive) 16%, var(--surface));
   }
   .ui-button:disabled {
     opacity: 0.5;

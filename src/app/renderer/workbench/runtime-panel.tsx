@@ -13,7 +13,12 @@ import type {
   SubmissionView,
 } from "../../../modules/execution/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import { Button } from "../../../modules/ui/renderer/public";
+import {
+  Button,
+  Disclosure,
+  DisclosureTrigger,
+  TextArea,
+} from "../../../modules/ui/renderer/public";
 import type { UiMessage } from "../../../shared/messages/contracts";
 import {
   receiptNeedsAttention,
@@ -211,8 +216,10 @@ export function RuntimePanel({
               item.status !== "unknown" &&
               !(item.status === "sent" && item.defaultAnswered),
           ) && (
-            <details hidden={!inspection}>
-              <summary>{t("ui.runtime.interactionRecords")}</summary>
+            <Disclosure hidden={!inspection}>
+              <DisclosureTrigger>
+                {t("ui.runtime.interactionRecords")}
+              </DisclosureTrigger>
               <div className="native-interactions">
                 {state.interactions.items
                   .filter(
@@ -237,7 +244,7 @@ export function RuntimePanel({
                     />
                   ))}
               </div>
-            </details>
+            </Disclosure>
           )}
         </section>
       )}
@@ -259,14 +266,16 @@ export function RuntimeInspection({ model }: { model: RuntimeModel }) {
       aria-label={t("ui.runtime.sectionLabel")}
     >
       <strong role="status">{label}</strong>
-      <details className="runtime-source">
-        <summary>{t("ui.runtime.details")}</summary>
-        <span className="muted">{formatMessage(state.configuration)}</span>
-        {state.phase === "ready" && <p>{formatMessage(state.message)}</p>}
-        {state.evidenceCoverage === "gap" && (
-          <p>{formatMessage({ code: "runtime.evidenceGap" })}</p>
-        )}
-      </details>
+      <div className="runtime-source">
+        <Disclosure>
+          <DisclosureTrigger>{t("ui.runtime.details")}</DisclosureTrigger>
+          <span className="muted">{formatMessage(state.configuration)}</span>
+          {state.phase === "ready" && <p>{formatMessage(state.message)}</p>}
+          {state.evidenceCoverage === "gap" && (
+            <p>{formatMessage({ code: "runtime.evidenceGap" })}</p>
+          )}
+        </Disclosure>
+      </div>
       {state.phase !== "ready" && (
         <p className="muted">{formatMessage(state.message)}</p>
       )}
@@ -434,8 +443,9 @@ function NativeDialog({
             </div>
           ) : (
             <div>
-              <textarea
-                className="native-answer"
+              <TextArea
+                className="my-2.5 block"
+                data-native-answer
                 aria-label={item.title}
                 disabled={!enabled || !trusted}
                 value={value}
@@ -462,8 +472,9 @@ function NativeDialog({
       ) : defaulted ? (
         <>
           <div>
-            <textarea
-              className="native-answer"
+            <TextArea
+              className="my-2.5 block"
+              data-native-answer
               aria-label={t("ui.interaction.continueAnswerLabel", {
                 title: item.title,
               })}

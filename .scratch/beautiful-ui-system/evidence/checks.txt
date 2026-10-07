@@ -1,0 +1,18 @@
+$ tsc --noEmit -p tsconfig.renderer.json
+$ biome check .
+Checked 604 files in 164ms. No fixes applied.
+$ node scripts/checks/lint-design.mjs
+PASS: design lint
+$ node scripts/checks/interaction-policy.mjs
+PASS: cursor, selection and shared-button authoring policy
+$ node scripts/checks/check-i18n-copy.mjs
+$ node validation/s1/design-check.mjs
+PASS: CSS Modules, clsx/cva, shared variable accepted; six invalid design patterns rejected.
+$ node scripts/architecture/check.mjs
+PASS: architecture boundaries (432 source files checked, TypeScript scanner)
+$ node scripts/architecture/report.mjs --check architecture/dependencies.generated.json
+PASS: generated structure report is current
+$ node scripts/checks/check-documentation.mjs
+PASS: documentation references (311 Markdown files; 17 historical snapshots excluded; external URLs not fetched)
+$ node scripts/tasks/project-status.mjs --check docs/status.md
+PASS: project status (24 slices, 127 tasks; engineering/trial/acceptance independent)

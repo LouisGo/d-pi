@@ -62,3 +62,7 @@
 | Tool UI [ActionButtons](https://github.com/assistant-ui/tool-ui/blob/49a870286facdbf28160cd647f0d337ebdc9b275/apps/www/components/tool-ui/shared/action-buttons.tsx) / [useActionButtons](https://github.com/assistant-ui/tool-ui/blob/49a870286facdbf28160cd647f0d337ebdc9b275/apps/www/components/tool-ui/shared/use-action-buttons.tsx) | 动作描述、显示、局部防重复和异步回调分工 | 本地交互瞬态不能成为执行事实；源码从调用层覆盖 Button 圆角/padding，不能原样带入 d-pi，应转为共享 variant；确认倒计时仅在产品语义需要时采用 |
 
 结论：基础控件薄封装 Base UI/shadcn；可复用的 AI 配套表达先使用自有控件组合，再按适配成本选择源码改造；业务绑定保留在所属功能。Beautiful UI/Tool UI 是重要写法参考，不成为应用直接消费的 API。所有实现方式都遵守[自有组件合同](design-system.md#自有组件库与实现选择2026-10-06)，本页不新增并列规则或第二套组件技术路线。
+
+## 2026-10-07 基础体系升级
+
+用户确认 Beautiful UI 从写法参考提升为本轮直接视觉和动效对照，工程接入仍采用自有 API、统一 token 与 Base UI。固定源码提交 `44a274e598395ab61e7c96c26fda2758780253b7`；对照中性主按钮、蓝色强调按钮、胶囊文字动作、不同表面的边界与浅层阴影及短按压反馈。来源与研究见[已有调研](../../.scratch/codex-workbench-ui/research.md#7-beautiful-ui--tool-ui组件写法与自有封装)及[升级规格](../../.scratch/beautiful-ui-system/spec.md)；不移植示例计时器、假运行状态或整套组件库。

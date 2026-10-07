@@ -1,6 +1,6 @@
 # 设计 Token、组件边界与密度
 
-日期：2026-09-27。状态：用户要求及工程合同；S1基础接入已有验收记录，后续组件按实际改动检查，具体覆盖见S1交接。补充 D-17/D-32，与[图标合同](icon-system.md)、[无头功能合同](headless-features.md)共同约束 GUI。适用于样式、组件、页面和外部 UI 源码接入；不将视觉 token 放入 OMP 协议或无头业务数据。
+日期：2026-09-27；2026-10-07 补充 Beautiful UI 视觉体系。状态：用户要求及工程合同；S1基础接入已有验收记录，后续组件按实际改动检查，具体覆盖见S1交接。补充 D-17/D-32，与[图标合同](icon-system.md)、[无头功能合同](headless-features.md)共同约束 GUI。适用于样式、组件、页面和外部 UI 源码接入；不将视觉 token 放入 OMP 协议或无头业务数据。
 
 2026-10-06 最新要求：基础、配套和业务组件保持同一视觉体系；light/dark 均为必备主题，颜色角色由同一变量体系联动。取消 normal/compact 切换，以原 compact 尺寸作为唯一默认布局，不再区分两种产品密度；取代此前双密度建设与往返验收要求，历史证据保留。自有组件封装要求继续有效。
 
@@ -53,7 +53,7 @@ CSS 自定义属性作为共享视觉值的单一来源，通过 Tailwind 主题
 | 表面、边界与层次 | 工作区/控件/浮层按语义 surface、border、overlay 和明确的阴影角色组织 | 不给每一层都加卡片、阴影或不同描边；同类浮层保持一致的圆角、边界和层次 |
 | 交互状态 | default、hover、active、selected、disabled、focus-visible 由共享组件/variant 映射 | 同一动作在基础、配套和业务区域使用同一反馈；不能只对单个业务按钮补局部颜色 |
 
-light/dark 两套主题都必须覆盖所有自有界面，包括 Portal、空态、错误态、选中/禁用/焦点状态和专用内容适配。颜色角色沿用 background/surface/foreground、primary/primary-foreground、muted/muted-foreground、border、accent、destructive 等现有命名；辅助/副标题文字优先使用 muted-foreground 等真实语义，有缺口时在唯一来源扩充，不按页面定义 subtitle 色板。
+light/dark 两套主题都必须覆盖所有自有界面，包括 Portal、空态、错误态、选中/禁用/焦点状态和专用内容适配。颜色角色沿用 background/surface/foreground、primary/primary-foreground、emphasis/emphasis-foreground、muted/muted-foreground、border、accent、destructive 等命名；辅助/副标题文字优先使用 muted-foreground 等真实语义，有缺口时在唯一来源扩充，不按页面定义 subtitle 色板。
 
 颜色联动是集中主题输入与派生映射的结果：每套主题集中维护基础色与角色关系，相关 hover/active、选中底面和前景色通过同源引用或适当的派生计算得到；需要独立调节的辅助文字角色也在同一来源定义。更换主题配方或某个角色只修改集中来源，不逐组件补色值。联动不表示所有颜色等于 primary，也不能仅改主色而留下旧的主操作状态色。派生方式结合对比度确定，不预建 token 编译器或主题编辑平台。
 
@@ -77,7 +77,7 @@ Base UI 负责基础交互，shadcn 源码接入后统一使用本项目 token�
 
 ### 选择组件约定（2026-10-07）
 
-用户组件专项要求：Select 类选择浮层默认在触发器下方，与触发器分离；仅下方空间不足时由碰撞处理翻转。ChoiceGroup 用于两个明确值，使用无外框的文本胶囊，选中项柔和底色，保留 radio 语义及键盘焦点；超过两个选项使用 Select。长列表或按名称查找的场景使用带弹层内快速搜索框、独立滚动列表和无结果反馈的选择组件，搜索本身不改变值。具体接入和验证见[选择组件专项](../../.scratch/selection-components/spec.md)。
+用户组件专项要求：Select 类选择浮层默认在触发器下方，与触发器分离；仅下方空间不足时由碰撞处理翻转。2026-10-07 用户追加参考图 2，ChoiceGroup 改用整体胶囊轨道与内嵌选中块，允许至少两个明确互斥选项，保留 radio 语义及键盘焦点，取代此前二值无外框配方。长列表或按名称查找的场景使用带弹层内快速搜索框、独立滚动列表和无结果反馈的选择组件，搜索本身不改变值。原专项见[选择组件专项](../../.scratch/selection-components/spec.md)，后续变更见[视觉升级规格](../../.scratch/beautiful-ui-system/spec.md)。
 
 ### 自有组件库与实现选择（2026-10-06）
 
@@ -125,11 +125,11 @@ Base UI / 选择性改造的上游源码 / 专用渲染与编辑能力
 
 用户已确认的全应用规则：点击目标禁止手形 `cursor: pointer`，统一为 `default`；输入/内容选择的 `text`、编辑器分隔条的 resize 等功能性指针保留。基础样式单源为 `src/app/renderer/styles/interaction.css`，由应用样式入口加载，覆盖 body 级 portal。
 
-- 组件默认外观须能识别操作入口，hover/active/selected/disabled/focus-visible 分别表达含义。共享 Button 管理主操作、ghost、navigation 与 icon；主操作按下色来自 `--primary-active`，其他状态复用现有主题 token。折叠标题沿用原生 disclosure，文字链接默认有颜色及下划线。
+- 组件默认外观须能识别操作入口，hover/active/selected/disabled/focus-visible 分别表达含义。共享 Button 管理中性主操作、蓝色 accent 强调操作、secondary、ghost、destructive、navigation 与 icon；主操作按下色来自 `--primary-active`，其他状态复用现有主题 token。折叠标题沿用原生 disclosure，文字链接默认有颜色及下划线。
 - 2026-10-07 用户明确要求并直接修复存量控件：默认、普通 focus、hover、active 不显示 outline；只允许键盘/无障碍的 `:focus-visible` 提示。中央 CSS 对所有元素（含 Portal 与第三方内部控件）禁止非 focus-visible 的 outline；共享交互入口标记指针焦点，补足文本输入框鼠标点击也可能匹配 focus-visible 的浏览器行为。键盘导航/激活或独立无障碍焦点移动解除指针标记。鼠标反馈使用背景与文字，不新增彩色 border 或 ring shadow；保留 caret、焦点协议与无障碍语义。
 - 默认 `user-select: none`。需要阅读/复制的正文、工具输出、历史、收据、原生交互及队列文本由内容拥有者加 `data-selectable`；输入/textarea/contenteditable 按原生语义开放。trace、Thread 身份、目录路径、file-meta 内容、运行来源、附件预览和 alert 是中央规则登记的内容例外，不按所有 p/span 或整个工作区开放。
 - 可选择区域内的按钮、链接、summary、导航/选项及其控件标签仍不可选；消息 heading 与装饰图标也不参与正文选择。新内容区域优先使用 `data-selectable`，不另写 select-text/all/auto、内联 userSelect 或局部 user-select 例外。
-- configuration 模块不能反向导入 app 私有 Button。其原生按钮使用静态 `ui-button` 加 `ui-button-primary/ghost/navigation` 接入同一份共享样式，保留原有表单/disabled 行为；不另建颜色或交互状态。其他 app 视图使用共享 React Button。
+- configuration 与 app 消费 `modules/ui/renderer/public` 的共享 Button 和表单控件；不能反向导入 app 私有组件或在消费端重建控件外观。原生 file/hidden input 保留其特殊职责。
 - Monaco 0.57 的 unlayered CSS 与动态 inline cursor 由中央适配规则限定到 editor/hover/menu 作用域覆盖。普通点击目标和编辑器使用窄范围 important；编辑区 text、sash resize 明确恢复。不对整个应用使用 `* { cursor: default !important }`，不覆盖 Monaco 自有选区机制。
 
 源码门禁 `pnpm lint:interaction` 检查 CSS、工具类、静态内联/命令式赋值和原生按钮的共享样式接入；在 `check:fast` 与 `lint:design`（因此完整 `check`）中执行。CSS 文本选择例外只允许中央规则定义，违规失败。扫描只证明可静态识别的自有代码，不冒称能解释任意动态 JS 或第三方 DOM。
@@ -198,3 +198,9 @@ Thread 列表底部的横向功能导航独立于状态栏，设置占宽区并�
 ## 通用标签条与 Thread 工具（2026-10-07）
 
 标签条采用自有 `TabStrip` / `TabItem`，只处理标签、可选面板关联、选择/关闭/新增与键盘导航，不渲染内容或拥有资源。PanelHost 和其他调用方组合内容容器；轻量选中底色及悬停时图标换关闭按钮沿用共享 token，切换不改变标签宽度。Thread 的真实配置/检查入口改为自有 Modal；必要执行交互继续在主区可见。共享焦点入口保留指针触发器进入 portal 的自动聚焦来源，键盘/辅助技术焦点继续可见。实施与证据见[07](../../.scratch/codex-workbench-ui/issues/07-thread-tools-tabs-focus.md)。
+
+## Beautiful UI 视觉基线（2026-10-07）
+
+本轮已授权基线与验收见[升级规格](../../.scratch/beautiful-ui-system/spec.md)。Beautiful UI 固定参考的表面、圆角、阴影、控件和动效作为直接视觉对照；Base UI 或适当的原生控件保留语义与键盘基础。常规主操作用 primary 中性色，明确强调动作（如发送）用 emphasis；accent 是柔和选中底面，三者不可互换。
+
+共享配方采用胶囊文字动作、较小圆角的图标/输入/导航、浅层控件阴影和较明显的浮层阴影；深色主题独立调整边界与深度。颜色、尺寸、圆角、阴影、motion/easing 的数值只在 tokens.css 定义。组件内部组合这些角色，消费者仅管理布局。新增 Checkbox、TextArea、Slider、Disclosure 透传原生 props/ref，覆盖真实的多选、问答、多行草稿、附件缩放与详情展开入口；看板使用同一公开实现。按下缩放仅用于短动作，导航和状态行不位移；reduced-motion 关闭 transition。

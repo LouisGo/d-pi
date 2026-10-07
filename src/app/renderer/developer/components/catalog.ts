@@ -8,6 +8,54 @@ export const categories = [
 ] as const;
 export const componentCatalog = [
   {
+    name: "Checkbox",
+    category: "forms",
+    purpose: "原生多选框，保留表单及键盘语义。",
+    forms: "checked · unchecked · disabled",
+  },
+  {
+    name: "TextInput",
+    category: "forms",
+    purpose: "文本、数字和只读输入共享尺寸与表面。",
+    forms: "text · number · readOnly · disabled",
+  },
+  {
+    name: "TextArea",
+    category: "forms",
+    purpose: "多行输入保持原生编辑与缩放。",
+    forms: "editable · readOnly · disabled",
+  },
+  {
+    name: "Slider",
+    category: "forms",
+    purpose: "使用鼠标或方向键调整连续值。",
+    forms: "range · step · disabled",
+  },
+  {
+    name: "Disclosure",
+    category: "layout",
+    purpose: "展开或收起内容，保留子视图状态。",
+    forms: "open · closed · keyboard",
+  },
+  {
+    name: "Modal",
+    category: "overlays",
+    purpose: "临时保护焦点，关闭后返回触发动作。",
+    forms: "open · closed · Esc · returnFocus",
+  },
+  {
+    name: "StatusPreview",
+    category: "overlays",
+    purpose: "状态栏动作与轻量详情浮层。",
+    forms: "summary · popover · keyboard",
+  },
+  {
+    name: "Tooltip",
+    category: "overlays",
+    purpose: "鼠标悬停和键盘焦点触发辅助提示。",
+    forms: "hover · focus · Esc",
+  },
+  {
     name: "Select",
     category: "forms",
     purpose: "三项及以上优先下拉；默认向下展开，支持弹层内快速搜索。",
@@ -28,7 +76,7 @@ export const componentCatalog = [
   {
     name: "ChoiceGroup",
     category: "forms",
-    purpose: "在两个明确值之间直接切换，选中项使用轻量胶囊底色。",
+    purpose: "在互斥值之间直接切换，整体胶囊轨道中嵌入选中块。",
     forms: "selected · unselected / disabled / radio keyboard",
   },
   {
@@ -106,6 +154,10 @@ export const copy = {
 };
 
 export const demoLabels = {
+  choiceDrive: "Drive",
+  choiceDots: "Dots",
+  choiceOrbit: "Orbit",
+  choiceSurfer: "Surfer",
   select: "默认行为",
   optionC: "选项 C",
   searchableSelect: "可搜索选择",
@@ -123,6 +175,8 @@ export const demoLabels = {
   settingsGroup: "通用设置",
   settingsRow: "默认选项",
   settingsRowDescription: "说明与控件共享同一配置行。",
+  accent: "强调操作",
+  destructive: "危险操作",
   primary: "主操作",
   ghost: "轻量操作",
   navigation: "导航选择",
@@ -165,4 +219,38 @@ export const demoLabels = {
   about: "关于",
   overlayHint: "这是本地演示，选择选项不会影响真实应用。",
   choice: (value: string) => `当前选项：${value}`,
+};
+
+export const foundationLabels = {
+  copy1: "普通输入",
+  copy2: "输入内容…",
+  copy3: "数量",
+  copy4: "只读输入",
+  copy5: "只读内容",
+  copy6: "禁用输入",
+  copy7: "暂不可编辑",
+  copy8: "多行输入",
+  copy9: "输入多行内容…",
+  copy10: "只读多行输入",
+  copy11: "只读内容保持可选中和复制。",
+  copy12: "禁用多行输入",
+  copy13: "缩放",
+  copy14: "禁用滑块",
+  copy15: "详情草稿",
+  copy16: "输入后收起再展开…",
+  copy17: "对话框演示",
+  copy18: "关闭对话框演示",
+  copy19: "对话框输入",
+  copy20: "状态详情演示",
+  copy21: "查看状态",
+  copy22: "解释此动作，不替代按钮名称",
+  copy23: "展开详情",
+  copy24: "本地演示：Esc 关闭并返回触发按钮。",
+  copy25: "本地演示内容，操作不会改变真实执行状态。",
+  copy26: "悬停或键盘聚焦",
+  copy27: "保留附件",
+  copy28: "不可用选项",
+  copy29: "已选且禁用",
+  copy30: "展开和收起只改变可见性，内容与输入状态保留。",
+  copy31: "打开对话框",
 };

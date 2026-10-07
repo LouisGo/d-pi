@@ -36,7 +36,11 @@ import {
 } from "../../../modules/files/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import type { ThreadContext } from "../../../modules/threads/contracts/public";
-import { Button } from "../../../modules/ui/renderer/public";
+import {
+  Button,
+  Disclosure,
+  DisclosureTrigger,
+} from "../../../modules/ui/renderer/public";
 import { readInFlight } from "./refresh-state";
 
 type EditorComponent = ComponentType<{
@@ -204,99 +208,100 @@ export function FilePanel({
     <section className="file-panel" aria-label={t("ui.files.section")}>
       <h2>{t("ui.files.section")}</h2>
       <p className="file-meta">{t("ui.files.readOnly")}</p>
-      <details
-        className="file-navigation"
-        open={browserOpen}
-        onToggle={(event) => setBrowserOpen(event.currentTarget.open)}
-      >
-        <summary>{t("ui.files.choose")}</summary>
-        <div className="file-browser">
-          <div className="flex gap-2">
-            <strong>{t("ui.files.tree")}</strong>
-            <Button variant="ghost" disabled={refreshing} onClick={refresh}>
-              {t("ui.files.refresh")}
-            </Button>
-            {directory && (
-              <Button
-                variant="ghost"
-                onClick={() =>
-                  listDirectory(directory.split("/").slice(0, -1).join("/"))
-                }
-              >
-                {t("ui.files.up")}
+      <div className="file-navigation">
+        <Disclosure
+          open={browserOpen}
+          onToggle={(event) => setBrowserOpen(event.currentTarget.open)}
+        >
+          <DisclosureTrigger>{t("ui.files.choose")}</DisclosureTrigger>
+          <div className="file-browser">
+            <div className="flex gap-2">
+              <strong>{t("ui.files.tree")}</strong>
+              <Button variant="ghost" disabled={refreshing} onClick={refresh}>
+                {t("ui.files.refresh")}
               </Button>
-            )}
-          </div>
-          <p className="file-meta">/{directory}</p>
-          {listing.data?.kind === "unavailable" && (
-            <p role="status">{reason(listing.data.reason, t)}</p>
-          )}
-          {listing.data?.kind === "entries" && (
-            <div className="file-list">
-              {listing.data.entries.map((entry) => (
+              {directory && (
                 <Button
-                  key={entry.path}
                   variant="ghost"
                   onClick={() =>
-                    entry.kind === "directory"
-                      ? listDirectory(entry.path)
-                      : openFile(entry.path)
+                    listDirectory(directory.split("/").slice(0, -1).join("/"))
                   }
                 >
-                  {entry.kind === "directory" ? "▸ " : ""}
-                  {entry.name}
+                  {t("ui.files.up")}
                 </Button>
-              ))}
+              )}
             </div>
-          )}
-          {listing.data?.kind === "entries" && listing.data.truncated && (
-            <p role="status">{t("ui.files.truncatedTree")}</p>
-          )}
-        </div>
-        <div className="git-panel">
-          <div className="flex gap-2">
-            <strong>{t("ui.files.gitHeading")}</strong>
-            <Button variant="ghost" disabled={refreshing} onClick={refresh}>
-              {t("ui.files.refresh")}
-            </Button>
-          </div>
-          <p className="file-meta">{t("ui.files.gitDisclaimer")}</p>
-          {changeList?.kind === "unavailable" && (
-            <p role="status">{reason(changeList.reason, t)}</p>
-          )}
-          {changeList?.kind === "changes" && (
-            <>
-              <p className="file-meta">
-                {changeList.repository} · HEAD{" "}
-                {changeList.head ?? t("ui.files.unborn")} ·{" "}
-                {changeList.capturedAt} · {t("ui.files.projectSample")}
-              </p>
-              <div className="change-list">
-                {changeList.entries.map((entry) => (
+            <p className="file-meta">/{directory}</p>
+            {listing.data?.kind === "unavailable" && (
+              <p role="status">{reason(listing.data.reason, t)}</p>
+            )}
+            {listing.data?.kind === "entries" && (
+              <div className="file-list">
+                {listing.data.entries.map((entry) => (
                   <Button
-                    key={`${entry.scope}:${entry.path}`}
+                    key={entry.path}
                     variant="ghost"
-                    onClick={() => openDiff(entry.scope, entry.path)}
+                    onClick={() =>
+                      entry.kind === "directory"
+                        ? listDirectory(entry.path)
+                        : openFile(entry.path)
+                    }
                   >
-                    {entry.scope === "head-index"
-                      ? t("ui.files.headIndex")
-                      : entry.scope === "index-worktree"
-                        ? t("ui.files.indexWorktree")
-                        : t("ui.files.untracked")}{" "}
-                    · {statusLabel(entry.status, t)} · {entry.path}
+                    {entry.kind === "directory" ? "▸ " : ""}
+                    {entry.name}
                   </Button>
                 ))}
               </div>
-              {changeList.truncated && (
-                <p role="status">{t("ui.files.truncatedChanges")}</p>
-              )}
-              {!changeList.entries.length && (
-                <p className="muted">{t("ui.files.noChanges")}</p>
-              )}
-            </>
-          )}
-        </div>
-      </details>
+            )}
+            {listing.data?.kind === "entries" && listing.data.truncated && (
+              <p role="status">{t("ui.files.truncatedTree")}</p>
+            )}
+          </div>
+          <div className="git-panel">
+            <div className="flex gap-2">
+              <strong>{t("ui.files.gitHeading")}</strong>
+              <Button variant="ghost" disabled={refreshing} onClick={refresh}>
+                {t("ui.files.refresh")}
+              </Button>
+            </div>
+            <p className="file-meta">{t("ui.files.gitDisclaimer")}</p>
+            {changeList?.kind === "unavailable" && (
+              <p role="status">{reason(changeList.reason, t)}</p>
+            )}
+            {changeList?.kind === "changes" && (
+              <>
+                <p className="file-meta">
+                  {changeList.repository} · HEAD{" "}
+                  {changeList.head ?? t("ui.files.unborn")} ·{" "}
+                  {changeList.capturedAt} · {t("ui.files.projectSample")}
+                </p>
+                <div className="change-list">
+                  {changeList.entries.map((entry) => (
+                    <Button
+                      key={`${entry.scope}:${entry.path}`}
+                      variant="ghost"
+                      onClick={() => openDiff(entry.scope, entry.path)}
+                    >
+                      {entry.scope === "head-index"
+                        ? t("ui.files.headIndex")
+                        : entry.scope === "index-worktree"
+                          ? t("ui.files.indexWorktree")
+                          : t("ui.files.untracked")}{" "}
+                      · {statusLabel(entry.status, t)} · {entry.path}
+                    </Button>
+                  ))}
+                </div>
+                {changeList.truncated && (
+                  <p role="status">{t("ui.files.truncatedChanges")}</p>
+                )}
+                {!changeList.entries.length && (
+                  <p className="muted">{t("ui.files.noChanges")}</p>
+                )}
+              </>
+            )}
+          </div>
+        </Disclosure>
+      </div>
       <section
         className="file-result"
         ref={resultRef}
@@ -330,13 +335,17 @@ export function FilePanel({
           <p role="status">{reason(diffReply.reason, t)}</p>
         )}
         {active === "file" && file?.kind === "text" && (
-          <details className="file-meta">
-            <summary>{t("ui.files.sampleDetails")}</summary>
-            <p>
-              {file.path} · {t("ui.files.workingTree")} · {file.version} ·{" "}
-              {file.bytes} B · {file.capturedAt} · {t("ui.files.complete")}
-            </p>
-          </details>
+          <div className="file-meta">
+            <Disclosure>
+              <DisclosureTrigger>
+                {t("ui.files.sampleDetails")}
+              </DisclosureTrigger>
+              <p>
+                {file.path} · {t("ui.files.workingTree")} · {file.version} ·{" "}
+                {file.bytes} B · {file.capturedAt} · {t("ui.files.complete")}
+              </p>
+            </Disclosure>
+          </div>
         )}
         {active === "diff" && diffReply?.kind === "diff" && (
           <>

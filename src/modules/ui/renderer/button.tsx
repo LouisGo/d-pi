@@ -10,6 +10,8 @@ const buttonVariants = cva("ui-button", {
     variant: {
       default: "ui-button-primary",
       secondary: "ui-button-secondary",
+      accent: "ui-button-accent",
+      destructive: "ui-button-destructive",
       ghost: "ui-button-ghost",
       navigation: "ui-button-navigation",
     },

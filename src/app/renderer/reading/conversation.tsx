@@ -5,7 +5,11 @@ import {
   readingSourceKey,
 } from "../../../modules/conversation/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import { Button } from "../../../modules/ui/renderer/public";
+import {
+  Button,
+  Disclosure,
+  DisclosureTrigger,
+} from "../../../modules/ui/renderer/public";
 import { ReadingBody } from "./reading-body";
 import { SubagentMessage } from "./subagents";
 
@@ -120,14 +124,16 @@ function ConversationMessage({
       {item.notice ? (
         <p>{formatMessage(item.notice)}</p>
       ) : item.role === "tool" ? (
-        <details>
-          <summary>{t("ui.conversation.toolOutput")}</summary>
+        <Disclosure>
+          <DisclosureTrigger>
+            {t("ui.conversation.toolOutput")}
+          </DisclosureTrigger>
           <ReadingBody
             text={item.text || t("ui.conversation.waitingResult")}
             raw
             position={position}
           />
-        </details>
+        </Disclosure>
       ) : (
         <ReadingBody
           text={item.text}

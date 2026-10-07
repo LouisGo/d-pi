@@ -1,0 +1,30 @@
+{
+  "method": "CUA native macOS Electron, real App and components; isolated mock DesktopBridge, no provider request",
+  "viewports": [
+    "1440x900 @2x",
+    "720x900 @2x"
+  ],
+  "observed": {
+    "button": "Click updates counter; Tab reaches accent action with visible ring",
+    "checkbox": "Space toggles 1 to 0; disabled controls remain disabled",
+    "slider": "Right changes 175 to 200 with step 25",
+    "select": "Search B filters to B while value remains A; Escape returns focus to trigger A",
+    "disclosure": "Space closes; Enter reopens; textarea remains preserved draft",
+    "modal": "Escape closes and focus returns to open trigger",
+    "tooltip": "Keyboard Tab reveals descriptive text; Escape dismisses",
+    "themes": "light and dark observed; narrow control wrapping observed"
+  },
+  "not_run": [
+    "real provider",
+    "package",
+    "VoiceOver",
+    "system IME",
+    "physical drag resize; narrow window launched at fixed 720 width"
+  ],
+  "capture_notes": "Final reviewed correction batch recaptured both fixed window widths and themes. dark-narrow-controls is closed-state composition. Native OS sharing pill and cursor highlight are system chrome. Captures use the source Renderer and mock IPC, not a packaged candidate.",
+  "correction_confirmation": [
+    "light emphasis contrast and neutral hover/active source verified by contrast.mjs",
+    "Checkbox default boundary uses control-border in both themes",
+    "Button/TabStrip/Disclosure geometry and native interaction paths unchanged"
+  ]
+}

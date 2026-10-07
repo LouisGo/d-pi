@@ -8,7 +8,13 @@ import type {
 } from "../../../modules/configuration/contracts/public";
 import { configurationSnapshotQuery } from "../../../modules/configuration/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import { Button, Select } from "../../../modules/ui/renderer/public";
+import {
+  Button,
+  Checkbox,
+  Disclosure,
+  DisclosureTrigger,
+  Select,
+} from "../../../modules/ui/renderer/public";
 import type { ThreadModel } from "../wiring/thread-model";
 
 type ThinkingChoice =
@@ -146,116 +152,119 @@ function ModelSelectionState({
       ? !!target?.thinking.adjustable && !target.thinking.requiresEffort
       : !!target?.thinking.efforts.includes(level));
   return (
-    <details
-      ref={disclosureRef}
-      className="model-controls"
-      aria-label={t("model.heading")}
-    >
-      <summary>
-        {t(
-          view?.phase === "interrupted"
-            ? "model.readOnly"
-            : view?.model
-              ? "model.active"
-              : "model.next",
+    <div className="model-controls">
+      <Disclosure ref={disclosureRef} aria-label={t("model.heading")}>
+        <DisclosureTrigger>
+          {t(
+            view?.phase === "interrupted"
+              ? "model.readOnly"
+              : view?.model
+                ? "model.active"
+                : "model.next",
+          )}
+          : {inherited ?? t("model.none")} · {t("model.thinking")}:{" "}
+          {view?.thinkingLevel ??
+            thinkingLabel(
+              view?.selectedModel?.thinking ?? { kind: "default" },
+              t,
+            )}{" "}
+          · {t("model.change")}
+        </DisclosureTrigger>
+        {view?.phase === "interrupted" && (
+          <p role="status" className="muted">
+            {t("model.readOnlyNotice")}
+          </p>
         )}
-        : {inherited ?? t("model.none")} · {t("model.thinking")}:{" "}
-        {view?.thinkingLevel ??
-          thinkingLabel(
-            view?.selectedModel?.thinking ?? { kind: "default" },
-            t,
-          )}{" "}
-        · {t("model.change")}
-      </summary>
-      {view?.phase === "interrupted" && (
-        <p role="status" className="muted">
-          {t("model.readOnlyNotice")}
-        </p>
-      )}
-      {view?.selectedModel && !view.model && (
-        <p className="muted">
-          {t("model.next")}: {view.selectedModel.provider}/
-          {view.selectedModel.modelId} ·{" "}
-          {thinkingLabel(view.selectedModel.thinking, t)}
-        </p>
-      )}
-      <label>
-        <input
-          type="checkbox"
-          checked={showUnavailable}
-          onChange={(e) => setShowUnavailable(e.target.checked)}
-        />
-        {t("model.showUnavailable")}
-      </label>
-      <div className="model-fields">
+        {view?.selectedModel && !view.model && (
+          <p className="muted">
+            {t("model.next")}: {view.selectedModel.provider}/
+            {view.selectedModel.modelId} ·{" "}
+            {thinkingLabel(view.selectedModel.thinking, t)}
+          </p>
+        )}
         <label>
-          {t("model.heading")}
-          <Select
-            value={selected}
-            disabled={disabled || loading}
-            onValueChange={select}
-            aria-label={t("model.heading")}
-            search={{ label: t("model.search"), empty: t("model.noAvailable") }}
-            options={[
-              { value: "", label: t("model.choose") },
-              ...visibleModels.map((m) => ({
-                value: JSON.stringify([m.provider, m.id]),
-                label: `${m.provider} / ${m.name}${m.reason ? ` · ${t(`model.reason.${m.reason}`)}` : ""}`,
-                searchText: m.id,
-                disabled: !m.available,
-              })),
-            ]}
+          <Checkbox
+            checked={showUnavailable}
+            onChange={(e) => setShowUnavailable(e.target.checked)}
           />
+          {t("model.showUnavailable")}
         </label>
-        <label>
-          {t("model.thinking")}
-          <Select<ThinkingChoice>
-            disabled={disabled || !target?.thinking.adjustable}
-            value={level}
-            aria-label={t("model.thinking")}
-            onValueChange={setLevel}
-            options={[
-              { value: "default", label: t("model.defaultThinking") },
-              ...(target?.thinking.adjustable && !target.thinking.requiresEffort
-                ? [{ value: "off" as const, label: t("model.offThinking") }]
-                : []),
-              ...(target?.thinking.efforts.map((value) => ({
-                value,
-                label: value,
-              })) ?? []),
-            ]}
-          />
-        </label>
-        <Button
-          disabled={!target?.available || disabled || loading || !validThinking}
-          onClick={() => {
-            if (target?.available && validThinking)
-              void runtime.selectModel({
-                provider: target.provider,
-                modelId: target.id,
-                thinking:
-                  level === "default"
-                    ? { kind: "default" }
-                    : level === "off"
-                      ? { kind: "off" }
-                      : { kind: "effort", effort: level },
-              });
-          }}
-        >
-          {t("model.apply")}
-        </Button>
-        <Button variant="ghost" disabled={loading} onClick={refresh}>
-          {t("config.refresh")}
-        </Button>
-      </div>
-      {loading && <p role="status">{t("config.loading")}</p>}
-      {failed && (
-        <p role="alert" className="failure">
-          {t("config.failed")}
-        </p>
-      )}
-      {!loading && !models.length && <p>{t("model.noAvailable")}</p>}
-      <p className="muted">{t("model.notice")}</p>
-    </details>
+        <div className="model-fields">
+          <label>
+            {t("model.heading")}
+            <Select
+              value={selected}
+              disabled={disabled || loading}
+              onValueChange={select}
+              aria-label={t("model.heading")}
+              search={{
+                label: t("model.search"),
+                empty: t("model.noAvailable"),
+              }}
+              options={[
+                { value: "", label: t("model.choose") },
+                ...visibleModels.map((m) => ({
+                  value: JSON.stringify([m.provider, m.id]),
+                  label: `${m.provider} / ${m.name}${m.reason ? ` · ${t(`model.reason.${m.reason}`)}` : ""}`,
+                  searchText: m.id,
+                  disabled: !m.available,
+                })),
+              ]}
+            />
+          </label>
+          <label>
+            {t("model.thinking")}
+            <Select<ThinkingChoice>
+              disabled={disabled || !target?.thinking.adjustable}
+              value={level}
+              aria-label={t("model.thinking")}
+              onValueChange={setLevel}
+              options={[
+                { value: "default", label: t("model.defaultThinking") },
+                ...(target?.thinking.adjustable &&
+                !target.thinking.requiresEffort
+                  ? [{ value: "off" as const, label: t("model.offThinking") }]
+                  : []),
+                ...(target?.thinking.efforts.map((value) => ({
+                  value,
+                  label: value,
+                })) ?? []),
+              ]}
+            />
+          </label>
+          <Button
+            disabled={
+              !target?.available || disabled || loading || !validThinking
+            }
+            onClick={() => {
+              if (target?.available && validThinking)
+                void runtime.selectModel({
+                  provider: target.provider,
+                  modelId: target.id,
+                  thinking:
+                    level === "default"
+                      ? { kind: "default" }
+                      : level === "off"
+                        ? { kind: "off" }
+                        : { kind: "effort", effort: level },
+                });
+            }}
+          >
+            {t("model.apply")}
+          </Button>
+          <Button variant="ghost" disabled={loading} onClick={refresh}>
+            {t("config.refresh")}
+          </Button>
+        </div>
+        {loading && <p role="status">{t("config.loading")}</p>}
+        {failed && (
+          <p role="alert" className="failure">
+            {t("config.failed")}
+          </p>
+        )}
+        {!loading && !models.length && <p>{t("model.noAvailable")}</p>}
+        <p className="muted">{t("model.notice")}</p>
+      </Disclosure>
+    </div>
   );
 }

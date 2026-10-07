@@ -51,16 +51,6 @@
 .gallery-search input {
   min-width: 0;
   width: min(100%, calc(var(--control-height) * 16));
-  min-height: var(--control-height);
-  padding-inline: var(--control-padding);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-control);
-  background: var(--background);
-  color: var(--foreground);
-  font-size: var(--text-body);
-}
-.gallery-search input::placeholder {
-  color: var(--muted-foreground);
 }
 /* The article scrolls separately, so the right index stays visible. */
 .gallery-navigation {

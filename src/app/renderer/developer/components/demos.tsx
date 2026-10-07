@@ -44,6 +44,12 @@ export function ButtonDemo() {
         <Sample label="default">
           <Button onClick={() => setCount(count + 1)}>{labels.primary}</Button>
         </Sample>
+        <Sample label="accent">
+          <Button variant="accent">{labels.accent}</Button>
+        </Sample>
+        <Sample label="destructive">
+          <Button variant="destructive">{labels.destructive}</Button>
+        </Sample>
         <Sample label="secondary">
           <Button variant="secondary">{labels.ghost}</Button>
         </Sample>
@@ -70,15 +76,22 @@ export function ButtonDemo() {
             <AddIcon />
           </Button>
         </Sample>
-        {(["default", "secondary", "ghost", "navigation"] as const).map(
-          (variant) => (
-            <Sample key={variant} label={`${variant} / disabled`}>
-              <Button variant={variant} disabled>
-                {labels.disabled}
-              </Button>
-            </Sample>
-          ),
-        )}
+        {(
+          [
+            "default",
+            "secondary",
+            "accent",
+            "destructive",
+            "ghost",
+            "navigation",
+          ] as const
+        ).map((variant) => (
+          <Sample key={variant} label={`${variant} / disabled`}>
+            <Button variant={variant} disabled>
+              {labels.disabled}
+            </Button>
+          </Sample>
+        ))}
       </div>
       <output
         className={styles["gallery-feedback"]}
@@ -473,15 +486,17 @@ export function FormFieldDemo() {
   );
 }
 export function ChoiceGroupDemo() {
-  const [value, change] = useState("a");
+  const [value, change] = useState("drive");
   return (
     <ChoiceGroup
       value={value}
       onValueChange={change}
       aria-label={labels.mode}
       options={[
-        { value: "a", label: labels.optionA },
-        { value: "b", label: labels.optionB },
+        { value: "drive", label: labels.choiceDrive },
+        { value: "dots", label: labels.choiceDots, disabled: true },
+        { value: "orbit", label: labels.choiceOrbit },
+        { value: "surfer", label: labels.choiceSurfer, disabled: true },
       ]}
     />
   );

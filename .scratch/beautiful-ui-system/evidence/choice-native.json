@@ -1,0 +1,23 @@
+{
+  "method": "CUA native macOS Electron; isolated real App/Renderer with mock DesktopBridge",
+  "scope": "ChoiceGroup only; video-derived list transition and all integrations removed",
+  "viewport": "1440x900 @2x",
+  "observed": {
+    "themes": "light and dark grouped pill track with inset selected surface",
+    "keyboard": "Right moved Drive to Orbit, skipping disabled Dots; native AX selected Orbit and keyboard focus ring visible",
+    "disabled": "Dots and Surfer exposed disabled by native AX",
+    "catalog": "21 / 21 items; no ItemHighlight or ListItem experiments"
+  },
+  "screenshots": [
+    "feedback-choice-light.png",
+    "feedback-choice-dark.png",
+    "feedback-choice-keyboard.png"
+  ],
+  "not_run": [
+    "provider",
+    "package",
+    "new physical resize",
+    "VoiceOver",
+    "system IME"
+  ]
+}

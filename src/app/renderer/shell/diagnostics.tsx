@@ -5,8 +5,12 @@ import { match } from "ts-pattern";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import {
   Button,
+  Disclosure,
+  DisclosureTrigger,
   Select,
   type SelectOption,
+  TextArea,
+  TextInput,
 } from "../../../modules/ui/renderer/public";
 import {
   type DiagnosticBridge,
@@ -250,7 +254,7 @@ function DiagnosticPanel({
       >
         <label>
           {t("ui.diagnostics.since")}
-          <input
+          <TextInput
             data-diagnostics-filter="since"
             name="since"
             aria-label={t("ui.diagnostics.since")}
@@ -261,7 +265,7 @@ function DiagnosticPanel({
         </label>
         <label>
           {t("ui.diagnostics.until")}
-          <input
+          <TextInput
             data-diagnostics-filter="until"
             name="until"
             aria-label={t("ui.diagnostics.until")}
@@ -272,7 +276,7 @@ function DiagnosticPanel({
         </label>
         <label>
           {t("ui.diagnostics.trace")}
-          <input
+          <TextInput
             data-diagnostics-filter="traceId"
             name="traceId"
             aria-label={t("ui.diagnostics.trace")}
@@ -281,7 +285,7 @@ function DiagnosticPanel({
         </label>
         <label>
           {t("ui.diagnostics.thread")}
-          <input
+          <TextInput
             data-diagnostics-filter="threadId"
             name="threadId"
             aria-label={t("ui.diagnostics.thread")}
@@ -290,7 +294,7 @@ function DiagnosticPanel({
         </label>
         <label>
           {t("ui.diagnostics.writer")}
-          <input
+          <TextInput
             data-diagnostics-filter="processInstanceId"
             name="processInstanceId"
             aria-label={t("ui.diagnostics.writer")}
@@ -329,7 +333,7 @@ function DiagnosticPanel({
         </label>
         <label>
           {t("ui.diagnostics.limit")}
-          <input
+          <TextInput
             data-diagnostics-filter="limit"
             name="limit"
             aria-label={t("ui.diagnostics.limit")}
@@ -503,12 +507,14 @@ function DiagnosticPanel({
                     {record.receiptState ? ` · ${record.receiptState}` : ""}
                     {record.outcome ? ` · ${record.outcome}` : ""}
                   </div>
-                  <details>
-                    <summary>{t("ui.diagnostics.recordDetails")}</summary>
+                  <Disclosure>
+                    <DisclosureTrigger>
+                      {t("ui.diagnostics.recordDetails")}
+                    </DisclosureTrigger>
                     <pre className={styles.metadata}>
                       {JSON.stringify(record, null, 2)}
                     </pre>
-                  </details>
+                  </Disclosure>
                 </li>
               ))}
             </ol>
@@ -517,7 +523,7 @@ function DiagnosticPanel({
       )}
       <label className={styles.feedback}>
         {t("ui.diagnostics.feedback")}
-        <textarea
+        <TextArea
           data-diagnostics-feedback
           aria-label={t("ui.diagnostics.feedback")}
           readOnly
