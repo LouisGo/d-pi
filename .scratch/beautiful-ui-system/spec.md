@@ -25,3 +25,7 @@ D-31/D-32 延续 Base UI、自有公开 API、Hugeicons、light/dark 和唯一�
 用户最初授权 ChoiceGroup 跟随图 2 的整体胶囊轨道与内嵌选中块，并尝试视频所示列表连续背景；随后明确分组标题/导航切换触发过多移动，要求没有良好优化依据时完全删除视频参考的动效，只保留 ChoiceGroup。最终采用删除：撤销共享跟随背景、列表包装及所有场景接入，恢复原列表反馈；本次追加交付只保留 ChoiceGroup（至少两项互斥、保留受控值/Radio 语义），取代原二值无外框配方。见[02](issues/02-list-and-choice-feedback.md)。首轮交付证据不冒称证明追加改动。
 
 追加工程完成，最终代码 `cdd7f5d`；14 项相关测试、最终代码构建、类型/设计/交互及相关门禁通过，light/dark 与禁用项方向键跳过经隔离 Electron 观测。源码 Dev 已交付，用户认可 pending。
+
+## 本地 main 集成
+
+2026-10-07 用户明确要求“本地 pr 进 main”，授权将本地 `codex/beautiful-ui-system` 整段交付合入 main；不扩展为远端 push/PR/发布或产品认可。基点 `7906f25`，已验证交付 head `58f3330`；本地说明见[pr.md](pr.md)。
