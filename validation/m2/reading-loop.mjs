@@ -115,7 +115,7 @@ try {
         JSON.stringify(text) +
         "&&!b.disabled&&b.getClientRects().length);if(!b)throw Error('Missing button '+ " +
         JSON.stringify(text) +
-        ");b.click()})()",
+        ");b.focus({preventScroll:true});b.click()})()",
     );
     await frames();
   }
@@ -248,6 +248,16 @@ try {
   );
   await click("Native history");
   await wait(() => evaluate("!!document.querySelector('.history article')"));
+  await wait(() =>
+    evaluate(
+      "![...document.querySelectorAll('[role=dialog]')].some(d=>d.getClientRects().length)",
+    ),
+  );
+  await frames();
+  await check(
+    "R13 history navigation returns keyboard focus to visible Thread tools",
+    "document.activeElement?.matches('[data-thread-tools-trigger]') && document.activeElement.getClientRects().length>0",
+  );
   await check(
     "R8 native partial saved-order scope",
     "document.querySelector('.history').textContent.includes('read-only and paged in saved order') && document.querySelector('.history').textContent.includes('incomplete')",
@@ -277,6 +287,10 @@ try {
     ),
   );
   await click("Return to live reading");
+  await check(
+    "R13 returning live keeps a visible keyboard focus",
+    "document.activeElement?.matches('[data-thread-tools-trigger]') && document.activeElement.getClientRects().length>0",
+  );
   await check(
     "R8R15 same live source anchor and body choice return",
     "document.querySelector('.conversation').dataset.readingSource===window.__source && Math.abs((" +

@@ -263,6 +263,9 @@ const ThreadContent = memo(function ThreadContent({
               readingView={readingView}
               historyButtonRef={historyTrigger}
               onReadingViewChange={(view) => {
+                // The originating live/history control may become hidden when
+                // changing views. Return to the stable toolbar trigger.
+                toolsReturnFocus.current = toolsTrigger.current;
                 onReadingViewChange(view);
                 setToolsOpen(false);
               }}
@@ -357,7 +360,10 @@ const ThreadContent = memo(function ThreadContent({
               positions={thread.readingSources}
               active={readingView === "history"}
               threadId={thread.context.threadId}
-              onReturnLive={() => onReadingViewChange("conversation")}
+              onReturnLive={() => {
+                onReadingViewChange("conversation");
+                toolsTrigger.current?.focus({ preventScroll: true });
+              }}
             />
           )}
         </ReadingPane>
