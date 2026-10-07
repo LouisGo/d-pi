@@ -335,8 +335,38 @@ export class AttachmentStore {
       return { kind: "unavailable", reason: "storage-unavailable" } as const;
     return this.editorHistories.update(owner, threadId, leaseId, version, ids);
   }
-  releaseEditorHistory(owner: string, threadId: string, leaseId: string) {
-    return this.editorHistories.release(owner, threadId, leaseId);
+  releaseEditorHistory(
+    owner: string,
+    threadId: string,
+    leaseId?: string,
+    releaseIds?: string[],
+    retainIds: string[] = [],
+  ) {
+    const dependencies = leaseId
+      ? this.editorHistories.dependencyIds(owner, threadId, leaseId)
+      : [];
+    const reply = leaseId
+      ? this.editorHistories.release(owner, threadId, leaseId)
+      : ({ kind: "history-released" } as const);
+    if (reply.kind !== "history-released" || releaseIds === undefined)
+      return reply;
+    const candidates = new Set([...dependencies, ...releaseIds]);
+    const retained = new Set(retainIds);
+    // Synchronous with lease release: retained body clones keep their original
+    // import pins throughout. Other epochs and documents remain authoritative.
+    for (const [id, item] of this.clipboardImports) {
+      if (
+        item.owner === owner &&
+        item.threadId === threadId &&
+        candidates.has(id) &&
+        !retained.has(id) &&
+        !this.editorHistories.retains(threadId, id)
+      ) {
+        this.lifecycle?.releaseImport(threadId, id);
+        this.clipboardImports.delete(id);
+      }
+    }
+    return reply;
   }
   releaseEditorHistories(owner: string): void {
     this.editorHistories.releaseOwner(owner);

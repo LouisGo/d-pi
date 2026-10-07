@@ -140,7 +140,13 @@ export function createAttachmentService(
           : { kind: "unavailable", reason: "reference-denied" };
       case "history-release":
         return owner
-          ? store.releaseEditorHistory(owner, command.threadId, command.leaseId)
+          ? store.releaseEditorHistory(
+              owner,
+              command.threadId,
+              command.leaseId,
+              command.releaseIds,
+              command.retainIds,
+            )
           : { kind: "unavailable", reason: "reference-denied" };
 
       case "check-storage":

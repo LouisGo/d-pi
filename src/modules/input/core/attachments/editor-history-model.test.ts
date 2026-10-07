@@ -50,7 +50,8 @@ it("retains failed dependency protection for explicit retry and releases the cur
 });
 
 it("releases a late Main open after its history epoch has been replaced, without reviving old IDs", async () => {
-  const leaseId = crypto.randomUUID();
+  const leaseId = crypto.randomUUID(),
+    id = crypto.randomUUID();
   let finish: (reply: AttachmentReply) => void = () => {};
   const commands: AttachmentRequest[] = [];
   const model = new EditorHistoryModel(
@@ -67,15 +68,23 @@ it("releases a late Main open after its history epoch has been replaced, without
     threadId,
     () => {},
   );
-  model.observe([crypto.randomUUID()]);
+  model.observe([id]);
   await Promise.resolve();
+  model.reset([id]);
   model.reset();
   finish({ kind: "history-lease", leaseId, version: 0 });
   expect(await model.ensure()).toBe(true);
   expect(commands.map((command) => command.kind)).toEqual([
     "history-open",
     "history-release",
+    "history-release",
+    "history-release",
   ]);
+  expect(commands.at(-1)).toMatchObject({
+    kind: "history-release",
+    releaseIds: [id],
+    retainIds: [],
+  });
   model.dispose();
 });
 
@@ -84,8 +93,10 @@ it("clears and visibly marks the bounded epoch before accepting a draft that exc
   const clear = vi.fn(() => model.reset());
   model = new EditorHistoryModel(
     {
-      request: async () => {
-        throw Error("must not transport oversized history");
+      request: async (command) => {
+        if (command.kind === "history-release")
+          return { kind: "history-released" };
+        throw Error("must not transport oversized history update");
       },
     },
     threadId,
@@ -98,6 +109,46 @@ it("clears and visibly marks the bounded epoch before accepting a draft that exc
     limited: true,
     failed: false,
     pending: false,
+  });
+  model.dispose();
+});
+
+it("keeps current clone candidates across repeated resets and awaits an explicit failed-release retry", async () => {
+  const id = crypto.randomUUID(),
+    leaseId = crypto.randomUUID();
+  let failing = true;
+  const commands: AttachmentRequest[] = [];
+  const model = new EditorHistoryModel(
+    {
+      request: async (command) => {
+        commands.push(command);
+        if (command.kind === "history-open")
+          return { kind: "history-lease", leaseId, version: 0 };
+        if (command.kind === "history-update")
+          return { kind: "history-lease", leaseId, version: command.version };
+        if (failing)
+          return { kind: "unavailable", reason: "storage-unavailable" };
+        return { kind: "history-released" };
+      },
+    },
+    threadId,
+    () => {},
+  );
+  model.observe([id]);
+  expect(await model.ensure()).toBe(true);
+  model.reset([id]);
+  expect(await model.ensure()).toBe(false);
+  expect(model.ready()).toBe(false);
+  failing = false;
+  expect(await model.retry()).toBe(true);
+  model.reset([id]);
+  expect(await model.ensure()).toBe(true);
+  model.reset();
+  expect(await model.ensure()).toBe(true);
+  expect(commands.at(-1)).toMatchObject({
+    kind: "history-release",
+    releaseIds: [id],
+    retainIds: [],
   });
   model.dispose();
 });

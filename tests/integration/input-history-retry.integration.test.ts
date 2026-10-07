@@ -90,6 +90,8 @@ it.each(["protected", "budget"] as const)(
               "document",
               command.threadId,
               command.leaseId,
+              command.releaseIds,
+              command.retainIds,
             );
           throw Error("unexpected request");
         },

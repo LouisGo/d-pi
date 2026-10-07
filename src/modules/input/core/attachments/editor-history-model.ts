@@ -2,6 +2,8 @@ import { createStore } from "zustand/vanilla";
 import { createId, type ThreadId } from "../../../../shared/identity";
 import type { AttachmentBridge } from "../../contracts/public";
 
+type Release = { leaseId?: string; releaseIds: string[]; retainIds: string[] };
+
 type State = { pending: boolean; failed: boolean; limited: boolean };
 /** Headless editor epoch. It stores dependency IDs, never a second draft body. */
 export class EditorHistoryModel {
@@ -16,6 +18,9 @@ export class EditorHistoryModel {
   > = this.store;
   private epoch = createId();
   private ids = new Set<string>();
+  // Cleanup candidates only; this is not a new epoch or editable body.
+  private cleanupIds = new Set<string>();
+  private failedRelease: Release | null = null;
   private leaseId: string | null = null;
   private version = 0;
   private generation = 0;
@@ -36,6 +41,7 @@ export class EditorHistoryModel {
     for (const id of ids)
       if (!this.ids.has(id)) {
         this.ids.add(id);
+        this.cleanupIds.add(id);
         changed = true;
       }
     if (!changed) return;
@@ -111,7 +117,10 @@ export class EditorHistoryModel {
     }
   }
   async retry(): Promise<boolean> {
-    if (this.store.getState().failed) this.enqueue();
+    if (this.store.getState().failed) {
+      if (this.failedRelease) this.enqueueRelease(this.failedRelease);
+      else this.enqueue();
+    }
     return this.ensure();
   }
   private async release(leaseId: string): Promise<void> {
@@ -126,19 +135,67 @@ export class EditorHistoryModel {
       });
     } catch {}
   }
-  reset(): void {
+  private enqueueRelease(plan: Release): void {
+    const generation = this.generation;
+    this.store.setState({ pending: true, failed: false });
+    this.tail = this.tail.then(async () => {
+      try {
+        // Multiple rapid resets may accumulate candidates from several bodies.
+        // Each wire request stays bounded; only the first releases the lease.
+        for (
+          let start = 0;
+          start < Math.max(1, plan.releaseIds.length);
+          start += 80000
+        ) {
+          const reply = await this.bridge.request({
+            kind: "history-release",
+            threadId: this.threadId,
+            traceId: createId(),
+            ...(start === 0 && plan.leaseId ? { leaseId: plan.leaseId } : {}),
+            releaseIds: plan.releaseIds.slice(start, start + 80000),
+            retainIds: plan.retainIds,
+          });
+          if (reply.kind !== "history-released")
+            throw Error("Editor history release unavailable");
+        }
+        if (generation === this.generation) {
+          const retained = new Set(plan.retainIds);
+          for (const id of plan.releaseIds)
+            if (!retained.has(id)) this.cleanupIds.delete(id);
+          this.failedRelease = null;
+        }
+      } catch {
+        if (generation === this.generation) {
+          this.failedRelease = plan;
+          this.store.setState({ failed: true });
+        }
+      } finally {
+        if (generation === this.generation && this.version === 0)
+          this.store.setState({ pending: false });
+      }
+    });
+  }
+  reset(retainIds: Iterable<string> = []): void {
     this.generation++;
     this.epoch = createId();
     this.version = 0;
     this.ids = new Set();
-    const leaseId = this.leaseId;
+    const retained = [...new Set(retainIds)];
+    for (const id of retained) this.cleanupIds.add(id);
+    const leaseId = this.leaseId ?? undefined;
     this.leaseId = null;
-    if (leaseId) this.tail = this.tail.then(() => this.release(leaseId));
+    this.failedRelease = null;
     this.store.setState({ pending: false, failed: false });
+    if (leaseId || this.cleanupIds.size)
+      this.enqueueRelease({
+        ...(leaseId ? { leaseId } : {}),
+        releaseIds: [...this.cleanupIds],
+        retainIds: retained,
+      });
   }
-  dispose(): void {
+  dispose(retainIds: Iterable<string> = []): void {
     if (this.disposed) return;
-    this.reset();
+    this.reset(retainIds);
     this.disposed = true;
   }
 }

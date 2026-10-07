@@ -101,3 +101,10 @@ Copy/cut 同步捕获实际选区，写入 Main 预发 ticket（`version:1, inst
 Paste 只解析严格版本和有界 envelope；未知、过期、伪造、跨 instance、准备失败、预算耗尽均显示可读 fallback。Main 校验目标 Thread；整片段验证成功后一个 SQLite 事务建立新目标图片 ID，保留私有对象去重，不访问任意路径或 URL。Renderer 用原 Thread 的 AttachmentModel 跟踪 pending，并在同一消费 sequence、同一 editor doc/selection、仍 editable/current 且 source 未被冻结时执行一次 PM paste transaction；全部内容一次 Undo/Redo。迟到结果不落入别的 Thread 或已消费草稿，未使用克隆释放 import pin。显式纯文本粘贴仍消费 text/plain。正文唯一可写拥有者、保存和 03 history lease 不变。
 
 公开 wire 使用现有 AttachmentBridge 的 clipboard-reserve/export/import/release/discard 命令与 clipboard-tickets/exported/imported/unavailable 判别结果。Clipboard failure 独立于附件内容失败（invalid/expired/busy/failed），不泄露 path、stderr 或业务全文到诊断。窗口内 adapter 只拥有可丢弃 ticket pool 和当前 paste attempt，没有第二份草稿或资产事实。
+
+
+### Clipboard clone 交接与历史结束
+
+成功插入尚未持久采用的 clone 继续由 Main 原 import pin 保护，不能提前仅交给异步 Undo lease。显式清史、缓存淘汰和 epoch 替换通过既有 `history-release` 发送可选 `leaseId`、`releaseIds`（该 epoch 的依赖候选，包括尚未确认或失败的 update）和 `retainIds`（当前真实正文依赖）。无 lease 的候选也可结束；旧调用缺字段只释放已验证的 lease，不新增 clone 删除授权。两个 ID 数组最多 80,000，覆盖 4 MiB 草稿正文 token 的上限；仅 ID 投影，不保存第二份正文。
+
+Main 在同一个同步步骤释放可信 owner/Thread 的历史 lease，并仅回收该 owner/Thread 候选中不在 retainIds、也不被其他有效 Main epoch 引用的未采用 clipboard clone：解除原 import pin 和 128 交接额度。当前正文 clone 继续沿原 pin 保护，无重新申请历史 lease 的窗口；普通 PDF 等资产的显式清史/重试预算合同不变。可 Redo 时不结束 epoch，保持其 clone 保护。重复清史保留用于后续清理的当前 ID 候选；缓存淘汰以 DraftController 的真实当前正文提供保留集合，document close 仍释放全部 document 临时资源。清理 RPC 失败保守留 pin，来源保存屏障等待完成并允许显式重试。

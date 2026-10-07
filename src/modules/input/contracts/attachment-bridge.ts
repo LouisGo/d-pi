@@ -49,7 +49,9 @@ export const AttachmentRequestSchema = z.discriminatedUnion("kind", [
   z.strictObject({
     ...identity,
     kind: z.literal("history-release"),
-    leaseId: z.uuid(),
+    leaseId: z.uuid().optional(),
+    releaseIds: z.array(z.uuid()).max(80000).optional(),
+    retainIds: z.array(z.uuid()).max(80000).optional(),
   }),
   z.strictObject({
     ...identity,

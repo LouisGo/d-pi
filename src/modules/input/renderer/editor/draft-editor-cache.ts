@@ -4,11 +4,35 @@ import { draftByteLength } from "../../../../shared/draft-text";
 import type { AttachmentBridge } from "../../contracts/public";
 import { EditorHistoryModel } from "../../core/attachments/editor-history-model";
 import type { DraftController } from "../../core/draft-controller";
+import { parseDraftBlocks } from "../../core/public";
+import { attachmentIds } from "../references/attachment-reference";
 import {
   clearDraftHistory,
   detachedDraftState,
   onDraftHistoryClear,
 } from "./plain-text-editor";
+
+function documentIds(doc: EditorState["doc"]): Set<string> {
+  const ids = new Set<string>();
+  doc.descendants((node) => {
+    if (
+      node.type.name === "attachmentReference" &&
+      typeof node.attrs.id === "string"
+    )
+      ids.add(node.attrs.id);
+  });
+  return ids;
+}
+function currentIds(controller: DraftController): Set<string> {
+  const ids = new Set<string>();
+  for (const block of parseDraftBlocks(controller.getTextSnapshot())) {
+    if (block.kind !== "paragraph") continue;
+    // Match the editor's atomic token grammar independently of adjacent literal
+    // text; a malformed literal must not hide an otherwise valid body clone.
+    for (const id of attachmentIds(block.text)) ids.add(id);
+  }
+  return ids;
+}
 
 type Snapshot = ReturnType<DraftController["getEditorSnapshot"]>;
 type Entry = { snapshot: Snapshot; state: EditorState; bytes: number };
@@ -55,13 +79,16 @@ export class DraftEditorCache {
     this.histories.delete(key);
     history.detachBarrier();
     history.unsubscribe();
-    history.model.dispose();
+    history.model.dispose(currentIds(history.controller));
   }
   private clearKeyHistory(key: string): void {
     const editor = this.activeEditors.get(key);
     this.entries.delete(key);
     if (editor && !editor.isDestroyed) clearDraftHistory(editor);
-    else this.histories.get(key)?.model.reset();
+    else {
+      const history = this.histories.get(key);
+      if (history) history.model.reset(currentIds(history.controller));
+    }
   }
   constructor(
     private readonly limits = { threads: 8, documentBytes: 4 * 1024 * 1024 },
@@ -97,7 +124,7 @@ export class DraftEditorCache {
     }
     const removeHistoryListener = onDraftHistoryClear(editor, () => {
       if (this.leases.get(key) === binding.token)
-        this.histories.get(key)?.model.reset();
+        this.histories.get(key)?.model.reset(documentIds(editor.state.doc));
     });
     editor.on("transaction", ({ transaction }) => {
       if (
@@ -190,7 +217,9 @@ export class DraftEditorCache {
       snapshot.text !== cached.snapshot.text ||
       cached.state.schema !== editor.schema
     ) {
-      this.histories.get(binding.key)?.model.reset();
+      this.histories
+        .get(binding.key)
+        ?.model.reset(currentIds(binding.controller));
       return;
     }
     editor.view.updateState(

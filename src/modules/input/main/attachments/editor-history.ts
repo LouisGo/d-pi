@@ -148,6 +148,17 @@ export class EditorHistoryLeases {
     }
     return true;
   }
+  dependencyIds(owner: string, threadId: string, leaseId: string): string[] {
+    const lease = this.leases.get(leaseId);
+    return lease?.owner === owner && lease.threadId === threadId
+      ? [...lease.ids]
+      : [];
+  }
+  retains(threadId: string, id: string): boolean {
+    return [...this.leases.values()].some(
+      (lease) => lease.threadId === threadId && lease.ids.has(id),
+    );
+  }
   release(owner: string, threadId: string, leaseId: string): AttachmentReply {
     const lease = this.leases.get(leaseId);
     if (lease && (lease.owner !== owner || lease.threadId !== threadId))
