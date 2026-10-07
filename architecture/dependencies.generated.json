@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "a33053dbc2885beebc82d09e0ca474d34b730475d426885ad4f14f3279ab9d7c",
+  "inputsHash": "468c425e2dc339b8867219fe495c6f367bbeb141a379ead4aeb9b300b69cdb0d",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 441,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 192,
-      "lines": 34638,
+      "lines": 34736,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -12890,6 +12890,18 @@
       "to": "src/shared/i18n/create-i18n.ts",
       "targetModule": "shared",
       "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-binding.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/ui/renderer/public",
+      "kind": "dynamic-import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/app/renderer/workbench/composer-continuity.test.ts",
