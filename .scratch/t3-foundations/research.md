@@ -74,6 +74,8 @@ d-pi 已有 Main preview + import-bytes 可重新授权图片并生成目标 ID�
 
 选项1后的补充源码核查：[ComposerContext](https://github.com/pingdotgg/t3code/blob/10f39eb9ac80c9a4b7f5097575dd2addc3b6f631/packages/contracts/src/composerContext.ts)的FileContextRecord是attachment ID/name/MIME/size绑定，未提供原项目动态path/version冻结接口；[ChatComposer](https://github.com/pingdotgg/t3code/blob/10f39eb9ac80c9a4b7f5097575dd2addc3b6f631/apps/web/src/components/chat/ChatComposer.tsx)约3128–3240经源environment asset URL和client fetch搬运实际内容，用target key防迟到串入，并让未解决chip先进入草稿。d-pi采用来源身份、实际内容、新ID及迟到复核的原则，但沿Main私有存储与全部ready后单事务插入，复制冻结属于用户确认的本地合同；不能将上游attachment搬运或URL访问视为已实现动态引用的复制时刻快照。
 
+冻结合同还需要明确时间和兼容性。同步COPY只能固定选区与依赖身份，内容在Main的有界异步export中读取并核验；不能将请求时间描述为操作系统按键瞬间的磁盘快照。一旦ready，目标预览、准备、重开和再次复制都只消费同一私有对象。来源项目、路径、版本与捕获时间用于解释内容由来，不能反向成为读取授权。新增optional provenance让新构建继续读旧记录，但原strict schema的旧构建可能拒绝新字段；SQLite schema不变不等于双向回滚兼容，Main/preload/Renderer需要同一构建，回退保留数据而不删库兜底。
+
 剪贴板导入完成后一次事务插入同版正文/引用；迟到导入不进入新 Thread 或已消费的新草稿。失败不得产生半段成功却可发送的输入。未使用的成功导入交给 Main 的引用/清理机制，不声称 SQLite 与文件 I/O 天然原子。测试核对仅选中依赖、冲突 ID、格式损坏/超限、Thread 切换、Undo/Redo、清理、发送快照及旧草稿兼容。
 
 ## 七 内容锚点和阅读来源

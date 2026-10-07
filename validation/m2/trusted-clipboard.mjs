@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import {
   existsSync,
   mkdirSync,
@@ -90,6 +91,8 @@ export async function validateTrustedClipboard({
   });
   let restore;
   let result;
+  let copyStartedAt;
+  let copyReadyAt;
   try {
     await evaluate(`(()=>{
       const editor=document.querySelector('.tiptap');editor.focus();
@@ -102,6 +105,7 @@ export async function validateTrustedClipboard({
       "new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))",
     );
     pasteboard.beforeCopy();
+    copyStartedAt = Date.now();
     await call("Input.dispatchKeyEvent", {
       type: "keyDown",
       key: "c",
@@ -137,6 +141,7 @@ export async function validateTrustedClipboard({
         return true;
       })()`);
       assert.equal(ready, true);
+      copyReadyAt = Date.now();
       rmSync(join(isolated.cwd, fileName));
       rmSync(join(isolated.cwd, directoryName, "origin-entry.txt"));
       writeFileSync(
@@ -196,6 +201,32 @@ export async function validateTrustedClipboard({
     assert.equal(privateClone, true);
     let frozen;
     if (frozenReferences) {
+      const clones = await evaluate(`(async()=>{
+        const reply=await window.desktop.attachments.request({kind:'list',threadId:${JSON.stringify(otherThreadId)},traceId:crypto.randomUUID()});
+        if(reply.kind!=='attachments')throw Error('Frozen manifest unavailable');
+        return ${JSON.stringify(targetIds.slice(1))}.map(id=>reply.items.find(item=>item.id===id));
+      })()`);
+      for (const [index, clone] of clones.entries()) {
+        assert.equal(clone?.status, "ready");
+        assert.equal(clone.source, "paste");
+        assert.equal(clone.representation, "text");
+        assert.equal(clone.frozenReference.projectPath, isolated.cwd);
+        assert.equal(
+          clone.frozenReference.path,
+          index === 0 ? fileName : directoryName,
+        );
+        assert.equal(
+          clone.frozenReference.kind,
+          index === 0 ? "file" : "directory",
+        );
+        assert.equal(clone.frozenReference.version, clone.inputDigest);
+        const capturedAt = Date.parse(clone.frozenReference.capturedAt);
+        assert.ok(capturedAt >= copyStartedAt && capturedAt <= copyReadyAt);
+      }
+      assert.equal(
+        clones[0].inputDigest,
+        createHash("sha256").update("ORIGIN_BEFORE_COPY").digest("hex"),
+      );
       const previews = await evaluate(`(async()=>{
         const values=[];
         for(const id of ${JSON.stringify(targetIds.slice(1))})values.push(await window.desktop.attachments.request({kind:'preview',threadId:${JSON.stringify(otherThreadId)},traceId:crypto.randomUUID(),id}));
@@ -220,6 +251,9 @@ export async function validateTrustedClipboard({
         targetSamePathsIgnored: true,
         directEntriesOnly: true,
         frozenLabelVisible: true,
+        provenanceVerified: true,
+        fileVersion: clones[0].frozenReference.version,
+        directoryVersion: clones[1].frozenReference.version,
       };
     }
     await call("Input.dispatchKeyEvent", {
