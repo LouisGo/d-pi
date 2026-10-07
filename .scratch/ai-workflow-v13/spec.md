@@ -52,8 +52,12 @@
     "engineering": "complete",
     "trial": "not-applicable",
     "acceptance": "not-applicable",
-    "evidence": ["handoff.md", "validation.md", "review.md", "research.md", "m2-retro-2026-10-06.md", "m2-retro-handoff.md", "m2-retro-validation.md", "m2-retro-review.md"],
-    "next": "M2 retro三项applied，票04工程完成；管理复核与本地整合完成，本轮停下；后续按M2 spec与其它会话真实进度选定范围"
+    "evidence": ["handoff.md", "validation.md", "review.md", "research.md", "m2-retro-2026-10-06.md", "m2-retro-handoff.md", "m2-retro-validation.md", "m2-retro-review.md", "validation-retro-2026-10-07.md"],
+    "next": "2026-10-07按风险验证与窄场景入口已实施，验证及PR收尾进行中；完成后从main进入下一阶段"
   }
 ]
 ```
+
+## 2026-10-07 验证工作流改善
+
+用户授权先改善工作流程并推进完成PR，落实现有D-28，不扩大产品范围。[本轮retro记录](validation-retro-2026-10-07.md)维护证据、工程验证、独立复核与交付；后续开发按所属功能规格选择必要验证，不默认叠加完整E2E或Computer use。

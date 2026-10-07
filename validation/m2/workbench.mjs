@@ -7,10 +7,18 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { createServer as createViteServer } from "vite";
 import { createTestEnvironment } from "../../scripts/testing/test-environment.mjs";
+import { parseValidationScenario } from "./scenario.mjs";
 
+const { scenario, path: outputPath } = parseValidationScenario(
+  process.argv.slice(2),
+  {
+    all: [],
+    focus: [],
+  },
+);
 const isolated = createTestEnvironment({ prefix: "d-pi-workbench-" });
 const output = resolve(
-  process.argv[2] ?? ".scratch/codex-workbench-ui/evidence/native.json",
+  outputPath ?? ".scratch/codex-workbench-ui/evidence/native.json",
 );
 const vite = await createViteServer({
   configFile: false,
@@ -83,6 +91,7 @@ async function evaluate(expression) {
   return result.result.value;
 }
 const results = [];
+let passed = false;
 try {
   const target = await wait(async () => {
     try {
@@ -113,31 +122,46 @@ try {
     ),
   );
   await call("Page.enable");
-  await evaluate(
-    "window.inputFrames=[];document.addEventListener('pointermove',e=>{if(e.buttons!==1)return;const start=performance.now();requestAnimationFrame(()=>window.inputFrames.push(performance.now()-start));})",
-  );
-  await runChecks();
-  results.push({
-    name: "scripted-input-to-next-frame-ms",
-    value: await evaluate(
-      "(()=>{const s=window.inputFrames.sort((a,b)=>a-b);return {count:s.length,median:s[Math.floor(s.length*.5)],p95:s[Math.floor(s.length*.95)],maximum:s.at(-1)};})()",
-    ),
-    limitation:
-      "CDP gesture input to rAF, not sustained frame-rate or system-input latency",
-  });
+  if (scenario === "focus") {
+    await runFocusChecks();
+  } else {
+    await evaluate(
+      "window.inputFrames=[];document.addEventListener('pointermove',e=>{if(e.buttons!==1)return;const start=performance.now();requestAnimationFrame(()=>window.inputFrames.push(performance.now()-start));})",
+    );
+    await runChecks();
+    results.push({
+      name: "scripted-input-to-next-frame-ms",
+      value: await evaluate(
+        "(()=>{const s=window.inputFrames.sort((a,b)=>a-b);return {count:s.length,median:s[Math.floor(s.length*.5)],p95:s[Math.floor(s.length*.95)],maximum:s.at(-1)};})()",
+      ),
+      limitation:
+        "CDP gesture input to rAF, not sustained frame-rate or system-input latency",
+    });
+  }
+  passed = true;
+  console.log(`PASS: ${results.length} Electron workbench checks. ${output}`);
+} finally {
   mkdirSync(resolve(output, ".."), { recursive: true });
   writeFileSync(
     output,
     JSON.stringify(
-      { version: "isolated-workbench", checks: results, stderr },
+      {
+        version: "isolated-workbench",
+        scenario,
+        passed,
+        checks: results,
+        stderr,
+        limitations:
+          scenario === "focus"
+            ? [
+                "pointer/keyboard focus only; geometry, continuity and performance not run",
+              ]
+            : ["isolated GUI fixture; not packaged or system IME evidence"],
+      },
       null,
       2,
     ),
   );
-  console.log(`PASS: ${results.length} Electron workbench checks. ${output}`);
-} finally {
-  mkdirSync(resolve(output, ".."), { recursive: true });
-  writeFileSync(output, JSON.stringify({ checks: results, stderr }, null, 2));
   socket?.close();
   const closed = new Promise((done) => child.once("close", done));
   child.kill();
@@ -318,7 +342,7 @@ async function checkPointerAndKeyboard(selector, name) {
   );
   results.push({ name, resting, hover, active, clicked, keyboard });
 }
-async function runChecks() {
+async function runNavigationFocusChecks() {
   for (const theme of ["light", "dark"]) {
     await evaluate(
       `document.documentElement.dataset.theme=${JSON.stringify(theme)}`,
@@ -333,6 +357,27 @@ async function runChecks() {
     );
     await capture(`${theme}-keyboard-focus`);
   }
+}
+async function runFocusChecks() {
+  await runNavigationFocusChecks();
+  for (const theme of ["light", "dark"]) {
+    await evaluate(
+      `document.documentElement.dataset.theme=${JSON.stringify(theme)}`,
+    );
+    await click("Settings");
+    await checkPointerAndKeyboard(
+      ".settings-navigation button",
+      `${theme}-settings-pointer-vs-keyboard-focus`,
+    );
+    await key("Escape", "Escape");
+    await check(
+      `${theme}-settings-escape-returns-focus`,
+      "document.querySelector('.ui-settings-modal').hidden && document.activeElement.getAttribute('aria-label')==='Settings'",
+    );
+  }
+}
+async function runChecks() {
+  await runNavigationFocusChecks();
   await evaluate("document.documentElement.dataset.theme='light'");
   await checkIconGeometry("all-icon-actions-centered-with-empty-attention");
   await check(
