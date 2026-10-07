@@ -186,6 +186,22 @@ async function click(label) {
   );
   await evaluate("window.probe.pause()");
 }
+async function revealNavigation() {
+  if (
+    await evaluate(
+      "document.querySelector('.primary-sidebar').getBoundingClientRect().width<1 && !document.querySelector('.ui-navigation-overlay')",
+    )
+  ) {
+    const label = await evaluate(
+      "document.querySelector('.header-navigation button[aria-expanded]').getAttribute('aria-label')",
+    );
+    await click(label);
+  }
+}
+async function openSettings(label = "Settings") {
+  await revealNavigation();
+  await click(label);
+}
 async function key(key, code, modifiers = 0) {
   await call("Input.dispatchKeyEvent", {
     type: "keyDown",
@@ -370,7 +386,7 @@ async function runFocusChecks() {
     await evaluate(
       `document.documentElement.dataset.theme=${JSON.stringify(theme)}`,
     );
-    await click("Settings");
+    await openSettings();
     await checkPointerAndKeyboard(
       ".settings-navigation button",
       `${theme}-settings-pointer-vs-keyboard-focus`,
@@ -408,7 +424,7 @@ async function runChecks() {
   await evaluate("window.probe.pause()");
 
   await capture("production-light-desktop");
-  await click("Settings");
+  await openSettings();
   await check(
     "settings-modal-backdrop-focus-and-geometry",
     "(()=>{const p=document.querySelector('.ui-settings-modal'),r=p.getBoundingClientRect(),b=document.querySelector('.ui-overlay-backdrop').getBoundingClientRect();return p.getAttribute('role')==='dialog'&&p.contains(document.activeElement)&&r.left>0&&r.right<innerWidth&&r.top>0&&r.bottom<innerHeight&&b.width===innerWidth&&b.height===innerHeight&&!document.querySelector('.toolbar select')&&!!document.querySelector('.primary-sidebar [data-new-thread]')&&!!document.querySelector('.sidebar-label button');})()",
@@ -420,7 +436,7 @@ async function runChecks() {
     "({hidden:document.querySelector('.ui-settings-modal').hidden,active:document.activeElement.outerHTML})",
     (v) => v.hidden && v.active.includes('aria-label=\"Settings\"'),
   );
-  await click("Settings");
+  await openSettings();
   await checkPointerAndKeyboard(
     ".settings-navigation button",
     "light-settings-pointer-vs-keyboard-focus",
@@ -570,7 +586,7 @@ async function runChecks() {
   await evaluate("window.probe.model.preference('theme');");
   await evaluate("window.probe.model.preference('theme');");
   await capture("production-dark-minimum");
-  await click("Settings");
+  await openSettings();
   await checkPointerAndKeyboard(
     ".settings-navigation button",
     "dark-settings-pointer-vs-keyboard-focus",
@@ -786,7 +802,7 @@ async function runChecks() {
     (v) => v.reading > 40 && v.editorBottom <= v.height,
   );
   await key("z", "KeyZ", 4);
-  await click("Settings");
+  await openSettings();
   await check(
     "narrow-settings-modal-remains-bounded",
     "(()=>{const r=document.querySelector('.ui-settings-modal').getBoundingClientRect();return r.left>0&&r.right<innerWidth&&r.top>0&&r.bottom<innerHeight&&document.querySelector('.settings-surface').clientHeight>100;})()",
@@ -797,13 +813,14 @@ async function runChecks() {
   await capture("settings-light-minimum-chinese");
   await click("关闭");
   await evaluate("window.probe.pause()");
+  await revealNavigation();
   await check(
     "minimum-chinese-actions-reachable",
-    "document.querySelector('.sidebar-actions button[aria-label=设置]')!==null && document.documentElement.scrollWidth===innerWidth && document.querySelector('.reading-pane').getBoundingClientRect().height>40",
+    "document.querySelector('.ui-navigation-overlay .sidebar-actions button[aria-label=设置]')?.getBoundingClientRect().width>0 && document.documentElement.scrollWidth===innerWidth && document.querySelector('.reading-pane').getBoundingClientRect().height>40",
   );
   await capture("isolated-light-minimum");
   await checkIconGeometry("all-icon-actions-centered-in-chinese-narrow-window");
-  await click("设置");
+  await openSettings("设置");
   await evaluate(
     "(()=>{const s=document.querySelector('#settings-appearance select');s.value='en-US';s.dispatchEvent(new Event('change',{bubbles:true}));})()",
   );
@@ -984,6 +1001,11 @@ async function runComponentChecks() {
   const before = await evaluate(
     'document.querySelector("#gallery-horizontal-aux").getBoundingClientRect().width',
   );
+  await check(
+    "nested-split-initial-controlled-size",
+    'document.querySelector("#gallery-horizontal-aux").getBoundingClientRect().width',
+    (value) => Math.abs(value - 120) < 1,
+  );
   await drag("gallery-horizontal-separator", 30);
   await check(
     "real-split-drag",
@@ -1040,6 +1062,13 @@ async function runComponentChecks() {
     `(()=>{const r=document.querySelector('[data-gallery-navigation]').getBoundingClientRect();const main=document.querySelector('[data-gallery-main]');return r.top===${navigationRect.top} && r.bottom===${navigationRect.bottom} && main.scrollTop>0 && !document.querySelector('header nav') && r.bottom<=window.innerHeight;})()`,
   );
 
+  await click("Back to conversation");
+  await wait(() => evaluate('!!document.querySelector(".tiptap")'));
+  await resize(1440, 900);
+  await check(
+    "return-restores-sidebar-width",
+    "Math.abs(document.querySelector('.primary-sidebar').getBoundingClientRect().width-window.componentSidebarWidth)<1",
+  );
   await evaluate(
     `${JSON.stringify(trigger)} && document.querySelector(${JSON.stringify(trigger)}).focus()`,
   );
@@ -1050,13 +1079,6 @@ async function runComponentChecks() {
   await check(
     "keyboard-tools-esc",
     `document.querySelector(${JSON.stringify(trigger)}).getAttribute('aria-expanded')==='false'`,
-  );
-  await click("Back to conversation");
-  await wait(() => evaluate('!!document.querySelector(".tiptap")'));
-  await resize(1440, 900);
-  await check(
-    "return-restores-sidebar-width",
-    "Math.abs(document.querySelector('.primary-sidebar').getBoundingClientRect().width-window.componentSidebarWidth)<1",
   );
   await check(
     "return-retains-draft-and-resource",
@@ -1101,7 +1123,7 @@ async function runSandwichChecks() {
     "quick-preview-escape-restores-trigger",
     "document.activeElement.getAttribute('aria-label')==='Conversation quick preview'",
   );
-  await click("Settings");
+  await openSettings();
   await check(
     "settings-keeps-editor-and-controller",
     "window.sandwichEditor===document.querySelector('.tiptap') && window.sandwichController===window.probe.model.controller",
@@ -1151,6 +1173,15 @@ async function runSandwichChecks() {
     clickCount: 1,
   });
   await evaluate("window.probe.pause()");
+  await evaluate(
+    "document.querySelector('[data-layout-region=workspace] textarea').focus()",
+  );
+  await resize(720, 540);
+  await check(
+    "workspace-body-focus-restored-on-temporary-hide",
+    "document.activeElement.getAttribute('aria-label')==='Restore workspace'",
+  );
+  await resize(1440, 900);
   for (const theme of ["light", "dark"]) {
     await evaluate(
       `document.documentElement.dataset.theme=${JSON.stringify(theme)}`,
@@ -1167,7 +1198,7 @@ async function runSandwichChecks() {
       `${theme}-hidden-navigation-restores-both-actions`,
       "!!document.querySelector('.ui-navigation-overlay .sidebar-actions [aria-label=Settings]') && !!document.querySelector('.ui-navigation-overlay .sidebar-tools [aria-label=开发者工具]')",
     );
-    await click("Settings");
+    await openSettings();
     await check(
       `${theme}-overlay-settings-transition`,
       "document.querySelector('.ui-settings-modal').hidden===false && !document.querySelector('.ui-navigation-overlay')",
@@ -1183,5 +1214,25 @@ async function runSandwichChecks() {
   await check(
     "layout-preserves-editor-controller",
     "window.sandwichEditor===document.querySelector('.tiptap') && window.sandwichController===window.probe.model.controller",
+  );
+  await resize(720, 540);
+  await click("Open or collapse project navigation");
+  await click("开发者工具");
+  await wait(() => evaluate("!!document.querySelector('[role=menuitem]')"));
+  await evaluate("document.querySelector('[role=menuitem]').click()");
+  await evaluate("window.probe.pause()");
+  await check(
+    "overlay-developer-transition-closes-navigation",
+    "!!document.querySelector('[data-component-dashboard]') && !document.querySelector('.ui-navigation-overlay')",
+  );
+  await check(
+    "overlay-developer-transition-focuses-visible-action",
+    "document.activeElement.getAttribute('aria-label')==='Back to conversation'",
+  );
+  await click("Back to conversation");
+  await resize(1440, 900);
+  await check(
+    "developer-return-keeps-thread-controller-and-draft",
+    "window.sandwichController===window.probe.model.controller && document.querySelector('.tiptap').textContent.includes('A unsent draft')",
   );
 }

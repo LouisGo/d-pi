@@ -89,6 +89,7 @@ export function WorkbenchFrame({
   const frame = useRef<HTMLDivElement>(null);
   const settingsTrigger = useRef<HTMLButtonElement>(null);
   const navigationTrigger = useRef<HTMLButtonElement>(null);
+  const conversationTrigger = useRef<HTMLButtonElement>(null);
   const workspaceTrigger = useRef<HTMLButtonElement>(null);
   const bottomTrigger = useRef<HTMLButtonElement>(null);
   const work = useRef<HTMLDivElement>(null);
@@ -174,8 +175,8 @@ export function WorkbenchFrame({
     });
   }, [geometry.sidebar.visible]);
   useLayoutEffect(() => {
-    if (geometry.sidebar.visible) setOverlay(false);
-  }, [geometry.sidebar.visible]);
+    if (geometry.sidebar.visible || developerActive) setOverlay(false);
+  }, [geometry.sidebar.visible, developerActive]);
   const toggleSidebar = () => {
     if (
       !geometry.sidebar.visible &&
@@ -286,11 +287,11 @@ export function WorkbenchFrame({
                   ? "bottom"
                   : ((["sidebar", "workspace", "bottom"] as const).find(
                       (region) =>
-                        frame.current
-                          ?.querySelector(
+                        [
+                          ...(frame.current?.querySelectorAll(
                             `[data-layout-region="${region}"], [data-header-region="${region}"]`,
-                          )
-                          ?.contains(target),
+                          ) ?? []),
+                        ].some((element) => element.contains(target)),
                     ) ?? null);
         }}
       >
@@ -310,6 +311,7 @@ export function WorkbenchFrame({
               ))}
             {developerActive && (
               <Button
+                ref={conversationTrigger}
                 variant="ghost"
                 aria-label={t("app.layout.backToConversation")}
                 onClick={onConversation}
@@ -479,11 +481,13 @@ export function WorkbenchFrame({
           {settings}
         </SettingsModal>
         <NavigationOverlay
-          open={overlay}
+          open={overlay && !developerActive}
           onClose={() => setOverlay(false)}
           title={t("app.layout.sidebar")}
           closeLabel={t("app.layout.close")}
-          returnFocus={navigationTrigger}
+          returnFocus={
+            developerActive ? conversationTrigger : navigationTrigger
+          }
           nativeInset={
             typeof navigator !== "undefined" &&
             navigator.userAgent.includes("Mac OS")

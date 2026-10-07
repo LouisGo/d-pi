@@ -44,13 +44,36 @@ export function ResizableSplit({
   const commit = useRef(onCommit);
   commit.current = onCommit;
   useEffect(() => {
-    // Panel constraint changes register with the group in a second layout
-    // pass. Apply the project size after that pass, before the next paint.
-    const frame = requestAnimationFrame(() =>
-      panel.current?.resize(visible ? size : 0),
-    );
-    return () => cancelAnimationFrame(frame);
-  }, [size, visible, min, max]);
+    // The library refreshes its cached axis size through ResizeObserver.
+    // Reapply controlled pixels after that refresh, including parent layout
+    // changes that do not change this split's props.
+    const host = element.current;
+    if (!host) return;
+    let frame = 0;
+    let observedSize: number | undefined;
+    const schedule = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() =>
+        panel.current?.resize(visible ? size : 0),
+      );
+    };
+    const observer = new ResizeObserver(([entry]) => {
+      if (!entry) return;
+      const next =
+        axis === "horizontal"
+          ? entry.contentRect.width
+          : entry.contentRect.height;
+      if (next === observedSize) return;
+      observedSize = next;
+      schedule();
+    });
+    observer.observe(host);
+    schedule();
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
+  }, [axis, size, visible, min, max]);
   useEffect(() => {
     const owner = element.current?.ownerDocument;
     if (!owner) return;
