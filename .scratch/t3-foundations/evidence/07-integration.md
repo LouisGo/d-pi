@@ -37,3 +37,11 @@ Spec轴冻结范围发现1个P2：Git二次采样把unavailable统称changed。�
 Standards独立关闭原PDF P2：固定 `ae9cb2c…e795933`，原真实PM/SQLite失败复现转绿，GC删除0、Undo后prepare成功；预算/GC交错/显式清史及Composer接线共8 files/37tests通过。Spec已独立关闭Git P2（`70b5528`，4files/45tests）。最终04与组合增量两轴review继续记录在下方。
 
 最终Standards冻结base5983233→fb7f5ba，15files61tests、architecture423通过，没有新material问题；新增独立late-clone真实Main/PM/SQLite交错证明目标编辑后不插入，discard后解除source引用真实GC删除1对象。最终Spec同源13files60tests通过，但另一个独立实际回归确认P2：32源图×4次paste→立即Undo→保存空稿→显式清史/awaitrelease，第5次仍typedbusy；只有document release解除128个未采用clone。复现 `/tmp/d-pi-t3-spec-final.vGCMWQ/tests/integration/spec-review-clipboard-handoff.test.ts`；production尚未修复时16:00:05真实红灯。review不能通过，保持票claimed；worker由8280951固定基点隔离修复。完整check/native系统通过未涵盖此差额，不能代替独立审查结论。
+
+## 清理确认与恢复复核
+
+正常额度回收修复源 `072921e0865fe8aed17f3fe45a78a96dbf691c3f` 串行集成为 `466e08c6fe894f264503a0e8fa299ebbc8c012b3`。Spec原复现转绿，第五次实际粘贴32个新token并一次Undo回空稿；针对性8files/33tests通过。Main按可信document/Thread/历史epoch回收未采用克隆，保留当前正文、Redo和其他cached epoch依赖；普通PDF清史不重建历史pin。带80002候选ID的真实preload/Zod分块证明上限及失败重试，未放宽单次wire预算。
+
+该冻结输入16:32–16:33完整 `pnpm check` 退出0：170files passed/1skipped，968tests passed/2skipped，测试阶段17.81s；architecture423files及全部常规工程检查通过，`pnpm build`通过。日志 `/tmp/d-pi-t3-final-check.log`、`/tmp/d-pi-t3-final-build.log`。后续源码改变需刷新组合检查。
+
+两轴各自真实复现同一新P2：RPC接缝第一次release返回unavailable且未执行Main，后续普通图片atom的成功update清掉失败；保存与retry报成功而原release未重试。Spec另外确认再次reset丢原leaseId，以及cache threads=0真实destroy/eviction后model/barrier移除、重入同Thread无可重试owner；二者实际GC均deleted0。复现为 `/tmp/d-pi-t3-spec-handoff.ZEOsCn/tests/integration/spec-review-handoff-failure.test.ts` 与 `/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/d-pi-standards-466e08c-serso3uj/tests/integration/standards-handoff-failed-release.test.ts`。固定466e08c的Standards针对检查15pass/1fail、architecture通过；不能把旧P2已关闭写作最终review通过。主Agent先补spec恢复合同，再由worker从466e08c隔离修复；没有扩大到未证实的其他生命周期问题。

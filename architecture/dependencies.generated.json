@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "5a00459c7c415cf73a8c49ffc30dbf1e7f65dd55f51d63f11088269d3e2c3926",
+  "inputsHash": "08e3617870d9c3b91d74358ca58d3a946f3fca20d139ac430d0df57abeded492",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 423,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 179,
-      "lines": 31582,
+      "lines": 31588,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -186,7 +186,7 @@
       ],
       "materialized": true,
       "files": 49,
-      "lines": 7952,
+      "lines": 8132,
       "publicEntries": [
         {
           "path": "src/modules/input/contracts/public.ts",
@@ -17870,6 +17870,30 @@
       "to": "src/modules/input/core/draft-controller.ts",
       "targetModule": "input",
       "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/renderer/editor/draft-editor-cache.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/renderer/editor/draft-editor-cache.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../references/attachment-reference",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/attachment-reference.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/modules/input/renderer/editor/draft-editor-cache.ts",
