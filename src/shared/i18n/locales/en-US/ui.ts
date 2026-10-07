@@ -1,4 +1,17 @@
 export const ui = {
+  "ui.reading.latest": "Latest segment",
+  "ui.conversation.newOutput": "New output",
+  "ui.conversation.toBottom": "Back to list bottom",
+  "ui.conversation.retainedTail":
+    "Go to the retained live list bottom; keep the current body segment.",
+  "ui.conversation.openHistory": "View native history",
+  "ui.history.readOnlyCoverage":
+    "Native history is read-only and paged in saved order, separately from the live list.",
+  "ui.history.refreshStart":
+    "Refresh reads this source again from its first page.",
+  "ui.history.returnLive": "Return to live reading",
+  "ui.history.notRead": "The bound session history has not been read yet.",
+
   "attachment.clipboardFallback":
     "Structured content fell back to readable text. Dynamic references do not transfer file access.",
   "attachment.clipboardFailed":

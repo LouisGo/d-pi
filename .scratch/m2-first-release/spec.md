@@ -164,7 +164,7 @@
 用户要求使用刚合并的 AI 工作流，从最新 main 重新开启下一阶段；2026-10-06 已确认 PR #1 合入，基点 `c8dbdbadf1a04ad2be54e01f1a509024c5d982ea`，集成分支 `codex/m2-lifecycle`。本段选择 B4 附件引用/延迟回收/一致性与原生子 Agent 状态/结果观察两条可独立交付路径，随后集成与本地候选。沿用已有 M2 本地实现/commit/试用候选授权；不 push、不公开发布、不扩 M3。冷旧 Thread 只读、unknown 不自动重发，PDF 视觉/OCR与退出放弃原待决不进入本段。无新增产品待决。
 
 ```implementation-plan
-[{"id":"m2-lifecycle","tickets":["04b","05d","06b"]},{"id":"m2-long-reading","tickets":["06c","06d"]},{"id":"m2-diagnostics","tickets":["06e","06f","06g"]},{"id":"thread-attention","tickets":["01a","01b","01c"]}]
+[{"id":"m2-lifecycle","tickets":["04b","05d","06b"]},{"id":"m2-long-reading","tickets":["06c","06d"]},{"id":"m2-diagnostics","tickets":["06e","06f","06g"]},{"id":"thread-attention","tickets":["01a","01b","01c"]},{"id":"long-reading-loop","tickets":["06h","06i","06j"]}]
 ```
 
 - [04b](issues/04b-attachment-lifecycle.md)：私有内容引用/最后释放、延迟回收及正式检查/清理出口。
@@ -265,3 +265,14 @@
 用户最新要求“先push，然后处理干净远程PR和本次提交，让main干净，后续开始写UI”。据此先push本地main的诊断/retro成果7031b96，复用远端PR#4，将main回流与提醒分支最后保存的真实供应商验证记录ff52823整合；独立双轴复核、必要本地检查与最终head远端CI通过后合并并同步main。此授权取代本阶段先前不merge限制，保留原始历史来源。[整合与结果](pr4-integration.md)。01c实际OS显示/点击仍claimed、M2整体和用户认可未完成；不新增UI实现、不运行真实账户请求、不签名或公开发布。
 
 2026-10-06 UI前远端收口完成：先push main7031b96，PR#4更新为最终aa3f9d8，源级/管理级两轴独立复核均无高价值遗留，798行为/34架构/89工具、build与原m2.20同源ZIP的17项合并harness包内检查通过；最终head push/PR CI均success，已正常merge为99d3bfb并同步本地main。完成远端PR分支和本轮临时本地分支清理，未改其它会话checkout；最后仅提交本结果/看板并push。[精确结果](pr4-integration.md)。用户后续可从main开展UI；M2仍in-progress、trial delivered、acceptance pending，01c及其它父范围未被merge关闭。
+
+
+## 2026-10-07 首个长会话阅读闭环（本轮授权）
+
+用户依据《D-PI 长会话研究与实现蓝图》明确授权直接实现第八节，必要 research、真实本机 OMP GPT Luna 测试、并行独立工作区、全面相关 TDD、pnpm dev 实际 UI、独立 review；无高价值问题后本地 PR 合入 main 并 push。此授权取代该同范围历史本地/push 限制，不扩为公开发布或 M3。起点 main `6daf80ee25d8c45e03cb8ab1c8d7304f926ee187`，干净；蓝图 `7906f255` 的后续 UI 提交保留，main 原有 10 个未 push 提交不改写。
+
+交付范围：live 列表回底、离尾新输出提示、raw 手动最新段、覆盖缺口经现有 Thread tools 历史入口并返回 live；用户接管、来源/生命周期隔离、真实 Markdown 完成态及相关故障路径。复用 Thread ReadingPositions（32 source/128 body）、真实 generation、8192 UTF-16/120行分段、history attempt；Main/Host/Bun 与8MiB/1000项/32ms预算不变，不猜 live/native 关联。布局沿用工具 Modal、消息独立滚动与 Composer dock。无新增重要产品待决。工程完成与用户认可分开，验收不自动完成父06或M2其它范围。
+
+本轮 leaf：[06h](issues/06h-live-reading-loop.md)、[06i](issues/06i-body-final-render.md)、[06j](issues/06j-reading-integration.md)。集成 `codex/long-reading-loop`，工作区 `/Users/louistation/.codex/worktrees/long-reading-loop/d-pi`。06h 由 live worker 在 `long-reading-live/d-pi` / `codex/long-reading-live` 实施；06i 由 body worker 在 `long-reading-body/d-pi` / `codex/long-reading-body` 实施；均固定6daf80e。主Agent单写票/spec/看板、i18n、历史与集成证据，worker不合入集成。
+
+验收 R1–R15 见蓝图；已正确行为补回归不伪造红灯，缺口逐行为红绿。实机验证回答 Chromium 几何/选择/最终语义及真实 provider 到达风险，纯DOM替身不足；操作覆盖完成或发现具体失败即停止扩大样本。

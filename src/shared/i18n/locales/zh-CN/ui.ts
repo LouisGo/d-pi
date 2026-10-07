@@ -1,4 +1,16 @@
 export const ui = {
+  "ui.reading.latest": "最新段",
+  "ui.conversation.newOutput": "有新输出",
+  "ui.conversation.toBottom": "回到列表底部",
+  "ui.conversation.retainedTail":
+    "回到当前实时列表已保留的底部；正文段选择保持不变。",
+  "ui.conversation.openHistory": "查看原生历史",
+  "ui.history.readOnlyCoverage":
+    "原生历史只读，按保存顺序分页显示，与实时列表分别呈现。",
+  "ui.history.refreshStart": "刷新会从当前来源的起始页重新读取。",
+  "ui.history.returnLive": "返回实时阅读",
+  "ui.history.notRead": "尚未读取绑定会话的原生历史。",
+
   "attachment.clipboardFallback":
     "结构化内容已降级为可读文本；动态文件引用不会复制读取权限。",
   "attachment.clipboardFailed":
@@ -441,7 +453,8 @@ export const ui = {
   "ui.conversation.sectionLabel": "原生会话阅读",
   "ui.conversation.heading": "会话",
   "ui.conversation.empty": "从下方输入，开始对话。",
-  "ui.conversation.gap": "当前显示有缺口，可在下方读取原生记录核对。",
+  "ui.conversation.gap":
+    "当前实时内容有缺口，可查看原生历史核对；回到底部不会补齐缺口。",
   "ui.conversation.streaming": "进行中",
   "ui.conversation.failed": "失败",
   "ui.conversation.copy": "复制",
