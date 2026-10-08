@@ -33,6 +33,7 @@ export interface NativeSessionOptions {
   directory: string;
   environment: NodeJS.ProcessEnv;
   sessionDirectory: string;
+  resume?: { sessionFile: string; sessionId: string };
   // Validation supplies fixed flags. Production passes none and retains native settings.
   extraArgs?: string[];
   supervision?: { mainPid: number; mainBirth: string; token: string };
@@ -126,6 +127,7 @@ export class NativeSession {
           env: {
             ...this.options.environment,
             PI_CODING_AGENT_SESSION_DIR: this.options.sessionDirectory,
+            D_PI_RESUME_SESSION: JSON.stringify(this.options.resume ?? null),
             D_PI_PROCESS_SUPERVISION: JSON.stringify({
               ...this.options.supervision,
               token: this.token,

@@ -5,6 +5,7 @@ import {
   realpathSync,
   renameSync,
   rmSync,
+  writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -119,7 +120,16 @@ async function running(
       : emit(event, ...args);
   const postMessage = vi.fn((raw: unknown) => {
     const command = HostTransportCommandSchema.parse(raw).command;
-    if (command.kind === "start") scopeId = command.processInstanceId;
+    if (command.kind === "start") {
+      scopeId = command.processInstanceId;
+      mkdirSync(command.sessionDirectory, { recursive: true });
+      if (!command.resume)
+        writeFileSync(
+          join(command.sessionDirectory, "native.jsonl"),
+          JSON.stringify({ type: "session", id: "native", cwd: project }) +
+            "\n",
+        );
+    }
     if (command.kind === "start")
       queueMicrotask(() => {
         host.emit("message", {
@@ -128,7 +138,12 @@ async function running(
           connectionGeneration: command.connectionGeneration,
           state: {
             sessionId: "native",
-            sessionFile: join(root, "native.jsonl"),
+            sessionFile: join(
+              root,
+              "native-sessions",
+              draft.threadId,
+              "native.jsonl",
+            ),
             model: { id: "model", provider: "fixture" },
             isStreaming: false,
             isCompacting: false,
@@ -142,7 +157,12 @@ async function running(
             pendingInteraction: false,
             state: {
               sessionId: "native",
-              sessionFile: join(root, "native.jsonl"),
+              sessionFile: join(
+                root,
+                "native-sessions",
+                draft.threadId,
+                "native.jsonl",
+              ),
               model: { id: "model", provider: "fixture" },
               isStreaming: true,
               isCompacting: false,
@@ -151,7 +171,9 @@ async function running(
           });
       });
   });
-  electron.fork.mockReturnValue(Object.assign(host, { postMessage }));
+  electron.fork.mockReturnValue(
+    Object.assign(host, { postMessage, kill: vi.fn() }),
+  );
   if (failFirstFork)
     electron.fork.mockImplementationOnce(() => {
       throw Error("fork failed");
@@ -338,11 +360,46 @@ it("a fork failure before any Host exists still allows an explicit start retry",
   expect((await fixture.act("inspect")).phase).toBe("ready");
 });
 
-it("restart exposes the unproven execution lock and never substitutes a new session", async () => {
+it("cold restart continues the exact bound session despite unrelated environment changes", async () => {
   const fixture = await running();
   const binding = fixture.store.threads.nativeSessionBinding(
     fixture.draft.threadId,
   );
+  fixture.host.emit("message", { kind: "scope-closed" });
+  await vi.waitFor(() => expect(fixture.runtime.hasActiveWork()).toBe(false));
+  const restored = new RuntimeService(
+    fixture.store,
+    fixture.root,
+    fixture.root,
+    { UNRELATED: "changed" },
+    () => {},
+  );
+  const act = (kind: "inspect" | "start") =>
+    restored.execute({
+      kind,
+      threadId: fixture.draft.threadId,
+      traceId: TraceIdSchema.parse(crypto.randomUUID()),
+    });
+  expect((await act("inspect")).phase).toBe("allowed");
+  expect((await act("start")).phase).toBe("ready");
+  const starts = fixture.postMessage.mock.calls
+    .map(([raw]) => HostTransportCommandSchema.parse(raw).command)
+    .filter((c) => c.kind === "start");
+  expect(starts.at(-1)).toMatchObject({
+    resume: {
+      sessionId: binding?.sessionId,
+      sessionFile: binding?.sessionFile,
+    },
+    configContextId: binding?.configContextId,
+  });
+  expect(
+    fixture.store.threads.nativeSessionBinding(fixture.draft.threadId),
+  ).toEqual(binding);
+  expect(fixture.store.drafts.read(fixture.draft.threadId)?.text).toBe("A");
+});
+
+it("an independently live writer blocks recovery without substituting a session", async () => {
+  const fixture = await running();
   const forks = electron.fork.mock.calls.length;
   const restored = new RuntimeService(
     fixture.store,
@@ -351,20 +408,13 @@ it("restart exposes the unproven execution lock and never substitutes a new sess
     {},
     () => {},
   );
-  for (const kind of ["inspect", "allow", "start"] as const) {
-    const view = await restored.execute({
-      kind,
-      threadId: fixture.draft.threadId,
-      traceId: TraceIdSchema.parse(crypto.randomUUID()),
-    });
-    expect(view.phase).toBe("interrupted");
-    expect(view.message).toEqual({ code: "runtime.previousSessionReadOnly" });
-  }
+  const view = await restored.execute({
+    kind: "start",
+    threadId: fixture.draft.threadId,
+    traceId: TraceIdSchema.parse(crypto.randomUUID()),
+  });
+  expect(view.phase).toBe("failed");
   expect(electron.fork.mock.calls).toHaveLength(forks);
-  expect(
-    fixture.store.threads.nativeSessionBinding(fixture.draft.threadId),
-  ).toEqual(binding);
-  expect(fixture.store.drafts.read(fixture.draft.threadId)?.text).toBe("A");
 });
 
 it("busy native sessions accept a frozen follow-up without an App auto-send queue", async () => {
@@ -1046,4 +1096,51 @@ it("locates reference preparation failure without a receipt or native dispatch a
       ([raw]) => HostTransportCommandSchema.parse(raw).command.kind,
     ),
   ).not.toContain("dispatch");
+});
+
+it("cold recovery never resends an unknown attempt while allowing explicit new work on the same session", async () => {
+  const f = await running();
+  const prepared = await f.prepare();
+  if (prepared.kind !== "receipt") throw Error("prepare failed");
+  const id = prepared.receipt.submissionId;
+  await f.dispatch();
+  const before = f.postMessage.mock.calls.filter(
+    ([r]) => HostTransportCommandSchema.parse(r).command.kind === "dispatch",
+  ).length;
+  f.host.emit("message", { kind: "scope-closed" });
+  await vi.waitFor(() => expect(f.runtime.hasActiveWork()).toBe(false));
+  expect(f.store.submissions.submission(id)?.state).toBe("unknown");
+  const restored = new RuntimeService(f.store, f.root, f.root, {}, () => {});
+  await restored.execute({
+    kind: "start",
+    threadId: f.draft.threadId,
+    traceId: TraceIdSchema.parse(crypto.randomUUID()),
+  });
+  expect(f.store.submissions.submission(id)?.state).toBe("unknown");
+  expect(
+    f.postMessage.mock.calls.filter(
+      ([r]) => HostTransportCommandSchema.parse(r).command.kind === "dispatch",
+    ),
+  ).toHaveLength(before);
+  f.store.drafts.save(f.draft.threadId, 1, "New explicit input");
+  const newId = SubmissionIdSchema.parse(crypto.randomUUID());
+  expect(
+    await restored.submit({
+      kind: "prepare",
+      threadId: f.draft.threadId,
+      submissionId: newId,
+      traceId: TraceIdSchema.parse(crypto.randomUUID()),
+      revision: 2,
+      text: "New explicit input",
+    }),
+  ).toMatchObject({
+    kind: "receipt",
+    receipt: {
+      state: "prepared",
+      target: {
+        nativeSessionRef: f.store.threads.nativeSessionBinding(f.draft.threadId)
+          ?.sessionFile,
+      },
+    },
+  });
 });

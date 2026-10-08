@@ -1,0 +1,39 @@
+Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/app-runtime-service.integration.test.ts > cold restart continues the exact bound session despite unrelated environment changes
+AssertionError: expected 'interrupted' to be 'allowed' // Object.is equality
+
+Expected: "allowed"
+Received: "interrupted"
+
+ ❯ tests/integration/app-runtime-service.integration.test.ts:353:40
+    351|   const restored = new RuntimeService(fixture.store, fixture.root, fix…
+    352|   const act = (kind:"inspect"|"start") => restored.execute({kind,threa…
+    353|   expect((await act("inspect")).phase).toBe("allowed");
+       |                                        ^
+    354|   expect((await act("start")).phase).toBe("ready");
+    355|   const starts = fixture.postMessage.mock.calls.map(([raw])=>HostTrans…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/integration/app-runtime-service.integration.test.ts > an independently live writer blocks recovery without substituting a session
+AssertionError: expected 'interrupted' to be 'failed' // Object.is equality
+
+Expected: "failed"
+Received: "interrupted"
+
+ ❯ tests/integration/app-runtime-service.integration.test.ts:366:22
+    364|   const restored = new RuntimeService(fixture.store,fixture.root,fixtu…
+    365|   const view = await restored.execute({kind:"start",threadId:fixture.d…
+    366|   expect(view.phase).toBe("failed");
+       |                      ^
+    367|   expect(electron.fork.mock.calls).toHaveLength(forks);
+    368| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 25 passed (27)
+   Start at  11:07:01
+   Duration  1.04s (tests 57%, transform 24%, import 19%)

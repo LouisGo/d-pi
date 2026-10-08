@@ -15,6 +15,8 @@ const native = vi.hoisted(() => ({
   writes: [] as string[],
   close: vi.fn(),
   controlRequest: vi.fn(),
+  messagesPage: vi.fn(),
+  options: [] as NativeSessionOptions[],
 }));
 vi.mock("./native/native-session", () => ({
   NativeSession: class {
@@ -23,6 +25,7 @@ vi.mock("./native/native-session", () => ({
       observe: (event: NativeObservation) => void,
     ) {
       native.observers.push(observe);
+      native.options.push(options);
     }
     async start() {}
     async close() {
@@ -31,7 +34,8 @@ vi.mock("./native/native-session", () => ({
     write(frame: string) {
       native.writes.push(frame);
     }
-    async request(command: string) {
+    async request(command: string, payload?: unknown) {
+      if (command === "get_messages_page") return native.messagesPage(payload);
       if (command === "d_pi_subagent_state")
         return { success: true, data: { agents: [] } };
       if (
@@ -67,6 +71,8 @@ afterEach(() => {
   native.writes.length = 0;
   native.close.mockReset();
   native.controlRequest.mockReset();
+  native.messagesPage.mockReset();
+  native.options.length = 0;
 });
 
 it("does not close from an idle query overtaken by observed background activity", async () => {
@@ -1468,4 +1474,97 @@ it("agent_end cannot open an idle-close gap while a confirmed completed prompt r
   await host.handle({ kind: "state" });
   await host.handle({ kind: "close-idle" });
   expect(native.close).toHaveBeenCalledOnce();
+});
+
+it("restores saved native messages in one live projection before ready, without dispatching input", async () => {
+  const sequence: string[] = [];
+  const frames: unknown[] = [];
+  const exit = vi.fn();
+  const host = createSessionHost((m) => sequence.push(m.kind), exit, {
+    onNativeFrame: (frame) => {
+      frames.push(frame);
+      sequence.push("history");
+    },
+  });
+  native.messagesPage
+    .mockResolvedValueOnce({
+      success: true,
+      data: {
+        messages: [{ role: "user", content: "saved input" }],
+        nextCursor: "second",
+        totalMessages: 2,
+      },
+    })
+    .mockResolvedValueOnce({
+      success: true,
+      data: {
+        messages: [
+          {
+            role: "assistant",
+            content: [{ type: "text", text: "saved reply" }],
+            stopReason: "stop",
+          },
+        ],
+        totalMessages: 2,
+      },
+    });
+  const resume = {
+    sessionId: "session",
+    sessionFile: "/sessions/session.jsonl",
+  };
+  await host.handle({
+    kind: "start",
+    threadId: crypto.randomUUID(),
+    traceId: crypto.randomUUID(),
+    processInstanceId: crypto.randomUUID(),
+    connectionGeneration: crypto.randomUUID(),
+    configContextId: "fixture",
+    binary: "/fixture/bun",
+    identity: { directory: "/project", device: "1", inode: "2" },
+    environment: {},
+    sessionDirectory: "/sessions",
+    resume,
+  });
+  expect(native.options[0]?.resume).toEqual(resume);
+  expect(frames).toEqual([
+    { type: "message_end", message: { role: "user", content: "saved input" } },
+    {
+      type: "message_end",
+      message: {
+        role: "assistant",
+        content: [{ type: "text", text: "saved reply" }],
+        stopReason: "stop",
+      },
+    },
+  ]);
+  expect(sequence.indexOf("ready")).toBeGreaterThan(
+    sequence.lastIndexOf("history"),
+  );
+  expect(native.writes).toEqual([]);
+});
+
+it("rejects a changed resumed identity before exposing history or readiness", async () => {
+  const messages: HostMessage[] = [];
+  const read = vi.fn();
+  const exit = vi.fn();
+  const host = createSessionHost((m) => messages.push(m), exit, {
+    onNativeFrame: read,
+  });
+  await host.handle({
+    kind: "start",
+    threadId: crypto.randomUUID(),
+    traceId: crypto.randomUUID(),
+    processInstanceId: crypto.randomUUID(),
+    connectionGeneration: crypto.randomUUID(),
+    configContextId: "fixture",
+    binary: "/fixture/bun",
+    identity: { directory: "/project", device: "1", inode: "2" },
+    environment: {},
+    sessionDirectory: "/sessions",
+    resume: { sessionId: "other", sessionFile: "/sessions/session.jsonl" },
+  });
+  expect(messages.some((m) => m.kind === "ready")).toBe(false);
+  expect(read).not.toHaveBeenCalled();
+  expect(native.writes).toEqual([]);
+  expect(exit).toHaveBeenCalledWith(1);
 });

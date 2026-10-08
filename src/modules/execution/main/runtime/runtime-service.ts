@@ -109,6 +109,23 @@ export class RuntimeService {
     this.connection = new HostConnection(
       (message) => this.receive(message),
       (evidence) => this.onExit(evidence),
+      (confirmed) => {
+        if (!confirmed) return;
+        this.sessionStarted = false;
+        this.target = null;
+        this.currentConnectionGeneration = null;
+        this.executingIds.clear();
+        this.pendingEvidence.clear();
+        if (this.view) {
+          this.view = { ...this.view };
+          delete this.view.control;
+          delete this.view.interactions;
+          delete this.view.queueOperation;
+          delete this.view.subagentOperation;
+          delete this.view.modelChanging;
+        }
+        this.update({ busy: false });
+      },
     );
     this.coordinator = new SubmissionCoordinator(
       store.submissions,
@@ -188,9 +205,14 @@ export class RuntimeService {
     const connectionGeneration = randomUUID();
     this.currentConnectionGeneration = connectionGeneration;
     this.update({ connectionGeneration: connectionGeneration });
-    const context = createHash("sha256")
-      .update(JSON.stringify({ cwd: thread.directory, env: this.environment }))
-      .digest("hex");
+    const previous = this.store.threads.nativeSessionBinding(thread.threadId);
+    const context =
+      previous?.configContextId ??
+      createHash("sha256")
+        .update(
+          JSON.stringify({ cwd: thread.directory, env: this.environment }),
+        )
+        .digest("hex");
     const starting = this.connection.start(
       {
         kind: "start",
@@ -209,9 +231,23 @@ export class RuntimeService {
             : {}),
         },
         sessionDirectory,
+        ...(previous
+          ? {
+              resume: {
+                sessionFile: previous.sessionFile,
+                sessionId: previous.sessionId,
+              },
+            }
+          : {}),
       },
       (message) => {
         try {
+          if (
+            previous &&
+            (message.state.sessionFile !== previous.sessionFile ||
+              message.state.sessionId !== previous.sessionId)
+          )
+            throw Error("Recovered native session identity conflict");
           this.store.threads.bindNativeSession({
             threadId: thread.threadId,
             configContextId: context,
@@ -622,7 +658,6 @@ export class RuntimeService {
       const trusted = !!this.store.threads.executionGrant(
         thread.workingDirectoryId,
       );
-      const previous = this.store.threads.nativeSessionBinding(thread.threadId);
       const profile = (
         this.environment.OMP_PROFILE ??
         this.environment.PI_PROFILE ??
@@ -648,13 +683,11 @@ export class RuntimeService {
         revision: 0,
         threadId: thread.threadId,
         traceId: command.traceId,
-        phase: previous ? "interrupted" : trusted ? "allowed" : "browse",
+        phase: trusted ? "allowed" : "browse",
         trusted,
         busy: false,
         model: null,
-        message: previous
-          ? uiMessage("runtime.previousSessionReadOnly")
-          : uiMessage("runtime.preStartTrust"),
+        message: uiMessage("runtime.preStartTrust"),
       };
     }
     if (
@@ -785,11 +818,6 @@ export class RuntimeService {
       return this.view;
     }
     if (command.kind === "select-model") {
-      if (
-        this.store.threads.nativeSessionBinding(command.threadId) &&
-        !this.connection.connected
-      )
-        throw Error("Read-only recovered Thread");
       if (this.hasActiveWork() || this.view.modelChanging)
         throw Error("Model change requires idle Thread");
       if (this.connection.connected && this.currentConnectionGeneration) {
@@ -929,9 +957,7 @@ export class RuntimeService {
                 trusted: true,
                 phase: this.connection.connected
                   ? (this.view?.phase ?? "interrupted")
-                  : this.store.threads.nativeSessionBinding(command.threadId)
-                    ? "interrupted"
-                    : "allowed",
+                  : "allowed",
                 traceId: command.traceId,
               }
             : {
@@ -974,7 +1000,6 @@ export class RuntimeService {
         if (
           this.connection.connected ||
           this.sessionStarted ||
-          this.store.threads.nativeSessionBinding(command.threadId) ||
           this.view?.phase === "starting"
         )
           return;

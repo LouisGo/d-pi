@@ -14,6 +14,8 @@ import {
   type ProcessExitEvidence,
 } from "../../contracts/public";
 
+import { SessionExecutionLease } from "./session-execution-lease";
+
 type ReadyMessage = Extract<HostMessage, { kind: "ready" }>;
 type Ready = ReadyMessage & {
   state: ReadyMessage["state"] & { sessionFile: string };
@@ -131,6 +133,7 @@ export class HostConnection {
       message: Exclude<HostMessage, { kind: "ready" | "native-register" }>,
     ) => void,
     private readonly exited: (evidence?: ProcessExitEvidence) => void,
+    private readonly closed: (confirmed: boolean) => void = () => {},
   ) {}
   get connected(): boolean {
     return this.scopeId !== null;
@@ -142,7 +145,17 @@ export class HostConnection {
     if (this.scopeId) return Promise.reject(Error("Host already connected"));
     const main = await readProcessIdentity(process.pid);
     if (!main) throw Error("Main process identity unavailable");
-    const host = hostProcess();
+    const lease = await SessionExecutionLease.acquire(
+      command.sessionDirectory,
+      main,
+    );
+    let host: UtilityProcess;
+    try {
+      host = hostProcess();
+    } catch (error) {
+      lease.release(true);
+      throw error;
+    }
     const supervision = {
       mainPid: process.pid,
       mainBirth: main.birth,
@@ -169,7 +182,9 @@ export class HostConnection {
         this.cleanup = nativeIdentity
           ? terminateManagedGroup(nativeIdentity)
           : Promise.resolve(true);
+        this.cleanup = this.cleanup.then((stopped) => lease.release(stopped));
         void this.cleanup.then((confirmed) => {
+          this.closed(confirmed);
           if (!confirmed)
             this.receive({
               kind: "interrupted",
@@ -185,7 +200,7 @@ export class HostConnection {
           if (message.kind === "native-register") {
             const registration = message.registration;
             void readProcessIdentity(registration.pid).then((actual) => {
-              const allowed =
+              let allowed =
                 !!actual &&
                 actual.birth === registration.birth &&
                 actual.executable === registration.executable &&
@@ -193,7 +208,19 @@ export class HostConnection {
                 actual.parentPid === host.pid &&
                 registration.processInstanceId === command.processInstanceId &&
                 registration.token === supervision.token;
-              if (allowed) nativeIdentity = actual;
+              if (
+                allowed &&
+                actual &&
+                this.scopeId === command.processInstanceId
+              ) {
+                try {
+                  // Persist cleanup identity before granting permission to import SDK.
+                  lease.register(actual);
+                  nativeIdentity = actual;
+                } catch {
+                  allowed = false;
+                }
+              }
               if (
                 sharedHost === host &&
                 this.scopeId === command.processInstanceId

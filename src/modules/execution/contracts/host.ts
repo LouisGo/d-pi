@@ -62,6 +62,12 @@ export const HostStartSchema = z.strictObject({
   identity: DirectoryIdentitySchema,
   environment: z.record(z.string(), z.string()),
   sessionDirectory: z.string().min(1),
+  resume: z
+    .strictObject({
+      sessionFile: z.string().min(1),
+      sessionId: z.string().min(1),
+    })
+    .optional(),
   supervision: z
     .strictObject({
       mainPid: z.number().int().min(2),

@@ -1,4 +1,7 @@
 import { EventEmitter } from "node:events";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { expect, it, vi } from "vitest";
 import type { HostStart } from "../../contracts/public";
 
@@ -8,6 +11,7 @@ vi.mock("electron", () => ({ utilityProcess: { fork: mocks.fork } }));
 import { HostConnection } from "./host-connection";
 
 it("one utility process routes two independent scopes and one scope exit leaves the other connected", async () => {
+  const directory = mkdtempSync(join(tmpdir(), "d-pi-host-multiplex-"));
   const process = Object.assign(new EventEmitter(), {
     postMessage: vi.fn(),
     kill: vi.fn(),
@@ -23,7 +27,7 @@ it("one utility process routes two independent scopes and one scope exit leaves 
     binary: "/fixture",
     identity: { directory: "/project", device: "1", inode: "2" },
     environment: {},
-    sessionDirectory: "/sessions",
+    sessionDirectory: join(directory, crypto.randomUUID()),
   });
   const ca = start(),
     cb = start();
@@ -44,7 +48,7 @@ it("one utility process routes two independent scopes and one scope exit leaves 
       connectionGeneration: c.connectionGeneration,
       state: {
         sessionId: c.threadId,
-        sessionFile: "/sessions/" + c.threadId,
+        sessionFile: join(c.sessionDirectory, c.threadId),
         isStreaming: false,
         isCompacting: false,
         queuedMessageCount: 0,
@@ -79,5 +83,6 @@ it("one utility process routes two independent scopes and one scope exit leaves 
   } finally {
     process.emit("exit");
     await Promise.allSettled([pa, pb]);
+    rmSync(directory, { recursive: true, force: true });
   }
 });

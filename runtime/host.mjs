@@ -1,4 +1,7 @@
 // App-owned transport adapter. Official SDK modules are loaded unchanged.
+
+import { lstat, open, realpath } from "node:fs/promises";
+import { isAbsolute, relative } from "node:path";
 import { createInterface } from "node:readline";
 import { resolveProfileEnv, setProfile } from "@oh-my-pi/pi-utils";
 
@@ -23,13 +26,75 @@ import { applyModelSelection } from "./model-selection.mjs";
 import { NativeQueueManager } from "./native-queue.mjs";
 import { createSubagentConfiguration } from "./native-subagent-configuration.mjs";
 
-const { session, setToolUIContext, subagentEventBus } =
-  await createAgentSession({
-    sessionManager: SessionManager.create(
-      process.cwd(),
-      process.env.PI_CODING_AGENT_SESSION_DIR,
-    ),
+// Explicit App binding only; never resume the latest CLI session or mint a replacement.
+async function managedSessionManager() {
+  const resume = JSON.parse(process.env.D_PI_RESUME_SESSION ?? "null");
+  const directory = process.env.PI_CODING_AGENT_SESSION_DIR;
+  if (resume === null) return SessionManager.create(process.cwd(), directory);
+  if (
+    !resume ||
+    typeof resume.sessionFile !== "string" ||
+    typeof resume.sessionId !== "string" ||
+    !directory
+  )
+    throw Error("Invalid native resume binding");
+  const root = await realpath(directory);
+  const file = await realpath(resume.sessionFile);
+  const within = relative(root, file);
+  if (
+    within.startsWith("..") ||
+    isAbsolute(within) ||
+    file !== resume.sessionFile ||
+    !(await lstat(file)).isFile()
+  )
+    throw Error("Unmanaged native resume binding");
+  const handle = await open(file, "r");
+  let header;
+  try {
+    const bytes = Buffer.alloc(65536);
+    const { bytesRead } = await handle.read(bytes, 0, bytes.length, 0);
+    const prefix = bytes.subarray(0, bytesRead);
+    const newline = prefix.lastIndexOf(10);
+    if (newline < 0) throw Error("Native session header unavailable");
+    // OMP can put its fixed-width title slot before the session header.
+    for (const line of prefix
+      .subarray(0, newline)
+      .toString("utf8")
+      .split("\n")) {
+      if (!line.trim()) continue;
+      const entry = JSON.parse(line);
+      if (entry.type === "session") {
+        header = entry;
+        break;
+      }
+    }
+  } finally {
+    await handle.close();
+  }
+  if (
+    !header ||
+    header.type !== "session" ||
+    header.id !== resume.sessionId ||
+    header.cwd !== process.cwd()
+  )
+    throw Error("Native session header identity conflict");
+  const manager = await SessionManager.open(file, directory, undefined, {
+    initialCwd: process.cwd(),
+    throwIfMissing: true,
+    suppressBreadcrumb: true,
   });
+  if (
+    manager.getSessionId() !== resume.sessionId ||
+    manager.getSessionFile() !== file ||
+    manager.getCwd() !== process.cwd()
+  ) {
+    await manager.close();
+    throw Error("Recovered native session identity conflict");
+  }
+  return manager;
+}
+const { session, setToolUIContext, subagentEventBus } =
+  await createAgentSession({ sessionManager: await managedSessionManager() });
 if (process.env.D_PI_MODEL_SELECTION) {
   const selection = JSON.parse(process.env.D_PI_MODEL_SELECTION);
   await applyModelSelection(session, selection);
