@@ -373,3 +373,47 @@ it("keeps a saved history snapshot readable while new messages append, and refre
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+it("returns a message larger than the ordinary page budget as one complete body", async () => {
+  const root = mkdtempSync(join(tmpdir(), "d-pi-history-large-body-"));
+  const threadId = crypto.randomUUID();
+  const directory = join(root, threadId);
+  mkdirSync(directory);
+  const file = join(directory, "session.jsonl");
+  const binding = {
+    threadId,
+    configContextId: "fixture",
+    sessionId: "session",
+    sessionFile: file,
+  };
+  const text = "连续正文\n".repeat(110_000);
+  writeFileSync(
+    file,
+    [
+      { type: "session", version: 3, id: "session" },
+      {
+        type: "message",
+        id: "large",
+        parentId: null,
+        message: { role: "assistant", content: text },
+      },
+    ]
+      .map((record) => JSON.stringify(record))
+      .join("\n") + "\n",
+  );
+  try {
+    let page = await readNativeHistory(root, binding);
+    const entries = [];
+    for (let count = 0; count < 3; count++) {
+      if (page.kind !== "page") throw Error("expected complete history page");
+      entries.push(...page.entries);
+      if (!page.next) break;
+      page = await readNativeHistory(root, binding, page.next);
+    }
+    expect(entries).toMatchObject([{ id: "large", text }]);
+    expect(entries).toHaveLength(1);
+    expect(page.kind === "page" && page.next).toBeNull();
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
