@@ -39,6 +39,8 @@ T3 使用 MIT；AppleIcon 的源码额外注明来自 [Simple Icons](https://git
 
 Lobe Icons 的仓库 [LICENSE](https://github.com/lobehub/lobe-icons/blob/c385b2b8d1f9e19aa86e628d4e23c91ee1111a47/LICENSE) 使用 MIT，未在所取 SVG 中注明额外素材许可。MIT 覆盖这份开源素材实现，不代替各品牌的商标使用规范；未找到可信标识或不能确定模型厂商时使用无品牌的通用降级图形。
 
+Kimi 的原始 K 主体为白色；d-pi 将这一单色主体改为 `currentColor`，保证浅色与深色界面可见。原 path、viewBox 和蓝色品牌点保持不变。
+
 ## 保留的许可原文
 
 ### T3
