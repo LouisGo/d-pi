@@ -454,7 +454,7 @@ export const ui = {
   "ui.conversation.imageNotLoaded": "未加载",
   "ui.conversation.sectionLabel": "原生会话阅读",
   "ui.conversation.heading": "会话",
-  "ui.conversation.empty": "从下方输入，开始对话。",
+  "ui.conversation.empty": "尚无实时消息。已有记录可从历史中查看。",
   "ui.conversation.gap":
     "当前实时内容有缺口，可查看原生历史核对；回到底部不会补齐缺口。",
   "ui.conversation.streaming": "进行中",
@@ -755,4 +755,6 @@ export const ui = {
   "app.status.directory": "工作目录",
   "app.status.messagesScope": "消息数量仅包含当前实时窗口中的用户与助手消息。",
   "app.status.messagesGap": "当前实时窗口存在同步缺口，消息数量可能不完整。",
+  "ui.conversation.aborted": "已停止",
+  "ui.conversation.continuation": "接续上次中断的回复",
 } as const;

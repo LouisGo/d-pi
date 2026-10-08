@@ -203,7 +203,7 @@ it("refreshes a changed CLI history from the first page and can continue reading
   }
 });
 
-it("announces discovery before offering a bound read, then announces the selected native page while it loads", async () => {
+it("offers a bound read during discovery and announces the selected native page while it loads", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -277,9 +277,9 @@ it("announces discovery before offering a bound read, then announces the selecte
     );
     expect(
       [...container.querySelectorAll("button")].some(
-        (b) => b.textContent === "Read native records",
+        (b) => b.textContent === "Read native records" && !b.disabled,
       ),
-    ).toBe(false);
+    ).toBe(true);
     expect(
       container.querySelector<HTMLButtonElement>("[data-slot=select]")
         ?.disabled,

@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { constants } from "node:fs";
-import { open, realpath } from "node:fs/promises";
+import { open, realpath, stat } from "node:fs/promises";
 import { isAbsolute, relative, sep } from "node:path";
 import { z } from "zod";
 import type { NativeSessionBinding } from "../../threads/contracts/public";
@@ -30,6 +30,7 @@ const EntrySchema = z.object({
 });
 const TextPartSchema = z.object({ type: z.literal("text"), text: z.string() });
 const PAGE_BYTES = 1024 * 1024;
+const MAX_RECORD_BYTES = 32 * 1024 * 1024;
 const MUTATING_TOOL_NAMES = new Set([
   "write",
   "edit",
@@ -69,8 +70,15 @@ export async function readNativeHistory(
     try {
       const info = await file.stat();
       if (!info.isFile()) return { kind: "unavailable", reason: "denied" };
-      const identity = `${info.dev}:${info.ino}:${info.size}:${info.mtimeMs}:${info.ctimeMs}`;
-      const prefix = Buffer.alloc(Math.min(65536, info.size));
+      // Read a frozen committed prefix, independent of current execution. The
+      // native writer appends records or atomically replaces the file; appends
+      // must not invalidate an older page, replacements must. Never use busy
+      // RPC history reads or a growing EOF as this snapshot's boundary.
+      const endOffset = cursor?.endOffset ?? info.size;
+      if (endOffset > info.size)
+        return { kind: "unavailable", reason: "changed" };
+      const identity = `${info.dev}:${info.ino}:${info.birthtimeMs}`;
+      const prefix = Buffer.alloc(Math.min(65536, endOffset));
       const prefixRead = await file.read(prefix, 0, prefix.length, 0);
       const lines = prefix
         .subarray(0, prefixRead.bytesRead)
@@ -95,23 +103,44 @@ export async function readNativeHistory(
       }
       if (header.data.id !== binding.sessionId)
         return { kind: "unavailable", reason: "changed" };
+      const prefixHash = createHash("sha256")
+        .update(prefix.subarray(0, prefixRead.bytesRead))
+        .digest("hex");
       const source = createHash("sha256")
-        .update(`${identity}:${binding.configContextId}:${header.data.id}`)
+        .update(
+          `${identity}:${binding.configContextId}:${header.data.id}:${endOffset}:${prefixHash}`,
+        )
         .digest("hex");
       if (
         cursor &&
         (cursor.threadId !== binding.threadId ||
           cursor.source !== source ||
-          cursor.offset > info.size)
+          cursor.offset > endOffset ||
+          cursor.prefixHash !== prefixHash)
       )
         return { kind: "unavailable", reason: "changed" };
       const offset = cursor?.offset ?? 0;
-      const buffer = Buffer.alloc(Math.min(PAGE_BYTES, info.size - offset));
+      let buffer = Buffer.alloc(Math.min(PAGE_BYTES, endOffset - offset));
       signal?.throwIfAborted();
-      const read = await file.read(buffer, 0, buffer.length, offset);
-      const bytes = buffer.subarray(0, read.bytesRead);
-      const lastNewline = bytes.lastIndexOf(10);
-      if (lastNewline < 0 && offset + bytes.length < info.size)
+      let read = await file.read(buffer, 0, buffer.length, offset);
+      let bytes = buffer.subarray(0, read.bytesRead);
+      let lastNewline = bytes.lastIndexOf(10);
+      // A single long message is still one record and one continuous body.
+      // Grow only when the first record exceeds a page, with an explicit cap.
+      while (
+        lastNewline < 0 &&
+        offset + bytes.length < endOffset &&
+        buffer.length < MAX_RECORD_BYTES
+      ) {
+        buffer = Buffer.alloc(
+          Math.min(buffer.length * 2, MAX_RECORD_BYTES, endOffset - offset),
+        );
+        signal?.throwIfAborted();
+        read = await file.read(buffer, 0, buffer.length, offset);
+        bytes = buffer.subarray(0, read.bytesRead);
+        lastNewline = bytes.lastIndexOf(10);
+      }
+      if (lastNewline < 0 && offset + bytes.length < endOffset)
         return { kind: "unavailable", reason: "unsupported" };
       const complete = bytes.subarray(0, lastNewline + 1);
       const utf8 = new TextDecoder("utf-8", { fatal: true });
@@ -168,14 +197,19 @@ export async function readNativeHistory(
       }
       signal?.throwIfAborted();
       const after = await file.stat();
+      const currentPath = await stat(path);
       if (
-        `${after.dev}:${after.ino}:${after.size}:${after.mtimeMs}:${after.ctimeMs}` !==
-          identity ||
+        `${after.dev}:${after.ino}:${after.birthtimeMs}` !== identity ||
+        currentPath.dev !== info.dev ||
+        currentPath.ino !== info.ino ||
+        after.size < endOffset ||
+        (after.size === info.size &&
+          (after.mtimeMs !== info.mtimeMs || after.ctimeMs !== info.ctimeMs)) ||
         (await realpath(binding.sessionFile)) !== path
       )
         return { kind: "unavailable", reason: "changed" };
       const nextOffset = offset + complete.length;
-      const atEnd = offset + bytes.length >= info.size;
+      const atEnd = offset + bytes.length >= endOffset;
       return {
         kind: "page",
         entries,
@@ -184,7 +218,13 @@ export async function readNativeHistory(
         incompleteTail: atEnd && complete.length !== bytes.length,
         omitted,
         next: !atEnd
-          ? { threadId: binding.threadId, source, offset: nextOffset }
+          ? {
+              threadId: binding.threadId,
+              source,
+              offset: nextOffset,
+              endOffset,
+              prefixHash,
+            }
           : null,
       };
     } finally {

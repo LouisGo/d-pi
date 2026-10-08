@@ -97,6 +97,7 @@ function HistoryContent({
   function read(nextCursor: HistoryCursor | null) {
     owner.rememberHistory({
       ...history,
+      choice: selected || "",
       cursor: nextCursor,
       readBound: !selected,
     });
@@ -201,12 +202,12 @@ function HistoryContent({
           <p className="muted">{t("ui.history.description")}</p>
         </Disclosure>
       </div>
-      {!selected && !awaitingCatalog && (
+      {!selected && (
         <>
           {!boundAttempt && <p className="muted">{t("ui.history.notRead")}</p>}
           <Button
             variant="ghost"
-            disabled={busy || catalog.isFetching}
+            disabled={busy}
             onClick={() => void read(null)}
           >
             {t("ui.history.read")}

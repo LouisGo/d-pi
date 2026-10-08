@@ -3,6 +3,11 @@ export const HistoryCursorSchema = z.strictObject({
   threadId: z.uuid(),
   source: z.string(),
   offset: z.number().int().nonnegative(),
+  endOffset: z.number().int().nonnegative().optional(),
+  prefixHash: z
+    .string()
+    .regex(/^[a-f0-9]{64}$/)
+    .optional(),
 });
 export type HistoryCursor = z.infer<typeof HistoryCursorSchema>;
 export const HistoryToolEffectSchema = z.enum([

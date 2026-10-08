@@ -93,6 +93,9 @@ export const PlainUiMessageCodeSchema = z.enum([
   "conversation.nativeInput",
   "conversation.nativeEvent",
   "conversation.truncated",
+  "conversation.retrying",
+  "conversation.retryCompleted",
+  "conversation.retryFailed",
 ]);
 export type PlainUiMessageCode = z.infer<typeof PlainUiMessageCodeSchema>;
 

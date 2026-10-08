@@ -499,7 +499,8 @@ export const ui = {
   "ui.conversation.imageNotLoaded": "not loaded",
   "ui.conversation.sectionLabel": "Native session reader",
   "ui.conversation.heading": "Conversation",
-  "ui.conversation.empty": "Start a conversation below.",
+  "ui.conversation.empty":
+    "No live messages yet. Saved messages are available in history.",
   "ui.conversation.gap":
     "The live view has a gap. Check native history; returning to the bottom does not fill it.",
   "ui.conversation.streaming": "In progress",
@@ -833,4 +834,6 @@ export const ui = {
     "Message count covers user and assistant messages in the current live window.",
   "app.status.messagesGap":
     "The live window has a synchronization gap; the message count may be incomplete.",
+  "ui.conversation.aborted": "Stopped",
+  "ui.conversation.continuation": "Continuing the interrupted reply",
 } as const;

@@ -131,4 +131,7 @@ export const domain = {
   "conversation.truncated": "显示已截断；可读取原生记录核对",
   "conversation.unsupportedNativeEvent":
     "收到 {eventType}。此类事件的完整交互尚未接入。",
+  "conversation.retrying": "连接中断，OMP 正在自动重试。",
+  "conversation.retryCompleted": "OMP 自动重试已结束，继续查看回复。",
+  "conversation.retryFailed": "OMP 自动重试未成功。",
 } as const;

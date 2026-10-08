@@ -156,4 +156,9 @@ export const domain = {
     "Display truncated; read the native record to verify the full content",
   "conversation.unsupportedNativeEvent":
     "Received {eventType}. Full interaction for this event is not yet supported.",
+  "conversation.retrying":
+    "The connection was interrupted. OMP is retrying automatically.",
+  "conversation.retryCompleted":
+    "OMP automatic retry has ended. Continue reading the reply.",
+  "conversation.retryFailed": "OMP automatic retry did not succeed.",
 } as const;

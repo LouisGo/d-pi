@@ -1,3 +1,4 @@
+import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import {
   type ConversationModel,
@@ -54,7 +55,7 @@ export function Conversation({
         </>
       )}
       {gap && <p role="status">{t("ui.conversation.gap")}</p>}
-      {(gap || truncated) && onOpenHistory && (
+      {onOpenHistory && (
         <Button variant="ghost" onClick={onOpenHistory}>
           {t("ui.conversation.openHistory")}
         </Button>
@@ -119,11 +120,12 @@ function ConversationMessage({
             : formatMessage(item.label.value)}
         </strong>
         <span>
-          {item.state === "streaming"
-            ? t("ui.conversation.streaming")
-            : item.state === "failed"
-              ? t("ui.conversation.failed")
-              : ""}
+          {match(item.state)
+            .with("streaming", () => t("ui.conversation.streaming"))
+            .with("failed", () => t("ui.conversation.failed"))
+            .with("aborted", () => t("ui.conversation.aborted"))
+            .with("complete", () => "")
+            .exhaustive()}
         </span>
         <Button
           variant="ghost"
@@ -132,6 +134,10 @@ function ConversationMessage({
           {t("ui.conversation.copy")}
         </Button>
       </div>
+      {item.continuationOf !== undefined && (
+        <p className="muted">{t("ui.conversation.continuation")}</p>
+      )}
+      {item.detail && <p role="status">{item.detail}</p>}
       {item.notice ? (
         <p>{formatMessage(item.notice)}</p>
       ) : item.role === "tool" ? (
