@@ -1,0 +1,158 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest tests/integration/clipboard-handoff.integration.test.ts tests/integration/clipboard-cleanup-recovery.integration.test.ts tests/integration/clipboard-cache-recovery.integration.test.ts tests/integration/clipboard-frozen-references.integration.test.ts tests/integration/configuration-sharing.integration.test.ts --maxWorkers=4
+$ tsr generate
+(node:78182) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/lou/.codex/worktrees/composer-quality/d-pi[39m
+
+ [31m❯[39m tests/integration/clipboard-handoff.integration.test.ts [2m([22m[2m8 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 809[2mms[22m[39m
+   [32m✓[39m reclaims fully abandoned clipboard handoffs after real paste/Undo/save and explicit epoch clear[32m 252[2mms[22m[39m
+   [32m✓[39m keeps a never-saved clone through Undo/GC/Redo, then reclaims its handoff and object after clear[32m 65[2mms[22m[39m
+   [32m✓[39m retains unsaved current-body import pins across multiple clears, then releases when that body is abandoned[32m 73[2mms[22m[39m
+   [32m✓[39m cache eviction preserves a never-saved clone with adjacent literal ""[32m 73[2mms[22m[39m
+   [32m✓[39m cache eviction preserves a never-saved clone with adjacent literal "[[dpi-attachment:broken]] "[32m 69[2mms[22m[39m
+[31m   [31m×[31m keeps clones in another live epoch and rejects foreign release before exact last-epoch cleanup[39m[32m 69[2mms[22m[39m
+   [32m✓[39m reclaims abandoned candidates even when their history update was never acknowledged[32m 72[2mms[22m[39m
+   [32m✓[39m recovers cumulative candidates from two valid bodies through bounded actual preload requests after a failed release[32m 134[2mms[22m[39m
+ [32m✓[39m tests/integration/clipboard-cleanup-recovery.integration.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 221[2mms[22m[39m
+ [31m❯[39m tests/integration/clipboard-cache-recovery.integration.test.ts [2m([22m[2m16 tests[22m[2m | [22m[31m3 failed[39m[2m)[22m[33m 1542[2mms[22m[39m
+   [32m✓[39m does not hide failed abandoned-clone release when the next genuine editor source is observed[32m 164[2mms[22m[39m
+   [32m✓[39m releases the failed original lease on a second real clear[32m 37[2mms[22m[39m
+   [32m✓[39m retries a failed abandoned-epoch release after actual editor cache eviction[32m 65[2mms[22m[39m
+[31m   [31m×[31m retains actual Undo dependencies while nine failed retired owners block admission, then ACKs them before save[39m[32m 250[2mms[22m[39m
+[31m   [31m×[31m naturally admits the tenth normal Thread after the LRU owner's real Main ACK without manual retry[39m[32m 203[2mms[22m[39m
+   [32m✓[39m renders the tenth Thread's pending history and its real Main ACK without a React update loop[32m 232[2mms[22m[39m
+   [32m✓[39m bounds waiting owners and verifies a trusted consumption replacement in the actual rejected editor[32m 236[2mms[22m[39m
+   [32m✓[39m retargets cleanup to a genuine new Controller's current body (retain=true)[32m 37[2mms[22m[39m
+   [32m✓[39m retargets cleanup to a genuine new Controller's current body (retain=false)[32m 35[2mms[22m[39m
+   [32m✓[39m discards rejected Main clones, retaining failed cleanup for explicit retry (fail=false)[32m 41[2mms[22m[39m
+   [32m✓[39m discards rejected Main clones, retaining failed cleanup for explicit retry (fail=true)[32m 46[2mms[22m[39m
+[31m   [31m×[31m keeps a real imported attachment as uninserted when the PM gate rejects and applies it after admission[39m[32m 39[2mms[22m[39m
+   [32m✓[39m keeps a reinserted clone protected when new epoch update fails while old cleanup is retried[32m 39[2mms[22m[39m
+   [32m✓[39m retains a failed late unused-clone discard for its live Thread owner after edit[32m 50[2mms[22m[39m
+   [32m✓[39m retains a failed late unused-clone discard for its live Thread owner after adapter-dispose[32m 35[2mms[22m[39m
+   [32m✓[39m retains a failed late unused-clone discard for its live Thread owner after editor-destroy[32m 32[2mms[22m[39m
+ [31m❯[39m tests/integration/clipboard-frozen-references.integration.test.ts [2m([22m[2m14 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 2230[2mms[22m[39m
+   [32m✓[39m freezes selected source file and direct directory in Main, survives source deletion/target conflict, recopy and reopen[32m 142[2mms[22m[39m
+   [32m✓[39m copies only the actual PM selection across two projects and pastes all frozen dependencies in one Undo action[32m 121[2mms[22m[39m
+[31m   [31m×[31m freezes a real SDK PDF only with existing text-only consent, preserves its derived record on recopy and pins both objects after source release[39m[32m 66[2mms[22m[39m
+   [32m✓[39m rejects unsupported source without creating partial target manifests or a ready capability[32m 71[2mms[22m[39m
+   [32m✓[39m rejects missing source without creating partial target manifests or a ready capability[32m 44[2mms[22m[39m
+   [32m✓[39m rejects denied source without creating partial target manifests or a ready capability[32m 45[2mms[22m[39m
+   [32m✓[39m rejects truncated-directory source without creating partial target manifests or a ready capability[32m 195[2mms[22m[39m
+   [33m[2m✓[22m[39m enforces actual async 64 MiB snapshot and 128 MiB aggregate byte budgets, and recovers pins/budget after rejection[33m 1180[2mms[22m[39m
+   [32m✓[39m counts deduplicated derived PDF bytes in the real final snapshot admission[32m 242[2mms[22m[39m
+   [32m✓[39m rejects a late real Main source read after TTL without publishing or pinning new assets[32m 17[2mms[22m[39m
+   [32m✓[39m rejects a late real Main source read after document without publishing or pinning new assets[32m 12[2mms[22m[39m
+   [32m✓[39m rechecks the captured source identity after asynchronous conversion and leaves all uncommitted objects collectible[32m 43[2mms[22m[39m
+   [32m✓[39m reads old manifests without provenance and repairs missing private object metadata before final admission[32m 23[2mms[22m[39m
+   [32m✓[39m rejects over-32 dependencies and over-1 MiB UTF-8 selection before any asynchronous source allocation[32m 25[2mms[22m[39m
+ [32m✓[39m tests/integration/configuration-sharing.integration.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 6228[2mms[22m[39m
+   [33m[2m✓[22m[39m shares native login and cached models both ways while CLI is open and from a desktop-only home[33m 6228[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 5 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/clipboard-cache-recovery.integration.test.ts[2m > [22mretains actual Undo dependencies while nine failed retired owners block admission, then ACKs them before save
+[31m[1mAssertionError[22m: expected false to be true // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+[36m [2m❯[22m tests/integration/clipboard-cache-recovery.integration.test.ts:[2m500:39[22m[39m
+    [90m498|[39m     expect(await target.controller.retry()).toBe(true);
+    [90m499|[39m     await f.service.store.cleanStorage(target.threadId);
+    [90m500|[39m     expect(existsSync(target.object)).toBe(true);
+    [90m   |[39m                                       [31m^[39m
+    [90m501|[39m     expect(target.editor.commands.undo()).toBe(true);
+    [90m502|[39m     expect(target.editor.getText()).toBe(clone.token);
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/clipboard-cache-recovery.integration.test.ts[2m > [22mnaturally admits the tenth normal Thread after the LRU owner's real Main ACK without manual retry
+[31m[1mAssertionError[22m: expected false to be true // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+[36m [2m❯[22m tests/integration/clipboard-cache-recovery.integration.test.ts:[2m549:39[22m[39m
+    [90m547|[39m     });
+    [90m548|[39m     await f.service.store.cleanStorage(target.threadId);
+    [90m549|[39m     expect(existsSync(target.object)).toBe(true);
+    [90m   |[39m                                       [31m^[39m
+    [90m550|[39m     expect(target.editor.commands.undo()).toBe(true);
+    [90m551|[39m     expect(target.editor.getText()).toBe(target.item.token);
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/clipboard-cache-recovery.integration.test.ts[2m > [22mkeeps a real imported attachment as uninserted when the PM gate rejects and applies it after admission
+[31m[1mAssertionError[22m: expected '[[dpi-attachment:cca5d294-20e6-4e1e-9…' to contain '[[dpi-attachment:97a42319-0009-4965-a…'[39m
+
+Expected: [32m"[[dpi-attachment:[7m97a42319-0009-4965-a448-9b68977bcc8d[27m]]"[39m
+Received: [31m"[[dpi-attachment:[7mcca5d294-20e6-4e1e-9bc1-fa6ef9026b63[27m]]"[39m
+
+[36m [2m❯[22m tests/integration/clipboard-cache-recovery.integration.test.ts:[2m814:32[22m[39m
+    [90m812|[39m     removeGate();
+    [90m813|[39m     f.model.flushInsertions();
+    [90m814|[39m     expect(f.editor.getText()).toContain(fresh.token);
+    [90m   |[39m                                [31m^[39m
+    [90m815|[39m     expect(f.model.getReadiness()).toEqual({ kind: "ready" });
+    [90m816|[39m   } finally {
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/clipboard-frozen-references.integration.test.ts[2m > [22mfreezes a real SDK PDF only with existing text-only consent, preserves its derived record on recopy and pins both objects after source release
+[31m[1mAssertionError[22m: expected { kind: 'clipboard-unavailable', …(1) } to deeply equal { kind: 'clipboard-exported', …(1) }[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "degraded": false,[39m
+[32m-   "kind": "clipboard-exported",[39m
+[31m+   "kind": "clipboard-unavailable",[39m
+[31m+   "reason": "failed",[39m
+[2m  }[22m
+
+[36m [2m❯[22m tests/integration/clipboard-frozen-references.integration.test.ts:[2m480:7[22m[39m
+    [90m478|[39m         [pdf.id],
+    [90m479|[39m       ),
+    [90m480|[39m     ).toEqual({ kind: "clipboard-exported", degraded: false });
+    [90m   |[39m       [31m^[39m
+    [90m481|[39m     expect(
+    [90m482|[39m       service.store.referenceSource(source.threadId, pdf.id)?.inputDig…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/clipboard-handoff.integration.test.ts[2m > [22mkeeps clones in another live epoch and rejects foreign release before exact last-epoch cleanup
+[31m[1mAssertionError[22m: expected 1 to be +0 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 0[39m
+[31m+ 1[39m
+
+[36m [2m❯[22m tests/integration/clipboard-handoff.integration.test.ts:[2m441:7[22m[39m
+    [90m439|[39m     expect(
+    [90m440|[39m       (await f.service.store.cleanStorage(f.target.threadId)).deletedO…
+    [90m441|[39m     ).toBe(0);
+    [90m   |[39m       [31m^[39m
+    [90m442|[39m     expect(
+    [90m443|[39m       await f.service.execute(
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m2 passed[39m[22m[90m (5)[39m
+[2m      Tests [22m [1m[31m5 failed[39m[22m[2m | [22m[1m[32m35 passed[39m[22m[90m (40)[39m
+[2m   Start at [22m 20:06:03
+[2m   Duration [22m 6.34s[2m (tests 75%, transform 10%, import 9%, environment 7%)[22m
+
+[ELIFECYCLE] Test failed. See above for more details.

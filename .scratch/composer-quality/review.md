@@ -86,3 +86,11 @@ Spec与Standards两位只读reviewer独立覆盖完整固定差异及所有新�
 小改动单独只读reviewer覆盖Spec/Standards两轴。固定差异SHA-256 3f431c854044dcf536fab22f7b3948faa7e759f54c63b9a4c3357b393e24044e，manifest逐项匹配，完整核对共享来源生命周期、portal/键盘/编辑、正式picker首次/重试×成功/取消和迟到不抢焦点。无可报告缺陷。[来源与源清单](evidence/native-picker-focus/provenance.md)。
 
 review读取实际5 red与4文件70 green，没有自行运行GUI或原生能力；只证明模拟focusin(null)的处理，不替代真实Finder序列和outline实机验收。收尾仅治理与报告新鲜度改变，行为源不变。
+
+## 完整本地PR：a9cf9a9..ace6a19（09）
+
+2026-10-08，两名无本轮作者实现上下文的只读reviewer `spec_review`、`standards_review` 固定整个范围，原37提交与收尾1提交。Spec确认重复@候选去重后trigger遗留P2，真实反例先红；ace6a19仅让trackReferenceRange明确消费经来源验证的trigger，独立Undo、普通重复不动选区和stale拒绝均覆盖，19项通过后关闭。
+
+完整check还发现旧gate误拒绝纯sharedtoken alias与旧图片fixture缺codec/历史语义漂移。改为准确正负门禁、明确codec stub及非图片PM历史夹具，24项通过；source CLI固定安装包、packaged路径不变。真实PDF worker可转换，旧fixture资源root被运行App占用；独立完整clone保留相对链接/真实路径身份且14项通过，不修改生产资源保护。
+
+两轴最终固定源码 `ace6a192ab01b2213c1fdefa26c4440b13545d13` 无未关闭高价值发现。Standards独立19项和gate2项通过；Spec不重复执行，读取19/24/14实际证据；完整check/build由root执行。治理文档后续不改变行为。未运行GUI/Finder trace/IME/VoiceOver/Host/provider及长期性能，用户认可pending。

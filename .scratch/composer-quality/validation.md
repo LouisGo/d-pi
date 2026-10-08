@@ -121,3 +121,11 @@ Standards随后发现source-too-large的“重试准备”仍直接打开picker�
 基点45c7ef1。新增共享1+正式控件4反例先失败，后4文件70项通过；Renderer type、fast、design和build通过。首次/重试×取消/成功验证relatedTarget=null同目标回返保留来源；共享Tab/独立目标及既有portal、编辑键路径保留。迟到导入不抢焦点。原始[红绿与来源](evidence/native-picker-focus/provenance.md)。
 
 用户截图是实机失败证据；本轮自动化模拟回返事件，没有Finder event trace或视觉通过结论。仍由用户实机复试，未运行GUI/Dev/E2E/Host/provider。完整check未重跑，既有React act/chunk警告和旧SDKPDF/CLI fixture未知保留。
+
+## 2026-10-08 完整本地PR（09）
+
+最终源码ace6a19，整段a9cf9a9起，原37提交全部纳入。完整 `pnpm check --maxWorkers=4` exit0：类型/格式/design/i18n/source/架构/文档/结构/看板检查通过，架构35/tooling113/应用1319通过、2跳过；`pnpm build` exit0。[完整输出](evidence/local-pr/check-complete.txt)、[构建](evidence/local-pr/build-final.txt)、[来源](evidence/local-pr/provenance.md)。
+
+完整检查首次失败记录保留；旧fixture适配公共codec、PM历史改用非图片、source CLI使用已安装固定官方包后关闭。真实PDF在完整独立SDK clone执行Main冻结/重复制/GC链路14通过，不是converter mock；保留原App资源guard及SDK身份检查。共享token纯alias2正负测试、重复@确认反例到19green、历史24green。最终独立双轴闭合。
+
+不扩大为GUI/Dev/E2E/真实Host/provider、Finder原生事件、真实IME/VoiceOver/长期性能验收；2跳过按既定测试条件，用户认可仍pending。此前历史失败不再作为当前完整check未通过的结论，但原始证据不改写。

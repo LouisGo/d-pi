@@ -13,7 +13,7 @@
 - 执行：主 Agent 单写规格/任务/生成看板/集成；M2 worker 单写隔离 worktree 的 input imports/lifecycle/batch adapter 与 Thread 装配，不写 M1 控件/Composer/CSS/locale；共享 public 导出串行集成。
 
 ```project-status
-[{"id":"composer-quality","title":"Composer M1/M2 编辑体验","phase":"M2","engineering":"in-progress","trial":"feedback","acceptance":"pending","build":"base45c7ef1 + 08固定WIP；70项/renderer type/fast/design/build通过","evidence":["handoff.md","validation.md","review.md"],"next":"完整本地PR：覆盖全部提交、复核组合缺陷/完整检查后合入main；实机认可仍pending","constraints":"仅本地交付；本轮未运行GUI/真实Host/provider，不push；完整check未重跑，既有PDF/CLI fixture未知保留。"}]
+[{"id":"composer-quality","title":"Composer M1/M2 编辑体验","phase":"M2","engineering":"in-progress","trial":"feedback","acceptance":"pending","build":"ace6a19；完整check：35架构/113tooling/1319应用通过，2跳过；build通过","evidence":["handoff.md","validation.md","review.md"],"next":"已完成整段双轴评审与完整检查；合入本地main并核实全部提交/目标树，实机认可仍pending","constraints":"仅本地PR/merge，不push；本轮未运行GUI/真实Host/provider；Finder原生事件、IME/VoiceOver、长期性能及用户认可pending。"}]
 ```
 
 ```implementation-plan

@@ -1,6 +1,6 @@
 # Composer 本地交接
 
-2026-10-08。最新为本文末尾 **08 Finder回返鼠标outline修复**（基点45c7ef1 + review manifest固定WIP）。下方06记录是历史交付源码 `6b39d19`、反馈基点 `2fdeab2`；分支 `codex/composer-quality`，工作树 `/Users/lou/.codex/worktrees/composer-quality/d-pi`。仅修改此树，没有新建实施树、修改原 checkout、push、远端 PR 或发布。
+2026-10-08。最新为本文末尾 **09 完整本地PR到main**。08及以前为历史交付证据。下方06记录是历史交付源码 `6b39d19`、反馈基点 `2fdeab2`；分支 `codex/composer-quality`，工作树 `/Users/lou/.codex/worktrees/composer-quality/d-pi`。此前仅修改隔离树；09用户授权完整本地main合入，可在原干净checkout切main，仍不push/远端PR/发布。
 
 ## 本轮结果与试用
 
@@ -83,3 +83,7 @@ Main租约按source ID保留各版本摘要，只迁出Main确认的外部图片
 新增5项实际red→相关4文件70项通过，Renderer type/fast/design/build与独立小范围两轴覆盖通过；原始证据见[来源记录](evidence/native-picker-focus/provenance.md)。此前只核对focus回editor，漏掉来源标记，故06工程通过不能解释用户这次实机失败。
 
 用户继续从此worktree `pnpm dev`复试鼠标首次选图、取消、重试选图回正文无蓝框，Tab导航仍有键盘焦点。Agent本轮没有启动GUI/Dev/E2E或真实Host/provider；模拟事件不是实际Finder证明，实机认可pending，无push/远端操作。
+
+## 09 完整本地PR到main
+
+已覆盖原37提交，最终行为修复ace6a19；整段双轴review闭合，完整check和build通过，架构35/tooling113/应用1319通过、2跳过。聚合[PR正文](pr.md)、[证据来源](evidence/local-pr/provenance.md)、[本地合入记录](local-merge.md)。原始红灯与历史失败保留。仅治理收尾后合入main，最终实际身份见合入记录；acceptance继续pending，不将用户未回复当认可。

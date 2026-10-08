@@ -1,0 +1,37 @@
+e2d55b2 feat: strengthen Composer suggestions and attachment focus
+6d0704d feat(input): add bounded asynchronous import batches and trusted settlement
+2bdec81 feat: wire asynchronous import batches into Composer
+e28b7f2 fix(input): fence attachment navigation and cancellation settlement
+0bef1ed fix(input): invalidate deleted file-only paste anchors
+e705748 fix: describe import admission limits in Composer
+986db73 fix(input): preserve PDF consent and import target label identity
+73417c8 fix(input): preserve paste targets across unrelated undo
+dad0a9b fix: expose PDF import preview and explicit text consent
+81ab5fd fix: use shared source chip spacing
+50c8bd0 fix(input): map pasted source identity around later insertions
+79856ed fix(input): restore editor focus after explicit import insertion
+75db892 fix(input): require navigation terminal events for owner recovery
+28bacd6 chore: refresh Composer dependency evidence
+ac6330a fix(ui): preserve rectangular attachment thumbnails
+36121ea fix(input): preview live references through authorised project reads
+3b932e0 fix(composer): close native preview before restoring editor focus
+72863d9 docs(composer): deliver M1 M2 validation and local handoff
+01ea0d6 feat(composer): add compact slot toolbar and accessible action menu
+baf46f0 fix(composer): compose unified input surface and separate project context
+f37b47f fix(composer): retain caret and expanded layout across toolbar actions
+fee53dd fix(ui): keep shared popups above expanded composer
+7827d38 fix(composer): preserve caret before opening native attachment picker
+836f591 fix(composer): preserve focus for automatic picker adoption
+3918b64 fix(composer): reuse native picker focus on failed import retry
+dd8d812 docs(composer): deliver corrected UI and native focus evidence
+373335b wip(input): separate image adoption from editor history
+daf1f7d feat(composer): render MIME-aware inline file attachments
+fec2290 fix(composer): isolate images and adopt inline files with dedup cleanup
+1b50c88 fix(composer): protect image migration and mapped import history
+63e023e fix(input): retire image leases and preserve frozen source authority
+e0c43e5 fix(composer): align readiness with frozen source token boundaries
+2fdeab2 docs(composer): record attachment semantics delivery and verification
+6b39d19 fix(composer): quiet saves and synchronize import feedback
+25e8c58 docs(composer): hand off quiet input feedback fixes
+45c7ef1 fix(input): defer image encoding and share bounded compression
+eb2e79c fix(ui): retain pointer focus when native picker returns

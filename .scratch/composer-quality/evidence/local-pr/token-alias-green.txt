@@ -1,0 +1,10 @@
+✔ accepts a private alias whose entire value comes from the shared token source (59.253583ms)
+✔ keeps rejecting independent values, undeclared references and component overrides of shared tokens (384.702791ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 524.831917
