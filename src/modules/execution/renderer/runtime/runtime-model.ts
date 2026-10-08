@@ -419,6 +419,15 @@ export class RuntimeModel {
             ...current,
             traceId: command.traceId,
             message: error.message,
+            ...(command.kind === "select-model"
+              ? {
+                  modelChanging: false,
+                  modelOperation: {
+                    traceId: command.traceId,
+                    status: "failed" as const,
+                  },
+                }
+              : {}),
           });
         })
         .exhaustive();
@@ -428,6 +437,15 @@ export class RuntimeModel {
         ...current,
         traceId: command.traceId,
         message: unknownMessage,
+        ...(command.kind === "select-model"
+          ? {
+              modelChanging: false,
+              modelOperation: {
+                traceId: command.traceId,
+                status: "unknown" as const,
+              },
+            }
+          : {}),
       });
     }
   }

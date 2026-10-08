@@ -895,6 +895,7 @@ export class RuntimeService {
         });
         if (generation !== this.currentConnectionGeneration) return this.view;
         this.update({
+          traceId: command.traceId,
           modelChanging: false,
           modelOperation: { traceId: command.traceId, status: response.status },
           ...(response.status === "acknowledged"
@@ -997,6 +998,7 @@ export class RuntimeService {
             ),
           });
         }
+        if (this.view?.phase === "starting") return;
         if (this.connection.connected && this.currentConnectionGeneration) {
           if (
             this.view?.queueOperation?.status !== "unknown" &&

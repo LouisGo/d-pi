@@ -42,7 +42,9 @@ export function ComposerModelPicker({
   const [pending, setPending] = useState(false);
   const applying = useRef(false);
   const search = useRef<HTMLInputElement>(null);
-  const { openProviders } = useContext(ConversationVisibilityContext);
+  const { openProviders, visible: conversationVisible } = useContext(
+    ConversationVisibilityContext,
+  );
   const view = useStore(runtime.stateStore, (state) => state.view);
   const preferences = useStore(model.stateStore, (state) =>
     state.kind === "ready"
@@ -58,7 +60,7 @@ export function ComposerModelPicker({
       threadId: thread.context.threadId,
       workingDirectoryId: thread.context.workingDirectoryId,
     }),
-    enabled: open && !!model.configuration,
+    enabled: (open || conversationVisible) && !!model.configuration,
   });
   const models = query.data?.models ?? [];
   const current = models.find((m) =>
@@ -108,8 +110,8 @@ export function ComposerModelPicker({
       const applied =
         readback?.threadId === thread.context.threadId &&
         !readback.modelChanging &&
-        (!readback.modelOperation ||
-          readback.modelOperation.status === "acknowledged") &&
+        readback.modelOperation?.traceId === readback.traceId &&
+        readback.modelOperation.status === "acknowledged" &&
         JSON.stringify(readback.selectedModel?.thinking) ===
           JSON.stringify(thinking) &&
         readback.phase !== "interrupted" &&

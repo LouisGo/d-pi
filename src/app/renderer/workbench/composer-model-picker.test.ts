@@ -22,7 +22,7 @@ import { AppModel } from "../wiring/model";
 import { ComposerModelPicker } from "./composer-model-picker";
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 40));
-async function setup(accept = true) {
+async function setup(accept: boolean | "reject" = true) {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
   const draft = DraftSchema.parse({
     schemaVersion: 1,
@@ -42,6 +42,7 @@ async function setup(accept = true) {
     busy: false,
     model: "openai-codex/gpt-current",
     thinkingLevel: "medium",
+    modelOperation: { traceId: crypto.randomUUID(), status: "acknowledged" },
     selectedModel: {
       provider: "openai-codex",
       modelId: "gpt-current",
@@ -115,6 +116,16 @@ async function setup(accept = true) {
       subscribe: () => () => {},
       request: async (command) => {
         commands.push(command);
+        if (command.kind === "select-model" && accept === "reject")
+          return {
+            kind: "failed",
+            error: {
+              traceId: command.traceId,
+              code: "active-thread",
+              category: "unknown",
+              message: { code: "runtime.controlFailed" },
+            },
+          };
         if (command.kind === "select-model")
           return {
             kind: "view",
@@ -125,6 +136,10 @@ async function setup(accept = true) {
                   revision: base.revision + 1,
                   model: `${command.selection.provider}/${command.selection.modelId}`,
                   selectedModel: command.selection,
+                  modelOperation: {
+                    traceId: command.traceId,
+                    status: "acknowledged",
+                  },
                 }
               : {
                   ...base,
@@ -252,5 +267,20 @@ it("routes the panel to provider settings and keeps default distinct from effect
   await act(async () => button?.click());
   expect(ui.manage).toHaveBeenCalledOnce();
   expect(ui.commands.filter((c) => c.kind === "select-model")).toHaveLength(0);
+  await ui.dispose();
+});
+
+it("does not reuse an earlier success when reselecting the same model is rejected", async () => {
+  const ui = await setup("reject");
+  await act(async () => {
+    document
+      .querySelector<HTMLButtonElement>('[data-model-id="gpt-current"]')
+      ?.click();
+    await settle();
+  });
+  expect(document.querySelector('[role="alert"]')).not.toBeNull();
+  expect(
+    document.querySelector('[data-model-id="gpt-current"]'),
+  ).not.toBeNull();
   await ui.dispose();
 });

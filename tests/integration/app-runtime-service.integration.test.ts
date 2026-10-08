@@ -115,6 +115,13 @@ async function running(
   busyAfterReady = false,
   failFirstFork = false,
   prepareContent?: ConstructorParameters<typeof RuntimeService>[8],
+  beforeReady?: (
+    runtime: RuntimeService,
+    command: Extract<
+      import("../../src/modules/execution/contracts/public").HostCommand,
+      { kind: "start" }
+    >,
+  ) => Promise<void>,
 ) {
   const root = realpathSync(
     mkdtempSync(join(tmpdir(), "d-pi-runtime-service-")),
@@ -148,7 +155,8 @@ async function running(
         );
     }
     if (command.kind === "start")
-      queueMicrotask(() => {
+      queueMicrotask(async () => {
+        await beforeReady?.(runtime, command);
         host.emit("message", {
           kind: "ready",
           processInstanceId: command.processInstanceId,
@@ -1515,4 +1523,28 @@ it("keeps a failed thinking change distinct from the unchanged model and ignores
     message: { code: "runtime.controlFailed" },
   });
   expect(readback.selectedModel).toBeUndefined();
+});
+
+it("inspects the starting projection without sending native state before the permit and ready handshake", async () => {
+  let inspectedPhase = "";
+  const f = await running(
+    false,
+    false,
+    false,
+    undefined,
+    async (runtime, command) => {
+      const view = await runtime.execute({
+        kind: "inspect",
+        threadId: command.threadId,
+        traceId: TraceIdSchema.parse(crypto.randomUUID()),
+      });
+      inspectedPhase = view.phase;
+    },
+  );
+  expect(inspectedPhase).toBe("starting");
+  expect(
+    f.postMessage.mock.calls.map(
+      ([raw]) => HostTransportCommandSchema.parse(raw).command.kind,
+    ),
+  ).not.toContain("state");
 });
