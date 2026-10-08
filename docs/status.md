@@ -63,8 +63,8 @@
 | [m2-first-release / 06 阅读与组合验收](../.scratch/m2-first-release/issues/06-reading-acceptance.md) | open | 无；范围以所属规格为准 |
 | [m2-first-release / 06o CLI历史自动项目索引](../.scratch/m2-first-release/issues/06o-native-index.md) | claimed | 无；范围以所属规格为准 |
 | [m2-first-release / 06p 自动准备执行](../.scratch/m2-first-release/issues/06p-automatic-runtime.md) | claimed | 无；范围以所属规格为准 |
-| [m2-first-release / 06q 默认历史阅读](../.scratch/m2-first-release/issues/06q-default-history.md) | open | [06o](../.scratch/m2-first-release/issues/06o-native-index.md) |
-| [m2-first-release / 06r 默认流程组合交付](../.scratch/m2-first-release/issues/06r-seamless-integration.md) | open | [06o](../.scratch/m2-first-release/issues/06o-native-index.md)、[06p](../.scratch/m2-first-release/issues/06p-automatic-runtime.md)、[06q](../.scratch/m2-first-release/issues/06q-default-history.md) |
+| [m2-first-release / 06q 默认历史阅读](../.scratch/m2-first-release/issues/06q-default-history.md) | claimed | [06o](../.scratch/m2-first-release/issues/06o-native-index.md) |
+| [m2-first-release / 06r 默认流程组合交付](../.scratch/m2-first-release/issues/06r-seamless-integration.md) | claimed | [06o](../.scratch/m2-first-release/issues/06o-native-index.md)、[06p](../.scratch/m2-first-release/issues/06p-automatic-runtime.md)、[06q](../.scratch/m2-first-release/issues/06q-default-history.md) |
 | [state-query-alignment / 04 集成验证与试用交接](../.scratch/state-query-alignment/issues/04-integration-verification.md) | claimed | 无；范围以所属规格为准 |
 
 ## 重要待决与继续边界
@@ -91,4 +91,4 @@
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 - [T3 研究与基础重构](../.scratch/t3-foundations/spec.md)：unknown 不重发，冷恢复只读；native/live 无可靠原生身份时保持独立来源；M3 能力仅作设计储备
 
-<!-- source-sha256: a3d92ce82513862ab78f0fa8b30dc4771433bacd2c5767dcafd25f11af650c82; sources: 164 -->
+<!-- source-sha256: 64c610adb3cdbf4ab9323a0d7f2fd358d015dcffb865f98499f7b47456ffd4a1; sources: 164 -->

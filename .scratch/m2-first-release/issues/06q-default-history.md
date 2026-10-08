@@ -1,6 +1,6 @@
 # 06q 默认历史阅读
 
-Status: open
+Status: claimed
 Blocked by: 06o
 
 所属[当前规格](../spec.md#2026-10-08-会话默认流程体验当前授权)。
@@ -10,3 +10,5 @@ Blocked by: 06o
 ## Comments
 
 2026-10-08：起点bd98fa8，目标缺口先红后修复；原生执行/历史所有权、信任和unknown不自动重发保持。
+
+2026-10-08：主Agent默认时间线/完整saved正文/真实nativeID合并/稳定DOM已集成349fdcd，等待SDK端原生身份适配与实际GUI组合验证。
