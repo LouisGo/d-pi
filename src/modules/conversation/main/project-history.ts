@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { constants } from "node:fs";
 import { open, readdir, realpath, stat } from "node:fs/promises";
-import { isAbsolute, join, relative } from "node:path";
+import { isAbsolute, join, relative, resolve } from "node:path";
 import { z } from "zod";
 import type {
   HistoryCursor,
@@ -30,21 +30,63 @@ export type NativeSessionMetadata = {
   directory: string;
   historyRoot: string;
 };
-async function discover(root: string, directory?: string) {
+export type NativeSessionCatalogCursor = {
+  root: string;
+  folder: string;
+  file: string | null;
+};
+async function recordedDirectory(directory: string): Promise<string> {
+  try {
+    return await realpath(directory);
+  } catch (error) {
+    const code = z.object({ code: z.string() }).safeParse(error);
+    if (
+      code.success &&
+      code.data.code === "ENOENT" &&
+      isAbsolute(directory) &&
+      resolve(directory) === directory
+    )
+      return directory;
+    throw error;
+  }
+}
+async function discover(
+  root: string,
+  directory?: string,
+  continuation: NativeSessionCatalogCursor | null = null,
+) {
   const base = await realpath(root);
   const project = directory ? await realpath(directory) : null;
+  const cursor = continuation?.root === base ? continuation : null;
+  let next: NativeSessionCatalogCursor | null = null;
   const located: NativeSessionMetadata[] = [];
   let partial = false;
-  const folders = await readdir(base, { withFileTypes: true });
+  const byName = (a: { name: string }, b: { name: string }) =>
+    a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+  const folders = (await readdir(base, { withFileTypes: true })).sort(byName);
   let scanned = 0;
-  for (const folder of folders.slice(0, 256)) {
+  let visited = 0;
+  scan: for (const folder of folders) {
     if (!folder.isDirectory() || folder.isSymbolicLink()) continue;
-    const files = await readdir(join(base, folder.name), {
-      withFileTypes: true,
-    }).catch(() => {
-      partial = true;
-      return [];
-    });
+    if (
+      cursor &&
+      (folder.name < cursor.folder ||
+        (folder.name === cursor.folder && cursor.file === null))
+    )
+      continue;
+    if (visited++ >= 256) {
+      next = { root: base, folder: folder.name, file: "" };
+      break;
+    }
+    const files = (
+      await readdir(join(base, folder.name), {
+        withFileTypes: true,
+      }).catch(() => {
+        partial = true;
+        return [];
+      })
+    ).sort(byName);
+    let lastFile = cursor?.folder === folder.name ? cursor.file : "";
     for (const entry of files) {
       if (
         !entry.isFile() ||
@@ -52,10 +94,18 @@ async function discover(root: string, directory?: string) {
         !entry.name.endsWith(".jsonl")
       )
         continue;
-      if (++scanned > 4096) {
-        partial = true;
-        break;
+      if (
+        cursor?.folder === folder.name &&
+        cursor.file !== null &&
+        entry.name <= cursor.file
+      )
+        continue;
+      if (scanned >= 4096) {
+        next = { root: base, folder: folder.name, file: lastFile };
+        break scan;
       }
+      scanned++;
+      lastFile = entry.name;
       const candidate = join(base, folder.name, entry.name);
       let file;
       try {
@@ -87,7 +137,7 @@ async function discover(root: string, directory?: string) {
           partial = true;
           continue;
         }
-        const cwd = await realpath(header.data.cwd);
+        const cwd = await recordedDirectory(header.data.cwd);
         if (project && cwd !== project) continue;
         const current = await stat(candidate);
         if (
@@ -117,12 +167,16 @@ async function discover(root: string, directory?: string) {
         await file?.close();
       }
     }
-    if (scanned > 4096) break;
   }
-  if (folders.length > 256) partial = true;
+
   return {
-    located: located.sort((a, b) => b.modifiedAt - a.modifiedAt).slice(0, 200),
-    partial: partial || located.length > 200,
+    located: located
+      .sort((a, b) => b.modifiedAt - a.modifiedAt)
+      .slice(0, directory ? 200 : undefined),
+    partial: partial || next !== null || (!!directory && located.length > 200),
+    degraded: partial,
+    next,
+    root: base,
   };
 }
 function unavailable(
@@ -192,13 +246,34 @@ export async function readProjectNativeHistory(
 
 export async function listNativeSessionCatalog(
   root: string,
+  continuation: NativeSessionCatalogCursor | null = null,
 ): Promise<
-  | { kind: "catalog"; sessions: NativeSessionMetadata[]; partial: boolean }
+  | {
+      kind: "catalog";
+      sessions: NativeSessionMetadata[];
+      partial: boolean;
+      degraded: boolean;
+      next: NativeSessionCatalogCursor | null;
+      root: string;
+    }
   | Extract<ProjectHistoryCatalog, { kind: "unavailable" }>
 > {
   try {
-    const { located, partial } = await discover(root);
-    return { kind: "catalog", sessions: located, partial };
+    const {
+      located,
+      partial,
+      degraded,
+      next,
+      root: canonicalRoot,
+    } = await discover(root, undefined, continuation);
+    return {
+      kind: "catalog",
+      sessions: located,
+      partial,
+      degraded,
+      next,
+      root: canonicalRoot,
+    };
   } catch (error) {
     return unavailable(error);
   }

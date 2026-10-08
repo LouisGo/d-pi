@@ -204,3 +204,85 @@ it("opens existing chats without waiting for native discovery or blocking a Thre
   finish?.("ready");
   await restore;
 });
+it("indexes older projects beyond the first 200 native sessions", async () => {
+  const f = setup();
+  for (let n = 0; n < 201; n++) {
+    const project = join(f.root, `project-${n}`);
+    mkdirSync(project);
+    writeFileSync(
+      join(
+        f.sessions,
+        "bucket",
+        `extra-${n.toString().padStart(3, "0")}.jsonl`,
+      ),
+      `${JSON.stringify({ type: "session", version: 3, id: crypto.randomUUID(), cwd: project })}\n`,
+    );
+  }
+  await f.index.reconcile(crypto.randomUUID());
+  expect(f.store.threads.list()).toHaveLength(202);
+  expect(
+    f.store.threads
+      .list()
+      .some((thread) => thread.directory === join(f.root, "project-200")),
+  ).toBe(true);
+});
+it("advances a global scan past 4096 files instead of rescanning its first page", async () => {
+  const f = setup();
+  for (let n = 0; n < 4097; n++) {
+    writeFileSync(
+      join(
+        f.sessions,
+        "bucket",
+        `extra-${n.toString().padStart(4, "0")}.jsonl`,
+      ),
+      `${JSON.stringify({ type: "session", version: 3, id: `session-${n}`, cwd: f.project })}\n`,
+    );
+  }
+  expect(await f.index.reconcile(crypto.randomUUID())).toBe("partial");
+  expect(f.store.threads.list()).toHaveLength(4096);
+  expect(await f.index.reconcile(crypto.randomUUID())).toBe("ready");
+  expect(f.store.threads.list()).toHaveLength(4098);
+}, 20000);
+it("continues beyond 256 project buckets in the next bounded scan", async () => {
+  const f = setup();
+  for (let n = 0; n < 257; n++) {
+    const bucket = join(f.sessions, `bucket-${n.toString().padStart(3, "0")}`);
+    mkdirSync(bucket);
+    writeFileSync(
+      join(bucket, "session.jsonl"),
+      `${JSON.stringify({ type: "session", version: 3, id: `bucket-session-${n}`, cwd: f.project })}\n`,
+    );
+  }
+  expect(await f.index.reconcile(crypto.randomUUID())).toBe("partial");
+  expect(f.store.threads.list()).toHaveLength(256);
+  expect(await f.index.reconcile(crypto.randomUUID())).toBe("ready");
+  expect(f.store.threads.list()).toHaveLength(258);
+});
+it("discovers preserved native history after the original worktree has been deleted", async () => {
+  const f = setup();
+  rmSync(f.project, { recursive: true });
+  const service = new DesktopCommandService(
+    f.store,
+    async () => null,
+    (traceId) => f.index.reconcile(traceId),
+  );
+  const reply = await service.execute({
+    kind: "restore",
+    traceId: crypto.randomUUID(),
+  });
+  expect(reply).toMatchObject({
+    kind: "ready",
+    directoryAvailable: false,
+    draft: { directory: f.project, origin: "cli" },
+  });
+  expect(f.store.threads.list()).toHaveLength(1);
+  expect(
+    f.store.threads.nativeSessionBinding(f.store.threads.list()[0]!.threadId)
+      ?.sessionFile,
+  ).toBe(f.file);
+  expect(
+    f.store.threads.executionGrant(
+      f.store.threads.list()[0]!.workingDirectoryId,
+    ),
+  ).toBeNull();
+});

@@ -64,3 +64,24 @@ it("discovers CLI history for the selected project without adopting it or readin
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+it("keeps the manual project picker bounded at 200 while the App index uses continuation", async () => {
+  const root = mkdtempSync(join(tmpdir(), "d-pi-cli-picker-cap-"));
+  const project = join(root, "project");
+  const sessions = join(root, "sessions");
+  mkdirSync(project);
+  mkdirSync(join(sessions, "bucket"), { recursive: true });
+  try {
+    for (let n = 0; n < 201; n++)
+      writeFileSync(
+        join(sessions, "bucket", `${n}.jsonl`),
+        `${JSON.stringify({ type: "session", version: 3, id: `id-${n}`, cwd: project })}\n`,
+      );
+    const catalog = await listProjectNativeHistory(sessions, project);
+    expect(catalog).toMatchObject({ kind: "catalog", partial: true });
+    if (catalog.kind !== "catalog") throw Error("missing catalog");
+    expect(catalog.sessions).toHaveLength(200);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});

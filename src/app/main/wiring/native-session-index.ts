@@ -1,8 +1,13 @@
-import { listNativeSessionCatalog } from "../../../modules/conversation/main/public";
+import {
+  listNativeSessionCatalog,
+  type NativeSessionCatalogCursor,
+} from "../../../modules/conversation/main/public";
 import type { ThreadRepository } from "../../../modules/threads/main/public";
 
 /** App-owned associations only; discovery never opens an execution session. */
 export class NativeSessionIndex {
+  private continuation: NativeSessionCatalogCursor | null = null;
+  private cyclePartial = false;
   private pending: Promise<"ready" | "partial" | "unavailable"> | null = null;
   private last: {
     at: number;
@@ -33,7 +38,12 @@ export class NativeSessionIndex {
     force = false,
   ): Promise<"ready" | "partial" | "unavailable"> {
     if (this.pending) return this.pending;
-    if (!force && this.last && Date.now() - this.last.at < 5000)
+    if (
+      !force &&
+      !this.continuation &&
+      this.last &&
+      Date.now() - this.last.at < 5000
+    )
       return Promise.resolve(this.last.status);
     if (force) this.source = null;
     this.pending = this.discover(traceId)
@@ -52,7 +62,7 @@ export class NativeSessionIndex {
     try {
       const root = await this.sessionsRoot(traceId);
       if (!root) return "unavailable";
-      const catalog = await listNativeSessionCatalog(root);
+      const catalog = await listNativeSessionCatalog(root, this.continuation);
       // A missing official sessions directory is an empty initial catalog;
       // after an indexed history existed, the missing source stays unavailable.
       if (catalog.kind === "unavailable") {
@@ -62,7 +72,12 @@ export class NativeSessionIndex {
           : "unavailable";
       }
       this.threads.reconcileNativeSessions(catalog.sessions);
-      return catalog.partial ? "partial" : "ready";
+      // Advance only after the page's associations commit successfully.
+      if (!this.continuation || this.continuation.root !== catalog.root)
+        this.cyclePartial = false;
+      this.cyclePartial ||= catalog.degraded;
+      this.continuation = catalog.next;
+      return this.continuation || this.cyclePartial ? "partial" : "ready";
     } catch {
       return "unavailable";
     }

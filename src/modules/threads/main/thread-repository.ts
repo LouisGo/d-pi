@@ -137,13 +137,21 @@ export class ThreadRepository implements ThreadReader {
   ): void {
     this.database.transaction(() => {
       let newest: string | null = null;
-      for (const session of sessions) {
-        const existing = this.db
+      const bindings = new Map(
+        this.db
           .prepare(
-            "SELECT thread_id FROM native_session WHERE session_file=? AND session_id=?",
+            "SELECT thread_id,session_file,session_id FROM native_session",
           )
-          .get(session.path, session.sessionId);
-        if (existing && typeof existing.thread_id === "string") {
+          .all()
+          .map((row) => [
+            JSON.stringify([row.session_file, row.session_id]),
+            row.thread_id,
+          ]),
+      );
+      for (const session of sessions) {
+        const identity = JSON.stringify([session.path, session.sessionId]);
+        const existing = bindings.get(identity);
+        if (typeof existing === "string") {
           this.db
             .prepare(
               "UPDATE native_session_index SET title=?,modified_at=? WHERE thread_id=? AND history_root=?",
@@ -151,10 +159,10 @@ export class ThreadRepository implements ThreadReader {
             .run(
               session.title,
               session.modifiedAt,
-              existing.thread_id,
+              existing,
               session.historyRoot,
             );
-          newest ??= existing.thread_id;
+          newest ??= existing;
           continue;
         }
         this.db
@@ -174,6 +182,7 @@ export class ThreadRepository implements ThreadReader {
         this.db
           .prepare("INSERT INTO native_session_index VALUES(?,?,?,?)")
           .run(id, session.historyRoot, session.title, session.modifiedAt);
+        bindings.set(identity, id);
         newest ??= id;
       }
       if (newest)
