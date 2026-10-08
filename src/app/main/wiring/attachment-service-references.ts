@@ -2,7 +2,7 @@ import {
   QueueChangeSchema,
   SubmissionReceiptSchema,
 } from "../../../modules/execution/contracts/public";
-import { readAttachmentTokens } from "../../../modules/input/core/public";
+import { readDraftAttachmentTokens } from "../../../modules/input/core/public";
 import type {
   AttachmentReferenceQuery,
   AttachmentReferenceReader,
@@ -108,7 +108,7 @@ export function createAttachmentReferences(
           threadId: string,
           frozenIds?: Set<string>,
         ) => {
-          const tokens = readAttachmentTokens(value);
+          const tokens = readDraftAttachmentTokens(value);
           if (!tokens.ok) throw Error("Attachment owner token is invalid");
           for (const token of tokens.tokens)
             attach(threadId, token.id, frozenIds?.has(token.id));

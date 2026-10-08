@@ -149,3 +149,5 @@ historyState供React外部订阅读取。没有history owner时的empty、pendin
 2026-10-08 图片迁移边界：冷恢复尚未取得 Main 附件清单时，含私有引用的正文暂缓普通编辑，避免未知图片被 Select All／Undo 删除；元数据读取失败保留正文并提供显式重新加载。分类与标签刷新是只读展示投影，不使草稿变脏。结构性的图片迁出有独立 PM meta，仍映射异步导入位置；纯标签刷新才跳过位置映射，语言切换不解绑导入 adapter。
 
 图片 token 只作为普通 paragraph 的附件依赖识别，不解析或删除冻结选区的原始文本。图片保存须保持 file-selection 的块分隔，选择块组成的正文以独立 token paragraph 承载图片，恢复投影不新增空白正文；其他正文保留原有空行。分类后从历史 epoch 移出图片依赖，并过滤后续事务；当前草稿和 cleanup candidate 的保护继续独立存在。减少 epoch 依赖必须等待 Main update ACK，失败时不提前 release candidate，显式 retry 先恢复 update，再恢复 release；正文 Redo 分支不为此清空。
+
+图片 epoch 退休由 Main 的真实 manifest 核定，只排除外部图片；项目图片引用及冻结项目上下文继续受正文历史保护。Main 按 source ID 保存各版本摘要，再投影为去重对象集合；减少图片来源时，其他文件及共用摘要的旧版本仍被 pin，预算检查和发布保持原子。已验证的冻结选区原文在准备、草稿采用记录和持久引用扫描中均不授予附件身份；附件扫描保留原字符串绝对位置，普通 paragraph 的未知/非法 token 仍拒绝发送。无 IPC、数据库或 Draft 版本迁移。

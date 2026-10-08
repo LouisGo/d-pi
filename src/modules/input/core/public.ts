@@ -6,7 +6,11 @@ export {
   type AttachmentReadiness,
 } from "./attachments/attachment-model";
 export { EditorHistoryModel } from "./attachments/editor-history-model";
-export { attachmentToken, readAttachmentTokens } from "./attachments/tokens";
+export {
+  attachmentToken,
+  readAttachmentTokens,
+  readDraftAttachmentTokens,
+} from "./attachments/tokens";
 export {
   type CapturedDraft,
   DraftController,

@@ -6,6 +6,7 @@ import { expect, it, vi } from "vitest";
 import { AppStorage } from "../../src/app/main/wiring/app-storage";
 import { createAttachmentService } from "../../src/app/main/wiring/attachment-service";
 import { createAttachmentReferences } from "../../src/app/main/wiring/attachment-service-references";
+import { serializeReference } from "../../src/modules/input/core/public";
 import { AttachmentStore } from "../../src/modules/input/main/public";
 
 vi.mock("electron", () => ({ utilityProcess: {} }));
@@ -1013,5 +1014,71 @@ it("preserves durable source adoption when an in-flight PDF retry publishes an o
     await store.close();
     storage.close();
     rmSync(data, { recursive: true, force: true });
+  }
+});
+it("does not durably bind a frozen source literal and counts only the real inline attachment", async () => {
+  const root = mkdtempSync(join(tmpdir(), "dpi-frozen-literal-"));
+  const storage = AppStorage.open(join(root, "app.sqlite"));
+  const service = createAttachmentService(
+    storage,
+    root,
+    "unused",
+    () => true,
+    async () => null,
+  );
+  try {
+    const draft = storage.drafts.create(root);
+    const file = await service.store.importBytes(draft.threadId, {
+      name: "literal.txt",
+      mimeType: "text/plain",
+      bytes: Buffer.from("actual attachment"),
+      source: "file",
+    });
+    const frozen = serializeReference({
+      kind: "selection",
+      path: "source.txt",
+      source: "working-tree",
+      version: "v1",
+      startLine: 1,
+      startColumn: 1,
+      endLine: 1,
+      endColumn: file.token.length + 1,
+      text: file.token,
+    });
+    storage.drafts.save(draft.threadId, 0, frozen);
+    expect(
+      service.store.referenceSource(draft.threadId, file.id)
+        ?.draftBoundRevision,
+    ).toBeUndefined();
+    const references = createAttachmentReferences(storage, (thread, id) =>
+      service.store.referenceSource(thread, id),
+    );
+    const query = {
+      digests: [file.inputDigest!],
+      attachmentIds: [{ threadId: draft.threadId, id: file.id }],
+    };
+    expect(await references.read(query)).toMatchObject({
+      complete: true,
+      counts: [],
+      durableAttachmentIds: [],
+    });
+    expect(await service.store.prepare(draft.threadId, frozen)).toMatchObject({
+      ok: true,
+      content: { sources: [] },
+    });
+    storage.drafts.save(draft.threadId, 1, `${file.token}\n${frozen}`);
+    expect(
+      service.store.referenceSource(draft.threadId, file.id)
+        ?.draftBoundRevision,
+    ).toBe(2);
+    expect(await references.read(query)).toMatchObject({
+      complete: true,
+      counts: [{ digest: file.inputDigest, count: 1 }],
+      durableAttachmentIds: [`${draft.threadId}:${file.id}`],
+    });
+  } finally {
+    await service.close();
+    storage.close();
+    rmSync(root, { recursive: true, force: true });
   }
 });

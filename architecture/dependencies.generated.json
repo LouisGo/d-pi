@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "df8e06f4b774bfe6fe9edcf3c0c83dd5eccf3faa66c2d4b6a661397af1c0b3a4",
+  "inputsHash": "8b86f20611c79e2b16778c599aac8ef8c89691d25e965c3dc231dbcac9c010da",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 478,
-    "scannedFiles": 478,
+    "sourceFiles": 480,
+    "scannedFiles": 480,
     "unscanned": []
   },
   "modules": [
@@ -185,8 +185,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 59,
-      "lines": 12857,
+      "files": 61,
+      "lines": 13249,
       "publicEntries": [
         {
           "path": "src/modules/input/contracts/public.ts",
@@ -18622,6 +18622,18 @@
       "targetEnvironment": "contracts"
     },
     {
+      "from": "src/modules/input/core/attachments/attachment-kind.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
       "from": "src/modules/input/core/attachments/attachment-model.test.ts",
       "sourceModule": "input",
       "sourceEnvironment": "core",
@@ -18776,6 +18788,51 @@
       "to": "src/modules/input/contracts/public.ts",
       "targetModule": "input",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/core/attachments/tokens.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/core/attachments/tokens.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "../references/serialize",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/references/serialize.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/core/attachments/tokens.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "./tokens",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/attachments/tokens.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/core/attachments/tokens.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "../references/serialize",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/references/serialize.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
     },
     {
       "from": "src/modules/input/core/draft-consumption.test.ts",
@@ -19113,6 +19170,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/input/core/attachments/tokens.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/main/attachments/attachment-store.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../core/references/serialize",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/references/serialize.ts",
       "targetModule": "input",
       "targetEnvironment": "core"
     },
@@ -19487,6 +19556,18 @@
       "sourceModule": "input",
       "sourceEnvironment": "main",
       "test": true,
+      "specifier": "../../core/attachments/editor-history-model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/attachments/editor-history-model.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/main/attachments/editor-history.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": true,
       "specifier": "./editor-history",
       "kind": "import",
       "resolution": "module",
@@ -19514,6 +19595,18 @@
       "to": "src/modules/input/contracts/public.ts",
       "targetModule": "input",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/main/attachments/editor-history.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../core/attachments/attachment-kind",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/attachments/attachment-kind.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
     },
     {
       "from": "src/modules/input/main/attachments/editor-history.ts",
@@ -20801,10 +20894,34 @@
       "sourceModule": "input",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "../../core/attachments/attachment-kind",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/attachments/attachment-kind.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-adoption.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "../../core/draft-controller",
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/input/core/draft-controller.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-adoption.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../core/attachments/attachment-kind",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/input/core/attachments/attachment-kind.ts",
       "targetModule": "input",
       "targetEnvironment": "core"
     },

@@ -414,7 +414,12 @@ export class DraftEditorCache {
     editor.on("mount", () => this.restore(editor, binding));
     // Register on this Editor, rather than useEditor's latest-options proxy:
     // delayed IME events must keep their original Thread/controller binding.
-    editor.on("update", () => {
+    editor.on("update", ({ transaction }) => {
+      if (
+        transaction.getMeta("dpiDetachedImageProjection") === true ||
+        transaction.getMeta("dpiReferenceLabelRefresh") === true
+      )
+        return;
       if (!this.disposed && this.leases.get(key) === binding.token)
         controller.editEditorText(editor.getText({ blockSeparator: "\n" }));
     });

@@ -1,14 +1,9 @@
 import type { Attachment } from "../../contracts/public";
+import { isDetachedImage } from "../../core/attachments/attachment-kind";
 import type { DraftController } from "../../core/draft-controller";
 
-export function isDetachedImage(item: Attachment): boolean {
-  return (
-    item.source !== "reference" &&
-    !item.frozenReference &&
-    (item.mimeType.toLowerCase().startsWith("image/") ||
-      item.representation === "image")
-  );
-}
+export { isDetachedImage } from "../../core/attachments/attachment-kind";
+
 function identity(item: Attachment): string {
   if (item.source === "reference")
     return JSON.stringify([

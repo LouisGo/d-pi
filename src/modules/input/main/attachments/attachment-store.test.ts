@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { attachmentToken } from "../../core/attachments/tokens";
+import { serializeReference } from "../../core/references/serialize";
 import { AttachmentStore } from "./attachment-store";
 
 let directory: string;
@@ -475,4 +476,31 @@ describe("private immutable input preparation", () => {
       await readFile(join(directory, "objects", a.inputDigest ?? ""), "utf8"),
     ).toBe("12345678");
   });
+});
+it("prepares frozen source containing private-token-shaped literals without attachment authority", async () => {
+  const s = store();
+  const file = await add(s);
+  const literal = `${file.token} [[dpi-attachment:${randomUUID()}]] [[dpi-attachment:broken]]`;
+  const frozen = serializeReference({
+    kind: "selection",
+    path: "source.txt",
+    source: "working-tree",
+    version: "v1",
+    startLine: 1,
+    startColumn: 1,
+    endLine: 1,
+    endColumn: literal.length + 1,
+    text: literal,
+  });
+  const sourceOnly = await s.prepare(thread, frozen);
+  expect(sourceOnly).toMatchObject({
+    ok: true,
+    content: { sources: [], images: [], message: frozen },
+  });
+  const mixed = await s.prepare(thread, `${file.token}\n${frozen}`);
+  expect(mixed.ok).toBe(true);
+  if (mixed.ok) {
+    expect(mixed.content.sources).toHaveLength(1);
+    expect(mixed.content.message).toContain(literal);
+  }
 });

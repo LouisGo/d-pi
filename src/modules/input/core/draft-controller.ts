@@ -159,8 +159,12 @@ export class DraftController {
   private appendImages(text: string, ids: readonly string[]): string {
     if (!ids.length) return text;
     const blocks = parseDraftBlocks(text);
+    // Never fill an authored blank beside a selection with image metadata.
+    // A separate carrier makes those blank paragraphs survive cold projection.
+    const hasSelection = blocks.some((block) => block.kind === "selection");
     const lastParagraph = blocks.findLastIndex(
-      (block) => block.kind === "paragraph",
+      (block) =>
+        block.kind === "paragraph" && (!hasSelection || block.text.length > 0),
     );
     const tokens = ids.map(attachmentToken).join("");
     if (lastParagraph < 0) return `${tokens}\n${text}`;
@@ -177,9 +181,9 @@ export class DraftController {
     transform: (paragraph: string) => string,
   ): string {
     const blocks = parseDraftBlocks(text);
-    const metadataParagraph =
-      blocks.some((block) => block.kind === "selection") &&
-      blocks.filter((block) => block.kind === "paragraph").length === 1;
+    const metadataParagraph = blocks.some(
+      (block) => block.kind === "selection",
+    );
     return blocks
       .flatMap((block) => {
         if (block.kind === "selection")

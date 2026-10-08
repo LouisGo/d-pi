@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { AttachmentReply } from "../../contracts/public";
+import { isDetachedImage } from "../../core/attachments/attachment-kind";
 import type { ContentManifest } from "./content-lifecycle";
 
 type Lease = {
@@ -8,6 +9,7 @@ type Lease = {
   epoch: string;
   version: number;
   digests: Map<string, number>;
+  sourceDigests: Map<string, Map<string, number>>;
   ids: Set<string>;
 };
 export class EditorHistoryLimitError extends Error {
@@ -52,6 +54,7 @@ export class EditorHistoryLeases {
       epoch,
       version: 0,
       digests: new Map(),
+      sourceDigests: new Map(),
       ids: new Set(),
     });
     return { kind: "history-lease", leaseId, version: 0 };
@@ -69,32 +72,53 @@ export class EditorHistoryLeases {
     if (version <= lease.version)
       return { kind: "history-lease", leaseId, version: lease.version };
     const sourceIds = new Set([...lease.ids, ...ids]);
+    const sourceDigests = new Map(lease.sourceDigests);
+    for (const id of sourceIds) {
+      const manifest = this.options.manifest(threadId, id);
+      if (manifest && isDetachedImage(manifest.attachment)) {
+        sourceIds.delete(id);
+        sourceDigests.delete(id);
+      }
+    }
     if (sourceIds.size > this.limits.ids) return { kind: "history-limit" };
-    const digests = new Map(lease.digests);
     for (const id of ids) {
       const manifest = this.options.manifest(threadId, id);
       if (!manifest)
         return { kind: "unavailable", reason: "attachment-not-found" };
+      if (isDetachedImage(manifest.attachment)) continue;
+      const versions = new Map(sourceDigests.get(id));
       for (const hash of [
         manifest.attachment.inputDigest,
         manifest.derivedDigest,
       ]) {
         if (hash)
-          digests.set(
+          versions.set(
             hash,
             this.options.objectBytes(hash) || manifest.attachment.byteLength,
           );
       }
+      sourceDigests.set(id, versions);
     }
+    const digests = this.combineDigests(sourceDigests);
     if (!this.withinBudget(owner, new Map([[leaseId, digests]])))
       return { kind: "history-limit" };
     lease.ids = sourceIds;
     lease.digests = digests;
+    lease.sourceDigests = sourceDigests;
     lease.version = version;
     // This is synchronous and outside the serialized maintenance lane: it must
     // invalidate an already-running GC while that collector awaits file reads.
     this.options.pin(leaseId, new Set(digests.keys()));
     return { kind: "history-lease", leaseId, version };
+  }
+  private combineDigests(
+    sources: Map<string, Map<string, number>>,
+  ): Map<string, number> {
+    const digests = new Map<string, number>();
+    for (const versions of sources.values())
+      for (const [hash, bytes] of versions)
+        digests.set(hash, Math.max(digests.get(hash) ?? 0, bytes));
+    return digests;
   }
   private withinBudget(
     owner: string,
@@ -114,6 +138,7 @@ export class EditorHistoryLeases {
   /** Main-only manifest publication. No await may separate publication and pins. */
   publishManifest(manifest: ContentManifest, publish: () => void): boolean {
     const changes = new Map<string, Map<string, number>>();
+    const sources = new Map<string, Map<string, Map<string, number>>>();
     const owners = new Set<string>();
     for (const [id, lease] of this.leases) {
       if (
@@ -121,18 +146,24 @@ export class EditorHistoryLeases {
         !lease.ids.has(manifest.attachment.id)
       )
         continue;
-      const digests = new Map(lease.digests);
+      const sourceDigests = new Map(lease.sourceDigests);
+      const versions = new Map(sourceDigests.get(manifest.attachment.id));
       for (const hash of [
         manifest.attachment.inputDigest,
         manifest.derivedDigest,
       ]) {
         if (hash)
-          digests.set(
+          versions.set(
             hash,
             this.options.objectBytes(hash) || manifest.attachment.byteLength,
           );
       }
+      if (isDetachedImage(manifest.attachment))
+        sourceDigests.delete(manifest.attachment.id);
+      else sourceDigests.set(manifest.attachment.id, versions);
+      const digests = this.combineDigests(sourceDigests);
       changes.set(id, digests);
+      sources.set(id, sourceDigests);
       owners.add(lease.owner);
     }
     for (const owner of owners)
@@ -144,6 +175,9 @@ export class EditorHistoryLeases {
       const lease = this.leases.get(id);
       if (!lease) continue;
       lease.digests = digests;
+      lease.sourceDigests = sources.get(id) ?? lease.sourceDigests;
+      if (isDetachedImage(manifest.attachment))
+        lease.ids.delete(manifest.attachment.id);
       this.options.pin(id, new Set(digests.keys()));
     }
     return true;

@@ -6,7 +6,11 @@ import {
   type DraftReader,
   DraftSchema,
 } from "../contracts/public";
-import { readAttachmentTokens } from "../core/public";
+import {
+  parseDraftBlocks,
+  readAttachmentTokens,
+  readDraftAttachmentTokens,
+} from "../core/public";
 export class DraftRepository implements DraftReader, DraftConsumptionWriter {
   constructor(
     private readonly database: AppDatabase,
@@ -66,18 +70,26 @@ export class DraftRepository implements DraftReader, DraftConsumptionWriter {
         Number(this.db.prepare("PRAGMA user_version").get()?.user_version) >= 9
       ) {
         const ids = (body: string): Set<string> => {
-          const parsed = readAttachmentTokens(body);
+          const parsed = readDraftAttachmentTokens(body);
           if (parsed.ok) return new Set(parsed.tokens.map((token) => token.id));
           // A malformed marker keeps authority scans conservative. Still retain
           // valid references nearby when correcting that input; validate each
           // fixed-size candidate through the same token grammar.
           return new Set(
-            [...body.matchAll(/\[\[dpi-attachment:[^\]]{36}\]\]/g)].flatMap(
-              ([candidate]) => {
+            parseDraftBlocks(body)
+              .flatMap((block) =>
+                block.kind === "paragraph"
+                  ? [
+                      ...block.text.matchAll(
+                        /\[\[dpi-attachment:[^\]]{36}\]\]/g,
+                      ),
+                    ]
+                  : [],
+              )
+              .flatMap(([candidate]) => {
                 const token = readAttachmentTokens(candidate);
                 return token.ok ? token.tokens.map((item) => item.id) : [];
-              },
-            ),
+              }),
           );
         };
         const before = ids(previous),

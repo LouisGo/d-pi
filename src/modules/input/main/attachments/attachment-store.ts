@@ -27,6 +27,7 @@ import {
   attachmentToken,
   parseDraftBlocks,
   readAttachmentTokens,
+  readDraftAttachmentTokens,
   serializeReference,
 } from "../../core/public";
 import {
@@ -1415,7 +1416,7 @@ export class AttachmentStore {
     threadId: string,
     text: string,
   ): Promise<ContentPreparationResult> {
-    const tokens = readAttachmentTokens(text);
+    const tokens = readDraftAttachmentTokens(text);
     if (!tokens.ok) return { ok: false, reason: "invalid-token" };
     const content: PreparedContent = {
       schemaVersion: 1,

@@ -297,16 +297,12 @@ export function projectDetachedImages(
   const tr = editor.state.tr;
   const detached = new Set(controller.getDetachedAttachmentIds());
   const positions: { from: number; to: number }[] = [];
-  const selectionOnly =
-    editor.state.doc.content.content.some(
-      (node) => node.type.name === "fileReference",
-    ) &&
-    editor.state.doc.content.content.filter(
-      (node) => node.type.name === "paragraph",
-    ).length === 1;
+  const hasSelection = editor.state.doc.content.content.some(
+    (node) => node.type.name === "fileReference",
+  );
   editor.state.doc.descendants((node, pos) => {
     if (
-      selectionOnly &&
+      hasSelection &&
       node.type.name === "paragraph" &&
       node.childCount > 0 &&
       node.content.content.every(

@@ -76,27 +76,37 @@ function readReference(
   return { value: { kind: "selection", ...fields, text }, next };
 }
 
-export function parseDraftBlocks(body: string): DraftBlock[] {
+export function parseDraftBlocks(
+  body: string,
+  visit?: (block: DraftBlock, position: number) => void,
+): DraftBlock[] {
   const blocks: DraftBlock[] = [];
+  const append = (block: DraftBlock, position: number) => {
+    blocks.push(block);
+    visit?.(block, position);
+  };
   let position = 0;
   while (position <= body.length) {
     const lineEnd = body.indexOf("\n", position);
     if (lineEnd < 0) {
-      blocks.push({ kind: "paragraph", text: body.slice(position) });
+      append({ kind: "paragraph", text: body.slice(position) }, position);
       break;
     }
     const reference = readReference(body, position, lineEnd);
     if (reference) {
-      blocks.push({ kind: "selection", value: reference.value });
+      append({ kind: "selection", value: reference.value }, position);
       if (reference.next === body.length) break;
       position = reference.next + 1;
       if (position === body.length) {
-        blocks.push({ kind: "paragraph", text: "" });
+        append({ kind: "paragraph", text: "" }, position);
         break;
       }
       continue;
     }
-    blocks.push({ kind: "paragraph", text: body.slice(position, lineEnd) });
+    append(
+      { kind: "paragraph", text: body.slice(position, lineEnd) },
+      position,
+    );
     position = lineEnd + 1;
   }
   return blocks;

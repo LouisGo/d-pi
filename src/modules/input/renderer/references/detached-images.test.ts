@@ -27,6 +27,7 @@ import {
   createAttachmentEditor,
   createAttachmentImportTarget,
   projectDetachedImages,
+  syncAttachmentLabels,
 } from "./attachment-editor";
 
 const cleanups: (() => void)[] = [];
@@ -649,4 +650,56 @@ it("keeps private-token-shaped frozen source intact during trusted image paste",
     value: { text: image.token },
   });
   expect(f.controller.getDetachedAttachmentIds()).toEqual([image.id]);
+});
+it("classifies a saved middle image without rewriting the canonical snapshot or advancing its sequence", async () => {
+  const f = fixture();
+  const image = f.item("image/png", "saved-middle.png");
+  const file = f.item("text/plain", "saved-file.txt");
+  f.controller.edit(`A${image.token}B${file.token}C`);
+  await f.controller.flush();
+  const snapshot = f.controller.getTextSnapshot();
+  const sequence = f.controller.getEditorSnapshot().sequence;
+  const editor = f.mount();
+  new AttachmentAdoption(f.controller).register([image]);
+  projectDetachedImages(editor, f.controller);
+  expect(editor.getText()).toBe(`AB${file.token}C`);
+  expect(f.controller.getTextSnapshot()).toBe(snapshot);
+  expect(f.controller.getEditorSnapshot().sequence).toBe(sequence);
+  expect(f.controller.getSnapshot()).toEqual({ kind: "saved" });
+  syncAttachmentLabels(editor, [image, file], "zh-CN");
+  expect(f.controller.getTextSnapshot()).toBe(snapshot);
+  expect(f.controller.getEditorSnapshot().sequence).toBe(sequence);
+  expect(f.controller.getSnapshot()).toEqual({ kind: "saved" });
+});
+it("preserves authored blank paragraphs around frozen selections during image add, remove and cold restore", () => {
+  const selection = serializeReference({
+    kind: "selection",
+    path: "source.txt",
+    source: "working-tree",
+    version: "v1",
+    startLine: 1,
+    startColumn: 1,
+    endLine: 1,
+    endColumn: 7,
+    text: "source",
+  });
+  for (const original of [
+    `\n${selection}`,
+    `${selection}\n`,
+    `\n${selection}\n`,
+  ]) {
+    const f = fixture(original);
+    const editor = f.mount(),
+      image = f.item("image/png", "empty-line.png");
+    const before = editor.state.doc.toJSON();
+    f.controller.addDetachedAttachments([image.id]);
+    expect(f.controller.getEditorTextSnapshot()).toBe(original);
+    const cold = fixture(f.controller.getTextSnapshot());
+    const restored = cold.mount();
+    cold.controller.registerDetachedAttachments([image.id]);
+    projectDetachedImages(restored, cold.controller);
+    expect(restored.state.doc.toJSON()).toEqual(before);
+    cold.controller.removeDetachedAttachment(image.id);
+    expect(cold.controller.getTextSnapshot()).toBe(original);
+  }
 });
