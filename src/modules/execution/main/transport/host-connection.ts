@@ -143,6 +143,7 @@ export class HostConnection {
     ready: (message: Ready) => void,
   ): Promise<void> {
     if (this.scopeId) return Promise.reject(Error("Host already connected"));
+    this.startDispatched = false;
     const main = await readProcessIdentity(process.pid);
     if (!main) throw Error("Main process identity unavailable");
     const lease = await SessionExecutionLease.acquire(

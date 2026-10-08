@@ -1144,3 +1144,14 @@ it("cold recovery never resends an unknown attempt while allowing explicit new w
     },
   });
 });
+
+it("explicit resume can retry a pre-fork failure after a previously confirmed shutdown", async () => {
+  const f = await running();
+  f.host.emit("message", { kind: "scope-closed" });
+  await f.runtime.closeIdle();
+  electron.fork.mockImplementationOnce(() => {
+    throw Error("temporary fork failure");
+  });
+  expect((await f.act("start")).phase).toBe("failed");
+  expect((await f.act("start")).phase).toBe("ready");
+});
