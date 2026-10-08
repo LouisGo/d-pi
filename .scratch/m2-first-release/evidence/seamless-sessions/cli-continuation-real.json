@@ -1,0 +1,27 @@
+{
+  "cliVersion": "omp/18.8.3",
+  "sdkVersion": "18.4.6",
+  "model": "openai-codex/gpt-6-luna",
+  "modelCalls": 3,
+  "cliSeed": true,
+  "realIdleCliDetected": true,
+  "closedCliReleased": true,
+  "rounds": [
+    {
+      "sameSessionId": true,
+      "sameSessionFile": true,
+      "recall": true,
+      "savedAssistantId": "e74a0e8f",
+      "textHash": "d3311c0185461fc5c4dac346d6c8d812823478d96430e38ed803bbd852ecf974"
+    },
+    {
+      "sameSessionId": true,
+      "sameSessionFile": true,
+      "recall": true,
+      "savedAssistantId": "62c0d950",
+      "textHash": "d3311c0185461fc5c4dac346d6c8d812823478d96430e38ed803bbd852ecf974"
+    }
+  ],
+  "tools": 0,
+  "result": "passed"
+}

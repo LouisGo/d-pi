@@ -88,17 +88,17 @@
     "id": "seamless-sessions",
     "title": "会话默认流程体验",
     "phase": "M2",
-    "engineering": "partial",
-    "trial": "not-delivered",
+    "engineering": "complete",
+    "trial": "delivered",
     "acceptance": "pending",
     "current": true,
-    "build": "Dev source d6df40a",
+    "build": "Dev source f795b82",
     "pending": [],
     "evidence": [
       "seamless-sessions.md"
     ],
-    "next": "实现、真实模型同身份冷恢复与双轴评审完成；Mac锁屏阻止正式GUI组合验收，解锁后完成06r与交付试用，用户认可仍待。",
-    "constraints": "2026-10-08用户明确要求最佳实践修复；首次陌生目录信任保留，未知不重发，CLI历史发现不授执行接管权；本地交付。"
+    "next": "默认历史与按项目整理、重复新建免授权免手动启动、CLI 原会话续问和冷重启续问、生成中阅读已完成正式 GUI 与真实模型复核；等待用户复试认可。",
+    "constraints": "2026-10-08用户追加授权 CLI 原会话继续，取代 CLI 来源统一只读；首次陌生目录信任保留，unknown不重发，外CLI占用不强占；本地交付，无远端操作。"
   }
 ]
 ```
@@ -358,3 +358,5 @@
 ## 2026-10-08 CLI 历史继续提问（当前授权）
 
 用户明确要求修复 CLI 历史只能阅读的问题并减少继续提问的阻断，取代上节 CLI 来源统一只读限制。已结束 CLI 的原文件经过当前配置/身份/目录检查后，在已信任项目自动准备并继续原 Thread；陌生目录一次信任保留。Main 持有原文件粒度的 d-pi 生命周期 lease，并在接入前识别外部实际 writer/项目内 OMP CLI；占用与未知保留历史和草稿，允许原地重试。外部 CLI 不参与该 lease，不能宣称阻止 GUI 执行期间另起不合作 CLI；不改写用户 CLI/启动器，不复制或 fork 原生历史。实施与真实验证见 [06s](issues/06s-cli-session-continuation.md)。无额外产品待决，用户认可 pending。
+
+2026-10-08 CLI 续接交付：06s 工程 resolved，产品 f795b82；真实 CLI/SDK 与正式 GUI 同 Thread/ID/文件续问、冷恢复、生成中跨项目阅读通过。未知不重发，外 CLI 边界与失败记录见 [交接](seamless-sessions.md)。M2 整体与用户认可 pending，无远端操作。

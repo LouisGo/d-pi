@@ -1,0 +1,75 @@
+Window: "d-pi", App: Electron.
+0 标准窗口 d-pi, Secondary Actions: Raise
+	1 container d-pi
+		2 container
+			3 HTML 内容 d-pi, URL: file:///Users/lou/Downloads/DPI_%E6%97%A0%E7%BC%9D%E4%BC%9A%E8%AF%9D%E5%A4%8D%E8%AF%95_2026-10-08/source/out/renderer/index.html
+				4 container
+					5 container
+						6 按钮 后退
+						7 按钮 (disabled) 前进
+						8 按钮 打开或收起项目导航
+						9 container
+							10 文本 project-alpha
+							11 按钮 切换为深色主题
+						12 container 项目导航
+							13 container 项目
+								14 按钮 新会话
+								15 文本 项目
+								16 按钮 打开项目
+								17 container
+									18 文本 project-alpha
+									19 按钮 会话 4 会话 4 · a88641, Help: /Users/lou/Downloads/DPI_无缝会话复试_2026-10-08/project-alpha · a8864147-99d5-40d5-9a02-b3f05454b181
+										20 文本 会话 4
+										21 container
+											22 text 会话 4  ·  a88641
+									23 按钮 2026-10-08T05-15-58-156Z_01a119f0-8f4c-76f9-8f6c-e74d84e9181d.jsonl 会话 3 · 799316 已完成, Help: /Users/lou/Downloads/DPI_无缝会话复试_2026-10-08/project-alpha · 79931678-5665-46de-9670-7e12246882de
+										24 文本 2026-10-08T05-15-58-156Z_01a119f0-8f4c-76f9-8f6c-e74d84e9181d.jsonl
+										25 container
+											26 text 会话 3  ·  799316
+										27 文本 已完成
+									28 按钮 QA CLI project-alpha 会话 2 · 433f56, Help: /Users/lou/Downloads/DPI_无缝会话复试_2026-10-08/project-alpha · 433f5666-cfb8-4850-ab2a-a7dffb8af91b
+										29 文本 QA CLI project-alpha
+										30 container
+											31 text 会话 2  ·  433f56
+									32 文本 project-beta
+									33 按钮 QA CLI project-beta 会话 1 · d11bf5, Help: /Users/lou/Downloads/DPI_无缝会话复试_2026-10-08/project-beta · d11bf5d2-849e-4ae0-bc27-a1f72ada7d96
+										34 文本 QA CLI project-beta
+										35 container
+											36 text 会话 1  ·  d11bf5
+							37 container 一级导航
+								38 切换按钮 Description: 设置, Value: 0
+								39 切换按钮 Description: 开发者工具, Value: 0
+						40 分离器 Description: 调整项目导航宽度, Value: 25
+						41 container
+							42 container
+								43 container
+									44 按钮 Thread 工具
+									45 container 原生会话阅读
+										46 container 原生会话阅读
+											47 文本 还没有消息。
+									48 container 持久文字草稿
+										49 文本输入区 (settable) Description: 草稿正文, Value: 
+
+										50 按钮 添加附件
+										51 按钮 @ 项目文件与文件夹
+										52 文本 粘贴图片、拖入文件，或输入 @ 引用项目文件或文件夹。
+										53 开合三角标记 附件与存储
+											54 文本 附件与存储
+										55 开合三角标记 输入选项
+											56 文本 输入选项
+										57 按钮 展开编辑区
+										58 按钮 发送
+						59 container 状态栏
+							60 文本 0.1.0-workbench.3
+							61 弹出式按钮 对话快速预览
+								62 文本 OMP 已就绪
+								63 文本  · 0 条消息
+	64 关闭按钮
+	65 全屏幕按钮 Help: 此按钮也可以执行缩放窗口的操作, Secondary Actions: 缩放窗口
+	66 最小化按钮
+67 menu bar
+	68 Electron
+	69 编辑
+	70 窗口
+
+The focused UI element is 3 HTML 内容 d-pi, URL: file:///Users/lou/Downloads/DPI_%E6%97%A0%E7%BC%9D%E4%BC%9A%E8%AF%9D%E5%A4%8D%E8%AF%95_2026-10-08/source/out/renderer/index.html

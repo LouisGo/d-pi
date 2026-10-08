@@ -1,6 +1,6 @@
 # 06r 默认流程组合交付
 
-Status: claimed
+Status: resolved
 Blocked by: 06o, 06p, 06q
 
 所属[当前规格](../spec.md#2026-10-08-会话默认流程体验当前授权)。
@@ -14,3 +14,5 @@ Blocked by: 06o, 06p, 06q
 2026-10-08：主Agent正在串行集成，双轴独立评审前三轮有价值发现均已复现先红后修；固定349fdcd两轴增量无剩余已证实问题，最终SDK/GUI与交付仍进行。
 
 2026-10-08：产品d6df40a已集成，真实GPT Luna两轮同身份冷恢复及SDK大历史通过、双轴最终无剩余已证实问题。macOS锁屏两次自动解锁失败，正式GUI验收未完成，本票保持claimed；需要用户解锁后续测。详见[交接](../seamless-sessions.md)。
+
+2026-10-08：Mac 解锁后正式 GUI 已补齐：默认原生历史和 CLI 按项目发现，已信任项目连续新建两 Thread 均自动就绪无重复授权/启动；CLI 原会话真实模型续问、冷重启同 Thread/ID/文件续问，生成中跨项目历史可读且返回仍生成。此前锁屏缺口已解除，工程 resolved，本地交付待用户复试；M2整体与认可独立pending。见 [最新交接](../seamless-sessions.md)。

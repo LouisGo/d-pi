@@ -2,7 +2,7 @@
 
 此页由所属规格的 `project-status` 块和任务的 `Status` / `Blocked by` 生成，禁止手工改进度。更新源后运行 `pnpm report:status:write`；`check` / `check:fast` 拒绝非法字段、依赖与陈旧结果。读取约定见 [任务约定](agents/issue-tracker.md#总看板读取约定)。
 
-当前工作：[会话默认流程体验](../.scratch/m2-first-release/spec.md)。实现、真实模型同身份冷恢复与双轴评审完成；Mac锁屏阻止正式GUI组合验收，解锁后完成06r与交付试用，用户认可仍待。
+当前工作：[会话默认流程体验](../.scratch/m2-first-release/spec.md)。默认历史与按项目整理、重复新建免授权免手动启动、CLI 原会话续问和冷重启续问、生成中阅读已完成正式 GUI 与真实模型复核；等待用户复试认可。
 
 工程完成、交付试用与用户认可独立；下面的计划不构成阶段授权。G1 按受影响能力验证，M1 是内部闭环，M2 是首版，M3 是后续增强。
 
@@ -17,7 +17,7 @@
 | M2 | [M2 首版](../.scratch/m2-first-release/spec.md) | 实施中 | 已交付待试用 | 待认可 | 0.1.0-m2.20 / 3c4c1060-8b550d60 [证据1](product/first-release.md) · [证据2](../.scratch/m2-first-release/handoff-entry.md) · [证据3](../.scratch/runtime-hardening-omp1845/handoff.md) · [证据4](../.scratch/m2-first-release/configuration-sharing.md) · [证据5](../.scratch/m2-first-release/mainflow-feedback.md) · [证据6](../.scratch/m2-first-release/progress-audit.md) · [证据7](../.scratch/m2-first-release/navigation-continuity.md) · [证据8](../.scratch/m2-first-release/development-tools.md) · [证据9](../.scratch/m2-first-release/rendering-isolation.md) · [证据10](../.scratch/m2-first-release/e2e-convergence.md) · [证据11](../.scratch/m2-first-release/warm-session-liveness.md) · [证据12](../.scratch/review-seven-commits/spec.md) · [证据13](../.scratch/m2-first-release/next-stage.md) · [证据14](../.scratch/m2-first-release/queue-configuration-review.md) · [证据15](../.scratch/m2-first-release/content-preparation.md) · [证据16](../.scratch/m2-first-release/lifecycle.md) · [证据17](../.scratch/m2-first-release/lifecycle-review.md) · [证据18](../.scratch/m2-first-release/project-references.md) · [证据19](../.scratch/m2-first-release/project-references-review.md) · [证据20](../.scratch/m2-first-release/long-reading.md) · [证据21](../.scratch/m2-first-release/long-reading-review.md) · [证据22](../.scratch/m2-first-release/diagnostics.md) · [证据23](../.scratch/m2-first-release/diagnostics-review.md) · [证据24](../.scratch/ai-workflow-v13/m2-retro-handoff.md) · [证据25](../.scratch/m2-first-release/attention.md) · [证据26](../.scratch/m2-first-release/attention-review.md) · [证据27](../.scratch/m2-first-release/progress-2026-10-06.md) · [证据28](../.scratch/m2-first-release/real-provider-e2e.md) · [证据29](../.scratch/m2-first-release/pr4-integration.md) · [证据30](../.scratch/m2-first-release/reading-loop.md) · [证据31](../.scratch/m2-first-release/reading-loop-review.md) | m2.20诊断/提醒候选已交付，PR#4已合入main，后续从最新main开始UI迭代；首次本机OpenAI GPT-5.6 Luna新Thread真实生成/GUI阅读完成。M2尚未完成，PDF视觉/OCR、01c系统显示/点击、V1-00/B6组合、其余真实账户/供应商路径及用户认可保持开放；冷旧Thread只读 |
 | M2 | [首个长会话阅读闭环](../.scratch/m2-first-release/spec.md) | 工程完成 | 已交付待试用 | 待认可 | Dev c04e245 / Chromium d987f98 [证据1](../.scratch/m2-first-release/reading-loop.md) · [证据2](../.scratch/m2-first-release/reading-loop-review.md) · [证据3](../.scratch/m2-first-release/reading-loop-pr.md) | 首个长会话阅读闭环已本地PR合main并push，远端源码289d36d已核实；从main pnpm dev试用。R1–R15、双轴无高价值遗留、真实Luna/Dev及干净Chromium证据已交付；用户认可pending，M2父范围仍开放。 |
 | M2 | [长会话连续体验修复](../.scratch/m2-first-release/spec.md) | 工程完成 | 已交付待试用 | 待认可 | Dev source c4bc00b [证据1](../.scratch/m2-first-release/long-session-repair.md) | 本地Dev三项修复已交付，两次冷恢复及真实模型/GUI/双轴评审通过；等待用户复试认可，M2其它项保持。 |
-| M2 | [会话默认流程体验](../.scratch/m2-first-release/spec.md) | 部分完成 | 未交付 | 待认可 | Dev source d6df40a [证据1](../.scratch/m2-first-release/seamless-sessions.md) | 实现、真实模型同身份冷恢复与双轴评审完成；Mac锁屏阻止正式GUI组合验收，解锁后完成06r与交付试用，用户认可仍待。 |
+| M2 | [会话默认流程体验](../.scratch/m2-first-release/spec.md) | 工程完成 | 已交付待试用 | 待认可 | Dev source f795b82 [证据1](../.scratch/m2-first-release/seamless-sessions.md) | 默认历史与按项目整理、重复新建免授权免手动启动、CLI 原会话续问和冷重启续问、生成中阅读已完成正式 GUI 与真实模型复核；等待用户复试认可。 |
 | M3 | [M3 后续增强](../.scratch/development-foundation/spec.md) | 未实施 | 未交付 | 待认可 | —  | 未启动，保留边界 |
 | M3 | [集成终端 B 方案](../.scratch/integrated-terminal/spec.md) | 未实施 | 未交付 | 待认可 | — [证据1](../.scratch/integrated-terminal/handoff.md) · [证据2](architecture/terminal.md) · [证据3](validation/terminal.md) | B与xterm路线已确认、文档已交付；待关联/退出产品答复及后续开发授权。 |
 | 基建 | [AI 工作流升级](../.scratch/ai-workflow-v13/spec.md) | 工程完成 | 不适用 | 不适用 | — [证据1](../.scratch/ai-workflow-v13/handoff.md) · [证据2](../.scratch/ai-workflow-v13/validation.md) · [证据3](../.scratch/ai-workflow-v13/review.md) · [证据4](../.scratch/ai-workflow-v13/research.md) · [证据5](../.scratch/ai-workflow-v13/m2-retro-2026-10-06.md) · [证据6](../.scratch/ai-workflow-v13/m2-retro-handoff.md) · [证据7](../.scratch/ai-workflow-v13/m2-retro-validation.md) · [证据8](../.scratch/ai-workflow-v13/m2-retro-review.md) · [证据9](../.scratch/ai-workflow-v13/validation-retro-2026-10-07.md) | 2026-10-07按风险验证与窄场景入口工程完成、独立两轴复核通过；PR#7合并后从main进入下一阶段 |
@@ -61,8 +61,6 @@
 | [m2-first-release / 04 输入与附件](../.scratch/m2-first-release/issues/04-input-attachments.md) | claimed | 无；范围以所属规格为准 |
 | [m2-first-release / 05 队列与子 Agent](../.scratch/m2-first-release/issues/05-queue-subagent.md) | open | 无；范围以所属规格为准 |
 | [m2-first-release / 06 阅读与组合验收](../.scratch/m2-first-release/issues/06-reading-acceptance.md) | open | 无；范围以所属规格为准 |
-| [m2-first-release / 06r 默认流程组合交付](../.scratch/m2-first-release/issues/06r-seamless-integration.md) | claimed | 无；范围以所属规格为准 |
-| [m2-first-release / 06s CLI 历史原地续接](../.scratch/m2-first-release/issues/06s-cli-session-continuation.md) | claimed | 无；范围以所属规格为准 |
 | [state-query-alignment / 04 集成验证与试用交接](../.scratch/state-query-alignment/issues/04-integration-verification.md) | claimed | 无；范围以所属规格为准 |
 
 ## 重要待决与继续边界
@@ -74,7 +72,7 @@
 - [M2 首版](../.scratch/m2-first-release/spec.md)：2026-10-06最新授权先push并处理远端PR/提交、让main干净供后续UI开发；允许整合、验证后合并PR#4。不公开发布、不扩M3，冷恢复只读，unknown不自动重发；用户认可pending。
 - [首个长会话阅读闭环](../.scratch/m2-first-release/spec.md)：2026-10-07当前明确授权本地PR合main并push，允许现有OMP Luna与并行工作。live/native分源，预算和冷恢复只读保留；不公开发布、不扩M3。
 - [长会话连续体验修复](../.scratch/m2-first-release/spec.md)：2026-10-08用户明确授权修复并取代手动分段及冷旧Thread一律只读边界；保留unknown不重发、原生身份与真实独占，允许本机真实模型复核；本地交付，不自动push或公开发布。
-- [会话默认流程体验](../.scratch/m2-first-release/spec.md)：2026-10-08用户明确要求最佳实践修复；首次陌生目录信任保留，未知不重发，CLI历史发现不授执行接管权；本地交付。
+- [会话默认流程体验](../.scratch/m2-first-release/spec.md)：2026-10-08用户追加授权 CLI 原会话继续，取代 CLI 来源统一只读；首次陌生目录信任保留，unknown不重发，外CLI占用不强占；本地交付，无远端操作。
 - [集成终端 B 方案](../.scratch/integrated-terminal/spec.md)：本次仅方案与文档；不开发终端、不新增终端依赖、不远端push/合并；本地合入main已授权；不扩大M2或D-39。
 - [Beautiful UI 基础视觉体系升级](../.scratch/beautiful-ui-system/spec.md)：本地源码交付；GUI证据为隔离Electron真实Renderer，不是provider或固定包验收。
 - [Codex 式工作台基础布局](../.scratch/codex-workbench-ui/spec.md)：用户已授权本UI分支push、PR及合并；不公开发布或发起真实账户请求。
@@ -89,4 +87,4 @@
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 - [T3 研究与基础重构](../.scratch/t3-foundations/spec.md)：unknown 不重发，冷恢复只读；native/live 无可靠原生身份时保持独立来源；M3 能力仅作设计储备
 
-<!-- source-sha256: fbddf6ad7e520f50aa84b96fe62a7f74e69a8afefd6bb070bf773d351fa76a1e; sources: 165 -->
+<!-- source-sha256: 7ad6d484d944a562bc7e809906c0bc26ac6a3fe99d099f2b09dea8aec5510046; sources: 165 -->

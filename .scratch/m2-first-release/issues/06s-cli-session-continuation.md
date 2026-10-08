@@ -1,6 +1,6 @@
 # 06s CLI 历史原地续接
 
-Status: claimed
+Status: resolved
 Blocked by: none
 
 ## 范围与授权
@@ -24,4 +24,6 @@ OMP 18.4.6 的原生文件锁覆盖发布操作，外部 CLI 没有共享的执�
 
 ## Comments
 
-开始基点 `0a29f5f`；无额外产品待决。工程与验证进行中。
+开始基点 `0a29f5f`；无额外产品待决。
+
+2026-10-08：产品 `e37b7ad/f795b82`，新增 TDD 反例先红后绿；受影响 68 项、类型/静态/架构/build 通过；真实 CLI 与 SDK 同身份三轮及正式 GUI 冷重启续问、生成中阅读完成。两轴固定范围复核无剩余已证实高价值问题。工程 resolved，本地可试用；M2 整体与用户认可 pending。实际失败、权限边界和证据见 [交接](../seamless-sessions.md)。

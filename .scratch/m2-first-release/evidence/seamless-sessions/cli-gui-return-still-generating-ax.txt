@@ -1,0 +1,96 @@
+Window: "d-pi", App: Electron.
+0 标准窗口 d-pi, Secondary Actions: Raise
+	1 container d-pi
+		2 container
+			3 HTML 内容 d-pi, URL: file:///Users/lou/Downloads/DPI_%E6%97%A0%E7%BC%9D%E4%BC%9A%E8%AF%9D%E5%A4%8D%E8%AF%95_2026-10-08/source/out/renderer/index.html
+				4 container
+					5 container
+						6 按钮 后退
+						7 按钮 (disabled) 前进
+						8 按钮 打开或收起项目导航
+						9 container
+							10 文本 project-alpha
+							11 按钮 切换为深色主题
+						12 container 项目导航
+							13 container 项目
+								14 按钮 新会话
+								15 文本 项目
+								16 按钮 打开项目
+								17 container
+									18 文本 project-alpha
+									19 按钮 2026-10-08T05-15-58-156Z_01a119f0-8f4c-76f9-8f6c-e74d84e9181d.jsonl 会话 3 · 799316 已完成, Help: /Users/lou/Downloads/DPI_无缝会话复试_2026-10-08/project-alpha · 79931678-5665-46de-9670-7e12246882de
+										20 文本 2026-10-08T05-15-58-156Z_01a119f0-8f4c-76f9-8f6c-e74d84e9181d.jsonl
+										21 container
+											22 text 会话 3  ·  799316
+										23 文本 已完成
+									24 按钮 QA CLI project-alpha 会话 2 · 433f56, Help: /Users/lou/Downloads/DPI_无缝会话复试_2026-10-08/project-alpha · 433f5666-cfb8-4850-ab2a-a7dffb8af91b
+										25 文本 QA CLI project-alpha
+										26 container
+											27 text 会话 2  ·  433f56
+									28 文本 project-beta
+									29 按钮 QA CLI project-beta 会话 1 · d11bf5, Help: /Users/lou/Downloads/DPI_无缝会话复试_2026-10-08/project-beta · d11bf5d2-849e-4ae0-bc27-a1f72ada7d96
+										30 文本 QA CLI project-beta
+										31 container
+											32 text 会话 1  ·  d11bf5
+							33 container 一级导航
+								34 切换按钮 Description: 设置, Value: 0
+								35 切换按钮 Description: 开发者工具, Value: 0
+						36 分离器 Description: 调整项目导航宽度, Value: 25
+						37 container
+							38 container
+								39 container
+									40 按钮 Thread 工具
+									41 container 原生会话阅读
+										42 container 原生会话阅读
+											43 文本 本页另有 5 条非消息记录，未作为正文显示。
+											44 container
+												45 文本 原生输入
+												46 按钮 复制
+												47 文本 这是 GUI 合成测试：纸鹤描述是“蓝色纸鹤编号 GUI1008”。请记住这一事实，只回答“已记住”，不调用工具。
+											48 container
+												49 文本 OMP
+												50 按钮 复制
+												51 文本 已记住
+											52 container
+												53 文本 原生输入
+												54 按钮 复制
+												55 文本 请回忆这条会话最早记录的纸鹤描述，只回答完整描述，不调用工具。
+											56 container
+												57 文本 OMP
+												58 按钮 复制
+												59 文本 蓝色纸鹤编号 GUI1008
+											60 container
+												61 文本 原生输入
+												62 按钮 复制
+												63 文本 冷重启续问测试：第一行只写本会话最早记录的纸鹤完整描述；随后从 1 到 180，每行写“第 N 行：历史会话仍可阅读”。请完整写到 180，不省略，不调用工具。
+											64 container
+												65 文本 OMP
+												66 按钮 复制
+									67 文本 有新输出
+									68 按钮 回到列表底部, Help: 回到当前实时列表已保留的底部。
+									69 container 持久文字草稿
+										70 文本输入区 (settable) Description: 草稿正文, Value: 
+
+										71 按钮 添加附件
+										72 按钮 @ 项目文件与文件夹
+										73 文本 粘贴图片、拖入文件，或输入 @ 引用项目文件或文件夹。
+										74 开合三角标记 附件与存储
+											75 文本 附件与存储
+										76 开合三角标记 输入选项
+											77 文本 输入选项
+										78 按钮 展开编辑区
+										79 按钮 发送
+						80 container 状态栏
+							81 文本 0.1.0-workbench.3
+							82 弹出式按钮 对话快速预览
+								83 文本 OMP 已就绪
+								84 文本  · 6 条消息
+	85 关闭按钮
+	86 全屏幕按钮 Help: 此按钮也可以执行缩放窗口的操作, Secondary Actions: 缩放窗口
+	87 最小化按钮
+88 menu bar
+	89 Electron
+	90 编辑
+	91 窗口
+
+The focused UI element is 19 按钮 2026-10-08T05-15-58-156Z_01a119f0-8f4c-76f9-8f6c-e74d84e9181d.jsonl 会话 3 · 799316 已完成, Help: /Users/lou/Downloads/DPI_无缝会话复试_2026-10-08/project-alpha · 79931678-5665-46de-9670-7e12246882de

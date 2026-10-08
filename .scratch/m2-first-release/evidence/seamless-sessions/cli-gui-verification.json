@@ -1,0 +1,83 @@
+{
+  "date": "2026-10-08",
+  "productCommit": "f795b826abdd2fd9f3e2249ca0568adae25db409",
+  "cliVersion": "omp/18.8.3",
+  "sdkVersion": "18.4.6",
+  "model": "openai-codex/gpt-6-luna",
+  "guiScenarioModelCalls": 3,
+  "extraFlatSessionSeedCalls": 1,
+  "threadId": "79931678-5665-46de-9670-7e12246882de",
+  "sessionId": "01a119f0-8f4c-76f9-8f6c-e74d84e9181d",
+  "sessionFile": "/Users/lou/Downloads/DPI_无缝会话复试_2026-10-08/native-config/sessions/-Downloads-DPI_无缝会话复试_2026-10-08-project-alpha/2026-10-08T05-15-58-156Z_01a119f0-8f4c-76f9-8f6c-e74d84e9181d.jsonl",
+  "sameThread": true,
+  "sameSessionId": true,
+  "sameSessionFile": true,
+  "automaticProjectDiscovery": true,
+  "automaticTrustedPreparation": true,
+  "coldAutomaticPreparation": true,
+  "repeatedTrustPrompts": 0,
+  "repeatedManualStart": 0,
+  "firstRecall": true,
+  "coldRecall": true,
+  "readOtherProjectDuringGeneration": true,
+  "returnStillGenerating": true,
+  "continuousAssistantRecords": 1,
+  "coldResponseLines": 181,
+  "noPromptReplay": true,
+  "tools": 0,
+  "messages": [
+    {
+      "id": "0967115e",
+      "role": "user",
+      "timestamp": "2026-10-08T05:15:58.505Z",
+      "textHash": "3f160690930ceab03cd61f5e722ef60226e05143ae6709209145382ea22811cc"
+    },
+    {
+      "id": "ad0ef167",
+      "role": "assistant",
+      "timestamp": "2026-10-08T05:16:00.919Z",
+      "textHash": "0648810164264ff1a25a62ff9f9bc5ee1dbd1abaeaaf720108d442e18418cdde"
+    },
+    {
+      "id": "90b1b886",
+      "role": "user",
+      "timestamp": "2026-10-08T05:17:01.362Z",
+      "textHash": "1f168ab263a91993e37f4ae72adff49108374cdc87ba28fddcee60456cdeb815"
+    },
+    {
+      "id": "1b216eee",
+      "role": "assistant",
+      "timestamp": "2026-10-08T05:17:03.077Z",
+      "textHash": "853c7365b336f726caac312b2cfb0be2bd56a8a23a12ff28555a4ccba1b2d9e9"
+    },
+    {
+      "id": "ee78c0f5",
+      "role": "user",
+      "timestamp": "2026-10-08T05:18:08.896Z",
+      "textHash": "8db724013642f3ccd9116a99a44722256abb6c9513cea39d7de3432fa7db41af"
+    },
+    {
+      "id": "ace35a6b",
+      "role": "assistant",
+      "timestamp": "2026-10-08T05:18:23.220Z",
+      "textHash": "c2c749d13eb8ce5ecca12f7bed0ec6cc9d09faf530e4de0dee4c2b866534c6d8"
+    }
+  ],
+  "connectionGenerations": [
+    "75f731b3-03da-405a-af3b-2f64dc120e91",
+    "a5a4af18-a11e-482d-ad6a-81672cb0179f"
+  ],
+  "sourceFilesMatched": 483,
+  "outHashes": {
+    "out/main/index.js": "536b17fff98ff58f29098c115a79686eda58ee07d870aabb46961e05549c3b94",
+    "out/main/session-host.js": "e40fb57050da52a8956f1ce24826a43dad9144d5189d96cf102b10ac493cc501",
+    "out/preload/index.cjs": "3841a95556191a6c6f38273d02e9b745fab356cf73ef5562323ba69f22399521",
+    "out/renderer/index.html": "d5cfef289d95001468388ffaf6e1f7c4c1b092f78b7776f26d117a1736816aeb"
+  },
+  "result": "passed",
+  "newPrivateThreadsAutomaticReady": [
+    "a8864147-99d5-40d5-9a02-b3f05454b181",
+    "ff6c64b4-2712-45a8-a285-aad0f54799e4"
+  ],
+  "newPrivateModelCalls": 0
+}
