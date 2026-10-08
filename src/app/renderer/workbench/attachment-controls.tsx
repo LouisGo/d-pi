@@ -1042,10 +1042,18 @@ function AttachmentPreviewDialog({
     element?.showModal();
     return () => element?.close();
   }, []);
+  function closeDialog() {
+    // Release native modal focus before the parent restores the editor bookmark.
+    dialog.current?.close();
+    close();
+  }
   return (
     <dialog
       ref={dialog}
-      onCancel={close}
+      onCancel={(event) => {
+        event.preventDefault();
+        closeDialog();
+      }}
       aria-labelledby={headingId}
       className="attachment-preview-dialog"
     >
@@ -1053,7 +1061,7 @@ function AttachmentPreviewDialog({
         <h2 id={headingId} className="break-all">
           {item.name}
         </h2>
-        <Button variant="ghost" autoFocus onClick={close}>
+        <Button variant="ghost" autoFocus onClick={closeDialog}>
           {t("attachment.closePreview")}
         </Button>
       </div>

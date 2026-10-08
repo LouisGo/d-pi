@@ -597,84 +597,107 @@ it("permits explicit re-preparation of a failed @PDF after text-only consent whi
   expect(item.status).toBe("failed");
 });
 
-it("opens a natively modal preview with an accessible filename heading and keeps truncation explicit", async () => {
-  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
-  const token = `[[dpi-attachment:${id}]]`;
-  const item: Attachment = {
-    schemaVersion: 1,
-    id,
-    threadId: id,
-    token,
-    name: "report.pdf",
-    mimeType: "application/pdf",
-    byteLength: 100,
-    capturedAt: new Date().toISOString(),
-    source: "file",
-    status: "ready",
-    representation: "pdf-text",
-    coverageGaps: [],
-    textOnly: false,
-  };
-  const editor = new Editor({
-    ...plainTextEditorOptions,
-    element: document.createElement("div"),
-    content: draftDocument(token),
-  });
-  const client = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
-  });
-  const container = document.createElement("div");
-  document.body.append(container);
-  const root = createRoot(container);
-  cleanups.push(async () => {
-    await act(() => root.unmount());
-    editor.destroy();
-    client.clear();
-    container.remove();
-  });
-  await act(async () => {
-    root.render(
-      createElement(QueryClientProvider, {
-        client,
-        children: controls({
-          bridge: {
-            request: async (command): Promise<AttachmentReply> =>
-              command.kind === "preview"
-                ? { kind: "text", text: "sample extract", truncated: true }
-                : { kind: "attachments", items: [item] },
-          },
-          threadId: id,
-          editor,
-          text: token,
-          isCurrent: () => true,
-          onBlocked: () => {},
-          mention: null,
-          dismissMention: () => {},
+it.each(["button", "cancel"] as const)(
+  "closes the native preview before unmount and restores editor focus via %s",
+  async (method) => {
+    vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+    const token = `[[dpi-attachment:${id}]]`;
+    const item: Attachment = {
+      schemaVersion: 1,
+      id,
+      threadId: id,
+      token,
+      name: "report.pdf",
+      mimeType: "application/pdf",
+      byteLength: 100,
+      capturedAt: new Date().toISOString(),
+      source: "file",
+      status: "ready",
+      representation: "pdf-text",
+      coverageGaps: [],
+      textOnly: false,
+    };
+    const editor = new Editor({
+      ...plainTextEditorOptions,
+      element: document.createElement("div"),
+      content: draftDocument(token),
+    });
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    cleanups.push(async () => {
+      await act(() => root.unmount());
+      editor.destroy();
+      client.clear();
+      container.remove();
+    });
+    await act(async () => {
+      root.render(
+        createElement(QueryClientProvider, {
+          client,
+          children: controls({
+            bridge: {
+              request: async (command): Promise<AttachmentReply> =>
+                command.kind === "preview"
+                  ? { kind: "text", text: "sample extract", truncated: true }
+                  : { kind: "attachments", items: [item] },
+            },
+            threadId: id,
+            editor,
+            text: token,
+            isCurrent: () => true,
+            onBlocked: () => {},
+            mention: null,
+            dismissMention: () => {},
+          }),
         }),
-      }),
+      );
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+    const preview = Array.from(container.querySelectorAll("button")).find(
+      (button) => button.textContent === "Preview report.pdf",
     );
-    await new Promise((resolve) => setTimeout(resolve, 20));
-  });
-  await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 20));
-  });
-  const preview = Array.from(container.querySelectorAll("button")).find(
-    (button) => button.textContent === "Preview report.pdf",
-  );
-  if (!preview) throw Error("missing preview button");
-  await act(async () => {
-    preview.click();
-    await new Promise((resolve) => setTimeout(resolve, 20));
-  });
-  const dialog = container.querySelector("dialog");
-  expect(dialog?.open).toBe(true);
-  const labelledBy = dialog?.getAttribute("aria-labelledby");
-  expect(labelledBy).toBeTruthy();
-  expect(
-    labelledBy ? document.getElementById(labelledBy)?.textContent : null,
-  ).toBe("report.pdf");
-  expect(dialog?.textContent).toContain("Only the first 64 KiB is previewed");
-});
+    if (!preview) throw Error("missing preview button");
+    container.append(editor.view.dom);
+    await act(async () => {
+      preview.click();
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+    const dialog = container.querySelector("dialog");
+    expect(dialog?.open).toBe(true);
+    const labelledBy = dialog?.getAttribute("aria-labelledby");
+    expect(labelledBy).toBeTruthy();
+    expect(
+      labelledBy ? document.getElementById(labelledBy)?.textContent : null,
+    ).toBe("report.pdf");
+    expect(dialog?.textContent).toContain("Only the first 64 KiB is previewed");
+    if (!dialog) throw Error("missing preview dialog");
+    const closedWhileMounted: boolean[] = [];
+    const nativeClose = vi.spyOn(dialog, "close").mockImplementation(() => {
+      // Native close releases the top layer and restores its previous focus.
+      if (!dialog.open) return;
+      closedWhileMounted.push(dialog.isConnected);
+      dialog.open = false;
+      preview.focus();
+    });
+    await act(async () => {
+      if (method === "cancel")
+        dialog.dispatchEvent(new Event("cancel", { cancelable: true }));
+      else dialog.querySelector<HTMLButtonElement>("button")?.click();
+      await new Promise((resolve) => setTimeout(resolve, 30));
+    });
+    expect(closedWhileMounted).toEqual([true]);
+    expect(container.querySelector("dialog")).toBeNull();
+    expect(document.activeElement).toBe(editor.view.dom);
+    nativeClose.mockRestore();
+  },
+);
 
 it("reports the typed oversized-source rejection instead of a transport failure and keeps sending blocked until explicit removal", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
