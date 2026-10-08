@@ -2,8 +2,7 @@ export const ui = {
   "ui.reading.latest": "最新段",
   "ui.conversation.newOutput": "有新输出",
   "ui.conversation.toBottom": "回到列表底部",
-  "ui.conversation.retainedTail":
-    "回到当前实时列表已保留的底部；正文段选择保持不变。",
+  "ui.conversation.retainedTail": "回到当前实时列表已保留的底部。",
   "ui.conversation.openHistory": "查看原生历史",
   "ui.history.readOnlyCoverage":
     "原生历史只读，按保存顺序分页显示，与实时列表分别呈现。",

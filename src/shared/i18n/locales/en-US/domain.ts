@@ -80,6 +80,14 @@ export const domain = {
   "runtime.browseOnly": "This project is browse only.",
   "runtime.starting":
     "Verifying the official Runtime and starting a native session…",
+  "runtime.recoveryOccupied":
+    "Another d-pi execution instance still owns this session. Close that instance and check again.",
+  "runtime.recoveryOwnerUnknown":
+    "The previous execution owner could not be verified. Check again.",
+  "runtime.recoveryShutdownUnconfirmed":
+    "The previous execution process has not been confirmed stopped. Check again.",
+  "runtime.recoveryLeaseUnavailable":
+    "Session execution access is unavailable. Check again; if this persists, inspect diagnostics.",
   "runtime.notReady":
     "OMP did not become ready. Check directory permission and native configuration; current evidence does not distinguish missing, unreadable, or incompatible configuration.",
   "runtime.grantInvalid":

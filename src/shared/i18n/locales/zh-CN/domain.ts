@@ -70,6 +70,13 @@ export const domain = {
     "已阻止新操作并请求停止。现有实例仍保留，待原生状态确认；不能据此视为已停止。",
   "runtime.browseOnly": "当前项目仅浏览。",
   "runtime.starting": "正在校验官方 Runtime 并启动原生会话…",
+  "runtime.recoveryOccupied":
+    "原会话仍被另一个 d-pi 执行实例占用。关闭该实例后重新检查。",
+  "runtime.recoveryOwnerUnknown": "暂时无法确认原执行实例身份。请重新检查。",
+  "runtime.recoveryShutdownUnconfirmed":
+    "尚未确认原执行进程已停止。请重新检查。",
+  "runtime.recoveryLeaseUnavailable":
+    "无法取得原会话执行权限。请重新检查；仍失败时查看诊断。",
   "runtime.notReady":
     "OMP 未能就绪。请检查目录授权与原生配置；当前证据无法确定配置缺失、不可读或格式不兼容。",
   "runtime.grantInvalid": "目录身份或执行授权无法确认，已阻止发送。",

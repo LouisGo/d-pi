@@ -2,8 +2,7 @@ export const ui = {
   "ui.reading.latest": "Latest segment",
   "ui.conversation.newOutput": "New output",
   "ui.conversation.toBottom": "Back to list bottom",
-  "ui.conversation.retainedTail":
-    "Go to the retained live list bottom; keep the current body segment.",
+  "ui.conversation.retainedTail": "Go to the retained live list bottom.",
   "ui.conversation.openHistory": "View native history",
   "ui.history.readOnlyCoverage":
     "Native history is read-only and paged in saved order, separately from the live list.",
