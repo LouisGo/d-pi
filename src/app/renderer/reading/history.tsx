@@ -218,6 +218,7 @@ function HistoryContent({
         <p role="status">
           {t("ui.history.unavailable", {
             reason: match(page.reason)
+              .with("unbound", () => t("ui.history.reason.unbound"))
               .with("missing", () => t("ui.history.reason.missing"))
               .with("denied", () => t("ui.history.reason.denied"))
               .with("changed", () => t("ui.history.reason.changed"))
