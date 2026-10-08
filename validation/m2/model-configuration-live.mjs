@@ -66,6 +66,37 @@ try {
  await writer.credentials.upsert('fixture',{type:'api_key',key:'isolated-only'});
  await choose('start');assert.equal(session.model.id,'start','new native credentials must work without restarting Host');
  save([spec('start'),spec('added')]);await choose('added');assert.equal(session.model.id,'added','new custom model must be discoverable in existing Host');
+ if(process.env.D_PI_LIVE_MODEL_GUARD_CASE!=='lazy'){
+ await choose('start');
+ const desktopA=session.model;const nativeB=registry.find('fixture','added');
+ await session.setModelTemporary(nativeB,undefined,{ephemeral:true});
+ await ensureCurrentModelConfiguration(session);
+ assert.equal(session.model,nativeB,'native ephemeral selection must remain on B');
+ await session.setModelTemporary(desktopA,undefined,{ephemeral:true});
+ await ensureCurrentModelConfiguration(session);
+ assert.equal(session.model,desktopA,'native ephemeral restore must remain on A');
+ const nativeStartup=createSession(registry);
+ await nativeStartup.setModelTemporary(registry.find('fixture','start'));
+ await captureCurrentModelConfiguration(nativeStartup);
+ const startupA=nativeStartup.model;const startupB=registry.find('fixture','added');
+ await nativeStartup.setModelTemporary(startupB,undefined,{ephemeral:true});
+ await ensureCurrentModelConfiguration(nativeStartup);
+ await nativeStartup.setModelTemporary(startupA,undefined,{ephemeral:true});
+ await ensureCurrentModelConfiguration(nativeStartup);
+ for(const mutation of ['endpoint','headers']){
+ save([spec('start'),{...spec('added'),headers:{'X-Native':'one'}}]);
+ await choose('start');const oldB=registry.find('fixture','added');
+ save([spec('start'),{...spec('added',mutation==='endpoint'?'http://127.0.0.1:11/v1':undefined),headers:{'X-Native':mutation==='headers'?'two':'one'}}]);
+ await ensureCurrentModelConfiguration(session);
+ await session.setModelTemporary(oldB,undefined,{ephemeral:true});
+ await assert.rejects(ensureCurrentModelConfiguration(session),/model-configuration-changed/,'old native B must retain its declaration baseline after '+mutation+' edit');
+ await choose('start');
+ const updatedB=registry.find('fixture','added');
+ await session.setModelTemporary(updatedB,undefined,{ephemeral:true});
+ await ensureCurrentModelConfiguration(session);
+ }
+ checks.push('desktop baseline permits native ephemeral A to B and restore','startup baseline permits native ephemeral A to B and restore','old native B endpoint edit requires reselection','old native B deferred header edit requires reselection');
+ }
  writeFileSync(join(config,'config.yml'),JSON.stringify({disabledProviders:['fixture'],modelRoles:{default:'fixture/start'},autolearn:{enabled:false}}));
  await assert.rejects(choose('start'));await assert.rejects(ensureCurrentModelConfiguration(session));
  writeFileSync(join(config,'config.yml'),JSON.stringify({enabledModels:['fixture/start'],modelRoles:{default:'fixture/start'},autolearn:{enabled:false}}));
@@ -128,9 +159,17 @@ try {
    assert.equal(lazySession.model.contextWindow,2000,type+' guard must preserve native live metadata');
    assert.equal(lazyRegistry.find(provider,'lazy-model').contextWindow,1000,type+' offline cache must remain distinct from selected live metadata');
    assert.equal(requests.length,requestCount,type+' guard must not re-probe native lazy metadata');
+   await lazySession.setModelTemporary(lazyRegistry.find(provider,'lazy-model'),undefined,{ephemeral:true});
+   assert.notEqual(lazySession.model,selected,type+' native lazy refresh creates another model object');
+   const nativeSelected=lazySession.model;const nativeRequestCount=requests.length;
+   await ensureCurrentModelConfiguration(lazySession);
+   assert.equal(lazySession.model,nativeSelected,type+' native lazy clone must remain selected');
+   assert.equal(lazySession.model.contextWindow,2000);
+   assert.equal(requests.length,nativeRequestCount,type+' clone guard must not discover again');
    checks.push(type+' native lazy context survives offline cache refresh');
+   checks.push(type+' native lazy metadata clone retains declaration identity');
  }
- console.log(JSON.stringify({sdkVersion:'18.4.6',checks,redRegressions:{deferredHeaders:'missing expected rejection on c283246',lazyContext:'model-configuration-changed on c283246 despite unchanged configuration',settingsListener:'unrelated credential helper executed from native settings listener on c283246'},realSupplierRequests:0}));
+ console.log(JSON.stringify({sdkVersion:'18.4.6',checks,redRegressions:{deferredHeaders:'missing expected rejection on c283246',lazyContext:'model-configuration-changed on c283246 despite unchanged configuration',settingsListener:'unrelated credential helper executed from native settings listener on c283246',nativeSwitch:{source:'runtime/model-selection.mjs at 5256af46a25b848f4d6cba89b9a6301ce5fa1bff',validation:'validation/m2/model-configuration-live.mjs official ModelControls ephemeral A to B',command:'node validation/m2/model-configuration-live.mjs /tmp/d-pi-native-model-switch-red.json',result:'exit 1: model-configuration-changed after official ephemeral A to B selection'}},realSupplierRequests:0}));
 } finally {writer.close();auth.close();settings.cancelPendingSaves();}
 `,
 );

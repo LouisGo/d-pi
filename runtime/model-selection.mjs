@@ -12,7 +12,9 @@ import {
   resolveConfigValue,
 } from "@oh-my-pi/pi-coding-agent/config/resolve-config-value";
 
-const selectedConfigurations = new WeakMap();
+// Guard provenance only: actual models, availability and selection stay owned
+// by OMP. Old native objects retain their declaration even after a catalog swap.
+const configurationBaselines = new WeakMap();
 function canonical(value) {
   if (Array.isArray(value)) return value.map(canonical);
   if (value && typeof value === "object")
@@ -23,7 +25,12 @@ function canonical(value) {
     );
   return value;
 }
-async function selectedConfiguration(session, model) {
+function fingerprint(value) {
+  return createHash("sha256")
+    .update(JSON.stringify(canonical(value)))
+    .digest("hex");
+}
+async function readNativeDeclaration() {
   // Read declarative config through the native schema, never resolve headers or
   // credentials to compare them. Neither closures nor live context-window
   // discovery are configuration identities.
@@ -36,12 +43,21 @@ async function selectedConfiguration(session, model) {
   ModelsConfigFile.invalidate();
   const loaded = ModelsConfigFile.tryLoad();
   if (loaded.status === "error") throw Error("model-configuration-unavailable");
+  const path = ModelsConfigFile.path();
+  return {
+    path,
+    value: loaded.value,
+    fingerprint: fingerprint({ path, value: loaded.value }),
+    resolveModelOverrideWithAliases,
+  };
+}
+function modelConfiguration(session, model, declaration) {
   const {
     models = [],
     modelOverrides = {},
     ...provider
-  } = loaded.value?.providers?.[model.provider] ?? {};
-  const override = resolveModelOverrideWithAliases(
+  } = declaration.value?.providers?.[model.provider] ?? {};
+  const override = declaration.resolveModelOverrideWithAliases(
     new Map(Object.entries(modelOverrides)),
     model,
     (provider, id) => session.modelRegistry.find(provider, id) !== undefined,
@@ -49,34 +65,42 @@ async function selectedConfiguration(session, model) {
   return {
     provider: model.provider,
     id: model.id,
-    fingerprint: createHash("sha256")
-      .update(
-        JSON.stringify(
-          canonical({
-            path: ModelsConfigFile.path(),
-            provider,
-            models: models.filter(
-              (entry) =>
-                entry.id === model.id || entry.id === model.requestModelId,
-            ),
-            override,
-          }),
-        ),
-      )
-      .digest("hex"),
+    fingerprint: fingerprint({
+      path: declaration.path,
+      provider,
+      models: models.filter(
+        (entry) => entry.id === model.id || entry.id === model.requestModelId,
+      ),
+      override,
+    }),
   };
 }
-export async function captureCurrentModelConfiguration(session) {
-  if (!session.model) {
-    selectedConfigurations.delete(session);
-    return;
+function rememberNativeModels(session, declaration) {
+  let state = configurationBaselines.get(session);
+  if (!state) {
+    state = { models: new WeakMap(), documentFingerprint: null };
+    configurationBaselines.set(session, state);
   }
-  selectedConfigurations.set(
-    session,
-    await selectedConfiguration(session, session.model),
-  );
+  // Includes role-specific native targets such as tiny/prewalk, without keeping
+  // a model list or resolving credentials. Never rebase an old object here.
+  for (const model of session.modelRegistry.getAvailable("all")) {
+    if (!state.models.has(model))
+      state.models.set(model, modelConfiguration(session, model, declaration));
+  }
+  state.documentFingerprint = declaration.fingerprint;
+  return state;
+}
+export async function captureCurrentModelConfiguration(session) {
+  const declaration = await readNativeDeclaration();
+  const state = rememberNativeModels(session, declaration);
+  if (session.model && !state.models.has(session.model))
+    state.models.set(
+      session.model,
+      modelConfiguration(session, session.model, declaration),
+    );
 }
 async function refreshNativeConfiguration(session) {
+  const before = await readNativeDeclaration();
   const registry = session.modelRegistry;
   // OMP offline discovery can resolve command-backed credentials. Synchronizing
   // disk/cache state must not execute unrelated helpers or refresh OAuth tokens.
@@ -94,25 +118,37 @@ async function refreshNativeConfiguration(session) {
     registry.authStorage.keys.setResolver(resolveConfigValue);
   }
   if (registry.getError()) throw Error("model-configuration-unavailable");
+  const declaration = await readNativeDeclaration();
+  // A model object must be associated with the document used for its native
+  // rebuild, never with an edit that arrived while that rebuild was pending.
+  if (before.fingerprint !== declaration.fingerprint)
+    throw Error("model-configuration-changed");
+  return declaration;
 }
-function availableModels(session) {
+function availableModels(session, kind = "chat") {
   return filterAvailableModelsByEnabledPatterns(
-    session.modelRegistry.getAvailable(),
+    session.modelRegistry.getAvailable(kind),
     cfgEnabledModels.get(session.settings),
     session.settings,
   );
 }
 export async function ensureCurrentModelConfiguration(session) {
-  await refreshNativeConfiguration(session);
+  const state = configurationBaselines.get(session);
+  const declaration = await refreshNativeConfiguration(session);
   const current = session.model;
+  let accepted = current && state?.models.get(current);
   const live =
     current &&
-    availableModels(session).find(
+    availableModels(session, "all").find(
       (model) => model.provider === current.provider && model.id === current.id,
     );
   if (!live) throw Error("selected-model-unavailable");
-  const accepted = selectedConfigurations.get(session);
-  const observed = await selectedConfiguration(session, current);
+  const observed = modelConfiguration(session, current, declaration);
+  // Native lazy metadata can create a new object between calls. Its declaration
+  // may only be inherited if the entire pre-existing native document baseline
+  // is unchanged; a model_changed event or first call alone cannot authorize it.
+  if (!accepted && state?.documentFingerprint === declaration.fingerprint)
+    accepted = observed;
   if (
     !accepted ||
     accepted.provider !== observed.provider ||
@@ -124,11 +160,13 @@ export async function ensureCurrentModelConfiguration(session) {
   // Never send through the old endpoint or silently switch this Session.
   for (const field of ["api", "baseUrl", "headers"]) {
     if (
-      JSON.stringify(live[field] ?? null) !==
-      JSON.stringify(current[field] ?? null)
+      JSON.stringify(canonical(live[field] ?? null)) !==
+      JSON.stringify(canonical(current[field] ?? null))
     )
       throw Error("model-configuration-changed");
   }
+  state.models.set(current, observed);
+  rememberNativeModels(session, declaration);
 }
 export function thinkingCapabilities(model) {
   const efforts = [...getSupportedEfforts(model)];
@@ -145,13 +183,14 @@ export function thinkingCapabilities(model) {
   };
 }
 export async function applyModelSelection(session, selection) {
-  await refreshNativeConfiguration(session);
+  const declaration = await refreshNativeConfiguration(session);
+  const state = rememberNativeModels(session, declaration);
   let model = availableModels(session).find(
     (model) =>
       model.provider === selection.provider && model.id === selection.modelId,
   );
   if (!model) throw Error("Selected model unavailable");
-  const configuration = await selectedConfiguration(session, model);
+  const configuration = modelConfiguration(session, model, declaration);
   model = await session.modelRegistry.refreshSelectedModelMetadata(model);
   const thinking = selection.thinking;
   if (thinking?.kind === "effort")
@@ -170,10 +209,14 @@ export async function applyModelSelection(session, selection) {
   // 18.4.6 has an explicit native Off selector. undefined preserves/defaults
   // the current selector and does not disable provider reasoning.
   else await session.setModelTemporary(model, ThinkingLevel.Off);
-  const observed = await selectedConfiguration(session, session.model);
+  const observed = modelConfiguration(
+    session,
+    session.model,
+    await readNativeDeclaration(),
+  );
   if (configuration.fingerprint !== observed.fingerprint)
     throw Error("model-configuration-changed");
-  selectedConfigurations.set(session, observed);
+  state.models.set(session.model, observed);
   return {
     model: session.model,
     thinkingLevel: session.thinkingLevel ?? ThinkingLevel.Inherit,
