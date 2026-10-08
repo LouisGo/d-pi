@@ -299,6 +299,13 @@ export function AttachmentControls({
     if (completion > 0 || importCompletion > 0 || preparationFailure)
       void client.invalidateQueries({ queryKey: listKey });
   }, [completion, importCompletion, preparationFailure, client, threadId]);
+  function prepareNativePicker() {
+    if (!isCurrent() || sourceFrozen || editor?.view.composing) return false;
+    // The native picker restores its initiating focus. Keep the current
+    // caret as that target; asynchronous completion must not refocus later.
+    if (editor && !editor.isDestroyed) editor.view.focus();
+    return true;
+  }
   function importFiles(
     files: File[],
     source: "paste" | "drop",
@@ -421,11 +428,7 @@ export function AttachmentControls({
     },
     openReference,
     chooseImport: () => {
-      if (!isCurrent() || sourceFrozen || editor?.view.composing) return;
-      // The native picker restores its initiating focus. Keep the current
-      // caret as that target; asynchronous completion must not refocus later.
-      if (editor && !editor.isDestroyed) editor.view.focus();
-      void run({ kind: "choose-import" }, true);
+      if (prepareNativePicker()) void run({ kind: "choose-import" }, true);
     },
     openManager: () => {
       if (!isCurrent() || !editor || editor.isDestroyed) return;
@@ -544,7 +547,15 @@ export function AttachmentControls({
               <Button
                 variant="ghost"
                 disabled={sourceFrozen || pending > 0}
-                onClick={() => void model.retryFailure()}
+                onClick={() => {
+                  if (!isCurrent()) return;
+                  if (
+                    failed.command.kind === "choose-import" &&
+                    !prepareNativePicker()
+                  )
+                    return;
+                  void model.retryFailure();
+                }}
               >
                 {t("attachment.retry")}
               </Button>

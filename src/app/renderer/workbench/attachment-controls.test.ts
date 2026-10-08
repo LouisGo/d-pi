@@ -86,9 +86,14 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 const id = ThreadIdSchema.parse("f9b0037d-1b8b-4f82-988c-7ca64f93fa37");
-it.each(["cancelled", "success"] as const)(
-  "keeps the caret as the picker return target without stealing focus on late %s",
-  async (result) => {
+it.each([
+  ["cancelled", false],
+  ["success", false],
+  ["cancelled", true],
+  ["success", true],
+] as const)(
+  "keeps the caret as the picker return target without stealing focus on late %s (retry: %s)",
+  async (result, retry) => {
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
     const editor = new Editor({
       ...plainTextEditorOptions,
@@ -102,11 +107,20 @@ it.each(["cancelled", "success"] as const)(
     document.body.append(container);
     const root = createRoot(container);
     let finishPicker!: (value: AttachmentReply) => void;
+    let rejected = false;
     const request = vi.fn(async (command: AttachmentRequest) => {
-      if (command.kind === "choose-import")
+      if (command.kind === "choose-import") {
+        if (retry && !rejected) {
+          rejected = true;
+          return {
+            kind: "unavailable" as const,
+            reason: "source-too-large" as const,
+          };
+        }
         return new Promise<AttachmentReply>((resolve) => {
           finishPicker = resolve;
         });
+      }
       return { kind: "attachments" as const, items: [] };
     });
     cleanups.push(async () => {
@@ -140,6 +154,18 @@ it.each(["cancelled", "success"] as const)(
     editor.commands.setTextSelection(4);
     attach.focus();
     await act(() => attach.click());
+    if (retry) {
+      let retryButton: HTMLButtonElement | undefined;
+      await vi.waitFor(() => {
+        retryButton = Array.from(container.querySelectorAll("button")).find(
+          (button) => button.textContent === "Retry preparation",
+        );
+        expect(retryButton).toBeDefined();
+      });
+      if (!retryButton) throw Error("missing retry button");
+      retryButton.focus();
+      await act(() => retryButton?.click());
+    }
     await vi.waitFor(() => expect(finishPicker).toBeTypeOf("function"));
     expect(document.activeElement).toBe(editor.view.dom);
     expect(editor.state.selection.from).toBe(4);
