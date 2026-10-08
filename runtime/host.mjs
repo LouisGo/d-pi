@@ -28,6 +28,7 @@ import { ConsumptionGate } from "./gate.js";
 import { prepareImageInput } from "./image-input.mjs";
 import {
   applyModelSelection,
+  captureCurrentModelConfiguration,
   ensureCurrentModelConfiguration,
 } from "./model-selection.mjs";
 import { NativeQueueManager } from "./native-queue.mjs";
@@ -104,6 +105,9 @@ async function managedSessionManager() {
 }
 const { session, setToolUIContext, subagentEventBus } =
   await createAgentSession({ sessionManager: await managedSessionManager() });
+// The native default/resumed model has a configuration baseline before any call,
+// even when the user has not made an explicit desktop model selection.
+await captureCurrentModelConfiguration(session);
 if (process.env.D_PI_MODEL_SELECTION) {
   const selection = JSON.parse(process.env.D_PI_MODEL_SELECTION);
   await applyModelSelection(session, selection);
