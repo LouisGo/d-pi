@@ -236,7 +236,7 @@ export const ui = {
   "attachment.reason.submission-too-large":
     "Total original content exceeds 100 MiB.",
   "attachment.reason.transport-too-large":
-    "Encoded input exceeds the native transport limit. Remove or reduce content; nothing was truncated.",
+    "Input exceeds the application transport budget. Remove or reduce content; nothing was truncated.",
   "attachment.reason.editor-history-limit":
     "Preparing this version would exceed the undo asset limit. The saved attachment and undo history are preserved.",
   "attachment.clearHistory": "Clear undo history, then send again",
@@ -251,6 +251,21 @@ export const ui = {
     "This file format has no supported content representation.",
   "attachment.reason.invalid-encoding":
     "Text is not valid UTF-8. Convert the source explicitly and attach again.",
+  "attachment.reason.image-too-large":
+    "The image still exceeds 10 MiB after compression. Resize or remove it.",
+  "attachment.reason.image-too-many-pixels":
+    "This image exceeds the local pixel limit. Resize it first.",
+  "attachment.reason.image-compression-unsupported":
+    "This image cannot be compressed while preserving its animation. Use a smaller original.",
+  "attachment.reason.image-compression-failed":
+    "Local image processing failed. The original is retained; retry.",
+  "attachment.reason.image-compression-unavailable":
+    "Local image processing is unavailable. Retry.",
+  "attachment.reason.image-compression-busy":
+    "Local image processing has reached its concurrency limit. Retry shortly.",
+  "attachment.imageCompressed": "Compressed",
+  "attachment.imageCompressionDetails":
+    "The sent image was converted from {originalWidth}×{originalHeight} to {width}×{height}, in {format} format. The original is retained.",
   "attachment.reason.invalid-image":
     "Image content cannot be decoded. Attach a valid image.",
   "attachment.reason.image-decoder-unavailable":
@@ -553,6 +568,18 @@ export const ui = {
   "ui.submissions.warning":
     "A call receipt does not mean the request was accepted or the task is complete. Check an unknown result before sending again.",
   "ui.submissions.checkStatus": "Check submission status",
+  "ui.submissions.rejected.contentMissing":
+    "Not dispatched to OMP: Image resources are missing. Attach the original again. Your input is retained.",
+  "ui.interaction.rejected.contentMissing":
+    "Not dispatched to OMP: Image resources are missing. Attach the original again. Your input is retained.",
+  "ui.submissions.rejected.contentCorrupt":
+    "Not dispatched to OMP: Image resource integrity verification failed. Attach the original again. Your input is retained.",
+  "ui.interaction.rejected.contentCorrupt":
+    "Not dispatched to OMP: Image resource integrity verification failed. Attach the original again. Your input is retained.",
+  "ui.submissions.rejected.transportTooLarge":
+    "Not dispatched to OMP: Image content exceeds the application transport budget. Reduce attachments. Your input is retained.",
+  "ui.interaction.rejected.transportTooLarge":
+    "Not dispatched to OMP: Image content exceeds the application transport budget. Reduce attachments. Your input is retained.",
   "ui.submissions.rejected":
     "Not dispatched to OMP; original text preserved. Resolve the blocker before resending.",
   "ui.submissions.rejected.notReady":

@@ -1,0 +1,54 @@
+$ node scripts/testing/test.mjs node tests/architecture/*.test.mjs
+✔ public entries must be source files, not directories or prose (456.920584ms)
+✔ renderer rejects Electron subpath imports (111.114625ms)
+✔ TanStack React Router is confined to the Renderer environment (981.759125ms)
+✔ production rejects test packages and helpers in test directories (63.902375ms)
+✔ Effect is limited to execution Host and Main transport, with no unstable ecosystem (480.713834ms)
+✔ unreadable manifests are tooling failures, not boundary violations (72.657459ms)
+✔ accepts a public type-only cross-module dependency (80.679916ms)
+✔ rejects a private cross-module import (111.572334ms)
+✔ rejects an unregistered cross-module dependency (78.678167ms)
+✔ rejects a public cross-module entry from the wrong environment (69.973708ms)
+✔ checks the runtime module and rejects Electron in the OMP environment (84.149166ms)
+✔ rejects forbidden external dependencies in shared, core and OMP environments (172.736708ms)
+✔ allows supported external packages in platform-independent environments (48.500042ms)
+✔ rejects a core import of a Node runtime and a file cycle (114.169958ms)
+✔ rejects production test-helper imports and non-literal dynamic imports (86.494792ms)
+✔ supports flat shared roots and explicit test-only public entries (67.853292ms)
+✔ rejects source files outside configured modules and owned roots (92.597041ms)
+✔ resolves directory index imports before checking cross-module privacy (66.921834ms)
+✔ workbench panel primitives stay behind the owned UI adapter (105.084708ms)
+FAIL: design lint crashed — /private/tmp/dpi-composer-node/node was killed by SIGTRAP before it judged any file.
+This is a tooling failure, not a rule result. On Node 24.17.0 the oxlint JS-plugin worker dies with SIGTRAP; it must run on a Node build where JS plugins load.
+node v24.21.0
+
+
+FAIL: design lint is unavailable — could not run oxlint-that-does-not-exist (spawnSync oxlint-that-does-not-exist ENOENT).
+This is a tooling failure, not a rule result. On Node 24.17.0 the oxlint JS-plugin worker dies with SIGTRAP; it must run on a Node build where JS plugins load.
+node v24.21.0
+
+
+✔ a killed oxlint is a tooling failure, not a clean lint (647.811459ms)
+✔ a missing oxlint binary is reported instead of passing (4.799667ms)
+✔ a missing configuration is a tooling failure, not a rule result (80.510125ms)
+✔ a real violation still fails the gate with the rule name (483.469292ms)
+✔ the root has no design violation to report (817.094875ms)
+✔ the design fixture check names a crash instead of an assertion diff (750.215875ms)
+✔ reports entry, production, test, and CSS size hints separately (222.324583ms)
+✔ separates declared permissions from observed source dependencies and scan gaps (241.821542ms)
+✔ rejects a generated report after source or permissions change (698.069709ms)
+✔ i18n copy check scans migrated module Renderer files (110.737333ms)
+✔ Tailwind source configuration includes migrated Renderer roots (0.281375ms)
+✔ design lint executes against a migrated module Renderer root (281.20425ms)
+✔ Tailwind emits a utility used only by a module Renderer (314.414375ms)
+✔ core has a dedicated typecheck without DOM or Node ambient types (0.84325ms)
+✔ process-specific typechecks declare their ambient environment explicitly (0.685917ms)
+✔ the real core typecheck rejects DOM globals (338.071875ms)
+ℹ tests 35
+ℹ suites 0
+ℹ pass 35
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3461.955833

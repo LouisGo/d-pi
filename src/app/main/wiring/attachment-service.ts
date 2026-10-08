@@ -11,6 +11,8 @@ import {
   AttachmentStore,
   EditorHistoryLimitError,
 } from "../../../modules/input/main/public";
+import { createImageCompressor } from "../../../platform/node/images/public";
+import { managedSdkRuntime } from "../../../platform/omp/resources/public";
 import type {
   AttachmentReply,
   AttachmentRequest,
@@ -33,6 +35,7 @@ export function createAttachmentService(
       store.referenceSource(threadId, id),
     ),
     validateImage,
+    compressImage: createImageCompressor(() => managedSdkRuntime(resources)),
     convertPdf: (bytes) => convertPdfContent(resources, bytes),
     readReference: async (threadId, path, kind) => {
       const thread = storage.threads.threadContext(threadId);

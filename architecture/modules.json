@@ -122,7 +122,8 @@
         "node/processes/public.ts",
         "omp/consumption-gate.ts",
         "omp/protocol/public.ts",
-        "omp/resources/public.ts"
+        "omp/resources/public.ts",
+        "node/images/public.ts"
       ],
       "dependsOn": [
         "shared"
@@ -143,7 +144,8 @@
         "i18n/create-i18n.ts",
         "i18n/locale.ts",
         "messages/contracts.ts",
-        "read-operation.ts"
+        "read-operation.ts",
+        "image-policy.ts"
       ],
       "dependsOn": []
     },
@@ -205,7 +207,8 @@
         ],
         "main": [
           "platform",
-          "threads"
+          "threads",
+          "shared"
         ],
         "renderer": [
           "files",

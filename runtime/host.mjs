@@ -25,6 +25,7 @@ import {
   queueChipText,
 } from "@oh-my-pi/pi-coding-agent/session/queued-messages";
 import { ConsumptionGate } from "./gate.js";
+import { prepareImageInput } from "./image-input.mjs";
 import { applyModelSelection } from "./model-selection.mjs";
 import { NativeQueueManager } from "./native-queue.mjs";
 import { createSubagentConfiguration } from "./native-subagent-configuration.mjs";
@@ -256,6 +257,10 @@ async function control(frame, claimStop, epoch) {
     });
   }
 }
+const imageTransferLimits = process.env.D_PI_IMAGE_TRANSFER_LIMITS
+  ? JSON.parse(process.env.D_PI_IMAGE_TRANSFER_LIMITS)
+  : undefined;
+let forwarding = Promise.resolve();
 const input = new ReadableStream({
   start(controller) {
     const lines = createInterface({
@@ -320,15 +325,70 @@ const input = new ReadableStream({
           id: frame.id,
           success: false,
           error: "明确继续后才能发送",
+          data: { inputRejected: "paused" },
         });
       } else {
-        controller.enqueue(encode.encode(`${line}\n`));
+        const epoch = stopEpoch;
+        forwarding = forwarding.then(async () => {
+          if (closing) return;
+          const isPrompt = [
+            "prompt",
+            "steer",
+            "follow_up",
+            "abort_and_prompt",
+          ].includes(frame?.type);
+          try {
+            const result = isPrompt
+              ? await prepareImageInput(
+                  frame,
+                  process.env.D_PI_CONTENT_DIRECTORY,
+                  imageTransferLimits,
+                  () => !paused && epoch === stopEpoch,
+                )
+              : { kind: "forward", frame };
+            if (closing) return;
+            if (result.kind === "rejected") {
+              output({
+                type: "response",
+                command: frame.type,
+                id: frame.id,
+                success: false,
+                data: { inputRejected: result.reason },
+                error: result.reason,
+              });
+              return;
+            }
+            controller.enqueue(
+              encode.encode(
+                `${result.frame === frame ? line : JSON.stringify(result.frame)}\n`,
+              ),
+            );
+          } catch (error) {
+            const reason = [
+              "content-missing",
+              "content-corrupt",
+              "transport-too-large",
+            ].includes(error.message)
+              ? error.message
+              : "content-corrupt";
+            output({
+              type: "response",
+              command: frame.type,
+              id: frame.id,
+              success: false,
+              data: { inputRejected: reason },
+              error: reason,
+            });
+          }
+        });
       }
     });
     lines.on("close", () => {
-      closing = true;
-      clearInterval(timer);
-      controller.close();
+      void forwarding.finally(() => {
+        closing = true;
+        clearInterval(timer);
+        controller.close();
+      });
     });
   },
 });

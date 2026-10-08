@@ -13,11 +13,11 @@
 - 执行：主 Agent 单写规格/任务/生成看板/集成；M2 worker 单写隔离 worktree 的 input imports/lifecycle/batch adapter 与 Thread 装配，不写 M1 控件/Composer/CSS/locale；共享 public 导出串行集成。
 
 ```project-status
-[{"id":"composer-quality","title":"Composer M1/M2 编辑体验","phase":"M2","engineering":"complete","trial":"delivered","acceptance":"pending","build":"源码6b39d19 / codex/composer-quality；302项/typecheck/fast/design/build通过","evidence":["handoff.md","validation.md","review.md"],"next":"用户从现有worktree pnpm dev复试安静保存、鼠标与键盘焦点、附件移除/Undo与窄窗；实机认可pending","constraints":"仅本地交付；本轮不运行GUI/E2E，未推送/发布；SDKPDF及既有CLI fixture失败保留，完整check未重跑。"}]
+[{"id":"composer-quality","title":"Composer M1/M2 编辑体验","phase":"M2","engineering":"complete","trial":"feedback","acceptance":"pending","build":"base25e8c58 + 07固定WIP（见review manifest）；299回归/111tooling/35architecture/typecheck/fast/build与SDK环境通过","evidence":["handoff.md","validation.md","review.md"],"next":"用户从现有worktree pnpm dev复试普通带图输入、压缩提示及@图片重复发送；实机认可pending","constraints":"仅本地交付；本轮未运行GUI/真实Host/provider，不push；完整check未重跑，既有PDF/CLI fixture未知保留。"}]
 ```
 
 ```implementation-plan
-[{"id":"composer","tickets":["01","02","04","03","05","06"]}]
+[{"id":"composer","tickets":["01","02","04","03","05","06","07"]}]
 ```
 
 ## 验收
@@ -47,3 +47,11 @@
 06 由 root 单写，基点 2fdeab2，类型/状态与设计 skill 按改动适用；不新建实施工作树，不修改原 checkout。本轮不运行 Dev/GUI/Computer use/E2E/provider/Host 发送，实机用户自行验收；只本地交付，不 push/远端 PR/发布。无重大产品待决。
 
 06 工程交付于 6b39d19：日常保存无状态行、共享鼠标编辑来源修复、成功报告按实际节点退出、紧凑待处理列表及窄窗工具栏。39文件302项、完整类型/fast/design/i18n/build通过，独立Spec/Standards固定2fdeab2..6b39d19无高价值发现。Agent未跑实机，用户复试与acceptance继续pending，既有SDKPDF/CLIfixture未知保持。详见最新[交接](handoff.md)。
+
+## 2026-10-08 普通带图提交与公共压缩（07）
+
+用户明确授权按二进制保存、冻结资源引用、临近 OMP 才编码的方向修复，并提炼可复用的高性能压缩工具，随后本地 commit。替换此前仅调整输入门槛的候选；本轮超预算图片的有界缩放/重编码获得授权，取代此票此前“不压缩”的限定，不扩展为图片编辑器。原件、私有摘要、来源版本、lease、Draft v1、ACK事务与unknown不重发保持。旧收据兼容读取；不把SDK输出帧限制冒称输入上限。
+
+实现验收：908202-byte PNG不因Base64膨胀提前拒绝；新冻结收据与App传输只存资源引用；宿主读取受控私有目录、长度/MIME/摘要/软链/预算校验，失败不向OMP提交不完整内容；异步准备后暂停/身份变化不能越过准入；压缩方法公共、二进制、有界并发/像素/源大小/编码次数，小图不重编码，超限派生原件保留且转换信息可见；固定SDK资源打包与hash同步。Agent仅自动化/fixture/type/build与独立双轴评审，实机/provider验收由用户完成，不运行GUI/真实Host或provider，不push。
+
+07工程完成：资源引用/延后编码、公共有界worker与类型化拒绝已实现；完整验证与双轴review见交接，本地提交后保留用户试用和acceptance pending。

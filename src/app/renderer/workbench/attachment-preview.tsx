@@ -89,6 +89,14 @@ export function AttachmentPreviewDialog({
       {content.kind === "unavailable" && (
         <p role="alert">{t(`attachment.reason.${content.reason}`)}</p>
       )}
+      {item.imageTransformation && (
+        <p role="status">
+          {t("attachment.imageCompressionDetails", {
+            ...item.imageTransformation,
+            format: item.imageTransformation.mimeType,
+          })}
+        </p>
+      )}
       {!!item.coverageGaps.length && (
         <p role="status">
           {t(

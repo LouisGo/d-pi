@@ -1,6 +1,7 @@
 import {
   mkdirSync,
   mkdtempSync,
+  readFileSync,
   realpathSync,
   renameSync,
   rmSync,
@@ -9,7 +10,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
 import { ThreadIdSchema } from "../../../shared/identity";
 import { AppStorage } from "./app-storage";
 import { createAttachmentService } from "./attachment-service";
@@ -56,6 +57,24 @@ it.each(["file", "directory"] as const)(
   },
 );
 
+vi.mock("../../../platform/node/images/public", () => ({
+  createImageCompressor:
+    () =>
+    async (
+      bytes: Uint8Array,
+      mimeType: "image/png" | "image/jpeg" | "image/webp" | "image/gif",
+    ) => ({
+      ok: true,
+      bytes,
+      mimeType,
+      recompressed: false,
+      width: 1,
+      height: 1,
+      originalWidth: 1,
+      originalHeight: 1,
+    }),
+}));
+
 it("freezes an @ image from the real authorised project read and rejects escaping symlinks", async () => {
   const root = realpathSync(mkdtempSync(join(tmpdir(), "dpi-ref-")));
   const project = join(root, "project");
@@ -80,7 +99,12 @@ it("freezes an @ image from the real authorised project read and rejects escapin
     expect(frozen).toMatchObject({
       ok: true,
       content: {
-        images: [{ data: bytes.toString("base64"), mimeType: "image/png" }],
+        images: [
+          {
+            resource: { digest: expect.any(String), byteLength: bytes.length },
+            mimeType: "image/png",
+          },
+        ],
       },
     });
     writeFileSync(join(root, "outside.txt"), "secret");
@@ -95,8 +119,31 @@ it("freezes an @ image from the real authorised project read and rejects escapin
     writeFileSync(join(project, "image.png"), "changed");
     expect(frozen).toMatchObject({
       ok: true,
-      content: { images: [{ data: bytes.toString("base64") }] },
+      content: {
+        images: [
+          {
+            resource: { digest: expect.any(String), byteLength: bytes.length },
+          },
+        ],
+      },
     });
+    if (
+      frozen.ok &&
+      frozen.content.images[0] &&
+      "resource" in frozen.content.images[0]
+    ) {
+      expect(
+        readFileSync(
+          join(
+            root,
+            "data",
+            "content",
+            "objects",
+            frozen.content.images[0].resource.digest,
+          ),
+        ).equals(bytes),
+      ).toBe(true);
+    }
   } finally {
     storage.close();
     rmSync(root, { recursive: true, force: true });

@@ -107,3 +107,11 @@ Standards随后发现source-too-large的“重试准备”仍直接打开picker�
 全typecheck、check:fast、lint:design、lint:i18n、build通过，structure报告按源码新鲜度重生，架构依赖边未变；impeccable指定UI检测[]。第一次扩展测试的两个失败来自旧待保存可见断言与取消按钮全文定位，按当前明确UI合同改成pending安静和完整aria-label；首次typecheck抓到image preview测试fixture多余mimeType已移除。错误准备不计为产品红灯。
 
 未运行validate:interaction（启动Electron）、Dev/GUI/E2E、真实provider/Host；深浅主题、窄窗、原生IME/OS/辅助技术及实际视觉由用户自测。完整check未重跑，既有SDKPDF/CLIfixture失败保留。原始证据见[provenance](evidence/quiet-composer/provenance.md)。
+
+## 2026-10-08 普通带图输入与公共压缩（07）
+
+基点25e8c58。本轮最终34文件299项通过，含7项真实独立Bun图片worker测试；tooling111项、architecture35项通过。完整typecheck、fast、design/i18n、build及SDK资源准备/hash/环境检查通过。评审反例为同一压缩@图片再次准备丢派生摘要，red→green26项，独立两轴复核关闭。数字属于各自集合，不累加旧轮结果。原始命令/输出与fixture修正见[来源记录](evidence/image-input/provenance.md)。
+
+新图片用摘要资源引用冻结，App管道保持紧凑，临近OMP编码；超限图在二进制公共worker生成有界PNG/WebP，原件/派生引用均保护。旧收据可读。宿主读取失败或准备期间停止为已证明拒绝，保留草稿，不ACK/自动重发。实际默认大图、透明度、像素/输入/队列预算及@源版本变化均有自动化结果。
+
+没有GUI/Dev/E2E/实际Host/provider发送；真实视觉、压缩质量、IME/OS/VoiceOver及峰值RSS/长会话性能未验证。完整check未重跑，旧SDKPDF/CLIfixture失败根因unknown保留；build既有chunk警告继续。

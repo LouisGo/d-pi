@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
-import { mkdir } from "node:fs/promises";
+import { mkdir, realpath } from "node:fs/promises";
 import { join } from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import { match } from "ts-pattern";
@@ -9,6 +9,7 @@ import {
   managedSdkRuntime,
   RuntimeResourceError,
 } from "../../../../platform/omp/resources/public";
+import { IMAGE_TRANSFER_LIMITS } from "../../../../shared/image-policy";
 import { uiMessage } from "../../../../shared/messages/contracts";
 import type { ContentPreparationResult } from "../../../input/contracts/public";
 import type {
@@ -261,6 +262,11 @@ export class RuntimeService {
         identity: current,
         environment: {
           ...this.environment,
+          D_PI_CONTENT_DIRECTORY: join(
+            await realpath(this.dataDirectory),
+            "content",
+          ),
+          D_PI_IMAGE_TRANSFER_LIMITS: JSON.stringify(IMAGE_TRANSFER_LIMITS),
           ...(this.view?.selectedModel
             ? { D_PI_MODEL_SELECTION: JSON.stringify(this.view.selectedModel) }
             : {}),

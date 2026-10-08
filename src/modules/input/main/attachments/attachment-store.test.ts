@@ -3,7 +3,7 @@ import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { attachmentToken } from "../../core/attachments/tokens";
 import { serializeReference } from "../../core/references/serialize";
 import { AttachmentStore } from "./attachment-store";
@@ -213,7 +213,7 @@ describe("private immutable input preparation", () => {
           {
             type: "image",
             mimeType: "image/png",
-            data: Buffer.from(image).toString("base64"),
+            resource: { digest: a.inputDigest, byteLength: image.byteLength },
           },
         ],
       },
@@ -503,4 +503,136 @@ it("prepares frozen source containing private-token-shaped literals without atta
     expect(mixed.content.sources).toHaveLength(1);
     expect(mixed.content.message).toContain(literal);
   }
+});
+
+it("prepares a normal pasted PNG above the old 1 MiB encoded floor without changing its source bytes", async () => {
+  const png = Buffer.from(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aJ1EAAAAASUVORK5CYII=",
+    "base64",
+  );
+  const image = Buffer.concat([png, Buffer.alloc(908202 - png.length)]);
+  const s = store({ validateImage: async () => true });
+  const attachment = await s.importBytes(thread, {
+    name: "question.png",
+    mimeType: "image/png",
+    bytes: image,
+    source: "paste",
+  });
+  expect(attachment.status).toBe("ready");
+  const prepared = await s.prepare(thread, `解释这张图片${attachment.token}`);
+  expect(prepared).toMatchObject({
+    ok: true,
+    content: {
+      images: [
+        {
+          resource: {
+            digest: attachment.inputDigest,
+            byteLength: image.byteLength,
+          },
+          mimeType: "image/png",
+        },
+      ],
+      rawBytes: image.byteLength,
+    },
+  });
+  expect(
+    (
+      await readFile(join(directory, "objects", attachment.inputDigest ?? ""))
+    ).equals(image),
+  ).toBe(true);
+});
+
+it("freezes a compressed image as a pinned derived resource and retains its original", async () => {
+  const original = Buffer.from(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aJ1EAAAAASUVORK5CYII=",
+    "base64",
+  );
+  const derived = Buffer.from([255, 216, 255, 1, 2, 3]);
+  const compressImage = vi.fn(async () => ({
+    ok: true as const,
+    bytes: derived,
+    mimeType: "image/jpeg" as const,
+    recompressed: true,
+    width: 1,
+    height: 1,
+    originalWidth: 2,
+    originalHeight: 2,
+  }));
+  const s = store({ validateImage: async () => true, compressImage });
+  const item = await s.importBytes(thread, {
+    name: "large.png",
+    mimeType: "image/png",
+    bytes: original,
+    source: "paste",
+  });
+  expect(item).toMatchObject({
+    status: "ready",
+    imageTransformation: { mimeType: "image/jpeg", width: 1, height: 1 },
+  });
+  const prepared = await s.prepare(thread, item.token);
+  expect(prepared.ok).toBe(true);
+  if (!prepared.ok) throw Error("not prepared");
+  const image = prepared.content.images[0];
+  expect(image).toMatchObject({
+    mimeType: "image/jpeg",
+    resource: { byteLength: derived.length },
+  });
+  expect(image).not.toHaveProperty("data");
+  expect(prepared.content.sources[0]?.derivedDigest).toBe(
+    image && "resource" in image ? image.resource.digest : "missing",
+  );
+  expect(
+    await readFile(join(directory, "objects", item.inputDigest ?? "")),
+  ).toEqual(original);
+  expect(prepared.content.sources[0]?.imageTransformation).toMatchObject({
+    width: 1,
+    height: 1,
+  });
+});
+it("retains the compressed resource across repeated @ preparation and refreshes it after the file changes", async () => {
+  const header = Buffer.from(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aJ1EAAAAASUVORK5CYII=",
+    "base64",
+  );
+  let original = Buffer.concat([header, Buffer.alloc(11 * 1024 * 1024)]);
+  const compressImage = vi.fn(async () => ({
+    ok: true as const,
+    bytes: header,
+    mimeType: "image/png" as const,
+    recompressed: true,
+    width: 1,
+    height: 1,
+    originalWidth: 2,
+    originalHeight: 2,
+  }));
+  const s = store({
+    compressImage,
+    readReference: async () => ({
+      bytes: original,
+      version: String(original.at(-1)),
+    }),
+  });
+  const item = await s.addReference(thread, "large.png");
+  const first = await s.prepare(thread, item.token);
+  expect(first.ok).toBe(true);
+  const second = await s.prepare(thread, item.token);
+  expect(second).toEqual(first);
+  expect(compressImage).toHaveBeenCalledTimes(1);
+  expect(await s.preview(thread, item.id)).toMatchObject({
+    kind: "image",
+    dataUrl: `data:image/png;base64,${header.toString("base64")}`,
+  });
+  original = Buffer.from(original);
+  original[original.length - 1] = 1;
+  expect(await s.preview(thread, item.id)).toMatchObject({
+    kind: "unavailable",
+    reason: "reference-unavailable",
+  });
+  const changed = await s.prepare(thread, item.token);
+  expect(changed.ok).toBe(true);
+  expect(compressImage).toHaveBeenCalledTimes(2);
+  if (first.ok && changed.ok)
+    expect(changed.content.sources[0]?.inputDigest).not.toBe(
+      first.content.sources[0]?.inputDigest,
+    );
 });

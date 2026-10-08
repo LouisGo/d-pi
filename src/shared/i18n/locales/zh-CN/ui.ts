@@ -216,7 +216,7 @@ export const ui = {
   "attachment.reason.source-too-large": "原件超出 25 MiB 限制。",
   "attachment.reason.submission-too-large": "提交原始内容总量超出 100 MiB。",
   "attachment.reason.transport-too-large":
-    "编码后输入超出原生传输限制。请移除或缩减内容；没有截断输入。",
+    "提交内容超出应用传输预算。请移除或缩减内容；没有截断输入。",
   "attachment.reason.editor-history-limit":
     "准备此版本会超出撤销资产上限。已保存的附件与撤销历史均保留。",
   "attachment.clearHistory": "清除撤销历史，然后重新发送",
@@ -228,6 +228,21 @@ export const ui = {
   "attachment.reason.unsupported-format": "此文件格式尚无可支持的内容表示。",
   "attachment.reason.invalid-encoding":
     "文字不是有效 UTF-8。请明确转换原件后重新附加。",
+  "attachment.reason.image-too-large":
+    "图片压缩后仍超出 10 MiB 限制，请缩小图片或移除。",
+  "attachment.reason.image-too-many-pixels":
+    "图片像素数超出本地处理上限，请先缩小图片。",
+  "attachment.reason.image-compression-unsupported":
+    "此图片无法在保留动画的情况下压缩，请提供较小的原图。",
+  "attachment.reason.image-compression-failed":
+    "本地图片处理失败，原件已保留；请重试。",
+  "attachment.reason.image-compression-unavailable":
+    "本地图片处理工具不可用，请重试。",
+  "attachment.reason.image-compression-busy":
+    "本地图片处理已达并发上限，请稍后重试。",
+  "attachment.imageCompressed": "已压缩",
+  "attachment.imageCompressionDetails":
+    "发送图片已从 {originalWidth}×{originalHeight} 转换为 {width}×{height}，格式为 {format}；原件仍保留。",
   "attachment.reason.invalid-image": "图片内容无法解码，请附加有效图片。",
   "attachment.reason.image-decoder-unavailable":
     "本地图片解码器不可用，请重试或附加支持的图片。",
@@ -505,6 +520,18 @@ export const ui = {
   "ui.submissions.warning":
     "调用回执不代表业务已接受或任务已完成。结果未知时请先核对，不要重复发送。",
   "ui.submissions.checkStatus": "核对提交状态",
+  "ui.submissions.rejected.contentMissing":
+    "未派发到 OMP：图片资源缺失，请重新附加原件。原文已保留。",
+  "ui.interaction.rejected.contentMissing":
+    "未派发到 OMP：图片资源缺失，请重新附加原件。原文已保留。",
+  "ui.submissions.rejected.contentCorrupt":
+    "未派发到 OMP：图片资源完整性校验失败，请重新附加原件。原文已保留。",
+  "ui.interaction.rejected.contentCorrupt":
+    "未派发到 OMP：图片资源完整性校验失败，请重新附加原件。原文已保留。",
+  "ui.submissions.rejected.transportTooLarge":
+    "未派发到 OMP：图片内容超出应用传输预算，请减少附件。原文已保留。",
+  "ui.interaction.rejected.transportTooLarge":
+    "未派发到 OMP：图片内容超出应用传输预算，请减少附件。原文已保留。",
   "ui.submissions.rejected": "未派发到 OMP，原文保留；可处理阻塞后重新发送",
   "ui.submissions.rejected.notReady":
     "未派发到 OMP：会话尚未就绪（没有可用模型）。原文已保留；请先核对运行状态。",

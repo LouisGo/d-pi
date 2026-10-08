@@ -151,3 +151,11 @@ historyState供React外部订阅读取。没有history owner时的empty、pendin
 图片 token 只作为普通 paragraph 的附件依赖识别，不解析或删除冻结选区的原始文本。图片保存须保持 file-selection 的块分隔，选择块组成的正文以独立 token paragraph 承载图片，恢复投影不新增空白正文；其他正文保留原有空行。分类后从历史 epoch 移出图片依赖，并过滤后续事务；当前草稿和 cleanup candidate 的保护继续独立存在。减少 epoch 依赖必须等待 Main update ACK，失败时不提前 release candidate，显式 retry 先恢复 update，再恢复 release；正文 Redo 分支不为此清空。
 
 图片 epoch 退休由 Main 的真实 manifest 核定，只排除外部图片；项目图片引用及冻结项目上下文继续受正文历史保护。Main 按 source ID 保存各版本摘要，再投影为去重对象集合；减少图片来源时，其他文件及共用摘要的旧版本仍被 pin，预算检查和发布保持原子。已验证的冻结选区原文在准备、草稿采用记录和持久引用扫描中均不授予附件身份；附件扫描保留原字符串绝对位置，普通 paragraph 的未知/非法 token 仍拒绝发送。无 IPC、数据库或 Draft 版本迁移。
+
+## 2026-10-08 图片资源与公共压缩
+
+新 PreparedContent 图片保存 MIME 与 `{digest, byteLength}`，来源保存原件摘要及可选派生摘要/转换尺寸；schemaVersion 1 兼容旧内嵌 Base64。原件 25MiB、来源总 100MiB 及私有库存预算不变。共享 `image-policy` 定义单图 10MiB、图片总 40MiB、OMP 内部编码 64MiB 应用预算；App RPC 的紧凑输入门槛不因此放宽。
+
+Main 使用 platform/node/images 公共压缩方法，独立 Bun worker 二进制输入/输出，并发 2、排队 6、预留源总量 100MiB、64M 像素及 20s 超时。小图验证后原字节不变；超单图预算缩至最长边 2048，以有界编码尝试得到 PNG/WebP，透明度保留，动态格式不静默扁平化。原件与派生物均进入准备/收据引用保护；@ 每次仍重新授权读取后冻结。预览使用真实派生 MIME/尺寸，并显示压缩信息，失败不截断或删除草稿。
+
+新图片不在收据或 App JSONL 中序列化 Base64。宿主水合及已证明拒绝合同见[runtime-host](runtime-host.md#2026-10-08-图片资源水合)。此处预算不承诺任意 provider 接受全部尺寸或数量。

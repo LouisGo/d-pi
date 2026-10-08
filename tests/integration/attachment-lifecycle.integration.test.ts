@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, realpathSync, rmSync } from "node:fs";
 import { access, open, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -421,7 +421,7 @@ it("scans beyond 1024 receipts without losing the last unknown reference or disa
 });
 
 it("locates a missing frozen original even after an @ source has been prepared from a newer file version", async () => {
-  const root = mkdtempSync(join(tmpdir(), "dpi-old-frozen-"));
+  const root = realpathSync(mkdtempSync(join(tmpdir(), "dpi-old-frozen-")));
   const storage = AppStorage.open(join(root, "app.sqlite"));
   const service = createAttachmentService(
     storage,
@@ -436,7 +436,7 @@ it("locates a missing frozen original even after an @ source has been prepared f
     const draft = storage.drafts.create(root);
     const a = await service.store.addReference(draft.threadId, "file.txt");
     const old = await service.store.prepare(draft.threadId, a.token);
-    if (!old.ok) throw Error("fixture preparation failed");
+    if (!old.ok) throw Error(`fixture preparation failed: ${old.reason}`);
     const { SubmissionIdSchema } = await import(
       "../../src/modules/execution/contracts/public"
     );

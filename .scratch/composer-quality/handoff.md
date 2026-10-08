@@ -1,6 +1,6 @@
 # Composer 本地交接
 
-2026-10-08。本轮源码 `6b39d19`，反馈增量基点 `2fdeab2`，分支 `codex/composer-quality`，工作树 `/Users/lou/.codex/worktrees/composer-quality/d-pi`。仅修改此树，没有新建实施树、修改原 checkout、push、远端 PR 或发布。
+2026-10-08。最新为本文末尾 **07 普通带图输入修复**（基点25e8c58 + review manifest固定WIP）。下方06记录是历史交付源码 `6b39d19`、反馈基点 `2fdeab2`；分支 `codex/composer-quality`，工作树 `/Users/lou/.codex/worktrees/composer-quality/d-pi`。仅修改此树，没有新建实施树、修改原 checkout、push、远端 PR 或发布。
 
 ## 本轮结果与试用
 
@@ -63,3 +63,15 @@ Main租约按source ID保留各版本摘要，只迁出Main确认的外部图片
 本轮没有实机或视觉通过结论。请重点试图片增删＋正文Undo/Redo、DOCX/HTML/MD/视频内联呈现、重复拖入/粘贴、冷恢复、快速切Thread、IME期间异步导入、错误详情和焦点。真实IME marked-text、VoiceOver、缩放/窄窗、长会话及OS竞态由用户验证；provider/Host queue未重新发送。
 
 仍有明确限制：现有Main不支持DOCX/视频等内容转换，失败状态不会伪装ready；固定SDK PDF复制fixture本次失败，未改1b50c88也同样失败，根因未定位。先前完整check中的configuration-sharing CLI fixture失败仍保留，未宣称完整check全绿。M3压缩/Markdown、历史召回、M4slash等不在本次范围。工程交付与用户认可分开，acceptance仍pending。
+
+## 最新交接：07 普通带图输入修复
+
+用户已授权实现和本地commit，基点25e8c58，仅现有 `/Users/lou/.codex/worktrees/composer-quality/d-pi`，分支codex/composer-quality；本轮不启动GUI，用户自行试用，原checkout未修改，没有push。
+
+已完成二进制私有资源→冻结摘要引用→宿主校验→OMP边界Base64。小图保持原字节；>10MiB使用公共独立worker压缩，源25MiB/总100MiB与库存预算保留，发送图片总40MiB及内部编码64MiB为应用预算。原件及派生lease保留，转换信息可见。旧收据兼容读取，停止/缺失/损坏/超预算在未转发时明确拒绝并保留草稿。ACK原子消费/unknown不重发保持。
+
+公共入口 `src/platform/node/images/public.ts`，共享策略 `src/shared/image-policy.ts`；runtime/image-compression.mjs二进制压缩、image-input.mjs只读水合随固定SDK同步/hash。SDK环境准备成功，用户退出旧d-pi后资源锁已释放；日常仍从上述worktree `pnpm dev`试用，不需要打包。
+
+34文件299项、tooling111、architecture35、typecheck/fast/design/i18n/build/完整环境通过，两轴独立review关闭派生manifest发现后无剩余高价值问题。[本轮证据](evidence/image-input/provenance.md)。实际provider接收、GUI压缩提示/视觉质量与原生交互由用户验证；峰值RSS/长会话性能未测，旧完整check失败记录不删除。
+
+兼容风险：新版本能读取旧内嵌收据，但旧源码不识别新资源引用；Main/Renderer/宿主/helper/SDKmanifest须同版运行。revert源码不会撤销已持久新收据、原件/派生物或OMP执行；降级时保留数据并恢复匹配版本，不能删除数据库或自动重发。

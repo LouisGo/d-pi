@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "f02d14366703a55f9e917a8a3041ca5f34afc06c27575b70a4422a92af9ffef3",
+  "inputsHash": "e0df1d681c1a9046726a35917011b4f435be64785ba74e3760b47a03ad067e9b",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 480,
-    "scannedFiles": 480,
+    "sourceFiles": 486,
+    "scannedFiles": 486,
     "unscanned": []
   },
   "modules": [
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 211,
-      "lines": 39620,
+      "lines": 39713,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -59,8 +59,8 @@
         "omp"
       ],
       "materialized": true,
-      "files": 30,
-      "lines": 3169,
+      "files": 33,
+      "lines": 3543,
       "publicEntries": [
         {
           "path": "src/platform/main/storage/public.ts",
@@ -89,6 +89,10 @@
         {
           "path": "src/platform/omp/resources/public.ts",
           "exists": true
+        },
+        {
+          "path": "src/platform/node/images/public.ts",
+          "exists": true
         }
       ],
       "testPublicEntries": []
@@ -101,8 +105,8 @@
       ],
       "defaultEnvironment": "shared",
       "materialized": true,
-      "files": 20,
-      "lines": 2845,
+      "files": 21,
+      "lines": 2918,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -138,6 +142,10 @@
         },
         {
           "path": "src/shared/read-operation.ts",
+          "exists": true
+        },
+        {
+          "path": "src/shared/image-policy.ts",
           "exists": true
         }
       ],
@@ -186,7 +194,7 @@
       ],
       "materialized": true,
       "files": 61,
-      "lines": 13249,
+      "lines": 13573,
       "publicEntries": [
         {
           "path": "src/modules/input/contracts/public.ts",
@@ -327,7 +335,7 @@
       ],
       "materialized": true,
       "files": 58,
-      "lines": 13486,
+      "lines": 13663,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -360,8 +368,8 @@
       ],
       "defaultEnvironment": "omp",
       "materialized": true,
-      "files": 12,
-      "lines": 2398,
+      "files": 14,
+      "lines": 2752,
       "publicEntries": [
         {
           "path": "runtime/host.mjs",
@@ -738,6 +746,12 @@
       "module": "input",
       "environment": "main",
       "dependency": "threads",
+      "testOnly": false
+    },
+    {
+      "module": "input",
+      "environment": "main",
+      "dependency": "shared",
       "testOnly": false
     },
     {
@@ -1688,6 +1702,20 @@
       "environment": "main",
       "dependency": "platform",
       "targetEnvironment": "main",
+      "testOnly": false
+    },
+    {
+      "module": "input",
+      "environment": "main",
+      "dependency": "platform",
+      "targetEnvironment": "node",
+      "testOnly": false
+    },
+    {
+      "module": "input",
+      "environment": "main",
+      "dependency": "shared",
+      "targetEnvironment": "shared",
       "testOnly": false
     },
     {
@@ -4920,6 +4948,30 @@
       "to": "src/modules/input/main/public.ts",
       "targetModule": "input",
       "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-service.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../platform/node/images/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/node/images/public.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "node"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-service.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../platform/omp/resources/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/omp/resources/public.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "omp"
     },
     {
       "from": "src/app/main/wiring/attachment-service.ts",
@@ -16776,6 +16828,123 @@
       "targetEnvironment": "node"
     },
     {
+      "from": "src/platform/node/images/image-compression.test.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": true,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/node/images/image-compression.test.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/node/images/image-compression.test.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/node/images/image-compression.test.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": true,
+      "specifier": "node:url",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/node/images/image-compression.test.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": true,
+      "specifier": "node:zlib",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/node/images/image-compression.test.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/node/images/image-compression.test.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": true,
+      "specifier": "./image-compression",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/node/images/image-compression.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "node"
+    },
+    {
+      "from": "src/platform/node/images/image-compression.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": false,
+      "specifier": "node:child_process",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/node/images/image-compression.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": false,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/node/images/image-compression.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/node/images/image-compression.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": false,
+      "specifier": "../../../shared/image-policy",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/image-policy.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/platform/node/images/public.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": false,
+      "specifier": "./image-compression",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/platform/node/images/image-compression.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "node"
+    },
+    {
       "from": "src/platform/node/processes/managed-process.test.ts",
       "sourceModule": "platform",
       "sourceEnvironment": "node",
@@ -18520,6 +18689,18 @@
       "resolution": "external"
     },
     {
+      "from": "src/modules/input/contracts/attachment.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "../../../shared/image-policy",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/image-policy.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
       "from": "src/modules/input/contracts/clipboard.ts",
       "sourceModule": "input",
       "sourceEnvironment": "contracts",
@@ -19274,6 +19455,30 @@
       "to": "src/platform/main/storage/public.ts",
       "targetModule": "platform",
       "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/input/main/attachments/attachment-store.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../../platform/node/images/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/node/images/public.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "node"
+    },
+    {
+      "from": "src/modules/input/main/attachments/attachment-store.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../../shared/image-policy",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/image-policy.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
     },
     {
       "from": "src/modules/input/main/attachments/attachment-store.ts",
@@ -25511,6 +25716,18 @@
       "sourceModule": "execution",
       "sourceEnvironment": "main",
       "test": false,
+      "specifier": "../../../../shared/image-policy",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/image-policy.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/modules/execution/main/runtime/runtime-service.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
       "specifier": "../../../../shared/messages/contracts",
       "kind": "import",
       "resolution": "module",
@@ -27015,6 +27232,18 @@
       "sourceModule": "runtime",
       "sourceEnvironment": "omp",
       "test": false,
+      "specifier": "./image-input.mjs",
+      "kind": "import",
+      "resolution": "module",
+      "to": "runtime/image-input.mjs",
+      "targetModule": "runtime",
+      "targetEnvironment": "omp"
+    },
+    {
+      "from": "runtime/host.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
       "specifier": "./model-selection.mjs",
       "kind": "import",
       "resolution": "module",
@@ -27057,6 +27286,42 @@
       "to": "runtime/reading-session.mjs",
       "targetModule": "runtime",
       "targetEnvironment": "omp"
+    },
+    {
+      "from": "runtime/image-input.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/image-input.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/image-input.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "node:fs/promises",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/image-input.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
     },
     {
       "from": "runtime/model-selection.mjs",

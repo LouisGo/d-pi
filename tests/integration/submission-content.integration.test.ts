@@ -60,3 +60,64 @@ it("persists frozen represented content independently of the draft and dispatche
     rmSync(directory, { recursive: true, force: true });
   }
 });
+
+it("admits an ordinary image above 1 MiB Base64 and stores resource references and dispatches exactly once", () => {
+  const directory = mkdtempSync(join(tmpdir(), "dpi-image-budget-"));
+  const store = AppStorage.open(join(directory, "app.sqlite"));
+  try {
+    const draft = store.drafts.create(directory);
+    store.drafts.save(draft.threadId, 0, "解释这张图片");
+    const resource = { digest: "a".repeat(64), byteLength: 908202 };
+    const attachmentId = randomUUID();
+    const frozen = {
+      submissionId: randomUUID(),
+      threadId: draft.threadId,
+      traceId: randomUUID(),
+      revision: 1,
+      text: "解释这张图片",
+      requestId: randomUUID(),
+      content: {
+        schemaVersion: 1 as const,
+        message: "解释这张图片",
+        images: [{ type: "image" as const, mimeType: "image/png", resource }],
+        sources: [
+          {
+            attachmentId,
+            inputDigest: resource.digest,
+            representation: "image" as const,
+            converterVersion: "original-image-v1",
+            coverageGaps: [],
+            byteLength: 908202,
+            name: "question.png",
+          },
+        ],
+        rawBytes: 908202,
+      },
+      target: {
+        processInstanceId: randomUUID(),
+        connectionGeneration: randomUUID(),
+        configContextId: "test",
+        nativeSessionRef: "managed",
+      },
+    };
+    const frames: string[] = [];
+    const coordinator = new SubmissionCoordinator(store.submissions, {
+      isCurrentTarget: () => true,
+      canDispatch: () => true,
+      write: (_v, frame) => frames.push(frame),
+    });
+    expect(coordinator.prepare(frozen).kind).toBe("receipt");
+    coordinator.dispatch(frozen.submissionId);
+    coordinator.dispatch(frozen.submissionId);
+    expect(frames).toHaveLength(1);
+    expect(JSON.parse(frames[0]!).images[0].resource).toEqual(resource);
+    expect(frames[0]!.length).toBeLessThan(1024);
+    expect(
+      JSON.stringify(store.submissions.submission(frozen.submissionId)),
+    ).not.toContain("base64");
+    expect(store.drafts.read(draft.threadId).text).toBe("解释这张图片");
+  } finally {
+    store.close();
+    rmSync(directory, { recursive: true, force: true });
+  }
+});

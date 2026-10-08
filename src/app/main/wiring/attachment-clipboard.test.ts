@@ -8,9 +8,27 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
 import { AppStorage } from "./app-storage";
 import { createAttachmentService } from "./attachment-service";
+
+vi.mock("../../../platform/node/images/public", () => ({
+  createImageCompressor:
+    () =>
+    async (
+      bytes: Uint8Array,
+      mimeType: "image/png" | "image/jpeg" | "image/webp" | "image/gif",
+    ) => ({
+      ok: true,
+      bytes,
+      mimeType,
+      recompressed: false,
+      width: 1,
+      height: 1,
+      originalWidth: 1,
+      originalHeight: 1,
+    }),
+}));
 
 it("copies only owned selected private images, freezes through cut/GC, remaps every paste and releases source-document tickets", async () => {
   const root = realpathSync(mkdtempSync(join(tmpdir(), "dpi-clipboard-")));

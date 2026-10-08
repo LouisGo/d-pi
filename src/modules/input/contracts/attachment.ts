@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { IMAGE_TRANSFER_LIMITS } from "../../../shared/image-policy";
 
 export const AttachmentFailureReasonSchema = z.enum([
   "invalid-token",
@@ -16,6 +17,12 @@ export const AttachmentFailureReasonSchema = z.enum([
   "invalid-encoding",
   "invalid-image",
   "image-decoder-unavailable",
+  "image-too-large",
+  "image-too-many-pixels",
+  "image-compression-unsupported",
+  "image-compression-failed",
+  "image-compression-unavailable",
+  "image-compression-busy",
   "pdf-conversion-unavailable",
   "pdf-conversion-failed",
   "pdf-coverage-gap",
@@ -34,6 +41,14 @@ export const FrozenReferenceSchema = z.strictObject({
   capturedAt: z.string().datetime(),
 });
 export type FrozenReference = z.infer<typeof FrozenReferenceSchema>;
+export const ImageTransformationSchema = z.strictObject({
+  mimeType: z.enum(["image/png", "image/jpeg", "image/webp"]),
+  byteLength: z.number().int().positive(),
+  width: z.number().int().positive(),
+  height: z.number().int().positive(),
+  originalWidth: z.number().int().positive(),
+  originalHeight: z.number().int().positive(),
+});
 export const AttachmentSchema = z
   .strictObject({
     schemaVersion: z.literal(1),
@@ -63,6 +78,7 @@ export const AttachmentSchema = z
       .regex(/^[a-f0-9]{64}$/)
       .optional(),
     converterVersion: z.string().max(128).optional(),
+    imageTransformation: ImageTransformationSchema.optional(),
     frozenReference: FrozenReferenceSchema.optional(),
   })
   .superRefine((attachment, ctx) => {
@@ -103,37 +119,83 @@ export const AttachmentSchema = z
       });
   });
 export type Attachment = z.infer<typeof AttachmentSchema>;
-export const PreparedContentSchema = z.strictObject({
-  schemaVersion: z.literal(1),
-  message: z.string(),
-  images: z.array(
-    z.strictObject({
-      type: z.literal("image"),
-      data: z.string(),
-      mimeType: z.enum(["image/png", "image/jpeg", "image/webp", "image/gif"]),
-    }),
-  ),
-  sources: z.array(
-    z.strictObject({
-      attachmentId: z.uuid(),
-      inputDigest: z.string().regex(/^[a-f0-9]{64}$/),
-      derivedDigest: z
-        .string()
-        .regex(/^[a-f0-9]{64}$/)
-        .optional(),
-      representation: AttachmentSchema.shape.representation,
-      converterVersion: z.string().max(128),
-      coverageGaps: z.array(z.string().max(128)),
-      byteLength: z.number().int().nonnegative(),
-      name: z.string().max(512),
-      path: z.string().max(4096).optional(),
-      referenceKind: z.enum(["file", "directory"]).optional(),
-      version: z.string().max(256).optional(),
-      frozenReference: FrozenReferenceSchema.optional(),
-    }),
-  ),
-  rawBytes: z.number().int().nonnegative(),
-});
+export const PreparedContentSchema = z
+  .strictObject({
+    schemaVersion: z.literal(1),
+    message: z.string(),
+    images: z.array(
+      z.union([
+        z.strictObject({
+          type: z.literal("image"),
+          data: z.string(),
+          mimeType: z.enum([
+            "image/png",
+            "image/jpeg",
+            "image/webp",
+            "image/gif",
+          ]),
+        }),
+        z.strictObject({
+          type: z.literal("image"),
+          resource: z.strictObject({
+            digest: z.string().regex(/^[a-f0-9]{64}$/),
+            byteLength: z
+              .number()
+              .int()
+              .positive()
+              .max(IMAGE_TRANSFER_LIMITS.imageBytes),
+          }),
+          mimeType: z.enum([
+            "image/png",
+            "image/jpeg",
+            "image/webp",
+            "image/gif",
+          ]),
+        }),
+      ]),
+    ),
+    sources: z.array(
+      z.strictObject({
+        attachmentId: z.uuid(),
+        inputDigest: z.string().regex(/^[a-f0-9]{64}$/),
+        derivedDigest: z
+          .string()
+          .regex(/^[a-f0-9]{64}$/)
+          .optional(),
+        representation: AttachmentSchema.shape.representation,
+        converterVersion: z.string().max(128),
+        coverageGaps: z.array(z.string().max(128)),
+        byteLength: z.number().int().nonnegative(),
+        name: z.string().max(512),
+        path: z.string().max(4096).optional(),
+        referenceKind: z.enum(["file", "directory"]).optional(),
+        version: z.string().max(256).optional(),
+        frozenReference: FrozenReferenceSchema.optional(),
+        imageTransformation: ImageTransformationSchema.optional(),
+      }),
+    ),
+    rawBytes: z.number().int().nonnegative(),
+  })
+  .superRefine((content, ctx) => {
+    for (const [index, image] of content.images.entries()) {
+      if (!("resource" in image)) continue;
+      if (
+        !content.sources.some(
+          (source) =>
+            source.representation === "image" &&
+            (source.derivedDigest ?? source.inputDigest) ===
+              image.resource.digest &&
+            (source.imageTransformation?.byteLength ?? source.byteLength) ===
+              image.resource.byteLength,
+        )
+      )
+        ctx.addIssue({
+          code: "custom",
+          message: "unowned-image-resource",
+          path: ["images", index],
+        });
+    }
+  });
 export type PreparedContent = z.infer<typeof PreparedContentSchema>;
 export type ContentPreparationResult =
   | { ok: true; content: PreparedContent }

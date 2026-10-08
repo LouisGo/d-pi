@@ -74,3 +74,9 @@ Standards固定dd8d812..63e023e闭合，独立6文件61项通过；随后63e023e
 - Standards：无可报告缺陷。覆盖共享焦点与portal、当前采用/preview和资源settlement分别处理、Main/leases/send所有权不变、异步Thread及Undo/Redo、React订阅和模块边界、类型/设计规则无绕过。独立focus/continuity/initialization3文件46项通过。其本机pnpm版本切换ENOEXEC后只读用node node_modules/vitest/vitest.mjs执行，Node23.10.0，作为补充行为证据；root固定Node24.21.0/pnpm12.8.1的302项/typecheck/build为主验证。
 
 结论仅适用于上述源码。真实浏览器focus-visible、蓝框是否消失、窄窗/深浅布局、OS/IME/VoiceOver未验证；T3引用与静态detector不构成用户认可。最后治理文档增量不改源码，验收保持pending。
+
+## 普通图片提交与公共压缩：25e8c58 + 固定WIP（07）
+
+Spec与Standards两位只读reviewer独立覆盖完整固定差异及所有新文件。首快照各发现同一 @ 图片派生manifest丢失问题：Spec P2、Standards P1；root以连续prepare反例核实，再修正通用reference收尾仅处理text，保留image完整record/转换器。新增连续prepare、派生预览、来源改变后重新压缩测试先失败后通过。preview授权读/摘要复核/读取后身份检查保持，无manifest写入。
+
+最新快照差异SHA-256 `c2849931de474435bc2918fb953c3785f561a8ebf1c6de4ecbada1d957d1138c`，两轴逐项hash核实并复核修复与增量后无剩余高价值发现；[源码manifest](evidence/image-input/review-source-manifest.json)、[红绿来源](evidence/image-input/provenance.md)。Standards独立Node水合3项通过，26项worker/引用结果来自root原始输出，不双计。收尾按 architecture skill 补充纯共享策略的 input/main→shared 实际依赖登记并刷新结构报告，Standards独立架构486文件及报告检查通过；仅测试缩进与治理交接再更新，行为源不变。没有原生/provider或视觉结论，实机与用户认可继续pending。

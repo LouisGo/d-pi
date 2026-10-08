@@ -1,0 +1,11 @@
+✔ hydrates the frozen private digest only at the SDK boundary (9.888875ms)
+✔ retains legacy inline images but rejects forged paths, lengths, MIME and budgets (0.253ms)
+✔ does not forward a prepared image if Stop or its epoch changes during reading (2.088041ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 68.05475

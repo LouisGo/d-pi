@@ -1,0 +1,7 @@
+{
+  "sourceBytes": 908202,
+  "base64Bytes": 1210936,
+  "oldJsonlBytes": 1211061,
+  "resourceJsonlBytes": 224,
+  "note": "controlled serialization fixture; not an RSS or throughput benchmark"
+}

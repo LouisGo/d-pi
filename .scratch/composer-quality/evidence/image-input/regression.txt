@@ -1,0 +1,55 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/modules/input src/platform/node/images src/modules/execution/host/session-host.test.ts src/modules/execution/host/native/native-session.test.ts src/app/main/wiring/attachment-service.test.ts src/app/main/wiring/attachment-clipboard.test.ts src/app/renderer/reading/submissions-renderer.test.ts src/app/renderer/workbench/composer-attachments.test.tsx tests/integration/attachment-lifecycle.integration.test.ts tests/integration/submission-content.integration.test.ts src/platform/omp/resources/sdk-resource.test.ts --maxWorkers=4
+$ tsr generate
+(node:47251) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/lou/.codex/worktrees/composer-quality/d-pi[39m
+
+ [32m✓[39m tests/integration/attachment-lifecycle.integration.test.ts [2m([22m[2m21 tests[22m[2m)[22m[33m 706[2mms[22m[39m
+ [32m✓[39m src/platform/node/images/image-compression.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 1628[2mms[22m[39m
+   [33m[2m✓[22m[39m handles an actual image above the production 10 MiB threshold with default policy[33m 835[2mms[22m[39m
+   [33m[2m✓[22m[39m bounds queued binary memory and releases the slot only after the child closes[33m 560[2mms[22m[39m
+ [32m✓[39m src/modules/input/renderer/attachments/import-batch.test.ts [2m([22m[2m25 tests[22m[2m)[22m[33m 1433[2mms[22m[39m
+ [32m✓[39m src/app/main/wiring/attachment-clipboard.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 350[2mms[22m[39m
+ [32m✓[39m src/modules/input/main/attachments/attachment-store.test.ts [2m([22m[2m19 tests[22m[2m)[22m[33m 367[2mms[22m[39m
+ [32m✓[39m src/app/main/wiring/attachment-service.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 433[2mms[22m[39m
+ [32m✓[39m src/modules/input/main/attachments/content-lifecycle.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 95[2mms[22m[39m
+ [32m✓[39m src/modules/input/renderer/attachments/attachment-imports.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 168[2mms[22m[39m
+ [32m✓[39m src/modules/input/renderer/references/detached-images.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 185[2mms[22m[39m
+ [32m✓[39m src/platform/omp/resources/sdk-resource.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 54[2mms[22m[39m
+ [32m✓[39m src/modules/input/renderer/clipboard/structured-paste.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 84[2mms[22m[39m
+ [32m✓[39m src/modules/input/renderer/editor/draft-editor-cache.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 81[2mms[22m[39m
+ [32m✓[39m src/modules/input/renderer/references/reference-interaction.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 42[2mms[22m[39m
+ [32m✓[39m src/modules/input/renderer/references/context-presentation.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 65[2mms[22m[39m
+ [32m✓[39m src/modules/execution/host/session-host.test.ts [2m([22m[2m35 tests[22m[2m)[22m[32m 49[2mms[22m[39m
+ [32m✓[39m tests/integration/submission-content.integration.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 45[2mms[22m[39m
+ [32m✓[39m src/modules/input/renderer/references/attachment-reference-boundaries.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 33[2mms[22m[39m
+ [32m✓[39m src/modules/input/renderer/editor/edit-action-history.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m src/modules/input/renderer/clipboard/trusted-clipboard.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 46[2mms[22m[39m
+ [32m✓[39m src/modules/execution/host/native/native-session.test.ts [2m([22m[2m15 tests[22m[2m)[22m[33m 4068[2mms[22m[39m
+   [33m[2m✓[22m[39m keeps two registered sessions queryable through repeated owner probe timeouts[33m 2319[2mms[22m[39m
+   [33m[2m✓[22m[39m ends in-flight waits when close begins, while still waiting for process exit[33m 563[2mms[22m[39m
+ [32m✓[39m src/modules/input/core/draft-controller.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m src/modules/input/main/attachments/clipboard-snapshots.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/modules/input/renderer/references/selection-insert.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m src/modules/input/renderer/clipboard/plain-text-paste.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/modules/input/main/attachments/editor-history.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/modules/input/core/attachments/editor-history-model.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/modules/input/renderer/references/attachment-reference.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/modules/input/renderer/references/file-presentation.test.ts [2m([22m[2m36 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/modules/input/core/attachments/tokens.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/modules/input/core/attachments/attachment-model.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/modules/input/core/draft-consumption.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/modules/input/core/references/serialize.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/app/renderer/reading/submissions-renderer.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 66[2mms[22m[39m
+ [32m✓[39m src/modules/input/renderer/references/suggestion-controller.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m34 passed[39m[22m[90m (34)[39m
+[2m      Tests [22m [1m[32m299 passed[39m[22m[90m (299)[39m
+[2m   Start at [22m 19:41:49
+[2m   Duration [22m 4.96s[2m (tests 59%, import 23%, environment 9%, transform 9%)[22m
+
+[2m    Isolate [22m [33m34 workers spawned[39m[2m · ~112ms startup each (spawn + environment, per file)[22m
+[2m            [22m [2mat least ~841ms faster with [22m[33misolate: false[39m[2m — reuses workers across files instead of one per file[22m
+

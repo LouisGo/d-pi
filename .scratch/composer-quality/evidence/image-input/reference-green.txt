@@ -1,0 +1,18 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/modules/input/main/attachments/attachment-store.test.ts src/platform/node/images/image-compression.test.ts --maxWorkers=4
+$ tsr generate
+(node:47089) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/lou/.codex/worktrees/composer-quality/d-pi[39m
+
+ [32m✓[39m src/modules/input/main/attachments/attachment-store.test.ts [2m([22m[2m19 tests[22m[2m)[22m[33m 342[2mms[22m[39m
+ [32m✓[39m src/platform/node/images/image-compression.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 1720[2mms[22m[39m
+   [33m[2m✓[22m[39m handles an actual image above the production 10 MiB threshold with default policy[33m 796[2mms[22m[39m
+   [33m[2m✓[22m[39m bounds queued binary memory and releases the slot only after the child closes[33m 594[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[32m26 passed[39m[22m[90m (26)[39m
+[2m   Start at [22m 19:41:17
+[2m   Duration [22m 1.86s[2m (tests 89%, transform 6%, import 4%)[22m
+

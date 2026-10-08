@@ -1,0 +1,112 @@
+
+ RUN  v5.0.2 /Users/lou/.codex/worktrees/composer-quality/d-pi
+
+ ❯ src/app/renderer/components/receipt-status.test.ts (16 tests | 3 failed) 59ms
+   × gives the native refusal cause content-missing its own message 6ms
+   × gives the native refusal cause content-corrupt its own message 3ms
+   × gives the native refusal cause transport-too-large its own message 1ms
+ ❯ src/modules/input/main/attachments/attachment-store.test.ts (18 tests | 1 failed) 1381ms
+   ❯ private immutable input preparation (15)
+     × prepares @ PDF from current authorized bytes, keeps explicit loss consent, and never reuses a prior frozen conversion 18ms
+ ❯ src/app/renderer/reading/submissions-renderer.test.ts (15 tests | 1 failed) 64ms
+   × renders the persisted content-missing cause for an ordinary submission in both UI languages 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/renderer/components/receipt-status.test.ts > gives the native refusal cause content-missing its own message
+AssertionError: expected 'attachment.reason.content-missing' to be 'ui.interaction.rejected.contentMissing' // Object.is equality
+
+Expected: "ui.interaction.rejected.contentMissing"
+Received: "attachment.reason.content-missing"
+
+ ❯ src/app/renderer/components/receipt-status.test.ts:10:17
+      8|   (rejectionReason) => {
+      9|     const key = receiptStatusKey({ state: "rejected", rejectionReason …
+     10|     expect(key).toBe(
+       |                 ^
+     11|       rejectionReason === "image-unsupported"
+     12|         ? "submission.imageUnsupported"
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  src/app/renderer/components/receipt-status.test.ts > gives the native refusal cause content-corrupt its own message
+AssertionError: expected 'attachment.reason.content-corrupt' to be 'ui.interaction.rejected.contentCorrupt' // Object.is equality
+
+Expected: "ui.interaction.rejected.contentCorrupt"
+Received: "attachment.reason.content-corrupt"
+
+ ❯ src/app/renderer/components/receipt-status.test.ts:10:17
+      8|   (rejectionReason) => {
+      9|     const key = receiptStatusKey({ state: "rejected", rejectionReason …
+     10|     expect(key).toBe(
+       |                 ^
+     11|       rejectionReason === "image-unsupported"
+     12|         ? "submission.imageUnsupported"
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  src/app/renderer/components/receipt-status.test.ts > gives the native refusal cause transport-too-large its own message
+AssertionError: expected 'attachment.reason.transport-too-large' to be 'ui.interaction.rejected.transportTooL…' // Object.is equality
+
+Expected: "ui.interaction.rejected.transportTooLarge"
+Received: "attachment.reason.transport-too-large"
+
+ ❯ src/app/renderer/components/receipt-status.test.ts:10:17
+      8|   (rejectionReason) => {
+      9|     const key = receiptStatusKey({ state: "rejected", rejectionReason …
+     10|     expect(key).toBe(
+       |                 ^
+     11|       rejectionReason === "image-unsupported"
+     12|         ? "submission.imageUnsupported"
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  src/app/renderer/reading/submissions-renderer.test.ts > renders the persisted content-missing cause for an ordinary submission in both UI languages
+AssertionError: expected '本地提交原文（1，最多显示最近 100 条）调用回执不代表业务已接受或任务…' to contain '原始内容丢失'
+
+- Expected
++ Received
+
+- 原始内容丢失
++ 本地提交原文（1，最多显示最近 100 条）调用回执不代表业务已接受或任务已完成。结果未知时请先核对，不要重复发送。核对提交状态私有内容丢失或已作为未引用缓存清理，请重新附加原件。用户提交原文
++ Keep **Markdown** and 😀 unchanged复制提交原文
+
+ ❯ src/app/renderer/reading/submissions-renderer.test.ts:137:37
+    135|         rejectionReason,
+    136|       });
+    137|       expect(container.textContent).toContain(
+       |                                     ^
+    138|         refusalCopy[rejectionReason][index],
+    139|       );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  src/modules/input/main/attachments/attachment-store.test.ts > private immutable input preparation > prepares @ PDF from current authorized bytes, keeps explicit loss consent, and never reuses a prior frozen conversion
+AssertionError: expected { kind: 'unavailable', …(1) } to match object { kind: 'text', text: '%PDF-old' }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "kind": "text",
+-   "text": "%PDF-old",
++   "kind": "unavailable",
+  }
+
+ ❯ src/modules/input/main/attachments/attachment-store.test.ts:382:43
+    380|       },
+    381|     ]);
+    382|     expect(await s.preview(thread, a.id)).toMatchObject({
+       |                                           ^
+    383|       kind: "text",
+    384|       text: "%PDF-old",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  3 failed | 3 passed (6)
+      Tests  5 failed | 92 passed (97)
+   Start at  19:26:48
+   Duration  6.14s (tests 56%, import 22%, transform 18%, environment 4%)
+

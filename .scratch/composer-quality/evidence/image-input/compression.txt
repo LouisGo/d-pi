@@ -1,0 +1,9 @@
+
+ RUN  v5.0.2 /Users/lou/.codex/worktrees/composer-quality/d-pi
+
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  19:35:05
+   Duration  1.00s (tests 93%, import 4%, transform 3%)
+

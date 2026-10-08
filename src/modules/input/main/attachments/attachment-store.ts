@@ -13,6 +13,8 @@ import { join } from "node:path";
 import { match } from "ts-pattern";
 import { z } from "zod";
 import type { AppDatabase } from "../../../../platform/main/storage/public";
+import type { ImageCompressionResult } from "../../../../platform/node/images/public";
+import { IMAGE_TRANSFER_LIMITS } from "../../../../shared/image-policy";
 import {
   type Attachment,
   type AttachmentFailureReason,
@@ -68,6 +70,10 @@ export interface AttachmentStoreOptions {
     bytes: Uint8Array,
     mimeType: ImageMime,
   ) => boolean | Promise<boolean>;
+  compressImage?: (
+    bytes: Uint8Array,
+    mimeType: ImageMime,
+  ) => Promise<ImageCompressionResult>;
   convertPdf?: (bytes: Uint8Array) => Promise<PdfConversion>;
   editorHistoryLimits?: { epochs: number; ids: number; bytes: number };
   limits?: {
@@ -1051,6 +1057,83 @@ export class AttachmentStore {
         },
       }))
       .with({ kind: "image" }, async ({ mimeType }) => {
+        if (this.options.compressImage) {
+          if (
+            attachment.status === "ready" &&
+            ["image-compressed-v1", "original-image-v1"].includes(
+              attachment.converterVersion ?? "",
+            ) &&
+            attachment.inputDigest === digest(bytes)
+          ) {
+            if (record.derivedDigest)
+              await this.readObject(record.derivedDigest);
+            return record;
+          }
+          const prepared = await this.options.compressImage(bytes, mimeType);
+          if (current && !current())
+            throw new ClipboardSnapshotError("expired");
+          if (!prepared.ok)
+            return {
+              ...record,
+              attachment: {
+                ...attachment,
+                mimeType,
+                status: "failed",
+                reason: prepared.reason,
+                representation: "image",
+              },
+            };
+          if (prepared.bytes.length > IMAGE_TRANSFER_LIMITS.imageBytes)
+            return {
+              ...record,
+              attachment: {
+                ...attachment,
+                mimeType,
+                status: "failed",
+                reason: "image-too-large",
+                representation: "image",
+              },
+            };
+          if (prepared.recompressed && prepared.mimeType !== "image/gif") {
+            const derivedDigest = await this.put(
+              prepared.bytes,
+              pinImport
+                ? { threadId: attachment.threadId, id: attachment.id }
+                : undefined,
+            );
+            return {
+              ...record,
+              derivedDigest,
+              attachment: {
+                ...attachment,
+                mimeType,
+                status: "ready",
+                representation: "image",
+                converterVersion: "image-compressed-v1",
+                imageTransformation: {
+                  mimeType: prepared.mimeType,
+                  byteLength: prepared.bytes.length,
+                  width: prepared.width,
+                  height: prepared.height,
+                  originalWidth: prepared.originalWidth,
+                  originalHeight: prepared.originalHeight,
+                },
+              },
+            };
+          }
+          const { derivedDigest: _derived, ...original } = record;
+          delete attachment.imageTransformation;
+          return {
+            ...original,
+            attachment: {
+              ...attachment,
+              mimeType,
+              status: "ready",
+              representation: "image",
+              converterVersion: "original-image-v1",
+            },
+          };
+        }
         let reason: AttachmentFailureReason | undefined;
         try {
           reason = !this.options.validateImage
@@ -1236,22 +1319,26 @@ export class AttachmentStore {
     const record = this.read(threadId, id);
     if (!record) return { kind: "unavailable", reason: "attachment-not-found" };
     try {
-      if (record.derivedDigest)
+      if (record.derivedDigest && !record.attachment.imageTransformation)
         return this.textPreview(
           new TextDecoder().decode(await this.readObject(record.derivedDigest)),
         );
       if (record.attachment.representation === "reference")
-        return this.previewReference(record.attachment);
+        return this.previewReference(record);
       if (!record.attachment.inputDigest)
         return { kind: "unavailable", reason: "reference-unavailable" };
-      const bytes = await this.readObject(record.attachment.inputDigest);
+      const bytes = await this.readObject(
+        record.attachment.imageTransformation && record.derivedDigest
+          ? record.derivedDigest
+          : record.attachment.inputDigest,
+      );
       if (
         record.attachment.representation === "image" &&
         record.attachment.status === "ready"
       )
         return {
           kind: "image",
-          dataUrl: `data:${record.attachment.mimeType};base64,${Buffer.from(bytes).toString("base64")}`,
+          dataUrl: `data:${record.attachment.imageTransformation?.mimeType ?? record.attachment.mimeType};base64,${Buffer.from(bytes).toString("base64")}`,
         };
       const content = this.identifyStoredContent(record, bytes);
       return content.kind === "text"
@@ -1271,8 +1358,9 @@ export class AttachmentStore {
     }
   }
   private async previewReference(
-    attachment: Attachment,
+    record: StoredRecord,
   ): Promise<AttachmentPreview> {
+    const attachment = record.attachment;
     if (!this.options.readReference || !attachment.path)
       return { kind: "unavailable", reason: "reference-unavailable" };
     try {
@@ -1285,6 +1373,17 @@ export class AttachmentStore {
         return { kind: "unavailable", reason: "source-too-large" };
       if (value.current && !value.current())
         return { kind: "unavailable", reason: "reference-denied" };
+      if (attachment.imageTransformation && record.derivedDigest) {
+        if (digest(value.bytes) !== attachment.inputDigest)
+          return { kind: "unavailable", reason: "reference-unavailable" };
+        const derived = await this.readObject(record.derivedDigest);
+        if (value.current && !value.current())
+          return { kind: "unavailable", reason: "reference-denied" };
+        return {
+          kind: "image",
+          dataUrl: `data:${attachment.imageTransformation.mimeType};base64,${Buffer.from(derived).toString("base64")}`,
+        };
+      }
       const directory = attachment.referenceKind === "directory";
       const content = identifyContent(
         value.bytes,
@@ -1394,10 +1493,9 @@ export class AttachmentStore {
         if (result.ok)
           this.lifecycle?.pinPreparation(
             result.content.sources.flatMap((source) => {
-              const record = this.read(threadId, source.attachmentId);
               return [
                 source.inputDigest,
-                ...(record?.derivedDigest ? [record.derivedDigest] : []),
+                ...(source.derivedDigest ? [source.derivedDigest] : []),
               ];
             }),
           );
@@ -1425,6 +1523,7 @@ export class AttachmentStore {
       sources: [],
       rawBytes: 0,
     };
+    let imageBytes = 0;
     let cursor = 0;
     for (const token of tokens.tokens) {
       let record = this.read(threadId, token.id);
@@ -1502,6 +1601,12 @@ export class AttachmentStore {
       if (attachment.representation === "reference") {
         try {
           const inputDigest = await this.put(bytes);
+          if (inputDigest !== attachment.inputDigest) {
+            const { derivedDigest: _derived, ...original } = record;
+            record = original;
+            delete attachment.imageTransformation;
+            delete attachment.converterVersion;
+          }
           attachment = {
             ...attachment,
             inputDigest,
@@ -1564,37 +1669,62 @@ export class AttachmentStore {
         content.message += `\n[${attachment.path ?? attachment.name}${attachment.referenceKind === "directory" ? "; directory listing" : ""}]\n${representation.text}\n[/attachment]\n`;
       else if (representation.kind === "image") {
         if (attachment.representation === "reference") {
-          if (!this.options.validateImage)
+          const described = await this.describe(record, bytes, false);
+          if (described.attachment.status !== "ready")
             return {
               ok: false,
-              reason: "image-decoder-unavailable",
+              reason: described.attachment.reason ?? "invalid-image",
               attachmentId: token.id,
             };
+          attachment = { ...described.attachment, representation: "reference" };
+          record = { ...described, attachment };
+          this.save(record);
+          outputRepresentation = "image";
+        }
+        const imageDigest = record.derivedDigest ?? attachment.inputDigest;
+        if (!imageDigest)
+          return {
+            ok: false,
+            reason: "content-corrupt",
+            attachmentId: token.id,
+          };
+        let image = bytes;
+        if (record.derivedDigest) {
           try {
-            if (
-              !(await this.options.validateImage(
-                bytes,
-                representation.mimeType,
-              ))
-            )
-              return {
-                ok: false,
-                reason: "invalid-image",
-                attachmentId: token.id,
-              };
-          } catch {
+            image = await this.readObject(record.derivedDigest);
+          } catch (error) {
             return {
               ok: false,
-              reason: "invalid-image",
+              reason:
+                error instanceof Error && error.message === "content-missing"
+                  ? "content-missing"
+                  : "content-corrupt",
               attachmentId: token.id,
             };
           }
         }
+        imageBytes += image.byteLength;
+        if (image.byteLength > IMAGE_TRANSFER_LIMITS.imageBytes)
+          return {
+            ok: false,
+            reason: "image-too-large",
+            attachmentId: token.id,
+          };
+        if (
+          imageBytes > IMAGE_TRANSFER_LIMITS.totalImageBytes ||
+          content.images.length >= 128
+        )
+          return {
+            ok: false,
+            reason: "transport-too-large",
+            attachmentId: token.id,
+          };
         content.message += `\n[image: ${attachment.name}]\n`;
         content.images.push({
           type: "image",
-          mimeType: representation.mimeType,
-          data: Buffer.from(bytes).toString("base64"),
+          mimeType:
+            attachment.imageTransformation?.mimeType ?? representation.mimeType,
+          resource: { digest: imageDigest, byteLength: image.byteLength },
         });
       } else
         return {
@@ -1607,20 +1737,17 @@ export class AttachmentStore {
         };
       if (
         attachment.representation === "reference" &&
-        representation.kind !== "pdf"
+        representation.kind === "text"
       ) {
-        outputRepresentation =
-          representation.kind === "text" ? "text" : "image";
+        outputRepresentation = "text";
         attachment = {
           ...attachment,
           status: "ready",
           coverageGaps: [],
           converterVersion:
-            representation.kind === "text"
-              ? attachment.referenceKind === "directory"
-                ? "directory-listing-v1"
-                : representation.encoding
-              : "original-image-v1",
+            attachment.referenceKind === "directory"
+              ? "directory-listing-v1"
+              : representation.encoding,
         };
         delete attachment.reason;
         this.save({ attachment });
@@ -1632,6 +1759,9 @@ export class AttachmentStore {
           ? { derivedDigest: record.derivedDigest }
           : {}),
         representation: outputRepresentation,
+        ...(attachment.imageTransformation
+          ? { imageTransformation: attachment.imageTransformation }
+          : {}),
         converterVersion:
           attachment.converterVersion ??
           (representation.kind === "text"

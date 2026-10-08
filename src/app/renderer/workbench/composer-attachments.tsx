@@ -33,7 +33,9 @@ export function AttachmentStrip({
             ? t(`attachment.reason.${item.reason}`)
             : item.status === "preparing"
               ? t("attachment.preparing")
-              : null;
+              : item.imageTransformation
+                ? t("attachment.imageCompressed")
+                : null;
           return (
             <li key={item.id} className="attachment-tile">
               <Button
