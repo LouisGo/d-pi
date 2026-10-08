@@ -1251,3 +1251,52 @@ it("keeps automatically indexed CLI threads readable without granting or dispatc
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+it("reuses a directory grant in an already browsed Thread after another Thread is allowed", async () => {
+  const root = realpathSync(mkdtempSync(join(tmpdir(), "dpi-shared-grant-")));
+  const store = AppStorage.open(join(root, "app.sqlite"));
+  const first = store.threads.create(root),
+    second = store.threads.create(root);
+  const a = new RuntimeService(
+    store,
+    "/fixture/resources",
+    root,
+    {},
+    () => {},
+    () => {},
+    () => {},
+    first.threadId,
+  );
+  const b = new RuntimeService(
+    store,
+    "/fixture/resources",
+    root,
+    {},
+    () => {},
+    () => {},
+    () => {},
+    second.threadId,
+  );
+  const inspect = () =>
+    a.execute({
+      kind: "inspect",
+      threadId: first.threadId,
+      traceId: crypto.randomUUID(),
+    });
+  try {
+    expect((await inspect()).phase).toBe("browse");
+    await b.execute({
+      kind: "allow",
+      threadId: second.threadId,
+      traceId: crypto.randomUUID(),
+    });
+    const restored = await inspect();
+    expect(restored.phase).toBe("allowed");
+    expect(restored.trusted).toBe(true);
+    store.threads.revokeExecution(first.workingDirectoryId);
+    expect((await inspect()).trusted).toBe(false);
+  } finally {
+    store.close();
+    rmSync(root, { recursive: true, force: true });
+  }
+});

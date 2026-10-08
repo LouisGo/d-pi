@@ -938,6 +938,30 @@ export class RuntimeService {
     }
     await match(command.kind)
       .with("inspect", async () => {
+        if (
+          !this.connection.connected &&
+          (this.view?.phase === "browse" || this.view?.phase === "allowed")
+        ) {
+          const grant = this.store.threads.executionGrant(
+            thread.workingDirectoryId,
+          );
+          let trusted = false;
+          try {
+            const identity = await identifyDirectory(thread.directory);
+            trusted = !!grant && sameDirectoryIdentity(grant, identity);
+          } catch {
+            /* A missing or replaced directory cannot inherit trust. */
+          }
+          this.update({
+            trusted,
+            phase: trusted ? "allowed" : "browse",
+            message: uiMessage(
+              grant && !trusted
+                ? "runtime.grantInvalid"
+                : "runtime.preStartTrust",
+            ),
+          });
+        }
         if (this.connection.connected && this.currentConnectionGeneration) {
           if (
             this.view?.queueOperation?.status !== "unknown" &&

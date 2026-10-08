@@ -3,6 +3,7 @@ import { memo, type ReactNode } from "react";
 import { useStore } from "zustand";
 import { FolderIcon } from "@/components/icons/common";
 import { useI18n } from "../../../modules/preferences/renderer/public";
+import type { ThreadContext } from "../../../modules/threads/contracts/public";
 import { Button } from "../../../modules/ui/renderer/public";
 import type { AppModel } from "../wiring/model";
 import { ThreadAttention } from "./attention";
@@ -13,6 +14,12 @@ export function ProjectThreads({ model }: { model: AppModel }) {
   const { t } = useI18n();
   const threads = useStore(model.threadListStore, (state) => state.threads);
   const failed = useStore(model.threadListStore, (state) => state.failed);
+  const groups = new Map<string, ThreadContext[]>();
+  for (const thread of threads) {
+    const group = groups.get(thread.directory);
+    if (group) group.push(thread);
+    else groups.set(thread.directory, [thread]);
+  }
   return (
     <nav aria-label={t("app.sidebar.projects")} className="thread-navigation">
       <NewThreadButton model={model} />
@@ -32,28 +39,26 @@ export function ProjectThreads({ model }: { model: AppModel }) {
         <p className="muted">{t("app.sidebar.noProject")}</p>
       )}
       <ThreadButtons model={model}>
-        {[...Map.groupBy(threads, (thread) => thread.directory)].map(
-          ([directory, group]) => (
-            <section key={directory} data-project-group={directory}>
-              <div className="sidebar-label" title={directory}>
-                <FolderIcon />
-                <span>
-                  {directory.split("/").filter(Boolean).at(-1) ?? directory}
-                </span>
-              </div>
-              {group.map((thread) => (
-                <ThreadButton
-                  key={thread.threadId}
-                  model={model}
-                  threadId={thread.threadId}
-                  directory={thread.directory}
-                  title={thread.title}
-                  number={threads.length - threads.indexOf(thread)}
-                />
-              ))}
-            </section>
-          ),
-        )}
+        {[...groups].map(([directory, group]) => (
+          <section key={directory} data-project-group={directory}>
+            <div className="sidebar-label" title={directory}>
+              <FolderIcon />
+              <span>
+                {directory.split("/").filter(Boolean).at(-1) ?? directory}
+              </span>
+            </div>
+            {group.map((thread) => (
+              <ThreadButton
+                key={thread.threadId}
+                model={model}
+                threadId={thread.threadId}
+                directory={thread.directory}
+                title={thread.title}
+                number={threads.length - threads.indexOf(thread)}
+              />
+            ))}
+          </section>
+        ))}
       </ThreadButtons>
     </nav>
   );

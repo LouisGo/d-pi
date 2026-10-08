@@ -167,3 +167,40 @@ it("creates separate project groups from actual cwd without changing existing ac
     new Set([f.project, other]),
   );
 });
+
+it("opens existing chats without waiting for native discovery or blocking a Thread switch", async () => {
+  const f = setup();
+  const a = f.store.threads.create(f.project);
+  const b = f.store.threads.create(f.project);
+  let finish: ((value: "ready") => void) | undefined;
+  const scan = new Promise<"ready">((resolve) => {
+    finish = resolve;
+  });
+  const service = new DesktopCommandService(
+    f.store,
+    async () => null,
+    () => scan,
+  );
+  const restore = service.execute({
+    kind: "restore",
+    traceId: crypto.randomUUID(),
+  });
+  const restored = await Promise.race([
+    restore,
+    new Promise((resolve) => setTimeout(() => resolve("blocked"), 30)),
+  ]);
+  expect(restored).not.toBe("blocked");
+  const switched = await Promise.race([
+    service.execute({
+      kind: "select-thread",
+      traceId: crypto.randomUUID(),
+      threadId: a.threadId,
+    }),
+    new Promise((resolve) => setTimeout(() => resolve("blocked"), 30)),
+  ]);
+  expect(switched).not.toBe("blocked");
+  expect(f.store.threads.activeThread()?.threadId).toBe(a.threadId);
+  expect(b.threadId).not.toBe(a.threadId);
+  finish?.("ready");
+  await restore;
+});

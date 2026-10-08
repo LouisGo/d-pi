@@ -25,8 +25,15 @@ export class DesktopCommandService {
 
   private async restore(
     traceId: string,
+    discover = true,
   ): Promise<Extract<Reply, { kind: "ready" }>> {
-    const nativeIndex = await this.reconcileNativeSessions?.(traceId);
+    // Restoring an existing chat must not wait on configuration or catalog I/O.
+    const existing = this.storage.threads.activeThread();
+    const discovery = discover
+      ? this.reconcileNativeSessions?.(traceId)
+      : undefined;
+    const nativeIndex = !existing ? await discovery : undefined;
+    if (existing) void discovery?.catch(() => {});
     const draft = this.storage.drafts.active();
     let directoryAvailable = true;
     if (draft) {
@@ -64,14 +71,14 @@ export class DesktopCommandService {
         })
         .with({ kind: "select-thread" }, async ({ threadId }) => {
           this.storage.threads.select(threadId);
-          return this.restore(command.traceId);
+          return this.restore(command.traceId, false);
         })
         .with({ kind: "new-thread" }, async ({ threadId }) => {
           const thread = this.storage.threads.threadContext(threadId);
           const directory = await resolveDirectory(thread.directory);
           if (directory !== thread.directory) throw Error("Directory changed");
           this.storage.threads.create(directory);
-          return this.restore(command.traceId);
+          return this.restore(command.traceId, false);
         })
         .with({ kind: "choose-project" }, async ({ traceId }) => {
           const result = await this.projects.chooseProject();
