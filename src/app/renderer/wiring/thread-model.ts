@@ -13,7 +13,10 @@ import {
   DraftController,
   readAttachmentTokens,
 } from "../../../modules/input/core/public";
-import { AttachmentImports } from "../../../modules/input/renderer/public";
+import {
+  AttachmentImportError,
+  AttachmentImports,
+} from "../../../modules/input/renderer/public";
 import type { ThreadContext } from "../../../modules/threads/contracts/public";
 import type { DesktopBridge } from "../../contracts/desktop-bridge";
 import type { ReadingView } from "../routing/search";
@@ -81,15 +84,39 @@ export class ThreadModel {
           draft.threadId,
         );
         this.attachments = attachments;
-        this.attachmentImports = new AttachmentImports(async (input) => {
-          const reply = await attachments.run(
-            { kind: "import-bytes", ...input },
-            true,
-          );
-          if (reply?.kind !== "attachments")
-            throw Error("Attachment import did not complete");
-          return reply.items;
-        });
+        const attachmentBridge = bridge.attachments;
+        this.attachmentImports = new AttachmentImports(
+          async (input) => {
+            // Accepted batches finish through the original bridge even when source
+            // admission freezes or the AttachmentModel/editor is later disposed.
+            const reply = await attachmentBridge.request({
+              kind: "import-bytes",
+              ...input,
+              threadId: draft.threadId,
+              traceId: crypto.randomUUID(),
+            });
+            if (reply.kind !== "attachments")
+              throw new AttachmentImportError(
+                reply.kind === "unavailable"
+                  ? reply.reason
+                  : "read-or-transport-failed",
+              );
+            return reply.items;
+          },
+          {
+            settle: async (operationId, disposition) => {
+              const reply = await attachmentBridge.request({
+                kind: "import-settle",
+                operationId,
+                disposition,
+                threadId: draft.threadId,
+                traceId: crypto.randomUUID(),
+              });
+              if (reply.kind !== "import-settled")
+                throw Error("Attachment operation settlement failed");
+            },
+          },
+        );
       }
       this.runtime = bridge.runtime ? new RuntimeModel(bridge.runtime) : null;
       this.reading = bridge.conversation
@@ -149,6 +176,7 @@ export class ThreadModel {
     this.active = false;
     ++this.activationGeneration;
     this.runtime?.setPreparationActive(false);
+    this.attachmentImports?.invalidateTargets();
   }
 
   freezeInputSources(): () => void {
@@ -166,7 +194,7 @@ export class ThreadModel {
     if (this.attachments && this.attachments.getReadiness(ids).kind !== "ready")
       return false;
     const sources = this.attachmentImports?.stateStore.getState();
-    return !sources || (sources.pending === 0 && sources.failures.length === 0);
+    return !sources || sources.ready;
   }
 
   matches(context: ThreadContext): boolean {

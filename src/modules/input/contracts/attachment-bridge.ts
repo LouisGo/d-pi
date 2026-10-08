@@ -64,6 +64,13 @@ export const AttachmentRequestSchema = z.discriminatedUnion("kind", [
     mimeType: z.string().max(128),
     dataBase64: z.string().max(34952536),
     source: z.enum(["paste", "drop"]),
+    operationId: z.uuid().optional(),
+  }),
+  z.strictObject({
+    ...identity,
+    kind: z.literal("import-settle"),
+    operationId: z.uuid(),
+    disposition: z.enum(["release", "adopt"]),
   }),
   z.strictObject({
     ...identity,
@@ -122,6 +129,7 @@ export const AttachmentReplySchema = z.discriminatedUnion("kind", [
     items: z.array(AttachmentSchema),
   }),
   z.strictObject({ kind: z.literal("cancelled") }),
+  z.strictObject({ kind: z.literal("import-settled") }),
   z.strictObject({
     kind: z.literal("search"),
     entries: z.array(ProjectReferenceEntrySchema).max(100),

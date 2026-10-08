@@ -187,6 +187,20 @@ export function createAttachmentService(
         const bytes = Buffer.from(command.dataBase64, "base64");
         if (bytes.toString("base64") !== command.dataBase64)
           return { kind: "unavailable", reason: "content-corrupt" };
+        if (command.operationId)
+          return owner
+            ? store.importOperation(
+                owner,
+                command.threadId,
+                command.operationId,
+                {
+                  name: command.name,
+                  mimeType: command.mimeType,
+                  bytes,
+                  source: command.source,
+                },
+              )
+            : { kind: "unavailable", reason: "reference-denied" };
         return attachments([
           await store.importBytes(command.threadId, {
             name: command.name,
@@ -196,6 +210,15 @@ export function createAttachmentService(
           }),
         ]);
       }
+      case "import-settle":
+        return owner
+          ? store.settleImportOperation(
+              owner,
+              command.threadId,
+              command.operationId,
+              command.disposition,
+            )
+          : { kind: "unavailable", reason: "reference-denied" };
       case "choose-import": {
         const paths = await chooseFiles(command.threadId);
         if (!paths) return { kind: "cancelled" };

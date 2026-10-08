@@ -23,6 +23,7 @@ export type AttachmentRange = {
 };
 export interface AttachmentEditorPort {
   insert(item: Attachment, range?: AttachmentRange): boolean;
+  applyBatch?(items: Attachment[]): boolean;
 }
 export type AttachmentRequestFailure = {
   command: AttachmentIntent;

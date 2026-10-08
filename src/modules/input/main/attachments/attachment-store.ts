@@ -17,6 +17,7 @@ import {
   type Attachment,
   type AttachmentFailureReason,
   type AttachmentPreview,
+  type AttachmentReply,
   AttachmentSchema,
   type ClipboardTicket,
   type ContentPreparationResult,
@@ -90,6 +91,16 @@ const RecordSchema = z.strictObject({
     .optional(),
 });
 type StoredRecord = z.infer<typeof RecordSchema>;
+type ImportOperation = {
+  owner: string;
+  threadId: string;
+  id: string;
+  fingerprint: string;
+  bytes: number;
+  finished: boolean;
+  disposition: "release" | "adopt" | null;
+  result: Promise<AttachmentReply>;
+};
 const digest = (bytes: Uint8Array) =>
   createHash("sha256").update(bytes).digest("hex");
 const DEFAULT_LIMITS = {
@@ -110,6 +121,8 @@ export class AttachmentStore {
     { owner: string; threadId: string }
   >();
   private readonly editorHistories: EditorHistoryLeases;
+  private readonly importOperations = new Map<string, ImportOperation>();
+  private importBytesReserved = 0;
   constructor(private readonly options: AttachmentStoreOptions) {
     this.clipboard = new ClipboardSnapshots({
       capture: (threadId, text, ids) =>
@@ -375,6 +388,11 @@ export class AttachmentStore {
     return reply;
   }
   releaseEditorHistories(owner: string): void {
+    for (const operation of this.importOperations.values()) {
+      if (operation.owner !== owner) continue;
+      operation.disposition = "release";
+      this.lifecycle?.releaseImport(operation.threadId, operation.id);
+    }
     this.editorHistories.releaseOwner(owner);
     this.clipboard.releaseOwner(owner);
     for (const [id, item] of this.clipboardImports)
@@ -753,7 +771,12 @@ export class AttachmentStore {
     for (const [id, item] of this.clipboardImports)
       this.lifecycle?.releaseImport(item.threadId, id);
     this.clipboardImports.clear();
+    for (const operation of this.importOperations.values())
+      operation.disposition = "release";
     await this.tail;
+    for (const operation of this.importOperations.values())
+      this.lifecycle?.releaseImport(operation.threadId, operation.id);
+    this.importOperations.clear();
     await this.lifecycle?.close();
   }
   list(threadId: string): Promise<Attachment[]> {
@@ -779,12 +802,12 @@ export class AttachmentStore {
   async importBytes(
     threadId: string,
     input: AttachmentImport,
+    id: string = randomUUID(),
   ): Promise<Attachment> {
     // Copy before the first await: callers cannot mutate source bytes during conversion.
     if (input.bytes.byteLength > this.limits.sourceBytes)
       throw new Error("source-too-large");
     const bytes = input.bytes.slice();
-    const id = randomUUID();
     const base = AttachmentSchema.parse({
       schemaVersion: 1,
       id,
@@ -808,6 +831,140 @@ export class AttachmentStore {
       this.save(record);
       return this.convert(record, bytes);
     });
+  }
+  /** Operation capability is accepted synchronously, before conversion enters the lane. */
+  importOperation(
+    owner: string,
+    threadId: string,
+    operationId: string,
+    input: AttachmentImport,
+  ): Promise<AttachmentReply> {
+    const fingerprint = digest(
+      new TextEncoder().encode(
+        JSON.stringify([
+          input.name,
+          input.mimeType,
+          input.source,
+          digest(input.bytes),
+        ]),
+      ),
+    );
+    const existing = this.importOperations.get(operationId);
+    if (existing) {
+      if (
+        existing.owner !== owner ||
+        existing.threadId !== threadId ||
+        existing.fingerprint !== fingerprint
+      )
+        return Promise.resolve({
+          kind: "unavailable",
+          reason: "reference-denied",
+        });
+      return existing.result;
+    }
+    if (this.closed || input.bytes.byteLength > this.limits.sourceBytes)
+      return Promise.resolve({
+        kind: "unavailable",
+        reason: this.closed ? "storage-unavailable" : "source-too-large",
+      });
+    // Prune completed releases and durably adopted handles. Pin authority stays
+    // in ContentLifecycle; disposing a document still releases its other handles.
+    for (const [key, operation] of this.importOperations) {
+      if (
+        operation.finished &&
+        (operation.disposition === "release" ||
+          (operation.disposition === "adopt" &&
+            this.read(operation.threadId, operation.id)?.draftBoundRevision !==
+              undefined))
+      )
+        this.importOperations.delete(key);
+    }
+    const owned = [...this.importOperations.values()].filter(
+      (operation) => operation.owner === owner,
+    );
+    if (
+      owned.length >= 64 ||
+      this.importOperations.size >= 128 ||
+      this.importBytesReserved + input.bytes.byteLength > 100 * 1024 * 1024 ||
+      owned.some(
+        (operation) => operation.threadId === threadId && !operation.finished,
+      )
+    )
+      return Promise.resolve({
+        kind: "unavailable",
+        reason: "storage-unavailable",
+      });
+    const operation: ImportOperation = {
+      owner,
+      threadId,
+      id: randomUUID(),
+      fingerprint,
+      bytes: input.bytes.byteLength,
+      finished: false,
+      disposition: null,
+      result: Promise.resolve({ kind: "cancelled" }),
+    };
+    this.importBytesReserved += operation.bytes;
+    this.importOperations.set(operationId, operation);
+    operation.result = (async (): Promise<AttachmentReply> => {
+      try {
+        const item = await this.importBytes(threadId, input, operation.id);
+        return operation.disposition === "release"
+          ? { kind: "cancelled" }
+          : { kind: "attachments", items: [item] };
+      } catch (error) {
+        return {
+          kind: "unavailable",
+          reason:
+            error instanceof Error && error.message === "storage-full"
+              ? "storage-full"
+              : error instanceof Error && error.message === "source-too-large"
+                ? "source-too-large"
+                : "storage-unavailable",
+        };
+      } finally {
+        operation.finished = true;
+        this.importBytesReserved -= operation.bytes;
+        if (operation.disposition === "release")
+          this.lifecycle?.releaseImport(threadId, operation.id);
+      }
+    })();
+    return operation.result;
+  }
+  async settleImportOperation(
+    owner: string,
+    threadId: string,
+    operationId: string,
+    disposition: "release" | "adopt",
+  ): Promise<AttachmentReply> {
+    const operation = this.importOperations.get(operationId);
+    // Unknown handles have no assets to release. This also makes lost settlement
+    // replies safe to retry after a completed release was pruned.
+    if (!operation) return { kind: "import-settled" };
+    if (operation.owner !== owner || operation.threadId !== threadId)
+      return { kind: "unavailable", reason: "reference-denied" };
+    if (disposition === "release") {
+      operation.disposition = "release";
+      this.lifecycle?.releaseImport(threadId, operation.id);
+      await operation.result;
+      this.lifecycle?.releaseImport(threadId, operation.id);
+      return { kind: "import-settled" };
+    }
+    const result = await operation.result;
+    if (
+      operation.disposition === "release" ||
+      result.kind !== "attachments" ||
+      result.items.some(
+        (item) =>
+          item.status !== "ready" ||
+          (item.coverageGaps.length > 0 && !item.textOnly),
+      )
+    )
+      return { kind: "unavailable", reason: "reference-unavailable" };
+    // Adopt transfers to the existing per-ID import pin. It stays until durable
+    // draft/history adoption or document teardown, never a gap before lease ACK.
+    operation.disposition = "adopt";
+    return { kind: "import-settled" };
   }
   async addReference(
     threadId: string,

@@ -1,6 +1,11 @@
 export {
+  AttachmentImportBudget,
+  AttachmentImportError,
   AttachmentImports,
+  type AttachmentImportTarget,
   hasUnpersistedAttachmentSources,
+  type ImportBatchView,
+  type ImportJobView,
 } from "./attachments/attachment-imports";
 export {
   createClipboardPaste,
@@ -16,6 +21,7 @@ export {
 } from "./editor/plain-text-editor";
 export {
   createAttachmentEditor,
+  createAttachmentImportTarget,
   moveAttachmentReference,
   removeAttachmentReference,
   syncAttachmentLabels,
