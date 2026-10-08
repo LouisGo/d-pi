@@ -36,6 +36,14 @@ Dev / preview 使用按 checkout 路径区分的持久 App 数据，沿用共享
 
 2026-09-30 的 [SDK 文件盘点](../../.scratch/infrastructure-closure/evidence/sdk-license-inventory.json)检查当前准备资源的 176 个包单元：152 个有根级 LICENSE/COPYING/NOTICE，另 24 个在包目录内也没有名称包含 license/copying/notice 的文件，涉及 libvips、puppeteer、onnxruntime、sherpa 等。这是指定资源的文件存在证据，不能由包元数据的 license 字段推断声明已经齐全，也不推断这些包不存在上游许可。公开分发前需根据实际产物补齐来源与义务核对；本轮不从网络拼贴替代原始声明，也不为此升级或裁剪 SDK。
 
+## 包内容与体积门禁
+
+2026-10-08 用户授权收敛打包体积，取代上一节历史盘点当时“不裁剪 SDK”的实施限制。当前 [准备规则](../../scripts/runtime/sdk-packaging.mjs)按已安装、锁定的运行依赖/peer/可用 optional 构建闭包，按包元数据 os/cpu 排除外平台 optional 包；ONNX native 只留目标平台架构。分发 source map、非源码目录的类型声明和固定 SDK 不执行的 CLI bundle 不入包。源码、浏览器工具的声明文本资产、模板、原始许可证、native、Bun 与 optional 推理/WASM 能力仍保留；不 strip 原生库或改 OMP 源码。
+
+ONNX 1.30.0 的 macOS 两份 dylib 经 SHA-256 相同才合为包内相对链接，保留 dyld 的 `.1.dylib` 路径。Transformers 4.3.0 的 Node bundle 实际引用未声明的 `onnxruntime-common`，准备规则只补其已安装的锁定解析链接，不复制整个 hoisted store；真实 optional import 在隔离 Node 子进程校验，无模型下载。这些规则限当前已核实的版本；依赖升级应重新核实布局、资源与许可。
+
+SDK 最大 650 MiB，完整 `.app` 最大 1000 MiB，均为普通文件逻辑字节之和；不跟随链接重复累计，不等同压缩下载量、APFS 物理占用或运行内存。[包后检查](../../scripts/packaging/after-pack.mjs)位于签名和分发文件创建之前，校验 SDK 平台/启动哈希、内部链接、必要应用入口、ASAR 不重复包含 `node_modules` 和实际体积；失败时打包命令非零退出。输出目录的 `package-size.json` 记录分项，SDK manifest 另记裁剪原因和字节。门禁不替代 native/GUI 或公开分发验收；本轮前后实测与限制见[体积规格](../../.scratch/package-size/spec.md)。
+
 ## 未实施与待决定
 
 D-40集成终端尚未包含在当前构建/包中。其node-pty ABI、TerminalHost入口、native/helper真实资源路径与将来的签名盘点见[终端契约 §8](../architecture/terminal.md#8-macos-原生构建诊断与实现约束)，验收见[终端验证](../validation/terminal.md)；不将现有OMP SDK包验证当成PTY包证据。

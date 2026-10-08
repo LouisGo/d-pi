@@ -1,0 +1,87 @@
+{
+  "source": "a0367be + WIP packaging changes; identical out/ and installed lockfile",
+  "before": {
+    "app": {
+      "bytes": 1276070280,
+      "files": 21355,
+      "links": 251,
+      "top": {
+        "Contents": 1276070280
+      }
+    },
+    "sdk": {
+      "bytes": 958387005,
+      "files": 21098,
+      "links": 237,
+      "top": {
+        "BUN-LICENSE.md": 5376,
+        "bun": 63096576,
+        "configuration-readonly.mjs": 14556,
+        "configuration.mjs": 5550,
+        "gate.js": 979,
+        "host.mjs": 7257,
+        "manifest.json": 1475,
+        "model-selection.mjs": 1939,
+        "native-queue.mjs": 10936,
+        "native-subagent-configuration.mjs": 4059,
+        "node_modules": 895237618,
+        "pdf-content.mjs": 684
+      }
+    }
+  },
+  "after": {
+    "app": {
+      "bytes": 892737411,
+      "files": 11108,
+      "links": 252,
+      "top": {
+        "Contents": 892737411
+      }
+    },
+    "sdk": {
+      "bytes": 575054136,
+      "files": 10851,
+      "links": 238,
+      "top": {
+        "BUN-LICENSE.md": 5376,
+        "bun": 63096576,
+        "configuration-readonly.mjs": 14556,
+        "configuration.mjs": 5550,
+        "gate.js": 937,
+        "host.mjs": 7257,
+        "manifest.json": 2656,
+        "model-selection.mjs": 1939,
+        "native-queue.mjs": 10936,
+        "native-subagent-configuration.mjs": 4059,
+        "node_modules": 511903610,
+        "pdf-content.mjs": 684
+      }
+    }
+  },
+  "savedAppBytes": 383332869,
+  "savedAppPercent": 30.040106333328286,
+  "removed": {
+    "type-declaration": {
+      "files": 5001,
+      "bytes": 40277212
+    },
+    "cli-bundle": {
+      "files": 1,
+      "bytes": 28100235
+    },
+    "source-map": {
+      "files": 5230,
+      "bytes": 58805457
+    },
+    "foreign-native": {
+      "files": 14,
+      "bytes": 211561176
+    },
+    "duplicate-native": {
+      "files": 1,
+      "bytes": 44589928
+    }
+  },
+  "appAsarSha256": "d658de96397b03c709d916e613900401c94ca25f579ac1329d95ba22707ffcb5",
+  "sdkManifestSha256": "834c5ead30b9cbfcab82347729a40ff8a789c5c31a31515fcb112220b4e1de7e"
+}

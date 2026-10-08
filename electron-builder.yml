@@ -2,6 +2,7 @@ appId: local.d-pi.desktop
 productName: d-pi
 asar: true
 npmRebuild: false
+afterPack: ./scripts/packaging/after-pack.mjs
 files:
   - out/main/**
   - out/preload/**
@@ -11,6 +12,9 @@ files:
 extraResources:
   - from: resources/sdk
     to: sdk
+    filter:
+      - '**/*'
+      - '!node_modules{,/**}'
   - from: resources/sdk/node_modules
     to: sdk/node_modules
 directories:

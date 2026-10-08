@@ -1,0 +1,13 @@
+{
+  "path": "dist/package-size/d-pi-mac-arm64.zip",
+  "bytes": 296768447,
+  "sha256": "cc9340c934bdb26e34faec5588c2226fa82fd41d7bb4a8674eb43debb15d36df",
+  "signed": false,
+  "notarized": false,
+  "extractedAudit": {
+    "appBytes": 892737411,
+    "sdkBytes": 575054136,
+    "closedLinks": true,
+    "launchHashesMatch": true
+  }
+}

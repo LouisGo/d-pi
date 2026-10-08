@@ -1,0 +1,30 @@
+{
+  "platform": "darwin-arm64",
+  "sdk": "18.4.6",
+  "bun": "1.3.14",
+  "tests": [
+    {
+      "name": "shared Main SDK resource validation in relocated app",
+      "status": 0
+    },
+    {
+      "name": "packaged Bun/official SDK factory from isolated cwd",
+      "status": 0
+    },
+    {
+      "name": "packaged ONNX dyld alias and Transformers ESM in isolated Node child; no models downloaded",
+      "status": 0
+    },
+    {
+      "name": "relocated package audit",
+      "appBytes": 892737411,
+      "sdkBytes": 575054136
+    },
+    {
+      "name": "relocated packaged Bun/SDK stop retains queue and explicit continue consumes same session exactly once",
+      "status": 0,
+      "entry": "validation/s3/sdk-control.mjs with SDK_ROOT set to Package With Spaces resource root"
+    }
+  ],
+  "limitation": "Resource and import probes only, not Electron GUI, actual inference or real provider acceptance"
+}

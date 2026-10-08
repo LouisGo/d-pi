@@ -36,6 +36,8 @@
 
 `pnpm runtime:sdk` 核对已安装包与声明版本，从受管理 pnpm store 复制锁定依赖并生成 manifest；`pnpm check:environment` 核对声明、随包包元数据、lockHash、平台、必要文件和启动资源的 SHA-256。[启动校验](../../src/platform/omp/resources/sdk-resource.ts)拒绝固定版本/平台不符、缺失、不可执行或被改动的 launcher，返回 `resource-incompatible`，不执行未知资源、不搜索外部 CLI 回退。
 
+2026-10-08 起复制的是目标平台运行闭包，不再复制整个 pnpm 单元；具体文件排除、版本限定的运行链接修复、许可证保留、体积预算与包后核对见[包内容门禁](local-delivery.md#包内容与体积门禁)。保留官方源 TS 与必要声明文本；不能根据扩展名把全部 `.d.ts` 判为开发文件。SDK factory import 与 optional Node bundle import 分别校验，前者不证明惰性加载路径完整。此资源策略不改变原生执行、队列、配置或恢复合同。
+
 manifest 校验 Bun、host.mjs、gate.js、configuration.mjs、configuration-readonly.mjs、model-selection.mjs 六个启动文件以及修正后的 sdk.ts；运行时同时核对 coding-agent/utils 的实际包名、版本和入口真实路径属于资源根。准备在独占 staging 中运行真实 SDK import，拒绝替换正在使用的资源，失败保留旧完整资源。依赖闭包由冻结安装与准备过程提供，不是全闭包签名或发布完整性保证。SDK 错误的具体原因不能从通用 `resource-incompatible` 推断，开发环境用环境检查定位并重新准备；随包缺损重新取得完整应用，不自行迁移未知外部配置。
 
 [资源守卫](../../src/platform/omp/resources/sdk-resource-guard.ts)让 Main 首次校验之前与 prepare 共用同一实际资源根的 SQLite 文件独占锁；Main 持有到退出，prepare 在准备结束后释放。因此重新准备前需关闭已经读取过该 SDK 的 d-pi，空闲原生会话也不例外。私有锁位于固定 `/tmp/d-pi-sdk-resource-guards-<uid>`，目录权限 0700、文件权限 0600，与 `HOME`/`TMPDIR`、App 数据库和 OMP 配置无关，不写只读的应用资源根。锁文件保存非秘密 PID/出生身份供核对；实际所有权来自内核锁，SIGKILL 后自动释放，旧记录不授权结束或接管其他进程。两个固定官方包按各自 `exports` 的 `import` 映射校验 `src/sdk.ts`/`src/index.ts`，不以 CommonJS `require` 条件解析原生 ESM 入口。
