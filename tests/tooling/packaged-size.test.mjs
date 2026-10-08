@@ -54,6 +54,7 @@ async function fixture(t, duplicate = false) {
     "configuration-readonly.mjs",
     "model-selection.mjs",
     "native-queue.mjs",
+    "reading-session.mjs",
     "native-subagent-configuration.mjs",
     "pdf-content.mjs",
     entry,

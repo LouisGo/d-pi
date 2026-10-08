@@ -17,6 +17,7 @@ import { SubagentProjection } from "./subagent-projection";
 const ReadingIdentitySchema = z.object({
   dPiRecordId: z.string().min(1).max(512).optional(),
   dPiRestored: z.boolean().optional(),
+  dPiIdentityUnknown: z.boolean().optional(),
 });
 const TextSchema = z.object({ type: z.literal("text"), text: z.string() });
 function textOf(content: unknown): string {
@@ -78,6 +79,7 @@ export class ConversationProjection {
       const prior = this.items.find((item) => item.id === existing);
       const continuationOf = prior?.continuationOf ?? this.interrupted;
       const identity = ReadingIdentitySchema.safeParse(message);
+      if (identity.success && identity.data.dPiIdentityUnknown) this.gap = true;
       const ended = isNativeFrameType(frame, NativeFrameTypes.messageEnd);
       const state =
         message.stopReason === "aborted"

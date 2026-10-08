@@ -10,6 +10,7 @@ export const NativeFailureOperationSchema = z.enum([
   "negotiate_protocol",
   "get_state",
   "get_messages_page",
+  "d_pi_reading_page",
   "d_pi_state",
   "d_pi_subagent_state",
   "d_pi_queue",

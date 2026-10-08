@@ -652,27 +652,36 @@ export function createSessionHost(
         // not a replay of prompts or a claim about old unknown submission receipts.
         if (options.onNativeFrame) {
           const instance = native;
+          const readingCommand = value.sdkEntry
+            ? "d_pi_reading_page"
+            : "get_messages_page";
+          const readingMessage = value.sdkEntry
+            ? z.looseObject({
+                role: z.string(),
+                content: z.unknown(),
+                dPiRecordId: z.string().min(1).max(512),
+                dPiRestored: z.literal(true),
+              })
+            : z.looseObject({ role: z.string(), content: z.unknown() });
           let cursor: string | undefined;
           let count = 0;
           let total: number | undefined;
           do {
             const response = await tasks.run((signal) =>
               instance.request(
-                "get_messages_page",
+                readingCommand,
                 { limit: 100, ...(cursor ? { cursor } : {}) },
                 { signal },
               ),
             );
             const page = nativeData(
               z.object({
-                messages: z.array(
-                  z.looseObject({ role: z.string(), content: z.unknown() }),
-                ),
+                messages: z.array(readingMessage),
                 nextCursor: z.string().optional(),
                 totalMessages: z.number().int().nonnegative(),
               }),
               response,
-              "get_messages_page",
+              readingCommand,
             );
             if (
               (total !== undefined && total !== page.totalMessages) ||

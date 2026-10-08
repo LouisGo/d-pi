@@ -39,6 +39,7 @@ export function inspectSdk(root, sdkRoot, declared) {
     "configuration-readonly.mjs",
     "model-selection.mjs",
     "native-queue.mjs",
+    "reading-session.mjs",
     "native-subagent-configuration.mjs",
     "BUN-LICENSE.md",
     "node_modules/@oh-my-pi/pi-coding-agent/package.json",
@@ -80,6 +81,7 @@ export function inspectSdk(root, sdkRoot, declared) {
     "configuration-readonly.mjs",
     "model-selection.mjs",
     "native-queue.mjs",
+    "reading-session.mjs",
     "native-subagent-configuration.mjs",
   ]) {
     if (

@@ -16,6 +16,7 @@ const native = vi.hoisted(() => ({
   close: vi.fn(),
   controlRequest: vi.fn(),
   messagesPage: vi.fn(),
+  readingPage: vi.fn(),
   options: [] as NativeSessionOptions[],
 }));
 vi.mock("./native/native-session", () => ({
@@ -36,6 +37,7 @@ vi.mock("./native/native-session", () => ({
     }
     async request(command: string, payload?: unknown) {
       if (command === "get_messages_page") return native.messagesPage(payload);
+      if (command === "d_pi_reading_page") return native.readingPage(payload);
       if (command === "d_pi_subagent_state")
         return { success: true, data: { agents: [] } };
       if (
@@ -72,6 +74,7 @@ afterEach(() => {
   native.close.mockReset();
   native.controlRequest.mockReset();
   native.messagesPage.mockReset();
+  native.readingPage.mockReset();
   native.options.length = 0;
 });
 
@@ -1567,4 +1570,64 @@ it("rejects a changed resumed identity before exposing history or readiness", as
   expect(read).not.toHaveBeenCalled();
   expect(native.writes).toEqual([]);
   expect(exit).toHaveBeenCalledWith(1);
+});
+
+it("seeds SDK recovery from branch records with exact native IDs before ready", async () => {
+  const frames: unknown[] = [];
+  const host = createSessionHost(() => {}, vi.fn(), {
+    onNativeFrame: (frame) => frames.push(frame),
+  });
+  native.controlRequest.mockResolvedValue({
+    success: true,
+    data: {
+      paused: false,
+      stopping: false,
+      pendingAsync: false,
+      admitted: false,
+      streaming: false,
+      compacting: false,
+      queued: 0,
+      background: 0,
+      queue: [],
+    },
+  });
+  native.readingPage.mockResolvedValue({
+    success: true,
+    data: {
+      totalMessages: 1,
+      messages: [
+        {
+          role: "user",
+          content: "native branch",
+          dPiRecordId: "entry-id",
+          dPiRestored: true,
+        },
+      ],
+    },
+  });
+  await host.handle({
+    kind: "start",
+    threadId: crypto.randomUUID(),
+    traceId: crypto.randomUUID(),
+    processInstanceId: crypto.randomUUID(),
+    connectionGeneration: crypto.randomUUID(),
+    configContextId: "fixture",
+    binary: "/fixture/bun",
+    sdkEntry: "/fixture/host.mjs",
+    identity: { directory: "/project", device: "1", inode: "2" },
+    environment: {},
+    sessionDirectory: "/sessions",
+    resume: { sessionId: "session", sessionFile: "/sessions/session.jsonl" },
+  });
+  expect(native.readingPage).toHaveBeenCalledOnce();
+  expect(native.messagesPage).not.toHaveBeenCalled();
+  expect(frames).toContainEqual({
+    type: "message_end",
+    message: {
+      role: "user",
+      content: "native branch",
+      dPiRecordId: "entry-id",
+      dPiRestored: true,
+    },
+  });
 });

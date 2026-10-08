@@ -284,3 +284,14 @@ it("carries only validated native record identity and restored origin through fi
   expect(p.snapshot().items.at(-1)?.nativeRecordId).toBeUndefined();
   p.dispose();
 });
+
+it("keeps an SDK identity coverage gap explicit without guessing a native record", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {});
+  p.accept({
+    type: "message_end",
+    message: { role: "assistant", content: "same", dPiIdentityUnknown: true },
+  });
+  expect(p.snapshot().gap).toBe(true);
+  expect(p.snapshot().items[0]?.nativeRecordId).toBeUndefined();
+  p.dispose();
+});
