@@ -106,3 +106,31 @@ test("cold reading refuses changing sessions and is permanently closed before pr
   const normal = createReadingSession(f.session, { coldResume: false });
   assert.throws(() => normal.page({}), /reading-phase-closed/);
 });
+
+test("dispose drains accepted end/settled frames and preserves the original native disposal failure", async () => {
+  for (const failing of [false, true]) {
+    const f = fixture(),
+      frames = [],
+      failure = Error("native-persistence-failed");
+    const message = { role: "assistant", content: "last message" };
+    f.branch.push({ type: "message", id: "last-native-id", message });
+    f.session.dispose = async () => {
+      f.emit({ type: "session_shutdown" });
+      if (failing) throw failure;
+    };
+    f.reading.session.subscribe((event) => frames.push(event));
+    f.emit({ type: "message_end", message });
+    f.emit({ type: "session_settled" });
+    if (failing)
+      await assert.rejects(
+        f.reading.session.dispose(),
+        (error) => error === failure,
+      );
+    else await f.reading.session.dispose();
+    assert.deepEqual(
+      frames.map((frame) => frame.type),
+      ["message_end", "session_settled", "session_shutdown"],
+    );
+    assert.equal(frames[0].message.dPiRecordId, "last-native-id");
+  }
+});

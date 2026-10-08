@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "5b6a783d88ab515c95e0408d497f2620d11df03e4f757b7b8f6914bbfb1506c1",
+  "inputsHash": "ec87b64d4b90017ef1c3c9ec5384481cd6e001c80010f124fa2a9c0287aac5de",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 448,
-    "scannedFiles": 448,
+    "sourceFiles": 449,
+    "scannedFiles": 449,
     "unscanned": []
   },
   "modules": [
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 196,
-      "lines": 35711,
+      "lines": 35936,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -60,7 +60,7 @@
       ],
       "materialized": true,
       "files": 28,
-      "lines": 3008,
+      "lines": 3011,
       "publicEntries": [
         {
           "path": "src/platform/main/storage/public.ts",
@@ -294,7 +294,7 @@
       ],
       "materialized": true,
       "files": 23,
-      "lines": 3648,
+      "lines": 3661,
       "publicEntries": [
         {
           "path": "src/modules/conversation/contracts/public.ts",
@@ -327,7 +327,7 @@
       ],
       "materialized": true,
       "files": 56,
-      "lines": 13190,
+      "lines": 13263,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -360,8 +360,8 @@
       ],
       "defaultEnvironment": "omp",
       "materialized": true,
-      "files": 11,
-      "lines": 2194,
+      "files": 12,
+      "lines": 2385,
       "publicEntries": [
         {
           "path": "runtime/host.mjs",
@@ -24835,6 +24835,15 @@
       "sourceModule": "runtime",
       "sourceEnvironment": "omp",
       "test": false,
+      "specifier": "@oh-my-pi/pi-coding-agent/modes/rpc/rpc-frame",
+      "kind": "dynamic-import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/host.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
       "specifier": "@oh-my-pi/pi-coding-agent/modes/rpc/rpc-mode",
       "kind": "dynamic-import",
       "resolution": "external"
@@ -24900,6 +24909,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "runtime/native-subagent-configuration.mjs",
+      "targetModule": "runtime",
+      "targetEnvironment": "omp"
+    },
+    {
+      "from": "runtime/host.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "./reading-session.mjs",
+      "kind": "import",
+      "resolution": "module",
+      "to": "runtime/reading-session.mjs",
       "targetModule": "runtime",
       "targetEnvironment": "omp"
     },
@@ -25238,6 +25259,24 @@
       "sourceEnvironment": "omp",
       "test": false,
       "specifier": "@oh-my-pi/pi-natives",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/reading-session.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/reading-session.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "node:timers/promises",
       "kind": "import",
       "resolution": "external"
     },

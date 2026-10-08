@@ -33,6 +33,7 @@ try {
     "model-selection.mjs",
     "native-queue.mjs",
     "native-subagent-configuration.mjs",
+    "reading-session.mjs",
   ])
     await cp(resolve("runtime", name), join(adapter, name));
   await writeFile(

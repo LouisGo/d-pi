@@ -57,6 +57,18 @@ export function createReadingSession(session, { coldResume = true } = {}) {
   const proxy = new Proxy(session, {
     get(target, property) {
       if (property === "subscribe") return subscribe;
+      if (property === "dispose")
+        return async () => {
+          try {
+            await target.dispose();
+          } catch (error) {
+            // Deliver already accepted frames before RPC drains its writer. Keep
+            // the original failure object for the SDK's persistence attribution.
+            await events.catch(() => {});
+            throw error;
+          }
+          await events;
+        };
       const value = Reflect.get(target, property, target);
       return typeof value === "function" ? value.bind(target) : value;
     },
