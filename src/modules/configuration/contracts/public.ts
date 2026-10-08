@@ -122,6 +122,7 @@ export const ModelSummarySchema = z.strictObject({
   id: z.string(),
   name: z.string(),
   available: z.boolean(),
+  sessionSelectable: z.boolean().optional(),
   reason: z
     .enum(["authentication-required", "disabled", "configuration-unknown"])
     .nullable(),
@@ -130,6 +131,7 @@ export const ModelSummarySchema = z.strictObject({
   maxTokens: z.number().nullable().optional(),
   cost: ModelCostSchema.nullable().optional(),
   custom: z.boolean().optional(),
+  assignableRoles: z.array(z.string()).optional(),
   api: z.string().optional(),
   baseUrl: z.string().nullable().optional(),
   reasoning: z.boolean(),

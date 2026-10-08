@@ -47,6 +47,8 @@ export const ProviderSummarySchema = z.strictObject({
       enterpriseUrl: z.string().optional(),
     }),
   ),
+  apiKeyEditable: z.boolean().optional(),
+  keyValidation: z.enum(["native", "none"]).optional(),
   modelCount: z.number().int().nonnegative(),
   baseUrl: z.string().nullable(),
 });
@@ -64,16 +66,11 @@ export const CustomModelInputSchema = z.strictObject({
   provider: ProviderIdSchema,
   id: z.string().trim().min(1).max(512),
   name: z.string().trim().min(1).max(512),
-  baseUrl: z.url().refine((value) => {
-    const url = new URL(value);
-    return (
-      ["http:", "https:"].includes(url.protocol) &&
-      !url.username &&
-      !url.password &&
-      !url.search &&
-      !url.hash
-    );
-  }),
+  baseUrl: z
+    .url({ protocol: /^https?$/ })
+    .refine(
+      (value) => !/[?#]/.test(value) && !/^https?:\/\/[^/]*@/.test(value),
+    ),
   api: z.string().trim().min(1).max(128).optional(),
   contextWindow: z.number().int().positive(),
   maxTokens: z.number().int().positive(),
