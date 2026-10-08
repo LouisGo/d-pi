@@ -139,6 +139,7 @@
     width: calc(var(--control-height) * 3);
     height: calc(var(--control-height) * 3);
     padding: calc(var(--layout-gap) / 2);
+    border-radius: var(--radius-control);
   }
   .ui-button-thumbnail img {
     width: 100%;
