@@ -92,6 +92,7 @@
 .providers-provider-button {
   display: flex;
   align-items: flex-start;
+  justify-content: flex-start;
   gap: var(--layout-gap);
   flex: 1;
   min-inline-size: 0;
