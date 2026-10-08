@@ -20,7 +20,11 @@ afterEach(async () => {
   for (const cleanup of cleanups.splice(0)) await cleanup();
   vi.unstubAllGlobals();
 });
-async function mount(active = true, page?: HistoryPage) {
+async function mount(
+  active = true,
+  page?: HistoryPage,
+  reader?: HistoryBridge["read"],
+) {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   let emit: ((event: ConversationEvent) => void) | undefined;
   const model = new ConversationModel({
@@ -33,25 +37,29 @@ async function mount(active = true, page?: HistoryPage) {
   const bridge: HistoryBridge = {
     projectList: vi.fn(),
     projectRead: vi.fn(),
-    read: vi.fn<HistoryBridge["read"]>(
-      async (_id, cursor) =>
-        page ?? {
-          kind: "page",
-          entries: [
-            {
-              id: cursor ? "two" : "one",
-              parentId: null,
-              role: "assistant",
-              text: cursor ? "second saved message" : "first saved message",
-            },
-          ],
-          source: "saved",
-          coverage: "append-order",
-          next: cursor ? null : { threadId: "A", source: "saved", offset: 100 },
-          incompleteTail: false,
-          omitted: 0,
-        },
-    ),
+    read:
+      reader ??
+      vi.fn<HistoryBridge["read"]>(
+        async (_id, cursor) =>
+          page ?? {
+            kind: "page",
+            entries: [
+              {
+                id: cursor ? "two" : "one",
+                parentId: null,
+                role: "assistant",
+                text: cursor ? "second saved message" : "first saved message",
+              },
+            ],
+            source: "saved",
+            coverage: "append-order",
+            next: cursor
+              ? null
+              : { threadId: "A", source: "saved", offset: 100 },
+            incompleteTail: false,
+            omitted: 0,
+          },
+      ),
   };
   const container = document.createElement("div");
   document.body.append(container);
@@ -230,4 +238,100 @@ it("distinguishes a missing bound file from an empty new conversation", async ()
     expect(f.container.textContent).toContain("records are missing");
   });
   expect(f.container.textContent).not.toContain("No messages yet");
+});
+
+it("keeps the complete saved body when the restored live projection is truncated", async () => {
+  const f = await mount();
+  await vi.waitFor(async () => {
+    await act(() => new Promise((r) => setTimeout(r, 5)));
+    expect(f.container.textContent).toContain("first saved message");
+  });
+  await act(() =>
+    f.emit({
+      kind: "snapshot",
+      connectionGeneration: "g",
+      seq: 1,
+      gap: true,
+      items: [
+        {
+          id: 1,
+          nativeRecordId: "one",
+          restored: true,
+          truncated: true,
+          role: "assistant",
+          state: "complete",
+          label: { kind: "literal", text: "OMP" },
+          text: "shortened",
+        },
+      ],
+    }),
+  );
+  expect(f.container.textContent).toContain("first saved message");
+  expect(f.container.textContent).not.toContain("shortened");
+});
+it("refreshes an initially unbound transcript after native persistence and retains a message evicted from live", async () => {
+  let committed = false;
+  const reader: HistoryBridge["read"] = vi.fn(async () =>
+    committed
+      ? {
+          kind: "page",
+          source: "committed",
+          coverage: "append-order",
+          next: null,
+          incompleteTail: false,
+          omitted: 0,
+          entries: [
+            {
+              id: "persisted",
+              parentId: null,
+              role: "assistant",
+              text: "old persisted reply",
+            },
+          ],
+        }
+      : { kind: "unavailable", reason: "unbound" },
+  );
+  const f = await mount(true, undefined, reader);
+  await act(() =>
+    f.emit({
+      kind: "snapshot",
+      connectionGeneration: "g",
+      seq: 1,
+      gap: false,
+      items: [
+        {
+          id: 1,
+          nativeRecordId: "persisted",
+          role: "assistant",
+          state: "complete",
+          label: { kind: "literal", text: "OMP" },
+          text: "old persisted reply",
+        },
+      ],
+    }),
+  );
+  committed = true;
+  await vi.waitFor(async () => {
+    await act(() => new Promise((r) => setTimeout(r, 20)));
+    expect(reader).toHaveBeenCalledTimes(2);
+  });
+  await act(() =>
+    f.emit({
+      kind: "snapshot",
+      connectionGeneration: "g",
+      seq: 2,
+      gap: true,
+      items: [
+        {
+          id: 1002,
+          role: "assistant",
+          state: "streaming",
+          label: { kind: "literal", text: "OMP" },
+          text: "current reply",
+        },
+      ],
+    }),
+  );
+  expect(f.container.textContent).toContain("old persisted reply");
+  expect(f.container.textContent).toContain("current reply");
 });

@@ -40,7 +40,7 @@ export function SavedConversation({
 }) {
   const { t } = useI18n();
   // Only membership/identity changes repaint the timeline; deltas belong to rows.
-  useStore(
+  const identities = useStore(
     model.stateStore,
     useShallow((state) =>
       state.itemIds.map((id) => state.itemsById.get(id)?.nativeRecordId ?? id),
@@ -51,11 +51,30 @@ export function SavedConversation({
     ...savedConversationQuery(bridge, threadId),
     enabled: active,
   });
+  // A native end identity / resumed generation is a read-only invalidation,
+  // never a prompt retry. Debounce coalesces user/end pairs and background bursts.
+  const generation = useStore(
+    model.stateStore,
+    (state) => state.view?.connectionGeneration,
+  );
+  const gap = useStore(model.stateStore, (state) => state.view?.gap ?? false);
+  const { refetch } = saved;
+  useEffect(() => {
+    if (!active || !generation || !identities.length) return;
+    const timer = setTimeout(() => {
+      void refetch();
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [active, generation, identities, refetch]);
   const source = JSON.stringify(["conversation", threadId]);
   const sentinel = useRef<HTMLDivElement>(null);
   const { hasNextPage, isFetching, fetchNextPage } = saved;
   useEffect(() => {
     const node = sentinel.current;
+    if (active && gap && hasNextPage && !isFetching) {
+      void fetchNextPage();
+      return;
+    }
     if (
       !active ||
       !node ||
@@ -72,7 +91,7 @@ export function SavedConversation({
     );
     observer.observe(node);
     return () => observer.disconnect();
-  }, [active, hasNextPage, isFetching, fetchNextPage]);
+  }, [active, gap, hasNextPage, isFetching, fetchNextPage]);
   const pages = saved.data?.pages ?? [];
   const unavailable = pages.find((page) => page.kind === "unavailable");
   const entries = pages.flatMap((page) =>
@@ -165,6 +184,7 @@ export function SavedConversation({
         (!unavailable || unavailable.reason === "unbound") && (
           <p className="muted">{t("ui.conversation.empty")}</p>
         )}
+      {gap && <p role="status">{t("ui.conversation.gap")}</p>}
       {onOpenHistory && live.view?.gap && (
         <Button variant="ghost" onClick={onOpenHistory}>
           {t("ui.conversation.openHistory")}
@@ -212,25 +232,27 @@ function SavedRow({
   const live = useStore(model.stateStore, (state) =>
     liveId === undefined ? undefined : state.itemsById.get(liveId),
   );
-  const item: ConversationItem = live ?? {
-    id: 0,
-    role:
-      entry.role === "user"
-        ? "user"
-        : entry.role === "assistant"
-          ? "assistant"
-          : "tool",
-    state: "complete",
-    text: entry.text,
-    label: {
-      kind: "literal",
-      text: match(entry.role)
-        .with("user", () => t("ui.history.role.user"))
-        .with("assistant", () => t("ui.history.role.assistant"))
-        .with("tool", "toolResult", () => t("ui.history.role.tool"))
-        .otherwise(() => entry.role),
-    },
-  };
+  const item: ConversationItem = live
+    ? { ...live, text: entry.text, truncated: false }
+    : {
+        id: 0,
+        role:
+          entry.role === "user"
+            ? "user"
+            : entry.role === "assistant"
+              ? "assistant"
+              : "tool",
+        state: "complete",
+        text: entry.text,
+        label: {
+          kind: "literal",
+          text: match(entry.role)
+            .with("user", () => t("ui.history.role.user"))
+            .with("assistant", () => t("ui.history.role.assistant"))
+            .with("tool", "toolResult", () => t("ui.history.role.tool"))
+            .otherwise(() => entry.role),
+        },
+      };
   return (
     <>
       <ConversationItemView
