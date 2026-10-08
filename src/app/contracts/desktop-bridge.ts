@@ -62,11 +62,13 @@ export const ReplySchema = z.discriminatedUnion("kind", [
   z.strictObject({
     kind: z.literal("threads"),
     threads: z.array(ThreadContextSchema),
+    nativeIndex: z.enum(["ready", "partial", "unavailable"]).optional(),
   }),
   z.strictObject({
     kind: z.literal("ready"),
     draft: DraftSchema.nullable(),
     directoryAvailable: z.boolean(),
+    nativeIndex: z.enum(["ready", "partial", "unavailable"]).optional(),
     preferences: PreferencesSchema,
   }),
   SavedDraftSchema,

@@ -325,6 +325,11 @@ export const ui = {
     "此旧会话不能更换模型或发送。请新建独立会话继续工作；原有草稿和历史保留。",
   "composer.blocked.readOnly":
     "此会话只读，不能发送。原有草稿保留；新会话可选择模型并开始工作。",
+  "composer.blocked.externalHistoryOnly": "CLI 会话历史可直接阅读；尚不能确认独占执行，暂不可发送。",
+  "ui.runtime.retryStart": "重新准备会话",
+  "app.thread.indexPartial": "部分原生会话尚未整理，可重试刷新。",
+  "app.thread.indexUnavailable": "原生会话索引暂不可用，现有会话仍可使用。",
+  "composer.blocked.preparing": "请稍候，正在准备会话…",
   "composer.blocked.start": "尚未启动会话，请先启动 OMP，再发送。",
   "composer.blocked.allow": "请允许项目执行以启动会话。",
   "composer.blocked.wait": "会话尚未就绪，请查看执行状态。",
