@@ -91,10 +91,12 @@ export class AppModel {
   readonly threadListStore = createStore<{
     threads: ThreadContext[];
     failed: boolean;
+    pending?: boolean;
     nativeIndex?: "ready" | "partial" | "unavailable";
   }>(() => ({
     threads: [],
     failed: false,
+    pending: true,
   }));
   private readonly threads = new Map<string, ThreadModel>();
   private disposed = false;
@@ -470,6 +472,7 @@ export class AppModel {
     }
   }
   async refreshThreads(): Promise<void> {
+    this.threadListStore.setState({ pending: true });
     const traceId = crypto.randomUUID();
     try {
       const reply = await this.bridge.request({
@@ -480,11 +483,14 @@ export class AppModel {
         this.threadListStore.setState({
           threads: reply.threads,
           failed: false,
+          pending: false,
           ...(reply.nativeIndex ? { nativeIndex: reply.nativeIndex } : {}),
         });
-      else if (!this.disposed) this.threadListStore.setState({ failed: true });
+      else if (!this.disposed)
+        this.threadListStore.setState({ failed: true, pending: false });
     } catch {
-      if (!this.disposed) this.threadListStore.setState({ failed: true });
+      if (!this.disposed)
+        this.threadListStore.setState({ failed: true, pending: false });
     }
   }
   async choose(): Promise<ThreadTransitionResult> {
