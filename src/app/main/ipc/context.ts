@@ -24,8 +24,9 @@ export type RuntimeConnectionContext = IpcSourceContext & {
   createMessageChannel: () => MessageChannelMain;
 };
 
-export type RuntimeRequestContext = IpcSourceContext & {
-  getRuntime: (threadId: string) => RuntimeService | undefined;
+export type RuntimeRequestContext = Omit<IpcSourceContext, "ipcMain"> & {
+  ipcMain: Pick<IpcMain, "handle">;
+  getRuntime: (threadId: string) => Pick<RuntimeService, "execute"> | undefined;
   initializeStorage: () => void;
   getDiagnostics: () => Diagnostics | undefined;
   runtimeFailure: (traceId: string, error: unknown) => RuntimeFailure;
