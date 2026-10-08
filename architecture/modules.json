@@ -269,11 +269,13 @@
       "root": "src/modules/preferences",
       "environments": [
         "contracts",
+        "core",
         "main",
         "renderer"
       ],
       "public": [
         "contracts/public.ts",
+        "core/public.ts",
         "main/public.ts",
         "renderer/public.ts"
       ],
@@ -286,7 +288,8 @@
         ],
         "renderer": [
           "shared"
-        ]
+        ],
+        "core": []
       },
       "materialized": true
     },
@@ -382,11 +385,13 @@
       "root": "src/modules/configuration",
       "environments": [
         "contracts",
+        "core",
         "main",
         "renderer"
       ],
       "public": [
         "contracts/public.ts",
+        "core/public.ts",
         "main/public.ts",
         "renderer/public.ts"
       ],
@@ -401,7 +406,8 @@
         "renderer": [
           "preferences",
           "ui"
-        ]
+        ],
+        "core": []
       },
       "materialized": true
     },

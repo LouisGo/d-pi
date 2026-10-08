@@ -123,7 +123,10 @@ export class DesktopCommandService {
         )
         .with({ kind: "preferences" }, ({ value }) => {
           this.storage.preferences.save(value);
-          return { kind: "preferences-saved" as const, value };
+          return {
+            kind: "preferences-saved" as const,
+            value: this.storage.preferences.read(),
+          };
         })
         .exhaustive();
     } catch (error) {

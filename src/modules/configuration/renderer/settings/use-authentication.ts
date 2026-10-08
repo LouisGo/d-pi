@@ -31,6 +31,8 @@ export function useAuthentication(bridge: ConfigurationBridge) {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<AuthenticationResult | null>(null);
   const [savingKey, setSavingKey] = useState(false);
+  const [continuing, setContinuing] = useState(false);
+  const continuingRef = useRef(false);
   const requesting = useRef(false);
   const client = useQueryClient();
   useEffect(
@@ -48,8 +50,8 @@ export function useAuthentication(bridge: ConfigurationBridge) {
       }),
     [bridge, client],
   );
-  const request = async (command: ConfigurationCommand) => {
-    if (requesting.current) return;
+  const request = async (command: ConfigurationCommand): Promise<boolean> => {
+    if (requesting.current || continuingRef.current) return false;
     requesting.current = true;
     setBusy(true);
     setSavingKey(command.kind === "save-key");
@@ -72,7 +74,7 @@ export function useAuthentication(bridge: ConfigurationBridge) {
           code: "identity-mismatch",
           traceId: command.traceId,
         });
-        return;
+        return false;
       }
       if (reply.kind === "started") {
         const current = eventRef.current;
@@ -109,6 +111,7 @@ export function useAuthentication(bridge: ConfigurationBridge) {
           void client.invalidateQueries({ queryKey: ["configuration"] });
         }
       }
+      return reply.kind === "done" || reply.kind === "started";
     } catch {
       setBusy(false);
       setResult({
@@ -116,12 +119,66 @@ export function useAuthentication(bridge: ConfigurationBridge) {
         code: "transport-failed",
         traceId: command.traceId,
       });
+      return false;
     } finally {
       requesting.current = false;
       setSavingKey(false);
     }
   };
   const active = !!event && event.kind !== "finished";
+  const continueRequest = async (
+    command: Extract<
+      ConfigurationCommand,
+      { kind: "answer" | "cancel" | "open-login" }
+    >,
+  ): Promise<boolean> => {
+    const origin = eventRef.current;
+    if (
+      !origin ||
+      origin.kind === "finished" ||
+      origin.jobId !== command.jobId ||
+      continuingRef.current
+    )
+      return false;
+    continuingRef.current = true;
+    setContinuing(true);
+    setResult(null);
+    try {
+      const reply = await bridge.request(command);
+      if (
+        reply.traceId !== command.traceId ||
+        !sameConfigurationScope(reply.scope, origin.scope)
+      ) {
+        setResult({
+          kind: "failed",
+          code: "identity-mismatch",
+          traceId: command.traceId,
+        });
+        return false;
+      }
+      if (reply.kind !== "done") {
+        setResult({
+          kind: "failed",
+          code:
+            reply.kind === "failed" ? reply.code : "configuration-unavailable",
+          traceId: command.traceId,
+        });
+        return false;
+      }
+      if (command.kind === "answer") setAnswer("");
+      return true;
+    } catch {
+      setResult({
+        kind: "failed",
+        code: "transport-failed",
+        traceId: command.traceId,
+      });
+      return false;
+    } finally {
+      continuingRef.current = false;
+      setContinuing(false);
+    }
+  };
   return {
     key,
     setKey,
@@ -134,5 +191,7 @@ export function useAuthentication(bridge: ConfigurationBridge) {
     result,
     request,
     active,
+    continuing,
+    continueRequest,
   };
 }

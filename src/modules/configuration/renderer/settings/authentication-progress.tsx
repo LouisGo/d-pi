@@ -1,34 +1,54 @@
 import { useI18n } from "../../../preferences/renderer/public";
 import { Button, FormField, TextInput } from "../../../ui/renderer/public";
-import type { ConfigurationBridge } from "../../contracts/public";
 import type { useAuthentication } from "./use-authentication";
 
 type Authentication = ReturnType<typeof useAuthentication>;
 export function AuthenticationProgress({
-  bridge,
   authentication,
 }: {
-  bridge: ConfigurationBridge;
   authentication: Pick<
     Authentication,
-    "active" | "event" | "challenge" | "answer" | "setAnswer"
+    | "active"
+    | "event"
+    | "challenge"
+    | "answer"
+    | "setAnswer"
+    | "continuing"
+    | "continueRequest"
   >;
 }) {
   const { t } = useI18n();
-  const { active, event, challenge, answer, setAnswer } = authentication;
+  const {
+    active,
+    event,
+    challenge,
+    answer,
+    setAnswer,
+    continuing,
+    continueRequest,
+  } = authentication;
   return (
     <>
       {" "}
       {active && event && (
-        <div role="status">
+        <div className="providers-auth-progress" role="status">
+          {"providerId" in event && event.providerId && (
+            <strong>{event.providerId}</strong>
+          )}
+          {event.source && (
+            <p className="trace" data-selectable>
+              {event.source.directory}
+            </p>
+          )}
           {challenge && challenge.jobId === event.jobId && (
             <>
               <p data-selectable>{challenge.instructions}</p>
               <Button
                 variant="secondary"
                 type="button"
+                disabled={continuing}
                 onClick={() =>
-                  void bridge.request({
+                  void continueRequest({
                     kind: "open-login",
                     jobId: challenge.jobId,
                     traceId: crypto.randomUUID(),
@@ -45,15 +65,16 @@ export function AuthenticationProgress({
           {event.kind === "prompt" && (
             <form
               className="settings-form"
+              data-auth-prompt
               onSubmit={(e) => {
                 e.preventDefault();
-                void bridge.request({
+                if ((!event.allowEmpty && !answer.trim()) || continuing) return;
+                void continueRequest({
                   kind: "answer",
                   jobId: event.jobId,
                   value: answer,
                   traceId: crypto.randomUUID(),
                 });
-                setAnswer("");
               }}
             >
               <FormField label={event.message}>
@@ -63,20 +84,29 @@ export function AuthenticationProgress({
                     aria-describedby={describedBy}
                     aria-invalid={invalid}
                     type={event.secret ? "password" : "text"}
+                    placeholder={event.placeholder}
+                    required={!event.allowEmpty}
+                    disabled={continuing}
                     autoComplete="off"
                     value={answer}
                     onChange={(e) => setAnswer(e.target.value)}
                   />
                 )}
               </FormField>
-              <Button type="submit">{t("config.answer")}</Button>
+              <Button
+                type="submit"
+                disabled={continuing || (!event.allowEmpty && !answer.trim())}
+              >
+                {t("config.answer")}
+              </Button>
             </form>
           )}
           <Button
             variant="ghost"
             type="button"
+            disabled={continuing}
             onClick={() =>
-              void bridge.request({
+              void continueRequest({
                 kind: "cancel",
                 jobId: event.jobId,
                 traceId: crypto.randomUUID(),

@@ -1,0 +1,1890 @@
+{
+  "startedAt": "2026-10-08T13:32:30.061Z",
+  "checks": [
+    {
+      "step": "launch-one-isolated-Electron",
+      "pid": 31574
+    },
+    {
+      "step": "native-provider-catalog-before-key",
+      "coverage": "complete",
+      "providerCount": 92,
+      "models": [
+        {
+          "provider": "openai",
+          "id": "gpt-fixture-a",
+          "available": false
+        },
+        {
+          "provider": "openai",
+          "id": "gpt-fixture-b",
+          "available": false
+        }
+      ]
+    },
+    {
+      "step": "raw-key-native-roundtrip-without-probe",
+      "provider": "openai",
+      "accountType": [
+        "api_key"
+      ],
+      "localhostRequests": 0
+    },
+    {
+      "step": "custom-model-native-file-and-snapshot",
+      "id": "gpt-fixture-custom",
+      "nativeFile": "models.yml",
+      "hash": "a43fade5c7517ea1ab55334a5470f6a5c2412ff80531210d7a59a90bdd15ba2b"
+    },
+    {
+      "step": "device-favorite-and-visibility-persisted",
+      "favorites": [
+        "[\"openai\",\"gpt-fixture-b\"]"
+      ],
+      "hidden": [
+        "[\"openai\",\"gpt-fixture-a\"]"
+      ]
+    },
+    {
+      "step": "ordinary-mouse-input-focus-no-outline",
+      "editable": true,
+      "focusVisible": true,
+      "outlineStyle": "none",
+      "outlineWidth": "3px"
+    },
+    {
+      "step": "picker-search-and-arrow-key",
+      "focusedModel": "gpt-fixture-b"
+    },
+    {
+      "step": "picker-escape-focus-return"
+    },
+    {
+      "step": "picker-manage-entry-opens-provider-settings"
+    },
+    {
+      "step": "composer-model-intent-before-project-trust",
+      "phase": "browse",
+      "selectedModel": {
+        "provider": "openai",
+        "modelId": "gpt-fixture-b",
+        "thinking": {
+          "kind": "default"
+        }
+      }
+    },
+    {
+      "step": "one-necessary-rebuilt-confirmation-same-data",
+      "pid": 72642,
+      "root": "/private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/d-pi-providers-models-gui-woNHIc"
+    },
+    {
+      "step": "explicit-project-trust-and-native-host-readback",
+      "phase": "ready",
+      "model": "openai/gpt-fixture-a",
+      "trusted": true,
+      "connectionGeneration": "78e8005f-fce7-49b7-9e06-1f17915059f7"
+    },
+    {
+      "step": "connected-host-model-switch-native-readback",
+      "model": "openai/gpt-fixture-custom",
+      "phase": "ready",
+      "pickerVisible": false,
+      "uiAlerts": []
+    },
+    {
+      "step": "continue-same-confirmation-Electron-after-harness-adjustment",
+      "pid": 72642
+    },
+    {
+      "step": "explicit-project-trust-and-native-host-readback",
+      "phase": "ready",
+      "model": "openai/gpt-fixture-custom",
+      "trusted": true,
+      "connectionGeneration": "78e8005f-fce7-49b7-9e06-1f17915059f7"
+    },
+    {
+      "step": "connected-host-model-switch-native-readback",
+      "model": "openai/gpt-fixture-custom",
+      "phase": "ready",
+      "pickerVisible": false,
+      "uiAlerts": []
+    },
+    {
+      "step": "actual-Composer-native-local-model-send",
+      "selectedModel": "openai/gpt-fixture-custom",
+      "localhostRequests": 2,
+      "localhostGenerationRequests": 1,
+      "localhostDiscoveryRequests": 1,
+      "requestModel": "gpt-fixture-custom",
+      "assistantRendered": true,
+      "realSupplierRequests": 0
+    },
+    {
+      "step": "no-real-provider-login-or-probe",
+      "localhostRequests": 2,
+      "localhostGenerationRequests": 1,
+      "localhostDiscoveryRequests": 1,
+      "realSupplierRequests": 0
+    }
+  ],
+  "screenshots": [
+    {
+      "name": "providers-light",
+      "file": "/Users/lou/.codex/worktrees/providers-models/d-pi/.scratch/providers-models/evidence/providers-light.png",
+      "sha256": "f78879b3510115ffb5e291bbd35a73251acb3437b14d97bbaae1b6af8d11b0d7",
+      "viewport": {
+        "width": 1120,
+        "height": 780
+      },
+      "theme": "light",
+      "rects": [
+        {
+          "selector": ".ui-settings-modal",
+          "x": 80,
+          "y": 78,
+          "width": 960,
+          "height": 624,
+          "clientWidth": 958,
+          "scrollWidth": 958
+        },
+        {
+          "selector": ".providers-workspace",
+          "x": 273,
+          "y": 439.296875,
+          "width": 750,
+          "height": 857.265625,
+          "clientWidth": 748,
+          "scrollWidth": 748
+        },
+        {
+          "selector": ".providers-rail",
+          "x": 274,
+          "y": 440.296875,
+          "width": 187,
+          "height": 855.265625,
+          "clientWidth": 186,
+          "scrollWidth": 186
+        },
+        {
+          "selector": ".providers-detail",
+          "x": 461,
+          "y": 440.296875,
+          "width": 561,
+          "height": 855.265625,
+          "clientWidth": 561,
+          "scrollWidth": 561
+        }
+      ],
+      "brands": [
+        "generic",
+        "openai",
+        "anthropic",
+        "zai",
+        "kimi",
+        "openrouter",
+        "githubcopilot",
+        "cursor",
+        "generic",
+        "antigravity",
+        "gemini",
+        "xai",
+        "generic",
+        "generic",
+        "generic",
+        "alibaba",
+        "alibaba",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "minimax",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "deepseek",
+        "generic",
+        "generic",
+        "meta",
+        "kimi",
+        "cerebras",
+        "generic",
+        "generic",
+        "fireworks",
+        "together",
+        "nvidia",
+        "generic",
+        "generic",
+        "huggingface",
+        "perplexity",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "ollama",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "aws",
+        "apple",
+        "azure",
+        "aws",
+        "google",
+        "google",
+        "groq",
+        "generic",
+        "minimax",
+        "mistral",
+        "openai",
+        "generic",
+        "minimax",
+        "openai",
+        "openai",
+        "openai",
+        "openai"
+      ]
+    },
+    {
+      "name": "providers-dark",
+      "file": "/Users/lou/.codex/worktrees/providers-models/d-pi/.scratch/providers-models/evidence/providers-dark.png",
+      "sha256": "682fee8715bf2f031ee5aed6f7b55c0dd73963d22f78296c4a9423b1d99f62b8",
+      "viewport": {
+        "width": 1120,
+        "height": 780
+      },
+      "theme": "dark",
+      "rects": [
+        {
+          "selector": ".ui-settings-modal",
+          "x": 80,
+          "y": 78,
+          "width": 960,
+          "height": 624,
+          "clientWidth": 958,
+          "scrollWidth": 958
+        },
+        {
+          "selector": ".providers-workspace",
+          "x": 273,
+          "y": 482.796875,
+          "width": 750,
+          "height": 857.265625,
+          "clientWidth": 748,
+          "scrollWidth": 748
+        },
+        {
+          "selector": ".providers-rail",
+          "x": 274,
+          "y": 483.796875,
+          "width": 187,
+          "height": 855.265625,
+          "clientWidth": 186,
+          "scrollWidth": 186
+        },
+        {
+          "selector": ".providers-detail",
+          "x": 461,
+          "y": 483.796875,
+          "width": 561,
+          "height": 855.265625,
+          "clientWidth": 561,
+          "scrollWidth": 561
+        }
+      ],
+      "brands": [
+        "generic",
+        "openai",
+        "anthropic",
+        "zai",
+        "kimi",
+        "openrouter",
+        "githubcopilot",
+        "cursor",
+        "generic",
+        "antigravity",
+        "gemini",
+        "xai",
+        "generic",
+        "generic",
+        "generic",
+        "alibaba",
+        "alibaba",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "minimax",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "deepseek",
+        "generic",
+        "generic",
+        "meta",
+        "kimi",
+        "cerebras",
+        "generic",
+        "generic",
+        "fireworks",
+        "together",
+        "nvidia",
+        "generic",
+        "generic",
+        "huggingface",
+        "perplexity",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "ollama",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "aws",
+        "apple",
+        "azure",
+        "aws",
+        "google",
+        "google",
+        "groq",
+        "generic",
+        "minimax",
+        "mistral",
+        "openai",
+        "generic",
+        "minimax",
+        "openai",
+        "openai",
+        "openai",
+        "openai"
+      ]
+    },
+    {
+      "name": "picker-dark",
+      "file": "/Users/lou/.codex/worktrees/providers-models/d-pi/.scratch/providers-models/evidence/picker-dark.png",
+      "sha256": "32d085b56bd5aec28bb1b900ca5bfd92b2cd5792beee34ac69693f55c81fc74d",
+      "viewport": {
+        "width": 1120,
+        "height": 780
+      },
+      "theme": "dark",
+      "rects": [
+        {
+          "selector": ".ui-popover-popup",
+          "x": 307.5,
+          "y": 171,
+          "width": 514,
+          "height": 514,
+          "clientWidth": 512,
+          "scrollWidth": 512
+        },
+        {
+          "selector": ".model-picker",
+          "x": 308.5,
+          "y": 172,
+          "width": 512,
+          "height": 512,
+          "clientWidth": 512,
+          "scrollWidth": 512
+        }
+      ],
+      "brands": [
+        "generic",
+        "openai",
+        "generic",
+        "generic",
+        "generic",
+        "alibaba",
+        "alibaba",
+        "aws",
+        "anthropic",
+        "azure",
+        "generic",
+        "aws",
+        "cerebras",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "cursor",
+        "generic",
+        "deepseek",
+        "generic",
+        "generic",
+        "fireworks",
+        "githubcopilot",
+        "generic",
+        "generic",
+        "generic",
+        "google",
+        "antigravity",
+        "gemini",
+        "google",
+        "groq",
+        "generic",
+        "huggingface",
+        "generic",
+        "kimi",
+        "meta",
+        "minimax",
+        "minimax",
+        "minimax",
+        "generic",
+        "mistral",
+        "kimi",
+        "generic",
+        "generic",
+        "generic",
+        "nvidia",
+        "generic",
+        "openai",
+        "generic",
+        "generic",
+        "openrouter",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "together",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "xai",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "zai",
+        "generic",
+        "generic",
+        "openai",
+        "openai",
+        "openai",
+        "openai"
+      ]
+    },
+    {
+      "name": "picker-light",
+      "file": "/Users/lou/.codex/worktrees/providers-models/d-pi/.scratch/providers-models/evidence/picker-light.png",
+      "sha256": "9c4b6a20bc4856170928255110f45f207016c65ac8b7f8c32e4a4a9efd588740",
+      "viewport": {
+        "width": 1120,
+        "height": 780
+      },
+      "theme": "light",
+      "rects": [
+        {
+          "selector": ".ui-popover-popup",
+          "x": 307.5,
+          "y": 171,
+          "width": 514,
+          "height": 514,
+          "clientWidth": 512,
+          "scrollWidth": 512
+        },
+        {
+          "selector": ".model-picker",
+          "x": 308.5,
+          "y": 172,
+          "width": 512,
+          "height": 512,
+          "clientWidth": 512,
+          "scrollWidth": 512
+        }
+      ],
+      "brands": [
+        "generic",
+        "openai",
+        "generic",
+        "generic",
+        "generic",
+        "alibaba",
+        "alibaba",
+        "aws",
+        "anthropic",
+        "azure",
+        "generic",
+        "aws",
+        "cerebras",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "cursor",
+        "generic",
+        "deepseek",
+        "generic",
+        "generic",
+        "fireworks",
+        "githubcopilot",
+        "generic",
+        "generic",
+        "generic",
+        "google",
+        "antigravity",
+        "gemini",
+        "google",
+        "groq",
+        "generic",
+        "huggingface",
+        "generic",
+        "kimi",
+        "meta",
+        "minimax",
+        "minimax",
+        "minimax",
+        "generic",
+        "mistral",
+        "kimi",
+        "generic",
+        "generic",
+        "generic",
+        "nvidia",
+        "generic",
+        "openai",
+        "generic",
+        "generic",
+        "openrouter",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "together",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "xai",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "zai",
+        "generic",
+        "generic",
+        "openai",
+        "openai",
+        "openai",
+        "openai"
+      ]
+    },
+    {
+      "name": "gui-failure",
+      "file": "/Users/lou/.codex/worktrees/providers-models/d-pi/.scratch/providers-models/evidence/gui-failure.png",
+      "sha256": "28da9b7b1ff6d16ab826487ca5b7e252383e7a1130d9226779a0fda340ee88e4",
+      "viewport": {
+        "width": 1120,
+        "height": 780
+      },
+      "theme": "light",
+      "rects": [],
+      "brands": [
+        "openai"
+      ]
+    },
+    {
+      "name": "gui-failure",
+      "file": "/Users/lou/.codex/worktrees/providers-models/d-pi/.scratch/providers-models/evidence/gui-failure.png",
+      "sha256": "8b4d486dead7998d20bc19adb0f5bc476242b570587c68deaed98ea560d455b0",
+      "buildId": "22569b77-dirty-7cd250c8",
+      "viewport": {
+        "width": 1120,
+        "height": 780
+      },
+      "theme": "light",
+      "rects": [],
+      "brands": [
+        "openai"
+      ]
+    },
+    {
+      "name": "local-native-response",
+      "file": "/Users/lou/.codex/worktrees/providers-models/d-pi/.scratch/providers-models/evidence/local-native-response.png",
+      "sha256": "0d9880314393559cc99cda18cc58a075a8698370685616c95b2f76e32aac6d7c",
+      "buildId": "22569b77-dirty-7cd250c8",
+      "viewport": {
+        "width": 1120,
+        "height": 780
+      },
+      "theme": "light",
+      "rects": [],
+      "brands": [
+        "openai"
+      ]
+    },
+    {
+      "name": "providers-light-confirmed",
+      "file": "/Users/lou/.codex/worktrees/providers-models/d-pi/.scratch/providers-models/evidence/providers-light-confirmed.png",
+      "sha256": "17f5781e3348c97bf5f925507e6187e381119fab6b51d2c968b234474db7d1bd",
+      "buildId": "22569b77-dirty-7cd250c8",
+      "viewport": {
+        "width": 1120,
+        "height": 780
+      },
+      "theme": "light",
+      "rects": [
+        {
+          "selector": ".ui-settings-modal",
+          "x": 80,
+          "y": 78,
+          "width": 960,
+          "height": 624,
+          "clientWidth": 958,
+          "scrollWidth": 958
+        },
+        {
+          "selector": ".providers-workspace",
+          "x": 273,
+          "y": 350.5,
+          "width": 750,
+          "height": 857.265625,
+          "clientWidth": 748,
+          "scrollWidth": 748
+        },
+        {
+          "selector": ".providers-rail",
+          "x": 274,
+          "y": 351.5,
+          "width": 187,
+          "height": 855.265625,
+          "clientWidth": 186,
+          "scrollWidth": 186
+        },
+        {
+          "selector": ".providers-detail",
+          "x": 461,
+          "y": 351.5,
+          "width": 561,
+          "height": 855.265625,
+          "clientWidth": 561,
+          "scrollWidth": 561
+        }
+      ],
+      "brands": [
+        "openai",
+        "openai",
+        "openai",
+        "anthropic",
+        "zai",
+        "kimi",
+        "openrouter",
+        "githubcopilot",
+        "cursor",
+        "generic",
+        "antigravity",
+        "gemini",
+        "xai",
+        "generic",
+        "generic",
+        "generic",
+        "alibaba",
+        "alibaba",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "minimax",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "deepseek",
+        "generic",
+        "generic",
+        "meta",
+        "kimi",
+        "cerebras",
+        "generic",
+        "generic",
+        "fireworks",
+        "together",
+        "nvidia",
+        "generic",
+        "generic",
+        "huggingface",
+        "perplexity",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "ollama",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "aws",
+        "apple",
+        "azure",
+        "aws",
+        "google",
+        "google",
+        "groq",
+        "generic",
+        "minimax",
+        "mistral",
+        "generic",
+        "minimax",
+        "openai",
+        "openai",
+        "openai",
+        "openai"
+      ]
+    },
+    {
+      "name": "provider-models-light-confirmed",
+      "file": "/Users/lou/.codex/worktrees/providers-models/d-pi/.scratch/providers-models/evidence/provider-models-light-confirmed.png",
+      "sha256": "63935abd990ac4a95106d92e4ee635833c3bc9a5d07790cd9cc5109a8c468d4d",
+      "buildId": "22569b77-dirty-7cd250c8",
+      "viewport": {
+        "width": 1120,
+        "height": 780
+      },
+      "theme": "light",
+      "rects": [
+        {
+          "selector": ".ui-settings-modal",
+          "x": 80,
+          "y": 78,
+          "width": 960,
+          "height": 624,
+          "clientWidth": 958,
+          "scrollWidth": 958
+        },
+        {
+          "selector": ".providers-workspace",
+          "x": 273,
+          "y": -139.5,
+          "width": 750,
+          "height": 857.265625,
+          "clientWidth": 748,
+          "scrollWidth": 748
+        },
+        {
+          "selector": ".providers-rail",
+          "x": 274,
+          "y": -138.5,
+          "width": 187,
+          "height": 855.265625,
+          "clientWidth": 186,
+          "scrollWidth": 186
+        },
+        {
+          "selector": ".providers-detail",
+          "x": 461,
+          "y": -138.5,
+          "width": 561,
+          "height": 855.265625,
+          "clientWidth": 561,
+          "scrollWidth": 561
+        }
+      ],
+      "brands": [
+        "openai",
+        "openai",
+        "openai",
+        "anthropic",
+        "zai",
+        "kimi",
+        "openrouter",
+        "githubcopilot",
+        "cursor",
+        "generic",
+        "antigravity",
+        "gemini",
+        "xai",
+        "generic",
+        "generic",
+        "generic",
+        "alibaba",
+        "alibaba",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "minimax",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "deepseek",
+        "generic",
+        "generic",
+        "meta",
+        "kimi",
+        "cerebras",
+        "generic",
+        "generic",
+        "fireworks",
+        "together",
+        "nvidia",
+        "generic",
+        "generic",
+        "huggingface",
+        "perplexity",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "ollama",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "aws",
+        "apple",
+        "azure",
+        "aws",
+        "google",
+        "google",
+        "groq",
+        "generic",
+        "minimax",
+        "mistral",
+        "generic",
+        "minimax",
+        "openai",
+        "openai",
+        "openai",
+        "openai"
+      ]
+    },
+    {
+      "name": "providers-dark-confirmed",
+      "file": "/Users/lou/.codex/worktrees/providers-models/d-pi/.scratch/providers-models/evidence/providers-dark-confirmed.png",
+      "sha256": "7c01b3644d2c3693262192fd092d325181a3cc87c3ab4ac30f2eb59d7b32233a",
+      "buildId": "22569b77-dirty-7cd250c8",
+      "viewport": {
+        "width": 1120,
+        "height": 780
+      },
+      "theme": "dark",
+      "rects": [
+        {
+          "selector": ".ui-settings-modal",
+          "x": 80,
+          "y": 78,
+          "width": 960,
+          "height": 624,
+          "clientWidth": 958,
+          "scrollWidth": 958
+        },
+        {
+          "selector": ".providers-workspace",
+          "x": 273,
+          "y": 350.5,
+          "width": 750,
+          "height": 857.265625,
+          "clientWidth": 748,
+          "scrollWidth": 748
+        },
+        {
+          "selector": ".providers-rail",
+          "x": 274,
+          "y": 351.5,
+          "width": 187,
+          "height": 855.265625,
+          "clientWidth": 186,
+          "scrollWidth": 186
+        },
+        {
+          "selector": ".providers-detail",
+          "x": 461,
+          "y": 351.5,
+          "width": 561,
+          "height": 855.265625,
+          "clientWidth": 561,
+          "scrollWidth": 561
+        }
+      ],
+      "brands": [
+        "openai",
+        "openai",
+        "openai",
+        "anthropic",
+        "zai",
+        "kimi",
+        "openrouter",
+        "githubcopilot",
+        "cursor",
+        "generic",
+        "antigravity",
+        "gemini",
+        "xai",
+        "generic",
+        "generic",
+        "generic",
+        "alibaba",
+        "alibaba",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "minimax",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "deepseek",
+        "generic",
+        "generic",
+        "meta",
+        "kimi",
+        "cerebras",
+        "generic",
+        "generic",
+        "fireworks",
+        "together",
+        "nvidia",
+        "generic",
+        "generic",
+        "huggingface",
+        "perplexity",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "ollama",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "aws",
+        "apple",
+        "azure",
+        "aws",
+        "google",
+        "google",
+        "groq",
+        "generic",
+        "minimax",
+        "mistral",
+        "generic",
+        "minimax",
+        "openai",
+        "openai",
+        "openai",
+        "openai"
+      ]
+    },
+    {
+      "name": "picker-dark-confirmed",
+      "file": "/Users/lou/.codex/worktrees/providers-models/d-pi/.scratch/providers-models/evidence/picker-dark-confirmed.png",
+      "sha256": "cb8edd6c053246821e916bc382b982ad335af2983b2dd2260c97676087ee1c98",
+      "buildId": "22569b77-dirty-7cd250c8",
+      "viewport": {
+        "width": 1120,
+        "height": 780
+      },
+      "theme": "dark",
+      "rects": [
+        {
+          "selector": ".ui-popover-popup",
+          "x": 307.5,
+          "y": 389,
+          "width": 514,
+          "height": 295.984375,
+          "clientWidth": 512,
+          "scrollWidth": 512
+        },
+        {
+          "selector": ".model-picker",
+          "x": 308.5,
+          "y": 390,
+          "width": 512,
+          "height": 293.984375,
+          "clientWidth": 512,
+          "scrollWidth": 512
+        }
+      ],
+      "brands": [
+        "openai",
+        "openai",
+        "openai",
+        "openai",
+        "openai",
+        "openai"
+      ]
+    },
+    {
+      "name": "picker-light-confirmed",
+      "file": "/Users/lou/.codex/worktrees/providers-models/d-pi/.scratch/providers-models/evidence/picker-light-confirmed.png",
+      "sha256": "91b4a4e4a7e353683a1f0c36b1001e3aa61472a4befe94fd579649afeb04cd24",
+      "buildId": "22569b77-dirty-7cd250c8",
+      "viewport": {
+        "width": 1120,
+        "height": 780
+      },
+      "theme": "light",
+      "rects": [
+        {
+          "selector": ".ui-popover-popup",
+          "x": 307.5,
+          "y": 389,
+          "width": 514,
+          "height": 295.984375,
+          "clientWidth": 512,
+          "scrollWidth": 512
+        },
+        {
+          "selector": ".model-picker",
+          "x": 308.5,
+          "y": 390,
+          "width": 512,
+          "height": 293.984375,
+          "clientWidth": 512,
+          "scrollWidth": 512
+        }
+      ],
+      "brands": [
+        "openai",
+        "openai",
+        "openai",
+        "openai",
+        "openai",
+        "openai"
+      ]
+    },
+    {
+      "name": "providers-narrow",
+      "file": "/Users/lou/.codex/worktrees/providers-models/d-pi/.scratch/providers-models/evidence/providers-narrow.png",
+      "sha256": "d0f3603f67dce27708fbb1458e9a8698a157f4a1f3c6913721c0680cff416eb0",
+      "buildId": "22569b77-dirty-7cd250c8",
+      "viewport": {
+        "width": 800,
+        "height": 900
+      },
+      "theme": "light",
+      "rects": [
+        {
+          "selector": ".ui-settings-modal",
+          "x": 16,
+          "y": 90,
+          "width": 768,
+          "height": 720,
+          "clientWidth": 766,
+          "scrollWidth": 766
+        },
+        {
+          "selector": ".providers-workspace",
+          "x": 209,
+          "y": 362.5,
+          "width": 558,
+          "height": 1272.265625,
+          "clientWidth": 556,
+          "scrollWidth": 556
+        },
+        {
+          "selector": ".providers-rail",
+          "x": 210,
+          "y": 363.5,
+          "width": 556,
+          "height": 295,
+          "clientWidth": 556,
+          "scrollWidth": 556
+        },
+        {
+          "selector": ".providers-detail",
+          "x": 210,
+          "y": 658.5,
+          "width": 556,
+          "height": 975.265625,
+          "clientWidth": 556,
+          "scrollWidth": 556
+        }
+      ],
+      "brands": [
+        "openai",
+        "openai",
+        "openai",
+        "anthropic",
+        "zai",
+        "kimi",
+        "openrouter",
+        "githubcopilot",
+        "cursor",
+        "generic",
+        "antigravity",
+        "gemini",
+        "xai",
+        "generic",
+        "generic",
+        "generic",
+        "alibaba",
+        "alibaba",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "minimax",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "deepseek",
+        "generic",
+        "generic",
+        "meta",
+        "kimi",
+        "cerebras",
+        "generic",
+        "generic",
+        "fireworks",
+        "together",
+        "nvidia",
+        "generic",
+        "generic",
+        "huggingface",
+        "perplexity",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "ollama",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "generic",
+        "aws",
+        "apple",
+        "azure",
+        "aws",
+        "google",
+        "google",
+        "groq",
+        "generic",
+        "minimax",
+        "mistral",
+        "generic",
+        "minimax",
+        "openai",
+        "openai",
+        "openai",
+        "openai"
+      ]
+    }
+  ],
+  "observations": [],
+  "build": {
+    "source": "/Users/lou/.codex/worktrees/providers-models/d-pi",
+    "version": "0.1.0-workbench.3",
+    "commit": "22569b7764e21324b5ad095244cf9dce3646798c",
+    "dirty": true,
+    "id": "22569b77-dirty-7cd250c8",
+    "mainSha256": "182977aa3cda5d32541b1d9bd5fc24d5596da884408e76151981b32397728ba8",
+    "preloadSha256": "85263277fcea95da6bab54f17791d0cc2d581df6b83b2081438b13c99a14745b",
+    "rendererAsset": "index--jpfNKbq.js",
+    "rendererSha256": "9003b09af0fa6e856ce6a16500cedbb06d3748f574c1d01c161af9a6a286013d",
+    "sdkManifestSha256": "1b79357a5d16144dac388c773837770c0fbc0e650e8490e16b3334481805b323",
+    "sdkResourcesMatchManifest": true,
+    "sdk": {
+      "lockHash": "b6735d784714e3cc68810a0475a02e676cd7f08eee8245c316e3e95c66448170",
+      "sdkImportFix": {
+        "file": "node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts",
+        "originalSha256": "97fc3bb3cd9ffe43b190da942c8ac326a62975484d46bc87f8c8d1ebf3db982d",
+        "sha256": "a3c4976059a734851ab0c57010dc3be38bc23b81b993bcd75fc8bb6b7532f1d4",
+        "originalImport": "import { createRatchetPrelude } from \"./ratchet/prelude\";",
+        "fixedImport": "import { createRatchetPrelude } from \"./ratchet/prelude.ts\";",
+        "authorized": "2026-10-01"
+      },
+      "sdkVersion": "18.4.6",
+      "bunVersion": "1.3.14",
+      "platform": "darwin-arm64",
+      "hashes": {
+        "bun": "e0c90ec15d33363e6b70713d56bc3b2c7585c17f40a0fe0f8fd9305901d4e233",
+        "host.mjs": "18daa3853f3d696d4d998aa2539da84b27eca291e5b952b746772fed481c44ac",
+        "gate.js": "62d1bc93fa5bfa163686199a94ff12f096490b55d0e5aef76253e12f25c28753",
+        "configuration.mjs": "70fd5a40abc23a0ae72123d378fa81ed4379518f6c96147377b8aaedbff57926",
+        "configuration-readonly.mjs": "6d9da381815c5f16b64ade7f6c1091d2bf65589c73d47a90bd2d2b60cdc73a03",
+        "model-selection.mjs": "dcdfe58b64bcb806a8be3c87b707a35324dd3549b72f07ffd458ddd88dce7893",
+        "reading-session.mjs": "105eec7cbf1ea5e7b78d6a2c7301a1ac6d8e4e8233d7c068cec10d9071e03bc8",
+        "image-input.mjs": "1602e7f1aad876978ae5c96ba5eb75e5970fe6ccaed66c1f8cc6a3113d73b038",
+        "image-compression.mjs": "9873879bb26e9f27ef0f3cb275999f56919478c810bb6a41448a766f455ec286",
+        "native-queue.mjs": "9fe01a80cf017bc248cdcbf0b0ec2865d5a3410692053acc7d95c6ab754c0326",
+        "native-subagent-configuration.mjs": "b9f8816d3ab20d462c49951121b6516c4a7c6201cf0c726b77ee3623b82e62a2",
+        "pdf-content.mjs": "a91e56a4157c2eb46fa9b541c5a299380d44c7fd7797ece1b2058c80c92982d2"
+      },
+      "packaging": {
+        "policyVersion": 1,
+        "budgetBytes": 681574400,
+        "packages": 112,
+        "omitted": [],
+        "removed": {
+          "type-declaration": {
+            "files": 5001,
+            "bytes": 40277212
+          },
+          "cli-bundle": {
+            "files": 1,
+            "bytes": 28100235
+          },
+          "source-map": {
+            "files": 5230,
+            "bytes": 58805457
+          },
+          "foreign-native": {
+            "files": 14,
+            "bytes": 211561176
+          },
+          "duplicate-native": {
+            "files": 1,
+            "bytes": 44589928
+          }
+        },
+        "runtimeAdditions": [
+          {
+            "package": "@huggingface/transformers@4.3.0",
+            "dependency": "onnxruntime-common"
+          }
+        ],
+        "size": {
+          "bytes": 575094530,
+          "files": 10853,
+          "links": 238,
+          "top": {
+            "BUN-LICENSE.md": 5376,
+            "bun": 63096576,
+            "configuration-readonly.mjs": 22389,
+            "configuration.mjs": 19457,
+            "gate.js": 937,
+            "host.mjs": 13203,
+            "image-compression.mjs": 4018,
+            "image-input.mjs": 5316,
+            "model-selection.mjs": 9176,
+            "native-queue.mjs": 10936,
+            "native-subagent-configuration.mjs": 4059,
+            "node_modules": 511896876,
+            "pdf-content.mjs": 684,
+            "reading-session.mjs": 5527
+          }
+        }
+      }
+    }
+  },
+  "isolation": {
+    "homeSeparate": true,
+    "appDataSeparate": true,
+    "nativeConfigSeparate": true,
+    "nativeSessionsSeparate": true,
+    "disabledProviders": 93,
+    "initialTrust": "browse"
+  },
+  "previousAttempt": {
+    "build": {
+      "source": "/Users/lou/.codex/worktrees/providers-models/d-pi",
+      "commit": "c2832460119b051da921d10c318868b47c3ea71e",
+      "dirty": true,
+      "mainSha256": "08988e5848e8a033738d92ab537e8cd10a1bd8a3a3c871795a03bc633cfb4abf",
+      "preloadSha256": "c625537e733a7489fdd3d5c94c13a289da43433491fa7d80ceb0889e43cf036e",
+      "rendererAsset": "index-D_L3U_VZ.js",
+      "rendererSha256": "50a1ea88665ec1e5f6ee3e8cf05dfc0e8ef77d99ffd0139ef9f348fe6b6bb02b",
+      "sdkManifestSha256": "7d9209c9ae9eafe4c905ee794dd907f3b00c9229efc041b7a124deccdd990e55",
+      "sdk": {
+        "lockHash": "b6735d784714e3cc68810a0475a02e676cd7f08eee8245c316e3e95c66448170",
+        "sdkImportFix": {
+          "file": "node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts",
+          "originalSha256": "97fc3bb3cd9ffe43b190da942c8ac326a62975484d46bc87f8c8d1ebf3db982d",
+          "sha256": "a3c4976059a734851ab0c57010dc3be38bc23b81b993bcd75fc8bb6b7532f1d4",
+          "originalImport": "import { createRatchetPrelude } from \"./ratchet/prelude\";",
+          "fixedImport": "import { createRatchetPrelude } from \"./ratchet/prelude.ts\";",
+          "authorized": "2026-10-01"
+        },
+        "sdkVersion": "18.4.6",
+        "bunVersion": "1.3.14",
+        "platform": "darwin-arm64",
+        "hashes": {
+          "bun": "e0c90ec15d33363e6b70713d56bc3b2c7585c17f40a0fe0f8fd9305901d4e233",
+          "host.mjs": "244818b236e7b2a4421dd3302321e6f0ddee356a1e0f243f2a7fd666b591b9e2",
+          "gate.js": "62d1bc93fa5bfa163686199a94ff12f096490b55d0e5aef76253e12f25c28753",
+          "configuration.mjs": "70fd5a40abc23a0ae72123d378fa81ed4379518f6c96147377b8aaedbff57926",
+          "configuration-readonly.mjs": "6d9da381815c5f16b64ade7f6c1091d2bf65589c73d47a90bd2d2b60cdc73a03",
+          "model-selection.mjs": "5d4009e65304224308a9c81c4377cb0abaf70d9b524874f86e90f92da09af2b3",
+          "reading-session.mjs": "105eec7cbf1ea5e7b78d6a2c7301a1ac6d8e4e8233d7c068cec10d9071e03bc8",
+          "image-input.mjs": "1602e7f1aad876978ae5c96ba5eb75e5970fe6ccaed66c1f8cc6a3113d73b038",
+          "image-compression.mjs": "9873879bb26e9f27ef0f3cb275999f56919478c810bb6a41448a766f455ec286",
+          "native-queue.mjs": "9fe01a80cf017bc248cdcbf0b0ec2865d5a3410692053acc7d95c6ab754c0326",
+          "native-subagent-configuration.mjs": "b9f8816d3ab20d462c49951121b6516c4a7c6201cf0c726b77ee3623b82e62a2",
+          "pdf-content.mjs": "a91e56a4157c2eb46fa9b541c5a299380d44c7fd7797ece1b2058c80c92982d2"
+        },
+        "packaging": {
+          "policyVersion": 1,
+          "budgetBytes": 681574400,
+          "packages": 112,
+          "omitted": [],
+          "removed": {
+            "type-declaration": {
+              "files": 5001,
+              "bytes": 40277212
+            },
+            "cli-bundle": {
+              "files": 1,
+              "bytes": 28100235
+            },
+            "source-map": {
+              "files": 5230,
+              "bytes": 58805457
+            },
+            "foreign-native": {
+              "files": 14,
+              "bytes": 211561176
+            },
+            "duplicate-native": {
+              "files": 1,
+              "bytes": 44589928
+            }
+          },
+          "runtimeAdditions": [
+            {
+              "package": "@huggingface/transformers@4.3.0",
+              "dependency": "onnxruntime-common"
+            }
+          ],
+          "size": {
+            "bytes": 575089131,
+            "files": 10853,
+            "links": 238,
+            "top": {
+              "BUN-LICENSE.md": 5376,
+              "bun": 63096576,
+              "configuration-readonly.mjs": 22389,
+              "configuration.mjs": 19457,
+              "gate.js": 937,
+              "host.mjs": 12964,
+              "image-compression.mjs": 4018,
+              "image-input.mjs": 5316,
+              "model-selection.mjs": 4016,
+              "native-queue.mjs": 10936,
+              "native-subagent-configuration.mjs": 4059,
+              "node_modules": 511896876,
+              "pdf-content.mjs": 684,
+              "reading-session.mjs": 5527
+            }
+          }
+        }
+      }
+    },
+    "failure": {
+      "name": "Error",
+      "message": "CDP Runtime.evaluate timeout"
+    }
+  },
+  "hostDiagnostics": [
+    {
+      "time": "2026-10-08T13:32:44.150Z",
+      "operation": "runtime:start",
+      "stage": "received",
+      "connectionId": "34646179-876b-4eb7-aba4-15f8a64efd6a",
+      "build": {
+        "version": "0.1.0-workbench.3",
+        "commit": "c2832460119b051da921d10c318868b47c3ea71e",
+        "dirty": true,
+        "id": "c2832460-dirty-870ce32b"
+      }
+    },
+    {
+      "time": "2026-10-08T13:32:44.416Z",
+      "operation": "runtime:host",
+      "stage": "disconnected",
+      "code": "state-unavailable",
+      "connectionId": "e3491c03-3fd4-46c9-a804-52d84877be78",
+      "build": {
+        "version": "0.1.0-workbench.3",
+        "commit": "c2832460119b051da921d10c318868b47c3ea71e",
+        "dirty": true,
+        "id": "c2832460-dirty-870ce32b"
+      }
+    },
+    {
+      "time": "2026-10-08T13:32:44.417Z",
+      "operation": "runtime:start",
+      "stage": "failed",
+      "connectionId": "34646179-876b-4eb7-aba4-15f8a64efd6a",
+      "build": {
+        "version": "0.1.0-workbench.3",
+        "commit": "c2832460119b051da921d10c318868b47c3ea71e",
+        "dirty": true,
+        "id": "c2832460-dirty-870ce32b"
+      }
+    },
+    {
+      "time": "2026-10-08T13:32:44.417Z",
+      "operation": "runtime:host",
+      "stage": "disconnected",
+      "code": "state-unavailable",
+      "connectionId": "e3491c03-3fd4-46c9-a804-52d84877be78",
+      "build": {
+        "version": "0.1.0-workbench.3",
+        "commit": "c2832460119b051da921d10c318868b47c3ea71e",
+        "dirty": true,
+        "id": "c2832460-dirty-870ce32b"
+      }
+    },
+    {
+      "time": "2026-10-08T13:32:44.417Z",
+      "operation": "runtime:host",
+      "stage": "disconnected",
+      "code": "state-unavailable",
+      "connectionId": "e3491c03-3fd4-46c9-a804-52d84877be78",
+      "build": {
+        "version": "0.1.0-workbench.3",
+        "commit": "c2832460119b051da921d10c318868b47c3ea71e",
+        "dirty": true,
+        "id": "c2832460-dirty-870ce32b"
+      }
+    },
+    {
+      "time": "2026-10-08T13:32:44.417Z",
+      "operation": "runtime:host",
+      "stage": "disconnected",
+      "code": "state-unavailable",
+      "connectionId": "e3491c03-3fd4-46c9-a804-52d84877be78",
+      "build": {
+        "version": "0.1.0-workbench.3",
+        "commit": "c2832460119b051da921d10c318868b47c3ea71e",
+        "dirty": true,
+        "id": "c2832460-dirty-870ce32b"
+      }
+    },
+    {
+      "time": "2026-10-08T13:32:44.458Z",
+      "operation": "runtime:host",
+      "stage": "disconnected",
+      "code": "exit",
+      "causeCode": "native-unavailable",
+      "connectionId": "e3491c03-3fd4-46c9-a804-52d84877be78",
+      "build": {
+        "version": "0.1.0-workbench.3",
+        "commit": "c2832460119b051da921d10c318868b47c3ea71e",
+        "dirty": true,
+        "id": "c2832460-dirty-870ce32b"
+      }
+    },
+    {
+      "time": "2026-10-08T13:32:44.476Z",
+      "operation": "runtime:native-exit",
+      "stage": "exited",
+      "terminationReason": "permit-rejected",
+      "requestedExitCode": null,
+      "exitSignal": "SIGKILL",
+      "exitCode": null,
+      "processPid": 32363,
+      "connectionId": "e3491c03-3fd4-46c9-a804-52d84877be78",
+      "build": {
+        "version": "0.1.0-workbench.3",
+        "commit": "c2832460119b051da921d10c318868b47c3ea71e",
+        "dirty": true,
+        "id": "c2832460-dirty-870ce32b"
+      }
+    },
+    {
+      "time": "2026-10-08T13:32:44.476Z",
+      "operation": "runtime:host",
+      "stage": "exited",
+      "connectionId": "e3491c03-3fd4-46c9-a804-52d84877be78",
+      "build": {
+        "version": "0.1.0-workbench.3",
+        "commit": "c2832460119b051da921d10c318868b47c3ea71e",
+        "dirty": true,
+        "id": "c2832460-dirty-870ce32b"
+      }
+    },
+    {
+      "time": "2026-10-08T14:31:23.636Z",
+      "operation": "runtime:start",
+      "stage": "received",
+      "connectionId": "c4965539-c977-47ab-b0a2-a2940fae5330",
+      "build": {
+        "version": "0.1.0-workbench.3",
+        "commit": "22569b7764e21324b5ad095244cf9dce3646798c",
+        "dirty": true,
+        "id": "22569b77-dirty-7cd250c8"
+      }
+    },
+    {
+      "time": "2026-10-08T14:31:26.251Z",
+      "operation": "runtime:start",
+      "stage": "completed",
+      "connectionId": "c4965539-c977-47ab-b0a2-a2940fae5330",
+      "build": {
+        "version": "0.1.0-workbench.3",
+        "commit": "22569b7764e21324b5ad095244cf9dce3646798c",
+        "dirty": true,
+        "id": "22569b77-dirty-7cd250c8"
+      }
+    }
+  ],
+  "harnessAdjustments": [
+    {
+      "failure": {
+        "name": "AssertionError",
+        "message": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   {\n+     method: 'GET',\n+     path: '/v1/models'\n+   }\n+ ]\n- []\n"
+      },
+      "reason": "Count native localhost model discovery GET separately from the one model generation POST; Electron and native Host remain unchanged."
+    }
+  ],
+  "narrowWindowMethod": "renderer viewport emulation (native CDP bounds unavailable)",
+  "appStorage": {
+    "schemaVersion": 13,
+    "nativeSessions": [
+      {
+        "session_id": "01a11bed-19fe-7000-be45-e4992417e4ee",
+        "thread_id": "bedfd5a9-039b-4b42-94ac-8e51959807e4"
+      }
+    ],
+    "trust": [
+      {
+        "workspace_id": "731a7513-76c1-43e6-a8ba-350099ab0028"
+      }
+    ]
+  },
+  "nativeCredentials": [
+    {
+      "id": 1,
+      "provider": "openai",
+      "credential_type": "api_key"
+    }
+  ],
+  "completedAt": "2026-10-08T14:34:39.839Z",
+  "rendererPolish": {
+    "startedAt": "2026-10-08T14:45:10.053Z",
+    "pid": 72642,
+    "mainBuild": "22569b77-dirty-7cd250c8",
+    "rendererBuildEvidence": "renderer-polish-build.json",
+    "build": {
+      "rendererBuild": {
+        "version": "0.1.0-workbench.3",
+        "commit": "048d498d3ccc3b798204488fcfe7dc407fc98004",
+        "dirty": true,
+        "id": "048d498d-dirty-3269c968"
+      },
+      "before": {
+        "main": "182977aa3cda5d32541b1d9bd5fc24d5596da884408e76151981b32397728ba8",
+        "preload": "85263277fcea95da6bab54f17791d0cc2d581df6b83b2081438b13c99a14745b",
+        "sdk": "1b79357a5d16144dac388c773837770c0fbc0e650e8490e16b3334481805b323"
+      },
+      "after": {
+        "main": "182977aa3cda5d32541b1d9bd5fc24d5596da884408e76151981b32397728ba8",
+        "preload": "85263277fcea95da6bab54f17791d0cc2d581df6b83b2081438b13c99a14745b",
+        "sdk": "1b79357a5d16144dac388c773837770c0fbc0e650e8490e16b3334481805b323"
+      },
+      "rendererAsset": "index-BJXbcmYf.js",
+      "rendererSha256": "a45ce2100b239ec91845349c52148f08a87c9b7589439c7f164bb9389b8abc05"
+    },
+    "checks": [
+      {
+        "step": "pointer-input-focus-without-outline",
+        "tag": "INPUT",
+        "focusVisible": true,
+        "outlineStyle": "none",
+        "outlineWidth": "3px",
+        "borderRadius": "8px",
+        "modelId": null
+      },
+      {
+        "step": "Kimi-light-foreground-and-blue-accent",
+        "pathFills": [
+          {
+            "attribute": "#1783FF",
+            "computed": "rgb(23, 131, 255)"
+          },
+          {
+            "attribute": "currentColor",
+            "computed": "rgb(39, 41, 46)"
+          }
+        ],
+        "color": "rgb(39, 41, 46)"
+      },
+      {
+        "step": "keyboard-model-navigation-visible-focus",
+        "tag": "BUTTON",
+        "focusVisible": true,
+        "outlineStyle": "solid",
+        "outlineWidth": "2px",
+        "borderRadius": "8px",
+        "modelId": "gpt-fixture-b"
+      },
+      {
+        "step": "Esc-focus-return"
+      },
+      {
+        "step": "narrow-pointer-input-focus-without-outline",
+        "tag": "INPUT",
+        "focusVisible": true,
+        "outlineStyle": "none",
+        "outlineWidth": "3px",
+        "borderRadius": "8px",
+        "modelId": null
+      },
+      {
+        "step": "narrow-provider-left-alignment",
+        "justifyContent": "flex-start",
+        "bodyScrollWidth": 800,
+        "viewportWidth": 800
+      },
+      {
+        "step": "same-native-Host-after-renderer-reload",
+        "phase": "ready",
+        "model": "openai/gpt-fixture-custom",
+        "connectionGeneration": "78e8005f-fce7-49b7-9e06-1f17915059f7"
+      },
+      {
+        "step": "no-additional-model-or-discovery-requests",
+        "localhostRequests": 2,
+        "localhostGenerationRequests": 1,
+        "localhostDiscoveryRequests": 1,
+        "realSupplierRequests": 0
+      }
+    ],
+    "screenshots": [
+      {
+        "name": "providers-kimi-light-polished",
+        "file": "/Users/lou/.codex/worktrees/providers-models/d-pi/.scratch/providers-models/evidence/providers-kimi-light-polished.png",
+        "sha256": "07f27c5e44c4452494c1c5c9deec5cbd7c05691e52af4eaa91a49f7e6f09e8e6",
+        "viewport": {
+          "width": 1120,
+          "height": 780
+        }
+      },
+      {
+        "name": "providers-kimi-narrow-polished",
+        "file": "/Users/lou/.codex/worktrees/providers-models/d-pi/.scratch/providers-models/evidence/providers-kimi-narrow-polished.png",
+        "sha256": "9c8afa9e1008e6d9481dc2ffed154b9b616e70bb20177fb8af94abce2a0d4621",
+        "viewport": {
+          "width": 800,
+          "height": 900
+        }
+      }
+    ],
+    "rendererScript": "file:///Users/lou/.codex/worktrees/providers-models/d-pi/out/renderer/assets/index-BJXbcmYf.js",
+    "harnessAdjustments": [
+      {
+        "at": "2026-10-08T14:49:34.437Z",
+        "sameElectronPid": 72642,
+        "initialFailure": {
+          "name": "AssertionError",
+          "message": "The expression evaluated to a falsy value:\n\n  assert.ok(keyboard.modelId)\n"
+        },
+        "observation": {
+          "picker": true,
+          "rows": [
+            "gpt-fixture-b",
+            "gpt-fixture-custom"
+          ],
+          "activeLabel": "设置"
+        },
+        "adjustment": "Close the existing panel and use a trusted pointer to reopen only after Settings finalFocus has settled; wait for selectable rows and the search input focus before ArrowDown."
+      }
+    ],
+    "continuedAt": "2026-10-08T14:49:34.440Z",
+    "completedAt": "2026-10-08T14:49:35.625Z",
+    "visualReview": {
+      "reviewedAt": "2026-10-08T14:50:05.554Z",
+      "method": "view_image of both captured PNG files",
+      "screenshots": [
+        {
+          "name": "providers-kimi-light-polished",
+          "sha256": "07f27c5e44c4452494c1c5c9deec5cbd7c05691e52af4eaa91a49f7e6f09e8e6"
+        },
+        {
+          "name": "providers-kimi-narrow-polished",
+          "sha256": "9c8afa9e1008e6d9481dc2ffed154b9b616e70bb20177fb8af94abce2a0d4621"
+        }
+      ],
+      "findings": [
+        "Kimi foreground remains visible in light theme with original blue accent.",
+        "Narrow provider rail rows align left; 800px viewport has no horizontal overflow."
+      ],
+      "narrowViewportMethod": "CDP Emulation.setDeviceMetricsOverride: 800x900 desktop viewport; no OS window resize"
+    }
+  }
+}

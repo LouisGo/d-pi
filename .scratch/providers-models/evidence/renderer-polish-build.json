@@ -1,0 +1,20 @@
+{
+  "rendererBuild": {
+    "version": "0.1.0-workbench.3",
+    "commit": "048d498d3ccc3b798204488fcfe7dc407fc98004",
+    "dirty": true,
+    "id": "048d498d-dirty-3269c968"
+  },
+  "before": {
+    "main": "182977aa3cda5d32541b1d9bd5fc24d5596da884408e76151981b32397728ba8",
+    "preload": "85263277fcea95da6bab54f17791d0cc2d581df6b83b2081438b13c99a14745b",
+    "sdk": "1b79357a5d16144dac388c773837770c0fbc0e650e8490e16b3334481805b323"
+  },
+  "after": {
+    "main": "182977aa3cda5d32541b1d9bd5fc24d5596da884408e76151981b32397728ba8",
+    "preload": "85263277fcea95da6bab54f17791d0cc2d581df6b83b2081438b13c99a14745b",
+    "sdk": "1b79357a5d16144dac388c773837770c0fbc0e650e8490e16b3334481805b323"
+  },
+  "rendererAsset": "index-BJXbcmYf.js",
+  "rendererSha256": "a45ce2100b239ec91845349c52148f08a87c9b7589439c7f164bb9389b8abc05"
+}

@@ -1,0 +1,152 @@
+{
+  "startedAt": "2026-10-08T14:45:10.053Z",
+  "pid": 72642,
+  "mainBuild": "22569b77-dirty-7cd250c8",
+  "rendererBuildEvidence": "renderer-polish-build.json",
+  "build": {
+    "rendererBuild": {
+      "version": "0.1.0-workbench.3",
+      "commit": "048d498d3ccc3b798204488fcfe7dc407fc98004",
+      "dirty": true,
+      "id": "048d498d-dirty-3269c968"
+    },
+    "before": {
+      "main": "182977aa3cda5d32541b1d9bd5fc24d5596da884408e76151981b32397728ba8",
+      "preload": "85263277fcea95da6bab54f17791d0cc2d581df6b83b2081438b13c99a14745b",
+      "sdk": "1b79357a5d16144dac388c773837770c0fbc0e650e8490e16b3334481805b323"
+    },
+    "after": {
+      "main": "182977aa3cda5d32541b1d9bd5fc24d5596da884408e76151981b32397728ba8",
+      "preload": "85263277fcea95da6bab54f17791d0cc2d581df6b83b2081438b13c99a14745b",
+      "sdk": "1b79357a5d16144dac388c773837770c0fbc0e650e8490e16b3334481805b323"
+    },
+    "rendererAsset": "index-BJXbcmYf.js",
+    "rendererSha256": "a45ce2100b239ec91845349c52148f08a87c9b7589439c7f164bb9389b8abc05"
+  },
+  "checks": [
+    {
+      "step": "pointer-input-focus-without-outline",
+      "tag": "INPUT",
+      "focusVisible": true,
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "borderRadius": "8px",
+      "modelId": null
+    },
+    {
+      "step": "Kimi-light-foreground-and-blue-accent",
+      "pathFills": [
+        {
+          "attribute": "#1783FF",
+          "computed": "rgb(23, 131, 255)"
+        },
+        {
+          "attribute": "currentColor",
+          "computed": "rgb(39, 41, 46)"
+        }
+      ],
+      "color": "rgb(39, 41, 46)"
+    },
+    {
+      "step": "keyboard-model-navigation-visible-focus",
+      "tag": "BUTTON",
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "borderRadius": "8px",
+      "modelId": "gpt-fixture-b"
+    },
+    {
+      "step": "Esc-focus-return"
+    },
+    {
+      "step": "narrow-pointer-input-focus-without-outline",
+      "tag": "INPUT",
+      "focusVisible": true,
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "borderRadius": "8px",
+      "modelId": null
+    },
+    {
+      "step": "narrow-provider-left-alignment",
+      "justifyContent": "flex-start",
+      "bodyScrollWidth": 800,
+      "viewportWidth": 800
+    },
+    {
+      "step": "same-native-Host-after-renderer-reload",
+      "phase": "ready",
+      "model": "openai/gpt-fixture-custom",
+      "connectionGeneration": "78e8005f-fce7-49b7-9e06-1f17915059f7"
+    },
+    {
+      "step": "no-additional-model-or-discovery-requests",
+      "localhostRequests": 2,
+      "localhostGenerationRequests": 1,
+      "localhostDiscoveryRequests": 1,
+      "realSupplierRequests": 0
+    }
+  ],
+  "screenshots": [
+    {
+      "name": "providers-kimi-light-polished",
+      "file": "/Users/lou/.codex/worktrees/providers-models/d-pi/.scratch/providers-models/evidence/providers-kimi-light-polished.png",
+      "sha256": "07f27c5e44c4452494c1c5c9deec5cbd7c05691e52af4eaa91a49f7e6f09e8e6",
+      "viewport": {
+        "width": 1120,
+        "height": 780
+      }
+    },
+    {
+      "name": "providers-kimi-narrow-polished",
+      "file": "/Users/lou/.codex/worktrees/providers-models/d-pi/.scratch/providers-models/evidence/providers-kimi-narrow-polished.png",
+      "sha256": "9c8afa9e1008e6d9481dc2ffed154b9b616e70bb20177fb8af94abce2a0d4621",
+      "viewport": {
+        "width": 800,
+        "height": 900
+      }
+    }
+  ],
+  "rendererScript": "file:///Users/lou/.codex/worktrees/providers-models/d-pi/out/renderer/assets/index-BJXbcmYf.js",
+  "harnessAdjustments": [
+    {
+      "at": "2026-10-08T14:49:34.437Z",
+      "sameElectronPid": 72642,
+      "initialFailure": {
+        "name": "AssertionError",
+        "message": "The expression evaluated to a falsy value:\n\n  assert.ok(keyboard.modelId)\n"
+      },
+      "observation": {
+        "picker": true,
+        "rows": [
+          "gpt-fixture-b",
+          "gpt-fixture-custom"
+        ],
+        "activeLabel": "设置"
+      },
+      "adjustment": "Close the existing panel and use a trusted pointer to reopen only after Settings finalFocus has settled; wait for selectable rows and the search input focus before ArrowDown."
+    }
+  ],
+  "continuedAt": "2026-10-08T14:49:34.440Z",
+  "completedAt": "2026-10-08T14:49:35.625Z",
+  "visualReview": {
+    "reviewedAt": "2026-10-08T14:50:05.554Z",
+    "method": "view_image of both captured PNG files",
+    "screenshots": [
+      {
+        "name": "providers-kimi-light-polished",
+        "sha256": "07f27c5e44c4452494c1c5c9deec5cbd7c05691e52af4eaa91a49f7e6f09e8e6"
+      },
+      {
+        "name": "providers-kimi-narrow-polished",
+        "sha256": "9c8afa9e1008e6d9481dc2ffed154b9b616e70bb20177fb8af94abce2a0d4621"
+      }
+    ],
+    "findings": [
+      "Kimi foreground remains visible in light theme with original blue accent.",
+      "Narrow provider rail rows align left; 800px viewport has no horizontal overflow."
+    ],
+    "narrowViewportMethod": "CDP Emulation.setDeviceMetricsOverride: 800x900 desktop viewport; no OS window resize"
+  }
+}

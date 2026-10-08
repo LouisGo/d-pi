@@ -3,6 +3,7 @@ import {
   type Command,
   CommandSchema,
   EnvelopeSchema,
+  parseDesktopReply,
   type ReplyFor,
 } from "./desktop-bridge";
 
@@ -24,6 +25,68 @@ it("bounds draft UTF-8 bytes rather than UTF-16 string length", () => {
     CommandSchema.safeParse({ ...command, text: "😀".repeat(1024 * 1024 + 1) })
       .success,
   ).toBe(false);
+});
+
+it("accepts the real preference readback and fences mismatched or omitted writes", () => {
+  const command = CommandSchema.parse({
+    kind: "preferences",
+    traceId: crypto.randomUUID(),
+    value: {
+      theme: "dark",
+      density: "compact",
+      sendKey: "enter-newline",
+      locale: "system",
+      modelPicker: { favorites: ["chosen"], hidden: [], order: ["chosen"] },
+    },
+  });
+  if (command.kind !== "preferences")
+    throw Error("Missing preferences command");
+  const reply = {
+    kind: "preferences-saved",
+    value: { ...command.value, density: "normal", locale: "zh-CN" },
+  };
+  expect(() => parseDesktopReply(command, reply)).not.toThrow();
+  expect(() =>
+    parseDesktopReply(command, {
+      ...reply,
+      value: { ...reply.value, theme: "light" },
+    }),
+  ).toThrow();
+  expect(() =>
+    parseDesktopReply(command, {
+      ...reply,
+      value: { ...reply.value, sendKey: undefined },
+    }),
+  ).toThrow();
+  expect(() =>
+    parseDesktopReply(command, {
+      ...reply,
+      value: { ...reply.value, modelPicker: undefined },
+    }),
+  ).toThrow();
+  expect(() =>
+    parseDesktopReply(command, {
+      ...reply,
+      value: {
+        ...reply.value,
+        modelPicker: { ...reply.value.modelPicker, favorites: [] },
+      },
+    }),
+  ).toThrow();
+  expect(() =>
+    parseDesktopReply(
+      {
+        ...command,
+        value: {
+          theme: "dark",
+          density: "compact",
+          sendKey: "enter-newline",
+          locale: "system",
+        },
+      },
+      reply,
+    ),
+  ).not.toThrow();
 });
 
 it("rejects unknown IPC operation/fields/versions and excessive draft content", () => {

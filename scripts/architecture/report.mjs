@@ -249,7 +249,7 @@ for (const path of inputs)
     .update("\0")
     .update(readFileSync(path))
     .update("\0");
-for (const name of ["check.mjs", "report.mjs"])
+for (const name of ["check.mjs", "report.mjs", "../checks/source-tokens.mjs"])
   hash.update(name).update(readFileSync(resolve(import.meta.dirname, name)));
 const allowedDependencies = [];
 for (const [name, module] of Object.entries(config.modules ?? {})) {

@@ -1,6 +1,7 @@
 // Versioned, read-only boundary for OMP 18.4.6. No OAuth/key resolution or refresh.
 
 import { Database } from "bun:sqlite";
+import { createHash } from "node:crypto";
 import {
   lstatSync,
   mkdtempSync,
@@ -10,10 +11,22 @@ import {
 } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { delimiter, dirname, join, parse, resolve } from "node:path";
+import { getOAuthProviders } from "@oh-my-pi/pi-ai";
 import { AuthStorage } from "@oh-my-pi/pi-ai/auth-storage";
+import { authPolicyFor, authProviders } from "@oh-my-pi/pi-catalog/compat/auth";
+import { getModelPricingStatus } from "@oh-my-pi/pi-catalog/models";
 import { isCredentialScopedModelCacheProvider } from "@oh-my-pi/pi-catalog/provider-models";
+import { modelKind } from "@oh-my-pi/pi-catalog/types";
 import { ModelRegistry } from "@oh-my-pi/pi-coding-agent/config/model-registry";
-import { cfgAuthBrokerUrl } from "@oh-my-pi/pi-coding-agent/config/model-settings";
+import {
+  getKnownRoleIds,
+  getRoleInfo,
+} from "@oh-my-pi/pi-coding-agent/config/model-roles";
+import {
+  cfgAuthBrokerUrl,
+  cfgDisabledProviders,
+  cfgModelRoleStorage,
+} from "@oh-my-pi/pi-coding-agent/config/model-settings";
 import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
 import {
   resolveUserPath,
@@ -27,7 +40,7 @@ import {
 } from "@oh-my-pi/pi-utils";
 import { thinkingCapabilities } from "./model-selection.mjs";
 
-function safePath(path) {
+export function safePath(path) {
   const absolute = resolve(path);
   let current = parse(absolute).root;
   for (const part of absolute
@@ -61,7 +74,9 @@ function safeSettingsPaths(agent, cwd) {
     "opencode.json",
     "opencode.jsonc",
   ];
+  const paths = new Set();
   const check = (path) => {
+    paths.add(resolve(path));
     if (!safePath(path)) return;
     // The native OpenCode provider expands arbitrary {file:...} references,
     // including those introduced by {env:...}. Do not copy its expansion rules
@@ -103,6 +118,7 @@ function safeSettingsPaths(agent, cwd) {
         file.startsWith("~/") ? join(process.env.HOME, file.slice(2)) : file,
       ),
     );
+  return [...paths];
 }
 function readonlyDatabase(path) {
   if (!safePath(path)) return null;
@@ -183,6 +199,124 @@ function credentialRows(db) {
       };
     });
 }
+export function modelConfigurationPath(agent = getAgentDir()) {
+  for (const name of ["models.yml", "models.yaml", "models.json"]) {
+    const candidate = join(agent, name);
+    if (safePath(candidate)) return candidate;
+  }
+  return join(agent, "models.yml");
+}
+export function configurationRevision(paths, source, rows) {
+  const hash = createHash("sha256").update(JSON.stringify(source));
+  for (const path of [...new Set(paths)].sort()) {
+    hash.update(path).update("\0");
+    hash.update(safePath(path) ? readFileSync(path) : "missing");
+  }
+  hash.update(JSON.stringify(rows));
+  return hash.digest("hex");
+}
+function publicBaseUrl(value) {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    if (!["http:", "https:"].includes(url.protocol)) return null;
+    url.username = "";
+    url.password = "";
+    url.search = "";
+    url.hash = "";
+    return url.href;
+  } catch {
+    return null;
+  }
+}
+function providerSummaries(auth, registry, settings, models, known) {
+  const logins = getOAuthProviders();
+  const ids = new Set(
+    authProviders().map((policy) => policy.storeAs ?? policy.id),
+  );
+  for (const model of models) ids.add(model.provider);
+  for (const row of auth?.credentials.list() ?? []) ids.add(row.provider);
+  const disabled = new Set(settings ? cfgDisabledProviders.get(settings) : []);
+  return [...ids].map((id) => {
+    const policy = authPolicyFor(id);
+    const source = known ? auth?.keys.source(id) : undefined;
+    const keyless =
+      known &&
+      (auth?.keys.keyless(id) ||
+        (models.some((model) => model.provider === id && model.available) &&
+          !source));
+    const accounts = known
+      ? (auth?.credentials.list(id) ?? []).map((row) => {
+          const credential = row.credential;
+          const summary = { credentialId: row.id, type: credential.type };
+          if (credential.type === "oauth")
+            for (const field of [
+              "email",
+              "accountId",
+              "orgId",
+              "orgName",
+              "projectId",
+              "enterpriseUrl",
+            ]) {
+              if (typeof credential[field] === "string")
+                summary[field] = credential[field];
+            }
+          return summary;
+        })
+      : [];
+    return {
+      id,
+      storageProvider: id,
+      name: policy?.name ?? id,
+      disabled: disabled.has(id),
+      authState: !known
+        ? "unknown"
+        : source
+          ? "configured"
+          : keyless
+            ? "keyless"
+            : "required",
+      authSource: source ?? null,
+      accounts,
+      loginMethods: logins
+        .filter((login) => (login.storeCredentialsAs ?? login.id) === id)
+        .map((login) => {
+          const rule = authPolicyFor(login.id)?.login;
+          return {
+            id: login.id,
+            name: login.name,
+            available: login.available,
+            kind: rule?.kind ?? "custom",
+            probe:
+              rule?.kind === "api-key"
+                ? (rule.validate?.kind ?? "none")
+                : "none",
+          };
+        }),
+      apiKeyEditable:
+        !policy ||
+        policy.login?.kind === "api-key" ||
+        Boolean(policy.env && !policy.nativeAuthApis?.length) ||
+        Boolean(!policy.login && !policy.nativeAuthApis?.length),
+      keyValidation:
+        policy?.login?.kind === "api-key" && policy.login.validate
+          ? "native"
+          : "none",
+      modelCount: models.filter((model) => model.provider === id).length,
+      baseUrl: publicBaseUrl(registry?.getProviderBaseUrl(id)),
+    };
+  });
+}
+function roleSummaries(settings) {
+  return getKnownRoleIds(settings).map((role) => ({
+    role,
+    name: getRoleInfo(role, settings)?.name ?? role,
+    value: settings.getModelRole(role) ?? null,
+    source: settings.getModelRoleProvenance(role) ?? null,
+    globalValue: settings.getGlobalModelRole(role) ?? null,
+    projectValue: settings.getProjectModelRole(role) ?? null,
+  }));
+}
 export async function readConfigurationSnapshot(frame) {
   const agent = getAgentDir();
   const source = {
@@ -195,8 +329,9 @@ export async function readConfigurationSnapshot(frame) {
   let db;
   let settings;
   let cacheDirectory;
+  let configurationFiles = [];
   try {
-    safeSettingsPaths(agent, source.cwd);
+    configurationFiles = safeSettingsPaths(agent, source.cwd);
     settings = await Settings.loadReadOnly({
       cwd: source.cwd,
       agentDir: agent,
@@ -208,6 +343,8 @@ export async function readConfigurationSnapshot(frame) {
       traceId: frame.traceId,
       source,
       models: [],
+      providers: providerSummaries(null, null, null, [], false),
+      modelRoles: [],
       defaultModel: null,
       openaiAuthenticated: null,
       deepseekAuthenticated: null,
@@ -297,14 +434,23 @@ export async function readConfigurationSnapshot(frame) {
       credentialsKnown = false;
       issues.push("credential-policy-unobserved");
     }
-    let modelsPath = join(agent, "models.json");
-    for (const name of ["models.yml", "models.yaml", "models.json"]) {
-      const candidate = join(agent, name);
-      if (safePath(candidate)) {
-        modelsPath = candidate;
-        break;
-      }
-    }
+    const modelsPath = modelConfigurationPath(agent);
+    configurationFiles.push(
+      ...["models.yml", "models.yaml", "models.json"].map((name) =>
+        join(agent, name),
+      ),
+    );
+    const { ModelsConfigFile } = await import(
+      "@oh-my-pi/pi-coding-agent/config/models-config"
+    );
+    const customConfig = ModelsConfigFile.relocate(modelsPath).load();
+    const customModels = new Set(
+      Object.entries(customConfig?.providers ?? {}).flatMap(
+        ([provider, config]) =>
+          (config.models ?? []).map((model) => provider + "/" + model.id),
+      ),
+    );
+    const revision = configurationRevision(configurationFiles, source, rows);
     // Native cache reads initialize/migrate/write. Serialize a consistent SQLite
     // read transaction (including committed WAL) to a private, short-lived cache.
     // Official OMP code owns compatibility, freshness, merging and header restore;
@@ -362,13 +508,41 @@ export async function readConfigurationSnapshot(frame) {
       cacheDbPath,
       fetch: () => Promise.reject(Error("readonly-network-forbidden")),
     });
-    const available = new Set(
-      registry.getAvailable().map((model) => model.provider + "/" + model.id),
+    const { isCommandConfigValue, resolveConfigValue } = await import(
+      "@oh-my-pi/pi-coding-agent/config/resolve-config-value"
     );
-    const models = registry.getAll().map((model) => {
+    // The official offline hydration path scopes cache rows to fresh, existing
+    // credentials. Its resolver is constrained so neither !key helpers nor
+    // token refresh/network work can be reached by this read-only process.
+    auth.keys.setResolver((value) =>
+      isCommandConfigValue(value) ? undefined : resolveConfigValue(value),
+    );
+    await registry.hydrateCredentialScopedModelCaches();
+    const { cfgEnabledModels } = await import(
+      "@oh-my-pi/pi-coding-agent/config/model-settings"
+    );
+    const { filterAvailableModelsByEnabledPatterns } = await import(
+      "@oh-my-pi/pi-coding-agent/config/model-resolver"
+    );
+    const selectable = new Set(
+      filterAvailableModelsByEnabledPatterns(
+        registry.getAvailable(),
+        cfgEnabledModels.get(settings),
+        settings,
+      ).map((model) => model.provider + "/" + model.id),
+    );
+    const available = new Set(
+      registry
+        .getAvailable("all")
+        .map((model) => model.provider + "/" + model.id),
+    );
+    const disabledProviders = new Set(cfgDisabledProviders.get(settings));
+    const models = registry.getAll("all").map((model) => {
       const accountGap =
-        auth.credentials.hasOAuth(model.provider) &&
-        isCredentialScopedModelCacheProvider(model.provider);
+        !disabledProviders.has(model.provider) &&
+        Boolean(auth.keys.source(model.provider)) &&
+        isCredentialScopedModelCacheProvider(model.provider) &&
+        registry.getProviderDiscoveryState(model.provider)?.status !== "cached";
       if (accountGap && !issues.includes("account-catalog-unobserved"))
         issues.push("account-catalog-unobserved");
       const unknown = !credentialsKnown || accountGap;
@@ -377,7 +551,34 @@ export async function readConfigurationSnapshot(frame) {
         provider: model.provider,
         id: model.id,
         name: model.name,
+        kind: modelKind(model),
+        api: model.api,
+        assignableRoles: getKnownRoleIds(settings).filter((role) =>
+          getRoleInfo(role, settings).accepts(model),
+        ),
+        baseUrl: publicBaseUrl(model.baseUrl),
+        custom: customModels.has(model.provider + "/" + model.id),
+        contextWindow: Number.isFinite(model.contextWindow)
+          ? model.contextWindow
+          : null,
+        maxTokens: Number.isFinite(model.maxTokens) ? model.maxTokens : null,
+        pricingStatus: getModelPricingStatus(model),
+        cost:
+          model.cost &&
+          ["input", "output", "cacheRead", "cacheWrite"].every(
+            (field) =>
+              Number.isFinite(model.cost[field]) && model.cost[field] >= 0,
+          )
+            ? Object.fromEntries(
+                ["input", "output", "cacheRead", "cacheWrite"].map((field) => [
+                  field,
+                  model.cost[field],
+                ]),
+              )
+            : null,
         available: ready,
+        sessionSelectable:
+          ready && selectable.has(model.provider + "/" + model.id),
         reason: ready
           ? null
           : unknown
@@ -420,6 +621,16 @@ export async function readConfigurationSnapshot(frame) {
       traceId: frame.traceId,
       source,
       models,
+      providers: providerSummaries(
+        auth,
+        registry,
+        settings,
+        models,
+        credentialsKnown,
+      ),
+      modelRoles: roleSummaries(settings),
+      modelRoleStorage: cfgModelRoleStorage.get(settings),
+      revision,
       defaultModel: settings.getModelRole("default") ?? null,
       openaiAuthenticated: credentialsKnown
         ? auth.credentials.hasOAuth("openai-codex")
@@ -438,6 +649,9 @@ export async function readConfigurationSnapshot(frame) {
       traceId: frame.traceId,
       source,
       models: [],
+      providers: providerSummaries(auth, null, settings, [], credentialsKnown),
+      modelRoles: roleSummaries(settings),
+      modelRoleStorage: cfgModelRoleStorage.get(settings),
       defaultModel: settings.getModelRole("default") ?? null,
       openaiAuthenticated: credentialsKnown
         ? auth.credentials.hasOAuth("openai-codex")

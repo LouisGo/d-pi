@@ -19,6 +19,7 @@ import { SettingsModal } from "@/components/ui/settings-modal";
 import { type TabItem, TabStrip } from "@/components/ui/tab-strip";
 import { useI18n } from "../../../../modules/preferences/renderer/public";
 import { Button } from "../../../../modules/ui/renderer/public";
+import { useSettingsSelect } from "../settings/settings";
 import { ConversationVisibilityContext } from "./conversation-visibility";
 import { solveGeometry } from "./geometry";
 import { createLayoutModel, readLayoutTokens } from "./model";
@@ -76,10 +77,19 @@ export function WorkbenchFrame({
   const intent = useStore(model.store, (value) => value);
   const [box, setBox] = useState({ width: 0, height: 0 });
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const selectSettings = useSettingsSelect();
+  const openProviders = useCallback(() => {
+    selectSettings("configuration");
+    setSettingsOpen(true);
+  }, [selectSettings]);
   const reveal = useCallback(() => setSettingsOpen(false), []);
   const conversation = useMemo(
-    () => ({ visible: !settingsOpen && !developerActive, reveal }),
-    [settingsOpen, developerActive, reveal],
+    () => ({
+      visible: !settingsOpen && !developerActive,
+      reveal,
+      openProviders,
+    }),
+    [settingsOpen, developerActive, reveal, openProviders],
   );
   const focusedRegion = useRef<"sidebar" | "workspace" | "bottom" | null>(null);
   const focusedNavigation = useRef<number | null>(null);

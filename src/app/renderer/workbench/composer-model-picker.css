@@ -1,0 +1,17 @@
+@layer components {
+  .composer-model-picker {
+    display: flex;
+    align-items: center;
+    gap: var(--region-gap);
+    min-width: 0;
+  }
+  .composer-model-picker > button:first-child {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .composer-thinking-select {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: calc(var(--control-height) * 5);
+  }
+}

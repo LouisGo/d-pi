@@ -7,7 +7,11 @@ import {
   DraftEditorCache,
   hasUnpersistedAttachmentSources,
 } from "../../../modules/input/renderer/public";
-import type { Preferences } from "../../../modules/preferences/contracts/public";
+import type {
+  ModelPickerPreferenceChange,
+  Preferences,
+} from "../../../modules/preferences/contracts/public";
+import { updateModelPickerPreferences } from "../../../modules/preferences/core/public";
 import type { ThreadContext } from "../../../modules/threads/contracts/public";
 import type {
   Command,
@@ -69,6 +73,10 @@ type EditorBoundary = {
   canLeaveView?: () => boolean;
 };
 type EditorBinding = { owner: ThreadModel; boundary: EditorBoundary };
+type PreferenceChange =
+  | { kind: "theme"; target: Preferences["theme"] | undefined }
+  | { kind: "sendKey"; target: Preferences["sendKey"] }
+  | { kind: "modelPicker"; change: ModelPickerPreferenceChange };
 
 export function transportFailure(traceId: string): Failure {
   return {
@@ -672,6 +680,9 @@ export class AppModel {
       binding?.boundary.release();
     return result;
   }
+  modelPreference(change: ModelPickerPreferenceChange): Promise<void> {
+    return this.enqueuePreference({ kind: "modelPicker", change });
+  }
   preference(
     ...args:
       | [key: "theme", target?: Preferences["theme"]]
@@ -681,25 +692,29 @@ export class AppModel {
       args[0] === "theme"
         ? { kind: "theme" as const, target: args[1] }
         : { kind: "sendKey" as const, target: args[1] };
+    return this.enqueuePreference(change);
+  }
+  private enqueuePreference(change: PreferenceChange): Promise<void> {
     const save = () => this.savePreference(change);
     const writing = this.preferenceWrite
       ? this.preferenceWrite.then(save)
       : save();
     this.preferenceWrite = writing;
-    void writing.finally(() => {
+    const release = () => {
       if (this.preferenceWrite === writing) this.preferenceWrite = null;
-    });
+    };
+    void writing.then(release, release);
     return writing;
   }
-  private async savePreference(
-    change:
-      | { kind: "theme"; target: Preferences["theme"] | undefined }
-      | { kind: "sendKey"; target: Preferences["sendKey"] },
-  ): Promise<void> {
+  private async savePreference(change: PreferenceChange): Promise<void> {
     const state = this.state;
     if (this.disposed || state.kind !== "ready") return;
     const current = state.preferences;
-    if (change.target !== undefined && current[change.kind] === change.target)
+    if (
+      change.kind !== "modelPicker" &&
+      change.target !== undefined &&
+      current[change.kind] === change.target
+    )
       return;
     const value = match(change)
       .with({ kind: "theme" }, ({ target }) => ({
@@ -719,6 +734,10 @@ export class AppModel {
           (current.sendKey === "enter-newline"
             ? ("enter-send" as const)
             : ("enter-newline" as const)),
+      }))
+      .with({ kind: "modelPicker" }, ({ change }) => ({
+        ...current,
+        modelPicker: updateModelPickerPreferences(current.modelPicker, change),
       }))
       .exhaustive();
     const traceId = crypto.randomUUID();

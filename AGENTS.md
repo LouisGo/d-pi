@@ -20,7 +20,7 @@
 - 业务生命周期独立于 React；Zustand 管展示状态，TanStack Query 管只读异步查询，不形成两份可独立双写的事实。发送类副作用沿用协调器/收据合同，不交给查询重试。职责与写法见下方合同和 skill。
 - D-21/D-22 从功能开始落实：跨实际经过的应用边界传播同一 `traceId`，记录阶段与真实身份，保留类型化原因及处理归属；根因未证实保留 unknown。诊断轻量、异步、有界，默认不记秘密或业务全文，不重建 OMP 日志。
 - 最终目标是基本承接适合 GUI 的 OMP TUI 能力，逐功能交付；全集和完整组件基础不是可用版本前置。G1/M1/M2/M3 与当前授权分开，验证通过不替代产品决定。
-- macOS 优先，其他平台支持未承诺；拟采用平台独占的必需能力时，说明原因、影响及替代方案并由用户决定。首版新增认证仅 OpenAI 账户（`openai-codex`）与 DeepSeek API key，已有其他可用配置仍复用。
+- macOS 优先，其他平台支持未承诺；拟采用平台独占的必需能力时，说明原因、影响及替代方案并由用户决定。2026-10-08 Provider/Models 切片已明确扩展到固定 OMP 的全部原生认证入口（D-23），已有配置继续复用；凭据与认证协议仍由 OMP 拥有。
 - 项目执行信任与 App 文件访问分开，不冒称工具沙箱。只翻译 d-pi 自有文案，Main/Renderer 共用解析语言，OMP/SessionHost 不格式化原生或用户内容。
 - 全组件 outline 仅用于键盘/无障碍可见焦点；普通 focus、hover、active 禁止 outline，鼠标点击输入框亦不例外。沿用共享交互入口与 `:focus-visible`，不得用局部样式绕过；保留 Tab/方向键/读屏焦点与 caret。
 - 已定技术路线由 D-17、D-30–D-38 及对应合同维护：Biome、Base UI、自有 Icon Layer、最小 Tiptap、SQLite、ts-pattern、Zod v4、Zustand 与 Query、应用导航的 TanStack Router；不引入 XState。GUI 共享 token 与全局主题/密度，设计 lint 不得关闭来消除违规。

@@ -1,7 +1,68 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { interactionViolations } from "../../scripts/checks/interaction-policy.mjs";
+
+function boundedViolations(source) {
+  const checker = new URL(
+    "../../scripts/checks/interaction-policy.mjs",
+    import.meta.url,
+  );
+  const child = spawnSync(
+    process.execPath,
+    [
+      "--input-type=module",
+      "-e",
+      `
+    import { interactionViolations } from ${JSON.stringify(checker.href)};
+    process.stdout.write(JSON.stringify(interactionViolations("src/fixture.tsx", ${JSON.stringify(source)})));
+  `,
+    ],
+    { encoding: "utf8", timeout: 1000, maxBuffer: 64 * 1024 },
+  );
+  assert.equal(
+    child.error,
+    undefined,
+    "interaction scanning must finish within the bounded child process",
+  );
+  assert.equal(child.status, 0, child.stderr);
+  return JSON.parse(child.stdout);
+}
+
+test("scans valid regular expressions with URL punctuation without swallowing subsequent UI violations", () => {
+  const source = String.raw`const safe = !/[?#]/.test(value) && !/^https?:\/\/[^/]*@/.test(value);
+    if (ready) /[?#]/.test(value);
+    const pattern = /"cursor-pointer"/;
+    const ratio = first / second / third;
+    element.style.cursor = "pointer";`;
+  assert.doesNotThrow(() => new Function(source));
+  const issues = boundedViolations(source);
+  assert.equal(issues.length, 1);
+  assert.match(issues[0], /UI-CURSOR/);
+});
+
+test("fails explicitly when a scanner token cannot advance instead of hanging or approving the source", () => {
+  const issues = boundedViolations(
+    "const invalid = #; element.style.cursor = 'pointer';",
+  );
+  assert.match(issues.join("\n"), /UI-SCAN: src\/fixture\.tsx:1:/);
+});
+
+test("does not interpret division around JSX as a regular expression or hide its cursor violations", () => {
+  for (const dividend of [
+    "left",
+    "helpers.if(ready)",
+    "helpers.return",
+    "left!",
+  ]) {
+    const issues =
+      boundedViolations(`const ratio = ${dividend} / <div className="cursor-pointer" /> / right;
+      element.style.cursor = "pointer";`);
+    assert.equal(issues.length, 2, dividend);
+    assert.ok(issues.every((issue) => issue.startsWith("UI-CURSOR:")));
+  }
+});
 
 test("rejects CSS hand cursors including comments, escapes and fallback values", () => {
   for (const source of [

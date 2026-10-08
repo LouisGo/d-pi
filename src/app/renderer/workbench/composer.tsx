@@ -52,6 +52,7 @@ import {
   type AttachmentActions,
   AttachmentControls,
 } from "./attachment-controls";
+import { ComposerModelPicker } from "./composer-model-picker";
 import { ComposerToolbar } from "./composer-toolbar";
 import { UrlDecoration } from "./url-decoration";
 export function Composer({
@@ -471,7 +472,18 @@ export function Composer({
         <ComposerToolbar
           model={
             runtime ? (
-              <ComposerModel runtime={runtime} onChooseModel={onChooseModel} />
+              model.configuration ? (
+                <ComposerModelPicker
+                  runtime={runtime}
+                  thread={thread}
+                  model={model}
+                />
+              ) : (
+                <ComposerModel
+                  runtime={runtime}
+                  onChooseModel={onChooseModel}
+                />
+              )
             ) : null
           }
           access={

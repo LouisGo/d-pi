@@ -21,6 +21,9 @@
     display: grid;
     gap: calc(var(--spacing) * 6);
   }
+  .configuration-scope {
+    max-width: calc(var(--control-height) * 12);
+  }
   .configuration-page-feedback {
     display: grid;
     gap: calc(var(--spacing) * 2);

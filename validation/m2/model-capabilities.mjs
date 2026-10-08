@@ -71,7 +71,7 @@ try{
  const settings=Settings.isolated();const registry=new ModelRegistry(auth,process.env.PI_CODING_AGENT_DIR+'/models.json',{settings,cacheDbPath:':memory:',fetch:globalThis.fetch});
  const agent=new Agent();const manager=SessionManager.inMemory();
  const controls=new ModelControls({agent,settings,modelRegistry:registry,sessionManager:manager,providerSessionState:new Map(),model:()=>agent.state.model,sessionId:()=>manager.getSessionId(),promptGeneration:()=>0,resolveActiveEditMode:()=> 'replace',syncAfterModelChange:async()=>{},setModelWithProviderSessionReset:async model=>agent.setModel(model),clearActiveRetryFallback:()=>{},clearInheritedProviderPromptCacheKey:()=>{},magicKeywordEnabled:()=>false,emit:()=>{},emitSessionEvent:async()=>{},emitNotice:()=>{}},{});
- const session={modelRegistry:registry,get model(){return agent.state.model;},get thinkingLevel(){return controls.thinkingLevel;},setModelTemporary:(...args)=>controls.setModelTemporary(...args),setThinkingLevel:(...args)=>controls.setThinkingLevel(...args)};
+ const session={settings,modelRegistry:registry,get model(){return agent.state.model;},get thinkingLevel(){return controls.thinkingLevel;},setModelTemporary:(...args)=>controls.setModelTemporary(...args),setThinkingLevel:(...args)=>controls.setThinkingLevel(...args)};
  const choose=(model,thinking)=>applyModelSelection(session,{provider:model.provider,modelId:model.id,thinking});
  await choose(samples.minimal,{kind:'effort',effort:'minimal'});assert.equal(controls.thinkingLevel,'minimal');assert.equal(agent.state.disableReasoning,false);
  await choose(samples.minimal,{kind:'default'});assert.equal(controls.thinkingLevel,'minimal','native default preserves effective effort without model default');
@@ -99,6 +99,15 @@ if (process.env.D_PI_CONFIGURATION_SOURCE !== "1") {
   let hostEntry = join(sdk, "host.mjs");
   if (sourceHost) {
     copyFileSync(resolve("runtime/host.mjs"), join(isolated.root, "host.mjs"));
+    for (const name of [
+      "image-input.mjs",
+      "image-compression.mjs",
+      "native-queue.mjs",
+      "native-subagent-configuration.mjs",
+      "reading-session.mjs",
+      "pdf-content.mjs",
+    ])
+      copyFileSync(resolve("runtime", name), join(isolated.root, name));
     copyFileSync(join(sdk, "gate.js"), join(isolated.root, "gate.js"));
     hostEntry = join(isolated.root, "host.mjs");
   }
@@ -226,5 +235,10 @@ if (process.env.D_PI_CONFIGURATION_SOURCE !== "1") {
       child.exitCode !== null ? resolve() : child.once("close", resolve),
     );
   }
+}
+if (process.argv[2]) {
+  const output = resolve(process.argv[2]);
+  mkdirSync(resolve(output, ".."), { recursive: true });
+  writeFileSync(output, JSON.stringify(evidence, null, 2) + "\n");
 }
 console.log(JSON.stringify(evidence));

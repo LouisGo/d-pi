@@ -1,0 +1,85 @@
+{
+  "sdkVersion": "18.4.6",
+  "samples": {
+    "deepseek": {
+      "provider": "deepseek",
+      "id": "deepseek-flash",
+      "thinking": {
+        "efforts": [
+          "low",
+          "high",
+          "max"
+        ],
+        "adjustable": true,
+        "requiresEffort": false,
+        "defaultEffort": null,
+        "defaultLevel": null
+      }
+    },
+    "minimal": {
+      "provider": "abliteration",
+      "id": "abliterated-model",
+      "thinking": {
+        "efforts": [
+          "minimal",
+          "low",
+          "medium",
+          "high",
+          "xhigh"
+        ],
+        "adjustable": true,
+        "requiresEffort": false,
+        "defaultEffort": null,
+        "defaultLevel": null
+      }
+    },
+    "fixed": {
+      "provider": "cline-pass",
+      "id": "cline-free/deepseek-v4.1-flash",
+      "thinking": {
+        "efforts": [],
+        "adjustable": false,
+        "requiresEffort": false,
+        "defaultEffort": null,
+        "defaultLevel": null
+      }
+    },
+    "required": {
+      "provider": "abliteration",
+      "id": "abliterated-model-large-v2",
+      "thinking": {
+        "efforts": [
+          "low",
+          "medium",
+          "high",
+          "xhigh",
+          "max"
+        ],
+        "adjustable": true,
+        "requiresEffort": true,
+        "defaultEffort": "max",
+        "defaultLevel": "max"
+      }
+    },
+    "plain": {
+      "provider": "aimlapi",
+      "id": "act_two",
+      "thinking": {
+        "efforts": [],
+        "adjustable": false,
+        "requiresEffort": false,
+        "defaultEffort": null,
+        "defaultLevel": null
+      }
+    }
+  },
+  "checks": [
+    "official metadata five categories",
+    "distinct default/off/effort through native ModelControls",
+    "native Agent reasoning disabled only by explicit off",
+    "required and invalid efforts rejected",
+    "native actual level readback",
+    "worktree Host against packaged SDK d_pi_model result agrees with native get_state for five categories"
+  ],
+  "realSupplierRequests": 0
+}

@@ -5,12 +5,14 @@ import {
   type LocaleSnapshot,
   LocaleSnapshotSchema,
 } from "../../../shared/i18n/locale";
+import { ModelPickerPreferencesSchema } from "./model-picker";
 export const PreferencesSchema = z.strictObject({
   theme: z.enum(["light", "dark", "system"]),
   // Compatibility DTO for existing database/IPC snapshots; not an appearance option.
   density: z.enum(["normal", "compact"]),
   sendKey: z.enum(["enter-send", "enter-newline"]).optional(),
   locale: LocalePreferenceSchema,
+  modelPicker: ModelPickerPreferencesSchema.optional(),
 });
 export type Preferences = z.infer<typeof PreferencesSchema>;
 

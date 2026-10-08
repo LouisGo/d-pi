@@ -28,6 +28,42 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+## Provider and model brand assets
+
+Static SVG/PNG marks adapted from T3 Code `apps/web/src/components/Icons.tsx`,
+commit 30cc788975500a8c00d32a50f348174d1ce578d1, and Lobe Icons
+`packages/static-svg/icons`, commit c385b2b8d1f9e19aa86e628d4e23c91ee1111a47.
+The asset inventory and original license texts are retained in
+[provider-brand-assets](docs/engineering/provider-brand-assets.md).
+These marks identify providers and models and do not imply endorsement.
+
+MIT License
+
+Copyright (c) 2026 T3 Tools Inc.
+Copyright (c) 2023 LobeHub
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+The Apple mark in T3's source is attributed to Simple Icons under
+[CC0-1.0](https://creativecommons.org/publicdomain/zero/1.0/legalcode).
+Software license grants do not transfer trademark rights.
+
 ## Bundled dependencies
 
 License files from the locked application dependency graph. The official OMP SDK dependency closure and Bun runtime are also shipped; their original license files are retained in `Contents/Resources/sdk/node_modules` and `Contents/Resources/sdk/BUN-LICENSE.md`.

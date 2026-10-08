@@ -17,7 +17,10 @@ import {
   DraftTextSchema,
   SavedDraftSchema,
 } from "../../modules/input/contracts/public";
-import type { LocaleBridge } from "../../modules/preferences/contracts/public";
+import type {
+  LocaleBridge,
+  ModelPickerPreferences,
+} from "../../modules/preferences/contracts/public";
 import { PreferencesSchema } from "../../modules/preferences/contracts/public";
 import { ThreadContextSchema } from "../../modules/threads/contracts/public";
 import type { DiagnosticBridge } from "../../shared/diagnostics";
@@ -157,13 +160,28 @@ export function parseDesktopReply(command: Command, raw: unknown): Reply {
             ({ value }) =>
               reply.kind === "preferences-saved" &&
               reply.value.theme === value.theme &&
-              reply.value.density === value.density &&
               reply.value.sendKey === value.sendKey &&
-              reply.value.locale === value.locale,
+              (value.modelPicker === undefined ||
+                sameModelPickerPreferences(
+                  reply.value.modelPicker,
+                  value.modelPicker,
+                )),
           )
           .exhaustive();
   if (!matches) throw new DesktopRequestError("invalid-reply", command.traceId);
   return reply;
+}
+
+function sameModelPickerPreferences(
+  actual: ModelPickerPreferences | undefined,
+  expected: ModelPickerPreferences,
+): boolean {
+  if (actual === undefined) return false;
+  return (["favorites", "hidden", "order"] as const).every(
+    (key) =>
+      actual[key].length === expected[key].length &&
+      actual[key].every((value, index) => value === expected[key][index]),
+  );
 }
 export interface DesktopBridge {
   attention?: AttentionBridge;

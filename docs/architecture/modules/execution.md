@@ -9,6 +9,7 @@
 - D-39 在 NativeSession 内部采纳 Effect 4.0.0 管理等待和资源释放；供应商类型不进入公开 DTO 或 Renderer，超时/Scope 中断仍只表示运输结果未知，不表示 OMP 已取消或可自动重发。实施与验证见[Effect 规格](../../../.scratch/effect-native-lifecycle/spec.md)。
 - `main/` 的 `RuntimeService` 是保留同一生命周期状态的执行协调器，复用 `RuntimeAdmission`、`SubmissionCoordinator`、`HostConnection` 和 `SubmissionRepository`；没有按行数复制状态或制造第二个队列。
 - `renderer/` 只保存当前执行镜像和提交客户端；应用组合与 SQLite 初始化在 `src/app/main/wiring/`，恢复由 `SubmissionRepository.recoverInterruptedSubmissions()` 显式调用。
+- 2026-10-08：`select-model` 复用 HostConnection 的有界 operation 等待，Main 回读关联 trace/generation 的原生终态后返回；`modelOperation` 区分 pending/acknowledged/failed/unknown，成功时才更新 App 的 selection/thinking 意图。Renderer 只能按同请求 trace 的 acknowledged 回读收起 panel，失效目标和未知运输不自动重发。准备阶段的 inspect 返回 starting 投影，不能在原生许可握手前写 get_state。
 - OMP 队列、原生历史和执行事实仍由 OMP 所有；`unknown` 不自动重发，ACK 与草稿消费标记继续在同一 SQLite 事务中完成。
 - `SubmissionRepository` 保存有精确 request/target 的有限 `promptResult`，区分 `native-prompt-result` 与内置本地命令的 `native-local-response`；调用 state 与 completed/aborted/failed/unknown outcome 分开。RuntimeView 暴露证据覆盖缺口，Renderer 收据合并不会用旧 unknown 或迟到 success 擦除已观测终态/错误。
 - Host 的未确认 evidence 缓存上限 256，重复事实合并，Main 持久提交后发送 confirm-evidence；同活实例按退避重送事实，attach/replay-evidence 也仅重送证据。未确认事实阻止正常 idle 回收，不能凭 ACK 与原生闲置丢弃未保存终态。已确认身份最多保留 128 项/15 分钟，不含正文，用于重复终态和迟到错误关联。Host 退出清内存，缓存压力和无关联结果明确报告 gap，不承诺崩溃后的缓存恢复。

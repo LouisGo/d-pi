@@ -1,6 +1,16 @@
 # 配置、模型与认证
 
-日期：2026-10-01。深度：配置身份、只读摘要与原生模型能力已接入；M2 来源选择、真实供应商认证及子 Agent Thread 覆盖仍待验收。依据 D-03/D-04/D-23/D-27；[配置 ADR](../../adr/0002-share-native-omp-config.md)、[基础契约 §3](../foundation-contracts.md#3-配置与首版认证b3)。返回[模块地图](README.md)。
+日期：2026-10-08。深度：全部原生 Provider 认证和模型配置无头接入；真实供应商认证及子 Agent Thread 覆盖仍待验收。依据 D-03/D-04/D-23/D-27 及本轮用户扩展授权；[配置 ADR](../../adr/0002-share-native-omp-config.md)、[基础契约 §3](../foundation-contracts.md#3-配置与首版认证b3)。返回[模块地图](README.md)。
+
+## Provider 与模型管理（2026-10-08）
+
+`configuration/contracts/provider-models.ts` 暴露原生登录方法、认证来源、非秘密账户身份、API key 保存/校验差异、模型类型/上下文/费用/角色候选和 revision。目录由 `getAll("all")` 读取；会话可选性另外沿用原生 chat 目录和 `enabledModels` pattern 过滤，不将设备收藏/隐藏误写为原生启用状态。全零费用由官方 `getModelPricingStatus` 区分免费、套餐内、可变和未知价格。`getKnownRoleIds` 与 `getRoleInfo.accepts` 保留原生角色和自定义角色。
+
+全部 `getOAuthProviders` 注册的可用方法通过 `auth.oauth.login` 接入，不复制 OAuth、设备码或 key 校验协议。原生 prompt 的 placeholder/allowEmpty/secret 和手工 callback 输入被保留；未声明 secret 的输入保守遮罩。API-key method 的原生 normalization/validation 原样调用，探针类型明确给 UI；可能产生计费请求的 chat-completions/anthropic-messages 校验不自动运行。无原生登录 method 但支持静态 key 的 provider 使用 `credentials.upsert` 保存，回执只表示原生保存，不冒称联网校验通过。移除账户按 `removeById(provider,id)`，保留同 provider 其他账户，env/config 来源仍可生效。
+
+原生共享写操作 `provider-enable`、`set-model-role` 和账户删除携带 `expectedRevision`；打开 writable storage 前检查路径/原生 schema，写前复核、写后回读。角色写入显式选择 global/project；application scope 不允许伪造项目角色。`Settings.loadIsolated`、`cfgDisabledProviders.setMember` 和原生 role setter 负责持久化。自定义模型在原生优先文件 models.yml/yaml/json 上复用 `ModelsConfigFile.schema` 与 `validateProviderConfiguration` 校验，按 revision/原文 CAS 后原子替换；只合并目标记录的传入字段，保留未知兄弟、headers 和凭据字段，Renderer 摘要不回传它们。原生没有公开 CRUD writer，文件适配不使用临时 `registerProvider` 冒充持久化。CAS 不提供外部 CLI 的进程间锁；发现冲突要求刷新后重做。
+
+显式 `refresh-catalog` 才调用官方在线 discovery；读取目录使用官方 `hydrateCredentialScopedModelCaches` 的离线路径和私有缓存副本，不刷新 token、不联网、不执行 `!command`。显式刷新也拒绝命令型 key/headers，不借目录刷新执行 credential helper。无法观察账户缓存时保留 partial/unknown。Main 的 URL 只来自原 job 的原生 challenge，允许无 userinfo 的 HTTPS 或 HTTP loopback；Perplexity 采用原生 email 回退，没有另建 Electron cookie/SSO 机制。证据见[原生能力调查与验证](../../../.scratch/providers-models/native-capabilities.md)。
 
 ## 当前工程落点（配置加固，2026-10-01）
 
@@ -40,7 +50,7 @@ Main 管非会话查询/认证接入的生命周期；涉及当前会话的能�
 
 仅浏览时只使用不加载项目可执行代码的检查路径；某项查询需要启动项目 Agent/扩展时，先明确执行准入，不为“检查是否可用”绕过项目信任。
 
-M2 新增认证仅 OpenAI 账户（openai-codex）和 DeepSeek API key；其他已有可用 provider 仍复用。原生实现管 token/刷新/持久化，GUI 只提供受控输入和进度；OAuth 使用系统浏览器，不依赖[内置浏览器](browser.md)。API key 不进 argv、日志或 App 数据库。
+原 M2 两入口限制于 2026-10-08 被用户明确扩展授权取代：全部 OMP 原生注册 provider 认证均可接入。OpenAI 账户（openai-codex）和 OpenAI API key 仍是不同入口。原生实现管 token/刷新/持久化，GUI 只提供受控输入和进度；OAuth 使用系统浏览器，不依赖[内置浏览器](browser.md)。API key 不进 argv、日志或 App 数据库。
 
 认证结束/取消释放临时桥接与监听；保存失败不先删除已有有效配置。不兼容格式停止写入。需要 Runtime 长期 fork 才能接入时，报告证据及影响，不能自行改变登录路线。
 

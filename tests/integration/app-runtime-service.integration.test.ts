@@ -115,6 +115,13 @@ async function running(
   busyAfterReady = false,
   failFirstFork = false,
   prepareContent?: ConstructorParameters<typeof RuntimeService>[8],
+  beforeReady?: (
+    runtime: RuntimeService,
+    command: Extract<
+      import("../../src/modules/execution/contracts/public").HostCommand,
+      { kind: "start" }
+    >,
+  ) => Promise<void>,
 ) {
   const root = realpathSync(
     mkdtempSync(join(tmpdir(), "d-pi-runtime-service-")),
@@ -148,7 +155,8 @@ async function running(
         );
     }
     if (command.kind === "start")
-      queueMicrotask(() => {
+      queueMicrotask(async () => {
+        await beforeReady?.(runtime, command);
         host.emit("message", {
           kind: "ready",
           processInstanceId: command.processInstanceId,
@@ -1405,4 +1413,138 @@ it("reuses a directory grant in an already browsed Thread after another Thread i
     store.close();
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+it("waits for the exact native model operation and preserves thinking intent after readback", async () => {
+  const f = await running();
+  const traceId = TraceIdSchema.parse(crypto.randomUUID());
+  const selection = {
+    provider: "fixture",
+    modelId: "next",
+    thinking: { kind: "effort" as const, effort: "high" as const },
+  };
+  let settled = false;
+  const pending = f.runtime
+    .execute({
+      kind: "select-model",
+      threadId: f.draft.threadId,
+      traceId,
+      selection,
+    })
+    .then((value) => {
+      settled = true;
+      return value;
+    });
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  expect(settled).toBe(false);
+  const envelope = f.postMessage.mock.calls
+    .map(([raw]) => HostTransportCommandSchema.parse(raw).command)
+    .findLast((command) => command.kind === "select-model");
+  if (envelope?.kind !== "select-model") throw Error("Missing model command");
+  f.host.emit("message", {
+    kind: "state",
+    busy: false,
+    pendingInteraction: false,
+    state: {
+      sessionId: "native",
+      sessionFile: join(
+        f.root,
+        "native-sessions",
+        f.draft.threadId,
+        "native.jsonl",
+      ),
+      model: { provider: "fixture", id: "next" },
+      thinkingLevel: "high",
+      isStreaming: false,
+      isCompacting: false,
+      queuedMessageCount: 0,
+    },
+  });
+  f.host.emit("message", {
+    kind: "operation-result",
+    connectionGeneration: envelope.connectionGeneration,
+    operation: "select-model",
+    traceId,
+    status: "acknowledged",
+  });
+  expect(await pending).toMatchObject({
+    model: "fixture/next",
+    selectedModel: selection,
+    modelChanging: false,
+    modelOperation: { traceId, status: "acknowledged" },
+  });
+});
+
+it("keeps a failed thinking change distinct from the unchanged model and ignores an unrelated model receipt", async () => {
+  const f = await running();
+  const traceId = TraceIdSchema.parse(crypto.randomUUID());
+  let settled = false;
+  const pending = f.runtime
+    .execute({
+      kind: "select-model",
+      threadId: f.draft.threadId,
+      traceId,
+      selection: {
+        provider: "fixture",
+        modelId: "model",
+        thinking: { kind: "effort", effort: "high" },
+      },
+    })
+    .then((value) => {
+      settled = true;
+      return value;
+    });
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  const envelope = f.postMessage.mock.calls
+    .map(([raw]) => HostTransportCommandSchema.parse(raw).command)
+    .findLast((command) => command.kind === "select-model");
+  if (envelope?.kind !== "select-model") throw Error("Missing model command");
+  f.host.emit("message", {
+    kind: "operation-result",
+    connectionGeneration: envelope.connectionGeneration,
+    operation: "select-model",
+    traceId: crypto.randomUUID(),
+    status: "acknowledged",
+  });
+  await Promise.resolve();
+  expect(settled).toBe(false);
+  f.host.emit("message", {
+    kind: "operation-result",
+    connectionGeneration: envelope.connectionGeneration,
+    operation: "select-model",
+    traceId,
+    status: "failed",
+  });
+  const readback = await pending;
+  expect(readback).toMatchObject({
+    model: "fixture/model",
+    modelChanging: false,
+    modelOperation: { traceId, status: "failed" },
+    message: { code: "runtime.controlFailed" },
+  });
+  expect(readback.selectedModel).toBeUndefined();
+});
+
+it("inspects the starting projection without sending native state before the permit and ready handshake", async () => {
+  let inspectedPhase = "";
+  const f = await running(
+    false,
+    false,
+    false,
+    undefined,
+    async (runtime, command) => {
+      const view = await runtime.execute({
+        kind: "inspect",
+        threadId: command.threadId,
+        traceId: TraceIdSchema.parse(crypto.randomUUID()),
+      });
+      inspectedPhase = view.phase;
+    },
+  );
+  expect(inspectedPhase).toBe("starting");
+  expect(
+    f.postMessage.mock.calls.map(
+      ([raw]) => HostTransportCommandSchema.parse(raw).command.kind,
+    ),
+  ).not.toContain("state");
 });

@@ -1,0 +1,41 @@
+{
+  "sdkVersion": "18.4.6",
+  "checks": [
+    "desktop baseline permits native ephemeral A to B and restore",
+    "startup baseline permits native ephemeral A to B and restore",
+    "old native B endpoint edit requires reselection",
+    "old native B deferred header edit requires reselection",
+    "native role executes outside enabledModels while desktop selection remains filtered",
+    "native deferred headers require explicit reselection",
+    "startup default baseline precedes first call",
+    "selected command headers compared without execution",
+    "existing Host reads newly saved credentials",
+    "existing Host reads added custom models",
+    "provider disabled before switch and model call",
+    "native enabledModels enforced",
+    "edited endpoint requires explicit reselection",
+    "removed credential blocks next call",
+    "unrelated helper not executed during native settings listener refresh",
+    "llama.cpp native lazy context survives offline cache refresh",
+    "llama.cpp native lazy metadata clone retains declaration identity",
+    "lm-studio native lazy context survives offline cache refresh",
+    "lm-studio native lazy metadata clone retains declaration identity"
+  ],
+  "redRegressions": {
+    "deferredHeaders": "missing expected rejection on c283246",
+    "lazyContext": "model-configuration-changed on c283246 despite unchanged configuration",
+    "settingsListener": "unrelated credential helper executed from native settings listener on c283246",
+    "nativeSwitch": {
+      "source": "runtime/model-selection.mjs at 5256af46a25b848f4d6cba89b9a6301ce5fa1bff",
+      "validation": "validation/m2/model-configuration-live.mjs official ModelControls ephemeral A to B",
+      "command": "node validation/m2/model-configuration-live.mjs /tmp/d-pi-native-model-switch-red.json",
+      "result": "exit 1: model-configuration-changed after official ephemeral A to B selection"
+    },
+    "nativeRole": {
+      "source": "runtime/model-selection.mjs at 7da8934f30731ebbc528027f29091cb46c159e4e",
+      "validation": "official ModelControls.resolveRoleModel tiny and ephemeral selection outside enabledModels",
+      "result": "exit 1: selected-model-unavailable for native tiny role excluded from desktop selector"
+    }
+  },
+  "realSupplierRequests": 0
+}

@@ -168,19 +168,26 @@ export class RuntimeModel {
   }
   async selectModel(
     selection: Extract<RuntimeCommand, { kind: "select-model" }>["selection"],
-  ): Promise<void> {
+  ): Promise<RuntimeView | null> {
     const state = this.store.getState();
-    if (!state.thread || !state.view || state.disposed) return;
+    if (!state.thread || !state.view || state.disposed) return null;
+    const traceId = crypto.randomUUID();
     await this.request(
       {
         kind: "select-model",
         threadId: state.thread,
-        traceId: crypto.randomUUID(),
+        traceId,
         selection,
       },
       state.view,
       uiMessage("runtime.connectionUnknown"),
     );
+    const latest = this.store.getState();
+    return !latest.disposed &&
+      latest.thread === state.thread &&
+      latest.view?.traceId === traceId
+      ? latest.view
+      : null;
   }
   private queueWrites: Promise<void> = Promise.resolve();
   configureSubagent(command: SubagentConfigurationCommand): Promise<void> {
@@ -412,6 +419,15 @@ export class RuntimeModel {
             ...current,
             traceId: command.traceId,
             message: error.message,
+            ...(command.kind === "select-model"
+              ? {
+                  modelChanging: false,
+                  modelOperation: {
+                    traceId: command.traceId,
+                    status: "failed" as const,
+                  },
+                }
+              : {}),
           });
         })
         .exhaustive();
@@ -421,6 +437,15 @@ export class RuntimeModel {
         ...current,
         traceId: command.traceId,
         message: unknownMessage,
+        ...(command.kind === "select-model"
+          ? {
+              modelChanging: false,
+              modelOperation: {
+                traceId: command.traceId,
+                status: "unknown" as const,
+              },
+            }
+          : {}),
       });
     }
   }

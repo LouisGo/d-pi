@@ -26,7 +26,11 @@ import {
 } from "@oh-my-pi/pi-coding-agent/session/queued-messages";
 import { ConsumptionGate } from "./gate.js";
 import { prepareImageInput } from "./image-input.mjs";
-import { applyModelSelection } from "./model-selection.mjs";
+import {
+  applyModelSelection,
+  captureCurrentModelConfiguration,
+  ensureCurrentModelConfiguration,
+} from "./model-selection.mjs";
 import { NativeQueueManager } from "./native-queue.mjs";
 import { createSubagentConfiguration } from "./native-subagent-configuration.mjs";
 import { createReadingSession } from "./reading-session.mjs";
@@ -101,6 +105,9 @@ async function managedSessionManager() {
 }
 const { session, setToolUIContext, subagentEventBus } =
   await createAgentSession({ sessionManager: await managedSessionManager() });
+// The native default/resumed model has a configuration baseline before any call,
+// even when the user has not made an explicit desktop model selection.
+await captureCurrentModelConfiguration(session);
 if (process.env.D_PI_MODEL_SELECTION) {
   const selection = JSON.parse(process.env.D_PI_MODEL_SELECTION);
   await applyModelSelection(session, selection);
@@ -149,7 +156,11 @@ const state = () => ({
     .map((item) => ({ ...item, text: item.text.slice(0, 512) })),
 });
 session.agent.addBeforeQueuedMessageDequeueHook((signal) => gate.wait(signal));
-session.agent.addBeforeModelCallHook((signal) => gate.wait(signal));
+session.agent.addBeforeModelCallHook(async (signal) => {
+  await gate.wait(signal);
+  await ensureCurrentModelConfiguration(session);
+  await gate.wait(signal);
+});
 let lastState = "";
 function publish() {
   const next = JSON.stringify(state());
