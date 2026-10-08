@@ -1,6 +1,18 @@
 import type { ConfigurationSnapshot } from "../contracts/public";
 
 type Model = ConfigurationSnapshot["models"][number];
+type Provider = NonNullable<ConfigurationSnapshot["providers"]>[number];
+export function orderProviderCatalog(
+  providers: readonly Provider[],
+): Provider[] {
+  const rank = (provider: Provider) =>
+    provider.disabled
+      ? 2
+      : provider.authState === "configured" || provider.authState === "keyless"
+        ? 0
+        : 1;
+  return providers.toSorted((a, b) => rank(a) - rank(b));
+}
 export type CatalogFilter = {
   provider?: string;
   query?: string;

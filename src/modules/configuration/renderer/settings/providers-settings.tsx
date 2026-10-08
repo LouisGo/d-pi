@@ -13,6 +13,7 @@ import type {
   ConfigurationScope,
   ConfigurationSnapshot,
 } from "../../contracts/public";
+import { orderProviderCatalog } from "../../core/public";
 import { CustomModelForm } from "./custom-model-form";
 import { ModelRoles } from "./model-roles";
 import { ProviderAccounts } from "./provider-accounts";
@@ -41,7 +42,7 @@ export function ProvidersSettings({
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
-  const providers = snapshot.providers ?? [];
+  const providers = orderProviderCatalog(snapshot.providers ?? []);
   const selected =
     providers.find((provider) => provider.id === selectedId) ?? providers[0];
   const filtered = providers.filter((provider) =>

@@ -226,6 +226,20 @@ async function input(selector: string, value: string) {
   });
 }
 
+it("prioritizes connected enabled providers for the initial settings detail without dropping other native providers", async () => {
+  currentSnapshot = (scope, traceId) => {
+    const result = snapshot(scope, traceId);
+    return { ...result, providers: [...(result.providers ?? [])].reverse() };
+  };
+  await render();
+  expect(button("OpenAI").getAttribute("aria-pressed")).toBe("true");
+  expect(button("Anthropic")).toBeDefined();
+  const names = [...host.querySelectorAll(".providers-provider-button")].map(
+    (el) => el.getAttribute("aria-label"),
+  );
+  expect(names).toEqual(["OpenAI", "Anthropic"]);
+});
+
 it("renders native provider brands and explicit status/source, enables with CAS and confirms exact account disconnect", async () => {
   await render();
   expect(button("OpenAI").getAttribute("aria-pressed")).toBe("true");

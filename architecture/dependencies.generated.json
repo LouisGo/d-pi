@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "e65b58b824b6bf0a8bece0d0318a489cac0f0c0c52fbaa2bd247b5ef20db1b6d",
+  "inputsHash": "e3cde8eba9d117042b90f8e663f07732d7b1cf67c4a27f2e217f54df9c61c116",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 515,
@@ -374,7 +374,7 @@
       "defaultEnvironment": "omp",
       "materialized": true,
       "files": 14,
-      "lines": 3522,
+      "lines": 3565,
       "publicEntries": [
         {
           "path": "runtime/host.mjs",
@@ -394,7 +394,7 @@
       ],
       "materialized": true,
       "files": 30,
-      "lines": 5152,
+      "lines": 5180,
       "publicEntries": [
         {
           "path": "src/modules/configuration/contracts/public.ts",
@@ -29608,6 +29608,18 @@
       "to": "src/modules/configuration/contracts/public.ts",
       "targetModule": "configuration",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/providers-settings.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/core/public.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "core"
     },
     {
       "from": "src/modules/configuration/renderer/settings/providers-settings.tsx",
