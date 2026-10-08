@@ -68,7 +68,7 @@
     "next": "首个长会话阅读闭环已本地PR合main并push，远端源码289d36d已核实；从main pnpm dev试用。R1–R15、双轴无高价值遗留、真实Luna/Dev及干净Chromium证据已交付；用户认可pending，M2父范围仍开放。",
     "constraints": "2026-10-07当前明确授权本地PR合main并push，允许现有OMP Luna与并行工作。live/native分源，预算和冷恢复只读保留；不公开发布、不扩M3。"
   },
-  {"id":"long-session-repair","title":"长会话连续体验修复","phase":"M2","engineering":"in-progress","trial":"feedback","acceptance":"pending","current":true,"build":"","pending":[],"evidence":["long-session-repair.md"],"next":"实现连贯正文、生成期间历史可读及同原生会话冷恢复；完成真实模型复试与独立评审。","constraints":"2026-10-08用户明确授权修复并取代手动分段及冷旧Thread一律只读边界；保留unknown不重发、原生身份与真实独占，允许本机真实模型复核；本地交付，不自动push或公开发布。"}
+  {"id":"long-session-repair","title":"长会话连续体验修复","phase":"M2","engineering":"complete","trial":"delivered","acceptance":"pending","current":true,"build":"Dev source c4bc00b","pending":[],"evidence":["long-session-repair.md"],"next":"本地Dev三项修复已交付，两次冷恢复及真实模型/GUI/双轴评审通过；等待用户复试认可，M2其它项保持。","constraints":"2026-10-08用户明确授权修复并取代手动分段及冷旧Thread一律只读边界；保留unknown不重发、原生身份与真实独占，允许本机真实模型复核；本地交付，不自动push或公开发布。"}
 ]
 ```
 
@@ -310,3 +310,5 @@
 验收：缺口真实红绿；正式Main/Host/SDK身份与锁冲突、停止后继续、冷重启同sessionfile/id和上下文回忆、生成期间历史可读、长Markdown不退原文/没有分段控件、复制精确、旧位置/焦点保留；受影响检查、build和独立Spec/Standards评审。真实模型测试沿用本次账户授权和合成数据；本地Dev交付，不自动push/发布，用户认可pending。
 
 工程状态：实施中；管理状态仅主Agent写入。06k由continuous_reading在`/Users/lou/.codex/worktrees/continuous-reading/d-pi`、分支`codex/continuous-reading-repair`实现，基点13efe95，b0e60cc已串行合入为6c8300f；06l由主Agent实现并提交f3a0669；06m由recovery_evidence在`/Users/lou/.codex/worktrees/cold-session-resume/d-pi`、分支`codex/cold-session-resume-repair`从13efe95实现。主Agent写合同/i18n/共享装配并串行集成。结果与试用见[交接](long-session-repair.md)。
+
+2026-10-08连续体验修复交付：06k/06l/06m/06n工程resolved，产品源c4bc00b；b0e60cc、c674b1c/a8781dc/0ca6487按写集串行合入，独立Spec/Standards复核无剩余高价值发现。4新增真实GUI请求、1独立协议模型调用，两次同id/file冷恢复记忆正确、19,053字符/220行代码连贯且复制精确、生成中历史可读、停止可继续、432增量零差异。类型/build及受影响检查通过；全量矩阵既有CLI路径失败和PDF并行超时/单独复查结果详见交接，不冒称完整check绿。Dev交付，无push/发布；M2其它范围与用户认可独立pending。

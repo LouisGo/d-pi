@@ -1,0 +1,176 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/Learn/d-pi
+
+ ❯ src/modules/conversation/host/projection.test.ts (12 tests | 4 failed) 16ms
+   ✓ ignores known non-conversation frames but preserves an unknown-frame notice 3ms
+   ✓ merges streamed text into a bounded message and keeps tools/results distinct before terminal state 3ms
+   ✓ does not let an unconsumed extra field on a tool start invent failure or result text 0ms
+   ✓ bounds retained messages and reports truncation without retaining evicted tools 1ms
+   ✓ accounts for JSON escaping when bounding one enormous message 0ms
+   ✓ keeps native text verbatim and exposes product notices as semantic data 0ms
+   ✓ bounds the external event type without changing the native source 0ms
+   ✓ keeps startup advisor-cost telemetry out of an empty conversation while preserving unknown notices 0ms
+   × uses full native update snapshots without appending a populated start twice 3ms
+   × keeps a stopped reply and failed reply distinct and retains their reason alongside partial text 2ms
+   × marks the next native reply after a failure as a continuation without carrying it across new user input 1ms
+   × does not render settled and configuration telemetry as unsupported user interaction 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/modules/conversation/host/projection.test.ts > uses full native update snapshots without appending a populated start twice
+AssertionError: expected 'DPI_PROTOCOLD' to be 'DPI_PROTOCOL' // Object.is equality
+
+Expected: "DPI_PROTOCOL"
+Received: "DPI_PROTOCOLD"
+
+ ❯ src/modules/conversation/host/projection.test.ts:159:39
+    157|   p.accept({ type: "message_start", message: { role: "assistant", cont…
+    158|   p.accept({ type: "message_update", message: {role:"assistant",conten…
+    159|   expect(p.snapshot().items[0]?.text).toBe("DPI_PROTOCOL");
+       |                                       ^
+    160|   p.accept({ type: "message_update", message: {role:"assistant",conten…
+    161|   expect(p.snapshot().items[0]?.text).toBe("DPI_PROTOCOL_END");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/modules/conversation/host/projection.test.ts > keeps a stopped reply and failed reply distinct and retains their reason alongside partial text
+AssertionError: expected [ …(2) ] to match object [ { text: 'partial', …(2) }, …(1) ]
+(10 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  [
+    {
+-     "detail": "d-pi 用户停止",
+-     "state": "aborted",
++     "state": "failed",
+      "text": "partial",
+    },
+    {
+-     "detail": "socket closed",
+      "state": "failed",
+      "text": "partial failure",
+    },
+  ]
+
+ ❯ src/modules/conversation/host/projection.test.ts:169:30
+    167|   p.accept({type:"message_end",message:{role:"assistant",content:"part…
+    168|   p.accept({type:"message_end",message:{role:"assistant",content:"part…
+    169|   expect(p.snapshot().items).toMatchObject([{text:"partial",state:"abo…
+       |                              ^
+    170|   p.dispose();
+    171| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/modules/conversation/host/projection.test.ts > marks the next native reply after a failure as a continuation without carrying it across new user input
+AssertionError: expected { id: 2, role: 'assistant', …(3) } to match object { continuationOf: 1 }
+(7 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "continuationOf": 1,
++   "id": 2,
++   "label": {
++     "kind": "literal",
++     "text": "OMP",
++   },
++   "role": "assistant",
++   "state": "streaming",
++   "text": "",
+  }
+
+ ❯ src/modules/conversation/host/projection.test.ts:177:33
+    175|   p.accept({type:"message_end",message:{role:"assistant",content:"part…
+    176|   p.accept({type:"message_start",message:{role:"assistant",content:[]}…
+    177|   expect(p.snapshot().items[1]).toMatchObject({continuationOf:1});
+       |                                 ^
+    178|   p.accept({type:"message_end",message:{role:"assistant",content:"reco…
+    179|   p.accept({type:"message_end",message:{role:"user",content:"new reque…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  src/modules/conversation/host/projection.test.ts > does not render settled and configuration telemetry as unsupported user interaction
+AssertionError: expected [ …(3) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "id": 1,
++     "label": {
++       "kind": "message",
++       "value": {
++         "code": "conversation.nativeEvent",
++       },
++     },
++     "notice": {
++       "code": "conversation.unsupportedNativeEvent",
++       "params": {
++         "eventType": "session_settled",
++       },
++     },
++     "role": "notice",
++     "state": "complete",
++     "text": "",
++   },
++   {
++     "id": 2,
++     "label": {
++       "kind": "message",
++       "value": {
++         "code": "conversation.nativeEvent",
++       },
++     },
++     "notice": {
++       "code": "conversation.unsupportedNativeEvent",
++       "params": {
++         "eventType": "thinking_level_changed",
++       },
++     },
++     "role": "notice",
++     "state": "complete",
++     "text": "",
++   },
++   {
++     "id": 3,
++     "label": {
++       "kind": "message",
++       "value": {
++         "code": "conversation.nativeEvent",
++       },
++     },
++     "notice": {
++       "code": "conversation.unsupportedNativeEvent",
++       "params": {
++         "eventType": "model_changed",
++       },
++     },
++     "role": "notice",
++     "state": "complete",
++     "text": "",
++   },
++ ]
+
+ ❯ src/modules/conversation/host/projection.test.ts:190:30
+    188|   p.accept({type:"thinking_level_changed",thinkingLevel:"off"});
+    189|   p.accept({type:"model_changed"});
+    190|   expect(p.snapshot().items).toEqual([]);
+       |                              ^
+    191|   p.dispose();
+    192| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 8 passed (12)
+   Start at  11:06:20
+   Duration  197ms (transform 52%, import 33%, tests 14%, worker 1%)
+

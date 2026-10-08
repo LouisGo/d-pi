@@ -1,0 +1,33 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/Learn/d-pi
+
+ ❯ src/app/renderer/reading/history-loop.test.ts (7 tests | 1 failed) 129ms
+   ✓ explains the read-only saved order and refresh scope, and returns to live without reading or binding 48ms
+   ✓ keeps discovery access denial distinct from an empty history and preserves the bound-read fallback 15ms
+   ✓ shows a native missing page as unavailable rather than empty 15ms
+   ✓ shows a native denied page as unavailable rather than empty 19ms
+   ✓ shows a native changed page as unavailable rather than empty 14ms
+   ✓ shows a truly empty native page separately from an unread bound source 14ms
+   × reads the bound saved messages while project discovery and native generation are still running 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/renderer/reading/history-loop.test.ts > reads the bound saved messages while project discovery and native generation are still running
+AssertionError: expected undefined to be defined
+ ❯ src/app/renderer/reading/history-loop.test.ts:172:16
+    170|   const {container}=await mount(bridge);
+    171|   const read=[...container.querySelectorAll("button")].find(b=>b.textC…
+    172|   expect(read).toBeDefined();
+       |                ^
+    173|   expect(read?.disabled).toBe(false);
+    174|   await act(()=>read?.click());
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed (7)
+   Start at  11:09:29
+   Duration  1.32s (import 70%, transform 11%, tests 10%, environment 9%)
+

@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "f92362d74e6c6e20aec5b0d4ad587c9063d9dd84b1215faae75030ba2cd52129",
+  "inputsHash": "fb18d4a22d0ce4e2a62ca1566735a34dc099ab8bf1196c3d926502acd3f1fbff",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 439,
-    "scannedFiles": 439,
+    "sourceFiles": 443,
+    "scannedFiles": 443,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 190,
-      "lines": 34191,
+      "files": 191,
+      "lines": 34271,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -60,7 +60,7 @@
       ],
       "materialized": true,
       "files": 28,
-      "lines": 2974,
+      "lines": 2978,
       "publicEntries": [
         {
           "path": "src/platform/main/storage/public.ts",
@@ -102,7 +102,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 20,
-      "lines": 2741,
+      "lines": 2758,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -294,7 +294,7 @@
       ],
       "materialized": true,
       "files": 23,
-      "lines": 3344,
+      "lines": 3388,
       "publicEntries": [
         {
           "path": "src/modules/conversation/contracts/public.ts",
@@ -326,8 +326,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 53,
-      "lines": 12364,
+      "files": 56,
+      "lines": 13045,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -361,7 +361,7 @@
       "defaultEnvironment": "omp",
       "materialized": true,
       "files": 11,
-      "lines": 2129,
+      "lines": 2194,
       "publicEntries": [
         {
           "path": "runtime/host.mjs",
@@ -1126,6 +1126,13 @@
     {
       "module": "app",
       "environment": "main",
+      "dependency": "execution",
+      "targetEnvironment": "contracts",
+      "testOnly": true
+    },
+    {
+      "module": "app",
+      "environment": "main",
       "dependency": "platform",
       "targetEnvironment": "main",
       "testOnly": true
@@ -1213,13 +1220,6 @@
       "dependency": "platform",
       "targetEnvironment": "node",
       "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "main",
-      "dependency": "execution",
-      "targetEnvironment": "contracts",
-      "testOnly": true
     },
     {
       "module": "app",
@@ -2032,6 +2032,13 @@
       "dependency": "threads",
       "targetEnvironment": "main",
       "testOnly": false
+    },
+    {
+      "module": "execution",
+      "environment": "main",
+      "dependency": "platform",
+      "targetEnvironment": "node",
+      "testOnly": true
     },
     {
       "module": "execution",
@@ -3383,6 +3390,99 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/main/ipc/context.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/ipc/execution.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/execution.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/execution.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/execution.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "electron",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/execution.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/execution.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/main/ipc/execution.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../../platform/main/diagnostics/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/main/diagnostics/public.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/ipc/execution.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../../shared/messages/contracts",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/messages/contracts.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/app/main/ipc/execution.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./execution",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/ipc/execution.ts",
       "targetModule": "app",
       "targetEnvironment": "main"
     },
@@ -21605,6 +21705,42 @@
       "targetEnvironment": "contracts"
     },
     {
+      "from": "src/modules/execution/core/runtime/admission.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "../../contracts/runtime",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/runtime.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/core/runtime/admission.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "./native-recovery-failure",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/core/runtime/native-recovery-failure.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/execution/core/runtime/native-recovery-failure.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "../../contracts/runtime",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/runtime.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
       "from": "src/modules/execution/core/submission/native-command-policy.ts",
       "sourceModule": "execution",
       "sourceEnvironment": "core",
@@ -22488,6 +22624,15 @@
       "sourceModule": "execution",
       "sourceEnvironment": "host",
       "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/host/session-host.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
       "specifier": "../../../platform/node/filesystem/public",
       "kind": "import",
       "resolution": "module",
@@ -23192,11 +23337,62 @@
       "targetEnvironment": "contracts"
     },
     {
+      "from": "src/modules/execution/main/transport/host-connection.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../core/runtime/native-recovery-failure",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/core/runtime/native-recovery-failure.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/execution/main/transport/host-connection.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "./session-execution-lease",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/main/transport/session-execution-lease.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "main"
+    },
+    {
       "from": "src/modules/execution/main/transport/host-multiplex.test.ts",
       "sourceModule": "execution",
       "sourceEnvironment": "main",
       "test": true,
       "specifier": "node:events",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/host-multiplex.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/host-multiplex.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/host-multiplex.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:path",
       "kind": "import",
       "resolution": "external"
     },
@@ -23247,6 +23443,33 @@
       "sourceModule": "execution",
       "sourceEnvironment": "main",
       "test": true,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/host-shutdown.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/host-shutdown.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/host-shutdown.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
       "specifier": "vitest",
       "kind": "import",
       "resolution": "external"
@@ -23274,6 +23497,144 @@
       "to": "src/modules/execution/main/transport/host-connection.ts",
       "targetModule": "execution",
       "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/execution/main/transport/session-execution-lease.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:child_process",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/session-execution-lease.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/session-execution-lease.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/session-execution-lease.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/session-execution-lease.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:sqlite",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/session-execution-lease.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/session-execution-lease.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../../../platform/node/processes/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/node/processes/public.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "node"
+    },
+    {
+      "from": "src/modules/execution/main/transport/session-execution-lease.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./session-execution-lease",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/main/transport/session-execution-lease.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/execution/main/transport/session-execution-lease.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/session-execution-lease.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/session-execution-lease.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:sqlite",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/session-execution-lease.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/session-execution-lease.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../../platform/node/processes/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/node/processes/public.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "node"
+    },
+    {
+      "from": "src/modules/execution/main/transport/session-execution-lease.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../core/runtime/native-recovery-failure",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/core/runtime/native-recovery-failure.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "core"
     },
     {
       "from": "src/modules/execution/renderer/public.ts",
@@ -23971,6 +24332,24 @@
       "sourceEnvironment": "omp",
       "test": false,
       "specifier": "@oh-my-pi/pi-utils",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/host.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "node:fs/promises",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/host.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "node:path",
       "kind": "import",
       "resolution": "external"
     },

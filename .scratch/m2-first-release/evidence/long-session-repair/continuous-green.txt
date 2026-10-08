@@ -1,0 +1,62 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/.codex/worktrees/continuous-reading/d-pi
+
+stderr | src/app/renderer/reading/continuous-reading-renderer.test.ts > expands long fenced code and tables into the same continuous reading surface
+An update to x inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ ✓ src/app/renderer/reading/continuous-reading-renderer.test.ts (7 tests) 516ms
+stderr | src/app/renderer/reading/project-history.test.ts > refreshes a changed CLI history from the first page and can continue reading its new version
+An update to HistoryContent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/reading/project-history.test.ts > refreshes a changed CLI history from the first page and can continue reading its new version
+An update to SelectValue inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ ✓ src/app/renderer/reading/project-history.test.ts (3 tests) 305ms
+ ✓ src/app/renderer/reading/markdown.test.ts (10 tests) 194ms
+ ✓ src/app/renderer/reading/bounded-history.test.ts (3 tests) 179ms
+ ✓ src/app/renderer/reading/history-loop.test.ts (6 tests) 119ms
+ ✓ src/app/renderer/reading/submissions-renderer.test.ts (12 tests) 56ms
+ ✓ src/app/renderer/reading/reading-pane.test.ts (1 test) 36ms
+ ✓ src/app/renderer/reading/subagents-renderer.test.ts (1 test) 34ms
+ ✓ src/app/renderer/reading/conversation-loop.test.ts (2 tests) 49ms
+ ✓ src/app/renderer/reading/conversation-i18n.test.ts (4 tests) 25ms
+ ✓ src/app/renderer/reading/reading-anchor.test.ts (9 tests) 14ms
+ ✓ src/app/renderer/reading/live-reading.test.ts (4 tests) 3ms
+
+ Test Files  12 passed (12)
+      Tests  62 passed (62)
+   Start at  11:09:20
+   Duration  13.89s (import 74%, tests 12%, environment 10%, transform 4%)
+
+     Import  116 modules were evaluated 189 times · 9.66s total, 74% of tracked time
+             ~3.73s faster with isolate: false — shared modules are evaluated once per worker instead of once per file
+             learn more: https://vitest.dev/guide/improving-performance#test-isolation
+

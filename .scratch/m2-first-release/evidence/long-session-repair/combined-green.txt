@@ -1,0 +1,22 @@
+ ✓ src/modules/execution/contracts/native-failure.test.ts (9 tests) 8ms
+ ✓ src/modules/execution/core/runtime/admission.test.ts (1 test) 7ms
+ ✓ src/app/renderer/reading/live-reading.test.ts (4 tests) 4ms
+ ✓ src/modules/execution/host/native/native-bootstrap.test.ts (7 tests) 9ms
+ ✓ src/modules/conversation/main/project-history.test.ts (1 test) 62ms
+ ✓ src/modules/conversation/core/bound-history-attempt.test.ts (5 tests) 315ms
+ ✓ src/modules/conversation/core/subscription.test.ts (2 tests) 9ms
+ ✓ src/modules/conversation/core/subagent-reconnect.test.ts (1 test) 21ms
+ ✓ src/modules/execution/core/submission/target.test.ts (5 tests) 4ms
+ ↓ src/modules/execution/host/native/native-smoke.test.ts (1 test | 1 skipped)
+ ✓ src/modules/execution/contracts/interactions.test.ts (3 tests) 4ms
+ ✓ src/modules/execution/renderer/submission/submission-shortcut.test.ts (1 test) 6ms
+ ✓ src/app/renderer/reading/conversation-i18n.test.ts (4 tests) 60ms
+
+ Test Files  46 passed | 1 skipped (47)
+      Tests  292 passed | 1 skipped (293)
+   Start at  11:18:14
+   Duration  33.33s (import 60%, tests 24%, transform 8%, environment 7%)
+
+    Isolate  47 workers spawned · ~439ms startup each (spawn + environment, per file)
+             at least ~4.72s faster with isolate: false — reuses workers across files instead of one per file
+

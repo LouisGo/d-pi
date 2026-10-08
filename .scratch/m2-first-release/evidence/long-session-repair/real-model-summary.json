@@ -1,0 +1,92 @@
+{
+  "scope": "4 new GUI real-provider submissions and 1 separate real Host protocol request; synthetic text, no tool calls",
+  "base": "ae94bc0bed8deba6a005c8b5ec79b16aa02f9df4",
+  "reviewedProductHead": "c4bc00bbdaa42cc07119c5e5aaa4f83701e07cc6",
+  "guiSourceFirstRun": "b9ad421919e2146ec648b9d3e97f52ddf3834e39",
+  "guiSourceSecondRun": "670a530924cea0decdf35169d106752548dbacd3",
+  "laterProductDelta": "c4bc00b only IPC correlated diagnostics/context narrowing; independently tested, no additional real-model call",
+  "threadId": "4a43e859-923b-4ed7-9ebb-13d122d69963",
+  "sameNativeSessionId": "01a11960-785b-7000-bb6a-d2d9987aea8f",
+  "sameNativeFileVerified": true,
+  "realGuiSubmissions": [
+    {
+      "submissionId": "b45ba5c1-4820-4096-8d64-bef87b1da27d",
+      "traceId": "2b6c2646-99ad-4f23-a5a4-867e9211b516",
+      "outcome": "completed",
+      "durationMs": 2074
+    },
+    {
+      "submissionId": "291ffc76-b650-4aee-8b0d-0af979b0a75d",
+      "traceId": "68290c16-5278-4d62-9400-f17defdeeeb9",
+      "outcome": "completed",
+      "durationMs": 33580
+    },
+    {
+      "submissionId": "ee6c5460-a295-47bf-925e-e820e60b1ae5",
+      "traceId": "f4912b02-d4f3-469a-a868-31e4377efd1d",
+      "outcome": "aborted",
+      "durationMs": 10370
+    },
+    {
+      "submissionId": "eb7b6aaa-a481-480e-937c-079c965a23f4",
+      "traceId": "968d80b3-b0cc-48f3-ac2b-57d4d5126549",
+      "outcome": "completed",
+      "durationMs": 2452
+    }
+  ],
+  "r8Recall": "此前代号：蓝鹭7；第一轮最后编号：180；第二轮最后编号：240。  \n松鸢42  \nDPI_REPAIR_COLD_R8",
+  "r11Recall": "松鸢42；item220\nDPI_REPAIR_COLD_R11",
+  "r9Copy": {
+    "characters": 19053,
+    "lines": 234,
+    "stopReason": "stop",
+    "copyExact": true,
+    "nativeSha256": "a0cf9423cea5644bb102a1f370de33ad6e4ca95e8a72a56884b9746255093549",
+    "copiedSha256": "a0cf9423cea5644bb102a1f370de33ad6e4ca95e8a72a56884b9746255093549",
+    "codeRows": 220,
+    "last": " epsilon zeta eta theta iota kappa lambda mu\";\nconst item219 = \"alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu\";\nconst item220 = \"alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu\";\n```\n\n## 连贯结尾\n\nDPI_REPAIR_END_R9",
+    "usage": {
+      "input": 1081,
+      "output": 4712,
+      "cacheRead": 16896,
+      "cacheWrite": 0,
+      "totalTokens": 22689,
+      "reasoningTokens": 30,
+      "cost": {
+        "input": 0.00010810000000000001,
+        "output": 0.002356,
+        "cacheRead": 0.00016896,
+        "cacheWrite": 0,
+        "total": 0.00263306
+      }
+    }
+  },
+  "secondRestartReceiptCountBeforeNewSubmission": 11,
+  "secondRestartDraftPreserved": true,
+  "historyReadWhileGenerating": true,
+  "backgroundThreadSwitch": true,
+  "stoppedBubbleLabel": "OMP 已停止",
+  "explicitContinueEnabledSending": true,
+  "protocol": {
+    "starts": [
+      {
+        "characters": 165,
+        "hash": "02bf02128b17996fe3b9cf3f64c8063d85863bcfee72b0ebd96f63361a968c11",
+        "model": "gpt-6-luna",
+        "provider": "openai-codex"
+      }
+    ],
+    "textDeltaUpdates": 432,
+    "discrepancies": 0,
+    "settled": true,
+    "failure": null
+  },
+  "model": "openai-codex/gpt-6-luna",
+  "toolCallsInRepair": 0,
+  "evidenceDirectory": "/Users/lou/Downloads/DPI_长会话修复复试_2026-10-08",
+  "limits": [
+    "no 8MiB/1000-message frame-rate benchmark",
+    "SDK SessionManager.open has no cross-CLI execution lease; supported private d-pi entry has real OS lease",
+    "no provider outage injected in GUI; failure/retry projection covered by behavioral tests"
+  ]
+}

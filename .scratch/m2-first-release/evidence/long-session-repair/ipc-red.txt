@@ -1,0 +1,138 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/Learn/d-pi
+
+ ❯ src/app/main/ipc/execution.test.ts (4 tests | 4 failed) 54ms
+   × persists the bounded occupied recovery reason at the actual IPC diagnostic boundary with the request trace 34ms
+   × persists the bounded owner-unknown recovery reason at the actual IPC diagnostic boundary with the request trace 6ms
+   × persists the bounded shutdown-unconfirmed recovery reason at the actual IPC diagnostic boundary with the request trace 7ms
+   × persists the bounded lease-unavailable recovery reason at the actual IPC diagnostic boundary with the request trace 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/main/ipc/execution.test.ts > persists the bounded occupied recovery reason at the actual IPC diagnostic boundary with the request trace
+AssertionError: expected [ { schemaVersion: 1, …(9) }, …(1) ] to match object [ { …(3) }, { …(4) } ]
+(11 matching properties omitted from actual)
+
+- Expected
++ Received
+
+@@ -3,11 +3,10 @@
+      "operation": "runtime:start",
+      "stage": "received",
+      "traceId": "d740bc04-d8fc-4f2e-8c1f-6dbeca455743",
+    },
+    {
+-     "code": "recovery-occupied",
+      "operation": "runtime:start",
+      "stage": "failed",
+      "traceId": "d740bc04-d8fc-4f2e-8c1f-6dbeca455743",
+    },
+  ]
+
+ ❯ src/app/main/ipc/execution.test.ts:36:23
+     34|       await diagnostics.close();
+     35|       const records = readFileSync(join(directory, "main.jsonl"), "utf…
+     36|       expect(records).toMatchObject([
+       |                       ^
+     37|         { operation: "runtime:start", traceId, stage: "received" },
+     38|         { operation: "runtime:start", traceId, stage: "failed", code: …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/app/main/ipc/execution.test.ts > persists the bounded owner-unknown recovery reason at the actual IPC diagnostic boundary with the request trace
+AssertionError: expected [ { schemaVersion: 1, …(9) }, …(1) ] to match object [ { …(3) }, { …(4) } ]
+(11 matching properties omitted from actual)
+
+- Expected
++ Received
+
+@@ -3,11 +3,10 @@
+      "operation": "runtime:start",
+      "stage": "received",
+      "traceId": "ea20c8bf-d593-45ea-b5e7-1bb5d07ae10f",
+    },
+    {
+-     "code": "recovery-owner-unknown",
+      "operation": "runtime:start",
+      "stage": "failed",
+      "traceId": "ea20c8bf-d593-45ea-b5e7-1bb5d07ae10f",
+    },
+  ]
+
+ ❯ src/app/main/ipc/execution.test.ts:36:23
+     34|       await diagnostics.close();
+     35|       const records = readFileSync(join(directory, "main.jsonl"), "utf…
+     36|       expect(records).toMatchObject([
+       |                       ^
+     37|         { operation: "runtime:start", traceId, stage: "received" },
+     38|         { operation: "runtime:start", traceId, stage: "failed", code: …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/app/main/ipc/execution.test.ts > persists the bounded shutdown-unconfirmed recovery reason at the actual IPC diagnostic boundary with the request trace
+AssertionError: expected [ { schemaVersion: 1, …(9) }, …(1) ] to match object [ { …(3) }, { …(4) } ]
+(11 matching properties omitted from actual)
+
+- Expected
++ Received
+
+@@ -3,11 +3,10 @@
+      "operation": "runtime:start",
+      "stage": "received",
+      "traceId": "617e2a42-3ac9-4d9f-ba3c-f876ae39dc79",
+    },
+    {
+-     "code": "recovery-shutdown-unconfirmed",
+      "operation": "runtime:start",
+      "stage": "failed",
+      "traceId": "617e2a42-3ac9-4d9f-ba3c-f876ae39dc79",
+    },
+  ]
+
+ ❯ src/app/main/ipc/execution.test.ts:36:23
+     34|       await diagnostics.close();
+     35|       const records = readFileSync(join(directory, "main.jsonl"), "utf…
+     36|       expect(records).toMatchObject([
+       |                       ^
+     37|         { operation: "runtime:start", traceId, stage: "received" },
+     38|         { operation: "runtime:start", traceId, stage: "failed", code: …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  src/app/main/ipc/execution.test.ts > persists the bounded lease-unavailable recovery reason at the actual IPC diagnostic boundary with the request trace
+AssertionError: expected [ { schemaVersion: 1, …(9) }, …(1) ] to match object [ { …(3) }, { …(4) } ]
+(11 matching properties omitted from actual)
+
+- Expected
++ Received
+
+@@ -3,11 +3,10 @@
+      "operation": "runtime:start",
+      "stage": "received",
+      "traceId": "9bfd4825-7c4b-4783-a22e-b25dbc37756a",
+    },
+    {
+-     "code": "recovery-lease-unavailable",
+      "operation": "runtime:start",
+      "stage": "failed",
+      "traceId": "9bfd4825-7c4b-4783-a22e-b25dbc37756a",
+    },
+  ]
+
+ ❯ src/app/main/ipc/execution.test.ts:36:23
+     34|       await diagnostics.close();
+     35|       const records = readFileSync(join(directory, "main.jsonl"), "utf…
+     36|       expect(records).toMatchObject([
+       |                       ^
+     37|         { operation: "runtime:start", traceId, stage: "received" },
+     38|         { operation: "runtime:start", traceId, stage: "failed", code: …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed (4)
+   Start at  11:27:35
+   Duration  666ms (transform 64%, import 25%, tests 10%, worker 1%)
+

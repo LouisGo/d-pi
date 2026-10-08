@@ -1,0 +1,22 @@
+✔ invalid dependency graphs and missing slice selectors never produce a dispatch plan (380.479833ms)
+✔ plan validation is wired into both standard gates, including scopes without board rows (76.526209ms)
+✔ plan edits invalidate the board fingerprint even when the spec has no project-status row (48.7835ms)
+✔ isolates every App/OMP path, cwd and future credential names in a real child (231.581375ms)
+✔ only explicit fixture credentials enter the environment; isolation paths cannot be overridden (25.863541ms)
+✔ standard Node test runner drops inherited credentials and the project's extension directory (1262.496791ms)
+✔ a Vitest separator cannot silently discard file filters and run other suites (407.85125ms)
+✔ direct filters and legal options execute only the selected test (3333.211666ms)
+✔ no file filters still run the complete fixture suite (1114.620291ms)
+✔ missing filters and failing selected tests keep a nonzero exit (1291.819791ms)
+✔ default validation retains the complete workflow and legacy increments (0.882041ms)
+✔ scenario selectors work before or after the optional path (0.220792ms)
+✔ invalid, conflicting or misspelled requests fail instead of broadening coverage (0.318417ms)
+✔ invalid package scope is rejected before touching a bundle or starting Electron (484.450833ms)
+ℹ tests 104
+ℹ suites 0
+ℹ pass 104
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 47301.688
