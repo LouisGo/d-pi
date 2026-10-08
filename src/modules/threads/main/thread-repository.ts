@@ -16,6 +16,16 @@ export class ThreadRepository implements ThreadReader {
   private get db() {
     return this.database.connection;
   }
+  private get indexedSchema(): boolean {
+    return (
+      Number(this.db.prepare("PRAGMA user_version").get()?.user_version) >= 12
+    );
+  }
+  private get contextQuery(): string {
+    return this.indexedSchema
+      ? "SELECT t.id AS threadId,w.id AS workingDirectoryId,w.directory,i.title,CASE WHEN i.thread_id IS NOT NULL THEN 'cli' END AS origin FROM thread t JOIN workspace w ON w.id=t.workspace_id LEFT JOIN native_session_index i ON i.thread_id=t.id"
+      : "SELECT t.id AS threadId,w.id AS workingDirectoryId,w.directory,NULL AS title,NULL AS origin FROM thread t JOIN workspace w ON w.id=t.workspace_id";
+  }
   activeThread(): ThreadContext | null {
     const row = this.db
       .prepare("SELECT active_thread FROM desktop WHERE id=1")
@@ -27,21 +37,27 @@ export class ThreadRepository implements ThreadReader {
     return this.threadContext(row.active_thread);
   }
   threadContext(id: string): ThreadContext {
-    return ThreadContextSchema.parse(
-      this.db
-        .prepare(
-          "SELECT t.id AS threadId,w.id AS workingDirectoryId,w.directory FROM thread t JOIN workspace w ON w.id=t.workspace_id WHERE t.id=?",
-        )
-        .get(id),
+    return this.parseContext(
+      this.db.prepare(`${this.contextQuery} WHERE t.id=?`).get(id),
     );
   }
   list(): ThreadContext[] {
     return this.db
-      .prepare(
-        "SELECT t.id AS threadId,w.id AS workingDirectoryId,w.directory FROM thread t JOIN workspace w ON w.id=t.workspace_id ORDER BY t.rowid DESC",
-      )
+      .prepare(`${this.contextQuery} ORDER BY t.rowid DESC`)
       .all()
-      .map((row) => ThreadContextSchema.parse(row));
+      .map((row) => this.parseContext(row));
+  }
+  private parseContext(row: unknown): ThreadContext {
+    const parsed = ThreadContextSchema.extend({
+      title: ThreadContextSchema.shape.title.nullable(),
+      origin: ThreadContextSchema.shape.origin.nullable(),
+    }).parse(row);
+    const { title, origin, ...context } = parsed;
+    return {
+      ...context,
+      ...(title !== null && title !== undefined ? { title } : {}),
+      ...(origin ? { origin } : {}),
+    };
   }
   select(threadId: string): void {
     this.threadContext(threadId);
@@ -69,10 +85,22 @@ export class ThreadRepository implements ThreadReader {
   nativeSessionBinding(threadId: string): NativeSessionBinding | null {
     const row = this.db
       .prepare(
-        "SELECT thread_id AS threadId,config_context AS configContextId,session_file AS sessionFile,session_id AS sessionId FROM native_session WHERE thread_id=?",
+        this.indexedSchema
+          ? "SELECT n.thread_id AS threadId,n.config_context AS configContextId,n.session_file AS sessionFile,n.session_id AS sessionId,i.history_root AS historyRoot, CASE WHEN i.thread_id IS NOT NULL THEN 'cli' END AS origin FROM native_session n LEFT JOIN native_session_index i ON i.thread_id=n.thread_id WHERE n.thread_id=?"
+          : "SELECT thread_id AS threadId,config_context AS configContextId,session_file AS sessionFile,session_id AS sessionId,NULL AS historyRoot,NULL AS origin FROM native_session WHERE thread_id=?",
       )
       .get(threadId);
-    return row ? NativeSessionBindingSchema.parse(row) : null;
+    if (!row) return null;
+    const parsed = NativeSessionBindingSchema.extend({
+      historyRoot: NativeSessionBindingSchema.shape.historyRoot.nullable(),
+      origin: NativeSessionBindingSchema.shape.origin.nullable(),
+    }).parse(row);
+    const { historyRoot, origin, ...binding } = parsed;
+    return {
+      ...binding,
+      ...(historyRoot ? { historyRoot } : {}),
+      ...(origin ? { origin } : {}),
+    };
   }
   bindNativeSession(binding: NativeSessionBinding): void {
     this.database.transaction(() => {
@@ -94,6 +122,66 @@ export class ThreadRepository implements ThreadReader {
           binding.sessionFile,
           binding.sessionId,
         );
+    });
+  }
+  reconcileNativeSessions(
+    sessions: readonly {
+      directory: string;
+      path: string;
+      sessionId: string;
+      historyRoot: string;
+      title: string;
+      modifiedAt: number;
+      key: string;
+    }[],
+  ): void {
+    this.database.transaction(() => {
+      let newest: string | null = null;
+      for (const session of sessions) {
+        const existing = this.db
+          .prepare(
+            "SELECT thread_id FROM native_session WHERE session_file=? AND session_id=?",
+          )
+          .get(session.path, session.sessionId);
+        if (existing && typeof existing.thread_id === "string") {
+          this.db
+            .prepare(
+              "UPDATE native_session_index SET title=?,modified_at=? WHERE thread_id=? AND history_root=?",
+            )
+            .run(
+              session.title,
+              session.modifiedAt,
+              existing.thread_id,
+              session.historyRoot,
+            );
+          newest ??= existing.thread_id;
+          continue;
+        }
+        this.db
+          .prepare(
+            "INSERT INTO workspace VALUES(?,?,'browse') ON CONFLICT(directory) DO NOTHING",
+          )
+          .run(randomUUID(), session.directory);
+        const id = randomUUID();
+        this.db
+          .prepare(
+            "INSERT INTO thread SELECT ?,id,0,'' FROM workspace WHERE directory=?",
+          )
+          .run(id, session.directory);
+        this.db
+          .prepare("INSERT INTO native_session VALUES(?,?,?,?)")
+          .run(id, session.key, session.path, session.sessionId);
+        this.db
+          .prepare("INSERT INTO native_session_index VALUES(?,?,?,?)")
+          .run(id, session.historyRoot, session.title, session.modifiedAt);
+        newest ??= id;
+      }
+      if (newest)
+        this.db
+          .prepare(
+            "UPDATE desktop SET active_thread=? WHERE id=1 AND active_thread IS NULL",
+          )
+          .run(newest);
     });
   }
   executionGrant(id: string): ExecutionGrant | null {

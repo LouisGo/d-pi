@@ -21,6 +21,7 @@ import {
   createAttachmentService,
 } from "./attachment-service";
 import { DesktopCommandService } from "./desktop-command-service";
+import { NativeSessionIndex } from "./native-session-index";
 export function createDesktopServices(context: {
   mainDirectory: string;
   getWindow: () => BrowserWindow | null;
@@ -34,6 +35,7 @@ export function createDesktopServices(context: {
   let service: DesktopCommandService | undefined;
   let configuration: NativeConfiguration | undefined;
   let attachments: AttachmentService | undefined;
+  let nativeSessionIndex: NativeSessionIndex | undefined;
   const runtimes = new Map<string, RuntimeService>();
   function getRuntime(threadId: string): RuntimeService | undefined {
     if (!store) return undefined;
@@ -91,15 +93,6 @@ export function createDesktopServices(context: {
       mkdirSync(data, { recursive: true, mode: 0o700 });
       store = AppStorage.open(join(data, "drafts.sqlite"));
       context.applyStoredLocale(store.preferences.read().locale);
-      service = new DesktopCommandService(store, async () => {
-        const window = context.getWindow();
-        if (!window) return null;
-        const result = await dialog.showOpenDialog(window, {
-          title: context.currentT()("main.chooseProject.title"),
-          properties: ["openDirectory"],
-        });
-        return result.canceled ? null : (result.filePaths[0] ?? null);
-      });
       configuration = new NativeConfiguration(
         app.isPackaged
           ? process.resourcesPath
@@ -111,6 +104,34 @@ export function createDesktopServices(context: {
           context.getWindow()?.webContents.send("configuration:state", event),
         (url) => shell.openExternal(url),
         (event) => context.getDiagnostics()?.record(event),
+      );
+      nativeSessionIndex = new NativeSessionIndex(
+        store.threads,
+        async (traceId) => {
+          const reply = await configuration?.execute({
+            kind: "snapshot",
+            traceId,
+            scope: { kind: "application" },
+          });
+          return reply?.kind === "snapshot"
+            ? join(reply.source.directory, "sessions")
+            : null;
+        },
+      );
+      service = new DesktopCommandService(
+        store,
+        async () => {
+          const window = context.getWindow();
+          if (!window) return null;
+          const result = await dialog.showOpenDialog(window, {
+            title: context.currentT()("main.chooseProject.title"),
+            properties: ["openDirectory"],
+          });
+          return result.canceled ? null : (result.filePaths[0] ?? null);
+        },
+        (traceId) =>
+          nativeSessionIndex?.reconcile(traceId) ??
+          Promise.resolve("unavailable"),
       );
       attachments = createAttachmentService(
         store,
@@ -159,6 +180,9 @@ export function createDesktopServices(context: {
     },
     get configuration() {
       return configuration;
+    },
+    get nativeSessionIndex() {
+      return nativeSessionIndex;
     },
     get startupCauseCode() {
       return startupCauseCode;

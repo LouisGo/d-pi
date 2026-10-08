@@ -16,11 +16,17 @@ export class DesktopCommandService {
       "drafts" | "preferences" | "threads"
     >,
     choose: () => Promise<string | null>,
+    private readonly reconcileNativeSessions?: (
+      traceId: string,
+    ) => Promise<"ready" | "partial" | "unavailable">,
   ) {
     this.projects = new ProjectSelectionService(storage.threads, choose);
   }
 
-  private async restore(): Promise<Extract<Reply, { kind: "ready" }>> {
+  private async restore(
+    traceId: string,
+  ): Promise<Extract<Reply, { kind: "ready" }>> {
+    const nativeIndex = await this.reconcileNativeSessions?.(traceId);
     const draft = this.storage.drafts.active();
     let directoryAvailable = true;
     if (draft) {
@@ -33,6 +39,7 @@ export class DesktopCommandService {
     }
     return {
       kind: "ready",
+      ...(nativeIndex ? { nativeIndex } : {}),
       draft,
       directoryAvailable,
       preferences: this.storage.preferences.read(),
@@ -43,22 +50,28 @@ export class DesktopCommandService {
     try {
       return await match(command)
         .with({ kind: "restore" }, async () => {
-          return this.restore();
+          return this.restore(command.traceId);
         })
-        .with({ kind: "list-threads" }, () => ({
-          kind: "threads" as const,
-          threads: this.storage.threads.list(),
-        }))
+        .with({ kind: "list-threads" }, async () => {
+          const nativeIndex = await this.reconcileNativeSessions?.(
+            command.traceId,
+          );
+          return {
+            kind: "threads" as const,
+            threads: this.storage.threads.list(),
+            ...(nativeIndex ? { nativeIndex } : {}),
+          };
+        })
         .with({ kind: "select-thread" }, async ({ threadId }) => {
           this.storage.threads.select(threadId);
-          return this.restore();
+          return this.restore(command.traceId);
         })
         .with({ kind: "new-thread" }, async ({ threadId }) => {
           const thread = this.storage.threads.threadContext(threadId);
           const directory = await resolveDirectory(thread.directory);
           if (directory !== thread.directory) throw Error("Directory changed");
           this.storage.threads.create(directory);
-          return this.restore();
+          return this.restore(command.traceId);
         })
         .with({ kind: "choose-project" }, async ({ traceId }) => {
           const result = await this.projects.chooseProject();

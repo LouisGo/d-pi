@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { IpcMain, IpcMainInvokeEvent } from "electron";
@@ -360,4 +360,56 @@ it("bounds each sender and all owners, and releasing one sender leaves the other
     kind: "failed",
     error: { code: "owner-released", retryable: false },
   });
+});
+
+it("reads indexed original CLI history only under the currently configured root and exact project binding", async () => {
+  const f = setup();
+  const sessions = join(stores[stores.length - 1]!.directory, "sessions");
+  const project = join(stores[stores.length - 1]!.directory, "project");
+  mkdirSync(project);
+  mkdirSync(join(sessions, "bucket"), { recursive: true });
+  const file = join(sessions, "bucket", "original.jsonl");
+  const sessionId = crypto.randomUUID();
+  writeFileSync(
+    file,
+    `${JSON.stringify({ type: "session", version: 3, id: sessionId, cwd: project })}\n${JSON.stringify({ type: "message", id: "m", parentId: null, message: { role: "user", content: "original record" } })}\n`,
+  );
+  f.store.threads.reconcileNativeSessions([
+    {
+      directory: project,
+      path: file,
+      sessionId,
+      historyRoot: sessions,
+      title: "CLI",
+      modifiedAt: 1,
+      key: "key",
+    },
+  ]);
+  const indexed = f.store.threads.list().find((t) => t.origin === "cli")!;
+  f.store.threads.select(indexed.threadId);
+  f.context.indexedNativeSessionsPath = async () => sessions;
+  expect(
+    await f.request("history:read", {
+      threadId: indexed.threadId,
+      cursor: null,
+    }),
+  ).toMatchObject({ kind: "page", entries: [{ text: "original record" }] });
+  f.context.indexedNativeSessionsPath = async () => join(sessions, "other");
+  expect(
+    await f.request("history:read", {
+      threadId: indexed.threadId,
+      cursor: null,
+    }),
+  ).toMatchObject({ kind: "unavailable", reason: "denied" });
+  f.context.indexedNativeSessionsPath = async () => sessions;
+  writeFileSync(
+    file,
+    `${JSON.stringify({ type: "session", version: 3, id: sessionId, cwd: stores[stores.length - 1]!.directory })}\n`,
+  );
+  expect(
+    await f.request("history:read", {
+      threadId: indexed.threadId,
+      cursor: null,
+    }),
+  ).toMatchObject({ kind: "unavailable", reason: "denied" });
 });

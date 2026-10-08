@@ -411,6 +411,9 @@ export function startDesktopApplication(mainDirectory: string): void {
         getStore: () => services.store,
         getDiagnostics: () => diagnostics,
         projectNativeSessionsPath: async () => null,
+        indexedNativeSessionsPath: (traceId: string) =>
+          services.nativeSessionIndex?.sessionsRoot(traceId) ??
+          Promise.resolve(null),
         nativeSessionsPath: () =>
           join(app.getPath("userData"), "native-sessions"),
       };

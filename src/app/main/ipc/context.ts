@@ -45,6 +45,7 @@ export type ProjectReadContext = Omit<IpcSourceContext, "ipcMain"> & {
     | Pick<Diagnostics, "processInstanceId" | "record">
     | undefined;
   nativeSessionsPath: () => string;
+  indexedNativeSessionsPath?: (traceId: string) => Promise<string | null>;
   projectNativeSessionsPath: (
     threadId: string,
     traceId: string,

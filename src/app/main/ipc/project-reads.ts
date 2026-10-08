@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { realpath } from "node:fs/promises";
 import {
   type GitReply,
   type GitRequest,
@@ -144,11 +145,33 @@ export function registerHistoryIpc(context: ProjectReadContext): void {
   });
   context.ipcMain.handle("history:read", async (event, raw: unknown) => {
     const { threadId, cursor } = HistoryRequestSchema.parse(raw);
-    activeThreadFor(context, event, "Invalid history source", threadId);
+    const thread = activeThreadFor(
+      context,
+      event,
+      "Invalid history source",
+      threadId,
+    );
     const binding = context.getStore()?.threads.nativeSessionBinding(threadId);
-    return binding
-      ? readNativeHistory(context.nativeSessionsPath(), binding, cursor)
-      : { kind: "unavailable", reason: "missing" };
+    if (!binding) return { kind: "unavailable", reason: "missing" };
+    if (binding.origin !== "cli")
+      return readNativeHistory(context.nativeSessionsPath(), binding, cursor);
+    const root = await context.indexedNativeSessionsPath?.(randomUUID());
+    activeThreadFor(context, event, "Invalid history source", threadId);
+    if (!root || !binding.historyRoot)
+      return { kind: "unavailable", reason: "denied" };
+    try {
+      if ((await realpath(root)) !== binding.historyRoot)
+        return { kind: "unavailable", reason: "denied" };
+    } catch {
+      return { kind: "unavailable", reason: "denied" };
+    }
+    return readNativeHistory(
+      root,
+      binding,
+      cursor,
+      undefined,
+      thread.directory,
+    );
   });
 }
 

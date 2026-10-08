@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { constants } from "node:fs";
-import { open, readdir, realpath } from "node:fs/promises";
+import { open, readdir, realpath, stat } from "node:fs/promises";
 import { isAbsolute, join, relative } from "node:path";
 import { z } from "zod";
 import type {
@@ -13,25 +13,27 @@ import { readNativeHistory } from "./native-history";
 const headerSchema = z.object({
   type: z.literal("session"),
   version: z.literal(3),
-  id: z.string(),
-  cwd: z.string(),
+  id: z.string().min(1),
+  cwd: z.string().min(1),
 });
 const titleSchema = z.object({
   type: z.literal("title"),
   title: z.string().optional(),
   text: z.string().optional(),
 });
-type Located = {
+export type NativeSessionMetadata = {
   key: string;
   sessionId: string;
   title: string;
   modifiedAt: number;
   path: string;
+  directory: string;
+  historyRoot: string;
 };
-async function discover(root: string, directory: string) {
+async function discover(root: string, directory?: string) {
   const base = await realpath(root);
-  const project = await realpath(directory);
-  const located: Located[] = [];
+  const project = directory ? await realpath(directory) : null;
+  const located: NativeSessionMetadata[] = [];
   let partial = false;
   const folders = await readdir(base, { withFileTypes: true });
   let scanned = 0;
@@ -85,10 +87,20 @@ async function discover(root: string, directory: string) {
           partial = true;
           continue;
         }
-        if ((await realpath(header.data.cwd)) !== project) continue;
+        const cwd = await realpath(header.data.cwd);
+        if (project && cwd !== project) continue;
+        const current = await stat(candidate);
+        if (
+          (await realpath(candidate)) !== path ||
+          current.dev !== info.dev ||
+          current.ino !== info.ino
+        ) {
+          partial = true;
+          continue;
+        }
         located.push({
           key: createHash("sha256")
-            .update(`${project}:${within}:${header.data.id}`)
+            .update(`${cwd}:${within}:${header.data.id}`)
             .digest("hex"),
           sessionId: header.data.id,
           title: title.success
@@ -96,6 +108,8 @@ async function discover(root: string, directory: string) {
             : entry.name,
           modifiedAt: info.mtimeMs,
           path,
+          directory: cwd,
+          historyRoot: base,
         });
       } catch {
         partial = true;
@@ -133,7 +147,14 @@ export async function listProjectNativeHistory(
     const { located, partial } = await discover(root, directory);
     return {
       kind: "catalog",
-      sessions: located.map(({ path: _path, ...entry }) => entry),
+      sessions: located.map(
+        ({
+          path: _path,
+          directory: _directory,
+          historyRoot: _root,
+          ...entry
+        }) => entry,
+      ),
       partial,
     };
   } catch (error) {
@@ -164,6 +185,20 @@ export async function readProjectNativeHistory(
       undefined,
       directory,
     );
+  } catch (error) {
+    return unavailable(error);
+  }
+}
+
+export async function listNativeSessionCatalog(
+  root: string,
+): Promise<
+  | { kind: "catalog"; sessions: NativeSessionMetadata[]; partial: boolean }
+  | Extract<ProjectHistoryCatalog, { kind: "unavailable" }>
+> {
+  try {
+    const { located, partial } = await discover(root);
+    return { kind: "catalog", sessions: located, partial };
   } catch (error) {
     return unavailable(error);
   }

@@ -30,7 +30,8 @@ export class AppDatabase {
         version !== 8 &&
         version !== 9 &&
         version !== 10 &&
-        version !== 11
+        version !== 11 &&
+        version !== 12
       )
         throw new Error("Unsupported schema version");
       if (version === 0) {
@@ -78,7 +79,8 @@ export class AppDatabase {
         version !== 8 &&
         version !== 9 &&
         version !== 10 &&
-        version !== 11
+        version !== 11 &&
+        version !== 12
       ) {
         const temporary = `${path}.before-v3.${randomUUID()}.tmp`;
         try {
@@ -115,7 +117,8 @@ export class AppDatabase {
       this.originalVersion !== 8 &&
       this.originalVersion !== 9 &&
       this.originalVersion !== 10 &&
-      this.originalVersion !== 11
+      this.originalVersion !== 11 &&
+      this.originalVersion !== 12
     ) {
       const temporary = `${this.path}.before-v4.${randomUUID()}.tmp`;
       try {
@@ -137,7 +140,8 @@ export class AppDatabase {
       this.originalVersion !== 8 &&
       this.originalVersion !== 9 &&
       this.originalVersion !== 10 &&
-      this.originalVersion !== 11
+      this.originalVersion !== 11 &&
+      this.originalVersion !== 12
     ) {
       const temporary = `${this.path}.before-v5.${randomUUID()}.tmp`;
       try {
@@ -158,7 +162,8 @@ export class AppDatabase {
       this.originalVersion !== 8 &&
       this.originalVersion !== 9 &&
       this.originalVersion !== 10 &&
-      this.originalVersion !== 11
+      this.originalVersion !== 11 &&
+      this.originalVersion !== 12
     ) {
       const temporary = `${this.path}.before-v6.${randomUUID()}.tmp`;
       try {
@@ -176,7 +181,8 @@ export class AppDatabase {
       this.originalVersion !== 8 &&
       this.originalVersion !== 9 &&
       this.originalVersion !== 10 &&
-      this.originalVersion !== 11
+      this.originalVersion !== 11 &&
+      this.originalVersion !== 12
     ) {
       const temporary = `${this.path}.before-v7.${randomUUID()}.tmp`;
       try {
@@ -196,6 +202,7 @@ export class AppDatabase {
     this.migrateContentLifecycle();
     this.migrateReferenceKinds();
     this.migrateNotificationPreferences();
+    this.migrateNativeSessionIndex();
   }
   private migrateAttachments(): void {
     if (this.originalVersion >= 8) return;
@@ -285,6 +292,28 @@ export class AppDatabase {
       ALTER TABLE desktop ADD COLUMN notification_system INTEGER NOT NULL DEFAULT 0 CHECK(notification_system IN (0,1));
       ALTER TABLE desktop ADD COLUMN notification_completion INTEGER NOT NULL DEFAULT 0 CHECK(notification_completion IN (0,1));
       PRAGMA user_version=11;
+    `),
+    );
+  }
+
+  private migrateNativeSessionIndex(): void {
+    if (this.originalVersion >= 12) return;
+    const temporary = `${this.path}.before-v12.${randomUUID()}.tmp`;
+    try {
+      this.connection.prepare("VACUUM INTO ?").run(temporary);
+      renameSync(temporary, `${this.path}.before-v12`);
+    } finally {
+      rmSync(temporary, { force: true });
+    }
+    this.transaction(() =>
+      this.connection.exec(`
+      CREATE TABLE native_session_index(
+        thread_id TEXT PRIMARY KEY REFERENCES thread(id),
+        history_root TEXT NOT NULL,
+        title TEXT NOT NULL,
+        modified_at REAL NOT NULL
+      );
+      PRAGMA user_version=12;
     `),
     );
   }
