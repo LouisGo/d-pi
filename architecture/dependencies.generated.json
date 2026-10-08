@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "c42ac006111ed4d5ec3d141aec5b6e30a85ae0e76af489f1750a4ec02961e295",
+  "inputsHash": "6b1262117aabc6cc7a16120883de5b5b8c46af739b1bedfa988ecaf3329e8fbd",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 461,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 199,
-      "lines": 37288,
+      "lines": 37528,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -186,7 +186,7 @@
       ],
       "materialized": true,
       "files": 54,
-      "lines": 10519,
+      "lines": 10816,
       "publicEntries": [
         {
           "path": "src/modules/input/contracts/public.ts",
@@ -20022,15 +20022,6 @@
       "sourceEnvironment": "renderer",
       "test": false,
       "specifier": "@tiptap/core",
-      "kind": "import",
-      "resolution": "external"
-    },
-    {
-      "from": "src/modules/input/renderer/references/attachment-editor.ts",
-      "sourceModule": "input",
-      "sourceEnvironment": "renderer",
-      "test": false,
-      "specifier": "@tiptap/pm/history",
       "kind": "import",
       "resolution": "external"
     },

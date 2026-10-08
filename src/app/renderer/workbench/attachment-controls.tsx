@@ -461,12 +461,8 @@ export function AttachmentControls({
             >
               <Button
                 variant="chip"
-                size={
-                  item?.representation === "image" ? "thumbnail" : "default"
-                }
-                className={
-                  item?.representation === "image" ? "w-full" : "w-full pr-10"
-                }
+                size={item?.representation === "image" ? "thumbnail" : "source"}
+                className="w-full"
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => {
                   if (item) openReference(item.id);
