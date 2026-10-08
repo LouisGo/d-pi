@@ -86,6 +86,68 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 const id = ThreadIdSchema.parse("f9b0037d-1b8b-4f82-988c-7ca64f93fa37");
+it("keeps the caret as the picker return target without stealing focus on a late cancellation", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const editor = new Editor({
+    ...plainTextEditorOptions,
+    element: document.createElement("div"),
+    content: draftDocument("review draft"),
+  });
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  let finishPicker!: (value: AttachmentReply) => void;
+  const request = vi.fn(async (command: AttachmentRequest) => {
+    if (command.kind === "choose-import")
+      return new Promise<AttachmentReply>((resolve) => {
+        finishPicker = resolve;
+      });
+    return { kind: "attachments" as const, items: [] };
+  });
+  cleanups.push(async () => {
+    await act(() => root.unmount());
+    editor.destroy();
+    client.clear();
+    container.remove();
+  });
+  await act(() =>
+    root.render(
+      createElement(QueryClientProvider, {
+        client,
+        children: controls({
+          bridge: { request },
+          threadId: id,
+          editor,
+          text: "review draft",
+          isCurrent: () => true,
+          onBlocked: () => {},
+          mention: null,
+          dismissMention: () => {},
+        }),
+      }),
+    ),
+  );
+  container.append(editor.view.dom);
+  const attach = Array.from(container.querySelectorAll("button")).find(
+    (button) => button.textContent === "Attach files",
+  );
+  if (!attach) throw Error("missing attachment button");
+  editor.commands.setTextSelection(4);
+  attach.focus();
+  await act(() => attach.click());
+  await vi.waitFor(() => expect(finishPicker).toBeTypeOf("function"));
+  expect(document.activeElement).toBe(editor.view.dom);
+  expect(editor.state.selection.from).toBe(4);
+  // A slower conversion/cancellation must not refocus after another action.
+  attach.focus();
+  await act(() => finishPicker({ kind: "cancelled" }));
+  expect(document.activeElement).toBe(attach);
+  expect(editor.getText()).toBe("review draft");
+});
+
 it("distinguishes frozen provenance from live references in the formal controls", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const token = `[[dpi-attachment:${id}]]`;

@@ -421,8 +421,11 @@ export function AttachmentControls({
     },
     openReference,
     chooseImport: () => {
-      if (isCurrent() && !sourceFrozen)
-        void run({ kind: "choose-import" }, true);
+      if (!isCurrent() || sourceFrozen || editor?.view.composing) return;
+      // The native picker restores its initiating focus. Keep the current
+      // caret as that target; asynchronous completion must not refocus later.
+      if (editor && !editor.isDestroyed) editor.view.focus();
+      void run({ kind: "choose-import" }, true);
     },
     openManager: () => {
       if (!isCurrent() || !editor || editor.isDestroyed) return;
