@@ -130,6 +130,26 @@ export const ui = {
   "attachment.hint":
     "Paste images, drop files, or type @ to reference a project file.",
   "attachment.preparing": "Preparing attachments…",
+  "attachment.import.batch": "File import",
+  "attachment.import.queued": "Queued",
+  "attachment.import.reading": "Reading",
+  "attachment.import.preparing": "Preparing",
+  "attachment.import.ready": "Ready to insert",
+  "attachment.import.failed": "Import failed",
+  "attachment.import.cancelling": "Cancelling and releasing resources",
+  "attachment.import.cancelled": "Cancelled",
+  "attachment.import.added": "Inserted",
+  "attachment.import.settling": "Inserted; protecting resources",
+  "attachment.import.retrySettlement": "Retry resource settlement",
+  "attachment.import.cancel": "Cancel {name}",
+  "attachment.import.cancelBatch": "Cancel files awaiting insertion",
+  "attachment.import.dismiss": "Dismiss import results",
+  "attachment.import.insertReady": "Insert ready files at cursor",
+  "attachment.import.insertSubset": "Insert only ready files",
+  "attachment.import.partial":
+    "Some files failed. Retry or cancel them, or explicitly insert only the ready files.",
+  "attachment.import.budget":
+    "These files exceed the import budget and were not queued. Choose fewer files or wait for the current imports to finish.",
   "attachment.ready": "Ready",
   "attachment.failed": "Preparation failed",
   "attachment.directoryAtSend":

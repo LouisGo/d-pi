@@ -2,7 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Editor } from "@tiptap/core";
-import { act, createElement } from "react";
+import { act, createElement, createRef } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
 import type { Attachment } from "../../../modules/input/contracts/public";
@@ -11,6 +11,7 @@ import {
   AttachmentImports,
   draftDocument,
   plainTextEditorOptions,
+  type ReferenceTrigger,
 } from "../../../modules/input/renderer/public";
 import { createI18n } from "../../../shared/i18n/create-i18n";
 import { ThreadIdSchema } from "../../../shared/identity";
@@ -18,7 +19,10 @@ import type {
   AttachmentReply,
   AttachmentRequest,
 } from "../../contracts/attachments";
-import { AttachmentControls } from "./attachment-controls";
+import {
+  type AttachmentActions,
+  AttachmentControls,
+} from "./attachment-controls";
 
 // Fixture owns the Thread resources; views only receive the same instances.
 const resources = new WeakMap<
@@ -46,7 +50,26 @@ function controls(
       imports.dispose();
     });
   }
-  return createElement(AttachmentControls, { ...props, ...owned });
+  const actions = createRef<AttachmentActions>();
+  return createElement(
+    "div",
+    {},
+    createElement(AttachmentControls, {
+      ...props,
+      ...owned,
+      ref: (value) => {
+        actions.current = value;
+        if (typeof props.ref === "function") props.ref(value);
+        else if (props.ref) props.ref.current = value;
+      },
+    }),
+    // Composer owns the toolbar; this host exercises the same imperative port.
+    createElement(
+      "button",
+      { onClick: () => actions.current?.chooseImport() },
+      "Attach files",
+    ),
+  );
 }
 
 vi.mock("../../../modules/preferences/renderer/public", () => ({
@@ -354,11 +377,7 @@ it.each([
       },
     );
     let current = true;
-    const render = (
-      mention: ReturnType<
-        typeof import("../../../modules/input/renderer/public").attachmentMention
-      >,
-    ) =>
+    const render = (mention: ReferenceTrigger | null) =>
       act(() =>
         root.render(
           createElement(QueryClientProvider, {
@@ -377,7 +396,7 @@ it.each([
           }),
         ),
       );
-    await render({ from: 8, to: 12, query: "src" });
+    await render({ from: 8, to: 12, query: "src", expectedSource: "@src" });
     await vi.waitFor(() => expect(searched).toBe(true));
     await render(null);
     await act(() =>
@@ -388,7 +407,7 @@ it.each([
       }),
     );
     expect(container.textContent).not.toContain("src/stale.ts");
-    await render({ from: 8, to: 12, query: "src" });
+    await render({ from: 8, to: 12, query: "src", expectedSource: "@src" });
     await act(() =>
       finishSearch({
         kind: "search",
@@ -400,8 +419,10 @@ it.each([
       await new Promise((resolve) => setTimeout(resolve, 20));
     });
     expect(
-      container.querySelector(`[data-reference-kind="${kind}"]`)?.textContent,
-    ).toContain(path);
+      container
+        .querySelector(`[data-reference-kind="${kind}"]`)
+        ?.getAttribute("aria-label"),
+    ).toBe(path);
     await act(async () => {
       actions.current?.handleMentionKey(
         new KeyboardEvent("keydown", { key: "Enter" }),
@@ -919,7 +940,7 @@ it.each(["success", "cancelled"] as const)(
       await new Promise((resolve) => setTimeout(resolve, 20));
     });
     expect(onBlocked).toHaveBeenLastCalledWith(true);
-    expect(attach.disabled).toBe(true);
+    // The actual toolbar now lives in Composer; this host checks the source gate.
     const retry = container.querySelector<HTMLButtonElement>(
       '[role="alert"] button',
     );
@@ -1096,7 +1117,12 @@ it("coalesces quick @ edits, hides old-query results, consumes Enter while waiti
             text: "",
             isCurrent: () => true,
             onBlocked: () => {},
-            mention: { query, from: 0, to: query.length + 1 },
+            mention: {
+              query,
+              from: 0,
+              to: query.length + 1,
+              expectedSource: `@${query}`,
+            },
             dismissMention: () => {},
             ref: actions,
           }),
@@ -1125,7 +1151,9 @@ it("coalesces quick @ edits, hides old-query results, consumes Enter while waiti
   ).toBe(false);
   await vi.waitFor(() => expect(searches()).toHaveLength(2));
   await vi.waitFor(() =>
-    expect(container.textContent).toContain("src/@virtualList/"),
+    expect(
+      container.querySelector('[role="option"]')?.getAttribute("aria-label"),
+    ).toBe("src/@virtualList"),
   );
   expect(searches()[1]?.[0]).toMatchObject({
     query: "@virtualList",
@@ -1141,7 +1169,9 @@ it("coalesces quick @ edits, hides old-query results, consumes Enter while waiti
   await vi.waitFor(() => expect(searches()).toHaveLength(4));
   expect(searches()[3]?.[0]).toMatchObject({ refresh: false });
   await vi.waitFor(() =>
-    expect(container.textContent).toContain("src/@virtualList/new/"),
+    expect(
+      container.querySelector('[role="option"]')?.getAttribute("aria-label"),
+    ).toBe("src/@virtualList/new"),
   );
   request.mockImplementation(async (command) => {
     if (command.kind === "search-reference") throw Error("refresh failed");

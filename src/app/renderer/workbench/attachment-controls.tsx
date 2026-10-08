@@ -29,6 +29,7 @@ import {
   attachmentIds,
   captureReferenceFocus,
   createAttachmentEditor,
+  createAttachmentImportTarget,
   isCompositionKey,
   moveAttachmentReference,
   navigateReference,
@@ -51,10 +52,15 @@ import type {
   AttachmentRequest,
 } from "../../contracts/attachments";
 import { CloseIcon, FileIcon, FolderIcon } from "../components/icons/common";
+import { AttachmentImportBatches } from "./attachment-import-batches";
 
 export type AttachmentActions = {
   canLeaveView(): boolean;
-  importFiles(files: File[], source: "paste" | "drop"): void;
+  importFiles(
+    files: File[],
+    source: "paste" | "drop",
+    target?: { position?: number; sourceFrom?: number } | false,
+  ): void;
   handleMentionKey(event: KeyboardEvent): boolean;
   handleReferenceKey(event: KeyboardEvent): boolean;
   openReference(id: string, position?: number): boolean;
@@ -123,7 +129,11 @@ export function AttachmentControls({
   const insertions = useStore(model.stateStore, (state) => state.insertions);
   const completion = useStore(model.stateStore, (state) => state.completion);
   const importing = useStore(imports.stateStore, (state) => state.pending);
-  const fileFailures = useStore(imports.stateStore, (state) => state.failures);
+  const importsReady = useStore(imports.stateStore, (state) => state.ready);
+  const importCompletion = useStore(
+    imports.stateStore,
+    (state) => state.completion,
+  );
 
   const [manualSearch, setManualSearch] = useState(false);
   const [query, setQuery] = useState("");
@@ -215,8 +225,7 @@ export function AttachmentControls({
       pending > 0 ||
         !!failed ||
         insertions.length > 0 ||
-        importing > 0 ||
-        fileFailures.length > 0 ||
+        !importsReady ||
         (ids.length > 0 &&
           (list.isFetching ||
             list.isError ||
@@ -231,7 +240,7 @@ export function AttachmentControls({
     failed,
     insertions,
     importing,
-    fileFailures,
+    importsReady,
     text,
     list.data,
     list.isFetching,
@@ -243,16 +252,23 @@ export function AttachmentControls({
   }, [editor, list.data, text]);
   useEffect(() => {
     if (!editor || editor.isDestroyed) return;
-    const detach = model.attachEditor(
-      createAttachmentEditor(editor, isCurrent),
-    );
-    const flush = () => model.flushInsertions();
+    const adapter = createAttachmentEditor(editor, isCurrent);
+    const detach = model.attachEditor(adapter);
+    const detachImports = imports.attachEditor(adapter);
+    const flush = () =>
+      setTimeout(() => {
+        if (isCurrent()) {
+          model.flushInsertions();
+          imports.flushInsertions();
+        }
+      }, 0);
     editor.view.dom.addEventListener("compositionend", flush);
     return () => {
       detach();
+      detachImports();
       editor.view.dom.removeEventListener("compositionend", flush);
     };
-  }, [model, editor, isCurrent]);
+  }, [model, imports, editor, isCurrent]);
   function insert(item: Attachment) {
     if (isCurrent()) model.insert(item);
   }
@@ -277,11 +293,22 @@ export function AttachmentControls({
     }
   }
   useEffect(() => {
-    if (completion > 0 || preparationFailure)
+    if (completion > 0 || importCompletion > 0 || preparationFailure)
       void client.invalidateQueries({ queryKey: listKey });
-  }, [completion, preparationFailure, client, threadId]);
-  function importFiles(files: File[], source: "paste" | "drop") {
-    if (isCurrent()) imports.importFiles(files, source);
+  }, [completion, importCompletion, preparationFailure, client, threadId]);
+  function importFiles(
+    files: File[],
+    source: "paste" | "drop",
+    options?: { position?: number; sourceFrom?: number } | false,
+  ) {
+    if (isCurrent())
+      imports.importFiles(
+        files,
+        source,
+        editor && options !== false
+          ? createAttachmentImportTarget(editor, isCurrent, options)
+          : undefined,
+      );
   }
   function chooseReference(entry: ProjectReferenceEntry) {
     if (
@@ -319,8 +346,7 @@ export function AttachmentControls({
   function handleMentionKey(event: KeyboardEvent) {
     if (
       !searchOpen ||
-      !editor ||
-      isCompositionKey(event, editor.view.composing)
+      (editor && isCompositionKey(event, editor.view.composing))
     )
       return false;
     if (event.key === "Escape") {
@@ -364,13 +390,10 @@ export function AttachmentControls({
   useImperativeHandle(ref, () => ({
     canLeaveView: () => {
       const sources = imports.stateStore.getState();
-      return (
-        model.getReadiness().kind === "ready" &&
-        sources.pending === 0 &&
-        sources.failures.length === 0
-      );
+      return model.getReadiness().kind === "ready" && sources.ready;
     },
-    importFiles: (files, source) => void importFiles(files, source),
+    importFiles: (files, source, target) =>
+      void importFiles(files, source, target),
     handleMentionKey,
     handleReferenceKey: (event) => {
       if (
@@ -739,6 +762,7 @@ export function AttachmentControls({
                   variant={selected === index ? "navigation" : "ghost"}
                   data-active={selected === index}
                   role="option"
+                  aria-label={entry.path}
                   disabled={sourceFrozen || pending > 0 || !!failed}
                   aria-selected={selected === index}
                   onMouseDown={(event) => event.preventDefault()}
@@ -825,37 +849,12 @@ export function AttachmentControls({
           ) : null}
         </div>
       )}
-      {fileFailures.map((failure) => (
-        <div
-          key={failure.id}
-          className="flex flex-wrap items-center gap-2"
-          role="alert"
-        >
-          <strong>{failure.file.name}</strong>
-          <p className="failure">
-            {failure.reason === "source-too-large"
-              ? t("attachment.reason.source-too-large")
-              : t("attachment.transportFailed")}
-          </p>
-          {failure.reason !== "source-too-large" && (
-            <Button
-              variant="ghost"
-              onClick={() => {
-                imports.removeFailure(failure.id);
-                void importFiles([failure.file], failure.source);
-              }}
-            >
-              {t("attachment.retry")}
-            </Button>
-          )}
-          <Button
-            variant="ghost"
-            onClick={() => imports.removeFailure(failure.id)}
-          >
-            {t("attachment.remove", { name: failure.file.name })}
-          </Button>
-        </div>
-      ))}
+      <AttachmentImportBatches
+        imports={imports}
+        editor={editor}
+        isCurrent={isCurrent}
+        frozen={sourceFrozen}
+      />
       {active.length > 0 && (
         <Disclosure>
           <DisclosureTrigger>{t("attachment.details")}</DisclosureTrigger>

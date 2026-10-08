@@ -175,18 +175,37 @@ export function Composer({
             attachmentActions.current
           ) {
             event.preventDefault();
-            attachmentActions.current.importFiles(files, "paste");
             const text = event.clipboardData?.getData("text/plain");
-            if (text) view.dispatch(textPasteTransaction(view.state, text));
+            const sourceFrom = view.state.selection.from;
+            let accepted = true;
+            if (text) {
+              const tr = textPasteTransaction(view.state, text);
+              view.dispatch(tr);
+              accepted = view.state.doc.eq(tr.doc);
+            }
+            attachmentActions.current.importFiles(
+              files,
+              "paste",
+              accepted
+                ? {
+                    position: view.state.selection.from,
+                    ...(text ? { sourceFrom } : {}),
+                  }
+                : false,
+            );
             return true;
           }
           return paste.handlePaste(view, event);
         },
-        handleDrop: (_view, event) => {
+        handleDrop: (view, event) => {
           const files = Array.from(event.dataTransfer?.files ?? []);
           if (!files.length || !attachmentActions.current) return false;
           event.preventDefault();
-          attachmentActions.current.importFiles(files, "drop");
+          attachmentActions.current.importFiles(files, "drop", {
+            position:
+              view.posAtCoords({ left: event.clientX, top: event.clientY })
+                ?.pos ?? view.state.selection.from,
+          });
           return true;
         },
         handleKeyDown: (view, event) => {
@@ -416,7 +435,10 @@ export function Composer({
               void model.draftEditors
                 .retryHistory(thread.key)
                 .then((protectedAssets) => {
-                  if (protectedAssets) void controller.retry();
+                  if (protectedAssets && isCurrentThread()) {
+                    thread.attachmentImports?.flushInsertions();
+                    void controller.retry();
+                  }
                 })
             }
           >

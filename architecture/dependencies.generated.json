@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "75784f1f00df5f5eec4dc5c25e4ae4d8195e82cfbcc99672f17a5c89c50c61cf",
+  "inputsHash": "d094a76632c954add9ae575d2590bdd088a86b8482ba178f4167330dbbcc4e04",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 457,
-    "scannedFiles": 457,
+    "sourceFiles": 460,
+    "scannedFiles": 460,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 196,
-      "lines": 36506,
+      "files": 198,
+      "lines": 37048,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -102,7 +102,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 20,
-      "lines": 2776,
+      "lines": 2816,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -185,8 +185,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 53,
-      "lines": 9262,
+      "files": 54,
+      "lines": 10481,
       "publicEntries": [
         {
           "path": "src/modules/input/contracts/public.ts",
@@ -12717,6 +12717,51 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/app/renderer/wiring/thread-imports.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/wiring/thread-imports.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/input/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/wiring/thread-imports.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../contracts/desktop-bridge",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/desktop-bridge.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/wiring/thread-imports.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./thread-model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/wiring/thread-model.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/app/renderer/wiring/thread-model.ts",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -13164,6 +13209,72 @@
       "resolution": "module",
       "to": "src/app/renderer/components/icons/common.tsx",
       "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./attachment-import-batches",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/attachment-import-batches.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-import-batches.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tiptap/core",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-import-batches.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "zustand",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-import-batches.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/input/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-import-batches.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-import-batches.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/ui/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
       "targetEnvironment": "renderer"
     },
     {
@@ -18797,6 +18908,15 @@
       "sourceModule": "input",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "ts-pattern",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/attachments/attachment-imports.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "zustand/vanilla",
       "kind": "import",
       "resolution": "external"
@@ -18812,6 +18932,84 @@
       "to": "src/modules/input/contracts/public.ts",
       "targetModule": "input",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/renderer/attachments/import-batch.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tiptap/core",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/attachments/import-batch.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/attachments/import-batch.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/renderer/attachments/import-batch.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../editor/edit-action-history",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/editor/edit-action-history.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/attachments/import-batch.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../editor/plain-text-editor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/editor/plain-text-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/attachments/import-batch.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../references/attachment-editor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/attachment-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/attachments/import-batch.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./attachment-imports",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/attachments/attachment-imports.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/modules/input/renderer/clipboard/plain-text-paste.test.ts",
@@ -19739,6 +19937,33 @@
       "sourceModule": "input",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "@tiptap/pm/history",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-editor.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tiptap/pm/model",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-editor.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tiptap/pm/state",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-editor.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "../../contracts/public",
       "kind": "import",
       "resolution": "module",
@@ -19757,6 +19982,30 @@
       "to": "src/modules/input/core/attachments/attachment-model.ts",
       "targetModule": "input",
       "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-editor.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../attachments/attachment-imports",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/attachments/attachment-imports.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-editor.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../editor/plain-text-editor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/editor/plain-text-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/modules/input/renderer/references/attachment-editor.ts",

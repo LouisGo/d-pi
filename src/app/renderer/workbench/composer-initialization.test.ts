@@ -334,7 +334,7 @@ it("retains the legacy native queue cap when no full projection is available", a
   );
 });
 
-it("blocks Enter and both send controls while pasted image preparation is pending", async () => {
+it("blocks Enter and both send controls for pending or unresolved image imports until explicit cancellation", async () => {
   let finish: (reply: { kind: "attachments"; items: [] }) => void = () => {};
   const attachments: AttachmentBridge = {
     request: async (command) => {
@@ -342,6 +342,7 @@ it("blocks Enter and both send controls while pasted image preparation is pendin
         return new Promise((resolve) => {
           finish = resolve;
         });
+      if (command.kind === "import-settle") return { kind: "import-settled" };
       return { kind: "attachments", items: [] };
     },
   };
@@ -354,7 +355,11 @@ it("blocks Enter and both send controls while pasted image preparation is pendin
   const dispatch = vi.fn();
   // Exact mixed source is handled by the real editor transaction in another test;
   // here the clipboard text is empty so only image preparation is pending.
-  const view = { composing: false, dispatch } as unknown as EditorView;
+  const view = {
+    composing: false,
+    dispatch,
+    state: { selection: { from: 1 } },
+  } as unknown as EditorView;
   await act(() =>
     editorProps?.handlePaste?.(
       view,
@@ -391,6 +396,18 @@ it("blocks Enter and both send controls while pasted image preparation is pendin
   await act(async () => {
     finish({ kind: "attachments", items: [] });
     await new Promise((resolve) => setTimeout(resolve, 20));
+  });
+  expect(send).not.toHaveBeenCalled();
+  expect(fixture.thread.attachmentImports?.stateStore.getState().ready).toBe(
+    false,
+  );
+  const cancel = Array.from(fixture.container.querySelectorAll("button")).find(
+    (button) => button.textContent === "Cancel capture.png",
+  );
+  expect(cancel).toBeDefined();
+  await act(async () => {
+    cancel?.click();
+    await new Promise((resolve) => setTimeout(resolve, 10));
   });
   await act(() =>
     editorProps?.handleKeyDown?.(

@@ -33,9 +33,11 @@ const mounted: {
 }[] = [];
 afterEach(async () => {
   for (const { root, container, model, client } of mounted.splice(0)) {
-    await act(() => root.unmount());
-    model.dispose();
-    client.clear();
+    await act(() => {
+      root.unmount();
+      model.dispose();
+      client.clear();
+    });
     container.remove();
   }
   vi.unstubAllGlobals();
@@ -395,6 +397,7 @@ it.each(["file-picker", "drop"])(
         };
       if (command.kind === "history-release")
         return { kind: "history-released" };
+      if (command.kind === "import-settle") return { kind: "import-settled" };
       return { kind: "attachments", items };
     };
     const fixture = await setup(undefined, undefined, { request });
@@ -896,4 +899,127 @@ it("accepts one reference on Enter and preserves input typed while Main verifies
   );
   await act(() => editor.commands.undo());
   expect(editor.getText()).toBe("@src/ B");
+});
+
+function importedText(threadId: string, name: string) {
+  const id = crypto.randomUUID();
+  return AttachmentSchema.parse({
+    schemaVersion: 1,
+    id,
+    token: `[[dpi-attachment:${id}]]`,
+    threadId,
+    name,
+    mimeType: "text/plain",
+    byteLength: 4,
+    capturedAt: new Date().toISOString(),
+    source: "paste",
+    status: "ready",
+    representation: "text",
+    coverageGaps: [],
+    textOnly: false,
+  });
+}
+function historyReply(
+  command: Parameters<AttachmentBridge["request"]>[0],
+): AttachmentReply | null {
+  if (command.kind === "history-open")
+    return { kind: "history-lease", leaseId: crypto.randomUUID(), version: 0 };
+  if (command.kind === "history-update")
+    return {
+      kind: "history-lease",
+      leaseId: command.leaseId,
+      version: command.version,
+    };
+  if (command.kind === "history-release") return { kind: "history-released" };
+  if (command.kind === "import-settle") return { kind: "import-settled" };
+  return null;
+}
+async function pasteFiles(
+  fixture: Awaited<ReturnType<typeof setup>>,
+  files: File[],
+  text = "",
+) {
+  const event = {
+    clipboardData: {
+      files,
+      types: ["text/plain"],
+      getData: (format: string) => (format === "text/plain" ? text : ""),
+    },
+    preventDefault: vi.fn(),
+  } as unknown as ClipboardEvent;
+  await act(() => {
+    const editor = fixture.editor();
+    editor.options.editorProps?.handlePaste?.(editor.view, event, Slice.empty);
+  });
+}
+
+it("inserts mixed-paste files at the captured source boundary and undoes the whole batch without erasing later typing", async () => {
+  let finish!: (reply: AttachmentReply) => void;
+  let items: import("../../../modules/input/contracts/public").Attachment[] =
+    [];
+  const fixture = await setup(undefined, undefined, {
+    request: async (command) => {
+      if (command.kind === "import-bytes")
+        return new Promise((resolve) => {
+          finish = resolve;
+        });
+      return historyReply(command) ?? { kind: "attachments", items };
+    },
+  });
+  await act(() => fixture.editor().commands.setTextSelection(6));
+  await pasteFiles(fixture, [new File(["file"], "source.txt")], " A");
+  await act(() => fixture.editor().commands.insertContent(" B"));
+  await act(() => new Promise((resolve) => setTimeout(resolve, 30)));
+  expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha A B omega");
+  items = [importedText(fixture.first.threadId, "source.txt")];
+  await act(() => finish({ kind: "attachments", items }));
+  await act(() => new Promise((resolve) => setTimeout(resolve, 10)));
+  expect(fixture.thread().controller.getTextSnapshot()).toBe(
+    `alpha A${items[0]?.token} B omega`,
+  );
+  await act(() => fixture.editor().commands.undo());
+  expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha A B omega");
+});
+
+it("exposes partial import without automatic adoption and accepts the ready subset only through its explicit Composer action", async () => {
+  let items: import("../../../modules/input/contracts/public").Attachment[] =
+    [];
+  const fixture = await setup(undefined, undefined, {
+    request: async (command) => {
+      if (command.kind === "import-bytes") {
+        if (command.name === "bad.txt")
+          return { kind: "unavailable", reason: "unsupported-format" };
+        const item = importedText(command.threadId, command.name);
+        items = [item];
+        return { kind: "attachments", items: [item] };
+      }
+      return historyReply(command) ?? { kind: "attachments", items };
+    },
+  });
+  await pasteFiles(fixture, [
+    new File(["file"], "good.txt"),
+    new File(["file"], "bad.txt"),
+  ]);
+  await act(() => new Promise((resolve) => setTimeout(resolve, 60)));
+  await act(() => new Promise((resolve) => setTimeout(resolve, 20)));
+  expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha omega");
+  expect(fixture.thread().canPrepareInput()).toBe(false);
+  const accept = Array.from(fixture.container.querySelectorAll("button")).find(
+    (button) => button.textContent === "Insert only ready files",
+  );
+  expect(accept).toBeDefined();
+  await act(() => accept?.click());
+  expect(fixture.thread().controller.getTextSnapshot()).toContain(
+    items[0]?.token,
+  );
+  expect(fixture.thread().canPrepareInput()).toBe(false);
+  const discard = Array.from(fixture.container.querySelectorAll("button")).find(
+    (button) => button.textContent === "Cancel bad.txt",
+  );
+  expect(discard).toBeDefined();
+  await act(() => discard?.click());
+  await act(() => new Promise((resolve) => setTimeout(resolve, 10)));
+  expect(fixture.thread().attachmentImports?.stateStore.getState().ready).toBe(
+    true,
+  );
 });
