@@ -142,7 +142,7 @@ export function ComposerModelPicker({
         }}
         initialFocus={search}
         label={t("models.select")}
-        className="model-picker-popup"
+        variant="flush"
         trigger={
           <Button
             variant="ghost"
@@ -179,7 +179,14 @@ export function ComposerModelPicker({
         )}
       </Popover>
       {current?.thinking.adjustable && (
-        <div className="composer-thinking-select">
+        <div
+          className="composer-thinking-select"
+          title={
+            view?.thinkingLevel
+              ? t("models.nativeValue", { value: view.thinkingLevel })
+              : undefined
+          }
+        >
           <Select<ThinkingChoice>
             aria-label={t("model.thinking")}
             value={thinking}
@@ -195,7 +202,7 @@ export function ComposerModelPicker({
               )
             }
             options={[
-              { value: "default", label: t("model.defaultThinking") },
+              { value: "default", label: t("models.thinkingDefault") },
               ...(!current.thinking.requiresEffort
                 ? [{ value: "off" as const, label: t("model.offThinking") }]
                 : []),

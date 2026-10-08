@@ -1,4 +1,10 @@
 export const ui = {
+  "models.pricing.free": "Free",
+  "models.pricing.included": "Included in plan",
+  "models.pricing.variable": "Variable pricing",
+  "models.pricing.unknown": "Pricing unavailable",
+  "models.thinkingDefault": "Default",
+
   "providers.roleScope": "Configuration scope",
   "models.nativeExcluded":
     "This model is excluded by native enabledModels settings.",

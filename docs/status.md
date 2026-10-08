@@ -63,11 +63,8 @@
 | [m2-first-release / 04 输入与附件](../.scratch/m2-first-release/issues/04-input-attachments.md) | claimed | 无；范围以所属规格为准 |
 | [m2-first-release / 05 队列与子 Agent](../.scratch/m2-first-release/issues/05-queue-subagent.md) | open | 无；范围以所属规格为准 |
 | [m2-first-release / 06 阅读与组合验收](../.scratch/m2-first-release/issues/06-reading-acceptance.md) | open | 无；范围以所属规格为准 |
-| [providers-models / 01 原生 Provider 与 Model 接入](../.scratch/providers-models/issues/01-native-provider-models.md) | claimed | 无；范围以所属规格为准 |
-| [providers-models / 02 模型设备偏好与选择规则](../.scratch/providers-models/issues/02-picker-preferences.md) | claimed | 无；范围以所属规格为准 |
-| [providers-models / 03 品牌图标和 Panel 基础](../.scratch/providers-models/issues/03-brand-components.md) | claimed | 无；范围以所属规格为准 |
-| [providers-models / 04 设置与 Composer 闭环](../.scratch/providers-models/issues/04-settings-composer.md) | open | [01](../.scratch/providers-models/issues/01-native-provider-models.md)、[02](../.scratch/providers-models/issues/02-picker-preferences.md)、[03](../.scratch/providers-models/issues/03-brand-components.md) |
-| [providers-models / 05 集成与本地交付](../.scratch/providers-models/issues/05-integration-delivery.md) | open | [04](../.scratch/providers-models/issues/04-settings-composer.md) |
+| [providers-models / 04 设置与 Composer 闭环](../.scratch/providers-models/issues/04-settings-composer.md) | claimed | 无；范围以所属规格为准 |
+| [providers-models / 05 集成与本地交付](../.scratch/providers-models/issues/05-integration-delivery.md) | claimed | [04](../.scratch/providers-models/issues/04-settings-composer.md) |
 | [state-query-alignment / 04 集成验证与试用交接](../.scratch/state-query-alignment/issues/04-integration-verification.md) | claimed | 无；范围以所属规格为准 |
 
 ## 重要待决与继续边界
@@ -96,4 +93,4 @@
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 - [T3 研究与基础重构](../.scratch/t3-foundations/spec.md)：unknown 不重发，冷恢复只读；native/live 无可靠原生身份时保持独立来源；M3 能力仅作设计储备
 
-<!-- source-sha256: 2367bf15178df0f9a1fd53894257f09fe595edf879723068b997e8cb27c2d095; sources: 181 -->
+<!-- source-sha256: 6c25c1974c87e7998267edb1ec229fb703193aba4321553baf13e57922702397; sources: 181 -->

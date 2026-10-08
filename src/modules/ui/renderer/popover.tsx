@@ -12,6 +12,7 @@ export type PopoverProps = {
   initialFocus?: RefObject<HTMLElement | null>;
   /** Outer popup layout only; surface and interaction styles are owned here. */
   className?: string;
+  variant?: "default" | "flush";
 };
 
 export function Popover({
@@ -22,6 +23,7 @@ export function Popover({
   onOpenChange,
   initialFocus,
   className,
+  variant = "default",
 }: PopoverProps) {
   return (
     <PopoverPrimitive.Root
@@ -46,6 +48,7 @@ export function Popover({
             initialFocus={initialFocus}
             className={clsx("ui-popover-popup", className)}
             data-slot="popover"
+            data-variant={variant}
           >
             {children}
           </PopoverPrimitive.Popup>

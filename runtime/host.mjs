@@ -26,7 +26,10 @@ import {
 } from "@oh-my-pi/pi-coding-agent/session/queued-messages";
 import { ConsumptionGate } from "./gate.js";
 import { prepareImageInput } from "./image-input.mjs";
-import { applyModelSelection } from "./model-selection.mjs";
+import {
+  applyModelSelection,
+  ensureCurrentModelConfiguration,
+} from "./model-selection.mjs";
 import { NativeQueueManager } from "./native-queue.mjs";
 import { createSubagentConfiguration } from "./native-subagent-configuration.mjs";
 import { createReadingSession } from "./reading-session.mjs";
@@ -149,7 +152,11 @@ const state = () => ({
     .map((item) => ({ ...item, text: item.text.slice(0, 512) })),
 });
 session.agent.addBeforeQueuedMessageDequeueHook((signal) => gate.wait(signal));
-session.agent.addBeforeModelCallHook((signal) => gate.wait(signal));
+session.agent.addBeforeModelCallHook(async (signal) => {
+  await gate.wait(signal);
+  await ensureCurrentModelConfiguration(session);
+  await gate.wait(signal);
+});
 let lastState = "";
 function publish() {
   const next = JSON.stringify(state());

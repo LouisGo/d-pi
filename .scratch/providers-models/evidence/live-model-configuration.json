@@ -1,0 +1,13 @@
+{
+  "sdkVersion": "18.4.6",
+  "checks": [
+    "existing Host reads newly saved credentials",
+    "existing Host reads added custom models",
+    "provider disabled before switch and model call",
+    "native enabledModels enforced",
+    "edited endpoint requires explicit reselection",
+    "removed credential blocks next call",
+    "unrelated helper not executed"
+  ],
+  "realSupplierRequests": 0
+}

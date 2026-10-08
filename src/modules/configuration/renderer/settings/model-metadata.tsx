@@ -23,11 +23,14 @@ export function SettingsModelMetadata({ model }: { model: Model }) {
       )}
       {model.reasoning && <span>{t("models.reasoning")}</span>}
       {model.input.includes("image") && <span>{t("models.vision")}</span>}
-      {model.cost && (
+      {model.cost &&
+      (model.pricingStatus === "fixed" || model.pricingStatus === undefined) ? (
         <span title={t("models.price")}>
           ${model.cost.input} / ${model.cost.output}
         </span>
-      )}
+      ) : model.pricingStatus && model.pricingStatus !== "fixed" ? (
+        <span>{t(`models.pricing.${model.pricingStatus}`)}</span>
+      ) : null}
       {model.reason === "authentication-required" && (
         <span>{t("providers.auth.required")}</span>
       )}

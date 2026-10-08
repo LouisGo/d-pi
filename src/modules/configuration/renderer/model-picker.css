@@ -1,10 +1,6 @@
 @layer components {
-  .model-picker-popup {
-    padding: 0;
-    width: min(32rem, var(--available-width));
-    overflow: hidden;
-  }
   .model-picker {
+    width: min(32rem, var(--available-width));
     display: flex;
     flex-direction: column;
     max-height: min(32rem, var(--available-height));

@@ -148,7 +148,7 @@ async function setup(accept = true) {
   const thread = state.threadSelection.thread;
   const runtime = thread.runtime;
   if (!runtime) throw Error("Missing fixture Runtime");
-  await thread.inspected;
+  await runtime.act("inspect");
   const host = document.createElement("div");
   document.body.append(host);
   const root = createRoot(host);
@@ -159,17 +159,16 @@ async function setup(accept = true) {
       createElement(
         QueryClientProvider,
         { client },
-        createElement(
-          I18nProvider,
-          { initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" } },
-          createElement(
+        createElement(I18nProvider, {
+          initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" },
+          children: createElement(
             ConversationVisibilityContext.Provider,
             {
               value: { visible: true, reveal: () => {}, openProviders: manage },
             },
             createElement(ComposerModelPicker, { thread, model, runtime }),
           ),
-        ),
+        }),
       ),
     ),
   );
@@ -246,7 +245,7 @@ it("routes the panel to provider settings and keeps default distinct from effect
   const ui = await setup();
   expect(
     ui.host.querySelector('[aria-label="Thinking level"]')?.textContent,
-  ).toContain("Native default");
+  ).toContain("Default");
   const button = [
     ...document.querySelectorAll<HTMLButtonElement>("button"),
   ].find((b) => b.textContent === "Manage providers & models");

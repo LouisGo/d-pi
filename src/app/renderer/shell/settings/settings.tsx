@@ -7,6 +7,7 @@ import {
 } from "react";
 import { useStore } from "zustand";
 import { ConfigurationSettings } from "../../../../modules/configuration/renderer/public";
+import { EMPTY_MODEL_PICKER_PREFERENCES } from "../../../../modules/preferences/core/public";
 import { useI18n } from "../../../../modules/preferences/renderer/public";
 import {
   Button,
@@ -104,6 +105,11 @@ function ThreadConfiguration({
   );
   const thread =
     threadSelection?.kind === "thread" ? threadSelection.thread : null;
+  const modelPicker = useStore(model.stateStore, (state) =>
+    state.kind === "ready"
+      ? (state.preferences.modelPicker ?? EMPTY_MODEL_PICKER_PREFERENCES)
+      : EMPTY_MODEL_PICKER_PREFERENCES,
+  );
   return model.configuration ? (
     <>
       {unknown && (
@@ -134,6 +140,8 @@ function ThreadConfiguration({
           bridge={model.configuration}
           presentation="page"
           active={active && !unknown}
+          modelPicker={modelPicker}
+          onModelPreference={(change) => model.modelPreference(change)}
           scope={
             thread && scopeChoice === "thread"
               ? {

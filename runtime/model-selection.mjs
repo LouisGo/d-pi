@@ -4,6 +4,62 @@ import {
   getSupportedEfforts,
   requireSupportedEffort,
 } from "@oh-my-pi/pi-catalog/model-thinking";
+import { filterAvailableModelsByEnabledPatterns } from "@oh-my-pi/pi-coding-agent/config/model-resolver";
+import { cfgEnabledModels } from "@oh-my-pi/pi-coding-agent/config/model-settings";
+import {
+  isCommandConfigValue,
+  resolveConfigValue,
+} from "@oh-my-pi/pi-coding-agent/config/resolve-config-value";
+
+async function refreshNativeConfiguration(session) {
+  await session.settings.reloadFromDisk();
+  const registry = session.modelRegistry;
+  await registry.authStorage.credentials.reload();
+  // OMP offline discovery can resolve command-backed credentials. Synchronizing
+  // disk/cache state must not execute unrelated helpers or refresh OAuth tokens.
+  registry.authStorage.keys.setResolver((value) =>
+    isCommandConfigValue(value) ? undefined : resolveConfigValue(value),
+  );
+  try {
+    await registry.refresh("offline", { refreshCommandCredentials: false });
+  } finally {
+    registry.authStorage.keys.setResolver(resolveConfigValue);
+  }
+  if (registry.getError()) throw Error("model-configuration-unavailable");
+}
+function availableModels(session) {
+  return filterAvailableModelsByEnabledPatterns(
+    session.modelRegistry.getAvailable(),
+    cfgEnabledModels.get(session.settings),
+    session.settings,
+  );
+}
+export async function ensureCurrentModelConfiguration(session) {
+  await refreshNativeConfiguration(session);
+  const current = session.model;
+  const live =
+    current &&
+    availableModels(session).find(
+      (model) => model.provider === current.provider && model.id === current.id,
+    );
+  if (!live) throw Error("selected-model-unavailable");
+  // A changed endpoint/transport must be applied by explicit model selection.
+  // Never send through the old endpoint or silently switch this Session.
+  for (const field of [
+    "api",
+    "baseUrl",
+    "headers",
+    "input",
+    "contextWindow",
+    "maxTokens",
+  ]) {
+    if (
+      JSON.stringify(live[field] ?? null) !==
+      JSON.stringify(current[field] ?? null)
+    )
+      throw Error("model-configuration-changed");
+  }
+}
 export function thinkingCapabilities(model) {
   const efforts = [...getSupportedEfforts(model)];
   return {
@@ -19,9 +75,12 @@ export function thinkingCapabilities(model) {
   };
 }
 export async function applyModelSelection(session, selection) {
-  let model = session.modelRegistry.find(selection.provider, selection.modelId);
-  if (!model || !session.modelRegistry.hasConfiguredAuth(model))
-    throw Error("Selected model unavailable");
+  await refreshNativeConfiguration(session);
+  let model = availableModels(session).find(
+    (model) =>
+      model.provider === selection.provider && model.id === selection.modelId,
+  );
+  if (!model) throw Error("Selected model unavailable");
   model = await session.modelRegistry.refreshSelectedModelMetadata(model);
   const thinking = selection.thinking;
   if (thinking?.kind === "effort")

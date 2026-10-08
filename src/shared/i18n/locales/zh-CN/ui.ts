@@ -1,4 +1,10 @@
 export const ui = {
+  "models.pricing.free": "免费",
+  "models.pricing.included": "套餐内",
+  "models.pricing.variable": "费用可变",
+  "models.pricing.unknown": "费用未提供",
+  "models.thinkingDefault": "默认",
+
   "providers.roleScope": "配置范围",
   "models.nativeExcluded": "此模型未包含在原生 enabledModels 范围内。",
   "config.error.configuration-conflict":

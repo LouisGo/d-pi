@@ -21,6 +21,10 @@
       opacity var(--motion-popup) var(--ease-out),
       scale var(--motion-popup) var(--ease-out);
   }
+  .ui-popover-popup[data-variant="flush"] {
+    padding: 0;
+    overflow: hidden;
+  }
   .ui-popover-popup[data-starting-style],
   .ui-popover-popup[data-ending-style] {
     opacity: 0;

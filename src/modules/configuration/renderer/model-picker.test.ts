@@ -41,10 +41,9 @@ async function renderPanel(
   const manage = vi.fn();
   await act(async () =>
     root.render(
-      createElement(
-        I18nProvider,
-        { initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" } },
-        createElement(ModelPickerPanel, {
+      createElement(I18nProvider, {
+        initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" },
+        children: createElement(ModelPickerPanel, {
           models: [
             model("openai-codex", "gpt-current"),
             model("anthropic", "claude-next"),
@@ -62,7 +61,7 @@ async function renderPanel(
           onManage: manage,
           ...overrides,
         }),
-      ),
+      }),
     ),
   );
   return {

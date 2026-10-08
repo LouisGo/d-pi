@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "39cbe1eb81089d8aa63bff668ff6c0cff0be81c633a1da47a644bc84f826e0c2",
+  "inputsHash": "82fd5403a6802585b43ee1e91192432bdaae0762eb2574fe01d866c1bc92c0b4",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 491,
-    "scannedFiles": 491,
+    "sourceFiles": 515,
+    "scannedFiles": 515,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 211,
-      "lines": 39727,
+      "files": 215,
+      "lines": 40778,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -60,7 +60,7 @@
       ],
       "materialized": true,
       "files": 33,
-      "lines": 3543,
+      "lines": 3570,
       "publicEntries": [
         {
           "path": "src/platform/main/storage/public.ts",
@@ -106,7 +106,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 21,
-      "lines": 3120,
+      "lines": 3194,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -269,15 +269,20 @@
       "root": "src/modules/preferences",
       "environments": [
         "contracts",
+        "core",
         "main",
         "renderer"
       ],
       "materialized": true,
-      "files": 7,
-      "lines": 298,
+      "files": 12,
+      "lines": 695,
       "publicEntries": [
         {
           "path": "src/modules/preferences/contracts/public.ts",
+          "exists": true
+        },
+        {
+          "path": "src/modules/preferences/core/public.ts",
           "exists": true
         },
         {
@@ -369,7 +374,7 @@
       "defaultEnvironment": "omp",
       "materialized": true,
       "files": 14,
-      "lines": 2924,
+      "lines": 3443,
       "publicEntries": [
         {
           "path": "runtime/host.mjs",
@@ -388,8 +393,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 20,
-      "lines": 2548,
+      "files": 30,
+      "lines": 5046,
       "publicEntries": [
         {
           "path": "src/modules/configuration/contracts/public.ts",
@@ -417,8 +422,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 10,
-      "lines": 1197,
+      "files": 15,
+      "lines": 2595,
       "publicEntries": [
         {
           "path": "src/modules/ui/renderer/public.ts",
@@ -1243,6 +1248,13 @@
     {
       "module": "app",
       "environment": "main",
+      "dependency": "preferences",
+      "targetEnvironment": "contracts",
+      "testOnly": true
+    },
+    {
+      "module": "app",
+      "environment": "main",
       "dependency": "execution",
       "targetEnvironment": "main",
       "testOnly": true
@@ -1495,6 +1507,20 @@
     {
       "module": "app",
       "environment": "renderer",
+      "dependency": "preferences",
+      "targetEnvironment": "core",
+      "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "renderer",
+      "dependency": "preferences",
+      "targetEnvironment": "core",
+      "testOnly": true
+    },
+    {
+      "module": "app",
+      "environment": "renderer",
       "dependency": "input",
       "targetEnvironment": "renderer",
       "testOnly": true
@@ -1518,6 +1544,27 @@
       "environment": "renderer",
       "dependency": "files",
       "targetEnvironment": "contracts",
+      "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "renderer",
+      "dependency": "configuration",
+      "targetEnvironment": "contracts",
+      "testOnly": true
+    },
+    {
+      "module": "app",
+      "environment": "renderer",
+      "dependency": "configuration",
+      "targetEnvironment": "contracts",
+      "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "renderer",
+      "dependency": "configuration",
+      "targetEnvironment": "core",
       "testOnly": false
     },
     {
@@ -1567,20 +1614,6 @@
       "environment": "renderer",
       "dependency": "changes",
       "targetEnvironment": "renderer",
-      "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "renderer",
-      "dependency": "configuration",
-      "targetEnvironment": "contracts",
-      "testOnly": true
-    },
-    {
-      "module": "app",
-      "environment": "renderer",
-      "dependency": "configuration",
-      "targetEnvironment": "contracts",
       "testOnly": false
     },
     {
@@ -2155,6 +2188,13 @@
       "environment": "renderer",
       "dependency": "preferences",
       "targetEnvironment": "renderer",
+      "testOnly": true
+    },
+    {
+      "module": "configuration",
+      "environment": "renderer",
+      "dependency": "preferences",
+      "targetEnvironment": "renderer",
       "testOnly": false
     },
     {
@@ -2168,7 +2208,14 @@
       "module": "configuration",
       "environment": "renderer",
       "dependency": "preferences",
-      "targetEnvironment": "renderer",
+      "targetEnvironment": "contracts",
+      "testOnly": false
+    },
+    {
+      "module": "configuration",
+      "environment": "renderer",
+      "dependency": "preferences",
+      "targetEnvironment": "contracts",
       "testOnly": true
     }
   ],
@@ -5379,6 +5426,87 @@
     },
     {
       "from": "src/app/main/wiring/m2-thread-entry.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./desktop-command-service",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/desktop-command-service.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/model-picker-preferences.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/model-picker-preferences.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/model-picker-preferences.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/model-picker-preferences.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:sqlite",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/model-picker-preferences.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/model-picker-preferences.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../../modules/preferences/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/contracts/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/main/wiring/model-picker-preferences.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./app-storage",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/app-storage.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/model-picker-preferences.test.ts",
       "sourceModule": "app",
       "sourceEnvironment": "main",
       "test": true,
@@ -11794,6 +11922,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "../settings/settings",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/settings/settings.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/layout/workbench-frame.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "./conversation-visibility",
       "kind": "import",
       "resolution": "module",
@@ -12301,6 +12441,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "../../../../modules/preferences/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/core/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/app/renderer/shell/settings/settings.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "../../../../modules/preferences/renderer/public",
       "kind": "import",
       "resolution": "module",
@@ -12630,6 +12782,87 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/app/renderer/wiring/model-picker-preferences.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/wiring/model-picker-preferences.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/input/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/wiring/model-picker-preferences.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/preferences/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/contracts/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/wiring/model-picker-preferences.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/preferences/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/core/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/app/renderer/wiring/model-picker-preferences.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../contracts/desktop-bridge",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/desktop-bridge.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/wiring/model-picker-preferences.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../contracts/failure",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/failure.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/wiring/model-picker-preferences.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/wiring/model.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/app/renderer/wiring/model-store.test.ts",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -12898,6 +13131,18 @@
       "to": "src/modules/preferences/contracts/public.ts",
       "targetModule": "preferences",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/wiring/model.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/preferences/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/core/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "core"
     },
     {
       "from": "src/app/renderer/wiring/model.ts",
@@ -14409,6 +14654,273 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/app/renderer/workbench/composer-model-picker.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tanstack/react-query",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-model-picker.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-model-picker.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react-dom/client",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-model-picker.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-model-picker.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/configuration/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/contracts/public.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-model-picker.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-model-picker.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/input/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-model-picker.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-model-picker.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../contracts/desktop-bridge",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/desktop-bridge.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-model-picker.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../shell/layout/conversation-visibility",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/layout/conversation-visibility.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-model-picker.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../wiring/model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/wiring/model.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-model-picker.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./composer-model-picker",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/composer-model-picker.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-model-picker.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tanstack/react-query",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-model-picker.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-model-picker.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "zustand",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-model-picker.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/configuration/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/contracts/public.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-model-picker.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/configuration/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/core/public.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-model-picker.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/configuration/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/renderer/public.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-model-picker.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/preferences/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/core/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-model-picker.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-model-picker.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/ui/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-model-picker.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../shell/layout/conversation-visibility",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/layout/conversation-visibility.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-model-picker.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../wiring/model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/wiring/model.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-model-picker.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../wiring/thread-model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/wiring/thread-model.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/app/renderer/workbench/composer-toolbar.test.ts",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -14681,6 +15193,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/workbench/attachment-controls.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./composer-model-picker",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/composer-model-picker.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -22747,6 +23271,36 @@
       "targetEnvironment": "contracts"
     },
     {
+      "from": "src/modules/preferences/contracts/model-picker.test.ts",
+      "sourceModule": "preferences",
+      "sourceEnvironment": "contracts",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/preferences/contracts/model-picker.test.ts",
+      "sourceModule": "preferences",
+      "sourceEnvironment": "contracts",
+      "test": true,
+      "specifier": "./public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/contracts/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/preferences/contracts/model-picker.ts",
+      "sourceModule": "preferences",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
       "from": "src/modules/preferences/contracts/preferences.ts",
       "sourceModule": "preferences",
       "sourceEnvironment": "contracts",
@@ -22768,6 +23322,30 @@
       "targetEnvironment": "shared"
     },
     {
+      "from": "src/modules/preferences/contracts/preferences.ts",
+      "sourceModule": "preferences",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "./model-picker",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/contracts/model-picker.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/preferences/contracts/public.ts",
+      "sourceModule": "preferences",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "./model-picker",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/preferences/contracts/model-picker.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "contracts"
+    },
+    {
       "from": "src/modules/preferences/contracts/public.ts",
       "sourceModule": "preferences",
       "sourceEnvironment": "contracts",
@@ -22778,6 +23356,60 @@
       "to": "src/modules/preferences/contracts/preferences.ts",
       "targetModule": "preferences",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/preferences/core/model-picker.test.ts",
+      "sourceModule": "preferences",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/preferences/core/model-picker.test.ts",
+      "sourceModule": "preferences",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "./public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/core/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/preferences/core/model-picker.ts",
+      "sourceModule": "preferences",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "ts-pattern",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/preferences/core/model-picker.ts",
+      "sourceModule": "preferences",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/contracts/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/preferences/core/public.ts",
+      "sourceModule": "preferences",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "./model-picker",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/preferences/core/model-picker.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "core"
     },
     {
       "from": "src/modules/preferences/main/preference-repository.ts",
@@ -27086,6 +27718,15 @@
       "sourceModule": "runtime",
       "sourceEnvironment": "omp",
       "test": false,
+      "specifier": "@oh-my-pi/pi-catalog/models",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/configuration-readonly.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
       "specifier": "@oh-my-pi/pi-catalog/provider-models",
       "kind": "import",
       "resolution": "external"
@@ -27184,11 +27825,74 @@
       "resolution": "external"
     },
     {
+      "from": "runtime/configuration-readonly.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "@oh-my-pi/pi-coding-agent/config/resolve-config-value",
+      "kind": "dynamic-import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/configuration-readonly.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "@oh-my-pi/pi-coding-agent/config/model-settings",
+      "kind": "dynamic-import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/configuration-readonly.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "@oh-my-pi/pi-coding-agent/config/model-resolver",
+      "kind": "dynamic-import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/configuration.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/configuration.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/configuration.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
       "from": "runtime/configuration.mjs",
       "sourceModule": "runtime",
       "sourceEnvironment": "omp",
       "test": false,
       "specifier": "node:readline",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/configuration.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "@oh-my-pi/pi-ai",
       "kind": "import",
       "resolution": "external"
     },
@@ -27206,7 +27910,25 @@
       "sourceModule": "runtime",
       "sourceEnvironment": "omp",
       "test": false,
+      "specifier": "@oh-my-pi/pi-catalog/compat/auth",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/configuration.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
       "specifier": "@oh-my-pi/pi-utils",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/configuration.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "bun",
       "kind": "import",
       "resolution": "external"
     },
@@ -27421,6 +28143,33 @@
       "sourceEnvironment": "omp",
       "test": false,
       "specifier": "@oh-my-pi/pi-catalog/model-thinking",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/model-selection.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "@oh-my-pi/pi-coding-agent/config/model-resolver",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/model-selection.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "@oh-my-pi/pi-coding-agent/config/model-settings",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/model-selection.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "@oh-my-pi/pi-coding-agent/config/resolve-config-value",
       "kind": "import",
       "resolution": "external"
     },
@@ -27785,6 +28534,18 @@
       "sourceModule": "configuration",
       "sourceEnvironment": "contracts",
       "test": true,
+      "specifier": "./provider-models",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/contracts/provider-models.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/configuration/contracts/provider-models.test.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "contracts",
+      "test": true,
       "specifier": "./public",
       "kind": "import",
       "resolution": "module",
@@ -28126,6 +28887,138 @@
       "resolution": "external"
     },
     {
+      "from": "src/modules/configuration/renderer/model-picker.test.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/configuration/renderer/model-picker.test.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react-dom/client",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/configuration/renderer/model-picker.test.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/configuration/renderer/model-picker.test.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/model-picker.test.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/contracts/public.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/configuration/renderer/model-picker.test.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./model-picker",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/renderer/model-picker.tsx",
+      "targetModule": "configuration",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/model-picker.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/configuration/renderer/model-picker.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/model-picker.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../ui/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/model-picker.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/contracts/public.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/configuration/renderer/model-picker.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/core/public.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/configuration/renderer/public.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./model-picker",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/configuration/renderer/model-picker.tsx",
+      "targetModule": "configuration",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/modules/configuration/renderer/public.ts",
       "sourceModule": "configuration",
       "sourceEnvironment": "renderer",
@@ -28241,6 +29134,51 @@
       "sourceModule": "configuration",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "./use-authentication",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/renderer/settings/use-authentication.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/custom-model-form.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/custom-model-form.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/custom-model-form.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../ui/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/custom-model-form.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "../../contracts/public",
       "kind": "import",
       "resolution": "module",
@@ -28249,7 +29187,145 @@
       "targetEnvironment": "contracts"
     },
     {
-      "from": "src/modules/configuration/renderer/settings/authentication-progress.tsx",
+      "from": "src/modules/configuration/renderer/settings/custom-model-form.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./use-configuration-write",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/renderer/settings/use-configuration-write.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/model-metadata.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/model-metadata.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/contracts/public.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/model-roles.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/model-roles.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/model-roles.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../ui/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/model-roles.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/contracts/public.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/model-roles.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./use-configuration-write",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/renderer/settings/use-configuration-write.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/provider-accounts.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/provider-accounts.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/provider-accounts.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../ui/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/provider-accounts.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/contracts/public.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/provider-accounts.tsx",
       "sourceModule": "configuration",
       "sourceEnvironment": "renderer",
       "test": false,
@@ -28257,6 +29333,324 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/configuration/renderer/settings/use-authentication.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/provider-accounts.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./use-configuration-write",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/renderer/settings/use-configuration-write.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/provider-models.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/provider-models.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../preferences/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/contracts/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/provider-models.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/provider-models.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../ui/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/provider-models.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/contracts/public.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/provider-models.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./custom-model-form",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/renderer/settings/custom-model-form.tsx",
+      "targetModule": "configuration",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/provider-models.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./model-metadata",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/renderer/settings/model-metadata.tsx",
+      "targetModule": "configuration",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/provider-models.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./use-configuration-write",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/renderer/settings/use-configuration-write.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/providers-settings.test.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tanstack/react-query",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/providers-settings.test.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/providers-settings.test.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react-dom/client",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/providers-settings.test.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/providers-settings.test.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../preferences/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/contracts/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/providers-settings.test.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/providers-settings.test.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/contracts/public.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/providers-settings.test.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/contracts/public.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/providers-settings.test.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./settings",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/renderer/settings/settings.tsx",
+      "targetModule": "configuration",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/providers-settings.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/providers-settings.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/providers-settings.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../ui/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/providers-settings.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/contracts/public.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/providers-settings.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./custom-model-form",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/renderer/settings/custom-model-form.tsx",
+      "targetModule": "configuration",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/providers-settings.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./model-roles",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/renderer/settings/model-roles.tsx",
+      "targetModule": "configuration",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/providers-settings.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./provider-accounts",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/renderer/settings/provider-accounts.tsx",
+      "targetModule": "configuration",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/providers-settings.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./provider-models",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/renderer/settings/provider-models.tsx",
+      "targetModule": "configuration",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/providers-settings.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./use-authentication",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/renderer/settings/use-authentication.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/providers-settings.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./use-configuration-write",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/renderer/settings/use-configuration-write.ts",
       "targetModule": "configuration",
       "targetEnvironment": "renderer"
     },
@@ -28415,6 +29809,30 @@
       "sourceModule": "configuration",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "./provider-models",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/renderer/settings/provider-models.tsx",
+      "targetModule": "configuration",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/settings.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./providers-settings",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/renderer/settings/providers-settings.tsx",
+      "targetModule": "configuration",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/settings.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "./snapshot-summary",
       "kind": "import",
       "resolution": "module",
@@ -28431,6 +29849,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/configuration/renderer/settings/use-authentication.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/settings.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./use-configuration-write",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/renderer/settings/use-configuration-write.ts",
       "targetModule": "configuration",
       "targetEnvironment": "renderer"
     },
@@ -28501,6 +29931,36 @@
       "targetEnvironment": "contracts"
     },
     {
+      "from": "src/modules/configuration/renderer/settings/use-configuration-write.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tanstack/react-query",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/use-configuration-write.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/use-configuration-write.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/contracts/public.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "contracts"
+    },
+    {
       "from": "src/modules/ui/renderer/button.tsx",
       "sourceModule": "ui",
       "sourceEnvironment": "renderer",
@@ -28535,6 +29995,93 @@
       "specifier": "react",
       "kind": "import",
       "resolution": "external"
+    },
+    {
+      "from": "src/modules/ui/renderer/components/icons/_brands/assets.tsx",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/ui/renderer/components/icons/brands.test.ts",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/ui/renderer/components/icons/brands.test.ts",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react-dom/server",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/ui/renderer/components/icons/brands.test.ts",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/ui/renderer/components/icons/brands.test.ts",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./brands",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/components/icons/brands.tsx",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/ui/renderer/components/icons/brands.tsx",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@hugeicons/core-free-icons",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/ui/renderer/components/icons/brands.tsx",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@hugeicons/react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/ui/renderer/components/icons/brands.tsx",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/ui/renderer/components/icons/brands.tsx",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./_brands/assets",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/components/icons/_brands/assets.tsx",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/modules/ui/renderer/components/icons/common.tsx",
@@ -28690,6 +30237,84 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/modules/ui/renderer/popover.test.ts",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/ui/renderer/popover.test.ts",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react-dom/client",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/ui/renderer/popover.test.ts",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/ui/renderer/popover.test.ts",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./popover",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/popover.tsx",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/ui/renderer/popover.test.ts",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/ui/renderer/popover.tsx",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@base-ui/react/popover",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/ui/renderer/popover.tsx",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "clsx",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/ui/renderer/popover.tsx",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
       "from": "src/modules/ui/renderer/primitives.test.ts",
       "sourceModule": "ui",
       "sourceEnvironment": "renderer",
@@ -28763,6 +30388,18 @@
       "sourceModule": "ui",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "./components/icons/brands",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/components/icons/brands.tsx",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/ui/renderer/public.ts",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "./components/icons/common",
       "kind": "export",
       "resolution": "module",
@@ -28791,6 +30428,18 @@
       "kind": "export",
       "resolution": "module",
       "to": "src/modules/ui/renderer/focus-visibility.ts",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/ui/renderer/public.ts",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./popover",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/popover.tsx",
       "targetModule": "ui",
       "targetEnvironment": "renderer"
     },

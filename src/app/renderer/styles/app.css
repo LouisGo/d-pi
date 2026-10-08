@@ -14,6 +14,7 @@
 @import "../workbench/composer-toolbar.css";
 @import "../workbench/composer.css";
 @import "../../../modules/configuration/renderer/model-picker.css";
+@import "../../../modules/configuration/renderer/settings/providers-settings.css";
 @import "../workbench/composer-model-picker.css";
 @layer base {
   *,

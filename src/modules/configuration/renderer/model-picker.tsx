@@ -31,6 +31,9 @@ export function ModelMetadata({ model }: { model: Model }) {
       )}
       {model.reasoning && <span>{t("models.reasoning")}</span>}
       {model.input.includes("image") && <span>{t("models.vision")}</span>}
+      {model.pricingStatus && model.pricingStatus !== "fixed" && (
+        <span>{t(`models.pricing.${model.pricingStatus}`)}</span>
+      )}
     </span>
   );
 }
