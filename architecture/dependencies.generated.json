@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "7210ec228f7f886ec005286f8b58e5d0412e575fa2d124a13480095df9d83c95",
+  "inputsHash": "39cbe1eb81089d8aa63bff668ff6c0cff0be81c633a1da47a644bc84f826e0c2",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 486,
-    "scannedFiles": 486,
+    "sourceFiles": 491,
+    "scannedFiles": 491,
     "unscanned": []
   },
   "modules": [
@@ -106,7 +106,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 21,
-      "lines": 2918,
+      "lines": 3120,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -369,7 +369,7 @@
       "defaultEnvironment": "omp",
       "materialized": true,
       "files": 14,
-      "lines": 2752,
+      "lines": 2924,
       "publicEntries": [
         {
           "path": "runtime/host.mjs",
@@ -383,15 +383,20 @@
       "root": "src/modules/configuration",
       "environments": [
         "contracts",
+        "core",
         "main",
         "renderer"
       ],
       "materialized": true,
-      "files": 15,
-      "lines": 2176,
+      "files": 20,
+      "lines": 2548,
       "publicEntries": [
         {
           "path": "src/modules/configuration/contracts/public.ts",
+          "exists": true
+        },
+        {
+          "path": "src/modules/configuration/core/public.ts",
           "exists": true
         },
         {
@@ -27018,6 +27023,15 @@
       "sourceModule": "runtime",
       "sourceEnvironment": "omp",
       "test": false,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/configuration-readonly.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
       "specifier": "node:fs",
       "kind": "import",
       "resolution": "external"
@@ -27045,7 +27059,25 @@
       "sourceModule": "runtime",
       "sourceEnvironment": "omp",
       "test": false,
+      "specifier": "@oh-my-pi/pi-ai",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/configuration-readonly.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
       "specifier": "@oh-my-pi/pi-ai/auth-storage",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/configuration-readonly.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "@oh-my-pi/pi-catalog/compat/auth",
       "kind": "import",
       "resolution": "external"
     },
@@ -27063,7 +27095,25 @@
       "sourceModule": "runtime",
       "sourceEnvironment": "omp",
       "test": false,
+      "specifier": "@oh-my-pi/pi-catalog/types",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/configuration-readonly.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
       "specifier": "@oh-my-pi/pi-coding-agent/config/model-registry",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/configuration-readonly.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "@oh-my-pi/pi-coding-agent/config/model-roles",
       "kind": "import",
       "resolution": "external"
     },
@@ -27123,6 +27173,15 @@
       "to": "runtime/model-selection.mjs",
       "targetModule": "runtime",
       "targetEnvironment": "omp"
+    },
+    {
+      "from": "runtime/configuration-readonly.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "@oh-my-pi/pi-coding-agent/config/models-config",
+      "kind": "dynamic-import",
+      "resolution": "external"
     },
     {
       "from": "runtime/configuration.mjs",
@@ -27713,6 +27772,36 @@
       "resolution": "external"
     },
     {
+      "from": "src/modules/configuration/contracts/provider-models.test.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "contracts",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/configuration/contracts/provider-models.test.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "contracts",
+      "test": true,
+      "specifier": "./public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/contracts/public.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/configuration/contracts/provider-models.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
       "from": "src/modules/configuration/contracts/public.ts",
       "sourceModule": "configuration",
       "sourceEnvironment": "contracts",
@@ -27742,6 +27831,30 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/configuration/contracts/model-selection.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/configuration/contracts/public.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "./provider-models",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/contracts/provider-models.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/configuration/contracts/public.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "./provider-models",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/configuration/contracts/provider-models.ts",
       "targetModule": "configuration",
       "targetEnvironment": "contracts"
     },
@@ -27789,6 +27902,63 @@
       "to": "src/modules/configuration/contracts/model-selection.ts",
       "targetModule": "configuration",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/configuration/core/model-catalog.test.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/configuration/core/model-catalog.test.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/contracts/public.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/configuration/core/model-catalog.test.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "./model-catalog",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/core/model-catalog.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/configuration/core/model-catalog.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/contracts/public.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/configuration/core/public.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "./model-catalog",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/configuration/core/model-catalog.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "core"
     },
     {
       "from": "src/modules/configuration/main/native-configuration.test.ts",
