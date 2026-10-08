@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { test } from "node:test";
@@ -17,6 +24,76 @@ function writeFixture(directory, relativePath, contents) {
   mkdirSync(resolve(path, ".."), { recursive: true });
   writeFileSync(path, contents);
 }
+
+test("invalidates generated reports when the shared scanner implementation changes", () => {
+  const directory = mkdtempSync(join(tmpdir(), "d-pi-scanner-report-"));
+  try {
+    writeFixture(
+      directory,
+      "architecture/modules.json",
+      JSON.stringify({
+        version: 1,
+        sourceRoots: ["src"],
+        modules: {
+          alpha: {
+            root: "src/modules/alpha",
+            environments: ["core"],
+            public: ["core/public.ts"],
+            dependsOn: [],
+          },
+        },
+      }),
+    );
+    writeFixture(
+      directory,
+      "src/modules/alpha/core/public.ts",
+      "export const alpha = true;\n",
+    );
+    for (const file of [
+      "scripts/architecture/check.mjs",
+      "scripts/architecture/report.mjs",
+      "scripts/checks/source-tokens.mjs",
+    ])
+      writeFixture(
+        directory,
+        file,
+        readFileSync(join(repositoryRoot, file), "utf8"),
+      );
+    symlinkSync(
+      join(repositoryRoot, "node_modules"),
+      join(directory, "node_modules"),
+      "dir",
+    );
+    const copiedReport = join(directory, "scripts/architecture/report.mjs");
+    const output = join(directory, "architecture/dependencies.generated.json");
+    const generated = spawnSync(
+      process.execPath,
+      [copiedReport, "--write", output],
+      { cwd: directory, encoding: "utf8", timeout: 1000 },
+    );
+    assert.equal(generated.status, 0, generated.stderr || generated.stdout);
+    const helper = "scripts/checks/source-tokens.mjs";
+    writeFixture(
+      directory,
+      helper,
+      `${readFileSync(join(directory, helper), "utf8")}\n// changed scanner implementation\n`,
+    );
+    const stale = spawnSync(
+      process.execPath,
+      [copiedReport, "--check", output],
+      { cwd: directory, encoding: "utf8", timeout: 1000 },
+    );
+    assert.equal(stale.error, undefined);
+    assert.equal(
+      stale.status,
+      1,
+      "scanner helper changes must invalidate the recorded inputs hash",
+    );
+    assert.match(`${stale.stdout}${stale.stderr}`, /STALE/);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
 
 test("reports entry, production, test, and CSS size hints separately", () => {
   const directory = mkdtempSync(join(tmpdir(), "d-pi-structure-report-"));

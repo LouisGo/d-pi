@@ -39,12 +39,81 @@ function fixture(name, files, modules, options = {}) {
   return directory;
 }
 
-function run(directory) {
+function run(directory, options = {}) {
   return spawnSync(process.execPath, [checker, "--config", "modules.json"], {
     cwd: directory,
     encoding: "utf8",
+    ...options,
   });
 }
+
+test("bounds scans of valid regular expressions and preserves following private-import violations", () => {
+  const directory = fixture(
+    "regex-scan",
+    {
+      "src/modules/alpha/core/public.ts":
+        "export const safe = (input) => !/[?#]/.test(input);\nimport { secret } from '../../beta/core/private';\n",
+      "src/modules/beta/core/public.ts": "export const publicValue = 1;\n",
+      "src/modules/beta/core/private.ts": "export const secret = 2;\n",
+    },
+    modules(),
+  );
+  try {
+    const result = run(directory, { timeout: 1000, maxBuffer: 64 * 1024 });
+    assert.equal(
+      result.error,
+      undefined,
+      "architecture scanner must terminate within the bounded child process",
+    );
+    assert.equal(result.status, 1, result.stderr);
+    assert.match(result.stderr, /ARCH-PRIVATE-IMPORT/);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test("keeps imports inside a division expression visible to architecture checks", () => {
+  const directory = fixture(
+    "division-import",
+    {
+      "src/modules/alpha/core/public.ts":
+        "export const ratio = left / (import('../../beta/core/private'), right) / third;\n",
+      "src/modules/beta/core/public.ts": "export const publicValue = 1;\n",
+      "src/modules/beta/core/private.ts": "export const secret = 2;\n",
+    },
+    modules(),
+  );
+  try {
+    const result = run(directory, { timeout: 1000, maxBuffer: 64 * 1024 });
+    assert.equal(result.error, undefined);
+    assert.equal(result.status, 1, result.stderr);
+    assert.match(result.stderr, /ARCH-PRIVATE-IMPORT/);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test("fails with a parsing error when the native scanner makes no progress", () => {
+  const directory = fixture(
+    "non-progress",
+    {
+      "src/modules/alpha/core/public.ts": "export const invalid = #;\n",
+    },
+    { alpha: modules().alpha },
+  );
+  try {
+    const result = run(directory, { timeout: 1000, maxBuffer: 64 * 1024 });
+    assert.equal(
+      result.error,
+      undefined,
+      "non-progress must fail without hanging the checker",
+    );
+    assert.equal(result.status, 1, result.stderr);
+    assert.match(result.stderr, /ARCH-PARSE.*scanner.*progress/);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
 
 function modules({ alphaDependencies = ["beta"], betaDependencies = [] } = {}) {
   return {

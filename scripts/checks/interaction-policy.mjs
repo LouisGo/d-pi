@@ -1,11 +1,8 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import {
-  createScanner,
-  LanguageVariant,
-  SyntaxKind,
-} from "typescript/unstable/ast";
+import { SyntaxKind } from "typescript/unstable/ast";
+import { SourceScanError, sourceTokens } from "./source-tokens.mjs";
 
 const policyFile = "src/app/renderer/styles/interaction.css";
 const decodeCss = (value) =>
@@ -49,24 +46,14 @@ export function interactionViolations(file, source) {
     }
     return issues;
   }
-  const scanner = createScanner(
-    true,
-    LanguageVariant.JSX,
-    source,
-    0,
-    source.length,
-  );
-  const tokens = [];
-  let kind;
-  do {
-    kind = scanner.scan();
-    tokens.push({
-      kind,
-      text: scanner.getTokenText(),
-      value: scanner.getTokenValue(),
-      position: scanner.getTokenStart(),
-    });
-  } while (kind !== SyntaxKind.EndOfFile);
+  let tokens;
+  try {
+    tokens = sourceTokens(file, source);
+  } catch (error) {
+    if (!(error instanceof SourceScanError)) throw error;
+    report("UI-SCAN", error.position, error.message);
+    return issues;
+  }
   const stringKinds = new Set([
     SyntaxKind.StringLiteral,
     SyntaxKind.NoSubstitutionTemplateLiteral,

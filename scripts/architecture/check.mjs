@@ -2,11 +2,8 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { builtinModules } from "node:module";
 import { dirname, extname, relative, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
-import {
-  createScanner,
-  LanguageVariant,
-  SyntaxKind,
-} from "typescript/unstable/ast";
+import { SyntaxKind } from "typescript/unstable/ast";
+import { sourceTokens } from "../checks/source-tokens.mjs";
 
 const SOURCE_EXTENSIONS = new Set([
   ".cjs",
@@ -177,22 +174,7 @@ function resolveSpecifier(specifier, importer, root) {
 
 function tokenise(path) {
   const text = readFileSync(path, "utf8");
-  const variant =
-    path.endsWith(".tsx") || path.endsWith(".jsx")
-      ? LanguageVariant.JSX
-      : LanguageVariant.Standard;
-  const scanner = createScanner(true, variant, text, 0, text.length);
-  const tokens = [];
-  let token;
-  do {
-    token = scanner.scan();
-    tokens.push({
-      kind: token,
-      text: scanner.getTokenText(),
-      value: scanner.getTokenValue(),
-    });
-  } while (token !== SyntaxKind.EndOfFile);
-  return tokens;
+  return sourceTokens(path, text);
 }
 
 function stringToken(token) {
