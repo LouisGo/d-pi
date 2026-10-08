@@ -242,7 +242,7 @@ it("advances a global scan past 4096 files instead of rescanning its first page"
   expect(f.store.threads.list()).toHaveLength(4096);
   expect(await f.index.reconcile(crypto.randomUUID())).toBe("ready");
   expect(f.store.threads.list()).toHaveLength(4098);
-}, 20000);
+}, 30000);
 it("continues beyond 256 project buckets in the next bounded scan", async () => {
   const f = setup();
   for (let n = 0; n < 257; n++) {

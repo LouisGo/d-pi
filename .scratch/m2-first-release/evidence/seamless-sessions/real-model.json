@@ -1,0 +1,31 @@
+{
+  "model": "openai-codex/gpt-6-luna",
+  "modelCalls": 2,
+  "tools": 0,
+  "rounds": [
+    {
+      "nativeRecordId": "1565d4b6",
+      "provider": "openai-codex",
+      "model": "gpt-6-luna",
+      "stopReason": "stop",
+      "textHash": "89e65b529fde88215a3eae33d282f5ea2e12ba94c4ff9cad614557d7fe26eaf8"
+    },
+    {
+      "nativeRecordId": "7c8928d9",
+      "provider": "openai-codex",
+      "model": "gpt-6-luna",
+      "stopReason": "stop",
+      "textHash": "8cd0da805e67d7d8e17c30a9d8f05f83f966094964a7780c017e4d4fbf1b619a"
+    }
+  ],
+  "sameNativeId": true,
+  "sameNativeFile": true,
+  "coldSeedIds": true,
+  "recall": true,
+  "savedAssistantIds": [
+    "1565d4b6",
+    "7c8928d9"
+  ],
+  "sameHistoryIds": true,
+  "result": "passed"
+}

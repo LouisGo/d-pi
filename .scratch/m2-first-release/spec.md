@@ -88,14 +88,16 @@
     "id": "seamless-sessions",
     "title": "会话默认流程体验",
     "phase": "M2",
-    "engineering": "in-progress",
+    "engineering": "partial",
     "trial": "not-delivered",
     "acceptance": "pending",
     "current": true,
-    "build": "",
+    "build": "Dev source d6df40a",
     "pending": [],
-    "evidence": [],
-    "next": "自动展示记录、准备执行和CLI项目索引；本地验证交付。",
+    "evidence": [
+      "seamless-sessions.md"
+    ],
+    "next": "实现、真实模型同身份冷恢复与双轴评审完成；Mac锁屏阻止正式GUI组合验收，解锁后完成06r与交付试用，用户认可仍待。",
     "constraints": "2026-10-08用户明确要求最佳实践修复；首次陌生目录信任保留，未知不重发，CLI历史发现不授执行接管权；本地交付。"
   }
 ]
@@ -350,3 +352,5 @@
 交付：已有绑定打开即自动显示原生历史；已信任的实际工作目录自动准备OMP，首次允许执行直接接续启动，冷恢复无需手工启动；CLI原生目录只读索引按规范化真实cwd分组，一原生session一AppThread，幂等持久且不复制/拼接上下文。陌生目录一次显式执行信任保留；自动索引不授予执行信任，不启动所有导入会话。CLI外部文件无共享执行全周期单写证据时只读且表达原因，不伪装ready/新建替代会话。
 
 验收：相关真实行为TDD、同身份/去重/持久恢复、历史不依赖执行准备、信任只确认一次且启动失败可重试、切换线程与后台生成不丢阅读/草稿；受影响检查、正式本地GUI/必要真实模型和独立Spec/Standards评审；工程与用户认可分开。不push/发布。主Agent单写规格、票与看板。
+
+2026-10-08工程交接：默认流程代码、SDK资源与两轮真实GPT Luna冷恢复通过；Spec/Standards固定至d6df40a均无剩余已证实高价值问题。正式GUI因Mac锁屏受阻，06r保持claimed，工程partial/试用not-delivered/认可pending。来源、实际检查失败与续测路径见[默认流程交接](seamless-sessions.md)。

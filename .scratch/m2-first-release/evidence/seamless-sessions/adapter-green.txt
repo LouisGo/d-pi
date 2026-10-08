@@ -1,0 +1,14 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/Learn/d-pi
+
+ ✓ src/modules/conversation/host/projection.test.ts (14 tests) 37ms
+ ✓ src/platform/omp/resources/sdk-resource.test.ts (1 test) 506ms
+   ✓ admits a complete current-platform SDK launcher and refuses tampering without executing it 504ms
+ ✓ src/modules/execution/host/session-host.test.ts (31 tests) 92ms
+
+ Test Files  3 passed (3)
+      Tests  46 passed (46)
+   Start at  12:29:22
+   Duration  1.26s (transform 54%, tests 26%, import 18%, worker 1%)
+

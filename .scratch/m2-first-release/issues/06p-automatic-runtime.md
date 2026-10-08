@@ -1,6 +1,6 @@
 # 06p 自动准备执行
 
-Status: claimed
+Status: resolved
 Blocked by: none
 
 所属[当前规格](../spec.md#2026-10-08-会话默认流程体验当前授权)。
@@ -12,3 +12,5 @@ Blocked by: none
 2026-10-08：起点bd98fa8，目标缺口先红后修复；原生执行/历史所有权、信任和unknown不自动重发保持。
 
 2026-10-08：自动准备实现dbb8288，根端补跨Thread已有grant重验与外CLI只读阻止接管；行为与严格类型已通过。
+
+2026-10-08：相关工程行为、类型/边界、真实SDK与双轴评审已验证；证据见[交接](../seamless-sessions.md)。正式GUI组合验收由06r继续，工程resolved不表示用户认可。

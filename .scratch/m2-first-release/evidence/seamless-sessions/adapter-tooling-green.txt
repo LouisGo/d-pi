@@ -1,0 +1,22 @@
+✔ distinguishes missing, crashed, failed and successful tool processes (480.618042ms)
+✔ checks installed metadata even when package exports hide package.json and require entries (204.755875ms)
+✔ SDK inspection refuses stale locks, tampered files and missing bundled resources (23.177625ms)
+✔ version probing never lets a package-manager shim overwrite the project lock (178.676292ms)
+✔ the package audit measures actual contents and rejects platform and launcher mismatches (312.743166ms)
+✔ the package audit rejects duplicated application dependencies and oversized apps (216.170375ms)
+✔ associates only the persisted original object after queued persistence and preserves event order without mutating native content (15.911709ms)
+✔ pages branch entries with exact native IDs, identity-bound cursors and bounded whole-message payloads (18.110667ms)
+✔ cold reading refuses changing sessions and is permanently closed before prompt admission (0.203958ms)
+✔ SDK preparation replaces old links, resolves the declared packages and is repeatable (2268.882125ms)
+✔ SDK preparation keeps a closed target runtime graph without maps, types, foreign binaries or incidental store packages (907.202042ms)
+✔ resource validation excludes preparation until Main exits, across HOME and TMPDIR contexts (3237.840583ms)
+✔ empty resources prepare successfully; a failed copy preserves the previous complete resources (1061.001834ms)
+✔ changed upstream source or active resource users cannot replace a complete SDK root (1629.568083ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 9312.546333

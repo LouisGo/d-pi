@@ -1,6 +1,6 @@
 # 06o CLI历史自动项目索引
 
-Status: claimed
+Status: resolved
 Blocked by: none
 
 所属[当前规格](../spec.md#2026-10-08-会话默认流程体验当前授权)。
@@ -12,3 +12,5 @@ Blocked by: none
 2026-10-08：起点bd98fa8，目标缺口先红后修复；原生执行/历史所有权、信任和unknown不自动重发保持。
 
 2026-10-08：Main 自动索引/持久去重已集成7aaf97d，根端补 indexing 与自动继续后页；真实202/4098/258批次、缺失cwd均绿。
+
+2026-10-08：相关工程行为、类型/边界、真实SDK与双轴评审已验证；证据见[交接](../seamless-sessions.md)。正式GUI组合验收由06r继续，工程resolved不表示用户认可。

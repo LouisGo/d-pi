@@ -1,0 +1,63 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/Learn/d-pi
+
+stderr | src/app/renderer/reading/saved-conversation.test.ts > keeps a live row, copy focus and selected text through native ID confirmation and saved refetch
+An update to SavedConversation inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ ❯ src/app/renderer/reading/saved-conversation.test.ts (10 tests | 1 failed) 495ms
+   ✓ opens bound native messages directly without project selection, execute or a read click 44ms
+   ✓ keeps pages adjacent in one transcript instead of replacing the previous messages 6ms
+   ✓ retains the same saved DOM and reading source when execution restores its native branch 8ms
+   ✓ does not start a history read from a hidden inactive pane 13ms
+   ✓ retains older saved records beyond the live projection window and appends only newly observed messages 8ms
+   ✓ shows incomplete tail and omitted-record coverage with an explicit refresh 9ms
+   ✓ distinguishes a missing bound file from an empty new conversation 8ms
+   ✓ keeps the complete saved body when the restored live projection is truncated 6ms
+   ✓ refreshes an initially unbound transcript after native persistence and retains a message evicted from live 182ms
+   × keeps a live row, copy focus and selected text through native ID confirmation and saved refetch 210ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/renderer/reading/saved-conversation.test.ts > keeps a live row, copy focus and selected text through native ID confirmation and saved refetch
+AssertionError: expected <article class="message" …(2)>…(2)</article> to be <article class="message" …(2)>…(2)</article> // Object.is equality
+
+- Expected
++ Received
+
+@@ -1,8 +1,8 @@
+  <article
+    class="message"
+-   data-reading-row="live:1"
++   data-reading-row="persisted"
+    data-selectable="true"
+  >
+    <div
+      class="message-heading"
+    >
+
+ ❯ src/app/renderer/reading/saved-conversation.test.ts:411:49
+    409|     expect(reader).toHaveBeenCalledTimes(2);
+    410|   });
+    411|   expect(f.container.querySelector(".message")).toBe(row);
+       |                                                 ^
+    412|   expect(row.dataset.readingRow).toBe(rowId);
+    413|   expect(document.activeElement).toBe(button);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 9 passed (10)
+   Start at  12:25:22
+   Duration  2.97s (import 70%, tests 17%, environment 8%, transform 5%)
+

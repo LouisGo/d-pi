@@ -1,0 +1,51 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/Learn/d-pi
+
+ ❯ src/app/renderer/reading/saved-conversation.test.ts (9 tests | 2 failed) 1107ms
+   ✓ opens bound native messages directly without project selection, execute or a read click 40ms
+   ✓ keeps pages adjacent in one transcript instead of replacing the previous messages 6ms
+   ✓ retains the same saved DOM and reading source when execution restores its native branch 9ms
+   ✓ does not start a history read from a hidden inactive pane 13ms
+   ✓ retains older saved records beyond the live projection window and appends only newly observed messages 8ms
+   ✓ shows incomplete tail and omitted-record coverage with an explicit refresh 9ms
+   ✓ distinguishes a missing bound file from an empty new conversation 6ms
+   × keeps the complete saved body when the restored live projection is truncated 10ms
+   × refreshes an initially unbound transcript after native persistence and retains a message evicted from live 1004ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/renderer/reading/saved-conversation.test.ts > keeps the complete saved body when the restored live projection is truncated
+AssertionError: expected 'OMPCopyshortenedDisplay truncated; re…' to contain 'first saved message'
+
+Expected: "first saved message"
+Received: "OMPCopyshortenedDisplay truncated; read the native record to verify the full content"
+
+ ❯ src/app/renderer/reading/saved-conversation.test.ts:269:35
+    267|     }),
+    268|   );
+    269|   expect(f.container.textContent).toContain("first saved message");
+       |                                   ^
+    270|   expect(f.container.textContent).not.toContain("shortened");
+    271| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/app/renderer/reading/saved-conversation.test.ts > refreshes an initially unbound transcript after native persistence and retains a message evicted from live
+AssertionError: expected "vi.fn()" to be called 2 times, but got 1 times
+ ❯ src/app/renderer/reading/saved-conversation.test.ts:316:20
+    314|   await vi.waitFor(async () => {
+    315|     await act(() => new Promise((r) => setTimeout(r, 20)));
+    316|     expect(reader).toHaveBeenCalledTimes(2);
+       |                    ^
+    317|   });
+    318|   await act(() =>
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 7 passed (9)
+   Start at  12:23:28
+   Duration  3.42s (import 55%, tests 33%, environment 7%, transform 5%)
+

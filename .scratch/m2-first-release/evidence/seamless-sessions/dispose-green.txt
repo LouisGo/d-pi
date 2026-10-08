@@ -1,0 +1,12 @@
+✔ associates only the persisted original object after queued persistence and preserves event order without mutating native content (2.068083ms)
+✔ pages branch entries with exact native IDs, identity-bound cursors and bounded whole-message payloads (2.832ms)
+✔ cold reading refuses changing sessions and is permanently closed before prompt admission (0.214667ms)
+✔ dispose drains accepted end/settled frames and preserves the original native disposal failure (2.654ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 84.62075
