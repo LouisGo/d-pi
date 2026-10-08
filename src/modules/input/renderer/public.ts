@@ -34,6 +34,13 @@ export {
   insertAttachmentReference,
 } from "./references/attachment-reference";
 export { AttachmentAdoption, isDetachedImage } from "./references/attachment-adoption";
+export {
+  type FileKind,
+  type FilePresentation,
+  filePresentation,
+  fileTypeIconPaths,
+  formatFileSize,
+} from "./references/file-presentation";
 export { FileReference } from "./references/file-reference-node";
 export {
   captureReferenceFocus,
