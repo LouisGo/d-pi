@@ -39,7 +39,6 @@ export function registerAttachmentIpc(
     frame: WebFrameMain | null,
   ): string | undefined {
     if (!frame || frame !== sender.mainFrame) return undefined;
-    resumeStopped(sender);
     if (navigating.has(sender)) return undefined;
     let document = documents.get(sender);
     if (document && document.frame !== frame) {

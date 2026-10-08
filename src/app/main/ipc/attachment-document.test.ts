@@ -83,6 +83,11 @@ it("aborted main navigation resumes the current frame with a fresh owner and nev
       await f.request({ kind: "history-open", epoch: crypto.randomUUID() }),
     ).toMatchObject({ kind: "unavailable", reason: "reference-denied" });
     f.setLoading(false);
+    // Loading can already be false before the navigation's terminal event.
+    // A request alone cannot establish which document ultimately owns the frame.
+    expect(
+      await f.request({ kind: "history-open", epoch: crypto.randomUUID() }),
+    ).toMatchObject({ kind: "unavailable", reason: "reference-denied" });
     f.sender.emit(
       "did-fail-provisional-load",
       {},
