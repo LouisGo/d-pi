@@ -26,7 +26,11 @@ import {
   type SubmissionCommand,
   type SubmissionReply,
 } from "../../contracts/public";
-import type { RuntimeCommand, RuntimeView } from "../../contracts/runtime";
+import type {
+  NativeRecoveryReason,
+  RuntimeCommand,
+  RuntimeView,
+} from "../../contracts/runtime";
 import { SubmissionCoordinator, sameSubmissionTarget } from "../../core/public";
 import {
   RuntimeAdmission,
@@ -72,6 +76,19 @@ type RuntimeStore = {
 
 function boundedDisplayValue(value: string, maxLength: number): string {
   return value.length > maxLength ? `${value.slice(0, maxLength - 1)}…` : value;
+}
+
+function recoveryFailureMessage(reason: NativeRecoveryReason) {
+  return match(reason)
+    .with("occupied", () => uiMessage("runtime.recoveryOccupied"))
+    .with("owner-unknown", () => uiMessage("runtime.recoveryOwnerUnknown"))
+    .with("shutdown-unconfirmed", () =>
+      uiMessage("runtime.recoveryShutdownUnconfirmed"),
+    )
+    .with("lease-unavailable", () =>
+      uiMessage("runtime.recoveryLeaseUnavailable"),
+    )
+    .exhaustive();
 }
 
 export class RuntimeService {
@@ -1003,6 +1020,10 @@ export class RuntimeService {
           this.view?.phase === "starting"
         )
           return;
+        if (this.view) {
+          this.view = { ...this.view };
+          delete this.view.recoveryFailure;
+        }
         this.update({
           phase: "starting",
           traceId: command.traceId,
@@ -1014,10 +1035,17 @@ export class RuntimeService {
           this.update({
             phase: "failed",
             busy: this.connection.connected,
-            message:
-              this.view?.phase === "failed"
-                ? this.view.message
-                : uiMessage("runtime.notReady"),
+            ...(result.kind === "denied" && result.reason === "recovery"
+              ? {
+                  recoveryFailure: result.failure,
+                  message: recoveryFailureMessage(result.failure),
+                }
+              : {
+                  message:
+                    this.view?.phase === "failed"
+                      ? this.view.message
+                      : uiMessage("runtime.notReady"),
+                }),
           });
       })
       .exhaustive();

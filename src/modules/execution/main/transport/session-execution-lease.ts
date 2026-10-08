@@ -14,6 +14,7 @@ import {
   readProcessIdentity,
   terminateManagedGroup,
 } from "../../../../platform/node/processes/public";
+import { NativeRecoveryFailure } from "../../core/runtime/native-recovery-failure";
 
 const ProcessIdentitySchema = z.strictObject({
   pid: z.number().int().min(2),
@@ -26,6 +27,13 @@ interface LeaseDependencies {
   identify: (pid: number) => Promise<ProcessIdentity | null>;
   exists: (pid: number) => boolean;
   terminate: (identity: ProcessIdentity) => Promise<boolean>;
+}
+function registeredIdentity(value: unknown): ProcessIdentity {
+  try {
+    return ProcessIdentitySchema.parse(JSON.parse(String(value)));
+  } catch {
+    throw new NativeRecoveryFailure("owner-unknown");
+  }
 }
 function processExists(pid: number): boolean {
   try {
@@ -54,6 +62,18 @@ export class SessionExecutionLease {
     main: ProcessIdentity,
     dependencies: LeaseDependencies = defaults,
   ): Promise<SessionExecutionLease> {
+    try {
+      return await this.acquireChecked(directory, main, dependencies);
+    } catch (error) {
+      if (error instanceof NativeRecoveryFailure) throw error;
+      throw new NativeRecoveryFailure("lease-unavailable");
+    }
+  }
+  private static async acquireChecked(
+    directory: string,
+    main: ProcessIdentity,
+    dependencies: LeaseDependencies,
+  ): Promise<SessionExecutionLease> {
     mkdirSync(directory, { recursive: true, mode: 0o700 });
     const file = join(realpathSync(directory), ".d-pi-execution.sqlite");
     const descriptor = openSync(
@@ -81,35 +101,45 @@ export class SessionExecutionLease {
       );
     } catch (cause) {
       database.close();
-      throw Error("Session execution is occupied or its lease is unavailable", {
-        cause,
-      });
+      const occupied =
+        cause instanceof Error &&
+        "errcode" in cause &&
+        (cause.errcode === 5 || cause.errcode === 6);
+      throw new NativeRecoveryFailure(
+        occupied ? "occupied" : "lease-unavailable",
+      );
     }
     try {
       const previous = database
         .prepare("SELECT main,native FROM owner WHERE id=1")
         .get();
       if (previous) {
-        const oldMain = ProcessIdentitySchema.parse(
-          JSON.parse(String(previous.main)),
-        );
-        const current = await dependencies.identify(oldMain.pid);
+        const oldMain = registeredIdentity(previous.main);
+        let current: ProcessIdentity | null;
+        try {
+          current = await dependencies.identify(oldMain.pid);
+        } catch {
+          throw new NativeRecoveryFailure("owner-unknown");
+        }
         if (
-          current
-            ? current.birth === oldMain.birth &&
-              current.executable === oldMain.executable
-            : dependencies.exists(oldMain.pid)
+          current &&
+          current.birth === oldMain.birth &&
+          current.executable === oldMain.executable
         )
-          throw Error("Previous session execution owner is live or unproven");
+          throw new NativeRecoveryFailure("occupied");
+        if (!current && dependencies.exists(oldMain.pid))
+          throw new NativeRecoveryFailure("owner-unknown");
         if (previous.native !== null) {
-          const native = ProcessIdentitySchema.parse(
-            JSON.parse(String(previous.native)),
-          );
-          if (
-            native.groupId !== native.pid ||
-            !(await dependencies.terminate(native))
-          )
-            throw Error("Previous native process group shutdown unconfirmed");
+          const native = registeredIdentity(previous.native);
+          let stopped = false;
+          try {
+            stopped =
+              native.groupId === native.pid &&
+              (await dependencies.terminate(native));
+          } catch {
+            // Probe/termination failures are not evidence of physical shutdown.
+          }
+          if (!stopped) throw new NativeRecoveryFailure("shutdown-unconfirmed");
         }
       }
       database

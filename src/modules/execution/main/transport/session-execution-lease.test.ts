@@ -112,7 +112,14 @@ it.each(["live", "unknown", "unconfirmed"])(
         { ...main, birth: "next" },
         deps,
       ),
-    ).rejects.toThrow();
+    ).rejects.toMatchObject({
+      reason:
+        reason === "live"
+          ? "occupied"
+          : reason === "unknown"
+            ? "owner-unknown"
+            : "shutdown-unconfirmed",
+    });
     const db = new DatabaseSync(join(directory, ".d-pi-execution.sqlite"));
     expect(
       JSON.parse(
@@ -200,4 +207,25 @@ it("verifies and terminates an actual registered orphan process group before rec
   } finally {
     child.kill("SIGKILL");
   }
+});
+
+it("reports invalid persisted process identity as unknown without leaking its data", async () => {
+  const directory = root();
+  const seed = await SessionExecutionLease.acquire(
+    directory,
+    main,
+    dependencies(),
+  );
+  seed.release(true);
+  const db = new DatabaseSync(join(directory, ".d-pi-execution.sqlite"));
+  db.prepare("INSERT OR REPLACE INTO owner VALUES(1,?,NULL)").run(
+    "secret-native-identity-data",
+  );
+  db.close();
+  await expect(
+    SessionExecutionLease.acquire(directory, main, dependencies()),
+  ).rejects.toMatchObject({
+    reason: "owner-unknown",
+    message: "Native recovery unavailable: owner-unknown",
+  });
 });

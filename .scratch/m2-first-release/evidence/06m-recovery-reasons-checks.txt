@@ -1,0 +1,17 @@
+Bounded native recovery reasons follow-up
+
+PASS: node node_modules/typescript/bin/tsc --noEmit
+PASS: node node_modules/typescript/bin/tsc --noEmit -p tsconfig.main.json
+PASS: node node_modules/typescript/bin/tsc --noEmit -p tsconfig.host.json
+PASS: architecture checks (444 source files)
+PASS: scoped Biome (8 files; final check, no fixes applied)
+PASS: git diff --check
+
+GUI entry source confirmation (no GUI run in this subtask):
+RuntimePanel displays state.message for failed state and renders RuntimeActions.
+RuntimeInspection also displays state.message and RuntimeActions.
+RuntimeActions allows trusted failed state to issue explicit model.act("start").
+Integration test uses that same RuntimeService start command to recheck after physical shutdown; no automatic start or prompt replay.
+
+Shared recovery message keys were supplied independently by parent commit 5e7c61b.
+No model or GUI calls added; earlier fixed offline SDK fixture evidence remains applicable to native resume, unchanged in this follow-up.

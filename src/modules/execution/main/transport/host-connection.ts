@@ -14,6 +14,7 @@ import {
   type ProcessExitEvidence,
 } from "../../contracts/public";
 
+import { NativeRecoveryFailure } from "../../core/runtime/native-recovery-failure";
 import { SessionExecutionLease } from "./session-execution-lease";
 
 type ReadyMessage = Extract<HostMessage, { kind: "ready" }>;
@@ -145,7 +146,7 @@ export class HostConnection {
     if (this.scopeId) return Promise.reject(Error("Host already connected"));
     this.startDispatched = false;
     const main = await readProcessIdentity(process.pid);
-    if (!main) throw Error("Main process identity unavailable");
+    if (!main) throw new NativeRecoveryFailure("owner-unknown");
     const lease = await SessionExecutionLease.acquire(
       command.sessionDirectory,
       main,

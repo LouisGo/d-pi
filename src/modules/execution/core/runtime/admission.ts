@@ -3,6 +3,8 @@ import {
   type ExecutionGrant,
   type ThreadContext,
 } from "../../../threads/contracts/public";
+import type { NativeRecoveryReason } from "../../contracts/runtime";
+import { NativeRecoveryFailure } from "./native-recovery-failure";
 export function sameDirectoryIdentity(
   a: DirectoryIdentity,
   b: DirectoryIdentity,
@@ -20,7 +22,8 @@ export interface AdmissionStore {
 export type AdmissionResult =
   | { kind: "allowed" }
   | { kind: "started" }
-  | { kind: "denied"; reason: "browse" | "directory-changed" | "unavailable" };
+  | { kind: "denied"; reason: "browse" | "directory-changed" | "unavailable" }
+  | { kind: "denied"; reason: "recovery"; failure: NativeRecoveryReason };
 export class RuntimeAdmission {
   constructor(
     private readonly store: AdmissionStore,
@@ -78,8 +81,10 @@ export class RuntimeAdmission {
         return { kind: "denied", reason: "browse" };
       await this.launch(thread, identity);
       return { kind: "started" };
-    } catch {
-      return { kind: "denied", reason: "unavailable" };
+    } catch (error) {
+      return error instanceof NativeRecoveryFailure
+        ? { kind: "denied", reason: "recovery", failure: error.reason }
+        : { kind: "denied", reason: "unavailable" };
     }
   }
   revoke(threadId: string): void {

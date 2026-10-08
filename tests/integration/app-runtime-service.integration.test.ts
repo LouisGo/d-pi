@@ -17,7 +17,9 @@ import {
   RuntimeViewSchema,
   SubmissionIdSchema,
 } from "../../src/modules/execution/contracts/public";
+import { NativeRecoveryFailure } from "../../src/modules/execution/core/runtime/native-recovery-failure";
 import { RuntimeService } from "../../src/modules/execution/main/public";
+import { SessionExecutionLease } from "../../src/modules/execution/main/transport/session-execution-lease";
 import { TraceIdSchema } from "../../src/shared/identity";
 
 const electron = vi.hoisted(() => ({ fork: vi.fn() }));
@@ -1155,3 +1157,59 @@ it("explicit resume can retry a pre-fork failure after a previously confirmed sh
   expect((await f.act("start")).phase).toBe("failed");
   expect((await f.act("start")).phase).toBe("ready");
 });
+
+it("a recovery conflict exposes a specific public reason and an explicit start recheck can recover", async () => {
+  const f = await running();
+  const restored = new RuntimeService(f.store, f.root, f.root, {}, () => {});
+  const start = () =>
+    restored.execute({
+      kind: "start",
+      threadId: f.draft.threadId,
+      traceId: TraceIdSchema.parse(crypto.randomUUID()),
+    });
+  const blocked = await start();
+  expect(blocked).toMatchObject({
+    phase: "failed",
+    busy: false,
+    recoveryFailure: "occupied",
+    message: { code: "runtime.recoveryOccupied" },
+  });
+  expect(RuntimeViewSchema.safeParse(blocked).success).toBe(true);
+  f.host.emit("message", { kind: "scope-closed" });
+  await f.runtime.closeIdle();
+  const ready = await start();
+  expect(ready.phase).toBe("ready");
+  expect(ready.recoveryFailure).toBeUndefined();
+});
+
+it.each([
+  ["owner-unknown", "runtime.recoveryOwnerUnknown"],
+  ["shutdown-unconfirmed", "runtime.recoveryShutdownUnconfirmed"],
+  ["lease-unavailable", "runtime.recoveryLeaseUnavailable"],
+] as const)(
+  "preserves %s through the public start reply without passing raw errors",
+  async (reason, code) => {
+    const f = await running();
+    const retry = new RuntimeService(f.store, f.root, f.root, {}, () => {});
+    const acquire = vi
+      .spyOn(SessionExecutionLease, "acquire")
+      .mockRejectedValueOnce(new NativeRecoveryFailure(reason));
+    try {
+      const view = await retry.execute({
+        kind: "start",
+        threadId: f.draft.threadId,
+        traceId: TraceIdSchema.parse(crypto.randomUUID()),
+      });
+      expect(view).toMatchObject({
+        phase: "failed",
+        busy: false,
+        recoveryFailure: reason,
+        message: { code },
+      });
+      expect(RuntimeViewSchema.safeParse(view).success).toBe(true);
+      expect(JSON.stringify(view)).not.toContain("Native recovery unavailable");
+    } finally {
+      acquire.mockRestore();
+    }
+  },
+);
