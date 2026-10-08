@@ -1,0 +1,52 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/modules/input/renderer/references/detached-images.test.ts -t 'classifies a saved middle image'
+$ tsr generate
+(node:61909) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/lou/.codex/worktrees/composer-quality/d-pi[39m
+
+ [31m❯[39m src/modules/input/renderer/references/detached-images.test.ts [2m([22m[2m17 tests[22m[2m | [22m[31m1 failed[39m[2m | [22m[33m16 skipped[39m[2m)[22m[32m 57[2mms[22m[39m
+   [2m[90m↓[39m[22m image add/remove preserves the editor document, Undo depth and existing Redo branch
+   [2m[90m↓[39m[22m tracks image clone cleanup outside Undo and requires its real Main ACK before saving
+   [2m[90m↓[39m[22m rehydrates legacy image tokens outside the editor and retains them despite malformed literal tokens
+   [2m[90m↓[39m[22m does not merge changed contents or distinct names and refuses foreign Thread adoption
+   [2m[90m↓[39m[22m captures images immutably and consumes the matching image draft while preserving a newer image version
+   [2m[90m↓[39m[22m trusted mixed paste undoes files and text only; a duplicate image paste preserves selection and Redo
+   [2m[90m↓[39m[22m mixed batches Undo only inline files and preserve images through cache remount and persistence
+   [2m[90m↓[39m[22m deduplicates repeated ID and same captured source without consuming selected text or history
+   [2m[90m↓[39m[22m releases duplicate import operations and retries the same release after a lost ACK
+   [2m[90m↓[39m[22m keeps frozen source identity and literal image-looking source content when adding or removing an image
+   [2m[90m↓[39m[22m maps a pending insertion through late image classification without moving it past the following text
+   [2m[90m↓[39m[22m drops migrated images from the Undo lease before releasing an explicitly removed image
+   [2m[90m↓[39m[22m keeps a trailing frozen block valid across image persistence and cold projection
+   [2m[90m↓[39m[22m retains image cleanup candidates until an epoch removal update is acknowledged
+   [2m[90m↓[39m[22m keeps private-token-shaped frozen source intact during trusted image paste
+[31m   [31m×[31m classifies a saved middle image without rewriting the canonical snapshot or advancing its sequence[39m[32m 56[2mms[22m[39m
+   [2m[90m↓[39m[22m preserves authored blank paragraphs around frozen selections during image add, remove and cold restore
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/modules/input/renderer/references/detached-images.test.ts[2m > [22mclassifies a saved middle image without rewriting the canonical snapshot or advancing its sequence
+[31m[1mAssertionError[22m: expected 'AB[[dpi-attachment:50817b81-fdc0-4da7…' to be 'A[[dpi-attachment:82a52ad7-d3d1-4c25-…' // Object.is equality[39m
+
+Expected: [32m"A[[dpi-attachment:[7m82a52ad7-d3d1-4c25-8587-25c9a77cf8ee[27m]][7mB[27m[[dpi-attachment:[7m50817b81-fdc0-4da7-a44a-f364679db987[27m]][7mC[27m"[39m
+Received: [31m"A[7mB[27m[[dpi-attachment:[7m50817b81-fdc0-4da7-a44a-f364679db987[27m]][7mC[27m[[dpi-attachment:[7m82a52ad7-d3d1-4c25-8587-25c9a77cf8ee[27m]]"[39m
+
+[36m [2m❯[22m src/modules/input/renderer/references/detached-images.test.ts:[2m670:42[22m[39m
+    [90m668|[39m   expect(f.controller.getSnapshot()).toEqual({ kind: "saved" });
+    [90m669|[39m   syncAttachmentLabels(editor, [image, file], "zh-CN");
+    [90m670|[39m   expect(f.controller.getTextSnapshot()).toBe(snapshot);
+    [90m   |[39m                                          [31m^[39m
+    [90m671|[39m   expect(f.controller.getEditorSnapshot().sequence).toBe(sequence);
+    [90m672|[39m   expect(f.controller.getSnapshot()).toEqual({ kind: "saved" });
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[33m16 skipped[39m[90m (17)[39m
+[2m   Start at [22m 18:09:25
+[2m   Duration [22m 643ms[2m (transform 37%, environment 33%, import 19%, tests 10%, worker 1%)[22m
+
+[ELIFECYCLE] Test failed. See above for more details.

@@ -1,0 +1,532 @@
+
+ RUN  v5.0.2 /private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/dpi-composer-review-red-zbmr9lj5
+
+ ❯ src/modules/input/renderer/references/detached-images.test.ts (15 tests | 6 failed) 309ms
+   × keeps frozen source identity and literal image-looking source content when adding or removing an image 25ms
+   × maps a pending insertion through late image classification without moving it past the following text 16ms
+   × drops migrated images from the Undo lease before releasing an explicitly removed image 5ms
+   × keeps a trailing frozen block valid across image persistence and cold projection 3ms
+   × retains image cleanup candidates until an epoch removal update is acknowledged 5ms
+   × keeps private-token-shaped frozen source intact during trusted image paste 8ms
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > preserves the mixed-paste target when only localized labels change
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > preserves the mixed-paste target when only localized labels change
+An update to AttachmentImportBatches inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > preserves the mixed-paste target when only localized labels change
+An update to AttachmentImportBatches inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > returns focus after explicitly adopting a pending image
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > keeps a restored image when the real Composer body is replaced before list metadata arrives
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > offers explicit metadata retry while keeping an unresolved restored image protected
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ ❯ src/app/renderer/workbench/composer-continuity.test.ts (28 tests | 4 failed) 4193ms
+   × preserves the mixed-paste target when only localized labels change 97ms
+   × returns focus after explicitly adopting a pending image 36ms
+   × keeps a restored image when the real Composer body is replaced before list metadata arrives 9ms
+   × offers explicit metadata retry while keeping an unresolved restored image protected 1014ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/renderer/workbench/composer-continuity.test.ts > preserves the mixed-paste target when only localized labels change
+AssertionError: expected 'alpha A omega' to be 'alpha A[[dpi-attachment:b7c4d5f3-657f…' // Object.is equality
+
+Expected: "alpha A[[dpi-attachment:b7c4d5f3-657f-4058-aedd-3d3c6d22e17c]] omega"
+Received: "alpha A omega"
+
+ ❯ src/app/renderer/workbench/composer-continuity.test.ts:1305:57
+    1303|   await act(() => finish({ kind: "attachments", items }));
+    1304|   await act(() => new Promise((resolve) => setTimeout(resolve, 20)));
+    1305|   expect(fixture.thread().controller.getTextSnapshot()).toBe(
+       |                                                         ^
+    1306|     `alpha A${items[0]?.token} omega`,
+    1307|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  src/app/renderer/workbench/composer-continuity.test.ts > returns focus after explicitly adopting a pending image
+AssertionError: expected <body><div>…(1)</div></body> to be <div contenteditable="true" …(7)>…(1)</div> // Object.is equality
+
+- Expected
++ Received
+
+@@ -1,6 +1,95 @@
++ <body>
++   <div>
++     <section
++       aria-label="Message composer"
++       class="composer"
++       data-expanded="false"
++     >
++       <div
++         class="composer-heading"
++       >
++         <span
++           class="save-status"
++           role="status"
++         >
++           Waiting to save…
++         </span>
++       </div>
++       <div
++         class="composer-body"
++       >
+          <div
++           class="composer-context"
++         >
++           <div
++             class="attachment-rail"
++           >
++             <ol
++               aria-label="Attach files"
++               class="attachment-group"
++             >
++               <li
++                 class="attachment-tile"
++               >
++                 <button
++                   aria-label="Preview image.png"
++                   class="ui-button ui-button-thumbnail ui-button-chip w-full h-full"
++                   data-slot="button"
++                   tabindex="0"
++                   title="image.png"
++                   type="button"
++                 >
++                   <span
++                     class="truncate"
++                   >
++                     image.png
++                   </span>
++                 </button>
++                 <span
++                   class="attachment-remove"
++                 >
++                   <button
++                     aria-label="Remove image.png"
++                     class="ui-button ui-button-icon ui-button-ghost"
++                     data-slot="button"
++                     tabindex="0"
++                     type="button"
++                   >
++                     <svg
++                       aria-hidden="true"
++                       class=""
++                       color="currentColor"
++                       fill="none"
++                       focusable="false"
++                       height="16"
++                       stroke="currentColor"
++                       stroke-width="1.5"
++                       viewBox="0 0 24 24"
++                       width="16"
++                       xmlns="http://www.w3.org/2000/svg"
++                     >
++                       <path
++                         d="M18 6L6.00081 17.9992M17.9992 18L6 6.00085"
++                         stroke="currentColor"
++                         stroke-linecap="round"
++                         stroke-linejoin="round"
++                         stroke-width="1.5"
++                       />
++                     </svg>
++                   </button>
++                 </span>
++               </li>
++             </ol>
++           </div>
++         </div>
++         <div
++           class="composer-editor"
++           data-empty="false"
++           data-placeholder="Send a message, @ to reference project files"
++         >
++           <div
+              aria-label="Message"
+              aria-multiline="true"
+              class="tiptap ProseMirror"
+              contenteditable="true"
+              role="textbox"
+@@ -9,6 +98,148 @@
+              translate="no"
+            >
+              <p>
+                alpha omega
+              </p>
++           </div>
++         </div>
++       </div>
++       <div
++         class="composer-footer"
++       >
++         <div
++           class="composer-toolbar"
++           data-slot="composer-toolbar"
++         >
++           <div
++             class="composer-toolbar-context"
++             data-slot="composer-toolbar-context"
++           >
++             <div
++               class="composer-toolbar-model"
++             />
+            </div>
++           <div
++             class="composer-toolbar-actions"
++             data-slot="composer-toolbar-actions"
++           >
++             <button
++               aria-label="Attach files"
++               class="ui-button ui-button-icon ui-button-ghost"
++               data-base-ui-tooltip-trigger=""
++               data-slot="button"
++               id="base-ui-_r_bv_"
++               tabindex="0"
++               type="button"
++             >
++               <span
++                 class="ui-icon-button-content"
++               >
++                 <svg
++                   aria-hidden="true"
++                   class=""
++                   color="currentColor"
++                   fill="none"
++                   focusable="false"
++                   height="18"
++                   stroke="currentColor"
++                   stroke-width="1.5"
++                   viewBox="0 0 24 24"
++                   width="18"
++                   xmlns="http://www.w3.org/2000/svg"
++                 >
++                   <path
++                     d="M5.82338 12L4.27922 10.4558C2.57359 8.75022 2.57359 5.98485 4.27922 4.27922C5.98485 2.57359 8.75022 2.57359 10.4558 4.27922L19.7208 13.5442C21.4264 15.2498 21.4264 18.0152 19.7208 19.7208C18.0152 21.4264 15.2498 21.4264 13.5442 19.7208L10.0698 16.2464C9.00379 15.1804 9.00379 13.4521 10.0698 12.386C11.1358 11.32 12.8642 11.32 13.9302 12.386L15.8604 14.3162"
++                     stroke="currentColor"
++                     stroke-linecap="round"
++                     stroke-linejoin="round"
++                     stroke-width="1.5"
++                   />
++                 </svg>
++               </span>
++             </button>
++             <button
++               aria-expanded="false"
++               aria-label="Expand editor"
++               class="ui-button ui-button-icon ui-button-ghost"
++               data-base-ui-tooltip-trigger=""
++               data-slot="button"
++               id="base-ui-_r_c1_"
++               tabindex="0"
++               type="button"
++             >
++               <span
++                 class="ui-icon-button-content"
++               >
++                 <svg
++                   aria-hidden="true"
++                   class=""
++                   color="currentColor"
++                   fill="none"
++                   focusable="false"
++                   height="18"
++                   stroke="currentColor"
++                   stroke-width="1.5"
++                   viewBox="0 0 24 24"
++                   width="18"
++                   xmlns="http://www.w3.org/2000/svg"
++                 >
++                   <path
++                     d="M16.4999 3.26621C17.3443 3.25421 20.1408 2.67328 20.7337 3.26621C21.3266 3.85913 20.7457 6.65559 20.7337 7.5M20.5059 3.49097L13.5021 10.4961"
++                     stroke="currentColor"
++                     stroke-linecap="round"
++                     stroke-linejoin="round"
++                     stroke-width="1.5"
++                   />
++                   <path
++                     d="M3.26636 16.5001C3.25436 17.3445 2.67343 20.141 3.26636 20.7339C3.85928 21.3268 6.65574 20.7459 7.50015 20.7339M10.502 13.4976L3.49824 20.5027"
++                     stroke="currentColor"
++                     stroke-linecap="round"
++                     stroke-linejoin="round"
++                     stroke-width="1.5"
++                   />
++                 </svg>
++               </span>
++             </button>
++             <button
++               aria-expanded="false"
++               aria-haspopup="menu"
++               aria-label="More composer actions"
++               class="ui-button ui-button-icon ui-button-ghost"
++               data-base-ui-tooltip-trigger=""
++               data-slot="button"
++               id="base-ui-_r_c6_"
++               tabindex="0"
++               type="button"
++             >
++               <span
++                 class="ui-icon-button-content"
++               >
++                 <svg
++                   aria-hidden="true"
++                   class=""
++                   color="currentColor"
++                   fill="none"
++                   focusable="false"
++                   height="18"
++                   stroke="currentColor"
++                   stroke-width="1.5"
++                   viewBox="0 0 24 24"
++                   width="18"
++                   xmlns="http://www.w3.org/2000/svg"
++                 >
++                   <path
++                     d="M6.00449 12.5V12M18.0045 12.5V12M12.0045 12.5V12M7.00449 12.5C7.00449 11.9477 6.55677 11.5 6.00449 11.5C5.4522 11.5 5.00449 11.9477 5.00449 12.5C5.00449 13.0523 5.4522 13.5 6.00449 13.5C6.55677 13.5 7.00449 13.0523 7.00449 12.5ZM19.0045 12.5C19.0045 11.9477 18.5568 11.5 18.0045 11.5C17.4522 11.5 17.0045 11.9477 17.0045 12.5C17.0045 13.0523 17.4522 13.5 18.0045 13.5C18.5568 13.5 19.0045 13.0523 19.0045 12.5ZM13.0045 12.5C13.0045 11.9477 12.5568 11.5 12.0045 11.5C11.4522 11.5 11.0045 11.9477 11.0045 12.5C11.0045 13.0523 11.4522 13.5 12.0045 13.5C12.5568 13.5 13.0045 13.0523 13.0045 12.5Z"
++                     stroke="currentColor"
++                     stroke-linecap="round"
++                     stroke-linejoin="round"
++                     stroke-width="1.5"
++                   />
++                 </svg>
++               </span>
++             </button>
++           </div>
++         </div>
++       </div>
++     </section>
++   </div>
++ </body>
+
+ ❯ src/app/renderer/workbench/composer-continuity.test.ts:1354:34
+    1352|   expect(fixture.thread().controller.getTextSnapshot()).toContain(imag…
+    1353|   expect(fixture.editor().getText()).toBe("alpha omega");
+    1354|   expect(document.activeElement).toBe(fixture.editor().view.dom);
+       |                                  ^
+    1355| });
+    1356|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  src/app/renderer/workbench/composer-continuity.test.ts > keeps a restored image when the real Composer body is replaced before list metadata arrives
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/app/renderer/workbench/composer-continuity.test.ts:1394:42
+    1392|     textOnly: false,
+    1393|   });
+    1394|   expect(fixture.editor().view.editable).toBe(false);
+       |                                          ^
+    1395|   await act(() => {
+    1396|     fixture.editor().commands.selectAll();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  src/app/renderer/workbench/composer-continuity.test.ts > offers explicit metadata retry while keeping an unresolved restored image protected
+AssertionError: expected undefined to be defined
+ ❯ src/app/renderer/workbench/composer-continuity.test.ts:1449:19
+    1447|       (button) => button.textContent === "Reload attachments",
+    1448|     );
+    1449|     expect(retry).toBeDefined();
+       |                   ^
+    1450|   });
+    1451|   expect(fixture.editor().view.editable).toBe(false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  src/modules/input/renderer/references/detached-images.test.ts > keeps frozen source identity and literal image-looking source content when adding or removing an image
+AssertionError: expected '[d-pi:file-selection:v1 {"schemaVersi…' to be '[d-pi:file-selection:v1 {"schemaVersi…' // Object.is equality
+
+- Expected
++ Received
+
+  [d-pi:file-selection:v1 {"schemaVersion":1,"path":"source.txt","source":"working-tree","version":"v1","startLine":1,"startColumn":1,"endLine":1,"endColumn":56,"textLength":55}]
+- [[dpi-attachment:4a0c7b13-f100-4c18-9623-237d06854867]]
++
+  [/d-pi:file-selection]
+
+ ❯ src/modules/input/renderer/references/detached-images.test.ts:444:48
+    442|     ),
+    443|   ).toEqual([{ kind: "selection", value: selection }]);
+    444|   expect(f.controller.getEditorTextSnapshot()).toBe(original);
+       |                                                ^
+    445|   // Round-trip and explicit removal must not consume matching text in…
+    446|   f.controller.editEditorText(original);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  src/modules/input/renderer/references/detached-images.test.ts > maps a pending insertion through late image classification without moving it past the following text
+AssertionError: expected 'AB[[dpi-attachment:221cc40f-81a1-4a1d…' to be 'A[[dpi-attachment:221cc40f-81a1-4a1d-…' // Object.is equality
+
+Expected: "A[[dpi-attachment:221cc40f-81a1-4a1d-a8eb-7765aeab7975]]BC"
+Received: "AB[[dpi-attachment:221cc40f-81a1-4a1d-a8eb-7765aeab7975]]C"
+
+ ❯ src/modules/input/renderer/references/detached-images.test.ts:466:28
+    464|   const file = f.item("text/plain", "later.txt");
+    465|   expect(target.apply([file])).toBe(true);
+    466|   expect(editor.getText()).toBe(`A${file.token}BC`);
+       |                            ^
+    467| });
+    468| it("drops migrated images from the Undo lease before releasing an expl…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  src/modules/input/renderer/references/detached-images.test.ts > drops migrated images from the Undo lease before releasing an explicitly removed image
+AssertionError: expected { kind: 'history-update', …(5) } to match object { ids: [] }
+(5 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ids": [],
++   "ids": [
++     "1936fe22-1335-443b-affa-3a632ab3839b",
++   ],
+  }
+
+ ❯ src/modules/input/renderer/references/detached-images.test.ts:501:22
+    499|   expect(editor.can().redo()).toBe(true);
+    500|   const lastUpdate = commands.filter((c) => c.kind === "history-update…
+    501|   expect(lastUpdate).toMatchObject({ ids: [] });
+       |                      ^
+    502|   const lastRelease = commands
+    503|     .filter((c) => c.kind === "history-release")
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+ FAIL  src/modules/input/renderer/references/detached-images.test.ts > keeps a trailing frozen block valid across image persistence and cold projection
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/modules/input/renderer/references/detached-images.test.ts:531:5
+    529|       (b) => b.kind === "selection",
+    530|     ),
+    531|   ).toBe(true);
+       |     ^
+    532|   const cold = fixture(f.controller.getTextSnapshot());
+    533|   const restored = cold.mount();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯
+
+ FAIL  src/modules/input/renderer/references/detached-images.test.ts > retains image cleanup candidates until an epoch removal update is acknowledged
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/modules/input/renderer/references/detached-images.test.ts:574:38
+    572|   projectDetachedImages(editor, f.controller);
+    573|   f.controller.removeDetachedAttachment(image.id);
+    574|   expect(await f.controller.flush()).toBe(false);
+       |                                      ^
+    575|   expect(
+    576|     commands
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯
+
+ FAIL  src/modules/input/renderer/references/detached-images.test.ts > keeps private-token-shaped frozen source intact during trusted image paste
+AssertionError: expected undefined to match object { kind: 'selection', …(1) }
+
+- Expected:
+{
+  "kind": "selection",
+  "value": {
+    "text": "[[dpi-attachment:6d988207-81a1-4d06-9435-f1d74e312bac]]",
+  },
+}
+
++ Received:
+undefined
+
+ ❯ src/modules/input/renderer/references/detached-images.test.ts:647:18
+    645|     (block) => block.kind === "selection",
+    646|   );
+    647|   expect(frozen).toMatchObject({
+       |                  ^
+    648|     kind: "selection",
+    649|     value: { text: image.token },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  10 failed | 33 passed (43)
+   Start at  17:54:25
+   Duration  12.98s (import 39%, tests 30%, transform 25%, environment 5%)
+
+  Transform  transforming modules took 3.72s · 25% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+

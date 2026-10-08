@@ -1,17 +1,15 @@
 ## Summary
 
-旧Composer把项目@重复放入外部附件栏，三个技术Disclosure割裂正文，底栏与附件缺少统一交互。此切片按用户截图重做连续输入表面：项目文件/目录只内联；外部图片缩略图与文件chip分区；模型与真实执行权限在左，附件/展开/More/发送在右，维护按需打开。用d-pi共享Base UI、Button、Icon和token组合，参照固定T3 ChatComposer组件分工，保留原业务协调器与发送边界。
+Composer将外部图片保留在独立缩略图栏，正文编辑和Undo/Redo不会增删图片；其他文件按MIME以内联chip呈现，包含类型图标、颜色、名称和大小，参与正文历史。项目@仍内联，重复来源不重复采用；默认重复的大块附件状态移入对应详情，失败标记及恢复入口保留。按固定T3的组合和images/files分工，用现有d-pi组件实现。
 
-M1补齐caret附近补全、单次确认、Escape、IME/键盘优先级、原子引用和详情焦点；M2复用Thread-owned输入模型，实现文本即时应用、文件映射原位置批次采用与独立Undo、取消/部分失败/PDF仅文本确认/跨Thread晚到隔离。随后修复展开焦点、连续隐藏锚点导航、管理关闭映射bookmark、原生picker首次/重试取消与自动完成不抢焦点。
+复用M1补全/键盘/焦点及M2映射导入、批次Undo、取消/部分失败/Thread隔离；修复冷恢复图片保护、语言切换撤销落点、显式采用焦点、冻结引用块分隔和空行。Main按来源保留历史摘要，仅退出已确认的外部图片依赖；真实update ACK前不释放candidate。冻结原文的token字样不授予附件身份。所属[规格](spec.md)及[05票](issues/05-attachment-semantics.md)。
 
 ## Evidence
 
-本地分支codex/composer-quality，基点a9cf9a9d，最终代码3918b64。最新Composer/input/picker回归17文件127项通过；保留input/Main/可信clipboard15文件105项、共享弹层6文件18项与前者有重叠。类型、fast、design/interaction/i18n、结构/架构与build通过。[验证](validation.md)保留原始红绿与构建身份，[独立评审](review.md)的Spec/Standards发现均关闭。fresh原生finish review仅对浅色宽窗给出ship，用户认可pending。
+源码e0c43e5，本轮增量dd8d812..e0c43e5，完整任务基点a9cf9a9d；仅本地分支codex/composer-quality。50文件369测试、完整typecheck、fast/design/i18n/interaction和build通过；真实Main+PM+SQLite与React fixture，原始红绿见[证据来源](evidence/attachment-semantics/provenance.md)和[验证](validation.md)。独立[Spec/Standards评审](review.md)按固定范围复核。
 
-pnpm dev实际验证项目只内联、图片/长文件名、候选确认/继续输入、展开/More/管理关闭、浅深色与565px停靠内容视口；最新超限→重试取消→成功后立即输入保持正文焦点。较早两个Thread草稿与Undo/Redo证据保留，未冒称新布局逐项重跑。
-
-较早完整check为1181 passed / 2 skipped / 1既有configuration-sharing CLI fixture失败，完整check不是全绿。真实IME/VoiceOver/200%缩放/长会话、OS mixed paste/drop全集、实机PDF及provider/Host queue未验证。见[交接](handoff.md)。
+用户负责本轮实机验收，未启动GUI/E2E；没有本轮视觉或真实IME通过结论。既有SDK PDF复制fixture失败在未改1b50c88亦复现，根因unknown；先前CLI fixture失败保留，完整check未重跑或宣称全绿。DOCX/视频等展示没有新增转换器。见[交接](handoff.md)。
 
 ## Merge Danger
 
-共享input/IPC影响所有Composer入口；Main接受后取消依赖真实release ACK，不能提前解除发送屏障。新增settlement需同版Main/preload/Renderer；无SQLite迁移，沿原import pin/history lease，不新增执行权限或队列。回滚前关闭当前构建并保留App数据；源码revert不撤回已保存草稿/资产，不能删除数据库或OMP历史来清理。当前仅本地交付，无远端PR、push或发布。
+跨Renderer/Main的图片分类、历史与草稿依赖必须同版交付，不能把Main累计ACK假称缩减ACK；文件旧版本/shared digest、clipboard cleanup和import settlement仍需真实保护。无IPC/DB/Draft版本迁移，沿既有所有者和权限，未新增队列或重发。回滚源码前关闭此Dev；revert不撤销已保存草稿和资产，不删除数据库或OMP历史。无远端push/PR/发布。

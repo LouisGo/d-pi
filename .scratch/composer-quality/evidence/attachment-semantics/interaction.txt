@@ -1,0 +1,2 @@
+$ node scripts/checks/interaction-policy.mjs
+PASS: cursor, selection and shared-button authoring policy

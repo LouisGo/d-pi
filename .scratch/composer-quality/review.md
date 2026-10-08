@@ -46,3 +46,22 @@
 `impeccable_finish_reviewer`无实现历史、只读原生复核fee53ddf：disposition为ship，范围为浅色桌面宽窗的收起/展开/More与实际鼠标焦点。持久设计合同为连续输入表面、项目引用仅正文、外部附件单独分区、真实model/access状态、次级维护、token/Icon/Base UI。截图参考结构已落实；不能把AX按钮动作后的keyboard outline当作物理鼠标缺陷，实际坐标点击只保留caret。root后续补深色/565px停靠内容视口/长文件名与3918b64超限重试焦点链，见原生记录。
 
 `impeccable_documenter`只读审查：无需改写全局DESIGN或刷新design.json；固定T3 SHA已写入交接，来源只支撑Surface/Banner/Prompt/Toolbar组合，不是复制T3业务架构。既有Button API/密度说明漂移不纳入本次任务。真实IME、VoiceOver、缩放、长会话、OS竞态全集和provider/Host queue继续列为证据缺口；用户认可pending。
+
+## 图片／文件编辑语义：dd8d812..e0c43e5
+
+Spec与Standards独立只读固定评审，未修改主树或治理状态，未运行GUI/Dev/E2E。此前UI认可不能替代本次用户验收。
+
+初次fec2290及随后1b50c88发现并修复：
+
+- 冷清单晚到前正文替换丢图片：metadata classification前暂缓普通编辑，读取失败提供显式重载；不复活已移除来源。
+- locale更新解绑导入adapter使映射资格失效：绑定稳定、localeRef仅更新标签。
+- 显式图片采用后按钮卸载失焦：图片及duplicate early-return遵守focus意图；自动false不抢焦点。
+- 图片结构投影误用标签meta跳过map：独立结构meta继续映射位置/来源，保留源消耗fence。
+- Renderer删除epoch ID但Main仍累加：Main按source ID保留版本摘要，仅其自有manifest核定外部image可退出；真实Main联合ACK失败/重试、shared hash与旧file版本通过。
+- 尾部冻结引用分隔与原空行被破坏：image carrier不填原空paragraph，块分隔、cold doc、Undo/Redo及冻结原文保持。
+- readonly分类及随后file label刷新重写canonical/sequence：cache跳过两种只读投影，来源观察仍执行。
+- Main既有冻结literal全字扫描：同parser仅paragraph授权，prepare／durable adoption／SQLite扫描及absolute offsets正式验证；最后Thread canPrepareInput也同规则，旧失败源仅作为冻结原文不再误阻止发送。
+
+Standards固定dd8d812..63e023e闭合，独立6文件61项通过；随后63e023e..e0c43e5窄增量复核无新增发现，独立Thread/token2文件4项通过。Spec在63e023e发现最后Thread门禁缺口，e0c43e5原反例及正式4项转绿后闭合；此前两个readonly middle migration旧反例及6文件61项亦独立通过。root最终50文件369项通过见验证页，不与reviewer数量合计。
+
+**最终两轴无剩余可行动发现，结论固定于e0c43e5源码。** 治理文档由root单写；SDK PDF现有失败未在闭合阶段重复运行，基线复现与unknown根因继续保留。评审不替代用户视觉/真实IME及实机验收。

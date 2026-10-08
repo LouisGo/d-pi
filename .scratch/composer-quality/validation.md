@@ -78,3 +78,24 @@ Standards随后发现source-too-large的“重试准备”仍直接打开picker�
 最后Dev Main build `3918b64a-dirty-2eee4843`，process `33bb81f0-36f4-4e00-806c-53fc29aac675`。26MiB样本在原生picker后显示“原件超出25 MiB限制”；重试→取消→无需点正文直接粘贴“重试取消后继续输入”，失败仍保留、正文更新、AX焦点为消息；再次重试→选择40字节有效文本→错误消失/新文件chip出现→直接粘贴“导入成功后继续输入”，仍进正文且焦点保持。最后真实坐标点击正文仅caret，没有outline。系统GoTo键盘后的focus-visible outline是键盘状态，不冒称为鼠标缺陷。Main阶段事件仅证明构建/请求/资源ACK，视觉与焦点来自CUA。
 
 本轮剩余矩阵：真实输入法marked-text、VoiceOver、OS所有尺寸/200%缩放、30min性能、mixed paste/drop竞态全集、实机PDF/其余错误组合、provider/Host queue。565px仅实际停靠内容视口。源码工程完成、可试用，用户认可pending。
+
+## 2026-10-08 图片独立、文件内联与去重
+
+本轮源码 `e0c43e507554ee09268eef3fa050b906f698d8af`，反馈增量 `dd8d812..e0c43e5`。用户明确自行实机测试；本轮未启动Dev/GUI/E2E，先前原生截图和IME限制不能作为当前布局通过证据。原Dev进程已停止。
+
+| 验证 | 实际结果与原始证据 |
+| --- | --- |
+| 图片与编辑历史、可信粘贴、采用去重 | 修正baseline fixture后3项实际red；duplicate settlement及image cleanup ACK另2项red；[图片red](evidence/attachment-semantics/images-red.txt)、[结算red](evidence/attachment-semantics/settlement-red.txt) |
+| MIME呈现与fallback边界 | worker2项呈现red、原型key1项red，3文件50项worker green；不与root集合相加。[red](evidence/attachment-semantics/mime-red.txt)、[边界red](evidence/attachment-semantics/mime-hardening-red.txt)、[worker green](evidence/attachment-semantics/mime-worker-green.txt) |
+| 独立评审反例 | fec2290归档10失败/33通过；1b50c88归档新增真实Main/SQLite、空行和readonly分类6失败/52跳过；label-only又1项red，最后Thread门禁1项red。[评审red](evidence/attachment-semantics/review-red.txt)、[Main red](evidence/attachment-semantics/real-main-red.txt)、[label red](evidence/attachment-semantics/label-projection-red.txt)、[Thread red](evidence/attachment-semantics/thread-readiness-red.txt) |
+| 最终受影响回归 | **50文件369项通过**：input全模块、workbench、renderer wiring、Main history/clipboard、真实SQLite生命周期、legacy mixed clipboard。[green](evidence/attachment-semantics/green.txt) |
+| 类型与门禁 | 完整typecheck、Biome/fast、design/i18n/interaction、architecture/生成报告通过。[类型](evidence/attachment-semantics/typecheck.txt)、[fast](evidence/attachment-semantics/check-fast.txt)、[design](evidence/attachment-semantics/design.txt)、[i18n](evidence/attachment-semantics/i18n.txt)、[interaction](evidence/attachment-semantics/interaction.txt) |
+| Build | 成功，现有大chunk警告保留；非打包/签名证明。[输出](evidence/attachment-semantics/build.txt) |
+| 扩展真实SDK PDF集合 | 既有PDF冻结复制失败，其余13项通过；legacy mixed clipboard另1项通过。未改1b50c88固定snapshot同样PDF失败，根因unknown。[当前扩展输出](evidence/attachment-semantics/extended-clipboard.txt)、[基线输出](evidence/attachment-semantics/previous-sdk-pdf-failure.txt) |
+| UI源码检查 | MIME/inline指定文件detector为[]，[结果](evidence/attachment-semantics/impeccable.json)。不是视觉或原生证据 |
+
+红灯出处与fixture修正区别见[来源记录](evidence/attachment-semantics/provenance.md)。原stdout/stderr完整保留，包括React act和工具warning。最后只改Thread readiness后扩展wiring矩阵；没有机械重复全部原生或完整check。先前configuration-sharing CLI fixture失败仍在记录，完整check不宣称全绿。
+
+当前UI：图片独立缩略图且不入Undo，其他文件MIME内联并入Undo，项目引用不进外部栏；默认重复的大块错误移入详情。DOCX/视频等仍没有Main内容转换支持，MIME样式不会伪装ready。未知附件分类前保护冷草稿，读取失败可重新加载；分类/标签不写脏草稿，真实Main只退出图片历史并保留文件旧摘要，共享对象保护和ACK失败重试经联合测试。冻结source只有普通paragraph附件有权威，Main准备/保存/扫描和Renderer readiness一致。
+
+本轮用户验收pending；真实IME、焦点/样式、OS drag/drop/clipboard竞态、窄窗/主题/缩放、VoiceOver、长会话和provider/Host queue没有新实机结果。

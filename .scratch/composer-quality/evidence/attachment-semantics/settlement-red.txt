@@ -1,0 +1,50 @@
+
+ RUN  v5.0.2 /private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/dpi-composer-settlement-red-ts93jtag
+
+ ❯ src/modules/input/renderer/references/detached-images.test.ts (9 tests | 2 failed | 7 skipped) 102ms
+   × tracks image clone cleanup outside Undo and requires its real Main ACK before saving 17ms
+   × releases duplicate import operations and retries the same release after a lost ACK 85ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/modules/input/renderer/references/detached-images.test.ts > tracks image clone cleanup outside Undo and requires its real Main ACK before saving
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/modules/input/renderer/references/detached-images.test.ts:167:38
+    165|   fail = true;
+    166|   f.controller.removeDetachedAttachment(image.id);
+    167|   expect(await f.controller.flush()).toBe(false);
+       |                                      ^
+    168|   expect(
+    169|     requests.some(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/modules/input/renderer/references/detached-images.test.ts > releases duplicate import operations and retries the same release after a lost ACK
+AssertionError: expected 'adopt' to be 'release' // Object.is equality
+
+Expected: "release"
+Received: "adopt"
+
+ ❯ src/modules/input/renderer/references/detached-images.test.ts:403:37
+    401|   );
+    402|   await vi.waitFor(() => expect(settle).toHaveBeenCalledOnce());
+    403|   expect(settle.mock.calls[0]?.[1]).toBe("release");
+       |                                     ^
+    404|   expect(f.controller.getTextSnapshot()).not.toContain(clone.token);
+    405|   const job = imports.stateStore.getState().batches[0]?.jobs[0];
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 7 skipped (9)
+   Start at  17:31:11
+   Duration  730ms (environment 37%, transform 29%, import 17%, tests 16%)
+

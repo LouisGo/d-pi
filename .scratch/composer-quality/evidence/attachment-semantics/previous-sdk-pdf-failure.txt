@@ -1,0 +1,37 @@
+
+ RUN  v5.0.2 /private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/dpi-composer-real-main-red-khffr3__
+
+ ❯ tests/integration/clipboard-frozen-references.integration.test.ts (14 tests | 1 failed | 13 skipped) 55ms
+   × freezes a real SDK PDF only with existing text-only consent, preserves its derived record on recopy and pins both objects after source release 54ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/clipboard-frozen-references.integration.test.ts > freezes a real SDK PDF only with existing text-only consent, preserves its derived record on recopy and pins both objects after source release
+AssertionError: expected { kind: 'clipboard-unavailable', …(1) } to deeply equal { kind: 'clipboard-exported', …(1) }
+
+- Expected
++ Received
+
+  {
+-   "degraded": false,
+-   "kind": "clipboard-exported",
++   "kind": "clipboard-unavailable",
++   "reason": "failed",
+  }
+
+ ❯ tests/integration/clipboard-frozen-references.integration.test.ts:460:7
+    458|         [pdf.id],
+    459|       ),
+    460|     ).toEqual({ kind: "clipboard-exported", degraded: false });
+       |       ^
+    461|     expect(
+    462|       service.store.referenceSource(source.threadId, pdf.id)?.inputDig…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 13 skipped (14)
+   Start at  18:07:12
+   Duration  961ms (transform 42%, import 30%, environment 21%, tests 6%, worker 1%)
+
