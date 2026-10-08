@@ -39,6 +39,7 @@ afterEach(async () => {
     container.remove();
   }
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
 });
 
 async function setup(
@@ -756,4 +757,143 @@ it("offers the normal project trust action for a CLI session and retains the que
   expect(labels).not.toContain("Start OMP");
   expect(fixture.container.textContent).not.toContain("CLI");
   expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha omega");
+});
+
+it("owns Enter while the reference popup is loading, empty or dismissed, and leaves IME confirmation to the editor", async () => {
+  let finishSearch!: (reply: AttachmentReply) => void;
+  const fixture = await setup("ready", undefined, {
+    request: async (command) => {
+      if (command.kind === "search-reference")
+        return new Promise((resolve) => {
+          finishSearch = resolve;
+        });
+      return { kind: "attachments", items: [] };
+    },
+  });
+  const editor = fixture.editor();
+  vi.spyOn(editor.view, "coordsAtPos").mockReturnValue({
+    left: 20,
+    right: 20,
+    top: 200,
+    bottom: 220,
+  });
+  await act(() => replaceDraftText(editor, "@missing"));
+  await act(() => new Promise((resolve) => setTimeout(resolve, 180)));
+  const key = async (value: string, keyCode = 0, repeat = false) => {
+    const event = new KeyboardEvent("keydown", {
+      key: value,
+      keyCode,
+      repeat,
+      cancelable: true,
+    });
+    let handled = false;
+    await act(() => {
+      handled =
+        editor.options.editorProps?.handleKeyDown?.(editor.view, event) ===
+        true;
+    });
+    return { handled, prevented: event.defaultPrevented };
+  };
+  expect(await key("Enter")).toEqual({ handled: true, prevented: true });
+  expect(await key("Enter", 229)).toEqual({ handled: false, prevented: false });
+  await act(() =>
+    finishSearch({ kind: "search", entries: [], truncated: false }),
+  );
+  expect(await key("Enter")).toEqual({ handled: true, prevented: true });
+  expect(await key("Escape")).toEqual({ handled: true, prevented: true });
+  await act(() => editor.commands.insertContent("x"));
+  expect(fixture.container.querySelector('[role="listbox"]')).toBeNull();
+  expect(editor.getText()).toBe("@missingx");
+});
+
+it("accepts one reference on Enter and preserves input typed while Main verifies the chosen source", async () => {
+  let finishReference!: (reply: AttachmentReply) => void;
+  let items: import("../../../modules/input/contracts/public").Attachment[] =
+    [];
+  const choose = vi.fn();
+  const fixture = await setup(undefined, undefined, {
+    request: async (command) => {
+      if (command.kind === "search-reference")
+        return {
+          kind: "search",
+          entries: [{ path: "src/beta.ts", kind: "file", name: "beta.ts" }],
+          truncated: false,
+        };
+      if (command.kind === "add-reference") {
+        choose();
+        return new Promise((resolve) => {
+          finishReference = resolve;
+        });
+      }
+      if (command.kind === "history-open")
+        return {
+          kind: "history-lease",
+          leaseId: crypto.randomUUID(),
+          version: 0,
+        };
+      if (command.kind === "history-update")
+        return {
+          kind: "history-lease",
+          leaseId: command.leaseId,
+          version: command.version,
+        };
+      if (command.kind === "history-release")
+        return { kind: "history-released" };
+      return { kind: "attachments", items };
+    },
+  });
+  const editor = fixture.editor();
+  vi.spyOn(editor.view, "coordsAtPos").mockReturnValue({
+    left: 20,
+    right: 20,
+    top: 200,
+    bottom: 220,
+  });
+  await act(() => replaceDraftText(editor, "@src/"));
+  await act(() => new Promise((resolve) => setTimeout(resolve, 200)));
+  await act(() => new Promise((resolve) => setTimeout(resolve, 20)));
+  expect(fixture.container.querySelectorAll('[role="option"]')).toHaveLength(1);
+  await act(() => {
+    const handler = editor.options.editorProps?.handleKeyDown;
+    handler?.(
+      editor.view,
+      new KeyboardEvent("keydown", { key: "Enter", cancelable: true }),
+    );
+    handler?.(
+      editor.view,
+      new KeyboardEvent("keydown", {
+        key: "Enter",
+        repeat: true,
+        cancelable: true,
+      }),
+    );
+    editor.commands.insertContent(" B");
+  });
+  expect(choose).toHaveBeenCalledTimes(1);
+  const id = crypto.randomUUID();
+  items = [
+    AttachmentSchema.parse({
+      schemaVersion: 1,
+      id,
+      token: `[[dpi-attachment:${id}]]`,
+      threadId: fixture.first.threadId,
+      name: "beta.ts",
+      mimeType: "text/plain",
+      byteLength: 1,
+      capturedAt: new Date().toISOString(),
+      source: "reference",
+      status: "ready",
+      representation: "reference",
+      coverageGaps: [],
+      textOnly: false,
+      referenceKind: "file",
+      path: "src/beta.ts",
+    }),
+  ];
+  await act(() => finishReference({ kind: "attachments", items }));
+  expect(fixture.thread().controller.getTextSnapshot()).toBe(
+    `${items[0]?.token} B`,
+  );
+  await act(() => editor.commands.undo());
+  expect(editor.getText()).toBe("@src/ B");
 });

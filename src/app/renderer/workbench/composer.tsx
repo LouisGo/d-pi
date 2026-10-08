@@ -22,12 +22,13 @@ import { shouldSend } from "../../../modules/execution/renderer/public";
 import type { FrozenSelection } from "../../../modules/files/core/public";
 import {
   appendSelectionReference,
-  attachmentMention,
   createClipboardPaste,
   createTrustedClipboard,
   draftDocument,
+  isCompositionKey,
   plainTextEditorOptions,
   replaceDraftText,
+  SuggestionController,
   textPasteTransaction,
 } from "../../../modules/input/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
@@ -37,6 +38,7 @@ import {
   DisclosureTrigger,
   TextArea,
 } from "../../../modules/ui/renderer/public";
+import { AttachmentIcon, SendIcon } from "../components/icons/common";
 import type { AppModel } from "../wiring/model";
 import type { ThreadModel } from "../wiring/thread-model";
 import {
@@ -95,15 +97,23 @@ export function Composer({
     "fallback" | "failed" | null
   >(null);
   const [attachmentBlocked, setAttachmentBlocked] = useState(false);
+  const suggestions = useMemo(() => new SuggestionController(), [controller]);
   const [mention, setMention] =
-    useState<ReturnType<typeof attachmentMention>>(null);
+    useState<ReturnType<SuggestionController["observe"]>>(null);
   const attachmentActions = useRef<AttachmentActions | null>(null);
   const attachmentBlock = useRef(false);
+  const isCurrentThread = useCallback(
+    () => model.isCurrentThread(thread),
+    [model, thread],
+  );
   const updateBlocked = useCallback((value: boolean) => {
     attachmentBlock.current = value;
     setAttachmentBlocked(value);
   }, []);
-  const dismissMention = useCallback(() => setMention(null), []);
+  const dismissMention = useCallback(() => {
+    suggestions.dismiss();
+    setMention(null);
+  }, [suggestions]);
   const preference = useStore(model.stateStore, (appState) =>
     appState.kind === "ready"
       ? (appState.preferences.sendKey ?? "enter-send")
@@ -146,10 +156,12 @@ export function Composer({
         model.draftEditors.bind(editor, thread.key, controller);
       },
       onSelectionUpdate: ({ editor }) => {
-        if (!editor.view.composing) setMention(attachmentMention(editor.state));
+        if (!editor.view.composing)
+          setMention(suggestions.observe(editor.state));
       },
       onUpdate: ({ editor }) => {
-        if (!editor.view.composing) setMention(attachmentMention(editor.state));
+        if (!editor.view.composing)
+          setMention(suggestions.observe(editor.state));
       },
       editorProps: {
         handlePaste: (view, event) => {
@@ -180,8 +192,16 @@ export function Composer({
         handleKeyDown: (view, event) => {
           paste.keyDown(event);
           if (!model.isCurrentThread(thread)) return false;
-          if (view.composing) return false;
+          if (isCompositionKey(event, view.composing)) return false;
+          if (event.repeat && event.key === "Enter") {
+            event.preventDefault();
+            return true;
+          }
           if (attachmentActions.current?.handleMentionKey(event)) {
+            event.preventDefault();
+            return true;
+          }
+          if (attachmentActions.current?.handleReferenceKey(event)) {
             event.preventDefault();
             return true;
           }
@@ -205,6 +225,15 @@ export function Composer({
             void submission?.send();
           return true;
         },
+        handleDoubleClickOn: (_view, _pos, node, nodePos) => {
+          if (node.type.name !== "attachmentReference") return false;
+          return (
+            attachmentActions.current?.openReference(
+              String(node.attrs.id),
+              nodePos,
+            ) ?? false
+          );
+        },
         handleDOMEvents: {
           copy: (view, event) =>
             trustedClipboard?.copy(view, event, false) ?? false,
@@ -218,9 +247,16 @@ export function Composer({
             paste.reset();
             return false;
           },
-          compositionend: () => {
+          compositionstart: () => {
+            setMention(null);
+            return false;
+          },
+          compositionend: (view) => {
             setTimeout(() => {
-              if (model.isCurrentThread(thread)) submission?.consume();
+              if (model.isCurrentThread(thread)) {
+                setMention(suggestions.observe(view.state));
+                submission?.consume();
+              }
             }, 0);
             return false;
           },
@@ -337,7 +373,6 @@ export function Composer({
           onChooseModel={onChooseModel}
         />
       )}
-      <EditorContent className="composer-editor" editor={editor} />
       {thread.attachments && thread.attachmentImports && model.attachments && (
         <AttachmentControls
           key={thread.key}
@@ -349,13 +384,14 @@ export function Composer({
           threadId={thread.context.threadId}
           editor={editor}
           text={controller.getTextSnapshot()}
-          isCurrent={() => model.isCurrentThread(thread)}
+          isCurrent={isCurrentThread}
           onBlocked={updateBlocked}
           mention={mention}
           dismissMention={dismissMention}
           onClearHistory={() => model.draftEditors.clearHistory(thread.key)}
         />
       )}
+      <EditorContent className="composer-editor" editor={editor} />
       {clipboardFeedback && (
         <p role="status" className="muted">
           {t(
@@ -394,6 +430,9 @@ export function Composer({
         </p>
       )}
       <div className="composer-footer">
+        {runtime && (
+          <ComposerModel runtime={runtime} onChooseModel={onChooseModel} />
+        )}
         <div className="composer-help">
           <Disclosure>
             <DisclosureTrigger>{t("composer.inputOptions")}</DisclosureTrigger>
@@ -413,6 +452,28 @@ export function Composer({
           </Disclosure>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t("attachment.add")}
+            title={t("attachment.add")}
+            disabled={attachmentBlocked}
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => attachmentActions.current?.chooseImport()}
+          >
+            <AttachmentIcon />
+            <span className="sr-only">{t("attachment.add")}</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t("attachment.reference")}
+            title={t("attachment.reference")}
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => attachmentActions.current?.openSearch()}
+          >
+            @
+          </Button>
           <Button
             variant="ghost"
             onMouseDown={(e) => e.preventDefault()}
@@ -542,13 +603,19 @@ function SendButton({
     <div className="flex gap-2">
       <Button
         variant="accent"
+        size="round"
+        aria-label={state?.busy ? t("composer.queueSend") : t("composer.send")}
+        title={state?.busy ? t("composer.queueSend") : t("composer.send")}
         disabled={contentBlocked || sending || capped || !canSubmit(state)}
         onMouseDown={(event) => event.preventDefault()}
         onClick={() => {
           if (canSend()) void submission.send();
         }}
       >
-        {state?.busy ? t("composer.queueSend") : t("composer.send")}
+        <SendIcon />
+        <span className="sr-only">
+          {state?.busy ? t("composer.queueSend") : t("composer.send")}
+        </span>
       </Button>
       {state?.busy && (
         <Button
@@ -633,5 +700,33 @@ function ComposerReadiness({
         </Button>
       )}
     </div>
+  );
+}
+
+function ComposerModel({
+  runtime,
+  onChooseModel,
+}: {
+  runtime: NonNullable<ThreadModel["runtime"]>;
+  onChooseModel?: (() => void) | undefined;
+}) {
+  const { t } = useI18n();
+  const model = useStore(
+    runtime.stateStore,
+    (state) => state.view?.selectedModel,
+  );
+  return (
+    <Button
+      variant="ghost"
+      disabled={!onChooseModel}
+      onMouseDown={(e) => e.preventDefault()}
+      onClick={onChooseModel}
+      title={t("composer.chooseModel")}
+      className="max-w-64"
+    >
+      <span className="truncate">
+        {model?.modelId ?? t("composer.chooseModel")}
+      </span>
+    </Button>
   );
 }

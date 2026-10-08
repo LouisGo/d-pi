@@ -1,4 +1,5 @@
 export const ui = {
+  "attachment.details": "附件详情",
   "ui.reading.latest": "最新段",
   "ui.conversation.newOutput": "有新输出",
   "ui.conversation.toBottom": "回到列表底部",

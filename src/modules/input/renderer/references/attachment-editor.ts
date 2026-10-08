@@ -1,10 +1,9 @@
 import type { Editor } from "@tiptap/core";
 import type { Attachment } from "../../contracts/public";
 import type { AttachmentEditorPort } from "../../core/attachments/attachment-model";
-import {
-  attachmentMention,
-  insertAttachmentReference,
-} from "./attachment-reference";
+import { insertAttachmentReference } from "./attachment-reference";
+
+import { referenceSourceMatches } from "./suggestion-controller";
 
 /** Concrete editing mechanics stay in the Tiptap adapter, outside the coordinator. */
 export function createAttachmentEditor(
@@ -20,12 +19,7 @@ export function createAttachmentEditor(
         editor.view.composing
       )
         return false;
-      if (
-        range &&
-        (editor.state.selection.from !== range.to ||
-          attachmentMention(editor.state)?.from !== range.from)
-      )
-        return false;
+      if (range && !referenceSourceMatches(editor.state, range)) return false;
       const tr = insertAttachmentReference(editor.state, item, range);
       editor.view.dispatch(tr);
       if (!editor.state.doc.eq(tr.doc)) return false;

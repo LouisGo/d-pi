@@ -6,10 +6,18 @@ import type { ComponentPropsWithRef } from "react";
 
 const buttonVariants = cva("ui-button", {
   variants: {
-    size: { default: "", icon: "ui-button-icon", status: "ui-button-status" },
+    size: {
+      default: "",
+      icon: "ui-button-icon",
+      status: "ui-button-status",
+      round: "ui-button-round",
+      thumbnail: "ui-button-thumbnail",
+      source: "ui-button-source",
+    },
     variant: {
       default: "ui-button-primary",
       secondary: "ui-button-secondary",
+      chip: "ui-button-chip",
       accent: "ui-button-accent",
       destructive: "ui-button-destructive",
       ghost: "ui-button-ghost",

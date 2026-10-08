@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "4a519647fd1128630c9e658637246b8ab608a05bc82ecaee59cc7b5a118a2b0a",
+  "inputsHash": "75784f1f00df5f5eec4dc5c25e4ae4d8195e82cfbcc99672f17a5c89c50c61cf",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 453,
-    "scannedFiles": 453,
+    "sourceFiles": 457,
+    "scannedFiles": 457,
     "unscanned": []
   },
   "modules": [
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 196,
-      "lines": 35954,
+      "lines": 36506,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -102,7 +102,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 20,
-      "lines": 2774,
+      "lines": 2776,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -185,8 +185,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 49,
-      "lines": 8874,
+      "files": 53,
+      "lines": 9262,
       "publicEntries": [
         {
           "path": "src/modules/input/contracts/public.ts",
@@ -405,7 +405,7 @@
       ],
       "materialized": true,
       "files": 10,
-      "lines": 1060,
+      "lines": 1068,
       "publicEntries": [
         {
           "path": "src/modules/ui/renderer/public.ts",
@@ -13849,6 +13849,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "../components/icons/common",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/icons/common.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "../wiring/model",
       "kind": "import",
       "resolution": "module",
@@ -19682,10 +19694,34 @@
       "sourceModule": "input",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "./references/reference-interaction",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/reference-interaction.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/public.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "./references/selection-insert",
       "kind": "export",
       "resolution": "module",
       "to": "src/modules/input/renderer/references/selection-insert.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/public.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./references/suggestion-controller",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/suggestion-controller.ts",
       "targetModule": "input",
       "targetEnvironment": "renderer"
     },
@@ -19731,6 +19767,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/input/renderer/references/attachment-reference.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-editor.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./suggestion-controller",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/suggestion-controller.ts",
       "targetModule": "input",
       "targetEnvironment": "renderer"
     },
@@ -19895,6 +19943,123 @@
       "to": "src/modules/input/core/references/serialize.ts",
       "targetModule": "input",
       "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/renderer/references/reference-interaction.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tiptap/core",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/reference-interaction.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tiptap/pm/state",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/reference-interaction.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/reference-interaction.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/renderer/references/reference-interaction.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../editor/plain-text-editor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/editor/plain-text-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/reference-interaction.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./attachment-editor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/attachment-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/reference-interaction.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./reference-interaction",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/reference-interaction.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/reference-interaction.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./suggestion-controller",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/suggestion-controller.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/reference-interaction.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tiptap/core",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/reference-interaction.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tiptap/pm/state",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/reference-interaction.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../editor/plain-text-editor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/editor/plain-text-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/modules/input/renderer/references/selection-insert.test.ts",
@@ -19991,6 +20156,99 @@
       "to": "src/modules/files/core/public.ts",
       "targetModule": "files",
       "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/renderer/references/suggestion-controller.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tiptap/core",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/suggestion-controller.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tiptap/pm/state",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/suggestion-controller.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/suggestion-controller.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../editor/plain-text-editor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/editor/plain-text-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/suggestion-controller.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./suggestion-controller",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/suggestion-controller.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/suggestion-controller.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tiptap/core",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/suggestion-controller.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tiptap/pm/state",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/suggestion-controller.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../editor/plain-text-editor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/editor/plain-text-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/suggestion-controller.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./attachment-reference",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/attachment-reference.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/modules/changes/contracts/public.ts",

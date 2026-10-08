@@ -15,7 +15,12 @@ type Intent<
   >,
 > = T extends AttachmentRequest ? Omit<T, "threadId" | "traceId"> : never;
 export type AttachmentIntent = Intent;
-export type AttachmentRange = { from: number; to: number };
+export type AttachmentRange = {
+  from: number;
+  to: number;
+  expectedSource?: string;
+  valid?: boolean;
+};
 export interface AttachmentEditorPort {
   insert(item: Attachment, range?: AttachmentRange): boolean;
 }

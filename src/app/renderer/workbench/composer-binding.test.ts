@@ -43,7 +43,11 @@ vi.mock("../../../modules/ui/renderer/public", async (importOriginal) => {
       createElement("button", null, children),
   };
 });
-vi.mock("@/components/icons/common", () => ({ WebsiteIcon: () => null }));
+vi.mock("@/components/icons/common", () => ({
+  WebsiteIcon: () => null,
+  AttachmentIcon: () => null,
+  SendIcon: () => null,
+}));
 
 const models: AppModel[] = [];
 afterEach(() => {

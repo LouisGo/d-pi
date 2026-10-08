@@ -5,6 +5,7 @@ import {
   useEffect,
   useId,
   useImperativeHandle,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -20,14 +21,22 @@ import type {
   AttachmentIntent,
   AttachmentModel,
 } from "../../../modules/input/core/public";
-import type { AttachmentImports } from "../../../modules/input/renderer/public";
+import type {
+  AttachmentImports,
+  ReferenceTrigger,
+} from "../../../modules/input/renderer/public";
 import {
   attachmentIds,
-  attachmentMention,
+  captureReferenceFocus,
   createAttachmentEditor,
+  isCompositionKey,
   moveAttachmentReference,
+  navigateReference,
+  referenceSourceMatches,
   removeAttachmentReference,
+  selectedReference,
   syncAttachmentLabels,
+  trackReferenceRange,
 } from "../../../modules/input/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import {
@@ -41,14 +50,18 @@ import type {
   AttachmentBridge,
   AttachmentRequest,
 } from "../../contracts/attachments";
-import { FileIcon, FolderIcon } from "../components/icons/common";
+import { CloseIcon, FileIcon, FolderIcon } from "../components/icons/common";
 
 export type AttachmentActions = {
   canLeaveView(): boolean;
   importFiles(files: File[], source: "paste" | "drop"): void;
   handleMentionKey(event: KeyboardEvent): boolean;
+  handleReferenceKey(event: KeyboardEvent): boolean;
+  openReference(id: string, position?: number): boolean;
+  chooseImport(): void;
+  openSearch(): void;
 };
-type Mention = ReturnType<typeof attachmentMention>;
+type Mention = ReferenceTrigger | null;
 
 export function AttachmentControls({
   bridge,
@@ -114,7 +127,10 @@ export function AttachmentControls({
 
   const [manualSearch, setManualSearch] = useState(false);
   const [query, setQuery] = useState("");
-  const [selected, setSelected] = useState(0);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const acceptingReference = useRef(false);
+  const listboxId = useId();
+  const restorePreviewFocus = useRef<((restore: boolean) => void) | null>(null);
   const [preview, setPreview] = useState<{
     item: Attachment;
     content: AttachmentPreview;
@@ -152,15 +168,47 @@ export function AttachmentControls({
     !searchPending && !search.isError && search.data?.kind === "search"
       ? search.data.entries
       : [];
+  const selected = Math.max(
+    0,
+    entries.findIndex((entry) => entry.path === activeId),
+  );
+  const optionId = (index: number) =>
+    `${listboxId}-${encodeURIComponent(entries[index]?.path ?? "")}`;
+  const popupPosition = useSuggestionPosition(editor, mention);
+  useEffect(() => {
+    if (!editor || editor.isDestroyed) return;
+    const dom = editor.view.dom;
+    if (mention && searchOpen) {
+      dom.setAttribute("aria-controls", listboxId);
+      if (entries.length)
+        dom.setAttribute("aria-activedescendant", optionId(selected));
+      else dom.removeAttribute("aria-activedescendant");
+    } else {
+      dom.removeAttribute("aria-controls");
+      dom.removeAttribute("aria-activedescendant");
+    }
+    return () => {
+      dom.removeAttribute("aria-controls");
+      dom.removeAttribute("aria-activedescendant");
+    };
+  }, [editor, mention, searchOpen, entries, selected, listboxId]);
+  useEffect(() => {
+    if (searchOpen && entries.length)
+      document
+        .getElementById(optionId(selected))
+        ?.scrollIntoView({ block: "nearest" });
+  }, [selected, searchOpen, entries.length]);
   const alive = useRef(true);
   useEffect(() => {
     alive.current = true;
     return () => {
       alive.current = false;
+      restorePreviewFocus.current?.(false);
+      restorePreviewFocus.current = null;
     };
   }, []);
   useEffect(() => {
-    setSelected(0);
+    setActiveId(null);
   }, [searchQuery]);
   useEffect(() => {
     onBlocked(
@@ -211,11 +259,11 @@ export function AttachmentControls({
   async function run(
     command: AttachmentIntent,
     add = false,
-    range?: { from: number; to: number },
+    range?: { from: number; to: number; expectedSource?: string },
   ) {
     if (!isCurrent()) return;
     const reply = await model.run(command, add, range);
-    if (!alive.current || !reply) return;
+    if (!alive.current || !isCurrent() || !reply) return;
     if (reply.kind === "storage-report") setStorageReport(reply);
     else if (
       command.kind === "preview" &&
@@ -236,15 +284,82 @@ export function AttachmentControls({
     if (isCurrent()) imports.importFiles(files, source);
   }
   function chooseReference(entry: ProjectReferenceEntry) {
-    if (searchPending || !isCurrent() || pending > 0 || failed) return;
-    const range = mention ? { from: mention.from, to: mention.to } : undefined;
+    if (
+      searchPending ||
+      !isCurrent() ||
+      sourceFrozen ||
+      acceptingReference.current ||
+      model.stateStore.getState().pending > 0 ||
+      model.stateStore.getState().failed ||
+      !editor ||
+      editor.view.composing
+    )
+      return;
+    if (
+      mention &&
+      (!editor.state.selection.empty ||
+        editor.state.selection.from !== mention.to ||
+        !referenceSourceMatches(editor.state, mention))
+    )
+      return;
+    acceptingReference.current = true;
+    const target = mention ? trackReferenceRange(editor, mention) : null;
+    const range = target?.range;
     void run(
       { kind: "add-reference", path: entry.path, referenceKind: entry.kind },
       true,
       range,
-    );
+    ).finally(() => {
+      acceptingReference.current = false;
+      target?.release();
+    });
     setManualSearch(false);
     dismissMention();
+  }
+  function handleMentionKey(event: KeyboardEvent) {
+    if (
+      !searchOpen ||
+      !editor ||
+      isCompositionKey(event, editor.view.composing)
+    )
+      return false;
+    if (event.key === "Escape") {
+      setManualSearch(false);
+      dismissMention();
+      return true;
+    }
+    if (["ArrowDown", "ArrowUp"].includes(event.key)) {
+      if (entries.length)
+        setActiveId(
+          entries[
+            (selected + (event.key === "ArrowDown" ? 1 : -1) + entries.length) %
+              entries.length
+          ]?.path ?? null,
+        );
+      return true;
+    }
+    if (event.key === "Enter") {
+      if (!event.repeat && entries[selected])
+        chooseReference(entries[selected]);
+      return true;
+    }
+    return false;
+  }
+  function openReference(id: string) {
+    if (!editor || editor.isDestroyed || !isCurrent() || editor.view.composing)
+      return false;
+    const item = items.find((item) => item.id === id);
+    if (!item || model.stateStore.getState().pending > 0) return false;
+    restorePreviewFocus.current?.(false);
+    restorePreviewFocus.current = captureReferenceFocus(editor, isCurrent);
+    void run({ kind: "preview", id });
+    return true;
+  }
+  function closePreview() {
+    setPreview(null);
+    const restore = restorePreviewFocus.current;
+    restorePreviewFocus.current = null;
+    queueMicrotask(() => restore?.(true));
   }
   useImperativeHandle(ref, () => ({
     canLeaveView: () => {
@@ -256,28 +371,29 @@ export function AttachmentControls({
       );
     },
     importFiles: (files, source) => void importFiles(files, source),
-    handleMentionKey: (event) => {
-      if (!searchOpen || event.isComposing) return false;
-      if (event.key === "Escape") {
-        setManualSearch(false);
-        dismissMention();
-        return true;
-      }
-      if (["ArrowDown", "ArrowUp"].includes(event.key)) {
-        setSelected((value) =>
-          entries.length
-            ? (value + (event.key === "ArrowDown" ? 1 : -1) + entries.length) %
-              entries.length
-            : 0,
-        );
-        return true;
-      }
-      if (event.key === "Enter") {
-        const entry = entries[selected];
-        if (entry) chooseReference(entry);
+    handleMentionKey,
+    handleReferenceKey: (event) => {
+      if (
+        !editor ||
+        !isCurrent() ||
+        isCompositionKey(event, editor.view.composing)
+      )
+        return false;
+      if (navigateReference(editor, event)) return true;
+      const id = selectedReference(editor);
+      if (id && event.key === "Enter") {
+        if (!event.repeat) openReference(id);
         return true;
       }
       return false;
+    },
+    openReference,
+    chooseImport: () => {
+      if (isCurrent() && !sourceFrozen)
+        void run({ kind: "choose-import" }, true);
+    },
+    openSearch: () => {
+      if (isCurrent() && !sourceFrozen) setManualSearch((value) => !value);
     },
   }));
   function remove(id: string) {
@@ -304,31 +420,68 @@ export function AttachmentControls({
   }
   return (
     <div className="grid gap-2 px-3 pb-2">
-      <div className="flex flex-wrap items-center gap-2">
-        <Button
-          variant="ghost"
-          disabled={
-            sourceFrozen || pending > 0 || importing > 0 || !editor || !!failed
-          }
-          onMouseDown={(event) => event.preventDefault()}
-          onClick={() => void run({ kind: "choose-import" }, true)}
-        >
-          {t("attachment.add")}
-        </Button>
-        <Button
-          variant="ghost"
-          disabled={sourceFrozen || !editor || !!failed}
-          onMouseDown={(event) => event.preventDefault()}
-          onClick={() => setManualSearch((value) => !value)}
-        >
-          {t("attachment.reference")}
-        </Button>
-        <span className="muted">
-          {pending || importing
-            ? t("attachment.preparing")
-            : t("attachment.hint")}
-        </span>
-      </div>
+      {(pending > 0 || importing > 0) && (
+        <p className="muted" role="status">
+          {t("attachment.preparing")}
+        </p>
+      )}
+      {active.length > 0 && (
+        <ol className="attachment-rail" aria-label={t("attachment.add")}>
+          {active.map((item, index) => (
+            <li
+              key={`${ids[index]}:${index}`}
+              className={
+                item?.representation === "image"
+                  ? "attachment-tile"
+                  : "attachment-file-chip"
+              }
+            >
+              <Button
+                variant="chip"
+                size={
+                  item?.representation === "image" ? "thumbnail" : "default"
+                }
+                className="w-full"
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => {
+                  if (item) openReference(item.id);
+                }}
+                aria-label={t("attachment.preview", {
+                  name: item?.name ?? ids[index] ?? "",
+                })}
+              >
+                {item?.representation === "image" ? (
+                  <AttachmentThumbnail
+                    item={item}
+                    bridge={bridge}
+                    threadId={threadId}
+                  />
+                ) : (
+                  <>
+                    <FileIcon />
+                    <span className="truncate">{item?.name ?? ids[index]}</span>
+                    {item && (
+                      <small>{Math.ceil(item.byteLength / 1024)} KiB</small>
+                    )}
+                  </>
+                )}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-0 top-0"
+                aria-label={t("attachment.remove", {
+                  name: item?.name ?? ids[index] ?? "",
+                })}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => remove(item?.id ?? ids[index] ?? "")}
+              >
+                <CloseIcon />
+              </Button>
+            </li>
+          ))}
+        </ol>
+      )}
       <Disclosure>
         <DisclosureTrigger>{t("attachment.storage")}</DisclosureTrigger>
         <div className="grid gap-2 py-2">
@@ -526,7 +679,18 @@ export function AttachmentControls({
       )}
       {searchOpen && (
         <div
-          className="grid gap-2 rounded-md border border-border bg-muted p-2"
+          className={mention ? "reference-suggestions" : "reference-search"}
+          style={
+            mention && popupPosition
+              ? ({
+                  "--suggestion-top": `${popupPosition.top}px`,
+                  "--suggestion-offset": popupPosition.offset,
+                  "--suggestion-left": `${popupPosition.left}px`,
+                  "--suggestion-width": `${popupPosition.width}px`,
+                  "--suggestion-height": `${popupPosition.maxHeight}px`,
+                } as React.CSSProperties)
+              : undefined
+          }
           role="region"
           aria-label={t("attachment.searchLabel")}
         >
@@ -535,26 +699,45 @@ export function AttachmentControls({
               aria-label={t("attachment.searchLabel")}
               value={query}
               onChange={(event) => setQuery(event.target.value)}
+              onKeyDown={(event) => {
+                if (handleMentionKey(event.nativeEvent)) event.preventDefault();
+              }}
               autoFocus
             />
           )}
           {searchPending ? (
-            <p role="status">{t("attachment.searching")}</p>
+            <div
+              id={listboxId}
+              role="listbox"
+              aria-label={t("attachment.searchLabel")}
+            >
+              <p role="status">{t("attachment.searching")}</p>
+            </div>
           ) : search.isError || search.data?.kind === "unavailable" ? (
-            <p role="alert">{t("attachment.searchFailed")}</p>
+            <div
+              id={listboxId}
+              role="listbox"
+              aria-label={t("attachment.searchLabel")}
+            >
+              <p role="alert">{t("attachment.searchFailed")}</p>
+            </div>
           ) : (
             <div
-              className="grid max-h-40 gap-1 overflow-auto"
+              id={listboxId}
+              className="reference-options"
               role="listbox"
               aria-label={t("attachment.searchLabel")}
             >
               {entries.map((entry, index) => (
                 <Button
                   key={entry.path}
+                  id={optionId(index)}
+                  tabIndex={-1}
                   data-reference-kind={entry.kind}
                   data-reference-path={entry.path}
-                  className="justify-start text-left"
+                  className="w-full justify-start text-left"
                   variant={selected === index ? "navigation" : "ghost"}
+                  data-active={selected === index}
                   role="option"
                   disabled={sourceFrozen || pending > 0 || !!failed}
                   aria-selected={selected === index}
@@ -566,16 +749,18 @@ export function AttachmentControls({
                   ) : (
                     <FileIcon className="shrink-0" />
                   )}
-                  <span className="min-w-0 flex-1 whitespace-normal break-all">
-                    {entry.path}
+                  <span className="reference-name">
+                    {entry.path.split("/").at(-1)}
                     {entry.kind === "directory" ? "/" : ""}
                   </span>
-                  <span className="shrink-0 text-muted-foreground">
-                    {t(
-                      entry.kind === "directory"
-                        ? "attachment.directoryKind"
-                        : "attachment.fileKind",
-                    )}
+                  <span className="reference-directory">
+                    {entry.path.includes("/")
+                      ? entry.path.slice(0, entry.path.lastIndexOf("/"))
+                      : t(
+                          entry.kind === "directory"
+                            ? "attachment.directoryKind"
+                            : "attachment.fileKind",
+                        )}
                   </span>
                 </Button>
               ))}
@@ -585,25 +770,27 @@ export function AttachmentControls({
           {!searchPending &&
             search.data?.kind === "search" &&
             search.data.truncated && <p>{t("attachment.searchLimited")}</p>}
-          <Button
-            variant="ghost"
-            disabled={searchPending}
-            onClick={() => {
-              refreshSearch.current = true;
-              void search.refetch();
-            }}
-          >
-            {t("attachment.refreshSearch")}
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() => {
-              setManualSearch(false);
-              dismissMention();
-            }}
-          >
-            {t("attachment.cancelSearch")}
-          </Button>
+          <div className="reference-search-actions">
+            <Button
+              variant="ghost"
+              disabled={searchPending}
+              onClick={() => {
+                refreshSearch.current = true;
+                void search.refetch();
+              }}
+            >
+              {t("attachment.refreshSearch")}
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setManualSearch(false);
+                dismissMention();
+              }}
+            >
+              {t("attachment.cancelSearch")}
+            </Button>
+          </div>
         </div>
       )}
       {preparationFailure && (
@@ -670,160 +857,168 @@ export function AttachmentControls({
         </div>
       ))}
       {active.length > 0 && (
-        <ol
-          className="grid max-h-40 gap-2 overflow-auto"
-          aria-label={t("attachment.add")}
-        >
-          {active.map((item, index) => (
-            <li
-              key={`${ids[index]}:${index}`}
-              className="grid gap-1 rounded-md border border-border p-2"
-            >
-              {item ? (
-                <>
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <strong className="flex items-center gap-2 break-all">
-                      {(item.source === "reference" || item.frozenReference) &&
-                        (item.referenceKind === "directory" ? (
-                          <FolderIcon />
-                        ) : (
-                          <FileIcon />
-                        ))}
-                      {item.name}
-                      {item.referenceKind === "directory" ? "/" : ""}
-                    </strong>
-                    <span className="muted">
-                      {item.frozenReference
-                        ? t("attachment.frozenOnCopy")
-                        : item.source === "reference"
-                          ? t(
-                              item.referenceKind === "directory"
-                                ? "attachment.directoryAtSend"
-                                : "attachment.readAtSend",
-                            )
-                          : t(`attachment.${item.status}`)}
-                      {item.source !== "reference" && (
-                        <> · {Math.ceil(item.byteLength / 1024)} KiB</>
-                      )}
-                    </span>
-                  </div>
-                  {item.frozenReference && (
-                    <div className="muted">
-                      <Disclosure data-selectable>
-                        <DisclosureTrigger>
-                          {t("attachment.frozenSource")}
-                        </DisclosureTrigger>
-                        <dl className="grid gap-1 break-all">
-                          <dt>{t("attachment.frozenProject")}</dt>
-                          <dd>{item.frozenReference.projectPath}</dd>
-                          <dt>{t("attachment.frozenPath")}</dt>
-                          <dd>{item.frozenReference.path}</dd>
-                          <dt>{t("attachment.frozenVersion")}</dt>
-                          <dd>{item.frozenReference.version}</dd>
-                          <dt>{t("attachment.frozenTime")}</dt>
-                          <dd>
-                            <time dateTime={item.frozenReference.capturedAt}>
-                              {item.frozenReference.capturedAt}
-                            </time>
-                          </dd>
-                        </dl>
-                      </Disclosure>
+        <Disclosure>
+          <DisclosureTrigger>{t("attachment.details")}</DisclosureTrigger>
+          <ol
+            className="grid max-h-40 gap-2 overflow-auto"
+            aria-label={t("attachment.add")}
+          >
+            {active.map((item, index) => (
+              <li
+                key={`${ids[index]}:${index}`}
+                className="grid gap-1 rounded-md border border-border p-2"
+              >
+                {item ? (
+                  <>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <strong className="flex items-center gap-2 break-all">
+                        {(item.source === "reference" ||
+                          item.frozenReference) &&
+                          (item.referenceKind === "directory" ? (
+                            <FolderIcon />
+                          ) : (
+                            <FileIcon />
+                          ))}
+                        {item.name}
+                        {item.referenceKind === "directory" ? "/" : ""}
+                      </strong>
+                      <span className="muted">
+                        {item.frozenReference
+                          ? t("attachment.frozenOnCopy")
+                          : item.source === "reference"
+                            ? t(
+                                item.referenceKind === "directory"
+                                  ? "attachment.directoryAtSend"
+                                  : "attachment.readAtSend",
+                              )
+                            : t(`attachment.${item.status}`)}
+                        {item.source !== "reference" && (
+                          <> · {Math.ceil(item.byteLength / 1024)} KiB</>
+                        )}
+                      </span>
                     </div>
-                  )}
-                  {item.reason && (
-                    <p className="failure" role="status">
-                      {t(`attachment.reason.${item.reason}`)}
-                    </p>
-                  )}
-                  {!!item.coverageGaps.length && (
-                    <p>
-                      {item.textOnly
-                        ? t("attachment.textOnlyNotice")
-                        : t("attachment.coverageGap")}
-                    </p>
-                  )}
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      variant="ghost"
-                      disabled={sourceFrozen || pending > 0}
-                      onClick={() => void run({ kind: "preview", id: item.id })}
-                    >
-                      {t("attachment.preview", { name: item.name })}
-                    </Button>
-                    {item.status === "failed" && (
+                    {item.frozenReference && (
+                      <div className="muted">
+                        <Disclosure data-selectable>
+                          <DisclosureTrigger>
+                            {t("attachment.frozenSource")}
+                          </DisclosureTrigger>
+                          <dl className="grid gap-1 break-all">
+                            <dt>{t("attachment.frozenProject")}</dt>
+                            <dd>{item.frozenReference.projectPath}</dd>
+                            <dt>{t("attachment.frozenPath")}</dt>
+                            <dd>{item.frozenReference.path}</dd>
+                            <dt>{t("attachment.frozenVersion")}</dt>
+                            <dd>{item.frozenReference.version}</dd>
+                            <dt>{t("attachment.frozenTime")}</dt>
+                            <dd>
+                              <time dateTime={item.frozenReference.capturedAt}>
+                                {item.frozenReference.capturedAt}
+                              </time>
+                            </dd>
+                          </dl>
+                        </Disclosure>
+                      </div>
+                    )}
+                    {item.reason && (
+                      <p className="failure" role="status">
+                        {t(`attachment.reason.${item.reason}`)}
+                      </p>
+                    )}
+                    {!!item.coverageGaps.length && (
+                      <p>
+                        {item.textOnly
+                          ? t("attachment.textOnlyNotice")
+                          : t("attachment.coverageGap")}
+                      </p>
+                    )}
+                    <div className="flex flex-wrap gap-2">
                       <Button
                         variant="ghost"
                         disabled={sourceFrozen || pending > 0}
-                        onClick={() => void run({ kind: "retry", id: item.id })}
+                        onClick={() => openReference(item.id)}
                       >
-                        {t("attachment.retry")}
+                        {t("attachment.preview", { name: item.name })}
                       </Button>
-                    )}
-                    {(item.representation === "pdf-text" ||
-                      item.source === "reference") &&
-                      !!item.coverageGaps.length &&
-                      !item.textOnly && (
+                      {item.status === "failed" && (
                         <Button
                           variant="ghost"
                           disabled={sourceFrozen || pending > 0}
                           onClick={() =>
-                            void run({
-                              kind: "set-text-only",
-                              id: item.id,
-                              value: true,
-                            })
+                            void run({ kind: "retry", id: item.id })
                           }
                         >
-                          {t("attachment.textOnly")}
+                          {t("attachment.retry")}
                         </Button>
                       )}
+                      {(item.representation === "pdf-text" ||
+                        item.source === "reference") &&
+                        !!item.coverageGaps.length &&
+                        !item.textOnly && (
+                          <Button
+                            variant="ghost"
+                            disabled={sourceFrozen || pending > 0}
+                            onClick={() =>
+                              void run({
+                                kind: "set-text-only",
+                                id: item.id,
+                                value: true,
+                              })
+                            }
+                          >
+                            {t("attachment.textOnly")}
+                          </Button>
+                        )}
+                      <Button
+                        variant="ghost"
+                        aria-label={t("attachment.previous", {
+                          name: item.name,
+                        })}
+                        disabled={sourceFrozen || index === 0}
+                        onClick={() => move(index, -1)}
+                      >
+                        {t("attachment.previous", { name: item.name })}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        aria-label={t("attachment.next", { name: item.name })}
+                        disabled={sourceFrozen || index === active.length - 1}
+                        onClick={() => move(index, 1)}
+                      >
+                        {t("attachment.next", { name: item.name })}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        aria-label={t("attachment.remove", { name: item.name })}
+                        onClick={() => remove(item.id)}
+                      >
+                        {t("attachment.remove", { name: item.name })}
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="failure">
+                      {t("attachment.missing", { id: ids[index] ?? "" })}
+                    </p>
                     <Button
                       variant="ghost"
-                      aria-label={t("attachment.previous", { name: item.name })}
-                      disabled={sourceFrozen || index === 0}
-                      onClick={() => move(index, -1)}
+                      onClick={() => remove(ids[index] ?? "")}
                     >
-                      {t("attachment.previous", { name: item.name })}
+                      {t("attachment.remove", { name: ids[index] ?? "" })}
                     </Button>
-                    <Button
-                      variant="ghost"
-                      aria-label={t("attachment.next", { name: item.name })}
-                      disabled={sourceFrozen || index === active.length - 1}
-                      onClick={() => move(index, 1)}
-                    >
-                      {t("attachment.next", { name: item.name })}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      aria-label={t("attachment.remove", { name: item.name })}
-                      onClick={() => remove(item.id)}
-                    >
-                      {t("attachment.remove", { name: item.name })}
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <p className="failure">
-                    {t("attachment.missing", { id: ids[index] ?? "" })}
-                  </p>
-                  <Button
-                    variant="ghost"
-                    onClick={() => remove(ids[index] ?? "")}
-                  >
-                    {t("attachment.remove", { name: ids[index] ?? "" })}
-                  </Button>
-                </>
-              )}
-            </li>
-          ))}
-        </ol>
+                  </>
+                )}
+              </li>
+            ))}
+          </ol>
+        </Disclosure>
       )}
       {preview && (
         <AttachmentPreviewDialog
           item={preview.item}
           content={preview.content}
-          close={() => setPreview(null)}
+          close={closePreview}
         />
       )}
     </div>
@@ -902,5 +1097,94 @@ function AttachmentPreviewDialog({
         <p role="alert">{t(`attachment.reason.${content.reason}`)}</p>
       )}
     </dialog>
+  );
+}
+
+function useSuggestionPosition(editor: Editor | null, mention: Mention) {
+  const [position, setPosition] = useState<{
+    top: number;
+    left: number;
+    width: number;
+    maxHeight: number;
+    offset: string;
+  }>();
+  useLayoutEffect(() => {
+    if (!editor || !mention || editor.isDestroyed) return;
+    let frame = 0;
+    const measure = () => {
+      if (editor.isDestroyed) return;
+      const anchor = editor.view.coordsAtPos(mention.to);
+      const viewportWidth = document.documentElement.clientWidth;
+      const viewportHeight = window.innerHeight;
+      const width = Math.min(640, viewportWidth - 24);
+      const above = anchor.top - 12;
+      const below = viewportHeight - anchor.bottom - 12;
+      const placeAbove = above >= Math.min(160, below);
+      const height = Math.max(0, Math.min(320, placeAbove ? above : below));
+      const top = placeAbove ? anchor.top - 8 : anchor.bottom + 8;
+      const next = {
+        top,
+        left: Math.max(12, Math.min(anchor.left, viewportWidth - width - 12)),
+        width,
+        maxHeight: height,
+        offset: placeAbove ? "-100%" : "0%",
+      };
+      setPosition((old) =>
+        old &&
+        Object.keys(next).every(
+          (key) =>
+            old[key as keyof typeof next] === next[key as keyof typeof next],
+        )
+          ? old
+          : next,
+      );
+    };
+    const schedule = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(measure);
+    };
+    measure();
+    window.addEventListener("resize", schedule);
+    window.addEventListener("scroll", schedule, true);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("resize", schedule);
+      window.removeEventListener("scroll", schedule, true);
+    };
+  }, [editor, mention?.to]);
+  return position;
+}
+function AttachmentThumbnail({
+  item,
+  bridge,
+  threadId,
+}: {
+  item: Attachment;
+  bridge: AttachmentBridge;
+  threadId: AttachmentRequest["threadId"];
+}) {
+  const preview = useQuery({
+    queryKey: [
+      "attachment-thumbnail",
+      threadId,
+      item.id,
+      item.inputDigest ?? item.capturedAt,
+    ],
+    queryFn: () =>
+      bridge.request({
+        kind: "preview",
+        threadId,
+        id: item.id,
+        traceId: crypto.randomUUID(),
+      }),
+    enabled: item.status === "ready",
+    networkMode: "always",
+    retry: false,
+    gcTime: 60000,
+  });
+  return preview.data?.kind === "image" ? (
+    <img src={preview.data.dataUrl} alt={item.name} />
+  ) : (
+    <span className="truncate">{item.name}</span>
   );
 }

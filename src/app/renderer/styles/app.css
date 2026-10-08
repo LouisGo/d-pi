@@ -676,3 +676,87 @@
     overflow: auto;
   }
 }
+
+@layer components {
+  .composer {
+    position: relative;
+    border-radius: var(--radius-window);
+  }
+  .composer-footer {
+    border-top: none;
+  }
+  .attachment-rail {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--layout-gap);
+    margin: 0;
+    padding-block: var(--layout-gap);
+  }
+  .attachment-tile,
+  .attachment-file-chip {
+    position: relative;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .attachment-tile {
+    width: calc(var(--control-height) * 3);
+    height: calc(var(--control-height) * 3);
+  }
+  .attachment-file-chip .truncate {
+    max-width: 36ch;
+  }
+  .reference-suggestions,
+  .reference-search {
+    background: var(--surface);
+    color: var(--foreground);
+    border-radius: var(--radius-window);
+    border: 1px solid var(--border);
+    padding: calc(var(--layout-gap) / 2);
+  }
+  .reference-suggestions {
+    position: fixed;
+    top: var(--suggestion-top);
+    transform: translateY(var(--suggestion-offset));
+    left: var(--suggestion-left);
+    width: var(--suggestion-width);
+    max-height: var(--suggestion-height);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-overlay);
+  }
+  .reference-options {
+    overflow: auto;
+    min-height: 0;
+  }
+  .reference-name {
+    flex-shrink: 0;
+    max-width: 60%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .reference-directory {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--muted-foreground);
+  }
+  .reference-search-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: calc(var(--layout-gap) / 2);
+  }
+  .tiptap [data-attachment-id] {
+    display: inline;
+    border-radius: var(--radius-control);
+    background: var(--accent);
+    color: var(--accent-foreground);
+    padding-inline: calc(var(--layout-gap) / 2);
+  }
+  .tiptap .ProseMirror-selectednode[data-attachment-id] {
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+}

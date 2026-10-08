@@ -26,4 +26,16 @@ export {
   insertAttachmentReference,
 } from "./references/attachment-reference";
 export { FileReference } from "./references/file-reference-node";
+export {
+  captureReferenceFocus,
+  navigateReference,
+  selectedReference,
+} from "./references/reference-interaction";
 export { appendSelectionReference } from "./references/selection-insert";
+export {
+  isCompositionKey,
+  type ReferenceTrigger,
+  referenceSourceMatches,
+  SuggestionController,
+  trackReferenceRange,
+} from "./references/suggestion-controller";

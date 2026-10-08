@@ -1,4 +1,5 @@
 export const ui = {
+  "attachment.details": "Attachment details",
   "ui.reading.latest": "Latest segment",
   "ui.conversation.newOutput": "New output",
   "ui.conversation.toBottom": "Back to list bottom",
