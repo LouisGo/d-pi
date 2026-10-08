@@ -70,13 +70,15 @@ export function ModelPickerPanel({
   const [provider, setProvider] = useState<string | null>(null);
   const [limit, setLimit] = useState(100);
   const list = useRef<HTMLDivElement>(null);
-  const chatModels = models.filter((m) => (m.kind ?? "chat") === "chat");
+  const chatModels = filterModelCatalog(models, {
+    ...preferences,
+    kind: "chat",
+    availableOnly: true,
+    sessionSelectableOnly: true,
+    currentKey,
+  });
   const providers = [...new Set(chatModels.map((m) => m.provider))].sort(
-    (a, b) => {
-      const available = (id: string) =>
-        chatModels.some((m) => m.provider === id && m.available);
-      return Number(available(b)) - Number(available(a)) || a.localeCompare(b);
-    },
+    (a, b) => a.localeCompare(b),
   );
   const visible = filterModelCatalog(models, {
     ...preferences,
@@ -84,6 +86,8 @@ export function ModelPickerPanel({
     ...(provider && provider !== "favorites" ? { provider } : {}),
     favoritesOnly: provider === "favorites",
     kind: "chat",
+    availableOnly: true,
+    sessionSelectableOnly: true,
     currentKey,
   });
   const navigate = (event: KeyboardEvent<HTMLElement>) => {
@@ -200,7 +204,7 @@ export function ModelPickerPanel({
                   data-current={current || undefined}
                 >
                   <Button
-                    variant="ghost"
+                    variant="navigation"
                     className="model-picker-choice"
                     data-model-id={model.id}
                     aria-current={current ? "true" : undefined}

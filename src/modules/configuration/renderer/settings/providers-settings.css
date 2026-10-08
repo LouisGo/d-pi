@@ -23,6 +23,11 @@
   color: var(--muted-foreground);
   font-size: var(--text-small);
 }
+.providers-source-paths {
+  display: grid;
+  gap: var(--region-gap);
+  padding-block-start: var(--layout-gap);
+}
 .providers-source strong {
   color: var(--foreground);
 }
@@ -101,6 +106,11 @@
   gap: var(--region-gap);
   min-inline-size: 0;
   overflow-wrap: anywhere;
+}
+.providers-provider-identity > strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .providers-detail {
   min-inline-size: 0;
@@ -274,7 +284,7 @@
   gap: var(--layout-gap);
   overflow-wrap: anywhere;
 }
-@container (max-width: 40rem) {
+@container (max-width: 640px) {
   .providers-workspace {
     grid-template-columns: minmax(0, 1fr);
   }

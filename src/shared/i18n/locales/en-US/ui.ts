@@ -1,4 +1,6 @@
 export const ui = {
+  "models.editChanged":
+    "Native configuration changed while this form was open. Keep your edits, then cancel and reopen the form to load the latest configuration before saving.",
   "models.pricing.free": "Free",
   "models.pricing.included": "Included in plan",
   "models.pricing.variable": "Variable pricing",

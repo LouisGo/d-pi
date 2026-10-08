@@ -6,6 +6,7 @@ export type CatalogFilter = {
   query?: string;
   kind?: string;
   availableOnly?: boolean;
+  sessionSelectableOnly?: boolean;
   favoritesOnly?: boolean;
   favorites?: readonly string[];
   hidden?: readonly string[];
@@ -34,7 +35,14 @@ export function filterModelCatalog(
       if (filter.kind && filter.kind !== "all" && kind !== filter.kind)
         return false;
       if (filter.provider && model.provider !== filter.provider) return false;
-      if (filter.availableOnly && !model.available) return false;
+      if (filter.availableOnly && !model.available && key !== filter.currentKey)
+        return false;
+      if (
+        filter.sessionSelectableOnly &&
+        model.sessionSelectable === false &&
+        key !== filter.currentKey
+      )
+        return false;
       if (filter.favoritesOnly && !favorites.has(key)) return false;
       if (hidden.has(key) && key !== filter.currentKey) return false;
       const text =

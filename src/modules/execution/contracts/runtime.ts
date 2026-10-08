@@ -80,6 +80,7 @@ export const RuntimeViewSchema = z.strictObject({
   selectedModel: ModelSelectionSchema.optional(),
   thinkingLevel: z.string().optional(),
   modelChanging: z.boolean().optional(),
+  modelOperation: RuntimeOperationSchema.optional(),
   message: UiMessageSchema,
 });
 export type RuntimeView = z.infer<typeof RuntimeViewSchema>;

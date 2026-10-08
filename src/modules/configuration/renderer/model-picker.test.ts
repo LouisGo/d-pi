@@ -84,8 +84,8 @@ it("preserves the hidden current model, excludes non-chat models, and keeps unav
   const locked = ui.host.querySelector<HTMLButtonElement>(
     '[data-model-id="deepseek-needs-key"]',
   );
-  expect(locked?.disabled).toBe(true);
-  expect(locked?.textContent).toContain("Authentication required");
+  expect(locked).toBeNull();
+  expect(ui.host.querySelector('[aria-label="deepseek"]')).toBeNull();
   const next = ui.host.querySelector<HTMLButtonElement>(
     '[data-model-id="claude-next"]',
   );
@@ -143,6 +143,7 @@ it("blocks model writes while busy but still opens connection settings", async (
 });
 it("keeps native policy exclusions unselectable and preserves caret keys in search", async () => {
   const ui = await renderPanel({
+    currentKey: JSON.stringify(["openai-codex", "excluded"]),
     models: [
       model("openai-codex", "eligible"),
       { ...model("openai-codex", "excluded"), sessionSelectable: false },

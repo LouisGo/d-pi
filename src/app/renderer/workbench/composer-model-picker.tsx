@@ -99,15 +99,19 @@ export function ComposerModelPicker({
     setPending(true);
     setFailure(null);
     try {
-      await runtime.selectModel({
+      const readback = await runtime.selectModel({
         provider: target.provider,
         modelId: target.id,
         thinking,
       });
-      const readback = runtime.getSnapshot();
       if (runtime.stateStore.getState().disposed) return;
       const applied =
         readback?.threadId === thread.context.threadId &&
+        !readback.modelChanging &&
+        (!readback.modelOperation ||
+          readback.modelOperation.status === "acknowledged") &&
+        JSON.stringify(readback.selectedModel?.thinking) ===
+          JSON.stringify(thinking) &&
         readback.phase !== "interrupted" &&
         readback.phase !== "failed" &&
         (readback.model === `${target.provider}/${target.id}` ||

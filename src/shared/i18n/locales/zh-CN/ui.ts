@@ -1,4 +1,6 @@
 export const ui = {
+  "models.editChanged":
+    "编辑期间原生配置已变化。请保留需要的修改，取消并重新打开表单，载入最新配置后再保存。",
   "models.pricing.free": "免费",
   "models.pricing.included": "套餐内",
   "models.pricing.variable": "费用可变",

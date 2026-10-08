@@ -80,3 +80,17 @@ it("searches provider, native model ID and name together, while respecting avail
     }),
   ).toEqual([moon]);
 });
+
+it("limits session choices to native selectable models while keeping an unavailable current identity visible", () => {
+  const current = model("offline", "current", false);
+  const eligible = model("ready", "eligible");
+  const excluded = { ...model("ready", "excluded"), sessionSelectable: false };
+  const missing = model("other", "needs-key", false);
+  expect(
+    filterModelCatalog([current, eligible, excluded, missing], {
+      availableOnly: true,
+      sessionSelectableOnly: true,
+      currentKey: catalogModelKey(current),
+    }),
+  ).toEqual([current, eligible]);
+});

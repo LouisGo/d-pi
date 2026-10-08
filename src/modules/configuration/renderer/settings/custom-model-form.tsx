@@ -34,6 +34,7 @@ export function CustomModelForm({
   onClose(): void;
 }) {
   const { t } = useI18n();
+  const [editRevision] = useState(snapshot.revision);
   const [providerId, setProvider] = useState(model?.provider ?? provider);
   const [id, setId] = useState(model?.id ?? "");
   const [name, setName] = useState(model?.name ?? "");
@@ -99,7 +100,7 @@ export function CustomModelForm({
       className="providers-custom-form providers-detail-section"
       onSubmit={async (event) => {
         event.preventDefault();
-        if (disabled || !snapshot.revision) return;
+        if (disabled || !editRevision) return;
         const result = CustomModelInputSchema.safeParse({
           provider: providerId,
           id,
@@ -128,7 +129,7 @@ export function CustomModelForm({
             kind: "upsert-custom-model",
             scope,
             model: result.data,
-            expectedRevision: snapshot.revision,
+            expectedRevision: editRevision,
             traceId: crypto.randomUUID(),
           })
         )
@@ -188,6 +189,11 @@ export function CustomModelForm({
           onCheckedChange={setImage}
         />
       </SettingRow>
+      {snapshot.revision !== editRevision && (
+        <p role="status" className="providers-hint">
+          {t("models.editChanged")}
+        </p>
+      )}
       {invalid && (
         <p className="failure" role="alert">
           {t("models.customInvalid")}
@@ -195,7 +201,7 @@ export function CustomModelForm({
       )}
       <p className="providers-hint">{t("models.customNewProvider")}</p>
       <div className="providers-form-actions">
-        <Button type="submit" disabled={disabled || !snapshot.revision}>
+        <Button type="submit" disabled={disabled || !editRevision}>
           {t("models.save")}
         </Button>
         <Button variant="ghost" disabled={disabled} onClick={onClose}>

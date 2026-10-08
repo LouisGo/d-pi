@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useI18n } from "../../../preferences/renderer/public";
 import {
   Button,
+  Disclosure,
+  DisclosureTrigger,
   ProviderBrandIcon,
   SearchIcon,
   Switch,
@@ -49,7 +51,6 @@ export function ProvidersSettings({
   );
   return (
     <div className="providers-settings">
-      <p className="providers-hint">{t("providers.description")}</p>
       <div className="providers-source">
         <strong>
           {t(
@@ -58,14 +59,19 @@ export function ProvidersSettings({
               : "providers.threadScope",
           )}
         </strong>
-        <span data-selectable>{snapshot.source.directory}</span>
-        <span data-selectable>{snapshot.source.cwd}</span>
-        {snapshot.source.profile && (
-          <span data-selectable>
-            {t("providers.profile")}: {snapshot.source.profile}
-          </span>
-        )}
-        <p className="providers-hint">{t("providers.sharedNotice")}</p>
+        <Disclosure>
+          <DisclosureTrigger>{t("providers.source")}</DisclosureTrigger>
+          <div className="providers-source-paths">
+            <span data-selectable>{snapshot.source.directory}</span>
+            <span data-selectable>{snapshot.source.cwd}</span>
+            {snapshot.source.profile && (
+              <span data-selectable>
+                {t("providers.profile")}: {snapshot.source.profile}
+              </span>
+            )}
+            <p className="providers-hint">{t("providers.sharedNotice")}</p>
+          </div>
+        </Disclosure>
         <Button variant="ghost" disabled={disabled} onClick={onRefresh}>
           {t("config.refresh")}
         </Button>
@@ -102,7 +108,7 @@ export function ProvidersSettings({
                 >
                   <ProviderBrandIcon provider={provider.id} size={20} />
                   <span className="providers-provider-identity">
-                    <strong>{provider.name}</strong>
+                    <strong title={provider.name}>{provider.name}</strong>
                     <span className="providers-hint">
                       {t(
                         provider.disabled

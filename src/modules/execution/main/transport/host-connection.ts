@@ -82,10 +82,21 @@ export class HostConnection {
   }
   operation(
     command:
-      | Extract<HostCommand, { kind: "manage-queue" | "configure-subagent" }>
+      | Extract<
+          HostCommand,
+          { kind: "manage-queue" | "configure-subagent" | "select-model" }
+        >
       | { kind: "state"; traceId: string; connectionGeneration: string },
   ): Promise<Extract<HostMessage, { kind: "operation-result" }>> {
-    const target = command.kind === "state" ? command : command.command;
+    const target =
+      command.kind === "state"
+        ? command
+        : command.kind === "select-model"
+          ? {
+              traceId: command.command.traceId,
+              connectionGeneration: command.connectionGeneration,
+            }
+          : command.command;
     const unknown = {
       kind: "operation-result" as const,
       traceId: target.traceId,

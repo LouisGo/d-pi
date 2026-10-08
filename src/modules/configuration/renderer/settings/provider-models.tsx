@@ -67,7 +67,10 @@ export function ProviderModels({
   const [kind, setKind] = useState("");
   const [limit, setLimit] = useState(100);
   const [editor, setEditor] = useState<{ model?: Model } | null>(null);
-  const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<{
+    id: string;
+    revision: string;
+  } | null>(null);
   const [preferenceBusy, setPreferenceBusy] = useState(false);
   const [preferenceFailed, setPreferenceFailed] = useState(false);
   const pendingPreference = useRef(false);
@@ -305,7 +308,7 @@ export function ProviderModels({
                   >
                     {t("models.editCustom", { name: model.name })}
                   </Button>
-                  {deleting === model.id ? (
+                  {deleting?.id === model.id ? (
                     <>
                       <Button
                         variant="destructive"
@@ -318,7 +321,7 @@ export function ProviderModels({
                               scope,
                               providerId: model.provider,
                               modelId: model.id,
-                              expectedRevision: snapshot.revision,
+                              expectedRevision: deleting.revision,
                               traceId: crypto.randomUUID(),
                             })
                           )
@@ -342,7 +345,13 @@ export function ProviderModels({
                         name: model.name,
                       })}
                       disabled={disabled || !snapshot.revision}
-                      onClick={() => setDeleting(model.id)}
+                      onClick={() =>
+                        snapshot.revision &&
+                        setDeleting({
+                          id: model.id,
+                          revision: snapshot.revision,
+                        })
+                      }
                     >
                       {t("models.deleteCustom", { name: model.name })}
                     </Button>

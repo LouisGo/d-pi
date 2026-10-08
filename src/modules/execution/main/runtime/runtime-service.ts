@@ -146,6 +146,7 @@ export class RuntimeService {
           delete this.view.queueOperation;
           delete this.view.subagentOperation;
           delete this.view.modelChanging;
+          delete this.view.modelOperation;
         }
         this.update({ busy: false });
       },
@@ -563,13 +564,6 @@ export class RuntimeService {
                 },
               });
           }
-          if (operation === "select-model")
-            this.update({
-              modelChanging: false,
-              ...(status === "unknown"
-                ? { model: null, message: uiMessage("runtime.controlUnknown") }
-                : {}),
-            });
           if (status === "failed")
             this.update({
               traceId,
@@ -888,16 +882,32 @@ export class RuntimeService {
           !sameDirectoryIdentity(this.instanceDirectory, identity)
         )
           throw Error("Execution grant invalid");
-        this.connection.send({
+        const generation = this.currentConnectionGeneration;
+        this.update({
+          modelChanging: true,
+          traceId: command.traceId,
+          modelOperation: { traceId: command.traceId, status: "pending" },
+        });
+        const response = await this.connection.operation({
           kind: "select-model",
           command,
-          connectionGeneration: this.currentConnectionGeneration,
+          connectionGeneration: generation,
         });
-        this.update({ modelChanging: true, traceId: command.traceId });
+        if (generation !== this.currentConnectionGeneration) return this.view;
+        this.update({
+          modelChanging: false,
+          modelOperation: { traceId: command.traceId, status: response.status },
+          ...(response.status === "acknowledged"
+            ? { selectedModel: command.selection }
+            : response.status === "unknown"
+              ? { model: null, message: uiMessage("runtime.controlUnknown") }
+              : { message: uiMessage("runtime.controlFailed") }),
+        });
       } else {
         this.update({
           selectedModel: command.selection,
           traceId: command.traceId,
+          modelOperation: { traceId: command.traceId, status: "acknowledged" },
         });
       }
       return this.view;

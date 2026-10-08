@@ -29,7 +29,10 @@ export function ProviderAccounts({
   write: ReturnType<typeof useConfigurationWrite>;
 }) {
   const { t } = useI18n();
-  const [disconnect, setDisconnect] = useState<number | null>(null);
+  const [disconnect, setDisconnect] = useState<{
+    id: number;
+    revision: string;
+  } | null>(null);
   const [apiKey, setApiKey] = useState("");
   const keyProbe = provider.loginMethods.find(
     (method) => method.kind === "api-key",
@@ -104,7 +107,7 @@ export function ProviderAccounts({
                 )}
             </span>
           </div>
-          {disconnect === account.credentialId ? (
+          {disconnect?.id === account.credentialId ? (
             <div className="providers-confirm-actions">
               <p className="providers-hint">
                 {t("providers.disconnectNotice")}
@@ -118,7 +121,7 @@ export function ProviderAccounts({
                     kind: "logout",
                     providerId: provider.id,
                     credentialId: account.credentialId,
-                    expectedRevision: revision,
+                    expectedRevision: disconnect.revision,
                     scope,
                     traceId: crypto.randomUUID(),
                   });
@@ -139,7 +142,10 @@ export function ProviderAccounts({
             <Button
               variant="ghost"
               disabled={disabled || !revision}
-              onClick={() => setDisconnect(account.credentialId)}
+              onClick={() =>
+                revision &&
+                setDisconnect({ id: account.credentialId, revision })
+              }
             >
               {t("providers.disconnect")}
             </Button>

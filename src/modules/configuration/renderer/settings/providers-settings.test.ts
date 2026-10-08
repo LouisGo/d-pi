@@ -523,3 +523,55 @@ it("shows external credentials and unvalidated key behavior, retains failed inpu
       ?.getAttribute("aria-checked"),
   ).toBe("true");
 });
+
+it("keeps the edit revision fixed when a refreshed snapshot changes the native model", async () => {
+  await render();
+  await act(async () => button("Edit custom-model").click());
+  await input('input[name="model-name"]', "Unsaved local name");
+  currentSnapshot = (scope, traceId) => ({
+    ...snapshot(scope, traceId),
+    revision: "b".repeat(64),
+    models: snapshot(scope, traceId).models.map((entry) =>
+      entry.id === "custom-model"
+        ? { ...entry, baseUrl: "https://changed.example.test/v1" }
+        : entry,
+    ),
+  });
+  await act(async () => client.invalidateQueries());
+  await act(
+    async () => new Promise<void>((resolve) => setTimeout(resolve, 25)),
+  );
+  expect(
+    client.getQueryData<ConfigurationSnapshot>(["configuration", application])
+      ?.revision,
+  ).toBe("b".repeat(64));
+  await act(async () => button("Save model").click());
+  expect(bridge.request).toHaveBeenCalledWith(
+    expect.objectContaining({
+      kind: "upsert-custom-model",
+      expectedRevision: revision,
+      model: expect.objectContaining({ name: "Unsaved local name" }),
+    }),
+  );
+});
+
+it("keeps destructive confirmations tied to the native revision that was confirmed", async () => {
+  await render();
+  await act(async () => button("Delete custom-model").click());
+  await act(async () => button("Disconnect account").click());
+  currentSnapshot = (scope, traceId) => ({
+    ...snapshot(scope, traceId),
+    revision: "b".repeat(64),
+  });
+  await act(async () => client.invalidateQueries());
+  await act(
+    async () => new Promise<void>((resolve) => setTimeout(resolve, 25)),
+  );
+  await act(async () => button("Confirm disconnect").click());
+  await act(async () => button("Confirm delete").click());
+  for (const kind of ["logout", "delete-custom-model"]) {
+    expect(bridge.request).toHaveBeenCalledWith(
+      expect.objectContaining({ kind, expectedRevision: revision }),
+    );
+  }
+});

@@ -181,7 +181,7 @@ it("traces a rejected receipt with the original request identity without logging
   });
 });
 
-it("rejects a preferences receipt from a different locale and keeps the request trace", async () => {
+it("accepts the Main-owned current locale in a preferences receipt", async () => {
   await import("./index");
   const bridge = shell.expose.mock.calls.at(-1)?.[1];
   if (!bridge) throw Error("bridge not exposed");
@@ -198,7 +198,10 @@ it("rejects a preferences receipt from a different locale and keeps the request 
   });
   await expect(
     bridge.request({ kind: "preferences", traceId, value }),
-  ).rejects.toMatchObject({ code: "invalid-reply", traceId });
+  ).resolves.toMatchObject({
+    kind: "preferences-saved",
+    value: { locale: "en-US" },
+  });
 });
 
 it("preserves the transport cause and trace without putting it into diagnostics", async () => {
