@@ -25,7 +25,7 @@ export function createAttachmentEditor(
       if (applied) editor.commands.focus();
       return applied;
     },
-    insert(item, range) {
+    insert(item, range, focus = true) {
       if (
         editor.isDestroyed ||
         !editor.isEditable ||
@@ -37,7 +37,7 @@ export function createAttachmentEditor(
       const tr = insertAttachmentReference(editor.state, item, range);
       editor.view.dispatch(tr);
       if (!editor.state.doc.eq(tr.doc)) return false;
-      editor.commands.focus();
+      if (focus) editor.commands.focus();
       return true;
     },
   };

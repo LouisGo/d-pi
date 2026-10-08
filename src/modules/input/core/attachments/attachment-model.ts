@@ -22,7 +22,7 @@ export type AttachmentRange = {
   valid?: boolean;
 };
 export interface AttachmentEditorPort {
-  insert(item: Attachment, range?: AttachmentRange): boolean;
+  insert(item: Attachment, range?: AttachmentRange, focus?: boolean): boolean;
   applyBatch?(items: Attachment[]): boolean;
 }
 export type AttachmentRequestFailure = {
@@ -30,7 +30,7 @@ export type AttachmentRequestFailure = {
   reason: AttachmentFailureReason | null;
   range?: AttachmentRange;
 };
-type Insertion = { item: Attachment; range?: AttachmentRange };
+type Insertion = { item: Attachment; range?: AttachmentRange; focus: boolean };
 type State = {
   acceptingSources: boolean;
   pending: number;
@@ -110,7 +110,7 @@ export class AttachmentModel {
       if (this.editor === editor) this.editor = null;
     };
   }
-  insert(item: Attachment, range?: AttachmentRange): void {
+  insert(item: Attachment, range?: AttachmentRange, focus = true): void {
     if (
       this.disposed ||
       this.sourceFreezes > 0 ||
@@ -120,7 +120,7 @@ export class AttachmentModel {
     this.store.setState((state) => ({
       insertions: [
         ...state.insertions.filter((entry) => entry.item.id !== item.id),
-        { item, ...(range ? { range } : {}) },
+        { item, focus, ...(range ? { range } : {}) },
       ],
     }));
     this.flushInsertions();
@@ -135,7 +135,7 @@ export class AttachmentModel {
     if (!this.editor || this.disposed) return;
     const pending = this.store.getState().insertions;
     const remaining = pending.filter(
-      ({ item, range }) => !this.editor?.insert(item, range),
+      ({ item, range, focus }) => !this.editor?.insert(item, range, focus),
     );
     if (remaining.length !== pending.length)
       this.store.setState({ insertions: remaining });
@@ -241,7 +241,9 @@ export class AttachmentModel {
             if (oldest) this.assetReadiness.delete(oldest);
           }
         }
-        if (add) for (const item of reply.items) this.insert(item, range);
+        if (add)
+          for (const item of reply.items)
+            this.insert(item, range, command.kind !== "choose-import");
         if (retryingFailure && this.store.getState().failed === retryingFailure)
           this.store.setState({
             failed: this.cleanupFailures.values().next().value ?? null,
