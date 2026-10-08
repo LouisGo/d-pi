@@ -1,5 +1,18 @@
 export { Button, type ButtonProps } from "./button";
-export { SearchIcon } from "./components/icons/common";
+export {
+  ModelBrandIcon,
+  type ModelBrandIconProps,
+  ProviderBrandIcon,
+  type ProviderBrandIconProps,
+} from "./components/icons/brands";
+export {
+  CheckIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  RefreshIcon,
+  SearchIcon,
+  StarIcon,
+} from "./components/icons/common";
 export {
   ChoiceGroup,
   type ChoiceGroupProps,
@@ -15,6 +28,7 @@ export {
   type TextInputProps,
 } from "./controls";
 export { installControlFocusVisibility } from "./focus-visibility";
+export { Popover, type PopoverProps } from "./popover";
 export {
   Checkbox,
   type CheckboxProps,
