@@ -1,0 +1,196 @@
+{
+  "capturedAt": "2026-10-08T13:49:01.279Z",
+  "build": {
+    "version": "0.1.0-workbench.3",
+    "commit": "c2832460119b051da921d10c318868b47c3ea71e",
+    "dirty": true,
+    "id": "c2832460-dirty-870ce32b"
+  },
+  "records": [
+    {
+      "time": "2026-10-08T13:32:44.150Z",
+      "operation": "runtime:start",
+      "stage": "received",
+      "connectionId": "34646179-876b-4eb7-aba4-15f8a64efd6a",
+      "build": {
+        "version": "0.1.0-workbench.3",
+        "commit": "c2832460119b051da921d10c318868b47c3ea71e",
+        "dirty": true,
+        "id": "c2832460-dirty-870ce32b"
+      }
+    },
+    {
+      "time": "2026-10-08T13:32:44.416Z",
+      "operation": "runtime:host",
+      "stage": "disconnected",
+      "code": "state-unavailable",
+      "connectionId": "e3491c03-3fd4-46c9-a804-52d84877be78",
+      "build": {
+        "version": "0.1.0-workbench.3",
+        "commit": "c2832460119b051da921d10c318868b47c3ea71e",
+        "dirty": true,
+        "id": "c2832460-dirty-870ce32b"
+      }
+    },
+    {
+      "time": "2026-10-08T13:32:44.417Z",
+      "operation": "runtime:start",
+      "stage": "failed",
+      "connectionId": "34646179-876b-4eb7-aba4-15f8a64efd6a",
+      "build": {
+        "version": "0.1.0-workbench.3",
+        "commit": "c2832460119b051da921d10c318868b47c3ea71e",
+        "dirty": true,
+        "id": "c2832460-dirty-870ce32b"
+      }
+    },
+    {
+      "time": "2026-10-08T13:32:44.417Z",
+      "operation": "runtime:host",
+      "stage": "disconnected",
+      "code": "state-unavailable",
+      "connectionId": "e3491c03-3fd4-46c9-a804-52d84877be78",
+      "build": {
+        "version": "0.1.0-workbench.3",
+        "commit": "c2832460119b051da921d10c318868b47c3ea71e",
+        "dirty": true,
+        "id": "c2832460-dirty-870ce32b"
+      }
+    },
+    {
+      "time": "2026-10-08T13:32:44.417Z",
+      "operation": "runtime:host",
+      "stage": "disconnected",
+      "code": "state-unavailable",
+      "connectionId": "e3491c03-3fd4-46c9-a804-52d84877be78",
+      "build": {
+        "version": "0.1.0-workbench.3",
+        "commit": "c2832460119b051da921d10c318868b47c3ea71e",
+        "dirty": true,
+        "id": "c2832460-dirty-870ce32b"
+      }
+    },
+    {
+      "time": "2026-10-08T13:32:44.417Z",
+      "operation": "runtime:host",
+      "stage": "disconnected",
+      "code": "state-unavailable",
+      "connectionId": "e3491c03-3fd4-46c9-a804-52d84877be78",
+      "build": {
+        "version": "0.1.0-workbench.3",
+        "commit": "c2832460119b051da921d10c318868b47c3ea71e",
+        "dirty": true,
+        "id": "c2832460-dirty-870ce32b"
+      }
+    },
+    {
+      "time": "2026-10-08T13:32:44.458Z",
+      "operation": "runtime:host",
+      "stage": "disconnected",
+      "code": "exit",
+      "causeCode": "native-unavailable",
+      "connectionId": "e3491c03-3fd4-46c9-a804-52d84877be78",
+      "build": {
+        "version": "0.1.0-workbench.3",
+        "commit": "c2832460119b051da921d10c318868b47c3ea71e",
+        "dirty": true,
+        "id": "c2832460-dirty-870ce32b"
+      }
+    },
+    {
+      "time": "2026-10-08T13:32:44.476Z",
+      "operation": "runtime:native-exit",
+      "stage": "exited",
+      "terminationReason": "permit-rejected",
+      "requestedExitCode": null,
+      "exitSignal": "SIGKILL",
+      "exitCode": null,
+      "processPid": 32363,
+      "connectionId": "e3491c03-3fd4-46c9-a804-52d84877be78",
+      "build": {
+        "version": "0.1.0-workbench.3",
+        "commit": "c2832460119b051da921d10c318868b47c3ea71e",
+        "dirty": true,
+        "id": "c2832460-dirty-870ce32b"
+      }
+    },
+    {
+      "time": "2026-10-08T13:32:44.476Z",
+      "operation": "runtime:host",
+      "stage": "exited",
+      "connectionId": "e3491c03-3fd4-46c9-a804-52d84877be78",
+      "build": {
+        "version": "0.1.0-workbench.3",
+        "commit": "c2832460119b051da921d10c318868b47c3ea71e",
+        "dirty": true,
+        "id": "c2832460-dirty-870ce32b"
+      }
+    }
+  ],
+  "lease": {
+    "ownerRows": [],
+    "interpretation": "Owner rows already deleted by confirmed release; cannot infer whether native was registered earlier."
+  },
+  "sdkHashValidity": [
+    {
+      "file": "bun",
+      "matches": true
+    },
+    {
+      "file": "host.mjs",
+      "matches": true
+    },
+    {
+      "file": "gate.js",
+      "matches": true
+    },
+    {
+      "file": "configuration.mjs",
+      "matches": true
+    },
+    {
+      "file": "configuration-readonly.mjs",
+      "matches": true
+    },
+    {
+      "file": "model-selection.mjs",
+      "matches": true
+    },
+    {
+      "file": "reading-session.mjs",
+      "matches": true
+    },
+    {
+      "file": "image-input.mjs",
+      "matches": true
+    },
+    {
+      "file": "image-compression.mjs",
+      "matches": true
+    },
+    {
+      "file": "native-queue.mjs",
+      "matches": true
+    },
+    {
+      "file": "native-subagent-configuration.mjs",
+      "matches": true
+    },
+    {
+      "file": "pdf-content.mjs",
+      "matches": true
+    },
+    {
+      "file": "node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts",
+      "matches": true
+    }
+  ],
+  "localhostRequests": [],
+  "stderr": "NativeSession intentionally drains stderr without persisting it; no raw stderr evidence exists for this failed attempt.",
+  "facts": [
+    "Native bootstrap emitted permit-rejected, then native-exit SIGKILL before importing SDK.",
+    "No model send, no provider probe.",
+    "External CDP runtime.inspect was polled during starting; script is now changed to subscribe."
+  ],
+  "sourceInference": "RuntimeService.inspect can send state while connected but still starting; SessionHost immediately refreshes get_state. Native bootstrap expects permit as its first stdin chunk. This can reject an early get_state as a permit. No safety check was relaxed."
+}

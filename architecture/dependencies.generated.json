@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "6750886a9788533da829d5cba133182373ac9c9ddbc1bb6502fabbaf8390b3a1",
+  "inputsHash": "1cd3785e3aa1664cad07d7545a3fede76b3d74220d5630044773d668eb025e5f",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 515,
@@ -423,7 +423,7 @@
       ],
       "materialized": true,
       "files": 15,
-      "lines": 2595,
+      "lines": 2594,
       "publicEntries": [
         {
           "path": "src/modules/ui/renderer/public.ts",

@@ -8,9 +8,11 @@
 
 结果：设置中的 Provider 主从管理视图，原生认证与取消/断开/刷新，模型能力目录和必要原生配置；Composer 的可复用搜索选择 panel、厂商/模型 logo、收藏及推理档位，成功显示实际原生回读。参考用户四张截图及本地 T3 `30cc788975500a8c00d32a50f348174d1ce578d1`；沿用 d-pi 的 compact、light/dark、自有 Base UI 组件与 token。
 
-验收：确定性无头/IPC/原生隔离测试先行，集成 check/build 与两轴独立评审；只为实际视觉/原生缺口进行一次有界 GUI 验证，必要修正后最多一次确认，不频繁 E2E。真实供应商登录需要用户实际账户交互，不能用 fixture 冒称认证服务验收；不自动计费探测。工程、试用、用户认可分别记录。
+验收：确定性无头/IPC/原生隔离测试先行，集成检查/build 与两轴独立评审；一次有界 GUI 验证，必要修正后一次重启确认；最后纯视觉修正只在同一实例重载 Renderer，不再启动应用或发送请求。真实供应商登录需要用户实际账户交互，不能用 fixture 冒称认证服务验收；不自动计费探测。工程、试用、用户认可分别记录。
 
 重要待决：无。原生注册表中没有可接入 API 的能力保留准确限制；可逆实现细节自主决定。仅本地交付，不自动 push、merge main 或公开发布。
+
+2026-10-08 工程闭环完成，Dev 已交付待试用。19 条固定 OMP 隔离流程通过；1371 项完整测试限制并发后通过、2 项按既有条件跳过，默认并行 worker 的失败和未知根因见 [validation](validation.md)。正式设置/Composer 已实际验证：凭据存储、模型 CRUD/偏好、真实 Host 回读与一次 localhost 发送响应；累计 1 GET 目录发现、1 POST 生成、0 真实供应商请求。深浅主题、键盘/鼠标焦点和 800px viewport 窄布局通过。两轴发现均修复；[交接](handoff.md)记录源码和 Main/Renderer 的不同构建时点，用户认可 pending。
 
 ## 范围与合同
 
@@ -36,5 +38,5 @@
 | [05](issues/05-integration-delivery.md) | 组合验证、评审、本地交付 | 主 Agent |
 
 ```project-status
-[{"id":"providers-models","title":"Provider 与 Models 完整闭环","phase":"M2","engineering":"in-progress","trial":"not-delivered","acceptance":"pending","next":"固定 OMP 能力、无头接入和模型偏好，再交付设置与 Composer panel","constraints":"本地交付，不自动 push/merge main/发布；真实认证与用户认可独立；E2E 按必要缺口有界执行"}]
+[{"id":"providers-models","title":"Provider 与 Models 完整闭环","phase":"M2","engineering":"complete","trial":"delivered","acceptance":"pending","next":"按交接启动 Dev，试用实际账户与 Provider/Models 体验","constraints":"本地交付，未 push/merge main/发布；真实认证服务与用户认可待试用；默认并行测试 worker 失败与限制并发通过分开记录"}]
 ```
