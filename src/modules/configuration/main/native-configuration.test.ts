@@ -331,7 +331,7 @@ it("keeps the old job cancellation outlet after its Thread disappears, and retai
   frame(process, traceId, {
     ...identity,
     kind: "challenge",
-    url: "https://unsafe.invalid/login",
+    url: "http://unsafe.invalid/login",
     instructions: "native instructions",
   });
   expect(
@@ -545,5 +545,70 @@ it("reports the one-shot credential timeout without claiming rejection or repeat
   } finally {
     service.dispose();
     vi.useRealTimers();
+  }
+});
+
+it("carries the native provider id and opens only that job's challenge including loopback launch URLs", async () => {
+  const process = child();
+  mocks.spawn.mockReturnValue(process);
+  const open = vi.fn(async () => {});
+  const service = new NativeConfiguration(
+    "/resources",
+    threads,
+    "/probe",
+    {},
+    () => {},
+    open,
+  );
+  const traceId = crypto.randomUUID();
+  try {
+    const started = await service.execute({
+      kind: "login",
+      scope: application,
+      traceId,
+      providerId: "anthropic",
+    });
+    if (started.kind !== "started") throw Error("not started");
+    expect(process.stdin.read()?.toString()).toContain(
+      '"providerId":"anthropic"',
+    );
+    frame(process, traceId, {
+      kind: "challenge",
+      jobId: started.jobId,
+      scope: application,
+      traceId,
+      source,
+      url: "https://claude.ai/oauth/authorize",
+      instructions: "Sign in",
+    });
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(
+      await service.execute({
+        kind: "open-login",
+        jobId: started.jobId,
+        traceId: crypto.randomUUID(),
+      }),
+    ).toMatchObject({ kind: "done" });
+    expect(open).toHaveBeenCalledWith("https://claude.ai/oauth/authorize");
+    frame(process, traceId, {
+      kind: "challenge",
+      jobId: started.jobId,
+      scope: application,
+      traceId,
+      source,
+      url: "https://claude.ai/oauth/authorize",
+      launchUrl: "http://127.0.0.1:9911/launch",
+      instructions: "Sign in",
+    });
+    await new Promise((resolve) => setImmediate(resolve));
+    await service.execute({
+      kind: "open-login",
+      jobId: started.jobId,
+      traceId: crypto.randomUUID(),
+    });
+    expect(open).toHaveBeenLastCalledWith("http://127.0.0.1:9911/launch");
+  } finally {
+    service.dispose();
+    process.emit("close", 0);
   }
 });

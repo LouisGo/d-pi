@@ -169,10 +169,13 @@ export class NativeConfiguration {
           if (!job.url) return failure("unsafe-login-url");
           const url = new URL(job.url);
           if (
-            url.protocol !== "https:" ||
             url.username ||
             url.password ||
-            !["auth.openai.com", "chatgpt.com"].includes(url.hostname)
+            !(
+              url.protocol === "https:" ||
+              (url.protocol === "http:" &&
+                ["127.0.0.1", "localhost", "[::1]"].includes(url.hostname))
+            )
           )
             return failure("unsafe-login-url");
           await this.open(url.href);
@@ -285,7 +288,8 @@ export class NativeConfiguration {
         ) {
           source = event.data.source;
           job.source = source;
-          if (event.data.kind === "challenge") job.url = event.data.url;
+          if (event.data.kind === "challenge")
+            job.url = event.data.launchUrl ?? event.data.url;
           this.announce(event.data);
           return;
         }
@@ -294,7 +298,15 @@ export class NativeConfiguration {
           result.success &&
           result.data.traceId === command.traceId &&
           sameConfigurationScope(result.data.scope, scope) &&
-          (result.data.source === null || result.data.source.cwd === directory)
+          (result.data.source === null ||
+            result.data.source.cwd === directory) &&
+          !(
+            result.data.kind === "done" &&
+            result.data.snapshot &&
+            (result.data.snapshot.traceId !== command.traceId ||
+              !sameConfigurationScope(result.data.snapshot.scope, scope) ||
+              result.data.snapshot.source.cwd !== directory)
+          )
         ) {
           source = result.data.source;
           job.source = source;
@@ -308,7 +320,11 @@ export class NativeConfiguration {
             child.stdin.write(JSON.stringify({ kind: "cancel" }) + "\n");
             child.kill();
           },
-          command.kind === "login" ? 180000 : 20000,
+          command.kind === "login"
+            ? 600000
+            : command.kind === "refresh-catalog"
+              ? 60000
+              : 20000,
         );
         const finish = (
           exitCode: number | null,
@@ -380,7 +396,7 @@ export class NativeConfiguration {
       child.stdin.write(
         JSON.stringify(
           command.kind === "login"
-            ? { kind: "login", jobId: job.id, scope, traceId: command.traceId }
+            ? { ...command, jobId: job.id, scope, traceId: command.traceId }
             : command,
         ) + "\n",
       );
@@ -398,7 +414,7 @@ export class NativeConfiguration {
       }
       return await completed;
     } catch {
-      if (command.kind === "save-key" || command.kind === "login")
+      if (command.kind !== "snapshot" && "scope" in command)
         this.mutation = false;
       return failure("configuration-unavailable");
     }

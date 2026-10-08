@@ -1,4 +1,5 @@
 import { expect, it } from "vitest";
+import { CustomModelInputSchema } from "./provider-models";
 import { ConfigurationCommandSchema } from "./public";
 
 const identity = {
@@ -29,6 +30,33 @@ it("accepts native provider login and exact-account removal with a revision", ()
       providerId: "anthropic",
     }).success,
   ).toBe(false);
+});
+it("rejects custom-model URLs that would embed secrets or unsupported transports", () => {
+  const model = {
+    provider: "fixture",
+    id: "model",
+    name: "Model",
+    contextWindow: 128000,
+    maxTokens: 8192,
+    reasoning: false,
+    input: ["text"],
+  };
+  for (const baseUrl of [
+    "https://token@api.example.test/v1",
+    "https://api.example.test/v1?key=secret",
+    "https://api.example.test/v1#secret",
+    "file:///tmp/model",
+  ]) {
+    expect(
+      CustomModelInputSchema.safeParse({ ...model, baseUrl }).success,
+    ).toBe(false);
+  }
+  expect(
+    CustomModelInputSchema.safeParse({
+      ...model,
+      baseUrl: "http://127.0.0.1:8000/v1",
+    }).success,
+  ).toBe(true);
 });
 it("keeps role writes explicitly scoped and custom models free of credential fields", () => {
   expect(

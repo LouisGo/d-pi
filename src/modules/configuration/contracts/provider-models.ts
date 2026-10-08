@@ -69,7 +69,10 @@ export const CustomModelInputSchema = z.strictObject({
   baseUrl: z
     .url({ protocol: /^https?$/ })
     .refine(
-      (value) => !/[?#]/.test(value) && !/^https?:\/\/[^/]*@/.test(value),
+      (value) =>
+        !value.includes("?") &&
+        !value.includes("#") &&
+        !value.split("://")[1]?.split("/")[0]?.includes("@"),
     ),
   api: z.string().trim().min(1).max(128).optional(),
   contextWindow: z.number().int().positive(),

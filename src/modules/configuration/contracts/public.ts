@@ -130,6 +130,9 @@ export const ModelSummarySchema = z.strictObject({
   contextWindow: z.number().nullable().optional(),
   maxTokens: z.number().nullable().optional(),
   cost: ModelCostSchema.nullable().optional(),
+  pricingStatus: z
+    .enum(["fixed", "free", "included", "variable", "unknown"])
+    .optional(),
   custom: z.boolean().optional(),
   assignableRoles: z.array(z.string()).optional(),
   api: z.string().optional(),
