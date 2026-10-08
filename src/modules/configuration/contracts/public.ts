@@ -4,6 +4,16 @@ import {
   WorkingDirectoryIdSchema,
 } from "../../../shared/identity";
 import { EffortSchema } from "./model-selection";
+import {
+  ConfigurationRevisionSchema,
+  CustomModelInputSchema,
+  ModelCostSchema,
+  ModelRoleSummarySchema,
+  ProviderIdSchema,
+  ProviderSummarySchema,
+} from "./provider-models";
+
+export * from "./provider-models";
 export const ConfigurationScopeSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("application") }),
   z.strictObject({
@@ -36,8 +46,53 @@ export const ConfigurationCommandSchema = z.discriminatedUnion("kind", [
     kind: z.literal("save-key"),
     ...identity,
     key: z.string().trim().min(1).max(8192),
+    providerId: ProviderIdSchema.optional(),
   }),
-  z.strictObject({ kind: z.literal("login"), ...identity }),
+  z.strictObject({
+    kind: z.literal("login"),
+    ...identity,
+    providerId: ProviderIdSchema.optional(),
+  }),
+  z.strictObject({
+    kind: z.literal("logout"),
+    ...identity,
+    providerId: ProviderIdSchema,
+    credentialId: z.number().int().positive(),
+    expectedRevision: ConfigurationRevisionSchema,
+  }),
+  z.strictObject({
+    kind: z.literal("refresh-catalog"),
+    ...identity,
+    providerId: ProviderIdSchema,
+  }),
+  z.strictObject({
+    kind: z.literal("provider-enable"),
+    ...identity,
+    providerId: ProviderIdSchema,
+    enabled: z.boolean(),
+    expectedRevision: ConfigurationRevisionSchema,
+  }),
+  z.strictObject({
+    kind: z.literal("set-model-role"),
+    ...identity,
+    role: z.string().trim().min(1).max(256),
+    selector: z.string().trim().min(1).max(1024).nullable(),
+    target: z.enum(["global", "project"]),
+    expectedRevision: ConfigurationRevisionSchema,
+  }),
+  z.strictObject({
+    kind: z.literal("upsert-custom-model"),
+    ...identity,
+    model: CustomModelInputSchema,
+    expectedRevision: ConfigurationRevisionSchema,
+  }),
+  z.strictObject({
+    kind: z.literal("delete-custom-model"),
+    ...identity,
+    providerId: ProviderIdSchema,
+    modelId: z.string().min(1).max(512),
+    expectedRevision: ConfigurationRevisionSchema,
+  }),
   z.strictObject({
     kind: z.literal("answer"),
     traceId: z.uuid(),
@@ -70,6 +125,13 @@ export const ModelSummarySchema = z.strictObject({
   reason: z
     .enum(["authentication-required", "disabled", "configuration-unknown"])
     .nullable(),
+  kind: z.string().optional(),
+  contextWindow: z.number().nullable().optional(),
+  maxTokens: z.number().nullable().optional(),
+  cost: ModelCostSchema.nullable().optional(),
+  custom: z.boolean().optional(),
+  api: z.string().optional(),
+  baseUrl: z.string().nullable().optional(),
   reasoning: z.boolean(),
   input: z.array(z.string()),
   thinking: z.strictObject({
@@ -85,6 +147,10 @@ export const ConfigurationSnapshotSchema = z.strictObject({
   ...identity,
   source: ConfigurationSourceSchema,
   models: z.array(ModelSummarySchema),
+  providers: z.array(ProviderSummarySchema).optional(),
+  modelRoles: z.array(ModelRoleSummarySchema).optional(),
+  modelRoleStorage: z.enum(["global", "project"]).optional(),
+  revision: ConfigurationRevisionSchema.optional(),
   defaultModel: z.string().nullable(),
   openaiAuthenticated: z.boolean().nullable(),
   deepseekAuthenticated: z.boolean().nullable(),
@@ -109,6 +175,12 @@ export const ConfigurationFailureCodeSchema = z.enum([
   "operation-timed-out",
   "invalid-job",
   "unsafe-login-url",
+  "configuration-conflict",
+  "configuration-invalid",
+  "provider-unavailable",
+  "credential-not-found",
+  "catalog-refresh-failed",
+  "model-not-found",
 ]);
 export const ConfigurationEventSchema = z.discriminatedUnion("kind", [
   z.strictObject({
@@ -116,12 +188,17 @@ export const ConfigurationEventSchema = z.discriminatedUnion("kind", [
     ...eventIdentity,
     url: z.string().url(),
     instructions: z.string(),
+    launchUrl: z.string().url().optional(),
+    providerId: ProviderIdSchema.optional(),
   }),
   z.strictObject({
     kind: z.literal("prompt"),
     ...eventIdentity,
     message: z.string(),
     secret: z.boolean(),
+    placeholder: z.string().optional(),
+    allowEmpty: z.boolean().optional(),
+    providerId: ProviderIdSchema.optional(),
   }),
   z.strictObject({
     kind: z.literal("progress"),
@@ -147,7 +224,11 @@ export const ConfigurationReplySchema = z.union([
     ...replyIdentity,
     jobId: z.uuid(),
   }),
-  z.strictObject({ kind: z.literal("done"), ...replyIdentity }),
+  z.strictObject({
+    kind: z.literal("done"),
+    ...replyIdentity,
+    snapshot: ConfigurationSnapshotSchema.optional(),
+  }),
   z.strictObject({
     kind: z.literal("failed"),
     ...replyIdentity,
