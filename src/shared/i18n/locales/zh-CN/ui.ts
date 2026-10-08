@@ -1,4 +1,20 @@
 export const ui = {
+  "providers.roleScope": "配置范围",
+  "models.nativeExcluded": "此模型未包含在原生 enabledModels 范围内。",
+  "config.error.configuration-conflict":
+    "原生配置已被其他进程修改，请刷新后重试。",
+  "config.error.configuration-invalid":
+    "原生配置未通过验证，请检查输入后重试。",
+  "config.error.provider-unavailable": "这个服务商当前不可用，请刷新目录。",
+  "config.error.credential-not-found": "这个账户已不在原生配置中，请刷新。",
+  "config.error.catalog-refresh-failed": "模型目录刷新失败，现有配置已保留。",
+  "config.error.model-not-found": "这个模型已不可用，请刷新目录。",
+  "providers.disconnectNotice":
+    "只移除这个原生账户；环境变量等外部凭证仍可能生效。",
+  "providers.accountFallback": "账户 {id}",
+  "providers.preferenceFailed": "设备模型偏好保存失败，请重试。",
+  "models.roleUnavailable": "没有适合此角色的可用模型。",
+
   "providers.title": "服务商与模型",
   "providers.description":
     "连接模型服务、管理模型目录，设置当前项目或全局的原生默认。",

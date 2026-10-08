@@ -1,4 +1,26 @@
 export const ui = {
+  "providers.roleScope": "Configuration scope",
+  "models.nativeExcluded":
+    "This model is excluded by native enabledModels settings.",
+  "config.error.configuration-conflict":
+    "Native configuration changed elsewhere. Refresh and try again.",
+  "config.error.configuration-invalid":
+    "Native configuration validation failed. Check the input and try again.",
+  "config.error.provider-unavailable":
+    "This provider is unavailable. Refresh the catalog.",
+  "config.error.credential-not-found":
+    "This account no longer exists in native configuration. Refresh to continue.",
+  "config.error.catalog-refresh-failed":
+    "Catalog refresh failed. Existing configuration was preserved.",
+  "config.error.model-not-found":
+    "This model is unavailable. Refresh the catalog.",
+  "providers.disconnectNotice":
+    "Only this native account is removed. External credentials such as environment variables may remain active.",
+  "providers.accountFallback": "Account {id}",
+  "providers.preferenceFailed":
+    "Device model preferences could not be saved. Try again.",
+  "models.roleUnavailable": "No available model supports this role.",
+
   "providers.title": "Providers & models",
   "providers.description":
     "Connect providers, manage the model catalog, and set native project or global defaults.",
