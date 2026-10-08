@@ -152,7 +152,7 @@ export function registerHistoryIpc(context: ProjectReadContext): void {
       threadId,
     );
     const binding = context.getStore()?.threads.nativeSessionBinding(threadId);
-    if (!binding) return { kind: "unavailable", reason: "missing" };
+    if (!binding) return { kind: "unavailable", reason: "unbound" };
     if (binding.origin !== "cli")
       return readNativeHistory(context.nativeSessionsPath(), binding, cursor);
     const root = await context.indexedNativeSessionsPath?.(randomUUID());

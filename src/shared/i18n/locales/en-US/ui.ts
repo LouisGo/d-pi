@@ -362,10 +362,13 @@ export const ui = {
     "This previous session cannot change model or send. Create an independent session to continue; its draft and history are preserved.",
   "composer.blocked.readOnly":
     "This session is read-only and cannot send. Its draft is preserved; create a new session to select a model and work.",
-  "composer.blocked.externalHistoryOnly": "CLI history is readable. Sending is unavailable until exclusive execution can be confirmed.",
+  "composer.blocked.externalHistoryOnly":
+    "CLI history is readable. Sending is unavailable until exclusive execution can be confirmed.",
   "ui.runtime.retryStart": "Retry preparing chat",
-  "app.thread.indexPartial": "Some native chats could not be indexed. Retry refreshing.",
-  "app.thread.indexUnavailable": "Native chat indexing is unavailable. Existing chats remain accessible.",
+  "app.thread.indexPartial":
+    "Some native chats could not be indexed. Retry refreshing.",
+  "app.thread.indexUnavailable":
+    "Native chat indexing is unavailable. Existing chats remain accessible.",
   "composer.blocked.preparing": "Preparing this chat…",
   "composer.blocked.start":
     "The session has not started. Start OMP before sending.",
@@ -376,7 +379,7 @@ export const ui = {
   "model.reason.configuration-unknown": "Configuration unavailable",
   "config.heading": "Configuration & sign in",
   "config.description":
-    "Reuse native OMP configuration. Sign in, choose a model, then allow project execution and start the session.",
+    "Reuse native OMP configuration. Sign in and choose a model. Trusted projects prepare conversations automatically.",
   "config.loading": "Reading native configuration…",
   "config.failed":
     "Native configuration operation was not confirmed. Check configuration, network and resources, then retry. Existing credentials are preserved.",
@@ -503,8 +506,7 @@ export const ui = {
   "ui.conversation.imageNotLoaded": "not loaded",
   "ui.conversation.sectionLabel": "Native session reader",
   "ui.conversation.heading": "Conversation",
-  "ui.conversation.empty":
-    "No live messages yet. Saved messages are available in history.",
+  "ui.conversation.empty": "No messages yet.",
   "ui.conversation.gap":
     "The live view has a gap. Check native history; returning to the bottom does not fill it.",
   "ui.conversation.streaming": "In progress",
@@ -560,6 +562,7 @@ export const ui = {
   "ui.history.readFailed": "Read connection failed. You can try again.",
   "ui.history.unavailable":
     "Records are temporarily unavailable: {reason}. A failure is not shown as an empty list.",
+  "ui.history.reason.unbound": "no saved session yet",
   "ui.history.reason.missing": "records are missing",
   "ui.history.reason.denied": "access was denied",
   "ui.history.reason.changed": "records changed",

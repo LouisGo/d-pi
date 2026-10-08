@@ -417,3 +417,41 @@ it("returns a message larger than the ordinary page budget as one complete body"
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+it("reads saved CLI history when its recorded canonical worktree no longer exists", async () => {
+  const root = mkdtempSync(join(tmpdir(), "d-pi-deleted-cwd-"));
+  const file = join(root, "session.jsonl");
+  const cwd = join(root, "deleted-worktree");
+  writeFileSync(
+    file,
+    [
+      { type: "session", version: 3, id: "native", cwd },
+      {
+        type: "message",
+        id: "entry",
+        parentId: null,
+        message: { role: "user", content: "preserved" },
+      },
+    ]
+      .map((row) => JSON.stringify(row))
+      .join("\n") + "\n",
+  );
+  try {
+    expect(
+      await readNativeHistory(
+        root,
+        {
+          threadId: crypto.randomUUID(),
+          configContextId: "fixture",
+          sessionId: "native",
+          sessionFile: file,
+        },
+        null,
+        undefined,
+        cwd,
+      ),
+    ).toMatchObject({ kind: "page", entries: [{ text: "preserved" }] });
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});

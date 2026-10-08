@@ -67,6 +67,12 @@ vi.mock("../reading/conversation", () => ({
     return null;
   },
 }));
+vi.mock("../reading/saved-conversation", () => ({
+  SavedConversation: (props: unknown) => {
+    views.conversation(props);
+    return null;
+  },
+}));
 vi.mock("../reading/history", () => ({
   History: (props: unknown) => {
     views.history(props);

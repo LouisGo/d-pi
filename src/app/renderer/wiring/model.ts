@@ -92,7 +92,7 @@ export class AppModel {
     threads: ThreadContext[];
     failed: boolean;
     pending?: boolean;
-    nativeIndex?: "ready" | "partial" | "unavailable";
+    nativeIndex?: "ready" | "indexing" | "partial" | "unavailable";
   }>(() => ({
     threads: [],
     failed: false,
@@ -471,23 +471,38 @@ export class AppModel {
       if (this.isCurrent(generation)) this.fail(transportFailure(traceId));
     }
   }
-  async refreshThreads(): Promise<void> {
+  private threadRefreshPending: Promise<void> | null = null;
+  refreshThreads(): Promise<void> {
+    if (this.threadRefreshPending) return this.threadRefreshPending;
+    this.threadRefreshPending = this.discoverThreads().finally(() => {
+      this.threadRefreshPending = null;
+    });
+    return this.threadRefreshPending;
+  }
+  private async discoverThreads(): Promise<void> {
+    if (this.disposed) return;
     this.threadListStore.setState({ pending: true });
     const traceId = crypto.randomUUID();
     try {
-      const reply = await this.bridge.request({
-        kind: "list-threads",
-        traceId,
-      });
-      if (!this.disposed && reply.kind === "threads")
+      let next = true;
+      while (next && !this.disposed) {
+        const reply = await this.bridge.request({
+          kind: "list-threads",
+          traceId,
+        });
+        if (this.disposed) return;
+        if (reply.kind !== "threads") {
+          this.threadListStore.setState({ failed: true, pending: false });
+          return;
+        }
+        next = reply.nativeIndex === "indexing";
         this.threadListStore.setState({
           threads: reply.threads,
           failed: false,
-          pending: false,
+          pending: next,
           ...(reply.nativeIndex ? { nativeIndex: reply.nativeIndex } : {}),
         });
-      else if (!this.disposed)
-        this.threadListStore.setState({ failed: true, pending: false });
+      }
     } catch {
       if (!this.disposed)
         this.threadListStore.setState({ failed: true, pending: false });

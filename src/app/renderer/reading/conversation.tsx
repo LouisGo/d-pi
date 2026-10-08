@@ -1,5 +1,6 @@
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
+import type { ConversationItem } from "../../../modules/conversation/contracts/public";
 import {
   type ConversationModel,
   type ReadingPositions,
@@ -95,24 +96,45 @@ function ConversationMessage({
   positions?: ReadingPositions | undefined;
   source?: string | undefined;
 }) {
-  const { t, formatMessage } = useI18n();
   const item = useStore(model.stateStore, (state) => state.itemsById.get(id));
   if (!item) return null;
+  return (
+    <ConversationItemView
+      item={item}
+      rowId={id}
+      positions={positions}
+      source={source}
+    />
+  );
+}
+
+export function ConversationItemView({
+  item,
+  rowId,
+  positions,
+  source,
+}: {
+  item: ConversationItem;
+  rowId: string | number;
+  positions?: ReadingPositions | undefined;
+  source?: string | undefined;
+}) {
+  const { t, formatMessage } = useI18n();
   const position =
     positions && source
-      ? { positions, key: JSON.stringify([source, id]) }
+      ? { positions, key: JSON.stringify([source, rowId]) }
       : undefined;
   if (item.subagent) return <SubagentMessage item={item} position={position} />;
   if (item.subagentNotice)
     return (
-      <p role="status" data-reading-row={id}>
+      <p role="status" data-reading-row={rowId}>
         {item.subagentNotice === "observation-limit"
           ? t("subagents.observationLimit")
           : t("subagents.observationUnavailable")}
       </p>
     );
   return (
-    <article className="message" data-selectable data-reading-row={id}>
+    <article className="message" data-selectable data-reading-row={rowId}>
       <div className="message-heading">
         <strong>
           {item.label.kind === "literal"

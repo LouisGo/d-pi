@@ -325,7 +325,8 @@ export const ui = {
     "此旧会话不能更换模型或发送。请新建独立会话继续工作；原有草稿和历史保留。",
   "composer.blocked.readOnly":
     "此会话只读，不能发送。原有草稿保留；新会话可选择模型并开始工作。",
-  "composer.blocked.externalHistoryOnly": "CLI 会话历史可直接阅读；尚不能确认独占执行，暂不可发送。",
+  "composer.blocked.externalHistoryOnly":
+    "CLI 会话历史可直接阅读；尚不能确认独占执行，暂不可发送。",
   "ui.runtime.retryStart": "重新准备会话",
   "app.thread.indexPartial": "部分原生会话尚未整理，可重试刷新。",
   "app.thread.indexUnavailable": "原生会话索引暂不可用，现有会话仍可使用。",
@@ -337,7 +338,7 @@ export const ui = {
   "model.reason.configuration-unknown": "配置暂不可用",
   "config.heading": "配置与认证",
   "config.description":
-    "复用 OMP 原生配置。登录或保存密钥后选择模型，再允许项目执行并启动会话。",
+    "复用 OMP 原生配置。登录或保存密钥后选择模型。已允许的项目会自动准备会话。",
   "config.loading": "正在读取原生配置…",
   "config.failed":
     "原生配置操作未确认成功。请检查配置目录、网络与资源，然后重试；原有配置不会预先删除。",
@@ -458,7 +459,7 @@ export const ui = {
   "ui.conversation.imageNotLoaded": "未加载",
   "ui.conversation.sectionLabel": "原生会话阅读",
   "ui.conversation.heading": "会话",
-  "ui.conversation.empty": "尚无实时消息。已有记录可从历史中查看。",
+  "ui.conversation.empty": "还没有消息。",
   "ui.conversation.gap":
     "当前实时内容有缺口，可查看原生历史核对；回到底部不会补齐缺口。",
   "ui.conversation.streaming": "进行中",
@@ -511,6 +512,7 @@ export const ui = {
   "ui.history.read": "读取原生记录",
   "ui.history.readFailed": "读取连接失败，可重新读取。",
   "ui.history.unavailable": "记录暂不可读：{reason}。不会用空列表代替故障。",
+  "ui.history.reason.unbound": "还没有保存记录",
   "ui.history.reason.missing": "记录不存在",
   "ui.history.reason.denied": "访问被拒绝",
   "ui.history.reason.changed": "记录已变化",

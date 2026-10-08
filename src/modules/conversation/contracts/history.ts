@@ -46,6 +46,7 @@ export const HistoryPageSchema = z.discriminatedUnion("kind", [
   z.strictObject({
     kind: z.literal("unavailable"),
     reason: z.enum([
+      "unbound",
       "missing",
       "denied",
       "changed",

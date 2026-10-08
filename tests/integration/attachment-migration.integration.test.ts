@@ -30,7 +30,7 @@ it("migrates attachment manifests after receipt recovery and reopens without los
       id: "attachment",
     });
     expect(reopened.prepare("PRAGMA user_version").get()?.user_version).toBe(
-      11,
+      12,
     );
     reopened.close();
   } finally {

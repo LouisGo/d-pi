@@ -18,7 +18,8 @@ async function fixture(
   options: {
     failStart?: boolean;
     origin?: "cli";
-    nativeIndex?: "ready" | "partial" | "unavailable";
+    nativeIndex?: "ready" | "indexing" | "partial" | "unavailable";
+    indexPages?: ("indexing" | "ready")[];
   } = {},
 ) {
   vi.stubGlobal("document", { documentElement: { dataset: {} } });
@@ -65,7 +66,11 @@ async function fixture(
       if (command.kind === "list-threads")
         return parseDesktopReply(command, {
           kind: "threads",
-          ...(options.nativeIndex ? { nativeIndex: options.nativeIndex } : {}),
+          ...(options.indexPages
+            ? { nativeIndex: options.indexPages.shift() ?? "ready" }
+            : options.nativeIndex
+              ? { nativeIndex: options.nativeIndex }
+              : {}),
           threads: Array.from(drafts.values()).map(
             ({ threadId, workingDirectoryId, directory }) => ({
               threadId,
@@ -253,4 +258,14 @@ it("retains native discovery's partial state beside the actual sidebar Thread li
   expect(f.model.threadListStore.getState().threads[0]?.threadId).toBe(
     f.first.threadId,
   );
+});
+
+it("automatically finishes bounded native catalog pages without another user refresh", async () => {
+  const f = await fixture(false, false, {
+    indexPages: ["indexing", "indexing", "ready"],
+  });
+  await vi.waitFor(() =>
+    expect(f.model.threadListStore.getState().nativeIndex).toBe("ready"),
+  );
+  expect(f.model.threadListStore.getState().pending).toBe(false);
 });

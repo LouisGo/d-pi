@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { constants } from "node:fs";
 import { open, realpath, stat } from "node:fs/promises";
-import { isAbsolute, relative, sep } from "node:path";
+import { isAbsolute, relative, resolve, sep } from "node:path";
 import { z } from "zod";
 import type { NativeSessionBinding } from "../../threads/contracts/public";
 import type {
@@ -95,11 +95,27 @@ export async function readNativeHistory(
         return { kind: "unavailable", reason: "unsupported" };
       if (projectDirectory) {
         const cwd = z.object({ cwd: z.string() }).safeParse(rawHeader);
-        if (
-          !cwd.success ||
-          (await realpath(cwd.data.cwd)) !== (await realpath(projectDirectory))
-        )
+        if (!cwd.success || !isAbsolute(cwd.data.cwd))
           return { kind: "unavailable", reason: "denied" };
+        try {
+          if (
+            (await realpath(cwd.data.cwd)) !==
+            (await realpath(projectDirectory))
+          )
+            return { kind: "unavailable", reason: "denied" };
+        } catch (error) {
+          // A lost worktree does not destroy its saved messages. This metadata
+          // fallback grants no execution and still requires the exact bound file.
+          const missing = z
+            .object({ code: z.literal("ENOENT") })
+            .safeParse(error);
+          if (
+            !missing.success ||
+            resolve(cwd.data.cwd) !== cwd.data.cwd ||
+            cwd.data.cwd !== projectDirectory
+          )
+            return { kind: "unavailable", reason: "denied" };
+        }
       }
       if (header.data.id !== binding.sessionId)
         return { kind: "unavailable", reason: "changed" };

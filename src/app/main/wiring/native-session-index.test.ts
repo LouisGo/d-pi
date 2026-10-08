@@ -238,7 +238,7 @@ it("advances a global scan past 4096 files instead of rescanning its first page"
       `${JSON.stringify({ type: "session", version: 3, id: `session-${n}`, cwd: f.project })}\n`,
     );
   }
-  expect(await f.index.reconcile(crypto.randomUUID())).toBe("partial");
+  expect(await f.index.reconcile(crypto.randomUUID())).toBe("indexing");
   expect(f.store.threads.list()).toHaveLength(4096);
   expect(await f.index.reconcile(crypto.randomUUID())).toBe("ready");
   expect(f.store.threads.list()).toHaveLength(4098);
@@ -253,7 +253,7 @@ it("continues beyond 256 project buckets in the next bounded scan", async () => 
       `${JSON.stringify({ type: "session", version: 3, id: `bucket-session-${n}`, cwd: f.project })}\n`,
     );
   }
-  expect(await f.index.reconcile(crypto.randomUUID())).toBe("partial");
+  expect(await f.index.reconcile(crypto.randomUUID())).toBe("indexing");
   expect(f.store.threads.list()).toHaveLength(256);
   expect(await f.index.reconcile(crypto.randomUUID())).toBe("ready");
   expect(f.store.threads.list()).toHaveLength(258);

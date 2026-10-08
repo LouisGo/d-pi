@@ -48,9 +48,11 @@ export function ProjectThreads({ model }: { model: AppModel }) {
       {nativeIndex && nativeIndex !== "ready" && (
         <p role="status" className="muted">
           {t(
-            nativeIndex === "partial"
-              ? "app.thread.indexPartial"
-              : "app.thread.indexUnavailable",
+            nativeIndex === "indexing"
+              ? "ui.history.discovering"
+              : nativeIndex === "partial"
+                ? "app.thread.indexPartial"
+                : "app.thread.indexUnavailable",
           )}{" "}
           <Button
             variant="ghost"
@@ -64,7 +66,8 @@ export function ProjectThreads({ model }: { model: AppModel }) {
       {!threads.length &&
         !failed &&
         !pending &&
-        nativeIndex !== "unavailable" && (
+        nativeIndex !== "unavailable" &&
+        nativeIndex !== "indexing" && (
           <p className="muted">{t("app.sidebar.noProject")}</p>
         )}
       <ThreadButtons model={model}>

@@ -8,10 +8,12 @@ import type { ThreadRepository } from "../../../modules/threads/main/public";
 export class NativeSessionIndex {
   private continuation: NativeSessionCatalogCursor | null = null;
   private cyclePartial = false;
-  private pending: Promise<"ready" | "partial" | "unavailable"> | null = null;
+  private pending: Promise<
+    "ready" | "indexing" | "partial" | "unavailable"
+  > | null = null;
   private last: {
     at: number;
-    status: "ready" | "partial" | "unavailable";
+    status: "ready" | "indexing" | "partial" | "unavailable";
   } | null = null;
   private source: { at: number; root: string | null } | null = null;
   private sourcePending: Promise<string | null> | null = null;
@@ -36,7 +38,7 @@ export class NativeSessionIndex {
   reconcile(
     traceId: string,
     force = false,
-  ): Promise<"ready" | "partial" | "unavailable"> {
+  ): Promise<"ready" | "indexing" | "partial" | "unavailable"> {
     if (this.pending) return this.pending;
     if (
       !force &&
@@ -58,7 +60,7 @@ export class NativeSessionIndex {
   }
   private async discover(
     traceId: string,
-  ): Promise<"ready" | "partial" | "unavailable"> {
+  ): Promise<"ready" | "indexing" | "partial" | "unavailable"> {
     try {
       const root = await this.sessionsRoot(traceId);
       if (!root) return "unavailable";
@@ -77,7 +79,11 @@ export class NativeSessionIndex {
         this.cyclePartial = false;
       this.cyclePartial ||= catalog.degraded;
       this.continuation = catalog.next;
-      return this.continuation || this.cyclePartial ? "partial" : "ready";
+      return this.continuation
+        ? "indexing"
+        : this.cyclePartial
+          ? "partial"
+          : "ready";
     } catch {
       return "unavailable";
     }

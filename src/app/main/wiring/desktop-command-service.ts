@@ -18,7 +18,7 @@ export class DesktopCommandService {
     choose: () => Promise<string | null>,
     private readonly reconcileNativeSessions?: (
       traceId: string,
-    ) => Promise<"ready" | "partial" | "unavailable">,
+    ) => Promise<"ready" | "indexing" | "partial" | "unavailable">,
   ) {
     this.projects = new ProjectSelectionService(storage.threads, choose);
   }

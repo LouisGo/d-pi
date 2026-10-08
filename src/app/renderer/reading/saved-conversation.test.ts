@@ -6,6 +6,7 @@ import { afterEach, expect, it, vi } from "vitest";
 import type {
   ConversationEvent,
   HistoryBridge,
+  HistoryPage,
 } from "../../../modules/conversation/contracts/public";
 import { ConversationModel } from "../../../modules/conversation/core/public";
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
@@ -19,7 +20,7 @@ afterEach(async () => {
   for (const cleanup of cleanups.splice(0)) await cleanup();
   vi.unstubAllGlobals();
 });
-async function mount(active = true) {
+async function mount(active = true, page?: HistoryPage) {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   let emit: ((event: ConversationEvent) => void) | undefined;
   const model = new ConversationModel({
@@ -32,22 +33,25 @@ async function mount(active = true) {
   const bridge: HistoryBridge = {
     projectList: vi.fn(),
     projectRead: vi.fn(),
-    read: vi.fn(async (_id, cursor) => ({
-      kind: "page",
-      entries: [
-        {
-          id: cursor ? "two" : "one",
-          parentId: null,
-          role: "assistant",
-          text: cursor ? "second saved message" : "first saved message",
+    read: vi.fn<HistoryBridge["read"]>(
+      async (_id, cursor) =>
+        page ?? {
+          kind: "page",
+          entries: [
+            {
+              id: cursor ? "two" : "one",
+              parentId: null,
+              role: "assistant",
+              text: cursor ? "second saved message" : "first saved message",
+            },
+          ],
+          source: "saved",
+          coverage: "append-order",
+          next: cursor ? null : { threadId: "A", source: "saved", offset: 100 },
+          incompleteTail: false,
+          omitted: 0,
         },
-      ],
-      source: "saved",
-      coverage: "append-order",
-      next: cursor ? null : { threadId: "A", source: "saved", offset: 100 },
-      incompleteTail: false,
-      omitted: 0,
-    })),
+    ),
   };
   const container = document.createElement("div");
   document.body.append(container);
@@ -116,12 +120,16 @@ it("keeps pages adjacent in one transcript instead of replacing the previous mes
   });
   expect(f.container.textContent).toContain("first saved message");
 });
-it("hands over to the native live branch snapshot without guessing duplicate identities", async () => {
+it("retains the same saved DOM and reading source when execution restores its native branch", async () => {
   const f = await mount();
   await vi.waitFor(async () => {
     await act(() => new Promise((r) => setTimeout(r, 5)));
     expect(f.container.textContent).toContain("first saved message");
   });
+  const row = f.container.querySelector("[data-reading-row=one]");
+  const source = f.container
+    .querySelector("[data-reading-source]")
+    ?.getAttribute("data-reading-source");
   await act(() =>
     f.emit({
       kind: "snapshot",
@@ -131,6 +139,8 @@ it("hands over to the native live branch snapshot without guessing duplicate ide
       items: [
         {
           id: 1,
+          nativeRecordId: "one",
+          restored: true,
           role: "assistant",
           state: "complete",
           label: { kind: "literal", text: "OMP" },
@@ -139,6 +149,12 @@ it("hands over to the native live branch snapshot without guessing duplicate ide
       ],
     }),
   );
+  expect(f.container.querySelector("[data-reading-row=one]")).toBe(row);
+  expect(
+    f.container
+      .querySelector("[data-reading-source]")
+      ?.getAttribute("data-reading-source"),
+  ).toBe(source);
   expect(f.container.querySelectorAll("[data-reading-text]")).toHaveLength(1);
   expect(f.container.textContent).toContain("first saved message");
 });
@@ -146,4 +162,72 @@ it("does not start a history read from a hidden inactive pane", async () => {
   const f = await mount(false);
   await act(() => new Promise((r) => setTimeout(r, 10)));
   expect(f.bridge.read).not.toHaveBeenCalled();
+});
+
+it("retains older saved records beyond the live projection window and appends only newly observed messages", async () => {
+  const f = await mount();
+  await vi.waitFor(async () => {
+    await act(() => new Promise((r) => setTimeout(r, 5)));
+    expect(f.container.textContent).toContain("first saved message");
+  });
+  await act(() =>
+    f.emit({
+      kind: "snapshot",
+      connectionGeneration: "g",
+      seq: 1,
+      gap: true,
+      items: [
+        {
+          id: 500,
+          nativeRecordId: "later",
+          restored: true,
+          role: "assistant",
+          state: "complete",
+          label: { kind: "literal", text: "OMP" },
+          text: "unloaded restored row",
+        },
+        {
+          id: 501,
+          role: "assistant",
+          state: "streaming",
+          label: { kind: "literal", text: "OMP" },
+          text: "new live answer",
+        },
+      ],
+    }),
+  );
+  expect(f.container.textContent).toContain("first saved message");
+  expect(f.container.textContent).toContain("new live answer");
+  expect(f.container.textContent).not.toContain("unloaded restored row");
+});
+
+it("shows incomplete tail and omitted-record coverage with an explicit refresh", async () => {
+  const f = await mount(true, {
+    kind: "page",
+    source: "saved",
+    next: null,
+    entries: [],
+    omitted: 3,
+    incompleteTail: true,
+    coverage: "append-order",
+  });
+  await vi.waitFor(async () => {
+    await act(() => new Promise((r) => setTimeout(r, 5)));
+    expect(f.container.textContent).toContain("incomplete");
+  });
+  expect(f.container.textContent).toContain("3");
+  const refresh = [...f.container.querySelectorAll("button")].find(
+    (b) => b.textContent === "Refresh",
+  );
+  expect(refresh).toBeTruthy();
+  await act(() => refresh?.click());
+  expect(f.bridge.read).toHaveBeenCalledTimes(2);
+});
+it("distinguishes a missing bound file from an empty new conversation", async () => {
+  const f = await mount(true, { kind: "unavailable", reason: "missing" });
+  await vi.waitFor(async () => {
+    await act(() => new Promise((r) => setTimeout(r, 5)));
+    expect(f.container.textContent).toContain("records are missing");
+  });
+  expect(f.container.textContent).not.toContain("No messages yet");
 });

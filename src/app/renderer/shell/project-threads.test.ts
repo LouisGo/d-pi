@@ -3,6 +3,7 @@ import { act, createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { expect, it, vi } from "vitest";
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
+import { ThreadContextSchema } from "../../../modules/threads/contracts/public";
 import { AppModel } from "../wiring/model";
 import { ProjectThreads } from "./project-threads";
 
@@ -18,27 +19,27 @@ it("groups discovered sessions by exact working directory and shows their native
   model.threadListStore.setState({
     threads: [
       {
-        threadId: "a",
-        workingDirectoryId: "w",
+        threadId: "00000000-0000-4000-8000-000000000061",
+        workingDirectoryId: "00000000-0000-4000-8000-000000000077",
         directory: "/one/project",
         title: "Native first",
         origin: "cli",
       },
       {
-        threadId: "b",
-        workingDirectoryId: "w",
+        threadId: "00000000-0000-4000-8000-000000000062",
+        workingDirectoryId: "00000000-0000-4000-8000-000000000077",
         directory: "/one/project",
         title: "Native second",
         origin: "cli",
       },
       {
-        threadId: "c",
-        workingDirectoryId: "x",
+        threadId: "00000000-0000-4000-8000-000000000063",
+        workingDirectoryId: "00000000-0000-4000-8000-000000000078",
         directory: "/two/project",
         title: "Other worktree",
         origin: "cli",
       },
-    ],
+    ].map((row) => ThreadContextSchema.parse(row)),
     failed: false,
   });
   const container = document.createElement("div");
