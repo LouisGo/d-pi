@@ -1,6 +1,6 @@
 # 打包体积收敛交接
 
-2026-10-08，本地 `codex/package-size`，基点 `a0367becdf015a4b7fa7a31aa23050c74a275849`，WIP。未 commit、push、创建 PR 或公开发布；所属[规格](spec.md)与[工程票](issues/01-package-size.md)。
+2026-10-08，基点 `a0367becdf015a4b7fa7a31aa23050c74a275849`，实现提交 `c0d93ea`，本地 `codex/package-size` 已通过 merge commit `a8a8663e0a90dfde903fff004016adfc82160d1c` 合入 `main`。用户明确授权 commit 并本地 PR 到 main；没有 push、创建远端 PR 或公开发布。所属[规格](spec.md)、[本地 PR](pr.md)与[工程票](issues/01-package-size.md)。
 
 ## 结果与原因
 
@@ -37,6 +37,7 @@
 - 保留的112个包与已安装锁定源码逐项核对149份license/copying/notice文件，15,567,708 bytes完全相同，[许可文件结果](license-verification.json)。这是文件保留，不是公开分发合规结论。
 - 全量tooling另跑一次100项：98通过、2失败。`development-launch.test.mjs:70`因本机`/var`与`/private/var`路径别名；`git-hooks.test.mjs:282`假设pnpm缺失，但本机Node工具目录存在旧Corepack shim，返回1而不是missing的2。两测试及对应实现均未在本次修改，没有关闭断言或顺手扩scope。
 - 本机Corepack仍把pnpm12当旧 `bin/pnpm.cjs` 启动而失败；使用同版本官方 `bin/pnpm.mjs` 下载的12.8.1原生CLI，临时PATH入口供builder使用，并显式`--pnpm-cli`完成环境校验。没有升级/修改用户全局Corepack；标准pnpm shim需后续工具环境对齐，不是包内Runtime依赖。
+- 提交 `c0d93ea` 的实际pre-commit hook执行 `check:fast` 全部通过（环境、620文件Biome、交互、文档、441源码架构、结构与状态）。隔离环境会优先使用Node所在工具目录，故提交时在临时目录复制当前Node24.21.0原始可执行文件，配合同版本缓存pnpm12.8.1入口；未关闭hook或更改全局工具，临时目录在finally清理。本地合并未改实现文件，不重复打包；现有ZIP仍保留原先WIP构建身份。
 - 未重跑完整check、GUI组合、系统通知、真实认证/供应商、语音/模型推理、长稳、签名/公证或远端CI。独立Spec/Standards结论见[复核](review.md)。
 
 ## 本地交付与回退

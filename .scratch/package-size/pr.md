@@ -4,6 +4,8 @@
 
 ## Evidence
 
+本地 PR 已合入 `main`：2026-10-08，base `a0367becdf015a4b7fa7a31aa23050c74a275849`，source `codex/package-size` / `c0d93ea`，merge `a8a8663e0a90dfde903fff004016adfc82160d1c`。提交hook的 `check:fast` 实际通过；无远端 PR、push或CI结果。包仍为交接记录中的WIP构建，合并未重新生成候选，用户认可保持pending。
+
 20项相关测试、build、环境/静态门禁、四项实际固定SDK本地fixture与移位包内资源/optional导入通过；同ASAR前后体积见[JSON](comparison.json)，两轴独立复核无高价值遗留见[review](review.md)。全量tooling有两个未修改的本机路径/Corepack用例失败；未运行完整check/GUI/实际推理/真实供应商或CI，不声称用户认可。已生成未签名本地App和ZIP，不以远端PR为交付前置。
 
 ## Merge Danger
