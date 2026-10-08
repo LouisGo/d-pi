@@ -136,6 +136,8 @@
   --settings-navigation-width: 11rem;
   --settings-minimum-height: 32rem;
   --overlay-width: 20rem;
+  --model-picker-width: 32rem;
+  --model-picker-max-height: 32rem;
   --layer-backdrop: 40;
   --layer-dialog: 50;
   --layer-popup: 100;

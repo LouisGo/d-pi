@@ -1,9 +1,9 @@
 @layer components {
   .model-picker {
-    width: min(32rem, var(--available-width));
+    width: min(var(--model-picker-width), var(--available-width));
     display: flex;
     flex-direction: column;
-    max-height: min(32rem, var(--available-height));
+    max-height: min(var(--model-picker-max-height), var(--available-height));
     min-height: 0;
   }
   .model-picker-body {
