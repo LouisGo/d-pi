@@ -1,5 +1,35 @@
 # Composer 本地交接
 
+2026-10-08。本轮源码 `6b39d19`，反馈增量基点 `2fdeab2`，分支 `codex/composer-quality`，工作树 `/Users/lou/.codex/worktrees/composer-quality/d-pi`。仅修改此树，没有新建实施树、修改原 checkout、push、远端 PR 或发布。
+
+## 本轮结果与试用
+
+- 正常草稿 dirty/saving/checking 安静运行，不再在输入区增加状态行；保存与核对仍执行。真实失败保留正文、紧凑提醒、重试/核对与全选，冲突保留比较与恢复。
+- 修共享焦点来源：鼠标进入文本区后，空格/换行/光标键不转换成键盘焦点；Tab、实际键盘焦点迁移与独立辅助技术焦点仍按 focus-visible。没有 Composer 局部 outline 覆盖或 lint 放松。
+- 成功导入不再长驻报告；成功显示只来自当前缩略图/内联节点。结算是资源事实，当前采用以草稿为准；删除/Undo 后不再因旧结算报告显示“已插入”。去重后未采用源仍正常 release，隐藏报告不停止 settlement。
+- 失败、部分采用、待插入、取消及结算失败保持可操作；移除后的结算错误不保留失效预览，重试也不重新采用。导入提示改为无嵌套边框的紧凑列表，长文件名只展示一处，预览/取消动作保留完整可访问名称；单项取消不再重复批量入口。窄窗工具栏按可用宽度换行。
+
+参照 T3 固定 `10f39eb9ac80c9a4b7f5097575dd2addc3b6f631` 的 ChatComposer Surface/Banner/Prompt/Toolbar、composerDraftStore 采用与移除职责，复用 d-pi Base UI/token。T3 当前本地 HEAD 为 `30cc788`；参考固定版本，不引入其架构或新依赖。
+
+在该树试用：
+
+```sh
+cd /Users/lou/.codex/worktrees/composer-quality/d-pi
+PATH="/tmp/dpi-composer-node:/tmp/dpi-composer-tools:$PATH" pnpm dev
+```
+
+Node24.21.0/pnpm12.8.1 已核实。上述 PATH 使用当前存在的固定运行时/工具 shim；本机默认 pnpm 的自动版本切换有 ENOEXEC，不把启动环境失败混作产品缺陷。没有改全局环境。
+
+请验证连续输入（含空格/中文 IME/换行/光标）、鼠标与 Tab 焦点、图片删除与重复粘贴、文件 Undo/Redo、混合批次部分失败/取消、快速切 Thread、窄窗/深浅主题及错误恢复。按用户安排，Agent 未启动 Dev、GUI、浏览器、Computer use/E2E 或真实 provider/Host 发送，实际视觉/OS/IME/VoiceOver 仍未验证，用户认可 pending。
+
+## 本轮工程证据
+
+原始日志见 [quiet-composer](evidence/quiet-composer/provenance.md)，最终 39 文件 302 项行为通过；全类型、check:fast、设计/交互/i18n 与 build 通过。新增反例的实际红灯为 6 失败/32 通过，首轮修复后 38 通过；随后补了真实 saving/checking 恢复与未结束结算时文件 Undo/Redo。扩展检查发现两个旧 UI 断言仍要求 pending 文案和冗长取消标签，已改为新合同的安静状态与 aria-label 验证；并修正 image preview fixture 的额外字段。
+
+完整 `pnpm check` 未重跑；早期 CLI fixture 及固定 SDK PDF fixture 失败仍根因 unknown，不纳入本次 UI 修复也不宣称全绿。build 既有 chunk 大小提示、路由生成的 circular dependency 提示保留。来源/评审/试用认可分别维护，静态 detector `[]` 不代表截图质量。
+
+## 上一轮附件语义交付（历史快照 e0c43e5）
+
 2026-10-08。源码 `e0c43e507554ee09268eef3fa050b906f698d8af`，分支 `codex/composer-quality`，隔离工作树 `/Users/lou/.codex/worktrees/composer-quality/d-pi`。本轮反馈增量从dd8d812开始，整个任务基于原checkout的a9cf9a9d；原 `/Users/lou/Learn/d-pi` 仍为该HEAD且干净。未push、创建远端PR或发布。
 
 ## 试用

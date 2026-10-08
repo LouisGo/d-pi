@@ -1,15 +1,17 @@
 ## Summary
 
-Composer将外部图片保留在独立缩略图栏，正文编辑和Undo/Redo不会增删图片；其他文件按MIME以内联chip呈现，包含类型图标、颜色、名称和大小，参与正文历史。项目@仍内联，重复来源不重复采用；默认重复的大块附件状态移入对应详情，失败标记及恢复入口保留。按固定T3的组合和images/files分工，用现有d-pi组件实现。
+Composer正常输入与自动保存安静运行，真实失败保留紧凑恢复；共享焦点入口区分鼠标编辑与键盘焦点迁移。成功导入不长驻结果面板，采用展示由当前图片缩略图/正文节点决定，删除/Undo后不保留旧预览或“已插入”；后台结算、去重release及失败重试继续执行。导入待处理项使用紧凑列表，长文件名与动作分开，工具栏支持窄窗换行。
 
-复用M1补全/键盘/焦点及M2映射导入、批次Undo、取消/部分失败/Thread隔离；修复冷恢复图片保护、语言切换撤销落点、显式采用焦点、冻结引用块分隔和空行。Main按来源保留历史摘要，仅退出已确认的外部图片依赖；真实update ACK前不释放candidate。冻结原文的token字样不授予附件身份。所属[规格](spec.md)及[05票](issues/05-attachment-semantics.md)。
+沿用现有图片独立rail且不进入Undo，非图片MIME内联且参与Undo、项目@内联；Draft v1、Main history lease、可信clipboard、immutable send/native queue不变。基于固定T3组合表面用d-pi组件/token实现。[规格](spec.md)、[06票](issues/06-quiet-composer.md)；先前附件语义/资源实现见[05票](issues/05-attachment-semantics.md)。
 
 ## Evidence
 
-源码e0c43e5，本轮增量dd8d812..e0c43e5，完整任务基点a9cf9a9d；仅本地分支codex/composer-quality。50文件369测试、完整typecheck、fast/design/i18n/interaction和build通过；真实Main+PM+SQLite与React fixture，原始红绿见[证据来源](evidence/attachment-semantics/provenance.md)和[验证](validation.md)。独立[Spec/Standards评审](review.md)按固定范围复核。
+本轮固定2fdeab2..6b39d19；任务总基点a9cf9a9d，分支codex/composer-quality，仅本地。正常保存状态、success/removed report及共享焦点6个真实反例先失败再修复，最终39文件302项通过，完整typecheck/check:fast/design/i18n/build通过。[原始证据](evidence/quiet-composer/provenance.md)、[验证](validation.md)、独立[Spec/Standards评审](review.md)均对应本轮固定源；上一轮50文件369项不与本次数量累加。
 
-用户负责本轮实机验收，未启动GUI/E2E；没有本轮视觉或真实IME通过结论。既有SDK PDF复制fixture失败在未改1b50c88亦复现，根因unknown；先前CLI fixture失败保留，完整check未重跑或宣称全绿。DOCX/视频等展示没有新增转换器。见[交接](handoff.md)。
+用户实机自测，Agent未启动Dev/GUI/E2E/provider/Host，没有新增视觉/IME/OS验收结论。完整check未重跑，既有SDKPDF/CLIfixture失败根因unknown保留；DOCX/视频展示不代表新增转换支持。[交接](handoff.md)包含准确启动目录及当前固定运行时。
 
 ## Merge Danger
 
-跨Renderer/Main的图片分类、历史与草稿依赖必须同版交付，不能把Main累计ACK假称缩减ACK；文件旧版本/shared digest、clipboard cleanup和import settlement仍需真实保护。无IPC/DB/Draft版本迁移，沿既有所有者和权限，未新增队列或重发。回滚源码前关闭此Dev；revert不撤销已保存草稿和资产，不删除数据库或OMP历史。无远端push/PR/发布。
+本轮改变Renderer呈现与共享焦点策略，无DB/IPC/Draft迁移、新依赖或权限变化；共享策略影响其他文本控件，input/textarea/contenteditable和既有portal行为回归通过，真实浏览器仍需用户验证。隐藏报告不等于settlement成功，未完成/失败的资源工作继续阻止准备并允许重试。整个任务的Main/Renderer图片历史分类必须同版交付。
+
+可以revert本轮源码，但不会撤销已保存草稿、资产或旧任务实现，不删除数据库/OMP历史。无push/远端PR/发布；工程完成不代表试用认可。

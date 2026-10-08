@@ -99,3 +99,11 @@ Standards随后发现source-too-large的“重试准备”仍直接打开picker�
 当前UI：图片独立缩略图且不入Undo，其他文件MIME内联并入Undo，项目引用不进外部栏；默认重复的大块错误移入详情。DOCX/视频等仍没有Main内容转换支持，MIME样式不会伪装ready。未知附件分类前保护冷草稿，读取失败可重新加载；分类/标签不写脏草稿，真实Main只退出图片历史并保留文件旧摘要，共享对象保护和ACK失败重试经联合测试。冻结source只有普通paragraph附件有权威，Main准备/保存/扫描和Renderer readiness一致。
 
 本轮用户验收pending；真实IME、焦点/样式、OS drag/drop/clipboard竞态、窄窗/主题/缩放、VoiceOver、长会话和provider/Host queue没有新实机结果。
+
+## 2026-10-08 日常状态与导入呈现（06）
+
+固定 base 2fdeab2 → source 6b39d19。首先用真实 Composer、DraftController、AttachmentImports 和共享焦点入口反例得到6失败/32通过：dirty状态仍占位、成功报告长驻、移除后结算失败仍声称已插入及保留预览、input/textarea/contenteditable输入键清除指针来源。修复后38通过。后续补真实saving/checking→恢复和file Undo/Redo跨未完成结算；完整本轮 input/workbench/focus/Thread 装配回归39文件302项通过，不与旧50文件369项累加。
+
+全typecheck、check:fast、lint:design、lint:i18n、build通过，structure报告按源码新鲜度重生，架构依赖边未变；impeccable指定UI检测[]。第一次扩展测试的两个失败来自旧待保存可见断言与取消按钮全文定位，按当前明确UI合同改成pending安静和完整aria-label；首次typecheck抓到image preview测试fixture多余mimeType已移除。错误准备不计为产品红灯。
+
+未运行validate:interaction（启动Electron）、Dev/GUI/E2E、真实provider/Host；深浅主题、窄窗、原生IME/OS/辅助技术及实际视觉由用户自测。完整check未重跑，既有SDKPDF/CLIfixture失败保留。原始证据见[provenance](evidence/quiet-composer/provenance.md)。

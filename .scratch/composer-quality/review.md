@@ -65,3 +65,12 @@ Spec与Standards独立只读固定评审，未修改主树或治理状态，未�
 Standards固定dd8d812..63e023e闭合，独立6文件61项通过；随后63e023e..e0c43e5窄增量复核无新增发现，独立Thread/token2文件4项通过。Spec在63e023e发现最后Thread门禁缺口，e0c43e5原反例及正式4项转绿后闭合；此前两个readonly middle migration旧反例及6文件61项亦独立通过。root最终50文件369项通过见验证页，不与reviewer数量合计。
 
 **最终两轴无剩余可行动发现，结论固定于e0c43e5源码。** 治理文档由root单写；SDK PDF现有失败未在闭合阶段重复运行，基线复现与unknown根因继续保留。评审不替代用户视觉/真实IME及实机验收。
+
+## 日常状态与导入呈现：2fdeab2..6b39d19
+
+独立 `spec_review` 和 `standards_review`，使用无作者实现历史的两个只读上下文，固定 base 2fdeab2d7183430dc0f5315dfee5d3fd30bd2bc7 / head 6b39d195d99e9618bc5c9d17c42aff7c2f9f8b13，merge-base等于base。未编辑源码、未创建实施树或运行GUI。
+
+- Spec：无高价值可报告缺陷。覆盖正常保存安静但继续执行、真实失败/冲突恢复、指针输入/Tab/实际焦点迁移、导入report的pending/partial/settlement、去重release/批次预算/取消及Thread隔离。读取提交中的302项证据，未独立执行。
+- Standards：无可报告缺陷。覆盖共享焦点与portal、当前采用/preview和资源settlement分别处理、Main/leases/send所有权不变、异步Thread及Undo/Redo、React订阅和模块边界、类型/设计规则无绕过。独立focus/continuity/initialization3文件46项通过。其本机pnpm版本切换ENOEXEC后只读用node node_modules/vitest/vitest.mjs执行，Node23.10.0，作为补充行为证据；root固定Node24.21.0/pnpm12.8.1的302项/typecheck/build为主验证。
+
+结论仅适用于上述源码。真实浏览器focus-visible、蓝框是否消失、窄窗/深浅布局、OS/IME/VoiceOver未验证；T3引用与静态detector不构成用户认可。最后治理文档增量不改源码，验收保持pending。
