@@ -137,11 +137,16 @@ export async function ensureCurrentModelConfiguration(session) {
   const declaration = await refreshNativeConfiguration(session);
   const current = session.model;
   let accepted = current && state?.models.get(current);
+  // enabledModels scopes the desktop picker. OMP roles and prewalk can select
+  // any native available target, still subject to auth and disabled providers.
   const live =
     current &&
-    availableModels(session, "all").find(
-      (model) => model.provider === current.provider && model.id === current.id,
-    );
+    session.modelRegistry
+      .getAvailable("all")
+      .find(
+        (model) =>
+          model.provider === current.provider && model.id === current.id,
+      );
   if (!live) throw Error("selected-model-unavailable");
   const observed = modelConfiguration(session, current, declaration);
   // Native lazy metadata can create a new object between calls. Its declaration

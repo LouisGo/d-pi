@@ -58,7 +58,7 @@ try {
  const createSession=registry=>{
  const agent=new Agent();const manager=SessionManager.inMemory();
  const controls=new ModelControls({agent,settings,modelRegistry:registry,sessionManager:manager,providerSessionState:new Map(),model:()=>agent.state.model,sessionId:()=>manager.getSessionId(),promptGeneration:()=>0,resolveActiveEditMode:()=> 'replace',syncAfterModelChange:async()=>{},setModelWithProviderSessionReset:async model=>agent.setModel(model),clearActiveRetryFallback:()=>{},clearInheritedProviderPromptCacheKey:()=>{},magicKeywordEnabled:()=>false,emit:()=>{},emitSessionEvent:async()=>{},emitNotice:()=>{}},{});
- return {settings,modelRegistry:registry,get model(){return agent.state.model;},get thinkingLevel(){return controls.thinkingLevel;},setModelTemporary:(...args)=>controls.setModelTemporary(...args)};
+ return {settings,modelRegistry:registry,get model(){return agent.state.model;},get thinkingLevel(){return controls.thinkingLevel;},setModelTemporary:(...args)=>controls.setModelTemporary(...args),resolveRoleModel:(...args)=>controls.resolveRoleModel(...args)};
  };
  const session=createSession(registry);
  const choose=(id)=>applyModelSelection(session,{provider:'fixture',modelId:id,thinking:{kind:'default'}});
@@ -101,6 +101,16 @@ try {
  await assert.rejects(choose('start'));await assert.rejects(ensureCurrentModelConfiguration(session));
  writeFileSync(join(config,'config.yml'),JSON.stringify({enabledModels:['fixture/start'],modelRoles:{default:'fixture/start'},autolearn:{enabled:false}}));
  await assert.rejects(choose('added'));await choose('start');
+ writeFileSync(join(config,'config.yml'),JSON.stringify({enabledModels:['fixture/start'],modelRoles:{default:'fixture/start',tiny:'fixture/added'},autolearn:{enabled:false}}));
+ await settings.reloadFromDisk();
+ const nativeTiny=session.resolveRoleModel('tiny');
+ assert.equal(nativeTiny.id,'added','native role can resolve a model excluded from the desktop selector');
+ await session.setModelTemporary(nativeTiny,undefined,{ephemeral:true});
+ await ensureCurrentModelConfiguration(session);
+ assert.equal(session.model,nativeTiny,'native role target must remain executable');
+ await assert.rejects(choose('added'),'desktop selection must continue to obey enabledModels');
+ await choose('start');
+ checks.push('native role executes outside enabledModels while desktop selection remains filtered');
  save([spec('start','http://127.0.0.1:10/v1'),spec('added')]);
  await assert.rejects(ensureCurrentModelConfiguration(session),/model-configuration-changed/);
  await choose('start');await ensureCurrentModelConfiguration(session);
@@ -169,7 +179,7 @@ try {
    checks.push(type+' native lazy context survives offline cache refresh');
    checks.push(type+' native lazy metadata clone retains declaration identity');
  }
- console.log(JSON.stringify({sdkVersion:'18.4.6',checks,redRegressions:{deferredHeaders:'missing expected rejection on c283246',lazyContext:'model-configuration-changed on c283246 despite unchanged configuration',settingsListener:'unrelated credential helper executed from native settings listener on c283246',nativeSwitch:{source:'runtime/model-selection.mjs at 5256af46a25b848f4d6cba89b9a6301ce5fa1bff',validation:'validation/m2/model-configuration-live.mjs official ModelControls ephemeral A to B',command:'node validation/m2/model-configuration-live.mjs /tmp/d-pi-native-model-switch-red.json',result:'exit 1: model-configuration-changed after official ephemeral A to B selection'}},realSupplierRequests:0}));
+ console.log(JSON.stringify({sdkVersion:'18.4.6',checks,redRegressions:{deferredHeaders:'missing expected rejection on c283246',lazyContext:'model-configuration-changed on c283246 despite unchanged configuration',settingsListener:'unrelated credential helper executed from native settings listener on c283246',nativeSwitch:{source:'runtime/model-selection.mjs at 5256af46a25b848f4d6cba89b9a6301ce5fa1bff',validation:'validation/m2/model-configuration-live.mjs official ModelControls ephemeral A to B',command:'node validation/m2/model-configuration-live.mjs /tmp/d-pi-native-model-switch-red.json',result:'exit 1: model-configuration-changed after official ephemeral A to B selection'},nativeRole:{source:'runtime/model-selection.mjs at 7da8934f30731ebbc528027f29091cb46c159e4e',validation:'official ModelControls.resolveRoleModel tiny and ephemeral selection outside enabledModels',result:'exit 1: selected-model-unavailable for native tiny role excluded from desktop selector'}},realSupplierRequests:0}));
 } finally {writer.close();auth.close();settings.cancelPendingSaves();}
 `,
 );
