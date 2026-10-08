@@ -57,7 +57,7 @@
     "engineering": "complete",
     "trial": "delivered",
     "acceptance": "pending",
-    "current": true,
+    "current": false,
     "build": "Dev c04e245 / Chromium d987f98",
     "pending": [],
     "evidence": [
@@ -67,7 +67,8 @@
     ],
     "next": "首个长会话阅读闭环已本地PR合main并push，远端源码289d36d已核实；从main pnpm dev试用。R1–R15、双轴无高价值遗留、真实Luna/Dev及干净Chromium证据已交付；用户认可pending，M2父范围仍开放。",
     "constraints": "2026-10-07当前明确授权本地PR合main并push，允许现有OMP Luna与并行工作。live/native分源，预算和冷恢复只读保留；不公开发布、不扩M3。"
-  }
+  },
+  {"id":"long-session-repair","title":"长会话连续体验修复","phase":"M2","engineering":"in-progress","trial":"feedback","acceptance":"pending","current":true,"build":"","pending":[],"evidence":["long-session-repair.md"],"next":"实现连贯正文、生成期间历史可读及同原生会话冷恢复；完成真实模型复试与独立评审。","constraints":"2026-10-08用户明确授权修复并取代手动分段及冷旧Thread一律只读边界；保留unknown不重发、原生身份与真实独占，允许本机真实模型复核；本地交付，不自动push或公开发布。"}
 ]
 ```
 
@@ -184,7 +185,7 @@
 用户要求使用刚合并的 AI 工作流，从最新 main 重新开启下一阶段；2026-10-06 已确认 PR #1 合入，基点 `c8dbdbadf1a04ad2be54e01f1a509024c5d982ea`，集成分支 `codex/m2-lifecycle`。本段选择 B4 附件引用/延迟回收/一致性与原生子 Agent 状态/结果观察两条可独立交付路径，随后集成与本地候选。沿用已有 M2 本地实现/commit/试用候选授权；不 push、不公开发布、不扩 M3。冷旧 Thread 只读、unknown 不自动重发，PDF 视觉/OCR与退出放弃原待决不进入本段。无新增产品待决。
 
 ```implementation-plan
-[{"id":"m2-lifecycle","tickets":["04b","05d","06b"]},{"id":"m2-long-reading","tickets":["06c","06d"]},{"id":"m2-diagnostics","tickets":["06e","06f","06g"]},{"id":"thread-attention","tickets":["01a","01b","01c"]},{"id":"long-reading-loop","tickets":["06h","06i","06j"]}]
+[{"id":"m2-lifecycle","tickets":["04b","05d","06b"]},{"id":"m2-long-reading","tickets":["06c","06d"]},{"id":"m2-diagnostics","tickets":["06e","06f","06g"]},{"id":"thread-attention","tickets":["01a","01b","01c"]},{"id":"long-reading-loop","tickets":["06h","06i","06j"]},{"id":"long-session-repair","tickets":["06k","06l","06m","06n"]}]
 ```
 
 - [04b](issues/04b-attachment-lifecycle.md)：私有内容引用/最后释放、延迟回收及正式检查/清理出口。
@@ -298,3 +299,14 @@
 验收 R1–R15 见蓝图；已正确行为补回归不伪造红灯，缺口逐行为红绿。实机验证回答 Chromium 几何/选择/最终语义及真实 provider 到达风险，纯DOM替身不足；操作覆盖完成或发现具体失败即停止扩大样本。
 
 2026-10-08：首个长会话阅读闭环实现、相关TDD与合并最新main后的1062行为/35架构/96工具检查、build/fast、真实Dev Luna/历史与干净Chromium24项通过，两个独立reviewer最终72c5e77均无高价值问题。本地PR分支8081910合main为289d36d3dcef18e81fd8c4a31d15913a7487387f，push成功且ls-remote核实相同；06h/06i/06j工程resolved。本次交付不关闭M2其它范围或用户认可，不冒称固定包。[完整交接](reading-loop.md)。
+
+
+## 2026-10-08 长会话连续体验修复（当前授权）
+
+用户基于本地真实模型复核明确要求修复全部确认问题，并指定三个验收：不能分段展示，正文必须连贯；生成期间能访问历史会话和消息；冷重启必须继续原会话。此要求取代06c/06h/06i的手动原文分段策略及旧D-24冷只读交付限制；历史证据保持原样。沿用D-02 OMP所有权、D-24 unknown不自动重发/事务与身份规则、D-35/37/39技术合同。无新增产品待决；实现需建立原生全周期独占和同文件/会话ID恢复，不能新建替代会话伪装续作。
+
+起点ae94bc0bed8deba6a005c8b5ec79b16aa02f9df4，原工作区干净，集成分支codex/long-session-repair。正式GUI连续阅读，不以关闭预算门禁应付；运行中读取已提交原生历史前缀，不能因尾部追加让旧页不可访问。正文重复、停止/失败/自动续写与正常事件误报和冷空态一并修复。
+
+验收：缺口真实红绿；正式Main/Host/SDK身份与锁冲突、停止后继续、冷重启同sessionfile/id和上下文回忆、生成期间历史可读、长Markdown不退原文/没有分段控件、复制精确、旧位置/焦点保留；受影响检查、build和独立Spec/Standards评审。真实模型测试沿用本次账户授权和合成数据；本地Dev交付，不自动push/发布，用户认可pending。
+
+工程状态：实施中；管理状态仅主Agent写入；冷恢复只读调查由recovery_evidence读取证据，不写源码。独立写者使用独立worktree；主Agent写合同/i18n/共享装配并串行集成。结果与试用见[交接](long-session-repair.md)。

@@ -2,7 +2,7 @@
 
 此页由所属规格的 `project-status` 块和任务的 `Status` / `Blocked by` 生成，禁止手工改进度。更新源后运行 `pnpm report:status:write`；`check` / `check:fast` 拒绝非法字段、依赖与陈旧结果。读取约定见 [任务约定](agents/issue-tracker.md#总看板读取约定)。
 
-当前工作：[首个长会话阅读闭环](../.scratch/m2-first-release/spec.md)。首个长会话阅读闭环已本地PR合main并push，远端源码289d36d已核实；从main pnpm dev试用。R1–R15、双轴无高价值遗留、真实Luna/Dev及干净Chromium证据已交付；用户认可pending，M2父范围仍开放。
+当前工作：[长会话连续体验修复](../.scratch/m2-first-release/spec.md)。实现连贯正文、生成期间历史可读及同原生会话冷恢复；完成真实模型复试与独立评审。
 
 工程完成、交付试用与用户认可独立；下面的计划不构成阶段授权。G1 按受影响能力验证，M1 是内部闭环，M2 是首版，M3 是后续增强。
 
@@ -16,6 +16,7 @@
 | M1 | [S5 组合验收](../.scratch/m1-s5-combination-acceptance/spec.md) | 工程完成 | 已反馈待处理/复试 | 待认可 | 0.1.0-s5.0 / 4b003e84-4c6aa4ad [证据1](../.scratch/m1-s5-combination-acceptance/handoff.md) · [证据2](../.scratch/m1-s5-combination-acceptance/evidence/acceptance.md) · [证据3](../.scratch/m1-s5-combination-acceptance/evidence/final-s5-result.json) · [证据4](../.scratch/m1-s5-combination-acceptance/evidence/frozen-review.md) | M1 工程完成、用户未认可；入口反馈由已授权 M2 接续处理 |
 | M2 | [M2 首版](../.scratch/m2-first-release/spec.md) | 实施中 | 已交付待试用 | 待认可 | 0.1.0-m2.20 / 3c4c1060-8b550d60 [证据1](product/first-release.md) · [证据2](../.scratch/m2-first-release/handoff-entry.md) · [证据3](../.scratch/runtime-hardening-omp1845/handoff.md) · [证据4](../.scratch/m2-first-release/configuration-sharing.md) · [证据5](../.scratch/m2-first-release/mainflow-feedback.md) · [证据6](../.scratch/m2-first-release/progress-audit.md) · [证据7](../.scratch/m2-first-release/navigation-continuity.md) · [证据8](../.scratch/m2-first-release/development-tools.md) · [证据9](../.scratch/m2-first-release/rendering-isolation.md) · [证据10](../.scratch/m2-first-release/e2e-convergence.md) · [证据11](../.scratch/m2-first-release/warm-session-liveness.md) · [证据12](../.scratch/review-seven-commits/spec.md) · [证据13](../.scratch/m2-first-release/next-stage.md) · [证据14](../.scratch/m2-first-release/queue-configuration-review.md) · [证据15](../.scratch/m2-first-release/content-preparation.md) · [证据16](../.scratch/m2-first-release/lifecycle.md) · [证据17](../.scratch/m2-first-release/lifecycle-review.md) · [证据18](../.scratch/m2-first-release/project-references.md) · [证据19](../.scratch/m2-first-release/project-references-review.md) · [证据20](../.scratch/m2-first-release/long-reading.md) · [证据21](../.scratch/m2-first-release/long-reading-review.md) · [证据22](../.scratch/m2-first-release/diagnostics.md) · [证据23](../.scratch/m2-first-release/diagnostics-review.md) · [证据24](../.scratch/ai-workflow-v13/m2-retro-handoff.md) · [证据25](../.scratch/m2-first-release/attention.md) · [证据26](../.scratch/m2-first-release/attention-review.md) · [证据27](../.scratch/m2-first-release/progress-2026-10-06.md) · [证据28](../.scratch/m2-first-release/real-provider-e2e.md) · [证据29](../.scratch/m2-first-release/pr4-integration.md) · [证据30](../.scratch/m2-first-release/reading-loop.md) · [证据31](../.scratch/m2-first-release/reading-loop-review.md) | m2.20诊断/提醒候选已交付，PR#4已合入main，后续从最新main开始UI迭代；首次本机OpenAI GPT-5.6 Luna新Thread真实生成/GUI阅读完成。M2尚未完成，PDF视觉/OCR、01c系统显示/点击、V1-00/B6组合、其余真实账户/供应商路径及用户认可保持开放；冷旧Thread只读 |
 | M2 | [首个长会话阅读闭环](../.scratch/m2-first-release/spec.md) | 工程完成 | 已交付待试用 | 待认可 | Dev c04e245 / Chromium d987f98 [证据1](../.scratch/m2-first-release/reading-loop.md) · [证据2](../.scratch/m2-first-release/reading-loop-review.md) · [证据3](../.scratch/m2-first-release/reading-loop-pr.md) | 首个长会话阅读闭环已本地PR合main并push，远端源码289d36d已核实；从main pnpm dev试用。R1–R15、双轴无高价值遗留、真实Luna/Dev及干净Chromium证据已交付；用户认可pending，M2父范围仍开放。 |
+| M2 | [长会话连续体验修复](../.scratch/m2-first-release/spec.md) | 实施中 | 已反馈待处理/复试 | 待认可 |  [证据1](../.scratch/m2-first-release/long-session-repair.md) | 实现连贯正文、生成期间历史可读及同原生会话冷恢复；完成真实模型复试与独立评审。 |
 | M3 | [M3 后续增强](../.scratch/development-foundation/spec.md) | 未实施 | 未交付 | 待认可 | —  | 未启动，保留边界 |
 | M3 | [集成终端 B 方案](../.scratch/integrated-terminal/spec.md) | 未实施 | 未交付 | 待认可 | — [证据1](../.scratch/integrated-terminal/handoff.md) · [证据2](architecture/terminal.md) · [证据3](validation/terminal.md) | B与xterm路线已确认、文档已交付；待关联/退出产品答复及后续开发授权。 |
 | 基建 | [AI 工作流升级](../.scratch/ai-workflow-v13/spec.md) | 工程完成 | 不适用 | 不适用 | — [证据1](../.scratch/ai-workflow-v13/handoff.md) · [证据2](../.scratch/ai-workflow-v13/validation.md) · [证据3](../.scratch/ai-workflow-v13/review.md) · [证据4](../.scratch/ai-workflow-v13/research.md) · [证据5](../.scratch/ai-workflow-v13/m2-retro-2026-10-06.md) · [证据6](../.scratch/ai-workflow-v13/m2-retro-handoff.md) · [证据7](../.scratch/ai-workflow-v13/m2-retro-validation.md) · [证据8](../.scratch/ai-workflow-v13/m2-retro-review.md) · [证据9](../.scratch/ai-workflow-v13/validation-retro-2026-10-07.md) | 2026-10-07按风险验证与窄场景入口工程完成、独立两轴复核通过；PR#7合并后从main进入下一阶段 |
@@ -59,6 +60,10 @@
 | [m2-first-release / 04 输入与附件](../.scratch/m2-first-release/issues/04-input-attachments.md) | claimed | 无；范围以所属规格为准 |
 | [m2-first-release / 05 队列与子 Agent](../.scratch/m2-first-release/issues/05-queue-subagent.md) | open | 无；范围以所属规格为准 |
 | [m2-first-release / 06 阅读与组合验收](../.scratch/m2-first-release/issues/06-reading-acceptance.md) | open | 无；范围以所属规格为准 |
+| [m2-first-release / 06k 连贯正文阅读](../.scratch/m2-first-release/issues/06k-continuous-reading.md) | claimed | 无；范围以所属规格为准 |
+| [m2-first-release / 06l 正文投影与运行中历史](../.scratch/m2-first-release/issues/06l-projection-history.md) | claimed | 无；范围以所属规格为准 |
+| [m2-first-release / 06m 原生会话冷恢复续作](../.scratch/m2-first-release/issues/06m-cold-resume.md) | claimed | 无；范围以所属规格为准 |
+| [m2-first-release / 06n 连续体验组合验收](../.scratch/m2-first-release/issues/06n-repair-integration.md) | open | [06k](../.scratch/m2-first-release/issues/06k-continuous-reading.md)、[06l](../.scratch/m2-first-release/issues/06l-projection-history.md)、[06m](../.scratch/m2-first-release/issues/06m-cold-resume.md) |
 | [state-query-alignment / 04 集成验证与试用交接](../.scratch/state-query-alignment/issues/04-integration-verification.md) | claimed | 无；范围以所属规格为准 |
 
 ## 重要待决与继续边界
@@ -69,6 +74,7 @@
 - [S5 组合验收](../.scratch/m1-s5-combination-acceptance/spec.md)：不 push、不公开发布、不扩 M2/M3；冷恢复只读，unknown 不自动重发；暂停队列放弃出口继续待决。
 - [M2 首版](../.scratch/m2-first-release/spec.md)：2026-10-06最新授权先push并处理远端PR/提交、让main干净供后续UI开发；允许整合、验证后合并PR#4。不公开发布、不扩M3，冷恢复只读，unknown不自动重发；用户认可pending。
 - [首个长会话阅读闭环](../.scratch/m2-first-release/spec.md)：2026-10-07当前明确授权本地PR合main并push，允许现有OMP Luna与并行工作。live/native分源，预算和冷恢复只读保留；不公开发布、不扩M3。
+- [长会话连续体验修复](../.scratch/m2-first-release/spec.md)：2026-10-08用户明确授权修复并取代手动分段及冷旧Thread一律只读边界；保留unknown不重发、原生身份与真实独占，允许本机真实模型复核；本地交付，不自动push或公开发布。
 - [集成终端 B 方案](../.scratch/integrated-terminal/spec.md)：本次仅方案与文档；不开发终端、不新增终端依赖、不远端push/合并；本地合入main已授权；不扩大M2或D-39。
 - [Beautiful UI 基础视觉体系升级](../.scratch/beautiful-ui-system/spec.md)：本地源码交付；GUI证据为隔离Electron真实Renderer，不是provider或固定包验收。
 - [Codex 式工作台基础布局](../.scratch/codex-workbench-ui/spec.md)：用户已授权本UI分支push、PR及合并；不公开发布或发起真实账户请求。
@@ -83,4 +89,4 @@
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 - [T3 研究与基础重构](../.scratch/t3-foundations/spec.md)：unknown 不重发，冷恢复只读；native/live 无可靠原生身份时保持独立来源；M3 能力仅作设计储备
 
-<!-- source-sha256: 3ee861988772f14331eecc22adacbcfb987f1701e7a7fe98205f9af2a78a2fbd; sources: 156 -->
+<!-- source-sha256: bb76314fd1118b2ffd9e66cef1a28ac4f6e6fa3c0c73d5cf9112c8af3c7d449e; sources: 160 -->
