@@ -335,3 +335,82 @@ it("refreshes an initially unbound transcript after native persistence and retai
   expect(f.container.textContent).toContain("old persisted reply");
   expect(f.container.textContent).toContain("current reply");
 });
+it("keeps a live row, copy focus and selected text through native ID confirmation and saved refetch", async () => {
+  let committed = false;
+  const reader: HistoryBridge["read"] = vi.fn(async () => ({
+    kind: "page",
+    source: "saved",
+    coverage: "append-order",
+    next: null,
+    incompleteTail: false,
+    omitted: 0,
+    entries: committed
+      ? [
+          {
+            id: "persisted",
+            parentId: null,
+            role: "assistant",
+            text: "stable closed paragraph",
+          },
+        ]
+      : [],
+  }));
+  const f = await mount(true, undefined, reader);
+  await act(() =>
+    f.emit({
+      kind: "snapshot",
+      connectionGeneration: "g",
+      seq: 1,
+      gap: false,
+      items: [
+        {
+          id: 1,
+          role: "assistant",
+          state: "streaming",
+          label: { kind: "literal", text: "OMP" },
+          text: "stable closed paragraph",
+        },
+      ],
+    }),
+  );
+  const row = f.container.querySelector<HTMLElement>(".message");
+  const text = row?.querySelector("[data-reading-text] p")?.firstChild;
+  const button = row?.querySelector("button");
+  if (!row || !text || !button) throw Error("missing live row");
+  button.focus();
+  const range = document.createRange();
+  range.setStart(text, 0);
+  range.setEnd(text, 6);
+  const selection = document.getSelection();
+  selection?.removeAllRanges();
+  selection?.addRange(range);
+  const rowId = row.dataset.readingRow;
+  committed = true;
+  await act(() =>
+    f.emit({
+      kind: "snapshot",
+      connectionGeneration: "g",
+      seq: 2,
+      gap: false,
+      items: [
+        {
+          id: 1,
+          nativeRecordId: "persisted",
+          role: "assistant",
+          state: "complete",
+          label: { kind: "literal", text: "OMP" },
+          text: "stable closed paragraph",
+        },
+      ],
+    }),
+  );
+  await vi.waitFor(async () => {
+    await act(() => new Promise((r) => setTimeout(r, 20)));
+    expect(reader).toHaveBeenCalledTimes(2);
+  });
+  expect(f.container.querySelector(".message")).toBe(row);
+  expect(row.dataset.readingRow).toBe(rowId);
+  expect(document.activeElement).toBe(button);
+  expect(text.isConnected).toBe(true);
+  expect(selection?.toString()).toBe("stable");
+});

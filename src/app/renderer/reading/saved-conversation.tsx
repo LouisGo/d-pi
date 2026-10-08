@@ -1,5 +1,5 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
@@ -98,6 +98,30 @@ export function SavedConversation({
     page.kind === "page" ? page.entries : [],
   );
   const nativeIds = new Set(entries.map((entry) => entry.id));
+  // Presentation identity is view state, separate from native persistence identity.
+  // A newly confirmed native ID adopts its already mounted live row.
+  const rowKeys = useMemo(
+    () => ({
+      records: new Map<string, string>(),
+      live: new Map<string, string>(),
+    }),
+    [threadId],
+  );
+  for (const id of live.itemIds) {
+    const item = live.itemsById.get(id);
+    const liveKey = JSON.stringify([generation, id]);
+    const key =
+      rowKeys.live.get(liveKey) ??
+      (item?.nativeRecordId
+        ? rowKeys.records.get(item.nativeRecordId)
+        : undefined) ??
+      `live:${liveKey}`;
+    rowKeys.live.set(liveKey, key);
+    if (item?.nativeRecordId && !rowKeys.records.has(item.nativeRecordId))
+      rowKeys.records.set(item.nativeRecordId, key);
+  }
+  for (const entry of entries)
+    if (!rowKeys.records.has(entry.id)) rowKeys.records.set(entry.id, entry.id);
   const liveByNativeId = new Map(
     live.itemIds.flatMap((id) => {
       const item = live.itemsById.get(id);
@@ -112,6 +136,20 @@ export function SavedConversation({
       (!item.nativeRecordId || !nativeIds.has(item.nativeRecordId))
     );
   });
+  const rows = [
+    ...entries.map((entry) => ({
+      key: rowKeys.records.get(entry.id) ?? entry.id,
+      entry,
+      liveId: liveByNativeId.get(entry.id),
+    })),
+    ...appended.map((liveId) => ({
+      key:
+        rowKeys.live.get(JSON.stringify([generation, liveId])) ??
+        `live:${liveId}`,
+      entry: undefined,
+      liveId,
+    })),
+  ];
   const incomplete = pages.some(
     (page) => page.kind === "page" && page.incompleteTail,
   );
@@ -157,20 +195,12 @@ export function SavedConversation({
           {t("config.refresh")}
         </Button>
       )}
-      {entries.map((entry) => (
-        <SavedRow
-          key={entry.id}
-          entry={entry}
-          liveId={liveByNativeId.get(entry.id)}
-          model={model}
-          positions={positions}
-          source={source}
-        />
-      ))}
-      {appended.map((id) => (
-        <LiveRow
-          key={`live:${id}`}
-          id={id}
+      {rows.map((row) => (
+        <TimelineRow
+          key={row.key}
+          rowId={row.key}
+          entry={row.entry}
+          liveId={row.liveId}
           model={model}
           positions={positions}
           source={source}
@@ -194,35 +224,16 @@ export function SavedConversation({
     </section>
   );
 }
-function LiveRow({
-  id,
-  model,
-  positions,
-  source,
-}: {
-  id: number;
-  model: ConversationModel;
-  positions?: ReadingPositions | undefined;
-  source: string;
-}) {
-  const item = useStore(model.stateStore, (state) => state.itemsById.get(id));
-  return item ? (
-    <ConversationItemView
-      item={item}
-      rowId={`live:${id}`}
-      positions={positions}
-      source={source}
-    />
-  ) : null;
-}
-function SavedRow({
+function TimelineRow({
+  rowId,
   entry,
   liveId,
   model,
   positions,
   source,
 }: {
-  entry: HistoryEntry;
+  rowId: string;
+  entry?: HistoryEntry | undefined;
   liveId?: number | undefined;
   model: ConversationModel;
   positions?: ReadingPositions | undefined;
@@ -232,36 +243,41 @@ function SavedRow({
   const live = useStore(model.stateStore, (state) =>
     liveId === undefined ? undefined : state.itemsById.get(liveId),
   );
-  const item: ConversationItem = live
-    ? { ...live, text: entry.text, truncated: false }
-    : {
-        id: 0,
-        role:
-          entry.role === "user"
-            ? "user"
-            : entry.role === "assistant"
-              ? "assistant"
-              : "tool",
-        state: "complete",
-        text: entry.text,
-        label: {
-          kind: "literal",
-          text: match(entry.role)
-            .with("user", () => t("ui.history.role.user"))
-            .with("assistant", () => t("ui.history.role.assistant"))
-            .with("tool", "toolResult", () => t("ui.history.role.tool"))
-            .otherwise(() => entry.role),
-        },
-      };
+  const item: ConversationItem | undefined = live
+    ? entry
+      ? { ...live, text: entry.text, truncated: false }
+      : live
+    : entry
+      ? {
+          id: 0,
+          role:
+            entry.role === "user"
+              ? "user"
+              : entry.role === "assistant"
+                ? "assistant"
+                : "tool",
+          state: "complete",
+          text: entry.text,
+          label: {
+            kind: "literal",
+            text: match(entry.role)
+              .with("user", () => t("ui.history.role.user"))
+              .with("assistant", () => t("ui.history.role.assistant"))
+              .with("tool", "toolResult", () => t("ui.history.role.tool"))
+              .otherwise(() => entry.role),
+          },
+        }
+      : undefined;
+  if (!item) return null;
   return (
     <>
       <ConversationItemView
         item={item}
-        rowId={entry.id}
+        rowId={rowId}
         positions={positions}
         source={source}
       />
-      {entry.toolEvidence && (
+      {entry?.toolEvidence && (
         <Disclosure>
           <DisclosureTrigger>
             {t("ui.history.nativeToolEvidence")}
