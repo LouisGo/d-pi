@@ -10,13 +10,14 @@
     "native enabledModels enforced",
     "edited endpoint requires explicit reselection",
     "removed credential blocks next call",
-    "unrelated helper not executed",
+    "unrelated helper not executed during native settings listener refresh",
     "llama.cpp native lazy context survives offline cache refresh",
     "lm-studio native lazy context survives offline cache refresh"
   ],
   "redRegressions": {
     "deferredHeaders": "missing expected rejection on c283246",
-    "lazyContext": "model-configuration-changed on c283246 despite unchanged configuration"
+    "lazyContext": "model-configuration-changed on c283246 despite unchanged configuration",
+    "settingsListener": "unrelated credential helper executed from native settings listener on c283246"
   },
   "realSupplierRequests": 0
 }

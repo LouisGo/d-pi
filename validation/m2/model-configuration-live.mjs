@@ -33,6 +33,7 @@ import {writeFileSync,existsSync} from 'node:fs';
 import {join} from 'node:path';
 import {Agent} from '@oh-my-pi/pi-agent-core';
 import {AuthStorage} from '@oh-my-pi/pi-ai/auth-storage';
+import {cfgDisabledProviders} from '@oh-my-pi/pi-coding-agent/config/model-settings';
 import {ModelRegistry} from '@oh-my-pi/pi-coding-agent/config/model-registry';
 import {Settings} from '@oh-my-pi/pi-coding-agent/config/settings';
 import {ModelControls} from '@oh-my-pi/pi-coding-agent/session/model-controls';
@@ -43,7 +44,7 @@ const config=process.env.PI_CODING_AGENT_DIR;
 const path=join(config,'models.yml');
 const marker=join(config,'helper-ran');
 const spec=(id,baseUrl='http://127.0.0.1:9/v1')=>({id,name:id,api:'openai-completions',baseUrl,reasoning:false,input:['text'],contextWindow:1000,maxTokens:100,cost:{input:0,output:0,cacheRead:0,cacheWrite:0}});
-const save=(models,headers)=>writeFileSync(path,JSON.stringify({providers:{fixture:{auth:'oauth',api:'openai-completions',baseUrl:'http://127.0.0.1:9/v1',models,...(headers?{headers}:{})},unrelated:{api:'openai-completions',baseUrl:'http://127.0.0.1:9/v1',apiKey:'!touch '+marker,models:[spec('unrelated')]}}}));
+const save=(models,headers)=>writeFileSync(path,JSON.stringify({providers:{fixture:{auth:'oauth',api:'openai-completions',baseUrl:'http://127.0.0.1:9/v1',models,...(headers?{headers}:{})},openai:{api:'openai-completions',baseUrl:'http://127.0.0.1:9/v1',apiKey:'!touch '+marker,models:[spec('unrelated')]}}}));
 save([spec('start')]);
 writeFileSync(join(config,'config.yml'),JSON.stringify({modelRoles:{default:'fixture/start'},autolearn:{enabled:false}}));
 const settings=await Settings.loadIsolated({cwd:process.cwd()});
@@ -52,6 +53,8 @@ const writer=await AuthStorage.create(join(config,'agent.db'));
 try {
  const checks=[];
  const registry=new ModelRegistry(auth,path,{settings,cacheDbPath:join(config,'models.db'),fetch:globalThis.fetch});
+ // Match the native AgentSession policy listener: reload itself starts discovery.
+ cfgDisabledProviders.listen(settings,()=>registry.reapplyModelPolicies());
  const createSession=registry=>{
  const agent=new Agent();const manager=SessionManager.inMemory();
  const controls=new ModelControls({agent,settings,modelRegistry:registry,sessionManager:manager,providerSessionState:new Map(),model:()=>agent.state.model,sessionId:()=>manager.getSessionId(),promptGeneration:()=>0,resolveActiveEditMode:()=> 'replace',syncAfterModelChange:async()=>{},setModelWithProviderSessionReset:async model=>agent.setModel(model),clearActiveRetryFallback:()=>{},clearInheritedProviderPromptCacheKey:()=>{},magicKeywordEnabled:()=>false,emit:()=>{},emitSessionEvent:async()=>{},emitNotice:()=>{}},{});
@@ -95,7 +98,7 @@ try {
  }
  await writer.credentials.remove('fixture');await assert.rejects(ensureCurrentModelConfiguration(session));
  assert.equal(existsSync(marker),false,'offline synchronization must not run unrelated command credentials');
- checks.push('existing Host reads newly saved credentials','existing Host reads added custom models','provider disabled before switch and model call','native enabledModels enforced','edited endpoint requires explicit reselection','removed credential blocks next call','unrelated helper not executed');
+ checks.push('existing Host reads newly saved credentials','existing Host reads added custom models','provider disabled before switch and model call','native enabledModels enforced','edited endpoint requires explicit reselection','removed credential blocks next call','unrelated helper not executed during native settings listener refresh');
  for(const type of ['llama.cpp','lm-studio']){
    const provider='lazy-'+type;
    writeFileSync(path,JSON.stringify({providers:{[provider]:{auth:'none',api:'openai-completions',baseUrl:'http://127.0.0.1:9001/v1',discovery:{type}}}}));
@@ -127,7 +130,7 @@ try {
    assert.equal(requests.length,requestCount,type+' guard must not re-probe native lazy metadata');
    checks.push(type+' native lazy context survives offline cache refresh');
  }
- console.log(JSON.stringify({sdkVersion:'18.4.6',checks,redRegressions:{deferredHeaders:'missing expected rejection on c283246',lazyContext:'model-configuration-changed on c283246 despite unchanged configuration'},realSupplierRequests:0}));
+ console.log(JSON.stringify({sdkVersion:'18.4.6',checks,redRegressions:{deferredHeaders:'missing expected rejection on c283246',lazyContext:'model-configuration-changed on c283246 despite unchanged configuration',settingsListener:'unrelated credential helper executed from native settings listener on c283246'},realSupplierRequests:0}));
 } finally {writer.close();auth.close();settings.cancelPendingSaves();}
 `,
 );
