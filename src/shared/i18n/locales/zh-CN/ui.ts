@@ -121,6 +121,8 @@ export const ui = {
   "attachment.hint": "粘贴图片、拖入文件，或输入 @ 引用项目文件或文件夹。",
   "attachment.preparing": "正在准备附件…",
   "attachment.import.batch": "文件导入",
+  "attachment.reason.import-limit":
+    "附件导入任务已达上限，请等待当前任务完成后重试。",
   "attachment.import.queued": "等待导入",
   "attachment.import.reading": "正在读取",
   "attachment.import.preparing": "正在准备",

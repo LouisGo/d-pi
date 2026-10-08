@@ -131,6 +131,8 @@ export const ui = {
     "Paste images, drop files, or type @ to reference a project file.",
   "attachment.preparing": "Preparing attachments…",
   "attachment.import.batch": "File import",
+  "attachment.reason.import-limit":
+    "Attachment import limit reached. Wait for current imports to finish, then retry.",
   "attachment.import.queued": "Queued",
   "attachment.import.reading": "Reading",
   "attachment.import.preparing": "Preparing",

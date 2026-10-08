@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "d094a76632c954add9ae575d2590bdd088a86b8482ba178f4167330dbbcc4e04",
+  "inputsHash": "c42ac006111ed4d5ec3d141aec5b6e30a85ae0e76af489f1750a4ec02961e295",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 460,
-    "scannedFiles": 460,
+    "sourceFiles": 461,
+    "scannedFiles": 461,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 198,
-      "lines": 37048,
+      "files": 199,
+      "lines": 37288,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -102,7 +102,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 20,
-      "lines": 2816,
+      "lines": 2821,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -186,7 +186,7 @@
       ],
       "materialized": true,
       "files": 54,
-      "lines": 10481,
+      "lines": 10519,
       "publicEntries": [
         {
           "path": "src/modules/input/contracts/public.ts",
@@ -2731,6 +2731,99 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/main/lifecycle/application.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/ipc/attachment-document.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:events",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/attachment-document.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/attachment-document.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/attachment-document.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/attachment-document.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/attachment-document.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../contracts/attachments",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/attachments.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/main/ipc/attachment-document.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../wiring/app-storage",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/app-storage.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/ipc/attachment-document.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../wiring/attachment-service",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/attachment-service.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/ipc/attachment-document.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./attachments",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/ipc/attachments.ts",
       "targetModule": "app",
       "targetEnvironment": "main"
     },
