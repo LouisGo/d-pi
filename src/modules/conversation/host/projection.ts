@@ -14,6 +14,10 @@ import type {
 
 import { SubagentProjection } from "./subagent-projection";
 
+const ReadingIdentitySchema = z.object({
+  dPiRecordId: z.string().min(1).max(512).optional(),
+  dPiRestored: z.boolean().optional(),
+});
 const TextSchema = z.object({ type: z.literal("text"), text: z.string() });
 function textOf(content: unknown): string {
   if (typeof content === "string") return content;
@@ -73,6 +77,7 @@ export class ConversationProjection {
       const text = textOf(message.content);
       const prior = this.items.find((item) => item.id === existing);
       const continuationOf = prior?.continuationOf ?? this.interrupted;
+      const identity = ReadingIdentitySchema.safeParse(message);
       const ended = isNativeFrameType(frame, NativeFrameTypes.messageEnd);
       const state =
         message.stopReason === "aborted"
@@ -100,6 +105,12 @@ export class ConversationProjection {
         role,
         text,
         state,
+        ...(identity.success && identity.data.dPiRecordId
+          ? { nativeRecordId: identity.data.dPiRecordId }
+          : {}),
+        ...(identity.success && identity.data.dPiRestored !== undefined
+          ? { restored: identity.data.dPiRestored }
+          : {}),
         ...(message.errorMessage
           ? { detail: message.errorMessage.slice(0, 4096) }
           : {}),

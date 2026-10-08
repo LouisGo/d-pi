@@ -45,6 +45,8 @@ export const ConversationItemSchema = z.strictObject({
   state: z.enum(["streaming", "complete", "failed", "aborted"]),
   detail: z.string().max(4096).optional(),
   continuationOf: z.number().int().nonnegative().optional(),
+  nativeRecordId: z.string().min(1).max(512).optional(),
+  restored: z.boolean().optional(),
   label: ConversationLabelSchema,
   notice: UiMessageSchema.optional(),
   truncated: z.boolean().optional(),

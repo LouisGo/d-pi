@@ -249,3 +249,38 @@ it("does not render settled and configuration telemetry as unsupported user inte
   expect(p.snapshot().items).toEqual([]);
   p.dispose();
 });
+it("carries only validated native record identity and restored origin through final projection", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {});
+  p.accept({
+    type: "message_end",
+    message: {
+      role: "user",
+      content: "same",
+      dPiRecordId: "record-1",
+      dPiRestored: true,
+    },
+  });
+  p.accept({
+    type: "message_start",
+    message: { role: "assistant", content: [] },
+  });
+  p.accept({
+    type: "message_end",
+    message: { role: "assistant", content: "same", dPiRecordId: "record-2" },
+  });
+  expect(p.snapshot().items).toMatchObject([
+    { nativeRecordId: "record-1", restored: true },
+    { nativeRecordId: "record-2" },
+  ]);
+  p.accept({
+    type: "message_end",
+    message: {
+      role: "user",
+      content: "other",
+      dPiRecordId: 123,
+      dPiRestored: "true",
+    },
+  });
+  expect(p.snapshot().items.at(-1)?.nativeRecordId).toBeUndefined();
+  p.dispose();
+});
