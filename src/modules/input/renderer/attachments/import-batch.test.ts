@@ -88,6 +88,21 @@ it("a rejected batch transaction retains the entire set and can retry once admis
   expect(target.apply([item("one"), item("two")])).toBe(true);
   editor.destroy();
 });
+it("a file-only paste uses the same deletion fence as a drop anchor", () => {
+  const editor = new Editor({
+    ...plainTextEditorOptions,
+    element: document.createElement("div"),
+    content: draftDocument("AB"),
+  });
+  const target = createAttachmentImportTarget(editor, () => true, {
+    position: 2,
+    sourceFrom: 2,
+  });
+  editor.view.dispatch(editor.state.tr.delete(2, 3));
+  expect(target.apply([item("late")])).toBe(false);
+  expect(editor.getText()).toBe("A");
+  editor.destroy();
+});
 it("partial failure never inserts success automatically and explicit adoption preserves order", async () => {
   const first = item("one");
   const second = item("two");

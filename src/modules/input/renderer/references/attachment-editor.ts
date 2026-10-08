@@ -74,7 +74,10 @@ export function createAttachmentImportTarget(
   options: { position?: number; sourceFrom?: number } = {},
 ): AttachmentImportTarget {
   let position = options.position ?? editor.state.selection.from;
-  let sourceFrom = options.sourceFrom;
+  let sourceFrom =
+    options.sourceFrom !== undefined && options.sourceFrom < position
+      ? options.sourceFrom
+      : undefined;
   let valid = true;
   let applying = false;
   const invalidate = () => {
