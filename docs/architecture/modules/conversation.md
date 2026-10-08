@@ -61,27 +61,30 @@ M3 PNG 分享复用确定版本的选中内容，按排版/分页输出图片；
 
 投影共用原阅读 8 MiB/1000 项预算，单个结果最多 64 KiB，截断或未知子事件明确展示。初始 `get_subagents` 最多消费 128 个活动任务，超出显示覆盖不足；终态保留在同活 Host 的有界镜像，Host 重启后不能从活动快照重建之前已完成任务。Renderer 连续缺号最多自动重连 3 次，之后保留 gap 与显式重新连接阅读入口；重连只重建订阅，不控制原生执行。正式 `reading/subagents.tsx` 复用消息阅读及 Markdown，提供身份、状态、任务、原生模型与可得结果；视图卸载仅释放订阅。
 
-## M2 有界长正文阅读（2026-10-06）
+## M2 连贯长正文阅读（2026-10-08取代手动分段）
 
-正式实时消息、工具输出、原生历史与子 Agent 结果共用 `reading/reading-body.tsx`。短正文保留原 Markdown / 工具原文表示；超过一段预算的正文明确采用原文分段，每段最多 8192 UTF-16 code units、120 行，保留 surrogate pair 和 CRLF 边界。`reading-segments.ts` 只计算既有正文的偏移，不复制或持久化另一份正文；主列表只挂载当前段，段内高度沿用现有阅读／编辑器高度 token，提供可键盘进入的滚动区及上一段／下一段控件。复制使用投影／历史条目的全部已有原文，历史页补行头复制；Host 截断、历史 omitted / incompleteTail 与子 Agent 覆盖提示保持，不宣称取得完整原生记录。
+用户明确要求所有正文连贯呈现，取代2026-10-06的8192 UTF-16/120行阈值与原文段导航。实时消息、工具结果、原生历史与子Agent结果共用ReadingBody：Markdown持续使用Streamdown/代码插件的稳定blocks，原生工具原文一次连贯呈现；代码与表格垂直完整展开，只有必要的横向溢出滚动。单一ReadingPane拥有外层滚动/跟尾/用户接管，不建立另一份正文或段页选择。全文复制读取当前投影/历史取得的原文，Host已有预算/gap/truncated仍如实表达，不以分段替代完整阅读。
 
-页码与段内滚动属于 Thread 的有界阅读位置。实时记录按 Thread、Host `connectionGeneration` 与 item ID 隔离；同 Host 重连保持页码，新 Host 或 Thread 使用自己的位置。历史记录按 Thread、所选原生会话、`page.source`、页偏移与 entry ID 隔离。流式追加不自动翻段，已封闭段的切片和 DOM 不变，保留选择与段内滚动；正在增长的末段仍有界，新增段由用户显式进入。正文缩短时立即夹紧页码，后续追加不恢复失效的旧选择。短正文首次跨入分段表示会改变渲染格式，稳定选择承诺针对已进入分段后的封闭旧段。
-
-此接入只改变 Renderer 呈现，不扩大 Host / OMP 预算、不重读历史、不改变执行或持久化。分段规则、实际 React 挂载的 DOM／选择／滚动和来源隔离有自动回归；真实 Electron 几何、键盘与剪贴板，以及完整 M2 性能组合另由对应候选记录维护。
-复制使用 Renderer 的 `navigator.clipboard.writeText`；应用窗口仅允许当前 WebContents、主框架、当前文档的 `clipboard-sanitized-write`，check/request 两入口一致。剪贴板读取和其它浏览器权限保持拒绝；此权限不授予模型工具或原生 OMP 文件访问能力。
+流式追加与完成保留已闭合Markdown节点；迟到引用/脚注仍需要相同文档解析作用域，不承诺语义改写时原生Selection不变。显示连贯不等于无界缓存，极限规模性能以实际测量为准，不声称已经通过千消息或8MiB帧率验收。历史上的分段证据见long-reading交接，不改写。
 
 ## T3 基础重构：内容锚点与读取 attempt（2026-10-07）
 
 Thread 拥有有界的阅读位置账本，不保存正文或执行事实。实时位置以真实 connectionGeneration 隔离，原生历史以 session key、实际 page.source 与 cursor offset 隔离；恢复 hydrate 只建立来源基线，不构造新轮次。锚点保存 row ID、行内偏移、像素 fallback 和 atEnd；上方阅读随布局/流式更新恢复同一内容，只有原先位于底部才跟随真实尾部。行消失或缩短时夹紧到可用范围，来源改变不借用旧来源位置。每 Thread 最多32个来源锚点、128个分段正文位置，按最近更新顺序淘汰最旧；来源/正文key及row ID最多4096 UTF-16 units，超限身份退回像素/局部分段，不缓存超长字符串；Thread释放时清空并拒绝迟到写入。
 
-Renderer DOM adapter 拥有 ResizeObserver/MutationObserver/rAF 与几何测量，卸载/隐藏停止测量，不用 hidden 零坐标覆盖可见位置。视图/Thread返回保留正文分段选择与段内滚动；只读位置不控制 OMP。仍保留有界正文 DOM 和当前已封闭段的选择，不按文字/顺序猜测 native/live 合并。
+Renderer DOM adapter 拥有 ResizeObserver/MutationObserver/rAF 与几何测量，卸载/隐藏停止测量，不用 hidden 零坐标覆盖可见位置。视图/Thread返回保留同来源外层锚点与滚动；只读位置不控制 OMP。保留已闭合Markdown块身份，不按文字/顺序猜测 native/live 合并。
 
 原生项目分页继续交给 Query 按来源/key/cursor 拥有；绑定历史读取也进入 Query，每次用户读取建立独立 attempt（同cursor重试仍不同），旧返回或 finally 不更新新attempt的忙碌/错误/页内容。未支持物理取消的历史 I/O 不冒称已终止；视图释放只防止迟到结果接管当前来源。合同与工程证据归 [T3 基础规格](../../../.scratch/t3-foundations/spec.md)。
 
 ## 首个长会话阅读闭环（2026-10-08）
 
-外层列表回底由同一 DOM adapter 即时执行，取消旧恢复并重新跟随当前 live 已保留尾部；不补 gap、不切来源，也不改变正文段选择。用户外层 wheel、导航键和滚动条输入优先于待发定位；嵌套 raw/代码滚动自身可消费时、编辑器/IME 输入时不误接管外层。attention 实际定位通过同一适配器提交；隐藏/dispose 取消帧并释放观察、监听和订阅。
+外层列表回底由同一 DOM adapter 即时执行，取消旧恢复并重新跟随当前 live 已保留尾部；不补 gap、不切来源，也不切换正文表示。用户外层 wheel、导航键和滚动条输入优先于待发定位；嵌套 raw/代码滚动自身可消费时、编辑器/IME 输入时不误接管外层。attention 实际定位通过同一适配器提交；隐藏/dispose 取消帧并释放观察、监听和订阅。
 
-新输出提示是当前可见来源一次阅读期间的布尔状态：同实体有效正文变化或新增正文可置位；相同快照、loading及完成元数据不置位，回底/已跟随清除，切来源/Thread/重新进入重建基线。段页旁的“最新段”由用户显式按当前有效末段选择，后续追加仍保留选择。gap/截断经既有Thread tools进入分开的原生历史，返回保持同来源账本位置及可见工具焦点；历史按保存顺序、只读与部分覆盖展示，刷新明确重读起始页，未读取/空页/不可用类型分开。
+新输出提示是当前可见来源一次阅读期间的布尔状态：同实体有效正文变化或新增正文可置位；相同快照、loading及完成元数据不置位，回底/已跟随清除，切来源/Thread/重新进入重建基线。2026-10-08取消正文分段和“最新段”；整个正文尾部跟随统一由外层适配器拥有。gap/截断经既有Thread tools进入分开的原生历史，返回保持同来源账本位置及可见工具焦点；历史按保存顺序、只读与部分覆盖展示，刷新明确重读起始页，未读取/空页/不可用类型分开。
 
-短 Markdown 完成关闭 incomplete 补写并保持稳定 Block 前缀；迟到引用/脚注需要全短文解析作用域。语义改变、跨分段阈值或卸载重挂不承诺DOM/Selection存活，封闭raw段仍保留原合同。Main/Host/Bun、历史所有权与预算未改变。[行为矩阵、源码身份及实际Dev/Chromium证据](../../../.scratch/m2-first-release/reading-loop.md)。
+Markdown 完成关闭 incomplete 补写并保持稳定 Block 前缀；迟到引用/脚注需要全篇解析作用域。语义改变或卸载重挂不承诺DOM/Selection存活，不再存在长度阈值切换表示。Main/Host/Bun、历史所有权与预算未改变。[行为矩阵、源码身份及实际Dev/Chromium证据](../../../.scratch/m2-first-release/reading-loop.md)。
+
+## 真实模型投影与运行中历史（2026-10-08）
+
+full RPC message_update带完整message时以其text parts为正文真相，不再同时追加delta；旧delta-only协议兼容仅在缺完整快照时使用。message_end仍是最终正文；aborted与failed独立表达，原生errorMessage在独立有界detail保留，不覆盖部分正文。失败/中断之后且没有新输入或prompt终态的下一回复带continuationOf，正常settled/model/thinking telemetry不生成“未接入交互”告警，真实auto_retry保留重试/结束状态。
+
+历史读取不调用busy RPC；Main只读绑定文件/批准的CLI历史，首次取得已提交前缀边界和原生文件身份。cursor固定endOffset及前缀hash；官方append不会使旧snapshot失效，原子替换/缩水/header变化拒绝旧cursor并提供刷新。读取期间尾部可继续追加，当前snapshot只包含其捕获范围。单原生大记录可在有界上限内扩大读预算，不将正文分成页面。项目目录发现不能阻止用户先读取本Thread绑定历史；显式读取锁定选择，迟到目录不能切走已有记录。
