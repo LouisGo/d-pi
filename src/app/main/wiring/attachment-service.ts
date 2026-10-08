@@ -97,7 +97,9 @@ export function createAttachmentService(
         throw Error(
           reply.kind === "unavailable" && reply.reason === "denied"
             ? "reference-denied"
-            : "reference-unavailable",
+            : reply.kind === "unavailable" && reply.reason === "too-large"
+              ? "source-too-large"
+              : "reference-unavailable",
         );
       return {
         bytes: reply.bytes,

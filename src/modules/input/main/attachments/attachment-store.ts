@@ -1239,6 +1239,8 @@ export class AttachmentStore {
         return this.textPreview(
           new TextDecoder().decode(await this.readObject(record.derivedDigest)),
         );
+      if (record.attachment.representation === "reference")
+        return this.previewReference(record.attachment);
       if (!record.attachment.inputDigest)
         return { kind: "unavailable", reason: "reference-unavailable" };
       const bytes = await this.readObject(record.attachment.inputDigest);
@@ -1264,6 +1266,46 @@ export class AttachmentStore {
           error instanceof Error && error.message === "content-missing"
             ? "content-missing"
             : "content-corrupt",
+      };
+    }
+  }
+  private async previewReference(
+    attachment: Attachment,
+  ): Promise<AttachmentPreview> {
+    if (!this.options.readReference || !attachment.path)
+      return { kind: "unavailable", reason: "reference-unavailable" };
+    try {
+      const value = await this.options.readReference(
+        attachment.threadId,
+        attachment.path,
+        attachment.referenceKind ?? "file",
+      );
+      if (value.bytes.byteLength > this.limits.sourceBytes)
+        return { kind: "unavailable", reason: "source-too-large" };
+      if (value.current && !value.current())
+        return { kind: "unavailable", reason: "reference-denied" };
+      const directory = attachment.referenceKind === "directory";
+      const content = identifyContent(
+        value.bytes,
+        directory ? "text/plain" : attachment.mimeType,
+        directory ? "directory" : attachment.name,
+      );
+      return content.kind === "text"
+        ? this.textPreview(content.text)
+        : {
+            kind: "unavailable",
+            reason:
+              content.kind === "failed" ? content.reason : "unsupported-format",
+          };
+    } catch (error) {
+      return {
+        kind: "unavailable",
+        reason:
+          error instanceof Error && error.message === "source-too-large"
+            ? "source-too-large"
+            : error instanceof Error && error.message === "reference-denied"
+              ? "reference-denied"
+              : "reference-unavailable",
       };
     }
   }
