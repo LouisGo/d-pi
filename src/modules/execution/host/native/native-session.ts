@@ -33,7 +33,11 @@ export interface NativeSessionOptions {
   directory: string;
   environment: NodeJS.ProcessEnv;
   sessionDirectory: string;
-  resume?: { sessionFile: string; sessionId: string };
+  resume?: {
+    sessionFile: string;
+    sessionId: string;
+    origin?: "cli" | undefined;
+  };
   // Validation supplies fixed flags. Production passes none and retains native settings.
   extraArgs?: string[];
   supervision?: { mainPid: number; mainBirth: string; token: string };

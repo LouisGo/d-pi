@@ -117,21 +117,18 @@ export class ThreadModel {
   activate(): void {
     if (this.disposed || this.active) return;
     this.active = true;
-    this.runtime?.setPreparationActive(this.context.origin !== "cli");
+    this.runtime?.setPreparationActive(true);
     const generation = ++this.activationGeneration;
     // A grant can have changed while this cached, untrusted Thread was away.
     // Re-read admission on selection instead of asking for the same grant again.
     const inspected =
-      generation > 1 &&
-      this.context.origin !== "cli" &&
-      this.runtime?.getSnapshot()?.phase === "browse"
+      generation > 1 && this.runtime?.getSnapshot()?.phase === "browse"
         ? this.runtime.act("inspect")
         : this.inspected;
     void inspected.then(() => {
       const view = this.runtime?.getSnapshot();
       if (
         this.disposed ||
-        this.context.origin === "cli" ||
         !this.active ||
         generation !== this.activationGeneration ||
         this.automaticStartAttempted ||

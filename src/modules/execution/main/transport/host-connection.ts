@@ -1,9 +1,11 @@
+import { createHash } from "node:crypto";
 import { join } from "node:path";
 import { Effect } from "effect";
 import { type UtilityProcess, utilityProcess } from "electron";
 import {
   type ProcessIdentity,
   readProcessIdentity,
+  sessionExecutionOwners,
   terminateManagedGroup,
 } from "../../../../platform/node/processes/public";
 import {
@@ -148,9 +150,38 @@ export class HostConnection {
     const main = await readProcessIdentity(process.pid);
     if (!main) throw new NativeRecoveryFailure("owner-unknown");
     const lease = await SessionExecutionLease.acquire(
-      command.sessionDirectory,
+      command.resume?.origin === "cli"
+        ? join(
+            command.sessionDirectory,
+            ".d-pi-ownership",
+            createHash("sha256")
+              .update(command.resume.sessionFile)
+              .digest("hex"),
+          )
+        : command.sessionDirectory,
       main,
     );
+    if (command.resume?.origin === "cli") {
+      try {
+        // Take the shared d-pi lifetime lease first (including stale owned-group
+        // cleanup), then check the original file for an existing external writer.
+        // An unmodified CLI does not honor our lease; never claim otherwise.
+        if (
+          (
+            await sessionExecutionOwners(
+              command.resume.sessionFile,
+              command.identity.directory,
+            )
+          ).length
+        )
+          throw new NativeRecoveryFailure("occupied");
+      } catch (error) {
+        lease.release(true);
+        throw error instanceof NativeRecoveryFailure
+          ? error
+          : new NativeRecoveryFailure("owner-unknown");
+      }
+    }
     let host: UtilityProcess;
     try {
       host = hostProcess();

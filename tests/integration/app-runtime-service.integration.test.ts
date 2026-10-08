@@ -128,8 +128,12 @@ async function running(
       if (!command.resume)
         writeFileSync(
           join(command.sessionDirectory, "native.jsonl"),
-          JSON.stringify({ type: "session", id: "native", cwd: project }) +
-            "\n",
+          JSON.stringify({
+            type: "session",
+            version: 3,
+            id: "native",
+            cwd: project,
+          }) + "\n",
         );
     }
     if (command.kind === "start")
@@ -1214,41 +1218,66 @@ it.each([
   },
 );
 
-it("keeps automatically indexed CLI threads readable without granting or dispatching external execution", async () => {
-  const root = realpathSync(mkdtempSync(join(tmpdir(), "d-pi-cli-readonly-")));
-  const store = AppStorage.open(join(root, "app.sqlite"));
-  const thread = store.threads.create(root);
+it("continues a CLI-origin binding through ordinary admission using its exact original file", async () => {
+  const fixture = await running();
+  const binding = fixture.store.threads.nativeSessionBinding(
+    fixture.draft.threadId,
+  )!;
+  fixture.host.emit("message", { kind: "scope-closed" });
+  await vi.waitFor(() => expect(fixture.runtime.hasActiveWork()).toBe(false));
+  const originalContext = fixture.store.threads.threadContext(
+    fixture.draft.threadId,
+  );
   const context = vi
-    .spyOn(store.threads, "threadContext")
-    .mockReturnValue({ ...thread, origin: "cli" });
+    .spyOn(fixture.store.threads, "threadContext")
+    .mockReturnValue({ ...originalContext, origin: "cli" });
+  const indexed = vi
+    .spyOn(fixture.store.threads, "nativeSessionBinding")
+    .mockReturnValue({ ...binding, origin: "cli", historyRoot: fixture.root });
   const runtime = new RuntimeService(
-    store,
-    "/fixture/resources",
-    root,
+    fixture.store,
+    fixture.root,
+    fixture.root,
     {},
     () => {},
     () => {},
     () => {},
-    thread.threadId,
+    fixture.draft.threadId,
+    undefined,
+    async () => fixture.root,
   );
-  electron.fork.mockClear();
   try {
-    for (const kind of ["inspect", "allow", "start"] as const) {
-      const view = await runtime.execute({
-        kind,
-        threadId: thread.threadId,
-        traceId: crypto.randomUUID(),
-      });
-      expect(view.phase).toBe("browse");
-      expect(view.recoveryFailure).toBe("external-session");
-      expect(view.trusted).toBe(false);
-    }
-    expect(store.threads.executionGrant(thread.workingDirectoryId)).toBeNull();
-    expect(electron.fork).not.toHaveBeenCalled();
+    const command = {
+      threadId: fixture.draft.threadId,
+      traceId: crypto.randomUUID(),
+    };
+    expect((await runtime.execute({ ...command, kind: "inspect" })).phase).toBe(
+      "allowed",
+    );
+    expect((await runtime.execute({ ...command, kind: "start" })).phase).toBe(
+      "ready",
+    );
+    const starts = fixture.postMessage.mock.calls
+      .map(([raw]) => HostTransportCommandSchema.parse(raw).command)
+      .filter((c) => c.kind === "start");
+    expect(starts.at(-1)).toMatchObject({
+      resume: {
+        sessionFile: binding.sessionFile,
+        sessionId: binding.sessionId,
+        origin: "cli",
+      },
+      sessionDirectory: join(
+        fixture.root,
+        "native-sessions",
+        fixture.draft.threadId,
+      ),
+    });
+    expect(fixture.store.drafts.read(fixture.draft.threadId)?.text).toBe("A");
+    fixture.host.emit("message", { kind: "scope-closed" });
+    await vi.waitFor(() => expect(runtime.hasActiveWork()).toBe(false));
   } finally {
     context.mockRestore();
-    store.close();
-    rmSync(root, { recursive: true, force: true });
+    indexed.mockRestore();
   }
 });
 

@@ -66,6 +66,7 @@ export const HostStartSchema = z.strictObject({
     .strictObject({
       sessionFile: z.string().min(1),
       sessionId: z.string().min(1),
+      origin: z.literal("cli").optional(),
     })
     .optional(),
   supervision: z

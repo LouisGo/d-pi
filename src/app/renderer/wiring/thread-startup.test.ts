@@ -220,10 +220,11 @@ it("does not retry a failed automatic startup when returning to the same Thread"
     ),
   ).toHaveLength(2);
 });
-it("keeps indexed external CLI history readable without automatic execution preparation", async () => {
+it("automatically resumes an indexed CLI session in a trusted project without creating another Thread", async () => {
   const f = await fixture(true, true, { origin: "cli" });
   await new Promise((done) => setTimeout(done, 0));
-  expect(f.requests.map((r) => r.kind)).toEqual(["inspect"]);
+  expect(f.requests.map((r) => r.kind)).toEqual(["inspect", "start"]);
+  expect(f.model.runtime?.getSnapshot()?.phase).toBe("ready");
   const state = f.model.getSnapshot();
   if (state.kind !== "ready" || state.threadSelection.kind !== "thread")
     throw Error("missing Thread");

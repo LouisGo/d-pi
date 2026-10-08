@@ -354,3 +354,7 @@
 验收：相关真实行为TDD、同身份/去重/持久恢复、历史不依赖执行准备、信任只确认一次且启动失败可重试、切换线程与后台生成不丢阅读/草稿；受影响检查、正式本地GUI/必要真实模型和独立Spec/Standards评审；工程与用户认可分开。不push/发布。主Agent单写规格、票与看板。
 
 2026-10-08工程交接：默认流程代码、SDK资源与两轮真实GPT Luna冷恢复通过；Spec/Standards固定至d6df40a均无剩余已证实高价值问题。正式GUI因Mac锁屏受阻，06r保持claimed，工程partial/试用not-delivered/认可pending。来源、实际检查失败与续测路径见[默认流程交接](seamless-sessions.md)。
+
+## 2026-10-08 CLI 历史继续提问（当前授权）
+
+用户明确要求修复 CLI 历史只能阅读的问题并减少继续提问的阻断，取代上节 CLI 来源统一只读限制。已结束 CLI 的原文件经过当前配置/身份/目录检查后，在已信任项目自动准备并继续原 Thread；陌生目录一次信任保留。Main 持有原文件粒度的 d-pi 生命周期 lease，并在接入前识别外部实际 writer/项目内 OMP CLI；占用与未知保留历史和草稿，允许原地重试。外部 CLI 不参与该 lease，不能宣称阻止 GUI 执行期间另起不合作 CLI；不改写用户 CLI/启动器，不复制或 fork 原生历史。实施与真实验证见 [06s](issues/06s-cli-session-continuation.md)。无额外产品待决，用户认可 pending。

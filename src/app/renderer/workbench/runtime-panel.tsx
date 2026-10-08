@@ -293,7 +293,7 @@ function RuntimeActions({
   const { t } = useI18n();
   return (
     <div className="flex gap-2">
-      {!state.trusted && state.recoveryFailure !== "external-session" && (
+      {!state.trusted && (
         <Button
           disabled={state.phase === "starting"}
           onClick={() => void model.act("allow")}

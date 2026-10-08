@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "2980b856f644cf0b5ee082922e1e49787d2e8d537a05758d75c697a16ce92e72",
+  "inputsHash": "2e8dc83cc3025ea1c973553634d07e393c0f8486661c0f8d74767755aecd1480",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 449,
-    "scannedFiles": 449,
+    "sourceFiles": 453,
+    "scannedFiles": 453,
     "unscanned": []
   },
   "modules": [
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 196,
-      "lines": 35936,
+      "lines": 35937,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -59,8 +59,8 @@
         "omp"
       ],
       "materialized": true,
-      "files": 28,
-      "lines": 3011,
+      "files": 30,
+      "lines": 3169,
       "publicEntries": [
         {
           "path": "src/platform/main/storage/public.ts",
@@ -102,7 +102,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 20,
-      "lines": 2778,
+      "lines": 2774,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -326,8 +326,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 56,
-      "lines": 13263,
+      "files": 58,
+      "lines": 13444,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -361,7 +361,7 @@
       "defaultEnvironment": "omp",
       "materialized": true,
       "files": 12,
-      "lines": 2397,
+      "lines": 2398,
       "publicEntries": [
         {
           "path": "runtime/host.mjs",
@@ -2032,6 +2032,13 @@
       "dependency": "threads",
       "targetEnvironment": "main",
       "testOnly": false
+    },
+    {
+      "module": "execution",
+      "environment": "main",
+      "dependency": "threads",
+      "targetEnvironment": "contracts",
+      "testOnly": true
     },
     {
       "module": "execution",
@@ -15950,6 +15957,102 @@
       "targetEnvironment": "node"
     },
     {
+      "from": "src/platform/node/processes/public.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": false,
+      "specifier": "./session-file-owners",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/platform/node/processes/session-file-owners.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "node"
+    },
+    {
+      "from": "src/platform/node/processes/session-file-owners.test.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": true,
+      "specifier": "node:child_process",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/node/processes/session-file-owners.test.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": true,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/node/processes/session-file-owners.test.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/node/processes/session-file-owners.test.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/node/processes/session-file-owners.test.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/node/processes/session-file-owners.test.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": true,
+      "specifier": "./session-file-owners",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/node/processes/session-file-owners.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "node"
+    },
+    {
+      "from": "src/platform/node/processes/session-file-owners.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": false,
+      "specifier": "node:child_process",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/node/processes/session-file-owners.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": false,
+      "specifier": "node:util",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/node/processes/session-file-owners.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
       "from": "src/platform/omp/consumption-gate.test.ts",
       "sourceModule": "platform",
       "sourceEnvironment": "omp",
@@ -23682,6 +23785,18 @@
       "targetEnvironment": "main"
     },
     {
+      "from": "src/modules/execution/main/runtime/runtime-service.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../transport/indexed-session-binding",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/main/transport/indexed-session-binding.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "main"
+    },
+    {
       "from": "src/modules/execution/main/submission/submission-repository.ts",
       "sourceModule": "execution",
       "sourceEnvironment": "main",
@@ -23725,6 +23840,15 @@
       "to": "src/modules/execution/contracts/public.ts",
       "targetModule": "execution",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/main/transport/host-connection.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
     },
     {
       "from": "src/modules/execution/main/transport/host-connection.ts",
@@ -23938,6 +24062,126 @@
       "to": "src/modules/execution/main/transport/host-connection.ts",
       "targetModule": "execution",
       "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/execution/main/transport/indexed-session-binding.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/indexed-session-binding.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/indexed-session-binding.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/indexed-session-binding.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/indexed-session-binding.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../../threads/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/threads/contracts/public.ts",
+      "targetModule": "threads",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/main/transport/indexed-session-binding.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./indexed-session-binding",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/main/transport/indexed-session-binding.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/execution/main/transport/indexed-session-binding.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/indexed-session-binding.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:fs/promises",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/indexed-session-binding.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/indexed-session-binding.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/indexed-session-binding.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../threads/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/threads/contracts/public.ts",
+      "targetModule": "threads",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/main/transport/indexed-session-binding.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../core/runtime/native-recovery-failure",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/core/runtime/native-recovery-failure.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "core"
     },
     {
       "from": "src/modules/execution/main/transport/session-execution-lease.test.ts",

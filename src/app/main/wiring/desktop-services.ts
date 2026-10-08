@@ -77,6 +77,16 @@ export function createDesktopServices(context: {
           attachments
             ? attachments.store.prepare(id, text)
             : Promise.resolve({ ok: false, reason: "storage-unavailable" }),
+        async (traceId) => {
+          const reply = await configuration?.execute({
+            kind: "snapshot",
+            traceId,
+            scope: { kind: "application" },
+          });
+          return reply?.kind === "snapshot"
+            ? join(reply.source.directory, "sessions")
+            : null;
+        },
       );
       runtimes.set(threadId, runtime);
     }

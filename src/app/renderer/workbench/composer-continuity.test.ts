@@ -729,13 +729,13 @@ it("offers an explicit startup retry after failure and preserves the draft until
   expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha omega");
 });
 
-it("explains external CLI history without offering a project grant or a misleading OMP startup", async () => {
+it("offers the normal project trust action for a CLI session and retains the question draft", async () => {
   const fixture = await setup("browse", undefined, undefined, "cli");
   const labels = Array.from(fixture.container.querySelectorAll("button")).map(
     (button) => button.textContent,
   );
-  expect(labels).not.toContain("Allow execution and start");
+  expect(labels).toContain("Allow execution and start");
   expect(labels).not.toContain("Start OMP");
-  expect(fixture.container.textContent).toContain("CLI");
+  expect(fixture.container.textContent).not.toContain("CLI");
   expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha omega");
 });

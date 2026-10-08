@@ -335,7 +335,6 @@ export function Composer({
           runtime={runtime}
           model={model}
           onChooseModel={onChooseModel}
-          externalHistory={thread.context.origin === "cli"}
         />
       )}
       <EditorContent className="composer-editor" editor={editor} />
@@ -576,12 +575,10 @@ function ComposerReadiness({
   runtime,
   model,
   onChooseModel,
-  externalHistory,
 }: {
   runtime: NonNullable<ThreadModel["runtime"]>;
   model: AppModel;
   onChooseModel: (() => void) | undefined;
-  externalHistory: boolean;
 }) {
   const { t, formatMessage } = useI18n();
   const view = useStore(runtime.stateStore, (state) => state.view);
@@ -615,26 +612,22 @@ function ComposerReadiness({
   return (
     <div className="composer-readiness" role="status">
       <p>
-        {externalHistory
-          ? t("composer.blocked.externalHistoryOnly")
-          : phase === "failed" && view
-            ? formatMessage(view.message)
-            : t(message)}
+        {phase === "failed" && view ? formatMessage(view.message) : t(message)}
       </p>
       {reason === "no-model" && onChooseModel && (
         <Button onClick={onChooseModel}>{t("composer.chooseModel")}</Button>
       )}
-      {(phase === "interrupted" || externalHistory) && (
+      {phase === "interrupted" && (
         <Button disabled={busy} onClick={() => void model.newThread()}>
           {t("app.toolbar.newThread")}
         </Button>
       )}
-      {phase === "browse" && !externalHistory && (
+      {phase === "browse" && (
         <Button disabled={busy} onClick={() => void runtime.act("allow")}>
           {t("ui.runtime.allow")}
         </Button>
       )}
-      {phase === "failed" && view?.trusted && !externalHistory && (
+      {phase === "failed" && view?.trusted && (
         <Button
           disabled={busy || view.busy}
           onClick={() => void runtime.act("start")}

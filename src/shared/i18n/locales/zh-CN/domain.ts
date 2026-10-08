@@ -70,10 +70,10 @@ export const domain = {
     "已阻止新操作并请求停止。现有实例仍保留，待原生状态确认；不能据此视为已停止。",
   "runtime.browseOnly": "当前项目仅浏览。",
   "runtime.starting": "正在校验官方 Runtime 并启动原生会话…",
-  "runtime.externalHistoryOnly":
-    "CLI 会话记录已关联，可直接阅读。目前无法确认与外部 CLI 的执行独占，暂不启动此会话。",
+  "runtime.recoveryBindingChanged":
+    "原会话文件、身份、项目或原生配置已变化。检查原会话后在这里重试，输入内容会保留。",
   "runtime.recoveryOccupied":
-    "原会话仍被另一个 d-pi 执行实例占用。关闭该实例后重新检查。",
+    "原会话有活跃写入者，或此项目仍开着 OMP CLI。结束该执行后在这里重试，输入内容会保留。",
   "runtime.recoveryOwnerUnknown": "暂时无法确认原执行实例身份。请重新检查。",
   "runtime.recoveryShutdownUnconfirmed":
     "尚未确认原执行进程已停止。请重新检查。",

@@ -362,8 +362,6 @@ export const ui = {
     "This previous session cannot change model or send. Create an independent session to continue; its draft and history are preserved.",
   "composer.blocked.readOnly":
     "This session is read-only and cannot send. Its draft is preserved; create a new session to select a model and work.",
-  "composer.blocked.externalHistoryOnly":
-    "CLI history is readable. Sending is unavailable until exclusive execution can be confirmed.",
   "ui.runtime.retryStart": "Retry preparing chat",
   "app.thread.indexPartial":
     "Some native chats could not be indexed. Retry refreshing.",

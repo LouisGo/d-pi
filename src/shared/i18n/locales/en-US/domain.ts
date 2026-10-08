@@ -80,10 +80,10 @@ export const domain = {
   "runtime.browseOnly": "This project is browse only.",
   "runtime.starting":
     "Verifying the official Runtime and starting a native session…",
-  "runtime.externalHistoryOnly":
-    "CLI history is linked and readable. Exclusive execution with the external CLI cannot be confirmed, so this chat is not started.",
+  "runtime.recoveryBindingChanged":
+    "The original session file, identity, project or native configuration changed. Check the original session and retry here; your draft is retained.",
   "runtime.recoveryOccupied":
-    "Another d-pi execution instance still owns this session. Close that instance and check again.",
+    "This session has an active writer, or OMP CLI is still open in this project. Close that execution and retry here; your draft is retained.",
   "runtime.recoveryOwnerUnknown":
     "The previous execution owner could not be verified. Check again.",
   "runtime.recoveryShutdownUnconfirmed":

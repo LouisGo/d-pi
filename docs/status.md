@@ -62,6 +62,7 @@
 | [m2-first-release / 05 队列与子 Agent](../.scratch/m2-first-release/issues/05-queue-subagent.md) | open | 无；范围以所属规格为准 |
 | [m2-first-release / 06 阅读与组合验收](../.scratch/m2-first-release/issues/06-reading-acceptance.md) | open | 无；范围以所属规格为准 |
 | [m2-first-release / 06r 默认流程组合交付](../.scratch/m2-first-release/issues/06r-seamless-integration.md) | claimed | 无；范围以所属规格为准 |
+| [m2-first-release / 06s CLI 历史原地续接](../.scratch/m2-first-release/issues/06s-cli-session-continuation.md) | claimed | 无；范围以所属规格为准 |
 | [state-query-alignment / 04 集成验证与试用交接](../.scratch/state-query-alignment/issues/04-integration-verification.md) | claimed | 无；范围以所属规格为准 |
 
 ## 重要待决与继续边界
@@ -88,4 +89,4 @@
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 - [T3 研究与基础重构](../.scratch/t3-foundations/spec.md)：unknown 不重发，冷恢复只读；native/live 无可靠原生身份时保持独立来源；M3 能力仅作设计储备
 
-<!-- source-sha256: cddac12a7283d91677e4de546a8fbb608601a243c15912d263bed901d6e90109; sources: 164 -->
+<!-- source-sha256: fbddf6ad7e520f50aa84b96fe62a7f74e69a8afefd6bb070bf773d351fa76a1e; sources: 165 -->

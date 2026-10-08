@@ -43,6 +43,7 @@ import {
 import type { QueueChangeRepository } from "../queue/queue-change-repository";
 import type { SubmissionRepository } from "../submission/submission-repository";
 import { HostConnection } from "../transport/host-connection";
+import { indexedSessionDirectory } from "../transport/indexed-session-binding";
 
 type RuntimeStore = {
   queueChanges: Pick<
@@ -80,7 +81,7 @@ function boundedDisplayValue(value: string, maxLength: number): string {
 
 function recoveryFailureMessage(reason: NativeRecoveryReason) {
   return match(reason)
-    .with("external-session", () => uiMessage("runtime.externalHistoryOnly"))
+    .with("binding-changed", () => uiMessage("runtime.recoveryBindingChanged"))
     .with("occupied", () => uiMessage("runtime.recoveryOccupied"))
     .with("owner-unknown", () => uiMessage("runtime.recoveryOwnerUnknown"))
     .with("shutdown-unconfirmed", () =>
@@ -123,6 +124,9 @@ export class RuntimeService {
       threadId: string,
       text: string,
     ) => Promise<ContentPreparationResult>,
+    private readonly indexedSessionsRoot?: (
+      traceId: string,
+    ) => Promise<string | null>,
   ) {
     this.connection = new HostConnection(
       (message) => this.receive(message),
@@ -201,12 +205,26 @@ export class RuntimeService {
       });
       throw error;
     }
-    const sessionDirectory = join(
+    const previous = this.store.threads.nativeSessionBinding(thread.threadId);
+    let sessionDirectory = join(
       this.dataDirectory,
       "native-sessions",
       thread.threadId,
     );
-    await mkdir(sessionDirectory, { recursive: true, mode: 0o700 });
+    if (thread.origin === "cli") {
+      // Discovery is not an execution grant. Revalidate the configured root,
+      // canonical exact file and project before entering ordinary admission.
+      const configured = await this.indexedSessionsRoot?.(
+        this.view?.traceId ?? randomUUID(),
+      );
+      sessionDirectory = await indexedSessionDirectory(
+        configured,
+        previous,
+        thread.directory,
+      );
+    } else {
+      await mkdir(sessionDirectory, { recursive: true, mode: 0o700 });
+    }
     const current = await identifyDirectory(thread.directory);
     const grant = this.store.threads.executionGrant(thread.workingDirectoryId);
     if (
@@ -223,7 +241,6 @@ export class RuntimeService {
     const connectionGeneration = randomUUID();
     this.currentConnectionGeneration = connectionGeneration;
     this.update({ connectionGeneration: connectionGeneration });
-    const previous = this.store.threads.nativeSessionBinding(thread.threadId);
     const context =
       previous?.configContextId ??
       createHash("sha256")
@@ -254,6 +271,9 @@ export class RuntimeService {
               resume: {
                 sessionFile: previous.sessionFile,
                 sessionId: previous.sessionId,
+                ...(previous.origin === "cli"
+                  ? { origin: previous.origin }
+                  : {}),
               },
             }
           : {}),
@@ -707,19 +727,6 @@ export class RuntimeService {
         model: null,
         message: uiMessage("runtime.preStartTrust"),
       };
-    }
-    // Indexing an external native file proves readability, not execution ownership.
-    // Refuse before granting trust, creating resources or sending any host command.
-    if (thread.origin === "cli") {
-      this.update({
-        phase: "browse",
-        trusted: false,
-        busy: false,
-        recoveryFailure: "external-session",
-        message: uiMessage("runtime.externalHistoryOnly"),
-        traceId: command.traceId,
-      });
-      return this.view;
     }
     if (
       command.kind === "manage-queue" ||

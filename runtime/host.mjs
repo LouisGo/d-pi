@@ -79,7 +79,8 @@ async function managedSessionManager() {
     !header ||
     header.type !== "session" ||
     header.id !== resume.sessionId ||
-    header.cwd !== process.cwd()
+    typeof header.cwd !== "string" ||
+    (await realpath(header.cwd)) !== process.cwd()
   )
     throw Error("Native session header identity conflict");
   const manager = await SessionManager.open(file, directory, undefined, {
@@ -90,7 +91,7 @@ async function managedSessionManager() {
   if (
     manager.getSessionId() !== resume.sessionId ||
     manager.getSessionFile() !== file ||
-    manager.getCwd() !== process.cwd()
+    (await realpath(manager.getCwd())) !== (await realpath(process.cwd()))
   ) {
     await manager.close();
     throw Error("Recovered native session identity conflict");
