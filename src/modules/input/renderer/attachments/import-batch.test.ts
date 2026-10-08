@@ -238,6 +238,52 @@ it("Undo of a file-only anchor origin permanently invalidates it across Redo", (
   expect(target.apply([item("late.txt")])).toBe(false);
   editor.destroy();
 });
+it("Undo of independent text inside the pasted source preserves its original characters and target", () => {
+  const editor = new Editor({
+    ...plainTextEditorOptions,
+    element: document.createElement("div"),
+    content: draftDocument(""),
+  });
+  editor.view.dispatch(
+    editor.state.tr.insertText("AB").setMeta("dpiIndependentAction", true),
+  );
+  const target = createAttachmentImportTarget(editor, () => true, {
+    position: 3,
+    sourceFrom: 1,
+  });
+  editor.view.dispatch(
+    editor.state.tr.insertText("X", 2).setMeta("dpiIndependentAction", true),
+  );
+  expect(editor.commands.undo()).toBe(true);
+  expect(editor.getText()).toBe("AB");
+  expect(target.apply([item("one.txt")])).toBe(true);
+  expect(
+    editor.state.doc.textBetween(0, editor.state.doc.content.size, "\n", "X"),
+  ).toBe("ABX");
+  editor.destroy();
+});
+it("deleting one original source character after an interior insertion permanently invalidates the target", () => {
+  const editor = new Editor({
+    ...plainTextEditorOptions,
+    element: document.createElement("div"),
+    content: draftDocument("AB"),
+  });
+  const target = createAttachmentImportTarget(editor, () => true, {
+    position: 3,
+    sourceFrom: 1,
+  });
+  editor.view.dispatch(
+    editor.state.tr.insertText("X", 2).setMeta("dpiIndependentAction", true),
+  );
+  editor.view.dispatch(
+    editor.state.tr.delete(3, 4).setMeta("dpiIndependentAction", true),
+  );
+  expect(editor.getText()).toBe("AX");
+  expect(editor.commands.undo()).toBe(true);
+  expect(editor.getText()).toBe("AXB");
+  expect(target.apply([item("late.txt")])).toBe(false);
+  editor.destroy();
+});
 it("a rejected batch transaction retains the entire set and can retry once admission recovers", () => {
   const editor = new Editor({
     ...plainTextEditorOptions,

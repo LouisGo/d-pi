@@ -73,10 +73,12 @@ export function createAttachmentImportTarget(
   options: { position?: number; sourceFrom?: number } = {},
 ): AttachmentImportTarget {
   let position = options.position ?? editor.state.selection.from;
-  let sourceFrom =
+  const sourceFrom =
     options.sourceFrom !== undefined && options.sourceFrom < position
       ? options.sourceFrom
       : undefined;
+  let source =
+    sourceFrom === undefined ? null : [{ from: sourceFrom, to: position }];
   let valid = true;
   let applying = false;
   const invalidate = () => {
@@ -99,11 +101,13 @@ export function createAttachmentImportTarget(
     // removing a later independent action does not invalidate surviving origin.
     for (const map of tr.mapping.maps) {
       let removedSource = false;
-      map.forEach((from, to) => {
+      const insertedAt: number[] = [];
+      map.forEach((from, to, newFrom, newTo) => {
+        if (from === to && newTo > newFrom) insertedAt.push(from);
         if (
           to > from &&
-          (sourceFrom !== undefined
-            ? from < position && to > sourceFrom
+          (source !== null
+            ? source.some((part) => from < part.to && to > part.from)
             : from <= position && to >= position)
         )
           removedSource = true;
@@ -118,7 +122,26 @@ export function createAttachmentImportTarget(
         return;
       }
       position = result.pos;
-      if (sourceFrom !== undefined) sourceFrom = map.map(sourceFrom, 1);
+      if (source !== null) {
+        // Later text inserted inside the source is not an original character.
+        // Exclude those holes so deleting/Undoing them cannot consume the paste.
+        const next: { from: number; to: number }[] = [];
+        for (const part of source) {
+          const edges = [
+            part.from,
+            ...insertedAt.filter((at) => at > part.from && at < part.to),
+            part.to,
+          ];
+          for (let index = 1; index < edges.length; index++) {
+            const from = map.map(edges[index - 1] ?? part.from, 1);
+            const to = map.map(edges[index] ?? part.to, -1);
+            const previous = next.at(-1);
+            if (previous?.to === from) previous.to = to;
+            else next.push({ from, to });
+          }
+        }
+        source = next;
+      }
     }
   };
   const stopHistory = onDraftHistoryClear(editor, invalidate);
