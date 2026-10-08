@@ -11,6 +11,10 @@ import {
 import type { AttachmentModel } from "../../core/attachments/attachment-model";
 import type { DraftController } from "../../core/draft-controller";
 import {
+  parseDraftBlocks,
+  serializeReference,
+} from "../../core/references/serialize";
+import {
   draftDocument,
   onDraftHistoryClear,
 } from "../editor/plain-text-editor";
@@ -252,10 +256,16 @@ export function createTrustedClipboard(options: {
               )
               .map((item) => item.id),
           );
-          const text = reply.text.replace(
-            /\[\[dpi-attachment:([0-9a-f-]{36})\]\]/g,
-            (token, id: string) => (omitted.has(id) ? "" : token),
-          );
+          const text = parseDraftBlocks(reply.text)
+            .map((block) =>
+              block.kind === "selection"
+                ? serializeReference(block.value)
+                : block.text.replace(
+                    /\[\[dpi-attachment:([0-9a-f-]{36})\]\]/g,
+                    (token, id: string) => (omitted.has(id) ? "" : token),
+                  ),
+            )
+            .join("\n");
           const content = view.state.schema.nodeFromJSON(draftDocument(text));
           const tr = view.state.tr.replaceSelection(
             new Slice(

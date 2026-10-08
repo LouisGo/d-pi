@@ -50,6 +50,7 @@ async function setup(
   attachments?: AttachmentBridge,
   origin?: "cli",
   runtimeBusy = false,
+  initialText = "alpha omega",
 ) {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const first = DraftSchema.parse({
@@ -58,7 +59,7 @@ async function setup(
     workingDirectoryId: crypto.randomUUID(),
     directory: "/fixture",
     revision: 0,
-    text: "alpha omega",
+    text: initialText,
     ...(origin ? { origin } : {}),
   });
   const second = DraftSchema.parse({
@@ -120,6 +121,10 @@ async function setup(
         }),
       }),
     };
+  let updateLocale!: (value: {
+    preference: "en-US" | "zh-CN";
+    resolvedLocale: "en-US" | "zh-CN";
+  }) => void;
   const model = new AppModel(bridge);
   await model.start();
   const container = document.createElement("div");
@@ -144,6 +149,21 @@ async function setup(
         createElement(QueryClientProvider, {
           client,
           children: createElement(I18nProvider, {
+            bridge: {
+              snapshot: async () => ({
+                preference: "en-US" as const,
+                resolvedLocale: "en-US" as const,
+              }),
+              subscribe: (listener) => {
+                updateLocale = listener;
+                return () => {};
+              },
+              setPreference: async (preference) => ({
+                preference,
+                resolvedLocale: preference === "system" ? "en-US" : preference,
+                persisted: true,
+              }),
+            },
             initialSnapshot: { preference: "system", resolvedLocale: "en-US" },
             children: createElement(Composer, {
               key: thread().key,
@@ -181,6 +201,8 @@ async function setup(
     editor,
     select,
     container,
+    changeLocale: () =>
+      updateLocale({ preference: "zh-CN", resolvedLocale: "zh-CN" }),
   };
 }
 
@@ -1258,4 +1280,178 @@ it("returns the mapped caret to the real editor when expanding and collapsing fo
     collapse?.click();
   });
   expect(document.activeElement).toBe(editor.view.dom);
+});
+
+it("preserves the mixed-paste target when only localized labels change", async () => {
+  let finish!: (reply: AttachmentReply) => void;
+  let items: import("../../../modules/input/contracts/public").Attachment[] =
+    [];
+  const fixture = await setup(undefined, undefined, {
+    request: async (command) => {
+      if (command.kind === "import-bytes")
+        return new Promise((resolve) => {
+          finish = resolve;
+        });
+      return historyReply(command) ?? { kind: "attachments", items };
+    },
+  });
+  await act(() => fixture.editor().commands.setTextSelection(6));
+  await pasteFiles(fixture, [new File(["file"], "source.txt")], " A");
+  await vi.waitFor(() => expect(finish).toBeTypeOf("function"));
+  await act(() => fixture.changeLocale());
+  items = [importedText(fixture.first.threadId, "source.txt")];
+  await act(() => finish({ kind: "attachments", items }));
+  await act(() => new Promise((resolve) => setTimeout(resolve, 20)));
+  expect(fixture.thread().controller.getTextSnapshot()).toBe(
+    `alpha A${items[0]?.token} omega`,
+  );
+});
+
+it("returns focus after explicitly adopting a pending image", async () => {
+  let finish!: (reply: AttachmentReply) => void;
+  let items: import("../../../modules/input/contracts/public").Attachment[] =
+    [];
+  const fixture = await setup(undefined, undefined, {
+    request: async (command) => {
+      if (command.kind === "choose-import")
+        return new Promise((resolve) => {
+          finish = resolve;
+        });
+      return historyReply(command) ?? { kind: "attachments", items };
+    },
+  });
+  const attach = fixture.container.querySelector<HTMLButtonElement>(
+    'button[aria-label="Attach files"]',
+  );
+  await act(() => attach?.click());
+  await vi.waitFor(() => expect(finish).toBeTypeOf("function"));
+  const image = AttachmentSchema.parse({
+    ...importedText(fixture.first.threadId, "image.png"),
+    mimeType: "image/png",
+    representation: "image",
+    inputDigest: "a".repeat(64),
+  });
+  items = [image];
+  const composing = vi
+    .spyOn(fixture.editor().view, "composing", "get")
+    .mockReturnValue(true);
+  await act(() => finish({ kind: "attachments", items }));
+  let insert: HTMLButtonElement | undefined;
+  await vi.waitFor(() => {
+    insert = Array.from(fixture.container.querySelectorAll("button")).find(
+      (button) => button.textContent === "Add to draft",
+    );
+    expect(insert).toBeDefined();
+  });
+  if (!insert) throw Error("missing pending image button");
+  await act(() => {
+    composing.mockReturnValue(false);
+    insert?.focus();
+    insert?.click();
+  });
+  expect(fixture.thread().controller.getTextSnapshot()).toContain(image.token);
+  expect(fixture.editor().getText()).toBe("alpha omega");
+  expect(document.activeElement).toBe(fixture.editor().view.dom);
+});
+
+it("keeps a restored image when the real Composer body is replaced before list metadata arrives", async () => {
+  const imageId = crypto.randomUUID();
+  const token = `[[dpi-attachment:${imageId}]]`;
+  let completeList!: (reply: AttachmentReply) => void;
+  const fixture = await setup(
+    undefined,
+    undefined,
+    {
+      request: async (command) => {
+        if (command.kind === "list")
+          return new Promise((resolve) => {
+            completeList = resolve;
+          });
+        return historyReply(command) ?? { kind: "attachments", items: [] };
+      },
+    },
+    undefined,
+    false,
+    `body${token}`,
+  );
+  expect(completeList).toBeTypeOf("function");
+  const image = AttachmentSchema.parse({
+    schemaVersion: 1,
+    id: imageId,
+    threadId: fixture.first.threadId,
+    token,
+    name: "cold.png",
+    mimeType: "image/png",
+    byteLength: 4,
+    capturedAt: new Date().toISOString(),
+    source: "file",
+    status: "ready",
+    representation: "image",
+    inputDigest: "a".repeat(64),
+    coverageGaps: [],
+    textOnly: false,
+  });
+  expect(fixture.editor().view.editable).toBe(false);
+  await act(() => {
+    fixture.editor().commands.selectAll();
+    fixture.editor().commands.insertContent("replacement body");
+  });
+  expect(fixture.thread().controller.getTextSnapshot()).toContain(token);
+  await act(() => completeList({ kind: "attachments", items: [image] }));
+  await act(() => new Promise((resolve) => setTimeout(resolve, 20)));
+  expect(fixture.editor().view.editable).toBe(true);
+  await act(() => {
+    fixture.editor().commands.selectAll();
+    fixture.editor().commands.insertContent("replacement body");
+  });
+  expect(fixture.editor().getText()).toBe("replacement body");
+  expect(fixture.thread().controller.getTextSnapshot()).toContain(token);
+  expect(
+    fixture.container.querySelector(".attachment-rail")?.textContent,
+  ).toContain("cold.png");
+});
+it("offers explicit metadata retry while keeping an unresolved restored image protected", async () => {
+  const id = crypto.randomUUID(),
+    token = `[[dpi-attachment:${id}]]`;
+  let attempts = 0;
+  let items: import("../../../modules/input/contracts/public").Attachment[] =
+    [];
+  const fixture = await setup(
+    undefined,
+    undefined,
+    {
+      request: async (command) => {
+        if (command.kind === "list")
+          return ++attempts === 1
+            ? { kind: "unavailable", reason: "storage-unavailable" }
+            : { kind: "attachments", items };
+        return historyReply(command) ?? { kind: "attachments", items };
+      },
+    },
+    undefined,
+    false,
+    `body${token}`,
+  );
+  const image = AttachmentSchema.parse({
+    ...importedText(fixture.first.threadId, "cold.png"),
+    id,
+    token,
+    mimeType: "image/png",
+    representation: "image",
+    inputDigest: "a".repeat(64),
+  });
+  items = [image];
+  let retry: HTMLButtonElement | undefined;
+  await vi.waitFor(() => {
+    retry = Array.from(fixture.container.querySelectorAll("button")).find(
+      (button) => button.textContent === "Reload attachments",
+    );
+    expect(retry).toBeDefined();
+  });
+  expect(fixture.editor().view.editable).toBe(false);
+  expect(fixture.thread().controller.getTextSnapshot()).toContain(token);
+  await act(() => retry?.click());
+  await vi.waitFor(() => expect(fixture.editor().view.editable).toBe(true));
+  expect(fixture.editor().getText()).toBe("body");
+  expect(fixture.thread().controller.getTextSnapshot()).toContain(token);
 });

@@ -156,6 +156,7 @@ export const ui = {
   "attachment.previous": "前移 {name}",
   "attachment.next": "后移 {name}",
   "attachment.retry": "重试准备",
+  "attachment.retryLoading": "重新加载附件",
   "attachment.preview": "预览 {name}",
   "attachment.closeManager": "关闭附件管理",
   "attachment.closePreview": "关闭预览",

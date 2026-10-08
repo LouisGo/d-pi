@@ -6,6 +6,15 @@ const admissions = new WeakMap<
   Editor,
   (transaction?: Transaction) => boolean
 >();
+const attachmentResolution = new WeakMap<Editor, () => boolean>();
+/** Protect a restored body until its private attachment tokens are classified. */
+export function bindAttachmentResolution(
+  editor: Editor,
+  ready: () => boolean,
+): () => void {
+  attachmentResolution.set(editor, ready);
+  return () => attachmentResolution.delete(editor);
+}
 export function bindHistoryAdmission(
   editor: Editor,
   admit: (transaction?: Transaction) => boolean,
@@ -23,7 +32,9 @@ export const EditActionHistory = Extension.create({
     return [
       new Plugin({
         props: {
-          editable: () => admissions.get(this.editor)?.() ?? true,
+          editable: () =>
+            (attachmentResolution.get(this.editor)?.() ?? true) &&
+            (admissions.get(this.editor)?.() ?? true),
           handleDOMEvents: {
             keydown: (_view, event) => {
               if (event.key === "Backspace" || event.key === "Delete")
@@ -40,6 +51,14 @@ export const EditActionHistory = Extension.create({
           },
         },
         filterTransaction: (tr) => {
+          if (
+            tr.docChanged &&
+            attachmentResolution.get(this.editor)?.() === false &&
+            !tr.getMeta("dpiReferenceLabelRefresh") &&
+            !tr.getMeta("dpiDetachedImageProjection") &&
+            !tr.getMeta("dpiTrustedDraftReplacement")
+          )
+            return false;
           if (tr.docChanged && admissions.get(this.editor)?.(tr) === false)
             return false;
           if (!tr.docChanged || tr.getMeta("addToHistory") === false)

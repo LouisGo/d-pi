@@ -2,6 +2,7 @@
 import { Editor } from "@tiptap/core";
 import { redoDepth, undoDepth } from "@tiptap/pm/history";
 import { afterEach, expect, it, vi } from "vitest";
+import { captureSelection } from "../../../files/core/public";
 import {
   type AttachmentBridge,
   AttachmentSchema,
@@ -10,6 +11,10 @@ import {
 } from "../../contracts/public";
 import { AttachmentModel } from "../../core/attachments/attachment-model";
 import { DraftController } from "../../core/draft-controller";
+import {
+  parseDraftBlocks,
+  serializeReference,
+} from "../../core/references/serialize";
 import { AttachmentImports } from "../attachments/attachment-imports";
 import { createTrustedClipboard } from "../clipboard/trusted-clipboard";
 import { DraftEditorCache } from "../editor/draft-editor-cache";
@@ -409,4 +414,239 @@ it("releases duplicate import operations and retries the same release after a lo
     expect(imports.stateStore.getState().ready).toBe(true),
   );
   expect(settle.mock.calls[1]).toEqual(settle.mock.calls[0]);
+});
+
+it("keeps frozen source identity and literal image-looking source content when adding or removing an image", () => {
+  const f = fixture();
+  const image = f.item("image/png", "source.png");
+  const selection = captureSelection(
+    image.token,
+    {
+      startLineNumber: 1,
+      startColumn: 1,
+      endLineNumber: 1,
+      endColumn: image.token.length + 1,
+    },
+    { path: "source.txt", source: "working-tree", version: "v1" },
+  );
+  if (selection.kind !== "selection") throw Error("invalid selection fixture");
+  const original = serializeReference(selection);
+  f.controller.edit(original);
+  const editor = f.mount();
+  createAttachmentEditor(editor, () => true, {
+    controller: f.controller,
+  }).insert(image);
+  expect(
+    parseDraftBlocks(f.controller.getTextSnapshot()).filter(
+      (b) => b.kind === "selection",
+    ),
+  ).toEqual([{ kind: "selection", value: selection }]);
+  expect(f.controller.getEditorTextSnapshot()).toBe(original);
+  // Round-trip and explicit removal must not consume matching text inside frozen source.
+  f.controller.editEditorText(original);
+  f.controller.removeDetachedAttachment(image.id);
+  expect(f.controller.getTextSnapshot()).toBe(original);
+  expect(parseDraftBlocks(f.controller.getEditorTextSnapshot())).toEqual([
+    { kind: "selection", value: selection },
+  ]);
+});
+it("maps a pending insertion through late image classification without moving it past the following text", () => {
+  const f = fixture();
+  const image = f.item("image/png", "late.png");
+  f.controller.edit(`A${image.token}BC`);
+  const editor = f.mount();
+  const target = createAttachmentImportTarget(editor, () => true, {
+    position: 3,
+    controller: f.controller,
+  });
+  new AttachmentAdoption(f.controller).register([image]);
+  projectDetachedImages(editor, f.controller);
+  const file = f.item("text/plain", "later.txt");
+  expect(target.apply([file])).toBe(true);
+  expect(editor.getText()).toBe(`A${file.token}BC`);
+});
+it("drops migrated images from the Undo lease before releasing an explicitly removed image", async () => {
+  const commands: Parameters<AttachmentBridge["request"]>[0][] = [];
+  const f = fixture("draft", {
+    request: async (command) => {
+      commands.push(command);
+      if (command.kind === "history-open")
+        return {
+          kind: "history-lease",
+          leaseId: crypto.randomUUID(),
+          version: 0,
+        };
+      if (command.kind === "history-update")
+        return {
+          kind: "history-lease",
+          leaseId: command.leaseId,
+          version: command.version,
+        };
+      return { kind: "history-released" };
+    },
+  });
+  const image = f.item("image/png", "legacy.png");
+  f.controller.edit(`A${image.token}BC`);
+  const editor = f.mount();
+  editor.commands.insertContent("typed");
+  editor.commands.undo();
+  await f.controller.flush();
+  new AttachmentAdoption(f.controller).register([image]);
+  projectDetachedImages(editor, f.controller);
+  f.controller.removeDetachedAttachment(image.id);
+  expect(await f.controller.flush()).toBe(true);
+  expect(editor.can().undo()).toBe(false);
+  expect(editor.can().redo()).toBe(true);
+  const lastUpdate = commands.filter((c) => c.kind === "history-update").at(-1);
+  expect(lastUpdate).toMatchObject({ ids: [] });
+  const lastRelease = commands
+    .filter((c) => c.kind === "history-release")
+    .at(-1);
+  expect(lastRelease).toMatchObject({ releaseIds: [image.id], retainIds: [] });
+});
+it("keeps a trailing frozen block valid across image persistence and cold projection", () => {
+  const f = fixture();
+  const image = f.item("image/png", "next.png");
+  const selection = captureSelection(
+    "source",
+    {
+      startLineNumber: 1,
+      startColumn: 1,
+      endLineNumber: 1,
+      endColumn: 7,
+    },
+    { path: "source.txt", source: "working-tree", version: "v1" },
+  );
+  if (selection.kind !== "selection") throw Error("invalid selection fixture");
+  const original = serializeReference(selection);
+  f.controller.edit(original);
+  const editor = f.mount();
+  createAttachmentEditor(editor, () => true, {
+    controller: f.controller,
+  }).insert(image);
+  expect(
+    parseDraftBlocks(f.controller.getTextSnapshot()).some(
+      (b) => b.kind === "selection",
+    ),
+  ).toBe(true);
+  const cold = fixture(f.controller.getTextSnapshot());
+  const restored = cold.mount();
+  cold.controller.registerDetachedAttachments([image.id]);
+  projectDetachedImages(restored, cold.controller);
+  expect(restored.state.doc.toJSON()).toEqual(editor.state.doc.toJSON());
+  cold.controller.removeDetachedAttachment(image.id);
+  expect(cold.controller.getTextSnapshot()).toBe(original);
+});
+it("retains image cleanup candidates until an epoch removal update is acknowledged", async () => {
+  const commands: Parameters<AttachmentBridge["request"]>[0][] = [];
+  let fail = false;
+  const f = fixture("draft", {
+    request: async (command) => {
+      commands.push(command);
+      if (command.kind === "history-open")
+        return {
+          kind: "history-lease",
+          leaseId: crypto.randomUUID(),
+          version: 0,
+        };
+      if (command.kind === "history-update")
+        return fail
+          ? { kind: "unavailable", reason: "storage-unavailable" }
+          : {
+              kind: "history-lease",
+              leaseId: command.leaseId,
+              version: command.version,
+            };
+      return { kind: "history-released" };
+    },
+  });
+  const image = f.item("image/png", "legacy-ack.png");
+  f.controller.edit(`A${image.token}BC`);
+  const editor = f.mount();
+  editor.commands.insertContent("typed");
+  editor.commands.undo();
+  await f.controller.flush();
+  fail = true;
+  const boundary = commands.length;
+  new AttachmentAdoption(f.controller).register([image]);
+  projectDetachedImages(editor, f.controller);
+  f.controller.removeDetachedAttachment(image.id);
+  expect(await f.controller.flush()).toBe(false);
+  expect(
+    commands
+      .slice(boundary)
+      .some(
+        (c) => c.kind === "history-release" && c.releaseIds?.includes(image.id),
+      ),
+  ).toBe(false);
+  fail = false;
+  expect(await f.controller.retry()).toBe(true);
+  expect(
+    commands.filter((c) => c.kind === "history-release").at(-1),
+  ).toMatchObject({ releaseIds: [image.id], retainIds: [] });
+});
+it("keeps private-token-shaped frozen source intact during trusted image paste", async () => {
+  const f = fixture();
+  const editor = f.mount(),
+    image = f.item("image/png", "clipboard.png");
+  const source = serializeReference({
+    kind: "selection",
+    path: "source.txt",
+    source: "working-tree",
+    version: "v1",
+    startLine: 1,
+    startColumn: 1,
+    endLine: 1,
+    endColumn: image.token.length + 1,
+    text: image.token,
+  });
+  const bridge: AttachmentBridge = {
+    request: async (command) =>
+      command.kind === "clipboard-import"
+        ? {
+            kind: "clipboard-imported",
+            text: `before${image.token}\n${source}`,
+            items: [image],
+            degraded: false,
+          }
+        : { kind: "cancelled" },
+  };
+  const model = new AttachmentModel(bridge, f.controller.threadId);
+  const clipboard = createTrustedClipboard({
+    bridge,
+    model,
+    controller: f.controller,
+    isCurrent: () => true,
+    sequence: () => f.controller.getEditorSnapshot().sequence,
+    onFeedback: () => {},
+  });
+  cleanups.push(() => {
+    clipboard.dispose();
+    model.dispose();
+  });
+  const ticket = {
+    version: 1,
+    instanceId: crypto.randomUUID(),
+    handleId: crypto.randomUUID(),
+    expiresAt: Date.now() + 10000,
+  };
+  const event = {
+    preventDefault() {},
+    clipboardData: {
+      types: [CLIPBOARD_MIME],
+      getData: () => JSON.stringify(ticket),
+      files: [],
+    },
+  } as unknown as ClipboardEvent;
+  editor.commands.selectAll();
+  clipboard.paste(editor.view, event);
+  await clipboard.settled();
+  const frozen = parseDraftBlocks(f.controller.getTextSnapshot()).find(
+    (block) => block.kind === "selection",
+  );
+  expect(frozen).toMatchObject({
+    kind: "selection",
+    value: { text: image.token },
+  });
+  expect(f.controller.getDetachedAttachmentIds()).toEqual([image.id]);
 });

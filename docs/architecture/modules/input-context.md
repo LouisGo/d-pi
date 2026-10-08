@@ -145,3 +145,7 @@ GUI 对必要 clipboard-discard 失败仅提供重试，隐藏移除失败请求
 Main 成功导入后，若因正文、选区、generation、前台身份或adapter/Editor销毁而未插入，同样由仍存活的原Thread AttachmentModel持有discard、失败及重试责任。失效的adapter不得绕过owner直接忽略RPC失败，也不得把clone重新插入新草稿。真正Thread owner销毁与可信Main document释放分别核对，不把二者笼统视为等价。
 
 historyState供React外部订阅读取。没有history owner时的empty、pending admission、failed/limited admission均返回稳定快照；在途Main释放不得每次创建新对象。实际ACK后订阅通知状态变化，正常第十Thread自动从pending准入并恢复保存，无React更新循环。
+
+2026-10-08 图片迁移边界：冷恢复尚未取得 Main 附件清单时，含私有引用的正文暂缓普通编辑，避免未知图片被 Select All／Undo 删除；元数据读取失败保留正文并提供显式重新加载。分类与标签刷新是只读展示投影，不使草稿变脏。结构性的图片迁出有独立 PM meta，仍映射异步导入位置；纯标签刷新才跳过位置映射，语言切换不解绑导入 adapter。
+
+图片 token 只作为普通 paragraph 的附件依赖识别，不解析或删除冻结选区的原始文本。图片保存须保持 file-selection 的块分隔，选择块组成的正文以独立 token paragraph 承载图片，恢复投影不新增空白正文；其他正文保留原有空行。分类后从历史 epoch 移出图片依赖，并过滤后续事务；当前草稿和 cleanup candidate 的保护继续独立存在。减少 epoch 依赖必须等待 Main update ACK，失败时不提前 release candidate，显式 retry 先恢复 update，再恢复 release；正文 Redo 分支不为此清空。

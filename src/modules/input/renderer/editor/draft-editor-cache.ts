@@ -351,17 +351,27 @@ export class DraftEditorCache {
       const candidates = new Set([...previousImages, ...images]);
       previousImages = images;
       const history = this.histories.get(key);
-      if (history) history.model.adopt(candidates, currentIds(controller), []);
-      else {
+      if (history) {
+        history.model.removeDependencies(candidates);
+        history.model.adopt(candidates, currentIds(controller), []);
+      } else {
         const source = this.pendingSource(key, controller);
-        if (source) for (const id of candidates) source.candidates.add(id);
+        if (source)
+          for (const id of candidates) {
+            source.epoch.delete(id);
+            source.candidates.add(id);
+          }
       }
     };
     const unsubscribeImages = controller.subscribe(observeImages);
     observeImages();
     const removeHistoryListener = onDraftHistoryClear(editor, () => {
       if (this.leases.get(key) !== binding.token) return;
-      const ids = documentIds(editor.state.doc);
+      const ids = new Set(
+        [...documentIds(editor.state.doc)].filter(
+          (id) => !controller.isDetachedAttachment(id),
+        ),
+      );
       const history = this.histories.get(key);
       if (history) history.model.reset(ids);
       else {
@@ -383,7 +393,8 @@ export class DraftEditorCache {
         doc.descendants((node) => {
           if (
             node.type.name === "attachmentReference" &&
-            typeof node.attrs.id === "string"
+            typeof node.attrs.id === "string" &&
+            !controller.isDetachedAttachment(node.attrs.id)
           )
             ids.add(node.attrs.id);
         });

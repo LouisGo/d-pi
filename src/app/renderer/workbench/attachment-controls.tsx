@@ -30,6 +30,7 @@ import type {
 import {
   AttachmentAdoption,
   attachmentIds,
+  bindAttachmentResolution,
   captureReferenceFocus,
   createAttachmentEditor,
   createAttachmentImportTarget,
@@ -118,7 +119,24 @@ export function AttachmentControls({
   const items = list.data?.kind === "attachments" ? list.data.items : [];
   const itemsRef = useRef(items);
   itemsRef.current = items;
-  const ids = [...new Set(attachmentIds(text))];
+  const localeRef = useRef(locale);
+  localeRef.current = locale;
+  const ids = controller?.getAttachmentIds() ?? [
+    ...new Set(attachmentIds(text)),
+  ];
+  const resolutionReady = ids.length === 0 || list.data?.kind === "attachments";
+  const resolutionRef = useRef(resolutionReady);
+  resolutionRef.current = resolutionReady;
+  const listFailed = list.isError || list.data?.kind === "unavailable";
+  useLayoutEffect(() => {
+    if (!editor || editor.isDestroyed) return;
+    const release = bindAttachmentResolution(
+      editor,
+      () => resolutionRef.current,
+    );
+    editor.view.updateState(editor.state);
+    return release;
+  }, [editor, resolutionReady]);
   const adoption = useMemo(
     () =>
       suppliedAdoption ??
@@ -248,7 +266,7 @@ export function AttachmentControls({
         !importsReady ||
         (ids.length > 0 &&
           (list.isFetching ||
-            list.isError ||
+            listFailed ||
             active.some(
               (item) =>
                 !item ||
@@ -264,10 +282,10 @@ export function AttachmentControls({
     text,
     list.data,
     list.isFetching,
-    list.isError,
+    listFailed,
     onBlocked,
   ]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (adoption) adoption.register(items);
     if (editor) {
       if (controller) projectDetachedImages(editor, controller);
@@ -289,7 +307,7 @@ export function AttachmentControls({
       setTimeout(() => {
         if (isCurrent()) {
           if (controller) projectDetachedImages(editor, controller);
-          syncAttachmentLabels(editor, itemsRef.current, locale);
+          syncAttachmentLabels(editor, itemsRef.current, localeRef.current);
           model.flushInsertions();
           imports.flushInsertions();
         }
@@ -300,7 +318,7 @@ export function AttachmentControls({
       detachImports();
       editor.view.dom.removeEventListener("compositionend", flush);
     };
-  }, [model, imports, editor, isCurrent, controller, adoption, locale]);
+  }, [model, imports, editor, isCurrent, controller, adoption]);
   function insert(item: Attachment) {
     if (isCurrent()) model.insert(item);
   }
@@ -505,7 +523,9 @@ export function AttachmentControls({
   }
   return (
     <div className="composer-context">
-      {(pending > 0 || importing > 0) && (
+      {(pending > 0 ||
+        importing > 0 ||
+        (!resolutionReady && list.isFetching)) && (
         <p className="muted" role="status">
           {t("attachment.preparing")}
         </p>
@@ -577,7 +597,7 @@ export function AttachmentControls({
           </Button>
         </div>
       ))}
-      {(failed || list.isError) && (
+      {(failed || listFailed) && (
         <div role="alert" className="flex flex-wrap items-center gap-2">
           <p className="failure">
             {failed?.reason
@@ -607,6 +627,15 @@ export function AttachmentControls({
                 </Button>
               )}
             </>
+          )}
+          {listFailed && (
+            <Button
+              variant="ghost"
+              disabled={list.isFetching}
+              onClick={() => void list.refetch()}
+            >
+              {t("attachment.retryLoading")}
+            </Button>
           )}
         </div>
       )}

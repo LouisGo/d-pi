@@ -71,6 +71,12 @@ export class EditorHistoryModel {
     }
     this.enqueue();
   }
+  removeDependencies(ids: Iterable<string>): void {
+    if (this.disposed) return;
+    let changed = false;
+    for (const id of ids) if (this.ids.delete(id)) changed = true;
+    if (changed) this.enqueue();
+  }
   private limit(): void {
     this.clearHistory();
     this.store.setState({ limited: true });
@@ -136,9 +142,10 @@ export class EditorHistoryModel {
   }
   async retry(): Promise<boolean> {
     await this.ensure();
+    // Retire the dependency on Main before releasing its cleanup candidate.
+    if (this.updateFailed) this.enqueue();
     for (const [key, cleanup] of this.cleanups)
       this.enqueueCleanup(key, cleanup);
-    if (this.updateFailed) this.enqueue();
     return this.ensure();
   }
   private protectedIds(): Set<string> {
@@ -171,6 +178,8 @@ export class EditorHistoryModel {
     this.tail = this.tail.then(async () => {
       try {
         for (;;) {
+          if (this.updateFailed)
+            throw Error("Editor history update not acknowledged");
           const revision = cleanup.revision;
           const ids = [...cleanup.ids];
           for (let start = 0; start < Math.max(1, ids.length); start += 80000) {

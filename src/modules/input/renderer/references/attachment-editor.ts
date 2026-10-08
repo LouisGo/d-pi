@@ -12,7 +12,6 @@ import type {
 import { onDraftHistoryClear } from "../editor/plain-text-editor";
 import { AttachmentAdoption, isDetachedImage } from "./attachment-adoption";
 import {
-  attachmentIds,
   attachmentNodeAttrs,
   insertAttachmentReference,
 } from "./attachment-reference";
@@ -57,10 +56,14 @@ export function createAttachmentEditor(
       if (options && item.threadId !== options.controller.threadId)
         return false;
       const accepted = adoption ? adoption.admit([item]) : [item];
-      if (!accepted.length) return true;
+      if (!accepted.length) {
+        if (focus) editor.commands.focus();
+        return true;
+      }
       if (isDetachedImage(item)) {
         if (!options) return false;
         options.controller.addDetachedAttachments([item.id]);
+        if (focus) editor.commands.focus();
         return true;
       }
       const tr = insertAttachmentReference(editor.state, item, range);
@@ -95,9 +98,7 @@ function applyAttachmentBatch(
     items.some((item) => item.threadId !== adoption.controller.threadId)
   )
     return false;
-  const activeIds = adoption
-    ? attachmentIds(adoption.controller.getTextSnapshot())
-    : [];
+  const activeIds = adoption ? adoption.controller.getAttachmentIds() : [];
   const accepted = adoption ? adoption.admit(items) : items;
   const report = () =>
     onAdopt?.([...new Set([...activeIds, ...accepted.map((item) => item.id)])]);
@@ -175,6 +176,7 @@ export function createAttachmentImportTarget(
     // Attribute labels preserve node identity and size; their ReplaceStep maps
     // describe a structural replacement even though no source was consumed.
     if (tr.getMeta("dpiReferenceLabelRefresh")) return;
+    const projectingImages = tr.getMeta("dpiDetachedImageProjection") === true;
     // Undo follows the same source-consumption fence as other transactions;
     // removing a later independent action does not invalidate surviving origin.
     for (const map of tr.mapping.maps) {
@@ -190,12 +192,12 @@ export function createAttachmentImportTarget(
         )
           removedSource = true;
       });
-      if (removedSource) {
+      if (removedSource && !projectingImages) {
         invalidate();
         return;
       }
       const result = map.mapResult(position, -1);
-      if (result.deletedAcross) {
+      if (result.deletedAcross && !projectingImages) {
         invalidate();
         return;
       }
@@ -214,8 +216,10 @@ export function createAttachmentImportTarget(
             const from = map.map(edges[index - 1] ?? part.from, 1);
             const to = map.map(edges[index] ?? part.to, -1);
             const previous = next.at(-1);
-            if (previous?.to === from) previous.to = to;
-            else next.push({ from, to });
+            if (from < to) {
+              if (previous?.to === from) previous.to = to;
+              else next.push({ from, to });
+            }
           }
         }
         source = next;
@@ -291,23 +295,39 @@ export function projectDetachedImages(
 ): void {
   if (editor.isDestroyed || editor.view.composing) return;
   const tr = editor.state.tr;
-  const canonical = controller.getTextSnapshot();
-  const projected = controller.getEditorTextSnapshot();
-  const projectedIds = new Set(attachmentIds(projected));
-  const detached = new Set(
-    attachmentIds(canonical).filter((id) => !projectedIds.has(id)),
-  );
-  const positions: number[] = [];
+  const detached = new Set(controller.getDetachedAttachmentIds());
+  const positions: { from: number; to: number }[] = [];
+  const selectionOnly =
+    editor.state.doc.content.content.some(
+      (node) => node.type.name === "fileReference",
+    ) &&
+    editor.state.doc.content.content.filter(
+      (node) => node.type.name === "paragraph",
+    ).length === 1;
   editor.state.doc.descendants((node, pos) => {
+    if (
+      selectionOnly &&
+      node.type.name === "paragraph" &&
+      node.childCount > 0 &&
+      node.content.content.every(
+        (child) =>
+          child.type.name === "attachmentReference" &&
+          detached.has(child.attrs.id),
+      )
+    ) {
+      positions.push({ from: pos, to: pos + node.nodeSize });
+      return false;
+    }
     if (node.type.name === "attachmentReference" && detached.has(node.attrs.id))
-      positions.push(pos);
+      positions.push({ from: pos, to: pos + 1 });
+    return true;
   });
-  for (const pos of positions.reverse()) tr.delete(pos, pos + 1);
+  for (const pos of positions.reverse()) tr.delete(pos.from, pos.to);
   if (tr.docChanged)
     editor.view.dispatch(
       tr
         .setMeta("addToHistory", false)
-        .setMeta("dpiReferenceLabelRefresh", true),
+        .setMeta("dpiDetachedImageProjection", true),
     );
 }
 export function removeAttachmentReference(editor: Editor, id: string): void {

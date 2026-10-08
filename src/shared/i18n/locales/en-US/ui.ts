@@ -167,6 +167,7 @@ export const ui = {
   "attachment.previous": "Move {name} earlier",
   "attachment.next": "Move {name} later",
   "attachment.retry": "Retry preparation",
+  "attachment.retryLoading": "Reload attachments",
   "attachment.preview": "Preview {name}",
   "attachment.closeManager": "Close attachment manager",
   "attachment.closePreview": "Close preview",

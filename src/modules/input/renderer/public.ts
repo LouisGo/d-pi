@@ -14,6 +14,7 @@ export {
 } from "./clipboard/plain-text-paste";
 export { createTrustedClipboard } from "./clipboard/trusted-clipboard";
 export { DraftEditorCache } from "./editor/draft-editor-cache";
+export { bindAttachmentResolution } from "./editor/edit-action-history";
 export {
   draftDocument,
   plainTextEditorOptions,

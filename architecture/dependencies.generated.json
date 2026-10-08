@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "2e0525cd19cb1af0d1b8c81c11900a66e970d78155599b53f03386f2162b8f5a",
+  "inputsHash": "df8e06f4b774bfe6fe9edcf3c0c83dd5eccf3faa66c2d4b6a661397af1c0b3a4",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 478,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 211,
-      "lines": 39145,
+      "lines": 39370,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -102,7 +102,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 20,
-      "lines": 2837,
+      "lines": 2839,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -186,7 +186,7 @@
       ],
       "materialized": true,
       "files": 59,
-      "lines": 12488,
+      "lines": 12857,
       "publicEntries": [
         {
           "path": "src/modules/input/contracts/public.ts",
@@ -18913,6 +18913,18 @@
       "targetEnvironment": "core"
     },
     {
+      "from": "src/modules/input/core/draft-controller.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "./references/serialize",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/references/serialize.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
       "from": "src/modules/input/core/public.ts",
       "sourceModule": "input",
       "sourceEnvironment": "core",
@@ -20180,6 +20192,18 @@
       "sourceModule": "input",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "../../core/references/serialize",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/references/serialize.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/renderer/clipboard/trusted-clipboard.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "../editor/plain-text-editor",
       "kind": "import",
       "resolution": "module",
@@ -20645,6 +20669,18 @@
       "sourceModule": "input",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "./editor/edit-action-history",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/editor/edit-action-history.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/public.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "./editor/plain-text-editor",
       "kind": "export",
       "resolution": "module",
@@ -20771,18 +20807,6 @@
       "to": "src/modules/input/core/draft-controller.ts",
       "targetModule": "input",
       "targetEnvironment": "core"
-    },
-    {
-      "from": "src/modules/input/renderer/references/attachment-adoption.ts",
-      "sourceModule": "input",
-      "sourceEnvironment": "renderer",
-      "test": false,
-      "specifier": "./attachment-reference",
-      "kind": "import",
-      "resolution": "module",
-      "to": "src/modules/input/renderer/references/attachment-reference.ts",
-      "targetModule": "input",
-      "targetEnvironment": "renderer"
     },
     {
       "from": "src/modules/input/renderer/references/attachment-editor.ts",
@@ -21215,6 +21239,18 @@
       "sourceModule": "input",
       "sourceEnvironment": "renderer",
       "test": true,
+      "specifier": "../../../files/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/files/core/public.ts",
+      "targetModule": "files",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/renderer/references/detached-images.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
       "specifier": "../../contracts/public",
       "kind": "import",
       "resolution": "module",
@@ -21243,6 +21279,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/input/core/draft-controller.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/renderer/references/detached-images.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../core/references/serialize",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/references/serialize.ts",
       "targetModule": "input",
       "targetEnvironment": "core"
     },

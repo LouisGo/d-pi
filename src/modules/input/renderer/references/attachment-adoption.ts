@@ -1,6 +1,5 @@
 import type { Attachment } from "../../contracts/public";
 import type { DraftController } from "../../core/draft-controller";
-import { attachmentIds } from "./attachment-reference";
 
 export function isDetachedImage(item: Attachment): boolean {
   return (
@@ -58,7 +57,7 @@ export class AttachmentAdoption {
   }
   admit(incoming: readonly Attachment[]): Attachment[] {
     this.register(incoming);
-    const active = new Set(attachmentIds(this.controller.getTextSnapshot()));
+    const active = new Set(this.controller.getAttachmentIds());
     const keys = new Set(
       [...active].flatMap((id) => {
         const item = this.items.get(id);
