@@ -271,25 +271,26 @@ it("keeps the complete saved body when the restored live projection is truncated
 });
 it("refreshes an initially unbound transcript after native persistence and retains a message evicted from live", async () => {
   let committed = false;
-  const reader: HistoryBridge["read"] = vi.fn(async () =>
-    committed
-      ? {
-          kind: "page",
-          source: "committed",
-          coverage: "append-order",
-          next: null,
-          incompleteTail: false,
-          omitted: 0,
-          entries: [
-            {
-              id: "persisted",
-              parentId: null,
-              role: "assistant",
-              text: "old persisted reply",
-            },
-          ],
-        }
-      : { kind: "unavailable", reason: "unbound" },
+  const reader: HistoryBridge["read"] = vi.fn<HistoryBridge["read"]>(
+    async () =>
+      committed
+        ? {
+            kind: "page",
+            source: "committed",
+            coverage: "append-order",
+            next: null,
+            incompleteTail: false,
+            omitted: 0,
+            entries: [
+              {
+                id: "persisted",
+                parentId: null,
+                role: "assistant",
+                text: "old persisted reply",
+              },
+            ],
+          }
+        : { kind: "unavailable", reason: "unbound" },
   );
   const f = await mount(true, undefined, reader);
   await act(() =>
@@ -337,24 +338,26 @@ it("refreshes an initially unbound transcript after native persistence and retai
 });
 it("keeps a live row, copy focus and selected text through native ID confirmation and saved refetch", async () => {
   let committed = false;
-  const reader: HistoryBridge["read"] = vi.fn(async () => ({
-    kind: "page",
-    source: "saved",
-    coverage: "append-order",
-    next: null,
-    incompleteTail: false,
-    omitted: 0,
-    entries: committed
-      ? [
-          {
-            id: "persisted",
-            parentId: null,
-            role: "assistant",
-            text: "stable closed paragraph",
-          },
-        ]
-      : [],
-  }));
+  const reader: HistoryBridge["read"] = vi.fn<HistoryBridge["read"]>(
+    async () => ({
+      kind: "page",
+      source: "saved",
+      coverage: "append-order",
+      next: null,
+      incompleteTail: false,
+      omitted: 0,
+      entries: committed
+        ? [
+            {
+              id: "persisted",
+              parentId: null,
+              role: "assistant",
+              text: "stable closed paragraph",
+            },
+          ]
+        : [],
+    }),
+  );
   const f = await mount(true, undefined, reader);
   await act(() =>
     f.emit({
