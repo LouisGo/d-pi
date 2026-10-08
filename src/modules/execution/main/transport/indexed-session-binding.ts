@@ -44,7 +44,14 @@ export async function indexedSessionDirectory(
       const lines = prefix.subarray(0, bytesRead).toString("utf8").split("\n");
       const first: unknown = JSON.parse(lines[0] ?? "");
       const title = z
-        .object({ type: z.literal("title") })
+        .object({
+          type: z.literal("title"),
+          v: z.literal(1),
+          title: z.string(),
+          updatedAt: z.string(),
+          pad: z.string(),
+          source: z.enum(["auto", "user"]).optional(),
+        })
         .safeParse(first).success;
       const header = HeaderSchema.parse(
         title ? JSON.parse(lines[1] ?? "") : first,

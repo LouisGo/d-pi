@@ -612,22 +612,19 @@ function ComposerReadiness({
   return (
     <div className="composer-readiness" role="status">
       <p>
-        {phase === "failed" && view ? formatMessage(view.message) : t(message)}
+        {(phase === "failed" || phase === "interrupted") && view
+          ? formatMessage(view.message)
+          : t(message)}
       </p>
       {reason === "no-model" && onChooseModel && (
         <Button onClick={onChooseModel}>{t("composer.chooseModel")}</Button>
       )}
-      {phase === "interrupted" && (
-        <Button disabled={busy} onClick={() => void model.newThread()}>
-          {t("app.toolbar.newThread")}
-        </Button>
-      )}
-      {phase === "browse" && (
+      {(phase === "browse" || (phase === "interrupted" && !view?.trusted)) && (
         <Button disabled={busy} onClick={() => void runtime.act("allow")}>
           {t("ui.runtime.allow")}
         </Button>
       )}
-      {phase === "failed" && view?.trusted && (
+      {(phase === "failed" || phase === "interrupted") && view?.trusted && (
         <Button
           disabled={busy || view.busy}
           onClick={() => void runtime.act("start")}

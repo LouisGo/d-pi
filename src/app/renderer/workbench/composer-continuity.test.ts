@@ -46,6 +46,7 @@ async function setup(
   onChooseModel?: () => void,
   attachments?: AttachmentBridge,
   origin?: "cli",
+  runtimeBusy = false,
 ) {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const first = DraftSchema.parse({
@@ -109,7 +110,7 @@ async function setup(
           revision: 0,
           phase,
           trusted: true,
-          busy: false,
+          busy: runtimeBusy,
           model: null,
           configuration: { code: "runtime.configDefault" },
           message: { code: "runtime.previousSessionReadOnly" },
@@ -312,19 +313,36 @@ it("Shift+Enter inserts a source line in the real composer and remains undoable"
   expect(fixture.editor().getText()).toBe("alpha omega");
 });
 
-it("offers a visible new-session exit beside the disabled send button for a recovered read-only thread", async () => {
+it("retries a confirmed interrupted chat in place without consuming the draft", async () => {
   const fixture = await setup("interrupted");
+  const runtime = fixture.thread().runtime!;
+  const retry = vi.spyOn(runtime, "act").mockResolvedValue();
   const container = fixture.editor().view.dom.closest("section");
-  expect(container?.textContent).toContain("read-only");
   const button = Array.from(container?.querySelectorAll("button") ?? []).find(
-    (b) => b.textContent === "New Thread",
+    (b) => b.textContent === "Retry preparing chat",
   );
   expect(button).toBeDefined();
-  const create = vi
-    .spyOn(fixture.model, "newThread")
-    .mockResolvedValue({ kind: "cancelled" });
   await act(() => button?.click());
-  expect(create).toHaveBeenCalledOnce();
+  expect(retry).toHaveBeenCalledWith("start");
+  expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha omega");
+});
+
+it("does not retry an interrupted chat until its previous process has stopped", async () => {
+  const fixture = await setup(
+    "interrupted",
+    undefined,
+    undefined,
+    undefined,
+    true,
+  );
+  const retry = vi.spyOn(fixture.thread().runtime!, "act").mockResolvedValue();
+  const container = fixture.editor().view.dom.closest("section");
+  const button = Array.from(container?.querySelectorAll("button") ?? []).find(
+    (b) => b.textContent === "Retry preparing chat",
+  );
+  expect(button?.disabled).toBe(true);
+  await act(() => button?.click());
+  expect(retry).not.toHaveBeenCalled();
   expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha omega");
 });
 

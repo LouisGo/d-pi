@@ -23,7 +23,13 @@ function fixture() {
   roots.push(root);
   const file = join(root, "original.jsonl");
   const body =
-    JSON.stringify({ type: "title", title: "Original CLI" }) +
+    JSON.stringify({
+      type: "title",
+      v: 1,
+      title: "Original CLI",
+      updatedAt: "2026-10-08T00:00:00Z",
+      pad: "",
+    }) +
     "\n" +
     JSON.stringify({ type: "session", version: 3, id: "native", cwd: root }) +
     "\n";
@@ -71,4 +77,17 @@ it("does not follow a substituted symlink or accept a damaged header", async () 
     reason: "binding-changed",
     message: "Native recovery unavailable: binding-changed",
   });
+});
+
+it("rejects a malformed leading title slot before launching the SDK", async () => {
+  const f = fixture();
+  writeFileSync(
+    f.file,
+    JSON.stringify({ type: "title", title: "invalid" }) +
+      "\n" +
+      f.body.split("\n").slice(1).join("\n"),
+  );
+  await expect(
+    indexedSessionDirectory(f.root, f.binding, f.root),
+  ).rejects.toMatchObject({ reason: "binding-changed" });
 });

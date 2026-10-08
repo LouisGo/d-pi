@@ -532,7 +532,7 @@ export const ui = {
   "ui.runtime.phase.starting": "正在启动 OMP",
   "ui.runtime.phase.busy": "OMP 正在工作",
   "ui.runtime.phase.ready": "OMP 已就绪",
-  "ui.runtime.phase.interrupted": "只读会话 · 无法继续执行",
+  "ui.runtime.phase.interrupted": "连接中断",
   "ui.runtime.phase.failed": "OMP 尚未就绪",
   "ui.runtime.sectionLabel": "项目执行",
   "ui.runtime.model": "模型：{model}",

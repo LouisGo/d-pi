@@ -144,6 +144,7 @@ export class HostConnection {
   async start(
     command: HostStart,
     ready: (message: Ready) => void,
+    validateAdmission: () => void = () => {},
   ): Promise<void> {
     if (this.scopeId) return Promise.reject(Error("Host already connected"));
     this.startDispatched = false;
@@ -184,6 +185,8 @@ export class HostConnection {
     }
     let host: UtilityProcess;
     try {
+      // Recheck trust after asynchronous identity/ownership probes.
+      validateAdmission();
       host = hostProcess();
     } catch (error) {
       lease.release(true);
@@ -247,6 +250,7 @@ export class HostConnection {
                 this.scopeId === command.processInstanceId
               ) {
                 try {
+                  validateAdmission();
                   // Persist cleanup identity before granting permission to import SDK.
                   lease.register(actual);
                   nativeIdentity = actual;

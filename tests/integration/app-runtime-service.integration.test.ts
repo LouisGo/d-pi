@@ -33,6 +33,17 @@ vi.mock("../../src/platform/omp/resources/public", async (original) => ({
     entry: "/fixture/host.mjs",
   }),
 }));
+
+import { sessionExecutionOwners } from "../../src/platform/node/processes/public";
+
+vi.mock("../../src/platform/node/processes/public", async (original) => {
+  const actual =
+    await original<typeof import("../../src/platform/node/processes/public")>();
+  return {
+    ...actual,
+    sessionExecutionOwners: vi.fn(actual.sessionExecutionOwners),
+  };
+});
 const cleanup: (() => void)[] = [];
 afterEach(() => {
   for (const close of cleanup.splice(0)) close();
@@ -1273,6 +1284,72 @@ it("continues a CLI-origin binding through ordinary admission using its exact or
       ),
     });
     expect(fixture.store.drafts.read(fixture.draft.threadId)?.text).toBe("A");
+    fixture.host.emit("message", { kind: "scope-closed" });
+    await vi.waitFor(() => expect(runtime.hasActiveWork()).toBe(false));
+  } finally {
+    context.mockRestore();
+    indexed.mockRestore();
+  }
+});
+
+it("does not dispatch a CLI startup after trust is revoked during the owner probe", async () => {
+  const fixture = await running();
+  const binding = fixture.store.threads.nativeSessionBinding(
+    fixture.draft.threadId,
+  )!;
+  fixture.host.emit("message", { kind: "scope-closed" });
+  await vi.waitFor(() => expect(fixture.runtime.hasActiveWork()).toBe(false));
+  const originalContext = fixture.store.threads.threadContext(
+    fixture.draft.threadId,
+  );
+  const context = vi
+    .spyOn(fixture.store.threads, "threadContext")
+    .mockReturnValue({ ...originalContext, origin: "cli" });
+  const indexed = vi
+    .spyOn(fixture.store.threads, "nativeSessionBinding")
+    .mockReturnValue({ ...binding, origin: "cli", historyRoot: fixture.root });
+  const runtime = new RuntimeService(
+    fixture.store,
+    fixture.root,
+    fixture.root,
+    {},
+    () => {},
+    () => {},
+    () => {},
+    fixture.draft.threadId,
+    undefined,
+    async () => fixture.root,
+  );
+  let release!: (owners: number[]) => void;
+  vi.mocked(sessionExecutionOwners).mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        release = resolve;
+      }),
+  );
+  const command = {
+    threadId: fixture.draft.threadId,
+    traceId: crypto.randomUUID(),
+  };
+  const before = fixture.postMessage.mock.calls.length;
+  try {
+    const starting = runtime.execute({ ...command, kind: "start" });
+    await vi.waitFor(() => expect(release).toBeDefined());
+    await runtime.execute({ ...command, kind: "revoke" });
+    release([]);
+    const view = await starting;
+    expect(view.trusted).toBe(false);
+    expect(
+      fixture.postMessage.mock.calls
+        .slice(before)
+        .map(([raw]) => HostTransportCommandSchema.parse(raw).command.kind),
+    ).not.toContain("start");
+    expect(runtime.hasActiveWork()).toBe(false);
+    // Regrant and retry proves the rejected attempt released its lifetime lease.
+    await runtime.execute({ ...command, kind: "allow" });
+    expect((await runtime.execute({ ...command, kind: "start" })).phase).toBe(
+      "ready",
+    );
     fixture.host.emit("message", { kind: "scope-closed" });
     await vi.waitFor(() => expect(runtime.hasActiveWork()).toBe(false));
   } finally {

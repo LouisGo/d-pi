@@ -584,7 +584,7 @@ export const ui = {
   "ui.runtime.phase.starting": "Starting OMP",
   "ui.runtime.phase.busy": "OMP is working",
   "ui.runtime.phase.ready": "OMP is ready",
-  "ui.runtime.phase.interrupted": "Read-only session · execution unavailable",
+  "ui.runtime.phase.interrupted": "Connection interrupted",
   "ui.runtime.phase.failed": "OMP is not ready",
   "ui.runtime.sectionLabel": "Project execution",
   "ui.runtime.model": "Model: {model}",

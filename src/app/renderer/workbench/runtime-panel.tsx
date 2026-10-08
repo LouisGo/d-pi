@@ -301,11 +301,13 @@ function RuntimeActions({
           {t("ui.runtime.allow")}
         </Button>
       )}
-      {state.trusted && state.phase === "failed" && !state.busy && (
-        <Button onClick={() => void model.act("start")}>
-          {t("ui.runtime.retryStart")}
-        </Button>
-      )}
+      {state.trusted &&
+        (state.phase === "failed" || state.phase === "interrupted") &&
+        !state.busy && (
+          <Button onClick={() => void model.act("start")}>
+            {t("ui.runtime.retryStart")}
+          </Button>
+        )}
       {state.trusted && (
         <Button variant="ghost" onClick={() => void model.act("revoke")}>
           {t("ui.runtime.revoke")}

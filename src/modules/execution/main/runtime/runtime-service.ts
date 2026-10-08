@@ -318,6 +318,18 @@ export class RuntimeService {
             : uiMessage("runtime.noModel"),
         });
       },
+      () => {
+        const latest = this.store.threads.executionGrant(
+          thread.workingDirectoryId,
+        );
+        if (
+          launchAttempt !== this.launchGeneration ||
+          this.currentConnectionGeneration !== connectionGeneration ||
+          !latest ||
+          !sameDirectoryIdentity(latest, current)
+        )
+          throw Error("Execution grant changed during startup");
+      },
     );
     this.instanceDirectory = current;
     this.sessionStarted = true;

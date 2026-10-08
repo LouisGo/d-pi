@@ -51,7 +51,7 @@ export const domain = {
   "runtime.noModel":
     "No model is available. Complete the native OMP configuration first.",
   "runtime.disconnected":
-    "The native connection was interrupted. The draft and original input are retained and will not be resent automatically. Exclusive control of the native session for its full lifetime cannot be verified; history is read only, and recovery will not take over the session.",
+    "The native connection was interrupted. Your draft and history are retained without automatic resending. After shutdown is confirmed, retry preparing this chat to continue.",
   "runtime.controlFailed":
     "The control request did not complete. Check the current native state; it will not be retried automatically.",
   "runtime.queuePaused":
