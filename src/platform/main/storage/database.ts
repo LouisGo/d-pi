@@ -31,7 +31,8 @@ export class AppDatabase {
         version !== 9 &&
         version !== 10 &&
         version !== 11 &&
-        version !== 12
+        version !== 12 &&
+        version !== 13
       )
         throw new Error("Unsupported schema version");
       if (version === 0) {
@@ -80,7 +81,8 @@ export class AppDatabase {
         version !== 9 &&
         version !== 10 &&
         version !== 11 &&
-        version !== 12
+        version !== 12 &&
+        version !== 13
       ) {
         const temporary = `${path}.before-v3.${randomUUID()}.tmp`;
         try {
@@ -118,7 +120,8 @@ export class AppDatabase {
       this.originalVersion !== 9 &&
       this.originalVersion !== 10 &&
       this.originalVersion !== 11 &&
-      this.originalVersion !== 12
+      this.originalVersion !== 12 &&
+      this.originalVersion !== 13
     ) {
       const temporary = `${this.path}.before-v4.${randomUUID()}.tmp`;
       try {
@@ -141,7 +144,8 @@ export class AppDatabase {
       this.originalVersion !== 9 &&
       this.originalVersion !== 10 &&
       this.originalVersion !== 11 &&
-      this.originalVersion !== 12
+      this.originalVersion !== 12 &&
+      this.originalVersion !== 13
     ) {
       const temporary = `${this.path}.before-v5.${randomUUID()}.tmp`;
       try {
@@ -163,7 +167,8 @@ export class AppDatabase {
       this.originalVersion !== 9 &&
       this.originalVersion !== 10 &&
       this.originalVersion !== 11 &&
-      this.originalVersion !== 12
+      this.originalVersion !== 12 &&
+      this.originalVersion !== 13
     ) {
       const temporary = `${this.path}.before-v6.${randomUUID()}.tmp`;
       try {
@@ -182,7 +187,8 @@ export class AppDatabase {
       this.originalVersion !== 9 &&
       this.originalVersion !== 10 &&
       this.originalVersion !== 11 &&
-      this.originalVersion !== 12
+      this.originalVersion !== 12 &&
+      this.originalVersion !== 13
     ) {
       const temporary = `${this.path}.before-v7.${randomUUID()}.tmp`;
       try {
@@ -203,6 +209,7 @@ export class AppDatabase {
     this.migrateReferenceKinds();
     this.migrateNotificationPreferences();
     this.migrateNativeSessionIndex();
+    this.migrateModelPickerPreferences();
   }
   private migrateAttachments(): void {
     if (this.originalVersion >= 8) return;
@@ -314,6 +321,26 @@ export class AppDatabase {
         modified_at REAL NOT NULL
       );
       PRAGMA user_version=12;
+    `),
+    );
+  }
+
+  private migrateModelPickerPreferences(): void {
+    if (this.originalVersion >= 13) return;
+    const temporary = `${this.path}.before-v13.${randomUUID()}.tmp`;
+    try {
+      this.connection.prepare("VACUUM INTO ?").run(temporary);
+      renameSync(temporary, `${this.path}.before-v13`);
+    } finally {
+      rmSync(temporary, { force: true });
+    }
+    this.transaction(() =>
+      this.connection.exec(`
+      CREATE TABLE model_picker_preferences(
+        id INTEGER PRIMARY KEY CHECK(id=1),
+        payload TEXT NOT NULL CHECK(json_valid(payload))
+      );
+      PRAGMA user_version=13;
     `),
     );
   }
