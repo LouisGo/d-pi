@@ -1,0 +1,47 @@
+@layer components {
+  .composer-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--layout-gap);
+    min-width: 0;
+  }
+  .composer-toolbar-context {
+    display: flex;
+    flex: 1 1 calc(var(--control-height) * 10);
+    align-items: center;
+    gap: var(--region-gap);
+    min-width: 0;
+  }
+  .composer-toolbar-model,
+  .composer-toolbar-access {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .composer-toolbar-model > *,
+  .composer-toolbar-access > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .composer-toolbar-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .composer-toolbar-separator {
+    flex: 0 0 auto;
+    width: var(--separator-size);
+    height: calc(var(--control-height) / 2);
+    margin-inline: var(--region-gap);
+    background: var(--border);
+  }
+  .composer-toolbar-actions {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: var(--region-gap);
+    margin-inline-start: auto;
+  }
+}

@@ -1,0 +1,160 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /private/tmp/dpi-reference-preview-proof.RQ727i
+
+ ❯ tests/integration/attachment-reference-preview.integration.test.ts (10 tests | 9 failed) 147ms
+   × previews live project text without freezing its manifest, private bytes or execution permission 27ms
+   × previews a directory's current direct names and kinds without reading nested file bodies 14ms
+   × rejects escaped, missing and unsupported live sources with their actual typed cause 15ms
+   × bounds UTF-8 preview to 64 KiB and maps the real 25 MiB read guard to source-too-large 13ms
+   ✓ preserves the no-reader read boundary without publishing a preview snapshot 13ms
+   × preserves the denied read boundary without publishing a preview snapshot 13ms
+   × preserves the too-large read boundary without publishing a preview snapshot 13ms
+   × preserves the read-failed read boundary without publishing a preview snapshot 13ms
+   × preserves the not-current read boundary without publishing a preview snapshot 12ms
+   × preserves the over-limit read boundary without publishing a preview snapshot 13ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/attachment-reference-preview.integration.test.ts > previews live project text without freezing its manifest, private bytes or execution permission
+AssertionError: expected { kind: 'unavailable', …(1) } to deeply equal { kind: 'text', …(1) }
+
+- Expected
++ Received
+
+  {
+-   "kind": "text",
+-   "text": "export const beta = 1;
+- ",
++   "kind": "unavailable",
++   "reason": "reference-unavailable",
+  }
+
+ ❯ tests/integration/attachment-reference-preview.integration.test.ts:72:38
+     70|     );
+     71|     const before = f.manifest(item.id);
+     72|     expect(await f.preview(item.id)).toEqual({
+       |                                      ^
+     73|       kind: "text",
+     74|       text: "export const beta = 1;\n",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  tests/integration/attachment-reference-preview.integration.test.ts > previews a directory's current direct names and kinds without reading nested file bodies
+AssertionError: expected 'unavailable' to be 'text' // Object.is equality
+
+Expected: "text"
+Received: "unavailable"
+
+ ❯ tests/integration/attachment-reference-preview.integration.test.ts:114:24
+    112|     const before = f.manifest(item.id);
+    113|     const reply = await f.preview(item.id);
+    114|     expect(reply.kind).toBe("text");
+       |                        ^
+    115|     if (reply.kind !== "text") throw Error("missing listing");
+    116|     expect(JSON.parse(reply.text)).toEqual({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  tests/integration/attachment-reference-preview.integration.test.ts > rejects escaped, missing and unsupported live sources with their actual typed cause
+AssertionError: expected { kind: 'unavailable', …(1) } to deeply equal { kind: 'unavailable', …(1) }
+
+- Expected
++ Received
+
+  {
+    "kind": "unavailable",
+-   "reason": "reference-denied",
++   "reason": "reference-unavailable",
+  }
+
+ ❯ tests/integration/attachment-reference-preview.integration.test.ts:147:40
+    145|     ] as const) {
+    146|       const item = await f.service.store.addReference(f.draft.threadId…
+    147|       expect(await f.preview(item.id)).toEqual({ kind: "unavailable", …
+       |                                        ^
+    148|     }
+    149|   } finally {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  tests/integration/attachment-reference-preview.integration.test.ts > bounds UTF-8 preview to 64 KiB and maps the real 25 MiB read guard to source-too-large
+AssertionError: expected 'unavailable' to be 'text' // Object.is equality
+
+Expected: "text"
+Received: "unavailable"
+
+ ❯ tests/integration/attachment-reference-preview.integration.test.ts:162:26
+    160|     );
+    161|     const preview = await f.preview(text.id);
+    162|     expect(preview.kind).toBe("text");
+       |                          ^
+    163|     if (preview.kind !== "text") throw Error("missing text preview");
+    164|     expect(preview.truncated).toBe(true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  tests/integration/attachment-reference-preview.integration.test.ts > preserves the denied read boundary without publishing a preview snapshot
+ FAIL  tests/integration/attachment-reference-preview.integration.test.ts > preserves the not-current read boundary without publishing a preview snapshot
+AssertionError: expected { kind: 'unavailable', …(1) } to deeply equal { kind: 'unavailable', …(1) }
+
+- Expected
++ Received
+
+  {
+    "kind": "unavailable",
+-   "reason": "reference-denied",
++   "reason": "reference-unavailable",
+  }
+
+ ❯ tests/integration/attachment-reference-preview.integration.test.ts:226:62
+    224|       const item = await store.addReference(f.draft.threadId, "beta.ts…
+    225|       const before = f.manifest(item.id);
+    226|       expect(await store.preview(f.draft.threadId, item.id)).toEqual({
+       |                                                              ^
+    227|         kind: "unavailable",
+    228|         reason,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  tests/integration/attachment-reference-preview.integration.test.ts > preserves the too-large read boundary without publishing a preview snapshot
+ FAIL  tests/integration/attachment-reference-preview.integration.test.ts > preserves the over-limit read boundary without publishing a preview snapshot
+AssertionError: expected { kind: 'unavailable', …(1) } to deeply equal { kind: 'unavailable', …(1) }
+
+- Expected
++ Received
+
+  {
+    "kind": "unavailable",
+-   "reason": "source-too-large",
++   "reason": "reference-unavailable",
+  }
+
+ ❯ tests/integration/attachment-reference-preview.integration.test.ts:226:62
+    224|       const item = await store.addReference(f.draft.threadId, "beta.ts…
+    225|       const before = f.manifest(item.id);
+    226|       expect(await store.preview(f.draft.threadId, item.id)).toEqual({
+       |                                                              ^
+    227|         kind: "unavailable",
+    228|         reason,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+ FAIL  tests/integration/attachment-reference-preview.integration.test.ts > preserves the read-failed read boundary without publishing a preview snapshot
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ tests/integration/attachment-reference-preview.integration.test.ts:231:20
+    229|       });
+    230|       expect(f.manifest(item.id)).toBe(before);
+    231|       expect(read).toHaveBeenCalledTimes(mode === "no-reader" ? 0 : 1);
+       |                    ^
+    232|     } finally {
+    233|       await store.close();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  9 failed | 1 passed (10)
+   Start at  14:37:33
+   Duration  702ms (transform 38%, import 38%, tests 23%)
+

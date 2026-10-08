@@ -40,6 +40,8 @@ export function inspectSdk(root, sdkRoot, declared) {
     "model-selection.mjs",
     "native-queue.mjs",
     "reading-session.mjs",
+    "image-input.mjs",
+    "image-compression.mjs",
     "native-subagent-configuration.mjs",
     "BUN-LICENSE.md",
     "node_modules/@oh-my-pi/pi-coding-agent/package.json",
@@ -82,6 +84,8 @@ export function inspectSdk(root, sdkRoot, declared) {
     "model-selection.mjs",
     "native-queue.mjs",
     "reading-session.mjs",
+    "image-input.mjs",
+    "image-compression.mjs",
     "native-subagent-configuration.mjs",
   ]) {
     if (

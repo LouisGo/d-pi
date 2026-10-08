@@ -18,6 +18,9 @@ import { Submissions } from "./submissions";
 const diagnosticTraceId = crypto.randomUUID();
 const originalText = "用户提交原文\r\nKeep **Markdown** and 😀 unchanged";
 const refusalCopy = {
+  "content-missing": ["图片资源缺失", "Image resources are missing"],
+  "content-corrupt": ["完整性校验", "integrity"],
+  "transport-too-large": ["应用传输预算", "transport budget"],
   "image-unsupported": ["图像", "image"],
   "not-ready": ["会话尚未就绪", "session has no ready model"],
   "native-unavailable": ["原生会话未连接", "native session is not connected"],

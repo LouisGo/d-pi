@@ -1,0 +1,52 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/components/ui src/modules/ui/renderer
+$ tsr generate
+(node:87587) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/.codex/worktrees/composer-quality/d-pi
+
+ ✓ src/modules/ui/renderer/focus-visibility.test.ts (4 tests) 6ms
+ ✓ src/modules/ui/renderer/primitives.test.ts (3 tests) 18ms
+ ✓ src/app/renderer/components/ui/tab-strip.test.ts (1 test) 21ms
+ ✓ src/app/renderer/components/ui/hover-menu.test.ts (1 test) 62ms
+stderr | src/modules/ui/renderer/controls.test.ts > keeps four segmented choices controlled and skips disabled options with the keyboard
+An update to Sample inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to RadioGroup inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to CompositeRoot inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ ✓ src/modules/ui/renderer/controls.test.ts (5 tests) 92ms
+ ✓ src/app/renderer/components/ui/action-menu.test.ts (4 tests) 424ms
+
+ Test Files  6 passed (6)
+      Tests  18 passed (18)
+   Start at  15:47:01
+   Duration  2.67s (import 74%, environment 16%, tests 5%, transform 4%)
+

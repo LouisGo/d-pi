@@ -1,0 +1,345 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/components/ui/action-menu.test.ts src/app/renderer/workbench/composer-toolbar.test.ts
+$ tsr generate
+(node:74300) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/.codex/worktrees/composer-toolbar/d-pi
+
+ ❯ src/app/renderer/workbench/composer-toolbar.test.ts (3 tests | 1 failed) 112ms
+   ✓ preserves real model/access/primary slots with a separated left group and compact right actions 23ms
+   × keeps attach direct, disables it alone, and exposes controlled expand/collapse state 13ms
+   ✓ keeps reference/cache/shortcut actions in the menu and reflects the current preference 76ms
+ ❯ src/app/renderer/components/ui/action-menu.test.ts (4 tests | 2 failed) 394ms
+   ✓ does not open on hover and exposes a named menu trigger 179ms
+   ✓ opens with ArrowDown, navigates items and returns focus on Escape 143ms
+   × executes an enabled click once, ignores disabled actions and closes 22ms
+   × exposes controlled preference state, descriptions and groups, and selects once by keyboard 49ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/renderer/workbench/composer-toolbar.test.ts > keeps attach direct, disables it alone, and exposes controlled expand/collapse state
+AssertionError: expected <span role="separator" …(2)></span> to be null
+
+- Expected:
+null
+
++ Received:
+<span
+  aria-orientation="vertical"
+  class="composer-toolbar-separator"
+  role="separator"
+/>
+
+ ❯ src/app/renderer/workbench/composer-toolbar.test.ts:110:5
+    108|       '[data-slot="composer-toolbar-context"] [role="separator"]',
+    109|     ),
+    110|   ).toBeNull();
+       |     ^
+    111| });
+    112|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/app/renderer/components/ui/action-menu.test.ts > executes an enabled click once, ignores disabled actions and closes
+AssertionError: expected "vi.fn()" to be called with arguments: []
+
+Received:
+
+  1st vi.fn() call:
+
+- []
++ [
++   SyntheticBaseEvent {
++     "_reactName": "onClick",
++     "_targetInst": null,
++     "altKey": false,
++     "bubbles": true,
++     "button": 0,
++     "buttons": 0,
++     "cancelable": true,
++     "clientX": 0,
++     "clientY": 0,
++     "ctrlKey": false,
++     "currentTarget": null,
++     "defaultPrevented": false,
++     "detail": 0,
++     "eventPhase": 3,
++     "getModifierState": [Function modifierStateGetter],
++     "isDefaultPrevented": [Function functionThatReturnsFalse],
++     "isPropagationStopped": [Function functionThatReturnsFalse],
++     "isTrusted": undefined,
++     "metaKey": false,
++     "movementX": 0,
++     "movementY": 0,
++     "nativeEvent": PointerEvent {
++       "AT_TARGET": 2,
++       "BUBBLING_PHASE": 3,
++       "CAPTURING_PHASE": 1,
++       "NONE": 0,
++       "altKey": false,
++       "altitudeAngle": 0,
++       "azimuthAngle": 0,
++       "button": 0,
++       "buttons": 0,
++       "clientX": 0,
++       "clientY": 0,
++       "coalescedEvents": [],
++       "ctrlKey": false,
++       "detail": 0,
++       "getCoalescedEvents": [Function getCoalescedEvents],
++       "getPredictedEvents": [Function getPredictedEvents],
++       "height": 1,
++       "isPrimary": false,
++       "layerX": 0,
++       "layerY": 0,
++       "metaKey": false,
++       "movementX": 0,
++       "movementY": 0,
++       "offsetX": 0,
++       "offsetY": 0,
++       "pageX": 0,
++       "pageY": 0,
++       "pointerId": 0,
++       "pointerType": "",
++       "predictedEvents": [],
++       "pressure": 0,
++       "region": "",
++       "relatedTarget": null,
++       "screenX": 0,
++       "screenY": 0,
++       "shiftKey": false,
++       "tangentialPressure": 0,
++       "tiltX": 0,
++       "tiltY": 0,
++       "twist": 0,
++       "view": null,
++       "width": 1,
++       Symbol(composed): true,
++       Symbol(bubbles): true,
++       Symbol(cancelable): true,
++       Symbol(defaultPrevented): false,
++       Symbol(eventPhase): 0,
++       Symbol(timeStamp): 1835.389833,
++       Symbol(type): "click",
++       Symbol(dispatching): false,
++       Symbol(immediatePropagationStopped): false,
++       Symbol(propagationStopped): false,
++       Symbol(target): <div
++         aria-label="Reference"
++         class="ui-action-menu-item"
++         id="base-ui-_r_r_"
++         role="menuitem"
++         tabindex="-1"
++       >
++         <span
++           aria-hidden="true"
++           class="ui-action-menu-indicator"
++         />
++         <span
++           class="ui-action-menu-content"
++         >
++           <span>
++             Reference
++           </span>
++         </span>
++       </div>,
++       Symbol(currentTarget): null,
++       Symbol(isInPassiveEventListener): false,
++     },
++     "pageX": 0,
++     "pageY": 0,
++     "preventBaseUIHandler": [Function anonymous],
++     "relatedTarget": null,
++     "screenX": 0,
++     "screenY": 0,
++     "shiftKey": false,
++     "target": <div
++       aria-label="Reference"
++       class="ui-action-menu-item"
++       id="base-ui-_r_r_"
++       role="menuitem"
++       tabindex="-1"
++     >
++       <span
++         aria-hidden="true"
++         class="ui-action-menu-indicator"
++       />
++       <span
++         class="ui-action-menu-content"
++       >
++         <span>
++           Reference
++         </span>
++       </span>
++     </div>,
++     "timeStamp": 1835.389833,
++     "type": "click",
++     "view": null,
++   },
++ ]
+
+
+Number of calls: 1
+
+ ❯ src/app/renderer/components/ui/action-menu.test.ts:104:20
+    102|   await act(() => items[0]?.click());
+    103|   expect(selected).toHaveBeenCalledTimes(1);
+    104|   expect(selected).toHaveBeenCalledWith();
+       |                    ^
+    105|   expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    106| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/app/renderer/components/ui/action-menu.test.ts > exposes controlled preference state, descriptions and groups, and selects once by keyboard
+AssertionError: expected "vi.fn()" to be called with arguments: []
+
+Received:
+
+  1st vi.fn() call:
+
+- []
++ [
++   false,
++   {
++     "allowPropagation": [Function allowPropagation],
++     "cancel": [Function cancel],
++     "event": PointerEvent {
++       "AT_TARGET": 2,
++       "BUBBLING_PHASE": 3,
++       "CAPTURING_PHASE": 1,
++       "NONE": 0,
++       "altKey": false,
++       "altitudeAngle": 0,
++       "azimuthAngle": 0,
++       "button": 0,
++       "buttons": 0,
++       "clientX": 0,
++       "clientY": 0,
++       "coalescedEvents": [],
++       "ctrlKey": false,
++       "detail": 0,
++       "getCoalescedEvents": [Function getCoalescedEvents],
++       "getPredictedEvents": [Function getPredictedEvents],
++       "height": 1,
++       "isPrimary": false,
++       "layerX": 0,
++       "layerY": 0,
++       "metaKey": false,
++       "movementX": 0,
++       "movementY": 0,
++       "offsetX": 0,
++       "offsetY": 0,
++       "pageX": 0,
++       "pageY": 0,
++       "pointerId": 0,
++       "pointerType": "",
++       "predictedEvents": [],
++       "pressure": 0,
++       "region": "",
++       "relatedTarget": null,
++       "screenX": 0,
++       "screenY": 0,
++       "shiftKey": false,
++       "tangentialPressure": 0,
++       "tiltX": 0,
++       "tiltY": 0,
++       "twist": 0,
++       "view": null,
++       "width": 1,
++       Symbol(composed): true,
++       Symbol(bubbles): true,
++       Symbol(cancelable): true,
++       Symbol(defaultPrevented): false,
++       Symbol(eventPhase): 0,
++       Symbol(timeStamp): 1857.045125,
++       Symbol(type): "click",
++       Symbol(dispatching): false,
++       Symbol(immediatePropagationStopped): false,
++       Symbol(propagationStopped): false,
++       Symbol(target): <div
++         aria-checked="true"
++         aria-description="Enter sends · Shift+Enter newline"
++         aria-label="Enter sends"
++         class="ui-action-menu-item"
++         data-checked=""
++         id="base-ui-_r_17_"
++         role="menuitemcheckbox"
++         tabindex="-1"
++       >
++         <span
++           aria-hidden="true"
++           class="ui-action-menu-indicator"
++         >
++           <span
++             aria-hidden="true"
++             data-checked=""
++           >
++             <svg
++               aria-hidden="true"
++               class=""
++               color="currentColor"
++               fill="none"
++               focusable="false"
++               height="16"
++               stroke="currentColor"
++               stroke-width="1.5"
++               viewBox="0 0 24 24"
++               width="16"
++               xmlns="http://www.w3.org/2000/svg"
++             >
++               <path
++                 d="M5 14L8.5 17.5L19 6.5"
++                 stroke="currentColor"
++                 stroke-linecap="round"
++                 stroke-linejoin="round"
++                 stroke-width="1.5"
++               />
++             </svg>
++           </span>
++         </span>
++         <span
++           class="ui-action-menu-content"
++         >
++           <span>
++             Enter sends
++           </span>
++           <span
++             class="ui-action-menu-description"
++           >
++             Enter sends · Shift+Enter newline
++           </span>
++         </span>
++       </div>,
++       Symbol(currentTarget): null,
++       Symbol(isInPassiveEventListener): false,
++     },
++     "isCanceled": false,
++     "isPropagationAllowed": false,
++     "preventUnmountOnClose": [Function NOOP],
++     "reason": "item-press",
++     "trigger": undefined,
++   },
++ ]
+
+
+Number of calls: 1
+
+ ❯ src/app/renderer/components/ui/action-menu.test.ts:133:20
+    131|   await key(option, "Enter");
+    132|   expect(selected).toHaveBeenCalledTimes(1);
+    133|   expect(selected).toHaveBeenCalledWith();
+       |                    ^
+    134|   expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    135|   await render([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  3 failed | 4 passed (7)
+   Start at  15:15:48
+   Duration  1.92s (import 71%, tests 15%, environment 10%, transform 4%)
+
+[ELIFECYCLE] Test failed. See above for more details.

@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "4a519647fd1128630c9e658637246b8ab608a05bc82ecaee59cc7b5a118a2b0a",
+  "inputsHash": "7210ec228f7f886ec005286f8b58e5d0412e575fa2d124a13480095df9d83c95",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 453,
-    "scannedFiles": 453,
+    "sourceFiles": 486,
+    "scannedFiles": 486,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 196,
-      "lines": 35954,
+      "files": 211,
+      "lines": 39727,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -59,8 +59,8 @@
         "omp"
       ],
       "materialized": true,
-      "files": 30,
-      "lines": 3169,
+      "files": 33,
+      "lines": 3543,
       "publicEntries": [
         {
           "path": "src/platform/main/storage/public.ts",
@@ -89,6 +89,10 @@
         {
           "path": "src/platform/omp/resources/public.ts",
           "exists": true
+        },
+        {
+          "path": "src/platform/node/images/public.ts",
+          "exists": true
         }
       ],
       "testPublicEntries": []
@@ -101,8 +105,8 @@
       ],
       "defaultEnvironment": "shared",
       "materialized": true,
-      "files": 20,
-      "lines": 2774,
+      "files": 21,
+      "lines": 2918,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -138,6 +142,10 @@
         },
         {
           "path": "src/shared/read-operation.ts",
+          "exists": true
+        },
+        {
+          "path": "src/shared/image-policy.ts",
           "exists": true
         }
       ],
@@ -185,8 +193,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 49,
-      "lines": 8874,
+      "files": 61,
+      "lines": 13625,
       "publicEntries": [
         {
           "path": "src/modules/input/contracts/public.ts",
@@ -327,7 +335,7 @@
       ],
       "materialized": true,
       "files": 58,
-      "lines": 13486,
+      "lines": 13663,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -360,8 +368,8 @@
       ],
       "defaultEnvironment": "omp",
       "materialized": true,
-      "files": 12,
-      "lines": 2398,
+      "files": 14,
+      "lines": 2752,
       "publicEntries": [
         {
           "path": "runtime/host.mjs",
@@ -405,7 +413,7 @@
       ],
       "materialized": true,
       "files": 10,
-      "lines": 1060,
+      "lines": 1197,
       "publicEntries": [
         {
           "path": "src/modules/ui/renderer/public.ts",
@@ -738,6 +746,12 @@
       "module": "input",
       "environment": "main",
       "dependency": "threads",
+      "testOnly": false
+    },
+    {
+      "module": "input",
+      "environment": "main",
+      "dependency": "shared",
       "testOnly": false
     },
     {
@@ -1301,6 +1315,13 @@
     {
       "module": "app",
       "environment": "renderer",
+      "dependency": "input",
+      "targetEnvironment": "renderer",
+      "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "renderer",
       "dependency": "execution",
       "targetEnvironment": "contracts",
       "testOnly": true
@@ -1485,13 +1506,6 @@
       "environment": "renderer",
       "dependency": "input",
       "targetEnvironment": "core",
-      "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "renderer",
-      "dependency": "input",
-      "targetEnvironment": "renderer",
       "testOnly": false
     },
     {
@@ -1688,6 +1702,20 @@
       "environment": "main",
       "dependency": "platform",
       "targetEnvironment": "main",
+      "testOnly": false
+    },
+    {
+      "module": "input",
+      "environment": "main",
+      "dependency": "platform",
+      "targetEnvironment": "node",
+      "testOnly": false
+    },
+    {
+      "module": "input",
+      "environment": "main",
+      "dependency": "shared",
+      "targetEnvironment": "shared",
       "testOnly": false
     },
     {
@@ -2731,6 +2759,99 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/main/lifecycle/application.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/ipc/attachment-document.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:events",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/attachment-document.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/attachment-document.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/attachment-document.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/attachment-document.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/attachment-document.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../contracts/attachments",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/attachments.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/main/ipc/attachment-document.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../wiring/app-storage",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/app-storage.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/ipc/attachment-document.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../wiring/attachment-service",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/attachment-service.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/ipc/attachment-document.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./attachments",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/ipc/attachments.ts",
       "targetModule": "app",
       "targetEnvironment": "main"
     },
@@ -4833,6 +4954,30 @@
       "sourceModule": "app",
       "sourceEnvironment": "main",
       "test": false,
+      "specifier": "../../../platform/node/images/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/node/images/public.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "node"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-service.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../platform/omp/resources/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/omp/resources/public.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "omp"
+    },
+    {
+      "from": "src/app/main/wiring/attachment-service.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
       "specifier": "../../contracts/attachments",
       "kind": "import",
       "resolution": "module",
@@ -6722,6 +6867,60 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/app/renderer/components/icons/composer.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@hugeicons/core-free-icons",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/icons/composer.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@hugeicons/react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/icons/composer.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./common",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/icons/common.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/components/icons/file-type.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../../modules/input/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/components/icons/file-type.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./common",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/icons/common.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/app/renderer/components/receipt-status.test.ts",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -6831,6 +7030,108 @@
       "to": "src/shared/i18n/create-i18n.ts",
       "targetModule": "shared",
       "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/app/renderer/components/ui/action-menu.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/ui/action-menu.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react-dom/client",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/ui/action-menu.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/ui/action-menu.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./action-menu",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/ui/action-menu.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/components/ui/action-menu.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@base-ui/react/menu",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/ui/action-menu.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/ui/action-menu.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "ts-pattern",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/ui/action-menu.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../../modules/ui/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/components/ui/action-menu.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../icons/composer",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/icons/composer.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/components/ui/action-menu.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./tooltip",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/ui/tooltip.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/app/renderer/components/ui/hover-menu.test.ts",
@@ -12697,6 +12998,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": true,
+      "specifier": "../../../modules/input/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/app/renderer/wiring/thread-attachments.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
       "specifier": "../../contracts/desktop-bridge",
       "kind": "import",
       "resolution": "module",
@@ -12706,6 +13019,51 @@
     },
     {
       "from": "src/app/renderer/wiring/thread-attachments.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./thread-model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/wiring/thread-model.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/wiring/thread-imports.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/wiring/thread-imports.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/input/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/wiring/thread-imports.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../contracts/desktop-bridge",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/desktop-bridge.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/wiring/thread-imports.test.ts",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": true,
@@ -12967,6 +13325,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": true,
+      "specifier": "../../../modules/ui/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
       "specifier": "../../../shared/i18n/create-i18n",
       "kind": "import",
       "resolution": "module",
@@ -13159,11 +13529,251 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "./attachment-import-batches",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/attachment-import-batches.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./attachment-manager",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/attachment-manager.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./attachment-preview",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/attachment-preview.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./composer-attachments",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/composer-attachments.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./reference-suggestions",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/reference-suggestions.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-import-batches.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tiptap/core",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-import-batches.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "zustand",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-import-batches.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/input/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-import-batches.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-import-batches.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/ui/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-manager.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-manager.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/input/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-manager.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/input/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-manager.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-manager.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/ui/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-manager.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "../components/icons/common",
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/components/icons/common.tsx",
       "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-manager.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../components/ui/modal",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/ui/modal.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-preview.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-preview.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/input/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-preview.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/input/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-preview.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-preview.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/ui/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
       "targetEnvironment": "renderer"
     },
     {
@@ -13222,6 +13832,75 @@
       "to": "src/app/contracts/attention.ts",
       "targetModule": "app",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-attachments.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tanstack/react-query",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-attachments.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/input/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-attachments.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-attachments.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/ui/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-attachments.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../contracts/attachments",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/attachments.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-attachments.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../components/icons/common",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/icons/common.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/app/renderer/workbench/composer-binding.test.ts",
@@ -13725,6 +14404,102 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/app/renderer/workbench/composer-toolbar.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-toolbar.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react-dom/client",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-toolbar.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-toolbar.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./composer-toolbar",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/composer-toolbar.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-toolbar.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-toolbar.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../components/icons/common",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/icons/common.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-toolbar.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../components/icons/composer",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/icons/composer.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-toolbar.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../components/ui/action-menu",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/ui/action-menu.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer-toolbar.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../components/ui/icon-button",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/ui/icon-button.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/app/renderer/workbench/composer.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -13849,6 +14624,30 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "../components/icons/common",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/icons/common.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../components/icons/composer",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/icons/composer.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "../wiring/model",
       "kind": "import",
       "resolution": "module",
@@ -13885,12 +14684,33 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "./composer-toolbar",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/composer-toolbar.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "./url-decoration",
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/workbench/url-decoration.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/composer.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tiptap/pm/model",
+      "kind": "dynamic-import",
+      "resolution": "external"
     },
     {
       "from": "src/app/renderer/workbench/editor-context.ts",
@@ -14177,6 +14997,69 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/workbench/refresh-state.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/file-type-badge.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/file-type-badge.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react-dom/client",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/file-type-badge.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/file-type-badge.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./file-type-badge",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/file-type-badge.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/file-type-badge.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/input/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/file-type-badge.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../components/icons/file-type",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/icons/file-type.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -14550,6 +15433,75 @@
       "resolution": "module",
       "to": "src/modules/ui/renderer/public.ts",
       "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/reference-suggestions.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/reference-suggestions.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/files/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/files/contracts/public.ts",
+      "targetModule": "files",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/reference-suggestions.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/reference-suggestions.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/ui/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/reference-suggestions.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../components/icons/common",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/icons/common.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/reference-suggestions.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./file-type-badge",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/file-type-badge.tsx",
+      "targetModule": "app",
       "targetEnvironment": "renderer"
     },
     {
@@ -15884,6 +16836,123 @@
       "kind": "export",
       "resolution": "module",
       "to": "src/platform/node/filesystem/directory.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "node"
+    },
+    {
+      "from": "src/platform/node/images/image-compression.test.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": true,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/node/images/image-compression.test.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/node/images/image-compression.test.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/node/images/image-compression.test.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": true,
+      "specifier": "node:url",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/node/images/image-compression.test.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": true,
+      "specifier": "node:zlib",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/node/images/image-compression.test.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/node/images/image-compression.test.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": true,
+      "specifier": "./image-compression",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/node/images/image-compression.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "node"
+    },
+    {
+      "from": "src/platform/node/images/image-compression.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": false,
+      "specifier": "node:child_process",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/node/images/image-compression.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": false,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/node/images/image-compression.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/node/images/image-compression.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": false,
+      "specifier": "../../../shared/image-policy",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/image-policy.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/platform/node/images/public.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": false,
+      "specifier": "./image-compression",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/platform/node/images/image-compression.ts",
       "targetModule": "platform",
       "targetEnvironment": "node"
     },
@@ -17632,6 +18701,18 @@
       "resolution": "external"
     },
     {
+      "from": "src/modules/input/contracts/attachment.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "../../../shared/image-policy",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/image-policy.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
       "from": "src/modules/input/contracts/clipboard.ts",
       "sourceModule": "input",
       "sourceEnvironment": "contracts",
@@ -17742,6 +18823,18 @@
       "kind": "export",
       "resolution": "module",
       "to": "src/modules/input/contracts/draft.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/core/attachments/attachment-kind.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
       "targetModule": "input",
       "targetEnvironment": "contracts"
     },
@@ -17902,6 +18995,51 @@
       "targetEnvironment": "contracts"
     },
     {
+      "from": "src/modules/input/core/attachments/tokens.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/core/attachments/tokens.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "../references/serialize",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/references/serialize.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/core/attachments/tokens.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "./tokens",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/attachments/tokens.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/core/attachments/tokens.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "../references/serialize",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/references/serialize.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
       "from": "src/modules/input/core/draft-consumption.test.ts",
       "sourceModule": "input",
       "sourceEnvironment": "core",
@@ -18023,6 +19161,30 @@
       "to": "src/modules/input/contracts/draft.ts",
       "targetModule": "input",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/core/draft-controller.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "./attachments/tokens",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/attachments/tokens.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/core/draft-controller.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "./references/serialize",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/references/serialize.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
     },
     {
       "from": "src/modules/input/core/public.ts",
@@ -18221,6 +19383,18 @@
       "sourceModule": "input",
       "sourceEnvironment": "main",
       "test": true,
+      "specifier": "../../core/references/serialize",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/references/serialize.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/main/attachments/attachment-store.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": true,
       "specifier": "./attachment-store",
       "kind": "import",
       "resolution": "module",
@@ -18293,6 +19467,30 @@
       "to": "src/platform/main/storage/public.ts",
       "targetModule": "platform",
       "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/input/main/attachments/attachment-store.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../../platform/node/images/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/node/images/public.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "node"
+    },
+    {
+      "from": "src/modules/input/main/attachments/attachment-store.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../../shared/image-policy",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/image-policy.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
     },
     {
       "from": "src/modules/input/main/attachments/attachment-store.ts",
@@ -18587,6 +19785,18 @@
       "sourceModule": "input",
       "sourceEnvironment": "main",
       "test": true,
+      "specifier": "../../core/attachments/editor-history-model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/attachments/editor-history-model.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/main/attachments/editor-history.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": true,
       "specifier": "./editor-history",
       "kind": "import",
       "resolution": "module",
@@ -18614,6 +19824,18 @@
       "to": "src/modules/input/contracts/public.ts",
       "targetModule": "input",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/main/attachments/editor-history.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../core/attachments/attachment-kind",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/attachments/attachment-kind.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
     },
     {
       "from": "src/modules/input/main/attachments/editor-history.ts",
@@ -18785,6 +20007,15 @@
       "sourceModule": "input",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "ts-pattern",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/attachments/attachment-imports.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "zustand/vanilla",
       "kind": "import",
       "resolution": "external"
@@ -18800,6 +20031,84 @@
       "to": "src/modules/input/contracts/public.ts",
       "targetModule": "input",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/renderer/attachments/import-batch.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tiptap/core",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/attachments/import-batch.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/attachments/import-batch.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/renderer/attachments/import-batch.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../editor/edit-action-history",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/editor/edit-action-history.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/attachments/import-batch.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../editor/plain-text-editor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/editor/plain-text-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/attachments/import-batch.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../references/attachment-editor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/attachment-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/attachments/import-batch.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./attachment-imports",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/attachments/attachment-imports.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/modules/input/renderer/clipboard/plain-text-paste.test.ts",
@@ -19193,10 +20502,58 @@
       "sourceModule": "input",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "../../core/draft-controller",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/draft-controller.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/renderer/clipboard/trusted-clipboard.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../core/references/serialize",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/references/serialize.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/renderer/clipboard/trusted-clipboard.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "../editor/plain-text-editor",
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/input/renderer/editor/plain-text-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/clipboard/trusted-clipboard.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../references/attachment-adoption",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/attachment-adoption.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/clipboard/trusted-clipboard.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../references/attachment-reference",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/attachment-reference.ts",
       "targetModule": "input",
       "targetEnvironment": "renderer"
     },
@@ -19634,10 +20991,34 @@
       "sourceModule": "input",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "./editor/edit-action-history",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/editor/edit-action-history.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/public.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "./editor/plain-text-editor",
       "kind": "export",
       "resolution": "module",
       "to": "src/modules/input/renderer/editor/plain-text-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/public.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./references/attachment-adoption",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/attachment-adoption.ts",
       "targetModule": "input",
       "targetEnvironment": "renderer"
     },
@@ -19670,10 +21051,34 @@
       "sourceModule": "input",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "./references/file-presentation",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/file-presentation.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/public.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "./references/file-reference-node",
       "kind": "export",
       "resolution": "module",
       "to": "src/modules/input/renderer/references/file-reference-node.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/public.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./references/reference-interaction",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/reference-interaction.ts",
       "targetModule": "input",
       "targetEnvironment": "renderer"
     },
@@ -19690,6 +21095,66 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/modules/input/renderer/public.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./references/suggestion-controller",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/suggestion-controller.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-adoption.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-adoption.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../core/attachments/attachment-kind",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/attachments/attachment-kind.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-adoption.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../core/draft-controller",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/draft-controller.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-adoption.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../core/attachments/attachment-kind",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/input/core/attachments/attachment-kind.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
       "from": "src/modules/input/renderer/references/attachment-editor.ts",
       "sourceModule": "input",
       "sourceEnvironment": "renderer",
@@ -19697,6 +21162,36 @@
       "specifier": "@tiptap/core",
       "kind": "import",
       "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-editor.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tiptap/pm/model",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-editor.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tiptap/pm/state",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-editor.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../../shared/i18n/locale",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/i18n/locale.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
     },
     {
       "from": "src/modules/input/renderer/references/attachment-editor.ts",
@@ -19727,10 +21222,70 @@
       "sourceModule": "input",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "../../core/draft-controller",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/draft-controller.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-editor.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../attachments/attachment-imports",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/attachments/attachment-imports.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-editor.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../editor/plain-text-editor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/editor/plain-text-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-editor.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./attachment-adoption",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/attachment-adoption.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-editor.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "./attachment-reference",
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/input/renderer/references/attachment-reference.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-editor.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./suggestion-controller",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/suggestion-controller.ts",
       "targetModule": "input",
       "targetEnvironment": "renderer"
     },
@@ -19833,6 +21388,15 @@
       "sourceEnvironment": "renderer",
       "test": false,
       "specifier": "@tiptap/core",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-reference.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tiptap/pm/model",
       "kind": "import",
       "resolution": "external"
     },
@@ -19859,12 +21423,336 @@
       "sourceModule": "input",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "../../../../shared/i18n/create-i18n",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/i18n/create-i18n.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-reference.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../../shared/i18n/locale",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/i18n/locale.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-reference.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "../../contracts/public",
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/input/contracts/public.ts",
       "targetModule": "input",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/renderer/references/attachment-reference.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./file-presentation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/file-presentation.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/context-presentation.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tiptap/core",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/context-presentation.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tiptap/pm/state",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/context-presentation.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/context-presentation.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/renderer/references/context-presentation.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../editor/plain-text-editor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/editor/plain-text-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/context-presentation.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./attachment-editor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/attachment-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/context-presentation.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./attachment-reference",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/attachment-reference.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/context-presentation.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./reference-interaction",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/reference-interaction.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/detached-images.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tiptap/core",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/detached-images.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tiptap/pm/history",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/detached-images.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/detached-images.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../files/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/files/core/public.ts",
+      "targetModule": "files",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/renderer/references/detached-images.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/renderer/references/detached-images.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../core/attachments/attachment-model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/attachments/attachment-model.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/renderer/references/detached-images.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../core/draft-controller",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/draft-controller.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/renderer/references/detached-images.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../core/references/serialize",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/references/serialize.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/renderer/references/detached-images.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../attachments/attachment-imports",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/attachments/attachment-imports.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/detached-images.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../clipboard/trusted-clipboard",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/clipboard/trusted-clipboard.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/detached-images.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../editor/draft-editor-cache",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/editor/draft-editor-cache.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/detached-images.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../editor/plain-text-editor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/editor/plain-text-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/detached-images.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./attachment-adoption",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/attachment-adoption.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/detached-images.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./attachment-editor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/attachment-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/detached-images.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./suggestion-controller",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/suggestion-controller.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/file-presentation.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/file-presentation.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./file-presentation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/file-presentation.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/file-presentation.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "ts-pattern",
+      "kind": "import",
+      "resolution": "external"
     },
     {
       "from": "src/modules/input/renderer/references/file-reference-node.ts",
@@ -19895,6 +21783,144 @@
       "to": "src/modules/input/core/references/serialize.ts",
       "targetModule": "input",
       "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/renderer/references/reference-interaction.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tiptap/core",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/reference-interaction.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tiptap/pm/state",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/reference-interaction.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/reference-interaction.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/input/renderer/references/reference-interaction.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../editor/plain-text-editor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/editor/plain-text-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/reference-interaction.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./attachment-editor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/attachment-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/reference-interaction.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./reference-interaction",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/reference-interaction.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/reference-interaction.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./suggestion-controller",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/suggestion-controller.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/reference-interaction.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tiptap/core",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/reference-interaction.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tiptap/pm/state",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/reference-interaction.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../editor/plain-text-editor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/editor/plain-text-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/reference-interaction.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./attachment-reference",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/attachment-reference.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/reference-interaction.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tiptap/pm/model",
+      "kind": "dynamic-import",
+      "resolution": "external"
     },
     {
       "from": "src/modules/input/renderer/references/selection-insert.test.ts",
@@ -19991,6 +22017,99 @@
       "to": "src/modules/files/core/public.ts",
       "targetModule": "files",
       "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/renderer/references/suggestion-controller.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tiptap/core",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/suggestion-controller.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tiptap/pm/state",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/suggestion-controller.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/suggestion-controller.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../editor/plain-text-editor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/editor/plain-text-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/suggestion-controller.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./suggestion-controller",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/suggestion-controller.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/suggestion-controller.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tiptap/core",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/suggestion-controller.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tiptap/pm/state",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/input/renderer/references/suggestion-controller.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../editor/plain-text-editor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/editor/plain-text-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/suggestion-controller.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./attachment-reference",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/attachment-reference.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/modules/changes/contracts/public.ts",
@@ -23621,6 +25740,18 @@
       "sourceModule": "execution",
       "sourceEnvironment": "main",
       "test": false,
+      "specifier": "../../../../shared/image-policy",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/image-policy.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/modules/execution/main/runtime/runtime-service.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
       "specifier": "../../../../shared/messages/contracts",
       "kind": "import",
       "resolution": "module",
@@ -25125,6 +27256,18 @@
       "sourceModule": "runtime",
       "sourceEnvironment": "omp",
       "test": false,
+      "specifier": "./image-input.mjs",
+      "kind": "import",
+      "resolution": "module",
+      "to": "runtime/image-input.mjs",
+      "targetModule": "runtime",
+      "targetEnvironment": "omp"
+    },
+    {
+      "from": "runtime/host.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
       "specifier": "./model-selection.mjs",
       "kind": "import",
       "resolution": "module",
@@ -25167,6 +27310,42 @@
       "to": "runtime/reading-session.mjs",
       "targetModule": "runtime",
       "targetEnvironment": "omp"
+    },
+    {
+      "from": "runtime/image-input.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/image-input.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/image-input.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "node:fs/promises",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/image-input.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
     },
     {
       "from": "runtime/model-selection.mjs",

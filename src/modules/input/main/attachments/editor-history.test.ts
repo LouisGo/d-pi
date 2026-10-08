@@ -1,5 +1,6 @@
 import { expect, it } from "vitest";
-import { AttachmentSchema } from "../../contracts/public";
+import { AttachmentSchema, DraftSchema } from "../../contracts/public";
+import { EditorHistoryModel } from "../../core/attachments/editor-history-model";
 import { EditorHistoryLeases } from "./editor-history";
 
 it("enforces distinct-object byte and cumulative source budgets without releasing the previously protected epoch", () => {
@@ -148,4 +149,179 @@ it("refreshes same-ID digests for every owning epoch on Main publication without
     }),
   ).toBe(true);
   expect(pins.size).toBe(0);
+});
+it("retires Main-confirmed external images while preserving file IDs and all their old shared digests", () => {
+  const threadId = crypto.randomUUID(),
+    imageId = crypto.randomUUID(),
+    fileId = crypto.randomUUID(),
+    referenceId = crypto.randomUUID();
+  const make = (id: string, mimeType: string, inputDigest: string) => ({
+    attachment: AttachmentSchema.parse({
+      schemaVersion: 1,
+      id,
+      threadId,
+      token: `[[dpi-attachment:${id}]]`,
+      name: "source",
+      mimeType,
+      byteLength: 4,
+      capturedAt: new Date().toISOString(),
+      source: "file",
+      status: "ready",
+      representation: "text",
+      coverageGaps: [],
+      textOnly: false,
+      inputDigest,
+    }),
+    derivedDigest: undefined as string | undefined,
+  });
+  const a = "a".repeat(64),
+    b = "b".repeat(64),
+    c = "c".repeat(64);
+  let image = make(imageId, "application/octet-stream", b);
+  let file = make(fileId, "text/plain", a);
+  const reference = make(referenceId, "image/png", b);
+  reference.attachment = {
+    ...reference.attachment,
+    source: "reference",
+    path: "project.png",
+    referenceKind: "file",
+  };
+  const manifests = new Map<string, ReturnType<typeof make>>([
+    [imageId, image],
+    [fileId, file],
+    [referenceId, reference],
+  ]);
+  const pins = new Map<string, Set<string>>();
+  const leases = new EditorHistoryLeases({
+    manifest: (_thread, id) => manifests.get(id) ?? null,
+    objectBytes: () => 4,
+    pin: (id, digests) => {
+      if (digests) pins.set(id, digests);
+      else pins.delete(id);
+    },
+  });
+  const opened = leases.open("owner", threadId, crypto.randomUUID());
+  if (opened.kind !== "history-lease") throw Error("not opened");
+  leases.update("owner", threadId, opened.leaseId, 1, [
+    imageId,
+    fileId,
+    referenceId,
+  ]);
+  file = {
+    ...file,
+    attachment: { ...file.attachment, inputDigest: c },
+    derivedDigest: b,
+  };
+  leases.publishManifest(file, () => manifests.set(fileId, file));
+  image = {
+    ...image,
+    attachment: {
+      ...image.attachment,
+      mimeType: "image/png",
+      representation: "image",
+    },
+  };
+  manifests.set(imageId, image);
+  expect(
+    leases.update("owner", threadId, opened.leaseId, 2, [fileId]),
+  ).toMatchObject({ kind: "history-lease", version: 2 });
+  expect(leases.retains(threadId, imageId)).toBe(false);
+  expect(leases.retains(threadId, fileId)).toBe(true);
+  expect(leases.retains(threadId, referenceId)).toBe(true);
+  expect(pins.get(opened.leaseId)).toEqual(new Set([a, b, c]));
+  // Shared digest b remains protected by file/reference, regardless of image retirement.
+  leases.update("owner", threadId, opened.leaseId, 3, []);
+  expect(pins.get(opened.leaseId)).toEqual(new Set([a, b, c]));
+  expect(leases.dependencyIds("owner", threadId, opened.leaseId)).toEqual([
+    fileId,
+    referenceId,
+  ]);
+  leases.releaseOwner("owner");
+});
+it("keeps an image candidate until Renderer removal is acknowledged by the real Main lease", async () => {
+  const threadId = crypto.randomUUID(),
+    id = crypto.randomUUID(),
+    hash = "a".repeat(64);
+  const manifest = {
+    attachment: AttachmentSchema.parse({
+      schemaVersion: 1,
+      id,
+      threadId,
+      token: `[[dpi-attachment:${id}]]`,
+      name: "legacy.png",
+      mimeType: "application/octet-stream",
+      byteLength: 4,
+      capturedAt: new Date().toISOString(),
+      source: "paste",
+      status: "ready",
+      representation: "text",
+      coverageGaps: [],
+      textOnly: false,
+      inputDigest: hash,
+    }),
+  };
+  const pins = new Map<string, Set<string>>();
+  const leases = new EditorHistoryLeases({
+    manifest: () => manifest,
+    objectBytes: () => 4,
+    pin: (leaseId, digests) => {
+      if (digests) pins.set(leaseId, digests);
+      else pins.delete(leaseId);
+    },
+  });
+  let candidatePinned = true,
+    fail = false;
+  const model = new EditorHistoryModel(
+    {
+      request: async (command) => {
+        if (command.kind === "history-open")
+          return leases.open("owner", threadId, command.epoch);
+        if (command.kind === "history-update")
+          return fail
+            ? { kind: "unavailable", reason: "storage-unavailable" }
+            : leases.update(
+                "owner",
+                threadId,
+                command.leaseId,
+                command.version,
+                command.ids,
+              );
+        if (command.kind === "history-release") {
+          if (command.leaseId)
+            leases.release("owner", threadId, command.leaseId);
+          if (
+            command.releaseIds?.includes(id) &&
+            !command.retainIds?.includes(id) &&
+            !leases.retains(threadId, id)
+          )
+            candidatePinned = false;
+          return { kind: "history-released" };
+        }
+        throw Error("unexpected request");
+      },
+    },
+    DraftSchema.shape.threadId.parse(threadId),
+    () => {},
+  );
+  model.observe([id]);
+  expect(await model.ensure()).toBe(true);
+  manifest.attachment = {
+    ...manifest.attachment,
+    mimeType: "image/png",
+    representation: "image",
+  };
+  fail = true;
+  model.removeDependencies([id]);
+  model.adopt([id], [], []);
+  expect(await model.ensure()).toBe(false);
+  expect(candidatePinned).toBe(true);
+  expect(leases.retains(threadId, id)).toBe(true);
+  fail = false;
+  expect(await model.retry()).toBe(true);
+  expect(candidatePinned).toBe(false);
+  expect(leases.retains(threadId, id)).toBe(false);
+  expect([...pins.values()].flatMap((set) => [...set])).not.toContain(hash);
+  model.dispose();
+  await model.ensure();
+  leases.dispose();
 });

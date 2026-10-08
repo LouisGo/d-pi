@@ -1,0 +1,10 @@
+Source commit: 47aa902366be895d2add31475d7db4f91b649d12
+RED: new tests + AttachmentStore/attachment-service from 198beb86bb6308bf9154370f25f0ab49241d062a
+GREEN: all sources restored to 47aa902; targeted 5 files / 38 tests
+Dependencies: symlink to worker node_modules; no builds or GUI executed
+RED exit: 1
+GREEN exit: 0
+RED command: node scripts/testing/test.mjs vitest tests/integration/attachment-reference-preview.integration.test.ts
+GREEN command: node scripts/testing/test.mjs vitest tests/integration/attachment-reference-preview.integration.test.ts tests/integration/attachment-preview.integration.test.ts tests/integration/attachment-import-operations.integration.test.ts src/app/main/wiring/attachment-service.test.ts src/modules/input/main/attachments/attachment-store.test.ts
+Original worker run before snapshot replay: pnpm test <same five file filters>; 38 passed; pnpm typecheck:main and pnpm check:architecture passed.
+No requested work remains in this leaf; GUI preview verification remains in parent integration task.

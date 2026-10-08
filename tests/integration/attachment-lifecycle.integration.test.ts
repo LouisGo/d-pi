@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, realpathSync, rmSync } from "node:fs";
 import { access, open, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -6,6 +6,7 @@ import { expect, it, vi } from "vitest";
 import { AppStorage } from "../../src/app/main/wiring/app-storage";
 import { createAttachmentService } from "../../src/app/main/wiring/attachment-service";
 import { createAttachmentReferences } from "../../src/app/main/wiring/attachment-service-references";
+import { serializeReference } from "../../src/modules/input/core/public";
 import { AttachmentStore } from "../../src/modules/input/main/public";
 
 vi.mock("electron", () => ({ utilityProcess: {} }));
@@ -420,7 +421,7 @@ it("scans beyond 1024 receipts without losing the last unknown reference or disa
 });
 
 it("locates a missing frozen original even after an @ source has been prepared from a newer file version", async () => {
-  const root = mkdtempSync(join(tmpdir(), "dpi-old-frozen-"));
+  const root = realpathSync(mkdtempSync(join(tmpdir(), "dpi-old-frozen-")));
   const storage = AppStorage.open(join(root, "app.sqlite"));
   const service = createAttachmentService(
     storage,
@@ -435,7 +436,7 @@ it("locates a missing frozen original even after an @ source has been prepared f
     const draft = storage.drafts.create(root);
     const a = await service.store.addReference(draft.threadId, "file.txt");
     const old = await service.store.prepare(draft.threadId, a.token);
-    if (!old.ok) throw Error("fixture preparation failed");
+    if (!old.ok) throw Error(`fixture preparation failed: ${old.reason}`);
     const { SubmissionIdSchema } = await import(
       "../../src/modules/execution/contracts/public"
     );
@@ -1013,5 +1014,71 @@ it("preserves durable source adoption when an in-flight PDF retry publishes an o
     await store.close();
     storage.close();
     rmSync(data, { recursive: true, force: true });
+  }
+});
+it("does not durably bind a frozen source literal and counts only the real inline attachment", async () => {
+  const root = mkdtempSync(join(tmpdir(), "dpi-frozen-literal-"));
+  const storage = AppStorage.open(join(root, "app.sqlite"));
+  const service = createAttachmentService(
+    storage,
+    root,
+    "unused",
+    () => true,
+    async () => null,
+  );
+  try {
+    const draft = storage.drafts.create(root);
+    const file = await service.store.importBytes(draft.threadId, {
+      name: "literal.txt",
+      mimeType: "text/plain",
+      bytes: Buffer.from("actual attachment"),
+      source: "file",
+    });
+    const frozen = serializeReference({
+      kind: "selection",
+      path: "source.txt",
+      source: "working-tree",
+      version: "v1",
+      startLine: 1,
+      startColumn: 1,
+      endLine: 1,
+      endColumn: file.token.length + 1,
+      text: file.token,
+    });
+    storage.drafts.save(draft.threadId, 0, frozen);
+    expect(
+      service.store.referenceSource(draft.threadId, file.id)
+        ?.draftBoundRevision,
+    ).toBeUndefined();
+    const references = createAttachmentReferences(storage, (thread, id) =>
+      service.store.referenceSource(thread, id),
+    );
+    const query = {
+      digests: [file.inputDigest!],
+      attachmentIds: [{ threadId: draft.threadId, id: file.id }],
+    };
+    expect(await references.read(query)).toMatchObject({
+      complete: true,
+      counts: [],
+      durableAttachmentIds: [],
+    });
+    expect(await service.store.prepare(draft.threadId, frozen)).toMatchObject({
+      ok: true,
+      content: { sources: [] },
+    });
+    storage.drafts.save(draft.threadId, 1, `${file.token}\n${frozen}`);
+    expect(
+      service.store.referenceSource(draft.threadId, file.id)
+        ?.draftBoundRevision,
+    ).toBe(2);
+    expect(await references.read(query)).toMatchObject({
+      complete: true,
+      counts: [{ digest: file.inputDigest, count: 1 }],
+      durableAttachmentIds: [`${draft.threadId}:${file.id}`],
+    });
+  } finally {
+    await service.close();
+    storage.close();
+    rmSync(root, { recursive: true, force: true });
   }
 });

@@ -512,13 +512,6 @@
 }
 
 @layer components {
-  .composer-help {
-    margin-inline-end: auto;
-    max-width: 100%;
-  }
-  .composer-help > .ui-disclosure > p {
-    margin-block: calc(var(--layout-gap) / 2);
-  }
   .runtime-panel > [hidden] {
     display: none;
   }

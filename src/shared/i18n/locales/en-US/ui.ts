@@ -1,4 +1,5 @@
 export const ui = {
+  "attachment.details": "Attachment details",
   "ui.reading.latest": "Latest segment",
   "ui.conversation.newOutput": "New output",
   "ui.conversation.toBottom": "Back to list bottom",
@@ -129,6 +130,31 @@ export const ui = {
   "attachment.hint":
     "Paste images, drop files, or type @ to reference a project file.",
   "attachment.preparing": "Preparing attachments…",
+  "attachment.import.batch": "File import",
+  "attachment.reason.import-limit":
+    "Attachment import limit reached. Wait for current imports to finish, then retry.",
+  "attachment.import.queued": "Queued",
+  "attachment.import.reading": "Reading",
+  "attachment.import.preparing": "Preparing",
+  "attachment.import.ready": "Ready to insert",
+  "attachment.import.failed": "Import failed",
+  "attachment.import.cancelling": "Cancelling and releasing resources",
+  "attachment.import.cancelled": "Cancelled",
+  "attachment.import.added": "Inserted",
+  "attachment.import.settling": "Inserted; protecting resources",
+  "attachment.import.settlementFailed": "Import cleanup needs retry",
+  "attachment.import.retrySettlement": "Retry resource settlement",
+  "attachment.import.cancel": "Cancel {name}",
+  "attachment.previewAction": "Preview",
+  "attachment.import.cancelAction": "Cancel",
+  "attachment.import.cancelBatch": "Cancel files awaiting insertion",
+  "attachment.import.dismiss": "Dismiss import results",
+  "attachment.import.insertReady": "Insert ready files at cursor",
+  "attachment.import.insertSubset": "Insert only ready files",
+  "attachment.import.partial":
+    "Some files failed. Retry or cancel them, or explicitly insert only the ready files.",
+  "attachment.import.budget":
+    "These files exceed the import budget and were not queued. Choose fewer files or wait for the current imports to finish.",
   "attachment.ready": "Ready",
   "attachment.failed": "Preparation failed",
   "attachment.directoryAtSend":
@@ -144,7 +170,9 @@ export const ui = {
   "attachment.previous": "Move {name} earlier",
   "attachment.next": "Move {name} later",
   "attachment.retry": "Retry preparation",
+  "attachment.retryLoading": "Reload attachments",
   "attachment.preview": "Preview {name}",
+  "attachment.closeManager": "Close attachment manager",
   "attachment.closePreview": "Close preview",
   "attachment.zoom": "Zoom",
   "attachment.textOnly": "Use extracted text only",
@@ -208,7 +236,7 @@ export const ui = {
   "attachment.reason.submission-too-large":
     "Total original content exceeds 100 MiB.",
   "attachment.reason.transport-too-large":
-    "Encoded input exceeds the native transport limit. Remove or reduce content; nothing was truncated.",
+    "Input exceeds the application transport budget. Remove or reduce content; nothing was truncated.",
   "attachment.reason.editor-history-limit":
     "Preparing this version would exceed the undo asset limit. The saved attachment and undo history are preserved.",
   "attachment.clearHistory": "Clear undo history, then send again",
@@ -223,6 +251,21 @@ export const ui = {
     "This file format has no supported content representation.",
   "attachment.reason.invalid-encoding":
     "Text is not valid UTF-8. Convert the source explicitly and attach again.",
+  "attachment.reason.image-too-large":
+    "The image still exceeds 10 MiB after compression. Resize or remove it.",
+  "attachment.reason.image-too-many-pixels":
+    "This image exceeds the local pixel limit. Resize it first.",
+  "attachment.reason.image-compression-unsupported":
+    "This image cannot be compressed while preserving its animation. Use a smaller original.",
+  "attachment.reason.image-compression-failed":
+    "Local image processing failed. The original is retained; retry.",
+  "attachment.reason.image-compression-unavailable":
+    "Local image processing is unavailable. Retry.",
+  "attachment.reason.image-compression-busy":
+    "Local image processing has reached its concurrency limit. Retry shortly.",
+  "attachment.imageCompressed": "Compressed",
+  "attachment.imageCompressionDetails":
+    "The sent image was converted from {originalWidth}×{originalHeight} to {width}×{height}, in {format} format. The original is retained.",
   "attachment.reason.invalid-image":
     "Image content cannot be decoded. Attach a valid image.",
   "attachment.reason.image-decoder-unavailable":
@@ -330,6 +373,13 @@ export const ui = {
     "The configuration connection ended without a confirmed result. Refresh native configuration before retrying.",
   "config.savingKey": "Validating and saving the key…",
 
+  "composer.placeholder": "Send a message, @ to reference project files",
+  "composer.more": "More composer actions",
+  "composer.manageAttachments": "Manage attachment cache",
+  "composer.enterToSend": "Enter to send when collapsed",
+  "composer.projectAccess": "Project execution access",
+  "composer.accessAllowed": "Execution allowed",
+  "composer.accessBrowse": "Browse only",
   "composer.chooseModel": "Select model",
   "composer.blocked.noModel":
     "No active model. Configure authentication above, then select an available model. Your draft is preserved.",
@@ -467,8 +517,8 @@ export const ui = {
   "composer.paste.unsupported":
     "Attachment paste is not connected in this candidate. No part was inserted or discarded; the existing draft is preserved.",
   "composer.paste.hint": "⌘⇧V paste plain text",
-  "composer.editorLabel": "Draft body",
-  "composer.sectionLabel": "Persistent text draft",
+  "composer.editorLabel": "Message",
+  "composer.sectionLabel": "Message composer",
   "composer.inputOptions": "Input options",
   "composer.heading": "Draft",
   "composer.status.saved": "Saved on this device",
@@ -518,6 +568,18 @@ export const ui = {
   "ui.submissions.warning":
     "A call receipt does not mean the request was accepted or the task is complete. Check an unknown result before sending again.",
   "ui.submissions.checkStatus": "Check submission status",
+  "ui.submissions.rejected.contentMissing":
+    "Not dispatched to OMP: Image resources are missing. Attach the original again. Your input is retained.",
+  "ui.interaction.rejected.contentMissing":
+    "Not dispatched to OMP: Image resources are missing. Attach the original again. Your input is retained.",
+  "ui.submissions.rejected.contentCorrupt":
+    "Not dispatched to OMP: Image resource integrity verification failed. Attach the original again. Your input is retained.",
+  "ui.interaction.rejected.contentCorrupt":
+    "Not dispatched to OMP: Image resource integrity verification failed. Attach the original again. Your input is retained.",
+  "ui.submissions.rejected.transportTooLarge":
+    "Not dispatched to OMP: Image content exceeds the application transport budget. Reduce attachments. Your input is retained.",
+  "ui.interaction.rejected.transportTooLarge":
+    "Not dispatched to OMP: Image content exceeds the application transport budget. Reduce attachments. Your input is retained.",
   "ui.submissions.rejected":
     "Not dispatched to OMP; original text preserved. Resolve the blocker before resending.",
   "ui.submissions.rejected.notReady":

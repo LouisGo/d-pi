@@ -3,6 +3,8 @@ import { DRAFT_MAX_BYTES, draftByteLength } from "../../../shared/draft-text";
 import { createId } from "../../../shared/identity";
 import { uiMessage } from "../../../shared/messages/contracts";
 import type { Draft, Failure, SaveReply } from "../contracts/draft";
+import { attachmentToken } from "./attachments/tokens";
+import { parseDraftBlocks, serializeReference } from "./references/serialize";
 export type SaveState =
   | { kind: "saved" }
   | { kind: "dirty" }
@@ -34,6 +36,9 @@ export class DraftController {
   private timer: unknown;
   private disposed = false;
   private baselineText: string;
+  // Metadata projection only. The immutable persisted snapshot remains the
+  // sole draft fact; images use its existing private token format, outside PM.
+  private readonly detachedAttachments = new Set<string>();
   private capture: {
     submissionId: string;
     sequence: number;
@@ -79,10 +84,132 @@ export class DraftController {
   // Reattaching an editor reads the existing immutable pending snapshot or
   // confirmed baseline. This is not a second editable body.
   getTextSnapshot = (): string => this.pending?.text ?? this.baselineText;
+  registerDetachedAttachments(ids: Iterable<string>): void {
+    if (this.disposed) return;
+    let changed = false;
+    for (const id of ids) {
+      if (!this.detachedAttachments.has(id)) changed = true;
+      this.detachedAttachments.add(id);
+    }
+    // Classification updates dependency projection, without dirtying the draft.
+    if (changed) for (const listener of this.listeners) listener();
+  }
+  isDetachedAttachment(id: string): boolean {
+    return this.detachedAttachments.has(id);
+  }
+  getAttachmentIds(): string[] {
+    return this.paragraphAttachmentIds(this.getTextSnapshot());
+  }
+  private paragraphAttachmentIds(text: string): string[] {
+    return [
+      ...new Set(
+        parseDraftBlocks(text).flatMap((block) =>
+          block.kind === "paragraph"
+            ? Array.from(
+                block.text.matchAll(/\[\[dpi-attachment:([0-9a-f-]{36})\]\]/g),
+                (match) => match[1] ?? "",
+              )
+            : [],
+        ),
+      ),
+    ];
+  }
+  getEditorTextSnapshot = (): string =>
+    this.projectEditorText(this.getTextSnapshot());
+  getDetachedAttachmentIds(): string[] {
+    return this.getAttachmentIds().filter((id) =>
+      this.detachedAttachments.has(id),
+    );
+  }
+  serializeEditorText(text: string): string {
+    return this.appendImages(
+      this.projectEditorText(text),
+      this.getDetachedAttachmentIds(),
+    );
+  }
+  editEditorText(text: string): void {
+    const snapshot = this.serializeEditorText(text);
+    if (snapshot !== this.getTextSnapshot()) this.edit(snapshot);
+  }
+  addDetachedAttachments(ids: readonly string[]): void {
+    if (this.disposed || !ids.length) return;
+    this.registerDetachedAttachments(ids);
+    const text = this.getTextSnapshot();
+    const existing = new Set(this.getAttachmentIds());
+    const added = [...new Set(ids)].filter((id) => !existing.has(id));
+    if (added.length) this.edit(this.appendImages(text, added));
+  }
+  removeDetachedAttachment(id: string): boolean {
+    if (this.disposed || !this.detachedAttachments.has(id)) return false;
+    const text = this.getTextSnapshot();
+    const next = this.transformParagraphs(text, (paragraph) =>
+      paragraph.split(attachmentToken(id)).join(""),
+    );
+    if (next !== text) this.edit(next);
+    return true;
+  }
+  projectEditorText(text: string): string {
+    return this.transformParagraphs(text, (paragraph) =>
+      paragraph.replace(
+        /\[\[dpi-attachment:([0-9a-f-]{36})\]\]/g,
+        (token, id: string) => (this.detachedAttachments.has(id) ? "" : token),
+      ),
+    );
+  }
+  private appendImages(text: string, ids: readonly string[]): string {
+    if (!ids.length) return text;
+    const blocks = parseDraftBlocks(text);
+    // Never fill an authored blank beside a selection with image metadata.
+    // A separate carrier makes those blank paragraphs survive cold projection.
+    const hasSelection = blocks.some((block) => block.kind === "selection");
+    const lastParagraph = blocks.findLastIndex(
+      (block) =>
+        block.kind === "paragraph" && (!hasSelection || block.text.length > 0),
+    );
+    const tokens = ids.map(attachmentToken).join("");
+    if (lastParagraph < 0) return `${tokens}\n${text}`;
+    return blocks
+      .map((block, index) =>
+        block.kind === "selection"
+          ? serializeReference(block.value)
+          : block.text + (index === lastParagraph ? tokens : ""),
+      )
+      .join("\n");
+  }
+  private transformParagraphs(
+    text: string,
+    transform: (paragraph: string) => string,
+  ): string {
+    const blocks = parseDraftBlocks(text);
+    const metadataParagraph = blocks.some(
+      (block) => block.kind === "selection",
+    );
+    return blocks
+      .flatMap((block) => {
+        if (block.kind === "selection")
+          return [serializeReference(block.value)];
+        const next = transform(block.text);
+        // A selection-only body stores image metadata in its own source line.
+        // Preserve authored empty lines; remove only that token-only carrier.
+        if (
+          metadataParagraph &&
+          block.text &&
+          !next &&
+          !block.text.replace(
+            /\[\[dpi-attachment:([0-9a-f-]{36})\]\]/g,
+            (token, id: string) =>
+              this.detachedAttachments.has(id) ? "" : token,
+          )
+        )
+          return [];
+        return [next];
+      })
+      .join("\n");
+  }
   getEditorSnapshot = () => ({
     revision: this.revision,
     sequence: this.sequence,
-    text: this.getTextSnapshot(),
+    text: this.getEditorTextSnapshot(),
   });
   subscribe = (listener: () => void): (() => void) => {
     this.listeners.add(listener);
@@ -397,5 +524,6 @@ export class DraftController {
     this.capture = null;
     timerHost.clearTimeout(this.timer);
     this.listeners.clear();
+    this.detachedAttachments.clear();
   }
 }

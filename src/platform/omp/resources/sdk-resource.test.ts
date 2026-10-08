@@ -28,6 +28,8 @@ it("admits a complete current-platform SDK launcher and refuses tampering withou
       "model-selection.mjs",
       "native-queue.mjs",
       "reading-session.mjs",
+      "image-input.mjs",
+      "image-compression.mjs",
       "native-subagent-configuration.mjs",
       "pdf-content.mjs",
     ]) {
@@ -87,6 +89,8 @@ it("admits a complete current-platform SDK launcher and refuses tampering withou
     for (const name of [
       "native-queue.mjs",
       "reading-session.mjs",
+      "image-input.mjs",
+      "image-compression.mjs",
       "native-subagent-configuration.mjs",
       "pdf-content.mjs",
     ]) {

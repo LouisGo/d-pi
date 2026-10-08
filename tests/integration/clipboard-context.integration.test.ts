@@ -3,7 +3,7 @@ import { existsSync, mkdtempSync, realpathSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Editor } from "@tiptap/core";
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
 import { AppStorage } from "../../src/app/main/wiring/app-storage";
 import { createAttachmentService } from "../../src/app/main/wiring/attachment-service";
 import {
@@ -22,7 +22,27 @@ import {
   plainTextEditorOptions,
 } from "../../src/modules/input/renderer/public";
 
-it("hands an actual cut image/frozen selection across Main into one target transaction and preserves Undo through save and GC", async () => {
+// This fixture verifies adoption/history/GC; real codec coverage uses its
+// dedicated binary worker tests with the fixed Bun runtime.
+vi.mock("../../src/platform/node/images/public", () => ({
+  createImageCompressor:
+    () =>
+    async (
+      bytes: Uint8Array,
+      mimeType: "image/png" | "image/jpeg" | "image/webp" | "image/gif",
+    ) => ({
+      ok: true,
+      bytes,
+      mimeType,
+      recompressed: false,
+      width: 1,
+      height: 1,
+      originalWidth: 1,
+      originalHeight: 1,
+    }),
+}));
+
+it("adopts a legacy cut image/frozen selection through Main with images independent of body Undo and GC", async () => {
   const root = realpathSync(
     mkdtempSync(join(tmpdir(), "dpi-clipboard-pm-main-")),
   );
@@ -93,6 +113,7 @@ it("hands an actual cut image/frozen selection across Main into one target trans
       const clipboard = createTrustedClipboard({
         bridge,
         model,
+        controller,
         sequence: () => controller.getEditorSnapshot().sequence,
         isCurrent: () => true,
         onFeedback: () => {},
@@ -130,6 +151,7 @@ it("hands an actual cut image/frozen selection across Main into one target trans
     expect(await to.controller.flush()).toBe(true);
     expect(to.editor.commands.undo()).toBe(true);
     expect(to.editor.getText()).toBe("");
+    expect(to.controller.getDetachedAttachmentIds()).toHaveLength(1);
     expect(await to.controller.flush()).toBe(true);
     service.store.releaseEditorHistories("source-document");
     await service.store.cleanStorage(target.threadId);
@@ -140,7 +162,10 @@ it("hands an actual cut image/frozen selection across Main into one target trans
     ).toBe(true);
     expect(to.editor.commands.redo()).toBe(true);
     expect(to.editor.getText({ blockSeparator: "\n" })).toBe(targetText);
-    const prepared = await service.store.prepare(target.threadId, targetText);
+    const prepared = await service.store.prepare(
+      target.threadId,
+      to.controller.getTextSnapshot(),
+    );
     expect(prepared).toMatchObject({ ok: true });
     if (prepared.ok) expect(prepared.content.images).toHaveLength(1);
   } finally {

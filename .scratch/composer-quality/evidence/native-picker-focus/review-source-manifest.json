@@ -1,0 +1,8 @@
+{
+  ".scratch/composer-quality/spec.md": "3f4cecdcd0f4b8546b6dbb4f5a7b0d4443f3f8005f7706520ad3b725c18b9b8b",
+  "docs/architecture/design-system.md": "a5d65406da0667eee327ad58bd5384b90c4514bc9a7cb2390f8387a4853a5872",
+  "src/app/renderer/workbench/attachment-controls.test.ts": "26df8fb33fa4a23942694f48cd41a5d8c2c5aa3cb9519c6e8656295adf98c601",
+  "src/modules/ui/renderer/focus-visibility.test.ts": "c1d2b8a2307c11b39669a9af32a025331223c19f984d5f5d1c6355ff33350a05",
+  "src/modules/ui/renderer/focus-visibility.ts": "22fb6a7915b908cc180d7845f0481448e249398e22c78dcd06595b6ce2c9292d",
+  ".scratch/composer-quality/issues/08-native-picker-focus.md": "b77ca162883c11062bd19e680110ad6c85f273bc5fdc6f69f707a54e4f5b1534"
+}

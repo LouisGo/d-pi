@@ -124,3 +124,37 @@
     transition: none;
   }
 }
+
+@layer components {
+  .ui-button-round {
+    width: var(--control-height);
+    height: var(--control-height);
+    padding: 0;
+    border-radius: var(--radius-pill);
+  }
+  .ui-button-source {
+    border-radius: var(--radius-chip);
+    padding-inline-end: var(--control-height);
+  }
+  .ui-button-thumbnail {
+    width: calc(var(--control-height) * 3);
+    height: calc(var(--control-height) * 3);
+    padding: calc(var(--layout-gap) / 2);
+    border-radius: var(--radius-control);
+  }
+  .ui-button-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: inherit;
+  }
+  .ui-button-chip {
+    background: var(--muted);
+    border-color: var(--border);
+    color: var(--foreground);
+  }
+  .ui-button-chip:hover:not(:disabled) {
+    background: var(--accent);
+    color: var(--accent-foreground);
+  }
+}

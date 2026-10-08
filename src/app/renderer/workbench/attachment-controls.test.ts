@@ -2,7 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Editor } from "@tiptap/core";
-import { act, createElement } from "react";
+import { act, createElement, createRef } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
 import type { Attachment } from "../../../modules/input/contracts/public";
@@ -11,14 +11,19 @@ import {
   AttachmentImports,
   draftDocument,
   plainTextEditorOptions,
+  type ReferenceTrigger,
 } from "../../../modules/input/renderer/public";
+import { installControlFocusVisibility } from "../../../modules/ui/renderer/public";
 import { createI18n } from "../../../shared/i18n/create-i18n";
 import { ThreadIdSchema } from "../../../shared/identity";
 import type {
   AttachmentReply,
   AttachmentRequest,
 } from "../../contracts/attachments";
-import { AttachmentControls } from "./attachment-controls";
+import {
+  type AttachmentActions,
+  AttachmentControls,
+} from "./attachment-controls";
 
 // Fixture owns the Thread resources; views only receive the same instances.
 const resources = new WeakMap<
@@ -46,7 +51,44 @@ function controls(
       imports.dispose();
     });
   }
-  return createElement(AttachmentControls, { ...props, ...owned });
+  const actions = createRef<AttachmentActions>();
+  return createElement(
+    "div",
+    {},
+    createElement(AttachmentControls, {
+      ...props,
+      ...owned,
+      ref: (value) => {
+        actions.current = value;
+        if (typeof props.ref === "function") props.ref(value);
+        else if (props.ref) props.ref.current = value;
+      },
+    }),
+    createElement("div", {
+      ref: (node: HTMLDivElement | null) => {
+        if (node && props.editor) node.append(props.editor.view.dom);
+      },
+      onClick: (event: { target: EventTarget }) => {
+        const token =
+          event.target instanceof Element
+            ? event.target.closest("[data-attachment-id]")
+            : null;
+        const id = token?.getAttribute("data-attachment-id");
+        if (id) actions.current?.openReference(id);
+      },
+    }),
+    // Composer owns the toolbar; this host exercises the same imperative port.
+    createElement(
+      "button",
+      { onClick: () => actions.current?.chooseImport() },
+      "Attach files",
+    ),
+    createElement(
+      "button",
+      { onClick: () => actions.current?.openManager() },
+      "Manage attachment storage",
+    ),
+  );
 }
 
 vi.mock("../../../modules/preferences/renderer/public", () => ({
@@ -58,6 +100,132 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 const id = ThreadIdSchema.parse("f9b0037d-1b8b-4f82-988c-7ca64f93fa37");
+it.each([
+  ["cancelled", false],
+  ["success", false],
+  ["cancelled", true],
+  ["success", true],
+] as const)(
+  "keeps the caret as the picker return target without stealing focus on late %s (retry: %s)",
+  async (result, retry) => {
+    vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+    const disposeFocus = installControlFocusVisibility(document);
+    cleanups.push(async () => disposeFocus());
+    const editor = new Editor({
+      ...plainTextEditorOptions,
+      element: document.createElement("div"),
+      content: draftDocument("review draft"),
+    });
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    let finishPicker!: (value: AttachmentReply) => void;
+    let rejected = false;
+    const request = vi.fn(async (command: AttachmentRequest) => {
+      if (command.kind === "choose-import") {
+        if (retry && !rejected) {
+          rejected = true;
+          return {
+            kind: "unavailable" as const,
+            reason: "source-too-large" as const,
+          };
+        }
+        return new Promise<AttachmentReply>((resolve) => {
+          finishPicker = resolve;
+        });
+      }
+      return { kind: "attachments" as const, items: [] };
+    });
+    cleanups.push(async () => {
+      await act(() => root.unmount());
+      editor.destroy();
+      client.clear();
+      container.remove();
+    });
+    await act(() =>
+      root.render(
+        createElement(QueryClientProvider, {
+          client,
+          children: controls({
+            bridge: { request },
+            threadId: id,
+            editor,
+            text: "review draft",
+            isCurrent: () => true,
+            onBlocked: () => {},
+            mention: null,
+            dismissMention: () => {},
+          }),
+        }),
+      ),
+    );
+    container.append(editor.view.dom);
+    const attach = Array.from(container.querySelectorAll("button")).find(
+      (button) => button.textContent === "Attach files",
+    );
+    if (!attach) throw Error("missing attachment button");
+    editor.commands.setTextSelection(4);
+    attach.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+    attach.focus();
+    await act(() => attach.click());
+    if (retry) {
+      let retryButton: HTMLButtonElement | undefined;
+      await vi.waitFor(() => {
+        retryButton = Array.from(container.querySelectorAll("button")).find(
+          (button) => button.textContent === "Retry preparation",
+        );
+        expect(retryButton).toBeDefined();
+      });
+      if (!retryButton) throw Error("missing retry button");
+      retryButton.dispatchEvent(
+        new PointerEvent("pointerdown", { bubbles: true }),
+      );
+      retryButton.focus();
+      await act(() => retryButton?.click());
+    }
+    await vi.waitFor(() => expect(finishPicker).toBeTypeOf("function"));
+    expect(document.activeElement).toBe(editor.view.dom);
+    expect(editor.state.selection.from).toBe(4);
+    expect(document.documentElement.dataset.pointerFocus).toBe("true");
+    // Native dialogs return without a DOM relatedTarget. The mouse origin
+    // must survive this return, including cancellation and retry.
+    editor.view.dom.dispatchEvent(
+      new FocusEvent("focusin", { bubbles: true, relatedTarget: null }),
+    );
+    expect(document.documentElement.dataset.pointerFocus).toBe("true");
+    // A slower conversion/cancellation must not refocus after another action.
+    attach.focus();
+    const item: Attachment = {
+      schemaVersion: 1,
+      id,
+      threadId: id,
+      token: `[[dpi-attachment:${id}]]`,
+      name: "note.txt",
+      mimeType: "text/plain",
+      byteLength: 4,
+      capturedAt: "2026-10-08T00:00:00.000Z",
+      source: "file",
+      status: "ready",
+      representation: "text",
+      coverageGaps: [],
+      textOnly: false,
+    };
+    await act(() =>
+      finishPicker(
+        result === "cancelled"
+          ? { kind: "cancelled" }
+          : { kind: "attachments", items: [item] },
+      ),
+    );
+    expect(document.activeElement).toBe(attach);
+    if (result === "success") expect(editor.getText()).toContain(item.token);
+    else expect(editor.getText()).toBe("review draft");
+  },
+);
+
 it("distinguishes frozen provenance from live references in the formal controls", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const token = `[[dpi-attachment:${id}]]`;
@@ -123,16 +291,38 @@ it("distinguishes frozen provenance from live references in the formal controls"
       }),
     );
   });
+  container.append(editor.view.dom);
   await act(async () => {
     await vi.waitFor(() =>
-      expect(container.textContent).toContain("original.txt"),
+      expect(editor.view.dom.textContent).toContain("original.txt"),
     );
   });
-  expect(container.textContent).toContain("Frozen on copy");
-  expect(container.textContent).toContain("/actual/source/project");
-  expect(container.textContent).toContain("source-version-1");
-  expect(container.textContent).toContain("2026-10-07T00:00:00.000Z");
-  expect(container.textContent).not.toContain("Read when sending");
+  expect(
+    container.querySelector(".attachment-rail")?.textContent ?? "",
+  ).not.toContain("original.txt");
+  expect(container.textContent).not.toContain("Attachment details");
+  expect(container.textContent).not.toContain("Attachments and storage");
+  const manage = Array.from(container.querySelectorAll("button")).find(
+    (button) => button.textContent === "Manage attachment storage",
+  );
+  await act(() => editor.commands.setTextSelection(2));
+  await act(() => manage?.click());
+  expect(document.body.textContent).toContain("Frozen on copy");
+  expect(document.body.textContent).toContain("/actual/source/project");
+  expect(document.body.textContent).toContain("source-version-1");
+  expect(document.body.textContent).toContain("2026-10-07T00:00:00.000Z");
+  expect(document.body.textContent).not.toContain("Read when sending");
+  await act(() => editor.commands.insertContentAt(1, "X"));
+  const close = document.querySelector<HTMLButtonElement>(
+    '[role="dialog"] button',
+  );
+  expect(close).not.toBeNull();
+  await act(async () => {
+    close?.click();
+    await new Promise((resolve) => setTimeout(resolve, 30));
+  });
+  expect(document.activeElement).toBe(editor.view.dom);
+  expect(editor.state.selection.from).toBe(3);
 });
 it("offers only retry for an unfinished clipboard cleanup and confirms its original IDs", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
@@ -279,11 +469,11 @@ it("mounts the formal attachment controls and removes a failed atomic reference 
   });
   expect(container.textContent).toContain("failed.pdf");
   expect(container.textContent).toContain("PDF");
-  const remove = container.querySelector<HTMLButtonElement>(
-    'button[aria-label="Remove failed.pdf"]',
-  );
-  expect(remove).not.toBeNull();
-  await act(() => remove?.click());
+  expect(container.querySelector(".composer-notice")).toBeNull();
+  await act(() => {
+    editor.commands.setNodeSelection(8);
+    editor.commands.deleteSelection();
+  });
   expect(editor.getText({ blockSeparator: "\n" })).toBe("before  after");
 });
 
@@ -354,11 +544,7 @@ it.each([
       },
     );
     let current = true;
-    const render = (
-      mention: ReturnType<
-        typeof import("../../../modules/input/renderer/public").attachmentMention
-      >,
-    ) =>
+    const render = (mention: ReferenceTrigger | null) =>
       act(() =>
         root.render(
           createElement(QueryClientProvider, {
@@ -377,7 +563,7 @@ it.each([
           }),
         ),
       );
-    await render({ from: 8, to: 12, query: "src" });
+    await render({ from: 8, to: 12, query: "src", expectedSource: "@src" });
     await vi.waitFor(() => expect(searched).toBe(true));
     await render(null);
     await act(() =>
@@ -388,7 +574,7 @@ it.each([
       }),
     );
     expect(container.textContent).not.toContain("src/stale.ts");
-    await render({ from: 8, to: 12, query: "src" });
+    await render({ from: 8, to: 12, query: "src", expectedSource: "@src" });
     await act(() =>
       finishSearch({
         kind: "search",
@@ -400,8 +586,10 @@ it.each([
       await new Promise((resolve) => setTimeout(resolve, 20));
     });
     expect(
-      container.querySelector(`[data-reference-kind="${kind}"]`)?.textContent,
-    ).toContain(path);
+      container
+        .querySelector(`[data-reference-kind="${kind}"]`)
+        ?.getAttribute("aria-label"),
+    ).toBe(path);
     await act(async () => {
       actions.current?.handleMentionKey(
         new KeyboardEvent("keydown", { key: "Enter" }),
@@ -491,12 +679,16 @@ it("identifies a ready reference that failed during send-time freezing without r
     await new Promise((resolve) => setTimeout(resolve, 20));
   });
   const alert = container.querySelector('[role="alert"]');
-  expect(alert?.textContent).toContain("src/a@b.ts");
+  expect(
+    container.querySelector(".composer-context-token")?.textContent,
+  ).toContain("src/a@b.ts");
   expect(alert?.textContent).toContain(
     "Referenced file is missing or unreadable",
   );
   expect(alert?.textContent).toContain("Sending reads this reference again");
-  expect(container.textContent).toContain("Read when sending");
+  expect(
+    container.querySelector(".attachment-rail")?.textContent ?? "",
+  ).not.toContain(item.name);
   expect(item.status).toBe("ready");
 });
 
@@ -565,8 +757,14 @@ it("permits explicit re-preparation of a failed @PDF after text-only consent whi
   await act(async () => {
     await new Promise((resolve) => setTimeout(resolve, 20));
   });
-  expect(container.textContent).toContain("Text-only PDF");
-  expect(container.textContent).toContain("Read when sending");
+  expect(
+    editor.view.dom
+      .querySelector(".composer-context-token")
+      ?.getAttribute("aria-label"),
+  ).toContain("Text-only PDF");
+  expect(
+    container.querySelector(".attachment-rail")?.textContent ?? "",
+  ).not.toContain(item.name);
   expect(container.textContent).toContain(
     "PDF text extraction has coverage gaps",
   );
@@ -576,84 +774,106 @@ it("permits explicit re-preparation of a failed @PDF after text-only consent whi
   expect(item.status).toBe("failed");
 });
 
-it("opens a natively modal preview with an accessible filename heading and keeps truncation explicit", async () => {
-  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
-  const token = `[[dpi-attachment:${id}]]`;
-  const item: Attachment = {
-    schemaVersion: 1,
-    id,
-    threadId: id,
-    token,
-    name: "report.pdf",
-    mimeType: "application/pdf",
-    byteLength: 100,
-    capturedAt: new Date().toISOString(),
-    source: "file",
-    status: "ready",
-    representation: "pdf-text",
-    coverageGaps: [],
-    textOnly: false,
-  };
-  const editor = new Editor({
-    ...plainTextEditorOptions,
-    element: document.createElement("div"),
-    content: draftDocument(token),
-  });
-  const client = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
-  });
-  const container = document.createElement("div");
-  document.body.append(container);
-  const root = createRoot(container);
-  cleanups.push(async () => {
-    await act(() => root.unmount());
-    editor.destroy();
-    client.clear();
-    container.remove();
-  });
-  await act(async () => {
-    root.render(
-      createElement(QueryClientProvider, {
-        client,
-        children: controls({
-          bridge: {
-            request: async (command): Promise<AttachmentReply> =>
-              command.kind === "preview"
-                ? { kind: "text", text: "sample extract", truncated: true }
-                : { kind: "attachments", items: [item] },
-          },
-          threadId: id,
-          editor,
-          text: token,
-          isCurrent: () => true,
-          onBlocked: () => {},
-          mention: null,
-          dismissMention: () => {},
+it.each(["button", "cancel"] as const)(
+  "closes the native preview before unmount and restores editor focus via %s",
+  async (method) => {
+    vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+    const token = `[[dpi-attachment:${id}]]`;
+    const item: Attachment = {
+      schemaVersion: 1,
+      id,
+      threadId: id,
+      token,
+      name: "report.pdf",
+      mimeType: "application/pdf",
+      byteLength: 100,
+      capturedAt: new Date().toISOString(),
+      source: "file",
+      status: "ready",
+      representation: "pdf-text",
+      coverageGaps: [],
+      textOnly: false,
+    };
+    const editor = new Editor({
+      ...plainTextEditorOptions,
+      element: document.createElement("div"),
+      content: draftDocument(token),
+    });
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    cleanups.push(async () => {
+      await act(() => root.unmount());
+      editor.destroy();
+      client.clear();
+      container.remove();
+    });
+    await act(async () => {
+      root.render(
+        createElement(QueryClientProvider, {
+          client,
+          children: controls({
+            bridge: {
+              request: async (command): Promise<AttachmentReply> =>
+                command.kind === "preview"
+                  ? { kind: "text", text: "sample extract", truncated: true }
+                  : { kind: "attachments", items: [item] },
+            },
+            threadId: id,
+            editor,
+            text: token,
+            isCurrent: () => true,
+            onBlocked: () => {},
+            mention: null,
+            dismissMention: () => {},
+          }),
         }),
-      }),
+      );
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+    const preview = container.querySelector<HTMLElement>(
+      "[data-attachment-id]",
     );
-    await new Promise((resolve) => setTimeout(resolve, 20));
-  });
-  await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 20));
-  });
-  const preview = Array.from(container.querySelectorAll("button")).find(
-    (button) => button.textContent === "Preview report.pdf",
-  );
-  if (!preview) throw Error("missing preview button");
-  await act(async () => {
-    preview.click();
-    await new Promise((resolve) => setTimeout(resolve, 20));
-  });
-  const dialog = container.querySelector("dialog");
-  expect(dialog?.open).toBe(true);
-  const labelledBy = dialog?.getAttribute("aria-labelledby");
-  expect(labelledBy).toBeTruthy();
-  expect(
-    labelledBy ? document.getElementById(labelledBy)?.textContent : null,
-  ).toBe("report.pdf");
-  expect(dialog?.textContent).toContain("Only the first 64 KiB is previewed");
-});
+    if (!preview) throw Error("missing inline preview token");
+    await act(async () => {
+      preview.click();
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+    const dialog = container.querySelector("dialog");
+    expect(dialog?.open).toBe(true);
+    const labelledBy = dialog?.getAttribute("aria-labelledby");
+    expect(labelledBy).toBeTruthy();
+    expect(
+      labelledBy ? document.getElementById(labelledBy)?.textContent : null,
+    ).toBe("report.pdf");
+    expect(dialog?.textContent).toContain("Only the first 64 KiB is previewed");
+    if (!dialog) throw Error("missing preview dialog");
+    const closedWhileMounted: boolean[] = [];
+    const nativeClose = vi.spyOn(dialog, "close").mockImplementation(() => {
+      // Native close releases the top layer and restores its previous focus.
+      if (!dialog.open) return;
+      closedWhileMounted.push(dialog.isConnected);
+      dialog.open = false;
+      preview.focus();
+    });
+    await act(async () => {
+      if (method === "cancel")
+        dialog.dispatchEvent(new Event("cancel", { cancelable: true }));
+      else dialog.querySelector<HTMLButtonElement>("button")?.click();
+      await new Promise((resolve) => setTimeout(resolve, 30));
+    });
+    expect(closedWhileMounted).toEqual([true]);
+    expect(container.querySelector("dialog")).toBeNull();
+    expect(document.activeElement).toBe(editor.view.dom);
+    nativeClose.mockRestore();
+  },
+);
 
 it("reports the typed oversized-source rejection instead of a transport failure and keeps sending blocked until explicit removal", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
@@ -813,20 +1033,26 @@ it.each([
       await new Promise((resolve) => setTimeout(resolve, 20));
     });
     expect(onBlocked).toHaveBeenLastCalledWith(true);
-    const label =
-      operation === "preview"
-        ? "Preview existing.pdf"
-        : operation === "retry"
-          ? "Retry preparation"
-          : "Use extracted text only";
-    const unrelated = Array.from(
-      container.querySelectorAll<HTMLButtonElement>("ol button"),
-    ).find((button) => button.textContent === label);
-    if (!unrelated) throw Error("missing unrelated operation");
+    const tokenNode = container.querySelector<HTMLElement>(
+      "[data-attachment-id]",
+    );
+    if (!tokenNode) throw Error("missing inline preview token");
     await act(async () => {
-      unrelated.click();
+      tokenNode.click();
       await new Promise((resolve) => setTimeout(resolve, 20));
     });
+    if (operation !== "preview") {
+      const label =
+        operation === "retry" ? "Retry preparation" : "Use extracted text only";
+      const unrelated = Array.from(
+        container.querySelectorAll<HTMLButtonElement>("dialog button"),
+      ).find((button) => button.textContent === label);
+      if (!unrelated) throw Error("missing preview recovery action");
+      await act(async () => {
+        unrelated.click();
+        await new Promise((resolve) => setTimeout(resolve, 20));
+      });
+    }
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 20));
     });
@@ -919,7 +1145,7 @@ it.each(["success", "cancelled"] as const)(
       await new Promise((resolve) => setTimeout(resolve, 20));
     });
     expect(onBlocked).toHaveBeenLastCalledWith(true);
-    expect(attach.disabled).toBe(true);
+    // The actual toolbar now lives in Composer; this host checks the source gate.
     const retry = container.querySelector<HTMLButtonElement>(
       '[role="alert"] button',
     );
@@ -1025,19 +1251,28 @@ it("offers storage checking and explicit unreferenced cleanup, locates broken or
   await act(async () => {
     await new Promise((resolve) => setTimeout(resolve, 20));
   });
-  const check = container.querySelector<HTMLButtonElement>(
+  expect(
+    container.querySelector("[data-attachment-storage-action]"),
+  ).toBeNull();
+  await act(() =>
+    [...container.querySelectorAll("button")]
+      .find((button) => button.textContent === "Manage attachment storage")
+      ?.click(),
+  );
+  const check = document.body.querySelector<HTMLButtonElement>(
     '[data-attachment-storage-action="check"]',
   );
   expect(check).not.toBeNull();
-  expect(check?.closest("details")?.textContent).toContain("saved.txt");
+  expect(check?.closest("section")?.textContent).toContain("saved.txt");
   await act(async () => {
     check?.click();
     await new Promise((resolve) => setTimeout(resolve, 20));
   });
   expect(
-    container.querySelector("[data-attachment-storage-report]")?.textContent,
+    document.body.querySelector("[data-attachment-storage-report]")
+      ?.textContent,
   ).toContain("lost original.txt");
-  const clean = container.querySelector<HTMLButtonElement>(
+  const clean = document.body.querySelector<HTMLButtonElement>(
     '[data-attachment-storage-action="clean"]',
   );
   await act(async () => {
@@ -1096,7 +1331,12 @@ it("coalesces quick @ edits, hides old-query results, consumes Enter while waiti
             text: "",
             isCurrent: () => true,
             onBlocked: () => {},
-            mention: { query, from: 0, to: query.length + 1 },
+            mention: {
+              query,
+              from: 0,
+              to: query.length + 1,
+              expectedSource: `@${query}`,
+            },
             dismissMention: () => {},
             ref: actions,
           }),
@@ -1125,12 +1365,15 @@ it("coalesces quick @ edits, hides old-query results, consumes Enter while waiti
   ).toBe(false);
   await vi.waitFor(() => expect(searches()).toHaveLength(2));
   await vi.waitFor(() =>
-    expect(container.textContent).toContain("src/@virtualList/"),
+    expect(
+      container.querySelector('[role="option"]')?.getAttribute("aria-label"),
+    ).toBe("src/@virtualList"),
   );
   expect(searches()[1]?.[0]).toMatchObject({
     query: "@virtualList",
     refresh: false,
   });
+  await act(() => actions.current?.openSearch());
   const refresh = [...container.querySelectorAll("button")].find(
     (button) => button.textContent === "Refresh search",
   );
@@ -1141,7 +1384,9 @@ it("coalesces quick @ edits, hides old-query results, consumes Enter while waiti
   await vi.waitFor(() => expect(searches()).toHaveLength(4));
   expect(searches()[3]?.[0]).toMatchObject({ refresh: false });
   await vi.waitFor(() =>
-    expect(container.textContent).toContain("src/@virtualList/new/"),
+    expect(
+      container.querySelector('[role="option"]')?.getAttribute("aria-label"),
+    ).toBe("src/@virtualList/new"),
   );
   request.mockImplementation(async (command) => {
     if (command.kind === "search-reference") throw Error("refresh failed");

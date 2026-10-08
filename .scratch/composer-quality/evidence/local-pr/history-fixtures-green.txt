@@ -1,0 +1,16 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest tests/integration/clipboard-handoff.integration.test.ts tests/integration/clipboard-cache-recovery.integration.test.ts --maxWorkers=4
+$ tsr generate
+(node:79288) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/lou/.codex/worktrees/composer-quality/d-pi[39m
+
+ [32m✓[39m tests/integration/clipboard-handoff.integration.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 690[2mms[22m[39m
+ [32m✓[39m tests/integration/clipboard-cache-recovery.integration.test.ts [2m([22m[2m16 tests[22m[2m)[22m[33m 1302[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[32m24 passed[39m[22m[90m (24)[39m
+[2m   Start at [22m 20:07:40
+[2m   Duration [22m 2.06s[2m (tests 59%, transform 20%, import 13%, environment 9%)[22m
+

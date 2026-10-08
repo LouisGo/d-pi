@@ -22,7 +22,12 @@ export function StatusPreview({
         }
       />
       <Popover.Portal>
-        <Popover.Positioner side="top" align="start" sideOffset={8}>
+        <Popover.Positioner
+          className="ui-popup-positioner"
+          side="top"
+          align="start"
+          sideOffset={8}
+        >
           <Popover.Popup className="ui-status-preview" aria-label={label}>
             <Popover.Title>{label}</Popover.Title>
             {children}

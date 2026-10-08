@@ -1,0 +1,145 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/workbench/attachment-controls.test.ts -t 'picker return target'
+$ tsr generate
+(node:94497) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/.codex/worktrees/composer-quality/d-pi
+
+stderr | src/app/renderer/workbench/attachment-controls.test.ts > keeps the caret as the picker return target without stealing focus on late cancelled (retry: true)
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/attachment-controls.test.ts > keeps the caret as the picker return target without stealing focus on late success (retry: true)
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ ❯ src/app/renderer/workbench/attachment-controls.test.ts (25 tests | 2 failed | 21 skipped) 89ms
+   ✓ keeps the caret as the picker return target without stealing focus on late cancelled (retry: false) 63ms
+   ✓ keeps the caret as the picker return target without stealing focus on late success (retry: false) 8ms
+   × keeps the caret as the picker return target without stealing focus on late cancelled (retry: true) 12ms
+   × keeps the caret as the picker return target without stealing focus on late success (retry: true) 6ms
+   ↓ distinguishes frozen provenance from live references in the formal controls
+   ↓ offers only retry for an unfinished clipboard cleanup and confirms its original IDs
+   ↓ mounts the formal attachment controls and removes a failed atomic reference without changing surrounding text
+   ↓ isolates late @ searches and inserts a typed file as one undoable reference
+   ↓ isolates late @ searches and inserts a typed directory as one undoable reference
+   ↓ identifies a ready reference that failed during send-time freezing without rewriting its preparation state
+   ↓ permits explicit re-preparation of a failed @PDF after text-only consent while keeping the reference atomic
+   ↓ closes the native preview before unmount and restores editor focus via button
+   ↓ closes the native preview before unmount and restores editor focus via cancel
+   ↓ reports the typed oversized-source rejection instead of a transport failure and keeps sending blocked until explicit removal
+   ↓ retains a failed import across unrelated preview operations (transport failure: false)
+   ↓ retains a failed import across unrelated preview operations (transport failure: true)
+   ↓ retains a failed import across unrelated retry operations (transport failure: false)
+   ↓ retains a failed import across unrelated retry operations (transport failure: true)
+   ↓ retains a failed import across unrelated set-text-only operations (transport failure: false)
+   ↓ retains a failed import across unrelated set-text-only operations (transport failure: true)
+   ↓ resolves a failed import only through its explicit retry (success)
+   ↓ resolves a failed import only through its explicit retry (cancelled)
+   ↓ offers storage checking and explicit unreferenced cleanup, locates broken originals, and preserves editor input
+   ↓ coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly
+   ↓ retains an unresolved required-source failure after replacing its view with the same Thread owner
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/renderer/workbench/attachment-controls.test.ts > keeps the caret as the picker return target without stealing focus on late cancelled (retry: true)
+ FAIL  src/app/renderer/workbench/attachment-controls.test.ts > keeps the caret as the picker return target without stealing focus on late success (retry: true)
+AssertionError: expected <button type="button" …(5)></button> to be <div contenteditable="true" …(4)>…(1)</div> // Object.is equality
+
+- Expected
++ Received
+
+- <div
+-   class="tiptap ProseMirror"
+-   contenteditable="true"
+-   role="textbox"
++ <button
++   class="ui-button ui-button-ghost"
++   data-disabled=""
++   data-slot="button"
++   disabled=""
+    tabindex="0"
+-   translate="no"
++   type="button"
+  >
+-   <p>
+-     review draft
+-   </p>
+- </div>
++   Retry preparation
++ </button>
+
+ ❯ src/app/renderer/workbench/attachment-controls.test.ts:170:36
+    168|     }
+    169|     await vi.waitFor(() => expect(finishPicker).toBeTypeOf("function")…
+    170|     expect(document.activeElement).toBe(editor.view.dom);
+       |                                    ^
+    171|     expect(editor.state.selection.from).toBe(4);
+    172|     // A slower conversion/cancellation must not refocus after another…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 2 passed | 21 skipped (25)
+   Start at  16:21:52
+   Duration  2.22s (import 69%, transform 15%, environment 11%, tests 4%)
+
+[ELIFECYCLE] Test failed. See above for more details.

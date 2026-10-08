@@ -1,0 +1,59 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/workbench/attachment-controls.test.ts -t 'distinguishes frozen provenance'
+$ tsr generate
+(node:85248) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/.codex/worktrees/composer-quality/d-pi
+
+ ❯ src/app/renderer/workbench/attachment-controls.test.ts (21 tests | 1 failed | 20 skipped) 160ms
+   × distinguishes frozen provenance from live references in the formal controls 160ms
+   ↓ offers only retry for an unfinished clipboard cleanup and confirms its original IDs
+   ↓ mounts the formal attachment controls and removes a failed atomic reference without changing surrounding text
+   ↓ isolates late @ searches and inserts a typed file as one undoable reference
+   ↓ isolates late @ searches and inserts a typed directory as one undoable reference
+   ↓ identifies a ready reference that failed during send-time freezing without rewriting its preparation state
+   ↓ permits explicit re-preparation of a failed @PDF after text-only consent while keeping the reference atomic
+   ↓ closes the native preview before unmount and restores editor focus via button
+   ↓ closes the native preview before unmount and restores editor focus via cancel
+   ↓ reports the typed oversized-source rejection instead of a transport failure and keeps sending blocked until explicit removal
+   ↓ retains a failed import across unrelated preview operations (transport failure: false)
+   ↓ retains a failed import across unrelated preview operations (transport failure: true)
+   ↓ retains a failed import across unrelated retry operations (transport failure: false)
+   ↓ retains a failed import across unrelated retry operations (transport failure: true)
+   ↓ retains a failed import across unrelated set-text-only operations (transport failure: false)
+   ↓ retains a failed import across unrelated set-text-only operations (transport failure: true)
+   ↓ resolves a failed import only through its explicit retry (success)
+   ↓ resolves a failed import only through its explicit retry (cancelled)
+   ↓ offers storage checking and explicit unreferenced cleanup, locates broken originals, and preserves editor input
+   ↓ coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly
+   ↓ retains an unresolved required-source failure after replacing its view with the same Thread owner
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/renderer/workbench/attachment-controls.test.ts > distinguishes frozen provenance from live references in the formal controls
+AssertionError: expected 2 to be 3 // Object.is equality
+
+- Expected
++ Received
+
+- 3
++ 2
+
+ ❯ src/app/renderer/workbench/attachment-controls.test.ts:180:39
+    178|   await act(async () => {close?.click(); await new Promise(resolve => …
+    179|   expect(document.activeElement).toBe(editor.view.dom);
+    180|   expect(editor.state.selection.from).toBe(3);
+       |                                       ^
+    181|
+    182| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 20 skipped (21)
+   Start at  15:36:05
+   Duration  2.42s (import 69%, transform 13%, environment 11%, tests 7%)
+
+[ELIFECYCLE] Test failed. See above for more details.

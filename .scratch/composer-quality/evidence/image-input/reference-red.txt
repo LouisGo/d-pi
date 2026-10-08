@@ -1,0 +1,101 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/modules/input/main/attachments/attachment-store.test.ts -t 'retains the compressed resource' --maxWorkers=4
+$ tsr generate
+(node:46860) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/lou/.codex/worktrees/composer-quality/d-pi[39m
+
+ [31m❯[39m src/modules/input/main/attachments/attachment-store.test.ts [2m([22m[2m19 tests[22m[2m | [22m[31m1 failed[39m[2m | [22m[33m18 skipped[39m[2m)[22m[32m 71[2mms[22m[39m
+   [2m[90m↓[39m[22m private immutable input preparation [2m(15)[22m
+     [2m[90m↓[39m[22m privately copies and deduplicates bytes but preserves separate reference identity and provenance
+     [2m[90m↓[39m[22m freezes authorized references at prepare and rejects a reference owned by another Thread
+     [2m[90m↓[39m[22m does not dispatch unknown or malformed tokens as literal filenames
+     [2m[90m↓[39m[22m retains failed binary and corrupt/private missing objects block the whole submission
+     [2m[90m↓[39m[22m accepts known extensionless/configuration source files with empty MIME and validates their actual encoding
+     [2m[90m↓[39m[22m strict UTF-8 and declared MIME avoid pretending unsupported bytes are text
+     [2m[90m↓[39m[22m validates image decoding and emits exact bytes in image payload
+     [2m[90m↓[39m[22m PDF conversion never silently drops visuals and allows explicit text-only
+     [2m[90m↓[39m[22m explicit text-only cannot override conversion failure or the page limit
+     [2m[90m↓[39m[22m validates referenced image bytes rather than trusting the file extension
+     [2m[90m↓[39m[22m retains the original when private storage fills and serializes concurrent duplicate imports
+     [2m[90m↓[39m[22m preserves authorization failures and supports known UTF-16 BOM text
+     [2m[90m↓[39m[22m prepares @ PDF from current authorized bytes, keeps explicit loss consent, and never reuses a prior frozen conversion
+     [2m[90m↓[39m[22m bounds text previews on UTF-8 boundaries while retaining complete source and send content
+     [2m[90m↓[39m[22m source and total/encoded capacity fail without truncating stored input
+   [2m[90m↓[39m[22m prepares frozen source containing private-token-shaped literals without attachment authority
+   [2m[90m↓[39m[22m prepares a normal pasted PNG above the old 1 MiB encoded floor without changing its source bytes
+   [2m[90m↓[39m[22m freezes a compressed image as a pinned derived resource and retains its original
+[31m   [31m×[31m retains the compressed resource across repeated @ preparation and refreshes it after the file changes[39m[32m 70[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/modules/input/main/attachments/attachment-store.test.ts[2m > [22mretains the compressed resource across repeated @ preparation and refreshes it after the file changes
+[31m[1mAssertionError[22m: expected { ok: false, …(2) } to deeply equal { ok: true, content: { …(5) } }[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "content": {[39m
+[32m-     "images": [[39m
+[32m-       {[39m
+[32m-         "mimeType": "image/png",[39m
+[32m-         "resource": {[39m
+[32m-           "byteLength": 68,[39m
+[32m-           "digest": "7d1a752d9272e15adbe44773b44d6ad4da69f67f40a96ecece3fdef6668bd669",[39m
+[32m-         },[39m
+[32m-         "type": "image",[39m
+[32m-       },[39m
+[32m-     ],[39m
+[32m-     "message": "[39m
+[32m- [image: large.png][39m
+[32m- ",[39m
+[32m-     "rawBytes": 11534404,[39m
+[32m-     "schemaVersion": 1,[39m
+[32m-     "sources": [[39m
+[32m-       {[39m
+[2m    "attachmentId": "e17f9855-a29a-4f32-9e14-e55825296431",[22m
+[32m-         "byteLength": 11534404,[39m
+[32m-         "converterVersion": "original-image-v1",[39m
+[32m-         "coverageGaps": [],[39m
+[32m-         "derivedDigest": "7d1a752d9272e15adbe44773b44d6ad4da69f67f40a96ecece3fdef6668bd669",[39m
+[32m-         "imageTransformation": {[39m
+[32m-           "byteLength": 68,[39m
+[32m-           "height": 1,[39m
+[32m-           "mimeType": "image/png",[39m
+[32m-           "originalHeight": 2,[39m
+[32m-           "originalWidth": 2,[39m
+[32m-           "width": 1,[39m
+[32m-         },[39m
+[32m-         "inputDigest": "b9624b331f69163b7d08687a6038e4a31b0cbfe9e3a8b3c04dd6cd81fc3565f4",[39m
+[32m-         "name": "large.png",[39m
+[32m-         "path": "large.png",[39m
+[32m-         "referenceKind": "file",[39m
+[32m-         "representation": "image",[39m
+[32m-         "version": "0",[39m
+[32m-       },[39m
+[32m-     ],[39m
+[32m-   },[39m
+[32m-   "ok": true,[39m
+[31m+   "ok": false,[39m
+[31m+   "reason": "image-too-large",[39m
+[2m  }[22m
+
+[36m [2m❯[22m src/modules/input/main/attachments/attachment-store.test.ts:[2m619:18[22m[39m
+    [90m617|[39m   expect(first.ok).toBe(true);
+    [90m618|[39m   const second = await s.prepare(thread, item.token);
+    [90m619|[39m   expect(second).toEqual(first);
+    [90m   |[39m                  [31m^[39m
+    [90m620|[39m   expect(compressImage).toHaveBeenCalledTimes(1);
+    [90m621|[39m   expect(await s.preview(thread, item.id)).toMatchObject({
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[33m18 skipped[39m[90m (19)[39m
+[2m   Start at [22m 19:40:33
+[2m   Duration [22m 358ms[2m (transform 49%, tests 25%, import 22%, worker 3%)[22m
+
+[ELIFECYCLE] Test failed. See above for more details.

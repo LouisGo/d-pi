@@ -1,0 +1,546 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/workbench/composer-continuity.test.ts
+$ tsr generate
+(node:44826) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/.codex/worktrees/composer-quality/d-pi
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > inserts mixed-paste files at the captured source boundary and undoes the whole batch without erasing later typing
+An update to AttachmentImportBatches inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > exposes partial import without automatic adoption and accepts the ready subset only through its explicit Composer action
+An update to AttachmentImportBatches inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > previews and confirms a failed PDF in its original import job before explicit insertion
+An update to AttachmentImportBatches inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > previews and confirms a failed PDF in its original import job before explicit insertion
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ ❯ src/app/renderer/workbench/composer-continuity.test.ts (22 tests | 1 failed) 1254ms
+   ✓ keeps a frozen selection pending when PM rejects insertion and applies it once after recovery 55ms
+   ✓ preserves A's middle selection and independent undo/redo across A → B → A with fresh views 27ms
+   ✓ cannot undo accepted submission consumption in the current editor or after a switch 14ms
+   ✓ uses an externally updated draft version on return and discards the previous undo 10ms
+   ✓ Shift+Enter inserts a source line in the real composer and remains undoable 5ms
+   ✓ retries a confirmed interrupted chat in place without consuming the draft 5ms
+   ✓ does not retry an interrupted chat until its previous process has stopped 3ms
+   ✓ explains a running session without a model and offers model selection without consuming its draft 3ms
+   ✓ keeps a pending file-picker insertion in its real Composer before admitting the developer view 61ms
+   ✓ keeps a pending drop insertion in its real Composer before admitting the developer view 57ms
+   ✓ makes history protection limit observable in the real Composer while preserving its source body 34ms
+   ✓ makes history protection failure observable in the real Composer while preserving its source body 37ms
+   ✓ keeps publication-limit Undo until explicit recovery and waits for Main lease release before retry 78ms
+   ✓ connects synchronous copy and awaited structured paste in real Composer views as one user action 19ms
+   ✓ shows automatic preparation without asking the user to start OMP 4ms
+   ✓ offers an explicit startup retry after failure and preserves the draft until a real submission 3ms
+   ✓ offers the normal project trust action for a CLI session and retains the question draft 3ms
+   ✓ owns Enter while the reference popup is loading, empty or dismissed, and leaves IME confirmation to the editor 198ms
+   ✓ accepts one reference on Enter and preserves input typed while Main verifies the chosen source 261ms
+   ✓ inserts mixed-paste files at the captured source boundary and undoes the whole batch without erasing later typing 80ms
+   × exposes partial import without automatic adoption and accepts the ready subset only through its explicit Composer action 158ms
+   ✓ previews and confirms a failed PDF in its original import job before explicit insertion 137ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/renderer/workbench/composer-continuity.test.ts > exposes partial import without automatic adoption and accepts the ready subset only through its explicit Composer action
+AssertionError: expected <body><div>…(1)</div></body> to be <div contenteditable="true" …(7)>…(1)</div> // Object.is equality
+
+- Expected
++ Received
+
+@@ -1,6 +1,334 @@
++ <body>
++   <div>
++     <section
++       aria-label="Persistent text draft"
++       class="composer"
++       data-expanded="false"
++     >
++       <div
++         class="composer-heading"
++       >
++         <span
++           class="save-status"
++           role="status"
++         >
++           Waiting to save…
++         </span>
++       </div>
++       <div
++         class="grid gap-2 px-3 pb-2"
++       >
++         <ol
++           aria-label="Attach files"
++           class="attachment-rail"
++         >
++           <li
++             class="attachment-file-chip"
++           >
++             <button
++               aria-label="Preview good.txt"
++               class="ui-button ui-button-source ui-button-chip w-full"
++               data-slot="button"
++               tabindex="0"
++               type="button"
++             >
++               <svg
++                 aria-hidden="true"
++                 class=""
++                 color="currentColor"
++                 fill="none"
++                 focusable="false"
++                 height="16"
++                 stroke="currentColor"
++                 stroke-width="1.5"
++                 viewBox="0 0 24 24"
++                 width="16"
++                 xmlns="http://www.w3.org/2000/svg"
++               >
++                 <path
++                   d="M8 7L16 7"
++                   stroke="currentColor"
++                   stroke-linecap="round"
++                   stroke-linejoin="round"
++                   stroke-width="1.5"
++                 />
++                 <path
++                   d="M8 11L12 11"
++                   stroke="currentColor"
++                   stroke-linecap="round"
++                   stroke-linejoin="round"
++                   stroke-width="1.5"
++                 />
++                 <path
++                   d="M13 21.5V21C13 18.1716 13 16.7574 13.8787 15.8787C14.7574 15 16.1716 15 19 15H19.5M20 13.3431V10C20 6.22876 20 4.34315 18.8284 3.17157C17.6569 2 15.7712 2 12 2C8.22877 2 6.34315 2 5.17157 3.17157C4 4.34314 4 6.22876 4 10L4 14.5442C4 17.7892 4 19.4117 4.88607 20.5107C5.06508 20.7327 5.26731 20.9349 5.48933 21.1139C6.58831 22 8.21082 22 11.4558 22C12.1614 22 12.5141 22 12.8372 21.886C12.9044 21.8623 12.9702 21.835 13.0345 21.8043C13.3436 21.6564 13.593 21.407 14.0919 20.9081L18.8284 16.1716C19.4065 15.5935 19.6955 15.3045 19.8478 14.9369C20 14.5694 20 14.1606 20 13.3431Z"
++                   stroke="currentColor"
++                   stroke-linecap="round"
++                   stroke-linejoin="round"
++                   stroke-width="1.5"
++                 />
++               </svg>
++               <span
++                 class="truncate"
++               >
++                 good.txt
++               </span>
++               <small>
++                 1
++                  KiB
++               </small>
++             </button>
++             <button
++               aria-label="Remove good.txt"
++               class="ui-button ui-button-icon ui-button-ghost absolute right-0 top-0"
++               data-slot="button"
++               tabindex="0"
++               type="button"
++             >
++               <svg
++                 aria-hidden="true"
++                 class=""
++                 color="currentColor"
++                 fill="none"
++                 focusable="false"
++                 height="16"
++                 stroke="currentColor"
++                 stroke-width="1.5"
++                 viewBox="0 0 24 24"
++                 width="16"
++                 xmlns="http://www.w3.org/2000/svg"
++               >
++                 <path
++                   d="M18 6L6.00081 17.9992M17.9992 18L6 6.00085"
++                   stroke="currentColor"
++                   stroke-linecap="round"
++                   stroke-linejoin="round"
++                   stroke-width="1.5"
++                 />
++               </svg>
++             </button>
++           </li>
++         </ol>
++         <details
++           class="ui-disclosure"
++           data-slot="disclosure"
++         >
++           <summary
++             class="ui-disclosure-trigger"
++             data-slot="disclosure-trigger"
++           >
++             Attachments and storage
++           </summary>
++           <div
++             class="grid gap-2 py-2"
++           >
++             <p
++               class="muted"
++             >
++               Drafts, pending imports and frozen receipts are retained. Automatic cleanup waits seven days after the last reference is released; manual cleanup removes unreferenced cached originals and conversions.
++             </p>
++             <div
++               class="flex flex-wrap gap-2"
++             >
++               <button
++                 class="ui-button ui-button-ghost"
++                 data-attachment-storage-action="check"
++                 data-slot="button"
++                 tabindex="0"
++                 type="button"
++               >
++                 Check stored attachments
++               </button>
++               <button
++                 class="ui-button ui-button-ghost"
++                 data-attachment-storage-action="clean"
++                 data-slot="button"
++                 tabindex="0"
++                 type="button"
++               >
++                 Clear unreferenced cache
++               </button>
++             </div>
++           </div>
++         </details>
+          <div
++           aria-label="File import"
++           class="grid gap-2 rounded-md border border-border p-2"
++         >
++           <ol
++             class="grid gap-2"
++           >
++             <li
++               class="grid gap-1"
++             >
++               <div
++                 class="flex flex-wrap items-center gap-2"
++               >
++                 <strong
++                   class="min-w-0 max-w-64 truncate"
++                   title="good.txt"
++                 >
++                   good.txt
++                 </strong>
++                 <span
++                   class="muted"
++                   role="status"
++                 >
++                   Inserted
++                 </span>
++                 <button
++                   aria-label="Preview good.txt"
++                   class="ui-button ui-button-ghost"
++                   data-slot="button"
++                   tabindex="0"
++                   type="button"
++                 >
++                   Preview good.txt
++                 </button>
++               </div>
++             </li>
++             <li
++               class="grid gap-1"
++             >
++               <div
++                 class="flex flex-wrap items-center gap-2"
++               >
++                 <strong
++                   class="min-w-0 max-w-64 truncate"
++                   title="bad.txt"
++                 >
++                   bad.txt
++                 </strong>
++                 <span
++                   class="muted"
++                   role="status"
++                 >
++                   Import failed
++                 </span>
++                 <button
++                   class="ui-button ui-button-ghost"
++                   data-slot="button"
++                   tabindex="0"
++                   type="button"
++                 >
++                   Retry preparation
++                 </button>
++                 <button
++                   class="ui-button ui-button-ghost"
++                   data-slot="button"
++                   tabindex="0"
++                   type="button"
++                 >
++                   Cancel bad.txt
++                 </button>
++               </div>
++               <p
++                 class="failure"
++                 role="alert"
++               >
++                 This file format has no supported content representation.
++               </p>
++             </li>
++           </ol>
++           <div
++             class="flex flex-wrap gap-2"
++           >
++             <button
++               class="ui-button ui-button-ghost"
++               data-slot="button"
++               tabindex="0"
++               type="button"
++             >
++               Cancel files awaiting insertion
++             </button>
++           </div>
++         </div>
++         <details
++           class="ui-disclosure"
++           data-slot="disclosure"
++         >
++           <summary
++             class="ui-disclosure-trigger"
++             data-slot="disclosure-trigger"
++           >
++             Attachment details
++           </summary>
++           <ol
++             aria-label="Attach files"
++             class="grid max-h-40 gap-2 overflow-auto"
++           >
++             <li
++               class="grid gap-1 rounded-md border border-border p-2"
++             >
++               <div
++                 class="flex flex-wrap items-center justify-between gap-2"
++               >
++                 <strong
++                   class="flex items-center gap-2 break-all"
++                 >
++                   good.txt
++                 </strong>
++                 <span
++                   class="muted"
++                 >
++                   Ready
++                    · 
++                   1
++                    KiB
++                 </span>
++               </div>
++               <div
++                 class="flex flex-wrap gap-2"
++               >
++                 <button
++                   class="ui-button ui-button-ghost"
++                   data-slot="button"
++                   tabindex="0"
++                   type="button"
++                 >
++                   Preview good.txt
++                 </button>
++                 <button
++                   aria-label="Move good.txt earlier"
++                   class="ui-button ui-button-ghost"
++                   data-disabled=""
++                   data-slot="button"
++                   disabled=""
++                   tabindex="0"
++                   type="button"
++                 >
++                   Move good.txt earlier
++                 </button>
++                 <button
++                   aria-label="Move good.txt later"
++                   class="ui-button ui-button-ghost"
++                   data-disabled=""
++                   data-slot="button"
++                   disabled=""
++                   tabindex="0"
++                   type="button"
++                 >
++                   Move good.txt later
++                 </button>
++                 <button
++                   aria-label="Remove good.txt"
++                   class="ui-button ui-button-ghost"
++                   data-slot="button"
++                   tabindex="0"
++                   type="button"
++                 >
++                   Remove good.txt
++                 </button>
++               </div>
++             </li>
++           </ol>
++         </details>
++       </div>
++       <div
++         class="composer-editor"
++       >
++         <div
+            aria-label="Draft body"
+            aria-multiline="true"
+            class="tiptap ProseMirror"
+            contenteditable="true"
+            role="textbox"
+@@ -19,7 +347,104 @@
+                data-attachment-id="bedf1d4c-dd9b-4601-abba-24e86595afd1"
+              >
+                @good.txt
+              </span>
+              alpha omega
++           </p>
++         </div>
++       </div>
++       <div
++         class="composer-footer"
++       >
++         <div
++           class="composer-help"
++         >
++           <details
++             class="ui-disclosure"
++             data-slot="disclosure"
++           >
++             <summary
++               class="ui-disclosure-trigger"
++               data-slot="disclosure-trigger"
++             >
++               Input options
++             </summary>
++             <p>
++               Enter to send · Shift+Enter for a new line
++                
++               · ⌘Z to undo
++                · 
++               ⌘⇧V paste plain text
+              </p>
++             <button
++               class="ui-button ui-button-ghost"
++               data-slot="button"
++               tabindex="0"
++               type="button"
++             >
++               Switch send shortcut
++             </button>
++           </details>
+          </div>
++         <div
++           class="flex flex-wrap gap-2"
++         >
++           <button
++             aria-label="Attach files"
++             class="ui-button ui-button-icon ui-button-ghost"
++             data-disabled=""
++             data-slot="button"
++             disabled=""
++             tabindex="0"
++             title="Attach files"
++             type="button"
++           >
++             <svg
++               aria-hidden="true"
++               class=""
++               color="currentColor"
++               fill="none"
++               focusable="false"
++               height="20"
++               stroke="currentColor"
++               stroke-width="1.5"
++               viewBox="0 0 24 24"
++               width="20"
++               xmlns="http://www.w3.org/2000/svg"
++             >
++               <path
++                 d="M5.82338 12L4.27922 10.4558C2.57359 8.75022 2.57359 5.98485 4.27922 4.27922C5.98485 2.57359 8.75022 2.57359 10.4558 4.27922L19.7208 13.5442C21.4264 15.2498 21.4264 18.0152 19.7208 19.7208C18.0152 21.4264 15.2498 21.4264 13.5442 19.7208L10.0698 16.2464C9.00379 15.1804 9.00379 13.4521 10.0698 12.386C11.1358 11.32 12.8642 11.32 13.9302 12.386L15.8604 14.3162"
++                 stroke="currentColor"
++                 stroke-linecap="round"
++                 stroke-linejoin="round"
++                 stroke-width="1.5"
++               />
++             </svg>
++             <span
++               class="sr-only"
++             >
++               Attach files
++             </span>
++           </button>
++           <button
++             aria-label="@ Project file"
++             class="ui-button ui-button-icon ui-button-ghost"
++             data-slot="button"
++             tabindex="0"
++             title="@ Project file"
++             type="button"
++           >
++             @
++           </button>
++           <button
++             class="ui-button ui-button-ghost"
++             data-slot="button"
++             tabindex="0"
++             type="button"
++           >
++             Expand editor
++           </button>
++         </div>
++       </div>
++     </section>
++   </div>
++ </body>
+
+ ❯ src/app/renderer/workbench/composer-continuity.test.ts:1017:34
+    1015|     items[0]?.token,
+    1016|   );
+    1017|   expect(document.activeElement).toBe(fixture.editor().view.dom);
+       |                                  ^
+    1018|   expect(fixture.thread().canPrepareInput()).toBe(false);
+    1019|   const discard = Array.from(fixture.container.querySelectorAll("butto…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 21 passed (22)
+   Start at  14:12:24
+   Duration  3.30s (import 45%, tests 39%, transform 10%, environment 5%)
+
+[ELIFECYCLE] Test failed. See above for more details.

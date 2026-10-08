@@ -1,0 +1,16 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/main/ipc/attachment-document.test.ts src/app/main/ipc/attachments.test.ts
+$ tsr generate
+(node:50273) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/.codex/worktrees/composer-quality/d-pi
+
+ ✓ src/app/main/ipc/attachment-document.test.ts (2 tests) 56ms
+ ✓ src/app/main/ipc/attachments.test.ts (3 tests) 122ms
+
+ Test Files  2 passed (2)
+      Tests  5 passed (5)
+   Start at  14:17:51
+   Duration  688ms (transform 45%, import 39%, tests 15%)
+

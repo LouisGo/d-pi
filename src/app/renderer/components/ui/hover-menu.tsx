@@ -40,7 +40,12 @@ export function HoverMenu({
         }
       />
       <Menu.Portal>
-        <Menu.Positioner side="top" align="end" sideOffset={8}>
+        <Menu.Positioner
+          className="ui-popup-positioner"
+          side="top"
+          align="end"
+          sideOffset={8}
+        >
           <Menu.Popup className="ui-hover-menu" aria-label={label}>
             {items.map((item) => (
               <Menu.Item

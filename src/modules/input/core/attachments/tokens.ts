@@ -1,3 +1,5 @@
+import { parseDraftBlocks } from "../references/serialize";
+
 export const ATTACHMENT_TOKEN_PREFIX = "[[dpi-attachment:";
 export function attachmentToken(id: string): string {
   return `${ATTACHMENT_TOKEN_PREFIX}${id}]]`;
@@ -25,4 +27,20 @@ export function readAttachmentTokens(
     tokens.push({ id, token, position });
     cursor = end + 2;
   }
+}
+/** Frozen selection text is literal source, never a private attachment grant. */
+export function readDraftAttachmentTokens(
+  text: string,
+): ReturnType<typeof readAttachmentTokens> {
+  const tokens: { id: string; token: string; position: number }[] = [];
+  let valid = true;
+  parseDraftBlocks(text, (block, position) => {
+    if (block.kind !== "paragraph") return;
+    const parsed = readAttachmentTokens(block.text);
+    if (!parsed.ok) valid = false;
+    else
+      for (const token of parsed.tokens)
+        tokens.push({ ...token, position: position + token.position });
+  });
+  return valid ? { ok: true, tokens } : { ok: false };
 }

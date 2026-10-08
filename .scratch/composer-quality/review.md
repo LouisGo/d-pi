@@ -1,0 +1,96 @@
+# Composer 独立双轴评审
+
+基点及实际merge-base `a9cf9a9d990f02242ce74d8e42585a63ffc21a2d`；行为实现最终 `3b932e04f93d49d62e98dffc7cdcab5c18bdb5d1`。两个只读独立subagent按固定提交/临时git archive源码审查，未写项目或治理状态。主Agent核实反例、修复并集成；结论来自本会话对应agent消息。
+
+## Spec：review_spec
+
+发现3个P2，全部关闭：
+
+1. PDF覆盖缺口批次缺少原预览/明确text-only入口，Main仍读旧failed result。`986db73` + `dad0a9b`修为同operation固定IDs/currentmanifest和真实GUI确认；独立临时PDF反例转绿。
+2. 无关Undo和纯标签刷新误撤销mapped origin。`986db73`/`73417c8`/`50c8bd0`分别区分标签身份、保留UndoB来源与排除后插区间；Undo原A/真实源部分删除后Redo不复活。三个原始临时反例及真实PM25通过。
+3. 键盘点显式插入后按钮卸载导致focus落body。`79856ed`仅在explicit adapter成功后focus；自动target不抢焦点。独立真实Composer临时反例转绿。
+
+前一阶段Spec闭合于行为 `75db8929`：最后导航terminal增量无新增发现；对应IPC临时独立2测试通过。source UI末次单token样式未改变产品行为。无未解决Spec发现，不代表未跑的实机矩阵通过。
+
+## Standards：review_standards
+
+覆盖Main document/Thread/op归属、预算/pin/settlement、freeze/dispose/late，展示订阅/Query、PM history/源身份、键盘/IME与共享焦点/组件规则。旧Electron导航签名候选依据本地Electron44.4.5类型及对应官方源码撤回，未作为缺陷；局部Button padding候选被design lint证实并改shared size source；import-limit两语言消息齐全。
+
+前一阶段闭合于 `ac6330a4`：成功显式插入焦点、真实terminal才恢复IPC owner，以及thumbnail消费既有shared圆角token均无未解决发现。无文件修改或全套重复检查。
+
+两轴限制：真实IME/VoiceOver/缩放/30min性能、provider/Host queue及原生导航事件时序没有独立运行证据；由主线程Dev观察与[验证](validation.md)明确区分。早期Dev租约失败根因仍unknown。
+
+## 最后固定增量
+
+两个reviewer分别复核ac6330a→36121ea的动态引用预览：受控root/symlink/Thread current、25MiB/64KiB预算、不调用put/save与保留PDF derivedDigest，均无新增发现；Spec另独立10项测试通过。
+
+36121ea→3b932e04关闭modal增量两轴亦无新增发现：按钮/Escape先同步关闭仍挂载dialog，再parent恢复bookmark，cancel阻止默认关闭干扰，原owner/销毁/替换/IME守卫保留。Spec另独立两项定向反例通过。工程评审闭合，不代表未跑实机矩阵通过。
+
+## UI拒绝后重新评审：72863d9..3918b64
+
+旧行为评审没有替代用户UI验收。按截图组合重做后，同两位只读reviewer各自覆盖Spec与Standards，主Agent核实并修复：
+
+- 展开后实际Enter为换行，More仍展示发送；改为展示当前有效行为，不覆写收起偏好。
+- 展开动作焦点落按钮；回到同一editor，维持原caret。
+- 多个隐藏external token连续相邻，方向键停在不可见位置；双向跳过完整连续区间，保留Shift扩选语义。
+- 管理弹窗期间正文变化后使用旧bookmark；改用真实PM映射位置恢复。
+- 首次及失败重试打开原生picker时，系统返回到即将卸载的按钮；打开前设定当前editor/caret为返回目标，保留owner/freeze/IME守卫。
+- 自动choose-import完成仍强制focus，晚到抢走新用户焦点；临时insertion entry保留focus意图，自动为false、显式采用为true，跨IME/view延迟仍保留该意图，不修改IPC/持久化。
+
+每项有真实PM/React反例，归档[红绿记录](validation.md#2026-10-08-ui-拒绝后的纠正)。最后836f591→3918b64的两轴关闭：Standards独立验证首次/重试×取消/成功四项，Spec九项覆盖这些路径及自动晚到不聚焦、显式采用聚焦；无剩余可行动发现。其他来源的“重新导入”在仍挂载管理Modal内，是单独合同，不机械把焦点送入inert editor；未宣称该入口有新的原生证据。
+
+共享ActionMenu/Toolbar/外部附件/ReferenceSuggestions组合不拥有第二份业务协调器；缩略图沿用只读Query。共享popup层与chip圆角增量独立Standards无新增发现。
+
+## Fresh视觉收尾
+
+`impeccable_finish_reviewer`无实现历史、只读原生复核fee53ddf：disposition为ship，范围为浅色桌面宽窗的收起/展开/More与实际鼠标焦点。持久设计合同为连续输入表面、项目引用仅正文、外部附件单独分区、真实model/access状态、次级维护、token/Icon/Base UI。截图参考结构已落实；不能把AX按钮动作后的keyboard outline当作物理鼠标缺陷，实际坐标点击只保留caret。root后续补深色/565px停靠内容视口/长文件名与3918b64超限重试焦点链，见原生记录。
+
+`impeccable_documenter`只读审查：无需改写全局DESIGN或刷新design.json；固定T3 SHA已写入交接，来源只支撑Surface/Banner/Prompt/Toolbar组合，不是复制T3业务架构。既有Button API/密度说明漂移不纳入本次任务。真实IME、VoiceOver、缩放、长会话、OS竞态全集和provider/Host queue继续列为证据缺口；用户认可pending。
+
+## 图片／文件编辑语义：dd8d812..e0c43e5
+
+Spec与Standards独立只读固定评审，未修改主树或治理状态，未运行GUI/Dev/E2E。此前UI认可不能替代本次用户验收。
+
+初次fec2290及随后1b50c88发现并修复：
+
+- 冷清单晚到前正文替换丢图片：metadata classification前暂缓普通编辑，读取失败提供显式重载；不复活已移除来源。
+- locale更新解绑导入adapter使映射资格失效：绑定稳定、localeRef仅更新标签。
+- 显式图片采用后按钮卸载失焦：图片及duplicate early-return遵守focus意图；自动false不抢焦点。
+- 图片结构投影误用标签meta跳过map：独立结构meta继续映射位置/来源，保留源消耗fence。
+- Renderer删除epoch ID但Main仍累加：Main按source ID保留版本摘要，仅其自有manifest核定外部image可退出；真实Main联合ACK失败/重试、shared hash与旧file版本通过。
+- 尾部冻结引用分隔与原空行被破坏：image carrier不填原空paragraph，块分隔、cold doc、Undo/Redo及冻结原文保持。
+- readonly分类及随后file label刷新重写canonical/sequence：cache跳过两种只读投影，来源观察仍执行。
+- Main既有冻结literal全字扫描：同parser仅paragraph授权，prepare／durable adoption／SQLite扫描及absolute offsets正式验证；最后Thread canPrepareInput也同规则，旧失败源仅作为冻结原文不再误阻止发送。
+
+Standards固定dd8d812..63e023e闭合，独立6文件61项通过；随后63e023e..e0c43e5窄增量复核无新增发现，独立Thread/token2文件4项通过。Spec在63e023e发现最后Thread门禁缺口，e0c43e5原反例及正式4项转绿后闭合；此前两个readonly middle migration旧反例及6文件61项亦独立通过。root最终50文件369项通过见验证页，不与reviewer数量合计。
+
+**最终两轴无剩余可行动发现，结论固定于e0c43e5源码。** 治理文档由root单写；SDK PDF现有失败未在闭合阶段重复运行，基线复现与unknown根因继续保留。评审不替代用户视觉/真实IME及实机验收。
+
+## 日常状态与导入呈现：2fdeab2..6b39d19
+
+独立 `spec_review` 和 `standards_review`，使用无作者实现历史的两个只读上下文，固定 base 2fdeab2d7183430dc0f5315dfee5d3fd30bd2bc7 / head 6b39d195d99e9618bc5c9d17c42aff7c2f9f8b13，merge-base等于base。未编辑源码、未创建实施树或运行GUI。
+
+- Spec：无高价值可报告缺陷。覆盖正常保存安静但继续执行、真实失败/冲突恢复、指针输入/Tab/实际焦点迁移、导入report的pending/partial/settlement、去重release/批次预算/取消及Thread隔离。读取提交中的302项证据，未独立执行。
+- Standards：无可报告缺陷。覆盖共享焦点与portal、当前采用/preview和资源settlement分别处理、Main/leases/send所有权不变、异步Thread及Undo/Redo、React订阅和模块边界、类型/设计规则无绕过。独立focus/continuity/initialization3文件46项通过。其本机pnpm版本切换ENOEXEC后只读用node node_modules/vitest/vitest.mjs执行，Node23.10.0，作为补充行为证据；root固定Node24.21.0/pnpm12.8.1的302项/typecheck/build为主验证。
+
+结论仅适用于上述源码。真实浏览器focus-visible、蓝框是否消失、窄窗/深浅布局、OS/IME/VoiceOver未验证；T3引用与静态detector不构成用户认可。最后治理文档增量不改源码，验收保持pending。
+
+## 普通图片提交与公共压缩：25e8c58 + 固定WIP（07）
+
+Spec与Standards两位只读reviewer独立覆盖完整固定差异及所有新文件。首快照各发现同一 @ 图片派生manifest丢失问题：Spec P2、Standards P1；root以连续prepare反例核实，再修正通用reference收尾仅处理text，保留image完整record/转换器。新增连续prepare、派生预览、来源改变后重新压缩测试先失败后通过。preview授权读/摘要复核/读取后身份检查保持，无manifest写入。
+
+最新快照差异SHA-256 `c2849931de474435bc2918fb953c3785f561a8ebf1c6de4ecbada1d957d1138c`，两轴逐项hash核实并复核修复与增量后无剩余高价值发现；[源码manifest](evidence/image-input/review-source-manifest.json)、[红绿来源](evidence/image-input/provenance.md)。Standards独立Node水合3项通过，26项worker/引用结果来自root原始输出，不双计。收尾按 architecture skill 补充纯共享策略的 input/main→shared 实际依赖登记并刷新结构报告，Standards独立架构486文件及报告检查通过；仅测试缩进与治理交接再更新，行为源不变。没有原生/provider或视觉结论，实机与用户认可继续pending。
+
+## 原生附件回返鼠标焦点：45c7ef1 + 08固定WIP
+
+小改动单独只读reviewer覆盖Spec/Standards两轴。固定差异SHA-256 3f431c854044dcf536fab22f7b3948faa7e759f54c63b9a4c3357b393e24044e，manifest逐项匹配，完整核对共享来源生命周期、portal/键盘/编辑、正式picker首次/重试×成功/取消和迟到不抢焦点。无可报告缺陷。[来源与源清单](evidence/native-picker-focus/provenance.md)。
+
+review读取实际5 red与4文件70 green，没有自行运行GUI或原生能力；只证明模拟focusin(null)的处理，不替代真实Finder序列和outline实机验收。收尾仅治理与报告新鲜度改变，行为源不变。
+
+## 完整本地PR：a9cf9a9..ace6a19（09）
+
+2026-10-08，两名无本轮作者实现上下文的只读reviewer `spec_review`、`standards_review` 固定整个范围，原37提交与收尾1提交。Spec确认重复@候选去重后trigger遗留P2，真实反例先红；ace6a19仅让trackReferenceRange明确消费经来源验证的trigger，独立Undo、普通重复不动选区和stale拒绝均覆盖，19项通过后关闭。
+
+完整check还发现旧gate误拒绝纯sharedtoken alias与旧图片fixture缺codec/历史语义漂移。改为准确正负门禁、明确codec stub及非图片PM历史夹具，24项通过；source CLI固定安装包、packaged路径不变。真实PDF worker可转换，旧fixture资源root被运行App占用；独立完整clone保留相对链接/真实路径身份且14项通过，不修改生产资源保护。
+
+两轴最终固定源码 `ace6a192ab01b2213c1fdefa26c4440b13545d13` 无未关闭高价值发现。Standards独立19项和gate2项通过；Spec不重复执行，读取19/24/14实际证据；完整check/build由root执行。治理文档后续不改变行为。未运行GUI/Finder trace/IME/VoiceOver/Host/provider及长期性能，用户认可pending。

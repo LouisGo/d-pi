@@ -667,3 +667,37 @@ it("closes the native process when ready times out", async () => {
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+it("writes a compact image resource request into an isolated reader without encoding the image", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "dpi-image-pipe-"));
+  const entry = join(dir, "fixture.cjs");
+  writeFileSync(
+    entry,
+    `console.log(JSON.stringify({type:'ready'}));require('node:readline').createInterface({input:process.stdin}).on('line',line=>{const c=JSON.parse(line);console.log(JSON.stringify({type:'response',id:c.id,command:c.type,success:true,data:{bytes:c.images?.[0]?.resource.byteLength??0}}));}).on('close',()=>process.exit(0));`,
+  );
+  const session = new NativeSession(
+    {
+      binary: process.execPath,
+      entry,
+      directory: dir,
+      environment: { PATH: process.env.PATH },
+      sessionDirectory: dir,
+    },
+    () => {},
+  );
+  try {
+    await session.start();
+    const resource = { digest: "a".repeat(64), byteLength: 908202 };
+    const reply = await session.request("prompt", {
+      message: "解释这张图片",
+      images: [{ type: "image", mimeType: "image/png", resource }],
+    });
+    expect(reply).toMatchObject({
+      success: true,
+      data: { bytes: resource.byteLength },
+    });
+  } finally {
+    await session.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

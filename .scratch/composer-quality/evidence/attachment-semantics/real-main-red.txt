@@ -1,0 +1,145 @@
+
+ RUN  v5.0.2 /private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/dpi-composer-real-main-red-khffr3__
+
+ ❯ src/modules/input/main/attachments/editor-history.test.ts (4 tests | 2 failed | 2 skipped) 9ms
+   × retires Main-confirmed external images while preserving file IDs and all their old shared digests 8ms
+   × keeps an image candidate until Renderer removal is acknowledged by the real Main lease 1ms
+ ❯ src/modules/input/main/attachments/attachment-store.test.ts (16 tests | 1 failed | 15 skipped) 22ms
+   × prepares frozen source containing private-token-shaped literals without attachment authority 21ms
+ ❯ src/modules/input/renderer/references/detached-images.test.ts (17 tests | 2 failed | 15 skipped) 49ms
+   × classifies a saved middle image without rewriting the canonical snapshot or advancing its sequence 44ms
+   × preserves authored blank paragraphs around frozen selections during image add, remove and cold restore 4ms
+ ❯ tests/integration/attachment-lifecycle.integration.test.ts (21 tests | 1 failed | 20 skipped) 39ms
+   × does not durably bind a frozen source literal and counts only the real inline attachment 38ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/attachment-lifecycle.integration.test.ts > does not durably bind a frozen source literal and counts only the real inline attachment
+AssertionError: expected 1 to be undefined
+
+- Expected:
+undefined
+
++ Received:
+1
+
+ ❯ tests/integration/attachment-lifecycle.integration.test.ts:1052:7
+    1050|       service.store.referenceSource(draft.threadId, file.id)
+    1051|         ?.draftBoundRevision,
+    1052|     ).toBeUndefined();
+       |       ^
+    1053|     const references = createAttachmentReferences(storage, (thread, id…
+    1054|       service.store.referenceSource(thread, id),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/modules/input/main/attachments/attachment-store.test.ts > prepares frozen source containing private-token-shaped literals without attachment authority
+AssertionError: expected { ok: false, reason: 'invalid-token' } to match object { ok: true, …(1) }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "content": {
+-     "images": [],
+-     "message": "[d-pi:file-selection:v1 {\"schemaVersion\":1,\"path\":\"source.txt\",\"source\":\"working-tree\",\"version\":\"v1\",\"startLine\":1,\"startColumn\":1,\"endLine\":1,\"endColumn\":138,\"textLength\":137}]
+- [[dpi-attachment:8dec61f8-1f41-4115-bd7b-ddcdf7038d5c]] [[dpi-attachment:7e5f422f-a670-4c0f-9d12-5373cbcef433]] [[dpi-attachment:broken]]
+- [/d-pi:file-selection]",
+-     "sources": [],
+-   },
+-   "ok": true,
++   "ok": false,
+  }
+
+ ❯ src/modules/input/main/attachments/attachment-store.test.ts:496:22
+    494|   });
+    495|   const sourceOnly = await s.prepare(thread, frozen);
+    496|   expect(sourceOnly).toMatchObject({
+       |                      ^
+    497|     ok: true,
+    498|     content: { sources: [], images: [], message: frozen },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  src/modules/input/main/attachments/editor-history.test.ts > retires Main-confirmed external images while preserving file IDs and all their old shared digests
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/modules/input/main/attachments/editor-history.test.ts:229:45
+    227|     leases.update("owner", threadId, opened.leaseId, 2, [fileId]),
+    228|   ).toMatchObject({ kind: "history-lease", version: 2 });
+    229|   expect(leases.retains(threadId, imageId)).toBe(false);
+       |                                             ^
+    230|   expect(leases.retains(threadId, fileId)).toBe(true);
+    231|   expect(leases.retains(threadId, referenceId)).toBe(true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  src/modules/input/main/attachments/editor-history.test.ts > keeps an image candidate until Renderer removal is acknowledged by the real Main lease
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/modules/input/main/attachments/editor-history.test.ts:322:27
+    320|   fail = false;
+    321|   expect(await model.retry()).toBe(true);
+    322|   expect(candidatePinned).toBe(false);
+       |                           ^
+    323|   expect(leases.retains(threadId, id)).toBe(false);
+    324|   expect([...pins.values()].flatMap((set) => [...set])).not.toContain(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  src/modules/input/renderer/references/detached-images.test.ts > classifies a saved middle image without rewriting the canonical snapshot or advancing its sequence
+AssertionError: expected 'ABC[[dpi-attachment:e1197111-4f03-4f7…' to be 'A[[dpi-attachment:e1197111-4f03-4f76-…' // Object.is equality
+
+Expected: "A[[dpi-attachment:e1197111-4f03-4f76-802b-b3a4a84fc3eb]]BC"
+Received: "ABC[[dpi-attachment:e1197111-4f03-4f76-802b-b3a4a84fc3eb]]"
+
+ ❯ src/modules/input/renderer/references/detached-images.test.ts:664:42
+    662|   projectDetachedImages(editor, f.controller);
+    663|   expect(editor.getText()).toBe("ABC");
+    664|   expect(f.controller.getTextSnapshot()).toBe(snapshot);
+       |                                          ^
+    665|   expect(f.controller.getEditorSnapshot().sequence).toBe(sequence);
+    666|   expect(f.controller.getSnapshot()).toEqual({ kind: "saved" });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  src/modules/input/renderer/references/detached-images.test.ts > preserves authored blank paragraphs around frozen selections during image add, remove and cold restore
+AssertionError: expected '[d-pi:file-selection:v1 {"schemaVersi…' to be '\n[d-pi:file-selection:v1 {"schemaVer…' // Object.is equality
+
+- Expected
++ Received
+
+-
+  [d-pi:file-selection:v1 {"schemaVersion":1,"path":"source.txt","source":"working-tree","version":"v1","startLine":1,"startColumn":1,"endLine":1,"endColumn":7,"textLength":6}]
+  source
+  [/d-pi:file-selection]
+
+ ❯ src/modules/input/renderer/references/detached-images.test.ts:690:50
+    688|     const before = editor.state.doc.toJSON();
+    689|     f.controller.addDetachedAttachments([image.id]);
+    690|     expect(f.controller.getEditorTextSnapshot()).toBe(original);
+       |                                                  ^
+    691|     const cold = fixture(f.controller.getTextSnapshot());
+    692|     const restored = cold.mount();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  4 failed (4)
+      Tests  6 failed | 52 skipped (58)
+   Start at  18:07:13
+   Duration  564ms (transform 53%, import 28%, environment 9%, tests 9%, worker 1%)
+

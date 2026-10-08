@@ -175,6 +175,26 @@ async function handoffFixture(threads = 8, failUpdates = false) {
   };
 }
 
+// This fixture verifies adoption/history/GC; real codec coverage uses its
+// dedicated binary worker tests with the fixed Bun runtime.
+vi.mock("../../src/platform/node/images/public", () => ({
+  createImageCompressor:
+    () =>
+    async (
+      bytes: Uint8Array,
+      mimeType: "image/png" | "image/jpeg" | "image/webp" | "image/gif",
+    ) => ({
+      ok: true,
+      bytes,
+      mimeType,
+      recompressed: false,
+      width: 1,
+      height: 1,
+      originalWidth: 1,
+      originalHeight: 1,
+    }),
+}));
+
 it("does not hide failed abandoned-clone release when the next genuine editor source is observed", async () => {
   const f = await handoffFixture();
   const execute = f.service.execute;
@@ -327,16 +347,11 @@ async function ownerBudgetFixture(threads: number, unavailable: boolean) {
   async function create() {
     const draft = storage.drafts.create(root);
     const item = await service.store.importBytes(draft.threadId, {
-      name: "budget.png",
-      mimeType: "image/png",
+      // PM Undo owns non-image files; detached images have independent history.
+      name: "budget.txt",
+      mimeType: "text/plain",
       source: "paste",
-      bytes: Buffer.concat([
-        Buffer.from(
-          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aJ1EAAAAASUVORK5CYII=",
-          "base64",
-        ),
-        Buffer.from(draft.threadId),
-      ]),
+      bytes: Buffer.from(`history resource ${draft.threadId}`),
     });
     storage.drafts.save(draft.threadId, 0, item.token);
     const controller = new DraftController(
@@ -482,13 +497,19 @@ it("retains actual Undo dependencies while nine failed retired owners block admi
     expect(target.editor.getText()).toBe(clone.token);
     expect(
       await f.service.store.preview(target.threadId, clone.id),
-    ).toMatchObject({ kind: "image" });
+    ).toMatchObject({
+      kind: "text",
+      text: expect.stringContaining("history resource"),
+    });
     expect(target.editor.commands.undo()).toBe(true);
     expect(target.editor.commands.undo()).toBe(true);
     expect(target.editor.getText()).toBe(target.item.token);
     expect(
       await f.service.store.preview(target.threadId, target.item.id),
-    ).toMatchObject({ kind: "image" });
+    ).toMatchObject({
+      kind: "text",
+      text: expect.stringContaining("history resource"),
+    });
     // The original inactive Thread save barrier also retires only after ACK.
     expect(await retired[0]!.controller.retry()).toBe(true);
   } finally {
@@ -763,16 +784,10 @@ it.each([false, true])(
 it("keeps a real imported attachment as uninserted when the PM gate rejects and applies it after admission", async () => {
   const f = await handoffFixture();
   const fresh = await f.service.store.importBytes(f.target.threadId, {
-    name: "uninserted.png",
-    mimeType: "image/png",
+    name: "uninserted.txt",
+    mimeType: "text/plain",
     source: "paste",
-    bytes: Buffer.concat([
-      Buffer.from(
-        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aJ1EAAAAASUVORK5CYII=",
-        "base64",
-      ),
-      Buffer.from("uninserted"),
-    ]),
+    bytes: Buffer.from("pending PM attachment"),
   });
   const removeGate = bindHistoryAdmission(f.editor, (tr) => !tr?.docChanged);
   const detach = f.model.attachEditor(

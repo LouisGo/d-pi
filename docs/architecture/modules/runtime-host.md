@@ -73,3 +73,9 @@ Runtime 的正常退出入口即使已断开，也必须等待 HostConnection �
 固定 OMP 18.4.6 原生 RPC `set_subagent_subscription(level=events)` 在 `get_subagents` 之前建立订阅；原生 lifecycle/progress/event 帧仍由 conversation 投影。`execution/host/native/subagent-observation.ts` 只协调初始读取和终态 transcript 读取，不另建调度或任务完成事实。原生 registry 的终态会从活动列表移除，但保留最多 256 个 transcript 引用；终态读取仅向 OMP 传原生 subagentId，结果路径必须匹配已观察拥有者。
 
 官方 transcript RPC 读取到 EOF，适配先 stat 原生提供的文件：超过 1 MiB 或不可读时不发读请求，保留已观察片段并明确原因；正常结果仍受原生传输上限和阅读投影预算约束。最多并发 2 个读取、128 个待处理读取，超限/失败不宣称没有结果。未知/释放/拥有者变化后的回包不进入新投影；原生断链后未终态任务保持 unknown，已观察终态与结果继续可读。
+
+## 2026-10-08 图片资源水合
+
+Main 传入规范化的 App 私有 content 目录及共享图片预算，Renderer 不提供任意本地路径。宿主仅按摘要读取 objects 下普通文件，拒绝软链、非普通文件、长度/MIME/摘要不符或超预算；有界读取后再校验文件状态。资源引用在最后 OMP JSONL 边界转为原生 ImageContent 的 Base64，不写回 App 收据或放宽 App 管道 1MiB 门槛。旧内嵌图片兼容。
+
+普通命令按 forwarding 链串行，暂停控制立即更新 epoch；异步水合前后都核对准入。未转发的暂停/资源缺失/损坏/编码预算失败返回类型化 inputRejected，SessionHost 发布 proven rejected，取消等待并保留草稿；不能当作 ACK、自动重发或以 unknown 掩盖。关闭等待已有 forwarding 结算。新 helper 与 worker 同固定 SDK 资源拷贝/hash 校验，但不修改官方 SDK。

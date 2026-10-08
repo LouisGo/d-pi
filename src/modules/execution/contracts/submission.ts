@@ -43,6 +43,9 @@ export const SubmissionRejectionReasonSchema = z.enum([
   "stale-target",
   "correlation-limit",
   "image-unsupported",
+  "content-missing",
+  "content-corrupt",
+  "transport-too-large",
 ]);
 export type SubmissionRejectionReason = z.infer<
   typeof SubmissionRejectionReasonSchema

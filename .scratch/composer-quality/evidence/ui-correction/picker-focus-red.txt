@@ -1,0 +1,72 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/workbench/attachment-controls.test.ts -t 'picker return target'
+$ tsr generate
+(node:91181) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/.codex/worktrees/composer-quality/d-pi
+
+ ❯ src/app/renderer/workbench/attachment-controls.test.ts (22 tests | 1 failed | 21 skipped) 55ms
+   × keeps the caret as the picker return target without stealing focus on a late cancellation 54ms
+   ↓ distinguishes frozen provenance from live references in the formal controls
+   ↓ offers only retry for an unfinished clipboard cleanup and confirms its original IDs
+   ↓ mounts the formal attachment controls and removes a failed atomic reference without changing surrounding text
+   ↓ isolates late @ searches and inserts a typed file as one undoable reference
+   ↓ isolates late @ searches and inserts a typed directory as one undoable reference
+   ↓ identifies a ready reference that failed during send-time freezing without rewriting its preparation state
+   ↓ permits explicit re-preparation of a failed @PDF after text-only consent while keeping the reference atomic
+   ↓ closes the native preview before unmount and restores editor focus via button
+   ↓ closes the native preview before unmount and restores editor focus via cancel
+   ↓ reports the typed oversized-source rejection instead of a transport failure and keeps sending blocked until explicit removal
+   ↓ retains a failed import across unrelated preview operations (transport failure: false)
+   ↓ retains a failed import across unrelated preview operations (transport failure: true)
+   ↓ retains a failed import across unrelated retry operations (transport failure: false)
+   ↓ retains a failed import across unrelated retry operations (transport failure: true)
+   ↓ retains a failed import across unrelated set-text-only operations (transport failure: false)
+   ↓ retains a failed import across unrelated set-text-only operations (transport failure: true)
+   ↓ resolves a failed import only through its explicit retry (success)
+   ↓ resolves a failed import only through its explicit retry (cancelled)
+   ↓ offers storage checking and explicit unreferenced cleanup, locates broken originals, and preserves editor input
+   ↓ coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly
+   ↓ retains an unresolved required-source failure after replacing its view with the same Thread owner
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/renderer/workbench/attachment-controls.test.ts > keeps the caret as the picker return target without stealing focus on a late cancellation
+AssertionError: expected <button></button> to be <div contenteditable="true" …(4)>…(1)</div> // Object.is equality
+
+- Expected
++ Received
+
+- <div
+-   class="tiptap ProseMirror"
+-   contenteditable="true"
+-   role="textbox"
+-   tabindex="0"
+-   translate="no"
+- >
+-   <p>
+-     review draft
+-   </p>
+- </div>
++ <button>
++   Attach files
++ </button>
+
+ ❯ src/app/renderer/workbench/attachment-controls.test.ts:142:34
+    140|   await act(() => attach.click());
+    141|   await vi.waitFor(() => expect(finishPicker).toBeTypeOf("function"));
+    142|   expect(document.activeElement).toBe(editor.view.dom);
+       |                                  ^
+    143|   expect(editor.state.selection.from).toBe(4);
+    144|   // A slower conversion/cancellation must not refocus after another a…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 21 skipped (22)
+   Start at  16:11:43
+   Duration  2.10s (import 71%, transform 15%, environment 11%, tests 3%)
+
+[ELIFECYCLE] Test failed. See above for more details.

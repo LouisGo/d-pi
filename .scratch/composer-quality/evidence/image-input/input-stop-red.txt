@@ -1,0 +1,28 @@
+✖ hydrates the frozen private digest only at the SDK boundary (4.050125ms)
+✔ retains legacy inline images but rejects forged paths, lengths, MIME and budgets (0.721042ms)
+✖ does not forward a prepared image if Stop or its epoch changes during reading (0.156916ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 1
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 46.967
+
+✖ failing tests:
+
+test at tests/tooling/image-input.test.mjs:10:1
+✖ hydrates the frozen private digest only at the SDK boundary (4.050125ms)
+  Error: content-corrupt
+      at hydrateImageResources (file:///Users/lou/.codex/worktrees/composer-quality/d-pi/runtime/image-input.mjs:66:11)
+      at async TestContext.<anonymous> (file:///Users/lou/.codex/worktrees/composer-quality/d-pi/tests/tooling/image-input.test.mjs:18:20)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+
+test at tests/tooling/image-input.test.mjs:41:1
+✖ does not forward a prepared image if Stop or its epoch changes during reading (0.156916ms)
+  TypeError: prepareImageInput is not a function
+      at TestContext.<anonymous> (file:///Users/lou/.codex/worktrees/composer-quality/d-pi/tests/tooling/image-input.test.mjs:46:17)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)

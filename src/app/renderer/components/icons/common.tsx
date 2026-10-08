@@ -2,6 +2,8 @@ import {
   Add01Icon,
   ArrowLeft01Icon,
   ArrowRight01Icon,
+  ArrowUp02Icon,
+  Attachment01Icon,
   BubbleChatIcon,
   Cancel01Icon,
   ComputerIcon,
@@ -214,3 +216,30 @@ export function ToolsIcon({ size = 20, className }: IconProps) {
 }
 
 export { SearchIcon } from "../../../../modules/ui/renderer/public";
+
+export function AttachmentIcon({ size = 20, className }: IconProps) {
+  return (
+    <HugeiconsIcon
+      icon={Attachment01Icon}
+      size={size}
+      className={className}
+      strokeWidth={1.5}
+      color="currentColor"
+      aria-hidden={true}
+      focusable={false}
+    />
+  );
+}
+export function SendIcon({ size = 20, className }: IconProps) {
+  return (
+    <HugeiconsIcon
+      icon={ArrowUp02Icon}
+      size={size}
+      className={className}
+      strokeWidth={1.5}
+      color="currentColor"
+      aria-hidden={true}
+      focusable={false}
+    />
+  );
+}

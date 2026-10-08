@@ -3,12 +3,18 @@
 export function installControlFocusVisibility(document: Document) {
   const root = document.documentElement;
   let pointerTarget: Element | null = null;
+  let pointerFocusTarget: Element | null = null;
+  let editingTarget: Element | null = null;
   const clearPointerFocus = () => {
     pointerTarget = null;
+    pointerFocusTarget = null;
+    editingTarget = null;
     delete root.dataset.pointerFocus;
   };
   const pointerDown = (event: PointerEvent) => {
     pointerTarget = event.target instanceof Element ? event.target : null;
+    pointerFocusTarget = null;
+    editingTarget = null;
     root.dataset.pointerFocus = "true";
   };
   const pointerOver = (event: PointerEvent) => {
@@ -20,10 +26,35 @@ export function installControlFocusVisibility(document: Document) {
         : null;
     if (trigger) {
       pointerTarget = trigger;
+      pointerFocusTarget = null;
+      editingTarget = null;
       root.dataset.pointerFocus = "true";
     }
   };
   const keyDown = (event: KeyboardEvent) => {
+    const target = event.target instanceof Element ? event.target : null;
+    const field = target?.closest(
+      'input, textarea, [contenteditable="true"], [contenteditable="plaintext-only"]',
+    );
+    const textField =
+      field &&
+      (!(field instanceof HTMLInputElement) ||
+        [
+          "text",
+          "search",
+          "email",
+          "url",
+          "tel",
+          "password",
+          "number",
+        ].includes(field.type));
+    // Caret movement, spaces, Enter and IME edit the same clicked field. They
+    // do not turn its existing pointer focus into keyboard navigation focus.
+    // A subsequent distinct focus move still gets the accessibility outline.
+    if (textField && event.key !== "Tab") {
+      editingTarget = field;
+      return;
+    }
     // Typing into a clicked input does not change how its focus was obtained.
     // Navigation and keyboard activation can move focus into a portal as well.
     if (
@@ -48,6 +79,10 @@ export function installControlFocusVisibility(document: Document) {
   const focusIn = (event: FocusEvent) => {
     const target = event.target;
     if (!(target instanceof Element)) return;
+    if (editingTarget && !editingTarget.contains(target)) {
+      clearPointerFocus();
+      return;
+    }
     // A distinct focus move without a related pointer press can come from
     // assistive technology or programmatic keyboard navigation. Let the
     // browser's :focus-visible decision apply to that destination.
@@ -61,15 +96,21 @@ export function installControlFocusVisibility(document: Document) {
       ?.getAttribute("aria-controls")
       ?.split(/\s+/)
       .some((id) => document.getElementById(id)?.contains(target));
+    // Native dialogs/window activation can restore the current DOM focus
+    // without a relatedTarget. Keep its established pointer origin; this
+    // does not grant that origin to a different destination or survive Tab.
+    const returningToPointerFocus =
+      event.relatedTarget === null && target === pointerFocusTarget;
     if (
       !pointerTarget ||
       (!pointerTarget.contains(target) &&
         !target.contains(pointerTarget) &&
         !fromTrigger &&
-        !fromControlledTrigger)
+        !fromControlledTrigger &&
+        !returningToPointerFocus)
     ) {
       clearPointerFocus();
-    }
+    } else pointerFocusTarget = target;
   };
   document.addEventListener("pointerdown", pointerDown, true);
   document.addEventListener("pointerover", pointerOver, true);

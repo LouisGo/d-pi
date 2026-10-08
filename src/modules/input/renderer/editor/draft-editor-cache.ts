@@ -24,9 +24,16 @@ function documentIds(doc: EditorState["doc"]): Set<string> {
   });
   return ids;
 }
-function currentIds(controller: DraftController): Set<string> {
+function currentIds(
+  controller: DraftController,
+  editorOnly = false,
+): Set<string> {
   const ids = new Set<string>();
-  for (const block of parseDraftBlocks(controller.getTextSnapshot())) {
+  for (const block of parseDraftBlocks(
+    editorOnly
+      ? controller.getEditorTextSnapshot()
+      : controller.getTextSnapshot(),
+  )) {
     if (block.kind !== "paragraph") continue;
     // Match the editor's atomic token grammar independently of adjacent literal
     // text; a malformed literal must not hide an otherwise valid body clone.
@@ -117,7 +124,11 @@ export class DraftEditorCache {
         this.waitingIds() + ids.size > MAX_WAITING_IDS
       )
         return undefined;
-      source = { key, candidates: new Set(ids), epoch: ids };
+      source = {
+        key,
+        candidates: new Set(ids),
+        epoch: currentIds(controller, true),
+      };
       this.waiting.set(controller, source);
     }
     return source;
@@ -266,7 +277,7 @@ export class DraftEditorCache {
       if (history) history.model.reset(currentIds(controller));
       else {
         const source = this.pendingSource(key, controller);
-        if (source) source.epoch = currentIds(controller);
+        if (source) source.epoch = currentIds(controller, true);
       }
     }
   }
@@ -289,7 +300,7 @@ export class DraftEditorCache {
         this.waiting.delete(previous);
         // A trusted Controller replacement ends the previous Undo epoch. Keep
         // its cleanup candidates, reading the new body's IDs from its owner.
-        waiting.epoch = currentIds(controller);
+        waiting.epoch = currentIds(controller, true);
         this.waiting.set(controller, waiting);
       }
     }
@@ -325,9 +336,42 @@ export class DraftEditorCache {
         (this.leases.get(key) === binding.token &&
           this.admitTransaction(key, controller, tr)),
     );
+    // Images have no PM transaction or Undo dependency. Their unpersisted
+    // clipboard clone still needs candidate cleanup and the existing save/ACK
+    // barrier, using the canonical draft's current IDs as retention authority.
+    let previousImages = new Set<string>();
+    const observeImages = () => {
+      if (this.disposed || this.leases.get(key) !== binding.token) return;
+      const images = new Set(controller.getDetachedAttachmentIds());
+      if (
+        images.size === previousImages.size &&
+        [...images].every((id) => previousImages.has(id))
+      )
+        return;
+      const candidates = new Set([...previousImages, ...images]);
+      previousImages = images;
+      const history = this.histories.get(key);
+      if (history) {
+        history.model.removeDependencies(candidates);
+        history.model.adopt(candidates, currentIds(controller), []);
+      } else {
+        const source = this.pendingSource(key, controller);
+        if (source)
+          for (const id of candidates) {
+            source.epoch.delete(id);
+            source.candidates.add(id);
+          }
+      }
+    };
+    const unsubscribeImages = controller.subscribe(observeImages);
+    observeImages();
     const removeHistoryListener = onDraftHistoryClear(editor, () => {
       if (this.leases.get(key) !== binding.token) return;
-      const ids = documentIds(editor.state.doc);
+      const ids = new Set(
+        [...documentIds(editor.state.doc)].filter(
+          (id) => !controller.isDetachedAttachment(id),
+        ),
+      );
       const history = this.histories.get(key);
       if (history) history.model.reset(ids);
       else {
@@ -349,7 +393,8 @@ export class DraftEditorCache {
         doc.descendants((node) => {
           if (
             node.type.name === "attachmentReference" &&
-            typeof node.attrs.id === "string"
+            typeof node.attrs.id === "string" &&
+            !controller.isDetachedAttachment(node.attrs.id)
           )
             ids.add(node.attrs.id);
         });
@@ -369,11 +414,17 @@ export class DraftEditorCache {
     editor.on("mount", () => this.restore(editor, binding));
     // Register on this Editor, rather than useEditor's latest-options proxy:
     // delayed IME events must keep their original Thread/controller binding.
-    editor.on("update", () => {
+    editor.on("update", ({ transaction }) => {
+      if (
+        transaction.getMeta("dpiDetachedImageProjection") === true ||
+        transaction.getMeta("dpiReferenceLabelRefresh") === true
+      )
+        return;
       if (!this.disposed && this.leases.get(key) === binding.token)
-        controller.edit(editor.getText({ blockSeparator: "\n" }));
+        controller.editEditorText(editor.getText({ blockSeparator: "\n" }));
     });
     editor.on("destroy", () => {
+      unsubscribeImages();
       this.capture(editor);
       if (this.leases.get(key) === binding.token) {
         this.leases.delete(key);

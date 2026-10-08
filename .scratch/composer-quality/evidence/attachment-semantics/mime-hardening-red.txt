@@ -1,0 +1,77 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/modules/input/renderer/references/file-presentation.test.ts
+$ tsr generate
+(node:40183) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/lou/.codex/worktrees/composer-mime/d-pi[39m
+
+ [31m❯[39m src/modules/input/renderer/references/file-presentation.test.ts [2m([22m[2m36 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 6[2mms[22m[39m
+   [32m✓[39m prioritizes MIME application/msword over a misleading extension[32m 1[2mms[22m[39m
+   [32m✓[39m prioritizes MIME application/vnd.openxmlformats-officedocument.wordprocessingml.document over a misleading extension[32m 0[2mms[22m[39m
+   [32m✓[39m prioritizes MIME APPLICATION/PDF; charset=binary over a misleading extension[32m 0[2mms[22m[39m
+   [32m✓[39m prioritizes MIME text/plain; charset=utf-8 over a misleading extension[32m 0[2mms[22m[39m
+   [32m✓[39m prioritizes MIME application/typescript over a misleading extension[32m 0[2mms[22m[39m
+   [32m✓[39m prioritizes MIME text/x-python over a misleading extension[32m 0[2mms[22m[39m
+   [32m✓[39m prioritizes MIME text/markdown over a misleading extension[32m 0[2mms[22m[39m
+   [32m✓[39m prioritizes MIME text/html over a misleading extension[32m 0[2mms[22m[39m
+   [32m✓[39m prioritizes MIME audio/mpeg over a misleading extension[32m 0[2mms[22m[39m
+   [32m✓[39m prioritizes MIME video/mp4 over a misleading extension[32m 0[2mms[22m[39m
+   [32m✓[39m prioritizes MIME application/zip over a misleading extension[32m 0[2mms[22m[39m
+   [32m✓[39m prioritizes MIME image/heic over a misleading extension[32m 0[2mms[22m[39m
+   [32m✓[39m fills unknown MIME from src/runtime.TSX without using filename text as markup[32m 0[2mms[22m[39m
+   [32m✓[39m fills unknown MIME from archive.tar.gz without using filename text as markup[32m 0[2mms[22m[39m
+   [32m✓[39m fills unknown MIME from 文档.文档说明.DOCX without using filename text as markup[32m 0[2mms[22m[39m
+   [32m✓[39m fills unknown MIME from note.md without using filename text as markup[32m 0[2mms[22m[39m
+   [32m✓[39m fills unknown MIME from page.html without using filename text as markup[32m 0[2mms[22m[39m
+   [32m✓[39m fills unknown MIME from clip.mp4 without using filename text as markup[32m 0[2mms[22m[39m
+   [32m✓[39m fills unknown MIME from audio.flac without using filename text as markup[32m 0[2mms[22m[39m
+   [32m✓[39m fills unknown MIME from README without using filename text as markup[32m 0[2mms[22m[39m
+   [32m✓[39m fills unknown MIME from input.unrecognised without using filename text as markup[32m 0[2mms[22m[39m
+   [32m✓[39m keeps directory context independent of the supplied MIME[32m 0[2mms[22m[39m
+   [32m✓[39m provides distinct authored icons for each visible non-image MIME category[32m 0[2mms[22m[39m
+   [32m✓[39m formats attachment size 0 without rendering missing metadata as zero bytes[32m 0[2mms[22m[39m
+   [32m✓[39m formats attachment size 1 without rendering missing metadata as zero bytes[32m 0[2mms[22m[39m
+   [32m✓[39m formats attachment size 1023 without rendering missing metadata as zero bytes[32m 0[2mms[22m[39m
+   [32m✓[39m formats attachment size 1024 without rendering missing metadata as zero bytes[32m 0[2mms[22m[39m
+   [32m✓[39m formats attachment size 225280 without rendering missing metadata as zero bytes[32m 0[2mms[22m[39m
+   [32m✓[39m formats attachment size 1048576 without rendering missing metadata as zero bytes[32m 0[2mms[22m[39m
+   [32m✓[39m formats attachment size 1073741824 without rendering missing metadata as zero bytes[32m 0[2mms[22m[39m
+   [32m✓[39m formats attachment size undefined without rendering missing metadata as zero bytes[32m 0[2mms[22m[39m
+   [32m✓[39m formats attachment size -1 without rendering missing metadata as zero bytes[32m 0[2mms[22m[39m
+   [32m✓[39m formats attachment size NaN without rendering missing metadata as zero bytes[32m 0[2mms[22m[39m
+   [32m✓[39m formats attachment size Infinity without rendering missing metadata as zero bytes[32m 0[2mms[22m[39m
+   [32m✓[39m formats attachment size 1.5 without rendering missing metadata as zero bytes[32m 0[2mms[22m[39m
+[31m   [31m×[31m treats prototype-shaped MIME and extensions as generic metadata[39m[32m 3[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/modules/input/renderer/references/file-presentation.test.ts[2m > [22mtreats prototype-shaped MIME and extensions as generic metadata
+[31m[1mAssertionError[22m: expected [Function Object] to deeply equal { kind: 'generic', label: 'FILE' }[39m
+
+[32m- Expected:[39m
+{
+  "kind": "generic",
+  "label": "FILE",
+}
+
+[31m+ Received:[39m
+[Function Object]
+
+[36m [2m❯[22m src/modules/input/renderer/references/file-presentation.test.ts:[2m94:64[22m[39m
+    [90m 92|[39m
+    [90m 93|[39m it("treats prototype-shaped MIME and extensions as generic metadata", …
+    [90m 94|[39m   expect(filePresentation("input.constructor", "constructor")).toEqual…
+    [90m   |[39m                                                                [31m^[39m
+    [90m 95|[39m });
+    [90m 96|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m35 passed[39m[22m[90m (36)[39m
+[2m   Start at [22m 17:06:02
+[2m   Duration [22m 109ms[2m (transform 62%, import 18%, tests 15%, worker 5%)[22m
+
+[ELIFECYCLE] Test failed. See above for more details.

@@ -424,10 +424,30 @@ export function createSessionHost(
           entry.responded = true;
           entry.accepted ||= frame.success;
         }
-        publishEvidence({
-          kind: frame.success ? "ack" : "error",
-          ...value,
-        });
+        const inputRejected =
+          !frame.success &&
+          frame.data &&
+          typeof frame.data === "object" &&
+          "inputRejected" in frame.data
+            ? frame.data.inputRejected
+            : undefined;
+        const refusal = [
+          "content-missing",
+          "content-corrupt",
+          "transport-too-large",
+          "paused",
+        ].find((reason) => reason === inputRejected);
+        if (
+          refusal === "content-missing" ||
+          refusal === "content-corrupt" ||
+          refusal === "transport-too-large" ||
+          refusal === "paused"
+        ) {
+          publishEvidence({ kind: "rejected", ...value, reason: refusal });
+          entry?.timer.cancel();
+          prompts.delete(frame.id);
+        } else
+          publishEvidence({ kind: frame.success ? "ack" : "error", ...value });
         if (
           frame.success &&
           frame.data &&

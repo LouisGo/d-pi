@@ -83,6 +83,8 @@ function fixture(t) {
     "model-selection.mjs",
     "native-queue.mjs",
     "reading-session.mjs",
+    "image-input.mjs",
+    "image-compression.mjs",
     "pdf-content.mjs",
     "native-subagent-configuration.mjs",
     "BUN-LICENSE.md",

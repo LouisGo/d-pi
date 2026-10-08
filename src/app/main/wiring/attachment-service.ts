@@ -11,6 +11,8 @@ import {
   AttachmentStore,
   EditorHistoryLimitError,
 } from "../../../modules/input/main/public";
+import { createImageCompressor } from "../../../platform/node/images/public";
+import { managedSdkRuntime } from "../../../platform/omp/resources/public";
 import type {
   AttachmentReply,
   AttachmentRequest,
@@ -33,6 +35,7 @@ export function createAttachmentService(
       store.referenceSource(threadId, id),
     ),
     validateImage,
+    compressImage: createImageCompressor(() => managedSdkRuntime(resources)),
     convertPdf: (bytes) => convertPdfContent(resources, bytes),
     readReference: async (threadId, path, kind) => {
       const thread = storage.threads.threadContext(threadId);
@@ -97,7 +100,9 @@ export function createAttachmentService(
         throw Error(
           reply.kind === "unavailable" && reply.reason === "denied"
             ? "reference-denied"
-            : "reference-unavailable",
+            : reply.kind === "unavailable" && reply.reason === "too-large"
+              ? "source-too-large"
+              : "reference-unavailable",
         );
       return {
         bytes: reply.bytes,
@@ -187,6 +192,20 @@ export function createAttachmentService(
         const bytes = Buffer.from(command.dataBase64, "base64");
         if (bytes.toString("base64") !== command.dataBase64)
           return { kind: "unavailable", reason: "content-corrupt" };
+        if (command.operationId)
+          return owner
+            ? store.importOperation(
+                owner,
+                command.threadId,
+                command.operationId,
+                {
+                  name: command.name,
+                  mimeType: command.mimeType,
+                  bytes,
+                  source: command.source,
+                },
+              )
+            : { kind: "unavailable", reason: "reference-denied" };
         return attachments([
           await store.importBytes(command.threadId, {
             name: command.name,
@@ -196,6 +215,15 @@ export function createAttachmentService(
           }),
         ]);
       }
+      case "import-settle":
+        return owner
+          ? store.settleImportOperation(
+              owner,
+              command.threadId,
+              command.operationId,
+              command.disposition,
+            )
+          : { kind: "unavailable", reason: "reference-denied" };
       case "choose-import": {
         const paths = await chooseFiles(command.threadId);
         if (!paths) return { kind: "cancelled" };

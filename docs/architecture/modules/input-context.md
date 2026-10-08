@@ -1,5 +1,15 @@
 # 输入与上下文
 
+## Composer 异步导入补充（2026-10-08）
+
+Thread-owned `AttachmentImports` 管 batch/job、读取预算、失败和结算；React 只订阅 projection。外部混合粘贴先立即应用文本，文件以稳定顺序在映射原位置应用一个独立 PM 事务，实际完整 doc 匹配才采用。Renderer adapter 持有 left-affinity target；原始文本被删除/撤销、可信替换、历史结束或视图解绑使其永久失效。随后独立输入的 Undo 与纯引用标签刷新不撤销原意图，失效结果保留在原 Thread 等待显式插入。自动完成不抢焦点；显式成功采用恢复 editor 焦点。
+
+每 Thread 至多一个读取/prepare，窗口最多两个活动工作、100 MiB 原始 File 与64个 job；每批最多32文件、每 Thread 最多32批。准入在 await 前预留；读取显示真实 FileReader progress，Main 转换只显示阶段。部分失败不自动采用子集；失败PDF可预览，并通过原ID显式 text-only 确认后再插入，不重新转换来丢失同意。
+
+`import-bytes.operationId` 与 `import-settle` 是窄 Main 结算补充，不借用 clipboard discard。Main 按实际 document/Thread 验证、固定 result IDs 和当前 manifest 采用；取消后晚到结果只结算。排队取消和 FileReader abort 可立即结束，Main 已接受的工作保持 cancelling，直到 release ACK。dispose 不把未结算义务留给已销毁 Thread；Main document teardown 统一回收。原 draft/history/clipboard/submission/native queue 合同继续有效。具体边界、证据和未验证项见 [Composer 规格](../../../.scratch/composer-quality/spec.md)。
+
+项目动态文件/目录详情复用Main已有受控只读readReference，读取后复核Thread/root身份，遵守25MiB来源与64KiB UTF-8预览预算；只展示当前内容，不写manifest/私有对象、不新增执行权限或作为发送冻结内容。PDF已有派生摘要预览优先。原生dialog先同步close释放modal，再恢复经映射且仍合法的editor选区/焦点；取消与关闭按钮同路，owner变化/销毁/替换不恢复旧视图。
+
 ## T3 基础输入重构合同（2026-10-07）
 
 ThreadModel 组合无 DOM 的 AttachmentModel，统一拥有来源请求、失败、显式重试和未插入的准备结果；浏览器 FileReader 留在 Renderer adapter。正式控件仅订阅并发出意图，卸载不销毁来源。Main 操作回复中的准备状态保留最多 128 项只读投影，按当前 DraftController token IDs 检查已知失败/未覆盖 PDF，移除正文中的来源不会被无用资产阻塞；恢复或淘汰后的未知资产始终由 Main prepare 权威校验，查询列表不形成第二份可写事实。发送在草稿捕获前、捕获准备时及捕获返回后复核同一 readiness。关窗冻结所有活 Thread 的来源入口，保存后再次核对，只有当前幂等 attempt lease 可释放；导航期间沿用原输入屏障。Main save 仍只接受 active Thread；正常切换先 flush，inactive owner 收到迟到正文而未确认时，关闭拒绝并给出侧栏已有会话短 ID，切回保存或解决该 owner 的失败后再重试，不扩大后台写权限。
@@ -102,6 +112,10 @@ Copy/cut 同步捕获实际选区，写入 Main 预发 ticket（`version:1, inst
 
 Paste 只解析严格版本和有界 envelope；未知、过期、伪造、跨 instance、准备失败、预算耗尽均显示可读 fallback。Main 校验目标 Thread；整片段验证成功后一个SQLite事务建立新目标附件ID，保留完整输入/派生record、冻结来源与私有对象去重。目标preview/prepare/reopen仅消费私有快照，不再回读源项目或目标同名路径，不访问任意路径或URL。Renderer 用原 Thread 的 AttachmentModel 跟踪 pending，并在同一消费 sequence、同一 editor doc/selection、仍 editable/current 且 source 未被冻结时执行一次 PM paste transaction；全部内容一次 Undo/Redo。迟到结果不落入别的 Thread 或已消费草稿，未使用克隆释放 import pin。显式纯文本粘贴仍消费 text/plain。正文唯一可写拥有者、保存和 03 history lease 不变。
 
+2026-10-08 用户明确调整 Composer 图片/文件语义，取代上段“全部内容一次 Undo/Redo”中的外部图片部分，实施范围见 [Composer 规格](../../../.scratch/composer-quality/spec.md)。外部图片只展示缩略图，不进入 PM 或 Undo/Redo；正文文字和其他文件内联节点仍为一次 paste/batch 编辑动作。项目 @ 及冻结的项目上下文仍内联。Draft v1 的私有 token 格式、Main manifest/对象和不可变发送保持不变；DraftController 只持有图片 ID 元数据及既有不可变快照，投影 PM 正文时去掉外部图片，保存/捕获时包含当前图片。正文 Undo/Redo 不增加、移除或复活图片，图片增删不打断现有 Redo 分支。
+
+同一 Composer 采用附件时按 ID 或文件名/MIME/字节数/Main 已验证输入摘要去重；不同内容和不同来源溯源不合并数据库记录。非图片内联节点依 MIME 展示图标、分类 token、尺寸和就近状态；具体原因、重试及 PDF 仅文字确认在预览/次级详情中，不默认重复呈现大块失败面板。未使用的可信 clipboard clone 沿原 AttachmentModel discard/ACK 义务释放；异步 import target 返回实际采用 ID，去重项沿原 import-settle release，丢 ACK 重试仍为 release。外部图片不属于 PM Undo 依赖，但其当前 canonical draft ID 和未采用 clone cleanup candidate 继续通过现有 history owner/保存屏障保护，图片删除的 cleanup 失败不能假称 ready。Main 权限、原生 queue、unknown 不重发及原位置/取消/部分失败/Thread 隔离不变。
+
 公开 wire 使用现有 AttachmentBridge 的 clipboard-reserve/export/import/release/discard 命令与 clipboard-tickets/exported/imported/unavailable 判别结果。Clipboard failure 独立于附件内容失败（invalid/expired/busy/failed），不泄露 path、stderr 或业务全文到诊断。窗口内 adapter 只拥有可丢弃 ticket pool 和当前 paste attempt，没有第二份草稿或资产事实。
 
 
@@ -131,3 +145,17 @@ GUI 对必要 clipboard-discard 失败仅提供重试，隐藏移除失败请求
 Main 成功导入后，若因正文、选区、generation、前台身份或adapter/Editor销毁而未插入，同样由仍存活的原Thread AttachmentModel持有discard、失败及重试责任。失效的adapter不得绕过owner直接忽略RPC失败，也不得把clone重新插入新草稿。真正Thread owner销毁与可信Main document释放分别核对，不把二者笼统视为等价。
 
 historyState供React外部订阅读取。没有history owner时的empty、pending admission、failed/limited admission均返回稳定快照；在途Main释放不得每次创建新对象。实际ACK后订阅通知状态变化，正常第十Thread自动从pending准入并恢复保存，无React更新循环。
+
+2026-10-08 图片迁移边界：冷恢复尚未取得 Main 附件清单时，含私有引用的正文暂缓普通编辑，避免未知图片被 Select All／Undo 删除；元数据读取失败保留正文并提供显式重新加载。分类与标签刷新是只读展示投影，不使草稿变脏。结构性的图片迁出有独立 PM meta，仍映射异步导入位置；纯标签刷新才跳过位置映射，语言切换不解绑导入 adapter。
+
+图片 token 只作为普通 paragraph 的附件依赖识别，不解析或删除冻结选区的原始文本。图片保存须保持 file-selection 的块分隔，选择块组成的正文以独立 token paragraph 承载图片，恢复投影不新增空白正文；其他正文保留原有空行。分类后从历史 epoch 移出图片依赖，并过滤后续事务；当前草稿和 cleanup candidate 的保护继续独立存在。减少 epoch 依赖必须等待 Main update ACK，失败时不提前 release candidate，显式 retry 先恢复 update，再恢复 release；正文 Redo 分支不为此清空。
+
+图片 epoch 退休由 Main 的真实 manifest 核定，只排除外部图片；项目图片引用及冻结项目上下文继续受正文历史保护。Main 按 source ID 保存各版本摘要，再投影为去重对象集合；减少图片来源时，其他文件及共用摘要的旧版本仍被 pin，预算检查和发布保持原子。已验证的冻结选区原文在准备、草稿采用记录和持久引用扫描中均不授予附件身份；附件扫描保留原字符串绝对位置，普通 paragraph 的未知/非法 token 仍拒绝发送。无 IPC、数据库或 Draft 版本迁移。
+
+## 2026-10-08 图片资源与公共压缩
+
+新 PreparedContent 图片保存 MIME 与 `{digest, byteLength}`，来源保存原件摘要及可选派生摘要/转换尺寸；schemaVersion 1 兼容旧内嵌 Base64。原件 25MiB、来源总 100MiB 及私有库存预算不变。共享 `image-policy` 定义单图 10MiB、图片总 40MiB、OMP 内部编码 64MiB 应用预算；App RPC 的紧凑输入门槛不因此放宽。
+
+Main 使用 platform/node/images 公共压缩方法，独立 Bun worker 二进制输入/输出，并发 2、排队 6、预留源总量 100MiB、64M 像素及 20s 超时。小图验证后原字节不变；超单图预算缩至最长边 2048，以有界编码尝试得到 PNG/WebP，透明度保留，动态格式不静默扁平化。原件与派生物均进入准备/收据引用保护；@ 每次仍重新授权读取后冻结。预览使用真实派生 MIME/尺寸，并显示压缩信息，失败不截断或删除草稿。
+
+新图片不在收据或 App JSONL 中序列化 Base64。宿主水合及已证明拒绝合同见[runtime-host](runtime-host.md#2026-10-08-图片资源水合)。此处预算不承诺任意 provider 接受全部尺寸或数量。

@@ -197,7 +197,7 @@ it("parses the initial editor document once while mounted draft and shortcut sub
   expect(documentCalls.mock.calls).toEqual([["restored draft"]]);
   const initialDocument = editorCalls.at(-1)?.content;
   await act(() => fixture.thread.controller.edit("new unsaved draft"));
-  expect(fixture.container.textContent).toContain(
+  expect(fixture.container.textContent).not.toContain(
     i18n.t("composer.status.dirty"),
   );
   expect(editorCalls.length).toBeGreaterThan(1);
@@ -205,16 +205,32 @@ it("parses the initial editor document once while mounted draft and shortcut sub
   expect(editorCalls.at(-1)?.content).toBe(initialDocument);
 
   await act(() => fixture.model.preference("sendKey"));
-  expect(fixture.container.textContent).toContain(
-    i18n.t("composer.shortcut.newline"),
+  expect(fixture.container.textContent).not.toContain(
+    i18n.t("composer.inputOptions"),
   );
+  await act(() =>
+    fixture.container
+      .querySelector<HTMLButtonElement>(
+        'button[aria-label="More composer actions"]',
+      )
+      ?.click(),
+  );
+  expect(
+    document
+      .querySelector('[role="menuitemcheckbox"]')
+      ?.getAttribute("aria-checked"),
+  ).toBe("false");
+  expect(
+    document.querySelector('[role="menuitemcheckbox"]')?.textContent,
+  ).toContain(i18n.t("composer.shortcut.newline"));
+
   expect(documentCalls.mock.calls).toEqual([["restored draft"]]);
 });
 
 it("does not parse again for an expanded editor and reads the latest pending snapshot on a real remount", async () => {
   const fixture = await setup();
   const expand = Array.from(fixture.container.querySelectorAll("button")).find(
-    (button) => button.textContent === i18n.t("composer.expand"),
+    (button) => button.getAttribute("aria-label") === i18n.t("composer.expand"),
   );
   if (!expand) throw Error("missing expand button");
   await act(() => expand.click());
@@ -334,7 +350,7 @@ it("retains the legacy native queue cap when no full projection is available", a
   );
 });
 
-it("blocks Enter and both send controls while pasted image preparation is pending", async () => {
+it("blocks Enter and both send controls for pending or unresolved image imports until explicit cancellation", async () => {
   let finish: (reply: { kind: "attachments"; items: [] }) => void = () => {};
   const attachments: AttachmentBridge = {
     request: async (command) => {
@@ -342,6 +358,7 @@ it("blocks Enter and both send controls while pasted image preparation is pendin
         return new Promise((resolve) => {
           finish = resolve;
         });
+      if (command.kind === "import-settle") return { kind: "import-settled" };
       return { kind: "attachments", items: [] };
     },
   };
@@ -354,7 +371,11 @@ it("blocks Enter and both send controls while pasted image preparation is pendin
   const dispatch = vi.fn();
   // Exact mixed source is handled by the real editor transaction in another test;
   // here the clipboard text is empty so only image preparation is pending.
-  const view = { composing: false, dispatch } as unknown as EditorView;
+  const view = {
+    composing: false,
+    dispatch,
+    state: { selection: { from: 1 } },
+  } as unknown as EditorView;
   await act(() =>
     editorProps?.handlePaste?.(
       view,
@@ -391,6 +412,18 @@ it("blocks Enter and both send controls while pasted image preparation is pendin
   await act(async () => {
     finish({ kind: "attachments", items: [] });
     await new Promise((resolve) => setTimeout(resolve, 20));
+  });
+  expect(send).not.toHaveBeenCalled();
+  expect(fixture.thread.attachmentImports?.stateStore.getState().ready).toBe(
+    false,
+  );
+  const cancel = Array.from(fixture.container.querySelectorAll("button")).find(
+    (button) => button.getAttribute("aria-label") === "Cancel capture.png",
+  );
+  expect(cancel).toBeDefined();
+  await act(async () => {
+    cancel?.click();
+    await new Promise((resolve) => setTimeout(resolve, 10));
   });
   await act(() =>
     editorProps?.handleKeyDown?.(

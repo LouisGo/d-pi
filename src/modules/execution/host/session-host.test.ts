@@ -1631,3 +1631,117 @@ it("seeds SDK recovery from branch records with exact native IDs before ready", 
     },
   });
 });
+it.each([
+  "content-missing",
+  "content-corrupt",
+  "transport-too-large",
+  "paused",
+] as const)(
+  "records a proven SDK-boundary image refusal %s without ACK or an unknown write",
+  async (reason) => {
+    const messages: HostMessage[] = [];
+    native.controlRequest.mockResolvedValue({
+      success: true,
+      data: {
+        paused: false,
+        stopping: false,
+        pendingAsync: false,
+        admitted: false,
+        streaming: false,
+        compacting: false,
+        queued: 0,
+        background: 0,
+        queue: [],
+        imageSupport: true,
+      },
+    });
+    const host = createSessionHost(
+      (message) => messages.push(message),
+      () => {},
+    );
+    const start: HostStart = {
+      kind: "start",
+      threadId: ThreadIdSchema.parse(crypto.randomUUID()),
+      traceId: crypto.randomUUID(),
+      processInstanceId: crypto.randomUUID(),
+      connectionGeneration: crypto.randomUUID(),
+      configContextId: "fixture",
+      binary: "/fixture/bun",
+      sdkEntry: "/fixture/host.mjs",
+      identity: { directory: "/project", device: "1", inode: "2" },
+      environment: {},
+      sessionDirectory: "/sessions",
+    };
+    await host.handle(start);
+    const attachmentId = crypto.randomUUID(),
+      digest = "a".repeat(64);
+    const value = FrozenSubmissionSchema.parse({
+      submissionId: crypto.randomUUID(),
+      threadId: start.threadId,
+      traceId: crypto.randomUUID(),
+      requestId: crypto.randomUUID(),
+      revision: 1,
+      text: "解释这张图片",
+      content: {
+        schemaVersion: 1,
+        message: "解释这张图片",
+        rawBytes: 908202,
+        images: [
+          {
+            type: "image",
+            mimeType: "image/png",
+            resource: { digest, byteLength: 908202 },
+          },
+        ],
+        sources: [
+          {
+            attachmentId,
+            inputDigest: digest,
+            representation: "image",
+            converterVersion: "original-image-v1",
+            coverageGaps: [],
+            byteLength: 908202,
+            name: "question.png",
+          },
+        ],
+      },
+      target: {
+        processInstanceId: start.processInstanceId,
+        connectionGeneration: start.connectionGeneration,
+        configContextId: start.configContextId,
+        nativeSessionRef: "/sessions/session.jsonl",
+      },
+    });
+    await host.handle({ kind: "dispatch", value });
+    expect(native.writes).toHaveLength(1);
+    expect(native.writes[0]!.length).toBeLessThan(1024);
+    native.observers[0]?.({
+      kind: "frame",
+      frame: {
+        type: "response",
+        id: value.requestId,
+        command: "prompt",
+        success: false,
+        data: { inputRejected: reason },
+      },
+    });
+    expect(messages).toContainEqual(
+      expect.objectContaining({
+        kind: "submission",
+        event: expect.objectContaining({
+          kind: "rejected",
+          requestId: value.requestId,
+          reason,
+        }),
+      }),
+    );
+    expect(
+      messages.filter(
+        (m) =>
+          m.kind === "submission" &&
+          (m.event.kind === "ack" || m.event.kind === "disconnected"),
+      ),
+    ).toEqual([]);
+    native.observers[0]?.({ kind: "exited" });
+  },
+);

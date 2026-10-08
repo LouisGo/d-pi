@@ -1,0 +1,77 @@
+
+ RUN  v5.0.2 /Users/lou/.codex/worktrees/composer-quality/d-pi
+
+ ❯ src/modules/input/main/attachments/attachment-store.test.ts (18 tests | 2 failed) 252ms
+   × prepares a normal pasted PNG above the old 1 MiB encoded floor without changing its source bytes 17ms
+   × freezes a compressed image as a pinned derived resource and retains its original 1ms
+ ❯ tests/integration/submission-content.integration.test.ts (2 tests | 1 failed) 42ms
+   × admits an ordinary image above 1 MiB Base64 and stores resource references and dispatches exactly once 18ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/submission-content.integration.test.ts > admits an ordinary image above 1 MiB Base64 and stores resource references and dispatches exactly once
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/integration/submission-content.integration.test.ts:81:20
+     79|     expect(coordinator.prepare(frozen).kind).toBe("receipt");
+     80|     coordinator.dispatch(frozen.submissionId); coordinator.dispatch(fr…
+     81|     expect(frames).toHaveLength(1);
+       |                    ^
+     82|     expect(JSON.parse(frames[0]!).images[0].resource).toEqual(resource…
+     83|     expect(frames[0]!.length).toBeLessThan(1024);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/modules/input/main/attachments/attachment-store.test.ts > prepares a normal pasted PNG above the old 1 MiB encoded floor without changing its source bytes
+AssertionError: expected { ok: false, …(1) } to match object { ok: true, content: { …(2) } }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "content": {
+-     "images": [
+-       {
+-         "mimeType": "image/png",
+-         "resource": {
+-           "byteLength": 908202,
+-           "digest": "2ae48cb97b63aa792b54158c188209fd2b6ed81f1b23a2b574bd671764ea5d35",
+-         },
+-       },
+-     ],
+-     "rawBytes": 908202,
+-   },
+-   "ok": true,
++   "ok": false,
+  }
+
+ ❯ src/modules/input/main/attachments/attachment-store.test.ts:515:20
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/modules/input/main/attachments/attachment-store.test.ts > freezes a compressed image as a pinned derived resource and retains its original
+ReferenceError: vi is not defined
+ ❯ src/modules/input/main/attachments/attachment-store.test.ts:522:25
+    520|   const original = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAA…
+    521|   const derived = Buffer.from([255,216,255,1,2,3]);
+    522|   const compressImage = vi.fn(async () => ({ ok: true as const, bytes:…
+       |                         ^
+    523|   const s = store({validateImage: async () => true, compressImage});
+    524|   const item = await s.importBytes(thread, {name:"large.png", mimeType…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed | 1 passed (3)
+      Tests  3 failed | 32 passed (35)
+   Start at  19:21:05
+   Duration  4.98s (tests 84%, transform 9%, import 7%)
+

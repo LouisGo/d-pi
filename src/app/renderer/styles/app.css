@@ -10,6 +10,9 @@
 @import "../components/ui/tab-strip.css";
 @import "../components/ui/modal.css";
 @import "../components/ui/status-preview.css";
+@import "../components/ui/action-menu.css";
+@import "../workbench/composer-toolbar.css";
+@import "../workbench/composer.css";
 @layer base {
   *,
   *::before,
@@ -323,12 +326,7 @@
   .directory-info svg {
     flex-shrink: 0;
   }
-  .composer {
-    flex-shrink: 0;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-  }
+
   .composer-readiness {
     display: flex;
     align-items: center;
@@ -340,23 +338,12 @@
     font-size: var(--text-small);
     line-height: 1.6;
   }
-  .composer-heading {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--layout-gap);
-    padding: calc(var(--layout-gap) / 2) var(--layout-gap);
-  }
   h2 {
     font-size: var(--text-body);
     font-weight: 500;
   }
-  .save-status {
-    color: var(--muted-foreground);
-    font-size: var(--text-small);
-  }
   .tiptap {
-    padding: var(--layout-gap);
+    padding: 0;
     min-height: var(--editor-height);
     max-height: max(var(--editor-height), var(--composer-max-height));
     overflow-y: auto;
@@ -364,7 +351,6 @@
     line-height: 1.7;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
-    outline: none;
     caret-color: var(--primary);
   }
   .tiptap p {
@@ -392,23 +378,7 @@
     overflow-x: auto;
     white-space: pre;
   }
-  .tiptap:focus-visible {
-    background: var(--accent);
-    color: var(--accent-foreground);
-    border-radius: var(--radius-control);
-  }
-  .composer-footer {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-end;
-    gap: calc(var(--layout-gap) / 2) var(--layout-gap);
-    padding: calc(var(--layout-gap) / 2) var(--layout-gap);
-    border-top: 1px solid var(--border);
-    color: var(--muted-foreground);
-    font-size: var(--text-small);
-    line-height: 1.6;
-  }
+
   .muted {
     color: var(--muted-foreground);
   }
@@ -590,9 +560,6 @@
 }
 
 @layer components {
-  .composer-footer > span {
-    flex: 1 1 100%;
-  }
   .message-heading > span {
     color: var(--muted-foreground);
   }
@@ -674,5 +641,51 @@
       var(--control-height)
     );
     overflow: auto;
+  }
+}
+
+@layer components {
+  .reference-suggestions,
+  .reference-search {
+    background: var(--surface);
+    color: var(--foreground);
+    border-radius: var(--radius-window);
+    border: 1px solid var(--border);
+    padding: calc(var(--layout-gap) / 2);
+  }
+  .reference-suggestions {
+    position: fixed;
+    top: var(--suggestion-top);
+    transform: translateY(var(--suggestion-offset));
+    left: var(--suggestion-left);
+    width: var(--suggestion-width);
+    max-height: var(--suggestion-height);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-overlay);
+  }
+  .reference-options {
+    overflow: auto;
+    min-height: 0;
+  }
+  .reference-name {
+    flex-shrink: 0;
+    max-width: 60%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .reference-directory {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--muted-foreground);
+  }
+  .reference-search-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: calc(var(--layout-gap) / 2);
   }
 }

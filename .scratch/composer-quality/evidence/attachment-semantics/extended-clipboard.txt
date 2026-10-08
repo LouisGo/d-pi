@@ -1,0 +1,57 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest tests/integration/clipboard-context.integration.test.ts tests/integration/clipboard-frozen-references.integration.test.ts
+$ tsr generate
+(node:56349) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/lou/.codex/worktrees/composer-quality/d-pi[39m
+
+ [32m✓[39m tests/integration/clipboard-context.integration.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 143[2mms[22m[39m
+ [31m❯[39m tests/integration/clipboard-frozen-references.integration.test.ts [2m([22m[2m14 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 1925[2mms[22m[39m
+   [32m✓[39m freezes selected source file and direct directory in Main, survives source deletion/target conflict, recopy and reopen[32m 110[2mms[22m[39m
+   [32m✓[39m copies only the actual PM selection across two projects and pastes all frozen dependencies in one Undo action[32m 107[2mms[22m[39m
+[31m   [31m×[31m freezes a real SDK PDF only with existing text-only consent, preserves its derived record on recopy and pins both objects after source release[39m[32m 40[2mms[22m[39m
+   [32m✓[39m rejects unsupported source without creating partial target manifests or a ready capability[32m 27[2mms[22m[39m
+   [32m✓[39m rejects missing source without creating partial target manifests or a ready capability[32m 15[2mms[22m[39m
+   [32m✓[39m rejects denied source without creating partial target manifests or a ready capability[32m 15[2mms[22m[39m
+   [32m✓[39m rejects truncated-directory source without creating partial target manifests or a ready capability[32m 79[2mms[22m[39m
+   [33m[2m✓[22m[39m enforces actual async 64 MiB snapshot and 128 MiB aggregate byte budgets, and recovers pins/budget after rejection[33m 1185[2mms[22m[39m
+   [32m✓[39m counts deduplicated derived PDF bytes in the real final snapshot admission[32m 220[2mms[22m[39m
+   [32m✓[39m rejects a late real Main source read after TTL without publishing or pinning new assets[32m 19[2mms[22m[39m
+   [32m✓[39m rejects a late real Main source read after document without publishing or pinning new assets[32m 16[2mms[22m[39m
+   [32m✓[39m rechecks the captured source identity after asynchronous conversion and leaves all uncommitted objects collectible[32m 44[2mms[22m[39m
+   [32m✓[39m reads old manifests without provenance and repairs missing private object metadata before final admission[32m 27[2mms[22m[39m
+   [32m✓[39m rejects over-32 dependencies and over-1 MiB UTF-8 selection before any asynchronous source allocation[32m 19[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/clipboard-frozen-references.integration.test.ts[2m > [22mfreezes a real SDK PDF only with existing text-only consent, preserves its derived record on recopy and pins both objects after source release
+[31m[1mAssertionError[22m: expected { kind: 'clipboard-unavailable', …(1) } to deeply equal { kind: 'clipboard-exported', …(1) }[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "degraded": false,[39m
+[32m-   "kind": "clipboard-exported",[39m
+[31m+   "kind": "clipboard-unavailable",[39m
+[31m+   "reason": "failed",[39m
+[2m  }[22m
+
+[36m [2m❯[22m tests/integration/clipboard-frozen-references.integration.test.ts:[2m460:7[22m[39m
+    [90m458|[39m         [pdf.id],
+    [90m459|[39m       ),
+    [90m460|[39m     ).toEqual({ kind: "clipboard-exported", degraded: false });
+    [90m   |[39m       [31m^[39m
+    [90m461|[39m     expect(
+    [90m462|[39m       service.store.referenceSource(source.threadId, pdf.id)?.inputDig…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m14 passed[39m[22m[90m (15)[39m
+[2m   Start at [22m 18:06:21
+[2m   Duration [22m 3.11s[2m (tests 48%, transform 23%, import 16%, environment 13%)[22m
+
+[ELIFECYCLE] Test failed. See above for more details.

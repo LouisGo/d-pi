@@ -15,7 +15,11 @@ export function Tooltip({
       <TooltipPrimitive.Root>
         <TooltipPrimitive.Trigger render={children} />
         <TooltipPrimitive.Portal>
-          <TooltipPrimitive.Positioner side={side} sideOffset={8}>
+          <TooltipPrimitive.Positioner
+            className="ui-popup-positioner"
+            side={side}
+            sideOffset={8}
+          >
             <TooltipPrimitive.Popup className="ui-tooltip">
               {content}
             </TooltipPrimitive.Popup>

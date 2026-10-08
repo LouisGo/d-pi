@@ -1,0 +1,2 @@
+$ node scripts/architecture/report.mjs --write architecture/dependencies.generated.json
+Generated structure report: /Users/lou/.codex/worktrees/composer-quality/d-pi/architecture/dependencies.generated.json

@@ -31,6 +31,8 @@ const ManifestSchema = z.object({
     "model-selection.mjs": z.string(),
     "native-queue.mjs": z.string(),
     "reading-session.mjs": z.string(),
+    "image-input.mjs": z.string(),
+    "image-compression.mjs": z.string(),
     "native-subagent-configuration.mjs": z.string(),
     "pdf-content.mjs": z.string(),
   }),

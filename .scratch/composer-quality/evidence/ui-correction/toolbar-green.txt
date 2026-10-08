@@ -1,0 +1,16 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/components/ui/action-menu.test.ts src/app/renderer/workbench/composer-toolbar.test.ts
+$ tsr generate
+(node:74387) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/.codex/worktrees/composer-toolbar/d-pi
+
+ ✓ src/app/renderer/workbench/composer-toolbar.test.ts (3 tests) 138ms
+ ✓ src/app/renderer/components/ui/action-menu.test.ts (4 tests) 414ms
+
+ Test Files  2 passed (2)
+      Tests  7 passed (7)
+   Start at  15:16:13
+   Duration  2.06s (import 70%, tests 15%, environment 11%, transform 4%)
+

@@ -1,0 +1,108 @@
+
+ RUN  v5.0.2 /private/var/folders/y8/gw467hcx2ll1z8qkddqydq7c0000gn/T/dpi-composer-semantics-red-mpy5_2ie
+
+ ❯ src/modules/input/renderer/references/detached-images.test.ts (3 tests | 3 failed) 29ms
+   × image add/remove preserves the editor document, Undo depth and existing Redo branch 21ms
+   × mixed batches Undo only inline files and preserve images through cache remount and persistence 3ms
+   × deduplicates repeated ID and same captured source without consuming selected text or history 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/modules/input/renderer/references/detached-images.test.ts > image add/remove preserves the editor document, Undo depth and existing Redo branch
+AssertionError: expected Node{ type: NodeType{ …(11) }, …(3) } to be Node{ type: NodeType{ …(11) }, …(3) } // Object.is equality
+
+- Expected
++ Received
+
+@@ -1,10 +1,19 @@
+  {
+    "content": [
+      {
+        "content": [
+          {
++           "attrs": {
++             "contextKind": "external",
++             "id": "d3e4e616-5b19-4727-b190-158c3fe65b24",
++             "name": "image.png",
++             "referenceKind": null,
++           },
++           "type": "attachmentReference",
++         },
++         {
+            "text": "draft",
+            "type": "text",
+          },
+        ],
+        "type": "paragraph",
+
+ ❯ src/modules/input/renderer/references/detached-images.test.ts:44:28
+     42|   const image = f.item("image/png", "image.png");
+     43|   expect(createAttachmentEditor(editor, () => true, { controller: f.co…
+     44|   expect(editor.state.doc).toBe(doc); expect(undoDepth(editor.state)).…
+       |                            ^
+     45|   expect(f.controller.getTextSnapshot()).toContain(image.token);
+     46|   expect(editor.commands.redo()).toBe(true); expect(f.controller.getTe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/modules/input/renderer/references/detached-images.test.ts > mixed batches Undo only inline files and preserve images through cache remount and persistence
+AssertionError: expected '[[dpi-attachment:adddf356-4c7f-48e1-8…' not to contain '[[dpi-attachment:adddf356-4c7f-48e1-8…'
+
+Expected: "[[dpi-attachment:adddf356-4c7f-48e1-820c-be37e4d13316]]"
+Received: "[[dpi-attachment:adddf356-4c7f-48e1-820c-be37e4d13316]][[dpi-attachment:d519ec4b-40b4-4ab4-b1de-e05e982d39ba]]draft"
+
+ ❯ src/modules/input/renderer/references/detached-images.test.ts:55:80
+     53|   const target = createAttachmentImportTarget(editor, () => true, { co…
+     54|   expect(target.apply([image, file])).toBe(true);
+     55|   expect(editor.getText()).toContain(file.token); expect(editor.getTex…
+       |                                                                                ^
+     56|   expect(editor.commands.undo()).toBe(true);
+     57|   expect(f.controller.getTextSnapshot()).toContain(image.token); expec…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/modules/input/renderer/references/detached-images.test.ts > deduplicates repeated ID and same captured source without consuming selected text or history
+AssertionError: expected Node{ type: NodeType{ …(11) }, …(3) } to be Node{ type: NodeType{ …(11) }, …(3) } // Object.is equality
+
+- Expected
++ Received
+
+@@ -10,11 +10,20 @@
+              "referenceKind": null,
+            },
+            "type": "attachmentReference",
+          },
+          {
+-           "text": "draft",
++           "attrs": {
++             "contextKind": "external",
++             "id": "1f12233e-5717-4ff0-bbc7-5dd698a15e9e",
++             "name": "duplicate.txt",
++             "referenceKind": null,
++           },
++           "type": "attachmentReference",
++         },
++         {
++           "text": "aft",
+            "type": "text",
+          },
+        ],
+        "type": "paragraph",
+      },
+
+ ❯ src/modules/input/renderer/references/detached-images.test.ts:69:66
+     67|   const depth = undoDepth(editor.state); editor.commands.setTextSelect…
+     68|   const doc = editor.state.doc;
+     69|   expect(port.insert(file)).toBe(true); expect(editor.state.doc).toBe(…
+       |                                                                  ^
+     70|   const duplicateId = crypto.randomUUID();
+     71|   expect(port.insert({ ...file, id: duplicateId, token: `[[dpi-attachm…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed (3)
+   Start at  17:08:41
+   Duration  549ms (environment 47%, transform 27%, import 20%, tests 6%, worker 1%)
+
