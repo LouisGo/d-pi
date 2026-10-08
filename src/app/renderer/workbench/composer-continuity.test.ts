@@ -42,9 +42,10 @@ afterEach(async () => {
 });
 
 async function setup(
-  phase?: "interrupted" | "allowed" | "ready",
+  phase?: "interrupted" | "allowed" | "ready" | "browse" | "failed",
   onChooseModel?: () => void,
   attachments?: AttachmentBridge,
+  origin?: "cli",
 ) {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const first = DraftSchema.parse({
@@ -54,6 +55,7 @@ async function setup(
     directory: "/fixture",
     revision: 0,
     text: "alpha omega",
+    ...(origin ? { origin } : {}),
   });
   const second = DraftSchema.parse({
     ...first,
@@ -701,4 +703,39 @@ it("connects synchronous copy and awaited structured paste in real Composer view
     expect(fixture.editor().commands.undo()).toBe(true);
   });
   expect(fixture.editor().getText()).toBe("bravo");
+});
+
+it("shows automatic preparation without asking the user to start OMP", async () => {
+  const fixture = await setup("allowed");
+  const labels = Array.from(fixture.container.querySelectorAll("button")).map(
+    (button) => button.textContent,
+  );
+  expect(labels).not.toContain("Start OMP");
+  expect(fixture.container.textContent).toContain("Preparing this chat");
+  expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha omega");
+});
+
+it("offers an explicit startup retry after failure and preserves the draft until a real submission", async () => {
+  const fixture = await setup("failed");
+  const button = Array.from(fixture.container.querySelectorAll("button")).find(
+    (button) => button.textContent === "Retry preparing chat",
+  );
+  expect(button).toBeDefined();
+  const runtime = fixture.thread().runtime;
+  if (!runtime) throw Error("missing Runtime");
+  const retry = vi.spyOn(runtime, "act").mockResolvedValue();
+  await act(() => button?.click());
+  expect(retry).toHaveBeenCalledExactlyOnceWith("start");
+  expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha omega");
+});
+
+it("explains external CLI history without offering a project grant or a misleading OMP startup", async () => {
+  const fixture = await setup("browse", undefined, undefined, "cli");
+  const labels = Array.from(fixture.container.querySelectorAll("button")).map(
+    (button) => button.textContent,
+  );
+  expect(labels).not.toContain("Allow execution and start");
+  expect(labels).not.toContain("Start OMP");
+  expect(fixture.container.textContent).toContain("CLI");
+  expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha omega");
 });

@@ -172,3 +172,102 @@ it("starts after an explicit project grant without a second startup action", asy
     model.dispose();
   }
 });
+
+it.each(["revoke", "inspect"] as const)(
+  "a newer %s supersedes a pending grant and cannot be followed by a late automatic startup",
+  async (newer) => {
+    const threadId = ThreadIdSchema.parse(crypto.randomUUID());
+    const requests: string[] = [];
+    let resolveGrant: (reply: RuntimeReply) => void = () => {};
+    const view = (
+      phase: RuntimeView["phase"],
+      revision: number,
+    ): RuntimeView => ({
+      threadId,
+      traceId: crypto.randomUUID(),
+      configuration: { code: "runtime.configDefault" },
+      revision,
+      phase,
+      trusted: phase === "allowed",
+      busy: false,
+      model: null,
+      message: { code: "runtime.readyToSend" },
+    });
+    const model = new RuntimeModel({
+      subscribe: () => () => {},
+      request: async (command) => {
+        requests.push(command.kind);
+        if (command.kind === "allow")
+          return new Promise((resolve) => {
+            resolveGrant = resolve;
+          });
+        return { kind: "view", view: view("browse", requests.length) };
+      },
+    });
+    try {
+      await model.bind(threadId);
+      const pending = model.act("allow");
+      await model.act(newer);
+      resolveGrant({ kind: "view", view: view("allowed", 10) });
+      await pending;
+      expect(requests).toEqual(["inspect", "allow", newer]);
+      expect(model.getSnapshot()?.phase).toBe("browse");
+    } finally {
+      model.dispose();
+    }
+  },
+);
+
+it("preserves a grant but does not launch when the Thread leaves the active selection before the grant reply", async () => {
+  const threadId = ThreadIdSchema.parse(crypto.randomUUID());
+  const requests: string[] = [];
+  let resolveGrant: (reply: RuntimeReply) => void = () => {};
+  const model = new RuntimeModel({
+    subscribe: () => () => {},
+    request: async (command) => {
+      requests.push(command.kind);
+      if (command.kind === "allow")
+        return new Promise((resolve) => {
+          resolveGrant = resolve;
+        });
+      return {
+        kind: "view",
+        view: {
+          threadId,
+          traceId: command.traceId,
+          configuration: { code: "runtime.configDefault" },
+          revision: 0,
+          phase: "browse",
+          trusted: false,
+          busy: false,
+          model: null,
+          message: { code: "runtime.readyToSend" },
+        },
+      };
+    },
+  });
+  try {
+    await model.bind(threadId);
+    const pending = model.act("allow");
+    model.setPreparationActive(false);
+    resolveGrant({
+      kind: "view",
+      view: {
+        threadId,
+        traceId: crypto.randomUUID(),
+        configuration: { code: "runtime.configDefault" },
+        revision: 1,
+        phase: "allowed",
+        trusted: true,
+        busy: false,
+        model: null,
+        message: { code: "runtime.readyToSend" },
+      },
+    });
+    await pending;
+    expect(requests).toEqual(["inspect", "allow"]);
+    expect(model.getSnapshot()?.phase).toBe("allowed");
+  } finally {
+    model.dispose();
+  }
+});

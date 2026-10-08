@@ -43,6 +43,11 @@ export class RuntimeModel {
   private readonly store: RuntimeStore = createRuntimeStore();
   readonly stateStore: RuntimeStateStore = this.store;
   private readonly unsubscribe: () => void;
+  private preparationActive = true;
+  /** App-owned selection suppresses only new preparation, never active work. */
+  setPreparationActive(active: boolean): void {
+    this.preparationActive = active;
+  }
   constructor(private readonly bridge: RuntimeBridge) {
     this.unsubscribe = bridge.subscribe((view) => {
       if (view.threadId === this.store.getState().thread) this.publish(view);
@@ -116,7 +121,8 @@ export class RuntimeModel {
     if (state.disposed) return;
     const threadId = state.thread;
     if (!threadId) return;
-    const requestGeneration = state.requestGeneration;
+    const requestGeneration = state.requestGeneration + 1;
+    this.store.setState({ requestGeneration });
     const traceId = crypto.randomUUID();
     try {
       const reply = await this.bridge.request({ kind, threadId, traceId });
@@ -142,6 +148,7 @@ export class RuntimeModel {
       const current = this.store.getState().view;
       if (
         kind === "allow" &&
+        this.preparationActive &&
         current?.phase === "allowed" &&
         current.trusted &&
         !current.busy

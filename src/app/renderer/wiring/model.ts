@@ -91,6 +91,7 @@ export class AppModel {
   readonly threadListStore = createStore<{
     threads: ThreadContext[];
     failed: boolean;
+    nativeIndex?: "ready" | "partial" | "unavailable";
   }>(() => ({
     threads: [],
     failed: false,
@@ -401,10 +402,7 @@ export class AppModel {
       this.publish({ ...state, busy: false, notice: error });
     else this.publish({ kind: "failed", error });
   }
-  private acceptRestore(
-    reply: RestoreReply,
-    startOnCreate = false,
-  ): ThreadTransitionResult {
+  private acceptRestore(reply: RestoreReply): ThreadTransitionResult {
     return match(reply)
       .with({ kind: "ready" }, ({ draft, directoryAvailable, preferences }) => {
         // Thread selection does not own desktop preferences. A selection
@@ -420,12 +418,7 @@ export class AppModel {
                 draft.revision &&
                 cached.controller.getTextSnapshot() === draft.text))
             ? cached
-            : new ThreadModel(
-                draft,
-                this.bridge,
-                transportFailure,
-                startOnCreate,
-              )
+            : new ThreadModel(draft, this.bridge, transportFailure)
           : null;
         if (thread) this.threads.set(thread.context.threadId, thread);
         if (cached && cached !== thread) cached.dispose();
@@ -434,6 +427,7 @@ export class AppModel {
           : { kind: "empty" };
         this.applyAppearance(appearance);
         if (previous !== thread) {
+          previous?.deactivate();
           this.editorBinding = null;
           this.closeAttempt?.releaseSources();
           this.closeAttempt = null;
@@ -445,6 +439,7 @@ export class AppModel {
           busy: false,
           notice: null,
         });
+        thread?.activate();
         void this.refreshThreads();
         return { kind: "applied" as const, selection: threadSelection };
       })
@@ -485,6 +480,7 @@ export class AppModel {
         this.threadListStore.setState({
           threads: reply.threads,
           failed: false,
+          ...(reply.nativeIndex ? { nativeIndex: reply.nativeIndex } : {}),
         });
       else if (!this.disposed) this.threadListStore.setState({ failed: true });
     } catch {
@@ -548,6 +544,7 @@ export class AppModel {
     if (binding && !binding.boundary.freeze())
       return { kind: "blocked", reason: "composing" };
     const previous = this.activeThread;
+    previous?.deactivate();
     this.publish({
       ...state,
       busy: true,
@@ -567,10 +564,7 @@ export class AppModel {
       if (this.isCurrent(generation)) {
         if (reply.kind === "failed")
           return await this.readSelection(generation, previous, reply.error);
-        return this.acceptRestore(
-          reply,
-          command.kind === "new-thread" || command.kind === "choose-project",
-        );
+        return this.acceptRestore(reply);
       }
       return { kind: "blocked", reason: "superseded" };
     } catch {
@@ -586,8 +580,16 @@ export class AppModel {
           this.state.kind === "ready" &&
           this.state.threadTransition === "unknown"
         )
-      )
+      ) {
+        if (
+          this.isCurrent(generation) &&
+          this.state.kind === "ready" &&
+          !this.state.busy &&
+          this.state.threadTransition === undefined
+        )
+          previous?.activate();
         binding?.boundary.release();
+      }
     }
   }
   /** A command receipt can be lost after Main changes its selection. Never resend it. */
