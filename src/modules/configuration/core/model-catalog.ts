@@ -30,7 +30,7 @@ export function filterModelCatalog(
   return models
     .filter((model) => {
       const key = catalogModelKey(model);
-      const kind = "kind" in model ? model.kind : "chat";
+      const kind = model.kind ?? "chat";
       if (filter.kind && filter.kind !== "all" && kind !== filter.kind)
         return false;
       if (filter.provider && model.provider !== filter.provider) return false;

@@ -10,6 +10,7 @@ import { ConfigurationSettings } from "../../../../modules/configuration/rendere
 import { useI18n } from "../../../../modules/preferences/renderer/public";
 import {
   Button,
+  Select,
   SettingRow,
   SettingsGroup,
   SettingsPage,
@@ -49,6 +50,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     </SettingsContext.Provider>
   );
 }
+export function useSettingsSelect() {
+  return useContext(SettingsContext).select;
+}
 export function SettingsNavigation() {
   const { t } = useI18n();
   const { section, select, id } = useContext(SettingsContext);
@@ -70,7 +74,13 @@ export function SettingsNavigation() {
           onClick={() => select(value)}
         >
           {icons[value]}
-          {t(value === "general" ? "settings.general" : `app.layout.${value}`)}
+          {t(
+            value === "general"
+              ? "settings.general"
+              : value === "configuration"
+                ? "providers.title"
+                : `app.layout.${value}`,
+          )}
         </Button>
       ))}
     </nav>
@@ -84,6 +94,7 @@ function ThreadConfiguration({
   active: boolean;
 }) {
   const { t } = useI18n();
+  const [scopeChoice, setScopeChoice] = useState<"global" | "thread">("thread");
   const threadSelection = useStore(model.stateStore, (state) =>
     state.kind === "ready" ? state.threadSelection : null,
   );
@@ -93,21 +104,48 @@ function ThreadConfiguration({
   );
   const thread =
     threadSelection?.kind === "thread" ? threadSelection.thread : null;
-  return model.configuration && !unknown ? (
-    <ConfigurationSettings
-      bridge={model.configuration}
-      presentation="page"
-      active={active}
-      scope={
-        thread
-          ? {
-              kind: "thread",
-              threadId: thread.context.threadId,
-              workingDirectoryId: thread.context.workingDirectoryId,
-            }
-          : { kind: "application" }
-      }
-    />
+  return model.configuration ? (
+    <>
+      {unknown && (
+        <p role="status" className="muted">
+          {t("settings.configurationUnavailable")}
+        </p>
+      )}
+      <div hidden={unknown} className="configuration-scope">
+        <Select<"global" | "thread">
+          aria-label={t("providers.roleScope")}
+          value={thread ? scopeChoice : "global"}
+          onValueChange={setScopeChoice}
+          options={[
+            { value: "global", label: t("providers.globalScope") },
+            ...(thread
+              ? [
+                  {
+                    value: "thread" as const,
+                    label: t("providers.threadScope"),
+                  },
+                ]
+              : []),
+          ]}
+        />
+      </div>
+      <div hidden={unknown}>
+        <ConfigurationSettings
+          bridge={model.configuration}
+          presentation="page"
+          active={active && !unknown}
+          scope={
+            thread && scopeChoice === "thread"
+              ? {
+                  kind: "thread",
+                  threadId: thread.context.threadId,
+                  workingDirectoryId: thread.context.workingDirectoryId,
+                }
+              : { kind: "application" }
+          }
+        />
+      </div>
+    </>
   ) : (
     <p role="status" className="muted">
       {t("settings.configurationUnavailable")}
@@ -151,14 +189,15 @@ export function SettingsSurface({ model }: { model: AppModel }) {
       </SettingsPage>
       <SettingsPage
         id={`${id}-configuration`}
-        title={t("app.layout.configuration")}
-        description={t("settings.configurationDescription")}
+        title={t("providers.title")}
+        description={t("providers.description")}
         hidden={section !== "configuration"}
       >
         <ThreadConfiguration
           model={model}
           active={visible && section === "configuration"}
         />
+        <PreferenceFeedback model={model} />
       </SettingsPage>
       <SettingsPage
         id={`${id}-attention`}
