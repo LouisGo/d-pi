@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "cd69598eb8f681b68b55f67f1f176c4e89965f39372dca0b76f43db10404757a",
+  "inputsHash": "7210ec228f7f886ec005286f8b58e5d0412e575fa2d124a13480095df9d83c95",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 486,
@@ -194,7 +194,7 @@
       ],
       "materialized": true,
       "files": 61,
-      "lines": 13573,
+      "lines": 13625,
       "publicEntries": [
         {
           "path": "src/modules/input/contracts/public.ts",
@@ -21709,6 +21709,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/input/renderer/references/attachment-editor.ts",
+      "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/detached-images.test.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./suggestion-controller",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/renderer/references/suggestion-controller.ts",
       "targetModule": "input",
       "targetEnvironment": "renderer"
     },

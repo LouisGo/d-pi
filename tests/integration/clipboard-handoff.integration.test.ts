@@ -3,7 +3,7 @@ import { existsSync, mkdtempSync, realpathSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Editor } from "@tiptap/core";
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
 import { AppStorage } from "../../src/app/main/wiring/app-storage";
 import { createAttachmentService } from "../../src/app/main/wiring/attachment-service";
 import { createAttachmentBridge } from "../../src/app/preload/bridges/attachments";
@@ -26,6 +26,26 @@ import {
 } from "../../src/modules/input/renderer/public";
 import { DRAFT_MAX_BYTES, draftByteLength } from "../../src/shared/draft-text";
 import { ThreadIdSchema } from "../../src/shared/identity";
+
+// This fixture verifies adoption/history/GC; real codec coverage uses its
+// dedicated binary worker tests with the fixed Bun runtime.
+vi.mock("../../src/platform/node/images/public", () => ({
+  createImageCompressor:
+    () =>
+    async (
+      bytes: Uint8Array,
+      mimeType: "image/png" | "image/jpeg" | "image/webp" | "image/gif",
+    ) => ({
+      ok: true,
+      bytes,
+      mimeType,
+      recompressed: false,
+      width: 1,
+      height: 1,
+      originalWidth: 1,
+      originalHeight: 1,
+    }),
+}));
 
 it("reclaims fully abandoned clipboard handoffs after real paste/Undo/save and explicit epoch clear", async () => {
   const root = realpathSync(
@@ -159,7 +179,11 @@ it("reclaims fully abandoned clipboard handoffs after real paste/Undo/save and e
   }
 });
 
-async function handoffFixture(threads = 8, failUpdates = false) {
+async function handoffFixture(
+  threads = 8,
+  failUpdates = false,
+  textFile = false,
+) {
   const root = realpathSync(
     mkdtempSync(join(tmpdir(), "dpi-clipboard-ownership-")),
   );
@@ -174,13 +198,15 @@ async function handoffFixture(threads = 8, failUpdates = false) {
   const source = storage.drafts.create(root),
     target = storage.drafts.create(root);
   const item = await service.store.importBytes(source.threadId, {
-    name: "image.png",
-    mimeType: "image/png",
+    name: textFile ? "context.txt" : "image.png",
+    mimeType: textFile ? "text/plain" : "image/png",
     source: "paste",
-    bytes: Buffer.from(
-      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aJ1EAAAAASUVORK5CYII=",
-      "base64",
-    ),
+    bytes: textFile
+      ? Buffer.from("clipboard history resource")
+      : Buffer.from(
+          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aJ1EAAAAASUVORK5CYII=",
+          "base64",
+        ),
   });
   storage.drafts.save(source.threadId, 0, item.token);
   const reserved = await service.execute(
@@ -388,7 +414,8 @@ it.each(["", "[[dpi-attachment:broken]] "])(
 );
 
 it("keeps clones in another live epoch and rejects foreign release before exact last-epoch cleanup", async () => {
-  const f = await handoffFixture();
+  // Only non-image files belong to the PM history lease.
+  const f = await handoffFixture(8, false, true);
   try {
     const opened = await f.service.execute(
       {

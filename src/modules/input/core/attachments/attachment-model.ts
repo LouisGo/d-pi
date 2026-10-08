@@ -20,6 +20,7 @@ export type AttachmentRange = {
   to: number;
   expectedSource?: string;
   valid?: boolean;
+  consumeOnDuplicate?: boolean;
 };
 export interface AttachmentEditorPort {
   insert(item: Attachment, range?: AttachmentRange, focus?: boolean): boolean;

@@ -3,7 +3,7 @@ import { mkdtempSync, realpathSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Editor } from "@tiptap/core";
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
 import { AppStorage } from "../../src/app/main/wiring/app-storage";
 import { createAttachmentService } from "../../src/app/main/wiring/attachment-service";
 import {
@@ -20,6 +20,26 @@ import {
   draftDocument,
   plainTextEditorOptions,
 } from "../../src/modules/input/renderer/public";
+
+// This fixture verifies adoption/history/GC; real codec coverage uses its
+// dedicated binary worker tests with the fixed Bun runtime.
+vi.mock("../../src/platform/node/images/public", () => ({
+  createImageCompressor:
+    () =>
+    async (
+      bytes: Uint8Array,
+      mimeType: "image/png" | "image/jpeg" | "image/webp" | "image/gif",
+    ) => ({
+      ok: true,
+      bytes,
+      mimeType,
+      recompressed: false,
+      width: 1,
+      height: 1,
+      originalWidth: 1,
+      originalHeight: 1,
+    }),
+}));
 
 it("does not hide failed clone cleanup after a new ordinary image enters the epoch", async () => {
   const root = realpathSync(

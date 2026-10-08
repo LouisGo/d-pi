@@ -29,6 +29,7 @@ import {
   projectDetachedImages,
   syncAttachmentLabels,
 } from "./attachment-editor";
+import { trackReferenceRange } from "./suggestion-controller";
 
 const cleanups: (() => void)[] = [];
 afterEach(() => {
@@ -379,6 +380,47 @@ it("deduplicates repeated ID and same captured source without consuming selected
   ).toBe(true);
   expect(editor.state.doc).toBe(doc);
   expect(undoDepth(editor.state)).toBe(depth);
+});
+it("consumes an explicitly confirmed duplicate @ trigger without adding a second reference", () => {
+  const f = fixture("");
+  const editor = f.mount();
+  const port = createAttachmentEditor(editor, () => true, {
+    controller: f.controller,
+  });
+  const item = {
+    ...f.item("text/plain", "ref.ts"),
+    source: "reference" as const,
+    representation: "reference" as const,
+    path: "src/ref.ts",
+    referenceKind: "file" as const,
+  };
+  expect(port.insert(item)).toBe(true);
+  editor.commands.insertContent(" @ref");
+  const to = editor.state.selection.from;
+  const target = trackReferenceRange(editor, {
+    from: to - 4,
+    to,
+    query: "ref",
+    expectedSource: "@ref",
+  });
+  const cloneId = crypto.randomUUID();
+  const duplicate = {
+    ...item,
+    id: cloneId,
+    token: `[[dpi-attachment:${cloneId}]]`,
+  };
+  expect(
+    port.insert(duplicate, { ...target.range, consumeOnDuplicate: false }),
+  ).toBe(true);
+  expect(editor.getText()).toContain("@ref");
+  expect(port.insert(duplicate, target.range)).toBe(true);
+  expect(editor.getText()).not.toContain("@ref");
+  expect(f.controller.getAttachmentIds()).toEqual([item.id]);
+  expect(editor.commands.undo()).toBe(true);
+  expect(editor.getText()).toContain("@ref");
+  expect(f.controller.getAttachmentIds()).toEqual([item.id]);
+  expect(port.insert(duplicate, target.range)).toBe(false);
+  target.release();
 });
 it("releases duplicate import operations and retries the same release after a lost ACK", async () => {
   const f = fixture();

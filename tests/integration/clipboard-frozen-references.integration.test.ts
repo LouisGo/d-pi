@@ -2,6 +2,8 @@
 
 import { randomUUID } from "node:crypto";
 import {
+  constants,
+  cpSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
@@ -31,6 +33,26 @@ import {
   draftDocument,
   plainTextEditorOptions,
 } from "../../src/modules/input/renderer/public";
+
+// This fixture verifies adoption/history/GC; real codec coverage uses its
+// dedicated binary worker tests with the fixed Bun runtime.
+vi.mock("../../src/platform/node/images/public", () => ({
+  createImageCompressor:
+    () =>
+    async (
+      bytes: Uint8Array,
+      mimeType: "image/png" | "image/jpeg" | "image/webp" | "image/gif",
+    ) => ({
+      ok: true,
+      bytes,
+      mimeType,
+      recompressed: false,
+      width: 1,
+      height: 1,
+      originalWidth: 1,
+      originalHeight: 1,
+    }),
+}));
 
 it("freezes selected source file and direct directory in Main, survives source deletion/target conflict, recopy and reopen", async () => {
   const root = realpathSync(
@@ -410,11 +432,30 @@ it("freezes a real SDK PDF only with existing text-only consent, preserves its d
   const sourceRoot = join(root, "project");
   mkdirSync(sourceRoot);
   writeFileSync(join(sourceRoot, "document.pdf"), pdfFixture());
+  // A running desktop owns its SDK root. Clone immutable resources so this
+  // real-converter fixture obeys the production exclusive resource lease.
+  const resources = join(root, "runtime");
+  cpSync(
+    join(import.meta.dirname, "../../resources/sdk"),
+    join(resources, "sdk"),
+    {
+      recursive: true,
+      verbatimSymlinks: true,
+      mode: constants.COPYFILE_FICLONE,
+    },
+  );
+  for (const name of ["pi-coding-agent", "pi-utils"]) {
+    expect(
+      realpathSync(
+        join(resources, "sdk", "node_modules/@oh-my-pi", name),
+      ).startsWith(`${resources}/sdk/`),
+    ).toBe(true);
+  }
   const storage = AppStorage.open(join(root, "app.sqlite"));
   const service = createAttachmentService(
     storage,
     root,
-    join(import.meta.dirname, "../../resources"),
+    resources,
     () => true,
     async () => null,
   );
@@ -546,7 +587,7 @@ it("freezes a real SDK PDF only with existing text-only consent, preserves its d
     storage.close();
     rmSync(root, { recursive: true, force: true });
   }
-});
+}, 60000);
 
 it.each(["unsupported", "missing", "denied", "truncated-directory"] as const)(
   "rejects %s source without creating partial target manifests or a ready capability",

@@ -13,11 +13,11 @@
 - 执行：主 Agent 单写规格/任务/生成看板/集成；M2 worker 单写隔离 worktree 的 input imports/lifecycle/batch adapter 与 Thread 装配，不写 M1 控件/Composer/CSS/locale；共享 public 导出串行集成。
 
 ```project-status
-[{"id":"composer-quality","title":"Composer M1/M2 编辑体验","phase":"M2","engineering":"complete","trial":"feedback","acceptance":"pending","build":"base45c7ef1 + 08固定WIP；70项/renderer type/fast/design/build通过","evidence":["handoff.md","validation.md","review.md"],"next":"用户从现有worktree pnpm dev复试鼠标选图/取消/重试回返outline与Tab焦点；实机认可pending","constraints":"仅本地交付；本轮未运行GUI/真实Host/provider，不push；完整check未重跑，既有PDF/CLI fixture未知保留。"}]
+[{"id":"composer-quality","title":"Composer M1/M2 编辑体验","phase":"M2","engineering":"in-progress","trial":"feedback","acceptance":"pending","build":"base45c7ef1 + 08固定WIP；70项/renderer type/fast/design/build通过","evidence":["handoff.md","validation.md","review.md"],"next":"完整本地PR：覆盖全部提交、复核组合缺陷/完整检查后合入main；实机认可仍pending","constraints":"仅本地交付；本轮未运行GUI/真实Host/provider，不push；完整check未重跑，既有PDF/CLI fixture未知保留。"}]
 ```
 
 ```implementation-plan
-[{"id":"composer","tickets":["01","02","04","03","05","06","07","08"]}]
+[{"id":"composer","tickets":["01","02","04","03","05","06","07","08","09"]}]
 ```
 
 ## 验收
@@ -61,3 +61,7 @@
 用户指出Finder选图后鼠标outline仍出现，继续修复共享focus-visibility，补首次/重试/成功/取消的回返事件反例。只保留已获得鼠标来源的同一DOM焦点目标，键盘/独立无障碍焦点仍正常；不在Composer局部压样式、不改变异步插入/Undo/提交。仍由用户实机验收，Agent不运行GUI。
 
 08工程完成，共享来源回返5反例先失败后修复，独立小范围两轴覆盖完成；模拟事件与真实Finder证据明确区分，用户实机复试pending。
+
+## 2026-10-08 完整本地PR到main（09）
+
+用户明确授权包含此前全部修改的本地PR合入main。固定原来源eb2e79c、目标cb233c6、实际mergebasea9cf9a9，37提交。整段独立双轴重新覆盖与完整检查，修复确证的重复@确认trigger遗留并完善门禁/fixture；GUI/真实provider与用户认可仍pending，不push。

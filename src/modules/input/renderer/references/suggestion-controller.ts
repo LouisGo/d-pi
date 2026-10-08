@@ -59,6 +59,7 @@ export function trackReferenceRange(editor: Editor, trigger: ReferenceTrigger) {
     to: trigger.to,
     expectedSource: trigger.expectedSource,
     valid: true,
+    consumeOnDuplicate: true,
   };
   const map = ({ transaction }: { transaction: Transaction }) => {
     if (transaction.getMeta("dpiTrustedDraftReplacement")) range.valid = false;

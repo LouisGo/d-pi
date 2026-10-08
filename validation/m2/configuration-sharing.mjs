@@ -352,7 +352,9 @@ process.exit();`,
     [
       "--preload",
       guard,
-      join(sdk, "node_modules/@oh-my-pi/pi-coding-agent/dist/cli.js"),
+      process.env.D_PI_CONFIGURATION_SOURCE === "1"
+        ? resolve("node_modules/@oh-my-pi/pi-coding-agent/dist/cli.js")
+        : join(sdk, "node_modules/@oh-my-pi/pi-coding-agent/dist/cli.js"),
       "--mode",
       "rpc",
     ],

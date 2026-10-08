@@ -57,6 +57,14 @@ export function createAttachmentEditor(
         return false;
       const accepted = adoption ? adoption.admit([item]) : [item];
       if (!accepted.length) {
+        if (range?.consumeOnDuplicate && item.source === "reference") {
+          const tr = editor.state.tr
+            .delete(range.from, range.to)
+            .setMeta("dpiIndependentAction", true)
+            .scrollIntoView();
+          editor.view.dispatch(tr);
+          if (!editor.state.doc.eq(tr.doc)) return false;
+        }
         if (focus) editor.commands.focus();
         return true;
       }

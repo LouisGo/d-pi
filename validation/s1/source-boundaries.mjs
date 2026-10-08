@@ -9,6 +9,13 @@ function files(directory) {
       : [join(directory, entry.name)],
   );
 }
+const sharedTokens = new Set(
+  [
+    ...readFileSync("src/app/renderer/styles/tokens.css", "utf8").matchAll(
+      /(--[\w-]+)\s*:/g,
+    ),
+  ].map(([, name]) => name),
+);
 for (const path of files("src")) {
   const text = readFileSync(path, "utf8");
   if (/\.[cm]?tsx?$/.test(path) && !path.endsWith(".test.ts")) {
@@ -46,10 +53,15 @@ for (const path of files("src")) {
       !/#[\da-f]{3,8}\b|\b(?:rgb|hsl|oklch)\(/i.test(text),
       `raw color outside token source: ${path}`,
     );
-    assert.ok(
-      !/--[\w-]+\s*:/.test(text),
-      `independent variable source: ${path}`,
-    );
+    for (const [, name, value] of text.matchAll(
+      /(--[\w-]+)\s*:\s*([^;}]+)[;}]/g,
+    )) {
+      const alias = /^var\(\s*(--[\w-]+)\s*\)$/.exec(value.trim());
+      assert.ok(
+        !sharedTokens.has(name) && alias && sharedTokens.has(alias[1]),
+        `independent variable source: ${path}: ${name}`,
+      );
+    }
     assert.ok(
       !/\b\d+(?:\.\d+)?(?:rem|em)\b/.test(text),
       `independent visual scale: ${path}`,
