@@ -17,7 +17,7 @@ vi.mock("./markdown", () => ({
   Markdown: ({ text }: { text: string }) => createElement("p", null, text),
 }));
 
-it("shows a reachable list-bottom action and a new-output prompt for same-entity appends without turning raw segments", async () => {
+it("shows a reachable list-bottom action and a new-output prompt for same-entity appends with one continuous body", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const frames = new Map<number, FrameRequestCallback>();
   let next = 0;
@@ -136,11 +136,10 @@ it("shows a reachable list-bottom action and a new-output prompt for same-entity
     await act(() => bottom?.click());
     expect(pane.scrollTop).toBe(800);
     expect(host.textContent).not.toContain("New output");
-    expect(
-      host
-        .querySelector("[data-reading-segment]")
-        ?.getAttribute("data-reading-segment"),
-    ).toBe("0");
+    expect(host.querySelector("[data-reading-segment]")).toBeNull();
+    expect(host.querySelector("[data-reading-text]")?.textContent).toBe(
+      text + "more",
+    );
     await act(() =>
       deliver({
         kind: "snapshot",

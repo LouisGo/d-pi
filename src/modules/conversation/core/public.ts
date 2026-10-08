@@ -3,6 +3,7 @@ export {
   boundHistoryPageQuery,
   projectHistoryCatalogQuery,
   projectHistoryPageQuery,
+  savedConversationQuery,
 } from "./history-queries";
 export { ConversationModel, type ConversationState } from "./model";
 export {

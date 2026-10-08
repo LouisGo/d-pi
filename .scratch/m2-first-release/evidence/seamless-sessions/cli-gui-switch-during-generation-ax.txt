@@ -1,0 +1,34 @@
+The following is a diff from the previous accessibility tree for Window: "d-pi" with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
+Removed element IDs: 38-70, 73-75, 83-93
+~						6 按钮 后退
+~							10 文本 project-beta
++								83 container
++									84 按钮 Thread 工具
++									85 container 原生会话阅读
++										86 container 原生会话阅读
++											87 文本 本页另有 1 条非消息记录，未作为正文显示。
++											88 container
++												89 文本 用户
++												90 按钮 复制
++												91 文本 QA CLI saved question project-beta
++											92 container
++												93 文本 助手
++												94 按钮 复制
++												95 text QA CLI saved answer project-beta This content was persisted by the official SessionManager.
++									96 container 持久文字草稿
++										97 container
++											98 文本 请允许项目执行以启动会话。
++											99 按钮 允许执行并启动
++										100 文本输入区 (settable) Description: 草稿正文, Value: 
+
++										101 按钮 添加附件
++										102 按钮 @ 项目文件与文件夹
++										103 文本 粘贴图片、拖入文件，或输入 @ 引用项目文件或文件夹。
++										104 开合三角标记 附件与存储
++											105 文本 附件与存储
++										106 开合三角标记 输入选项
++											107 文本 输入选项
++										108 按钮 展开编辑区
++										109 按钮 (disabled) 发送
++							110 弹出式按钮 对话快速预览
+The focused UI element is 28 按钮 QA CLI project-beta 会话 1 · d11bf5, Help: /Users/lou/Downloads/DPI_无缝会话复试_2026-10-08/project-beta · d11bf5d2-849e-4ae0-bc27-a1f72ada7d96

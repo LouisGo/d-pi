@@ -1,0 +1,35 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/Learn/d-pi
+
+ ❯ src/modules/conversation/main/native-history.test.ts (5 tests | 1 failed) 32ms
+   ✓ reads bound native v3 history without modifying it, retaining branch identities and incomplete tail 5ms
+   ✓ keeps failed, successful and unknown tool results distinct and ignores results without tool identity 2ms
+   ✓ classifies every known mutating native tool without changing its original name 1ms
+   ✓ pages large files within a byte budget and rejects replaced cursors, other Threads and unsupported versions 16ms
+   × keeps a saved history snapshot readable while new messages append, and refresh sees the new tail 8ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/modules/conversation/main/native-history.test.ts > keeps a saved history snapshot readable while new messages append, and refresh sees the new tail
+AssertionError: expected 'unavailable' to be 'page' // Object.is equality
+
+Expected: "page"
+Received: "unavailable"
+
+ ❯ src/modules/conversation/main/native-history.test.ts:335:25
+    333|     appendFileSync(file,JSON.stringify({type:"message",id:"new-generat…
+    334|     const second=await readNativeHistory(root,binding,first.next);
+    335|     expect(second.kind).toBe("page");
+       |                         ^
+    336|     if(second.kind!=="page")return;
+    337|     expect(second.source).toBe(first.source);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 passed (5)
+   Start at  11:07:50
+   Duration  196ms (import 42%, transform 30%, tests 26%, worker 2%)
+

@@ -58,11 +58,11 @@ Main 拥有窗口、Host 监督及受限通道建立；一个 utility SessionHos
 
 资源manifest复制并校验队列及子Agent适配模块；队列快照预算512 KiB/128项，受限表示通过truncated/hiddenCount/coverage明示，不截断真实原生队列。固定SDK/Bun/localhost的8次真实模型调用已验证逐项及all合并批次的等待、保存/取消、独立停止/继续和隐藏companions，详见[队列记录](../../../.scratch/m2-first-release/queue-management.md)。完整附件编辑、真实macOS关窗/视觉和冷执行恢复仍不由该证据覆盖。
 
-原生 session 放入 Main 指定目录；新启动与冷恢复分开，已有绑定缺执行全周期独占证据则只读。停止/退出的实际验收和限制以 [S3 交接](../../../.scratch/m1-s3-control-recovery/handoff.md) 为准。
+原生 session 放入 Main 指定目录；新启动与冷恢复分开，已有App私有绑定经生命周期lease和旧原生进程清理核实后恢复同文件/ID，具体合同见基础契约2026-10-08修订。停止/退出的实际验收和限制以 [S3 交接](../../../.scratch/m1-s3-control-recovery/handoff.md) 为准。
 
 ## 运行时加固（2026-10-01）
 
-NativeSession 启动受管独立进程组，薄 bootstrap 在导入 SDK 前等待 Main 的身份登记许可。Main 登记 scope/processInstanceId、资源入口及实际 PID、父进程、进程组、birth/executable；Host 与 Main 故障分别清理属于本次实例的组。仅凭断链不能宣布原生或工具已停止，终止结果与 prompt 结果分别报告；清理复核身份，不能仅凭旧 PID 杀进程。单 Bun 故障不结束其他 scope，停止和紧急清理不依赖 SQLite 可写。逃逸进程组的未知外部进程不在已证终止范围，不能声称工具沙箱或跨 CLI 单写。冷旧原生绑定继续只读，不 adopt 或自动重放 unknown。真实 Electron utility/Bun/工具故障证据由[04](../../../.scratch/runtime-hardening-omp1845/issues/04-process-supervision.md)维护。
+NativeSession 启动受管独立进程组，薄 bootstrap 在导入 SDK 前等待 Main 的身份登记许可。Main 登记 scope/processInstanceId、资源入口及实际 PID、父进程、进程组、birth/executable；Host 与 Main 故障分别清理属于本次实例的组。仅凭断链不能宣布原生或工具已停止，终止结果与 prompt 结果分别报告；清理复核身份，不能仅凭旧 PID 杀进程。单 Bun 故障不结束其他 scope，停止和紧急清理不依赖 SQLite 可写。逃逸进程组的未知外部进程不在已证终止范围，不能声称工具沙箱或跨 CLI 单写。冷旧App私有绑定按2026-10-08合同恢复同文件/ID，不adopt旧stdio或自动重放unknown。真实 Electron utility/Bun/工具故障证据由[04](../../../.scratch/runtime-hardening-omp1845/issues/04-process-supervision.md)维护。
 
 Runtime 的正常退出入口即使已断开，也必须等待 HostConnection 的最终组清理；清理未证实则拒绝退出，重复调用不能跳过失败。最近七提交的跨层回归修复见[审查记录](../../../.scratch/review-seven-commits/spec.md)。
 

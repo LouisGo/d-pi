@@ -1,0 +1,98 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/.codex/worktrees/continuous-reading/d-pi
+
+ ❯ src/app/renderer/reading/continuous-reading-renderer.test.ts (6 tests | 6 failed) 216ms
+   × keeps all Markdown and closed nodes while streaming crosses the old character threshold 176ms
+   × keeps all Markdown and closed nodes while streaming crosses the old line threshold 15ms
+   × renders a long answer's first and last blocks together, preserving tables and fenced code 3ms
+   × shows the full raw output without page controls or an inner vertical scrolling region 6ms
+   × copies the full available tool output while rendering it continuously and preserving truncation notices 9ms
+   × copies the full available subagent output while rendering it continuously and preserving truncation notices 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/renderer/reading/continuous-reading-renderer.test.ts > keeps all Markdown and closed nodes while streaming crosses the old character threshold
+ FAIL  src/app/renderer/reading/continuous-reading-renderer.test.ts > keeps all Markdown and closed nodes while streaming crosses the old line threshold
+AssertionError: expected undefined to be 'Continuous answer' // Object.is equality
+
+- Expected:
+"Continuous answer"
+
++ Received:
+undefined
+
+ ❯ src/app/renderer/reading/continuous-reading-renderer.test.ts:58:58
+     56|     observer.observe(paragraph, { childList: true, characterData: true…
+     57|     await f.render(prefix + tail + "\n\nEND_CONTINUOUS");
+     58|     expect(f.container.querySelector("h1")?.textContent).toBe("Continu…
+       |                                                          ^
+     59|     expect(f.container.querySelector("table")).toBe(table);
+     60|     expect(f.container.querySelector('[data-streamdown="code-block"]')…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/app/renderer/reading/continuous-reading-renderer.test.ts > renders a long answer's first and last blocks together, preserving tables and fenced code
+AssertionError: expected undefined to be 'First heading' // Object.is equality
+
+- Expected:
+"First heading"
+
++ Received:
+undefined
+
+ ❯ src/app/renderer/reading/continuous-reading-renderer.test.ts:84:58
+     82|   try {
+     83|     await f.render(text, false);
+     84|     expect(f.container.querySelector("h1")?.textContent).toBe("First h…
+       |                                                          ^
+     85|     expect(f.container.querySelectorAll("p")).toHaveLength(181);
+     86|     expect(f.container.querySelector("table")?.textContent).toContain(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  src/app/renderer/reading/continuous-reading-renderer.test.ts > shows the full raw output without page controls or an inner vertical scrolling region
+AssertionError: expected 2270 to be 38017 // Object.is equality
+
+- Expected
++ Received
+
+- 38017
++ 2270
+
+ ❯ src/app/renderer/reading/continuous-reading-renderer.test.ts:98:67
+     96|   try {
+     97|     await f.render(text, false, true);
+     98|     expect(f.container.querySelector("pre")?.textContent?.length).toBe…
+       |                                                                   ^
+     99|     expect(f.container.querySelector("pre")?.textContent).toBe(text);
+    100|     expect(f.container.querySelector("button")).toBeNull();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  src/app/renderer/reading/continuous-reading-renderer.test.ts > copies the full available tool output while rendering it continuously and preserving truncation notices
+ FAIL  src/app/renderer/reading/continuous-reading-renderer.test.ts > copies the full available subagent output while rendering it continuously and preserving truncation notices
+AssertionError: expected 2279 to be 38010 // Object.is equality
+
+- Expected
++ Received
+
+- 38010
++ 2279
+
+ ❯ src/app/renderer/reading/continuous-reading-renderer.test.ts:132:81
+    130|       children: createElement(Conversation, { model, positions }),
+    131|     })));
+    132|     expect(container.querySelector("[data-reading-text]")?.textContent…
+       |                                                                                 ^
+    133|     expect(container.querySelector("[data-reading-text]")?.textContent…
+    134|     const button = [...container.querySelectorAll("button")].find((nod…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed (6)
+   Start at  11:07:40
+   Duration  1.65s (import 67%, tests 14%, transform 10%, environment 10%)
+

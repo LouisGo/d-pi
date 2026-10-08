@@ -1,0 +1,23 @@
+Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/app-runtime-service.integration.test.ts > explicit resume can retry a pre-fork failure after a previously confirmed shutdown
+AssertionError: expected 'failed' to be 'ready' // Object.is equality
+
+Expected: "ready"
+Received: "failed"
+
+ ❯ tests/integration/app-runtime-service.integration.test.ts:1154:40
+    1152|   electron.fork.mockImplementationOnce(()=>{throw Error("temporary for…
+    1153|   expect((await f.act("start")).phase).toBe("failed");
+    1154|   expect((await f.act("start")).phase).toBe("ready");
+       |                                        ^
+    1155| });
+    1156|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 28 passed (29)
+   Start at  11:18:18
+   Duration  11.11s (tests 76%, transform 19%, import 6%)

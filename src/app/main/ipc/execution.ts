@@ -71,6 +71,9 @@ export function registerRuntimeRequestIpc(
       const view = await runtime.execute(command);
       diagnostics?.record({
         ...requestContext,
+        ...(command.kind === "start" && view.recoveryFailure
+          ? { code: `recovery-${view.recoveryFailure}` }
+          : {}),
         stage:
           view.phase === "failed" || view.phase === "interrupted"
             ? "failed"

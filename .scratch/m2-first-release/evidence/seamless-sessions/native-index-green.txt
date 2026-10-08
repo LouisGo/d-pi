@@ -1,0 +1,14 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/Learn/d-pi
+
+ ✓ src/app/main/wiring/native-session-index.test.ts (11 tests) 19708ms
+   ✓ indexes older projects beyond the first 200 native sessions 1347ms
+   ✓ advances a global scan past 4096 files instead of rescanning its first page 16332ms
+   ✓ continues beyond 256 project buckets in the next bounded scan 1429ms
+
+ Test Files  1 passed (1)
+      Tests  11 passed (11)
+   Start at  12:37:10
+   Duration  21.54s (tests 92%, transform 6%, import 2%)
+

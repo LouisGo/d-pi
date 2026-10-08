@@ -1,0 +1,16 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/Learn/d-pi
+
+ ✓ src/platform/main/diagnostics/diagnostics.test.ts (11 tests) 267ms
+ ✓ src/app/main/ipc/execution.test.ts (4 tests) 42ms
+ ✓ src/platform/main/diagnostics/reader.test.ts (12 tests) 4564ms
+   ✓ caps the retained-file and scan-byte budgets and reads each file from its recent tail 868ms
+   ✓ bounds directory enumeration and malformed-line scans even when no event matches 2409ms
+   ✓ lets the existing Writer persist and close while a budgeted snapshot is scanning 1043ms
+
+ Test Files  3 passed (3)
+      Tests  27 passed (27)
+   Start at  11:27:50
+   Duration  5.01s (tests 80%, transform 14%, import 6%)
+

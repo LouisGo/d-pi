@@ -29,7 +29,8 @@ export class DraftRepository implements DraftReader, DraftConsumptionWriter {
         `SELECT 1 AS schemaVersion,t.id AS threadId,w.id AS workingDirectoryId,w.directory,t.revision,t.body AS text FROM thread t JOIN workspace w ON w.id=t.workspace_id WHERE t.id=?`,
       )
       .get(id);
-    const draft = DraftSchema.parse(row);
+    const context = this.threads.threadContext(id);
+    const draft = DraftSchema.parse({ ...row, ...context });
     const consumed = this.db
       .prepare(
         "SELECT submission_id FROM draft_consumption WHERE thread_id=? AND revision=?",

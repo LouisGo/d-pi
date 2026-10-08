@@ -1,0 +1,11 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/Learn/d-pi
+
+ ✓ src/app/renderer/reading/saved-conversation.test.ts (10 tests) 446ms
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  12:25:36
+   Duration  2.38s (import 67%, tests 19%, environment 8%, transform 6%)
+

@@ -1,4 +1,7 @@
 // App-owned transport adapter. Official SDK modules are loaded unchanged.
+
+import { lstat, open, realpath } from "node:fs/promises";
+import { isAbsolute, relative } from "node:path";
 import { createInterface } from "node:readline";
 import { resolveProfileEnv, setProfile } from "@oh-my-pi/pi-utils";
 
@@ -7,6 +10,9 @@ setProfile(resolveProfileEnv(process.env.OMP_PROFILE, process.env.PI_PROFILE));
 const { createAgentSession } = await import("@oh-my-pi/pi-coding-agent/sdk");
 const { SessionManager } = await import(
   "@oh-my-pi/pi-coding-agent/session/session-manager"
+);
+const { RpcFrameEncoder } = await import(
+  "@oh-my-pi/pi-coding-agent/modes/rpc/rpc-frame"
 );
 const { runRpcMode } = await import(
   "@oh-my-pi/pi-coding-agent/modes/rpc/rpc-mode"
@@ -22,14 +28,78 @@ import { ConsumptionGate } from "./gate.js";
 import { applyModelSelection } from "./model-selection.mjs";
 import { NativeQueueManager } from "./native-queue.mjs";
 import { createSubagentConfiguration } from "./native-subagent-configuration.mjs";
+import { createReadingSession } from "./reading-session.mjs";
 
-const { session, setToolUIContext, subagentEventBus } =
-  await createAgentSession({
-    sessionManager: SessionManager.create(
-      process.cwd(),
-      process.env.PI_CODING_AGENT_SESSION_DIR,
-    ),
+// Explicit App binding only; never resume the latest CLI session or mint a replacement.
+async function managedSessionManager() {
+  const resume = JSON.parse(process.env.D_PI_RESUME_SESSION ?? "null");
+  const directory = process.env.PI_CODING_AGENT_SESSION_DIR;
+  if (resume === null) return SessionManager.create(process.cwd(), directory);
+  if (
+    !resume ||
+    typeof resume.sessionFile !== "string" ||
+    typeof resume.sessionId !== "string" ||
+    !directory
+  )
+    throw Error("Invalid native resume binding");
+  const root = await realpath(directory);
+  const file = await realpath(resume.sessionFile);
+  const within = relative(root, file);
+  if (
+    within.startsWith("..") ||
+    isAbsolute(within) ||
+    file !== resume.sessionFile ||
+    !(await lstat(file)).isFile()
+  )
+    throw Error("Unmanaged native resume binding");
+  const handle = await open(file, "r");
+  let header;
+  try {
+    const bytes = Buffer.alloc(65536);
+    const { bytesRead } = await handle.read(bytes, 0, bytes.length, 0);
+    const prefix = bytes.subarray(0, bytesRead);
+    const newline = prefix.lastIndexOf(10);
+    if (newline < 0) throw Error("Native session header unavailable");
+    // OMP can put its fixed-width title slot before the session header.
+    for (const line of prefix
+      .subarray(0, newline)
+      .toString("utf8")
+      .split("\n")) {
+      if (!line.trim()) continue;
+      const entry = JSON.parse(line);
+      if (entry.type === "session") {
+        header = entry;
+        break;
+      }
+    }
+  } finally {
+    await handle.close();
+  }
+  if (
+    !header ||
+    header.type !== "session" ||
+    header.id !== resume.sessionId ||
+    typeof header.cwd !== "string" ||
+    (await realpath(header.cwd)) !== process.cwd()
+  )
+    throw Error("Native session header identity conflict");
+  const manager = await SessionManager.open(file, directory, undefined, {
+    initialCwd: process.cwd(),
+    throwIfMissing: true,
+    suppressBreadcrumb: true,
   });
+  if (
+    manager.getSessionId() !== resume.sessionId ||
+    manager.getSessionFile() !== file ||
+    (await realpath(manager.getCwd())) !== (await realpath(process.cwd()))
+  ) {
+    await manager.close();
+    throw Error("Recovered native session identity conflict");
+  }
+  return manager;
+}
+const { session, setToolUIContext, subagentEventBus } =
+  await createAgentSession({ sessionManager: await managedSessionManager() });
 if (process.env.D_PI_MODEL_SELECTION) {
   const selection = JSON.parse(process.env.D_PI_MODEL_SELECTION);
   await applyModelSelection(session, selection);
@@ -42,6 +112,9 @@ const queue = new NativeQueueManager(session, {
   displayText: queueChipText,
 });
 const subagents = createSubagentConfiguration(session);
+const reading = createReadingSession(session, {
+  coldResume: JSON.parse(process.env.D_PI_RESUME_SESSION ?? "null") !== null,
+});
 
 let paused = false;
 let stopping = false;
@@ -49,7 +122,12 @@ let closing = false;
 let sequence = Promise.resolve();
 let stopEpoch = 0;
 const encode = new TextEncoder();
-const output = (frame) => process.stdout.write(`${JSON.stringify(frame)}\n`);
+const frameEncoder = new RpcFrameEncoder();
+let protocol2 = false;
+const output = (frame) => {
+  for (const line of frameEncoder.encodeFrames(frame))
+    process.stdout.write(line);
+};
 const state = () => ({
   imageSupport: !!session.model && sendsImageInputOnWire(session.model),
   queueState: queue.snapshot(),
@@ -83,6 +161,19 @@ const timer = setInterval(publish, 200);
 timer.unref();
 async function control(frame, claimStop, epoch) {
   try {
+    if (frame.type === "d_pi_reading_page") {
+      if (!protocol2) throw Error("reading-protocol-required");
+      if (session.isStreaming || session.isCompacting)
+        throw Error("reading-session-busy");
+      output({
+        type: "response",
+        command: frame.type,
+        id: frame.id,
+        success: true,
+        data: reading.page(frame),
+      });
+      return;
+    }
     if (
       frame.type === "d_pi_queue" ||
       frame.type === "d_pi_subagent_config" ||
@@ -184,8 +275,21 @@ const input = new ReadableStream({
         controller.enqueue(encode.encode(`${line}\n`));
         return;
       }
+      // This adapter emits large App pages only during cold seeding, before
+      // any prompt admission. Earlier SDK RPC frames are small startup reads.
+      if (
+        ["prompt", "steer", "follow_up", "abort_and_prompt"].includes(
+          frame?.type,
+        )
+      )
+        reading.closeSnapshot();
+      if (frame?.type === "negotiate_protocol" && frame.protocolVersion === 2) {
+        protocol2 = true;
+        frameEncoder.setProtocolVersion(2);
+      }
       if (
         [
+          "d_pi_reading_page",
           "d_pi_stop",
           "d_pi_continue",
           "d_pi_state",
@@ -228,4 +332,8 @@ const input = new ReadableStream({
     });
   },
 });
-await runRpcMode(session, { setToolUIContext, subagentEventBus, input });
+await runRpcMode(reading.session, {
+  setToolUIContext,
+  subagentEventBus,
+  input,
+});

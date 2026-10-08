@@ -30,6 +30,7 @@ const ManifestSchema = z.object({
     "configuration-readonly.mjs": z.string(),
     "model-selection.mjs": z.string(),
     "native-queue.mjs": z.string(),
+    "reading-session.mjs": z.string(),
     "native-subagent-configuration.mjs": z.string(),
     "pdf-content.mjs": z.string(),
   }),

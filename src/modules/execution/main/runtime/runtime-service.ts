@@ -26,7 +26,11 @@ import {
   type SubmissionCommand,
   type SubmissionReply,
 } from "../../contracts/public";
-import type { RuntimeCommand, RuntimeView } from "../../contracts/runtime";
+import type {
+  NativeRecoveryReason,
+  RuntimeCommand,
+  RuntimeView,
+} from "../../contracts/runtime";
 import { SubmissionCoordinator, sameSubmissionTarget } from "../../core/public";
 import {
   RuntimeAdmission,
@@ -39,6 +43,7 @@ import {
 import type { QueueChangeRepository } from "../queue/queue-change-repository";
 import type { SubmissionRepository } from "../submission/submission-repository";
 import { HostConnection } from "../transport/host-connection";
+import { indexedSessionDirectory } from "../transport/indexed-session-binding";
 
 type RuntimeStore = {
   queueChanges: Pick<
@@ -74,6 +79,20 @@ function boundedDisplayValue(value: string, maxLength: number): string {
   return value.length > maxLength ? `${value.slice(0, maxLength - 1)}…` : value;
 }
 
+function recoveryFailureMessage(reason: NativeRecoveryReason) {
+  return match(reason)
+    .with("binding-changed", () => uiMessage("runtime.recoveryBindingChanged"))
+    .with("occupied", () => uiMessage("runtime.recoveryOccupied"))
+    .with("owner-unknown", () => uiMessage("runtime.recoveryOwnerUnknown"))
+    .with("shutdown-unconfirmed", () =>
+      uiMessage("runtime.recoveryShutdownUnconfirmed"),
+    )
+    .with("lease-unavailable", () =>
+      uiMessage("runtime.recoveryLeaseUnavailable"),
+    )
+    .exhaustive();
+}
+
 export class RuntimeService {
   private readonly executingIds = new Set<string>();
   private readonly pendingEvidence = new Set<string>();
@@ -105,10 +124,30 @@ export class RuntimeService {
       threadId: string,
       text: string,
     ) => Promise<ContentPreparationResult>,
+    private readonly indexedSessionsRoot?: (
+      traceId: string,
+    ) => Promise<string | null>,
   ) {
     this.connection = new HostConnection(
       (message) => this.receive(message),
       (evidence) => this.onExit(evidence),
+      (confirmed) => {
+        if (!confirmed) return;
+        this.sessionStarted = false;
+        this.target = null;
+        this.currentConnectionGeneration = null;
+        this.executingIds.clear();
+        this.pendingEvidence.clear();
+        if (this.view) {
+          this.view = { ...this.view };
+          delete this.view.control;
+          delete this.view.interactions;
+          delete this.view.queueOperation;
+          delete this.view.subagentOperation;
+          delete this.view.modelChanging;
+        }
+        this.update({ busy: false });
+      },
     );
     this.coordinator = new SubmissionCoordinator(
       store.submissions,
@@ -166,12 +205,26 @@ export class RuntimeService {
       });
       throw error;
     }
-    const sessionDirectory = join(
+    const previous = this.store.threads.nativeSessionBinding(thread.threadId);
+    let sessionDirectory = join(
       this.dataDirectory,
       "native-sessions",
       thread.threadId,
     );
-    await mkdir(sessionDirectory, { recursive: true, mode: 0o700 });
+    if (thread.origin === "cli") {
+      // Discovery is not an execution grant. Revalidate the configured root,
+      // canonical exact file and project before entering ordinary admission.
+      const configured = await this.indexedSessionsRoot?.(
+        this.view?.traceId ?? randomUUID(),
+      );
+      sessionDirectory = await indexedSessionDirectory(
+        configured,
+        previous,
+        thread.directory,
+      );
+    } else {
+      await mkdir(sessionDirectory, { recursive: true, mode: 0o700 });
+    }
     const current = await identifyDirectory(thread.directory);
     const grant = this.store.threads.executionGrant(thread.workingDirectoryId);
     if (
@@ -188,9 +241,13 @@ export class RuntimeService {
     const connectionGeneration = randomUUID();
     this.currentConnectionGeneration = connectionGeneration;
     this.update({ connectionGeneration: connectionGeneration });
-    const context = createHash("sha256")
-      .update(JSON.stringify({ cwd: thread.directory, env: this.environment }))
-      .digest("hex");
+    const context =
+      previous?.configContextId ??
+      createHash("sha256")
+        .update(
+          JSON.stringify({ cwd: thread.directory, env: this.environment }),
+        )
+        .digest("hex");
     const starting = this.connection.start(
       {
         kind: "start",
@@ -209,9 +266,26 @@ export class RuntimeService {
             : {}),
         },
         sessionDirectory,
+        ...(previous
+          ? {
+              resume: {
+                sessionFile: previous.sessionFile,
+                sessionId: previous.sessionId,
+                ...(previous.origin === "cli"
+                  ? { origin: previous.origin }
+                  : {}),
+              },
+            }
+          : {}),
       },
       (message) => {
         try {
+          if (
+            previous &&
+            (message.state.sessionFile !== previous.sessionFile ||
+              message.state.sessionId !== previous.sessionId)
+          )
+            throw Error("Recovered native session identity conflict");
           this.store.threads.bindNativeSession({
             threadId: thread.threadId,
             configContextId: context,
@@ -243,6 +317,18 @@ export class RuntimeService {
             ? uiMessage("runtime.readyToSend")
             : uiMessage("runtime.noModel"),
         });
+      },
+      () => {
+        const latest = this.store.threads.executionGrant(
+          thread.workingDirectoryId,
+        );
+        if (
+          launchAttempt !== this.launchGeneration ||
+          this.currentConnectionGeneration !== connectionGeneration ||
+          !latest ||
+          !sameDirectoryIdentity(latest, current)
+        )
+          throw Error("Execution grant changed during startup");
       },
     );
     this.instanceDirectory = current;
@@ -622,7 +708,6 @@ export class RuntimeService {
       const trusted = !!this.store.threads.executionGrant(
         thread.workingDirectoryId,
       );
-      const previous = this.store.threads.nativeSessionBinding(thread.threadId);
       const profile = (
         this.environment.OMP_PROFILE ??
         this.environment.PI_PROFILE ??
@@ -648,13 +733,11 @@ export class RuntimeService {
         revision: 0,
         threadId: thread.threadId,
         traceId: command.traceId,
-        phase: previous ? "interrupted" : trusted ? "allowed" : "browse",
+        phase: trusted ? "allowed" : "browse",
         trusted,
         busy: false,
         model: null,
-        message: previous
-          ? uiMessage("runtime.previousSessionReadOnly")
-          : uiMessage("runtime.preStartTrust"),
+        message: uiMessage("runtime.preStartTrust"),
       };
     }
     if (
@@ -785,11 +868,6 @@ export class RuntimeService {
       return this.view;
     }
     if (command.kind === "select-model") {
-      if (
-        this.store.threads.nativeSessionBinding(command.threadId) &&
-        !this.connection.connected
-      )
-        throw Error("Read-only recovered Thread");
       if (this.hasActiveWork() || this.view.modelChanging)
         throw Error("Model change requires idle Thread");
       if (this.connection.connected && this.currentConnectionGeneration) {
@@ -879,6 +957,30 @@ export class RuntimeService {
     }
     await match(command.kind)
       .with("inspect", async () => {
+        if (
+          !this.connection.connected &&
+          (this.view?.phase === "browse" || this.view?.phase === "allowed")
+        ) {
+          const grant = this.store.threads.executionGrant(
+            thread.workingDirectoryId,
+          );
+          let trusted = false;
+          try {
+            const identity = await identifyDirectory(thread.directory);
+            trusted = !!grant && sameDirectoryIdentity(grant, identity);
+          } catch {
+            /* A missing or replaced directory cannot inherit trust. */
+          }
+          this.update({
+            trusted,
+            phase: trusted ? "allowed" : "browse",
+            message: uiMessage(
+              grant && !trusted
+                ? "runtime.grantInvalid"
+                : "runtime.preStartTrust",
+            ),
+          });
+        }
         if (this.connection.connected && this.currentConnectionGeneration) {
           if (
             this.view?.queueOperation?.status !== "unknown" &&
@@ -929,9 +1031,7 @@ export class RuntimeService {
                 trusted: true,
                 phase: this.connection.connected
                   ? (this.view?.phase ?? "interrupted")
-                  : this.store.threads.nativeSessionBinding(command.threadId)
-                    ? "interrupted"
-                    : "allowed",
+                  : "allowed",
                 traceId: command.traceId,
               }
             : {
@@ -974,10 +1074,13 @@ export class RuntimeService {
         if (
           this.connection.connected ||
           this.sessionStarted ||
-          this.store.threads.nativeSessionBinding(command.threadId) ||
           this.view?.phase === "starting"
         )
           return;
+        if (this.view) {
+          this.view = { ...this.view };
+          delete this.view.recoveryFailure;
+        }
         this.update({
           phase: "starting",
           traceId: command.traceId,
@@ -989,10 +1092,17 @@ export class RuntimeService {
           this.update({
             phase: "failed",
             busy: this.connection.connected,
-            message:
-              this.view?.phase === "failed"
-                ? this.view.message
-                : uiMessage("runtime.notReady"),
+            ...(result.kind === "denied" && result.reason === "recovery"
+              ? {
+                  recoveryFailure: result.failure,
+                  message: recoveryFailureMessage(result.failure),
+                }
+              : {
+                  message:
+                    this.view?.phase === "failed"
+                      ? this.view.message
+                      : uiMessage("runtime.notReady"),
+                }),
           });
       })
       .exhaustive();

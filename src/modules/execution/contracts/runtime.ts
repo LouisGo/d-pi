@@ -45,6 +45,14 @@ export const RuntimeCommandSchema = z.union([
   DismissCommandSchema,
 ]);
 export type RuntimeCommand = z.infer<typeof RuntimeCommandSchema>;
+export const NativeRecoveryReasonSchema = z.enum([
+  "binding-changed",
+  "occupied",
+  "owner-unknown",
+  "shutdown-unconfirmed",
+  "lease-unavailable",
+]);
+export type NativeRecoveryReason = z.infer<typeof NativeRecoveryReasonSchema>;
 export const RuntimeViewSchema = z.strictObject({
   threadId: ThreadIdSchema,
   traceId: TraceIdSchema,
@@ -56,6 +64,7 @@ export const RuntimeViewSchema = z.strictObject({
   queueOperation: RuntimeOperationSchema.optional(),
   interactions: InteractionViewSchema.optional(),
   revision: z.number().int().nonnegative(),
+  recoveryFailure: NativeRecoveryReasonSchema.optional(),
   phase: z.enum([
     "browse",
     "allowed",

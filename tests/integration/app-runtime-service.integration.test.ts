@@ -5,6 +5,7 @@ import {
   realpathSync,
   renameSync,
   rmSync,
+  writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -16,7 +17,9 @@ import {
   RuntimeViewSchema,
   SubmissionIdSchema,
 } from "../../src/modules/execution/contracts/public";
+import { NativeRecoveryFailure } from "../../src/modules/execution/core/runtime/native-recovery-failure";
 import { RuntimeService } from "../../src/modules/execution/main/public";
+import { SessionExecutionLease } from "../../src/modules/execution/main/transport/session-execution-lease";
 import { TraceIdSchema } from "../../src/shared/identity";
 
 const electron = vi.hoisted(() => ({ fork: vi.fn() }));
@@ -30,6 +33,17 @@ vi.mock("../../src/platform/omp/resources/public", async (original) => ({
     entry: "/fixture/host.mjs",
   }),
 }));
+
+import { sessionExecutionOwners } from "../../src/platform/node/processes/public";
+
+vi.mock("../../src/platform/node/processes/public", async (original) => {
+  const actual =
+    await original<typeof import("../../src/platform/node/processes/public")>();
+  return {
+    ...actual,
+    sessionExecutionOwners: vi.fn(actual.sessionExecutionOwners),
+  };
+});
 const cleanup: (() => void)[] = [];
 afterEach(() => {
   for (const close of cleanup.splice(0)) close();
@@ -119,7 +133,20 @@ async function running(
       : emit(event, ...args);
   const postMessage = vi.fn((raw: unknown) => {
     const command = HostTransportCommandSchema.parse(raw).command;
-    if (command.kind === "start") scopeId = command.processInstanceId;
+    if (command.kind === "start") {
+      scopeId = command.processInstanceId;
+      mkdirSync(command.sessionDirectory, { recursive: true });
+      if (!command.resume)
+        writeFileSync(
+          join(command.sessionDirectory, "native.jsonl"),
+          JSON.stringify({
+            type: "session",
+            version: 3,
+            id: "native",
+            cwd: project,
+          }) + "\n",
+        );
+    }
     if (command.kind === "start")
       queueMicrotask(() => {
         host.emit("message", {
@@ -128,7 +155,12 @@ async function running(
           connectionGeneration: command.connectionGeneration,
           state: {
             sessionId: "native",
-            sessionFile: join(root, "native.jsonl"),
+            sessionFile: join(
+              root,
+              "native-sessions",
+              draft.threadId,
+              "native.jsonl",
+            ),
             model: { id: "model", provider: "fixture" },
             isStreaming: false,
             isCompacting: false,
@@ -142,7 +174,12 @@ async function running(
             pendingInteraction: false,
             state: {
               sessionId: "native",
-              sessionFile: join(root, "native.jsonl"),
+              sessionFile: join(
+                root,
+                "native-sessions",
+                draft.threadId,
+                "native.jsonl",
+              ),
               model: { id: "model", provider: "fixture" },
               isStreaming: true,
               isCompacting: false,
@@ -151,7 +188,9 @@ async function running(
           });
       });
   });
-  electron.fork.mockReturnValue(Object.assign(host, { postMessage }));
+  electron.fork.mockReturnValue(
+    Object.assign(host, { postMessage, kill: vi.fn() }),
+  );
   if (failFirstFork)
     electron.fork.mockImplementationOnce(() => {
       throw Error("fork failed");
@@ -338,11 +377,46 @@ it("a fork failure before any Host exists still allows an explicit start retry",
   expect((await fixture.act("inspect")).phase).toBe("ready");
 });
 
-it("restart exposes the unproven execution lock and never substitutes a new session", async () => {
+it("cold restart continues the exact bound session despite unrelated environment changes", async () => {
   const fixture = await running();
   const binding = fixture.store.threads.nativeSessionBinding(
     fixture.draft.threadId,
   );
+  fixture.host.emit("message", { kind: "scope-closed" });
+  await vi.waitFor(() => expect(fixture.runtime.hasActiveWork()).toBe(false));
+  const restored = new RuntimeService(
+    fixture.store,
+    fixture.root,
+    fixture.root,
+    { UNRELATED: "changed" },
+    () => {},
+  );
+  const act = (kind: "inspect" | "start") =>
+    restored.execute({
+      kind,
+      threadId: fixture.draft.threadId,
+      traceId: TraceIdSchema.parse(crypto.randomUUID()),
+    });
+  expect((await act("inspect")).phase).toBe("allowed");
+  expect((await act("start")).phase).toBe("ready");
+  const starts = fixture.postMessage.mock.calls
+    .map(([raw]) => HostTransportCommandSchema.parse(raw).command)
+    .filter((c) => c.kind === "start");
+  expect(starts.at(-1)).toMatchObject({
+    resume: {
+      sessionId: binding?.sessionId,
+      sessionFile: binding?.sessionFile,
+    },
+    configContextId: binding?.configContextId,
+  });
+  expect(
+    fixture.store.threads.nativeSessionBinding(fixture.draft.threadId),
+  ).toEqual(binding);
+  expect(fixture.store.drafts.read(fixture.draft.threadId)?.text).toBe("A");
+});
+
+it("an independently live writer blocks recovery without substituting a session", async () => {
+  const fixture = await running();
   const forks = electron.fork.mock.calls.length;
   const restored = new RuntimeService(
     fixture.store,
@@ -351,20 +425,13 @@ it("restart exposes the unproven execution lock and never substitutes a new sess
     {},
     () => {},
   );
-  for (const kind of ["inspect", "allow", "start"] as const) {
-    const view = await restored.execute({
-      kind,
-      threadId: fixture.draft.threadId,
-      traceId: TraceIdSchema.parse(crypto.randomUUID()),
-    });
-    expect(view.phase).toBe("interrupted");
-    expect(view.message).toEqual({ code: "runtime.previousSessionReadOnly" });
-  }
+  const view = await restored.execute({
+    kind: "start",
+    threadId: fixture.draft.threadId,
+    traceId: TraceIdSchema.parse(crypto.randomUUID()),
+  });
+  expect(view.phase).toBe("failed");
   expect(electron.fork.mock.calls).toHaveLength(forks);
-  expect(
-    fixture.store.threads.nativeSessionBinding(fixture.draft.threadId),
-  ).toEqual(binding);
-  expect(fixture.store.drafts.read(fixture.draft.threadId)?.text).toBe("A");
 });
 
 it("busy native sessions accept a frozen follow-up without an App auto-send queue", async () => {
@@ -1046,4 +1113,296 @@ it("locates reference preparation failure without a receipt or native dispatch a
       ([raw]) => HostTransportCommandSchema.parse(raw).command.kind,
     ),
   ).not.toContain("dispatch");
+});
+
+it("cold recovery never resends an unknown attempt while allowing explicit new work on the same session", async () => {
+  const f = await running();
+  const prepared = await f.prepare();
+  if (prepared.kind !== "receipt") throw Error("prepare failed");
+  const id = prepared.receipt.submissionId;
+  await f.dispatch();
+  const before = f.postMessage.mock.calls.filter(
+    ([r]) => HostTransportCommandSchema.parse(r).command.kind === "dispatch",
+  ).length;
+  f.host.emit("message", { kind: "scope-closed" });
+  await vi.waitFor(() => expect(f.runtime.hasActiveWork()).toBe(false));
+  expect(f.store.submissions.submission(id)?.state).toBe("unknown");
+  const restored = new RuntimeService(f.store, f.root, f.root, {}, () => {});
+  await restored.execute({
+    kind: "start",
+    threadId: f.draft.threadId,
+    traceId: TraceIdSchema.parse(crypto.randomUUID()),
+  });
+  expect(f.store.submissions.submission(id)?.state).toBe("unknown");
+  expect(
+    f.postMessage.mock.calls.filter(
+      ([r]) => HostTransportCommandSchema.parse(r).command.kind === "dispatch",
+    ),
+  ).toHaveLength(before);
+  f.store.drafts.save(f.draft.threadId, 1, "New explicit input");
+  const newId = SubmissionIdSchema.parse(crypto.randomUUID());
+  expect(
+    await restored.submit({
+      kind: "prepare",
+      threadId: f.draft.threadId,
+      submissionId: newId,
+      traceId: TraceIdSchema.parse(crypto.randomUUID()),
+      revision: 2,
+      text: "New explicit input",
+    }),
+  ).toMatchObject({
+    kind: "receipt",
+    receipt: {
+      state: "prepared",
+      target: {
+        nativeSessionRef: f.store.threads.nativeSessionBinding(f.draft.threadId)
+          ?.sessionFile,
+      },
+    },
+  });
+});
+
+it("explicit resume can retry a pre-fork failure after a previously confirmed shutdown", async () => {
+  const f = await running();
+  f.host.emit("message", { kind: "scope-closed" });
+  await f.runtime.closeIdle();
+  electron.fork.mockImplementationOnce(() => {
+    throw Error("temporary fork failure");
+  });
+  expect((await f.act("start")).phase).toBe("failed");
+  expect((await f.act("start")).phase).toBe("ready");
+});
+
+it("a recovery conflict exposes a specific public reason and an explicit start recheck can recover", async () => {
+  const f = await running();
+  const restored = new RuntimeService(f.store, f.root, f.root, {}, () => {});
+  const start = () =>
+    restored.execute({
+      kind: "start",
+      threadId: f.draft.threadId,
+      traceId: TraceIdSchema.parse(crypto.randomUUID()),
+    });
+  const blocked = await start();
+  expect(blocked).toMatchObject({
+    phase: "failed",
+    busy: false,
+    recoveryFailure: "occupied",
+    message: { code: "runtime.recoveryOccupied" },
+  });
+  expect(RuntimeViewSchema.safeParse(blocked).success).toBe(true);
+  f.host.emit("message", { kind: "scope-closed" });
+  await f.runtime.closeIdle();
+  const ready = await start();
+  expect(ready.phase).toBe("ready");
+  expect(ready.recoveryFailure).toBeUndefined();
+});
+
+it.each([
+  ["owner-unknown", "runtime.recoveryOwnerUnknown"],
+  ["shutdown-unconfirmed", "runtime.recoveryShutdownUnconfirmed"],
+  ["lease-unavailable", "runtime.recoveryLeaseUnavailable"],
+] as const)(
+  "preserves %s through the public start reply without passing raw errors",
+  async (reason, code) => {
+    const f = await running();
+    const retry = new RuntimeService(f.store, f.root, f.root, {}, () => {});
+    const acquire = vi
+      .spyOn(SessionExecutionLease, "acquire")
+      .mockRejectedValueOnce(new NativeRecoveryFailure(reason));
+    try {
+      const view = await retry.execute({
+        kind: "start",
+        threadId: f.draft.threadId,
+        traceId: TraceIdSchema.parse(crypto.randomUUID()),
+      });
+      expect(view).toMatchObject({
+        phase: "failed",
+        busy: false,
+        recoveryFailure: reason,
+        message: { code },
+      });
+      expect(RuntimeViewSchema.safeParse(view).success).toBe(true);
+      expect(JSON.stringify(view)).not.toContain("Native recovery unavailable");
+    } finally {
+      acquire.mockRestore();
+    }
+  },
+);
+
+it("continues a CLI-origin binding through ordinary admission using its exact original file", async () => {
+  const fixture = await running();
+  const binding = fixture.store.threads.nativeSessionBinding(
+    fixture.draft.threadId,
+  )!;
+  fixture.host.emit("message", { kind: "scope-closed" });
+  await vi.waitFor(() => expect(fixture.runtime.hasActiveWork()).toBe(false));
+  const originalContext = fixture.store.threads.threadContext(
+    fixture.draft.threadId,
+  );
+  const context = vi
+    .spyOn(fixture.store.threads, "threadContext")
+    .mockReturnValue({ ...originalContext, origin: "cli" });
+  const indexed = vi
+    .spyOn(fixture.store.threads, "nativeSessionBinding")
+    .mockReturnValue({ ...binding, origin: "cli", historyRoot: fixture.root });
+  const runtime = new RuntimeService(
+    fixture.store,
+    fixture.root,
+    fixture.root,
+    {},
+    () => {},
+    () => {},
+    () => {},
+    fixture.draft.threadId,
+    undefined,
+    async () => fixture.root,
+  );
+  try {
+    const command = {
+      threadId: fixture.draft.threadId,
+      traceId: crypto.randomUUID(),
+    };
+    expect((await runtime.execute({ ...command, kind: "inspect" })).phase).toBe(
+      "allowed",
+    );
+    expect((await runtime.execute({ ...command, kind: "start" })).phase).toBe(
+      "ready",
+    );
+    const starts = fixture.postMessage.mock.calls
+      .map(([raw]) => HostTransportCommandSchema.parse(raw).command)
+      .filter((c) => c.kind === "start");
+    expect(starts.at(-1)).toMatchObject({
+      resume: {
+        sessionFile: binding.sessionFile,
+        sessionId: binding.sessionId,
+        origin: "cli",
+      },
+      sessionDirectory: join(
+        fixture.root,
+        "native-sessions",
+        fixture.draft.threadId,
+      ),
+    });
+    expect(fixture.store.drafts.read(fixture.draft.threadId)?.text).toBe("A");
+    fixture.host.emit("message", { kind: "scope-closed" });
+    await vi.waitFor(() => expect(runtime.hasActiveWork()).toBe(false));
+  } finally {
+    context.mockRestore();
+    indexed.mockRestore();
+  }
+});
+
+it("does not dispatch a CLI startup after trust is revoked during the owner probe", async () => {
+  const fixture = await running();
+  const binding = fixture.store.threads.nativeSessionBinding(
+    fixture.draft.threadId,
+  )!;
+  fixture.host.emit("message", { kind: "scope-closed" });
+  await vi.waitFor(() => expect(fixture.runtime.hasActiveWork()).toBe(false));
+  const originalContext = fixture.store.threads.threadContext(
+    fixture.draft.threadId,
+  );
+  const context = vi
+    .spyOn(fixture.store.threads, "threadContext")
+    .mockReturnValue({ ...originalContext, origin: "cli" });
+  const indexed = vi
+    .spyOn(fixture.store.threads, "nativeSessionBinding")
+    .mockReturnValue({ ...binding, origin: "cli", historyRoot: fixture.root });
+  const runtime = new RuntimeService(
+    fixture.store,
+    fixture.root,
+    fixture.root,
+    {},
+    () => {},
+    () => {},
+    () => {},
+    fixture.draft.threadId,
+    undefined,
+    async () => fixture.root,
+  );
+  let release!: (owners: number[]) => void;
+  vi.mocked(sessionExecutionOwners).mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        release = resolve;
+      }),
+  );
+  const command = {
+    threadId: fixture.draft.threadId,
+    traceId: crypto.randomUUID(),
+  };
+  const before = fixture.postMessage.mock.calls.length;
+  try {
+    const starting = runtime.execute({ ...command, kind: "start" });
+    await vi.waitFor(() => expect(release).toBeDefined());
+    await runtime.execute({ ...command, kind: "revoke" });
+    release([]);
+    const view = await starting;
+    expect(view.trusted).toBe(false);
+    expect(
+      fixture.postMessage.mock.calls
+        .slice(before)
+        .map(([raw]) => HostTransportCommandSchema.parse(raw).command.kind),
+    ).not.toContain("start");
+    expect(runtime.hasActiveWork()).toBe(false);
+    // Regrant and retry proves the rejected attempt released its lifetime lease.
+    await runtime.execute({ ...command, kind: "allow" });
+    expect((await runtime.execute({ ...command, kind: "start" })).phase).toBe(
+      "ready",
+    );
+    fixture.host.emit("message", { kind: "scope-closed" });
+    await vi.waitFor(() => expect(runtime.hasActiveWork()).toBe(false));
+  } finally {
+    context.mockRestore();
+    indexed.mockRestore();
+  }
+});
+
+it("reuses a directory grant in an already browsed Thread after another Thread is allowed", async () => {
+  const root = realpathSync(mkdtempSync(join(tmpdir(), "dpi-shared-grant-")));
+  const store = AppStorage.open(join(root, "app.sqlite"));
+  const first = store.threads.create(root),
+    second = store.threads.create(root);
+  const a = new RuntimeService(
+    store,
+    "/fixture/resources",
+    root,
+    {},
+    () => {},
+    () => {},
+    () => {},
+    first.threadId,
+  );
+  const b = new RuntimeService(
+    store,
+    "/fixture/resources",
+    root,
+    {},
+    () => {},
+    () => {},
+    () => {},
+    second.threadId,
+  );
+  const inspect = () =>
+    a.execute({
+      kind: "inspect",
+      threadId: first.threadId,
+      traceId: crypto.randomUUID(),
+    });
+  try {
+    expect((await inspect()).phase).toBe("browse");
+    await b.execute({
+      kind: "allow",
+      threadId: second.threadId,
+      traceId: crypto.randomUUID(),
+    });
+    const restored = await inspect();
+    expect(restored.phase).toBe("allowed");
+    expect(restored.trusted).toBe(true);
+    store.threads.revokeExecution(first.workingDirectoryId);
+    expect((await inspect()).trusted).toBe(false);
+  } finally {
+    store.close();
+    rmSync(root, { recursive: true, force: true });
+  }
 });

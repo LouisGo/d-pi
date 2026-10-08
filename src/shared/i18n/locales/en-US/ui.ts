@@ -2,8 +2,7 @@ export const ui = {
   "ui.reading.latest": "Latest segment",
   "ui.conversation.newOutput": "New output",
   "ui.conversation.toBottom": "Back to list bottom",
-  "ui.conversation.retainedTail":
-    "Go to the retained live list bottom; keep the current body segment.",
+  "ui.conversation.retainedTail": "Go to the retained live list bottom.",
   "ui.conversation.openHistory": "View native history",
   "ui.history.readOnlyCoverage":
     "Native history is read-only and paged in saved order, separately from the live list.",
@@ -363,6 +362,12 @@ export const ui = {
     "This previous session cannot change model or send. Create an independent session to continue; its draft and history are preserved.",
   "composer.blocked.readOnly":
     "This session is read-only and cannot send. Its draft is preserved; create a new session to select a model and work.",
+  "ui.runtime.retryStart": "Retry preparing chat",
+  "app.thread.indexPartial":
+    "Some native chats could not be indexed. Retry refreshing.",
+  "app.thread.indexUnavailable":
+    "Native chat indexing is unavailable. Existing chats remain accessible.",
+  "composer.blocked.preparing": "Preparing this chat…",
   "composer.blocked.start":
     "The session has not started. Start OMP before sending.",
   "composer.blocked.allow": "Allow project execution to start the session.",
@@ -372,7 +377,7 @@ export const ui = {
   "model.reason.configuration-unknown": "Configuration unavailable",
   "config.heading": "Configuration & sign in",
   "config.description":
-    "Reuse native OMP configuration. Sign in, choose a model, then allow project execution and start the session.",
+    "Reuse native OMP configuration. Sign in and choose a model. Trusted projects prepare conversations automatically.",
   "config.loading": "Reading native configuration…",
   "config.failed":
     "Native configuration operation was not confirmed. Check configuration, network and resources, then retry. Existing credentials are preserved.",
@@ -499,7 +504,7 @@ export const ui = {
   "ui.conversation.imageNotLoaded": "not loaded",
   "ui.conversation.sectionLabel": "Native session reader",
   "ui.conversation.heading": "Conversation",
-  "ui.conversation.empty": "Start a conversation below.",
+  "ui.conversation.empty": "No messages yet.",
   "ui.conversation.gap":
     "The live view has a gap. Check native history; returning to the bottom does not fill it.",
   "ui.conversation.streaming": "In progress",
@@ -555,6 +560,7 @@ export const ui = {
   "ui.history.readFailed": "Read connection failed. You can try again.",
   "ui.history.unavailable":
     "Records are temporarily unavailable: {reason}. A failure is not shown as an empty list.",
+  "ui.history.reason.unbound": "no saved session yet",
   "ui.history.reason.missing": "records are missing",
   "ui.history.reason.denied": "access was denied",
   "ui.history.reason.changed": "records changed",
@@ -578,7 +584,7 @@ export const ui = {
   "ui.runtime.phase.starting": "Starting OMP",
   "ui.runtime.phase.busy": "OMP is working",
   "ui.runtime.phase.ready": "OMP is ready",
-  "ui.runtime.phase.interrupted": "Read-only session · execution unavailable",
+  "ui.runtime.phase.interrupted": "Connection interrupted",
   "ui.runtime.phase.failed": "OMP is not ready",
   "ui.runtime.sectionLabel": "Project execution",
   "ui.runtime.model": "Model: {model}",
@@ -833,4 +839,6 @@ export const ui = {
     "Message count covers user and assistant messages in the current live window.",
   "app.status.messagesGap":
     "The live window has a synchronization gap; the message count may be incomplete.",
+  "ui.conversation.aborted": "Stopped",
+  "ui.conversation.continuation": "Continuing the interrupted reply",
 } as const;

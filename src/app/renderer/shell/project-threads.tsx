@@ -3,6 +3,7 @@ import { memo, type ReactNode } from "react";
 import { useStore } from "zustand";
 import { FolderIcon } from "@/components/icons/common";
 import { useI18n } from "../../../modules/preferences/renderer/public";
+import type { ThreadContext } from "../../../modules/threads/contracts/public";
 import { Button } from "../../../modules/ui/renderer/public";
 import type { AppModel } from "../wiring/model";
 import { ThreadAttention } from "./attention";
@@ -13,6 +14,17 @@ export function ProjectThreads({ model }: { model: AppModel }) {
   const { t } = useI18n();
   const threads = useStore(model.threadListStore, (state) => state.threads);
   const failed = useStore(model.threadListStore, (state) => state.failed);
+  const pending = useStore(model.threadListStore, (state) => state.pending);
+  const nativeIndex = useStore(
+    model.threadListStore,
+    (state) => state.nativeIndex,
+  );
+  const groups = new Map<string, ThreadContext[]>();
+  for (const thread of threads) {
+    const group = groups.get(thread.directory);
+    if (group) group.push(thread);
+    else groups.set(thread.directory, [thread]);
+  }
   return (
     <nav aria-label={t("app.sidebar.projects")} className="thread-navigation">
       <NewThreadButton model={model} />
@@ -28,18 +40,60 @@ export function ProjectThreads({ model }: { model: AppModel }) {
           </Button>
         </p>
       )}
-      {!threads.length && !failed && (
-        <p className="muted">{t("app.sidebar.noProject")}</p>
+      {pending && !threads.length && (
+        <p role="status" className="muted">
+          {t("ui.history.discovering")}
+        </p>
       )}
+      {nativeIndex && nativeIndex !== "ready" && (
+        <p role="status" className="muted">
+          {t(
+            nativeIndex === "indexing"
+              ? "ui.history.discovering"
+              : nativeIndex === "partial"
+                ? "app.thread.indexPartial"
+                : "app.thread.indexUnavailable",
+          )}{" "}
+          <Button
+            variant="ghost"
+            disabled={pending}
+            onClick={() => void model.refreshThreads()}
+          >
+            {t("app.retry")}
+          </Button>
+        </p>
+      )}
+      {!threads.length &&
+        !failed &&
+        !pending &&
+        nativeIndex !== "unavailable" &&
+        nativeIndex !== "indexing" && (
+          <p className="muted">{t("app.sidebar.noProject")}</p>
+        )}
       <ThreadButtons model={model}>
-        {threads.map((thread, index) => (
-          <ThreadButton
-            key={thread.threadId}
-            model={model}
-            threadId={thread.threadId}
-            directory={thread.directory}
-            number={threads.length - index}
-          />
+        {[...groups].map(([directory, group]) => (
+          <section
+            key={directory}
+            className="flex flex-col gap-1"
+            data-project-group={directory}
+          >
+            <div className="sidebar-label" title={directory}>
+              <FolderIcon />
+              <span>
+                {directory.split("/").filter(Boolean).at(-1) ?? directory}
+              </span>
+            </div>
+            {group.map((thread) => (
+              <ThreadButton
+                key={thread.threadId}
+                model={model}
+                threadId={thread.threadId}
+                directory={thread.directory}
+                title={thread.title}
+                number={threads.length - threads.indexOf(thread)}
+              />
+            ))}
+          </section>
         ))}
       </ThreadButtons>
     </nav>
@@ -69,11 +123,13 @@ const ThreadButton = memo(function ThreadButton({
   threadId,
   directory,
   number,
+  title,
 }: {
   model: AppModel;
   threadId: Parameters<AppModel["selectThread"]>[0];
   directory: string;
   number: number;
+  title?: string | undefined;
 }) {
   const { t } = useI18n();
   const navigate = useNavigate();
@@ -100,7 +156,7 @@ const ThreadButton = memo(function ThreadButton({
     >
       <FolderIcon />
       <span className="thread-name">
-        {directory.split("/").filter(Boolean).at(-1)}
+        {title || t("app.thread.label", { number })}
         <small>
           {t("app.thread.label", { number })} · {threadId.slice(0, 6)}
         </small>

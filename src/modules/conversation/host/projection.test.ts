@@ -151,3 +151,147 @@ it("keeps startup advisor-cost telemetry out of an empty conversation while pres
   });
   projection.dispose();
 });
+
+it("uses full native update snapshots without appending a populated start twice", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {});
+  p.accept({
+    type: "message_start",
+    message: {
+      role: "assistant",
+      content: [{ type: "text", text: "DPI_PROTOCOL" }],
+    },
+  });
+  p.accept({
+    type: "message_update",
+    message: {
+      role: "assistant",
+      content: [{ type: "text", text: "DPI_PROTOCOL" }],
+    },
+    assistantMessageEvent: { type: "text_delta", delta: "D" },
+  });
+  expect(p.snapshot().items[0]?.text).toBe("DPI_PROTOCOL");
+  p.accept({
+    type: "message_update",
+    message: {
+      role: "assistant",
+      content: [{ type: "text", text: "DPI_PROTOCOL_END" }],
+    },
+    assistantMessageEvent: { type: "text_delta", delta: "PI_PROTOCOL_END" },
+  });
+  expect(p.snapshot().items[0]?.text).toBe("DPI_PROTOCOL_END");
+  p.dispose();
+});
+
+it("keeps a stopped reply and failed reply distinct and retains their reason alongside partial text", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {});
+  p.accept({
+    type: "message_end",
+    message: {
+      role: "assistant",
+      content: "partial",
+      stopReason: "aborted",
+      errorMessage: "d-pi 用户停止",
+    },
+  });
+  p.accept({
+    type: "message_end",
+    message: {
+      role: "assistant",
+      content: "partial failure",
+      stopReason: "error",
+      errorMessage: "socket closed",
+    },
+  });
+  expect(p.snapshot().items).toMatchObject([
+    { text: "partial", state: "aborted", detail: "d-pi 用户停止" },
+    { text: "partial failure", state: "failed", detail: "socket closed" },
+  ]);
+  p.dispose();
+});
+
+it("marks the next native reply after a failure as a continuation without carrying it across new user input", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {});
+  p.accept({
+    type: "message_end",
+    message: {
+      role: "assistant",
+      content: "partial",
+      stopReason: "error",
+      errorMessage: "socket closed",
+    },
+  });
+  p.accept({
+    type: "message_start",
+    message: { role: "assistant", content: [] },
+  });
+  expect(p.snapshot().items[1]).toMatchObject({ continuationOf: 1 });
+  p.accept({
+    type: "message_end",
+    message: { role: "assistant", content: "recovered", stopReason: "stop" },
+  });
+  p.accept({
+    type: "message_end",
+    message: { role: "user", content: "new request" },
+  });
+  p.accept({
+    type: "message_start",
+    message: { role: "assistant", content: [] },
+  });
+  expect(p.snapshot().items.at(-1)).not.toHaveProperty("continuationOf");
+  p.dispose();
+});
+
+it("does not render settled and configuration telemetry as unsupported user interaction", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {});
+  p.accept({ type: "session_settled" });
+  p.accept({ type: "thinking_level_changed", thinkingLevel: "off" });
+  p.accept({ type: "model_changed" });
+  expect(p.snapshot().items).toEqual([]);
+  p.dispose();
+});
+it("carries only validated native record identity and restored origin through final projection", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {});
+  p.accept({
+    type: "message_end",
+    message: {
+      role: "user",
+      content: "same",
+      dPiRecordId: "record-1",
+      dPiRestored: true,
+    },
+  });
+  p.accept({
+    type: "message_start",
+    message: { role: "assistant", content: [] },
+  });
+  p.accept({
+    type: "message_end",
+    message: { role: "assistant", content: "same", dPiRecordId: "record-2" },
+  });
+  expect(p.snapshot().items).toMatchObject([
+    { nativeRecordId: "record-1", restored: true },
+    { nativeRecordId: "record-2" },
+  ]);
+  p.accept({
+    type: "message_end",
+    message: {
+      role: "user",
+      content: "other",
+      dPiRecordId: 123,
+      dPiRestored: "true",
+    },
+  });
+  expect(p.snapshot().items.at(-1)?.nativeRecordId).toBeUndefined();
+  p.dispose();
+});
+
+it("keeps an SDK identity coverage gap explicit without guessing a native record", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {});
+  p.accept({
+    type: "message_end",
+    message: { role: "assistant", content: "same", dPiIdentityUnknown: true },
+  });
+  expect(p.snapshot().gap).toBe(true);
+  expect(p.snapshot().items[0]?.nativeRecordId).toBeUndefined();
+  p.dispose();
+});

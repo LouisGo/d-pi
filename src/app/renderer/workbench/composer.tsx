@@ -580,7 +580,7 @@ function ComposerReadiness({
   model: AppModel;
   onChooseModel: (() => void) | undefined;
 }) {
-  const { t } = useI18n();
+  const { t, formatMessage } = useI18n();
   const view = useStore(runtime.stateStore, (state) => state.view);
   const busy = useStore(
     model.stateStore,
@@ -591,7 +591,7 @@ function ComposerReadiness({
   const phase = view?.phase;
   const message = match(reason)
     .with("interrupted", () => "composer.blocked.readOnly" as const)
-    .with("allowed", () => "composer.blocked.start" as const)
+    .with("allowed", () => "composer.blocked.preparing" as const)
     .with("browse", "untrusted", () => "composer.blocked.allow" as const)
     .with(
       "loading",
@@ -611,23 +611,25 @@ function ComposerReadiness({
     .exhaustive();
   return (
     <div className="composer-readiness" role="status">
-      <p>{t(message)}</p>
+      <p>
+        {(phase === "failed" || phase === "interrupted") && view
+          ? formatMessage(view.message)
+          : t(message)}
+      </p>
       {reason === "no-model" && onChooseModel && (
         <Button onClick={onChooseModel}>{t("composer.chooseModel")}</Button>
       )}
-      {phase === "interrupted" && (
-        <Button disabled={busy} onClick={() => void model.newThread()}>
-          {t("app.toolbar.newThread")}
-        </Button>
-      )}
-      {phase === "browse" && (
+      {(phase === "browse" || (phase === "interrupted" && !view?.trusted)) && (
         <Button disabled={busy} onClick={() => void runtime.act("allow")}>
           {t("ui.runtime.allow")}
         </Button>
       )}
-      {phase === "allowed" && (
-        <Button disabled={busy} onClick={() => void runtime.act("start")}>
-          {t("ui.runtime.start")}
+      {(phase === "failed" || phase === "interrupted") && view?.trusted && (
+        <Button
+          disabled={busy || view.busy}
+          onClick={() => void runtime.act("start")}
+        >
+          {t("ui.runtime.retryStart")}
         </Button>
       )}
     </div>

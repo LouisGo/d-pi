@@ -161,3 +161,59 @@ it("shows a truly empty native page separately from an unread bound source", asy
   expect(container.textContent).not.toContain("not been read yet");
   expect(container.textContent).not.toContain("temporarily unavailable");
 });
+
+it("reads the bound saved messages while project discovery and native generation are still running", async () => {
+  const bridge = emptyBridge();
+  let finishDiscovery: (
+    value: Awaited<ReturnType<HistoryBridge["projectList"]>>,
+  ) => void = () => {};
+  bridge.projectList = () =>
+    new Promise((resolve) => {
+      finishDiscovery = resolve;
+    });
+  bridge.projectRead = vi.fn(bridge.projectRead);
+  bridge.read = vi.fn(async () => ({
+    kind: "page" as const,
+    entries: [
+      {
+        id: "saved",
+        parentId: null,
+        role: "user",
+        text: "saved before current generation",
+      },
+    ],
+    next: null,
+    source: "bound-live-snapshot",
+    coverage: "append-order" as const,
+    incompleteTail: false,
+    omitted: 0,
+  }));
+  const { container } = await mount(bridge);
+  const read = [...container.querySelectorAll("button")].find(
+    (b) => b.textContent === "Read native records",
+  );
+  expect(read).toBeDefined();
+  expect(read?.disabled).toBe(false);
+  await act(() => read?.click());
+  await vi.waitFor(async () => {
+    await settle();
+    expect(container.textContent).toContain("saved before current generation");
+  });
+  await act(() =>
+    finishDiscovery({
+      kind: "catalog",
+      partial: false,
+      sessions: [
+        {
+          key: "a".repeat(64),
+          sessionId: "external",
+          title: "External CLI history",
+          modifiedAt: 1,
+        },
+      ],
+    }),
+  );
+  await settle();
+  expect(container.textContent).toContain("saved before current generation");
+  expect(bridge.projectRead).not.toHaveBeenCalled();
+});

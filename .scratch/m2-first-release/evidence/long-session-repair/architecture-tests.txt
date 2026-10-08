@@ -1,0 +1,22 @@
+✔ a missing configuration is a tooling failure, not a rule result (166.145042ms)
+✔ a real violation still fails the gate with the rule name (697.147458ms)
+✔ the root has no design violation to report (2510.593583ms)
+✔ the design fixture check names a crash instead of an assertion diff (2720.7235ms)
+✔ reports entry, production, test, and CSS size hints separately (343.328083ms)
+✔ separates declared permissions from observed source dependencies and scan gaps (167.045667ms)
+✔ rejects a generated report after source or permissions change (1226.554209ms)
+✔ i18n copy check scans migrated module Renderer files (158.950333ms)
+✔ Tailwind source configuration includes migrated Renderer roots (12.168125ms)
+✔ design lint executes against a migrated module Renderer root (583.602667ms)
+✔ Tailwind emits a utility used only by a module Renderer (1084.910875ms)
+✔ core has a dedicated typecheck without DOM or Node ambient types (4.842417ms)
+✔ process-specific typechecks declare their ambient environment explicitly (2.681833ms)
+✔ the real core typecheck rejects DOM globals (468.486125ms)
+ℹ tests 35
+ℹ suites 0
+ℹ pass 35
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8253.3895

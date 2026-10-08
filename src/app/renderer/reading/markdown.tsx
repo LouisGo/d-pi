@@ -14,8 +14,8 @@ const components = {
 
 function markdownBlocks(text: string): string[] {
   // 2.6.0 keeps footnotes together, but ordinary reference definitions otherwise
-  // get parsed apart from their uses. Conservatively give those bounded short
-  // documents one parse scope; Markdown itself decides whether a match is valid.
+  // get parsed apart from their uses. Keep one document parse scope for those
+  // references; Markdown itself decides whether a match is valid.
   return text.includes("]:") ? [text] : parseMarkdownIntoBlocks(text);
 }
 
@@ -51,6 +51,9 @@ export const Markdown = memo(function Markdown({
       data-selectable
       plugins={plugins}
       controls={false}
+      // The reading pane owns vertical scrolling, including long code and tables.
+      codeBlockMaxHeight={0}
+      tableMaxHeight={0}
       // Streamdown's static branch replaces the block tree on message_end.
       // Keep its block identities while disabling remend for final/interrupted text.
       mode="streaming"

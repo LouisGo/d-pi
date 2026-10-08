@@ -27,6 +27,10 @@ export const NativeFrameTypes = {
   sessionInfoUpdate: "session_info_update",
   configUpdate: "config_update",
   advisorCostChanged: "advisor_cost_changed",
+  thinkingLevelChanged: "thinking_level_changed",
+  modelChanged: "model_changed",
+  autoRetryStart: "auto_retry_start",
+  autoRetryEnd: "auto_retry_end",
   extensionUiRequest: "extension_ui_request",
   extensionUiResponse: "extension_ui_response",
   dPiControlState: "d_pi_control_state",
@@ -54,6 +58,7 @@ const message = z.looseObject({
   toolCallId: z.string().optional(),
   isError: z.boolean().optional(),
   errorMessage: z.string().optional(),
+  stopReason: z.string().optional(),
 });
 const nativePayloadSchemas = {
   response: NativeResponseSchema,

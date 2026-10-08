@@ -2,8 +2,7 @@ export const ui = {
   "ui.reading.latest": "最新段",
   "ui.conversation.newOutput": "有新输出",
   "ui.conversation.toBottom": "回到列表底部",
-  "ui.conversation.retainedTail":
-    "回到当前实时列表已保留的底部；正文段选择保持不变。",
+  "ui.conversation.retainedTail": "回到当前实时列表已保留的底部。",
   "ui.conversation.openHistory": "查看原生历史",
   "ui.history.readOnlyCoverage":
     "原生历史只读，按保存顺序分页显示，与实时列表分别呈现。",
@@ -326,6 +325,10 @@ export const ui = {
     "此旧会话不能更换模型或发送。请新建独立会话继续工作；原有草稿和历史保留。",
   "composer.blocked.readOnly":
     "此会话只读，不能发送。原有草稿保留；新会话可选择模型并开始工作。",
+  "ui.runtime.retryStart": "重新准备会话",
+  "app.thread.indexPartial": "部分原生会话尚未整理，可重试刷新。",
+  "app.thread.indexUnavailable": "原生会话索引暂不可用，现有会话仍可使用。",
+  "composer.blocked.preparing": "请稍候，正在准备会话…",
   "composer.blocked.start": "尚未启动会话，请先启动 OMP，再发送。",
   "composer.blocked.allow": "请允许项目执行以启动会话。",
   "composer.blocked.wait": "会话尚未就绪，请查看执行状态。",
@@ -333,7 +336,7 @@ export const ui = {
   "model.reason.configuration-unknown": "配置暂不可用",
   "config.heading": "配置与认证",
   "config.description":
-    "复用 OMP 原生配置。登录或保存密钥后选择模型，再允许项目执行并启动会话。",
+    "复用 OMP 原生配置。登录或保存密钥后选择模型。已允许的项目会自动准备会话。",
   "config.loading": "正在读取原生配置…",
   "config.failed":
     "原生配置操作未确认成功。请检查配置目录、网络与资源，然后重试；原有配置不会预先删除。",
@@ -454,7 +457,7 @@ export const ui = {
   "ui.conversation.imageNotLoaded": "未加载",
   "ui.conversation.sectionLabel": "原生会话阅读",
   "ui.conversation.heading": "会话",
-  "ui.conversation.empty": "从下方输入，开始对话。",
+  "ui.conversation.empty": "还没有消息。",
   "ui.conversation.gap":
     "当前实时内容有缺口，可查看原生历史核对；回到底部不会补齐缺口。",
   "ui.conversation.streaming": "进行中",
@@ -507,6 +510,7 @@ export const ui = {
   "ui.history.read": "读取原生记录",
   "ui.history.readFailed": "读取连接失败，可重新读取。",
   "ui.history.unavailable": "记录暂不可读：{reason}。不会用空列表代替故障。",
+  "ui.history.reason.unbound": "还没有保存记录",
   "ui.history.reason.missing": "记录不存在",
   "ui.history.reason.denied": "访问被拒绝",
   "ui.history.reason.changed": "记录已变化",
@@ -528,7 +532,7 @@ export const ui = {
   "ui.runtime.phase.starting": "正在启动 OMP",
   "ui.runtime.phase.busy": "OMP 正在工作",
   "ui.runtime.phase.ready": "OMP 已就绪",
-  "ui.runtime.phase.interrupted": "只读会话 · 无法继续执行",
+  "ui.runtime.phase.interrupted": "连接中断",
   "ui.runtime.phase.failed": "OMP 尚未就绪",
   "ui.runtime.sectionLabel": "项目执行",
   "ui.runtime.model": "模型：{model}",
@@ -755,4 +759,6 @@ export const ui = {
   "app.status.directory": "工作目录",
   "app.status.messagesScope": "消息数量仅包含当前实时窗口中的用户与助手消息。",
   "app.status.messagesGap": "当前实时窗口存在同步缺口，消息数量可能不完整。",
+  "ui.conversation.aborted": "已停止",
+  "ui.conversation.continuation": "接续上次中断的回复",
 } as const;

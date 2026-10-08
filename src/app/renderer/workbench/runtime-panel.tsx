@@ -302,9 +302,10 @@ function RuntimeActions({
         </Button>
       )}
       {state.trusted &&
-        (state.phase === "allowed" || state.phase === "failed") && (
+        (state.phase === "failed" || state.phase === "interrupted") &&
+        !state.busy && (
           <Button onClick={() => void model.act("start")}>
-            {t("ui.runtime.start")}
+            {t("ui.runtime.retryStart")}
           </Button>
         )}
       {state.trusted && (

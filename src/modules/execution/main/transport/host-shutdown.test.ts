@@ -1,4 +1,7 @@
 import { EventEmitter } from "node:events";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { expect, it, vi } from "vitest";
 import type { HostStart } from "../../contracts/public";
 
@@ -16,6 +19,7 @@ vi.mock("../../../../platform/node/processes/public", () => ({
 import { HostConnection } from "./host-connection";
 
 it("does not confirm idle close until its owned group is confirmed dead, and rejects uncertain cleanup", async () => {
+  const directory = mkdtempSync(join(tmpdir(), "d-pi-host-shutdown-"));
   const host = Object.assign(new EventEmitter(), {
     pid: 12344,
     postMessage: vi.fn(),
@@ -50,7 +54,7 @@ it("does not confirm idle close until its owned group is confirmed dead, and rej
     sdkEntry: "/fixture/host.mjs",
     identity: { directory: "/project", device: "1", inode: "2" },
     environment: {},
-    sessionDirectory: "/sessions",
+    sessionDirectory: directory,
   };
   const receive = vi.fn();
   const connection = new HostConnection(receive, vi.fn());
@@ -77,7 +81,7 @@ it("does not confirm idle close until its owned group is confirmed dead, and rej
       connectionGeneration: command.connectionGeneration,
       state: {
         sessionId: "session",
-        sessionFile: "/sessions/session",
+        sessionFile: join(directory, "session"),
         isStreaming: false,
         isCompacting: false,
         queuedMessageCount: 0,
@@ -107,4 +111,5 @@ it("does not confirm idle close until its owned group is confirmed dead, and rej
   await expect(connection.closeIdle()).rejects.toThrow(
     "Process group shutdown unconfirmed",
   );
+  rmSync(directory, { recursive: true, force: true });
 });

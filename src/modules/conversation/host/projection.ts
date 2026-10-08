@@ -14,6 +14,11 @@ import type {
 
 import { SubagentProjection } from "./subagent-projection";
 
+const ReadingIdentitySchema = z.object({
+  dPiRecordId: z.string().min(1).max(512).optional(),
+  dPiRestored: z.boolean().optional(),
+  dPiIdentityUnknown: z.boolean().optional(),
+});
 const TextSchema = z.object({ type: z.literal("text"), text: z.string() });
 function textOf(content: unknown): string {
   if (typeof content === "string") return content;
@@ -37,6 +42,8 @@ export class ConversationProjection {
   private seq = 0;
   private gap = false;
   private active: number | null = null;
+  private interrupted: number | null = null;
+  private retryNotice: number | null = null;
   private tools = new Map<string, number>();
   private pending = new Map<number, ConversationItem>();
   private timer: ReturnType<typeof setTimeout> | undefined;
@@ -68,7 +75,22 @@ export class ConversationProjection {
         : undefined;
       const existing = tool ?? (role === "assistant" ? this.active : null);
       const id = existing ?? this.nextId++;
-      const text = textOf(message.content) || message.errorMessage || "";
+      const text = textOf(message.content);
+      const prior = this.items.find((item) => item.id === existing);
+      const continuationOf = prior?.continuationOf ?? this.interrupted;
+      const identity = ReadingIdentitySchema.safeParse(message);
+      if (identity.success && identity.data.dPiIdentityUnknown) this.gap = true;
+      const ended = isNativeFrameType(frame, NativeFrameTypes.messageEnd);
+      const state =
+        message.stopReason === "aborted"
+          ? "aborted"
+          : message.stopReason === "error" ||
+              message.isError ||
+              message.errorMessage
+            ? "failed"
+            : ended
+              ? "complete"
+              : "streaming";
       if (
         isNativeFrameType(frame, NativeFrameTypes.messageStart) &&
         role === "assistant"
@@ -84,12 +106,19 @@ export class ConversationProjection {
         id,
         role,
         text,
-        state:
-          message.isError || message.errorMessage
-            ? "failed"
-            : isNativeFrameType(frame, NativeFrameTypes.messageEnd)
-              ? "complete"
-              : "streaming",
+        state,
+        ...(identity.success && identity.data.dPiRecordId
+          ? { nativeRecordId: identity.data.dPiRecordId }
+          : {}),
+        ...(identity.success && identity.data.dPiRestored !== undefined
+          ? { restored: identity.data.dPiRestored }
+          : {}),
+        ...(message.errorMessage
+          ? { detail: message.errorMessage.slice(0, 4096) }
+          : {}),
+        ...(role === "assistant" && continuationOf !== null
+          ? { continuationOf }
+          : {}),
         label:
           role === "tool"
             ? { kind: "message", value: uiMessage("conversation.toolResult") }
@@ -101,7 +130,12 @@ export class ConversationProjection {
               : { kind: "literal", text: "OMP" },
       });
       if (isNativeFrameType(frame, NativeFrameTypes.messageEnd)) {
-        if (role === "assistant") this.active = null;
+        if (role === "assistant") {
+          this.active = null;
+          this.interrupted =
+            state === "failed" || state === "aborted" ? id : null;
+        }
+        if (role === "user") this.interrupted = null;
         this.flush();
       }
       return;
@@ -114,13 +148,77 @@ export class ConversationProjection {
       const id = this.active ?? this.nextId++;
       this.active = id;
       const item = this.items.find((item) => item.id === id);
+      // The fixed full RPC stream carries the current message on each update.
+      // A populated start can already include its first delta. Treat that full
+      // snapshot as authoritative, never concatenate both representations.
+      const snapshot = z
+        .object({
+          role: z.literal("assistant"),
+          content: z.union([z.string(), z.array(z.unknown())]),
+        })
+        .safeParse(frame.message);
       this.put({
         id,
         role: "assistant",
         label: { kind: "literal", text: "OMP" },
         state: "streaming",
-        text: (item?.text ?? "") + delta.data.delta,
+        text: snapshot.success
+          ? textOf(snapshot.data.content)
+          : (item?.text ?? "") + delta.data.delta,
+        ...(item?.continuationOf !== undefined
+          ? { continuationOf: item.continuationOf }
+          : {}),
       });
+      return;
+    }
+    if (isNativeFrameType(frame, NativeFrameTypes.promptResult)) {
+      this.interrupted = null;
+      this.retryNotice = null;
+      return;
+    }
+    if (
+      isNativeFrameType(
+        frame,
+        NativeFrameTypes.autoRetryStart,
+        NativeFrameTypes.autoRetryEnd,
+      )
+    ) {
+      const retry = z
+        .object({
+          attempt: z.number().int().nonnegative(),
+          errorMessage: z.string().optional(),
+          finalError: z.string().optional(),
+          success: z.boolean().optional(),
+        })
+        .safeParse(frame);
+      if (!retry.success) return;
+      const id = this.retryNotice ?? this.nextId++;
+      this.retryNotice = id;
+      const ended = frame.type === NativeFrameTypes.autoRetryEnd;
+      this.put({
+        id,
+        role: "notice",
+        text: "",
+        state: ended && retry.data.success === false ? "failed" : "complete",
+        label: { kind: "literal", text: "OMP" },
+        notice: uiMessage(
+          ended
+            ? retry.data.success === false
+              ? "conversation.retryFailed"
+              : "conversation.retryCompleted"
+            : "conversation.retrying",
+        ),
+        ...((retry.data.errorMessage ?? retry.data.finalError)
+          ? {
+              detail: (
+                retry.data.errorMessage ??
+                retry.data.finalError ??
+                ""
+              ).slice(0, 4096),
+            }
+          : {}),
+      });
+      this.flush();
       return;
     }
     if (
@@ -176,6 +274,9 @@ export class ConversationProjection {
         // OMP 18.4.6 emits this when restoring cost metadata at startup,
         // even without a submission. It carries no conversation or interaction.
         NativeFrameTypes.advisorCostChanged,
+        NativeFrameTypes.sessionSettled,
+        NativeFrameTypes.thinkingLevelChanged,
+        NativeFrameTypes.modelChanged,
       )
     )
       return;

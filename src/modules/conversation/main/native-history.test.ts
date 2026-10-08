@@ -1,7 +1,9 @@
 import {
+  appendFileSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  renameSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -256,7 +258,7 @@ it("classifies every known mutating native tool without changing its original na
   }
 });
 
-it("pages large files within a byte budget and rejects changed cursors, other Threads and unsupported versions", async () => {
+it("pages large files within a byte budget and rejects replaced cursors, other Threads and unsupported versions", async () => {
   const root = mkdtempSync(join(tmpdir(), "d-pi-history-pages-"));
   const threadId = crypto.randomUUID();
   const directory = join(root, threadId);
@@ -292,7 +294,8 @@ it("pages large files within a byte budget and rejects changed cursors, other Th
       kind: "page",
       incompleteTail: false,
     });
-    writeFileSync(file, body + "\n");
+    writeFileSync(`${file}.replacement`, body + "\n");
+    renameSync(`${file}.replacement`, file);
     expect(await readNativeHistory(root, binding, first.next)).toEqual({
       kind: "unavailable",
       reason: "changed",
@@ -311,6 +314,143 @@ it("pages large files within a byte budget and rejects changed cursors, other Th
     expect(
       await readNativeHistory(root, binding, null, AbortSignal.abort()),
     ).toEqual({ kind: "unavailable", reason: "cancelled" });
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+it("keeps a saved history snapshot readable while new messages append, and refresh sees the new tail", async () => {
+  const root = mkdtempSync(join(tmpdir(), "d-pi-history-active-"));
+  const threadId = crypto.randomUUID();
+  const directory = join(root, threadId);
+  mkdirSync(directory);
+  const file = join(directory, "session.jsonl");
+  const binding = {
+    threadId,
+    configContextId: "fixture",
+    sessionId: "session",
+    sessionFile: file,
+  };
+  const records = [
+    { type: "session", version: 3, id: "session" },
+    ...Array.from({ length: 1100 }, (_, i) => ({
+      type: "message",
+      id: String(i),
+      parentId: i ? String(i - 1) : null,
+      message: { role: "assistant", content: "x".repeat(1000) },
+    })),
+  ];
+  writeFileSync(file, records.map((x) => JSON.stringify(x)).join("\n") + "\n");
+  try {
+    const first = await readNativeHistory(root, binding);
+    if (first.kind !== "page" || !first.next)
+      throw Error("expected first snapshot page");
+    appendFileSync(
+      file,
+      JSON.stringify({
+        type: "message",
+        id: "new-generation",
+        parentId: "1099",
+        message: { role: "assistant", content: "new output" },
+      }) + "\n",
+    );
+    const second = await readNativeHistory(root, binding, first.next);
+    expect(second.kind).toBe("page");
+    if (second.kind !== "page") return;
+    expect(second.source).toBe(first.source);
+    expect(second.next).toBeNull();
+    expect([...first.entries, ...second.entries]).toHaveLength(1100);
+    expect(second.entries.some((e) => e.id === "new-generation")).toBe(false);
+    const refreshed = await readNativeHistory(root, binding);
+    expect(refreshed.kind).toBe("page");
+    if (refreshed.kind !== "page" || !refreshed.next)
+      throw Error("expected refreshed page");
+    const tail = await readNativeHistory(root, binding, refreshed.next);
+    expect(tail.kind === "page" && tail.entries.at(-1)?.text).toBe(
+      "new output",
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+it("returns a message larger than the ordinary page budget as one complete body", async () => {
+  const root = mkdtempSync(join(tmpdir(), "d-pi-history-large-body-"));
+  const threadId = crypto.randomUUID();
+  const directory = join(root, threadId);
+  mkdirSync(directory);
+  const file = join(directory, "session.jsonl");
+  const binding = {
+    threadId,
+    configContextId: "fixture",
+    sessionId: "session",
+    sessionFile: file,
+  };
+  const text = "连续正文\n".repeat(110_000);
+  writeFileSync(
+    file,
+    [
+      { type: "session", version: 3, id: "session" },
+      {
+        type: "message",
+        id: "large",
+        parentId: null,
+        message: { role: "assistant", content: text },
+      },
+    ]
+      .map((record) => JSON.stringify(record))
+      .join("\n") + "\n",
+  );
+  try {
+    let page = await readNativeHistory(root, binding);
+    const entries = [];
+    for (let count = 0; count < 3; count++) {
+      if (page.kind !== "page") throw Error("expected complete history page");
+      entries.push(...page.entries);
+      if (!page.next) break;
+      page = await readNativeHistory(root, binding, page.next);
+    }
+    expect(entries).toMatchObject([{ id: "large", text }]);
+    expect(entries).toHaveLength(1);
+    expect(page.kind === "page" && page.next).toBeNull();
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+it("reads saved CLI history when its recorded canonical worktree no longer exists", async () => {
+  const root = mkdtempSync(join(tmpdir(), "d-pi-deleted-cwd-"));
+  const file = join(root, "session.jsonl");
+  const cwd = join(root, "deleted-worktree");
+  writeFileSync(
+    file,
+    [
+      { type: "session", version: 3, id: "native", cwd },
+      {
+        type: "message",
+        id: "entry",
+        parentId: null,
+        message: { role: "user", content: "preserved" },
+      },
+    ]
+      .map((row) => JSON.stringify(row))
+      .join("\n") + "\n",
+  );
+  try {
+    expect(
+      await readNativeHistory(
+        root,
+        {
+          threadId: crypto.randomUUID(),
+          configContextId: "fixture",
+          sessionId: "native",
+          sessionFile: file,
+        },
+        null,
+        undefined,
+        cwd,
+      ),
+    ).toMatchObject({ kind: "page", entries: [{ text: "preserved" }] });
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

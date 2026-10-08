@@ -1,0 +1,50 @@
+{
+  "productSource": "d6df40a7b6704b6f5a0e3e665c442694f0a77d62",
+  "branch": "codex/seamless-session-experience",
+  "types": {
+    "root": "passed",
+    "core": "passed",
+    "renderer": "passed",
+    "main": "passed",
+    "host": "passed",
+    "preload": "passed"
+  },
+  "biome": "passed",
+  "designLint": "passed",
+  "designValidation": "passed",
+  "interaction": "passed",
+  "i18n": "passed",
+  "architecture": "passed (449 source files)",
+  "architectureTests": "35 passed",
+  "documentation": "passed (326 files)",
+  "build": "passed; existing chunk-size warnings",
+  "affectedBehavior": "310 passed; SDK adapter/Host/resource 46 passed; native catalog 11 passed; reading disposal 4 passed",
+  "sdkResource": "prepared both root and isolated QA: 18.4.6, 548.4 MiB / 650 MiB",
+  "sdkControl": "passed: stop retains queue and explicit continue consumes same session once",
+  "realModel": "2 GPT Luna calls; same native ID/file; successful memory recall; no tools",
+  "gui": {
+    "status": "blocked",
+    "reason": "macOS locked; automatic unlock failed twice",
+    "appStarted": true,
+    "freshCatalogProjects": 2,
+    "visibleProof": false
+  },
+  "fullSuite": {
+    "lastRun": "1126 passed / 2 failed / 2 skipped",
+    "failures": [
+      "existing configuration-sharing validator targets pruned SDK dist/cli.js",
+      "4K filesystem fixture exceeded 20s while builds/types/SDK prepares ran concurrently; isolated pass; fixture budget changed to30s and final11 tests passed"
+    ]
+  },
+  "toolingFullSuite": "existing missing-pnpm hook test fails (exit1 vs2), 14 affected tooling tests passed",
+  "pnpmCheck": "not green: environment corepack cannot fetch pnpm; direct matching checks executed",
+  "review": {
+    "spec": "no remaining evidenced P0/P1/P2 at d6df40a",
+    "standards": "no remaining evidenced P0/P1/P2 at d6df40a"
+  },
+  "limits": [
+    "CLI-origin imports read-only without shared full-lifecycle execution lease",
+    "obfuscator identity clone explicitly gap, no text guessing",
+    "GUI remains required after user unlock"
+  ]
+}

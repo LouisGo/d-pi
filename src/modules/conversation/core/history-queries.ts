@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import type { HistoryBridge, HistoryCursor } from "../contracts/public";
 
 export interface BoundHistoryAttempt {
@@ -53,5 +53,27 @@ export function projectHistoryPageQuery(
     networkMode: "always",
     enabled: key !== null,
     queryFn: () => (key ? bridge.projectRead(threadId, key, cursor) : null),
+  });
+}
+
+/** Append committed pages in one read-only transcript; never page away a message. */
+export function savedConversationQuery(
+  bridge: HistoryBridge,
+  threadId: string,
+) {
+  return infiniteQueryOptions({
+    queryKey: ["saved-native-conversation", threadId] as const,
+    initialPageParam: null as HistoryCursor | null,
+    networkMode: "always",
+    retry: false,
+    staleTime: 0,
+    queryFn: async ({ pageParam, signal }) => {
+      signal.throwIfAborted();
+      const page = await bridge.read(threadId, pageParam);
+      signal.throwIfAborted();
+      return page;
+    },
+    getNextPageParam: (page) =>
+      page.kind === "page" ? (page.next ?? undefined) : undefined,
   });
 }

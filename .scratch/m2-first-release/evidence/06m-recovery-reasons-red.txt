@@ -1,0 +1,72 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/.codex/worktrees/cold-session-resume/d-pi
+
+(node:41078) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ tests/integration/app-runtime-service.integration.test.ts (30 tests | 1 failed) 1475ms
+   ✓ applies future subagent defaults on the exact busy instance and waits for native confirmation 76ms
+   ✓ never dispatches to the old instance after replacing and reauthorizing its directory 46ms
+   ✓ a prepared submission cannot cross the instance directory boundary even if a new grant exists 62ms
+   ✓ regranting the unchanged directory preserves normal submission and idle shutdown 59ms
+   ✓ publishes runtime status as a valid semantic IPC value 48ms
+   ✓ execution admission and inspection do not require loading a draft body 43ms
+   ✓ state observed immediately after ready is not overwritten by handshake completion 37ms
+   ✓ a fork failure before any Host exists still allows an explicit start retry 62ms
+   ✓ cold restart continues the exact bound session despite unrelated environment changes 52ms
+   ✓ an independently live writer blocks recovery without substituting a session 48ms
+   ✓ busy native sessions accept a frozen follow-up without an App auto-send queue 47ms
+   ✓ refuses new queue entries beyond twenty while still dispatching counted ones 91ms
+   ✓ counts hidden native queue entries at the admission cap without App receipts 43ms
+   ✓ returns a historical non-prepared receipt without a native write after the grant is revoked (A12 Main lock) 64ms
+   ✓ Host exit marks every in-flight queued submission unknown without replay 49ms
+   ✓ control and answers reject stale generations and revoked grants while allowing cancellation 40ms
+   ✓ background-only work prevents quit even after a stale idle poll and ignores old control snapshots 35ms
+   ✓ clearing native admission and confirming idle cannot settle an acknowledged submission without its terminal 40ms
+   ✓ blocks prepare and dispatch during native interactions, then admits normal follow-up 39ms
+   ✓ persists Host non-dispatch without consuming the draft and permits an explicit new send 40ms
+   ✓ a control rejection preserves the same session for explicit continue and does not mask real disconnection 31ms
+   ✓ settles error only with adequate evidence, including a result arriving after idle 34ms
+   ✓ settles disconnected only with adequate evidence, including a result arriving after idle 40ms
+   ✓ settles a late failure after the last idle snapshot without waiting for another native state change 40ms
+   ✓ finishes a prepared attempt rejected after revoke before dispatch 33ms
+   ✓ finishes a prepared attempt rejected after missing-directory before dispatch 32ms
+   ✓ locates reference preparation failure without a receipt or native dispatch and preserves the draft 53ms
+   ✓ cold recovery never resends an unknown attempt while allowing explicit new work on the same session 97ms
+   ✓ explicit resume can retry a pre-fork failure after a previously confirmed shutdown 45ms
+   × a recovery conflict exposes a specific public reason and an explicit start recheck can recover 46ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/app-runtime-service.integration.test.ts > a recovery conflict exposes a specific public reason and an explicit start recheck can recover
+AssertionError: expected { …(10) } to match object { phase: 'failed', busy: false, …(2) }
+(8 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "busy": false,
+    "message": {
+-     "code": "runtime.recoveryOccupied",
++     "code": "runtime.notReady",
+    },
+    "phase": "failed",
+-   "recoveryFailure": "occupied",
+  }
+
+ ❯ tests/integration/app-runtime-service.integration.test.ts:1164:19
+    1162|   const start=()=>restored.execute({kind:"start",threadId:f.draft.thre…
+    1163|   const blocked=await start();
+    1164|   expect(blocked).toMatchObject({phase:"failed",busy:false,recoveryFai…
+       |                   ^
+    1165|   expect(RuntimeViewSchema.safeParse(blocked).success).toBe(true);
+    1166|   f.host.emit("message",{kind:"scope-closed"}); await f.runtime.closeI…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 29 passed (30)
+   Start at  11:21:27
+   Duration  3.67s (tests 43%, transform 40%, import 17%)

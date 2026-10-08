@@ -59,7 +59,7 @@ async function waitForHighlightedCode(container: HTMLElement) {
   });
 }
 
-it("preserves completed Markdown prefix nodes, selection and nested code position when the same message finishes", async () => {
+it("preserves completed Markdown prefix nodes, selection and code identity when the same message finishes", async () => {
   const fixture = mountMarkdown();
   const text =
     "Stable selected prefix.\n\n```js\n" +
@@ -82,7 +82,6 @@ it("preserves completed Markdown prefix nodes, selection and nested code positio
     const selection = window.getSelection();
     selection?.removeAllRanges();
     selection?.addRange(range);
-    code.scrollTop = 71;
     await fixture.render(text, false);
     expect(fixture.container.querySelector("p")).toBe(paragraph);
     expect(paragraph.firstChild).toBe(node);
@@ -92,7 +91,6 @@ it("preserves completed Markdown prefix nodes, selection and nested code positio
     expect(
       fixture.container.querySelector('[data-streamdown="code-block-body"]'),
     ).toBe(code);
-    expect(code.scrollTop).toBe(71);
     expect(fixture.container.textContent).toContain("Final tail.");
   } finally {
     await fixture.dispose();

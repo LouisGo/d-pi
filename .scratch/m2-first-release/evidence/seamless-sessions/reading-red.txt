@@ -1,0 +1,112 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/Learn/d-pi
+
+ ❯ src/modules/conversation/main/native-history.test.ts (7 tests | 1 failed) 48ms
+   ✓ reads bound native v3 history without modifying it, retaining branch identities and incomplete tail 5ms
+   ✓ keeps failed, successful and unknown tool results distinct and ignores results without tool identity 2ms
+   ✓ classifies every known mutating native tool without changing its original name 1ms
+   ✓ pages large files within a byte budget and rejects replaced cursors, other Threads and unsupported versions 17ms
+   ✓ keeps a saved history snapshot readable while new messages append, and refresh sees the new tail 9ms
+   ✓ returns a message larger than the ordinary page budget as one complete body 8ms
+   × reads saved CLI history when its recorded canonical worktree no longer exists 5ms
+ ❯ src/app/renderer/reading/saved-conversation.test.ts (5 tests | 2 failed) 83ms
+   ✓ opens bound native messages directly without project selection, execute or a read click 42ms
+   ✓ keeps pages adjacent in one transcript instead of replacing the previous messages 7ms
+   × retains the same saved DOM and reading source when execution restores its native branch 11ms
+   ✓ does not start a history read from a hidden inactive pane 13ms
+   × retains older saved records beyond the live projection window and appends only newly observed messages 8ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/modules/conversation/main/native-history.test.ts > reads saved CLI history when its recorded canonical worktree no longer exists
+AssertionError: expected { kind: 'unavailable', …(1) } to match object { kind: 'page', …(1) }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "entries": [
+-     {
+-       "text": "preserved",
+-     },
+-   ],
+-   "kind": "page",
++   "kind": "unavailable",
+  }
+
+ ❯ src/modules/conversation/main/native-history.test.ts:430:155
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/app/renderer/reading/saved-conversation.test.ts > retains the same saved DOM and reading source when execution restores its native branch
+AssertionError: expected null to be <article class="message" …(2)>…(2)</article> // Object.is equality
+
+- Expected:
+<article
+  class="message"
+  data-reading-row="one"
+  data-selectable="true"
+>
+  <div
+    class="message-heading"
+  >
+    <strong>
+      Assistant
+    </strong>
+    <button
+      class="ui-button ui-button-ghost"
+      data-slot="button"
+      tabindex="0"
+      type="button"
+    >
+      Copy
+    </button>
+  </div>
+  <div
+    class="reading-body"
+    data-reading-text="true"
+  >
+    <p>
+      first saved message
+    </p>
+  </div>
+</article>
+
++ Received:
+null
+
+ ❯ src/app/renderer/reading/saved-conversation.test.ts:146:63
+    144|     }),
+    145|   );
+    146|   expect(f.container.querySelector("[data-reading-row=one]")).toBe(row…
+       |                                                               ^
+    147|   expect(f.container.querySelector("[data-reading-source]")?.getAttrib…
+    148|   expect(f.container.querySelectorAll("[data-reading-text]")).toHaveLe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/app/renderer/reading/saved-conversation.test.ts > retains older saved records beyond the live projection window and appends only newly observed messages
+AssertionError: expected 'The live view has a gap. Check native…' to contain 'first saved message'
+
+Expected: "first saved message"
+Received: "The live view has a gap. Check native history; returning to the bottom does not fill it.OMPCopyunloaded restored rowOMPIn progressCopynew live answer"
+
+ ❯ src/app/renderer/reading/saved-conversation.test.ts:167:35
+    165|     {id: 501, role:"assistant",state:"streaming",label:{kind:"literal"…
+    166|   ]}));
+    167|   expect(f.container.textContent).toContain("first saved message");
+       |                                   ^
+    168|   expect(f.container.textContent).toContain("new live answer");
+    169|   expect(f.container.textContent).not.toContain("unloaded restored row…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  3 failed | 9 passed (12)
+   Start at  12:16:45
+   Duration  2.66s (import 77%, environment 11%, transform 7%, tests 5%)
+

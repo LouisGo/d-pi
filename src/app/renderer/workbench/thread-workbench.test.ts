@@ -33,6 +33,9 @@ vi.mock("../reading/submissions", () => ({
       ),
     ),
 }));
+vi.mock("../reading/saved-conversation", async () => ({
+  SavedConversation: (await import("../reading/conversation")).Conversation,
+}));
 vi.mock("../reading/history", () => ({
   History: ({ onReturnLive }: { onReturnLive?: () => void }) =>
     createElement(

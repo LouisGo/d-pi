@@ -1,0 +1,14 @@
+
+(node:39301) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ tests/integration/app-runtime-service.integration.test.ts (29 tests) 2503ms
+
+ Test Files  1 passed (1)
+      Tests  29 passed (29)
+   Start at  11:18:48
+   Duration  5.69s (tests 46%, transform 37%, import 17%)
+
+  Transform  transforming modules took 2.02s · 37% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             on CI this only helps when the cache directory is persisted between runs
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns

@@ -1,0 +1,18 @@
+{
+  "schema": 12,
+  "indexed": 2,
+  "rows": [
+    {
+      "directory": "/Users/lou/Downloads/DPI_无缝会话复试_2026-10-08/project-alpha",
+      "title": "QA CLI project-alpha",
+      "nativeId": "01a119b3-a871-7000-a078-7d4050bfb84a",
+      "nativeFile": "/Users/lou/Downloads/DPI_无缝会话复试_2026-10-08/native-config/sessions/project-alpha/2026-10-08T04-09-26-898Z_01a119b3-a871-7000-a078-7d4050bfb84a.jsonl"
+    },
+    {
+      "directory": "/Users/lou/Downloads/DPI_无缝会话复试_2026-10-08/project-beta",
+      "title": "QA CLI project-beta",
+      "nativeId": "01a119b3-a8a9-7000-b55b-25a4037a1b56",
+      "nativeFile": "/Users/lou/Downloads/DPI_无缝会话复试_2026-10-08/native-config/sessions/project-beta/2026-10-08T04-09-26-953Z_01a119b3-a8a9-7000-b55b-25a4037a1b56.jsonl"
+    }
+  ]
+}

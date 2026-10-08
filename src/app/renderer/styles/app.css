@@ -492,29 +492,15 @@
   .message pre {
     white-space: pre-wrap;
     overflow-wrap: anywhere;
-    max-height: var(--editor-max-height);
-    overflow: auto;
+    max-height: none;
+    overflow-x: auto;
   }
   .message [data-streamdown="code-block"] pre {
     white-space: pre;
     overflow-wrap: normal;
   }
-  .reading-segments {
+  .reading-body {
     min-width: 0;
-  }
-  .reading-segment-controls {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: calc(var(--layout-gap) / 2);
-    font-size: var(--text-body);
-  }
-  .reading-segment-text {
-    max-height: var(--editor-max-height);
-    overflow: auto;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-    font-family: inherit;
   }
   .composer[data-expanded="true"] {
     position: absolute;

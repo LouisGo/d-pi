@@ -1,0 +1,19 @@
+The following is a diff from the previous accessibility tree for Window: "d-pi" with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
+Removed element IDs: 83
++									83 container 项目执行
++										84 container
++											85 文本 原生队列：0 条；后台活动：0
++											86 按钮 停止并暂缓队列
++											87 文本 正在读取原生记录…
++											88 container
++												89 文本 原生输入
++												90 按钮 复制
++												91 文本 冷重启续问测试：第一行只写本会话最早记录的纸鹤完整描述；随后从 1 到 180，每行写“第 N 行：历史会话仍可阅读”。请完整写到 180，不省略，不调用工具。
++									92 文本 有新输出
+~										61 文本输入区 (settable) Description: 草稿正文, Value: 
+
+~										70 按钮 排队发送
++										93 按钮 干预当前执行
+~								74 文本 OMP 正在工作
+~								75 文本  · 5 条消息
+The focused UI element is 61 文本输入区 (settable) Description: 草稿正文, Value: 

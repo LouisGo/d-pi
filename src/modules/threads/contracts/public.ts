@@ -15,6 +15,8 @@ export const NativeSessionBindingSchema = z.strictObject({
   configContextId: z.string().min(1),
   sessionFile: z.string().min(1),
   sessionId: z.string().min(1),
+  origin: z.literal("cli").optional(),
+  historyRoot: z.string().min(1).optional(),
 });
 export type NativeSessionBinding = z.infer<typeof NativeSessionBindingSchema>;
 
@@ -23,6 +25,8 @@ export const ThreadContextSchema = z.strictObject({
   threadId: ThreadIdSchema,
   workingDirectoryId: WorkingDirectoryIdSchema,
   directory: z.string().min(1),
+  title: z.string().max(256).optional(),
+  origin: z.literal("cli").optional(),
 });
 export type ThreadContext = z.infer<typeof ThreadContextSchema>;
 export interface ThreadReader {

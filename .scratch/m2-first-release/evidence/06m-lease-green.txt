@@ -1,0 +1,12 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/.codex/worktrees/cold-session-resume/d-pi
+
+(node:35766) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/modules/execution/main/transport/session-execution-lease.test.ts (7 tests) 118ms
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  11:15:55
+   Duration  274ms (tests 58%, import 24%, transform 17%, worker 1%)

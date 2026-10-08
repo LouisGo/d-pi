@@ -57,7 +57,7 @@
     "engineering": "complete",
     "trial": "delivered",
     "acceptance": "pending",
-    "current": true,
+    "current": false,
     "build": "Dev c04e245 / Chromium d987f98",
     "pending": [],
     "evidence": [
@@ -67,6 +67,38 @@
     ],
     "next": "首个长会话阅读闭环已本地PR合main并push，远端源码289d36d已核实；从main pnpm dev试用。R1–R15、双轴无高价值遗留、真实Luna/Dev及干净Chromium证据已交付；用户认可pending，M2父范围仍开放。",
     "constraints": "2026-10-07当前明确授权本地PR合main并push，允许现有OMP Luna与并行工作。live/native分源，预算和冷恢复只读保留；不公开发布、不扩M3。"
+  },
+  {
+    "id": "long-session-repair",
+    "title": "长会话连续体验修复",
+    "phase": "M2",
+    "engineering": "complete",
+    "trial": "delivered",
+    "acceptance": "pending",
+    "current": false,
+    "build": "Dev source c4bc00b",
+    "pending": [],
+    "evidence": [
+      "long-session-repair.md"
+    ],
+    "next": "本地Dev三项修复已交付，两次冷恢复及真实模型/GUI/双轴评审通过；等待用户复试认可，M2其它项保持。",
+    "constraints": "2026-10-08用户明确授权修复并取代手动分段及冷旧Thread一律只读边界；保留unknown不重发、原生身份与真实独占，允许本机真实模型复核；本地交付，不自动push或公开发布。"
+  },
+  {
+    "id": "seamless-sessions",
+    "title": "会话默认流程体验",
+    "phase": "M2",
+    "engineering": "complete",
+    "trial": "delivered",
+    "acceptance": "pending",
+    "current": true,
+    "build": "Dev source f795b82",
+    "pending": [],
+    "evidence": [
+      "seamless-sessions.md"
+    ],
+    "next": "默认历史与按项目整理、重复新建免授权免手动启动、CLI 原会话续问和冷重启续问、生成中阅读已完成正式 GUI 与真实模型复核；等待用户复试认可。",
+    "constraints": "2026-10-08用户追加授权 CLI 原会话继续，取代 CLI 来源统一只读；首次陌生目录信任保留，unknown不重发，外CLI占用不强占；本地交付，无远端操作。"
   }
 ]
 ```
@@ -92,7 +124,7 @@
 - 授权：用户明确正式开启 M2，包含文档、源码、测试、工程配置、macOS GUI/原生验证、候选包与分批本地 commit；不 push、不公开发布、不扩 M3，不需逐票重复授权。
 - 交付：按 [V1-00–10](../../docs/product/first-release.md#首版-m2-验收清单内部-m1-是子集见基础契约-8)逐功能完成，优先可重复配置、认证、模型、项目与 Thread 主流程。接续 [S5 体验反馈](../m1-s5-combination-acceptance/spec.md#2026-09-30-体验反馈与完成口径)，M1 工程完成不等于用户认可。
 - 已定：D-02–D-08、D-10/D-11、D-20–D-27、D-28–D-37；沿用 OMP 执行、队列、原生历史、配置与凭据所有权，App 草稿/冻结原文/收据事务不改变。
-- 重要待决：无新增。[S3 09](../m1-s3-control-recovery/issues/09-quit-discard-decision.md)退出放弃队列待决，仅暂停对应出口；缺全周期单写证据的冷恢复只读，提供明确新建独立 Thread 出口，不冒称恢复旧执行。
+- 重要待决：无新增。[S3 09](../m1-s3-control-recovery/issues/09-quit-discard-decision.md)退出放弃队列待决，仅暂停对应出口。冷恢复现按下方2026-10-08授权建立私有会话全周期lease，打开原session ID/文件继续；unknown不自动重发，活执行或无法证实身份时不接管。
 - 工程：正在实施；既有正确路径复用当前相关证据，新增缺口先失败行为测试。测试隔离 App 数据、OMP 配置、HOME、Git 配置、项目及网络；不继承个人凭据。真实供应商缺账户/费用授权仅暂停实测，不阻塞薄桥接及 fixture 验证。
 - 用户试用：当前交付 `0.1.0-m2.20 / 3c4c1060-8b550d60`，产品source `3c4c106`；PR追加竞态真实红绿、798行为/34架构/74工具、双轴复核、17项修复后实际干净包及ZIP同源通过。m2.19的真实关窗/Finder重开同Main无重发及system=failed为其独立历史证据，不外推到新包；01c实际显示/点击仍claimed，用户认可pending。[精确身份、哈希、证据与步骤](attention.md#最终候选与试用)。
 - 继续边界：本授权内持续实施，不重做基建审计。重大产品/权限/数据合同变化才对齐；签名、公证、公开分发及 M3 不纳入。
@@ -101,7 +133,7 @@
 
 | 票 | 路径 | 结果/验收 |
 | --- | --- | --- |
-| [01 项目与 Thread](issues/01-project-threads.md) | V1-03/09 | 随时打开项目、新建/切换 Thread，切换先保存且不停止后台；冷重开列表与只读恢复，身份/草稿/回执隔离 |
+| [01 项目与 Thread](issues/01-project-threads.md) | V1-03/09 | 随时打开项目、新建/切换 Thread，切换先保存且不停止后台；冷重开列表并在私有会话独占证明后继续原会话，身份/草稿/回执隔离 |
 | [02 配置、认证与模型](issues/02-configuration-models.md) | V1-01/02 | 同一原生配置上下文，已有配置复用，两条原生认证、取消/重试及实际模型/档位选择；秘密不落 App 数据/日志 |
 | [03 主流程候选](issues/03-entry-candidate.md) | V1-10 | 清晰流程、真实 macOS 包/原生/GUI 验证、可重复隔离试用与对应 SHA |
 | [04 输入与附件](issues/04-input-attachments.md) | V1-04 | 结构粘贴、@ 文件、截图/拖入/文件/PDF、预览/缩放/删除/重排、真实编码预检，无静默丢失 |
@@ -184,7 +216,7 @@
 用户要求使用刚合并的 AI 工作流，从最新 main 重新开启下一阶段；2026-10-06 已确认 PR #1 合入，基点 `c8dbdbadf1a04ad2be54e01f1a509024c5d982ea`，集成分支 `codex/m2-lifecycle`。本段选择 B4 附件引用/延迟回收/一致性与原生子 Agent 状态/结果观察两条可独立交付路径，随后集成与本地候选。沿用已有 M2 本地实现/commit/试用候选授权；不 push、不公开发布、不扩 M3。冷旧 Thread 只读、unknown 不自动重发，PDF 视觉/OCR与退出放弃原待决不进入本段。无新增产品待决。
 
 ```implementation-plan
-[{"id":"m2-lifecycle","tickets":["04b","05d","06b"]},{"id":"m2-long-reading","tickets":["06c","06d"]},{"id":"m2-diagnostics","tickets":["06e","06f","06g"]},{"id":"thread-attention","tickets":["01a","01b","01c"]},{"id":"long-reading-loop","tickets":["06h","06i","06j"]}]
+[{"id": "m2-lifecycle", "tickets": ["04b", "05d", "06b"]}, {"id": "m2-long-reading", "tickets": ["06c", "06d"]}, {"id": "m2-diagnostics", "tickets": ["06e", "06f", "06g"]}, {"id": "thread-attention", "tickets": ["01a", "01b", "01c"]}, {"id": "long-reading-loop", "tickets": ["06h", "06i", "06j"]}, {"id": "long-session-repair", "tickets": ["06k", "06l", "06m", "06n"]}, {"id": "seamless-sessions", "tickets": ["06o", "06p", "06q", "06r"]}]
 ```
 
 - [04b](issues/04b-attachment-lifecycle.md)：私有内容引用/最后释放、延迟回收及正式检查/清理出口。
@@ -298,3 +330,33 @@
 验收 R1–R15 见蓝图；已正确行为补回归不伪造红灯，缺口逐行为红绿。实机验证回答 Chromium 几何/选择/最终语义及真实 provider 到达风险，纯DOM替身不足；操作覆盖完成或发现具体失败即停止扩大样本。
 
 2026-10-08：首个长会话阅读闭环实现、相关TDD与合并最新main后的1062行为/35架构/96工具检查、build/fast、真实Dev Luna/历史与干净Chromium24项通过，两个独立reviewer最终72c5e77均无高价值问题。本地PR分支8081910合main为289d36d3dcef18e81fd8c4a31d15913a7487387f，push成功且ls-remote核实相同；06h/06i/06j工程resolved。本次交付不关闭M2其它范围或用户认可，不冒称固定包。[完整交接](reading-loop.md)。
+
+
+## 2026-10-08 长会话连续体验修复（当前授权）
+
+用户基于本地真实模型复核明确要求修复全部确认问题，并指定三个验收：不能分段展示，正文必须连贯；生成期间能访问历史会话和消息；冷重启必须继续原会话。此要求取代06c/06h/06i的手动原文分段策略及旧D-24冷只读交付限制；历史证据保持原样。沿用D-02 OMP所有权、D-24 unknown不自动重发/事务与身份规则、D-35/37/39技术合同。无新增产品待决；实现需建立原生全周期独占和同文件/会话ID恢复，不能新建替代会话伪装续作。
+
+起点ae94bc0bed8deba6a005c8b5ec79b16aa02f9df4，原工作区干净，集成分支codex/long-session-repair。正式GUI连续阅读，不以关闭预算门禁应付；运行中读取已提交原生历史前缀，不能因尾部追加让旧页不可访问。正文重复、停止/失败/自动续写与正常事件误报和冷空态一并修复。
+
+验收：缺口真实红绿；正式Main/Host/SDK身份与锁冲突、停止后继续、冷重启同sessionfile/id和上下文回忆、生成期间历史可读、长Markdown不退原文/没有分段控件、复制精确、旧位置/焦点保留；受影响检查、build和独立Spec/Standards评审。真实模型测试沿用本次账户授权和合成数据；本地Dev交付，不自动push/发布，用户认可pending。
+
+工程状态：实施中；管理状态仅主Agent写入。06k由continuous_reading在`/Users/lou/.codex/worktrees/continuous-reading/d-pi`、分支`codex/continuous-reading-repair`实现，基点13efe95，b0e60cc已串行合入为6c8300f；06l由主Agent实现并提交f3a0669；06m由recovery_evidence在`/Users/lou/.codex/worktrees/cold-session-resume/d-pi`、分支`codex/cold-session-resume-repair`从13efe95实现。主Agent写合同/i18n/共享装配并串行集成。结果与试用见[交接](long-session-repair.md)。
+
+2026-10-08连续体验修复交付：06k/06l/06m/06n工程resolved，产品源c4bc00b；b0e60cc、c674b1c/a8781dc/0ca6487按写集串行合入，独立Spec/Standards复核无剩余高价值发现。4新增真实GUI请求、1独立协议模型调用，两次同id/file冷恢复记忆正确、19,053字符/220行代码连贯且复制精确、生成中历史可读、停止可继续、432增量零差异。类型/build及受影响检查通过；全量矩阵既有CLI路径失败和PDF并行超时/单独复查结果详见交接，不冒称完整check绿。Dev交付，无push/发布；M2其它范围与用户认可独立pending。
+
+
+## 2026-10-08 会话默认流程体验（当前授权）
+
+用户指出原生记录手动读取、新会话手动授权/启动、CLI已有会话未自动按项目进入Thread三项体验缺口，明确要求“最佳实践优雅修复这些体验”。基点bd98fa8；本地分支codex/seamless-session-experience。沿用上轮连续正文、生成中可读和App私有同身份冷恢复，补齐默认流程，不扩其它M2范围。
+
+交付：已有绑定打开即自动显示原生历史；已信任的实际工作目录自动准备OMP，首次允许执行直接接续启动，冷恢复无需手工启动；CLI原生目录只读索引按规范化真实cwd分组，一原生session一AppThread，幂等持久且不复制/拼接上下文。陌生目录一次显式执行信任保留；自动索引不授予执行信任，不启动所有导入会话。CLI外部文件无共享执行全周期单写证据时只读且表达原因，不伪装ready/新建替代会话。
+
+验收：相关真实行为TDD、同身份/去重/持久恢复、历史不依赖执行准备、信任只确认一次且启动失败可重试、切换线程与后台生成不丢阅读/草稿；受影响检查、正式本地GUI/必要真实模型和独立Spec/Standards评审；工程与用户认可分开。不push/发布。主Agent单写规格、票与看板。
+
+2026-10-08工程交接：默认流程代码、SDK资源与两轮真实GPT Luna冷恢复通过；Spec/Standards固定至d6df40a均无剩余已证实高价值问题。正式GUI因Mac锁屏受阻，06r保持claimed，工程partial/试用not-delivered/认可pending。来源、实际检查失败与续测路径见[默认流程交接](seamless-sessions.md)。
+
+## 2026-10-08 CLI 历史继续提问（当前授权）
+
+用户明确要求修复 CLI 历史只能阅读的问题并减少继续提问的阻断，取代上节 CLI 来源统一只读限制。已结束 CLI 的原文件经过当前配置/身份/目录检查后，在已信任项目自动准备并继续原 Thread；陌生目录一次信任保留。Main 持有原文件粒度的 d-pi 生命周期 lease，并在接入前识别外部实际 writer/项目内 OMP CLI；占用与未知保留历史和草稿，允许原地重试。外部 CLI 不参与该 lease，不能宣称阻止 GUI 执行期间另起不合作 CLI；不改写用户 CLI/启动器，不复制或 fork 原生历史。实施与真实验证见 [06s](issues/06s-cli-session-continuation.md)。无额外产品待决，用户认可 pending。
+
+2026-10-08 CLI 续接交付：06s 工程 resolved，产品 f795b82；真实 CLI/SDK 与正式 GUI 同 Thread/ID/文件续问、冷恢复、生成中跨项目阅读通过。未知不重发，外 CLI 边界与失败记录见 [交接](seamless-sessions.md)。M2 整体与用户认可 pending，无远端操作。

@@ -34,17 +34,22 @@ export class ThreadModel {
   private previousRuntimeView: RuntimeView | null = null;
   private runtimeReadingUnsubscribe: (() => void) | null = null;
   private disposed = false;
+  private active = false;
+  private activationGeneration = 0;
+  private automaticStartAttempted = false;
+  private inspected: Promise<void> = Promise.resolve();
 
   constructor(
     draft: Draft,
     bridge: DesktopBridge,
     transportFailure: (traceId: string) => Failure,
-    startOnCreate = false,
   ) {
     this.context = {
       threadId: draft.threadId,
       workingDirectoryId: draft.workingDirectoryId,
       directory: draft.directory,
+      ...(draft.origin ? { origin: draft.origin } : {}),
+      ...(draft.title ? { title: draft.title } : {}),
     };
     this.key = JSON.stringify([
       draft.threadId,
@@ -100,22 +105,50 @@ export class ThreadModel {
         : null;
       this.runtimeReadingUnsubscribe =
         this.runtime?.subscribe(this.syncReading) ?? null;
-      const inspected = this.runtime?.bind(draft.threadId);
-      if (startOnCreate)
-        void inspected?.then(() => {
-          const view = this.runtime?.getSnapshot();
-          if (
-            !this.disposed &&
-            view?.phase === "allowed" &&
-            view.trusted &&
-            !view.busy
-          )
-            void this.runtime?.act("start");
-        });
+      this.runtime?.setPreparationActive(false);
+      this.inspected = this.runtime?.bind(draft.threadId) ?? Promise.resolve();
     } catch (cause) {
       this.dispose();
       throw cause;
     }
+  }
+
+  /** Selection owns preparation; view mounts and history reads do not. */
+  activate(): void {
+    if (this.disposed || this.active) return;
+    this.active = true;
+    this.runtime?.setPreparationActive(true);
+    const generation = ++this.activationGeneration;
+    // A grant can have changed while this cached, untrusted Thread was away.
+    // Re-read admission on selection instead of asking for the same grant again.
+    const inspected =
+      generation > 1 && this.runtime?.getSnapshot()?.phase === "browse"
+        ? this.runtime.act("inspect")
+        : this.inspected;
+    void inspected.then(() => {
+      const view = this.runtime?.getSnapshot();
+      if (
+        this.disposed ||
+        !this.active ||
+        generation !== this.activationGeneration ||
+        this.automaticStartAttempted ||
+        view?.phase !== "allowed" ||
+        !view.trusted ||
+        view.busy
+      )
+        return;
+      // A failed or uncertain startup needs an explicit retry, never a loop
+      // caused by returning to this Thread or publishing another runtime view.
+      this.automaticStartAttempted = true;
+      void this.runtime?.act("start");
+    });
+  }
+
+  deactivate(): void {
+    if (!this.active) return;
+    this.active = false;
+    ++this.activationGeneration;
+    this.runtime?.setPreparationActive(false);
   }
 
   freezeInputSources(): () => void {
@@ -140,7 +173,8 @@ export class ThreadModel {
     return (
       this.context.threadId === context.threadId &&
       this.context.workingDirectoryId === context.workingDirectoryId &&
-      this.context.directory === context.directory
+      this.context.directory === context.directory &&
+      this.context.origin === context.origin
     );
   }
 
@@ -148,6 +182,7 @@ export class ThreadModel {
     if (this.disposed) return;
     const view = this.runtime?.getSnapshot();
     if (!view) return;
+    if (view.phase === "ready") this.automaticStartAttempted = false;
     const previous = this.previousRuntimeView;
     this.previousRuntimeView = view;
     if (
@@ -161,6 +196,7 @@ export class ThreadModel {
 
   dispose(): void {
     if (this.disposed) return;
+    this.deactivate();
     this.disposed = true;
     this.readingPositions.clear();
     this.readingSources.dispose();

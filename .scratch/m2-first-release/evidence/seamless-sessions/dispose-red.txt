@@ -1,0 +1,37 @@
+✔ associates only the persisted original object after queued persistence and preserves event order without mutating native content (8.628ms)
+✔ pages branch entries with exact native IDs, identity-bound cursors and bounded whole-message payloads (7.026625ms)
+✔ cold reading refuses changing sessions and is permanently closed before prompt admission (0.398791ms)
+✖ dispose drains accepted end/settled frames and preserves the original native disposal failure (2.017833ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 3
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 147.437792
+
+✖ failing tests:
+
+test at ../../../../../../../../Users/lou/Learn/d-pi/tests/tooling/reading-session.test.mjs:110:1
+✖ dispose drains accepted end/settled frames and preserves the original native disposal failure (2.017833ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + []
+  - [
+  -   'message_end',
+  -   'session_settled',
+  -   'session_shutdown'
+  - ]
+  
+      at TestContext.<anonymous> (file:///Users/lou/Learn/d-pi/tests/tooling/reading-session.test.mjs:130:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ 'message_end', 'session_settled', 'session_shutdown' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

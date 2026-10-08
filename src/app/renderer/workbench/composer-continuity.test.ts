@@ -42,9 +42,11 @@ afterEach(async () => {
 });
 
 async function setup(
-  phase?: "interrupted" | "allowed" | "ready",
+  phase?: "interrupted" | "allowed" | "ready" | "browse" | "failed",
   onChooseModel?: () => void,
   attachments?: AttachmentBridge,
+  origin?: "cli",
+  runtimeBusy = false,
 ) {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const first = DraftSchema.parse({
@@ -54,6 +56,7 @@ async function setup(
     directory: "/fixture",
     revision: 0,
     text: "alpha omega",
+    ...(origin ? { origin } : {}),
   });
   const second = DraftSchema.parse({
     ...first,
@@ -107,7 +110,7 @@ async function setup(
           revision: 0,
           phase,
           trusted: true,
-          busy: false,
+          busy: runtimeBusy,
           model: null,
           configuration: { code: "runtime.configDefault" },
           message: { code: "runtime.previousSessionReadOnly" },
@@ -310,19 +313,36 @@ it("Shift+Enter inserts a source line in the real composer and remains undoable"
   expect(fixture.editor().getText()).toBe("alpha omega");
 });
 
-it("offers a visible new-session exit beside the disabled send button for a recovered read-only thread", async () => {
+it("retries a confirmed interrupted chat in place without consuming the draft", async () => {
   const fixture = await setup("interrupted");
+  const runtime = fixture.thread().runtime!;
+  const retry = vi.spyOn(runtime, "act").mockResolvedValue();
   const container = fixture.editor().view.dom.closest("section");
-  expect(container?.textContent).toContain("read-only");
   const button = Array.from(container?.querySelectorAll("button") ?? []).find(
-    (b) => b.textContent === "New Thread",
+    (b) => b.textContent === "Retry preparing chat",
   );
   expect(button).toBeDefined();
-  const create = vi
-    .spyOn(fixture.model, "newThread")
-    .mockResolvedValue({ kind: "cancelled" });
   await act(() => button?.click());
-  expect(create).toHaveBeenCalledOnce();
+  expect(retry).toHaveBeenCalledWith("start");
+  expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha omega");
+});
+
+it("does not retry an interrupted chat until its previous process has stopped", async () => {
+  const fixture = await setup(
+    "interrupted",
+    undefined,
+    undefined,
+    undefined,
+    true,
+  );
+  const retry = vi.spyOn(fixture.thread().runtime!, "act").mockResolvedValue();
+  const container = fixture.editor().view.dom.closest("section");
+  const button = Array.from(container?.querySelectorAll("button") ?? []).find(
+    (b) => b.textContent === "Retry preparing chat",
+  );
+  expect(button?.disabled).toBe(true);
+  await act(() => button?.click());
+  expect(retry).not.toHaveBeenCalled();
   expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha omega");
 });
 
@@ -701,4 +721,39 @@ it("connects synchronous copy and awaited structured paste in real Composer view
     expect(fixture.editor().commands.undo()).toBe(true);
   });
   expect(fixture.editor().getText()).toBe("bravo");
+});
+
+it("shows automatic preparation without asking the user to start OMP", async () => {
+  const fixture = await setup("allowed");
+  const labels = Array.from(fixture.container.querySelectorAll("button")).map(
+    (button) => button.textContent,
+  );
+  expect(labels).not.toContain("Start OMP");
+  expect(fixture.container.textContent).toContain("Preparing this chat");
+  expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha omega");
+});
+
+it("offers an explicit startup retry after failure and preserves the draft until a real submission", async () => {
+  const fixture = await setup("failed");
+  const button = Array.from(fixture.container.querySelectorAll("button")).find(
+    (button) => button.textContent === "Retry preparing chat",
+  );
+  expect(button).toBeDefined();
+  const runtime = fixture.thread().runtime;
+  if (!runtime) throw Error("missing Runtime");
+  const retry = vi.spyOn(runtime, "act").mockResolvedValue();
+  await act(() => button?.click());
+  expect(retry).toHaveBeenCalledExactlyOnceWith("start");
+  expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha omega");
+});
+
+it("offers the normal project trust action for a CLI session and retains the question draft", async () => {
+  const fixture = await setup("browse", undefined, undefined, "cli");
+  const labels = Array.from(fixture.container.querySelectorAll("button")).map(
+    (button) => button.textContent,
+  );
+  expect(labels).toContain("Allow execution and start");
+  expect(labels).not.toContain("Start OMP");
+  expect(fixture.container.textContent).not.toContain("CLI");
+  expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha omega");
 });

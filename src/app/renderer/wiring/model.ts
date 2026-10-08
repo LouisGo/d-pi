@@ -91,9 +91,12 @@ export class AppModel {
   readonly threadListStore = createStore<{
     threads: ThreadContext[];
     failed: boolean;
+    pending?: boolean;
+    nativeIndex?: "ready" | "indexing" | "partial" | "unavailable";
   }>(() => ({
     threads: [],
     failed: false,
+    pending: true,
   }));
   private readonly threads = new Map<string, ThreadModel>();
   private disposed = false;
@@ -401,10 +404,7 @@ export class AppModel {
       this.publish({ ...state, busy: false, notice: error });
     else this.publish({ kind: "failed", error });
   }
-  private acceptRestore(
-    reply: RestoreReply,
-    startOnCreate = false,
-  ): ThreadTransitionResult {
+  private acceptRestore(reply: RestoreReply): ThreadTransitionResult {
     return match(reply)
       .with({ kind: "ready" }, ({ draft, directoryAvailable, preferences }) => {
         // Thread selection does not own desktop preferences. A selection
@@ -420,12 +420,7 @@ export class AppModel {
                 draft.revision &&
                 cached.controller.getTextSnapshot() === draft.text))
             ? cached
-            : new ThreadModel(
-                draft,
-                this.bridge,
-                transportFailure,
-                startOnCreate,
-              )
+            : new ThreadModel(draft, this.bridge, transportFailure)
           : null;
         if (thread) this.threads.set(thread.context.threadId, thread);
         if (cached && cached !== thread) cached.dispose();
@@ -434,6 +429,7 @@ export class AppModel {
           : { kind: "empty" };
         this.applyAppearance(appearance);
         if (previous !== thread) {
+          previous?.deactivate();
           this.editorBinding = null;
           this.closeAttempt?.releaseSources();
           this.closeAttempt = null;
@@ -445,6 +441,7 @@ export class AppModel {
           busy: false,
           notice: null,
         });
+        thread?.activate();
         void this.refreshThreads();
         return { kind: "applied" as const, selection: threadSelection };
       })
@@ -474,21 +471,41 @@ export class AppModel {
       if (this.isCurrent(generation)) this.fail(transportFailure(traceId));
     }
   }
-  async refreshThreads(): Promise<void> {
+  private threadRefreshPending: Promise<void> | null = null;
+  refreshThreads(): Promise<void> {
+    if (this.threadRefreshPending) return this.threadRefreshPending;
+    this.threadRefreshPending = this.discoverThreads().finally(() => {
+      this.threadRefreshPending = null;
+    });
+    return this.threadRefreshPending;
+  }
+  private async discoverThreads(): Promise<void> {
+    if (this.disposed) return;
+    this.threadListStore.setState({ pending: true });
     const traceId = crypto.randomUUID();
     try {
-      const reply = await this.bridge.request({
-        kind: "list-threads",
-        traceId,
-      });
-      if (!this.disposed && reply.kind === "threads")
+      let next = true;
+      while (next && !this.disposed) {
+        const reply = await this.bridge.request({
+          kind: "list-threads",
+          traceId,
+        });
+        if (this.disposed) return;
+        if (reply.kind !== "threads") {
+          this.threadListStore.setState({ failed: true, pending: false });
+          return;
+        }
+        next = reply.nativeIndex === "indexing";
         this.threadListStore.setState({
           threads: reply.threads,
           failed: false,
+          pending: next,
+          ...(reply.nativeIndex ? { nativeIndex: reply.nativeIndex } : {}),
         });
-      else if (!this.disposed) this.threadListStore.setState({ failed: true });
+      }
     } catch {
-      if (!this.disposed) this.threadListStore.setState({ failed: true });
+      if (!this.disposed)
+        this.threadListStore.setState({ failed: true, pending: false });
     }
   }
   async choose(): Promise<ThreadTransitionResult> {
@@ -548,6 +565,7 @@ export class AppModel {
     if (binding && !binding.boundary.freeze())
       return { kind: "blocked", reason: "composing" };
     const previous = this.activeThread;
+    previous?.deactivate();
     this.publish({
       ...state,
       busy: true,
@@ -567,10 +585,7 @@ export class AppModel {
       if (this.isCurrent(generation)) {
         if (reply.kind === "failed")
           return await this.readSelection(generation, previous, reply.error);
-        return this.acceptRestore(
-          reply,
-          command.kind === "new-thread" || command.kind === "choose-project",
-        );
+        return this.acceptRestore(reply);
       }
       return { kind: "blocked", reason: "superseded" };
     } catch {
@@ -586,8 +601,16 @@ export class AppModel {
           this.state.kind === "ready" &&
           this.state.threadTransition === "unknown"
         )
-      )
+      ) {
+        if (
+          this.isCurrent(generation) &&
+          this.state.kind === "ready" &&
+          !this.state.busy &&
+          this.state.threadTransition === undefined
+        )
+          previous?.activate();
         binding?.boundary.release();
+      }
     }
   }
   /** A command receipt can be lost after Main changes its selection. Never resend it. */

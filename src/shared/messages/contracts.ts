@@ -27,6 +27,11 @@ export const PlainUiMessageCodeSchema = z.enum([
   "runtime.browseOnly",
   "runtime.starting",
   "runtime.notReady",
+  "runtime.recoveryBindingChanged",
+  "runtime.recoveryOccupied",
+  "runtime.recoveryOwnerUnknown",
+  "runtime.recoveryShutdownUnconfirmed",
+  "runtime.recoveryLeaseUnavailable",
   "runtime.grantInvalid",
   "runtime.connectionUnknown",
   "runtime.configUnknown",
@@ -93,6 +98,9 @@ export const PlainUiMessageCodeSchema = z.enum([
   "conversation.nativeInput",
   "conversation.nativeEvent",
   "conversation.truncated",
+  "conversation.retrying",
+  "conversation.retryCompleted",
+  "conversation.retryFailed",
 ]);
 export type PlainUiMessageCode = z.infer<typeof PlainUiMessageCodeSchema>;
 

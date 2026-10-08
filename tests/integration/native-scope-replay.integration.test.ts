@@ -508,9 +508,14 @@ it("ACK then protocol loss preserves SQLite receipt, newer draft and readable pr
     a.native.step("child-close", () => a.native.exit()),
   );
   await a.closed;
-  // Physical close is established, but the missing prompt result remains
-  // execution uncertainty and must not be cleared by the task Scope.
-  expect(a.runtime.hasActiveWork()).toBe(true);
+  // Confirmed physical close releases execution ownership for explicit resume;
+  // the missing request result remains unknown and must never be replayed.
+  expect(a.runtime.hasActiveWork()).toBe(false);
+  expect(f.store.submissions.submission(receipt.submissionId)).toMatchObject({
+    state: "acknowledged",
+    outcome: "unknown",
+    target: receipt.target,
+  });
   expect(f.diagnostics).toContainEqual(
     expect.objectContaining({
       operation: "runtime:native-exit",

@@ -1,0 +1,7 @@
+2026-10-08 cold resume worker, base 13efe95
+TypeScript tsc --noEmit, tsconfig.main.json, tsconfig.host.json: PASS
+Scoped Biome 15 files: PASS
+Architecture boundaries: PASS, 443 source files
+Regression: 251 behavior tests passed, 1 fixed CLI smoke skipped; added real registered orphan test separately PASS (lease suite 7 tests).
+Official SDK fixture: v18.4.6, no model calls, isolated HOME/config/project; same id/file and saved messages, invalid/missing/cwd/empty fail closed.
+No GUI or personal model call performed by this worker. Integration owner verifies final GUI/build.

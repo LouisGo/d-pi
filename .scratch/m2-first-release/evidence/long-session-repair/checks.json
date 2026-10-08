@@ -1,0 +1,42 @@
+{
+  "productSource": "c4bc00bbdaa42cc07119c5e5aaa4f83701e07cc6",
+  "allProcessTypechecks": "passed (app/core/renderer/main/host/preload; main+renderer repeated after final IPC delta)",
+  "build": "passed",
+  "biome": "passed",
+  "designLint": "passed",
+  "interactionPolicy": "passed",
+  "designValidation": "passed",
+  "i18n": "passed",
+  "sourceBoundaries": "passed",
+  "architectureTests": 35,
+  "toolingTests": 104,
+  "combinedAffectedTests": 292,
+  "laterRuntimeRetryTests": 29,
+  "laterRecoveryReasonTests": 42,
+  "ipcAndDiagnosticTests": 27,
+  "fullIsolatedSuite": {
+    "passed": 1082,
+    "failed": 2,
+    "skipped": 2,
+    "failures": [
+      {
+        "test": "clipboard-frozen-references PDF",
+        "reason": "5000ms timeout under parallel load",
+        "serialRecheck": "14/14 passed"
+      },
+      {
+        "test": "configuration-sharing official CLI",
+        "reason": "validator references bundled dist/cli.js that packaging intentionally prunes",
+        "baseline": "same failure reproduced in unchanged ae94bc0 source copy",
+        "scope": "not introduced by this repair"
+      }
+    ]
+  },
+  "pnpmEntry": "Corepack shim fails isolated pnpm tool probe; equivalent gates run explicitly; clean standalone Node fixture gives tooling 104/104. No claim that pnpm check is green.",
+  "sdkPrepared": "fixed official 18.4.6 in main checkout and isolated GUI source, 112 packages, 548.4 MiB; native exact identity fixture passed",
+  "review": {
+    "spec": "independent review through c4bc00b; P2 recovery reason+diagnostics fixed and independently rechecked; no remaining high-value finding",
+    "standards": "independent review through c4bc00b; retry candidate fixed and independently rechecked; no remaining high-value finding"
+  },
+  "designDetector": []
+}

@@ -51,7 +51,7 @@ export const domain = {
   "runtime.noModel":
     "No model is available. Complete the native OMP configuration first.",
   "runtime.disconnected":
-    "The native connection was interrupted. The draft and original input are retained and will not be resent automatically. Exclusive control of the native session for its full lifetime cannot be verified; history is read only, and recovery will not take over the session.",
+    "The native connection was interrupted. Your draft and history are retained without automatic resending. After shutdown is confirmed, retry preparing this chat to continue.",
   "runtime.controlFailed":
     "The control request did not complete. Check the current native state; it will not be retried automatically.",
   "runtime.queuePaused":
@@ -80,6 +80,16 @@ export const domain = {
   "runtime.browseOnly": "This project is browse only.",
   "runtime.starting":
     "Verifying the official Runtime and starting a native session…",
+  "runtime.recoveryBindingChanged":
+    "The original session file, identity, project or native configuration changed. Check the original session and retry here; your draft is retained.",
+  "runtime.recoveryOccupied":
+    "This session has an active writer, or OMP CLI is still open in this project. Close that execution and retry here; your draft is retained.",
+  "runtime.recoveryOwnerUnknown":
+    "The previous execution owner could not be verified. Check again.",
+  "runtime.recoveryShutdownUnconfirmed":
+    "The previous execution process has not been confirmed stopped. Check again.",
+  "runtime.recoveryLeaseUnavailable":
+    "Session execution access is unavailable. Check again; if this persists, inspect diagnostics.",
   "runtime.notReady":
     "OMP did not become ready. Check directory permission and native configuration; current evidence does not distinguish missing, unreadable, or incompatible configuration.",
   "runtime.grantInvalid":
@@ -156,4 +166,9 @@ export const domain = {
     "Display truncated; read the native record to verify the full content",
   "conversation.unsupportedNativeEvent":
     "Received {eventType}. Full interaction for this event is not yet supported.",
+  "conversation.retrying":
+    "The connection was interrupted. OMP is retrying automatically.",
+  "conversation.retryCompleted":
+    "OMP automatic retry has ended. Continue reading the reply.",
+  "conversation.retryFailed": "OMP automatic retry did not succeed.",
 } as const;

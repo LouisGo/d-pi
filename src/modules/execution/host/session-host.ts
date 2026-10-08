@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { isAbsolute, relative } from "node:path";
 import { match } from "ts-pattern";
+import { z } from "zod";
 import { identifyDirectory } from "../../../platform/node/filesystem/public";
 import {
   isNativeFrameType,
@@ -600,6 +601,7 @@ export function createSessionHost(
           directory: identity.directory,
           environment: value.environment,
           sessionDirectory: value.sessionDirectory,
+          ...(value.resume ? { resume: value.resume } : {}),
           ...(value.supervision
             ? {
                 supervision: value.supervision,
@@ -640,6 +642,67 @@ export function createSessionHost(
       const within = relative(value.sessionDirectory, state.sessionFile);
       if (within.startsWith("..") || isAbsolute(within))
         throw Error("Unmanaged native session reference");
+      if (value.resume) {
+        if (
+          state.sessionFile !== value.resume.sessionFile ||
+          state.sessionId !== value.resume.sessionId
+        )
+          throw Error("Recovered native session identity conflict");
+        // Rebuild the same native branch before enabling new input. This is a read,
+        // not a replay of prompts or a claim about old unknown submission receipts.
+        if (options.onNativeFrame) {
+          const instance = native;
+          const readingCommand = value.sdkEntry
+            ? "d_pi_reading_page"
+            : "get_messages_page";
+          const readingMessage = value.sdkEntry
+            ? z.looseObject({
+                role: z.string(),
+                content: z.unknown(),
+                dPiRecordId: z.string().min(1).max(512),
+                dPiRestored: z.literal(true),
+              })
+            : z.looseObject({ role: z.string(), content: z.unknown() });
+          let cursor: string | undefined;
+          let count = 0;
+          let total: number | undefined;
+          do {
+            const response = await tasks.run((signal) =>
+              instance.request(
+                readingCommand,
+                { limit: 100, ...(cursor ? { cursor } : {}) },
+                { signal },
+              ),
+            );
+            const page = nativeData(
+              z.object({
+                messages: z.array(readingMessage),
+                nextCursor: z.string().optional(),
+                totalMessages: z.number().int().nonnegative(),
+              }),
+              response,
+              readingCommand,
+            );
+            if (
+              (total !== undefined && total !== page.totalMessages) ||
+              (page.nextCursor &&
+                (page.nextCursor === cursor || !page.messages.length))
+            )
+              throw Error("Native resume reading snapshot changed");
+            total = page.totalMessages;
+            for (const message of page.messages)
+              options.onNativeFrame({
+                type: NativeFrameTypes.messageEnd,
+                message,
+              });
+            count += page.messages.length;
+            if (count > total)
+              throw Error("Invalid native resume reading count");
+            cursor = page.nextCursor;
+          } while (cursor);
+          if (count !== total) throw Error("Native resume reading incomplete");
+        }
+      }
       send({
         kind: "ready",
         state,
