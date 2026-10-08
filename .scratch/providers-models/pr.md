@@ -10,6 +10,8 @@ OMP 持有凭据、配置、模型与执行；App 仅持设备 picker 偏好。�
 
 新增认证范围经用户确认取代 D-23 的首版两入口限制，原生协议没有重写。用户追加授权本地 PR 合入 main 并 push；实际 source、merge tree、祖先和远端身份见 [合入记录](local-merge.md)。未创建远端 PR，未验证远端 CI；原有默认并行测试 worker 失败不因 merge/push 改记为通过。
 
+本地 PR 已合入并推送：merge `55550021`、source `99ec699b`；29 个原实现提交全部纳入，合并树与预合并及来源树完全相同。原项目目录 SDK/环境/快速检查通过，远端 main 实际身份已核实；后续仅最终治理记录提交。原始记录见 [merge-verification](evidence/merge-verification.json)。
+
 ## Merge Danger
 
 代码可 revert，数据和外部效果构成 one-way door：App schema 13 升级前创建备份，但回退代码不能自动降级已迁移数据库；显式原生认证、断开、角色和模型编辑写入 OMP 的共享配置与 credential store，revert 不撤销这些用户动作。恢复数据库需核对备份及后续新数据，不能直接删除数据库掩盖问题。

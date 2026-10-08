@@ -1,0 +1,33 @@
+{
+  "observedAt": "2026-10-08T23:02:05.559826+08:00",
+  "operation": "local PR merge and normal main push",
+  "targetBefore": "f649457d063f7ab8abfb82a1ba63031cbce9fe77",
+  "remoteBefore": "a0367becdf015a4b7fa7a31aa23050c74a275849",
+  "originalImplementationHead": "4d1223b525e7e6effba41351244ac68b9e6efa75",
+  "source": "99ec699b978bfb02656e3bb94a9ae585f5a90e99",
+  "merge": "55550021f292111bde07e70e0f0c885752d360e1",
+  "mergeBase": "f649457d063f7ab8abfb82a1ba63031cbce9fe77",
+  "parents": [
+    "f649457d063f7ab8abfb82a1ba63031cbce9fe77",
+    "99ec699b978bfb02656e3bb94a9ae585f5a90e99"
+  ],
+  "originalImplementationCommitCount": 29,
+  "allOriginalImplementationCommitsIncluded": true,
+  "sourceCommitCount": 30,
+  "preExistingMainAheadCount": 81,
+  "expectedMergeTree": "b55c34584164bd8e759df0868a3a4281c317f0b5",
+  "actualMergeTree": "b55c34584164bd8e759df0868a3a4281c317f0b5",
+  "mergeTreeMatchesSource": true,
+  "remoteMainVerified": "55550021f292111bde07e70e0f0c885752d360e1",
+  "mergeCheckoutClean": true,
+  "checks": {
+    "sdk": "exit 0; fixed OMP 18.4.6, 112 packages, 548.5 MiB / 650 MiB",
+    "environment": "exit 0; 0 issues",
+    "checkFast": "exit 0"
+  },
+  "followUp": "Only delivery records will be committed after this observation; the final pushed head is reported separately.",
+  "remotePullRequestCreated": false,
+  "newGuiOrSupplierRequests": false,
+  "forcePush": false,
+  "acceptance": "pending"
+}

@@ -4,10 +4,10 @@
 
 ## 试用
 
-在该 worktree 使用已准备的项目环境运行 `pnpm dev`。此机精确工具路径可用：
+已完成本地 PR 合入 main 并 push，原目录 main 的固定 SDK、环境和快速检查通过。日常试用从原项目目录运行 `pnpm dev`，此机精确工具路径可用：
 
 ```sh
-cd /Users/lou/.codex/worktrees/providers-models/d-pi
+cd /Users/lou/Learn/d-pi
 PATH="/tmp/dpi-composer-node:/tmp/dpi-composer-tools:$PATH" pnpm dev
 ```
 
@@ -21,6 +21,6 @@ Dev 使用按 checkout 分开的 App 数据，OMP 配置沿用用户原生共享
 
 实现、验证和失败修正见 [validation](validation.md)、两轴结论见 [review](review.md)、本地 PR 草稿见 [pr](pr.md)。真实流程使用 `22569b7` Main；最后视觉修正只重编译 `048d498d` Renderer。完整 build ID、组件/SDK SHA 和结果由 [gui-flow](evidence/gui-flow.json) 与 [Renderer build](evidence/renderer-polish-build.json) 记录；后续交付记录提交不冒称重新编译应用。
 
-工程与必要 GUI 确认完成，Dev 已交付待试用；用户认可仍 pending。真实供应商 OAuth/API 服务、个人账户、计费请求、远端 CI、打包签名和公证均未验证。
+工程与必要 GUI 确认完成，Dev 已交付待试用，本地 PR 已合入 main 并 push；用户认可仍 pending。真实供应商 OAuth/API 服务、个人账户、计费请求、远端 CI、打包签名和公证均未验证。合并没有新增 GUI 或真实供应商验证。
 
 截图：[Provider 浅色](evidence/providers-light-confirmed.png)、[模型管理](evidence/provider-models-light-confirmed.png)、[Composer panel 深色](evidence/picker-dark-confirmed.png)、[Kimi 浅色](evidence/providers-kimi-light-polished.png)、[窄布局](evidence/providers-kimi-narrow-polished.png)、[实际本机响应](evidence/local-native-response.png)。

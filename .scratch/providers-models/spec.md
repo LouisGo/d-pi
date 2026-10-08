@@ -16,6 +16,8 @@
 
 同日用户追加授权“改完之后 本地 PR 到 main 然后进行 push”：完整合入 `codex/providers-models` 到本地 main，再正常 push `origin/main`。取代初次交付不合并、不 push 的限制；不创建远端 PR、不发布。固定实现 head `4d1223b525e7e6effba41351244ac68b9e6efa75` 的 29 个提交全部纳入；目标本地 main `f649457d063f7ab8abfb82a1ba63031cbce9fe77`，原远端 main `a0367becdf015a4b7fa7a31aa23050c74a275849`，本地原有 81 个领先提交随 main 一起正常推送。实际合入和远端核实结果见 [合入记录](local-merge.md)，工程/试用/用户认可保持分开。
 
+已完成本地 PR 合入与 push：merge `55550021`、source `99ec699b`，完整 29 项原实现加 1 项治理提交保留，合并树与来源树完全一致；远端 main 已核实为该 merge。原目录 main 的固定 SDK、开发环境与快速检查通过；其后仅同步最终交付记录，不新增 GUI 或供应商请求。
+
 ## 范围与合同
 
 - D-01/D-03/D-04/D-21/D-22/D-23/D-28–D-38；[配置模块](../../docs/architecture/modules/configuration.md)、[基础契约](../../docs/architecture/foundation-contracts.md)、[设计系统](../../docs/architecture/design-system.md)、[图标合同](../../docs/architecture/icon-system.md)。
@@ -40,5 +42,5 @@
 | [05](issues/05-integration-delivery.md) | 组合验证、评审、本地交付 | 主 Agent |
 
 ```project-status
-[{"id":"providers-models","title":"Provider 与 Models 完整闭环","phase":"M2","engineering":"complete","trial":"delivered","acceptance":"pending","next":"完成已授权的本地 PR 合入 main 与 push，再按交接试用实际账户","constraints":"本地 PR/main 合入及 push 已授权，不公开发布；真实认证服务与用户认可待试用；默认并行测试 worker 失败与限制并发通过分开记录"}]
+[{"id":"providers-models","title":"Provider 与 Models 完整闭环","phase":"M2","engineering":"complete","trial":"delivered","acceptance":"pending","build":"main merge 55550021；source 99ec699b；历史 GUI 构建身份见交接","evidence":["local-merge.md","handoff.md","validation.md","review.md"],"next":"已合入 main 并 push；从原项目目录 pnpm dev 试用实际账户与 Provider/Models 体验","constraints":"本地 PR 已合入 main 并 push，不公开发布；真实认证服务与用户认可待试用；默认并行测试 worker 失败与限制并发通过分开记录"}]
 ```
