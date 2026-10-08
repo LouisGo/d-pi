@@ -32,15 +32,28 @@ export function ProjectThreads({ model }: { model: AppModel }) {
         <p className="muted">{t("app.sidebar.noProject")}</p>
       )}
       <ThreadButtons model={model}>
-        {threads.map((thread, index) => (
-          <ThreadButton
-            key={thread.threadId}
-            model={model}
-            threadId={thread.threadId}
-            directory={thread.directory}
-            number={threads.length - index}
-          />
-        ))}
+        {[...Map.groupBy(threads, (thread) => thread.directory)].map(
+          ([directory, group]) => (
+            <section key={directory} data-project-group={directory}>
+              <div className="sidebar-label" title={directory}>
+                <FolderIcon />
+                <span>
+                  {directory.split("/").filter(Boolean).at(-1) ?? directory}
+                </span>
+              </div>
+              {group.map((thread) => (
+                <ThreadButton
+                  key={thread.threadId}
+                  model={model}
+                  threadId={thread.threadId}
+                  directory={thread.directory}
+                  title={thread.title}
+                  number={threads.length - threads.indexOf(thread)}
+                />
+              ))}
+            </section>
+          ),
+        )}
       </ThreadButtons>
     </nav>
   );
@@ -69,11 +82,13 @@ const ThreadButton = memo(function ThreadButton({
   threadId,
   directory,
   number,
+  title,
 }: {
   model: AppModel;
   threadId: Parameters<AppModel["selectThread"]>[0];
   directory: string;
   number: number;
+  title?: string | undefined;
 }) {
   const { t } = useI18n();
   const navigate = useNavigate();
@@ -100,7 +115,7 @@ const ThreadButton = memo(function ThreadButton({
     >
       <FolderIcon />
       <span className="thread-name">
-        {directory.split("/").filter(Boolean).at(-1)}
+        {title || t("app.thread.label", { number })}
         <small>
           {t("app.thread.label", { number })} · {threadId.slice(0, 6)}
         </small>

@@ -70,6 +70,8 @@ export const domain = {
     "已阻止新操作并请求停止。现有实例仍保留，待原生状态确认；不能据此视为已停止。",
   "runtime.browseOnly": "当前项目仅浏览。",
   "runtime.starting": "正在校验官方 Runtime 并启动原生会话…",
+  "runtime.externalHistoryOnly":
+    "CLI 会话记录已关联，可直接阅读。目前无法确认与外部 CLI 的执行独占，暂不启动此会话。",
   "runtime.recoveryOccupied":
     "原会话仍被另一个 d-pi 执行实例占用。关闭该实例后重新检查。",
   "runtime.recoveryOwnerUnknown": "暂时无法确认原执行实例身份。请重新检查。",

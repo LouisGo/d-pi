@@ -293,7 +293,7 @@ function RuntimeActions({
   const { t } = useI18n();
   return (
     <div className="flex gap-2">
-      {!state.trusted && (
+      {!state.trusted && state.recoveryFailure !== "external-session" && (
         <Button
           disabled={state.phase === "starting"}
           onClick={() => void model.act("allow")}
@@ -301,12 +301,11 @@ function RuntimeActions({
           {t("ui.runtime.allow")}
         </Button>
       )}
-      {state.trusted &&
-        (state.phase === "allowed" || state.phase === "failed") && (
-          <Button onClick={() => void model.act("start")}>
-            {t("ui.runtime.start")}
-          </Button>
-        )}
+      {state.trusted && state.phase === "failed" && !state.busy && (
+        <Button onClick={() => void model.act("start")}>
+          {t("ui.runtime.retryStart")}
+        </Button>
+      )}
       {state.trusted && (
         <Button variant="ghost" onClick={() => void model.act("revoke")}>
           {t("ui.runtime.revoke")}

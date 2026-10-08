@@ -80,6 +80,7 @@ function boundedDisplayValue(value: string, maxLength: number): string {
 
 function recoveryFailureMessage(reason: NativeRecoveryReason) {
   return match(reason)
+    .with("external-session", () => uiMessage("runtime.externalHistoryOnly"))
     .with("occupied", () => uiMessage("runtime.recoveryOccupied"))
     .with("owner-unknown", () => uiMessage("runtime.recoveryOwnerUnknown"))
     .with("shutdown-unconfirmed", () =>
@@ -706,6 +707,19 @@ export class RuntimeService {
         model: null,
         message: uiMessage("runtime.preStartTrust"),
       };
+    }
+    // Indexing an external native file proves readability, not execution ownership.
+    // Refuse before granting trust, creating resources or sending any host command.
+    if (thread.origin === "cli") {
+      this.update({
+        phase: "browse",
+        trusted: false,
+        busy: false,
+        recoveryFailure: "external-session",
+        message: uiMessage("runtime.externalHistoryOnly"),
+        traceId: command.traceId,
+      });
+      return this.view;
     }
     if (
       command.kind === "manage-queue" ||

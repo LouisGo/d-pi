@@ -46,6 +46,7 @@ export const RuntimeCommandSchema = z.union([
 ]);
 export type RuntimeCommand = z.infer<typeof RuntimeCommandSchema>;
 export const NativeRecoveryReasonSchema = z.enum([
+  "external-session",
   "occupied",
   "owner-unknown",
   "shutdown-unconfirmed",

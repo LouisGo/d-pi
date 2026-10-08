@@ -80,6 +80,8 @@ export const domain = {
   "runtime.browseOnly": "This project is browse only.",
   "runtime.starting":
     "Verifying the official Runtime and starting a native session…",
+  "runtime.externalHistoryOnly":
+    "CLI history is linked and readable. Exclusive execution with the external CLI cannot be confirmed, so this chat is not started.",
   "runtime.recoveryOccupied":
     "Another d-pi execution instance still owns this session. Close that instance and check again.",
   "runtime.recoveryOwnerUnknown":

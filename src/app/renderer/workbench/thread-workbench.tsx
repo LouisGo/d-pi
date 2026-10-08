@@ -18,6 +18,7 @@ import { Conversation } from "../reading/conversation";
 import { History } from "../reading/history";
 import type { attachReadingAnchor } from "../reading/reading-anchor";
 import { ReadingPane } from "../reading/reading-pane";
+import { SavedConversation } from "../reading/saved-conversation";
 import { Submissions } from "../reading/submissions";
 import type { ReadingView } from "../routing/search";
 import { ConversationVisibilityContext } from "../shell/layout/conversation-visibility";
@@ -315,13 +316,23 @@ const ThreadContent = memo(function ThreadContent({
           onOpenHistory={openHistoryTools}
           active={readingView === "conversation"}
         >
-          {thread.reading && (
-            <Conversation
-              model={thread.reading}
-              positions={thread.readingSources}
-              onOpenHistory={openHistoryTools}
-            />
-          )}
+          {thread.reading &&
+            (model.history ? (
+              <SavedConversation
+                model={thread.reading}
+                bridge={model.history}
+                threadId={thread.context.threadId}
+                active={readingView === "conversation"}
+                positions={thread.readingSources}
+                onOpenHistory={openHistoryTools}
+              />
+            ) : (
+              <Conversation
+                model={thread.reading}
+                positions={thread.readingSources}
+                onOpenHistory={openHistoryTools}
+              />
+            ))}
         </ReadingPane>
         <ReadingPane
           thread={thread}

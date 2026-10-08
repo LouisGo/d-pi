@@ -27,6 +27,7 @@ export const PlainUiMessageCodeSchema = z.enum([
   "runtime.browseOnly",
   "runtime.starting",
   "runtime.notReady",
+  "runtime.externalHistoryOnly",
   "runtime.recoveryOccupied",
   "runtime.recoveryOwnerUnknown",
   "runtime.recoveryShutdownUnconfirmed",

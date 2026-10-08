@@ -46,6 +46,7 @@ const codes = new Set([
   "recovery-occupied",
   "recovery-owner-unknown",
   "recovery-shutdown-unconfirmed",
+  "recovery-external-session",
   "recovery-lease-unavailable",
   "cache-full",
   "correlation-expired",

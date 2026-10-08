@@ -1213,3 +1213,41 @@ it.each([
     }
   },
 );
+
+it("keeps automatically indexed CLI threads readable without granting or dispatching external execution", async () => {
+  const root = realpathSync(mkdtempSync(join(tmpdir(), "d-pi-cli-readonly-")));
+  const store = AppStorage.open(join(root, "app.sqlite"));
+  const thread = store.threads.create(root);
+  const context = vi
+    .spyOn(store.threads, "threadContext")
+    .mockReturnValue({ ...thread, origin: "cli" });
+  const runtime = new RuntimeService(
+    store,
+    "/fixture/resources",
+    root,
+    {},
+    () => {},
+    () => {},
+    () => {},
+    thread.threadId,
+  );
+  electron.fork.mockClear();
+  try {
+    for (const kind of ["inspect", "allow", "start"] as const) {
+      const view = await runtime.execute({
+        kind,
+        threadId: thread.threadId,
+        traceId: crypto.randomUUID(),
+      });
+      expect(view.phase).toBe("browse");
+      expect(view.recoveryFailure).toBe("external-session");
+      expect(view.trusted).toBe(false);
+    }
+    expect(store.threads.executionGrant(thread.workingDirectoryId)).toBeNull();
+    expect(electron.fork).not.toHaveBeenCalled();
+  } finally {
+    context.mockRestore();
+    store.close();
+    rmSync(root, { recursive: true, force: true });
+  }
+});
