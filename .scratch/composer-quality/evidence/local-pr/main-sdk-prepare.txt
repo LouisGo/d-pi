@@ -1,0 +1,6 @@
+$ node scripts/runtime/prepare-sdk.mjs
+Bundled 1 module in 36ms
+
+  gate.js  0.94 KB  (entry point)
+
+Prepared fixed official SDK 18.4.6: 112 packages, 548.4 MiB / 650 MiB budget

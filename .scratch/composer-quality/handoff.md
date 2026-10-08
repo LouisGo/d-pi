@@ -87,3 +87,7 @@ Main租约按source ID保留各版本摘要，只迁出Main确认的外部图片
 ## 09 完整本地PR到main
 
 已覆盖原37提交，最终行为修复ace6a19；整段双轴review闭合，完整check和build通过，架构35/tooling113/应用1319通过、2跳过。聚合[PR正文](pr.md)、[证据来源](evidence/local-pr/provenance.md)、[本地合入记录](local-merge.md)。原始红灯与历史失败保留。仅治理收尾后合入main，最终实际身份见合入记录；acceptance继续pending，不将用户未回复当认可。
+
+实际已合入本地main：`98fa5db5b208214469d3d5013dc0f410fbc7e36d`，来源`ec09aeb5d0b5677970b98a4eb7bfd2ab7725e39e`，原37全部纳入。原目录当前main；隔离树仍source分支。合并树/祖先验证通过，后续仅治理记录提交，参见[完整身份](local-merge.md)。
+
+原目录main SDK已同步并通过0issues环境检查，main fast最终通过；仍使用README标准Dev入口，Agent未启动GUI。工作树治理记录已提交，用户实机复试pending。

@@ -1,0 +1,22 @@
+{
+  "base": "a9cf9a9d990f02242ce74d8e42585a63ffc21a2d",
+  "targetBefore": "cb233c6c97a1694df8a344db65fd62fc724f3d82",
+  "originalHead": "eb2e79ce4dda2014c71d54f31a905f795ad119a4",
+  "originalCommitCount": 37,
+  "sourceHead": "ec09aeb5d0b5677970b98a4eb7bfd2ab7725e39e",
+  "sourceCommitCount": 39,
+  "merge": "98fa5db5b208214469d3d5013dc0f410fbc7e36d",
+  "parents": [
+    "cb233c6c97a1694df8a344db65fd62fc724f3d82",
+    "ec09aeb5d0b5677970b98a4eb7bfd2ab7725e39e"
+  ],
+  "tree": "df94ea0178628984276f10a0525f0ac7d4393304",
+  "projectedTree": "df94ea0178628984276f10a0525f0ac7d4393304",
+  "allOriginalCommitsIncluded": true,
+  "sourceIsAncestor": true,
+  "mergeTreeMatches": true,
+  "originalCheckout": "/Users/lou/Learn/d-pi",
+  "branch": "main",
+  "cleanAfterMerge": true,
+  "pushed": false
+}

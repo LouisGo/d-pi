@@ -1,0 +1,3 @@
+$ node scripts/tasks/project-status.mjs --write docs/status.md
+STATUS-FIELD: .scratch/composer-quality/spec.md (composer-quality): invalid engineering
+[ELIFECYCLE] Command failed with exit code 1.

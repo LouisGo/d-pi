@@ -129,3 +129,5 @@ Standards随后发现source-too-large的“重试准备”仍直接打开picker�
 完整检查首次失败记录保留；旧fixture适配公共codec、PM历史改用非图片、source CLI使用已安装固定官方包后关闭。真实PDF在完整独立SDK clone执行Main冻结/重复制/GC链路14通过，不是converter mock；保留原App资源guard及SDK身份检查。共享token纯alias2正负测试、重复@确认反例到19green、历史24green。最终独立双轴闭合。
 
 不扩大为GUI/Dev/E2E/真实Host/provider、Finder原生事件、真实IME/VoiceOver/长期性能验收；2跳过按既定测试条件，用户认可仍pending。此前历史失败不再作为当前完整check未通过的结论，但原始证据不改写。
+
+main合入后核实：全部原37与完整source39提交纳入，实际merge tree等于预合并；原目录SDK同步、environment0issues、最终fast通过，未改生产源码。实际身份与原始main日志见[合入记录](local-merge.md)。

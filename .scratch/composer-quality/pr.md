@@ -20,3 +20,5 @@
 影响 Renderer 编辑与共享焦点、Main 私有资源/lease/导入、FrozenSubmission 及 Host/SDK 输入边界。保留 Draft v1、数据库 schema、原有身份、信任与权限、ACK 原子事务、unknown 不自动重发和 native queue；不引入新依赖。来源 ID 与对象摘要分离，不能按共享摘要混并来源。压缩有界且原件保留，不能将自动化预算测试当作峰值 RSS/实机性能测量。
 
 旧 inlineBase64 收据继续可读，但旧版本不一定理解新 resource 收据或派生信息，所以代码 revert 不能等同持久数据降级；回退前保留 App 数据和对应 SDK，并核实新收据兼容，不删除数据库或私有对象恢复旧版。当前整段没有新增 DB migration。合入是工程交付，不关闭产品验收父范围、不改变用户认可状态。
+
+本地合入完成：merge `98fa5db`，完整source `ec09aeb`（39提交，含原37）。原项目目录现为main，SDK已同步，environment/最终fast通过；最终治理记录为后续main提交，生产源码与评审/完整check一致。所有祖先与合并树检查见[合入记录](local-merge.md)。

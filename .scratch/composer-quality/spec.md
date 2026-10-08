@@ -13,7 +13,7 @@
 - 执行：主 Agent 单写规格/任务/生成看板/集成；M2 worker 单写隔离 worktree 的 input imports/lifecycle/batch adapter 与 Thread 装配，不写 M1 控件/Composer/CSS/locale；共享 public 导出串行集成。
 
 ```project-status
-[{"id":"composer-quality","title":"Composer M1/M2 编辑体验","phase":"M2","engineering":"in-progress","trial":"feedback","acceptance":"pending","build":"ace6a19；完整check：35架构/113tooling/1319应用通过，2跳过；build通过","evidence":["handoff.md","validation.md","review.md"],"next":"已完成整段双轴评审与完整检查；合入本地main并核实全部提交/目标树，实机认可仍pending","constraints":"仅本地PR/merge，不push；本轮未运行GUI/真实Host/provider；Finder原生事件、IME/VoiceOver、长期性能及用户认可pending。"}]
+[{"id":"composer-quality","title":"Composer M1/M2 编辑体验","phase":"M2","engineering":"complete","trial":"feedback","acceptance":"pending","build":"main merge98fa5db；sourceec09aeb/行为ace6a19；完整check/build通过","evidence":["handoff.md","validation.md","review.md"],"next":"已完整合入本地main；用户复试Finder回返outline、图片/文件与长期性能，实机认可pending","constraints":"仅本地PR/merge，不push；本轮未运行GUI/真实Host/provider；Finder原生事件、IME/VoiceOver、长期性能及用户认可pending。"}]
 ```
 
 ```implementation-plan
@@ -65,3 +65,5 @@
 ## 2026-10-08 完整本地PR到main（09）
 
 用户明确授权包含此前全部修改的本地PR合入main。固定原来源eb2e79c、目标cb233c6、实际mergebasea9cf9a9，37提交。整段独立双轴重新覆盖与完整检查，修复确证的重复@确认trigger遗留并完善门禁/fixture；GUI/真实provider与用户认可仍pending，不push。
+
+09工程完成：完整本地PR已合入main，39来源提交含全部37先前提交、整段修复和治理收尾。实际身份见[合入记录](local-merge.md)，用户认可保持pending。
