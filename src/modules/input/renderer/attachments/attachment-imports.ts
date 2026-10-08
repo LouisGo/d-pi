@@ -49,6 +49,7 @@ export interface ImportJobView {
   readonly total: number;
   readonly reason: ImportReason | null;
   readonly adoption: "pending" | "applied" | "settling" | "settled";
+  readonly attachmentIds: readonly string[];
 }
 export interface ImportBatchView {
   readonly id: string;
@@ -145,6 +146,7 @@ type Batch = {
 };
 type Options = {
   budget?: AttachmentImportBudget;
+  confirmTextOnly?: (items: Attachment[]) => Promise<Attachment[]>;
   /** Main owns any accepted operation after Renderer disposal/reload. */
   settle?: (
     operationId: string,
@@ -262,6 +264,7 @@ export class AttachmentImports {
           total: file.size,
           reason: file.size > 25 * 1024 * 1024 ? "source-too-large" : null,
           adoption: "pending",
+          attachmentIds: [],
         },
         file,
         items: [],
@@ -295,6 +298,80 @@ export class AttachmentImports {
   }
   removeFailure(id: string): void {
     this.cancel(id, true);
+  }
+  /** Explicit PDF coverage consent updates the same accepted operation. */
+  async confirmTextOnly(id: string): Promise<boolean> {
+    if (this.disposed || this.sourceFreezes || !this.options.confirmTextOnly)
+      return false;
+    const found = this.find(id);
+    if (
+      !found ||
+      found.job.view.phase !== "failed" ||
+      found.job.view.reason !== "pdf-coverage-gap" ||
+      !found.job.items.length ||
+      !found.job.operationId ||
+      found.job.activeAttempt ||
+      found.job.retrying ||
+      found.job.settling
+    )
+      return false;
+    const { job, batch } = found;
+    batch.automatic = false;
+    batch.target?.invalidate?.();
+    batch.target = null;
+    job.activeAttempt = true;
+    job.view = { ...job.view, phase: "preparing" };
+    this.publish();
+    try {
+      const items = await this.options.confirmTextOnly(
+        structuredClone(job.items),
+      );
+      if (this.disposed || job.view.phase === "cancelling") {
+        await this.finishCancellation(job);
+        return false;
+      }
+      if (
+        items.length !== job.items.length ||
+        items.some(
+          (item, index) =>
+            item.id !== job.items[index]?.id ||
+            item.threadId !== job.items[index]?.threadId,
+        )
+      )
+        throw new AttachmentImportError("reference-denied");
+      job.items = items;
+      const failed = items.find(
+        (item) =>
+          item.status !== "ready" ||
+          (item.coverageGaps.length > 0 && !item.textOnly),
+      );
+      job.view = {
+        ...job.view,
+        phase: failed ? "failed" : "ready",
+        reason: failed ? (failed.reason ?? "pdf-coverage-gap") : null,
+      };
+      this.store.setState((state) => ({ completion: state.completion + 1 }));
+      for (const listener of this.listeners) listener(items);
+      return !failed;
+    } catch (error) {
+      if (this.disposed || job.view.phase === "cancelling")
+        await this.finishCancellation(job);
+      else
+        job.view = {
+          ...job.view,
+          phase: "failed",
+          // An uncertain transport preserves the previous unconfirmed snapshot;
+          // repeating consent uses the same IDs and cannot reconvert the source.
+          reason:
+            error instanceof AttachmentImportError
+              ? error.reason
+              : "pdf-coverage-gap",
+        };
+      return false;
+    } finally {
+      job.activeAttempt = false;
+      this.publish();
+    }
   }
   retry(id: string): void {
     if (this.disposed || this.sourceFreezes) return;
@@ -340,6 +417,7 @@ export class AttachmentImports {
           reason: job.file.size > 25 * 1024 * 1024 ? "source-too-large" : null,
           loaded: 0,
           adoption: "pending",
+          attachmentIds: [],
         };
         batch.automatic = false;
         this.publish();
@@ -456,6 +534,7 @@ export class AttachmentImports {
           );
           job.view = {
             ...job.view,
+            attachmentIds: items.map((item) => item.id),
             phase: failed ? "failed" : "ready",
             reason: failed ? (failed.reason ?? "pdf-coverage-gap") : null,
           };
@@ -580,6 +659,7 @@ export class AttachmentImports {
       phase: "cancelled",
       adoption: "settled",
       reason: null,
+      attachmentIds: [],
     };
     this.releaseSource(job);
   }

@@ -97,6 +97,9 @@ export function createAttachmentImportTarget(
       invalidate();
       return;
     }
+    // Attribute labels preserve node identity and size; their ReplaceStep maps
+    // describe a structural replacement even though no source was consumed.
+    if (tr.getMeta("dpiReferenceLabelRefresh")) return;
     for (const map of tr.mapping.maps) {
       let removedSource = false;
       map.forEach((from, to) => {
@@ -167,7 +170,12 @@ export function syncAttachmentLabels(
         referenceKind: item.referenceKind ?? null,
       });
   });
-  if (tr.docChanged) editor.view.dispatch(tr.setMeta("addToHistory", false));
+  if (tr.docChanged)
+    editor.view.dispatch(
+      tr
+        .setMeta("addToHistory", false)
+        .setMeta("dpiReferenceLabelRefresh", true),
+    );
 }
 export function removeAttachmentReference(editor: Editor, id: string): void {
   const tr = editor.state.tr;

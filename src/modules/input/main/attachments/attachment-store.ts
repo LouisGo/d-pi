@@ -953,11 +953,20 @@ export class AttachmentStore {
       return { kind: "import-settled" };
     }
     const result = await operation.result;
+    // Identity is fixed by the accepted operation, while explicit same-ID PDF
+    // consent may have updated the authoritative manifest after preparation.
+    const current =
+      result.kind === "attachments"
+        ? result.items.map((item) => this.read(threadId, item.id)?.attachment)
+        : [];
     if (
       operation.disposition === "release" ||
       result.kind !== "attachments" ||
-      result.items.some(
+      !current.length ||
+      current.some(
         (item) =>
+          !item ||
+          item.id !== operation.id ||
           item.status !== "ready" ||
           (item.coverageGaps.length > 0 && !item.textOnly),
       )

@@ -104,6 +104,26 @@ export class ThreadModel {
             return reply.items;
           },
           {
+            confirmTextOnly: async (items) => {
+              const confirmed = [];
+              for (const item of items) {
+                const reply = await attachmentBridge.request({
+                  kind: "set-text-only",
+                  id: item.id,
+                  value: true,
+                  threadId: draft.threadId,
+                  traceId: crypto.randomUUID(),
+                });
+                if (reply.kind !== "attachments")
+                  throw new AttachmentImportError(
+                    reply.kind === "unavailable"
+                      ? reply.reason
+                      : "read-or-transport-failed",
+                  );
+                confirmed.push(...reply.items);
+              }
+              return confirmed;
+            },
             settle: async (operationId, disposition) => {
               const reply = await attachmentBridge.request({
                 kind: "import-settle",

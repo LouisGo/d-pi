@@ -10,6 +10,7 @@ import {
 import {
   createAttachmentEditor,
   createAttachmentImportTarget,
+  syncAttachmentLabels,
 } from "../references/attachment-editor";
 import {
   AttachmentImportBudget,
@@ -35,6 +36,125 @@ function item(name: string) {
     textOnly: false,
   });
 }
+function partialPdf() {
+  return AttachmentSchema.parse({
+    ...item("partial.pdf"),
+    representation: "pdf-text",
+    status: "failed",
+    mimeType: "application/pdf",
+    reason: "pdf-coverage-gap",
+    coverageGaps: ["visual-content"],
+  });
+}
+it("PDF consent preserves source/operation identity and only permits explicit insertion after confirmation", async () => {
+  const pdf = partialPdf();
+  const prepare = vi.fn().mockResolvedValue([pdf]);
+  const confirm = vi.fn().mockResolvedValue([
+    AttachmentSchema.parse({
+      ...pdf,
+      status: "ready",
+      textOnly: true,
+      reason: undefined,
+    }),
+  ]);
+  const settle = vi.fn().mockResolvedValue(undefined);
+  const model = new AttachmentImports(prepare, {
+    confirmTextOnly: confirm,
+    settle,
+  });
+  const apply = vi.fn(() => true);
+  model.attachEditor({ applyBatch: apply });
+  const batch = model.importFiles([new File(["pdf"], "partial.pdf")], "paste", {
+    apply,
+  });
+  await vi.waitFor(() => expect(model.stateStore.getState().pending).toBe(0));
+  const job = model.stateStore.getState().batches[0]?.jobs[0];
+  if (!job || !batch) throw Error("missing batch");
+  expect(job.attachmentIds).toEqual([pdf.id]);
+  expect(job.reason).toBe("pdf-coverage-gap");
+  const release = model.freezeSources();
+  expect(await model.confirmTextOnly(job.id)).toBe(false);
+  expect(confirm).not.toHaveBeenCalled();
+  release();
+  const confirmation = model.confirmTextOnly(job.id);
+  const releaseDuringConfirmation = model.freezeSources();
+  expect(await confirmation).toBe(true);
+  expect(confirm).toHaveBeenCalledWith([pdf]);
+  expect(prepare).toHaveBeenCalledTimes(1);
+  expect(settle).not.toHaveBeenCalled();
+  expect(apply).not.toHaveBeenCalled();
+  expect(model.stateStore.getState().ready).toBe(false);
+  expect(model.stateStore.getState().batches[0]?.jobs[0]).toMatchObject({
+    id: job.id,
+    phase: "ready",
+    attachmentIds: [pdf.id],
+    adoption: "pending",
+  });
+  expect(model.insertReady(batch)).toBe(false);
+  releaseDuringConfirmation();
+  expect(model.insertReady(batch)).toBe(true);
+  await vi.waitFor(() => expect(model.stateStore.getState().ready).toBe(true));
+  expect(settle).toHaveBeenCalledWith(
+    prepare.mock.calls[0]?.[0]?.operationId,
+    "adopt",
+  );
+  model.dispose();
+});
+it.each(["cancel", "dispose"] as const)(
+  "late PDF consent after %s cannot adopt or resurrect its original source",
+  async (action) => {
+    const pdf = partialPdf();
+    const prepare = vi.fn().mockResolvedValue([pdf]);
+    let finish: (items: (typeof pdf)[]) => void = () => {};
+    const confirm = vi.fn(
+      () =>
+        new Promise<(typeof pdf)[]>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    const settle = vi.fn().mockResolvedValue(undefined);
+    const model = new AttachmentImports(prepare, {
+      confirmTextOnly: confirm,
+      settle,
+    });
+    const apply = vi.fn(() => true);
+    model.attachEditor({ applyBatch: apply });
+    const batch = model.importFiles(
+      [new File(["pdf"], "partial.pdf")],
+      "drop",
+      { apply },
+    );
+    await vi.waitFor(() => expect(model.stateStore.getState().pending).toBe(0));
+    const job = model.stateStore.getState().batches[0]?.jobs[0];
+    if (!job || !batch) throw Error("missing batch");
+    const confirmation = model.confirmTextOnly(job.id);
+    expect(model.stateStore.getState().pending).toBe(1);
+    if (action === "cancel") model.cancel(batch);
+    else model.dispose();
+    finish([
+      AttachmentSchema.parse({
+        ...pdf,
+        status: "ready",
+        textOnly: true,
+        reason: undefined,
+      }),
+    ]);
+    expect(await confirmation).toBe(false);
+    await vi.waitFor(() => expect(settle).toHaveBeenCalledTimes(1));
+    expect(settle).toHaveBeenCalledWith(
+      prepare.mock.calls[0]?.[0]?.operationId,
+      "release",
+    );
+    expect(apply).not.toHaveBeenCalled();
+    if (action === "cancel") {
+      expect(model.stateStore.getState().ready).toBe(true);
+      expect(
+        model.stateStore.getState().batches[0]?.jobs[0]?.attachmentIds,
+      ).toEqual([]);
+    }
+    model.dispose();
+  },
+);
 it("maps left-affinity original position, applies all files once and Undo preserves intervening B", async () => {
   const editor = new Editor({
     ...plainTextEditorOptions,
@@ -101,6 +221,27 @@ it("a file-only paste uses the same deletion fence as a drop anchor", () => {
   editor.view.dispatch(editor.state.tr.delete(2, 3));
   expect(target.apply([item("late")])).toBe(false);
   expect(editor.getText()).toBe("A");
+  editor.destroy();
+});
+it("late restored reference labels preserve an adjacent file-only anchor while actual deletion invalidates it", () => {
+  const restored = item("restored.txt");
+  const editor = new Editor({
+    ...plainTextEditorOptions,
+    element: document.createElement("div"),
+    content: draftDocument(`${restored.token}tail`),
+  });
+  const target = createAttachmentImportTarget(editor, () => true, {
+    position: 2,
+    sourceFrom: 2,
+  });
+  syncAttachmentLabels(editor, [restored]);
+  expect(target.apply([item("new.txt")])).toBe(true);
+  const deleted = createAttachmentImportTarget(editor, () => true, {
+    position: 2,
+  });
+  syncAttachmentLabels(editor, [{ ...restored, name: "renamed.txt" }]);
+  editor.view.dispatch(editor.state.tr.delete(1, 2));
+  expect(deleted.apply([item("late.txt")])).toBe(false);
   editor.destroy();
 });
 it("partial failure never inserts success automatically and explicit adoption preserves order", async () => {

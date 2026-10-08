@@ -7,6 +7,88 @@ import { createAttachmentService } from "../../src/app/main/wiring/attachment-se
 import { AttachmentRequestSchema } from "../../src/modules/input/contracts/public";
 
 vi.mock("electron", () => ({ utilityProcess: {} }));
+it("PDF consent refreshes the same trusted operation identity before adopt without discarding its original or derived pin", async () => {
+  const root = mkdtempSync(join(tmpdir(), "dpi-import-consent-"));
+  const storage = AppStorage.open(join(root, "app.sqlite"));
+  const { AttachmentStore } = await import(
+    "../../src/modules/input/main/public"
+  );
+  const { createAttachmentReferences } = await import(
+    "../../src/app/main/wiring/attachment-service-references"
+  );
+  const store = new AttachmentStore({
+    directory: join(root, "content"),
+    database: storage.database,
+    lifecycle: createAttachmentReferences(storage, (threadId, id) =>
+      store.referenceSource(threadId, id),
+    ),
+    convertPdf: async () => ({
+      text: "extracted body",
+      pageCount: 2,
+      pagesNeedingOcr: [2],
+      hasVisualContent: true,
+      converterVersion: "fixture",
+    }),
+  });
+  try {
+    const draft = storage.drafts.create(root),
+      owner = crypto.randomUUID(),
+      operationId = crypto.randomUUID();
+    const imported = await store.importOperation(
+      owner,
+      draft.threadId,
+      operationId,
+      {
+        name: "partial.pdf",
+        mimeType: "application/pdf",
+        bytes: Buffer.from("%PDF-1.7 original"),
+        source: "paste",
+      },
+    );
+    if (imported.kind !== "attachments" || !imported.items[0])
+      throw Error("missing PDF");
+    const item = imported.items[0];
+    expect(item).toMatchObject({
+      status: "failed",
+      reason: "pdf-coverage-gap",
+      textOnly: false,
+    });
+    expect(
+      await store.settleImportOperation(
+        owner,
+        draft.threadId,
+        operationId,
+        "adopt",
+      ),
+    ).toEqual({ kind: "unavailable", reason: "reference-unavailable" });
+    expect(
+      await store.setTextOnly(draft.threadId, item.id, true),
+    ).toMatchObject({ id: item.id, status: "ready", textOnly: true });
+    expect(await store.preview(draft.threadId, item.id)).toEqual({
+      kind: "text",
+      text: "extracted body",
+    });
+    expect(
+      await store.settleImportOperation(
+        owner,
+        draft.threadId,
+        operationId,
+        "adopt",
+      ),
+    ).toEqual({ kind: "import-settled" });
+    expect(await store.cleanStorage(draft.threadId)).toMatchObject({
+      deletedObjects: 0,
+    });
+    store.releaseEditorHistories(owner);
+    expect(await store.cleanStorage(draft.threadId)).toMatchObject({
+      deletedObjects: 2,
+    });
+  } finally {
+    await store.close();
+    storage.close();
+    rmSync(root, { recursive: true, force: true });
+  }
+});
 it("strict operation settlement is document/Thread scoped, idempotent and releases no shared durable dependency", async () => {
   const root = mkdtempSync(join(tmpdir(), "dpi-import-op-"));
   const storage = AppStorage.open(join(root, "app.sqlite"));
