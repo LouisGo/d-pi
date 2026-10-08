@@ -1,0 +1,209 @@
+
+ RUN  v5.0.2 /Users/lou/.codex/worktrees/composer-quality/d-pi
+
+ ❯ src/modules/ui/renderer/focus-visibility.test.ts (7 tests | 3 failed) 10ms
+   × keeps pointer focus during editing keys in input, but makes Tab and a distinct keyboard focus visible 3ms
+   × keeps pointer focus during editing keys in textarea, but makes Tab and a distinct keyboard focus visible 1ms
+   × keeps pointer focus during editing keys in contenteditable, but makes Tab and a distinct keyboard focus visible 0ms
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > saves edits quietly without adding a pending status row, and keeps real save recovery
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > removes successful import reports without losing image adoption, dedup settlement or Undo/Redo
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > removes successful import reports without losing image adoption, dedup settlement or Undo/Redo
+An update to AttachmentImportBatches inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > keeps failed settlement recoverable after removal without previewing or claiming an adopted image
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > keeps failed settlement recoverable after removal without previewing or claiming an adopted image
+An update to AttachmentImportBatches inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ ❯ src/app/renderer/workbench/composer-continuity.test.ts (31 tests | 3 failed) 1768ms
+   × saves edits quietly without adding a pending status row, and keeps real save recovery 9ms
+   × removes successful import reports without losing image adoption, dedup settlement or Undo/Redo 63ms
+   × keeps failed settlement recoverable after removal without previewing or claiming an adopted image 70ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/renderer/workbench/composer-continuity.test.ts > saves edits quietly without adding a pending status row, and keeps real save recovery
+AssertionError: expected <span role="status" …(1)></span> to be null
+
+- Expected:
+null
+
++ Received:
+<span
+  class="save-status"
+  role="status"
+>
+  Waiting to save…
+</span>
+
+ ❯ src/app/renderer/workbench/composer-continuity.test.ts:1464:59
+    1462|   await act(() => fixture.editor().commands.insertContent(" more"));
+    1463|   expect(fixture.thread().controller.getSnapshot().kind).toBe("dirty");
+    1464|   expect(fixture.container.querySelector(".save-status")).toBeNull();
+       |                                                           ^
+    1465|   await act(() => fixture.thread().controller.flush());
+    1466|   expect(fixture.drafts.get(fixture.first.threadId)?.text).toContain("…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/app/renderer/workbench/composer-continuity.test.ts > removes successful import reports without losing image adoption, dedup settlement or Undo/Redo
+AssertionError: expected <div …(2)>…(2)</div> to be null
+
+- Expected:
+null
+
++ Received:
+<div
+  aria-label="File import"
+  class="grid gap-2 rounded-md border border-border p-2"
+>
+  <ol
+    class="grid gap-2"
+  >
+    <li
+      class="grid gap-1"
+    >
+      <div
+        class="flex flex-wrap items-center gap-2"
+      >
+        <strong
+          class="min-w-0 max-w-64 truncate"
+          title="photo.png"
+        >
+          photo.png
+        </strong>
+        <span
+          class="muted"
+          role="status"
+        >
+          Inserted
+        </span>
+        <button
+          aria-label="Preview photo.png"
+          class="ui-button ui-button-ghost"
+          data-slot="button"
+          tabindex="0"
+          type="button"
+        >
+          Preview photo.png
+        </button>
+      </div>
+    </li>
+  </ol>
+  <div
+    class="flex flex-wrap gap-2"
+  >
+    <button
+      class="ui-button ui-button-ghost"
+      data-slot="button"
+      tabindex="0"
+      type="button"
+    >
+      Dismiss import results
+    </button>
+  </div>
+</div>
+
+ ❯ src/app/renderer/workbench/composer-continuity.test.ts:1495:73
+    1493|   await act(() => vi.waitFor(() => expect(imports.stateStore.getState(…
+    1494|   expect(fixture.thread().controller.getAttachmentIds()).toHaveLength(…
+    1495|   expect(fixture.container.querySelector('[aria-label="File import"]')…
+       |                                                                         ^
+    1496|   await pasteFiles(fixture, [file]);
+    1497|   await act(() => vi.waitFor(() => expect(imports.stateStore.getState(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  src/app/renderer/workbench/composer-continuity.test.ts > keeps failed settlement recoverable after removal without previewing or claiming an adopted image
+AssertionError: expected 'photo.pngInserted; protecting resourc…' not to contain 'Inserted'
+
+Expected: "Inserted"
+Received: "photo.pngInserted; protecting resourcesPreview photo.pngRetry resource settlementAttachment request failed. Your draft is retained; retry the explicit operation.Cancel files awaiting insertion"
+
+ ❯ src/app/renderer/workbench/composer-continuity.test.ts:1529:90
+    1527|   await act(() => fixture.container.querySelector<HTMLButtonElement>('…
+    1528|   expect(fixture.thread().controller.getAttachmentIds()).toEqual([]);
+    1529|   expect(fixture.container.querySelector('[aria-label="File import"]')…
+       |                                                                                          ^
+    1530|   expect(fixture.container.querySelector('[aria-label="Preview photo.p…
+    1531|   const retry = Array.from(fixture.container.querySelectorAll("button"…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  src/modules/ui/renderer/focus-visibility.test.ts > keeps pointer focus during editing keys in input, but makes Tab and a distinct keyboard focus visible
+ FAIL  src/modules/ui/renderer/focus-visibility.test.ts > keeps pointer focus during editing keys in textarea, but makes Tab and a distinct keyboard focus visible
+ FAIL  src/modules/ui/renderer/focus-visibility.test.ts > keeps pointer focus during editing keys in contenteditable, but makes Tab and a distinct keyboard focus visible
+AssertionError:  : expected undefined to be 'true' // Object.is equality
+
+- Expected:
+"true"
+
++ Received:
+undefined
+
+ ❯ src/modules/ui/renderer/focus-visibility.test.ts:110:68
+    108|       for (const key of [" ", "ArrowLeft", "ArrowRight", "ArrowUp", "H…
+    109|         target.dispatchEvent(new KeyboardEvent("keydown", { key, bubbl…
+    110|         expect(document.documentElement.dataset.pointerFocus, key).toB…
+       |                                                                    ^
+    111|       }
+    112|       button.focus();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  6 failed | 32 passed (38)
+   Start at  18:28:22
+   Duration  4.73s (import 36%, tests 34%, environment 21%, transform 9%)
+

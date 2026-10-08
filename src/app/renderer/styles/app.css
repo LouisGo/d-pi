@@ -338,20 +338,9 @@
     font-size: var(--text-small);
     line-height: 1.6;
   }
-  .composer-heading {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--layout-gap);
-    padding: calc(var(--layout-gap) / 2) var(--layout-gap);
-  }
   h2 {
     font-size: var(--text-body);
     font-weight: 500;
-  }
-  .save-status {
-    color: var(--muted-foreground);
-    font-size: var(--text-small);
   }
   .tiptap {
     padding: 0;

@@ -193,6 +193,7 @@ async function setup(
   };
   return {
     model,
+    bridge,
     first,
     second,
     drafts,
@@ -1164,8 +1165,11 @@ it("exposes partial import without automatic adoption and accepts the ready subs
   );
   expect(document.activeElement).toBe(fixture.editor().view.dom);
   expect(fixture.thread().canPrepareInput()).toBe(false);
+  const report = fixture.container.querySelector('[aria-label="File import"]');
+  expect(report?.textContent).toContain("bad.txt");
+  expect(report?.textContent).not.toContain(items[0]?.name);
   const discard = Array.from(fixture.container.querySelectorAll("button")).find(
-    (button) => button.textContent === "Cancel bad.txt",
+    (button) => button.getAttribute("aria-label") === "Cancel bad.txt",
   );
   expect(discard).toBeDefined();
   await act(() => discard?.click());
@@ -1173,6 +1177,9 @@ it("exposes partial import without automatic adoption and accepts the ready subs
   expect(fixture.thread().attachmentImports?.stateStore.getState().ready).toBe(
     true,
   );
+  expect(
+    fixture.container.querySelector('[aria-label="File import"]'),
+  ).toBeNull();
 });
 
 it("previews and confirms a failed PDF in its original import job before explicit insertion", async () => {
@@ -1454,4 +1461,237 @@ it("offers explicit metadata retry while keeping an unresolved restored image pr
   await vi.waitFor(() => expect(fixture.editor().view.editable).toBe(true));
   expect(fixture.editor().getText()).toBe("body");
   expect(fixture.thread().controller.getTextSnapshot()).toContain(token);
+});
+
+it("saves edits quietly without adding a pending status row, and keeps real save recovery", async () => {
+  const fixture = await setup();
+  await act(() => fixture.editor().commands.insertContent(" more"));
+  expect(fixture.thread().controller.getSnapshot().kind).toBe("dirty");
+  expect(fixture.container.querySelector(".save-status")).toBeNull();
+  const originalRequest = fixture.bridge.request;
+  const request = vi.spyOn(fixture.bridge, "request");
+  let finishSave!: () => void;
+  request.mockImplementationOnce(
+    (command) =>
+      new Promise((resolve) => {
+        finishSave = () => {
+          void originalRequest(command).then(resolve);
+        };
+      }),
+  );
+  let saving!: Promise<boolean>;
+  await act(() => {
+    saving = fixture.thread().controller.flush();
+  });
+  expect(fixture.thread().controller.getSnapshot().kind).toBe("saving");
+  expect(fixture.container.querySelector(".save-status")).toBeNull();
+  await act(async () => {
+    finishSave();
+    await saving;
+  });
+  expect(fixture.drafts.get(fixture.first.threadId)?.text).toContain("more");
+  request.mockRejectedValueOnce(Error("save transport lost"));
+  await act(() => fixture.editor().commands.insertContent(" recover"));
+  await act(() => fixture.thread().controller.flush());
+  expect(fixture.thread().controller.getSnapshot().kind).toBe("failed");
+  expect(fixture.container.querySelector('[role="alert"]')).not.toBeNull();
+  const check = Array.from(fixture.container.querySelectorAll("button")).find(
+    (b) => b.textContent === "Check save status",
+  );
+  expect(check).toBeDefined();
+  expect(fixture.editor().getText()).toContain("recover");
+  let finishCheck!: () => void;
+  request.mockImplementationOnce(
+    (command) =>
+      new Promise((resolve) => {
+        finishCheck = () => {
+          void originalRequest(command).then(resolve);
+        };
+      }),
+  );
+  await act(() => check?.click());
+  expect(fixture.thread().controller.getSnapshot().kind).toBe("checking");
+  expect(fixture.container.querySelector(".save-status")).toBeNull();
+  await act(async () => {
+    finishCheck();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  });
+  expect(fixture.thread().controller.getSnapshot().kind).toBe("saved");
+  expect(fixture.drafts.get(fixture.first.threadId)?.text).toContain("recover");
+});
+
+it("removes successful import reports without losing image adoption, dedup settlement or Undo/Redo", async () => {
+  let items: import("../../../modules/input/contracts/public").Attachment[] =
+    [];
+  const request = vi.fn(
+    async (
+      command: Parameters<AttachmentBridge["request"]>[0],
+    ): Promise<AttachmentReply> => {
+      if (command.kind === "import-bytes") {
+        const next = AttachmentSchema.parse({
+          ...importedText(command.threadId, command.name),
+          mimeType: "image/png",
+          representation: "image",
+          inputDigest: "b".repeat(64),
+        });
+        items.push(next);
+        return { kind: "attachments", items: [next] };
+      }
+      if (command.kind === "preview")
+        return {
+          kind: "image",
+          dataUrl: "data:image/png;base64,aA==",
+        };
+      return historyReply(command) ?? { kind: "attachments", items };
+    },
+  );
+  const fixture = await setup(undefined, undefined, { request });
+  const imports = fixture.thread().attachmentImports!;
+  const file = new File(["image"], "photo.png", { type: "image/png" });
+  await pasteFiles(fixture, [file]);
+  await act(() =>
+    vi.waitFor(() => expect(imports.stateStore.getState().ready).toBe(true)),
+  );
+  expect(fixture.thread().controller.getAttachmentIds()).toHaveLength(1);
+  expect(
+    fixture.container.querySelector('[aria-label="File import"]'),
+  ).toBeNull();
+  await pasteFiles(fixture, [file]);
+  await act(() =>
+    vi.waitFor(() => expect(imports.stateStore.getState().ready).toBe(true)),
+  );
+  expect(fixture.thread().controller.getAttachmentIds()).toHaveLength(1);
+  expect(
+    request.mock.calls
+      .filter(([c]) => c.kind === "import-settle")
+      .map(([c]) => (c.kind === "import-settle" ? c.disposition : "")),
+  ).toEqual(["adopt", "release"]);
+  await act(() =>
+    fixture.container
+      .querySelector<HTMLButtonElement>('[aria-label="Remove photo.png"]')
+      ?.click(),
+  );
+  expect(fixture.thread().controller.getAttachmentIds()).toEqual([]);
+  expect(
+    fixture.container.querySelector('[aria-label="Preview photo.png"]'),
+  ).toBeNull();
+  expect(fixture.container.textContent).not.toContain("Inserted");
+  expect(fixture.container.textContent).not.toContain("Dismiss import results");
+  await act(() => fixture.editor().commands.insertContent(" new"));
+  await act(() => fixture.editor().commands.undo());
+  await act(() => fixture.editor().commands.redo());
+  expect(fixture.thread().controller.getAttachmentIds()).toEqual([]);
+  await fixture.select(fixture.second.threadId);
+  expect(
+    fixture.container.querySelector('[aria-label="File import"]'),
+  ).toBeNull();
+});
+
+it("keeps failed settlement recoverable after removal without previewing or claiming an adopted image", async () => {
+  let items: import("../../../modules/input/contracts/public").Attachment[] =
+    [];
+  let rejectSettlement = true;
+  const request = vi.fn(
+    async (
+      command: Parameters<AttachmentBridge["request"]>[0],
+    ): Promise<AttachmentReply> => {
+      if (command.kind === "import-bytes") {
+        items = [
+          AttachmentSchema.parse({
+            ...importedText(command.threadId, command.name),
+            mimeType: "image/png",
+            representation: "image",
+          }),
+        ];
+        return { kind: "attachments", items };
+      }
+      if (command.kind === "import-settle" && rejectSettlement)
+        throw Error("settlement lost");
+      return historyReply(command) ?? { kind: "attachments", items };
+    },
+  );
+  const fixture = await setup(undefined, undefined, { request });
+  await pasteFiles(fixture, [
+    new File(["image"], "photo.png", { type: "image/png" }),
+  ]);
+  await act(() =>
+    vi.waitFor(() =>
+      expect(fixture.container.textContent).toContain(
+        "Retry resource settlement",
+      ),
+    ),
+  );
+  await act(() =>
+    fixture.container
+      .querySelector<HTMLButtonElement>('[aria-label="Remove photo.png"]')
+      ?.click(),
+  );
+  expect(fixture.thread().controller.getAttachmentIds()).toEqual([]);
+  expect(
+    fixture.container.querySelector('[aria-label="File import"]')?.textContent,
+  ).not.toContain("Inserted");
+  expect(
+    fixture.container.querySelector('[aria-label="Preview photo.png"]'),
+  ).toBeNull();
+  const retry = Array.from(fixture.container.querySelectorAll("button")).find(
+    (b) => b.textContent === "Retry resource settlement",
+  );
+  rejectSettlement = false;
+  await act(() => retry?.click());
+  await act(() =>
+    vi.waitFor(() =>
+      expect(
+        fixture.thread().attachmentImports!.stateStore.getState().ready,
+      ).toBe(true),
+    ),
+  );
+  expect(
+    fixture.container.querySelector('[aria-label="File import"]'),
+  ).toBeNull();
+  expect(fixture.thread().controller.getAttachmentIds()).toEqual([]);
+});
+
+it("keeps settlement independent of file Undo and Redo while its successful UI stays quiet", async () => {
+  let finishSettlement!: () => void;
+  let items: import("../../../modules/input/contracts/public").Attachment[] =
+    [];
+  const fixture = await setup(undefined, undefined, {
+    request: async (command) => {
+      if (command.kind === "import-bytes") {
+        items = [importedText(command.threadId, command.name)];
+        return { kind: "attachments", items };
+      }
+      if (command.kind === "import-settle")
+        return new Promise((resolve) => {
+          finishSettlement = () => resolve({ kind: "import-settled" });
+        });
+      return historyReply(command) ?? { kind: "attachments", items };
+    },
+  });
+  await pasteFiles(fixture, [
+    new File(["text"], "source.txt", { type: "text/plain" }),
+  ]);
+  await act(() =>
+    vi.waitFor(() => expect(finishSettlement).toBeTypeOf("function")),
+  );
+  expect(
+    fixture.container.querySelector('[aria-label="File import"]'),
+  ).toBeNull();
+  expect(fixture.thread().attachmentImports!.stateStore.getState().ready).toBe(
+    false,
+  );
+  await act(() => fixture.editor().commands.undo());
+  expect(fixture.thread().controller.getAttachmentIds()).toEqual([]);
+  await act(() => finishSettlement());
+  expect(fixture.thread().attachmentImports!.stateStore.getState().ready).toBe(
+    true,
+  );
+  expect(fixture.thread().controller.getAttachmentIds()).toEqual([]);
+  await act(() => fixture.editor().commands.redo());
+  expect(fixture.thread().controller.getAttachmentIds()).toEqual([
+    items[0]!.id,
+  ]);
+  expect(
+    fixture.container.querySelector('[aria-label="File import"]'),
+  ).toBeNull();
 });

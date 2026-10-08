@@ -90,3 +90,53 @@ it("does not treat unrelated assistive focus as hover-menu autofocus", () => {
     input.remove();
   }
 });
+
+it.each(["input", "textarea", "contenteditable"])(
+  "keeps pointer focus during editing keys in %s, but makes Tab and a distinct keyboard focus visible",
+  (kind) => {
+    const field = document.createElement(
+      kind === "contenteditable" ? "div" : kind,
+    );
+    if (kind === "contenteditable") {
+      field.contentEditable = "true";
+      field.tabIndex = 0;
+    }
+    const child = document.createElement("span");
+    if (kind === "contenteditable") field.append(child);
+    const button = document.createElement("button");
+    document.body.append(field, button);
+    const dispose = installControlFocusVisibility(document);
+    try {
+      const target = kind === "contenteditable" ? child : field;
+      target.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+      field.focus();
+      for (const key of [
+        " ",
+        "ArrowLeft",
+        "ArrowRight",
+        "ArrowUp",
+        "Home",
+        "End",
+        "Enter",
+        "Escape",
+      ]) {
+        target.dispatchEvent(
+          new KeyboardEvent("keydown", { key, bubbles: true }),
+        );
+        expect(document.documentElement.dataset.pointerFocus, key).toBe("true");
+      }
+      button.focus();
+      expect(document.documentElement.dataset.pointerFocus).toBeUndefined();
+      field.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+      field.focus();
+      field.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Tab", bubbles: true }),
+      );
+      expect(document.documentElement.dataset.pointerFocus).toBeUndefined();
+    } finally {
+      dispose();
+      field.remove();
+      button.remove();
+    }
+  },
+);

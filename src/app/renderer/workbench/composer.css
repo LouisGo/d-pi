@@ -36,6 +36,42 @@
     color: var(--muted-foreground);
     font-size: var(--text-body);
   }
+  .composer-recovery {
+    display: grid;
+    gap: var(--region-gap);
+    padding: var(--layout-gap) var(--panel-padding);
+    border-top: 1px solid var(--border-soft);
+    font-size: var(--text-small);
+  }
+  .composer-recovery p {
+    margin: 0;
+  }
+  .composer-import-notice {
+    display: grid;
+    gap: var(--region-gap);
+    margin-block-end: var(--layout-gap);
+    font-size: var(--text-small);
+  }
+  .composer-import-jobs {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--region-gap);
+  }
+  .composer-import-job {
+    min-width: 0;
+  }
+  .composer-import-job p {
+    margin: 0;
+  }
+  .composer-import-name {
+    min-width: 0;
+    max-width: min(100%, 36ch);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
   .composer-notice {
     display: flex;
     flex-wrap: wrap;
@@ -62,8 +98,6 @@
     position: relative;
     min-width: 0;
     max-width: 100%;
-  }
-  .attachment-tile {
     width: calc(var(--control-height) * 2.5);
     height: calc(var(--control-height) * 2.5);
   }

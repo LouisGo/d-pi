@@ -379,14 +379,6 @@ export function Composer({
       detachEditor?.();
     };
   }, [editor, model, thread, controller, submission]);
-  const status = match(state)
-    .with({ kind: "saved" }, () => t("composer.status.saved"))
-    .with({ kind: "dirty" }, () => t("composer.status.dirty"))
-    .with({ kind: "saving" }, () => t("composer.status.saving"))
-    .with({ kind: "checking" }, () => t("composer.status.checking"))
-    .with({ kind: "conflict" }, () => t("composer.status.conflict"))
-    .with({ kind: "failed" }, () => t("composer.status.failed"))
-    .exhaustive();
   return (
     <section
       className="composer"
@@ -394,13 +386,6 @@ export function Composer({
       data-expanded={expanded}
       aria-label={t("composer.sectionLabel")}
     >
-      {state.kind !== "saved" && (
-        <div className="composer-heading">
-          <span role="status" className="save-status">
-            {status}
-          </span>
-        </div>
-      )}
       {runtime && (
         <ComposerReadiness
           runtime={runtime}
@@ -537,7 +522,7 @@ export function Composer({
         />
       </div>
       {state.kind === "conflict" && (
-        <div className="failure" role="alert">
+        <div className="composer-recovery" role="alert">
           <p>{t("composer.conflict.description")}</p>
           <Disclosure>
             <DisclosureTrigger>
@@ -586,8 +571,10 @@ export function Composer({
         </div>
       )}
       {state.kind === "failed" && (
-        <div className="failure" role="alert">
-          <p>{formatMessage(state.error.message)}</p>
+        <div className="composer-recovery" role="alert">
+          <p className="failure">
+            {t("composer.status.failed")} · {formatMessage(state.error.message)}
+          </p>
           <p className="trace">
             {t("app.trace", { traceId: state.error.traceId })}
           </p>

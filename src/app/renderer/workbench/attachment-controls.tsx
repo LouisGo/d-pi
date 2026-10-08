@@ -523,9 +523,7 @@ export function AttachmentControls({
   }
   return (
     <div className="composer-context">
-      {(pending > 0 ||
-        importing > 0 ||
-        (!resolutionReady && list.isFetching)) && (
+      {(pending > 0 || (!resolutionReady && list.isFetching)) && (
         <p className="muted" role="status">
           {t("attachment.preparing")}
         </p>
@@ -737,6 +735,7 @@ export function AttachmentControls({
         isCurrent={isCurrent}
         frozen={sourceFrozen}
         onPreview={openReference}
+        activeIds={ids}
       />
       {preview && (
         <AttachmentPreviewDialog

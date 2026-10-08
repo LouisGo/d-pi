@@ -13,11 +13,11 @@
 - 执行：主 Agent 单写规格/任务/生成看板/集成；M2 worker 单写隔离 worktree 的 input imports/lifecycle/batch adapter 与 Thread 装配，不写 M1 控件/Composer/CSS/locale；共享 public 导出串行集成。
 
 ```project-status
-[{"id":"composer-quality","title":"Composer M1/M2 编辑体验","phase":"M2","engineering":"complete","trial":"delivered","acceptance":"pending","build":"源码e0c43e5 / codex/composer-quality；check:fast/typecheck/build通过","evidence":["handoff.md","validation.md","review.md"],"next":"用户自行pnpm dev验收图片/文件UI及OS/IME；SDKPDF既有失败根因待定位","constraints":"仅本地交付；本轮不运行GUI/E2E，未推送/发布；SDKPDF及既有CLI fixture失败保留，完整check未重跑。"}]
+[{"id":"composer-quality","title":"Composer M1/M2 编辑体验","phase":"M2","engineering":"in-progress","trial":"feedback","acceptance":"pending","build":"源码e0c43e5 / codex/composer-quality；check:fast/typecheck/build通过","evidence":["handoff.md","validation.md","review.md"],"next":"用户自行pnpm dev验收图片/文件UI及OS/IME；SDKPDF既有失败根因待定位","constraints":"仅本地交付；本轮不运行GUI/E2E，未推送/发布；SDKPDF及既有CLI fixture失败保留，完整check未重跑。"}]
 ```
 
 ```implementation-plan
-[{"id":"composer","tickets":["01","02","04","03","05"]}]
+[{"id":"composer","tickets":["01","02","04","03","05","06"]}]
 ```
 
 ## 验收
@@ -39,3 +39,9 @@
 最新用户六项要求授权05，取代本规格中“所有外部附件仅rail且隐形PM锚点”的旧展示/历史选择。外部图片在缩略图栏独立管理，不进入编辑文档或Undo/Redo；其余文件在正文可见内联，MIME优先的图标/颜色/大小，参与Undo/Redo；项目@仍为内联上下文。当前Composer重复附件不重复采用，保留源身份与私有内容摘要，不按内容摘要合并数据库来源记录或混淆不同版本。重复大块状态移入对应附件详情，默认只保留就近状态标记和无对应节点的操作失败。T3固定源码的images/files/prompt分工与采用去重可直接参考，草稿/lease/可信clipboard/冻结提交/queue仍由现有d-pi拥有者承担。验收由用户实机执行，Agent只完成自动化与源码交付，不机械重跑E2E。
 
 本次补充工程交付于e0c43e5，05票resolved；图片外置独立历史、其他文件MIME内联、采用去重和详情反馈已完成，并修复真实Main历史移出、冻结source跨保存/准备/扫描/Renderer readiness的一致性。最终50文件369项通过、类型/门禁/build通过，两轴独立评审无剩余发现。按用户要求未做本次GUI/E2E，视觉/真实IME认可仍pending；SDKPDF既有fixture失败和早期CLIfixture失败准确保留。
+
+## 2026-10-08 日常状态与输入表面反馈（06）
+
+用户授权继续在现有 composer-quality 工作树自主修复 Composer：日常保存 pending 安静，不停止保存；普通鼠标聚焦与输入无 outline，修正共享焦点入口；成功导入不长驻占位，移除、清空、Undo/Redo、去重与异步结算不能误报已采用。参照固定 T3 的连续编辑表面、实际附件和按需 Banner，用 d-pi 组件/token 实现紧凑恢复和窄窗工具栏。保留图片独立历史、非图片正文历史、项目 @ 内联、Draft v1/Main lease/trusted clipboard/immutable send/native queue。
+
+06 由 root 单写，基点 2fdeab2，类型/状态与设计 skill 按改动适用；不新建实施工作树，不修改原 checkout。本轮不运行 Dev/GUI/Computer use/E2E/provider/Host 发送，实机用户自行验收；只本地交付，不 push/远端 PR/发布。无重大产品待决。

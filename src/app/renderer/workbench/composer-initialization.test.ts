@@ -197,7 +197,7 @@ it("parses the initial editor document once while mounted draft and shortcut sub
   expect(documentCalls.mock.calls).toEqual([["restored draft"]]);
   const initialDocument = editorCalls.at(-1)?.content;
   await act(() => fixture.thread.controller.edit("new unsaved draft"));
-  expect(fixture.container.textContent).toContain(
+  expect(fixture.container.textContent).not.toContain(
     i18n.t("composer.status.dirty"),
   );
   expect(editorCalls.length).toBeGreaterThan(1);
@@ -418,7 +418,7 @@ it("blocks Enter and both send controls for pending or unresolved image imports 
     false,
   );
   const cancel = Array.from(fixture.container.querySelectorAll("button")).find(
-    (button) => button.textContent === "Cancel capture.png",
+    (button) => button.getAttribute("aria-label") === "Cancel capture.png",
   );
   expect(cancel).toBeDefined();
   await act(async () => {

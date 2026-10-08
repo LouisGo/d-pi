@@ -10,12 +10,14 @@ export function AttachmentImportBatches({
   isCurrent,
   frozen,
   onPreview,
+  activeIds,
 }: {
   imports: AttachmentImports;
   editor: Editor | null;
   isCurrent: () => boolean;
   frozen: boolean;
   onPreview: (id: string) => void;
+  activeIds: readonly string[];
 }) {
   const { t } = useI18n();
   const batches = useStore(imports.stateStore, (state) => state.batches);
@@ -33,7 +35,19 @@ export function AttachmentImportBatches({
         </p>
       )}
       {batches.map((batch) => {
-        const settled = batch.jobs.every((job) => job.adoption === "settled");
+        // Settlement records resource ownership, not current draft adoption.
+        // Success belongs to the actual tile/token; reports only keep work that
+        // still needs attention. Hiding a report never cancels settlement.
+        const jobs = batch.jobs.filter(
+          (job) =>
+            job.adoption !== "settled" &&
+            (job.adoption === "pending" ||
+              job.reason ||
+              job.phase === "cancelling" ||
+              job.phase === "cancelled"),
+        );
+        if (!jobs.length) return null;
+        const cancellable = jobs.some((job) => job.adoption === "pending");
         const pending = batch.jobs.some((job) =>
           ["queued", "reading", "preparing", "cancelling"].includes(job.phase),
         );
@@ -44,26 +58,19 @@ export function AttachmentImportBatches({
         return (
           <div
             key={batch.id}
-            className="grid gap-2 rounded-md border border-border p-2"
+            className="composer-import-notice"
             aria-label={t("attachment.import.batch")}
           >
-            <ol className="grid gap-2">
-              {batch.jobs.map((job) => (
-                <li key={job.id} className="grid gap-1">
+            <ol className="composer-import-jobs">
+              {jobs.map((job) => (
+                <li key={job.id} className="composer-import-job">
                   <div className="flex flex-wrap items-center gap-2">
-                    <strong
-                      className="min-w-0 max-w-64 truncate"
-                      title={job.name}
-                    >
+                    <span className="composer-import-name" title={job.name}>
                       {job.name}
-                    </strong>
+                    </span>
                     <span className="muted" role="status">
                       {job.phase === "ready" && job.adoption !== "pending"
-                        ? t(
-                            job.adoption === "settled"
-                              ? "attachment.import.added"
-                              : "attachment.import.settling",
-                          )
+                        ? t("attachment.import.settlementFailed")
                         : t(`attachment.import.${job.phase}`)}
                     </span>
                     {job.phase === "reading" && (
@@ -85,18 +92,25 @@ export function AttachmentImportBatches({
                           {t("attachment.retry")}
                         </Button>
                       )}
-                    {job.attachmentIds.map((id) => (
-                      <Button
-                        key={id}
-                        variant="ghost"
-                        aria-label={t("attachment.preview", { name: job.name })}
-                        onClick={() => {
-                          if (isCurrent()) onPreview(id);
-                        }}
-                      >
-                        {t("attachment.preview", { name: job.name })}
-                      </Button>
-                    ))}
+                    {job.attachmentIds
+                      .filter(
+                        (id) =>
+                          job.adoption === "pending" || activeIds.includes(id),
+                      )
+                      .map((id) => (
+                        <Button
+                          key={id}
+                          variant="ghost"
+                          aria-label={t("attachment.preview", {
+                            name: job.name,
+                          })}
+                          onClick={() => {
+                            if (isCurrent()) onPreview(id);
+                          }}
+                        >
+                          {t("attachment.previewAction")}
+                        </Button>
+                      ))}
                     {job.phase === "failed" &&
                       job.reason === "pdf-coverage-gap" && (
                         <Button
@@ -139,11 +153,14 @@ export function AttachmentImportBatches({
                       ) && (
                         <Button
                           variant="ghost"
+                          aria-label={t("attachment.import.cancel", {
+                            name: job.name,
+                          })}
                           onClick={() => {
                             if (isCurrent()) imports.cancel(job.id, true);
                           }}
                         >
-                          {t("attachment.import.cancel", { name: job.name })}
+                          {t("attachment.import.cancelAction")}
                         </Button>
                       )}
                   </div>
@@ -177,7 +194,7 @@ export function AttachmentImportBatches({
                   )}
                 </Button>
               )}
-              {!settled && (
+              {cancellable && jobs.length > 1 && (
                 <Button
                   variant="ghost"
                   onClick={() => {
@@ -185,14 +202,6 @@ export function AttachmentImportBatches({
                   }}
                 >
                   {t("attachment.import.cancelBatch")}
-                </Button>
-              )}
-              {settled && (
-                <Button
-                  variant="ghost"
-                  onClick={() => imports.dismissSettled(batch.id)}
-                >
-                  {t("attachment.import.dismiss")}
                 </Button>
               )}
             </div>
