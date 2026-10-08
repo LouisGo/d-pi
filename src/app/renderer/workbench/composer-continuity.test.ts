@@ -1023,3 +1023,85 @@ it("exposes partial import without automatic adoption and accepts the ready subs
     true,
   );
 });
+
+it("previews and confirms a failed PDF in its original import job before explicit insertion", async () => {
+  let items: import("../../../modules/input/contracts/public").Attachment[] =
+    [];
+  const request = vi.fn(
+    async (
+      command: Parameters<AttachmentBridge["request"]>[0],
+    ): Promise<AttachmentReply> => {
+      if (command.kind === "import-bytes") {
+        items = [
+          AttachmentSchema.parse({
+            ...importedText(command.threadId, command.name),
+            mimeType: "application/pdf",
+            status: "failed",
+            reason: "pdf-coverage-gap",
+            representation: "pdf-text",
+            coverageGaps: ["page-1"],
+          }),
+        ];
+        return { kind: "attachments", items };
+      }
+      if (command.kind === "set-text-only") {
+        expect(command.id).toBe(items[0]?.id);
+        items = items.map((item) =>
+          AttachmentSchema.parse({
+            ...item,
+            status: "ready",
+            reason: undefined,
+            textOnly: true,
+          }),
+        );
+        return { kind: "attachments", items };
+      }
+      if (command.kind === "preview")
+        return { kind: "text", text: "Extracted PDF text", truncated: false };
+      return historyReply(command) ?? { kind: "attachments", items };
+    },
+  );
+  const fixture = await setup(undefined, undefined, { request });
+  await pasteFiles(fixture, [
+    new File(["PDF"], "scan.pdf", { type: "application/pdf" }),
+  ]);
+  await act(() => new Promise((resolve) => setTimeout(resolve, 80)));
+  expect(
+    fixture.thread().attachmentImports?.stateStore.getState().batches[0]
+      ?.jobs[0]?.reason,
+  ).toBe("pdf-coverage-gap");
+  const button = (text: string) =>
+    Array.from(fixture.container.querySelectorAll("button")).find(
+      (entry) => entry.textContent === text,
+    );
+  expect(button("Use extracted text only")).toBeDefined();
+  const preview = Array.from(fixture.container.querySelectorAll("button")).find(
+    (entry) => entry.getAttribute("aria-label") === "Preview scan.pdf",
+  );
+  expect(preview).toBeDefined();
+  await act(() => preview?.click());
+  expect(
+    request.mock.calls.some(
+      ([command]) => command.kind === "preview" && command.id === items[0]?.id,
+    ),
+  ).toBe(true);
+  const close = fixture.container.querySelector<HTMLButtonElement>(
+    '[aria-label="Close preview"]',
+  );
+  await act(() => close?.click());
+  await act(() => button("Use extracted text only")?.click());
+  expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha omega");
+  expect(items[0]?.textOnly).toBe(true);
+  expect(button("Insert ready files at cursor")).toBeDefined();
+  await act(() => button("Insert ready files at cursor")?.click());
+  await act(() => new Promise((resolve) => setTimeout(resolve, 20)));
+  expect(fixture.thread().controller.getTextSnapshot()).toContain(
+    items[0]?.token,
+  );
+  expect(
+    request.mock.calls.filter(([command]) => command.kind === "import-bytes"),
+  ).toHaveLength(1);
+  expect(fixture.thread().attachmentImports?.stateStore.getState().ready).toBe(
+    true,
+  );
+});

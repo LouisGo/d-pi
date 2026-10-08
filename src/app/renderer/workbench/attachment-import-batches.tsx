@@ -9,11 +9,13 @@ export function AttachmentImportBatches({
   editor,
   isCurrent,
   frozen,
+  onPreview,
 }: {
   imports: AttachmentImports;
   editor: Editor | null;
   isCurrent: () => boolean;
   frozen: boolean;
+  onPreview: (id: string) => void;
 }) {
   const { t } = useI18n();
   const batches = useStore(imports.stateStore, (state) => state.batches);
@@ -81,6 +83,31 @@ export function AttachmentImportBatches({
                           }}
                         >
                           {t("attachment.retry")}
+                        </Button>
+                      )}
+                    {job.attachmentIds.map((id) => (
+                      <Button
+                        key={id}
+                        variant="ghost"
+                        aria-label={t("attachment.preview", { name: job.name })}
+                        onClick={() => {
+                          if (isCurrent()) onPreview(id);
+                        }}
+                      >
+                        {t("attachment.preview", { name: job.name })}
+                      </Button>
+                    ))}
+                    {job.phase === "failed" &&
+                      job.reason === "pdf-coverage-gap" && (
+                        <Button
+                          variant="ghost"
+                          disabled={disabled}
+                          onClick={() => {
+                            if (isCurrent())
+                              void imports.confirmTextOnly(job.id);
+                          }}
+                        >
+                          {t("attachment.textOnly")}
                         </Button>
                       )}
                     {job.reason &&

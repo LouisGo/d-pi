@@ -464,7 +464,9 @@ export function AttachmentControls({
                 size={
                   item?.representation === "image" ? "thumbnail" : "default"
                 }
-                className="w-full"
+                className={
+                  item?.representation === "image" ? "w-full" : "w-full pr-10"
+                }
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => {
                   if (item) openReference(item.id);
@@ -483,7 +485,7 @@ export function AttachmentControls({
                   <>
                     <FileIcon />
                     <span className="truncate">{item?.name ?? ids[index]}</span>
-                    {item && (
+                    {item && item.source !== "reference" && (
                       <small>{Math.ceil(item.byteLength / 1024)} KiB</small>
                     )}
                   </>
@@ -854,6 +856,7 @@ export function AttachmentControls({
         editor={editor}
         isCurrent={isCurrent}
         frozen={sourceFrozen}
+        onPreview={openReference}
       />
       {active.length > 0 && (
         <Disclosure>
