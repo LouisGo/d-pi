@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "887a64b8ca3d3091653d54c7247e466bd147b2dcbb627141b0ee6111650faa1b",
+  "inputsHash": "e65b58b824b6bf0a8bece0d0318a489cac0f0c0c52fbaa2bd247b5ef20db1b6d",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 515,
@@ -374,7 +374,7 @@
       "defaultEnvironment": "omp",
       "materialized": true,
       "files": 14,
-      "lines": 3443,
+      "lines": 3522,
       "publicEntries": [
         {
           "path": "runtime/host.mjs",
@@ -28133,6 +28133,15 @@
       "sourceModule": "runtime",
       "sourceEnvironment": "omp",
       "test": false,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/model-selection.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
       "specifier": "@oh-my-pi/pi-agent-core",
       "kind": "import",
       "resolution": "external"
@@ -28171,6 +28180,24 @@
       "test": false,
       "specifier": "@oh-my-pi/pi-coding-agent/config/resolve-config-value",
       "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/model-selection.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "@oh-my-pi/pi-coding-agent/config/models-config",
+      "kind": "dynamic-import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/model-selection.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "@oh-my-pi/pi-coding-agent/config/custom-models",
+      "kind": "dynamic-import",
       "resolution": "external"
     },
     {
