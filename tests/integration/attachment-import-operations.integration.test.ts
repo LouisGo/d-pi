@@ -71,6 +71,14 @@ it("strict operation settlement is document/Thread scoped, idempotent and releas
     expect(await settlement(a.threadId, owner)).toEqual({
       kind: "import-settled",
     });
+    expect(
+      await service.store.importOperation(owner, a.threadId, operationId, {
+        name: "one.txt",
+        mimeType: "text/plain",
+        bytes: Buffer.from("shared"),
+        source: "drop",
+      }),
+    ).toEqual({ kind: "cancelled" });
     expect(await settlement(a.threadId, owner)).toEqual({
       kind: "import-settled",
     });
@@ -89,7 +97,7 @@ it("strict operation settlement is document/Thread scoped, idempotent and releas
     rmSync(root, { recursive: true, force: true });
   }
 });
-it("document disposal during an accepted conversion settles late source and derived objects", async () => {
+it("document disposal during an accepted import settles its late source", async () => {
   const root = mkdtempSync(join(tmpdir(), "dpi-import-dispose-"));
   const storage = AppStorage.open(join(root, "app.sqlite"));
   const service = createAttachmentService(
@@ -106,8 +114,10 @@ it("document disposal during an accepted conversion settles late source and deri
     // Freeze an accepted import in the serialized lane before it writes its source.
     const original = service.store.importBytes.bind(service.store);
     let finish: () => void = () => {};
+    let started = false;
     vi.spyOn(service.store, "importBytes").mockImplementation(
       async (...args) => {
+        started = true;
         await new Promise<void>((resolve) => {
           finish = resolve;
         });
@@ -127,7 +137,7 @@ it("document disposal during an accepted conversion settles late source and deri
       }),
       owner,
     );
-    await vi.waitFor(() => expect(finish).not.toEqual(() => {}));
+    await vi.waitFor(() => expect(started).toBe(true));
     service.store.releaseEditorHistories(owner);
     finish();
     await importing;
@@ -334,7 +344,7 @@ it("admission stays bounded before await and rejected attempts cannot impersonat
         crypto.randomUUID(),
         input,
       ),
-    ).toMatchObject({ kind: "unavailable", reason: "storage-unavailable" });
+    ).toMatchObject({ kind: "unavailable", reason: "import-limit" });
     expect(
       await service.store.importOperation(owner, draft.threadId, operationId, {
         ...input,

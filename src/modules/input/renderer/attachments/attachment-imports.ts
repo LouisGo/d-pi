@@ -86,9 +86,18 @@ export class AttachmentImportBudget {
       this.jobs -= jobs;
     };
   }
-  acquire(): Promise<() => void> {
+  acquire(signal?: AbortSignal): Promise<(() => void) | null> {
     return new Promise((resolve) => {
+      let started = false;
+      const abort = () => {
+        if (started) return;
+        const index = this.waiters.indexOf(start);
+        if (index >= 0) this.waiters.splice(index, 1);
+        resolve(null);
+      };
       const start = () => {
+        started = true;
+        signal?.removeEventListener("abort", abort);
         this.active++;
         let released = false;
         resolve(() => {
@@ -98,6 +107,11 @@ export class AttachmentImportBudget {
           this.waiters.shift()?.();
         });
       };
+      if (signal?.aborted) {
+        resolve(null);
+        return;
+      }
+      signal?.addEventListener("abort", abort, { once: true });
       if (this.active < this.limits.active) start();
       else this.waiters.push(start);
     });
@@ -120,6 +134,7 @@ type Job = {
   activeAttempt: boolean;
   intent: string;
   retrying: boolean;
+  waiting: AbortController | null;
 };
 type Batch = {
   id: string;
@@ -257,6 +272,7 @@ export class AttachmentImports {
         activeAttempt: false,
         intent: crypto.randomUUID(),
         retrying: false,
+        waiting: null,
         releaseSource: () => {
           if (released) return;
           released = true;
@@ -402,7 +418,11 @@ export class AttachmentImports {
           .find(({ job }) => job.view.phase === "queued");
         if (!found || this.disposed) break;
         const { batch, job } = found;
-        const release = await this.budget.acquire();
+        const waiting = new AbortController();
+        job.waiting = waiting;
+        const release = await this.budget.acquire(waiting.signal);
+        job.waiting = null;
+        if (!release) continue;
         try {
           if (this.disposed || job.view.phase !== "queued" || !job.file)
             continue;
@@ -553,6 +573,7 @@ export class AttachmentImports {
     job.releaseSource();
   }
   private cancelled(job: Job): void {
+    job.waiting?.abort();
     job.items = [];
     job.view = {
       ...job.view,

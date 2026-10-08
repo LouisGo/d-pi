@@ -23,7 +23,11 @@ it.each(["destroyed", "render-process-gone", "navigation"])(
       () => true,
       async () => null,
     );
-    const sender = new EventEmitter();
+    let loading = false;
+    const sender = Object.assign(new EventEmitter(), {
+      mainFrame: { processId: 1, routingId: 1, url: "file:///fixture" },
+      isLoadingMainFrame: () => loading,
+    });
     let invoke: (event: unknown, command: unknown) => Promise<AttachmentReply> =
       async () => {
         throw Error("no handler");
@@ -48,7 +52,7 @@ it.each(["destroyed", "render-process-gone", "navigation"])(
         traceId: crypto.randomUUID(),
       };
       const request = (command: AttachmentRequest) =>
-        invoke({ sender }, command);
+        invoke({ sender, senderFrame: sender.mainFrame }, command);
       const item = await service.store.importBytes(draft.threadId, {
         name: "source.txt",
         mimeType: "text/plain",
@@ -89,12 +93,15 @@ it.each(["destroyed", "render-process-gone", "navigation"])(
         kind: "clipboard-import",
         ticket: reserved.tickets[0],
       });
-      if (eventName === "navigation")
+      if (eventName === "navigation") {
+        loading = true;
         sender.emit("did-start-navigation", {
           isMainFrame: true,
           isSameDocument: false,
+          frame: sender.mainFrame,
+          url: "file:///next",
         });
-      else sender.emit(eventName);
+      } else sender.emit(eventName);
       expect(await clipboardWait).toMatchObject({
         kind: "clipboard-unavailable",
         reason: "invalid",
@@ -123,7 +130,8 @@ it.each(["destroyed", "render-process-gone", "navigation"])(
             })
           ).kind,
         ).toBe("unavailable");
-        sender.emit("did-frame-finish-load", {}, true);
+        loading = false;
+        sender.emit("did-frame-finish-load", {}, true, 1, 1);
         expect(
           (
             await request({

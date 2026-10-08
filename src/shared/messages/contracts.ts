@@ -56,6 +56,7 @@ export const PlainUiMessageCodeSchema = z.enum([
   "attachment.reason.invalid-token",
   "attachment.reason.attachment-not-found",
   "attachment.reason.source-too-large",
+  "attachment.reason.import-limit",
   "attachment.reason.submission-too-large",
   "attachment.reason.transport-too-large",
   "attachment.reason.storage-full",

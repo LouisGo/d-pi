@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { WebContents } from "electron";
+import type { WebContents, WebFrameMain } from "electron";
 import type { Diagnostics } from "../../../platform/main/diagnostics/public";
 import { AttachmentRequestSchema } from "../../contracts/attachments";
 import type { AttachmentService } from "../wiring/attachment-service";
@@ -12,37 +12,103 @@ export function registerAttachmentIpc(
       | undefined;
   },
 ) {
-  const documents = new Map<WebContents, string>();
+  const documents = new Map<
+    WebContents,
+    { owner: string; frame: WebFrameMain }
+  >();
   const observed = new WeakSet<WebContents>();
-  const navigating = new WeakSet<WebContents>();
-  function ownerFor(sender: WebContents): string | undefined {
+  const navigating = new WeakMap<
+    WebContents,
+    { frame: WebFrameMain | null; url: string }
+  >();
+  const matchesFrame = (
+    sender: WebContents,
+    processId: number,
+    routingId: number,
+  ) =>
+    sender.mainFrame.processId === processId &&
+    sender.mainFrame.routingId === routingId;
+  function resumeStopped(sender: WebContents): void {
+    // A failed provisional load may keep the original document. Resume it with
+    // a fresh owner only after *all* main navigation has actually stopped.
+    if (navigating.has(sender) && !sender.isLoadingMainFrame())
+      navigating.delete(sender);
+  }
+  function ownerFor(
+    sender: WebContents,
+    frame: WebFrameMain | null,
+  ): string | undefined {
+    if (!frame || frame !== sender.mainFrame) return undefined;
+    resumeStopped(sender);
     if (navigating.has(sender)) return undefined;
-    let owner = documents.get(sender);
-    if (!owner) {
-      owner = randomUUID();
-      documents.set(sender, owner);
+    let document = documents.get(sender);
+    if (document && document.frame !== frame) {
+      context.getService()?.store.releaseEditorHistories(document.owner);
+      documents.delete(sender);
+      document = undefined;
+    }
+    if (!document) {
+      document = { owner: randomUUID(), frame };
+      documents.set(sender, document);
     }
     if (!observed.has(sender)) {
       observed.add(sender);
       const release = () => {
         const current = documents.get(sender);
         if (current)
-          context.getService()?.store.releaseEditorHistories(current);
+          context.getService()?.store.releaseEditorHistories(current.owner);
         documents.delete(sender);
       };
       sender.on("destroyed", release);
       sender.on("render-process-gone", release);
       sender.on("did-start-navigation", (details) => {
         if (details.isMainFrame && !details.isSameDocument) {
-          navigating.add(sender);
+          navigating.set(sender, { frame: details.frame, url: details.url });
           release();
         }
       });
-      sender.on("did-frame-finish-load", (_event, isMainFrame) => {
-        if (isMainFrame) navigating.delete(sender);
-      });
+      sender.on(
+        "did-frame-finish-load",
+        (_event, isMainFrame, processId, routingId) => {
+          if (isMainFrame && matchesFrame(sender, processId, routingId))
+            resumeStopped(sender);
+        },
+      );
+      sender.on(
+        "did-frame-navigate",
+        (_event, url, _code, _status, isMainFrame, processId, routingId) => {
+          const pending = navigating.get(sender);
+          if (
+            pending &&
+            isMainFrame &&
+            matchesFrame(sender, processId, routingId) &&
+            sender.mainFrame.url === url &&
+            (pending.frame !== sender.mainFrame || pending.url === url)
+          )
+            navigating.delete(sender);
+        },
+      );
+      sender.on("did-stop-loading", () => resumeStopped(sender));
+      const failed = (
+        _event: Electron.Event,
+        _code: number,
+        _description: string,
+        url: string,
+        isMainFrame: boolean,
+        processId: number,
+        routingId: number,
+      ) => {
+        if (
+          isMainFrame &&
+          navigating.get(sender)?.url === url &&
+          matchesFrame(sender, processId, routingId)
+        )
+          resumeStopped(sender);
+      };
+      sender.on("did-fail-load", failed);
+      sender.on("did-fail-provisional-load", failed);
     }
-    return owner;
+    return document.owner;
   }
   context.ipcMain.handle("attachments:request", async (event, raw: unknown) => {
     if (!context.sourceValid(event)) throw Error("Invalid attachment source");
@@ -60,7 +126,10 @@ export function registerAttachmentIpc(
     try {
       const service = context.getService();
       if (!service) throw Error("Attachment storage unavailable");
-      const reply = await service.execute(command, ownerFor(event.sender));
+      const reply = await service.execute(
+        command,
+        ownerFor(event.sender, event.senderFrame),
+      );
       diagnostics?.record({
         ...identity,
         stage:

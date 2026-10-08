@@ -432,3 +432,17 @@ it("composition/history recovery retries an eligible automatic target while deta
   expect(target).toHaveBeenCalledTimes(2);
   model.dispose();
 });
+
+it("queued budget reservations abort before a slow active preparation finishes and never keep disposed owners in the scheduler", async () => {
+  const budget = new AttachmentImportBudget({ active: 1, bytes: 1, jobs: 1 });
+  const first = await budget.acquire();
+  if (!first) throw Error("missing active slot");
+  const waiting = new AbortController();
+  const queued = budget.acquire(waiting.signal);
+  waiting.abort();
+  expect(await queued).toBeNull();
+  first();
+  const next = await budget.acquire();
+  expect(next).toBeTypeOf("function");
+  next?.();
+});

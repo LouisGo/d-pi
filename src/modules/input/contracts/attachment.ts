@@ -4,6 +4,7 @@ export const AttachmentFailureReasonSchema = z.enum([
   "invalid-token",
   "attachment-not-found",
   "source-too-large",
+  "import-limit",
   "submission-too-large",
   "transport-too-large",
   "storage-full",

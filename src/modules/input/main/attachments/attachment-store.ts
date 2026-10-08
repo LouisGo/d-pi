@@ -860,7 +860,9 @@ export class AttachmentStore {
           kind: "unavailable",
           reason: "reference-denied",
         });
-      return existing.result;
+      return existing.disposition === "release"
+        ? Promise.resolve({ kind: "cancelled" })
+        : existing.result;
     }
     if (this.closed || input.bytes.byteLength > this.limits.sourceBytes)
       return Promise.resolve({
@@ -892,7 +894,7 @@ export class AttachmentStore {
     )
       return Promise.resolve({
         kind: "unavailable",
-        reason: "storage-unavailable",
+        reason: "import-limit",
       });
     const operation: ImportOperation = {
       owner,
