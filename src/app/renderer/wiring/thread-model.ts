@@ -11,7 +11,7 @@ import type { Draft, Failure } from "../../../modules/input/contracts/public";
 import {
   AttachmentModel,
   DraftController,
-  readAttachmentTokens,
+  readDraftAttachmentTokens,
 } from "../../../modules/input/core/public";
 import {
   AttachmentImportError,
@@ -209,7 +209,7 @@ export class ThreadModel {
   }
   canPrepareInput(): boolean {
     if (this.disposed || !this.controller.canSaveInput()) return false;
-    const parsed = readAttachmentTokens(this.controller.getTextSnapshot());
+    const parsed = readDraftAttachmentTokens(this.controller.getTextSnapshot());
     const ids = parsed.ok ? parsed.tokens.map((item) => item.id) : [];
     if (this.attachments && this.attachments.getReadiness(ids).kind !== "ready")
       return false;

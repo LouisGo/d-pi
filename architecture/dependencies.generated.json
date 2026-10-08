@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "8b86f20611c79e2b16778c599aac8ef8c89691d25e965c3dc231dbcac9c010da",
+  "inputsHash": "34687dae294803309faefa014e458fb7938903f8c945a2278f1391e0b9a2b144",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 480,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 211,
-      "lines": 39370,
+      "lines": 39385,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -12940,6 +12940,18 @@
       "to": "src/modules/input/contracts/public.ts",
       "targetModule": "input",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/wiring/thread-attachments.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/input/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
     },
     {
       "from": "src/app/renderer/wiring/thread-attachments.test.ts",

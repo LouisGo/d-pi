@@ -4,6 +4,7 @@ import {
   type AttachmentReply,
   DraftSchema,
 } from "../../../modules/input/contracts/public";
+import { serializeReference } from "../../../modules/input/core/public";
 import {
   type DesktopBridge,
   parseDesktopReply,
@@ -155,6 +156,20 @@ it("keeps Main-confirmed manifest failures in the active body blocked after the 
     expect(request).toHaveBeenCalledTimes(1);
     expect(model.controller.getTextSnapshot()).toBe(`body ${token}`);
     model.controller.edit("body without the failed source");
+    expect(model.canPrepareInput()).toBe(true);
+    const frozen = serializeReference({
+      kind: "selection",
+      path: "source.ts",
+      source: "working-tree",
+      version: "v1",
+      startLine: 1,
+      startColumn: 1,
+      endLine: 1,
+      endColumn: token.length + 1,
+      text: token,
+    });
+    model.controller.edit(frozen);
+    expect(model.controller.getAttachmentIds()).toEqual([]);
     expect(model.canPrepareInput()).toBe(true);
   } finally {
     model.dispose();
