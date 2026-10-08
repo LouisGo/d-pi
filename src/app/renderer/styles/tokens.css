@@ -126,6 +126,9 @@
   --settings-navigation-width: 11rem;
   --settings-minimum-height: 32rem;
   --overlay-width: 20rem;
+  --layer-backdrop: 40;
+  --layer-dialog: 50;
+  --layer-popup: 100;
   --shadow-overlay: 0 4px 12px rgb(0 0 0 / 6%), 0 16px 40px rgb(0 0 0 / 10%);
   --content-width: 56rem;
   --editor-height: 4rem;

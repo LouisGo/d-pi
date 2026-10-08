@@ -1,4 +1,13 @@
 @layer components {
+  .ui-popup-positioner {
+    z-index: var(--layer-popup);
+  }
+  :is(.ui-modal, .ui-settings-modal, .ui-navigation-overlay) {
+    z-index: var(--layer-dialog);
+  }
+  .ui-overlay-backdrop {
+    z-index: var(--layer-backdrop);
+  }
   .ui-modal {
     position: fixed;
     inset-block-start: 50%;
