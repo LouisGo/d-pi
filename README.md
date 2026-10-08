@@ -29,7 +29,7 @@ Renderer 使用 HMR。Main/preload 修改默认重启 Dev；需要自动监听�
 | --- | --- |
 | `pnpm install --frozen-lockfile` | 安装锁定依赖；需要包仓库可访问或完整可用的离线缓存，不承诺无网络首次安装 |
 | `pnpm exec install-electron` | 串行准备已安装版本的 Electron 分发，避免首次测试多个进程同时自动下载；已有完整分发时直接返回 |
-| `pnpm runtime:sdk` | 使用已安装的锁定依赖准备 `resources/sdk`：官方 SDK 依赖图、Bun、App 薄宿主、消费门控和 manifest；不使用全局 OMP |
+| `pnpm runtime:sdk` | 使用已安装的锁定依赖准备目标平台 SDK 运行闭包、Bun、App 薄宿主、消费门控和 manifest；裁剪分发冗余并检查 650 MiB 资源预算，不使用全局 OMP |
 | `pnpm check:environment` | 检查开发工具、已安装依赖、Electron 实际内嵌 Node、Bun 与 SDK manifest/资源哈希；缺失和异常启动变量明确失败 |
 | `pnpm check` | 快速工具环境、类型、代码/设计/i18n、文档引用、架构及报告新鲜度、门禁负例与隔离自动测试；检查通过不等于 GUI 或用户试用通过 |
 | `pnpm check:fast` | 快速工具/依赖、Biome、文档/任务、模块边界及报告新鲜度；显式安装的提交 hook 调用，不启动原生进程或打包 |
@@ -37,7 +37,7 @@ Renderer 使用 HMR。Main/preload 修改默认重启 Dev；需要自动监听�
 | `pnpm dev` | 启动带 Renderer HMR 的开发态应用；需已有匹配本机平台/架构的 SDK；终端显示源码和独立开发数据目录 |
 | `pnpm dev:watch` | 在 Dev 基础上监听 Main/preload；会重启应用/重载页面 |
 | `pnpm preview` | 构建并运行未打包的应用，使用该 checkout 的开发数据；不准备 SDK 或生成 `.app` |
-| `pnpm package:mac` | 先准备 SDK、构建，再生成未签名的本地 macOS 应用目录；产物在 `dist/`，实际构建标识以交接为准 |
+| `pnpm package:mac` | 先准备 SDK、构建，再生成未签名的本地 macOS 应用目录；包后检查平台、资源哈希、依赖链接与 1000 MiB 预算，输出 `package-size.json`；实际构建标识以交接为准 |
 
 当前已验证交付平台为 macOS arm64，未承诺 Windows/Linux、其他架构、签名或公证。`resources/sdk`、`out` 与 `dist` 都是可重建产物，不把作者机器的资源目录当干净环境前置。独立环境验证与实际证据由重写任务记录维护。
 

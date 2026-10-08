@@ -4,18 +4,21 @@ import {
   cp,
   mkdir,
   mkdtemp,
-  readdir,
   readFile,
   realpath,
   rename,
   rm,
-  symlink,
   writeFile,
 } from "node:fs/promises";
 import { createRequire } from "node:module";
-import { dirname, join, relative, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { acquireSdkResourceGuard } from "../../src/platform/omp/resources/sdk-resource-guard.ts";
 import { createTestEnvironment } from "../testing/test-environment.mjs";
+import {
+  auditSdkTree,
+  copySdkDependencyGraph,
+  SDK_SIZE_LIMIT,
+} from "./sdk-packaging.mjs";
 
 const require = createRequire(resolve("package.json"));
 const declared = JSON.parse(await readFile("package.json", "utf8"));
@@ -40,68 +43,18 @@ const previous = `${destination}.previous`;
 try {
   root = await mkdtemp(`${destination}.staging-`);
   await mkdir(join(root, "node_modules", "@oh-my-pi"), { recursive: true });
-  const source = await realpath("node_modules/@oh-my-pi/pi-coding-agent");
-  const store = resolve("node_modules/.pnpm");
-  const copied = new Set();
-  async function copyPackage(path) {
-    const actual = await realpath(path);
-    const rel = relative(store, actual);
-    if (rel.startsWith(".."))
-      throw Error("SDK dependency outside managed store");
-    const unit = rel.split("/")[0];
-    if (copied.has(unit)) return;
-    copied.add(unit);
-    const base = join(store, unit);
-    await cp(base, join(root, "node_modules/.pnpm", unit), {
-      recursive: true,
-      verbatimSymlinks: true,
-    });
-    const modules = join(base, "node_modules");
-    for (const entry of await readdir(modules, { withFileTypes: true })) {
-      if (entry.name.startsWith("@")) {
-        for (const item of await readdir(join(modules, entry.name), {
-          withFileTypes: true,
-        })) {
-          if (item.isSymbolicLink())
-            await copyPackage(join(modules, entry.name, item.name));
-        }
-      } else if (entry.isSymbolicLink())
-        await copyPackage(join(modules, entry.name));
-    }
-  }
   const lockHash = createHash("sha256")
     .update(await readFile("pnpm-lock.yaml"))
     .digest("hex");
   // Refresh the locked graph too, so this command repairs missing SDK resources.
-  await copyPackage(source);
-  await copyPackage("node_modules/@oh-my-pi/pi-utils");
-  const family = new Map();
-  for (const unit of copied) {
-    const scope = join(
-      root,
-      "node_modules/.pnpm",
-      unit,
-      "node_modules/@oh-my-pi",
-    );
-    for (const entry of await readdir(scope, { withFileTypes: true }).catch(
-      () => [],
-    )) {
-      if (!entry.isDirectory()) continue;
-      const path = join(scope, entry.name);
-      const metadata = JSON.parse(
-        await readFile(join(path, "package.json"), "utf8"),
-      );
-      family.set(metadata.name, path);
-    }
-  }
-  for (const [name, packagePath] of family) {
-    const link = join(root, "node_modules", name);
-    try {
-      await symlink(relative(dirname(link), packagePath), link);
-    } catch (error) {
-      if (error.code !== "EEXIST") throw error;
-    }
-  }
+  const graph = await copySdkDependencyGraph(
+    [
+      "node_modules/@oh-my-pi/pi-coding-agent",
+      "node_modules/@oh-my-pi/pi-utils",
+    ],
+    "node_modules/.pnpm",
+    root,
+  );
   // 2026-10-01 explicit user exception: preserve the official package and
   // correct this one ambiguous source import only in the prepared resource copy.
   const sdkSourcePath = join(
@@ -180,6 +133,7 @@ try {
     hashes[name] = createHash("sha256")
       .update(await readFile(join(root, name)))
       .digest("hex");
+  const size = await auditSdkTree(root);
   await writeFile(
     join(root, "manifest.json"),
     JSON.stringify(
@@ -190,13 +144,21 @@ try {
         bunVersion: versions.bun,
         platform: `${process.platform}-${process.arch}`,
         hashes,
+        packaging: {
+          policyVersion: 1,
+          budgetBytes: SDK_SIZE_LIMIT,
+          ...graph,
+          size,
+        },
       },
       null,
       2,
     ),
   );
+  // The manifest itself counts toward the budget as well.
+  await auditSdkTree(root);
   console.log(
-    `Prepared fixed official SDK ${versions["@oh-my-pi/pi-coding-agent"]}: ${copied.size} dependency units`,
+    `Prepared fixed official SDK ${versions["@oh-my-pi/pi-coding-agent"]}: ${graph.packages} packages, ${(size.bytes / 1024 / 1024).toFixed(1)} MiB / ${SDK_SIZE_LIMIT / 1024 / 1024} MiB budget`,
   );
 
   // Prove the actual SDK import before publishing the new resource root.
@@ -219,6 +181,23 @@ try {
         stdio: "pipe",
       },
     );
+    if (
+      graph.runtimeAdditions.some(
+        (item) => item.package === "@huggingface/transformers@4.3.0",
+      )
+    ) {
+      // Optional inference is lazy in OMP, so the SDK factory import alone
+      // cannot prove this bundle's dependency closure. No model is downloaded.
+      execFileSync(
+        process.execPath,
+        [
+          "--input-type=module",
+          "--eval",
+          `import{createRequire}from'node:module';import{realpathSync}from'node:fs';import{pathToFileURL}from'node:url';const r=createRequire(realpathSync(${JSON.stringify(join(root, "node_modules/@oh-my-pi/pi-coding-agent/package.json"))}));const hf=await import(pathToFileURL(r.resolve('@huggingface/transformers')));if(typeof hf.pipeline!=='function')throw Error('Optional inference runtime unavailable');process.exit(0);`,
+        ],
+        { cwd: sandbox.cwd, env: sandbox.env, timeout: 30000, stdio: "pipe" },
+      );
+    }
   } finally {
     sandbox.cleanup();
   }

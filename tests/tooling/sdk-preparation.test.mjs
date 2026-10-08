@@ -27,7 +27,7 @@ const officialSource = readFileSync(
   "utf8",
 );
 function fixture(t) {
-  const root = mkdtempSync(join(tmpdir(), "d-pi-sdk-prepare-"));
+  const root = realpathSync(mkdtempSync(join(tmpdir(), "d-pi-sdk-prepare-")));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   const write = (name, body) => {
     mkdirSync(dirname(join(root, name)), { recursive: true });
@@ -155,6 +155,115 @@ test("SDK preparation replaces old links, resolves the declared packages and is 
   assert.equal(
     readFileSync(join(root, "resources/sdk/manifest.json"), "utf8"),
     manifest,
+  );
+});
+
+test("SDK preparation keeps a closed target runtime graph without maps, types, foreign binaries or incidental store packages", (t) => {
+  const { root, write } = fixture(t);
+  const agent = "node_modules/.pnpm/pi-coding-agent@18.4.6/node_modules";
+  const metadataPath = join(
+    root,
+    agent,
+    "@oh-my-pi/pi-coding-agent/package.json",
+  );
+  const metadata = JSON.parse(readFileSync(metadataPath, "utf8"));
+  metadata.dependencies = { "onnxruntime-node": "1.30.0" };
+  metadata.optionalDependencies = { "foreign-native": "1.0.0" };
+  writeFileSync(metadataPath, JSON.stringify(metadata));
+  const onnx =
+    "node_modules/.pnpm/onnxruntime-node@1.30.0/node_modules/onnxruntime-node";
+  write(
+    `${onnx}/package.json`,
+    JSON.stringify({ name: "onnxruntime-node", version: "1.30.0" }),
+  );
+  write(`${onnx}/LICENSE`, "preserve original license");
+  write(`${onnx}/dist/binding.js`, "fixture binding");
+  write(`${onnx}/dist/binding.js.map`, "not runtime");
+  write(`${onnx}/dist/binding.d.ts`, "not runtime");
+  write(
+    `${onnx}/bin/napi-v6/${process.platform}/${process.arch}/binding.node`,
+    "target native",
+  );
+  write(`${onnx}/bin/napi-v6/foreign/alien/binding.node`, "foreign native");
+  symlinkSync(
+    "../../onnxruntime-node@1.30.0/node_modules/onnxruntime-node",
+    join(root, agent, "onnxruntime-node"),
+  );
+  for (const name of ["foreign-native", "incidental-package"]) {
+    const target = `node_modules/.pnpm/${name}@1.0.0/node_modules/${name}`;
+    write(
+      `${target}/package.json`,
+      JSON.stringify({
+        name,
+        version: "1.0.0",
+        ...(name === "foreign-native"
+          ? { os: ["foreign"], cpu: ["alien"] }
+          : {}),
+      }),
+    );
+    write(`${target}/index.js`, "not a target runtime dependency");
+    symlinkSync(
+      `../../${name}@1.0.0/node_modules/${name}`,
+      join(root, agent, name),
+    );
+  }
+  write(`${agent}/@oh-my-pi/pi-coding-agent/dist/cli.js`, "unused bundled CLI");
+  write(
+    `${agent}/@oh-my-pi/pi-coding-agent/src/template.html`,
+    "required template",
+  );
+  write(
+    `${agent}/@oh-my-pi/pi-coding-agent/src/tools/browser/declarations.d.ts`,
+    "required tool declaration asset",
+  );
+  const result = prepare(root);
+  assert.equal(result.status, 0, result.stderr);
+  const preparedAgent = join(
+    root,
+    "resources/sdk/node_modules/.pnpm/pi-coding-agent@18.4.6/node_modules",
+  );
+  const preparedOnnx = join(preparedAgent, "onnxruntime-node");
+  assert.equal(
+    existsSync(
+      join(
+        preparedOnnx,
+        "bin/napi-v6",
+        process.platform,
+        process.arch,
+        "binding.node",
+      ),
+    ),
+    true,
+  );
+  assert.equal(
+    readFileSync(join(preparedOnnx, "LICENSE"), "utf8"),
+    "preserve original license",
+  );
+  assert.equal(existsSync(join(preparedOnnx, "bin/napi-v6/foreign")), false);
+  assert.equal(existsSync(join(preparedOnnx, "dist/binding.js.map")), false);
+  assert.equal(existsSync(join(preparedOnnx, "dist/binding.d.ts")), false);
+  assert.equal(existsSync(join(preparedAgent, "foreign-native")), false);
+  assert.equal(existsSync(join(preparedAgent, "incidental-package")), false);
+  assert.equal(
+    existsSync(join(preparedAgent, "@oh-my-pi/pi-coding-agent/dist/cli.js")),
+    false,
+  );
+  assert.equal(
+    readFileSync(
+      join(preparedAgent, "@oh-my-pi/pi-coding-agent/src/template.html"),
+      "utf8",
+    ),
+    "required template",
+  );
+  assert.equal(
+    readFileSync(
+      join(
+        preparedAgent,
+        "@oh-my-pi/pi-coding-agent/src/tools/browser/declarations.d.ts",
+      ),
+      "utf8",
+    ),
+    "required tool declaration asset",
   );
 });
 
