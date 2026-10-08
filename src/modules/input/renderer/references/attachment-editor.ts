@@ -18,7 +18,9 @@ export function createAttachmentEditor(
 ): AttachmentEditorPort & AttachmentImportEditor {
   return {
     applyBatch(items) {
-      return applyAttachmentBatch(editor, isCurrent, items);
+      const applied = applyAttachmentBatch(editor, isCurrent, items);
+      if (applied) editor.commands.focus();
+      return applied;
     },
     insert(item, range) {
       if (

@@ -1008,10 +1008,13 @@ it("exposes partial import without automatic adoption and accepts the ready subs
     (button) => button.textContent === "Insert only ready files",
   );
   expect(accept).toBeDefined();
+  accept?.focus();
   await act(() => accept?.click());
+  await act(() => new Promise((resolve) => setTimeout(resolve, 20)));
   expect(fixture.thread().controller.getTextSnapshot()).toContain(
     items[0]?.token,
   );
+  expect(document.activeElement).toBe(fixture.editor().view.dom);
   expect(fixture.thread().canPrepareInput()).toBe(false);
   const discard = Array.from(fixture.container.querySelectorAll("button")).find(
     (button) => button.textContent === "Cancel bad.txt",
