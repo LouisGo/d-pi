@@ -96,6 +96,7 @@
     select,
     input,
     textarea,
+    [contenteditable="true"],
     [role="tab"],
     [role="menu"],
     [role="menuitem"],

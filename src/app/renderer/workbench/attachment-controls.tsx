@@ -40,19 +40,16 @@ import {
   trackReferenceRange,
 } from "../../../modules/input/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import {
-  Button,
-  Disclosure,
-  DisclosureTrigger,
-  Slider,
-  TextInput,
-} from "../../../modules/ui/renderer/public";
+import { Button } from "../../../modules/ui/renderer/public";
 import type {
   AttachmentBridge,
   AttachmentRequest,
 } from "../../contracts/attachments";
-import { CloseIcon, FileIcon, FolderIcon } from "../components/icons/common";
 import { AttachmentImportBatches } from "./attachment-import-batches";
+import { AttachmentManager } from "./attachment-manager";
+import { AttachmentPreviewDialog } from "./attachment-preview";
+import { AttachmentAttention, AttachmentStrip } from "./composer-attachments";
+import { ReferenceSuggestions } from "./reference-suggestions";
 
 export type AttachmentActions = {
   canLeaveView(): boolean;
@@ -66,6 +63,7 @@ export type AttachmentActions = {
   openReference(id: string, position?: number): boolean;
   chooseImport(): void;
   openSearch(): void;
+  openManager(): void;
 };
 type Mention = ReferenceTrigger | null;
 
@@ -135,6 +133,8 @@ export function AttachmentControls({
     (state) => state.completion,
   );
 
+  const [managerOpen, setManagerOpen] = useState(false);
+  const managerReturnFocus = useRef<HTMLElement | null>(null);
   const [manualSearch, setManualSearch] = useState(false);
   const [query, setQuery] = useState("");
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -415,6 +415,11 @@ export function AttachmentControls({
       if (isCurrent() && !sourceFrozen)
         void run({ kind: "choose-import" }, true);
     },
+    openManager: () => {
+      if (!isCurrent() || !editor || editor.isDestroyed) return;
+      managerReturnFocus.current = editor.view.dom;
+      setManagerOpen(true);
+    },
     openSearch: () => {
       if (isCurrent() && !sourceFrozen) setManualSearch((value) => !value);
     },
@@ -442,180 +447,55 @@ export function AttachmentControls({
     moveAttachmentReference(editor, index, direction);
   }
   return (
-    <div className="grid gap-2 px-3 pb-2">
+    <div className="composer-context">
       {(pending > 0 || importing > 0) && (
         <p className="muted" role="status">
           {t("attachment.preparing")}
         </p>
       )}
-      {active.length > 0 && (
-        <ol className="attachment-rail" aria-label={t("attachment.add")}>
-          {active.map((item, index) => (
-            <li
-              key={`${ids[index]}:${index}`}
-              className={
-                item?.representation === "image"
-                  ? "attachment-tile"
-                  : "attachment-file-chip"
-              }
-            >
-              <Button
-                variant="chip"
-                size={item?.representation === "image" ? "thumbnail" : "source"}
-                className="w-full"
-                onMouseDown={(event) => event.preventDefault()}
-                onClick={() => {
-                  if (item) openReference(item.id);
-                }}
-                aria-label={t("attachment.preview", {
-                  name: item?.name ?? ids[index] ?? "",
-                })}
-              >
-                {item?.representation === "image" ? (
-                  <AttachmentThumbnail
-                    item={item}
-                    bridge={bridge}
-                    threadId={threadId}
-                  />
-                ) : (
-                  <>
-                    <FileIcon />
-                    <span className="truncate">{item?.name ?? ids[index]}</span>
-                    {item && item.source !== "reference" && (
-                      <small>{Math.ceil(item.byteLength / 1024)} KiB</small>
-                    )}
-                  </>
-                )}
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-0 top-0"
-                aria-label={t("attachment.remove", {
-                  name: item?.name ?? ids[index] ?? "",
-                })}
-                onMouseDown={(event) => event.preventDefault()}
-                onClick={() => remove(item?.id ?? ids[index] ?? "")}
-              >
-                <CloseIcon />
-              </Button>
-            </li>
-          ))}
-        </ol>
+      <AttachmentStrip
+        items={active.filter(
+          (item): item is Attachment =>
+            !!item && item.source !== "reference" && !item.frozenReference,
+        )}
+        bridge={bridge}
+        threadId={threadId}
+        onPreview={openReference}
+        onRemove={remove}
+      />
+      <AttachmentAttention
+        loading={list.isFetching}
+        items={active}
+        ids={ids}
+        disabled={sourceFrozen || pending > 0}
+        onAction={(command) => void run(command)}
+        onPreview={openReference}
+        onRemove={remove}
+      />
+      {managerOpen && (
+        <AttachmentManager
+          open={managerOpen}
+          close={() => setManagerOpen(false)}
+          returnFocus={managerReturnFocus}
+          storageReport={storageReport}
+          sourceFrozen={sourceFrozen}
+          pending={pending}
+          importing={importing}
+          editorAvailable={!!editor}
+          failed={!!failed}
+          unused={unused}
+          active={active}
+          ids={ids}
+          run={(command, add) => void run(command, add)}
+          insert={insert}
+          openReference={(id) => {
+            setManagerOpen(false);
+            openReference(id);
+          }}
+          move={move}
+          remove={remove}
+        />
       )}
-      <Disclosure>
-        <DisclosureTrigger>{t("attachment.storage")}</DisclosureTrigger>
-        <div className="grid gap-2 py-2">
-          <p className="muted">{t("attachment.storagePolicy")}</p>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="ghost"
-              data-attachment-storage-action="check"
-              disabled={sourceFrozen || pending > 0 || importing > 0}
-              onClick={() => void run({ kind: "check-storage" })}
-            >
-              {t("attachment.checkStorage")}
-            </Button>
-            <Button
-              variant="ghost"
-              data-attachment-storage-action="clean"
-              disabled={sourceFrozen || pending > 0 || importing > 0}
-              onClick={() => void run({ kind: "clean-storage" })}
-            >
-              {t("attachment.cleanStorage")}
-            </Button>
-          </div>
-          {storageReport && (
-            <div
-              data-attachment-storage-report=""
-              className="grid gap-2"
-              role="status"
-              aria-live="polite"
-            >
-              <p>
-                {t("attachment.storageSummary", {
-                  checked: storageReport.checkedObjects,
-                  retained: storageReport.retainedObjects,
-                  unused: storageReport.unreferencedObjects,
-                  remaining: storageReport.remainingObjects,
-                })}
-              </p>
-              <p>
-                {t("attachment.storageDeleted", {
-                  count: storageReport.deletedObjects,
-                  bytes: storageReport.deletedBytes,
-                })}
-              </p>
-              {storageReport.issues.length > 0 && (
-                <>
-                  <ul className="grid max-h-40 gap-1 overflow-auto">
-                    {storageReport.issues.map((issue) => (
-                      <li
-                        key={`${issue.attachmentId}:${issue.object}:${issue.digest ?? ""}`}
-                        className="break-all"
-                      >
-                        <strong>{issue.name}</strong> ·{" "}
-                        {t(
-                          issue.object === "original"
-                            ? "attachment.storageOriginal"
-                            : "attachment.storageDerived",
-                        )}
-                        : {t(`attachment.reason.${issue.reason}`)}
-                      </li>
-                    ))}
-                  </ul>
-                  <p>{t("attachment.storageReattach")}</p>
-                  <Button
-                    variant="ghost"
-                    disabled={
-                      sourceFrozen ||
-                      pending > 0 ||
-                      importing > 0 ||
-                      !editor ||
-                      !!failed
-                    }
-                    onClick={() => void run({ kind: "choose-import" }, true)}
-                  >
-                    {t("attachment.add")}
-                  </Button>
-                </>
-              )}
-              {(storageReport.manifestScanIncomplete ||
-                storageReport.referenceScanIncomplete) && (
-                <p>{t("attachment.storageReferencePending")}</p>
-              )}
-              {storageReport.discoveryPending && (
-                <p>{t("attachment.storageDiscoveryPending")}</p>
-              )}
-              {storageReport.issuesTruncated && (
-                <p>{t("attachment.storageIssuesTruncated")}</p>
-              )}
-            </div>
-          )}
-          {!!unused.length && (
-            <Disclosure>
-              <DisclosureTrigger>{t("attachment.library")}</DisclosureTrigger>
-              <div className="grid max-h-40 gap-2 overflow-auto">
-                {unused.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center justify-between gap-2"
-                  >
-                    <span className="break-all">{item.name}</span>
-                    <Button
-                      variant="ghost"
-                      disabled={sourceFrozen}
-                      onClick={() => insert(item)}
-                    >
-                      {t("attachment.insert")}
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </Disclosure>
-          )}
-        </div>
-      </Disclosure>
       {insertions.map(({ item }) => (
         <div
           key={item.id}
@@ -699,121 +579,35 @@ export function AttachmentControls({
         </div>
       )}
       {searchOpen && (
-        <div
-          className={mention ? "reference-suggestions" : "reference-search"}
-          style={
-            mention && popupPosition
-              ? ({
-                  "--suggestion-top": `${popupPosition.top}px`,
-                  "--suggestion-offset": popupPosition.offset,
-                  "--suggestion-left": `${popupPosition.left}px`,
-                  "--suggestion-width": `${popupPosition.width}px`,
-                  "--suggestion-height": `${popupPosition.maxHeight}px`,
-                } as React.CSSProperties)
-              : undefined
-          }
-          role="region"
-          aria-label={t("attachment.searchLabel")}
-        >
-          {manualSearch && (
-            <TextInput
-              aria-label={t("attachment.searchLabel")}
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              onKeyDown={(event) => {
-                if (handleMentionKey(event.nativeEvent)) event.preventDefault();
-              }}
-              autoFocus
-            />
-          )}
-          {searchPending ? (
-            <div
-              id={listboxId}
-              role="listbox"
-              aria-label={t("attachment.searchLabel")}
-            >
-              <p role="status">{t("attachment.searching")}</p>
-            </div>
-          ) : search.isError || search.data?.kind === "unavailable" ? (
-            <div
-              id={listboxId}
-              role="listbox"
-              aria-label={t("attachment.searchLabel")}
-            >
-              <p role="alert">{t("attachment.searchFailed")}</p>
-            </div>
-          ) : (
-            <div
-              id={listboxId}
-              className="reference-options"
-              role="listbox"
-              aria-label={t("attachment.searchLabel")}
-            >
-              {entries.map((entry, index) => (
-                <Button
-                  key={entry.path}
-                  id={optionId(index)}
-                  tabIndex={-1}
-                  data-reference-kind={entry.kind}
-                  data-reference-path={entry.path}
-                  className="w-full justify-start text-left"
-                  variant={selected === index ? "navigation" : "ghost"}
-                  data-active={selected === index}
-                  role="option"
-                  aria-label={entry.path}
-                  disabled={sourceFrozen || pending > 0 || !!failed}
-                  aria-selected={selected === index}
-                  onMouseDown={(event) => event.preventDefault()}
-                  onClick={() => chooseReference(entry)}
-                >
-                  {entry.kind === "directory" ? (
-                    <FolderIcon className="shrink-0" />
-                  ) : (
-                    <FileIcon className="shrink-0" />
-                  )}
-                  <span className="reference-name">
-                    {entry.path.split("/").at(-1)}
-                    {entry.kind === "directory" ? "/" : ""}
-                  </span>
-                  <span className="reference-directory">
-                    {entry.path.includes("/")
-                      ? entry.path.slice(0, entry.path.lastIndexOf("/"))
-                      : t(
-                          entry.kind === "directory"
-                            ? "attachment.directoryKind"
-                            : "attachment.fileKind",
-                        )}
-                  </span>
-                </Button>
-              ))}
-              {!entries.length && <p>{t("attachment.noMatches")}</p>}
-            </div>
-          )}
-          {!searchPending &&
+        <ReferenceSuggestions
+          inline={!!mention}
+          manual={manualSearch}
+          query={query}
+          onQuery={setQuery}
+          onKey={handleMentionKey}
+          listboxId={listboxId}
+          optionId={optionId}
+          position={popupPosition}
+          entries={entries}
+          selected={selected}
+          disabled={sourceFrozen || pending > 0 || !!failed}
+          searchPending={searchPending}
+          searchFailed={search.isError || search.data?.kind === "unavailable"}
+          truncated={
+            !searchPending &&
             search.data?.kind === "search" &&
-            search.data.truncated && <p>{t("attachment.searchLimited")}</p>}
-          <div className="reference-search-actions">
-            <Button
-              variant="ghost"
-              disabled={searchPending}
-              onClick={() => {
-                refreshSearch.current = true;
-                void search.refetch();
-              }}
-            >
-              {t("attachment.refreshSearch")}
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setManualSearch(false);
-                dismissMention();
-              }}
-            >
-              {t("attachment.cancelSearch")}
-            </Button>
-          </div>
-        </div>
+            search.data.truncated
+          }
+          onChoose={chooseReference}
+          onRefresh={() => {
+            refreshSearch.current = true;
+            void search.refetch();
+          }}
+          onClose={() => {
+            setManualSearch(false);
+            dismissMention();
+          }}
+        />
       )}
       {preparationFailure && (
         <div role="alert" className="failure">
@@ -854,164 +648,6 @@ export function AttachmentControls({
         frozen={sourceFrozen}
         onPreview={openReference}
       />
-      {active.length > 0 && (
-        <Disclosure>
-          <DisclosureTrigger>{t("attachment.details")}</DisclosureTrigger>
-          <ol
-            className="grid max-h-40 gap-2 overflow-auto"
-            aria-label={t("attachment.add")}
-          >
-            {active.map((item, index) => (
-              <li
-                key={`${ids[index]}:${index}`}
-                className="grid gap-1 rounded-md border border-border p-2"
-              >
-                {item ? (
-                  <>
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <strong className="flex items-center gap-2 break-all">
-                        {(item.source === "reference" ||
-                          item.frozenReference) &&
-                          (item.referenceKind === "directory" ? (
-                            <FolderIcon />
-                          ) : (
-                            <FileIcon />
-                          ))}
-                        {item.name}
-                        {item.referenceKind === "directory" ? "/" : ""}
-                      </strong>
-                      <span className="muted">
-                        {item.frozenReference
-                          ? t("attachment.frozenOnCopy")
-                          : item.source === "reference"
-                            ? t(
-                                item.referenceKind === "directory"
-                                  ? "attachment.directoryAtSend"
-                                  : "attachment.readAtSend",
-                              )
-                            : t(`attachment.${item.status}`)}
-                        {item.source !== "reference" && (
-                          <> · {Math.ceil(item.byteLength / 1024)} KiB</>
-                        )}
-                      </span>
-                    </div>
-                    {item.frozenReference && (
-                      <div className="muted">
-                        <Disclosure data-selectable>
-                          <DisclosureTrigger>
-                            {t("attachment.frozenSource")}
-                          </DisclosureTrigger>
-                          <dl className="grid gap-1 break-all">
-                            <dt>{t("attachment.frozenProject")}</dt>
-                            <dd>{item.frozenReference.projectPath}</dd>
-                            <dt>{t("attachment.frozenPath")}</dt>
-                            <dd>{item.frozenReference.path}</dd>
-                            <dt>{t("attachment.frozenVersion")}</dt>
-                            <dd>{item.frozenReference.version}</dd>
-                            <dt>{t("attachment.frozenTime")}</dt>
-                            <dd>
-                              <time dateTime={item.frozenReference.capturedAt}>
-                                {item.frozenReference.capturedAt}
-                              </time>
-                            </dd>
-                          </dl>
-                        </Disclosure>
-                      </div>
-                    )}
-                    {item.reason && (
-                      <p className="failure" role="status">
-                        {t(`attachment.reason.${item.reason}`)}
-                      </p>
-                    )}
-                    {!!item.coverageGaps.length && (
-                      <p>
-                        {item.textOnly
-                          ? t("attachment.textOnlyNotice")
-                          : t("attachment.coverageGap")}
-                      </p>
-                    )}
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        variant="ghost"
-                        disabled={sourceFrozen || pending > 0}
-                        onClick={() => openReference(item.id)}
-                      >
-                        {t("attachment.preview", { name: item.name })}
-                      </Button>
-                      {item.status === "failed" && (
-                        <Button
-                          variant="ghost"
-                          disabled={sourceFrozen || pending > 0}
-                          onClick={() =>
-                            void run({ kind: "retry", id: item.id })
-                          }
-                        >
-                          {t("attachment.retry")}
-                        </Button>
-                      )}
-                      {(item.representation === "pdf-text" ||
-                        item.source === "reference") &&
-                        !!item.coverageGaps.length &&
-                        !item.textOnly && (
-                          <Button
-                            variant="ghost"
-                            disabled={sourceFrozen || pending > 0}
-                            onClick={() =>
-                              void run({
-                                kind: "set-text-only",
-                                id: item.id,
-                                value: true,
-                              })
-                            }
-                          >
-                            {t("attachment.textOnly")}
-                          </Button>
-                        )}
-                      <Button
-                        variant="ghost"
-                        aria-label={t("attachment.previous", {
-                          name: item.name,
-                        })}
-                        disabled={sourceFrozen || index === 0}
-                        onClick={() => move(index, -1)}
-                      >
-                        {t("attachment.previous", { name: item.name })}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        aria-label={t("attachment.next", { name: item.name })}
-                        disabled={sourceFrozen || index === active.length - 1}
-                        onClick={() => move(index, 1)}
-                      >
-                        {t("attachment.next", { name: item.name })}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        aria-label={t("attachment.remove", { name: item.name })}
-                        onClick={() => remove(item.id)}
-                      >
-                        {t("attachment.remove", { name: item.name })}
-                      </Button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <p className="failure">
-                      {t("attachment.missing", { id: ids[index] ?? "" })}
-                    </p>
-                    <Button
-                      variant="ghost"
-                      onClick={() => remove(ids[index] ?? "")}
-                    >
-                      {t("attachment.remove", { name: ids[index] ?? "" })}
-                    </Button>
-                  </>
-                )}
-              </li>
-            ))}
-          </ol>
-        </Disclosure>
-      )}
       {preview && (
         <AttachmentPreviewDialog
           item={preview.item}
@@ -1020,89 +656,6 @@ export function AttachmentControls({
         />
       )}
     </div>
-  );
-}
-
-function AttachmentPreviewDialog({
-  item,
-  content,
-  close,
-}: {
-  item: Attachment;
-  content: AttachmentPreview;
-  close: () => void;
-}) {
-  const { t } = useI18n();
-  const dialog = useRef<HTMLDialogElement>(null);
-  const headingId = useId();
-  const [zoom, setZoom] = useState(100);
-  const [width, setWidth] = useState<number>();
-  useEffect(() => {
-    const element = dialog.current;
-    element?.showModal();
-    return () => element?.close();
-  }, []);
-  function closeDialog() {
-    // Release native modal focus before the parent restores the editor bookmark.
-    dialog.current?.close();
-    close();
-  }
-  return (
-    <dialog
-      ref={dialog}
-      onCancel={(event) => {
-        event.preventDefault();
-        closeDialog();
-      }}
-      aria-labelledby={headingId}
-      className="attachment-preview-dialog"
-    >
-      <div className="flex items-center justify-between gap-4">
-        <h2 id={headingId} className="break-all">
-          {item.name}
-        </h2>
-        <Button variant="ghost" autoFocus onClick={closeDialog}>
-          {t("attachment.closePreview")}
-        </Button>
-      </div>
-      {content.kind === "image" && (
-        <>
-          <label className="flex items-center gap-2">
-            {t("attachment.zoom")}
-            <Slider
-              min="25"
-              max="300"
-              step="25"
-              value={zoom}
-              onChange={(event) => setZoom(Number(event.target.value))}
-            />
-            {zoom}%
-          </label>
-          <div className="attachment-preview-content">
-            <img
-              className="max-w-none"
-              src={content.dataUrl}
-              alt={item.name}
-              width={width ? (width * zoom) / 100 : undefined}
-              onLoad={(event) => setWidth(event.currentTarget.naturalWidth)}
-            />
-          </div>
-        </>
-      )}
-      {content.kind === "text" && (
-        <>
-          <pre className="attachment-preview-content whitespace-pre-wrap">
-            {content.text}
-          </pre>
-          {content.truncated && (
-            <p role="status">{t("attachment.previewTruncated")}</p>
-          )}
-        </>
-      )}
-      {content.kind === "unavailable" && (
-        <p role="alert">{t(`attachment.reason.${content.reason}`)}</p>
-      )}
-    </dialog>
   );
 }
 
@@ -1159,38 +712,4 @@ function useSuggestionPosition(editor: Editor | null, mention: Mention) {
     };
   }, [editor, mention?.to]);
   return position;
-}
-function AttachmentThumbnail({
-  item,
-  bridge,
-  threadId,
-}: {
-  item: Attachment;
-  bridge: AttachmentBridge;
-  threadId: AttachmentRequest["threadId"];
-}) {
-  const preview = useQuery({
-    queryKey: [
-      "attachment-thumbnail",
-      threadId,
-      item.id,
-      item.inputDigest ?? item.capturedAt,
-    ],
-    queryFn: () =>
-      bridge.request({
-        kind: "preview",
-        threadId,
-        id: item.id,
-        traceId: crypto.randomUUID(),
-      }),
-    enabled: item.status === "ready",
-    networkMode: "always",
-    retry: false,
-    gcTime: 60000,
-  });
-  return preview.data?.kind === "image" ? (
-    <img src={preview.data.dataUrl} alt={item.name} />
-  ) : (
-    <span className="truncate">{item.name}</span>
-  );
 }

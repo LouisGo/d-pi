@@ -353,6 +353,13 @@ export const ui = {
     "The configuration connection ended without a confirmed result. Refresh native configuration before retrying.",
   "config.savingKey": "Validating and saving the key…",
 
+  "composer.placeholder": "Send a message, @ to reference project files",
+  "composer.more": "More composer actions",
+  "composer.manageAttachments": "Manage attachment cache",
+  "composer.enterToSend": "Enter to send",
+  "composer.projectAccess": "Project execution access",
+  "composer.accessAllowed": "Execution allowed",
+  "composer.accessBrowse": "Browse only",
   "composer.chooseModel": "Select model",
   "composer.blocked.noModel":
     "No active model. Configure authentication above, then select an available model. Your draft is preserved.",
@@ -490,8 +497,8 @@ export const ui = {
   "composer.paste.unsupported":
     "Attachment paste is not connected in this candidate. No part was inserted or discarded; the existing draft is preserved.",
   "composer.paste.hint": "⌘⇧V paste plain text",
-  "composer.editorLabel": "Draft body",
-  "composer.sectionLabel": "Persistent text draft",
+  "composer.editorLabel": "Message",
+  "composer.sectionLabel": "Message composer",
   "composer.inputOptions": "Input options",
   "composer.heading": "Draft",
   "composer.status.saved": "Saved on this device",

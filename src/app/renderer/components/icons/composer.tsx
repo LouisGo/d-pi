@@ -1,6 +1,9 @@
 import {
+  ArrowDown01Icon,
   ArrowExpand01Icon,
   ArrowShrink01Icon,
+  BubbleChatIcon,
+  LockKeyIcon,
   MoreHorizontalIcon,
   Tick02Icon,
 } from "@hugeicons/core-free-icons";
@@ -50,6 +53,46 @@ export function MenuCheckIcon({ size = 16, className }: IconProps) {
   return (
     <HugeiconsIcon
       icon={Tick02Icon}
+      size={size}
+      className={className}
+      strokeWidth={1.5}
+      color="currentColor"
+      aria-hidden={true}
+      focusable={false}
+    />
+  );
+}
+
+export function ComposerChevronIcon({ size = 16, className }: IconProps) {
+  return (
+    <HugeiconsIcon
+      icon={ArrowDown01Icon}
+      size={size}
+      className={className}
+      strokeWidth={1.5}
+      color="currentColor"
+      aria-hidden={true}
+      focusable={false}
+    />
+  );
+}
+export function ComposerAccessIcon({ size = 16, className }: IconProps) {
+  return (
+    <HugeiconsIcon
+      icon={LockKeyIcon}
+      size={size}
+      className={className}
+      strokeWidth={1.5}
+      color="currentColor"
+      aria-hidden={true}
+      focusable={false}
+    />
+  );
+}
+export function ComposerModelIcon({ size = 16, className }: IconProps) {
+  return (
+    <HugeiconsIcon
+      icon={BubbleChatIcon}
       size={size}
       className={className}
       strokeWidth={1.5}

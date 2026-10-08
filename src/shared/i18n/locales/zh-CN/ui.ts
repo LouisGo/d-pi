@@ -322,6 +322,13 @@ export const ui = {
     "配置连接中断，结果未确认。请先刷新原生配置再重试。",
   "config.savingKey": "正在保存并校验密钥…",
 
+  "composer.placeholder": "发送消息，@ 引用项目文件",
+  "composer.more": "更多输入操作",
+  "composer.manageAttachments": "管理附件缓存",
+  "composer.enterToSend": "Enter 发送",
+  "composer.projectAccess": "项目执行权限",
+  "composer.accessAllowed": "已允许执行",
+  "composer.accessBrowse": "仅浏览",
   "composer.chooseModel": "选择模型",
   "composer.blocked.noModel":
     "尚无生效模型。请在顶部配置认证，再选择可用模型；草稿已保留。",
@@ -443,8 +450,8 @@ export const ui = {
   "composer.paste.unsupported":
     "此候选的附件粘贴尚未接入；未插入或丢弃其中任何内容，原草稿保留。",
   "composer.paste.hint": "⌘⇧V 纯文本粘贴",
-  "composer.editorLabel": "草稿正文",
-  "composer.sectionLabel": "持久文字草稿",
+  "composer.editorLabel": "消息",
+  "composer.sectionLabel": "消息输入",
   "composer.inputOptions": "输入选项",
   "composer.heading": "草稿",
   "composer.status.saved": "已保存到此设备",

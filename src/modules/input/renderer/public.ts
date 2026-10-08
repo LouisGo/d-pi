@@ -29,6 +29,7 @@ export {
 export {
   attachmentIds,
   attachmentMention,
+  contextTypeLabel,
   insertAttachmentReference,
 } from "./references/attachment-reference";
 export { FileReference } from "./references/file-reference-node";

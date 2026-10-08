@@ -403,7 +403,7 @@ it.each(["file-picker", "drop"])(
     const fixture = await setup(undefined, undefined, { request });
     const attach = Array.from(
       fixture.container.querySelectorAll("button"),
-    ).find((button) => button.textContent === "Attach files");
+    ).find((button) => button.getAttribute("aria-label") === "Attach files");
     if (!attach) throw Error("missing real attachment control");
     let admitted = true;
     await act(async () => {
@@ -510,7 +510,7 @@ it.each(["limit", "failure"] as const)(
     items = [item];
     const button = Array.from(
       fixture.container.querySelectorAll("button"),
-    ).find((button) => button.textContent === "Attach files");
+    ).find((button) => button.getAttribute("aria-label") === "Attach files");
     if (!button) throw Error("missing attach action");
     await act(async () => {
       button.click();
@@ -610,7 +610,8 @@ it("keeps publication-limit Undo until explicit recovery and waits for Main leas
   ];
   const button = (label: string) =>
     Array.from(fixture.container.querySelectorAll("button")).find(
-      (button) => button.textContent === label,
+      (button) =>
+        (button.getAttribute("aria-label") ?? button.textContent) === label,
     );
   await act(async () => {
     button("Attach files")?.click();
@@ -977,8 +978,30 @@ it("inserts mixed-paste files at the captured source boundary and undoes the who
   expect(fixture.thread().controller.getTextSnapshot()).toBe(
     `alpha A${items[0]?.token} B omega`,
   );
+  expect(
+    fixture.container.querySelector(".attachment-rail")?.textContent,
+  ).toContain("source.txt");
+  expect(
+    fixture
+      .editor()
+      .view.dom.querySelector<HTMLElement>('[data-context-kind="external"]')
+      ?.hidden,
+  ).toBe(true);
+  expect(fixture.container.querySelector("details")).toBeNull();
   await act(() => fixture.editor().commands.undo());
   expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha A B omega");
+  expect(fixture.container.querySelector(".attachment-rail")).toBeNull();
+  await act(() => fixture.editor().commands.redo());
+  await act(() => new Promise((resolve) => setTimeout(resolve, 20)));
+  expect(
+    fixture.container.querySelector(".attachment-rail")?.textContent,
+  ).toContain("source.txt");
+  expect(
+    fixture
+      .editor()
+      .view.dom.querySelector<HTMLElement>('[data-context-kind="external"]')
+      ?.hidden,
+  ).toBe(true);
 });
 
 it("exposes partial import without automatic adoption and accepts the ready subset only through its explicit Composer action", async () => {

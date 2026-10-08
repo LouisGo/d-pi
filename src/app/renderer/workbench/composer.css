@@ -1,0 +1,131 @@
+@layer components {
+  .composer {
+    position: relative;
+    flex-shrink: 0;
+    min-width: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-window);
+    box-shadow: var(--shadow-raised);
+  }
+  .composer-body {
+    padding: var(--panel-padding) var(--panel-padding) var(--layout-gap);
+  }
+  .composer-context {
+    display: grid;
+    gap: var(--layout-gap);
+  }
+  .composer-context:empty {
+    display: none;
+  }
+  .composer-editor {
+    position: relative;
+    min-width: 0;
+  }
+  .composer-editor[data-empty="true"]::before {
+    position: absolute;
+    inset: 0;
+    content: attr(data-placeholder);
+    color: var(--muted-foreground);
+    font-size: var(--text-reading);
+    line-height: 1.7;
+    pointer-events: none;
+  }
+  .composer-footer {
+    padding: 0 var(--layout-gap) var(--layout-gap);
+    color: var(--muted-foreground);
+    font-size: var(--text-body);
+  }
+  .composer-notice {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--region-gap);
+    font-size: var(--text-small);
+    color: var(--muted-foreground);
+  }
+  .attachment-rail {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--layout-gap);
+    list-style: none;
+    margin: 0 0 var(--layout-gap);
+    padding: 0;
+  }
+  .attachment-tile,
+  .attachment-file-chip {
+    position: relative;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .attachment-tile {
+    width: calc(var(--control-height) * 2.5);
+    height: calc(var(--control-height) * 2.5);
+  }
+  .attachment-file-chip {
+    display: flex;
+    align-items: center;
+    gap: var(--region-gap);
+  }
+  .attachment-file-chip .truncate {
+    max-width: 38ch;
+  }
+  .attachment-file-chip small {
+    flex-shrink: 0;
+    color: var(--muted-foreground);
+  }
+  .attachment-remove {
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+  .attachment-tile .attachment-remove {
+    position: absolute;
+    top: var(--region-gap);
+    right: var(--region-gap);
+    background: var(--surface);
+    border-radius: var(--radius-control);
+    box-shadow: var(--shadow-overlay);
+  }
+  .composer-file-type,
+  .composer-context-type {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--tab-icon-size);
+    height: var(--tab-icon-size);
+    padding-inline: var(--region-gap);
+    border-radius: var(--radius-control);
+    background: var(--accent);
+    color: var(--emphasis);
+    font-size: var(--text-small);
+    font-weight: 500;
+    line-height: 1;
+  }
+  .composer-context-token {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--region-gap);
+    max-width: 100%;
+    vertical-align: baseline;
+    white-space: nowrap;
+    border: 1px solid var(--control-border);
+    border-radius: var(--radius-control);
+    padding-inline: var(--region-gap);
+    background: var(--accent);
+    color: var(--accent-foreground);
+  }
+  .composer-context-token[hidden] {
+    display: none;
+  }
+  .composer-context-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .composer-context-token.ProseMirror-selectednode {
+    border-color: var(--emphasis);
+    background: var(--code-selection);
+  }
+}

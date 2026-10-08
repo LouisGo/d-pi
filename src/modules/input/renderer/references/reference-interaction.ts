@@ -8,7 +8,8 @@ import { onDraftHistoryClear } from "../editor/plain-text-editor";
 export function selectedReference(editor: Editor): string | null {
   const selection = editor.state.selection;
   return selection instanceof NodeSelection &&
-    selection.node.type.name === "attachmentReference"
+    selection.node.type.name === "attachmentReference" &&
+    selection.node.attrs.contextKind !== "external"
     ? String(selection.node.attrs.id)
     : null;
 }
@@ -48,10 +49,12 @@ export function navigateReference(
   const pos = direction > 0 ? selection.head : selection.head - node.nodeSize;
   editor.view.dispatch(
     editor.state.tr.setSelection(
-      event.shiftKey
+      event.shiftKey || node.attrs.contextKind === "external"
         ? TextSelection.create(
             doc,
-            selection.anchor,
+            event.shiftKey
+              ? selection.anchor
+              : selection.head + direction * node.nodeSize,
             selection.head + direction * node.nodeSize,
           )
         : NodeSelection.create(doc, pos),

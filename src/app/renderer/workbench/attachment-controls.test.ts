@@ -69,6 +69,11 @@ function controls(
       { onClick: () => actions.current?.chooseImport() },
       "Attach files",
     ),
+    createElement(
+      "button",
+      { onClick: () => actions.current?.openManager() },
+      "Manage attachment storage",
+    ),
   );
 }
 
@@ -146,16 +151,26 @@ it("distinguishes frozen provenance from live references in the formal controls"
       }),
     );
   });
+  container.append(editor.view.dom);
   await act(async () => {
     await vi.waitFor(() =>
-      expect(container.textContent).toContain("original.txt"),
+      expect(editor.view.dom.textContent).toContain("original.txt"),
     );
   });
-  expect(container.textContent).toContain("Frozen on copy");
-  expect(container.textContent).toContain("/actual/source/project");
-  expect(container.textContent).toContain("source-version-1");
-  expect(container.textContent).toContain("2026-10-07T00:00:00.000Z");
-  expect(container.textContent).not.toContain("Read when sending");
+  expect(
+    container.querySelector(".attachment-rail")?.textContent ?? "",
+  ).not.toContain("original.txt");
+  expect(container.textContent).not.toContain("Attachment details");
+  expect(container.textContent).not.toContain("Attachments and storage");
+  const manage = Array.from(container.querySelectorAll("button")).find(
+    (button) => button.textContent === "Manage attachment storage",
+  );
+  await act(() => manage?.click());
+  expect(document.body.textContent).toContain("Frozen on copy");
+  expect(document.body.textContent).toContain("/actual/source/project");
+  expect(document.body.textContent).toContain("source-version-1");
+  expect(document.body.textContent).toContain("2026-10-07T00:00:00.000Z");
+  expect(document.body.textContent).not.toContain("Read when sending");
 });
 it("offers only retry for an unfinished clipboard cleanup and confirms its original IDs", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
@@ -517,7 +532,9 @@ it("identifies a ready reference that failed during send-time freezing without r
     "Referenced file is missing or unreadable",
   );
   expect(alert?.textContent).toContain("Sending reads this reference again");
-  expect(container.textContent).toContain("Read when sending");
+  expect(
+    container.querySelector(".attachment-rail")?.textContent ?? "",
+  ).not.toContain(item.name);
   expect(item.status).toBe("ready");
 });
 
@@ -587,7 +604,9 @@ it("permits explicit re-preparation of a failed @PDF after text-only consent whi
     await new Promise((resolve) => setTimeout(resolve, 20));
   });
   expect(container.textContent).toContain("Text-only PDF");
-  expect(container.textContent).toContain("Read when sending");
+  expect(
+    container.querySelector(".attachment-rail")?.textContent ?? "",
+  ).not.toContain(item.name);
   expect(container.textContent).toContain(
     "PDF text extraction has coverage gaps",
   );
@@ -661,7 +680,7 @@ it.each(["button", "cancel"] as const)(
       await new Promise((resolve) => setTimeout(resolve, 20));
     });
     const preview = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "Preview report.pdf",
+      (button) => button.getAttribute("aria-label") === "Preview report.pdf",
     );
     if (!preview) throw Error("missing preview button");
     container.append(editor.view.dom);
@@ -864,8 +883,11 @@ it.each([
           ? "Retry preparation"
           : "Use extracted text only";
     const unrelated = Array.from(
-      container.querySelectorAll<HTMLButtonElement>("ol button"),
-    ).find((button) => button.textContent === label);
+      container.querySelectorAll<HTMLButtonElement>("button"),
+    ).find(
+      (button) =>
+        (button.getAttribute("aria-label") ?? button.textContent) === label,
+    );
     if (!unrelated) throw Error("missing unrelated operation");
     await act(async () => {
       unrelated.click();
@@ -1069,7 +1091,15 @@ it("offers storage checking and explicit unreferenced cleanup, locates broken or
   await act(async () => {
     await new Promise((resolve) => setTimeout(resolve, 20));
   });
-  const check = container.querySelector<HTMLButtonElement>(
+  expect(
+    container.querySelector("[data-attachment-storage-action]"),
+  ).toBeNull();
+  await act(() =>
+    [...container.querySelectorAll("button")]
+      .find((button) => button.textContent === "Manage attachment storage")
+      ?.click(),
+  );
+  const check = document.body.querySelector<HTMLButtonElement>(
     '[data-attachment-storage-action="check"]',
   );
   expect(check).not.toBeNull();
@@ -1079,9 +1109,10 @@ it("offers storage checking and explicit unreferenced cleanup, locates broken or
     await new Promise((resolve) => setTimeout(resolve, 20));
   });
   expect(
-    container.querySelector("[data-attachment-storage-report]")?.textContent,
+    document.body.querySelector("[data-attachment-storage-report]")
+      ?.textContent,
   ).toContain("lost original.txt");
-  const clean = container.querySelector<HTMLButtonElement>(
+  const clean = document.body.querySelector<HTMLButtonElement>(
     '[data-attachment-storage-action="clean"]',
   );
   await act(async () => {
@@ -1182,6 +1213,7 @@ it("coalesces quick @ edits, hides old-query results, consumes Enter while waiti
     query: "@virtualList",
     refresh: false,
   });
+  await act(() => actions.current?.openSearch());
   const refresh = [...container.querySelectorAll("button")].find(
     (button) => button.textContent === "Refresh search",
   );

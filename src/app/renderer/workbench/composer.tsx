@@ -38,13 +38,19 @@ import {
   DisclosureTrigger,
   TextArea,
 } from "../../../modules/ui/renderer/public";
-import { AttachmentIcon, SendIcon } from "../components/icons/common";
+import { SendIcon } from "../components/icons/common";
+import {
+  ComposerAccessIcon,
+  ComposerChevronIcon,
+  ComposerModelIcon,
+} from "../components/icons/composer";
 import type { AppModel } from "../wiring/model";
 import type { ThreadModel } from "../wiring/thread-model";
 import {
   type AttachmentActions,
   AttachmentControls,
 } from "./attachment-controls";
+import { ComposerToolbar } from "./composer-toolbar";
 import { UrlDecoration } from "./url-decoration";
 export function Composer({
   thread,
@@ -52,6 +58,7 @@ export function Composer({
   selectionAttachment,
   onAttachmentApplied,
   onChooseModel,
+  onOpenPermissions,
   hidden = false,
 }: {
   thread: ThreadModel;
@@ -63,6 +70,7 @@ export function Composer({
   } | null;
   onAttachmentApplied?: (id: string) => void;
   onChooseModel?: (() => void) | undefined;
+  onOpenPermissions?: (() => void) | undefined;
   hidden?: boolean;
 }) {
   const { controller, submission, runtime } = thread;
@@ -392,133 +400,127 @@ export function Composer({
           onChooseModel={onChooseModel}
         />
       )}
-      {thread.attachments && thread.attachmentImports && model.attachments && (
-        <AttachmentControls
-          key={thread.key}
-          model={thread.attachments}
-          imports={thread.attachmentImports}
-          preparationFailure={preparationFailure}
-          ref={attachmentActions}
-          bridge={model.attachments}
-          threadId={thread.context.threadId}
-          editor={editor}
-          text={controller.getTextSnapshot()}
-          isCurrent={isCurrentThread}
-          onBlocked={updateBlocked}
-          mention={mention}
-          dismissMention={dismissMention}
-          onClearHistory={() => model.draftEditors.clearHistory(thread.key)}
-        />
-      )}
-      <EditorContent className="composer-editor" editor={editor} />
-      {clipboardFeedback && (
-        <p role="status" className="muted">
-          {t(
-            clipboardFeedback === "fallback"
-              ? "attachment.clipboardFallback"
-              : "attachment.clipboardFailed",
-          )}
-        </p>
-      )}
-      {unsupportedPaste && (
-        <p role="alert" className="failure">
-          {t("composer.paste.unsupported")}
-        </p>
-      )}
-      {history.failed && (
-        <div role="alert" className="flex flex-wrap items-center gap-2">
-          <p className="failure">{t("attachment.historyLeaseFailed")}</p>
-          <Button
-            variant="ghost"
-            disabled={history.pending}
-            onClick={() =>
-              void model.draftEditors
-                .retryHistory(thread.key)
-                .then((protectedAssets) => {
-                  if (protectedAssets && isCurrentThread()) {
-                    thread.attachmentImports?.flushInsertions();
-                    void controller.retry();
-                  }
-                })
-            }
-          >
-            {t("attachment.historyRetry")}
-          </Button>
-        </div>
-      )}
-      {history.limited && (
-        <p role="status" className="muted">
-          {t("attachment.historyCleared")}
-        </p>
-      )}
-      <div className="composer-footer">
-        {runtime && (
-          <ComposerModel runtime={runtime} onChooseModel={onChooseModel} />
-        )}
-        <div className="composer-help">
-          <Disclosure>
-            <DisclosureTrigger>{t("composer.inputOptions")}</DisclosureTrigger>
-            <p>
-              {expanded || preference === "enter-newline"
-                ? t("composer.shortcut.newline")
-                : t("composer.shortcut.send")}{" "}
-              {t("composer.shortcut.undo")} · {t("composer.paste.hint")}
-            </p>
-            <Button
-              variant="ghost"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => void model.preference("sendKey")}
-            >
-              {t("composer.switchShortcut")}
-            </Button>
-          </Disclosure>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={t("attachment.add")}
-            title={t("attachment.add")}
-            disabled={attachmentBlocked}
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={() => attachmentActions.current?.chooseImport()}
-          >
-            <AttachmentIcon />
-            <span className="sr-only">{t("attachment.add")}</span>
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={t("attachment.reference")}
-            title={t("attachment.reference")}
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={() => attachmentActions.current?.openSearch()}
-          >
-            @
-          </Button>
-          <Button
-            variant="ghost"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => setExpanded((value) => !value)}
-          >
-            {expanded ? t("composer.collapse") : t("composer.expand")}
-          </Button>
-          {submission && runtime && (
-            <SendButton
-              contentBlocked={
-                attachmentBlocked || history.pending || history.failed
-              }
-              canSend={() =>
-                !!editor &&
-                !editor.view.composing &&
-                model.isCurrentThread(thread) &&
-                !attachmentBlock.current
-              }
-              submission={submission}
-              runtime={runtime}
+      <div className="composer-body">
+        {thread.attachments &&
+          thread.attachmentImports &&
+          model.attachments && (
+            <AttachmentControls
+              key={thread.key}
+              model={thread.attachments}
+              imports={thread.attachmentImports}
+              preparationFailure={preparationFailure}
+              ref={attachmentActions}
+              bridge={model.attachments}
+              threadId={thread.context.threadId}
+              editor={editor}
+              text={controller.getTextSnapshot()}
+              isCurrent={isCurrentThread}
+              onBlocked={updateBlocked}
+              mention={mention}
+              dismissMention={dismissMention}
+              onClearHistory={() => model.draftEditors.clearHistory(thread.key)}
             />
           )}
-        </div>
+        <EditorContent
+          className="composer-editor"
+          data-placeholder={t("composer.placeholder")}
+          data-empty={
+            !editor ||
+            !editor.state.doc.content.size ||
+            !hasVisibleContent(editor.state.doc)
+          }
+          editor={editor}
+        />
+        {clipboardFeedback && (
+          <p role="status" className="muted">
+            {t(
+              clipboardFeedback === "fallback"
+                ? "attachment.clipboardFallback"
+                : "attachment.clipboardFailed",
+            )}
+          </p>
+        )}
+        {unsupportedPaste && (
+          <p role="alert" className="failure">
+            {t("composer.paste.unsupported")}
+          </p>
+        )}
+        {history.failed && (
+          <div role="alert" className="flex flex-wrap items-center gap-2">
+            <p className="failure">{t("attachment.historyLeaseFailed")}</p>
+            <Button
+              variant="ghost"
+              disabled={history.pending}
+              onClick={() =>
+                void model.draftEditors
+                  .retryHistory(thread.key)
+                  .then((protectedAssets) => {
+                    if (protectedAssets && isCurrentThread()) {
+                      thread.attachmentImports?.flushInsertions();
+                      void controller.retry();
+                    }
+                  })
+              }
+            >
+              {t("attachment.historyRetry")}
+            </Button>
+          </div>
+        )}
+        {history.limited && (
+          <p role="status" className="muted">
+            {t("attachment.historyCleared")}
+          </p>
+        )}
+      </div>
+      <div className="composer-footer">
+        <ComposerToolbar
+          model={
+            runtime ? (
+              <ComposerModel runtime={runtime} onChooseModel={onChooseModel} />
+            ) : null
+          }
+          access={
+            runtime ? (
+              <ComposerAccess runtime={runtime} onOpen={onOpenPermissions} />
+            ) : null
+          }
+          expanded={expanded}
+          preference={preference}
+          disabled={attachmentBlocked}
+          onAttach={() => attachmentActions.current?.chooseImport()}
+          onReference={() => attachmentActions.current?.openSearch()}
+          onManageAttachments={() => attachmentActions.current?.openManager()}
+          onToggleExpanded={() => setExpanded((value) => !value)}
+          onToggleSendKey={() => void model.preference("sendKey")}
+          labels={{
+            attach: t("attachment.add"),
+            expand: t("composer.expand"),
+            collapse: t("composer.collapse"),
+            more: t("composer.more"),
+            reference: t("attachment.reference"),
+            manageAttachments: t("composer.manageAttachments"),
+            enterToSend: t("composer.enterToSend"),
+            enterSendShortcut: t("composer.shortcut.send"),
+            enterNewlineShortcut: t("composer.shortcut.newline"),
+          }}
+          primaryAction={
+            submission && runtime ? (
+              <SendButton
+                contentBlocked={
+                  attachmentBlocked || history.pending || history.failed
+                }
+                canSend={() =>
+                  !!editor &&
+                  !editor.view.composing &&
+                  model.isCurrentThread(thread) &&
+                  !attachmentBlock.current
+                }
+                submission={submission}
+                runtime={runtime}
+              />
+            ) : null
+          }
+        />
       </div>
       {state.kind === "conflict" && (
         <div className="failure" role="alert">
@@ -744,11 +746,55 @@ function ComposerModel({
       onMouseDown={(e) => e.preventDefault()}
       onClick={onChooseModel}
       title={t("composer.chooseModel")}
-      className="max-w-64"
+      className="w-full min-w-0 justify-start"
     >
-      <span className="truncate">
+      <ComposerModelIcon size={18} />
+      <span className="composer-toolbar-label">
         {model?.modelId ?? t("composer.chooseModel")}
       </span>
+      <ComposerChevronIcon />
     </Button>
   );
+}
+
+function ComposerAccess({
+  runtime,
+  onOpen,
+}: {
+  runtime: NonNullable<ThreadModel["runtime"]>;
+  onOpen?: (() => void) | undefined;
+}) {
+  const { t } = useI18n();
+  const trusted = useStore(
+    runtime.stateStore,
+    (state) => state.view?.trusted === true,
+  );
+  return (
+    <Button
+      variant="ghost"
+      className="w-full min-w-0 justify-start"
+      disabled={!onOpen}
+      onClick={onOpen}
+      title={t("composer.projectAccess")}
+    >
+      <ComposerAccessIcon size={18} />
+      <span className="composer-toolbar-label">
+        {t(trusted ? "composer.accessAllowed" : "composer.accessBrowse")}
+      </span>
+      <ComposerChevronIcon />
+    </Button>
+  );
+}
+function hasVisibleContent(doc: import("@tiptap/pm/model").Node) {
+  let visible = false;
+  doc.descendants((node) => {
+    if (
+      (node.isText && node.text?.trim()) ||
+      (node.type.name === "attachmentReference" &&
+        node.attrs.contextKind !== "external") ||
+      node.type.name === "fileReference"
+    )
+      visible = true;
+  });
+  return visible;
 }

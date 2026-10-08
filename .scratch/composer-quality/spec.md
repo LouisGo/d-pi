@@ -13,11 +13,11 @@
 - 执行：主 Agent 单写规格/任务/生成看板/集成；M2 worker 单写隔离 worktree 的 input imports/lifecycle/batch adapter 与 Thread 装配，不写 M1 控件/Composer/CSS/locale；共享 public 导出串行集成。
 
 ```project-status
-[{"id":"composer-quality","title":"Composer M1/M2 编辑体验","phase":"M2","engineering":"complete","trial":"delivered","acceptance":"pending","build":"Dev / codex/composer-quality / 3b932e04","evidence":["handoff.md","validation.md","review.md"],"next":"交付试用；实机IME/VoiceOver/缩放/长会话及既有CLI fixture冲突保留","constraints":"本地源码与 Dev 交付；未推送/发布；真实 provider/Host queue 未重跑，用户认可pending。"}]
+[{"id":"composer-quality","title":"Composer M1/M2 编辑体验","phase":"M2","engineering":"in-progress","trial":"delivered","acceptance":"pending","build":"Dev / codex/composer-quality / 3b932e04","evidence":["handoff.md","validation.md","review.md"],"next":"按用户截图重新实现Composer组合UI，项目引用仅内联，移出技术展开面板，原生对照验收","constraints":"本地源码与 Dev 交付；未推送/发布；真实 provider/Host queue 未重跑，用户认可pending。"}]
 ```
 
 ```implementation-plan
-[{"id":"composer","tickets":["01","02","03"]}]
+[{"id":"composer","tickets":["01","02","04","03"]}]
 ```
 
 ## 验收
@@ -25,3 +25,9 @@
 01：加载/空/失败 popup Enter 不发送，IME 229/isComposing/view.composing 不确认引用或发送；同长度旧结果拒绝；Escape 同 token 持续关闭；稳定 active option 与 editor 焦点；原子 chip 详情/删除/焦点恢复，截图布局适配窄窗/light/dark。
 02：真实 PM mapped target、B 保留、批次一次 Undo；partial failure 不自动接受；逐阶段取消与 retry/old finally、budget/freeze/dispose/late completion 跨 Thread 隔离；Main 资源结算沿既有 pin/lifecycle 或最小严格补充合同，不能借用 clipboard discard。
 03：组合类型/格式/架构/行为/build、独立 Spec/Standards review；pnpm dev 实际键盘、粘贴、焦点、Thread 切换与图片；记录真实 IME/VoiceOver/30min 性能未验证项，不伪报通过。
+
+## 2026-10-08 用户拒绝UI交付，重新打开M1
+
+上一版功能验证不构成UI验收。用户明确要求重做布局/组件/样式/交互/文案：项目内@引用及复制的项目上下文仅正文内联，不进入外部附件栏；外部图片/文件分别以缩略图/紧凑文件chip呈现；正文与附件共享连续表面，底部模型/权限/操作栏。附件与存储、附件详情、输入选项三个默认展开入口移走，维护从次级入口按需打开，具体来源的失败/确认仍就近可见。采用T3固定源码的Surface/Banner/Prompt/Toolbar分工，用d-pi自有Base UI组件和token实现；不复用T3状态/队列/权限架构。原M2、草稿、资源lease、trusted clipboard、immutable send及native queue不变。
+
+当前集成基点72863d9，沿用本任务已隔离主树，原工作树继续保留；toolbar leaf隔离分派，root单写编辑表面/附件绑定/规格/看板。验收为真实Dev对照用户截图，项目引用无重复附件、长文件名/图片/空态/错误/窄窗/light-dark/键盘焦点；不以变量使用或单测绿宣称UI合格。

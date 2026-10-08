@@ -186,6 +186,15 @@ const ThreadContent = memo(function ThreadContent({
     setChoosingModel(true);
     setToolsOpen(true);
   }, []);
+  const openPermissions = useCallback(() => {
+    toolsReturnFocus.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : toolsTrigger.current;
+    setChoosingHistory(false);
+    setChoosingModel(false);
+    setToolsOpen(true);
+  }, []);
   const [selectionAttachment, setSelectionAttachment] = useState<{
     id: string;
     threadId: string;
@@ -385,6 +394,7 @@ const ThreadContent = memo(function ThreadContent({
         selectionAttachment={selectionAttachment}
         onAttachmentApplied={onAttachmentApplied}
         onChooseModel={chooseModel}
+        onOpenPermissions={openPermissions}
         hidden={readingFocus}
       />
     </>

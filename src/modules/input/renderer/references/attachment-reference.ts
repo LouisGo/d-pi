@@ -15,6 +15,7 @@ export const AttachmentReference = Node.create({
       id: { default: null },
       name: { default: null },
       referenceKind: { default: null },
+      contextKind: { default: "project" },
     };
   },
   renderHTML({ node }) {
@@ -22,18 +23,56 @@ export const AttachmentReference = Node.create({
     return [
       "span",
       {
-        class: "rounded-sm bg-muted px-1 text-foreground",
+        class: "composer-context-token",
         contenteditable: "false",
         "data-attachment-id": id,
         "data-reference-kind": node.attrs.referenceKind,
+        "data-context-kind": node.attrs.contextKind,
+        hidden: node.attrs.contextKind === "external" ? true : undefined,
       },
-      `@${node.attrs.name ?? id.slice(0, 8)}${node.attrs.referenceKind === "directory" ? "/" : ""}`,
+      [
+        "span",
+        { class: "composer-context-type", "aria-hidden": "true" },
+        contextTypeLabel(node.attrs.name, node.attrs.referenceKind),
+      ],
+      [
+        "span",
+        { class: "composer-context-name" },
+        `${node.attrs.name ?? id.slice(0, 8)}${node.attrs.referenceKind === "directory" ? "/" : ""}`,
+      ],
     ];
   },
   renderText({ node }) {
     return `[[dpi-attachment:${Id.parse(node.attrs.id)}]]`;
   },
 });
+
+export function contextTypeLabel(name: unknown, kind?: unknown): string {
+  if (kind === "directory") return "DIR";
+  const extension =
+    typeof name === "string"
+      ? /\.([a-z0-9]{1,5})$/i.exec(name)?.[1]?.toUpperCase()
+      : undefined;
+  return extension === "TSX"
+    ? "TS"
+    : extension === "JSX"
+      ? "JS"
+      : (extension ?? "FILE");
+}
+export function attachmentNodeAttrs(
+  item: Pick<Attachment, "id" | "name" | "referenceKind"> &
+    Partial<Pick<Attachment, "source" | "frozenReference">>,
+) {
+  return {
+    id: item.id,
+    name: item.name,
+    referenceKind: item.referenceKind ?? null,
+    contextKind:
+      !item.source || item.source === "reference" || item.frozenReference
+        ? "project"
+        : "external",
+  };
+}
 
 export function attachmentParagraph(text: string) {
   const content: { type: string; text?: string; attrs?: { id: string } }[] = [];
@@ -55,12 +94,13 @@ export function attachmentParagraph(text: string) {
 
 export function insertAttachmentReference(
   state: EditorState,
-  item: Pick<Attachment, "id" | "name" | "referenceKind">,
+  item: Pick<Attachment, "id" | "name" | "referenceKind"> &
+    Partial<Pick<Attachment, "source" | "frozenReference">>,
   range?: { from: number; to: number },
 ): Transaction {
   const type = state.schema.nodes.attachmentReference;
   if (!type) throw Error("Attachment reference schema unavailable");
-  const node = type.create(item);
+  const node = type.create(attachmentNodeAttrs(item));
   return range
     ? state.tr
         .replaceWith(range.from, range.to, node)

@@ -205,16 +205,32 @@ it("parses the initial editor document once while mounted draft and shortcut sub
   expect(editorCalls.at(-1)?.content).toBe(initialDocument);
 
   await act(() => fixture.model.preference("sendKey"));
-  expect(fixture.container.textContent).toContain(
-    i18n.t("composer.shortcut.newline"),
+  expect(fixture.container.textContent).not.toContain(
+    i18n.t("composer.inputOptions"),
   );
+  await act(() =>
+    fixture.container
+      .querySelector<HTMLButtonElement>(
+        'button[aria-label="More composer actions"]',
+      )
+      ?.click(),
+  );
+  expect(
+    document
+      .querySelector('[role="menuitemcheckbox"]')
+      ?.getAttribute("aria-checked"),
+  ).toBe("false");
+  expect(
+    document.querySelector('[role="menuitemcheckbox"]')?.textContent,
+  ).toContain(i18n.t("composer.shortcut.newline"));
+
   expect(documentCalls.mock.calls).toEqual([["restored draft"]]);
 });
 
 it("does not parse again for an expanded editor and reads the latest pending snapshot on a real remount", async () => {
   const fixture = await setup();
   const expand = Array.from(fixture.container.querySelectorAll("button")).find(
-    (button) => button.textContent === i18n.t("composer.expand"),
+    (button) => button.getAttribute("aria-label") === i18n.t("composer.expand"),
   );
   if (!expand) throw Error("missing expand button");
   await act(() => expand.click());

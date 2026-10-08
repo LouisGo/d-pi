@@ -8,7 +8,10 @@ import type {
   AttachmentImportTarget,
 } from "../attachments/attachment-imports";
 import { onDraftHistoryClear } from "../editor/plain-text-editor";
-import { insertAttachmentReference } from "./attachment-reference";
+import {
+  attachmentNodeAttrs,
+  insertAttachmentReference,
+} from "./attachment-reference";
 import { referenceSourceMatches } from "./suggestion-controller";
 
 /** Concrete editing mechanics stay in the Tiptap adapter, outside the coordinator. */
@@ -57,7 +60,9 @@ function applyAttachmentBatch(
     return false;
   const type = editor.state.schema.nodes.attachmentReference;
   if (!type) return false;
-  const fragment = Fragment.fromArray(items.map((item) => type.create(item)));
+  const fragment = Fragment.fromArray(
+    items.map((item) => type.create(attachmentNodeAttrs(item))),
+  );
   const tr =
     position === undefined
       ? editor.state.tr.replaceSelection(new Slice(fragment, 0, 0))
@@ -181,15 +186,16 @@ export function syncAttachmentLabels(
   editor.state.doc.descendants((node, position) => {
     if (node.type.name !== "attachmentReference") return;
     const item = items.find((item) => item.id === node.attrs.id);
+    const attributes = item ? attachmentNodeAttrs(item) : null;
     if (
       item &&
       (node.attrs.name !== item.name ||
-        node.attrs.referenceKind !== (item.referenceKind ?? null))
+        node.attrs.referenceKind !== (item.referenceKind ?? null) ||
+        node.attrs.contextKind !== attributes?.contextKind)
     )
       tr.setNodeMarkup(position, undefined, {
         ...node.attrs,
-        name: item.name,
-        referenceKind: item.referenceKind ?? null,
+        ...attributes,
       });
   });
   if (tr.docChanged)
