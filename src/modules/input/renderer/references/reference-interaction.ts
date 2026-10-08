@@ -30,7 +30,11 @@ export function navigateReference(
     selection instanceof NodeSelection &&
     selection.node.type.name === "attachmentReference"
   ) {
-    const head = direction > 0 ? selection.to : selection.from;
+    const head = skipExternalReferences(
+      doc,
+      direction > 0 ? selection.to : selection.from,
+      direction,
+    );
     editor.view.dispatch(
       editor.state.tr.setSelection(
         TextSelection.create(
@@ -47,20 +51,39 @@ export function navigateReference(
     direction > 0 ? selection.$head.nodeAfter : selection.$head.nodeBefore;
   if (node?.type.name !== "attachmentReference") return false;
   const pos = direction > 0 ? selection.head : selection.head - node.nodeSize;
+  const head =
+    node.attrs.contextKind === "external"
+      ? skipExternalReferences(doc, selection.head, direction)
+      : selection.head + direction * node.nodeSize;
   editor.view.dispatch(
     editor.state.tr.setSelection(
       event.shiftKey || node.attrs.contextKind === "external"
         ? TextSelection.create(
             doc,
-            event.shiftKey
-              ? selection.anchor
-              : selection.head + direction * node.nodeSize,
-            selection.head + direction * node.nodeSize,
+            event.shiftKey ? selection.anchor : head,
+            head,
           )
         : NodeSelection.create(doc, pos),
     ),
   );
   return true;
+}
+function skipExternalReferences(
+  doc: import("@tiptap/pm/model").Node,
+  start: number,
+  direction: number,
+) {
+  let head = start;
+  for (;;) {
+    const resolved = doc.resolve(head);
+    const node = direction > 0 ? resolved.nodeAfter : resolved.nodeBefore;
+    if (
+      node?.type.name !== "attachmentReference" ||
+      node.attrs.contextKind !== "external"
+    )
+      return head;
+    head += direction * node.nodeSize;
+  }
 }
 /** Selection is mapped while details are open; replacement/owner changes revoke restoration. */
 export function captureReferenceFocus(

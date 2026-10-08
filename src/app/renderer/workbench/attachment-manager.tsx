@@ -55,12 +55,12 @@ export function AttachmentManager({
       open={open}
       onClose={close}
       returnFocus={returnFocus}
-      title={t("attachment.storage")}
-      closeLabel={t("attachment.closePreview")}
+      title={t("composer.manageAttachments")}
+      closeLabel={t("attachment.closeManager")}
     >
       <div className="grid gap-4">
-        <Disclosure>
-          <DisclosureTrigger>{t("attachment.storage")}</DisclosureTrigger>
+        <section>
+          <h3>{t("attachment.storage")}</h3>
           <div className="grid gap-2 py-2">
             <p className="muted">{t("attachment.storagePolicy")}</p>
             <div className="flex flex-wrap gap-2">
@@ -171,7 +171,7 @@ export function AttachmentManager({
               </Disclosure>
             )}
           </div>
-        </Disclosure>
+        </section>
         {active.length > 0 && (
           <Disclosure>
             <DisclosureTrigger>{t("attachment.details")}</DisclosureTrigger>

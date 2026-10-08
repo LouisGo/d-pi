@@ -165,12 +165,24 @@ it("distinguishes frozen provenance from live references in the formal controls"
   const manage = Array.from(container.querySelectorAll("button")).find(
     (button) => button.textContent === "Manage attachment storage",
   );
+  await act(() => editor.commands.setTextSelection(2));
   await act(() => manage?.click());
   expect(document.body.textContent).toContain("Frozen on copy");
   expect(document.body.textContent).toContain("/actual/source/project");
   expect(document.body.textContent).toContain("source-version-1");
   expect(document.body.textContent).toContain("2026-10-07T00:00:00.000Z");
   expect(document.body.textContent).not.toContain("Read when sending");
+  await act(() => editor.commands.insertContentAt(1, "X"));
+  const close = document.querySelector<HTMLButtonElement>(
+    '[role="dialog"] button',
+  );
+  expect(close).not.toBeNull();
+  await act(async () => {
+    close?.click();
+    await new Promise((resolve) => setTimeout(resolve, 30));
+  });
+  expect(document.activeElement).toBe(editor.view.dom);
+  expect(editor.state.selection.from).toBe(3);
 });
 it("offers only retry for an unfinished clipboard cleanup and confirms its original IDs", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
@@ -1103,7 +1115,7 @@ it("offers storage checking and explicit unreferenced cleanup, locates broken or
     '[data-attachment-storage-action="check"]',
   );
   expect(check).not.toBeNull();
-  expect(check?.closest("details")?.textContent).toContain("saved.txt");
+  expect(check?.closest("section")?.textContent).toContain("saved.txt");
   await act(async () => {
     check?.click();
     await new Promise((resolve) => setTimeout(resolve, 20));

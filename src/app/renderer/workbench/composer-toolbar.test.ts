@@ -143,3 +143,15 @@ it("keeps reference/cache/shortcut actions in the menu and reflects the current 
   await act(() => preference?.click());
   expect(value.onToggleSendKey).toHaveBeenCalledTimes(1);
 });
+it("describes expanded keyboard behavior while retaining the collapsed send-key preference", async () => {
+  const value = props();
+  await act(() =>
+    root.render(createElement(ComposerToolbar, { ...value, expanded: true })),
+  );
+  await act(() => button("More composer actions").click());
+  const option = document.querySelector('[role="menuitemcheckbox"]');
+  expect(option?.getAttribute("aria-checked")).toBe("true");
+  expect(option?.getAttribute("aria-description")).toBe(
+    value.labels.enterNewlineShortcut,
+  );
+});

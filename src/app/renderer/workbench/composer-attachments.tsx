@@ -26,54 +26,72 @@ export function AttachmentStrip({
   const { t } = useI18n();
   if (!items.length) return null;
   return (
-    <ol className="attachment-rail" aria-label={t("attachment.add")}>
-      {items.map((item, index) => (
-        <li
-          key={`${item.id}:${index}`}
-          className={
-            item.representation === "image"
-              ? "attachment-tile"
-              : "attachment-file-chip"
-          }
-        >
-          <Button
-            variant="chip"
-            size={item.representation === "image" ? "thumbnail" : "source"}
-            className={
-              item.representation === "image" ? "w-full h-full" : "min-w-0"
-            }
-            aria-label={t("attachment.preview", { name: item.name })}
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={() => onPreview(item.id)}
-          >
-            {item.representation === "image" ? (
-              <AttachmentThumbnail
-                item={item}
-                bridge={bridge}
-                threadId={threadId}
-              />
-            ) : (
-              <>
-                <FileTypeBadge name={item.name} />
-                <span className="truncate">{item.name}</span>
-                <small>{formatAttachmentSize(item.byteLength)}</small>
-              </>
-            )}
-          </Button>
-          <span className="attachment-remove">
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={t("attachment.remove", { name: item.name })}
-              onMouseDown={(event) => event.preventDefault()}
-              onClick={() => onRemove(item.id)}
+    <div className="attachment-rail">
+      {[
+        items.filter((item) => item.representation === "image"),
+        items.filter((item) => item.representation !== "image"),
+      ].map(
+        (group, index) =>
+          group.length > 0 && (
+            <ol
+              key={index}
+              className="attachment-group"
+              aria-label={t("attachment.add")}
             >
-              <CloseIcon />
-            </Button>
-          </span>
-        </li>
-      ))}
-    </ol>
+              {group.map((item, index) => (
+                <li
+                  key={`${item.id}:${index}`}
+                  className={
+                    item.representation === "image"
+                      ? "attachment-tile"
+                      : "attachment-file-chip"
+                  }
+                >
+                  <Button
+                    variant="chip"
+                    size={
+                      item.representation === "image" ? "thumbnail" : "source"
+                    }
+                    className={
+                      item.representation === "image"
+                        ? "w-full h-full"
+                        : "min-w-0"
+                    }
+                    aria-label={t("attachment.preview", { name: item.name })}
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => onPreview(item.id)}
+                  >
+                    {item.representation === "image" ? (
+                      <AttachmentThumbnail
+                        item={item}
+                        bridge={bridge}
+                        threadId={threadId}
+                      />
+                    ) : (
+                      <>
+                        <FileTypeBadge name={item.name} />
+                        <span className="truncate">{item.name}</span>
+                        <small>{formatAttachmentSize(item.byteLength)}</small>
+                      </>
+                    )}
+                  </Button>
+                  <span className="attachment-remove">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={t("attachment.remove", { name: item.name })}
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => onRemove(item.id)}
+                    >
+                      <CloseIcon />
+                    </Button>
+                  </span>
+                </li>
+              ))}{" "}
+            </ol>
+          ),
+      )}
+    </div>
   );
 }
 

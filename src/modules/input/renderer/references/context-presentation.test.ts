@@ -93,3 +93,38 @@ it("crosses the external attachment anchor without selecting an invisible chip",
   expect(editor.state.selection.head).toBe(3);
   expect(editor.state.selection.empty).toBe(true);
 });
+it.each([
+  { key: "ArrowRight", start: 2, end: 5 },
+  { key: "ArrowLeft", start: 5, end: 2 },
+])(
+  "crosses a whole consecutive external batch with one $key and preserves Shift's anchor",
+  ({ key, start, end }) => {
+    const { editor, item } = fixture("file");
+    const items = [
+      item,
+      { ...item, id: crypto.randomUUID() },
+      { ...item, id: crypto.randomUUID() },
+    ];
+    editor.commands.setContent(
+      draftDocument(
+        `a${items.map((entry) => `[[dpi-attachment:${entry.id}]]`).join("")}b`,
+      ),
+    );
+    syncAttachmentLabels(editor, items);
+    for (const shiftKey of [false, true]) {
+      editor.view.dispatch(
+        editor.state.tr.setSelection(
+          TextSelection.create(editor.state.doc, start),
+        ),
+      );
+      expect(
+        navigateReference(
+          editor,
+          new KeyboardEvent("keydown", { key, shiftKey }),
+        ),
+      ).toBe(true);
+      expect(editor.state.selection.head).toBe(end);
+      expect(editor.state.selection.anchor).toBe(shiftKey ? start : end);
+    }
+  },
+);

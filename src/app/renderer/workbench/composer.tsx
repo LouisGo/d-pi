@@ -490,7 +490,11 @@ export function Composer({
           onAttach={() => attachmentActions.current?.chooseImport()}
           onReference={() => attachmentActions.current?.openSearch()}
           onManageAttachments={() => attachmentActions.current?.openManager()}
-          onToggleExpanded={() => setExpanded((value) => !value)}
+          onToggleExpanded={() => {
+            setExpanded((value) => !value);
+            if (editor && !editor.view.composing && isCurrentThread())
+              editor.commands.focus(undefined, { scrollIntoView: false });
+          }}
           onToggleSendKey={() => void model.preference("sendKey")}
           labels={{
             attach: t("attachment.add"),

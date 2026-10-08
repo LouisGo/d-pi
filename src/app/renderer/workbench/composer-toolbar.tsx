@@ -85,6 +85,7 @@ export function ComposerToolbar({
           variant="ghost"
           label={expanded ? labels.collapse : labels.expand}
           aria-expanded={expanded}
+          onMouseDown={(event) => event.preventDefault()}
           onClick={onToggleExpanded}
         >
           {expanded ? (
@@ -116,7 +117,7 @@ export function ComposerToolbar({
               label: labels.enterToSend,
               checked: preference === "enter-send",
               description:
-                preference === "enter-send"
+                !expanded && preference === "enter-send"
                   ? labels.enterSendShortcut
                   : labels.enterNewlineShortcut,
               onSelect: onToggleSendKey,

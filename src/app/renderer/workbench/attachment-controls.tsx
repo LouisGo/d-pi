@@ -133,6 +133,7 @@ export function AttachmentControls({
     (state) => state.completion,
   );
 
+  const restoreManagerFocus = useRef<((restore: boolean) => void) | null>(null);
   const [managerOpen, setManagerOpen] = useState(false);
   const managerReturnFocus = useRef<HTMLElement | null>(null);
   const [manualSearch, setManualSearch] = useState(false);
@@ -213,6 +214,8 @@ export function AttachmentControls({
     alive.current = true;
     return () => {
       alive.current = false;
+      restoreManagerFocus.current?.(false);
+      restoreManagerFocus.current = null;
       restorePreviewFocus.current?.(false);
       restorePreviewFocus.current = null;
     };
@@ -387,6 +390,12 @@ export function AttachmentControls({
     restorePreviewFocus.current = null;
     queueMicrotask(() => restore?.(true));
   }
+  function closeManager(restoreFocus = true) {
+    setManagerOpen(false);
+    const restore = restoreManagerFocus.current;
+    restoreManagerFocus.current = null;
+    queueMicrotask(() => restore?.(restoreFocus));
+  }
   useImperativeHandle(ref, () => ({
     canLeaveView: () => {
       const sources = imports.stateStore.getState();
@@ -417,6 +426,8 @@ export function AttachmentControls({
     },
     openManager: () => {
       if (!isCurrent() || !editor || editor.isDestroyed) return;
+      restoreManagerFocus.current?.(false);
+      restoreManagerFocus.current = captureReferenceFocus(editor, isCurrent);
       managerReturnFocus.current = editor.view.dom;
       setManagerOpen(true);
     },
@@ -475,7 +486,7 @@ export function AttachmentControls({
       {managerOpen && (
         <AttachmentManager
           open={managerOpen}
-          close={() => setManagerOpen(false)}
+          close={() => closeManager()}
           returnFocus={managerReturnFocus}
           storageReport={storageReport}
           sourceFrozen={sourceFrozen}
@@ -489,7 +500,7 @@ export function AttachmentControls({
           run={(command, add) => void run(command, add)}
           insert={insert}
           openReference={(id) => {
-            setManagerOpen(false);
+            closeManager(false);
             openReference(id);
           }}
           move={move}

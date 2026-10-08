@@ -45,11 +45,17 @@
     color: var(--muted-foreground);
   }
   .attachment-rail {
+    display: grid;
+    gap: var(--layout-gap);
+    margin: 0 0 var(--layout-gap);
+  }
+  .attachment-group {
     display: flex;
     flex-wrap: wrap;
+    align-items: flex-start;
     gap: var(--layout-gap);
     list-style: none;
-    margin: 0 0 var(--layout-gap);
+    margin: 0;
     padding: 0;
   }
   .attachment-tile,
@@ -127,5 +133,22 @@
   .composer-context-token.ProseMirror-selectednode {
     border-color: var(--emphasis);
     background: var(--code-selection);
+  }
+}
+
+@layer components {
+  .composer[data-expanded="true"] .composer-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
+  .composer[data-expanded="true"] .composer-context {
+    flex-shrink: 0;
+    max-height: 40%;
+    overflow: auto;
+  }
+  .composer[data-expanded="true"] .composer-footer {
+    flex-shrink: 0;
   }
 }

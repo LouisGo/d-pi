@@ -1131,3 +1131,28 @@ it("previews and confirms a failed PDF in its original import job before explici
     true,
   );
 });
+it("returns the mapped caret to the real editor when expanding and collapsing for continued input", async () => {
+  const fixture = await setup();
+  const editor = fixture.editor();
+  await act(() => editor.commands.setTextSelection(6));
+  const button = fixture.container.querySelector<HTMLButtonElement>(
+    'button[aria-label="Expand editor"]',
+  );
+  expect(button).not.toBeNull();
+  await act(() => {
+    button?.focus();
+    button?.click();
+  });
+  expect(document.activeElement).toBe(editor.view.dom);
+  expect(editor.state.selection.from).toBe(6);
+  await act(() => editor.commands.insertContent(" typing"));
+  expect(editor.getText()).toBe("alpha typing omega");
+  const collapse = fixture.container.querySelector<HTMLButtonElement>(
+    'button[aria-label="Collapse editor"]',
+  );
+  await act(() => {
+    collapse?.focus();
+    collapse?.click();
+  });
+  expect(document.activeElement).toBe(editor.view.dom);
+});

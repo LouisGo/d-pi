@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "568fecfb86893547f07de714b56c6781736d706642d7ca4224d4f2e57475294e",
+  "inputsHash": "f6a36a103e0e278cd456c890f7ee4b703594437d2a6864cef2edf47cc1c31177",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 472,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 209,
-      "lines": 38686,
+      "lines": 38769,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -102,7 +102,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 20,
-      "lines": 2835,
+      "lines": 2837,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -186,7 +186,7 @@
       ],
       "materialized": true,
       "files": 55,
-      "lines": 11074,
+      "lines": 11132,
       "publicEntries": [
         {
           "path": "src/modules/input/contracts/public.ts",
@@ -21065,6 +21065,15 @@
       "to": "src/modules/input/renderer/editor/plain-text-editor.ts",
       "targetModule": "input",
       "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/input/renderer/references/reference-interaction.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tiptap/pm/model",
+      "kind": "dynamic-import",
+      "resolution": "external"
     },
     {
       "from": "src/modules/input/renderer/references/selection-insert.test.ts",
