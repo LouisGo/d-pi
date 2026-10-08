@@ -1,5 +1,4 @@
 import type { Editor } from "@tiptap/core";
-import { isHistoryTransaction } from "@tiptap/pm/history";
 import { Fragment, Slice } from "@tiptap/pm/model";
 import type { Transaction } from "@tiptap/pm/state";
 import type { Attachment } from "../../contracts/public";
@@ -89,17 +88,15 @@ export function createAttachmentImportTarget(
   };
   const mapped = ({ transaction: tr }: { transaction: Transaction }) => {
     if (!valid || applying) return;
-    if (
-      !isCurrent() ||
-      isHistoryTransaction(tr) ||
-      tr.getMeta("dpiTrustedDraftReplacement")
-    ) {
+    if (!isCurrent() || tr.getMeta("dpiTrustedDraftReplacement")) {
       invalidate();
       return;
     }
     // Attribute labels preserve node identity and size; their ReplaceStep maps
     // describe a structural replacement even though no source was consumed.
     if (tr.getMeta("dpiReferenceLabelRefresh")) return;
+    // Undo follows the same source-consumption fence as other transactions;
+    // removing a later independent action does not invalidate surviving origin.
     for (const map of tr.mapping.maps) {
       let removedSource = false;
       map.forEach((from, to) => {

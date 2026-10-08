@@ -194,6 +194,50 @@ it("Undo, deleted paste source and unbinding make late files pending instead of 
   expect(target.apply([item("late")])).toBe(false);
   editor.destroy();
 });
+it("Undo of independent B preserves the original mixed paste A and its left-affinity attachment target", () => {
+  const editor = new Editor({
+    ...plainTextEditorOptions,
+    element: document.createElement("div"),
+    content: draftDocument(""),
+  });
+  editor.view.dispatch(
+    editor.state.tr.insertText("A").setMeta("dpiIndependentAction", true),
+  );
+  const target = createAttachmentImportTarget(editor, () => true, {
+    position: 2,
+    sourceFrom: 1,
+  });
+  editor.view.dispatch(
+    editor.state.tr.insertText("B", 2).setMeta("dpiIndependentAction", true),
+  );
+  expect(editor.commands.undo()).toBe(true);
+  expect(editor.getText()).toBe("A");
+  expect(target.apply([item("one.txt")])).toBe(true);
+  expect(
+    editor.state.doc.textBetween(0, editor.state.doc.content.size, "\n", "X"),
+  ).toBe("AX");
+  expect(editor.commands.undo()).toBe(true);
+  expect(editor.getText()).toBe("A");
+  editor.destroy();
+});
+it("Undo of a file-only anchor origin permanently invalidates it across Redo", () => {
+  const editor = new Editor({
+    ...plainTextEditorOptions,
+    element: document.createElement("div"),
+    content: draftDocument(""),
+  });
+  editor.view.dispatch(
+    editor.state.tr.insertText("A").setMeta("dpiIndependentAction", true),
+  );
+  const target = createAttachmentImportTarget(editor, () => true, {
+    position: 2,
+  });
+  expect(editor.commands.undo()).toBe(true);
+  expect(editor.commands.redo()).toBe(true);
+  expect(editor.getText()).toBe("A");
+  expect(target.apply([item("late.txt")])).toBe(false);
+  editor.destroy();
+});
 it("a rejected batch transaction retains the entire set and can retry once admission recovers", () => {
   const editor = new Editor({
     ...plainTextEditorOptions,
