@@ -1,5 +1,15 @@
 # 输入与上下文
 
+## Composer 异步导入补充（2026-10-08）
+
+Thread-owned `AttachmentImports` 管 batch/job、读取预算、失败和结算；React 只订阅 projection。外部混合粘贴先立即应用文本，文件以稳定顺序在映射原位置应用一个独立 PM 事务，实际完整 doc 匹配才采用。Renderer adapter 持有 left-affinity target；原始文本被删除/撤销、可信替换、历史结束或视图解绑使其永久失效。随后独立输入的 Undo 与纯引用标签刷新不撤销原意图，失效结果保留在原 Thread 等待显式插入。自动完成不抢焦点；显式成功采用恢复 editor 焦点。
+
+每 Thread 至多一个读取/prepare，窗口最多两个活动工作、100 MiB 原始 File 与64个 job；每批最多32文件、每 Thread 最多32批。准入在 await 前预留；读取显示真实 FileReader progress，Main 转换只显示阶段。部分失败不自动采用子集；失败PDF可预览，并通过原ID显式 text-only 确认后再插入，不重新转换来丢失同意。
+
+`import-bytes.operationId` 与 `import-settle` 是窄 Main 结算补充，不借用 clipboard discard。Main 按实际 document/Thread 验证、固定 result IDs 和当前 manifest 采用；取消后晚到结果只结算。排队取消和 FileReader abort 可立即结束，Main 已接受的工作保持 cancelling，直到 release ACK。dispose 不把未结算义务留给已销毁 Thread；Main document teardown 统一回收。原 draft/history/clipboard/submission/native queue 合同继续有效。具体边界、证据和未验证项见 [Composer 规格](../../../.scratch/composer-quality/spec.md)。
+
+项目动态文件/目录详情复用Main已有受控只读readReference，读取后复核Thread/root身份，遵守25MiB来源与64KiB UTF-8预览预算；只展示当前内容，不写manifest/私有对象、不新增执行权限或作为发送冻结内容。PDF已有派生摘要预览优先。原生dialog先同步close释放modal，再恢复经映射且仍合法的editor选区/焦点；取消与关闭按钮同路，owner变化/销毁/替换不恢复旧视图。
+
 ## T3 基础输入重构合同（2026-10-07）
 
 ThreadModel 组合无 DOM 的 AttachmentModel，统一拥有来源请求、失败、显式重试和未插入的准备结果；浏览器 FileReader 留在 Renderer adapter。正式控件仅订阅并发出意图，卸载不销毁来源。Main 操作回复中的准备状态保留最多 128 项只读投影，按当前 DraftController token IDs 检查已知失败/未覆盖 PDF，移除正文中的来源不会被无用资产阻塞；恢复或淘汰后的未知资产始终由 Main prepare 权威校验，查询列表不形成第二份可写事实。发送在草稿捕获前、捕获准备时及捕获返回后复核同一 readiness。关窗冻结所有活 Thread 的来源入口，保存后再次核对，只有当前幂等 attempt lease 可释放；导航期间沿用原输入屏障。Main save 仍只接受 active Thread；正常切换先 flush，inactive owner 收到迟到正文而未确认时，关闭拒绝并给出侧栏已有会话短 ID，切回保存或解决该 owner 的失败后再重试，不扩大后台写权限。

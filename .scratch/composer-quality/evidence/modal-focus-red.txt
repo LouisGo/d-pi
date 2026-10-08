@@ -1,0 +1,125 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/workbench/attachment-controls.test.ts
+$ tsr generate
+(node:60789) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/.codex/worktrees/composer-quality/d-pi
+
+stderr | src/app/renderer/workbench/attachment-controls.test.ts > coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/attachment-controls.test.ts > coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/attachment-controls.test.ts > coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/attachment-controls.test.ts > coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/attachment-controls.test.ts > coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stdout | src/app/renderer/workbench/attachment-controls.test.ts > retains an unresolved required-source failure after replacing its view with the same Thread owner
+{"afterRemount":{"blocked":true,"failureVisible":"This source exceeds the 25 MiB limit.Retry preparationRemove this failed attachment request","chooseRequests":1,"text":"retained draft"}}
+
+ ❯ src/app/renderer/workbench/attachment-controls.test.ts (21 tests | 2 failed) 2311ms
+   ✓ distinguishes frozen provenance from live references in the formal controls 133ms
+   ✓ offers only retry for an unfinished clipboard cleanup and confirms its original IDs 62ms
+   ✓ mounts the formal attachment controls and removes a failed atomic reference without changing surrounding text 57ms
+   ✓ isolates late @ searches and inserts a typed file as one undoable reference 59ms
+   ✓ isolates late @ searches and inserts a typed directory as one undoable reference 51ms
+   ✓ identifies a ready reference that failed during send-time freezing without rewriting its preparation state 50ms
+   ✓ permits explicit re-preparation of a failed @PDF after text-only consent while keeping the reference atomic 50ms
+   × closes the native preview before unmount and restores editor focus via button 108ms
+   × closes the native preview before unmount and restores editor focus via cancel 102ms
+   ✓ reports the typed oversized-source rejection instead of a transport failure and keeps sending blocked until explicit removal 50ms
+   ✓ retains a failed import across unrelated preview operations (transport failure: false) 120ms
+   ✓ retains a failed import across unrelated preview operations (transport failure: true) 120ms
+   ✓ retains a failed import across unrelated retry operations (transport failure: false) 120ms
+   ✓ retains a failed import across unrelated retry operations (transport failure: true) 115ms
+   ✓ retains a failed import across unrelated set-text-only operations (transport failure: false) 114ms
+   ✓ retains a failed import across unrelated set-text-only operations (transport failure: true) 117ms
+   ✓ resolves a failed import only through its explicit retry (success) 90ms
+   ✓ resolves a failed import only through its explicit retry (cancelled) 88ms
+   ✓ offers storage checking and explicit unreferenced cleanup, locates broken originals, and preserves editor input 93ms
+   ✓ coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly 518ms
+   ✓ retains an unresolved required-source failure after replacing its view with the same Thread owner 93ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/renderer/workbench/attachment-controls.test.ts > closes the native preview before unmount and restores editor focus via button
+ FAIL  src/app/renderer/workbench/attachment-controls.test.ts > closes the native preview before unmount and restores editor focus via cancel
+AssertionError: expected [ false ] to deeply equal [ true ]
+
+- Expected
++ Received
+
+  [
+-   true,
++   false,
+  ]
+
+ ❯ src/app/renderer/workbench/attachment-controls.test.ts:693:30
+    691|     await new Promise((resolve) => setTimeout(resolve, 30));
+    692|   });
+    693|   expect(closedWhileMounted).toEqual([true]);
+       |                              ^
+    694|   expect(container.querySelector("dialog")).toBeNull();
+    695|   expect(document.activeElement).toBe(editor.view.dom);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 19 passed (21)
+   Start at  14:44:47
+   Duration  6.07s (import 44%, tests 39%, environment 10%, transform 6%)
+
+[ELIFECYCLE] Test failed. See above for more details.
