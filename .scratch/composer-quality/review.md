@@ -80,3 +80,9 @@ Standards固定dd8d812..63e023e闭合，独立6文件61项通过；随后63e023e
 Spec与Standards两位只读reviewer独立覆盖完整固定差异及所有新文件。首快照各发现同一 @ 图片派生manifest丢失问题：Spec P2、Standards P1；root以连续prepare反例核实，再修正通用reference收尾仅处理text，保留image完整record/转换器。新增连续prepare、派生预览、来源改变后重新压缩测试先失败后通过。preview授权读/摘要复核/读取后身份检查保持，无manifest写入。
 
 最新快照差异SHA-256 `c2849931de474435bc2918fb953c3785f561a8ebf1c6de4ecbada1d957d1138c`，两轴逐项hash核实并复核修复与增量后无剩余高价值发现；[源码manifest](evidence/image-input/review-source-manifest.json)、[红绿来源](evidence/image-input/provenance.md)。Standards独立Node水合3项通过，26项worker/引用结果来自root原始输出，不双计。收尾按 architecture skill 补充纯共享策略的 input/main→shared 实际依赖登记并刷新结构报告，Standards独立架构486文件及报告检查通过；仅测试缩进与治理交接再更新，行为源不变。没有原生/provider或视觉结论，实机与用户认可继续pending。
+
+## 原生附件回返鼠标焦点：45c7ef1 + 08固定WIP
+
+小改动单独只读reviewer覆盖Spec/Standards两轴。固定差异SHA-256 3f431c854044dcf536fab22f7b3948faa7e759f54c63b9a4c3357b393e24044e，manifest逐项匹配，完整核对共享来源生命周期、portal/键盘/编辑、正式picker首次/重试×成功/取消和迟到不抢焦点。无可报告缺陷。[来源与源清单](evidence/native-picker-focus/provenance.md)。
+
+review读取实际5 red与4文件70 green，没有自行运行GUI或原生能力；只证明模拟focusin(null)的处理，不替代真实Finder序列和outline实机验收。收尾仅治理与报告新鲜度改变，行为源不变。

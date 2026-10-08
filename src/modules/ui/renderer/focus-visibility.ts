@@ -3,14 +3,17 @@
 export function installControlFocusVisibility(document: Document) {
   const root = document.documentElement;
   let pointerTarget: Element | null = null;
+  let pointerFocusTarget: Element | null = null;
   let editingTarget: Element | null = null;
   const clearPointerFocus = () => {
     pointerTarget = null;
+    pointerFocusTarget = null;
     editingTarget = null;
     delete root.dataset.pointerFocus;
   };
   const pointerDown = (event: PointerEvent) => {
     pointerTarget = event.target instanceof Element ? event.target : null;
+    pointerFocusTarget = null;
     editingTarget = null;
     root.dataset.pointerFocus = "true";
   };
@@ -23,6 +26,7 @@ export function installControlFocusVisibility(document: Document) {
         : null;
     if (trigger) {
       pointerTarget = trigger;
+      pointerFocusTarget = null;
       editingTarget = null;
       root.dataset.pointerFocus = "true";
     }
@@ -92,15 +96,21 @@ export function installControlFocusVisibility(document: Document) {
       ?.getAttribute("aria-controls")
       ?.split(/\s+/)
       .some((id) => document.getElementById(id)?.contains(target));
+    // Native dialogs/window activation can restore the current DOM focus
+    // without a relatedTarget. Keep its established pointer origin; this
+    // does not grant that origin to a different destination or survive Tab.
+    const returningToPointerFocus =
+      event.relatedTarget === null && target === pointerFocusTarget;
     if (
       !pointerTarget ||
       (!pointerTarget.contains(target) &&
         !target.contains(pointerTarget) &&
         !fromTrigger &&
-        !fromControlledTrigger)
+        !fromControlledTrigger &&
+        !returningToPointerFocus)
     ) {
       clearPointerFocus();
-    }
+    } else pointerFocusTarget = target;
   };
   document.addEventListener("pointerdown", pointerDown, true);
   document.addEventListener("pointerover", pointerOver, true);

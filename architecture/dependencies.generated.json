@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "e0df1d681c1a9046726a35917011b4f435be64785ba74e3760b47a03ad067e9b",
+  "inputsHash": "cd69598eb8f681b68b55f67f1f176c4e89965f39372dca0b76f43db10404757a",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 486,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 211,
-      "lines": 39713,
+      "lines": 39727,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -413,7 +413,7 @@
       ],
       "materialized": true,
       "files": 10,
-      "lines": 1149,
+      "lines": 1197,
       "publicEntries": [
         {
           "path": "src/modules/ui/renderer/public.ts",
@@ -13318,6 +13318,18 @@
       "resolution": "module",
       "to": "src/modules/input/renderer/public.ts",
       "targetModule": "input",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/attachment-controls.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/ui/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
       "targetEnvironment": "renderer"
     },
     {

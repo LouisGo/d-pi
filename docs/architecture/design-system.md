@@ -127,6 +127,7 @@ Base UI / 选择性改造的上游源码 / 专用渲染与编辑能力
 
 - 组件默认外观须能识别操作入口，hover/active/selected/disabled/focus-visible 分别表达含义。共享 Button 管理中性主操作、蓝色 accent 强调操作、secondary、ghost、destructive、navigation 与 icon；主操作按下色来自 `--primary-active`，其他状态复用现有主题 token。折叠标题沿用原生 disclosure，文字链接默认有颜色及下划线。
 - 2026-10-07 用户明确要求并直接修复存量控件：默认、普通 focus、hover、active 不显示 outline；只允许键盘/无障碍的 `:focus-visible` 提示。中央 CSS 对所有元素（含 Portal 与第三方内部控件）禁止非 focus-visible 的 outline；共享交互入口标记指针焦点，补足文本输入框鼠标点击也可能匹配 focus-visible 的浏览器行为。键盘导航/激活或独立无障碍焦点移动解除指针标记。鼠标反馈使用背景与文字，不新增彩色 border 或 ring shadow；保留 caret、焦点协议与无障碍语义。
+- 2026-10-08补充：原生文件选择或窗口回返可能没有DOM `relatedTarget`；仅回到已获得鼠标来源的同一焦点目标时保留该来源。键盘导航清除后不得复活，独立焦点目标不继承，不在异步附件结算后强行聚焦。
 - 默认 `user-select: none`。需要阅读/复制的正文、工具输出、历史、收据、原生交互及队列文本由内容拥有者加 `data-selectable`；输入/textarea/contenteditable 按原生语义开放。trace、Thread 身份、目录路径、file-meta 内容、运行来源、附件预览和 alert 是中央规则登记的内容例外，不按所有 p/span 或整个工作区开放。
 - 可选择区域内的按钮、链接、summary、导航/选项及其控件标签仍不可选；消息 heading 与装饰图标也不参与正文选择。新内容区域优先使用 `data-selectable`，不另写 select-text/all/auto、内联 userSelect 或局部 user-select 例外。
 - configuration 与 app 消费 `modules/ui/renderer/public` 的共享 Button 和表单控件；不能反向导入 app 私有组件或在消费端重建控件外观。原生 file/hidden input 保留其特殊职责。

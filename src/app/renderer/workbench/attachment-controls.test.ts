@@ -13,6 +13,7 @@ import {
   plainTextEditorOptions,
   type ReferenceTrigger,
 } from "../../../modules/input/renderer/public";
+import { installControlFocusVisibility } from "../../../modules/ui/renderer/public";
 import { createI18n } from "../../../shared/i18n/create-i18n";
 import { ThreadIdSchema } from "../../../shared/identity";
 import type {
@@ -108,6 +109,8 @@ it.each([
   "keeps the caret as the picker return target without stealing focus on late %s (retry: %s)",
   async (result, retry) => {
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+    const disposeFocus = installControlFocusVisibility(document);
+    cleanups.push(async () => disposeFocus());
     const editor = new Editor({
       ...plainTextEditorOptions,
       element: document.createElement("div"),
@@ -165,6 +168,7 @@ it.each([
     );
     if (!attach) throw Error("missing attachment button");
     editor.commands.setTextSelection(4);
+    attach.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
     attach.focus();
     await act(() => attach.click());
     if (retry) {
@@ -176,12 +180,22 @@ it.each([
         expect(retryButton).toBeDefined();
       });
       if (!retryButton) throw Error("missing retry button");
+      retryButton.dispatchEvent(
+        new PointerEvent("pointerdown", { bubbles: true }),
+      );
       retryButton.focus();
       await act(() => retryButton?.click());
     }
     await vi.waitFor(() => expect(finishPicker).toBeTypeOf("function"));
     expect(document.activeElement).toBe(editor.view.dom);
     expect(editor.state.selection.from).toBe(4);
+    expect(document.documentElement.dataset.pointerFocus).toBe("true");
+    // Native dialogs return without a DOM relatedTarget. The mouse origin
+    // must survive this return, including cancellation and retry.
+    editor.view.dom.dispatchEvent(
+      new FocusEvent("focusin", { bubbles: true, relatedTarget: null }),
+    );
+    expect(document.documentElement.dataset.pointerFocus).toBe("true");
     // A slower conversion/cancellation must not refocus after another action.
     attach.focus();
     const item: Attachment = {

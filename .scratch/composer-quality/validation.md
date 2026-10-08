@@ -115,3 +115,9 @@ Standards随后发现source-too-large的“重试准备”仍直接打开picker�
 新图片用摘要资源引用冻结，App管道保持紧凑，临近OMP编码；超限图在二进制公共worker生成有界PNG/WebP，原件/派生引用均保护。旧收据可读。宿主读取失败或准备期间停止为已证明拒绝，保留草稿，不ACK/自动重发。实际默认大图、透明度、像素/输入/队列预算及@源版本变化均有自动化结果。
 
 没有GUI/Dev/E2E/实际Host/provider发送；真实视觉、压缩质量、IME/OS/VoiceOver及峰值RSS/长会话性能未验证。完整check未重跑，旧SDKPDF/CLIfixture失败根因unknown保留；build既有chunk警告继续。
+
+## 2026-10-08 Finder回返鼠标outline（08）
+
+基点45c7ef1。新增共享1+正式控件4反例先失败，后4文件70项通过；Renderer type、fast、design和build通过。首次/重试×取消/成功验证relatedTarget=null同目标回返保留来源；共享Tab/独立目标及既有portal、编辑键路径保留。迟到导入不抢焦点。原始[红绿与来源](evidence/native-picker-focus/provenance.md)。
+
+用户截图是实机失败证据；本轮自动化模拟回返事件，没有Finder event trace或视觉通过结论。仍由用户实机复试，未运行GUI/Dev/E2E/Host/provider。完整check未重跑，既有React act/chunk警告和旧SDKPDF/CLI fixture未知保留。

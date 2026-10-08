@@ -1,6 +1,6 @@
 # Composer 本地交接
 
-2026-10-08。最新为本文末尾 **07 普通带图输入修复**（基点25e8c58 + review manifest固定WIP）。下方06记录是历史交付源码 `6b39d19`、反馈基点 `2fdeab2`；分支 `codex/composer-quality`，工作树 `/Users/lou/.codex/worktrees/composer-quality/d-pi`。仅修改此树，没有新建实施树、修改原 checkout、push、远端 PR 或发布。
+2026-10-08。最新为本文末尾 **08 Finder回返鼠标outline修复**（基点45c7ef1 + review manifest固定WIP）。下方06记录是历史交付源码 `6b39d19`、反馈基点 `2fdeab2`；分支 `codex/composer-quality`，工作树 `/Users/lou/.codex/worktrees/composer-quality/d-pi`。仅修改此树，没有新建实施树、修改原 checkout、push、远端 PR 或发布。
 
 ## 本轮结果与试用
 
@@ -75,3 +75,11 @@ Main租约按source ID保留各版本摘要，只迁出Main确认的外部图片
 34文件299项、tooling111、architecture35、typecheck/fast/design/i18n/build/完整环境通过，两轴独立review关闭派生manifest发现后无剩余高价值问题。[本轮证据](evidence/image-input/provenance.md)。实际provider接收、GUI压缩提示/视觉质量与原生交互由用户验证；峰值RSS/长会话性能未测，旧完整check失败记录不删除。
 
 兼容风险：新版本能读取旧内嵌收据，但旧源码不识别新资源引用；Main/Renderer/宿主/helper/SDKmanifest须同版运行。revert源码不会撤销已持久新收据、原件/派生物或OMP执行；降级时保留数据并恢复匹配版本，不能删除数据库或自动重发。
+
+## 最新交接：08 Finder回返鼠标outline修复
+
+继续仅 `/Users/lou/.codex/worktrees/composer-quality/d-pi`、codex/composer-quality，基点45c7ef1。鼠标来源已经传递给editor，但无relatedTarget的同目标回返此前被清除；共享focus-visibility现在记住实际焦点目标，仅同目标返回保留。Tab、新鼠标意图、独立焦点和dispose仍清除，不局部覆盖CSS，不改caret或异步插入focus。
+
+新增5项实际red→相关4文件70项通过，Renderer type/fast/design/build与独立小范围两轴覆盖通过；原始证据见[来源记录](evidence/native-picker-focus/provenance.md)。此前只核对focus回editor，漏掉来源标记，故06工程通过不能解释用户这次实机失败。
+
+用户继续从此worktree `pnpm dev`复试鼠标首次选图、取消、重试选图回正文无蓝框，Tab导航仍有键盘焦点。Agent本轮没有启动GUI/Dev/E2E或真实Host/provider；模拟事件不是实际Finder证明，实机认可pending，无push/远端操作。
