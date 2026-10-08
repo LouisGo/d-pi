@@ -12,7 +12,7 @@ vi.mock("./markdown", () => ({
   Markdown: ({ text }: { text: string }) => createElement("p", null, text),
 }));
 
-it("restores the selected native session, page and segment after A to B to A remounts", async () => {
+it("restores the selected native session and record page after A to B to A remounts", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const keys = ["a".repeat(64), "b".repeat(64)];
   const owners = { A: new ReadingPositions(), B: new ReadingPositions() };
@@ -103,14 +103,9 @@ it("restores the selected native session, page and segment after A to B to A rem
     await waitText("A/1/0:");
     await click("Next page");
     await waitText("A/1/100:");
-    await click("Next segment");
     await render("B");
     await waitText("B/0/0:");
-    expect(
-      container
-        .querySelector("[data-reading-segment]")
-        ?.getAttribute("data-reading-segment"),
-    ).toBe("0");
+    expect(container.querySelector("[data-reading-segment]")).toBeNull();
     await render("A");
     await vi.waitFor(async () => {
       await act(() => new Promise((resolve) => setTimeout(resolve, 10)));
@@ -118,10 +113,8 @@ it("restores the selected native session, page and segment after A to B to A rem
         container.querySelector<HTMLButtonElement>("[data-slot=select]")?.value,
       ).toBe(keys[1]);
       expect(
-        container
-          .querySelector("[data-reading-segment]")
-          ?.getAttribute("data-reading-segment"),
-      ).toBe("1");
+        container.querySelector("[data-reading-text]")?.textContent,
+      ).toContain("A/1/100:");
     });
     expect(owners.A.stateStore.getState().history.cursor?.offset).toBe(100);
   } finally {
@@ -134,7 +127,7 @@ it("restores the selected native session, page and segment after A to B to A rem
   }
 });
 
-it("bounds native history records and copies all available original text while retaining coverage notices", async () => {
+it("renders complete native history records and copies all available original text while retaining coverage notices", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const text = "原生记录😀\n".repeat(2000);
   const copy = vi.spyOn(navigator.clipboard, "writeText").mockResolvedValue();
@@ -192,7 +185,7 @@ it("bounds native history records and copies all available original text while r
     expect(container.querySelector("[data-reading-text]")).not.toBeNull();
     expect(
       container.querySelector("[data-reading-text]")?.textContent?.length,
-    ).toBeLessThanOrEqual(8192);
+    ).toBe(text.length);
     const button = [
       ...container.querySelectorAll<HTMLButtonElement>("article button"),
     ].find((button) => button.textContent === "Copy");
@@ -210,7 +203,7 @@ it("bounds native history records and copies all available original text while r
   }
 });
 
-it("does not carry a record's segment choice into another native history source", async () => {
+it("replaces the complete record when a native history source changes without reusing old content", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const { projectHistoryPageQuery } = await import(
     "../../../modules/conversation/core/public"
@@ -270,24 +263,14 @@ it("does not carry a record's segment choice into another native history source"
       await act(() => new Promise((resolve) => setTimeout(resolve, 10)));
       expect(container.querySelector("[data-reading-text]")).not.toBeNull();
     });
-    const next = [...container.querySelectorAll("button")].find(
-      (button) => button.textContent === "Next segment",
-    );
-    if (!next) throw Error("missing next segment");
-    await act(() => next.click());
     expect(
-      container
-        .querySelector("[data-reading-segment]")
-        ?.getAttribute("data-reading-segment"),
-    ).toBe("1");
+      container.querySelector("[data-reading-text]")?.textContent,
+    ).toContain("first-source");
+    expect(container.querySelector("[data-reading-segment]")).toBeNull();
     await act(() => client.setQueryData(query.queryKey, page("second-source")));
     await vi.waitFor(async () => {
       await act(() => new Promise((resolve) => setTimeout(resolve, 10)));
-      expect(
-        container
-          .querySelector("[data-reading-segment]")
-          ?.getAttribute("data-reading-segment"),
-      ).toBe("0");
+      expect(container.querySelector("[data-reading-segment]")).toBeNull();
     });
     expect(
       container.querySelector("[data-reading-text]")?.textContent,
