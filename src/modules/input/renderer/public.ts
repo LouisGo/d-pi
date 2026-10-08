@@ -23,6 +23,7 @@ export {
   createAttachmentEditor,
   createAttachmentImportTarget,
   moveAttachmentReference,
+  projectDetachedImages,
   removeAttachmentReference,
   syncAttachmentLabels,
 } from "./references/attachment-editor";
@@ -32,6 +33,7 @@ export {
   contextTypeLabel,
   insertAttachmentReference,
 } from "./references/attachment-reference";
+export { AttachmentAdoption, isDetachedImage } from "./references/attachment-adoption";
 export { FileReference } from "./references/file-reference-node";
 export {
   captureReferenceFocus,

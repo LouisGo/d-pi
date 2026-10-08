@@ -371,7 +371,7 @@ export class DraftEditorCache {
     // delayed IME events must keep their original Thread/controller binding.
     editor.on("update", () => {
       if (!this.disposed && this.leases.get(key) === binding.token)
-        controller.edit(editor.getText({ blockSeparator: "\n" }));
+        controller.editEditorText(editor.getText({ blockSeparator: "\n" }));
     });
     editor.on("destroy", () => {
       this.capture(editor);

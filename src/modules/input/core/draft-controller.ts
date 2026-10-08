@@ -3,6 +3,7 @@ import { DRAFT_MAX_BYTES, draftByteLength } from "../../../shared/draft-text";
 import { createId } from "../../../shared/identity";
 import { uiMessage } from "../../../shared/messages/contracts";
 import type { Draft, Failure, SaveReply } from "../contracts/draft";
+import { attachmentToken, readAttachmentTokens } from "./attachments/tokens";
 export type SaveState =
   | { kind: "saved" }
   | { kind: "dirty" }
@@ -34,6 +35,9 @@ export class DraftController {
   private timer: unknown;
   private disposed = false;
   private baselineText: string;
+  // Metadata projection only. The immutable persisted snapshot remains the
+  // sole draft fact; images use its existing private token format, outside PM.
+  private readonly detachedAttachments = new Set<string>();
   private capture: {
     submissionId: string;
     sequence: number;
@@ -79,10 +83,49 @@ export class DraftController {
   // Reattaching an editor reads the existing immutable pending snapshot or
   // confirmed baseline. This is not a second editable body.
   getTextSnapshot = (): string => this.pending?.text ?? this.baselineText;
+  registerDetachedAttachments(ids: Iterable<string>): void {
+    for (const id of ids) this.detachedAttachments.add(id);
+  }
+  getEditorTextSnapshot = (): string =>
+    this.withoutDetachedAttachments(this.getTextSnapshot());
+  serializeEditorText(text: string): string {
+    const parsed = readAttachmentTokens(this.getTextSnapshot());
+    const retained = parsed.ok
+      ? [...new Set(parsed.tokens.map((entry) => entry.id))].filter((id) =>
+          this.detachedAttachments.has(id),
+        )
+      : [];
+    return this.withoutDetachedAttachments(text) + retained.map(attachmentToken).join("");
+  }
+  editEditorText(text: string): void {
+    const snapshot = this.serializeEditorText(text);
+    if (snapshot !== this.getTextSnapshot()) this.edit(snapshot);
+  }
+  addDetachedAttachments(ids: readonly string[]): void {
+    if (this.disposed || !ids.length) return;
+    this.registerDetachedAttachments(ids);
+    const text = this.getTextSnapshot();
+    const parsed = readAttachmentTokens(text);
+    if (!parsed.ok) return;
+    const existing = new Set(parsed.tokens.map((entry) => entry.id));
+    const added = [...new Set(ids)].filter((id) => !existing.has(id));
+    if (added.length) this.edit(text + added.map(attachmentToken).join(""));
+  }
+  removeDetachedAttachment(id: string): boolean {
+    if (this.disposed || !this.detachedAttachments.has(id)) return false;
+    const text = this.getTextSnapshot();
+    const next = text.split(attachmentToken(id)).join("");
+    if (next !== text) this.edit(next);
+    return true;
+  }
+  private withoutDetachedAttachments(text: string): string {
+    return text.replace(/\[\[dpi-attachment:([0-9a-f-]{36})\]\]/g,
+      (token, id: string) => this.detachedAttachments.has(id) ? "" : token);
+  }
   getEditorSnapshot = () => ({
     revision: this.revision,
     sequence: this.sequence,
-    text: this.getTextSnapshot(),
+    text: this.getEditorTextSnapshot(),
   });
   subscribe = (listener: () => void): (() => void) => {
     this.listeners.add(listener);

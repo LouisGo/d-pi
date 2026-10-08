@@ -13,11 +13,11 @@
 - 执行：主 Agent 单写规格/任务/生成看板/集成；M2 worker 单写隔离 worktree 的 input imports/lifecycle/batch adapter 与 Thread 装配，不写 M1 控件/Composer/CSS/locale；共享 public 导出串行集成。
 
 ```project-status
-[{"id":"composer-quality","title":"Composer M1/M2 编辑体验","phase":"M2","engineering":"complete","trial":"delivered","acceptance":"pending","build":"Dev / codex/composer-quality / 3918b64","evidence":["handoff.md","validation.md","review.md"],"next":"试用重做的Composer；补真实IME、VoiceOver、缩放和长会话验收，收取用户反馈","constraints":"本地源码与 Dev 交付；未推送/发布；既有CLI fixture失败保留，真实provider/Host queue未重跑，用户认可pending。"}]
+[{"id":"composer-quality","title":"Composer M1/M2 编辑体验","phase":"M2","engineering":"in-progress","trial":"feedback","acceptance":"pending","build":"Dev / codex/composer-quality / 3918b64","evidence":["handoff.md","validation.md","review.md"],"next":"按新反馈拆分图片与文件编辑语义，补MIME样式和去重；本次用户自行实机测试","constraints":"本地源码交付；用户自行实机验收，Agent不运行GUI/E2E；未推送/发布，既有CLI fixture失败保留。"}]
 ```
 
 ```implementation-plan
-[{"id":"composer","tickets":["01","02","04","03"]}]
+[{"id":"composer","tickets":["01","02","04","03","05"]}]
 ```
 
 ## 验收
@@ -33,3 +33,7 @@
 当前集成基点72863d9，沿用本任务已隔离主树，原工作树继续保留；toolbar leaf隔离分派，root单写编辑表面/附件绑定/规格/看板。验收为真实Dev对照用户截图，项目引用无重复附件、长文件名/图片/空态/错误/窄窗/light-dark/键盘焦点；不以变量使用或单测绿宣称UI合格。
 
 纠正已交付：独立 Spec/Standards 发现的键盘、映射 bookmark、展开与 picker 焦点问题均修复并关闭；fresh finish review 对浅色宽窗收起/展开/More/实际鼠标焦点给出 ship。root 补充深色、565px停靠内容视口、长文件名及超限→重试取消→成功后立即输入；最后17文件127项通过。这里只关闭工程票，未将 reviewer 结论替代用户认可，也未将普通中文粘贴替代真实输入法组合态。详见交接的未完成矩阵。
+
+## 2026-10-08 图片/文件语义反馈
+
+最新用户六项要求授权05，取代本规格中“所有外部附件仅rail且隐形PM锚点”的旧展示/历史选择。外部图片在缩略图栏独立管理，不进入编辑文档或Undo/Redo；其余文件在正文可见内联，MIME优先的图标/颜色/大小，参与Undo/Redo；项目@仍为内联上下文。当前Composer重复附件不重复采用，保留源身份与私有内容摘要，不按内容摘要合并数据库来源记录或混淆不同版本。重复大块状态移入对应附件详情，默认只保留就近状态标记和无对应节点的操作失败。T3固定源码的images/files/prompt分工与采用去重可直接参考，草稿/lease/可信clipboard/冻结提交/queue仍由现有d-pi拥有者承担。验收由用户实机执行，Agent只完成自动化与源码交付，不机械重跑E2E。

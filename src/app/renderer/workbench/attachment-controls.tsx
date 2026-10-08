@@ -6,6 +6,7 @@ import {
   useId,
   useImperativeHandle,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -20,6 +21,7 @@ import type {
 import type {
   AttachmentIntent,
   AttachmentModel,
+  DraftController,
 } from "../../../modules/input/core/public";
 import type {
   AttachmentImports,
@@ -27,14 +29,17 @@ import type {
 } from "../../../modules/input/renderer/public";
 import {
   attachmentIds,
+  AttachmentAdoption,
   captureReferenceFocus,
   createAttachmentEditor,
   createAttachmentImportTarget,
   isCompositionKey,
+  isDetachedImage,
   moveAttachmentReference,
   navigateReference,
   referenceSourceMatches,
   removeAttachmentReference,
+  projectDetachedImages,
   selectedReference,
   syncAttachmentLabels,
   trackReferenceRange,
@@ -77,10 +82,12 @@ export function AttachmentControls({
   mention,
   dismissMention,
   model,
+  controller,
   imports,
   preparationFailure,
   onClearHistory,
   ref,
+  adoption: suppliedAdoption,
 }: {
   bridge: AttachmentBridge;
   threadId: AttachmentRequest["threadId"];
@@ -91,12 +98,14 @@ export function AttachmentControls({
   mention: Mention;
   dismissMention: () => void;
   model: AttachmentModel;
+  controller?: DraftController;
+  adoption?: AttachmentAdoption;
   imports: AttachmentImports;
   preparationFailure?: SubmissionFailure["preparation"] | null;
   onClearHistory?: () => Promise<boolean>;
   ref?: Ref<AttachmentActions>;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const client = useQueryClient();
   const listKey = ["input-attachments", threadId] as const;
   const list = useQuery({
@@ -107,7 +116,8 @@ export function AttachmentControls({
     retry: false,
   });
   const items = list.data?.kind === "attachments" ? list.data.items : [];
-  const ids = attachmentIds(text);
+  const ids = [...new Set(attachmentIds(text))];
+  const adoption = useMemo(() => suppliedAdoption ?? (controller ? new AttachmentAdoption(controller) : undefined), [controller, suppliedAdoption]);
   const active = ids.map((id) => items.find((item) => item.id === id));
   const unused = items.filter((item) => !ids.includes(item.id));
   const [storageReport, setStorageReport] =
@@ -251,11 +261,15 @@ export function AttachmentControls({
     onBlocked,
   ]);
   useEffect(() => {
-    if (editor) syncAttachmentLabels(editor, items);
+    if (adoption) adoption.register(items);
+    if (editor) {
+      if (controller) projectDetachedImages(editor, controller);
+      syncAttachmentLabels(editor, items);
+    }
   }, [editor, list.data, text]);
   useEffect(() => {
     if (!editor || editor.isDestroyed) return;
-    const adapter = createAttachmentEditor(editor, isCurrent);
+    const adapter = createAttachmentEditor(editor, isCurrent, controller ? { controller, adoption } : undefined);
     const detach = model.attachEditor(adapter);
     const detachImports = imports.attachEditor(adapter);
     const flush = () =>
@@ -316,7 +330,7 @@ export function AttachmentControls({
         files,
         source,
         editor && options !== false
-          ? createAttachmentImportTarget(editor, isCurrent, options)
+          ? createAttachmentImportTarget(editor, isCurrent, { ...options, ...(controller ? { controller, adoption } : {}) })
           : undefined,
       );
   }
@@ -450,6 +464,7 @@ export function AttachmentControls({
       !isCurrent()
     )
       return;
+    if (controller?.removeDetachedAttachment(id)) return;
     removeAttachmentReference(editor, id);
   }
   function move(index: number, direction: -1 | 1) {
@@ -473,7 +488,7 @@ export function AttachmentControls({
       <AttachmentStrip
         items={active.filter(
           (item): item is Attachment =>
-            !!item && item.source !== "reference" && !item.frozenReference,
+            !!item && isDetachedImage(item),
         )}
         bridge={bridge}
         threadId={threadId}
@@ -482,8 +497,8 @@ export function AttachmentControls({
       />
       <AttachmentAttention
         loading={list.isFetching}
-        items={active}
-        ids={ids}
+        items={active.filter((item) => !item)}
+        ids={ids.filter((_, index) => !active[index])}
         disabled={sourceFrozen || pending > 0}
         onAction={(command) => void run(command)}
         onPreview={openReference}

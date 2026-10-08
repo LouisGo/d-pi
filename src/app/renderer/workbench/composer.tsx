@@ -22,6 +22,7 @@ import { shouldSend } from "../../../modules/execution/renderer/public";
 import type { FrozenSelection } from "../../../modules/files/core/public";
 import {
   appendSelectionReference,
+  AttachmentAdoption,
   createClipboardPaste,
   createTrustedClipboard,
   draftDocument,
@@ -130,9 +131,10 @@ export function Composer({
   const inputOptions = useRef({ expanded, preference });
   inputOptions.current = { expanded, preference };
   const initialDocument = useMemo(
-    () => draftDocument(controller.getTextSnapshot()),
+    () => draftDocument(controller.getEditorTextSnapshot()),
     [controller],
   );
+  const attachmentAdoption = useMemo(() => new AttachmentAdoption(controller), [controller]);
   const paste = useMemo(
     () => createClipboardPaste(() => setUnsupportedPaste(true)),
     [controller],
@@ -143,6 +145,8 @@ export function Composer({
         ? createTrustedClipboard({
             bridge: model.attachments,
             model: thread.attachments,
+            controller,
+            adoption: attachmentAdoption,
             isCurrent: () => model.isCurrentThread(thread),
             sequence: () => controller.getEditorSnapshot().sequence,
             onFeedback: setClipboardFeedback,
@@ -407,6 +411,8 @@ export function Composer({
             <AttachmentControls
               key={thread.key}
               model={thread.attachments}
+              controller={controller}
+              adoption={attachmentAdoption}
               imports={thread.attachmentImports}
               preparationFailure={preparationFailure}
               ref={attachmentActions}
