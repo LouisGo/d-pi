@@ -10,9 +10,11 @@
 
 验收：确定性无头/IPC/原生隔离测试先行，集成检查/build 与两轴独立评审；一次有界 GUI 验证，必要修正后一次重启确认；最后纯视觉修正只在同一实例重载 Renderer，不再启动应用或发送请求。真实供应商登录需要用户实际账户交互，不能用 fixture 冒称认证服务验收；不自动计费探测。工程、试用、用户认可分别记录。
 
-重要待决：无。原生注册表中没有可接入 API 的能力保留准确限制；可逆实现细节自主决定。仅本地交付，不自动 push、merge main 或公开发布。
+重要待决：无。原生注册表中没有可接入 API 的能力保留准确限制；可逆实现细节自主决定。初次交付仅本地；后续 main 合入与 push 按下方用户追加授权执行，不公开发布。
 
 2026-10-08 工程闭环完成，Dev 已交付待试用。19 条固定 OMP 隔离流程通过；1371 项完整测试限制并发后通过、2 项按既有条件跳过，默认并行 worker 的失败和未知根因见 [validation](validation.md)。正式设置/Composer 已实际验证：凭据存储、模型 CRUD/偏好、真实 Host 回读与一次 localhost 发送响应；累计 1 GET 目录发现、1 POST 生成、0 真实供应商请求。深浅主题、键盘/鼠标焦点和 800px viewport 窄布局通过。两轴发现均修复；[交接](handoff.md)记录源码和 Main/Renderer 的不同构建时点，用户认可 pending。
+
+同日用户追加授权“改完之后 本地 PR 到 main 然后进行 push”：完整合入 `codex/providers-models` 到本地 main，再正常 push `origin/main`。取代初次交付不合并、不 push 的限制；不创建远端 PR、不发布。固定实现 head `4d1223b525e7e6effba41351244ac68b9e6efa75` 的 29 个提交全部纳入；目标本地 main `f649457d063f7ab8abfb82a1ba63031cbce9fe77`，原远端 main `a0367becdf015a4b7fa7a31aa23050c74a275849`，本地原有 81 个领先提交随 main 一起正常推送。实际合入和远端核实结果见 [合入记录](local-merge.md)，工程/试用/用户认可保持分开。
 
 ## 范围与合同
 
@@ -38,5 +40,5 @@
 | [05](issues/05-integration-delivery.md) | 组合验证、评审、本地交付 | 主 Agent |
 
 ```project-status
-[{"id":"providers-models","title":"Provider 与 Models 完整闭环","phase":"M2","engineering":"complete","trial":"delivered","acceptance":"pending","next":"按交接启动 Dev，试用实际账户与 Provider/Models 体验","constraints":"本地交付，未 push/merge main/发布；真实认证服务与用户认可待试用；默认并行测试 worker 失败与限制并发通过分开记录"}]
+[{"id":"providers-models","title":"Provider 与 Models 完整闭环","phase":"M2","engineering":"complete","trial":"delivered","acceptance":"pending","next":"完成已授权的本地 PR 合入 main 与 push，再按交接试用实际账户","constraints":"本地 PR/main 合入及 push 已授权，不公开发布；真实认证服务与用户认可待试用；默认并行测试 worker 失败与限制并发通过分开记录"}]
 ```

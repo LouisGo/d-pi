@@ -1,6 +1,6 @@
 # Provider 与 Models 本地交付
 
-源码：`/Users/lou/.codex/worktrees/providers-models/d-pi`；分支 `codex/providers-models`，从本地 main `f649457d063f7ab8abfb82a1ba63031cbce9fe77` 建立。固定 OMP 18.4.6、macOS arm64；此次没有 push 或合并 main。
+初次交付源码：`/Users/lou/.codex/worktrees/providers-models/d-pi`；分支 `codex/providers-models`，从本地 main `f649457d063f7ab8abfb82a1ba63031cbce9fe77` 建立。固定 OMP 18.4.6、macOS arm64。后续用户追加授权本地 PR 合入 main 并 push，最新身份见 [合入记录](local-merge.md)。
 
 ## 试用
 

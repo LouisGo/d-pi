@@ -6,9 +6,9 @@ OMP 持有凭据、配置、模型与执行；App 仅持设备 picker 偏好。�
 
 ## Evidence
 
-本地 base `f649457d063f7ab8abfb82a1ba63031cbce9fe77`，分支 `codex/providers-models`。完整检查、真实 SDK 隔离回归、红灯/绿灯与未验证项见 [validation](validation.md)；两轴独立结论见 [review](review.md)。GUI 的实际构建身份、SDK 完整性与流程结果以 [gui-flow](evidence/gui-flow.json) 为准，不能把 fixture 当成真实供应商验收。
+本地 base/目标 `f649457d063f7ab8abfb82a1ba63031cbce9fe77`，分支 `codex/providers-models`。固定实现 head `4d1223b525e7e6effba41351244ac68b9e6efa75` 的 29 个提交完整纳入；后续只含交付治理记录。完整检查、真实 SDK 隔离回归、红灯/绿灯与未验证项见 [validation](validation.md)；两轴独立结论见 [review](review.md)。GUI 的实际构建身份、SDK 完整性与流程结果以 [gui-flow](evidence/gui-flow.json) 为准，不能把 fixture 当成真实供应商验收。
 
-新增认证范围经用户确认取代 D-23 的首版两入口限制，原生协议没有重写。没有 push、远端 PR、merge 或 CI 的验证证据。
+新增认证范围经用户确认取代 D-23 的首版两入口限制，原生协议没有重写。用户追加授权本地 PR 合入 main 并 push；实际 source、merge tree、祖先和远端身份见 [合入记录](local-merge.md)。未创建远端 PR，未验证远端 CI；原有默认并行测试 worker 失败不因 merge/push 改记为通过。
 
 ## Merge Danger
 
