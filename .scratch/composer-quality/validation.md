@@ -1,6 +1,6 @@
 # Composer 验证记录
 
-基点 `a9cf9a9d`。最终行为源码 `3b932e04`，动态引用预览 `36121ea`；共享 thumbnail 样式 `ac6330a4`。Node 24.21.0、pnpm 12.8.1、Electron 44.4.5、SDK 18.4.6、macOS arm64。测试边界与原生观测分别列示。
+基点 `a9cf9a9d`。以下较早记录固定于 `3b932e04`，动态引用预览 `36121ea`；共享 thumbnail 样式 `ac6330a4`。该版 UI 已被用户拒绝，不能作为当前 UI 通过证据。最新纠正记录在本文末尾。Node 24.21.0、pnpm 12.8.1、Electron 44.4.5、SDK 18.4.6、macOS arm64。测试边界与原生观测分别列示。
 
 ## 自动化
 
@@ -37,3 +37,44 @@
 早期边实现边热重载出现history-open/update reference-denied；当时不能归因为单一导航事件。固定代码重新启动后租约成功，没有复现。保留真实失败与证据差异，不把单位测试的导航fence当作该运行时失败的确定根因。
 
 未运行：真实CJK组合态/VoiceOver/200%缩放/窄窗/30min性能、OS文件mixed paste/drop竞态全集、实机PDF确认、个人账户/provider请求、真实Host queue发送、打包/签名/远端CI。工程验证不等于用户认可。
+
+## 2026-10-08 UI 拒绝后的纠正
+
+纠正范围 `72863d9..fee53ddf`。Toolbar 独立 worker `b8dbdf6` 串行集成为 `01ea0d6`；连续编辑表面、附件分区、内联引用和组件绑定在 `baf46f0`；原生/评审发现的焦点、展开布局、连续隐藏外部锚点键盘导航在 `f37b47f7`；共享弹层/文件chip圆角在 `fee53ddf`。没有改写 M2 导入权威、Main 资源合同或发送队列。
+
+| 检查 | 当前实际结果与证据 |
+| --- | --- |
+| 纯 Toolbar / ActionMenu | 7 项通过，另有 3 项合同缺口先红；[red](evidence/ui-correction/toolbar-red.txt) / [green](evidence/ui-correction/toolbar-green.txt) |
+| 项目引用呈现 / external rail | 先失败再实现；[red](evidence/ui-correction/presentation-red.txt) 中 frozen fixture 初次缺 inputDigest 的失败属于测试准备错误，已纠正，不能计作产品缺陷 |
+| 评审边界 | expanded 快捷键文案、展开后输入焦点、双向连续隐藏 external anchors 共4项红；[red](evidence/ui-correction/review-red.txt) |
+| 附件管理关闭映射焦点 | 打开后中间编辑导致 bookmark 应从2映射到3，原实现仍2，真实 PM 红；[red](evidence/ui-correction/manager-focus-red.txt) |
+| 纠正后 Composer / Controls / 引用 / Toolbar | 12 文件 82 项通过，含原位置、Undo/Redo、partial/PDF、history lease；[green](evidence/ui-correction/composer-green.txt) |
+| 保留 input / Main / frozen clipboard | 15 文件 105 项通过，真实附件生命周期与冻结引用覆盖；[输出](evidence/ui-correction/retained-boundaries.txt)。与前一行有重叠，不合计作独立总数 |
+| 共享 popup 组件 | 最后增量6文件18项通过；[输出](evidence/ui-correction/popup-components.txt) |
+| 类型、fast、design、interaction、i18n | 全部通过；[类型](evidence/ui-correction/typecheck.txt)、[fast](evidence/ui-correction/check-fast.txt)、[design](evidence/ui-correction/design.txt)、[interaction](evidence/ui-correction/interaction.txt)、[i18n](evidence/ui-correction/i18n.txt) |
+| Build | 完成，现有大 chunk 警告保留；[输出](evidence/ui-correction/build.txt) |
+
+部分 React async fixture 有既存 act 警告，保留 stdout。没有重新宣称完整 pnpm check 全绿；较早 CLI fixture 与 SDK 打包规则冲突的失败仍保留。
+
+当前 Dev 从上述 worktree 的干净源码 `fee53ddf` 启动，Main build `fee53ddf-ef3241b6`，process `584a0f7a-a525-4c95-9e46-ee2f2795f999`；[启动输出](evidence/ui-correction/dev.txt)。原工作树检查仍干净。只操作同一隔离 fixture Thread B，不授予项目执行权限、不发送 provider 请求。
+
+实际 UI 与焦点证据来自本会话 CUA，不是 DOM fixture：外部 sample.png 缩略图和 note.txt 文件分别呈现，alpha.ts 只内联；正文、附件和底栏共享连续表面，三个默认技术展开入口已移走；@src/ 候选有类型/文件名/路径，Enter 确认后能继续输入中文；展开后正文继续输入且底栏位于编辑表面底部；附件管理关闭后直接粘贴“弹窗关闭后输入”，AX 正文确有新增文字，焦点为消息输入。
+
+原生截图曾出现同一次操作后与 AX 状态不一致，另有 ScreenCaptureKit -3811；不能用该单帧宣布菜单/弹窗遮挡已解决或制造截图文件。当时共享 popup 计算 z-index 经 DevTools 原生只读检查为50，状态为data-open，仍需独立视觉复核；随后复核结果见下一段。截图只在工具输出展示，未虚构可导出路径。
+
+独立 fresh finish reviewer 随后重新获取了无遮挡画面，并实际操作收起/展开/More：菜单可见，默认三个技术Disclosure不存在；实际截图坐标点击展开仅保留caret、没有outline，结论 ship，范围限浅色宽窗。root随后验证深色宽窗及DevTools停靠后的565×780内容视口，正文换行、底栏/More菜单无横向溢出，恢复浅色收起态。长文件名样本通过原生选择器导入，文件chip截断后保留大小与删除按钮。此处补足视觉证据，不把最早不一致帧当作当前确定缺陷。
+
+最后原生选择器返回焦点暴露旧入口问题，`7827d38` 在打开picker前保留当前caret作为系统返回目标；独立成功晚到反例再发现旧adapter仍无条件focus。`836f591` 在临时insertion队列保留焦点意图：自动choose-import采用不聚焦，用户显式待插入/项目选择保持聚焦；没有修改IPC、持久化或M2mapped target。正式取消/成功两条真实PM/React反例先红再绿，17文件125项通过，完整typecheck/check:fast与build通过。初次picker测试忘记挂载editor，已修正fixture后重跑基线红，归档red来自修正后的fixture，不将准备错误作产品证据。
+
+Standards随后发现source-too-large的“重试准备”仍直接打开picker，绕过首次入口；两条重试取消/成功反例红，`3918b64`复用同一prepareNativePicker守卫后转绿。没有把管理Modal内其他command的重新导入机械聚焦到inert editor。
+
+| 最后焦点回归与检查 | 实际证据 |
+| --- | --- |
+| 首次picker / 自动完成 / 失败重试 | [首次red](evidence/ui-correction/picker-focus-red.txt)、[晚到red](evidence/ui-correction/picker-success-red.txt)、[重试red](evidence/ui-correction/picker-retry-red.txt)；最终17文件127项通过，[green](evidence/ui-correction/picker-final-green.txt) |
+| 类型 | 836f591完整[main/renderer](evidence/ui-correction/picker-typecheck.txt)通过；3918b64只改Renderer入口，最后[renderer](evidence/ui-correction/picker-final-renderer-types.txt)通过 |
+| fast / build | 836f591 [fast](evidence/ui-correction/picker-check-fast.txt)通过；3918b64 [build](evidence/ui-correction/picker-build.txt)成功，现有chunk警告保留。最终交接文档/报告后的fast见[输出](evidence/ui-correction/final-check-fast.txt) |
+| 最后原生 | 3918b64固定源码启动，dirty仅交接文档；[启动](evidence/ui-correction/picker-dev.txt)、[fixture阶段事件](evidence/ui-correction/native-events.jsonl)、[原生操作记录](evidence/ui-correction/native-ui.md) |
+
+最后Dev Main build `3918b64a-dirty-2eee4843`，process `33bb81f0-36f4-4e00-806c-53fc29aac675`。26MiB样本在原生picker后显示“原件超出25 MiB限制”；重试→取消→无需点正文直接粘贴“重试取消后继续输入”，失败仍保留、正文更新、AX焦点为消息；再次重试→选择40字节有效文本→错误消失/新文件chip出现→直接粘贴“导入成功后继续输入”，仍进正文且焦点保持。最后真实坐标点击正文仅caret，没有outline。系统GoTo键盘后的focus-visible outline是键盘状态，不冒称为鼠标缺陷。Main阶段事件仅证明构建/请求/资源ACK，视觉与焦点来自CUA。
+
+本轮剩余矩阵：真实输入法marked-text、VoiceOver、OS所有尺寸/200%缩放、30min性能、mixed paste/drop竞态全集、实机PDF/其余错误组合、provider/Host queue。565px仅实际停靠内容视口。源码工程完成、可试用，用户认可pending。

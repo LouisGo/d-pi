@@ -1,0 +1,30 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/modules/input/renderer tests/integration/attachment-lifecycle.integration.test.ts tests/integration/clipboard-frozen-references.integration.test.ts
+$ tsr generate
+(node:86499) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/.codex/worktrees/composer-quality/d-pi
+
+ ✓ src/modules/input/renderer/clipboard/structured-paste.test.ts (6 tests) 110ms
+ ✓ src/modules/input/renderer/editor/edit-action-history.test.ts (2 tests) 27ms
+ ✓ src/modules/input/renderer/references/attachment-reference-boundaries.test.ts (2 tests) 31ms
+ ✓ src/modules/input/renderer/clipboard/trusted-clipboard.test.ts (3 tests) 25ms
+ ✓ src/modules/input/renderer/references/context-presentation.test.ts (6 tests) 39ms
+ ✓ src/modules/input/renderer/attachments/attachment-imports.test.ts (4 tests) 176ms
+ ✓ src/modules/input/renderer/editor/draft-editor-cache.test.ts (6 tests) 95ms
+ ✓ src/modules/input/renderer/references/attachment-reference.test.ts (4 tests) 8ms
+ ✓ src/modules/input/renderer/references/selection-insert.test.ts (2 tests) 19ms
+ ✓ src/modules/input/renderer/references/suggestion-controller.test.ts (3 tests) 7ms
+ ✓ src/modules/input/renderer/clipboard/plain-text-paste.test.ts (4 tests) 18ms
+ ✓ src/modules/input/renderer/references/reference-interaction.test.ts (4 tests) 22ms
+ ✓ tests/integration/attachment-lifecycle.integration.test.ts (20 tests) 777ms
+ ✓ src/modules/input/renderer/attachments/import-batch.test.ts (25 tests) 1423ms
+ ✓ tests/integration/clipboard-frozen-references.integration.test.ts (14 tests) 1926ms
+   ✓ enforces actual async 64 MiB snapshot and 128 MiB aggregate byte budgets, and recovers pins/budget after rejection 952ms
+
+ Test Files  15 passed (15)
+      Tests  105 passed (105)
+   Start at  15:41:25
+   Duration  3.22s (tests 38%, environment 33%, transform 16%, import 12%, worker 1%)
+

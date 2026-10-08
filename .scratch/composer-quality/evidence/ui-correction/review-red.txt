@@ -1,0 +1,222 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/modules/input/renderer/references/context-presentation.test.ts src/app/renderer/workbench/composer-toolbar.test.ts src/app/renderer/workbench/composer-continuity.test.ts
+$ tsr generate
+(node:85152) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/.codex/worktrees/composer-quality/d-pi
+
+ ❯ src/modules/input/renderer/references/context-presentation.test.ts (6 tests | 2 failed) 43ms
+   ✓ presents live or frozen project context only as an inline file chip (frozen=false) 19ms
+   ✓ presents live or frozen project context only as an inline file chip (frozen=true) 3ms
+   ✓ keeps the adopted external attachment anchor immutable without duplicating its rail label in the body 2ms
+   ✓ crosses the external attachment anchor without selecting an invisible chip 2ms
+   × crosses a whole consecutive external batch with one ArrowRight and preserves Shift's anchor 12ms
+   × crosses a whole consecutive external batch with one ArrowLeft and preserves Shift's anchor 4ms
+ ❯ src/app/renderer/workbench/composer-toolbar.test.ts (4 tests | 1 failed) 161ms
+   ✓ preserves real model/access/primary slots with a separated left group and compact right actions 23ms
+   ✓ keeps attach direct, disables it alone, and exposes controlled expand/collapse state 10ms
+   ✓ keeps reference/cache/shortcut actions in the menu and reflects the current preference 110ms
+   × describes expanded keyboard behavior while retaining the collapsed send-key preference 17ms
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > inserts mixed-paste files at the captured source boundary and undoes the whole batch without erasing later typing
+An update to AttachmentImportBatches inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > exposes partial import without automatic adoption and accepts the ready subset only through its explicit Composer action
+An update to AttachmentImportBatches inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > previews and confirms a failed PDF in its original import job before explicit insertion
+An update to AttachmentImportBatches inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > previews and confirms a failed PDF in its original import job before explicit insertion
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ ❯ src/app/renderer/workbench/composer-continuity.test.ts (23 tests | 1 failed) 1341ms
+   ✓ keeps a frozen selection pending when PM rejects insertion and applies it once after recovery 109ms
+   ✓ preserves A's middle selection and independent undo/redo across A → B → A with fresh views 52ms
+   ✓ cannot undo accepted submission consumption in the current editor or after a switch 21ms
+   ✓ uses an externally updated draft version on return and discards the previous undo 16ms
+   ✓ Shift+Enter inserts a source line in the real composer and remains undoable 8ms
+   ✓ retries a confirmed interrupted chat in place without consuming the draft 8ms
+   ✓ does not retry an interrupted chat until its previous process has stopped 5ms
+   ✓ explains a running session without a model and offers model selection without consuming its draft 5ms
+   ✓ keeps a pending file-picker insertion in its real Composer before admitting the developer view 65ms
+   ✓ keeps a pending drop insertion in its real Composer before admitting the developer view 58ms
+   ✓ makes history protection limit observable in the real Composer while preserving its source body 30ms
+   ✓ makes history protection failure observable in the real Composer while preserving its source body 40ms
+   ✓ keeps publication-limit Undo until explicit recovery and waits for Main lease release before retry 78ms
+   ✓ connects synchronous copy and awaited structured paste in real Composer views as one user action 15ms
+   ✓ shows automatic preparation without asking the user to start OMP 4ms
+   ✓ offers an explicit startup retry after failure and preserves the draft until a real submission 3ms
+   ✓ offers the normal project trust action for a CLI session and retains the question draft 6ms
+   ✓ owns Enter while the reference popup is loading, empty or dismissed, and leaves IME confirmation to the editor 197ms
+   ✓ accepts one reference on Enter and preserves input typed while Main verifies the chosen source 250ms
+   ✓ inserts mixed-paste files at the captured source boundary and undoes the whole batch without erasing later typing 85ms
+   ✓ exposes partial import without automatic adoption and accepts the ready subset only through its explicit Composer action 134ms
+   ✓ previews and confirms a failed PDF in its original import job before explicit insertion 127ms
+   × returns the mapped caret to the real editor when expanding and collapsing for continued input 21ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/renderer/workbench/composer-continuity.test.ts > returns the mapped caret to the real editor when expanding and collapsing for continued input
+AssertionError: expected <button type="button" …(8)>…(1)</button> to be <div contenteditable="true" …(7)>…(1)</div> // Object.is equality
+
+- Expected
++ Received
+
+- <div
+-   aria-label="Message"
+-   aria-multiline="true"
+-   class="tiptap ProseMirror"
+-   contenteditable="true"
+-   role="textbox"
+-   spellcheck="false"
++ <button
++   aria-expanded="true"
++   aria-label="Collapse editor"
++   class="ui-button ui-button-icon ui-button-ghost"
++   data-base-ui-tooltip-trigger=""
++   data-popup-open=""
++   data-slot="button"
++   id="base-ui-_r_aq_"
+    tabindex="0"
+-   translate="no"
++   type="button"
++ >
++   <span
++     class="ui-icon-button-content"
++   >
++     <svg
++       aria-hidden="true"
++       class=""
++       color="currentColor"
++       fill="none"
++       focusable="false"
++       height="18"
++       stroke="currentColor"
++       stroke-width="1.5"
++       viewBox="0 0 24 24"
++       width="18"
++       xmlns="http://www.w3.org/2000/svg"
+      >
+-   <p>
+-     alpha omega
+-   </p>
+- </div>
++       <path
++         d="M6.5023 10.7365C7.34671 10.7485 10.1432 11.3294 10.7361 10.7365C11.329 10.1436 10.7481 7.34708 10.7361 6.50267M13.2685 17.5027C13.2565 16.6583 12.6756 13.8618 13.2685 13.2689C13.8614 12.676 16.6579 13.2569 17.5023 13.2689M20.9991 21.001L13.6102 13.6188M10.3691 10.3763L2.99998 2.99902"
++         stroke="currentColor"
++         stroke-linecap="round"
++         stroke-linejoin="round"
++         stroke-width="1.5"
++       />
++     </svg>
++   </span>
++ </button>
+
+ ❯ src/app/renderer/workbench/composer-continuity.test.ts:1141:34
+    1139|   expect(button).not.toBeNull();
+    1140|   await act(() => { button?.focus(); button?.click(); });
+    1141|   expect(document.activeElement).toBe(editor.view.dom);
+       |                                  ^
+    1142|   expect(editor.state.selection.from).toBe(6);
+    1143|   await act(() => editor.commands.insertContent(" typing"));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/app/renderer/workbench/composer-toolbar.test.ts > describes expanded keyboard behavior while retaining the collapsed send-key preference
+AssertionError: expected 'Enter sends · Shift+Enter newline' to be 'Enter newline · Command+Enter sends' // Object.is equality
+
+Expected: "Enter newline · Command+Enter sends"
+Received: "Enter sends · Shift+Enter newline"
+
+ ❯ src/app/renderer/workbench/composer-toolbar.test.ts:152:52
+    150|   const option = document.querySelector('[role="menuitemcheckbox"]');
+    151|   expect(option?.getAttribute("aria-checked")).toBe("true");
+    152|   expect(option?.getAttribute("aria-description")).toBe(value.labels.e…
+       |                                                    ^
+    153| });
+    154|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/modules/input/renderer/references/context-presentation.test.ts > crosses a whole consecutive external batch with one ArrowRight and preserves Shift's anchor
+AssertionError: expected 3 to be 5 // Object.is equality
+
+- Expected
++ Received
+
+- 5
++ 3
+
+ ❯ src/modules/input/renderer/references/context-presentation.test.ts:107:41
+    105|     editor.view.dispatch(editor.state.tr.setSelection(TextSelection.cr…
+    106|     expect(navigateReference(editor, new KeyboardEvent("keydown", {key…
+    107|     expect(editor.state.selection.head).toBe(end);
+       |                                         ^
+    108|     expect(editor.state.selection.anchor).toBe(shiftKey ? start : end);
+    109|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  src/modules/input/renderer/references/context-presentation.test.ts > crosses a whole consecutive external batch with one ArrowLeft and preserves Shift's anchor
+AssertionError: expected 4 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 4
+
+ ❯ src/modules/input/renderer/references/context-presentation.test.ts:107:41
+    105|     editor.view.dispatch(editor.state.tr.setSelection(TextSelection.cr…
+    106|     expect(navigateReference(editor, new KeyboardEvent("keydown", {key…
+    107|     expect(editor.state.selection.head).toBe(end);
+       |                                         ^
+    108|     expect(editor.state.selection.anchor).toBe(shiftKey ? start : end);
+    109|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  3 failed (3)
+      Tests  4 failed | 29 passed (33)
+   Start at  15:35:19
+   Duration  3.60s (import 54%, tests 24%, environment 11%, transform 10%)
+
+[ELIFECYCLE] Test failed. See above for more details.

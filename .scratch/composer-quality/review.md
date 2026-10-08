@@ -25,3 +25,24 @@
 两个reviewer分别复核ac6330a→36121ea的动态引用预览：受控root/symlink/Thread current、25MiB/64KiB预算、不调用put/save与保留PDF derivedDigest，均无新增发现；Spec另独立10项测试通过。
 
 36121ea→3b932e04关闭modal增量两轴亦无新增发现：按钮/Escape先同步关闭仍挂载dialog，再parent恢复bookmark，cancel阻止默认关闭干扰，原owner/销毁/替换/IME守卫保留。Spec另独立两项定向反例通过。工程评审闭合，不代表未跑实机矩阵通过。
+
+## UI拒绝后重新评审：72863d9..3918b64
+
+旧行为评审没有替代用户UI验收。按截图组合重做后，同两位只读reviewer各自覆盖Spec与Standards，主Agent核实并修复：
+
+- 展开后实际Enter为换行，More仍展示发送；改为展示当前有效行为，不覆写收起偏好。
+- 展开动作焦点落按钮；回到同一editor，维持原caret。
+- 多个隐藏external token连续相邻，方向键停在不可见位置；双向跳过完整连续区间，保留Shift扩选语义。
+- 管理弹窗期间正文变化后使用旧bookmark；改用真实PM映射位置恢复。
+- 首次及失败重试打开原生picker时，系统返回到即将卸载的按钮；打开前设定当前editor/caret为返回目标，保留owner/freeze/IME守卫。
+- 自动choose-import完成仍强制focus，晚到抢走新用户焦点；临时insertion entry保留focus意图，自动为false、显式采用为true，跨IME/view延迟仍保留该意图，不修改IPC/持久化。
+
+每项有真实PM/React反例，归档[红绿记录](validation.md#2026-10-08-ui-拒绝后的纠正)。最后836f591→3918b64的两轴关闭：Standards独立验证首次/重试×取消/成功四项，Spec九项覆盖这些路径及自动晚到不聚焦、显式采用聚焦；无剩余可行动发现。其他来源的“重新导入”在仍挂载管理Modal内，是单独合同，不机械把焦点送入inert editor；未宣称该入口有新的原生证据。
+
+共享ActionMenu/Toolbar/外部附件/ReferenceSuggestions组合不拥有第二份业务协调器；缩略图沿用只读Query。共享popup层与chip圆角增量独立Standards无新增发现。
+
+## Fresh视觉收尾
+
+`impeccable_finish_reviewer`无实现历史、只读原生复核fee53ddf：disposition为ship，范围为浅色桌面宽窗的收起/展开/More与实际鼠标焦点。持久设计合同为连续输入表面、项目引用仅正文、外部附件单独分区、真实model/access状态、次级维护、token/Icon/Base UI。截图参考结构已落实；不能把AX按钮动作后的keyboard outline当作物理鼠标缺陷，实际坐标点击只保留caret。root后续补深色/565px停靠内容视口/长文件名与3918b64超限重试焦点链，见原生记录。
+
+`impeccable_documenter`只读审查：无需改写全局DESIGN或刷新design.json；固定T3 SHA已写入交接，来源只支撑Surface/Banner/Prompt/Toolbar组合，不是复制T3业务架构。既有Button API/密度说明漂移不纳入本次任务。真实IME、VoiceOver、缩放、长会话、OS竞态全集和provider/Host queue继续列为证据缺口；用户认可pending。

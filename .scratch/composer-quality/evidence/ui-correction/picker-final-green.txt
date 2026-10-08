@@ -1,0 +1,210 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/app/renderer/workbench/attachment-controls.test.ts src/app/renderer/workbench/composer-binding.test.ts src/app/renderer/workbench/composer-continuity.test.ts src/modules/input/core/attachments/attachment-model.test.ts src/modules/input/renderer
+$ tsr generate
+(node:94663) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/.codex/worktrees/composer-quality/d-pi
+
+ ✓ src/modules/input/renderer/references/attachment-reference.test.ts (4 tests) 40ms
+ ✓ src/modules/input/renderer/attachments/attachment-imports.test.ts (4 tests) 175ms
+ ✓ src/modules/input/renderer/clipboard/structured-paste.test.ts (6 tests) 186ms
+ ✓ src/modules/input/renderer/references/reference-interaction.test.ts (4 tests) 61ms
+ ✓ src/modules/input/renderer/references/context-presentation.test.ts (6 tests) 56ms
+ ✓ src/modules/input/renderer/editor/draft-editor-cache.test.ts (6 tests) 126ms
+ ✓ src/modules/input/renderer/clipboard/trusted-clipboard.test.ts (3 tests) 44ms
+ ✓ src/modules/input/renderer/clipboard/plain-text-paste.test.ts (4 tests) 19ms
+ ✓ src/modules/input/core/attachments/attachment-model.test.ts (6 tests) 8ms
+ ✓ src/modules/input/renderer/references/selection-insert.test.ts (2 tests) 22ms
+ ✓ src/modules/input/renderer/references/suggestion-controller.test.ts (3 tests) 6ms
+ ✓ src/modules/input/renderer/editor/edit-action-history.test.ts (2 tests) 21ms
+ ✓ src/modules/input/renderer/references/attachment-reference-boundaries.test.ts (2 tests) 22ms
+ ✓ src/modules/input/renderer/attachments/import-batch.test.ts (25 tests) 1457ms
+stderr | src/app/renderer/workbench/attachment-controls.test.ts > keeps the caret as the picker return target without stealing focus on late cancelled (retry: true)
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/attachment-controls.test.ts > keeps the caret as the picker return target without stealing focus on late success (retry: true)
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ ✓ src/app/renderer/workbench/composer-binding.test.ts (2 tests) 40ms
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > inserts mixed-paste files at the captured source boundary and undoes the whole batch without erasing later typing
+An update to AttachmentImportBatches inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > exposes partial import without automatic adoption and accepts the ready subset only through its explicit Composer action
+An update to AttachmentImportBatches inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > previews and confirms a failed PDF in its original import job before explicit insertion
+An update to AttachmentImportBatches inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > previews and confirms a failed PDF in its original import job before explicit insertion
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ ✓ src/app/renderer/workbench/composer-continuity.test.ts (23 tests) 1384ms
+stderr | src/app/renderer/workbench/attachment-controls.test.ts > coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/attachment-controls.test.ts > coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/attachment-controls.test.ts > coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/attachment-controls.test.ts > coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/attachment-controls.test.ts > coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stdout | src/app/renderer/workbench/attachment-controls.test.ts > retains an unresolved required-source failure after replacing its view with the same Thread owner
+{"afterRemount":{"blocked":true,"failureVisible":"This source exceeds the 25 MiB limit.Retry preparationRemove this failed attachment request","chooseRequests":1,"text":"retained draft"}}
+
+ ✓ src/app/renderer/workbench/attachment-controls.test.ts (25 tests) 2259ms
+   ✓ coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly 493ms
+
+ Test Files  17 passed (17)
+      Tests  127 passed (127)
+   Start at  16:22:33
+   Duration  5.04s (import 32%, tests 29%, transform 19%, environment 19%, worker 1%)
+
+    Isolate  17 workers spawned · ~365ms startup each (spawn + environment, per file)
+             at least ~256ms faster with isolate: false — reuses workers across files instead of one per file
+

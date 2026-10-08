@@ -1,0 +1,197 @@
+$ pnpm routes:generate && node scripts/testing/test.mjs vitest src/modules/input/renderer/references/context-presentation.test.ts src/app/renderer/workbench/attachment-controls.test.ts
+$ tsr generate
+(node:72079) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/.codex/worktrees/composer-quality/d-pi
+
+ ❯ src/modules/input/renderer/references/context-presentation.test.ts (4 tests | 4 failed) 23ms
+   × presents live or frozen project context only as an inline file chip (frozen=false) 16ms
+   × presents live or frozen project context only as an inline file chip (frozen=true) 1ms
+   × keeps the adopted external attachment anchor immutable without duplicating its rail label in the body 3ms
+   × crosses the external attachment anchor without selecting an invisible chip 2ms
+stderr | src/app/renderer/workbench/attachment-controls.test.ts > coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/attachment-controls.test.ts > coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/attachment-controls.test.ts > coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/attachment-controls.test.ts > coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/attachment-controls.test.ts > coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stdout | src/app/renderer/workbench/attachment-controls.test.ts > retains an unresolved required-source failure after replacing its view with the same Thread owner
+{"afterRemount":{"blocked":true,"failureVisible":"This source exceeds the 25 MiB limit.Retry preparationRemove this failed attachment request","chooseRequests":1,"text":"retained draft"}}
+
+ ❯ src/app/renderer/workbench/attachment-controls.test.ts (21 tests | 1 failed) 2180ms
+   × distinguishes frozen provenance from live references in the formal controls 104ms
+   ✓ offers only retry for an unfinished clipboard cleanup and confirms its original IDs 59ms
+   ✓ mounts the formal attachment controls and removes a failed atomic reference without changing surrounding text 50ms
+   ✓ isolates late @ searches and inserts a typed file as one undoable reference 52ms
+   ✓ isolates late @ searches and inserts a typed directory as one undoable reference 49ms
+   ✓ identifies a ready reference that failed during send-time freezing without rewriting its preparation state 49ms
+   ✓ permits explicit re-preparation of a failed @PDF after text-only consent while keeping the reference atomic 47ms
+   ✓ closes the native preview before unmount and restores editor focus via button 112ms
+   ✓ closes the native preview before unmount and restores editor focus via cancel 102ms
+   ✓ reports the typed oversized-source rejection instead of a transport failure and keeps sending blocked until explicit removal 46ms
+   ✓ retains a failed import across unrelated preview operations (transport failure: false) 114ms
+   ✓ retains a failed import across unrelated preview operations (transport failure: true) 112ms
+   ✓ retains a failed import across unrelated retry operations (transport failure: false) 110ms
+   ✓ retains a failed import across unrelated retry operations (transport failure: true) 113ms
+   ✓ retains a failed import across unrelated set-text-only operations (transport failure: false) 113ms
+   ✓ retains a failed import across unrelated set-text-only operations (transport failure: true) 111ms
+   ✓ resolves a failed import only through its explicit retry (success) 89ms
+   ✓ resolves a failed import only through its explicit retry (cancelled) 87ms
+   ✓ offers storage checking and explicit unreferenced cleanup, locates broken originals, and preserves editor input 89ms
+   ✓ coalesces quick @ edits, hides old-query results, consumes Enter while waiting and refreshes explicitly 489ms
+   ✓ retains an unresolved required-source failure after replacing its view with the same Thread owner 83ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/renderer/workbench/attachment-controls.test.ts > distinguishes frozen provenance from live references in the formal controls
+AssertionError: expected 'original.txt1 KiB' not to contain 'original.txt'
+
+Expected: "original.txt"
+Received: "original.txt1 KiB"
+
+ ❯ src/app/renderer/workbench/attachment-controls.test.ts:160:78
+    158|     );
+    159|   });
+    160|   expect(container.querySelector(".attachment-rail")?.textContent ?? "…
+       |                                                                              ^
+    161|   expect(container.textContent).not.toContain("Attachment details");
+    162|   expect(container.textContent).not.toContain("Attachments and storage…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  src/modules/input/renderer/references/context-presentation.test.ts > presents live or frozen project context only as an inline file chip (frozen=false)
+AssertionError: expected undefined to be 'project' // Object.is equality
+
+- Expected:
+"project"
+
++ Received:
+undefined
+
+ ❯ src/modules/input/renderer/references/context-presentation.test.ts:22:40
+     20| it.each([false, true])("presents live or frozen project context only a…
+     21|   const {editor, item, element} = fixture(frozen ? "file" : "reference…
+     22|   expect(element?.dataset.contextKind).toBe("project");
+       |                                        ^
+     23|   expect(element?.hidden).toBe(false);
+     24|   expect(element?.textContent).toBe("TSruntime-service.ts");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  src/modules/input/renderer/references/context-presentation.test.ts > presents live or frozen project context only as an inline file chip (frozen=true)
+ZodError: [
+  {
+    "code": "custom",
+    "message": "invalid-frozen-reference",
+    "path": [
+      "frozenReference"
+    ]
+  }
+]
+ ❯ fixture src/modules/input/renderer/references/context-presentation.test.ts:14:33
+
+ ❯ src/modules/input/renderer/references/context-presentation.test.ts:21:35
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  src/modules/input/renderer/references/context-presentation.test.ts > keeps the adopted external attachment anchor immutable without duplicating its rail label in the body
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/modules/input/renderer/references/context-presentation.test.ts:29:27
+     27| it("keeps the adopted external attachment anchor immutable without dup…
+     28|   const {editor, item, element} = fixture("file");
+     29|   expect(element?.hidden).toBe(true);
+       |                           ^
+     30|   expect(element?.dataset.contextKind).toBe("external");
+     31|   expect(editor.getText()).toBe(`a${item.token}b`);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  src/modules/input/renderer/references/context-presentation.test.ts > crosses the external attachment anchor without selecting an invisible chip
+AssertionError: expected '97bcbbc1-4c96-42e1-8d9d-bb36f06fbb20' to be null
+
+- Expected:
+null
+
++ Received:
+"97bcbbc1-4c96-42e1-8d9d-bb36f06fbb20"
+
+ ❯ src/modules/input/renderer/references/context-presentation.test.ts:38:37
+     36|   editor.view.dispatch(editor.state.tr.setSelection(TextSelection.crea…
+     37|   expect(navigateReference(editor, new KeyboardEvent("keydown", {key: …
+     38|   expect(selectedReference(editor)).toBeNull();
+       |                                     ^
+     39|   expect(editor.state.selection.head).toBe(3);
+     40| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  5 failed | 20 passed (25)
+   Start at  15:09:29
+   Duration  4.49s (tests 45%, import 37%, environment 11%, transform 7%)
+
+[ELIFECYCLE] Test failed. See above for more details.
