@@ -112,6 +112,10 @@ Copy/cut 同步捕获实际选区，写入 Main 预发 ticket（`version:1, inst
 
 Paste 只解析严格版本和有界 envelope；未知、过期、伪造、跨 instance、准备失败、预算耗尽均显示可读 fallback。Main 校验目标 Thread；整片段验证成功后一个SQLite事务建立新目标附件ID，保留完整输入/派生record、冻结来源与私有对象去重。目标preview/prepare/reopen仅消费私有快照，不再回读源项目或目标同名路径，不访问任意路径或URL。Renderer 用原 Thread 的 AttachmentModel 跟踪 pending，并在同一消费 sequence、同一 editor doc/selection、仍 editable/current 且 source 未被冻结时执行一次 PM paste transaction；全部内容一次 Undo/Redo。迟到结果不落入别的 Thread 或已消费草稿，未使用克隆释放 import pin。显式纯文本粘贴仍消费 text/plain。正文唯一可写拥有者、保存和 03 history lease 不变。
 
+2026-10-08 用户明确调整 Composer 图片/文件语义，取代上段“全部内容一次 Undo/Redo”中的外部图片部分，实施范围见 [Composer 规格](../../../.scratch/composer-quality/spec.md)。外部图片只展示缩略图，不进入 PM 或 Undo/Redo；正文文字和其他文件内联节点仍为一次 paste/batch 编辑动作。项目 @ 及冻结的项目上下文仍内联。Draft v1 的私有 token 格式、Main manifest/对象和不可变发送保持不变；DraftController 只持有图片 ID 元数据及既有不可变快照，投影 PM 正文时去掉外部图片，保存/捕获时包含当前图片。正文 Undo/Redo 不增加、移除或复活图片，图片增删不打断现有 Redo 分支。
+
+同一 Composer 采用附件时按 ID 或文件名/MIME/字节数/Main 已验证输入摘要去重；不同内容和不同来源溯源不合并数据库记录。非图片内联节点依 MIME 展示图标、分类 token、尺寸和就近状态；具体原因、重试及 PDF 仅文字确认在预览/次级详情中，不默认重复呈现大块失败面板。未使用的可信 clipboard clone 沿原 AttachmentModel discard/ACK 义务释放；异步 import target 返回实际采用 ID，去重项沿原 import-settle release，丢 ACK 重试仍为 release。外部图片不属于 PM Undo 依赖，但其当前 canonical draft ID 和未采用 clone cleanup candidate 继续通过现有 history owner/保存屏障保护，图片删除的 cleanup 失败不能假称 ready。Main 权限、原生 queue、unknown 不重发及原位置/取消/部分失败/Thread 隔离不变。
+
 公开 wire 使用现有 AttachmentBridge 的 clipboard-reserve/export/import/release/discard 命令与 clipboard-tickets/exported/imported/unavailable 判别结果。Clipboard failure 独立于附件内容失败（invalid/expired/busy/failed），不泄露 path、stderr 或业务全文到诊断。窗口内 adapter 只拥有可丢弃 ticket pool 和当前 paste attempt，没有第二份草稿或资产事实。
 
 

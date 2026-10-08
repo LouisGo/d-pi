@@ -8,7 +8,10 @@ import {
   plainTextEditorOptions,
   replaceDraftText,
 } from "../editor/plain-text-editor";
-import { createAttachmentEditor } from "./attachment-editor";
+import {
+  createAttachmentEditor,
+  syncAttachmentLabels,
+} from "./attachment-editor";
 import {
   captureReferenceFocus,
   navigateReference,
@@ -33,6 +36,9 @@ function make(text: string) {
 it("selects and crosses a whole atom with arrows, preserving reverse Shift selection", () => {
   const e = make(`a[[dpi-attachment:${id}]]b`);
   e.view.dispatch(
+    e.state.tr.setNodeMarkup(2, undefined, { id, contextKind: "project" }),
+  );
+  e.view.dispatch(
     e.state.tr.setSelection(TextSelection.create(e.state.doc, 2)),
   );
   expect(
@@ -47,6 +53,33 @@ it("selects and crosses a whole atom with arrows, preserving reverse Shift selec
   );
   expect(e.state.selection.anchor).toBe(3);
   expect(e.state.selection.head).toBe(2);
+});
+it("selects visible external files and updates localized failure metadata without an Undo event", () => {
+  const e = make(`a[[dpi-attachment:${id}]]b`);
+  const item = AttachmentSchema.parse({
+    schemaVersion: 1,
+    id,
+    threadId: crypto.randomUUID(),
+    token: `[[dpi-attachment:${id}]]`,
+    name: "report.docx",
+    mimeType:
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    byteLength: 1024,
+    capturedAt: new Date().toISOString(),
+    source: "file",
+    status: "failed",
+    reason: "unsupported-format",
+    representation: "unsupported",
+    coverageGaps: [],
+    textOnly: false,
+  });
+  syncAttachmentLabels(e, [item], "zh-CN");
+  e.commands.setTextSelection(2);
+  navigateReference(e, new KeyboardEvent("keydown", { key: "ArrowRight" }));
+  expect(selectedReference(e)).toBe(id);
+  const token = e.view.dom.querySelector(".composer-context-token");
+  expect(token?.getAttribute("aria-label")).toContain("此文件格式");
+  expect(e.can().undo()).toBe(false);
 });
 it("maps detail focus across ordinary edits but revokes it after replacement or Thread change", () => {
   const e = make("abc");

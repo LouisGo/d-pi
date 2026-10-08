@@ -40,12 +40,7 @@ export const AttachmentReference = Node.create({
   renderHTML({ node }) {
     const id = Id.parse(node.attrs.id);
     const external = node.attrs.contextKind === "external";
-    const isImage =
-      external &&
-      (node.attrs.representation === "image" ||
-        (typeof node.attrs.mimeType === "string" &&
-          node.attrs.mimeType.toLowerCase().startsWith("image/")));
-    const hidden = node.attrs.contextKind === "unresolved" || isImage;
+    const hidden = isAttachmentNodeHidden(node.attrs);
     const file = filePresentation(
       node.attrs.name,
       external ? node.attrs.mimeType : undefined,
@@ -111,7 +106,19 @@ export const AttachmentReference = Node.create({
               : "M12 3 2 21h20ZM12 9v5m0 4h.01",
         ]),
       ]);
-    const label = [t("attachment.preview", { name }), file.label, size, notice]
+    const consent =
+      node.attrs.textOnly &&
+      Array.isArray(node.attrs.coverageGaps) &&
+      node.attrs.coverageGaps.length
+        ? t("attachment.textOnlyNotice")
+        : null;
+    const label = [
+      t("attachment.preview", { name }),
+      file.label,
+      size,
+      notice,
+      consent !== notice ? consent : null,
+    ]
       .filter(Boolean)
       .join(" · ");
     return [
@@ -127,7 +134,9 @@ export const AttachmentReference = Node.create({
         "data-status": status,
         "data-reason": node.attrs.reason,
         "aria-label": label,
-        title: [name, size, notice].filter(Boolean).join(" · "),
+        title: [name, size, notice, consent !== notice ? consent : null]
+          .filter(Boolean)
+          .join(" · "),
         hidden: hidden ? true : undefined,
       },
       ...children,
@@ -137,6 +146,18 @@ export const AttachmentReference = Node.create({
     return `[[dpi-attachment:${Id.parse(node.attrs.id)}]]`;
   },
 });
+
+export function isAttachmentNodeHidden(
+  attrs: Record<string, unknown>,
+): boolean {
+  return (
+    attrs.contextKind === "unresolved" ||
+    (attrs.contextKind === "external" &&
+      (attrs.representation === "image" ||
+        (typeof attrs.mimeType === "string" &&
+          attrs.mimeType.toLowerCase().startsWith("image/"))))
+  );
+}
 
 function badgeIcon(paths: readonly string[]): DOMOutputSpec {
   return [

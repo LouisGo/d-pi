@@ -35,10 +35,13 @@ export type AttachmentImportInput = {
 };
 export interface AttachmentImportTarget {
   apply(items: Attachment[]): boolean;
+  /** Actual identities retained by the last accepted transaction (after dedup). */
+  adoptedIds?(): readonly string[];
   invalidate?(): void;
 }
 export interface AttachmentImportEditor {
   applyBatch(items: Attachment[]): boolean;
+  adoptedIds?(): readonly string[];
 }
 export interface ImportJobView {
   readonly id: string;
@@ -131,6 +134,7 @@ type Job = {
   releaseSource: () => void;
   reader: FileReader | null;
   settling: Promise<boolean> | null;
+  settlementDisposition?: "release" | "adopt";
   removing: boolean;
   activeAttempt: boolean;
   intent: string;
@@ -381,7 +385,7 @@ export class AttachmentImports {
       found.job.view.adoption === "settling" &&
       !found.job.settling
     ) {
-      void this.settle(found.job, "adopt");
+      void this.settle(found.job, found.job.settlementDisposition ?? "adopt");
       return;
     }
     if (
@@ -468,6 +472,7 @@ export class AttachmentImports {
     return this.apply(
       batch,
       (items) => this.editor?.applyBatch(items) ?? false,
+      () => this.editor?.adoptedIds?.(),
     );
   }
   dismissSettled(id: string): void {
@@ -595,24 +600,36 @@ export class AttachmentImports {
       batch.jobs.some((job) => job.view.phase !== "ready")
     )
       return;
-    this.apply(batch, (items) => batch.target?.apply(items) ?? false);
+    const target = batch.target;
+    this.apply(
+      batch,
+      (items) => target.apply(items),
+      () => target.adoptedIds?.(),
+    );
   }
   private apply(
     batch: Batch,
     apply: (items: Attachment[]) => boolean,
+    adoptedIds?: () => readonly string[] | undefined,
   ): boolean {
     const jobs = batch.jobs.filter(
       (job) => job.view.phase === "ready" && job.view.adoption === "pending",
     );
     const items = jobs.flatMap((job) => job.items);
     if (!jobs.length || !items.length || !apply(items)) return false;
+    const identities = adoptedIds?.();
+    const retained = identities ? new Set(identities) : null;
     batch.automatic = false;
     batch.target?.invalidate?.();
     batch.target = null;
     for (const job of jobs) {
       job.view = { ...job.view, adoption: "applied" };
       this.releaseSource(job);
-      void this.settle(job, "adopt");
+      job.settlementDisposition =
+        retained && job.items.every((item) => !retained.has(item.id))
+          ? "release"
+          : "adopt";
+      void this.settle(job, job.settlementDisposition);
     }
     this.publish();
     return true;
@@ -721,7 +738,7 @@ export class AttachmentImports {
           job.view.phase === "ready" &&
           ["applied", "settling"].includes(job.view.adoption)
         ) {
-          void this.settle(job, "adopt");
+          void this.settle(job, job.settlementDisposition ?? "adopt");
           continue;
         }
         if (job.view.phase === "preparing" || job.view.phase === "reading") {

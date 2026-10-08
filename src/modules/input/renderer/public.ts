@@ -20,6 +20,10 @@ export {
   replaceDraftText,
 } from "./editor/plain-text-editor";
 export {
+  AttachmentAdoption,
+  isDetachedImage,
+} from "./references/attachment-adoption";
+export {
   createAttachmentEditor,
   createAttachmentImportTarget,
   moveAttachmentReference,
@@ -32,8 +36,8 @@ export {
   attachmentMention,
   contextTypeLabel,
   insertAttachmentReference,
+  isAttachmentNodeHidden,
 } from "./references/attachment-reference";
-export { AttachmentAdoption, isDetachedImage } from "./references/attachment-adoption";
 export {
   type FileKind,
   type FilePresentation,

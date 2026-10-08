@@ -575,6 +575,8 @@ it("keeps publication-limit Undo until explicit recovery and waits for Main leas
         released = true;
         return { kind: "history-released" };
       }
+      if (command.kind === "preview")
+        return { kind: "unavailable", reason: "pdf-conversion-failed" };
       if (command.kind === "retry") {
         retries++;
         if (!released)
@@ -622,6 +624,22 @@ it("keeps publication-limit Undo until explicit recovery and waits for Main leas
   });
   const body = fixture.editor().getText();
   expect(fixture.editor().can().undo()).toBe(true);
+  await act(async () => {
+    const token = fixture
+      .editor()
+      .view.dom.querySelector<HTMLElement>("[data-attachment-id]");
+    if (!token) throw Error("missing inline failed file");
+    fixture.editor().commands.setNodeSelection(1);
+    fixture
+      .editor()
+      .view.someProp("handleKeyDown", (handler) =>
+        handler(
+          fixture.editor().view,
+          new KeyboardEvent("keydown", { key: "Enter" }),
+        ),
+      );
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  });
   await act(async () => {
     button("Retry preparation")?.click();
     await new Promise((resolve) => setTimeout(resolve, 20));
@@ -979,14 +997,15 @@ it("inserts mixed-paste files at the captured source boundary and undoes the who
     `alpha A${items[0]?.token} B omega`,
   );
   expect(
-    fixture.container.querySelector(".attachment-rail")?.textContent,
+    fixture.editor().view.dom.querySelector(".composer-context-token")
+      ?.textContent,
   ).toContain("source.txt");
   expect(
     fixture
       .editor()
       .view.dom.querySelector<HTMLElement>('[data-context-kind="external"]')
       ?.hidden,
-  ).toBe(true);
+  ).toBe(false);
   expect(fixture.container.querySelector("details")).toBeNull();
   await act(() => fixture.editor().commands.undo());
   expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha A B omega");
@@ -994,14 +1013,98 @@ it("inserts mixed-paste files at the captured source boundary and undoes the who
   await act(() => fixture.editor().commands.redo());
   await act(() => new Promise((resolve) => setTimeout(resolve, 20)));
   expect(
-    fixture.container.querySelector(".attachment-rail")?.textContent,
+    fixture.editor().view.dom.querySelector(".composer-context-token")
+      ?.textContent,
   ).toContain("source.txt");
   expect(
     fixture
       .editor()
       .view.dom.querySelector<HTMLElement>('[data-context-kind="external"]')
       ?.hidden,
-  ).toBe(true);
+  ).toBe(false);
+});
+
+it("renders images only as tiles and MIME files only inline, without a repeated failure panel or image Undo", async () => {
+  let items: import("../../../modules/input/contracts/public").Attachment[] =
+    [];
+  const fixture = await setup(undefined, undefined, {
+    request: async (command) => {
+      if (command.kind === "preview")
+        return { kind: "unavailable", reason: "unsupported-format" };
+      return historyReply(command) ?? { kind: "attachments", items };
+    },
+  });
+  const imageId = crypto.randomUUID(),
+    fileId = crypto.randomUUID();
+  const base = {
+    schemaVersion: 1,
+    threadId: fixture.first.threadId,
+    byteLength: 1024,
+    capturedAt: new Date().toISOString(),
+    source: "file",
+    coverageGaps: [],
+    textOnly: false,
+  };
+  const image = AttachmentSchema.parse({
+    ...base,
+    id: imageId,
+    token: `[[dpi-attachment:${imageId}]]`,
+    name: "image.png",
+    mimeType: "image/png",
+    status: "ready",
+    representation: "image",
+    inputDigest: "a".repeat(64),
+  });
+  const file = AttachmentSchema.parse({
+    ...base,
+    id: fileId,
+    token: `[[dpi-attachment:${fileId}]]`,
+    name: "report.docx",
+    mimeType:
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    status: "failed",
+    reason: "unsupported-format",
+    representation: "unsupported",
+    inputDigest: "b".repeat(64),
+  });
+  items = [image, file];
+  const attach = fixture.container.querySelector<HTMLButtonElement>(
+    'button[aria-label="Attach files"]',
+  );
+  await act(async () => {
+    attach?.click();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  });
+  expect(fixture.editor().getText()).toContain(file.token);
+  expect(fixture.editor().getText()).not.toContain(image.token);
+  expect(
+    fixture.container.querySelector(".attachment-rail")?.textContent,
+  ).not.toContain(file.name);
+  const token = fixture
+    .editor()
+    .view.dom.querySelector('[data-file-kind="document"]');
+  expect(token?.textContent).toContain("1 KB");
+  expect(token?.getAttribute("data-status")).toBe("failed");
+  expect(fixture.container.querySelector(".composer-notice")).toBeNull();
+  expect(
+    fixture.container.querySelector(".composer-context")?.textContent,
+  ).not.toContain("This file format");
+  await act(() => fixture.editor().commands.undo());
+  expect(fixture.thread().controller.getTextSnapshot()).not.toContain(
+    file.token,
+  );
+  expect(fixture.thread().controller.getTextSnapshot()).toContain(image.token);
+  await act(() =>
+    fixture.container
+      .querySelector<HTMLButtonElement>('button[aria-label="Remove image.png"]')
+      ?.click(),
+  );
+  await act(() => fixture.editor().commands.redo());
+  expect(fixture.thread().controller.getTextSnapshot()).toContain(file.token);
+  expect(fixture.thread().controller.getTextSnapshot()).not.toContain(
+    image.token,
+  );
+  expect(fixture.container.querySelector(".attachment-rail")).toBeNull();
 });
 
 it("exposes partial import without automatic adoption and accepts the ready subset only through its explicit Composer action", async () => {

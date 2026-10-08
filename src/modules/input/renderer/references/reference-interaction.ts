@@ -5,11 +5,12 @@ import {
   type Transaction,
 } from "@tiptap/pm/state";
 import { onDraftHistoryClear } from "../editor/plain-text-editor";
+import { isAttachmentNodeHidden } from "./attachment-reference";
 export function selectedReference(editor: Editor): string | null {
   const selection = editor.state.selection;
   return selection instanceof NodeSelection &&
     selection.node.type.name === "attachmentReference" &&
-    selection.node.attrs.contextKind !== "external"
+    !isAttachmentNodeHidden(selection.node.attrs)
     ? String(selection.node.attrs.id)
     : null;
 }
@@ -30,7 +31,7 @@ export function navigateReference(
     selection instanceof NodeSelection &&
     selection.node.type.name === "attachmentReference"
   ) {
-    const head = skipExternalReferences(
+    const head = skipHiddenReferences(
       doc,
       direction > 0 ? selection.to : selection.from,
       direction,
@@ -51,13 +52,12 @@ export function navigateReference(
     direction > 0 ? selection.$head.nodeAfter : selection.$head.nodeBefore;
   if (node?.type.name !== "attachmentReference") return false;
   const pos = direction > 0 ? selection.head : selection.head - node.nodeSize;
-  const head =
-    node.attrs.contextKind === "external"
-      ? skipExternalReferences(doc, selection.head, direction)
-      : selection.head + direction * node.nodeSize;
+  const head = isAttachmentNodeHidden(node.attrs)
+    ? skipHiddenReferences(doc, selection.head, direction)
+    : selection.head + direction * node.nodeSize;
   editor.view.dispatch(
     editor.state.tr.setSelection(
-      event.shiftKey || node.attrs.contextKind === "external"
+      event.shiftKey || isAttachmentNodeHidden(node.attrs)
         ? TextSelection.create(
             doc,
             event.shiftKey ? selection.anchor : head,
@@ -68,7 +68,7 @@ export function navigateReference(
   );
   return true;
 }
-function skipExternalReferences(
+function skipHiddenReferences(
   doc: import("@tiptap/pm/model").Node,
   start: number,
   direction: number,
@@ -79,7 +79,7 @@ function skipExternalReferences(
     const node = direction > 0 ? resolved.nodeAfter : resolved.nodeBefore;
     if (
       node?.type.name !== "attachmentReference" ||
-      node.attrs.contextKind !== "external"
+      !isAttachmentNodeHidden(node.attrs)
     )
       return head;
     head += direction * node.nodeSize;

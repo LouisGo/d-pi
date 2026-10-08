@@ -3,7 +3,7 @@ import { DRAFT_MAX_BYTES, draftByteLength } from "../../../shared/draft-text";
 import { createId } from "../../../shared/identity";
 import { uiMessage } from "../../../shared/messages/contracts";
 import type { Draft, Failure, SaveReply } from "../contracts/draft";
-import { attachmentToken, readAttachmentTokens } from "./attachments/tokens";
+import { attachmentToken } from "./attachments/tokens";
 export type SaveState =
   | { kind: "saved" }
   | { kind: "dirty" }
@@ -84,18 +84,33 @@ export class DraftController {
   // confirmed baseline. This is not a second editable body.
   getTextSnapshot = (): string => this.pending?.text ?? this.baselineText;
   registerDetachedAttachments(ids: Iterable<string>): void {
+    if (this.disposed) return;
     for (const id of ids) this.detachedAttachments.add(id);
   }
   getEditorTextSnapshot = (): string =>
-    this.withoutDetachedAttachments(this.getTextSnapshot());
+    this.projectEditorText(this.getTextSnapshot());
+  getDetachedAttachmentIds(): string[] {
+    return Array.from(
+      this.getTextSnapshot().matchAll(
+        /\[\[dpi-attachment:([0-9a-f-]{36})\]\]/g,
+      ),
+      (match) => match[1] ?? "",
+    ).filter((id) => this.detachedAttachments.has(id));
+  }
   serializeEditorText(text: string): string {
-    const parsed = readAttachmentTokens(this.getTextSnapshot());
-    const retained = parsed.ok
-      ? [...new Set(parsed.tokens.map((entry) => entry.id))].filter((id) =>
-          this.detachedAttachments.has(id),
-        )
-      : [];
-    return this.withoutDetachedAttachments(text) + retained.map(attachmentToken).join("");
+    const retained = [
+      ...new Set(
+        Array.from(
+          this.getTextSnapshot().matchAll(
+            /\[\[dpi-attachment:([0-9a-f-]{36})\]\]/g,
+          ),
+          (match) => match[1],
+        ),
+      ),
+    ].filter((id): id is string => !!id && this.detachedAttachments.has(id));
+    return (
+      this.projectEditorText(text) + retained.map(attachmentToken).join("")
+    );
   }
   editEditorText(text: string): void {
     const snapshot = this.serializeEditorText(text);
@@ -105,9 +120,12 @@ export class DraftController {
     if (this.disposed || !ids.length) return;
     this.registerDetachedAttachments(ids);
     const text = this.getTextSnapshot();
-    const parsed = readAttachmentTokens(text);
-    if (!parsed.ok) return;
-    const existing = new Set(parsed.tokens.map((entry) => entry.id));
+    const existing = new Set(
+      Array.from(
+        text.matchAll(/\[\[dpi-attachment:([0-9a-f-]{36})\]\]/g),
+        (match) => match[1],
+      ),
+    );
     const added = [...new Set(ids)].filter((id) => !existing.has(id));
     if (added.length) this.edit(text + added.map(attachmentToken).join(""));
   }
@@ -118,9 +136,11 @@ export class DraftController {
     if (next !== text) this.edit(next);
     return true;
   }
-  private withoutDetachedAttachments(text: string): string {
-    return text.replace(/\[\[dpi-attachment:([0-9a-f-]{36})\]\]/g,
-      (token, id: string) => this.detachedAttachments.has(id) ? "" : token);
+  projectEditorText(text: string): string {
+    return text.replace(
+      /\[\[dpi-attachment:([0-9a-f-]{36})\]\]/g,
+      (token, id: string) => (this.detachedAttachments.has(id) ? "" : token),
+    );
   }
   getEditorSnapshot = () => ({
     revision: this.revision,
@@ -440,5 +460,6 @@ export class DraftController {
     this.capture = null;
     timerHost.clearTimeout(this.timer);
     this.listeners.clear();
+    this.detachedAttachments.clear();
   }
 }

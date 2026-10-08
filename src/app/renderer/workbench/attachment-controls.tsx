@@ -28,8 +28,8 @@ import type {
   ReferenceTrigger,
 } from "../../../modules/input/renderer/public";
 import {
-  attachmentIds,
   AttachmentAdoption,
+  attachmentIds,
   captureReferenceFocus,
   createAttachmentEditor,
   createAttachmentImportTarget,
@@ -37,9 +37,9 @@ import {
   isDetachedImage,
   moveAttachmentReference,
   navigateReference,
+  projectDetachedImages,
   referenceSourceMatches,
   removeAttachmentReference,
-  projectDetachedImages,
   selectedReference,
   syncAttachmentLabels,
   trackReferenceRange,
@@ -116,8 +116,15 @@ export function AttachmentControls({
     retry: false,
   });
   const items = list.data?.kind === "attachments" ? list.data.items : [];
+  const itemsRef = useRef(items);
+  itemsRef.current = items;
   const ids = [...new Set(attachmentIds(text))];
-  const adoption = useMemo(() => suppliedAdoption ?? (controller ? new AttachmentAdoption(controller) : undefined), [controller, suppliedAdoption]);
+  const adoption = useMemo(
+    () =>
+      suppliedAdoption ??
+      (controller ? new AttachmentAdoption(controller) : undefined),
+    [controller, suppliedAdoption],
+  );
   const active = ids.map((id) => items.find((item) => item.id === id));
   const unused = items.filter((item) => !ids.includes(item.id));
   const [storageReport, setStorageReport] =
@@ -264,17 +271,25 @@ export function AttachmentControls({
     if (adoption) adoption.register(items);
     if (editor) {
       if (controller) projectDetachedImages(editor, controller);
-      syncAttachmentLabels(editor, items);
+      syncAttachmentLabels(editor, items, locale);
     }
-  }, [editor, list.data, text]);
+  }, [editor, list.data, text, adoption, controller, locale]);
   useEffect(() => {
     if (!editor || editor.isDestroyed) return;
-    const adapter = createAttachmentEditor(editor, isCurrent, controller ? { controller, adoption } : undefined);
+    const adapter = createAttachmentEditor(
+      editor,
+      isCurrent,
+      controller
+        ? { controller, ...(adoption ? { adoption } : {}) }
+        : undefined,
+    );
     const detach = model.attachEditor(adapter);
     const detachImports = imports.attachEditor(adapter);
     const flush = () =>
       setTimeout(() => {
         if (isCurrent()) {
+          if (controller) projectDetachedImages(editor, controller);
+          syncAttachmentLabels(editor, itemsRef.current, locale);
           model.flushInsertions();
           imports.flushInsertions();
         }
@@ -285,7 +300,7 @@ export function AttachmentControls({
       detachImports();
       editor.view.dom.removeEventListener("compositionend", flush);
     };
-  }, [model, imports, editor, isCurrent]);
+  }, [model, imports, editor, isCurrent, controller, adoption, locale]);
   function insert(item: Attachment) {
     if (isCurrent()) model.insert(item);
   }
@@ -330,7 +345,11 @@ export function AttachmentControls({
         files,
         source,
         editor && options !== false
-          ? createAttachmentImportTarget(editor, isCurrent, { ...options, ...(controller ? { controller, adoption } : {}) })
+          ? createAttachmentImportTarget(editor, isCurrent, {
+              ...options,
+              ...(controller ? { controller } : {}),
+              ...(adoption ? { adoption } : {}),
+            })
           : undefined,
       );
   }
@@ -476,7 +495,13 @@ export function AttachmentControls({
       !isCurrent()
     )
       return;
-    moveAttachmentReference(editor, index, direction);
+    const nodeIds: string[] = [];
+    editor.state.doc.descendants((node) => {
+      if (node.type.name === "attachmentReference")
+        nodeIds.push(String(node.attrs.id));
+    });
+    const position = nodeIds.indexOf(ids[index] ?? "");
+    if (position >= 0) moveAttachmentReference(editor, position, direction);
   }
   return (
     <div className="composer-context">
@@ -487,21 +512,18 @@ export function AttachmentControls({
       )}
       <AttachmentStrip
         items={active.filter(
-          (item): item is Attachment =>
-            !!item && isDetachedImage(item),
+          (item): item is Attachment => !!item && isDetachedImage(item),
         )}
         bridge={bridge}
         threadId={threadId}
         onPreview={openReference}
         onRemove={remove}
+        disabled={sourceFrozen}
       />
       <AttachmentAttention
         loading={list.isFetching}
-        items={active.filter((item) => !item)}
         ids={ids.filter((_, index) => !active[index])}
         disabled={sourceFrozen || pending > 0}
-        onAction={(command) => void run(command)}
-        onPreview={openReference}
         onRemove={remove}
       />
       {managerOpen && (
@@ -518,6 +540,11 @@ export function AttachmentControls({
           unused={unused}
           active={active}
           ids={ids}
+          movableIds={active
+            .filter(
+              (item): item is Attachment => !!item && !isDetachedImage(item),
+            )
+            .map((item) => item.id)}
           run={(command, add) => void run(command, add)}
           insert={insert}
           openReference={(id) => {
@@ -650,14 +677,8 @@ export function AttachmentControls({
         />
       )}
       {preparationFailure && (
-        <div role="alert" className="failure">
-          <strong>
-            {items.find((item) => item.id === preparationFailure.attachmentId)
-              ?.name ??
-              preparationFailure.attachmentId ??
-              t("attachment.add")}
-          </strong>
-          <p>{t(`attachment.reason.${preparationFailure.reason}`)}</p>
+        <div role="alert" className="composer-notice">
+          <span>{t(`attachment.reason.${preparationFailure.reason}`)}</span>
           {preparationFailure.reason === "editor-history-limit" &&
             onClearHistory && (
               <Button
@@ -690,9 +711,16 @@ export function AttachmentControls({
       />
       {preview && (
         <AttachmentPreviewDialog
-          item={preview.item}
+          item={
+            items.find((item) => item.id === preview.item.id) ?? preview.item
+          }
           content={preview.content}
           close={closePreview}
+          disabled={sourceFrozen || pending > 0}
+          onAction={(command) => {
+            closePreview();
+            void run(command);
+          }}
         />
       )}
     </div>

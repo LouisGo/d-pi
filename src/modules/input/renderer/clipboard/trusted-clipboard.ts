@@ -10,12 +10,15 @@ import {
 } from "../../contracts/public";
 import type { AttachmentModel } from "../../core/attachments/attachment-model";
 import type { DraftController } from "../../core/draft-controller";
-import { type AttachmentAdoption, isDetachedImage } from "../references/attachment-adoption";
-import { attachmentNodeAttrs } from "../references/attachment-reference";
 import {
   draftDocument,
   onDraftHistoryClear,
 } from "../editor/plain-text-editor";
+import {
+  AttachmentAdoption,
+  isDetachedImage,
+} from "../references/attachment-adoption";
+import { attachmentNodeAttrs } from "../references/attachment-reference";
 import { textPasteTransaction } from "./plain-text-paste";
 
 function readTicket(data: DataTransfer): ClipboardTicket | null {
@@ -55,6 +58,11 @@ export function createTrustedClipboard(options: {
   sequence(): number;
   onFeedback(value: "fallback" | "failed" | null): void;
 }) {
+  const adoption =
+    options.adoption ??
+    (options.controller
+      ? new AttachmentAdoption(options.controller)
+      : undefined);
   let tickets: ClipboardTicket[] = [],
     disposed = false;
   let generation = 0;
@@ -232,12 +240,22 @@ export function createTrustedClipboard(options: {
             if (!disposed && options.isCurrent()) options.onFeedback("failed");
             return;
           }
-          const accepted = options.adoption ? options.adoption.admit(reply.items) : reply.items;
+          const accepted = adoption ? adoption.admit(reply.items) : reply.items;
           const acceptedIds = new Set(accepted.map((item) => item.id));
-          const images = options.controller ? accepted.filter(isDetachedImage) : [];
-          const omitted = new Set(reply.items.filter((item) => !acceptedIds.has(item.id) || images.includes(item)).map((item) => item.id));
-          const text = reply.text.replace(/\[\[dpi-attachment:([0-9a-f-]{36})\]\]/g,
-            (token, id: string) => omitted.has(id) ? "" : token);
+          const images = options.controller
+            ? accepted.filter(isDetachedImage)
+            : [];
+          const omitted = new Set(
+            reply.items
+              .filter(
+                (item) => !acceptedIds.has(item.id) || images.includes(item),
+              )
+              .map((item) => item.id),
+          );
+          const text = reply.text.replace(
+            /\[\[dpi-attachment:([0-9a-f-]{36})\]\]/g,
+            (token, id: string) => (omitted.has(id) ? "" : token),
+          );
           const content = view.state.schema.nodeFromJSON(draftDocument(text));
           const tr = view.state.tr.replaceSelection(
             new Slice(
@@ -255,13 +273,14 @@ export function createTrustedClipboard(options: {
                 ...attachmentNodeAttrs(item),
               });
           });
-          if (text) view.dispatch(
-            tr
-              .setMeta("paste", true)
-              .setMeta("uiEvent", "paste")
-              .setMeta("dpiIndependentAction", true)
-              .scrollIntoView(),
-          );
+          if (text)
+            view.dispatch(
+              tr
+                .setMeta("paste", true)
+                .setMeta("uiEvent", "paste")
+                .setMeta("dpiIndependentAction", true)
+                .scrollIntoView(),
+            );
           if (text && !view.state.doc.eq(tr.doc)) {
             await options.model.run({
               kind: "clipboard-discard",
@@ -270,9 +289,17 @@ export function createTrustedClipboard(options: {
             if (!disposed && options.isCurrent()) options.onFeedback("failed");
             return;
           }
-          options.controller?.addDetachedAttachments(images.map((item) => item.id));
-          const discarded = reply.items.filter((item) => !acceptedIds.has(item.id));
-          if (discarded.length) await options.model.run({ kind: "clipboard-discard", ids: discarded.map((item) => item.id) });
+          options.controller?.addDetachedAttachments(
+            images.map((item) => item.id),
+          );
+          const discarded = reply.items.filter(
+            (item) => !acceptedIds.has(item.id),
+          );
+          if (discarded.length)
+            await options.model.run({
+              kind: "clipboard-discard",
+              ids: discarded.map((item) => item.id),
+            });
           if (reply.degraded) options.onFeedback("fallback");
         } else if (current()) {
           view.dispatch(textPasteTransaction(view.state, fallback));

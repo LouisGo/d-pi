@@ -63,6 +63,19 @@ function controls(
         else if (props.ref) props.ref.current = value;
       },
     }),
+    createElement("div", {
+      ref: (node: HTMLDivElement | null) => {
+        if (node && props.editor) node.append(props.editor.view.dom);
+      },
+      onClick: (event: { target: EventTarget }) => {
+        const token =
+          event.target instanceof Element
+            ? event.target.closest("[data-attachment-id]")
+            : null;
+        const id = token?.getAttribute("data-attachment-id");
+        if (id) actions.current?.openReference(id);
+      },
+    }),
     // Composer owns the toolbar; this host exercises the same imperative port.
     createElement(
       "button",
@@ -442,11 +455,11 @@ it("mounts the formal attachment controls and removes a failed atomic reference 
   });
   expect(container.textContent).toContain("failed.pdf");
   expect(container.textContent).toContain("PDF");
-  const remove = container.querySelector<HTMLButtonElement>(
-    'button[aria-label="Remove failed.pdf"]',
-  );
-  expect(remove).not.toBeNull();
-  await act(() => remove?.click());
+  expect(container.querySelector(".composer-notice")).toBeNull();
+  await act(() => {
+    editor.commands.setNodeSelection(8);
+    editor.commands.deleteSelection();
+  });
   expect(editor.getText({ blockSeparator: "\n" })).toBe("before  after");
 });
 
@@ -652,7 +665,9 @@ it("identifies a ready reference that failed during send-time freezing without r
     await new Promise((resolve) => setTimeout(resolve, 20));
   });
   const alert = container.querySelector('[role="alert"]');
-  expect(alert?.textContent).toContain("src/a@b.ts");
+  expect(
+    container.querySelector(".composer-context-token")?.textContent,
+  ).toContain("src/a@b.ts");
   expect(alert?.textContent).toContain(
     "Referenced file is missing or unreadable",
   );
@@ -728,7 +743,11 @@ it("permits explicit re-preparation of a failed @PDF after text-only consent whi
   await act(async () => {
     await new Promise((resolve) => setTimeout(resolve, 20));
   });
-  expect(container.textContent).toContain("Text-only PDF");
+  expect(
+    editor.view.dom
+      .querySelector(".composer-context-token")
+      ?.getAttribute("aria-label"),
+  ).toContain("Text-only PDF");
   expect(
     container.querySelector(".attachment-rail")?.textContent ?? "",
   ).not.toContain(item.name);
@@ -804,11 +823,10 @@ it.each(["button", "cancel"] as const)(
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 20));
     });
-    const preview = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.getAttribute("aria-label") === "Preview report.pdf",
+    const preview = container.querySelector<HTMLElement>(
+      "[data-attachment-id]",
     );
-    if (!preview) throw Error("missing preview button");
-    container.append(editor.view.dom);
+    if (!preview) throw Error("missing inline preview token");
     await act(async () => {
       preview.click();
       await new Promise((resolve) => setTimeout(resolve, 20));
@@ -1001,23 +1019,26 @@ it.each([
       await new Promise((resolve) => setTimeout(resolve, 20));
     });
     expect(onBlocked).toHaveBeenLastCalledWith(true);
-    const label =
-      operation === "preview"
-        ? "Preview existing.pdf"
-        : operation === "retry"
-          ? "Retry preparation"
-          : "Use extracted text only";
-    const unrelated = Array.from(
-      container.querySelectorAll<HTMLButtonElement>("button"),
-    ).find(
-      (button) =>
-        (button.getAttribute("aria-label") ?? button.textContent) === label,
+    const tokenNode = container.querySelector<HTMLElement>(
+      "[data-attachment-id]",
     );
-    if (!unrelated) throw Error("missing unrelated operation");
+    if (!tokenNode) throw Error("missing inline preview token");
     await act(async () => {
-      unrelated.click();
+      tokenNode.click();
       await new Promise((resolve) => setTimeout(resolve, 20));
     });
+    if (operation !== "preview") {
+      const label =
+        operation === "retry" ? "Retry preparation" : "Use extracted text only";
+      const unrelated = Array.from(
+        container.querySelectorAll<HTMLButtonElement>("dialog button"),
+      ).find((button) => button.textContent === label);
+      if (!unrelated) throw Error("missing preview recovery action");
+      await act(async () => {
+        unrelated.click();
+        await new Promise((resolve) => setTimeout(resolve, 20));
+      });
+    }
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 20));
     });

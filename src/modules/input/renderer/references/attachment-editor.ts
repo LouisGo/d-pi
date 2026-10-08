@@ -1,18 +1,19 @@
 import type { Editor } from "@tiptap/core";
 import { Fragment, Slice } from "@tiptap/pm/model";
 import type { Transaction } from "@tiptap/pm/state";
+import type { SupportedLocale } from "../../../../shared/i18n/locale";
 import type { Attachment } from "../../contracts/public";
 import type { AttachmentEditorPort } from "../../core/attachments/attachment-model";
 import type { DraftController } from "../../core/draft-controller";
-import { AttachmentAdoption, isDetachedImage } from "./attachment-adoption";
 import type {
   AttachmentImportEditor,
   AttachmentImportTarget,
 } from "../attachments/attachment-imports";
 import { onDraftHistoryClear } from "../editor/plain-text-editor";
+import { AttachmentAdoption, isDetachedImage } from "./attachment-adoption";
 import {
-  attachmentNodeAttrs,
   attachmentIds,
+  attachmentNodeAttrs,
   insertAttachmentReference,
 } from "./attachment-reference";
 import { referenceSourceMatches } from "./suggestion-controller";
@@ -23,10 +24,23 @@ export function createAttachmentEditor(
   isCurrent: () => boolean,
   options?: { controller: DraftController; adoption?: AttachmentAdoption },
 ): AttachmentEditorPort & AttachmentImportEditor {
-  const adoption = options ? options.adoption ?? new AttachmentAdoption(options.controller) : undefined;
+  const adoption = options
+    ? (options.adoption ?? new AttachmentAdoption(options.controller))
+    : undefined;
+  let adopted: readonly string[] = [];
   return {
+    adoptedIds: () => adopted,
     applyBatch(items) {
-      const applied = applyAttachmentBatch(editor, isCurrent, items, undefined, adoption);
+      const applied = applyAttachmentBatch(
+        editor,
+        isCurrent,
+        items,
+        undefined,
+        adoption,
+        (ids) => {
+          adopted = ids;
+        },
+      );
       if (applied) editor.commands.focus();
       return applied;
     },
@@ -34,11 +48,14 @@ export function createAttachmentEditor(
       if (
         editor.isDestroyed ||
         !editor.isEditable ||
+        !editor.view.editable ||
         !isCurrent() ||
         editor.view.composing
       )
         return false;
       if (range && !referenceSourceMatches(editor.state, range)) return false;
+      if (options && item.threadId !== options.controller.threadId)
+        return false;
       const accepted = adoption ? adoption.admit([item]) : [item];
       if (!accepted.length) return true;
       if (isDetachedImage(item)) {
@@ -62,22 +79,38 @@ function applyAttachmentBatch(
   items: Attachment[],
   position?: number,
   adoption?: AttachmentAdoption,
+  onAdopt?: (ids: readonly string[]) => void,
 ): boolean {
   if (
     editor.isDestroyed ||
     !editor.isEditable ||
+    !editor.view.editable ||
     !isCurrent() ||
     editor.view.composing ||
     !items.length
   )
     return false;
+  if (
+    adoption &&
+    items.some((item) => item.threadId !== adoption.controller.threadId)
+  )
+    return false;
+  const activeIds = adoption
+    ? attachmentIds(adoption.controller.getTextSnapshot())
+    : [];
   const accepted = adoption ? adoption.admit(items) : items;
-  if (!accepted.length) return true;
+  const report = () =>
+    onAdopt?.([...new Set([...activeIds, ...accepted.map((item) => item.id)])]);
+  if (!accepted.length) {
+    report();
+    return true;
+  }
   const images = accepted.filter(isDetachedImage);
   if (images.length && !adoption) return false;
   const files = accepted.filter((item) => !isDetachedImage(item));
   if (!files.length) {
     adoption?.controller.addDetachedAttachments(images.map((item) => item.id));
+    report();
     return true;
   }
   const type = editor.state.schema.nodes.attachmentReference;
@@ -93,7 +126,10 @@ function applyAttachmentBatch(
   editor.view.dispatch(tr);
   // History admission may reject; no item is marked adopted until all applied.
   const applied = editor.state.doc.eq(tr.doc);
-  if (applied) adoption?.controller.addDetachedAttachments(images.map((item) => item.id));
+  if (applied) {
+    adoption?.controller.addDetachedAttachments(images.map((item) => item.id));
+    report();
+  }
   return applied;
 }
 
@@ -101,9 +137,19 @@ function applyAttachmentBatch(
 export function createAttachmentImportTarget(
   editor: Editor,
   isCurrent: () => boolean,
-  options: { position?: number; sourceFrom?: number; controller?: DraftController; adoption?: AttachmentAdoption } = {},
+  options: {
+    position?: number;
+    sourceFrom?: number;
+    controller?: DraftController;
+    adoption?: AttachmentAdoption;
+  } = {},
 ): AttachmentImportTarget {
-  const adoption = options.adoption ?? (options.controller ? new AttachmentAdoption(options.controller) : undefined);
+  const adoption =
+    options.adoption ??
+    (options.controller
+      ? new AttachmentAdoption(options.controller)
+      : undefined);
+  let adopted: readonly string[] = [];
   let position = options.position ?? editor.state.selection.from;
   const sourceFrom =
     options.sourceFrom !== undefined && options.sourceFrom < position
@@ -181,6 +227,7 @@ export function createAttachmentImportTarget(
   editor.on("destroy", invalidate);
   return {
     invalidate,
+    adoptedIds: () => adopted,
     apply(items) {
       if (!valid || !isCurrent()) {
         invalidate();
@@ -194,6 +241,9 @@ export function createAttachmentImportTarget(
           items,
           position,
           adoption,
+          (ids) => {
+            adopted = ids;
+          },
         );
         if (applied) invalidate();
         return applied;
@@ -206,18 +256,21 @@ export function createAttachmentImportTarget(
 export function syncAttachmentLabels(
   editor: Editor,
   items: Attachment[],
+  locale: SupportedLocale = "en-US",
 ): void {
   if (editor.isDestroyed || editor.view.composing || !items.length) return;
   const tr = editor.state.tr;
   editor.state.doc.descendants((node, position) => {
     if (node.type.name !== "attachmentReference") return;
     const item = items.find((item) => item.id === node.attrs.id);
-    const attributes = item ? attachmentNodeAttrs(item) : null;
+    const attributes = item ? attachmentNodeAttrs(item, locale) : null;
     if (
       item &&
-      (node.attrs.name !== item.name ||
-        node.attrs.referenceKind !== (item.referenceKind ?? null) ||
-        node.attrs.contextKind !== attributes?.contextKind)
+      attributes &&
+      Object.entries(attributes).some(
+        ([key, value]) =>
+          JSON.stringify(node.attrs[key]) !== JSON.stringify(value),
+      )
     )
       tr.setNodeMarkup(position, undefined, {
         ...node.attrs,
@@ -232,18 +285,30 @@ export function syncAttachmentLabels(
     );
 }
 /** Recover legacy image tokens without introducing a PM action/history entry. */
-export function projectDetachedImages(editor: Editor, controller: DraftController): void {
+export function projectDetachedImages(
+  editor: Editor,
+  controller: DraftController,
+): void {
   if (editor.isDestroyed || editor.view.composing) return;
   const tr = editor.state.tr;
   const canonical = controller.getTextSnapshot();
   const projected = controller.getEditorTextSnapshot();
-  const detached = new Set(attachmentIds(canonical).filter((id) => !attachmentIds(projected).includes(id)));
+  const projectedIds = new Set(attachmentIds(projected));
+  const detached = new Set(
+    attachmentIds(canonical).filter((id) => !projectedIds.has(id)),
+  );
   const positions: number[] = [];
   editor.state.doc.descendants((node, pos) => {
-    if (node.type.name === "attachmentReference" && detached.has(node.attrs.id)) positions.push(pos);
+    if (node.type.name === "attachmentReference" && detached.has(node.attrs.id))
+      positions.push(pos);
   });
   for (const pos of positions.reverse()) tr.delete(pos, pos + 1);
-  if (tr.docChanged) editor.view.dispatch(tr.setMeta("addToHistory", false).setMeta("dpiReferenceLabelRefresh", true));
+  if (tr.docChanged)
+    editor.view.dispatch(
+      tr
+        .setMeta("addToHistory", false)
+        .setMeta("dpiReferenceLabelRefresh", true),
+    );
 }
 export function removeAttachmentReference(editor: Editor, id: string): void {
   const tr = editor.state.tr;

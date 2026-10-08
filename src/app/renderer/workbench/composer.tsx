@@ -21,11 +21,12 @@ import {
 import { shouldSend } from "../../../modules/execution/renderer/public";
 import type { FrozenSelection } from "../../../modules/files/core/public";
 import {
-  appendSelectionReference,
   AttachmentAdoption,
+  appendSelectionReference,
   createClipboardPaste,
   createTrustedClipboard,
   draftDocument,
+  isAttachmentNodeHidden,
   isCompositionKey,
   plainTextEditorOptions,
   replaceDraftText,
@@ -134,7 +135,10 @@ export function Composer({
     () => draftDocument(controller.getEditorTextSnapshot()),
     [controller],
   );
-  const attachmentAdoption = useMemo(() => new AttachmentAdoption(controller), [controller]);
+  const attachmentAdoption = useMemo(
+    () => new AttachmentAdoption(controller),
+    [controller],
+  );
   const paste = useMemo(
     () => createClipboardPaste(() => setUnsupportedPaste(true)),
     [controller],
@@ -566,7 +570,12 @@ export function Composer({
               variant="ghost"
               onClick={() =>
                 controller.useStored((text) => {
-                  return editor ? replaceDraftText(editor, text) : false;
+                  return editor
+                    ? replaceDraftText(
+                        editor,
+                        controller.projectEditorText(text),
+                      )
+                    : false;
                 })
               }
             >
@@ -801,7 +810,7 @@ function hasVisibleContent(doc: import("@tiptap/pm/model").Node) {
     if (
       (node.isText && node.text?.trim()) ||
       (node.type.name === "attachmentReference" &&
-        node.attrs.contextKind !== "external") ||
+        !isAttachmentNodeHidden(node.attrs)) ||
       node.type.name === "fileReference"
     )
       visible = true;

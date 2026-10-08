@@ -25,6 +25,7 @@ export function AttachmentManager({
   unused,
   active,
   ids,
+  movableIds,
   run,
   insert,
   openReference,
@@ -43,6 +44,7 @@ export function AttachmentManager({
   unused: Attachment[];
   active: (Attachment | undefined)[];
   ids: string[];
+  movableIds: string[];
   run: (command: AttachmentIntent, add?: boolean) => void;
   insert: (item: Attachment) => void;
   openReference: (id: string) => void;
@@ -287,24 +289,37 @@ export function AttachmentManager({
                               {t("attachment.textOnly")}
                             </Button>
                           )}
-                        <Button
-                          variant="ghost"
-                          aria-label={t("attachment.previous", {
-                            name: item.name,
-                          })}
-                          disabled={sourceFrozen || index === 0}
-                          onClick={() => move(index, -1)}
-                        >
-                          {t("attachment.previous", { name: item.name })}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          aria-label={t("attachment.next", { name: item.name })}
-                          disabled={sourceFrozen || index === active.length - 1}
-                          onClick={() => move(index, 1)}
-                        >
-                          {t("attachment.next", { name: item.name })}
-                        </Button>
+                        {movableIds.includes(item.id) && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              aria-label={t("attachment.previous", {
+                                name: item.name,
+                              })}
+                              disabled={
+                                sourceFrozen ||
+                                movableIds.indexOf(item.id) === 0
+                              }
+                              onClick={() => move(index, -1)}
+                            >
+                              {t("attachment.previous", { name: item.name })}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              aria-label={t("attachment.next", {
+                                name: item.name,
+                              })}
+                              disabled={
+                                sourceFrozen ||
+                                movableIds.indexOf(item.id) ===
+                                  movableIds.length - 1
+                              }
+                              onClick={() => move(index, 1)}
+                            >
+                              {t("attachment.next", { name: item.name })}
+                            </Button>
+                          </>
+                        )}
                         <Button
                           variant="ghost"
                           aria-label={t("attachment.remove", {

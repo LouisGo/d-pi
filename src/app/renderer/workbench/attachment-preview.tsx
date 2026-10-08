@@ -3,16 +3,21 @@ import type {
   Attachment,
   AttachmentPreview,
 } from "../../../modules/input/contracts/public";
+import type { AttachmentIntent } from "../../../modules/input/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import { Button, Slider } from "../../../modules/ui/renderer/public";
 export function AttachmentPreviewDialog({
   item,
   content,
   close,
+  disabled = false,
+  onAction,
 }: {
   item: Attachment;
   content: AttachmentPreview;
   close: () => void;
+  disabled?: boolean;
+  onAction?: (intent: AttachmentIntent) => void;
 }) {
   const { t } = useI18n();
   const dialog = useRef<HTMLDialogElement>(null);
@@ -83,6 +88,46 @@ export function AttachmentPreviewDialog({
       )}
       {content.kind === "unavailable" && (
         <p role="alert">{t(`attachment.reason.${content.reason}`)}</p>
+      )}
+      {!!item.coverageGaps.length && (
+        <p role="status">
+          {t(
+            item.textOnly
+              ? "attachment.textOnlyNotice"
+              : "attachment.coverageGap",
+          )}
+        </p>
+      )}
+      {onAction && (
+        <div className="flex flex-wrap gap-2">
+          {item.status === "failed" && (
+            <Button
+              variant="ghost"
+              disabled={disabled}
+              onClick={() => {
+                dialog.current?.close();
+                onAction({ kind: "retry", id: item.id });
+              }}
+            >
+              {t("attachment.retry")}
+            </Button>
+          )}
+          {!!item.coverageGaps.length &&
+            !item.textOnly &&
+            (item.representation === "pdf-text" ||
+              item.source === "reference") && (
+              <Button
+                variant="ghost"
+                disabled={disabled}
+                onClick={() => {
+                  dialog.current?.close();
+                  onAction({ kind: "set-text-only", id: item.id, value: true });
+                }}
+              >
+                {t("attachment.textOnly")}
+              </Button>
+            )}
+        </div>
       )}
     </dialog>
   );
