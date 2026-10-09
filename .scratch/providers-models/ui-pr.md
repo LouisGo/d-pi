@@ -2,6 +2,8 @@
 
 目标：本地 `main`，范围来自用户 2026-10-09 的界面反馈、“本地 pr 到 main”及“全部一起”授权；包含已有 Linux 修复和本轮 UI 修改，不创建远端 PR、不 push。
 
+2026-10-09 已合入：本地 merge `54b54e9b0d3a27d77cf1fffff992542699dde1c6`，source `e4e11b53f801f53e40a6ff7b7c5e7f67ae5d35c7`（`codex/provider-models-ui`），目标原 main `c14297c382fbf436d201605e0c0c9d04a4e0b637`。merge 双亲与目标/source 一致，合并树和 source 树均为 `d4aea85d7bc24bbccbd711ac17f6ef47794d963b`，无源码差异；已有 Linux `077ce1f`、UI `3fd82b4` 和交付文档 `e4e11b5` 均保留。该核对仅证明本地 Git 合入，不代表工程验证或用户验收；本记录随后以文档提交补入 main。
+
 ## Summary
 
 服务商设置原有两级导航过窄、详情拥挤和嵌套滚动；模型弹框重复图标、信息过多，底部也未说明实际认证形式。调整导航宽度、两行信息布局和左右栏滚动，补齐品牌 logo；模型框简化筛选，按原生认证来源展示套餐/API key 等使用形式与可确定的账户摘要。
