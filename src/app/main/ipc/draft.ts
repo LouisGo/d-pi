@@ -19,6 +19,7 @@ export function registerDraftIpc(
     initializeStorage: () => void;
     getService: () => DesktopCommandService | undefined;
     getStartupCauseCode: () => string | undefined;
+    onEditableReady: () => void;
   },
 ): void {
   dependencies.ipcMain.on("draft:diagnostic", (event, raw: unknown) => {
@@ -87,6 +88,10 @@ export function registerDraftIpc(
         stage: "completed",
         durationMs: performance.now() - started,
       });
+    // Arm before publishing an editable snapshot. Keep this armed across
+    // navigation: a reload cannot prove the previous in-memory tail was saved.
+    if (reply.kind === "ready" && dependencies.sourceValid(event))
+      dependencies.onEditableReady();
     return reply;
   });
 }

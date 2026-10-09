@@ -1,0 +1,166 @@
+{
+  "platform": "darwin",
+  "electron": "44.4.5",
+  "results": [
+    {
+      "theme": "light",
+      "width": 1178,
+      "height": 814,
+      "label": "Scope",
+      "value": "global",
+      "geometry": {
+        "width": 240.390625,
+        "height": 82.390625,
+        "opacity": "1",
+        "parentOpacity": "1",
+        "visibility": "visible",
+        "hit": true
+      }
+    },
+    {
+      "theme": "light",
+      "width": 1178,
+      "height": 814,
+      "label": "Scope",
+      "value": "thread",
+      "geometry": {
+        "width": 209.9921875,
+        "height": 82.390625,
+        "opacity": "1",
+        "parentOpacity": "1",
+        "visibility": "visible",
+        "hit": true
+      }
+    },
+    {
+      "theme": "light",
+      "width": 1178,
+      "height": 814,
+      "label": "Search scope",
+      "value": "global",
+      "geometry": {
+        "width": 288,
+        "height": 117.390625,
+        "opacity": "1",
+        "parentOpacity": "1",
+        "visibility": "visible",
+        "hit": true
+      }
+    },
+    {
+      "theme": "light",
+      "width": 1178,
+      "height": 814,
+      "label": "Search scope",
+      "value": "thread",
+      "geometry": {
+        "width": 288,
+        "height": 117.390625,
+        "opacity": "1",
+        "parentOpacity": "1",
+        "visibility": "visible",
+        "hit": true
+      }
+    },
+    {
+      "theme": "light",
+      "long": false,
+      "rail": {
+        "scrollWidth": 46,
+        "clientWidth": 46,
+        "scrollHeight": 162,
+        "clientHeight": 162
+      }
+    },
+    {
+      "theme": "light",
+      "long": true,
+      "rail": {
+        "scrollWidth": 46,
+        "clientWidth": 46,
+        "scrollHeight": 1373,
+        "clientHeight": 461
+      }
+    },
+    {
+      "theme": "dark",
+      "width": 885,
+      "height": 647,
+      "label": "Scope",
+      "value": "global",
+      "geometry": {
+        "width": 240.390625,
+        "height": 82.390625,
+        "opacity": "1",
+        "parentOpacity": "1",
+        "visibility": "visible",
+        "hit": true
+      }
+    },
+    {
+      "theme": "dark",
+      "width": 885,
+      "height": 647,
+      "label": "Scope",
+      "value": "thread",
+      "geometry": {
+        "width": 209.9921875,
+        "height": 82.390625,
+        "opacity": "1",
+        "parentOpacity": "1",
+        "visibility": "visible",
+        "hit": true
+      }
+    },
+    {
+      "theme": "dark",
+      "width": 885,
+      "height": 647,
+      "label": "Search scope",
+      "value": "global",
+      "geometry": {
+        "width": 288,
+        "height": 117.390625,
+        "opacity": "1",
+        "parentOpacity": "1",
+        "visibility": "visible",
+        "hit": true
+      }
+    },
+    {
+      "theme": "dark",
+      "width": 885,
+      "height": 647,
+      "label": "Search scope",
+      "value": "thread",
+      "geometry": {
+        "width": 288,
+        "height": 117.390625,
+        "opacity": "1",
+        "parentOpacity": "1",
+        "visibility": "visible",
+        "hit": true
+      }
+    },
+    {
+      "theme": "dark",
+      "long": false,
+      "rail": {
+        "scrollWidth": 46,
+        "clientWidth": 46,
+        "scrollHeight": 146,
+        "clientHeight": 146
+      }
+    },
+    {
+      "theme": "dark",
+      "long": true,
+      "rail": {
+        "scrollWidth": 46,
+        "clientWidth": 46,
+        "scrollHeight": 1369,
+        "clientHeight": 424
+      }
+    }
+  ]
+}

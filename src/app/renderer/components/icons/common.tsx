@@ -18,10 +18,8 @@ import {
   ToolsIcon as ToolsIconData,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-export interface IconProps {
-  size?: 16 | 18 | 20 | 24;
-  className?: string;
-}
+import type { IconProps } from "../../../../modules/ui/renderer/public";
+export type { IconProps } from "../../../../modules/ui/renderer/public";
 export function FileIcon({ size = 16, className }: IconProps) {
   return (
     <HugeiconsIcon
@@ -215,7 +213,7 @@ export function ToolsIcon({ size = 20, className }: IconProps) {
   );
 }
 
-export { SearchIcon } from "../../../../modules/ui/renderer/public";
+export { SearchIcon, StarIcon } from "../../../../modules/ui/renderer/public";
 
 export function AttachmentIcon({ size = 20, className }: IconProps) {
   return (

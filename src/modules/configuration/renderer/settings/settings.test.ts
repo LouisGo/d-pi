@@ -10,6 +10,62 @@ import type {
 } from "../../contracts/public";
 import { ConfigurationSettings } from "./settings";
 
+it("offers retry and the failed request trace before any snapshot succeeds", async () => {
+  Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  const host = document.createElement("div");
+  document.body.append(host);
+  const root = createRoot(host);
+  let lastTrace = "";
+  const bridge: ConfigurationBridge = {
+    subscribe: () => () => {},
+    request: vi.fn<ConfigurationBridge["request"]>(async (command) => {
+      if (command.kind !== "snapshot") throw Error("unexpected write");
+      lastTrace = command.traceId;
+      return {
+        kind: "failed",
+        code: "configuration-unavailable",
+        scope: command.scope,
+        traceId: command.traceId,
+        source: null,
+      };
+    }),
+  };
+  try {
+    await act(async () => {
+      root.render(
+        createElement(
+          QueryClientProvider,
+          { client },
+          createElement(I18nProvider, {
+            initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" },
+            children: createElement(ConfigurationSettings, {
+              bridge,
+              scope: { kind: "application" },
+              presentation: "page",
+            }),
+          }),
+        ),
+      );
+      await new Promise((r) => setTimeout(r, 20));
+    });
+    await act(async () => new Promise((r) => setTimeout(r, 20)));
+    expect(host.textContent).toContain(lastTrace);
+    const retry = Array.from(host.querySelectorAll("button")).find(
+      (b) => b.textContent === "Check again",
+    );
+    expect(retry).toBeDefined();
+    await act(async () => retry?.click());
+    expect(bridge.request).toHaveBeenCalledTimes(2);
+  } finally {
+    await act(() => root.unmount());
+    client.clear();
+    host.remove();
+  }
+});
+
 it("retains the native browser challenge through a closed disclosure and the later authorization-code prompt, then clears it on cancel", async () => {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
   const client = new QueryClient({

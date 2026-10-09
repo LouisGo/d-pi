@@ -1,6 +1,9 @@
 .providers-settings {
-  display: grid;
-  gap: var(--panel-padding);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-block-size: 0;
+  gap: calc(var(--spacing) * 4);
   min-inline-size: 0;
   container-type: inline-size;
 }
@@ -40,42 +43,50 @@
 }
 .providers-workspace {
   display: grid;
-  grid-template-columns: minmax(var(--settings-navigation-width), 1fr) minmax(
-      0,
-      3fr
-    );
+  flex: 1;
+  min-block-size: 0;
+  grid-template-columns: var(--providers-navigation-width) minmax(0, 1fr);
   min-inline-size: 0;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: clip;
 }
 .providers-rail {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   min-inline-size: 0;
-  padding: var(--layout-gap);
-  background: var(--field);
+  min-block-size: 0;
+  background: var(--surface);
   border-inline-end: 1px solid var(--border);
 }
+.providers-rail > .providers-search {
+  margin: calc(var(--spacing) * 3);
+}
 .providers-search {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: var(--layout-gap);
   min-inline-size: 0;
 }
 .providers-search > svg {
-  flex-shrink: 0;
+  position: absolute;
+  inset-inline-start: var(--control-padding);
+  pointer-events: none;
   color: var(--muted-foreground);
 }
 .providers-search > input {
   min-inline-size: 0;
   inline-size: 100%;
+  padding-inline-start: calc(var(--control-padding) + var(--spacing) * 6);
 }
 .providers-provider-list {
   display: grid;
   align-content: start;
-  gap: var(--region-gap);
-  margin-block-start: var(--layout-gap);
-  max-block-size: var(--settings-minimum-height);
-  overflow: auto;
+  gap: var(--spacing);
+  min-block-size: 0;
+  padding: 0 calc(var(--spacing) * 3) calc(var(--spacing) * 3);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   scrollbar-gutter: stable;
 }
 .providers-provider-row {
@@ -83,7 +94,7 @@
   align-items: center;
   min-inline-size: 0;
   gap: var(--region-gap);
-  padding-inline-end: var(--region-gap);
+  padding-inline-end: calc(var(--spacing) * 2);
   border-radius: var(--radius-control);
 }
 .providers-provider-row[data-selected] {
@@ -91,12 +102,13 @@
 }
 .providers-provider-button {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: flex-start;
   gap: var(--layout-gap);
   flex: 1;
   min-inline-size: 0;
   block-size: auto;
+  padding: calc(var(--spacing) * 3) calc(var(--spacing) * 2);
   text-align: start;
 }
 .providers-provider-button > svg {
@@ -104,36 +116,53 @@
 }
 .providers-provider-identity {
   display: grid;
-  gap: var(--region-gap);
+  gap: var(--spacing);
   min-inline-size: 0;
-  overflow-wrap: anywhere;
 }
 .providers-provider-identity > strong {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.providers-provider-identity > .providers-hint {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .providers-detail {
   min-inline-size: 0;
-  padding: var(--panel-padding);
+  min-block-size: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding: calc(var(--spacing) * 6);
   background: var(--surface);
 }
 .providers-detail-heading {
   display: flex;
   align-items: center;
   gap: var(--layout-gap);
-  margin-block-end: var(--panel-padding);
+  margin-block-end: calc(var(--spacing) * 6);
 }
 .providers-detail-heading h3 {
   font-size: var(--text-title);
+  font-weight: 600;
+}
+.providers-detail-heading > div {
+  display: grid;
+  gap: var(--spacing);
+  min-inline-size: 0;
+}
+.providers-source > .ui-button:last-child {
+  margin-inline-start: auto;
 }
 .providers-detail-section {
   display: grid;
-  gap: var(--layout-gap);
+  gap: calc(var(--spacing) * 4);
 }
 .providers-detail-section + .providers-detail-section {
-  margin-block-start: var(--panel-padding);
-  padding-block-start: var(--panel-padding);
+  margin-block-start: calc(var(--spacing) * 7);
+  padding-block-start: calc(var(--spacing) * 6);
   border-block-start: 1px solid var(--border);
 }
 .providers-detail-section h4 {
@@ -142,7 +171,22 @@
 }
 .providers-login-methods {
   display: grid;
-  gap: var(--layout-gap);
+  gap: calc(var(--spacing) * 4);
+}
+.providers-login-method > div {
+  display: grid;
+  gap: var(--spacing);
+}
+.providers-login-method > button,
+.providers-account-row > button,
+.providers-section-heading > button {
+  flex-shrink: 0;
+}
+.providers-detail-section > .ui-setting-row {
+  padding-block: calc(var(--spacing) * 2);
+}
+.providers-detail-section .ui-setting-description {
+  font-size: var(--text-small);
 }
 .providers-login-method,
 .providers-account-row,
@@ -204,9 +248,7 @@
   gap: var(--layout-gap);
 }
 .providers-model-list {
-  max-block-size: var(--settings-minimum-height);
-  overflow: auto;
-  scrollbar-gutter: stable;
+  min-inline-size: 0;
 }
 .providers-model-row {
   display: grid;
@@ -219,18 +261,53 @@
 .providers-model-row[data-hidden] {
   background: var(--field);
 }
+.providers-model-drag:not(:disabled) {
+  cursor: grab;
+}
+.providers-model-drag:active:not(:disabled) {
+  cursor: grabbing;
+}
+.providers-model-row[data-dragging] {
+  opacity: 0.5;
+}
+.providers-model-row[data-drop="before"] {
+  box-shadow: inset 0 2px 0 var(--emphasis);
+}
+.providers-model-row[data-drop="after"] {
+  box-shadow: inset 0 -2px 0 var(--emphasis);
+}
 .providers-model-identity {
+  display: grid;
+  gap: var(--spacing);
   min-inline-size: 0;
+}
+.providers-model-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing) calc(var(--spacing) * 3);
+  align-items: baseline;
+  min-inline-size: 0;
+}
+.providers-model-id {
+  max-inline-size: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.providers-model-actions button[aria-pressed="true"] {
+  color: var(--emphasis);
 }
 .providers-model-identity > p:first-child {
   display: flex;
   align-items: baseline;
-  flex-wrap: wrap;
   gap: var(--region-gap);
 }
-.providers-model-identity strong,
-.providers-model-id {
-  overflow-wrap: anywhere;
+.providers-model-identity strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-inline-size: 0;
+  font-weight: 500;
 }
 .providers-model-tag {
   color: var(--muted-foreground);
@@ -239,7 +316,7 @@
 .providers-model-metadata {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--layout-gap);
+  gap: var(--spacing) calc(var(--spacing) * 2);
   font-variant-numeric: tabular-nums;
 }
 .providers-model-actions {
@@ -259,13 +336,24 @@
   gap: var(--layout-gap);
 }
 .providers-model-roles {
-  padding-block-start: var(--panel-padding);
+  flex-shrink: 0;
+  padding: var(--layout-gap) var(--panel-padding);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.providers-role-settings {
+  display: grid;
+  gap: var(--layout-gap);
+  max-block-size: min(30vh, calc(var(--settings-minimum-height) / 2));
+  padding-block-start: var(--layout-gap);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 .providers-role-list {
   display: grid;
   gap: var(--layout-gap);
-  max-block-size: var(--settings-minimum-height);
-  overflow: auto;
 }
 .providers-role-row {
   padding-block: var(--region-gap);
@@ -285,26 +373,45 @@
   gap: var(--layout-gap);
   overflow-wrap: anywhere;
 }
-@container (max-width: 640px) {
+@container (max-width: 900px) {
+  .providers-workspace {
+    grid-template-columns: calc(
+        var(--providers-navigation-width) -
+        var(--spacing) *
+        6
+      ) minmax(0, 1fr);
+  }
+  .providers-detail {
+    padding: calc(var(--spacing) * 4);
+  }
+}
+@container (max-width: 700px) {
   .providers-workspace {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, var(--thread-setup-max-height)) minmax(0, 1fr);
   }
   .providers-rail {
     border-inline-end: 0;
     border-block-end: 1px solid var(--border);
-  }
-  .providers-provider-list {
-    max-block-size: var(--thread-setup-max-height);
   }
   .providers-model-actions {
     grid-column: 2 / -1;
     justify-content: flex-end;
   }
   .providers-account-row,
-  .providers-role-row {
+  .providers-role-row,
+  .providers-section-heading,
+  .providers-login-method {
     flex-wrap: wrap;
   }
-  .providers-custom-fields {
+  .providers-custom-fields,
+  .providers-key-form,
+  .providers-model-toolbar {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+.configuration-content .providers-workspace {
+  min-block-size: var(--settings-minimum-height);
+  max-block-size: calc(var(--settings-minimum-height) + var(--spacing) * 40);
 }

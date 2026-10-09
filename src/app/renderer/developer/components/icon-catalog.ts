@@ -1,8 +1,15 @@
 import type { ComponentType } from "react";
-import type { IconProps } from "../../components/icons/common";
+import type {
+  IconVariant,
+  VariantIconProps,
+} from "../../../../modules/ui/renderer/public";
+
+type PreviewIcon = ComponentType<VariantIconProps> & {
+  readonly variants?: readonly IconVariant[];
+};
 
 // Preview only our public Icon Layer. New exports/modules need no gallery list.
-const modules = import.meta.glob<Record<string, ComponentType<IconProps>>>(
+const modules = import.meta.glob<Record<string, PreviewIcon>>(
   [
     "../../components/icons/**/*.{ts,tsx}",
     "!../../components/icons/**/*.test.{ts,tsx}",
@@ -16,6 +23,13 @@ export const iconPreviews = Object.entries(modules)
   .flatMap(([path, exports]) =>
     Object.entries(exports)
       .filter(([name]) => /^[A-Z].*Icon$/.test(name))
-      .map(([name, Icon]) => ({ key: `${path}:${name}`, name, Icon })),
+      .flatMap(([name, Icon]) =>
+        (Icon.variants ?? [undefined]).map((variant) => ({
+          key: `${path}:${name}:${variant ?? "default"}`,
+          name: variant ? `${name} · ${variant}` : name,
+          Icon,
+          variant,
+        })),
+      ),
   )
   .sort((left, right) => left.name.localeCompare(right.name));

@@ -123,6 +123,10 @@ export const ModelSummarySchema = z.strictObject({
   name: z.string(),
   available: z.boolean(),
   sessionSelectable: z.boolean().optional(),
+  catalogRevision: z.string().optional(),
+  catalogFamily: z.string().optional(),
+  catalogPriority: z.number().finite().optional(),
+  isNew: z.boolean().optional(),
   reason: z
     .enum(["authentication-required", "disabled", "configuration-unknown"])
     .nullable(),

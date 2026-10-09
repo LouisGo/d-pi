@@ -75,6 +75,22 @@ async function renderPanel(
     },
   };
 }
+it("distinguishes catalog failure from an empty search and exposes an explicit retry", async () => {
+  const retry = vi.fn();
+  const ui = await renderPanel({ models: [], failed: true, onRetry: retry });
+  try {
+    expect(ui.host.querySelector('[role="alert"]')).not.toBeNull();
+    expect(ui.host.textContent).not.toContain("No matching models");
+    const button = Array.from(ui.host.querySelectorAll("button")).find(
+      (b) => b.textContent === "Check again",
+    );
+    expect(button).toBeDefined();
+    await act(() => button?.click());
+    expect(retry).toHaveBeenCalledOnce();
+  } finally {
+    await ui.dispose();
+  }
+});
 it("preserves the hidden current model, excludes non-chat models, and keeps unavailable entries truthful", async () => {
   const ui = await renderPanel();
   expect(ui.host.querySelector('[data-current="true"]')?.textContent).toContain(

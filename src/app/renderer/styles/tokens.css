@@ -132,11 +132,12 @@
   --bottom-min: 8.75rem;
   --bottom-default: 13.75rem;
   --conversation-min-height: 30rem;
-  --settings-width: 60rem;
-  --settings-navigation-width: 11rem;
+  --settings-width: 76rem;
+  --settings-navigation-width: 12.5rem;
+  --providers-navigation-width: 18rem;
   --settings-minimum-height: 32rem;
   --overlay-width: 20rem;
-  --model-picker-width: 32rem;
+  --model-picker-width: 28rem;
   --model-picker-max-height: 32rem;
   --layer-backdrop: 40;
   --layer-dialog: 50;

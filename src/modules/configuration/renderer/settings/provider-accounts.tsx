@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useI18n } from "../../../preferences/renderer/public";
 import {
   Button,
+  Disclosure,
+  DisclosureTrigger,
   FormField,
   SettingRow,
   TextInput,
@@ -44,10 +46,22 @@ export function ProviderAccounts({
         {provider.loginMethods.map((method) => (
           <div key={method.id} className="providers-login-method">
             <div>
-              <p>{method.name}</p>
-              <p className="providers-hint">
-                {t(`providers.login.${method.kind}`)}
+              <p title={method.name}>
+                {t(
+                  method.id === "openai-codex"
+                    ? "providers.login.chatgpt"
+                    : method.id === "openai-codex-device"
+                      ? "providers.login.chatgptDevice"
+                      : `providers.login.${method.kind}`,
+                )}
               </p>
+              {provider.loginMethods.filter(
+                (entry) => entry.kind === method.kind,
+              ).length > 1 &&
+                method.id !== "openai-codex" &&
+                method.id !== "openai-codex-device" && (
+                  <p className="providers-hint">{method.name}</p>
+                )}
               {(method.probe === "chat-completions" ||
                 method.probe === "anthropic-messages") && (
                 <p className="providers-probe-notice">
@@ -92,20 +106,25 @@ export function ProviderAccounts({
                 t("providers.accountFallback", { id: account.credentialId })}
             </strong>
             <span className="providers-hint">
-              {[
-                account.orgName,
-                account.orgId,
-                account.projectId,
-                account.enterpriseUrl,
-              ]
-                .filter(Boolean)
-                .join(" · ") ||
+              {account.orgName ||
                 t(
                   account.type === "api_key"
                     ? "providers.apiKey"
                     : "providers.login.oauth-code",
                 )}
             </span>
+            {(account.orgId || account.projectId || account.enterpriseUrl) && (
+              <Disclosure>
+                <DisclosureTrigger>
+                  {t("providers.accountDetails")}
+                </DisclosureTrigger>
+                <p className="providers-hint">
+                  {[account.orgId, account.projectId, account.enterpriseUrl]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </p>
+              </Disclosure>
+            )}
           </div>
           {disconnect?.id === account.credentialId ? (
             <div className="providers-confirm-actions">

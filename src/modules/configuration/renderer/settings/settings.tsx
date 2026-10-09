@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { useI18n } from "../../../preferences/renderer/public";
 import {
   Button,
@@ -14,7 +14,7 @@ import type {
   ConfigurationBridge,
   ConfigurationScope,
 } from "../../contracts/public";
-import { configurationSnapshotQuery } from "../queries";
+import { ConfigurationReadError, configurationSnapshotQuery } from "../queries";
 import { AuthenticationProgress } from "./authentication-progress";
 import type { ModelPreferencesProps } from "./provider-models";
 import { ProvidersSettings } from "./providers-settings";
@@ -26,6 +26,7 @@ export type ConfigurationSettingsProps = ModelPreferencesProps & {
   scope: ConfigurationScope;
   presentation?: "disclosure" | "page";
   active?: boolean;
+  scopeControl?: ReactNode;
 };
 export function ConfigurationSettings({
   bridge,
@@ -34,6 +35,7 @@ export function ConfigurationSettings({
   active = true,
   modelPicker,
   onModelPreference,
+  scopeControl,
 }: ConfigurationSettingsProps) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
@@ -94,7 +96,9 @@ export function ConfigurationSettings({
   const content = expanded && (
     <div
       className={
-        presentation === "page" ? "configuration-page" : "configuration-content"
+        presentation === "page"
+          ? "configuration-page-content"
+          : "configuration-content"
       }
     >
       {presentation === "disclosure" && (
@@ -106,14 +110,30 @@ export function ConfigurationSettings({
         </p>
       )}
       {query.isError && (
-        <p className="failure" role="alert">
-          {t("config.failed")}
-        </p>
+        <div className="configuration-feedback">
+          <p className="failure" role="alert">
+            {t("config.failed")}
+            {query.error instanceof ConfigurationReadError && (
+              <span className="trace">
+                {" "}
+                {t("app.trace", { traceId: query.error.traceId })}
+              </span>
+            )}
+          </p>
+          <Button
+            variant="secondary"
+            disabled={!active || query.isFetching}
+            onClick={() => void query.refetch()}
+          >
+            {t("app.retry")}
+          </Button>
+        </div>
       )}
       {query.data?.providers !== undefined ? (
         <ProvidersSettings
           key={`${JSON.stringify(scope)}:${query.data.source.directory}:${query.data.source.profile ?? ""}`}
           snapshot={query.data}
+          scopeControl={scopeControl}
           scope={scope}
           disabled={
             !active ||

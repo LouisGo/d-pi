@@ -379,12 +379,12 @@ export function SettingsDemo() {
 export function IconsDemo() {
   return (
     <div className={styles["gallery-icon-grid"]} data-gallery-icons>
-      {iconPreviews.map(({ key, name, Icon }) => (
+      {iconPreviews.map(({ key, name, Icon, variant }) => (
         <Sample key={key} label={name}>
           <div className={styles["gallery-samples"]}>
             {([16, 18, 20, 24] as const).map((size) => (
               <Sample key={size} label={`${size} px`}>
-                <Icon size={size} />
+                <Icon size={size} {...(variant ? { variant } : {})} />
               </Sample>
             ))}
           </div>

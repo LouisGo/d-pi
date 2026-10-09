@@ -41,6 +41,8 @@ Renderer 使用 HMR。Main/preload 修改默认重启 Dev；需要自动监听�
 
 当前已验证交付平台为 macOS arm64，未承诺 Windows/Linux、其他架构、签名或公证。`resources/sdk`、`out` 与 `dist` 都是可重建产物，不把作者机器的资源目录当干净环境前置。独立环境验证与实际证据由重写任务记录维护。
 
+固定 OMP 18.4.6 的 Linux x64 SDK 准备只携带官方 baseline CPU 变体；官方 loader 在 AVX2 主机上也支持回退到它，以避免重复携带约 181 MiB 的 modern 二进制。原件不改写，650 MiB 预算、依赖闭包与实际 SDK import 门禁仍保留。升级版本需重新复核；此分发适配不代表 Linux 全功能 GUI 已验收，当前复试范围见 [Linux 反馈修复](.scratch/linux-e2e-repair/handoff.md)。
+
 `pnpm dev` 提供「开发 → 切换开发者工具」（macOS：`⌥⌘I`），并在页面加载前通过 `electron-devtools-installer` 加载官方 React Developer Tools 扩展。首次启动需要从 Chrome Web Store 下载，后续复用 App 数据目录中的扩展缓存；打开 DevTools 后可使用 Components / Profiler。如果首次安装后 Components 提示尚未检测到 React，按 `⌘R` 刷新一次，让扩展完成注入。下载失败会在启动终端提示，应用继续启动，可在网络恢复后重启。开发菜单和扩展加载仅用于开发构建。
 
 `pnpm runtime:fetch` 另行下载并校验固定官方 **CLI artifact**，用于保留的对应验证路径；当前 artifact manifest 只包含 `darwin-arm64`。该命令不准备 SDK 资源，不是当前应用启动的必需步骤。

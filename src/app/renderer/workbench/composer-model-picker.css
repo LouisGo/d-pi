@@ -9,6 +9,23 @@
     min-width: 0;
     max-width: 100%;
   }
+  .composer-model-identity {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--region-gap);
+    min-inline-size: 0;
+    line-height: var(--control-line-height);
+  }
+  .composer-model-provider {
+    min-inline-size: 0;
+    max-inline-size: calc(var(--spacing) * 30);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--muted-foreground);
+    font-size: inherit;
+    font-weight: 400;
+  }
   .composer-thinking-select {
     flex: 0 1 auto;
     min-width: 0;

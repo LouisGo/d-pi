@@ -117,28 +117,30 @@ function ThreadConfiguration({
           {t("settings.configurationUnavailable")}
         </p>
       )}
-      <div hidden={unknown} className="configuration-scope">
-        <Select<"global" | "thread">
-          aria-label={t("providers.roleScope")}
-          value={thread ? scopeChoice : "global"}
-          onValueChange={setScopeChoice}
-          options={[
-            { value: "global", label: t("providers.globalScope") },
-            ...(thread
-              ? [
-                  {
-                    value: "thread" as const,
-                    label: t("providers.threadScope"),
-                  },
-                ]
-              : []),
-          ]}
-        />
-      </div>
-      <div hidden={unknown}>
+      <div hidden={unknown} className="configuration-host">
         <ConfigurationSettings
           bridge={model.configuration}
           presentation="page"
+          scopeControl={
+            <div className="configuration-scope">
+              <Select<"global" | "thread">
+                aria-label={t("providers.roleScope")}
+                value={thread ? scopeChoice : "global"}
+                onValueChange={setScopeChoice}
+                options={[
+                  { value: "global", label: t("providers.globalScope") },
+                  ...(thread
+                    ? [
+                        {
+                          value: "thread" as const,
+                          label: t("providers.threadScope"),
+                        },
+                      ]
+                    : []),
+                ]}
+              />
+            </div>
+          }
           active={active && !unknown}
           modelPicker={modelPicker}
           onModelPreference={(change) => model.modelPreference(change)}

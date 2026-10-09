@@ -9,6 +9,7 @@ import { catalogModelKey } from "../../../modules/configuration/core/public";
 import {
   configurationSnapshotQuery,
   ModelPickerPanel,
+  providerDisplayName,
 } from "../../../modules/configuration/renderer/public";
 import { EMPTY_MODEL_PICKER_PREFERENCES } from "../../../modules/preferences/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
@@ -80,6 +81,10 @@ export function ComposerModelPicker({
     view?.model?.slice(0, view.model.indexOf("/")) ??
     view?.selectedModel?.provider ??
     "";
+  const providerLabel = providerDisplayName(
+    provider,
+    query.data?.providers?.find((entry) => entry.id === provider)?.name,
+  );
   const disabled =
     pending ||
     !!view?.busy ||
@@ -153,11 +158,14 @@ export function ComposerModelPicker({
           <Button
             variant="ghost"
             aria-label={t("models.select")}
-            title={t("models.select")}
+            title={`${providerLabel} / ${current?.name ?? modelId}`}
           >
             <ModelBrandIcon provider={provider} modelId={modelId} size={18} />
-            <span className="composer-toolbar-label">
-              {current?.name ?? (modelId || t("model.none"))}
+            <span className="composer-model-identity">
+              <span className="composer-toolbar-label">
+                {current?.name ?? (modelId || t("model.none"))}
+              </span>
+              <span className="composer-model-provider">{providerLabel}</span>
             </span>
             <ChevronDownIcon />
           </Button>
@@ -165,11 +173,14 @@ export function ComposerModelPicker({
       >
         <ModelPickerPanel
           models={models}
+          providers={query.data?.providers}
           currentKey={currentKey}
+          currentProvider={provider}
           preferences={preferences}
           disabled={disabled}
           loading={query.isFetching}
           failed={query.isError || !!query.data?.catalogError}
+          onRetry={() => void query.refetch()}
           searchRef={search}
           onSelect={(target) => void apply(target, { kind: "default" })}
           onPreference={(change) => void model.modelPreference(change)}

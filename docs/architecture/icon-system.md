@@ -4,7 +4,7 @@
 
 ## 选择与已核实的依据
 
-采用 `@hugeicons/react` + `@hugeicons/core-free-icons`，UI 图标统一使用免费 Stroke Rounded。外部库藏在应用自己的 Icon Layer 内，业务视图使用稳定的语义名称。替代 P-04 中的 Lucide 提议，保留自有组件 API 的 B-02 基线；不并行引入第二套通用 UI 图标库，不使用 Pro 图标或已弃用的 `hugeicons-react`。
+采用 `@hugeicons/react` + `@hugeicons/core-free-icons`，UI 图标默认使用免费 Stroke Rounded。2026-10-09 用户要求收藏等已选状态使用实心字形，并按图标方案统一处理；新增由 Icon Layer 管理的显式 `stroke` / `solid` 变体合同，取代所有自有 UI 图标只用线框的限制。外部库藏在应用自己的 Icon Layer 内，业务视图使用稳定的语义名称。替代 P-04 中的 Lucide 提议，保留自有组件 API 的 B-02 基线；不并行引入第二套通用 UI 图标库，不使用 Pro 图标或已弃用的 `hugeicons-react`。
 
 2026-09-25 只读核实官方资料及 npm 发布包（没有安装）：
 
@@ -35,13 +35,15 @@
 
 应用图标只负责画图，不接收点击/Tooltip、读 store、请求数据、启动计时器或判断业务状态。`IconButton` 负责按钮语义、焦点、键盘、禁用与可访问名称；状态呈现组件读取既有投影并组合文字、颜色和图标，不重写状态机或用动画计时伪造进度。纯 SVG 渲染无需逐图标日志，D-21/D-22 诊断仍在实际业务操作链路完成。
 
-公共 API（已按此形态落在 `src/app/renderer/components/icons/common.tsx`）：
+公共尺寸与样式 API 由 UI 模块的 Icon Layer 统一定义，经 `src/modules/ui/renderer/public.ts` 导出；App 图标复用此类型：
 
 ```ts
 export interface IconProps {
   size?: 16 | 18 | 20 | 24; // 默认 16
   className?: string;
 }
+export type IconVariant = "stroke" | "solid";
+export type VariantIconProps = IconProps & { variant?: IconVariant };
 ```
 
 当前实现使用内联联合而不导出 `IconSize` 别名；个别语义图标（如 `WebsiteIcon`）另接受窄的 `brand` 判别值；WebsiteIcon省略brand时默认generic，支持与其他语义图标一致的无参数预览。新增缺口按此形态扩展，不因为文档示例而补一个未被使用的导出。
@@ -51,6 +53,14 @@ export interface IconProps {
 - `className` 用于颜色、布局与必要状态动画；不能绕过 size/线宽约束，用任意 CSS 修改内部路径。光学校正集中在 Icon Layer；旋转等状态效果由外层呈现控制，遵守 reduced motion。
 - `SettingsIcon` 等名称描述稳定用途；`Settings01Icon` 等供应商编号只出现在内部映射。不要为不同业务状态大量创建同字形别名；业务含义放在组合组件与文字里。
 - 只有图标的按钮用按钮本身的可访问名称；只显示状态图标的区域必须有可见或屏幕阅读器文本，不能仅用红/绿或旋转区别结果。公告频率由状态组件控制，不在每个 SVG 上设 live region。
+
+### 字形变体（2026-10-09）
+
+- `stroke` 为默认。确实有一对可读字形的语义图标接受 `VariantIconProps`；普通线性操作图标仍只接受 `IconProps`，品牌沿用原身份。不得因为任意按钮 pressed/selected 就自动填充全部图标。
+- 视图把既有状态显式映射为 `variant`，如 `<StarIcon variant={favorite ? "solid" : "stroke"} />`；图标不读取业务状态，也不接收 `favorite` 等业务字段。按钮继续提供 `aria-pressed` 和可访问名称，颜色继续继承主题语义。
+- 私有 `createVariantIcon` 接收明确的 `stroke` / `solid` 字形对，统一尺寸、线宽、currentColor 与 SVG 可访问性；公开组件声明只读 `variants` 元数据，开发者看板自动展开其支持的变体。以后新增变体图标复用此入口，不按业务场景增设 CSS 或别名字形。
+- 免费包没有配套实心资源时，可在 Icon Layer 内对已核实的闭合轮廓作局部适配并保留 MIT 来源；本次 Star 使用锁定 Hugeicons 4.3.5 的单一闭合圆角轮廓。不能将所有 SVG 路径统一加 fill，开放路径、多路径孔洞与品牌须单独判断；未适配的字形不宣称支持 solid。
+- 变体渲染由图标层决定具体填充/描边，消费者不传 fill/strokeWidth 或通过 CSS 修改路径。实心字形使用对应 silhouette，无叠加轮廓描边；按主题继承 currentColor。新增能力不承诺未执行的视觉或 bundle 验证。
 
 ## 文件组织与接入规则
 
@@ -62,7 +72,7 @@ Icon Layer 位于 `src/app/renderer/components/icons/`；跨模块 UI 自用图�
 - 复制 shadcn/ui、Beautiful UI、Tool UI 等源码时，应用自有控件中的 Lucide/其他图标导入与相关依赖同批迁为 Icon Layer；不为保留示例顺手安装其整套图标包。迁移不改变原组件的可访问性、ref、尺寸与交互合同，差异须在适配处解决。
 - 第三方封装控件内部无法公开替换的图标作为明确记录的集成边界，先核实扩展点和代价；不因此开放业务侧混用另一通用图标库，也不把品牌资产当作例外引入整包。
 
-自定义 SVG 仅用于现有字形不能清楚表达的已确认产品概念，先查免费图库，不能为尚未定义的 Run/Checkpoint 预造资产。默认 viewBox `0 0 24 24`、无填充、currentColor、圆端/圆角、线宽 1.5，与外部图标经过相同适配并从类别模块导出。保留来源和许可；不把未知来源 SVG 或含外部资源/脚本的内容直接注入。品牌标识单独管理来源和使用条件，不强制描成线性图标。
+自定义 SVG 仅用于现有字形不能清楚表达的已确认产品概念，先查免费图库，不能为尚未定义的 Run/Checkpoint 预造资产。默认 viewBox `0 0 24 24`、无填充、currentColor、圆端/圆角、线宽 1.5；已声明的实心变体遵循上方字形变体合同，与外部图标经过相同适配并从类别模块导出。保留来源和许可；不把未知来源 SVG 或含外部资源/脚本的内容直接注入。品牌标识单独管理来源和使用条件，不强制描成线性图标。
 
 ## 实施时机、任务边界与验收
 

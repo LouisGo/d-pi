@@ -18,6 +18,8 @@
 
 已完成本地 PR 合入与 push：merge `55550021`、source `99ec699b`，完整 29 项原实现加 1 项治理提交保留，合并树与来源树完全一致；远端 main 已核实为该 merge。原目录 main 的固定 SDK、开发环境与快速检查通过；其后仅同步最终交付记录，不新增 GUI 或供应商请求。
 
+2026-10-09 用户截图反馈追加授权当前 checkout 的 Provider/Models 全面视觉改造；要求快速开发且不验证，由用户测试并反馈截图。设置、模型框、品牌标识与信息层级已作源码修改，本轮未运行测试/检查/build/GUI，历史验证不覆盖本轮；详见 [界面反馈改造](ui-feedback.md)。随后用户授权本地 PR 到 main，并明确“全部一起”：按 [本地 PR](ui-pr.md)一并合入已有 Linux 修复和界面范围，不 push；页面验收继续由用户反馈。
+
 ## 范围与合同
 
 - D-01/D-03/D-04/D-21/D-22/D-23/D-28–D-38；[配置模块](../../docs/architecture/modules/configuration.md)、[基础契约](../../docs/architecture/foundation-contracts.md)、[设计系统](../../docs/architecture/design-system.md)、[图标合同](../../docs/architecture/icon-system.md)。

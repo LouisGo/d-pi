@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "1cd3785e3aa1664cad07d7545a3fede76b3d74220d5630044773d668eb025e5f",
+  "inputsHash": "9da7a0f8b59bd5914dd19a1a4b1c850c752599435f44a0ac1e1447ef32f05bbc",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 515,
-    "scannedFiles": 515,
+    "sourceFiles": 518,
+    "scannedFiles": 518,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 215,
-      "lines": 40817,
+      "files": 218,
+      "lines": 41037,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -106,7 +106,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 21,
-      "lines": 3198,
+      "lines": 3201,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -394,7 +394,7 @@
       ],
       "materialized": true,
       "files": 30,
-      "lines": 5180,
+      "lines": 5282,
       "publicEntries": [
         {
           "path": "src/modules/configuration/contracts/public.ts",
@@ -3484,6 +3484,60 @@
       "targetEnvironment": "shared"
     },
     {
+      "from": "src/app/main/ipc/draft.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "electron",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/draft.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/draft.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../contracts/desktop-bridge",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/desktop-bridge.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/main/ipc/draft.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../wiring/desktop-command-service",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/desktop-command-service.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/ipc/draft.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./draft",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/ipc/draft.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
       "from": "src/app/main/ipc/draft.ts",
       "sourceModule": "app",
       "sourceEnvironment": "main",
@@ -4330,6 +4384,18 @@
       "targetEnvironment": "main"
     },
     {
+      "from": "src/app/main/lifecycle/application.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "./window-close",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/lifecycle/window-close.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
       "from": "src/app/main/lifecycle/development-tools.test.ts",
       "sourceModule": "app",
       "sourceEnvironment": "main",
@@ -4479,6 +4545,36 @@
       "sourceEnvironment": "main",
       "test": false,
       "specifier": "electron",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/lifecycle/window-close.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/lifecycle/window-close.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./window-close",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/lifecycle/window-close.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/lifecycle/window-close.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:crypto",
       "kind": "import",
       "resolution": "external"
     },

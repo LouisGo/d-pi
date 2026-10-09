@@ -1,4 +1,9 @@
 export { Button, type ButtonProps } from "./button";
+export type {
+  IconProps,
+  IconVariant,
+  VariantIconProps,
+} from "./components/icons/_shared/icon";
 export {
   ModelBrandIcon,
   type ModelBrandIconProps,

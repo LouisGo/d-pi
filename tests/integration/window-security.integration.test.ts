@@ -14,6 +14,7 @@ const desktop = vi.hoisted(() => ({
   loadURL: vi.fn<(url: string) => Promise<void>>(() => Promise.resolve()),
   loadFile: vi.fn<(path: string) => Promise<void>>(() => Promise.resolve()),
   quit: vi.fn(),
+  close: vi.fn(),
   contents: {
     getURL: () => "file:///app/renderer/index.html",
     mainFrame: {},
@@ -53,6 +54,8 @@ vi.mock("electron", () => ({
       desktop.windowEvents.set(name, listener);
     loadURL = desktop.loadURL;
     loadFile = desktop.loadFile;
+    close = desktop.close;
+    isDestroyed = () => false;
   },
   ipcMain: { handle: vi.fn(), on: vi.fn() },
   dialog: { showMessageBox: vi.fn(), showOpenDialog: vi.fn() },
@@ -88,6 +91,64 @@ it("keeps the packaged privileged window local even when a development URL is in
   expect(desktop.loadFile).toHaveBeenCalledWith(
     expect.stringContaining("/renderer/index.html"),
   );
+});
+
+it("closes an uninitialized window without requesting a nonexistent editable draft", async () => {
+  await import("../../src/app/main/index");
+  await vi.waitFor(() => expect(desktop.construct).toHaveBeenCalled());
+  desktop.windowEvents.get("close")?.({ preventDefault: vi.fn() });
+  expect(desktop.close).toHaveBeenCalledOnce();
+  expect(
+    desktop.contents.send.mock.calls.some(
+      ([channel]) => channel === "draft:close-request",
+    ),
+  ).toBe(false);
+});
+
+it("arms the actual Main close handshake when restore publishes ready and coalesces unsaved notices", async () => {
+  await import("../../src/app/main/index");
+  await vi.waitFor(() => expect(desktop.construct).toHaveBeenCalled());
+  const { ipcMain, dialog } = await import("electron");
+  const restore = vi
+    .mocked(ipcMain.handle)
+    .mock.calls.find(([channel]) => channel === "draft:request")?.[1];
+  if (!restore) throw Error("missing restore handler");
+  const event = {
+    sender: desktop.contents,
+    senderFrame: desktop.contents.mainFrame,
+  } as unknown as Electron.IpcMainInvokeEvent;
+  const reply = await restore(event, {
+    schemaVersion: 1,
+    connectionId: crypto.randomUUID(),
+    requestId: crypto.randomUUID(),
+    command: { kind: "restore", traceId: crypto.randomUUID() },
+  });
+  expect(reply.kind).toBe("ready");
+  desktop.windowEvents.get("close")?.({ preventDefault: vi.fn() });
+  const token = desktop.contents.send.mock.calls.find(
+    ([channel]) => channel === "draft:close-request",
+  )?.[1];
+  expect(token).toBeTypeOf("string");
+  expect(desktop.close).not.toHaveBeenCalled();
+  let dismiss: (() => void) | undefined;
+  vi.mocked(dialog.showMessageBox).mockImplementation(
+    () =>
+      new Promise((done) => {
+        dismiss = () => done({ response: 0, checkboxChecked: false });
+      }),
+  );
+  const result = vi
+    .mocked(ipcMain.on)
+    .mock.calls.find(([channel]) => channel === "draft:close-result")?.[1];
+  result?.(event, { token, saved: false });
+  desktop.windowEvents.get("close")?.({ preventDefault: vi.fn() });
+  expect(dialog.showMessageBox).toHaveBeenCalledOnce();
+  expect(
+    desktop.contents.send.mock.calls.filter(
+      ([channel]) => channel === "draft:close-request",
+    ),
+  ).toHaveLength(1);
+  dismiss?.();
 });
 
 it("does not give an external development page the application preload", async () => {

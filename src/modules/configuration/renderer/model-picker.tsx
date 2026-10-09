@@ -11,6 +11,8 @@ import {
 } from "../../ui/renderer/public";
 import type { ConfigurationSnapshot } from "../contracts/public";
 import { catalogModelKey, filterModelCatalog } from "../core/public";
+import { ProviderConnectionSummary } from "./provider-connection-summary";
+import { providerDisplayName } from "./provider-presentation";
 
 type Model = ConfigurationSnapshot["models"][number];
 type PickerPreferences = {
@@ -40,7 +42,9 @@ export function ModelMetadata({ model }: { model: Model }) {
 
 export function ModelPickerPanel({
   models,
+  providers: providerCatalog,
   currentKey,
+  currentProvider,
   preferences,
   disabled = false,
   loading = false,
@@ -48,10 +52,13 @@ export function ModelPickerPanel({
   onSelect,
   onPreference,
   onManage,
+  onRetry,
   searchRef,
 }: {
   models: readonly Model[];
+  providers?: ConfigurationSnapshot["providers"];
   currentKey: string | null;
+  currentProvider?: string;
   preferences: PickerPreferences;
   disabled?: boolean;
   loading?: boolean;
@@ -63,11 +70,28 @@ export function ModelPickerPanel({
     value: boolean;
   }) => void;
   onManage: () => void;
+  onRetry?: () => void;
   searchRef?: Ref<HTMLInputElement>;
 }) {
   const { t } = useI18n();
   const [query, setQuery] = useState("");
-  const [provider, setProvider] = useState<string | null>(null);
+  const [provider, setProvider] = useState<string | null | undefined>();
+  const currentModel = models.find(
+    (model) => catalogModelKey(model) === currentKey,
+  );
+  const connectionProviderId = currentProvider ?? currentModel?.provider;
+  const connectionProvider = providerCatalog?.find(
+    (entry) => entry.id === connectionProviderId,
+  );
+  const activeProvider =
+    provider === undefined ? (currentModel?.provider ?? null) : provider;
+  const filterProvider =
+    query.trim() && activeProvider !== "favorites" ? null : activeProvider;
+  const providerName = (id: string) =>
+    providerDisplayName(
+      id,
+      providerCatalog?.find((entry) => entry.id === id)?.name,
+    );
   const [limit, setLimit] = useState(100);
   const list = useRef<HTMLDivElement>(null);
   const chatModels = filterModelCatalog(models, {
@@ -83,8 +107,10 @@ export function ModelPickerPanel({
   const visible = filterModelCatalog(models, {
     ...preferences,
     query,
-    ...(provider && provider !== "favorites" ? { provider } : {}),
-    favoritesOnly: provider === "favorites",
+    ...(filterProvider && filterProvider !== "favorites"
+      ? { provider: filterProvider }
+      : {}),
+    favoritesOnly: filterProvider === "favorites",
     kind: "chat",
     availableOnly: true,
     sessionSelectableOnly: true,
@@ -126,22 +152,15 @@ export function ModelPickerPanel({
           <Button
             variant="ghost"
             size="icon"
-            title={t("providers.all")}
-            aria-label={t("providers.all")}
-            aria-pressed={provider === null}
-            onClick={() => changeProvider(null)}
-          >
-            <SearchIcon size={20} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
             title={t("providers.favorites")}
             aria-label={t("providers.favorites")}
-            aria-pressed={provider === "favorites"}
+            aria-pressed={filterProvider === "favorites"}
             onClick={() => changeProvider("favorites")}
           >
-            <StarIcon size={20} />
+            <StarIcon
+              size={20}
+              variant={filterProvider === "favorites" ? "solid" : "stroke"}
+            />
           </Button>
           <div className="model-picker-rail-separator" />
           {providers.map((id) => (
@@ -149,12 +168,15 @@ export function ModelPickerPanel({
               key={id}
               variant="ghost"
               size="icon"
-              title={id}
-              aria-label={id}
-              aria-pressed={provider === id}
-              onClick={() => changeProvider(id)}
+              title={providerName(id)}
+              aria-label={providerName(id)}
+              aria-pressed={filterProvider === id}
+              onClick={() => {
+                setQuery("");
+                changeProvider(filterProvider === id ? null : id);
+              }}
             >
-              <ProviderBrandIcon provider={id} size={24} />
+              <ProviderBrandIcon provider={id} size={20} />
             </Button>
           ))}
         </nav>
@@ -180,16 +202,29 @@ export function ModelPickerPanel({
               </p>
             )}
             {failed && (
-              <p className="model-picker-empty failure" role="alert">
-                {t("config.failed")}
-              </p>
+              <div className="model-picker-empty">
+                <p className="failure" role="alert">
+                  {t("config.failed")}
+                </p>
+                {onRetry && (
+                  <Button
+                    variant="secondary"
+                    disabled={loading}
+                    onClick={onRetry}
+                  >
+                    {t("app.retry")}
+                  </Button>
+                )}
+              </div>
             )}
-            {!loading && !visible.length && (
+            {!loading && !failed && !visible.length && (
               <p className="model-picker-empty">
                 {t(
-                  provider === "favorites"
+                  filterProvider === "favorites"
                     ? "models.noFavorites"
-                    : "models.noResults",
+                    : !chatModels.length
+                      ? "models.noAvailable"
+                      : "models.noResults",
                 )}
               </p>
             )}
@@ -215,18 +250,26 @@ export function ModelPickerPanel({
                     }
                     onClick={() => onSelect(model)}
                   >
-                    <ModelBrandIcon
-                      provider={model.provider}
-                      modelId={model.id}
-                      size={24}
-                    />
                     <span className="model-picker-copy">
-                      <span className="model-picker-name">{model.name}</span>
-                      <span className="model-picker-provider">
-                        <ProviderBrandIcon provider={model.provider} />
-                        {model.provider}
+                      <span className="model-picker-title">
+                        <span className="model-picker-name">{model.name}</span>
+                        {current && (
+                          <span className="model-picker-selected">
+                            <CheckIcon />
+                            {t("models.current")}
+                          </span>
+                        )}
                       </span>
-                      <ModelMetadata model={model} />
+                      <span className="model-picker-provider">
+                        <ModelBrandIcon
+                          provider={model.provider}
+                          modelId={model.id}
+                          size={16}
+                        />
+                        <span title={model.provider}>
+                          {providerName(model.provider)}
+                        </span>
+                      </span>
                       {!model.available && model.reason && (
                         <span className="model-picker-reason">
                           {t(`model.reason.${model.reason}`)}
@@ -243,7 +286,6 @@ export function ModelPickerPanel({
                         </span>
                       )}
                     </span>
-                    {current && <CheckIcon size={16} />}
                   </Button>
                   <Button
                     variant="ghost"
@@ -258,7 +300,10 @@ export function ModelPickerPanel({
                       onPreference({ kind: "favorite", key, value: !favorite })
                     }
                   >
-                    <StarIcon size={16} />
+                    <StarIcon
+                      size={16}
+                      variant={favorite ? "solid" : "stroke"}
+                    />
                   </Button>
                 </div>
               );
@@ -272,15 +317,23 @@ export function ModelPickerPanel({
         </div>
       </div>
       <div className="model-picker-footer">
-        <span>
-          {t(disabled ? "models.busy" : "models.count", {
-            count: visible.length,
-          })}
-        </span>
+        {connectionProviderId ? (
+          <ProviderConnectionSummary
+            providerId={connectionProviderId}
+            provider={connectionProvider}
+          />
+        ) : (
+          <span>{t("models.count", { count: visible.length })}</span>
+        )}
         <Button variant="ghost" onClick={onManage}>
           {t("models.manage")}
         </Button>
       </div>
+      {disabled && (
+        <p className="model-picker-busy" role="status">
+          {t("models.busy")}
+        </p>
+      )}
     </div>
   );
 }

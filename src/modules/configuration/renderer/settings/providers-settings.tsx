@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { useI18n } from "../../../preferences/renderer/public";
 import {
   Button,
@@ -14,6 +14,7 @@ import type {
   ConfigurationSnapshot,
 } from "../../contracts/public";
 import { orderProviderCatalog } from "../../core/public";
+import { providerDisplayName } from "../provider-presentation";
 import { CustomModelForm } from "./custom-model-form";
 import { ModelRoles } from "./model-roles";
 import { ProviderAccounts } from "./provider-accounts";
@@ -30,6 +31,7 @@ export function ProvidersSettings({
   modelPicker,
   onModelPreference,
   onRefresh,
+  scopeControl,
 }: ModelPreferencesProps & {
   snapshot: ConfigurationSnapshot;
   scope: ConfigurationScope;
@@ -37,6 +39,7 @@ export function ProvidersSettings({
   authentication: ReturnType<typeof useAuthentication>;
   write: ReturnType<typeof useConfigurationWrite>;
   onRefresh(): void;
+  scopeControl?: ReactNode;
 }) {
   const { t } = useI18n();
   const [query, setQuery] = useState("");
@@ -53,13 +56,15 @@ export function ProvidersSettings({
   return (
     <div className="providers-settings">
       <div className="providers-source">
-        <strong>
-          {t(
-            scope.kind === "application"
-              ? "providers.globalScope"
-              : "providers.threadScope",
-          )}
-        </strong>
+        {scopeControl ?? (
+          <strong>
+            {t(
+              scope.kind === "application"
+                ? "providers.globalScope"
+                : "providers.threadScope",
+            )}
+          </strong>
+        )}
         <Disclosure>
           <DisclosureTrigger>{t("providers.source")}</DisclosureTrigger>
           <div className="providers-source-paths">
@@ -109,15 +114,16 @@ export function ProvidersSettings({
                 >
                   <ProviderBrandIcon provider={provider.id} size={20} />
                   <span className="providers-provider-identity">
-                    <strong title={provider.name}>{provider.name}</strong>
+                    <strong title={provider.name}>
+                      {providerDisplayName(provider.id, provider.name)}
+                    </strong>
                     <span className="providers-hint">
                       {t(
                         provider.disabled
                           ? "providers.disabled"
                           : `providers.auth.${provider.authState}`,
                       )}
-                    </span>
-                    <span className="providers-hint">
+                      <span aria-hidden="true"> · </span>
                       {t("models.count", { count: provider.modelCount })}
                     </span>
                   </span>
@@ -149,15 +155,13 @@ export function ProvidersSettings({
           {selected ? (
             <>
               <header className="providers-detail-heading">
-                <ProviderBrandIcon provider={selected.id} size={24} />
+                <ProviderBrandIcon provider={selected.id} size={20} />
                 <div>
-                  <h3>{selected.name}</h3>
-                  <p className="providers-hint">
-                    {t(
-                      selected.disabled
-                        ? "providers.disabled"
-                        : `providers.auth.${selected.authState}`,
-                    )}
+                  <h3 title={selected.name}>
+                    {providerDisplayName(selected.id, selected.name)}
+                  </h3>
+                  <p className="providers-hint" data-selectable>
+                    {selected.id}
                   </p>
                 </div>
               </header>
@@ -209,6 +213,7 @@ export function ProvidersSettings({
           scope={scope}
           disabled={disabled}
           write={write}
+          order={modelPicker?.order}
         />
       )}
     </div>

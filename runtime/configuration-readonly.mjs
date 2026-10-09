@@ -551,6 +551,16 @@ export async function readConfigurationSnapshot(frame) {
         provider: model.provider,
         id: model.id,
         name: model.name,
+        ...(typeof model.identity?.revision === "string"
+          ? { catalogRevision: model.identity.revision }
+          : {}),
+        ...(typeof model.identity?.family === "string"
+          ? { catalogFamily: model.identity.family }
+          : {}),
+        ...(Number.isFinite(model.priority)
+          ? { catalogPriority: model.priority }
+          : {}),
+        ...(typeof model.isNew === "boolean" ? { isNew: model.isNew } : {}),
         kind: modelKind(model),
         api: model.api,
         assignableRoles: getKnownRoleIds(settings).filter((role) =>
