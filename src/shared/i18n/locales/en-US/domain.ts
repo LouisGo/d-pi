@@ -1,170 +1,165 @@
 export const domain = {
   "subagents.observationLimit":
-    "The active snapshot exceeds the observation budget. Only the first 128 tasks are shown; coverage is incomplete.",
+    "Showing the first 128 tasks. The list is incomplete.",
   "subagents.unhandledEvent":
-    "Subagent event {eventType} has no dedicated view yet. Process coverage is incomplete.",
+    "{eventType} isn't supported in this view. Some activity may be missing.",
 
-  "subagents.reconnect": "Reconnect reading",
+  "subagents.reconnect": "Reconnect",
   "subagents.heading": "Subagent",
   "subagents.pending": "Pending",
   "subagents.running": "Running",
   "subagents.completed": "Completed",
   "subagents.failed": "Failed",
-  "subagents.aborted": "Aborted",
+  "subagents.aborted": "Stopped",
   "subagents.unknown": "Status unknown",
   "subagents.copy": "Copy result",
   "subagents.task": "View task",
-  "subagents.model": "Native model",
+  "subagents.model": "Model",
   "subagents.currentTool": "Current tool",
   "subagents.progress": "Progress excerpt",
-  "subagents.result": "View available result",
-  "subagents.noResult": "No readable result is available yet.",
+  "subagents.result": "View result",
+  "subagents.noResult": "No readable result yet.",
   "subagents.coverage":
-    "Only tasks observed in this native instance are shown. Completed tasks before a Host restart are absent from the active snapshot; their status is separate from the main submission.",
+    "Shows tasks received on this connection. Tasks finished before a restart may be missing; their status is separate from the main task.",
   "subagents.transcriptUnavailable":
-    "The native result record is unreadable. Observed excerpts remain; the full result is unknown.",
+    "Can't read the full result. Previously received content remains.",
   "subagents.transcriptTooLarge":
-    "The native record exceeds the read budget. Observed excerpts remain; the full result was not read.",
+    "The result is too large to load in full. Previously received content remains.",
   "subagents.transcriptEmpty":
-    "The native record has no readable text yet. Observed excerpts do not prove a complete result.",
+    "No full result yet. Shown content may be incomplete.",
   "subagents.transcriptReset":
-    "The native record was reset. Result coverage may be incomplete.",
+    "The result record was reset. Content may be incomplete.",
   "subagents.truncated":
-    "The displayed result is truncated; native content is unchanged.",
+    "Showing part of the result. The original is unchanged.",
   "subagents.identityAmbiguous":
-    "This native identity refers to multiple tasks. Unattributed events were not merged.",
+    "Some events couldn't be matched to a task and weren't merged.",
   "subagents.missingLifecycle":
-    "The start of this task was not observed. Process coverage is incomplete.",
+    "The task's start wasn't recorded. Activity may be incomplete.",
   "subagents.observationUnavailable":
-    "Subagent observation is unavailable. Previously observed execution status may be stale; results remain read-only.",
+    "Subagent updates are unavailable. Shown content remains readable; statuses may be out of date.",
 
   "submission.contentNotReady":
-    "Attachments are not ready. The entire original input is retained; resolve failed items before sending.",
+    "Attachments aren't ready. Resolve them before sending. Your input remains.",
   "submission.imageUnsupported":
-    "The selected model or transport cannot preserve image input. Choose a compatible model; the entire original input is retained.",
+    "This model or connection can't send the image input. Choose a compatible model. Your input remains.",
 
   "runtime.evidenceGap":
-    "Some native evidence could not be saved or correlated. Missing results remain unknown; prompts are never resent automatically.",
-  "runtime.processingInput": "Processing input…",
-  "runtime.resourceUnknown": "Cannot verify the Runtime resources.",
+    "Some records couldn't be saved or linked. Outcomes remain unknown; nothing is resent automatically.",
+  "runtime.processingInput": "Processing message…",
+  "runtime.resourceUnknown": "Couldn't verify runtime files.",
   "runtime.readyToSend": "Ready to send.",
-  "runtime.noModel": "No model is available. Add a model in settings.",
+  "runtime.noModel": "No model available. Connect a provider in Settings.",
   "runtime.disconnected": "Connection interrupted. Your draft is retained.",
   "runtime.controlFailed":
-    "The control request did not complete. Check the current native state; it will not be retried automatically.",
+    "The action didn't complete. Check task status; no automatic retry.",
   "runtime.queuePaused":
-    "The queue is paused. Consumption resumes only after you explicitly continue. Background activity still reflects its actual state.",
-  "runtime.controlUpdated": "The native queue and control state were updated.",
-  "runtime.pendingInteraction": "Waiting for your response.",
+    "Queued messages are paused. Resume the queue to continue. Background work may still be running.",
+  "runtime.controlUpdated": "Status updated.",
+  "runtime.pendingInteraction": "Waiting for your answer.",
   "runtime.processing": "Generating…",
   "runtime.idle": "Ready for your next message.",
   "runtime.statusUnknown":
-    "Session state cannot be verified. Check the details; input will not be resent and the task will not be forcibly stopped.",
+    "Thread status is unknown. Check details. Nothing is resent or stopped automatically.",
   "runtime.configDefault":
-    "Using OMP's default configuration discovery rules and the app launch environment",
+    "Uses OMP defaults and the app's launch environment.",
   "runtime.previousSessionReadOnly":
-    "This conversation is already linked to a native session. Exclusive control for its full lifetime cannot be verified, so history is read only; the app will neither take over nor create a replacement session. Closing an external CLI does not prove exclusive control.",
+    "Exclusive access to this session can't be verified. It is read-only. Closing another terminal still requires checking again.",
   "runtime.preStartTrust":
-    "The directory will be checked again before starting. Project execution is not a file sandbox; OMP can use the current system user's permissions.",
+    "The folder is checked again before starting. Execution uses your system account permissions and can access files outside this project.",
   "runtime.controlDispatched":
-    "The control request was dispatched. Awaiting native state; it will not be retried automatically.",
+    "Request sent, awaiting status. No automatic retry.",
   "runtime.directoryChanged":
-    "The directory identity changed, so this native instance cannot be reused. New submissions are blocked; existing work is not stopped by this check.",
+    "The project folder changed. New messages are blocked; current work isn't stopped.",
   "runtime.grantSaveFailed":
-    "Could not save execution permission. Check the directory and local storage.",
+    "Couldn't save execution permission. Check the folder and local storage.",
   "runtime.revokedStopRequested":
-    "New operations are blocked and a stop was requested. The existing instance remains until native state is verified; do not treat it as stopped yet.",
-  "runtime.browseOnly": "This project is browse only.",
-  "runtime.starting":
-    "Verifying the official Runtime and starting a native session…",
+    "New actions are blocked and a stop was requested. Stopping isn't confirmed yet.",
+  "runtime.browseOnly": "This project is browse-only.",
+  "runtime.starting": "Preparing and connecting Thread…",
   "runtime.recoveryBindingChanged":
-    "The original session file, identity, project or native configuration changed. Check the original session and retry here; your draft is retained.",
+    "The original session record, project, or settings changed. Check them before retrying. Your draft remains.",
   "runtime.recoveryOccupied":
-    "This session or project is occupied by another window or terminal. End that execution and retry here; your draft is retained.",
+    "Another window or terminal is using this session or project. End that work, then retry. Your draft remains.",
   "runtime.recoveryOwnerUnknown":
-    "The previous execution owner could not be verified. Check again.",
+    "Couldn't verify the previous session process. Check again.",
   "runtime.recoveryShutdownUnconfirmed":
-    "The previous execution process has not been confirmed stopped. Check again.",
+    "The previous process hasn't been confirmed stopped. Check again.",
   "runtime.recoveryLeaseUnavailable":
-    "Session execution access is unavailable. Check again; if this persists, inspect diagnostics.",
+    "Couldn't obtain session access. Check again; if this persists, open diagnostics.",
   "runtime.notReady":
-    "The session did not become ready. Check project permission and model settings; review the details for further verification.",
+    "This Thread isn't ready. Check project permissions and model settings.",
   "runtime.grantInvalid":
-    "Directory identity or execution permission could not be verified. Sending was blocked.",
+    "The project folder or execution permission couldn't be verified. Sending is blocked.",
   "runtime.connectionUnknown":
-    "Connection state cannot be verified. The draft is retained. Check the state again; nothing will be sent automatically.",
-  "runtime.configUnknown": "Configuration source has not been verified",
+    "Connection status unknown. Check again. Your draft remains; nothing sends automatically.",
+  "runtime.configUnknown": "Settings source unknown",
   "runtime.controlUnknown":
-    "Control outcome is unknown. Check the state; the request will not be retried automatically.",
+    "Outcome unknown. Check status; no automatic retry.",
   "runtime.answerUnknown":
-    "Answer outcome is unknown. Check the native interaction; the app will not answer again automatically.",
+    "Answer outcome unknown. Check answer records; no automatic resend.",
   "runtime.dismissUnknown":
-    "Could not dismiss the unknown interaction. Check the native interaction before retrying.",
+    "Couldn't dismiss the prompt. Check its status before retrying.",
   "runtime.resourceMissing":
-    "Official Runtime resources are missing. In development, run pnpm runtime:fetch; for a packaged app, obtain the complete app again.",
+    "Runtime files are missing. In development, run pnpm runtime:fetch. For an installed app, get the complete app again.",
   "runtime.resourceUnreadable":
-    "Cannot read or execute the official Runtime. Check permissions on the app resources.",
+    "Can't start the runtime. Check permissions on the app's files.",
   "runtime.resourceIncompatible":
-    "The official Runtime or SDK resources failed compatibility or integrity checks in this environment. In development, check the managed resources; for a packaged app, obtain the complete app again.",
+    "Runtime files failed verification. In development, check managed resources. For an installed app, get the complete app again.",
   "runtime.sdkResourcesUnavailable":
-    "Official SDK resources are missing or failed verification. In development, run pnpm runtime:sdk; for a packaged app, obtain the complete app again.",
-  "runtime.configProfile":
-    "OMP profile: {profile} (using native discovery rules)",
-  "runtime.configDirectory": "Native configuration directory: {directory}",
+    "Runtime support files are missing or invalid. In development, run pnpm runtime:sdk. For an installed app, get the complete app again.",
+  "runtime.configProfile": "OMP profile: {profile}",
+  "runtime.configDirectory": "OMP settings folder: {directory}",
   "submission.storageUnavailable":
-    "Submission records cannot be saved right now. Keep the original input and check its state; do not send it again.",
-  "submission.notReady":
-    "The execution environment is not ready. The original input is retained.",
+    "Can't save message log. Copy your input and check status before sending again.",
+  "submission.notReady": "This Thread isn't ready. Your input remains.",
   "submission.unsupportedNativeCommand":
-    "Not sent: moving or deleting an app-managed conversation through native commands is not supported. The original input is retained.",
+    "Not sent: this command can't move or delete app-managed Threads. Your input remains.",
   "submission.contentTooLarge":
-    "The encoded text exceeds the sending limit. The original input was not truncated.",
-  "submission.unknownSubmission": "This submission record could not be found.",
-  "submission.staleEvent": "A receipt from a different instance was ignored.",
+    "The message exceeds the send limit. Your full input remains.",
+  "submission.unknownSubmission": "This message record couldn't be found.",
+  "submission.staleEvent": "Confirmation from an older connection was ignored.",
   "submission.revisionConflict":
-    "The submission identity or draft revision changed. Check the current content.",
+    "The message or draft version changed. Check your current input.",
   "submission.queueFull":
-    "The queue is full (20 items). Wait for consumption before sending again. The original input is retained and will not be resent automatically.",
+    "The queue is full (20 messages). Wait for a message to be processed. Your input remains; no automatic resend.",
   "submission.stateUnverified":
-    "Submission state has not been verified. Keep the original input and do not send it again.",
-  "submission.unsentDraft": "Not sent: check the text and draft save state.",
+    "Send status is unconfirmed. Keep your input and check before resending.",
+  "submission.unsentDraft": "Not sent. Check your message and save status.",
   "submission.sendUnknown":
-    "Sending outcome cannot be verified. The original input and submission record are retained; nothing will be resent automatically.",
-  "submission.followUpPending": "A follow-up is being sent. Please wait.",
+    "Send outcome unknown. Your input and record remain; no automatic resend.",
+  "submission.followUpPending": "Sending follow-up…",
   "submission.followUpUnknown":
-    "Follow-up outcome cannot be verified. The original input and submission record are retained; nothing will be resent automatically.",
+    "Follow-up outcome unknown. Your input and record remain; no automatic resend.",
   "submission.resendUnknown":
-    "The result of sending again is unknown. The original input is retained and will not be resent automatically.",
+    "Resend outcome unknown. Your input remains; no automatic resend.",
   "submission.continueUnknown":
-    "The result of continuing the submission cannot be verified. Check its state; it will not be resent automatically.",
-  "draft.alreadyActive":
-    "A draft already exists. Continue with the current project.",
+    "Send outcome unknown. Check message log; no automatic resend.",
+  "draft.alreadyActive": "A draft already exists. Continue in this project.",
   "draft.directoryUnavailable":
-    "The directory does not exist or cannot be read. Choose it again.",
+    "The folder is missing or unreadable. Choose it again.",
   "draft.identityMismatch":
-    "The draft identity does not match. The write was blocked.",
+    "The draft doesn't match. Saving is blocked; check the current Thread.",
   "draft.revisionConflict":
-    "The draft revision conflicts. The current input is retained; check the save state before choosing which content to keep.",
+    "Draft versions differ. Your input remains. Check and choose which version to keep.",
   "draft.storageUnavailable":
-    "Local data could not be read or saved. The database was not deleted. Keep the current input before retrying.",
+    "Can't read or save local data. Copy your current input before retrying.",
   "draft.contentTooLarge":
-    "The text exceeds UTF-8 4 MiB and has not been saved. The input was not truncated; copy a backup or shorten it before saving again.",
-  "draft.invalidSource": "The request source is invalid.",
+    "Text exceeds 4 MiB and isn't saved. Copy a backup, then shorten it.",
+  "draft.invalidSource": "This request couldn't be accepted.",
   "draft.invalidRequest":
-    "The request format is unsupported. The input was not truncated.",
+    "Unsupported request format. Your full input remains.",
   "draft.storageOpenFailed":
-    "The local database could not be opened. No data was reset. Check the logs and database backup.",
+    "Can't open local data. Nothing was reset. Check logs and backups.",
   "draft.transportUnknown":
-    "The connection was interrupted, so the save outcome is unknown. The current input is retained; check the save state before continuing.",
+    "Connection lost; saving is unconfirmed. Check save status. Your input remains.",
   "conversation.toolResult": "Tool result",
   "conversation.nativeInput": "You",
-  "conversation.nativeEvent": "Native event",
+  "conversation.nativeEvent": "Session event",
   "conversation.truncated":
-    "Display truncated; open conversation details for the full content",
+    "Showing part of the content. Open Thread details for the full text.",
   "conversation.unsupportedNativeEvent":
-    "Received {eventType}. Full interaction for this event is not yet supported.",
+    "Full display of {eventType} isn't supported yet.",
   "conversation.retrying": "The connection was interrupted. Retrying…",
-  "conversation.retryCompleted":
-    "The connection has recovered. Continue reading the reply.",
-  "conversation.retryFailed": "Could not reconnect.",
+  "conversation.retryCompleted": "Reconnected. You can continue reading.",
+  "conversation.retryFailed": "Couldn't reconnect.",
 } as const;

@@ -12,9 +12,10 @@ import { Modal } from "../../components/ui/modal";
 import { StatusPreview } from "../../components/ui/status-preview";
 import { Tooltip } from "../../components/ui/tooltip";
 
-import { foundationLabels as labels } from "./catalog";
+import { useFoundationLabels } from "./catalog";
 
 export function TextInputDemo() {
+  const labels = useFoundationLabels();
   return (
     <div className="grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2">
       <TextInput aria-label={labels.copy1} placeholder={labels.copy2} />
@@ -35,6 +36,7 @@ export function TextInputDemo() {
   );
 }
 export function TextAreaDemo() {
+  const labels = useFoundationLabels();
   return (
     <div className="grid max-w-2xl gap-3">
       <TextArea aria-label={labels.copy8} placeholder={labels.copy9} rows={3} />
@@ -48,6 +50,7 @@ export function TextAreaDemo() {
   );
 }
 export function CheckboxDemo() {
+  const labels = useFoundationLabels();
   const [checked, setChecked] = useState(true);
   return (
     <div className="flex flex-wrap items-center gap-4">
@@ -70,6 +73,7 @@ export function CheckboxDemo() {
   );
 }
 export function SliderDemo() {
+  const labels = useFoundationLabels();
   const [zoom, setZoom] = useState(100);
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -96,6 +100,7 @@ export function SliderDemo() {
   );
 }
 export function DisclosureDemo() {
+  const labels = useFoundationLabels();
   return (
     <Disclosure>
       <DisclosureTrigger>{labels.copy23}</DisclosureTrigger>
@@ -107,6 +112,7 @@ export function DisclosureDemo() {
   );
 }
 export function ModalDemo() {
+  const labels = useFoundationLabels();
   const [open, setOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
   return (
@@ -128,6 +134,7 @@ export function ModalDemo() {
   );
 }
 export function StatusPreviewDemo() {
+  const labels = useFoundationLabels();
   return (
     <StatusPreview label={labels.copy20} summary={labels.copy21}>
       <p data-selectable>{labels.copy25}</p>
@@ -135,6 +142,7 @@ export function StatusPreviewDemo() {
   );
 }
 export function TooltipDemo() {
+  const labels = useFoundationLabels();
   return (
     <Tooltip content={labels.copy22}>
       <Button variant="secondary">{labels.copy26}</Button>

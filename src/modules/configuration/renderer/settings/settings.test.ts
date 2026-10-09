@@ -143,7 +143,7 @@ it("retains the native browser challenge through a closed disclosure and the lat
       Array.from(element.querySelectorAll("button")).find(
         (b) => b.textContent?.trim() === text,
       );
-    await act(async () => button("登录 OpenAI 账户")?.click());
+    await act(async () => button("登录 OpenAI")?.click());
     await act(async () => {
       const details = element.querySelector("details");
       if (!details) throw Error("missing details");
@@ -178,11 +178,11 @@ it("retains the native browser challenge through a closed disclosure and the lat
       details.dispatchEvent(new Event("toggle"));
     });
     expect(element.textContent).toContain("Paste authorization code");
-    expect(button("在系统浏览器登录")).toBeDefined();
+    expect(button("在浏览器登录")).toBeDefined();
     await act(async () => button("取消登录")?.click());
-    expect(element.textContent).toContain("已取消，可重新登录");
-    expect(button("在系统浏览器登录")).toBeUndefined();
-    expect(button("登录 OpenAI 账户")?.disabled).toBe(false);
+    expect(element.textContent).toContain("已取消登录");
+    expect(button("在浏览器登录")).toBeUndefined();
+    expect(button("登录 OpenAI")?.disabled).toBe(false);
   } finally {
     await act(async () => root.unmount());
     client.clear();
@@ -254,12 +254,12 @@ it("keeps a completed login settled when its finished event arrives before the s
       details.dispatchEvent(new Event("toggle"));
     });
     const login = Array.from(element.querySelectorAll("button")).find(
-      (b) => b.textContent?.trim() === "登录 OpenAI 账户",
+      (b) => b.textContent?.trim() === "登录 OpenAI",
     );
     expect(login).toBeDefined();
     await act(async () => login?.click());
     expect(login?.disabled).toBe(false);
-    expect(element.textContent).toContain("原生认证已保存");
+    expect(element.textContent).toContain("登录信息已保存");
   } finally {
     await act(async () => root.unmount());
     client.clear();
@@ -334,7 +334,7 @@ it("keeps save progress and a typed stale-target failure outside the scroll area
           new Event("submit", { bubbles: true, cancelable: true }),
         ),
     );
-    expect(element.textContent).toContain("正在保存");
+    expect(element.textContent).toContain("保存中");
     const status = element.querySelector(".configuration-feedback");
     expect(status).not.toBeNull();
     expect(status?.closest(".configuration-content")).toBeNull();
@@ -344,7 +344,7 @@ it("keeps save progress and a typed stale-target failure outside the scroll area
       )?.disabled,
     ).toBe(true);
     await act(async () => finish?.());
-    expect(element.textContent).toContain("项目身份已变化");
+    expect(element.textContent).toContain("项目已变化");
     expect(
       element.querySelector(".configuration-feedback [role=alert]"),
     ).not.toBeNull();
@@ -424,7 +424,7 @@ it("keeps page authentication subscribed while inactive, queries only on activat
     await render(true);
     await vi.waitFor(() => expect(bridge.request).toHaveBeenCalled());
     const login = Array.from(element.querySelectorAll("button")).find(
-      (button) => button.textContent?.trim() === "登录 OpenAI 账户",
+      (button) => button.textContent?.trim() === "登录 OpenAI",
     );
     await act(async () => login?.click());
     await render(false);
@@ -442,7 +442,7 @@ it("keeps page authentication subscribed while inactive, queries only on activat
     );
     await render(true);
     expect(element.textContent).toContain("native challenge");
-    expect(element.textContent).toContain("在系统浏览器登录");
+    expect(element.textContent).toContain("在浏览器登录");
     expect(
       vi
         .mocked(bridge.request)

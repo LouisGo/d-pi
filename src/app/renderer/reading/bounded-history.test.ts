@@ -193,7 +193,7 @@ it("renders complete native history records and copies all available original te
     await act(() => button.click());
     expect(copy).toHaveBeenCalledWith(text);
     expect(container.textContent).toContain("3");
-    expect(container.textContent).toContain("incomplete");
+    expect(container.textContent).toContain("still being written");
   } finally {
     await act(() => root.unmount());
     client.clear();

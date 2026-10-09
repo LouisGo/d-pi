@@ -38,7 +38,7 @@ it("only confirms a completed clipboard write and exposes rejection with a retry
     write.mockRejectedValueOnce(new Error("Clipboard denied"));
     await act(async () => host.querySelector("button")?.click());
     expect(host.querySelector("[role=alert]")?.textContent).toContain(
-      "Copy failed",
+      "Couldn't copy",
     );
     expect(host.querySelector("button")?.disabled).toBe(false);
     expect(host.querySelector("button")?.textContent).toBe("Copy");

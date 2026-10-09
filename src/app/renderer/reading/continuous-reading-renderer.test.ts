@@ -205,7 +205,7 @@ it.each(["tool", "subagent"] as const)(
       if (!button) throw Error("missing copy");
       await act(() => button.click());
       expect(copy).toHaveBeenCalledWith(text);
-      expect(container.textContent).toContain("truncated");
+      expect(container.textContent).toContain("Showing part");
       expect(positions.stateStore.getState().bodies.size).toBe(0);
     } finally {
       await act(() => root.unmount());

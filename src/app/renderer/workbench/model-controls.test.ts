@@ -208,7 +208,7 @@ it("renders native effort metadata and sends default, off and minimal as distinc
     expect(await options()).toEqual(["default", "off", "minimal", "low"]);
     const apply = () =>
       Array.from(element.querySelectorAll("button")).find(
-        (button) => button.textContent?.trim() === "应用到当前会话",
+        (button) => button.textContent?.trim() === "应用",
       );
     const selectThinking = async (value: string) => pick(thinking, value);
     await act(async () => apply()?.click());

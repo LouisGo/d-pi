@@ -222,7 +222,7 @@ it("opens a failed attention receipt in readable space, preserves the editor and
   expect(input.container.querySelector(".tiptap")).toBe(editor);
   expect(editor?.textContent).toBe("first draft");
   const restore = [...document.querySelectorAll("button")].find(
-    (button) => button.textContent === "Restore controls",
+    (button) => button.textContent === "Show controls",
   );
   await act(() => restore?.click());
   expect(
@@ -434,7 +434,7 @@ it("focuses reading without remounting the draft editor or reading pane and rest
   pane.scrollTop = 120;
   pane.dispatchEvent(new Event("scroll"));
   const focus = [...document.querySelectorAll("button")].find(
-    (b) => b.textContent === "Focus reading",
+    (b) => b.textContent === "Focus mode",
   );
   expect(focus).toBeDefined();
   await act(() => focus?.click());
@@ -447,7 +447,7 @@ it("focuses reading without remounting the draft editor or reading pane and rest
   expect(input.container.querySelector(".reading-pane")).toBe(pane);
   expect(editor.isDestroyed).toBe(false);
   const restore = [...document.querySelectorAll("button")].find(
-    (b) => b.textContent === "Restore controls",
+    (b) => b.textContent === "Show controls",
   );
   await act(() => restore?.click());
   expect(

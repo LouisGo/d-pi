@@ -76,7 +76,7 @@ async function setup(initial: Interaction = item, trusted = true) {
 it("selects locally, then submits the exact native option once", async () => {
   const view = await setup();
   try {
-    expect(view.button("提交回答").disabled).toBe(true);
+    expect(view.button("发送回答").disabled).toBe(true);
     const option = view.host.querySelector<HTMLElement>(
       '[role="radio"][aria-label="继续"]',
     );
@@ -89,8 +89,8 @@ it("selects locally, then submits the exact native option once", async () => {
       "保留现有配置",
     );
     await act(() => {
-      view.button("提交回答").click();
-      view.button("提交回答").click();
+      view.button("发送回答").click();
+      view.button("发送回答").click();
     });
     expect(view.answer).toHaveBeenCalledExactlyOnceWith("question", {
       kind: "value",
@@ -110,8 +110,8 @@ it("does not submit a different option when native options change after selectio
         ?.click(),
     );
     await view.render({ ...item, options: ["删除", "稍后处理"] });
-    expect(view.button("提交回答").disabled).toBe(true);
-    await act(() => view.button("提交回答").click());
+    expect(view.button("发送回答").disabled).toBe(true);
+    await act(() => view.button("发送回答").click());
     expect(view.answer).not.toHaveBeenCalled();
   } finally {
     await view.cleanup();
@@ -124,8 +124,8 @@ it("retains cancellation without execution trust and disables native choices", a
     expect(
       view.host.querySelector('[role="radio"]')?.getAttribute("aria-disabled"),
     ).toBe("true");
-    expect(view.button("提交回答").disabled).toBe(true);
-    await act(() => view.button("取消交互").click());
+    expect(view.button("发送回答").disabled).toBe(true);
+    await act(() => view.button("取消回答").click());
     expect(view.answer).toHaveBeenCalledExactlyOnceWith("question", {
       kind: "cancel",
     });
@@ -198,7 +198,7 @@ it("retains the original input prefill when submitted", async () => {
   });
   try {
     expect(view.host.querySelector("textarea")?.value).toBe("原生预填内容");
-    await act(() => view.button("提交回答").click());
+    await act(() => view.button("发送回答").click());
     expect(view.answer).toHaveBeenCalledExactlyOnceWith("question", {
       kind: "value",
       value: "原生预填内容",
@@ -211,13 +211,13 @@ it("retains the original input prefill when submitted", async () => {
 it("allows a single native option without selecting it automatically", async () => {
   const view = await setup({ ...item, options: ["唯一选项"] });
   try {
-    expect(view.button("提交回答").disabled).toBe(true);
+    expect(view.button("发送回答").disabled).toBe(true);
     await act(() =>
       view.host
         .querySelector<HTMLElement>('[role="radio"][aria-label="唯一选项"]')
         ?.click(),
     );
-    await act(() => view.button("提交回答").click());
+    await act(() => view.button("发送回答").click());
     expect(view.answer).toHaveBeenCalledExactlyOnceWith("question", {
       kind: "value",
       value: "唯一选项",
@@ -241,10 +241,10 @@ it("submits custom text unchanged and only once after clearing the selected opti
       view.host.querySelector('[role="radio"][aria-checked="true"]'),
     ).toBeNull();
     expect(view.answer).not.toHaveBeenCalled();
-    expect(view.button("提交回答").disabled).toBe(false);
+    expect(view.button("发送回答").disabled).toBe(false);
     await act(() => {
-      view.button("提交回答").click();
-      view.button("提交回答").click();
+      view.button("发送回答").click();
+      view.button("发送回答").click();
     });
     expect(view.answer).toHaveBeenCalledExactlyOnceWith("question", {
       kind: "value",
@@ -265,7 +265,7 @@ it("clears custom text when returning to a predefined option", async () => {
         ?.click(),
     );
     expect(view.host.querySelector("textarea")?.value).toBe("");
-    await act(() => view.button("提交回答").click());
+    await act(() => view.button("发送回答").click());
     expect(view.answer).toHaveBeenCalledExactlyOnceWith("question", {
       kind: "value",
       value: "稍后处理",
@@ -279,8 +279,8 @@ it("keeps whitespace-only custom answers disabled", async () => {
   const view = await setup();
   try {
     await typeAnswer(view.host, " \n  ");
-    expect(view.button("提交回答").disabled).toBe(true);
-    await act(() => view.button("提交回答").click());
+    expect(view.button("发送回答").disabled).toBe(true);
+    await act(() => view.button("发送回答").click());
     expect(view.answer).not.toHaveBeenCalled();
   } finally {
     await view.cleanup();

@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "537473761df2d99f7786a8d5e4cd58e4cc6a553114241be5a9d32a10f891f5af",
+  "inputsHash": "2943bee04caba519e7a937422e5c35dff51c79e3ae511f182dd27fd3f8afee82",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 557,
-    "scannedFiles": 557,
+    "sourceFiles": 559,
+    "scannedFiles": 559,
     "unscanned": []
   },
   "modules": [
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 240,
-      "lines": 45203,
+      "lines": 45327,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -105,8 +105,8 @@
       ],
       "defaultEnvironment": "shared",
       "materialized": true,
-      "files": 21,
-      "lines": 3265,
+      "files": 23,
+      "lines": 3553,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -194,7 +194,7 @@
       ],
       "materialized": true,
       "files": 61,
-      "lines": 13646,
+      "lines": 13644,
       "publicEntries": [
         {
           "path": "src/modules/input/contracts/public.ts",
@@ -394,7 +394,7 @@
       ],
       "materialized": true,
       "files": 32,
-      "lines": 5631,
+      "lines": 5640,
       "publicEntries": [
         {
           "path": "src/modules/configuration/contracts/public.ts",
@@ -1388,6 +1388,13 @@
     {
       "module": "app",
       "environment": "renderer",
+      "dependency": "preferences",
+      "targetEnvironment": "contracts",
+      "testOnly": true
+    },
+    {
+      "module": "app",
+      "environment": "renderer",
       "dependency": "conversation",
       "targetEnvironment": "contracts",
       "testOnly": true
@@ -1474,13 +1481,6 @@
       "environment": "renderer",
       "dependency": "files",
       "targetEnvironment": "renderer",
-      "testOnly": true
-    },
-    {
-      "module": "app",
-      "environment": "renderer",
-      "dependency": "preferences",
-      "targetEnvironment": "contracts",
       "testOnly": true
     },
     {
@@ -8048,6 +8048,27 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/app/renderer/developer/components/catalog.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/developer/components/catalog.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/app/renderer/developer/components/component-dashboard.test.ts",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -8079,12 +8100,36 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": true,
+      "specifier": "../../../../modules/preferences/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/contracts/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/developer/components/component-dashboard.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
       "specifier": "../../../../modules/preferences/renderer/public",
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/preferences/renderer/public.ts",
       "targetModule": "preferences",
       "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/developer/components/component-dashboard.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../../shared/i18n/locale",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/i18n/locale.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
     },
     {
       "from": "src/app/renderer/developer/components/component-dashboard.test.ts",
@@ -8429,18 +8474,6 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
-      "specifier": "../../../../modules/preferences/renderer/public",
-      "kind": "import",
-      "resolution": "module",
-      "to": "src/modules/preferences/renderer/public.ts",
-      "targetModule": "preferences",
-      "targetEnvironment": "renderer"
-    },
-    {
-      "from": "src/app/renderer/developer/components/presentation-demos.tsx",
-      "sourceModule": "app",
-      "sourceEnvironment": "renderer",
-      "test": false,
       "specifier": "../../../../modules/ui/renderer/public",
       "kind": "import",
       "resolution": "module",
@@ -8550,6 +8583,18 @@
       "specifier": "react",
       "kind": "import",
       "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/developer/hover-menu-preview.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/app/renderer/developer/hover-menu-preview.tsx",
@@ -11200,6 +11245,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "../../../shared/i18n/create-i18n",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/i18n/create-i18n.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/app/renderer/routing/context.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "../wiring/model",
       "kind": "import",
       "resolution": "module",
@@ -12382,6 +12439,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/developer-tools.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "../components/icons/common",
       "kind": "import",
       "resolution": "module",
@@ -12811,6 +12880,18 @@
       "resolution": "module",
       "to": "src/app/renderer/components/icons/common.tsx",
       "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/i18n-renderer.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/ui/renderer/public",
+      "kind": "dynamic-import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
       "targetEnvironment": "renderer"
     },
     {
@@ -19827,6 +19908,18 @@
       "sourceModule": "shared",
       "sourceEnvironment": "shared",
       "test": false,
+      "specifier": "./locales/en-US/developer",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/i18n/locales/en-US/developer.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/shared/i18n/catalog.ts",
+      "sourceModule": "shared",
+      "sourceEnvironment": "shared",
+      "test": false,
       "specifier": "./locales/en-US/domain",
       "kind": "import",
       "resolution": "module",
@@ -19855,6 +19948,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/shared/i18n/locales/en-US/ui.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/shared/i18n/catalog.ts",
+      "sourceModule": "shared",
+      "sourceEnvironment": "shared",
+      "test": false,
+      "specifier": "./locales/zh-CN/developer",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/i18n/locales/zh-CN/developer.ts",
       "targetModule": "shared",
       "targetEnvironment": "shared"
     },

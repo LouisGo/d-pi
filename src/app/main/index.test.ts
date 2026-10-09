@@ -190,7 +190,7 @@ it("starts with system locale, rebuilds the native menu on interaction, and keep
     closeResult(event, { token: closeToken, saved: false });
     expect(
       JSON.stringify(vi.mocked(dialog.showMessageBox).mock.lastCall),
-    ).toContain("The draft has not been saved; the window remains open");
+    ).toContain("Draft not saved");
     await expect(
       set({ sender: {}, senderFrame: {} }, "zh-CN"),
     ).rejects.toThrow();

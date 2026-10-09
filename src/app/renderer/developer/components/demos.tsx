@@ -23,7 +23,7 @@ import { NavigationOverlay } from "../../components/ui/navigation-overlay";
 import { ResizableSplit } from "../../components/ui/resizable";
 import { SettingsModal } from "../../components/ui/settings-modal";
 import { TabStrip } from "../../components/ui/tab-strip";
-import { demoLabels as labels, presentationLabels } from "./catalog";
+import { useDemoLabels, usePresentationLabels } from "./catalog";
 import styles from "./component-dashboard.module.css";
 import { iconPreviews } from "./icon-catalog";
 
@@ -36,6 +36,7 @@ function Sample({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 export function ButtonDemo() {
+  const labels = useDemoLabels();
   const [count, setCount] = useState(0);
   const [pressed, setPressed] = useState(false);
   return (
@@ -103,6 +104,7 @@ export function ButtonDemo() {
   );
 }
 export function IconButtonDemo() {
+  const labels = useDemoLabels();
   const [count, setCount] = useState(0);
   return (
     <>
@@ -158,27 +160,23 @@ export function IconButtonDemo() {
     </>
   );
 }
-const initialTabs = [
-  {
-    id: "files",
-    title: labels.files,
-    icon: <FileIcon />,
-    content: labels.files,
-  },
-  {
-    id: "preview",
-    title: labels.preview,
-    icon: <ChatIcon />,
-    content: labels.preview,
-  },
-  {
-    id: "settings",
-    title: labels.settings,
-    icon: <SettingsIcon />,
-    content: labels.settings,
-  },
+type DemoTab = {
+  id: string;
+  kind: "files" | "preview" | "settings";
+  number?: number;
+};
+const initialTabs: DemoTab[] = [
+  { id: "files", kind: "files" },
+  { id: "preview", kind: "preview" },
+  { id: "settings", kind: "settings" },
 ];
+const tabIcons = {
+  files: <FileIcon />,
+  preview: <ChatIcon />,
+  settings: <SettingsIcon />,
+};
 export function TabsDemo() {
+  const labels = useDemoLabels();
   const [tabs, setTabs] = useState(initialTabs);
   const [selected, setSelected] = useState<string | null>("files");
   const fallback = useRef<HTMLDivElement>(null);
@@ -194,7 +192,11 @@ export function TabsDemo() {
         id="gallery-tabs"
         label="TabStrip"
         tabs={tabs.map((tab) => ({
-          ...tab,
+          id: tab.id,
+          title: tab.number
+            ? `${labels[tab.kind]} ${tab.number}`
+            : labels[tab.kind],
+          icon: tabIcons[tab.kind],
           panelId: `gallery-tabs-content-${tab.id}`,
         }))}
         selected={selected}
@@ -215,9 +217,8 @@ export function TabsDemo() {
               ...tabs,
               {
                 id,
-                title: `${labels.files} ${sequence.current}`,
-                icon: <FileIcon />,
-                content: id,
+                kind: "files",
+                number: sequence.current,
               },
             ]);
             setSelected(id);
@@ -233,7 +234,7 @@ export function TabsDemo() {
           aria-labelledby={`gallery-tabs-tab-${active.id}`}
         >
           {labels.tabBody}
-          {active.content}
+          {active.number ? active.id : labels[active.kind]}
         </div>
       ) : (
         <p className={styles["gallery-feedback"]}>{labels.tabEmpty}</p>
@@ -242,6 +243,7 @@ export function TabsDemo() {
   );
 }
 function SplitPreview({ axis }: { axis: "horizontal" | "vertical" }) {
+  const labels = useDemoLabels();
   const [size, setSize] = useState(120);
   const [visible, setVisible] = useState(true);
   return (
@@ -298,8 +300,11 @@ export function SplitDemo() {
   );
 }
 export function NavigationDemo() {
+  const labels = useDemoLabels();
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState(labels.overview);
+  const [selected, setSelected] = useState<"overview" | "files" | "settings">(
+    "overview",
+  );
   const trigger = useRef<HTMLButtonElement>(null);
   return (
     <>
@@ -307,7 +312,9 @@ export function NavigationDemo() {
         <SidebarIcon />
         {labels.openNavigation}
       </Button>
-      <p className={styles["gallery-feedback"]}>{labels.choice(selected)}</p>
+      <p className={styles["gallery-feedback"]}>
+        {labels.choice(labels[selected])}
+      </p>
       <NavigationOverlay
         open={open}
         onClose={() => setOpen(false)}
@@ -319,14 +326,14 @@ export function NavigationDemo() {
         <div className={styles["gallery-overlay-content"]}>
           <p>{labels.overlayHint}</p>
           <nav className={styles["gallery-demo-navigation"]}>
-            {[labels.overview, labels.files, labels.settings].map((name) => (
+            {(["overview", "files", "settings"] as const).map((name) => (
               <Button
                 key={name}
                 variant="navigation"
                 aria-pressed={selected === name}
                 onClick={() => setSelected(name)}
               >
-                {name}
+                {labels[name]}
               </Button>
             ))}
           </nav>
@@ -336,8 +343,11 @@ export function NavigationDemo() {
   );
 }
 export function SettingsDemo() {
+  const labels = useDemoLabels();
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState(labels.appearance);
+  const [selected, setSelected] = useState<"appearance" | "about">(
+    "appearance",
+  );
   const trigger = useRef<HTMLButtonElement>(null);
   return (
     <>
@@ -345,7 +355,9 @@ export function SettingsDemo() {
         <SettingsIcon />
         {labels.openSettings}
       </Button>
-      <p className={styles["gallery-feedback"]}>{labels.choice(selected)}</p>
+      <p className={styles["gallery-feedback"]}>
+        {labels.choice(labels[selected])}
+      </p>
       <SettingsModal
         open={open}
         onClose={() => setOpen(false)}
@@ -354,23 +366,23 @@ export function SettingsDemo() {
         returnFocus={trigger}
         navigation={
           <nav className={styles["gallery-demo-navigation"]}>
-            {[labels.appearance, labels.about].map((name) => (
+            {(["appearance", "about"] as const).map((name) => (
               <Button
                 key={name}
                 variant="navigation"
                 aria-pressed={selected === name}
                 onClick={() => setSelected(name)}
               >
-                {name}
+                {labels[name]}
               </Button>
             ))}
           </nav>
         }
       >
         <div className={styles["gallery-overlay-content"]}>
-          <h3>{selected}</h3>
+          <h3>{labels[selected]}</h3>
           <p>{labels.overlayHint}</p>
-          <p>{labels.choice(selected)}</p>
+          <p>{labels.choice(labels[selected])}</p>
         </div>
       </SettingsModal>
     </>
@@ -395,6 +407,7 @@ export function IconsDemo() {
 }
 
 export function SelectDemo() {
+  const labels = useDemoLabels();
   const [value, change] = useState("a");
   const options = [
     { value: "a", label: labels.optionA },
@@ -433,6 +446,7 @@ export function SelectDemo() {
   );
 }
 export function SwitchDemo() {
+  const labels = useDemoLabels();
   const [checked, change] = useState(false);
   return (
     <div className={styles["gallery-samples"]}>
@@ -455,6 +469,7 @@ export function SwitchDemo() {
   );
 }
 export function FormFieldDemo() {
+  const labels = useDemoLabels();
   return (
     <div className={styles["gallery-samples"]}>
       {(["text", "password"] as const).map((type) => (
@@ -486,6 +501,7 @@ export function FormFieldDemo() {
   );
 }
 export function ChoiceGroupDemo() {
+  const labels = useDemoLabels();
   const [value, change] = useState("drive");
   return (
     <ChoiceGroup
@@ -502,6 +518,8 @@ export function ChoiceGroupDemo() {
   );
 }
 export function SettingsGroupDemo() {
+  const presentationLabels = usePresentationLabels();
+  const labels = useDemoLabels();
   const [value, change] = useState("a");
   return (
     <SettingsPage

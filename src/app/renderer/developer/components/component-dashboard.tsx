@@ -1,12 +1,6 @@
 import { type ComponentType, type ReactNode, useRef, useState } from "react";
 import { Button, TextInput } from "../../../../modules/ui/renderer/public";
-import {
-  type ComponentName,
-  categories,
-  componentCatalog,
-  copy,
-  menuEntry,
-} from "./catalog";
+import { type ComponentName, useComponentDashboardCopy } from "./catalog";
 import styles from "./component-dashboard.module.css";
 import {
   ButtonDemo,
@@ -94,6 +88,7 @@ function ComponentPreview({
   entry: { name: string; purpose: string; forms: string };
   children: ReactNode;
 }) {
+  const { copy } = useComponentDashboardCopy();
   const [revision, setRevision] = useState(0);
   return (
     <section
@@ -132,6 +127,8 @@ export function ComponentDashboard({
 }: {
   additionalPreview?: ReactNode;
 }) {
+  const { categories, componentCatalog, menuEntry, copy } =
+    useComponentDashboardCopy();
   const main = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const needle = query.trim().toLocaleLowerCase();

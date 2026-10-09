@@ -27,10 +27,7 @@ export function AppearanceSettings({ model }: { model: AppModel }) {
   );
   return (
     <SettingsGroup title={t("settings.visualStyle")}>
-      <SettingRow
-        label={t("app.layout.theme")}
-        description={t("settings.themeDescription")}
-      >
+      <SettingRow label={t("app.layout.theme")}>
         <Select
           value={theme}
           disabled={busy}
@@ -98,10 +95,7 @@ export function GeneralSettings({ model }: { model: AppModel }) {
         </p>
       )}
       <SettingsGroup title={t("settings.composer")}>
-        <SettingRow
-          label={t("settings.sendKey")}
-          description={t("settings.sendKeyDescription")}
-        >
+        <SettingRow label={t("settings.sendKey")}>
           <ChoiceGroup
             aria-label={t("settings.sendKey")}
             disabled={busy}

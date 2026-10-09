@@ -1,5 +1,6 @@
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { useStore } from "zustand";
+import { useI18n } from "../../../modules/preferences/renderer/public";
 import { ToolsIcon } from "../components/icons/common";
 import { HoverMenu } from "../components/ui/hover-menu";
 import type { AppModel } from "../wiring/model";
@@ -13,21 +14,21 @@ function useDeveloperWorkspace() {
 }
 
 export function DeveloperTools() {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const selected = useDeveloperWorkspace() !== undefined;
   return (
     <HoverMenu
-      // i18n-ignore: developer tools use fixed Chinese by user request
-      label="开发者工具"
+      label={t("dev.entry")}
       icon={<ToolsIcon />}
       selected={selected}
       items={[
         {
           id: "components",
-          // i18n-ignore: developer tools use fixed Chinese by user request
-          label: "组件看板",
-          // i18n-ignore: developer tools use fixed Chinese by user request
-          description: "浏览形态、状态与交互",
+
+          label: t("dev.dashboard"),
+
+          description: t("dev.dashboardDescription"),
           onSelect: () => {
             void navigate({ to: "/dev/components" });
           },
@@ -38,6 +39,7 @@ export function DeveloperTools() {
 }
 
 export function useConversationNavigation(model: AppModel) {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const workspace = useDeveloperWorkspace();
   const developerActive = workspace !== undefined;
@@ -48,7 +50,9 @@ export function useConversationNavigation(model: AppModel) {
   );
   return {
     developerActive,
-    developerTitle: workspace?.title,
+    developerTitle: workspace?.titleMessage
+      ? t(workspace.titleMessage)
+      : undefined,
     onConversation: () => {
       if (!developerActive) return;
       if (threadId)

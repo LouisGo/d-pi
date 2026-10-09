@@ -240,7 +240,7 @@ it("background event preserves focus and selection; click respects IME admission
   expect(ui.model.controller?.getTextSnapshot()).toBe("keep");
   ui.setComposing(true);
   await ui.click(`[data-attention-open='${ui.second.threadId}']`);
-  expect(ui.host.textContent).toContain("尚未切换 Thread");
+  expect(ui.host.textContent).toContain("暂不能切换会话");
   expect(ui.model.attention.locationStore.getState().target).toBeNull();
   ui.setComposing(false);
   await ui.click("[data-attention-retry]");
@@ -287,7 +287,7 @@ it("system and completion preferences require explicit opt-in, supported is not 
     ),
   ).toBe(true);
   await ui.emit({ system: "available" });
-  expect(ui.host.textContent).toContain("是否显示由 macOS 权限和系统设置决定");
+  expect(ui.host.textContent).toContain("通知是否显示取决于 macOS 权限和设置");
   expect(
     ui.request.mock.calls.filter(([command]) => command.kind === "seen"),
   ).toHaveLength(0);
@@ -314,7 +314,7 @@ it("native click before ready can be retried, stale event opens current state wi
   expect(ui.host.querySelector("[data-attention-retry]")).not.toBeNull();
   ui.setComposing(false);
   await ui.click("[data-attention-retry]");
-  expect(ui.host.textContent).toContain("这条提醒已过期");
+  expect(ui.host.textContent).toContain("提醒已过期");
   expect(ui.model.attention.locationStore.getState().target?.eventId).toBe(
     ui.snapshot().entries[0]?.eventId,
   );
@@ -407,7 +407,7 @@ it("a changed event during navigation selects the current result view rather tha
   expect(ui.model.attention.locationStore.getState().target?.kind).toBe(
     "completed",
   );
-  expect(ui.host.textContent).toContain("这条提醒已过期");
+  expect(ui.host.textContent).toContain("提醒已过期");
 });
 
 it("clears visible attention while a Thread selection is pending and restores the committed Thread", async () => {

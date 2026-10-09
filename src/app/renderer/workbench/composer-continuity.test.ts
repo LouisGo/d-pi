@@ -349,7 +349,7 @@ it("offers preparation retry only for an imported CLI chat, without consuming it
   const retry = vi.spyOn(runtime, "act").mockResolvedValue();
   const container = fixture.editor().view.dom.closest("section");
   const button = Array.from(container?.querySelectorAll("button") ?? []).find(
-    (b) => b.textContent === "Retry preparing chat",
+    (b) => b.textContent === "Reconnect",
   );
   expect(button).toBeDefined();
   await act(() => button?.click());
@@ -390,7 +390,7 @@ it("does not retry an interrupted chat until its previous process has stopped", 
   const retry = vi.spyOn(fixture.thread().runtime!, "act").mockResolvedValue();
   const container = fixture.editor().view.dom.closest("section");
   const button = Array.from(container?.querySelectorAll("button") ?? []).find(
-    (b) => b.textContent === "Retry preparing chat",
+    (b) => b.textContent === "Reconnect",
   );
   expect(button).toBeUndefined();
   await act(() => button?.click());
@@ -402,7 +402,9 @@ it("explains a running session without a model and offers model selection withou
   const choose = vi.fn();
   const fixture = await setup("ready", choose);
   const container = fixture.editor().view.dom.closest("section");
-  expect(container?.textContent).toContain("No active model");
+  expect(container?.textContent).toContain(
+    "Connect a provider and choose a model",
+  );
   const button = Array.from(container?.querySelectorAll("button") ?? []).find(
     (b) => b.textContent === "Select model",
   );
@@ -568,7 +570,7 @@ it.each(["limit", "failure"] as const)(
     expect(fixture.editor().getText()).toContain(item.token);
     if (mode === "limit") {
       expect(fixture.container.textContent).toContain(
-        "Undo history was cleared; your draft is preserved",
+        "Undo history reached its limit and was cleared. Your draft remains",
       );
       expect(fixture.editor().can().undo()).toBe(false);
       await act(async () =>
@@ -586,7 +588,9 @@ it.each(["limit", "failure"] as const)(
         },
       });
       expect(fixture.editor().can().undo()).toBe(true);
-      expect(fixture.container.textContent).toContain("Retry asset protection");
+      expect(fixture.container.textContent).toContain(
+        "Retry keeping attachments",
+      );
       failure = false;
       await act(async () =>
         expect(await fixture.thread().controller.retry()).toBe(true),
@@ -695,7 +699,7 @@ it("keeps publication-limit Undo until explicit recovery and waits for Main leas
   });
   expect(retries).toBe(1);
   expect(fixture.container.textContent).toContain(
-    "The saved attachment and undo history are preserved",
+    "Existing attachments and history remain",
   );
   expect(fixture.editor().can().undo()).toBe(true);
   expect(fixture.editor().getText()).toBe(body);
@@ -800,7 +804,7 @@ it("shows automatic preparation without asking the user to start OMP", async () 
   const labels = Array.from(fixture.container.querySelectorAll("button")).map(
     (button) => button.textContent,
   );
-  expect(labels).not.toContain("Start OMP");
+  expect(labels).not.toContain("Connect Thread");
   expect(fixture.container.textContent).not.toContain("Preparing this chat");
   expect(
     fixture.container.querySelector<HTMLButtonElement>(
@@ -829,8 +833,8 @@ it("offers the normal project trust action for a CLI session and retains the que
   const labels = Array.from(fixture.container.querySelectorAll("button")).map(
     (button) => button.textContent,
   );
-  expect(labels).toContain("Allow execution and start");
-  expect(labels).not.toContain("Start OMP");
+  expect(labels).toContain("Allow execution");
+  expect(labels).not.toContain("Connect Thread");
   expect(fixture.container.textContent).not.toContain("CLI");
   expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha omega");
 });
@@ -1185,7 +1189,7 @@ it("exposes partial import without automatic adoption and accepts the ready subs
   expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha omega");
   expect(fixture.thread().canPrepareInput()).toBe(false);
   const accept = Array.from(fixture.container.querySelectorAll("button")).find(
-    (button) => button.textContent === "Insert only ready files",
+    (button) => button.textContent === "Add ready files only",
   );
   expect(accept).toBeDefined();
   accept?.focus();
@@ -1196,7 +1200,7 @@ it("exposes partial import without automatic adoption and accepts the ready subs
   );
   expect(document.activeElement).toBe(fixture.editor().view.dom);
   expect(fixture.thread().canPrepareInput()).toBe(false);
-  const report = fixture.container.querySelector('[aria-label="File import"]');
+  const report = fixture.container.querySelector('[aria-label="File imports"]');
   expect(report?.textContent).toContain("bad.txt");
   expect(report?.textContent).not.toContain(items[0]?.name);
   const discard = Array.from(fixture.container.querySelectorAll("button")).find(
@@ -1209,7 +1213,7 @@ it("exposes partial import without automatic adoption and accepts the ready subs
     true,
   );
   expect(
-    fixture.container.querySelector('[aria-label="File import"]'),
+    fixture.container.querySelector('[aria-label="File imports"]'),
   ).toBeNull();
 });
 
@@ -1263,7 +1267,7 @@ it("previews and confirms a failed PDF in its original import job before explici
     Array.from(fixture.container.querySelectorAll("button")).find(
       (entry) => entry.textContent === text,
     );
-  expect(button("Use extracted text only")).toBeDefined();
+  expect(button("Use text only")).toBeDefined();
   const preview = Array.from(fixture.container.querySelectorAll("button")).find(
     (entry) => entry.getAttribute("aria-label") === "Preview scan.pdf",
   );
@@ -1278,11 +1282,11 @@ it("previews and confirms a failed PDF in its original import job before explici
     '[aria-label="Close preview"]',
   );
   await act(() => close?.click());
-  await act(() => button("Use extracted text only")?.click());
+  await act(() => button("Use text only")?.click());
   expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha omega");
   expect(items[0]?.textOnly).toBe(true);
-  expect(button("Insert ready files at cursor")).toBeDefined();
-  await act(() => button("Insert ready files at cursor")?.click());
+  expect(button("Add ready files at cursor")).toBeDefined();
+  await act(() => button("Add ready files at cursor")?.click());
   await act(() => new Promise((resolve) => setTimeout(resolve, 20)));
   expect(fixture.thread().controller.getTextSnapshot()).toContain(
     items[0]?.token,
@@ -1299,7 +1303,7 @@ it("returns the mapped caret to the real editor when expanding and collapsing fo
   const editor = fixture.editor();
   await act(() => editor.commands.setTextSelection(6));
   const button = fixture.container.querySelector<HTMLButtonElement>(
-    'button[aria-label="Expand editor"]',
+    'button[aria-label="Expand input"]',
   );
   expect(button).not.toBeNull();
   await act(() => {
@@ -1311,7 +1315,7 @@ it("returns the mapped caret to the real editor when expanding and collapsing fo
   await act(() => editor.commands.insertContent(" typing"));
   expect(editor.getText()).toBe("alpha typing omega");
   const collapse = fixture.container.querySelector<HTMLButtonElement>(
-    'button[aria-label="Collapse editor"]',
+    'button[aria-label="Collapse input"]',
   );
   await act(() => {
     collapse?.focus();
@@ -1585,7 +1589,7 @@ it("removes successful import reports without losing image adoption, dedup settl
   );
   expect(fixture.thread().controller.getAttachmentIds()).toHaveLength(1);
   expect(
-    fixture.container.querySelector('[aria-label="File import"]'),
+    fixture.container.querySelector('[aria-label="File imports"]'),
   ).toBeNull();
   await pasteFiles(fixture, [file]);
   await act(() =>
@@ -1606,15 +1610,15 @@ it("removes successful import reports without losing image adoption, dedup settl
   expect(
     fixture.container.querySelector('[aria-label="Preview photo.png"]'),
   ).toBeNull();
-  expect(fixture.container.textContent).not.toContain("Inserted");
-  expect(fixture.container.textContent).not.toContain("Dismiss import results");
+  expect(fixture.container.textContent).not.toContain("Added");
+  expect(fixture.container.textContent).not.toContain("Dismiss results");
   await act(() => fixture.editor().commands.insertContent(" new"));
   await act(() => fixture.editor().commands.undo());
   await act(() => fixture.editor().commands.redo());
   expect(fixture.thread().controller.getAttachmentIds()).toEqual([]);
   await fixture.select(fixture.second.threadId);
   expect(
-    fixture.container.querySelector('[aria-label="File import"]'),
+    fixture.container.querySelector('[aria-label="File imports"]'),
   ).toBeNull();
 });
 
@@ -1647,9 +1651,7 @@ it("keeps failed settlement recoverable after removal without previewing or clai
   ]);
   await act(() =>
     vi.waitFor(() =>
-      expect(fixture.container.textContent).toContain(
-        "Retry resource settlement",
-      ),
+      expect(fixture.container.textContent).toContain("Retry saving"),
     ),
   );
   await act(() =>
@@ -1659,13 +1661,13 @@ it("keeps failed settlement recoverable after removal without previewing or clai
   );
   expect(fixture.thread().controller.getAttachmentIds()).toEqual([]);
   expect(
-    fixture.container.querySelector('[aria-label="File import"]')?.textContent,
-  ).not.toContain("Inserted");
+    fixture.container.querySelector('[aria-label="File imports"]')?.textContent,
+  ).not.toContain("Added");
   expect(
     fixture.container.querySelector('[aria-label="Preview photo.png"]'),
   ).toBeNull();
   const retry = Array.from(fixture.container.querySelectorAll("button")).find(
-    (b) => b.textContent === "Retry resource settlement",
+    (b) => b.textContent === "Retry saving",
   );
   rejectSettlement = false;
   await act(() => retry?.click());
@@ -1677,7 +1679,7 @@ it("keeps failed settlement recoverable after removal without previewing or clai
     ),
   );
   expect(
-    fixture.container.querySelector('[aria-label="File import"]'),
+    fixture.container.querySelector('[aria-label="File imports"]'),
   ).toBeNull();
   expect(fixture.thread().controller.getAttachmentIds()).toEqual([]);
 });
@@ -1706,7 +1708,7 @@ it("keeps settlement independent of file Undo and Redo while its successful UI s
     vi.waitFor(() => expect(finishSettlement).toBeTypeOf("function")),
   );
   expect(
-    fixture.container.querySelector('[aria-label="File import"]'),
+    fixture.container.querySelector('[aria-label="File imports"]'),
   ).toBeNull();
   expect(fixture.thread().attachmentImports!.stateStore.getState().ready).toBe(
     false,
@@ -1723,6 +1725,6 @@ it("keeps settlement independent of file Undo and Redo while its successful UI s
     items[0]!.id,
   ]);
   expect(
-    fixture.container.querySelector('[aria-label="File import"]'),
+    fixture.container.querySelector('[aria-label="File imports"]'),
   ).toBeNull();
 });

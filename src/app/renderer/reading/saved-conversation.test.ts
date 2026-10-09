@@ -174,7 +174,7 @@ it("opens bound native messages directly without project selection, execute or a
   });
   expect(f.bridge.read).toHaveBeenCalledWith("A", null);
   expect(f.bridge.projectList).not.toHaveBeenCalled();
-  expect(f.container.textContent).not.toContain("Read native records");
+  expect(f.container.textContent).not.toContain("Load history");
 });
 it("keeps pages adjacent in one transcript instead of replacing the previous messages", async () => {
   vi.stubGlobal(
@@ -291,7 +291,7 @@ it("shows incomplete tail and omitted-record coverage with an explicit refresh",
   });
   await vi.waitFor(async () => {
     await act(() => new Promise((r) => setTimeout(r, 5)));
-    expect(f.container.textContent).toContain("incomplete");
+    expect(f.container.textContent).toContain("still being written");
   });
   expect(f.container.textContent).toContain("3");
   const refresh = [...f.container.querySelectorAll("button")].find(
@@ -305,7 +305,7 @@ it("distinguishes a missing bound file from an empty new conversation", async ()
   const f = await mount(true, { kind: "unavailable", reason: "missing" });
   await vi.waitFor(async () => {
     await act(() => new Promise((r) => setTimeout(r, 5)));
-    expect(f.container.textContent).toContain("records are missing");
+    expect(f.container.textContent).toContain("Record missing");
   });
   expect(f.container.textContent).not.toContain("No messages yet");
 });

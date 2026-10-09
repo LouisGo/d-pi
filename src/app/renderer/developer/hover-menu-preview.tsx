@@ -1,35 +1,37 @@
 import { useState } from "react";
+import { useI18n } from "../../../modules/preferences/renderer/public";
 import { ToolsIcon } from "../components/icons/common";
 import { HoverMenu } from "../components/ui/hover-menu";
 
 export function HoverMenuPreview() {
+  const { t } = useI18n();
   const [selected, setSelected] = useState(0);
   return (
     <div className="flex flex-wrap items-center gap-3">
       <HoverMenu
-        // i18n-ignore: developer demonstration uses fixed Chinese
-        label="演示工具菜单"
+        label={t("dev.menu")}
         icon={<ToolsIcon />}
         items={[
           {
             id: "sample",
-            // i18n-ignore: developer demonstration uses fixed Chinese
-            label: "可用工具",
-            // i18n-ignore: developer demonstration uses fixed Chinese
-            description: "点击后更新旁边的反馈",
+
+            label: t("dev.menuItem"),
+
+            description: t("dev.menuDescription"),
             onSelect: () => setSelected((value) => value + 1),
           },
           {
             id: "disabled",
-            // i18n-ignore: developer demonstration uses fixed Chinese
-            label: "禁用工具",
+
+            label: t("dev.menuDisabled"),
             disabled: true,
             onSelect: () => setSelected((value) => value + 1),
           },
         ]}
       />
-      {/* i18n-ignore: developer demonstration uses fixed Chinese */}
-      <output aria-label="菜单反馈">已选择 {selected} 次</output>
+      <output aria-label={t("dev.menuFeedback")}>
+        {t("dev.menuCount", { selected })}
+      </output>
     </div>
   );
 }

@@ -38,11 +38,7 @@ vi.mock("../reading/saved-conversation", async () => ({
 }));
 vi.mock("../reading/history", () => ({
   History: ({ onReturnLive }: { onReturnLive?: () => void }) =>
-    createElement(
-      "button",
-      { onClick: onReturnLive },
-      "Return to live reading",
-    ),
+    createElement("button", { onClick: onReturnLive }, "Back to Thread"),
 }));
 vi.mock("../reading/markdown", () => ({
   Markdown: ({ text }: { text: string }) => createElement("p", null, text),
@@ -203,21 +199,21 @@ it("opens the existing Thread tools at native history from a live coverage gap a
   try {
     await f.render();
     const gapEntry = [...f.host.querySelectorAll("button")].find(
-      (button) => button.textContent === "Conversation details",
+      (button) => button.textContent === "Thread details",
     );
     expect(gapEntry).toBeDefined();
     await act(() => gapEntry?.click());
     await f.flush();
     const history = [
       ...document.querySelectorAll<HTMLButtonElement>("[role=dialog] button"),
-    ].find((button) => button.textContent === "Native history");
+    ].find((button) => button.textContent === "History");
     expect(history).toBeDefined();
     await act(() => history?.click());
     expect(f.props.onReadingViewChange).toHaveBeenLastCalledWith("history");
     f.props.readingView = "history";
     await f.render();
     const returnLive = [...f.host.querySelectorAll("button")].find(
-      (button) => button.textContent === "Return to live reading",
+      (button) => button.textContent === "Back to Thread",
     );
     await act(() => returnLive?.click());
     expect(f.props.onReadingViewChange).toHaveBeenLastCalledWith(

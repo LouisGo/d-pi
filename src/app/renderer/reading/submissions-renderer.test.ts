@@ -18,20 +18,23 @@ import { Submissions } from "./submissions";
 const diagnosticTraceId = crypto.randomUUID();
 const originalText = "用户提交原文\r\nKeep **Markdown** and 😀 unchanged";
 const refusalCopy = {
-  "content-missing": ["图片资源缺失", "Image resources are missing"],
-  "content-corrupt": ["完整性校验", "integrity"],
-  "transport-too-large": ["应用传输预算", "transport budget"],
-  "image-unsupported": ["图像", "image"],
-  "not-ready": ["会话尚未就绪", "session has no ready model"],
-  "native-unavailable": ["原生会话未连接", "native session is not connected"],
+  "content-missing": ["图片丢失", "an image is missing"],
+  "content-corrupt": ["图片损坏", "an image is damaged"],
+  "transport-too-large": ["图片过大", "images exceed the send limit"],
+  "image-unsupported": ["图片", "image"],
+  "not-ready": ["没有可用模型", "no model is ready"],
+  "native-unavailable": ["会话未连接", "Thread isn't connected"],
   "unsupported-native-command": [
-    "应用托管的原生命令",
-    "managed native command",
+    "不能在输入框使用此命令",
+    "command can't be used",
   ],
-  paused: ["原生队列已暂停", "native queue is paused"],
-  "interaction-pending": ["有原生对话框等待回答", "native dialog is waiting"],
-  "stale-target": ["旧的原生会话实例", "older session instance"],
-  "correlation-limit": ["未确认的派发过多", "too many dispatches"],
+  paused: ["队列已暂停", "queue is paused"],
+  "interaction-pending": ["请先回答待答问题", "answer the pending question"],
+  "stale-target": ["会话连接已变化", "Thread connection changed"],
+  "correlation-limit": [
+    "等待确认的消息过多",
+    "too many messages are unconfirmed",
+  ],
 } as const;
 
 const mounted: {
@@ -151,7 +154,7 @@ it("keeps an unreported refusal cause generic without inventing a recovery fact"
       outcome: "unobserved",
     });
     expect(container.textContent).toContain(
-      locale === "zh-CN" ? "未发送，原文保留" : "Not sent",
+      locale === "zh-CN" ? "未发送，原文仍保留" : "Not sent",
     );
     for (const reason of Object.values(refusalCopy))
       expect(container.textContent).not.toContain(
@@ -169,16 +172,16 @@ it.each(["failed", "unknown"] as const)(
         outcome,
       });
       expect(container.textContent).toContain(
-        locale === "zh-CN" ? "已收到调用回执" : "Call receipt received",
+        locale === "zh-CN" ? "发送已确认" : "Send confirmed",
       );
       expect(container.textContent).toContain(
         locale === "zh-CN"
           ? outcome === "failed"
-            ? "原生返回失败"
+            ? "本次调用失败"
             : "后续结果未知"
           : outcome === "failed"
-            ? "Native call failed"
-            : "Later result unknown",
+            ? "Call failed"
+            : "Outcome unknown",
       );
     }
   },
@@ -202,5 +205,5 @@ it("click location reveals and focuses the current failed receipt without dispat
   });
   expect(container.querySelector("details")?.open).toBe(true);
   expect(document.activeElement).toBe(record);
-  expect(record.textContent).toContain("原生返回失败");
+  expect(record.textContent).toContain("本次调用失败");
 });

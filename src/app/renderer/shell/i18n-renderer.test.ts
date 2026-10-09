@@ -34,6 +34,9 @@ vi.mock("../../../modules/preferences/renderer/public", async () => {
   };
 });
 
+vi.mock("../developer/components/component-dashboard", () => ({
+  ComponentDashboard: () => null,
+}));
 vi.mock("../workbench/composer", () => ({ Composer: () => null }));
 // The Monaco adapter is not part of this locale check and must not load here:
 // its editor bundle reaches into `window` at module scope.
@@ -56,7 +59,8 @@ vi.mock("@/components/icons/common", async (importOriginal) => ({
   FolderIcon: () => null,
   LightThemeIcon: () => null,
 }));
-vi.mock("../../../modules/ui/renderer/public", () => ({
+vi.mock("../../../modules/ui/renderer/public", async (original) => ({
+  ...(await original<typeof import("../../../modules/ui/renderer/public")>()),
   Button: ({ children }: { children: ReactNode }) =>
     createElement("button", null, children),
 }));
@@ -113,13 +117,13 @@ describe("renderer locale", () => {
 
   it("updates visible app copy when the locale changes", async () => {
     const chinese = await renderApp();
-    expect(chinese).toContain("在项目里，写下第一步");
+    expect(chinese).toContain("开始一个任务");
     expect(chinese).toContain("打开项目");
 
     locale = "en-US";
     const english = await renderApp();
-    expect(english).toContain("Write your first step in a project");
-    expect(english).toContain("Choose a project and create a draft");
-    expect(english).not.toContain("在项目里，写下第一步");
+    expect(english).toContain("Start a task");
+    expect(english).toContain("Open project");
+    expect(english).not.toContain("开始一个任务");
   });
 });

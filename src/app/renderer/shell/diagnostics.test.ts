@@ -116,21 +116,21 @@ it("opens only on intent, applies bounded trace and coverage, validates filters 
   const bridge = successBridge();
   const ui = await mount(bridge, trace);
   expect(bridge.request).not.toHaveBeenCalled();
-  await ui.click("查看此故障诊断");
+  await ui.click("查看故障详情");
   expect(bridge.request).toHaveBeenCalledTimes(1);
   expect(bridge.request.mock.calls[0]?.[0].filter).toMatchObject({
     traceId: trace,
     limit: 100,
   });
-  expect(document.body.textContent).toContain("坏行 1");
+  expect(document.body.textContent).toContain("无效行 1");
   expect(document.body.textContent).toContain("丢弃 4");
-  await edit("最多记录数", "501");
-  await ui.click("应用筛选");
-  expect(document.body.textContent).toContain("请检查时间范围");
+  await edit("条数上限", "501");
+  await ui.click("筛选");
+  expect(document.body.textContent).toContain("请检查时间");
   expect(bridge.request).toHaveBeenCalledTimes(1);
-  await edit("最多记录数", "25");
-  await edit("traceId", otherTrace);
-  await ui.click("应用筛选");
+  await edit("条数上限", "25");
+  await edit("诊断编号", otherTrace);
+  await ui.click("筛选");
   expect(bridge.request.mock.calls.at(-1)?.[0].filter).toMatchObject({
     traceId: otherTrace,
     limit: 25,
@@ -146,7 +146,7 @@ it("retains an identified old sample when explicit refresh fails, with failure t
     reason: "read-unavailable",
   }));
   await ui.click("刷新");
-  expect(document.body.textContent).toContain("刷新失败，仍显示旧采样");
+  expect(document.body.textContent).toContain("仍显示上次结果");
   expect(document.body.textContent).toContain("read-unavailable");
   expect(document.body.textContent).toContain("2026");
   expect(bridge.request).toHaveBeenCalledTimes(2);
@@ -162,24 +162,24 @@ it("exports only explicit intent once and reports cancellation, failure and expo
         resolve = r;
       }),
   );
-  await ui.click("脱敏导出");
+  await ui.click("导出脱敏日志");
   expect(ui.button("正在导出…")?.disabled).toBe(true);
   await act(async () => resolve({ kind: "cancelled", traceId: trace }));
   await flush();
-  expect(document.body.textContent).toContain("已取消导出");
+  expect(document.body.textContent).toContain("已取消，未保存文件");
   bridge.request.mockImplementationOnce(async () => ({
     kind: "failed",
     traceId: trace,
     reason: "busy",
   }));
-  await ui.click("脱敏导出");
+  await ui.click("导出脱敏日志");
   expect(document.body.textContent).toContain("busy");
   bridge.request.mockImplementationOnce(async () => ({
     kind: "exported",
     traceId: trace,
     fileName: "diagnostics.json",
   }));
-  await ui.click("脱敏导出");
+  await ui.click("导出脱敏日志");
   expect(document.body.textContent).toContain("diagnostics.json");
   expect(document.body.textContent).toContain(trace);
   expect(
@@ -196,10 +196,10 @@ it("drops late query and export from a closed or replaced scope", async () => {
       }),
   );
   const ui = await mount(bridge, trace);
-  await ui.click("查看此故障诊断");
+  await ui.click("查看故障详情");
   await ui.click("关闭诊断");
   await ui.render(otherTrace);
-  await ui.click("查看此故障诊断");
+  await ui.click("查看故障详情");
   await act(async () =>
     resolve({
       kind: "snapshot",
@@ -220,9 +220,9 @@ it("drops late query and export from a closed or replaced scope", async () => {
         finish = r;
       }),
   );
-  await ui.click("脱敏导出");
+  await ui.click("导出脱敏日志");
   await ui.click("关闭诊断");
-  await ui.click("查看此故障诊断");
+  await ui.click("查看故障详情");
   await act(async () =>
     finish({ kind: "exported", traceId: trace, fileName: "obsolete.json" }),
   );
@@ -237,12 +237,12 @@ it("copies controlled metadata and reproduction placeholders, reporting clipboar
   });
   const bridge = successBridge();
   const ui = await mount(bridge, trace);
-  await ui.click("查看此故障诊断");
+  await ui.click("查看故障详情");
   await ui.click("复制反馈模板");
   const text = writeText.mock.calls[0]?.[0] ?? "";
   expect(text).toContain(trace);
   expect(text).toContain("复现步骤：");
-  expect(text).toContain("期待结果：");
+  expect(text).toContain("预期结果：");
   expect(text).toContain("实际结果：");
   expect(document.body.textContent).toContain("已复制");
   expect(text).not.toContain("/Users/");
@@ -258,8 +258,8 @@ it("applies explicit local time, Thread, Writer, operation and stage without iss
   await ui.click("诊断与反馈");
   await edit("开始时间", "2026-10-05T12:00:00");
   await edit("结束时间", "2026-10-06T12:00:00");
-  await edit("Thread ID", trace);
-  await edit("Writer实例 ID", otherTrace);
+  await edit("会话 ID", trace);
+  await edit("日志进程 ID", otherTrace);
   for (const [name, value] of [
     ["stage", "failed"],
     ["operation", "submit"],
@@ -276,7 +276,7 @@ it("applies explicit local time, Thread, Writer, operation and stage without iss
     await act(() => item.click());
   }
   expect(bridge.request).toHaveBeenCalledTimes(1);
-  await ui.click("应用筛选");
+  await ui.click("筛选");
   expect(bridge.request.mock.calls.at(-1)?.[0].filter).toMatchObject({
     since: new Date("2026-10-05T12:00:00").toISOString(),
     until: new Date("2026-10-06T12:00:00").toISOString(),
@@ -359,10 +359,10 @@ it("releases diagnostic scope cache on close and restores apply focus after chan
   const bridge = successBridge();
   const ui = await mount(bridge);
   await ui.click("诊断与反馈");
-  await edit("traceId", trace);
-  ui.button("应用筛选")?.focus();
-  await ui.click("应用筛选");
-  expect(document.activeElement).toBe(ui.button("应用筛选"));
+  await edit("诊断编号", trace);
+  ui.button("筛选")?.focus();
+  await ui.click("筛选");
+  expect(document.activeElement).toBe(ui.button("筛选"));
   expect(ui.client.getQueryCache().getAll()).toHaveLength(1);
   await ui.click("关闭诊断");
   await flush();
@@ -422,8 +422,8 @@ it("distinguishes recovered current health from cumulative gaps and active I/O",
   }));
   const ui = await mount(bridge);
   await ui.click("诊断与反馈");
-  expect(document.body.textContent).toContain("未确认追加 2");
+  expect(document.body.textContent).toContain("写入未确认 2");
   expect(document.body.textContent).toContain("清理失败 3");
-  expect(document.body.textContent).toContain("在途 100");
+  expect(document.body.textContent).toContain("待处理 100");
   expect(document.body.textContent).toContain("最近恢复");
 });

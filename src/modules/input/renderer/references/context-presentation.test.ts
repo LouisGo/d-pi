@@ -193,10 +193,8 @@ it("exposes localized failure in the chip's accessible name and title without a 
   );
   expect(element?.hidden).toBe(false);
   expect(element?.dataset.status).toBe("failed");
-  expect(element?.getAttribute("aria-label")).toContain(
-    "此文件格式尚无可支持的内容表示。",
-  );
-  expect(element?.title).toContain("此文件格式尚无可支持的内容表示。");
+  expect(element?.getAttribute("aria-label")).toContain("暂不支持此文件格式。");
+  expect(element?.title).toContain("暂不支持此文件格式。");
   expect(element?.textContent).toBe("DOC研究.docx20 B");
   expect(element?.querySelector(".composer-context-status svg")).not.toBeNull();
   expect(editor.getText()).toBe(`a${item.token}b`);
@@ -213,7 +211,7 @@ it.each([false, true])(
     });
     expect(element?.dataset.status).toBe("partial");
     expect(element?.getAttribute("aria-label")).toContain(
-      textOnly ? "Text-only PDF" : "PDF extraction is incomplete",
+      textOnly ? "Sends PDF text only" : "Some PDF content is missing",
     );
     expect(
       element?.querySelector(".composer-context-status svg"),

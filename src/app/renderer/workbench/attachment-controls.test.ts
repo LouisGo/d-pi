@@ -301,17 +301,17 @@ it("distinguishes frozen provenance from live references in the formal controls"
     container.querySelector(".attachment-rail")?.textContent ?? "",
   ).not.toContain("original.txt");
   expect(container.textContent).not.toContain("Attachment details");
-  expect(container.textContent).not.toContain("Attachments and storage");
+  expect(container.textContent).not.toContain("Attachment cache");
   const manage = Array.from(container.querySelectorAll("button")).find(
     (button) => button.textContent === "Manage attachment storage",
   );
   await act(() => editor.commands.setTextSelection(2));
   await act(() => manage?.click());
-  expect(document.body.textContent).toContain("Frozen on copy");
+  expect(document.body.textContent).toContain("Captured when copied");
   expect(document.body.textContent).toContain("/actual/source/project");
   expect(document.body.textContent).toContain("source-version-1");
   expect(document.body.textContent).toContain("2026-10-07T00:00:00.000Z");
-  expect(document.body.textContent).not.toContain("Read when sending");
+  expect(document.body.textContent).not.toContain("Read when sent");
   await act(() => editor.commands.insertContentAt(1, "X"));
   const close = document.querySelector<HTMLButtonElement>(
     '[role="dialog"] button',
@@ -682,10 +682,8 @@ it("identifies a ready reference that failed during send-time freezing without r
   expect(
     container.querySelector(".composer-context-token")?.textContent,
   ).toContain("src/a@b.ts");
-  expect(alert?.textContent).toContain(
-    "Referenced file is missing or unreadable",
-  );
-  expect(alert?.textContent).toContain("Sending reads this reference again");
+  expect(alert?.textContent).toContain("The file is missing or unreadable");
+  expect(alert?.textContent).toContain("This file is read again when you send");
   expect(
     container.querySelector(".attachment-rail")?.textContent ?? "",
   ).not.toContain(item.name);
@@ -761,12 +759,12 @@ it("permits explicit re-preparation of a failed @PDF after text-only consent whi
     editor.view.dom
       .querySelector(".composer-context-token")
       ?.getAttribute("aria-label"),
-  ).toContain("Text-only PDF");
+  ).toContain("Sends PDF text only");
   expect(
     container.querySelector(".attachment-rail")?.textContent ?? "",
   ).not.toContain(item.name);
   expect(container.textContent).toContain(
-    "PDF text extraction has coverage gaps",
+    "Some PDF text couldn't be extracted",
   );
   expect(onBlocked).toHaveBeenLastCalledWith(false);
   expect(editor.getText()).toBe(token);
@@ -852,7 +850,7 @@ it.each(["button", "cancel"] as const)(
     expect(
       labelledBy ? document.getElementById(labelledBy)?.textContent : null,
     ).toBe("report.pdf");
-    expect(dialog?.textContent).toContain("Only the first 64 KiB is previewed");
+    expect(dialog?.textContent).toContain("Preview shows the first 64 KiB");
     if (!dialog) throw Error("missing preview dialog");
     const closedWhileMounted: boolean[] = [];
     const nativeClose = vi.spyOn(dialog, "close").mockImplementation(() => {
@@ -927,7 +925,7 @@ it("reports the typed oversized-source rejection instead of a transport failure 
     await new Promise((resolve) => setTimeout(resolve, 20));
   });
   expect(container.querySelector('[role="alert"]')?.textContent).toContain(
-    "25 MiB limit",
+    "exceeds 25 MiB",
   );
   expect(container.querySelector('[role="alert"]')?.textContent).not.toContain(
     "Attachment request failed",
@@ -935,7 +933,7 @@ it("reports the typed oversized-source rejection instead of a transport failure 
   expect(onBlocked).toHaveBeenLastCalledWith(true);
   expect(editor.getText()).toBe("retained draft");
   const remove = Array.from(container.querySelectorAll("button")).find(
-    (button) => button.textContent === "Remove this failed attachment request",
+    (button) => button.textContent === "Remove failed attachment",
   );
   if (!remove) throw Error("missing removal");
   await act(() => remove.click());
@@ -1043,7 +1041,7 @@ it.each([
     });
     if (operation !== "preview") {
       const label =
-        operation === "retry" ? "Retry preparation" : "Use extracted text only";
+        operation === "retry" ? "Retry preparation" : "Use text only";
       const unrelated = Array.from(
         container.querySelectorAll<HTMLButtonElement>("dialog button"),
       ).find((button) => button.textContent === label);
@@ -1059,7 +1057,7 @@ it.each([
     expect(
       request.mock.calls.some(([command]) => command.kind === operation),
     ).toBe(true);
-    expect(container.textContent).toContain("25 MiB limit");
+    expect(container.textContent).toContain("exceeds 25 MiB");
     expect(onBlocked).toHaveBeenLastCalledWith(true);
     expect(editor.getText()).toBe(token);
   },
@@ -1160,8 +1158,8 @@ it.each(["success", "cancelled"] as const)(
     expect(attempts).toBe(2);
     expect(onBlocked).toHaveBeenLastCalledWith(outcome === "cancelled");
     if (outcome === "cancelled")
-      expect(container.textContent).toContain("25 MiB limit");
-    else expect(container.textContent).not.toContain("25 MiB limit");
+      expect(container.textContent).toContain("exceeds 25 MiB");
+    else expect(container.textContent).not.toContain("exceeds 25 MiB");
     expect(editor.getText()).toContain("original draft");
   },
 );
@@ -1466,7 +1464,7 @@ it("retains an unresolved required-source failure after replacing its view with 
     });
     expect(onBlocked).toHaveBeenLastCalledWith(true);
     expect(container.querySelector('[role="alert"]')?.textContent).toContain(
-      "25 MiB limit",
+      "exceeds 25 MiB",
     );
     expect(choose).toBe(1);
     expect(editor.getText()).toBe("retained draft");
@@ -1486,7 +1484,7 @@ it("retains an unresolved required-source failure after replacing its view with 
     );
     expect(onBlocked).toHaveBeenLastCalledWith(true);
     expect(container.querySelector('[role="alert"]')?.textContent).toContain(
-      "25 MiB limit",
+      "exceeds 25 MiB",
     );
   } finally {
     await act(() => root.unmount());

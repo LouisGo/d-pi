@@ -166,7 +166,7 @@ it.each(["file", "diff"] as const)(
       const result = container.querySelector(".file-result");
       expect(result).not.toBeNull();
       expect(document.activeElement).toBe(result);
-      expect(result?.textContent).toContain("Reading");
+      expect(result?.textContent).toContain("Loading");
       await act(async () => finish?.());
       await vi.waitFor(async () => {
         await act(() => new Promise((resolve) => setTimeout(resolve, 10)));

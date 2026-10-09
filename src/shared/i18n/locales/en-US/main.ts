@@ -1,21 +1,20 @@
 export const main = {
-  "main.chooseProject.title": "Choose a project and create a draft",
-  "main.loggingFailure.message": "Diagnostic logs are temporarily unavailable",
+  "main.chooseProject.title": "Open project",
+  "main.loggingFailure.message": "Couldn't save logs",
   "main.loggingFailure.detail":
-    "Troubleshooting records may be incomplete. Use the editor's save status to check whether the draft was saved. Check write access to the app data directory.",
+    "Logs may be incomplete. Check write access to the app's data folder. Check the input's save status for your draft.",
   "main.loggingFailure.acknowledge": "OK",
-  "main.closeUnconfirmed.message": "Could not confirm that the draft was saved",
+  "main.closeUnconfirmed.message": "Draft save unconfirmed",
   "main.closeUnconfirmed.detail":
-    "The window will stay open. Check the current input and save status, then try closing it again.",
-  "main.closeUnconfirmed.keepWindow": "Keep window open",
-  "main.rendererGone.message": "The input window stopped responding",
+    "The window stays open. Check your input and save status before closing.",
+  "main.closeUnconfirmed.keepWindow": "Keep editing",
+  "main.rendererGone.message": "The window stopped responding",
   "main.rendererGone.detail":
-    "Reopening restores the last confirmed saved draft. Unsaved input may be lost.",
+    "Reopen to restore the last saved draft. Unsaved input may be lost.",
   "main.rendererGone.reopen": "Reopen",
-  "main.closeUnsaved.message":
-    "The draft has not been saved; the window remains open",
+  "main.closeUnsaved.message": "Draft not saved",
   "main.closeUnsaved.detail":
-    "Confirm any active input method selection, or resolve the save failure shown in the window before closing.",
+    "The window stays open. Finish any input-method selection or resolve the save failure before closing.",
   "main.closeUnsaved.continueEditing": "Continue editing",
   "main.menu.about": "About d-pi",
   "main.menu.quit": "Quit d-pi",
@@ -33,12 +32,12 @@ export const main = {
   "main.menu.minimize": "Minimize",
   "main.menu.zoom": "Zoom",
   "main.menu.close": "Close Window",
-  "main.quitActive.message": "Native work or its status is still unresolved",
+  "main.quitActive.message": "Work is active or unconfirmed",
   "main.quitActive.detail":
-    "Wait quits after the work finishes and the draft is saved. Stop interrupts the current run and pauses its queue. The app stays open if queued items, interactions, or background work remain. Resolve them before quitting. Unknown status will not be forcibly terminated.",
+    "“Wait” quits after work finishes and drafts are saved. “Request stop” interrupts current work and pauses the queue. The app stays open if messages, questions, or background tasks remain. Unconfirmed work won't be forcibly stopped.",
   "main.quitActive.wait": "Wait, then quit",
   "main.quitActive.stop": "Request stop, then quit",
   "main.quitActive.cancel": "Cancel quit",
-  "main.diagnostics.export": "Save redacted diagnostics",
-  "main.diagnostics.report": "Diagnostic report",
+  "main.diagnostics.export": "Save redacted logs",
+  "main.diagnostics.report": "Diagnostics report",
 } as const;

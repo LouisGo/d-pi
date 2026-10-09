@@ -60,16 +60,14 @@ it("explains the read-only saved order and refresh scope, and returns to live wi
   const { container, onReturnLive } = await mount(bridge);
   await settle();
   expect(container.textContent).toContain(
-    "Native history is read-only and paged in saved order",
+    "History is read-only and shown in saved order",
   );
   expect(container.textContent).toContain(
-    "Refresh reads this source again from its first page",
+    "Refresh starts again from the first page",
   );
-  expect(container.textContent).toContain(
-    "The bound session history has not been read yet",
-  );
+  expect(container.textContent).toContain("History hasn't been loaded yet");
   const button = [...container.querySelectorAll("button")].find(
-    (b) => b.textContent === "Return to live reading",
+    (b) => b.textContent === "Back to Thread",
   );
   expect(button).toBeDefined();
   await act(() => button?.click());
@@ -83,22 +81,22 @@ it("keeps discovery access denial distinct from an empty history and preserves t
   const { container } = await mount(bridge);
   await vi.waitFor(async () => {
     await settle();
-    expect(container.textContent).toContain("access was denied");
+    expect(container.textContent).toContain("Access denied");
   });
   expect(container.textContent).not.toContain(
-    "No complete text messages to display",
+    "No complete text messages to show",
   );
   const read = [...container.querySelectorAll("button")].find(
-    (b) => b.textContent === "Read native records",
+    (b) => b.textContent === "Load history",
   );
   expect(read?.disabled).toBe(false);
   expect(bridge.read).not.toHaveBeenCalled();
 });
 
 it.each([
-  ["missing", "records are missing"],
-  ["denied", "access was denied"],
-  ["changed", "records changed"],
+  ["missing", "Record missing"],
+  ["denied", "Access denied"],
+  ["changed", "Record changed"],
 ] as const)(
   "shows a native %s page as unavailable rather than empty",
   async (reason, message) => {
@@ -122,7 +120,7 @@ it.each([
       expect(container.textContent).toContain(message);
     });
     expect(container.textContent).not.toContain(
-      "No complete text messages to display",
+      "No complete text messages to show",
     );
     expect(container.querySelector("article")).toBeNull();
   },
@@ -155,10 +153,10 @@ it("shows a truly empty native page separately from an unread bound source", asy
   await vi.waitFor(async () => {
     await settle();
     expect(container.textContent).toContain(
-      "No complete text messages to display",
+      "No complete text messages to show",
     );
   });
-  expect(container.textContent).not.toContain("not been read yet");
+  expect(container.textContent).not.toContain("hasn't been loaded yet");
   expect(container.textContent).not.toContain("temporarily unavailable");
 });
 
@@ -190,7 +188,7 @@ it("reads the bound saved messages while project discovery and native generation
   }));
   const { container } = await mount(bridge);
   const read = [...container.querySelectorAll("button")].find(
-    (b) => b.textContent === "Read native records",
+    (b) => b.textContent === "Load history",
   );
   expect(read).toBeDefined();
   expect(read?.disabled).toBe(false);

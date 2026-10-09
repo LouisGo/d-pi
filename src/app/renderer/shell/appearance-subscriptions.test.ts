@@ -480,7 +480,7 @@ it("translates controls with one locale repaint while preserving Thread resource
   expect(
     document.querySelector(".thread-tools-content .reading-navigation")
       ?.textContent,
-  ).toContain("原生历史");
+  ).toContain("历史记录");
   // Locale affects each view's chrome. It may repaint once, but cannot replace
   // the owning Thread or re-run its business requests and subscriptions.
   expect(renderCounts()).toEqual(
@@ -846,7 +846,7 @@ it("Main attention samples update only the relevant badge and notice, preserving
   expect(
     document.querySelector(`[data-attention-thread='${other.threadId}']`)
       ?.textContent,
-  ).toContain("Needs an answer");
+  ).toContain("Needs input");
   for (const [key, view] of Object.entries(views))
     expect(view.mock.calls.length, key).toBe(counts[key]);
   expect(model.controller).toBe(controller);
@@ -858,7 +858,7 @@ it("opens the developer route across the complete workspace and restores the Thr
   const controller = fixture.model.controller;
   expect(fixture.container.querySelector(".primary-sidebar")).not.toBeNull();
   const tools = fixture.container.querySelector<HTMLButtonElement>(
-    "button[aria-label='开发者工具']",
+    "button[aria-label='Developer tools']",
   );
   if (!tools) throw Error("missing tools entry");
   await act(() => tools.click());
@@ -912,12 +912,12 @@ it("shows a fixed navigation dock without a home icon and separates it from conv
     sidebar?.querySelector(".sidebar-actions [aria-label='Settings']"),
   ).not.toBeNull();
   expect(
-    sidebar?.querySelector(".sidebar-tools [aria-label='开发者工具']"),
+    sidebar?.querySelector(".sidebar-tools [aria-label='Developer tools']"),
   ).not.toBeNull();
   expect(sidebar?.querySelector(".sidebar-scroll .sidebar-actions")).toBeNull();
   expect(
     fixture.container.querySelector(
-      ".window-statusbar [aria-label='Conversation quick preview']",
+      ".window-statusbar [aria-label='Thread preview']",
     ),
   ).not.toBeNull();
   expect(fixture.container.querySelector(".sidebar-bottom")).toBeNull();
@@ -961,8 +961,8 @@ it("updates real conversation status without rendering the workspace and never c
     });
     fixture.emitReading(snapshot);
   });
-  const status = fixture.button("Conversation quick preview");
-  expect(status.textContent).toContain("OMP is working");
+  const status = fixture.button("Thread preview");
+  expect(status.textContent).toContain("Generating");
   expect(status.textContent).toContain("2 messages");
   expect(status.textContent).toContain("3 queued");
   expect(renderCounts()).toEqual(before);
@@ -972,14 +972,14 @@ it("updates real conversation status without rendering the workspace and never c
   expect(preview?.textContent).toContain("current live window");
   expect(preview?.textContent).not.toContain("tokens");
   await act(() => fixture.emitReading({ ...snapshot, seq: 1, gap: true }));
-  expect(preview?.textContent).toContain("synchronization gap");
+  expect(preview?.textContent).toContain("Some messages haven't synced");
 });
 
 it("clears the prior Thread status and keeps missing metrics distinct from zero", async () => {
   const fixture = await setup();
   await act(() => fixture.emitRuntime({ model: "old-thread-model" }));
   await act(async () => fixture.changeThread());
-  await act(() => fixture.button("Conversation quick preview").click());
+  await act(() => fixture.button("Thread preview").click());
   const preview = document.querySelector(".ui-status-preview");
   expect(preview?.textContent).not.toContain("old-thread-model");
   expect(preview?.textContent).toContain("Unavailable");

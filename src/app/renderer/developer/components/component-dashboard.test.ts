@@ -2,7 +2,9 @@
 import { act, createElement, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
+import type { LocaleBridge } from "../../../../modules/preferences/contracts/public";
 import { I18nProvider } from "../../../../modules/preferences/renderer/public";
+import type { LocaleSnapshot } from "../../../../shared/i18n/locale";
 import { ComponentDashboard } from "./component-dashboard";
 
 vi.mock("../../components/icons/common", async (original) => ({
@@ -23,10 +25,26 @@ async function setup(additionalPreview?: ReactNode) {
   const container = document.createElement("div");
   document.body.append(container);
   const root = createRoot(container);
+  let snapshot: LocaleSnapshot = {
+    preference: "zh-CN",
+    resolvedLocale: "zh-CN",
+  };
+  let receiveLocale: ((value: LocaleSnapshot) => void) | undefined;
+  const bridge: LocaleBridge = {
+    snapshot: async () => snapshot,
+    subscribe: (listener) => {
+      receiveLocale = listener;
+      return () => {
+        receiveLocale = undefined;
+      };
+    },
+    setPreference: async () => ({ ...snapshot, persisted: true }),
+  };
   mounted.push({ root, container });
-  await act(() =>
+  await act(async () =>
     root.render(
       createElement(I18nProvider, {
+        bridge,
         initialSnapshot: { preference: "zh-CN", resolvedLocale: "zh-CN" },
         children: createElement(ComponentDashboard, { additionalPreview }),
       }),
@@ -41,8 +59,66 @@ async function setup(additionalPreview?: ReactNode) {
     if (!node) throw Error(`missing button: ${label}`);
     return node;
   };
-  return { container, button };
+  const switchLocale = async (locale: "zh-CN" | "en-US") => {
+    snapshot = { preference: locale, resolvedLocale: locale };
+    await act(() => receiveLocale?.(snapshot));
+  };
+  return { container, button, switchLocale };
 }
+
+it("switches developer copy and nested previews without resetting demo state", async () => {
+  const { container, button, switchLocale } = await setup();
+  await act(() => button("主操作").click());
+  const tabs = container.querySelector("[data-component='TabStrip']");
+  if (!tabs) throw Error("missing tabs");
+  await act(() => button("添加标签页", tabs).click());
+  await act(() => button("预览", tabs).click());
+  await act(() => button("打开导航").click());
+  const navigation = document.querySelector(".ui-navigation-overlay");
+  if (!navigation) throw Error("missing navigation");
+  await act(() => button("文件", navigation).click());
+  await act(() => button("关闭导航", navigation).click());
+  await act(() => button("打开设置").click());
+  const settings = document.querySelector(".ui-settings-modal:not([hidden])");
+  if (!settings) throw Error("missing settings");
+  await act(() => button("关于", settings).click());
+  await act(() => button("关闭设置", settings).click());
+  await switchLocale("en-US");
+  expect(container.querySelector("h1")?.textContent).toBe("Components");
+  expect(
+    container.querySelector("input[aria-label='Search components']"),
+  ).not.toBeNull();
+  expect(
+    container.querySelector("[aria-label='Button feedback']")?.textContent,
+  ).toBe("Clicked 1 time");
+  expect(tabs.querySelector("[role='tabpanel']")?.textContent).toBe(
+    "Current tab:Preview",
+  );
+  expect(
+    container.querySelector("[data-component='NativeInteraction']")
+      ?.textContent,
+  ).toContain("Send answer");
+  expect(
+    container.querySelector("[data-component='NativeInteraction']")
+      ?.textContent,
+  ).not.toContain("发送回答");
+  expect(tabs.querySelectorAll("[role='tab']")).toHaveLength(4);
+  expect(button("Files 1", tabs)).toBeDefined();
+  expect(
+    container.querySelector("[data-component='NavigationOverlay']")
+      ?.textContent,
+  ).toContain("Selected: Files");
+  expect(
+    container.querySelector("[data-component='SettingsModal']")?.textContent,
+  ).toContain("Selected: About");
+  await switchLocale("zh-CN");
+  expect(container.querySelector("[aria-label='按钮反馈']")?.textContent).toBe(
+    "已点击 1 次",
+  );
+  expect(tabs.querySelector("[role='tabpanel']")?.textContent).toBe(
+    "当前标签页：预览",
+  );
+});
 
 it("shows every existing foundation component as a real preview by default", async () => {
   const { container } = await setup();
@@ -104,15 +180,15 @@ it("shows every existing foundation component as a real preview by default", asy
 it("uses independent real button and icon interactions and resets only the selected demo", async () => {
   const { container, button } = await setup();
   await act(() => button("主操作").click());
-  await act(() => button("添加演示项目").click());
+  await act(() => button("添加示例").click());
   expect(container.querySelector("[aria-label='按钮反馈']")?.textContent).toBe(
     "已点击 1 次",
   );
   expect(
     container.querySelector("[data-component='IconButton'] output")
       ?.textContent,
-  ).toBe("添加了 1 个演示项目");
-  await act(() => button("导航选择").click());
+  ).toBe("已添加 1 项");
+  await act(() => button("导航").click());
   expect(button("选中").getAttribute("aria-pressed")).toBe("true");
   await act(() => button("禁用").click());
   expect(container.querySelector("[aria-label='按钮反馈']")?.textContent).toBe(
@@ -122,16 +198,16 @@ it("uses independent real button and icon interactions and resets only the selec
   expect(container.querySelector("[aria-label='按钮反馈']")?.textContent).toBe(
     "已点击 0 次",
   );
-  expect(button("导航选择").getAttribute("aria-pressed")).toBe("false");
+  expect(button("导航").getAttribute("aria-pressed")).toBe("false");
   expect(
     container.querySelector("[data-component='IconButton'] output")
       ?.textContent,
-  ).toBe("添加了 1 个演示项目");
+  ).toBe("已添加 1 项");
   await act(() => button("重置 IconButton").click());
   expect(
     container.querySelector("[data-component='IconButton'] output")
       ?.textContent,
-  ).toBe("添加了 0 个演示项目");
+  ).toBe("已添加 0 项");
 });
 
 it("switches and closes real workspace tabs with keyboard navigation and restores them", async () => {
@@ -140,7 +216,7 @@ it("switches and closes real workspace tabs with keyboard navigation and restore
   if (!section) throw Error("missing tabs preview");
   await act(() => button("预览", section).click());
   expect(section.querySelector("[role='tabpanel']")?.textContent).toBe(
-    "当前页签：预览",
+    "当前标签页：预览",
   );
   await act(() => {
     button("预览", section).dispatchEvent(
@@ -148,32 +224,32 @@ it("switches and closes real workspace tabs with keyboard navigation and restore
     );
   });
   expect(section.querySelector("[role='tabpanel']")?.textContent).toBe(
-    "当前页签：设置",
+    "当前标签页：设置",
   );
   expect(document.activeElement).toBe(button("设置", section));
   await act(() => button("关闭 设置", section).click());
   expect(section.querySelectorAll("[role='tab']")).toHaveLength(2);
   expect(section.querySelector("[role='tabpanel']")?.textContent).toBe(
-    "当前页签：文件",
+    "当前标签页：文件",
   );
   await act(() => button("关闭 文件", section).click());
   await act(() => button("关闭 预览", section).click());
-  expect(section.textContent).toContain("页签已全部关闭，重置可恢复。");
+  expect(section.textContent).toContain("标签页已关闭，重置可恢复。");
   await act(() => button("重置 TabStrip").click());
   expect(section.querySelectorAll("[role='tab']")).toHaveLength(3);
   expect(section.querySelector("[role='tabpanel']")?.textContent).toBe(
-    "当前页签：文件",
+    "当前标签页：文件",
   );
 });
 
 it("opens real portaled dialogs, interacts locally and resets the selected choice", async () => {
   const { container, button } = await setup();
-  await act(() => button("打开导航抽屉").click());
+  await act(() => button("打开导航").click());
   const navigation = document.querySelector(".ui-navigation-overlay");
   if (!navigation) throw Error("missing navigation overlay");
   expect(navigation.getAttribute("role")).toBe("dialog");
   await act(() => button("文件", navigation).click());
-  await act(() => button("关闭导航抽屉", navigation).click());
+  await act(() => button("关闭导航", navigation).click());
   expect(
     container.querySelector("[data-component='NavigationOverlay']")
       ?.textContent,
@@ -183,13 +259,13 @@ it("opens real portaled dialogs, interacts locally and resets the selected choic
     container.querySelector("[data-component='NavigationOverlay']")
       ?.textContent,
   ).toContain("当前选项：概览");
-  await act(() => button("打开设置弹层").click());
+  await act(() => button("打开设置").click());
   const settings = document.querySelector(".ui-settings-modal:not([hidden])");
   if (!settings) throw Error("missing settings modal");
   expect(settings.getAttribute("role")).toBe("dialog");
   await act(() => button("关于", settings).click());
   expect(settings.querySelector("h3")?.textContent).toBe("关于");
-  await act(() => button("关闭设置弹层", settings).click());
+  await act(() => button("关闭设置", settings).click());
   await act(() => button("重置 SettingsModal").click());
   expect(
     container.querySelector("[data-component='SettingsModal']")?.textContent,
@@ -277,7 +353,7 @@ it("filters by purpose and form, explains no matches and restores the full catal
   await search(" GHOST ");
   expect(container.querySelectorAll("[data-component]")).toHaveLength(1);
   await search("does-not-exist");
-  expect(container.textContent).toContain("没有匹配的组件");
+  expect(container.textContent).toContain("未找到组件");
   expect(container.querySelectorAll("[data-component]")).toHaveLength(0);
   await act(() => button("清空搜索").click());
   expect(input.value).toBe("");
@@ -286,7 +362,7 @@ it("filters by purpose and form, explains no matches and restores the full catal
 
 it("groups every component in the separate right navigation with existing anchor targets", async () => {
   const { container } = await setup(createElement("span", null, "Menu sample"));
-  const index = container.querySelector('nav[aria-label="组件索引"]');
+  const index = container.querySelector('nav[aria-label="组件目录"]');
   expect(index?.closest("[data-gallery-navigation]")).not.toBeNull();
   expect(container.querySelector("header nav")).toBeNull();
   for (const link of index?.querySelectorAll("a") ?? [])

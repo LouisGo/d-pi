@@ -210,9 +210,7 @@ it("parses the initial editor document once while mounted draft and shortcut sub
   );
   await act(() =>
     fixture.container
-      .querySelector<HTMLButtonElement>(
-        'button[aria-label="More composer actions"]',
-      )
+      .querySelector<HTMLButtonElement>('button[aria-label="More options"]')
       ?.click(),
   );
   expect(

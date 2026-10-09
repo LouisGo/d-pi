@@ -277,7 +277,7 @@ it("offers a bound read during discovery and announces the selected native page 
     );
     expect(
       [...container.querySelectorAll("button")].some(
-        (b) => b.textContent === "Read native records" && !b.disabled,
+        (b) => b.textContent === "Load history" && !b.disabled,
       ),
     ).toBe(true);
     expect(

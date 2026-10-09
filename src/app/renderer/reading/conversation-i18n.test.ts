@@ -69,14 +69,14 @@ describe("submission copy", () => {
   it("translates receipt chrome while retaining the submitted text", () => {
     locale = "zh-CN";
     const chinese = renderToStaticMarkup(createElement(Submissions, { model }));
-    expect(chinese).toContain("已保存，未派发");
+    expect(chinese).toContain("已保存，未发送");
     expect(chinese).toContain(originalText);
 
     locale = "en-US";
     const english = renderToStaticMarkup(createElement(Submissions, { model }));
-    expect(english).toContain("Saved, not dispatched");
+    expect(english).toContain("Saved, not sent");
     expect(english).toContain(originalText);
-    expect(english).not.toContain("已保存，未派发");
+    expect(english).not.toContain("已保存，未发送");
   });
 
   it("reads receipt rows without rescanning the receipt array for each ID", () => {

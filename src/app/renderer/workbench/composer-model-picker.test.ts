@@ -259,11 +259,11 @@ it("keeps native readback and an actionable failure when a switch cannot be conf
 it("routes the panel to provider settings and keeps default distinct from effective medium", async () => {
   const ui = await setup();
   expect(
-    ui.host.querySelector('[aria-label="Thinking level"]')?.textContent,
+    ui.host.querySelector('[aria-label="Reasoning effort"]')?.textContent,
   ).toContain("Default");
   const button = [
     ...document.querySelectorAll<HTMLButtonElement>("button"),
-  ].find((b) => b.textContent === "Manage providers & models");
+  ].find((b) => b.textContent === "Manage providers");
   await act(async () => button?.click());
   expect(ui.manage).toHaveBeenCalledOnce();
   expect(ui.commands.filter((c) => c.kind === "select-model")).toHaveLength(0);

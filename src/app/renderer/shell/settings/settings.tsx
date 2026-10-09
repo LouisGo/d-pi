@@ -182,7 +182,6 @@ export function SettingsSurface({ model }: { model: AppModel }) {
       <SettingsPage
         id={`${id}-appearance`}
         title={t("app.layout.appearance")}
-        description={t("settings.appearanceDescription")}
         hidden={section !== "appearance"}
       >
         <AppearanceSettings model={model} />
@@ -191,7 +190,6 @@ export function SettingsSurface({ model }: { model: AppModel }) {
       <SettingsPage
         id={`${id}-general`}
         title={t("settings.general")}
-        description={t("settings.generalDescription")}
         hidden={section !== "general"}
       >
         <GeneralSettings model={model} />
@@ -200,7 +198,6 @@ export function SettingsSurface({ model }: { model: AppModel }) {
       <SettingsPage
         id={`${id}-configuration`}
         title={t("providers.title")}
-        description={t("providers.description")}
         hidden={section !== "configuration"}
       >
         <ThreadConfiguration
@@ -212,7 +209,6 @@ export function SettingsSurface({ model }: { model: AppModel }) {
       <SettingsPage
         id={`${id}-attention`}
         title={t("app.layout.attention")}
-        description={t("settings.attentionDescription")}
         hidden={section !== "attention"}
       >
         <AttentionPreferences model={model} />
@@ -220,14 +216,10 @@ export function SettingsSurface({ model }: { model: AppModel }) {
       <SettingsPage
         id={`${id}-diagnostics`}
         title={t("app.layout.diagnostics")}
-        description={t("settings.diagnosticsDescription")}
         hidden={section !== "diagnostics"}
       >
         <SettingsGroup title={t("settings.diagnosticsTools")}>
-          <SettingRow
-            label={t("ui.diagnostics.entry")}
-            description={t("settings.diagnosticsRowDescription")}
-          >
+          <SettingRow label={t("ui.diagnostics.entry")}>
             <Diagnostics contained />
           </SettingRow>
         </SettingsGroup>

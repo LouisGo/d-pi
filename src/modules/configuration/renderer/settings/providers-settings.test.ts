@@ -206,8 +206,8 @@ async function render(
     async () => new Promise<void>((resolve) => setTimeout(resolve, 25)),
   );
 }
-function button(name: string) {
-  const found = [...host.querySelectorAll<HTMLButtonElement>("button")].find(
+function button(name: string, selector = "button") {
+  const found = [...host.querySelectorAll<HTMLButtonElement>(selector)].find(
     (el) =>
       el.getAttribute("aria-label") === name || el.textContent?.trim() === name,
   );
@@ -267,7 +267,9 @@ it("renders native provider brands and explicit status/source, enables with CAS 
       .mocked(bridge.request)
       .mock.calls.some(([command]) => command.kind === "logout"),
   ).toBe(false);
-  await act(async () => button("Confirm disconnect").click());
+  await act(async () =>
+    button("Disconnect account", ".providers-confirm-actions button").click(),
+  );
   expect(bridge.request).toHaveBeenCalledWith(
     expect.objectContaining({
       kind: "logout",
@@ -305,7 +307,7 @@ it("warns before a native generation probe, preserves the old job across provide
   });
   await render();
   await act(async () => button("Anthropic").click());
-  expect(host.textContent).toContain("model validation request");
+  expect(host.textContent).toContain("test request");
   expect(host.textContent).toContain("incur a charge");
   await act(async () => button("Claude API key").click());
   await act(async () =>
@@ -339,7 +341,7 @@ it("warns before a native generation probe, preserves the old job across provide
     expect.objectContaining({ kind: "answer", jobId, value: "" }),
   );
   expect(host.querySelector('[role="alert"]')?.textContent).toContain(
-    "connection",
+    "Connection",
   );
   expect(host.textContent).toContain("Native prompt");
 });
@@ -357,7 +359,10 @@ it("keeps all models, including hidden and unpaged models, in device reorder and
     modelPicker: {
       favorites: [],
       hidden: [key("model-1")],
-      order: [JSON.stringify(["anthropic", "other"])],
+      order: [
+        JSON.stringify(["anthropic", "other"]),
+        ...Array.from({ length: 103 }, (_, i) => key(`model-${i}`)),
+      ],
     },
     onModelPreference: changed,
   });
@@ -373,12 +378,12 @@ it("keeps all models, including hidden and unpaged models, in device reorder and
       ...Array.from({ length: 101 }, (_, i) => key(`model-${i + 2}`)),
     ],
   });
-  await act(async () => button("Show more models").click());
+  await act(async () => button("More models").click());
   expect(host.querySelectorAll("[data-settings-model]")).toHaveLength(103);
   await act(async () => button("Image").click());
   expect(document.querySelectorAll('[role="option"]')).toHaveLength(1);
   expect(document.querySelector('[role="option"]')?.textContent).toBe(
-    "Inherit default",
+    "Use default",
   );
 });
 
@@ -436,7 +441,7 @@ it("edits only custom models and preserves source metadata in a CAS save, then c
       .mocked(bridge.request)
       .mock.calls.some(([command]) => command.kind === "delete-custom-model"),
   ).toBe(false);
-  await act(async () => button("Confirm delete").click());
+  await act(async () => button("Delete model").click());
   expect(bridge.request).toHaveBeenCalledWith(
     expect.objectContaining({
       kind: "delete-custom-model",
@@ -465,12 +470,14 @@ it("clears unsubmitted keys, model editors, and disconnect targets on provider o
   ).toBe("");
   await act(async () => button("Edit custom-model").click());
   await act(async () => button("Disconnect account").click());
-  expect(button("Confirm disconnect")).toBeDefined();
+  expect(
+    button("Disconnect account", ".providers-confirm-actions button"),
+  ).toBeDefined();
   await render({ scope: thread });
   expect(host.querySelector(".providers-custom-form")).toBeNull();
   expect(
-    [...host.querySelectorAll("button")].some(
-      (el) => el.textContent === "Confirm disconnect",
+    [...host.querySelectorAll(".providers-confirm-actions button")].some(
+      (el) => el.textContent === "Disconnect account",
     ),
   ).toBe(false);
   expect(
@@ -510,7 +517,7 @@ it("shows external credentials and unvalidated key behavior, retains failed inpu
   });
   await render();
   expect(host.textContent).toContain("OPENAI_API_KEY");
-  expect(host.textContent).toContain("without an online validation request");
+  expect(host.textContent).toContain("without online verification");
   await input(".providers-key-form input", "retry-this-key");
   await act(async () =>
     host
@@ -581,8 +588,10 @@ it("keeps destructive confirmations tied to the native revision that was confirm
   await act(
     async () => new Promise<void>((resolve) => setTimeout(resolve, 25)),
   );
-  await act(async () => button("Confirm disconnect").click());
-  await act(async () => button("Confirm delete").click());
+  await act(async () =>
+    button("Disconnect account", ".providers-confirm-actions button").click(),
+  );
+  await act(async () => button("Delete model").click());
   for (const kind of ["logout", "delete-custom-model"]) {
     expect(bridge.request).toHaveBeenCalledWith(
       expect.objectContaining({ kind, expectedRevision: revision }),

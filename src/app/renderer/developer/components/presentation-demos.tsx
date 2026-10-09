@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { I18nProvider } from "../../../../modules/preferences/renderer/public";
 import {
   ActionGroup,
   Badge,
@@ -16,10 +15,11 @@ import { ConversationItemView } from "../../reading/conversation";
 import { MessageHeader, ToolResultFrame } from "../../reading/message-parts";
 import { TurnPreviewCard } from "../../reading/turn-preview-card";
 import { NativeInteraction } from "../../workbench/native-interaction";
-import { presentationLabels as labels } from "./catalog";
+import { usePresentationLabels } from "./catalog";
 import styles from "./component-dashboard.module.css";
 
 export function BadgeDemo() {
+  const labels = usePresentationLabels();
   return (
     <ActionGroup>
       <Badge>{labels.queued}</Badge>
@@ -29,6 +29,7 @@ export function BadgeDemo() {
   );
 }
 export function ActionGroupDemo() {
+  const labels = usePresentationLabels();
   const [applied, setApplied] = useState(false);
   return (
     <>
@@ -45,6 +46,7 @@ export function ActionGroupDemo() {
   );
 }
 export function OptionActionDemo() {
+  const labels = usePresentationLabels();
   const [applied, setApplied] = useState(false);
   return (
     <>
@@ -61,6 +63,7 @@ export function OptionActionDemo() {
   );
 }
 export function InlineNoticeDemo() {
+  const labels = usePresentationLabels();
   const [ready, setReady] = useState(false);
   return (
     <InlineNotice
@@ -79,6 +82,7 @@ export function InlineNoticeDemo() {
   );
 }
 export function EmptyStateDemo() {
+  const labels = usePresentationLabels();
   const [chosen, setChosen] = useState(false);
   return chosen ? (
     <output>{labels.saved}</output>
@@ -92,6 +96,7 @@ export function EmptyStateDemo() {
   );
 }
 export function KbdDemo() {
+  const labels = usePresentationLabels();
   return (
     <ActionGroup>
       <Kbd>⌘</Kbd>
@@ -101,6 +106,7 @@ export function KbdDemo() {
   );
 }
 export function CopyButtonDemo() {
+  const labels = usePresentationLabels();
   return <CopyButton text={labels.copyText} label={labels.copy} />;
 }
 export function PathLabelDemo() {
@@ -111,6 +117,7 @@ export function PathLabelDemo() {
   );
 }
 export function MessageHeaderDemo() {
+  const labels = usePresentationLabels();
   return (
     <article className="message">
       <MessageHeader
@@ -123,6 +130,7 @@ export function MessageHeaderDemo() {
   );
 }
 export function ToolResultFrameDemo() {
+  const labels = usePresentationLabels();
   return (
     <article className="message">
       <ToolResultFrame label={labels.tool} open>
@@ -136,10 +144,9 @@ export function ToolResultFrameDemo() {
   );
 }
 export function ConversationMessageDemo() {
+  const labels = usePresentationLabels();
   return (
-    <I18nProvider
-      initialSnapshot={{ preference: "zh-CN", resolvedLocale: "zh-CN" }}
-    >
+    <>
       <section className="conversation">
         <ConversationItemView
           rowId="demo-user"
@@ -163,14 +170,13 @@ export function ConversationMessageDemo() {
           }}
         />
       </section>
-    </I18nProvider>
+    </>
   );
 }
 export function HoverCardDemo() {
+  const labels = usePresentationLabels();
   return (
-    <I18nProvider
-      initialSnapshot={{ preference: "zh-CN", resolvedLocale: "zh-CN" }}
-    >
+    <>
       <HoverCard
         label={labels.previewQuestion}
         trigger={<Button variant="secondary">{labels.previewQuestion}</Button>}
@@ -181,15 +187,14 @@ export function HoverCardDemo() {
           reply={labels.conversationReply}
         />
       </HoverCard>
-    </I18nProvider>
+    </>
   );
 }
 export function NativeInteractionDemo() {
+  const labels = usePresentationLabels();
   const [answer, setAnswer] = useState("");
   return (
-    <I18nProvider
-      initialSnapshot={{ preference: "zh-CN", resolvedLocale: "zh-CN" }}
-    >
+    <>
       <NativeInteraction
         item={{
           id: "gallery-local",
@@ -221,6 +226,6 @@ export function NativeInteractionDemo() {
       <output className={styles["gallery-feedback"]}>
         {answer ? `${labels.answered}：${answer}` : labels.waiting}
       </output>
-    </I18nProvider>
+    </>
   );
 }
