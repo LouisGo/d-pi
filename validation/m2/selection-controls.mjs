@@ -144,6 +144,7 @@ try {
       });
   };
   const geometry = [];
+  const detailFailures = [];
   for (const theme of ["light", "dark"]) {
     await evaluate(`document.documentElement.dataset.theme='${theme}'`);
     for (const id of ["top", "bottom", "search"]) {
@@ -167,7 +168,31 @@ try {
           g.popup.right <= g.width &&
           g.popup.bottom <= g.height,
       );
-      geometry.push(g);
+      const columns = await evaluate(`(()=>{
+        const popup=document.querySelector('.ui-select-positioner:not([hidden]) .ui-select-popup');
+        return Array.from(popup.querySelectorAll('[role=option]')).map(row=>{
+          const text=row.querySelector('.ui-select-option-text');
+          const indicator=row.querySelector('.ui-select-indicator');
+          const r=row.getBoundingClientRect(),t=text?.getBoundingClientRect(),i=indicator?.getBoundingClientRect();
+          return {label:row.textContent,text:t?.toJSON(),indicator:i?.toJSON(),row:r.toJSON()};
+        });
+      })()`);
+      geometry.push({ ...g, columns });
+      if (
+        !columns.every(
+          (row) =>
+            row.text &&
+            row.indicator &&
+            row.text.right + 10 <= row.indicator.left,
+        )
+      )
+        detailFailures.push(
+          `${theme}/${id}: every label needs an independent check column with a readable gap`,
+        );
+      if (g.popup.width < 200)
+        detailFailures.push(
+          `${theme}/${id}: short trigger produces a cramped option popup (${g.popup.width}px)`,
+        );
       await shot(`${theme}-${id}`);
       if (id === "search") {
         assert.equal(
@@ -263,7 +288,7 @@ try {
   await shot("keyboard-search-focus");
   await key("Escape", "Escape", 27);
 
-  await click("document.querySelector('[role=radio][aria-label=Standard]')");
+  await click("document.querySelector('[role=radio][aria-label=Default]')");
   await key("ArrowRight", "ArrowRight", 39);
   await wait(() =>
     evaluate(
@@ -271,6 +296,50 @@ try {
     ),
   );
   assert.ok(await evaluate("document.activeElement.matches(':focus-visible')"));
+  const overflow = await evaluate(`(()=>{
+    const section=document.querySelector('[data-detail-fixture]');
+    return Array.from(section.querySelectorAll('*')).filter(el=>{
+      if(el.getAttribute('aria-hidden')==='true') return false;
+      const r=el.getBoundingClientRect(),s=section.getBoundingClientRect();
+      const unclipped=getComputedStyle(el).overflowX==='visible';
+      return r.width>0 && (r.right>s.right+1 || r.left<s.left-1 || (unclipped && el.scrollWidth>el.clientWidth+1));
+    }).map(el=>({tag:el.tagName,class:el.className,width:el.clientWidth,scroll:el.scrollWidth}));
+  })()`);
+  if (overflow.length)
+    detailFailures.push(
+      `narrow shared compositions overflow: ${JSON.stringify(overflow)}`,
+    );
+  assert.deepEqual(detailFailures, [], "shared control geometry regressions");
+  await evaluate(
+    "document.querySelector('[data-detail-fixture]').scrollIntoView({block:'end'})",
+  );
+  await shot("dark-narrow-details");
+  for (const [trigger, popup] of [
+    ["#long-option", ".ui-select-popup"],
+    ['[aria-label="Actions"]', ".ui-action-menu"],
+    ['[aria-label="More actions"]', ".ui-hover-menu"],
+  ]) {
+    const visiblePopup = `${popup}:not([data-closed])`;
+    await click(`document.querySelector('${trigger}')`);
+    await wait(() => evaluate(`!!document.querySelector('${visiblePopup}')`));
+    await evaluate(
+      "Promise.all(document.getAnimations().filter(a=>a instanceof CSSTransition).map(a=>a.finished.catch(()=>{})))",
+    );
+    const bounds = await evaluate(`(()=>{
+      const el=document.querySelector('${visiblePopup}'),r=el.getBoundingClientRect();
+      return {popup:'${popup}',rect:r.toJSON(),viewport:innerWidth,overflow:el.scrollWidth>el.clientWidth+1};
+    })()`);
+    assert.ok(
+      bounds.rect.left >= 0 && bounds.rect.right <= bounds.viewport + 1,
+      JSON.stringify(bounds),
+    );
+    assert.equal(bounds.overflow, false, JSON.stringify(bounds));
+    geometry.push(bounds);
+    await shot(`dark-narrow-${popup.slice(1)}`);
+    await key("Escape", "Escape", 27);
+    await call("Input.dispatchMouseEvent", { type: "mouseMoved", x: 0, y: 0 });
+    await wait(() => evaluate(`!document.querySelector('${visiblePopup}')`));
+  }
   writeFileSync(
     output,
     JSON.stringify(
@@ -291,6 +360,11 @@ try {
           "radio arrow keys",
           "light/dark",
           "narrow bounds",
+          "stable label/check columns",
+          "independent popup width",
+          "narrow multi-control setting rows",
+          "unbroken disclosure/empty-state/action text",
+          "long Select and menu viewport bounds",
         ],
         limitations: ["isolated controls; no real provider requests"],
       },

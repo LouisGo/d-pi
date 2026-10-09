@@ -23,7 +23,7 @@
 | M3 | [M3 后续增强](../.scratch/development-foundation/spec.md) | 未实施 | 未交付 | 待认可 | —  | 未启动，保留边界 |
 | M3 | [集成终端 B 方案](../.scratch/integrated-terminal/spec.md) | 未实施 | 未交付 | 待认可 | — [证据1](../.scratch/integrated-terminal/handoff.md) · [证据2](architecture/terminal.md) · [证据3](validation/terminal.md) | B与xterm路线已确认、文档已交付；待关联/退出产品答复及后续开发授权。 |
 | 基建 | [AI 工作流升级](../.scratch/ai-workflow-v13/spec.md) | 工程完成 | 不适用 | 不适用 | — [证据1](../.scratch/ai-workflow-v13/handoff.md) · [证据2](../.scratch/ai-workflow-v13/validation.md) · [证据3](../.scratch/ai-workflow-v13/review.md) · [证据4](../.scratch/ai-workflow-v13/research.md) · [证据5](../.scratch/ai-workflow-v13/m2-retro-2026-10-06.md) · [证据6](../.scratch/ai-workflow-v13/m2-retro-handoff.md) · [证据7](../.scratch/ai-workflow-v13/m2-retro-validation.md) · [证据8](../.scratch/ai-workflow-v13/m2-retro-review.md) · [证据9](../.scratch/ai-workflow-v13/validation-retro-2026-10-07.md) | 2026-10-09单人维护流程已精简；普通任务默认main串行、相关验证、一处简记与Dev交付，PR/隔离/独立评审按需；下一轮检验实际执行成本 |
-| 基建 | [Beautiful UI 基础视觉体系升级](../.scratch/beautiful-ui-system/spec.md) | 工程完成 | 已交付待试用 | 待认可 | — [证据1](../.scratch/beautiful-ui-system/spec.md) · [证据2](../.scratch/beautiful-ui-system/evidence/custom-answer-verification.json) · [证据3](../.scratch/beautiful-ui-system/evidence/custom-answer-browser.json) · [证据4](../.scratch/beautiful-ui-system/evidence/detail-browser.json) | 用户在 Dev 试用支持预设选项和手动输入的紧凑问答卡；认可 pending |
+| 基建 | [Beautiful UI 基础视觉体系升级](../.scratch/beautiful-ui-system/spec.md) | 工程完成 | 已交付待试用 | 待认可 | — [证据1](../.scratch/beautiful-ui-system/spec.md) · [证据2](../.scratch/beautiful-ui-system/evidence/component-details/native.json) · [证据3](../.scratch/beautiful-ui-system/evidence/custom-answer-verification.json) · [证据4](../.scratch/beautiful-ui-system/evidence/custom-answer-browser.json) · [证据5](../.scratch/beautiful-ui-system/evidence/detail-browser.json) | 用户在 Dev 复试 Select 固定 check 列、菜单宽度、窄容器长文本及紧凑问答卡；认可 pending |
 | 基建 | [Codex 式工作台基础布局](../.scratch/codex-workbench-ui/spec.md) | 部分完成 | 已交付待试用 | 待认可 | Dev / codex/thread-layout / 16568d3 [证据1](../.scratch/codex-workbench-ui/feedback-handoff.md) · [证据2](../.scratch/codex-workbench-ui/thread-surface-handoff.md) · [证据3](../.scratch/codex-workbench-ui/sandwich-validation.md) · [证据4](../.scratch/codex-workbench-ui/baseline-refinement.md) | Dev试用Thread工具Modal、TabStrip独立组合与搜索焦点修正；后续消息/Composer细化等用户指令，原A3缺口仍开放 |
 | 基建 | [开发者工具与基础组件看板](../.scratch/component-dashboard/spec.md) | 工程完成 | 已交付待试用 | 待认可 | e97c5a05-b19549d5 [证据1](../.scratch/component-dashboard/handoff.md) · [证据2](../.scratch/component-dashboard/validation.md) · [证据3](../.scratch/component-dashboard/review.md) | 用户试用修正版图标预览、常驻目录与独立工作区；认可pending |
 | 基建 | [领域目录治理](../.scratch/domain-directory-governance/spec.md) | 工程完成 | 不适用 | 不适用 | — [证据1](../.scratch/domain-directory-governance/handoff.md) | 沿用模块机器清单，目录规模不作为硬门槛 |
@@ -79,7 +79,7 @@
 - [Provider 与 Models 完整闭环](../.scratch/providers-models/spec.md)：本地 PR 已合入 main 并 push，不公开发布；真实认证服务与用户认可待试用；默认并行测试 worker 失败与限制并发通过分开记录
 - [会话默认流程体验](../.scratch/m2-first-release/spec.md)：2026-10-08用户追加授权 CLI 原会话继续，取代 CLI 来源统一只读；首次陌生目录信任保留，unknown不重发，外CLI占用不强占；本地交付，无远端操作。
 - [集成终端 B 方案](../.scratch/integrated-terminal/spec.md)：本次仅方案与文档；不开发终端、不新增终端依赖、不远端push/合并；本地合入main已授权；不扩大M2或D-39。
-- [Beautiful UI 基础视觉体系升级](../.scratch/beautiful-ui-system/spec.md)：源码 Dev 交付；最新视觉证据为隔离 Renderer 浏览器 fixture，回答帧与代次检查另有 Host 测试；未证明真实扩展业务结果、provider 或原生完整索引；pnpm 启动器环境门禁未通过。
+- [Beautiful UI 基础视觉体系升级](../.scratch/beautiful-ui-system/spec.md)：源码 Dev 交付；组件细节有隔离 Electron 控件场景证据，问答沿用隔离 Renderer fixture 与 Host 测试；未证明真实扩展业务结果、provider 或原生完整索引；pnpm 启动器环境门禁未通过。
 - [Codex 式工作台基础布局](../.scratch/codex-workbench-ui/spec.md)：用户已授权本UI分支push、PR及合并；不公开发布或发起真实账户请求。
 - [开发者工具与基础组件看板](../.scratch/component-dashboard/spec.md)：仅本地实施与交付；开发者区域固定中文；不改变Thread执行与持久化。
 - [Effect 原生连接生命周期](../.scratch/effect-native-lifecycle/spec.md)：Effect 限定 execution/host 与 execution/main/transport；unknown 不自动重发，冷恢复只读。
@@ -92,4 +92,4 @@
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 - [T3 研究与基础重构](../.scratch/t3-foundations/spec.md)：unknown 不重发，冷恢复只读；native/live 无可靠原生身份时保持独立来源；M3 能力仅作设计储备
 
-<!-- source-sha256: 31cc37d21f934e57660ee8f74b492ac9db5d932dfc6002f76aa31f05689ed239; sources: 185 -->
+<!-- source-sha256: 947d7a6f2f4e682b963f941396a946eabf43f9ff00c93dd66e26f5eccd6e1875; sources: 185 -->

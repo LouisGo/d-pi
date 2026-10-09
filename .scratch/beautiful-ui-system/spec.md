@@ -15,7 +15,7 @@ D-31/D-32 延续 Base UI、自有公开 API、Hugeicons、light/dark 和唯一�
 工程：完成。试用：源码 Dev 已交付，见[交接](handoff.md)。用户认可：pending。65 项定向测试、Renderer 类型检查、构建与相关门禁通过；隔离 Electron 完成本轮必要的视觉和键盘交互观测。评审与证据边界见[评审记录](review.md)。
 
 ```project-status
-[{"id":"beautiful-ui-system","title":"Beautiful UI 基础视觉体系升级","phase":"基建","engineering":"complete","trial":"delivered","acceptance":"pending","evidence":["spec.md","evidence/custom-answer-verification.json","evidence/custom-answer-browser.json","evidence/detail-browser.json"],"next":"用户在 Dev 试用支持预设选项和手动输入的紧凑问答卡；认可 pending","constraints":"源码 Dev 交付；最新视觉证据为隔离 Renderer 浏览器 fixture，回答帧与代次检查另有 Host 测试；未证明真实扩展业务结果、provider 或原生完整索引；pnpm 启动器环境门禁未通过。"}]
+[{"id":"beautiful-ui-system","title":"Beautiful UI 基础视觉体系升级","phase":"基建","engineering":"complete","trial":"delivered","acceptance":"pending","evidence":["spec.md","evidence/component-details/native.json","evidence/custom-answer-verification.json","evidence/custom-answer-browser.json","evidence/detail-browser.json"],"next":"用户在 Dev 复试 Select 固定 check 列、菜单宽度、窄容器长文本及紧凑问答卡；认可 pending","constraints":"源码 Dev 交付；组件细节有隔离 Electron 控件场景证据，问答沿用隔离 Renderer fixture 与 Host 测试；未证明真实扩展业务结果、provider 或原生完整索引；pnpm 启动器环境门禁未通过。"}]
 ```
 
 任务：[01](issues/01-foundation-upgrade.md)、[02](issues/02-list-and-choice-feedback.md)。
@@ -141,3 +141,17 @@ D-31/D-32 延续 Base UI、自有公开 API、Hugeicons、light/dark 和唯一�
 按 impeccable 做一轮集中检查、文案修正和一次确认。light/dark × 720/1440 下卡片及输入区域无横向溢出；鼠标输入无 outline，Tab 进入输入框为可见 2px outline。744 字符多行样本在限高输入区滚动，footer 保持正常布局；空白按钮禁用、本地自定义提交反馈实际观测。视觉来自隔离 Renderer 浏览器，不是 Electron、真实 OMP 扩展业务、provider、IME、VoiceOver 或固定包验收。
 
 证据：[源码与验证](evidence/custom-answer-verification.json)、[界面记录](evidence/custom-answer-browser.json)、[深色手动回答](evidence/custom-answer-dark-crop.jpg)、[长回答](evidence/custom-answer-long-light.jpg)、[键盘焦点](evidence/custom-answer-keyboard-light.jpg)、[本地提交](evidence/custom-answer-submitted-light.jpg)。手工 detector 仅作机械补充，用户认可保持 pending。工程完成，源码 Dev 可试用；由于 Host 代码也有修改，已有 Dev/Host 进程需重启以采用更新，未主动中断用户运行中的真实会话。既有工具准备门禁限制保留。
+
+## 2026-10-09 Select 反馈与组件细节修正
+
+用户指出 Select 弹层过窄、check 像附在文字后，并授权举一反三修复组件库同类问题。本轮沿用 D-32 的现有视觉体系，在当前 main 串行增量修改；期间其他会话提交了现有工作，本轮组件修正已核对保留在当前源码中，后续测试与本节记录作为工作区增量交付。
+
+- Select 与搜索选择使用稳定的文字/check 两列，未选中行保留同宽槽位，文字可换行但不挤占勾选区。check 与触发器箭头使用既有 Icon Layer。普通选择弹层使用共享最小菜单宽度，按内容增长并受实际可用宽度限制；ActionMenu/HoverMenu 沿用相同宽度基线，保留已有独立指示列。
+- SettingRow 的控件组允许换行；Button 的长名称限制在分配宽度内并可断词，避免单个恢复动作撑出 InlineNotice/ActionGroup。TabStrip 标题继续单行省略，Select 值及 PathLabel 的原有省略合同不变。
+- Disclosure 长标题补齐断词；EmptyState 的子内容允许收缩并保持容器边界。已有 RadioOptions、OptionAction、Checkbox/Switch 等正常的图标槽位与交互保留，没有为统一外观重写选择行为。ActionMenu 的键盘可见焦点改为内侧，避免浮层裁切外侧轮廓。
+
+验证采用实际几何缺口先失败再修复：短触发器的普通弹层约 115px、未预留 check 列、窄设置控件和无断点长文本溢出均已复现。扩展既有 `validation/m2/selection-controls.mjs`，最终隔离 Electron 场景通过，包含 light/dark、默认 bottom/边缘翻转、搜索不改值、键盘选择、Esc 回焦及鼠标/键盘焦点，另覆盖 240px 组件容器和 400px viewport 下的长 Select/ActionMenu/HoverMenu。触发器的有意省略与 Base UI 隐藏表单输入不按可见溢出处理；关闭后保留的隐藏弹层按真实 closed 状态定位，避免误匹配。
+
+当前 [几何与交互记录](evidence/component-details/native.json) 含 14 张截图，已目视核对代表性的浅色选择弹层与深色窄菜单。8 文件 27 项相关组件测试通过；Renderer TypeScript、12 文件 Biome、设计 lint 通过；单次 [Impeccable detector](evidence/component-details-detector.json) 为 0 findings。机械结果不代表用户认可。测试有既有 React act 警告，未出现测试失败。
+
+工具准备门禁仍失败：当前 pnpm 启动器尝试获取 11.24.0，项目目标为 12.8.1；48/48 声明依赖已安装，本轮使用已安装直接工具完成验证，没有安装依赖或调整工具链。未运行真实 provider、完整工作台/原生看板、IME/VoiceOver、全量检查或打包。本轮工程与源码 Dev 交付完成，用户认可 pending。
