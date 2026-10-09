@@ -13,7 +13,7 @@ const binding = {
   configContextId: "config",
   sessionFile: "/unused",
 };
-function receipt(rawText = text, sessionId = "native") {
+function receipt(rawText = text, sessionFile = "/unused") {
   return SubmissionReceiptSchema.parse({
     submissionId: crypto.randomUUID(),
     threadId,
@@ -21,7 +21,7 @@ function receipt(rawText = text, sessionId = "native") {
     revision: 1,
     text: rawText,
     target: {
-      nativeSessionRef: sessionId,
+      nativeSessionRef: sessionFile,
       configContextId: "config",
       processInstanceId: crypto.randomUUID(),
       connectionGeneration: crypto.randomUUID(),

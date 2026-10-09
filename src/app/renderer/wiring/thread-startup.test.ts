@@ -111,11 +111,9 @@ async function fixture(
                   ? command.kind === "start"
                     ? "ready"
                     : coldAllowed
-                      ? command.kind === "start"
-                        ? "ready"
-                        : trusted
-                          ? "allowed"
-                          : "browse"
+                      ? trusted
+                        ? "allowed"
+                        : "browse"
                       : "interrupted"
                   : command.kind === "start"
                     ? "ready"

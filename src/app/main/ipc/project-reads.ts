@@ -216,7 +216,7 @@ export function registerHistoryIpc(context: ProjectReadContext): void {
               .getStore()
               ?.submissions?.presentationCandidates(
                 threadId,
-                binding.sessionId,
+                binding.sessionFile,
                 binding.configContextId,
                 entry.text,
               ) ?? [];

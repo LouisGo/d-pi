@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { EventEmitter } from "node:events";
 import {
   mkdirSync,
@@ -9,7 +10,13 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { IpcMain, IpcMainInvokeEvent } from "electron";
 import { afterEach, expect, it, vi } from "vitest";
+import { presentSavedInput } from "../../src/app/main/ipc/history-presentation";
+import {
+  ProjectReadOperations,
+  registerHistoryIpc,
+} from "../../src/app/main/ipc/project-reads";
 import { AppStorage } from "../../src/app/main/wiring/app-storage";
 import {
   HostTransportCommandSchema,
@@ -1547,4 +1554,193 @@ it("inspects the starting projection without sending native state before the per
       ([raw]) => HostTransportCommandSchema.parse(raw).command.kind,
     ),
   ).not.toContain("state");
+});
+
+it("uses the Runtime canonical file reference for frozen TXT+PNG presentation after storage restart", async () => {
+  const attachmentId = crypto.randomUUID();
+  const imageId = crypto.randomUUID();
+  const text = `Question\n[[dpi-attachment:${attachmentId}]]\n[[dpi-attachment:${imageId}]]`;
+  const message =
+    "Question\n\n[qa-attachment.txt]\nfrozen text\n[/attachment]\n\n[image: shot.png]";
+  const data = "aGVsbG8=";
+  const digest = createHash("sha256")
+    .update(Buffer.from(data, "base64"))
+    .digest("hex");
+  const content = {
+    schemaVersion: 1 as const,
+    message,
+    images: [{ type: "image" as const, mimeType: "image/png", data }],
+    sources: [
+      {
+        attachmentId,
+        inputDigest: "a".repeat(64),
+        representation: "text" as const,
+        converterVersion: "utf-8",
+        coverageGaps: [],
+        byteLength: 11,
+        name: "qa-attachment.txt",
+      },
+      {
+        attachmentId: imageId,
+        inputDigest: digest,
+        representation: "image" as const,
+        converterVersion: "original-image-v1",
+        coverageGaps: [],
+        byteLength: 5,
+        name: "shot.png",
+      },
+    ],
+    rawBytes: 16,
+  };
+  const f = await running(false, false, false, async () => ({
+    ok: true as const,
+    content,
+  }));
+  const current = await f.act("inspect");
+  f.host.emit("message", {
+    kind: "control",
+    connectionGeneration: current.connectionGeneration,
+    state: {
+      imageSupport: true,
+      paused: false,
+      stopping: false,
+      streaming: false,
+      compacting: false,
+      queued: 0,
+      background: 0,
+      pendingAsync: false,
+      admitted: false,
+      queue: [],
+    },
+  });
+  f.store.drafts.save(f.draft.threadId, 1, text);
+  const prepared = await f.runtime.submit({
+    kind: "prepare",
+    threadId: f.draft.threadId,
+    submissionId: SubmissionIdSchema.parse(crypto.randomUUID()),
+    traceId: TraceIdSchema.parse(crypto.randomUUID()),
+    revision: 2,
+    text,
+  });
+  if (prepared.kind !== "receipt") throw Error(JSON.stringify(prepared));
+  const binding = f.store.threads.nativeSessionBinding(f.draft.threadId)!;
+  expect(binding.sessionId).not.toBe(binding.sessionFile);
+  expect(prepared.receipt.target.nativeSessionRef).toBe(binding.sessionFile);
+  f.host.emit("message", { kind: "scope-closed" });
+  await vi.waitFor(() => expect(f.runtime.hasActiveWork()).toBe(false));
+  f.store.close();
+  const reopened = AppStorage.open(join(f.root, "app.sqlite"));
+  try {
+    const restored = reopened.threads.nativeSessionBinding(f.draft.threadId)!;
+    const candidates = reopened.submissions.presentationCandidates(
+      f.draft.threadId,
+      restored.sessionFile,
+      restored.configContextId,
+      message,
+    );
+    expect(candidates).toHaveLength(1);
+    expect(
+      reopened.submissions.presentationCandidates(
+        f.draft.threadId,
+        restored.sessionId,
+        restored.configContextId,
+        message,
+      ),
+    ).toEqual([]);
+    expect(
+      reopened.submissions.presentationCandidates(
+        f.draft.threadId,
+        restored.sessionFile,
+        "other-config",
+        message,
+      ),
+    ).toEqual([]);
+    const entry = {
+      id: "user",
+      parentId: null,
+      role: "user",
+      text: message,
+      images: [{ mimeType: "image/png", digest, byteLength: 5 }],
+    };
+    const shown = presentSavedInput(entry, restored, candidates);
+    expect(shown.displayText).toBe("Question");
+    expect(shown.files?.[0]?.name).toBe("qa-attachment.txt");
+    writeFileSync(
+      restored.sessionFile,
+      [
+        { type: "session", version: 3, id: restored.sessionId, cwd: f.project },
+        {
+          type: "message",
+          id: "user",
+          parentId: null,
+          message: {
+            role: "user",
+            content: [
+              { type: "text", text: message },
+              { type: "image", mimeType: "image/png", data },
+            ],
+          },
+        },
+      ]
+        .map((row) => JSON.stringify(row))
+        .join("\n") + "\n",
+    );
+    const handle = vi.fn<IpcMain["handle"]>();
+    const event = {
+      sender: { id: 1 },
+      senderFrame: { processId: 2, routingId: 3 },
+    } as IpcMainInvokeEvent;
+    registerHistoryIpc({
+      ipcMain: { handle },
+      sourceValid: (input) => input === event,
+      reads: new ProjectReadOperations(),
+      getStore: () => reopened,
+      getDiagnostics: () => undefined,
+      nativeSessionsPath: () => join(f.root, "native-sessions"),
+      projectNativeSessionsPath: async () => null,
+    });
+    const read = handle.mock.calls.find(
+      ([channel]) => channel === "history:read",
+    )![1];
+    const page = await read(event, {
+      threadId: f.draft.threadId,
+      cursor: null,
+    });
+    expect(page.kind).toBe("page");
+    expect(page.entries[0]).toMatchObject({
+      displayText: "Question",
+      files: [{ name: "qa-attachment.txt" }],
+      images: [{ digest }],
+    });
+
+    expect(
+      presentSavedInput(
+        {
+          ...entry,
+          images: [
+            { mimeType: "image/png", digest: "b".repeat(64), byteLength: 5 },
+          ],
+        },
+        restored,
+        candidates,
+      ).displayText,
+    ).toBeUndefined();
+    expect(
+      presentSavedInput(
+        entry,
+        { ...restored, configContextId: "other-config" },
+        candidates,
+      ).displayText,
+    ).toBeUndefined();
+    expect(
+      presentSavedInput(
+        { ...entry, text: message + "different" },
+        restored,
+        candidates,
+      ).displayText,
+    ).toBeUndefined();
+    expect(reopened.drafts.read(f.draft.threadId).text).toBe(text);
+  } finally {
+    reopened.close();
+  }
 });

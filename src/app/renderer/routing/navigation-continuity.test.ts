@@ -74,12 +74,12 @@ async function fixture(withFailedReceipt = false, runtime?: RuntimeBridge) {
   });
   const bridge: DesktopBridge = {
     ...(runtime ? { runtime } : {}),
-    ...(withFailedReceipt
+    ...(withFailedReceipt || runtime
       ? {
           submission: {
             request: vi.fn(async () => ({
               kind: "list" as const,
-              receipts: [failedReceipt],
+              receipts: withFailedReceipt ? [failedReceipt] : [],
             })),
             subscribe: () => () => {},
           },
@@ -644,9 +644,9 @@ it("discloses healthy runtime inspection without hiding Stop when execution beco
   await act(() => receive?.(busy));
   const stop = [
     ...input.container.querySelectorAll<HTMLButtonElement>(
-      ".runtime-panel button",
+      ".composer-toolbar button",
     ),
-  ].find((button) => button.textContent === "Stop and pause queue");
+  ].find((button) => button.getAttribute("aria-label") === "Stop response");
   expect(stop).toBeDefined();
   expect(document.querySelector(".ui-modal:not([hidden])")).toBeNull();
   await act(() => stop?.click());

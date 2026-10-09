@@ -176,6 +176,7 @@ try {
     "native-queue.mjs",
     "native-subagent-configuration.mjs",
     "reading-session.mjs",
+    "managed-session.mjs",
   ])
     await cp(resolve("runtime", name), join(adapter, name));
   const rounds = [];

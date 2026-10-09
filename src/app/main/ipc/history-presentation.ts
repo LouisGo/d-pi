@@ -13,7 +13,8 @@ export function presentSavedInput(
   if (entry.role !== "user") return entry;
   const candidates = receipts.filter(
     (receipt) =>
-      receipt.target.nativeSessionRef === binding.sessionId &&
+      receipt.threadId === binding.threadId &&
+      receipt.target.nativeSessionRef === binding.sessionFile &&
       receipt.target.configContextId === binding.configContextId &&
       receipt.content?.message === entry.text &&
       receipt.content.images.length === (entry.images?.length ?? 0) &&

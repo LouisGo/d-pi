@@ -55,6 +55,7 @@ async function fixture(t, duplicate = false) {
     "model-selection.mjs",
     "native-queue.mjs",
     "reading-session.mjs",
+    "managed-session.mjs",
     "image-input.mjs",
     "image-compression.mjs",
     "native-subagent-configuration.mjs",

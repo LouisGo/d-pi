@@ -1,4 +1,10 @@
 @layer components {
+  /* Elevation belongs to the isolated body portal, not only its children.
+     Nested Select/Popover portals remain in this same dialog stack. */
+  .ui-dialog-portal {
+    position: relative;
+    z-index: var(--layer-dialog);
+  }
   .ui-popup-positioner {
     z-index: var(--layer-popup);
     max-width: var(--available-width);

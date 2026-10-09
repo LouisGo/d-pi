@@ -1,6 +1,7 @@
 // Project-owned composition of Base UI 1.8.0 preview-card primitives.
 import { PreviewCard as PreviewCardPrimitive } from "@base-ui/react/preview-card";
 import type { ReactElement, ReactNode } from "react";
+import { useHoverCardModalBoundary } from "./hover-card-modal-boundary";
 
 export const createHoverCardHandle = PreviewCardPrimitive.createHandle;
 export type HoverCardHandle<Payload = unknown> =
@@ -49,8 +50,9 @@ export function HoverCardPopup<Payload = unknown>({
   sideOffset = 8,
   children,
 }: HoverCardPopupProps<Payload>) {
+  const boundary = useHoverCardModalBoundary();
   return (
-    <PreviewCardPrimitive.Root handle={handle}>
+    <PreviewCardPrimitive.Root handle={handle} {...boundary}>
       {({ payload }) => (
         <PreviewCardPrimitive.Portal>
           <PreviewCardPrimitive.Positioner
@@ -98,8 +100,9 @@ export function HoverCard({
   sideOffset = 12,
   onOpenChange,
 }: HoverCardProps) {
+  const boundary = useHoverCardModalBoundary(onOpenChange);
   return (
-    <PreviewCardPrimitive.Root onOpenChange={(next) => onOpenChange?.(next)}>
+    <PreviewCardPrimitive.Root {...boundary}>
       <PreviewCardPrimitive.Trigger
         render={trigger}
         delay={120}

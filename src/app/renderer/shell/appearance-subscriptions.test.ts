@@ -61,7 +61,8 @@ const attachmentBridge = vi.hoisted(() => {
   } = { attach: null, applied: null, current: null };
   return value;
 });
-vi.mock("../reading/conversation", () => ({
+vi.mock("../reading/conversation", async (original) => ({
+  ...(await original<typeof import("../reading/conversation")>()),
   Conversation: (props: unknown) => {
     views.conversation(props);
     return null;
@@ -864,9 +865,12 @@ it("opens the developer route across the complete workspace and restores the Thr
   await act(() => tools.click());
   const menu = document.querySelector<HTMLDivElement>("[role='menuitem']");
   if (!menu) throw Error("missing tools option");
-  await act(async () => {
-    menu.click();
-    await new Promise((resolve) => setTimeout(resolve, 30));
+  await act(() => menu.click());
+  await vi.waitFor(async () => {
+    await act(async () => {});
+    expect(
+      fixture.container.querySelector("[data-component-dashboard]"),
+    ).not.toBeNull();
   });
   expect(
     fixture.container.querySelector("[data-component-dashboard]"),
@@ -887,7 +891,7 @@ it("opens the developer route across the complete workspace and restores the Thr
   ).not.toBeNull();
   expect(fixture.model.controller).toBe(controller);
   const conversation = fixture.container.querySelector<HTMLButtonElement>(
-    "button[aria-label='Back to conversation']",
+    "button[aria-label='Back to Thread']",
   );
   if (!conversation) throw Error("missing conversation entry");
   await act(async () => {

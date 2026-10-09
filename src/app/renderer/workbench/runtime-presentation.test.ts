@@ -33,9 +33,9 @@ it("does not turn an ordinary running reply into a queue area above the conversa
   });
   const model = new RuntimeModel({
     subscribe: () => () => {},
-    request: async () => view,
+    request: async () => ({ kind: "view", view }),
   });
-  model.stateStore.setState({ view });
+  await model.bind(view.threadId);
   const container = document.createElement("div");
   document.body.append(container);
   const root = createRoot(container);
@@ -44,7 +44,11 @@ it("does not turn an ordinary running reply into a queue area above the conversa
       root.render(
         createElement(I18nProvider, {
           initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" },
-          children: createElement(RuntimePanel, { model, inspection: false }),
+          children: createElement(RuntimePanel, {
+            model,
+            inspection: false,
+            onFollowUp: undefined,
+          }),
         }),
       ),
     );
@@ -88,10 +92,11 @@ it("keeps stop in the composer and dispatches against the current execution iden
     subscribe: () => () => {},
     request: async (command) => {
       commands.push(command);
-      return view;
+      return { kind: "view", view };
     },
   });
-  model.stateStore.setState({ view, thread: threadId });
+  await model.bind(view.threadId);
+  commands.length = 0;
   const container = document.createElement("div");
   document.body.append(container);
   const root = createRoot(container);

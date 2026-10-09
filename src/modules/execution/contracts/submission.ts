@@ -13,6 +13,7 @@ export const SubmissionTargetSchema = z.strictObject({
   processInstanceId: z.uuid(),
   connectionGeneration: z.uuid(),
   configContextId: z.string().min(1),
+  // Canonical native session file path, shared by Runtime, receipts and history reads.
   nativeSessionRef: z.string().min(1),
 });
 export const FrozenSubmissionSchema = z.strictObject({

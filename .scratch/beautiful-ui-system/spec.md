@@ -103,7 +103,7 @@ D-31/D-32 延续 Base UI、自有公开 API、Hugeicons、light/dark 和唯一�
 
 按 impeccable 完成一轮集中视觉检查、一次修正及一次最终确认。当前截图确认 light/dark × 1440/720 宽度的业务组合、原生长选项和工具正文没有横向溢出；首轮还检查设置行、嵌入小容器、Select 完整值/Esc 焦点返回，以及实际线程输入栏。原生选项的本地即时回调已观测，反馈仍明确表示结果未确认，不借样式假造业务成功。
 
-证据：[验证清单](evidence/finesse-verification.json)、[浏览器记录](evidence/finesse-browser.json)、[测试输出](evidence/finesse-tests.log)、[浅色窄窗](evidence/finesse-business-light-720.jpg)、[深色宽窗](evidence/finesse-business-dark-1440.jpg)。有效手工 detector 扫描一次，0 findings；前一次传入错误的输出参数未产生有效 JSON，纠正参数后才取得有效结果。机械扫描不替代视觉判断。
+证据：[验证清单](evidence/finesse-verification.json)、[浏览器记录](evidence/finesse-browser.json)、测试输出日志未随仓库保存、[浅色窄窗](evidence/finesse-business-light-720.jpg)、[深色宽窗](evidence/finesse-business-dark-1440.jpg)。有效手工 detector 扫描一次，0 findings；前一次传入错误的输出参数未产生有效 JSON，纠正参数后才取得有效结果。机械扫描不替代视觉判断。
 
 证据限制：本轮截图来自隔离的实际 Renderer/IPC fixture，在 Codex in-app browser 中检查；未将 Electron 启动等同于原生验证。完整看板索引检查时，IAB 的截图位置与 viewport/滚动读数互相矛盾，因此不声称原生窗口定位已验收；历史 56 项 Electron 记录保留，只证明前轮对应源码。本轮未重跑完整 Electron 自动化、真实 provider、系统 IME、VoiceOver 或固定包。工具链问题仍沿用前节记录，使用已安装的直接工具完成检查。
 

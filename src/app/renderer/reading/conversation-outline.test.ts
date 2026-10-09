@@ -5,6 +5,14 @@ import { expect, it, vi } from "vitest";
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
 import { ConversationOutline } from "./conversation-outline";
 
+function deferred() {
+  let resolve = () => {};
+  const promise = new Promise<void>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
+}
+
 it("positions a stable turn through the reading owner and ignores streamed body mutations", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const frames = new Map<number, FrameRequestCallback>();
@@ -125,7 +133,7 @@ it("previews the single-line question with # prefix and 3-line reply description
 
     await act(async () => {
       button?.focus();
-      const { promise, resolve } = Promise.withResolvers<void>();
+      const { promise, resolve } = deferred();
       setTimeout(resolve, 180);
       await promise;
     });
@@ -152,8 +160,7 @@ it("previews the single-line question with # prefix and 3-line reply description
       button?.dispatchEvent(
         new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
       );
-      const { promise: closed, resolve: resolveClosed } =
-        Promise.withResolvers<void>();
+      const { promise: closed, resolve: resolveClosed } = deferred();
       setTimeout(resolveClosed, 0);
       await closed;
     });
@@ -205,7 +212,7 @@ it("reuses a single shared preview popup during rapid switching between anchors 
     // Focus button 0 -> opens popup for turn 1
     await act(async () => {
       buttons[0]?.focus();
-      const { promise, resolve } = Promise.withResolvers<void>();
+      const { promise, resolve } = deferred();
       setTimeout(resolve, 180);
       await promise;
     });
@@ -230,7 +237,7 @@ it("reuses a single shared preview popup during rapid switching between anchors 
     // Rapidly switch focus to button 1
     await act(async () => {
       buttons[1]?.focus();
-      const { promise, resolve } = Promise.withResolvers<void>();
+      const { promise, resolve } = deferred();
       setTimeout(resolve, 180);
       await promise;
     });

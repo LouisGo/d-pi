@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "2943bee04caba519e7a937422e5c35dff51c79e3ae511f182dd27fd3f8afee82",
+  "inputsHash": "e333c2cbcdf7a8138537dd5801691fc33dbdd66452fce29520a010e0a38e5fd2",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 559,
-    "scannedFiles": 559,
+    "sourceFiles": 562,
+    "scannedFiles": 562,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 240,
-      "lines": 45327,
+      "files": 241,
+      "lines": 45428,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -340,7 +340,7 @@
       ],
       "materialized": true,
       "files": 59,
-      "lines": 14216,
+      "lines": 14217,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -373,8 +373,8 @@
       ],
       "defaultEnvironment": "omp",
       "materialized": true,
-      "files": 14,
-      "lines": 3584,
+      "files": 15,
+      "lines": 3604,
       "publicEntries": [
         {
           "path": "runtime/host.mjs",
@@ -422,8 +422,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 25,
-      "lines": 3732,
+      "files": 26,
+      "lines": 3776,
       "publicEntries": [
         {
           "path": "src/modules/ui/renderer/public.ts",
@@ -1388,6 +1388,13 @@
     {
       "module": "app",
       "environment": "renderer",
+      "dependency": "ui",
+      "targetEnvironment": "renderer",
+      "testOnly": true
+    },
+    {
+      "module": "app",
+      "environment": "renderer",
       "dependency": "preferences",
       "targetEnvironment": "contracts",
       "testOnly": true
@@ -1410,13 +1417,6 @@
       "module": "app",
       "environment": "renderer",
       "dependency": "execution",
-      "targetEnvironment": "renderer",
-      "testOnly": true
-    },
-    {
-      "module": "app",
-      "environment": "renderer",
-      "dependency": "ui",
       "targetEnvironment": "renderer",
       "testOnly": true
     },
@@ -7745,6 +7745,57 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/app/renderer/components/ui/modal.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/ui/modal.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react-dom/client",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/ui/modal.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/components/ui/modal.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../../modules/ui/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/components/ui/modal.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./modal",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/ui/modal.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/app/renderer/components/ui/modal.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -11786,6 +11837,18 @@
       "kind": "dynamic-import",
       "resolution": "module",
       "to": "src/app/renderer/components/icons/common.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/appearance-subscriptions.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../reading/conversation",
+      "kind": "dynamic-import",
+      "resolution": "module",
+      "to": "src/app/renderer/reading/conversation.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -30063,24 +30126,6 @@
       "sourceModule": "runtime",
       "sourceEnvironment": "omp",
       "test": false,
-      "specifier": "node:fs/promises",
-      "kind": "import",
-      "resolution": "external"
-    },
-    {
-      "from": "runtime/host.mjs",
-      "sourceModule": "runtime",
-      "sourceEnvironment": "omp",
-      "test": false,
-      "specifier": "node:path",
-      "kind": "import",
-      "resolution": "external"
-    },
-    {
-      "from": "runtime/host.mjs",
-      "sourceModule": "runtime",
-      "sourceEnvironment": "omp",
-      "test": false,
       "specifier": "node:readline",
       "kind": "import",
       "resolution": "external"
@@ -30175,6 +30220,18 @@
       "sourceModule": "runtime",
       "sourceEnvironment": "omp",
       "test": false,
+      "specifier": "./managed-session.mjs",
+      "kind": "import",
+      "resolution": "module",
+      "to": "runtime/managed-session.mjs",
+      "targetModule": "runtime",
+      "targetEnvironment": "omp"
+    },
+    {
+      "from": "runtime/host.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
       "specifier": "./model-selection.mjs",
       "kind": "import",
       "resolution": "module",
@@ -30247,6 +30304,24 @@
     },
     {
       "from": "runtime/image-input.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/managed-session.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "node:fs/promises",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/managed-session.mjs",
       "sourceModule": "runtime",
       "sourceEnvironment": "omp",
       "test": false,
@@ -32582,6 +32657,24 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/modules/ui/renderer/hover-card-modal-boundary.ts",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@base-ui/react/preview-card",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/ui/renderer/hover-card-modal-boundary.ts",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
       "from": "src/modules/ui/renderer/hover-card.tsx",
       "sourceModule": "ui",
       "sourceEnvironment": "renderer",
@@ -32598,6 +32691,18 @@
       "specifier": "react",
       "kind": "import",
       "resolution": "external"
+    },
+    {
+      "from": "src/modules/ui/renderer/hover-card.tsx",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./hover-card-modal-boundary",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/hover-card-modal-boundary.ts",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/modules/ui/renderer/loading-indicator.test.ts",

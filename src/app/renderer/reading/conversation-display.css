@@ -173,7 +173,6 @@
    so the shared design roles, rather than vendor defaults, own this surface. */
 @layer reading-adapter {
   .reading-body [data-streamdown="code-block"] {
-    --code-header-height: calc(var(--control-height) + var(--spacing) * 2);
     position: relative;
     overflow: hidden;
     min-width: 0;
@@ -186,7 +185,7 @@
     background: var(--field);
   }
   .reading-body [data-streamdown="code-block-header"] {
-    height: var(--code-header-height);
+    height: calc(var(--control-height) + var(--spacing) * 2);
     padding: var(--spacing) calc(var(--spacing) * 3);
     color: var(--muted-foreground);
     font-size: var(--text-small);
@@ -286,7 +285,7 @@
     pointer-events: none;
   }
   .ui-hover-card-popup:has(.turn-preview) {
-    width: min(17rem, var(--available-width));
+    width: min(var(--turn-preview-width), var(--available-width));
     border-radius: var(--radius-control);
   }
   .turn-preview {
@@ -294,7 +293,7 @@
     flex-direction: column;
     min-width: 0;
     width: 100%;
-    max-width: 17rem;
+    max-width: var(--turn-preview-width);
     padding: calc(var(--spacing) * 1.5) calc(var(--spacing) * 2);
     gap: calc(var(--spacing) * 1);
   }
@@ -307,7 +306,7 @@
   }
   .turn-preview-number {
     flex-shrink: 0;
-    font-size: 0.725rem;
+    font-size: var(--text-micro);
     font-weight: 600;
     font-feature-settings: "tnum";
     color: var(--muted-foreground);
@@ -317,7 +316,7 @@
     flex: 1;
     min-width: 0;
     margin: 0;
-    font-size: 0.775rem;
+    font-size: var(--text-caption);
     font-weight: 600;
     color: var(--foreground);
     line-height: 1.35;
@@ -333,7 +332,7 @@
     line-clamp: 3;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-size: 0.75rem;
+    font-size: var(--text-small);
     color: var(--muted-foreground);
     line-height: 1.4;
     white-space: pre-wrap;
