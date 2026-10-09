@@ -244,6 +244,7 @@ export function ConversationItemView({
       ) : (
         <ReadingBody
           text={item.text}
+          assistantReply={item.role === "assistant"}
           streaming={item.state === "streaming"}
           position={position}
         />

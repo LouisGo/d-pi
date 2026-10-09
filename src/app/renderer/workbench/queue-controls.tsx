@@ -47,15 +47,15 @@ export function QueueControls({
     model.stateStore,
     (state) => state.view?.control?.stopping === true,
   );
-  if (
-    !queue ||
-    (hiddenEmpty &&
-      !queue.items.length &&
-      !queue.hiddenCount &&
-      !queue.editing &&
-      (!operation || operation.status === "acknowledged"))
-  )
-    return null;
+  const showResume = placement === "composer" && paused;
+  const showQueue =
+    !!queue &&
+    (!hiddenEmpty ||
+      !!queue.items.length ||
+      !!queue.hiddenCount ||
+      !!queue.editing ||
+      (!!operation && operation.status !== "acknowledged"));
+  if (!showResume && !showQueue) return null;
   const pending = operation?.status === "pending";
   const unknown = operation?.status === "unknown";
   const unreconciled = unknown && !operation.reconciled;
@@ -67,7 +67,7 @@ export function QueueControls({
     <div
       className={placement === "composer" ? "composer-queue" : "runtime-source"}
     >
-      {placement === "composer" && paused && (
+      {showResume && (
         <Button
           variant="ghost"
           aria-label={t("composer.resumeQueue")}
@@ -77,163 +77,165 @@ export function QueueControls({
           {t("composer.resumeQueue")}
         </Button>
       )}
-      <Disclosure
-        variant={placement === "composer" ? "inline" : "plain"}
-        aria-label={t("queue.heading")}
-      >
-        <DisclosureTrigger>
-          {t("queue.heading")} · {queue.items.length + queue.hiddenCount}
-        </DisclosureTrigger>
-        <p className="muted">{t("queue.batchNotice")}</p>
-        {pending && <p role="status">{t("queue.pending")}</p>}
-        {unknown && (
-          <p
-            role={unreconciled ? "alert" : "status"}
-            className={unreconciled ? "failure" : "muted"}
-          >
-            {t(unreconciled ? "queue.unknown" : "queue.reconciled")}
-          </p>
-        )}
-        {operation?.status === "failed" && (
-          <p role="alert" className="failure">
-            {t("queue.failed", { code: operation.code ?? "unknown" })}
-          </p>
-        )}
-        {(unknown || operation?.status === "failed") && (
-          <Button variant="ghost" onClick={() => void model.act("inspect")}>
-            {t("queue.inspect")}
-          </Button>
-        )}
-        {queue.coverage === "limited" && (
-          <p role="status" className="muted">
-            {t("queue.limited")}
-          </p>
-        )}
-        {queue.hiddenCount > 0 && (
-          <p className="muted">
-            {t("queue.hidden", { count: queue.hiddenCount })}
-          </p>
-        )}
-        {!queue.items.length && <p>{t("queue.empty")}</p>}
-        {queue.items.map((entry) => {
-          const siblings = queue.items.filter(
-            (item) => item.kind === entry.kind,
-          );
-          const index = siblings.findIndex((item) => item.id === entry.id);
-          const editing =
-            queue.editing?.entryId === entry.id ? queue.editing : null;
-          const editActive = !!queue.editing;
-          return (
-            <section
-              key={entry.id}
-              data-queue-entry={entry.id}
-              className="queue-entry"
+      {showQueue && queue && (
+        <Disclosure
+          variant={placement === "composer" ? "inline" : "plain"}
+          aria-label={t("queue.heading")}
+        >
+          <DisclosureTrigger>
+            {t("queue.heading")} · {queue.items.length + queue.hiddenCount}
+          </DisclosureTrigger>
+          <p className="muted">{t("queue.batchNotice")}</p>
+          {pending && <p role="status">{t("queue.pending")}</p>}
+          {unknown && (
+            <p
+              role={unreconciled ? "alert" : "status"}
+              className={unreconciled ? "failure" : "muted"}
             >
-              <strong>
-                {t(
-                  entry.kind === "steering"
-                    ? "queue.steering"
-                    : "queue.followUp",
-                )}{" "}
-                · <Badge>{index + 1}</Badge>
-              </strong>
-              <p data-selectable className="whitespace-pre-wrap break-words">
-                {entry.text}
-              </p>
-              {!!entry.imageCount && (
-                <p className="muted">
-                  {t("queue.images", { count: entry.imageCount })}
+              {t(unreconciled ? "queue.unknown" : "queue.reconciled")}
+            </p>
+          )}
+          {operation?.status === "failed" && (
+            <p role="alert" className="failure">
+              {t("queue.failed", { code: operation.code ?? "unknown" })}
+            </p>
+          )}
+          {(unknown || operation?.status === "failed") && (
+            <Button variant="ghost" onClick={() => void model.act("inspect")}>
+              {t("queue.inspect")}
+            </Button>
+          )}
+          {queue.coverage === "limited" && (
+            <p role="status" className="muted">
+              {t("queue.limited")}
+            </p>
+          )}
+          {queue.hiddenCount > 0 && (
+            <p className="muted">
+              {t("queue.hidden", { count: queue.hiddenCount })}
+            </p>
+          )}
+          {!queue.items.length && <p>{t("queue.empty")}</p>}
+          {queue.items.map((entry) => {
+            const siblings = queue.items.filter(
+              (item) => item.kind === entry.kind,
+            );
+            const index = siblings.findIndex((item) => item.id === entry.id);
+            const editing =
+              queue.editing?.entryId === entry.id ? queue.editing : null;
+            const editActive = !!queue.editing;
+            return (
+              <section
+                key={entry.id}
+                data-queue-entry={entry.id}
+                className="queue-entry"
+              >
+                <strong>
+                  {t(
+                    entry.kind === "steering"
+                      ? "queue.steering"
+                      : "queue.followUp",
+                  )}{" "}
+                  · <Badge>{index + 1}</Badge>
+                </strong>
+                <p data-selectable className="whitespace-pre-wrap break-words">
+                  {entry.text}
                 </p>
-              )}
-              {entry.truncated && (
-                <p className="muted">{t("queue.truncated")}</p>
-              )}
-              {!entry.editable && !entry.truncated && (
-                <p className="muted">{t("queue.contentReadOnly")}</p>
-              )}
-              {editing ? (
-                <QueueEditor
-                  key={entry.id}
-                  model={model}
-                  entryId={entry.id}
-                  revision={queue.revision}
-                  draftText={editing.draftText}
-                  images={entry.images ?? []}
-                  retainedImageIds={editing.retainedImageIds}
-                  disabled={locked}
-                  inputDisabled={!available || unreconciled}
-                />
-              ) : (
-                <ActionGroup>
-                  <Button
-                    data-queue-action="begin-edit"
-                    variant="ghost"
-                    disabled={locked || editActive || !entry.editable}
-                    onClick={() =>
-                      send({
-                        action: "begin-edit",
-                        entryId: entry.id,
-                        revision: queue.revision,
-                      })
-                    }
-                  >
-                    {t("queue.edit")}
-                  </Button>
-                  <Button
-                    data-queue-action="delete"
-                    variant="destructive"
-                    disabled={locked || editActive}
-                    onClick={() =>
-                      send({
-                        action: "delete",
-                        entryId: entry.id,
-                        revision: queue.revision,
-                      })
-                    }
-                  >
-                    {t("queue.delete")}
-                  </Button>
-                  <Button
-                    data-queue-action="move-up"
-                    variant="ghost"
-                    disabled={locked || editActive || index === 0}
-                    onClick={() =>
-                      send({
-                        action: "move",
-                        entryId: entry.id,
-                        revision: queue.revision,
-                        toIndex: index - 1,
-                      })
-                    }
-                  >
-                    {t("queue.up")}
-                  </Button>
-                  <Button
-                    data-queue-action="move-down"
-                    variant="ghost"
-                    disabled={
-                      locked ||
-                      editActive ||
-                      index === siblings.length - 1 ||
-                      queue.hiddenCount > 0
-                    }
-                    onClick={() =>
-                      send({
-                        action: "move",
-                        entryId: entry.id,
-                        revision: queue.revision,
-                        toIndex: index + 1,
-                      })
-                    }
-                  >
-                    {t("queue.down")}
-                  </Button>
-                </ActionGroup>
-              )}
-            </section>
-          );
-        })}
-      </Disclosure>
+                {!!entry.imageCount && (
+                  <p className="muted">
+                    {t("queue.images", { count: entry.imageCount })}
+                  </p>
+                )}
+                {entry.truncated && (
+                  <p className="muted">{t("queue.truncated")}</p>
+                )}
+                {!entry.editable && !entry.truncated && (
+                  <p className="muted">{t("queue.contentReadOnly")}</p>
+                )}
+                {editing ? (
+                  <QueueEditor
+                    key={entry.id}
+                    model={model}
+                    entryId={entry.id}
+                    revision={queue.revision}
+                    draftText={editing.draftText}
+                    images={entry.images ?? []}
+                    retainedImageIds={editing.retainedImageIds}
+                    disabled={locked}
+                    inputDisabled={!available || unreconciled}
+                  />
+                ) : (
+                  <ActionGroup>
+                    <Button
+                      data-queue-action="begin-edit"
+                      variant="ghost"
+                      disabled={locked || editActive || !entry.editable}
+                      onClick={() =>
+                        send({
+                          action: "begin-edit",
+                          entryId: entry.id,
+                          revision: queue.revision,
+                        })
+                      }
+                    >
+                      {t("queue.edit")}
+                    </Button>
+                    <Button
+                      data-queue-action="delete"
+                      variant="destructive"
+                      disabled={locked || editActive}
+                      onClick={() =>
+                        send({
+                          action: "delete",
+                          entryId: entry.id,
+                          revision: queue.revision,
+                        })
+                      }
+                    >
+                      {t("queue.delete")}
+                    </Button>
+                    <Button
+                      data-queue-action="move-up"
+                      variant="ghost"
+                      disabled={locked || editActive || index === 0}
+                      onClick={() =>
+                        send({
+                          action: "move",
+                          entryId: entry.id,
+                          revision: queue.revision,
+                          toIndex: index - 1,
+                        })
+                      }
+                    >
+                      {t("queue.up")}
+                    </Button>
+                    <Button
+                      data-queue-action="move-down"
+                      variant="ghost"
+                      disabled={
+                        locked ||
+                        editActive ||
+                        index === siblings.length - 1 ||
+                        queue.hiddenCount > 0
+                      }
+                      onClick={() =>
+                        send({
+                          action: "move",
+                          entryId: entry.id,
+                          revision: queue.revision,
+                          toIndex: index + 1,
+                        })
+                      }
+                    >
+                      {t("queue.down")}
+                    </Button>
+                  </ActionGroup>
+                )}
+              </section>
+            );
+          })}
+        </Disclosure>
+      )}
     </div>
   );
 }

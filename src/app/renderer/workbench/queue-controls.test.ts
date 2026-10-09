@@ -472,6 +472,21 @@ it("hides an acknowledged empty queue in the composer and keeps paused messages 
       'button[aria-label="继续发送"]',
     );
     expect(resume).not.toBeNull();
+    await mounted.publish({
+      ...original,
+      busy: false,
+      control: {
+        ...original.control,
+        paused: true,
+        streaming: false,
+        queued: 0,
+        queueState: { ...original.control.queueState, items: [] },
+      },
+    });
+    expect(
+      mounted.element.querySelector('button[aria-label="继续发送"]'),
+    ).not.toBeNull();
+    expect(mounted.element.querySelector("details")).toBeNull();
     await act(async () => resume?.click());
     expect(mounted.commands).toContainEqual(
       expect.objectContaining({

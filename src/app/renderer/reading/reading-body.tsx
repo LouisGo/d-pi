@@ -11,10 +11,12 @@ export function ReadingBody({
   text,
   streaming = false,
   raw = false,
+  assistantReply = false,
 }: {
   text: string;
   streaming?: boolean;
   raw?: boolean;
+  assistantReply?: boolean;
   position?: ReadingBodyBinding | undefined;
 }) {
   return raw ? (
@@ -22,7 +24,11 @@ export function ReadingBody({
       {text}
     </pre>
   ) : (
-    <div className="reading-body" data-reading-text>
+    <div
+      className="reading-body"
+      data-reading-text
+      data-assistant-reply={assistantReply ? "" : undefined}
+    >
       <Markdown text={text} streaming={streaming} />
     </div>
   );

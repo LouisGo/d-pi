@@ -32,7 +32,8 @@ export class AppDatabase {
         version !== 10 &&
         version !== 11 &&
         version !== 12 &&
-        version !== 13
+        version !== 13 &&
+        version !== 14
       )
         throw new Error("Unsupported schema version");
       if (version === 0) {
@@ -82,7 +83,8 @@ export class AppDatabase {
         version !== 10 &&
         version !== 11 &&
         version !== 12 &&
-        version !== 13
+        version !== 13 &&
+        version !== 14
       ) {
         const temporary = `${path}.before-v3.${randomUUID()}.tmp`;
         try {
@@ -121,7 +123,8 @@ export class AppDatabase {
       this.originalVersion !== 10 &&
       this.originalVersion !== 11 &&
       this.originalVersion !== 12 &&
-      this.originalVersion !== 13
+      this.originalVersion !== 13 &&
+      this.originalVersion !== 14
     ) {
       const temporary = `${this.path}.before-v4.${randomUUID()}.tmp`;
       try {
@@ -145,7 +148,8 @@ export class AppDatabase {
       this.originalVersion !== 10 &&
       this.originalVersion !== 11 &&
       this.originalVersion !== 12 &&
-      this.originalVersion !== 13
+      this.originalVersion !== 13 &&
+      this.originalVersion !== 14
     ) {
       const temporary = `${this.path}.before-v5.${randomUUID()}.tmp`;
       try {
@@ -168,7 +172,8 @@ export class AppDatabase {
       this.originalVersion !== 10 &&
       this.originalVersion !== 11 &&
       this.originalVersion !== 12 &&
-      this.originalVersion !== 13
+      this.originalVersion !== 13 &&
+      this.originalVersion !== 14
     ) {
       const temporary = `${this.path}.before-v6.${randomUUID()}.tmp`;
       try {
@@ -188,7 +193,8 @@ export class AppDatabase {
       this.originalVersion !== 10 &&
       this.originalVersion !== 11 &&
       this.originalVersion !== 12 &&
-      this.originalVersion !== 13
+      this.originalVersion !== 13 &&
+      this.originalVersion !== 14
     ) {
       const temporary = `${this.path}.before-v7.${randomUUID()}.tmp`;
       try {
@@ -210,6 +216,7 @@ export class AppDatabase {
     this.migrateNotificationPreferences();
     this.migrateNativeSessionIndex();
     this.migrateModelPickerPreferences();
+    this.migrateSubmissionPresentationIndex();
   }
   private migrateAttachments(): void {
     if (this.originalVersion >= 8) return;
@@ -341,6 +348,32 @@ export class AppDatabase {
         payload TEXT NOT NULL CHECK(json_valid(payload))
       );
       PRAGMA user_version=13;
+    `),
+    );
+  }
+
+  private migrateSubmissionPresentationIndex(): void {
+    if (this.originalVersion >= 14) return;
+    const temporary = `${this.path}.before-v14.${randomUUID()}.tmp`;
+    try {
+      this.connection.prepare("VACUUM INTO ?").run(temporary);
+      renameSync(temporary, `${this.path}.before-v14`);
+    } finally {
+      rmSync(temporary, { force: true });
+    }
+    this.transaction(() =>
+      this.connection.exec(`
+      CREATE TABLE submission_presentation(
+        submission_id TEXT PRIMARY KEY REFERENCES submission(id) ON DELETE CASCADE,
+        thread_id TEXT NOT NULL,
+        native_session_ref TEXT NOT NULL,
+        config_context_id TEXT NOT NULL,
+        message_digest TEXT CHECK(message_digest IS NULL OR length(message_digest)=64)
+      );
+      CREATE INDEX submission_presentation_lookup ON submission_presentation(
+        thread_id, native_session_ref, config_context_id, message_digest
+      );
+      PRAGMA user_version=14;
     `),
     );
   }

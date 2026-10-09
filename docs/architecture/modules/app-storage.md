@@ -5,7 +5,7 @@
 ## 当前工程落点（领域目录治理，2026-09-29）
 
 - `src/platform/main/storage/database.ts` 只负责连接、PRAGMA、schema/备份迁移和事务原语；业务仓储分别位于 threads/input/preferences/execution 模块。
-- `src/app/main/wiring/app-storage.ts` 以一个 `AppDatabase` 组装仓储，并显式执行 `至少 v3 + WAL → submission recovery → 后续迁移至 v10 → queue change recovery → publish`；数据库构造不隐式修改业务收据。当前已为 v10 时不重复迁移或生成升级备份。
+- `src/app/main/wiring/app-storage.ts` 以一个 `AppDatabase` 组装仓储，并显式执行 `至少 v3 + WAL → submission recovery → 后续迁移至 v14 → submission presentation index → queue change recovery → publish`；数据库构造不隐式修改业务收据。当前已为 v14 时不重复迁移或生成升级备份。
 - `src/platform/main/diagnostics/` 是轻量有界诊断设施；它不决定业务恢复，也不记录秘密、路径或正文作为诊断内容。
 
 
@@ -64,3 +64,6 @@ App 的 attachment-service-references 装配跨仓储权威投影：分批读取
 2026-10-06：有界诊断读取与脱敏公开入口沿用 `platform/main/diagnostics/public.ts`，跨进程DTO单源 `shared/diagnostics.ts`；Main IPC控制日志目录及原生保存，Renderer按需采样/显示覆盖与反馈模板。未新增SQLite表、OMP事件存储或自动恢复/上传，采样不等待Writer并不保证未落盘尾部。预算与未完成监控目标见[诊断合同](../diagnostics.md)。
 
 2026-10-07：Writer 在序列化前选择数据字段并注入可信身份；读取/导出仍独立过滤。快照兼容旧的 degraded/dropped，并表达追加未确认、清理失败、拒收、关闭达限、在途及最近恢复，不新增 SQLite 事实。实现与统计口径见[诊断合同](../diagnostics.md#2026-10-07-t3-基础重构writer-安全与恢复合同)。
+
+
+2026-10-09：schema 14 新增 `submission_presentation`，只派生冻结收据的 Thread、nativeSessionRef、configContextId 与 message digest。execution 在迁移后补齐旧记录，在 prepared 的同一事务内登记新索引；查询通过复合索引找到至多129个候选，超过128个保守放弃，再核对冻结原文。before-v14 保留 schema 13，恢复/ACK/草稿消费和原生历史所有权不变。此修复按用户要求未运行验证，待用户自行复试。

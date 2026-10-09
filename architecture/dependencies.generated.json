@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "94163be145a3bb08221fd5cca4c2df61a8e3c176e6b24bb564f833580a7e3990",
+  "inputsHash": "537473761df2d99f7786a8d5e4cd58e4cc6a553114241be5a9d32a10f891f5af",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 557,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 240,
-      "lines": 45076,
+      "lines": 45203,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -60,7 +60,7 @@
       ],
       "materialized": true,
       "files": 33,
-      "lines": 3570,
+      "lines": 3603,
       "publicEntries": [
         {
           "path": "src/platform/main/storage/public.ts",
@@ -340,7 +340,7 @@
       ],
       "materialized": true,
       "files": 59,
-      "lines": 14182,
+      "lines": 14216,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -11002,6 +11002,15 @@
       "to": "src/app/renderer/components/ui/copy-button.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/turn-preview-card.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
     },
     {
       "from": "src/app/renderer/reading/turn-preview-card.tsx",
@@ -28461,6 +28470,15 @@
       "to": "src/modules/execution/main/transport/indexed-session-binding.ts",
       "targetModule": "execution",
       "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/execution/main/submission/submission-repository.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
     },
     {
       "from": "src/modules/execution/main/submission/submission-repository.ts",

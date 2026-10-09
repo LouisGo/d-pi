@@ -93,7 +93,7 @@ it("previews the single-line question with # prefix and 3-line reply description
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const pane = document.createElement("div");
   pane.innerHTML =
-    '<article data-conversation-turn="one" data-turn-preview="Short summary"><div class="user-message-bubble" data-reading-text></div></article><article data-message-role="assistant"><div data-reading-text>Private reply</div></article><article data-conversation-turn="two" data-turn-preview="Second question"></article>';
+    '<article data-conversation-turn="one" data-turn-preview="Short summary"><div class="user-message-bubble" data-reading-text></div></article><article data-message-role="assistant"><div data-reading-text data-assistant-reply>Private reply</div></article><article data-conversation-turn="two" data-turn-preview="Second question"></article>';
   const question = `First line\n\n${"Long question content. ".repeat(35)}\nLast line beyond the summary`;
   const body = pane.querySelector("[data-reading-text]");
   if (body) body.textContent = question;
@@ -114,8 +114,8 @@ it("previews the single-line question with # prefix and 3-line reply description
         }),
       ),
     );
-    // Pre-fetched on mount into cache
-    expect(read).toHaveBeenCalledOnce();
+    // The outline indexes identities without reading full transcript text.
+    expect(read).not.toHaveBeenCalled();
     const buttons = container.querySelectorAll<HTMLButtonElement>("button");
     const button = buttons[0];
 
@@ -145,8 +145,7 @@ it("previews the single-line question with # prefix and 3-line reply description
     expect(
       preview?.querySelector(".turn-preview-description")?.textContent,
     ).toBe("Private reply");
-    // Remained 1: zero repeated DOM read queries during focus/hover due to cache
-    expect(read).toHaveBeenCalledOnce();
+    expect(read).toHaveBeenCalled();
     expect(position).not.toHaveBeenCalled();
     expect(document.activeElement).toBe(button);
     await act(async () => {
@@ -160,20 +159,20 @@ it("previews the single-line question with # prefix and 3-line reply description
     });
     expect(document.activeElement).toBe(button);
 
-    // Clicking to navigate blurs the button and navigates
+    // Keyboard activation retains focus for the next arrow-key navigation.
     await act(async () => {
       button?.click();
     });
     expect(position).toHaveBeenCalledOnce();
-    expect(document.activeElement).not.toBe(button);
+    expect(document.activeElement).toBe(button);
 
-    // Pointer leave smoothly restores idle state without requiring another click
+    // Pointer leave does not discard the keyboard focal point.
     const nav = container.querySelector("nav");
     await act(async () => {
       nav?.dispatchEvent(new PointerEvent("pointerleave", { bubbles: true }));
     });
-    expect(button?.style.getPropertyValue("--turn-width")).toBe("12px");
-    expect(buttons[1]?.style.getPropertyValue("--turn-width")).toBe("7px");
+    expect(button?.style.getPropertyValue("--turn-width")).toBe("32px");
+    expect(buttons[1]?.style.getPropertyValue("--turn-width")).toBe("22px");
   } finally {
     await act(() => root.unmount());
     pane.remove();
@@ -185,7 +184,7 @@ it("reuses a single shared preview popup during rapid switching between anchors 
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const pane = document.createElement("div");
   pane.innerHTML =
-    '<article data-conversation-turn="one" data-turn-preview="First question"><div class="user-message-bubble" data-reading-text>First full question</div></article><article data-message-role="assistant"><div data-reading-text>Reply 1</div></article><article data-conversation-turn="two" data-turn-preview="Second question"><div class="user-message-bubble" data-reading-text>Second full question</div></article><article data-message-role="assistant"><div data-reading-text>Reply 2</div></article>';
+    '<article data-conversation-turn="one" data-turn-preview="First question"><div class="user-message-bubble" data-reading-text>First full question</div></article><article data-message-role="assistant"><details open><div data-reading-text>Internal reasoning</div></details><div data-reading-text data-assistant-reply>Reply 1</div></article><article data-conversation-turn="two" data-turn-preview="Second question"><div class="user-message-bubble" data-reading-text>Second full question</div></article><article data-message-role="assistant"><div data-reading-text data-assistant-reply>Reply 2</div></article>';
   const container = document.createElement("div");
   document.body.append(pane, container);
   const root = createRoot(container);
@@ -216,6 +215,17 @@ it("reuses a single shared preview popup during rapid switching between anchors 
     expect(popups[0]?.querySelector(".turn-preview-number")?.textContent).toBe(
       "#1",
     );
+    expect(
+      popups[0]?.querySelector(".turn-preview-description")?.textContent,
+    ).toBe("Reply 1");
+    await act(async () => {
+      const reply = pane.querySelector("[data-assistant-reply]");
+      if (reply) reply.textContent = "Final reply 1";
+      await new Promise((resolve) => setTimeout(resolve, 180));
+    });
+    expect(
+      popups[0]?.querySelector(".turn-preview-description")?.textContent,
+    ).toBe("Final reply 1");
 
     // Rapidly switch focus to button 1
     await act(async () => {

@@ -30,6 +30,7 @@ export class AppStorage {
       // backups. Only a fully recovered and migrated instance is published.
       submissions.recoverInterruptedSubmissions();
       database.completeSchemaMigrations();
+      submissions.initializePresentationIndex();
       // queue_change exists only after v7. Normalize interrupted mutations
       // before publishing; recovery never dispatches an OMP operation.
       const queueChanges = new QueueChangeRepository(database);

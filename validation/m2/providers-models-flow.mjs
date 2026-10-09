@@ -971,7 +971,7 @@ try {
   const db = new DatabaseSync(join(session.data, "drafts.sqlite"), {
     readOnly: true,
   });
-  assert.equal(db.prepare("PRAGMA user_version").get().user_version, 13);
+  assert.equal(db.prepare("PRAGMA user_version").get().user_version, 14);
   report.appStorage = {
     schemaVersion: 13,
     nativeSessions: db

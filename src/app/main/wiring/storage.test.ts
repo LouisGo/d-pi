@@ -173,7 +173,7 @@ describe("real SQLite and directory service", () => {
       try {
         expect(
           unchanged.prepare("PRAGMA user_version").get()?.user_version,
-        ).toBe(13);
+        ).toBe(14);
         expect(
           unchanged
             .prepare("SELECT workspace_id,body FROM thread WHERE id=?")
@@ -355,7 +355,7 @@ it("a v6 backup publication failure preserves the v5 database and its draft inst
     store.close();
     const previous = new DatabaseSync(path);
     previous.exec(
-      "DROP TABLE model_picker_preferences; DROP TABLE native_session_index; ALTER TABLE desktop DROP COLUMN notification_system; ALTER TABLE desktop DROP COLUMN notification_completion; PRAGMA user_version=5",
+      "DROP TABLE submission_presentation; DROP TABLE model_picker_preferences; DROP TABLE native_session_index; ALTER TABLE desktop DROP COLUMN notification_system; ALTER TABLE desktop DROP COLUMN notification_completion; PRAGMA user_version=5",
     );
     previous.close();
     rmSync(`${path}.before-v6`);
@@ -385,7 +385,7 @@ it("backs up schema 9 before typed references and fences older readers without r
   initial.close();
   const previous = new DatabaseSync(path);
   previous.exec(
-    "DROP TABLE model_picker_preferences; DROP TABLE native_session_index; ALTER TABLE desktop DROP COLUMN notification_system; ALTER TABLE desktop DROP COLUMN notification_completion; PRAGMA user_version=9",
+    "DROP TABLE submission_presentation; DROP TABLE model_picker_preferences; DROP TABLE native_session_index; ALTER TABLE desktop DROP COLUMN notification_system; ALTER TABLE desktop DROP COLUMN notification_completion; PRAGMA user_version=9",
   );
   previous.close();
   const migrated = openStorage(path);
@@ -393,7 +393,7 @@ it("backs up schema 9 before typed references and fences older readers without r
     expect(
       migrated.database.connection.prepare("PRAGMA user_version").get()
         ?.user_version,
-    ).toBe(13);
+    ).toBe(14);
     expect(migrated.drafts.active()?.text).toBe("old file reference remains");
     const backup = new DatabaseSync(`${path}.before-v10`, { readOnly: true });
     try {

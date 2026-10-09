@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
 import type { AppDatabase } from "../../../../platform/main/storage/public";
 import type {
@@ -100,6 +101,7 @@ export class SubmissionRepository {
       this.db
         .prepare("INSERT INTO submission VALUES(?,?,?)")
         .run(value.submissionId, value.threadId, JSON.stringify(receipt));
+      this.indexPresentation(receipt);
       return receipt;
     });
   }
@@ -205,7 +207,32 @@ export class SubmissionRepository {
       .all(threadId)
       .map((row) => this.decodeReceipt(row.receipt));
   }
-  /** Read-only presentation candidates, never a receipt/native identity join. */
+  /** Backfill a derived lookup after schema migration, before publishing storage. */
+  initializePresentationIndex(): void {
+    this.database.transaction(() => {
+      const rows = this.db.prepare(
+        "SELECT receipt FROM submission WHERE NOT EXISTS (SELECT 1 FROM submission_presentation WHERE submission_id=submission.id)",
+      );
+      for (const row of rows.iterate())
+        this.indexPresentation(this.decodeReceipt(row.receipt));
+    });
+  }
+  private indexPresentation(receipt: SubmissionReceipt): void {
+    this.db
+      .prepare(
+        "INSERT INTO submission_presentation(submission_id,thread_id,native_session_ref,config_context_id,message_digest) VALUES(?,?,?,?,?)",
+      )
+      .run(
+        receipt.submissionId,
+        receipt.threadId,
+        receipt.target.nativeSessionRef,
+        receipt.target.configContextId,
+        receipt.content
+          ? createHash("sha256").update(receipt.content.message).digest("hex")
+          : null,
+      );
+  }
+  /** The digest narrows presentation candidates; the frozen receipt stays authoritative. */
   presentationCandidates(
     threadId: string,
     nativeSessionRef: string,
@@ -214,13 +241,20 @@ export class SubmissionRepository {
   ): SubmissionReceipt[] {
     const rows = this.db
       .prepare(
-        "SELECT receipt FROM submission WHERE thread_id=? AND json_extract(receipt, '$.target.nativeSessionRef')=? AND json_extract(receipt, '$.target.configContextId')=? AND json_extract(receipt, '$.content.message')=? ORDER BY rowid DESC LIMIT 129",
+        "SELECT submission.receipt FROM submission_presentation AS lookup JOIN submission ON submission.id=lookup.submission_id WHERE lookup.thread_id=? AND lookup.native_session_ref=? AND lookup.config_context_id=? AND lookup.message_digest=? LIMIT 129",
       )
-      .all(threadId, nativeSessionRef, configContextId, message);
+      .all(
+        threadId,
+        nativeSessionRef,
+        configContextId,
+        createHash("sha256").update(message).digest("hex"),
+      );
     // Too many equivalent inputs are not a reason to choose an arbitrary subset.
     return rows.length > 128
       ? []
-      : rows.map((row) => this.decodeReceipt(row.receipt));
+      : rows
+          .map((row) => this.decodeReceipt(row.receipt))
+          .filter((receipt) => receipt.content?.message === message);
   }
   private decodeReceipt(value: unknown): SubmissionReceipt {
     if (typeof value !== "string")

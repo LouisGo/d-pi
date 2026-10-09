@@ -6,11 +6,10 @@ import {
 } from "../../../modules/ui/renderer/public";
 import {
   ConversationTurnAnchor,
-  extractAssistantReply,
   type TurnPreviewPayload,
 } from "./conversation-turn-anchor";
 import type { ReadingAnchorController } from "./reading-anchor";
-import { TurnPreviewCard } from "./turn-preview-card";
+import { ConversationTurnPreview } from "./turn-preview-card";
 
 interface Turn {
   id: string;
@@ -74,7 +73,6 @@ export function ConversationOutline({
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   useLayoutEffect(() => {
-    const cache = new Map<string, TurnPreviewPayload>();
     let rows: readonly Turn[] = [];
     let frame: number | null = null;
     let disposed = false;
@@ -103,24 +101,7 @@ export function ConversationOutline({
         if (!id) return [];
         const preview = node.dataset.turnPreview ?? "";
         const number = index + 1;
-        const cached = cache.get(id);
-        const payload: TurnPreviewPayload =
-          !cached || cached.preview !== preview || !cached.reply
-            ? {
-                id,
-                number,
-                question:
-                  (
-                    node.querySelector(":scope > .user-message-bubble") ??
-                    node.querySelector("[data-reading-text]")
-                  )?.textContent?.trim() || preview,
-                reply: extractAssistantReply(node),
-                preview,
-              }
-            : cached.number !== number
-              ? { ...cached, number }
-              : cached;
-        cache.set(id, payload);
+        const payload = { id, number, node, preview };
         return [{ id, preview, payload, node }];
       });
       setTurns(rows);
@@ -162,17 +143,7 @@ export function ConversationOutline({
     <nav
       className="conversation-outline"
       aria-label={t("ui.conversation.turns")}
-      onPointerLeave={(event) => {
-        setHoveredIndex(null);
-        setFocusedIndex(null);
-        const activeEl = document.activeElement;
-        if (
-          activeEl instanceof HTMLElement &&
-          event.currentTarget.contains(activeEl)
-        ) {
-          activeEl.blur();
-        }
-      }}
+      onPointerLeave={() => setHoveredIndex(null)}
     >
       {turns.map((turn, index) => (
         <ConversationTurnAnchor
@@ -237,10 +208,11 @@ export function ConversationOutline({
       <HoverCardPopup handle={hoverCardHandle} side="right" sideOffset={8}>
         {(payload) =>
           payload ? (
-            <TurnPreviewCard
+            <ConversationTurnPreview
+              key={payload.id}
               number={payload.number}
-              question={payload.question}
-              reply={payload.reply}
+              node={payload.node}
+              preview={payload.preview}
             />
           ) : null
         }

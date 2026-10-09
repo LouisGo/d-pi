@@ -97,7 +97,7 @@ function receiptState(path: string, submissionId: string): unknown {
 }
 
 describe("persistent submission handoff", () => {
-  it("recovers interrupted receipts before all v4–v13 backups and returns a ready store", () =>
+  it("recovers interrupted receipts before all v4–v14 backups and returns a ready store", () =>
     fixture((path) => {
       const submissionId = stageInterruptedRun(path);
       expect(receiptState(path, submissionId)).toBe("dispatching");
@@ -119,6 +119,7 @@ describe("persistent submission handoff", () => {
           ["before-v11", 10],
           ["before-v12", 11],
           ["before-v13", 12],
+          ["before-v14", 13],
         ] as const) {
           const backup = new DatabaseSync(`${path}.${suffix}`, {
             readOnly: true,
@@ -568,5 +569,64 @@ it("finds frozen attachment presentations beyond the recent receipt window witho
       );
     } finally {
       store.close();
+    }
+  }));
+
+it("backfills the presentation index from schema 13 without changing frozen receipts", () =>
+  fixture((path) => {
+    const store = AppStorage.open(path);
+    const value = frozen(store);
+    const receipt = store.submissions.prepareSubmission({
+      ...value,
+      content: {
+        schemaVersion: 1,
+        message: "frozen file input",
+        images: [],
+        sources: [],
+        rawBytes: 0,
+      },
+    });
+    store.close();
+    const prior = new DatabaseSync(path);
+    prior.exec("DROP TABLE submission_presentation; PRAGMA user_version=13;");
+    prior.close();
+    const reopened = AppStorage.open(path);
+    try {
+      expect(reopened.submissions.submission(receipt.submissionId)).toEqual(
+        receipt,
+      );
+      expect(
+        reopened.submissions.presentationCandidates(
+          value.threadId,
+          value.target.nativeSessionRef,
+          value.target.configContextId,
+          "frozen file input",
+        ),
+      ).toEqual([receipt]);
+      const plan = reopened.database.connection
+        .prepare(
+          "EXPLAIN QUERY PLAN SELECT submission.receipt FROM submission_presentation AS lookup JOIN submission ON submission.id=lookup.submission_id WHERE lookup.thread_id=? AND lookup.native_session_ref=? AND lookup.config_context_id=? AND lookup.message_digest=? LIMIT 129",
+        )
+        .all(
+          value.threadId,
+          value.target.nativeSessionRef,
+          value.target.configContextId,
+          "digest",
+        );
+      expect(
+        plan.some((step) =>
+          String(step.detail).includes("submission_presentation_lookup"),
+        ),
+      ).toBe(true);
+      const backup = new DatabaseSync(`${path}.before-v14`, { readOnly: true });
+      try {
+        expect(backup.prepare("PRAGMA user_version").get()?.user_version).toBe(
+          13,
+        );
+      } finally {
+        backup.close();
+      }
+    } finally {
+      reopened.close();
     }
   }));

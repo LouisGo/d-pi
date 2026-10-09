@@ -13,8 +13,7 @@ import {
 export interface TurnPreviewPayload {
   id: string;
   number: number;
-  question: string;
-  reply: string;
+  node: HTMLElement;
   preview: string;
 }
 
@@ -32,28 +31,6 @@ interface ConversationTurnAnchorProps {
   onPointerEnter?: () => void;
   onFocus?: FocusEventHandler<HTMLButtonElement>;
   onBlur?: FocusEventHandler<HTMLButtonElement>;
-}
-
-export function extractAssistantReply(node: HTMLElement): string {
-  let sibling = node.nextElementSibling;
-  while (
-    sibling instanceof HTMLElement &&
-    !sibling.matches("[data-conversation-turn]")
-  ) {
-    if (sibling.getAttribute("data-message-role") === "assistant") {
-      const readingBody = sibling.querySelector(
-        "[data-reading-text], .reading-body",
-      );
-      const text = (
-        readingBody?.textContent ??
-        sibling.textContent ??
-        ""
-      ).trim();
-      if (text) return text;
-    }
-    sibling = sibling.nextElementSibling;
-  }
-  return "";
 }
 
 export function ConversationTurnAnchor({
@@ -92,7 +69,7 @@ export function ConversationTurnAnchor({
           tabIndex={tabIndex}
           onClick={(event) => {
             onNavigate();
-            event.currentTarget.blur();
+            if (event.detail > 0) event.currentTarget.blur();
           }}
           onKeyDown={onKeyDown}
           onPointerEnter={onPointerEnter}
