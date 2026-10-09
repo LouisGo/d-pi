@@ -19,6 +19,7 @@ import type {
   ConfigurationScope,
   ConfigurationSnapshot,
 } from "../../contracts/public";
+import { orderModelCatalog } from "../../core/public";
 import { CustomModelForm } from "./custom-model-form";
 import { SettingsModelMetadata } from "./model-metadata";
 import type { useConfigurationWrite } from "./use-configuration-write";
@@ -74,18 +75,22 @@ export function ProviderModels({
   const [preferenceBusy, setPreferenceBusy] = useState(false);
   const [preferenceFailed, setPreferenceFailed] = useState(false);
   const pendingPreference = useRef(false);
+  const draggedKey = useRef<string | null>(null);
+  const [dragging, setDragging] = useState<string | null>(null);
+  const [dropTarget, setDropTarget] = useState<{
+    key: string;
+    before: boolean;
+  } | null>(null);
   const favorites = new Set(modelPicker?.favorites);
   const hidden = new Set(modelPicker?.hidden);
-  const ordered = useMemo(() => {
-    const order = new Map(modelPicker?.order.map((key, index) => [key, index]));
-    return snapshot.models
-      .filter((model) => model.provider === provider)
-      .sort(
-        (a, b) =>
-          (order.get(keyOf(a)) ?? Number.MAX_SAFE_INTEGER) -
-          (order.get(keyOf(b)) ?? Number.MAX_SAFE_INTEGER),
-      );
-  }, [snapshot.models, provider, modelPicker?.order]);
+  const ordered = useMemo(
+    () =>
+      orderModelCatalog(
+        snapshot.models.filter((model) => model.provider === provider),
+        modelPicker?.order,
+      ),
+    [snapshot.models, provider, modelPicker?.order],
+  );
   const kinds = [
     ...new Set(
       ordered
@@ -117,16 +122,8 @@ export function ProviderModels({
       setPreferenceBusy(false);
     }
   };
-  const move = (model: Model, direction: -1 | 1) => {
-    const keys = ordered.map(keyOf);
-    const from = keys.indexOf(keyOf(model));
-    const to = from + direction;
-    const neighbor = keys[to];
-    if (from < 0 || neighbor === undefined) return;
-    keys[to] = keyOf(model);
-    keys[from] = neighbor;
-    // Device order is global. Retain other/unknown keys in their existing
-    // relative order, then replace this provider with its complete catalog.
+  const preferencesDisabled = disabled || preferenceBusy || !onModelPreference;
+  const saveOrder = (keys: string[]) => {
     const providerKeys = new Set(keys);
     void preference({
       kind: "order",
@@ -136,7 +133,22 @@ export function ProviderModels({
       ],
     });
   };
-  const preferencesDisabled = disabled || preferenceBusy || !onModelPreference;
+  const move = (key: string, direction: -1 | 1) => {
+    if (preferencesDisabled) return;
+    const keys = ordered.map(keyOf);
+    const from = keys.indexOf(key);
+    const to = from + direction;
+    const neighbor = keys[to];
+    if (from < 0 || neighbor === undefined) return;
+    keys[from] = neighbor;
+    keys[to] = key;
+    saveOrder(keys);
+  };
+  const finishDrag = () => {
+    draggedKey.current = null;
+    setDragging(null);
+    setDropTarget(null);
+  };
   return (
     <section className="providers-detail-section providers-model-section">
       <div className="providers-section-heading">
@@ -209,22 +221,93 @@ export function ProviderModels({
       <div className="providers-model-list">
         {filtered.slice(0, limit).map((model) => {
           const key = keyOf(model);
-          const index = ordered.indexOf(model);
           return (
             <div
               key={key}
               className="providers-model-row"
               data-settings-model={model.id}
               data-hidden={hidden.has(key) || undefined}
+              data-dragging={dragging === key || undefined}
+              data-drop={
+                dropTarget?.key === key
+                  ? dropTarget.before
+                    ? "before"
+                    : "after"
+                  : undefined
+              }
+              onDragOver={(event) => {
+                if (
+                  preferencesDisabled ||
+                  !draggedKey.current ||
+                  draggedKey.current === key
+                )
+                  return;
+                event.preventDefault();
+                event.dataTransfer.dropEffect = "move";
+                const rect = event.currentTarget.getBoundingClientRect();
+                setDropTarget({
+                  key,
+                  before: event.clientY < rect.top + rect.height / 2,
+                });
+              }}
+              onDragLeave={(event) => {
+                if (
+                  !(event.relatedTarget instanceof Node) ||
+                  !event.currentTarget.contains(event.relatedTarget)
+                ) {
+                  setDropTarget((target) =>
+                    target?.key === key ? null : target,
+                  );
+                }
+              }}
+              onDrop={(event) => {
+                const source = draggedKey.current;
+                if (preferencesDisabled || !source || source === key) return;
+                event.preventDefault();
+                const previous = ordered.map(keyOf);
+                if (!previous.includes(source)) {
+                  finishDrag();
+                  return;
+                }
+                const rect = event.currentTarget.getBoundingClientRect();
+                const before = event.clientY < rect.top + rect.height / 2;
+                const keys = previous.filter((entry) => entry !== source);
+                const destination = keys.indexOf(key);
+                keys.splice(destination + (before ? 0 : 1), 0, source);
+                finishDrag();
+                if (keys.some((entry, index) => entry !== previous[index]))
+                  saveOrder(keys);
+              }}
             >
-              <ModelBrandIcon
-                provider={model.provider}
-                modelId={model.id}
-                size={20}
-              />
+              <Button
+                variant="navigation"
+                size="icon"
+                className="providers-model-drag"
+                aria-label={t("models.drag", { name: model.name })}
+                title={t("models.drag", { name: model.name })}
+                disabled={preferencesDisabled}
+                draggable={!preferencesDisabled}
+                onDragStart={(event) => {
+                  if (preferencesDisabled) {
+                    event.preventDefault();
+                    return;
+                  }
+                  draggedKey.current = key;
+                  setDragging(key);
+                  event.dataTransfer.effectAllowed = "move";
+                  event.dataTransfer.setData("text/plain", key);
+                }}
+                onDragEnd={finishDrag}
+              >
+                <ModelBrandIcon
+                  provider={model.provider}
+                  modelId={model.id}
+                  size={20}
+                />
+              </Button>
               <div className="providers-model-identity">
                 <p>
-                  <strong>{model.name}</strong>
+                  <strong title={model.name}>{model.name}</strong>
                   {model.custom && (
                     <span className="providers-model-tag">
                       {t("models.custom")}
@@ -238,13 +321,19 @@ export function ProviderModels({
                     </span>
                   )}
                 </p>
-                <p
-                  className="providers-hint providers-model-id"
-                  data-selectable
-                >
-                  {model.id}
-                </p>
-                <SettingsModelMetadata model={model} />
+                <div className="providers-model-summary">
+                  {model.id.toLocaleLowerCase() !==
+                    model.name.toLocaleLowerCase() && (
+                    <span
+                      className="providers-hint providers-model-id"
+                      data-selectable
+                      title={model.id}
+                    >
+                      {model.id}
+                    </span>
+                  )}
+                  <SettingsModelMetadata model={model} />
+                </div>
               </div>
               <div className="providers-model-actions">
                 <Button
@@ -266,23 +355,23 @@ export function ProviderModels({
                     })
                   }
                 >
-                  <StarIcon />
+                  <StarIcon variant={favorites.has(key) ? "solid" : "stroke"} />
                 </Button>
                 <Button
-                  variant="ghost"
+                  variant="navigation"
                   size="icon"
                   aria-label={t("models.moveUp", { name: model.name })}
-                  disabled={preferencesDisabled || index === 0}
-                  onClick={() => move(model, -1)}
+                  disabled={preferencesDisabled || ordered[0] === model}
+                  onClick={() => move(key, -1)}
                 >
                   <ChevronUpIcon />
                 </Button>
                 <Button
-                  variant="ghost"
+                  variant="navigation"
                   size="icon"
                   aria-label={t("models.moveDown", { name: model.name })}
-                  disabled={preferencesDisabled || index === ordered.length - 1}
-                  onClick={() => move(model, 1)}
+                  disabled={preferencesDisabled || ordered.at(-1) === model}
+                  onClick={() => move(key, 1)}
                 >
                   <ChevronDownIcon />
                 </Button>

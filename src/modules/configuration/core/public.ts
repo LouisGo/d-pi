@@ -3,4 +3,5 @@ export {
   catalogModelKey,
   filterModelCatalog,
   orderProviderCatalog,
+  orderModelCatalog,
 } from "./model-catalog";

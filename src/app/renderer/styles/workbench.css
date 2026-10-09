@@ -443,7 +443,7 @@
   }
   .settings-modal-navigation {
     background: var(--sidebar);
-    padding: var(--layout-gap);
+    padding: calc(var(--spacing) * 4) calc(var(--spacing) * 3);
     border-right: 1px solid var(--border);
     overflow: auto;
     overscroll-behavior: contain;

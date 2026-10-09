@@ -29,6 +29,18 @@ export const ui = {
     "Device model preferences could not be saved. Try again.",
   "models.roleUnavailable": "No available model supports this role.",
 
+  "providers.connection.chatgpt": "Using ChatGPT plan",
+  "providers.connection.account": "{name} · Account sign in",
+  "providers.connection.apiKey": "{name} · API key",
+  "providers.connection.environment": "{name} · Environment credentials",
+  "providers.connection.configuration": "{name} · Configuration credentials",
+  "providers.connection.runtime": "{name} · Runtime credentials",
+  "providers.connection.keyless": "{name} · No authentication required",
+  "providers.connection.required": "{name} · Not connected",
+  "providers.connection.disabled": "{name} · Disabled",
+  "providers.connection.unknown": "{name} · Authentication method unknown",
+  "providers.connection.accounts": "{count} connected accounts",
+
   "providers.title": "Providers & models",
   "providers.description":
     "Connect providers, manage the model catalog, and set native project or global defaults.",
@@ -64,6 +76,9 @@ export const ui = {
     "Authentication comes from external configuration. Manage it at its environment or source.",
   "providers.noConnectionMethod":
     "This provider has no native sign-in flow. Existing environment and configuration can still be used.",
+  "providers.login.chatgpt": "ChatGPT account",
+  "providers.login.chatgptDevice": "ChatGPT device sign in",
+  "providers.accountDetails": "Account details",
   "providers.login.api-key": "API key",
   "providers.login.oauth-code": "Account sign in",
   "providers.login.device-code": "Device code sign in",
@@ -88,8 +103,9 @@ export const ui = {
   "models.unfavorite": "Unfavorite {name}",
   "models.visible": "Show {name} in the picker",
   "models.deviceNotice":
-    "Favorites, visibility, and ordering are saved on this device and do not change native model capabilities or authentication.",
+    "Newest first by default. Drag a model icon to reorder. Favorites, visibility, and order are saved on this device.",
   "models.moveUp": "Move {name} up",
+  "models.drag": "Drag to reorder {name}",
   "models.moveDown": "Move {name} down",
   "models.kind": "Kind",
   "models.kind.all": "All kinds",

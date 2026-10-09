@@ -41,6 +41,14 @@ Lobe Icons 的仓库 [LICENSE](https://github.com/lobehub/lobe-icons/blob/c385b2
 
 Kimi 的原始 K 主体为白色；d-pi 将这一单色主体改为 `currentColor`，保证浅色与深色界面可见。原 path、viewBox 和蓝色品牌点保持不变。
 
+## 2026-10-09 补充 Magpie 静态标识
+
+本轮按用户指定的 [yetone/magpie](https://github.com/yetone/magpie/blob/a8ca7908556ead568c3d3a72e6e58e7e11852caa/internal/gui/assets/app.js) 图标做法补充：单色标识继承文字色，彩色标识保留原色；同一模型列表项仅展示一个 logo。厂商不明时保留中性标识，本地模型与 Web 搜索使用对应的功能图形，不冒用 LM Studio 等产品品牌。
+
+来源固定为 commit `a8ca7908556ead568c3d3a72e6e58e7e11852caa` 的 `internal/gui/assets/icons/`：`lmstudio.svg`、`cloudflare-color.svg`、`vllm-color.svg`、`voyage-color.svg`、`jina.svg`、`ai21.svg`、`gemma-color.svg`、`stepfun-color.svg`、`bytedance-color.svg`、`siliconcloud-color.svg`、`novita-color.svg`、`baseten.svg`、`opencode.svg`、`vercel.svg`、`venice-color.svg`、`nebius.svg`、`chutes.svg`、`deepinfra-color.svg`、`xiaomimimo.svg`。
+
+保存于 Icon Layer 私有 `magpie-assets.tsx`，静态 React SVG 保留 viewBox/path、品牌色与填充规则；移除来源的尺寸、标题与布局 style，渐变 ID 按实例隔离。没有运行时远程图片或新的图标包。Magpie 根 [LICENSE](https://github.com/yetone/magpie/blob/a8ca7908556ead568c3d3a72e6e58e7e11852caa/LICENSE) 为 MIT；上述素材含 Lobe Icons 来源，沿用本页的 Lobe MIT 声明并在 `THIRD_PARTY_NOTICES.md` 补充 Magpie 许可。
+
 ## 保留的许可原文
 
 ### T3
