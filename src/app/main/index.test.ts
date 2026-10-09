@@ -52,6 +52,7 @@ vi.mock("electron", () => ({
     on = (name: string, listener: (event: unknown) => void) =>
       shell.windowEvents.set(name, listener);
     close = shell.close;
+    isDestroyed = () => false;
     loadURL = vi.fn();
     loadFile = vi.fn();
   },
@@ -172,6 +173,16 @@ it("starts with system locale, rebuilds the native menu on interaction, and keep
     const close = shell.windowEvents.get("close");
     const closeResult = shell.listeners.get("draft:close-result");
     if (!close || !closeResult) throw Error("Missing close protocol");
+    const restore = shell.handlers.get("draft:request");
+    if (!restore) throw Error("Missing restore handler");
+    expect(
+      await restore(event, {
+        schemaVersion: 1,
+        connectionId: crypto.randomUUID(),
+        requestId: crypto.randomUUID(),
+        command: { kind: "restore", traceId: crypto.randomUUID() },
+      }),
+    ).toMatchObject({ kind: "ready" });
     close({ preventDefault: vi.fn() });
     const closeToken = shell.contents.send.mock.calls.findLast(
       ([channel]) => channel === "draft:close-request",
@@ -338,6 +349,16 @@ it("a timed-out close receipt cannot close a later attempt, and failed saves ret
       sender: shell.contents,
       senderFrame: shell.contents.mainFrame,
     };
+    const restore = shell.handlers.get("draft:request");
+    if (!restore) throw Error("Missing restore handler");
+    expect(
+      await restore(event, {
+        schemaVersion: 1,
+        connectionId: crypto.randomUUID(),
+        requestId: crypto.randomUUID(),
+        command: { kind: "restore", traceId: crypto.randomUUID() },
+      }),
+    ).toMatchObject({ kind: "ready" });
     const requestClose = () => {
       const preventDefault = vi.fn();
       close({ preventDefault });
@@ -359,6 +380,7 @@ it("a timed-out close receipt cannot close a later attempt, and failed saves ret
     expect(shell.close).not.toHaveBeenCalled();
     result(event, { token: current, saved: false });
     expect(shell.close).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(0);
     const final = requestClose();
     result(event, { token: final, saved: true });
     expect(shell.close).toHaveBeenCalledTimes(1);

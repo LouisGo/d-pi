@@ -12,7 +12,7 @@
     flex: 1 1 auto;
   }
   .model-picker-rail {
-    flex: 0 0 calc(var(--control-height) + var(--panel-padding));
+    flex: 0 0 auto;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -20,6 +20,7 @@
     padding: var(--layout-gap) var(--region-gap);
     border-right: 1px solid var(--border);
     overflow-y: auto;
+    scrollbar-gutter: stable;
   }
   .model-picker-rail button {
     flex-shrink: 0;

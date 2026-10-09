@@ -48,6 +48,7 @@ export function ModelPickerPanel({
   onSelect,
   onPreference,
   onManage,
+  onRetry,
   searchRef,
 }: {
   models: readonly Model[];
@@ -63,6 +64,7 @@ export function ModelPickerPanel({
     value: boolean;
   }) => void;
   onManage: () => void;
+  onRetry?: () => void;
   searchRef?: Ref<HTMLInputElement>;
 }) {
   const { t } = useI18n();
@@ -180,16 +182,29 @@ export function ModelPickerPanel({
               </p>
             )}
             {failed && (
-              <p className="model-picker-empty failure" role="alert">
-                {t("config.failed")}
-              </p>
+              <div className="model-picker-empty">
+                <p className="failure" role="alert">
+                  {t("config.failed")}
+                </p>
+                {onRetry && (
+                  <Button
+                    variant="secondary"
+                    disabled={loading}
+                    onClick={onRetry}
+                  >
+                    {t("app.retry")}
+                  </Button>
+                )}
+              </div>
             )}
-            {!loading && !visible.length && (
+            {!loading && !failed && !visible.length && (
               <p className="model-picker-empty">
                 {t(
                   provider === "favorites"
                     ? "models.noFavorites"
-                    : "models.noResults",
+                    : !chatModels.length
+                      ? "models.noAvailable"
+                      : "models.noResults",
                 )}
               </p>
             )}

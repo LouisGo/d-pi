@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   realpathSync,
@@ -11,6 +12,7 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
+import { getAddonFilenames } from "../../node_modules/.pnpm/@oh-my-pi+pi-natives@18.4.6/node_modules/@oh-my-pi/pi-natives/native/loader-state.js";
 import {
   auditSdkTree,
   copySdkDependencyGraph,
@@ -37,6 +39,21 @@ function fixture(t) {
   }
   return { root, write, packagePath };
 }
+
+test("the fixed official Linux loader falls back to baseline on modern and older CPUs", () => {
+  assert.deepEqual(
+    getAddonFilenames({ tag: "linux-x64", arch: "x64", variant: "modern" }),
+    [
+      "pi_natives.linux-x64-modern.node",
+      "pi_natives.linux-x64-baseline.node",
+      "pi_natives.linux-x64.node",
+    ],
+  );
+  assert.deepEqual(
+    getAddonFilenames({ tag: "linux-x64", arch: "x64", variant: "baseline" }),
+    ["pi_natives.linux-x64-baseline.node", "pi_natives.linux-x64.node"],
+  );
+});
 
 test("declared peers and cycles resolve within the copied graph, while optional missing peers remain absent", async (t) => {
   const { root, packagePath } = fixture(t);
@@ -77,6 +94,83 @@ test("missing required runtime dependencies and dependencies outside the managed
   await assert.rejects(
     copySdkDependencyGraph([a], join(root, "store"), join(root, "escaped-sdk")),
     /outside managed store/,
+  );
+});
+
+test("fixed Linux x64 SDK retains baseline and omits the optional modern CPU binary", async (t) => {
+  const { root, packagePath, write } = fixture(t);
+  const native = packagePath("@oh-my-pi/pi-natives-linux-x64", {
+    version: "18.4.6",
+  });
+  const relativeNative =
+    "store/@oh-my-pi+pi-natives-linux-x64@1/node_modules/@oh-my-pi/pi-natives-linux-x64";
+  write(
+    `${relativeNative}/pi_natives.linux-x64-baseline.node`,
+    "baseline native",
+  );
+  write(`${relativeNative}/pi_natives.linux-x64-modern.node`, "modern native");
+  write(`${relativeNative}/LICENSE`, "license");
+  write(`${relativeNative}/unknown.node`, "unknown layout");
+  const target = { platform: "linux", arch: "x64" };
+  const sdk = join(root, "sdk");
+  const graph = await copySdkDependencyGraph(
+    [native],
+    join(root, "store"),
+    sdk,
+    target,
+  );
+  const output = join(
+    sdk,
+    "node_modules/.pnpm/@oh-my-pi+pi-natives-linux-x64@1/node_modules/@oh-my-pi/pi-natives-linux-x64",
+  );
+  assert.equal(
+    existsSync(join(output, "pi_natives.linux-x64-baseline.node")),
+    true,
+  );
+  assert.equal(
+    existsSync(join(output, "pi_natives.linux-x64-modern.node")),
+    false,
+  );
+  assert.equal(existsSync(join(output, "LICENSE")), true);
+  assert.equal(existsSync(join(output, "unknown.node")), true);
+  assert.equal(graph.removed["optional-cpu-variant"].bytes, 13);
+  await auditSdkTree(sdk, target);
+  rmSync(join(output, "pi_natives.linux-x64-baseline.node"));
+  await assert.rejects(auditSdkTree(sdk, target), /baseline/);
+});
+
+test("Linux CPU pruning rejects a missing baseline and preserves unknown SDK versions", async (t) => {
+  const { root, packagePath, write } = fixture(t);
+  const native = packagePath("@oh-my-pi/pi-natives-linux-x64", {
+    version: "18.4.6",
+  });
+  const relativeNative =
+    "store/@oh-my-pi+pi-natives-linux-x64@1/node_modules/@oh-my-pi/pi-natives-linux-x64";
+  write(`${relativeNative}/pi_natives.linux-x64-modern.node`, "modern native");
+  const target = { platform: "linux", arch: "x64" };
+  await assert.rejects(
+    copySdkDependencyGraph(
+      [native],
+      join(root, "store"),
+      join(root, "missing-sdk"),
+      target,
+    ),
+    /baseline/,
+  );
+  write(
+    `${relativeNative}/package.json`,
+    JSON.stringify({ name: "@oh-my-pi/pi-natives-linux-x64", version: "next" }),
+  );
+  const sdk = join(root, "unknown-sdk");
+  await copySdkDependencyGraph([native], join(root, "store"), sdk, target);
+  assert.equal(
+    existsSync(
+      join(
+        sdk,
+        "node_modules/.pnpm/@oh-my-pi+pi-natives-linux-x64@1/node_modules/@oh-my-pi/pi-natives-linux-x64/pi_natives.linux-x64-modern.node",
+      ),
+    ),
+    true,
   );
 });
 

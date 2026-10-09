@@ -80,6 +80,8 @@ export const ui = {
     "The catalog is incomplete. Loaded entries are retained; refresh and retry.",
   "models.search": "Search models…",
   "models.noResults": "No matching models. Try another name or provider.",
+  "models.noAvailable":
+    "No available chat models. Configure a provider to get started.",
   "models.noFavorites":
     "No favorite models yet. Star a model to find it here next time.",
   "models.favorite": "Favorite {name}",

@@ -49,6 +49,7 @@ import { buildApplicationMenu } from "./menu";
 import { QuitCoordinator } from "./quit";
 import { ElectronSystemNotifications } from "./system-notifications";
 import { loadWindowRenderer, secureWindow } from "./window";
+import { WindowCloseGuard } from "./window-close";
 
 export function startDesktopApplication(mainDirectory: string): void {
   if (process.env.D_PI_DATA_DIR)
@@ -121,8 +122,7 @@ export function startDesktopApplication(mainDirectory: string): void {
   }
   let quitting = false;
   let approved = false;
-  let closing: { token: string; timer: ReturnType<typeof setTimeout> } | null =
-    null;
+  let closeGuard: WindowCloseGuard | null = null;
   const closeResult = z.strictObject({ token: z.uuid(), saved: z.boolean() });
   function runtimeFailure(
     traceId: string,
@@ -150,24 +150,7 @@ export function startDesktopApplication(mainDirectory: string): void {
     );
   }
   function requestClose(): void {
-    if (!window || closing) return;
-    const token = randomUUID();
-    const timer = setTimeout(() => {
-      closing = null;
-      quitting = false;
-      window?.webContents.send("draft:close-cancelled");
-      if (window) {
-        const t = currentT();
-        void dialog.showMessageBox(window, {
-          type: "warning",
-          message: t("main.closeUnconfirmed.message"),
-          detail: t("main.closeUnconfirmed.detail"),
-          buttons: [t("main.closeUnconfirmed.keepWindow")],
-        });
-      }
-    }, 5000);
-    closing = { token, timer };
-    window.webContents.send("draft:close-request", token);
+    if (!closeGuard?.request()) quitting = false;
   }
   function createWindow(): void {
     approved = false;
@@ -193,6 +176,42 @@ export function startDesktopApplication(mainDirectory: string): void {
       },
     });
     window = current;
+    const guard = new WindowCloseGuard({
+      send: (token) => current.webContents.send("draft:close-request", token),
+      approve: () => {
+        if (window !== current || current.isDestroyed()) return;
+        approved = true;
+        if (quitting) app.quit();
+        else current.close();
+      },
+      blocked: async (reason) => {
+        if (window !== current || current.isDestroyed()) return;
+        quitting = false;
+        current.webContents.send("draft:close-cancelled");
+        const t = currentT();
+        await dialog.showMessageBox(current, {
+          type: "warning",
+          message: t(
+            reason === "unsaved"
+              ? "main.closeUnsaved.message"
+              : "main.closeUnconfirmed.message",
+          ),
+          detail: t(
+            reason === "unsaved"
+              ? "main.closeUnsaved.detail"
+              : "main.closeUnconfirmed.detail",
+          ),
+          buttons: [
+            t(
+              reason === "unsaved"
+                ? "main.closeUnsaved.continueEditing"
+                : "main.closeUnconfirmed.keepWindow",
+            ),
+          ],
+        });
+      },
+    });
+    closeGuard = guard;
     const senderId = current.webContents.id;
     sourceGeneration++;
     current.webContents.on(
@@ -224,8 +243,8 @@ export function startDesktopApplication(mainDirectory: string): void {
       attention?.setForeground(false);
       window = null;
       approved = false;
-      if (closing) clearTimeout(closing.timer);
-      closing = null;
+      guard.dispose();
+      closeGuard = null;
     });
     current.webContents.on("render-process-gone", (_event, details) => {
       reads.releaseSender(senderId);
@@ -460,30 +479,13 @@ export function startDesktopApplication(mainDirectory: string): void {
         getStartupCauseCode: () => services.startupCauseCode,
         initializeStorage,
         getDiagnostics: () => diagnostics,
+        onEditableReady: () => closeGuard?.markEditable(),
       });
       ipcMain.on("draft:close-result", (event, raw: unknown) => {
         if (!sourceValid(event)) return;
         const parsed = closeResult.safeParse(raw);
-        if (!parsed.success || parsed.data.token !== closing?.token) return;
-        clearTimeout(closing.timer);
-        closing = null;
-        if (!parsed.data.saved) {
-          quitting = false;
-          window?.webContents.send("draft:close-cancelled");
-          if (window) {
-            const t = currentT();
-            void dialog.showMessageBox(window, {
-              type: "warning",
-              message: t("main.closeUnsaved.message"),
-              detail: t("main.closeUnsaved.detail"),
-              buttons: [t("main.closeUnsaved.continueEditing")],
-            });
-          }
-          return;
-        }
-        approved = true;
-        if (quitting) app.quit();
-        else window?.close();
+        if (parsed.success)
+          closeGuard?.resolve(parsed.data.token, parsed.data.saved);
       });
       buildMenu();
       createWindow();

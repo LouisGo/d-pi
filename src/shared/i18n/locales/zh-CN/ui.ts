@@ -70,6 +70,7 @@ export const ui = {
   "providers.partial": "目录读取不完整；保留已读内容，可刷新后重试。",
   "models.search": "搜索模型…",
   "models.noResults": "没有匹配的模型，试试其他名称或服务商。",
+  "models.noAvailable": "没有可用的对话模型。请先配置服务商。",
   "models.noFavorites": "还没有收藏模型。点击模型旁的星标，方便下次找到。",
   "models.favorite": "收藏 {name}",
   "models.unfavorite": "取消收藏 {name}",

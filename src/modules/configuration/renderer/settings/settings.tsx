@@ -14,7 +14,7 @@ import type {
   ConfigurationBridge,
   ConfigurationScope,
 } from "../../contracts/public";
-import { configurationSnapshotQuery } from "../queries";
+import { ConfigurationReadError, configurationSnapshotQuery } from "../queries";
 import { AuthenticationProgress } from "./authentication-progress";
 import type { ModelPreferencesProps } from "./provider-models";
 import { ProvidersSettings } from "./providers-settings";
@@ -106,9 +106,24 @@ export function ConfigurationSettings({
         </p>
       )}
       {query.isError && (
-        <p className="failure" role="alert">
-          {t("config.failed")}
-        </p>
+        <div className="configuration-feedback">
+          <p className="failure" role="alert">
+            {t("config.failed")}
+            {query.error instanceof ConfigurationReadError && (
+              <span className="trace">
+                {" "}
+                {t("app.trace", { traceId: query.error.traceId })}
+              </span>
+            )}
+          </p>
+          <Button
+            variant="secondary"
+            disabled={!active || query.isFetching}
+            onClick={() => void query.refetch()}
+          >
+            {t("app.retry")}
+          </Button>
+        </div>
       )}
       {query.data?.providers !== undefined ? (
         <ProvidersSettings

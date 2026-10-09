@@ -36,6 +36,26 @@ function compatible(metadata, target) {
   );
 }
 
+function baselineOnly(metadata, target) {
+  return (
+    metadata.name === "@oh-my-pi/pi-natives-linux-x64" &&
+    metadata.version === "18.4.6" &&
+    target.platform === "linux" &&
+    target.arch === "x64"
+  );
+}
+
+async function requireBaseline(packagePath) {
+  const baseline = await lstat(
+    join(packagePath, "pi_natives.linux-x64-baseline.node"),
+  ).catch((error) => {
+    if (error.code === "ENOENT") return null;
+    throw error;
+  });
+  if (!baseline?.isFile())
+    throw Error("Fixed Linux SDK baseline native addon is missing or unsafe");
+}
+
 async function digest(path) {
   const hash = createHash("sha256");
   for await (const bytes of createReadStream(path)) hash.update(bytes);
@@ -62,6 +82,13 @@ function excluded(metadata, path, target) {
   if (/(?:^|\/)[^/]*(?:license|licence|copying|notice)[^/]*$/i.test(path))
     return null;
   if (/\.map$/.test(path)) return "source-map";
+  // The fixed official loader tries baseline after modern on AVX2 CPUs,
+  // and baseline first on older CPUs. Ship one portable, unmodified addon.
+  if (
+    baselineOnly(metadata, target) &&
+    path === "pi_natives.linux-x64-modern.node"
+  )
+    return "optional-cpu-variant";
   // OMP imports src/tools/browser/declarations.d.ts as a text asset. Source
   // declarations can be runtime resources; only prune distribution types.
   if (/\.d\.(?:ts|mts|cts)$/.test(path) && !/(?:^|\/)src\//.test(path))
@@ -124,6 +151,7 @@ export async function copySdkDependencyGraph(
     const [unit, modules] = rel.split(sep);
     if (modules !== "node_modules") throw Error("Unexpected SDK store layout");
     const packagePath = join(destination, "node_modules/.pnpm", rel);
+    if (baselineOnly(metadata, target)) await requireBaseline(actual);
     const record = {
       name: metadata.name,
       version: metadata.version,
@@ -297,6 +325,7 @@ export async function auditSdkTree(
         );
         if (!compatible(metadata, target))
           throw Error(`Foreign SDK package: ${metadata.name}`);
+        if (baselineOnly(metadata, target)) await requireBaseline(packagePath);
         async function inspect(path) {
           for (const item of await readdir(path, { withFileTypes: true })) {
             const file = join(path, item.name);

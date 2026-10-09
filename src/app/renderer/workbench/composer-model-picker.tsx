@@ -170,6 +170,7 @@ export function ComposerModelPicker({
           disabled={disabled}
           loading={query.isFetching}
           failed={query.isError || !!query.data?.catalogError}
+          onRetry={() => void query.refetch()}
           searchRef={search}
           onSelect={(target) => void apply(target, { kind: "default" })}
           onPreference={(change) => void model.modelPreference(change)}

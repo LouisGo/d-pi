@@ -520,7 +520,9 @@
 /* Shared portaled surfaces use Base UI lifecycle attributes and geometry. */
 @layer components {
   .ui-select-positioner,
-  [data-base-ui-portal] {
+  /* Nested portals share their modal's stack; isolating each one traps even
+     a popup above layer-dialog behind the dialog's content. */
+  body > [data-base-ui-portal] {
     isolation: isolate;
   }
   .ui-tooltip,
