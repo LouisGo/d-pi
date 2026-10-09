@@ -34,6 +34,9 @@ try {
     "native-queue.mjs",
     "native-subagent-configuration.mjs",
     "reading-session.mjs",
+    "managed-session.mjs",
+    "image-input.mjs",
+    "image-compression.mjs",
   ])
     await cp(resolve("runtime", name), join(adapter, name));
   await writeFile(
@@ -140,6 +143,24 @@ try {
     children.delete(child);
     return { state, messages, frames };
   }
+  const fresh = await run(null);
+  assert.equal(fresh.state.success, true);
+  assert.equal(fresh.messages.data.totalMessages, 0);
+  const emptyBinding = {
+    sessionId: fresh.state.data.sessionId,
+    sessionFile: await realpath(fresh.state.data.sessionFile),
+  };
+  const emptyJournal = await readFile(emptyBinding.sessionFile, "utf8");
+  const coldEmpty = await run(emptyBinding);
+  assert.equal(coldEmpty.state.data.sessionId, emptyBinding.sessionId);
+  assert.equal(
+    await realpath(coldEmpty.state.data.sessionFile),
+    emptyBinding.sessionFile,
+  );
+  assert.equal(coldEmpty.messages.data.totalMessages, 0);
+  assert.ok(
+    (await readFile(emptyBinding.sessionFile, "utf8")).startsWith(emptyJournal),
+  );
   const restored = await run(binding);
   assert.equal(restored.state.success, true);
   assert.equal(restored.state.data.sessionId, binding.sessionId);
@@ -195,6 +216,7 @@ try {
   console.log(
     JSON.stringify({
       sdkVersion: "18.4.6",
+      emptySessionColdRestart: true,
       sameSessionId: true,
       sameSessionFile: true,
       savedMessages: restored.messages.data.totalMessages,

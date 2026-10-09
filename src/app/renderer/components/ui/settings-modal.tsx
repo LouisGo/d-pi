@@ -30,7 +30,11 @@ export function SettingsModal({
         if (!value) onClose();
       }}
     >
-      <Dialog.Portal keepMounted>
+      <Dialog.Portal
+        keepMounted
+        className="ui-dialog-portal"
+        data-dpi-modal-open={open ? "" : undefined}
+      >
         <Dialog.Backdrop className="ui-overlay-backdrop" />
         <Dialog.Popup
           ref={popup}

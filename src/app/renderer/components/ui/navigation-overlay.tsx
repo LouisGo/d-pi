@@ -27,7 +27,10 @@ export function NavigationOverlay({
         if (!value) onClose();
       }}
     >
-      <Dialog.Portal>
+      <Dialog.Portal
+        className="ui-dialog-portal"
+        data-dpi-modal-open={open ? "" : undefined}
+      >
         <Dialog.Backdrop className="ui-overlay-backdrop" />
         <Dialog.Popup
           className="ui-navigation-overlay"

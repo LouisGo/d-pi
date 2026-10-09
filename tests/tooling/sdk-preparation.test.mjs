@@ -83,6 +83,7 @@ function fixture(t) {
     "model-selection.mjs",
     "native-queue.mjs",
     "reading-session.mjs",
+    "managed-session.mjs",
     "image-input.mjs",
     "image-compression.mjs",
     "pdf-content.mjs",

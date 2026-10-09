@@ -105,6 +105,7 @@ if (process.env.D_PI_CONFIGURATION_SOURCE !== "1") {
       "native-queue.mjs",
       "native-subagent-configuration.mjs",
       "reading-session.mjs",
+      "managed-session.mjs",
       "pdf-content.mjs",
     ])
       copyFileSync(resolve("runtime", name), join(isolated.root, name));
