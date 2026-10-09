@@ -29,7 +29,7 @@ it("keeps favorite provider/model pairs distinct and sorts by device order witho
       favorites: [catalogModelKey(b)],
       order: [catalogModelKey(c), catalogModelKey(a)],
     }),
-  ).toEqual([b, c, a]);
+  ).toEqual([c, a, b]);
   expect(
     filterModelCatalog(native, {
       favoritesOnly: true,

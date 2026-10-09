@@ -111,8 +111,8 @@ first.files = [
     end: start + fileContent.length,
   },
 ];
-const runtimeRequest = bridge.runtime.request;
-bridge.runtime.request = async (command) => {
+const runtimeRequest = bridge.runtime!.request;
+bridge.runtime!.request = async (command) => {
   const reply = await runtimeRequest(command);
   if (reply.kind !== "view") return reply;
   return {
@@ -183,7 +183,7 @@ bridge.conversation = {
 };
 Object.assign(window, {
   displayProbe: {
-    locale: () => bridge.locale.setPreference("zh-CN"),
+    locale: () => bridge.locale!.setPreference("zh-CN"),
     append: () => {
       live = {
         ...live,

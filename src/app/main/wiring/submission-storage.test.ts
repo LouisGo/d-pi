@@ -4,7 +4,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { describe, expect, it, vi } from "vitest";
-import { FrozenSubmissionSchema } from "../../../modules/execution/contracts/public";
+import {
+  FrozenSubmissionSchema,
+  SubmissionIdSchema,
+} from "../../../modules/execution/contracts/public";
 import { SubmissionRepository } from "../../../modules/execution/main/public";
 import { DraftRepository } from "../../../modules/input/main/public";
 import { ThreadRepository } from "../../../modules/threads/main/public";
@@ -145,7 +148,7 @@ describe("persistent submission handoff", () => {
         const ready = new DatabaseSync(path, { readOnly: true });
         try {
           expect(ready.prepare("PRAGMA user_version").get()?.user_version).toBe(
-            13,
+            14,
           );
           expect(ready.prepare("PRAGMA journal_mode").get()?.journal_mode).toBe(
             "wal",
@@ -541,7 +544,7 @@ it("finds frozen attachment presentations beyond the recent receipt window witho
         store.submissions.prepareSubmission({
           ...value,
           origin: "free",
-          submissionId: randomUUID(),
+          submissionId: SubmissionIdSchema.parse(randomUUID()),
           traceId: randomUUID(),
           requestId: randomUUID(),
           text: `later ${index}`,

@@ -30,7 +30,7 @@ it("keeps all multi-file failures in its Thread-owned projection and retries onl
   });
 });
 it("finishes private imports after detaching a view without delivering a late insert to another Thread", async () => {
-  let finish: (items: []) => void = () => {};
+  let finish: ((items: []) => void) | undefined;
   const model = new AttachmentImports(
     () =>
       new Promise((resolve) => {
@@ -45,8 +45,8 @@ it("finishes private imports after detaching a view without delivering a late in
   model.importFiles([new File(["body"], "source.txt")], "paste");
   await vi.waitFor(() => expect(model.stateStore.getState().pending).toBe(1));
   detach();
-  await new Promise((resolve) => setTimeout(resolve, 10));
-  finish([]);
+  await vi.waitFor(() => expect(finish).toBeDefined());
+  finish?.([]);
   await vi.waitFor(() => expect(model.stateStore.getState().pending).toBe(0));
   expect(oldView).not.toHaveBeenCalled();
   expect(otherView).not.toHaveBeenCalled();

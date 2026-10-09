@@ -1,0 +1,86 @@
+{
+  "commit": "7d49b4907b61fef0502b30f04308812f8905eaea",
+  "dirty": true,
+  "passed": true,
+  "captured": true,
+  "platform": "darwin",
+  "mode": "isolated Electron Renderer; production views and synthetic bridge; no provider requests",
+  "results": [
+    {
+      "name": "modal rail isolation, preview closure, Escape/focus/backdrop",
+      "theme": "light",
+      "width": 1440,
+      "hit": {
+        "portalZ": "50",
+        "inside": true,
+        "preview": false
+      }
+    },
+    {
+      "name": "Settings nested Select, separate Escape and focus return",
+      "theme": "light",
+      "width": 1440,
+      "nested": {
+        "nested": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "modal rail isolation, preview closure, Escape/focus/backdrop",
+      "theme": "light",
+      "width": 720,
+      "hit": {
+        "portalZ": "50",
+        "inside": true,
+        "preview": false
+      }
+    },
+    {
+      "name": "Settings nested Select, separate Escape and focus return",
+      "theme": "light",
+      "width": 720,
+      "nested": {
+        "nested": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "modal rail isolation, preview closure, Escape/focus/backdrop",
+      "theme": "dark",
+      "width": 1440,
+      "hit": {
+        "portalZ": "50",
+        "inside": true,
+        "preview": false
+      }
+    },
+    {
+      "name": "Settings nested Select, separate Escape and focus return",
+      "theme": "dark",
+      "width": 1440,
+      "nested": {
+        "nested": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "modal rail isolation, preview closure, Escape/focus/backdrop",
+      "theme": "dark",
+      "width": 720,
+      "hit": {
+        "portalZ": "50",
+        "inside": true,
+        "preview": false
+      }
+    },
+    {
+      "name": "Settings nested Select, separate Escape and focus return",
+      "theme": "dark",
+      "width": 720,
+      "nested": {
+        "nested": true,
+        "hit": true
+      }
+    }
+  ]
+}

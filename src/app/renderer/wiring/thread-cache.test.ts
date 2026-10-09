@@ -4,7 +4,10 @@ import {
   RuntimeViewSchema,
 } from "../../../modules/execution/contracts/public";
 import { DraftSchema } from "../../../modules/input/contracts/public";
-import type { DesktopBridge } from "../../contracts/desktop-bridge";
+import {
+  type DesktopBridge,
+  parseDesktopReply,
+} from "../../contracts/desktop-bridge";
 import { AppModel } from "./model";
 
 afterEach(() => vi.unstubAllGlobals());
@@ -27,16 +30,16 @@ async function fixture() {
   const bridge: DesktopBridge = {
     request: async (command) => {
       if (command.kind === "list-threads")
-        return { kind: "threads", threads: drafts };
+        return parseDesktopReply(command, { kind: "threads", threads: drafts });
       if (command.kind === "select-thread")
         current = drafts.find((draft) => draft.threadId === command.threadId);
       if (!current) throw Error("missing draft");
-      return {
+      return parseDesktopReply(command, {
         kind: "ready",
         draft: current,
         directoryAvailable: true,
         preferences: { theme: "light", density: "normal", locale: "system" },
-      };
+      });
     },
     runtime: {
       subscribe: (listener) => {

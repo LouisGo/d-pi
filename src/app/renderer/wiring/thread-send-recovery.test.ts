@@ -5,7 +5,10 @@ import {
   SubmissionReceiptSchema,
 } from "../../../modules/execution/contracts/public";
 import { DraftSchema } from "../../../modules/input/contracts/public";
-import type { DesktopBridge } from "../../contracts/desktop-bridge";
+import {
+  type DesktopBridge,
+  parseDesktopReply,
+} from "../../contracts/desktop-bridge";
 import { transportFailure } from "./model";
 import { ThreadModel } from "./thread-model";
 
@@ -38,11 +41,11 @@ async function fixture(
   const bridge: DesktopBridge = {
     request: async (command) => {
       if (command.kind === "save")
-        return {
+        return parseDesktopReply(command, {
           kind: "saved",
           threadId: command.threadId,
           revision: command.expectedRevision + 1,
-        };
+        });
       throw Error("unexpected desktop command");
     },
     runtime: {
@@ -105,7 +108,10 @@ async function fixture(
         if (command.kind === "dispatch" && prepared)
           return {
             kind: "receipt",
-            receipt: { ...prepared, state: "dispatching" },
+            receipt: SubmissionReceiptSchema.parse({
+              ...prepared,
+              state: "dispatching",
+            }),
           };
         throw Error("unexpected submission command");
       },

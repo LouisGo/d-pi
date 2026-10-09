@@ -81,7 +81,7 @@ afterEach(() => {
 it("writes a custom question answer through the Host only for the live connection generation", async () => {
   const messages: HostMessage[] = [];
   const host = createSessionHost((message) => messages.push(message), vi.fn());
-  const threadId = crypto.randomUUID();
+  const threadId = ThreadIdSchema.parse(crypto.randomUUID());
   const connectionGeneration = crypto.randomUUID();
   await host.handle({
     kind: "start",
@@ -270,7 +270,7 @@ it("answers timed-out questions with the timeout default while confirm dialogs k
     const messages: HostMessage[] = [];
     const exit = vi.fn();
     const host = createSessionHost((message) => messages.push(message), exit);
-    const threadId = crypto.randomUUID();
+    const threadId = ThreadIdSchema.parse(crypto.randomUUID());
     const connectionGeneration = crypto.randomUUID();
     await host.handle({
       kind: "start",
@@ -843,7 +843,7 @@ it("dismisses an unknown dialog locally and reports acknowledged without a nativ
   const messages: HostMessage[] = [];
   const exit = vi.fn();
   const host = createSessionHost((message) => messages.push(message), exit);
-  const threadId = crypto.randomUUID();
+  const threadId = ThreadIdSchema.parse(crypto.randomUUID());
   const connectionGeneration = crypto.randomUUID();
   await host.handle({
     kind: "start",

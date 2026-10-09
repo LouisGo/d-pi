@@ -120,6 +120,9 @@
   --text-body: 0.8125rem;
   --text-reading: 0.9375rem;
   --text-small: 0.75rem;
+  --text-caption: 0.775rem;
+  --text-micro: 0.725rem;
+  --turn-preview-width: 17rem;
   --statusbar-height: 28px;
   --header-height: 2.75rem;
   --window-controls-width: 4.5rem;

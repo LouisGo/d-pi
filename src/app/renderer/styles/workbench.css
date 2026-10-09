@@ -506,7 +506,7 @@
   }
   .sidebar-loading {
     align-self: center;
-    padding-block: 0.75rem;
+    padding-block: calc(var(--spacing) * 3);
   }
   .sidebar-loading:empty {
     display: none;

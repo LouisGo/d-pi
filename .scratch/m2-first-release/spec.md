@@ -407,3 +407,21 @@
 本段工程验证：按确认表逐值核对两种语言，既有 953 项含 9 项删除全部一致，开发者新增 196 个共享消息，两种语言各 1140 个键且 ICU 解析通过。文案相关 30 文件 253 项测试通过；筛选排除的两项旧测试（runtime inspection 的 Stop 查找、开发者整页路由进入）仍在全量执行中报告，未增加 skip 或修改门禁。新增看板语言切换测试覆盖嵌套预览、按钮计数、新增标签页、导航/设置选择保留；此前固定中文的真实缺口先失败后通过。相关测试同步按钮名称、提示与确认区域选择；模型排序示例使用明确设备顺序，避免版本排序改变示例前提。
 
 Renderer/Main/Core/Host/preload 生产代码类型检查、build、check:fast、i18n/design/interaction lint 及 impeccable 静态扫描通过。全局 typecheck 的 20 项旧测试/validation 类型错误，在起点归档具有相同位置和错误码；全量测试余下 8 项断言失败在起点用相同 Node 24.21.0 复现：5 项 schema 14 对旧 13 断言、1 项模型排序、上述 2 项界面测试。本轮完整矩阵的一次 SDK PDF worker SIGABRT，单独复查该文件 14 项通过；不宣称全量门禁全绿，也不扩大为旧功能修复。源码/diff 复核执行、权限、持久化与原生内容处理未改；当前目录 main 交付，commit/push 依本轮用户明确授权执行。未运行 GUI 或新模型请求，用户试用认可 pending。
+
+
+## 2026-10-09 本地 QA 修复复核
+
+用户明确授权本地修复、验证、commit 与 push；使用独立 `codex/qa-20261009` 分支，起点 fresh fetch 的 main 为 `7d49b4907b61fef0502b30f04308812f8905eaea`。原 QA 报告基线 `e483d25dabb857ad4d4c2843e155dbb105f4d100` 仅为历史输入；没有回退或覆盖用户 checkout。
+
+Library 官方 prepare_materialize 已成功产生传输描述，但内置 helper 在本执行器下载阶段返回 HTTP 403；按受支持流程显式本地目标重试一次仍失败，此后停止。报告、ZIP 和原截图 32/55/65 未成功落地或读取，ZIP 摘要未核验；以下证据来自最新源码、本地回归和新实机截图，不能据此标记原 QA 全部验收。
+
+修复与证据：
+
+- SDK 新会话原来只分配文件名，在 Ready/binding 发布时空 session 尚未落盘。固定 OMP 18.4.6 的 `ensureOnDisk()` 在同一 session 上完成持久化后才交给 Host；失败拒绝启动，恢复继续核验真实路径/header ID/cwd。真实临时目录回归先 ENOENT 后通过；真实 Host 冷恢复探针覆盖 Ready 后未发送即正常退出、同 ID/路径/零消息重启，以及已有两条消息、错 ID、缺失文件、错 cwd、空历史文件、零模型调用。已有缺失文件 binding 无可靠证据区分从未落盘与历史被删除，保持明确失败和草稿，不静默换 ID、覆盖或重建。
+- 收据生产者持有 `sessionFile`，历史候选查询/展示却使用 `sessionId`。统一 path canonical ref，保留 Thread/config context/正文/图片 digest 校验。真实 RuntimeService→SQLite→重开存储→生产历史 IPC/JSONL 链路测试使用不等于 ID 的路径、TXT+PNG，并断言错误 context/digest/body 不归并及草稿保留。旧显示回归先失败再通过。
+- 三个共享 Dialog Portal 使用共同 layer token 提升整个 isolation stacking context；两种共享 HoverCard 入口关闭现存背景预览并拒绝背景打开。相同 Electron 回归在起点源码副本打开图片后等待背景 preview 关闭超时；修复后 [实机结果](evidence/conversation-modal/result.json) 8 项通过。覆盖亮/暗主题、1440/720 宽度、命中层级、背景 hover、遮罩、Escape、焦点回归、Settings 嵌套 Select 和分开关闭；已实际查看新截图像素。
+- 在当前起点复现四个 schema13 旧断言和 favorites-first 旧排序断言，更新为 schema14/显式手动顺序；保留 migration backup/index 和排序相关保障。总门禁另外揭示既有测试类型/桥接/组件 mock/旧按钮名称及异步附件读取等待问题，补齐当前契约，不删除或跳过测试。既有局部尺寸改用同值集中 token/计算表达式；文档中不存在的历史日志链接明确标记未保存。SDK failure fixture 补齐官方 models 配置要求，保留零 provider 调用断言。
+
+独立 Spec/Standards 审查及增量复核无有依据生产缺陷。OMP、依赖锁和架构边界保持原版本；没有 merge、部署、付费 provider 请求或修改用户真实数据。验证系统为 macOS arm64，实机为正式 Renderer 配合合成桥接；不补称 Linux 专属或真实厂商兼容验证。用户体验认可仍 pending。
+
+最终本机结果：`pnpm check` 的类型、lint/design/i18n、设计/source boundary、架构/文档/生成报告检查、39 项架构测试和 144 项 tooling 测试通过；默认并发的最终全量阶段两次在 clipboard PDF worker `SIGABRT`（232 文件/1448 断言通过，1 worker 错误），不记为完整门禁通过。该文件单独 14 项通过；不改配置、不新增 skip 的 `pnpm test --maxWorkers=2` 完整运行 233 文件/1461 项通过，原有 2 项跳过。`pnpm check:fast`、`pnpm build`、`pnpm check:environment`、`pnpm validate:sdk`、真实 Host cold resume 和 impeccable 扫描通过（扫描无发现）。远端标准 CI 按推送后的确切 SHA 单独核对并在交付报告给出结果。

@@ -162,7 +162,7 @@ it("normalizes existing v6 dispatch and ACK receipts before publishing the befor
     const current = new DatabaseSync(path, { readOnly: true });
     try {
       expect(current.prepare("PRAGMA user_version").get()?.user_version).toBe(
-        13,
+        14,
       );
     } finally {
       current.close();

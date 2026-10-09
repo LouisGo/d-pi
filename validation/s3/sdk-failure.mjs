@@ -21,6 +21,8 @@ await writeFile(
   JSON.stringify({
     providers: {
       fixture: {
+        // A valid declaration whose credential command deterministically returns no key.
+        apiKey: "!exit 1",
         baseUrl: `http://127.0.0.1:${server.address().port}/v1`,
         api: "openai-completions",
         models: [

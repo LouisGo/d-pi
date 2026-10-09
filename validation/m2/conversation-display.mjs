@@ -12,10 +12,15 @@ import { createCdpClient } from "./cdp.mjs";
 const isolated = createTestEnvironment({
   prefix: "d-pi-conversation-display-",
 });
+const modalOnly = process.argv.includes("--modal");
 const anchorPreview = process.argv.includes("--anchor-preview");
 const output = resolve(
   ".scratch/m2-first-release/evidence/" +
-    (anchorPreview ? "conversation-anchor-preview" : "conversation-feedback"),
+    (modalOnly
+      ? "conversation-modal"
+      : anchorPreview
+        ? "conversation-anchor-preview"
+        : "conversation-feedback"),
 );
 mkdirSync(output, { recursive: true });
 const commit = execFileSync("git", ["rev-parse", "HEAD"], {
@@ -142,7 +147,172 @@ try {
       "!!document.querySelector('[data-streamdown=code-block-body] span[style]')",
     ),
   );
-  if (anchorPreview) {
+  if (modalOnly) {
+    const visiblePreview =
+      "!!document.querySelector('[data-slot=hover-card][data-open]')";
+    for (const theme of ["light", "dark"]) {
+      await evaluate(
+        "window.probe.model.preference('theme'," + JSON.stringify(theme) + ")",
+      );
+      for (const width of [1440, 720]) {
+        await call("Emulation.setDeviceMetricsOverride", {
+          width,
+          height: 900,
+          deviceScaleFactor: 1,
+          mobile: false,
+        });
+        await evaluate(pane + ".scrollTop=0");
+        await frames();
+        const turn = await evaluate(
+          "(()=>{const r=document.querySelectorAll('[data-turn-target]')[1].getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()",
+        );
+        await call("Input.dispatchMouseEvent", {
+          type: "mouseMoved",
+          x: turn.x,
+          y: turn.y,
+        });
+        await wait(() => evaluate(visiblePreview));
+        await evaluate(
+          "document.querySelector('.message-image-tile button').focus();document.querySelector('.message-image-tile button').click()",
+        );
+        await wait(() =>
+          evaluate(
+            "!!document.querySelector('[role=dialog][data-open] .message-image-preview')",
+          ),
+        );
+        await wait(() =>
+          evaluate(
+            "!document.querySelector('[data-slot=hover-card][data-open]')",
+          ),
+        );
+        await call("Input.dispatchMouseEvent", {
+          type: "mouseMoved",
+          x: turn.x,
+          y: turn.y,
+        });
+        await frames();
+        const hit = await evaluate(
+          "(()=>{const r=document.querySelectorAll('[data-turn-target]')[1].getBoundingClientRect(),p=document.querySelector('[role=dialog][data-open]').closest('[data-base-ui-portal]');return {portalZ:getComputedStyle(p).zIndex,inside:p.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)),preview:!!document.querySelector('[data-slot=hover-card][data-open]')}})()",
+        );
+        assert.ok(hit.inside && !hit.preview, JSON.stringify(hit));
+        await wait(() =>
+          evaluate(
+            "getComputedStyle(document.querySelector('[role=dialog][data-open]')).opacity==='1' && document.querySelector('.message-image-preview').naturalWidth>0",
+          ),
+        );
+        await frames();
+        await shot(`modal-${theme}-${width}`);
+        await call("Input.dispatchKeyEvent", {
+          type: "keyDown",
+          key: "Escape",
+          code: "Escape",
+          windowsVirtualKeyCode: 27,
+        });
+        await call("Input.dispatchKeyEvent", {
+          type: "keyUp",
+          key: "Escape",
+          code: "Escape",
+          windowsVirtualKeyCode: 27,
+        });
+        await wait(() =>
+          evaluate("!document.querySelector('[data-dpi-modal-open]')"),
+        );
+        await wait(() =>
+          evaluate(
+            "document.activeElement===document.querySelector('.message-image-tile button')",
+          ),
+        );
+        await evaluate(
+          "document.querySelector('.message-image-tile button').click()",
+        );
+        await wait(() =>
+          evaluate("!!document.querySelector('[data-dpi-modal-open]')"),
+        );
+        await call("Input.dispatchMouseEvent", {
+          type: "mousePressed",
+          x: width - 8,
+          y: 8,
+          button: "left",
+          clickCount: 1,
+        });
+        await call("Input.dispatchMouseEvent", {
+          type: "mouseReleased",
+          x: width - 8,
+          y: 8,
+          button: "left",
+          clickCount: 1,
+        });
+        await wait(() =>
+          evaluate("!document.querySelector('[data-dpi-modal-open]')"),
+        );
+        results.push({
+          name: "modal rail isolation, preview closure, Escape/focus/backdrop",
+          theme,
+          width,
+          hit,
+        });
+        await evaluate(
+          "document.querySelector('.sidebar-actions button').focus();document.querySelector('.sidebar-actions button').click()",
+        );
+        await wait(() =>
+          evaluate("!!document.querySelector('.ui-settings-modal[data-open]')"),
+        );
+        await evaluate(
+          "document.querySelector('.ui-settings-modal .ui-select').click()",
+        );
+        await wait(() =>
+          evaluate("!!document.querySelector('.ui-select-popup[data-open]')"),
+        );
+        const nested = await evaluate(
+          "(()=>{const p=document.querySelector('.ui-select-popup[data-open]'),r=p.getBoundingClientRect(),d=document.querySelector('.ui-settings-modal[data-open]').closest('[data-base-ui-portal]');return {nested:d.contains(p),hit:p.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2))}})()",
+        );
+        assert.ok(nested.nested && nested.hit, JSON.stringify(nested));
+        await wait(() =>
+          evaluate(
+            "getComputedStyle(document.querySelector('.ui-settings-modal[data-open]')).opacity==='1' && getComputedStyle(document.querySelector('.ui-select-popup[data-open]')).opacity==='1'",
+          ),
+        );
+        await frames();
+        await shot(`settings-select-${theme}-${width}`);
+        for (const remaining of [true, false]) {
+          await call("Input.dispatchKeyEvent", {
+            type: "keyDown",
+            key: "Escape",
+            code: "Escape",
+            windowsVirtualKeyCode: 27,
+          });
+          await call("Input.dispatchKeyEvent", {
+            type: "keyUp",
+            key: "Escape",
+            code: "Escape",
+            windowsVirtualKeyCode: 27,
+          });
+          await wait(() =>
+            evaluate(
+              "!document.querySelector('.ui-select-popup[data-open]') && !!document.querySelector('.ui-settings-modal[data-open]') === " +
+                remaining,
+            ),
+          );
+        }
+        await wait(() =>
+          evaluate(
+            "document.activeElement===document.querySelector('.sidebar-actions button')",
+          ),
+        );
+        results.push({
+          name: "Settings nested Select, separate Escape and focus return",
+          theme,
+          width,
+          nested,
+        });
+        await call("Input.dispatchMouseEvent", {
+          type: "mouseMoved",
+          x: width - 20,
+          y: 30,
+        });
+      }
+    }
+  } else if (anchorPreview) {
     for (const theme of ["light", "dark"]) {
       await evaluate(
         "window.probe.model.preference('theme'," + JSON.stringify(theme) + ")",
