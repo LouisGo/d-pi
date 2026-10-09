@@ -2,7 +2,7 @@
 
 ## 当前工作入口
 
-从固定[项目总看板](docs/status.md)找到当前范围、所属规格和任务，再按本页路由读取相关合同。授权、工程完成、交付试用与用户认可由所属 `spec.md` 维护；任务状态在所属票，看板只生成聚合，交接是特定构建的快照。
+从固定[项目总看板](docs/status.md)找到所属范围，再按本页路由读取相关合同。普通任务复用所属 spec 或票的一处简短记录；只有需要独立交接或拆分时才增加文件。看板只生成聚合，工程完成、交付试用与用户认可分别表达。日常串行开发默认当前目录的 main；分支、worktree、PR 按[任务约定](docs/agents/issue-tracker.md#日常开发与隔离)分别选择。
 
 历史切片的授权或限制只描述当时范围，不能覆盖后续用户明确授权；计划、提议、工程通过和用户未回复都不构成授权或认可。发现重要待决时只暂停依赖部分，不据此阻塞独立工程工作。状态读取、更新与交接规则见[任务约定](docs/agents/issue-tracker.md)。
 
@@ -11,7 +11,7 @@
 - 产品设计、选型或实现前，查[决定登记](docs/decisions.md)、[首版方案](docs/product/first-release.md)及相关需求/ADR，识别受影响 ID 与状态；其他任务只读相关材料。已读且未变化的内容不重复加载。
 - 已确认决定与沿用基线继续有效。改变既定方向、数据/权限、重大范围或无法确定的概念冲突时，列出旧决定、证据、替代方案和影响，与用户对齐；仅暂停依赖部分。常规可逆工程选择自主完成。
 - 决定变更保留日期、依据和取代关系，同步登记与规格；不得事后改规格迁就实现。文档、代码与观测不符时分别说明要求、实现事实和证据缺口。
-- 近期切片开始时简述交付结果、范围、验收及重要待决；补规格、拆票、内部接口由 Agent 完成。每段可操作体验及时交付试用。状态与参与细则单源见[任务约定](docs/agents/issue-tracker.md#spec-对齐与跨会话交接)。
+- 近期工作开始时简述交付结果、范围、必要验证及重要待决；复用已有规格，仅按实际依赖或独立交付需要补规格、拆票。每段可操作体验及时交付试用。状态与参与细则单源见[任务约定](docs/agents/issue-tracker.md#spec-对齐与跨会话交接)。
 
 ## 稳定边界
 
@@ -28,7 +28,7 @@
 
 ## 常用命令与验证
 
-环境准备、SDK 资源与 Dev 启动见[README](README.md#环境准备与启动)，日常试用默认 `pnpm dev`；构建预览、固定包及旧产物清理按[本地交付](docs/engineering/local-delivery.md#选择运行与交付方式)选择。快速本地检查为 `pnpm check:fast`（显式安装的提交 hook 调用），完整检查为 `pnpm check`、`pnpm build`；边界任务按需用 `pnpm check:architecture`、`pnpm test:architecture`、`pnpm report:structure`。
+环境准备、SDK 资源与 Dev 启动见[README](README.md#环境准备与启动)，日常试用默认 `pnpm dev`；构建预览、固定包及旧产物清理按[本地交付](docs/engineering/local-delivery.md#选择运行与交付方式)选择。日常只跑受影响的行为测试和必要静态检查；已安装的提交 hook 按暂存改动选择文档检查或现有快速门禁，完整 `pnpm check`、`pnpm build` 用于需要它们的集成节点或 CI。具体命令见[工程入口](docs/engineering/checks.md)，边界任务按需用架构检查和报告。
 
 功能与缺陷遵循 TDD：目标缺口先失败测试，再最小实现；既有正确行为补测不伪造红灯。优先固定官方源码、文档和已有证据，关键未知才做最小实验；自动化证明常规行为，Computer use 仅补必要原生/视觉证据或响应用户明确要求。按风险完成必要检查，足够即交付，不逐票重跑无关矩阵。详细规则见[无头功能合同](docs/architecture/headless-features.md)。
 
@@ -38,9 +38,9 @@
 
 | 任务 | 入口 |
 | --- | --- |
-| 执行已授权切片、并行 implement 与集成 | [d-pi-implement-slice](.agents/skills/d-pi-implement-slice/SKILL.md)、[任务约定](docs/agents/issue-tracker.md#授权切片与-ready-frontier)；多票用 `pnpm plan:slice`，主 Agent 单写管理状态 |
-| PR / 分支 / WIP 的独立评审 | [d-pi-code-review](.agents/skills/d-pi-code-review/SKILL.md)；固定真实范围，分别覆盖 Spec 与 Standards |
-| PR body 与工程收尾 | [d-pi-pr](.agents/skills/d-pi-pr/SKILL.md)、[PR 模板](.github/pull_request_template.md)；本地任务不依赖远端 PR 关闭 |
+| 执行已授权任务、按需并行与集成 | [d-pi-implement-slice](.agents/skills/d-pi-implement-slice/SKILL.md)；需要多票调度时用 `pnpm plan:slice`，主 Agent 单写管理状态 |
+| PR / 分支 / 提交 / WIP 的评审 | [d-pi-code-review](.agents/skills/d-pi-code-review/SKILL.md)；固定真实范围，一次审查覆盖 Spec 与 Standards，独立评审按风险或用户要求选择 |
+| 已选择 PR 的描述与合入 | [d-pi-pr](.agents/skills/d-pi-pr/SKILL.md)、[PR 模板](.github/pull_request_template.md)；普通任务不加载 PR 收尾 |
 | 请求复盘或已授权工作流优化 | [d-pi-retro](.agents/skills/d-pi-retro/SKILL.md)；依据真实会话建议/实施环境改进，不自动扩张规则 |
 | 功能规划、拆票、模块实现或架构评审 | [d-pi-headless-features](.agents/skills/d-pi-headless-features/SKILL.md)、[无头功能合同](docs/architecture/headless-features.md)、相关基础契约节；普通文档/skill 审计、纯文字或纯样式不触发 |
 | 模块与跨模块接入 | [模块地图](docs/architecture/modules/README.md)的目标模块及直接依赖，跨模块再读[交接图](docs/architecture/modules/flows.md) |

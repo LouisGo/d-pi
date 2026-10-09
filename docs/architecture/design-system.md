@@ -135,7 +135,7 @@ Base UI / 选择性改造的上游源码 / 专用渲染与编辑能力
 
 源码门禁 `pnpm lint:interaction` 检查 CSS、工具类、静态内联/命令式赋值和原生按钮的共享样式接入；在 `check:fast` 与 `lint:design`（因此完整 `check`）中执行。CSS 文本选择例外只允许中央规则定义，违规失败。扫描只证明可静态识别的自有代码，不冒称能解释任意动态 JS 或第三方 DOM。
 
-修改中央规则、相关控件、内容标记或升级 UI 依赖时运行 `pnpm validate:interaction`：隔离 Electron 使用正式 App/组件及真实 Monaco/Diff，验证 computed cursor、默认不可选与鼠标拖选例外、Monaco 键盘选区、控件/portal 覆盖、hover/active/disabled/focus-visible 和主题/密度。测试桥接使用 fixture，不认证、不执行 OMP，也不代表真实供应商或用户认可。实现与本轮证据见[交互规范规格](../../.scratch/interaction-policy/spec.md)。
+2026-10-09 验证投入调整：局部控件或内容标记变化默认使用相关 lint、组件/行为测试；只因新增控件不运行完整交互矩阵。修改中央交互规则、Monaco 适配或 UI 依赖且涉及跨控件传播风险时，按[验证选择](headless-features.md#日常改动的验证选择2026-10-07)选择对应真实场景；需覆盖全局交互时运行 `pnpm validate:interaction`。该隔离 Electron 入口使用正式 App/组件及真实 Monaco/Diff，覆盖 cursor、选择例外、控件/portal、交互状态与主题；fixture 不代表真实供应商或用户认可。交互行为要求不变，历史实现与证据见[交互规范规格](../../.scratch/interaction-policy/spec.md)。
 
 ## 可执行检查
 

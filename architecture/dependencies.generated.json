@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "9da7a0f8b59bd5914dd19a1a4b1c850c752599435f44a0ac1e1447ef32f05bbc",
+  "inputsHash": "f60f441c48bd257ed4ebd6c7e2200db953eebc569399cf5c0eb435076945b186",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 518,
-    "scannedFiles": 518,
+    "sourceFiles": 522,
+    "scannedFiles": 522,
     "unscanned": []
   },
   "modules": [
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 218,
-      "lines": 41037,
+      "lines": 41061,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -106,7 +106,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 21,
-      "lines": 3201,
+      "lines": 3233,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -374,7 +374,7 @@
       "defaultEnvironment": "omp",
       "materialized": true,
       "files": 14,
-      "lines": 3570,
+      "lines": 3580,
       "publicEntries": [
         {
           "path": "runtime/host.mjs",
@@ -393,8 +393,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 30,
-      "lines": 5282,
+      "files": 32,
+      "lines": 5618,
       "publicEntries": [
         {
           "path": "src/modules/configuration/contracts/public.ts",
@@ -422,8 +422,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 15,
-      "lines": 2594,
+      "files": 17,
+      "lines": 3062,
       "publicEntries": [
         {
           "path": "src/modules/ui/renderer/public.ts",
@@ -7089,6 +7089,30 @@
       "sourceEnvironment": "renderer",
       "test": false,
       "specifier": "../../../../modules/ui/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/components/icons/common.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../../modules/ui/renderer/public",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/components/icons/common.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../../modules/ui/renderer/public",
       "kind": "export",
       "resolution": "module",
       "to": "src/modules/ui/renderer/public.ts",
@@ -8104,11 +8128,11 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
-      "specifier": "../../components/icons/common",
+      "specifier": "../../../../modules/ui/renderer/public",
       "kind": "import",
       "resolution": "module",
-      "to": "src/app/renderer/components/icons/common.tsx",
-      "targetModule": "app",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
       "targetEnvironment": "renderer"
     },
     {
@@ -29130,6 +29154,87 @@
       "targetEnvironment": "core"
     },
     {
+      "from": "src/modules/configuration/renderer/model-picker.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./provider-connection-summary",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/renderer/provider-connection-summary.tsx",
+      "targetModule": "configuration",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/model-picker.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./provider-presentation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/renderer/provider-presentation.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/provider-connection-summary.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "ts-pattern",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/configuration/renderer/provider-connection-summary.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/provider-connection-summary.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../ui/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/provider-connection-summary.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/contracts/public.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/configuration/renderer/provider-connection-summary.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./provider-presentation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/renderer/provider-presentation.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/modules/configuration/renderer/public.ts",
       "sourceModule": "configuration",
       "sourceEnvironment": "renderer",
@@ -29138,6 +29243,18 @@
       "kind": "export",
       "resolution": "module",
       "to": "src/modules/configuration/renderer/model-picker.tsx",
+      "targetModule": "configuration",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/configuration/renderer/public.ts",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./provider-presentation",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/configuration/renderer/provider-presentation.ts",
       "targetModule": "configuration",
       "targetEnvironment": "renderer"
     },
@@ -29395,6 +29512,18 @@
       "sourceModule": "configuration",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "../../core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/core/public.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/model-roles.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "./use-configuration-write",
       "kind": "import",
       "resolution": "module",
@@ -29527,6 +29656,18 @@
       "to": "src/modules/configuration/contracts/public.ts",
       "targetModule": "configuration",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/provider-models.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/core/public.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "core"
     },
     {
       "from": "src/modules/configuration/renderer/settings/provider-models.tsx",
@@ -29716,6 +29857,18 @@
       "to": "src/modules/configuration/core/public.ts",
       "targetModule": "configuration",
       "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/configuration/renderer/settings/providers-settings.tsx",
+      "sourceModule": "configuration",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../provider-presentation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/configuration/renderer/provider-presentation.ts",
+      "targetModule": "configuration",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/modules/configuration/renderer/settings/providers-settings.tsx",
@@ -30141,6 +30294,36 @@
       "resolution": "external"
     },
     {
+      "from": "src/modules/ui/renderer/components/icons/_brands/assets.tsx",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./magpie-assets",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/components/icons/_brands/magpie-assets.tsx",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/ui/renderer/components/icons/_brands/magpie-assets.tsx",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/ui/renderer/components/icons/_shared/icon.tsx",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@hugeicons/react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
       "from": "src/modules/ui/renderer/components/icons/brands.test.ts",
       "sourceModule": "ui",
       "sourceEnvironment": "renderer",
@@ -30184,24 +30367,6 @@
       "sourceModule": "ui",
       "sourceEnvironment": "renderer",
       "test": false,
-      "specifier": "@hugeicons/core-free-icons",
-      "kind": "import",
-      "resolution": "external"
-    },
-    {
-      "from": "src/modules/ui/renderer/components/icons/brands.tsx",
-      "sourceModule": "ui",
-      "sourceEnvironment": "renderer",
-      "test": false,
-      "specifier": "@hugeicons/react",
-      "kind": "import",
-      "resolution": "external"
-    },
-    {
-      "from": "src/modules/ui/renderer/components/icons/brands.tsx",
-      "sourceModule": "ui",
-      "sourceEnvironment": "renderer",
-      "test": false,
       "specifier": "react",
       "kind": "import",
       "resolution": "external"
@@ -30219,6 +30384,18 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/modules/ui/renderer/components/icons/brands.tsx",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./_shared/icon",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/components/icons/_shared/icon.tsx",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/modules/ui/renderer/components/icons/common.tsx",
       "sourceModule": "ui",
       "sourceEnvironment": "renderer",
@@ -30232,9 +30409,12 @@
       "sourceModule": "ui",
       "sourceEnvironment": "renderer",
       "test": false,
-      "specifier": "@hugeicons/react",
+      "specifier": "./_shared/icon",
       "kind": "import",
-      "resolution": "external"
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/components/icons/_shared/icon.tsx",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/modules/ui/renderer/controls.test.ts",
@@ -30515,6 +30695,18 @@
       "kind": "export",
       "resolution": "module",
       "to": "src/modules/ui/renderer/button.tsx",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/ui/renderer/public.ts",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./components/icons/_shared/icon",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/components/icons/_shared/icon.tsx",
       "targetModule": "ui",
       "targetEnvironment": "renderer"
     },

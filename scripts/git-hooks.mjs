@@ -11,7 +11,7 @@ import {
 } from "node:fs";
 import { isAbsolute, join, resolve } from "node:path";
 
-const modes = new Set(["install", "uninstall", "status"]);
+const modes = new Set(["install", "uninstall", "status", "check"]);
 const hooks = [
   "applypatch-msg",
   "pre-applypatch",
@@ -43,6 +43,58 @@ const hooks = [
 ];
 const quote = (value) => `'${value.replaceAll("'", "'\\''")}'`;
 
+function checkCommit(root) {
+  const staged = spawnSync(
+    "git",
+    ["diff", "--cached", "--name-only", "--no-renames", "-z"],
+    { cwd: root, encoding: "utf8" },
+  );
+  if (staged.error || staged.signal || staged.status !== 0)
+    throw new Error("Staged change inventory unavailable; checks did not run");
+  const paths = staged.stdout.split("\0").filter(Boolean);
+  function check(command, args) {
+    const result = spawnSync(command, args, { cwd: root, stdio: "inherit" });
+    if (result.error || result.signal)
+      throw new Error(
+        `Check unavailable: ${result.error?.message ?? result.signal}`,
+      );
+    process.exitCode = result.status ?? 2;
+    return result.status === 0;
+  }
+  if (paths.length > 0 && paths.every((path) => path.endsWith(".md"))) {
+    if (!check(process.execPath, ["scripts/checks/check-documentation.mjs"]))
+      return;
+    check(process.execPath, [
+      "scripts/tasks/project-status.mjs",
+      "--check",
+      "docs/status.md",
+    ]);
+    return;
+  }
+  if (
+    spawnSync("sh", ["-c", "command -v pnpm"], {
+      cwd: root,
+      stdio: "ignore",
+    }).status !== 0
+  )
+    throw new Error("pnpm is unavailable; pre-commit checks did not run");
+  const manifest = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+  const steps = manifest.scripts?.["check:fast"]?.split(" && ");
+  if (!steps || steps.filter((step) => step === "pnpm lint").length !== 1)
+    throw new Error("Unsupported check:fast entry; commit checks did not run");
+  const broadLint = new Set([
+    "biome.json",
+    "biome.jsonc",
+    "package.json",
+    "pnpm-lock.yaml",
+    ".node-version",
+  ]);
+  if (paths.length > 0 && !paths.some((path) => broadLint.has(path)))
+    steps[steps.indexOf("pnpm lint")] =
+      "pnpm exec biome check --staged --no-errors-on-unmatched";
+  check("sh", ["-c", steps.join(" && ")]);
+}
+
 function run() {
   const [mode, ...args] = process.argv.slice(2);
   if (
@@ -50,7 +102,7 @@ function run() {
     (args.length !== 0 && (args[0] !== "--root" || args.length !== 2))
   )
     throw new Error(
-      "Usage: node scripts/git-hooks.mjs install|uninstall|status [--root path]",
+      "Usage: node scripts/git-hooks.mjs install|uninstall|status|check [--root path]",
     );
   const requestedRoot = resolve(args[1] ?? process.cwd());
   function git(arguments_, allowMissing = false) {
@@ -67,6 +119,10 @@ function run() {
     return result.status === 0 ? result.stdout.replace(/\n$/, "") : null;
   }
   const root = git(["rev-parse", "--show-toplevel"]);
+  if (mode === "check") {
+    checkCommit(root);
+    return;
+  }
   const worktreeConfig =
     git(
       ["config", "--local", "--bool", "--get", "extensions.worktreeConfig"],

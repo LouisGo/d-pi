@@ -1,4 +1,4 @@
 interface:
   display_name: "d-pi PR 收尾"
-  short_description: "以关键行为、真实验证证据和回滚风险准备 PR 收尾，支持本地草稿与已有远端授权"
+  short_description: "仅在已选择 PR 时准备描述和合入，核实关键行为、验证证据、回滚风险与远端授权"
   default_prompt: "使用 $d-pi-pr 为当前切片准备 PR 描述，核实证据、影响范围与工程交付状态。"

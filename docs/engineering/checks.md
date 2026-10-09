@@ -4,6 +4,8 @@
 
 日常运行默认 `pnpm dev`；需要监听 Main/preload 时 `pnpm dev:watch`，只需运行编译结果时 `pnpm preview`。首次准备、每轮验证和交付是不同步骤，不把下表串成每次编辑或收尾的必跑链。固定包的触发条件与数据边界见[本地交付](local-delivery.md#选择运行与交付方式)。CI 的完整检查继续保留，不能推导出本地每轮都要打包/E2E/Computer use。
 
+日常任务按[验证选择](../architecture/headless-features.md#日常改动的验证选择2026-10-07)只运行受影响的行为测试、对应环境类型检查和相关 lint；纯文档运行文档检查，修改规格/票且影响看板来源时再生成并检查状态。一次结果足够后停止；完整 check/build 由集成节点的影响或 CI 触发，不因新增功能、换分支或 PR 收尾自动重复。提交 hook 按下方暂存改动选择检查，不自动启动实机。
+
 | 入口 | 责任与运行成本 |
 | --- | --- |
 | `pnpm check:tools` | 开发工具、必需基础依赖声明、精确版本、根 lock importer 与同族版本一致；不启动原生资源 |
@@ -22,7 +24,9 @@
 
 ## 显式安装的提交 hook
 
-`pnpm hooks:install` 安装 Git 元数据里的 dispatcher，再调用仓库 [.githooks/pre-commit](../../.githooks/pre-commit)；原 hook 文件及配置值保留，先执行原 pre-commit，再运行本 checkout 的 `check:fast`，其余原 hooks 继续转发。安装不改全局配置、不启用新的 worktree 配置；其他 linked worktrees 继续原 hook。
+`pnpm hooks:install` 安装 Git 元数据里的 dispatcher，再调用仓库 [.githooks/pre-commit](../../.githooks/pre-commit)；原 hook 文件及配置值保留，先执行原 pre-commit，再由[现有 hook 工具](../../scripts/git-hooks.mjs)的 `check` 模式运行本 checkout 检查，其余原 hooks 继续转发。安装不改全局配置、不启用新的 worktree 配置；其他 linked worktrees 继续原 hook。
+
+2026-10-09：非空暂存集仅含 `.md` 时，直接用 Node 运行 documentation 和 status 检查，不要求 pnpm/应用依赖或 lint 无关代码。其他提交复用 `package.json` 的 `check:fast` 全部门禁，仅将 Biome 限到暂存文件；Biome/依赖/工具版本配置变化和空提交保留完整 Biome。分类使用 NUL 路径及禁用 rename 折叠，代码删除/改名到Markdown仍进入代码门禁；无法读取暂存集或不认识检查入口时失败，不降级为通过。显式 `pnpm check:fast` 和 CI 的完整检查保持原范围。
 
 `pnpm hooks:status` 读取安装状态；`pnpm hooks:uninstall` 恢复安装前本地 `core.hooksPath`，不删除原 hooks。安装后用户另改配置时不静默覆盖或卸载。安装与当前 checkout 的实际拒绝/成功验证见[收口工程票](../../.scratch/infrastructure-closure/issues/03-engineering.md)。安装方式是显式工程操作；首次 clone 不假装已启用。
 

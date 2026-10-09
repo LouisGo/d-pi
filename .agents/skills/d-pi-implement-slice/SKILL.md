@@ -1,36 +1,33 @@
 ---
 name: d-pi-implement-slice
-description: "执行 d-pi 已授权的 spec 切片或任务：按 DAG 调度 leaf 票、隔离并行实现、串行集成并评审交付。规划或只读分析请求不自动转为实施。"
+description: "执行 d-pi 已授权任务，默认当前目录串行实现、相关验证与 Dev 交付；需要多票调度或并行隔离时再进入集成流程。规划或只读分析不自动转为实施。"
 ---
 
 # 执行授权切片
 
-授权、计划格式、票状态与单写归属以[任务约定](../../../docs/agents/issue-tracker.md#授权切片与-ready-frontier)为准。当前任务入口是[总看板](../../../docs/status.md)及用户指定 spec；用户本轮明确范围优先，不能只因看板 current 指向别处就忽略它。
+当前任务入口是用户请求、[总看板](../../../docs/status.md)及所属记录；用户本轮明确范围优先。开发位置、记录与按需调度以[任务约定](../../../docs/agents/issue-tracker.md)为准。
 
-## 准备与派发
+## 日常执行
 
-1. 读取 spec 的推进与交接和目标票，明确本段可交付结果、真实验收及待决。复用已有规格；只补实施所需 leaf、依赖与指针，父票残余行为另拆，不顺手实现其他开放票。
-2. 检查 `git status`、分支、现有 worktrees；固定 base SHA 和集成分支。用户改动保留原位置，必要时建立隔离 checkout；不要 reset 到上游。小单票可沿用当前合适分支，无须强制 worktree/DAG/PR。
-3. 多票使用 spec 的 implementation-plan，运行 `pnpm plan:slice -- .scratch/<feature>/spec.md --slice <id>`。核实授权、hold、写集和共享合同；挑可安全并行的 ready 子集，按实际并发额度派发，不机械铺满。
-4. 主 Agent 标 claimed 并记录归属。先建独立 worktree/分支，再给 implementer 发任务，显式给其绝对工作目录。以当次 integration SHA 为起点；工具 create_worktree 的默认远端分支不保证这一点，必须指定 ref 并核实实际 HEAD。分支默认 `codex/<slice>-<ticket>`，集成默认 `codex/<slice>`。
+明确本段目标、范围、必要验证及重要待决，复用已有 spec 或票；普通任务不先造 DAG、独立规格或收尾文档。检查工作树与分支，记录起点，默认当前目录 main 串行开发；已有合适分支继续使用。保留用户改动，仅并发写入、冲突隔离或保留基线需要时选择短期分支/worktree。跨模块或新增功能本身不触发隔离。
 
-Worker 输入最少包含：spec 的相关节、票路径、基点/集成分支、允许写集、必须保持的公共合同、相关模块 AGENTS/skill、验收和交付格式。只读资料可共享；执行目录和写集不可共享。工程环境按[README](../../../README.md#环境准备与启动)准备固定依赖/资源，不复制或复用会混淆源码身份的构建输出。
+功能/缺陷按项目 TDD 合同推进；文档和已有正确行为不伪造红灯。只加载目标需要的合同和工程 skills，沿用已读且未变化的上下文。环境准备复用[README](../../../README.md#环境准备与启动)，不为每次任务重建 SDK 或复制会混淆源码身份的构建输出。
 
-功能/缺陷按项目 TDD 合同推进；文档和已有正确行为不伪造红灯。按目标加载 headless-features、TypeScript、state-query、architecture、design-system 等真实 SKILL.md，而非只在提示词中提名字；不要求与目标无关的全部 skills。
+按[验证选择](../../../docs/architecture/headless-features.md#日常改动的验证选择2026-10-07)运行受影响的自动测试与必要静态检查，满足当前风险即停止。需要 E2E、实机、供应商请求或完整矩阵时说明具体缺口和停止条件；各层分别选择，失败后只复测受影响部分。
 
-没有 subagent 或独立 worktree 能力时，按同一 frontier 串行做票，并明确实际模式。可用且获授权时优先并行独立实现；探索已够时不再固定起 exploration/merger Agent。
+## 按需派发与集成
 
-## 集成循环
+只有需要调度已拆分任务或选择并行实现时读取 spec 的 implementation-plan，运行 `pnpm plan:slice -- .scratch/<feature>/spec.md --slice <id>`。核实授权、hold、共享接口与写集；主 Agent 单写票状态和 spec。选择有实际收益的 ready 子集，不为填满并发额度拆碎票；串行执行不要求独立 worktree。并行规则详见[任务约定](../../../docs/agents/issue-tracker.md#执行归属与集成)。
 
-- Worker 交付 commit SHA、变更范围、实际测试与未覆盖项。声明随提交保留的证据给出准确路径，交付前用 `git ls-files --error-unmatch -- <选定证据路径>` 核实已暂存/跟踪，主 Agent 用 `git cat-file -e <commit>:<path>` 核实能从提交取回；磁盘存在不等于交付。被忽略的选定工程证据可显式 force-add 或用局部例外，运行日志与业务内容不自动收录。Worker 不负责追赶移动的 integration tip、不合入集成分支，也不写共享管理状态；遇公共合同变化报告给主 Agent。
-- 主 Agent 一次只合入一个结果。核实 commit 来自记录的起点与分支、未带范围外修改；用 merge/cherry-pick 等适合当前历史的方式集成。Git 无冲突还需检查跨票语义一致、接口和资源释放，不能据 merge 成功 resolved。
-- 完成该票验收、更新票和 spec 后再生成看板；重算 frontier，让依赖票从最新 integration SHA 启动。集成期间已运行的独立 worker 保持原基点，主 Agent 承担新旧合同整合。
-- 冲突先判断所有权与合同。普通冲突自主解决；确有收益才派独立 merger/fixer。无法证实正确时保留 worktree 和 blocker，继续其他不依赖工作；不丢弃失败现场。
+- 派并行 implementer 前建立独立目录/分支，明确绝对工作目录、固定基点、允许写集、公共合同和验收。`create_worktree` 默认远端分支不保证集成基点，必须指定 ref 并核实 HEAD。分支使用 `codex/` 前缀，主 Agent 记录必要归属映射；只读评审可用固定差异快照，不另建 worktree。
+- Worker 提供 commit、变更、实际测试与未覆盖项，不追赶移动的集成 tip、不合入或写共享管理状态。承诺随提交保留的证据，用 `git ls-files --error-unmatch` 核实跟踪，主 Agent 用 `git cat-file -e <commit>:<path>` 核实可取回；普通操作日志不自动收录。
+- 主 Agent 串行合入，核实基点和范围，检查跨票接口、所有权与资源释放；完成票的实际验收才 resolved，再更新必要状态和生成看板。新 worker 可从最新集成点开始，已运行 worker 保持原基点。
+- 普通冲突自主解决，重大合同歧义仅暂停依赖部分；保留失败或未合入工作的可恢复位置，不 reset/stash 用户工作。无并行能力时串行完成，不固定起 exploration/merger Agent。
 
 ## 整段交付
 
-可运行体验默认交付 `pnpm dev` 的源码和试用步骤；只有[本地交付](../../../docs/engineering/local-delivery.md#选择运行与交付方式)中的固定候选或打包差异需要才生成包。创建 worktree/PR、完成切片本身不触发打包；验证按受影响行为选择，不为收尾机械重跑完整原生/E2E/Computer use。
+主 Agent 一次 diff 审查覆盖当前要求与相关合同。执行/恢复/权限/事务/跨进程身份等高风险变化、复杂组合或用户明确要求时，按[d-pi-code-review](../d-pi-code-review/SKILL.md)选择独立评审；普通任务不派两个 reviewer 或生成独立报告。修复后刷新受影响验证和审查覆盖。
 
-运行受影响的确定性检查，再按[d-pi-code-review](../d-pi-code-review/SKILL.md)固定整个集成范围，独立 Spec/Standards review；核实发现并修复，修改后更新受影响检查和评审覆盖。需要真实 GUI 的验收仍按原功能合同，不以工具层通过替代。
+交付范围清楚的 commit/diff 与 `pnpm dev` 试用，只在所属记录简记完成内容、验证和剩余问题；工程、试用和用户认可分开。只有[本地交付](../../../docs/engineering/local-delivery.md#选择运行与交付方式)中的固定候选或打包差异需要才生成包。
 
-按[d-pi-pr](../d-pi-pr/SKILL.md)准备可审查收尾；没有远端操作授权仍可交付本地分支和 body。记录工程状态、实际候选/试用、未完成父票和下一步，清理仅限已保存且可恢复的 worktree。证据支持的环境改进可记为 retro 候选，不自动加载或实施 retro。
+仅用户要求或实际选择 PR 时加载[d-pi-pr](../d-pi-pr/SKILL.md)，否则不创建 `pr.md`、模拟 PR 或额外合并仪式。使用过 worktree 时核实保留用途，清理只限已保存可恢复且不再需要的工作；证据支持的环境问题可在同一记录留下 retro 候选，不自动执行复盘。

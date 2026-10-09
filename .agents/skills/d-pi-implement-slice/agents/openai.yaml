@@ -1,4 +1,4 @@
 interface:
   display_name: "d-pi 切片执行"
-  short_description: "按当前授权与 DAG 调度独立工作树实现，串行集成后验证、评审和交付"
-  default_prompt: "使用 $d-pi-implement-slice 完成当前已授权切片，按任务图推进并交付可审查的集成结果。"
+  short_description: "默认当前目录串行实现与相关验证，按需选择多票调度、隔离、评审和 Dev 交付"
+  default_prompt: "使用 $d-pi-implement-slice 完成当前已授权任务，选择必要验证并交付可审查的结果。"

@@ -53,7 +53,7 @@
     "trial": "not-applicable",
     "acceptance": "not-applicable",
     "evidence": ["handoff.md", "validation.md", "review.md", "research.md", "m2-retro-2026-10-06.md", "m2-retro-handoff.md", "m2-retro-validation.md", "m2-retro-review.md", "validation-retro-2026-10-07.md"],
-    "next": "2026-10-07按风险验证与窄场景入口工程完成、独立两轴复核通过；PR#7合并后从main进入下一阶段"
+    "next": "2026-10-09单人维护流程已精简；普通任务默认main串行、相关验证、一处简记与Dev交付，PR/隔离/独立评审按需；下一轮检验实际执行成本"
   }
 ]
 ```
@@ -61,3 +61,26 @@
 ## 2026-10-07 验证工作流改善
 
 用户授权先改善工作流程并推进完成PR，落实现有D-28，不扩大产品范围。[本轮retro记录](validation-retro-2026-10-07.md)维护证据、工程验证、独立复核与交付；后续开发按所属功能规格选择必要验证，不默认叠加完整E2E或Computer use。
+
+## 2026-10-09 单人维护工作流精简
+
+授权：用户在本会话讨论验证/文档成本和 worktree/PR 管理后，明确要求“开始按照这几轮对话的结论，优化工作流”。本轮从当前目录 `main@44f7911` 串行修改规则、合同与项目 skills；提交时发现纯文档受无关应用lint阻塞，补现有hook的检查选择和必要回归。不修改产品实现、测试并发配置、个人全局规则或 memory，不清理旧 worktree，不沿用历史远端授权。
+
+本节是当前推进记录，取代上方 2026-10-06/07 的完整切片流程作为日常默认；历史工程、评审和交付证据不改写。沿用 D-28，OMP/App 所有权、TDD、数据/权限与恢复合同不变，无产品待决。
+
+| 状态 | 原始证据与成本 | 原因及改进落点 | 验证 |
+| --- | --- | --- | --- |
+| applied | [10-07复盘](validation-retro-2026-10-07.md)记录局部CSS后68条Electron、14条包内记录与CUA；设计合同仍要求相关控件变化跑完整interaction | 入口过宽和默认规则仍有强制升级；headless/design合同改为相关静态/行为检查，具体风险才升级 | 文档入口与场景推演；下一轮核对高成本验证是否有具体缺口 |
+| applied | Provider/Models 的spec、handoff、validation、PR与local-merge重复更新同一交付身份；提交4d1223b/99ec699/c14297c可查 | 日常记录未与复杂交接分开；任务约定、Dev交付和skills改为所属spec或票一处简记 | 检查所有收尾路由；下一轮普通任务只需一处手工记录 |
+| applied | 实施skill无条件进入PR，任务约定却称PR可选；本轮Git列出10个额外检出目录，不能据数量判定均可删 | 并行切片方式被用于串行日常；当前目录main为默认，分支/worktree/PR独立按需选择 | 普通单写、高风险串行、并行写者与明确PR场景核对 |
+| applied | 实施skill要求独立两轴review，review skill按较大切片固定两个reviewer | 检查维度与评审人数绑定；普通diff一次覆盖两轴，高风险/复杂组合/用户要求才选独立评审 | 普通文档/UI与恢复/身份场景核对；不冒称独立review |
+| applied | 本轮纯规则提交的原hook被main已有两处应用Biome错误阻塞，HEAD源码核实错误并非本轮引入 | 全工作树lint与暂存范围脱节；现有hook按Markdown-only选择docs/status，其余保留快速门禁并限Biome到暂存文件，配置变化仍全量 | Markdown-only目标先失败再实现；真实Git提交fixture覆盖混入代码、代码改名、配置变化及失败拒绝，其余正确行为为回归覆盖 |
+| proposed | [Provider验证](../providers-models/validation.md)记录同一worker两次SIGABRT，限并发后完整套件通过 | 根因仍unknown；后续有复现时调查测试并发/worker，当前只明确重复全量重跑不能代替诊断 | 本轮不修改测试配置或运行完整套件 |
+
+本轮主 Agent 一次核对两轴：Spec 覆盖用户确认的串行main、按风险验证、一处简记和按需PR；Standards 核对并行单写/隔离、固定评审输入、TDD、恢复与认可边界。普通UI场景走相关静态/组件检查与Dev反馈；恢复场景增加对应集成和独立评审而不自动建worktree；并行写者隔离并串行集成；明确PR才进入body/CI/合入。上述为规则场景核对，未执行这些产品流程，不冒称独立review。
+
+文档链接/锚点/D-ID检查与生成看板检查通过，`git diff --check`通过；四个修改skill的YAML/frontmatter及UI metadata经系统Ruby YAML检查通过。标准Python quick validator因本机和bundled Python均缺PyYAML未能启动，未安装依赖，改用现有YAML解析器核对相同字段约束。git-hooks/documentation-gate/project-status/engineering-entrypoints共32个相关用例通过（hook最终18项复核通过，含status失败和未知入口拒绝），两个改动脚本文件Biome通过；测试代理实际转发原fast链，保留失败传播。未运行应用测试、build、Electron、供应商或完整检查。工作流真实收益留待下一轮任务观察，不把文档检查称为已证实提速。
+
+首次本地提交被已安装的快速hook拒绝：默认pnpm shim尝试获取11.24.0且环境拒绝网络，未取得目标12.8.1版本。改用已有 `/tmp/dpi-composer-tools/pnpm` 的12.8.1精确入口后，Node及48个依赖检查通过，但原全量Biome被main已有两处格式错误拒绝；未改应用源码或将失败记为通过。随后按上表修正hook检查范围，未停用hook或修改机器环境配置；最终提交及hook结果见本节所在Git提交和本会话输出。
+
+新hook实际提交检查中，暂存Biome、interaction、documentation和architecture通过，structure仍正确拒绝main的旧生成报告（518源文件，当前522）。使用现有生成器刷新并审查报告，变化对应HEAD已有UI源码而非本轮产品修改，模块合同不变；此生成快照一起交付，不修改模块权限或关闭门禁。

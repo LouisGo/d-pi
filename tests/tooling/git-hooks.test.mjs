@@ -76,6 +76,137 @@ function fixture(t) {
   return { sandbox, directory, env, log, write, git, install, commit, lines };
 }
 
+function versionedFixture(t) {
+  const f = fixture(t);
+  f.write(
+    join(f.directory, ".githooks/pre-commit"),
+    readFileSync(join(root, ".githooks/pre-commit"), "utf8"),
+  );
+  f.write(join(f.directory, "scripts/git-hooks.mjs"), readFileSync(installer));
+  f.write(
+    join(f.directory, "package.json"),
+    JSON.stringify({
+      scripts: {
+        "check:fast":
+          "pnpm lint && pnpm check:documentation && pnpm check:status",
+      },
+    }),
+  );
+  for (const [path, label] of [
+    ["scripts/checks/check-documentation.mjs", "docs"],
+    ["scripts/tasks/project-status.mjs", "status"],
+  ])
+    f.write(
+      join(f.directory, path),
+      `import { appendFileSync } from 'node:fs';\nappendFileSync(process.env.D_PI_FIXTURE_LOG, '${label}\\n');\nprocess.exit(Number(process.env.D_PI_FIXTURE_${label.toUpperCase()}_EXIT ?? 0));\n`,
+    );
+  f.write(
+    join(f.sandbox.root, "bin/pnpm"),
+    `#!/bin/sh
+if [ "$1" = "check:fast" ]; then
+  exec node -e "const fs = require('node:fs'); const cp = require('node:child_process'); process.exitCode = cp.spawnSync('sh', ['-c', JSON.parse(fs.readFileSync('package.json')).scripts['check:fast']], { stdio: 'inherit' }).status ?? 2;"
+fi
+printf "%s\\n" "$*" >> "$D_PI_FIXTURE_LOG"
+case "$1" in
+  check:documentation) exec node scripts/checks/check-documentation.mjs ;;
+  check:status) exec node scripts/tasks/project-status.mjs --check docs/status.md ;;
+esac
+exit "\${D_PI_FIXTURE_CHECK_EXIT:-0}"
+`,
+  );
+  assert.equal(f.install().status, 0);
+  return f;
+}
+
+test("documentation-only commits run docs/status without pnpm or unrelated code gates", (t) => {
+  const f = versionedFixture(t);
+  f.write(join(f.directory, "README.md"), "# Updated docs\n");
+  f.write(join(f.directory, "unstaged.js"), "invalid code\n");
+  assert.equal(f.git(["add", "README.md"]).status, 0);
+  const result = f.commit({ D_PI_FIXTURE_CHECK_EXIT: "9" });
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.deepEqual(f.lines(), ["docs", "status"]);
+});
+
+test("documentation failures reject the commit and stop before status", (t) => {
+  const f = versionedFixture(t);
+  f.write(join(f.directory, "README.md"), "# Docs\n");
+  assert.equal(f.git(["add", "README.md"]).status, 0);
+  const result = f.commit({ D_PI_FIXTURE_DOCS_EXIT: "1" });
+  assert.notEqual(result.status, 0);
+  assert.notEqual(f.git(["rev-parse", "--verify", "HEAD"]).status, 0);
+  assert.deepEqual(f.lines(), ["docs"]);
+});
+
+test("status failures also reject documentation-only commits", (t) => {
+  const f = versionedFixture(t);
+  f.write(join(f.directory, "README.md"), "# Docs\n");
+  assert.equal(f.git(["add", "README.md"]).status, 0);
+  const result = f.commit({ D_PI_FIXTURE_STATUS_EXIT: "1" });
+  assert.notEqual(result.status, 0);
+  assert.notEqual(f.git(["rev-parse", "--verify", "HEAD"]).status, 0);
+  assert.deepEqual(f.lines(), ["docs", "status"]);
+});
+
+test("mixed code commits retain all fast gates with staged Biome scope", (t) => {
+  const f = versionedFixture(t);
+  f.write(join(f.directory, "README.md"), "# Docs\n");
+  f.write(join(f.directory, "feature.js"), "export const value = 1;\n");
+  assert.equal(f.git(["add", "README.md", "feature.js"]).status, 0);
+  const result = f.commit();
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.deepEqual(f.lines(), [
+    "exec biome check --staged --no-errors-on-unmatched",
+    "check:documentation",
+    "docs",
+    "check:status",
+    "status",
+  ]);
+});
+
+test("a code rename to Markdown still enters the code gate and can reject the commit", (t) => {
+  const f = versionedFixture(t);
+  f.write(join(f.directory, "old.js"), "export const value = 1;\n");
+  assert.equal(f.git(["add", "old.js"]).status, 0);
+  assert.equal(f.commit().status, 0);
+  writeFileSync(f.log, "");
+  assert.equal(f.git(["mv", "old.js", "renamed.md"]).status, 0);
+  const result = f.commit({ D_PI_FIXTURE_CHECK_EXIT: "1" });
+  assert.notEqual(result.status, 0);
+  assert.deepEqual(f.lines(), [
+    "exec biome check --staged --no-errors-on-unmatched",
+  ]);
+});
+
+test("toolchain or Biome configuration changes preserve full Biome checks", (t) => {
+  const f = versionedFixture(t);
+  f.write(join(f.directory, "biome.json"), "{}\n");
+  assert.equal(f.git(["add", "biome.json"]).status, 0);
+  const result = f.commit();
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.deepEqual(f.lines(), [
+    "lint",
+    "check:documentation",
+    "docs",
+    "check:status",
+    "status",
+  ]);
+});
+
+test("an unsupported fast entry rejects code commits before running gates", (t) => {
+  const f = versionedFixture(t);
+  f.write(
+    join(f.directory, "package.json"),
+    JSON.stringify({ scripts: { "check:fast": "pnpm check:status" } }),
+  );
+  f.write(join(f.directory, "feature.js"), "export const value = 1;\n");
+  assert.equal(f.git(["add", "feature.js"]).status, 0);
+  const result = f.commit();
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /Unsupported check:fast/);
+  assert.deepEqual(f.lines(), []);
+});
+
 test("the installed fast hook really prevents a commit when checks fail", (t) => {
   const f = fixture(t);
   const installed = f.install();

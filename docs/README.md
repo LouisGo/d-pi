@@ -1,6 +1,6 @@
 # 文档导航
 
-按任务找当前依据。授权、工程验证和用户试用在各切片 `spec.md` 维护，`handoff.md` 是对应构建的交付快照；本页只导航，不复制进度。文档路径或更新时间不能代替决定状态与取代关系。
+按任务找当前依据。普通任务复用所属 spec 或票的一处简记；长切片现态在 `spec.md` 维护，`handoff.md` 仅用于固定候选或独立交接。本页只导航，不复制进度；文档路径或更新时间不能代替决定状态与取代关系。
 
 ## 日常入口
 
@@ -16,7 +16,7 @@
 | 文案、语言和概念 | [国际化架构](architecture/internationalization.md)、[产品术语](product-terminology.md)、[GLOSSARY](../GLOSSARY.md)；[领域约定](agents/domain.md)约束术语和 ADR |
 | 目录、公开面、允许依赖与门禁 | [源码边界](architecture/source-layout.md)、[d-pi-architecture](../.agents/skills/d-pi-architecture/SKILL.md)；`architecture/modules.json` 是机器单源，实际依赖与允许依赖分开 |
 | 功能拆票、状态更新和交付 | [任务约定](agents/issue-tracker.md)、[d-pi-headless-features](../.agents/skills/d-pi-headless-features/SKILL.md)；切片记录放 `.scratch/<feature>/` |
-| 执行、独立 review、PR 与 retro | [执行切片](../.agents/skills/d-pi-implement-slice/SKILL.md)、[双轴评审](../.agents/skills/d-pi-code-review/SKILL.md)、[PR](../.agents/skills/d-pi-pr/SKILL.md)、[复盘](../.agents/skills/d-pi-retro/SKILL.md)；调度与状态单源仍为任务约定 |
+| 日常执行、按需评审/PR 与 retro | [执行任务](../.agents/skills/d-pi-implement-slice/SKILL.md)、[双轴评审](../.agents/skills/d-pi-code-review/SKILL.md)、[已选择PR](../.agents/skills/d-pi-pr/SKILL.md)、[复盘](../.agents/skills/d-pi-retro/SKILL.md)；[任务约定](agents/issue-tracker.md#日常开发与隔离)维护普通默认与隔离选择 |
 
 日常只补目标模块、直接依赖和受影响合同，不先重建项目时间线。代码、观测与文档不符时分别报告实现事实、既定要求和证据缺口，不按当前行为自动改规格。
 

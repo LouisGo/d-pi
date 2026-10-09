@@ -2,8 +2,8 @@
 set -eu
 d_pi_root=$(git rev-parse --show-toplevel)
 cd "$d_pi_root"
-if ! command -v pnpm >/dev/null 2>&1; then
-  printf '%s\n' 'FAIL: pnpm is unavailable; d-pi pre-commit checks did not run' >&2
+if ! command -v node >/dev/null 2>&1; then
+  printf '%s\n' 'FAIL: Node is unavailable; d-pi pre-commit checks did not run' >&2
   exit 2
 fi
-exec pnpm check:fast
+exec node scripts/git-hooks.mjs check
