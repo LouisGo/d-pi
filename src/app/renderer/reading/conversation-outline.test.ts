@@ -114,7 +114,8 @@ it("previews the single-line question with # prefix and 3-line reply description
         }),
       ),
     );
-    expect(read).not.toHaveBeenCalled();
+    // Pre-fetched on mount into cache
+    expect(read).toHaveBeenCalledOnce();
     const buttons = container.querySelectorAll<HTMLButtonElement>("button");
     const button = buttons[0];
 
@@ -144,6 +145,7 @@ it("previews the single-line question with # prefix and 3-line reply description
     expect(
       preview?.querySelector(".turn-preview-description")?.textContent,
     ).toBe("Private reply");
+    // Remained 1: zero repeated DOM read queries during focus/hover due to cache
     expect(read).toHaveBeenCalledOnce();
     expect(position).not.toHaveBeenCalled();
     expect(document.activeElement).toBe(button);
@@ -172,6 +174,63 @@ it("previews the single-line question with # prefix and 3-line reply description
     });
     expect(button?.style.getPropertyValue("--turn-width")).toBe("12px");
     expect(buttons[1]?.style.getPropertyValue("--turn-width")).toBe("7px");
+  } finally {
+    await act(() => root.unmount());
+    pane.remove();
+    container.remove();
+    vi.unstubAllGlobals();
+  }
+});
+it("reuses a single shared preview popup during rapid switching between anchors without overlapping", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const pane = document.createElement("div");
+  pane.innerHTML =
+    '<article data-conversation-turn="one" data-turn-preview="First question"><div class="user-message-bubble" data-reading-text>First full question</div></article><article data-message-role="assistant"><div data-reading-text>Reply 1</div></article><article data-conversation-turn="two" data-turn-preview="Second question"><div class="user-message-bubble" data-reading-text>Second full question</div></article><article data-message-role="assistant"><div data-reading-text>Reply 2</div></article>';
+  const container = document.createElement("div");
+  document.body.append(pane, container);
+  const root = createRoot(container);
+  try {
+    await act(() =>
+      root.render(
+        createElement(I18nProvider, {
+          initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" },
+          children: createElement(ConversationOutline, {
+            pane,
+            anchor: { position: vi.fn() },
+          }),
+        }),
+      ),
+    );
+    const buttons = container.querySelectorAll<HTMLButtonElement>("button");
+
+    // Focus button 0 -> opens popup for turn 1
+    await act(async () => {
+      buttons[0]?.focus();
+      const { promise, resolve } = Promise.withResolvers<void>();
+      setTimeout(resolve, 180);
+      await promise;
+    });
+
+    let popups = document.querySelectorAll('[data-slot="hover-card"]');
+    expect(popups).toHaveLength(1);
+    expect(popups[0]?.querySelector(".turn-preview-number")?.textContent).toBe(
+      "#1",
+    );
+
+    // Rapidly switch focus to button 1
+    await act(async () => {
+      buttons[1]?.focus();
+      const { promise, resolve } = Promise.withResolvers<void>();
+      setTimeout(resolve, 180);
+      await promise;
+    });
+
+    // Exactly 1 popup remains in the DOM: zero overlap
+    popups = document.querySelectorAll('[data-slot="hover-card"]');
+    expect(popups).toHaveLength(1);
+    expect(popups[0]?.querySelector(".turn-preview-number")?.textContent).toBe(
+      "#2",
+    );
   } finally {
     await act(() => root.unmount());
     pane.remove();

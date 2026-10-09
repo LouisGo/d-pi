@@ -42,7 +42,16 @@ export {
   type TextInputProps,
 } from "./controls";
 export { installControlFocusVisibility } from "./focus-visibility";
-export { HoverCard, type HoverCardProps } from "./hover-card";
+export {
+  createHoverCardHandle,
+  HoverCard,
+  type HoverCardHandle,
+  HoverCardPopup,
+  type HoverCardPopupProps,
+  type HoverCardProps,
+  HoverCardTrigger,
+  type HoverCardTriggerProps,
+} from "./hover-card";
 export {
   LoadingIndicator,
   type LoadingIndicatorProps,

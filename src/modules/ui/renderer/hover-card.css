@@ -3,6 +3,13 @@
     z-index: var(--layer-popup);
     max-width: var(--available-width);
     outline: none;
+    transition:
+      top 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .ui-hover-card-positioner[data-starting-style],
+  .ui-hover-card-positioner[data-instant] {
+    transition: none;
   }
   .ui-hover-card-popup {
     display: flex;
@@ -34,6 +41,7 @@
     outline-offset: var(--focus-ring-offset);
   }
   @media (prefers-reduced-motion: reduce) {
+    .ui-hover-card-positioner,
     .ui-hover-card-popup {
       transition: none;
     }

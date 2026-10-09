@@ -1,12 +1,22 @@
-import {
-  type CSSProperties,
-  type FocusEventHandler,
-  type KeyboardEventHandler,
-  useState,
+import type {
+  CSSProperties,
+  FocusEventHandler,
+  KeyboardEventHandler,
 } from "react";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import { Button, HoverCard } from "../../../modules/ui/renderer/public";
-import { TurnPreviewCard } from "./turn-preview-card";
+import {
+  Button,
+  type HoverCardHandle,
+  HoverCardTrigger,
+} from "../../../modules/ui/renderer/public";
+
+export interface TurnPreviewPayload {
+  id: string;
+  number: number;
+  question: string;
+  reply: string;
+  preview: string;
+}
 
 interface ConversationTurnAnchorProps {
   turn: { id: string; preview: string; node: HTMLElement };
@@ -15,6 +25,8 @@ interface ConversationTurnAnchorProps {
   tabIndex: number;
   markWidth: number;
   markOpacity: number;
+  handle: HoverCardHandle<TurnPreviewPayload>;
+  payload: TurnPreviewPayload;
   onNavigate: () => void;
   onKeyDown: KeyboardEventHandler<HTMLButtonElement>;
   onPointerEnter?: () => void;
@@ -22,7 +34,7 @@ interface ConversationTurnAnchorProps {
   onBlur?: FocusEventHandler<HTMLButtonElement>;
 }
 
-function extractAssistantReply(node: HTMLElement): string {
+export function extractAssistantReply(node: HTMLElement): string {
   let sibling = node.nextElementSibling;
   while (
     sibling instanceof HTMLElement &&
@@ -51,6 +63,8 @@ export function ConversationTurnAnchor({
   tabIndex,
   markWidth,
   markOpacity,
+  handle,
+  payload,
   onNavigate,
   onKeyDown,
   onPointerEnter,
@@ -58,25 +72,14 @@ export function ConversationTurnAnchor({
   onBlur,
 }: ConversationTurnAnchorProps) {
   const { t } = useI18n();
-  const [question, setQuestion] = useState(turn.preview);
-  const [reply, setReply] = useState("");
 
   return (
-    <HoverCard
-      label={t("ui.conversation.turnNumber", { number })}
-      sideOffset={8}
-      onOpenChange={(open) => {
-        // Sample only the opened question and assistant reply; never rescan on streamed tokens.
-        if (open) {
-          const userBubble =
-            turn.node.querySelector(":scope > .user-message-bubble") ??
-            turn.node.querySelector("[data-reading-text]");
-          const userText = (userBubble?.textContent ?? turn.preview).trim();
-          setQuestion(userText || turn.preview);
-          setReply(extractAssistantReply(turn.node));
-        }
-      }}
-      trigger={
+    <HoverCardTrigger
+      handle={handle}
+      payload={payload}
+      delay={50}
+      closeDelay={120}
+      render={
         <Button
           size="turn"
           variant="ghost"
@@ -105,8 +108,6 @@ export function ConversationTurnAnchor({
           <span className="turn-mark" aria-hidden="true" />
         </Button>
       }
-    >
-      <TurnPreviewCard number={number} question={question} reply={reply} />
-    </HoverCard>
+    />
   );
 }

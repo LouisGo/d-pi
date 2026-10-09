@@ -1,11 +1,21 @@
-import { useLayoutEffect, useState } from "react";
+import { useLayoutEffect, useMemo, useState } from "react";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import { ConversationTurnAnchor } from "./conversation-turn-anchor";
+import {
+  createHoverCardHandle,
+  HoverCardPopup,
+} from "../../../modules/ui/renderer/public";
+import {
+  ConversationTurnAnchor,
+  extractAssistantReply,
+  type TurnPreviewPayload,
+} from "./conversation-turn-anchor";
 import type { ReadingAnchorController } from "./reading-anchor";
+import { TurnPreviewCard } from "./turn-preview-card";
 
 interface Turn {
   id: string;
   preview: string;
+  payload: TurnPreviewPayload;
   node: HTMLElement;
 }
 const selector = "[data-conversation-turn]";
@@ -64,6 +74,7 @@ export function ConversationOutline({
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   useLayoutEffect(() => {
+    const cache = new Map<string, TurnPreviewPayload>();
     let rows: readonly Turn[] = [];
     let frame: number | null = null;
     let disposed = false;
@@ -86,14 +97,32 @@ export function ConversationOutline({
       if (frame === null) frame = requestAnimationFrame(markActive);
     };
     const rebuild = () => {
-      rows = [...pane.querySelectorAll<HTMLElement>(selector)].flatMap(
-        (node) => {
-          const id = node.dataset.conversationTurn;
-          return id
-            ? [{ id, preview: node.dataset.turnPreview ?? "", node }]
-            : [];
-        },
-      );
+      const turnNodes = [...pane.querySelectorAll<HTMLElement>(selector)];
+      rows = turnNodes.flatMap((node, index) => {
+        const id = node.dataset.conversationTurn;
+        if (!id) return [];
+        const preview = node.dataset.turnPreview ?? "";
+        const number = index + 1;
+        const cached = cache.get(id);
+        const payload: TurnPreviewPayload =
+          !cached || cached.preview !== preview || !cached.reply
+            ? {
+                id,
+                number,
+                question:
+                  (
+                    node.querySelector(":scope > .user-message-bubble") ??
+                    node.querySelector("[data-reading-text]")
+                  )?.textContent?.trim() || preview,
+                reply: extractAssistantReply(node),
+                preview,
+              }
+            : cached.number !== number
+              ? { ...cached, number }
+              : cached;
+        cache.set(id, payload);
+        return [{ id, preview, payload, node }];
+      });
       setTurns(rows);
       schedule();
     };
@@ -121,6 +150,10 @@ export function ConversationOutline({
       if (frame !== null) cancelAnimationFrame(frame);
     };
   }, [pane]);
+  const hoverCardHandle = useMemo(
+    () => createHoverCardHandle<TurnPreviewPayload>(),
+    [],
+  );
   if (turns.length < 2) return null;
   const focalIndex = hoveredIndex ?? focusedIndex;
   const activeIndex = turns.findIndex((turn) => turn.id === active);
@@ -150,6 +183,8 @@ export function ConversationOutline({
           tabIndex={active === turn.id || (!active && index === 0) ? 0 : -1}
           markWidth={computeTurnMarkWidth(index, activeIndex, focalIndex)}
           markOpacity={computeTurnMarkOpacity(index, activeIndex, focalIndex)}
+          handle={hoverCardHandle}
+          payload={turn.payload}
           onPointerEnter={() => setHoveredIndex(index)}
           onFocus={(event) => {
             if (event.currentTarget.matches(":focus-visible")) {
@@ -199,6 +234,17 @@ export function ConversationOutline({
           }}
         />
       ))}
+      <HoverCardPopup handle={hoverCardHandle} side="right" sideOffset={8}>
+        {(payload) =>
+          payload ? (
+            <TurnPreviewCard
+              number={payload.number}
+              question={payload.question}
+              reply={payload.reply}
+            />
+          ) : null
+        }
+      </HoverCardPopup>
     </nav>
   );
 }

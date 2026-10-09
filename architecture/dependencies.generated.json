@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "24a3f5adceeafba4e727fd2f1f6ea325fb264b211ded243c055dd297628b2e8a",
+  "inputsHash": "94163be145a3bb08221fd5cca4c2df61a8e3c176e6b24bb564f833580a7e3990",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 557,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 240,
-      "lines": 44970,
+      "lines": 45076,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -423,7 +423,7 @@
       ],
       "materialized": true,
       "files": 25,
-      "lines": 3645,
+      "lines": 3732,
       "publicEntries": [
         {
           "path": "src/modules/ui/renderer/public.ts",
@@ -9184,6 +9184,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "../../../modules/ui/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/conversation-outline.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "./conversation-turn-anchor",
       "kind": "import",
       "resolution": "module",
@@ -9200,6 +9212,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/reading/reading-anchor.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/conversation-outline.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./turn-preview-card",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/reading/turn-preview-card.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -9234,18 +9258,6 @@
       "resolution": "module",
       "to": "src/modules/ui/renderer/public.ts",
       "targetModule": "ui",
-      "targetEnvironment": "renderer"
-    },
-    {
-      "from": "src/app/renderer/reading/conversation-turn-anchor.tsx",
-      "sourceModule": "app",
-      "sourceEnvironment": "renderer",
-      "test": false,
-      "specifier": "./turn-preview-card",
-      "kind": "import",
-      "resolution": "module",
-      "to": "src/app/renderer/reading/turn-preview-card.tsx",
-      "targetModule": "app",
       "targetEnvironment": "renderer"
     },
     {
