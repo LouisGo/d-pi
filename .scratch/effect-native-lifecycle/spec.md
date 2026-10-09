@@ -3,7 +3,7 @@
 2026-10-02。基线 `b93971a`。用户明确授权根据所附方案在合适的位置引入 Effect，完成检查后 commit 并 push 全部内容。工作区开始时干净。
 
 ```project-status
-[{"id":"effect-native-lifecycle","title":"Effect 原生连接生命周期","phase":"基建","engineering":"complete","trial":"not-applicable","acceptance":"not-applicable","evidence":["issues/01-native-lifecycle.md","validation.md","evidence/process-supervision.json"],"next":"NativeSession 接入完成；SessionHost 与 Main transport 后续按实际替代收益接入","constraints":"Effect 限定 execution/host 与 execution/main/transport；unknown 不自动重发，冷恢复只读。"}]
+[{"id":"effect-native-lifecycle","title":"Effect 原生连接生命周期","phase":"基建","engineering":"complete","trial":"not-applicable","acceptance":"not-applicable","evidence":["issues/01-native-lifecycle.md","validation.md","evidence/process-supervision.json"],"next":"NativeSession、SessionHost 与 Main transport 等待已按 owner 接入；后续仅按实际收益维护，不扩张到 Renderer","constraints":"Effect 限定 execution/host 与 execution/main/transport；unknown 不自动重发，冷恢复只读。"}]
 ```
 
 ## 推进与交接
@@ -33,6 +33,8 @@
 - [01 原生生命周期](issues/01-native-lifecycle.md)
 
 ## Comments
+
+- 2026-10-09：用户授权修正 Effect 用法、优化并单独 commit，未授权 push。当前基线 `70443c4d`，保留其他 UI/阅读工作区改动。先以正常操作完成后 waiter 残留的失败测试固定缺口，再改为 `ensuring` 全退出清理；同步关闭派发失败遗留 listener/timer、超时后迟到 ready 仍绑定也分别验证红→绿。Main transport 的启动/操作/关闭等待绑定每代连接 Scope，真实进程组清理完成后才结算关闭并关闭 Scope；超时仍保留 unknown，不重发命令。HostScope deadline 将 AbortSignal 传给已运行任务，cancel/close 由任务协作停止；保留 Node ref/unref，不能宣称抢占任意 Promise。相关测试、Main/Host 类型、Biome 与架构边界通过；固定差异的独立双轴评审无新增发现。沿用正确的 NativeSession 用法及 PendingInteractions/原生 bootstrap 的明确 timer owner，本轮不做全层迁移、GUI 或供应商验收。
 
 - 2026-10-02：完整检查确认基线 `b93971a` 的三个 `letter-spacing` 字面量违反已有 token 单源检查；仅将 -0.03em/-0.02em 移入 `tokens.css` 的品牌/标题字距角色，视觉数值、主题和密度保持相同，不放宽门禁。
 - 2026-10-02：依赖加入后资源 manifest 的 lockHash 失效，按既有 staging/原子替换流程重新生成 SDK，完整环境核验通过。Effect 编入 utility Host 构建，不加入原生 OMP SDK closure。

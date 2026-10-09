@@ -35,6 +35,8 @@ Main 拥有窗口、Host 监督及受限通道建立；一个 utility SessionHos
 
 2026-10-07 T3 基础切片的新增合同：NativeSession 可辨认的原生边界失败以普通 Error rejection 附带有限 NativeFailureSummary，区分 spawn/protocol/write/timeout/local interruption/unavailable 及输入/请求预算；本地编码或应用观察者缺陷保持 unknown 归因。可信 Host/Main 仅映射固定 code/causeCode，不传播原始 Cause、stderr 或异常全文。每个 Host 的后台等待与 deadline 绑定局部 Scope，scheduled handle 完成即释放；断链结束自动重播但保留待持久确认的 evidence，重播不写 prompt。刷新继续 singleFlight，并在每次 await 后复核 observationVersion/dispatch 身份。取消局部等待不发送 abort，所有业务 unknown/ACK、物理 close/groupStopped 门槛保持不变。
 
+2026-10-09：Main HostConnection 的启动、操作与关闭等待也绑定每代连接的 Effect Scope；关联表和关闭监听通过 `ensuring` 在所有退出路径释放，不能把 `Effect.callback` 仅用于中断的 cleanup 当作通用 finally。启动终结后拒绝迟到 ready 绑定及登记许可；操作超时仍返回 unknown 且不重发。真实进程组清理及 lease 释放完成后结算关闭监听，再关闭该代 Scope，旧代收尾不结束新代等待。HostScope deadline 向已运行任务传 AbortSignal，任务需协作停止；保留 Node ref/unref，不将 Fiber 中断解释为抢占任意 Promise 或原生执行已停止。
+
 确定性回放仅替换 process/stdio 接缝，实际 FrameDecoder、NativeSession、SessionHost、ConversationProjection 及 Main/SQLite 收据事务继续运行；Gate 在入站标记前等待明确释放，同批帧不插入额外 await。测试样本不证明供应商、OS 停止或 GUI；真实进程检查独立保留。目标与证据见 [01](../../../.scratch/t3-foundations/issues/01-native-scope-replay.md)。
 
 - Main 创建 Host，Host 为已准入的 Thread 创建/恢复 OMP。历史浏览走只读路径，不为浏览启动 Agent 或加载项目可执行扩展。

@@ -75,3 +75,27 @@ it("reports a failed scheduled operation once without suppressing other deadline
   expect(succeeded).toHaveBeenCalledOnce();
   await tasks.close();
 });
+
+it.each(["cancel", "close"])(
+  "propagates %s to an already running deadline operation",
+  async (action) => {
+    vi.useFakeTimers();
+    const failures = vi.fn();
+    const tasks = new HostScope(failures);
+    let signal: AbortSignal | undefined;
+    const scheduled = tasks.deadline(10, (value) => {
+      signal = value;
+      return new Promise<void>((resolve) => {
+        value.addEventListener("abort", () => resolve(), { once: true });
+      });
+    });
+    await vi.advanceTimersByTimeAsync(10);
+    expect(signal?.aborted).toBe(false);
+    if (action === "cancel") scheduled.cancel();
+    else await tasks.close();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(signal?.aborted).toBe(true);
+    expect(failures).not.toHaveBeenCalled();
+    await tasks.close();
+  },
+);

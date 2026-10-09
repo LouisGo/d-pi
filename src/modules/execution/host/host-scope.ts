@@ -34,7 +34,7 @@ export class HostScope {
 
   deadline(
     delay: number,
-    operation: () => void | Promise<void>,
+    operation: (signal: AbortSignal) => void | Promise<void>,
     unref = false,
   ): ScopedDeadline {
     if (this.closed) return { cancel() {} };
@@ -50,8 +50,8 @@ export class HostScope {
         wait.pipe(
           Effect.andThen(
             Effect.tryPromise({
-              try: async () => {
-                if (!this.closed) await operation();
+              try: async (signal) => {
+                if (!this.closed) await operation(signal);
               },
               catch: (error) => error,
             }),

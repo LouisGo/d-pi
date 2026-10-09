@@ -12,9 +12,10 @@
 - `core/runtime/` 维护执行准入，`core/submission/` 维护提交准入、协调与原生命令策略。
 - `main/runtime/` 监督运行，`main/transport/` 管 Host 连接，`main/submission/` 持久收据。
 - `host/native/` 管原生进程和启动，`host/interactions/` 管待答交互；`session-host.ts` 保留共同关联与恢复状态的 owner。
-- D-39：Effect v4 仅用于 `host/` 和 `main/transport/` 的连接生命周期；当前 NativeSession 已接入。Scope/Fiber 等供应商类型留在内部，对外普通 Promise/DTO；超时/中断不是执行取消或失败证据，禁止自动重发写请求。不使用 unstable 或 `@effect/*` 扩展包。
+- D-39：Effect v4 仅用于 `host/` 和 `main/transport/` 的连接生命周期；NativeSession、SessionHost 与 Main transport 等待已接入。Scope/Fiber 等供应商类型留在内部，对外普通 Promise/DTO；超时/中断不是执行取消或失败证据，禁止自动重发写请求。不使用 unstable 或 `@effect/*` 扩展包。
 - 在上述范围新增并发等待、超时、取消、后台任务或资源释放时，默认用 Effect，任务绑定实际拥有者的 Scope，统一收尾；不要再拼一套 timer、清理栈或任务管理器。参考 [NativeSession](host/native/native-session.ts)，API 以安装的 v4 源码为准。
 - 简单单次异步调用可沿用 Promise；维护旧代码时，只迁移本次范围内有实际收益的生命周期，不顺带全层改写，也不为使用 Effect 增加无用包装。
+- 回调适配以安装版本语义为准：`Effect.callback` 返回的 cleanup 仅在中断时执行；所有退出路径都需释放的关联或监听用 `ensuring`。异步任务接收并配合 AbortSignal；取消等待不保证底层 Promise/进程已经停止。Main 连接的参考实现为 [HostConnection](main/transport/host-connection.ts)，仍须等待真实进程组清理与 lease 释放。
 - `renderer/runtime/` 与 `renderer/submission/` 分别维护客户端投影，不因目录分开改变提交与执行的合同。
 
 公开面保持各环境 `public.ts`，内部相对导入；测试与所属实现就近。AppStorage 与 RuntimeService 的跨域组合验证放 `tests/integration/`。

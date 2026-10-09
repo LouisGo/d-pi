@@ -1,6 +1,10 @@
 import { createHash } from "node:crypto";
 import { join } from "node:path";
-import { Effect } from "effect";
+import * as Cause from "effect/Cause";
+import * as Effect from "effect/Effect";
+import * as Exit from "effect/Exit";
+import * as Fiber from "effect/Fiber";
+import * as Scope from "effect/Scope";
 import { type UtilityProcess, utilityProcess } from "electron";
 import {
   type ProcessIdentity,
@@ -26,6 +30,11 @@ type Ready = ReadyMessage & {
 type ScopeListener = {
   message: (message: HostMessage | { kind: "scope-closed" }) => void;
   exit: (evidence?: ProcessExitEvidence) => void;
+};
+type OperationResult = Extract<HostMessage, { kind: "operation-result" }>;
+type OperationWaiter = {
+  finish: (result: OperationResult) => void;
+  unknown: OperationResult;
 };
 let sharedHost: UtilityProcess | null = null;
 const scopes = new Map<string, ScopeListener>();
@@ -66,15 +75,21 @@ function hostProcess(): UtilityProcess {
 }
 // Process/transport ownership only. It cannot grant trust or persist business receipts.
 export class HostConnection {
-  private readonly operationWaiters = new Map<
-    string,
-    {
-      finish: (
-        result: Extract<HostMessage, { kind: "operation-result" }>,
-      ) => void;
-      unknown: Extract<HostMessage, { kind: "operation-result" }>;
-    }
-  >();
+  private readonly operationWaiters = new Map<string, OperationWaiter>();
+  private waitScope = Scope.makeUnsafe("parallel");
+  // One task owner per connection generation. Public methods keep ordinary
+  // Promise/Error results; transport interruption is never process-stop evidence.
+  private async run<A, E>(
+    effect: Effect.Effect<A, E>,
+    scope = this.waitScope,
+  ): Promise<A> {
+    const fiber = Effect.runSync(
+      Effect.forkIn(effect, scope, { startImmediately: true }),
+    );
+    const result = await Effect.runPromiseExit(Fiber.join(fiber));
+    if (Exit.isSuccess(result)) return result.value;
+    throw Cause.squash(result.cause);
+  }
   private finishOperations(): void {
     for (const waiter of this.operationWaiters.values())
       waiter.finish(waiter.unknown);
@@ -104,12 +119,11 @@ export class HostConnection {
       operation: command.kind === "state" ? ("inspect" as const) : command.kind,
       status: "unknown" as const,
     };
-    return Effect.runPromise(
-      Effect.callback<
-        Extract<HostMessage, { kind: "operation-result" }>,
-        Error
-      >((resume) => {
-        this.operationWaiters.set(target.traceId, {
+    if (!this.connected) return Promise.resolve(unknown);
+    let waiter: OperationWaiter;
+    return this.run(
+      Effect.callback<OperationResult>((resume) => {
+        waiter = {
           finish: (result) => {
             if (
               result.connectionGeneration === target.connectionGeneration &&
@@ -118,20 +132,24 @@ export class HostConnection {
               resume(Effect.succeed(result));
           },
           unknown,
-        });
+        };
+        this.operationWaiters.set(target.traceId, waiter);
         try {
           this.send(command);
         } catch {
           resume(Effect.succeed(unknown));
         }
-        return Effect.sync(() => {
-          this.operationWaiters.delete(target.traceId);
-        });
       }).pipe(
         Effect.timeoutOrElse({
           duration: 12000,
           orElse: () => Effect.succeed(unknown),
         }),
+        Effect.ensuring(
+          Effect.sync(() => {
+            if (this.operationWaiters.get(target.traceId) === waiter)
+              this.operationWaiters.delete(target.traceId);
+          }),
+        ),
       ),
     );
   }
@@ -141,7 +159,7 @@ export class HostConnection {
     return this.startDispatched;
   }
   private cleanup: Promise<boolean> | null = null;
-  private readonly closeListeners = new Set<(confirmed: boolean) => void>();
+  private closeListeners = new Set<(confirmed: boolean) => void>();
   constructor(
     private readonly receive: (
       message: Exclude<HostMessage, { kind: "ready" | "native-register" }>,
@@ -211,16 +229,21 @@ export class HostConnection {
     command = { ...command, supervision };
     let nativeIdentity: ProcessIdentity | null = null;
     this.scopeId = command.processInstanceId;
-    return new Promise((accept, reject) => {
-      const timeout = setTimeout(() => {
-        reject(Error("Host startup timeout"));
-        host.postMessage({
-          scopeId: command.processInstanceId,
-          command: { kind: "close-idle" },
-        });
-      }, 35000);
+    const waitScope = Scope.makeUnsafe("parallel");
+    const closeListeners = new Set<(confirmed: boolean) => void>();
+    this.waitScope = waitScope;
+    this.closeListeners = closeListeners;
+    let awaitingReady = true;
+    const startup = Effect.callback<void, unknown>((resume) => {
+      const accept = () => {
+        awaitingReady = false;
+        resume(Effect.void);
+      };
+      const reject = (error: unknown) => {
+        awaitingReady = false;
+        resume(Effect.fail(error));
+      };
       const exit = (evidence?: ProcessExitEvidence) => {
-        clearTimeout(timeout);
         if (this.scopeId !== command.processInstanceId) return;
         scopes.delete(command.processInstanceId);
         this.scopeId = null;
@@ -237,7 +260,10 @@ export class HostConnection {
               kind: "interrupted",
               reason: "process-group-unconfirmed",
             });
-          for (const listener of this.closeListeners) listener(confirmed);
+          for (const listener of closeListeners) listener(confirmed);
+          // Close wait fibers only after real group cleanup has resolved the
+          // listeners. A local interruption cannot confirm physical shutdown.
+          void Effect.runPromise(Scope.close(waitScope, Exit.void));
         });
         reject(Error("Host exited"));
       };
@@ -248,6 +274,7 @@ export class HostConnection {
             const registration = message.registration;
             void readProcessIdentity(registration.pid).then((actual) => {
               let allowed =
+                awaitingReady &&
                 !!actual &&
                 actual.birth === registration.birth &&
                 actual.executable === registration.executable &&
@@ -296,11 +323,11 @@ export class HostConnection {
           }
           if (message.kind === "ready") {
             if (
+              !awaitingReady ||
               message.processInstanceId !== command.processInstanceId ||
               message.connectionGeneration !== command.connectionGeneration
             )
               return;
-            clearTimeout(timeout);
             if (!message.state.sessionFile) {
               reject(Error("Native reference missing"));
               return;
@@ -325,7 +352,6 @@ export class HostConnection {
             if (message.kind === "interrupted" || message.kind === "failed")
               this.finishOperations();
             if (message.kind === "failed" || message.kind === "interrupted") {
-              clearTimeout(timeout);
               reject(Error("Host unavailable"));
             }
           }
@@ -334,6 +360,31 @@ export class HostConnection {
       this.startDispatched = true;
       host.postMessage({ scopeId: command.processInstanceId, command });
     });
+    return this.run(
+      startup.pipe(
+        Effect.ensuring(
+          Effect.sync(() => {
+            awaitingReady = false;
+          }),
+        ),
+        Effect.timeoutOrElse({
+          duration: 35000,
+          orElse: () =>
+            Effect.suspend(() => {
+              try {
+                host.postMessage({
+                  scopeId: command.processInstanceId,
+                  command: { kind: "close-idle" },
+                });
+              } catch {
+                // Keep the original timeout result; failed dispatch cannot prove exit.
+              }
+              return Effect.fail(Error("Host startup timeout"));
+            }),
+        }),
+      ),
+      waitScope,
+    );
   }
   send(command: HostCommand): void {
     if (!this.scopeId || !sharedHost) throw Error("Host unavailable");
@@ -355,19 +406,29 @@ export class HostConnection {
         throw Error("Process group shutdown unconfirmed");
       return;
     }
-    await new Promise<void>((accept, reject) => {
-      const done = (confirmed: boolean) => {
-        clearTimeout(timer);
-        this.closeListeners.delete(done);
-        if (confirmed) accept();
-        else reject(Error("Process group shutdown unconfirmed"));
-      };
-      const timer = setTimeout(() => {
-        this.closeListeners.delete(done);
-        reject(Error("Idle close not confirmed"));
-      }, 5000);
-      this.closeListeners.add(done);
-      this.send({ kind: "close-idle" });
-    });
+    const listeners = this.closeListeners;
+    let done: (confirmed: boolean) => void;
+    await this.run(
+      Effect.callback<void, unknown>((resume) => {
+        done = (confirmed) =>
+          resume(
+            confirmed
+              ? Effect.void
+              : Effect.fail(Error("Process group shutdown unconfirmed")),
+          );
+        listeners.add(done);
+        try {
+          this.send({ kind: "close-idle" });
+        } catch (error) {
+          resume(Effect.fail(error));
+        }
+      }).pipe(
+        Effect.timeoutOrElse({
+          duration: 5000,
+          orElse: () => Effect.fail(Error("Idle close not confirmed")),
+        }),
+        Effect.ensuring(Effect.sync(() => listeners.delete(done))),
+      ),
+    );
   }
 }

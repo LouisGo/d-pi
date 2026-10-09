@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "f60f441c48bd257ed4ebd6c7e2200db953eebc569399cf5c0eb435076945b186",
+  "inputsHash": "a6e5cf22d7aeb024b36107c91df63aefb2496bc16c7e3a456df89197709c1241",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 522,
-    "scannedFiles": 522,
+    "sourceFiles": 523,
+    "scannedFiles": 523,
     "unscanned": []
   },
   "modules": [
@@ -339,8 +339,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 58,
-      "lines": 13712,
+      "files": 59,
+      "lines": 14025,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -26752,7 +26752,43 @@
       "sourceModule": "execution",
       "sourceEnvironment": "main",
       "test": false,
-      "specifier": "effect",
+      "specifier": "effect/Cause",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/host-connection.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "effect/Effect",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/host-connection.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "effect/Exit",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/host-connection.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "effect/Fiber",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/host-connection.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "effect/Scope",
       "kind": "import",
       "resolution": "external"
     },
@@ -26872,6 +26908,75 @@
     },
     {
       "from": "src/modules/execution/main/transport/host-multiplex.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./host-connection",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/main/transport/host-connection.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/execution/main/transport/host-operation.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:events",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/host-operation.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/host-operation.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/host-operation.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/host-operation.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/transport/host-operation.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/main/transport/host-operation.test.ts",
       "sourceModule": "execution",
       "sourceEnvironment": "main",
       "test": true,

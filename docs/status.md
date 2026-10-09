@@ -27,7 +27,7 @@
 | 基建 | [Codex 式工作台基础布局](../.scratch/codex-workbench-ui/spec.md) | 部分完成 | 已交付待试用 | 待认可 | Dev / codex/thread-layout / 16568d3 [证据1](../.scratch/codex-workbench-ui/feedback-handoff.md) · [证据2](../.scratch/codex-workbench-ui/thread-surface-handoff.md) · [证据3](../.scratch/codex-workbench-ui/sandwich-validation.md) · [证据4](../.scratch/codex-workbench-ui/baseline-refinement.md) | Dev试用Thread工具Modal、TabStrip独立组合与搜索焦点修正；后续消息/Composer细化等用户指令，原A3缺口仍开放 |
 | 基建 | [开发者工具与基础组件看板](../.scratch/component-dashboard/spec.md) | 工程完成 | 已交付待试用 | 待认可 | e97c5a05-b19549d5 [证据1](../.scratch/component-dashboard/handoff.md) · [证据2](../.scratch/component-dashboard/validation.md) · [证据3](../.scratch/component-dashboard/review.md) | 用户试用修正版图标预览、常驻目录与独立工作区；认可pending |
 | 基建 | [领域目录治理](../.scratch/domain-directory-governance/spec.md) | 工程完成 | 不适用 | 不适用 | — [证据1](../.scratch/domain-directory-governance/handoff.md) | 沿用模块机器清单，目录规模不作为硬门槛 |
-| 基建 | [Effect 原生连接生命周期](../.scratch/effect-native-lifecycle/spec.md) | 工程完成 | 不适用 | 不适用 | — [证据1](../.scratch/effect-native-lifecycle/issues/01-native-lifecycle.md) · [证据2](../.scratch/effect-native-lifecycle/validation.md) · [证据3](../.scratch/effect-native-lifecycle/evidence/process-supervision.json) | NativeSession 接入完成；SessionHost 与 Main transport 后续按实际替代收益接入 |
+| 基建 | [Effect 原生连接生命周期](../.scratch/effect-native-lifecycle/spec.md) | 工程完成 | 不适用 | 不适用 | — [证据1](../.scratch/effect-native-lifecycle/issues/01-native-lifecycle.md) · [证据2](../.scratch/effect-native-lifecycle/validation.md) · [证据3](../.scratch/effect-native-lifecycle/evidence/process-supervision.json) | NativeSession、SessionHost 与 Main transport 等待已按 owner 接入；后续仅按实际收益维护，不扩张到 Renderer |
 | 基建 | [国际化基础](../.scratch/i18n-foundation/spec.md) | 工程完成 | 已交付待试用 | 待认可 | 0.1.0-i18n.0 [证据1](../.scratch/i18n-foundation/handoff.md) | 等待热切换与输入体验反馈 |
 | 基建 | [S5 前基建收口](../.scratch/infrastructure-closure/spec.md) | 工程完成 | 未交付 | 不适用 | 3285474e-dirty-1f488792（工程安全候选） [证据1](../.scratch/infrastructure-closure/handoff.md) | 本轮已完成；S5 按新授权进入所属规格，M2 未启动 |
 | 基建 | [Linux E2E 反馈修复](../.scratch/linux-e2e-repair/spec.md) | 工程完成 | 已交付待试用 | 待认可 | base c14297c3 / codex/linux-e2e-repair [证据1](../.scratch/linux-e2e-repair/handoff.md) · [证据2](../.scratch/linux-e2e-repair/validation.md) · [证据3](../.scratch/linux-e2e-repair/review.md) | 原 Linux 机器复试 SDK import 和原生 GUI；137 的终止来源仍未知，用户认可待反馈。 |
@@ -92,4 +92,4 @@
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 - [T3 研究与基础重构](../.scratch/t3-foundations/spec.md)：unknown 不重发，冷恢复只读；native/live 无可靠原生身份时保持独立来源；M3 能力仅作设计储备
 
-<!-- source-sha256: c23c965e811560d914c11dd60f45f8e1fca5616faf39081dc3c39e7c94f44652; sources: 185 -->
+<!-- source-sha256: 8fa7885c53ee0206e0dd6c050280314dd72af034d9908b168a24895ce80ca6a5; sources: 185 -->
