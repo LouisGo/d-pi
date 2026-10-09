@@ -16,6 +16,8 @@
 
 2026-10-09 远端交付授权：用户随后要求“本地 commit 并 pr 到 main”，包含本切片分支的 commit、push 与创建指向 `main` 的 PR。最终提交及远端 CI 以 Git/PR 的真实 head 和运行记录为准；CI 未完成前保留 Draft。
 
+2026-10-09 后续本地合入授权：Provider/Models 界面反馈迭代后，用户要求“本地 pr 到 main”“全部一起”，将本切片 `077ce1f` 与界面提交 `3fd82b4` 一并合入本地 main。本次不 push、不新增远端 PR、不重跑验证；合并描述见 [本地 PR](../providers-models/ui-pr.md)。原 Linux 机器复试与用户认可仍待反馈。
+
 ```implementation-plan
 [{"id":"linux-e2e-repair","tickets":["01","02","03"]}]
 ```
