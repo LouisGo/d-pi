@@ -1,6 +1,14 @@
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync, realpathSync } from "node:fs";
+import {
+  accessSync,
+  constants,
+  existsSync,
+  readFileSync,
+  realpathSync,
+  writeFileSync,
+} from "node:fs";
+import { homedir } from "node:os";
 import { basename, delimiter, dirname, join, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 import { createTestEnvironment } from "../testing/test-environment.mjs";
@@ -23,6 +31,81 @@ export function probeTool(binary, args, options) {
   if (result.status !== 0)
     return { kind: "failed", status: result.status, output };
   return { kind: "ran", output };
+}
+
+/** Resolve the caller's tool before switching HOME/PATH to the clean probe. */
+export function probePnpm(target, cli, options, callerEnv = process.env) {
+  let entry =
+    cli && /^(pnpm\.[cm]?js|pnpm(?:-native)?(?:\.exe)?)$/.test(basename(cli))
+      ? resolve(cli)
+      : null;
+  if (!entry) {
+    for (const directory of (callerEnv.PATH ?? "").split(delimiter)) {
+      const candidate = resolve(directory, "pnpm");
+      try {
+        accessSync(candidate, constants.X_OK);
+        entry = candidate;
+        break;
+      } catch {
+        // Continue through the caller's PATH, not the reordered probe PATH.
+      }
+    }
+  }
+  if (!entry)
+    return {
+      kind: "missing",
+      reason: "ENOENT",
+      output: "pnpm is missing from the caller's PATH",
+    };
+
+  let path;
+  try {
+    path = realpathSync(entry);
+  } catch {
+    return probeTool(entry, ["--version"], options);
+  }
+  const script = /^pnpm\.[cm]?js$/.test(basename(path));
+  let corepack = false;
+  if (script) {
+    try {
+      corepack =
+        JSON.parse(
+          readFileSync(resolve(dirname(path), "../package.json"), "utf8"),
+        ).name === "corepack";
+    } catch {
+      // Standalone pnpm JS entries do not require Corepack metadata.
+    }
+  }
+  let probeOptions = options;
+  if (corepack) {
+    // Only the package-manager cache crosses the boundary. HOME, credentials,
+    // project configuration and network access stay isolated. A minimal project
+    // declaration prevents Corepack from selecting its unrelated default.
+    const cache =
+      callerEnv.COREPACK_HOME ??
+      join(
+        callerEnv.XDG_CACHE_HOME ??
+          callerEnv.LOCALAPPDATA ??
+          join(callerEnv.HOME ?? homedir(), ".cache"),
+        "node/corepack",
+      );
+    writeFileSync(
+      join(options.cwd, "package.json"),
+      JSON.stringify({ private: true, packageManager: `pnpm@${target}` }),
+    );
+    probeOptions = {
+      ...options,
+      env: { ...options.env, COREPACK_HOME: resolve(cache) },
+    };
+  }
+  return {
+    ...probeTool(
+      script ? process.execPath : path,
+      script ? [path, "--version"] : ["--version"],
+      probeOptions,
+    ),
+    entry: { path, kind: corepack ? "corepack" : script ? "script" : "native" },
+  };
 }
 
 const sha256 = (path) =>
@@ -222,10 +305,7 @@ export function inspectEnvironment(
         COREPACK_DEFAULT_TO_LATEST: "0",
       },
     };
-    tools.pnpm =
-      pnpmCli && /^pnpm\.[cm]?js$/.test(basename(pnpmCli))
-        ? probeTool(process.execPath, [pnpmCli, "--version"], pnpmOptions)
-        : probeTool("pnpm", ["--version"], pnpmOptions);
+    tools.pnpm = probePnpm(pnpmTarget, pnpmCli, pnpmOptions);
     if (tools.pnpm.kind !== "ran")
       issues.push(`pnpm tool ${tools.pnpm.kind}; it did not report a version`);
     else if (tools.pnpm.output !== pnpmTarget)

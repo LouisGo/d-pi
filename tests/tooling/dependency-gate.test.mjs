@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import {
+  chmodSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -28,7 +29,7 @@ function lockfile(manifest) {
   return `${lines.join("\n")}\n`;
 }
 
-function fixture(t, edit, editLock = (text) => text) {
+function fixture(t, edit, editLock = (text) => text, manager = {}) {
   const directory = mkdtempSync(join(tmpdir(), "d-pi-dependencies-"));
   t.after(() => rmSync(directory, { recursive: true, force: true }));
   const manifest = structuredClone(baseline);
@@ -37,7 +38,9 @@ function fixture(t, edit, editLock = (text) => text) {
     "package.json": JSON.stringify(manifest),
     ".node-version": process.versions.node,
     "pnpm-lock.yaml": editLock(lockfile(manifest)),
-    "pnpm.cjs": `process.stdout.write(${JSON.stringify(manifest.packageManager.split("@")[1])});\n`,
+    [manager.native ? "pnpm-native" : "pnpm.cjs"]: manager.native
+      ? `#!/bin/sh\nprintf '%s' '${manager.version ?? manifest.packageManager.split("@")[1]}'\n`
+      : `process.stdout.write(${JSON.stringify(manifest.packageManager.split("@")[1])});\n`,
   };
   for (const [name, version] of Object.entries({
     ...manifest.dependencies,
@@ -51,11 +54,29 @@ function fixture(t, edit, editLock = (text) => text) {
     mkdirSync(dirname(join(directory, name)), { recursive: true });
     writeFileSync(join(directory, name), contents);
   }
+  if (manager.native) chmodSync(join(directory, "pnpm-native"), 0o755);
   return inspectEnvironment(directory, {
     toolsOnly: true,
-    pnpmCli: join(directory, "pnpm.cjs"),
+    pnpmCli: join(directory, manager.native ? "pnpm-native" : "pnpm.cjs"),
   });
 }
+
+test("the gate probes the native pnpm entry supplied by pnpm 12 instead of falling back to Corepack", (t) => {
+  const report = fixture(t, () => {}, undefined, { native: true });
+  assert.equal(report.tools.pnpm.output, baseline.packageManager.split("@")[1]);
+  assert.deepEqual(report.issues, []);
+});
+
+test("a native pnpm version mismatch remains a failure", (t) => {
+  const report = fixture(t, () => {}, undefined, {
+    native: true,
+    version: "0.0.1",
+  });
+  assert.match(
+    report.issues.join("\n"),
+    /pnpm 0\.0\.1 differs from packageManager/,
+  );
+});
 
 test("the fast environment gate accepts pinned required foundations and peer-qualified lock entries", (t) => {
   const report = fixture(t, () => {});

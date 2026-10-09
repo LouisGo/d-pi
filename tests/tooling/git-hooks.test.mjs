@@ -5,6 +5,7 @@ import {
   existsSync,
   mkdirSync,
   readFileSync,
+  symlinkSync,
   writeFileSync,
 } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -402,17 +403,20 @@ test("a malformed installation record cannot clear repository configuration", (t
   );
 });
 
-test("the versioned hook names a missing pnpm as tooling unavailable", () => {
-  const sandbox = createTestEnvironment();
-  try {
-    const result = spawnSync("sh", [join(root, ".githooks/pre-commit")], {
-      cwd: root,
-      env: sandbox.env,
-      encoding: "utf8",
-    });
-    assert.equal(result.status, 2);
-    assert.match(`${result.stdout}${result.stderr}`, /pnpm.*unavailable/);
-  } finally {
-    sandbox.cleanup();
-  }
+test("the versioned hook names a missing pnpm as tooling unavailable", (t) => {
+  const f = versionedFixture(t);
+  const bin = join(f.sandbox.root, "node-only-bin");
+  mkdirSync(bin);
+  symlinkSync(process.execPath, join(bin, "node"));
+  f.write(join(f.directory, "changed.js"), "export const changed = true;\n");
+  assert.equal(f.git(["add", "changed.js"]).status, 0);
+  const result = spawnSync("sh", [join(f.directory, ".githooks/pre-commit")], {
+    cwd: f.directory,
+    env: { ...f.env, PATH: `${bin}:/usr/bin:/bin` },
+    encoding: "utf8",
+  });
+  assert.equal(result.status, 2, result.stderr || result.stdout);
+  assert.match(`${result.stdout}${result.stderr}`, /pnpm.*unavailable/);
+  assert.notEqual(f.git(["rev-parse", "--verify", "HEAD"]).status, 0);
+  assert.deepEqual(f.lines(), []);
 });

@@ -52,8 +52,8 @@
     "engineering": "complete",
     "trial": "not-applicable",
     "acceptance": "not-applicable",
-    "evidence": ["handoff.md", "validation.md", "review.md", "research.md", "m2-retro-2026-10-06.md", "m2-retro-handoff.md", "m2-retro-validation.md", "m2-retro-review.md", "validation-retro-2026-10-07.md"],
-    "next": "2026-10-09单人维护流程已精简；普通任务默认main串行、相关验证、一处简记与Dev交付，PR/隔离/独立评审按需；下一轮检验实际执行成本"
+    "evidence": ["handoff.md", "validation.md", "review.md", "research.md", "m2-retro-2026-10-06.md", "m2-retro-handoff.md", "m2-retro-validation.md", "m2-retro-review.md", "validation-retro-2026-10-07.md", "evidence/pnpm-entry-probe.json"],
+    "next": "2026-10-09单人维护流程与pnpm隔离探测已修正；普通任务默认main串行、相关验证、一处简记与Dev交付；下一轮核对正常入口无需临时包装器"
   }
 ]
 ```
@@ -84,3 +84,15 @@
 首次本地提交被已安装的快速hook拒绝：默认pnpm shim尝试获取11.24.0且环境拒绝网络，未取得目标12.8.1版本。改用已有 `/tmp/dpi-composer-tools/pnpm` 的12.8.1精确入口后，Node及48个依赖检查通过，但原全量Biome被main已有两处格式错误拒绝；未改应用源码或将失败记为通过。随后按上表修正hook检查范围，未停用hook或修改机器环境配置；最终提交及hook结果见本节所在Git提交和本会话输出。
 
 新hook实际提交检查中，暂存Biome、interaction、documentation和architecture通过，structure仍正确拒绝main的旧生成报告（518源文件，当前522）。使用现有生成器刷新并审查报告，变化对应HEAD已有UI源码而非本轮产品修改，模块合同不变；此生成快照一起交付，不修改模块权限或关闭门禁。
+
+## 2026-10-09 pnpm 环境复盘与修复
+
+授权：用户明确调用 d-pi-retro，要求解释反复出现的 pnpm 版本问题并一次性解决。本轮在当前 main 修改现有环境检查及相关回归，不调整个人全局配置、依赖版本、SDK 或产品源码。
+
+状态：applied。原始证据是上节及组件修复提交的 hook 失败：本机已缓存 12.8.1，却尝试获取 11.24.0；过去靠临时 pnpm/node 包装器才能继续，修复提交见本节所属 Git 提交。当前源码与真实入口确认根因：检查器仅识别 `pnpm.cjs/mjs/js`，忽略 pnpm 12 的 `pnpm-native`；随后在隔离 HOME/cwd 下执行 Corepack shim，丢失原缓存与项目版本声明，转向无关默认版本。该因果已复现，不推定所有历史依赖缺失都有同一原因。
+
+最小回流位置为现有 `check-environment.mjs`：隔离前解析调用方 JS/原生/PATH 入口；Corepack 只复用工具缓存，并在受控临时 cwd 写入相同固定版本声明，继续隔离 HOME/凭据与禁用网络。README 和工程入口解释正常路径，无新增检查系统或宽松降级。
+
+目标原生入口正例与错误版本负例先出现预期红灯，修复后通过；相关 pnpm/environment/dependency/hook 回归共42项通过，覆盖错误版本、缺入口、缺固定缓存、PATH 遮蔽及凭据隔离。旧 hook 缺 pnpm 测试实际仍暴露 Corepack，已改为独立 Git fixture 与仅含 Node 的 PATH。真实普通 `pnpm check:tools` 与直接 Node 检查均报告12.8.1、零问题，分别实际经过 native/Corepack，[入口证据](evidence/pnpm-entry-probe.json)已保存。正常提交 hook 结果以本节所属 Git 提交及会话输出为准，不使用临时包装器。
+
+完整 `pnpm check:fast` 的 pnpm 门禁已通过，仍被 HEAD 已有 `icons/common.tsx`、`configuration/core/public.ts` 两处无关 Biome 问题阻塞；本轮未修改这些应用文件，也不把全量检查称为通过。未运行 build、Electron 或供应商验证，本轮只涉及工具探测。

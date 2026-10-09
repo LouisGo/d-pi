@@ -8,6 +8,8 @@
 
 本轮开发环境目标为 **Node 24.21.0 / pnpm 12.8.1**，分别以 `.node-version` 与 `packageManager` 为单一入口。`package.json` 的 Node 最低声明不代表所有满足版本均已验证。开发 Node、Electron 内嵌 Node、OMP 宿主 Bun 各自独立；固定依赖与资源版本由锁文件和资源 manifest 核对。
 
+工具检查支持 pnpm 的 JS、原生及 Corepack 入口，先解析当前实际入口，再隔离探测环境；Corepack 复用已有工具缓存和项目固定版本，检查时禁止下载。正确版本已准备后无需为每次检查重装或临时包装 pnpm；版本缺失或不匹配仍明确失败。
+
 首次 clone 或新 worktree 先准备依赖和资源；已有环境只在依赖、SDK/宿主或平台变化时更新对应资源：
 
 ```sh

@@ -1,0 +1,27 @@
+{
+  "kind": "actual-installed-pnpm-entry-probes",
+  "date": "2026-10-09",
+  "nativeScript": {
+    "pnpm": {
+      "kind": "ran",
+      "output": "12.8.1",
+      "entry": {
+        "path": "/Users/lou/.cache/node/corepack/v1/pnpm/12.8.1/pnpm-native",
+        "kind": "native"
+      }
+    },
+    "issues": []
+  },
+  "directNode": {
+    "pnpm": {
+      "kind": "ran",
+      "output": "12.8.1",
+      "entry": {
+        "path": "/Users/lou/.nvm/versions/node/v24.21.0/lib/node_modules/corepack/dist/pnpm.js",
+        "kind": "corepack"
+      }
+    },
+    "issues": []
+  },
+  "isolation": "Private HOME, cwd, App/OMP paths and credentials; only the existing Corepack tool cache is reused; probe networking disabled."
+}
