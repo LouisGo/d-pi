@@ -1,0 +1,42 @@
+@layer components {
+  .message-heading > strong {
+    min-width: 0;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+  }
+  .message-actions {
+    margin-inline-start: auto;
+    min-width: 0;
+  }
+  .tool-result-content {
+    min-width: 0;
+    padding: calc(var(--spacing) * 3);
+    border-top: 1px solid var(--border-soft);
+    background: var(--field);
+    border-end-start-radius: inherit;
+    border-end-end-radius: inherit;
+    line-height: 1.7;
+    color: var(--muted-foreground);
+  }
+  .tool-result-content > pre {
+    min-width: 0;
+    max-width: 100%;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    color: var(--foreground);
+    font-size: var(--text-small);
+    tab-size: 2;
+  }
+  .tool-result-icon {
+    flex-shrink: 0;
+    color: var(--muted-foreground);
+  }
+  .tool-result-label {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-weight: 400;
+  }
+  .message .tool-result-content > pre {
+    margin: 0;
+  }
+}

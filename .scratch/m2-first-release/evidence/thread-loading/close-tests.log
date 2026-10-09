@@ -1,0 +1,15 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/Learn/d-pi
+
+ ✓ src/app/main/lifecycle/window-close.test.ts (4 tests) 8ms
+ ✓ src/app/renderer/wiring/thread-send-recovery.test.ts (5 tests) 17ms
+ ✓ src/app/renderer/wiring/model-navigation.test.ts (5 tests) 21ms
+ ✓ src/app/renderer/wiring/model.test.ts (16 tests) 22ms
+ ✓ src/app/renderer/wiring/thread-startup.test.ts (12 tests) 103ms
+ ✓ src/app/renderer/wiring/thread-imports.test.ts (2 tests) 369ms
+
+ Test Files  6 passed (6)
+      Tests  44 passed (44)
+   Start at  15:13:35
+   Duration  1.25s (transform 48%, import 27%, tests 15%, environment 9%, worker 1%)

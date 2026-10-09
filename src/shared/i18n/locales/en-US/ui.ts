@@ -1,4 +1,7 @@
 export const ui = {
+  "ui.copy.copied": "Copied",
+  "ui.copy.failed": "Copy failed. Try again.",
+  "ui.copy.pending": "Copying…",
   "models.editChanged":
     "Native configuration changed while this form was open. Keep your edits, then cancel and reopen the form to load the latest configuration before saving.",
   "models.pricing.free": "Free",
@@ -577,6 +580,7 @@ export const ui = {
   "composer.blocked.readOnly":
     "This session is read-only and cannot send. Its draft is preserved; create a new session to select a model and work.",
   "ui.runtime.retryStart": "Retry preparing chat",
+  "ui.runtime.retry": "Retry",
   "app.thread.indexPartial":
     "Some native chats could not be indexed. Retry refreshing.",
   "app.thread.indexUnavailable":
@@ -840,6 +844,8 @@ export const ui = {
   "ui.interaction.confirm": "Confirm",
   "ui.interaction.reject": "Reject",
   "ui.interaction.submit": "Submit answer",
+  "ui.interaction.customAnswer": "Custom answer",
+  "ui.interaction.customPlaceholder": "Something else…",
   "ui.interaction.cancel": "Cancel interaction",
   "ui.interaction.continueAnswerLabel": "Continue answering {title}",
   "ui.interaction.sendingFollowUp": "Sending follow-up…",

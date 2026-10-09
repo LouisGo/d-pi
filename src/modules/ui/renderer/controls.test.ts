@@ -36,6 +36,40 @@ it("links form labels and help/errors to the real input", async () => {
   }
 });
 
+it.each([false, true])(
+  "keeps an unavailable controlled selection readable (search=%s) without choosing a replacement",
+  async (searchable) => {
+    vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+    const host = document.createElement("div");
+    document.body.append(host);
+    const root = createRoot(host);
+    const change = vi.fn();
+    try {
+      await act(() =>
+        root.render(
+          createElement(Select, {
+            value: "removed-model",
+            options: [{ value: "another-model", label: "Another model" }],
+            onValueChange: change,
+            "aria-label": "Model",
+            ...(searchable
+              ? { search: { label: "Search models", empty: "No models" } }
+              : {}),
+          }),
+        ),
+      );
+      expect(host.querySelector("[role=combobox]")?.textContent).toContain(
+        "removed-model",
+      );
+      expect(change).not.toHaveBeenCalled();
+    } finally {
+      await act(() => root.unmount());
+      host.remove();
+      vi.unstubAllGlobals();
+    }
+  },
+);
+
 it("changes a switch once and respects disabled state", async () => {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
   const host = document.createElement("div");

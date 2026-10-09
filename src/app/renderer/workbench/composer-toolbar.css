@@ -12,12 +12,16 @@
     align-items: center;
     gap: var(--region-gap);
     min-width: 0;
+    flex-wrap: wrap;
   }
   .composer-toolbar-model,
   .composer-toolbar-access {
     flex: 0 1 auto;
     min-width: 0;
     max-width: 100%;
+  }
+  .composer-toolbar-model {
+    flex: 1 1 auto;
   }
   .composer-toolbar-model > *,
   .composer-toolbar-access > * {
@@ -43,5 +47,12 @@
     align-items: center;
     gap: var(--region-gap);
     margin-inline-start: auto;
+  }
+}
+
+@container (max-width: 540px) {
+  .composer-toolbar-context {
+    flex-basis: 100%;
+    flex-wrap: nowrap;
   }
 }

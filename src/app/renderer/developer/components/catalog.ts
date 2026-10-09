@@ -4,6 +4,7 @@ export const categories = [
   { id: "forms", label: "表单与配置" },
   { id: "layout", label: "导航与布局" },
   { id: "overlays", label: "弹层与菜单" },
+  { id: "business", label: "业务组合" },
   { id: "icons", label: "图标" },
 ] as const;
 export const componentCatalog = [
@@ -130,6 +131,72 @@ export const componentCatalog = [
     purpose: "自动收录项目 Icon Layer 的公开图标，仅作预览。",
     forms: "16 · 18 · 20 · 24 px / currentColor / 新增图标自动出现",
   },
+  {
+    name: "Badge",
+    category: "actions",
+    purpose: "用语义色呈现状态，文字保留完整含义。",
+    forms: "neutral · emphasis · danger / long text",
+  },
+  {
+    name: "ActionGroup",
+    category: "actions",
+    purpose: "将相关动作按可用空间换行组合。",
+    forms: "start · end / wrapping",
+  },
+  {
+    name: "OptionAction",
+    category: "actions",
+    purpose: "将选项名称、说明与立即执行动作组合为完整操作行。",
+    forms: "label · description / wrapping · disabled · keyboard",
+  },
+  {
+    name: "InlineNotice",
+    category: "actions",
+    purpose: "就地呈现提示、错误与对应恢复动作。",
+    forms: "neutral · danger / optional actions",
+  },
+  {
+    name: "EmptyState",
+    category: "layout",
+    purpose: "统一页面与局部内容的空态层级。",
+    forms: "page · compact / description · action · note",
+  },
+  {
+    name: "Kbd",
+    category: "layout",
+    purpose: "以原生键盘语义呈现快捷键。",
+    forms: "single key · chord",
+  },
+  {
+    name: "CopyButton",
+    category: "actions",
+    purpose: "等待剪贴板写入完成后确认，失败时允许重试。",
+    forms: "idle · pending · copied · failed",
+  },
+  {
+    name: "PathLabel",
+    category: "layout",
+    purpose: "长路径保留末端文件名，完整路径可选取。",
+    forms: "short · long / tail ellipsis",
+  },
+  {
+    name: "MessageHeader",
+    category: "business",
+    purpose: "统一消息身份、事实状态和消息级操作。",
+    forms: "title · status · actions / wrapping",
+  },
+  {
+    name: "ToolResultFrame",
+    category: "business",
+    purpose: "收纳工具输出，展开状态独立于执行结果。",
+    forms: "open · closed / long output",
+  },
+  {
+    name: "NativeInteraction",
+    category: "business",
+    purpose: "组合预设选项、手动回答与提交动作；业务继续使用正式收据。",
+    forms: "pending · custom answer · answered / local demo",
+  },
 ] as const;
 export type ComponentName = (typeof componentCatalog)[number]["name"];
 export const menuEntry = {
@@ -139,7 +206,7 @@ export const menuEntry = {
   forms: "closed · open / hover · click · keyboard / Esc 关闭",
 };
 export const copy = {
-  title: "基础组件看板",
+  title: "组件看板",
   intro: "查看组件形态与状态，直接体验交互。",
   search: "搜索组件",
   index: "组件索引",
@@ -253,4 +320,42 @@ export const foundationLabels = {
   copy29: "已选且禁用",
   copy30: "展开和收起只改变可见性，内容与输入状态保留。",
   copy31: "打开对话框",
+};
+
+export const presentationLabels = {
+  keyEnter: "Enter",
+  keyEsc: "Esc",
+  queued: "等待处理",
+  running: "执行中",
+  failed: "需要处理",
+  saved: "本地示例已更新",
+  apply: "应用示例",
+  cancel: "取消",
+  noticeTitle: "连接暂时不可用",
+  notice: "内容仍可阅读。恢复连接后再继续操作。",
+  retry: "重试示例",
+  noticeReady: "本地示例恢复，可继续操作。",
+  emptyTitle: "尚无内容",
+  emptyDescription: "选择项目后，会在这里显示会话与文件。",
+  emptyNote: "示例只改变看板内状态。",
+  choose: "选择示例项目",
+  copy: "复制示例文本",
+  copyText: "这是一段用于验证复制反馈的组件示例。",
+  assistant: "助手",
+  message: "这里展示消息头与正文的组合，以及窄空间下的状态和操作排列。",
+  tool: "读取文件 · src/app/renderer/workbench/native-interaction.tsx",
+  toolOutput: "工具输出保留原始文本；展开、收起只影响阅读视图。",
+  nativeTitle: "选择处理方式",
+  nativeMessage: "本地演示，不会向 OMP 发送回答。",
+  option: "继续使用当前项目及现有配置，保留原生会话中的文件与执行上下文",
+  alternative: "稍后处理",
+  optionDescription: "较长的原生选项与说明应在按钮及容器内完整换行。",
+  answered: "本地示例已回答",
+  waiting: "选择一项或输入回答后提交，验证本地交互。",
+  longOption:
+    "项目默认提供商 / Very-long-model-name-with-large-context-and-custom-configuration",
+  nested: "嵌入面板",
+  nestedDescription: "跟随父容器宽度换行，无需缩小整个窗口。",
+  nestedLabel: "默认模型",
+  nestedHint: "完整选项保留在弹层中。",
 };

@@ -8,6 +8,8 @@ import { QueueTextSchema } from "../../../modules/execution/contracts/public";
 import type { RuntimeModel } from "../../../modules/execution/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import {
+  ActionGroup,
+  Badge,
   Button,
   Checkbox,
   Disclosure,
@@ -100,7 +102,7 @@ export function QueueControls({
             <section
               key={entry.id}
               data-queue-entry={entry.id}
-              className="flex flex-col gap-2"
+              className="queue-entry"
             >
               <strong>
                 {t(
@@ -108,7 +110,7 @@ export function QueueControls({
                     ? "queue.steering"
                     : "queue.followUp",
                 )}{" "}
-                · {index + 1}
+                · <Badge>{index + 1}</Badge>
               </strong>
               <p data-selectable className="whitespace-pre-wrap break-words">
                 {entry.text}
@@ -137,7 +139,7 @@ export function QueueControls({
                   inputDisabled={!available || unreconciled}
                 />
               ) : (
-                <div className="flex flex-wrap gap-2">
+                <ActionGroup>
                   <Button
                     data-queue-action="begin-edit"
                     variant="ghost"
@@ -154,7 +156,7 @@ export function QueueControls({
                   </Button>
                   <Button
                     data-queue-action="delete"
-                    variant="ghost"
+                    variant="destructive"
                     disabled={locked || editActive}
                     onClick={() =>
                       send({
@@ -201,7 +203,7 @@ export function QueueControls({
                   >
                     {t("queue.down")}
                   </Button>
-                </div>
+                </ActionGroup>
               )}
             </section>
           );
@@ -292,7 +294,7 @@ function QueueEditor({
           {t("queue.contentTooLarge")}
         </p>
       )}
-      <div className="flex flex-wrap gap-2">
+      <ActionGroup>
         <Button
           data-queue-action="save-edit"
           disabled={
@@ -320,7 +322,7 @@ function QueueEditor({
         >
           {t("queue.cancel")}
         </Button>
-      </div>
+      </ActionGroup>
     </div>
   );
 }

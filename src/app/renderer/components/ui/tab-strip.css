@@ -8,11 +8,13 @@
   }
   .tab-strip-list {
     display: flex;
+    flex: 1 1 auto;
     align-items: center;
     min-width: 0;
     gap: calc(var(--layout-gap) / 2);
     overflow-x: auto;
     padding: calc(var(--layout-gap) / 2);
+    overscroll-behavior: contain;
   }
   .tab-strip-item {
     position: relative;
@@ -38,10 +40,15 @@
     background: transparent;
     border-radius: inherit;
   }
+  .tab-strip-label:active:not(:disabled),
+  .tab-strip-close:active:not(:disabled) {
+    transform: none;
+  }
   .tab-strip-title {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .tab-strip-icon {
     display: grid;

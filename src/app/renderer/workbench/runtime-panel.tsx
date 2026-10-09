@@ -3,7 +3,6 @@ import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import { createStore } from "zustand/vanilla";
 import type {
-  Interaction,
   RuntimeView,
   SubmissionReceipt,
 } from "../../../modules/execution/contracts/public";
@@ -14,23 +13,16 @@ import type {
 } from "../../../modules/execution/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import {
+  ActionGroup,
   Button,
   Disclosure,
   DisclosureTrigger,
-  TextArea,
+  LoadingIndicator,
 } from "../../../modules/ui/renderer/public";
-import type { UiMessage } from "../../../shared/messages/contracts";
-import {
-  receiptNeedsAttention,
-  receiptStatusKey,
-} from "../components/receipt-status";
 import { runtimePhaseLabel } from "../components/runtime-phase";
+import { type FollowUpResult, NativeInteraction } from "./native-interaction";
 import { QueueControls } from "./queue-controls";
-export type FollowUpResult = {
-  ok: boolean;
-  message: UiMessage | null;
-  submissionId: string | null;
-};
+
 const emptySubmissionStore = createStore<SubmissionView>()(() => ({
   sending: false as const,
   sendingText: false as const,
@@ -45,13 +37,15 @@ export function RuntimePanel({
   submission,
   onFollowUp,
   inspection = true,
+  origin,
 }: {
   model: RuntimeModel;
   inspection?: boolean;
+  origin?: "cli" | undefined;
   submission?: SubmissionModel | null;
   onFollowUp: ((text: string) => Promise<FollowUpResult>) | undefined;
 }) {
-  const { t, formatMessage } = useI18n();
+  const { t } = useI18n();
   const state = useStore(model.stateStore, (value) => value.view);
   const submissionStore = submission?.stateStore ?? emptySubmissionStore;
   const receiptsById = useStore(submissionStore, (value) => value.receiptsById);
@@ -80,9 +74,7 @@ export function RuntimePanel({
   };
   if (!state)
     return inspection ? (
-      <p className="muted" role="status">
-        {t("ui.runtime.loading")}
-      </p>
+      <LoadingIndicator pending label={t("app.loading")} />
     ) : null;
   const actionable =
     state.busy ||
@@ -95,8 +87,6 @@ export function RuntimePanel({
     state.control?.queueState?.hiddenCount ||
     state.queueOperation?.status === "unknown" ||
     state.queueOperation?.status === "failed" ||
-    state.phase === "failed" ||
-    state.phase === "interrupted" ||
     state.interactions?.unsupported ||
     state.interactions?.items.some(
       (item) =>
@@ -105,7 +95,13 @@ export function RuntimePanel({
         (item.status === "sent" && item.defaultAnswered),
     );
   if (!inspection && !actionable) return null;
-  const label = runtimePhaseLabel(state, t);
+  if (
+    !inspection &&
+    state.phase !== "ready" &&
+    !state.control &&
+    !state.interactions
+  )
+    return null;
   return (
     <section
       className="runtime-panel"
@@ -113,16 +109,7 @@ export function RuntimePanel({
       tabIndex={-1}
       aria-label={t("ui.runtime.sectionLabel")}
     >
-      {inspection ? (
-        <RuntimeInspection model={model} />
-      ) : (
-        state.phase !== "ready" && (
-          <div>
-            <strong role="status">{label}</strong>
-            <p className="muted">{formatMessage(state.message)}</p>
-          </div>
-        )
-      )}
+      {inspection ? <RuntimeInspection model={model} origin={origin} /> : null}
       {state.control &&
         (state.busy ||
           state.control.paused ||
@@ -153,7 +140,7 @@ export function RuntimePanel({
                   {item.text}
                 </p>
               ))}
-            <div className="flex gap-2">
+            <ActionGroup>
               <Button
                 disabled={state.control.stopping || state.phase !== "ready"}
                 onClick={() => void model.control("stop")}
@@ -174,7 +161,7 @@ export function RuntimePanel({
                   {t("ui.runtime.continue")}
                 </Button>
               )}
-            </div>
+            </ActionGroup>
           </div>
         )}
       <QueueControls model={model} hiddenEmpty={!inspection} />
@@ -196,7 +183,7 @@ export function RuntimePanel({
                 (item.status === "sent" && item.defaultAnswered),
             )
             .map((item) => (
-              <NativeDialog
+              <NativeInteraction
                 key={`${state.interactions?.connectionGeneration}-${item.id}`}
                 item={item}
                 trusted={state.trusted}
@@ -229,7 +216,7 @@ export function RuntimePanel({
                       !(item.status === "sent" && item.defaultAnswered),
                   )
                   .map((item) => (
-                    <NativeDialog
+                    <NativeInteraction
                       key={item.id}
                       item={item}
                       trusted={state.trusted}
@@ -248,17 +235,20 @@ export function RuntimePanel({
           )}
         </section>
       )}
-      {!inspection && state.phase === "failed" && (
-        <RuntimeActions model={model} state={state} />
-      )}
     </section>
   );
 }
 
-export function RuntimeInspection({ model }: { model: RuntimeModel }) {
+export function RuntimeInspection({
+  model,
+  origin,
+}: {
+  model: RuntimeModel;
+  origin?: "cli" | undefined;
+}) {
   const { t, formatMessage } = useI18n();
   const state = useStore(model.stateStore, (value) => value.view);
-  if (!state) return <p role="status">{t("ui.runtime.loading")}</p>;
+  if (!state) return <LoadingIndicator pending label={t("app.loading")} />;
   const label = runtimePhaseLabel(state, t);
   return (
     <section
@@ -279,20 +269,22 @@ export function RuntimeInspection({ model }: { model: RuntimeModel }) {
       {state.phase !== "ready" && (
         <p className="muted">{formatMessage(state.message)}</p>
       )}
-      <RuntimeActions model={model} state={state} />
+      <RuntimeActions model={model} state={state} origin={origin} />
     </section>
   );
 }
 function RuntimeActions({
   model,
   state,
+  origin,
 }: {
   model: RuntimeModel;
   state: RuntimeView;
+  origin?: "cli" | undefined;
 }) {
   const { t } = useI18n();
   return (
-    <div className="flex gap-2">
+    <ActionGroup>
       {!state.trusted && (
         <Button
           disabled={state.phase === "starting"}
@@ -305,7 +297,7 @@ function RuntimeActions({
         (state.phase === "failed" || state.phase === "interrupted") &&
         !state.busy && (
           <Button onClick={() => void model.act("start")}>
-            {t("ui.runtime.retryStart")}
+            {t(origin === "cli" ? "ui.runtime.retryStart" : "ui.runtime.retry")}
           </Button>
         )}
       {state.trusted && (
@@ -316,248 +308,6 @@ function RuntimeActions({
       <Button variant="ghost" onClick={() => void model.act("inspect")}>
         {t("ui.runtime.inspect")}
       </Button>
-    </div>
-  );
-}
-
-function defaultAnswerText(
-  item: Interaction,
-  t: ReturnType<typeof useI18n>["t"],
-): string {
-  if (item.method === "select")
-    return item.options?.[0] ?? t("ui.interaction.cancelled");
-  if (item.prefill !== undefined)
-    return item.prefill || t("ui.interaction.empty");
-  return t("ui.interaction.cancelled");
-}
-
-function NativeDialog({
-  item,
-  model,
-  available,
-  trusted,
-  onFollowUp,
-  onContinueFollowUp,
-  receiptsById,
-  followUpIds,
-}: {
-  item: Interaction;
-  model: RuntimeModel;
-  available: boolean;
-  trusted: boolean;
-  onFollowUp: ((text: string) => Promise<FollowUpResult>) | undefined;
-  onContinueFollowUp:
-    | ((submissionId: SubmissionReceipt["submissionId"]) => void)
-    | undefined;
-  receiptsById: ReadonlyMap<string, SubmissionReceipt>;
-  followUpIds: string[];
-}) {
-  const { t, formatMessage } = useI18n();
-  const [value, setValue] = useState(item.prefill ?? "");
-  const [sent, setSent] = useState(false);
-  const [sending, setSending] = useState(false);
-  const [followUpError, setFollowUpError] = useState<
-    UiMessage | "fallback" | null
-  >(null);
-  const enabled = available && item.status === "pending" && !sent;
-  const defaulted = item.status === "sent" && item.defaultAnswered;
-  const followUpReceipts = followUpIds
-    .map((id) => receiptsById.get(id) ?? null)
-    .filter((receipt) => receipt !== null);
-  // The formal receipts own the results. An in-flight prepared/dispatching
-  // entry pauses further sends for this card; terminal entries never lock:
-  // acknowledged is call confirmation, not task completion, so a typo can be
-  // corrected with a new steer. Rejected/unknown stay visible with retry.
-  const followUpInFlight = followUpReceipts.some(
-    (receipt) =>
-      receipt.state === "prepared" || receipt.state === "dispatching",
-  );
-  const followUp = () => {
-    if (
-      !available ||
-      !trusted ||
-      !onFollowUp ||
-      !value.trim() ||
-      sending ||
-      followUpInFlight
-    )
-      return;
-    setSending(true);
-    setFollowUpError(null);
-    void onFollowUp(value).then((result) => {
-      setSending(false);
-      // Identity is appended by the parent (survives remount); failures with
-      // a formal receipt are still tracked via that identity.
-      if (!result.ok || !result.submissionId)
-        setFollowUpError(result.message ?? "fallback");
-    });
-  };
-  const answer = (response: Parameters<RuntimeModel["answer"]>[1]) => {
-    if (!enabled || (!trusted && response.kind !== "cancel")) return;
-    setSent(true);
-    void model.answer(item.id, response);
-  };
-  return (
-    <article className="message" data-selectable aria-label={item.title}>
-      <strong>{item.title}</strong>
-      {item.message && <p>{item.message}</p>}
-      {defaulted && (
-        <p role="status">
-          {t("ui.interaction.defaultAnswered", {
-            answer: defaultAnswerText(item, t),
-          })}
-        </p>
-      )}
-      {item.status === "pending" && !sent ? (
-        <>
-          {item.method === "confirm" ? (
-            <div className="flex gap-2">
-              <Button
-                disabled={!enabled || !trusted}
-                onClick={() => answer({ kind: "confirm", confirmed: true })}
-              >
-                {t("ui.interaction.confirm")}
-              </Button>
-              <Button
-                variant="ghost"
-                disabled={!enabled || !trusted}
-                onClick={() => answer({ kind: "confirm", confirmed: false })}
-              >
-                {t("ui.interaction.reject")}
-              </Button>
-            </div>
-          ) : item.method === "select" ? (
-            <div className="flex flex-col gap-2">
-              {item.options?.map((option, index) => (
-                <div key={`${index}-${option}`}>
-                  <Button
-                    disabled={!enabled || !trusted}
-                    onClick={() => answer({ kind: "value", value: option })}
-                  >
-                    {option}
-                  </Button>
-                  {item.optionDetails?.[index]?.description && (
-                    <p>{item.optionDetails[index]?.description}</p>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div>
-              <TextArea
-                className="my-2.5 block"
-                data-native-answer
-                aria-label={item.title}
-                disabled={!enabled || !trusted}
-                value={value}
-                placeholder={item.placeholder}
-                maxLength={16384}
-                onChange={(event) => setValue(event.target.value)}
-              />
-              <Button
-                disabled={!enabled || !trusted}
-                onClick={() => answer({ kind: "value", value })}
-              >
-                {t("ui.interaction.submit")}
-              </Button>
-            </div>
-          )}
-          <Button
-            variant="ghost"
-            disabled={!enabled}
-            onClick={() => answer({ kind: "cancel" })}
-          >
-            {t("ui.interaction.cancel")}
-          </Button>
-        </>
-      ) : defaulted ? (
-        <>
-          <div>
-            <TextArea
-              className="my-2.5 block"
-              data-native-answer
-              aria-label={t("ui.interaction.continueAnswerLabel", {
-                title: item.title,
-              })}
-              disabled={!available || !trusted || followUpInFlight || sending}
-              value={value}
-              placeholder={item.placeholder}
-              maxLength={16384}
-              onChange={(event) => setValue(event.target.value)}
-            />
-            <Button
-              disabled={
-                !available ||
-                !trusted ||
-                followUpInFlight ||
-                sending ||
-                !value.trim()
-              }
-              onClick={followUp}
-            >
-              {sending
-                ? t("ui.interaction.sendingFollowUp")
-                : t("ui.interaction.sendFollowUp")}
-            </Button>
-          </div>
-          {followUpReceipts.map((receipt) => {
-            const trouble = receiptNeedsAttention(receipt);
-            return (
-              <div key={receipt.submissionId}>
-                <p
-                  role={trouble ? "alert" : "status"}
-                  className={trouble ? "failure" : undefined}
-                >
-                  {t(receiptStatusKey(receipt))}
-                </p>
-                {receipt.state === "prepared" && onContinueFollowUp && (
-                  <Button
-                    variant="ghost"
-                    disabled={!available || !trusted}
-                    onClick={() => onContinueFollowUp(receipt.submissionId)}
-                  >
-                    {t("ui.interaction.continueDispatch")}
-                  </Button>
-                )}
-              </div>
-            );
-          })}
-          {followUpError && (
-            <p role="alert" className="failure">
-              {followUpError === "fallback"
-                ? t("ui.interaction.followUpFailed")
-                : formatMessage(followUpError)}
-            </p>
-          )}
-        </>
-      ) : (
-        <>
-          <p role="status">
-            {item.status === "expired"
-              ? t("ui.interaction.expired")
-              : item.status === "cancelled"
-                ? item.dismissed
-                  ? t("ui.interaction.dismissed")
-                  : t("ui.interaction.nativeCancelled")
-                : item.status === "unknown"
-                  ? t("ui.interaction.answerUnknown")
-                  : item.status === "pending"
-                    ? t("ui.interaction.answerSubmitted")
-                    : t("ui.interaction.answerWritten")}
-          </p>
-          {item.status === "unknown" && (
-            <>
-              <Button
-                variant="ghost"
-                onClick={() => void model.dismiss(item.id)}
-              >
-                {t("ui.interaction.dismissUnknown")}
-              </Button>
-              <p className="muted">{t("ui.interaction.dismissWarning")}</p>
-            </>
-          )}
-        </>
-      )}
-    </article>
+    </ActionGroup>
   );
 }

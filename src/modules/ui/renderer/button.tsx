@@ -17,11 +17,13 @@ const buttonVariants = cva("ui-button", {
     variant: {
       default: "ui-button-primary",
       secondary: "ui-button-secondary",
+      subtle: "ui-button-subtle",
       chip: "ui-button-chip",
       accent: "ui-button-accent",
       destructive: "ui-button-destructive",
       ghost: "ui-button-ghost",
       navigation: "ui-button-navigation",
+      option: "ui-button-option",
     },
   },
   defaultVariants: { variant: "default", size: "default" },

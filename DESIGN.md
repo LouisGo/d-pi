@@ -323,6 +323,22 @@ d-pi 的基础视觉体系跟随本轮已授权的 Beautiful UI 对照：常规�
 
 本轮原生观测范围见 [native-observations.json](.scratch/beautiful-ui-system/evidence/native-observations.json)：记录 light/dark、固定窄窗、Checkbox/Slider/Disclosure 键盘与 Select 搜索/Esc、Modal/Tooltip 焦点行为。该记录不证明真实 provider、打包、VoiceOver、系统 IME 或物理拖拽；工程/试用/认可状态仍由[所属规格](.scratch/beautiful-ui-system/spec.md)维护。
 
+## 展示、配套与业务组合（2026-10-09）
+
+共享 Badge、ActionGroup、InlineNotice、EmptyState、Kbd 的实现及样式位于 `modules/ui/renderer/presentation.*`，从 UI public 面导出；全部消费现有 token。Badge 的 tone 只表达调用者提供的状态，InlineNotice 的 alert/status 由调用者显式选择，不推断执行结果。设置行按分组的实际容器宽度换行；Select 长值省略在值区域，弹层保留完整文案，受控值缺失时仍展示真实值。
+
+App CopyButton 在剪贴板写入完成后确认，失败可重试；PathLabel 保留路径末端及完整可访问文本。Reading 的 MessageHeader 和 ToolResultFrame 组合共享控件；后者使用 Disclosure 的 framed variant，展开只改变呈现。NativeInteraction 从 RuntimePanel 提取，原生状态、权限和后续正式收据继续由原合同拥有。看板索引与 TabStrip 自动显露仅滚动各自容器。
+
+2026-10-09 精致感追加：轻表面使用共享 `--surface-subtle`，表面内边缘使用 `--shadow-surface`，与现有控件/浮层阴影组合。OptionAction 属于 UI 配套组件，由 Button 的 option variant 管理立即执行的操作行外观，名称与说明分别关联。Disclosure 的箭头、工具输出头部与代码正文统一层次；看板展示容器避免与业务组件重复加框。历史原生记录不外推为最新源码验收。
+
+2026-10-09 截图反馈修正：原生问答以用户提供的 Beautiful UI 紧凑卡片为直接视觉依据，取代此前撑满宽度的 OptionAction 列表。NativeInteraction 宽度消费 `--interaction-width` 并允许随父容器收缩，标题与关闭动作对齐，底部为右侧辅助/强调动作。共享 RadioOptions 使用 Base UI RadioGroup/Radio，支持空选择、单项及名称/说明关联；仅管理本地呈现选择，显式提交才发送原生选项原文。ChoiceGroup 仍沿用已有胶囊模式，不混用两种场景。Button 的 subtle variant 使用 muted 填充，accent 仍表达强调提交。
+
+framed Disclosure 的共享容器裁切 hover 和正文至圆角内，summary 的键盘焦点采用内侧 outline，鼠标不显示 outline。工具正文允许长路径换行；组件消费者不通过负边距或独立主题值修补内部样式。最新验收范围见[细节重做记录](.scratch/beautiful-ui-system/spec.md#2026-10-09-截图反馈与细节重做)。
+
+同日用户明确要求直接补齐手动回答。公开 AnswerOptions 将 RadioOptions 与 TextArea 的 quiet variant 组合为一个受控答案，option/custom 两种输入互斥；可由调用者省略 custom 入口。quiet 输入静止时无边框和独立表面，hover/focus 使用同源表面，键盘仍使用共享 focus-visible；内容自然增长至限高后在输入区滚动。NativeInteraction 的 select 卡片实际开放“其他回答”，空白禁用，显式提交原文，不丢弃超时默认后的未提交草稿。Host 通过既有 value 字符串回复传递自定义内容，confirm 仍使用独立布尔响应。最新来源及验证见[手动回答补齐](.scratch/beautiful-ui-system/spec.md#2026-10-09-手动回答补齐)。
+
+组件盘点、t3 code 固定源码对照、采用边界和本轮证据见[所属规格](.scratch/beautiful-ui-system/spec.md#2026-10-09-组件梳理与组合-polish)。
+
 ## Do's and Don'ts
 
 ### Do:

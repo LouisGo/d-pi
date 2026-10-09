@@ -1,0 +1,16 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/Learn/d-pi
+
+ ✓ tests/integration/app-runtime-service.integration.test.ts (39 tests) 1712ms
+   ✓ continues a CLI-origin binding through ordinary admission using its exact original file 422ms
+   ✓ does not dispatch a CLI startup after trust is revoked during the owner probe 302ms
+ ✓ tests/integration/runtime-causality.integration.test.ts (22 tests) 4280ms
+   ✓ replays bounded evidence in the same live Host after a SQLite failure without replaying prompt 1135ms
+   ✓ idle cannot dispose unconfirmed terminal evidence after ACK was already committed 590ms
+   ✓ a Host loss after Main write failure loses only memory evidence and reopens conservatively without resending 2035ms
+
+ Test Files  2 passed (2)
+      Tests  61 passed (61)
+   Start at  16:01:58
+   Duration  4.83s (tests 87%, transform 9%, import 4%)

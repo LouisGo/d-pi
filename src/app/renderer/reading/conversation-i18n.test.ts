@@ -24,7 +24,10 @@ vi.mock("../../../modules/preferences/renderer/public", async () => {
   return { useI18n: () => ({ ...createI18n(locale) }) };
 });
 
-vi.mock("@/components/icons/common", () => ({ WebsiteIcon: () => null }));
+vi.mock("@/components/icons/common", () => ({
+  WebsiteIcon: () => null,
+  ToolsIcon: () => null,
+}));
 vi.mock("../../../modules/ui/renderer/public", async (importOriginal) => ({
   ...(await importOriginal<
     typeof import("../../../modules/ui/renderer/public")

@@ -73,29 +73,99 @@ async function mount(
     model.dispose();
     container.remove();
   });
-  await act(() =>
-    root.render(
-      createElement(
-        QueryClientProvider,
-        { client },
-        createElement(I18nProvider, {
-          initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" },
-          children: createElement(SavedConversation, {
-            model,
-            bridge,
-            threadId: "A",
-            active,
+  const render = () =>
+    act(() =>
+      root.render(
+        createElement(
+          QueryClientProvider,
+          { client },
+          createElement(I18nProvider, {
+            initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" },
+            children: createElement(SavedConversation, {
+              model,
+              bridge,
+              threadId: "A",
+              active,
+            }),
           }),
-        }),
+        ),
       ),
-    ),
-  );
+    );
+  await render();
   return {
     container,
     bridge,
     emit: (event: ConversationEvent) => emit?.(event),
+    remount: async () => {
+      await act(() => root.render(null));
+      await render();
+    },
   };
 }
+it("reuses fresh saved messages on return without another disk read or loading prose", async () => {
+  const f = await mount(true, {
+    kind: "page",
+    entries: [
+      { id: "one", parentId: null, role: "assistant", text: "cached message" },
+    ],
+    source: "saved",
+    coverage: "append-order",
+    next: null,
+    incompleteTail: false,
+    omitted: 0,
+  });
+  await vi.waitFor(() =>
+    expect(f.container.textContent).toContain("cached message"),
+  );
+  expect(f.bridge.read).toHaveBeenCalledTimes(1);
+  await f.remount();
+  await act(() => new Promise((resolve) => setTimeout(resolve, 250)));
+  expect(f.bridge.read).toHaveBeenCalledTimes(1);
+  expect(f.container.textContent).not.toContain("Reading native records");
+  expect(
+    f.container.querySelector('[data-slot="loading-indicator"]'),
+  ).toBeNull();
+});
+it("does not re-read a cached transcript just because its existing live identities remount", async () => {
+  const f = await mount(true, {
+    kind: "page",
+    entries: [
+      { id: "one", parentId: null, role: "assistant", text: "cached message" },
+    ],
+    source: "saved",
+    coverage: "append-order",
+    next: null,
+    incompleteTail: false,
+    omitted: 0,
+  });
+  await vi.waitFor(() =>
+    expect(f.container.textContent).toContain("cached message"),
+  );
+  await act(() =>
+    f.emit({
+      kind: "snapshot",
+      connectionGeneration: "ready",
+      seq: 1,
+      gap: false,
+      items: [
+        {
+          id: 1,
+          nativeRecordId: "one",
+          role: "assistant",
+          state: "complete",
+          label: { kind: "literal", text: "OMP" },
+          text: "cached message",
+        },
+      ],
+    }),
+  );
+  await act(() => new Promise((resolve) => setTimeout(resolve, 250)));
+  const calls = vi.mocked(f.bridge.read).mock.calls.length;
+  await f.remount();
+  await act(() => new Promise((resolve) => setTimeout(resolve, 250)));
+  expect(f.bridge.read).toHaveBeenCalledTimes(calls);
+  expect(f.container.textContent).toContain("cached message");
+});
 it("opens bound native messages directly without project selection, execute or a read click", async () => {
   const f = await mount();
   await vi.waitFor(async () => {

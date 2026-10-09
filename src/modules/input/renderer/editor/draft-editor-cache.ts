@@ -281,6 +281,14 @@ export class DraftEditorCache {
       }
     }
   }
+  /** Retirement keeps failed cleanup with its existing bounded history owner. */
+  evict(key: string): boolean {
+    const editor = this.activeEditors.get(key);
+    if (editor && !editor.isDestroyed) return false;
+    this.entries.delete(key);
+    this.releaseHistory(key);
+    return true;
+  }
   constructor(
     private readonly limits = { threads: 8, documentBytes: 4 * 1024 * 1024 },
     private readonly bridge?: AttachmentBridge,

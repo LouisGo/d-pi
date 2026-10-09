@@ -876,6 +876,9 @@ async function runComponentChecks() {
   await evaluate(
     "window.componentController=window.probe.model.controller;window.componentSidebarWidth=document.querySelector('.primary-sidebar').getBoundingClientRect().width",
   );
+  await evaluate(
+    `window.galleryReveal=(node)=>{const main=document.querySelector('[data-gallery-main]');main.scrollTop+=node.getBoundingClientRect().top-main.getBoundingClientRect().top-16;};`,
+  );
   const trigger = '.sidebar-tools button[aria-label="开发者工具"]';
   await check(
     "settings-left-tools-right",
@@ -961,7 +964,11 @@ async function runComponentChecks() {
     await evaluate("window.probe.pause()");
     await check(
       `right-anchor-${selector.includes("title") ? "component" : "category"}`,
-      `(()=>{const main=document.querySelector('[data-gallery-main]');const link=document.querySelector('[data-gallery-navigation] ${selector}');const target=document.querySelector(link.getAttribute('href'));const r=target.getBoundingClientRect(),m=main.getBoundingClientRect();return r.top>=m.top-1 && r.top<m.bottom && document.querySelector('[data-gallery-navigation]').getBoundingClientRect().top===${navTop};})()`,
+      `(()=>{const main=document.querySelector('[data-gallery-main]');const link=document.querySelector('[data-gallery-navigation] ${selector}');const target=document.querySelector(link.getAttribute('href'));const r=target.getBoundingClientRect(),m=main.getBoundingClientRect();return {target:r.toJSON(),main:m.toJSON(),navigationTop:document.querySelector('[data-gallery-navigation]').getBoundingClientRect().top};})()`,
+      (v) =>
+        v.target.top >= v.main.top - 1 &&
+        v.target.top < v.main.bottom &&
+        v.navigationTop === navTop,
     );
   }
   await capture("components-icons");
@@ -992,7 +999,7 @@ async function runComponentChecks() {
     ],
   ]) {
     await evaluate(
-      `(()=>{const button=[...document.querySelectorAll('[data-component] button')].find(b=>b.textContent===${JSON.stringify(openLabel)});button.scrollIntoView({block:'center'});button.focus();button.click();})()`,
+      `(()=>{const button=[...document.querySelectorAll('[data-component] button')].find(b=>b.textContent===${JSON.stringify(openLabel)});window.galleryReveal(button);button.focus();button.click();})()`,
     );
     await wait(() =>
       evaluate(`!!document.querySelector(${JSON.stringify(popup)})`),
@@ -1009,7 +1016,7 @@ async function runComponentChecks() {
     );
   }
   await evaluate(
-    `document.querySelector('[data-component="ResizableSplit"]').scrollIntoView({block:'center'})`,
+    `window.galleryReveal(document.querySelector('[data-component="ResizableSplit"]'))`,
   );
   await evaluate("window.probe.pause()");
   const before = await evaluate(
@@ -1074,6 +1081,97 @@ async function runComponentChecks() {
   await check(
     "narrow-navigation-stays-visible-after-scroll",
     `(()=>{const r=document.querySelector('[data-gallery-navigation]').getBoundingClientRect();const main=document.querySelector('[data-gallery-main]');return r.top===${navigationRect.top} && r.bottom===${navigationRect.bottom} && main.scrollTop>0 && !document.querySelector('header nav') && r.bottom<=window.innerHeight;})()`,
+  );
+
+  // Regression evidence for compositions, measured against their allocated box.
+  for (const theme of ["light", "dark"]) {
+    if (await evaluate(`document.documentElement.dataset.theme !== '${theme}'`))
+      await evaluate(`window.probe.model.preference('theme', '${theme}')`);
+    await check(
+      `polish-${theme}-resolved-theme`,
+      `document.documentElement.dataset.theme==='${theme}' && getComputedStyle(document.documentElement).colorScheme==='${theme}'`,
+    );
+    for (const [width, height] of [
+      [1440, 900],
+      [720, 540],
+    ]) {
+      await resize(width, height);
+      await check(
+        `polish-${theme}-${width}-component-content-fits`,
+        `(()=>{
+        const main=document.querySelector('[data-gallery-main]');
+        return main.scrollWidth<=main.clientWidth+1 && ['MessageHeader','ToolResultFrame','NativeInteraction','InlineNotice','PathLabel'].every(name=>{
+          const node=document.querySelector('[data-component="'+name+'"]');
+          return node.scrollWidth<=node.clientWidth+1;
+        });
+      })()`,
+      );
+      await check(
+        `polish-${theme}-${width}-nested-settings-and-long-select`,
+        `(()=>{
+        const host=document.querySelector('[data-nested-settings]'),row=host.querySelector('.ui-setting-row');
+        const copy=row.querySelector('.ui-setting-copy').getBoundingClientRect(),control=row.querySelector('.ui-setting-control').getBoundingClientRect();
+        const trigger=row.querySelector('.ui-select'),value=trigger.querySelector('.ui-select-value');
+        return copy.bottom<=control.top+1 && host.scrollWidth<=host.clientWidth+1 && value.scrollWidth>value.clientWidth && trigger.scrollWidth<=trigger.clientWidth+1 && getComputedStyle(value).textOverflow==='ellipsis';
+      })()`,
+      );
+      await evaluate(
+        `window.galleryReveal(document.querySelector('[data-component="MessageHeader"]'))`,
+      );
+      await capture(`polish-business-${theme}-${width}`);
+    }
+  }
+  await resize(1440, 900);
+  await evaluate(
+    `window.galleryReveal(document.querySelector('[data-nested-settings] .ui-select')); document.querySelector('[data-nested-settings] .ui-select').focus();`,
+  );
+  await key("ArrowDown", "ArrowDown");
+  await wait(() => evaluate("!!document.querySelector('.ui-select-popup')"));
+  await check(
+    "polish-long-select-popup-fits-window",
+    `(()=>{const r=document.querySelector('.ui-select-popup').getBoundingClientRect();return r.left>=0 && r.right<=innerWidth+1 && r.top>=0 && r.bottom<=innerHeight+1;})()`,
+  );
+  await capture("polish-settings-dark-wide");
+  await key("Escape", "Escape");
+  await wait(() =>
+    evaluate(
+      "document.activeElement===document.querySelector('[data-nested-settings] .ui-select')",
+    ),
+  );
+  await check(
+    "polish-select-escape-returns-focus",
+    "document.activeElement===document.querySelector('[data-nested-settings] .ui-select')",
+  );
+  await evaluate(
+    `document.querySelector('[data-component="ToolResultFrame"] summary').click()`,
+  );
+  await check(
+    "polish-tool-output-collapses",
+    "!document.querySelector('[data-component=ToolResultFrame] details').open",
+  );
+  await evaluate(
+    `document.querySelector('[data-component="NativeInteraction"] [data-slot="answer-options"] [role="radio"]').click()`,
+  );
+  await wait(() =>
+    evaluate(
+      `document.querySelector('[data-component="NativeInteraction"] [data-slot="answer-options"] [role="radio"]').getAttribute('aria-checked')==='true'`,
+    ),
+  );
+  await check(
+    "polish-native-selection-waits-for-submit",
+    "!document.querySelector('[data-component=NativeInteraction] output').textContent.includes('本地示例已回答')",
+  );
+  await evaluate(
+    `document.querySelector('[data-component="NativeInteraction"] .native-interaction-footer button.ui-button-accent').click()`,
+  );
+  await wait(() =>
+    evaluate(
+      "document.querySelector('[data-component=NativeInteraction] output').textContent.includes('本地示例已回答')",
+    ),
+  );
+  await check(
+    "polish-native-answer-feedback",
+    "document.querySelector('[data-component=NativeInteraction] output').textContent.includes('本地示例已回答') && !document.querySelector('[data-component=NativeInteraction] [data-slot=answer-options]')",
   );
 
   await click("Back to conversation");
@@ -1337,7 +1435,7 @@ async function runThreadChecks() {
     if (
       await evaluate(`document.documentElement.dataset.theme !== '${theme}'`)
     ) {
-      await evaluate("window.probe.model.preference('theme')");
+      await evaluate(`window.probe.model.preference('theme', '${theme}')`);
     }
     for (const [width, height] of [
       [1440, 900],
@@ -1361,6 +1459,15 @@ async function runThreadChecks() {
           v.composer.bottom <= v.workspace.bottom + 1 &&
           v.composer.width <= v.workspace.width &&
           !v.open,
+      );
+      await check(
+        `thread-${theme}-${width}-toolbar-actions-have-a-clear-row`,
+        `(()=>{
+        const context=document.querySelector('[data-slot="composer-toolbar-context"]').getBoundingClientRect();
+        const actions=document.querySelector('[data-slot="composer-toolbar-actions"]').getBoundingClientRect();
+        const composer=document.querySelector('.composer').getBoundingClientRect();
+        return composer.width>540 ? Math.abs(context.top-actions.top)<1 : context.bottom<=actions.top+1;
+      })()`,
       );
       await check(
         `thread-${theme}-${width}-scroll-boundaries`,

@@ -59,6 +59,26 @@
     padding-block: calc(var(--spacing) * 2);
     resize: vertical;
     line-height: 1.6;
+    display: block;
+    max-height: none;
+  }
+  .ui-textarea[data-variant="quiet"] {
+    field-sizing: content;
+    min-height: var(--control-height);
+    max-height: calc(var(--editor-height) * 2);
+    padding: calc(var(--spacing) * 2);
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+    resize: none;
+    font-size: var(--text-reading);
+  }
+  .ui-textarea[data-variant="quiet"]:hover:not(:disabled):not([readonly]) {
+    border-color: transparent;
+    background: var(--surface-subtle);
+  }
+  .ui-textarea[data-variant="quiet"]:focus {
+    background: var(--field);
   }
   .ui-slider {
     appearance: none;
@@ -97,6 +117,12 @@
     min-width: 0;
   }
   .ui-disclosure-trigger {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--spacing) * 2);
+    min-width: 0;
+    overflow-wrap: anywhere;
+    list-style: none;
     padding: calc(var(--spacing) * 1.5) calc(var(--spacing) * 2);
     border-radius: var(--radius-control);
     color: var(--muted-foreground);
@@ -105,6 +131,32 @@
     transition:
       background-color var(--motion-control) var(--ease-out),
       color var(--motion-control) var(--ease-out);
+  }
+  .ui-disclosure-trigger::-webkit-details-marker {
+    display: none;
+  }
+  .ui-disclosure-trigger::after {
+    content: "";
+    flex-shrink: 0;
+    width: calc(var(--spacing) * 1.5);
+    height: calc(var(--spacing) * 1.5);
+    margin-inline-start: auto;
+    margin-inline-end: var(--spacing);
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    rotate: -45deg;
+    color: var(--muted-foreground);
+    transition: rotate var(--motion-control) var(--ease-out);
+  }
+  .ui-disclosure[open] > .ui-disclosure-trigger::after {
+    rotate: 45deg;
+  }
+  .ui-disclosure-trigger:hover {
+    background: var(--surface-subtle);
+    color: var(--foreground);
+  }
+  .ui-disclosure-trigger:active {
+    background: var(--muted);
   }
   .ui-disclosure[open] > .ui-disclosure-trigger {
     color: var(--foreground);
@@ -123,5 +175,35 @@
   .ui-slider::-webkit-slider-thumb,
   .ui-disclosure-trigger {
     transition: none;
+  }
+  .ui-disclosure-trigger::after {
+    transition: none;
+  }
+}
+
+@layer components {
+  .ui-disclosure[data-variant="framed"] {
+    min-width: 0;
+    overflow: clip;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: var(--text-body);
+    background: var(--surface-subtle);
+    box-shadow: var(--shadow-surface);
+  }
+  .ui-disclosure[data-variant="framed"] > .ui-disclosure-trigger {
+    padding: calc(var(--spacing) * 3);
+    color: var(--foreground);
+    border-radius: inherit;
+  }
+  .ui-disclosure[data-variant="framed"][open] > .ui-disclosure-trigger {
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+  }
+  .ui-disclosure[data-variant="framed"] > .ui-disclosure-trigger:hover {
+    background: var(--muted-hover);
+  }
+  .ui-disclosure[data-variant="framed"] > .ui-disclosure-trigger:focus-visible {
+    outline-offset: calc(-1 * var(--focus-ring-offset));
   }
 }

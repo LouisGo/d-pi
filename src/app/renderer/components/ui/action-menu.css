@@ -1,7 +1,13 @@
 @layer components {
   .ui-action-menu {
-    min-width: var(--settings-navigation-width);
-    max-width: calc(100vw - var(--panel-padding) * 2);
+    min-width: min(var(--menu-min-width), var(--available-width));
+    max-width: min(
+      var(--available-width),
+      calc(100vw - var(--panel-padding) * 2)
+    );
+    max-height: var(--available-height);
+    overflow-y: auto;
+    overscroll-behavior: contain;
     padding: calc(var(--layout-gap) / 2);
     border: 1px solid var(--border);
     border-radius: var(--radius);
@@ -33,7 +39,7 @@
   }
   .ui-action-menu-item:focus-visible {
     outline: var(--focus-ring);
-    outline-offset: var(--focus-ring-offset);
+    outline-offset: calc(-1 * var(--focus-ring-offset));
   }
   .ui-action-menu-indicator {
     display: flex;

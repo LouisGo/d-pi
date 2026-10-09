@@ -66,3 +66,16 @@
 ## 2026-10-07 基础体系升级
 
 用户确认 Beautiful UI 从写法参考提升为本轮直接视觉和动效对照，工程接入仍采用自有 API、统一 token 与 Base UI。固定源码提交 `44a274e598395ab61e7c96c26fda2758780253b7`；对照中性主按钮、蓝色强调按钮、胶囊文字动作、不同表面的边界与浅层阴影及短按压反馈。来源与研究见[已有调研](../../.scratch/codex-workbench-ui/research.md#7-beautiful-ui--tool-ui组件写法与自有封装)及[升级规格](../../.scratch/beautiful-ui-system/spec.md)；不移植示例计时器、假运行状态或整套组件库。
+
+## 2026-10-09 t3 code 本地组件对照
+
+用户明确要求对照本地 `/Users/lou/Learn/t3code`，固定 commit `30cc788975500a8c00d32a50f348174d1ce578d1`，根许可 MIT。只读源码，不运行或安装 t3。代表入口是 `apps/web/src/components/ui/{badge,alert,empty,kbd,group,select,combobox,dialog}.tsx`、`StartTruncatedPath.tsx`、`DiffFilePathCopyButton.tsx`、`hooks/useCopyToClipboard.ts`，以及消息/命令输出组合。采用判断与未覆盖候选见[本轮规格](../../.scratch/beautiful-ui-system/spec.md#2026-10-09-组件梳理与组合-polish)。
+
+借鉴状态/动作/提示/空态组合、异步复制反馈、末端路径保留和可用空间约束；以 d-pi 公开控件、自有语义 token 和业务合同重新组合。没有复制整套组件或上游视觉常量，不引入 t3 的 lucide、glass、第二套密度、执行状态机或远程环境。共享展示位于 UI Renderer，剪贴板/路径配套位于 App，消息/原生交互组合留在所属功能。
+
+
+## Beautiful UI 精致感对照（2026-10-09）
+
+用户再次明确要求 Beautiful UI 的精致感。本轮查看 [官网](https://www.beautifului.dev/) 实际 Approval Card、Tool Chips、Task Rows、Chat、Prompt Bar：以细边界、轻表面和名称/说明/动作层次作为视觉依据，沿用上文固定源码来源。采用自有 OptionAction/NativeInteraction、Disclosure/ToolResultFrame 及共享控件配方；不复制新上游源码、演示计时器或假执行事实。具体采用、源文件指纹及本轮浏览器证据限制见[升级规格](../../.scratch/beautiful-ui-system/spec.md#2026-10-09-beautiful-ui-精致感升级)。
+
+同日用户提供紧凑问答卡截图并否定导航式原生选项外观。最新 NativeInteraction 以该截图的宽度比例、圆形单选、标题关闭和右下角动作作为直接视觉依据；单选使用已有 Base UI Radio/RadioGroup，自有 RadioOptions 消费统一 token，未复制外部源码。原生问答通过显式提交发送既有选项原文，不照搬参考图中未有业务依据的分页和自定义回答。见[反馈修正](../../.scratch/beautiful-ui-system/spec.md#2026-10-09-截图反馈与细节重做)。

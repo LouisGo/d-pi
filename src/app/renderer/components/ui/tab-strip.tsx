@@ -1,5 +1,5 @@
 import { Button as TabButton } from "@base-ui/react/button";
-import { type ReactNode, useRef } from "react";
+import { type ReactNode, useLayoutEffect, useRef } from "react";
 import { Button } from "../../../../modules/ui/renderer/public";
 import { AddIcon, CloseIcon } from "../icons/common";
 
@@ -34,6 +34,27 @@ export function TabStrip({
   const list = useRef<HTMLDivElement>(null);
   const enabled = tabs.filter((tab) => !tab.disabled);
   const current = enabled.find((tab) => tab.id === selected) ?? enabled[0];
+  const currentId = current?.id;
+  useLayoutEffect(() => {
+    if (!currentId || !list.current) return;
+    const viewport = list.current;
+    const item = document
+      .getElementById(`${id}-tab-${currentId}`)
+      ?.closest<HTMLElement>(".tab-strip-item");
+    if (!item) return;
+    const reveal = () => {
+      const box = viewport.getBoundingClientRect();
+      const target = item.getBoundingClientRect();
+      if (target.left < box.left) viewport.scrollLeft += target.left - box.left;
+      else if (target.right > box.right)
+        viewport.scrollLeft += target.right - box.right;
+    };
+    reveal();
+    const observer = new ResizeObserver(reveal);
+    observer.observe(viewport);
+    observer.observe(item);
+    return () => observer.disconnect();
+  }, [id, currentId]);
   const closeTab = (tabId: string) => {
     const ownedFocus = list.current?.contains(document.activeElement);
     close?.onClose(tabId);

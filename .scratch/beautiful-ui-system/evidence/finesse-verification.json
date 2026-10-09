@@ -1,0 +1,113 @@
+{
+  "recordedAt": "2026-10-09T05:05:35.632428+00:00",
+  "delivery": "working tree / Dev",
+  "reference": {
+    "url": "https://www.beautifului.dev/",
+    "fixedSourceCommit": "44a274e598395ab61e7c96c26fda2758780253b7",
+    "copiedSource": false
+  },
+  "sourceSha256": {
+    "src/app/renderer/components/ui/action-menu.css": "4a5a26e606c07dc0873569b531ecedcfbf0349a8341ece4df94f8844bb8d8cae",
+    "src/app/renderer/components/ui/copy-button.test.ts": "717c82b133ea2f97e02ef05130d1c477e8b1aeb5ff6ee5d09aa6499e3f04c03c",
+    "src/app/renderer/components/ui/copy-button.tsx": "138ab2befb4effea3065f08791590d47da792f9ee01ebde91cbd988a2487c0a6",
+    "src/app/renderer/components/ui/feedback.css": "8da8dd09deb47aeb7e6c56e5ecf43e767b2fadff42f8fb011a7a9c6484f619f8",
+    "src/app/renderer/components/ui/hover-menu.css": "0b801701daf26e285600e127c2d6259ec0e67fbcff624e1d36942b4ccf0ee6d3",
+    "src/app/renderer/components/ui/modal.css": "9c7ddc1c65fd6a35576f0961ae0045e99a407adc203a8c7deb7f9d77c27e9b0e",
+    "src/app/renderer/components/ui/path-label.tsx": "9f760582ca3ef52b9d1fe94e785ddd3b41c1164ecc5f04779b970d7454c50c62",
+    "src/app/renderer/components/ui/status-preview.css": "7dc8d16049da5c9c922cbf0b2544ebe03cc4e9dc8716619221282934aa5b398f",
+    "src/app/renderer/components/ui/tab-strip.css": "7c271d15ec229818a2c6b55c9bc98549500a1db42897c855374588c56dc75ae3",
+    "src/app/renderer/components/ui/tab-strip.test.ts": "856e22d74562496614804800609ec6f96504e152f5d8a058911ef82f35cbba6c",
+    "src/app/renderer/components/ui/tab-strip.tsx": "b138a94923a2bae7a03cfdbb23a7fb992465dd5f7f95ceaacee5ea4733bd7b82",
+    "src/app/renderer/developer/components/catalog.ts": "59e07cac9772afa54773b62051104f99a88d3ff71f2e08b310feaf47f219b609",
+    "src/app/renderer/developer/components/component-dashboard.module.css": "7ce6539808219e688349dde370c76e40221c3e783a0fb16599a51d6eaeabf9be",
+    "src/app/renderer/developer/components/component-dashboard.test.ts": "455febc4b595619c3539a37a4cdbe85afac5ab48e60c761e22cd69f4341af05c",
+    "src/app/renderer/developer/components/component-dashboard.tsx": "c6b00139d8ea890c16feada698b6e53fff4da94beda9a0e7f6100ac5bb7eda79",
+    "src/app/renderer/developer/components/demos.tsx": "9319f22b65c1ad76c69428d1f6a174da51e952cd83c784d3013692522b13b526",
+    "src/app/renderer/developer/components/presentation-demos.tsx": "8195a3dd9e6df15ec7f1ce9bebf252b1c6b7d04c90943beee3e6afd5b7c245b3",
+    "src/app/renderer/reading/conversation-i18n.test.ts": "06aeed57ef2508732467ac2a1482843e4e292864876deb7d443cdfeb7ecd2e7d",
+    "src/app/renderer/reading/conversation.tsx": "162f17aff33b6b1d63594fd3913e4ee8d9aae5907cb49b9ba31ccff1a58ab382",
+    "src/app/renderer/reading/history.tsx": "1551af9b27451a0420aea0f684af9da120ab1f0dab20d4dd4e17873da315e91f",
+    "src/app/renderer/reading/message-parts.css": "befd69f444ab8102e69a7c7964e38349fd1f0f2f8d90b43bc37291543c643a70",
+    "src/app/renderer/reading/message-parts.tsx": "36b09a640a9afbb527fd658e1f07c22f18afbb6a60c0ade9bddfa949406d0e69",
+    "src/app/renderer/reading/subagents.tsx": "ebd5c551fd0a37820423fcb669c0205e4c2a0996d9f0669be2e0c05ff626c9c4",
+    "src/app/renderer/reading/submissions.tsx": "24fc06988982b8f8cb8845003173c12d71c71bc842485ea0d4c3d9413cd16326",
+    "src/app/renderer/shell/empty-workbench.tsx": "418c6fd4aa4162c3093e168998fe96e7ea7f5056c434d0145cf70ad96760d0af",
+    "src/app/renderer/shell/settings/preferences.tsx": "ab09c140cf8535be1d2be5280f890b3885735a53ba4d36bd4594323aec2a0d06",
+    "src/app/renderer/shell/settings/settings.css": "6340be55cd51bc1ee7eaffd35c3c0d9f3672be6043134e52679686b2361d8c59",
+    "src/app/renderer/shell/thread-notice.tsx": "157fe09906b446f5b6e244686b80935444aece02b189b1cb7aa0d410fa864dfd",
+    "src/app/renderer/styles/app.css": "f8d0cd62472daaa0007349aa1ef12ca2c98642954c6218374faf213332eca44a",
+    "src/app/renderer/styles/tokens.css": "4e4f1811e75369aaf96be54404316b94cef689a7e0937df2c4d5b78b27b8761e",
+    "src/app/renderer/styles/workbench.css": "444ac3de8291f958da26fb448b7badbba4969e22d48f8f88e4b8d7d6a639a12d",
+    "src/app/renderer/workbench/composer-model-picker.css": "0c37eef4937c8e17affda7559438871c48ae7bc817006735880ba27b769eadfd",
+    "src/app/renderer/workbench/composer-toolbar.css": "70636855fc610203154f3713fc3a3c5adb863f47a6552499ff2c6fbd2caa9a02",
+    "src/app/renderer/workbench/composer.css": "e51e1642e747ca3c100b6fb72ba0c464cc031c9f63e23d37a01bfe8c896361cb",
+    "src/app/renderer/workbench/file-panel.tsx": "a0cd735414884d902738a8fc2564ff83132b1c03720db2e468cc4b07d528696d",
+    "src/app/renderer/workbench/native-interaction.tsx": "c399d6b337abdc3bf44d4d56a9370ee761f53a86a5cdcb500c913cb47ae4df1c",
+    "src/app/renderer/workbench/queue-controls.tsx": "e28e0aa09e4beb914b16c69c710130d3db82678903b800bf4400fc3bb95176dd",
+    "src/app/renderer/workbench/runtime-panel.tsx": "38b360ae2b5966e87e4d55efb751fdffd911cda08980753fe0e9b802c9a9e471",
+    "src/modules/configuration/renderer/model-picker.css": "114c9165a45581ec34fb5984ebf912ee4497d24c51bbceb229dd7600d25c8e14",
+    "src/modules/configuration/renderer/model-picker.test.ts": "24e75b3df6e023d73a06ab4dc5e0aad20465e25e43763f0e66b8a175f4761b55",
+    "src/modules/configuration/renderer/settings/providers-settings.css": "ed4ce1f5c627afcc9cfc7abe930cde234f7d6bcb50ea7ef82347b3d256205d3d",
+    "src/modules/ui/renderer/button.css": "3dbecec2af133144af20d4bb6c36a29c52e1613352c9349e05720b7b2a2aec4b",
+    "src/modules/ui/renderer/button.tsx": "39fac844bb3258f6597fbe284c5a997c1c0bfef78acf7cca23a06a4e2a084519",
+    "src/modules/ui/renderer/components/icons/_brands/magpie-assets.tsx": "97687c6c8bcc63b2eda565310a67cf871ae76c7294cb24007fefb3096119b409",
+    "src/modules/ui/renderer/components/icons/common.tsx": "09f210afd8db25a859393148c1f778385b3ae3d76c272269d5b2140ef365da21",
+    "src/modules/ui/renderer/controls.css": "b1130c0abbcadfd543252cd3b40cd030d362189d010a7f2831630facf6cb2088",
+    "src/modules/ui/renderer/controls.test.ts": "0b2965e6eb542cf513f8ded09be685b4ea8df7bd4eb42e64142d775a4703e4b1",
+    "src/modules/ui/renderer/controls.tsx": "edcb2b57b2d07cc5dbc6b577c387b05af6a6035fde154b18987874b4ef7ad368",
+    "src/modules/ui/renderer/option-action.test.ts": "c6619f2ce35da16e327cc46ca215789dad0290e65a636145252f282bcbeeab95",
+    "src/modules/ui/renderer/option-action.tsx": "e8495526d9f724bcbc115d34aee8867f001a38b200f724b7fadbbd64d4d815a8",
+    "src/modules/ui/renderer/presentation.css": "dfd5a6cd941d5f58199c323a197350f0f68311c8cff865ad3e477f11a65d6cd1",
+    "src/modules/ui/renderer/presentation.tsx": "b5092d9bc0417f7b7904dd93f6e58bd35e8f3912f27277ec71dc6497396c9877",
+    "src/modules/ui/renderer/primitives.css": "bca4653663d2015fc444a5e31cd557ffba6e91666d9dc5bea176854a3567cf42",
+    "src/modules/ui/renderer/primitives.tsx": "e082ccce2e6c2fe3d941b07cff3ee66c654fad0c10bfe092ac06362923941e70",
+    "src/modules/ui/renderer/public.ts": "01240134a1ed2a358ca2e25e06de81432088224b2991bbe49cf17ab05084fbb7",
+    "src/modules/ui/renderer/settings.css": "44a90e8d3e87edc93e2a5d03d5afa6c2e59804cc3b322e95908065e1038afba9",
+    "src/modules/ui/renderer/settings.test.ts": "5c019e0739891a2d755e13ff829bbd887b3ee74a73adb3988e739710fc11327e",
+    "src/modules/ui/renderer/settings.tsx": "bbad86ae8fbeb93ed089691f49920e1f5ac892681d8f84b55b13b2a96d977cbe",
+    "src/shared/i18n/locales/en-US/ui.ts": "e1e386b62da6e5bda248e1aae71dc614eff998c7a9a29726b6204567a7e375a2",
+    "src/shared/i18n/locales/zh-CN/ui.ts": "cc9996ee1f4195d8660f66cd4a8922160e0d1bc123c7cd58fe28018d97e2f498"
+  },
+  "tests": {
+    "files": 8,
+    "passed": 43,
+    "tdd": "OptionAction missing public component red, implementation green"
+  },
+  "visual": {
+    "surface": "isolated Renderer fixture in IAB",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      720
+    ],
+    "rounds": "batched first inspection, one repair batch, one confirmation",
+    "evidence": "finesse-browser.json"
+  },
+  "detector": {
+    "findings": 0,
+    "file": "finesse-detector.json",
+    "initialInvocation": "invalid --format json; no effective JSON evidence"
+  },
+  "limitations": [
+    "pnpm launcher environment gate not passed; direct installed tools used",
+    "Full catalog anchor screenshot and IAB geometry inconsistent; native confirmation outstanding",
+    "No current Electron automation, provider, packaging, IME or VoiceOver validation",
+    "Prior polish Electron results belong to prior source fingerprint"
+  ],
+  "checks": {
+    "rendererTypecheck": "passed",
+    "build": "passed",
+    "biome": "passed (60 changed source files)",
+    "designLint": "passed",
+    "interactionPolicy": "passed",
+    "i18n": "passed",
+    "architecture": "passed (532 source files)",
+    "structureReport": "current",
+    "documentation": "passed",
+    "projectStatus": "current",
+    "diffWhitespace": "passed"
+  }
+}

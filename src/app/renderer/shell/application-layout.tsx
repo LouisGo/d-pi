@@ -3,7 +3,7 @@ import { type ReactNode, useContext } from "react";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import { Button } from "../../../modules/ui/renderer/public";
+import { Button, LoadingIndicator } from "../../../modules/ui/renderer/public";
 import { BUILD_INFO } from "../../../shared/build-info";
 import type { AppModel } from "../wiring/model";
 import { AttentionCenter, AttentionIndicator } from "./attention";
@@ -41,9 +41,9 @@ export function ApplicationLayout({ model, children }: ApplicationLayoutProps) {
 function StartupLoading() {
   const { t } = useI18n();
   return (
-    <main className="startup" role="status">
+    <main className="startup">
       <div className="window-drag-strip" aria-hidden="true" />
-      {t("app.loading")}
+      <LoadingIndicator pending placement="center" label={t("app.loading")} />
     </main>
   );
 }

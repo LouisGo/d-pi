@@ -1,0 +1,46 @@
+{
+  "surface": "isolated-renderer-fixture",
+  "checks": [
+    {
+      "overflow": [],
+      "theme": "light",
+      "viewport": [
+        1440,
+        900
+      ]
+    },
+    {
+      "overflow": [],
+      "theme": "light",
+      "viewport": [
+        720,
+        900
+      ]
+    },
+    {
+      "overflow": [],
+      "theme": "dark",
+      "viewport": [
+        720,
+        900
+      ]
+    },
+    {
+      "overflow": [],
+      "theme": "dark",
+      "viewport": [
+        1440,
+        900
+      ]
+    }
+  ],
+  "observations": [
+    "Option name and description use separate accessible associations; immediate answer feedback observed",
+    "Nested Select opens with full value and Escape returned focus after closing transition",
+    "Full catalog link activation produced conflicting viewport and header geometry in IAB; not native window evidence"
+  ],
+  "limitations": [
+    "In-app browser fixture; not native Electron focus or packaged app validation",
+    "No real provider, IME or VoiceOver exercise"
+  ]
+}

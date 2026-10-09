@@ -18,6 +18,7 @@ import {
   Button,
   Disclosure,
   DisclosureTrigger,
+  LoadingIndicator,
 } from "../../../modules/ui/renderer/public";
 import { ConversationItemView } from "./conversation";
 import { historyToolEvidenceMessage } from "./history";
@@ -30,6 +31,7 @@ export function SavedConversation({
   active,
   positions,
   onOpenHistory,
+  initializing = false,
 }: {
   model: ConversationModel;
   bridge: HistoryBridge;
@@ -37,6 +39,7 @@ export function SavedConversation({
   active: boolean;
   positions?: ReadingPositions | undefined;
   onOpenHistory?: (() => void) | undefined;
+  initializing?: boolean;
 }) {
   const { t } = useI18n();
   // Only membership/identity changes repaint the timeline; deltas belong to rows.
@@ -59,8 +62,20 @@ export function SavedConversation({
   );
   const gap = useStore(model.stateStore, (state) => state.view?.gap ?? false);
   const { refetch } = saved;
+  const lastLive = useRef({ generation, identities });
   useEffect(() => {
-    if (!active || !generation || !identities.length) return;
+    if (!active || !generation) return;
+    const previous = lastLive.current;
+    lastLive.current = { generation, identities };
+    const unbound = saved.data?.pages.some(
+      (page) => page.kind === "unavailable" && page.reason === "unbound",
+    );
+    if (
+      previous.generation === generation &&
+      previous.identities === identities &&
+      !unbound
+    )
+      return;
     const timer = setTimeout(() => {
       void refetch();
     }, 150);
@@ -162,8 +177,14 @@ export function SavedConversation({
       className="conversation"
       data-reading-source={source}
       aria-label={t("ui.conversation.sectionLabel")}
+      aria-busy={!rows.length && (initializing || saved.isFetching)}
     >
-      {saved.isFetching && <p role="status">{t("ui.history.reading")}</p>}
+      <LoadingIndicator
+        pending={!rows.length && (initializing || saved.isFetching)}
+        identity={threadId}
+        label={t("app.loading")}
+        placement="center"
+      />
       {saved.isError && (
         <p role="alert">
           {t("ui.history.readFailed")}{" "}
@@ -207,6 +228,7 @@ export function SavedConversation({
         />
       ))}
       {!saved.isFetching &&
+        !initializing &&
         !saved.isError &&
         !entries.length &&
         !appended.length &&

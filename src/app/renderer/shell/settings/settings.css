@@ -87,14 +87,6 @@
     display: grid;
     gap: calc(var(--spacing) * 2);
   }
-  .settings-key {
-    font: inherit;
-    font-size: var(--text-small);
-    padding: calc(var(--spacing) * 0.5) calc(var(--spacing) * 1.5);
-    border-radius: var(--radius-control);
-    background: var(--muted);
-    color: var(--foreground);
-  }
 }
 @media (max-width: 960px) {
   .settings-surface {

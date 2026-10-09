@@ -1,0 +1,180 @@
+{
+  "date": "2026-10-09T07:18:14.467967+00:00",
+  "head": "bb37eaf4928d7f09565fdc08632943b45d51bf3f",
+  "delivery": "current main working tree; no commit or push; existing Dev Main must load new source",
+  "scope": [
+    "200ms delayed silent loading",
+    "8-entry Renderer Thread LRU and saved transcript Query LRU",
+    "30s saved transcript freshness / 5min unobserved GC",
+    "CLI-only retry preparing, new send prepares same session before dispatch",
+    "automatic App recovery after confirmed cleanup, bounded to one recovery per selection",
+    "close-handshake suppression and single startup after execution grant"
+  ],
+  "tests": {
+    "result": "pass",
+    "uniqueCount": 259,
+    "files": {
+      "src/app/renderer/wiring/thread-imports.test.ts": 2,
+      "tests/integration/prepared-recovery.integration.test.ts": 7,
+      "src/modules/execution/renderer/submission/submission-model.test.ts": 18,
+      "src/modules/input/renderer/editor/draft-editor-cache.test.ts": 7,
+      "src/app/renderer/reading/history-loop.test.ts": 7,
+      "src/app/renderer/reading/saved-conversation.test.ts": 12,
+      "src/app/renderer/reading/project-history.test.ts": 3,
+      "src/app/renderer/wiring/thread-startup.test.ts": 14,
+      "tests/integration/clipboard-cache-recovery.integration.test.ts": 16,
+      "src/app/renderer/wiring/m2-thread-switch.test.ts": 1,
+      "src/app/renderer/wiring/thread-send-recovery.test.ts": 5,
+      "tests/integration/app-runtime-service.integration.test.ts": 39,
+      "src/app/renderer/workbench/composer-initialization.test.ts": 7,
+      "tests/integration/runtime-causality.integration.test.ts": 22,
+      "src/app/renderer/wiring/conversation-cache.test.ts": 1,
+      "src/app/renderer/wiring/thread-attachments.test.ts": 2,
+      "src/app/renderer/wiring/thread-cache.test.ts": 2,
+      "src/modules/ui/renderer/loading-indicator.test.ts": 1,
+      "src/app/renderer/reading/reading-pane.test.ts": 1,
+      "src/app/renderer/workbench/composer-continuity.test.ts": 33,
+      "src/app/renderer/shell/project-threads.test.ts": 1,
+      "src/app/renderer/workbench/composer-binding.test.ts": 2,
+      "src/app/renderer/shell/appearance-subscriptions.test.ts": 23,
+      "src/app/main/lifecycle/window-close.test.ts": 4,
+      "src/app/renderer/wiring/model-navigation.test.ts": 5,
+      "src/app/renderer/wiring/model.test.ts": 16,
+      "src/modules/execution/renderer/runtime/runtime-model.test.ts": 8
+    },
+    "batches": [
+      {
+        "log": "primary-tests.log",
+        "passed": 221
+      },
+      {
+        "log": "cache-ui-confirmation.log",
+        "passed": 64
+      },
+      {
+        "log": "close-tests.log",
+        "passed": 44
+      },
+      {
+        "log": "recovery-final-tests.log",
+        "passed": 144
+      }
+    ],
+    "redPhase": [
+      "cache-hit remount repeated native read before stale-time fix",
+      "new send required manual CLI preparation before hook",
+      "2 close-handshake preparation tests failed before suspension",
+      "grant preparation duplicated before request-generation check",
+      "repeated native crash restarted without bound before recovery budget"
+    ]
+  },
+  "verification": {
+    "rendererMainCoreTypes": "pass",
+    "build": "pass",
+    "designLint": "pass",
+    "interactionPolicy": "pass",
+    "i18n": "pass",
+    "architecture": "pass (541 source files)",
+    "biome": "pass (39 affected source/test/style files)",
+    "documentation": "pass (351 Markdown files)",
+    "generatedReports": "pass (architecture dependencies and project status)",
+    "diffWhitespace": "pass"
+  },
+  "rendererObservation": {
+    "environment": "isolated actual Renderer + ThreadModel/Composer with mock IPC; not real OMP or provider",
+    "screenshots": [
+      "loading-light.jpg",
+      "loading-dark.jpg",
+      "cached-return-dark.jpg",
+      "cli-history.jpg"
+    ],
+    "loading": {
+      "singleCenteredIndicator": true,
+      "visibleRoutineProse": false,
+      "readinessRow": false,
+      "sendDisabledWhilePreparing": true,
+      "horizontalOverflow": false
+    },
+    "cachedReturn": {
+      "cachedReturnLoading": 0,
+      "draft": "A unsent draft",
+      "readiness": false,
+      "sendDisabled": false,
+      "theme": "dark"
+    },
+    "cliHistory": {
+      "duplicateRuntimeBanner": false,
+      "notice": "Connection interrupted. Your draft is retained.Retry preparing chat",
+      "overflow": false,
+      "retryPreparing": 1,
+      "sendEnabled": true
+    },
+    "providerSendClicked": false,
+    "limits": "Screenshots validate rendering only. Main/Host/SQLite behavior covered by automated integration tests; no real supplier continuation or full native GUI run.",
+    "note": "Screenshots precede the final close/recovery guards; the loading/composer presentation was unchanged by those lifecycle-only changes."
+  },
+  "sourceSha256": {
+    "src/app/renderer/reading/conversation.tsx": "3d0863c7d61a390c06369a6a37c6e8622aa8d4fad1bb914ed8e62f3d674a837b",
+    "src/app/renderer/reading/history.tsx": "5955ce986ba169cf463f5ee43946b022c7a0957f0bdc3f71f22779ebd001a93c",
+    "src/app/renderer/reading/saved-conversation.tsx": "8f1c6a21fa75b894fd7096782b81f5d7674f7dcb921ae30d67a72021ef198442",
+    "src/app/renderer/reading/saved-conversation.test.ts": "7af5c83437bb96a63cedef7e4477076b238481b3d3586a9e740d4514e0de1440",
+    "src/app/renderer/reading/project-history.test.ts": "35c07875f0f6776e98e7ff96150d8896960fcd9ea450459b13d7a83e31727a73",
+    "src/app/renderer/shell/appearance-subscriptions.test.ts": "31383586b2b640cf1aaa04a3721d0cf12d4d7f4ae3c3848449ce5e567c1fc4a9",
+    "src/app/renderer/shell/application-layout.tsx": "f19b29caceaf7be55dd08b34fb898d079b442f07439e3f304e8d775a0891d5dd",
+    "src/app/renderer/shell/conversation-status.tsx": "03562680793802b09709cba17ad947cbc5e3b9343d325b453f26bb9db6211f41",
+    "src/app/renderer/shell/project-threads.tsx": "2565cc1dcecb629c8264106b42c7b2bf8efbb6509aa8208d40659aaba072de9d",
+    "src/app/renderer/styles/app.css": "fec230f9652c8372d9ee48db0d745e70967d8cd82c8e41aaca48ec8609c0556d",
+    "src/app/renderer/styles/workbench.css": "4a5972279f0aa661ad9fc97e762a7446ebaf4c9097f4d19144004f05ba206b37",
+    "src/app/renderer/wiring/model.ts": "9378b8e9f4b2fc04b370daf3bf861cd3f175b3e547ba762e402f8f22a254b6ad",
+    "src/app/renderer/wiring/query-client.tsx": "2e54622da81e9e1ec9fed46ecc14a8b74a69fee0398e36cbb67e86e4de35c461",
+    "src/app/renderer/wiring/thread-model.ts": "d97104ec0ed931708c56d3c4bfe0df53fffd01b262c2f37c1fced7cded93e639",
+    "src/app/renderer/wiring/thread-startup.test.ts": "f95b6c38fdeca40389913cdd0402e473553893d457c61f2cb4c82039cfc384e2",
+    "src/app/renderer/wiring/thread-cache.test.ts": "da8df278d609c05fb6557d69ab82a56587f986605b3dc9f04ea53eeab176ba8f",
+    "src/app/renderer/wiring/thread-send-recovery.test.ts": "492d3de1bcaf7d9606c16102a13e008a52a6448a08736fb10b8ad032ca6220a7",
+    "src/app/renderer/wiring/conversation-cache.ts": "c85ae8eb1b9060774e4691dd406b121504a4ae1f032800255c8310253c2be2e8",
+    "src/app/renderer/wiring/conversation-cache.test.ts": "63ff717fbf71e595d999175e0bee7bfdba87d96afa2d064ea4ad7d72c5ba96a0",
+    "src/app/renderer/workbench/composer-continuity.test.ts": "d61ad1cff6c9ea55b4a33ab70cc9c2d94cb1184fbced3405595e08fe6c786ddd",
+    "src/app/renderer/workbench/composer.tsx": "bb5e05978a226bf322d4a63168d90b642757b9269d4a7bbcb884bd268bfd043f",
+    "src/app/renderer/workbench/runtime-panel.tsx": "bdea56fb3f1e9f07fd3de76e4929bff255172aa0a5a56a0953fe3bc813d83938",
+    "src/app/renderer/workbench/thread-workbench.tsx": "28d95506b0236b45fb2bf9dec6fb6fbf2226dcf3a92a05b9da971a844bf77c26",
+    "src/modules/conversation/core/history-queries.ts": "e17b98e0dc7c16bcf06c1bb60fbdb41d764e16145549d57dba399fe4d072369b",
+    "src/modules/execution/main/runtime/runtime-service.ts": "83f666c440a2ae0d84cd001de8a16e6f6a9c9fceb2a87ee15f2917e891247cc0",
+    "src/modules/execution/renderer/runtime/runtime-model.ts": "57f59ddcb179ca74531b89b0244a1b5c15743579ff81a2b78a7d185cb2f87170",
+    "src/modules/execution/renderer/submission/submission-model.ts": "c0b43c91dfe8fbee560547a0d0841403017ffd5114fb51746599c850f6bf7326",
+    "src/modules/input/renderer/editor/draft-editor-cache.ts": "168206c56bbb7770d4c030a593142b48f2a8ee4e6c3d8dcf975fa3eaf8f1bb6e",
+    "src/modules/input/renderer/editor/draft-editor-cache.test.ts": "25aa15b2cce1c5a2ab8ab1f937e427ff445e469691cbfa02010aa5984a0f477a",
+    "src/modules/ui/renderer/public.ts": "d576f988869313a1235685f48508e4825f076ec34c3ec2c0b46b534e01faf87e",
+    "src/modules/ui/renderer/loading-indicator.css": "170c18d377a7e34ed5fb742d2920f795c14d011478482230a11b9f2193a00d5e",
+    "src/modules/ui/renderer/loading-indicator.tsx": "049c4196abfba5f8dd244887c8ce21a93389e3aa930fd95c42f4186b0da7336d",
+    "src/modules/ui/renderer/loading-indicator.test.ts": "f05a536b5fe66abaad51fc49e1df86ef6b92f275a0702b83222819a4ef7bd0c1",
+    "src/shared/i18n/locales/en-US/domain.ts": "afd5b749d139a078bf0cc3314b8bb6302e05e2264fda08fa52733cc8103f18ec",
+    "src/shared/i18n/locales/en-US/ui.ts": "8a653f0999e7e06dd6a394bd9ecbe11cbf7045dc7042864faea12c9e8583a013",
+    "src/shared/i18n/locales/zh-CN/domain.ts": "76c625d5c9ab792b0a8f9e51018b22dc163dd4d8110f308d07bfbee9d541d30c",
+    "src/shared/i18n/locales/zh-CN/ui.ts": "7bf7efc98c1739da469fa70bb2df43a1ff9f8274bb1eb647531ff4d394d01b25",
+    "tests/integration/runtime-causality.integration.test.ts": "ff448e69e0dc252ae23edbe4d587ad54550639d3f7a2bcc83de4877bebf8132f",
+    "validation/m2/rendering.tsx": "8d54a07bc7fface677fa04d14e5eba2f1579bdef453e0b834c437ac103f7ba27"
+  },
+  "buildArtifactsSha256": {
+    "out/main/index.js": "1149d382922486c2c180e5e5f1da7e0cf6bcf146cb46efa94215dbc3e4e2cbb3",
+    "out/preload/index.cjs": "bbcabd1decc88c39eeed1b8b5f8681fe8ae48474a687790512ee083b9d959cbd",
+    "out/renderer/index.html": "e0e7b1a8ca6d4699985e66f95c853662ea5b45baa31f7946c648e39b30bee179"
+  },
+  "impeccableDetector": {
+    "result": [],
+    "scope": [
+      "src/modules/ui/renderer",
+      "src/app/renderer"
+    ],
+    "interpretation": "advisory source detection, not visual acceptance"
+  },
+  "commitPreparation": {
+    "parent": "bb37eaf4928d7f09565fdc08632943b45d51bf3f",
+    "runtimeIntegrationTests": {
+      "files": 2,
+      "passed": 61,
+      "result": "pass",
+      "log": "commit-runtime-check.log"
+    },
+    "validationScript": "updated removed NativeInteraction option selectors; verifies selection then explicit submit; syntax and Biome passed, no new GUI run"
+  }
+}

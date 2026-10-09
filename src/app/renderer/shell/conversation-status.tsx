@@ -3,6 +3,7 @@ import { createStore } from "zustand/vanilla";
 import type { ConversationSnapshot } from "../../../modules/conversation/contracts/public";
 import type { RuntimeView } from "../../../modules/execution/contracts/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
+import { LoadingIndicator } from "../../../modules/ui/renderer/public";
 import { runtimePhaseLabel } from "../components/runtime-phase";
 import { StatusPreview } from "../components/ui/status-preview";
 import type { AppModel } from "../wiring/model";
@@ -26,7 +27,9 @@ export function ConversationStatus({ model }: { model: AppModel }) {
     state.kind === "ready" ? state.threadTransition : undefined,
   );
   if (transition)
-    return (
+    return transition === "pending" ? (
+      <LoadingIndicator pending label={t("app.loading")} />
+    ) : (
       <span>
         {t(
           transition === "unknown"
@@ -66,6 +69,7 @@ function ThreadStatus({ thread }: { thread: ThreadModel }) {
     ? runtimePhaseLabel({ phase, busy, model }, t)
     : t("app.sidebar.localDraft");
   const unavailable = t("app.status.unavailable");
+  if (!phase || phase === "allowed" || phase === "starting") return null;
   return (
     <StatusPreview
       label={t("app.status.preview")}

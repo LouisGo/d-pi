@@ -1,6 +1,77 @@
 import { expect, it } from "vitest";
 import { PendingInteractions } from "./interactions";
 
+it("writes custom select text unchanged once, using the existing value response", () => {
+  const interactions = new PendingInteractions();
+  interactions.update({
+    type: "extension_ui_request",
+    method: "select",
+    id: "custom",
+    title: "Pick or write",
+    options: ["A", "B"],
+  });
+  const frames: string[] = [];
+  const value = "  我自己的回答\n保留原始文本  ";
+  try {
+    expect(
+      interactions.answer("custom", { kind: "value", value }, (frame) =>
+        frames.push(frame),
+      ),
+    ).toBe(true);
+    expect(frames.map((frame) => JSON.parse(frame))).toEqual([
+      { type: "extension_ui_response", id: "custom", value },
+    ]);
+    expect(
+      interactions.answer(
+        "custom",
+        { kind: "value", value: "second" },
+        (frame) => frames.push(frame),
+      ),
+    ).toBe(false);
+    expect(frames).toHaveLength(1);
+  } finally {
+    interactions.dispose();
+  }
+});
+
+it("still rejects text for confirm and confirmation booleans for select", () => {
+  const interactions = new PendingInteractions();
+  const write = () => {
+    throw Error("must not write an incompatible response");
+  };
+  try {
+    interactions.update({
+      type: "extension_ui_request",
+      method: "confirm",
+      id: "confirm",
+      title: "Confirm",
+    });
+    interactions.update({
+      type: "extension_ui_request",
+      method: "select",
+      id: "select",
+      title: "Select",
+      options: ["A"],
+    });
+    expect(
+      interactions.answer(
+        "confirm",
+        { kind: "value", value: "approve" },
+        write,
+      ),
+    ).toBe(false);
+    expect(
+      interactions.answer(
+        "select",
+        { kind: "confirm", confirmed: true },
+        write,
+      ),
+    ).toBe(false);
+  } finally {
+    interactions.dispose();
+  }
+});
+
 it("does not classify an unknown host frame as an interaction", () => {
   const interaction = new PendingInteractions();
 

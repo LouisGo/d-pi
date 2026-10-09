@@ -658,7 +658,7 @@ it("passes a newly loaded editor adapter through without replacing the Thread", 
 
 it("retains loading, repeated failure details and disposal without a root state subscription", async () => {
   const fixture = await setup({ start: false, restoreFails: true });
-  expect(fixture.container.textContent).toContain(i18n.t("app.loading"));
+  expect(fixture.container.textContent).not.toContain(i18n.t("app.loading"));
   await act(() => fixture.model.start());
   expect(fixture.container.textContent).toContain(i18n.t("app.failure.title"));
   const failed = fixture.model.getSnapshot();

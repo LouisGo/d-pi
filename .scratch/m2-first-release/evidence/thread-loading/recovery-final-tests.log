@@ -1,0 +1,759 @@
+SKIP: fixed CLI artifact native behavior smoke; opt in with D_PI_NATIVE_SMOKE=1 after runtime:fetch
+
+ RUN  v5.0.2 /Users/lou/Learn/d-pi
+
+ ✓ src/modules/execution/renderer/runtime/runtime-model.test.ts (8 tests) 11ms
+ ✓ src/app/renderer/wiring/thread-send-recovery.test.ts (5 tests) 12ms
+ ✓ src/app/renderer/wiring/thread-cache.test.ts (2 tests) 18ms
+ ✓ src/app/renderer/wiring/model-navigation.test.ts (5 tests) 20ms
+ ✓ src/app/renderer/wiring/model.test.ts (16 tests) 28ms
+ ✓ src/app/renderer/wiring/thread-startup.test.ts (14 tests) 105ms
+ ✓ tests/integration/app-runtime-service.integration.test.ts (39 tests) 1783ms
+   ✓ continues a CLI-origin binding through ordinary admission using its exact original file 394ms
+   ✓ does not dispatch a CLI startup after trust is revoked during the owner probe 321ms
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > keeps a frozen selection pending when PM rejects insertion and applies it once after recovery
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > keeps a frozen selection pending when PM rejects insertion and applies it once after recovery
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > keeps a frozen selection pending when PM rejects insertion and applies it once after recovery
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > keeps a frozen selection pending when PM rejects insertion and applies it once after recovery
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > preserves A's middle selection and independent undo/redo across A → B → A with fresh views
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > preserves A's middle selection and independent undo/redo across A → B → A with fresh views
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > preserves A's middle selection and independent undo/redo across A → B → A with fresh views
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > preserves A's middle selection and independent undo/redo across A → B → A with fresh views
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > cannot undo accepted submission consumption in the current editor or after a switch
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > cannot undo accepted submission consumption in the current editor or after a switch
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > cannot undo accepted submission consumption in the current editor or after a switch
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > uses an externally updated draft version on return and discards the previous undo
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > uses an externally updated draft version on return and discards the previous undo
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > uses an externally updated draft version on return and discards the previous undo
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > Shift+Enter inserts a source line in the real composer and remains undoable
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > offers preparation retry only for an imported CLI chat, without consuming its draft
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > keeps Send and Enter available for idle CLI history, without requiring preparation retry first
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > does not retry an interrupted chat until its previous process has stopped
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > explains a running session without a model and offers model selection without consuming its draft
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > keeps a pending file-picker insertion in its real Composer before admitting the developer view
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > keeps a pending drop insertion in its real Composer before admitting the developer view
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > makes history protection limit observable in the real Composer while preserving its source body
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > makes history protection failure observable in the real Composer while preserving its source body
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > keeps publication-limit Undo until explicit recovery and waits for Main lease release before retry
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > connects synchronous copy and awaited structured paste in real Composer views as one user action
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > connects synchronous copy and awaited structured paste in real Composer views as one user action
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > shows automatic preparation without asking the user to start OMP
+An update to ComposerReadiness inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to SendButton inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > offers an explicit startup retry after failure and preserves the draft until a real submission
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > offers the normal project trust action for a CLI session and retains the question draft
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > owns Enter while the reference popup is loading, empty or dismissed, and leaves IME confirmation to the editor
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > accepts one reference on Enter and preserves input typed while Main verifies the chosen source
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > inserts mixed-paste files at the captured source boundary and undoes the whole batch without erasing later typing
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > inserts mixed-paste files at the captured source boundary and undoes the whole batch without erasing later typing
+An update to AttachmentImportBatches inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > renders images only as tiles and MIME files only inline, without a repeated failure panel or image Undo
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > exposes partial import without automatic adoption and accepts the ready subset only through its explicit Composer action
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > exposes partial import without automatic adoption and accepts the ready subset only through its explicit Composer action
+An update to AttachmentImportBatches inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > previews and confirms a failed PDF in its original import job before explicit insertion
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > previews and confirms a failed PDF in its original import job before explicit insertion
+An update to AttachmentImportBatches inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > previews and confirms a failed PDF in its original import job before explicit insertion
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > returns the mapped caret to the real editor when expanding and collapsing for continued input
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > preserves the mixed-paste target when only localized labels change
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > preserves the mixed-paste target when only localized labels change
+An update to AttachmentImportBatches inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > preserves the mixed-paste target when only localized labels change
+An update to AttachmentImportBatches inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > returns focus after explicitly adopting a pending image
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > keeps a restored image when the real Composer body is replaced before list metadata arrives
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > offers explicit metadata retry while keeping an unresolved restored image protected
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > offers explicit metadata retry while keeping an unresolved restored image protected
+An update to AttachmentControls inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > offers explicit metadata retry while keeping an unresolved restored image protected
+An update to Composer inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to Composer inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to Composer inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > offers explicit metadata retry while keeping an unresolved restored image protected
+An update to Composer inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > saves edits quietly without adding a pending status row, and keeps real save recovery
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > removes successful import reports without losing image adoption, dedup settlement or Undo/Redo
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > removes successful import reports without losing image adoption, dedup settlement or Undo/Redo
+An update to AttachmentImportBatches inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > removes successful import reports without losing image adoption, dedup settlement or Undo/Redo
+An update to AttachmentImportBatches inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > removes successful import reports without losing image adoption, dedup settlement or Undo/Redo
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > keeps failed settlement recoverable after removal without previewing or claiming an adopted image
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > keeps failed settlement recoverable after removal without previewing or claiming an adopted image
+An update to AttachmentImportBatches inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > keeps settlement independent of file Undo and Redo while its successful UI stays quiet
+An update to I18nProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/app/renderer/workbench/composer-continuity.test.ts > keeps settlement independent of file Undo and Redo while its successful UI stays quiet
+An update to AttachmentImportBatches inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ ✓ src/app/renderer/workbench/composer-continuity.test.ts (33 tests) 1962ms
+ ✓ tests/integration/runtime-causality.integration.test.ts (22 tests) 4271ms
+   ✓ replays bounded evidence in the same live Host after a SQLite failure without replaying prompt 1147ms
+   ✓ idle cannot dispose unconfirmed terminal evidence after ACK was already committed 573ms
+   ✓ a Host loss after Main write failure loses only memory evidence and reopens conservatively without resending 1997ms
+
+ Test Files  9 passed (9)
+      Tests  144 passed (144)
+   Start at  15:16:49
+   Duration  5.16s (tests 52%, transform 24%, import 22%, environment 2%)

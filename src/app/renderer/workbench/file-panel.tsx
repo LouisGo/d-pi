@@ -37,10 +37,13 @@ import {
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import type { ThreadContext } from "../../../modules/threads/contracts/public";
 import {
+  ActionGroup,
   Button,
   Disclosure,
   DisclosureTrigger,
 } from "../../../modules/ui/renderer/public";
+import { FileIcon, FolderIcon } from "../components/icons/common";
+import { PathLabel } from "../components/ui/path-label";
 import { readInFlight } from "./refresh-state";
 
 type EditorComponent = ComponentType<{
@@ -215,7 +218,7 @@ export function FilePanel({
         >
           <DisclosureTrigger>{t("ui.files.choose")}</DisclosureTrigger>
           <div className="file-browser">
-            <div className="flex gap-2">
+            <ActionGroup>
               <strong>{t("ui.files.tree")}</strong>
               <Button variant="ghost" disabled={refreshing} onClick={refresh}>
                 {t("ui.files.refresh")}
@@ -230,7 +233,7 @@ export function FilePanel({
                   {t("ui.files.up")}
                 </Button>
               )}
-            </div>
+            </ActionGroup>
             <p className="file-meta">/{directory}</p>
             {listing.data?.kind === "unavailable" && (
               <p role="status">{reason(listing.data.reason, t)}</p>
@@ -240,15 +243,18 @@ export function FilePanel({
                 {listing.data.entries.map((entry) => (
                   <Button
                     key={entry.path}
-                    variant="ghost"
+                    variant="navigation"
+                    className="w-full justify-start text-left"
+                    title={entry.path}
+                    aria-label={entry.path}
                     onClick={() =>
                       entry.kind === "directory"
                         ? listDirectory(entry.path)
                         : openFile(entry.path)
                     }
                   >
-                    {entry.kind === "directory" ? "▸ " : ""}
-                    {entry.name}
+                    {entry.kind === "directory" ? <FolderIcon /> : <FileIcon />}
+                    <PathLabel path={entry.name} />
                   </Button>
                 ))}
               </div>
@@ -258,12 +264,12 @@ export function FilePanel({
             )}
           </div>
           <div className="git-panel">
-            <div className="flex gap-2">
+            <ActionGroup>
               <strong>{t("ui.files.gitHeading")}</strong>
               <Button variant="ghost" disabled={refreshing} onClick={refresh}>
                 {t("ui.files.refresh")}
               </Button>
-            </div>
+            </ActionGroup>
             <p className="file-meta">{t("ui.files.gitDisclaimer")}</p>
             {changeList?.kind === "unavailable" && (
               <p role="status">{reason(changeList.reason, t)}</p>
@@ -279,7 +285,9 @@ export function FilePanel({
                   {changeList.entries.map((entry) => (
                     <Button
                       key={`${entry.scope}:${entry.path}`}
-                      variant="ghost"
+                      variant="navigation"
+                      className="w-full justify-start text-left"
+                      title={entry.path}
                       onClick={() => openDiff(entry.scope, entry.path)}
                     >
                       {entry.scope === "head-index"
@@ -287,7 +295,8 @@ export function FilePanel({
                         : entry.scope === "index-worktree"
                           ? t("ui.files.indexWorktree")
                           : t("ui.files.untracked")}{" "}
-                      · {statusLabel(entry.status, t)} · {entry.path}
+                      · {statusLabel(entry.status, t)} ·{" "}
+                      <PathLabel path={entry.path} />
                     </Button>
                   ))}
                 </div>
@@ -383,7 +392,7 @@ export function FilePanel({
             ) : (
               <p role="status">{t("ui.files.loadingEditor")}</p>
             )}
-            <div className="flex gap-2">
+            <ActionGroup>
               <Button
                 disabled={selected?.kind !== "selection"}
                 onClick={() => {
@@ -404,7 +413,7 @@ export function FilePanel({
               {selected?.kind === "selection" && (
                 <span className="file-meta">{`${selected.path}:${selected.startLine}:${selected.startColumn}-${selected.endLine}:${selected.endColumn} · ${selected.source}`}</span>
               )}
-            </div>
+            </ActionGroup>
           </>
         )}
       </section>

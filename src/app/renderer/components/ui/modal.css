@@ -1,6 +1,7 @@
 @layer components {
   .ui-popup-positioner {
     z-index: var(--layer-popup);
+    max-width: var(--available-width);
   }
   :is(.ui-modal, .ui-settings-modal, .ui-navigation-overlay) {
     z-index: var(--layer-dialog);
@@ -32,10 +33,18 @@
     flex-shrink: 0;
     align-items: center;
     justify-content: space-between;
+    gap: var(--layout-gap);
     padding: var(--layout-gap) var(--panel-padding);
     border-bottom: 1px solid var(--border);
   }
+  .ui-modal-header h2 {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-size: var(--text-title);
+    font-weight: 600;
+  }
   .ui-modal-body {
+    min-width: 0;
     min-height: 0;
     padding: var(--panel-padding);
     overflow: auto;

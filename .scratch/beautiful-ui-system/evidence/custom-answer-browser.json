@@ -1,0 +1,105 @@
+{
+  "surface": "isolated-renderer-fixture",
+  "themesAndWidths": [
+    {
+      "cardScrollWidth": 414,
+      "cardWidth": 414,
+      "checked": 0,
+      "input": {
+        "height": 64,
+        "maxHeight": "128px",
+        "outline": "none",
+        "scrollWidth": 380,
+        "width": 380
+      },
+      "overflow": [],
+      "submitDisabled": false,
+      "theme": "light",
+      "viewport": [
+        720,
+        900
+      ]
+    },
+    {
+      "cardScrollWidth": 414,
+      "cardWidth": 414,
+      "checked": 0,
+      "input": {
+        "height": 64,
+        "maxHeight": "128px",
+        "outline": "none",
+        "scrollWidth": 380,
+        "width": 380
+      },
+      "overflow": [],
+      "submitDisabled": false,
+      "theme": "dark",
+      "viewport": [
+        720,
+        900
+      ]
+    },
+    {
+      "cardScrollWidth": 414,
+      "cardWidth": 414,
+      "checked": 0,
+      "input": {
+        "height": 64,
+        "maxHeight": "128px",
+        "outline": "none",
+        "scrollWidth": 380,
+        "width": 380
+      },
+      "overflow": [],
+      "submitDisabled": false,
+      "theme": "dark",
+      "viewport": [
+        1440,
+        900
+      ]
+    },
+    {
+      "cardScrollWidth": 414,
+      "cardWidth": 414,
+      "checked": 0,
+      "input": {
+        "height": 64,
+        "maxHeight": "128px",
+        "outline": "none",
+        "scrollWidth": 380,
+        "width": 380
+      },
+      "overflow": [],
+      "submitDisabled": false,
+      "theme": "light",
+      "viewport": [
+        1440,
+        900
+      ]
+    }
+  ],
+  "switchBack": {
+    "inputValue": "",
+    "selected": "稍后处理"
+  },
+  "keyboard": {
+    "focus": true,
+    "focusVisible": true,
+    "outline": "solid",
+    "width": "2px"
+  },
+  "blankSubmitEnabled": false,
+  "longAnswer": {
+    "height": 126,
+    "length": 744,
+    "maxLength": 16384,
+    "scrollHeight": 1192,
+    "scrollWidth": 380,
+    "width": 380
+  },
+  "submitted": "NativeInteraction\n\n组合预设选项、手动回答与提交动作；业务继续使用正式收据。\n\n重置\n\npending · custom answer · answered / local demo\n\n选择处理方式\n\n本地演示，不会向 OMP 发送回答。\n\n回答已提交，结果尚未确认；不会自动重答\n\n本地示例已回答：先备份配置，再继续。 保留当前会话。",
+  "limits": [
+    "In-app browser with isolated IPC fixture, not native Electron or real provider",
+    "Host wire framing and connection-generation behavior verified by automated tests"
+  ]
+}

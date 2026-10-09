@@ -216,7 +216,9 @@ try {
   await evaluate(
     "window.probe.model.stateStore.setState({...window.probe.model.stateStore.getState(),threadSelection:{kind:'empty'}})",
   );
-  await wait(() => evaluate("!!document.querySelector('.empty-state')"));
+  await wait(() =>
+    evaluate("!!document.querySelector('[data-slot=empty-state]')"),
+  );
   await capture("empty-light-normal", 1000, 800);
   writeFileSync(
     join(output, "geometry.json"),

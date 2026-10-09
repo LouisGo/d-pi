@@ -1,5 +1,8 @@
 import { afterEach, expect, it, vi } from "vitest";
-import { RuntimeViewSchema } from "../../../modules/execution/contracts/public";
+import {
+  type RuntimeView,
+  RuntimeViewSchema,
+} from "../../../modules/execution/contracts/public";
 import { DraftSchema } from "../../../modules/input/contracts/public";
 import {
   type DesktopBridge,
@@ -37,6 +40,8 @@ async function fixture(
   let selected = first;
   const drafts = new Map([[first.threadId, first]]);
   const requests: { kind: string; threadId: string }[] = [];
+  const runtimeListeners = new Set<(view: RuntimeView) => void>();
+  const runtimeRevisions = new Map<string, number>();
   let release = () => {};
   const gate = new Promise<void>((done) => {
     release = done;
@@ -82,29 +87,36 @@ async function fixture(
       throw Error("Unexpected command");
     },
     runtime: {
-      subscribe: () => () => {},
+      subscribe: (listener) => {
+        runtimeListeners.add(listener);
+        return () => runtimeListeners.delete(listener);
+      },
       request: async (command) => {
         requests.push(command);
         if (command.kind === "inspect" && command.threadId !== first.threadId)
           await gate;
+        const revision = (runtimeRevisions.get(command.threadId) ?? -1) + 1;
+        runtimeRevisions.set(command.threadId, revision);
         return {
           kind: "view",
           view: RuntimeViewSchema.parse({
             threadId: command.threadId,
             traceId: command.traceId,
-            revision: command.kind === "start" ? 1 : 0,
+            revision,
             configuration: { code: "runtime.configDefault" },
             phase:
               options.failStart && command.kind === "start"
                 ? "failed"
                 : command.threadId === first.threadId
-                  ? coldAllowed
-                    ? command.kind === "start"
-                      ? "ready"
-                      : trusted
-                        ? "allowed"
-                        : "browse"
-                    : "interrupted"
+                  ? command.kind === "start"
+                    ? "ready"
+                    : coldAllowed
+                      ? command.kind === "start"
+                        ? "ready"
+                        : trusted
+                          ? "allowed"
+                          : "browse"
+                      : "interrupted"
                   : command.kind === "start"
                     ? "ready"
                     : trusted
@@ -130,20 +142,25 @@ async function fixture(
     requests,
     release,
     first,
+    publish: (view: RuntimeView) => {
+      runtimeRevisions.set(view.threadId, view.revision);
+      for (const listener of runtimeListeners) listener(view);
+    },
     grant: () => {
       trusted = true;
     },
   };
 }
-it("starts a newly created Thread once after its project grant, while an interrupted runtime waits for explicit recovery", async () => {
+it("automatically prepares an idle interrupted App Thread and starts a newly created Thread after inspection", async () => {
   const f = await fixture(true);
-  expect(f.requests.map((r) => r.kind)).toEqual(["inspect"]);
+  await new Promise((done) => setTimeout(done, 0));
+  expect(f.requests.map((r) => r.kind)).toEqual(["inspect", "start"]);
   const result = await f.model.newThread();
   expect(result.kind).toBe("applied");
-  expect(f.requests.filter((r) => r.kind === "start")).toEqual([]);
+  expect(f.requests.filter((r) => r.kind === "start")).toHaveLength(1);
   f.release();
   await new Promise((done) => setTimeout(done, 0));
-  expect(f.requests.filter((r) => r.kind === "start")).toEqual([
+  expect(f.requests.filter((r) => r.kind === "start").slice(1)).toEqual([
     {
       kind: "start",
       threadId: f.model.runtime?.stateStore.getState().thread,
@@ -170,7 +187,7 @@ it("automatically prepares a trusted restored session while retaining its draft 
   expect(f.model.runtime?.stateStore.getState().thread).toBe(f.first.threadId);
 });
 it("does not launch a newly detached Thread after its inspection finishes, but prepares it once on return", async () => {
-  const f = await fixture(true);
+  const f = await fixture(true, false, { origin: "cli" });
   await f.model.newThread();
   const second = f.model.runtime?.stateStore.getState().thread;
   if (!second) throw Error("missing second Thread");
@@ -189,7 +206,7 @@ it("does not launch a newly detached Thread after its inspection finishes, but p
   expect(f.requests.filter((r) => r.kind === "start")).toHaveLength(1);
 });
 it("does not launch after disposal while startup inspection is still pending", async () => {
-  const f = await fixture(true);
+  const f = await fixture(true, false, { origin: "cli" });
   await f.model.newThread();
   f.model.dispose();
   f.release();
@@ -269,4 +286,66 @@ it("automatically finishes bounded native catalog pages without another user ref
     expect(f.model.threadListStore.getState().nativeIndex).toBe("ready"),
   );
   expect(f.model.threadListStore.getState().pending).toBe(false);
+});
+
+it("suspends new automatic preparation through the close handshake and resumes after cancellation", async () => {
+  const f = await fixture(true, true);
+  await vi.waitFor(() =>
+    expect(f.model.runtime?.getSnapshot()?.phase).toBe("ready"),
+  );
+  expect(await f.model.prepareClose()).toBe(true);
+  const current = f.model.runtime?.getSnapshot();
+  if (!current) throw Error("missing runtime");
+  f.publish({ ...current, revision: current.revision + 1, phase: "allowed" });
+  await new Promise((done) => setTimeout(done, 0));
+  expect(f.requests.filter((r) => r.kind === "start")).toHaveLength(1);
+  f.model.cancelClose();
+  await vi.waitFor(() =>
+    expect(f.requests.filter((r) => r.kind === "start")).toHaveLength(2),
+  );
+});
+
+it("does not start a pending inspection while closing, even when inspection completes successfully", async () => {
+  const f = await fixture(true, false, { origin: "cli" });
+  await f.model.newThread();
+  expect(await f.model.prepareClose()).toBe(true);
+  f.release();
+  await new Promise((done) => setTimeout(done, 0));
+  expect(f.requests.filter((r) => r.kind === "start")).toHaveLength(0);
+  f.model.cancelClose();
+  await vi.waitFor(() =>
+    expect(f.requests.filter((r) => r.kind === "start")).toHaveLength(1),
+  );
+});
+
+it("prepares only once when an active Thread receives an explicit execution grant", async () => {
+  const f = await fixture(false, true);
+  f.grant();
+  await f.model.runtime?.act("allow");
+  await new Promise((done) => setTimeout(done, 0));
+  expect(f.requests.map((r) => r.kind)).toEqual(["inspect", "allow", "start"]);
+});
+
+it("automatically recovers once per selection and stops repeated native crash loops", async () => {
+  const f = await fixture(true, true);
+  await vi.waitFor(() =>
+    expect(f.model.runtime?.getSnapshot()?.phase).toBe("ready"),
+  );
+  const exit = () => {
+    const view = f.model.runtime?.getSnapshot();
+    if (!view) throw Error("missing runtime");
+    f.publish({ ...view, revision: view.revision + 1, phase: "interrupted" });
+  };
+  exit();
+  await vi.waitFor(() =>
+    expect(f.requests.filter((r) => r.kind === "start")).toHaveLength(2),
+  );
+  await vi.waitFor(() =>
+    expect(f.model.runtime?.getSnapshot()?.phase).toBe("ready"),
+  );
+  exit();
+  await new Promise((done) => setTimeout(done, 0));
+  expect(f.requests.filter((r) => r.kind === "start")).toHaveLength(2);
+  await f.model.runtime?.act("start");
+  expect(f.requests.filter((r) => r.kind === "start")).toHaveLength(3);
 });

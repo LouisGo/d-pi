@@ -272,7 +272,7 @@ it("offers a bound read during discovery and announces the selected native page 
         ),
       ),
     );
-    expect(container.textContent).toContain(
+    expect(container.textContent).not.toContain(
       "Discovering this project's history",
     );
     expect(
@@ -287,7 +287,10 @@ it("offers a bound read during discovery and announces the selected native page 
     await act(async () => found?.());
     await vi.waitFor(async () => {
       await act(() => new Promise((resolve) => setTimeout(resolve, 10)));
-      expect(container.textContent).toContain("Reading native records");
+      expect(
+        container.querySelector('[data-slot="loading-indicator"]'),
+      ).not.toBeNull();
+      expect(container.textContent).not.toContain("Reading native records");
     });
     expect(
       container.querySelector<HTMLButtonElement>("[data-slot=select]")?.value,

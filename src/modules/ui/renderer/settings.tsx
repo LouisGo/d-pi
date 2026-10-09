@@ -43,11 +43,12 @@ export function SettingsGroup({
     <section
       className="ui-settings-group"
       aria-labelledby={title ? id : undefined}
+      aria-describedby={description ? `${id}-description` : undefined}
     >
-      {title && (
+      {(title || description) && (
         <header className="ui-settings-group-header">
-          <h3 id={id}>{title}</h3>
-          {description && <p>{description}</p>}
+          {title && <h3 id={id}>{title}</h3>}
+          {description && <p id={`${id}-description`}>{description}</p>}
         </header>
       )}
       <div className="ui-settings-group-content">{children}</div>

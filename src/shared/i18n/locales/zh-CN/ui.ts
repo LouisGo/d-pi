@@ -1,4 +1,7 @@
 export const ui = {
+  "ui.copy.copied": "已复制",
+  "ui.copy.failed": "复制失败，请重试。",
+  "ui.copy.pending": "正在复制…",
   "models.editChanged":
     "编辑期间原生配置已变化。请保留需要的修改，取消并重新打开表单，载入最新配置后再保存。",
   "models.pricing.free": "免费",
@@ -527,6 +530,7 @@ export const ui = {
   "composer.blocked.readOnly":
     "此会话只读，不能发送。原有草稿保留；新会话可选择模型并开始工作。",
   "ui.runtime.retryStart": "重新准备会话",
+  "ui.runtime.retry": "重试",
   "app.thread.indexPartial": "部分原生会话尚未整理，可重试刷新。",
   "app.thread.indexUnavailable": "原生会话索引暂不可用，现有会话仍可使用。",
   "composer.blocked.preparing": "请稍候，正在准备会话…",
@@ -772,6 +776,8 @@ export const ui = {
   "ui.interaction.confirm": "确认",
   "ui.interaction.reject": "拒绝",
   "ui.interaction.submit": "提交回答",
+  "ui.interaction.customAnswer": "其他回答",
+  "ui.interaction.customPlaceholder": "也可以输入你的回答…",
   "ui.interaction.cancel": "取消交互",
   "ui.interaction.continueAnswerLabel": "{title}的继续作答",
   "ui.interaction.sendingFollowUp": "正在追发…",

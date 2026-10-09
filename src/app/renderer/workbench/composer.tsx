@@ -256,7 +256,7 @@ export function Composer({
             !attachmentBlock.current &&
             runtimeView &&
             !queueCapped(receipts, nativeQueueLength(runtimeView)) &&
-            canSubmit(runtimeView)
+            thread.canSend(runtimeView)
           )
             void submission?.send();
           return true;
@@ -389,6 +389,7 @@ export function Composer({
     >
       {runtime && (
         <ComposerReadiness
+          origin={thread.context.origin}
           runtime={runtime}
           model={model}
           onChooseModel={onChooseModel}
@@ -528,6 +529,7 @@ export function Composer({
                 }
                 submission={submission}
                 runtime={runtime}
+                thread={thread}
               />
             ) : null
           }
@@ -629,11 +631,13 @@ function SendButton({
   canSend,
   submission,
   runtime,
+  thread,
 }: {
   contentBlocked: boolean;
   canSend: () => boolean;
   submission: NonNullable<AppModel["submission"]>;
   runtime: NonNullable<AppModel["runtime"]>;
+  thread: ThreadModel;
 }) {
   const { t } = useI18n();
   const sending = useStore(submission.stateStore, (value) => value.sending);
@@ -648,7 +652,7 @@ function SendButton({
         size="round"
         aria-label={state?.busy ? t("composer.queueSend") : t("composer.send")}
         title={state?.busy ? t("composer.queueSend") : t("composer.send")}
-        disabled={contentBlocked || sending || capped || !canSubmit(state)}
+        disabled={contentBlocked || sending || capped || !thread.canSend(state)}
         onMouseDown={(event) => event.preventDefault()}
         onClick={() => {
           if (canSend()) void submission.send();
@@ -684,10 +688,12 @@ function ComposerReadiness({
   runtime,
   model,
   onChooseModel,
+  origin,
 }: {
   runtime: NonNullable<ThreadModel["runtime"]>;
   model: AppModel;
   onChooseModel: (() => void) | undefined;
+  origin: ThreadModel["context"]["origin"];
 }) {
   const { t, formatMessage } = useI18n();
   const view = useStore(runtime.stateStore, (state) => state.view);
@@ -697,17 +703,13 @@ function ComposerReadiness({
   );
   const reason = submissionBlockReason(view);
   if (!reason) return null;
+  if (reason === "loading" || reason === "allowed" || reason === "starting")
+    return null;
   const phase = view?.phase;
   const message = match(reason)
     .with("interrupted", () => "composer.blocked.readOnly" as const)
-    .with("allowed", () => "composer.blocked.preparing" as const)
     .with("browse", "untrusted", () => "composer.blocked.allow" as const)
-    .with(
-      "loading",
-      "starting",
-      "failed",
-      () => "composer.blocked.wait" as const,
-    )
+    .with("failed", () => "composer.blocked.wait" as const)
     .with("model-changing", () => "composer.blocked.modelChanging" as const)
     .with("no-model", () => "composer.blocked.noModel" as const)
     .with("paused", () => "composer.blocked.paused" as const)
@@ -733,14 +735,16 @@ function ComposerReadiness({
           {t("ui.runtime.allow")}
         </Button>
       )}
-      {(phase === "failed" || phase === "interrupted") && view?.trusted && (
-        <Button
-          disabled={busy || view.busy}
-          onClick={() => void runtime.act("start")}
-        >
-          {t("ui.runtime.retryStart")}
-        </Button>
-      )}
+      {(phase === "failed" || phase === "interrupted") &&
+        view?.trusted &&
+        !view.busy && (
+          <Button
+            disabled={busy || view.busy}
+            onClick={() => void runtime.act("start")}
+          >
+            {t(origin === "cli" ? "ui.runtime.retryStart" : "ui.runtime.retry")}
+          </Button>
+        )}
     </div>
   );
 }

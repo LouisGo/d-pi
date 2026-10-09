@@ -1,5 +1,6 @@
 import {
   ArrowDown01Icon,
+  ArrowRight01Icon,
   ArrowUp01Icon,
   RefreshIcon as RefreshGlyph,
   Search01Icon,
@@ -40,6 +41,10 @@ export function ChevronDownIcon(props: IconProps) {
 
 export function ChevronUpIcon(props: IconProps) {
   return <Icon {...props} icon={ArrowUp01Icon} />;
+}
+
+export function ChevronRightIcon(props: IconProps) {
+  return <Icon {...props} icon={ArrowRight01Icon} />;
 }
 
 export function RefreshIcon(props: IconProps) {

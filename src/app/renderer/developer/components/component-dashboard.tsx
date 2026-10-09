@@ -1,4 +1,4 @@
-import { type ComponentType, type ReactNode, useState } from "react";
+import { type ComponentType, type ReactNode, useRef, useState } from "react";
 import { Button, TextInput } from "../../../../modules/ui/renderer/public";
 import {
   type ComponentName,
@@ -33,7 +33,32 @@ import {
   TooltipDemo,
 } from "./foundation-demos";
 
+import {
+  ActionGroupDemo,
+  BadgeDemo,
+  CopyButtonDemo,
+  EmptyStateDemo,
+  InlineNoticeDemo,
+  KbdDemo,
+  MessageHeaderDemo,
+  NativeInteractionDemo,
+  OptionActionDemo,
+  PathLabelDemo,
+  ToolResultFrameDemo,
+} from "./presentation-demos";
+
 const demos: Record<ComponentName, ComponentType> = {
+  Badge: BadgeDemo,
+  ActionGroup: ActionGroupDemo,
+  OptionAction: OptionActionDemo,
+  InlineNotice: InlineNoticeDemo,
+  EmptyState: EmptyStateDemo,
+  Kbd: KbdDemo,
+  CopyButton: CopyButtonDemo,
+  PathLabel: PathLabelDemo,
+  MessageHeader: MessageHeaderDemo,
+  ToolResultFrame: ToolResultFrameDemo,
+  NativeInteraction: NativeInteractionDemo,
   Checkbox: CheckboxDemo,
   TextInput: TextInputDemo,
   TextArea: TextAreaDemo,
@@ -103,6 +128,7 @@ export function ComponentDashboard({
 }: {
   additionalPreview?: ReactNode;
 }) {
+  const main = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const needle = query.trim().toLocaleLowerCase();
   const matches = (entry: {
@@ -132,7 +158,7 @@ export function ComponentDashboard({
   );
   return (
     <div className={styles["component-dashboard"]} data-component-dashboard>
-      <div className={styles["gallery-main"]} data-gallery-main>
+      <div className={styles["gallery-main"]} data-gallery-main ref={main}>
         <header className={styles["gallery-header"]}>
           <div className={styles["gallery-title-row"]} data-gallery-title>
             <h1>{copy.title}</h1>
@@ -194,7 +220,36 @@ export function ComponentDashboard({
         </div>
       </div>
       <aside className={styles["gallery-navigation"]} data-gallery-navigation>
-        <nav aria-label={copy.index}>
+        <nav
+          aria-label={copy.index}
+          onClick={(event) => {
+            if (
+              event.metaKey ||
+              event.ctrlKey ||
+              event.shiftKey ||
+              event.altKey
+            )
+              return;
+            const link =
+              event.target instanceof Element
+                ? event.target.closest("a")
+                : null;
+            const target = link
+              ? document.getElementById(link.hash.slice(1))
+              : null;
+            const viewport = main.current;
+            if (!target || !viewport?.contains(target)) return;
+            event.preventDefault();
+            const margin =
+              Number.parseFloat(
+                getComputedStyle(target).scrollMarginBlockStart,
+              ) || 0;
+            viewport.scrollTop +=
+              target.getBoundingClientRect().top -
+              viewport.getBoundingClientRect().top -
+              margin;
+          }}
+        >
           <h2>{copy.index}</h2>
           {visibleCategories.map((category) => (
             <div key={category.id} className={styles["gallery-index-group"]}>

@@ -1,0 +1,23 @@
+@layer components {
+  .ui-copy-control {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    min-width: 0;
+    gap: var(--region-gap);
+  }
+  .ui-copy-feedback {
+    color: var(--destructive);
+    font-size: var(--text-small);
+    overflow-wrap: anywhere;
+  }
+  .ui-path-label {
+    display: block;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: left;
+  }
+}

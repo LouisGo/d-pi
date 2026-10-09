@@ -46,8 +46,7 @@ export const domain = {
   "runtime.resourceUnknown": "Runtime 资源无法确认。",
   "runtime.readyToSend": "OMP 已就绪，可发送文字。",
   "runtime.noModel": "没有可用模型，请先补齐原生 OMP 配置。",
-  "runtime.disconnected":
-    "原生连接已中断，草稿与历史保留，不自动重发。确认原进程退出后，可重新准备此会话继续提问。",
+  "runtime.disconnected": "连接已中断，草稿已保留。",
   "runtime.controlFailed": "控制请求未完成，请核对当前原生状态；不会自动重试。",
   "runtime.queuePaused":
     "已暂缓队列；明确继续后恢复消费。后台活动仍按实际状态显示。",

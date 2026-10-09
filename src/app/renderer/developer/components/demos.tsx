@@ -23,7 +23,7 @@ import { NavigationOverlay } from "../../components/ui/navigation-overlay";
 import { ResizableSplit } from "../../components/ui/resizable";
 import { SettingsModal } from "../../components/ui/settings-modal";
 import { TabStrip } from "../../components/ui/tab-strip";
-import { demoLabels as labels } from "./catalog";
+import { demoLabels as labels, presentationLabels } from "./catalog";
 import styles from "./component-dashboard.module.css";
 import { iconPreviews } from "./icon-catalog";
 
@@ -525,6 +525,27 @@ export function SettingsGroupDemo() {
           />
         </SettingRow>
       </SettingsGroup>
+      <div className={styles["gallery-constrained"]} data-nested-settings>
+        <SettingsGroup
+          title={presentationLabels.nested}
+          description={presentationLabels.nestedDescription}
+        >
+          <SettingRow
+            label={presentationLabels.nestedLabel}
+            description={presentationLabels.nestedHint}
+          >
+            <Select
+              value={value}
+              onValueChange={change}
+              aria-label={presentationLabels.nestedLabel}
+              options={[
+                { value: "a", label: presentationLabels.longOption },
+                { value: "b", label: labels.optionB },
+              ]}
+            />
+          </SettingRow>
+        </SettingsGroup>
+      </div>
     </SettingsPage>
   );
 }

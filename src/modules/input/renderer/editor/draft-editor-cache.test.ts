@@ -9,6 +9,19 @@ import { draftDocument, plainTextEditorOptions } from "./plain-text-editor";
 
 const editors: Editor[] = [];
 const controllers: DraftController[] = [];
+it("Thread eviction releases only a detached editor state and leaves the saved draft intact", () => {
+  const cache = new DraftEditorCache();
+  const draft = controller("saved body");
+  const editor = attach(cache, "A", draft);
+  expect(cache.evict("A")).toBe(false);
+  cache.capture(editor);
+  editor.destroy();
+  expect(cache.evict("A")).toBe(true);
+  const reopened = attach(cache, "A", draft);
+  expect(reopened.getText()).toBe("saved body");
+  expect(reopened.can().undo()).toBe(false);
+  cache.dispose();
+});
 afterEach(() => {
   for (const editor of editors.splice(0)) editor.destroy();
   for (const controller of controllers.splice(0)) controller.dispose();

@@ -78,6 +78,66 @@ afterEach(() => {
   native.options.length = 0;
 });
 
+it("writes a custom question answer through the Host only for the live connection generation", async () => {
+  const messages: HostMessage[] = [];
+  const host = createSessionHost((message) => messages.push(message), vi.fn());
+  const threadId = crypto.randomUUID();
+  const connectionGeneration = crypto.randomUUID();
+  await host.handle({
+    kind: "start",
+    threadId,
+    traceId: crypto.randomUUID(),
+    processInstanceId: crypto.randomUUID(),
+    connectionGeneration,
+    configContextId: "fixture",
+    binary: "/fixture/omp",
+    identity: { directory: "/project", device: "1", inode: "2" },
+    environment: {},
+    sessionDirectory: "/sessions",
+  });
+  native.observers[0]?.({
+    kind: "frame",
+    frame: {
+      type: "extension_ui_request",
+      method: "select",
+      id: "custom-question",
+      title: "Choose or write",
+      options: ["A", "B"],
+    },
+  });
+  const value = "  自己输入的回答\n保持原文  ";
+  const command = {
+    kind: "answer" as const,
+    threadId,
+    traceId: crypto.randomUUID(),
+    connectionGeneration,
+    id: "custom-question",
+    answer: { kind: "value" as const, value },
+  };
+  await host.handle({
+    kind: "answer",
+    command: { ...command, connectionGeneration: crypto.randomUUID() },
+  });
+  expect(native.writes).toHaveLength(0);
+  await host.handle({ kind: "answer", command });
+  expect(native.writes.map((frame) => JSON.parse(frame))).toEqual([
+    { type: "extension_ui_response", id: "custom-question", value },
+  ]);
+  expect(messages).toContainEqual(
+    expect.objectContaining({
+      kind: "operation-result",
+      traceId: command.traceId,
+      operation: "answer",
+      status: "acknowledged",
+    }),
+  );
+  await host.handle({
+    kind: "answer",
+    command: { ...command, traceId: crypto.randomUUID() },
+  });
+  expect(native.writes).toHaveLength(1);
+});
+
 it("does not close from an idle query overtaken by observed background activity", async () => {
   const messages: HostMessage[] = [];
   const exit = vi.fn();

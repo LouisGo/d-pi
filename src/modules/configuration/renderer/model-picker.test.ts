@@ -102,6 +102,12 @@ it("preserves the hidden current model, excludes non-chat models, and keeps unav
   );
   expect(locked).toBeNull();
   expect(ui.host.querySelector('[aria-label="deepseek"]')).toBeNull();
+  expect(ui.host.querySelector('[data-model-id="claude-next"]')).toBeNull();
+  await act(async () =>
+    ui.host
+      .querySelector<HTMLButtonElement>('[aria-label="Anthropic"]')
+      ?.click(),
+  );
   const next = ui.host.querySelector<HTMLButtonElement>(
     '[data-model-id="claude-next"]',
   );
@@ -113,6 +119,11 @@ it("preserves the hidden current model, excludes non-chat models, and keeps unav
 });
 it("searches native identities, sends favorite intent separately, and supports keyboard selection", async () => {
   const ui = await renderPanel();
+  await act(async () =>
+    ui.host
+      .querySelector<HTMLButtonElement>('[aria-label="Anthropic"]')
+      ?.click(),
+  );
   const favorite = ui.host.querySelector<HTMLButtonElement>(
     '[aria-label="Favorite claude-next"]',
   );

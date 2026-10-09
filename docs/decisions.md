@@ -81,6 +81,7 @@
 
 - **2026-09-28 ACK 清稿修订**：用户选择保留官方 OMP，取代“业务接受证据持久化后才能清稿”。冻结原文、prepared 与 dispatching 先落盘；有效关联 ACK 与对应草稿消费标记在同一事务持久化后，才清仍匹配的草稿，后来输入保留。`acknowledged` 不等于 `accepted`、原生历史持久化或执行完成；迟到错误独立展示，不撤销 ACK 事实、不自动重发、不把旧稿盖回新稿。选择理由、固定源码与代价见[S2 已确认方案 A](../.scratch/m1-s2-submit-read/acceptance-decision.md)，当前细节以[基础契约 §2](architecture/foundation-contracts.md#2-提交交接b2)为准。
 - **2026-09-28 prepared 恢复补充**：Main/原生仍存活、Renderer 重建后，持久 prepared 仅由用户显式继续，复用原 submission ID 并重新核验目标/准入；不自动派发。清稿关联只恢复匹配原编辑，后来输入与 retryOf 当前草稿不消费。unknown 不自动重发、同版本防重保持；2026-10-08冷续作合同取代旧只读交付限制。见[S3 因果与恢复复核](../.scratch/m1-s3-control-recovery/causality-recovery-review.md)。
+- **2026-10-09 恢复体验澄清**：用户明确普通 App 会话不要求手动“重新准备”，经真实旧进程停止证据及既有准入自动准备同会话；该提示仅用于 CLI 同步来源，发送新消息亦可先准备再接着作答。上述动作只派发本次用户新输入，不自动继续旧 prepared 或重发 unknown；独占、信任、原生文件/ID与失败边界不变。见[Thread 反馈记录](../.scratch/m2-first-release/issues/01-project-threads.md)。
 - **2026-09-28 本地草稿核对**：保存结果未知时只读核对同一 Thread 的版本，保留当前输入；证据一致才恢复保存，不同内容展示双方供用户选择，覆盖仍检查 revision。S1 正文上限确认为 UTF-8 4 MiB，超限提示并保留，已有大草稿仍可读。此机制不证明 OMP 接受，容量不是性能承诺。见[S1 巩固记录](../.scratch/m1-s1-project-draft/hardening.md)。
 
 ## 2026-09-28：交互超时默认作答与队列上限（D-11/D-24 细化，用户明确指令优先）
@@ -91,6 +92,10 @@
 - 固定 SDK 18.3.0 首个 `extension_ui_response` 生效，重复/迟到回答被丢弃；请求无推荐默认字段，原生超时删除请求不发 cancel。默认由 App 定义，发出后不可撤回，用户后答作为新的 steer 追发指示，不冒称原生覆盖默认。断链/写失败的 unknown 不自动重答，unknown 提交仍不自动重发；此取代只限旧“超时不默认作答”的场景，不改其他未知/不支持处理。
 - 队列上限 20 条；产生队列提示上限，达限禁用输入/发送，有空位恢复。停止后内容原地保留、暂缓后续消费，明确继续才恢复。
 - 多 Thread 提醒沿用既定 M2 策略：待答/失败标记与不抢焦点提醒，App 不在前台时用已授权系统通知；完成默认仅标记完成/未读，完成通知可选，点击定位关联内容。关窗且后台有活无须另行告知。详见[提醒策略](product/first-release.md#多-thread-提醒策略2026-09-27-用户确认)。真正退出时非空队列的放弃出口仍[延期待决](../.scratch/m1-s3-control-recovery/issues/09-quit-discard-decision.md)，不借上述决定清队列。
+
+## 2026-10-09：D-32 问答组件与原生回答的自由输入
+
+用户在 Beautiful UI 组件打磨中明确要求同时提供预设选项和手动输入，并要求直接实施，取代该切片此前只接受原选项的 App 本地约束。共享 AnswerOptions 提供互斥的选项/自定义答案；NativeInteraction 的 select 通过既有 value 字符串协议提交用户原文。已安装 SDK 18.4.6 的 RPC select 使用字符串响应解析，无选项成员校验；扩展仍拥有回答的业务解释。confirm 保留布尔确认/拒绝，信任、连接身份/代次、超时默认及 unknown 不重发均不改变。实现与验证见[手动回答补齐](../.scratch/beautiful-ui-system/spec.md#2026-10-09-手动回答补齐)。
 
 ## 证据与维护入口
 

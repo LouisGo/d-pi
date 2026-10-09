@@ -12,7 +12,7 @@ import { useStore } from "zustand";
 import { FolderIcon } from "@/components/icons/common";
 import type { FrozenSelection } from "../../../modules/files/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import { Button } from "../../../modules/ui/renderer/public";
+import { Button, LoadingIndicator } from "../../../modules/ui/renderer/public";
 import { Modal } from "../components/ui/modal";
 import { Conversation } from "../reading/conversation";
 import { History } from "../reading/history";
@@ -161,6 +161,27 @@ const ThreadContent = memo(function ThreadContent({
   const { thread, directoryAvailable } = threadSelection;
   const { submission } = thread;
   const { t } = useI18n();
+  const initializing = useSyncExternalStore(
+    useCallback(
+      (listener: () => void) =>
+        thread.runtime?.subscribeTo(
+          (state) =>
+            !state.view ||
+            state.view.phase === "allowed" ||
+            state.view.phase === "starting",
+          listener,
+        ) ?? (() => {}),
+      [thread],
+    ),
+    useCallback(
+      () =>
+        !!thread.runtime &&
+        (!thread.runtime.getSnapshot() ||
+          thread.runtime.getSnapshot()?.phase === "allowed" ||
+          thread.runtime.getSnapshot()?.phase === "starting"),
+      [thread],
+    ),
+  );
   const toolsTrigger = useRef<HTMLButtonElement>(null);
   const toolsReturnFocus = useRef<HTMLElement | null>(null);
   const [toolsOpen, setToolsOpen] = useState(false);
@@ -268,7 +289,12 @@ const ThreadContent = memo(function ThreadContent({
                 />
               )}
             </div>
-            {thread.runtime && <RuntimeInspection model={thread.runtime} />}
+            {thread.runtime && (
+              <RuntimeInspection
+                model={thread.runtime}
+                origin={thread.context.origin}
+              />
+            )}
             <ReadingNavigation
               readingView={readingView}
               historyButtonRef={historyTrigger}
@@ -306,6 +332,7 @@ const ThreadContent = memo(function ThreadContent({
         {!directoryAvailable && <DirectoryUnavailable />}
         {thread.runtime && (
           <RuntimePanel
+            origin={thread.context.origin}
             model={thread.runtime}
             submission={thread.submission}
             inspection={false}
@@ -328,6 +355,7 @@ const ThreadContent = memo(function ThreadContent({
           {thread.reading &&
             (model.history ? (
               <SavedConversation
+                initializing={initializing}
                 model={thread.reading}
                 bridge={model.history}
                 threadId={thread.context.threadId}
@@ -336,11 +364,20 @@ const ThreadContent = memo(function ThreadContent({
                 onOpenHistory={openHistoryTools}
               />
             ) : (
-              <Conversation
-                model={thread.reading}
-                positions={thread.readingSources}
-                onOpenHistory={openHistoryTools}
-              />
+              <>
+                <LoadingIndicator
+                  pending={initializing}
+                  identity={thread.key}
+                  label={t("app.loading")}
+                  placement="center"
+                />
+                <Conversation
+                  initializing={initializing}
+                  model={thread.reading}
+                  positions={thread.readingSources}
+                  onOpenHistory={openHistoryTools}
+                />
+              </>
             ))}
         </ReadingPane>
         <ReadingPane

@@ -14,7 +14,11 @@ import {
   useState,
 } from "react";
 
-import { SearchIcon } from "./components/icons/common";
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  SearchIcon,
+} from "./components/icons/common";
 
 export type SelectOption<T extends string> = {
   value: T;
@@ -31,7 +35,10 @@ export type SelectProps<T extends string> = {
   name?: string | undefined;
   disabled?: boolean | undefined;
   "aria-label"?: string | undefined;
+  "aria-labelledby"?: string | undefined;
   "aria-describedby"?: string | undefined;
+  "aria-invalid"?: ComponentPropsWithRef<"button">["aria-invalid"];
+  ref?: ComponentPropsWithRef<"button">["ref"];
 };
 export function Select<T extends string>({
   value,
@@ -41,6 +48,7 @@ export function Select<T extends string>({
   name,
   disabled,
   search,
+  ref,
   ...aria
 }: SelectProps<T>) {
   if (search)
@@ -53,6 +61,7 @@ export function Select<T extends string>({
         name={name}
         disabled={disabled}
         search={search}
+        ref={ref}
         {...aria}
       />
     );
@@ -78,14 +87,16 @@ export function Select<T extends string>({
     >
       <SelectPrimitive.Trigger
         {...aria}
+        ref={ref}
+        title={options.find((option) => option.value === value)?.label ?? value}
         name={name}
         value={value}
         className="ui-select"
         data-slot="select"
       >
-        <SelectPrimitive.Value />
+        <SelectPrimitive.Value className="ui-select-value" />
         <SelectPrimitive.Icon className="ui-select-chevron">
-          {null}
+          <ChevronDownIcon />
         </SelectPrimitive.Icon>
       </SelectPrimitive.Trigger>
       <SelectPrimitive.Portal>
@@ -106,11 +117,14 @@ export function Select<T extends string>({
                   disabled={option.disabled}
                   className="ui-select-option"
                 >
-                  <SelectPrimitive.ItemText>
+                  <SelectPrimitive.ItemText className="ui-select-option-text">
                     {option.label}
                   </SelectPrimitive.ItemText>
-                  <SelectPrimitive.ItemIndicator className="ui-select-indicator">
-                    {null}
+                  <SelectPrimitive.ItemIndicator
+                    keepMounted
+                    className="ui-select-indicator"
+                  >
+                    <CheckIcon />
                   </SelectPrimitive.ItemIndicator>
                 </SelectPrimitive.Item>
               ))}
@@ -223,6 +237,69 @@ export function ChoiceGroup<T extends string>({
   );
 }
 
+// i18n-ignore: Caller-supplied text type, no rendered copy.
+export type RadioOption<T extends string> = SelectOption<T> & {
+  description?: string | undefined;
+};
+export type RadioOptionsProps<T extends string> = {
+  value: T | null;
+  options: readonly RadioOption<T>[];
+  onValueChange: (value: T) => void;
+  disabled?: boolean | undefined;
+  "aria-label": string;
+};
+
+// A question's choices are a vertical radio list, separate from segmented modes.
+export function RadioOptions<T extends string>({
+  options,
+  onValueChange,
+  ...props
+}: RadioOptionsProps<T>) {
+  return (
+    <RadioGroup
+      {...props}
+      onValueChange={(value) => {
+        if (value !== null) onValueChange(value);
+      }}
+      className="ui-radio-options"
+      data-slot="radio-options"
+    >
+      {options.map((option) => (
+        <RadioOptionItem key={option.value} option={option} />
+      ))}
+    </RadioGroup>
+  );
+}
+
+function RadioOptionItem<T extends string>({
+  option,
+}: {
+  option: RadioOption<T>;
+}) {
+  const descriptionId = useId();
+  return (
+    <Radio.Root
+      value={option.value}
+      aria-label={option.label}
+      aria-describedby={option.description ? descriptionId : undefined}
+      disabled={option.disabled}
+      className="ui-radio-option"
+    >
+      <span className="ui-radio-circle" aria-hidden="true">
+        <Radio.Indicator className="ui-radio-dot" />
+      </span>
+      <span className="ui-radio-copy">
+        <span>{option.label}</span>
+        {option.description && (
+          <span id={descriptionId} className="ui-radio-description">
+            {option.description}
+          </span>
+        )}
+      </span>
+    </Radio.Root>
+  );
+}
+
 function SearchSelect<T extends string>({
   value,
   options,
@@ -231,6 +308,7 @@ function SearchSelect<T extends string>({
   name,
   disabled,
   search,
+  ref,
   ...aria
 }: SelectProps<T> & { search: { label: string; empty: string } }) {
   const [query, setQuery] = useState("");
@@ -258,14 +336,18 @@ function SearchSelect<T extends string>({
     >
       <Combobox.Trigger
         {...aria}
+        ref={ref}
         id={id}
         name={name}
         value={value}
         className="ui-select"
         data-slot="select"
+        title={selected?.label ?? value}
       >
-        {selected?.label}
-        <Combobox.Icon className="ui-select-chevron">{null}</Combobox.Icon>
+        <span className="ui-select-value">{selected?.label ?? value}</span>
+        <Combobox.Icon className="ui-select-chevron">
+          <ChevronDownIcon />
+        </Combobox.Icon>
       </Combobox.Trigger>
       <Combobox.Portal>
         <Combobox.Positioner
@@ -299,9 +381,12 @@ function SearchSelect<T extends string>({
                   disabled={option.disabled}
                   className="ui-select-option"
                 >
-                  {option.label}
-                  <Combobox.ItemIndicator className="ui-select-indicator">
-                    {null}
+                  <span className="ui-select-option-text">{option.label}</span>
+                  <Combobox.ItemIndicator
+                    keepMounted
+                    className="ui-select-indicator"
+                  >
+                    <CheckIcon />
                   </Combobox.ItemIndicator>
                 </Combobox.Item>
               )}

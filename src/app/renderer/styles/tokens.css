@@ -61,6 +61,7 @@
   --control-border: #8a8d95;
   --border-soft: #eff0f2;
   --field: #f7f7f8;
+  --surface-subtle: color-mix(in srgb, var(--surface) 96%, var(--foreground));
   --placeholder: #6b6f77;
   --destructive: #b3261e;
   --code-selection: #c5d5f8;
@@ -85,6 +86,8 @@
   --switch-padding: 0.1875rem;
   --switch-thumb-size: 1rem;
   --tab-icon-size: 1rem;
+  --control-icon-size: 1rem;
+  --menu-min-width: 14rem;
   --checkbox-size: 1rem;
   --checkbox-mark-width: 0.3rem;
   --checkbox-mark-height: 0.55rem;
@@ -107,6 +110,7 @@
   --shadow-raised: 0 2px 6px rgb(0 0 0 / 6%), 0 6px 16px rgb(0 0 0 / 4%);
   --shadow-inset: inset 0 1px 2px rgb(0 0 0 / 4%);
   --shadow-filled: inset 0 1px 0 rgb(255 255 255 / 12%);
+  --shadow-surface: inset 0 1px 0 rgb(255 255 255 / 80%);
   --scrollbar: #b8bbc3;
   --text-title: 1.125rem;
   --text-heading: 1.5rem;
@@ -138,6 +142,9 @@
   --settings-minimum-height: 32rem;
   --overlay-width: 20rem;
   --model-picker-width: 28rem;
+  --interaction-width: 26rem;
+  --radio-size: 1rem;
+  --radio-dot-size: 0.375rem;
   --model-picker-max-height: 32rem;
   --layer-backdrop: 40;
   --layer-dialog: 50;
@@ -177,6 +184,7 @@
   --shadow-raised: 0 2px 6px rgb(0 0 0 / 20%), 0 6px 16px rgb(0 0 0 / 16%);
   --shadow-overlay: 0 4px 12px rgb(0 0 0 / 24%), 0 16px 40px rgb(0 0 0 / 28%);
   --shadow-inset: inset 0 1px 2px rgb(0 0 0 / 20%);
+  --shadow-surface: inset 0 1px 0 rgb(255 255 255 / 5%);
   --destructive: #ffb4ab;
   --code-selection: #34538d;
   --file-type-code: #68cadc;

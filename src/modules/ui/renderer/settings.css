@@ -1,5 +1,6 @@
 @layer components {
   .ui-settings-page {
+    min-width: 0;
     width: 100%;
     max-width: var(--content-width);
     margin-inline: auto;
@@ -25,6 +26,7 @@
   }
   .ui-settings-group {
     min-width: 0;
+    container-type: inline-size;
   }
   .ui-settings-group-header {
     display: grid;
@@ -41,20 +43,23 @@
     border-radius: var(--radius);
     padding-inline: var(--panel-padding);
     min-width: 0;
+    background: var(--surface);
+    box-shadow: var(--shadow-surface);
   }
   .ui-setting-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: calc(var(--spacing) * 6);
+    flex-wrap: wrap;
+    gap: calc(var(--spacing) * 3) calc(var(--spacing) * 6);
     padding-block: calc(var(--spacing) * 4);
     min-width: 0;
   }
   .ui-setting-row + .ui-setting-row {
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--border-soft);
   }
   .ui-setting-copy {
-    flex: 1;
+    flex: 1 1 calc(var(--spacing) * 48);
     min-width: 0;
     display: grid;
     gap: calc(var(--spacing) * 1);
@@ -67,19 +72,36 @@
     color: var(--muted-foreground);
     line-height: 1.5;
     overflow-wrap: anywhere;
+    max-width: 65ch;
+    font-size: var(--text-small);
   }
   .ui-setting-control {
     flex: 0 1 auto;
     max-width: 100%;
     min-width: 0;
-  }
-}
-@media (max-width: 760px) {
-  .ui-setting-row {
+    display: flex;
     flex-wrap: wrap;
-    gap: calc(var(--spacing) * 3);
+    align-items: center;
+    gap: var(--layout-gap);
   }
-  .ui-setting-copy {
-    flex-basis: calc(var(--spacing) * 56);
+  .ui-setting-control > .ui-select {
+    max-width: min(100%, var(--overlay-width));
+  }
+  @container (max-width: 420px) {
+    .ui-setting-row:has(.ui-select, .ui-input, .ui-choice-group) {
+      align-items: flex-start;
+    }
+    .ui-setting-row:has(.ui-select, .ui-input, .ui-choice-group)
+      > .ui-setting-copy {
+      flex-basis: 100%;
+    }
+    .ui-setting-row:has(.ui-select, .ui-input, .ui-choice-group)
+      > .ui-setting-control {
+      width: 100%;
+    }
+    .ui-setting-control > :is(.ui-select, .ui-input) {
+      width: 100%;
+      max-width: none;
+    }
   }
 }

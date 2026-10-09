@@ -3,6 +3,8 @@
 @import "../../../modules/ui/renderer/controls.css";
 @import "../../../modules/ui/renderer/primitives.css";
 @import "../../../modules/ui/renderer/settings.css";
+@import "../../../modules/ui/renderer/presentation.css";
+@import "../../../modules/ui/renderer/loading-indicator.css";
 @import "../shell/settings/settings.css";
 @import "../components/ui/hover-menu.css";
 @import "./interaction.css";
@@ -11,6 +13,8 @@
 @import "../components/ui/modal.css";
 @import "../components/ui/status-preview.css";
 @import "../components/ui/action-menu.css";
+@import "../components/ui/feedback.css";
+@import "../reading/message-parts.css";
 @import "../workbench/composer-toolbar.css";
 @import "../workbench/composer.css";
 @import "../../../modules/configuration/renderer/model-picker.css";
@@ -56,6 +60,8 @@
   }
   h1,
   h2,
+  h3,
+  h4,
   p {
     margin: 0;
   }
@@ -140,11 +146,71 @@
     border-radius: var(--radius-control);
     font-size: var(--text-small);
     line-height: 1.6;
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
   .runtime-panel > p,
   .runtime-panel > div,
   .runtime-panel > .native-interactions {
     grid-column: 1 / -1;
+  }
+  .runtime-panel > .ui-action-group {
+    grid-column: 1 / -1;
+  }
+  .runtime-source {
+    min-width: 0;
+  }
+  .queue-entry {
+    display: grid;
+    gap: var(--layout-gap);
+    padding-block: var(--layout-gap);
+    border-bottom: 1px solid var(--border-soft);
+    min-width: 0;
+    font-size: var(--text-body);
+    overflow-wrap: anywhere;
+  }
+  .queue-entry:last-child {
+    border-bottom: 0;
+  }
+  .native-interaction {
+    display: grid;
+    gap: calc(var(--spacing) * 3);
+    min-width: 0;
+    width: min(100%, var(--interaction-width));
+    padding: var(--panel-padding);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow-control);
+    font-size: var(--text-body);
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+  .native-interaction-heading {
+    display: flex;
+    align-items: center;
+    gap: var(--layout-gap);
+    min-width: 0;
+  }
+  .native-interaction-heading > strong {
+    flex: 1;
+    min-width: 0;
+    font-weight: 500;
+    font-size: var(--text-title);
+    line-height: var(--control-line-height);
+    letter-spacing: var(--tracking-heading);
+  }
+  .native-interaction-heading > .ui-button {
+    color: var(--muted-foreground);
+  }
+  .native-interaction > p {
+    color: var(--muted-foreground);
+  }
+  .native-interaction-footer {
+    display: flex;
+    justify-content: end;
+    min-width: 0;
+    padding-block-start: calc(var(--spacing) * 2);
   }
   .runtime-panel > .native-interactions:empty {
     display: none;
@@ -156,6 +222,7 @@
     gap: var(--layout-gap);
     height: 100%;
     min-height: 0;
+    min-width: 0;
   }
   .thread-setup {
     flex-shrink: 1;
@@ -334,12 +401,20 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
     gap: var(--layout-gap);
     padding: calc(var(--layout-gap) / 2) var(--layout-gap);
     background: var(--muted);
     color: var(--muted-foreground);
     font-size: var(--text-small);
     line-height: 1.6;
+    border-start-start-radius: inherit;
+    border-start-end-radius: inherit;
+  }
+  .composer-readiness > p {
+    flex: 1 1 32ch;
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
   h2 {
     font-size: var(--text-body);
@@ -391,19 +466,6 @@
     margin-top: var(--layout-gap);
     overflow-wrap: anywhere;
   }
-  .empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--panel-padding);
-    max-width: 65ch;
-    margin: auto;
-    padding-block: var(--intro-space);
-  }
-  .empty-note {
-    color: var(--muted-foreground);
-    font-size: var(--text-small);
-  }
   .failure {
     color: var(--destructive);
   }
@@ -446,10 +508,20 @@
     display: flex;
     flex-direction: column;
     gap: var(--layout-gap);
+    min-width: 0;
+  }
+  :is(.conversation, .submission-records, .history) {
+    width: 100%;
+    max-width: var(--content-width);
+    margin-inline: auto;
+  }
+  :is(.conversation, .submission-records, .history) > .ui-button {
+    align-self: flex-start;
   }
   .message {
+    min-width: 0;
     padding: var(--panel-padding) 0;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--border-soft);
     overflow-wrap: anywhere;
     font-size: var(--text-reading);
     line-height: 1.7;
@@ -463,6 +535,7 @@
     font-size: var(--text-body);
   }
   .message pre {
+    margin-block: var(--layout-gap);
     white-space: pre-wrap;
     overflow-wrap: anywhere;
     max-height: none;
@@ -474,6 +547,12 @@
   }
   .reading-body {
     min-width: 0;
+  }
+  .message > :is(p, .ui-disclosure) + :is(p, .ui-disclosure, .reading-body) {
+    margin-block-start: var(--layout-gap);
+  }
+  .message > .ui-disclosure:not([data-variant="framed"])[open] > :not(summary) {
+    margin-block-start: var(--layout-gap);
   }
   .composer[data-expanded="true"] {
     position: absolute;
@@ -513,6 +592,7 @@
     display: grid;
     gap: var(--layout-gap);
     margin-block: var(--panel-padding);
+    min-width: 0;
   }
   .file-panel {
     border: 1px solid var(--border);
@@ -521,8 +601,8 @@
   }
   .file-list,
   .change-list {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: calc(var(--layout-gap) / 2);
   }
   .file-result {
@@ -559,16 +639,11 @@
     justify-content: space-between;
     gap: var(--layout-gap);
     overflow-wrap: anywhere;
+    flex-wrap: wrap;
   }
 }
 
 @layer components {
-  .message-heading > span {
-    color: var(--muted-foreground);
-  }
-  .message-heading > button {
-    margin-inline-start: auto;
-  }
   .reading-pane {
     padding-inline: var(--layout-gap);
     scrollbar-gutter: stable;
@@ -586,17 +661,10 @@
     padding-block: var(--panel-padding);
     line-height: 1.7;
   }
-  .empty-state h1 {
-    letter-spacing: var(--tracking-heading);
-    font-weight: 600;
-  }
-  .empty-state p {
-    line-height: 1.8;
-  }
 }
 
 @layer components {
-  .work-content:has(> .empty-state) {
+  .work-content:has(> .ui-empty-state) {
     display: flex;
     align-items: center;
   }

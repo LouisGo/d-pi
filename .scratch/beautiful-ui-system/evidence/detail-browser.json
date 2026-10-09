@@ -1,0 +1,213 @@
+{
+  "surface": "isolated-renderer-fixture",
+  "rounds": {
+    "initial": [
+      {
+        "card": [
+          {
+            "scrollWidth": 414,
+            "width": 414
+          }
+        ],
+        "overflow": [
+          "native-interaction-heading"
+        ],
+        "theme": "light",
+        "tool": [
+          {
+            "clip": "clip",
+            "hover": false,
+            "scrollWidth": 894,
+            "width": 894
+          }
+        ],
+        "viewport": [
+          1440,
+          900
+        ]
+      },
+      {
+        "card": {
+          "scrollWidth": 414,
+          "width": 414
+        },
+        "overflow": [
+          "native-interaction-heading"
+        ],
+        "theme": "dark",
+        "tool": {
+          "clip": "clip",
+          "hover": true,
+          "scrollWidth": 894,
+          "width": 894
+        },
+        "viewport": [
+          1440,
+          900
+        ]
+      },
+      {
+        "overflow": [
+          "native-interaction-heading"
+        ],
+        "theme": "dark",
+        "tool": {
+          "clip": "clip",
+          "hover": true
+        },
+        "viewport": [
+          720,
+          900
+        ]
+      },
+      {
+        "overflow": [
+          "native-interaction-heading"
+        ],
+        "theme": "light",
+        "tool": {
+          "clip": "clip",
+          "hover": true
+        },
+        "viewport": [
+          720,
+          900
+        ]
+      }
+    ],
+    "fixes": [
+      "remove negative header margins",
+      "filled secondary action",
+      "visible framed hover"
+    ],
+    "confirmation": [
+      {
+        "card": {
+          "headingScrollWidth": 382,
+          "headingWidth": 382,
+          "scrollWidth": 414,
+          "width": 414
+        },
+        "overflow": [],
+        "theme": "light",
+        "tool": {
+          "clip": "clip",
+          "cornerInside": false,
+          "hover": true,
+          "open": true,
+          "outline": "none"
+        },
+        "viewport": [
+          720,
+          900
+        ]
+      },
+      {
+        "card": {
+          "headingScrollWidth": 382,
+          "headingWidth": 382,
+          "scrollWidth": 414,
+          "width": 414
+        },
+        "overflow": [],
+        "theme": "dark",
+        "tool": {
+          "clip": "clip",
+          "cornerInside": false,
+          "hover": true,
+          "open": true,
+          "outline": "none"
+        },
+        "viewport": [
+          720,
+          900
+        ]
+      },
+      {
+        "card": {
+          "headingScrollWidth": 382,
+          "headingWidth": 382,
+          "scrollWidth": 414,
+          "width": 414
+        },
+        "overflow": [],
+        "theme": "dark",
+        "tool": {
+          "clip": "clip",
+          "cornerInside": false,
+          "hover": true,
+          "open": true,
+          "outline": "none"
+        },
+        "viewport": [
+          1440,
+          900
+        ]
+      },
+      {
+        "card": {
+          "headingScrollWidth": 382,
+          "headingWidth": 382,
+          "scrollWidth": 414,
+          "width": 414
+        },
+        "overflow": [],
+        "theme": "light",
+        "tool": {
+          "clip": "clip",
+          "cornerInside": false,
+          "hover": true,
+          "open": true,
+          "outline": "none"
+        },
+        "viewport": [
+          1440,
+          900
+        ]
+      }
+    ]
+  },
+  "closedHover": {
+    "card": {
+      "headingScrollWidth": 382,
+      "headingWidth": 382,
+      "scrollWidth": 414,
+      "width": 414
+    },
+    "overflow": [],
+    "theme": "light",
+    "tool": {
+      "clip": "clip",
+      "cornerInside": false,
+      "hover": true,
+      "open": false,
+      "outline": "none"
+    },
+    "viewport": [
+      1440,
+      900
+    ]
+  },
+  "keyboard": {
+    "tool": {
+      "offset": "-2px",
+      "open": true,
+      "outline": "solid",
+      "visible": true,
+      "width": "2px"
+    },
+    "choice": {
+      "focus": true,
+      "label": "继续使用当前项目及现有配置，保留原生会话中的文件与执行上下文",
+      "outline": "solid",
+      "visible": true,
+      "width": "2px"
+    }
+  },
+  "localSubmission": "NativeInteraction\n\n组合原生选项、说明和回答动作；业务继续使用正式收据。\n\n重置\n\npending · answered / local demo\n\n选择处理方式\n\n本地演示，不会向 OMP 发送回答。\n\n回答已提交，结果尚未确认；不会自动重答\n\n本地示例已回答：继续使用当前项目及现有配置，保留原生会话中的文件与执行上下文",
+  "limits": [
+    "In-app browser; not native Electron or packaged app validation",
+    "Native callbacks in this gallery are explicitly local-only; no provider execution",
+    "Only ToolResultFrame and NativeInteraction variants affected by this pass were visually checked"
+  ]
+}

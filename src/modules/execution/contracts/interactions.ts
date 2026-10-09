@@ -26,6 +26,8 @@ export const InteractionSchema = DialogSchema.extend({
 export type Interaction = z.infer<typeof InteractionSchema>;
 export const AnswerSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("confirm"), confirmed: z.boolean() }),
+  // Select accepts a provided option or a user-written answer via the same
+  // native value frame. Confirm remains a separate response above.
   z.strictObject({ kind: z.literal("value"), value: z.string().max(16384) }),
   z.strictObject({ kind: z.literal("cancel") }),
 ]);

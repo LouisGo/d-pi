@@ -147,6 +147,7 @@ export class RuntimeService {
           delete this.view.subagentOperation;
           delete this.view.modelChanging;
           delete this.view.modelOperation;
+          delete this.view.connectionGeneration;
         }
         this.update({ busy: false });
       },

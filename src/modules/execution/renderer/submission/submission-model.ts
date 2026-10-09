@@ -134,6 +134,7 @@ export class SubmissionModel {
     private readonly threadId: ThreadId,
     private readonly draft: DraftController,
     private readonly canPrepareInput: () => boolean = () => true,
+    private readonly prepareExecution?: () => Promise<boolean>,
   ) {
     this.remove = bridge.subscribe((reply) => this.accept(reply));
     void this.refresh();
@@ -261,6 +262,9 @@ export class SubmissionModel {
         async (value) => {
           if (this.disposed || !this.canPrepareInput() || !value.text.trim())
             return false;
+          if (this.prepareExecution && !(await this.prepareExecution()))
+            return false;
+          if (this.disposed || !this.canPrepareInput()) return false;
           const reply = await this.bridge.request({
             kind: "prepare",
             threadId: this.threadId,
@@ -331,6 +335,10 @@ export class SubmissionModel {
     const submissionId = SubmissionIdSchema.parse(crypto.randomUUID());
     let preparedOk = false;
     try {
+      if (this.prepareExecution && !(await this.prepareExecution()))
+        return { ok: false, message: null, submissionId: null };
+      if (this.disposed)
+        return { ok: false, message: null, submissionId: null };
       const prepared = await this.bridge.request({
         kind: "prepare",
         threadId: this.threadId,

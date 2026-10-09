@@ -107,6 +107,8 @@ export class AppModel {
     pending: true,
   }));
   private readonly threads = new Map<string, ThreadModel>();
+  private readonly cacheSubscriptions = new Map<ThreadModel, () => void>();
+  private cachePruneScheduled = false;
   private disposed = false;
   private systemAppearance: MediaQueryList | null = null;
   private appearancePreference: Preferences["theme"] = "light";
@@ -123,7 +125,10 @@ export class AppModel {
     releaseSources: () => void;
   } | null = null;
   readonly attention: AttentionModel;
-  constructor(private readonly bridge: DesktopBridge) {
+  constructor(
+    private readonly bridge: DesktopBridge,
+    private readonly threadCacheLimit = 8,
+  ) {
     this.draftEditors = new DraftEditorCache(undefined, bridge.attachments);
     this.attention = new AttentionModel(bridge.attention);
   }
@@ -277,9 +282,14 @@ export class AppModel {
     }
     const binding = this.editorBinding;
     if (binding && !binding.boundary.freeze()) return false;
-    const sourceReleases = Array.from(this.threads.values(), (thread) =>
-      thread.freezeInputSources(),
-    );
+    const sourceReleases = Array.from(this.threads.values(), (thread) => {
+      const releasePreparation = thread.suspendPreparation();
+      const releaseInput = thread.freezeInputSources();
+      return () => {
+        releaseInput();
+        releasePreparation();
+      };
+    });
     const attempt = {
       thread: this.activeThread,
       binding,
@@ -356,6 +366,8 @@ export class AppModel {
     this.closeAttempt = null;
     this.store.setState({ kind: "disposed" }, true);
     for (const thread of this.threads.values()) thread.dispose();
+    for (const unsubscribe of this.cacheSubscriptions.values()) unsubscribe();
+    this.cacheSubscriptions.clear();
     this.threads.clear();
     this.draftEditors.dispose();
     this.attention.dispose();
@@ -430,8 +442,25 @@ export class AppModel {
             ? cached
             : new ThreadModel(draft, this.bridge, transportFailure)
           : null;
-        if (thread) this.threads.set(thread.context.threadId, thread);
-        if (cached && cached !== thread) cached.dispose();
+        if (thread) {
+          // Map insertion order is selection recency, not creation recency.
+          this.threads.delete(thread.context.threadId);
+          this.threads.set(thread.context.threadId, thread);
+          if (!this.cacheSubscriptions.has(thread)) {
+            const releases = [
+              thread.runtime?.subscribe(() => this.scheduleCachePrune()),
+              thread.submission?.subscribe(() => this.scheduleCachePrune()),
+            ];
+            this.cacheSubscriptions.set(thread, () =>
+              releases.forEach((release) => release?.()),
+            );
+          }
+        }
+        if (cached && cached !== thread) {
+          this.cacheSubscriptions.get(cached)?.();
+          this.cacheSubscriptions.delete(cached);
+          cached.dispose();
+        }
         const threadSelection: ThreadSelectionState = thread
           ? { kind: "thread", thread, directoryAvailable }
           : { kind: "empty" };
@@ -450,6 +479,7 @@ export class AppModel {
           notice: null,
         });
         thread?.activate();
+        this.scheduleCachePrune();
         void this.refreshThreads();
         return { kind: "applied" as const, selection: threadSelection };
       })
@@ -466,6 +496,36 @@ export class AppModel {
         return { kind: "cancelled" as const };
       })
       .exhaustive();
+  }
+  private scheduleCachePrune(): void {
+    if (this.cachePruneScheduled || this.disposed) return;
+    this.cachePruneScheduled = true;
+    queueMicrotask(() => {
+      this.cachePruneScheduled = false;
+      if (this.disposed || (this.state.kind === "ready" && this.state.busy))
+        return;
+      // Work in flight is pinned outside the idle-cache budget.
+      let idle = [...this.threads.values()].filter(
+        (thread) => thread === this.activeThread || thread.canEvict(),
+      ).length;
+      for (const [id, thread] of this.threads) {
+        if (idle <= this.threadCacheLimit) break;
+        const history = this.draftEditors.historyState(thread.key);
+        if (
+          !thread.canEvict() ||
+          history.pending ||
+          history.failed ||
+          history.limited ||
+          !this.draftEditors.evict(thread.key)
+        )
+          continue;
+        this.threads.delete(id);
+        this.cacheSubscriptions.get(thread)?.();
+        this.cacheSubscriptions.delete(thread);
+        thread.dispose();
+        idle--;
+      }
+    });
   }
   async start(): Promise<void> {
     if (this.disposed) return;

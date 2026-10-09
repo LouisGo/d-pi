@@ -20,8 +20,11 @@ import {
   Button,
   Disclosure,
   DisclosureTrigger,
+  LoadingIndicator,
   Select,
 } from "../../../modules/ui/renderer/public";
+import { CopyButton } from "../components/ui/copy-button";
+import { MessageHeader } from "./message-parts";
 import { ReadingBody } from "./reading-body";
 
 type HistoryToolEvidenceMessage =
@@ -127,8 +130,11 @@ function HistoryContent({
           {t("ui.history.returnLive")}
         </Button>
       )}
-      {discovering && <p role="status">{t("ui.history.discovering")}</p>}
-      {reading && <p role="status">{t("ui.history.reading")}</p>}
+      <LoadingIndicator
+        pending={discovering || reading}
+        identity={`${threadId}:${selected}:${cursor?.offset ?? 0}`}
+        label={t("app.loading")}
+      />
 
       <div className="history-controls">
         <label>
@@ -148,11 +154,7 @@ function HistoryContent({
             options={[
               {
                 value: "",
-                label: t(
-                  awaitingCatalog
-                    ? "ui.history.discovering"
-                    : "ui.history.bound",
-                ),
+                label: t("ui.history.bound"),
               },
               ...(catalog.data?.kind === "catalog"
                 ? catalog.data.sessions.map((session) => ({
@@ -242,21 +244,19 @@ function HistoryContent({
               data-reading-row={entry.id}
               key={JSON.stringify([threadId, selected, page.source, entry.id])}
             >
-              <div className="message-heading">
-                <strong>
-                  {match(entry.role)
-                    .with("user", () => t("ui.history.role.user"))
-                    .with("assistant", () => t("ui.history.role.assistant"))
-                    .with("tool", "toolResult", () => t("ui.history.role.tool"))
-                    .otherwise(() => entry.role)}
-                </strong>
-                <Button
-                  variant="ghost"
-                  onClick={() => void navigator.clipboard.writeText(entry.text)}
-                >
-                  {t("ui.conversation.copy")}
-                </Button>
-              </div>
+              <MessageHeader
+                title={match(entry.role)
+                  .with("user", () => t("ui.history.role.user"))
+                  .with("assistant", () => t("ui.history.role.assistant"))
+                  .with("tool", "toolResult", () => t("ui.history.role.tool"))
+                  .otherwise(() => entry.role)}
+                actions={
+                  <CopyButton
+                    label={t("ui.conversation.copy")}
+                    text={entry.text}
+                  />
+                }
+              />
               <div className="history-record file-meta">
                 <Disclosure>
                   <DisclosureTrigger>

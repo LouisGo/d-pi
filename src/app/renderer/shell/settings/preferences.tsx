@@ -7,6 +7,7 @@ import {
 } from "../../../../modules/preferences/renderer/public";
 import {
   ChoiceGroup,
+  Kbd,
   Select,
   SettingRow,
   SettingsGroup,
@@ -116,7 +117,7 @@ export function GeneralSettings({ model }: { model: AppModel }) {
           label={t("settings.expandedComposer")}
           description={t("settings.expandedDescription")}
         >
-          <kbd className="settings-key">{t("settings.commandEnterKey")}</kbd>
+          <Kbd>{t("settings.commandEnterKey")}</Kbd>
         </SettingRow>
       </SettingsGroup>
     </>

@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
+import { installConversationCacheBudget } from "./conversation-cache";
 
 /**
  * One query client per renderer process, created by the application entry and
@@ -30,6 +31,7 @@ export const queryClient = new QueryClient({
     },
   },
 });
+installConversationCacheBudget(queryClient);
 
 export function QueryProvider({ children }: { children: ReactNode }) {
   return (

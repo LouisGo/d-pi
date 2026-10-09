@@ -15,6 +15,12 @@ import type { LocaleSnapshot } from "../../src/shared/i18n/locale";
 import "../../src/app/renderer/styles/app.css";
 
 const pause = () => new Promise<void>((resolve) => setTimeout(resolve, 120));
+const threadLoadingFixture = new URLSearchParams(location.search).has(
+  "thread-loading",
+);
+const cliHistoryFixture = new URLSearchParams(location.search).has(
+  "cli-history",
+);
 const first = DraftSchema.parse({
   schemaVersion: 1,
   threadId: crypto.randomUUID(),
@@ -22,6 +28,9 @@ const first = DraftSchema.parse({
   directory: "/isolated/rendering",
   revision: 0,
   text: "A unsent draft",
+  ...(cliHistoryFixture
+    ? { origin: "cli", title: "Imported CLI history" }
+    : {}),
 });
 const drafts = [
   first,
@@ -201,6 +210,8 @@ export const bridge: DesktopBridge = {
     subscribe: () => () => {},
     request: async (command) => {
       runtimeCommands.push(command);
+      if (threadLoadingFixture)
+        await new Promise((resolve) => setTimeout(resolve, 8000));
       return {
         kind: "view",
         view: RuntimeViewSchema.parse({
@@ -208,15 +219,17 @@ export const bridge: DesktopBridge = {
           traceId: command.traceId,
           revision: command.kind === "start" ? 1 : 0,
           phase:
-            location.search === "?thread-layout"
-              ? "ready"
-              : command.kind === "start"
+            threadLoadingFixture && command.kind !== "start"
+              ? "allowed"
+              : location.search === "?thread-layout"
                 ? "ready"
-                : drafts.some(
-                      (d) => d.threadId === command.threadId && d.text !== "",
-                    )
-                  ? "interrupted"
-                  : "allowed",
+                : command.kind === "start"
+                  ? "ready"
+                  : drafts.some(
+                        (d) => d.threadId === command.threadId && d.text !== "",
+                      )
+                    ? "interrupted"
+                    : "allowed",
           trusted: true,
           busy: false,
           model:
@@ -224,7 +237,7 @@ export const bridge: DesktopBridge = {
               ? "fixture/model"
               : null,
           configuration: { code: "runtime.configDefault" },
-          message: { code: "runtime.previousSessionReadOnly" },
+          message: { code: "runtime.disconnected" },
         }),
       };
     },
@@ -237,7 +250,14 @@ export const bridge: DesktopBridge = {
         connectionGeneration: crypto.randomUUID(),
         gap: false,
         items: Array.from(
-          { length: location.pathname.endsWith("/workbench.html") ? 3 : 1 },
+          {
+            length:
+              threadLoadingFixture || cliHistoryFixture
+                ? 0
+                : location.pathname.endsWith("/workbench.html")
+                  ? 3
+                  : 1,
+          },
           (_, index) => ({
             id: index + 1,
             role: "assistant",
@@ -279,7 +299,10 @@ export const bridge: DesktopBridge = {
     cancel: async (command) => ({ kind: "acknowledged", ...command }),
   },
   history: {
-    read: async () => ({ kind: "unavailable", reason: "missing" }),
+    read: async () =>
+      threadLoadingFixture || cliHistoryFixture
+        ? { kind: "unavailable", reason: "unbound" }
+        : { kind: "unavailable", reason: "missing" },
     projectList: async () => ({
       kind: "catalog",
       sessions: [],

@@ -1,0 +1,219 @@
+{
+  "version": "isolated-workbench",
+  "scenario": "components",
+  "passed": true,
+  "checks": [
+    {
+      "name": "settings-left-tools-right",
+      "value": true
+    },
+    {
+      "name": "hover-opens-tools",
+      "value": true
+    },
+    {
+      "name": "hover-travel-keeps-menu",
+      "value": true
+    },
+    {
+      "name": "all-real-components-visible",
+      "value": true
+    },
+    {
+      "name": "thread-resource-preserved",
+      "value": true
+    },
+    {
+      "name": "shared-component-styles-preserved",
+      "value": true
+    },
+    {
+      "name": "developer-route-covers-thread-workspace",
+      "value": true
+    },
+    {
+      "name": "icons-read-only-and-auto-collected",
+      "value": true
+    },
+    {
+      "name": "right-anchor-category",
+      "value": {
+        "target": {
+          "x": 16,
+          "y": 63.7890625,
+          "width": 1168,
+          "height": 809.4921875,
+          "top": 63.7890625,
+          "right": 1184,
+          "bottom": 873.28125,
+          "left": 16
+        },
+        "main": {
+          "x": 0,
+          "y": 48,
+          "width": 1200,
+          "height": 820,
+          "top": 48,
+          "right": 1200,
+          "bottom": 868,
+          "left": 0
+        },
+        "navigationTop": 48
+      }
+    },
+    {
+      "name": "right-anchor-component",
+      "value": {
+        "target": {
+          "x": 16,
+          "y": 64.2890625,
+          "width": 1168,
+          "height": 19.5,
+          "top": 64.2890625,
+          "right": 1184,
+          "bottom": 83.7890625,
+          "left": 16
+        },
+        "main": {
+          "x": 0,
+          "y": 48,
+          "width": 1200,
+          "height": 820,
+          "top": 48,
+          "right": 1200,
+          "bottom": 868,
+          "left": 0
+        },
+        "navigationTop": 48
+      }
+    },
+    {
+      "name": "button-feedback",
+      "value": true
+    },
+    {
+      "name": "tab-switch",
+      "value": true
+    },
+    {
+      "name": "navigation-dialog-open",
+      "value": true
+    },
+    {
+      "name": "navigation-esc-close",
+      "value": true
+    },
+    {
+      "name": "settings-dialog-open",
+      "value": true
+    },
+    {
+      "name": "settings-esc-close",
+      "value": true
+    },
+    {
+      "name": "nested-split-initial-controlled-size",
+      "value": 119.859375
+    },
+    {
+      "name": "real-split-drag",
+      "value": 149.65625
+    },
+    {
+      "name": "split-reset",
+      "value": 119.859375
+    },
+    {
+      "name": "search-empty",
+      "value": true
+    },
+    {
+      "name": "dark-theme",
+      "value": true
+    },
+    {
+      "name": "intermediate-right-navigation",
+      "value": true
+    },
+    {
+      "name": "narrow-without-horizontal-overflow",
+      "value": true
+    },
+    {
+      "name": "narrow-navigation-stays-visible-after-scroll",
+      "value": true
+    },
+    {
+      "name": "polish-light-resolved-theme",
+      "value": true
+    },
+    {
+      "name": "polish-light-1440-component-content-fits",
+      "value": true
+    },
+    {
+      "name": "polish-light-1440-nested-settings-and-long-select",
+      "value": true
+    },
+    {
+      "name": "polish-light-720-component-content-fits",
+      "value": true
+    },
+    {
+      "name": "polish-light-720-nested-settings-and-long-select",
+      "value": true
+    },
+    {
+      "name": "polish-dark-resolved-theme",
+      "value": true
+    },
+    {
+      "name": "polish-dark-1440-component-content-fits",
+      "value": true
+    },
+    {
+      "name": "polish-dark-1440-nested-settings-and-long-select",
+      "value": true
+    },
+    {
+      "name": "polish-dark-720-component-content-fits",
+      "value": true
+    },
+    {
+      "name": "polish-dark-720-nested-settings-and-long-select",
+      "value": true
+    },
+    {
+      "name": "polish-long-select-popup-fits-window",
+      "value": true
+    },
+    {
+      "name": "polish-select-escape-returns-focus",
+      "value": true
+    },
+    {
+      "name": "polish-tool-output-collapses",
+      "value": true
+    },
+    {
+      "name": "polish-native-answer-feedback",
+      "value": true
+    },
+    {
+      "name": "return-restores-sidebar-width",
+      "value": true
+    },
+    {
+      "name": "keyboard-tools-esc",
+      "value": true
+    },
+    {
+      "name": "return-retains-draft-and-resource",
+      "value": true
+    }
+  ],
+  "stderr": "\nDevTools listening on ws://127.0.0.1:62699/devtools/browser/16c455f3-ac97-421b-8642-8b190b6ab267\n",
+  "limitations": [
+    "isolated GUI fixture; not packaged or system IME evidence"
+  ]
+}

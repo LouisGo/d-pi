@@ -335,6 +335,6 @@ export const magpieAssets = {
     viewBox: string;
     fill: string;
     fillRule?: "evenodd";
-    content: () => ReactNode;
+    content: (id: string) => ReactNode;
   }
 >;

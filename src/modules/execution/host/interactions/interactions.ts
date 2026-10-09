@@ -63,12 +63,9 @@ export class PendingInteractions {
       (dialog.method === "confirm") !== (answer.kind === "confirm")
     )
       return false;
-    if (
-      dialog.method === "select" &&
-      answer.kind === "value" &&
-      !dialog.options?.includes(answer.value)
-    )
-      return false;
+    // Select and input/editor share the SDK's string value response. Options
+    // are suggestions; the GUI also accepts an explicitly typed answer.
+    // Confirm keeps its distinct boolean response and is never inferred from text.
     return true;
   }
   private frameForAnswer(id: string, answer: Answer): string {

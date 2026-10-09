@@ -186,12 +186,14 @@
     border-block-start: 1px solid var(--border);
     color: var(--muted-foreground);
     font-size: var(--text-small);
+    flex-wrap: wrap;
   }
   .model-picker-connection {
     display: flex;
     align-items: center;
     gap: calc(var(--spacing) * 2);
     min-inline-size: 0;
+    flex: 1 1 calc(var(--spacing) * 40);
   }
   .model-picker-connection > span {
     display: grid;

@@ -7,11 +7,9 @@ import {
   readingSourceKey,
 } from "../../../modules/conversation/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import {
-  Button,
-  Disclosure,
-  DisclosureTrigger,
-} from "../../../modules/ui/renderer/public";
+import { Button, EmptyState } from "../../../modules/ui/renderer/public";
+import { CopyButton } from "../components/ui/copy-button";
+import { MessageHeader, ToolResultFrame } from "./message-parts";
 import { ReadingBody } from "./reading-body";
 import { SubagentMessage } from "./subagents";
 
@@ -19,10 +17,12 @@ export function Conversation({
   model,
   positions,
   onOpenHistory,
+  initializing = false,
 }: {
   model: ConversationModel;
   positions?: ReadingPositions | undefined;
   onOpenHistory?: (() => void) | undefined;
+  initializing?: boolean;
 }) {
   const { t } = useI18n();
   const itemIds = useStore(model.stateStore, (state) => state.itemIds);
@@ -50,10 +50,8 @@ export function Conversation({
       data-reading-source={source}
       aria-label={t("ui.conversation.sectionLabel")}
     >
-      {!itemIds.length && (
-        <>
-          <p className="muted">{t("ui.conversation.empty")}</p>
-        </>
+      {!initializing && !itemIds.length && (
+        <EmptyState title={t("ui.conversation.empty")} />
       )}
       {gap && <p role="status">{t("ui.conversation.gap")}</p>}
       {onOpenHistory && (
@@ -135,27 +133,25 @@ export function ConversationItemView({
     );
   return (
     <article className="message" data-selectable data-reading-row={rowId}>
-      <div className="message-heading">
-        <strong>
-          {item.label.kind === "literal"
+      <MessageHeader
+        title={
+          item.label.kind === "literal"
             ? item.label.text
-            : formatMessage(item.label.value)}
-        </strong>
-        <span>
-          {match(item.state)
+            : formatMessage(item.label.value)
+        }
+        status={{
+          label: match(item.state)
             .with("streaming", () => t("ui.conversation.streaming"))
             .with("failed", () => t("ui.conversation.failed"))
             .with("aborted", () => t("ui.conversation.aborted"))
             .with("complete", () => "")
-            .exhaustive()}
-        </span>
-        <Button
-          variant="ghost"
-          onClick={() => void navigator.clipboard.writeText(item.text)}
-        >
-          {t("ui.conversation.copy")}
-        </Button>
-      </div>
+            .exhaustive(),
+          tone: item.state === "failed" ? "danger" : "neutral",
+        }}
+        actions={
+          <CopyButton label={t("ui.conversation.copy")} text={item.text} />
+        }
+      />
       {item.continuationOf !== undefined && (
         <p className="muted">{t("ui.conversation.continuation")}</p>
       )}
@@ -163,16 +159,13 @@ export function ConversationItemView({
       {item.notice ? (
         <p>{formatMessage(item.notice)}</p>
       ) : item.role === "tool" ? (
-        <Disclosure>
-          <DisclosureTrigger>
-            {t("ui.conversation.toolOutput")}
-          </DisclosureTrigger>
+        <ToolResultFrame label={t("ui.conversation.toolOutput")}>
           <ReadingBody
             text={item.text || t("ui.conversation.waitingResult")}
             raw
             position={position}
           />
-        </Disclosure>
+        </ToolResultFrame>
       ) : (
         <ReadingBody
           text={item.text}

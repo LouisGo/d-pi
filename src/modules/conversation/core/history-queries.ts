@@ -66,7 +66,8 @@ export function savedConversationQuery(
     initialPageParam: null as HistoryCursor | null,
     networkMode: "always",
     retry: false,
-    staleTime: 0,
+    staleTime: 30_000,
+    gcTime: 5 * 60 * 1000,
     queryFn: async ({ pageParam, signal }) => {
       signal.throwIfAborted();
       const page = await bridge.read(threadId, pageParam);

@@ -12,12 +12,19 @@ export function Checkbox({ className, ...props }: CheckboxProps) {
     />
   );
 }
-export type TextAreaProps = ComponentPropsWithRef<"textarea">;
-export function TextArea({ className, ...props }: TextAreaProps) {
+export type TextAreaProps = ComponentPropsWithRef<"textarea"> & {
+  variant?: "default" | "quiet";
+};
+export function TextArea({
+  className,
+  variant = "default",
+  ...props
+}: TextAreaProps) {
   return (
     <textarea
       {...props}
       data-slot="textarea"
+      data-variant={variant}
       className={clsx("ui-input ui-textarea", className)}
     />
   );
@@ -33,12 +40,19 @@ export function Slider({ className, ...props }: SliderProps) {
     />
   );
 }
-export type DisclosureProps = ComponentPropsWithRef<"details">;
-export function Disclosure({ className, ...props }: DisclosureProps) {
+export type DisclosureProps = ComponentPropsWithRef<"details"> & {
+  variant?: "plain" | "framed";
+};
+export function Disclosure({
+  className,
+  variant = "plain",
+  ...props
+}: DisclosureProps) {
   return (
     <details
       {...props}
       data-slot="disclosure"
+      data-variant={variant}
       className={clsx("ui-disclosure", className)}
     />
   );

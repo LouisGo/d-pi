@@ -2,6 +2,7 @@
 import { act, createElement, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
+import { I18nProvider } from "../../../../modules/preferences/renderer/public";
 import { ComponentDashboard } from "./component-dashboard";
 
 vi.mock("../../components/icons/common", async (original) => ({
@@ -24,7 +25,12 @@ async function setup(additionalPreview?: ReactNode) {
   const root = createRoot(container);
   mounted.push({ root, container });
   await act(() =>
-    root.render(createElement(ComponentDashboard, { additionalPreview })),
+    root.render(
+      createElement(I18nProvider, {
+        initialSnapshot: { preference: "zh-CN", resolvedLocale: "zh-CN" },
+        children: createElement(ComponentDashboard, { additionalPreview }),
+      }),
+    ),
   );
   const button = (label: string, within: ParentNode = container) => {
     const node = [...within.querySelectorAll<HTMLButtonElement>("button")].find(
@@ -47,6 +53,11 @@ it("shows every existing foundation component as a real preview by default", asy
   ).toEqual([
     "Button",
     "IconButton",
+    "Badge",
+    "ActionGroup",
+    "OptionAction",
+    "InlineNotice",
+    "CopyButton",
     "Checkbox",
     "TextInput",
     "TextArea",
@@ -59,11 +70,17 @@ it("shows every existing foundation component as a real preview by default", asy
     "Disclosure",
     "TabStrip",
     "ResizableSplit",
+    "EmptyState",
+    "Kbd",
+    "PathLabel",
     "Modal",
     "StatusPreview",
     "Tooltip",
     "NavigationOverlay",
     "SettingsModal",
+    "MessageHeader",
+    "ToolResultFrame",
+    "NativeInteraction",
     "Icon Layer",
   ]);
   expect(
@@ -204,7 +221,7 @@ it("includes an optional menu preview in category navigation, search and reset",
   const { container, button } = await setup(
     createElement("button", null, "菜单演示"),
   );
-  expect(container.querySelectorAll("[data-component]")).toHaveLength(21);
+  expect(container.querySelectorAll("[data-component]")).toHaveLength(32);
   expect(
     container.querySelector("#gallery-overlays [data-component='HoverMenu']"),
   ).not.toBeNull();
@@ -229,7 +246,7 @@ it("includes an optional menu preview in category navigation, search and reset",
   ).not.toBeNull();
   expect(
     container.querySelector("[data-gallery-title]")?.textContent,
-  ).toContain("1 / 21 项");
+  ).toContain("1 / 32 项");
 });
 
 it("filters by purpose and form, explains no matches and restores the full catalog", async () => {
@@ -262,7 +279,7 @@ it("filters by purpose and form, explains no matches and restores the full catal
   expect(container.querySelectorAll("[data-component]")).toHaveLength(0);
   await act(() => button("清空搜索").click());
   expect(input.value).toBe("");
-  expect(container.querySelectorAll("[data-component]")).toHaveLength(20);
+  expect(container.querySelectorAll("[data-component]")).toHaveLength(31);
 });
 
 it("groups every component in the separate right navigation with existing anchor targets", async () => {
@@ -281,6 +298,11 @@ it("groups every component in the separate right navigation with existing anchor
   ).toEqual([
     "Button",
     "IconButton",
+    "Badge",
+    "ActionGroup",
+    "OptionAction",
+    "InlineNotice",
+    "CopyButton",
     "Checkbox",
     "TextInput",
     "TextArea",
@@ -293,12 +315,18 @@ it("groups every component in the separate right navigation with existing anchor
     "Disclosure",
     "TabStrip",
     "ResizableSplit",
+    "EmptyState",
+    "Kbd",
+    "PathLabel",
     "Modal",
     "StatusPreview",
     "Tooltip",
     "NavigationOverlay",
     "SettingsModal",
     "HoverMenu",
+    "MessageHeader",
+    "ToolResultFrame",
+    "NativeInteraction",
     "Icon Layer",
   ]);
 });
@@ -309,4 +337,27 @@ it("automatically shows new Icon Layer exports without a gallery entry and keeps
   expect(icons?.textContent).toContain("FutureIcon");
   expect(icons?.querySelector("svg[data-new-icon]")).not.toBeNull();
   expect(icons?.querySelector("button")).toBeNull();
+});
+
+it("keeps index navigation inside the gallery scroll region", async () => {
+  const { container } = await setup();
+  const main = container.querySelector<HTMLElement>("[data-gallery-main]");
+  const target = container.querySelector<HTMLElement>("#gallery-icons");
+  const link = container.querySelector<HTMLAnchorElement>(
+    'a[href="#gallery-icons"]',
+  );
+  if (!main || !target || !link) throw Error("Missing gallery navigation");
+  vi.spyOn(main, "getBoundingClientRect").mockReturnValue(
+    new DOMRect(0, 44, 900, 820),
+  );
+  vi.spyOn(target, "getBoundingClientRect").mockReturnValue(
+    new DOMRect(0, 1044, 900, 300),
+  );
+  container.scrollTop = 0;
+  const event = new MouseEvent("click", { bubbles: true, cancelable: true });
+  await act(async () => link.dispatchEvent(event));
+  expect(event.defaultPrevented).toBe(true);
+  expect(main.scrollTop).toBeGreaterThan(900);
+  expect(container.scrollTop).toBe(0);
+  vi.restoreAllMocks();
 });

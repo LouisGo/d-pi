@@ -121,6 +121,10 @@ async function setup(
         }),
       }),
     };
+  bridge.submission = {
+    subscribe: () => () => {},
+    request: async () => ({ kind: "list", receipts: [] }),
+  };
   let updateLocale!: (value: {
     preference: "en-US" | "zh-CN";
     resolvedLocale: "en-US" | "zh-CN";
@@ -339,8 +343,8 @@ it("Shift+Enter inserts a source line in the real composer and remains undoable"
   expect(fixture.editor().getText()).toBe("alpha omega");
 });
 
-it("retries a confirmed interrupted chat in place without consuming the draft", async () => {
-  const fixture = await setup("interrupted");
+it("offers preparation retry only for an imported CLI chat, without consuming its draft", async () => {
+  const fixture = await setup("interrupted", undefined, undefined, "cli");
   const runtime = fixture.thread().runtime!;
   const retry = vi.spyOn(runtime, "act").mockResolvedValue();
   const container = fixture.editor().view.dom.closest("section");
@@ -350,6 +354,28 @@ it("retries a confirmed interrupted chat in place without consuming the draft", 
   expect(button).toBeDefined();
   await act(() => button?.click());
   expect(retry).toHaveBeenCalledWith("start");
+  expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha omega");
+});
+it("keeps Send and Enter available for idle CLI history, without requiring preparation retry first", async () => {
+  const fixture = await setup("interrupted", undefined, undefined, "cli");
+  const submission = fixture.thread().submission;
+  if (!submission) throw Error("missing submission");
+  const send = vi.spyOn(submission, "send").mockResolvedValue();
+  const button = fixture.container.querySelector<HTMLButtonElement>(
+    'button[aria-label="Send"]',
+  );
+  expect(button?.disabled).toBe(false);
+  await act(() => button?.click());
+  expect(send).toHaveBeenCalledOnce();
+  send.mockClear();
+  await act(() =>
+    fixture
+      .editor()
+      .view.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+      ),
+  );
+  expect(send).toHaveBeenCalledOnce();
   expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha omega");
 });
 
@@ -366,7 +392,7 @@ it("does not retry an interrupted chat until its previous process has stopped", 
   const button = Array.from(container?.querySelectorAll("button") ?? []).find(
     (b) => b.textContent === "Retry preparing chat",
   );
-  expect(button?.disabled).toBe(true);
+  expect(button).toBeUndefined();
   await act(() => button?.click());
   expect(retry).not.toHaveBeenCalled();
   expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha omega");
@@ -775,14 +801,19 @@ it("shows automatic preparation without asking the user to start OMP", async () 
     (button) => button.textContent,
   );
   expect(labels).not.toContain("Start OMP");
-  expect(fixture.container.textContent).toContain("Preparing this chat");
+  expect(fixture.container.textContent).not.toContain("Preparing this chat");
+  expect(
+    fixture.container.querySelector<HTMLButtonElement>(
+      'button[aria-label="Send"]',
+    )?.disabled,
+  ).toBe(true);
   expect(fixture.thread().controller.getTextSnapshot()).toBe("alpha omega");
 });
 
 it("offers an explicit startup retry after failure and preserves the draft until a real submission", async () => {
   const fixture = await setup("failed");
   const button = Array.from(fixture.container.querySelectorAll("button")).find(
-    (button) => button.textContent === "Retry preparing chat",
+    (button) => button.textContent === "Retry",
   );
   expect(button).toBeDefined();
   const runtime = fixture.thread().runtime;

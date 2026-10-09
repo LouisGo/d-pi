@@ -17,7 +17,10 @@
     text-overflow: ellipsis;
   }
   .ui-status-preview {
-    width: min(var(--overlay-width), calc(100vw - var(--panel-padding) * 2));
+    width: min(var(--overlay-width), var(--available-width));
+    max-height: var(--available-height);
+    overflow-y: auto;
+    overscroll-behavior: contain;
     padding: var(--panel-padding);
     background: var(--surface);
     color: var(--foreground);
@@ -37,6 +40,8 @@
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     gap: var(--layout-gap);
+    margin: 0;
+    font-variant-numeric: tabular-nums;
   }
   .ui-status-preview dt {
     color: var(--muted-foreground);

@@ -5,12 +5,15 @@
     justify-content: center;
     gap: calc(var(--layout-gap) / 2);
     min-height: var(--control-height);
+    min-width: 0;
+    max-width: 100%;
     flex-shrink: 0;
     padding: 0 calc(var(--control-padding) + var(--spacing) / 2);
     border-radius: var(--radius-pill);
     font-size: var(--text-body);
     font-weight: 500;
-    white-space: nowrap;
+    white-space: normal;
+    overflow-wrap: anywhere;
     cursor: default;
     user-select: none;
     border: 1px solid transparent;
@@ -19,6 +22,7 @@
     transition:
       background-color var(--motion-control) var(--ease-out),
       color var(--motion-control) var(--ease-out),
+      border-color var(--motion-control) var(--ease-out),
       transform var(--motion-control) var(--ease-out),
       box-shadow var(--motion-control) var(--ease-out);
   }
@@ -33,6 +37,7 @@
     place-items: center;
     gap: 0;
     width: var(--control-height);
+    height: var(--control-height);
     padding: 0;
   }
   .ui-icon-button-content {
@@ -51,7 +56,7 @@
   .ui-button-primary {
     color: var(--primary-foreground);
     background: var(--primary);
-    box-shadow: var(--shadow-filled);
+    box-shadow: var(--shadow-filled), var(--shadow-control);
   }
   .ui-button-primary:hover:not(:disabled) {
     background: var(--primary-hover);
@@ -75,6 +80,16 @@
     color: var(--foreground);
     background: transparent;
   }
+  .ui-button-subtle {
+    color: var(--foreground);
+    background: var(--muted);
+  }
+  .ui-button-subtle:hover:not(:disabled) {
+    background: var(--muted-hover);
+  }
+  .ui-button-subtle:active:not(:disabled) {
+    background: var(--background);
+  }
   .ui-button-ghost:hover:not(:disabled) {
     background: var(--muted-hover);
   }
@@ -96,6 +111,7 @@
   .ui-button-accent {
     color: var(--emphasis-foreground);
     background: var(--emphasis);
+    box-shadow: var(--shadow-filled), var(--shadow-control);
   }
   .ui-button-accent:hover:not(:disabled) {
     background: var(--emphasis-hover);
@@ -133,6 +149,8 @@
     border-radius: var(--radius-pill);
   }
   .ui-button-source {
+    min-width: 0;
+    max-width: 100%;
     border-radius: var(--radius-chip);
     padding-inline-end: var(--control-height);
   }
@@ -140,6 +158,9 @@
     width: calc(var(--control-height) * 3);
     height: calc(var(--control-height) * 3);
     padding: calc(var(--layout-gap) / 2);
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
     border-radius: var(--radius-control);
   }
   .ui-button-thumbnail img {
@@ -149,12 +170,33 @@
     border-radius: inherit;
   }
   .ui-button-chip {
-    background: var(--muted);
+    background: var(--surface-subtle);
     border-color: var(--border);
     color: var(--foreground);
+    box-shadow: var(--shadow-surface);
   }
   .ui-button-chip:hover:not(:disabled) {
     background: var(--accent);
     color: var(--accent-foreground);
+  }
+  .ui-button-option {
+    width: 100%;
+    min-width: 0;
+    justify-content: space-between;
+    align-items: center;
+    gap: calc(var(--spacing) * 3);
+    padding: calc(var(--spacing) * 3);
+    border-radius: var(--radius-control);
+    color: var(--foreground);
+    background: transparent;
+    text-align: start;
+    white-space: normal;
+  }
+  .ui-button-option:hover:not(:disabled) {
+    background: var(--surface-subtle);
+  }
+  .ui-button-option:active:not(:disabled) {
+    background: var(--accent);
+    transform: none;
   }
 }

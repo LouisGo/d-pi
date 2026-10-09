@@ -11,6 +11,7 @@
     background: var(--field);
     color: var(--foreground);
     font: inherit;
+    font-size: var(--text-body);
     line-height: var(--control-line-height);
     transition:
       background-color var(--motion-control) var(--ease-out),
@@ -23,28 +24,53 @@
     display: inline-flex;
     align-items: center;
     justify-content: space-between;
-    gap: calc(var(--spacing) * 3);
-    min-width: calc(var(--spacing) * 32);
+    gap: calc(var(--spacing) * 2.5);
+    min-width: 0;
+    text-align: start;
+    background: var(--surface);
+    box-shadow: var(--shadow-surface), var(--shadow-control);
+  }
+  .ui-select-value {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ui-select[aria-invalid="true"] {
+    border-color: var(--destructive);
   }
   .ui-select:hover:not(:disabled) {
-    background: var(--muted-hover);
+    background: var(--surface-subtle);
+    border-color: var(--border-strong);
   }
   .ui-select-chevron {
-    width: calc(var(--spacing) * 1.8);
-    height: calc(var(--spacing) * 1.8);
-    border-right: 1.5px solid currentColor;
-    border-bottom: 1.5px solid currentColor;
-    transform: rotate(45deg) translateY(-2px);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: var(--control-icon-size);
+    height: var(--control-icon-size);
     color: var(--muted-foreground);
+  }
+  :is(.ui-select-chevron, .ui-select-indicator) > svg {
+    width: 100%;
+    height: 100%;
   }
   .ui-select-positioner {
     z-index: var(--layer-popup);
     outline: none;
   }
   .ui-select-popup {
-    min-width: var(--anchor-width);
+    width: max-content;
+    min-width: min(
+      var(--available-width),
+      max(var(--anchor-width), var(--menu-min-width))
+    );
+    max-width: var(--available-width);
     max-height: var(--available-height);
     overflow: auto;
+    overscroll-behavior: contain;
+    font-size: var(--text-body);
     padding: calc(var(--spacing) * 1.5);
     border: 1px solid var(--border);
     border-radius: var(--radius);
@@ -57,14 +83,16 @@
       scale var(--motion-popup) var(--ease-out);
   }
   .ui-select-option {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--control-icon-size);
     align-items: center;
-    justify-content: space-between;
-    gap: calc(var(--spacing) * 6);
+    gap: calc(var(--spacing) * 3);
+    min-height: var(--control-height);
     padding: calc(var(--spacing) * 2) calc(var(--spacing) * 2.5);
     border-radius: var(--radius-control);
     outline: none;
     line-height: var(--control-line-height);
+    overflow-wrap: anywhere;
     transition:
       background-color var(--motion-control) var(--ease-out),
       color var(--motion-control) var(--ease-out);
@@ -74,15 +102,22 @@
     color: var(--accent-foreground);
   }
   .ui-select-indicator {
-    width: calc(var(--spacing) * 1.6);
-    height: calc(var(--spacing) * 2.8);
-    border-right: 1.5px solid currentColor;
-    border-bottom: 1.5px solid currentColor;
-    transform: rotate(45deg);
+    display: grid;
+    place-items: center;
+    width: var(--control-icon-size);
+    height: var(--control-icon-size);
+  }
+  .ui-select-indicator:not([data-selected]) {
+    visibility: hidden;
+  }
+  .ui-select-option-text {
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
   .ui-input {
     width: 100%;
     min-width: 0;
+    box-shadow: var(--shadow-inset);
   }
   .ui-input:hover:not(:disabled):not([readonly]) {
     border-color: var(--border-strong);
@@ -106,8 +141,16 @@
     font-weight: 500;
   }
   .ui-field-description {
+    margin: 0;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
     color: var(--muted-foreground);
     font-size: var(--text-small);
+  }
+  .ui-form-field > .failure {
+    margin: 0;
+    font-size: var(--text-small);
+    overflow-wrap: anywhere;
   }
   .ui-switch {
     outline: none;
@@ -139,7 +182,9 @@
     border-radius: 50%;
     background: var(--surface);
     box-shadow: var(--shadow-control);
-    transition: transform var(--motion-control) var(--ease-out);
+    transition:
+      transform var(--motion-control) var(--ease-out),
+      scale var(--motion-control) var(--ease-out);
   }
   .ui-switch[data-checked] .ui-switch-thumb {
     transform: translateX(
@@ -159,6 +204,8 @@
     background: var(--muted);
     max-width: 100%;
     overflow-x: auto;
+    border: 1px solid var(--border-soft);
+    box-shadow: var(--shadow-inset);
   }
   .ui-choice-option {
     outline: none;
@@ -180,8 +227,8 @@
   .ui-choice-option[data-checked] {
     background: var(--surface);
     color: var(--foreground);
-    border-color: var(--border-strong);
-    box-shadow: var(--shadow-control);
+    border-color: var(--border);
+    box-shadow: var(--shadow-surface), var(--shadow-control);
   }
   .ui-choice-option:hover:not([data-disabled]):not([data-checked]) {
     background: var(--muted-hover);
@@ -189,6 +236,79 @@
   }
   .ui-choice-option:active:not([data-disabled]) {
     background: var(--background);
+  }
+  .ui-radio-options {
+    display: grid;
+    gap: var(--spacing);
+    min-width: 0;
+  }
+  .ui-answer-options {
+    display: grid;
+    gap: calc(var(--spacing) * 2);
+    min-width: 0;
+  }
+  .ui-radio-option {
+    display: flex;
+    align-items: start;
+    gap: calc(var(--spacing) * 2.5);
+    min-width: 0;
+    padding: calc(var(--spacing) * 2);
+    border: 0;
+    border-radius: var(--radius-control);
+    color: var(--muted-foreground);
+    font-size: var(--text-reading);
+    line-height: var(--control-line-height);
+    text-align: start;
+    outline: none;
+    transition:
+      background-color var(--motion-control) var(--ease-out),
+      color var(--motion-control) var(--ease-out);
+  }
+  .ui-radio-circle {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: var(--radio-size);
+    height: var(--radio-size);
+    margin-block-start: calc(var(--spacing) / 2);
+    border: 1.5px solid var(--control-border);
+    border-radius: var(--radius-pill);
+  }
+  .ui-radio-dot {
+    width: var(--radio-dot-size);
+    height: var(--radio-dot-size);
+    border-radius: var(--radius-pill);
+    background: currentColor;
+  }
+  .ui-radio-copy {
+    display: grid;
+    gap: var(--spacing);
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .ui-radio-description {
+    color: var(--muted-foreground);
+    font-size: var(--text-small);
+    line-height: 1.6;
+  }
+  .ui-radio-option:hover:not([data-disabled]) {
+    background: var(--muted-hover);
+    color: var(--foreground);
+  }
+  .ui-radio-option[data-checked] {
+    color: var(--foreground);
+    background: var(--surface-subtle);
+  }
+  .ui-radio-option[data-checked] .ui-radio-circle {
+    color: var(--emphasis);
+    border-color: var(--emphasis);
+  }
+  .ui-radio-option:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: calc(-1 * var(--focus-ring-offset));
+  }
+  .ui-radio-option[data-disabled] {
+    opacity: 0.5;
   }
   .ui-select-popup:is([data-starting-style], [data-ending-style]) {
     opacity: 0;
@@ -223,9 +343,11 @@
     border-radius: 0;
     background: transparent;
     padding-inline: 0;
+    box-shadow: none;
   }
   .ui-select-list {
     overflow-y: auto;
+    overscroll-behavior: contain;
     min-height: 0;
     max-height: calc(var(--spacing) * 72);
   }
@@ -254,11 +376,12 @@
   .ui-button-secondary {
     background: var(--surface);
     color: var(--foreground);
-    border-color: var(--border-strong);
-    box-shadow: var(--shadow-control);
+    border-color: var(--border);
+    box-shadow: var(--shadow-surface), var(--shadow-control);
   }
   .ui-button-secondary:hover:not(:disabled) {
-    background: var(--muted-hover);
+    background: var(--surface-subtle);
+    border-color: var(--border-strong);
   }
   .ui-button-secondary:active:not(:disabled) {
     background: var(--accent);
@@ -272,6 +395,7 @@
   .ui-select-popup,
   .ui-select-option,
   .ui-input,
+  .ui-radio-option,
   .ui-choice-option {
     transition: none;
   }

@@ -148,6 +148,7 @@ export class RuntimeModel {
       const current = this.store.getState().view;
       if (
         kind === "allow" &&
+        requestGeneration === this.store.getState().requestGeneration &&
         this.preparationActive &&
         current?.phase === "allowed" &&
         current.trusted &&

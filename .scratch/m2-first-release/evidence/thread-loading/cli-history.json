@@ -1,0 +1,7 @@
+{
+  "duplicateRuntimeBanner": false,
+  "notice": "Connection interrupted. Your draft is retained.Retry preparing chat",
+  "overflow": false,
+  "retryPreparing": 1,
+  "sendEnabled": true
+}

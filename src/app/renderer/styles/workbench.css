@@ -1,5 +1,6 @@
 @layer components {
   .window-frame {
+    position: relative;
     display: grid;
     grid-template-rows: var(--header-height) minmax(0, 1fr) var(
         --statusbar-height
@@ -313,6 +314,8 @@
     padding: var(--panel-padding);
   }
   .ui-tooltip {
+    max-width: min(var(--overlay-width), var(--available-width));
+    overflow-wrap: anywhere;
     padding: calc(var(--layout-gap) / 2) var(--control-padding);
     color: var(--foreground);
     background: var(--surface);
@@ -425,6 +428,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: var(--layout-gap);
     flex-shrink: 0;
     height: var(--header-height);
     padding-inline: var(--panel-padding);
@@ -432,6 +436,8 @@
     -webkit-app-region: no-drag;
   }
   .settings-modal-header h2 {
+    min-width: 0;
+    overflow-wrap: anywhere;
     font-size: var(--text-title);
     font-weight: 550;
   }
@@ -494,8 +500,16 @@
 
 @layer components {
   .thread-reading {
+    position: relative;
     display: flex;
     flex-direction: column;
+  }
+  .sidebar-loading {
+    align-self: center;
+    padding-block: 0.75rem;
+  }
+  .sidebar-loading:empty {
+    display: none;
   }
   .thread-reading > .reading-pane {
     flex: 1;

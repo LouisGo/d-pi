@@ -2,10 +2,11 @@ import { match } from "ts-pattern";
 import type { ConversationItem } from "../../../modules/conversation/contracts/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import {
-  Button,
   Disclosure,
   DisclosureTrigger,
 } from "../../../modules/ui/renderer/public";
+import { CopyButton } from "../components/ui/copy-button";
+import { MessageHeader, ToolResultFrame } from "./message-parts";
 import { ReadingBody, type ReadingBodyBinding } from "./reading-body";
 export function SubagentMessage({
   item,
@@ -50,20 +51,25 @@ export function SubagentMessage({
       data-subagent-status={agent.status}
       data-subagent-parent={agent.parentToolCallId}
     >
-      <div className="message-heading">
-        <strong>
-          {t("subagents.heading")} ·{" "}
-          {item.label.kind === "literal" ? item.label.text : "OMP"}
-        </strong>
-        <span>{status}</span>
-        <Button
-          variant="ghost"
-          disabled={!item.text}
-          onClick={() => void navigator.clipboard.writeText(item.text)}
-        >
-          {t("subagents.copy")}
-        </Button>
-      </div>
+      <MessageHeader
+        title={
+          <>
+            {t("subagents.heading")} ·{" "}
+            {item.label.kind === "literal" ? item.label.text : "OMP"}
+          </>
+        }
+        status={{
+          label: status,
+          tone: agent.status === "failed" ? "danger" : "neutral",
+        }}
+        actions={
+          <CopyButton
+            label={t("subagents.copy")}
+            text={item.text}
+            disabled={!item.text}
+          />
+        }
+      />
       <p className="muted">
         {agent.nativeId}
         {agent.parentToolCallId ? ` · ${agent.parentToolCallId}` : ""}
@@ -85,14 +91,14 @@ export function SubagentMessage({
           {t("subagents.currentTool")} · {agent.currentTool}
         </p>
       )}
-      <Disclosure
+      <ToolResultFrame
         open={agent.status !== "running" && agent.status !== "pending"}
-      >
-        <DisclosureTrigger>
-          {agent.resultSource === "progress"
+        label={
+          agent.resultSource === "progress"
             ? t("subagents.progress")
-            : t("subagents.result")}
-        </DisclosureTrigger>
+            : t("subagents.result")
+        }
+      >
         {item.text ? (
           <ReadingBody
             text={item.text}
@@ -102,7 +108,7 @@ export function SubagentMessage({
         ) : (
           <p>{t("subagents.noResult")}</p>
         )}
-      </Disclosure>
+      </ToolResultFrame>
       {reason && <p role="status">{reason}</p>}
       {agent.unhandledEvent && (
         <p role="status">

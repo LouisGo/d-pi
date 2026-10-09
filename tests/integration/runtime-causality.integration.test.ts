@@ -414,6 +414,13 @@ it("confirmed idle native exit releases its Host and lets normal idle close fini
   expect(f.runtime.hasActiveWork()).toBe(false);
   await f.nativeExit();
   expect(f.runtime.hasActiveWork()).toBe(false);
+  const recoverable = await f.runtime.execute({
+    kind: "inspect",
+    threadId: f.draft.threadId,
+    traceId: TraceIdSchema.parse(crypto.randomUUID()),
+  });
+  expect(recoverable.phase).toBe("interrupted");
+  expect(recoverable.connectionGeneration).toBeUndefined();
   const count = f.commands.length;
   await f.runtime.closeIdle();
   expect(f.commands).toHaveLength(count);

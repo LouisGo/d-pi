@@ -50,8 +50,7 @@ export const domain = {
   "runtime.readyToSend": "OMP is ready. You can send text.",
   "runtime.noModel":
     "No model is available. Complete the native OMP configuration first.",
-  "runtime.disconnected":
-    "The native connection was interrupted. Your draft and history are retained without automatic resending. After shutdown is confirmed, retry preparing this chat to continue.",
+  "runtime.disconnected": "Connection interrupted. Your draft is retained.",
   "runtime.controlFailed":
     "The control request did not complete. Check the current native state; it will not be retried automatically.",
   "runtime.queuePaused":

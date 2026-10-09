@@ -1,0 +1,203 @@
+{
+  "version": "isolated-workbench",
+  "scenario": "thread",
+  "passed": true,
+  "checks": [
+    {
+      "name": "thread-light-1440-two-regions",
+      "value": {
+        "workspace": {
+          "x": 296.3984375,
+          "y": 64,
+          "width": 1127.6015625,
+          "height": 788,
+          "top": 64,
+          "right": 1424,
+          "bottom": 852,
+          "left": 296.3984375
+        },
+        "reading": {
+          "x": 296.3984375,
+          "y": 104,
+          "width": 1127.6015625,
+          "height": 606,
+          "top": 104,
+          "right": 1424,
+          "bottom": 710,
+          "left": 296.3984375
+        },
+        "composer": {
+          "x": 412.1953125,
+          "y": 720,
+          "width": 896,
+          "height": 132,
+          "top": 720,
+          "right": 1308.1953125,
+          "bottom": 852,
+          "left": 412.1953125
+        },
+        "open": false,
+        "setup": 0
+      }
+    },
+    {
+      "name": "thread-light-1440-toolbar-actions-have-a-clear-row",
+      "value": true
+    },
+    {
+      "name": "thread-light-1440-scroll-boundaries",
+      "value": true
+    },
+    {
+      "name": "thread-light-720-two-regions",
+      "value": {
+        "workspace": {
+          "x": 232.3515625,
+          "y": 60,
+          "width": 475.6484375,
+          "height": 436,
+          "top": 60,
+          "right": 708,
+          "bottom": 496,
+          "left": 232.3515625
+        },
+        "reading": {
+          "x": 232.3515625,
+          "y": 98,
+          "width": 475.6484375,
+          "height": 252,
+          "top": 98,
+          "right": 708,
+          "bottom": 350,
+          "left": 232.3515625
+        },
+        "composer": {
+          "x": 232.3515625,
+          "y": 358,
+          "width": 475.6484375,
+          "height": 138,
+          "top": 358,
+          "right": 708,
+          "bottom": 496,
+          "left": 232.3515625
+        },
+        "open": false,
+        "setup": 0
+      }
+    },
+    {
+      "name": "thread-light-720-toolbar-actions-have-a-clear-row",
+      "value": true
+    },
+    {
+      "name": "thread-light-720-scroll-boundaries",
+      "value": true
+    },
+    {
+      "name": "thread-dark-1440-two-regions",
+      "value": {
+        "workspace": {
+          "x": 296.3984375,
+          "y": 64,
+          "width": 1127.6015625,
+          "height": 788,
+          "top": 64,
+          "right": 1424,
+          "bottom": 852,
+          "left": 296.3984375
+        },
+        "reading": {
+          "x": 296.3984375,
+          "y": 104,
+          "width": 1127.6015625,
+          "height": 606,
+          "top": 104,
+          "right": 1424,
+          "bottom": 710,
+          "left": 296.3984375
+        },
+        "composer": {
+          "x": 412.1953125,
+          "y": 720,
+          "width": 896,
+          "height": 132,
+          "top": 720,
+          "right": 1308.1953125,
+          "bottom": 852,
+          "left": 412.1953125
+        },
+        "open": false,
+        "setup": 0
+      }
+    },
+    {
+      "name": "thread-dark-1440-toolbar-actions-have-a-clear-row",
+      "value": true
+    },
+    {
+      "name": "thread-dark-1440-scroll-boundaries",
+      "value": true
+    },
+    {
+      "name": "thread-dark-720-two-regions",
+      "value": {
+        "workspace": {
+          "x": 232.3515625,
+          "y": 60,
+          "width": 475.6484375,
+          "height": 436,
+          "top": 60,
+          "right": 708,
+          "bottom": 496,
+          "left": 232.3515625
+        },
+        "reading": {
+          "x": 232.3515625,
+          "y": 98,
+          "width": 475.6484375,
+          "height": 252,
+          "top": 98,
+          "right": 708,
+          "bottom": 350,
+          "left": 232.3515625
+        },
+        "composer": {
+          "x": 232.3515625,
+          "y": 358,
+          "width": 475.6484375,
+          "height": 138,
+          "top": 358,
+          "right": 708,
+          "bottom": 496,
+          "left": 232.3515625
+        },
+        "open": false,
+        "setup": 0
+      }
+    },
+    {
+      "name": "thread-dark-720-toolbar-actions-have-a-clear-row",
+      "value": true
+    },
+    {
+      "name": "thread-dark-720-scroll-boundaries",
+      "value": true
+    },
+    {
+      "name": "thread-tools-bounded",
+      "value": true
+    },
+    {
+      "name": "thread-tools-preserve-resources",
+      "value": true
+    },
+    {
+      "name": "thread-long-draft-preserves-reading-space",
+      "value": true
+    }
+  ],
+  "stderr": "\nDevTools listening on ws://127.0.0.1:62838/devtools/browser/07898654-78f9-4275-aae0-4e9946cc0829\n",
+  "limitations": [
+    "isolated GUI fixture; not packaged or system IME evidence"
+  ]
+}

@@ -7,6 +7,7 @@ import {
   DisclosureTrigger,
 } from "../../../modules/ui/renderer/public";
 import { submissionRejectionKey } from "../components/receipt-status";
+import { CopyButton } from "../components/ui/copy-button";
 
 export function Submissions({ model }: { model: SubmissionModel }) {
   const { t, formatMessage } = useI18n();
@@ -94,16 +95,10 @@ function SubmissionRecord({
           {!!receipt.content.images.length && (
             <p>{t("queue.images", { count: receipt.content.images.length })}</p>
           )}
-          <Button
-            variant="ghost"
-            onClick={() =>
-              void navigator.clipboard.writeText(
-                receipt.content?.message ?? receipt.text,
-              )
-            }
-          >
-            {t("ui.submissions.copyContent")}
-          </Button>
+          <CopyButton
+            label={t("ui.submissions.copyContent")}
+            text={receipt.content.message}
+          />
         </Disclosure>
       )}
       {receipt.retryOf && (
@@ -139,12 +134,10 @@ function SubmissionRecord({
           </Button>
         </Disclosure>
       )}
-      <Button
-        variant="ghost"
-        onClick={() => void navigator.clipboard.writeText(receipt.text)}
-      >
-        {t("ui.submissions.copyOriginal")}
-      </Button>
+      <CopyButton
+        label={t("ui.submissions.copyOriginal")}
+        text={receipt.text}
+      />
     </article>
   );
 }

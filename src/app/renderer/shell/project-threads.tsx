@@ -4,7 +4,7 @@ import { useStore } from "zustand";
 import { FolderIcon } from "@/components/icons/common";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import type { ThreadContext } from "../../../modules/threads/contracts/public";
-import { Button } from "../../../modules/ui/renderer/public";
+import { Button, LoadingIndicator } from "../../../modules/ui/renderer/public";
 import type { AppModel } from "../wiring/model";
 import { ThreadAttention } from "./attention";
 import { ChooseProjectButton } from "./choose-project-button";
@@ -40,19 +40,18 @@ export function ProjectThreads({ model }: { model: AppModel }) {
           </Button>
         </p>
       )}
-      {pending && !threads.length && (
-        <p role="status" className="muted">
-          {t("ui.history.discovering")}
-        </p>
-      )}
-      {nativeIndex && nativeIndex !== "ready" && (
+      <div className="sidebar-loading">
+        <LoadingIndicator
+          pending={(pending && !threads.length) || nativeIndex === "indexing"}
+          label={t("app.loading")}
+        />
+      </div>
+      {nativeIndex && nativeIndex !== "ready" && nativeIndex !== "indexing" && (
         <p role="status" className="muted">
           {t(
-            nativeIndex === "indexing"
-              ? "ui.history.discovering"
-              : nativeIndex === "partial"
-                ? "app.thread.indexPartial"
-                : "app.thread.indexUnavailable",
+            nativeIndex === "partial"
+              ? "app.thread.indexPartial"
+              : "app.thread.indexUnavailable",
           )}{" "}
           <Button
             variant="ghost"

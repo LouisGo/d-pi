@@ -3,6 +3,7 @@ import {
   ReadingPositions,
 } from "../../../modules/conversation/core/public";
 import type { RuntimeView } from "../../../modules/execution/contracts/public";
+import { canSubmit } from "../../../modules/execution/core/public";
 import {
   RuntimeModel,
   SubmissionModel,
@@ -40,6 +41,9 @@ export class ThreadModel {
   private active = false;
   private activationGeneration = 0;
   private automaticStartAttempted = false;
+  private hasPrepared = false;
+  private automaticRecoveryAttempted = false;
+  private preparationSuspensions = 0;
   private inspected: Promise<void> = Promise.resolve();
 
   constructor(
@@ -148,6 +152,7 @@ export class ThreadModel {
             draft.threadId,
             this.controller,
             () => this.canPrepareInput(),
+            () => this.prepareExecution(),
           )
         : null;
       this.runtimeReadingUnsubscribe =
@@ -164,7 +169,8 @@ export class ThreadModel {
   activate(): void {
     if (this.disposed || this.active) return;
     this.active = true;
-    this.runtime?.setPreparationActive(true);
+    this.automaticRecoveryAttempted = false;
+    this.runtime?.setPreparationActive(this.preparationSuspensions === 0);
     const generation = ++this.activationGeneration;
     // A grant can have changed while this cached, untrusted Thread was away.
     // Re-read admission on selection instead of asking for the same grant again.
@@ -174,21 +180,47 @@ export class ThreadModel {
         : this.inspected;
     void inspected.then(() => {
       const view = this.runtime?.getSnapshot();
-      if (
-        this.disposed ||
-        !this.active ||
-        generation !== this.activationGeneration ||
-        this.automaticStartAttempted ||
-        view?.phase !== "allowed" ||
-        !view.trusted ||
-        view.busy
-      )
-        return;
-      // A failed or uncertain startup needs an explicit retry, never a loop
-      // caused by returning to this Thread or publishing another runtime view.
-      this.automaticStartAttempted = true;
-      void this.runtime?.act("start");
+      if (generation === this.activationGeneration)
+        this.startAutomatically(view);
     });
+  }
+
+  private startAutomatically(view: RuntimeView | null | undefined): void {
+    if (
+      this.disposed ||
+      !this.active ||
+      this.preparationSuspensions > 0 ||
+      this.automaticStartAttempted ||
+      (this.hasPrepared && this.automaticRecoveryAttempted) ||
+      !view?.trusted ||
+      view.busy ||
+      !(
+        view.phase === "allowed" ||
+        (view.phase === "interrupted" &&
+          !view.connectionGeneration &&
+          this.context.origin !== "cli")
+      )
+    )
+      return;
+    this.automaticStartAttempted = true;
+    if (this.hasPrepared) this.automaticRecoveryAttempted = true;
+    void this.runtime?.act("start");
+  }
+
+  /** Closing freezes new preparation without stopping work or losing import targets. */
+  suspendPreparation(): () => void {
+    ++this.preparationSuspensions;
+    this.runtime?.setPreparationActive(false);
+    let released = false;
+    return () => {
+      if (released) return;
+      released = true;
+      --this.preparationSuspensions;
+      this.runtime?.setPreparationActive(
+        this.active && this.preparationSuspensions === 0,
+      );
+      this.startAutomatically(this.runtime?.getSnapshot());
+    };
   }
 
   deactivate(): void {
@@ -197,6 +229,58 @@ export class ThreadModel {
     ++this.activationGeneration;
     this.runtime?.setPreparationActive(false);
     this.attachmentImports?.invalidateTargets();
+  }
+
+  /** New user intent may prepare the same session; it never replays an old receipt. */
+  canSend(view = this.runtime?.getSnapshot() ?? null): boolean {
+    return (
+      canSubmit(view) ||
+      !!(
+        view?.trusted &&
+        !view.busy &&
+        !view.connectionGeneration &&
+        (view.phase === "interrupted" || view.phase === "failed")
+      )
+    );
+  }
+  private async prepareExecution(): Promise<boolean> {
+    if (this.preparationSuspensions > 0) return false;
+    if (!this.runtime) return true;
+    if (canSubmit(this.runtime.getSnapshot())) return true;
+    if (!this.active || this.disposed || !this.canSend()) return false;
+    await this.runtime.act("start");
+    return !this.disposed && canSubmit(this.runtime.getSnapshot());
+  }
+
+  /** Active or unresolved resources are work, not discardable cache entries. */
+  canEvict(): boolean {
+    if (this.active || this.controller.getSnapshot().kind !== "saved")
+      return false;
+    const runtime = this.runtime?.getSnapshot();
+    if (
+      runtime?.busy ||
+      runtime?.phase === "starting" ||
+      runtime?.control?.background ||
+      runtime?.interactions?.items.some(
+        (item) => item.status === "pending" || item.status === "unknown",
+      )
+    )
+      return false;
+    const submission = this.submission?.getSnapshot();
+    if (
+      submission?.sending ||
+      submission?.sendingText ||
+      submission?.receipts.some(
+        (receipt) =>
+          receipt.state === "prepared" ||
+          receipt.state === "dispatching" ||
+          receipt.state === "unknown" ||
+          (receipt.state === "acknowledged" &&
+            receipt.outcome === "unobserved"),
+      )
+    )
+      return false;
+    return this.canPrepareInput();
   }
 
   freezeInputSources(): () => void {
@@ -230,7 +314,10 @@ export class ThreadModel {
     if (this.disposed) return;
     const view = this.runtime?.getSnapshot();
     if (!view) return;
-    if (view.phase === "ready") this.automaticStartAttempted = false;
+    if (view.phase === "ready") {
+      this.hasPrepared = true;
+      this.automaticStartAttempted = false;
+    }
     const previous = this.previousRuntimeView;
     this.previousRuntimeView = view;
     if (
@@ -240,6 +327,7 @@ export class ThreadModel {
         (view.phase === "ready" && previous.phase !== "ready"))
     )
       this.reading.connect(view.threadId);
+    this.startAutomatically(view);
   };
 
   dispose(): void {

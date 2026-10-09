@@ -1,18 +1,20 @@
 @layer components {
   .composer {
     position: relative;
+    container-type: inline-size;
     flex-shrink: 0;
     min-width: 0;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-window);
-    box-shadow: var(--shadow-raised);
+    box-shadow: var(--shadow-surface), var(--shadow-control);
   }
   .composer-body {
     padding: var(--panel-padding) var(--panel-padding) var(--layout-gap);
   }
   .composer-context {
     display: grid;
+    min-width: 0;
     gap: var(--layout-gap);
   }
   .composer-context:empty {
@@ -61,6 +63,7 @@
   }
   .composer-import-job {
     min-width: 0;
+    overflow-wrap: anywhere;
   }
   .composer-import-job p {
     margin: 0;
@@ -79,6 +82,7 @@
     gap: var(--region-gap);
     font-size: var(--text-small);
     color: var(--muted-foreground);
+    overflow-wrap: anywhere;
   }
   .attachment-rail {
     display: grid;
