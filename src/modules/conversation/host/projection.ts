@@ -6,6 +6,7 @@ import {
 } from "../../../platform/omp/protocol/public";
 import { draftByteLength } from "../../../shared/draft-text";
 import { uiMessage } from "../../../shared/messages/contracts";
+import { nativeMessageTime } from "../contracts/message-time";
 import type {
   ConversationItem,
   ConversationSnapshot,
@@ -20,6 +21,19 @@ const ReadingIdentitySchema = z.object({
   dPiIdentityUnknown: z.boolean().optional(),
 });
 const TextSchema = z.object({ type: z.literal("text"), text: z.string() });
+const ThinkingSchema = z.object({
+  type: z.literal("thinking"),
+  thinking: z.string(),
+});
+function thinkingOf(content: unknown): string {
+  if (!Array.isArray(content)) return "";
+  return content
+    .flatMap((part: unknown) => {
+      const parsed = ThinkingSchema.safeParse(part);
+      return parsed.success ? [parsed.data.thinking] : [];
+    })
+    .join("\n");
+}
 function textOf(content: unknown): string {
   if (typeof content === "string") return content;
   if (!Array.isArray(content)) return "";
@@ -76,7 +90,10 @@ export class ConversationProjection {
       const existing = tool ?? (role === "assistant" ? this.active : null);
       const id = existing ?? this.nextId++;
       const text = textOf(message.content);
+      const thinking = role === "assistant" ? thinkingOf(message.content) : "";
       const prior = this.items.find((item) => item.id === existing);
+      const timestamp =
+        nativeMessageTime(message.timestamp) ?? prior?.timestamp;
       const continuationOf = prior?.continuationOf ?? this.interrupted;
       const identity = ReadingIdentitySchema.safeParse(message);
       if (identity.success && identity.data.dPiIdentityUnknown) this.gap = true;
@@ -106,7 +123,9 @@ export class ConversationProjection {
         id,
         role,
         text,
+        ...(thinking ? { thinking } : {}),
         state,
+        ...(timestamp !== undefined ? { timestamp } : {}),
         ...(identity.success && identity.data.dPiRecordId
           ? { nativeRecordId: identity.data.dPiRecordId }
           : {}),
@@ -121,7 +140,10 @@ export class ConversationProjection {
           : {}),
         label:
           role === "tool"
-            ? { kind: "message", value: uiMessage("conversation.toolResult") }
+            ? (prior?.label ?? {
+                kind: "message",
+                value: uiMessage("conversation.toolResult"),
+              })
             : role === "user"
               ? {
                   kind: "message",
@@ -142,7 +164,10 @@ export class ConversationProjection {
     }
     if (isNativeFrameType(frame, NativeFrameTypes.messageUpdate)) {
       const delta = z
-        .object({ type: z.literal("text_delta"), delta: z.string() })
+        .object({
+          type: z.enum(["text_delta", "thinking_delta"]),
+          delta: z.string(),
+        })
         .safeParse(frame.assistantMessageEvent);
       if (!delta.success) return;
       const id = this.active ?? this.nextId++;
@@ -162,9 +187,19 @@ export class ConversationProjection {
         role: "assistant",
         label: { kind: "literal", text: "OMP" },
         state: "streaming",
+        ...(item?.timestamp !== undefined ? { timestamp: item.timestamp } : {}),
         text: snapshot.success
           ? textOf(snapshot.data.content)
-          : (item?.text ?? "") + delta.data.delta,
+          : (item?.text ?? "") +
+            (delta.data.type === "text_delta" ? delta.data.delta : ""),
+        thinking: snapshot.success
+          ? thinkingOf(snapshot.data.content)
+          : (item?.thinking ?? "") +
+            (delta.data.type === "thinking_delta" ? delta.data.delta : ""),
+        ...(item?.nativeRecordId
+          ? { nativeRecordId: item.nativeRecordId }
+          : {}),
+        ...(item?.restored !== undefined ? { restored: item.restored } : {}),
         ...(item?.continuationOf !== undefined
           ? { continuationOf: item.continuationOf }
           : {}),
@@ -310,11 +345,23 @@ export class ConversationProjection {
     let size = draftByteLength(JSON.stringify(item)) + 1;
     if (size + 2 > this.budget) {
       const bytes = new TextEncoder().encode(item.text);
-      let limit = Math.min(bytes.length, this.budget - 512);
+      const thinkingBytes = new TextEncoder().encode(item.thinking ?? "");
+      const total = bytes.length + thinkingBytes.length;
+      let limit = Math.min(total, this.budget - 512);
       do {
+        const textLimit = total
+          ? Math.floor((limit * bytes.length) / total)
+          : 0;
         item = {
           ...item,
-          text: new TextDecoder().decode(bytes.subarray(0, limit)),
+          text: new TextDecoder().decode(bytes.subarray(0, textLimit)),
+          ...(item.thinking !== undefined
+            ? {
+                thinking: new TextDecoder().decode(
+                  thinkingBytes.subarray(0, limit - textLimit),
+                ),
+              }
+            : {}),
           truncated: true,
         };
         size = draftByteLength(JSON.stringify(item)) + 1;

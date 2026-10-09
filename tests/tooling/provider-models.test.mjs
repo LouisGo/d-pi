@@ -138,6 +138,7 @@ test("native readonly catalog exposes every login, model kinds and identities wi
     const before = readFileSync(join(f.config, "models.json"));
     const snapshot = f.command({ kind: "snapshot" });
     assert.equal(snapshot.kind, "snapshot");
+    assert.equal(snapshot.nativeBlobsDirectory, join(f.config, "blobs"));
     assert.ok(
       snapshot.providers.flatMap((provider) => provider.loginMethods).length >=
         80,

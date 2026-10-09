@@ -47,21 +47,19 @@ export const domain = {
     "Some native evidence could not be saved or correlated. Missing results remain unknown; prompts are never resent automatically.",
   "runtime.processingInput": "Processing input…",
   "runtime.resourceUnknown": "Cannot verify the Runtime resources.",
-  "runtime.readyToSend": "OMP is ready. You can send text.",
-  "runtime.noModel":
-    "No model is available. Complete the native OMP configuration first.",
+  "runtime.readyToSend": "Ready to send.",
+  "runtime.noModel": "No model is available. Add a model in settings.",
   "runtime.disconnected": "Connection interrupted. Your draft is retained.",
   "runtime.controlFailed":
     "The control request did not complete. Check the current native state; it will not be retried automatically.",
   "runtime.queuePaused":
     "The queue is paused. Consumption resumes only after you explicitly continue. Background activity still reflects its actual state.",
   "runtime.controlUpdated": "The native queue and control state were updated.",
-  "runtime.pendingInteraction":
-    "OMP is waiting for an interaction. Check the native interaction panel.",
-  "runtime.processing": "OMP is processing…",
-  "runtime.idle": "OMP is idle. You can continue sending.",
+  "runtime.pendingInteraction": "Waiting for your response.",
+  "runtime.processing": "Generating…",
+  "runtime.idle": "Ready for your next message.",
   "runtime.statusUnknown":
-    "OMP's state cannot be verified. Check its native configuration. The app will not automatically resend input or forcibly end the task.",
+    "Session state cannot be verified. Check the details; input will not be resent and the task will not be forcibly stopped.",
   "runtime.configDefault":
     "Using OMP's default configuration discovery rules and the app launch environment",
   "runtime.previousSessionReadOnly":
@@ -82,7 +80,7 @@ export const domain = {
   "runtime.recoveryBindingChanged":
     "The original session file, identity, project or native configuration changed. Check the original session and retry here; your draft is retained.",
   "runtime.recoveryOccupied":
-    "This session has an active writer, or OMP CLI is still open in this project. Close that execution and retry here; your draft is retained.",
+    "This session or project is occupied by another window or terminal. End that execution and retry here; your draft is retained.",
   "runtime.recoveryOwnerUnknown":
     "The previous execution owner could not be verified. Check again.",
   "runtime.recoveryShutdownUnconfirmed":
@@ -90,7 +88,7 @@ export const domain = {
   "runtime.recoveryLeaseUnavailable":
     "Session execution access is unavailable. Check again; if this persists, inspect diagnostics.",
   "runtime.notReady":
-    "OMP did not become ready. Check directory permission and native configuration; current evidence does not distinguish missing, unreadable, or incompatible configuration.",
+    "The session did not become ready. Check project permission and model settings; review the details for further verification.",
   "runtime.grantInvalid":
     "Directory identity or execution permission could not be verified. Sending was blocked.",
   "runtime.connectionUnknown":
@@ -159,15 +157,14 @@ export const domain = {
   "draft.transportUnknown":
     "The connection was interrupted, so the save outcome is unknown. The current input is retained; check the save state before continuing.",
   "conversation.toolResult": "Tool result",
-  "conversation.nativeInput": "Native input",
+  "conversation.nativeInput": "You",
   "conversation.nativeEvent": "Native event",
   "conversation.truncated":
-    "Display truncated; read the native record to verify the full content",
+    "Display truncated; open conversation details for the full content",
   "conversation.unsupportedNativeEvent":
     "Received {eventType}. Full interaction for this event is not yet supported.",
-  "conversation.retrying":
-    "The connection was interrupted. OMP is retrying automatically.",
+  "conversation.retrying": "The connection was interrupted. Retrying…",
   "conversation.retryCompleted":
-    "OMP automatic retry has ended. Continue reading the reply.",
-  "conversation.retryFailed": "OMP automatic retry did not succeed.",
+    "The connection has recovered. Continue reading the reply.",
+  "conversation.retryFailed": "Could not reconnect.",
 } as const;

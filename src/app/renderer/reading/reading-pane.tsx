@@ -10,6 +10,7 @@ import { useI18n } from "../../../modules/preferences/renderer/public";
 import type { ReadingView } from "../routing/search";
 import { ConversationVisibilityContext } from "../shell/layout/conversation-visibility";
 import type { ThreadModel } from "../wiring/thread-model";
+import { ConversationOutline } from "./conversation-outline";
 import { LiveReadingControls } from "./live-reading-controls";
 import { attachReadingAnchor } from "./reading-anchor";
 
@@ -45,6 +46,26 @@ export function ReadingPane({
   const [liveAnchor, setLiveAnchor] = useState<ReturnType<
     typeof attachReadingAnchor
   > | null>(null);
+  useLayoutEffect(() => {
+    const pane = ref.current;
+    const workspace = pane?.closest<HTMLElement>(".thread-workspace");
+    if (!pane || !workspace || view !== "conversation" || !active || !visible)
+      return;
+    let previous = -1;
+    const syncGutter = () => {
+      const width = pane.offsetWidth - pane.clientWidth;
+      if (width === previous) return;
+      previous = width;
+      workspace.style.setProperty("--conversation-scrollbar", `${width}px`);
+    };
+    syncGutter();
+    const observer =
+      typeof ResizeObserver === "undefined"
+        ? null
+        : new ResizeObserver(syncGutter);
+    observer?.observe(pane);
+    return () => observer?.disconnect();
+  }, [view, active, visible]);
   useLayoutEffect(() => {
     const pane = ref.current;
     if (!pane || !active || !visible) return;
@@ -86,11 +107,16 @@ export function ReadingPane({
         visible &&
         thread.reading &&
         liveAnchor && (
-          <LiveReadingControls
-            model={thread.reading}
-            anchor={liveAnchor}
-            onOpenHistory={onOpenHistory}
-          />
+          <>
+            {ref.current && (
+              <ConversationOutline pane={ref.current} anchor={liveAnchor} />
+            )}
+            <LiveReadingControls
+              model={thread.reading}
+              anchor={liveAnchor}
+              onOpenHistory={onOpenHistory}
+            />
+          </>
         )}
     </>
   );

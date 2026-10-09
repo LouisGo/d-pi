@@ -13,6 +13,7 @@ const buttonVariants = cva("ui-button", {
       round: "ui-button-round",
       thumbnail: "ui-button-thumbnail",
       source: "ui-button-source",
+      turn: "ui-button-turn",
     },
     variant: {
       default: "ui-button-primary",

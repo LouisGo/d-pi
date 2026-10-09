@@ -44,18 +44,18 @@ export const domain = {
     "部分原生证据未能保存或关联。缺少的结果保持未知，不会自动重发输入。",
   "runtime.processingInput": "正在处理输入…",
   "runtime.resourceUnknown": "Runtime 资源无法确认。",
-  "runtime.readyToSend": "OMP 已就绪，可发送文字。",
-  "runtime.noModel": "没有可用模型，请先补齐原生 OMP 配置。",
+  "runtime.readyToSend": "可以发送消息。",
+  "runtime.noModel": "没有可用模型，请在设置中添加。",
   "runtime.disconnected": "连接已中断，草稿已保留。",
   "runtime.controlFailed": "控制请求未完成，请核对当前原生状态；不会自动重试。",
   "runtime.queuePaused":
     "已暂缓队列；明确继续后恢复消费。后台活动仍按实际状态显示。",
   "runtime.controlUpdated": "原生队列与控制状态已更新。",
-  "runtime.pendingInteraction": "OMP 正在等待交互，请查看原生交互面板。",
-  "runtime.processing": "OMP 正在处理…",
-  "runtime.idle": "OMP 已空闲，可继续发送。",
+  "runtime.pendingInteraction": "正在等待你的回答。",
+  "runtime.processing": "正在生成…",
+  "runtime.idle": "可以继续发送消息。",
   "runtime.statusUnknown":
-    "OMP 状态无法确认。请检查原生配置，应用不会自动重发或强行结束任务。",
+    "会话状态无法确认。请查看详情；不会自动重发或强行结束任务。",
   "runtime.configDefault": "沿用 OMP 默认配置发现规则与应用启动环境",
   "runtime.previousSessionReadOnly":
     "此会话已有关联的原生会话。无法确认原生会话的执行全周期独占，当前只读历史；不会强占或新建会话替代。关闭外部 CLI 也不等于已经获得独占证明。",
@@ -72,14 +72,14 @@ export const domain = {
   "runtime.recoveryBindingChanged":
     "原会话文件、身份、项目或原生配置已变化。检查原会话后在这里重试，输入内容会保留。",
   "runtime.recoveryOccupied":
-    "原会话有活跃写入者，或此项目仍开着 OMP CLI。结束该执行后在这里重试，输入内容会保留。",
+    "原会话或所在项目正由其他窗口或终端占用。结束该执行后可重试，输入内容会保留。",
   "runtime.recoveryOwnerUnknown": "暂时无法确认原执行实例身份。请重新检查。",
   "runtime.recoveryShutdownUnconfirmed":
     "尚未确认原执行进程已停止。请重新检查。",
   "runtime.recoveryLeaseUnavailable":
     "无法取得原会话执行权限。请重新检查；仍失败时查看诊断。",
   "runtime.notReady":
-    "OMP 未能就绪。请检查目录授权与原生配置；当前证据无法确定配置缺失、不可读或格式不兼容。",
+    "会话未能就绪。请检查项目授权与模型设置，可查看详情进一步核对。",
   "runtime.grantInvalid": "目录身份或执行授权无法确认，已阻止发送。",
   "runtime.connectionUnknown":
     "连接状态无法确认。草稿仍保留，请重新检查状态；不会自动发送。",
@@ -134,12 +134,12 @@ export const domain = {
   "draft.transportUnknown":
     "连接中断，保存结果未确认。当前输入已保留，请核对保存状态后继续。",
   "conversation.toolResult": "工具结果",
-  "conversation.nativeInput": "原生输入",
+  "conversation.nativeInput": "你",
   "conversation.nativeEvent": "原生事件",
-  "conversation.truncated": "显示已截断；可读取原生记录核对",
+  "conversation.truncated": "显示已截断，可在会话详情中查看完整内容",
   "conversation.unsupportedNativeEvent":
     "收到 {eventType}。此类事件的完整交互尚未接入。",
-  "conversation.retrying": "连接中断，OMP 正在自动重试。",
-  "conversation.retryCompleted": "OMP 自动重试已结束，继续查看回复。",
-  "conversation.retryFailed": "OMP 自动重试未成功。",
+  "conversation.retrying": "连接中断，正在重试…",
+  "conversation.retryCompleted": "连接已恢复，可继续查看回复。",
+  "conversation.retryFailed": "未能重新连接。",
 } as const;

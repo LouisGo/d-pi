@@ -6,12 +6,14 @@ import {
   GitRequestSchema,
 } from "../../../modules/changes/contracts/public";
 import {
+  HistoryImageRequestSchema,
   HistoryRequestSchema,
   ProjectHistoryRequestSchema,
 } from "../../../modules/conversation/contracts/public";
 import {
   listProjectNativeHistory,
   readNativeHistory,
+  readNativeImage,
   readProjectNativeHistory,
 } from "../../../modules/conversation/main/public";
 import {
@@ -32,6 +34,7 @@ import {
 } from "../../../shared/read-operation";
 import type { AppStorage } from "../wiring/app-storage";
 import type { ProjectReadContext } from "./context";
+import { presentSavedInput } from "./history-presentation";
 
 type ActiveThread = NonNullable<
   ReturnType<AppStorage["threads"]["activeThread"]>
@@ -143,8 +146,13 @@ export function registerHistoryIpc(context: ProjectReadContext): void {
       },
     );
   });
-  context.ipcMain.handle("history:read", async (event, raw: unknown) => {
-    const { threadId, cursor } = HistoryRequestSchema.parse(raw);
+  const boundRead = async (
+    event: Parameters<ProjectReadContext["sourceValid"]>[0],
+    request:
+      | ReturnType<typeof HistoryRequestSchema.parse>
+      | ReturnType<typeof HistoryImageRequestSchema.parse>,
+  ) => {
+    const { threadId, cursor } = request;
     const thread = activeThreadFor(
       context,
       event,
@@ -153,8 +161,70 @@ export function registerHistoryIpc(context: ProjectReadContext): void {
     );
     const binding = context.getStore()?.threads.nativeSessionBinding(threadId);
     if (!binding) return { kind: "unavailable", reason: "unbound" };
-    if (binding.origin !== "cli")
-      return readNativeHistory(context.nativeSessionsPath(), binding, cursor);
+    const bindingCurrent = () => {
+      activeThreadFor(context, event, "Invalid history source", threadId);
+      const current = context
+        .getStore()
+        ?.threads.nativeSessionBinding(threadId);
+      return (
+        current?.sessionId === binding.sessionId &&
+        current.configContextId === binding.configContextId &&
+        current.sessionFile === binding.sessionFile
+      );
+    };
+    const read = async (root: string, directory?: string) => {
+      if ("recordId" in request) {
+        const blobsDirectory = await context.nativeBlobsPath?.(
+          threadId,
+          request.traceId,
+        );
+        if (!bindingCurrent())
+          return { kind: "unavailable", reason: "changed" } as const;
+        const image = await readNativeImage(
+          root,
+          binding,
+          request.cursor,
+          request.recordId,
+          request.index,
+          directory,
+          blobsDirectory ?? undefined,
+        );
+        return bindingCurrent()
+          ? image
+          : ({ kind: "unavailable", reason: "changed" } as const);
+      }
+      const page = await readNativeHistory(
+        root,
+        binding,
+        cursor,
+        undefined,
+        directory,
+      );
+      if (!bindingCurrent())
+        return { kind: "unavailable", reason: "changed" } as const;
+      if (page.kind !== "page") return page;
+      return {
+        ...page,
+        entries: page.entries.map((entry) => {
+          if (
+            entry.role !== "user" ||
+            !/(?:\[image: |\[\/attachment\])/.test(entry.text)
+          )
+            return entry;
+          const candidates =
+            context
+              .getStore()
+              ?.submissions?.presentationCandidates(
+                threadId,
+                binding.sessionId,
+                binding.configContextId,
+                entry.text,
+              ) ?? [];
+          return presentSavedInput(entry, binding, candidates);
+        }),
+      };
+    };
+    if (binding.origin !== "cli") return read(context.nativeSessionsPath());
     const root = await context.indexedNativeSessionsPath?.(randomUUID());
     activeThreadFor(context, event, "Invalid history source", threadId);
     if (!root || !binding.historyRoot)
@@ -165,12 +235,21 @@ export function registerHistoryIpc(context: ProjectReadContext): void {
     } catch {
       return { kind: "unavailable", reason: "denied" };
     }
-    return readNativeHistory(
-      root,
-      binding,
-      cursor,
-      undefined,
-      thread.directory,
+    return read(root, thread.directory);
+  };
+  context.ipcMain.handle("history:read", (event, raw: unknown) =>
+    boundRead(event, HistoryRequestSchema.parse(raw)),
+  );
+  context.ipcMain.handle("history:image", (event, raw: unknown) => {
+    const request = HistoryImageRequestSchema.parse(raw);
+    return recordRead(
+      context,
+      {
+        traceId: request.traceId,
+        threadId: request.threadId,
+        operation: "history:image",
+      },
+      () => boundRead(event, request),
     );
   });
 }

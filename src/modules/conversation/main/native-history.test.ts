@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import {
   appendFileSync,
   mkdirSync,
@@ -10,7 +11,116 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, it } from "vitest";
-import { readNativeHistory } from "./native-history";
+import { readNativeHistory, readNativeImage } from "./native-history";
+
+it.each(["inline", "blob"])(
+  "retains real times and lazy %s image references while leaving the native file untouched",
+  async (format) => {
+    const root = mkdtempSync(join(tmpdir(), "d-pi-history-media-"));
+    const threadId = crypto.randomUUID();
+    mkdirSync(join(root, threadId));
+    const sessionFile = join(root, threadId, "session.jsonl");
+    const binding = {
+      threadId,
+      configContextId: "fixture",
+      sessionId: "session",
+      sessionFile,
+    };
+    const timestamp = 1791500000000;
+    const data =
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jfX8AAAAASUVORK5CYII=";
+    const digest = createHash("sha256")
+      .update(Buffer.from(data, "base64"))
+      .digest("hex");
+    const blobs = join(root, "blobs");
+    mkdirSync(blobs);
+    writeFileSync(join(blobs, digest), Buffer.from(data, "base64"));
+    const body =
+      [
+        { type: "session", version: 3, id: "session" },
+        {
+          type: "message",
+          id: "image-user",
+          parentId: null,
+          timestamp: new Date(timestamp).toISOString(),
+          message: {
+            role: "user",
+            timestamp,
+            content: [
+              { type: "text", text: "What is this?\n[image: shot.png]\n" },
+              {
+                type: "image",
+                mimeType: "image/png",
+                data: format === "blob" ? `blob:sha256:${digest}` : data,
+              },
+            ],
+          },
+        },
+      ]
+        .map((value) => JSON.stringify(value))
+        .join("\n") + "\n";
+    writeFileSync(sessionFile, body);
+    try {
+      const page = await readNativeHistory(root, binding);
+      if (page.kind !== "page") throw Error("missing page");
+      const entry = page.entries[0];
+      expect(entry).toMatchObject({
+        timestamp,
+        displayText: "What is this?",
+        images: [{ index: 0, mimeType: "image/png", name: "shot.png", digest }],
+      });
+      expect(JSON.stringify(page)).not.toContain(data);
+      expect(entry?.mediaCursor).toBeDefined();
+      const image = await readNativeImage(
+        root,
+        binding,
+        entry!.mediaCursor!,
+        entry!.id,
+        0,
+        undefined,
+        blobs,
+      );
+      expect(image).toEqual({
+        kind: "image",
+        dataUrl: `data:image/png;base64,${data}`,
+      });
+      if (format === "blob") {
+        expect(
+          await readNativeImage(
+            root,
+            binding,
+            entry!.mediaCursor!,
+            entry!.id,
+            0,
+          ),
+        ).toMatchObject({ kind: "unavailable" });
+        writeFileSync(join(blobs, digest), Buffer.from("wrong bytes"));
+        expect(
+          await readNativeImage(
+            root,
+            binding,
+            entry!.mediaCursor!,
+            entry!.id,
+            0,
+            undefined,
+            blobs,
+          ),
+        ).toMatchObject({ kind: "unavailable", reason: "changed" });
+      }
+      expect(
+        await readNativeImage(root, binding, entry!.mediaCursor!, "wrong", 0),
+      ).toMatchObject({ kind: "unavailable" });
+      expect(readFileSync(sessionFile, "utf8")).toBe(body);
+      renameSync(sessionFile, `${sessionFile}.old`);
+      writeFileSync(sessionFile, body);
+      expect(
+        await readNativeImage(root, binding, entry!.mediaCursor!, entry!.id, 0),
+      ).toMatchObject({ kind: "unavailable", reason: "changed" });
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  },
+);
 
 it("reads bound native v3 history without modifying it, retaining branch identities and incomplete tail", async () => {
   const root = mkdtempSync(join(tmpdir(), "d-pi-history-"));
@@ -46,7 +156,11 @@ it("reads bound native v3 history without modifying it, retaining branch identit
         parentId: "a",
         message: {
           role: "assistant",
-          content: [{ type: "text", text: "answer" }],
+          content: [
+            { type: "thinking", thinking: "reasoning" },
+            { type: "text", text: "answer" },
+          ],
+          stopReason: "aborted",
         },
       },
       {
@@ -73,7 +187,14 @@ it("reads bound native v3 history without modifying it, retaining branch identit
       kind: "page",
       entries: [
         { id: "a", parentId: null, role: "user", text: "A" },
-        { id: "b", parentId: "a", role: "assistant", text: "answer" },
+        {
+          id: "b",
+          parentId: "a",
+          role: "assistant",
+          text: "answer",
+          thinking: "reasoning",
+          state: "aborted",
+        },
         {
           id: "c",
           role: "toolResult",

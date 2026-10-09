@@ -1,0 +1,353 @@
+{
+  "commit": "03fe044306d67bf1a6f9dc9ae93181241c8f668f",
+  "dirty": true,
+  "passed": true,
+  "captured": true,
+  "platform": "darwin",
+  "mode": "isolated Electron Renderer; production views and synthetic bridge; no provider requests",
+  "results": [
+    {
+      "name": "light 1440 alignment and overflow",
+      "geometry": {
+        "timeline": {
+          "left": 412.1953125,
+          "right": 1308.1953125,
+          "width": 896
+        },
+        "composer": {
+          "left": 412.1953125,
+          "right": 1308.1953125,
+          "width": 896
+        },
+        "pane": {
+          "left": 296.3984375,
+          "right": 1424,
+          "width": 1127.6015625
+        },
+        "pageOverflow": false,
+        "bubbles": [
+          {
+            "left": 946.1953125,
+            "right": 1308.1953125,
+            "width": 362
+          },
+          {
+            "left": 839.8828125,
+            "right": 1308.1953125,
+            "width": 468.3125
+          },
+          {
+            "left": 1111.1953125,
+            "right": 1308.1953125,
+            "width": 197
+          }
+        ],
+        "visibleOMP": false
+      },
+      "codeStyle": {
+        "frame": {
+          "border": "1px",
+          "padding": "0px",
+          "background": "rgb(247, 247, 248)"
+        },
+        "body": {
+          "border": "0px",
+          "padding": "12px",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        "actions": {
+          "border": "0px",
+          "padding": "0px",
+          "background": "rgba(0, 0, 0, 0)"
+        }
+      },
+      "media": {
+        "above": true,
+        "clean": true,
+        "time": "2026-10-09T09:00:00.000Z",
+        "timeVisible": "1",
+        "noQueue": true,
+        "stop": true,
+        "thumbnails": [
+          {
+            "natural": 2298,
+            "overflow": false
+          },
+          {
+            "natural": 778,
+            "overflow": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "light 720 alignment and overflow",
+      "geometry": {
+        "timeline": {
+          "left": 276.3515625,
+          "right": 664,
+          "width": 387.6484375
+        },
+        "composer": {
+          "left": 276.3515625,
+          "right": 664,
+          "width": 387.6484375
+        },
+        "pane": {
+          "left": 236.3515625,
+          "right": 704,
+          "width": 467.6484375
+        },
+        "pageOverflow": false,
+        "bubbles": [
+          {
+            "left": 334.5,
+            "right": 664,
+            "width": 329.5
+          },
+          {
+            "left": 334.5,
+            "right": 664,
+            "width": 329.5
+          },
+          {
+            "left": 467,
+            "right": 664,
+            "width": 197
+          }
+        ],
+        "visibleOMP": false
+      },
+      "codeStyle": {
+        "frame": {
+          "border": "1px",
+          "padding": "0px",
+          "background": "rgb(247, 247, 248)"
+        },
+        "body": {
+          "border": "0px",
+          "padding": "12px",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        "actions": {
+          "border": "0px",
+          "padding": "0px",
+          "background": "rgba(0, 0, 0, 0)"
+        }
+      },
+      "media": {
+        "above": true,
+        "clean": true,
+        "time": "2026-10-09T09:00:00.000Z",
+        "timeVisible": "1",
+        "noQueue": true,
+        "stop": true,
+        "thumbnails": [
+          {
+            "natural": 2298,
+            "overflow": false
+          },
+          {
+            "natural": 778,
+            "overflow": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "dark 1440 alignment and overflow",
+      "geometry": {
+        "timeline": {
+          "left": 412.1953125,
+          "right": 1308.1953125,
+          "width": 896
+        },
+        "composer": {
+          "left": 412.1953125,
+          "right": 1308.1953125,
+          "width": 896
+        },
+        "pane": {
+          "left": 296.3984375,
+          "right": 1424,
+          "width": 1127.6015625
+        },
+        "pageOverflow": false,
+        "bubbles": [
+          {
+            "left": 946.1953125,
+            "right": 1308.1953125,
+            "width": 362
+          },
+          {
+            "left": 839.8828125,
+            "right": 1308.1953125,
+            "width": 468.3125
+          },
+          {
+            "left": 1111.1953125,
+            "right": 1308.1953125,
+            "width": 197
+          }
+        ],
+        "visibleOMP": false
+      },
+      "codeStyle": {
+        "frame": {
+          "border": "1px",
+          "padding": "0px",
+          "background": "rgb(40, 41, 46)"
+        },
+        "body": {
+          "border": "0px",
+          "padding": "12px",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        "actions": {
+          "border": "0px",
+          "padding": "0px",
+          "background": "rgba(0, 0, 0, 0)"
+        }
+      },
+      "media": {
+        "above": true,
+        "clean": true,
+        "time": "2026-10-09T09:00:00.000Z",
+        "timeVisible": "1",
+        "noQueue": true,
+        "stop": true,
+        "thumbnails": [
+          {
+            "natural": 2298,
+            "overflow": false
+          },
+          {
+            "natural": 778,
+            "overflow": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "dark 720 alignment and overflow",
+      "geometry": {
+        "timeline": {
+          "left": 276.3515625,
+          "right": 664,
+          "width": 387.6484375
+        },
+        "composer": {
+          "left": 276.3515625,
+          "right": 664,
+          "width": 387.6484375
+        },
+        "pane": {
+          "left": 236.3515625,
+          "right": 704,
+          "width": 467.6484375
+        },
+        "pageOverflow": false,
+        "bubbles": [
+          {
+            "left": 334.5,
+            "right": 664,
+            "width": 329.5
+          },
+          {
+            "left": 334.5,
+            "right": 664,
+            "width": 329.5
+          },
+          {
+            "left": 467,
+            "right": 664,
+            "width": 197
+          }
+        ],
+        "visibleOMP": false
+      },
+      "codeStyle": {
+        "frame": {
+          "border": "1px",
+          "padding": "0px",
+          "background": "rgb(40, 41, 46)"
+        },
+        "body": {
+          "border": "0px",
+          "padding": "12px",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        "actions": {
+          "border": "0px",
+          "padding": "0px",
+          "background": "rgba(0, 0, 0, 0)"
+        }
+      },
+      "media": {
+        "above": true,
+        "clean": true,
+        "time": "2026-10-09T09:00:00.000Z",
+        "timeVisible": "1",
+        "noQueue": true,
+        "stop": true,
+        "thumbnails": [
+          {
+            "natural": 2298,
+            "overflow": false
+          },
+          {
+            "natural": 778,
+            "overflow": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "hover and keyboard actions without layout shift",
+      "hidden": "0",
+      "hovered": "1",
+      "focused": "1",
+      "stableHeight": 185.5
+    },
+    {
+      "name": "native thinking disclosure",
+      "passed": true
+    },
+    {
+      "name": "turn positioning and stream takeover",
+      "jump": {
+        "top": -0.109375,
+        "scroll": 842,
+        "active": "user-2"
+      },
+      "retained": {
+        "before": 842,
+        "after": 842,
+        "top": -0.109375
+      }
+    },
+    {
+      "name": "turn question and answer preview bounds",
+      "hover": {
+        "left": 352.6199951171875,
+        "right": 644.6600341796875,
+        "top": 335.4599914550781,
+        "bottom": 478.5246887207031,
+        "overflow": false,
+        "reply": true
+      }
+    },
+    {
+      "name": "back to bottom",
+      "passed": true
+    },
+    {
+      "name": "frozen file and saved image previews",
+      "passed": true
+    },
+    {
+      "name": "composer stop uses existing control",
+      "passed": true
+    }
+  ]
+}

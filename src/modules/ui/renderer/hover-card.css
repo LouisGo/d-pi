@@ -1,0 +1,41 @@
+@layer components {
+  .ui-hover-card-positioner {
+    z-index: var(--layer-popup);
+    max-width: var(--available-width);
+    outline: none;
+  }
+  .ui-hover-card-popup {
+    display: flex;
+    width: min(var(--overlay-width), var(--available-width));
+    max-height: min(calc(var(--control-height) * 10), var(--available-height));
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--foreground);
+    font-size: var(--text-body);
+    box-shadow: var(--shadow-raised);
+    outline: none;
+    transform-origin: var(--transform-origin);
+    transition:
+      opacity var(--motion-popup) var(--ease-out),
+      scale var(--motion-popup) var(--ease-out);
+  }
+  .ui-hover-card-popup[data-starting-style],
+  .ui-hover-card-popup[data-ending-style] {
+    opacity: 0;
+    scale: 0.98;
+  }
+  .ui-hover-card-popup[data-instant] {
+    transition: none;
+  }
+  .ui-hover-card-popup:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-ring-offset);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ui-hover-card-popup {
+      transition: none;
+    }
+  }
+}

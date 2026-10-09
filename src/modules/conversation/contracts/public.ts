@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { UiMessageSchema } from "../../../shared/messages/contracts";
+import { MessageTimestampSchema } from "./message-time";
 
 export * from "./history";
 export const ConversationLabelSchema = z.discriminatedUnion("kind", [
@@ -42,6 +43,8 @@ export const ConversationItemSchema = z.strictObject({
   id: z.number().int().nonnegative(),
   role: z.enum(["user", "assistant", "tool", "notice", "subagent"]),
   text: z.string(),
+  thinking: z.string().optional(),
+  timestamp: MessageTimestampSchema.optional(),
   state: z.enum(["streaming", "complete", "failed", "aborted"]),
   detail: z.string().max(4096).optional(),
   continuationOf: z.number().int().nonnegative().optional(),

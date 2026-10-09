@@ -171,7 +171,7 @@ export const ui = {
   "ui.conversation.newOutput": "New output",
   "ui.conversation.toBottom": "Back to list bottom",
   "ui.conversation.retainedTail": "Go to the retained live list bottom.",
-  "ui.conversation.openHistory": "View native history",
+  "ui.conversation.openHistory": "Conversation details",
   "ui.history.readOnlyCoverage":
     "Native history is read-only and paged in saved order, separately from the live list.",
   "ui.history.refreshStart":
@@ -558,7 +558,7 @@ export const ui = {
     "Stopping the current execution. Wait for confirmation before sending.",
   "composer.blocked.interaction":
     "Resolve the pending or uncertain native interaction in execution controls before sending.",
-  "ui.runtime.phase.noModel": "OMP started · no active model",
+  "ui.runtime.phase.noModel": "No active model",
 
   "ui.history.openCli": "View this project’s existing CLI history",
   "ui.history.projectDescription":
@@ -587,7 +587,7 @@ export const ui = {
     "Native chat indexing is unavailable. Existing chats remain accessible.",
   "composer.blocked.preparing": "Preparing this chat…",
   "composer.blocked.start":
-    "The session has not started. Start OMP before sending.",
+    "The session is not ready yet. Connect before sending.",
   "composer.blocked.allow": "Allow project execution to start the session.",
   "composer.blocked.wait":
     "The session is not ready. Check its execution status.",
@@ -718,16 +718,29 @@ export const ui = {
   "composer.steer": "Steer current execution",
   "composer.queueFull":
     "Queue full ({queued}/{cap}). Wait for an item to be processed before sending; your draft is preserved.",
+  "ui.conversation.details": "Details",
+  "ui.conversation.generating": "Generating response",
+  "ui.conversation.thinking": "Thinking",
+  "ui.conversation.thinkingActive": "Thinking…",
+  "ui.conversation.turns": "Conversation turns",
+  "ui.conversation.jumpToTurn": "Go to turn {number}: {preview}",
+  "ui.conversation.turnNumber": "Turn {number}",
+  "ui.conversation.questionWithoutText": "This turn has no text question.",
+  "ui.conversation.copyCode": "Copy code",
   "ui.conversation.image": "[Image: {alt}]",
   "ui.conversation.imageNotLoaded": "not loaded",
-  "ui.conversation.sectionLabel": "Native session reader",
+  "ui.conversation.sectionLabel": "Conversation",
   "ui.conversation.heading": "Conversation",
   "ui.conversation.empty": "No messages yet.",
   "ui.conversation.gap":
-    "The live view has a gap. Check native history; returning to the bottom does not fill it.",
+    "Some messages are unavailable. Open conversation details to check.",
   "ui.conversation.streaming": "In progress",
   "ui.conversation.failed": "Failed",
   "ui.conversation.copy": "Copy",
+  "ui.conversation.imageNumber": "Image {number}",
+  "ui.conversation.mediaUnavailable": "Preview unavailable",
+  "composer.stopResponse": "Stop response",
+  "composer.resumeQueue": "Continue sending",
   "ui.conversation.toolOutput": "View tool output",
   "ui.conversation.waitingResult": "Waiting for result…",
   "ui.submissions.sectionLabel": "Submission records",
@@ -737,33 +750,33 @@ export const ui = {
     "A call receipt does not mean the request was accepted or the task is complete. Check an unknown result before sending again.",
   "ui.submissions.checkStatus": "Check submission status",
   "ui.submissions.rejected.contentMissing":
-    "Not dispatched to OMP: Image resources are missing. Attach the original again. Your input is retained.",
+    "Not sent: Image resources are missing. Attach the original again. Your input is retained.",
   "ui.interaction.rejected.contentMissing":
-    "Not dispatched to OMP: Image resources are missing. Attach the original again. Your input is retained.",
+    "Not sent: Image resources are missing. Attach the original again. Your input is retained.",
   "ui.submissions.rejected.contentCorrupt":
-    "Not dispatched to OMP: Image resource integrity verification failed. Attach the original again. Your input is retained.",
+    "Not sent: Image resource integrity verification failed. Attach the original again. Your input is retained.",
   "ui.interaction.rejected.contentCorrupt":
-    "Not dispatched to OMP: Image resource integrity verification failed. Attach the original again. Your input is retained.",
+    "Not sent: Image resource integrity verification failed. Attach the original again. Your input is retained.",
   "ui.submissions.rejected.transportTooLarge":
-    "Not dispatched to OMP: Image content exceeds the application transport budget. Reduce attachments. Your input is retained.",
+    "Not sent: Image content exceeds the application transport budget. Reduce attachments. Your input is retained.",
   "ui.interaction.rejected.transportTooLarge":
-    "Not dispatched to OMP: Image content exceeds the application transport budget. Reduce attachments. Your input is retained.",
+    "Not sent: Image content exceeds the application transport budget. Reduce attachments. Your input is retained.",
   "ui.submissions.rejected":
-    "Not dispatched to OMP; original text preserved. Resolve the blocker before resending.",
+    "Not sent; original text preserved. Resolve the blocker before resending.",
   "ui.submissions.rejected.notReady":
-    "Not dispatched to OMP: the session has no ready model. Original text preserved; check the runtime status first.",
+    "Not sent: the session has no ready model. Original text preserved; check the runtime status first.",
   "ui.submissions.rejected.nativeUnavailable":
-    "Not dispatched to OMP: the native session is not connected. Original text preserved; check the runtime status first.",
+    "Not sent: the native session is not connected. Original text preserved; check the runtime status first.",
   "ui.submissions.rejected.unsupportedNativeCommand":
-    "Not dispatched to OMP: this text is a managed native command and cannot go through the composer. Original text preserved.",
+    "Not sent: this text is a managed native command and cannot go through the composer. Original text preserved.",
   "ui.submissions.rejected.paused":
-    "Not dispatched to OMP: the native queue is paused. Original text preserved; explicitly continue before sending again.",
+    "Not sent: the native queue is paused. Original text preserved; explicitly continue before sending again.",
   "ui.submissions.rejected.interactionPending":
-    "Not dispatched to OMP: a native dialog is waiting for an answer. Original text preserved; handle the pending question first.",
+    "Not sent: a native dialog is waiting for an answer. Original text preserved; handle the pending question first.",
   "ui.submissions.rejected.staleTarget":
-    "Not dispatched to OMP: the submission targeted an older session instance. Original text preserved; check the current runtime status before sending again.",
+    "Not sent: the submission targeted an older session instance. Original text preserved; check the current runtime status before sending again.",
   "ui.submissions.rejected.correlationLimit":
-    "Not dispatched to OMP: too many dispatches are still unconfirmed. Original text preserved; check the existing submission states first.",
+    "Not sent: too many dispatches are still unconfirmed. Original text preserved; check the existing submission states first.",
   "ui.submissions.acknowledged": "Call receipt received",
   "ui.submissions.prepared": "Saved, not dispatched",
   "ui.submissions.dispatching": "Dispatched, awaiting receipt",
@@ -811,11 +824,11 @@ export const ui = {
   "ui.runtime.loading": "Reading project execution status…",
   "ui.runtime.phase.browse": "Browse only",
   "ui.runtime.phase.allowed": "Project execution allowed",
-  "ui.runtime.phase.starting": "Starting OMP",
-  "ui.runtime.phase.busy": "OMP is working",
-  "ui.runtime.phase.ready": "OMP is ready",
+  "ui.runtime.phase.starting": "Connecting",
+  "ui.runtime.phase.busy": "Generating",
+  "ui.runtime.phase.ready": "Ready",
   "ui.runtime.phase.interrupted": "Connection interrupted",
-  "ui.runtime.phase.failed": "OMP is not ready",
+  "ui.runtime.phase.failed": "Connection unavailable",
   "ui.runtime.sectionLabel": "Project execution",
   "ui.runtime.model": "Model: {model}",
   "ui.runtime.queuePaused":

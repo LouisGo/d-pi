@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import type { ConversationItem } from "../../../modules/conversation/contracts/public";
@@ -7,9 +8,19 @@ import {
   readingSourceKey,
 } from "../../../modules/conversation/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import { Button, EmptyState } from "../../../modules/ui/renderer/public";
-import { CopyButton } from "../components/ui/copy-button";
-import { MessageHeader, ToolResultFrame } from "./message-parts";
+import {
+  Button,
+  Disclosure,
+  DisclosureTrigger,
+  EmptyState,
+} from "../../../modules/ui/renderer/public";
+import {
+  MessageActions,
+  MessageStatus,
+  ThinkingDisclosure,
+  ToolResultFrame,
+  UserMessageBubble,
+} from "./message-parts";
 import { ReadingBody } from "./reading-body";
 import { SubagentMessage } from "./subagents";
 
@@ -32,10 +43,6 @@ export function Conversation({
     (state) => state.view?.connectionGeneration,
   );
   const gap = useStore(model.stateStore, (state) => state.view?.gap ?? false);
-  const truncated = useStore(
-    model.stateStore,
-    (state) => state.view?.items.some((item) => item.truncated) ?? false,
-  );
   const exhausted = useStore(
     model.stateStore,
     (state) => state.resyncExhausted,
@@ -111,18 +118,25 @@ export function ConversationItemView({
   rowId,
   positions,
   source,
+  evidence,
+  displayText,
+  media,
 }: {
   item: ConversationItem;
   rowId: string | number;
   positions?: ReadingPositions | undefined;
   source?: string | undefined;
+  evidence?: ReactNode;
+  displayText?: string | undefined;
+  media?: ReactNode;
 }) {
   const { t, formatMessage } = useI18n();
   const position =
     positions && source
       ? { positions, key: JSON.stringify([source, rowId]) }
       : undefined;
-  if (item.subagent) return <SubagentMessage item={item} position={position} />;
+  if (item.subagent)
+    return <SubagentMessage item={item} position={position} rowId={rowId} />;
   if (item.subagentNotice)
     return (
       <p role="status" data-reading-row={rowId}>
@@ -131,41 +145,102 @@ export function ConversationItemView({
           : t("subagents.observationUnavailable")}
       </p>
     );
-  return (
-    <article className="message" data-selectable data-reading-row={rowId}>
-      <MessageHeader
-        title={
-          item.label.kind === "literal"
-            ? item.label.text
-            : formatMessage(item.label.value)
-        }
-        status={{
-          label: match(item.state)
-            .with("streaming", () => t("ui.conversation.streaming"))
-            .with("failed", () => t("ui.conversation.failed"))
-            .with("aborted", () => t("ui.conversation.aborted"))
-            .with("complete", () => "")
-            .exhaustive(),
-          tone: item.state === "failed" ? "danger" : "neutral",
-        }}
-        actions={
-          <CopyButton label={t("ui.conversation.copy")} text={item.text} />
-        }
-      />
-      {item.continuationOf !== undefined && (
-        <p className="muted">{t("ui.conversation.continuation")}</p>
-      )}
-      {item.detail && <p role="status">{item.detail}</p>}
-      {item.notice ? (
-        <p>{formatMessage(item.notice)}</p>
-      ) : item.role === "tool" ? (
-        <ToolResultFrame label={t("ui.conversation.toolOutput")}>
+  const title =
+    item.label.kind === "literal"
+      ? item.label.text
+      : formatMessage(item.label.value);
+  const status = match(item.state)
+    .with("streaming", () =>
+      item.role === "tool"
+        ? t("ui.conversation.streaming")
+        : t("ui.conversation.generating"),
+    )
+    .with("failed", () => t("ui.conversation.failed"))
+    .with("aborted", () => t("ui.conversation.aborted"))
+    .with("complete", () => "")
+    .exhaustive();
+  if (item.role === "tool")
+    return (
+      <article
+        className="message message-tool"
+        data-message-role="tool"
+        data-selectable
+        data-reading-row={rowId}
+      >
+        <ToolResultFrame
+          label={title}
+          status={{
+            label: status,
+            tone: item.state === "failed" ? "danger" : "neutral",
+          }}
+          evidence={evidence}
+        >
+          {item.detail && <p role="status">{item.detail}</p>}
           <ReadingBody
             text={item.text || t("ui.conversation.waitingResult")}
             raw
             position={position}
           />
+          <MessageActions text={item.text} label={t("ui.conversation.copy")} />
+          {item.truncated && (
+            <p role="status">
+              {formatMessage({ code: "conversation.truncated" })}
+            </p>
+          )}
         </ToolResultFrame>
+      </article>
+    );
+  return (
+    <article
+      className="message"
+      data-message-role={item.role}
+      data-message-state={item.state}
+      data-selectable
+      data-reading-row={rowId}
+      data-conversation-turn={item.role === "user" ? rowId : undefined}
+      data-turn-preview={
+        item.role === "user"
+          ? (displayText ?? item.text).replace(/\s+/g, " ").slice(0, 240)
+          : undefined
+      }
+      aria-label={
+        item.role === "assistant"
+          ? t("ui.history.role.assistant")
+          : item.role === "user"
+            ? t("ui.history.role.user")
+            : undefined
+      }
+    >
+      {item.thinking && (
+        <ThinkingDisclosure
+          text={item.thinking}
+          label={t(
+            item.state === "streaming" && !item.text
+              ? "ui.conversation.thinkingActive"
+              : "ui.conversation.thinking",
+          )}
+          streaming={item.state === "streaming"}
+        />
+      )}
+      {(!item.thinking || item.text || item.state !== "streaming") && (
+        <MessageStatus state={item.state} label={status} />
+      )}
+      {item.continuationOf !== undefined && (
+        <p className="muted">{t("ui.conversation.continuation")}</p>
+      )}
+      {item.detail && (
+        <Disclosure variant="inline">
+          <DisclosureTrigger>{t("ui.conversation.details")}</DisclosureTrigger>
+          <p>{item.detail}</p>
+        </Disclosure>
+      )}
+      {item.role === "user" && media}
+      {item.notice ? (
+        <p>{formatMessage(item.notice)}</p>
+      ) : item.role === "user" ? (
+        (displayText ?? item.text) ? (
+          <UserMessageBubble text={displayText ?? item.text} />
+        ) : null
       ) : (
         <ReadingBody
           text={item.text}
@@ -176,6 +251,12 @@ export function ConversationItemView({
       {item.truncated && (
         <p role="status">{formatMessage({ code: "conversation.truncated" })}</p>
       )}
+      <MessageActions
+        text={displayText ?? item.text}
+        label={t("ui.conversation.copy")}
+        timestamp={item.timestamp}
+      />
+      {evidence}
     </article>
   );
 }

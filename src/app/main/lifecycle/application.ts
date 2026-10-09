@@ -423,6 +423,10 @@ export function startDesktopApplication(mainDirectory: string): void {
         getStore: () => services.store,
         createMessageChannel: () => new MessageChannelMain(),
       });
+      const nativeBlobSources = new Map<
+        string,
+        { at: number; path: Promise<string | null> }
+      >();
       const projectReadContext = {
         reads,
         gitReader,
@@ -435,6 +439,37 @@ export function startDesktopApplication(mainDirectory: string): void {
           Promise.resolve(null),
         nativeSessionsPath: () =>
           join(app.getPath("userData"), "native-sessions"),
+        nativeBlobsPath: async (threadId: string, traceId: string) => {
+          const thread = services.store?.threads.threadContext(threadId);
+          if (!thread || !services.configuration) return null;
+          const at = Date.now();
+          for (const [key, source] of nativeBlobSources)
+            if (at - source.at >= 5000) nativeBlobSources.delete(key);
+          const key = JSON.stringify([
+            thread.threadId,
+            thread.workingDirectoryId,
+          ]);
+          const cached = nativeBlobSources.get(key);
+          if (cached) return cached.path;
+          // Several visible thumbnails share one scoped, short-lived SDK path sample.
+          const path = services.configuration
+            .execute({
+              kind: "snapshot",
+              traceId,
+              scope: {
+                kind: "thread",
+                threadId: thread.threadId,
+                workingDirectoryId: thread.workingDirectoryId,
+              },
+            })
+            .then((reply) =>
+              reply.kind === "snapshot"
+                ? (reply.nativeBlobsDirectory ?? null)
+                : null,
+            );
+          nativeBlobSources.set(key, { at, path });
+          return path;
+        },
       };
       registerHistoryIpc({
         ...projectReadContext,

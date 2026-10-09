@@ -7,9 +7,16 @@ import type { NativeSessionBinding } from "../../threads/contracts/public";
 import type {
   HistoryCursor,
   HistoryEntry,
+  HistoryImageReply,
   HistoryPage,
   HistoryToolEffect,
 } from "../contracts/history";
+import { nativeMessageTime } from "../contracts/message-time";
+import {
+  NativeImagePartSchema,
+  nativeImageDigest,
+  readNativeImagePart,
+} from "./native-image";
 
 const HeaderSchema = z.object({
   type: z.literal("session"),
@@ -20,15 +27,23 @@ const EntrySchema = z.object({
   type: z.literal("message"),
   id: z.string(),
   parentId: z.string().nullable(),
+  timestamp: z.unknown().optional(),
   message: z.object({
     role: z.string(),
     content: z.union([z.string(), z.array(z.unknown())]),
     toolCallId: z.string().max(256).optional(),
     toolName: z.string().max(120).optional(),
     isError: z.boolean().optional(),
+    stopReason: z.string().optional(),
+    errorMessage: z.string().optional(),
+    timestamp: z.unknown().optional(),
   }),
 });
 const TextPartSchema = z.object({ type: z.literal("text"), text: z.string() });
+const ThinkingPartSchema = z.object({
+  type: z.literal("thinking"),
+  thinking: z.string(),
+});
 const PAGE_BYTES = 1024 * 1024;
 const MAX_RECORD_BYTES = 32 * 1024 * 1024;
 const MUTATING_TOOL_NAMES = new Set([
@@ -52,6 +67,12 @@ export async function readNativeHistory(
   cursor: HistoryCursor | null = null,
   signal?: AbortSignal,
   projectDirectory?: string,
+  imageRequest?: {
+    recordId: string;
+    index: number;
+    blobsDirectory?: string | undefined;
+    receive: (image: HistoryImageReply) => void;
+  },
 ): Promise<HistoryPage> {
   try {
     signal?.throwIfAborted();
@@ -162,7 +183,10 @@ export async function readNativeHistory(
       const utf8 = new TextDecoder("utf-8", { fatal: true });
       const entries: HistoryEntry[] = [];
       let omitted = 0;
+      let lineOffset = offset;
       for (const line of utf8.decode(complete).split("\n")) {
+        const recordOffset = lineOffset;
+        lineOffset += Buffer.byteLength(line, "utf8") + 1;
         if (!line.trim()) continue;
         const raw: unknown = JSON.parse(line);
         const record = EntrySchema.safeParse(raw);
@@ -177,6 +201,23 @@ export async function readNativeHistory(
           continue;
         }
         const { id, parentId, message } = record.data;
+        if (imageRequest) {
+          if (imageRequest.recordId !== id) continue;
+          if (message.role === "user" && Array.isArray(message.content)) {
+            const image = message.content.flatMap((part) => {
+              const parsed = NativeImagePartSchema.safeParse(part);
+              return parsed.success ? [parsed.data] : [];
+            })[imageRequest.index];
+            if (image)
+              imageRequest.receive(
+                await readNativeImagePart(image, imageRequest.blobsDirectory),
+              );
+          }
+          break;
+        }
+        const timestamp =
+          nativeMessageTime(message.timestamp) ??
+          nativeMessageTime(record.data.timestamp);
         const text =
           typeof message.content === "string"
             ? message.content
@@ -186,6 +227,28 @@ export async function readNativeHistory(
                   return text.success ? [text.data.text] : [];
                 })
                 .join("\n");
+        const images =
+          message.role === "user" && Array.isArray(message.content)
+            ? message.content
+                .flatMap((part) => {
+                  const parsed = NativeImagePartSchema.safeParse(part);
+                  return parsed.success ? [parsed.data] : [];
+                })
+                .slice(0, 128)
+            : [];
+        const imageMarkers = [
+          ...text.matchAll(/(?:^|\n)\[image: ([^\n]+)\](?=\n|$)/g),
+        ];
+        const paired =
+          images.length > 0 && imageMarkers.length === images.length;
+        const imageMetadata = images.map((image, index) => ({
+          index,
+          mimeType: image.mimeType,
+          digest: nativeImageDigest(image),
+          ...(paired
+            ? { name: (imageMarkers[index]?.[1] ?? "").slice(0, 512) }
+            : {}),
+        }));
         const toolEvidence =
           message.role === "toolResult" &&
           message.toolCallId &&
@@ -203,11 +266,51 @@ export async function readNativeHistory(
                   : 0,
               }
             : undefined;
+        const thinking =
+          message.role === "assistant" && Array.isArray(message.content)
+            ? message.content
+                .flatMap((part) => {
+                  const parsed = ThinkingPartSchema.safeParse(part);
+                  return parsed.success ? [parsed.data.thinking] : [];
+                })
+                .join("\n")
+            : "";
         entries.push({
           id,
           parentId,
           role: message.role,
           text,
+          ...(timestamp !== undefined ? { timestamp } : {}),
+          ...(images.length
+            ? {
+                images: imageMetadata,
+                mediaCursor: {
+                  threadId: binding.threadId,
+                  source,
+                  offset: recordOffset,
+                  endOffset,
+                  prefixHash,
+                },
+              }
+            : {}),
+          ...(paired
+            ? {
+                displayText: text
+                  .replace(/(?:^|\n)\[image: ([^\n]+)\](?=\n|$)/g, "")
+                  .trim(),
+              }
+            : {}),
+          ...(thinking ? { thinking } : {}),
+          ...(message.stopReason === "aborted"
+            ? { state: "aborted" as const }
+            : message.stopReason === "error" ||
+                message.isError ||
+                message.errorMessage
+              ? { state: "failed" as const }
+              : {}),
+          ...(message.errorMessage
+            ? { detail: message.errorMessage.slice(0, 4096) }
+            : {}),
           ...(toolEvidence ? { toolEvidence } : {}),
         });
       }
@@ -255,4 +358,35 @@ export async function readNativeHistory(
       return { kind: "unavailable", reason: "denied" };
     return { kind: "unavailable", reason: "invalid" };
   }
+}
+
+/** Same bound file and frozen prefix as its page. Never accepts a path or an arbitrary resource. */
+export async function readNativeImage(
+  root: string,
+  binding: NativeSessionBinding,
+  cursor: HistoryCursor,
+  recordId: string,
+  index: number,
+  projectDirectory?: string,
+  blobsDirectory?: string,
+): Promise<HistoryImageReply> {
+  let image: HistoryImageReply | undefined;
+  const page = await readNativeHistory(
+    root,
+    binding,
+    cursor,
+    undefined,
+    projectDirectory,
+    {
+      recordId,
+      index,
+      blobsDirectory,
+      receive: (value) => {
+        image = value;
+      },
+    },
+  );
+  return page.kind === "unavailable"
+    ? page
+    : (image ?? { kind: "unavailable", reason: "missing" });
 }

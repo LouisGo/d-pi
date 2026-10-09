@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-09",
+  "commit": "03fe044306d67bf1a6f9dc9ae93181241c8f668f",
+  "dirty": true,
+  "mode": "Read-only original native records through the production history and image readers; no provider requests or source-data writes",
+  "rootCause": "Original sent images use blob:sha256 references, while the previous reader only accepted inline base64",
+  "nativeStorage": "Fixed SDK BlobStore uses the official getBlobsDir() root and extensionless SHA-256 filenames",
+  "results": [
+    {
+      "recordId": "6d030ca9",
+      "images": 1,
+      "placeholderRemoved": true,
+      "dataUrlBytes": 116311
+    },
+    {
+      "recordId": "9e640794",
+      "images": 1,
+      "placeholderRemoved": true,
+      "dataUrlBytes": 116311
+    },
+    {
+      "recordId": "8706a6d5",
+      "images": 1,
+      "placeholderRemoved": true,
+      "dataUrlBytes": 116311
+    }
+  ],
+  "automatedChecks": {
+    "affectedVitestTests": 43,
+    "isolatedProviderModelsTests": 9,
+    "isolatedRendererChecks": 11,
+    "rendererEvidence": "../conversation-feedback/result-final.json"
+  },
+  "liveDevDelivery": {
+    "state": "delivered",
+    "source": "/Users/lou/Learn/d-pi",
+    "appData": "/Users/lou/.d-pi/dev/d-pi-c3166594c238",
+    "sdkRefresh": "passed",
+    "mainAndPreloadBuild": "passed",
+    "nativeChecks": {
+      "originalThread": "cd6d1980-f0db-476b-ac11-9d23b61ca228",
+      "originalImageThumbnailAboveBubble": true,
+      "placeholderRemoved": true,
+      "originalImagePreviewOpened": true,
+      "defaultTimeAndCopyHidden": true,
+      "assistantTimeAndCopyShownTogether": true,
+      "readyAndTwelveMessagesRetained": true
+    },
+    "evidence": "Native accessibility and screenshots observed with cua_repl; no new model messages. Hover/focus geometry additionally covered by the isolated Renderer checks."
+  }
+}

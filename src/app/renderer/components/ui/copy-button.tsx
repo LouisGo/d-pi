@@ -1,16 +1,20 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { useI18n } from "../../../../modules/preferences/renderer/public";
-import { Button } from "../../../../modules/ui/renderer/public";
+import { Button, CheckIcon } from "../../../../modules/ui/renderer/public";
+import { CopyIcon } from "../icons/reading";
+import { Tooltip } from "./tooltip";
 
 // Feedback belongs to this clipboard action; it never reports execution success.
 export function CopyButton({
   text,
   label,
   disabled = false,
+  iconOnly = false,
 }: {
   text: string;
   label: string;
   disabled?: boolean;
+  iconOnly?: boolean;
 }) {
   const { t } = useI18n();
   const [state, setState] = useState<"idle" | "pending" | "copied" | "failed">(
@@ -44,16 +48,30 @@ export function CopyButton({
       if (current === generation.current) pending.current = false;
     }
   };
+  const actionLabel = state === "copied" ? t("ui.copy.copied") : label;
+  const action = (
+    <Button
+      type="button"
+      variant="ghost"
+      size={iconOnly ? "icon" : "default"}
+      aria-label={actionLabel}
+      disabled={disabled || state === "pending"}
+      onClick={() => void copy()}
+    >
+      {iconOnly ? (
+        state === "copied" ? (
+          <CheckIcon />
+        ) : (
+          <CopyIcon />
+        )
+      ) : (
+        actionLabel
+      )}
+    </Button>
+  );
   return (
     <span className="ui-copy-control">
-      <Button
-        type="button"
-        variant="ghost"
-        disabled={disabled || state === "pending"}
-        onClick={() => void copy()}
-      >
-        {state === "copied" ? t("ui.copy.copied") : label}
-      </Button>
+      {iconOnly ? <Tooltip content={actionLabel}>{action}</Tooltip> : action}
       {state === "failed" && (
         <span className="ui-copy-feedback" role="alert">
           {t("ui.copy.failed")}

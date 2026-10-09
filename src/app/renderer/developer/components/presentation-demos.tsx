@@ -5,13 +5,16 @@ import {
   Badge,
   Button,
   EmptyState,
+  HoverCard,
   InlineNotice,
   Kbd,
   OptionAction,
 } from "../../../../modules/ui/renderer/public";
 import { CopyButton } from "../../components/ui/copy-button";
 import { PathLabel } from "../../components/ui/path-label";
+import { ConversationItemView } from "../../reading/conversation";
 import { MessageHeader, ToolResultFrame } from "../../reading/message-parts";
+import { TurnPreviewCard } from "../../reading/turn-preview-card";
 import { NativeInteraction } from "../../workbench/native-interaction";
 import { presentationLabels as labels } from "./catalog";
 import styles from "./component-dashboard.module.css";
@@ -130,6 +133,55 @@ export function ToolResultFrameDemo() {
         </pre>
       </ToolResultFrame>
     </article>
+  );
+}
+export function ConversationMessageDemo() {
+  return (
+    <I18nProvider
+      initialSnapshot={{ preference: "zh-CN", resolvedLocale: "zh-CN" }}
+    >
+      <section className="conversation">
+        <ConversationItemView
+          rowId="demo-user"
+          item={{
+            id: 1,
+            role: "user",
+            state: "complete",
+            text: labels.conversationPrompt,
+            label: { kind: "literal", text: labels.assistant },
+          }}
+        />
+        <ConversationItemView
+          rowId="demo-assistant"
+          item={{
+            id: 2,
+            role: "assistant",
+            state: "complete",
+            text: labels.conversationReply,
+            thinking: labels.conversationThinking,
+            label: { kind: "literal", text: labels.assistant },
+          }}
+        />
+      </section>
+    </I18nProvider>
+  );
+}
+export function HoverCardDemo() {
+  return (
+    <I18nProvider
+      initialSnapshot={{ preference: "zh-CN", resolvedLocale: "zh-CN" }}
+    >
+      <HoverCard
+        label={labels.previewQuestion}
+        trigger={<Button variant="secondary">{labels.previewQuestion}</Button>}
+      >
+        <TurnPreviewCard
+          number={2}
+          question={labels.conversationPrompt}
+          reply={labels.conversationReply}
+        />
+      </HoverCard>
+    </I18nProvider>
   );
 }
 export function NativeInteractionDemo() {

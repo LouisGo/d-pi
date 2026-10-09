@@ -11,7 +11,9 @@ import { RuntimeModel } from "../../../modules/execution/renderer/public";
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
 import { QueueControls } from "./queue-controls";
 
-async function mountQueue() {
+async function mountQueue(
+  options: Partial<Parameters<typeof QueueControls>[0]> = {},
+) {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
   const entryId = crypto.randomUUID();
   let view = RuntimeViewSchema.parse({
@@ -116,7 +118,7 @@ async function mountQueue() {
     root.render(
       createElement(I18nProvider, {
         initialSnapshot: { preference: "zh-CN", resolvedLocale: "zh-CN" },
-        children: createElement(QueueControls, { model }),
+        children: createElement(QueueControls, { model, ...options }),
       }),
     );
   await act(async () => render());
@@ -449,6 +451,45 @@ it("allows image-only queue edits and only removes a native image through an exp
       kind: "manage-queue",
       command: { action: "save-edit", text: "", retainedImageIds: [imageId] },
     });
+  } finally {
+    await mounted.cleanup();
+  }
+});
+
+it("hides an acknowledged empty queue in the composer and keeps paused messages explicitly resumable", async () => {
+  const mounted = await mountQueue({
+    hiddenEmpty: true,
+    placement: "composer",
+  });
+  try {
+    const original = mounted.view();
+    if (!original.control?.queueState) throw Error("missing queue");
+    await mounted.publish({
+      ...original,
+      control: { ...original.control, paused: true },
+    });
+    const resume = mounted.element.querySelector<HTMLButtonElement>(
+      'button[aria-label="继续发送"]',
+    );
+    expect(resume).not.toBeNull();
+    await act(async () => resume?.click());
+    expect(mounted.commands).toContainEqual(
+      expect.objectContaining({
+        kind: "continue",
+        connectionGeneration: original.connectionGeneration,
+      }),
+    );
+    await mounted.publish({
+      ...original,
+      revision: 5,
+      queueOperation: { traceId: crypto.randomUUID(), status: "acknowledged" },
+      control: {
+        ...original.control,
+        queued: 0,
+        queueState: { ...original.control.queueState, items: [] },
+      },
+    });
+    expect(mounted.element.querySelector(".composer-queue")).toBeNull();
   } finally {
     await mounted.cleanup();
   }

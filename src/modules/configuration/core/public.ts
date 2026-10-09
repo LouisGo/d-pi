@@ -2,6 +2,6 @@ export {
   type CatalogFilter,
   catalogModelKey,
   filterModelCatalog,
-  orderProviderCatalog,
   orderModelCatalog,
+  orderProviderCatalog,
 } from "./model-catalog";

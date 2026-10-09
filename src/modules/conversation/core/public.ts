@@ -1,6 +1,7 @@
 export {
   type BoundHistoryAttempt,
   boundHistoryPageQuery,
+  nativeImageQuery,
   projectHistoryCatalogQuery,
   projectHistoryPageQuery,
   savedConversationQuery,

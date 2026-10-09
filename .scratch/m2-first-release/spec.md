@@ -360,3 +360,36 @@
 用户明确要求修复 CLI 历史只能阅读的问题并减少继续提问的阻断，取代上节 CLI 来源统一只读限制。已结束 CLI 的原文件经过当前配置/身份/目录检查后，在已信任项目自动准备并继续原 Thread；陌生目录一次信任保留。Main 持有原文件粒度的 d-pi 生命周期 lease，并在接入前识别外部实际 writer/项目内 OMP CLI；占用与未知保留历史和草稿，允许原地重试。外部 CLI 不参与该 lease，不能宣称阻止 GUI 执行期间另起不合作 CLI；不改写用户 CLI/启动器，不复制或 fork 原生历史。实施与真实验证见 [06s](issues/06s-cli-session-continuation.md)。无额外产品待决，用户认可 pending。
 
 2026-10-08 CLI 续接交付：06s 工程 resolved，产品 f795b82；真实 CLI/SDK 与正式 GUI 同 Thread/ID/文件续问、冷恢复、生成中跨项目阅读通过。未知不重发，外 CLI 边界与失败记录见 [交接](seamless-sessions.md)。M2 整体与用户认可 pending，无远端操作。
+
+## 2026-10-09 会话展示专项
+
+用户明确授权按所给 Codex 消息参考图重做正式会话：用户气泡与 composer 对齐，多轮锚点及 hover 预览，打磨思考、生成、工具、任务、代码组件；普通会话以模型对话表达，底层引擎名称与技术信息隐藏在详情。起点 main `03fe044306d67bf1a6f9dc9ae93181241c8f668f`，工作区原本干净，当前目录串行实现。属于 M2 会话阅读与 Beautiful UI 设计体系的可逆呈现升级；不改变执行、权限、发送收据或原生历史所有权，无新增重要产品待决。
+
+按 UserMessageBubble、MessageActions、MessageStatus、ThinkingDisclosure、ToolResultFrame、ConversationOutline 和代码适配拆分组合，并加入真实组件展台。用户原文保持字面与换行，模型长文连续阅读；动作 hover/focus 显露且不挤动内容；思考首次展开才解析，工具默认收起；失败/停止明确显示，底层详情保持可读。Outline 只索引已呈现用户行的稳定身份，浮层按需读取完整提问，通过已有阅读所有者定位，不建立第二份业务状态。真实原生 thinking 单独投影与读取，计入原有字节预算；固定 SDK 增量与完整快照不重复拼接，工具最终追加保留名字。原生文件只读、实时订阅及历史去重合同继续沿用。
+
+对照用户参考图及 Beautiful UI 已登记的 MIT 固定来源 `44a274e598395ab61e7c96c26fda2758780253b7` 中 TaskRows 等写法，不复制整套外部组件或演示状态。项目 impeccable 的 Operate/Read 方向与共享 token、Base UI、自有 Icon Layer 对齐；外部 Streamdown utility 由专属适配层接回同源颜色、尺寸、圆角与精确复制。无新增依赖。
+
+验证：气泡字面/复制、详情隐藏、thinking 快照/字节预算/按需解析、工具最终名称、轮次定位/键盘/流式更新不重扫、相关阅读/历史/组件行为共 141 项通过；Renderer/Host/Main 类型检查及 design/interaction/i18n lint 通过。隔离 macOS Electron 使用正式 App 与合成桥接，9 项实际检查覆盖深浅主题 1440/720 对齐、无横向溢出/普通画面无引擎名称、代码适配实际计算样式、hover/聚焦无布局变化、thinking 展开、问答预览边界、定位后继续生成保持位置及回到底部。[结果](evidence/conversation-display/result.json)。两轮截图观察后不追加第三轮；最后的代码工具栏适配与轮次点击区域由计算样式、几何及行为确认。截图是合成数据场景，不证明真实 provider、VoiceOver 或固定包，未重跑收费模型。Dev/diff 交付，用户审美认可 pending，未提交或 push，不关闭其他 M2 范围。
+
+
+同日依据用户新增四项反馈继续优化：
+
+- 新增 MessageMedia，发送图片及文件卡片位于用户气泡上方；缩略图保留尺寸、按可见区域读取，点击使用共享 Modal 预览。图像仅从已绑定的原生记录与冻结游标读取，图片字节不进入实时快照或历史元数据；跨进程延续同一 traceId，取消查询忽略迟到结果。沿用原记录 32 MiB 上限、身份与文件替换检查，原生文件保持只读。
+- 保留原消息真实 timestamp，用户及模型回复的时间常显，复制仍在 hover/键盘聚焦显露；缺失旧时间不编造。文件名称/正文来自冻结提交与原记录的呈现等价核对，跨原生会话或有歧义时不推断关联；只读候选查询可越过最近 100 条收据窗口，不改变收据、执行身份或结果。文件预览不读取已变更的项目文件；缺失/重复/嵌入分隔符时明确无预览。无可核对来源的旧文件继续保留原文。
+- Outline 改为细线与圆点，当前轮次用主题强调色，悬停与当前态区分；保留问答预览、键盘操作及定位后生成不抢位置。
+- 正常作答只显示回复，不因 busy 产生顶部队列区；停止回复移入 composer，真实队列在输入附近按需展开，已确认的空队列隐藏。暂停的待发送消息保留显式继续，待答交互仍留在阅读区域。
+
+本次累计相关测试 163 项通过（最终 trace 注入及跨进程读图复核对应 11 项再次通过）；Renderer/Main/Host/Preload/Core 类型检查通过。按项目 impeccable 的 polish 与共享设计体系进行了两轮实际截图观察，深浅主题 720/1440 的附件、时间、对齐与无顶部队列通过；11 项隔离 Electron 检查还覆盖 hover 无跳动、锚点/流式位置、文件与图片预览、composer 停止。预览弹窗和提示浮层的初次截图落在进入动画中，不作为静止态证据；最终用计算样式确认动画结束后的 opacity=1，不追加第三轮截图。[最终结果](evidence/conversation-feedback/result-final.json)。仍为正式视图与合成桥接的验证，未调用真实 provider 或验证固定包/VoiceOver；当前工作区 Dev/diff 交付，未提交或 push，用户体验认可继续 pending。
+
+
+同日按用户追加要求将轮次预览由普通 Tooltip 改为可阅读的小卡片。共享 HoverCard 封装固定 Base UI 1.8.0 PreviewCard 的 hover/focus、鼠标连接、边界碰撞与 Esc；TurnPreviewCard 只呈现轮次和完整问题，ConversationTurnAnchor 组合触发与按需采样，ConversationOutline 继续只拥有索引、当前态与定位。每次打开才读取该轮已呈现的完整用户正文，保留原文换行，不截成 240 字或混入回复；长问题在卡片内滚动，不推动消息列表。只有附件的提问提供无文字提示，不加载附件来填补内容。HoverCard 与正式提问卡片组合接入组件展台。
+
+本次新增缺口测试先失败再通过；相关轮次、消息展示与展台 18 项通过，Renderer 类型检查、design/interaction/i18n lint 与架构/文档检查通过。隔离 Electron 仅检查本次浮层：深浅主题 1440/720 的完整问题、边界、鼠标移入后滚动、焦点预览及 Esc 共 4 组通过；第一轮读取了进入动画中的坐标导致检查失败，等待稳定布局后确认鼠标连接正常，不将该失败记作产品缺陷。最终视觉与几何证据见 [结果](evidence/conversation-anchor-preview/result.json)。正式视图与合成桥接，无 provider 请求；当前目录 Dev/diff 交付，未提交或 push，用户认可 pending。
+
+
+同日按用户最新截图纠正时间与已发送图片：时间取代上一段常显规则，和复制按钮共用 MessageActions 的 hover/focus 显露，不改变行高。图片根因通过用户实际三条原生记录确认：固定 SDK 将图像写成 `blob:sha256:<digest>`，旧读取器仅接受内嵌 base64，因此忽略了真实图片并留下 `[image: …]`。现在两种格式均产生按需图片元数据，由 SDK 官方 `getBlobsDir()` 提供实际 profile/XDG 根目录；Main 延续原生绑定、冻结游标和当前 Thread 校验，只读规范 digest 文件，拒绝符号链接、非普通文件、超过 32 MiB 或摘要不符的内容。可见缩略图共用短时路径查询，图像字节仍不进入列表快照，MessageMedia 与共享 Modal 保持组件边界。
+
+新增 blob 元数据缺口测试先失败再通过；受影响 7 文件 43 项行为测试、9 项隔离配置适配测试、Main/Core/Renderer 类型检查及 design/interaction/i18n、架构/文档检查通过。隔离正式 Renderer 的 11 项检查确认时间/复制共同隐藏和 hover/focus 显露、无行高变化、深浅主题 720/1440 附件位于气泡上方并可预览；未追加截图。另以生产读取代码只读核对用户原三条记录，每条返回一张 116,311 字节原图并去掉占位文本，[结果](evidence/conversation-image-echo/result.json)。这证明实际存储格式和读取修复，不冒称正在运行的 App 已加载新代码：当前 Dev 持有 SDK 资源保护锁，Mac 锁屏导致无法正常退出；待用户解锁并退出 d-pi 后刷新 SDK 资源、重启 Dev。无新模型请求、原记录写入、提交或 push，用户认可 pending。
+
+
+用户解锁后继续完成本段 Dev 交付：通过应用菜单正常退出旧实例，`pnpm runtime:sdk` 刷新固定 SDK 18.4.6 成功，资源 548.5 MiB / 650 MiB；`pnpm dev` 从当前目录重建 Main/preload 并启动，沿用原开发数据目录。正式原 Thread `cd6d1980-f0db-476b-ac11-9d23b61ca228` 保留 12 条消息与 Ready 状态；原图缩略图实际出现在气泡上方，无占位文字，点击打开原图预览，默认时间/复制隐藏，已观察模型回复时间与复制共同显露。CUA 的一次预览操作捕捉报错后，AX 确认预览已打开；不把捕捉失败当产品失败。随后用户在 App 操作，停止继续争用界面；hover/focus 无布局跳动仍由上一段 11 项隔离 Renderer 几何检查证明。原来的锁屏/资源锁阻塞已解除，[结果](evidence/conversation-image-echo/result.json) 更新为 Dev 已交付；未发送新的模型提问，不冒称固定包或用户体验认可，无提交或 push。

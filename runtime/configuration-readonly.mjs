@@ -36,6 +36,7 @@ import { loadEffectiveAuthAccountPolicyConfig } from "@oh-my-pi/pi-coding-agent/
 import {
   getAgentDbPath,
   getAgentDir,
+  getBlobsDir,
   getModelDbPath,
 } from "@oh-my-pi/pi-utils";
 import { thinkingCapabilities } from "./model-selection.mjs";
@@ -342,6 +343,7 @@ export async function readConfigurationSnapshot(frame) {
       scope: frame.scope,
       traceId: frame.traceId,
       source,
+      nativeBlobsDirectory: getBlobsDir(),
       models: [],
       providers: providerSummaries(null, null, null, [], false),
       modelRoles: [],
@@ -631,6 +633,7 @@ export async function readConfigurationSnapshot(frame) {
       traceId: frame.traceId,
       source,
       models,
+      nativeBlobsDirectory: getBlobsDir(),
       providers: providerSummaries(
         auth,
         registry,
@@ -658,6 +661,7 @@ export async function readConfigurationSnapshot(frame) {
       scope: frame.scope,
       traceId: frame.traceId,
       source,
+      nativeBlobsDirectory: getBlobsDir(),
       models: [],
       providers: providerSummaries(auth, null, settings, [], credentialsKnown),
       modelRoles: roleSummaries(settings),

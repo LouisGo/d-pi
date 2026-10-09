@@ -78,3 +78,35 @@ export function savedConversationQuery(
       page.kind === "page" ? (page.next ?? undefined) : undefined,
   });
 }
+
+/** Image bytes belong only to a visible, source-bound thumbnail query. */
+export function nativeImageQuery(
+  bridge: HistoryBridge,
+  threadId: string,
+  cursor: HistoryCursor,
+  recordId: string,
+  index: number,
+  newTrace: () => string,
+) {
+  return queryOptions({
+    queryKey: [
+      "native-message-image",
+      threadId,
+      cursor,
+      recordId,
+      index,
+    ] as const,
+    networkMode: "always",
+    retry: false,
+    gcTime: 0,
+    staleTime: Infinity,
+    queryFn: async ({ signal }) => {
+      signal.throwIfAborted();
+      const reply =
+        (await bridge.image?.(threadId, cursor, recordId, index, newTrace())) ??
+        ({ kind: "unavailable", reason: "unsupported" } as const);
+      signal.throwIfAborted();
+      return reply;
+    },
+  });
+}

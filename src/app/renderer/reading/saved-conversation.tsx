@@ -22,6 +22,7 @@ import {
 } from "../../../modules/ui/renderer/public";
 import { ConversationItemView } from "./conversation";
 import { historyToolEvidenceMessage } from "./history";
+import { MessageMedia } from "./message-media";
 
 /** One saved timeline survives execution startup and the bounded live window. */
 export function SavedConversation({
@@ -225,6 +226,8 @@ export function SavedConversation({
           model={model}
           positions={positions}
           source={source}
+          bridge={bridge}
+          threadId={threadId}
         />
       ))}
       {!saved.isFetching &&
@@ -253,6 +256,8 @@ function TimelineRow({
   model,
   positions,
   source,
+  bridge,
+  threadId,
 }: {
   rowId: string;
   entry?: HistoryEntry | undefined;
@@ -260,6 +265,8 @@ function TimelineRow({
   model: ConversationModel;
   positions?: ReadingPositions | undefined;
   source: string;
+  bridge: HistoryBridge;
+  threadId: string;
 }) {
   const { t } = useI18n();
   const live = useStore(model.stateStore, (state) =>
@@ -267,7 +274,15 @@ function TimelineRow({
   );
   const item: ConversationItem | undefined = live
     ? entry
-      ? { ...live, text: entry.text, truncated: false }
+      ? {
+          ...live,
+          text: entry.text,
+          timestamp: entry.timestamp ?? live.timestamp,
+          thinking: entry.thinking ?? live.thinking,
+          state: entry.state ?? live.state,
+          detail: entry.detail ?? live.detail,
+          truncated: false,
+        }
       : live
     : entry
       ? {
@@ -278,48 +293,64 @@ function TimelineRow({
               : entry.role === "assistant"
                 ? "assistant"
                 : "tool",
-          state: "complete",
+          state: entry.state ?? "complete",
           text: entry.text,
+          timestamp: entry.timestamp,
+          thinking: entry.thinking,
+          detail: entry.detail,
           label: {
             kind: "literal",
-            text: match(entry.role)
-              .with("user", () => t("ui.history.role.user"))
-              .with("assistant", () => t("ui.history.role.assistant"))
-              .with("tool", "toolResult", () => t("ui.history.role.tool"))
-              .otherwise(() => entry.role),
+            text:
+              entry.toolEvidence?.toolName ??
+              match(entry.role)
+                .with("user", () => t("ui.history.role.user"))
+                .with("assistant", () => t("ui.history.role.assistant"))
+                .with("tool", "toolResult", () => t("ui.history.role.tool"))
+                .otherwise(() => entry.role),
           },
         }
       : undefined;
   if (!item) return null;
   return (
-    <>
-      <ConversationItemView
-        item={item}
-        rowId={rowId}
-        positions={positions}
-        source={source}
-      />
-      {entry?.toolEvidence && (
-        <Disclosure>
-          <DisclosureTrigger>
-            {t("ui.history.nativeToolEvidence")}
-          </DisclosureTrigger>
-          <p>{t(historyToolEvidenceMessage(entry.toolEvidence))}</p>
-          <p>
-            {t("ui.history.toolCall", {
-              toolName: entry.toolEvidence.toolName,
-              toolCallId: entry.toolEvidence.toolCallId,
-              recordId: entry.id,
-            })}
-          </p>
-          <p>
-            {t("ui.history.toolCoverage", {
-              count: entry.toolEvidence.nonTextParts,
-              source,
-            })}
-          </p>
-        </Disclosure>
-      )}
-    </>
+    <ConversationItemView
+      item={item}
+      rowId={rowId}
+      positions={positions}
+      source={source}
+      displayText={entry?.displayText}
+      media={
+        entry?.role === "user" && (
+          <MessageMedia
+            key={JSON.stringify([threadId, entry.id])}
+            entry={entry}
+            bridge={bridge}
+            threadId={threadId}
+          />
+        )
+      }
+      evidence={
+        entry?.toolEvidence && (
+          <Disclosure>
+            <DisclosureTrigger>
+              {t("ui.history.nativeToolEvidence")}
+            </DisclosureTrigger>
+            <p>{t(historyToolEvidenceMessage(entry.toolEvidence))}</p>
+            <p>
+              {t("ui.history.toolCall", {
+                toolName: entry.toolEvidence.toolName,
+                toolCallId: entry.toolEvidence.toolCallId,
+                recordId: entry.id,
+              })}
+            </p>
+            <p>
+              {t("ui.history.toolCoverage", {
+                count: entry.toolEvidence.nonTextParts,
+                source,
+              })}
+            </p>
+          </Disclosure>
+        )
+      }
+    />
   );
 }

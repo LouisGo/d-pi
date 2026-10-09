@@ -19,6 +19,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { IconProps } from "../../../../modules/ui/renderer/public";
+
 export type { IconProps } from "../../../../modules/ui/renderer/public";
 export function FileIcon({ size = 16, className }: IconProps) {
   return (

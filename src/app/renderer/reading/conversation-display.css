@@ -1,0 +1,384 @@
+@layer components {
+  .thread-reading > .reading-pane[data-reading-pane="conversation"] {
+    padding: var(--panel-padding) var(--conversation-gutter)
+      calc(var(--panel-padding) * 3);
+    scrollbar-gutter: stable both-edges;
+  }
+  .thread-workspace > .composer:not([data-expanded="true"]) {
+    width: min(
+      var(--content-width),
+      calc(
+        100% -
+        2 *
+        var(--conversation-gutter) -
+        var(--conversation-scrollbar, 0px)
+      )
+    );
+  }
+  .conversation > .message {
+    border: 0;
+    padding: 0;
+    margin: 0;
+  }
+  .conversation > .message[data-message-role="user"] {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--spacing);
+    margin-block: calc(var(--panel-padding) * 2) var(--panel-padding);
+  }
+  .conversation > .message[data-message-role="user"]:first-child {
+    margin-block-start: var(--layout-gap);
+  }
+  .conversation > .message > .user-message-bubble {
+    width: fit-content;
+    max-width: min(85%, 75ch);
+    padding: calc(var(--spacing) * 3) var(--panel-padding);
+    background: var(--message-user-background);
+    color: var(--message-user-foreground);
+    border-radius: var(--radius-message);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .conversation > .message[data-message-role="assistant"] {
+    padding-block: var(--layout-gap);
+  }
+  .message > .message-action-bar {
+    display: flex;
+    align-items: center;
+    min-height: var(--control-height);
+    max-width: 100%;
+    gap: var(--spacing);
+    margin-block-start: var(--spacing);
+    color: var(--muted-foreground);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--motion-control) var(--ease-out);
+  }
+  .message-action-bar > time {
+    font-size: var(--text-small);
+    font-variant-numeric: tabular-nums;
+    padding-inline: var(--spacing);
+  }
+  [data-message-role="user"] > .message-action-bar > time {
+    order: -1;
+  }
+  .message-media {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: flex-end;
+    gap: var(--layout-gap);
+    max-width: 85%;
+    margin-block-end: var(--spacing);
+  }
+  .message-image-tile {
+    width: calc(var(--control-height) * 3);
+    height: calc(var(--control-height) * 3);
+    flex: 0 0 auto;
+    overflow: hidden;
+    border-radius: var(--radius);
+  }
+  .message-image-placeholder {
+    display: grid;
+    place-items: center;
+    height: 100%;
+    padding: var(--spacing);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface-subtle);
+    color: var(--muted-foreground);
+    font-size: var(--text-small);
+    text-align: center;
+  }
+  .message-file {
+    display: flex;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .message-file-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .message-image-preview {
+    display: block;
+    width: 100%;
+    max-height: 65dvh;
+    object-fit: contain;
+  }
+  .message-file-preview {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    margin: 0;
+  }
+  .composer-queue {
+    margin-block-end: var(--layout-gap);
+    max-height: 25dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    font-size: var(--text-small);
+  }
+  .message:hover > .message-action-bar,
+  .message:focus-within > .message-action-bar,
+  .tool-result-content > .message-action-bar {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .message > .message-status {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--spacing) * 2);
+    margin-block-end: var(--layout-gap);
+    font-size: var(--text-body);
+    color: var(--muted-foreground);
+  }
+  .message-status[data-state="failed"] {
+    color: var(--destructive);
+  }
+  .message-working-dot {
+    display: block;
+    width: calc(var(--spacing) * 1.5);
+    height: calc(var(--spacing) * 1.5);
+    border-radius: var(--radius-pill);
+    background: currentColor;
+    animation: message-working 1.6s var(--ease-out) infinite;
+  }
+  .message-thinking {
+    min-width: 0;
+    margin-block-end: var(--layout-gap);
+    font-size: var(--text-body);
+  }
+  .thinking-content {
+    padding: var(--layout-gap) var(--panel-padding);
+    color: var(--muted-foreground);
+    line-height: 1.7;
+  }
+  .conversation > .message-tool {
+    max-width: 100%;
+  }
+  .conversation > .message-tool + .message-tool {
+    margin-block-start: calc(var(--spacing) * -1);
+  }
+  .message[data-message-role="notice"] {
+    color: var(--muted-foreground);
+    font-size: var(--text-body);
+  }
+  .reading-body > [data-streamdown] {
+    min-width: 0;
+  }
+}
+/* Streamdown emits utility classes. Its adapter must follow Tailwind utilities
+   so the shared design roles, rather than vendor defaults, own this surface. */
+@layer reading-adapter {
+  .reading-body [data-streamdown="code-block"] {
+    --code-header-height: calc(var(--control-height) + var(--spacing) * 2);
+    position: relative;
+    overflow: hidden;
+    min-width: 0;
+    max-width: 100%;
+    gap: 0;
+    padding: 0;
+    margin-block: var(--panel-padding);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--field);
+  }
+  .reading-body [data-streamdown="code-block-header"] {
+    height: var(--code-header-height);
+    padding: var(--spacing) calc(var(--spacing) * 3);
+    color: var(--muted-foreground);
+    font-size: var(--text-small);
+    border-bottom: 1px solid var(--border-soft);
+    background: var(--surface-subtle);
+  }
+  .reading-body
+    [data-streamdown="code-block"]
+    > div:has(> [data-streamdown="code-block-actions"]) {
+    position: absolute;
+    inset-block-start: var(--spacing);
+    inset-inline-end: var(--spacing);
+    margin: 0;
+    height: var(--control-height);
+  }
+  .reading-body [data-streamdown="code-block-actions"] {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    backdrop-filter: none;
+  }
+  .reading-body [data-streamdown="code-block"] button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--control-height);
+    height: var(--control-height);
+    border-radius: var(--radius-control);
+    color: var(--muted-foreground);
+    border: 0;
+    background: transparent;
+    transition: background-color var(--motion-control) var(--ease-out);
+  }
+  .reading-body [data-streamdown="code-block"] button:hover {
+    background: var(--muted-hover);
+    color: var(--foreground);
+  }
+  .reading-body [data-streamdown="code-block-body"] {
+    padding: calc(var(--spacing) * 3);
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+  .reading-body [data-streamdown="code-block-body"] pre {
+    margin: 0;
+  }
+}
+@layer components {
+  .conversation-outline {
+    position: absolute;
+    inset-inline-start: 4px;
+    top: 50%;
+    translate: 0 -50%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    max-height: 70%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: var(--spacing) 0;
+    z-index: 2;
+    scrollbar-width: none;
+    gap: 1px;
+    isolation: isolate;
+  }
+  .conversation-outline::-webkit-scrollbar {
+    display: none;
+  }
+  [data-turn-target] {
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 38px;
+    height: 10px;
+    padding: 0 2px;
+    background: transparent;
+    border: none;
+  }
+  [data-turn-target]:hover {
+    background: transparent;
+  }
+  .turn-mark {
+    display: block;
+    position: relative;
+    width: var(--turn-width, 7px);
+    height: 2px;
+    border-radius: var(--radius-pill);
+    background-color: var(--foreground);
+    opacity: var(--turn-opacity, 0.28);
+    transition:
+      width 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 0.18s ease,
+      background-color 0.18s ease;
+    will-change: width, opacity;
+    pointer-events: none;
+  }
+  .ui-hover-card-popup:has(.turn-preview) {
+    width: min(17rem, var(--available-width));
+    border-radius: var(--radius-control);
+  }
+  .turn-preview {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    width: 100%;
+    max-width: 17rem;
+    padding: calc(var(--spacing) * 1.5) calc(var(--spacing) * 2);
+    gap: calc(var(--spacing) * 1);
+  }
+  .turn-preview-header {
+    display: flex;
+    align-items: baseline;
+    gap: calc(var(--spacing) * 1);
+    min-width: 0;
+    width: 100%;
+  }
+  .turn-preview-number {
+    flex-shrink: 0;
+    font-size: 0.725rem;
+    font-weight: 600;
+    font-feature-settings: "tnum";
+    color: var(--muted-foreground);
+    line-height: 1.35;
+  }
+  .turn-preview-title {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    font-size: 0.775rem;
+    font-weight: 600;
+    color: var(--foreground);
+    line-height: 1.35;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .turn-preview-description {
+    margin: 0;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .live-reading-controls {
+    position: absolute;
+    inset-inline: var(--conversation-gutter);
+    bottom: calc(var(--spacing) * 3);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--layout-gap);
+    pointer-events: none;
+  }
+  .live-reading-controls > * {
+    pointer-events: auto;
+    background: var(--surface);
+    border-radius: var(--radius-pill);
+    box-shadow: var(--shadow-raised);
+  }
+  .live-reading-controls > [role="status"] {
+    padding: var(--spacing) var(--control-padding);
+    font-size: var(--text-small);
+  }
+}
+@keyframes message-working {
+  50% {
+    opacity: 0.35;
+  }
+}
+@media (hover: none) {
+  .message > .message-action-bar,
+  .message > .message-action-bar > .ui-copy-control {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .message > .message-action-bar,
+  .turn-mark {
+    transition: none;
+  }
+  .message-working-dot {
+    animation: none;
+  }
+}

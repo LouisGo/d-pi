@@ -205,6 +205,23 @@ export class SubmissionRepository {
       .all(threadId)
       .map((row) => this.decodeReceipt(row.receipt));
   }
+  /** Read-only presentation candidates, never a receipt/native identity join. */
+  presentationCandidates(
+    threadId: string,
+    nativeSessionRef: string,
+    configContextId: string,
+    message: string,
+  ): SubmissionReceipt[] {
+    const rows = this.db
+      .prepare(
+        "SELECT receipt FROM submission WHERE thread_id=? AND json_extract(receipt, '$.target.nativeSessionRef')=? AND json_extract(receipt, '$.target.configContextId')=? AND json_extract(receipt, '$.content.message')=? ORDER BY rowid DESC LIMIT 129",
+      )
+      .all(threadId, nativeSessionRef, configContextId, message);
+    // Too many equivalent inputs are not a reason to choose an arbitrary subset.
+    return rows.length > 128
+      ? []
+      : rows.map((row) => this.decodeReceipt(row.receipt));
+  }
   private decodeReceipt(value: unknown): SubmissionReceipt {
     if (typeof value !== "string")
       throw new Error("Invalid submission receipt");

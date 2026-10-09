@@ -54,7 +54,7 @@ it.each(["gap", "truncated"] as const)(
         ),
       );
       const button = [...host.querySelectorAll("button")].find(
-        (node) => node.textContent === "View native history",
+        (node) => node.textContent === "Conversation details",
       );
       expect(button).toBeDefined();
       await act(() => button?.click());

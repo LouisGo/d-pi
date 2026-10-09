@@ -3,6 +3,8 @@ import { useStore } from "zustand";
 import type { ConversationModel } from "../../../modules/conversation/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import { Button } from "../../../modules/ui/renderer/public";
+import { ToBottomIcon } from "../components/icons/reading";
+import { Tooltip } from "../components/ui/tooltip";
 import { observeLiveReadingUpdates } from "./live-reading";
 import type { attachReadingAnchor } from "./reading-anchor";
 
@@ -30,10 +32,7 @@ export function LiveReadingControls({
   );
   if (atEnd && !(coverageGap && onOpenHistory)) return null;
   return (
-    <div
-      className="flex min-w-0 shrink-0 flex-wrap items-center justify-end gap-2 px-3 py-1"
-      data-live-reading-controls=""
-    >
+    <div className="live-reading-controls" data-live-reading-controls="">
       {coverageGap && onOpenHistory && (
         <Button
           variant="ghost"
@@ -45,14 +44,18 @@ export function LiveReadingControls({
       )}
       {newOutput && <span role="status">{t("ui.conversation.newOutput")}</span>}
       {!atEnd && (
-        <Button
-          variant="ghost"
-          data-list-bottom=""
-          onClick={() => anchor.toBottom()}
-          title={t("ui.conversation.retainedTail")}
-        >
-          {t("ui.conversation.toBottom")}
-        </Button>
+        <Tooltip content={t("ui.conversation.toBottom")} side="top">
+          <Button
+            variant="secondary"
+            size="round"
+            aria-label={t("ui.conversation.toBottom")}
+            data-list-bottom=""
+            onClick={() => anchor.toBottom()}
+            title={t("ui.conversation.retainedTail")}
+          >
+            <ToBottomIcon size={20} />
+          </Button>
+        </Tooltip>
       )}
     </div>
   );

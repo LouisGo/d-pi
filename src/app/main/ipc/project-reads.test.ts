@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -72,6 +73,7 @@ function setup() {
   registerFilesIpc(context);
   registerGitIpc(context);
   return {
+    directory,
     thread,
     context,
     store,
@@ -412,4 +414,108 @@ it("reads indexed original CLI history only under the currently configured root 
       cursor: null,
     }),
   ).toMatchObject({ kind: "unavailable", reason: "denied" });
+});
+
+it("gates lazy message images by the sender and the active Thread", async () => {
+  const f = setup();
+  const threadId = f.thread.threadId;
+  const request = {
+    traceId: crypto.randomUUID(),
+    threadId,
+    cursor: { threadId, source: "fixture", offset: 0 },
+    recordId: "message",
+    index: 0,
+  };
+  f.context.sourceValid = () => false;
+  await expect(f.request("history:image", request)).rejects.toThrow(
+    "Invalid history source",
+  );
+  f.context.sourceValid = () => true;
+  await expect(
+    f.request("history:image", { ...request, threadId: crypto.randomUUID() }),
+  ).rejects.toThrow("Foreign Thread");
+  expect(await f.request("history:image", request)).toEqual({
+    kind: "unavailable",
+    reason: "unbound",
+  });
+  expect(() =>
+    f.request("history:image", { ...request, index: 128 }),
+  ).toThrow();
+});
+
+it("reads a bound blob image and rechecks the active Thread after resolving SDK storage", async () => {
+  const f = setup();
+  const threadId = f.thread.threadId;
+  const root = join(f.directory, "sessions");
+  const blobs = join(f.directory, "sdk-blobs");
+  mkdirSync(join(root, threadId), { recursive: true });
+  mkdirSync(blobs);
+  const data =
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jfX8AAAAASUVORK5CYII=";
+  const bytes = Buffer.from(data, "base64");
+  const digest = createHash("sha256").update(bytes).digest("hex");
+  writeFileSync(join(blobs, digest), bytes);
+  const sessionFile = join(root, threadId, "session.jsonl");
+  writeFileSync(
+    sessionFile,
+    [
+      { type: "session", version: 3, id: "session" },
+      {
+        type: "message",
+        id: "user",
+        parentId: null,
+        message: {
+          role: "user",
+          content: [
+            { type: "text", text: "Question\n[image: shot.png]" },
+            {
+              type: "image",
+              mimeType: "image/png",
+              data: `blob:sha256:${digest}`,
+            },
+          ],
+        },
+      },
+    ]
+      .map((row) => JSON.stringify(row))
+      .join("\n") + "\n",
+  );
+  f.store.threads.bindNativeSession({
+    threadId,
+    sessionFile,
+    sessionId: "session",
+    configContextId: "fixture",
+  });
+  f.context.nativeSessionsPath = () => root;
+  const locate = vi.fn(async () => blobs);
+  f.context.nativeBlobsPath = locate;
+  const page = await f.request("history:read", { threadId, cursor: null });
+  expect(page.entries[0]).toMatchObject({
+    displayText: "Question",
+    images: [{ digest }],
+  });
+  const request = {
+    traceId: crypto.randomUUID(),
+    threadId,
+    cursor: page.entries[0].mediaCursor,
+    recordId: "user",
+    index: 0,
+  };
+  expect(await f.request("history:image", request)).toEqual({
+    kind: "image",
+    dataUrl: `data:image/png;base64,${data}`,
+  });
+  expect(locate).toHaveBeenCalledWith(threadId, request.traceId);
+  let finish: (path: string) => void = () => {};
+  f.context.nativeBlobsPath = () =>
+    new Promise((resolve) => {
+      finish = resolve;
+    });
+  const pending = f.request("history:image", {
+    ...request,
+    traceId: crypto.randomUUID(),
+  });
+  f.store.threads.create("/new-active-thread");
+  finish(blobs);
+  await expect(pending).rejects.toThrow("Foreign Thread");
 });

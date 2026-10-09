@@ -57,6 +57,12 @@ export const componentCatalog = [
     forms: "hover · focus · Esc",
   },
   {
+    name: "HoverCard",
+    category: "overlays",
+    purpose: "悬停预览完整提问，鼠标移入后可继续阅读。",
+    forms: "hover · focus · scroll · Esc",
+  },
+  {
     name: "Select",
     category: "forms",
     purpose: "三项及以上优先下拉；默认向下展开，支持弹层内快速搜索。",
@@ -184,6 +190,12 @@ export const componentCatalog = [
     category: "business",
     purpose: "统一消息身份、事实状态和消息级操作。",
     forms: "title · status · actions / wrapping",
+  },
+  {
+    name: "ConversationMessage",
+    category: "business",
+    purpose: "组合用户气泡、回复正文、思考折叠与按需显示的消息操作。",
+    forms: "user · assistant / thinking · streaming · hover · keyboard",
   },
   {
     name: "ToolResultFrame",
@@ -343,6 +355,11 @@ export const presentationLabels = {
   copyText: "这是一段用于验证复制反馈的组件示例。",
   assistant: "助手",
   message: "这里展示消息头与正文的组合，以及窄空间下的状态和操作排列。",
+  conversationPrompt: "先让消息更容易阅读，再打磨操作细节。",
+  previewQuestion: "预览提问",
+  conversationThinking: "根据真实内容组织用户输入、回复与工具输出的层级。",
+  conversationReply:
+    "用户输入放在右侧气泡里，回复保留清晰的段落层级。\n\n复制操作在悬停和键盘聚焦时显示，思考内容可以按需展开。",
   tool: "读取文件 · src/app/renderer/workbench/native-interaction.tsx",
   toolOutput: "工具输出保留原始文本；展开、收起只影响阅读视图。",
   nativeTitle: "选择处理方式",

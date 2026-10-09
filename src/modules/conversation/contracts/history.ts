@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MessageTimestampSchema } from "./message-time";
 export const HistoryCursorSchema = z.strictObject({
   threadId: z.uuid(),
   source: z.string(),
@@ -16,11 +17,33 @@ export const HistoryToolEffectSchema = z.enum([
   "unknown",
 ]);
 export type HistoryToolEffect = z.infer<typeof HistoryToolEffectSchema>;
+export const HistoryImageSchema = z.strictObject({
+  index: z.number().int().nonnegative().max(127),
+  mimeType: z.enum(["image/png", "image/jpeg", "image/webp", "image/gif"]),
+  digest: z.string().regex(/^[a-f0-9]{64}$/),
+  name: z.string().max(512).optional(),
+});
+export type HistoryImage = z.infer<typeof HistoryImageSchema>;
+export const HistoryFileSchema = z.strictObject({
+  name: z.string().max(512),
+  byteLength: z.number().int().nonnegative(),
+  start: z.number().int().nonnegative().optional(),
+  end: z.number().int().nonnegative().optional(),
+});
+export type HistoryFile = z.infer<typeof HistoryFileSchema>;
 export const HistoryEntrySchema = z.strictObject({
   id: z.string(),
   parentId: z.string().nullable(),
   role: z.string(),
   text: z.string(),
+  thinking: z.string().optional(),
+  timestamp: MessageTimestampSchema.optional(),
+  displayText: z.string().optional(),
+  images: z.array(HistoryImageSchema).max(128).optional(),
+  files: z.array(HistoryFileSchema).max(128).optional(),
+  mediaCursor: HistoryCursorSchema.optional(),
+  state: z.enum(["complete", "failed", "aborted"]).optional(),
+  detail: z.string().max(4096).optional(),
   toolEvidence: z
     .strictObject({
       toolCallId: z.string().max(256),
@@ -62,6 +85,13 @@ export const HistoryRequestSchema = z.strictObject({
   cursor: HistoryCursorSchema.nullable(),
 });
 export interface HistoryBridge {
+  image?(
+    threadId: string,
+    cursor: HistoryCursor,
+    recordId: string,
+    index: number,
+    traceId: string,
+  ): Promise<HistoryImageReply>;
   projectList(threadId: string): Promise<ProjectHistoryCatalog>;
   projectRead(
     threadId: string,
@@ -70,6 +100,35 @@ export interface HistoryBridge {
   ): Promise<HistoryPage>;
   read(threadId: string, cursor: HistoryCursor | null): Promise<HistoryPage>;
 }
+export const HistoryImageRequestSchema = z.strictObject({
+  traceId: z.uuid(),
+  threadId: z.uuid(),
+  cursor: HistoryCursorSchema,
+  recordId: z.string().min(1).max(512),
+  index: z.number().int().nonnegative().max(127),
+});
+export const HistoryImageReplySchema = z.discriminatedUnion("kind", [
+  z.strictObject({
+    kind: z.literal("image"),
+    dataUrl: z
+      .string()
+      .max(44739300)
+      .regex(/^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/]+={0,2}$/),
+  }),
+  z.strictObject({
+    kind: z.literal("unavailable"),
+    reason: z.enum([
+      "missing",
+      "denied",
+      "changed",
+      "unsupported",
+      "invalid",
+      "cancelled",
+      "unbound",
+    ]),
+  }),
+]);
+export type HistoryImageReply = z.infer<typeof HistoryImageReplySchema>;
 
 export const ProjectHistoryCatalogSchema = z.discriminatedUnion("kind", [
   z.strictObject({

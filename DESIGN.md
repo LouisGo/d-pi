@@ -251,7 +251,7 @@ d-pi 的基础视觉体系跟随本轮已授权的 Beautiful UI 对照：常规�
 - **Heading**：页面标题消费 `--text-heading`，标题 tracking 按真实组件消费 `--tracking-heading`。
 - **Title**：目录等区域标题消费 `--text-title`。
 - **Body / Control**：日常界面文字消费 `--text-body`；控件行高消费 `--control-line-height`。
-- **Reading**：消息正文与编辑输入的阅读文字消费 `--text-reading`；已有阅读行高由所属样式维护，正文内容宽度在现有消息区域限制至 75ch。
+- **Reading**：消息正文与编辑输入的阅读文字消费 `--text-reading`；已有阅读行高由所属样式维护，模型正文限制至 75ch。会话与 composer 共享内容列，用户输入的右侧气泡消费 `--message-user-background` / `--message-user-foreground` 与 `--radius-message`，保留输入原文和换行。
 - **Small**：辅助信息与 Tooltip 消费 `--text-small`。
 
 不要用全局缩放代替控件密度，也不要把长文阅读压成辅助文字。具体字重继续由现有组件管理，frontmatter 不凭空建立未存在的共享字重 token。
@@ -338,6 +338,8 @@ framed Disclosure 的共享容器裁切 hover 和正文至圆角内，summary �
 同日用户明确要求直接补齐手动回答。公开 AnswerOptions 将 RadioOptions 与 TextArea 的 quiet variant 组合为一个受控答案，option/custom 两种输入互斥；可由调用者省略 custom 入口。quiet 输入静止时无边框和独立表面，hover/focus 使用同源表面，键盘仍使用共享 focus-visible；内容自然增长至限高后在输入区滚动。NativeInteraction 的 select 卡片实际开放“其他回答”，空白禁用，显式提交原文，不丢弃超时默认后的未提交草稿。Host 通过既有 value 字符串回复传递自定义内容，confirm 仍使用独立布尔响应。最新来源及验证见[手动回答补齐](.scratch/beautiful-ui-system/spec.md#2026-10-09-手动回答补齐)。
 
 组件盘点、t3 code 固定源码对照、采用边界和本轮证据见[所属规格](.scratch/beautiful-ui-system/spec.md#2026-10-09-组件梳理与组合-polish)。
+
+2026-10-09 会话展示专项：UserMessageBubble、MessageActions、MessageStatus、ThinkingDisclosure 和 ToolResultFrame 各自拥有一类呈现，模型回复保留无框长文；思考首次展开才解析，工具默认收起，失败与停止仍明确显示。消息动作 hover 或键盘聚焦时显露，预留高度防止跳动。ConversationOutline 仅索引已呈现的用户轮次，通过独立的 HoverCard、TurnPreviewCard 与 ConversationTurnAnchor 组合，在悬停或键盘聚焦时预览完整提问；保留换行，长内容在卡片内滚动，鼠标移入后继续展开，通过既有阅读锚点定位；继续生成不改变已定位的轮次。技术身份和底层错误保留在详情中，普通会话不以执行引擎命名。Streamdown 的代码适配层在供应商 utility 层之后消费项目 token，保留精确复制、语法高亮与独立横向滚动。MessageMedia 将已发送图片与冻结文件放在用户气泡上方，保留尺寸并按需加载，预览沿用共享 Modal；真实消息时间与复制动作共同按 hover/focus 显露，预留高度避免跳动。轮次导航使用细线圆点与强调色当前态，队列只在输入区按需呈现，停止回复由 composer 提供。验证与限制见[所属规格](.scratch/m2-first-release/spec.md#2026-10-09-会话展示专项)。
 
 ## Do's and Don'ts
 

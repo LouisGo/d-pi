@@ -158,7 +158,7 @@ export const ui = {
   "ui.conversation.newOutput": "有新输出",
   "ui.conversation.toBottom": "回到列表底部",
   "ui.conversation.retainedTail": "回到当前实时列表已保留的底部。",
-  "ui.conversation.openHistory": "查看原生历史",
+  "ui.conversation.openHistory": "会话详情",
   "ui.history.readOnlyCoverage":
     "原生历史只读，按保存顺序分页显示，与实时列表分别呈现。",
   "ui.history.refreshStart": "刷新会从当前来源的起始页重新读取。",
@@ -511,7 +511,7 @@ export const ui = {
   "composer.blocked.stopping": "正在停止当前执行，确认停止后可发送。",
   "composer.blocked.interaction":
     "请先在执行控制中处理待答或结果不确定的原生交互。",
-  "ui.runtime.phase.noModel": "OMP 已启动 · 尚无生效模型",
+  "ui.runtime.phase.noModel": "没有可用模型",
 
   "ui.history.openCli": "查看此项目已有的 CLI 历史",
   "ui.history.projectDescription":
@@ -534,7 +534,7 @@ export const ui = {
   "app.thread.indexPartial": "部分原生会话尚未整理，可重试刷新。",
   "app.thread.indexUnavailable": "原生会话索引暂不可用，现有会话仍可使用。",
   "composer.blocked.preparing": "请稍候，正在准备会话…",
-  "composer.blocked.start": "尚未启动会话，请先启动 OMP，再发送。",
+  "composer.blocked.start": "会话尚未就绪，连接后可发送。",
   "composer.blocked.allow": "请允许项目执行以启动会话。",
   "composer.blocked.wait": "会话尚未就绪，请查看执行状态。",
   "model.offThinking": "关闭推理",
@@ -658,16 +658,28 @@ export const ui = {
   "composer.steer": "干预当前执行",
   "composer.queueFull":
     "排队已满（{queued}/{cap}），请等待消费后再发送；草稿已保留。",
+  "ui.conversation.details": "详情",
+  "ui.conversation.generating": "正在生成回复",
+  "ui.conversation.thinking": "思考过程",
+  "ui.conversation.thinkingActive": "正在思考…",
+  "ui.conversation.turns": "对话轮次",
+  "ui.conversation.jumpToTurn": "定位第 {number} 轮：{preview}",
+  "ui.conversation.turnNumber": "第 {number} 轮",
+  "ui.conversation.questionWithoutText": "此轮没有文字提问。",
+  "ui.conversation.copyCode": "复制代码",
   "ui.conversation.image": "[图片：{alt}]",
   "ui.conversation.imageNotLoaded": "未加载",
-  "ui.conversation.sectionLabel": "原生会话阅读",
+  "ui.conversation.sectionLabel": "会话",
   "ui.conversation.heading": "会话",
   "ui.conversation.empty": "还没有消息。",
-  "ui.conversation.gap":
-    "当前实时内容有缺口，可查看原生历史核对；回到底部不会补齐缺口。",
+  "ui.conversation.gap": "部分消息暂不可读，可打开会话详情核对。",
   "ui.conversation.streaming": "进行中",
   "ui.conversation.failed": "失败",
   "ui.conversation.copy": "复制",
+  "ui.conversation.imageNumber": "图片 {number}",
+  "ui.conversation.mediaUnavailable": "无法预览",
+  "composer.stopResponse": "停止回复",
+  "composer.resumeQueue": "继续发送",
   "ui.conversation.toolOutput": "查看工具输出",
   "ui.conversation.waitingResult": "等待结果…",
   "ui.submissions.sectionLabel": "提交记录",
@@ -676,32 +688,32 @@ export const ui = {
     "调用回执不代表业务已接受或任务已完成。结果未知时请先核对，不要重复发送。",
   "ui.submissions.checkStatus": "核对提交状态",
   "ui.submissions.rejected.contentMissing":
-    "未派发到 OMP：图片资源缺失，请重新附加原件。原文已保留。",
+    "未发送：图片资源缺失，请重新附加原件。原文已保留。",
   "ui.interaction.rejected.contentMissing":
-    "未派发到 OMP：图片资源缺失，请重新附加原件。原文已保留。",
+    "未发送：图片资源缺失，请重新附加原件。原文已保留。",
   "ui.submissions.rejected.contentCorrupt":
-    "未派发到 OMP：图片资源完整性校验失败，请重新附加原件。原文已保留。",
+    "未发送：图片资源完整性校验失败，请重新附加原件。原文已保留。",
   "ui.interaction.rejected.contentCorrupt":
-    "未派发到 OMP：图片资源完整性校验失败，请重新附加原件。原文已保留。",
+    "未发送：图片资源完整性校验失败，请重新附加原件。原文已保留。",
   "ui.submissions.rejected.transportTooLarge":
-    "未派发到 OMP：图片内容超出应用传输预算，请减少附件。原文已保留。",
+    "未发送：图片内容超出应用传输预算，请减少附件。原文已保留。",
   "ui.interaction.rejected.transportTooLarge":
-    "未派发到 OMP：图片内容超出应用传输预算，请减少附件。原文已保留。",
-  "ui.submissions.rejected": "未派发到 OMP，原文保留；可处理阻塞后重新发送",
+    "未发送：图片内容超出应用传输预算，请减少附件。原文已保留。",
+  "ui.submissions.rejected": "未发送，原文保留；可处理阻塞后重新发送",
   "ui.submissions.rejected.notReady":
-    "未派发到 OMP：会话尚未就绪（没有可用模型）。原文已保留；请先核对运行状态。",
+    "未发送：会话尚未就绪（没有可用模型）。原文已保留；请先核对运行状态。",
   "ui.submissions.rejected.nativeUnavailable":
-    "未派发到 OMP：原生会话未连接。原文已保留；请先核对运行状态。",
+    "未发送：原生会话未连接。原文已保留；请先核对运行状态。",
   "ui.submissions.rejected.unsupportedNativeCommand":
-    "未派发到 OMP：该文本属于应用托管的原生命令，不能经输入框发送。原文已保留。",
+    "未发送：该文本属于应用托管的原生命令，不能经输入框发送。原文已保留。",
   "ui.submissions.rejected.paused":
-    "未派发到 OMP：原生队列已暂停。原文已保留；明确继续后可重新发送。",
+    "未发送：原生队列已暂停。原文已保留；明确继续后可重新发送。",
   "ui.submissions.rejected.interactionPending":
-    "未派发到 OMP：有原生对话框等待回答。原文已保留；请先处理待回答交互。",
+    "未发送：有原生对话框等待回答。原文已保留；请先处理待回答交互。",
   "ui.submissions.rejected.staleTarget":
-    "未派发到 OMP：提交指向旧的原生会话实例。原文已保留；请核对当前运行状态后重新发送。",
+    "未发送：提交指向旧的原生会话实例。原文已保留；请核对当前运行状态后重新发送。",
   "ui.submissions.rejected.correlationLimit":
-    "未派发到 OMP：未确认的派发过多。原文已保留；请先核对已有提交状态。",
+    "未发送：未确认的派发过多。原文已保留；请先核对已有提交状态。",
   "ui.submissions.acknowledged": "已收到调用回执",
   "ui.submissions.prepared": "已保存，未派发",
   "ui.submissions.dispatching": "已派发，等待回执",
@@ -746,11 +758,11 @@ export const ui = {
   "ui.runtime.loading": "正在读取项目执行状态…",
   "ui.runtime.phase.browse": "仅浏览",
   "ui.runtime.phase.allowed": "已允许项目执行",
-  "ui.runtime.phase.starting": "正在启动 OMP",
-  "ui.runtime.phase.busy": "OMP 正在工作",
-  "ui.runtime.phase.ready": "OMP 已就绪",
+  "ui.runtime.phase.starting": "正在连接",
+  "ui.runtime.phase.busy": "正在生成",
+  "ui.runtime.phase.ready": "就绪",
   "ui.runtime.phase.interrupted": "连接中断",
-  "ui.runtime.phase.failed": "OMP 尚未就绪",
+  "ui.runtime.phase.failed": "连接不可用",
   "ui.runtime.sectionLabel": "项目执行",
   "ui.runtime.model": "模型：{model}",
   "ui.runtime.queuePaused": "队列已暂缓：{queued} 条；后台活动：{background}",

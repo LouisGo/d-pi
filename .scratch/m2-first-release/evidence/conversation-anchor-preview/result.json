@@ -1,0 +1,98 @@
+{
+  "commit": "03fe044306d67bf1a6f9dc9ae93181241c8f668f",
+  "dirty": true,
+  "passed": true,
+  "captured": true,
+  "platform": "darwin",
+  "mode": "isolated Electron Renderer; production views and synthetic bridge; no provider requests",
+  "results": [
+    {
+      "name": "light 1440 complete question, pointer bridge, scroll and keyboard",
+      "card": {
+        "left": 346,
+        "right": 666,
+        "top": 242,
+        "bottom": 542,
+        "x": 506,
+        "y": 405,
+        "fullQuestion": true,
+        "length": 423,
+        "wrap": "pre-wrap",
+        "scrollable": true,
+        "overflow": false,
+        "paneScroll": 0
+      },
+      "retained": {
+        "open": true,
+        "scroll": 180,
+        "paneScroll": 0
+      }
+    },
+    {
+      "name": "light 720 complete question, pointer bridge, scroll and keyboard",
+      "card": {
+        "left": 286,
+        "right": 606,
+        "top": 222,
+        "bottom": 522,
+        "x": 446,
+        "y": 385,
+        "fullQuestion": true,
+        "length": 423,
+        "wrap": "pre-wrap",
+        "scrollable": true,
+        "overflow": false,
+        "paneScroll": 0
+      },
+      "retained": {
+        "open": true,
+        "scroll": 180,
+        "paneScroll": 0
+      }
+    },
+    {
+      "name": "dark 1440 complete question, pointer bridge, scroll and keyboard",
+      "card": {
+        "left": 346,
+        "right": 666,
+        "top": 242,
+        "bottom": 542,
+        "x": 506,
+        "y": 405,
+        "fullQuestion": true,
+        "length": 423,
+        "wrap": "pre-wrap",
+        "scrollable": true,
+        "overflow": false,
+        "paneScroll": 0
+      },
+      "retained": {
+        "open": true,
+        "scroll": 180,
+        "paneScroll": 0
+      }
+    },
+    {
+      "name": "dark 720 complete question, pointer bridge, scroll and keyboard",
+      "card": {
+        "left": 286,
+        "right": 606,
+        "top": 222,
+        "bottom": 522,
+        "x": 446,
+        "y": 385,
+        "fullQuestion": true,
+        "length": 423,
+        "wrap": "pre-wrap",
+        "scrollable": true,
+        "overflow": false,
+        "paneScroll": 0
+      },
+      "retained": {
+        "open": true,
+        "scroll": 180,
+        "paneScroll": 0
+      }
+    }
+  ]
+}

@@ -155,6 +155,8 @@ export const ConfigurationSnapshotSchema = z.strictObject({
   kind: z.literal("snapshot"),
   ...identity,
   source: ConfigurationSourceSchema,
+  /** Resolved by the fixed SDK, including profile and XDG rules. */
+  nativeBlobsDirectory: z.string().optional(),
   models: z.array(ModelSummarySchema),
   providers: z.array(ProviderSummarySchema).optional(),
   modelRoles: z.array(ModelRoleSummarySchema).optional(),

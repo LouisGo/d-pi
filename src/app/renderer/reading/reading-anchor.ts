@@ -5,6 +5,15 @@ import {
   resolveReadingAnchor,
 } from "../../../modules/conversation/core/public";
 
+export interface ReadingAnchorController {
+  capture: (explicit?: boolean) => void;
+  getSnapshot: () => boolean;
+  subscribe: (listener: () => void) => () => void;
+  position: (action: () => boolean) => boolean;
+  toBottom: () => void;
+  dispose: () => void;
+}
+
 /** One visible pane owns its DOM observers; Thread positions outlive this adapter. */
 export function attachReadingAnchor({
   pane,
@@ -20,7 +29,7 @@ export function attachReadingAnchor({
   pixel: () => number;
   rememberPixel: (top: number) => void;
   onTakeover?: (() => void) | undefined;
-}) {
+}): ReadingAnchorController {
   let disposed = false;
   let frame: number | null = null;
   let restoring = false;

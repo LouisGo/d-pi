@@ -374,7 +374,8 @@ Object.assign(window, {
 if (
   !location.pathname.endsWith("workbench.html") &&
   !location.pathname.endsWith("settings.html") &&
-  !location.pathname.endsWith("reading-loop.html")
+  !location.pathname.endsWith("reading-loop.html") &&
+  !location.pathname.endsWith("conversation-display.html")
 )
   mountRenderingFixture();
 

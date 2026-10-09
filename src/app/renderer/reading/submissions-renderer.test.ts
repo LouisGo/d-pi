@@ -151,7 +151,7 @@ it("keeps an unreported refusal cause generic without inventing a recovery fact"
       outcome: "unobserved",
     });
     expect(container.textContent).toContain(
-      locale === "zh-CN" ? "未派发到 OMP，原文保留" : "Not dispatched to OMP",
+      locale === "zh-CN" ? "未发送，原文保留" : "Not sent",
     );
     for (const reason of Object.values(refusalCopy))
       expect(container.textContent).not.toContain(

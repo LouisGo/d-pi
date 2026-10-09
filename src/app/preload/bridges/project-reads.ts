@@ -4,6 +4,8 @@ import {
   GitResponseSchema,
 } from "../../../modules/changes/contracts/public";
 import {
+  HistoryImageReplySchema,
+  HistoryImageRequestSchema,
   HistoryPageSchema,
   HistoryRequestSchema,
   ProjectHistoryCatalogSchema,
@@ -42,6 +44,20 @@ export function createProjectReadBridge(
   }
   return {
     history: {
+      async image(threadId, cursor, recordId, index, traceId) {
+        return HistoryImageReplySchema.parse(
+          await ipcRenderer.invoke(
+            "history:image",
+            HistoryImageRequestSchema.parse({
+              threadId,
+              cursor,
+              recordId,
+              index,
+              traceId,
+            }),
+          ),
+        );
+      },
       async projectList(threadId) {
         return ProjectHistoryCatalogSchema.parse(
           await ipcRenderer.invoke(

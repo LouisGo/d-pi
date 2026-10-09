@@ -36,8 +36,10 @@ import {
 import {
   ActionGroupDemo,
   BadgeDemo,
+  ConversationMessageDemo,
   CopyButtonDemo,
   EmptyStateDemo,
+  HoverCardDemo,
   InlineNoticeDemo,
   KbdDemo,
   MessageHeaderDemo,
@@ -57,6 +59,7 @@ const demos: Record<ComponentName, ComponentType> = {
   CopyButton: CopyButtonDemo,
   PathLabel: PathLabelDemo,
   MessageHeader: MessageHeaderDemo,
+  ConversationMessage: ConversationMessageDemo,
   ToolResultFrame: ToolResultFrameDemo,
   NativeInteraction: NativeInteractionDemo,
   Checkbox: CheckboxDemo,
@@ -67,6 +70,7 @@ const demos: Record<ComponentName, ComponentType> = {
   Modal: ModalDemo,
   StatusPreview: StatusPreviewDemo,
   Tooltip: TooltipDemo,
+  HoverCard: HoverCardDemo,
 
   Select: SelectDemo,
   Switch: SwitchDemo,

@@ -1,4 +1,4 @@
-export { readNativeHistory } from "./native-history";
+export { readNativeHistory, readNativeImage } from "./native-history";
 export {
   listNativeSessionCatalog,
   listProjectNativeHistory,

@@ -83,7 +83,7 @@ it.each([
       expect(mutations).toHaveLength(0);
       expect(f.container.textContent).toContain("END_CONTINUOUS");
       expect(f.container.querySelector("[data-reading-segment]")).toBeNull();
-      expect(f.container.querySelector("button")).toBeNull();
+      expect(f.container.querySelector("[data-reading-segment]")).toBeNull();
       await f.render(prefix + tail + "\n\nEND_CONTINUOUS", false);
       expect(f.container.querySelector("p")).toBe(paragraph);
       expect(f.container.querySelectorAll("th, td").length).toBe(4);
@@ -112,7 +112,7 @@ it("renders a long answer's first and last blocks together, preserving tables an
       "LAST_CODE_LINE",
     );
     expect(f.container.textContent).toContain("LAST_PARAGRAPH");
-    expect(f.container.querySelector("button")).toBeNull();
+    expect(f.container.querySelector("[data-reading-segment]")).toBeNull();
   } finally {
     await f.dispose();
   }
@@ -128,7 +128,7 @@ it("shows the full raw output without page controls or an inner vertical scrolli
       text.length,
     );
     expect(f.container.querySelector("pre")?.textContent).toBe(text);
-    expect(f.container.querySelector("button")).toBeNull();
+    expect(f.container.querySelector("[data-reading-segment]")).toBeNull();
     expect(f.container.querySelector("pre")?.hasAttribute("tabindex")).toBe(
       false,
     );
@@ -200,7 +200,7 @@ it.each(["tool", "subagent"] as const)(
         text,
       );
       const button = [...container.querySelectorAll("button")].find((node) =>
-        node.textContent?.includes("Copy"),
+        node.getAttribute("aria-label")?.startsWith("Copy"),
       );
       if (!button) throw Error("missing copy");
       await act(() => button.click());

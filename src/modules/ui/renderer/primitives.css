@@ -165,6 +165,11 @@
     color: var(--muted-foreground);
     font-size: var(--text-small);
   }
+  .ui-disclosure[data-variant="inline"] > .ui-disclosure-trigger {
+    width: fit-content;
+    max-width: 100%;
+    gap: calc(var(--spacing) * 2);
+  }
   :is(.ui-checkbox, .ui-slider, .ui-disclosure-trigger):focus-visible {
     outline: var(--focus-ring);
     outline-offset: var(--focus-ring-offset);

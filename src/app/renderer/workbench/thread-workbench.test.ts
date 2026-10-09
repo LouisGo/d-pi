@@ -203,7 +203,7 @@ it("opens the existing Thread tools at native history from a live coverage gap a
   try {
     await f.render();
     const gapEntry = [...f.host.querySelectorAll("button")].find(
-      (button) => button.textContent === "View native history",
+      (button) => button.textContent === "Conversation details",
     );
     expect(gapEntry).toBeDefined();
     await act(() => gapEntry?.click());

@@ -3,10 +3,25 @@ import { type ComponentProps, memo } from "react";
 import { parseMarkdownIntoBlocks, Streamdown } from "streamdown";
 import { WebsiteIcon } from "@/components/icons/common";
 import { useI18n } from "../../../modules/preferences/renderer/public";
+import { CheckIcon } from "../../../modules/ui/renderer/public";
+import { CopyIcon } from "../components/icons/reading";
 import { urlBrand } from "../components/url-display";
 
 // Keep remote resources inert. Native text can be copied; only an explicit app action may open a URL.
 const plugins = { code };
+const controls = {
+  code: { copy: true, download: false },
+  table: false,
+  mermaid: false,
+  image: false,
+};
+function MarkdownCopyIcon() {
+  return <CopyIcon />;
+}
+function MarkdownCheckIcon() {
+  return <CheckIcon />;
+}
+const icons = { CopyIcon: MarkdownCopyIcon, CheckIcon: MarkdownCheckIcon };
 const components = {
   img: MarkdownImage,
   a: MarkdownLink,
@@ -46,11 +61,17 @@ export const Markdown = memo(function Markdown({
   text: string;
   streaming?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <Streamdown
       data-selectable
       plugins={plugins}
-      controls={false}
+      controls={controls}
+      icons={icons}
+      translations={{
+        copyCode: t("ui.conversation.copyCode"),
+        copied: t("ui.copy.copied"),
+      }}
       // The reading pane owns vertical scrolling, including long code and tables.
       codeBlockMaxHeight={0}
       tableMaxHeight={0}

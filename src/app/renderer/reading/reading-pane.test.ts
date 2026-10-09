@@ -117,7 +117,7 @@ it("shows a reachable list-bottom action and a new-output prompt for same-entity
     pane.scrollTop = 230;
     await act(() => pane.dispatchEvent(new Event("scroll")));
     const bottom = [...host.querySelectorAll("button")].find(
-      (node) => node.textContent === "Back to list bottom",
+      (node) => node.getAttribute("aria-label") === "Back to list bottom",
     );
     expect(bottom).toBeDefined();
     expect(host.textContent).not.toContain("New output");

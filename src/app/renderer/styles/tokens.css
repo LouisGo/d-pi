@@ -151,6 +151,14 @@
   --layer-popup: 100;
   --shadow-overlay: 0 4px 12px rgb(0 0 0 / 6%), 0 16px 40px rgb(0 0 0 / 10%);
   --content-width: 56rem;
+  --conversation-gutter: calc(var(--control-height) + var(--layout-gap));
+  --message-user-background: var(--accent);
+  --message-user-foreground: color-mix(
+    in srgb,
+    var(--foreground) 85%,
+    var(--emphasis)
+  );
+  --radius-message: calc(var(--radius) + var(--spacing));
   --editor-height: 4rem;
   --thread-setup-max-height: 26vh;
   --composer-max-height: 24vh;

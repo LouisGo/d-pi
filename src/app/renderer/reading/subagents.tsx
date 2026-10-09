@@ -11,9 +11,11 @@ import { ReadingBody, type ReadingBodyBinding } from "./reading-body";
 export function SubagentMessage({
   item,
   position,
+  rowId = item.id,
 }: {
   item: ConversationItem;
   position?: ReadingBodyBinding | undefined;
+  rowId?: string | number;
 }) {
   const { t } = useI18n();
   const agent = item.subagent;
@@ -46,18 +48,14 @@ export function SubagentMessage({
     <article
       className="message"
       data-selectable
-      data-reading-row={item.id}
+      data-reading-row={rowId}
+      data-message-role="subagent"
       data-subagent-id={agent.nativeId}
       data-subagent-status={agent.status}
       data-subagent-parent={agent.parentToolCallId}
     >
       <MessageHeader
-        title={
-          <>
-            {t("subagents.heading")} ·{" "}
-            {item.label.kind === "literal" ? item.label.text : "OMP"}
-          </>
-        }
+        title={agent.description || t("subagents.heading")}
         status={{
           label: status,
           tone: agent.status === "failed" ? "danger" : "neutral",
@@ -70,21 +68,11 @@ export function SubagentMessage({
           />
         }
       />
-      <p className="muted">
-        {agent.nativeId}
-        {agent.parentToolCallId ? ` · ${agent.parentToolCallId}` : ""}
-      </p>
-      {agent.description && <p>{agent.description}</p>}
       {agent.task && (
         <Disclosure>
           <DisclosureTrigger>{t("subagents.task")}</DisclosureTrigger>
           <pre>{agent.task}</pre>
         </Disclosure>
-      )}
-      {agent.model && (
-        <p>
-          {t("subagents.model")} · {agent.model}
-        </p>
       )}
       {agent.currentTool && (
         <p>
@@ -110,12 +98,24 @@ export function SubagentMessage({
         )}
       </ToolResultFrame>
       {reason && <p role="status">{reason}</p>}
-      {agent.unhandledEvent && (
-        <p role="status">
-          {t("subagents.unhandledEvent", { eventType: agent.unhandledEvent })}
+      <Disclosure>
+        <DisclosureTrigger>{t("ui.conversation.details")}</DisclosureTrigger>
+        <p className="muted">
+          {agent.nativeId}
+          {agent.parentToolCallId ? ` · ${agent.parentToolCallId}` : ""}
         </p>
-      )}
-      <p className="muted">{t("subagents.coverage")}</p>
+        {agent.model && (
+          <p>
+            {t("subagents.model")} · {agent.model}
+          </p>
+        )}
+        {agent.unhandledEvent && (
+          <p role="status">
+            {t("subagents.unhandledEvent", { eventType: agent.unhandledEvent })}
+          </p>
+        )}
+        <p className="muted">{t("subagents.coverage")}</p>
+      </Disclosure>
     </article>
   );
 }

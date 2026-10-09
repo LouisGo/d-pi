@@ -52,8 +52,10 @@ import {
   type AttachmentActions,
   AttachmentControls,
 } from "./attachment-controls";
+import { ComposerStopAction } from "./composer-execution-controls";
 import { ComposerModelPicker } from "./composer-model-picker";
 import { ComposerToolbar } from "./composer-toolbar";
+import { QueueControls } from "./queue-controls";
 import { UrlDecoration } from "./url-decoration";
 export function Composer({
   thread,
@@ -395,6 +397,9 @@ export function Composer({
           onChooseModel={onChooseModel}
         />
       )}
+      {runtime && (
+        <QueueControls model={runtime} hiddenEmpty placement="composer" />
+      )}
       <div className="composer-body">
         {thread.attachments &&
           thread.attachmentImports &&
@@ -647,6 +652,7 @@ function SendButton({
   const queued = queueCount(receipts, nativeQueueLength(state));
   return (
     <div className="flex gap-2">
+      <ComposerStopAction model={runtime} />
       <Button
         variant="accent"
         size="round"

@@ -41,7 +41,7 @@ export function Slider({ className, ...props }: SliderProps) {
   );
 }
 export type DisclosureProps = ComponentPropsWithRef<"details"> & {
-  variant?: "plain" | "framed";
+  variant?: "plain" | "framed" | "inline";
 };
 export function Disclosure({
   className,

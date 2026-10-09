@@ -20,9 +20,11 @@ import {
 export function QueueControls({
   model,
   hiddenEmpty = false,
+  placement = "inspection",
 }: {
   model: RuntimeModel;
   hiddenEmpty?: boolean;
+  placement?: "inspection" | "composer";
 }) {
   const { t } = useI18n();
   const queue = useStore(
@@ -37,13 +39,21 @@ export function QueueControls({
     model.stateStore,
     (state) => state.view?.phase === "ready" && state.view.trusted,
   );
+  const paused = useStore(
+    model.stateStore,
+    (state) => state.view?.control?.paused === true,
+  );
+  const stopping = useStore(
+    model.stateStore,
+    (state) => state.view?.control?.stopping === true,
+  );
   if (
     !queue ||
     (hiddenEmpty &&
       !queue.items.length &&
       !queue.hiddenCount &&
       !queue.editing &&
-      !operation)
+      (!operation || operation.status === "acknowledged"))
   )
     return null;
   const pending = operation?.status === "pending";
@@ -54,8 +64,23 @@ export function QueueControls({
     void model.manageQueue(command);
   };
   return (
-    <div className="runtime-source">
-      <Disclosure aria-label={t("queue.heading")}>
+    <div
+      className={placement === "composer" ? "composer-queue" : "runtime-source"}
+    >
+      {placement === "composer" && paused && (
+        <Button
+          variant="ghost"
+          aria-label={t("composer.resumeQueue")}
+          disabled={!available || stopping || locked}
+          onClick={() => void model.control("continue")}
+        >
+          {t("composer.resumeQueue")}
+        </Button>
+      )}
+      <Disclosure
+        variant={placement === "composer" ? "inline" : "plain"}
+        aria-label={t("queue.heading")}
+      >
         <DisclosureTrigger>
           {t("queue.heading")} · {queue.items.length + queue.hiddenCount}
         </DisclosureTrigger>

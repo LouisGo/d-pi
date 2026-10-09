@@ -5,6 +5,7 @@
 @import "../../../modules/ui/renderer/settings.css";
 @import "../../../modules/ui/renderer/presentation.css";
 @import "../../../modules/ui/renderer/loading-indicator.css";
+@import "../../../modules/ui/renderer/hover-card.css";
 @import "../shell/settings/settings.css";
 @import "../components/ui/hover-menu.css";
 @import "./interaction.css";
@@ -15,6 +16,7 @@
 @import "../components/ui/action-menu.css";
 @import "../components/ui/feedback.css";
 @import "../reading/message-parts.css";
+@import "../reading/conversation-display.css";
 @import "../workbench/composer-toolbar.css";
 @import "../workbench/composer.css";
 @import "../../../modules/configuration/renderer/model-picker.css";
@@ -671,7 +673,7 @@
   .configuration-content {
     color: var(--foreground);
   }
-  .message > div:not(.message-heading) {
+  .message > div:not(.message-heading, .user-message-bubble) {
     max-width: 75ch;
   }
 }

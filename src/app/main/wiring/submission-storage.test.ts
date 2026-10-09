@@ -519,3 +519,54 @@ it("non-dispatched receipts cannot consume a draft and remain terminal across re
       store.close();
     }
   }));
+
+it("finds frozen attachment presentations beyond the recent receipt window without changing receipts", () =>
+  fixture((path) => {
+    const store = AppStorage.open(path);
+    try {
+      const value = frozen(store);
+      const original = {
+        ...value,
+        content: {
+          schemaVersion: 1 as const,
+          message: "frozen file input",
+          images: [],
+          sources: [],
+          rawBytes: 0,
+        },
+      };
+      store.submissions.prepareSubmission(original);
+      for (let index = 0; index < 101; index++)
+        store.submissions.prepareSubmission({
+          ...value,
+          origin: "free",
+          submissionId: randomUUID(),
+          traceId: randomUUID(),
+          requestId: randomUUID(),
+          text: `later ${index}`,
+        });
+      expect(store.submissions.list(value.threadId)).toHaveLength(100);
+      const matches = store.submissions.presentationCandidates(
+        value.threadId,
+        value.target.nativeSessionRef,
+        value.target.configContextId,
+        "frozen file input",
+      );
+      expect(matches.map((receipt) => receipt.submissionId)).toEqual([
+        value.submissionId,
+      ]);
+      expect(
+        store.submissions.presentationCandidates(
+          value.threadId,
+          "other",
+          value.target.configContextId,
+          "frozen file input",
+        ),
+      ).toEqual([]);
+      expect(store.submissions.submission(value.submissionId)?.state).toBe(
+        "prepared",
+      );
+    } finally {
+      store.close();
+    }
+  }));

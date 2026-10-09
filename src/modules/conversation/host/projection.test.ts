@@ -1,6 +1,92 @@
 import { expect, it } from "vitest";
 import { ConversationProjection } from "./projection";
 
+it("keeps native message time through streamed updates without substituting the local clock", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {});
+  p.accept({
+    type: "message_start",
+    message: { role: "assistant", content: [], timestamp: 1791500000000 },
+  });
+  p.accept({
+    type: "message_update",
+    assistantMessageEvent: { type: "text_delta", delta: "Hi" },
+  });
+  expect(p.snapshot().items[0]).toMatchObject({ timestamp: 1791500000000 });
+  p.accept({
+    type: "message_end",
+    message: { role: "assistant", content: "Hi", timestamp: 1791500000000 },
+  });
+  expect(p.snapshot().items[0]).toMatchObject({ timestamp: 1791500000000 });
+  p.accept({
+    type: "message_end",
+    message: { role: "user", content: "legacy" },
+  });
+  expect(p.snapshot().items[1]?.timestamp).toBeUndefined();
+  p.dispose();
+});
+
+it("projects native thinking separately and preserves full snapshots without doubling deltas", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {});
+  p.accept({
+    type: "message_start",
+    message: { role: "assistant", content: [] },
+  });
+  p.accept({
+    type: "message_update",
+    assistantMessageEvent: { type: "thinking_delta", delta: "Consider " },
+  });
+  p.accept({
+    type: "message_update",
+    assistantMessageEvent: { type: "thinking_delta", delta: "paths" },
+    message: {
+      role: "assistant",
+      content: [{ type: "thinking", thinking: "Consider paths" }],
+    },
+  });
+  expect(p.snapshot().items[0]).toMatchObject({
+    text: "",
+    thinking: "Consider paths",
+    state: "streaming",
+  });
+  p.accept({
+    type: "message_end",
+    message: {
+      role: "assistant",
+      content: [
+        { type: "thinking", thinking: "Consider paths" },
+        { type: "text", text: "Answer" },
+      ],
+    },
+  });
+  expect(p.snapshot().items[0]).toMatchObject({
+    text: "Answer",
+    thinking: "Consider paths",
+    state: "complete",
+  });
+  p.dispose();
+});
+
+it("includes thinking in the bounded projection rather than letting it bypass the byte budget", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {}, 2048);
+  p.accept({
+    type: "message_end",
+    message: {
+      role: "assistant",
+      content: [
+        { type: "thinking", thinking: "思考".repeat(10000) },
+        { type: "text", text: "Reply" },
+      ],
+    },
+  });
+  const snapshot = p.snapshot();
+  expect(snapshot.items[0]?.truncated).toBe(true);
+  expect(snapshot.gap).toBe(true);
+  expect(
+    new TextEncoder().encode(JSON.stringify(snapshot.items)).length,
+  ).toBeLessThanOrEqual(2048);
+  p.dispose();
+});
+
 it("ignores known non-conversation frames but preserves an unknown-frame notice", () => {
   const p = new ConversationProjection(crypto.randomUUID(), () => {});
 
@@ -69,6 +155,35 @@ it("does not let an unconsumed extra field on a tool start invent failure or res
   });
   expect(p.snapshot().items).toMatchObject([
     { role: "tool", state: "streaming", text: "" },
+  ]);
+  p.dispose();
+});
+
+it("keeps the tool name when its native result is appended after execution", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {});
+  p.accept({ type: "tool_execution_start", toolCallId: "t", toolName: "read" });
+  p.accept({
+    type: "tool_execution_end",
+    toolCallId: "t",
+    toolName: "read",
+    isError: false,
+    result: { content: [{ type: "text", text: "contents" }] },
+  });
+  p.accept({
+    type: "message_end",
+    message: {
+      role: "toolResult",
+      toolCallId: "t",
+      content: [{ type: "text", text: "contents" }],
+    },
+  });
+  expect(p.snapshot().items).toMatchObject([
+    {
+      role: "tool",
+      label: { kind: "literal", text: "read" },
+      text: "contents",
+      state: "complete",
+    },
   ]);
   p.dispose();
 });

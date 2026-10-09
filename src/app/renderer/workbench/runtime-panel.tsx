@@ -77,16 +77,6 @@ export function RuntimePanel({
       <LoadingIndicator pending label={t("app.loading")} />
     ) : null;
   const actionable =
-    state.busy ||
-    state.control?.paused ||
-    state.control?.queued ||
-    state.control?.stopping ||
-    state.control?.background ||
-    state.control?.queueState?.editing ||
-    state.control?.queueState?.items.length ||
-    state.control?.queueState?.hiddenCount ||
-    state.queueOperation?.status === "unknown" ||
-    state.queueOperation?.status === "failed" ||
     state.interactions?.unsupported ||
     state.interactions?.items.some(
       (item) =>
@@ -110,7 +100,8 @@ export function RuntimePanel({
       aria-label={t("ui.runtime.sectionLabel")}
     >
       {inspection ? <RuntimeInspection model={model} origin={origin} /> : null}
-      {state.control &&
+      {inspection &&
+        state.control &&
         (state.busy ||
           state.control.paused ||
           state.control.queued > 0 ||
@@ -164,7 +155,7 @@ export function RuntimePanel({
             </ActionGroup>
           </div>
         )}
-      <QueueControls model={model} hiddenEmpty={!inspection} />
+      {inspection && <QueueControls model={model} />}
       {state.interactions && (
         <section
           aria-label={t("ui.runtime.interactionsLabel")}
