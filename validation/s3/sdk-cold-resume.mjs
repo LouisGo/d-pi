@@ -139,11 +139,12 @@ try {
       (f) => f.type === "response" && f.id === "messages",
     );
     child.stdin.end();
-    await exited;
+    const code = await exited;
     children.delete(child);
-    return { state, messages, frames };
+    return { state, messages, frames, code };
   }
   const fresh = await run(null);
+  assert.equal(fresh.code, 0, "closing stdin exits the real RPC session cleanly");
   assert.equal(fresh.state.success, true);
   assert.equal(fresh.messages.data.totalMessages, 0);
   const emptyBinding = {
@@ -162,6 +163,7 @@ try {
     (await readFile(emptyBinding.sessionFile, "utf8")).startsWith(emptyJournal),
   );
   const restored = await run(binding);
+  assert.equal(restored.code, 0, "resumed RPC session exits cleanly");
   assert.equal(restored.state.success, true);
   assert.equal(restored.state.data.sessionId, binding.sessionId);
   assert.equal(

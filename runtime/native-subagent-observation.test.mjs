@@ -206,6 +206,33 @@ test("fixed SDK RPC observes two same-name tasks, final transcript and terminal 
         "M2_SUBAGENT_CHILD_RESULT_",
       );
     }
+    await wait(() =>
+      frames.some(
+        (frame) =>
+          frame.type === "tool_execution_end" &&
+          frame.toolCallId === "native-parent-task",
+      ),
+    );
+    expect(
+      frames.some(
+        (frame) =>
+          frame.type === "tool_execution_start" &&
+          frame.toolCallId === "native-parent-task" &&
+          frame.toolName === "task",
+      ),
+    ).toBe(true);
+    expect(
+      frames.some(
+        (frame) =>
+          frame.type === "message_end" &&
+          frame.message?.role === "assistant" &&
+          frame.message.content?.some(
+            (part) =>
+              part.type === "text" &&
+              part.text.includes("M2_SUBAGENT_PARENT_DONE"),
+          ),
+      ),
+    ).toBe(true);
     expect((await request("get_subagents")).data.subagents).toEqual([]);
     await mkdir(dirname(process.env.OBSERVATION_EVIDENCE_PATH), {
       recursive: true,

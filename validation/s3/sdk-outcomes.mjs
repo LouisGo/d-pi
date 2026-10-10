@@ -129,6 +129,26 @@ const terminal = async (id, status = "completed") => {
 const cases = {};
 try {
   await wait(() => frames.some((frame) => frame.type === "ready"));
+  const initial = (await request("get_state")).data;
+  assert.ok(initial.sessionId);
+  assert.ok(initial.sessionFile.startsWith(sandbox.sessions));
+  const selected = await request("d_pi_model", {
+    provider: "fixture",
+    modelId: "fixture",
+    thinking: { kind: "default" },
+  });
+  assert.equal(selected.data.model.provider, "fixture");
+  assert.equal(selected.data.model.id, "fixture");
+  assert.equal((await request("get_state")).data.sessionId, initial.sessionId);
+  const unavailableId = send("d_pi_model", {
+    provider: "fixture",
+    modelId: "not-configured",
+    thinking: { kind: "default" },
+  });
+  await wait(() => responseFor(unavailableId));
+  assert.equal(responseFor(unavailableId).success, false);
+  assert.equal(responseFor(unavailableId).command, "d_pi_model");
+  assert.equal((await request("get_state")).data.model.id, "fixture");
   await request("negotiate_protocol", { protocolVersion: 2 });
   const local = await request("prompt", { message: "/fixture-local" });
   assert.equal((await terminal(local.id)).agentInvoked, false);
@@ -144,6 +164,14 @@ try {
     const callsBefore = inputs.length;
     holdNext = true;
     const main = await request("prompt", { message: `${behavior}_MAIN` });
+    const busyModel = send("d_pi_model", {
+      provider: "fixture",
+      modelId: "fixture",
+      thinking: { kind: "default" },
+    });
+    await wait(() => responseFor(busyModel));
+    assert.equal(responseFor(busyModel).success, false);
+    assert.equal(responseFor(busyModel).command, "d_pi_model");
     await wait(() => inputs.length === callsBefore + 1 && held);
     const first = await request("prompt", {
       message: `${behavior}_FIRST`,
@@ -220,6 +248,26 @@ try {
     success: responseFor(compact).success,
     input: overlapping.id,
   };
+  assert.ok(
+    frames.some(
+      (frame) =>
+        frame.type === "message_end" &&
+        frame.message?.role === "assistant" &&
+        frame.message.content?.some(
+          (part) => part.type === "text" && part.text.includes("FIXTURE_RESPONSE"),
+        ),
+    ),
+    "the real SDK delivers an assistant message, not just prompt acknowledgments",
+  );
+  assert.ok(
+    frames.some(
+      (frame) =>
+        frame.type === "message_end" &&
+        frame.message?.role === "user" &&
+        JSON.stringify(frame.message.content).includes("steer_MAIN"),
+    ),
+    "accepted user input reaches the native message stream",
+  );
   assert.equal(
     resultFor(builtinLocal.id),
     undefined,

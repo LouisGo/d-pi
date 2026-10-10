@@ -47,6 +47,44 @@ function run(directory, options = {}) {
   });
 }
 
+test("OMP imports stay in the OMP adapter environment, including dynamic imports and require", () => {
+  for (const statement of [
+    'import { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";',
+    'const sdk = await import("@oh-my-pi/pi-coding-agent/sdk");',
+    'const sdk = require("@oh-my-pi/pi-coding-agent/sdk");',
+  ]) {
+    const directory = fixture(
+      "omp-boundary",
+      {
+        "src/modules/alpha/host/public.ts": `${statement}\n`,
+        "src/modules/beta/omp/public.ts": `${statement}\n`,
+      },
+      {
+        alpha: {
+          root: "src/modules/alpha",
+          environments: ["host"],
+          public: ["host/public.ts"],
+          dependsOn: [],
+        },
+        beta: {
+          root: "src/modules/beta",
+          environments: ["omp"],
+          public: ["omp/public.ts"],
+          dependsOn: [],
+        },
+      },
+    );
+    try {
+      const result = run(directory);
+      assert.equal(result.status, 1, `${statement}: ${result.stderr}`);
+      assert.match(result.stderr, /ARCH-ENVIRONMENT.*alpha\/host\/public\.ts.*@oh-my-pi/);
+      assert.doesNotMatch(result.stderr, /ARCH-ENVIRONMENT.*beta\/omp\/public\.ts/);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  }
+});
+
 test("bounds scans of valid regular expressions and preserves following private-import violations", () => {
   const directory = fixture(
     "regex-scan",

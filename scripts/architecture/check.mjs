@@ -315,6 +315,12 @@ function isAllowedUnresolved(config, specifier) {
   );
 }
 
+// OMP internals are version-pinned native adapter dependencies, not application
+// APIs. Tests may exercise the real SDK without becoming production consumers.
+function ompAdapterViolation(environment, specifier) {
+  return OMP_VENDOR.test(specifier) && environment !== "omp";
+}
+
 function externalEnvironmentViolation(environment, specifier, source, config) {
   if (
     (config.externalImportRules ?? []).some(
@@ -504,12 +510,13 @@ export function scanArchitecture(
         );
       if (
         !sourceTest &&
-        (externalEnvironmentViolation(
-          sourceInfo.environment,
-          specifier,
-          sourceRelative,
-          config,
-        ) ||
+        (ompAdapterViolation(sourceInfo.environment, specifier) ||
+          externalEnvironmentViolation(
+            sourceInfo.environment,
+            specifier,
+            sourceRelative,
+            config,
+          ) ||
           rendererProcess)
       )
         report(
