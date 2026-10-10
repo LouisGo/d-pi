@@ -7,6 +7,20 @@ import { I18nProvider } from "../../../modules/preferences/renderer/public";
 import { Conversation } from "./conversation";
 import { ReadingWindow, readingWindow } from "./reading-window";
 
+// happy-dom has no layout: supply the scroll-relative geometry the adapter reads.
+function mockReadingGeometry(pane: HTMLElement, count: () => number) {
+  Object.defineProperty(pane, "scrollHeight", { get: () => count() * 120 });
+  return vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+    if (this === pane) return new DOMRect(0, 0, 600, 600);
+    if (this.matches("[data-reading-window]") && pane.contains(this))
+      return new DOMRect(0, -pane.scrollTop, 600, count() * 120);
+    const id = this.dataset.readingRow;
+    if (id !== undefined && pane.contains(this))
+      return new DOMRect(0, Number(id) * 120 - pane.scrollTop, 600, 120);
+    return new DOMRect();
+  });
+}
+
 it("bounds mounted conversation bodies for thousands of available rows", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const model = new ConversationModel({ connect: (_thread, listener) => {
@@ -21,6 +35,7 @@ it("bounds mounted conversation bodies for thousands of available rows", async (
   Object.defineProperty(pane, "clientHeight", { value: 600 });
   document.body.append(pane);
   const root = createRoot(pane);
+  const geometry = mockReadingGeometry(pane, () => 3000);
   try {
     await act(() => root.render(createElement(I18nProvider, {
       initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" },
@@ -49,6 +64,7 @@ it("bounds mounted conversation bodies for thousands of available rows", async (
     document.getSelection()?.removeAllRanges();
     await act(() => root.unmount());
     model.dispose();
+    geometry.mockRestore();
     pane.remove();
     vi.unstubAllGlobals();
   }
@@ -62,6 +78,7 @@ it("keeps focused and expanded rows mounted through offscreen jumps and appends"
   document.body.append(pane);
   const root = createRoot(pane);
   let count = 2000;
+  const geometry = mockReadingGeometry(pane, () => count);
   const render = () => root.render(createElement(ReadingWindow, {
     source: "test",
     rows: Array.from({ length: count }, (_, index) => ({ id: String(index) })),
@@ -89,6 +106,7 @@ it("keeps focused and expanded rows mounted through offscreen jumps and appends"
     expect(pane.querySelector('[data-reading-row="0"]')).toBeNull();
   } finally {
     await act(() => root.unmount());
+    geometry.mockRestore();
     pane.remove();
     vi.unstubAllGlobals();
   }
