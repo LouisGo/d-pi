@@ -97,6 +97,10 @@ async function mount(
     container,
     bridge,
     emit: (event: ConversationEvent) => emit?.(event),
+    setActive: async (next: boolean) => {
+      active = next;
+      await render();
+    },
     remount: async () => {
       await act(() => root.render(null));
       await render();
@@ -577,4 +581,62 @@ it("does not publish a cancelled late refresh error over a newer successful gene
   });
   expect(f.container.querySelector('[role="alert"]')).toBeNull();
   expect(f.container.textContent).toContain("cached message");
+});
+
+it("checks an aged saved cache on return without a live generation using append continuation", async () => {
+  vi.useFakeTimers();
+  const cursor = {
+    threadId: "A", source: "saved", offset: 100, endOffset: 100,
+    prefixHash: "a".repeat(64),
+  };
+  const initial: HistoryPage = {
+    kind: "page",
+    entries: [{ id: "one", parentId: null, role: "assistant", text: "cached message" }],
+    source: "saved", coverage: "append-order", next: null,
+    continuation: cursor, incompleteTail: false, omitted: 0,
+  };
+  const read = vi.fn<HistoryBridge["read"]>()
+    .mockResolvedValueOnce(initial)
+    .mockResolvedValue({
+      ...initial,
+      source: "extended",
+      continuation: { ...cursor, source: "extended", offset: 200, endOffset: 200 },
+      entries: [{ id: "two", parentId: "one", role: "assistant", text: "external CLI append" }],
+    });
+  const f = await mount(true, undefined, read);
+  await vi.waitFor(async () => {
+    await flushRefreshUpdates();
+    expect(f.container.textContent).toContain("cached message");
+  });
+  vi.setSystemTime(Date.now() + 30_001);
+  await f.remount();
+  await vi.waitFor(async () => {
+    await flushRefreshUpdates();
+    expect(read).toHaveBeenCalledTimes(2);
+    expect(f.container.textContent).toContain("external CLI append");
+  });
+  expect(read).toHaveBeenLastCalledWith("A", { ...cursor, append: true });
+  expect(f.container.textContent).toContain("cached message");
+});
+
+it("checks an unbound cache on inactive-to-active return even without a live generation", async () => {
+  vi.useFakeTimers();
+  const read = vi.fn<HistoryBridge["read"]>()
+    .mockResolvedValueOnce({ kind: "unavailable", reason: "unbound" })
+    .mockResolvedValue({
+      kind: "page", source: "bound", coverage: "append-order", next: null,
+      incompleteTail: false, omitted: 0,
+      entries: [{ id: "bound", parentId: null, role: "assistant", text: "now bound history" }],
+    });
+  const f = await mount(true, undefined, read);
+  await flushRefreshUpdates();
+  expect(read).toHaveBeenCalledTimes(1);
+  await f.setActive(false);
+  await f.setActive(true);
+  await vi.waitFor(async () => {
+    await flushRefreshUpdates();
+    expect(f.container.textContent).toContain("now bound history");
+  });
+  expect(read).toHaveBeenCalledTimes(2);
+  expect(read).toHaveBeenLastCalledWith("A", null);
 });

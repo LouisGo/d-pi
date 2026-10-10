@@ -83,17 +83,30 @@ export function SavedConversation({
   }, [client, bridge, threadId]);
   useEffect(() => () => refresh.current?.abort(), [threadId]);
   const lastLive = useRef({ generation, identities });
+  const lastActive = useRef({ active: false, threadId });
   useEffect(() => {
-    if (!active || !generation) return;
+    const activated =
+      active && (!lastActive.current.active || lastActive.current.threadId !== threadId);
+    lastActive.current = { active, threadId };
+    if (!active) return;
     const previous = lastLive.current;
     lastLive.current = { generation, identities };
     const unbound = saved.data?.pages.some(
       (page) => page.kind === "unavailable" && page.reason === "unbound",
     );
+    // Query auto-refetch is disabled to avoid replaying loaded pages. On return,
+    // validate only an aged cache (or a previously unbound one), even when there
+    // is no live connection generation. Initial uncached reads remain single.
+    const activationRefresh =
+      activated &&
+      saved.data !== undefined &&
+      (unbound || Date.now() - saved.dataUpdatedAt >= 30_000);
     if (
-      previous.generation === generation &&
-      previous.identities === identities &&
-      !unbound
+      !activationRefresh &&
+      (!generation ||
+        (previous.generation === generation &&
+          previous.identities === identities &&
+          !unbound))
     )
       return;
     const controller = new AbortController();
