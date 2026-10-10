@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "1ad8b8cb8ecafb6f7af6b95e63eb65cdc6ea39cb8f48aaccc2379ba691f7417b",
+  "inputsHash": "87191d11215d489fd91728218a6a0620dd0176399ce19d0c83ced0620152342a",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 601,
-    "scannedFiles": 601,
+    "sourceFiles": 605,
+    "scannedFiles": 605,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 270,
-      "lines": 50798,
+      "files": 272,
+      "lines": 51224,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -106,7 +106,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 23,
-      "lines": 3644,
+      "lines": 3648,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -422,8 +422,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 28,
-      "lines": 3978,
+      "files": 30,
+      "lines": 4133,
       "publicEntries": [
         {
           "path": "src/modules/ui/renderer/public.ts",
@@ -14397,18 +14397,6 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
-      "specifier": "../components/icons/sidebar",
-      "kind": "import",
-      "resolution": "module",
-      "to": "src/app/renderer/components/icons/sidebar.tsx",
-      "targetModule": "app",
-      "targetEnvironment": "renderer"
-    },
-    {
-      "from": "src/app/renderer/shell/project-threads.tsx",
-      "sourceModule": "app",
-      "sourceEnvironment": "renderer",
-      "test": false,
       "specifier": "../wiring/model",
       "kind": "import",
       "resolution": "module",
@@ -14485,6 +14473,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/shell/sidebar-section.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/project-threads.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./sidebar-skeleton",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/sidebar-skeleton.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -14864,6 +14864,105 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/app/renderer/shell/sidebar-loading.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/shell/sidebar-loading.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react-dom/client",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/shell/sidebar-loading.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/shell/sidebar-loading.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/preferences/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/core/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/app/renderer/shell/sidebar-loading.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/sidebar-loading.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/threads/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/threads/contracts/public.ts",
+      "targetModule": "threads",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/shell/sidebar-loading.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../contracts/desktop-bridge",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/desktop-bridge.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/shell/sidebar-loading.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../wiring/model",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/wiring/model.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/sidebar-loading.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./project-threads",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/project-threads.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/app/renderer/shell/sidebar-preview.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -15087,6 +15186,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "./sidebar-skeleton",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/sidebar-skeleton.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/sidebar-project-group.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "./sidebar-sortable",
       "kind": "import",
       "resolution": "module",
@@ -15258,18 +15369,6 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
-      "specifier": "../components/icons/sidebar",
-      "kind": "import",
-      "resolution": "module",
-      "to": "src/app/renderer/components/icons/sidebar.tsx",
-      "targetModule": "app",
-      "targetEnvironment": "renderer"
-    },
-    {
-      "from": "src/app/renderer/shell/sidebar-section.tsx",
-      "sourceModule": "app",
-      "sourceEnvironment": "renderer",
-      "test": false,
       "specifier": "../wiring/model",
       "kind": "import",
       "resolution": "module",
@@ -15306,6 +15405,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "./sidebar-skeleton",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/sidebar-skeleton.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/sidebar-section.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "./sidebar-sortable",
       "kind": "import",
       "resolution": "module",
@@ -15323,6 +15434,30 @@
       "resolution": "module",
       "to": "src/app/renderer/shell/sidebar-thread-row.tsx",
       "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/sidebar-skeleton.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/shell/sidebar-skeleton.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/ui/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
       "targetEnvironment": "renderer"
     },
     {
@@ -35373,6 +35508,48 @@
       "resolution": "external"
     },
     {
+      "from": "src/modules/ui/renderer/navigation-section.tsx",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "clsx",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/ui/renderer/navigation-section.tsx",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/ui/renderer/navigation-section.tsx",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./button",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/button.tsx",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/ui/renderer/navigation-section.tsx",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./components/icons/common",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/components/icons/common.tsx",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/modules/ui/renderer/option-action.test.ts",
       "sourceModule": "ui",
       "sourceEnvironment": "renderer",
@@ -35722,6 +35899,18 @@
       "sourceModule": "ui",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "./navigation-section",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/navigation-section.tsx",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/ui/renderer/public.ts",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "./option-action",
       "kind": "export",
       "resolution": "module",
@@ -35778,6 +35967,18 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/modules/ui/renderer/public.ts",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./skeleton",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/skeleton.tsx",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/modules/ui/renderer/settings.test.ts",
       "sourceModule": "ui",
       "sourceEnvironment": "renderer",
@@ -35818,6 +36019,24 @@
     },
     {
       "from": "src/modules/ui/renderer/settings.tsx",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/ui/renderer/skeleton.tsx",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "clsx",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/ui/renderer/skeleton.tsx",
       "sourceModule": "ui",
       "sourceEnvironment": "renderer",
       "test": false,

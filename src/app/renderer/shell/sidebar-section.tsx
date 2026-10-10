@@ -1,4 +1,4 @@
-import { type ReactNode, useId } from "react";
+import { type ReactNode } from "react";
 import { match } from "ts-pattern";
 import type {
   SidebarItem,
@@ -6,11 +6,11 @@ import type {
 } from "../../../modules/preferences/contracts/public";
 import { sidebarItemKey } from "../../../modules/preferences/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import { Button } from "../../../modules/ui/renderer/public";
-import { SidebarChevronIcon } from "../components/icons/sidebar";
+import { NavigationSection } from "../../../modules/ui/renderer/public";
 import type { AppModel } from "../wiring/model";
 import { SidebarProjectGroup } from "./sidebar-project-group";
 import type { SidebarEntry } from "./sidebar-projection";
+import type { SidebarDiscoveryState } from "./sidebar-skeleton";
 import { SidebarSortableList } from "./sidebar-sortable";
 import { SidebarThreadRow } from "./sidebar-thread-row";
 export function SidebarSection({
@@ -21,6 +21,7 @@ export function SidebarSection({
   disabled,
   navigationDisabled,
   action,
+  discovery = "settled",
 }: {
   model: AppModel;
   section: "pins" | "projects";
@@ -29,9 +30,9 @@ export function SidebarSection({
   disabled: boolean;
   navigationDisabled: boolean;
   action?: ReactNode;
+  discovery?: SidebarDiscoveryState;
 }) {
   const { t } = useI18n();
-  const contentId = useId();
   const collapsed = value.collapsedSections.includes(section);
   const items = new Map(
     entries.map((entry) => [sidebarItemKey(entry.item), entry.item]),
@@ -45,34 +46,26 @@ export function SidebarSection({
           : { kind: "move-project", id: item.id, before: before?.id ?? null },
     });
   return (
-    <section className="sidebar-section" data-sidebar-section={section}>
-      <div className="sidebar-section-heading">
-        <Button
-          variant="navigation"
-          aria-expanded={!collapsed}
-          aria-controls={contentId}
-          pending={disabled}
-          onClick={() =>
-            void model.commands.execute({
-              kind: "sidebar",
-              change: {
-                kind: "collapse-section",
-                section,
-                value: !collapsed,
-              },
-            })
-          }
-        >
-          {t(
-            section === "pins" ? "app.sidebar.pinned" : "app.sidebar.projects",
-          )}
-          <span className="sidebar-section-chevron" data-collapsed={collapsed}>
-            <SidebarChevronIcon />
-          </span>
-        </Button>
-        {action}
-      </div>
-      <div id={contentId} hidden={collapsed}>
+    <NavigationSection
+      data-sidebar-section={section}
+      label={t(
+        section === "pins" ? "app.sidebar.pinned" : "app.sidebar.projects",
+      )}
+      expanded={!collapsed}
+      pending={disabled}
+      actions={action}
+      onExpandedChange={(expanded) =>
+        void model.commands.execute({
+          kind: "sidebar",
+          change: {
+            kind: "collapse-section",
+            section,
+            value: !expanded,
+          },
+        })
+      }
+    >
+      <div className="sidebar-section-items">
         <SidebarSortableList
           entries={entries}
           itemKey={(entry) => sidebarItemKey(entry.item)}
@@ -94,6 +87,7 @@ export function SidebarSection({
                   disabled={disabled}
                   navigationDisabled={navigationDisabled}
                   drag={drag}
+                  discovery={discovery}
                 />
               ))
               .with({ kind: "thread" }, ({ thread }) => (
@@ -110,6 +104,6 @@ export function SidebarSection({
           }}
         />
       </div>
-    </section>
+    </NavigationSection>
   );
 }

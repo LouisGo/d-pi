@@ -1,0 +1,26 @@
+@layer components {
+  .ui-skeleton {
+    min-width: 0;
+    width: 100%;
+    height: var(--text-small);
+    border-radius: var(--spacing);
+    background: var(--border);
+    animation: ui-skeleton-pulse 1.6s ease-in-out infinite;
+  }
+  .ui-skeleton[data-shape="icon"] {
+    flex-shrink: 0;
+    width: var(--small-icon-size);
+    height: var(--small-icon-size);
+    border-radius: calc(var(--spacing) / 2);
+  }
+  @keyframes ui-skeleton-pulse {
+    50% {
+      opacity: 0.45;
+    }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-skeleton {
+    animation: none;
+  }
+}

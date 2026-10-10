@@ -2,41 +2,53 @@
   .thread-navigation {
     gap: var(--spacing);
   }
-  .sidebar-section {
-    min-width: 0;
-    margin-block-start: var(--panel-padding);
-  }
-  .sidebar-section-heading {
+  .sidebar-sections {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-block-end: var(--spacing);
+    flex-direction: column;
+    gap: calc(var(--spacing) * 3);
+    margin-block-start: calc(var(--spacing) * 2);
   }
-  .sidebar-section-heading > .ui-button {
-    gap: var(--spacing);
-    font-size: var(--text-small);
-  }
-  .sidebar-section-chevron,
   .sidebar-project-chevron {
     display: inline-flex;
     transition: transform var(--motion-control) var(--ease-out);
   }
-  .sidebar-section-chevron[data-collapsed="true"],
   .sidebar-project-chevron[data-collapsed="true"] {
     transform: rotate(-90deg);
   }
   .sidebar-project-group {
-    margin-block-end: var(--layout-gap);
     min-width: 0;
+  }
+  .sidebar-section-items
+    > .sidebar-sortable:has(.sidebar-project-group)
+    + .sidebar-sortable,
+  .sidebar-section-items
+    > .sidebar-sortable
+    + .sidebar-sortable:has(.sidebar-project-group),
+  .sidebar-section-items > .sidebar-project-group + .sidebar-project-group {
+    margin-block-start: calc(var(--spacing) * 2);
   }
   .sidebar-project-group [data-project-toggle] .ui-navigation-row-label {
     font-weight: 500;
   }
-  .sidebar-section + .sidebar-section {
-    margin-block-start: calc(var(--panel-padding) * 1.5);
-  }
   .sidebar-project-children {
     padding-inline-start: var(--sidebar-indent);
+  }
+  .sidebar-skeleton-row {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--layout-gap) / 2);
+    min-height: var(--sidebar-row-height);
+    padding-inline: var(--control-padding);
+    border: 1px solid transparent;
+  }
+  .sidebar-skeleton-row > [data-length="short"] {
+    width: 38%;
+  }
+  .sidebar-skeleton-row > [data-length="medium"] {
+    width: 62%;
+  }
+  .sidebar-skeleton-row > [data-length="long"] {
+    width: 82%;
   }
   .sidebar-sortable {
     transform: var(--sidebar-transform);
@@ -154,7 +166,6 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .sidebar-section-chevron,
   .sidebar-project-chevron {
     transition: none;
   }

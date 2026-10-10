@@ -622,8 +622,10 @@ export const ui = {
   "app.sidebar.threadCount": "{count} conversations",
   "app.sidebar.newInProject": "New conversation in {name}",
   "app.sidebar.noThreads": "No conversations yet",
+  "app.sidebar.loading": "Loading projects and conversations…",
   "app.sidebar.allPinned": "Conversations are pinned separately",
   "app.sidebar.showMore": "Show more",
+  "app.sidebar.showMoreCount": "Show {count} more",
   "app.sidebar.showLess": "Show less",
   "app.sidebar.saveFailed":
     "Sidebar changes could not be confirmed. Reload and check.",

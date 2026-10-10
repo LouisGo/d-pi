@@ -5,6 +5,7 @@ import { useI18n } from "../../../modules/preferences/renderer/public";
 import {
   Button,
   HoverCardTrigger,
+  NavigationDisclosure,
   NavigationRow,
   NavigationRowLabel,
 } from "../../../modules/ui/renderer/public";
@@ -20,6 +21,10 @@ import { SidebarItemMenu } from "./sidebar-item-menu";
 import { useSidebarPreview } from "./sidebar-preview";
 import { projectName, type SidebarProject } from "./sidebar-projection";
 import {
+  type SidebarDiscoveryState,
+  SidebarThreadSkeleton,
+} from "./sidebar-skeleton";
+import {
   type SidebarDragBindings,
   SidebarSortableList,
 } from "./sidebar-sortable";
@@ -32,6 +37,7 @@ export function SidebarProjectGroup({
   disabled,
   navigationDisabled,
   drag,
+  discovery = "settled",
 }: {
   model: AppModel;
   group: SidebarProject;
@@ -40,6 +46,7 @@ export function SidebarProjectGroup({
   disabled: boolean;
   navigationDisabled: boolean;
   drag: SidebarDragBindings;
+  discovery?: SidebarDiscoveryState;
 }) {
   const { t } = useI18n(),
     contentId = useId(),
@@ -197,21 +204,34 @@ export function SidebarProjectGroup({
               />
             )}
           />
-          {!group.threads.length && (
-            <p className="sidebar-empty-project">
-              {t(
-                group.sourceThreadId
-                  ? "app.sidebar.allPinned"
-                  : "app.sidebar.noThreads",
-              )}
-            </p>
-          )}
+          {!group.threads.length &&
+            !group.sourceThreadId &&
+            discovery === "loading" && <SidebarThreadSkeleton />}
+          {!group.threads.length &&
+            (group.sourceThreadId || discovery === "settled") && (
+              <p className="sidebar-empty-project">
+                {t(
+                  group.sourceThreadId
+                    ? "app.sidebar.allPinned"
+                    : "app.sidebar.noThreads",
+                )}
+              </p>
+            )}
           {group.threads.length > 5 && (
-            <Button
-              variant="navigation"
-              size="sidebar"
+            <NavigationDisclosure
               data-expand-project
-              aria-expanded={expanded}
+              expanded={expanded}
+              label={t(
+                expanded ? "app.sidebar.showLess" : "app.sidebar.showMore",
+              )}
+              aria-label={
+                expanded
+                  ? t("app.sidebar.showLess")
+                  : t("app.sidebar.showMoreCount", {
+                      count: group.threads.length - 5,
+                    })
+              }
+              count={expanded ? undefined : group.threads.length - 5}
               pending={disabled}
               onClick={() =>
                 void model.commands.execute({
@@ -219,9 +239,7 @@ export function SidebarProjectGroup({
                   change: { kind: "expand-project", id, value: !expanded },
                 })
               }
-            >
-              {t(expanded ? "app.sidebar.showLess" : "app.sidebar.showMore")}
-            </Button>
+            />
           )}
         </>
       </div>

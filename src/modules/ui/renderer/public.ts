@@ -61,6 +61,12 @@ export {
   NavigationRowLabel,
   type NavigationRowProps,
 } from "./navigation-row";
+export {
+  NavigationDisclosure,
+  type NavigationDisclosureProps,
+  NavigationSection,
+  type NavigationSectionProps,
+} from "./navigation-section";
 export { OptionAction, type OptionActionProps } from "./option-action";
 export { Popover, type PopoverProps } from "./popover";
 export {
@@ -94,3 +100,4 @@ export {
   SettingsPage,
   type SettingsPageProps,
 } from "./settings";
+export { Skeleton, type SkeletonProps } from "./skeleton";

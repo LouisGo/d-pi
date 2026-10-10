@@ -98,7 +98,7 @@ it("keeps controls and sibling rows stable through persisted project and section
         ?.hidden,
     ).toBe(false);
     const sectionToggle = container.querySelector<HTMLButtonElement>(
-      ".sidebar-section-heading button",
+      "[data-slot='navigation-section-heading'] button",
     );
     if (!sectionToggle) throw Error("missing section toggle");
     await act(async () => {
@@ -364,6 +364,7 @@ it("limits project children to five, expands on demand, and detaches individuall
       "[data-expand-project]",
     );
     expect(expand).not.toBeNull();
+    expect(expand?.getAttribute("aria-label")).toBe("Show 1 more");
     await act(() => expand?.click());
     expect(group?.querySelectorAll("[data-thread-navigation]")).toHaveLength(6);
     expect(change).toHaveBeenCalledWith({
@@ -380,6 +381,66 @@ it("limits project children to five, expands on demand, and detaches individuall
     ).toBe(true);
     expect(group?.querySelectorAll("[data-thread-navigation]")).toHaveLength(6);
     expect(pins?.querySelectorAll("[data-thread-navigation]")).toHaveLength(7);
+  } finally {
+    await act(() => root.unmount());
+    container.remove();
+    model.dispose();
+    vi.unstubAllGlobals();
+  }
+});
+
+it("keeps completed rows mounted through the same section disclosure interaction", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const { emptySidebarPreferences } = await import(
+    "../../../modules/preferences/core/public"
+  );
+  const model = new AppModel({
+    request: async () => {
+      throw Error("Unexpected request");
+    },
+    onCloseRequest: () => () => {},
+    onCloseCancelled: () => () => {},
+    completeClose: () => {},
+  });
+  model.sidebar.accept({ revision: 1, value: emptySidebarPreferences() });
+  model.threadListStore.setState({
+    threads: [
+      ThreadContextSchema.parse({
+        threadId: "00000000-0000-4000-8000-000000000001",
+        workingDirectoryId: "00000000-0000-4000-8000-000000000077",
+        directory: "/one/project",
+        title: "Completed task",
+        completed: true,
+      }),
+    ],
+    pending: false,
+    failed: false,
+  });
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  try {
+    await act(() =>
+      root.render(
+        createElement(I18nProvider, {
+          initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" },
+          children: createElement(ProjectThreads, { model }),
+        }),
+      ),
+    );
+    const toggle = [
+      ...container.querySelectorAll<HTMLButtonElement>("button"),
+    ].find((button) => button.textContent === "Completed");
+    if (!toggle) throw Error("Missing completed disclosure");
+    expect(container.querySelector("[data-thread-navigation]")).toBeNull();
+    await act(() => toggle.click());
+    const original = container.querySelector("[data-thread-navigation]");
+    expect(original).not.toBeNull();
+    await act(() => toggle.click());
+    expect(original?.isConnected).toBe(true);
+    expect(original?.closest("[hidden]")).not.toBeNull();
+    await act(() => toggle.click());
+    expect(container.querySelector("[data-thread-navigation]")).toBe(original);
   } finally {
     await act(() => root.unmount());
     container.remove();

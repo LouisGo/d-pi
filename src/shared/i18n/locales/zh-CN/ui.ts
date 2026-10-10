@@ -548,8 +548,10 @@ export const ui = {
   "app.sidebar.threadCount": "{count} 个会话",
   "app.sidebar.newInProject": "在 {name} 中新建会话",
   "app.sidebar.noThreads": "暂无会话",
+  "app.sidebar.loading": "正在加载项目与会话…",
   "app.sidebar.allPinned": "会话已单独置顶",
   "app.sidebar.showMore": "展开显示",
+  "app.sidebar.showMoreCount": "展开显示其余 {count} 条会话",
   "app.sidebar.showLess": "收起显示",
   "app.sidebar.saveFailed": "侧栏更改未确认，请重新读取后检查。",
   "app.sidebar.dragInstructions":

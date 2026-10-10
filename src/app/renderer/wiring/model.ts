@@ -88,6 +88,18 @@ export function transportFailure(traceId: string): Failure {
     message: { code: "draft.transportUnknown" },
   };
 }
+// Indexing replies are partial samples, not evidence that an existing row vanished.
+function mergeDiscoveryRows<T>(
+  current: T[],
+  incoming: T[],
+  identity: (row: T) => string,
+): T[] {
+  return [
+    ...new Map(
+      [...current, ...incoming].map((row) => [identity(row), row]),
+    ).values(),
+  ];
+}
 export class AppModel {
   readonly sidebar: SidebarModel;
   readonly commands: ThreadCommands;
@@ -98,12 +110,15 @@ export class AppModel {
     threads: ThreadContext[];
     projects: ProjectContext[];
     failed: boolean;
+    // A settled discovery reply has arrived; an empty result also counts.
+    initialized: boolean;
     pending?: boolean;
-    nativeIndex?: "ready" | "indexing" | "partial" | "unavailable";
+    nativeIndex?: "ready" | "indexing" | "partial" | "unavailable" | undefined;
   }>(() => ({
     threads: [],
     projects: [],
     failed: false,
+    initialized: false,
     pending: true,
   }));
   private readonly threads = new Map<string, ThreadModel>();
@@ -574,13 +589,26 @@ export class AppModel {
         }
         if (reply.sidebar) this.sidebar.accept(reply.sidebar);
         next = reply.nativeIndex === "indexing";
-        this.threadListStore.setState({
-          threads: reply.threads,
-          projects: reply.projects ?? [],
+        this.threadListStore.setState((state) => ({
+          threads: next
+            ? mergeDiscoveryRows(
+                state.threads,
+                reply.threads,
+                (row) => row.threadId,
+              )
+            : reply.threads,
+          projects: next
+            ? mergeDiscoveryRows(
+                state.projects,
+                reply.projects ?? [],
+                (row) => row.workingDirectoryId,
+              )
+            : (reply.projects ?? []),
           failed: false,
+          initialized: state.initialized || !next,
           pending: next,
-          ...(reply.nativeIndex ? { nativeIndex: reply.nativeIndex } : {}),
-        });
+          nativeIndex: reply.nativeIndex,
+        }));
       }
     } catch {
       if (!this.disposed)
