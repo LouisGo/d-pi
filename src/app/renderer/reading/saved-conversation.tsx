@@ -370,17 +370,10 @@ export function SavedConversation({
     </section>
   );
 }
-type SavedHistoryEntry = HistoryEntry & {
-  tool?: ToolExecutionObservation | undefined;
-};
-
 function mergeToolObservation(
-  liveTool: ToolExecutionObservation | undefined,
-  savedTool: ToolExecutionObservation | undefined,
-): ToolExecutionObservation | undefined {
-  if (!liveTool) return savedTool;
-  if (!savedTool) return liveTool;
-
+  liveTool: ToolExecutionObservation,
+  savedTool: ToolExecutionObservation,
+): ToolExecutionObservation {
   if (
     liveTool.toolCallId !== savedTool.toolCallId ||
     liveTool.name !== savedTool.name
@@ -389,11 +382,34 @@ function mergeToolObservation(
   }
 
   const argumentsPayload = liveTool.arguments ?? savedTool.arguments;
-  const progressPayload = liveTool.progress ?? savedTool.progress;
   const resultPayload = liveTool.result ?? savedTool.result;
 
-  const filledArguments = !liveTool.arguments && Boolean(savedTool.arguments);
-  const filledResult = !liveTool.result && Boolean(savedTool.result);
+  const borrowedArguments = !liveTool.arguments && Boolean(savedTool.arguments);
+  const borrowedResult = !liveTool.result && Boolean(savedTool.result);
+  const borrowedFields = borrowedArguments || borrowedResult;
+
+  const observed = borrowedFields
+    ? [
+        ...liveTool.observed,
+        ...savedTool.observed.filter(
+          (marker) => !liveTool.observed.includes(marker),
+        ),
+      ]
+    : liveTool.observed;
+
+  const coverage =
+    liveTool.coverage === "partial" ||
+    (borrowedFields && savedTool.coverage === "partial")
+      ? "partial"
+      : "observed";
+
+  const truncated =
+    liveTool.truncated ||
+    Boolean(
+      (borrowedArguments && savedTool.arguments?.truncated) ||
+        (borrowedResult && savedTool.result?.truncated) ||
+        (borrowedFields && savedTool.truncated),
+    );
 
   return {
     ...liveTool,
@@ -401,29 +417,18 @@ function mergeToolObservation(
     name: liveTool.name,
     lifecycle: liveTool.lifecycle,
     backgroundState: liveTool.backgroundState,
-    observed: liveTool.observed,
-    progress: progressPayload,
+    progress: liveTool.progress,
     arguments: argumentsPayload,
     result: resultPayload,
-    coverage:
-      liveTool.coverage === "partial" && !resultPayload
-        ? "partial"
-        : liveTool.coverage === "partial" && argumentsPayload && resultPayload
-          ? savedTool.coverage
-          : liveTool.coverage,
-    truncated:
-      liveTool.truncated ||
-      Boolean(
-        (filledArguments && savedTool.arguments?.truncated) ||
-          (filledResult && savedTool.result?.truncated) ||
-          ((filledArguments || filledResult) && savedTool.truncated),
-      ),
+    observed,
+    coverage,
+    truncated,
   };
 }
 
 function TimelineRow({
   rowId,
-  entry: rawEntry,
+  entry,
   liveId,
   model,
   positions,
@@ -441,7 +446,6 @@ function TimelineRow({
   threadId: string;
 }) {
   const { t } = useI18n();
-  const entry = rawEntry as SavedHistoryEntry | undefined;
   const live = useStore(model.stateStore, (state) =>
     liveId === undefined ? undefined : state.itemsById.get(liveId),
   );
@@ -451,20 +455,26 @@ function TimelineRow({
         ...rawSavedTool,
         lifecycle:
           rawSavedTool.lifecycle === "running"
-            ? "completed"
+            ? "unknown"
             : rawSavedTool.lifecycle,
+        coverage:
+          rawSavedTool.lifecycle === "running"
+            ? "partial"
+            : rawSavedTool.coverage,
         backgroundState: undefined,
       }
     : undefined;
   const sameToolIdentity = Boolean(
     live &&
+      entry &&
+      live.nativeRecordId === entry.id &&
       savedTool &&
       live.tool &&
       live.tool.toolCallId === savedTool.toolCallId &&
       live.tool.name === savedTool.name,
   );
   const tool = live
-    ? sameToolIdentity
+    ? sameToolIdentity && savedTool && live.tool
       ? mergeToolObservation(live.tool, savedTool)
       : live.tool
     : savedTool;
