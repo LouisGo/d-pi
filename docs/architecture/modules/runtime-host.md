@@ -54,7 +54,7 @@ Main 拥有窗口、Host 监督及受限通道建立；一个 utility SessionHos
 
 ## S3 当前实现（2026-09-28）
 
-当前固定官方 SDK 18.4.6 在随包 Bun 1.3.14 中运行；`runtime/host.mjs` 是 App 自有薄适配。2026-10-01 用户授权仅在资源 staging 修正 sdk.ts 的 prelude 导入歧义，原文件和补丁哈希入 manifest，其余官方代码与所有权不变。正式 Host 使用该入口，原生 RPC driver 继续拥有标准命令和扩展 UI；仅增加消费前钩子、控制帧与有界状态观察。资源准备由 `scripts/runtime/prepare-sdk.mjs` 复制锁定依赖，打包显式保留 node_modules。控制和回答沿 Main 信任检查、Host 当前代次及 traceId 返回运输结果，正文不记诊断日志。
+当前固定官方 SDK 18.8.7 在随包 Bun 1.3.14 中运行；`runtime/host.mjs` 是 App 自有薄适配。2026-10-10 升级退役旧 prelude staging 补丁；manifest 固定未修改官方 sdk.ts 的路径与 SHA-256。启动把明确 App 模型选择传入原生 factory，再精确复核模型/thinking；拒绝不可恢复保存模型的静默 fallback。正式 Host 使用该入口，原生 RPC driver 继续拥有标准命令和扩展 UI；仅增加消费前钩子、控制帧与有界状态观察。资源准备由 `scripts/runtime/prepare-sdk.mjs` 复制锁定依赖，打包显式保留 node_modules。控制和回答沿 Main 信任检查、Host 当前代次及 traceId 返回运输结果，正文不记诊断日志。
 
 2026-10-02 M2文本队列增量：App控制帧 `d_pi_queue` 经NativeSession既有唯一请求表关联，`d_pi_state` / `d_pi_control_state` 的queueState包含真实待处理UUID/revision、编辑稿与覆盖范围。Host在当前Thread/连接上校验并解析结果，再向Main报告operation-result，不把本地投影变动冒充原生确认。薄 `NativeQueueManager` 直接观察/修改官方队列对象；编辑等待包装SDK的queued preparation，保留原准备和原生批次策略；不在全局model-call gate加入编辑理由，因此当前执行继续。组件卸载不释放管理器或未保存稿；消费暂缓与停止各自解除。
 
@@ -72,7 +72,7 @@ Runtime 的正常退出入口即使已断开，也必须等待 HostConnection �
 
 ## 子 Agent 只读观察接入（2026-10-06）
 
-固定 OMP 18.4.6 原生 RPC `set_subagent_subscription(level=events)` 在 `get_subagents` 之前建立订阅；原生 lifecycle/progress/event 帧仍由 conversation 投影。`execution/host/native/subagent-observation.ts` 只协调初始读取和终态 transcript 读取，不另建调度或任务完成事实。原生 registry 的终态会从活动列表移除，但保留最多 256 个 transcript 引用；终态读取仅向 OMP 传原生 subagentId，结果路径必须匹配已观察拥有者。
+固定 OMP 18.8.7 原生 RPC `set_subagent_subscription(level=events)` 在 `get_subagents` 之前建立订阅；原生 lifecycle/progress/event 帧仍由 conversation 投影。`execution/host/native/subagent-observation.ts` 只协调初始读取和终态 transcript 读取，不另建调度或任务完成事实。原生 registry 的终态会从活动列表移除，但保留最多 256 个 transcript 引用；终态读取仅向 OMP 传原生 subagentId，结果路径必须匹配已观察拥有者。
 
 官方 transcript RPC 读取到 EOF，适配先 stat 原生提供的文件：超过 1 MiB 或不可读时不发读请求，保留已观察片段并明确原因；正常结果仍受原生传输上限和阅读投影预算约束。最多并发 2 个读取、128 个待处理读取，超限/失败不宣称没有结果。未知/释放/拥有者变化后的回包不进入新投影；原生断链后未终态任务保持 unknown，已观察终态与结果继续可读。
 

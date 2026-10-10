@@ -7,19 +7,14 @@ import { RuntimeResourceError } from "./runtime-resource";
 import { holdSdkResources } from "./sdk-resource-guard";
 
 const ManifestSchema = z.object({
-  sdkVersion: z.literal("18.4.6"),
+  sdkVersion: z.literal("18.8.7"),
   bunVersion: z.literal("1.3.14"),
-  sdkImportFix: z.object({
+  sdkImportFix: z.never().optional(),
+  sdkSource: z.object({
     file: z.literal("node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts"),
-    originalSha256: z.string().regex(/^[a-f0-9]{64}$/),
-    sha256: z.string().regex(/^[a-f0-9]{64}$/),
-    originalImport: z.literal(
-      'import { createRatchetPrelude } from "./ratchet/prelude";',
+    sha256: z.literal(
+      "d693c1b71e70f61c38c2cf564c608750401179509e8c6c414d1e124baa96e69a",
     ),
-    fixedImport: z.literal(
-      'import { createRatchetPrelude } from "./ratchet/prelude.ts";',
-    ),
-    authorized: z.literal("2026-10-01"),
   }),
   platform: z.string(),
   hashes: z.object({
@@ -31,6 +26,7 @@ const ManifestSchema = z.object({
     "model-selection.mjs": z.string(),
     "native-queue.mjs": z.string(),
     "reading-session.mjs": z.string(),
+    "managed-session.mjs": z.string(),
     "image-input.mjs": z.string(),
     "image-compression.mjs": z.string(),
     "native-subagent-configuration.mjs": z.string(),
@@ -51,7 +47,7 @@ export async function managedSdkRuntime(
       throw Error("Platform mismatch");
     for (const [name, expected] of Object.entries({
       ...manifest.hashes,
-      [manifest.sdkImportFix.file]: manifest.sdkImportFix.sha256,
+      [manifest.sdkSource.file]: manifest.sdkSource.sha256,
     })) {
       const hash = createHash("sha256");
       for await (const bytes of createReadStream(join(directory, name)))
@@ -66,7 +62,7 @@ export async function managedSdkRuntime(
       const metadata = z
         .object({
           name: z.literal(`@oh-my-pi/${name}`),
-          version: z.literal("18.4.6"),
+          version: z.literal("18.8.7"),
           exports: z.object({
             ".": z.object({ import: z.literal("./src/index.ts") }),
             ...(name === "pi-coding-agent"

@@ -1,4 +1,4 @@
-// Versioned, read-only boundary for OMP 18.4.6. No OAuth/key resolution or refresh.
+// Versioned, read-only boundary for OMP 18.8.7. No OAuth/key resolution or refresh.
 
 import { Database } from "bun:sqlite";
 import { createHash } from "node:crypto";
@@ -14,6 +14,7 @@ import { delimiter, dirname, join, parse, resolve } from "node:path";
 import { getOAuthProviders } from "@oh-my-pi/pi-ai";
 import { AuthStorage } from "@oh-my-pi/pi-ai/auth-storage";
 import { authPolicyFor, authProviders } from "@oh-my-pi/pi-catalog/compat/auth";
+import { readModelCache } from "@oh-my-pi/pi-catalog/model-cache";
 import { getModelPricingStatus } from "@oh-my-pi/pi-catalog/models";
 import { isCredentialScopedModelCacheProvider } from "@oh-my-pi/pi-catalog/provider-models";
 import { modelKind } from "@oh-my-pi/pi-catalog/types";
@@ -603,29 +604,16 @@ export async function readConfigurationSnapshot(frame) {
         thinking: thinkingCapabilities(model),
       };
     });
-    if (cacheDirectory && cacheProviders.length) {
-      let materialized;
-      try {
-        materialized = new Database(cacheDbPath, {
-          readonly: true,
-          create: false,
-        });
-        const remaining = new Set(
-          materialized
-            .query("SELECT provider_id FROM model_cache")
-            .all()
-            .map((row) => row.provider_id),
-        );
-        // Official compatibility and parsing may reject rows in the private
-        // copy. Preserve that decision, but do not claim complete source coverage.
-        if (cacheProviders.some((row) => !remaining.has(row.provider_id)))
-          issues.push("catalog-cache-rejected");
-      } catch {
-        issues.push("catalog-cache-unavailable");
-      } finally {
-        materialized?.close();
-      }
-    }
+    // 18.8.7 may retain incompatible rows while rejecting their materialized
+    // value. Ask the official exported reader; row deletion is not its receipt.
+    // Its writes/migrations remain confined to the same disposable copy.
+    if (
+      cacheDirectory &&
+      cacheProviders.some(
+        (row) => !readModelCache(row.provider_id, 0, Date.now, cacheDbPath),
+      )
+    )
+      issues.push("catalog-cache-rejected");
     if (registry.getError()) issues.push("models-config-invalid");
     return {
       kind: "snapshot",

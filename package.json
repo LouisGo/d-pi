@@ -84,8 +84,8 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
     "@formatjs/icu-messageformat-parser": "3.5.20",
-    "@oh-my-pi/pi-coding-agent": "18.4.6",
-    "@oh-my-pi/pi-utils": "18.4.6",
+    "@oh-my-pi/pi-coding-agent": "18.8.7",
+    "@oh-my-pi/pi-utils": "18.8.7",
     "@shadcn/lint": "0.2.0",
     "@tailwindcss/vite": "4.3.3",
     "@tanstack/router-cli": "1.167.40",

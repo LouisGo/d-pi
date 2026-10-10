@@ -39,7 +39,7 @@ function compatible(metadata, target) {
 function baselineOnly(metadata, target) {
   return (
     metadata.name === "@oh-my-pi/pi-natives-linux-x64" &&
-    metadata.version === "18.4.6" &&
+    metadata.version === "18.8.7" &&
     target.platform === "linux" &&
     target.arch === "x64"
   );
@@ -95,7 +95,7 @@ function excluded(metadata, path, target) {
     return "type-declaration";
   if (
     metadata.name === "@oh-my-pi/pi-coding-agent" &&
-    metadata.version === "18.4.6" &&
+    metadata.version === "18.8.7" &&
     path === "dist/cli.js"
   )
     return "cli-bundle";

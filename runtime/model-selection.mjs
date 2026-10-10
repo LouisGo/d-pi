@@ -211,7 +211,7 @@ export async function applyModelSelection(session, selection) {
   if (thinking.kind === "default") await session.setModelTemporary(model);
   else if (thinking.kind === "effort")
     await session.setModelTemporary(model, thinking.effort);
-  // 18.4.6 has an explicit native Off selector. undefined preserves/defaults
+  // 18.8.7 has an explicit native Off selector. undefined preserves/defaults
   // the current selector and does not disable provider reasoning.
   else await session.setModelTemporary(model, ThinkingLevel.Off);
   const observed = modelConfiguration(

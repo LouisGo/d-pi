@@ -79,7 +79,7 @@ AppModel 拥有窗口级 DraftEditorCache，input Renderer 缓存脱离 EditorVi
 
 input Main 的 AttachmentStore 管 schema 8 manifest、schema 9 对象投影、摘要原件/派生文件、准备与预算；Renderer AttachmentImports 属于 Thread，视图卸载不会取消导入，尚未私有落盘的原件在关闭时有保护。草稿只存原子短 token，不放二进制；@查询是只读Query，导入/重试/准备是显式副作用。
 
-导入文本和图片复制原件；@项目文件每次发送经 files 授权读取及身份复核，冻结内容交给 execution prepared 持久化。预览文本最多64KiB并显示截断；该预览不用于发送。固定OMP18.4.6提供PDF文字转换，实际图表/扫描覆盖不能保证，必须显式仅文字；没有实现完整页面渲染。未知格式、解码、容量、权限和覆盖失败定位附件，完整保留原输入。
+导入文本和图片复制原件；@项目文件每次发送经 files 授权读取及身份复核，冻结内容交给 execution prepared 持久化。预览文本最多64KiB并显示截断；该预览不用于发送。固定OMP18.8.7提供PDF文字转换，实际图表/扫描覆盖不能保证，必须显式仅文字；没有实现完整页面渲染。未知格式、解码、容量、权限和覆盖失败定位附件，完整保留原输入。
 
 原件按摘要去重，来源仍保留各自 attachment identity。App 装配提供持久草稿、全部冻结提交收据与 queue_change 原来源的权威引用投影，input 不跨领域查询执行表。终态收据没有原生历史自持久证明，依赖永不因终态自动释放；unknown 不重发，冷 Thread 继续只读。
 

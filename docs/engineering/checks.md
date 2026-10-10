@@ -54,6 +54,7 @@ pnpm 探测先采用调用方的实际 `npm_execpath`（JS 或原生），直接
 | 开发者工具与组件看板 | `node validation/m2/workbench.mjs <output.json> --scenario=components` | 真实组件的悬停菜单、交互/重置、弹层、页签、拖拽、图标纯预览、独立工具工作区、右侧锚点/常驻导航、light/dark与宽中窄窗；使用隔离IPC fixture，不代表真实供应商或系统IME |
 | 工作台整体几何与资源连续性 | `node validation/m2/workbench.mjs <output.json>` | 保留既有完整隔离 Electron GUI 场景；明确选择时可用 `--scenario=all` |
 | 当前包的顶栏、主题持久化与设置诊断焦点 | `node validation/m2/package.mjs <d-pi.app> --scenario=workbench` | 真实 Main/preload 的工作台检查；断言零供应商请求、零执行会话，不启动执行/重载/冷恢复；不代表完整 M2 验收 |
+| 固定 SDK 升级的包内启动和冷恢复 | `node validation/m2/package.mjs <d-pi.app> --scenario=sdk-upgrade --working-tree` | 隔离配置与 localhost provider；同 Thread/原生 file/ID、历史/草稿、模型丢失拒绝与显式换模型；不跑无关 GUI 矩阵 |
 | 包内执行/恢复与需要的功能增量 | `node validation/m2/package.mjs <d-pi.app> [增量 flags]` | 默认保留既有完整基础流程；`--router`、`--attachments`、`--workbench` 等是增量，不是范围过滤器 |
 
-`--scenario=<name>` 可在路径前后出现；未知/重复 selector、不支持的 flag 或多个路径在启动前失败，不静默退回完整流程。窄包内场景仅允许兼容的 `--workbench` / `--working-tree`，不与 `--inspect` 或其他功能增量混用。范围和实际结果写入结果 JSON；未运行的层级不能算通过。包内场景仍需要已有可运行 macOS 包，但不为纯测试驱动修改重新打产品包。
+`--scenario=<name>` 可在路径前后出现；未知/重复 selector、不支持的 flag 或多个路径在启动前失败，不静默退回完整流程。workbench 窄包内场景仅允许 `--workbench` / `--working-tree`，sdk-upgrade 仅允许 `--working-tree`；不与 `--inspect` 或其他功能增量混用。范围和实际结果写入结果 JSON；未运行的层级不能算通过。包内场景仍需要已有可运行 macOS 包，但不为纯测试驱动修改重新打产品包。

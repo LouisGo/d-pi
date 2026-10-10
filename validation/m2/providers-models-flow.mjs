@@ -54,7 +54,7 @@ function buildIdentity() {
     sdkManifestSha256: sha(join(source, "resources/sdk/manifest.json")),
     sdkResourcesMatchManifest: Object.entries({
       ...sdk.hashes,
-      [sdk.sdkImportFix.file]: sdk.sdkImportFix.sha256,
+      [sdk.sdkSource.file]: sdk.sdkSource.sha256,
     }).every(
       ([file, expected]) =>
         sha(join(source, "resources/sdk", file)) === expected,

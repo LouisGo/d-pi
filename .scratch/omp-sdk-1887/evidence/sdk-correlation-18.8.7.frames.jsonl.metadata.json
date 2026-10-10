@@ -1,0 +1,10 @@
+{
+  "sdk": "18.8.7",
+  "source": "real RpcPromptResults and RpcSessionSettleWatcher with controlled AgentSession events",
+  "providerCalls": 0,
+  "cases": [
+    "old run yield cannot settle newly accepted prompt",
+    "queued messages must drain before queued prompt results",
+    "completed prompt remains sessionSettled false until background work drains"
+  ]
+}

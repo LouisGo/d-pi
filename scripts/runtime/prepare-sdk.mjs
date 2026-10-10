@@ -55,42 +55,26 @@ try {
     "node_modules/.pnpm",
     root,
   );
-  // 2026-10-01 explicit user exception: preserve the official package and
-  // correct this one ambiguous source import only in the prepared resource copy.
+  // Reviewed npm 18.8.7 source, copied byte-for-byte; no staging source patch.
   const sdkSourcePath = join(
     root,
     "node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts",
   );
-  const sdkSource = await readFile(sdkSourcePath, "utf8");
-  const originalSdkSha256 = createHash("sha256")
-    .update(sdkSource)
-    .digest("hex");
   const officialSdkSha256 =
-    "97fc3bb3cd9ffe43b190da942c8ac326a62975484d46bc87f8c8d1ebf3db982d";
-  const originalImport =
-    'import { createRatchetPrelude } from "./ratchet/prelude";';
-  const fixedImport =
-    'import { createRatchetPrelude } from "./ratchet/prelude.ts";';
-  let sdkImportFix;
-  if (versions["@oh-my-pi/pi-coding-agent"] === "18.4.6") {
-    if (
-      originalSdkSha256 !== officialSdkSha256 ||
-      sdkSource.split(originalImport).length !== 2
-    )
-      throw Error(
-        "Official SDK source changed; refusing unreviewed import correction",
-      );
-    const fixedSource = sdkSource.replace(originalImport, fixedImport);
-    await writeFile(sdkSourcePath, fixedSource);
-    sdkImportFix = {
-      file: "node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts",
-      originalSha256: originalSdkSha256,
-      sha256: createHash("sha256").update(fixedSource).digest("hex"),
-      originalImport,
-      fixedImport,
-      authorized: "2026-10-01",
-    };
-  }
+    "d693c1b71e70f61c38c2cf564c608750401179509e8c6c414d1e124baa96e69a";
+  const sdkSha256 = createHash("sha256")
+    .update(await readFile(sdkSourcePath))
+    .digest("hex");
+  if (
+    versions["@oh-my-pi/pi-coding-agent"] !== "18.8.7" ||
+    versions["@oh-my-pi/pi-utils"] !== "18.8.7" ||
+    sdkSha256 !== officialSdkSha256
+  )
+    throw Error("Official SDK source changed; refusing unreviewed resources");
+  const sdkSource = {
+    file: "node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts",
+    sha256: sdkSha256,
+  };
   const bun = join(
     dirname(require.resolve("bun/package.json")),
     "bin",
@@ -147,7 +131,7 @@ try {
     JSON.stringify(
       {
         lockHash,
-        ...(sdkImportFix ? { sdkImportFix } : {}),
+        sdkSource,
         sdkVersion: versions["@oh-my-pi/pi-coding-agent"],
         bunVersion: versions.bun,
         platform: `${process.platform}-${process.arch}`,

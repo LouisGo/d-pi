@@ -61,6 +61,7 @@ const { scenario, path: sourcePath } = parseValidationScenario(
       "--working-tree",
     ],
     workbench: ["--workbench", "--working-tree"],
+    "sdk-upgrade": ["--working-tree"],
   },
 );
 const isolated = createTestEnvironment({ prefix: "d-pi-m2-package-" });
@@ -410,6 +411,138 @@ async function runValidation() {
   await wait(() =>
     evaluate("!!document.querySelector('[contenteditable=true]')"),
   );
+  if (scenario === "sdk-upgrade") {
+    const inspect = () =>
+      evaluate(
+        `window.desktop.runtime.request({kind:'inspect',threadId:${JSON.stringify(a)},traceId:crypto.randomUUID()})`,
+      );
+    const binding = () =>
+      db
+        .prepare(
+          "SELECT thread_id,session_id,session_file FROM native_session WHERE thread_id=?",
+        )
+        .get(a);
+    const ready = () =>
+      wait(async () => (await inspect()).view?.phase === "ready");
+    const restart = async () => {
+      child.kill("SIGKILL");
+      await wait(() => child.signalCode !== null);
+      socket.onclose = null;
+      socket.close();
+      child = launch();
+      await connect();
+      await wait(() =>
+        evaluate("!!document.querySelector('[contenteditable=true]')"),
+      );
+    };
+    await evaluate(
+      `window.desktop.runtime.request({kind:'allow',threadId:${JSON.stringify(a)},traceId:crypto.randomUUID()})`,
+    );
+    await ready();
+    const original = binding();
+    assert.ok(original.session_id && existsSync(original.session_file));
+    await insert("SDK_UPGRADE_HISTORY");
+    await click("发送");
+    await wait(() => requests.length === 1 && held);
+    held();
+    await wait(async () => !(await inspect()).view.busy);
+    await wait(() =>
+      evaluate(
+        "document.querySelector('.conversation')?.textContent.includes('M2_THREAD_A_REPLY')",
+      ),
+    );
+    await insert("SDK_UNSENT_DRAFT");
+    await wait(() =>
+      db
+        .prepare("SELECT body FROM thread WHERE id=?")
+        .get(a)
+        .body.includes("SDK_UNSENT_DRAFT"),
+    );
+    const journal = readFileSync(original.session_file, "utf8");
+    await restart();
+    await ready();
+    assert.deepEqual(binding(), original);
+    await wait(() =>
+      evaluate(
+        "document.querySelector('.conversation')?.textContent.includes('M2_THREAD_A_REPLY')",
+      ),
+    );
+    await wait(() =>
+      evaluate(
+        "document.querySelector('[contenteditable=true]')?.textContent==='SDK_UNSENT_DRAFT'",
+      ),
+    );
+    assert.equal(requests.length, 1, "cold resume must not replay a request");
+    assert.ok(readFileSync(original.session_file, "utf8").startsWith(journal));
+    checks.push(
+      "macOS arm64 packaged Main/Host cold resume preserves same Thread/native file-ID, readable real 18.8.7 JSONL and unsent draft without replay",
+    );
+    const modelsPath = join(isolated.config, "models.yml");
+    const config = JSON.parse(readFileSync(modelsPath, "utf8"));
+    config.providers.fixture.models = config.providers.fixture.models.filter(
+      (m) => m.id !== "fixture-a",
+    );
+    writeFileSync(modelsPath, JSON.stringify(config));
+    const settingsPath = join(isolated.config, "config.yml");
+    const settings = JSON.parse(readFileSync(settingsPath, "utf8"));
+    settings.modelRoles = {
+      default: "fixture/fixture-b",
+      smol: "fixture/fixture-b",
+    };
+    writeFileSync(settingsPath, JSON.stringify(settings));
+    await restart();
+    await wait(async () =>
+      ["failed", "interrupted"].includes((await inspect()).view?.phase),
+    );
+    // The failure view can precede identity-checked process cleanup. Wait for
+    // that independent lifecycle receipt before a new explicit selection.
+    await wait(() => {
+      const records = readFileSync(
+        join(isolated.data, "logs/main.jsonl"),
+        "utf8",
+      )
+        .trim()
+        .split("\n")
+        .map(JSON.parse);
+      const current = records.at(-1).processInstanceId;
+      return records.some(
+        (record) =>
+          record.processInstanceId === current &&
+          record.operation === "runtime:host" &&
+          record.stage === "exited",
+      );
+    });
+    assert.deepEqual(binding(), original);
+    await wait(() =>
+      evaluate(
+        "document.querySelector('.history')?.textContent.includes('M2_THREAD_A_REPLY') || document.querySelector('.conversation')?.textContent.includes('M2_THREAD_A_REPLY')",
+      ),
+    );
+    assert.equal(
+      await evaluate(
+        "document.querySelector('[contenteditable=true]')?.textContent",
+      ),
+      "SDK_UNSENT_DRAFT",
+    );
+    assert.equal(requests.length, 1);
+    const chosen = await evaluate(
+      `window.desktop.runtime.request({kind:'select-model',threadId:${JSON.stringify(a)},traceId:crypto.randomUUID(),selection:{provider:'fixture',modelId:'fixture-b',thinking:{kind:'default'}}})`,
+    );
+    assert.equal(chosen.kind, "view");
+    await evaluate(
+      `window.desktop.runtime.request({kind:'start',threadId:${JSON.stringify(a)},traceId:crypto.randomUUID()})`,
+    );
+    await ready();
+    assert.deepEqual(binding(), original);
+    assert.equal((await inspect()).view.model, "fixture/fixture-b");
+    assert.equal(requests.length, 1);
+    checks.push(
+      "missing saved model fails visibly while retaining history/draft/binding; explicit replacement recovers same identity without provider traffic or replacement session",
+    );
+    screenshots.push(await shot("sdk-upgrade-restored"));
+    await finish();
+    return;
+  }
   if (scenario === "workbench" || process.argv.includes("--workbench")) {
     workbenchLayout = await evaluate(
       "(()=>{const h=document.querySelector('.primary-sidebar>.panel-header');return {top:h.getBoundingClientRect().top,inner:innerHeight,outer:outerHeight,controls:[...h.querySelectorAll('button')].map(b=>({name:b.getAttribute('aria-label')||b.title,left:b.getBoundingClientRect().left})),density:document.documentElement.hasAttribute('data-density'),workspace:document.querySelector('[data-layout-region=workspace]').getBoundingClientRect().width,bottom:document.querySelector('[data-layout-region=bottom]').getBoundingClientRect().height,icons:[...document.querySelectorAll('.ui-button-icon')].filter(b=>b.getBoundingClientRect().width>0&&getComputedStyle(b).visibility!=='hidden'&&!b.closest('[hidden],[inert]')).map(b=>{const r=b.getBoundingClientRect(),s=b.querySelector('svg').getBoundingClientRect(),i=b.querySelector('.ui-icon-button-indicator');return {name:b.getAttribute('aria-label')||b.title,dx:s.x+s.width/2-r.x-r.width/2,dy:s.y+s.height/2-r.y-r.height/2,overlay:!i||(getComputedStyle(i).position==='absolute'&&getComputedStyle(i).pointerEvents==='none')};})};})()",

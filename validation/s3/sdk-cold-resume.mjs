@@ -1,13 +1,6 @@
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
-import {
-  cp,
-  mkdir,
-  readFile,
-  realpath,
-  symlink,
-  writeFile,
-} from "node:fs/promises";
+import { readFile, realpath, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { createInterface } from "node:readline";
 import { createTestEnvironment } from "../../scripts/testing/test-environment.mjs";
@@ -15,7 +8,6 @@ import { createTestEnvironment } from "../../scripts/testing/test-environment.mj
 // Fixed official SDK with isolated configuration; no prompt, network model, or user credentials.
 const sandbox = createTestEnvironment({ prefix: "d-pi-sdk-cold-resume-" });
 const sdk = resolve(process.env.SDK_ROOT ?? "resources/sdk");
-const adapter = join(sandbox.root, "adapter");
 const children = new Set();
 try {
   const packageMetadata = JSON.parse(
@@ -24,21 +16,7 @@ try {
       "utf8",
     ),
   );
-  assert.equal(packageMetadata.version, "18.4.6");
-  await mkdir(adapter);
-  await symlink(join(sdk, "node_modules"), join(adapter, "node_modules"));
-  await cp(join(sdk, "gate.js"), join(adapter, "gate.js"));
-  for (const name of [
-    "host.mjs",
-    "model-selection.mjs",
-    "native-queue.mjs",
-    "native-subagent-configuration.mjs",
-    "reading-session.mjs",
-    "managed-session.mjs",
-    "image-input.mjs",
-    "image-compression.mjs",
-  ])
-    await cp(resolve("runtime", name), join(adapter, name));
+  assert.equal(packageMetadata.version, "18.8.7");
   await writeFile(
     join(sandbox.config, "models.yml"),
     JSON.stringify({
@@ -78,19 +56,22 @@ try {
     join(sdk, "bun"),
     [
       "-e",
-      `const {SessionManager}=await import(${JSON.stringify(manager)});const m=SessionManager.create(process.cwd(),process.env.PI_CODING_AGENT_SESSION_DIR);m.appendMessage({role:'user',content:'remember blue heron 7',timestamp:1});m.appendMessage({role:'assistant',content:[{type:'text',text:'saved answer'}],api:'openai-completions',provider:'fixture',model:'fixture',usage:{input:0,output:0,cacheRead:0,cacheWrite:0,totalTokens:0,cost:{input:0,output:0,cacheRead:0,cacheWrite:0,total:0}},stopReason:'stop',timestamp:2});await m.close(); console.log(JSON.stringify({sessionFile:m.getSessionFile(),sessionId:m.getSessionId()}));`,
+      `const {SessionManager}=await import(${JSON.stringify(manager)});const m=SessionManager.create(process.cwd(),process.env.PI_CODING_AGENT_SESSION_DIR);m.appendModelChange("fixture/fixture");m.appendMessage({role:'user',content:'remember blue heron 7',timestamp:1});m.appendMessage({role:'assistant',content:[{type:'text',text:'saved answer'}],api:'openai-completions',provider:'fixture',model:'fixture',usage:{input:0,output:0,cacheRead:0,cacheWrite:0,totalTokens:0,cost:{input:0,output:0,cacheRead:0,cacheWrite:0,total:0}},stopReason:'stop',timestamp:2});await m.close(); console.log(JSON.stringify({sessionFile:m.getSessionFile(),sessionId:m.getSessionId()}));`,
     ],
     { cwd: sandbox.cwd, env: sandbox.env, encoding: "utf8", timeout: 15000 },
   );
   assert.equal(seed.status, 0, seed.stderr);
   const binding = JSON.parse(seed.stdout.trim());
   const initial = await readFile(binding.sessionFile, "utf8");
-  async function run(bindingOverride, inspect = true) {
-    const child = spawn(join(sdk, "bun"), [join(adapter, "host.mjs")], {
+  async function run(bindingOverride, inspect = true, selection) {
+    const child = spawn(join(sdk, "bun"), [join(sdk, "host.mjs")], {
       cwd: sandbox.cwd,
       env: {
         ...sandbox.env,
         D_PI_RESUME_SESSION: JSON.stringify(bindingOverride),
+        ...(selection
+          ? { D_PI_MODEL_SELECTION: JSON.stringify(selection) }
+          : {}),
       },
       stdio: ["pipe", "pipe", "pipe"],
     });
@@ -144,7 +125,11 @@ try {
     return { state, messages, frames, code };
   }
   const fresh = await run(null);
-  assert.equal(fresh.code, 0, "closing stdin exits the real RPC session cleanly");
+  assert.equal(
+    fresh.code,
+    0,
+    "closing stdin exits the real RPC session cleanly",
+  );
   assert.equal(fresh.state.success, true);
   assert.equal(fresh.messages.data.totalMessages, 0);
   const emptyBinding = {
@@ -183,6 +168,25 @@ try {
       (f) => f.type === "prompt_result" || f.type === "agent_start",
     ),
   );
+  const roleSeed = spawnSync(
+    join(sdk, "bun"),
+    [
+      "-e",
+      `const {SessionManager}=await import(${JSON.stringify(manager)});const m=SessionManager.create(process.cwd(),process.env.PI_CODING_AGENT_SESSION_DIR);m.appendModelChange('fixture/fixture');m.appendMessage({role:'user',content:'saved role history',timestamp:1});m.appendModelChange('fixture/missing-role','advisor');await m.ensureOnDisk();await m.close();console.log(JSON.stringify({sessionFile:m.getSessionFile(),sessionId:m.getSessionId()}));`,
+    ],
+    { cwd: sandbox.cwd, env: sandbox.env, encoding: "utf8", timeout: 15000 },
+  );
+  assert.equal(roleSeed.status, 0, roleSeed.stderr);
+  const roleBinding = JSON.parse(roleSeed.stdout.trim());
+  const roleJournal = await readFile(roleBinding.sessionFile, "utf8");
+  assert.notEqual(
+    (await run(roleBinding, false)).code,
+    0,
+    "missing last role model must not silently substitute saved default",
+  );
+  assert.ok(
+    (await readFile(roleBinding.sessionFile, "utf8")).startsWith(roleJournal),
+  );
   const after = await readFile(binding.sessionFile, "utf8");
   assert.ok(after.startsWith(initial), "resume preserves the prior journal");
   for (const invalid of [
@@ -215,9 +219,80 @@ try {
     0,
   );
   assert.equal(await readFile(empty, "utf8"), "");
+  const modelsPath = join(sandbox.config, "models.yml");
+  const models = JSON.parse(await readFile(modelsPath, "utf8"));
+  models.providers.fixture.models[0].id = "replacement";
+  models.providers.fixture.models[0].name = "replacement";
+  await writeFile(modelsPath, JSON.stringify(models));
+  const settingsPath = join(sandbox.config, "config.yml");
+  const settings = JSON.parse(await readFile(settingsPath, "utf8"));
+  settings.modelRoles = {
+    default: "fixture/replacement",
+    smol: "fixture/replacement",
+  };
+  await writeFile(settingsPath, JSON.stringify(settings));
+  assert.notEqual(
+    (await run(binding, false)).code,
+    0,
+    "missing saved model must refuse fallback",
+  );
+  assert.equal(await readFile(binding.sessionFile, "utf8"), after);
+  const selection = {
+    provider: "fixture",
+    modelId: "replacement",
+    thinking: { kind: "default" },
+  };
+  const replacement = await run(binding, true, selection);
+  assert.equal(replacement.code, 0);
+  assert.equal(replacement.state.data.sessionId, binding.sessionId);
+  assert.equal(replacement.state.data.sessionFile, binding.sessionFile);
+  assert.equal(replacement.state.data.model.id, "replacement");
+  assert.equal(replacement.messages.data.totalMessages, 2);
+  assert.ok((await readFile(binding.sessionFile, "utf8")).startsWith(after));
+  let selectedJournal = await readFile(binding.sessionFile, "utf8");
+  async function preservesHistoryOnRejectedSelection() {
+    const journal = await readFile(binding.sessionFile, "utf8");
+    assert.ok(journal.startsWith(selectedJournal));
+    const added = journal.slice(selectedJournal.length).trim();
+    for (const line of added ? added.split("\n") : []) {
+      const entry = JSON.parse(line);
+      assert.equal(entry.type, "custom");
+      assert.equal(entry.customType, "session_exit");
+    }
+    selectedJournal = journal;
+  }
+
+  settings.disabledProviders = ["fixture"];
+  await writeFile(settingsPath, JSON.stringify(settings));
+  assert.notEqual(
+    (await run(binding, false)).code,
+    0,
+    "disabled saved provider must refuse model fallback",
+  );
+  await preservesHistoryOnRejectedSelection();
+  assert.notEqual(
+    (await run(binding, false, selection)).code,
+    0,
+    "disabled selection cannot start execution",
+  );
+  await preservesHistoryOnRejectedSelection();
+  delete settings.disabledProviders;
+  settings.enabledModels = ["fixture/other"];
+  await writeFile(settingsPath, JSON.stringify(settings));
+  assert.notEqual(
+    (await run(binding, false, selection)).code,
+    0,
+    "disabled desktop model cannot start execution",
+  );
+  await preservesHistoryOnRejectedSelection();
+  assert.notEqual(
+    (await run(binding, false, { ...selection, modelId: "missing" })).code,
+    0,
+  );
+  await preservesHistoryOnRejectedSelection();
   console.log(
     JSON.stringify({
-      sdkVersion: "18.4.6",
+      sdkVersion: "18.8.7",
       emptySessionColdRestart: true,
       sameSessionId: true,
       sameSessionFile: true,
@@ -228,6 +303,12 @@ try {
       rejectedMissing: true,
       rejectedWrongCwd: true,
       rejectedEmpty: true,
+      missingModelRefused: true,
+      explicitReplacementSameIdentity: true,
+      disabledSelectionRefused: true,
+      disabledSavedProviderRefused: true,
+      missingRoleModelRefused: true,
+      failedResumePreservesJournal: true,
       modelCalls: 0,
     }),
   );

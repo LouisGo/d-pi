@@ -34,18 +34,32 @@ it.skipIf(!existsSync(resolve(repository, "resources/sdk/bun")))(
           projection.snapshot(),
         );
         const agents = snapshot.items.filter((item) => item.subagent);
-        expect(agents).toHaveLength(2);
-        expect(agents.map((item) => item.subagent?.nativeId)).toEqual([
+        expect(agents).toHaveLength(6);
+        const initial = agents.slice(0, 2);
+        expect(initial.map((item) => item.subagent?.nativeId)).toEqual([
           "first-task",
           "second-task",
         ]);
         expect(
-          agents.every((item) => item.subagent?.status === "completed"),
+          initial.every((item) => item.subagent?.status === "completed"),
         ).toBe(true);
-        expect(agents.map((item) => item.text).sort()).toEqual([
+        expect(initial.map((item) => item.text).sort()).toEqual([
           "M2_SUBAGENT_CHILD_RESULT_A",
           "M2_SUBAGENT_CHILD_RESULT_B",
         ]);
+        expect(evidence.parentStopCancelsBoth).toBe(true);
+        expect(evidence.continueDoesNotRetry).toBe(true);
+        expect(evidence.explicitNewDelegationCompletes).toBe(true);
+        expect(
+          agents
+            .slice(2, 4)
+            .every((item) => item.subagent?.status === "aborted"),
+        ).toBe(true);
+        expect(
+          agents
+            .slice(4)
+            .every((item) => item.subagent?.status === "completed"),
+        ).toBe(true);
         expect(JSON.stringify(snapshot)).not.toContain("sessionFile");
         const model = new ConversationModel({
           connect: (_thread, listener) => {

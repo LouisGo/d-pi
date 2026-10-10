@@ -179,16 +179,19 @@ export function inspectSdk(root, sdkRoot, declared) {
     )
       issues.push(`SDK resource hash mismatch: ${name}`);
   }
-  if (manifest.sdkVersion === "18.4.6" && !manifest.sdkImportFix)
-    issues.push("SDK import correction audit is missing");
-  if (manifest.sdkImportFix) {
-    const path = join(
-      sdkRoot,
-      "node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts",
-    );
-    if (!existsSync(path) || manifest.sdkImportFix.sha256 !== sha256(path))
-      issues.push("SDK import correction hash mismatch");
-  }
+  if (manifest.sdkImportFix !== undefined)
+    issues.push("Retired SDK import correction is not permitted");
+  const sdkSourcePath = "node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts";
+  const officialSdkSha256 =
+    "d693c1b71e70f61c38c2cf564c608750401179509e8c6c414d1e124baa96e69a";
+  const sourcePath = join(sdkRoot, sdkSourcePath);
+  if (
+    manifest.sdkSource?.file !== sdkSourcePath ||
+    manifest.sdkSource?.sha256 !== officialSdkSha256 ||
+    !existsSync(sourcePath) ||
+    sha256(sourcePath) !== officialSdkSha256
+  )
+    issues.push("Official SDK source audit/hash mismatch");
   for (const name of ["pi-coding-agent", "pi-utils"]) {
     const packagePath = join(
       sdkRoot,

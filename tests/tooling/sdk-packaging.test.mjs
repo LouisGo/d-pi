@@ -12,7 +12,7 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
-import { getAddonFilenames } from "../../node_modules/.pnpm/@oh-my-pi+pi-natives@18.4.6/node_modules/@oh-my-pi/pi-natives/native/loader-state.js";
+import { getAddonFilenames } from "../../node_modules/.pnpm/@oh-my-pi+pi-natives@18.8.7/node_modules/@oh-my-pi/pi-natives/native/loader-state.js";
 import {
   auditSdkTree,
   copySdkDependencyGraph,
@@ -100,7 +100,7 @@ test("missing required runtime dependencies and dependencies outside the managed
 test("fixed Linux x64 SDK retains baseline and omits the optional modern CPU binary", async (t) => {
   const { root, packagePath, write } = fixture(t);
   const native = packagePath("@oh-my-pi/pi-natives-linux-x64", {
-    version: "18.4.6",
+    version: "18.8.7",
   });
   const relativeNative =
     "store/@oh-my-pi+pi-natives-linux-x64@1/node_modules/@oh-my-pi/pi-natives-linux-x64";
@@ -142,7 +142,7 @@ test("fixed Linux x64 SDK retains baseline and omits the optional modern CPU bin
 test("Linux CPU pruning rejects a missing baseline and preserves unknown SDK versions", async (t) => {
   const { root, packagePath, write } = fixture(t);
   const native = packagePath("@oh-my-pi/pi-natives-linux-x64", {
-    version: "18.4.6",
+    version: "18.8.7",
   });
   const relativeNative =
     "store/@oh-my-pi+pi-natives-linux-x64@1/node_modules/@oh-my-pi/pi-natives-linux-x64";

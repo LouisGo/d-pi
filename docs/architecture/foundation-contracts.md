@@ -36,7 +36,7 @@
 交接主路径：`preparing → prepared → dispatching → acknowledged`。`acknowledged` 仅表示与本次原生命令、实例准确关联的成功调用回执已经持久化；`accepted` 是需要额外原生证据的业务接受事实，S2 不依赖它清稿，二者都不是 started/completed。明确接受前拒绝为 `rejected`，本地准备中取消为 `cancelled`；派发后尚未持久确认 ACK 且断链/超时/崩溃为 `unknown`。
 
 - Host 必须等 prepared（含冻结内容）与 dispatching 分别落盘后才写 OMP。Main 收到有效调用 ACK 后，在同一事务保存 acknowledged 与对应草稿 revision 的消费标记，成功后才通知 Renderer 腾空仍对应本次提交的输入。事务不另改草稿正文或推进 revision；输入继续沿原保存序列工作。新编辑始终保留，通知丢失时由持久标记恢复有效草稿。
-- 通信确认、业务接受和执行结果分别记录。当前固定 OMP v18.4.6 仍可先 success 后同 ID 异步 response error，再给出独立 prompt_result。首次 success 只证明调用确认；Host 不能在 ACK 或迟到 error 后提前释放已接受请求的关联。requestId 映射到 submissionId 与完整 target（processInstanceId/connectionGeneration/configContextId/nativeSessionRef），不按文本、generic idle 或 agent_end 猜结果归属。
+- 通信确认、业务接受和执行结果分别记录。当前固定 OMP v18.8.7 仍可先 success 后同 ID 异步 response error，再给出独立 prompt_result。首次 success 只证明调用确认；Host 不能在 ACK 或迟到 error 后提前释放已接受请求的关联。requestId 映射到 submissionId 与完整 target（processInstanceId/connectionGeneration/configContextId/nativeSessionRef），不按文本、generic idle 或 agent_end 猜结果归属。
 - prompt_result(id) 的 completed/aborted/error、agentInvoked、sessionSettled 独立保存为有限结果观察；error 仅保存 retryable/httpStatus 等必要类型化摘要，不复制 provider 文本、诊断路径或正文。内置本地命令有时只返回 response.data.agentInvoked=false，该结果另标 native-local-response，不伪造 prompt_result 或 sessionSettled。agentInvoked=false 不证明没有配置/文件副作用。
 - completed 只说明该输入的原生工作结果；sessionSettled=false 时仍保留后台活动约束，新鲜 get_state/control 与 session_settled 才能确认该实例闲置。prompt_result 不证明最终正文已到 Renderer，正文仍以 full 模式的 message_end 与阅读快照为准。
 - 后续错误/执行中断与已持久确认的 ACK 分开：保留 acknowledged 事实及冻结原文，独立显示失败或执行结果未知，不倒写成从未发送、不因迟到 success 擦除错误。只有可靠证据证明接受前拒绝才标注该拒绝；一般异步错误不能推断失败阶段。没有逐提交身份的原生流只归属 Thread/会话。
@@ -69,7 +69,7 @@
 - `configContextId` 标识解析后的配置根、profile、cwd 与非秘密的来源信息；真实环境值/凭据由宿主使用，不放进 UI 状态/日志。所有配置读取、认证及 OMP 执行使用同一上下文。
 - 配置摘要与新认证命令携带明确的 `application` 或 `thread { threadId, workingDirectoryId }` scope 和同一 `traceId`。Main 在资源等待前从 Thread 仓储固定实际目录及原生环境，等待后复核关联；切换活动 Thread 不改写旧请求，删除或重关联返回 `stale-target`。application 使用 Main 拥有的固定隔离探测目录。Query key 与命令 scope 一致，回包身份不符不能进入成功缓存；认证续步与取消只按原 job 找固定来源。
 - snapshot 全链只读，不以 `Settings.loadReadOnly` 代替凭据、模型缓存与文件迁移的验证。薄适配以有限只读 SQLite 事务读取已提交的数据库和 WAL；缺数据库不创建、legacy JSON 不迁移、不执行命令 key/helper、不联网、不加载项目 Agent/扩展。SQLite 的 WAL/SHM 协调文件允许由原生只读连接管理，不 checkpoint、不修改持久凭据/配置/模型缓存源。模型缓存通过 SQLite serialize 的一致快照交给私有临时库中的官方兼容校验、合并和 metadata 读取，退出清理。旧 schema、损坏或不安全路径、读取锁超时、远程认证、未观察账户目录和无法在有限读取内观察的外部配置引用均明确返回 `partial/unavailable` 与对应未知项，不把未知解释为无认证。2026-10-01 用户纠正共享配置回归后，取代此前将正常活动 WAL 当作不可读的工程限制；双向共享证据见 [M2 配置复用修复](../../.scratch/m2-first-release/configuration-sharing.md)。
-- 推理选项从固定 SDK 的实际 metadata/helper 派生，区分 native default、explicit off 和支持的 effort（含 minimal）；不可调模型不给虚假菜单，requiresEffort 不提供 off。18.4.6 使用官方 `ThinkingLevel.Off` 显式关闭，`undefined`/`ThinkingLevel.Inherit` 表示未指定。空闲实例应用前复核能力，完成后显示 Host 的实际回读；未知操作结果不显示成功。
+- 推理选项从固定 SDK 的实际 metadata/helper 派生，区分 native default、explicit off 和支持的 effort（含 minimal）；不可调模型不给虚假菜单，requiresEffort 不提供 off。18.8.7 使用官方 `ThinkingLevel.Off` 显式关闭，`undefined`/`ThinkingLevel.Inherit` 表示未指定。空闲实例应用前复核能力，完成后显示 Host 的实际回读；未知操作结果不显示成功。
 - 正常已配置路径零配置进入。Finder 启动缺少终端环境时，区分 absent / incomplete / incompatible / inaccessible；GUI 可选择原生配置根及必要环境来源，展示来源与作用域。不能误判成新用户后暗建默认配置，也不自动执行任意 shell startup 文件以“修复环境”。
 - 不兼容格式禁止写入，不自动迁移外部 CLI；提供只读诊断、选择兼容上下文及明确修复说明。原生接口写设置，保存前重读、比较目标 revision/内容，保存后回读；App 内串行不冒充外部 CLI 互斥，record 冲突要求刷新重做，不能盲覆盖。
 - 认证由原生实现管理 token、刷新及持久化；GUI 仅传秘密输入/显示挑战、取消与进度。OAuth 用系统浏览器，不依赖未来内置浏览器；回调/state/超时由原生路径处理，结束释放监听。API key 不进入命令行参数、日志或 App 偏好，走受控输入通道。新 key 验证/保存失败保留已有有效认证，不先删旧值。

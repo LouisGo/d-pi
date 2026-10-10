@@ -7,7 +7,7 @@
 - 合同和历史页在 `src/modules/conversation/contracts/`，无平台阅读客户端在 `core/`，Host 投影在 `host/`，原生历史读取在 `main/`。
 - `src/app/renderer/reading/` 的 `conversation.tsx`、`history.tsx`、`submissions.tsx` 分别组合实时阅读模型、原生历史桥和执行收据显示，共用 `markdown.tsx`；`ConversationModel` 不启动后台执行，面板卸载只释放视图资源与订阅。
 - `ConversationProjection` 由 `conversation/host` 的独立 Host scope 创建并通过公开 `ConversationPort` 输出；`app/host` 将其与 execution Host 组合。OMP 原生历史仍是来源，App 不建立第二套持久历史。
-- 固定 OMP v18.4.6 保持 full 消息模式，以原生 message_end 更新最终正文；prompt_result/SQLite 保存成功不证明 Renderer 已收到最终消息。执行收据显示调用 ACK 与原生 completed/aborted/failed/unknown 的独立事实，结果证据不足时保留覆盖说明，阅读镜像不结算提交。
+- 固定 OMP v18.8.7 保持 full 消息模式，以原生 message_end 更新最终正文；prompt_result/SQLite 保存成功不证明 Renderer 已收到最终消息。执行收据显示调用 ACK 与原生 completed/aborted/failed/unknown 的独立事实，结果证据不足时保留覆盖说明，阅读镜像不结算提交。
 
 
 ## 范围与拥有者

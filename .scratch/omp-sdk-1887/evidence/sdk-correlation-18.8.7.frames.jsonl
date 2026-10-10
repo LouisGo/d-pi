@@ -1,0 +1,5 @@
+{"type":"prompt_result","id":"fresh-after-old","agentInvoked":true,"status":"error","sessionSettled":true,"error":{"message":"fixture-error","provider":"fixture","model":"fixture","retryable":false,"httpStatus":503}}
+{"type":"prompt_result","id":"queued-first","agentInvoked":true,"status":"completed","sessionSettled":true}
+{"type":"prompt_result","id":"queued-second","agentInvoked":true,"status":"completed","sessionSettled":true}
+{"type":"prompt_result","id":"completed-with-background","agentInvoked":true,"status":"completed","sessionSettled":false}
+{"type":"session_settled"}

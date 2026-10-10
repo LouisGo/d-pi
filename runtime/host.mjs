@@ -34,17 +34,40 @@ import { NativeQueueManager } from "./native-queue.mjs";
 import { createSubagentConfiguration } from "./native-subagent-configuration.mjs";
 import { createReadingSession } from "./reading-session.mjs";
 
-const { session, setToolUIContext, subagentEventBus } =
-  await createAgentSession({
-    sessionManager: await managedSessionManager(SessionManager),
-  });
-// The native default/resumed model has a configuration baseline before any call,
-// even when the user has not made an explicit desktop model selection.
-await captureCurrentModelConfiguration(session);
-if (process.env.D_PI_MODEL_SELECTION) {
-  const selection = JSON.parse(process.env.D_PI_MODEL_SELECTION);
-  await applyModelSelection(session, selection);
-}
+const selection = process.env.D_PI_MODEL_SELECTION
+  ? JSON.parse(process.env.D_PI_MODEL_SELECTION)
+  : null;
+const coldResume =
+  JSON.parse(process.env.D_PI_RESUME_SESSION ?? "null") !== null;
+const manager = await managedSessionManager(SessionManager);
+const { session, setToolUIContext, subagentEventBus } = await (async () => {
+  let created;
+  try {
+    created = await createAgentSession({
+      sessionManager: manager,
+      // An explicit user choice must reach the factory before saved-model
+      // restoration. The native resolver discovers it; applyModelSelection below
+      // still enforces the exact available desktop model and thinking capability.
+      ...(selection
+        ? { modelPattern: `${selection.provider}/${selection.modelId}` }
+        : {}),
+      allowSessionModelFallback: false,
+    });
+    // Native role restoration may still fall back to its saved default. The
+    // public warning is the factory's receipt; reject without publishing ready.
+    if (coldResume && !selection && created.modelFallbackMessage)
+      throw Error("saved-model-unavailable");
+    await captureCurrentModelConfiguration(created.session);
+    if (selection) await applyModelSelection(created.session, selection);
+    return created;
+  } catch (error) {
+    // Startup never publishes a ready binding after a rejected selection.
+    await (created ? created.session.dispose() : manager.close()).catch(
+      () => {},
+    );
+    throw error;
+  }
+})();
 const gate = new ConsumptionGate();
 const queue = new NativeQueueManager(session, {
   gate: new ConsumptionGate(),
@@ -54,7 +77,7 @@ const queue = new NativeQueueManager(session, {
 });
 const subagents = createSubagentConfiguration(session);
 const reading = createReadingSession(session, {
-  coldResume: JSON.parse(process.env.D_PI_RESUME_SESSION ?? "null") !== null,
+  coldResume,
 });
 
 let paused = false;

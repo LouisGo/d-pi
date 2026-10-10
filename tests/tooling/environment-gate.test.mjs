@@ -73,14 +73,19 @@ test("checks installed metadata even when package exports hide package.json and 
 test("SDK inspection refuses stale locks, tampered files and missing bundled resources", (t) => {
   const hash = (content) => createHash("sha256").update(content).digest("hex");
   const declared = {
-    "@oh-my-pi/pi-coding-agent": "18.3.0",
-    "@oh-my-pi/pi-utils": "18.3.0",
+    "@oh-my-pi/pi-coding-agent": "18.8.7",
+    "@oh-my-pi/pi-utils": "18.8.7",
     bun: "1.3.14",
   };
   const root = fixture(t, {
     "pnpm-lock.yaml": "fixture-lock\n",
     "sdk/manifest.json": JSON.stringify({
-      sdkVersion: "18.3.0",
+      sdkVersion: "18.8.7",
+      sdkSource: {
+        file: "node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts",
+        sha256:
+          "d693c1b71e70f61c38c2cf564c608750401179509e8c6c414d1e124baa96e69a",
+      },
       bunVersion: "1.3.14",
       platform: `${process.platform}-${process.arch}`,
       lockHash: hash("fixture-lock\n"),
@@ -114,16 +119,22 @@ test("SDK inspection refuses stale locks, tampered files and missing bundled res
     "sdk/BUN-LICENSE.md": "fixture-license",
     "sdk/node_modules/@oh-my-pi/pi-coding-agent/package.json": JSON.stringify({
       name: "@oh-my-pi/pi-coding-agent",
-      version: "18.3.0",
+      version: "18.8.7",
       exports: {
         ".": { import: "./src/index.ts" },
         "./*": { import: "./src/*.ts" },
       },
     }),
-    "sdk/node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts": "export {};",
+    "sdk/node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts": readFileSync(
+      new URL(
+        "../../node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
     "sdk/node_modules/@oh-my-pi/pi-utils/package.json": JSON.stringify({
       name: "@oh-my-pi/pi-utils",
-      version: "18.3.0",
+      version: "18.8.7",
       exports: { ".": { import: "./src/index.ts" } },
     }),
     "sdk/node_modules/@oh-my-pi/pi-utils/src/index.ts": "export {};",
@@ -131,7 +142,7 @@ test("SDK inspection refuses stale locks, tampered files and missing bundled res
   assert.deepEqual(inspectSdk(root, join(root, "sdk"), declared).issues, []);
   writeFileSync(
     join(root, "sdk/node_modules/@oh-my-pi/pi-utils/package.json"),
-    JSON.stringify({ name: "wrong", version: "18.3.0", main: "./index.js" }),
+    JSON.stringify({ name: "wrong", version: "18.8.7", main: "./index.js" }),
   );
   assert.match(
     inspectSdk(root, join(root, "sdk"), declared).issues.join("\n"),

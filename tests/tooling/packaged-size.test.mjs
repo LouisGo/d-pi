@@ -43,8 +43,7 @@ async function fixture(t, duplicate = false) {
     write("asar/node_modules/duplicate/index.js", "duplicated dependency");
   const resources = "d-pi.app/Contents/Resources";
   const sdk = `${resources}/sdk`;
-  const entry =
-    "node_modules/.pnpm/agent/node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts";
+  const entry = "node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts";
   const hashes = {};
   for (const name of [
     "bun",
@@ -62,21 +61,31 @@ async function fixture(t, duplicate = false) {
     "pdf-content.mjs",
     entry,
   ]) {
-    const body = `required resource ${name}`;
+    const body =
+      name === entry
+        ? readFileSync(
+            new URL(
+              "../../node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts",
+              import.meta.url,
+            ),
+          )
+        : `required resource ${name}`;
     write(`${sdk}/${name}`, body);
     hashes[name] = createHash("sha256").update(body).digest("hex");
   }
   write(
     `${sdk}/node_modules/.pnpm/agent/node_modules/@oh-my-pi/pi-coding-agent/package.json`,
-    JSON.stringify({ name: "@oh-my-pi/pi-coding-agent", version: "18.4.6" }),
+    JSON.stringify({ name: "@oh-my-pi/pi-coding-agent", version: "18.8.7" }),
   );
   write(
     `${sdk}/manifest.json`,
     JSON.stringify({
+      sdkVersion: "18.8.7",
+      bunVersion: "1.3.14",
       platform: "darwin-arm64",
       hashes,
       packaging: { policyVersion: 1 },
-      sdkImportFix: { file: entry, sha256: hashes[entry] },
+      sdkSource: { file: entry, sha256: hashes[entry] },
     }),
   );
   await createPackage(join(root, "asar"), join(root, resources, "app.asar"));

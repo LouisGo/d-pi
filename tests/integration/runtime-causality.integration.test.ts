@@ -574,7 +574,7 @@ it("decodes and persists a prompt terminal before ACK, keeps background work act
   f.busy();
   const backgroundFrames = readFileSync(
     new URL(
-      "../../.scratch/runtime-hardening-omp1845/evidence/sdk-correlation-18.4.6.frames.jsonl",
+      "../../.scratch/omp-sdk-1887/evidence/sdk-correlation-18.8.7.frames.jsonl",
       import.meta.url,
     ),
     "utf8",
@@ -684,6 +684,81 @@ it("replays bounded evidence in the same live Host after a SQLite failure withou
   } finally {
     lock.close();
   }
+});
+
+it("keeps actual 18.8.7 queued-steer intermediate end active until independent prompt and session receipts", async () => {
+  const recorded = readFileSync(
+    new URL(
+      "../../.scratch/omp-sdk-1887/evidence/sdk-control-18.8.7.frames.jsonl",
+      import.meta.url,
+    ),
+    "utf8",
+  )
+    .trim()
+    .split("\n")
+    .map((line) => JSON.parse(line));
+  const start = recorded.findLastIndex(
+    (frame) => frame.type === "agent_end" && frame.isTerminal === false,
+  );
+  expect(start).toBeGreaterThan(0);
+  const end = recorded
+    .slice(start + 1)
+    .find((frame) => frame.type === "agent_end" && frame.isTerminal === true);
+  const result = recorded
+    .slice(start + 1)
+    .find(
+      (frame) => frame.type === "prompt_result" && frame.status === "completed",
+    );
+  const settled = recorded
+    .slice(start + 1)
+    .find((frame) => frame.type === "session_settled");
+  expect(end && result && settled).toBeTruthy();
+  const f = await running();
+  const receipt = await f.prepare();
+  await f.dispatch();
+  f.frames({
+    type: "response",
+    command: "prompt",
+    id: receipt.requestId,
+    success: true,
+  });
+  f.busy();
+  await f.host.handle({ kind: "state" });
+  const reads = f.commands.filter(
+    (command) => command.type === "get_state",
+  ).length;
+  f.frames(recorded[start]);
+  await Promise.resolve();
+  await Promise.resolve();
+  expect(
+    f.commands.filter((command) => command.type === "get_state"),
+  ).toHaveLength(reads);
+  expect(f.runtime.hasActiveWork()).toBe(true);
+  expect(await f.runtime.releaseIfIdle()).toBe(false);
+  await expect(f.runtime.closeIdle()).rejects.toThrow("Active native work");
+  expect(f.store.submissions.submission(receipt.submissionId)).toMatchObject({
+    state: "acknowledged",
+    outcome: "unobserved",
+  });
+  f.idleControl();
+  f.frames(end);
+  await f.host.handle({ kind: "state" });
+  expect(f.runtime.hasActiveWork()).toBe(true);
+  await expect(f.runtime.closeIdle()).rejects.toThrow("Active native work");
+  expect(f.store.submissions.submission(receipt.submissionId)).toMatchObject({
+    outcome: "unobserved",
+  });
+  f.frames({ ...result, id: receipt.requestId });
+  f.frames(settled);
+  await f.host.handle({ kind: "state" });
+  expect(f.runtime.hasActiveWork()).toBe(false);
+  expect(f.store.submissions.submission(receipt.submissionId)).toMatchObject({
+    state: "acknowledged",
+    outcome: "completed",
+  });
+  expect(
+    f.commands.filter((command) => command.type === "prompt"),
+  ).toHaveLength(1);
 });
 
 it("idle cannot dispose unconfirmed terminal evidence after ACK was already committed", async () => {

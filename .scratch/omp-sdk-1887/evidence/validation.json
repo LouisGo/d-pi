@@ -1,0 +1,273 @@
+{
+  "date": "2026-10-10",
+  "startSha": "41190889e4b55169f40744b9cabe5b4651675d6f",
+  "tagCommit": "f261ed9faf16b61880b544f599876bface4ded0d",
+  "sdkVersion": "18.8.7",
+  "bunVersion": "1.3.14",
+  "platform": "darwin-arm64",
+  "package": {
+    "scenario": "sdk-upgrade",
+    "build": {
+      "version": "0.1.0-workbench.3",
+      "commit": "41190889e4b55169f40744b9cabe5b4651675d6f",
+      "dirty": true,
+      "id": "41190889-dirty-1b0de593"
+    },
+    "checks": [
+      "macOS arm64 packaged Main/Host cold resume preserves same Thread/native file-ID, readable real 18.8.7 JSONL and unsent draft without replay",
+      "missing saved model fails visibly while retaining history/draft/binding; explicit replacement recovers same identity without provider traffic or replacement session"
+    ],
+    "continuitySamples": [],
+    "providerCalls": 1,
+    "subagentProviderCalls": 0,
+    "subagentTitleProviderCalls": 0,
+    "longReadingProviderCalls": 0,
+    "attentionProviderCalls": 0,
+    "models": [
+      "fixture-a"
+    ],
+    "nativeSessions": [
+      {
+        "session_id": "01a12455-00cd-7000-a533-1dfe1eee6398",
+        "thread_id": "dc5089eb-88e9-43b8-9e12-63bdf61dc1ca"
+      }
+    ],
+    "sourceAsarSha256": "10c9cf82f9c2e97352fe477aa02fd67c2cc830b8e049dc710b80c8f69e58b30b",
+    "limitations": [
+      "localhost deterministic supplier, no real credentials/billing",
+      "native inspection evidence recorded separately",
+      "M2 V1-04 and queue/subagent/read-performance increments remain open"
+    ]
+  },
+  "coldResume": {
+    "sdkVersion": "18.8.7",
+    "emptySessionColdRestart": true,
+    "sameSessionId": true,
+    "sameSessionFile": true,
+    "savedMessages": 2,
+    "noPromptReplay": true,
+    "priorJournalPreserved": true,
+    "rejectedWrongId": true,
+    "rejectedMissing": true,
+    "rejectedWrongCwd": true,
+    "rejectedEmpty": true,
+    "missingModelRefused": true,
+    "explicitReplacementSameIdentity": true,
+    "disabledSelectionRefused": true,
+    "disabledSavedProviderRefused": true,
+    "missingRoleModelRefused": true,
+    "failedResumePreservesJournal": true,
+    "modelCalls": 0
+  },
+  "sdkUpgrade": {
+    "sdkVersion": "18.8.7",
+    "bunVersion": "1.3.14",
+    "platform": "darwin-arm64",
+    "sdkRoot": "resources/sdk",
+    "checks": [
+      {
+        "grammar": {
+          "info": {
+            "language": "kotlin",
+            "release": "v1",
+            "file": "kotlin-83d1aa9580f91a32.wasm",
+            "sha256": "83d1aa9580f91a32b51a057ad4216166c29e488bf750aa891ae528f7a04dd4bf",
+            "size": 5772696,
+            "installed": false
+          },
+          "assetUrl": "https://github.com/stencil-hq/wasm-grammars/releases/download/v1/kotlin-83d1aa9580f91a32.wasm.zst",
+          "firstDownload": true,
+          "cachedOffline": true,
+          "firstOffline": {
+            "missing": [
+              "kotlin"
+            ],
+            "note": "Skipped kotlin files: grammar could not be downloaded (offline?); results exclude them."
+          }
+        }
+      },
+      {
+        "badModelExcluded": true,
+        "goodModelObjectReused": true,
+        "priorUnicodeSnapshotRecovered": true,
+        "utf8BudgetEvictsOldest": true,
+        "newestSnapshotRetained": true,
+        "clear": true
+      },
+      {
+        "grammarStop": {
+          "downloadOutlivedStop": true,
+          "installedAfterRelease": true,
+          "stopElapsedMs": 372,
+          "promptAborted": true,
+          "modelCalls": 1,
+          "elapsedIncludesObservationWait": true
+        }
+      }
+    ],
+    "limits": [
+      "Stop aborts execution, but grammar transfer continues until completion or upstream 60-second timeout; caller AbortSignal is not wired",
+      "Kotlin ast_grep covered; TTSR and read summaries are separate consumers",
+      "No real OAuth or Claude account tested"
+    ]
+  },
+  "modelConfiguration": {
+    "sdkVersion": "18.8.7",
+    "checks": [
+      "desktop baseline permits native ephemeral A to B and restore",
+      "startup baseline permits native ephemeral A to B and restore",
+      "old native B endpoint edit requires reselection",
+      "old native B deferred header edit requires reselection",
+      "native role executes outside enabledModels while desktop selection remains filtered",
+      "native deferred headers require explicit reselection",
+      "startup default baseline precedes first call",
+      "selected command headers compared without execution",
+      "existing Host reads newly saved credentials",
+      "existing Host reads added custom models",
+      "provider disabled before switch and model call",
+      "native enabledModels enforced",
+      "edited endpoint requires explicit reselection",
+      "removed credential blocks next call",
+      "unrelated helper not executed during native settings listener refresh",
+      "llama.cpp native lazy context survives offline cache refresh",
+      "llama.cpp native lazy metadata clone retains declaration identity",
+      "lm-studio native lazy context survives offline cache refresh",
+      "lm-studio native lazy metadata clone retains declaration identity"
+    ],
+    "redRegressions": {
+      "deferredHeaders": "missing expected rejection on c283246",
+      "lazyContext": "model-configuration-changed on c283246 despite unchanged configuration",
+      "settingsListener": "unrelated credential helper executed from native settings listener on c283246",
+      "nativeSwitch": {
+        "source": "runtime/model-selection.mjs at 5256af46a25b848f4d6cba89b9a6301ce5fa1bff",
+        "validation": "validation/m2/model-configuration-live.mjs official ModelControls ephemeral A to B",
+        "command": "node validation/m2/model-configuration-live.mjs /tmp/d-pi-native-model-switch-red.json",
+        "result": "exit 1: model-configuration-changed after official ephemeral A to B selection"
+      },
+      "nativeRole": {
+        "source": "runtime/model-selection.mjs at 7da8934f30731ebbc528027f29091cb46c159e4e",
+        "validation": "official ModelControls.resolveRoleModel tiny and ephemeral selection outside enabledModels",
+        "result": "exit 1: selected-model-unavailable for native tiny role excluded from desktop selector"
+      }
+    },
+    "realSupplierRequests": 0
+  },
+  "thinking": {
+    "sdkVersion": "18.8.7",
+    "samples": {
+      "deepseek": {
+        "provider": "deepseek",
+        "id": "deepseek-flash",
+        "thinking": {
+          "efforts": [
+            "low",
+            "high",
+            "max"
+          ],
+          "adjustable": true,
+          "requiresEffort": false,
+          "defaultEffort": null,
+          "defaultLevel": null
+        }
+      },
+      "minimal": {
+        "provider": "abliteration",
+        "id": "abliterated-model",
+        "thinking": {
+          "efforts": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "adjustable": true,
+          "requiresEffort": false,
+          "defaultEffort": null,
+          "defaultLevel": null
+        }
+      },
+      "fixed": {
+        "provider": "cline-pass",
+        "id": "cline-free/mimo-v2.6-flash",
+        "thinking": {
+          "efforts": [],
+          "adjustable": false,
+          "requiresEffort": false,
+          "defaultEffort": null,
+          "defaultLevel": null
+        }
+      },
+      "required": {
+        "provider": "abliteration",
+        "id": "abliterated-model-large-v2",
+        "thinking": {
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "adjustable": true,
+          "requiresEffort": true,
+          "defaultEffort": "max",
+          "defaultLevel": "max"
+        }
+      },
+      "plain": {
+        "provider": "aimlapi",
+        "id": "act_two",
+        "thinking": {
+          "efforts": [],
+          "adjustable": false,
+          "requiresEffort": false,
+          "defaultEffort": null,
+          "defaultLevel": null
+        }
+      }
+    },
+    "checks": [
+      "official metadata five categories",
+      "distinct default/off/effort through native ModelControls",
+      "native Agent reasoning disabled only by explicit off",
+      "required and invalid efforts rejected",
+      "native actual level readback",
+      "packaged Host d_pi_model result agrees with native get_state for five categories"
+    ],
+    "realSupplierRequests": 0
+  },
+  "nativeReading": {
+    "officialSdk": "18.8.7",
+    "records": 1002,
+    "pages": 12,
+    "bodyBytes": 2250080,
+    "chunkCount": 9,
+    "largestPhysicalFrame": 349618,
+    "closed": true,
+    "liveExactId": [
+      "user",
+      "assistant"
+    ],
+    "modelRequests": 0,
+    "savedLiveToolSameRecord": true,
+    "savedToolPartialCoverage": true,
+    "incrementalRealJsonl": true
+  },
+  "check": {
+    "status": "passed",
+    "ordinaryAttempt": "Vitest worker SIGABRT; not a pass",
+    "limitedWorkersCommand": "pnpm check --maxWorkers=2",
+    "vitest": {
+      "filesPassed": 236,
+      "testsPassed": 1534,
+      "testsSkipped": 2,
+      "totalTests": 1536
+    },
+    "architectureTestsPassed": 40,
+    "toolingTestsPassed": 144,
+    "workerCrashCause": "unknown"
+  },
+  "independentReview": "refreshed Spec/Standards snapshot: two verified findings fixed; no new evidenced finding",
+  "packageArtifact": "dist/omp-sdk-1887/mac-arm64/d-pi.app"
+}

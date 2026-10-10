@@ -6,6 +6,9 @@ import { createInterface } from "node:readline";
 
 test("fixed SDK RPC observes two same-name tasks, final transcript and terminal registry removal", async () => {
   const requests = [];
+  let phase = "normal";
+  let phaseSpawned = false;
+  const heldStreams = new Set();
   let releaseChildren;
   const released = new Promise((resolve) => {
     releaseChildren = resolve;
@@ -13,6 +16,7 @@ test("fixed SDK RPC observes two same-name tasks, final transcript and terminal 
   const server = Bun.serve({
     hostname: "127.0.0.1",
     port: 0,
+    idleTimeout: 0,
     async fetch(req) {
       const body = await req.json();
       requests.push(body);
@@ -31,7 +35,11 @@ test("fixed SDK RPC observes two same-name tasks, final transcript and terminal 
       });
       let delta = { role: "assistant", content: "M2_SUBAGENT_PARENT_DONE" },
         finish = "stop";
-      if (index === 1) {
+      if (
+        index === 1 ||
+        (phase !== "normal" && !phaseSpawned && !childMessage)
+      ) {
+        phaseSpawned = true;
         delta = {
           role: "assistant",
           tool_calls: [
@@ -64,6 +72,22 @@ test("fixed SDK RPC observes two same-name tasks, final transcript and terminal 
         };
         finish = "tool_calls";
       } else if (childMessage) {
+        if (phase === "cancel" && body.tools?.length) {
+          return new Response(
+            new ReadableStream({
+              start(controller) {
+                heldStreams.add(controller);
+                controller.enqueue(
+                  new TextEncoder().encode(
+                    `data: ${JSON.stringify(chunk({ role: "assistant", content: "CHILD_PARTIAL" }, null))}\n\n`,
+                  ),
+                );
+              },
+              cancel() {},
+            }),
+            { headers: { "Content-Type": "text/event-stream" } },
+          );
+        }
         await released;
         const result = JSON.stringify(childMessage.content).includes("CHILD_A")
           ? "M2_SUBAGENT_CHILD_RESULT_A"
@@ -221,7 +245,7 @@ test("fixed SDK RPC observes two same-name tasks, final transcript and terminal 
           frame.toolName === "task",
       ),
     ).toBe(true);
-    expect(
+    await wait(() =>
       frames.some(
         (frame) =>
           frame.type === "message_end" &&
@@ -232,8 +256,98 @@ test("fixed SDK RPC observes two same-name tasks, final transcript and terminal 
               part.text.includes("M2_SUBAGENT_PARENT_DONE"),
           ),
       ),
-    ).toBe(true);
+    );
+    await wait(() => frames.some((frame) => frame.type === "session_settled"));
     expect((await request("get_subagents")).data.subagents).toEqual([]);
+    phase = "cancel";
+    phaseSpawned = false;
+    const cancelStart = frames.length;
+    const cancelPrompt = await request("prompt", {
+      message: "M2_SUBAGENT_PARENT_CANCEL: explicitly delegate both tasks.",
+    });
+    await wait(
+      () =>
+        frames
+          .slice(cancelStart)
+          .filter(
+            (frame) =>
+              frame.type === "subagent_lifecycle" &&
+              frame.payload.status === "started",
+          ).length === 2 && heldStreams.size === 2,
+    );
+    const cancelledIds = frames
+      .slice(cancelStart)
+      .filter(
+        (frame) =>
+          frame.type === "subagent_lifecycle" &&
+          frame.payload.status === "started",
+      )
+      .map((frame) => frame.payload.id);
+    expect((await request("d_pi_stop")).success).toBe(true);
+    await wait(
+      () =>
+        frames
+          .slice(cancelStart)
+          .filter(
+            (frame) =>
+              frame.type === "subagent_lifecycle" &&
+              frame.payload.status === "aborted",
+          ).length === 2,
+    );
+    await wait(() =>
+      frames.some(
+        (frame) =>
+          frame.type === "prompt_result" &&
+          frame.id === cancelPrompt.id &&
+          frame.status === "aborted",
+      ),
+    );
+    const pausedCalls = requests.length;
+    await Bun.sleep(200);
+    expect(requests.length).toBe(pausedCalls);
+    expect((await request("d_pi_continue")).success).toBe(true);
+    await Bun.sleep(200);
+    expect(requests.length).toBe(pausedCalls);
+    phase = "retry";
+    phaseSpawned = false;
+    const retryStart = frames.length;
+    const retryPrompt = await request("prompt", {
+      message:
+        "M2_SUBAGENT_PARENT_RETRY: explicitly delegate both tasks again.",
+    });
+    await wait(
+      () =>
+        frames
+          .slice(retryStart)
+          .filter(
+            (frame) =>
+              frame.type === "subagent_lifecycle" &&
+              frame.payload.status === "completed",
+          ).length === 2,
+    );
+    const retryIds = frames
+      .slice(retryStart)
+      .filter(
+        (frame) =>
+          frame.type === "subagent_lifecycle" &&
+          frame.payload.status === "started",
+      )
+      .map((frame) => frame.payload.id);
+    expect(retryIds).toHaveLength(2);
+    expect(retryIds.every((id) => !cancelledIds.includes(id))).toBe(true);
+    await wait(() =>
+      frames.some(
+        (frame) =>
+          frame.type === "prompt_result" &&
+          frame.id === retryPrompt.id &&
+          frame.status === "completed",
+      ),
+    );
+    await wait(() =>
+      frames
+        .slice(retryStart)
+        .some((frame) => frame.type === "session_settled"),
+    );
     await mkdir(dirname(process.env.OBSERVATION_EVIDENCE_PATH), {
       recursive: true,
     });
@@ -241,9 +355,12 @@ test("fixed SDK RPC observes two same-name tasks, final transcript and terminal 
       process.env.OBSERVATION_EVIDENCE_PATH,
       JSON.stringify(
         {
-          sdkVersion: "18.4.6",
+          sdkVersion: "18.8.7",
           config: { task: { batch: true } },
           supplierCalls: requests.length,
+          parentStopCancelsBoth: true,
+          continueDoesNotRetry: true,
+          explicitNewDelegationCompletes: true,
           frames,
         },
         null,

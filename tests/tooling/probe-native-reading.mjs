@@ -15,6 +15,7 @@ import { join, resolve } from "node:path";
 import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
 import { createReadingSession } from "../../runtime/reading-session.mjs";
+import { readNativeHistory } from "../../src/modules/conversation/main/native-history.ts";
 
 const resources = resolve(process.argv[2]);
 const scratch = await realpath(
@@ -222,9 +223,85 @@ try {
     assert.equal(end.message.dPiIdentityUnknown, undefined);
     assert.equal(original.dPiRecordId, undefined);
   }
+  const assistant = liveManager
+    .getBranch()
+    .findLast(
+      (entry) => entry.type === "message" && entry.message.role === "assistant",
+    ).message;
+  const call = {
+    ...assistant,
+    content: [
+      {
+        type: "toolCall",
+        id: "reading-tool-1887",
+        name: "read",
+        arguments: { path: "fixture.kt" },
+      },
+    ],
+    stopReason: "toolUse",
+  };
+  const tool = {
+    role: "toolResult",
+    toolCallId: "reading-tool-1887",
+    toolName: "read",
+    isError: false,
+    content: [{ type: "text", text: "tool body" }],
+    details: { lines: 1 },
+    timestamp: Date.now(),
+  };
+  for (const message of [call, tool]) {
+    session.agent.emitExternalEvent({ type: "message_end", message });
+    await reading.flushEvents();
+  }
+  await liveManager.flush();
+  const liveBinding = {
+    threadId: "reading-probe",
+    configContextId: "reading-probe",
+    sessionId: liveManager.getSessionId(),
+    sessionFile: liveManager.getSessionFile(),
+  };
+  const history = await readNativeHistory(
+    sessions,
+    liveBinding,
+    null,
+    undefined,
+    cwd,
+  );
+  assert.equal(history.kind, "page");
+  const saved = history.entries.find(
+    (entry) => entry.tool?.toolCallId === tool.toolCallId,
+  );
+  assert(saved, "real 18.8.7 JSONL tool result must retain native identity");
+  assert.equal(saved.tool.coverage, "partial");
+  assert.equal(saved.tool.arguments.value.path, "fixture.kt");
+  assert.equal(saved.tool.result.value.details.lines, 1);
+  const liveEnd = events.find(
+    (event) =>
+      event.type === "message_end" &&
+      event.message.toolCallId === tool.toolCallId,
+  );
+  assert.equal(liveEnd.message.dPiRecordId, saved.id);
+  const appended = liveManager.appendMessage({
+    role: "user",
+    content: "append-after-real-history",
+    timestamp: Date.now(),
+  });
+  await liveManager.flush();
+  const tail = await readNativeHistory(
+    sessions,
+    liveBinding,
+    { ...history.continuation, append: true },
+    undefined,
+    cwd,
+  );
+  assert.equal(tail.kind, "page");
+  assert.deepEqual(
+    tail.entries.map((entry) => entry.id),
+    [appended],
+  );
   console.log(
     JSON.stringify({
-      officialSdk: "18.4.6",
+      officialSdk: "18.8.7",
       records: messages.length,
       pages,
       bodyBytes: Buffer.byteLength(big),
@@ -233,6 +310,9 @@ try {
       closed: true,
       liveExactId: ["user", "assistant"],
       modelRequests: 0,
+      savedLiveToolSameRecord: true,
+      savedToolPartialCoverage: true,
+      incrementalRealJsonl: true,
     }),
   );
 } finally {

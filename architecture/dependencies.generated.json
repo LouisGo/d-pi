@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "a8660d64875a6000aa91a37300c6106827de0dd447660d2168d36f2b88c49f7c",
+  "inputsHash": "97f7cc67c66f8e70f33e3952fe41f2e7833596282ef20531cb25926f3f260549",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 569,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 244,
-      "lines": 47607,
+      "lines": 47608,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -60,7 +60,7 @@
       ],
       "materialized": true,
       "files": 33,
-      "lines": 3603,
+      "lines": 3600,
       "publicEntries": [
         {
           "path": "src/platform/main/storage/public.ts",
@@ -374,7 +374,7 @@
       "defaultEnvironment": "omp",
       "materialized": true,
       "files": 15,
-      "lines": 3631,
+      "lines": 3759,
       "publicEntries": [
         {
           "path": "runtime/host.mjs",
@@ -30475,6 +30475,15 @@
       "sourceEnvironment": "omp",
       "test": false,
       "specifier": "@oh-my-pi/pi-catalog/compat/auth",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/configuration-readonly.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "@oh-my-pi/pi-catalog/model-cache",
       "kind": "import",
       "resolution": "external"
     },

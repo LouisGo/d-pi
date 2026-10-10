@@ -3,6 +3,7 @@ import {
   chmodSync,
   mkdirSync,
   mkdtempSync,
+  readFileSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -28,6 +29,7 @@ it("admits a complete current-platform SDK launcher and refuses tampering withou
       "model-selection.mjs",
       "native-queue.mjs",
       "reading-session.mjs",
+      "managed-session.mjs",
       "image-input.mjs",
       "image-compression.mjs",
       "native-subagent-configuration.mjs",
@@ -42,23 +44,21 @@ it("admits a complete current-platform SDK launcher and refuses tampering withou
     });
     writeFileSync(
       join(root, "sdk/node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts"),
-      "fixture-sdk-source",
+      readFileSync(
+        new URL(
+          "../../../../node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts",
+          import.meta.url,
+        ),
+      ),
     );
     writeFileSync(
       join(root, "sdk/manifest.json"),
       JSON.stringify({
-        sdkVersion: "18.4.6",
-        sdkImportFix: {
+        sdkVersion: "18.8.7",
+        sdkSource: {
           file: "node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts",
-          originalSha256: "0".repeat(64),
-          sha256: createHash("sha256")
-            .update("fixture-sdk-source")
-            .digest("hex"),
-          originalImport:
-            'import { createRatchetPrelude } from "./ratchet/prelude";',
-          fixedImport:
-            'import { createRatchetPrelude } from "./ratchet/prelude.ts";',
-          authorized: "2026-10-01",
+          sha256:
+            "d693c1b71e70f61c38c2cf564c608750401179509e8c6c414d1e124baa96e69a",
         },
         bunVersion: "1.3.14",
         platform: `${process.platform}-${process.arch}`,
@@ -72,7 +72,7 @@ it("admits a complete current-platform SDK launcher and refuses tampering withou
         join(packageRoot, "package.json"),
         JSON.stringify({
           name: `@oh-my-pi/${name}`,
-          version: "18.4.6",
+          version: "18.8.7",
           exports: {
             ".": { import: "./src/index.ts" },
             "./*": { import: "./src/*.ts" },
@@ -89,6 +89,7 @@ it("admits a complete current-platform SDK launcher and refuses tampering withou
     for (const name of [
       "native-queue.mjs",
       "reading-session.mjs",
+      "managed-session.mjs",
       "image-input.mjs",
       "image-compression.mjs",
       "native-subagent-configuration.mjs",
@@ -116,7 +117,7 @@ it("admits a complete current-platform SDK launcher and refuses tampering withou
       join(root, "sdk/node_modules/@oh-my-pi/pi-utils/package.json"),
       JSON.stringify({
         name: "@oh-my-pi/pi-utils",
-        version: "18.4.6",
+        version: "18.8.7",
         exports: { ".": { import: "./src/index.ts" } },
       }),
     );

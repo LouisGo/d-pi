@@ -21,7 +21,7 @@
 - `runtime/configuration.mjs` 在短生命周期包内 Bun 中区分只读 snapshot 和显式认证写入。snapshot 的 `configuration-readonly.mjs` 复用官方 `Settings.loadReadOnly`、AuthStorage 的内存凭据投影与 ModelRegistry 的私有临时缓存快照；本地文件/SQLite 事务有限、只读且关闭；正常 WAL 的已提交内容直接读取，原生 WAL/SHM 协调文件允许管理，不 checkpoint，缓存源通过 serialize 一致快照交给官方代码并在退出时清理临时库，不启动项目 Agent，不运行命令 key/helper、不联网、迁移或修复用户文件。原生 credential schema 8 经版本检查；不兼容、损坏、symlink、锁超时、remote auth、未观察账户目录以覆盖缺口返回，unknown 不冒称无认证。官方认证/合并规则仍由 OMP 拥有。
 - OpenAI 原生 OAuth、DeepSeek 原生 key 登录的 GUI 接入已实现，真实供应商尚未验收。认证 job 固定原 scope/source；answer/cancel/open-login 仅经 jobId 续接，Thread 切换或删除不丢失旧 job 的取消出口。保存成功仅使摘要查询失效，不重试认证副作用。
 - DeepSeek 使用原生 models-endpoint GET 校验后原子保存；失败保留旧凭据。隔离 fixture 已覆盖归一化、拒绝与旧凭据保护。凭据不进 argv、App 数据或诊断。
-- 当前 Thread 主模型/档位使用原生实例 `setModelTemporary`，不修改共享默认值；启动前选择通过本实例环境带入，启动后空闲时经 Host 控制更新，显示原生回读。能力直接派生自 18.4.6 metadata/helper，包含 minimal、不可调档与 requiresEffort；GUI 默认/off/effort 传输意图独立。官方 `ThinkingLevel.Off` 关闭 provider reasoning，未指定实际值保留为 `inherit`；失效 effort 拒绝或要求刷新，不能显示为成功。子 Agent Thread 覆盖尚未接入。
+- 当前 Thread 主模型/档位使用原生实例 `setModelTemporary`，不修改共享默认值；启动前选择通过本实例环境带入，启动后空闲时经 Host 控制更新，显示原生回读。能力直接派生自 18.8.7 metadata/helper，包含 minimal、不可调档与 requiresEffort；GUI 默认/off/effort 传输意图独立。官方 `ThinkingLevel.Off` 关闭 provider reasoning，未指定实际值保留为 `inherit`；失效 effort 拒绝或要求刷新，不能显示为成功。子 Agent Thread 覆盖尚未接入。
 
 ## 范围与拥有者
 

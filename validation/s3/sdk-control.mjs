@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -30,7 +30,7 @@ const server = createServer(async (req, res) => {
   res.write(
     `data: ${JSON.stringify(frame({ role: "assistant", content: "RESPONSE" }, null))}\n\n`,
   );
-  if (calls > 1) {
+  if (calls !== 1 && calls !== 3) {
     res.write(`data: ${JSON.stringify(frame({}, "stop"))}\n\n`);
     res.end("data: [DONE]\n\n");
   }
@@ -173,12 +173,72 @@ try {
   console.log("Native idle observation", finalState);
   assert.equal(finalState.queued, 0);
   assert.match(inputs[1], /SECOND/);
+  const steeringStart = frames.length;
+  await request("prompt", { message: "STEER_MAIN" });
+  await wait(() => calls === 3);
+  await request("prompt", {
+    message: "STEER_QUEUED",
+    streamingBehavior: "steer",
+  });
+  assert.equal((await request("d_pi_state")).data.queued, 1);
+  await request("d_pi_stop");
+  await new Promise((r) => setTimeout(r, 350));
+  assert.equal(calls, 3, "stopped steering must not auto-drain or retry");
+  assert.equal((await request("d_pi_state")).data.queued, 1);
+  const intermediateEnds = frames
+    .slice(steeringStart)
+    .filter((f) => f.type === "agent_end")
+    .map((f) => f.isTerminal);
+  await request("d_pi_continue");
+  await wait(() => calls === 4);
+  await wait(() =>
+    frames.slice(steeringStart).some((f) => f.type === "session_settled"),
+  );
+  await new Promise((r) => setTimeout(r, 200));
+  assert.equal(calls, 4, "continued steering consumes the entry once");
+  assert.match(inputs[3], /STEER_QUEUED/);
+  console.log("Steering Stop/Continue terminal flags", {
+    intermediateEnds,
+    allEnds: frames
+      .slice(steeringStart)
+      .filter((f) => f.type === "agent_end")
+      .map((f) => f.isTerminal),
+  });
   if (process.env.D_PI_NATIVE_EVIDENCE) {
     const path = resolve(process.env.D_PI_NATIVE_EVIDENCE);
     await mkdir(join(path, ".."), { recursive: true });
     await writeFile(
       path,
-      frames.map((frame) => JSON.stringify(frame)).join("\n") + "\n",
+      (frames.map((frame) => JSON.stringify(frame)).join("\n") + "\n")
+        .split(root)
+        .join("/isolated-native"),
+    );
+    const manifest = JSON.parse(
+      await readFile(
+        resolve(process.env.SDK_ROOT ?? "resources/sdk", "manifest.json"),
+        "utf8",
+      ),
+    );
+    await writeFile(
+      `${path}.metadata.json`,
+      JSON.stringify(
+        {
+          sdk: manifest.sdkVersion,
+          bun: manifest.bunVersion,
+          platform: manifest.platform,
+          sdkSource: manifest.sdkSource,
+          lockHash: manifest.lockHash,
+          source: "real Host RPC and localhost provider",
+          providerCalls: calls,
+          cases: [
+            "followUp queue Stop/Continue",
+            "newer Stop supersedes Continue",
+            "steer intermediate agent_end:false followed by true",
+          ],
+        },
+        null,
+        2,
+      ) + "\n",
     );
     console.log(
       `Recorded fixed-SDK frames from isolated local provider fixture: ${path}`,

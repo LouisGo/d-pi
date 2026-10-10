@@ -16,6 +16,6 @@ process.stdout.write(
     pageCount: result.pageCount,
     pagesNeedingOcr: result.pagesNeedingOcr,
     hasVisualContent: true,
-    converterVersion: "omp18.4.6-pdfToMarkdown",
+    converterVersion: "omp18.8.7-pdfToMarkdown",
   }),
 );

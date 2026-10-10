@@ -11,15 +11,15 @@
 | OMP 原生配置、凭据、skills 与扩展 | OMP 按 profile、环境及实际工作目录发现；薄宿主先设置原生 profile 再导入 SDK | 默认复用已有原生配置。App 偏好和数据目录独立；`D_PI_DATA_DIR` 只隔离 App 数据，不隔离 OMP。 |
 | App 原生会话目录与绑定 | Main 管持久关联和会话目录，SessionHost 管连接；[宿主合同](../architecture/modules/runtime-host.md) | 原生历史仍由 OMP 写入。窗口重连与冷恢复不同；缺执行全周期单写证据时冷恢复只读。 |
 
-开发 skill 与 OMP skill 可以采用相同的 Markdown 格式，目录用途不产生运行时隔离。固定 OMP 18.4.6 的 `src/discovery/agents.ts` 会发现项目 `.agent/skills`、`.agents/skills`，`src/extensibility/skills.ts` 默认启用 project agents 来源；薄宿主没有禁用原生发现。因此把 d-pi 仓库本身作为受信任项目运行时，OMP 也可能发现这些开发文件。是否加载以原生配置和发现规则为准，不能宣称“仓库 skill 永不进入产品会话”，也不把开发 skill 安装当作产品扩展安装。
+开发 skill 与 OMP skill 可以采用相同的 Markdown 格式，目录用途不产生运行时隔离。固定 OMP 18.8.7 的 `src/discovery/agents.ts` 会发现项目 `.agent/skills`、`.agents/skills`，`src/extensibility/skills.ts` 默认启用 project agents 来源；薄宿主没有禁用原生发现。因此把 d-pi 仓库本身作为受信任项目运行时，OMP 也可能发现这些开发文件。是否加载以原生配置和发现规则为准，不能宣称“仓库 skill 永不进入产品会话”，也不把开发 skill 安装当作产品扩展安装。
 
 新目录默认仅浏览，不为探测配置或 skills 启动项目 OMP/扩展。允许项目执行之后才进入原生加载路径；这项信任和 App 文件读取授权分开，均不构成工具沙箱。原生配置/扩展损坏时保留原配置并如实报告，不删除配置、改用全局 OMP 或新建替代原生会话掩盖失败。
 
 ## 固定 SDK 的证据入口
 
-当前固定基线为 OMP 18.4.6 / Bun 1.3.14，声明和安装结果以 `package.json`、锁文件及 `pnpm check:environment` 为准。以下层次各自证明不同问题，不互相替代：
+当前固定基线为 OMP 18.8.7 / Bun 1.3.14，声明和安装结果以 `package.json`、锁文件及 `pnpm check:environment` 为准。以下层次各自证明不同问题，不互相替代：
 
-2026-10-01 用户认可[专属规格](../../.scratch/runtime-hardening-omp1845/spec.md)与[升级顺序](../../.scratch/runtime-hardening-omp1845/upgrade.md)，核实官方 18.4.5/18.4.6 原包导入失败后，授权固定 **18.4.6** 并仅在随包 staging 把 SDK 的 `./ratchet/prelude` 改为 `./ratchet/prelude.ts`。已安装官方包保持原样；准备脚本核对原文件 SHA-256 后修正一次，manifest 记录原文件/补丁哈希及授权日期。任何其他原生源码变更仍需另行决定。
+历史例外：2026-10-01 用户认可[专属规格](../../.scratch/runtime-hardening-omp1845/spec.md)与[升级顺序](../../.scratch/runtime-hardening-omp1845/upgrade.md)，核实官方 18.4.5/18.4.6 原包导入失败后，授权固定 **18.4.6** 并仅在随包 staging 把 SDK 的 `./ratchet/prelude` 改为 `./ratchet/prelude.ts`。已安装官方包保持原样；准备脚本核对原文件 SHA-256 后修正一次，manifest 记录原文件/补丁哈希及授权日期。2026-10-10 固定升级到 **18.8.7** 后，官方包已使用 `./ratchet/prelude-definition`，旧 staging 补丁及强制 `sdkImportFix` 合同退役。准备、运行与包后检查改为强制 `sdkSource` 的固定路径及未修改官方文件 SHA-256，并拒绝旧补丁记录。任何新增原生源码变更仍需另行决定。
 
 | 层次 | 入口 | 覆盖与限制 |
 | --- | --- | --- |
@@ -38,7 +38,7 @@
 
 2026-10-08 起复制的是目标平台运行闭包，不再复制整个 pnpm 单元；具体文件排除、版本限定的运行链接修复、许可证保留、体积预算与包后核对见[包内容门禁](local-delivery.md#包内容与体积门禁)。保留官方源 TS 与必要声明文本；不能根据扩展名把全部 `.d.ts` 判为开发文件。SDK factory import 与 optional Node bundle import 分别校验，前者不证明惰性加载路径完整。此资源策略不改变原生执行、队列、配置或恢复合同。
 
-manifest 校验 Bun、host.mjs、gate.js、configuration.mjs、configuration-readonly.mjs、model-selection.mjs 六个启动文件以及修正后的 sdk.ts；运行时同时核对 coding-agent/utils 的实际包名、版本和入口真实路径属于资源根。准备在独占 staging 中运行真实 SDK import，拒绝替换正在使用的资源，失败保留旧完整资源。依赖闭包由冻结安装与准备过程提供，不是全闭包签名或发布完整性保证。SDK 错误的具体原因不能从通用 `resource-incompatible` 推断，开发环境用环境检查定位并重新准备；随包缺损重新取得完整应用，不自行迁移未知外部配置。
+manifest 校验 Bun 与受管启动文件（含 managed-session.mjs）的完整必需哈希清单以及未修改的官方 sdk.ts；运行时同时核对 coding-agent/utils 的实际包名、版本和入口真实路径属于资源根。准备在独占 staging 中运行真实 SDK import，拒绝替换正在使用的资源，失败保留旧完整资源。依赖闭包由冻结安装与准备过程提供，不是全闭包签名或发布完整性保证。SDK 错误的具体原因不能从通用 `resource-incompatible` 推断，开发环境用环境检查定位并重新准备；随包缺损重新取得完整应用，不自行迁移未知外部配置。
 
 [资源守卫](../../src/platform/omp/resources/sdk-resource-guard.ts)让 Main 首次校验之前与 prepare 共用同一实际资源根的 SQLite 文件独占锁；Main 持有到退出，prepare 在准备结束后释放。因此重新准备前需关闭已经读取过该 SDK 的 d-pi，空闲原生会话也不例外。私有锁位于固定 `/tmp/d-pi-sdk-resource-guards-<uid>`，目录权限 0700、文件权限 0600，与 `HOME`/`TMPDIR`、App 数据库和 OMP 配置无关，不写只读的应用资源根。锁文件保存非秘密 PID/出生身份供核对；实际所有权来自内核锁，SIGKILL 后自动释放，旧记录不授权结束或接管其他进程。两个固定官方包按各自 `exports` 的 `import` 映射校验 `src/sdk.ts`/`src/index.ts`，不以 CommonJS `require` 条件解析原生 ESM 入口。
 
@@ -48,10 +48,16 @@ manifest 校验 Bun、host.mjs、gate.js、configuration.mjs、configuration-rea
 
 ## SDK 升级入口
 
-本轮已按授权升级到 18.4.6，实际证据见[本切片](../../.scratch/runtime-hardening-omp1845/spec.md)。后续升级在自己的规格中先写候选版本和兼容问题，并按以下顺序复核；不为升级引入通用 AgentRuntime、Run 或检查点系统：
+当前固定 18.8.7，升级证据、首次 grammar 联网边界与数据回滚约束见[本切片](../../.scratch/omp-sdk-1887/spec.md)。后续升级在自己的规格中先写候选版本和兼容问题，并按以下顺序复核；不为升级引入通用 AgentRuntime、Run 或检查点系统：
 
-1. 核对候选官方源码、exports、Bun 要求、原生 profile/配置发现、历史格式和消费前 hook。协调包声明、锁文件、CLI artifact manifest 与启动兼容校验，不能只改一个版本号或自动迁移外部 CLI。
+1. 核对候选官方源码、exports、Bun 要求、原生 profile/配置发现、历史格式和消费前 hook。协调 SDK 包声明、锁文件、SDK manifest 与启动兼容校验；CLI artifact manifest 仅属独立历史/opt-in CLI 入口，不能只改一个版本号或自动迁移外部 CLI。
 2. 运行已有协议、收据、Host 和录制回放。旧录制只证明 App 能解析旧事件；另运行候选 SDK 的实际控制与 ACK 后失败检查，必要时新增带版本说明的录制。
-3. 复核 prompt ACK/后续错误关联、停止/继续竞争、同 session 队列消费、工具 payload、扩展 UI 生命周期及 unknown 不重发。缺少执行全周期单写证明时继续保留冷恢复只读，不能由升级成功推断可恢复写入。
+3. 复核 prompt ACK/后续错误关联、停止/继续竞争、同 session 队列消费、工具 payload、扩展 UI 生命周期及 unknown 不重发。缺少执行全周期单写证明的具体目标继续保留冷恢复只读，不能由升级成功推断可恢复写入。
 4. 在受支持的 macOS arm64 准备干净资源、构建并验证包内启动/通道；涉及输出或交互时才补必要 GUI。保留真实供应商、个人扩展及其他平台的证据缺口。
 5. 核对实际随包依赖和原始许可证文件，记录替换版本、兼容结论、构建与证据入口。许可证、签名、更新和公开分发仍按 [交付边界](local-delivery.md) 单独决定。
+
+## 18.8.7 启动与首次联网边界
+
+Host 将用户明确选择的 provider/modelId 以原生 `modelPattern` 传入 factory，再沿既有 `applyModelSelection` 精确复核可用模型和 thinking。没有明确选择时恢复保存模型，`allowSessionModelFallback: false`；不可恢复即拒绝，不新建替代会话、不重发输入。失败仍由 App 保留可读历史和草稿。原生 dispose 可以追加 `session_exit`，不等同于历史正文丢失。
+
+部分语言的 AST、TTSR 和阅读摘要首次使用会下载固定大小/哈希的 WASM；缓存由 OMP 拥有。下载超时为 60 秒，未传递 caller AbortSignal；实测 Stop 可中止执行，但传输继续至完成或超时，不能声称立即取消下载。首次离线可返回缺少 grammar 的部分覆盖；已缓存语言可离线工作。具体实测语言与消费者、其余未验证路径见本切片，不把 Kotlin AST 检查扩大为所有语言/TTSR/摘要验证，也不开启 gitGuard/worktree。
