@@ -33,6 +33,9 @@ export function Popover({
       <PopoverPrimitive.Trigger render={trigger} />
       <PopoverPrimitive.Portal>
         <PopoverPrimitive.Positioner
+          // A portaled popup must not enlarge the document's scrollable area.
+          // Otherwise focus scrolling and collision sizing can feed each other.
+          positionMethod="fixed"
           side="bottom"
           align="start"
           sideOffset={6}

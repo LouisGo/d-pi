@@ -22,6 +22,12 @@
 
 ## 范围与合同
 
+### 2026-10-10 模型选框布局抖动修复
+
+用户录屏反馈选框打开后无限上下抖动，明确授权当前工作区诊断、修复及必要验证。真实 Electron/Chromium 使用正式 Popover、ModelPickerPanel 和 App CSS 的隔离场景复现：再次打开时，绝对定位 Portal 扩大文档滚动范围，搜索框焦点滚动与碰撞避让/可用高度更新形成反馈；780px viewport 的文档高度在 946/1001px、scrollY 在 166/221px 之间反复变化。共享 Popover 改用 `positionMethod="fixed"`，保留 anchor tracking、翻转、列表内滚动和焦点语义，不修改目录查询或已有侧栏改动。
+
+回归入口 `node validation/m2/model-picker-layout.mjs`：1120×780、800×600、800×400，light/dark 六场景，每次打开采样 90 帧；断言文档高度保持 viewport、scrollY 始终 0、会话滚动位置保持、稳定后弹层坐标不变且不越界，列表可滚动、搜索自动聚焦、Escape 回焦。修复前失败、修复后通过。14 项相关组件测试、总 TypeScript/Renderer 类型检查、Biome、设计与交互 lint 通过。仅隔离正式组件几何验证，不访问真实账户/供应商；当前修复交付待用户复试，用户认可 pending。用户随后明确授权直接 commit 并 push；本次提交仅包含模型选框修复、回归场景及本记录，保留侧栏等其他暂存改动。
+
 - D-01/D-03/D-04/D-21/D-22/D-23/D-28–D-38；[配置模块](../../docs/architecture/modules/configuration.md)、[基础契约](../../docs/architecture/foundation-contracts.md)、[设计系统](../../docs/architecture/design-system.md)、[图标合同](../../docs/architecture/icon-system.md)。
 - snapshot 只读，scope/source/trace 与可信目录一致；账户 secrets 不入 argv/App DB/诊断。显式写入/网络刷新与只读采样分开，保存前复核来源和外部变化，原生保存失败保留旧配置。
 - 模型选择不设 GUI provider 白名单。可用性、kind、能力、成本/窗口元数据和角色来自固定 OMP；Composer 只提供适合对话且可用的模型。未知/partial、失效当前模型和非对话模型均准确呈现。
