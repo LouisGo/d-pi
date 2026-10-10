@@ -333,7 +333,12 @@ it("keeps a real portaled media preview and its owner mounted until close and fo
                       role: "user",
                       text: "Attachment contents",
                       files: [
-                        { name: "notes.txt", byteLength: 19, start: 0, end: 19 },
+                        {
+                          name: "notes.txt",
+                          byteLength: 19,
+                          start: 0,
+                          end: 19,
+                        },
                       ],
                     },
                     bridge,

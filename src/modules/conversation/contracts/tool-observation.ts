@@ -13,14 +13,7 @@ export const ToolExecutionObservationSchema = z.strictObject({
   backgroundState: z.enum(["running", "completed", "failed"]).optional(),
   observed: z
     .array(
-      z.enum([
-        "start",
-        "update",
-        "end",
-        "message-end",
-        "record",
-        "message",
-      ]),
+      z.enum(["start", "update", "end", "message-end", "record", "message"]),
     )
     .max(6),
   coverage: z.enum(["observed", "partial"]),

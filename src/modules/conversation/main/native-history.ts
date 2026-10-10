@@ -36,8 +36,8 @@ const EntrySchema = z.object({
   message: z.object({
     role: z.string(),
     content: z.union([z.string(), z.array(z.unknown())]),
-    toolCallId: z.string().max(256).optional(),
-    toolName: z.string().max(120).optional(),
+    toolCallId: z.string().max(256).optional().catch(undefined),
+    toolName: z.string().max(120).optional().catch(undefined),
     isError: z.boolean().optional(),
     details: z.unknown().optional(),
     stopReason: z.string().optional(),
@@ -248,10 +248,7 @@ export async function readNativeHistory(
           continue;
         }
         const { id, parentId, message } = record.data;
-        if (
-          message.role === "assistant" &&
-          Array.isArray(message.content)
-        ) {
+        if (message.role === "assistant" && Array.isArray(message.content)) {
           const calls = new Map<
             string,
             { name: string; arguments?: unknown }
@@ -347,9 +344,7 @@ export async function readNativeHistory(
           )
             return undefined;
 
-          let matchedCall:
-            | { name: string; arguments?: unknown }
-            | undefined;
+          let matchedCall: { name: string; arguments?: unknown } | undefined;
           let currentId = parentId;
           let steps = 0;
           const visited = new Set<string>();
@@ -367,10 +362,10 @@ export async function readNativeHistory(
             currentId = parentOf.get(currentId) ?? null;
           }
 
-          const hasArgs = matchedCall && matchedCall.arguments !== undefined;
-          const argumentsPayload = hasArgs
-            ? projectToolPayload(matchedCall.arguments, measureUtf8Bytes)
-            : undefined;
+          const argumentsPayload =
+            matchedCall?.arguments !== undefined
+              ? projectToolPayload(matchedCall.arguments, measureUtf8Bytes)
+              : undefined;
 
           const resultInput =
             message.details !== undefined

@@ -444,11 +444,12 @@ Library 官方 prepare_materialize 已成功产生传输描述，但内置 helpe
 
 已观察证据：
 
-- 受影响 Host/Core/真实 JSONL/Query/阅读/Main/保留 Renderer 回归按真实失败增量修复；初次 22 文件 201 项中的两个布局/焦点失败已修复，随后窗口、pane 与共享 Modal 8 项通过，不将初次失败记作全绿。
+- 受影响 Host/Core/真实 JSONL/Query/阅读/Main/保留 Renderer 回归分段完成，共覆盖 25 文件 229 项；不是完整测试套件。初次 22 文件 201 项中的两个布局/焦点失败已修复，随后窗口、pane 与共享 Modal 8 项通过。历史 Tool 收尾另跑 5 文件 80 项通过（与前述存在重叠，不相加）；新增失败已修复，不将初次失败记作全绿。
 - 正式 ReadingPane/SavedConversation/MessageMedia/ToolDetails 的隔离 Chromium：3002 条可用行只挂载约 9–21 条，Outline 80 个标记；隐藏期间追加后原 owner 与行内位置 -30.5 px 保持；离屏键盘定位、跨窗口选区与 token 追加通过。真实 portal 在远距离定位/追加中保留 owner、焦点和弹窗；动画结束后焦点回到触发器，离开焦点后释放旧行。实际截图查看及最终页面错误为零；合成桥接不冒称真实账户 GUI 或 FPS 验收。
 - 实际 Electron Main→Utility→固定 OMP：已连接实例拒绝回收且不停止；收到真实 idle 后退出并确认 native PID 消失，释放并重建同 Thread，保留 Renderer 接受新 revision，继续同原生文件/ID，再次退出/释放。使用一条 localhost fixture 回复产生真实原生持久记录与已完成收据；无计费 provider 调用。刷新固定 SDK 资源成功（18.4.6，548.5 MiB/650 MiB），未改版本。
 - Core 单独基准：10000 次当前实体更新、3 轮中位数；保留 100/800/1000 条时，旧模型为 54.31/259.07/300.25 ms，新模型为 13.08/22.29/14.78 ms。旧快照/非目标实体及精确通知检查通过；不外推 Host 解码、DOM FPS 或 Main 延迟。
+- 最终全环境 typecheck、生产 Main/Preload/Renderer build、架构边界检查（569 源文件）、文档引用与结构报告检查通过；固定 SDK 四组真实协议 smoke 通过，架构检测器 23 项通过。受影响源文件 Biome、设计/文案门禁及 Impeccable 检测通过。构建保留第三方注解/`use client` 与 chunk 大小警告，没有屏蔽；不冒称全套测试或 CLI smoke 通过。
 
 限制：历史已加载页仍保留在 Query；单条极长正文、完整原生快照及 Main JSONL 解码成本仍存在，未凭静态推断引入 Worker/Utility 分片。主动展开/选区等 pin 可以超过普通视口窗口。原生私有接口升级仍需要完整相应契约验证；本轮不是 OMP 升级、多窗口交付或全量 M2 验收。临时 smoke 源码已删除，用户数据未修改；用户试用认可 pending，无 push/PR。
 
-最终合同核对补齐一处同范围缺口：保存历史仍只有 text-parts-only 的工具证据，需复用同一 Tool observation DTO 表达原生记录已具备的身份、结果及可得调用参数，而不是冷恢复后退回纯文本。复用 Host 已有 8 KiB/128 节点/深度 5 的有界 JSON 与图像字节排除策略；缺失参数、瞬时进度或当前后台状态明确 partial，不从保存结果猜当前执行。此补齐正在实施，未将已通过的实时观察冒称历史端到端通过。
+最终合同核对补齐保存历史的结构化 Tool：单次顺序解析保留本页父链可证明的调用参数及真实结果，复用同一 observation DTO 与 Host 的 8 KiB/128 节点/深度 5 有界策略，图像字节不进入元数据。record-only 来源保持 partial，缺失瞬时进度或当前后台状态不编造；身份字段不能表示时保留可读正文，坏 JSON 不静默跳过。固定 OMP 实际执行内建 read，经两条 localhost fixture 回复写入真实 JSONL；生产 Main 读取器解析其参数 `fixture.txt`、真实结果与调用 ID，隔离 Chromium 的正式 SavedConversation 冷读取、展开共享 Tool 详情，实际截图及最终页面错误为零。此 smoke 不是完整 Main IPC 授权/原生 GUI 验收；无计费调用，临时源码、服务与浏览器标签已清理。

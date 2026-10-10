@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "d0e86c0adab2d4e790ece7734b11121447d5541e144dd5cc7097b3e6f5e1be00",
+  "inputsHash": "6b1695563f535722b3b7b5b560c9b3169955d57bd87dd5d3ef824dc4dcc10b9d",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 567,
-    "scannedFiles": 567,
+    "sourceFiles": 569,
+    "scannedFiles": 569,
     "unscanned": []
   },
   "modules": [
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 244,
-      "lines": 46990,
+      "lines": 47455,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -306,8 +306,8 @@
         "main"
       ],
       "materialized": true,
-      "files": 29,
-      "lines": 5654,
+      "files": 31,
+      "lines": 6480,
       "publicEntries": [
         {
           "path": "src/modules/conversation/contracts/public.ts",
@@ -25676,6 +25676,18 @@
       "targetEnvironment": "contracts"
     },
     {
+      "from": "src/modules/conversation/contracts/history.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "./tool-observation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/contracts/tool-observation.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "contracts"
+    },
+    {
       "from": "src/modules/conversation/contracts/message-time.ts",
       "sourceModule": "conversation",
       "sourceEnvironment": "contracts",
@@ -26015,6 +26027,18 @@
       "targetEnvironment": "core"
     },
     {
+      "from": "src/modules/conversation/core/public.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "./tool-payload",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/conversation/core/tool-payload.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "core"
+    },
+    {
       "from": "src/modules/conversation/core/reading-position.test.ts",
       "sourceModule": "conversation",
       "sourceEnvironment": "core",
@@ -26127,6 +26151,39 @@
       "to": "src/modules/conversation/core/model.ts",
       "targetModule": "conversation",
       "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/conversation/core/tool-payload.test.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/core/tool-payload.test.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "./tool-payload",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/core/tool-payload.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/conversation/core/tool-payload.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "../contracts/tool-observation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/contracts/tool-observation.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/modules/conversation/host/projection.test.ts",
@@ -26253,6 +26310,18 @@
       "to": "src/modules/conversation/contracts/tool-observation.ts",
       "targetModule": "conversation",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/conversation/host/projection.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "../core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/core/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "core"
     },
     {
       "from": "src/modules/conversation/host/projection.ts",
@@ -26550,6 +26619,30 @@
       "to": "src/modules/conversation/contracts/message-time.ts",
       "targetModule": "conversation",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/conversation/main/native-history.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../contracts/tool-observation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/contracts/tool-observation.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/conversation/main/native-history.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/core/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "core"
     },
     {
       "from": "src/modules/conversation/main/native-history.ts",

@@ -102,5 +102,6 @@ full RPC message_update带完整message时以其text parts为正文真相，不�
 - 绑定历史页提供已提交换行边界 continuation；追加读取重新核对真实文件、header、冻结前缀及原来源，然后只读取边界之后的记录。未完成尾部留待下次提交，状态来自当前尾页；替换、缩水或不连续回到新起始页。缓存页不做 infinite-query 全页 refetch；返回超过 30 秒的缓存作尾部续查，未绑定来源在持久化后也续查。运输失败保留旧正文与重试入口，取消/旧 attempt 不覆盖新结果。高级历史选择器的显式起始页刷新不变。
 - ReadingWindow 用已测高度、普通文档流 spacer 和坐标索引挂载视口附近的连续整行；正在生成、选区、指针、焦点、展开详情及真实 portaled 附件预览保留所属行。预览关闭须等共享 Modal 完成焦点回归才解除临时 pin。隐藏或无布局时不测量、不用零矩形与 margin 覆写可见高度；返回仍由同一阅读所有者恢复行内偏移。Outline 索引已加载轮次元数据，最多挂载 80 个标记，离屏键盘定位先挂载目标。大正文不分段；用户主动 pin 的行可超过普通窗口预算。
 - Tool observation 在既有 ConversationItem 中保留真实 toolCallId、名称、原生调用生命周期及有界参数/进度/结果；后台 running/completed/failed 与原生调用终态分开。晚到的真实进度不丢弃，partial/truncated 覆盖标志保持，不伪造 Diff、产物或可恢复动作。详情首次展开才构造展示；Subagent 沿用原结构化模型，不再建立另一套 Agent registry。
+- 保存历史复用同一 Tool observation；只在本页已知父链能证明调用关系时关联参数，原生结果保留 record 来源及部分覆盖，不伪造瞬时进度或当前后台状态。与实时实体合并须同时匹配 nativeRecordId、toolCallId 和名称；只借用缺失参数/结果，保留实时生命周期、进度与 partial/truncated。Host/Main 共用 8 KiB、128 节点、深度 5 的结构化投影预算，图像字节不进入元数据。
 
 OMP JSONL 仍为事实来源；Main 继续授权与解析，未引入新数据库或 Worker。已加载历史内存、单条长正文与完整原生快照的解码成本并未消失，模型基准及有界 DOM 证据不代表整体 FPS 或 Main 延迟验收。实施与实际验证见[本轮记录](../../../.scratch/m2-first-release/spec.md#2026-10-10-架构与性能巩固)。

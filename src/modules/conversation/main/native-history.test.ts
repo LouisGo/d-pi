@@ -775,7 +775,7 @@ it("retains truthful partial coverage and available factual arguments/result for
   }
 });
 
-it("returns unavailable unsupported on malformed non-header JSON line within a page", async () => {
+it("returns unavailable invalid on malformed non-header JSON line within a page", async () => {
   const root = mkdtempSync(join(tmpdir(), "d-pi-history-malformed-"));
   const threadId = crypto.randomUUID();
   const directory = join(root, threadId);
@@ -796,7 +796,7 @@ it("returns unavailable unsupported on malformed non-header JSON line within a p
     const page = await readNativeHistory(root, binding);
     expect(page).toEqual({
       kind: "unavailable",
-      reason: "unsupported",
+      reason: "invalid",
     });
   } finally {
     rmSync(root, { recursive: true, force: true });
