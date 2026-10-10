@@ -784,7 +784,7 @@ it("renders cold saved-only tool with shared disclosure, real name, call ID, arg
             truncated: true,
           },
         },
-      } as unknown as HistoryPage extends { entries: (infer E)[] } ? E : never,
+      } as unknown as HistoryEntry,
     ],
     source: "saved",
     coverage: "append-order",
@@ -876,7 +876,7 @@ it("retains live lifecycle and progress on same-nativeRecordId overlay while fil
             truncated: false,
           },
         },
-      } as unknown as HistoryPage extends { entries: (infer E)[] } ? E : never,
+      } as unknown as HistoryEntry,
     ],
     source: "saved",
     coverage: "append-order",
@@ -953,6 +953,12 @@ it("retains live lifecycle and progress on same-nativeRecordId overlay while fil
   expect(observation?.textContent).toContain("Observed result");
   expect(observation?.textContent).toContain("chunks");
   expect(observation?.textContent).toContain("4096");
+
+  // 8. Live coverage partial is preserved: partial status notice remains visible even though saved DTO was observed
+  const statusNotices = [
+    ...(observation?.querySelectorAll('[role="status"]') ?? []),
+  ].map((el) => el.textContent);
+  expect(statusNotices.some((text) => text?.includes("missing"))).toBe(true);
 });
 
 it("does not graft saved arguments or result when live tool call identity mismatches", async () => {
@@ -981,7 +987,7 @@ it("does not graft saved arguments or result when live tool call identity mismat
             truncated: false,
           },
         },
-      } as unknown as HistoryPage extends { entries: (infer E)[] } ? E : never,
+      } as unknown as HistoryEntry,
     ],
     source: "saved",
     coverage: "append-order",
@@ -1037,4 +1043,90 @@ it("does not graft saved arguments or result when live tool call identity mismat
   // Never grafts saved arguments or result from mismatched toolCallId
   expect(observation?.textContent).not.toContain("saved_secret_command");
   expect(observation?.textContent).not.toContain("saved_result");
+});
+
+it("does not graft saved arguments when nativeRecordId mismatches even if tool identity matches", async () => {
+  const page: HistoryPage = {
+    kind: "page",
+    entries: [
+      {
+        id: "rec_saved_orig",
+        parentId: null,
+        role: "tool",
+        text: "Original saved output",
+        state: "complete",
+        tool: {
+          toolCallId: "call_same_id",
+          name: "bash",
+          lifecycle: "completed",
+          observed: ["record"],
+          coverage: "observed",
+          truncated: false,
+          arguments: {
+            value: { cmd: "saved_only_cmd" },
+            truncated: false,
+          },
+        },
+      } as unknown as HistoryEntry,
+    ],
+    source: "saved",
+    coverage: "append-order",
+    next: null,
+    incompleteTail: false,
+    omitted: 0,
+  };
+  const f = await mount(true, page);
+  await vi.waitFor(() => {
+    expect(f.container.textContent).toContain("Original saved output");
+  });
+
+  // Live item with different nativeRecordId
+  await act(() =>
+    f.emit({
+      kind: "snapshot",
+      connectionGeneration: "live-gen-3",
+      seq: 1,
+      gap: false,
+      items: [
+        {
+          id: 103,
+          nativeRecordId: "rec_different_foreign",
+          role: "tool",
+          state: "complete",
+          label: { kind: "literal", text: "bash" },
+          text: "Foreign live output",
+          tool: {
+            toolCallId: "call_same_id",
+            name: "bash",
+            lifecycle: "completed",
+            observed: ["start", "end"],
+            coverage: "partial",
+            truncated: false,
+          },
+        },
+      ],
+    }),
+  );
+
+  // Expand the original saved record details
+  const savedRow = f.container.querySelector('[data-reading-row="rec_saved_orig"]');
+  expect(savedRow).not.toBeNull();
+  const savedOuter = savedRow?.querySelector<HTMLDetailsElement>("details");
+  await act(() => savedOuter?.querySelector("summary")?.click());
+  const savedObservation = savedRow?.querySelector<HTMLDetailsElement>(
+    "[data-tool-observation]",
+  );
+  await act(() => savedObservation?.querySelector("summary")?.click());
+  expect(savedObservation?.textContent).toContain("saved_only_cmd");
+
+  // Foreign live item did not graft anything from rec_saved_orig
+  const liveRow = f.container.querySelector('[data-reading-row^="live:"]');
+  expect(liveRow).not.toBeNull();
+  const liveOuter = liveRow?.querySelector<HTMLDetailsElement>("details");
+  await act(() => liveOuter?.querySelector("summary")?.click());
+  const liveObservation = liveRow?.querySelector<HTMLDetailsElement>(
+    "[data-tool-observation]",
+  );
+  await act(() => liveObservation?.querySelector("summary")?.click());
+  expect(liveObservation?.textContent).not.toContain("saved_only_cmd");
 });
