@@ -94,6 +94,9 @@ function recoveryFailureMessage(reason: NativeRecoveryReason) {
     .exhaustive();
 }
 
+// Renderer models can outlive an evicted service; revisions belong to Main's lifetime.
+let publicationRevision = 0;
+
 export class RuntimeService {
   private readonly executingIds = new Set<string>();
   private readonly pendingEvidence = new Set<string>();
@@ -150,6 +153,7 @@ export class RuntimeService {
         this.target = null;
         this.currentConnectionGeneration = null;
         this.executingIds.clear();
+        this.lostEvidence ||= this.pendingEvidence.size > 0;
         this.pendingEvidence.clear();
         if (this.view) {
           this.view = { ...this.view };
@@ -161,7 +165,15 @@ export class RuntimeService {
           delete this.view.modelOperation;
           delete this.view.connectionGeneration;
         }
-        this.update({ busy: false });
+        this.update({
+          busy: false,
+          ...(this.lostEvidence
+            ? {
+                evidenceCoverage: "gap",
+                message: uiMessage("runtime.evidenceGap"),
+              }
+            : {}),
+        });
         this.settled();
       },
     );
@@ -709,7 +721,7 @@ export class RuntimeService {
   }
   private update(change: Partial<RuntimeView>): void {
     if (!this.view) return;
-    this.view = { ...this.view, ...change, revision: this.view.revision + 1 };
+    this.view = { ...this.view, ...change, revision: ++publicationRevision };
     this.publish(this.view);
   }
   async execute(command: RuntimeCommand): Promise<RuntimeView> {
@@ -754,7 +766,7 @@ export class RuntimeService {
                 },
               }
             : uiMessage("runtime.configDefault"),
-        revision: 0,
+        revision: ++publicationRevision,
         threadId: thread.threadId,
         traceId: command.traceId,
         phase: trusted ? "allowed" : "browse",

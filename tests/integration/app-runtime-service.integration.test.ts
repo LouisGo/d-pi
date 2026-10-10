@@ -21,12 +21,15 @@ import { AppStorage } from "../../src/app/main/wiring/app-storage";
 import {
   HostTransportCommandSchema,
   RuntimeCommandSchema,
+  type RuntimeView,
   RuntimeViewSchema,
   SubmissionIdSchema,
 } from "../../src/modules/execution/contracts/public";
+import { canSubmit } from "../../src/modules/execution/core/public";
 import { NativeRecoveryFailure } from "../../src/modules/execution/core/runtime/native-recovery-failure";
 import { RuntimeService } from "../../src/modules/execution/main/public";
 import { SessionExecutionLease } from "../../src/modules/execution/main/transport/session-execution-lease";
+import { RuntimeModel } from "../../src/modules/execution/renderer/runtime/runtime-model";
 import type { ContentPreparationResult } from "../../src/modules/input/contracts/public";
 import { TraceIdSchema } from "../../src/shared/identity";
 
@@ -329,6 +332,166 @@ it("releases only confirmed exited runtimes and preserves the same persisted nat
     }),
   ).toEqual({ kind: "list", receipts: [] });
 });
+
+it("a retained RuntimeModel accepts inspect and ready after the same thread runtime is released and reconstructed", async () => {
+  const f = await running();
+  let service = f.runtime;
+  let publish: (view: RuntimeView) => void = () => {};
+  const model = new RuntimeModel({
+    request: async (command) => ({
+      kind: "view",
+      view: await service.execute(command),
+    }),
+    subscribe: (listener) => {
+      publish = listener;
+      return () => {};
+    },
+  });
+  cleanup.push(() => model.dispose());
+  await model.bind(f.draft.threadId);
+  expect(canSubmit(model.getSnapshot())).toBe(true);
+  f.host.emit("exit", 0);
+  await service.closeIdle();
+  await model.act("inspect");
+  expect(model.getSnapshot()?.phase).toBe("interrupted");
+  expect(await service.releaseIfIdle()).toBe(true);
+  service = new RuntimeService(
+    f.store,
+    f.root,
+    f.root,
+    {},
+    (view) => publish(view),
+    undefined,
+    undefined,
+    f.draft.threadId,
+  );
+  await model.act("inspect");
+  expect(model.getSnapshot()).toMatchObject({
+    phase: "allowed",
+    trusted: true,
+    busy: false,
+  });
+  await model.act("start");
+  expect(model.getSnapshot()).toMatchObject({
+    phase: "ready",
+    model: "fixture/model",
+  });
+  expect(canSubmit(model.getSnapshot())).toBe(true);
+  expect(
+    await service.submit({
+      kind: "prepare",
+      threadId: f.draft.threadId,
+      submissionId: SubmissionIdSchema.parse(crypto.randomUUID()),
+      traceId: TraceIdSchema.parse(crypto.randomUUID()),
+      revision: 1,
+      text: "A",
+    }),
+  ).toMatchObject({ kind: "receipt", receipt: { state: "prepared" } });
+});
+
+it.each([false, true])(
+  "preserves lost terminal correction evidence across confirmed cleanup unless retried on the live host (retry=%s)",
+  async (retry) => {
+    const f = await running();
+    const prepared = await f.prepare();
+    if (prepared.kind !== "receipt") throw Error("prepare failed");
+    await f.dispatch();
+    const identity = {
+      submissionId: prepared.receipt.submissionId,
+      requestId: prepared.receipt.requestId,
+      target: prepared.receipt.target,
+    };
+    f.host.emit("message", {
+      kind: "submission",
+      evidenceId: crypto.randomUUID(),
+      event: { kind: "ack", ...identity },
+    });
+    f.host.emit("message", {
+      kind: "submission",
+      evidenceId: crypto.randomUUID(),
+      event: {
+        kind: "prompt-result",
+        ...identity,
+        status: "completed",
+        agentInvoked: true,
+        sessionSettled: true,
+      },
+    });
+    expect(f.store.submissions.submission(f.submissionId)).toMatchObject({
+      state: "acknowledged",
+      outcome: "completed",
+      promptResult: { status: "completed" },
+    });
+    const persist = vi
+      .spyOn(f.store.submissions, "observePromptResult")
+      .mockImplementationOnce(() => {
+        throw Error("SQLite unavailable");
+      });
+    const correction = {
+      kind: "submission",
+      evidenceId: crypto.randomUUID(),
+      event: {
+        kind: "prompt-result",
+        ...identity,
+        status: "error",
+        agentInvoked: true,
+        sessionSettled: true,
+        error: { code: "native-error", retryable: true },
+      },
+    };
+    f.host.emit("message", correction);
+    expect(persist).toHaveBeenCalledOnce();
+    expect(await f.act("inspect")).toMatchObject({
+      evidenceCoverage: "gap",
+      message: { code: "runtime.evidenceGap" },
+    });
+    expect(await f.runtime.releaseIfIdle()).toBe(false);
+    if (retry) {
+      f.host.emit("message", correction);
+      expect(f.store.submissions.submission(f.submissionId)).toMatchObject({
+        outcome: "failed",
+        promptResult: { status: "error" },
+      });
+      expect(await f.act("inspect")).toMatchObject({
+        evidenceCoverage: "complete",
+      });
+      f.host.emit("message", {
+        kind: "control",
+        connectionGeneration: prepared.receipt.target.connectionGeneration,
+        state: {
+          paused: false,
+          stopping: false,
+          streaming: false,
+          compacting: false,
+          queued: 0,
+          queue: [],
+          background: 0,
+          pendingAsync: false,
+          admitted: false,
+        },
+      });
+      f.confirmIdle();
+      expect(f.runtime.hasActiveWork()).toBe(false);
+    }
+    f.host.emit("exit", 0);
+    if (retry) await f.runtime.closeIdle();
+    else {
+      // Physical exit asynchronously confirms lease cleanup without stopping live work.
+      await vi.waitFor(() => expect(f.runtime.hasActiveWork()).toBe(false));
+    }
+    expect(await f.runtime.releaseIfIdle()).toBe(retry);
+    if (!retry) {
+      expect(f.store.submissions.submission(f.submissionId)).toMatchObject({
+        outcome: "completed",
+        promptResult: { status: "completed" },
+      });
+      expect(await f.act("inspect")).toMatchObject({
+        evidenceCoverage: "gap",
+        message: { code: "runtime.evidenceGap" },
+      });
+    }
+  },
+);
 
 it("retains pending and unknown receipts after physical exit", async () => {
   const fixture = await running();
