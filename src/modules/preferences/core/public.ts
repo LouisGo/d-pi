@@ -3,3 +3,11 @@ export {
   modelKey,
   updateModelPickerPreferences,
 } from "./model-picker";
+export {
+  emptySidebarPreferences,
+  reconcileSidebar,
+  type SidebarCatalog,
+  sidebarItemKey,
+  updateSidebar,
+  validSidebarChange,
+} from "./sidebar";

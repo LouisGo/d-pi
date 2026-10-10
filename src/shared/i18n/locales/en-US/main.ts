@@ -6,7 +6,7 @@ export const main = {
   "main.loggingFailure.acknowledge": "OK",
   "main.closeUnconfirmed.message": "Draft save unconfirmed",
   "main.closeUnconfirmed.detail":
-    "The window stays open. Check your input and save status before closing.",
+    "Closing now. Your last saved draft is retained; unsaved input may be lost.",
   "main.closeUnconfirmed.keepWindow": "Keep editing",
   "main.rendererGone.message": "The window stopped responding",
   "main.rendererGone.detail":
@@ -14,7 +14,7 @@ export const main = {
   "main.rendererGone.reopen": "Reopen",
   "main.closeUnsaved.message": "Draft not saved",
   "main.closeUnsaved.detail":
-    "The window stays open. Finish any input-method selection or resolve the save failure before closing.",
+    "Closing now. Your last saved draft is retained; unsaved input may be lost.",
   "main.closeUnsaved.continueEditing": "Continue editing",
   "main.menu.about": "About d-pi",
   "main.menu.quit": "Quit d-pi",
@@ -32,9 +32,9 @@ export const main = {
   "main.menu.minimize": "Minimize",
   "main.menu.zoom": "Zoom",
   "main.menu.close": "Close Window",
-  "main.quitActive.message": "Work is active or unconfirmed",
+  "main.quitActive.message": "d-pi is quitting",
   "main.quitActive.detail":
-    "“Wait” quits after work finishes and drafts are saved. “Request stop” interrupts current work and pauses the queue. The app stays open if messages, questions, or background tasks remain. Unconfirmed work won't be forcibly stopped.",
+    "Cleanup could not be fully confirmed. Saved content is retained. Unconfirmed work will be checked next time you open d-pi and will not be resent automatically.",
   "main.quitActive.wait": "Wait, then quit",
   "main.quitActive.stop": "Request stop, then quit",
   "main.quitActive.cancel": "Cancel quit",

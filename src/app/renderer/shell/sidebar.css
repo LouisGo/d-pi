@@ -1,0 +1,166 @@
+@layer components {
+  .thread-navigation {
+    gap: var(--spacing);
+  }
+  .sidebar-section {
+    min-width: 0;
+    margin-block-start: var(--panel-padding);
+  }
+  .sidebar-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-block-end: var(--spacing);
+  }
+  .sidebar-section-heading > .ui-button {
+    gap: var(--spacing);
+    font-size: var(--text-small);
+  }
+  .sidebar-section-chevron,
+  .sidebar-project-chevron {
+    display: inline-flex;
+    transition: transform var(--motion-control) var(--ease-out);
+  }
+  .sidebar-section-chevron[data-collapsed="true"],
+  .sidebar-project-chevron[data-collapsed="true"] {
+    transform: rotate(-90deg);
+  }
+  .sidebar-project-group {
+    margin-block-end: var(--spacing);
+    min-width: 0;
+  }
+  .sidebar-project-children {
+    padding-inline-start: var(--sidebar-indent);
+  }
+  .sidebar-row {
+    --sidebar-actions-space: 0px;
+    position: relative;
+    display: flex;
+    min-width: 0;
+    align-items: center;
+  }
+  .sidebar-row:is(:hover, :focus-within, [data-menu-open="true"]) {
+    --sidebar-actions-space: calc(var(--control-height) * 2);
+  }
+  .sidebar-title {
+    max-width: 100%;
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .sidebar-row-actions {
+    position: absolute;
+    inset-inline-end: 0;
+    display: flex;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .sidebar-row:is(:hover, :focus-within, [data-menu-open="true"])
+    > .sidebar-row-actions {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .sidebar-sortable {
+    transform: var(--sidebar-transform);
+    position: relative;
+    min-width: 0;
+  }
+  .sidebar-sortable[data-dragging="true"] {
+    opacity: 0.45;
+  }
+  .sidebar-sortable[data-dragging="true"] [data-drag-activator] {
+    cursor: grabbing;
+  }
+  .sidebar-sortable[data-dragging="true"] .sidebar-row-actions {
+    visibility: hidden;
+  }
+  .sidebar-drag-overlay {
+    padding: var(--control-padding);
+    border-radius: var(--radius-control);
+    background: var(--surface);
+    color: var(--foreground);
+    box-shadow: var(--shadow-overlay);
+    font-size: var(--text-body);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: grabbing;
+  }
+  .sidebar-project-symbol {
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
+  }
+  .sidebar-project-chevron {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+  }
+  .sidebar-project-group
+    .sidebar-row:is(:hover, :focus-within)
+    .sidebar-project-symbol
+    > svg {
+    opacity: 0;
+  }
+  .sidebar-project-group
+    .sidebar-row:is(:hover, :focus-within)
+    .sidebar-project-chevron {
+    opacity: 1;
+  }
+  .sidebar-empty-project,
+  .sidebar-feedback {
+    padding-inline: var(--control-padding);
+    font-size: var(--text-small);
+    color: var(--muted-foreground);
+  }
+  .sidebar-empty-project {
+    padding-block: var(--spacing);
+  }
+  .sidebar-preview-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--layout-gap);
+    padding: var(--panel-padding);
+    min-width: 0;
+    width: 100%;
+  }
+  .sidebar-preview-title {
+    margin: 0;
+    color: var(--foreground);
+    font-weight: 500;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+  }
+  .sidebar-preview-project {
+    display: flex;
+    align-items: center;
+    gap: var(--layout-gap);
+  }
+  .sidebar-preview-project svg {
+    flex-shrink: 0;
+    color: var(--muted-foreground);
+  }
+  .sidebar-preview-path {
+    margin: 0;
+    color: var(--muted-foreground);
+    font-size: var(--text-small);
+    overflow-wrap: anywhere;
+  }
+  .sidebar-command-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--panel-padding);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-section-chevron,
+  .sidebar-project-chevron {
+    transition: none;
+  }
+}

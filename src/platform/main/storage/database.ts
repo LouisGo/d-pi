@@ -33,7 +33,9 @@ export class AppDatabase {
         version !== 11 &&
         version !== 12 &&
         version !== 13 &&
-        version !== 14
+        version !== 14 &&
+        version !== 15 &&
+        version !== 16
       )
         throw new Error("Unsupported schema version");
       if (version === 0) {
@@ -84,7 +86,9 @@ export class AppDatabase {
         version !== 11 &&
         version !== 12 &&
         version !== 13 &&
-        version !== 14
+        version !== 14 &&
+        version !== 15 &&
+        version !== 16
       ) {
         const temporary = `${path}.before-v3.${randomUUID()}.tmp`;
         try {
@@ -124,7 +128,9 @@ export class AppDatabase {
       this.originalVersion !== 11 &&
       this.originalVersion !== 12 &&
       this.originalVersion !== 13 &&
-      this.originalVersion !== 14
+      this.originalVersion !== 14 &&
+      this.originalVersion !== 15 &&
+      this.originalVersion !== 16
     ) {
       const temporary = `${this.path}.before-v4.${randomUUID()}.tmp`;
       try {
@@ -149,7 +155,9 @@ export class AppDatabase {
       this.originalVersion !== 11 &&
       this.originalVersion !== 12 &&
       this.originalVersion !== 13 &&
-      this.originalVersion !== 14
+      this.originalVersion !== 14 &&
+      this.originalVersion !== 15 &&
+      this.originalVersion !== 16
     ) {
       const temporary = `${this.path}.before-v5.${randomUUID()}.tmp`;
       try {
@@ -173,7 +181,9 @@ export class AppDatabase {
       this.originalVersion !== 11 &&
       this.originalVersion !== 12 &&
       this.originalVersion !== 13 &&
-      this.originalVersion !== 14
+      this.originalVersion !== 14 &&
+      this.originalVersion !== 15 &&
+      this.originalVersion !== 16
     ) {
       const temporary = `${this.path}.before-v6.${randomUUID()}.tmp`;
       try {
@@ -194,7 +204,9 @@ export class AppDatabase {
       this.originalVersion !== 11 &&
       this.originalVersion !== 12 &&
       this.originalVersion !== 13 &&
-      this.originalVersion !== 14
+      this.originalVersion !== 14 &&
+      this.originalVersion !== 15 &&
+      this.originalVersion !== 16
     ) {
       const temporary = `${this.path}.before-v7.${randomUUID()}.tmp`;
       try {
@@ -217,6 +229,8 @@ export class AppDatabase {
     this.migrateNativeSessionIndex();
     this.migrateModelPickerPreferences();
     this.migrateSubmissionPresentationIndex();
+    this.migrateSidebarPreferences();
+    this.migrateThreadManagement();
   }
   private migrateAttachments(): void {
     if (this.originalVersion >= 8) return;
@@ -374,6 +388,53 @@ export class AppDatabase {
         thread_id, native_session_ref, config_context_id, message_digest
       );
       PRAGMA user_version=14;
+    `),
+    );
+  }
+
+  private migrateSidebarPreferences(): void {
+    if (this.originalVersion >= 15) return;
+    const temporary = `${this.path}.before-v15.${randomUUID()}.tmp`;
+    try {
+      this.connection.prepare("VACUUM INTO ?").run(temporary);
+      renameSync(temporary, `${this.path}.before-v15`);
+    } finally {
+      rmSync(temporary, { force: true });
+    }
+    this.transaction(() =>
+      this.connection.exec(`
+      CREATE TABLE sidebar_preferences(
+        id INTEGER PRIMARY KEY CHECK(id=1),
+        revision INTEGER NOT NULL CHECK(revision>=0),
+        payload TEXT NOT NULL CHECK(json_valid(payload))
+      );
+      PRAGMA user_version=15;
+    `),
+    );
+  }
+
+  private migrateThreadManagement(): void {
+    if (this.originalVersion >= 16) return;
+    const temporary = `${this.path}.before-v16.${randomUUID()}.tmp`;
+    try {
+      this.connection.prepare("VACUUM INTO ?").run(temporary);
+      renameSync(temporary, `${this.path}.before-v16`);
+    } finally {
+      rmSync(temporary, { force: true });
+    }
+    this.transaction(() =>
+      this.connection.exec(`
+      CREATE TABLE thread_management(
+        thread_id TEXT PRIMARY KEY,
+        title TEXT,
+        completed INTEGER NOT NULL DEFAULT 0 CHECK(completed IN (0,1)),
+        parent_thread_id TEXT,
+        fork_pending INTEGER NOT NULL DEFAULT 0 CHECK(fork_pending IN (0,1)),
+        deletion TEXT CHECK(deletion IN ('pending','deleted')),
+        native_file TEXT,
+        native_id TEXT
+      );
+      PRAGMA user_version=16;
     `),
     );
   }

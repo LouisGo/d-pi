@@ -70,7 +70,7 @@
 | B-01 | 沿用基线，部分细化 | React/TS/electron-vite/pnpm/Tailwind、自有组件 API/token、Zustand/Query、Vitest/RTL/Playwright/electron-builder；Zod v4 和 ts-pattern 由 2026-09-26 D-35 确认。原“按功能接入”中状态/查询基础依赖部分由 09-29 D-37 取代；按功能建立业务投影/缓存实例仍有效 |
 | B-02 | 部分被 D-32 取代 | 2026-09-26 Base UI 默认交互 + shadcn/ui 源码复用，取代“Base UI 非默认、Radix 按需”；自有 API/token、React Aria 对照和 Beautiful UI/Tool UI 参考继续有效。见[库雷达](prototype/frontend-library-radar.md) |
 | B-03 | 沿用基线 | Streamdown + Shiki 统一渲染方向，撤回业务 react-markdown 第二入口；确认方向不替代集成验收 |
-| B-04 | 沿用基线 | 关窗继续、重开接回、真正退出协调与 Renderer 刷新不重启工作；2026-09-27 确认关窗保留队列编辑/暂缓，重开后由用户保存/取消；09-28 确认后台有活时关窗无须提示。来源见[GUI 原始证据](archive/stage1-evidence.md)、[基础契约 §1/§2](architecture/foundation-contracts.md) |
+| B-04 | 沿用基线 | 关窗继续、重开接回、真正退出协调与 Renderer 刷新不重启工作；2026-09-27 确认关窗保留队列编辑/暂缓，重开后由用户保存/取消；09-28 确认后台有活时关窗无须提示；2026-10-10 用户要求关窗/真正退出尊重关闭意图，保存/清理有界，风险提示不阻塞，保留队列和未知证据。来源见[GUI 原始证据](archive/stage1-evidence.md)、[基础契约 §1/§2](architecture/foundation-contracts.md) |
 | P-01 | 已收敛 | 用户授权划分阶段，首版按 D-26 与[首版方案](product/first-release.md)；不代表依赖或性能已验收 |
 | P-02 | 已被 D-33 取代 | 原直接 ProseMirror 优先、最小 Tiptap 有条件对照；2026-09-26 用户确认最小 Tiptap，不再作为备用默认。旧研究理由保留在[历史快照](../.scratch/infrastructure-closure/evidence/decision-history.md) |
 | P-03 | 已转为确认 | 2026-09-25 用户接受准确标注来源的 Diff 交付顺序，见 D-20；保留编号追溯原提议 |
@@ -91,7 +91,7 @@
 - select/input/editor 提问允许 App 超时默认作答：select 取首选项，input/editor 取预填值，无预填取消；原生无 timeout 时等待 120 秒，有则按原生期限并在请求删除前写出。卡片标识已采取的默认，浮窗保留。confirm 永不由 App 超时默认作答；扩展自带 timeout 时仍按官方语义以 false 结束并删除请求，App 如实展示 expired，无 timeout 才继续等待。
 - 固定 SDK 18.3.0 首个 `extension_ui_response` 生效，重复/迟到回答被丢弃；请求无推荐默认字段，原生超时删除请求不发 cancel。默认由 App 定义，发出后不可撤回，用户后答作为新的 steer 追发指示，不冒称原生覆盖默认。断链/写失败的 unknown 不自动重答，unknown 提交仍不自动重发；此取代只限旧“超时不默认作答”的场景，不改其他未知/不支持处理。
 - 队列上限 20 条；产生队列提示上限，达限禁用输入/发送，有空位恢复。停止后内容原地保留、暂缓后续消费，明确继续才恢复。
-- 多 Thread 提醒沿用既定 M2 策略：待答/失败标记与不抢焦点提醒，App 不在前台时用已授权系统通知；完成默认仅标记完成/未读，完成通知可选，点击定位关联内容。关窗且后台有活无须另行告知。详见[提醒策略](product/first-release.md#多-thread-提醒策略2026-09-27-用户确认)。真正退出时非空队列的放弃出口仍[延期待决](../.scratch/m1-s3-control-recovery/issues/09-quit-discard-decision.md)，不借上述决定清队列。
+- 多 Thread 提醒沿用既定 M2 策略：待答/失败标记与不抢焦点提醒，App 不在前台时用已授权系统通知；完成默认仅标记完成/未读，完成通知可选，点击定位关联内容。关窗且后台有活无须另行告知。详见[提醒策略](product/first-release.md#多-thread-提醒策略2026-09-27-用户确认)。2026-10-10 用户调整[真正退出](../.scratch/m1-s3-control-recovery/issues/09-quit-discard-decision.md)：保留队列与未知证据、有界停止清理后退出，提示不要求二次选择，不借退出清队列。
 
 ## 2026-10-09：D-32 问答组件与原生回答的自由输入
 

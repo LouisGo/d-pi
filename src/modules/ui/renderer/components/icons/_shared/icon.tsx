@@ -1,7 +1,7 @@
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 
 export type IconProps = {
-  size?: 16 | 18 | 20 | 24;
+  size?: 14 | 16 | 18 | 20 | 24;
   className?: string;
 };
 export type IconVariant = "stroke" | "solid";

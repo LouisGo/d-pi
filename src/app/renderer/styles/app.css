@@ -1,4 +1,5 @@
 @import "./tokens.css";
+@import "../shell/sidebar.css";
 @import "../../../modules/ui/renderer/button.css";
 @import "../../../modules/ui/renderer/controls.css";
 @import "../../../modules/ui/renderer/primitives.css";
@@ -315,7 +316,7 @@
   .thread-navigation {
     display: flex;
     flex-direction: column;
-    gap: calc(var(--layout-gap) / 2);
+    gap: var(--spacing);
     min-width: 0;
   }
   .thread-navigation [data-thread-navigation] {

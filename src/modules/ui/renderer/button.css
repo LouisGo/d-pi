@@ -30,6 +30,20 @@
     outline: var(--focus-ring);
     outline-offset: var(--focus-ring-offset);
   }
+  .ui-button-sidebar {
+    cursor: default;
+    touch-action: pan-y;
+    width: 100%;
+    min-height: var(--sidebar-row-height);
+    padding-inline-start: var(--control-padding);
+    padding-inline-end: calc(
+      var(--sidebar-actions-space, 0px) +
+      var(--control-padding)
+    );
+    justify-content: flex-start;
+    text-align: start;
+    font-weight: 400;
+  }
   .ui-button-icon {
     position: relative;
     border-radius: var(--radius-control);
@@ -86,6 +100,7 @@
     color: var(--foreground);
     background: var(--muted-hover);
   }
+  .ui-button-navigation[data-current="true"],
   .ui-button-navigation[aria-selected="true"],
   .ui-button-navigation[aria-current="page"],
   .ui-button-navigation[aria-pressed="true"] {
@@ -95,6 +110,14 @@
   .ui-button-ghost {
     color: var(--foreground);
     background: transparent;
+  }
+  .ui-button-success {
+    color: var(--foreground);
+    background: transparent;
+  }
+  .ui-button-success:is(:hover, :focus-visible, :active):not(:disabled) {
+    color: var(--success);
+    background: color-mix(in srgb, var(--success) 10%, var(--surface));
   }
   .ui-button-subtle {
     color: var(--foreground);
@@ -149,6 +172,30 @@
   .ui-button:disabled {
     opacity: 0.5;
     cursor: default;
+  }
+  .ui-button-plain {
+    color: var(--muted-foreground);
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+  }
+  .ui-button-plain:is(:hover, :focus-visible, :active):not(:disabled) {
+    color: var(--foreground);
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+  }
+  .ui-button-plain.ui-button-success:is(:hover, :focus-visible, :active):not(
+    :disabled
+  ) {
+    color: var(--success);
+  }
+  .ui-button-plain.ui-button-destructive:is(
+    :hover,
+    :focus-visible,
+    :active
+  ):not(:disabled) {
+    color: var(--destructive);
   }
 }
 @media (prefers-reduced-motion: reduce) {

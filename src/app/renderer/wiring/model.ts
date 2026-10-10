@@ -12,34 +12,30 @@ import type {
   Preferences,
 } from "../../../modules/preferences/contracts/public";
 import { updateModelPickerPreferences } from "../../../modules/preferences/core/public";
-import type { ThreadContext } from "../../../modules/threads/contracts/public";
+import type {
+  ProjectContext,
+  ThreadContext,
+  ThreadMutation,
+} from "../../../modules/threads/contracts/public";
 import type {
   Command,
   DesktopBridge,
   ReplyFor,
 } from "../../contracts/desktop-bridge";
 import { AttentionModel } from "./attention-model";
+import { SidebarModel } from "./sidebar-model";
+import { ThreadCommands } from "./thread-commands";
 import { ThreadModel } from "./thread-model";
 
-export type ThreadSelectionState =
-  | { kind: "empty" }
-  | { kind: "thread"; thread: ThreadModel; directoryAvailable: boolean };
-export type ThreadTransitionResult =
-  | { kind: "applied"; selection: ThreadSelectionState }
-  | {
-      kind: "blocked";
-      reason:
-        | "not-ready"
-        | "busy"
-        | "closing"
-        | "composing"
-        | "save-failed"
-        | "superseded"
-        | "selection-unknown";
-    }
-  | { kind: "cancelled" }
-  | { kind: "failed"; error: Failure }
-  | { kind: "unknown"; error: Failure };
+export type {
+  ThreadSelectionState,
+  ThreadTransitionResult,
+} from "./thread-transition";
+
+import type {
+  ThreadSelectionState,
+  ThreadTransitionResult,
+} from "./thread-transition";
 export type ViewState =
   | { kind: "loading" }
   | { kind: "failed"; error: Failure }
@@ -93,16 +89,20 @@ export function transportFailure(traceId: string): Failure {
   };
 }
 export class AppModel {
+  readonly sidebar: SidebarModel;
+  readonly commands: ThreadCommands;
   readonly draftEditors: DraftEditorCache;
   private readonly store: AppStore = createAppStore();
   readonly stateStore: AppStateStore = this.store;
   readonly threadListStore = createStore<{
     threads: ThreadContext[];
+    projects: ProjectContext[];
     failed: boolean;
     pending?: boolean;
     nativeIndex?: "ready" | "indexing" | "partial" | "unavailable";
   }>(() => ({
     threads: [],
+    projects: [],
     failed: false,
     pending: true,
   }));
@@ -129,6 +129,8 @@ export class AppModel {
     private readonly bridge: DesktopBridge,
     private readonly threadCacheLimit = 8,
   ) {
+    this.sidebar = new SidebarModel(bridge);
+    this.commands = new ThreadCommands(this);
     this.draftEditors = new DraftEditorCache(undefined, bridge.attachments);
     this.attention = new AttentionModel(bridge.attention);
   }
@@ -371,6 +373,8 @@ export class AppModel {
     this.threads.clear();
     this.draftEditors.dispose();
     this.attention.dispose();
+    this.sidebar.dispose();
+    this.commands.dispose();
   }
   getSnapshot = (): ViewState => this.store.getState();
   subscribe = (listener: () => void): (() => void) =>
@@ -443,6 +447,8 @@ export class AppModel {
             : new ThreadModel(draft, this.bridge, transportFailure)
           : null;
         if (thread) {
+          // Presentation metadata refreshes without replacing the runtime owner.
+          thread.context.title = draft?.title;
           // Map insertion order is selection recency, not creation recency.
           this.threads.delete(thread.context.threadId);
           this.threads.set(thread.context.threadId, thread);
@@ -540,8 +546,11 @@ export class AppModel {
     }
   }
   private threadRefreshPending: Promise<void> | null = null;
-  refreshThreads(): Promise<void> {
-    if (this.threadRefreshPending) return this.threadRefreshPending;
+  refreshThreads(afterMutation = false): Promise<void> {
+    if (this.threadRefreshPending)
+      return afterMutation
+        ? this.threadRefreshPending.then(() => this.refreshThreads())
+        : this.threadRefreshPending;
     this.threadRefreshPending = this.discoverThreads().finally(() => {
       this.threadRefreshPending = null;
     });
@@ -563,9 +572,11 @@ export class AppModel {
           this.threadListStore.setState({ failed: true, pending: false });
           return;
         }
+        if (reply.sidebar) this.sidebar.accept(reply.sidebar);
         next = reply.nativeIndex === "indexing";
         this.threadListStore.setState({
           threads: reply.threads,
+          projects: reply.projects ?? [],
           failed: false,
           pending: next,
           ...(reply.nativeIndex ? { nativeIndex: reply.nativeIndex } : {}),
@@ -582,12 +593,14 @@ export class AppModel {
       traceId: crypto.randomUUID(),
     });
   }
-  async newThread(): Promise<ThreadTransitionResult> {
-    const thread = this.activeThread;
-    if (thread)
+  async newThread(
+    sourceThreadId?: ThreadContext["threadId"],
+  ): Promise<ThreadTransitionResult> {
+    const threadId = sourceThreadId ?? this.activeThread?.context.threadId;
+    if (threadId)
       return this.changeThread({
         kind: "new-thread",
-        threadId: thread.context.threadId,
+        threadId,
         traceId: crypto.randomUUID(),
       });
     return { kind: "blocked", reason: "not-ready" };
@@ -615,10 +628,27 @@ export class AppModel {
       traceId: crypto.randomUUID(),
     });
   }
+  manageThread(
+    threadId: ThreadContext["threadId"],
+    mutation: ThreadMutation,
+  ): Promise<ThreadTransitionResult> {
+    return this.changeThread({
+      kind: "thread-command",
+      threadId,
+      mutation,
+      traceId: crypto.randomUUID(),
+    });
+  }
   private async changeThread(
     command: Extract<
       Command,
-      { kind: "choose-project" | "select-thread" | "new-thread" }
+      {
+        kind:
+          | "choose-project"
+          | "select-thread"
+          | "new-thread"
+          | "thread-command";
+      }
     >,
   ): Promise<ThreadTransitionResult> {
     const state = this.state;
@@ -653,13 +683,39 @@ export class AppModel {
       if (this.isCurrent(generation)) {
         if (reply.kind === "failed")
           return await this.readSelection(generation, previous, reply.error);
+        if (reply.kind === "thread-command-result") {
+          const restored = await this.bridge.request({
+            kind: "restore",
+            traceId: crypto.randomUUID(),
+          });
+          if (!this.isCurrent(generation))
+            return { kind: "blocked", reason: "superseded" };
+          const result = this.acceptRestore(restored);
+          if (
+            command.kind === "thread-command" &&
+            command.mutation.kind === "delete"
+          ) {
+            const removed = this.threads.get(command.threadId);
+            if (removed && removed !== this.activeThread) {
+              this.cacheSubscriptions.get(removed)?.();
+              this.cacheSubscriptions.delete(removed);
+              this.threads.delete(command.threadId);
+              removed.dispose();
+            }
+          }
+          await this.refreshThreads(true);
+          return result;
+        }
         return this.acceptRestore(reply);
       }
       return { kind: "blocked", reason: "superseded" };
     } catch {
       const error = transportFailure(command.traceId);
-      if (this.isCurrent(generation))
-        return await this.readSelection(generation, previous, error);
+      if (this.isCurrent(generation)) {
+        const result = await this.readSelection(generation, previous, error);
+        if (command.kind === "thread-command") await this.refreshThreads(true);
+        return result;
+      }
       return { kind: "blocked", reason: "superseded" };
     } finally {
       if (

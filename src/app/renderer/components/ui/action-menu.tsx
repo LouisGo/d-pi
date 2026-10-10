@@ -22,15 +22,18 @@ export function ActionMenu({
   label,
   icon,
   items,
+  disabled = false,
 }: {
   label: string;
   icon: ReactNode;
   items: readonly ActionMenuEntry[];
+  disabled?: boolean;
 }) {
   return (
     <Menu.Root modal={false}>
       <Tooltip content={label} side="top">
         <Menu.Trigger
+          disabled={disabled}
           render={
             <Button
               type="button"

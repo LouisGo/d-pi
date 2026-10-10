@@ -1,34 +1,27 @@
+/** A user quit request has one bounded lifetime, even if cleanup never settles. */
 export class QuitCoordinator {
-  private timer: ReturnType<typeof setInterval> | undefined;
-  private generation = 0;
+  private requested = false;
+  private finished = false;
+  private timer: ReturnType<typeof setTimeout> | undefined;
   constructor(
-    private readonly active: () => boolean,
-    private readonly stop: () => Promise<void>,
-    private readonly finish: () => void,
+    private readonly shutdown: () => Promise<void>,
+    private readonly finish: (reason: "clean" | "failed" | "timeout") => void,
   ) {}
-  request(intent: "wait" | "stop" | "cancel"): void {
-    this.dispose();
-    if (intent === "cancel") return;
-    const generation = this.generation;
-    const poll = () => {
-      if (generation !== this.generation || this.active()) return;
-      this.dispose();
-      this.finish();
+  request(): void {
+    if (this.requested) return;
+    this.requested = true;
+    const finish = (reason: "clean" | "failed" | "timeout") => {
+      if (this.finished) return;
+      this.finished = true;
+      clearTimeout(this.timer);
+      this.finish(reason);
     };
-    const begin = () => {
-      if (generation !== this.generation) return;
-      this.timer = setInterval(poll, 200);
-      poll();
-    };
-    if (intent === "stop")
-      void this.stop()
-        .then(begin)
-        .catch(() => this.dispose());
-    else begin();
-  }
-  dispose(): void {
-    this.generation++;
-    clearInterval(this.timer);
-    this.timer = undefined;
+    this.timer = setTimeout(() => finish("timeout"), 8000);
+    void Promise.resolve()
+      .then(this.shutdown)
+      .then(
+        () => finish("clean"),
+        () => finish("failed"),
+      );
   }
 }

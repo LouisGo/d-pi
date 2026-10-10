@@ -50,7 +50,7 @@ it("migrates v12 and persists picker preferences across restart without changing
     expect(
       reopened.database.connection.prepare("PRAGMA user_version").get()
         ?.user_version,
-    ).toBe(14);
+    ).toBe(16);
     reopened.close();
     const backup = new DatabaseSync(`${path}.before-v13`, { readOnly: true });
     expect(backup.prepare("PRAGMA user_version").get()?.user_version).toBe(12);
@@ -78,7 +78,7 @@ it("preserves schema 12 and the user's draft if publishing the v13 backup fails"
     store.close();
     const prior = new DatabaseSync(path);
     prior.exec(
-      "DROP TABLE submission_presentation; DROP TABLE model_picker_preferences; PRAGMA user_version=12;",
+      "DROP TABLE sidebar_preferences; DROP TABLE submission_presentation; DROP TABLE model_picker_preferences; PRAGMA user_version=12;",
     );
     prior.close();
     rmSync(`${path}.before-v13`);

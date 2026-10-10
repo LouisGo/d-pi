@@ -459,3 +459,36 @@ Library 官方 prepare_materialize 已成功产生传输描述，但内置 helpe
 缓存丢失、不可用提示遗漏、默认展开累积及分页失败后重读起点均先失败再实现。受影响 9 文件 59 项测试通过，包含真实临时 JSONL 坏记录与修复后同游标重试、原子替换来源重置、选区/焦点/附件预览和子 Agent 消费者；独立复核重跑其中 4 文件 41 项通过，无新的高价值问题。相同 200 个完成子 Agent 的 React 组件样本在模拟滚动几何下，逐次定位挂载数由原先 12→165 改为 12→17，主动展开另有回归；这不是原生布局、整体 FPS 或供应商验收。Core/Renderer 与根 TypeScript 检查、受影响 Biome、设计 lint、设计合同与文案检查通过，Impeccable 扫描无命中；测试仍有既有 React act 警告。
 
 写法核对沿用 Host/Core 增量索引、不可变实体快照、Main/OMP 原生历史与执行所有权、只读 Query 和现有订阅/代次边界；本次优化集中于展开意图、类型化刷新结果和失败页的继续读取，不增加事实 store 或框架。源码及正常 Dev 入口已交付，未运行新 GUI/真实模型或完整测试套件，未 commit/push，用户试用认可 pending。
+
+
+## 2026-10-10 项目侧栏整理（当前授权）
+
+用户要求按 Codex 截图重做 Thread 区，暂不设“最近”。先合同/API/类型/无头逻辑，再 UI。项目以 workingDirectoryId 区分（同名路径不合并）；thread 单独置顶只改变导航位置，保留项目归属，取消置顶回原顺序。项目与 thread 在同一 pins 数组扁平排序；置顶项目的子列表剔除已单独置顶的 thread。普通项目默认显示五条，可展开全部及收回；项目与两分区可折叠，均持久化。
+
+实施拆分：① preferences 拥有版本化导航记录，Main SQLite 原子更新用户意图，独立于外观偏好；② 受限 IPC 接入、身份/归属检查、revision 防迟到覆盖与失败后重读；③ ProjectThreads 组合分区、项目组、会话行、菜单及排序适配层，拖拽与键盘菜单复用相同意图；④ 迁移/重启、排序/置顶组合、React 交互和静态门禁验证。新发现项目/会话追加到已持久顺序，部分索引不删除旧偏好；未知身份/跨项目移动拒绝。排序仅在原分区/项目内，拖动不改真实项目关系。当前目录 main 的源码与正常 Dev 入口已交付，用户认可 pending。
+
+工程结果：schema 15 独立 sidebar_preferences 原子保存 revision/payload，before-v15 保留升级前库；实际临时 SQLite 覆盖重开数据库、无效归属、写入回滚与备份发布失败。确认 ACK 前不改本地事实，丢失 ACK 仅重读，不自动重发。正式侧栏采用混合置顶、文件夹/独立会话图标、项目折叠与五条展开；自有排序适配层封装 dnd-kit，项目、置顶分区和各项目子列表独立排序，并提供菜单上移/下移与键盘拖动。新增尺寸从共享 control-height/spacing 推导，沿用 Button、ActionMenu、自有 Icon Layer 和 focus-visible；DESIGN.md 与 sidecar 保持不变。
+
+验证：受影响回归累计 18 文件 66 项通过（分段运行）；类型检查、Biome、design/i18n/interaction lint、架构边界与 40 项架构测试、文档引用、生成报告检查和 Main/preload/Renderer build 通过。隔离 Chromium 使用正式组件与合成桥接，实际查看 280px 浅色、240px 深色及右侧项目菜单，确认长标题无侧栏横向溢出、单独置顶脱离项目子列表、键盘排序生效；静态 Impeccable 检测无命中，独立 finish review disposition 为 ship。未启动真实 Electron/OMP、未操作用户实际数据或付费 provider，未验证物理鼠标拖拽及 VoiceOver；不将截图或工程通过记作用户认可。临时预览入口/服务/浏览器已清理，未 commit/push。
+
+## 2026-10-10 侧栏交互打磨与有界退出（当前追加授权）
+
+用户按新截图要求去掉拖拽把手、more 和上下移；整行默认 cursor:default，260ms 长按激活拖拽，保留键盘排序。悬停 420ms 后显示三行标题、项目/路径及已有状态的共享预览卡片；右键菜单提供重命名、置顶、分叉、标记完成/恢复、永久删除，快捷勾选与菜单复用同一 ThreadCommands → AppModel → Main ThreadCommandService 核心，不在各呈现层重写业务。完成为导航元数据，保留原生历史，活动列表隐藏；“已完成”默认折叠可恢复，原 pin/排序不变。
+
+schema 16 独立管理标题覆盖、完成、父关联和删除/分叉意图；升级前保留 before-v16。fork/delete 先真实释放闲置实例、核实持久未决收据、复用同一 CLI/App lease 根和外部占用检查。原生 adapter 仅用固定 SDK SessionManager/FileSessionStorage，不加载 Agent/tools/provider；fork 带 artifacts 完整性流式核验，采用与父关联/选择/移除 pending 同事务。永久删除先 journal，官方 native 文件/附件删除成功才原子清 App 关系；失败可显式重试，deleted identity 防止再发现。结果丢失不重发；fork 在原生写入前持久记录目标和源身份，未采用或补偿失败保留核查记录，不自动采用/清理，这仍是恢复限制，不冒称分叉已成功。身份 header 只读 64KiB；native worker 有独立 30s deadline 和真实 Main PID/birth watchdog。长按/菜单期间抑制预览，重命名返回原行键盘焦点，列表写入后确保重新读取，旧的在飞列表不作为最终事实。
+
+用户退出旧 App 后明确追加退出优化：尊重关闭意图，提示而不阻塞。取代 B-04 原退出等待/取消基线，关窗保存最多 5s，未保存/未确认发非阻塞系统风险提示后继续关闭；关窗后台继续不变。真正 Quit 合并重复请求，请求保存、停止与实际资源收尾（含历史指令），整体最多 8s；失败/超时不重开窗口，App退出不记作任务成功。native watchdog 和后续 lease 身份核查保留未知收据/队列，不清队列或自动重发。OS 通知可能被设置抑制，不依赖用户点击或通知送达才能退出。
+
+验证：22 文件 116 项受影响回归通过，覆盖真实临时 SQLite 重开/迁移/事务、实际固定 Bun/OMP 原生分叉与 artifacts/删除/显式重试、丢失回复、列表新鲜读取及退出时限。最终追加退出意图守卫：退出期间的新窗口、激活、Renderer 崩溃恢复及迟到恢复回调均不重开窗口；附件清理未结束时注入崩溃先失败再修复，4 文件 39 项退出/窗口回归再次通过。全环境 TypeScript、Biome、design/interaction/i18n lint、596 源文件架构边界、文档引用、生成报告检查和最终 Main/preload/Renderer build 通过；刷新固定 SDK 18.8.7 成功（476.8 MiB/650 MiB），保留第三方构建注解和大 chunk 警告，不宣称全套测试或 CLI smoke 已运行。
+
+隔离 Chromium 用正式组件、AppModel 与合成桥接查看浅/深色预览卡片及右键菜单；完成/恢复、键盘排序的实际列表结果、重命名初始焦点与保存后返回原行均验证。临时入口、服务和标签已清理。独立安全复核确认 Main 身份 watchdog、分叉 journal/artifacts 核验、64KiB 身份读取及最终退出意图守卫无新增阻断问题；未重复运行测试。未直接故障注入真实 Main 死亡、复制失败或核验超预算，未测物理鼠标长按拖拽、VoiceOver、真实 Electron 退出及 OS 通知送达；源代码边界和模拟时限不代替这些证据。
+
+当前目录 main 的 WIP 源码、固定 SDK 与正常 `pnpm dev` 入口已交付，无 commit/push；未操作用户历史、凭据或计费 Provider，未重开用户已退出的 App。保留未采用 fork journal 的安全核查/清理/采用限制，体验认可 pending。
+
+2026-10-10 同日后续反馈：右键菜单使用 12rem 紧凑宽度与较小字阶/行距；body portal 自身升到 popup 层，保留 dialog 独立层级，修复被正文定位标记穿透的堆叠关系。切换时会话行保留 DOM/焦点，以 aria-disabled 和同一导航准入守卫阻止重复操作；共享 navigation 禁用态不再使整个侧栏变暗。共享焦点入口识别鼠标右键 portal 自动聚焦，普通点击/hover/focus 不绘制 outline，键盘导航和辅助焦点保留原合同。完成换圆圈勾选、新建换带加号会话图标；侧栏/菜单图标使用 Icon Layer 新增的 14px 档位，共享 success Button 变体在 hover 时为绿色。ThreadCommands 只在完成/恢复得到 applied 后发布成功反馈，4s 非模态提示不移动焦点、不占列表布局；失败、丢失回复和迟到反馈清理有回归保护。
+
+此轮受影响 6 文件 31 项测试分段通过；包含实际 React/AppModel 切换等待期间的节点保留/不 dim/重复导航拒绝、完成反馈确认/失败/迟到清理、鼠标与键盘菜单焦点及既有路由/菜单路径。根与 Renderer TypeScript、Biome、design/interaction/i18n lint 通过。隔离 Chromium 的正式侧栏与合成桥接确认浅/深色菜单实际 192px、14px 图标、menu 在正文定位标记之上、鼠标 outline-style:none；切换等待时全部会话行 opacity:1、原生 disabled:false 且 aria-disabled:true，完成快捷入口与菜单均出现成功提示。未逐帧测量或运行真实 Electron，不声称覆盖所有闪烁成因；预览 fixture HMR 曾出现重复 createRoot 警告，未归为生产缺陷。临时入口/服务/标签已清理，源码 WIP 与 Dev 入口交付，用户试用认可 pending，无 commit/push。
+
+2026-10-10 再次反馈：折叠/展开/置顶持久化等待与切换统一接入共享 Button.pending，替代全区 native disabled 的瞬时变暗；项目/分区折叠保留内部节点并使用 hidden，不重建整组 DnD/菜单/会话行。静态不可用与命令等待分离，Main 确认、串行写入和重复激活拦截保持。共享 plain appearance 取消侧栏快捷图标的背景，仅语义变色，沿用按下 scale；危险菜单高亮红色、完成绿色不再由 sidebar 局部 CSS 管理。全局 TooltipProvider 提速到 120ms，IconButton 默认 top/2px；文字提示关闭等待为 0、不可悬停且锚点隐藏/退场立即不可见，避免图标消失后悬留；项目预览采用共享 HoverCard 默认时序。
+
+本轮 10 文件 38 项回归通过，新增红灯验证 pending 阻止重复鼠标/键盘动作且保持焦点、真实 SidebarModel 的项目/分区折叠回执前后控件/同级节点稳定；共享与独立 Tooltip 的 220ms 内出现/top 和 pointer leave 关闭验证通过。根/Renderer TypeScript、Biome、设计/交互/i18n lint 与 Main/preload/Renderer build 通过。隔离 Chromium 确认项目折叠等待时按钮 native disabled:false、opacity:1，浅色危险项实际红色高亮；键盘提示实际 top/2px、快捷完成按钮背景透明且语义绿色，离开图标后无打开提示。键盘焦点按原合同保留 outline，普通鼠标仍用共享入口抑制。未逐帧测量或重开真实 Electron，不把有限 DOM/视觉证据当全部场景认可。临时入口、服务、标签清理；源码 WIP、Dev 试用交付，无 commit/push，用户体验认可 pending。

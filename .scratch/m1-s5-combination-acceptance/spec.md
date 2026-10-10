@@ -14,7 +14,7 @@
     "build": "0.1.0-s5.0 / 4b003e84-4c6aa4ad",
     "evidence": ["handoff.md", "evidence/acceptance.md", "evidence/final-s5-result.json", "evidence/frozen-review.md"],
     "next": "M1 工程完成、用户未认可；入口反馈由已授权 M2 接续处理",
-    "constraints": "不 push、不公开发布、不扩 M2/M3；冷恢复只读，unknown 不自动重发；暂停队列放弃出口继续待决。"
+    "constraints": "不 push、不公开发布、不扩 M2/M3；冷恢复只读，unknown 不自动重发；2026-10-10 已确认保留队列、有界退出。"
   }
 ]
 ```

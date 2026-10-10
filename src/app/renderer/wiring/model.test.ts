@@ -81,6 +81,9 @@ async function setup(
           { kind: "list-threads" },
           { kind: "new-thread" },
           { kind: "preferences" },
+          { kind: "thread-command" },
+          { kind: "sidebar-read" },
+          { kind: "sidebar-change" },
           () => {
             throw new Error("Unexpected command in close scenario");
           },
@@ -632,4 +635,53 @@ it("rechecks inactive late input after the active close save and releases every 
   input.model.cancelClose();
   expect(input.controller.getTextSnapshot()).toBe("late completion body on A");
   input.model.dispose();
+});
+
+it("reads a new thread list after an in-flight pre-mutation sample instead of retaining the stale row", async () => {
+  vi.stubGlobal("document", { documentElement: { dataset: {} } });
+  let listCalls = 0;
+  let release: (value: unknown) => void = () => {};
+  const stale = new Promise<unknown>((resolve) => {
+    release = resolve;
+  });
+  const row = {
+    threadId: draft.threadId,
+    workingDirectoryId: draft.workingDirectoryId,
+    directory: draft.directory,
+    title: "Before",
+  };
+  const model = new AppModel({
+    request: async (command) => {
+      if (command.kind !== "list-threads")
+        throw Error("Unexpected fixture request");
+      listCalls++;
+      return parseDesktopReply(
+        command,
+        listCalls === 1
+          ? await stale
+          : {
+              kind: "threads",
+              threads: [{ ...row, title: "After", completed: true }],
+              projects: [],
+            },
+      );
+    },
+    onCloseRequest: () => () => {},
+    onCloseCancelled: () => () => {},
+    completeClose: () => {},
+  });
+  try {
+    const existing = model.refreshThreads();
+    const following = model.refreshThreads(true);
+    release({ kind: "threads", threads: [row], projects: [] });
+    await existing;
+    await following;
+    expect(listCalls).toBe(2);
+    expect(model.threadListStore.getState().threads[0]).toMatchObject({
+      title: "After",
+      completed: true,
+    });
+  } finally {
+    model.dispose();
+  }
 });

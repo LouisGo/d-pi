@@ -27,6 +27,8 @@ export const ThreadContextSchema = z.strictObject({
   directory: z.string().min(1),
   title: z.string().max(256).optional(),
   origin: z.literal("cli").optional(),
+  completed: z.boolean().optional(),
+  parentThreadId: ThreadIdSchema.optional(),
 });
 export type ThreadContext = z.infer<typeof ThreadContextSchema>;
 export interface ThreadReader {
@@ -38,3 +40,20 @@ export const ExecutionGrantSchema = DirectoryIdentitySchema.extend({
   workingDirectoryId: WorkingDirectoryIdSchema,
 });
 export type ExecutionGrant = z.infer<typeof ExecutionGrantSchema>;
+
+export const ProjectContextSchema = z.strictObject({
+  workingDirectoryId: WorkingDirectoryIdSchema,
+  directory: z.string().min(1),
+});
+export type ProjectContext = z.infer<typeof ProjectContextSchema>;
+
+export const ThreadMutationSchema = z.discriminatedUnion("kind", [
+  z.strictObject({
+    kind: z.literal("rename"),
+    title: z.string().trim().min(1).max(256),
+  }),
+  z.strictObject({ kind: z.literal("complete"), value: z.boolean() }),
+  z.strictObject({ kind: z.literal("fork") }),
+  z.strictObject({ kind: z.literal("delete") }),
+]);
+export type ThreadMutation = z.infer<typeof ThreadMutationSchema>;

@@ -22,6 +22,8 @@ import {
 } from "./attachment-service";
 import { DesktopCommandService } from "./desktop-command-service";
 import { NativeSessionIndex } from "./native-session-index";
+import { NativeThreadHistory } from "./native-thread-history";
+import { ThreadCommandService } from "./thread-command-service";
 export function createDesktopServices(context: {
   mainDirectory: string;
   getWindow: () => BrowserWindow | null;
@@ -37,6 +39,8 @@ export function createDesktopServices(context: {
   let attachments: AttachmentService | undefined;
   let nativeSessionIndex: NativeSessionIndex | undefined;
   const runtimes = new Map<string, RuntimeService>();
+  let threadCommands: ThreadCommandService | undefined;
+  const managing = new Set<string>();
   const releasing = new Set<RuntimeService>();
   let pruneScheduled = false;
   let latestThreadId: string | undefined;
@@ -69,7 +73,7 @@ export function createDesktopServices(context: {
     });
   }
   function getRuntime(threadId: string): RuntimeService | undefined {
-    if (!store) return undefined;
+    if (!store || managing.has(threadId)) return undefined;
     try {
       store.threads.threadContext(threadId);
     } catch {
@@ -176,6 +180,29 @@ export function createDesktopServices(context: {
         (traceId) =>
           nativeSessionIndex?.reconcile(traceId) ??
           Promise.resolve("unavailable"),
+        (threadCommands = new ThreadCommandService(
+          store,
+          new NativeThreadHistory(
+            app.isPackaged
+              ? process.resourcesPath
+              : join(context.mainDirectory, "../../resources"),
+            data,
+          ),
+          async (id, operation) => {
+            if (managing.has(id)) throw Error("Thread command pending");
+            managing.add(id);
+            try {
+              const runtime = runtimes.get(id);
+              if (runtime) {
+                await runtime.retireForThreadManagement();
+                if (runtimes.get(id) === runtime) runtimes.delete(id);
+              }
+              return await operation();
+            } finally {
+              managing.delete(id);
+            }
+          },
+        )),
       );
       attachments = createAttachmentService(
         store,
@@ -213,6 +240,7 @@ export function createDesktopServices(context: {
     }
   }
   return {
+    closeThreadCommands: () => threadCommands?.close(),
     get attachments() {
       return attachments;
     },

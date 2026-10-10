@@ -13,3 +13,14 @@ export {
   type Preferences,
   PreferencesSchema,
 } from "./preferences";
+
+export {
+  type SidebarChange,
+  SidebarChangeSchema,
+  type SidebarItem,
+  SidebarItemSchema,
+  type SidebarPreferences,
+  SidebarPreferencesSchema,
+  type SidebarSnapshot,
+  SidebarSnapshotSchema,
+} from "./sidebar";

@@ -1,4 +1,24 @@
 @layer components {
+  .ui-success-notice {
+    position: fixed;
+    inset-block-end: calc(var(--statusbar-height) + var(--panel-padding));
+    inset-inline-start: var(--panel-padding);
+    z-index: var(--layer-popup);
+    display: flex;
+    align-items: center;
+    gap: var(--layout-gap);
+    max-width: calc(100vw - var(--panel-padding) * 2);
+    padding: var(--layout-gap) var(--control-padding);
+    border-radius: var(--radius-control);
+    background: var(--surface);
+    color: var(--success);
+    box-shadow: var(--shadow-raised);
+    font-size: var(--text-small);
+    pointer-events: none;
+  }
+  .ui-success-notice[hidden] {
+    display: none;
+  }
   .ui-copy-control {
     display: inline-flex;
     align-items: center;

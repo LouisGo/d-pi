@@ -1,5 +1,6 @@
 import { RouterProvider } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { TooltipProvider } from "./components/ui/tooltip";
 import { createAppRouting } from "./routing/router";
 import {
   type WorkbenchHosts,
@@ -16,10 +17,12 @@ export function App({
   const [routing] = useState(() => createAppRouting(model));
   useEffect(() => routing.connect(), [routing]);
   return (
-    <EditorAdapterContext value={editor}>
-      <WorkbenchHostsContext value={hosts ?? {}}>
-        <RouterProvider router={routing.router} />
-      </WorkbenchHostsContext>
-    </EditorAdapterContext>
+    <TooltipProvider>
+      <EditorAdapterContext value={editor}>
+        <WorkbenchHostsContext value={hosts ?? {}}>
+          <RouterProvider router={routing.router} />
+        </WorkbenchHostsContext>
+      </EditorAdapterContext>
+    </TooltipProvider>
   );
 }

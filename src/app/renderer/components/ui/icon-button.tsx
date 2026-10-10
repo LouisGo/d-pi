@@ -9,13 +9,15 @@ export function IconButton({
   label,
   children,
   indicator,
+  tooltipSide = "top",
   ...props
 }: Omit<ButtonProps, "size" | "aria-label" | "title"> & {
   label: string;
   indicator?: ReactNode;
+  tooltipSide?: "top" | "bottom" | "left" | "right";
 }) {
   return (
-    <Tooltip content={label} side="right">
+    <Tooltip content={label} side={tooltipSide} sideOffset={2}>
       <Button {...props} size="icon" aria-label={label}>
         <span className="ui-icon-button-content">{children}</span>
         {indicator !== undefined && indicator !== null && (

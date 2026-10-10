@@ -2,7 +2,6 @@ import { useContext } from "react";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import {
-  AddIcon,
   DarkThemeIcon,
   LightThemeIcon,
   SystemThemeIcon,
@@ -10,6 +9,7 @@ import {
 import { IconButton } from "@/components/ui/icon-button";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import { Button } from "../../../modules/ui/renderer/public";
+import { NewChatIcon } from "../components/icons/sidebar";
 import type { AppModel } from "../wiring/model";
 import { ConversationVisibilityContext } from "./layout/conversation-visibility";
 import { NavigationHistory } from "./navigation-history";
@@ -35,14 +35,15 @@ export function NewThreadButton({ model }: { model: AppModel }) {
   return (
     <Button
       data-new-thread
-      variant="ghost"
+      variant="navigation"
+      size="sidebar"
       disabled={!enabled}
       onClick={() => {
         reveal();
-        void model.newThread();
+        void model.commands.execute({ kind: "new" });
       }}
     >
-      <AddIcon />
+      <NewChatIcon />
       {t("app.toolbar.newThread")}
     </Button>
   );

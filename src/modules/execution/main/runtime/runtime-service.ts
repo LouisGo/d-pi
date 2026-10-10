@@ -1455,6 +1455,27 @@ export class RuntimeService {
   get isReleased(): boolean {
     return this.released;
   }
+  async retireForThreadManagement(): Promise<void> {
+    if (
+      this.commandsInFlight ||
+      this.hasActiveWork() ||
+      this.lostEvidence ||
+      this.uncertainLifetime ||
+      this.view?.modelChanging ||
+      this.view?.queueOperation?.status === "unknown" ||
+      this.view?.subagentOperation?.status === "unknown" ||
+      this.view?.modelOperation?.status === "unknown"
+    )
+      throw Error("Thread runtime is not settled");
+    await this.closeIdle();
+    if (
+      this.commandsInFlight ||
+      this.hasActiveWork() ||
+      !(await this.connection.releaseIfExited())
+    )
+      throw Error("Thread shutdown unconfirmed");
+    this.released = true;
+  }
   async closeIdle(): Promise<void> {
     if (this.hasActiveWork()) throw Error("Active native work");
     await this.connection.closeIdle();

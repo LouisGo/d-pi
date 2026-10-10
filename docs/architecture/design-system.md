@@ -205,3 +205,5 @@ Thread 列表底部的横向功能导航独立于状态栏，设置占宽区并�
 本轮已授权基线与验收见[升级规格](../../.scratch/beautiful-ui-system/spec.md)。Beautiful UI 固定参考的表面、圆角、阴影、控件和动效作为直接视觉对照；Base UI 或适当的原生控件保留语义与键盘基础。常规主操作用 primary 中性色，明确强调动作（如发送）用 emphasis；accent 是柔和选中底面，三者不可互换。
 
 共享配方采用胶囊文字动作、较小圆角的图标/输入/导航、浅层控件阴影和较明显的浮层阴影；深色主题独立调整边界与深度。颜色、尺寸、圆角、阴影、motion/easing 的数值只在 tokens.css 定义。组件内部组合这些角色，消费者仅管理布局。新增 Checkbox、TextArea、Slider、Disclosure 透传原生 props/ref，覆盖真实的多选、问答、多行草稿、附件缩放与详情展开入口；看板使用同一公开实现。按下缩放仅用于短动作，导航和状态行不位移；reduced-motion 关闭 transition。
+
+2026-10-10 侧栏后续反馈统一到共享控件：Button 的 `pending` 表达短暂命令等待，通过 Base UI focusableWhenDisabled 阻止鼠标/键盘激活，同时保留节点、焦点与正常透明度；`disabled` 继续表达真正不可用。`appearance="plain"` 仅保留图标/文字颜色反馈和统一按下 scale，允许同 success/destructive 语义组合，业务区域不覆盖 Button 的背景规则。共享菜单危险项的 highlighted 背景/前景使用 destructive，完成使用 success。App 共用 TooltipProvider（120ms 打开、0ms 关闭、相邻提示即时切换）；IconButton 默认上方、2px 间距，可显式覆盖方向。文字 Tooltip 不可悬停、不桥接指针，退出/锚点隐藏立即不可见；可交互预览继续使用 HoverCard，不混用两个生命周期。

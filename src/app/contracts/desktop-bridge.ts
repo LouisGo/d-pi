@@ -21,8 +21,16 @@ import type {
   LocaleBridge,
   ModelPickerPreferences,
 } from "../../modules/preferences/contracts/public";
-import { PreferencesSchema } from "../../modules/preferences/contracts/public";
-import { ThreadContextSchema } from "../../modules/threads/contracts/public";
+import {
+  PreferencesSchema,
+  SidebarChangeSchema,
+  SidebarSnapshotSchema,
+} from "../../modules/preferences/contracts/public";
+import {
+  ProjectContextSchema,
+  ThreadContextSchema,
+  ThreadMutationSchema,
+} from "../../modules/threads/contracts/public";
 import type { DiagnosticBridge } from "../../shared/diagnostics";
 import { ThreadIdSchema, TraceIdSchema } from "../../shared/identity";
 import type { AttachmentBridge } from "./attachments";
@@ -34,6 +42,18 @@ export {
   LocaleSetResultSchema,
 } from "../../modules/preferences/contracts/public";
 export const CommandSchema = z.discriminatedUnion("kind", [
+  z.strictObject({
+    kind: z.literal("thread-command"),
+    traceId: TraceIdSchema,
+    threadId: ThreadIdSchema,
+    mutation: ThreadMutationSchema,
+  }),
+  z.strictObject({ kind: z.literal("sidebar-read"), traceId: TraceIdSchema }),
+  z.strictObject({
+    kind: z.literal("sidebar-change"),
+    traceId: TraceIdSchema,
+    change: SidebarChangeSchema,
+  }),
   z.strictObject({ kind: z.literal("restore"), traceId: TraceIdSchema }),
   z.strictObject({ kind: z.literal("choose-project"), traceId: TraceIdSchema }),
   z.strictObject({ kind: z.literal("list-threads"), traceId: TraceIdSchema }),
@@ -63,8 +83,21 @@ export const CommandSchema = z.discriminatedUnion("kind", [
 export type Command = z.infer<typeof CommandSchema>;
 export const ReplySchema = z.discriminatedUnion("kind", [
   z.strictObject({
+    kind: z.literal("thread-command-result"),
+    traceId: TraceIdSchema,
+    threadId: ThreadIdSchema,
+    thread: ThreadContextSchema.nullable(),
+  }),
+  z.strictObject({
+    kind: z.literal("sidebar"),
+    traceId: TraceIdSchema,
+    snapshot: SidebarSnapshotSchema,
+  }),
+  z.strictObject({
     kind: z.literal("threads"),
     threads: z.array(ThreadContextSchema),
+    projects: z.array(ProjectContextSchema).optional(),
+    sidebar: SidebarSnapshotSchema.optional(),
     nativeIndex: z
       .enum(["ready", "indexing", "partial", "unavailable"])
       .optional(),
@@ -88,6 +121,9 @@ export const ReplySchema = z.discriminatedUnion("kind", [
 ]);
 export type Reply = z.infer<typeof ReplySchema>;
 type SuccessKind = {
+  "thread-command": "thread-command-result";
+  "sidebar-read": "sidebar";
+  "sidebar-change": "sidebar";
   restore: "ready";
   "new-thread": "ready";
   "select-thread": "ready";
@@ -133,6 +169,18 @@ export function parseDesktopReply(command: Command, raw: unknown): Reply {
     reply.kind === "failed"
       ? reply.error.traceId === command.traceId
       : match(command)
+          .with(
+            { kind: "thread-command" },
+            ({ threadId }) =>
+              reply.kind === "thread-command-result" &&
+              reply.traceId === command.traceId &&
+              reply.threadId === threadId,
+          )
+          .with(
+            { kind: "sidebar-read" },
+            { kind: "sidebar-change" },
+            () => reply.kind === "sidebar" && reply.traceId === command.traceId,
+          )
           .with(
             { kind: "restore" },
             { kind: "new-thread" },
@@ -216,6 +264,9 @@ export const BridgeDiagnosticSchema = z.strictObject({
     "new-thread",
     "select-thread",
     "list-threads",
+    "thread-command",
+    "sidebar-read",
+    "sidebar-change",
     "save",
     "preferences",
   ]),

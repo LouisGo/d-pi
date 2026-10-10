@@ -1,6 +1,6 @@
 // Project-owned composition of Base UI 1.8.0 preview-card primitives.
 import { PreviewCard as PreviewCardPrimitive } from "@base-ui/react/preview-card";
-import type { ReactElement, ReactNode } from "react";
+import { type ReactElement, type ReactNode, useEffect } from "react";
 import { useHoverCardModalBoundary } from "./hover-card-modal-boundary";
 
 export const createHoverCardHandle = PreviewCardPrimitive.createHandle;
@@ -37,6 +37,7 @@ export function HoverCardTrigger<Payload = unknown>({
 export interface HoverCardPopupProps<Payload = unknown> {
   handle: HoverCardHandle<Payload>;
   label?: string;
+  suppressed?: boolean;
   side?: "top" | "right" | "bottom" | "left";
   sideOffset?: number;
   children: ReactNode | ((payload: Payload | undefined) => ReactNode);
@@ -46,13 +47,27 @@ export interface HoverCardPopupProps<Payload = unknown> {
 export function HoverCardPopup<Payload = unknown>({
   handle,
   label,
+  suppressed = false,
   side = "right",
   sideOffset = 8,
   children,
 }: HoverCardPopupProps<Payload>) {
   const boundary = useHoverCardModalBoundary();
+  useEffect(() => {
+    if (suppressed) boundary.actionsRef.current?.close();
+  }, [suppressed, boundary.actionsRef]);
   return (
-    <PreviewCardPrimitive.Root handle={handle} {...boundary}>
+    <PreviewCardPrimitive.Root
+      handle={handle}
+      {...boundary}
+      onOpenChange={(open, details) => {
+        if (open && suppressed) {
+          details.cancel();
+          return;
+        }
+        boundary.onOpenChange(open, details);
+      }}
+    >
       {({ payload }) => (
         <PreviewCardPrimitive.Portal>
           <PreviewCardPrimitive.Positioner

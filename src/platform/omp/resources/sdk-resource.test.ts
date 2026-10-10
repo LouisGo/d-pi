@@ -29,6 +29,7 @@ it("admits a complete current-platform SDK launcher and refuses tampering withou
       "model-selection.mjs",
       "native-queue.mjs",
       "reading-session.mjs",
+      "thread-history.mjs",
       "managed-session.mjs",
       "image-input.mjs",
       "image-compression.mjs",
@@ -89,6 +90,7 @@ it("admits a complete current-platform SDK launcher and refuses tampering withou
     for (const name of [
       "native-queue.mjs",
       "reading-session.mjs",
+      "thread-history.mjs",
       "managed-session.mjs",
       "image-input.mjs",
       "image-compression.mjs",

@@ -19,8 +19,8 @@
     "pending": [
       "issues/09-quit-discard-decision.md"
     ],
-    "next": "等待试用，退出放弃另行对齐",
-    "constraints": "冷恢复仅只读，unknown 不自动重发；退出非空队列尚无放弃出口。"
+    "next": "等待 Dev 试用，验证有界退出",
+    "constraints": "冷恢复仅只读，unknown 不自动重发；2026-10-10 确认有界退出，保留队列与未决证据。"
   }
 ]
 ```

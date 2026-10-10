@@ -39,7 +39,7 @@
 
 ```ts
 export interface IconProps {
-  size?: 16 | 18 | 20 | 24; // 默认 16
+  size?: 14 | 16 | 18 | 20 | 24; // 默认 16；紧凑侧栏使用 14
   className?: string;
 }
 export type IconVariant = "stroke" | "solid";

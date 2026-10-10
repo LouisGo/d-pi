@@ -5,7 +5,8 @@ export const main = {
     "诊断记录可能不完整，请检查应用数据目录权限。草稿是否保存，以输入框状态为准。",
   "main.loggingFailure.acknowledge": "知道了",
   "main.closeUnconfirmed.message": "无法确认草稿已保存",
-  "main.closeUnconfirmed.detail": "窗口已保留。请检查输入和保存状态后再关闭。",
+  "main.closeUnconfirmed.detail":
+    "正在关闭。上次保存的草稿会保留，未保存内容可能丢失。",
   "main.closeUnconfirmed.keepWindow": "继续编辑",
   "main.rendererGone.message": "界面已中断",
   "main.rendererGone.detail":
@@ -13,7 +14,7 @@ export const main = {
   "main.rendererGone.reopen": "重新打开",
   "main.closeUnsaved.message": "草稿未保存",
   "main.closeUnsaved.detail":
-    "窗口已保留。请完成输入法选字或处理保存失败后再关闭。",
+    "正在关闭。上次保存的草稿会保留，未保存内容可能丢失。",
   "main.closeUnsaved.continueEditing": "继续编辑",
   "main.menu.about": "关于 d-pi",
   "main.menu.quit": "退出 d-pi",
@@ -31,9 +32,9 @@ export const main = {
   "main.menu.minimize": "最小化",
   "main.menu.zoom": "缩放",
   "main.menu.close": "关闭窗口",
-  "main.quitActive.message": "任务尚未结束，或状态未确认",
+  "main.quitActive.message": "d-pi 正在退出",
   "main.quitActive.detail":
-    "“等待”会在任务结束并保存草稿后退出。“请求停止”会中断当前任务并暂停队列；若仍有排队消息、待答问题或后台任务，应用会保持打开。未知状态不会强制结束。",
+    "清理未能全部确认。已保存的内容会保留；未确认任务会在下次打开时核查，不会自动重发。",
   "main.quitActive.wait": "等待结束后退出",
   "main.quitActive.stop": "请求停止后退出",
   "main.quitActive.cancel": "取消退出",

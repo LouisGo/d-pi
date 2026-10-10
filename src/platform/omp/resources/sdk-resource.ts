@@ -25,6 +25,7 @@ const ManifestSchema = z.object({
     "configuration-readonly.mjs": z.string(),
     "model-selection.mjs": z.string(),
     "native-queue.mjs": z.string(),
+    "thread-history.mjs": z.string().min(1),
     "reading-session.mjs": z.string(),
     "managed-session.mjs": z.string(),
     "image-input.mjs": z.string(),
@@ -106,5 +107,23 @@ export async function managedConfigurationRuntime(
   return {
     binary: runtime.binary,
     entry: join(directory, "configuration.mjs"),
+  };
+}
+
+export async function managedThreadHistoryRuntime(
+  root: string,
+): Promise<{ binary: string; entry: string }> {
+  const runtime = await managedSdkRuntime(root);
+  const manifest = ManifestSchema.parse(
+    JSON.parse(await readFile(join(root, "sdk", "manifest.json"), "utf8")),
+  );
+  if (!manifest.hashes["thread-history.mjs"])
+    throw new RuntimeResourceError(
+      "resource-incompatible",
+      "Native thread history adapter unavailable",
+    );
+  return {
+    binary: runtime.binary,
+    entry: join(root, "sdk", "thread-history.mjs"),
   };
 }

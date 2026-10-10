@@ -49,3 +49,10 @@ D-40 [用户终端](terminal.md)消费同一工作目录身份与项目执行信
 M1 先做一个前台 Thread 的创建、草稿恢复、目录准入、原生绑定与重开；数据模型支持多 Thread，不要求先建全套管理页。M2 交付并行、切换和已有 worktree 关联；M3 再做创建/迁移/清理 worktree 与原生历史编辑、分叉、树导航。
 
 验收至少覆盖：相同目录两 Thread 不串草稿/回执，切换前台不停止后台；旧实例结果不进入新实例；目录丢失不换目录执行；仅浏览没有项目代码加载；占用不明不追加。原生分叉创建新 Thread 并保存父关联，树内导航不新建 Thread；具体 GUI 操作到该切片核实，不定义文件回滚。
+
+
+### 项目侧栏（2026-10-10）
+
+项目列表由 ThreadRepository.listProjects 提供规范目录与 workingDirectoryId，会话仍使用真实 threadId；同名项目和 worktree 不合并。preferences 拥有导航偏好：project/thread 共用一个有序 pins 数组；单独置顶的 thread 从项目子列表剔除但不改 workspace_id，取消置顶回到已存项目内顺序。普通项目按 projectOrder 排列，项目内按 threadOrder 排列；新发现身份追加，部分索引不剪除旧偏好。移位仅允许当前分区或同项目未独立置顶的会话，不接受跨项目改变关系。项目默认五条，展开、项目折叠、置顶/项目两分区折叠分别保存。组件发意图，业务资源不会随侧栏折叠释放。
+
+2026-10-10 追加：ThreadCommands 是菜单、快捷勾选、置顶、拖拽及新建的 Renderer 指令入口；Main ThreadCommandService 串行处理 rename/complete/fork/delete，交互适配不直接写事实。标题覆盖和完成状态独立持久于 thread_management，完成隐藏活动列表但不删除 native 历史，恢复沿用原 pin/排序。fork/delete 在执行实例真实闲置释放后复核持久收据、共享 lease 与外部占用；不确定拒绝。native 分叉用固定 SDK 分支与父关联，流式核对 artifacts 后才原子采用；创建前记录 fork_pending 目标身份，结果丢失或补偿失败保留核查记录，不自动重放/采用。永久删除先记录意图，再删除官方历史/附件，确认后单事务移除 App Thread、draft/submission/attachment引用；失败保留身份和可读 App 状态，显式重试不自动重放。已删身份 tombstone 防止索引重现；不删除项目目录。

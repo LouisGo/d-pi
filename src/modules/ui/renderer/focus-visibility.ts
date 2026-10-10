@@ -5,17 +5,27 @@ export function installControlFocusVisibility(document: Document) {
   let pointerTarget: Element | null = null;
   let pointerFocusTarget: Element | null = null;
   let editingTarget: Element | null = null;
+  let pointerContextMenu = false;
   const clearPointerFocus = () => {
     pointerTarget = null;
     pointerFocusTarget = null;
     editingTarget = null;
+    pointerContextMenu = false;
     delete root.dataset.pointerFocus;
   };
   const pointerDown = (event: PointerEvent) => {
     pointerTarget = event.target instanceof Element ? event.target : null;
     pointerFocusTarget = null;
     editingTarget = null;
+    pointerContextMenu = false;
     root.dataset.pointerFocus = "true";
+  };
+  const contextMenu = (event: MouseEvent) => {
+    // A pointer context menu focuses its portal without focusing the row first.
+    // Keyboard context menus retain normal visible navigation focus.
+    if (root.dataset.pointerFocus !== "true") return;
+    pointerTarget = event.target instanceof Element ? event.target : null;
+    pointerContextMenu = true;
   };
   const pointerOver = (event: PointerEvent) => {
     // Hover menus can autofocus their portal before any pointer press or
@@ -71,6 +81,8 @@ export function installControlFocusVisibility(document: Document) {
         "Enter",
         " ",
         "Escape",
+        "ContextMenu",
+        "F10",
       ].includes(event.key)
     ) {
       clearPointerFocus();
@@ -101,12 +113,15 @@ export function installControlFocusVisibility(document: Document) {
     // does not grant that origin to a different destination or survive Tab.
     const returningToPointerFocus =
       event.relatedTarget === null && target === pointerFocusTarget;
+    const fromPointerContextMenu =
+      pointerContextMenu && !!target.closest('[data-slot="context-menu"]');
     if (
       !pointerTarget ||
       (!pointerTarget.contains(target) &&
         !target.contains(pointerTarget) &&
         !fromTrigger &&
         !fromControlledTrigger &&
+        !fromPointerContextMenu &&
         !returningToPointerFocus)
     ) {
       clearPointerFocus();
@@ -114,11 +129,13 @@ export function installControlFocusVisibility(document: Document) {
   };
   document.addEventListener("pointerdown", pointerDown, true);
   document.addEventListener("pointerover", pointerOver, true);
+  document.addEventListener("contextmenu", contextMenu, true);
   document.addEventListener("keydown", keyDown, true);
   document.addEventListener("focusin", focusIn, true);
   return () => {
     document.removeEventListener("pointerdown", pointerDown, true);
     document.removeEventListener("pointerover", pointerOver, true);
+    document.removeEventListener("contextmenu", contextMenu, true);
     document.removeEventListener("keydown", keyDown, true);
     document.removeEventListener("focusin", focusIn, true);
     clearPointerFocus();

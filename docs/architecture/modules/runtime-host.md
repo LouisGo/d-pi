@@ -66,7 +66,7 @@ Main 拥有窗口、Host 监督及受限通道建立；一个 utility SessionHos
 
 NativeSession 启动受管独立进程组，薄 bootstrap 在导入 SDK 前等待 Main 的身份登记许可。Main 登记 scope/processInstanceId、资源入口及实际 PID、父进程、进程组、birth/executable；Host 与 Main 故障分别清理属于本次实例的组。仅凭断链不能宣布原生或工具已停止，终止结果与 prompt 结果分别报告；清理复核身份，不能仅凭旧 PID 杀进程。单 Bun 故障不结束其他 scope，停止和紧急清理不依赖 SQLite 可写。逃逸进程组的未知外部进程不在已证终止范围，不能声称工具沙箱或跨 CLI 单写。冷旧App私有绑定按2026-10-08合同恢复同文件/ID，不adopt旧stdio或自动重放unknown。真实 Electron utility/Bun/工具故障证据由[04](../../../.scratch/runtime-hardening-omp1845/issues/04-process-supervision.md)维护。
 
-Runtime 的正常退出入口即使已断开，也必须等待 HostConnection 的最终组清理；清理未证实则拒绝退出，重复调用不能跳过失败。最近七提交的跨层回归修复见[审查记录](../../../.scratch/review-seven-commits/spec.md)。
+Runtime 的正常退出入口即使已断开，也必须等待 HostConnection 的最终组清理；清理未证实则拒绝确认正常 idle 关闭，重复调用不能跳过失败。2026-10-10 显式 App Quit 整体有界：超时仍保留未确认状态并退出，由 native Main 身份 watchdog 和后续 lease 核查收敛物理生命周期；不冒称任务成功。最近七提交的跨层回归修复见[审查记录](../../../.scratch/review-seven-commits/spec.md)。
 
 2026-10-02 暖会话修复：bootstrap 的所有者探测异步且不重叠；ps 失败保留 unknown，仅成功采样的 birth 变化、父 PID 变化或 liveness 的 ESRCH 才终止。NativeSession 报告真实 close 的 PID/code/signal；bootstrap 终止原因与 SDK 请求退出码为有限、token 关联的独立证据，缺失保持 null。Main 区分单 native 与 utility 退出，不凭 SIGKILL 猜 OOM 或 watchdog，见[记录](../../../.scratch/m2-first-release/warm-session-liveness.md)。
 

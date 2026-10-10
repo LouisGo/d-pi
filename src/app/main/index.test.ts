@@ -27,6 +27,9 @@ const shell = vi.hoisted(() => ({
     },
   },
   quit: vi.fn(),
+  exit: vi.fn(),
+  notice: vi.fn(),
+  noticeConstruct: vi.fn(),
   systemLocale: "en-US",
   preferredSystemLanguages: ["en-US"],
 }));
@@ -42,6 +45,14 @@ vi.mock("electron", () => ({
     on: (name: string, listener: (event: unknown) => void) =>
       shell.events.set(name, listener),
     quit: shell.quit,
+    exit: shell.exit,
+  },
+  Notification: class {
+    constructor(value: unknown) {
+      shell.noticeConstruct(value);
+    }
+    static isSupported = () => true;
+    show = shell.notice;
   },
   BrowserWindow: class {
     constructor(options: Record<string, unknown>) {
@@ -71,11 +82,25 @@ vi.mock("electron", () => ({
   },
 }));
 
+async function requestQuit() {
+  shell.events.get("before-quit")?.({ preventDefault: vi.fn() });
+  await Promise.resolve();
+  const token = shell.contents.send.mock.calls.findLast(
+    ([channel]) => channel === "draft:close-request",
+  )?.[1];
+  if (token)
+    shell.listeners.get("draft:close-result")?.(
+      { sender: shell.contents, senderFrame: shell.contents.mainFrame },
+      { token, saved: true },
+    );
+}
+
 it("uses the first preferred system language rather than the Chromium app locale", async () => {
   vi.resetModules();
   shell.handlers.clear();
   shell.events.clear();
   shell.quit.mockClear();
+  shell.exit.mockClear();
   shell.directory = mkdtempSync(join(tmpdir(), "d-pi-system-language-"));
   shell.systemLocale = "en-US";
   shell.preferredSystemLanguages = ["zh-Hans-CN", "en-US"];
@@ -105,8 +130,8 @@ it("uses the first preferred system language rather than the Chromium app locale
     });
   } finally {
     shell.preferredSystemLanguages = ["en-US"];
-    shell.events.get("will-quit")?.({ preventDefault: vi.fn() });
-    await vi.waitFor(() => expect(shell.quit).toHaveBeenCalled());
+    await requestQuit();
+    await vi.waitFor(() => expect(shell.exit).toHaveBeenCalled());
     rmSync(shell.directory, { recursive: true, force: true });
   }
 });
@@ -188,15 +213,15 @@ it("starts with system locale, rebuilds the native menu on interaction, and keep
       ([channel]) => channel === "draft:close-request",
     )?.[1];
     closeResult(event, { token: closeToken, saved: false });
-    expect(
-      JSON.stringify(vi.mocked(dialog.showMessageBox).mock.lastCall),
-    ).toContain("Draft not saved");
+    expect(JSON.stringify(shell.noticeConstruct.mock.lastCall)).toContain(
+      "Draft not saved",
+    );
     await expect(
       set({ sender: {}, senderFrame: {} }, "zh-CN"),
     ).rejects.toThrow();
   } finally {
-    shell.events.get("will-quit")?.({ preventDefault: vi.fn() });
-    await vi.waitFor(() => expect(shell.quit).toHaveBeenCalled());
+    await requestQuit();
+    await vi.waitFor(() => expect(shell.exit).toHaveBeenCalled());
     const events = readFileSync(
       join(shell.directory, "logs/main.jsonl"),
       "utf8",
@@ -220,6 +245,7 @@ it("restores the saved language before building the native menu", async () => {
   shell.handlers.clear();
   shell.events.clear();
   shell.quit.mockClear();
+  shell.exit.mockClear();
   shell.directory = mkdtempSync(join(tmpdir(), "d-pi-locale-restart-"));
   shell.systemLocale = "en-US";
   const path = join(shell.directory, "drafts.sqlite");
@@ -242,8 +268,8 @@ it("restores the saved language before building the native menu", async () => {
       JSON.stringify(vi.mocked(Menu.buildFromTemplate).mock.lastCall?.[0]),
     ).toContain("编辑");
   } finally {
-    shell.events.get("will-quit")?.({ preventDefault: vi.fn() });
-    await vi.waitFor(() => expect(shell.quit).toHaveBeenCalled());
+    await requestQuit();
+    await vi.waitFor(() => expect(shell.exit).toHaveBeenCalled());
     rmSync(shell.directory, { recursive: true, force: true });
   }
 });
@@ -253,6 +279,7 @@ it("retries a failed initial restore after the lock clears, preserving the same 
   shell.handlers.clear();
   shell.events.clear();
   shell.quit.mockClear();
+  shell.exit.mockClear();
   shell.directory = mkdtempSync(join(tmpdir(), "d-pi-startup-"));
   const path = join(shell.directory, "drafts.sqlite");
   const original = AppStorage.open(path);
@@ -323,13 +350,13 @@ it("retries a failed initial restore after the lock clears, preserving the same 
   } finally {
     if (locked) locker.exec("ROLLBACK");
     locker.close();
-    shell.events.get("will-quit")?.({ preventDefault: vi.fn() });
-    await vi.waitFor(() => expect(shell.quit).toHaveBeenCalled());
+    await requestQuit();
+    await vi.waitFor(() => expect(shell.exit).toHaveBeenCalled());
     rmSync(shell.directory, { recursive: true, force: true });
   }
 });
 
-it("a timed-out close receipt cannot close a later attempt, and failed saves retain the window", async () => {
+it("a timed-out close honors intent after warning and ignores stale save results", async () => {
   vi.resetModules();
   shell.handlers.clear();
   shell.events.clear();
@@ -338,6 +365,7 @@ it("a timed-out close receipt cannot close a later attempt, and failed saves ret
   shell.contents.send.mockClear();
   shell.close.mockClear();
   shell.quit.mockClear();
+  shell.exit.mockClear();
   shell.directory = mkdtempSync(join(tmpdir(), "d-pi-close-"));
   vi.useFakeTimers();
   try {
@@ -372,21 +400,13 @@ it("a timed-out close receipt cannot close a later attempt, and failed saves ret
     };
     const expired = requestClose();
     await vi.advanceTimersByTimeAsync(5000);
-    expect(shell.contents.send).toHaveBeenCalledWith("draft:close-cancelled");
-    expect(shell.close).not.toHaveBeenCalled();
-    const current = requestClose();
-    expect(current).not.toBe(expired);
-    result(event, { token: expired, saved: true });
-    expect(shell.close).not.toHaveBeenCalled();
-    result(event, { token: current, saved: false });
-    expect(shell.close).not.toHaveBeenCalled();
-    await vi.advanceTimersByTimeAsync(0);
-    const final = requestClose();
-    result(event, { token: final, saved: true });
+    expect(shell.notice).toHaveBeenCalled();
     expect(shell.close).toHaveBeenCalledTimes(1);
-    expect(shell.quit).not.toHaveBeenCalled();
+    result(event, { token: expired, saved: true });
+    expect(shell.close).toHaveBeenCalledTimes(1);
+    expect(shell.exit).not.toHaveBeenCalled();
   } finally {
-    shell.events.get("will-quit")?.({ preventDefault: vi.fn() });
+    await requestQuit();
     await vi.runAllTimersAsync();
     vi.useRealTimers();
     rmSync(shell.directory, { recursive: true, force: true });
@@ -398,6 +418,7 @@ it("accepts only bounded bridge diagnostics from the active frame", async () => 
   shell.listeners.clear();
   shell.events.clear();
   shell.quit.mockClear();
+  shell.exit.mockClear();
   shell.directory = mkdtempSync(join(tmpdir(), "d-pi-bridge-logs-"));
   try {
     await import("./index");
@@ -418,8 +439,8 @@ it("accepts only bounded bridge diagnostics from the active frame", async () => 
     receive?.(event, { ...record, text: "PRIVATE BODY" });
     receive?.({ ...event, senderFrame: {} }, record);
     receive?.(event, record);
-    shell.events.get("will-quit")?.({ preventDefault: vi.fn() });
-    await vi.waitFor(() => expect(shell.quit).toHaveBeenCalled());
+    await requestQuit();
+    await vi.waitFor(() => expect(shell.exit).toHaveBeenCalled());
     const lines = readFileSync(join(shell.directory, "logs/main.jsonl"), "utf8")
       .trim()
       .split("\n");
@@ -430,7 +451,7 @@ it("accepts only bounded bridge diagnostics from the active frame", async () => 
     });
     expect(lines.join()).not.toContain("PRIVATE BODY");
   } finally {
-    shell.events.get("will-quit")?.({ preventDefault: vi.fn() });
+    await requestQuit();
     rmSync(shell.directory, { recursive: true, force: true });
   }
 });
@@ -440,6 +461,7 @@ it("runtime inspection is read-only, rejects foreign frames, and explicit allowa
   shell.handlers.clear();
   shell.events.clear();
   shell.quit.mockClear();
+  shell.exit.mockClear();
   shell.directory = mkdtempSync(join(tmpdir(), "d-pi-runtime-ipc-"));
   const storage = AppStorage.open(join(shell.directory, "drafts.sqlite"));
   const draft = storage.drafts.create(realpathSync(shell.directory));
@@ -477,8 +499,8 @@ it("runtime inspection is read-only, rejects foreign frames, and explicit allowa
       view: { phase: "browse", trusted: false },
     });
   } finally {
-    shell.events.get("will-quit")?.({ preventDefault: vi.fn() });
-    await vi.waitFor(() => expect(shell.quit).toHaveBeenCalled());
+    await requestQuit();
+    await vi.waitFor(() => expect(shell.exit).toHaveBeenCalled());
     rmSync(shell.directory, { recursive: true, force: true });
   }
 });
@@ -487,6 +509,7 @@ it("starts attachment maintenance once and drains it before closing SQLite on Qu
   vi.resetModules();
   shell.events.clear();
   shell.quit.mockClear();
+  shell.exit.mockClear();
   shell.directory = mkdtempSync(join(tmpdir(), "d-pi-attachment-quit-"));
   const attachmentModule = await import("./wiring/attachment-service");
   const factory = attachmentModule.createAttachmentService;
@@ -509,12 +532,20 @@ it("starts attachment maintenance once and drains it before closing SQLite on Qu
     await import("./index");
     await vi.waitFor(() => expect(startMaintenance).toHaveBeenCalledTimes(1));
     startMaintenance.mock.calls[0]?.[0]?.();
-    shell.events.get("will-quit")?.({ preventDefault: vi.fn() });
+    await requestQuit();
     await vi.waitFor(() => expect(close).toHaveBeenCalledTimes(1));
     expect(databaseClose).not.toHaveBeenCalled();
-    expect(shell.quit).not.toHaveBeenCalled();
+    expect(shell.exit).not.toHaveBeenCalled();
+    const { dialog } = await import("electron");
+    vi.mocked(dialog.showMessageBox).mockClear();
+    const rendererGone = shell.contents.on.mock.calls.findLast(
+      ([name]) => name === "render-process-gone",
+    )?.[1];
+    expect(rendererGone).toBeTypeOf("function");
+    expect(() => rendererGone({}, { reason: "crashed" })).not.toThrow();
+    expect(dialog.showMessageBox).not.toHaveBeenCalled();
     release();
-    await vi.waitFor(() => expect(shell.quit).toHaveBeenCalledTimes(1));
+    await vi.waitFor(() => expect(shell.exit).toHaveBeenCalledTimes(1));
     expect(databaseClose).toHaveBeenCalledTimes(1);
     const logs = readFileSync(join(shell.directory, "logs/main.jsonl"), "utf8")
       .trim()
@@ -529,8 +560,8 @@ it("starts attachment maintenance once and drains it before closing SQLite on Qu
     );
   } finally {
     release();
-    shell.events.get("will-quit")?.({ preventDefault: vi.fn() });
-    await vi.waitFor(() => expect(shell.quit).toHaveBeenCalled());
+    await requestQuit();
+    await vi.waitFor(() => expect(shell.exit).toHaveBeenCalled());
     factorySpy.mockRestore();
     databaseClose.mockRestore();
     rmSync(shell.directory, { recursive: true, force: true });

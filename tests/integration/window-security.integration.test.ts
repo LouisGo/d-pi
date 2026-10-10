@@ -14,6 +14,8 @@ const desktop = vi.hoisted(() => ({
   loadURL: vi.fn<(url: string) => Promise<void>>(() => Promise.resolve()),
   loadFile: vi.fn<(path: string) => Promise<void>>(() => Promise.resolve()),
   quit: vi.fn(),
+  exit: vi.fn(),
+  notice: vi.fn(),
   close: vi.fn(),
   contents: {
     getURL: () => "file:///app/renderer/index.html",
@@ -43,6 +45,11 @@ vi.mock("electron", () => ({
     on: (name: string, listener: (event: unknown) => void) =>
       desktop.events.set(name, listener),
     quit: desktop.quit,
+    exit: desktop.exit,
+  },
+  Notification: class {
+    static isSupported = () => true;
+    show = desktop.notice;
   },
   BrowserWindow: class {
     constructor(options: unknown) {
@@ -77,8 +84,21 @@ beforeEach(() => {
 });
 
 afterEach(async () => {
-  desktop.events.get("will-quit")?.({ preventDefault: vi.fn() });
-  await vi.waitFor(() => expect(desktop.quit).toHaveBeenCalled());
+  desktop.events.get("before-quit")?.({ preventDefault: vi.fn() });
+  await Promise.resolve();
+  const { ipcMain } = await import("electron");
+  const token = desktop.contents.send.mock.calls.findLast(
+    ([channel]) => channel === "draft:close-request",
+  )?.[1];
+  const result = vi
+    .mocked(ipcMain.on)
+    .mock.calls.find(([channel]) => channel === "draft:close-result")?.[1];
+  if (token)
+    result?.(
+      { sender: desktop.contents, senderFrame: desktop.contents.mainFrame },
+      { token, saved: true },
+    );
+  await vi.waitFor(() => expect(desktop.exit).toHaveBeenCalled());
   vi.unstubAllEnvs();
   rmSync(desktop.directory, { recursive: true, force: true });
 });
@@ -108,7 +128,7 @@ it("closes an uninitialized window without requesting a nonexistent editable dra
 it("arms the actual Main close handshake when restore publishes ready and coalesces unsaved notices", async () => {
   await import("../../src/app/main/index");
   await vi.waitFor(() => expect(desktop.construct).toHaveBeenCalled());
-  const { ipcMain, dialog } = await import("electron");
+  const { ipcMain } = await import("electron");
   const restore = vi
     .mocked(ipcMain.handle)
     .mock.calls.find(([channel]) => channel === "draft:request")?.[1];
@@ -130,25 +150,18 @@ it("arms the actual Main close handshake when restore publishes ready and coales
   )?.[1];
   expect(token).toBeTypeOf("string");
   expect(desktop.close).not.toHaveBeenCalled();
-  let dismiss: (() => void) | undefined;
-  vi.mocked(dialog.showMessageBox).mockImplementation(
-    () =>
-      new Promise((done) => {
-        dismiss = () => done({ response: 0, checkboxChecked: false });
-      }),
-  );
   const result = vi
     .mocked(ipcMain.on)
     .mock.calls.find(([channel]) => channel === "draft:close-result")?.[1];
   result?.(event, { token, saved: false });
   desktop.windowEvents.get("close")?.({ preventDefault: vi.fn() });
-  expect(dialog.showMessageBox).toHaveBeenCalledOnce();
+  expect(desktop.notice).toHaveBeenCalledOnce();
+  expect(desktop.close).toHaveBeenCalledOnce();
   expect(
     desktop.contents.send.mock.calls.filter(
       ([channel]) => channel === "draft:close-request",
     ),
   ).toHaveLength(1);
-  dismiss?.();
 });
 
 it("does not give an external development page the application preload", async () => {

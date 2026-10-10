@@ -8,7 +8,7 @@ export class WindowCloseGuard {
   } | null = null;
   private disposed = false;
   private editable = false;
-  private noticeOpen = false;
+  private approved = false;
   constructor(
     private readonly actions: {
       send(token: string): void;
@@ -20,10 +20,10 @@ export class WindowCloseGuard {
     this.editable = true;
   }
   request(): boolean {
-    if (this.disposed || this.noticeOpen) return false;
-    if (this.pending) return true;
+    if (this.disposed) return false;
+    if (this.pending || this.approved) return true;
     if (!this.editable) {
-      this.actions.approve();
+      this.approve();
       return true;
     }
     const token = randomUUID();
@@ -41,17 +41,18 @@ export class WindowCloseGuard {
     if (this.disposed || token !== this.pending?.token) return;
     clearTimeout(this.pending.timer);
     this.pending = null;
-    if (saved) this.actions.approve();
+    if (saved) this.approve();
     else this.block("unsaved");
   }
   private block(reason: "unsaved" | "unconfirmed"): void {
-    this.noticeOpen = true;
-    void this.actions
-      .blocked(reason)
-      .catch(() => {})
-      .then(() => {
-        this.noticeOpen = false;
-      });
+    // Warning delivery must never become a second close permission handshake.
+    void this.actions.blocked(reason).catch(() => {});
+    this.approve();
+  }
+  private approve(): void {
+    if (this.disposed || this.approved) return;
+    this.approved = true;
+    this.actions.approve();
   }
   dispose(): void {
     this.disposed = true;

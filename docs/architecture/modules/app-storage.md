@@ -5,7 +5,7 @@
 ## 当前工程落点（领域目录治理，2026-09-29）
 
 - `src/platform/main/storage/database.ts` 只负责连接、PRAGMA、schema/备份迁移和事务原语；业务仓储分别位于 threads/input/preferences/execution 模块。
-- `src/app/main/wiring/app-storage.ts` 以一个 `AppDatabase` 组装仓储，并显式执行 `至少 v3 + WAL → submission recovery → 后续迁移至 v14 → submission presentation index → queue change recovery → publish`；数据库构造不隐式修改业务收据。当前已为 v14 时不重复迁移或生成升级备份。
+- `src/app/main/wiring/app-storage.ts` 以一个 `AppDatabase` 组装仓储，并显式执行 `至少 v3 + WAL → submission recovery → 后续迁移至 v15 → submission presentation index → queue change recovery → publish`；数据库构造不隐式修改业务收据。当前已为 v15 时不重复迁移或生成升级备份。
 - `src/platform/main/diagnostics/` 是轻量有界诊断设施；它不决定业务恢复，也不记录秘密、路径或正文作为诊断内容。
 
 
@@ -67,3 +67,8 @@ App 的 attachment-service-references 装配跨仓储权威投影：分批读取
 
 
 2026-10-09：schema 14 新增 `submission_presentation`，只派生冻结收据的 Thread、nativeSessionRef、configContextId 与 message digest。execution 在迁移后补齐旧记录，在 prepared 的同一事务内登记新索引；查询通过复合索引找到至多129个候选，超过128个保守放弃，再核对冻结原文。before-v14 保留 schema 13，恢复/ACK/草稿消费和原生历史所有权不变。此修复按用户要求未运行验证，待用户自行复试。
+
+
+2026-10-10：schema 15 新增 sidebar_preferences(id=1, revision, payload)，偏好记录自身 schemaVersion=1；导航顺序、混合置顶、项目折叠/五条展开与分区折叠由 preferences 拥有。before-v15 保留 schema 14，发布备份后才原子迁表，不改变 submission recovery/index/queue recovery 顺序。sidebar-read 与 sidebar-change 复用受限、带 traceId 的桌面桥；Main 按当前 catalog 校验身份/归属，原子应用意图而非接收 Renderer 全量覆盖；revision 防止迟到读取覆盖新确认。外观、语言和模型偏好不能覆盖导航记录，损坏记录明确失败，不重置用户顺序。
+
+2026-10-10：schema 16 增加 thread_management（名称覆盖、完成、父分叉关系、pending/deleted native 身份及未采用 fork 目标）；升级前独立 before-v16 备份。采用分叉与移除 pending 同事务；永久删除先持久意图，native 删除成功再同事务清理 App 关系，失败不伪造完成。schema 15 的 sidebar_preferences/revision 不随完成删除而双写，确认后由原身份表重读投影。

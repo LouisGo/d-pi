@@ -5,7 +5,17 @@ import {
   NotificationPreferencesSchema,
   type Preferences,
   PreferencesSchema,
+  type SidebarChange,
+  type SidebarSnapshot,
+  SidebarSnapshotSchema,
 } from "../contracts/public";
+import {
+  emptySidebarPreferences,
+  reconcileSidebar,
+  type SidebarCatalog,
+  updateSidebar,
+  validSidebarChange,
+} from "../core/sidebar";
 export class PreferenceRepository {
   constructor(private readonly database: AppDatabase) {}
   private get db() {
@@ -69,6 +79,50 @@ export class PreferenceRepository {
         "UPDATE desktop SET notification_system=?,notification_completion=? WHERE id=1",
       )
       .run(Number(value.system), Number(value.completion));
+  }
+  readSidebar(): SidebarSnapshot {
+    const row = this.db
+      .prepare("SELECT revision,payload FROM sidebar_preferences WHERE id=1")
+      .get();
+    if (!row) return { revision: 0, value: emptySidebarPreferences() };
+    if (typeof row.payload !== "string")
+      throw Error("Invalid sidebar preference record");
+    return SidebarSnapshotSchema.parse({
+      revision: row.revision,
+      value: JSON.parse(row.payload),
+    });
+  }
+  reconcileSidebar(catalog: SidebarCatalog): SidebarSnapshot {
+    return this.database.transaction(() => {
+      const current = this.readSidebar();
+      const value = reconcileSidebar(current.value, catalog);
+      if (JSON.stringify(value) === JSON.stringify(current.value))
+        return current;
+      return this.writeSidebar({ revision: current.revision + 1, value });
+    });
+  }
+  changeSidebar(
+    catalog: SidebarCatalog,
+    change: SidebarChange,
+  ): SidebarSnapshot | null {
+    return this.database.transaction(() => {
+      const current = this.readSidebar();
+      const reconciled = reconcileSidebar(current.value, catalog);
+      if (!validSidebarChange(reconciled, catalog, change)) return null;
+      const value = updateSidebar(reconciled, change);
+      if (JSON.stringify(value) === JSON.stringify(current.value))
+        return current;
+      return this.writeSidebar({ revision: current.revision + 1, value });
+    });
+  }
+  private writeSidebar(snapshot: SidebarSnapshot): SidebarSnapshot {
+    const parsed = SidebarSnapshotSchema.parse(snapshot);
+    this.db
+      .prepare(
+        "INSERT INTO sidebar_preferences(id,revision,payload) VALUES(1,?,?) ON CONFLICT(id) DO UPDATE SET revision=excluded.revision,payload=excluded.payload",
+      )
+      .run(parsed.revision, JSON.stringify(parsed.value));
+    return parsed;
   }
   saveLocale(locale: Preferences["locale"]): void {
     this.db.prepare("UPDATE desktop SET locale=? WHERE id=1").run(locale);

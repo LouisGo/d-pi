@@ -2,6 +2,58 @@
 import { expect, it } from "vitest";
 import { installControlFocusVisibility } from "./focus-visibility";
 
+it("keeps mouse context-menu autofocus outline-free until keyboard navigation", () => {
+  const row = document.createElement("button");
+  const menu = document.createElement("div");
+  menu.setAttribute("role", "menu");
+  menu.dataset.slot = "context-menu";
+  menu.tabIndex = -1;
+  document.body.append(row, menu);
+  const dispose = installControlFocusVisibility(document);
+  try {
+    row.dispatchEvent(
+      new PointerEvent("pointerdown", { bubbles: true, button: 2 }),
+    );
+    row.dispatchEvent(
+      new MouseEvent("contextmenu", { bubbles: true, button: 2 }),
+    );
+    // Context menus can focus their portal directly from body, without first focusing the row.
+    menu.focus();
+    expect(document.documentElement.dataset.pointerFocus).toBe("true");
+    menu.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
+    );
+    expect(document.documentElement.dataset.pointerFocus).toBeUndefined();
+  } finally {
+    dispose();
+    row.remove();
+    menu.remove();
+  }
+});
+
+it("recognizes a keyboard context menu after a pointer click as keyboard focus", () => {
+  const row = document.createElement("button");
+  const menu = document.createElement("div");
+  menu.tabIndex = -1;
+  menu.dataset.slot = "context-menu";
+  document.body.append(row, menu);
+  const dispose = installControlFocusVisibility(document);
+  try {
+    row.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+    row.focus();
+    row.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ContextMenu", bubbles: true }),
+    );
+    row.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true }));
+    menu.focus();
+    expect(document.documentElement.dataset.pointerFocus).toBeUndefined();
+  } finally {
+    dispose();
+    row.remove();
+    menu.remove();
+  }
+});
+
 it("recognizes first-hover menu autofocus without a pointer press, and restores keyboard focus", () => {
   const trigger = document.createElement("button");
   const icon = document.createElement("span");

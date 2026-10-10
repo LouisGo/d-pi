@@ -6,6 +6,7 @@ import {
   dialog,
   ipcMain,
   MessageChannelMain,
+  Notification,
 } from "electron";
 import { z } from "zod";
 import { createProjectGitReader } from "../../../modules/changes/main/public";
@@ -102,7 +103,7 @@ export function startDesktopApplication(mainDirectory: string): void {
       if (!localeInteracted) applyLocale(preference, window !== null);
     },
   });
-  const { getRuntime, activeWork, initializeStorage } = services;
+  const { getRuntime, initializeStorage } = services;
 
   let loggingNoticeShown = false;
   function reportLoggingFailure(): void {
@@ -123,6 +124,10 @@ export function startDesktopApplication(mainDirectory: string): void {
   let quitting = false;
   let approved = false;
   let closeGuard: WindowCloseGuard | null = null;
+  let saveForQuit: (() => void) | undefined;
+  function notifyClosing(title: string, body: string): void {
+    if (Notification.isSupported()) new Notification({ title, body }).show();
+  }
   const closeResult = z.strictObject({ token: z.uuid(), saved: z.boolean() });
   function runtimeFailure(
     traceId: string,
@@ -150,9 +155,10 @@ export function startDesktopApplication(mainDirectory: string): void {
     );
   }
   function requestClose(): void {
-    if (!closeGuard?.request()) quitting = false;
+    closeGuard?.request();
   }
   function createWindow(): void {
+    if (quitting) return;
     approved = false;
     const current = new BrowserWindow({
       width: 1120,
@@ -181,34 +187,20 @@ export function startDesktopApplication(mainDirectory: string): void {
       approve: () => {
         if (window !== current || current.isDestroyed()) return;
         approved = true;
-        if (quitting) app.quit();
+        if (quitting) saveForQuit?.();
         else current.close();
       },
       blocked: async (reason) => {
         if (window !== current || current.isDestroyed()) return;
-        quitting = false;
-        current.webContents.send("draft:close-cancelled");
         const t = currentT();
-        await dialog.showMessageBox(current, {
-          type: "warning",
-          message: t(
+        notifyClosing(
+          t(
             reason === "unsaved"
               ? "main.closeUnsaved.message"
               : "main.closeUnconfirmed.message",
           ),
-          detail: t(
-            reason === "unsaved"
-              ? "main.closeUnsaved.detail"
-              : "main.closeUnconfirmed.detail",
-          ),
-          buttons: [
-            t(
-              reason === "unsaved"
-                ? "main.closeUnsaved.continueEditing"
-                : "main.closeUnconfirmed.keepWindow",
-            ),
-          ],
-        });
+          t("main.closeUnconfirmed.detail"),
+        );
       },
     });
     closeGuard = guard;
@@ -257,6 +249,7 @@ export function startDesktopApplication(mainDirectory: string): void {
         stage: "renderer-gone",
         code: details.reason,
       });
+      if (quitting) return;
       // Confirmed drafts survive; do not misrepresent recovery of the lost in-memory tail.
       const t = currentT();
       void dialog
@@ -267,6 +260,7 @@ export function startDesktopApplication(mainDirectory: string): void {
           buttons: [t("main.rendererGone.reopen")],
         })
         .then(() => {
+          if (quitting || window !== current) return;
           approved = true;
           current.destroy();
           createWindow();
@@ -282,6 +276,7 @@ export function startDesktopApplication(mainDirectory: string): void {
   if (!locked) app.quit();
   else {
     app.on("second-instance", () => {
+      if (quitting) return;
       if (window) {
         window.show();
         window.focus();
@@ -526,6 +521,7 @@ export function startDesktopApplication(mainDirectory: string): void {
       createWindow();
     });
     app.on("activate", () => {
+      if (quitting) return;
       if (!window) createWindow();
       else window.show();
     });
@@ -533,84 +529,63 @@ export function startDesktopApplication(mainDirectory: string): void {
       // Window lifetime is separate from Main; explicit Quit owns application shutdown.
     });
     const quitCoordinator = new QuitCoordinator(
-      () => activeWork(),
       async () => {
-        await Promise.all(
-          [...services.runtimes.values()]
-            .filter((runtime) => runtime.hasActiveWork())
-            .map((runtime) => runtime.requestStop()),
-        );
-      },
-      () => app.quit(),
-    );
-    let quitDialogOpen = false;
-    app.on("before-quit", (event) => {
-      if (activeWork()) {
-        event.preventDefault();
-        quitting = false;
-        if (!window) createWindow();
-        else window.show();
-        if (window && !quitDialogOpen) {
-          quitDialogOpen = true;
-          const t = currentT();
-          void dialog
-            .showMessageBox(window, {
-              type: "warning",
-              message: t("main.quitActive.message"),
-              detail: t("main.quitActive.detail"),
-              buttons: [
-                t("main.quitActive.wait"),
-                t("main.quitActive.stop"),
-                t("main.quitActive.cancel"),
-              ],
-              cancelId: 2,
-              defaultId: 2,
-            })
-            .then(({ response }) => {
-              quitCoordinator.request(
-                response === 0 ? "wait" : response === 1 ? "stop" : "cancel",
-              );
-            })
-            .finally(() => {
-              quitDialogOpen = false;
-            });
-        }
-        return;
-      }
-      if (window && !approved) {
-        event.preventDefault();
         quitting = true;
-        requestClose();
-      }
-    });
-    let drained = false;
-    app.on("will-quit", (event) => {
-      if (drained) return;
-      quitCoordinator.dispose();
-      event.preventDefault();
-      void (async () => {
-        await Promise.all(
-          [...services.runtimes.values()].map((runtime) => runtime.closeIdle()),
+        const save =
+          window && !approved
+            ? new Promise<void>((resolve) => {
+                saveForQuit = resolve;
+                requestClose();
+              })
+            : Promise.resolve();
+        // Queue/pending evidence remains durable. Stop is requested, never
+        // interpreted as confirmation that unknown work completed.
+        const runtimes = [...services.runtimes.values()];
+        const stopped = Promise.all(
+          runtimes.map(async (runtime) => {
+            if (runtime.hasActiveWork()) {
+              await runtime.requestStop();
+              while (runtime.hasActiveWork())
+                await new Promise((resolve) => setTimeout(resolve, 100));
+            }
+            await runtime.closeIdle();
+          }),
         );
-        await Promise.all([reads.close(), gitReader.close()]);
-        await services.attachments?.close();
+        const results = await Promise.allSettled([
+          save,
+          stopped,
+          services.closeThreadCommands(),
+          reads.close(),
+          gitReader.close(),
+          services.attachments?.close(),
+        ]);
         await diagnostics?.close();
-      })()
-        .then(() => {
-          drained = true;
+        if (results.some((result) => result.status === "rejected"))
+          throw Error("Shutdown cleanup unconfirmed");
+      },
+      (reason) => {
+        try {
+          if (reason !== "clean")
+            notifyClosing(
+              currentT()("main.quitActive.message"),
+              currentT()("main.quitActive.detail"),
+            );
           unsubscribeAttention?.();
           attention?.dispose();
           services.configuration?.dispose();
-          services.store?.close();
-          // Let Electron unwind the prevented will-quit event before retrying Quit.
-          setImmediate(() => app.quit());
-        })
-        .catch(() => {
-          quitting = false;
-          approved = false;
-          if (!window) createWindow();
-          window?.webContents.send("draft:close-cancelled");
-        });
+          if (reason === "clean") services.store?.close();
+        } finally {
+          app.exit(0);
+        }
+        // Closing Main is intentional, not an execution outcome. Managed native
+        // groups observe Main death through their watchdog; lease evidence stays
+        // on disk until real group death is verified during subsequent recovery.
+      },
+    );
+    app.on("before-quit", (event) => {
+      event.preventDefault();
+      quitting = true;
+      quitCoordinator.request();
     });
   }
 }

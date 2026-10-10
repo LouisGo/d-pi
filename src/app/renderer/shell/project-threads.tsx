@@ -1,166 +1,167 @@
-import { useNavigate } from "@tanstack/react-router";
-import { memo, type ReactNode } from "react";
+import { useMemo, useState } from "react";
 import { useStore } from "zustand";
-import { FolderIcon } from "@/components/icons/common";
+import { emptySidebarPreferences } from "../../../modules/preferences/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import type { ThreadContext } from "../../../modules/threads/contracts/public";
 import { Button, LoadingIndicator } from "../../../modules/ui/renderer/public";
+import { SidebarChevronIcon } from "../components/icons/sidebar";
 import type { AppModel } from "../wiring/model";
-import { ThreadAttention } from "./attention";
 import { ChooseProjectButton } from "./choose-project-button";
 import { NewThreadButton } from "./preference-toolbar";
+import { SidebarCommandFeedback } from "./sidebar-command-feedback";
+import { SidebarPreview } from "./sidebar-preview";
+import { projectSidebar } from "./sidebar-projection";
+import { SidebarSection } from "./sidebar-section";
+import { SidebarThreadRow } from "./sidebar-thread-row";
+import { ThreadCommandDialog } from "./thread-command-dialog";
 
+const empty = emptySidebarPreferences();
 export function ProjectThreads({ model }: { model: AppModel }) {
   const { t } = useI18n();
+  const [showCompleted, setShowCompleted] = useState(false);
+  const commandPending = useStore(model.commands.stateStore, (s) => s.pending);
   const threads = useStore(model.threadListStore, (state) => state.threads);
+  const projects = useStore(model.threadListStore, (state) => state.projects);
   const failed = useStore(model.threadListStore, (state) => state.failed);
   const pending = useStore(model.threadListStore, (state) => state.pending);
   const nativeIndex = useStore(
     model.threadListStore,
     (state) => state.nativeIndex,
   );
-  const groups = new Map<string, ThreadContext[]>();
-  for (const thread of threads) {
-    const group = groups.get(thread.directory);
-    if (group) group.push(thread);
-    else groups.set(thread.directory, [thread]);
-  }
-  return (
-    <nav aria-label={t("app.sidebar.projects")} className="thread-navigation">
-      <NewThreadButton model={model} />
-      <div className="sidebar-label">
-        <span>{t("app.sidebar.projects")}</span>
-        <ChooseProjectButton model={model} iconOnly />
-      </div>
-      {failed && (
-        <p role="alert" className="failure">
-          {t("app.thread.listFailed")}
-          <Button variant="ghost" onClick={() => void model.refreshThreads()}>
-            {t("app.retry")}
-          </Button>
-        </p>
-      )}
-      <div className="sidebar-loading">
-        <LoadingIndicator
-          pending={(pending && !threads.length) || nativeIndex === "indexing"}
-          label={t("app.loading")}
-        />
-      </div>
-      {nativeIndex && nativeIndex !== "ready" && nativeIndex !== "indexing" && (
-        <p role="status" className="muted">
-          {t(
-            nativeIndex === "partial"
-              ? "app.thread.indexPartial"
-              : "app.thread.indexUnavailable",
-          )}{" "}
-          <Button
-            variant="ghost"
-            disabled={pending}
-            onClick={() => void model.refreshThreads()}
-          >
-            {t("app.retry")}
-          </Button>
-        </p>
-      )}
-      {!threads.length &&
-        !failed &&
-        !pending &&
-        nativeIndex !== "unavailable" &&
-        nativeIndex !== "indexing" && (
-          <p className="muted">{t("app.sidebar.noProject")}</p>
-        )}
-      <ThreadButtons model={model}>
-        {[...groups].map(([directory, group]) => (
-          <section
-            key={directory}
-            className="flex flex-col gap-1"
-            data-project-group={directory}
-          >
-            <div className="sidebar-label" title={directory}>
-              <FolderIcon />
-              <span>
-                {directory.split("/").filter(Boolean).at(-1) ?? directory}
-              </span>
-            </div>
-            {group.map((thread) => (
-              <ThreadButton
-                key={thread.threadId}
-                model={model}
-                threadId={thread.threadId}
-                directory={thread.directory}
-                title={thread.title}
-                number={threads.length - threads.indexOf(thread)}
-              />
-            ))}
-          </section>
-        ))}
-      </ThreadButtons>
-    </nav>
+  const snapshot = useStore(
+    model.sidebar.stateStore,
+    (state) => state.snapshot,
   );
-}
-
-function ThreadButtons({
-  model,
-  children,
-}: {
-  model: AppModel;
-  children: ReactNode;
-}) {
-  const busy = useStore(
-    model.stateStore,
-    (state) => state.kind === "ready" && state.threadTransition === "unknown",
+  const saving = useStore(model.sidebar.stateStore, (state) => state.pending);
+  const saveFailed = useStore(
+    model.sidebar.stateStore,
+    (state) => state.failed,
   );
-  return (
-    <fieldset className="thread-buttons" disabled={busy}>
-      {children}
-    </fieldset>
-  );
-}
-
-const ThreadButton = memo(function ThreadButton({
-  model,
-  threadId,
-  directory,
-  number,
-  title,
-}: {
-  model: AppModel;
-  threadId: Parameters<AppModel["selectThread"]>[0];
-  directory: string;
-  number: number;
-  title?: string | undefined;
-}) {
-  const { t } = useI18n();
-  const navigate = useNavigate();
-  const selected = useStore(
+  const navigationDisabled = useStore(
     model.stateStore,
     (state) =>
       state.kind === "ready" &&
-      state.threadSelection.kind === "thread" &&
-      state.threadSelection.thread.context.threadId === threadId,
+      (state.busy || state.threadTransition === "unknown"),
   );
+  const value = snapshot?.value ?? empty;
+  const projection = useMemo(
+    () => projectSidebar(projects, threads, value),
+    [projects, threads, value],
+  );
+  const disabled = saving || commandPending || !snapshot;
   return (
-    <Button
-      variant="navigation"
-      data-thread-navigation
-      aria-current={selected ? "page" : undefined}
-      title={directory + " · " + threadId}
-      onClick={() =>
-        void navigate({
-          to: "/threads/$threadId",
-          params: { threadId },
-          search: { view: "conversation" },
-        })
-      }
-    >
-      <FolderIcon />
-      <span className="thread-name">
-        {title || t("app.thread.label", { number })}
-        <small>
-          {t("app.thread.label", { number })} · {threadId.slice(0, 6)}
-        </small>
-        <ThreadAttention model={model} threadId={threadId} />
-      </span>
-    </Button>
+    <SidebarPreview model={model}>
+      <nav
+        aria-label={t("app.sidebar.projects")}
+        className="thread-navigation"
+        aria-busy={saving}
+      >
+        <NewThreadButton model={model} />
+        <SidebarCommandFeedback model={model} />
+        {failed && (
+          <p role="alert" className="failure">
+            {t("app.thread.listFailed")}
+            <Button variant="ghost" onClick={() => void model.refreshThreads()}>
+              {t("app.retry")}
+            </Button>
+          </p>
+        )}
+        {saveFailed && (
+          <p role="alert" className="failure sidebar-feedback">
+            {t("app.sidebar.saveFailed")}
+            <Button
+              variant="ghost"
+              disabled={saving}
+              onClick={() => void model.sidebar.refresh()}
+            >
+              {t("app.retry")}
+            </Button>
+          </p>
+        )}
+        <div className="sidebar-loading">
+          <LoadingIndicator
+            pending={(pending && !threads.length) || nativeIndex === "indexing"}
+            label={t("app.loading")}
+          />
+        </div>
+        {nativeIndex &&
+          nativeIndex !== "ready" &&
+          nativeIndex !== "indexing" && (
+            <p role="status" className="muted">
+              {t(
+                nativeIndex === "partial"
+                  ? "app.thread.indexPartial"
+                  : "app.thread.indexUnavailable",
+              )}{" "}
+              <Button
+                variant="ghost"
+                disabled={pending}
+                onClick={() => void model.refreshThreads()}
+              >
+                {t("app.retry")}
+              </Button>
+            </p>
+          )}
+        {projection.pins.length > 0 && (
+          <SidebarSection
+            model={model}
+            section="pins"
+            entries={projection.pins}
+            value={value}
+            disabled={disabled}
+            navigationDisabled={navigationDisabled}
+          />
+        )}
+        <SidebarSection
+          model={model}
+          section="projects"
+          entries={projection.projects}
+          value={value}
+          disabled={disabled}
+          navigationDisabled={navigationDisabled}
+          action={<ChooseProjectButton model={model} iconOnly />}
+        />
+        {!projects.length &&
+          !threads.length &&
+          !failed &&
+          !pending &&
+          nativeIndex !== "unavailable" &&
+          nativeIndex !== "indexing" && (
+            <p className="muted sidebar-feedback">
+              {t("app.sidebar.noProject")}
+            </p>
+          )}
+        {threads.some((thread) => thread.completed) && (
+          <section className="sidebar-section">
+            <Button
+              variant="navigation"
+              aria-expanded={showCompleted}
+              onClick={() => setShowCompleted(!showCompleted)}
+            >
+              {t("app.sidebar.completed")}
+              <span
+                className="sidebar-section-chevron"
+                data-collapsed={!showCompleted}
+              >
+                <SidebarChevronIcon />
+              </span>
+            </Button>
+            {showCompleted &&
+              threads
+                .filter((thread) => thread.completed)
+                .map((thread) => (
+                  <SidebarThreadRow
+                    key={thread.threadId}
+                    model={model}
+                    thread={thread}
+                    pinned={false}
+                    disabled={disabled}
+                    navigationDisabled={navigationDisabled}
+                  />
+                ))}
+          </section>
+        )}
+        <ThreadCommandDialog model={model} />
+      </nav>
+    </SidebarPreview>
   );
-});
+}

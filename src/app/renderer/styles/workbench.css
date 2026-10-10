@@ -324,6 +324,15 @@
     font-size: var(--text-small);
     box-shadow: var(--shadow-overlay);
   }
+  [data-slot="tooltip-positioner"] {
+    pointer-events: none;
+  }
+  [data-slot="tooltip-positioner"][data-anchor-hidden] {
+    visibility: hidden;
+  }
+  .ui-tooltip[data-ending-style] {
+    visibility: hidden;
+  }
   .ui-overlay-backdrop {
     position: fixed;
     inset: 0;
@@ -538,6 +547,12 @@
      a popup above layer-dialog behind the dialog's content. */
   body > [data-base-ui-portal] {
     isolation: isolate;
+  }
+  /* Non-dialog body portals must raise their own isolated stack, otherwise
+     positioned reading controls can paint above even a z-index:100 popup. */
+  body > [data-base-ui-portal]:not(.ui-dialog-portal) {
+    position: relative;
+    z-index: var(--layer-popup);
   }
   .ui-tooltip,
   .ui-hover-menu,

@@ -2,31 +2,47 @@ import { afterEach, expect, it, vi } from "vitest";
 import { QuitCoordinator } from "./quit";
 
 afterEach(() => vi.useRealTimers());
-it("stop-and-quit requests stop once and retains the app until queued/background work is safe", async () => {
-  vi.useFakeTimers();
-  let active = true;
-  const stop = vi.fn(async () => {}),
+it("coalesces Quit and completes graceful shutdown once", async () => {
+  const shutdown = vi.fn(async () => {}),
     finish = vi.fn();
-  const quit = new QuitCoordinator(() => active, stop, finish);
-  quit.request("stop");
-  await vi.advanceTimersByTimeAsync(1000);
-  expect(stop).toHaveBeenCalledTimes(1);
-  expect(finish).not.toHaveBeenCalled();
-  active = false;
-  await vi.advanceTimersByTimeAsync(250);
-  expect(finish).toHaveBeenCalledTimes(1);
-  quit.dispose();
+  const quit = new QuitCoordinator(shutdown, finish);
+  quit.request();
+  quit.request();
+  await Promise.resolve();
+  await Promise.resolve();
+  expect(shutdown).toHaveBeenCalledOnce();
+  await vi.waitFor(() =>
+    expect(finish).toHaveBeenCalledExactlyOnceWith("clean"),
+  );
 });
-it("cancelled waiting cannot quit later and waiting does not send a stop", async () => {
+it("honors Quit at the deadline even when saving or native cleanup never resolves", async () => {
   vi.useFakeTimers();
-  let active = true;
-  const stop = vi.fn(async () => {}),
+  let resolve: (() => void) | undefined;
+  const shutdown = vi.fn(
+      () =>
+        new Promise<void>((done) => {
+          resolve = done;
+        }),
+    ),
     finish = vi.fn();
-  const quit = new QuitCoordinator(() => active, stop, finish);
-  quit.request("wait");
-  quit.request("cancel");
-  active = false;
-  await vi.advanceTimersByTimeAsync(500);
-  expect(stop).not.toHaveBeenCalled();
+  const quit = new QuitCoordinator(shutdown, finish);
+  quit.request();
+  await vi.advanceTimersByTimeAsync(7999);
   expect(finish).not.toHaveBeenCalled();
+  await vi.advanceTimersByTimeAsync(1);
+  expect(finish).toHaveBeenCalledExactlyOnceWith("timeout");
+  resolve?.();
+  await Promise.resolve();
+  await Promise.resolve();
+  expect(finish).toHaveBeenCalledOnce();
+});
+it("cleanup failure does not reopen the app or cancel a requested quit", async () => {
+  const finish = vi.fn();
+  const quit = new QuitCoordinator(async () => {
+    throw Error("unconfirmed");
+  }, finish);
+  quit.request();
+  await vi.waitFor(() =>
+    expect(finish).toHaveBeenCalledExactlyOnceWith("failed"),
+  );
 });

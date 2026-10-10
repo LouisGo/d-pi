@@ -22,11 +22,12 @@ export function ChooseProjectButton({
       <IconButton
         data-choose-project
         variant="ghost"
+        appearance="plain"
         label={t("app.empty.choose")}
-        disabled={busy}
+        pending={busy}
         onClick={() => void model.choose()}
       >
-        <AddIcon />
+        <AddIcon size={14} />
       </IconButton>
     );
   return (

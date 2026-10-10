@@ -6,6 +6,7 @@ import { resolveDirectory } from "../../../platform/node/filesystem/public";
 import type { Command, Reply } from "../../contracts/desktop-bridge";
 import { failure } from "../../contracts/failure";
 import type { AppStorage } from "./app-storage";
+import type { ThreadCommandService } from "./thread-command-service";
 
 export class DesktopCommandService {
   private readonly projects: ProjectSelectionService;
@@ -19,6 +20,7 @@ export class DesktopCommandService {
     private readonly reconcileNativeSessions?: (
       traceId: string,
     ) => Promise<"ready" | "indexing" | "partial" | "unavailable">,
+    private readonly threadCommands?: ThreadCommandService,
   ) {
     this.projects = new ProjectSelectionService(storage.threads, choose);
   }
@@ -53,9 +55,54 @@ export class DesktopCommandService {
     };
   }
 
+  private sidebarCatalog() {
+    return {
+      projects: this.storage.threads
+        .listProjects()
+        .map((project) => project.workingDirectoryId),
+      threads: this.storage.threads.list(),
+    };
+  }
   async execute(command: Command): Promise<Reply> {
     try {
       return await match(command)
+        .with(
+          { kind: "thread-command" },
+          async ({ traceId, threadId, mutation }) => {
+            if (!this.threadCommands)
+              return failure(
+                traceId,
+                "invalid-request",
+                "draft.invalidRequest",
+              );
+            const thread = await this.threadCommands.execute(
+              threadId,
+              mutation,
+            );
+            return {
+              kind: "thread-command-result" as const,
+              traceId,
+              threadId,
+              thread,
+            };
+          },
+        )
+        .with({ kind: "sidebar-read" }, ({ traceId }) => ({
+          kind: "sidebar" as const,
+          traceId,
+          snapshot: this.storage.preferences.reconcileSidebar(
+            this.sidebarCatalog(),
+          ),
+        }))
+        .with({ kind: "sidebar-change" }, ({ traceId, change }) => {
+          const snapshot = this.storage.preferences.changeSidebar(
+            this.sidebarCatalog(),
+            change,
+          );
+          return snapshot
+            ? { kind: "sidebar" as const, traceId, snapshot }
+            : failure(traceId, "invalid-request", "draft.invalidRequest");
+        })
         .with({ kind: "restore" }, async () => {
           return this.restore(command.traceId);
         })
@@ -66,6 +113,10 @@ export class DesktopCommandService {
           return {
             kind: "threads" as const,
             threads: this.storage.threads.list(),
+            projects: this.storage.threads.listProjects(),
+            sidebar: this.storage.preferences.reconcileSidebar(
+              this.sidebarCatalog(),
+            ),
             ...(nativeIndex ? { nativeIndex } : {}),
           };
         })

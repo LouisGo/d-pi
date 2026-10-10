@@ -22,7 +22,7 @@ it("closes a window which has never received an editable restore without a false
   expect(f.send).not.toHaveBeenCalled();
   expect(f.blocked).not.toHaveBeenCalled();
 });
-it("requires matching save confirmation after initialization and refuses an unsaved result", async () => {
+it("requires matching save confirmation after initialization and honors an unsaved close after warning", async () => {
   const f = fixture();
   f.guard.markEditable();
   f.guard.request();
@@ -31,14 +31,6 @@ it("requires matching save confirmation after initialization and refuses an unsa
   expect(f.approve).not.toHaveBeenCalled();
   f.guard.resolve(token, false);
   expect(f.blocked).toHaveBeenCalledWith("unsaved");
-  expect(f.approve).not.toHaveBeenCalled();
-  f.guard.request();
-  expect(f.send).toHaveBeenCalledOnce();
-  f.dismiss();
-  await Promise.resolve();
-  await Promise.resolve();
-  f.guard.request();
-  f.guard.resolve(f.send.mock.calls[1]?.[0], true);
   expect(f.approve).toHaveBeenCalledOnce();
   f.guard.dispose();
 });
@@ -55,13 +47,9 @@ it("coalesces close requests during timeout recovery and ignores late save resul
   await vi.advanceTimersByTimeAsync(10000);
   expect(f.send).toHaveBeenCalledOnce();
   expect(f.blocked).toHaveBeenCalledOnce();
+  expect(f.approve).toHaveBeenCalledOnce();
   f.guard.resolve(token, true);
-  expect(f.approve).not.toHaveBeenCalled();
-  f.dismiss();
-  await Promise.resolve();
-  await Promise.resolve();
-  f.guard.request();
-  expect(f.send).toHaveBeenCalledTimes(2);
+  expect(f.approve).toHaveBeenCalledOnce();
   f.guard.dispose();
 });
 it("disposes the window's pending timer and does not let an old window approve a new one", async () => {
