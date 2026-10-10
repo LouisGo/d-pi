@@ -221,9 +221,8 @@ export function SavedConversation({
       liveId,
     })),
   ];
-  const incomplete = pages.some(
-    (page) => page.kind === "page" && page.incompleteTail,
-  );
+  const tail = pages.at(-1);
+  const incomplete = tail?.kind === "page" && tail.incompleteTail;
   const omitted = pages.reduce(
     (count, page) => count + (page.kind === "page" ? page.omitted : 0),
     0,

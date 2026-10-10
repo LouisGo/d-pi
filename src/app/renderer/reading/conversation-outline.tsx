@@ -1,4 +1,10 @@
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  type CSSProperties,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { flushSync } from "react-dom";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import {
@@ -208,7 +214,12 @@ export function ConversationOutline({
       {outlineStart > 0 && (
         <div
           aria-hidden="true"
-          style={{ height: outlineStart * outlinePitch - 1, flexShrink: 0 }}
+          className="reading-window-spacer"
+          style={
+            {
+              "--reading-spacer-height": `${outlineStart * outlinePitch - 1}px`,
+            } as CSSProperties
+          }
         />
       )}
       {turns.slice(outlineStart, outlineEnd).map((turn, localIndex) => {
@@ -295,10 +306,12 @@ export function ConversationOutline({
       {outlineEnd < turns.length && (
         <div
           aria-hidden="true"
-          style={{
-            height: (turns.length - outlineEnd) * outlinePitch - 1,
-            flexShrink: 0,
-          }}
+          className="reading-window-spacer"
+          style={
+            {
+              "--reading-spacer-height": `${(turns.length - outlineEnd) * outlinePitch - 1}px`,
+            } as CSSProperties
+          }
         />
       )}
       <HoverCardPopup handle={hoverCardHandle} side="right" sideOffset={8}>

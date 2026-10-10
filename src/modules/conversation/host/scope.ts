@@ -1,5 +1,5 @@
 import type { NativeFrame } from "../../../platform/omp/protocol/public";
-import type { ConversationUpdate } from "../contracts/public";
+import type { ConversationEvent } from "../contracts/public";
 import { ConversationProjection } from "./projection";
 
 export interface ConversationHostPort {
@@ -19,7 +19,7 @@ export function createConversationHost(): ConversationHost {
   let projection: ConversationProjection | null = null;
   let port: ConversationHostPort | null = null;
 
-  const post = (event: ConversationUpdate): void => {
+  const post = (event: ConversationEvent): void => {
     try {
       port?.postMessage(event);
     } catch {

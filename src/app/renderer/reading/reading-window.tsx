@@ -1,4 +1,5 @@
 import {
+  type CSSProperties,
   Fragment,
   type ReactNode,
   useLayoutEffect,
@@ -328,9 +329,12 @@ export function ReadingWindow({
           key={`gap:${previous}`}
           aria-hidden="true"
           data-reading-spacer=""
-          style={{
-            height: Math.max(0, offset(index) - offset(previous) - state.gap),
-          }}
+          className="reading-window-spacer"
+          style={
+            {
+              "--reading-spacer-height": `${Math.max(0, offset(index) - offset(previous) - state.gap)}px`,
+            } as CSSProperties
+          }
         />,
       );
     const row = rows[index];
@@ -344,12 +348,12 @@ export function ReadingWindow({
         key="gap:end"
         aria-hidden="true"
         data-reading-spacer=""
-        style={{
-          height: Math.max(
-            0,
-            offset(rows.length) - offset(previous) - state.gap,
-          ),
-        }}
+        className="reading-window-spacer"
+        style={
+          {
+            "--reading-spacer-height": `${Math.max(0, offset(rows.length) - offset(previous) - state.gap)}px`,
+          } as CSSProperties
+        }
       />,
     );
   return (

@@ -1,11 +1,15 @@
 import { expect, it, vi } from "vitest";
-import { ConversationSnapshotSchema } from "../contracts/public";
+import {
+  type ConversationEvent,
+  ConversationSnapshotSchema,
+} from "../contracts/public";
+import { ConversationModel } from "../core/public";
 import { ConversationProjection } from "./projection";
 
 it("defers superseded full snapshots until a lifecycle barrier and preserves delta ordering", () => {
   const emitted: string[] = [];
   const p = new ConversationProjection(crypto.randomUUID(), (event) => {
-    emitted.push(event.item.text);
+    if (event.kind === "update") emitted.push(event.item.text);
   });
   p.accept({
     type: "message_start",
@@ -101,6 +105,149 @@ it("projects tool progress and preserves its real identity through native result
   ]);
   p.dispose();
 });
+it("preserves role-only RPC delta envelopes across a coalesced batch", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {});
+  p.accept({
+    type: "message_start",
+    message: { role: "assistant", content: [] },
+  });
+  for (const delta of ["a", "b"])
+    p.accept({
+      type: "message_update",
+      message: { role: "assistant" },
+      assistantMessageEvent: { type: "text_delta", delta },
+    });
+  p.accept({
+    type: "message_update",
+    message: { role: "assistant" },
+    assistantMessageEvent: { type: "thinking_delta", delta: "reason" },
+  });
+  expect(p.snapshot().items[0]).toMatchObject({
+    text: "ab",
+    thinking: "reason",
+  });
+  p.dispose();
+});
+
+it.each(["completed", "failed"] as const)(
+  "settles observed background %s updates after the native call already returned",
+  (backgroundState) => {
+    const p = new ConversationProjection(crypto.randomUUID(), () => {});
+    p.accept({
+      type: "tool_execution_start",
+      toolCallId: "task",
+      toolName: "task",
+      args: {},
+    });
+    p.accept({
+      type: "tool_execution_end",
+      toolCallId: "task",
+      toolName: "task",
+      isError: false,
+      result: {
+        content: [{ type: "text", text: "detached" }],
+        details: { async: { state: "running" } },
+      },
+    });
+    p.accept({
+      type: "message_end",
+      message: { role: "toolResult", toolCallId: "task", content: "detached" },
+    });
+    const id = p.snapshot().items[0]?.id;
+    p.accept({
+      type: "tool_execution_update",
+      toolCallId: "task",
+      toolName: "task",
+      partialResult: {
+        content: [{ type: "text", text: `background ${backgroundState}` }],
+        details: { async: { state: backgroundState } },
+      },
+    });
+    expect(p.snapshot().items).toMatchObject([
+      {
+        id,
+        state: backgroundState === "failed" ? "failed" : "complete",
+        tool: { lifecycle: "completed", backgroundState },
+      },
+    ]);
+    p.dispose();
+  },
+);
+
+it("publishes coverage and membership when a growing oldest tool evicts itself", () => {
+  let receive: (event: ConversationEvent) => void = () => {};
+  const model = new ConversationModel({
+    connect: (_id, listener) => {
+      receive = listener;
+      return () => {};
+    },
+  });
+  model.connect("thread");
+  const p = new ConversationProjection(
+    crypto.randomUUID(),
+    (event) => receive(event),
+    4096,
+  );
+  receive(p.snapshot());
+  p.accept({
+    type: "tool_execution_start",
+    toolCallId: "oldest",
+    toolName: "read",
+  });
+  for (let i = 0; i < 4; i++)
+    p.accept({
+      type: "message_end",
+      message: { role: "user", content: "x".repeat(400) },
+    });
+  const id = model.stateStore.getState().itemIds[0];
+  expect(model.getSnapshot()?.gap).toBe(false);
+  p.accept({
+    type: "tool_execution_update",
+    toolCallId: "oldest",
+    toolName: "read",
+    partialResult: { content: [{ type: "text", text: "y".repeat(5000) }] },
+  });
+  expect(model.getSnapshot()?.gap).toBe(true);
+  expect(model.stateStore.getState().itemIds).not.toContain(id);
+  expect(model.stateStore.getState().itemIds).toEqual(
+    p.snapshot().items.map((item) => item.id),
+  );
+  p.dispose();
+  model.dispose();
+});
+
+it("retains budget loss evidence after a small final tool result replaces large progress", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {}, 1024);
+  p.accept({
+    type: "tool_execution_start",
+    toolCallId: "lost",
+    toolName: "edit",
+    args: { path: "original.ts" },
+  });
+  p.accept({
+    type: "tool_execution_update",
+    toolCallId: "lost",
+    toolName: "edit",
+    partialResult: { content: [{ type: "text", text: "x".repeat(5000) }] },
+  });
+  expect(p.snapshot().items[0]?.tool?.arguments).toBeUndefined();
+  p.accept({
+    type: "tool_execution_end",
+    toolCallId: "lost",
+    toolName: "edit",
+    isError: false,
+    result: { content: [{ type: "text", text: "done" }] },
+  });
+  p.accept({
+    type: "message_end",
+    message: { role: "toolResult", toolCallId: "lost", content: "done" },
+  });
+  expect(p.snapshot().items[0]).toMatchObject({
+    truncated: true,
+    tool: { coverage: "partial", truncated: true },
+  });
+  p.dispose();
+});
 
 it.each([
   "agent_end",
@@ -110,9 +257,9 @@ it.each([
   "agent_start",
 ])("flushes authoritative snapshots and trailing deltas before %s", (type) => {
   const texts: string[] = [];
-  const p = new ConversationProjection(crypto.randomUUID(), (event) =>
-    texts.push(event.item.text),
-  );
+  const p = new ConversationProjection(crypto.randomUUID(), (event) => {
+    if (event.kind === "update") texts.push(event.item.text);
+  });
   p.accept({
     type: "message_start",
     message: { role: "assistant", content: "old" },
@@ -134,9 +281,9 @@ it.each([
 it("flushes a token batch on the timer and leaves final authoritative text exact", () => {
   vi.useFakeTimers();
   const texts: string[] = [];
-  const p = new ConversationProjection(crypto.randomUUID(), (event) =>
-    texts.push(event.item.text),
-  );
+  const p = new ConversationProjection(crypto.randomUUID(), (event) => {
+    if (event.kind === "update") texts.push(event.item.text);
+  });
   try {
     p.accept({
       type: "message_start",

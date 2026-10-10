@@ -306,6 +306,58 @@ it("shows incomplete tail and omitted-record coverage with an explicit refresh",
   await act(() => refresh?.click());
   expect(f.bridge.read).toHaveBeenCalledTimes(2);
 });
+it("clears incomplete-tail status after the frozen partial record is committed", async () => {
+  vi.useFakeTimers();
+  const original: HistoryPage = {
+    kind: "page",
+    source: "saved",
+    coverage: "append-order",
+    entries: [
+      { id: "one", parentId: null, role: "assistant", text: "cached message" },
+    ],
+    next: null,
+    continuation: { threadId: "A", source: "saved", offset: 100 },
+    incompleteTail: true,
+    omitted: 0,
+  };
+  const read = vi
+    .fn<HistoryBridge["read"]>()
+    .mockResolvedValueOnce(original)
+    .mockResolvedValue({
+      ...original,
+      entries: [
+        {
+          id: "tail",
+          parentId: null,
+          role: "assistant",
+          text: "completed tail",
+        },
+      ],
+      continuation: { threadId: "A", source: "saved", offset: 200 },
+      incompleteTail: false,
+    });
+  const f = await mount(true, undefined, read);
+  await vi.waitFor(async () => {
+    await flushRefreshUpdates();
+    expect(f.container.textContent).toContain("cached message");
+    expect(f.container.querySelector('[role="status"]')).not.toBeNull();
+  });
+  await act(() =>
+    f.emit({
+      kind: "snapshot",
+      connectionGeneration: "committed-tail",
+      seq: 1,
+      gap: false,
+      items: [],
+    }),
+  );
+  await vi.waitFor(async () => {
+    await flushRefreshUpdates();
+    expect(f.container.textContent).toContain("completed tail");
+    expect(f.container.querySelector('p[role="status"]')).toBeNull();
+  });
+  expect(f.container.textContent).toContain("cached message");
+});
 it("distinguishes a missing bound file from an empty new conversation", async () => {
   const f = await mount(true, { kind: "unavailable", reason: "missing" });
   await vi.waitFor(async () => {

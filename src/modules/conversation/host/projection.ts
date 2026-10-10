@@ -8,9 +8,9 @@ import { draftByteLength } from "../../../shared/draft-text";
 import { uiMessage } from "../../../shared/messages/contracts";
 import { nativeMessageTime } from "../contracts/message-time";
 import type {
+  ConversationEvent,
   ConversationItem,
   ConversationSnapshot,
-  ConversationUpdate,
 } from "../contracts/public";
 import type {
   ToolExecutionObservation,
@@ -32,6 +32,11 @@ const DeltaSchema = z.object({
 const AssistantSnapshotSchema = z.object({
   role: z.literal("assistant"),
   content: z.union([z.string(), z.array(z.unknown())]),
+});
+const BackgroundStateSchema = z.object({
+  details: z.object({
+    async: z.object({ state: z.enum(["running", "completed", "failed"]) }),
+  }),
 });
 const ThinkingSchema = z.object({
   type: z.literal("thinking"),
@@ -141,6 +146,7 @@ export class ConversationProjection {
   private bytes = 1;
   private seq = 0;
   private gap = false;
+  private coveragePending = false;
   private active: number | null = null;
   private interrupted: number | null = null;
   private retryNotice: number | null = null;
@@ -160,7 +166,7 @@ export class ConversationProjection {
   private unknownTypes = new Set<string>();
   constructor(
     private readonly connectionGeneration: string,
-    private readonly emit: (event: ConversationUpdate) => void,
+    private readonly emit: (event: ConversationEvent) => void,
     private readonly budget = 8 * 1024 * 1024,
   ) {}
   accept(frame: NativeFrame): void {
@@ -222,7 +228,19 @@ export class ConversationProjection {
         role,
         text,
         ...(thinking ? { thinking } : {}),
-        state,
+        state:
+          role === "tool" &&
+          state === "complete" &&
+          prior?.tool?.backgroundState
+            ? prior.tool.backgroundState === "running"
+              ? "streaming"
+              : prior.tool.backgroundState === "failed"
+                ? "failed"
+                : "complete"
+            : state,
+        ...(prior?.truncated && prior.tool?.truncated
+          ? { truncated: true }
+          : {}),
         ...(timestamp !== undefined ? { timestamp } : {}),
         ...(identity.success && identity.data.dPiRecordId
           ? { nativeRecordId: identity.data.dPiRecordId }
@@ -288,7 +306,11 @@ export class ConversationProjection {
       };
       // Keep only the latest authoritative message. Parse/extract it at flush,
       // then append only delta-only frames that followed that snapshot.
-      if (frame.message !== undefined) {
+      if (
+        typeof frame.message === "object" &&
+        frame.message !== null &&
+        Object.hasOwn(frame.message, "content")
+      ) {
         this.stream.snapshot = frame.message;
         this.stream.snapshotDelta = delta.success ? delta.data : undefined;
         this.stream.text = [];
@@ -395,7 +417,10 @@ export class ConversationProjection {
       ];
       if (!observed.includes(stage)) observed.push(stage);
       const truncated = Boolean(
-        args?.truncated || progress?.truncated || result?.truncated,
+        prior?.tool?.truncated ||
+          args?.truncated ||
+          progress?.truncated ||
+          result?.truncated,
       );
       const payload =
         stage === "end"
@@ -405,11 +430,21 @@ export class ConversationProjection {
             : undefined;
       const content = z.object({ content: z.unknown() }).safeParse(payload);
       const failed = stage === "end" && frame.isError === true;
+      const background = BackgroundStateSchema.safeParse(payload);
+      const backgroundState = background.success
+        ? background.data.details.async.state
+        : prior?.tool?.backgroundState;
+      const lifecycle =
+        stage === "end"
+          ? failed
+            ? "failed"
+            : "completed"
+          : (prior?.tool?.lifecycle ?? "running");
       const tool: ToolExecutionObservation = {
         toolCallId,
         name: toolName.slice(0, 120),
-        lifecycle:
-          stage === "end" ? (failed ? "failed" : "completed") : "running",
+        lifecycle,
+        ...(backgroundState ? { backgroundState } : {}),
         observed,
         coverage:
           !observed.includes("start") || truncated ? "partial" : "observed",
@@ -424,7 +459,12 @@ export class ConversationProjection {
         role: "tool",
         tool,
         label: { kind: "literal", text: tool.name },
-        state: stage === "end" ? (failed ? "failed" : "complete") : "streaming",
+        state:
+          lifecycle === "failed" || backgroundState === "failed"
+            ? "failed"
+            : lifecycle === "running" || backgroundState === "running"
+              ? "streaming"
+              : "complete",
         text: content.success
           ? textOf(content.data.content)
           : (prior?.text ?? ""),
@@ -499,6 +539,7 @@ export class ConversationProjection {
     let size = sizeOf(item);
     if (size + 1 > this.budget) {
       this.gap = true;
+      this.coveragePending = true;
       item = { ...item, truncated: true };
       // Budget metadata as well as visible text. Preserve identities; never
       // shorten them into a different native record or tool call.
@@ -554,6 +595,7 @@ export class ConversationProjection {
       if (id === undefined) break;
       this.evict(id);
       this.gap = true;
+      this.coveragePending = true;
     }
     if (this.items.has(item.id)) this.pending.set(item.id, item);
     if (!this.timer) this.timer = setTimeout(() => this.flush(), 32);
@@ -589,6 +631,15 @@ export class ConversationProjection {
     this.materializeStream();
     clearTimeout(this.timer);
     this.timer = undefined;
+    if (this.pending.size === 0 && this.coveragePending) {
+      this.emit({
+        kind: "snapshot",
+        connectionGeneration: this.connectionGeneration,
+        seq: ++this.seq,
+        items: Array.from(this.items.values(), (item) => ({ ...item })),
+        gap: this.gap,
+      });
+    }
     for (const item of this.pending.values())
       this.emit({
         kind: "update",
@@ -599,6 +650,7 @@ export class ConversationProjection {
         gap: this.gap,
       });
     this.pending.clear();
+    this.coveragePending = false;
   }
   snapshot(): ConversationSnapshot {
     this.flush();
@@ -614,5 +666,6 @@ export class ConversationProjection {
     clearTimeout(this.timer);
     this.stream = undefined;
     this.pending.clear();
+    this.coveragePending = false;
   }
 }
