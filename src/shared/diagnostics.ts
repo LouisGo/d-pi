@@ -65,6 +65,7 @@ export const DiagnosticOperationSchema = z.enum([
   "attachments:retry",
   "attachments:set-text-only",
   "attachments:maintenance",
+  "attachments:document",
   "attachments:history-open",
   "attachments:history-update",
   "attachments:history-release",

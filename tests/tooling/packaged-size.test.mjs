@@ -59,6 +59,7 @@ async function fixture(t, duplicate = false) {
     "image-compression.mjs",
     "native-subagent-configuration.mjs",
     "pdf-content.mjs",
+    "document-content.mjs",
     entry,
   ]) {
     const body =

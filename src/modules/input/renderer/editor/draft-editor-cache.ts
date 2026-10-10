@@ -200,6 +200,7 @@ export class DraftEditorCache {
       detachBarrier: controller.registerSaveBarrier({
         ready: () => model.ready(),
         prepare: (retry) => (retry ? model.retry() : model.ensure()),
+        failure: () => model.failure(),
       }),
       unsubscribe: model.stateStore.subscribe(() => {
         for (const listener of this.listeners) listener();
@@ -325,6 +326,7 @@ export class DraftEditorCache {
         ready: () => existing.model.ready(),
         prepare: (retry) =>
           retry ? existing.model.retry() : existing.model.ensure(),
+        failure: () => existing.model.failure(),
       });
     }
     if (existing) existing.retired = false;
@@ -335,6 +337,11 @@ export class DraftEditorCache {
           this.histories.get(key)?.controller === controller &&
           (this.histories.get(key)?.model.ready() ?? false),
         prepare: (retry) => this.prepareHistory(key, controller, retry),
+        failure: () =>
+          this.histories.get(key)?.model.failure() ??
+          [...this.histories.values()]
+            .find((h) => h.retired && h.model.failure())
+            ?.model.failure(),
       });
     }
     const removeAdmission = bindHistoryAdmission(

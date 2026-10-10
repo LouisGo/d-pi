@@ -107,6 +107,7 @@ if (process.env.D_PI_CONFIGURATION_SOURCE !== "1") {
       "reading-session.mjs",
       "managed-session.mjs",
       "pdf-content.mjs",
+      "document-content.mjs",
     ])
       copyFileSync(resolve("runtime", name), join(isolated.root, name));
     copyFileSync(join(sdk, "gate.js"), join(isolated.root, "gate.js"));

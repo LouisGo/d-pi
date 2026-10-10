@@ -19,7 +19,7 @@ import type {
 } from "../../contracts/attachments";
 import type { AppStorage } from "./app-storage";
 import { createAttachmentReferences } from "./attachment-service-references";
-import { convertPdfContent } from "./pdf-content";
+import { convertDocumentContent, convertPdfContent } from "./pdf-content";
 export function createAttachmentService(
   storage: AppStorage,
   dataDirectory: string,
@@ -37,6 +37,8 @@ export function createAttachmentService(
     validateImage,
     compressImage: createImageCompressor(() => managedSdkRuntime(resources)),
     convertPdf: (bytes) => convertPdfContent(resources, bytes),
+    convertDocument: (bytes, extension) =>
+      convertDocumentContent(resources, bytes, extension),
     readReference: async (threadId, path, kind) => {
       const thread = storage.threads.threadContext(threadId);
       const rootBefore = await lstat(thread.directory);

@@ -352,6 +352,16 @@ export const ui = {
     "Couldn't keep attachments needed for undo. Retry before saving or sending.",
   "attachment.historyCleared":
     "Undo history reached its limit and was cleared. Your draft remains.",
+  "attachment.reason.history-lease-expired":
+    "Attachment undo protection expired. Retry to restore it; your draft is preserved.",
+  "attachment.reason.document-conversion-unavailable":
+    "Document conversion is unavailable. Please retry.",
+  "attachment.reason.document-conversion-failed":
+    "Document conversion failed. Check the file or attach it again.",
+  "attachment.pdfConversionNotice":
+    "OMP extracts text as Markdown; PDF page images are not sent.",
+  "attachment.documentConversionNotice":
+    "OMP converts documents to Markdown; embedded images may become placeholders and formulas use saved results.",
   "attachment.historyRetry": "Retry keeping attachments",
   "attachment.awaitingInsertion":
     "{name} is ready. Add it to your draft or remove it before sending.",

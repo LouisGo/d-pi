@@ -79,7 +79,11 @@ AppModel 拥有窗口级 DraftEditorCache，input Renderer 缓存脱离 EditorVi
 
 input Main 的 AttachmentStore 管 schema 8 manifest、schema 9 对象投影、摘要原件/派生文件、准备与预算；Renderer AttachmentImports 属于 Thread，视图卸载不会取消导入，尚未私有落盘的原件在关闭时有保护。草稿只存原子短 token，不放二进制；@查询是只读Query，导入/重试/准备是显式副作用。
 
-导入文本和图片复制原件；@项目文件每次发送经 files 授权读取及身份复核，冻结内容交给 execution prepared 持久化。预览文本最多64KiB并显示截断；该预览不用于发送。固定OMP18.8.7提供PDF文字转换，实际图表/扫描覆盖不能保证，必须显式仅文字；没有实现完整页面渲染。未知格式、解码、容量、权限和覆盖失败定位附件，完整保留原输入。
+导入文本和图片复制原件；@项目文件每次发送经 files 授权读取及身份复核，冻结内容交给 execution prepared 持久化。预览文本最多64KiB并显示截断；该预览不用于发送。2026-10-10用户要求修复PDF/XLSX原生支持：固定OMP18.8.7的pdfToMarkdown和XlsxConverter提供原生Markdown转换，保存原件、派生摘要与转换版本，详情明确PDF不发送页面图像、XLSX公式使用文件保存结果。原生返回需要OCR的页仍须显式仅文字；不可把缺失的视觉检测元数据伪造为所有PDF都有视觉缺口，也不承诺完整图表/扫描覆盖或页面渲染。未知格式、解码、容量、权限和已知覆盖失败定位附件，完整保留原输入。
+
+主文档开始非同页导航只暂停附件权限，未提交且中止的导航保留原document owner与历史lease；真实当前主框架提交（含重定向）、替换或销毁才撤销原权限。过期lease与越权分别返回类型化原因；Renderer显式重试重新申请并经Main校验全部依赖，不能放宽跨document/Thread权限。保存屏障传播实际失败请求traceId，诊断记录document生命周期、owner与拒绝原因；不另造无法关联后台的保存诊断编号。
+
+同日补齐固定OMP的全部文档转换集合：PDF、DOCX、PPTX、XLSX、EPUB；IPYNB经原生notebookToEditableText准备可读单元，其他有效文本不按扩展名白名单拒绝，SVG按原生默认源码文字路径进入。PNG/JPEG/GIF/WebP沿原有图片通路。旧DOC/PPT/XLS/RTF没有固定OMP转换器，不作为支持承诺；上述文档Markdown输出不承诺包含完整内嵌视觉内容。
 
 原件按摘要去重，来源仍保留各自 attachment identity。App 装配提供持久草稿、全部冻结提交收据与 queue_change 原来源的权威引用投影，input 不跨领域查询执行表。终态收据没有原生历史自持久证明，依赖永不因终态自动释放；unknown 不重发，冷 Thread 继续只读。
 
@@ -159,3 +163,6 @@ historyState供React外部订阅读取。没有history owner时的empty、pendin
 Main 使用 platform/node/images 公共压缩方法，独立 Bun worker 二进制输入/输出，并发 2、排队 6、预留源总量 100MiB、64M 像素及 20s 超时。小图验证后原字节不变；超单图预算缩至最长边 2048，以有界编码尝试得到 PNG/WebP，透明度保留，动态格式不静默扁平化。原件与派生物均进入准备/收据引用保护；@ 每次仍重新授权读取后冻结。预览使用真实派生 MIME/尺寸，并显示压缩信息，失败不截断或删除草稿。
 
 新图片不在收据或 App JSONL 中序列化 Base64。宿主水合及已证明拒绝合同见[runtime-host](runtime-host.md#2026-10-08-图片资源水合)。此处预算不承诺任意 provider 接受全部尺寸或数量。
+
+
+2026-10-10 内联标签展示使用 UI 公开面的 `composerTagMarkup`；input Renderer 单向依赖 UI，仅提供文件名、类型、大小和状态，不复制通用标签标记。编辑器原子节点的外层持有 `contenteditable=false`，名称内部保持单行，展示空格不参与草稿序列化。

@@ -101,6 +101,20 @@ it.each(["destroyed", "render-process-gone", "navigation"])(
           frame: sender.mainFrame,
           url: "file:///next",
         });
+        expect(
+          (await service.store.cleanStorage(draft.threadId)).deletedObjects,
+        ).toBe(0);
+        sender.mainFrame.url = "file:///next";
+        sender.emit(
+          "did-frame-navigate",
+          {},
+          "file:///next",
+          200,
+          "",
+          true,
+          1,
+          1,
+        );
       } else sender.emit(eventName);
       expect(await clipboardWait).toMatchObject({
         kind: "clipboard-unavailable",
@@ -118,7 +132,7 @@ it.each(["destroyed", "render-process-gone", "navigation"])(
       ).toBe(1);
       expect(await request({ ...update, version: 2 })).toMatchObject({
         kind: "unavailable",
-        reason: "reference-denied",
+        reason: "history-lease-expired",
       });
       if (eventName === "navigation") {
         expect(
@@ -129,7 +143,7 @@ it.each(["destroyed", "render-process-gone", "navigation"])(
               epoch: crypto.randomUUID(),
             })
           ).kind,
-        ).toBe("unavailable");
+        ).toBe("history-lease");
         loading = false;
         sender.emit("did-frame-finish-load", {}, true, 1, 1);
         expect(

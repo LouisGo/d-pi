@@ -32,10 +32,12 @@ const ManifestSchema = z.object({
     "image-compression.mjs": z.string(),
     "native-subagent-configuration.mjs": z.string(),
     "pdf-content.mjs": z.string(),
+    "document-content.mjs": z.string().optional(),
   }),
 });
 export async function managedSdkRuntime(
   root: string,
+  requiredAdapter?: "document-content.mjs",
 ): Promise<{ binary: string; entry: string }> {
   try {
     const directory = join(root, "sdk");
@@ -44,6 +46,8 @@ export async function managedSdkRuntime(
     const manifest = ManifestSchema.parse(
       JSON.parse(await readFile(join(directory, "manifest.json"), "utf8")),
     );
+    if (requiredAdapter && !manifest.hashes[requiredAdapter])
+      throw Error("Required SDK adapter is not verified");
     if (manifest.platform !== `${process.platform}-${process.arch}`)
       throw Error("Platform mismatch");
     for (const [name, expected] of Object.entries({

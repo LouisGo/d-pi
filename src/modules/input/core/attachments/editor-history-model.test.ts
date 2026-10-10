@@ -8,6 +8,59 @@ import { EditorHistoryModel } from "./editor-history-model";
 
 const threadId = ThreadIdSchema.parse("f9b0037d-1b8b-4f82-988c-7ca64f9da922");
 
+it("reacquires a revoked lease on explicit retry and retains the actual failure trace", async () => {
+  const first = crypto.randomUUID(),
+    next = crypto.randomUUID(),
+    id = crypto.randomUUID();
+  let opens = 0,
+    revoked = false;
+  const commands: AttachmentRequest[] = [];
+  const model = new EditorHistoryModel(
+    {
+      request: async (command) => {
+        commands.push(command);
+        if (command.kind === "history-open")
+          return {
+            kind: "history-lease",
+            leaseId: ++opens === 1 ? first : next,
+            version: 0,
+          };
+        if (command.kind === "history-update")
+          return revoked && command.leaseId === first
+            ? { kind: "unavailable", reason: "history-lease-expired" }
+            : {
+                kind: "history-lease",
+                leaseId: command.leaseId,
+                version: command.version,
+              };
+        return { kind: "history-released" };
+      },
+    },
+    threadId,
+    () => {},
+  );
+  model.observe([id]);
+  expect(await model.ensure()).toBe(true);
+  revoked = true;
+  model.observe([crypto.randomUUID()]);
+  expect(await model.ensure()).toBe(false);
+  const failed = commands.at(-1);
+  expect(model.failure()).toMatchObject({
+    traceId: failed?.traceId,
+    causeCode: "history-lease-expired",
+  });
+  model.observe([]);
+  expect(model.failure()?.traceId).toBe(failed?.traceId);
+  expect(await model.retry()).toBe(true);
+  expect(opens).toBe(2);
+  expect(model.failure()).toBeUndefined();
+  expect(commands.at(-1)).toMatchObject({
+    kind: "history-update",
+    leaseId: next,
+    ids: expect.arrayContaining([id]),
+  });
+});
+
 it("retains failed dependency protection for explicit retry and releases the current Main lease when history ends", async () => {
   const leaseId = crypto.randomUUID(),
     id = crypto.randomUUID();

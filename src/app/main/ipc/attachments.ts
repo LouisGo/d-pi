@@ -21,6 +21,19 @@ export function registerAttachmentIpc(
     WebContents,
     { frame: WebFrameMain | null; url: string }
   >();
+  function documentEvent(sender: WebContents, causeCode: string): void {
+    const diagnostics = context.getDiagnostics();
+    const traceId = randomUUID();
+    diagnostics?.record({
+      traceId,
+      requestId: traceId,
+      connectionId:
+        documents.get(sender)?.owner ?? diagnostics.processInstanceId,
+      operation: "attachments:document",
+      stage: "confirmed",
+      causeCode,
+    });
+  }
   const matchesFrame = (
     sender: WebContents,
     processId: number,
@@ -29,10 +42,12 @@ export function registerAttachmentIpc(
     sender.mainFrame.processId === processId &&
     sender.mainFrame.routingId === routingId;
   function resumeStopped(sender: WebContents): void {
-    // A failed provisional load may keep the original document. Resume it with
-    // a fresh owner only after *all* main navigation has actually stopped.
-    if (navigating.has(sender) && !sender.isLoadingMainFrame())
+    // Starting a navigation is not a document replacement. An aborted load
+    // resumes the unchanged owner and its Undo/clipboard authorities.
+    if (navigating.has(sender) && !sender.isLoadingMainFrame()) {
+      documentEvent(sender, "attachment-navigation-resumed");
       navigating.delete(sender);
+    }
   }
   function ownerFor(
     sender: WebContents,
@@ -42,6 +57,7 @@ export function registerAttachmentIpc(
     if (navigating.has(sender)) return undefined;
     let document = documents.get(sender);
     if (document && document.frame !== frame) {
+      documentEvent(sender, "attachment-frame-replaced");
       context.getService()?.store.releaseEditorHistories(document.owner);
       documents.delete(sender);
       document = undefined;
@@ -58,12 +74,18 @@ export function registerAttachmentIpc(
           context.getService()?.store.releaseEditorHistories(current.owner);
         documents.delete(sender);
       };
-      sender.on("destroyed", release);
-      sender.on("render-process-gone", release);
+      sender.on("destroyed", () => {
+        documentEvent(sender, "attachment-document-destroyed");
+        release();
+      });
+      sender.on("render-process-gone", () => {
+        documentEvent(sender, "attachment-renderer-gone");
+        release();
+      });
       sender.on("did-start-navigation", (details) => {
         if (details.isMainFrame && !details.isSameDocument) {
+          documentEvent(sender, "attachment-navigation-started");
           navigating.set(sender, { frame: details.frame, url: details.url });
-          release();
         }
       });
       sender.on(
@@ -76,15 +98,15 @@ export function registerAttachmentIpc(
       sender.on(
         "did-frame-navigate",
         (_event, url, _code, _status, isMainFrame, processId, routingId) => {
-          const pending = navigating.get(sender);
           if (
-            pending &&
             isMainFrame &&
             matchesFrame(sender, processId, routingId) &&
-            sender.mainFrame.url === url &&
-            (pending.frame !== sender.mainFrame || pending.url === url)
-          )
+            sender.mainFrame.url === url
+          ) {
+            documentEvent(sender, "attachment-document-replaced");
+            release();
             navigating.delete(sender);
+          }
         },
       );
       sender.on("did-stop-loading", () => resumeStopped(sender));
@@ -114,32 +136,55 @@ export function registerAttachmentIpc(
     const command = AttachmentRequestSchema.parse(raw);
     const diagnostics = context.getDiagnostics();
     const started = performance.now();
+    const owner = ownerFor(event.sender, event.senderFrame);
     const identity = {
       traceId: command.traceId,
       requestId: randomUUID(),
       threadId: command.threadId,
-      connectionId: diagnostics?.processInstanceId ?? randomUUID(),
+      connectionId: owner ?? diagnostics?.processInstanceId ?? randomUUID(),
       operation: `attachments:${command.kind}`,
     };
     diagnostics?.record({ ...identity, stage: "received" });
     try {
       const service = context.getService();
       if (!service) throw Error("Attachment storage unavailable");
-      const reply = await service.execute(
-        command,
-        ownerFor(event.sender, event.senderFrame),
-      );
+      const reply = await service.execute(command, owner);
+      const failedAttachment =
+        reply.kind === "attachments" && command.kind !== "list"
+          ? reply.items.find((item) => item.status === "failed")
+          : undefined;
       diagnostics?.record({
         ...identity,
         stage:
-          reply.kind === "unavailable" || reply.kind === "clipboard-unavailable"
+          reply.kind === "unavailable" ||
+          reply.kind === "clipboard-unavailable" ||
+          failedAttachment
             ? "failed"
             : "completed",
         ...(reply.kind === "unavailable"
           ? { code: reply.reason }
           : reply.kind === "clipboard-unavailable"
             ? { code: `clipboard-${reply.reason}` }
-            : {}),
+            : failedAttachment
+              ? {
+                  code:
+                    failedAttachment.reason ??
+                    "attachment-operation-unavailable",
+                }
+              : {}),
+        ...(reply.kind === "unavailable" &&
+        reply.reason === "reference-denied" &&
+        command.kind.startsWith("history-")
+          ? {
+              causeCode: !event.senderFrame
+                ? "attachment-frame-missing"
+                : event.senderFrame !== event.sender.mainFrame
+                  ? "attachment-frame-stale"
+                  : navigating.has(event.sender)
+                    ? "attachment-navigation-pending"
+                    : "attachment-lease-owner-mismatch",
+            }
+          : {}),
         durationMs: performance.now() - started,
       });
       return reply;

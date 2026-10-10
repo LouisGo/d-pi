@@ -67,3 +67,32 @@
 用户明确授权包含此前全部修改的本地PR合入main。固定原来源eb2e79c、目标cb233c6、实际mergebasea9cf9a9，37提交。整段独立双轴重新覆盖与完整检查，修复确证的重复@确认trigger遗留并完善门禁/fixture；GUI/真实provider与用户认可仍pending，不push。
 
 09工程完成：完整本地PR已合入main，39来源提交含全部37先前提交、整段修复和治理收尾。实际身份见[合入记录](local-merge.md)，用户认可保持pending。
+
+## 2026-10-10 PDF/XLSX与附件历史保存屏障P0修复
+
+用户明确要求诊断编号414e8d76-1920-448f-ae6a-49bfca7aea38对应的阻断并修复。只处理文档转换、历史权限与错误关联，不覆盖并行阅读/UI改动。实际Main记录为history-update reference-denied和clipboard-invalid；截图编号由保存屏障另造，不是附件失败请求trace，旧记录缺少document生命周期原因，无法倒推出这次具体导航触发。
+
+确证根因：PDF adapter无检测地硬编码hasVisualContent=true，所有PDF被制造视觉缺口；XLSX未接固定OMP原生XlsxConverter；provisional navigation开始即撤销仍存活文档的lease，Renderer重复使用旧lease且保存层丢失实际Failure。用户要求原生支持后，PDF/XLSX默认采用固定OMP的Markdown转换并展示转换含义，取代所有PDF一律要求仅文字确认的实现；真实OCR/已知覆盖缺口仍显式确认，完整页面/图表覆盖未实现，也不以Markdown成功冒称视觉覆盖。
+
+修复保留原件和派生摘要，支持预览/准备/可信剪贴板冻结/@项目XLSX；未提交导航不撤销owner，真实提交（含同frame重定向）才撤销；过期lease显式重试重新经Main验证全部依赖。保存错误保留真实traceId/原因，Main记录document owner/生命周期/拒绝归属。回归先失败再修复，覆盖中止导航、真实提交/重定向、失效lease后删除并保存剩余正文、诊断关联、原生PDF/XLSX及需要OCR的PDF冻结确认。真实用户原PDF经固定OMP返回4页、0页需OCR、4185字符正文、无编码错误；原XLSX原生转换返回非空内容。
+
+工程验证：17文件123项相关行为测试通过（含真实固定OMP二进制PDF/XLSX和OCR确认冻结），7项SDK准备/包审计通过；build、所属31文件Biome、architecture、i18n及documentation检查通过。core/main/renderer/preload边界类型检查在本轮修复后通过；后续全仓typecheck被并行project-reads.test.ts的SubmissionId及临时__tag-verification.tsx的initialSnapshot错误阻断，design检查同样被该临时页inline styles阻断，不称全仓全绿。独立Spec/Standards发现的同frame重定向旧owner问题已先红后绿修复，最终复核无剩余高价值发现。
+
+最终core/main/host/renderer/preload五个边界类型检查均通过。并行临时页类型错误消除后Renderer重新通过，design仍被其inline styles阻断；前述全仓typecheck失败保留为实际检查记录，不将本票验证冒称整个并行工作树已全绿。
+
+Dev当前运行旧Main/SDK，不能替换其持有的SDK资源或声称运行中已生效；尝试pnpm runtime:sdk被真实资源guard拒绝（database locked），未绕过锁或停止用户进程。先保全未保存正文，退出当前Dev后执行pnpm runtime:sdk，再pnpm dev，旧失败附件显式重试重新转换。未运行用户窗口GUI/provider，实机重启后复试及用户认可pending。
+
+### 原生支持格式补齐与提交
+
+用户进一步要求确保其他OMP支持的附件格式可正确引入并commit本部分。固定OMP18.8.7的utils/markit.ts CONVERTIBLE_EXTENSIONS与registry.ts注册集合确认为PDF、DOCX、PPTX、XLSX、EPUB；旧DOC/PPT/XLS/RTF没有原生转换器，不宣称支持。图片输入集合PNG/JPEG/GIF/WebP与现有入口一致。其余扩展名不应成为文本拒绝依据：采用有效UTF-8/有BOM的UTF-16与控制字节校验，允许源码/无扩展名/SVG默认源码；IPYNB沿原生notebookToEditableText转换，SVG :img渲染选择器不属于默认附件源码输入。
+
+通过有界worker接入固定OMP Markit注册集合，DOCX/PPTX/EPUB与XLSX共用document-text/原件和派生物保护链路；详情说明Markdown及内嵌图像占位/公式保存结果。原生fixtures验证全部五类文档与Notebook的导入、预览、prepare、复制冻结和@项目读取；固定OMP支持集合的回归在升级时提醒重新审计；损坏文档保留失败，二进制不作为文本发送。仅提交附件P0及格式支持写集，locale按hunk隔离并行阅读文案，不纳入阅读/设计/组件等WIP。
+
+最终18文件135项相关测试、7项SDK/打包测试、五个边界类型检查及build通过；所属Biome、architecture、i18n、documentation通过。全仓typecheck仍被并行project-reads.test.ts:573的SubmissionId类型错误阻断，未修改该票；设计检查的并行临时页错误保留在上段记录。新增格式独立Spec/Standards复核无高价值问题。工程提交不替代用户窗口实机/供应商发送验收；运行中的旧SDK仍需安全退出后更新。
+
+
+## 2026-10-10 通用内联标签优化
+
+用户授权提炼通用 Composer 标签，长名称中间截断、完整 Tooltip、默认两侧空格并统一名称/大小的字号与垂直对齐。使用 impeccable 的组件提取与 polish 指导；UI 拥有通用标签和 Tooltip，input/消息领域只提供展示数据。32 grapheme 上限，保留前 16 与后 15；标签展示空格不改私有 token 或发送原文。真实 Tiptap 原子节点与 React 消息标签共用配方，键盘方向键选择也能显示完整提示，保留现有编辑历史和预览入口。
+
+视觉证据来自正式组件和真实 Tiptap 的独立验证页，覆盖宽窗、320px 窄窗、浅/深色以及键盘 Tooltip；发现并修正 Tiptap contenteditable 规则造成的窄窗折行。证据：`/Users/louistation/.codex/visualizations/2026/10/10/01a12632-baa3-7093-a197-fcba3fbf1a8c/composer-tags-dark.png`。临时验证页已移除，未重发用户附件或运行 provider；用户实机认可仍待反馈。

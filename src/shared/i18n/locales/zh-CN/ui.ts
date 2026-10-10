@@ -315,6 +315,16 @@ export const ui = {
   "attachment.historyLeaseFailed":
     "无法保留撤销所需附件。请重试后再保存或发送。",
   "attachment.historyCleared": "撤销记录已达上限并清空，草稿仍保留。",
+  "attachment.reason.history-lease-expired":
+    "附件撤销保护已失效，请重试恢复；草稿仍保留。",
+  "attachment.reason.document-conversion-unavailable":
+    "文档转换暂不可用，请重试。",
+  "attachment.reason.document-conversion-failed":
+    "文档转换失败，请检查文件或重新添加。",
+  "attachment.pdfConversionNotice":
+    "按 OMP 提取文字并转换为 Markdown；不会发送 PDF 页面图像。",
+  "attachment.documentConversionNotice":
+    "按 OMP 将文档转换为 Markdown；内嵌图像可能仅保留占位，表格公式使用文件中保存的结果。",
   "attachment.historyRetry": "重试保留附件",
   "attachment.awaitingInsertion":
     "{name} 已准备。请添加到草稿，或移除后再发送。",

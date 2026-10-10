@@ -23,6 +23,32 @@ const error: Failure = {
   message: { code: "draft.storageUnavailable" },
 };
 describe("draft save coordination", () => {
+  it("reports the attachment operation's real failure without inventing a diagnostic ID", async () => {
+    const save = vi.fn();
+    const transport = vi.fn(() => error);
+    const controller = new DraftController(draft, save, transport);
+    const historyError = {
+      ...error,
+      recovery: "retry_safe" as const,
+      causeCode: "reference-denied",
+      message: { code: "attachment.historyLeaseFailed" as const },
+    };
+    controller.registerSaveBarrier({
+      ready: () => false,
+      prepare: async () => false,
+      failure: () => historyError,
+    });
+    controller.edit("unchanged user content");
+    expect(await controller.flush()).toBe(false);
+    expect(controller.getSnapshot()).toEqual({
+      kind: "failed",
+      error: historyError,
+    });
+    expect(transport).not.toHaveBeenCalled();
+    expect(save).not.toHaveBeenCalled();
+    expect(controller.getTextSnapshot()).toBe("unchanged user content");
+    controller.dispose();
+  });
   it("does not begin another write when a disposed Thread's pending save finishes", async () => {
     let finish: (reply: SaveReply) => void = () => {};
     const save = vi.fn((revision: number) =>

@@ -97,6 +97,16 @@ export function AttachmentPreviewDialog({
           })}
         </p>
       )}
+      {(item.representation === "pdf-text" ||
+        item.representation === "document-text") && (
+        <p role="status">
+          {t(
+            item.representation === "pdf-text"
+              ? "attachment.pdfConversionNotice"
+              : "attachment.documentConversionNotice",
+          )}
+        </p>
+      )}
       {!!item.coverageGaps.length && (
         <p role="status">
           {t(

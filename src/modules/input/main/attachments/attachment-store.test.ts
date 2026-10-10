@@ -41,6 +41,72 @@ async function add(s: AttachmentStore, text = "original") {
 }
 
 describe("private immutable input preparation", () => {
+  it("prepares XLSX through the fixed native document converter and retains its derived content for preview and clipboard", async () => {
+    const convertDocument = vi.fn(async () => ({
+      text: "## Sheet1\n| Name | Count |\n| --- | --- |\n| Alice | 7 |",
+      converterVersion: "omp18.8.7-markit-xlsx",
+    }));
+    const s = store({ convertDocument });
+    const item = await s.importBytes(thread, {
+      name: "sheet.xlsx",
+      mimeType: "",
+      bytes: new Uint8Array([80, 75, 3, 4, 1, 2]),
+      source: "file",
+    });
+    expect(item).toMatchObject({
+      status: "ready",
+      representation: "document-text",
+    });
+    expect(convertDocument).toHaveBeenCalledOnce();
+    const preview = await s.preview(thread, item.id);
+    expect(preview).toMatchObject({
+      kind: "text",
+      text: expect.stringContaining("Alice"),
+    });
+    const prepared = await s.prepare(thread, item.token);
+    expect(prepared).toMatchObject({
+      ok: true,
+      content: {
+        message: expect.stringContaining("Alice"),
+        sources: [
+          expect.objectContaining({
+            attachmentId: item.id,
+            representation: "document-text",
+            derivedDigest: expect.any(String),
+          }),
+        ],
+      },
+    });
+    await s.close();
+  });
+  it("keeps a failed XLSX removable and retryable without classifying binary input as text", async () => {
+    let fails = true;
+    const s = store({
+      convertDocument: async () => {
+        if (fails) throw Error("invalid-workbook");
+        return { text: "recovered table", converterVersion: "fixture" };
+      },
+    });
+    const item = await s.importBytes(thread, {
+      name: "sheet.xlsx",
+      mimeType: "",
+      bytes: new Uint8Array([80, 75, 3, 4]),
+      source: "file",
+    });
+    expect(item).toMatchObject({
+      status: "failed",
+      reason: "document-conversion-failed",
+    });
+    expect(await s.prepare(thread, "remaining ordinary text")).toMatchObject({
+      ok: true,
+    });
+    fails = false;
+    expect(await s.retry(thread, item.id)).toMatchObject({
+      status: "ready",
+      representation: "document-text",
+    });
+    await s.close();
+  });
   it("privately copies and deduplicates bytes but preserves separate reference identity and provenance", async () => {
     const s = store();
     const a = await add(s);
@@ -175,10 +241,7 @@ describe("private immutable input preparation", () => {
       bytes: bytes("opaque"),
       source: "file",
     });
-    expect(unknown).toMatchObject({
-      status: "failed",
-      reason: "unsupported-format",
-    });
+    expect(unknown).toMatchObject({ status: "ready", representation: "text" });
   });
   it("strict UTF-8 and declared MIME avoid pretending unsupported bytes are text", async () => {
     const s = store();

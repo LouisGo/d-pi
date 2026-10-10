@@ -1,8 +1,17 @@
 import type { AttachmentFailureReason } from "../../contracts/public";
 export type ImageMime = "image/png" | "image/jpeg" | "image/webp" | "image/gif";
+const documentExtensions = [
+  ".docx",
+  ".pptx",
+  ".xlsx",
+  ".epub",
+  ".ipynb",
+] as const;
+export type DocumentExtension = (typeof documentExtensions)[number];
 export type Representation =
   | { kind: "image"; mimeType: ImageMime }
   | { kind: "pdf" }
+  | { kind: "document"; extension: DocumentExtension }
   | { kind: "text"; text: string; encoding: string }
   | { kind: "failed"; reason: AttachmentFailureReason };
 function begins(bytes: Uint8Array, signature: number[]): boolean {
@@ -29,23 +38,32 @@ export function identifyContent(
   )
     return { kind: "image", mimeType: "image/webp" };
   if (begins(bytes, [37, 80, 68, 70, 45])) return { kind: "pdf" };
-  if (mimeType.startsWith("image/"))
+  const documentTypes: Record<string, DocumentExtension> = {
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+      ".docx",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+      ".pptx",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+      ".xlsx",
+    "application/epub": ".epub",
+    "application/epub+zip": ".epub",
+    "application/x-epub+zip": ".epub",
+    "application/x-ipynb+json": ".ipynb",
+  };
+  const extension =
+    documentExtensions.find((extension) =>
+      name.toLowerCase().endsWith(extension),
+    ) ?? documentTypes[mimeType.toLowerCase().split(";")[0]?.trim() ?? ""];
+  if (extension)
+    return extension === ".ipynb" || begins(bytes, [80, 75, 3, 4])
+      ? { kind: "document", extension }
+      : { kind: "failed", reason: "document-conversion-failed" };
+  // OMP's ordinary file path accepts readable text independent of extension.
+  // SVG follows its default source-text path; raster :img is a separate selector.
+  if (mimeType.startsWith("image/") && mimeType !== "image/svg+xml")
     return { kind: "failed", reason: "invalid-image" };
   if (mimeType === "application/pdf" || /\.pdf$/i.test(name))
     return { kind: "failed", reason: "pdf-conversion-failed" };
-  if (
-    !mimeType.startsWith("text/") &&
-    !["application/json", "application/xml", "application/javascript"].includes(
-      mimeType,
-    ) &&
-    !/\.(txt|md|mdx|rst|csv|tsv|json|jsonl|yaml|yml|toml|xml|html|css|scss|sass|less|js|jsx|mjs|cjs|ts|tsx|py|rs|go|c|h|cpp|hpp|cc|sh|bash|zsh|fish|sql|log|conf|config|ini|properties|gradle|java|kt|swift|rb|php|lua|vue|svelte)$/i.test(
-      name,
-    ) &&
-    !/^(Dockerfile(?:\.[\w-]+)?|(?:GNU)?Makefile|README|LICENSE|COPYING|NOTICE|CHANGELOG|Procfile|Gemfile|Rakefile|\.gitignore|\.gitattributes|\.gitmodules|\.editorconfig|\.env(?:\.[\w-]+)?|\.npmrc|\.nvmrc|\.yarnrc|\.prettierrc|\.babelrc|\.eslintrc)$/i.test(
-      name,
-    )
-  )
-    return { kind: "failed", reason: "unsupported-format" };
   const encoding = begins(bytes, [255, 254])
     ? "utf-16le"
     : begins(bytes, [254, 255])

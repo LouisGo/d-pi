@@ -1,7 +1,6 @@
 import { match } from "ts-pattern";
 import { DRAFT_MAX_BYTES, draftByteLength } from "../../../shared/draft-text";
 import { createId } from "../../../shared/identity";
-import { uiMessage } from "../../../shared/messages/contracts";
 import type { Draft, Failure, SaveReply } from "../contracts/draft";
 import { attachmentToken } from "./attachments/tokens";
 import { parseDraftBlocks, serializeReference } from "./references/serialize";
@@ -51,6 +50,7 @@ export class DraftController {
   private saveBarrier: {
     ready: () => boolean;
     prepare: (retry: boolean) => Promise<boolean>;
+    failure: () => Failure | undefined;
   } | null = null;
   get threadId() {
     return this.draft.threadId;
@@ -61,6 +61,7 @@ export class DraftController {
   registerSaveBarrier(barrier: {
     ready: () => boolean;
     prepare: (retry: boolean) => Promise<boolean>;
+    failure: () => Failure | undefined;
   }): () => void {
     this.saveBarrier = barrier;
     return () => {
@@ -303,14 +304,10 @@ export class DraftController {
       const retryBarrier = this.retrySaveBarrier;
       this.retrySaveBarrier = false;
       if (this.saveBarrier && !(await this.saveBarrier.prepare(retryBarrier))) {
-        this.publish({
-          kind: "failed",
-          error: {
-            ...this.onTransportError(),
-            recovery: "retry_safe",
-            message: uiMessage("attachment.historyLeaseFailed"),
-          },
-        });
+        const error = this.saveBarrier.failure();
+        // Admission/pending is not a failed transport operation. Only an
+        // actual failed attachment request supplies a diagnostic identity.
+        this.publish(error ? { kind: "failed", error } : { kind: "dirty" });
         this.capture?.finish(null);
         this.capture = null;
         return false;

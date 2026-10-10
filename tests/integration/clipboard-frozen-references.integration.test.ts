@@ -1,12 +1,13 @@
 // @vitest-environment happy-dom
 
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import {
   constants,
   cpSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readFileSync,
   realpathSync,
   rmSync,
   symlinkSync,
@@ -444,6 +445,16 @@ it("freezes a real SDK PDF only with existing text-only consent, preserves its d
       mode: constants.COPYFILE_FICLONE,
     },
   );
+  const sdk = join(resources, "sdk");
+  const manifest = JSON.parse(readFileSync(join(sdk, "manifest.json"), "utf8"));
+  const adapter = readFileSync(
+    join(import.meta.dirname, "../../runtime/pdf-content.mjs"),
+  );
+  writeFileSync(join(sdk, "pdf-content.mjs"), adapter);
+  manifest.hashes["pdf-content.mjs"] = createHash("sha256")
+    .update(adapter)
+    .digest("hex");
+  writeFileSync(join(sdk, "manifest.json"), JSON.stringify(manifest));
   for (const name of ["pi-coding-agent", "pi-utils"]) {
     expect(
       realpathSync(
@@ -517,7 +528,7 @@ it("freezes a real SDK PDF only with existing text-only consent, preserves its d
     expect(item).toMatchObject({
       representation: "pdf-text",
       textOnly: true,
-      coverageGaps: expect.arrayContaining(["visual-content"]),
+      coverageGaps: expect.arrayContaining(["ocr-pages:1"]),
       converterVersion: "omp18.8.7-pdfToMarkdown",
     });
     expect(sourceRecord?.derivedDigest).toMatch(/^[a-f0-9]{64}$/);

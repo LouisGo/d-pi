@@ -8,14 +8,15 @@ for await (const chunk of process.stdin) {
   chunks.push(chunk);
 }
 const result = await pdfToMarkdown(Buffer.concat(chunks));
-// This converter has no page/image renderer. Text mode always needs explicit consent.
+// Match the fixed OMP PDF-to-Markdown path. Its real coverage evidence is the
+// OCR page list; it does not report visual-content detection. Never invent a
+// visual gap for every PDF. This output is Markdown, not rendered PDF pages.
 if (result.hasEncodingIssues) throw Error("invalid-encoding");
 process.stdout.write(
   JSON.stringify({
     text: result.markdown,
     pageCount: result.pageCount,
     pagesNeedingOcr: result.pagesNeedingOcr,
-    hasVisualContent: true,
     converterVersion: "omp18.8.7-pdfToMarkdown",
   }),
 );

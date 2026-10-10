@@ -87,6 +87,26 @@ it("admits a complete current-platform SDK launcher and refuses tampering withou
       binary: join(root, "sdk/bun"),
       entry: join(root, "sdk/host.mjs"),
     });
+    await expect(
+      managedSdkRuntime(root, "document-content.mjs"),
+    ).rejects.toMatchObject({
+      code: "resource-incompatible",
+    });
+    writeFileSync(
+      join(root, "sdk/document-content.mjs"),
+      "document-content.mjs",
+    );
+    hashes["document-content.mjs"] = createHash("sha256")
+      .update("document-content.mjs")
+      .digest("hex");
+    const manifest = JSON.parse(
+      readFileSync(join(root, "sdk/manifest.json"), "utf8"),
+    );
+    manifest.hashes = hashes;
+    writeFileSync(join(root, "sdk/manifest.json"), JSON.stringify(manifest));
+    await expect(
+      managedSdkRuntime(root, "document-content.mjs"),
+    ).resolves.toBeDefined();
     for (const name of [
       "native-queue.mjs",
       "reading-session.mjs",
@@ -96,6 +116,7 @@ it("admits a complete current-platform SDK launcher and refuses tampering withou
       "image-compression.mjs",
       "native-subagent-configuration.mjs",
       "pdf-content.mjs",
+      "document-content.mjs",
     ]) {
       writeFileSync(join(root, "sdk", name), "unexpected adapter edit");
       await expect(managedSdkRuntime(root)).rejects.toMatchObject({

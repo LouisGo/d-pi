@@ -67,7 +67,8 @@ export class EditorHistoryLeases {
     ids: string[],
   ): AttachmentReply {
     const lease = this.leases.get(leaseId);
-    if (!lease || lease.owner !== owner || lease.threadId !== threadId)
+    if (!lease) return { kind: "unavailable", reason: "history-lease-expired" };
+    if (lease.owner !== owner || lease.threadId !== threadId)
       return { kind: "unavailable", reason: "reference-denied" };
     if (version <= lease.version)
       return { kind: "history-lease", leaseId, version: lease.version };
