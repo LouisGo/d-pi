@@ -3,7 +3,7 @@
     padding: calc(var(--spacing) * 6);
   }
   .settings-surface:has(> .ui-settings-page:not([hidden]) .providers-settings) {
-    overflow: hidden;
+    overflow-y: auto;
   }
   .settings-surface > .ui-settings-page:has(.providers-settings):not([hidden]) {
     display: flex;

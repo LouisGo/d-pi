@@ -371,7 +371,7 @@ export const ui = {
     "Content is too large to send. Reduce the text or attachments.",
   "attachment.reason.editor-history-limit":
     "Attachment space for undo is full. Existing attachments and history remain.",
-  "attachment.clearHistory": "Clear undo history and resend",
+  "attachment.clearHistory": "Clear undo history, then send again",
   "attachment.clearHistoryRetry": "Clear undo history and retry",
   "attachment.reason.storage-full":
     "Attachment storage is full. Your current input remains.",

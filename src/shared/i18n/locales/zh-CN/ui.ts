@@ -332,7 +332,7 @@ export const ui = {
     "内容过大，未发送。请减少内容或附件。",
   "attachment.reason.editor-history-limit":
     "撤销记录所需空间已满。现有附件和记录仍保留。",
-  "attachment.clearHistory": "清空撤销记录并重新发送",
+  "attachment.clearHistory": "清空撤销记录，之后再发送",
   "attachment.clearHistoryRetry": "清空撤销记录并重试",
   "attachment.reason.storage-full": "附件存储已满，当前内容仍保留。",
   "attachment.reason.storage-unavailable": "附件存储不可用，请重新准备。",

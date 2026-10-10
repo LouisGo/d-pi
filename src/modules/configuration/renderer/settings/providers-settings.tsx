@@ -49,7 +49,7 @@ export function ProvidersSettings({
   const selected =
     providers.find((provider) => provider.id === selectedId) ?? providers[0];
   const filtered = providers.filter((provider) =>
-    `${provider.id} ${provider.name}`
+    `${provider.id} ${provider.name} ${providerDisplayName(provider.id, provider.name)}`
       .toLocaleLowerCase()
       .includes(query.toLocaleLowerCase().trim()),
   );

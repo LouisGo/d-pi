@@ -2,7 +2,7 @@
 import { act, createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { expect, it, vi } from "vitest";
-import { I18nProvider } from "../../preferences/renderer/public";
+import { I18nProvider, useI18n } from "../../preferences/renderer/public";
 import type { ConfigurationSnapshot } from "../contracts/public";
 import { ModelPickerPanel } from "./model-picker";
 
@@ -39,11 +39,18 @@ async function renderPanel(
   const select = vi.fn();
   const preference = vi.fn();
   const manage = vi.fn();
+  const messages = { noResults: "", noFavorites: "" };
+  function Panel(props: Parameters<typeof ModelPickerPanel>[0]) {
+    const { t } = useI18n();
+    messages.noResults = t("models.noResults");
+    messages.noFavorites = t("models.noFavorites");
+    return createElement(ModelPickerPanel, props);
+  }
   await act(async () =>
     root.render(
       createElement(I18nProvider, {
         initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" },
-        children: createElement(ModelPickerPanel, {
+        children: createElement(Panel, {
           models: [
             model("openai-codex", "gpt-current"),
             model("anthropic", "claude-next"),
@@ -66,6 +73,7 @@ async function renderPanel(
   );
   return {
     host,
+    messages,
     select,
     preference,
     manage,
@@ -191,4 +199,97 @@ it("keeps native policy exclusions unselectable and preserves caret keys in sear
   expect(home.defaultPrevented).toBe(false);
   expect(document.activeElement).toBe(input);
   await ui.dispose();
+});
+
+it("searches displayed provider aliases and native names while selecting the native model", async () => {
+  const google = model("google", "gemini-example");
+  const ui = await renderPanel({
+    models: [google, model("anthropic", "claude-example")],
+    currentKey: null,
+    providers: [
+      {
+        id: "google",
+        name: "Google Gemini",
+        storageProvider: "google",
+        disabled: false,
+        authState: "configured",
+        authSource: null,
+        loginMethods: [],
+        accounts: [],
+        modelCount: 1,
+        baseUrl: null,
+      },
+    ],
+  });
+  try {
+    for (const query of ["Google AI", "gOoGlE aI", "Google Gemini", "google"]) {
+      await act(() => {
+        const input = ui.host.querySelector("input");
+        Object.getOwnPropertyDescriptor(
+          HTMLInputElement.prototype,
+          "value",
+        )?.set?.call(input, query);
+        input?.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+      const choices = [
+        ...ui.host.querySelectorAll<HTMLButtonElement>("[data-model-id]"),
+      ];
+      expect(choices.map((el) => el.dataset.modelId)).toEqual([
+        "gemini-example",
+      ]);
+      await act(() => choices[0]?.click());
+      expect(ui.select).toHaveBeenLastCalledWith(google);
+    }
+  } finally {
+    await ui.dispose();
+  }
+});
+
+it("distinguishes an empty favorite collection from a favorite search with no matches", async () => {
+  const key = JSON.stringify(["openai-codex", "gpt-current"]);
+  const ui = await renderPanel({
+    preferences: { favorites: [key], hidden: [], order: [] },
+  });
+  try {
+    await act(() =>
+      ui.host
+        .querySelector<HTMLButtonElement>('[aria-label="Favorites"]')
+        ?.click(),
+    );
+    const search = async (query: string) =>
+      act(() => {
+        const input = ui.host.querySelector("input");
+        Object.getOwnPropertyDescriptor(
+          HTMLInputElement.prototype,
+          "value",
+        )?.set?.call(input, query);
+        input?.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+    expect(
+      ui.host.querySelector('[data-model-id="gpt-current"]'),
+    ).not.toBeNull();
+    await search("zzzz");
+    expect(ui.host.querySelector(".model-picker-empty")?.textContent).toBe(
+      ui.messages.noResults,
+    );
+    await search("");
+    expect(
+      ui.host.querySelector('[data-model-id="gpt-current"]'),
+    ).not.toBeNull();
+  } finally {
+    await ui.dispose();
+  }
+  const empty = await renderPanel();
+  try {
+    await act(() =>
+      empty.host
+        .querySelector<HTMLButtonElement>('[aria-label="Favorites"]')
+        ?.click(),
+    );
+    expect(empty.host.querySelector(".model-picker-empty")?.textContent).toBe(
+      empty.messages.noFavorites,
+    );
+  } finally {
+    await empty.dispose();
+  }
 });

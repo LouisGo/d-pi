@@ -107,6 +107,12 @@ export function ModelPickerPanel({
   const visible = filterModelCatalog(models, {
     ...preferences,
     query,
+    providerSearchText: new Map(
+      providers.map((id) => [
+        id,
+        `${providerName(id)} ${providerCatalog?.find((entry) => entry.id === id)?.name ?? ""}`,
+      ]),
+    ),
     ...(filterProvider && filterProvider !== "favorites"
       ? { provider: filterProvider }
       : {}),
@@ -220,7 +226,10 @@ export function ModelPickerPanel({
             {!loading && !failed && !visible.length && (
               <p className="model-picker-empty">
                 {t(
-                  filterProvider === "favorites"
+                  filterProvider === "favorites" &&
+                    !chatModels.some((model) =>
+                      preferences.favorites.includes(catalogModelKey(model)),
+                    )
                     ? "models.noFavorites"
                     : !chatModels.length
                       ? "models.noAvailable"

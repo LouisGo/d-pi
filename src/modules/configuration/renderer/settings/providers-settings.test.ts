@@ -598,3 +598,38 @@ it("keeps destructive confirmations tied to the native revision that was confirm
     );
   }
 });
+
+it("finds a provider by its displayed alias, native name and ID without changing its identity", async () => {
+  currentSnapshot = (scope, traceId) => {
+    const result = snapshot(scope, traceId);
+    return {
+      ...result,
+      providers: [
+        {
+          ...result.providers![0]!,
+          id: "google",
+          name: "Google Gemini",
+          storageProvider: "google",
+        },
+        ...result.providers!,
+      ],
+    };
+  };
+  await render();
+  for (const query of ["Google AI", "gOoGlE aI", "Google Gemini", "google"]) {
+    await input(".providers-search input", query);
+    expect(
+      [...host.querySelectorAll(".providers-provider-button")].map((el) =>
+        el.getAttribute("aria-label"),
+      ),
+    ).toEqual(["Google Gemini"]);
+    await act(() => button("Google Gemini").click());
+    expect(
+      host.querySelector(".providers-detail-heading")?.textContent,
+    ).toContain("Google AI");
+    expect(
+      host.querySelector(".providers-detail-heading [data-selectable]")
+        ?.textContent,
+    ).toBe("google");
+  }
+});

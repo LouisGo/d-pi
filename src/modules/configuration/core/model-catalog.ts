@@ -16,6 +16,7 @@ export function orderProviderCatalog(
 export type CatalogFilter = {
   provider?: string;
   query?: string;
+  providerSearchText?: ReadonlyMap<string, string>;
   kind?: string;
   availableOnly?: boolean;
   sessionSelectableOnly?: boolean;
@@ -113,7 +114,7 @@ export function filterModelCatalog(
       if (filter.favoritesOnly && !favorites.has(key)) return false;
       if (hidden.has(key) && key !== filter.currentKey) return false;
       const text =
-        `${model.provider} ${model.id} ${model.name}`.toLocaleLowerCase(
+        `${model.provider} ${model.id} ${model.name} ${filter.providerSearchText?.get(model.provider) ?? ""}`.toLocaleLowerCase(
           "en-US",
         );
       return terms.every((term) => text.includes(term));
