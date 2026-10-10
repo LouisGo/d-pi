@@ -32,7 +32,11 @@ export function MessageMedia({
   };
   return (
     <>
-      <div className="message-media" data-message-media>
+      <div
+        className="message-media"
+        data-message-media
+        data-reading-view-open={preview !== null ? "" : undefined}
+      >
         {entry.images?.map((image) => (
           <ImageTile
             key={JSON.stringify([image.index, image.digest])}

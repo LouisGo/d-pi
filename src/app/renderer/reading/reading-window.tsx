@@ -47,6 +47,12 @@ function heightCache(positions: ReadingPositions | undefined, source: string) {
   return cache;
 }
 
+function hasReadingLayout(pane: HTMLElement) {
+  if (pane.closest("[hidden]")) return false;
+  const rect = pane.getBoundingClientRect();
+  return rect.width > 0 && rect.height > 0;
+}
+
 /** Contiguous normal-flow bodies, with measured spacers only for unmounted rows. */
 export function ReadingWindow({
   rows,
@@ -128,17 +134,19 @@ export function ReadingWindow({
     if (index === undefined) return null;
     const node = state.nodes.get(id);
     const pane = state.pane;
-    if (node && pane) {
+    if (node && pane && hasReadingLayout(pane)) {
       const rect = node.getBoundingClientRect();
-      return {
-        id,
-        top:
-          rect.top -
-          pane.getBoundingClientRect().top -
-          pane.clientTop +
-          pane.scrollTop,
-        height: rect.height,
-      };
+      if (rect.width > 0 && rect.height > 0) {
+        return {
+          id,
+          top:
+            rect.top -
+            pane.getBoundingClientRect().top -
+            pane.clientTop +
+            pane.scrollTop,
+          height: rect.height,
+        };
+      }
     }
     return {
       id,
@@ -171,8 +179,11 @@ export function ReadingWindow({
     let frame: number | null = null;
     const update = () => {
       frame = null;
+      if (!hasReadingLayout(pane)) return;
+      const rect = element.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return;
       state.origin =
-        element.getBoundingClientRect().top -
+        rect.top -
         pane.getBoundingClientRect().top -
         pane.clientTop +
         pane.scrollTop;
@@ -230,10 +241,12 @@ export function ReadingWindow({
     const element = root.current;
     const pane = state.pane;
     if (!element || !pane) return;
-    const gap = Number.parseFloat(getComputedStyle(element).rowGap) || 0;
-    if (gap !== state.gap) {
-      state.gap = gap;
-      redraw();
+    if (hasReadingLayout(pane)) {
+      const gap = Number.parseFloat(getComputedStyle(element).rowGap) || 0;
+      if (gap !== state.gap) {
+        state.gap = gap;
+        redraw();
+      }
     }
     windows.set(pane, controller);
     state.nodes = new Map(
@@ -242,12 +255,15 @@ export function ReadingWindow({
       ),
     );
     const measure = () => {
+      if (!hasReadingLayout(pane)) return;
       let changed = false;
       for (const [id, node] of state.nodes) {
+        const rect = node.getBoundingClientRect();
+        if (rect.width <= 0 || rect.height <= 0) continue;
         // Include normal-flow margins (not just the content box).
         const style = getComputedStyle(node);
         const height =
-          node.getBoundingClientRect().height +
+          rect.height +
           (Number.parseFloat(style.marginTop) || 0) +
           (Number.parseFloat(style.marginBottom) || 0);
         if (
@@ -302,7 +318,7 @@ export function ReadingWindow({
       ranges.some((range) => range.intersectsNode(node)) ||
       (document.activeElement && node.contains(document.activeElement)) ||
       node.querySelector(
-        "details[open], [aria-expanded=true], [data-state=streaming]",
+        "details[open], [aria-expanded=true], [data-state=streaming], [data-reading-view-open]",
       )
     ) {
       const index = state.indices.get(id);
