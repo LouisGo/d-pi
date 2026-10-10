@@ -24,6 +24,8 @@ import { ConversationVisibilityContext } from "../shell/layout/conversation-visi
 import type { AppModel } from "../wiring/model";
 import type { ThreadModel } from "../wiring/thread-model";
 
+import { displayedModel, modelSelectionMode } from "./model-selection";
+
 type ThinkingChoice =
   | "default"
   | "off"
@@ -64,33 +66,19 @@ export function ComposerModelPicker({
     enabled: (open || conversationVisible) && !!model.configuration,
   });
   const models = query.data?.models ?? [];
-  const current = models.find((m) =>
-    view?.model
-      ? `${m.provider}/${m.id}` === view.model
-      : view?.selectedModel?.provider === m.provider &&
-        view.selectedModel.modelId === m.id,
-  );
+  const identity = displayedModel(view);
+  const current = models.find((m) => `${m.provider}/${m.id}` === identity);
   const currentKey = current ? catalogModelKey(current) : null;
   const modelId =
-    current?.id ??
-    view?.model?.slice(view.model.indexOf("/") + 1) ??
-    view?.selectedModel?.modelId ??
-    "";
+    current?.id ?? identity?.slice(identity.indexOf("/") + 1) ?? "";
   const provider =
-    current?.provider ??
-    view?.model?.slice(0, view.model.indexOf("/")) ??
-    view?.selectedModel?.provider ??
-    "";
+    current?.provider ?? identity?.slice(0, identity.indexOf("/")) ?? "";
+  const mode = modelSelectionMode(view);
   const providerLabel = providerDisplayName(
     provider,
     query.data?.providers?.find((entry) => entry.id === provider)?.name,
   );
-  const disabled =
-    pending ||
-    !!view?.busy ||
-    !!view?.modelChanging ||
-    view?.phase === "starting" ||
-    view?.phase === "interrupted";
+  const disabled = pending || mode === "blocked";
   const apply = async (
     target: ConfigurationSnapshot["models"][number],
     thinking: ThinkingSelection,
@@ -119,12 +107,11 @@ export function ComposerModelPicker({
         readback.modelOperation.status === "acknowledged" &&
         JSON.stringify(readback.selectedModel?.thinking) ===
           JSON.stringify(thinking) &&
-        readback.phase !== "interrupted" &&
-        readback.phase !== "failed" &&
-        (readback.model === `${target.provider}/${target.id}` ||
-          (!readback.model &&
-            readback.selectedModel?.provider === target.provider &&
-            readback.selectedModel.modelId === target.id));
+        readback.selectedModel?.provider === target.provider &&
+        readback.selectedModel.modelId === target.id &&
+        (modelSelectionMode(readback) === "next-start" ||
+          (readback.phase === "ready" &&
+            readback.model === `${target.provider}/${target.id}`));
       if (applied) setOpen(false);
       else {
         setFailure(
@@ -158,14 +145,19 @@ export function ComposerModelPicker({
           <Button
             variant="ghost"
             aria-label={t("models.select")}
-            title={`${providerLabel} / ${current?.name ?? modelId}`}
+            title={`${providerLabel} / ${current?.name ?? modelId}${mode === "next-start" && view?.selectedModel ? ` · ${t("models.nextStart")}` : ""}`}
           >
             <ModelBrandIcon provider={provider} modelId={modelId} size={18} />
             <span className="composer-model-identity">
               <span className="composer-toolbar-label">
                 {current?.name ?? (modelId || t("model.none"))}
               </span>
-              <span className="composer-model-provider">{providerLabel}</span>
+              <span className="composer-model-provider">
+                {providerLabel}
+                {mode === "next-start" && view?.selectedModel && (
+                  <span role="status"> · {t("models.nextStartLabel")}</span>
+                )}
+              </span>
             </span>
             <ChevronDownIcon />
           </Button>
@@ -178,6 +170,11 @@ export function ComposerModelPicker({
           currentProvider={provider}
           preferences={preferences}
           disabled={disabled}
+          disabledHint={
+            view?.phase === "interrupted" || view?.phase === "failed"
+              ? t("models.recoveryBlocked")
+              : undefined
+          }
           loading={query.isFetching}
           failed={query.isError || !!query.data?.catalogError}
           onRetry={() => void query.refetch()}
@@ -189,6 +186,15 @@ export function ComposerModelPicker({
             openProviders?.();
           }}
         />
+        {mode === "next-start" && (
+          <p role="status" className="model-picker-empty">
+            {t(
+              view?.selectedModel
+                ? "models.nextStart"
+                : "models.recoverySelect",
+            )}
+          </p>
+        )}
         {(failure || notice) && (
           <p role="alert" className="model-picker-empty failure">
             {failure ?? (notice && formatMessage(notice.message))}

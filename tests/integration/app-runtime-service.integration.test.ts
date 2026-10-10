@@ -1466,6 +1466,7 @@ it("a recovery conflict exposes a specific public reason and an explicit start r
     phase: "failed",
     busy: false,
     recoveryFailure: "occupied",
+    modelSelection: "blocked",
     message: { code: "runtime.recoveryOccupied" },
   });
   expect(RuntimeViewSchema.safeParse(blocked).success).toBe(true);
@@ -2008,3 +2009,87 @@ it("uses the Runtime canonical file reference for frozen TXT+PNG presentation af
     reopened.close();
   }
 });
+
+it("permits explicit offline model recovery only after cleanup and resumes the exact native identity", async () => {
+  const f = await running();
+  const binding = f.store.threads.nativeSessionBinding(f.draft.threadId);
+  const choose = () =>
+    f.runtime.execute(
+      RuntimeCommandSchema.parse({
+        kind: "select-model",
+        threadId: f.draft.threadId,
+        traceId: crypto.randomUUID(),
+        selection: {
+          provider: "fixture",
+          modelId: "replacement",
+          thinking: { kind: "default" },
+        },
+      }),
+    );
+  f.host.emit("exit");
+  const blocked = choose();
+  await expect(blocked).rejects.toThrow("idle Thread");
+  f.host.emit("message", { kind: "scope-closed" });
+  await vi.waitFor(async () =>
+    expect((await f.act("inspect")).modelSelection).toBe("next-start"),
+  );
+  const before = f.postMessage.mock.calls.length;
+  const selected = await choose();
+  expect(selected).toMatchObject({
+    phase: "interrupted",
+    model: "fixture/model",
+    modelSelection: "next-start",
+    selectedModel: { modelId: "replacement" },
+    modelOperation: { status: "acknowledged", traceId: selected.traceId },
+  });
+  expect(f.postMessage.mock.calls).toHaveLength(before);
+  await f.act("start");
+  const starts = f.postMessage.mock.calls
+    .map(([raw]) => HostTransportCommandSchema.parse(raw).command)
+    .filter((c) => c.kind === "start");
+  expect(starts.at(-1)).toMatchObject({
+    environment: {
+      D_PI_MODEL_SELECTION: JSON.stringify(selected.selectedModel),
+    },
+    resume: {
+      sessionFile: binding?.sessionFile,
+      sessionId: binding?.sessionId,
+    },
+  });
+  expect(f.store.threads.nativeSessionBinding(f.draft.threadId)).toEqual(
+    binding,
+  );
+  expect(f.store.drafts.read(f.draft.threadId)?.text).toBe("A");
+  expect(
+    f.postMessage.mock.calls
+      .slice(before)
+      .map(([raw]) => HostTransportCommandSchema.parse(raw).command.kind),
+  ).not.toContain("dispatch");
+});
+
+it.each(["prepared", "unknown"] as const)(
+  "blocks offline selection with a %s receipt",
+  async (state) => {
+    const f = await running();
+    await f.prepare();
+    if (state === "unknown") await f.dispatch();
+    f.host.emit("exit");
+    f.host.emit("message", { kind: "scope-closed" });
+    await vi.waitFor(() => expect(f.runtime.hasActiveWork()).toBe(false));
+    expect((await f.act("inspect")).modelSelection).toBe("blocked");
+    await expect(
+      f.runtime.execute(
+        RuntimeCommandSchema.parse({
+          kind: "select-model",
+          threadId: f.draft.threadId,
+          traceId: crypto.randomUUID(),
+          selection: {
+            provider: "fixture",
+            modelId: "replacement",
+            thinking: { kind: "default" },
+          },
+        }),
+      ),
+    ).rejects.toThrow("idle Thread");
+  },
+);

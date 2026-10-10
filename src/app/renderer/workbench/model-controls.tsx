@@ -17,6 +17,8 @@ import {
 } from "../../../modules/ui/renderer/public";
 import type { ThreadModel } from "../wiring/thread-model";
 
+import { displayedModel, modelSelectionMode } from "./model-selection";
+
 type ThinkingChoice =
   | "default"
   | "off"
@@ -114,13 +116,10 @@ function ModelSelectionState({
   t: ReturnType<typeof useI18n>["t"];
 }) {
   const view = useStore(runtime.stateStore, (state) => state.view);
+  const mode = modelSelectionMode(view);
   const inherited =
-    view?.model ??
-    (view?.selectedModel
-      ? `${view.selectedModel.provider}/${view.selectedModel.modelId}`
-      : view?.phase === "interrupted"
-        ? null
-        : defaultModel);
+    displayedModel(view) ??
+    (view?.phase === "interrupted" ? null : defaultModel);
   const current = catalog.find((m) => `${m.provider}/${m.id}` === inherited);
   const selected =
     chosen ?? (current ? JSON.stringify([current.provider, current.id]) : "");
@@ -141,11 +140,7 @@ function ModelSelectionState({
         : intent?.kind === "off"
           ? "off"
           : "default");
-  const disabled =
-    !!view?.busy ||
-    !!view?.modelChanging ||
-    view?.phase === "starting" ||
-    view?.phase === "interrupted";
+  const disabled = mode === "blocked";
   const validThinking =
     level === "default" ||
     (level === "off"
@@ -156,9 +151,9 @@ function ModelSelectionState({
       <Disclosure ref={disclosureRef} aria-label={t("model.heading")}>
         <DisclosureTrigger>
           {t(
-            view?.phase === "interrupted"
+            view?.phase === "interrupted" && mode === "blocked"
               ? "model.readOnly"
-              : view?.model
+              : mode === "live" && view?.model
                 ? "model.active"
                 : "model.next",
           )}
@@ -172,12 +167,16 @@ function ModelSelectionState({
         </DisclosureTrigger>
         {view?.phase === "interrupted" && (
           <p role="status" className="muted">
-            {t("model.readOnlyNotice")}
+            {t(
+              mode === "next-start"
+                ? "models.recoverySelect"
+                : "models.recoveryBlocked",
+            )}
           </p>
         )}
-        {view?.selectedModel && !view.model && (
+        {view?.selectedModel && mode === "next-start" && (
           <p className="muted">
-            {t("model.next")}: {view.selectedModel.provider}/
+            {t("models.nextStart")}: {view.selectedModel.provider}/
             {view.selectedModel.modelId} ·{" "}
             {thinkingLabel(view.selectedModel.thinking, t)}
           </p>

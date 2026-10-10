@@ -596,6 +596,12 @@ export const ui = {
   "model.search": "Search models",
   "model.active": "Current model",
   "model.none": "No active model",
+  "models.nextStartLabel": "Next connection",
+  "models.nextStart": "Selected for the next connection. Reconnect to apply.",
+  "models.recoverySelect":
+    "Select an available model, then reconnect to continue this Thread.",
+  "models.recoveryBlocked":
+    "Model switching is unavailable until execution and recovery are confirmed safe. Your history remains readable.",
   "model.next": "Use when connected",
   "model.choose": "Choose model",
   "model.thinking": "Reasoning effort",

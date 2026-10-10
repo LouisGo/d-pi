@@ -47,6 +47,7 @@ export function ModelPickerPanel({
   currentProvider,
   preferences,
   disabled = false,
+  disabledHint,
   loading = false,
   failed = false,
   onSelect,
@@ -61,6 +62,7 @@ export function ModelPickerPanel({
   currentProvider?: string;
   preferences: PickerPreferences;
   disabled?: boolean;
+  disabledHint?: string | undefined;
   loading?: boolean;
   failed?: boolean;
   onSelect: (model: Model) => void;
@@ -340,7 +342,7 @@ export function ModelPickerPanel({
       </div>
       {disabled && (
         <p className="model-picker-busy" role="status">
-          {t("models.busy")}
+          {disabledHint ?? t("models.busy")}
         </p>
       )}
     </div>

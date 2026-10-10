@@ -523,6 +523,11 @@ export const ui = {
   "model.search": "搜索模型",
   "model.active": "当前模型",
   "model.none": "未选模型",
+  "models.nextStartLabel": "下次连接",
+  "models.nextStart": "已选择下次连接使用的模型，请重新连接以生效。",
+  "models.recoverySelect": "可选择其他可用模型，再重新连接以继续此会话。",
+  "models.recoveryBlocked":
+    "执行与恢复状态尚未确认安全，暂时无法切换模型。历史仍可阅读。",
   "model.next": "连接后使用",
   "model.choose": "选择模型",
   "model.thinking": "思考深度",

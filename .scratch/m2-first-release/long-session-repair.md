@@ -39,3 +39,14 @@
 主 checkout 的 SDK资源已按当前 `runtime/host.mjs` 重新准备，正常使用 `pnpm dev`。打开旧 Thread 后点“启动 OMP”，等原消息/就绪，再继续发送；生成中可查看历史或切换 Thread。不能仅依靠旧 Dev 的 Renderer 热更新验证 Main/Host 修改，应退出旧 Dev 再启动。
 
 App主数据库没有本轮schema迁移；新增每私有会话目录 `.d-pi-execution.sqlite`（0600）及原生过程身份元数据。正常退出确认子组停止后释放，崩溃由OS释放锁并保留登记供核验；不删除该锁文件处理冲突。回退产品提交将恢复旧冷只读/正文分段行为，不回退已发生的供应商调用和原生新增历史。复试实例已正常退出，未删除业务库或杀未知进程。
+
+
+## 2026-10-10 保存模型失效后的显式恢复修复
+
+用户授权依据本机 Downloads 的 `d-pi-developer-e2e-20261010-report.md` 与同名 evidence zip 修复 NATIVE-RECOVERY-001 并本地 commit；报告基点与当前起点均为 `c60fd27f411066193623adbf98eed3cc65d8da25`。本次只处理已清理、无未决工作的旧 Thread 无法选择替代模型及离线 ACK 被误判失败；配置读取超时、PNG 冷预览保持待查。
+
+Main 发布 `modelSelection`（live / next-start / blocked），两个模型入口共享该投影。离线选择须有有效目录授权，旧进程确认清理、无活跃工作/未决收据/未知操作/证据缺口/恢复冲突；选择入口重新核验目录与准入。ACK 核对同 Thread、trace、目标及 thinking，允许原 interrupted/failed 与上次实际模型保持，界面显示下次连接使用的显式选择；既有 Retry 传递该选择，继续核验原 sessionFile/sessionId。不自动启动/重发，不写共享默认配置。未决持久队列操作同样阻止离线选择。
+
+验证：先在组件测试复现可用替代项禁用，再修复；两个入口、离线 interrupted/failed ACK、忙碌/未授权能力、清理前拒绝与清理后 Retry 原身份、prepared/unknown 收据和既有恢复冲突有自动化覆盖。Renderer/Main 类型检查、Biome、design/i18n lint、架构边界与生成结构检查通过；独立综合评审及最终增量复核无高价值发现。相关行为测试 77 项、架构测试 40 项通过。
+
+限制：未重跑原生 Electron GUI、真实 provider 或完整缺模型冷启动 E2E；集成测试使用真实 AppStorage/RuntimeService 和受控 Host。工程修复不等于报告原流程已复试通过或用户认可。Main 代码修改需退出旧 Dev 再运行 `pnpm dev`，仅 Renderer 热更新不足以加载修复。

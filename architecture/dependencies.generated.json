@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "f3c168f362823aceb1b570ec32bff73718f955b2f5a82471fee3c060078f87c6",
+  "inputsHash": "355877859d71bb967d30d27a544df8288648ed77eac3a63242ed6cd3a3612f98",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 605,
-    "scannedFiles": 605,
+    "sourceFiles": 606,
+    "scannedFiles": 606,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 272,
-      "lines": 51224,
+      "files": 273,
+      "lines": 51316,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -106,7 +106,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 23,
-      "lines": 3648,
+      "lines": 3659,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -340,7 +340,7 @@
       ],
       "materialized": true,
       "files": 59,
-      "lines": 14344,
+      "lines": 14401,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -394,7 +394,7 @@
       ],
       "materialized": true,
       "files": 32,
-      "lines": 5786,
+      "lines": 5788,
       "publicEntries": [
         {
           "path": "src/modules/configuration/contracts/public.ts",
@@ -18626,6 +18626,18 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/app/renderer/workbench/composer-model-picker.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./model-selection",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/model-selection.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/app/renderer/workbench/composer-toolbar.test.ts",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -19563,6 +19575,30 @@
       "to": "src/app/renderer/wiring/thread-model.ts",
       "targetModule": "app",
       "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/model-controls.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./model-selection",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/model-selection.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/model-selection.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/app/renderer/workbench/native-interaction.test.ts",

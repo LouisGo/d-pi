@@ -722,6 +722,7 @@ export class RuntimeService {
   private update(change: Partial<RuntimeView>): void {
     if (!this.view) return;
     this.view = { ...this.view, ...change, revision: ++publicationRevision };
+    this.view.modelSelection = this.modelSelection();
     this.publish(this.view);
   }
   async execute(command: RuntimeCommand): Promise<RuntimeView> {
@@ -904,17 +905,19 @@ export class RuntimeService {
       return this.view;
     }
     if (command.kind === "select-model") {
-      if (this.hasActiveWork() || this.view.modelChanging)
+      if (this.modelSelection() === "blocked")
+        throw Error("Model change requires idle Thread");
+      const identity = await identifyDirectory(thread.directory);
+      const grant = this.store.threads.executionGrant(
+        thread.workingDirectoryId,
+      );
+      if (!grant || !sameDirectoryIdentity(grant, identity))
+        throw Error("Execution grant invalid");
+      if (this.modelSelection() === "blocked")
         throw Error("Model change requires idle Thread");
       if (this.connection.connected && this.currentConnectionGeneration) {
-        const identity = await identifyDirectory(thread.directory);
-        const grant = this.store.threads.executionGrant(
-          thread.workingDirectoryId,
-        );
         if (
-          !grant ||
           !this.instanceDirectory ||
-          !sameDirectoryIdentity(grant, identity) ||
           !sameDirectoryIdentity(this.instanceDirectory, identity)
         )
           throw Error("Execution grant invalid");
@@ -1406,6 +1409,58 @@ export class RuntimeService {
       (this.connection.connected &&
         (!!this.view?.busy || this.view?.phase !== "ready"))
     );
+  }
+  private modelSelection(): NonNullable<RuntimeView["modelSelection"]> {
+    if (
+      !this.view?.trusted ||
+      this.view.busy ||
+      this.view.modelChanging ||
+      this.view.recoveryFailure ||
+      this.hasActiveWork() ||
+      this.lostEvidence ||
+      this.uncertainLifetime ||
+      [
+        this.view.modelOperation,
+        this.view.queueOperation,
+        this.view.subagentOperation,
+      ].some(
+        (operation) =>
+          operation?.status === "pending" || operation?.status === "unknown",
+      )
+    )
+      return "blocked";
+    try {
+      if (
+        !this.connection.connected &&
+        this.store.queueChanges
+          .list(this.view.threadId)
+          .some(
+            (change) =>
+              change.status === "dispatching" || change.status === "unknown",
+          )
+      )
+        return "blocked";
+      if (
+        this.store.submissions
+          .list(this.view.threadId)
+          .some(
+            (receipt) =>
+              receipt.state === "prepared" ||
+              receipt.state === "dispatching" ||
+              receipt.state === "unknown" ||
+              (receipt.state === "acknowledged" &&
+                (receipt.outcome === "unobserved" ||
+                  receipt.outcome === "unknown")),
+          )
+      )
+        return "blocked";
+    } catch {
+      return "blocked";
+    }
+    if (this.connection.connected)
+      return this.view.phase === "ready" ? "live" : "blocked";
+    // sessionStarted is cleared only by confirmed physical cleanup.
+    return this.sessionStarted ? "blocked" : "next-start";
   }
   private releaseEligible(): boolean {
     if (

@@ -80,6 +80,8 @@ export const RuntimeViewSchema = z.strictObject({
   selectedModel: ModelSelectionSchema.optional(),
   thinkingLevel: z.string().optional(),
   modelChanging: z.boolean().optional(),
+  // Main-owned permission; absence cannot authorize interrupted recovery.
+  modelSelection: z.enum(["live", "next-start", "blocked"]).optional(),
   modelOperation: RuntimeOperationSchema.optional(),
   message: UiMessageSchema,
 });

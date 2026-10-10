@@ -9,6 +9,7 @@ import type {
 } from "../../../modules/configuration/contracts/public";
 import {
   type RuntimeCommand,
+  type RuntimeView,
   RuntimeViewSchema,
 } from "../../../modules/execution/contracts/public";
 import { DraftSchema } from "../../../modules/input/contracts/public";
@@ -22,7 +23,10 @@ import { AppModel } from "../wiring/model";
 import { ComposerModelPicker } from "./composer-model-picker";
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 40));
-async function setup(accept: boolean | "reject" = true) {
+async function setup(
+  accept: boolean | "reject" | "offline" = true,
+  override: Partial<RuntimeView> = {},
+) {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
   const draft = DraftSchema.parse({
     schemaVersion: 1,
@@ -37,7 +41,8 @@ async function setup(accept: boolean | "reject" = true) {
     traceId: crypto.randomUUID(),
     configuration: { code: "runtime.configDefault" },
     revision: 0,
-    phase: "ready",
+    phase: accept === "offline" ? "interrupted" : "ready",
+    modelSelection: accept === "offline" ? "next-start" : "live",
     trusted: true,
     busy: false,
     model: "openai-codex/gpt-current",
@@ -49,6 +54,7 @@ async function setup(accept: boolean | "reject" = true) {
       thinking: { kind: "default" },
     },
     message: { code: "runtime.readyToSend" },
+    ...override,
   });
   const commands: RuntimeCommand[] = [];
   const configCommands: unknown[] = [];
@@ -134,7 +140,10 @@ async function setup(accept: boolean | "reject" = true) {
                   ...base,
                   traceId: command.traceId,
                   revision: base.revision + 1,
-                  model: `${command.selection.provider}/${command.selection.modelId}`,
+                  model:
+                    accept === "offline"
+                      ? base.model
+                      : `${command.selection.provider}/${command.selection.modelId}`,
                   selectedModel: command.selection,
                   modelOperation: {
                     traceId: command.traceId,
@@ -283,4 +292,59 @@ it("does not reuse an earlier success when reselecting the same model is rejecte
     document.querySelector('[data-model-id="gpt-current"]'),
   ).not.toBeNull();
   await ui.dispose();
+});
+
+it.each(["interrupted", "failed"] as const)(
+  "accepts an acknowledged offline replacement in %s while retaining the actual model",
+  async (phase) => {
+    const ui = await setup("offline", { phase });
+    try {
+      const starts = ui.commands.filter((c) => c.kind === "start").length;
+      const next = document.querySelector<HTMLButtonElement>(
+        '[data-model-id="gpt-next"]',
+      );
+      expect(next?.disabled).toBe(false);
+      await act(async () => {
+        next?.click();
+        await settle();
+      });
+      expect(ui.commands.filter((c) => c.kind === "select-model")).toHaveLength(
+        1,
+      );
+      expect(document.querySelector('[data-model-id="gpt-next"]')).toBeNull();
+      expect(ui.host.textContent).toContain("gpt-next");
+      expect(ui.host.textContent).toContain("Next connection");
+      expect(ui.commands.filter((c) => c.kind === "start")).toHaveLength(
+        starts,
+      );
+      expect(
+        ui.configCommands.every(
+          (c) => (c as { kind: string }).kind === "snapshot",
+        ),
+      ).toBe(true);
+    } finally {
+      await ui.dispose();
+    }
+  },
+);
+
+it.each([
+  { phase: "interrupted", modelSelection: undefined },
+  { phase: "interrupted", modelSelection: "blocked" },
+  { phase: "starting", modelSelection: "next-start" },
+  { phase: "interrupted", modelSelection: "next-start", busy: true },
+] as const)("keeps unsafe recovery disabled: %j", async (override) => {
+  const ui = await setup("offline", override);
+  try {
+    const next = document.querySelector<HTMLButtonElement>(
+      '[data-model-id="gpt-next"]',
+    );
+    expect(next?.disabled).toBe(true);
+    await act(async () => next?.click());
+    expect(ui.commands.filter((c) => c.kind === "select-model")).toHaveLength(
+      0,
+    );
+  } finally {
+    await ui.dispose();
+  }
 });
