@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import type {
@@ -61,6 +61,27 @@ export function SavedConversation({
   const gap = useStore(model.stateStore, (state) => state.view?.gap ?? false);
   const refresh = useRef<AbortController | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [refreshError, setRefreshError] = useState<{ cause: unknown } | null>(null);
+  const refreshNow = useCallback(async (controller: AbortController) => {
+    if (refresh.current !== controller) {
+      refresh.current?.abort();
+      refresh.current = controller;
+    }
+    setRefreshing(true);
+    setRefreshError(null);
+    try {
+      await refreshSavedConversation(client, bridge, threadId, controller.signal);
+    } catch (cause: unknown) {
+      if (!controller.signal.aborted && refresh.current === controller) {
+        setRefreshError({ cause });
+      }
+    } finally {
+      if (!controller.signal.aborted && refresh.current === controller) {
+        setRefreshing(false);
+      }
+    }
+  }, [client, bridge, threadId]);
+  useEffect(() => () => refresh.current?.abort(), [threadId]);
   const lastLive = useRef({ generation, identities });
   useEffect(() => {
     if (!active || !generation) return;
@@ -80,17 +101,14 @@ export function SavedConversation({
     refresh.current = controller;
     setRefreshing(true);
     const timer = setTimeout(() => {
-      void refreshSavedConversation(client, bridge, threadId, controller.signal)
-        .finally(() => {
-          if (refresh.current === controller) setRefreshing(false);
-        });
+      void refreshNow(controller);
     }, 150);
     return () => {
       clearTimeout(timer);
       controller.abort();
       if (refresh.current === controller) setRefreshing(false);
     };
-  }, [active, generation, identities, client, bridge, threadId]);
+  }, [active, generation, identities, refreshNow]);
   const source = JSON.stringify(["conversation", threadId]);
   const sentinel = useRef<HTMLDivElement>(null);
   const { hasNextPage, fetchNextPage } = saved;
@@ -196,10 +214,14 @@ export function SavedConversation({
         label={t("app.loading")}
         placement="center"
       />
-      {saved.isError && (
+      {(saved.isError || refreshError !== null) && (
         <p role="alert">
           {t("ui.history.readFailed")}{" "}
-          <Button variant="ghost" onClick={() => void saved.refetch()}>
+          <Button
+            variant="ghost"
+            disabled={isFetching}
+            onClick={() => void refreshNow(new AbortController())}
+          >
             {t("app.retry")}
           </Button>
         </p>
@@ -218,11 +240,12 @@ export function SavedConversation({
       )}
       {(incomplete ||
         saved.isError ||
+        refreshError !== null ||
         (unavailable && unavailable.reason !== "unbound")) && (
         <Button
           variant="ghost"
-          disabled={saved.isFetching}
-          onClick={() => void saved.refetch()}
+          disabled={isFetching}
+          onClick={() => void refreshNow(new AbortController())}
         >
           {t("config.refresh")}
         </Button>
@@ -271,6 +294,7 @@ export function SavedConversation({
       {!saved.isFetching &&
         !initializing &&
         !saved.isError &&
+        refreshError === null &&
         !entries.length &&
         !appended.length &&
         !hasNextPage &&

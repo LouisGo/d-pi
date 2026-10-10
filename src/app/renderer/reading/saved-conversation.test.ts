@@ -19,6 +19,7 @@ const cleanups: (() => Promise<void>)[] = [];
 afterEach(async () => {
   for (const cleanup of cleanups.splice(0)) await cleanup();
   vi.unstubAllGlobals();
+  vi.useRealTimers();
 });
 async function mount(
   active = true,
@@ -486,4 +487,94 @@ it("keeps a live row, copy focus and selected text through native ID confirmatio
   expect(document.activeElement).toBe(button);
   expect(text.isConnected).toBe(true);
   expect(selection?.toString()).toBe("stable");
+});
+
+async function flushRefreshUpdates() {
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(150);
+  });
+}
+
+it("retains cached history and exposes a retry after an incremental refresh transport failure", async () => {
+  vi.useFakeTimers();
+  const page: HistoryPage = {
+    kind: "page",
+    entries: [{ id: "one", parentId: null, role: "assistant", text: "cached message" }],
+    source: "saved",
+    coverage: "append-order",
+    next: null,
+    continuation: { threadId: "A", source: "saved", offset: 100 },
+    incompleteTail: false,
+    omitted: 0,
+  };
+  const read = vi.fn<HistoryBridge["read"]>()
+    .mockResolvedValueOnce(page)
+    .mockRejectedValueOnce(new Error("IPC transport lost"))
+    .mockResolvedValue(page);
+  const f = await mount(true, undefined, read);
+  await vi.waitFor(async () => {
+    await flushRefreshUpdates();
+    expect(f.container.textContent).toContain("cached message");
+  });
+  await act(() => f.emit({
+    kind: "snapshot", connectionGeneration: "refresh-generation",
+    seq: 1, gap: false, items: [],
+  }));
+  await vi.waitFor(async () => {
+    await flushRefreshUpdates();
+    expect(f.container.querySelector('[role="alert"]')).not.toBeNull();
+  });
+  expect(f.container.textContent).toContain("cached message");
+  const retry = f.container.querySelector<HTMLButtonElement>('[role="alert"] button');
+  if (!retry) throw Error("expected retry button");
+  await act(() => retry.click());
+  await vi.waitFor(async () => {
+    await flushRefreshUpdates();
+    expect(read).toHaveBeenCalledTimes(3);
+    expect(f.container.querySelector('[role="alert"]')).toBeNull();
+  });
+  expect(f.container.textContent).toContain("cached message");
+});
+
+it("does not publish a cancelled late refresh error over a newer successful generation", async () => {
+  vi.useFakeTimers();
+  const page: HistoryPage = {
+    kind: "page",
+    entries: [{ id: "one", parentId: null, role: "assistant", text: "cached message" }],
+    source: "saved", coverage: "append-order", next: null,
+    continuation: { threadId: "A", source: "saved", offset: 100 },
+    incompleteTail: false, omitted: 0,
+  };
+  const late = Promise.withResolvers<HistoryPage>();
+  const read = vi.fn<HistoryBridge["read"]>()
+    .mockResolvedValueOnce(page)
+    .mockReturnValueOnce(late.promise)
+    .mockResolvedValue(page);
+  const f = await mount(true, undefined, read);
+  await vi.waitFor(async () => {
+    await flushRefreshUpdates();
+    expect(f.container.textContent).toContain("cached message");
+  });
+  await act(() => f.emit({
+    kind: "snapshot", connectionGeneration: "old-generation",
+    seq: 1, gap: false, items: [],
+  }));
+  await vi.waitFor(async () => {
+    await flushRefreshUpdates();
+    expect(read).toHaveBeenCalledTimes(2);
+  });
+  await act(() => f.emit({
+    kind: "snapshot", connectionGeneration: "new-generation",
+    seq: 1, gap: false, items: [],
+  }));
+  await vi.waitFor(async () => {
+    await flushRefreshUpdates();
+    expect(read).toHaveBeenCalledTimes(3);
+  });
+  await act(async () => {
+    late.reject(new Error("old cancelled transport error"));
+    await Promise.resolve();
+  });
+  expect(f.container.querySelector('[role="alert"]')).toBeNull();
+  expect(f.container.textContent).toContain("cached message");
 });
