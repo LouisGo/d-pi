@@ -81,8 +81,14 @@ test("OMP imports stay in the OMP adapter environment, including dynamic imports
     try {
       const result = run(directory);
       assert.equal(result.status, 1, `${statement}: ${result.stderr}`);
-      assert.match(result.stderr, /ARCH-ENVIRONMENT.*alpha\/host\/public\.ts.*@oh-my-pi/);
-      assert.doesNotMatch(result.stderr, /ARCH-ENVIRONMENT.*beta\/omp\/public\.ts/);
+      assert.match(
+        result.stderr,
+        /ARCH-ENVIRONMENT.*alpha\/host\/public\.ts.*@oh-my-pi/,
+      );
+      assert.doesNotMatch(
+        result.stderr,
+        /ARCH-ENVIRONMENT.*beta\/omp\/public\.ts/,
+      );
     } finally {
       rmSync(directory, { recursive: true, force: true });
     }

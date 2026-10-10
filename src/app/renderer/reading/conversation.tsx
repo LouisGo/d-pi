@@ -22,9 +22,9 @@ import {
   UserMessageBubble,
 } from "./message-parts";
 import { ReadingBody } from "./reading-body";
+import { ReadingWindow } from "./reading-window";
 import { SubagentMessage } from "./subagents";
 import { ToolObservationDetails } from "./tool-observation";
-import { ReadingWindow } from "./reading-window";
 
 export function Conversation({
   model,
@@ -87,19 +87,34 @@ export function Conversation({
           const item = model.stateStore.getState().itemsById.get(id);
           return {
             id: String(id),
-            turn: item?.role === "user" ? item.text.replace(/\s+/g, " ").slice(0, 240) : undefined,
+            turn:
+              item?.role === "user"
+                ? item.text.replace(/\s+/g, " ").slice(0, 240)
+                : undefined,
             preview: () => {
               const state = model.stateStore.getState();
               const start = state.itemIds.indexOf(id);
               let reply = "";
-              for (let index = start + 1; index < state.itemIds.length; index++) {
+              for (
+                let index = start + 1;
+                index < state.itemIds.length;
+                index++
+              ) {
                 const next = state.itemsById.get(state.itemIds[index] ?? -1);
                 if (next?.role === "user") break;
-                if (next?.role === "assistant" && next.text) { reply = next.text; break; }
+                if (next?.role === "assistant" && next.text) {
+                  reply = next.text;
+                  break;
+                }
               }
               return { question: state.itemsById.get(id)?.text ?? "", reply };
             },
-            pinned: item?.state === "streaming" ? () => model.stateStore.getState().itemsById.get(id)?.state === "streaming" : undefined,
+            pinned:
+              item?.state === "streaming"
+                ? () =>
+                    model.stateStore.getState().itemsById.get(id)?.state ===
+                    "streaming"
+                : undefined,
           };
         })}
         renderRow={(_row, index) => (

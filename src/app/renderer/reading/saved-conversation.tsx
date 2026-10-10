@@ -45,7 +45,10 @@ export function SavedConversation({
 }) {
   const { t } = useI18n();
   // Only membership/identity changes repaint the timeline; deltas belong to rows.
-  const identities = useStore(model.stateStore, (state) => state.nativeIdentities);
+  const identities = useStore(
+    model.stateStore,
+    (state) => state.nativeIdentities,
+  );
   const client = useQueryClient();
   const live = model.stateStore.getState();
   const saved = useInfiniteQuery({
@@ -61,32 +64,43 @@ export function SavedConversation({
   const gap = useStore(model.stateStore, (state) => state.view?.gap ?? false);
   const refresh = useRef<AbortController | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [refreshError, setRefreshError] = useState<{ cause: unknown } | null>(null);
-  const refreshNow = useCallback(async (controller: AbortController) => {
-    if (refresh.current !== controller) {
-      refresh.current?.abort();
-      refresh.current = controller;
-    }
-    setRefreshing(true);
-    setRefreshError(null);
-    try {
-      await refreshSavedConversation(client, bridge, threadId, controller.signal);
-    } catch (cause: unknown) {
-      if (!controller.signal.aborted && refresh.current === controller) {
-        setRefreshError({ cause });
+  const [refreshError, setRefreshError] = useState<{ cause: unknown } | null>(
+    null,
+  );
+  const refreshNow = useCallback(
+    async (controller: AbortController) => {
+      if (refresh.current !== controller) {
+        refresh.current?.abort();
+        refresh.current = controller;
       }
-    } finally {
-      if (!controller.signal.aborted && refresh.current === controller) {
-        setRefreshing(false);
+      setRefreshing(true);
+      setRefreshError(null);
+      try {
+        await refreshSavedConversation(
+          client,
+          bridge,
+          threadId,
+          controller.signal,
+        );
+      } catch (cause: unknown) {
+        if (!controller.signal.aborted && refresh.current === controller) {
+          setRefreshError({ cause });
+        }
+      } finally {
+        if (!controller.signal.aborted && refresh.current === controller) {
+          setRefreshing(false);
+        }
       }
-    }
-  }, [client, bridge, threadId]);
+    },
+    [client, bridge, threadId],
+  );
   useEffect(() => () => refresh.current?.abort(), [threadId]);
   const lastLive = useRef({ generation, identities });
   const lastActive = useRef({ active: false, threadId });
   useEffect(() => {
     const activated =
-      active && (!lastActive.current.active || lastActive.current.threadId !== threadId);
+      active &&
+      (!lastActive.current.active || lastActive.current.threadId !== threadId);
     lastActive.current = { active, threadId };
     if (!active) return;
     const previous = lastLive.current;
@@ -268,23 +282,55 @@ export function SavedConversation({
         source={source}
         positions={positions}
         rows={rows.map((row, index) => {
-          const item = row.liveId === undefined ? undefined : live.itemsById.get(row.liveId);
+          const item =
+            row.liveId === undefined
+              ? undefined
+              : live.itemsById.get(row.liveId);
           const role = row.entry?.role ?? item?.role;
           return {
             id: row.key,
-            turn: role === "user" ? (row.entry?.displayText ?? row.entry?.text ?? item?.text ?? "").replace(/\s+/g, " ").slice(0, 240) : undefined,
-            pinned: row.liveId !== undefined && item?.state === "streaming" ? () => model.stateStore.getState().itemsById.get(row.liveId ?? -1)?.state === "streaming" : undefined,
+            turn:
+              role === "user"
+                ? (
+                    row.entry?.displayText ??
+                    row.entry?.text ??
+                    item?.text ??
+                    ""
+                  )
+                    .replace(/\s+/g, " ")
+                    .slice(0, 240)
+                : undefined,
+            pinned:
+              row.liveId !== undefined && item?.state === "streaming"
+                ? () =>
+                    model.stateStore.getState().itemsById.get(row.liveId ?? -1)
+                      ?.state === "streaming"
+                : undefined,
             preview: () => {
               const current = model.stateStore.getState();
               let reply = "";
               for (let next = index + 1; next < rows.length; next++) {
                 const following = rows[next];
-                const liveItem = following?.liveId === undefined ? undefined : current.itemsById.get(following.liveId);
+                const liveItem =
+                  following?.liveId === undefined
+                    ? undefined
+                    : current.itemsById.get(following.liveId);
                 const nextRole = following?.entry?.role ?? liveItem?.role;
                 if (nextRole === "user") break;
-                if (nextRole === "assistant") { reply = following?.entry?.text ?? liveItem?.text ?? ""; if (reply) break; }
+                if (nextRole === "assistant") {
+                  reply = following?.entry?.text ?? liveItem?.text ?? "";
+                  if (reply) break;
+                }
               }
-              return { question: row.entry?.displayText ?? row.entry?.text ?? (row.liveId === undefined ? "" : current.itemsById.get(row.liveId)?.text ?? ""), reply };
+              return {
+                question:
+                  row.entry?.displayText ??
+                  row.entry?.text ??
+                  (row.liveId === undefined
+                    ? ""
+                    : (current.itemsById.get(row.liveId)?.text ?? "")),
+                reply,
+              };
             },
           };
         })}

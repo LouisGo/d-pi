@@ -151,7 +151,11 @@ try {
   assert.equal(responseFor(invalidMode).success, false);
   assert.equal(responseFor(invalidMode).command, "set_cache_warming");
   assert.equal((await request("get_state")).data.sessionId, initial.sessionId);
-  assert.equal(inputs.length, 0, "rejected RPC input must not invoke a provider");
+  assert.equal(
+    inputs.length,
+    0,
+    "rejected RPC input must not invoke a provider",
+  );
   cases.rpcRejected = {
     malformedJson: true,
     unknownCommand: unknown,
@@ -281,7 +285,8 @@ try {
         frame.type === "message_end" &&
         frame.message?.role === "assistant" &&
         frame.message.content?.some(
-          (part) => part.type === "text" && part.text.includes("FIXTURE_RESPONSE"),
+          (part) =>
+            part.type === "text" && part.text.includes("FIXTURE_RESPONSE"),
         ),
     ),
     "the real SDK delivers an assistant message, not just prompt acknowledgments",

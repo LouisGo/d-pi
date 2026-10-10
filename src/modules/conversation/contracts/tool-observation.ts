@@ -16,5 +16,7 @@ export const ToolExecutionObservationSchema = z.strictObject({
   progress: ToolPayloadSchema.optional(),
   result: ToolPayloadSchema.optional(),
 });
-export type ToolExecutionObservation = z.infer<typeof ToolExecutionObservationSchema>;
+export type ToolExecutionObservation = z.infer<
+  typeof ToolExecutionObservationSchema
+>;
 export type ToolPayload = z.infer<typeof ToolPayloadSchema>;

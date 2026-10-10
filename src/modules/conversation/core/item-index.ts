@@ -34,7 +34,10 @@ export class ItemIndex {
 
   without(id: number): ItemIndex {
     if (!this.get(id)) return this;
-    return new ItemIndex(this.replace(this.root, this.depth - 1, id), this.depth);
+    return new ItemIndex(
+      this.replace(this.root, this.depth - 1, id),
+      this.depth,
+    );
   }
 
   private replace(
@@ -45,7 +48,12 @@ export class ItemIndex {
   ): Node {
     if (level < 0) return item ? { children: empty.children, item } : empty;
     const digit = Math.floor(id / RADIX ** level) % RADIX;
-    const child = this.replace(node.children.get(digit) ?? empty, level - 1, id, item);
+    const child = this.replace(
+      node.children.get(digit) ?? empty,
+      level - 1,
+      id,
+      item,
+    );
     const children = new Map(node.children);
     if (child.item || child.children.size) children.set(digit, child);
     else children.delete(digit);

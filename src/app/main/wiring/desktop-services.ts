@@ -51,18 +51,20 @@ export function createDesktopServices(context: {
         if (threadId === latestThreadId || releasing.has(runtime)) continue;
         const selectedAtRelease = latestThreadId;
         releasing.add(runtime);
-        void runtime.releaseIfIdle(() => latestThreadId !== threadId).then(
-          (released) => {
-            releasing.delete(runtime);
-            if (released && runtimes.get(threadId) === runtime)
-              runtimes.delete(threadId);
-            if (!released && latestThreadId !== selectedAtRelease)
-              scheduleRuntimePrune();
-          },
-          () => {
-            releasing.delete(runtime);
-          },
-        );
+        void runtime
+          .releaseIfIdle(() => latestThreadId !== threadId)
+          .then(
+            (released) => {
+              releasing.delete(runtime);
+              if (released && runtimes.get(threadId) === runtime)
+                runtimes.delete(threadId);
+              if (!released && latestThreadId !== selectedAtRelease)
+                scheduleRuntimePrune();
+            },
+            () => {
+              releasing.delete(runtime);
+            },
+          );
       }
     });
   }

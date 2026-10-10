@@ -1414,14 +1414,17 @@ export class RuntimeService {
     const threadId = this.scopeThreadId ?? this.view?.threadId;
     if (!threadId) return false;
     try {
-      return !this.store.submissions.list(threadId).some(
-        (receipt) =>
-          receipt.state === "prepared" ||
-          receipt.state === "dispatching" ||
-          receipt.state === "unknown" ||
-          (receipt.state === "acknowledged" &&
-            (receipt.outcome === "unobserved" || receipt.outcome === "unknown")),
-      );
+      return !this.store.submissions
+        .list(threadId)
+        .some(
+          (receipt) =>
+            receipt.state === "prepared" ||
+            receipt.state === "dispatching" ||
+            receipt.state === "unknown" ||
+            (receipt.state === "acknowledged" &&
+              (receipt.outcome === "unobserved" ||
+                receipt.outcome === "unknown")),
+        );
     } catch {
       // Unreadable receipt evidence is not proof of a releasable lifetime.
       return false;

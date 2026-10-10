@@ -503,7 +503,9 @@ it("retains cached history and exposes a retry after an incremental refresh tran
   vi.useFakeTimers();
   const page: HistoryPage = {
     kind: "page",
-    entries: [{ id: "one", parentId: null, role: "assistant", text: "cached message" }],
+    entries: [
+      { id: "one", parentId: null, role: "assistant", text: "cached message" },
+    ],
     source: "saved",
     coverage: "append-order",
     next: null,
@@ -511,7 +513,8 @@ it("retains cached history and exposes a retry after an incremental refresh tran
     incompleteTail: false,
     omitted: 0,
   };
-  const read = vi.fn<HistoryBridge["read"]>()
+  const read = vi
+    .fn<HistoryBridge["read"]>()
     .mockResolvedValueOnce(page)
     .mockRejectedValueOnce(new Error("IPC transport lost"))
     .mockResolvedValue(page);
@@ -520,16 +523,23 @@ it("retains cached history and exposes a retry after an incremental refresh tran
     await flushRefreshUpdates();
     expect(f.container.textContent).toContain("cached message");
   });
-  await act(() => f.emit({
-    kind: "snapshot", connectionGeneration: "refresh-generation",
-    seq: 1, gap: false, items: [],
-  }));
+  await act(() =>
+    f.emit({
+      kind: "snapshot",
+      connectionGeneration: "refresh-generation",
+      seq: 1,
+      gap: false,
+      items: [],
+    }),
+  );
   await vi.waitFor(async () => {
     await flushRefreshUpdates();
     expect(f.container.querySelector('[role="alert"]')).not.toBeNull();
   });
   expect(f.container.textContent).toContain("cached message");
-  const retry = f.container.querySelector<HTMLButtonElement>('[role="alert"] button');
+  const retry = f.container.querySelector<HTMLButtonElement>(
+    '[role="alert"] button',
+  );
   if (!retry) throw Error("expected retry button");
   await act(() => retry.click());
   await vi.waitFor(async () => {
@@ -544,39 +554,58 @@ it("does not publish a cancelled late refresh error over a newer successful gene
   vi.useFakeTimers();
   const page: HistoryPage = {
     kind: "page",
-    entries: [{ id: "one", parentId: null, role: "assistant", text: "cached message" }],
-    source: "saved", coverage: "append-order", next: null,
+    entries: [
+      { id: "one", parentId: null, role: "assistant", text: "cached message" },
+    ],
+    source: "saved",
+    coverage: "append-order",
+    next: null,
     continuation: { threadId: "A", source: "saved", offset: 100 },
-    incompleteTail: false, omitted: 0,
+    incompleteTail: false,
+    omitted: 0,
   };
-  const late = Promise.withResolvers<HistoryPage>();
-  const read = vi.fn<HistoryBridge["read"]>()
+  let rejectLate: (cause: unknown) => void = () => {};
+  const late = new Promise<HistoryPage>((_resolve, reject) => {
+    rejectLate = reject;
+  });
+  const read = vi
+    .fn<HistoryBridge["read"]>()
     .mockResolvedValueOnce(page)
-    .mockReturnValueOnce(late.promise)
+    .mockReturnValueOnce(late)
     .mockResolvedValue(page);
   const f = await mount(true, undefined, read);
   await vi.waitFor(async () => {
     await flushRefreshUpdates();
     expect(f.container.textContent).toContain("cached message");
   });
-  await act(() => f.emit({
-    kind: "snapshot", connectionGeneration: "old-generation",
-    seq: 1, gap: false, items: [],
-  }));
+  await act(() =>
+    f.emit({
+      kind: "snapshot",
+      connectionGeneration: "old-generation",
+      seq: 1,
+      gap: false,
+      items: [],
+    }),
+  );
   await vi.waitFor(async () => {
     await flushRefreshUpdates();
     expect(read).toHaveBeenCalledTimes(2);
   });
-  await act(() => f.emit({
-    kind: "snapshot", connectionGeneration: "new-generation",
-    seq: 1, gap: false, items: [],
-  }));
+  await act(() =>
+    f.emit({
+      kind: "snapshot",
+      connectionGeneration: "new-generation",
+      seq: 1,
+      gap: false,
+      items: [],
+    }),
+  );
   await vi.waitFor(async () => {
     await flushRefreshUpdates();
     expect(read).toHaveBeenCalledTimes(3);
   });
   await act(async () => {
-    late.reject(new Error("old cancelled transport error"));
+    rejectLate(new Error("old cancelled transport error"));
     await Promise.resolve();
   });
   expect(f.container.querySelector('[role="alert"]')).toBeNull();
@@ -586,22 +615,44 @@ it("does not publish a cancelled late refresh error over a newer successful gene
 it("checks an aged saved cache on return without a live generation using append continuation", async () => {
   vi.useFakeTimers();
   const cursor = {
-    threadId: "A", source: "saved", offset: 100, endOffset: 100,
+    threadId: "A",
+    source: "saved",
+    offset: 100,
+    endOffset: 100,
     prefixHash: "a".repeat(64),
   };
   const initial: HistoryPage = {
     kind: "page",
-    entries: [{ id: "one", parentId: null, role: "assistant", text: "cached message" }],
-    source: "saved", coverage: "append-order", next: null,
-    continuation: cursor, incompleteTail: false, omitted: 0,
+    entries: [
+      { id: "one", parentId: null, role: "assistant", text: "cached message" },
+    ],
+    source: "saved",
+    coverage: "append-order",
+    next: null,
+    continuation: cursor,
+    incompleteTail: false,
+    omitted: 0,
   };
-  const read = vi.fn<HistoryBridge["read"]>()
+  const read = vi
+    .fn<HistoryBridge["read"]>()
     .mockResolvedValueOnce(initial)
     .mockResolvedValue({
       ...initial,
       source: "extended",
-      continuation: { ...cursor, source: "extended", offset: 200, endOffset: 200 },
-      entries: [{ id: "two", parentId: "one", role: "assistant", text: "external CLI append" }],
+      continuation: {
+        ...cursor,
+        source: "extended",
+        offset: 200,
+        endOffset: 200,
+      },
+      entries: [
+        {
+          id: "two",
+          parentId: "one",
+          role: "assistant",
+          text: "external CLI append",
+        },
+      ],
     });
   const f = await mount(true, undefined, read);
   await vi.waitFor(async () => {
@@ -621,12 +672,24 @@ it("checks an aged saved cache on return without a live generation using append 
 
 it("checks an unbound cache on inactive-to-active return even without a live generation", async () => {
   vi.useFakeTimers();
-  const read = vi.fn<HistoryBridge["read"]>()
+  const read = vi
+    .fn<HistoryBridge["read"]>()
     .mockResolvedValueOnce({ kind: "unavailable", reason: "unbound" })
     .mockResolvedValue({
-      kind: "page", source: "bound", coverage: "append-order", next: null,
-      incompleteTail: false, omitted: 0,
-      entries: [{ id: "bound", parentId: null, role: "assistant", text: "now bound history" }],
+      kind: "page",
+      source: "bound",
+      coverage: "append-order",
+      next: null,
+      incompleteTail: false,
+      omitted: 0,
+      entries: [
+        {
+          id: "bound",
+          parentId: null,
+          role: "assistant",
+          text: "now bound history",
+        },
+      ],
     });
   const f = await mount(true, undefined, read);
   await flushRefreshUpdates();

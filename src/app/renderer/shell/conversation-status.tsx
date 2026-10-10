@@ -58,10 +58,7 @@ function ThreadStatus({ thread }: { thread: ThreadModel }) {
     (state) => state.view?.control?.background,
   );
   const message = useStore(runtime, (state) => state.view?.message);
-  const count = useStore(
-    reading,
-    (state) => state.messageCount,
-  );
+  const count = useStore(reading, (state) => state.messageCount);
   const gap = useStore(reading, (state) => state.view?.gap ?? false);
   const label = phase
     ? runtimePhaseLabel({ phase, busy, model }, t)

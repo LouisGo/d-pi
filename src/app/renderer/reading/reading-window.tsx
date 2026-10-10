@@ -1,6 +1,16 @@
-import { Fragment, type ReactNode, useLayoutEffect, useMemo, useReducer, useRef } from "react";
+import {
+  Fragment,
+  type ReactNode,
+  useLayoutEffect,
+  useMemo,
+  useReducer,
+  useRef,
+} from "react";
 import { flushSync } from "react-dom";
-import type { ReadingPositions, ReadingRow } from "../../../modules/conversation/core/public";
+import type {
+  ReadingPositions,
+  ReadingRow,
+} from "../../../modules/conversation/core/public";
 
 export interface WindowRow {
   id: string;
@@ -17,7 +27,10 @@ export interface ReadingWindowController {
 const windows = new WeakMap<HTMLElement, ReadingWindowController>();
 export const readingWindow = (pane: HTMLElement) => windows.get(pane);
 // Coordinates only; lifetime follows the existing Thread-owned position resource.
-const measurements = new WeakMap<ReadingPositions, Map<string, Map<string, number>>>();
+const measurements = new WeakMap<
+  ReadingPositions,
+  Map<string, Map<string, number>>
+>();
 function heightCache(positions: ReadingPositions | undefined, source: string) {
   if (!positions) return new Map<string, number>();
   let sources = measurements.get(positions);
@@ -34,7 +47,12 @@ function heightCache(positions: ReadingPositions | undefined, source: string) {
 }
 
 /** Contiguous normal-flow bodies, with measured spacers only for unmounted rows. */
-export function ReadingWindow({ rows, source, positions, renderRow }: {
+export function ReadingWindow({
+  rows,
+  source,
+  positions,
+  renderRow,
+}: {
   rows: readonly WindowRow[];
   source: string;
   positions?: ReadingPositions | undefined;
@@ -42,19 +60,36 @@ export function ReadingWindow({ rows, source, positions, renderRow }: {
 }) {
   const root = useRef<HTMLDivElement>(null);
   const [, redraw] = useReducer((value: number) => value + 1, 0);
-  const state = useMemo(() => ({
-    heights: heightCache(positions, source),
-    tree: [0], sizes: [] as number[], indices: new Map<string, number>(), nodes: new Map<string, HTMLElement>(),
-    pane: null as HTMLElement | null, top: positions?.get(source)?.pixel ?? 0, height: 600, origin: 0,
-    target: null as string | null, pointer: null as string | null, gap: 0,
-  }), [positions, source]);
-  state.indices = useMemo(() => new Map(rows.map((row, index) => [row.id, index])), [rows]);
+  const state = useMemo(
+    () => ({
+      heights: heightCache(positions, source),
+      tree: [0],
+      sizes: [] as number[],
+      indices: new Map<string, number>(),
+      nodes: new Map<string, HTMLElement>(),
+      pane: null as HTMLElement | null,
+      top: positions?.get(source)?.pixel ?? 0,
+      height: 600,
+      origin: 0,
+      target: null as string | null,
+      pointer: null as string | null,
+      gap: 0,
+    }),
+    [positions, source],
+  );
+  state.indices = useMemo(
+    () => new Map(rows.map((row, index) => [row.id, index])),
+    [rows],
+  );
   const geometryIndex = useMemo(() => {
-    const sizes = rows.map((row) => (state.heights.get(row.id) ?? 120) + state.gap);
+    const sizes = rows.map(
+      (row) => (state.heights.get(row.id) ?? 120) + state.gap,
+    );
     const tree = [0, ...sizes];
     for (let index = 1; index < tree.length; index++) {
       const parent = index + (index & -index);
-      if (parent < tree.length) tree[parent] = (tree[parent] ?? 0) + (tree[index] ?? 0);
+      if (parent < tree.length)
+        tree[parent] = (tree[parent] ?? 0) + (tree[index] ?? 0);
     }
     return { sizes, tree };
   }, [rows, state, state.gap]);
@@ -63,14 +98,22 @@ export function ReadingWindow({ rows, source, positions, renderRow }: {
   // Fenwick coordinates: streamed height updates and offscreen lookup are O(log n).
   const offset = (index: number) => {
     let top = 0;
-    for (let cursor = index; cursor > 0; cursor -= cursor & -cursor) top += state.tree[cursor] ?? 0;
+    for (let cursor = index; cursor > 0; cursor -= cursor & -cursor)
+      top += state.tree[cursor] ?? 0;
     return top;
   };
-  const pinCandidates = useMemo(() => rows.flatMap((row, index) => row.pinned ? [{ row, index }] : []), [rows]);
+  const pinCandidates = useMemo(
+    () => rows.flatMap((row, index) => (row.pinned ? [{ row, index }] : [])),
+    [rows],
+  );
   const indexAt = (top: number) => {
     let index = 0;
     let remaining = Math.max(0, top);
-    for (let bit = 2 ** Math.floor(Math.log2(Math.max(1, rows.length))); bit > 0; bit >>>= 1) {
+    for (
+      let bit = 2 ** Math.floor(Math.log2(Math.max(1, rows.length)));
+      bit > 0;
+      bit >>>= 1
+    ) {
       const next = index + bit;
       if (next <= rows.length && (state.tree[next] ?? Infinity) <= remaining) {
         remaining -= state.tree[next] ?? 0;
@@ -86,9 +129,21 @@ export function ReadingWindow({ rows, source, positions, renderRow }: {
     const pane = state.pane;
     if (node && pane) {
       const rect = node.getBoundingClientRect();
-      return { id, top: rect.top - pane.getBoundingClientRect().top - pane.clientTop + pane.scrollTop, height: rect.height };
+      return {
+        id,
+        top:
+          rect.top -
+          pane.getBoundingClientRect().top -
+          pane.clientTop +
+          pane.scrollTop,
+        height: rect.height,
+      };
     }
-    return { id, top: state.origin + offset(index), height: state.heights.get(id) ?? 120 };
+    return {
+      id,
+      top: state.origin + offset(index),
+      height: state.heights.get(id) ?? 120,
+    };
   };
   const controller: ReadingWindowController = {
     rows,
@@ -115,17 +170,32 @@ export function ReadingWindow({ rows, source, positions, renderRow }: {
     let frame: number | null = null;
     const update = () => {
       frame = null;
-      state.origin = element.getBoundingClientRect().top - pane.getBoundingClientRect().top - pane.clientTop + pane.scrollTop;
+      state.origin =
+        element.getBoundingClientRect().top -
+        pane.getBoundingClientRect().top -
+        pane.clientTop +
+        pane.scrollTop;
       state.top = pane.scrollTop;
       state.height = pane.clientHeight || 600;
       redraw();
     };
-    const schedule = () => { if (frame === null) frame = requestAnimationFrame(update); };
-    const pointerdown = (event: PointerEvent) => {
-      const target = event.target instanceof Element ? event.target.closest<HTMLElement>("[data-reading-row]") : null;
-      state.pointer = target && element.contains(target) ? target.dataset.readingRow ?? null : null;
+    const schedule = () => {
+      if (frame === null) frame = requestAnimationFrame(update);
     };
-    const pointerup = () => { state.pointer = null; schedule(); };
+    const pointerdown = (event: PointerEvent) => {
+      const target =
+        event.target instanceof Element
+          ? event.target.closest<HTMLElement>("[data-reading-row]")
+          : null;
+      state.pointer =
+        target && element.contains(target)
+          ? (target.dataset.readingRow ?? null)
+          : null;
+    };
+    const pointerup = () => {
+      state.pointer = null;
+      schedule();
+    };
     element.addEventListener("pointerdown", pointerdown);
     document.addEventListener("pointerup", pointerup);
     document.addEventListener("pointercancel", pointerup);
@@ -134,7 +204,10 @@ export function ReadingWindow({ rows, source, positions, renderRow }: {
     pane.addEventListener("focusout", schedule);
     element.addEventListener("toggle", schedule, true);
     document.addEventListener("selectionchange", schedule);
-    const resize = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(schedule);
+    const resize =
+      typeof ResizeObserver === "undefined"
+        ? null
+        : new ResizeObserver(schedule);
     resize?.observe(pane);
     update();
     return () => {
@@ -157,23 +230,41 @@ export function ReadingWindow({ rows, source, positions, renderRow }: {
     const pane = state.pane;
     if (!element || !pane) return;
     const gap = Number.parseFloat(getComputedStyle(element).rowGap) || 0;
-    if (gap !== state.gap) { state.gap = gap; redraw(); }
+    if (gap !== state.gap) {
+      state.gap = gap;
+      redraw();
+    }
     windows.set(pane, controller);
-    state.nodes = new Map([...element.querySelectorAll<HTMLElement>("[data-reading-row]")].map((node) => [node.dataset.readingRow ?? "", node]));
+    state.nodes = new Map(
+      [...element.querySelectorAll<HTMLElement>("[data-reading-row]")].map(
+        (node) => [node.dataset.readingRow ?? "", node],
+      ),
+    );
     const measure = () => {
       let changed = false;
       for (const [id, node] of state.nodes) {
         // Include normal-flow margins (not just the content box).
         const style = getComputedStyle(node);
-        const height = node.getBoundingClientRect().height + (Number.parseFloat(style.marginTop) || 0) + (Number.parseFloat(style.marginBottom) || 0);
-        if (height > 0 && Math.abs(height - (state.heights.get(id) ?? 120)) > 0.5) {
+        const height =
+          node.getBoundingClientRect().height +
+          (Number.parseFloat(style.marginTop) || 0) +
+          (Number.parseFloat(style.marginBottom) || 0);
+        if (
+          height > 0 &&
+          Math.abs(height - (state.heights.get(id) ?? 120)) > 0.5
+        ) {
           state.heights.set(id, height);
           const index = state.indices.get(id);
           if (index !== undefined) {
             const size = height + state.gap;
             const delta = size - (state.sizes[index] ?? 0);
             state.sizes[index] = size;
-            for (let cursor = index + 1; cursor < state.tree.length; cursor += cursor & -cursor) state.tree[cursor] = (state.tree[cursor] ?? 0) + delta;
+            for (
+              let cursor = index + 1;
+              cursor < state.tree.length;
+              cursor += cursor & -cursor
+            )
+              state.tree[cursor] = (state.tree[cursor] ?? 0) + delta;
           }
           changed = true;
         }
@@ -181,40 +272,89 @@ export function ReadingWindow({ rows, source, positions, renderRow }: {
       if (changed) redraw();
     };
     measure();
-    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(measure);
+    const observer =
+      typeof ResizeObserver === "undefined"
+        ? null
+        : new ResizeObserver(measure);
     for (const node of state.nodes.values()) observer?.observe(node);
     pane.dispatchEvent(new Event("reading-window-change"));
     return () => observer?.disconnect();
   });
   const start = indexAt(Math.max(0, state.top - state.origin - state.height));
-  const end = Math.min(rows.length, indexAt(state.top - state.origin + state.height * 2) + 2);
+  const end = Math.min(
+    rows.length,
+    indexAt(state.top - state.origin + state.height * 2) + 2,
+  );
   const mounted = new Set<number>();
   for (let i = start; i < end; i++) mounted.add(i);
   // Inspect only mounted interaction nodes before deciding what may unmount.
   // This also covers append commits before the browser's selectionchange event.
   const selection = document.getSelection();
-  const ranges = selection && !selection.isCollapsed
-    ? Array.from({ length: selection.rangeCount }, (_, index) => selection.getRangeAt(index))
-    : [];
+  const ranges =
+    selection && !selection.isCollapsed
+      ? Array.from({ length: selection.rangeCount }, (_, index) =>
+          selection.getRangeAt(index),
+        )
+      : [];
   for (const [id, node] of state.nodes) {
-    if (ranges.some((range) => range.intersectsNode(node)) ||
-        (document.activeElement && node.contains(document.activeElement)) ||
-        node.querySelector("details[open], [aria-expanded=true], [data-state=streaming]")) {
+    if (
+      ranges.some((range) => range.intersectsNode(node)) ||
+      (document.activeElement && node.contains(document.activeElement)) ||
+      node.querySelector(
+        "details[open], [aria-expanded=true], [data-state=streaming]",
+      )
+    ) {
       const index = state.indices.get(id);
       if (index !== undefined) mounted.add(index);
     }
   }
-  if (state.target) { const index = state.indices.get(state.target); if (index !== undefined) mounted.add(index); state.target = null; }
-  if (state.pointer) { const index = state.indices.get(state.pointer); if (index !== undefined) mounted.add(index); }
-  for (const { row, index } of pinCandidates) if (row.pinned?.()) mounted.add(index);
+  if (state.target) {
+    const index = state.indices.get(state.target);
+    if (index !== undefined) mounted.add(index);
+    state.target = null;
+  }
+  if (state.pointer) {
+    const index = state.indices.get(state.pointer);
+    if (index !== undefined) mounted.add(index);
+  }
+  for (const { row, index } of pinCandidates)
+    if (row.pinned?.()) mounted.add(index);
   const content: ReactNode[] = [];
   let previous = 0;
   for (const index of [...mounted].sort((a, b) => a - b)) {
-    if (index > previous) content.push(<div key={`gap:${previous}`} aria-hidden="true" data-reading-spacer="" style={{ height: Math.max(0, offset(index) - offset(previous) - state.gap) }} />);
+    if (index > previous)
+      content.push(
+        <div
+          key={`gap:${previous}`}
+          aria-hidden="true"
+          data-reading-spacer=""
+          style={{
+            height: Math.max(0, offset(index) - offset(previous) - state.gap),
+          }}
+        />,
+      );
     const row = rows[index];
-    if (row) content.push(<Fragment key={row.id}>{renderRow(row, index)}</Fragment>);
+    if (row)
+      content.push(<Fragment key={row.id}>{renderRow(row, index)}</Fragment>);
     previous = index + 1;
   }
-  if (previous < rows.length) content.push(<div key="gap:end" aria-hidden="true" data-reading-spacer="" style={{ height: Math.max(0, offset(rows.length) - offset(previous) - state.gap) }} />);
-  return <div ref={root} className="conversation-window" data-reading-window="">{content}</div>;
+  if (previous < rows.length)
+    content.push(
+      <div
+        key="gap:end"
+        aria-hidden="true"
+        data-reading-spacer=""
+        style={{
+          height: Math.max(
+            0,
+            offset(rows.length) - offset(previous) - state.gap,
+          ),
+        }}
+      />,
+    );
+  return (
+    <div ref={root} className="conversation-window" data-reading-window="">
+      {content}
+    </div>
+  );
 }

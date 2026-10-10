@@ -182,12 +182,15 @@ export function attachReadingAnchor({
     const anchor = currentSource ? positions.get(currentSource) : undefined;
     let top = currentSource ? 0 : pixel();
     if (anchor) {
-      const windowRow = anchor.rowId ? readingWindow(pane)?.row(anchor.rowId) : null;
-      const row = !windowRow && anchor.rowId
-        ? pane.querySelector<HTMLElement>(
-            `[data-reading-row="${CSS.escape(anchor.rowId)}"]`,
-          )
+      const windowRow = anchor.rowId
+        ? readingWindow(pane)?.row(anchor.rowId)
         : null;
+      const row =
+        !windowRow && anchor.rowId
+          ? pane.querySelector<HTMLElement>(
+              `[data-reading-row="${CSS.escape(anchor.rowId)}"]`,
+            )
+          : null;
       top = resolveReadingAnchor(
         anchor,
         viewport(),
@@ -274,7 +277,9 @@ export function attachReadingAnchor({
         expectedTop = pane.scrollTop;
         return true;
       }
-      const node = pane.querySelector<HTMLElement>(`[data-reading-row="${CSS.escape(id)}"]`);
+      const node = pane.querySelector<HTMLElement>(
+        `[data-reading-row="${CSS.escape(id)}"]`,
+      );
       const row = node ? geometry(node) : null;
       if (!row) return false;
       pane.scrollTop = Math.ceil(row.top);

@@ -107,7 +107,12 @@ function toolPayload(input: unknown): ToolPayload {
           continue;
         }
         const cost = draftByteLength(JSON.stringify(key)) + 2;
-        if (++count > 32 || key.length > 120 || remaining - cost < 16 || nodes <= 0) {
+        if (
+          ++count > 32 ||
+          key.length > 120 ||
+          remaining - cost < 16 ||
+          nodes <= 0
+        ) {
           truncated = true;
           break;
         }
@@ -141,13 +146,15 @@ export class ConversationProjection {
   private retryNotice: number | null = null;
   private tools = new Map<string, number>();
   private toolOwners = new Map<number, string>();
-  private stream: {
-    id: number;
-    snapshot: unknown;
-    snapshotDelta: z.infer<typeof DeltaSchema> | undefined;
-    text: string[];
-    thinking: string[];
-  } | undefined;
+  private stream:
+    | {
+        id: number;
+        snapshot: unknown;
+        snapshotDelta: z.infer<typeof DeltaSchema> | undefined;
+        text: string[];
+        thinking: string[];
+      }
+    | undefined;
   private pending = new Map<number, ConversationItem>();
   private timer: ReturnType<typeof setTimeout> | undefined;
   private unknownTypes = new Set<string>();
@@ -233,8 +240,10 @@ export class ConversationProjection {
           ? {
               tool: {
                 ...prior.tool,
-                lifecycle: state === "failed" || state === "aborted"
-                  ? "failed" : "completed",
+                lifecycle:
+                  state === "failed" || state === "aborted"
+                    ? "failed"
+                    : "completed",
                 observed: prior.tool.observed.includes("message-end")
                   ? prior.tool.observed
                   : [...prior.tool.observed, "message-end"],
@@ -271,7 +280,11 @@ export class ConversationProjection {
       const id = this.active ?? this.nextId++;
       this.active = id;
       this.stream ??= {
-        id, snapshot: undefined, snapshotDelta: undefined, text: [], thinking: [],
+        id,
+        snapshot: undefined,
+        snapshotDelta: undefined,
+        text: [],
+        thinking: [],
       };
       // Keep only the latest authoritative message. Parse/extract it at flush,
       // then append only delta-only frames that followed that snapshot.
@@ -338,15 +351,20 @@ export class ConversationProjection {
       this.flush();
       return;
     }
-    if (isNativeFrameType(frame,
-      NativeFrameTypes.toolExecutionStart,
-      NativeFrameTypes.toolExecutionUpdate,
-      NativeFrameTypes.toolExecutionEnd,
-    )) {
-      const identity = z.object({
-        toolCallId: z.string().min(1).max(512),
-        toolName: z.string(),
-      }).safeParse(frame);
+    if (
+      isNativeFrameType(
+        frame,
+        NativeFrameTypes.toolExecutionStart,
+        NativeFrameTypes.toolExecutionUpdate,
+        NativeFrameTypes.toolExecutionEnd,
+      )
+    ) {
+      const identity = z
+        .object({
+          toolCallId: z.string().min(1).max(512),
+          toolName: z.string(),
+        })
+        .safeParse(frame);
       if (!identity.success) {
         this.gap = true;
         return;
@@ -356,36 +374,60 @@ export class ConversationProjection {
       this.tools.set(toolCallId, id);
       this.toolOwners.set(id, toolCallId);
       const prior = this.items.get(id);
-      const stage = frame.type === NativeFrameTypes.toolExecutionStart
-        ? "start" : frame.type === NativeFrameTypes.toolExecutionUpdate ? "update" : "end";
-      const args = stage !== "end" && frame.args !== undefined
-        ? toolPayload(frame.args) : prior?.tool?.arguments;
-      const progress = stage === "update"
-        ? toolPayload(frame.partialResult) : prior?.tool?.progress;
-      const result = stage === "end"
-        ? toolPayload(frame.result) : prior?.tool?.result;
-      const observed: ToolExecutionObservation["observed"] = [...(prior?.tool?.observed ?? [])];
+      const stage =
+        frame.type === NativeFrameTypes.toolExecutionStart
+          ? "start"
+          : frame.type === NativeFrameTypes.toolExecutionUpdate
+            ? "update"
+            : "end";
+      const args =
+        stage !== "end" && frame.args !== undefined
+          ? toolPayload(frame.args)
+          : prior?.tool?.arguments;
+      const progress =
+        stage === "update"
+          ? toolPayload(frame.partialResult)
+          : prior?.tool?.progress;
+      const result =
+        stage === "end" ? toolPayload(frame.result) : prior?.tool?.result;
+      const observed: ToolExecutionObservation["observed"] = [
+        ...(prior?.tool?.observed ?? []),
+      ];
       if (!observed.includes(stage)) observed.push(stage);
-      const truncated = Boolean(args?.truncated || progress?.truncated || result?.truncated);
-      const payload = stage === "end" ? frame.result
-        : stage === "update" ? frame.partialResult : undefined;
+      const truncated = Boolean(
+        args?.truncated || progress?.truncated || result?.truncated,
+      );
+      const payload =
+        stage === "end"
+          ? frame.result
+          : stage === "update"
+            ? frame.partialResult
+            : undefined;
       const content = z.object({ content: z.unknown() }).safeParse(payload);
       const failed = stage === "end" && frame.isError === true;
       const tool: ToolExecutionObservation = {
-        toolCallId, name: toolName.slice(0, 120),
-        lifecycle: stage === "end" ? failed ? "failed" : "completed" : "running",
+        toolCallId,
+        name: toolName.slice(0, 120),
+        lifecycle:
+          stage === "end" ? (failed ? "failed" : "completed") : "running",
         observed,
-        coverage: !observed.includes("start") || truncated ? "partial" : "observed",
+        coverage:
+          !observed.includes("start") || truncated ? "partial" : "observed",
         truncated,
         ...(args ? { arguments: args } : {}),
         ...(progress ? { progress } : {}),
         ...(result ? { result } : {}),
       };
       this.put({
-        ...prior, id, role: "tool", tool,
+        ...prior,
+        id,
+        role: "tool",
+        tool,
         label: { kind: "literal", text: tool.name },
-        state: stage === "end" ? failed ? "failed" : "complete" : "streaming",
-        text: content.success ? textOf(content.data.content) : prior?.text ?? "",
+        state: stage === "end" ? (failed ? "failed" : "complete") : "streaming",
+        text: content.success
+          ? textOf(content.data.content)
+          : (prior?.text ?? ""),
       });
       this.flush();
       return;
@@ -466,21 +508,28 @@ export class ConversationProjection {
         delete item.tool.progress;
         delete item.tool.result;
       }
-      if (item.subagent) item.subagent = {
-        ...item.subagent, task: "", description: "", currentTool: "", model: "",
-        coverage: "partial", reason: "truncated",
-      };
+      if (item.subagent)
+        item.subagent = {
+          ...item.subagent,
+          task: "",
+          description: "",
+          currentTool: "",
+          model: "",
+          coverage: "partial",
+          reason: "truncated",
+        };
       if (item.detail) item.detail = item.detail.slice(0, 120);
       const text = item.text;
       const thinking = item.thinking ?? "";
       const total = text.length + thinking.length;
       const candidate = (limit: number): ConversationItem => {
-        const textLimit = total ? Math.floor(limit * text.length / total) : 0;
+        const textLimit = total ? Math.floor((limit * text.length) / total) : 0;
         return {
           ...item,
           text: text.slice(0, textLimit),
           ...(item.thinking !== undefined
-            ? { thinking: thinking.slice(0, limit - textLimit) } : {}),
+            ? { thinking: thinking.slice(0, limit - textLimit) }
+            : {}),
         };
       };
       let low = 0;
@@ -526,10 +575,14 @@ export class ConversationProjection {
       role: "assistant",
       label: { kind: "literal", text: "OMP" },
       state: "streaming",
-      text: (snapshot.success ? textOf(snapshot.data.content) : prior?.text ?? "") +
-        stream.text.join(""),
-      thinking: (snapshot.success ? thinkingOf(snapshot.data.content) : prior?.thinking ?? "") +
-        stream.thinking.join(""),
+      text:
+        (snapshot.success
+          ? textOf(snapshot.data.content)
+          : (prior?.text ?? "")) + stream.text.join(""),
+      thinking:
+        (snapshot.success
+          ? thinkingOf(snapshot.data.content)
+          : (prior?.thinking ?? "")) + stream.thinking.join(""),
     });
   }
   flush(): void {

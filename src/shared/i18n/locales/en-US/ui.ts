@@ -167,8 +167,10 @@ export const ui = {
   "ui.tool.arguments": "Invocation arguments",
   "ui.tool.progress": "Observed progress",
   "ui.tool.result": "Observed result",
-  "ui.tool.partial": "Some execution events are missing; shown values do not prove a complete execution history.",
-  "ui.tool.truncated": "Showing part of the structured values. The native record is unchanged.",
+  "ui.tool.partial":
+    "Some execution events are missing; shown values do not prove a complete execution history.",
+  "ui.tool.truncated":
+    "Showing part of the structured values. The native record is unchanged.",
   "ui.history.readOnlyCoverage":
     "History is read-only and shown in saved order.",
   "ui.history.refreshStart": "Refresh starts again from the first page.",

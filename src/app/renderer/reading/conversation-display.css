@@ -27,14 +27,16 @@
     padding: 0;
     margin: 0;
   }
-  :is(.conversation, .conversation-window) > .message[data-message-role="user"] {
+  :is(.conversation, .conversation-window)
+    > .message[data-message-role="user"] {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
     gap: var(--spacing);
     margin-block: calc(var(--panel-padding) * 2) var(--panel-padding);
   }
-  :is(.conversation, .conversation-window) > .message[data-message-role="user"]:first-child {
+  :is(.conversation, .conversation-window)
+    > .message[data-message-role="user"]:first-child {
     margin-block-start: var(--layout-gap);
   }
   :is(.conversation, .conversation-window) > .message > .user-message-bubble {
@@ -47,7 +49,8 @@
     white-space: pre-wrap;
     overflow-wrap: anywhere;
   }
-  :is(.conversation, .conversation-window) > .message[data-message-role="assistant"] {
+  :is(.conversation, .conversation-window)
+    > .message[data-message-role="assistant"] {
     padding-block: var(--layout-gap);
   }
   .message > .message-action-bar {

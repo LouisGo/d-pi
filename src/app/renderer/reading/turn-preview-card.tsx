@@ -82,7 +82,11 @@ export function ConversationTurnPreview({
 }
 
 /** Offscreen turns read their owner only while the preview is actually open. */
-export function WindowTurnPreview({ number, pane, read }: {
+export function WindowTurnPreview({
+  number,
+  pane,
+  read,
+}: {
   number: number;
   pane: HTMLElement;
   read: () => { question: string; reply: string };
@@ -93,12 +97,20 @@ export function WindowTurnPreview({ number, pane, read }: {
     const update = () => {
       frame = null;
       const next = read();
-      setContent((previous) => previous.question === next.question && previous.reply === next.reply ? previous : next);
+      setContent((previous) =>
+        previous.question === next.question && previous.reply === next.reply
+          ? previous
+          : next,
+      );
     };
     const observer = new MutationObserver(() => {
       if (frame === null) frame = requestAnimationFrame(update);
     });
-    observer.observe(pane, { subtree: true, childList: true, characterData: true });
+    observer.observe(pane, {
+      subtree: true,
+      childList: true,
+      characterData: true,
+    });
     update();
     return () => {
       observer.disconnect();

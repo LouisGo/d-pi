@@ -160,14 +160,19 @@ it("reveals structured tool observations without interpreting arguments as mutat
       observed: ["start", "update", "end"],
       coverage: "partial",
       truncated: true,
-      arguments: { value: { path: "src/example.ts", proposed: "not a proven diff" }, truncated: false },
+      arguments: {
+        value: { path: "src/example.ts", proposed: "not a proven diff" },
+        truncated: false,
+      },
       progress: { value: { phase: "checking" }, truncated: false },
       result: { value: { changed: true }, truncated: true },
     },
   });
   const outer = container.querySelector("details");
   await act(() => outer?.querySelector("summary")?.click());
-  const observation = container.querySelector<HTMLDetailsElement>("[data-tool-observation]");
+  const observation = container.querySelector<HTMLDetailsElement>(
+    "[data-tool-observation]",
+  );
   expect(observation).not.toBeNull();
   expect(observation?.open).toBe(false);
   expect(observation?.querySelector("pre")).toBeNull();

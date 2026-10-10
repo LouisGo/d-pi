@@ -159,7 +159,13 @@ export class ConversationModel {
       if (event.seq !== view.seq + 1) {
         const previous = this.store.getState();
         this.store.setState({
-          view: indexedSnapshot(view, previous.itemIds, this.index, view.seq, true),
+          view: indexedSnapshot(
+            view,
+            previous.itemIds,
+            this.index,
+            view.seq,
+            true,
+          ),
         });
         if (this.recoveryAttempts >= 3) {
           this.store.setState({ resyncing: false, resyncExhausted: true });
@@ -199,14 +205,20 @@ export class ConversationModel {
       const prior = this.index.get(event.item.id);
       if (!prior) {
         itemIds = [...itemIds, event.item.id];
-        nativeIdentities = [...nativeIdentities, event.item.nativeRecordId ?? event.item.id];
+        nativeIdentities = [
+          ...nativeIdentities,
+          event.item.nativeRecordId ?? event.item.id,
+        ];
       } else if (prior.nativeRecordId !== event.item.nativeRecordId) {
         const identities = [...nativeIdentities];
-        identities[itemIds.indexOf(event.item.id)] = event.item.nativeRecordId ?? event.item.id;
+        identities[itemIds.indexOf(event.item.id)] =
+          event.item.nativeRecordId ?? event.item.id;
         nativeIdentities = identities;
       }
-      messageCount += (isMessage(event.item) ? 1 : 0) - (prior && isMessage(prior) ? 1 : 0);
-      truncatedCount += (event.item.truncated ? 1 : 0) - (prior?.truncated ? 1 : 0);
+      messageCount +=
+        (isMessage(event.item) ? 1 : 0) - (prior && isMessage(prior) ? 1 : 0);
+      truncatedCount +=
+        (event.item.truncated ? 1 : 0) - (prior?.truncated ? 1 : 0);
       this.index = this.index.with(event.item);
       this.store.setState({
         view: indexedSnapshot(view, itemIds, this.index, event.seq, event.gap),
@@ -215,7 +227,8 @@ export class ConversationModel {
         itemsById: this.index,
         messageCount,
         truncatedCount,
-        bodyRevision: previous.bodyRevision + (bodyChanged(event.item, prior) ? 1 : 0),
+        bodyRevision:
+          previous.bodyRevision + (bodyChanged(event.item, prior) ? 1 : 0),
       });
     });
   }
@@ -232,8 +245,16 @@ function isMessage(item: ConversationItem): boolean {
   return item.role === "user" || item.role === "assistant";
 }
 
-function bodyChanged(item: ConversationItem, prior?: ConversationItem): boolean {
-  return !item.notice && !item.subagentNotice && item.text.length > 0 && item.text !== prior?.text;
+function bodyChanged(
+  item: ConversationItem,
+  prior?: ConversationItem,
+): boolean {
+  return (
+    !item.notice &&
+    !item.subagentNotice &&
+    item.text.length > 0 &&
+    item.text !== prior?.text
+  );
 }
 
 /** Full arrays are materialized only for an explicit snapshot consumer. */

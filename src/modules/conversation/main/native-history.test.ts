@@ -582,35 +582,79 @@ it("continues a short frozen prefix at its committed newline and retains old ima
   const threadId = crypto.randomUUID();
   mkdirSync(join(root, threadId));
   const sessionFile = join(root, threadId, "session.jsonl");
-  const binding = { threadId, sessionFile, sessionId: "session", configContextId: "fixture" };
-  const data = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jfX8AAAAASUVORK5CYII=";
-  const completed = [
-    { type: "session", version: 3, id: "session" },
-    { type: "message", id: "image", parentId: null, message: {
-      role: "user", content: [{ type: "image", mimeType: "image/png", data }],
-    } },
-  ].map((value) => JSON.stringify(value)).join("\n") + "\n";
-  const tail = JSON.stringify({ type: "message", id: "tail", parentId: "image",
-    message: { role: "assistant", content: "completed later" } });
+  const binding = {
+    threadId,
+    sessionFile,
+    sessionId: "session",
+    configContextId: "fixture",
+  };
+  const data =
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jfX8AAAAASUVORK5CYII=";
+  const completed =
+    [
+      { type: "session", version: 3, id: "session" },
+      {
+        type: "message",
+        id: "image",
+        parentId: null,
+        message: {
+          role: "user",
+          content: [{ type: "image", mimeType: "image/png", data }],
+        },
+      },
+    ]
+      .map((value) => JSON.stringify(value))
+      .join("\n") + "\n";
+  const tail = JSON.stringify({
+    type: "message",
+    id: "tail",
+    parentId: "image",
+    message: { role: "assistant", content: "completed later" },
+  });
   writeFileSync(sessionFile, completed + tail.slice(0, 30));
   try {
     const first = await readNativeHistory(root, binding);
-    if (first.kind !== "page" || !first.continuation || !first.entries[0]?.mediaCursor)
+    if (
+      first.kind !== "page" ||
+      !first.continuation ||
+      !first.entries[0]?.mediaCursor
+    )
       throw Error("expected bound continuation and image");
     expect(first.incompleteTail).toBe(true);
     expect(first.continuation.offset).toBe(Buffer.byteLength(completed));
-    const partial = await readNativeHistory(root, binding, { ...first.continuation, append: true });
+    const partial = await readNativeHistory(root, binding, {
+      ...first.continuation,
+      append: true,
+    });
     expect(partial.kind === "page" && partial.entries).toEqual([]);
     appendFileSync(sessionFile, tail.slice(30) + "\n");
-    const appended = await readNativeHistory(root, binding, { ...first.continuation, append: true });
-    expect(appended).toMatchObject({ kind: "page", entries: [{ id: "tail", text: "completed later" }],
-      next: null, incompleteTail: false });
-    expect(await readNativeImage(root, binding, first.entries[0].mediaCursor, "image", 0))
-      .toMatchObject({ kind: "image" });
+    const appended = await readNativeHistory(root, binding, {
+      ...first.continuation,
+      append: true,
+    });
+    expect(appended).toMatchObject({
+      kind: "page",
+      entries: [{ id: "tail", text: "completed later" }],
+      next: null,
+      incompleteTail: false,
+    });
+    expect(
+      await readNativeImage(
+        root,
+        binding,
+        first.entries[0].mediaCursor,
+        "image",
+        0,
+      ),
+    ).toMatchObject({ kind: "image" });
     writeFileSync(`${sessionFile}.replacement`, completed);
     renameSync(`${sessionFile}.replacement`, sessionFile);
-    expect(await readNativeHistory(root, binding, { ...first.continuation, append: true }))
-      .toEqual({ kind: "unavailable", reason: "changed" });
+    expect(
+      await readNativeHistory(root, binding, {
+        ...first.continuation,
+        append: true,
+      }),
+    ).toEqual({ kind: "unavailable", reason: "changed" });
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
