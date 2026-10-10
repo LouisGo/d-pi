@@ -13,7 +13,10 @@ import type {
 } from "../contracts/history";
 import { nativeMessageTime } from "../contracts/message-time";
 import type { ToolExecutionObservation } from "../contracts/tool-observation";
-import { projectToolPayload } from "../core/public";
+import {
+  projectToolPayload,
+  type ToolPayloadByteCounter,
+} from "../core/public";
 import {
   NativeImagePartSchema,
   nativeImageDigest,
@@ -58,6 +61,8 @@ const RecordHeaderSchema = z.object({
   id: z.string(),
   parentId: z.string().nullable().optional(),
 });
+const measureUtf8Bytes: ToolPayloadByteCounter = (text: string): number =>
+  Buffer.byteLength(text, "utf8");
 const PAGE_BYTES = 1024 * 1024;
 const MAX_RECORD_BYTES = 32 * 1024 * 1024;
 const MUTATING_TOOL_NAMES = new Set([
@@ -214,64 +219,23 @@ export async function readNativeHistory(
         return { kind: "unavailable", reason: "unsupported" };
       const complete = bytes.subarray(0, lastNewline + 1);
       const utf8 = new TextDecoder("utf-8", { fatal: true });
-      const lines = utf8.decode(complete).split("\n");
-      const parsedRecords: Array<{
-        raw: unknown;
-        recordOffset: number;
-      }> = [];
+      const entries: HistoryEntry[] = [];
       const parentOf = new Map<string, string | null>();
       const toolCallsByRecord = new Map<
         string,
         Map<string, { name: string; arguments?: unknown }>
       >();
-
+      let omitted = 0;
       let lineOffset = offset;
-      for (const line of lines) {
+      for (const line of utf8.decode(complete).split("\n")) {
         const recordOffset = lineOffset;
         lineOffset += Buffer.byteLength(line, "utf8") + 1;
         if (!line.trim()) continue;
-        let raw: unknown;
-        try {
-          raw = JSON.parse(line);
-        } catch {
-          continue;
-        }
-        parsedRecords.push({ raw, recordOffset });
+        const raw: unknown = JSON.parse(line);
         const header = RecordHeaderSchema.safeParse(raw);
         if (header.success) {
           parentOf.set(header.data.id, header.data.parentId ?? null);
-          const entry = EntrySchema.safeParse(raw);
-          if (
-            entry.success &&
-            entry.data.message.role === "assistant" &&
-            Array.isArray(entry.data.message.content)
-          ) {
-            const calls = new Map<
-              string,
-              { name: string; arguments?: unknown }
-            >();
-            for (const part of entry.data.message.content) {
-              const call = ToolCallPartSchema.safeParse(part);
-              if (call.success) {
-                const callId = call.data.id ?? call.data.toolCallId;
-                if (callId) {
-                  calls.set(callId, {
-                    name: call.data.name,
-                    arguments: call.data.arguments,
-                  });
-                }
-              }
-            }
-            if (calls.size > 0) {
-              toolCallsByRecord.set(header.data.id, calls);
-            }
-          }
         }
-      }
-
-      const entries: HistoryEntry[] = [];
-      let omitted = 0;
-      for (const { raw, recordOffset } of parsedRecords) {
         const record = EntrySchema.safeParse(raw);
         if (!record.success) {
           const type = z.object({ type: z.string() }).safeParse(raw);
@@ -284,6 +248,30 @@ export async function readNativeHistory(
           continue;
         }
         const { id, parentId, message } = record.data;
+        if (
+          message.role === "assistant" &&
+          Array.isArray(message.content)
+        ) {
+          const calls = new Map<
+            string,
+            { name: string; arguments?: unknown }
+          >();
+          for (const part of message.content) {
+            const call = ToolCallPartSchema.safeParse(part);
+            if (call.success) {
+              const callId = call.data.id ?? call.data.toolCallId;
+              if (callId) {
+                calls.set(callId, {
+                  name: call.data.name,
+                  arguments: call.data.arguments,
+                });
+              }
+            }
+          }
+          if (calls.size > 0) {
+            toolCallsByRecord.set(id, calls);
+          }
+        }
         if (imageRequest) {
           if (imageRequest.recordId !== id) continue;
           if (message.role === "user" && Array.isArray(message.content)) {
@@ -353,7 +341,9 @@ export async function readNativeHistory(
           if (
             (message.role !== "toolResult" && message.role !== "tool") ||
             !message.toolCallId ||
-            !message.toolName
+            !message.toolName ||
+            message.toolCallId.length > 512 ||
+            message.toolName.length > 120
           )
             return undefined;
 
@@ -379,9 +369,7 @@ export async function readNativeHistory(
 
           const hasArgs = matchedCall && matchedCall.arguments !== undefined;
           const argumentsPayload = hasArgs
-            ? projectToolPayload(matchedCall.arguments, (t) =>
-                Buffer.byteLength(t, "utf8"),
-              )
+            ? projectToolPayload(matchedCall.arguments, measureUtf8Bytes)
             : undefined;
 
           const resultInput =
@@ -395,7 +383,7 @@ export async function readNativeHistory(
                 : { content: message.content };
           const resultPayload = projectToolPayload(
             resultInput,
-            (t) => Buffer.byteLength(t, "utf8"),
+            measureUtf8Bytes,
           );
 
           const lifecycle: ToolExecutionObservation["lifecycle"] =
@@ -409,14 +397,11 @@ export async function readNativeHistory(
             argumentsPayload?.truncated || resultPayload.truncated,
           );
 
-          const coverage: ToolExecutionObservation["coverage"] =
-            matchedCall && hasArgs && lifecycle !== "unknown"
-              ? "observed"
-              : "partial";
+          const coverage = "partial" as const;
 
           return {
             toolCallId: message.toolCallId,
-            name: message.toolName.slice(0, 120),
+            name: message.toolName,
             lifecycle,
             observed: ["record" as const],
             coverage,

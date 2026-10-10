@@ -469,7 +469,7 @@ it("projects bounded tool execution observations with real identity, arguments f
       name: "write",
       lifecycle: "completed",
       observed: ["record"],
-      coverage: "observed",
+      coverage: "partial",
       truncated: true,
       arguments: {
         value: { path: "out.txt", content: "data" },
@@ -695,6 +695,171 @@ it("recovers arguments by verified ancestry and does not pair by global toolCall
     const res2 = page.entries.find((e) => e.id === "turn2-res");
     expect(res1?.tool?.arguments?.value).toEqual({ path: "turn1.txt" });
     expect(res2?.tool?.arguments?.value).toEqual({ path: "turn2.txt" });
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+it("retains truthful partial coverage and available factual arguments/result for saved tool execution", async () => {
+  const root = mkdtempSync(join(tmpdir(), "d-pi-history-tool-observed-"));
+  const threadId = crypto.randomUUID();
+  const directory = join(root, threadId);
+  mkdirSync(directory);
+  const file = join(directory, "session.jsonl");
+  const binding = {
+    threadId,
+    configContextId: "fixture",
+    sessionId: "session",
+    sessionFile: file,
+  };
+  const body =
+    [
+      { type: "session", version: 3, id: "session" },
+      {
+        type: "message",
+        id: "asst-plain",
+        parentId: null,
+        message: {
+          role: "assistant",
+          content: [
+            {
+              type: "toolCall",
+              id: "call-plain",
+              name: "read",
+              arguments: { path: "hello.txt" },
+            },
+          ],
+        },
+      },
+      {
+        type: "message",
+        id: "res-plain",
+        parentId: "asst-plain",
+        message: {
+          role: "toolResult",
+          toolCallId: "call-plain",
+          toolName: "read",
+          isError: false,
+          content: [{ type: "text", text: "hello world" }],
+        },
+      },
+    ]
+      .map((x) => JSON.stringify(x))
+      .join("\n") + "\n";
+  writeFileSync(file, body);
+  try {
+    const page = await readNativeHistory(root, binding);
+    expect(page.kind).toBe("page");
+    if (page.kind !== "page") return;
+    const entry = page.entries.find((e) => e.id === "res-plain");
+    expect(entry?.tool).toEqual({
+      toolCallId: "call-plain",
+      name: "read",
+      lifecycle: "completed",
+      observed: ["record"],
+      coverage: "partial",
+      truncated: false,
+      arguments: {
+        value: { path: "hello.txt" },
+        truncated: false,
+      },
+      result: {
+        value: {
+          content: [{ type: "text", text: "hello world" }],
+        },
+        truncated: false,
+      },
+    });
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+it("returns unavailable unsupported on malformed non-header JSON line within a page", async () => {
+  const root = mkdtempSync(join(tmpdir(), "d-pi-history-malformed-"));
+  const threadId = crypto.randomUUID();
+  const directory = join(root, threadId);
+  mkdirSync(directory);
+  const file = join(directory, "session.jsonl");
+  const binding = {
+    threadId,
+    configContextId: "fixture",
+    sessionId: "session",
+    sessionFile: file,
+  };
+  const body =
+    JSON.stringify({ type: "session", version: 3, id: "session" }) +
+    "\n" +
+    "this is not valid json {{{{\n";
+  writeFileSync(file, body);
+  try {
+    const page = await readNativeHistory(root, binding);
+    expect(page).toEqual({
+      kind: "unavailable",
+      reason: "unsupported",
+    });
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+it("omits tool DTO when toolCallId or toolName exceeds schema max limits, preserving readable entry body", async () => {
+  const root = mkdtempSync(join(tmpdir(), "d-pi-history-oversized-id-"));
+  const threadId = crypto.randomUUID();
+  const directory = join(root, threadId);
+  mkdirSync(directory);
+  const file = join(directory, "session.jsonl");
+  const binding = {
+    threadId,
+    configContextId: "fixture",
+    sessionId: "session",
+    sessionFile: file,
+  };
+  const oversizedId = "x".repeat(513);
+  const oversizedName = "n".repeat(121);
+  const body =
+    [
+      { type: "session", version: 3, id: "session" },
+      {
+        type: "message",
+        id: "res-oversized-id",
+        parentId: null,
+        message: {
+          role: "toolResult",
+          toolCallId: oversizedId,
+          toolName: "read",
+          isError: false,
+          content: "readable text",
+        },
+      },
+      {
+        type: "message",
+        id: "res-oversized-name",
+        parentId: null,
+        message: {
+          role: "toolResult",
+          toolCallId: "call-ok",
+          toolName: oversizedName,
+          isError: false,
+          content: "other readable text",
+        },
+      },
+    ]
+      .map((x) => JSON.stringify(x))
+      .join("\n") + "\n";
+  writeFileSync(file, body);
+  try {
+    const page = await readNativeHistory(root, binding);
+    expect(page.kind).toBe("page");
+    if (page.kind !== "page") return;
+    const entry1 = page.entries.find((e) => e.id === "res-oversized-id");
+    expect(entry1).toBeDefined();
+    expect(entry1?.text).toBe("readable text");
+    expect(entry1?.tool).toBeUndefined();
+    const entry2 = page.entries.find((e) => e.id === "res-oversized-name");
+    expect(entry2).toBeDefined();
+    expect(entry2?.text).toBe("other readable text");
+    expect(entry2?.tool).toBeUndefined();
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
