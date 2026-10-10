@@ -468,7 +468,9 @@ it("mounts the formal attachment controls and removes a failed atomic reference 
     await new Promise((resolve) => setTimeout(resolve, 20));
   });
   expect(container.textContent).toContain("failed.pdf");
-  expect(container.textContent).toContain("PDF");
+  expect(
+    container.querySelector("[data-attachment-id]")?.getAttribute("aria-label"),
+  ).toContain("PDF");
   expect(container.querySelector(".composer-notice")).toBeNull();
   await act(() => {
     editor.commands.setNodeSelection(8);

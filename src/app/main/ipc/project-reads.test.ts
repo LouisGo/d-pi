@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { IpcMain, IpcMainInvokeEvent } from "electron";
 import { afterEach, expect, it, vi } from "vitest";
+import { AttachmentStore } from "../../../modules/input/main/public";
 import type { DiagnosticEvent } from "../../../platform/main/diagnostics/public";
 import { AppStorage } from "../wiring/app-storage";
 import type { ProjectReadContext } from "./context";
@@ -518,4 +519,109 @@ it("reads a bound blob image and rechecks the active Thread after resolving SDK 
   f.store.threads.create("/new-active-thread");
   finish(blobs);
   await expect(pending).rejects.toThrow("Foreign Thread");
+});
+
+it("projects real mixed attachment receipts through history IPC and its durable presentation index", async () => {
+  const f = setup();
+  const threadId = f.thread.threadId;
+  const attachments = new AttachmentStore({
+    directory: join(f.directory, "attachments"),
+    database: f.store.database,
+    validateImage: async () => true,
+  });
+  const md = await attachments.importBytes(threadId, {
+    name: "report.md",
+    mimeType: "text/markdown",
+    bytes: new TextEncoder().encode("# Report"),
+    source: "file",
+  });
+  const txt = await attachments.importBytes(threadId, {
+    name: "notes.txt",
+    mimeType: "text/plain",
+    bytes: new TextEncoder().encode("Notes"),
+    source: "file",
+  });
+  const png = await attachments.importBytes(threadId, {
+    name: "shot.png",
+    mimeType: "image/png",
+    bytes: Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aJ1EAAAAASUVORK5CYII=",
+      "base64",
+    ),
+    source: "paste",
+  });
+  const draft = `Explain ${md.token} and ${txt.token}\n${png.token}`;
+  const prepared = await attachments.prepare(threadId, draft);
+  if (!prepared.ok) throw Error(prepared.reason);
+  const root = join(f.directory, "sessions");
+  mkdirSync(join(root, threadId), { recursive: true });
+  const sessionFile = join(root, threadId, "mixed.jsonl");
+  const binding = {
+    threadId,
+    sessionFile,
+    sessionId: "session",
+    configContextId: "fixture",
+  };
+  f.store.threads.bindNativeSession(binding);
+  f.context.nativeSessionsPath = () => root;
+  const revision = f.store.drafts.save(
+    threadId,
+    f.store.drafts.read(threadId).revision,
+    draft,
+  )!;
+  const receipt = f.store.submissions.prepareSubmission({
+    submissionId: crypto.randomUUID(),
+    threadId,
+    traceId: crypto.randomUUID(),
+    requestId: crypto.randomUUID(),
+    revision,
+    text: draft,
+    content: prepared.content,
+    target: {
+      nativeSessionRef: sessionFile,
+      configContextId: "fixture",
+      processInstanceId: crypto.randomUUID(),
+      connectionGeneration: crypto.randomUUID(),
+    },
+  });
+  f.store.submissions.acknowledgeSubmission(receipt.submissionId);
+  writeFileSync(
+    sessionFile,
+    [
+      { type: "session", version: 3, id: "session" },
+      {
+        type: "message",
+        id: "mixed",
+        parentId: null,
+        message: {
+          role: "user",
+          content: [
+            { type: "text", text: prepared.content.message },
+            {
+              type: "image",
+              mimeType: "image/webp",
+              data: `blob:sha256:${"c".repeat(64)}`,
+            },
+          ],
+        },
+      },
+    ]
+      .map((value) => JSON.stringify(value))
+      .join("\n") + "\n",
+  );
+  for (let read = 0; read < 2; read++) {
+    if (read) f.store.submissions.initializePresentationIndex();
+    const page = await f.request("history:read", { threadId, cursor: null });
+    expect(page.entries[0]).toMatchObject({
+      images: [{ mimeType: "image/webp", digest: "c".repeat(64) }],
+      files: [{ name: "report.md" }, { name: "notes.txt" }],
+      inputParts: [
+        { kind: "text", text: "Explain " },
+        { kind: "file", index: 0 },
+        { kind: "text", text: " and " },
+        { kind: "file", index: 1 },
+        { kind: "text", text: "\n" },
+      ],
+    });
+  }
 });

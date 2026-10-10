@@ -1,9 +1,12 @@
 import { Node } from "@tiptap/core";
-import type { DOMOutputSpec } from "@tiptap/pm/model";
 import type { EditorState, Transaction } from "@tiptap/pm/state";
 import { z } from "zod";
 import { createI18n } from "../../../../shared/i18n/create-i18n";
 import type { SupportedLocale } from "../../../../shared/i18n/locale";
+import {
+  composerTagMarkup,
+  fileContextGlyph,
+} from "../../../ui/renderer/public";
 import {
   type Attachment,
   AttachmentFailureReasonSchema,
@@ -75,37 +78,6 @@ export const AttachmentReference = Node.create({
                   : "attachment.coverageGap",
               )
             : null;
-    const children: DOMOutputSpec[] = [
-      [
-        "span",
-        { class: "composer-context-type", "aria-hidden": "true" },
-        badgeIcon(fileTypeIconPaths(file.kind)),
-        ["span", { class: "composer-context-type-label" }, file.label],
-      ],
-      ["span", { class: "composer-context-name" }, name],
-    ];
-    if (size)
-      children.push([
-        "span",
-        { class: "composer-context-size", "aria-hidden": "true" },
-        size,
-      ]);
-    if (status && notice)
-      children.push([
-        "span",
-        {
-          class: "composer-context-status",
-          "data-status": status,
-          "aria-hidden": "true",
-        },
-        badgeIcon([
-          status === "preparing"
-            ? "M12 3a9 9 0 1 1-9 9M12 6v6l4 2"
-            : status === "failed"
-              ? "M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM12 7v6m0 4h.01"
-              : "M12 3 2 21h20ZM12 9v5m0 4h.01",
-        ]),
-      ]);
     const consent =
       node.attrs.textOnly &&
       Array.isArray(node.attrs.coverageGaps) &&
@@ -121,12 +93,37 @@ export const AttachmentReference = Node.create({
     ]
       .filter(Boolean)
       .join(" · ");
-    return [
-      "span",
+    return composerTagMarkup(
       {
-        class: "composer-context-token",
+        label: name,
+        detail: size,
+        leading: fileContextGlyph(
+          name,
+          fileTypeIconPaths(file.kind),
+          file.kind,
+        ),
+        tone: external ? "blue" : "teal",
+        description: [notice, consent !== notice ? consent : null]
+          .filter(Boolean)
+          .join(" · "),
+        ...(status && notice
+          ? {
+              status: {
+                kind: status,
+                label: notice,
+                paths: [
+                  status === "preparing"
+                    ? "M12 3a9 9 0 1 1-9 9M12 6v6l4 2"
+                    : status === "failed"
+                      ? "M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM12 7v6m0 4h.01"
+                      : "M12 3 2 21h20ZM12 9v5m0 4h.01",
+                ],
+              },
+            }
+          : {}),
+      },
+      {
         contenteditable: "false",
-        role: "button",
         "data-attachment-id": id,
         "data-reference-kind": node.attrs.referenceKind,
         "data-context-kind": node.attrs.contextKind,
@@ -134,13 +131,9 @@ export const AttachmentReference = Node.create({
         "data-status": status,
         "data-reason": node.attrs.reason,
         "aria-label": label,
-        title: [name, size, notice, consent !== notice ? consent : null]
-          .filter(Boolean)
-          .join(" · "),
         hidden: hidden ? true : undefined,
       },
-      ...children,
-    ];
+    );
   },
   renderText({ node }) {
     return `[[dpi-attachment:${Id.parse(node.attrs.id)}]]`;
@@ -157,27 +150,6 @@ export function isAttachmentNodeHidden(
         (typeof attrs.mimeType === "string" &&
           attrs.mimeType.toLowerCase().startsWith("image/"))))
   );
-}
-
-function badgeIcon(paths: readonly string[]): DOMOutputSpec {
-  return [
-    "http://www.w3.org/2000/svg svg",
-    {
-      viewBox: "0 0 24 24",
-      width: 16,
-      height: 16,
-      fill: "none",
-      stroke: "currentColor",
-      "stroke-width": 1.5,
-      "stroke-linecap": "round",
-      "stroke-linejoin": "round",
-      focusable: "false",
-      "aria-hidden": "true",
-    },
-    ...paths.map(
-      (d): DOMOutputSpec => ["http://www.w3.org/2000/svg path", { d }],
-    ),
-  ];
 }
 
 export function contextTypeLabel(name: unknown, kind?: unknown): string {
@@ -270,7 +242,7 @@ export function attachmentMention(
     "\n",
     "\ufffc",
   );
-  const found = /(?:^|\s)@([^\s\ufffc]*)$/.exec(prefix);
+  const found = /(?:^|[\s\ufffc])@([^\s\ufffc]*)$/.exec(prefix);
   if (!found) return null;
   const query = found[1] ?? "";
   return { from: from - query.length - 1, to: from, query };

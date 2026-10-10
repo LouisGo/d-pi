@@ -508,3 +508,30 @@ schema 16 独立管理标题覆盖、完成、父关联和删除/分叉意图；
 2026-10-10 侧栏间距与层级反馈：移除项目组尾侧 margin 与分区顶部 16/24px 的叠加，组合层统一分区 gap 12px、项目之间 8px；项目内部会话行仍沿用 34px 与 19px 缩进。共享 NavigationSection 统一置顶/项目/已完成与静态骨架的标题字阶、箭头、heading/content 关系和 hidden 折叠；已完成使用首次展开才挂载、之后折叠保留节点的共享能力，避免启动时挂载全部历史行和再次展开重建。共享 NavigationDisclosure 将展开/收回与普通会话区分：12px 无背景辅助文字、方向箭头及实际剩余条数，鼠标沿用语义变色/scale，键盘保留可见焦点；操作仍调用唯一 ThreadCommands 与持久化意图。
 
 验证：剩余会话的可访问名称、已完成折叠保留节点和首次折叠不挂载先失败再实施，相关侧栏/加载/投影/模型共四文件 29 项通过。根/Renderer 类型、Biome、设计/交互/i18n lint 通过，Impeccable layout 检测无命中。隔离 Chromium 的正式组件与合成数据复现用户的置顶项目、折叠项目、展开已完成结构，实测两个分区间隔均 12px，三个标题与展开辅助操作均 12px、会话 13px，浅/深色 280px 侧栏无水平溢出，辅助操作背景透明、普通鼠标 outline:none。临时入口/服务/标签清理，未重开真实 Electron 或操作用户数据，未测逐帧/VoiceOver/物理长按拖拽；源码与 Dev 交付，无 commit/push，用户认可 pending。
+
+
+## 2026-10-10 Composer 与用户消息呈现一致性
+
+用户明确要求内联标签与文字垂直居中、发送后的结构对应 Composer，并清除重复的“会话详情”。补充 D-10/D-16 的呈现要求，取代 10-09 将文件/图片整体放在气泡外的做法：图片在同一气泡内上方，文件标签保留提交草稿中的位置、重复引用与换行；标签的类型图标、名称、大小、颜色和几何共用 UI 的 context token 配方。项目文件/目录与外部文件保留各自标签信息。仅在当前真实 session/payload 与发送收据完全匹配且各候选呈现一致时生成 inputParts；无法证明时保留原生文字，不猜测标签或授予新文件访问。预览继续读取冻结正文范围与验证后的原生图片。正文和浮动控件的详情入口、相关 callback/props/失效文案已清理；真实缺口提示与会话工具中的原生历史仍保留。
+
+验证：原始内联位置/重复引用测试先失败再实现；阅读区与 Main history/project-reads 共 18 文件 120 项通过，覆盖冻结预览、滚动/虚拟窗口与已发送内容。Renderer/Main 类型、Biome、设计/交互/i18n lint、架构门禁、40 项架构测试及生成结构报告通过。扩大到 appearance-subscriptions 时出现 3 个侧栏断言失败，已在未改动起点 7f11172 的隔离 archive 中复现同样 3 项；未纳入本轮修复。隔离 Chromium 以正式 UI/消息组件、真实 Tiptap AttachmentReference 和合成数据对比：浅色宽区的编辑/消息标签均 15px 字号、21px 行高、23px 高、6px 圆角，颜色一致；暗色 480px 内容区标签收缩和文字换行，无标签溢出，图片不可用占位与正文在同一气泡上下排列。未发真实供应商请求，未验证新发送/冷恢复完整 Electron 链路；当前 Dev 的 Main 需正常重启后加载新增历史投影。临时渲染入口与标签清理。源码 diff 交付，用户试用/认可待确认。
+
+
+### 2026-10-10 全局 outline 追加反馈
+
+用户再次指出附件标签关闭预览后出现蓝色 outline。原全局 CSS 已禁止普通焦点，但共享焦点来源在弹层卸载/回焦时丢失了鼠标来源；前三个回返测试先失败，再修复 `installControlFocusVisibility`。已知 dialog/menu/listbox/popover/hover-card 的回返通过弱引用记录精确目标；关闭控件或非控件外部点击导致弹层卸载后仍保持指针来源，Tab/Escape 与无关独立焦点不继承。样式统一在最先声明的 interaction-policy 层清除非 focus-visible 及指针焦点的 outline，包括根、Portal 和伪元素，以 important 层优先级抵抗后加载的高 specificity/important 规则，不给消息标签加局部补丁。
+
+有限 Chromium 验证使用正式 MessageMedia/Modal 与合成冻结文件：鼠标打开再关闭预览，焦点回到附件标签且实际 outlineStyle:none；点击输入框虽匹配 focus-visible，仍为 none。额外高优先级 important 的 hover/active/focus/focus-within 规则和伪元素注入场景中，实际 focus-within 与伪元素 outline 均为 none；Tab 到下一按钮仍为 solid 的键盘可见焦点。未操作用户会话数据或供应商，未实测 VoiceOver；当前 Renderer 变更随 Dev 加载，不涉及 Main 重启要求。本次源码 diff 尚未提交。
+
+
+### 2026-10-10 混合附件内联回退修复
+
+用户真实 `.md + .txt + PNG` 提交暴露前轮合成展示测试的缺口。只读核查冻结收据与原生记录：正文完全一致，固定 OMP 18.8.7 在保存前按模型 normalizeModelContextImages 将 PNG 转为 WebP/blob，原生摘要与输入资源摘要不同。原展示投影将图片摘要相等作为整条消息的门槛，导致文本附件回退成原始 envelope 正文。
+
+展示等价性继续核对 Thread、nativeSessionRef、configContextId、完整正文、图片数量及有序图片名称，并要求所有匹配候选给出一致的文件/内联投影；不再把跨转码字节摘要相等当作文本展示前提。图片及其摘要、惰性读取和 blob 校验仍完全沿用原生记录，不据展示等价推断提交身份或执行结果。附件内容仍保留在原始历史与冻结收据中，预览按原文偏移读取。
+
+先增加实际 AttachmentStore 导入/prepare → inline/blob WebP 原生历史读回回归，两项均在旧实现失败；最小修复后通过。另增加真实 SQLite draft → receipt → presentation index → history:read IPC 回归，覆盖索引重建。6 文件 78 项受影响测试通过，Main/Renderer TypeScript、Biome、design/interaction lint、架构/文档/结构/状态检查通过。
+
+正常退出旧 Dev 并重新启动 `pnpm dev` 后，直接验证用户截图中的既有混合附件消息：图片在上、两个文本文件回到原始内联位置、前后文字完整保留；Markdown 标签能打开冻结全文预览，鼠标关闭后焦点返回原标签且无 outline。没有重新发送文件或调用计费 Provider；没有打开可能含授权凭据的 txt 预览。该证据是既有真实提交的修复后冷读取与桌面展示，不宣称本轮重新执行 Provider 发送。当前 main WIP，未提交，体验认可仍 pending。
+
+2026-10-11 用户授权本次会话全部相关修复本地 commit，包括 Composer/消息呈现、混合附件历史投影、全局焦点边界与通用标签。提交前增量复核 Main 历史/真实收据 IPC、阅读和焦点五文件 37 项通过，Main 类型通过；与通用标签的 101 项相关回归共同构成本次证据。其他任务已提交的原生文档转换不重复纳入；不 push，不改变用户体验认可状态。

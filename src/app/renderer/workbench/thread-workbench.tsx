@@ -188,15 +188,6 @@ const ThreadContent = memo(function ThreadContent({
   const [choosingModel, setChoosingModel] = useState(false);
   const [choosingHistory, setChoosingHistory] = useState(false);
   const historyTrigger = useRef<HTMLButtonElement>(null);
-  const openHistoryTools = useCallback(() => {
-    toolsReturnFocus.current =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : toolsTrigger.current;
-    setChoosingModel(false);
-    setChoosingHistory(true);
-    setToolsOpen(true);
-  }, []);
   const modelDisclosure = useRef<HTMLDetailsElement>(null);
   const chooseModel = useCallback(() => {
     toolsReturnFocus.current =
@@ -349,7 +340,6 @@ const ThreadContent = memo(function ThreadContent({
           thread={thread}
           onTakeover={onReadingTakeover}
           view="conversation"
-          onOpenHistory={openHistoryTools}
           active={readingView === "conversation"}
         >
           {thread.reading &&
@@ -361,7 +351,6 @@ const ThreadContent = memo(function ThreadContent({
                 threadId={thread.context.threadId}
                 active={readingView === "conversation"}
                 positions={thread.readingSources}
-                onOpenHistory={openHistoryTools}
               />
             ) : (
               <>
@@ -375,7 +364,6 @@ const ThreadContent = memo(function ThreadContent({
                   initializing={initializing}
                   model={thread.reading}
                   positions={thread.readingSources}
-                  onOpenHistory={openHistoryTools}
                 />
               </>
             ))}

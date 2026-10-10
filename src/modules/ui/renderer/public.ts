@@ -4,6 +4,7 @@ export {
   type AnswerSelection,
 } from "./answer-options";
 export { Button, type ButtonProps } from "./button";
+export { fileContextGlyph } from "./components/icons/_file-context-glyphs";
 export type {
   IconProps,
   IconVariant,
@@ -24,6 +25,14 @@ export {
   SearchIcon,
   StarIcon,
 } from "./components/icons/common";
+export {
+  ComposerTag,
+  type ComposerTagIcon,
+  type ComposerTagProps,
+  ComposerTagTooltips,
+  composerTagLabel,
+  composerTagMarkup,
+} from "./composer-tag";
 export {
   ChoiceGroup,
   type ChoiceGroupProps,
@@ -101,3 +110,4 @@ export {
   type SettingsPageProps,
 } from "./settings";
 export { Skeleton, type SkeletonProps } from "./skeleton";
+export { Tooltip, TooltipProvider } from "./tooltip";

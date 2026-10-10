@@ -34,7 +34,6 @@ export function SavedConversation({
   threadId,
   active,
   positions,
-  onOpenHistory,
   initializing = false,
 }: {
   model: ConversationModel;
@@ -42,7 +41,6 @@ export function SavedConversation({
   threadId: string;
   active: boolean;
   positions?: ReadingPositions | undefined;
-  onOpenHistory?: (() => void) | undefined;
   initializing?: boolean;
 }) {
   const { t } = useI18n();
@@ -370,11 +368,6 @@ export function SavedConversation({
           <p className="muted">{t("ui.conversation.empty")}</p>
         )}
       {gap && <p role="status">{t("ui.conversation.gap")}</p>}
-      {onOpenHistory && live.view?.gap && (
-        <Button variant="ghost" onClick={onOpenHistory}>
-          {t("ui.conversation.openHistory")}
-        </Button>
-      )}
       <div ref={sentinel} />
     </section>
   );
@@ -544,6 +537,7 @@ function TimelineRow({
           <MessageMedia
             key={JSON.stringify([threadId, entry.id])}
             entry={entry}
+            includeText
             bridge={bridge}
             threadId={threadId}
           />

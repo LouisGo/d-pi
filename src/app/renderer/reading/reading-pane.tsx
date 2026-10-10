@@ -21,13 +21,11 @@ export function ReadingPane({
   children,
   onAdapterChange,
   onTakeover,
-  onOpenHistory,
 }: {
   thread: Pick<ThreadModel, "readingSources" | "readingPositions" | "reading">;
   view: ReadingView;
   active: boolean;
   children: ReactNode;
-  onOpenHistory?: (() => void) | undefined;
   onTakeover?: (() => void) | undefined;
   onAdapterChange?:
     | ((adapter: ReturnType<typeof attachReadingAnchor> | null) => void)
@@ -111,11 +109,7 @@ export function ReadingPane({
             {ref.current && (
               <ConversationOutline pane={ref.current} anchor={liveAnchor} />
             )}
-            <LiveReadingControls
-              model={thread.reading}
-              anchor={liveAnchor}
-              onOpenHistory={onOpenHistory}
-            />
+            <LiveReadingControls model={thread.reading} anchor={liveAnchor} />
           </>
         )}
     </>

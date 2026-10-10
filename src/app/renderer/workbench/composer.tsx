@@ -36,6 +36,7 @@ import {
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import {
   Button,
+  ComposerTagTooltips,
   Disclosure,
   DisclosureTrigger,
   TextArea,
@@ -432,6 +433,9 @@ export function Composer({
             !hasVisibleContent(editor.state.doc)
           }
           editor={editor}
+        />
+        <ComposerTagTooltips
+          container={hidden ? null : (editor?.view.dom ?? null)}
         />
         {clipboardFeedback && (
           <p role="status" className="muted">

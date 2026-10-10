@@ -177,10 +177,16 @@
   }
 }
 
-/* Global outline boundary, including portals and vendor controls. This narrowly
-   scoped important declaration is intentional: component hover/active/focus
-   rules cannot bypass the accessibility-only outline contract. */
-:where(*):not(:focus-visible),
-:root[data-pointer-focus="true"] :where(*) {
-  outline: none !important;
+/* The first cascade layer owns this boundary: important layer precedence also
+   defeats later vendor hover/active/focus rules. Keyboard-visible focus remains. */
+@layer interaction-policy {
+  :where(*):not(:focus-visible),
+  :where(*):not(:focus-visible)::before,
+  :where(*):not(:focus-visible)::after,
+  :root[data-pointer-focus="true"],
+  :root[data-pointer-focus="true"] :where(*),
+  :root[data-pointer-focus="true"] :where(*)::before,
+  :root[data-pointer-focus="true"] :where(*)::after {
+    outline: none !important;
+  }
 }

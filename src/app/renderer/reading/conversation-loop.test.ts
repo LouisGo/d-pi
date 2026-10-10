@@ -15,10 +15,9 @@ vi.mock("./markdown", () => ({
 }));
 
 it.each(["gap", "truncated"] as const)(
-  "offers native history from a nonempty live %s without changing execution",
+  "keeps live %s readable without a redundant details action",
   async (kind) => {
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
-    const onOpenHistory = vi.fn();
     const model = new ConversationModel({
       connect: (_thread, listener) => {
         listener({
@@ -49,16 +48,14 @@ it.each(["gap", "truncated"] as const)(
         root.render(
           createElement(I18nProvider, {
             initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" },
-            children: createElement(Conversation, { model, onOpenHistory }),
+            children: createElement(Conversation, { model }),
           }),
         ),
       );
       const button = [...host.querySelectorAll("button")].find(
         (node) => node.textContent === "Thread details",
       );
-      expect(button).toBeDefined();
-      await act(() => button?.click());
-      expect(onOpenHistory).toHaveBeenCalledTimes(1);
+      expect(button).toBeUndefined();
       expect(model.getSnapshot()?.items[0]?.text).toBe("retained answer");
     } finally {
       await act(() => root.unmount());

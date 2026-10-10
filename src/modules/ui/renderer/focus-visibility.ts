@@ -5,16 +5,28 @@ export function installControlFocusVisibility(document: Document) {
   let pointerTarget: Element | null = null;
   let pointerFocusTarget: Element | null = null;
   let editingTarget: Element | null = null;
+  const popupSelector =
+    '[role="dialog"], [role="menu"], [role="listbox"], [data-slot="popover"], [data-slot="hover-card"]';
+  const popupReturnTargets = new WeakMap<Element, Element>();
+  let pointerReturnTarget: Element | null = null;
   let pointerContextMenu = false;
   const clearPointerFocus = () => {
     pointerTarget = null;
     pointerFocusTarget = null;
     editingTarget = null;
     pointerContextMenu = false;
+    pointerReturnTarget = null;
     delete root.dataset.pointerFocus;
   };
   const pointerDown = (event: PointerEvent) => {
     pointerTarget = event.target instanceof Element ? event.target : null;
+    // Capture before the popup unmounts and relatedTarget becomes null.
+    const popup =
+      pointerTarget?.closest(popupSelector) ??
+      document.activeElement?.closest(popupSelector);
+    pointerReturnTarget = popup
+      ? (popupReturnTargets.get(popup) ?? null)
+      : null;
     pointerFocusTarget = null;
     editingTarget = null;
     pointerContextMenu = false;
@@ -35,6 +47,7 @@ export function installControlFocusVisibility(document: Document) {
         ? event.target.closest('[aria-haspopup="menu"]')
         : null;
     if (trigger) {
+      pointerReturnTarget = null;
       pointerTarget = trigger;
       pointerFocusTarget = null;
       editingTarget = null;
@@ -102,7 +115,11 @@ export function installControlFocusVisibility(document: Document) {
       event.relatedTarget instanceof Element &&
       !!pointerTarget &&
       (pointerTarget.contains(event.relatedTarget) ||
-        event.relatedTarget.contains(pointerTarget));
+        event.relatedTarget.contains(pointerTarget)) &&
+      (!event.relatedTarget.matches(
+        'input, textarea, [contenteditable="true"], [contenteditable="plaintext-only"]',
+      ) ||
+        !!target.closest(popupSelector));
     const controlledPopup = pointerTarget?.closest("[aria-controls]");
     const fromControlledTrigger = controlledPopup
       ?.getAttribute("aria-controls")
@@ -113,19 +130,48 @@ export function installControlFocusVisibility(document: Document) {
     // does not grant that origin to a different destination or survive Tab.
     const returningToPointerFocus =
       event.relatedTarget === null && target === pointerFocusTarget;
+    const returningFromPointerPopup =
+      root.dataset.pointerFocus === "true" && target === pointerReturnTarget;
     const fromPointerContextMenu =
       pointerContextMenu && !!target.closest('[data-slot="context-menu"]');
     if (
-      !pointerTarget ||
-      (!pointerTarget.contains(target) &&
-        !target.contains(pointerTarget) &&
-        !fromTrigger &&
-        !fromControlledTrigger &&
-        !fromPointerContextMenu &&
-        !returningToPointerFocus)
+      !(
+        pointerTarget &&
+        (pointerTarget.contains(target) || target.contains(pointerTarget))
+      ) &&
+      !fromTrigger &&
+      !fromControlledTrigger &&
+      !fromPointerContextMenu &&
+      !returningToPointerFocus &&
+      !returningFromPointerPopup
     ) {
       clearPointerFocus();
-    } else pointerFocusTarget = target;
+    } else {
+      const popup = target.closest(popupSelector);
+      const previous = event.relatedTarget;
+      if (
+        popup &&
+        !returningFromPointerPopup &&
+        !(previous instanceof Element && popup.contains(previous))
+      ) {
+        const origin =
+          fromControlledTrigger || fromPointerContextMenu
+            ? (pointerTarget?.closest(
+                '[aria-controls], button, [role="button"]',
+              ) ?? pointerTarget)
+            : previous;
+        if (origin instanceof Element) popupReturnTargets.set(popup, origin);
+      }
+      if (returningFromPointerPopup) {
+        pointerTarget = null;
+        pointerReturnTarget = null;
+      } else if (!popup) {
+        // Clicking a different field outside a popup establishes its own focus;
+        // it must not leave a stale return grant for later assistive navigation.
+        pointerReturnTarget = null;
+      }
+      pointerFocusTarget = target;
+    }
   };
   document.addEventListener("pointerdown", pointerDown, true);
   document.addEventListener("pointerover", pointerOver, true);

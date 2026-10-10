@@ -28,6 +28,8 @@ export const HistoryImageSchema = z.strictObject({
 });
 export type HistoryImage = z.infer<typeof HistoryImageSchema>;
 export const HistoryFileSchema = z.strictObject({
+  contextKind: z.enum(["project", "external"]).optional(),
+  referenceKind: z.enum(["file", "directory"]).optional(),
   name: z.string().max(512),
   byteLength: z.number().int().nonnegative(),
   start: z.number().int().nonnegative().optional(),
@@ -42,6 +44,18 @@ export const HistoryEntrySchema = z.strictObject({
   thinking: z.string().optional(),
   timestamp: MessageTimestampSchema.optional(),
   displayText: z.string().optional(),
+  /** Verified submitted draft order; indexes refer to frozen files, never live paths. */
+  inputParts: z
+    .array(
+      z.discriminatedUnion("kind", [
+        z.strictObject({ kind: z.literal("text"), text: z.string() }),
+        z.strictObject({
+          kind: z.literal("file"),
+          index: z.number().int().nonnegative().max(127),
+        }),
+      ]),
+    )
+    .optional(),
   images: z.array(HistoryImageSchema).max(128).optional(),
   files: z.array(HistoryFileSchema).max(128).optional(),
   mediaCursor: HistoryCursorSchema.optional(),

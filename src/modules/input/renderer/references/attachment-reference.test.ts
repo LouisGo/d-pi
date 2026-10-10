@@ -80,3 +80,36 @@ it("does not turn malformed reserved-looking text into a reference", () => {
     editor.destroy();
   }
 });
+
+it("starts the next @ query immediately after each accepted reference, without inserting draft spaces", () => {
+  const schema = getSchema(plainTextEditorOptions.extensions);
+  let state = EditorState.create({
+    schema,
+    doc: schema.nodeFromJSON(draftDocument("@first")),
+  });
+  state = state.apply(
+    state.tr.setSelection(TextSelection.create(state.doc, 7)),
+  );
+  state = state.apply(
+    insertAttachmentReference(
+      state,
+      { id, name: "first.ts" },
+      { from: 1, to: 7 },
+    ),
+  );
+  for (const [nextId, name] of [
+    ["c7fd3f31-0f06-4c31-aef7-f7cdd3d39013", "second.ts"],
+    ["daebf3c8-b8a6-4770-b8c0-e23b8e4cb42f", "third.ts"],
+  ]) {
+    state = state.apply(state.tr.insertText("@"));
+    const trigger = attachmentMention(state);
+    expect(trigger?.query).toBe("");
+    expect(trigger?.from).toBe(state.selection.from - 1);
+    if (!trigger) throw Error("next reference trigger missing");
+    state = state.apply(
+      insertAttachmentReference(state, { id: nextId!, name: name! }, trigger),
+    );
+  }
+  expect(state.doc.firstChild?.childCount).toBe(3);
+  expect(state.doc.firstChild?.textContent).toBe("");
+});

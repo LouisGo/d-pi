@@ -127,6 +127,7 @@ Base UI / 选择性改造的上游源码 / 专用渲染与编辑能力
 
 - 组件默认外观须能识别操作入口，hover/active/selected/disabled/focus-visible 分别表达含义。共享 Button 管理中性主操作、蓝色 accent 强调操作、secondary、ghost、destructive、navigation 与 icon；主操作按下色来自 `--primary-active`，其他状态复用现有主题 token。折叠标题沿用原生 disclosure，文字链接默认有颜色及下划线。
 - 2026-10-07 用户明确要求并直接修复存量控件：默认、普通 focus、hover、active 不显示 outline；只允许键盘/无障碍的 `:focus-visible` 提示。中央 CSS 对所有元素（含 Portal 与第三方内部控件）禁止非 focus-visible 的 outline；共享交互入口标记指针焦点，补足文本输入框鼠标点击也可能匹配 focus-visible 的浏览器行为。键盘导航/激活或独立无障碍焦点移动解除指针标记。鼠标反馈使用背景与文字，不新增彩色 border 或 ring shadow；保留 caret、焦点协议与无障碍语义。
+- 2026-10-10 截图追加反馈：统一禁止 hover、active、普通 focus、focus-within 的 outline，覆盖伪元素。中央边界置于最先声明的 `interaction-policy` 层，用 important 层优先级压过后加载的供应商规则；共享焦点入口保留已知弹窗/菜单/列表的鼠标焦点回返，不将关闭预览后的程序化回焦误判为键盘导航。Tab、Escape 等键盘导航仍解除鼠标标记，独立无障碍焦点不继承无关弹层的来源。
 - 2026-10-08补充：原生文件选择或窗口回返可能没有DOM `relatedTarget`；仅回到已获得鼠标来源的同一焦点目标时保留该来源。键盘导航清除后不得复活，独立焦点目标不继承，不在异步附件结算后强行聚焦。
 - 默认 `user-select: none`。需要阅读/复制的正文、工具输出、历史、收据、原生交互及队列文本由内容拥有者加 `data-selectable`；输入/textarea/contenteditable 按原生语义开放。trace、Thread 身份、目录路径、file-meta 内容、运行来源、附件预览和 alert 是中央规则登记的内容例外，不按所有 p/span 或整个工作区开放。
 - 可选择区域内的按钮、链接、summary、导航/选项及其控件标签仍不可选；消息 heading 与装饰图标也不参与正文选择。新内容区域优先使用 `data-selectable`，不另写 select-text/all/auto、内联 userSelect 或局部 user-select 例外。
@@ -209,3 +210,12 @@ Thread 列表底部的横向功能导航独立于状态栏，设置占宽区并�
 2026-10-10 侧栏后续反馈统一到共享控件：Button 的 `pending` 表达短暂命令等待，通过 Base UI focusableWhenDisabled 阻止鼠标/键盘激活，同时保留节点、焦点与正常透明度；`disabled` 继续表达真正不可用。`appearance="plain"` 仅保留图标/文字颜色反馈和统一按下 scale，允许同 success/destructive 语义组合，业务区域不覆盖 Button 的背景规则。共享菜单危险项的 highlighted 背景/前景使用 destructive，完成使用 success。App 共用 TooltipProvider（120ms 打开、0ms 关闭、相邻提示即时切换）；IconButton 默认上方、2px 间距，可显式覆盖方向。文字 Tooltip 不可悬停、不桥接指针，退出/锚点隐藏立即不可见；可交互预览继续使用 HoverCard，不混用两个生命周期。
 
 2026-10-10 侧栏 polish 将带快捷动作的导航行收进 UI 公开组件 `NavigationRow` / `NavigationRowLabel`：主按钮保持整行命中，末尾图标使用固定覆盖区；悬浮仅改变文字遮罩，不改变文字宽度或截断位置。整行持有 hover/current/menu-active 背景，图标仍使用 plain appearance；隐藏动作同时移出鼠标命中和无障碍树，主按钮键盘聚焦后恢复动作导航。公开行可转交 React 19 ref；项目/会话共用，业务动作仍只调用中央指令入口。
+
+
+## 通用 Composer 标签（2026-10-10）
+
+UI 公开面 `ComposerTag` 接收 label、detail、leading 与 status 展示数据，不拥有附件或项目文件业务。文件类型、大小、准备状态及预览动作由领域 companion 提供。React 消息标签与 Tiptap 原子节点共享 `composerTagMarkup` 配方；编辑器使用一个委托的 `ComposerTagTooltips`，避免每个节点创建 React root。Tooltip 沿用共享组件，支持鼠标悬停和方向键选择原子节点。
+
+名称超过 36 个 Unicode grapheme 时保留前 21、后 14 个，中间使用省略号；窄窗继续收缩前段并保留尾段。Tooltip 和无障碍名称保留完整内容。名称按正文的 0.86em 缩放，辅助体积文字按标签的 0.82em、普通字重及较弱颜色表达层级，两者垂直居中。标签前后各一个展示空格，不改变私有 token、持久化草稿、冻结提交或复制原文。组件看板提供短名、长名、项目文件及非文件标签示例。
+
+2026-10-11 按用户图 1 和固定同目录 t3code 的 `ContextChip` / `FileChip` / `PierreEntryIcon` 源码修正：文件 companion 仅显示类型图标，不叠加 MD/TS/JSON 文字。通用标签提供 neutral/blue/teal 展示 tone；外部文件用 blue，项目引用用 teal。文件字形由 UI Icon Layer 拥有，选择适用的固定 Pierre 1.0.0-beta.6 资源并保留 Apache-2.0 许可；PDF 用现有 Hugeicons 4.3.5 的 Pdf01 字形，统一 d-pi 线宽与尺寸。图标独立消费已有主题类型色：PDF 红、表格/Markdown 绿、文档/TypeScript 蓝、React 青、JSON/HTML 橙、压缩包黄、文本/未知灰。未知格式提供稳定语义降级，不导入整个第三方运行时或注入 SVG sprite。

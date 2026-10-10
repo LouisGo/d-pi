@@ -73,7 +73,7 @@ it.each([false, true])(
     );
     expect(element?.dataset.contextKind).toBe("project");
     expect(element?.hidden).toBe(false);
-    expect(element?.textContent).toBe("TSruntime-service.ts");
+    expect(element?.textContent).toBe("runtime-service.ts");
     expect(editor.getText()).toBe(`a${item.token}b`);
   },
 );
@@ -175,7 +175,7 @@ it("keeps unresolved manifest tokens hidden until real metadata is supplied", ()
   expect(element?.dataset.contextKind).toBe("unresolved");
   expect(editor.getText()).toBe(`a${item.token}b`);
 });
-it("exposes localized failure in the chip's accessible name and title without a duplicate panel", () => {
+it("exposes localized failure in the chip's accessible name and Tooltip without a duplicate panel", () => {
   const { editor, item } = fixture("file", false, {
     name: "研究.docx",
     mimeType: "application/msword",
@@ -194,8 +194,10 @@ it("exposes localized failure in the chip's accessible name and title without a 
   expect(element?.hidden).toBe(false);
   expect(element?.dataset.status).toBe("failed");
   expect(element?.getAttribute("aria-label")).toContain("暂不支持此文件格式。");
-  expect(element?.title).toContain("暂不支持此文件格式。");
-  expect(element?.textContent).toBe("DOC研究.docx20 B");
+  expect(element?.getAttribute("data-composer-tag-tooltip")).toContain(
+    "暂不支持此文件格式。",
+  );
+  expect(element?.textContent).toBe("研究.docx20 B");
   expect(element?.querySelector(".composer-context-status svg")).not.toBeNull();
   expect(editor.getText()).toBe(`a${item.token}b`);
 });
@@ -225,8 +227,87 @@ it("escapes long CJK filename markup while retaining its full name for details",
     mimeType: "application/msword",
   });
   expect(element?.querySelector(".composer-context-name")?.textContent).toBe(
-    name,
+    `${name.slice(0, 21)}…${name.slice(-14)}`,
   );
   expect(element?.querySelector("img")).toBeNull();
-  expect(element?.title).toContain(name);
+  expect(element?.getAttribute("data-composer-tag-tooltip")).toContain(name);
+});
+
+it.each([
+  ["render.tsx", "react"],
+  ["feedback.ts", "typescript"],
+  ["translations.json", "json"],
+  ["report.md", "markdown"],
+  ["report.pdf", "pdf"],
+  ["budget.xlsx", "table"],
+  ["legacy.xls", "table"],
+  ["summary.docx", "document"],
+  ["notes.txt", "text"],
+  ["data.csv", "table"],
+  ["archive.zip", "zip"],
+  ["photo.png", "image"],
+  ["unknown.custom", "generic"],
+])(
+  "uses the file glyph for %s without a duplicate type label",
+  (name, glyph) => {
+    const { element } = fixture("reference", false, { name });
+    expect(element?.querySelector(".composer-context-type")?.textContent).toBe(
+      "",
+    );
+    expect(element?.querySelector("svg")?.getAttribute("data-file-icon")).toBe(
+      glyph,
+    );
+    expect(element?.getAttribute("aria-label")).toContain(name);
+  },
+);
+
+it.each([
+  ["report.pdf", "application/pdf", "pdf"],
+  [
+    "budget.xlsx",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "document",
+  ],
+  ["legacy.xls", "application/vnd.ms-excel", "document"],
+  [
+    "summary.docx",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "document",
+  ],
+  ["notes.txt", "text/plain", "text"],
+  ["data.csv", "text/csv", "text"],
+  ["archive.zip", "application/zip", "archive"],
+  ["unknown.custom", "application/octet-stream", "generic"],
+])(
+  "keeps external %s as a visible inline tag with size, full tooltip and immutable content",
+  (name, mimeType, kind) => {
+    const { editor, item, element } = fixture("file", false, {
+      name,
+      mimeType,
+      byteLength: 13312,
+    });
+    expect(element?.hidden).toBe(false);
+    expect(element?.dataset.fileKind).toBe(kind);
+    expect(element?.getAttribute("data-composer-tag-tone")).toBe("blue");
+    expect(element?.querySelector(".composer-context-type")?.textContent).toBe(
+      "",
+    );
+    expect(element?.querySelector(".composer-context-size")?.textContent).toBe(
+      "13 KB",
+    );
+    expect(element?.getAttribute("data-composer-tag-tooltip")).toBe(
+      name + "\n13 KB",
+    );
+    expect(editor.getText()).toBe(`a${item.token}b`);
+  },
+);
+
+it("keeps authoritative PDF MIME presentation even when the source filename ends with png", () => {
+  const { element } = fixture("file", false, {
+    name: "misnamed.png",
+    mimeType: "application/pdf",
+  });
+  expect(element?.querySelector("svg")?.getAttribute("data-file-icon")).toBe(
+    "pdf",
+  );
 });

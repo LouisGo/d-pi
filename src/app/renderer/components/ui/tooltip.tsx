@@ -1,53 +1,13 @@
-import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip";
+import type { ComponentProps, ReactNode } from "react";
 import {
-  createContext,
-  type ReactElement,
-  type ReactNode,
-  useContext,
-} from "react";
+  Tooltip as SharedTooltip,
+  TooltipProvider as SharedTooltipProvider,
+} from "../../../../modules/ui/renderer/public";
 
-const TooltipProviderContext = createContext(false);
-/** Shared timing and immediate handoff between adjacent hints. Standalone controls use the same fallback. */
-export function TooltipProvider({ children }: { children: ReactNode }) {
-  const provided = useContext(TooltipProviderContext);
-  if (provided) return children;
-  return (
-    <TooltipProviderContext value>
-      <TooltipPrimitive.Provider delay={120} closeDelay={0}>
-        {children}
-      </TooltipPrimitive.Provider>
-    </TooltipProviderContext>
-  );
+/** App compatibility surface; popup behavior and timing are owned by shared UI. */
+export function Tooltip(props: ComponentProps<typeof SharedTooltip>) {
+  return <SharedTooltip {...props} />;
 }
-
-export function Tooltip({
-  children,
-  content,
-  side = "bottom",
-  sideOffset = 4,
-}: {
-  children: ReactElement;
-  content: ReactNode;
-  side?: "top" | "bottom" | "left" | "right";
-  sideOffset?: number;
-}) {
-  return (
-    <TooltipProvider>
-      <TooltipPrimitive.Root disableHoverablePopup>
-        <TooltipPrimitive.Trigger render={children} />
-        <TooltipPrimitive.Portal>
-          <TooltipPrimitive.Positioner
-            className="ui-popup-positioner"
-            data-slot="tooltip-positioner"
-            side={side}
-            sideOffset={sideOffset}
-          >
-            <TooltipPrimitive.Popup className="ui-tooltip" role="tooltip">
-              {content}
-            </TooltipPrimitive.Popup>
-          </TooltipPrimitive.Positioner>
-        </TooltipPrimitive.Portal>
-      </TooltipPrimitive.Root>
-    </TooltipProvider>
-  );
+export function TooltipProvider({ children }: { children: ReactNode }) {
+  return <SharedTooltipProvider>{children}</SharedTooltipProvider>;
 }

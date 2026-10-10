@@ -29,12 +29,10 @@ import { ToolObservationDetails } from "./tool-observation";
 export function Conversation({
   model,
   positions,
-  onOpenHistory,
   initializing = false,
 }: {
   model: ConversationModel;
   positions?: ReadingPositions | undefined;
-  onOpenHistory?: (() => void) | undefined;
   initializing?: boolean;
 }) {
   const { t } = useI18n();
@@ -63,11 +61,6 @@ export function Conversation({
         <EmptyState title={t("ui.conversation.empty")} />
       )}
       {gap && <p role="status">{t("ui.conversation.gap")}</p>}
-      {onOpenHistory && (
-        <Button variant="ghost" onClick={onOpenHistory}>
-          {t("ui.conversation.openHistory")}
-        </Button>
-      )}
       {exhausted && (
         <Button
           variant="ghost"
@@ -275,12 +268,13 @@ export function ConversationItemView({
           <p>{item.detail}</p>
         </Disclosure>
       )}
-      {item.role === "user" && media}
       {item.notice ? (
         <p>{formatMessage(item.notice)}</p>
       ) : item.role === "user" ? (
-        (displayText ?? item.text) ? (
-          <UserMessageBubble text={displayText ?? item.text} />
+        media || (displayText ?? item.text) ? (
+          <UserMessageBubble text={displayText ?? item.text}>
+            {media}
+          </UserMessageBubble>
         ) : null
       ) : (
         <ReadingBody

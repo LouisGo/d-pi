@@ -100,10 +100,16 @@ export function MessageActions({
   );
 }
 
-export function UserMessageBubble({ text }: { text: string }) {
+export function UserMessageBubble({
+  text,
+  children,
+}: {
+  text: string;
+  children?: ReactNode;
+}) {
   return (
     <div className="reading-body user-message-bubble" data-reading-text>
-      {text}
+      {children ?? text}
     </div>
   );
 }

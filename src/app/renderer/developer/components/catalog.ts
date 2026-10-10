@@ -14,6 +14,13 @@ export function useComponentDashboardCopy() {
     ] as const;
     const componentCatalog = [
       {
+        name: "ComposerTag",
+        category: "business",
+        purpose: t("dev.componentCatalog.ComposerTag.purpose"),
+        forms:
+          "label · leading · detail / middle truncation · Tooltip / editor · message",
+      },
+      {
         name: "Checkbox",
         category: "forms",
         purpose: t("dev.componentCatalog.Checkbox.purpose"),

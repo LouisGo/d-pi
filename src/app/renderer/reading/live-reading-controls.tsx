@@ -1,5 +1,4 @@
 import { useLayoutEffect, useState, useSyncExternalStore } from "react";
-import { useStore } from "zustand";
 import type { ConversationModel } from "../../../modules/conversation/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import { Button } from "../../../modules/ui/renderer/public";
@@ -11,11 +10,9 @@ import type { attachReadingAnchor } from "./reading-anchor";
 export function LiveReadingControls({
   model,
   anchor,
-  onOpenHistory,
 }: {
   model: ConversationModel;
   anchor: ReturnType<typeof attachReadingAnchor>;
-  onOpenHistory?: (() => void) | undefined;
 }) {
   const { t } = useI18n();
   const atEnd = useSyncExternalStore(anchor.subscribe, anchor.getSnapshot);
@@ -24,22 +21,9 @@ export function LiveReadingControls({
     () => observeLiveReadingUpdates({ model, anchor, onChange: setNewOutput }),
     [model, anchor],
   );
-  const coverageGap = useStore(
-    model.stateStore,
-    (state) => !!state.view?.gap || state.truncatedCount > 0,
-  );
-  if (atEnd && !(coverageGap && onOpenHistory)) return null;
+  if (atEnd) return null;
   return (
     <div className="live-reading-controls" data-live-reading-controls="">
-      {coverageGap && onOpenHistory && (
-        <Button
-          variant="ghost"
-          data-open-native-history=""
-          onClick={onOpenHistory}
-        >
-          {t("ui.conversation.openHistory")}
-        </Button>
-      )}
       {newOutput && <span role="status">{t("ui.conversation.newOutput")}</span>}
       {!atEnd && (
         <Tooltip content={t("ui.conversation.toBottom")} side="top">

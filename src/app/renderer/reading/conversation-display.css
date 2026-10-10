@@ -80,11 +80,18 @@
   .message-media {
     display: flex;
     flex-wrap: wrap;
-    justify-content: flex-end;
-    align-items: flex-end;
+    justify-content: flex-start;
+    align-items: flex-start;
     gap: var(--layout-gap);
-    max-width: 85%;
+    max-width: 100%;
     margin-block-end: var(--spacing);
+  }
+  .message-media:empty {
+    display: none;
+  }
+  .user-message-content {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
   }
   .message-image-tile {
     width: calc(var(--control-height) * 3);

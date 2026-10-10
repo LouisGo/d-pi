@@ -5,6 +5,7 @@ import { afterEach, expect, it, vi } from "vitest";
 import type { ConversationItem } from "../../../modules/conversation/contracts/public";
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
 import { ConversationItemView } from "./conversation";
+import { MessageMedia } from "./message-media";
 
 const cleanups: (() => Promise<void>)[] = [];
 afterEach(async () => {
@@ -44,7 +45,7 @@ const base: ConversationItem = {
   label: { kind: "literal", text: "You" },
   text: "Keep **literal** prompt\nSecond line",
 };
-it("places sent media above the literal bubble and displays the real message time", async () => {
+it("places sent media and text together inside the bubble and displays the real message time", async () => {
   const container = await mount(
     { ...base, timestamp: 1791500000000, text: "Question\n[image: shot.png]" },
     {
@@ -53,15 +54,14 @@ it("places sent media above the literal bubble and displays the real message tim
         "div",
         { "data-message-media": true },
         createElement("img", { alt: "shot.png" }),
+        "Question",
       ),
     },
   );
   const row = container.querySelector("article")!;
   const media = row.querySelector("[data-message-media]")!;
   const bubble = row.querySelector(".user-message-bubble")!;
-  expect(
-    media.compareDocumentPosition(bubble) & Node.DOCUMENT_POSITION_FOLLOWING,
-  ).toBeTruthy();
+  expect(bubble.contains(media)).toBe(true);
   expect(bubble.textContent).toBe("Question");
   expect(row.querySelector("time")?.dateTime).toBe(
     new Date(1791500000000).toISOString(),
@@ -182,4 +182,51 @@ it("reveals structured tool observations without interpreting arguments as mutat
   expect(observation?.textContent).toContain("checking");
   expect(observation?.textContent).toContain("Showing part");
   expect(container.textContent).not.toContain("Diff");
+});
+
+it("renders frozen file tags inline at their submitted positions, including repeated mentions", async () => {
+  const container = await mount(
+    { ...base, text: "frozen body" },
+    {
+      displayText: "Before  after\nAgain ",
+      media: createElement(MessageMedia, {
+        includeText: true,
+        threadId: "thread",
+        bridge: {} as Parameters<typeof MessageMedia>[0]["bridge"],
+        entry: {
+          id: "entry",
+          parentId: null,
+          role: "user",
+          text: "frozen body",
+          files: [
+            {
+              name: "notes.md",
+              byteLength: 13000,
+              contextKind: "external",
+              start: 0,
+              end: 11,
+            },
+          ],
+          inputParts: [
+            { kind: "text", text: "Before " },
+            { kind: "file", index: 0 },
+            { kind: "text", text: " after\nAgain " },
+            { kind: "file", index: 0 },
+          ],
+        },
+      }),
+    },
+  );
+  const bubble = container.querySelector(".user-message-bubble")!;
+  const tags = bubble.querySelectorAll(".composer-context-token");
+  expect(tags).toHaveLength(2);
+  expect(tags[0]?.textContent).toContain("notes.md13 KB");
+  expect(bubble.querySelector(".user-message-content")?.textContent).toBe(
+    "Before  notes.md13 KB  after\nAgain  notes.md13 KB ",
+  );
+  expect(bubble.querySelector(".message-media")?.children).toHaveLength(0);
+  await act(() => (tags[0] as HTMLButtonElement).click());
+  expect(document.querySelector(".message-file-preview")?.textContent).toBe(
+    "frozen body",
+  );
 });

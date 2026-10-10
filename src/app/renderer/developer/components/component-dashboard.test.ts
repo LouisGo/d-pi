@@ -155,6 +155,7 @@ it("shows every existing foundation component as a real preview by default", asy
     "HoverCard",
     "NavigationOverlay",
     "SettingsModal",
+    "ComposerTag",
     "MessageHeader",
     "ConversationMessage",
     "ToolResultFrame",
@@ -299,7 +300,7 @@ it("includes an optional menu preview in category navigation, search and reset",
   const { container, button } = await setup(
     createElement("button", null, "菜单演示"),
   );
-  expect(container.querySelectorAll("[data-component]")).toHaveLength(34);
+  expect(container.querySelectorAll("[data-component]")).toHaveLength(35);
   expect(
     container.querySelector("#gallery-overlays [data-component='HoverMenu']"),
   ).not.toBeNull();
@@ -324,7 +325,7 @@ it("includes an optional menu preview in category navigation, search and reset",
   ).not.toBeNull();
   expect(
     container.querySelector("[data-gallery-title]")?.textContent,
-  ).toContain("1 / 34 项");
+  ).toContain("1 / 35 项");
 });
 
 it("filters by purpose and form, explains no matches and restores the full catalog", async () => {
@@ -357,7 +358,7 @@ it("filters by purpose and form, explains no matches and restores the full catal
   expect(container.querySelectorAll("[data-component]")).toHaveLength(0);
   await act(() => button("清空搜索").click());
   expect(input.value).toBe("");
-  expect(container.querySelectorAll("[data-component]")).toHaveLength(33);
+  expect(container.querySelectorAll("[data-component]")).toHaveLength(34);
 });
 
 it("groups every component in the separate right navigation with existing anchor targets", async () => {
@@ -403,6 +404,7 @@ it("groups every component in the separate right navigation with existing anchor
     "NavigationOverlay",
     "SettingsModal",
     "HoverMenu",
+    "ComposerTag",
     "MessageHeader",
     "ConversationMessage",
     "ToolResultFrame",

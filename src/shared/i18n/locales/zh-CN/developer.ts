@@ -12,6 +12,8 @@ export const developer = {
   "dev.componentCatalog.Disclosure.purpose": "展开或收起，内容状态保留。",
   "dev.componentCatalog.Modal.purpose": "关闭后，焦点返回打开按钮。",
   "dev.componentCatalog.StatusPreview.purpose": "点击状态，查看详情。",
+  "dev.componentCatalog.ComposerTag.purpose":
+    "输入和消息共用的内联标签，保留名称首尾并提示全貌。",
   "dev.componentCatalog.Tooltip.purpose": "悬停或键盘聚焦时显示提示。",
   "dev.componentCatalog.HoverCard.purpose": "悬停预览提问，可移入阅读。",
   "dev.componentCatalog.Select.purpose": "下拉选择，支持搜索和键盘操作。",

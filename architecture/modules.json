@@ -212,7 +212,8 @@
         ],
         "renderer": [
           "files",
-          "shared"
+          "shared",
+          "ui"
         ]
       },
       "materialized": true

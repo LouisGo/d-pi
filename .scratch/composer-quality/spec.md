@@ -93,6 +93,14 @@ Dev当前运行旧Main/SDK，不能替换其持有的SDK资源或声称运行中
 
 ## 2026-10-10 通用内联标签优化
 
-用户授权提炼通用 Composer 标签，长名称中间截断、完整 Tooltip、默认两侧空格并统一名称/大小的字号与垂直对齐。使用 impeccable 的组件提取与 polish 指导；UI 拥有通用标签和 Tooltip，input/消息领域只提供展示数据。32 grapheme 上限，保留前 16 与后 15；标签展示空格不改私有 token 或发送原文。真实 Tiptap 原子节点与 React 消息标签共用配方，键盘方向键选择也能显示完整提示，保留现有编辑历史和预览入口。
+用户授权提炼通用 Composer 标签，长名称中间截断、完整 Tooltip、默认两侧空格并统一名称/大小的字号与垂直对齐。使用 impeccable 的组件提取与 polish 指导；UI 拥有通用标签和 Tooltip，input/消息领域只提供展示数据。36 grapheme 上限，保留前 21 与后 14；标签展示空格不改私有 token 或发送原文。真实 Tiptap 原子节点与 React 消息标签共用配方，键盘方向键选择也能显示完整提示，保留现有编辑历史和预览入口。
 
 视觉证据来自正式组件和真实 Tiptap 的独立验证页，覆盖宽窗、320px 窄窗、浅/深色以及键盘 Tooltip；发现并修正 Tiptap contenteditable 规则造成的窄窗折行。证据：`/Users/louistation/.codex/visualizations/2026/10/10/01a12632-baa3-7093-a197-fcba3fbf1a8c/composer-tags-dark.png`。临时验证页已移除，未重发用户附件或运行 provider；用户实机认可仍待反馈。
+
+### 2026-10-11 图标、文字层级与连续 @ 补充
+
+最新用户图 1 取代此前标签名称/体积同字号的选择。按同目录固定 t3code `ContextChip.tsx`、`contextChipParts.tsx`、`PierreEntryIcon.tsx`、`pierre-icons.ts` 及共享 `composerTrigger.ts` 核实实现：标签随正文 0.86em，体积为标签 0.82em、较弱颜色/字重并居中；文件仅保留图标，外部标签蓝色、项目引用青色，图标类型色独立。已采用的 Pierre 固定资源在 UI Icon Layer 内保留许可，PDF 使用项目 Hugeicons；没有引入另一套通用 UI 库。
+
+连续 @ 根因是仅添加了展示空格，触发器未承认原子节点边界；修正 U+FFFC 为合法边界，连续三次引用无需手动空格，邮箱与路径内部 @ 回归保持。多类型检查覆盖 PDF、XLSX、XLS、DOCX、TXT、CSV、ZIP、HTML、Markdown、TS/TSX、JSON 和未知类型；外部图片继续独立缩略图，项目图片引用仍可内联。视觉使用正式 React 标签和真实 Tiptap，宽/320px窄窗、浅/深主题、完整 Tooltip、直接再次 @ 已核对；名称/体积中心偏差小于 0.01px。多类型资源示例加入组件看板。证据为同一会话证据目录 `composer-tags-types-light.png` 与 `composer-tags-types-dark.png`。这是展示/编辑边界验证，未以此冒称真实文档转换或 provider 发送已验证。
+
+验证收尾：本轮受影响的 11 文件共 101 项测试通过（最终同轮复测，包含 MIME 权威 PDF 反例）；Renderer 类型、19 文件 Biome、design/interaction/i18n、architecture/documentation/structure/status 门禁通过。附件控件既有 act 警告仍存在，未冒称无警告。最终中间截断沿用固定 T3 默认 36 grapheme、前 21 后 14，保留更完整的文件前缀；最终局部视觉确认见 `composer-tags-final.png`。用户随后明确授权本地 commit；本轮展示和连续 @ 修改随本次提交交付，Renderer Dev 可试用；临时页和测试标签已清理。

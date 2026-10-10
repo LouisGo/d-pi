@@ -30,6 +30,7 @@ import {
 import {
   ActionGroupDemo,
   BadgeDemo,
+  ComposerTagDemo,
   ConversationMessageDemo,
   CopyButtonDemo,
   EmptyStateDemo,
@@ -45,6 +46,7 @@ import {
 
 const demos: Record<ComponentName, ComponentType> = {
   Badge: BadgeDemo,
+  ComposerTag: ComposerTagDemo,
   ActionGroup: ActionGroupDemo,
   OptionAction: OptionActionDemo,
   InlineNotice: InlineNoticeDemo,

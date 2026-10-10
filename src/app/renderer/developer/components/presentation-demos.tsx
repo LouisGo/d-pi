@@ -3,12 +3,14 @@ import {
   ActionGroup,
   Badge,
   Button,
+  ComposerTag,
   EmptyState,
   HoverCard,
   InlineNotice,
   Kbd,
   OptionAction,
 } from "../../../../modules/ui/renderer/public";
+import { ContextFileToken } from "../../components/ui/context-file-token";
 import { CopyButton } from "../../components/ui/copy-button";
 import { PathLabel } from "../../components/ui/path-label";
 import { ConversationItemView } from "../../reading/conversation";
@@ -227,5 +229,45 @@ export function NativeInteractionDemo() {
         {answer ? `${labels.answered}：${answer}` : labels.waiting}
       </output>
     </>
+  );
+}
+
+export function ComposerTagDemo() {
+  const labels = usePresentationLabels();
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <ContextFileToken
+        name="notes.txt"
+        byteLength={13000}
+        contextKind="external"
+      />
+      <ContextFileToken
+        name="d-pi-developer-e2e-20261010-report.md"
+        byteLength={13000}
+        contextKind="external"
+      />
+      <ContextFileToken
+        name="src/modules/input/renderer/references/attachment-reference.ts"
+        byteLength={0}
+        contextKind="project"
+      />
+      {[
+        "report.pdf",
+        "budget.xlsx",
+        "summary.docx",
+        "data.csv",
+        "archive.zip",
+        "render.tsx",
+        "translations.json",
+      ].map((name) => (
+        <ContextFileToken
+          key={name}
+          name={name}
+          byteLength={13000}
+          contextKind="external"
+        />
+      ))}
+      <ComposerTag label={labels.option} />
+    </div>
   );
 }

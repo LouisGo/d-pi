@@ -17,6 +17,8 @@ export const developer = {
     "Returns focus to the trigger when closed.",
   "dev.componentCatalog.StatusPreview.purpose":
     "Open details from the status bar.",
+  "dev.componentCatalog.ComposerTag.purpose":
+    "Shared inline tags for input and messages, with middle truncation and full Tooltip details.",
   "dev.componentCatalog.Tooltip.purpose":
     "Shows a hint on hover or keyboard focus.",
   "dev.componentCatalog.HoverCard.purpose":

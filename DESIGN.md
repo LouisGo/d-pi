@@ -339,7 +339,7 @@ framed Disclosure 的共享容器裁切 hover 和正文至圆角内，summary �
 
 组件盘点、t3 code 固定源码对照、采用边界和本轮证据见[所属规格](.scratch/beautiful-ui-system/spec.md#2026-10-09-组件梳理与组合-polish)。
 
-2026-10-09 会话展示专项：UserMessageBubble、MessageActions、MessageStatus、ThinkingDisclosure 和 ToolResultFrame 各自拥有一类呈现，模型回复保留无框长文；思考首次展开才解析，工具默认收起，失败与停止仍明确显示。消息动作 hover 或键盘聚焦时显露，预留高度防止跳动。ConversationOutline 仅索引已呈现的用户轮次，通过独立的 HoverCard、TurnPreviewCard 与 ConversationTurnAnchor 组合，在悬停或键盘聚焦时预览完整提问；保留换行，长内容在卡片内滚动，鼠标移入后继续展开，通过既有阅读锚点定位；继续生成不改变已定位的轮次。技术身份和底层错误保留在详情中，普通会话不以执行引擎命名。Streamdown 的代码适配层在供应商 utility 层之后消费项目 token，保留精确复制、语法高亮与独立横向滚动。MessageMedia 将已发送图片与冻结文件放在用户气泡上方，保留尺寸并按需加载，预览沿用共享 Modal；真实消息时间与复制动作共同按 hover/focus 显露，预留高度避免跳动。轮次导航使用细线圆点与强调色当前态，队列只在输入区按需呈现，停止回复由 composer 提供。验证与限制见[所属规格](.scratch/m2-first-release/spec.md#2026-10-09-会话展示专项)。
+2026-10-09 会话展示专项：UserMessageBubble、MessageActions、MessageStatus、ThinkingDisclosure 和 ToolResultFrame 各自拥有一类呈现，模型回复保留无框长文；思考首次展开才解析，工具默认收起，失败与停止仍明确显示。消息动作 hover 或键盘聚焦时显露，预留高度防止跳动。ConversationOutline 仅索引已呈现的用户轮次，通过独立的 HoverCard、TurnPreviewCard 与 ConversationTurnAnchor 组合，在悬停或键盘聚焦时预览完整提问；保留换行，长内容在卡片内滚动，鼠标移入后继续展开，通过既有阅读锚点定位；继续生成不改变已定位的轮次。技术身份和底层错误保留在详情中，普通会话不以执行引擎命名。Streamdown 的代码适配层在供应商 utility 层之后消费项目 token，保留精确复制、语法高亮与独立横向滚动。2026-10-10 用户反馈取代此前媒体放在气泡外的布局：图片在用户气泡内上方，文件标签按发送草稿的原始位置与正文内联，输入和消息共用 context token 配方；保留尺寸并按需加载，预览沿用共享 Modal；真实消息时间与复制动作共同按 hover/focus 显露，预留高度避免跳动。轮次导航使用细线圆点与强调色当前态，队列只在输入区按需呈现，停止回复由 composer 提供。验证与限制见[所属规格](.scratch/m2-first-release/spec.md#2026-10-09-会话展示专项)。
 
 ## Do's and Don'ts
 
@@ -357,3 +357,6 @@ framed Disclosure 的共享容器裁切 hover 和正文至圆角内，summary �
 - **Don't** 给导航/状态行添加按下位移，或把普通鼠标焦点改成 outline。
 - **Don't** 为局部页面重绘共享控件、关闭设计 lint、引入第二套图标库或恢复密度切换。
 - **Don't** 把截图、工程检查或设计工具结果写成用户认可、真实 provider 或固定包验证。
+
+
+2026-10-10 通用 ComposerTag 由 UI 公开面拥有，附件与项目文件 companion 仅提供展示数据。编辑器与消息气泡共用标记配方、36 grapheme 中间截断、完整 Tooltip、两侧展示空格及垂直居中的名称/辅助文字层级；其他上下文标签可直接复用。窄窗保留尾段，组件看板提供真实示例。

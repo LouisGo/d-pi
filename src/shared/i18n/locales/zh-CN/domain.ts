@@ -120,7 +120,7 @@ export const domain = {
   "conversation.toolResult": "工具结果",
   "conversation.nativeInput": "你",
   "conversation.nativeEvent": "会话事件",
-  "conversation.truncated": "仅显示部分内容，全文见会话详情。",
+  "conversation.truncated": "仅显示部分内容，可在会话工具中查看原生历史。",
   "conversation.unsupportedNativeEvent": "暂不支持完整显示 {eventType}。",
   "conversation.retrying": "连接中断，正在重试…",
   "conversation.retryCompleted": "已重新连接，可继续阅读。",

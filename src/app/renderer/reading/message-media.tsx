@@ -9,7 +9,7 @@ import type {
 import { nativeImageQuery } from "../../../modules/conversation/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import { Button, LoadingIndicator } from "../../../modules/ui/renderer/public";
-import { FileIcon } from "../components/icons/common";
+import { ContextFileToken } from "../components/ui/context-file-token";
 import { Modal } from "../components/ui/modal";
 
 type Preview = { name: string; image?: string; text?: string };
@@ -17,20 +17,50 @@ export function MessageMedia({
   entry,
   bridge,
   threadId,
+  includeText = false,
 }: {
   entry: HistoryEntry;
   bridge: HistoryBridge;
   threadId: string;
+  includeText?: boolean;
 }) {
   const { t } = useI18n();
   const [preview, setPreview] = useState<Preview | null>(null);
   const [previewPinned, setPreviewPinned] = useState(false);
   const returnFocus = useRef<HTMLButtonElement | null>(null);
-  if (!entry.images?.length && !entry.files?.length) return null;
+  if (!entry.images?.length && !entry.files?.length)
+    return includeText ? <>{entry.displayText ?? entry.text}</> : null;
   const open = (value: Preview, button: HTMLButtonElement) => {
     returnFocus.current = button;
     setPreviewPinned(true);
     setPreview(value);
+  };
+  const fileToken = (index: number) => {
+    const file = entry.files?.[index];
+    if (!file) return null;
+    return (
+      <ContextFileToken
+        name={file.name}
+        byteLength={file.byteLength}
+        contextKind={file.contextKind}
+        referenceKind={file.referenceKind}
+        aria-label={t("attachment.preview", { name: file.name })}
+        onClick={(event) =>
+          open(
+            {
+              name: file.name,
+              ...(file.start !== undefined &&
+              file.end !== undefined &&
+              file.start <= file.end &&
+              file.end <= entry.text.length
+                ? { text: entry.text.slice(file.start, file.end) }
+                : {}),
+            },
+            event.currentTarget,
+          )
+        }
+      />
+    );
   };
   return (
     <>
@@ -50,35 +80,26 @@ export function MessageMedia({
             onOpen={open}
           />
         ))}
-        {entry.files?.map((file, index) => (
-          <div
-            className="message-file"
-            key={JSON.stringify([file.name, index])}
-          >
-            <Button
-              variant="chip"
-              title={t("attachment.preview", { name: file.name })}
-              onClick={(event) =>
-                open(
-                  {
-                    name: file.name,
-                    ...(file.start !== undefined &&
-                    file.end !== undefined &&
-                    file.start <= file.end &&
-                    file.end <= entry.text.length
-                      ? { text: entry.text.slice(file.start, file.end) }
-                      : {}),
-                  },
-                  event.currentTarget,
-                )
-              }
-            >
-              <FileIcon />
-              <span className="message-file-name">{file.name}</span>
-            </Button>
-          </div>
-        ))}
+        {!entry.inputParts &&
+          entry.files?.map((file, index) => (
+            <div className="message-file" key={index}>
+              {fileToken(index)}
+            </div>
+          ))}
       </div>
+      {includeText && (
+        <span className="user-message-content">
+          {entry.inputParts
+            ? entry.inputParts.map((part, index) =>
+                part.kind === "text" ? (
+                  <span key={index}>{part.text}</span>
+                ) : (
+                  <span key={index}>{fileToken(part.index)}</span>
+                ),
+              )
+            : (entry.displayText ?? entry.text)}
+        </span>
+      )}
       <Modal
         open={preview !== null}
         onClose={() => setPreview(null)}

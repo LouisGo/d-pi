@@ -1,0 +1,195 @@
+@layer components {
+  .composer-tag {
+    white-space: pre-wrap;
+  }
+  .composer-tag[hidden] {
+    display: none;
+  }
+  .composer-context-token {
+    --file-type-color: var(--file-type-generic);
+  }
+  .composer-context-token[data-composer-tag-tone="blue"] {
+    --file-type-color: var(--emphasis);
+  }
+  .composer-context-token[data-composer-tag-tone="teal"] {
+    --file-type-color: var(--file-type-code);
+  }
+  .composer-file-type[data-file-kind="document"],
+  .composer-file-type[data-file-kind="image"] {
+    --file-type-color: var(--file-type-document);
+  }
+  .composer-file-type[data-file-kind="pdf"] {
+    --file-type-color: var(--file-type-pdf);
+  }
+  .composer-file-type[data-file-kind="text"] {
+    --file-type-color: var(--file-type-text);
+  }
+  .composer-file-type[data-file-kind="code"] {
+    --file-type-color: var(--file-type-code);
+  }
+  .composer-file-type[data-file-kind="markdown"] {
+    --file-type-color: var(--file-type-markdown);
+  }
+  .composer-file-type[data-file-kind="html"] {
+    --file-type-color: var(--file-type-html);
+  }
+  .composer-file-type[data-file-kind="audio"] {
+    --file-type-color: var(--file-type-audio);
+  }
+  .composer-file-type[data-file-kind="video"] {
+    --file-type-color: var(--file-type-video);
+  }
+  .composer-file-type[data-file-kind="archive"] {
+    --file-type-color: var(--file-type-archive);
+  }
+  .composer-file-type,
+  .composer-context-type {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    gap: var(--region-gap);
+    min-width: var(--tab-icon-size);
+    color: color-mix(in srgb, var(--file-type-color) 85%, var(--foreground));
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+  }
+  .composer-file-type {
+    height: var(--tab-icon-size);
+    font-size: var(--text-small);
+    line-height: 1;
+    padding: var(--region-gap);
+    border-radius: var(--radius-chip);
+    background: color-mix(in srgb, var(--file-type-color) 10%, var(--surface));
+  }
+  .composer-context-token {
+    display: inline-flex;
+    min-height: 0;
+    padding-block: 0;
+    height: 1.41em;
+    font-size: 0.86em;
+    font-weight: 500;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.33em;
+    max-width: min(calc(100% - 0.5em), 44ch);
+    vertical-align: middle;
+    white-space: nowrap;
+    border: 1px solid
+      color-mix(in srgb, var(--file-type-color) 35%, var(--border));
+    border-radius: var(--radius-chip);
+    padding-inline: 0.5em;
+    background: color-mix(in srgb, var(--file-type-color) 9%, var(--surface));
+    color: color-mix(in srgb, var(--file-type-color) 20%, var(--foreground));
+    line-height: var(--control-line-height);
+    cursor: default;
+  }
+  .ui-button.composer-context-token:active:not(:disabled) {
+    transform: none;
+  }
+  .composer-context-token:hover {
+    background: color-mix(in srgb, var(--file-type-color) 14%, var(--surface));
+  }
+  .composer-context-token[hidden] {
+    display: none;
+  }
+  .composer-context-name {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+    overflow: hidden;
+    unicode-bidi: plaintext;
+    white-space: nowrap;
+  }
+  .composer-tag-prefix {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .composer-tag-suffix {
+    flex-shrink: 0;
+  }
+  .composer-tag-tooltip {
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+  }
+  .composer-context-type svg {
+    display: block;
+  }
+  .composer-context-type svg[data-file-icon="markdown"] {
+    color: var(--file-type-markdown);
+  }
+  .composer-context-type
+    svg:is([data-file-icon="json"], [data-file-icon="yml"]) {
+    color: var(--file-type-html);
+  }
+  .composer-context-type
+    svg:is(
+      [data-file-icon="react"],
+      [data-file-icon="typescript"],
+      [data-file-icon="javascript"]
+    ) {
+    color: var(--file-type-code);
+  }
+  .composer-context-type svg[data-file-icon="pdf"] {
+    color: var(--file-type-pdf);
+  }
+  .composer-context-type
+    svg:is([data-file-icon="typescript"], [data-file-icon="document"]) {
+    color: var(--emphasis);
+  }
+  .composer-context-type svg[data-file-icon="table"] {
+    color: var(--file-type-markdown);
+  }
+  .composer-context-type svg[data-file-icon="zip"] {
+    color: var(--file-type-archive);
+  }
+  .composer-context-type
+    svg:is([data-file-icon="text"], [data-file-icon="generic"]) {
+    color: var(--file-type-text);
+  }
+  .composer-context-type
+    svg:is([data-file-icon="image"], [data-file-icon="html"]) {
+    color: var(--file-type-html);
+  }
+  .composer-context-type svg[data-file-icon="javascript"] {
+    color: var(--file-type-archive);
+  }
+  .composer-context-type svg[data-file-icon="audio"] {
+    color: var(--file-type-audio);
+  }
+  .composer-context-type svg[data-file-icon="video"] {
+    color: var(--file-type-video);
+  }
+  .composer-context-size,
+  .composer-context-status {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    font-size: inherit;
+    line-height: inherit;
+    font-variant-numeric: tabular-nums;
+  }
+  .composer-context-size {
+    font-size: 0.82em;
+    font-weight: 400;
+    color: color-mix(in srgb, currentColor 78%, var(--muted-foreground));
+  }
+  .composer-context-status {
+    display: inline-flex;
+    align-items: center;
+    color: var(--file-type-archive);
+  }
+  .composer-context-status[data-status="failed"] {
+    color: var(--destructive);
+  }
+  .composer-context-status[data-status="preparing"] {
+    color: var(--muted-foreground);
+  }
+  .composer-tag.ProseMirror-selectednode .composer-context-token,
+  .composer-context-token.ProseMirror-selectednode {
+    border-color: var(--emphasis);
+    background: var(--code-selection);
+  }
+}

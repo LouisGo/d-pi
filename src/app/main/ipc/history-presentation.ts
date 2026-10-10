@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import type { HistoryEntry } from "../../../modules/conversation/contracts/public";
 import type { SubmissionReceipt } from "../../../modules/execution/contracts/public";
 import { readDraftAttachmentTokens } from "../../../modules/input/core/public";
@@ -18,15 +17,15 @@ export function presentSavedInput(
       receipt.target.configContextId === binding.configContextId &&
       receipt.content?.message === entry.text &&
       receipt.content.images.length === (entry.images?.length ?? 0) &&
-      receipt.content.images.every((image, index) => {
-        const digest =
-          "resource" in image
-            ? image.resource.digest
-            : createHash("sha256")
-                .update(Buffer.from(image.data, "base64"))
-                .digest("hex");
-        return digest === entry.images?.[index]?.digest;
-      }),
+      // OMP normalizes image MIME/bytes for the model before saving history.
+      // This projection establishes text/file presentation equivalence, never
+      // image identity: images and their verified digests remain native-owned.
+      receipt.content.sources
+        .filter((source) => source.representation === "image")
+        .every(
+          (source, index) =>
+            source.name.slice(0, 512) === entry.images?.[index]?.name,
+        ),
   );
   const presentations = candidates.flatMap((receipt) => {
     const tokens = readDraftAttachmentTokens(receipt.text);
@@ -67,6 +66,13 @@ export function presentSavedInput(
       const unique =
         header && entry.text.indexOf(header, at + header.length) < 0;
       return {
+        contextKind:
+          source.path || source.frozenReference
+            ? ("project" as const)
+            : ("external" as const),
+        ...(source.referenceKind
+          ? { referenceKind: source.referenceKind }
+          : {}),
         name: source.name,
         byteLength: source.byteLength,
         ...(envelopesComplete && unique && start !== undefined && end >= start
@@ -74,7 +80,23 @@ export function presentSavedInput(
           : {}),
       };
     });
-    return [{ displayText: displayText.trim(), files }];
+    const inputParts: NonNullable<HistoryEntry["inputParts"]> = [];
+    let position = 0;
+    for (const token of tokens.tokens) {
+      if (token.position > position)
+        inputParts.push({
+          kind: "text",
+          text: receipt.text.slice(position, token.position),
+        });
+      const index = fileSources.findIndex(
+        (source) => source.attachmentId === token.id,
+      );
+      if (index >= 0) inputParts.push({ kind: "file", index });
+      position = token.position + token.token.length;
+    }
+    if (position < receipt.text.length)
+      inputParts.push({ kind: "text", text: receipt.text.slice(position) });
+    return [{ displayText: displayText.trim(), files, inputParts }];
   });
   const presentation = presentations[0];
   if (

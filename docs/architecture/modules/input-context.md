@@ -166,3 +166,5 @@ Main 使用 platform/node/images 公共压缩方法，独立 Bun worker 二进�
 
 
 2026-10-10 内联标签展示使用 UI 公开面的 `composerTagMarkup`；input Renderer 单向依赖 UI，仅提供文件名、类型、大小和状态，不复制通用标签标记。编辑器原子节点的外层持有 `contenteditable=false`，名称内部保持单行，展示空格不参与草稿序列化。
+
+2026-10-11 连续 @：与固定 T3 的 inline placeholder whitespace boundary 策略一致，`attachmentMention` 将 PM 原子节点占位 `\ufffc` 视为合法触发边界。接受一个引用后可立即触发下一次 @；不写入额外草稿空格，不放宽邮箱正文或改变异步候选确认、Undo/Redo 与源跨度验证。

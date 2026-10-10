@@ -230,3 +230,166 @@ it("preserves the pointer origin when a native picker returns to the same focuse
     other.remove();
   }
 });
+
+it.each(["dialog", "menu", "listbox"])(
+  "keeps pointer autofocus and the return from a %s outline-free after its close control unmounts",
+  (role) => {
+    const trigger = document.createElement("button");
+    const popup = document.createElement("div");
+    popup.setAttribute("role", role);
+    popup.tabIndex = -1;
+    const close = document.createElement("button");
+    popup.append(close);
+    document.body.append(trigger, popup);
+    const dispose = installControlFocusVisibility(document);
+    try {
+      trigger.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+      trigger.focus();
+      popup.focus();
+      expect(document.documentElement.dataset.pointerFocus).toBe("true");
+      close.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+      close.focus();
+      popup.remove();
+      trigger.focus();
+      expect(document.activeElement).toBe(trigger);
+      expect(document.documentElement.dataset.pointerFocus).toBe("true");
+      trigger.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Tab", bubbles: true }),
+      );
+      expect(document.documentElement.dataset.pointerFocus).toBeUndefined();
+    } finally {
+      dispose();
+      trigger.remove();
+      popup.remove();
+    }
+  },
+);
+
+it("returns a hover-opened menu to its trigger rather than the previously focused unrelated field", () => {
+  const field = document.createElement("input");
+  const trigger = document.createElement("button");
+  trigger.setAttribute("aria-haspopup", "menu");
+  trigger.setAttribute("aria-controls", "return-menu");
+  const popup = document.createElement("div");
+  popup.id = "return-menu";
+  popup.setAttribute("role", "menu");
+  popup.tabIndex = -1;
+  const item = document.createElement("button");
+  popup.append(item);
+  document.body.append(field, trigger, popup);
+  const dispose = installControlFocusVisibility(document);
+  try {
+    field.focus();
+    trigger.dispatchEvent(new PointerEvent("pointerover", { bubbles: true }));
+    popup.focus();
+    item.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+    item.focus();
+    popup.remove();
+    trigger.focus();
+    expect(document.documentElement.dataset.pointerFocus).toBe("true");
+    field.focus();
+    expect(document.documentElement.dataset.pointerFocus).toBeUndefined();
+  } finally {
+    dispose();
+    field.remove();
+    trigger.remove();
+    popup.remove();
+  }
+});
+
+it("allows visible keyboard focus when a clicked dialog is dismissed with Escape", () => {
+  const trigger = document.createElement("button");
+  const popup = document.createElement("div");
+  popup.setAttribute("role", "dialog");
+  popup.tabIndex = -1;
+  document.body.append(trigger, popup);
+  const dispose = installControlFocusVisibility(document);
+  try {
+    trigger.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+    trigger.focus();
+    popup.focus();
+    popup.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+    );
+    popup.remove();
+    trigger.focus();
+    expect(document.documentElement.dataset.pointerFocus).toBeUndefined();
+  } finally {
+    dispose();
+    trigger.remove();
+    popup.remove();
+  }
+});
+
+it("preserves each return target when nested pointer dialogs close", () => {
+  const trigger = document.createElement("button");
+  const outer = document.createElement("div");
+  outer.setAttribute("role", "dialog");
+  outer.tabIndex = -1;
+  const innerTrigger = document.createElement("button");
+  const outerClose = document.createElement("button");
+  outer.append(innerTrigger, outerClose);
+  const inner = document.createElement("div");
+  inner.setAttribute("role", "dialog");
+  inner.tabIndex = -1;
+  const innerClose = document.createElement("button");
+  inner.append(innerClose);
+  document.body.append(trigger, outer, inner);
+  const dispose = installControlFocusVisibility(document);
+  const click = (target: HTMLElement) => {
+    target.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+    target.focus();
+  };
+  try {
+    click(trigger);
+    outer.focus();
+    click(innerTrigger);
+    inner.focus();
+    click(innerClose);
+    inner.remove();
+    innerTrigger.focus();
+    expect(document.documentElement.dataset.pointerFocus).toBe("true");
+    click(outerClose);
+    outer.remove();
+    trigger.focus();
+    expect(document.documentElement.dataset.pointerFocus).toBe("true");
+  } finally {
+    dispose();
+    trigger.remove();
+    outer.remove();
+    inner.remove();
+  }
+});
+
+it("keeps a pointer backdrop dismissal outline-free, without granting its return to a different field", () => {
+  const trigger = document.createElement("button");
+  const popup = document.createElement("div");
+  popup.setAttribute("role", "dialog");
+  popup.tabIndex = -1;
+  const backdrop = document.createElement("div");
+  const field = document.createElement("input");
+  document.body.append(trigger, popup, backdrop, field);
+  const dispose = installControlFocusVisibility(document);
+  try {
+    trigger.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+    trigger.focus();
+    popup.focus();
+    backdrop.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+    popup.remove();
+    trigger.focus();
+    expect(document.documentElement.dataset.pointerFocus).toBe("true");
+    document.body.append(popup);
+    trigger.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+    popup.focus();
+    field.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+    field.focus();
+    trigger.focus();
+    expect(document.documentElement.dataset.pointerFocus).toBeUndefined();
+  } finally {
+    dispose();
+    trigger.remove();
+    popup.remove();
+    backdrop.remove();
+    field.remove();
+  }
+});

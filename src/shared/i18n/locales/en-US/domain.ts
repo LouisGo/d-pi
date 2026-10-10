@@ -156,7 +156,7 @@ export const domain = {
   "conversation.nativeInput": "You",
   "conversation.nativeEvent": "Session event",
   "conversation.truncated":
-    "Showing part of the content. Open Thread details for the full text.",
+    "Showing part of the content. Open native history from Thread tools for the full text.",
   "conversation.unsupportedNativeEvent":
     "Full display of {eventType} isn't supported yet.",
   "conversation.retrying": "The connection was interrupted. Retrying…",

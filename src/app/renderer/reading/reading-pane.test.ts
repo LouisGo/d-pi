@@ -84,7 +84,6 @@ it("shows a reachable list-bottom action and a new-output prompt for same-entity
     gap: false,
     items: [item],
   });
-  const onOpenHistory = vi.fn();
   const thread = {
     readingSources: positions,
     readingPositions: new Map(),
@@ -104,7 +103,6 @@ it("shows a reachable list-bottom action and a new-output prompt for same-entity
               thread,
               view: "conversation",
               active,
-              onOpenHistory,
               children: createElement(Conversation, { model, positions }),
             }),
           }),
@@ -162,10 +160,7 @@ it("shows a reachable list-bottom action and a new-output prompt for same-entity
     const historyEntry = host.querySelector<HTMLButtonElement>(
       "[data-live-reading-controls] [data-open-native-history]",
     );
-    expect(historyEntry).not.toBeNull();
-    expect(pane.contains(historyEntry)).toBe(false);
-    await act(() => historyEntry?.click());
-    expect(onOpenHistory).toHaveBeenCalledTimes(1);
+    expect(historyEntry).toBeNull();
     pane.scrollTop = 230;
     await act(() => pane.dispatchEvent(new Event("scroll")));
     await act(() =>

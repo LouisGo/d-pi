@@ -22,6 +22,7 @@ const buttonVariants = cva("ui-button", {
       secondary: "ui-button-secondary",
       subtle: "ui-button-subtle",
       chip: "ui-button-chip",
+      context: "composer-context-token",
       accent: "ui-button-accent",
       destructive: "ui-button-destructive",
       ghost: "ui-button-ghost",
