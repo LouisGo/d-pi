@@ -50,6 +50,10 @@ function run(directory, options = {}) {
 test("OMP imports stay in the OMP adapter environment, including dynamic imports and require", () => {
   for (const statement of [
     'import { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";',
+    'import type { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";',
+    'export type { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";',
+    'export { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";',
+    'export type NativeSession = import("@oh-my-pi/pi-coding-agent/session/session-manager").SessionManager;',
     'const sdk = await import("@oh-my-pi/pi-coding-agent/sdk");',
     'const sdk = require("@oh-my-pi/pi-coding-agent/sdk");',
   ]) {

@@ -132,6 +132,33 @@ try {
   const initial = (await request("get_state")).data;
   assert.ok(initial.sessionId);
   assert.ok(initial.sessionFile.startsWith(sandbox.sessions));
+  // Bad wire input must report failure without losing the live native session.
+  child.stdin.write("{not-valid-json}\n");
+  await wait(() =>
+    frames.some(
+      (frame) =>
+        frame.type === "response" &&
+        frame.command === "parse" &&
+        frame.success === false,
+    ),
+  );
+  const unknown = send("fixture_unknown_command");
+  await wait(() => responseFor(unknown));
+  assert.equal(responseFor(unknown).success, false);
+  assert.equal(responseFor(unknown).command, "fixture_unknown_command");
+  const invalidMode = send("set_cache_warming", { mode: "fixture_invalid" });
+  await wait(() => responseFor(invalidMode));
+  assert.equal(responseFor(invalidMode).success, false);
+  assert.equal(responseFor(invalidMode).command, "set_cache_warming");
+  assert.equal((await request("get_state")).data.sessionId, initial.sessionId);
+  assert.equal(inputs.length, 0, "rejected RPC input must not invoke a provider");
+  cases.rpcRejected = {
+    malformedJson: true,
+    unknownCommand: unknown,
+    invalidMode,
+    sessionPreserved: true,
+    providerCalls: inputs.length,
+  };
   const selected = await request("d_pi_model", {
     provider: "fixture",
     modelId: "fixture",
