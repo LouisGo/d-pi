@@ -379,6 +379,327 @@ it("classifies every known mutating native tool without changing its original na
   }
 });
 
+it("projects bounded tool execution observations with real identity, arguments from verified ancestry, and excludes image data while keeping body intact", async () => {
+  const root = mkdtempSync(join(tmpdir(), "d-pi-history-tool-obs-"));
+  const threadId = crypto.randomUUID();
+  const directory = join(root, threadId);
+  mkdirSync(directory);
+  const file = join(directory, "session.jsonl");
+  const binding = {
+    threadId,
+    configContextId: "fixture",
+    sessionId: "session",
+    sessionFile: file,
+  };
+  const body =
+    [
+      { type: "title", title: "Tool Observation Run" },
+      { type: "session", version: 3, id: "session" },
+      {
+        type: "message",
+        id: "user-1",
+        parentId: null,
+        message: { role: "user", content: "Please write file" },
+      },
+      {
+        type: "message",
+        id: "asst-1",
+        parentId: "user-1",
+        message: {
+          role: "assistant",
+          content: [
+            { type: "text", text: "Writing..." },
+            {
+              type: "toolCall",
+              id: "call-1",
+              name: "write",
+              arguments: { path: "out.txt", content: "data" },
+            },
+          ],
+        },
+      },
+      {
+        type: "custom",
+        customType: "tool_execution_start",
+        data: { toolCallId: "call-1", toolName: "write" },
+        id: "start-1",
+        parentId: "asst-1",
+      },
+      {
+        type: "message",
+        id: "tool-res-1",
+        parentId: "start-1",
+        message: {
+          role: "toolResult",
+          toolCallId: "call-1",
+          toolName: "write",
+          isError: false,
+          content: [
+            { type: "text", text: "Wrote out.txt successfully" },
+            {
+              type: "image",
+              mimeType: "image/png",
+              data: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jfX8AAAAASUVORK5CYII=",
+            },
+          ],
+          details: { path: "/tmp/out.txt", bytes: 4 },
+        },
+      },
+    ]
+      .map((x) => JSON.stringify(x))
+      .join("\n") + "\n";
+  writeFileSync(file, body);
+  try {
+    const page = await readNativeHistory(root, binding);
+    expect(page.kind).toBe("page");
+    if (page.kind !== "page") return;
+    const entry = page.entries.find((e) => e.id === "tool-res-1");
+    expect(entry).toBeDefined();
+    expect(entry?.text).toBe("Wrote out.txt successfully");
+    expect(entry?.toolEvidence).toMatchObject({
+      toolCallId: "call-1",
+      toolName: "write",
+      isError: false,
+      effect: "mutation",
+      coverage: "text-parts-only",
+    });
+    expect(entry?.tool).toBeDefined();
+    expect(entry?.tool).toEqual({
+      toolCallId: "call-1",
+      name: "write",
+      lifecycle: "completed",
+      observed: ["record"],
+      coverage: "observed",
+      truncated: true,
+      arguments: {
+        value: { path: "out.txt", content: "data" },
+        truncated: false,
+      },
+      result: {
+        value: {
+          content: [
+            { type: "text", text: "Wrote out.txt successfully" },
+            { type: "image", mimeType: "image/png" },
+          ],
+          details: { path: "/tmp/out.txt", bytes: 4 },
+        },
+        truncated: true,
+      },
+    });
+    expect(JSON.stringify(entry?.tool)).not.toContain("iVBORw0KGgoAAAANSUhEUg");
+    expect(entry?.tool?.backgroundState).toBeUndefined();
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+it("marks lifecycle failed when isError is true, and marks coverage partial when ancestry is missing", async () => {
+  const root = mkdtempSync(join(tmpdir(), "d-pi-history-tool-failed-"));
+  const threadId = crypto.randomUUID();
+  const directory = join(root, threadId);
+  mkdirSync(directory);
+  const file = join(directory, "session.jsonl");
+  const binding = {
+    threadId,
+    configContextId: "fixture",
+    sessionId: "session",
+    sessionFile: file,
+  };
+  const body =
+    [
+      { type: "session", version: 3, id: "session" },
+      {
+        type: "message",
+        id: "tool-fail-1",
+        parentId: null,
+        message: {
+          role: "toolResult",
+          toolCallId: "call-err",
+          toolName: "shell",
+          isError: true,
+          content: [{ type: "text", text: "command failed" }],
+          details: { exitCode: 1 },
+        },
+      },
+    ]
+      .map((x) => JSON.stringify(x))
+      .join("\n") + "\n";
+  writeFileSync(file, body);
+  try {
+    const page = await readNativeHistory(root, binding);
+    expect(page.kind).toBe("page");
+    if (page.kind !== "page") return;
+    const entry = page.entries.find((e) => e.id === "tool-fail-1");
+    expect(entry?.tool).toBeDefined();
+    expect(entry?.tool).toMatchObject({
+      toolCallId: "call-err",
+      name: "shell",
+      lifecycle: "failed",
+      observed: ["record"],
+      coverage: "partial",
+      truncated: false,
+      result: {
+        value: {
+          content: [{ type: "text", text: "command failed" }],
+          details: { exitCode: 1 },
+        },
+        truncated: false,
+      },
+    });
+    expect(entry?.tool?.arguments).toBeUndefined();
+    expect(entry?.state).toBe("failed");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+it("marks lifecycle unknown when isError is missing, and ignores records without tool identity", async () => {
+  const root = mkdtempSync(join(tmpdir(), "d-pi-history-tool-unk-"));
+  const threadId = crypto.randomUUID();
+  const directory = join(root, threadId);
+  mkdirSync(directory);
+  const file = join(directory, "session.jsonl");
+  const binding = {
+    threadId,
+    configContextId: "fixture",
+    sessionId: "session",
+    sessionFile: file,
+  };
+  const body =
+    [
+      { type: "session", version: 3, id: "session" },
+      {
+        type: "message",
+        id: "tool-unk-1",
+        parentId: null,
+        message: {
+          role: "toolResult",
+          toolCallId: "call-unk",
+          toolName: "custom",
+          content: "done",
+        },
+      },
+      {
+        type: "message",
+        id: "tool-noid-1",
+        parentId: "tool-unk-1",
+        message: {
+          role: "toolResult",
+          content: "no tool identity",
+        },
+      },
+    ]
+      .map((x) => JSON.stringify(x))
+      .join("\n") + "\n";
+  writeFileSync(file, body);
+  try {
+    const page = await readNativeHistory(root, binding);
+    expect(page.kind).toBe("page");
+    if (page.kind !== "page") return;
+    const unkEntry = page.entries.find((e) => e.id === "tool-unk-1");
+    expect(unkEntry?.tool).toBeDefined();
+    expect(unkEntry?.tool).toMatchObject({
+      toolCallId: "call-unk",
+      name: "custom",
+      lifecycle: "unknown",
+      observed: ["record"],
+      coverage: "partial",
+    });
+    const noIdEntry = page.entries.find((e) => e.id === "tool-noid-1");
+    expect(noIdEntry?.tool).toBeUndefined();
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+it("recovers arguments by verified ancestry and does not pair by global toolCallId across turns", async () => {
+  const root = mkdtempSync(join(tmpdir(), "d-pi-history-tool-ancestry-"));
+  const threadId = crypto.randomUUID();
+  const directory = join(root, threadId);
+  mkdirSync(directory);
+  const file = join(directory, "session.jsonl");
+  const binding = {
+    threadId,
+    configContextId: "fixture",
+    sessionId: "session",
+    sessionFile: file,
+  };
+  const body =
+    [
+      { type: "session", version: 3, id: "session" },
+      {
+        type: "message",
+        id: "turn1-asst",
+        parentId: null,
+        message: {
+          role: "assistant",
+          content: [
+            {
+              type: "toolCall",
+              id: "reused-id",
+              name: "read",
+              arguments: { path: "turn1.txt" },
+            },
+          ],
+        },
+      },
+      {
+        type: "message",
+        id: "turn1-res",
+        parentId: "turn1-asst",
+        message: {
+          role: "toolResult",
+          toolCallId: "reused-id",
+          toolName: "read",
+          isError: false,
+          content: "turn 1 result",
+        },
+      },
+      {
+        type: "message",
+        id: "turn2-asst",
+        parentId: "turn1-res",
+        message: {
+          role: "assistant",
+          content: [
+            {
+              type: "toolCall",
+              id: "reused-id",
+              name: "read",
+              arguments: { path: "turn2.txt" },
+            },
+          ],
+        },
+      },
+      {
+        type: "message",
+        id: "turn2-res",
+        parentId: "turn2-asst",
+        message: {
+          role: "toolResult",
+          toolCallId: "reused-id",
+          toolName: "read",
+          isError: false,
+          content: "turn 2 result",
+        },
+      },
+    ]
+      .map((x) => JSON.stringify(x))
+      .join("\n") + "\n";
+  writeFileSync(file, body);
+  try {
+    const page = await readNativeHistory(root, binding);
+    expect(page.kind).toBe("page");
+    if (page.kind !== "page") return;
+    const res1 = page.entries.find((e) => e.id === "turn1-res");
+    const res2 = page.entries.find((e) => e.id === "turn2-res");
+    expect(res1?.tool?.arguments?.value).toEqual({ path: "turn1.txt" });
+    expect(res2?.tool?.arguments?.value).toEqual({ path: "turn2.txt" });
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 it("pages large files within a byte budget and rejects replaced cursors, other Threads and unsupported versions", async () => {
   const root = mkdtempSync(join(tmpdir(), "d-pi-history-pages-"));
   const threadId = crypto.randomUUID();
