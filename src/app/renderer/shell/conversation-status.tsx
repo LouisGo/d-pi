@@ -13,9 +13,10 @@ import type { ThreadModel } from "../wiring/thread-model";
 const emptyRuntime = createStore<{ view: RuntimeView | null }>(() => ({
   view: null,
 }));
-const emptyReading = createStore<{ view: ConversationSnapshot | null }>(() => ({
-  view: null,
-}));
+const emptyReading = createStore<{
+  view: ConversationSnapshot | null;
+  messageCount: number | undefined;
+}>(() => ({ view: null, messageCount: undefined }));
 export function ConversationStatus({ model }: { model: AppModel }) {
   const { t } = useI18n();
   const thread = useStore(model.stateStore, (state) =>
@@ -59,10 +60,7 @@ function ThreadStatus({ thread }: { thread: ThreadModel }) {
   const message = useStore(runtime, (state) => state.view?.message);
   const count = useStore(
     reading,
-    (state) =>
-      state.view?.items.filter(
-        (item) => item.role === "user" || item.role === "assistant",
-      ).length,
+    (state) => state.messageCount,
   );
   const gap = useStore(reading, (state) => state.view?.gap ?? false);
   const label = phase

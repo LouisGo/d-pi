@@ -122,3 +122,47 @@ it("keeps whole-state subscribers unaffected by fine grained selection", () => {
   expect(changes).toBe(2);
   model.dispose();
 });
+
+it("publishes stable native membership and independent immutable entity snapshots", () => {
+  const { model, deliver, connectionGeneration } = connected();
+  deliver({
+    kind: "snapshot",
+    connectionGeneration,
+    seq: 0,
+    items: [item(1, "old"), item(2, "tail", "streaming")],
+    gap: false,
+  });
+  const before = model.stateStore.getState();
+  const beforeSnapshot = model.getSnapshot();
+  deliver({
+    kind: "update",
+    connectionGeneration,
+    seq: 1,
+    droppedBefore: 0,
+    gap: false,
+    item: item(2, "tail grows", "streaming"),
+  });
+  const streamed = model.stateStore.getState();
+  expect(streamed.nativeIdentities).toEqual([1, 2]);
+  expect(streamed.nativeIdentities).toBe(before.nativeIdentities);
+  expect(streamed.itemIds).toBe(before.itemIds);
+  expect(before.itemsById.get(2)?.text).toBe("tail");
+  expect(beforeSnapshot?.items[1]?.text).toBe("tail");
+  expect(streamed.itemsById.get(1)).toBe(before.itemsById.get(1));
+  deliver({
+    kind: "update",
+    connectionGeneration,
+    seq: 2,
+    droppedBefore: 2,
+    gap: true,
+    item: { ...item(2, "tail grows"), nativeRecordId: "native-tail" },
+  });
+  const finished = model.stateStore.getState();
+  expect(finished.nativeIdentities).toEqual(["native-tail"]);
+  expect(finished.itemsById.get(1)).toBeUndefined();
+  expect(streamed.itemsById.get(1)?.text).toBe("old");
+  expect(model.getSnapshot()?.items).toEqual([
+    { ...item(2, "tail grows"), nativeRecordId: "native-tail" },
+  ]);
+  model.dispose();
+});

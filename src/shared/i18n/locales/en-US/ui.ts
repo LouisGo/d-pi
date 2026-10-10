@@ -162,6 +162,13 @@ export const ui = {
   "ui.conversation.toBottom": "Jump to bottom",
   "ui.conversation.retainedTail": "Jump to the bottom of the current list.",
   "ui.conversation.openHistory": "Thread details",
+  "ui.tool.observation": "Observation details",
+  "ui.tool.identity": "Tool call ID",
+  "ui.tool.arguments": "Invocation arguments",
+  "ui.tool.progress": "Observed progress",
+  "ui.tool.result": "Observed result",
+  "ui.tool.partial": "Some execution events are missing; shown values do not prove a complete execution history.",
+  "ui.tool.truncated": "Showing part of the structured values. The native record is unchanged.",
   "ui.history.readOnlyCoverage":
     "History is read-only and shown in saved order.",
   "ui.history.refreshStart": "Refresh starts again from the first page.",

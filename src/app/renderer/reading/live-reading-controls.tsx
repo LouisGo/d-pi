@@ -26,9 +26,7 @@ export function LiveReadingControls({
   );
   const coverageGap = useStore(
     model.stateStore,
-    (state) =>
-      !!state.view?.gap ||
-      (state.view?.items.some((item) => item.truncated) ?? false),
+    (state) => !!state.view?.gap || state.truncatedCount > 0,
   );
   if (atEnd && !(coverageGap && onOpenHistory)) return null;
   return (

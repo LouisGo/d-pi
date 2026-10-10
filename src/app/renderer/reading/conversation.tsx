@@ -23,6 +23,7 @@ import {
 } from "./message-parts";
 import { ReadingBody } from "./reading-body";
 import { SubagentMessage } from "./subagents";
+import { ToolObservationDetails } from "./tool-observation";
 
 export function Conversation({
   model,
@@ -176,6 +177,7 @@ export function ConversationItemView({
           evidence={evidence}
         >
           {item.detail && <p role="status">{item.detail}</p>}
+          {item.tool && <ToolObservationDetails tool={item.tool} />}
           <ReadingBody
             text={item.text || t("ui.conversation.waitingResult")}
             raw

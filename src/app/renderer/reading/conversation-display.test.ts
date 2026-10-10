@@ -146,3 +146,35 @@ it("shows failure as a conversation state and keeps transport detail in a closed
     "Failed",
   );
 });
+
+it("reveals structured tool observations without interpreting arguments as mutation evidence", async () => {
+  const container = await mount({
+    ...base,
+    role: "tool",
+    text: "Observed output",
+    label: { kind: "literal", text: "edit" },
+    tool: {
+      toolCallId: "native-edit-1",
+      name: "edit",
+      lifecycle: "completed",
+      observed: ["start", "update", "end"],
+      coverage: "partial",
+      truncated: true,
+      arguments: { value: { path: "src/example.ts", proposed: "not a proven diff" }, truncated: false },
+      progress: { value: { phase: "checking" }, truncated: false },
+      result: { value: { changed: true }, truncated: true },
+    },
+  });
+  const outer = container.querySelector("details");
+  await act(() => outer?.querySelector("summary")?.click());
+  const observation = container.querySelector<HTMLDetailsElement>("[data-tool-observation]");
+  expect(observation).not.toBeNull();
+  expect(observation?.open).toBe(false);
+  expect(observation?.querySelector("pre")).toBeNull();
+  await act(() => observation?.querySelector("summary")?.click());
+  expect(observation?.textContent).toContain("native-edit-1");
+  expect(observation?.textContent).toContain("src/example.ts");
+  expect(observation?.textContent).toContain("checking");
+  expect(observation?.textContent).toContain("Showing part");
+  expect(container.textContent).not.toContain("Diff");
+});

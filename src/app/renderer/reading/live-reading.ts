@@ -34,13 +34,7 @@ export function observeLiveReadingUpdates({
       sameSource &&
       !!previous.view &&
       !!current.view &&
-      current.view.items.some(
-        (item) =>
-          !item.notice &&
-          !item.subagentNotice &&
-          item.text.length > 0 &&
-          item.text !== previous.itemsById.get(item.id)?.text,
-      );
+      current.bodyRevision !== previous.bodyRevision;
     previous = current;
     if (!sameSource || anchor.getSnapshot()) publish(false);
     else if (changedBody) publish(true);
