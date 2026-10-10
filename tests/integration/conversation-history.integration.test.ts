@@ -101,3 +101,80 @@ it("refreshes loaded JSONL pages from the committed tail without rereading cache
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+it("keeps the verified JSONL prefix readable when a newly committed record is invalid", async () => {
+  const root = mkdtempSync(join(tmpdir(), "d-pi-history-invalid-tail-"));
+  const threadId = crypto.randomUUID();
+  mkdirSync(join(root, threadId));
+  const sessionFile = join(root, threadId, "session.jsonl");
+  const binding = {
+    threadId,
+    sessionFile,
+    sessionId: "session",
+    configContextId: "fixture",
+  };
+  const record = (id: string, content: string) =>
+    JSON.stringify({
+      type: "message",
+      id,
+      parentId: null,
+      message: { role: "assistant", content },
+    });
+  const committed =
+    JSON.stringify({ type: "session", version: 3, id: "session" }) +
+    "\n" +
+    record("one", "verified prefix") +
+    "\n";
+  writeFileSync(sessionFile, committed);
+  const client = new QueryClient();
+  const read = vi.fn<HistoryBridge["read"]>((_, cursor) =>
+    readNativeHistory(root, binding, cursor),
+  );
+  const bridge: HistoryBridge = {
+    read,
+    projectRead: async () => ({ kind: "unavailable", reason: "missing" }),
+    projectList: async () => ({
+      kind: "catalog",
+      sessions: [],
+      partial: false,
+    }),
+  };
+  const options = savedConversationQuery(bridge, threadId);
+  try {
+    const loaded = await client.fetchInfiniteQuery(options);
+    const cursor =
+      loaded.pages[0]?.kind === "page"
+        ? loaded.pages[0].continuation
+        : undefined;
+    if (!cursor) throw Error("expected committed continuation");
+    read.mockClear();
+    appendFileSync(sessionFile, "{invalid appended record}\n");
+    expect(await refreshSavedConversation(client, bridge, threadId)).toEqual({
+      kind: "unavailable",
+      reason: "invalid",
+    });
+    expect(client.getQueryData(options.queryKey)).toBe(loaded);
+    // Repair only the suffix; the same bound file and committed prefix remain.
+    writeFileSync(
+      sessionFile,
+      committed + record("two", "repaired tail") + "\n",
+    );
+    await refreshSavedConversation(client, bridge, threadId);
+    expect(read.mock.calls.map((call) => call[1])).toEqual([
+      { ...cursor, append: true },
+      { ...cursor, append: true },
+    ]);
+    const recovered = client.getQueryData<typeof loaded>(options.queryKey);
+    expect(
+      recovered?.pages.flatMap((page) =>
+        page.kind === "page" ? page.entries : [],
+      ),
+    ).toMatchObject([
+      { id: "one", text: "verified prefix" },
+      { id: "two", text: "repaired tail" },
+    ]);
+  } finally {
+    client.clear();
+    rmSync(root, { recursive: true, force: true });
+  }
+});

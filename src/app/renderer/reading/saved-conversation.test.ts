@@ -602,6 +602,58 @@ it("retains cached history and exposes a retry after an incremental refresh tran
   expect(f.container.textContent).toContain("cached message");
 });
 
+it("shows the unavailable append reason alongside cached messages and retries the preserved continuation", async () => {
+  vi.useFakeTimers();
+  const cursor = { threadId: "A", source: "saved", offset: 100 };
+  const page: HistoryPage = {
+    kind: "page",
+    entries: [
+      { id: "one", parentId: null, role: "assistant", text: "cached message" },
+    ],
+    source: "saved",
+    coverage: "append-order",
+    next: null,
+    continuation: cursor,
+    incompleteTail: false,
+    omitted: 0,
+  };
+  const read = vi
+    .fn<HistoryBridge["read"]>()
+    .mockResolvedValueOnce(page)
+    .mockResolvedValueOnce({ kind: "unavailable", reason: "invalid" })
+    .mockResolvedValue({ ...page, entries: [], continuation: cursor });
+  const f = await mount(true, undefined, read);
+  await vi.waitFor(() =>
+    expect(f.container.textContent).toContain("cached message"),
+  );
+  await act(() =>
+    f.emit({
+      kind: "snapshot",
+      connectionGeneration: "refresh-generation",
+      seq: 1,
+      gap: false,
+      items: [],
+    }),
+  );
+  await vi.waitFor(async () => {
+    await flushRefreshUpdates();
+    expect(f.container.textContent).toContain("Invalid record");
+  });
+  expect(f.container.textContent).toContain("cached message");
+  const retry = [
+    ...f.container.querySelectorAll<HTMLButtonElement>("button"),
+  ].find((button) => button.textContent === "Refresh");
+  if (!retry) throw Error("expected unavailable refresh action");
+  await act(() => retry.click());
+  await vi.waitFor(() => expect(read).toHaveBeenCalledTimes(3));
+  expect(read.mock.calls.slice(1).map((call) => call[1])).toEqual([
+    { ...cursor, append: true },
+    { ...cursor, append: true },
+  ]);
+  expect(f.container.textContent).not.toContain("Invalid record");
+  expect(f.container.textContent).toContain("cached message");
+});
+
 it("does not publish a cancelled late refresh error over a newer successful generation", async () => {
   vi.useFakeTimers();
   const page: HistoryPage = {

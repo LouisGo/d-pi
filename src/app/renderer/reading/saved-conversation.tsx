@@ -6,6 +6,7 @@ import type {
   ConversationItem,
   HistoryBridge,
   HistoryEntry,
+  HistoryPage,
   ToolExecutionObservation,
 } from "../../../modules/conversation/contracts/public";
 import {
@@ -65,9 +66,11 @@ export function SavedConversation({
   const gap = useStore(model.stateStore, (state) => state.view?.gap ?? false);
   const refresh = useRef<AbortController | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [refreshError, setRefreshError] = useState<{ cause: unknown } | null>(
-    null,
-  );
+  const [refreshIssue, setRefreshIssue] = useState<
+    | Extract<HistoryPage, { kind: "unavailable" }>
+    | { kind: "transport-error"; cause: unknown }
+    | null
+  >(null);
   const refreshNow = useCallback(
     async (controller: AbortController) => {
       if (refresh.current !== controller) {
@@ -75,17 +78,20 @@ export function SavedConversation({
         refresh.current = controller;
       }
       setRefreshing(true);
-      setRefreshError(null);
+      setRefreshIssue(null);
       try {
-        await refreshSavedConversation(
+        const unavailable = await refreshSavedConversation(
           client,
           bridge,
           threadId,
           controller.signal,
         );
+        if (!controller.signal.aborted && refresh.current === controller) {
+          setRefreshIssue(unavailable ?? null);
+        }
       } catch (cause: unknown) {
         if (!controller.signal.aborted && refresh.current === controller) {
-          setRefreshError({ cause });
+          setRefreshIssue({ kind: "transport-error", cause });
         }
       } finally {
         if (!controller.signal.aborted && refresh.current === controller) {
@@ -165,7 +171,10 @@ export function SavedConversation({
     return () => observer.disconnect();
   }, [active, gap, hasNextPage, isFetching, fetchNextPage]);
   const pages = saved.data?.pages ?? [];
-  const unavailable = pages.find((page) => page.kind === "unavailable");
+  const unavailable =
+    refreshIssue?.kind === "unavailable"
+      ? refreshIssue
+      : pages.find((page) => page.kind === "unavailable");
   const entries = pages.flatMap((page) =>
     page.kind === "page" ? page.entries : [],
   );
@@ -241,7 +250,7 @@ export function SavedConversation({
         label={t("app.loading")}
         placement="center"
       />
-      {(saved.isError || refreshError !== null) && (
+      {(saved.isError || refreshIssue?.kind === "transport-error") && (
         <p role="alert">
           {t("ui.history.readFailed")}{" "}
           <Button
@@ -267,7 +276,7 @@ export function SavedConversation({
       )}
       {(incomplete ||
         saved.isError ||
-        refreshError !== null ||
+        refreshIssue !== null ||
         (unavailable && unavailable.reason !== "unbound")) && (
         <Button
           variant="ghost"
@@ -353,7 +362,7 @@ export function SavedConversation({
       {!saved.isFetching &&
         !initializing &&
         !saved.isError &&
-        refreshError === null &&
+        refreshIssue === null &&
         !entries.length &&
         !appended.length &&
         !hasNextPage &&

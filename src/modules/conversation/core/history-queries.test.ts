@@ -175,3 +175,127 @@ it("extends partially loaded history without rereading the first loaded page", a
   });
   client.clear();
 });
+
+it.each([
+  "invalid",
+  "missing",
+  "denied",
+  "unsupported",
+  "cancelled",
+  "unbound",
+] as const)(
+  "preserves readable pages after a %s append observation and retries only that tail",
+  async (reason) => {
+    const client = new QueryClient();
+    const threadId = crypto.randomUUID();
+    const cursor = { threadId, source: "saved", offset: 100, endOffset: 100 };
+    const first: HistoryPage = {
+      kind: "page",
+      source: "saved",
+      entries: [
+        { id: "one", parentId: null, role: "assistant", text: "readable" },
+      ],
+      continuation: cursor,
+      next: null,
+      coverage: "append-order",
+      incompleteTail: false,
+      omitted: 0,
+    };
+    const unavailable = { kind: "unavailable", reason } as const;
+    const read = vi
+      .fn<HistoryBridge["read"]>()
+      .mockResolvedValueOnce(unavailable)
+      .mockResolvedValueOnce({
+        ...first,
+        entries: [
+          { id: "two", parentId: "one", role: "assistant", text: "new tail" },
+        ],
+        continuation: { ...cursor, offset: 200, endOffset: 200 },
+      });
+    const bridge: HistoryBridge = {
+      read,
+      projectRead: async () => unavailable,
+      projectList: async () => ({
+        kind: "catalog",
+        sessions: [],
+        partial: false,
+      }),
+    };
+    const options = savedConversationQuery(bridge, threadId);
+    client.setQueryData(options.queryKey, {
+      pages: [first],
+      pageParams: [null],
+    });
+    const cached = client.getQueryData(options.queryKey);
+    try {
+      expect(await refreshSavedConversation(client, bridge, threadId)).toEqual(
+        unavailable,
+      );
+      expect(client.getQueryData(options.queryKey)).toBe(cached);
+      await refreshSavedConversation(client, bridge, threadId);
+      expect(read.mock.calls).toEqual([
+        [threadId, { ...cursor, append: true }],
+        [threadId, { ...cursor, append: true }],
+      ]);
+      expect(client.getQueryData(options.queryKey)).toMatchObject({
+        pages: [first, { entries: [{ id: "two", text: "new tail" }] }],
+      });
+    } finally {
+      client.clear();
+    }
+  },
+);
+
+it("retries an unavailable next page from the last committed continuation instead of restarting the transcript", async () => {
+  const client = new QueryClient();
+  const threadId = crypto.randomUUID();
+  const cursor = { threadId, source: "saved", offset: 100, endOffset: 200 };
+  const first: HistoryPage = {
+    kind: "page",
+    source: "saved",
+    entries: [
+      { id: "one", parentId: null, role: "assistant", text: "readable" },
+    ],
+    continuation: cursor,
+    next: cursor,
+    coverage: "append-order",
+    incompleteTail: false,
+    omitted: 0,
+  };
+  const read = vi
+    .fn<HistoryBridge["read"]>()
+    .mockResolvedValueOnce(first)
+    .mockResolvedValueOnce({ kind: "unavailable", reason: "invalid" })
+    .mockResolvedValueOnce({
+      ...first,
+      entries: [
+        { id: "two", parentId: "one", role: "assistant", text: "retried page" },
+      ],
+      next: null,
+      continuation: { ...cursor, offset: 200 },
+    });
+  const bridge: HistoryBridge = {
+    read,
+    projectRead: async () => ({ kind: "unavailable", reason: "missing" }),
+    projectList: async () => ({
+      kind: "catalog",
+      sessions: [],
+      partial: false,
+    }),
+  };
+  const options = savedConversationQuery(bridge, threadId);
+  try {
+    await client.fetchInfiniteQuery({ ...options, pages: 2 });
+    await refreshSavedConversation(client, bridge, threadId);
+    expect(read.mock.calls[2]).toEqual([threadId, { ...cursor, append: true }]);
+    expect(client.getQueryData(options.queryKey)).toMatchObject({
+      pages: [
+        first,
+        { kind: "page", entries: [{ id: "two", text: "retried page" }] },
+      ],
+      pageParams: [null, cursor],
+    });
+  } finally {
+    client.clear();
+  }
+});

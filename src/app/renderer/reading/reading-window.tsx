@@ -318,7 +318,7 @@ export function ReadingWindow({
       ranges.some((range) => range.intersectsNode(node)) ||
       (document.activeElement && node.contains(document.activeElement)) ||
       node.querySelector(
-        "details[open], [aria-expanded=true], [data-state=streaming], [data-reading-view-open]",
+        "details[open]:not([data-reading-default-open]), [aria-expanded=true], [data-state=streaming], [data-reading-view-open]",
       )
     ) {
       const index = state.indices.get(id);

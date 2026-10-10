@@ -15,6 +15,7 @@ import {
   type ReadingAnchorController,
 } from "./reading-anchor";
 import { ReadingWindow, readingWindow } from "./reading-window";
+import { SubagentMessage } from "./subagents";
 
 // happy-dom has no layout: supply the scroll-relative geometry the adapter reads.
 function mockReadingGeometry(pane: HTMLElement, count: () => number) {
@@ -95,6 +96,91 @@ it("bounds mounted conversation bodies for thousands of available rows", async (
     document.getSelection()?.removeAllRanges();
     await act(() => root.unmount());
     model.dispose();
+    geometry.mockRestore();
+    pane.remove();
+    vi.unstubAllGlobals();
+  }
+});
+
+it("releases default-open completed subagents but retains results explicitly opened by the reader", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const count = 200;
+  const pane = document.createElement("div");
+  pane.dataset.readingPane = "conversation";
+  Object.defineProperty(pane, "clientHeight", { value: 600 });
+  document.body.append(pane);
+  const root = createRoot(pane);
+  const geometry = mockReadingGeometry(pane, () => count);
+  try {
+    await act(() =>
+      root.render(
+        createElement(I18nProvider, {
+          initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" },
+          children: createElement(ReadingWindow, {
+            source: "test",
+            rows: Array.from({ length: count }, (_, index) => ({
+              id: String(index),
+            })),
+            renderRow: (row) =>
+              createElement(SubagentMessage, {
+                rowId: row.id,
+                item: {
+                  id: Number(row.id),
+                  role: "subagent",
+                  state: "complete",
+                  text: "Final result",
+                  label: { kind: "literal", text: "Agent" },
+                  subagent: {
+                    nativeId: row.id,
+                    status: "completed",
+                    task: "",
+                    description: "",
+                    currentTool: "",
+                    model: "",
+                    resultSource: "progress",
+                    coverage: "observed",
+                  },
+                },
+              }),
+          }),
+        }),
+      ),
+    );
+    expect(pane.querySelector("details[open]")).not.toBeNull();
+    for (let index = 20; index < count; index += 20) {
+      await act(() => {
+        readingWindow(pane)?.mount(String(index));
+      });
+      expect(pane.querySelectorAll("[data-reading-row]").length).toBeLessThan(
+        40,
+      );
+    }
+    expect(pane.querySelector('[data-reading-row="0"]')).toBeNull();
+    await act(() => {
+      readingWindow(pane)?.mount("0");
+    });
+    const first = pane.querySelector('[data-reading-row="0"]');
+    const details = first?.querySelector<HTMLDetailsElement>("details[open]");
+    const summary = details?.querySelector("summary");
+    if (!details || !summary) throw Error("missing default-open result");
+    // Simulate explicit close/reopen; native toggle geometry is supplied by happy-dom.
+    await act(() => {
+      summary.click();
+      details.open = false;
+      summary.click();
+      details.open = true;
+    });
+    await act(() => {
+      readingWindow(pane)?.mount("180");
+    });
+    expect(pane.querySelector('[data-reading-row="0"]')).toBe(first);
+    details.open = false;
+    await act(() => {
+      readingWindow(pane)?.mount("100");
+    });
+    expect(pane.querySelector('[data-reading-row="0"]')).toBeNull();
+  } finally {
+    await act(() => root.unmount());
     geometry.mockRestore();
     pane.remove();
     vi.unstubAllGlobals();

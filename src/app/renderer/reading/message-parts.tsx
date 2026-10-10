@@ -45,9 +45,14 @@ export function ToolResultFrame({
   status?: { label: string; tone?: BadgeProps["tone"] };
   evidence?: ReactNode;
 }) {
+  const [readerToggled, setReaderToggled] = useState(false);
   return (
-    <Disclosure variant="framed" open={open}>
-      <DisclosureTrigger>
+    <Disclosure
+      variant="framed"
+      open={open}
+      data-reading-default-open={open && !readerToggled ? "" : undefined}
+    >
+      <DisclosureTrigger onClick={() => setReaderToggled(true)}>
         <ToolsIcon size={16} className="tool-result-icon" />
         <span className="tool-result-label">{label}</span>
         {status?.label && (

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "6b1695563f535722b3b7b5b560c9b3169955d57bd87dd5d3ef824dc4dcc10b9d",
+  "inputsHash": "a8660d64875a6000aa91a37300c6106827de0dd447660d2168d36f2b88c49f7c",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 569,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 244,
-      "lines": 47455,
+      "lines": 47607,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -307,7 +307,7 @@
       ],
       "materialized": true,
       "files": 31,
-      "lines": 6480,
+      "lines": 6617,
       "publicEntries": [
         {
           "path": "src/modules/conversation/contracts/public.ts",
@@ -10703,6 +10703,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/reading/reading-window.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/reading-window.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./subagents",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/reading/subagents.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },

@@ -94,13 +94,13 @@ export function savedConversationQuery(
 const refreshVersions = new WeakMap<QueryClient, Map<string, object>>();
 const cachedRecordIds = new WeakMap<object, Set<string>>();
 
-/** Extend the last loaded committed page, not TanStack's all-page refetch. */
+/** Extend committed pages; return an unavailable observation without discarding a valid prefix. */
 export async function refreshSavedConversation(
   client: QueryClient,
   bridge: HistoryBridge,
   threadId: string,
   signal?: { readonly aborted: boolean },
-): Promise<void> {
+): Promise<Extract<HistoryPage, { kind: "unavailable" }> | undefined> {
   let versions = refreshVersions.get(client);
   if (!versions) {
     versions = new Map();
@@ -111,17 +111,21 @@ export async function refreshSavedConversation(
   const options = savedConversationQuery(bridge, threadId);
   try {
     await client.cancelQueries({ queryKey: options.queryKey, exact: true });
-    if (signal?.aborted || versions.get(threadId) !== version) return;
+    if (signal?.aborted || versions.get(threadId) !== version) return undefined;
     const cached = client.getQueryData<
       InfiniteData<HistoryPage, HistoryCursor | null>
     >(options.queryKey);
-    const last = cached?.pages.at(-1);
+    // An unavailable fetchNextPage reply is an observation, not a new
+    // committed boundary. Retry from the last readable page.
+    const lastIndex =
+      cached?.pages.findLastIndex((page) => page.kind === "page") ?? -1;
+    const last = cached?.pages[lastIndex];
     const cursor = last?.kind === "page" ? last.continuation : undefined;
     let page = await bridge.read(
       threadId,
       cursor ? { ...cursor, append: true } : null,
     );
-    if (signal?.aborted || versions.get(threadId) !== version) return;
+    if (signal?.aborted || versions.get(threadId) !== version) return undefined;
     // A replaced/truncated source is a clean reset, never joined to old entries.
     const reset =
       !cursor || (page.kind === "unavailable" && page.reason === "changed");
@@ -131,14 +135,22 @@ export async function refreshSavedConversation(
       versions.get(threadId) !== version ||
       client.getQueryData(options.queryKey) !== cached
     )
-      return;
+      return undefined;
+    if (page.kind === "unavailable" && !reset && cached) return page;
     if (reset || !cached || page.kind === "unavailable") {
       client.setQueryData(options.queryKey, {
         pages: [page],
         pageParams: [null],
       });
-      return;
+      return page.kind === "unavailable" ? page : undefined;
     }
+    const hasUnavailableTail = lastIndex !== cached.pages.length - 1;
+    const pages = hasUnavailableTail
+      ? cached.pages.slice(0, lastIndex + 1)
+      : cached.pages;
+    const pageParams = hasUnavailableTail
+      ? cached.pageParams.slice(0, lastIndex + 1)
+      : cached.pageParams;
     let ids = cachedRecordIds.get(cached);
     if (!ids) {
       ids = new Set<string>();
@@ -162,7 +174,7 @@ export async function refreshSavedConversation(
     if (appended.entries.length === 0 && last?.kind === "page") {
       const updated = client.setQueryData(options.queryKey, {
         pages: [
-          ...cached.pages.slice(0, -1),
+          ...pages.slice(0, -1),
           {
             ...last,
             next: appended.next,
@@ -171,16 +183,17 @@ export async function refreshSavedConversation(
             omitted: last.omitted + appended.omitted,
           },
         ],
-        pageParams: cached.pageParams,
+        pageParams,
       });
       if (updated) cachedRecordIds.set(updated, ids);
-      return;
+      return undefined;
     }
     const updated = client.setQueryData(options.queryKey, {
-      pages: [...cached.pages, appended],
-      pageParams: [...cached.pageParams, cursor ?? null],
+      pages: [...pages, appended],
+      pageParams: [...pageParams, cursor ?? null],
     });
     if (updated) cachedRecordIds.set(updated, ids);
+    return undefined;
   } finally {
     if (versions.get(threadId) === version) versions.delete(threadId);
   }
