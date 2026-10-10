@@ -6,6 +6,7 @@ import type {
   ConversationItem,
   HistoryBridge,
   HistoryEntry,
+  ToolExecutionObservation,
 } from "../../../modules/conversation/contracts/public";
 import {
   type ConversationModel,
@@ -369,9 +370,60 @@ export function SavedConversation({
     </section>
   );
 }
+type SavedHistoryEntry = HistoryEntry & {
+  tool?: ToolExecutionObservation | undefined;
+};
+
+function mergeToolObservation(
+  liveTool: ToolExecutionObservation | undefined,
+  savedTool: ToolExecutionObservation | undefined,
+): ToolExecutionObservation | undefined {
+  if (!liveTool) return savedTool;
+  if (!savedTool) return liveTool;
+
+  if (
+    liveTool.toolCallId !== savedTool.toolCallId ||
+    liveTool.name !== savedTool.name
+  ) {
+    return liveTool;
+  }
+
+  const argumentsPayload = liveTool.arguments ?? savedTool.arguments;
+  const progressPayload = liveTool.progress ?? savedTool.progress;
+  const resultPayload = liveTool.result ?? savedTool.result;
+
+  const filledArguments = !liveTool.arguments && Boolean(savedTool.arguments);
+  const filledResult = !liveTool.result && Boolean(savedTool.result);
+
+  return {
+    ...liveTool,
+    toolCallId: liveTool.toolCallId,
+    name: liveTool.name,
+    lifecycle: liveTool.lifecycle,
+    backgroundState: liveTool.backgroundState,
+    observed: liveTool.observed,
+    progress: progressPayload,
+    arguments: argumentsPayload,
+    result: resultPayload,
+    coverage:
+      liveTool.coverage === "partial" && !resultPayload
+        ? "partial"
+        : liveTool.coverage === "partial" && argumentsPayload && resultPayload
+          ? savedTool.coverage
+          : liveTool.coverage,
+    truncated:
+      liveTool.truncated ||
+      Boolean(
+        (filledArguments && savedTool.arguments?.truncated) ||
+          (filledResult && savedTool.result?.truncated) ||
+          ((filledArguments || filledResult) && savedTool.truncated),
+      ),
+  };
+}
+
 function TimelineRow({
   rowId,
-  entry,
+  entry: rawEntry,
   liveId,
   model,
   positions,
@@ -389,9 +441,34 @@ function TimelineRow({
   threadId: string;
 }) {
   const { t } = useI18n();
+  const entry = rawEntry as SavedHistoryEntry | undefined;
   const live = useStore(model.stateStore, (state) =>
     liveId === undefined ? undefined : state.itemsById.get(liveId),
   );
+  const rawSavedTool = entry?.tool;
+  const savedTool = rawSavedTool
+    ? {
+        ...rawSavedTool,
+        lifecycle:
+          rawSavedTool.lifecycle === "running"
+            ? "completed"
+            : rawSavedTool.lifecycle,
+        backgroundState: undefined,
+      }
+    : undefined;
+  const sameToolIdentity = Boolean(
+    live &&
+      savedTool &&
+      live.tool &&
+      live.tool.toolCallId === savedTool.toolCallId &&
+      live.tool.name === savedTool.name,
+  );
+  const tool = live
+    ? sameToolIdentity
+      ? mergeToolObservation(live.tool, savedTool)
+      : live.tool
+    : savedTool;
+
   const item: ConversationItem | undefined = live
     ? entry
       ? {
@@ -399,8 +476,9 @@ function TimelineRow({
           text: entry.text,
           timestamp: entry.timestamp ?? live.timestamp,
           thinking: entry.thinking ?? live.thinking,
-          state: entry.state ?? live.state,
-          detail: entry.detail ?? live.detail,
+          state: live.state ?? entry.state ?? "complete",
+          detail: live.detail ?? entry.detail,
+          tool,
           truncated: false,
         }
       : live
@@ -413,14 +491,18 @@ function TimelineRow({
               : entry.role === "assistant"
                 ? "assistant"
                 : "tool",
-          state: entry.state ?? "complete",
+          state:
+            entry.state ??
+            (tool?.lifecycle === "failed" ? "failed" : "complete"),
           text: entry.text,
           timestamp: entry.timestamp,
           thinking: entry.thinking,
           detail: entry.detail,
+          tool,
           label: {
             kind: "literal",
             text:
+              tool?.name ??
               entry.toolEvidence?.toolName ??
               match(entry.role)
                 .with("user", () => t("ui.history.role.user"))
