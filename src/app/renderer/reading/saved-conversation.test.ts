@@ -755,3 +755,286 @@ it("checks an unbound cache on inactive-to-active return even without a live gen
   expect(read).toHaveBeenCalledTimes(2);
   expect(read).toHaveBeenLastCalledWith("A", null);
 });
+
+it("renders cold saved-only tool with shared disclosure, real name, call ID, args, result and full text", async () => {
+  const fullText = "COMPLETE_TOOL_OUTPUT_TEXT\nline 2";
+  const copy = vi.spyOn(navigator.clipboard, "writeText").mockResolvedValue();
+  const page: HistoryPage = {
+    kind: "page",
+    entries: [
+      {
+        id: "saved_tool_rec_1",
+        parentId: null,
+        role: "tool",
+        text: fullText,
+        state: "complete",
+        tool: {
+          toolCallId: "call_cold_saved_999",
+          name: "tool_executor",
+          lifecycle: "completed",
+          observed: ["record"],
+          coverage: "partial",
+          truncated: true,
+          arguments: {
+            value: { command: "run-check", flags: ["--verbose"] },
+            truncated: false,
+          },
+          result: {
+            value: { exitCode: 0, stdout: "ok" },
+            truncated: true,
+          },
+        },
+      } as unknown as HistoryPage extends { entries: (infer E)[] } ? E : never,
+    ],
+    source: "saved",
+    coverage: "append-order",
+    next: null,
+    incompleteTail: false,
+    omitted: 0,
+  };
+  const f = await mount(true, page);
+  await vi.waitFor(() => {
+    expect(f.container.textContent).toContain(fullText);
+  });
+
+  // Real tool name displayed in shared ToolResultFrame trigger
+  const label = f.container.querySelector(".tool-result-label");
+  expect(label?.textContent).toBe("tool_executor");
+
+  // No fabricated running/streaming claim in frame status
+  expect(f.container.querySelector(".tool-result-icon")).not.toBeNull();
+  expect(f.container.textContent).not.toContain("Streaming");
+
+  // Shared ToolResultFrame details disclosure
+  const outer = f.container.querySelector<HTMLDetailsElement>("details");
+  expect(outer).not.toBeNull();
+  await act(() => outer?.querySelector("summary")?.click());
+
+  // Shared ToolObservationDetails disclosure
+  const observation = f.container.querySelector<HTMLDetailsElement>(
+    "[data-tool-observation]",
+  );
+  expect(observation).not.toBeNull();
+  expect(observation?.open).toBe(false);
+
+  // Expand observation disclosure
+  await act(() => observation?.querySelector("summary")?.click());
+
+  // Shows real toolCallId
+  expect(observation?.textContent).toContain("call_cold_saved_999");
+  // Shows saved arguments on expansion
+  expect(observation?.textContent).toContain("run-check");
+  expect(observation?.textContent).toContain("--verbose");
+  // Shows saved result on expansion
+  expect(observation?.textContent).toContain("exitCode");
+  expect(observation?.textContent).toContain("stdout");
+  // No fabricated progress claim
+  expect(observation?.textContent).not.toContain("Observed progress");
+  expect(observation?.querySelector('[aria-label="Observed progress"]')).toBeNull();
+
+  // Partial and truncated guidance status indicators
+  const statusNotices = [...(observation?.querySelectorAll('[role="status"]') ?? [])].map(
+    (el) => el.textContent,
+  );
+  expect(statusNotices.some((text) => text?.includes("missing"))).toBe(true);
+  expect(
+    statusNotices.some((text) => text?.includes("Showing part of the structured values")),
+  ).toBe(true);
+
+  // Full available text copy unchanged
+  const copyButton = [...f.container.querySelectorAll("button")].find((node) =>
+    node.getAttribute("aria-label")?.startsWith("Copy"),
+  );
+  expect(copyButton).toBeDefined();
+  await act(() => copyButton?.click());
+  expect(copy).toHaveBeenCalledWith(fullText);
+});
+
+it("retains live lifecycle and progress on same-nativeRecordId overlay while filling missing saved args and result", async () => {
+  const page: HistoryPage = {
+    kind: "page",
+    entries: [
+      {
+        id: "rec_live_overlay",
+        parentId: null,
+        role: "tool",
+        text: "Full committed output from disk",
+        state: "complete",
+        tool: {
+          toolCallId: "call_live_777",
+          name: "build_worker",
+          lifecycle: "completed",
+          observed: ["record"],
+          coverage: "observed",
+          truncated: false,
+          arguments: {
+            value: { target: "dist/bundle.js", minify: true },
+            truncated: false,
+          },
+          result: {
+            value: { chunks: 3, bytes: 4096 },
+            truncated: false,
+          },
+        },
+      } as unknown as HistoryPage extends { entries: (infer E)[] } ? E : never,
+    ],
+    source: "saved",
+    coverage: "append-order",
+    next: null,
+    incompleteTail: false,
+    omitted: 0,
+  };
+  const f = await mount(true, page);
+  await vi.waitFor(() => {
+    expect(f.container.textContent).toContain("Full committed output from disk");
+  });
+
+  // Overlay live item with same nativeRecordId, currently streaming with progress
+  await act(() =>
+    f.emit({
+      kind: "snapshot",
+      connectionGeneration: "live-gen-1",
+      seq: 1,
+      gap: false,
+      items: [
+        {
+          id: 101,
+          nativeRecordId: "rec_live_overlay",
+          role: "tool",
+          state: "streaming",
+          label: { kind: "literal", text: "build_worker" },
+          text: "Live partial text",
+          tool: {
+            toolCallId: "call_live_777",
+            name: "build_worker",
+            lifecycle: "running",
+            observed: ["start", "update"],
+            coverage: "partial",
+            truncated: false,
+            progress: {
+              value: { phase: "optimizing", progressRatio: 0.75 },
+              truncated: false,
+            },
+          },
+        },
+      ],
+    }),
+  );
+
+  // 1. Live lifecycle/state wins: tool frame shows streaming badge!
+  expect(f.container.textContent).toContain("Streaming");
+
+  // 2. Saved text precedence: committed full output from disk is retained
+  expect(f.container.textContent).toContain("Full committed output from disk");
+
+  // 3. Expand ToolResultFrame
+  const outer = f.container.querySelector<HTMLDetailsElement>("details");
+  expect(outer).not.toBeNull();
+  await act(() => outer?.querySelector("summary")?.click());
+
+  // 4. Observation details disclosure exists
+  const observation = f.container.querySelector<HTMLDetailsElement>(
+    "[data-tool-observation]",
+  );
+  expect(observation).not.toBeNull();
+  await act(() => observation?.querySelector("summary")?.click());
+
+  // 5. Retains current live progress
+  expect(observation?.textContent).toContain("Observed progress");
+  expect(observation?.textContent).toContain("optimizing");
+  expect(observation?.textContent).toContain("0.75");
+
+  // 6. Fills genuinely missing saved arguments
+  expect(observation?.textContent).toContain("Invocation arguments");
+  expect(observation?.textContent).toContain("dist/bundle.js");
+  expect(observation?.textContent).toContain("minify");
+
+  // 7. Fills genuinely missing saved result
+  expect(observation?.textContent).toContain("Observed result");
+  expect(observation?.textContent).toContain("chunks");
+  expect(observation?.textContent).toContain("4096");
+});
+
+it("does not graft saved arguments or result when live tool call identity mismatches", async () => {
+  const page: HistoryPage = {
+    kind: "page",
+    entries: [
+      {
+        id: "rec_mismatch",
+        parentId: null,
+        role: "tool",
+        text: "Mismatched tool text",
+        state: "complete",
+        tool: {
+          toolCallId: "call_saved_AAA",
+          name: "bash",
+          lifecycle: "completed",
+          observed: ["record"],
+          coverage: "observed",
+          truncated: false,
+          arguments: {
+            value: { cmd: "saved_secret_command" },
+            truncated: false,
+          },
+          result: {
+            value: { output: "saved_result" },
+            truncated: false,
+          },
+        },
+      } as unknown as HistoryPage extends { entries: (infer E)[] } ? E : never,
+    ],
+    source: "saved",
+    coverage: "append-order",
+    next: null,
+    incompleteTail: false,
+    omitted: 0,
+  };
+  const f = await mount(true, page);
+  await vi.waitFor(() => {
+    expect(f.container.textContent).toContain("Mismatched tool text");
+  });
+
+  // Emit live with same nativeRecordId but different toolCallId
+  await act(() =>
+    f.emit({
+      kind: "snapshot",
+      connectionGeneration: "live-gen-2",
+      seq: 1,
+      gap: false,
+      items: [
+        {
+          id: 102,
+          nativeRecordId: "rec_mismatch",
+          role: "tool",
+          state: "complete",
+          label: { kind: "literal", text: "bash" },
+          text: "Live text",
+          tool: {
+            toolCallId: "call_live_BBB",
+            name: "bash",
+            lifecycle: "completed",
+            observed: ["start", "end"],
+            coverage: "partial",
+            truncated: false,
+          },
+        },
+      ],
+    }),
+  );
+
+  const outer = f.container.querySelector<HTMLDetailsElement>("details");
+  expect(outer).not.toBeNull();
+  await act(() => outer?.querySelector("summary")?.click());
+
+  const observation = f.container.querySelector<HTMLDetailsElement>(
+    "[data-tool-observation]",
+  );
+  expect(observation).not.toBeNull();
+  await act(() => observation?.querySelector("summary")?.click());
+
+  // Shows live call ID
+  expect(observation?.textContent).toContain("call_live_BBB");
+  // Never grafts saved arguments or result from mismatched toolCallId
+  expect(observation?.textContent).not.toContain("saved_secret_command");
+  expect(observation?.textContent).not.toContain("saved_result");
+});
