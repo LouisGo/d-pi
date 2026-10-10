@@ -24,10 +24,12 @@ export function MessageMedia({
 }) {
   const { t } = useI18n();
   const [preview, setPreview] = useState<Preview | null>(null);
+  const [previewPinned, setPreviewPinned] = useState(false);
   const returnFocus = useRef<HTMLButtonElement | null>(null);
   if (!entry.images?.length && !entry.files?.length) return null;
   const open = (value: Preview, button: HTMLButtonElement) => {
     returnFocus.current = button;
+    setPreviewPinned(true);
     setPreview(value);
   };
   return (
@@ -35,7 +37,7 @@ export function MessageMedia({
       <div
         className="message-media"
         data-message-media
-        data-reading-view-open={preview !== null ? "" : undefined}
+        data-reading-view-open={previewPinned ? "" : undefined}
       >
         {entry.images?.map((image) => (
           <ImageTile
@@ -83,6 +85,7 @@ export function MessageMedia({
         title={preview?.name ?? ""}
         closeLabel={t("attachment.closePreview")}
         returnFocus={returnFocus}
+        onFocusReturned={() => setPreviewPinned(false)}
       >
         {preview?.image ? (
           <img

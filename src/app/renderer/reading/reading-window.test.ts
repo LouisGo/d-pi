@@ -10,7 +10,10 @@ import {
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
 import { Conversation } from "./conversation";
 import { MessageMedia } from "./message-media";
-import { attachReadingAnchor, type ReadingAnchorController } from "./reading-anchor";
+import {
+  attachReadingAnchor,
+  type ReadingAnchorController,
+} from "./reading-anchor";
 import { ReadingWindow, readingWindow } from "./reading-window";
 
 // happy-dom has no layout: supply the scroll-relative geometry the adapter reads.
@@ -208,7 +211,9 @@ it.each(["pane", "ancestor", "no-layout"])(
       .spyOn(HTMLElement.prototype, "getClientRects")
       .mockImplementation(function (this: HTMLElement) {
         const values = hidden() ? [] : [this.getBoundingClientRect()];
-        return Object.assign(values, { item: (index: number) => values[index] ?? null });
+        return Object.assign(values, {
+          item: (index: number) => values[index] ?? null,
+        });
       });
     const positions = new ReadingPositions();
     const root = createRoot(pane);
@@ -221,12 +226,18 @@ it.each(["pane", "ancestor", "no-layout"])(
           createElement(ReadingWindow, {
             source: "test",
             positions,
-            rows: Array.from({ length: count }, (_, index) => ({ id: String(index) })),
+            rows: Array.from({ length: count }, (_, index) => ({
+              id: String(index),
+            })),
             renderRow: (row) =>
-              createElement("article", {
-                "data-reading-row": row.id,
-                style: { marginTop: 20, marginBottom: 20 },
-              }, `Question ${row.id}`),
+              createElement(
+                "article",
+                {
+                  "data-reading-row": row.id,
+                  style: { marginTop: 20, marginBottom: 20 },
+                },
+                `Question ${row.id}`,
+              ),
           }),
         ),
       );
@@ -295,26 +306,44 @@ it("keeps a real portaled media preview and its owner mounted until close and fo
   const bridge: HistoryBridge = {
     read: async () => ({ kind: "unavailable", reason: "missing" }),
     projectRead: async () => ({ kind: "unavailable", reason: "missing" }),
-    projectList: async () => ({ kind: "catalog", sessions: [], partial: false }),
+    projectList: async () => ({
+      kind: "catalog",
+      sessions: [],
+      partial: false,
+    }),
   };
   const render = () =>
-    root.render(createElement(I18nProvider, {
-      initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" },
-      children: createElement(ReadingWindow, {
-        source: "media",
-        rows: Array.from({ length: count }, (_, index) => ({ id: String(index) })),
-        renderRow: (row) => createElement("article", { "data-reading-row": row.id },
-          row.id === "0" ? createElement(MessageMedia, {
-            entry: {
-              id: "0", parentId: null, role: "user", text: "Attachment contents",
-              files: [{ name: "notes.txt", start: 0, end: 19 }],
-            },
-            bridge,
-            threadId: "thread",
-          }) : createElement("button", null, "Other row"),
-        ),
+    root.render(
+      createElement(I18nProvider, {
+        initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" },
+        children: createElement(ReadingWindow, {
+          source: "media",
+          rows: Array.from({ length: count }, (_, index) => ({
+            id: String(index),
+          })),
+          renderRow: (row) =>
+            createElement(
+              "article",
+              { "data-reading-row": row.id },
+              row.id === "0"
+                ? createElement(MessageMedia, {
+                    entry: {
+                      id: "0",
+                      parentId: null,
+                      role: "user",
+                      text: "Attachment contents",
+                      files: [
+                        { name: "notes.txt", byteLength: 19, start: 0, end: 19 },
+                      ],
+                    },
+                    bridge,
+                    threadId: "thread",
+                  })
+                : createElement("button", null, "Other row"),
+            ),
+        }),
       }),
-    }));
+    );
   try {
     await act(render);
     const owner = pane.querySelector('[data-reading-row="0"]');
@@ -325,7 +354,9 @@ it("keeps a real portaled media preview and its owner mounted until close and fo
       opener.click();
     });
     // Wait for Base UI's real portal autofocus, outside the owning article.
-    await act(async () => { await vi.runOnlyPendingTimersAsync(); });
+    await act(async () => {
+      await vi.runOnlyPendingTimersAsync();
+    });
     const popup = document.querySelector<HTMLElement>('[role="dialog"]');
     if (!popup) throw Error("missing real attachment dialog");
     expect(popup.textContent).toContain("Attachment contents");
@@ -340,13 +371,19 @@ it("keeps a real portaled media preview and its owner mounted until close and fo
     expect(document.querySelector('[role="dialog"]')).toBe(popup);
     expect(document.activeElement).toBe(focused);
     expect(pane.querySelectorAll("[data-reading-row]").length).toBeLessThan(80);
-    const close = popup.querySelector<HTMLButtonElement>('button[aria-label="Close preview"]');
+    const close = popup.querySelector<HTMLButtonElement>(
+      'button[aria-label="Close preview"]',
+    );
     if (!close) throw Error("missing preview close action");
     await act(() => close.click());
-    await act(async () => { await vi.runOnlyPendingTimersAsync(); });
+    await act(async () => {
+      await vi.runOnlyPendingTimersAsync();
+    });
     expect(document.querySelector("[data-dpi-modal-open]")).toBeNull();
     expect(document.activeElement).toBe(opener);
-    const other = pane.querySelector<HTMLButtonElement>('[data-reading-row="1500"] button');
+    const other = pane.querySelector<HTMLButtonElement>(
+      '[data-reading-row="1500"] button',
+    );
     if (!other) throw Error("missing destination focus");
     await act(() => other.focus());
     count++;

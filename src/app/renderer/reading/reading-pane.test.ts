@@ -39,6 +39,16 @@ it("shows a reachable list-bottom action and a new-output prompt for same-entity
     .mockImplementation(function () {
       return [new DOMRect(0, 0, 400, 200)] as unknown as DOMRectList;
     });
+  // A visible, continuous long body must report real layout, not happy-dom's
+  // zero-sized rectangles; hidden layout is exercised separately by the window.
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
+    function (this: HTMLElement) {
+      const pane = this.closest<HTMLElement>("[data-reading-pane]");
+      return this.matches("[data-reading-pane]")
+        ? new DOMRect(0, 0, 400, 200)
+        : new DOMRect(0, -(pane?.scrollTop ?? 0), 400, 1000);
+    },
+  );
   const positions = new ReadingPositions();
   const source = readingSourceKey({
     kind: "live",

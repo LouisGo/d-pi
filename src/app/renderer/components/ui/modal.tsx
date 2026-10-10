@@ -11,6 +11,7 @@ export function Modal({
   closeLabel,
   returnFocus,
   initialFocus,
+  onFocusReturned,
   children,
 }: {
   open: boolean;
@@ -19,6 +20,7 @@ export function Modal({
   closeLabel: string;
   returnFocus: RefObject<HTMLElement | null>;
   initialFocus?: () => HTMLElement | null;
+  onFocusReturned?: () => void;
   children: ReactNode;
 }) {
   const body = useRef<HTMLDivElement>(null);
@@ -38,7 +40,14 @@ export function Modal({
         <Dialog.Popup
           className="ui-modal"
           initialFocus={() => initialFocus?.() ?? body.current}
-          finalFocus={returnFocus}
+          finalFocus={
+            onFocusReturned
+              ? () => {
+                  queueMicrotask(onFocusReturned);
+                  return returnFocus.current;
+                }
+              : returnFocus
+          }
         >
           <div className="ui-modal-header">
             <Dialog.Title>{title}</Dialog.Title>

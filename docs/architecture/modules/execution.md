@@ -75,3 +75,11 @@ Main 收据和冻结内容跨窗口/重启保留。Host 的请求映射随原生
 ## M2 子 Agent 观察边界（2026-10-06）
 
 SDK Host 启动后由只读观察适配建立原生订阅与活动快照；同活 Host 继续观察并向 conversation 转交真实帧。子 Agent 状态、可得结果与已有后续创建配置、主提交收据各自独立，观察及阅读重连不启动、停止、恢复或结算执行。适配仅保存有界原生读取关联，真实身份/状态来自 OMP；同 nativeId 的后续 parentToolCallId/sessionFile 运行不能接收旧结果。固定 SDK localhost 的真实 task/yield 样本验证原生状态、活动 registry 移除与终态 transcript 保留，不替代真实供应商或用户试用。
+
+## Main 闲置实例回收（2026-10-10）
+
+Main registry 只移除已确认退出且可从存储重建的 RuntimeService；不因 Renderer 的 8 个 Thread 缓存淘汰而停止原生进程，不中断后台 Agent。释放前后重验 registry 所有权、实际进程清理、在途命令、执行/交互/队列、未决收据与不可重建的选择意图；unknown 或身份不明拒绝回收。真正退出与页面卸载仍是两个生命周期。
+
+持久 evidence 失败不能在物理清理清空内存后变成“可回收”：未确认缺口保留到同活 Host 重送并实际入库，退出后的缺口仍阻止丢弃该实例。重建实例的 RuntimeView revision 使用 Main 生命周期单调发布时钟；同一 Main 内保留的 Renderer/attention 镜像不会拒绝新实例的低 revision。跨 Thread 可有跳号，revision 不表示 OMP 执行序号或持久事实。
+
+OMP 非公开 API 继续限制在 `runtime/` 适配与隔离原生验证中；架构门禁覆盖静态/type/re-export/require 入口。固定 SDK 契约包含畸形 RPC、未知命令与非法 warming 状态的拒绝，升级仍须运行既有真实 Session/Queue/Model/Subagent/协议验证，不以 SDK 版本号替代行为证据。实际本轮覆盖见[记录](../../../.scratch/m2-first-release/spec.md#2026-10-10-架构与性能巩固)。

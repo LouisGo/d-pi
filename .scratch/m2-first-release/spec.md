@@ -425,3 +425,30 @@ Library 官方 prepare_materialize 已成功产生传输描述，但内置 helpe
 独立 Spec/Standards 审查及增量复核无有依据生产缺陷。OMP、依赖锁和架构边界保持原版本；没有 merge、部署、付费 provider 请求或修改用户真实数据。验证系统为 macOS arm64，实机为正式 Renderer 配合合成桥接；不补称 Linux 专属或真实厂商兼容验证。用户体验认可仍 pending。
 
 最终本机结果：`pnpm check` 的类型、lint/design/i18n、设计/source boundary、架构/文档/生成报告检查、39 项架构测试和 144 项 tooling 测试通过；默认并发的最终全量阶段两次在 clipboard PDF worker `SIGABRT`（232 文件/1448 断言通过，1 worker 错误），不记为完整门禁通过。该文件单独 14 项通过；不改配置、不新增 skip 的 `pnpm test --maxWorkers=2` 完整运行 233 文件/1461 项通过，原有 2 项跳过。`pnpm check:fast`、`pnpm build`、`pnpm check:environment`、`pnpm validate:sdk`、真实 Host cold resume 和 impeccable 扫描通过（扫描无发现）。远端标准 CI 按推送后的确切 SHA 单独核对并在交付报告给出结果。
+
+## 2026-10-10 架构与性能巩固
+
+用户授权复核所附架构研判并优化；实际起点为干净 main `6c0b718386d7297533161bc8b43bda23964706ea`，不是报告的 `246c48d`。沿用 D-02/D-11/D-24/D-35/D-37 及既有进程/执行/恢复所有权，不更换框架、不引入会话数据库或 Event Sourcing，不开发终端。当前目录集成，独立写集使用隔离副本，主 Agent 单写规格与管理记录。
+
+独立结论及交付范围：
+
+- 高频链路确认有历史集合重建；Host 改索引与完整帧合并，Core 改不可变增量实体索引及细粒度正文/数量订阅，既有 seq/generation/snapshot 保留。
+- 绑定历史确认 infinite refetch 放大；改冻结 continuation 的追加读取、身份不连续重置、迟到取消/错误隔离与缓存返回尾部检查。只读新记录不重取全部已缓存页；原生文件与提交事实不复制。
+- 阅读确认累计挂载无界；正式时间线改整行测量窗口，保留当前生成、选区、焦点、展开内容及 portaled 附件预览。共享 Modal 完成实际焦点回归后解除预览临时 pin；隐藏/零布局不覆写可见高度。Outline 使用已加载元数据及有界标记，离屏导航仍由同一滚动所有者执行。正文不分段。
+- Subagent 已有结构化模型，不重做；补齐 Tool observation 的稳定身份、调用生命周期、有界参数/进度/结果和覆盖说明。原生调用返回与后台任务完成分开，不丢晚到进度，不编造 Diff 或产物。
+- OMP 私有接口已经集中在适配层；补强所有私有导入形式的边界门禁与真实固定 SDK 的协议拒绝契约，不把原生配置类型扩散到 GUI。
+- Main registry 回收仅限已确认物理退出且无未决/不可重建事实的实例。保护持久 evidence 缺口，重建后发布 revision 继续 Main 生命周期单调，保留的 Renderer 镜像可接受新实例；不以释放缓存为由停止后台 Agent。
+- activeThread 的读授权是当前单窗口合同，不改为“拥有 Thread ID 就可读”。未来多视图需 Main 颁发、绑定调用者且可撤销的只读 capability；当前没有多窗口产品授权，不放宽目录或执行权限。
+
+独立 Spec/Standards 审查发现并修复：role-only 帧吞 delta、后台 Tool 终态/截断覆盖丢失、仅有预算成员变化未通知、旧页 incomplete-tail 残留、隐藏零矩形覆写高度、真实 portal 丢 owner/关闭前丢焦点、实例 revision 重置及清理时遗忘持久 evidence。确认缺口均先失败再实现；原有 pane 测试补齐真实可见长正文矩形，不用 happy-dom 零尺寸冒充布局。
+
+已观察证据：
+
+- 受影响 Host/Core/真实 JSONL/Query/阅读/Main/保留 Renderer 回归按真实失败增量修复；初次 22 文件 201 项中的两个布局/焦点失败已修复，随后窗口、pane 与共享 Modal 8 项通过，不将初次失败记作全绿。
+- 正式 ReadingPane/SavedConversation/MessageMedia/ToolDetails 的隔离 Chromium：3002 条可用行只挂载约 9–21 条，Outline 80 个标记；隐藏期间追加后原 owner 与行内位置 -30.5 px 保持；离屏键盘定位、跨窗口选区与 token 追加通过。真实 portal 在远距离定位/追加中保留 owner、焦点和弹窗；动画结束后焦点回到触发器，离开焦点后释放旧行。实际截图查看及最终页面错误为零；合成桥接不冒称真实账户 GUI 或 FPS 验收。
+- 实际 Electron Main→Utility→固定 OMP：已连接实例拒绝回收且不停止；收到真实 idle 后退出并确认 native PID 消失，释放并重建同 Thread，保留 Renderer 接受新 revision，继续同原生文件/ID，再次退出/释放。使用一条 localhost fixture 回复产生真实原生持久记录与已完成收据；无计费 provider 调用。刷新固定 SDK 资源成功（18.4.6，548.5 MiB/650 MiB），未改版本。
+- Core 单独基准：10000 次当前实体更新、3 轮中位数；保留 100/800/1000 条时，旧模型为 54.31/259.07/300.25 ms，新模型为 13.08/22.29/14.78 ms。旧快照/非目标实体及精确通知检查通过；不外推 Host 解码、DOM FPS 或 Main 延迟。
+
+限制：历史已加载页仍保留在 Query；单条极长正文、完整原生快照及 Main JSONL 解码成本仍存在，未凭静态推断引入 Worker/Utility 分片。主动展开/选区等 pin 可以超过普通视口窗口。原生私有接口升级仍需要完整相应契约验证；本轮不是 OMP 升级、多窗口交付或全量 M2 验收。临时 smoke 源码已删除，用户数据未修改；用户试用认可 pending，无 push/PR。
+
+最终合同核对补齐一处同范围缺口：保存历史仍只有 text-parts-only 的工具证据，需复用同一 Tool observation DTO 表达原生记录已具备的身份、结果及可得调用参数，而不是冷恢复后退回纯文本。复用 Host 已有 8 KiB/128 节点/深度 5 的有界 JSON 与图像字节排除策略；缺失参数、瞬时进度或当前后台状态明确 partial，不从保存结果猜当前执行。此补齐正在实施，未将已通过的实时观察冒称历史端到端通过。
