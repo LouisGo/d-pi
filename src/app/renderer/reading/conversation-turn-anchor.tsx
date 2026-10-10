@@ -13,12 +13,13 @@ import {
 export interface TurnPreviewPayload {
   id: string;
   number: number;
-  node: HTMLElement;
+  node: HTMLElement | null;
+  read?: (() => { question: string; reply: string }) | undefined;
   preview: string;
 }
 
 interface ConversationTurnAnchorProps {
-  turn: { id: string; preview: string; node: HTMLElement };
+  turn: { id: string; preview: string; node: HTMLElement | null };
   number: number;
   active: boolean;
   tabIndex: number;

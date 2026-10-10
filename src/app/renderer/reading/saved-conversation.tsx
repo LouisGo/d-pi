@@ -23,6 +23,7 @@ import {
 import { ConversationItemView } from "./conversation";
 import { historyToolEvidenceMessage } from "./history";
 import { MessageMedia } from "./message-media";
+import { ReadingWindow } from "./reading-window";
 
 /** One saved timeline survives execution startup and the bounded live window. */
 export function SavedConversation({
@@ -226,19 +227,47 @@ export function SavedConversation({
           {t("config.refresh")}
         </Button>
       )}
-      {rows.map((row) => (
-        <TimelineRow
-          key={row.key}
-          rowId={row.key}
-          entry={row.entry}
-          liveId={row.liveId}
-          model={model}
-          positions={positions}
-          source={source}
-          bridge={bridge}
-          threadId={threadId}
-        />
-      ))}
+      <ReadingWindow
+        key={source}
+        source={source}
+        positions={positions}
+        rows={rows.map((row, index) => {
+          const item = row.liveId === undefined ? undefined : live.itemsById.get(row.liveId);
+          const role = row.entry?.role ?? item?.role;
+          return {
+            id: row.key,
+            turn: role === "user" ? (row.entry?.displayText ?? row.entry?.text ?? item?.text ?? "").replace(/\s+/g, " ").slice(0, 240) : undefined,
+            pinned: row.liveId !== undefined && item?.state === "streaming" ? () => model.stateStore.getState().itemsById.get(row.liveId ?? -1)?.state === "streaming" : undefined,
+            preview: () => {
+              const current = model.stateStore.getState();
+              let reply = "";
+              for (let next = index + 1; next < rows.length; next++) {
+                const following = rows[next];
+                const liveItem = following?.liveId === undefined ? undefined : current.itemsById.get(following.liveId);
+                const nextRole = following?.entry?.role ?? liveItem?.role;
+                if (nextRole === "user") break;
+                if (nextRole === "assistant") { reply = following?.entry?.text ?? liveItem?.text ?? ""; if (reply) break; }
+              }
+              return { question: row.entry?.displayText ?? row.entry?.text ?? (row.liveId === undefined ? "" : current.itemsById.get(row.liveId)?.text ?? ""), reply };
+            },
+          };
+        })}
+        renderRow={(_metadata, index) => {
+          const row = rows[index];
+          return row ? (
+            <TimelineRow
+              rowId={row.key}
+              entry={row.entry}
+              liveId={row.liveId}
+              model={model}
+              positions={positions}
+              source={source}
+              bridge={bridge}
+              threadId={threadId}
+            />
+          ) : null;
+        }}
+      />
       {!saved.isFetching &&
         !initializing &&
         !saved.isError &&

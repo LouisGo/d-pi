@@ -4,6 +4,7 @@ import {
   type ReadingRow,
   resolveReadingAnchor,
 } from "../../../modules/conversation/core/public";
+import { readingWindow } from "./reading-window";
 
 export interface ReadingAnchorController {
   capture: (explicit?: boolean) => void;
@@ -11,6 +12,7 @@ export interface ReadingAnchorController {
   subscribe: (listener: () => void) => () => void;
   position: (action: () => boolean) => boolean;
   toBottom: () => void;
+  toRow: (id: string) => boolean;
   dispose: () => void;
 }
 
@@ -72,6 +74,8 @@ export function attachReadingAnchor({
     scrollHeight: pane.scrollHeight,
   });
   const currentRow = () => {
+    const window = readingWindow(pane);
+    if (window) return window.currentRow();
     // Ordered rows: only O(log n) layout reads, with no per-token geometry scan.
     const rows = pane.querySelectorAll<HTMLElement>("[data-reading-row]");
     let low = 0;
@@ -178,7 +182,8 @@ export function attachReadingAnchor({
     const anchor = currentSource ? positions.get(currentSource) : undefined;
     let top = currentSource ? 0 : pixel();
     if (anchor) {
-      const row = anchor.rowId
+      const windowRow = anchor.rowId ? readingWindow(pane)?.row(anchor.rowId) : null;
+      const row = !windowRow && anchor.rowId
         ? pane.querySelector<HTMLElement>(
             `[data-reading-row="${CSS.escape(anchor.rowId)}"]`,
           )
@@ -186,7 +191,7 @@ export function attachReadingAnchor({
       top = resolveReadingAnchor(
         anchor,
         viewport(),
-        row ? geometry(row) : null,
+        windowRow ?? (row ? geometry(row) : null),
       );
     }
     pane.scrollTop = top;
@@ -214,6 +219,7 @@ export function attachReadingAnchor({
         );
     });
   };
+  pane.addEventListener("reading-window-change", refresh);
   restoring = true;
   apply();
   refresh();
@@ -255,6 +261,28 @@ export function attachReadingAnchor({
       expectedTop = pane.scrollTop;
       return positioned;
     },
+    toRow(id) {
+      if (!visible()) return false;
+      takeOwnership();
+      const window = readingWindow(pane);
+      if (window) {
+        if (!window.mount(id)) return false;
+        const row = window.row(id);
+        if (row) pane.scrollTop = Math.ceil(row.top);
+        expectedTop = null;
+        capture(false);
+        expectedTop = pane.scrollTop;
+        return true;
+      }
+      const node = pane.querySelector<HTMLElement>(`[data-reading-row="${CSS.escape(id)}"]`);
+      const row = node ? geometry(node) : null;
+      if (!row) return false;
+      pane.scrollTop = Math.ceil(row.top);
+      expectedTop = null;
+      capture(false);
+      expectedTop = pane.scrollTop;
+      return true;
+    },
     toBottom() {
       if (!visible()) return;
       takeOwnership();
@@ -274,6 +302,7 @@ export function attachReadingAnchor({
       frame = null;
       resize?.disconnect();
       mutation.disconnect();
+      pane.removeEventListener("reading-window-change", refresh);
       listeners.clear();
       pane.removeEventListener("wheel", wheel);
       pane.removeEventListener("keydown", keydown);

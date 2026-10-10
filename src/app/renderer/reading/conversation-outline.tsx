@@ -1,4 +1,5 @@
-import { useLayoutEffect, useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import {
   createHoverCardHandle,
@@ -9,13 +10,14 @@ import {
   type TurnPreviewPayload,
 } from "./conversation-turn-anchor";
 import type { ReadingAnchorController } from "./reading-anchor";
-import { ConversationTurnPreview } from "./turn-preview-card";
+import { ConversationTurnPreview, WindowTurnPreview } from "./turn-preview-card";
+import { readingWindow, type WindowRow } from "./reading-window";
 
 interface Turn {
   id: string;
   preview: string;
   payload: TurnPreviewPayload;
-  node: HTMLElement;
+  node: HTMLElement | null;
 }
 const selector = "[data-conversation-turn]";
 function touchesTurns(record: MutationRecord): boolean {
@@ -65,17 +67,29 @@ export function ConversationOutline({
   anchor,
 }: {
   pane: HTMLElement;
-  anchor: Pick<ReadingAnchorController, "position">;
+  anchor: Pick<ReadingAnchorController, "position"> & Partial<Pick<ReadingAnchorController, "toRow">>;
 }) {
   const { t } = useI18n();
   const [turns, setTurns] = useState<readonly Turn[]>([]);
   const [active, setActive] = useState<string | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
+  const nav = useRef<HTMLElement>(null);
+  const [outlineTop, setOutlineTop] = useState(0);
+  const [outlinePitch, setOutlinePitch] = useState(11);
+  useLayoutEffect(() => {
+    const element = nav.current;
+    const button = element?.querySelector<HTMLElement>("[data-turn-target]");
+    if (!element || !button) return;
+    const height = button.getBoundingClientRect().height;
+    const gap = Number.parseFloat(getComputedStyle(element).rowGap) || 0;
+    if (height > 0) setOutlinePitch(height + gap);
+  }, [turns]);
   useLayoutEffect(() => {
     let rows: readonly Turn[] = [];
     let frame: number | null = null;
     let disposed = false;
+    let previousWindowRows: readonly WindowRow[] | undefined;
     const markActive = () => {
       frame = null;
       if (disposed) return;
@@ -84,7 +98,10 @@ export function ConversationOutline({
       let high = rows.length;
       while (low < high) {
         const middle = (low + high) >>> 1;
-        if ((rows[middle]?.node.getBoundingClientRect().top ?? Infinity) <= top)
+        const turn = rows[middle];
+        const geometry = turn ? readingWindow(pane)?.row(turn.id) : null;
+        const rowTop = geometry ? geometry.top - pane.scrollTop + pane.getBoundingClientRect().top + pane.clientTop : turn?.node?.getBoundingClientRect().top ?? Infinity;
+        if (rowTop <= top)
           low = middle + 1;
         else high = middle;
       }
@@ -95,6 +112,21 @@ export function ConversationOutline({
       if (frame === null) frame = requestAnimationFrame(markActive);
     };
     const rebuild = () => {
+      const window = readingWindow(pane);
+      if (window) {
+        if (previousWindowRows === window.rows) { schedule(); return; }
+        previousWindowRows = window.rows;
+        rows = window.rows.flatMap((row) => {
+          if (row.turn === undefined) return [];
+          const node = null;
+          const payload = { id: row.id, number: 0, node, preview: row.turn, read: row.preview };
+          return [{ id: row.id, preview: row.turn, payload, node }];
+        });
+        rows.forEach((turn, index) => { turn.payload.number = index + 1; });
+        setTurns(rows);
+        schedule();
+        return;
+      }
       const turnNodes = [...pane.querySelectorAll<HTMLElement>(selector)];
       rows = turnNodes.flatMap((node, index) => {
         const id = node.dataset.conversationTurn;
@@ -117,6 +149,7 @@ export function ConversationOutline({
       attributeFilter: ["data-conversation-turn", "data-turn-preview"],
     });
     pane.addEventListener("scroll", schedule, { passive: true });
+    pane.addEventListener("reading-window-change", rebuild);
     const resize =
       typeof ResizeObserver === "undefined"
         ? null
@@ -127,6 +160,7 @@ export function ConversationOutline({
       disposed = true;
       observer.disconnect();
       resize?.disconnect();
+      pane.removeEventListener("reading-window-change", rebuild);
       pane.removeEventListener("scroll", schedule);
       if (frame !== null) cancelAnimationFrame(frame);
     };
@@ -138,20 +172,27 @@ export function ConversationOutline({
   if (turns.length < 2) return null;
   const focalIndex = hoveredIndex ?? focusedIndex;
   const activeIndex = turns.findIndex((turn) => turn.id === active);
+  const outlineStart = Math.min(Math.max(0, turns.length - 80), Math.max(0, Math.floor(outlineTop / outlinePitch) - 5));
+  const outlineEnd = Math.min(turns.length, outlineStart + 80);
 
   return (
     <nav
+      ref={nav}
+      onScroll={(event) => setOutlineTop(event.currentTarget.scrollTop)}
       className="conversation-outline"
       aria-label={t("ui.conversation.turns")}
       onPointerLeave={() => setHoveredIndex(null)}
     >
-      {turns.map((turn, index) => (
+      {outlineStart > 0 && <div aria-hidden="true" style={{ height: outlineStart * outlinePitch - 1, flexShrink: 0 }} />}
+      {turns.slice(outlineStart, outlineEnd).map((turn, localIndex) => {
+        const index = outlineStart + localIndex;
+        return (
         <ConversationTurnAnchor
           key={turn.id}
           turn={turn}
           number={index + 1}
           active={active === turn.id}
-          tabIndex={active === turn.id || (!active && index === 0) ? 0 : -1}
+          tabIndex={active === turn.id || ((activeIndex < outlineStart || activeIndex >= outlineEnd) && index === outlineStart) || (!active && index === 0) ? 0 : -1}
           markWidth={computeTurnMarkWidth(index, activeIndex, focalIndex)}
           markOpacity={computeTurnMarkOpacity(index, activeIndex, focalIndex)}
           handle={hoverCardHandle}
@@ -166,7 +207,12 @@ export function ConversationOutline({
             setFocusedIndex((prev) => (prev === index ? null : prev))
           }
           onNavigate={() => {
-            if (!turn.node.isConnected || !pane.contains(turn.node)) return;
+            if (readingWindow(pane) && anchor.toRow) {
+              if (anchor.toRow(turn.id)) setActive(turn.id);
+              return;
+            }
+            const node = turn.node;
+            if (!node?.isConnected || !pane.contains(node)) return;
             anchor.position(() => {
               // Round toward the row: capturing the preceding gap would let
               // its shorter row clamp the offset on the next streamed update.
@@ -174,7 +220,7 @@ export function ConversationOutline({
                 0,
                 Math.ceil(
                   pane.scrollTop +
-                    turn.node.getBoundingClientRect().top -
+                    node.getBoundingClientRect().top -
                     pane.getBoundingClientRect().top -
                     pane.clientTop,
                 ),
@@ -184,30 +230,35 @@ export function ConversationOutline({
             setActive(turn.id);
           }}
           onKeyDown={(event) => {
-            const buttons = [
-              ...(event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>(
-                "[data-turn-target]",
-              ) ?? []),
-            ];
+            const element = event.currentTarget.parentElement;
             const next =
               event.key === "Home"
                 ? 0
                 : event.key === "End"
-                  ? buttons.length - 1
+                  ? turns.length - 1
                   : event.key === "ArrowDown" || event.key === "ArrowRight"
-                    ? Math.min(index + 1, buttons.length - 1)
+                    ? Math.min(index + 1, turns.length - 1)
                     : event.key === "ArrowUp" || event.key === "ArrowLeft"
                       ? Math.max(0, index - 1)
                       : null;
             if (next === null) return;
             event.preventDefault();
-            buttons[next]?.focus();
+            if (next < outlineStart || next >= outlineEnd) {
+              flushSync(() => setOutlineTop(next * outlinePitch));
+              if (nav.current) nav.current.scrollTop = next * outlinePitch;
+            }
+            const target = turns[next];
+            if (target) element?.querySelector<HTMLButtonElement>(`[data-turn-target="${CSS.escape(target.id)}"]`)?.focus();
           }}
         />
-      ))}
+        );
+      })}
+      {outlineEnd < turns.length && <div aria-hidden="true" style={{ height: (turns.length - outlineEnd) * outlinePitch - 1, flexShrink: 0 }} />}
       <HoverCardPopup handle={hoverCardHandle} side="right" sideOffset={8}>
         {(payload) =>
-          payload ? (
+          payload?.read ? (
+            <WindowTurnPreview key={payload.id} number={payload.number} pane={pane} read={payload.read} />
+          ) : payload?.node ? (
             <ConversationTurnPreview
               key={payload.id}
               number={payload.number}
