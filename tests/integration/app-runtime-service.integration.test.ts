@@ -298,6 +298,9 @@ it("releases only confirmed exited runtimes and preserves the same persisted nat
   expect(await fixture.runtime.releaseIfIdle()).toBe(false);
   expect(fixture.postMessage.mock.calls).toHaveLength(before);
   fixture.host.emit("exit", 0);
+  // Utility exit is not yet confirmed native-group/lease cleanup.
+  expect(await fixture.runtime.releaseIfIdle()).toBe(false);
+  await fixture.runtime.closeIdle();
   expect(await fixture.runtime.releaseIfIdle()).toBe(true);
   await expect(fixture.act("inspect")).rejects.toThrow("Runtime released");
   const reopened = new RuntimeService(
