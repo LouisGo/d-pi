@@ -8,10 +8,21 @@ export const ToolPayloadSchema = z.strictObject({
 export const ToolExecutionObservationSchema = z.strictObject({
   toolCallId: z.string().min(1).max(512),
   name: z.string().max(120),
-  lifecycle: z.enum(["running", "completed", "failed"]),
+  lifecycle: z.enum(["running", "completed", "failed", "unknown"]),
   // A returned native call can still report detached background progress.
   backgroundState: z.enum(["running", "completed", "failed"]).optional(),
-  observed: z.array(z.enum(["start", "update", "end", "message-end"])).max(4),
+  observed: z
+    .array(
+      z.enum([
+        "start",
+        "update",
+        "end",
+        "message-end",
+        "record",
+        "message",
+      ]),
+    )
+    .max(6),
   coverage: z.enum(["observed", "partial"]),
   truncated: z.boolean(),
   arguments: ToolPayloadSchema.optional(),

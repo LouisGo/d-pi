@@ -16,6 +16,7 @@ import type {
   ToolExecutionObservation,
   ToolPayload,
 } from "../contracts/tool-observation";
+import { projectToolPayload } from "../core/public";
 
 import { SubagentProjection } from "./subagent-projection";
 
@@ -62,79 +63,6 @@ function textOf(content: unknown): string {
     .join("\n");
 }
 
-function toolPayload(input: unknown): ToolPayload {
-  let remaining = 8192;
-  let nodes = 128;
-  let truncated = false;
-  const visit = (value: unknown, depth: number): ToolPayload["value"] => {
-    if (--nodes < 0 || depth > 5 || remaining < 32) {
-      truncated = true;
-      remaining -= 4;
-      return null;
-    }
-    if (value === null || typeof value === "boolean") {
-      remaining -= 5;
-      return value;
-    }
-    if (typeof value === "number" && Number.isFinite(value)) {
-      remaining -= 32;
-      return value;
-    }
-    if (typeof value === "string") {
-      const limit = Math.min(1024, Math.floor((remaining - 2) / 6));
-      const text = value.slice(0, limit);
-      truncated ||= text.length !== value.length;
-      remaining -= draftByteLength(JSON.stringify(text));
-      return text;
-    }
-    if (Array.isArray(value)) {
-      const result: ToolPayload["value"][] = [];
-      remaining -= 2;
-      for (let i = 0; i < value.length; i++) {
-        if (i >= 32 || remaining < 16 || nodes <= 0) {
-          truncated = true;
-          break;
-        }
-        remaining--;
-        result.push(visit(value[i], depth + 1));
-      }
-      return result;
-    }
-    if (typeof value === "object" && value !== null) {
-      const result: Record<string, ToolPayload["value"]> = {};
-      remaining -= 2;
-      let count = 0;
-      for (const key in value) {
-        if (!Object.hasOwn(value, key)) continue;
-        // Binary image payloads are not a text/structured tool detail.
-        if (key === "data" && "type" in value && value.type === "image") {
-          truncated = true;
-          continue;
-        }
-        const cost = draftByteLength(JSON.stringify(key)) + 2;
-        if (
-          ++count > 32 ||
-          key.length > 120 ||
-          remaining - cost < 16 ||
-          nodes <= 0
-        ) {
-          truncated = true;
-          break;
-        }
-        remaining -= cost;
-        Object.defineProperty(result, key, {
-          value: visit(Reflect.get(value, key), depth + 1),
-          enumerable: true,
-        });
-      }
-      return result;
-    }
-    truncated = true;
-    remaining -= 4;
-    return null;
-  };
-  return { value: visit(input, 0), truncated };
-}
 export class ConversationProjection {
   private readonly subagents = new SubagentProjection(
     () => this.nextId++,
@@ -193,6 +121,10 @@ export class ConversationProjection {
         : undefined;
       const existing = tool ?? (role === "assistant" ? this.active : null);
       const id = existing ?? this.nextId++;
+      if (message.toolCallId && !this.tools.has(message.toolCallId)) {
+        this.tools.set(message.toolCallId, id);
+        this.toolOwners.set(id, message.toolCallId);
+      }
       const text = textOf(message.content);
       const thinking = role === "assistant" ? thinkingOf(message.content) : "";
       const prior = existing == null ? undefined : this.items.get(existing);
@@ -223,6 +155,61 @@ export class ConversationProjection {
         role !== "assistant"
       )
         return;
+      const toolObservation: ToolExecutionObservation | undefined = prior?.tool
+        ? {
+            ...prior.tool,
+            lifecycle:
+              state === "failed" || state === "aborted"
+                ? "failed"
+                : "completed",
+            observed: prior.tool.observed.includes("message-end")
+              ? prior.tool.observed
+              : [...prior.tool.observed, "message-end"],
+          }
+        : role === "tool" &&
+            typeof message.toolCallId === "string" &&
+            message.toolCallId.length > 0
+          ? (() => {
+              const meta = z
+                .object({
+                  toolName: z.string().optional(),
+                  details: z.unknown().optional(),
+                })
+                .safeParse(message);
+              const toolName = (
+                meta.success && meta.data.toolName ? meta.data.toolName : ""
+              ).slice(0, 120);
+              const details = meta.success ? meta.data.details : undefined;
+              const resultInput =
+                details !== undefined
+                  ? { content: message.content, details }
+                  : typeof message.content === "object" &&
+                      message.content !== null &&
+                      !Array.isArray(message.content) &&
+                      "content" in message.content
+                    ? message.content
+                    : { content: message.content };
+              const projected = projectToolPayload(
+                resultInput,
+                draftByteLength,
+              );
+              const lifecycle =
+                message.isError === true ||
+                state === "failed" ||
+                state === "aborted"
+                  ? "failed"
+                  : "completed";
+              return {
+                toolCallId: message.toolCallId,
+                name: toolName,
+                lifecycle,
+                observed: ["message" as const],
+                coverage: "partial" as const,
+                truncated: projected.truncated,
+                result: projected,
+              };
+            })()
+          : undefined;
       this.put({
         id,
         role,
@@ -240,7 +227,9 @@ export class ConversationProjection {
             : state,
         ...(prior?.truncated && prior.tool?.truncated
           ? { truncated: true }
-          : {}),
+          : !prior?.tool && toolObservation?.truncated
+            ? { truncated: true }
+            : {}),
         ...(timestamp !== undefined ? { timestamp } : {}),
         ...(identity.success && identity.data.dPiRecordId
           ? { nativeRecordId: identity.data.dPiRecordId }
@@ -254,20 +243,7 @@ export class ConversationProjection {
         ...(role === "assistant" && continuationOf !== null
           ? { continuationOf }
           : {}),
-        ...(prior?.tool
-          ? {
-              tool: {
-                ...prior.tool,
-                lifecycle:
-                  state === "failed" || state === "aborted"
-                    ? "failed"
-                    : "completed",
-                observed: prior.tool.observed.includes("message-end")
-                  ? prior.tool.observed
-                  : [...prior.tool.observed, "message-end"],
-              },
-            }
-          : {}),
+        ...(toolObservation ? { tool: toolObservation } : {}),
         label:
           role === "tool"
             ? (prior?.label ?? {
@@ -404,14 +380,16 @@ export class ConversationProjection {
             : "end";
       const args =
         stage !== "end" && frame.args !== undefined
-          ? toolPayload(frame.args)
+          ? projectToolPayload(frame.args, draftByteLength)
           : prior?.tool?.arguments;
       const progress =
         stage === "update"
-          ? toolPayload(frame.partialResult)
+          ? projectToolPayload(frame.partialResult, draftByteLength)
           : prior?.tool?.progress;
       const result =
-        stage === "end" ? toolPayload(frame.result) : prior?.tool?.result;
+        stage === "end"
+          ? projectToolPayload(frame.result, draftByteLength)
+          : prior?.tool?.result;
       const observed: ToolExecutionObservation["observed"] = [
         ...(prior?.tool?.observed ?? []),
       ];

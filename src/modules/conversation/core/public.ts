@@ -19,3 +19,7 @@ export {
   readingSourceKey,
   resolveReadingAnchor,
 } from "./reading-position";
+export {
+  projectToolPayload,
+  type ToolPayloadByteCounter,
+} from "./tool-payload";

@@ -12,6 +12,8 @@ import type {
   HistoryToolEffect,
 } from "../contracts/history";
 import { nativeMessageTime } from "../contracts/message-time";
+import type { ToolExecutionObservation } from "../contracts/tool-observation";
+import { projectToolPayload } from "../core/public";
 import {
   NativeImagePartSchema,
   nativeImageDigest,
@@ -34,6 +36,7 @@ const EntrySchema = z.object({
     toolCallId: z.string().max(256).optional(),
     toolName: z.string().max(120).optional(),
     isError: z.boolean().optional(),
+    details: z.unknown().optional(),
     stopReason: z.string().optional(),
     errorMessage: z.string().optional(),
     timestamp: z.unknown().optional(),
@@ -43,6 +46,17 @@ const TextPartSchema = z.object({ type: z.literal("text"), text: z.string() });
 const ThinkingPartSchema = z.object({
   type: z.literal("thinking"),
   thinking: z.string(),
+});
+const ToolCallPartSchema = z.object({
+  type: z.literal("toolCall"),
+  id: z.string().min(1).max(512).optional(),
+  toolCallId: z.string().min(1).max(512).optional(),
+  name: z.string().max(120),
+  arguments: z.unknown().optional(),
+});
+const RecordHeaderSchema = z.object({
+  id: z.string(),
+  parentId: z.string().nullable().optional(),
 });
 const PAGE_BYTES = 1024 * 1024;
 const MAX_RECORD_BYTES = 32 * 1024 * 1024;
@@ -200,14 +214,64 @@ export async function readNativeHistory(
         return { kind: "unavailable", reason: "unsupported" };
       const complete = bytes.subarray(0, lastNewline + 1);
       const utf8 = new TextDecoder("utf-8", { fatal: true });
-      const entries: HistoryEntry[] = [];
-      let omitted = 0;
+      const lines = utf8.decode(complete).split("\n");
+      const parsedRecords: Array<{
+        raw: unknown;
+        recordOffset: number;
+      }> = [];
+      const parentOf = new Map<string, string | null>();
+      const toolCallsByRecord = new Map<
+        string,
+        Map<string, { name: string; arguments?: unknown }>
+      >();
+
       let lineOffset = offset;
-      for (const line of utf8.decode(complete).split("\n")) {
+      for (const line of lines) {
         const recordOffset = lineOffset;
         lineOffset += Buffer.byteLength(line, "utf8") + 1;
         if (!line.trim()) continue;
-        const raw: unknown = JSON.parse(line);
+        let raw: unknown;
+        try {
+          raw = JSON.parse(line);
+        } catch {
+          continue;
+        }
+        parsedRecords.push({ raw, recordOffset });
+        const header = RecordHeaderSchema.safeParse(raw);
+        if (header.success) {
+          parentOf.set(header.data.id, header.data.parentId ?? null);
+          const entry = EntrySchema.safeParse(raw);
+          if (
+            entry.success &&
+            entry.data.message.role === "assistant" &&
+            Array.isArray(entry.data.message.content)
+          ) {
+            const calls = new Map<
+              string,
+              { name: string; arguments?: unknown }
+            >();
+            for (const part of entry.data.message.content) {
+              const call = ToolCallPartSchema.safeParse(part);
+              if (call.success) {
+                const callId = call.data.id ?? call.data.toolCallId;
+                if (callId) {
+                  calls.set(callId, {
+                    name: call.data.name,
+                    arguments: call.data.arguments,
+                  });
+                }
+              }
+            }
+            if (calls.size > 0) {
+              toolCallsByRecord.set(header.data.id, calls);
+            }
+          }
+        }
+      }
+
+      const entries: HistoryEntry[] = [];
+      let omitted = 0;
+      for (const { raw, recordOffset } of parsedRecords) {
         const record = EntrySchema.safeParse(raw);
         if (!record.success) {
           const type = z.object({ type: z.string() }).safeParse(raw);
@@ -269,7 +333,7 @@ export async function readNativeHistory(
             : {}),
         }));
         const toolEvidence =
-          message.role === "toolResult" &&
+          (message.role === "toolResult" || message.role === "tool") &&
           message.toolCallId &&
           message.toolName
             ? {
@@ -285,6 +349,82 @@ export async function readNativeHistory(
                   : 0,
               }
             : undefined;
+        const toolObservation: ToolExecutionObservation | undefined = (() => {
+          if (
+            (message.role !== "toolResult" && message.role !== "tool") ||
+            !message.toolCallId ||
+            !message.toolName
+          )
+            return undefined;
+
+          let matchedCall:
+            | { name: string; arguments?: unknown }
+            | undefined;
+          let currentId = parentId;
+          let steps = 0;
+          const visited = new Set<string>();
+          while (currentId && steps < 128 && !visited.has(currentId)) {
+            visited.add(currentId);
+            steps++;
+            const calls = toolCallsByRecord.get(currentId);
+            if (calls) {
+              const candidate = calls.get(message.toolCallId);
+              if (candidate && candidate.name === message.toolName) {
+                matchedCall = candidate;
+                break;
+              }
+            }
+            currentId = parentOf.get(currentId) ?? null;
+          }
+
+          const hasArgs = matchedCall && matchedCall.arguments !== undefined;
+          const argumentsPayload = hasArgs
+            ? projectToolPayload(matchedCall.arguments, (t) =>
+                Buffer.byteLength(t, "utf8"),
+              )
+            : undefined;
+
+          const resultInput =
+            message.details !== undefined
+              ? { content: message.content, details: message.details }
+              : typeof message.content === "object" &&
+                  message.content !== null &&
+                  !Array.isArray(message.content) &&
+                  "content" in message.content
+                ? message.content
+                : { content: message.content };
+          const resultPayload = projectToolPayload(
+            resultInput,
+            (t) => Buffer.byteLength(t, "utf8"),
+          );
+
+          const lifecycle: ToolExecutionObservation["lifecycle"] =
+            message.isError === true
+              ? "failed"
+              : message.isError === false
+                ? "completed"
+                : "unknown";
+
+          const truncated = Boolean(
+            argumentsPayload?.truncated || resultPayload.truncated,
+          );
+
+          const coverage: ToolExecutionObservation["coverage"] =
+            matchedCall && hasArgs && lifecycle !== "unknown"
+              ? "observed"
+              : "partial";
+
+          return {
+            toolCallId: message.toolCallId,
+            name: message.toolName.slice(0, 120),
+            lifecycle,
+            observed: ["record" as const],
+            coverage,
+            truncated,
+            ...(argumentsPayload ? { arguments: argumentsPayload } : {}),
+            result: resultPayload,
+          };
+        })();
         const thinking =
           message.role === "assistant" && Array.isArray(message.content)
             ? message.content
@@ -331,6 +471,7 @@ export async function readNativeHistory(
             ? { detail: message.errorMessage.slice(0, 4096) }
             : {}),
           ...(toolEvidence ? { toolEvidence } : {}),
+          ...(toolObservation ? { tool: toolObservation } : {}),
         });
       }
       signal?.throwIfAborted();

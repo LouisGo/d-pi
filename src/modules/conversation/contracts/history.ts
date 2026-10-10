@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { MessageTimestampSchema } from "./message-time";
+import { ToolExecutionObservationSchema } from "./tool-observation";
 export const HistoryCursorSchema = z.strictObject({
   threadId: z.uuid(),
   source: z.string(),
@@ -56,6 +57,7 @@ export const HistoryEntrySchema = z.strictObject({
       nonTextParts: z.number().int().nonnegative(),
     })
     .optional(),
+  tool: ToolExecutionObservationSchema.optional(),
 });
 export type HistoryEntry = z.infer<typeof HistoryEntrySchema>;
 export const HistoryPageSchema = z.discriminatedUnion("kind", [

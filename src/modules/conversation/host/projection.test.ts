@@ -808,3 +808,45 @@ it("keeps an SDK identity coverage gap explicit without guessing a native record
   expect(p.snapshot().items[0]?.nativeRecordId).toBeUndefined();
   p.dispose();
 });
+
+it("projects restored toolResult message with observed 'message' keeping truthful partial and no synthesized events", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {});
+  p.accept({
+    type: "message_end",
+    message: {
+      role: "toolResult",
+      toolCallId: "restored-call-1",
+      toolName: "read",
+      content: [{ type: "text", text: "file contents" }],
+      details: { path: "src/index.ts" },
+      isError: false,
+      dPiRecordId: "native-rec-1",
+      dPiRestored: true,
+    },
+  });
+  const item = p.snapshot().items[0];
+  expect(item).toBeDefined();
+  expect(item?.role).toBe("tool");
+  expect(item?.text).toBe("file contents");
+  expect(item?.nativeRecordId).toBe("native-rec-1");
+  expect(item?.restored).toBe(true);
+  expect(item?.tool).toEqual({
+    toolCallId: "restored-call-1",
+    name: "read",
+    lifecycle: "completed",
+    observed: ["message"],
+    coverage: "partial",
+    truncated: false,
+    result: {
+      value: {
+        content: [{ type: "text", text: "file contents" }],
+        details: { path: "src/index.ts" },
+      },
+      truncated: false,
+    },
+  });
+  expect(item?.tool?.arguments).toBeUndefined();
+  expect(item?.tool?.progress).toBeUndefined();
+  expect(item?.tool?.backgroundState).toBeUndefined();
+  p.dispose();
+});

@@ -4,8 +4,14 @@ import { MessageTimestampSchema } from "./message-time";
 import { ToolExecutionObservationSchema } from "./tool-observation";
 
 export * from "./history";
-export type { ToolExecutionObservation } from "./tool-observation";
-export { ToolExecutionObservationSchema } from "./tool-observation";
+export type {
+  ToolExecutionObservation,
+  ToolPayload,
+} from "./tool-observation";
+export {
+  ToolExecutionObservationSchema,
+  ToolPayloadSchema,
+} from "./tool-observation";
 export const ConversationLabelSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("literal"), text: z.string() }),
   z.strictObject({ kind: z.literal("message"), value: UiMessageSchema }),
