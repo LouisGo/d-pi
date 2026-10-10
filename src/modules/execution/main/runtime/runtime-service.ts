@@ -110,6 +110,9 @@ export class RuntimeService {
   private sessionStarted = false;
   private currentConnectionGeneration: string | null = null;
   private instanceDirectory: DirectoryIdentity | undefined;
+  private commandsInFlight = 0;
+  private released = false;
+  private uncertainLifetime = false;
   constructor(
     private readonly store: RuntimeStore,
     private readonly resources: string,
@@ -128,12 +131,21 @@ export class RuntimeService {
     private readonly indexedSessionsRoot?: (
       traceId: string,
     ) => Promise<string | null>,
+    private readonly settled: () => void = () => {},
   ) {
     this.connection = new HostConnection(
       (message) => this.receive(message),
       (evidence) => this.onExit(evidence),
       (confirmed) => {
         if (!confirmed) return;
+        this.uncertainLifetime ||= [
+          this.view?.queueOperation,
+          this.view?.subagentOperation,
+          this.view?.modelOperation,
+        ].some(
+          (operation) =>
+            operation?.status === "pending" || operation?.status === "unknown",
+        );
         this.sessionStarted = false;
         this.target = null;
         this.currentConnectionGeneration = null;
@@ -150,6 +162,7 @@ export class RuntimeService {
           delete this.view.connectionGeneration;
         }
         this.update({ busy: false });
+        this.settled();
       },
     );
     this.coordinator = new SubmissionCoordinator(
@@ -700,6 +713,16 @@ export class RuntimeService {
     this.publish(this.view);
   }
   async execute(command: RuntimeCommand): Promise<RuntimeView> {
+    if (this.released) throw Error("Runtime released");
+    this.commandsInFlight++;
+    try {
+      return await this.executeCommand(command);
+    } finally {
+      this.commandsInFlight--;
+      this.settled();
+    }
+  }
+  private async executeCommand(command: RuntimeCommand): Promise<RuntimeView> {
     const thread = this.scopeThreadId
       ? this.store.threads.threadContext(this.scopeThreadId)
       : this.store.threads.activeThread();
@@ -1128,6 +1151,18 @@ export class RuntimeService {
     return this.view;
   }
   async submit(command: SubmissionCommand): Promise<SubmissionReply> {
+    if (this.released) throw Error("Runtime released");
+    this.commandsInFlight++;
+    try {
+      return await this.submitCommand(command);
+    } finally {
+      this.commandsInFlight--;
+      this.settled();
+    }
+  }
+  private async submitCommand(
+    command: SubmissionCommand,
+  ): Promise<SubmissionReply> {
     const thread = this.scopeThreadId
       ? this.store.threads.threadContext(this.scopeThreadId)
       : this.store.threads.activeThread();
@@ -1359,6 +1394,51 @@ export class RuntimeService {
       (this.connection.connected &&
         (!!this.view?.busy || this.view?.phase !== "ready"))
     );
+  }
+  private releaseEligible(): boolean {
+    if (
+      this.released ||
+      this.commandsInFlight > 0 ||
+      this.sessionStarted ||
+      this.connection.connected ||
+      this.hasActiveWork() ||
+      this.lostEvidence ||
+      this.uncertainLifetime ||
+      this.view?.selectedModel ||
+      this.view?.modelChanging ||
+      this.view?.queueOperation?.status === "unknown" ||
+      this.view?.subagentOperation?.status === "unknown" ||
+      this.view?.modelOperation?.status === "unknown"
+    )
+      return false;
+    const threadId = this.scopeThreadId ?? this.view?.threadId;
+    if (!threadId) return false;
+    try {
+      return !this.store.submissions.list(threadId).some(
+        (receipt) =>
+          receipt.state === "prepared" ||
+          receipt.state === "dispatching" ||
+          receipt.state === "unknown" ||
+          (receipt.state === "acknowledged" &&
+            (receipt.outcome === "unobserved" || receipt.outcome === "unknown")),
+      );
+    } catch {
+      // Unreadable receipt evidence is not proof of a releasable lifetime.
+      return false;
+    }
+  }
+  /** Main eviction only: never asks a live native scope to stop. */
+  async releaseIfIdle(
+    stillOwned: () => boolean = () => true,
+  ): Promise<boolean> {
+    if (!this.releaseEligible()) return false;
+    if (!(await this.connection.releaseIfExited())) return false;
+    if (!stillOwned() || !this.releaseEligible()) return false;
+    this.released = true;
+    return true;
+  }
+  get isReleased(): boolean {
+    return this.released;
   }
   async closeIdle(): Promise<void> {
     if (this.hasActiveWork()) throw Error("Active native work");

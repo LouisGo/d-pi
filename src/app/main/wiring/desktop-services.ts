@@ -37,6 +37,35 @@ export function createDesktopServices(context: {
   let attachments: AttachmentService | undefined;
   let nativeSessionIndex: NativeSessionIndex | undefined;
   const runtimes = new Map<string, RuntimeService>();
+  const releasing = new Set<RuntimeService>();
+  let pruneScheduled = false;
+  let latestThreadId: string | undefined;
+  function scheduleRuntimePrune(): void {
+    if (pruneScheduled) return;
+    pruneScheduled = true;
+    queueMicrotask(() => {
+      pruneScheduled = false;
+      for (const [threadId, runtime] of runtimes) {
+        // Keep the most recently requested object stable for its caller.
+        // Every other exited/reconstructible object is released, not LRU-killed.
+        if (threadId === latestThreadId || releasing.has(runtime)) continue;
+        const selectedAtRelease = latestThreadId;
+        releasing.add(runtime);
+        void runtime.releaseIfIdle(() => latestThreadId !== threadId).then(
+          (released) => {
+            releasing.delete(runtime);
+            if (released && runtimes.get(threadId) === runtime)
+              runtimes.delete(threadId);
+            if (!released && latestThreadId !== selectedAtRelease)
+              scheduleRuntimePrune();
+          },
+          () => {
+            releasing.delete(runtime);
+          },
+        );
+      }
+    });
+  }
   function getRuntime(threadId: string): RuntimeService | undefined {
     if (!store) return undefined;
     try {
@@ -44,8 +73,10 @@ export function createDesktopServices(context: {
     } catch {
       return undefined;
     }
+    latestThreadId = threadId;
+    scheduleRuntimePrune();
     let runtime = runtimes.get(threadId);
-    if (!runtime) {
+    if (!runtime || runtime.isReleased) {
       runtime = new RuntimeService(
         store,
         app.isPackaged
@@ -87,6 +118,7 @@ export function createDesktopServices(context: {
             ? join(reply.source.directory, "sessions")
             : null;
         },
+        scheduleRuntimePrune,
       );
       runtimes.set(threadId, runtime);
     }

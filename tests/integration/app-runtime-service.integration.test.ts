@@ -27,6 +27,7 @@ import {
 import { NativeRecoveryFailure } from "../../src/modules/execution/core/runtime/native-recovery-failure";
 import { RuntimeService } from "../../src/modules/execution/main/public";
 import { SessionExecutionLease } from "../../src/modules/execution/main/transport/session-execution-lease";
+import type { ContentPreparationResult } from "../../src/modules/input/contracts/public";
 import { TraceIdSchema } from "../../src/shared/identity";
 
 const electron = vi.hoisted(() => ({ fork: vi.fn() }));
@@ -267,6 +268,7 @@ async function running(
     act,
     prepare,
     dispatch,
+    submissionId,
     postMessage,
     host,
     confirmIdle: () => {
@@ -286,6 +288,102 @@ async function running(
     },
   };
 }
+
+it("releases only confirmed exited runtimes and preserves the same persisted native identity on reopen", async () => {
+  const fixture = await running();
+  const binding = fixture.store.threads.nativeSessionBinding(
+    fixture.draft.threadId,
+  );
+  const before = fixture.postMessage.mock.calls.length;
+  expect(await fixture.runtime.releaseIfIdle()).toBe(false);
+  expect(fixture.postMessage.mock.calls).toHaveLength(before);
+  fixture.host.emit("exit", 0);
+  expect(await fixture.runtime.releaseIfIdle()).toBe(true);
+  await expect(fixture.act("inspect")).rejects.toThrow("Runtime released");
+  const reopened = new RuntimeService(
+    fixture.store,
+    fixture.root,
+    fixture.root,
+    {},
+    () => {},
+    undefined,
+    undefined,
+    fixture.draft.threadId,
+  );
+  const view = await reopened.execute({
+    kind: "inspect",
+    threadId: fixture.draft.threadId,
+    traceId: TraceIdSchema.parse(crypto.randomUUID()),
+  });
+  expect(view.phase).toBe("allowed");
+  expect(
+    fixture.store.threads.nativeSessionBinding(fixture.draft.threadId),
+  ).toEqual(binding);
+  expect(
+    await reopened.submit({
+      kind: "list",
+      threadId: fixture.draft.threadId,
+    }),
+  ).toEqual({ kind: "list", receipts: [] });
+});
+
+it("retains pending and unknown receipts after physical exit", async () => {
+  const fixture = await running();
+  await fixture.prepare();
+  fixture.host.emit("exit", 0);
+  expect(await fixture.runtime.releaseIfIdle()).toBe(false);
+  fixture.store.submissions.dispatchSubmission(fixture.submissionId);
+  fixture.store.submissions.unknownSubmission(fixture.submissionId);
+  expect(await fixture.runtime.releaseIfIdle()).toBe(false);
+});
+
+it("retains a runtime while asynchronous content preparation can still produce a result", async () => {
+  let finish: (result: ContentPreparationResult) => void = () => {};
+  const preparation = new Promise<ContentPreparationResult>((resolve) => {
+    finish = resolve;
+  });
+  const prepareContent = vi.fn(() => preparation);
+  const fixture = await running(false, false, false, prepareContent);
+  const pending = fixture.prepare();
+  await vi.waitFor(() => expect(prepareContent).toHaveBeenCalledOnce());
+  fixture.host.emit("exit", 0);
+  expect(await fixture.runtime.releaseIfIdle()).toBe(false);
+  finish({ ok: false, reason: "storage-unavailable" });
+  await pending;
+  expect(await fixture.runtime.releaseIfIdle()).toBe(true);
+});
+
+it("retains an operation whose native result becomes unknown across confirmed shutdown", async () => {
+  const fixture = await running();
+  const view = await fixture.act("inspect");
+  const pending = fixture.runtime.execute(
+    RuntimeCommandSchema.parse({
+      kind: "configure-subagent",
+      threadId: fixture.draft.threadId,
+      traceId: crypto.randomUUID(),
+      connectionGeneration: view.connectionGeneration,
+      command: {
+        kind: "set",
+        agent: "task",
+        provider: "fixture",
+        modelId: "model",
+        thinking: { kind: "default" },
+      },
+    }),
+  );
+  await vi.waitFor(() =>
+    expect(
+      fixture.postMessage.mock.calls.some(
+        ([raw]) =>
+          HostTransportCommandSchema.parse(raw).command.kind ===
+          "configure-subagent",
+      ),
+    ).toBe(true),
+  );
+  fixture.host.emit("exit", 0);
+  await pending;
+  expect(await fixture.runtime.releaseIfIdle()).toBe(false);
+});
 
 it("never dispatches to the old instance after replacing and reauthorizing its directory", async () => {
   const fixture = await running();

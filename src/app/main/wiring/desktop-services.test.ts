@@ -32,6 +32,7 @@ vi.mock("../../../modules/configuration/main/public", () => ({
 }));
 vi.mock("../../../modules/execution/main/public", () => ({
   RuntimeService: class {
+    releaseIfIdle = vi.fn(async () => false);
     constructor(...args: unknown[]) {
       fixture.callbacks.push(args);
     }
@@ -86,4 +87,26 @@ it("continues Main observation without a window and isolates observer failure fr
   expect(() => publishReply(receipt)).not.toThrow();
   expect(send).toHaveBeenCalledWith("runtime:state", view);
   expect(send).toHaveBeenCalledWith("submission:state", receipt);
+});
+
+it("evicts confirmed released runtimes without stopping live scopes and reconstructs on reopen", async () => {
+  const services = createDesktopServices({
+    mainDirectory: "/tmp",
+    getWindow: () => null,
+    getDiagnostics: () => undefined,
+    currentT: () => (() => "") as never,
+    applyStoredLocale: () => {},
+  });
+  services.initializeStorage();
+  const exitedId = crypto.randomUUID();
+  const liveId = crypto.randomUUID();
+  const exited = services.getRuntime(exitedId);
+  const live = services.getRuntime(liveId);
+  if (!exited || !live) throw Error("missing runtime");
+  vi.mocked(exited.releaseIfIdle).mockResolvedValue(true);
+  const settled = fixture.callbacks[0]?.[10] as () => void;
+  settled?.();
+  await vi.waitFor(() => expect(services.runtimes.has(exitedId)).toBe(false));
+  expect(services.runtimes.get(liveId)).toBe(live);
+  expect(services.getRuntime(exitedId)).not.toBe(exited);
 });

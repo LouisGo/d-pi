@@ -400,6 +400,15 @@ export class HostConnection {
       [port],
     );
   }
+  /** Release local wait resources only after physical process cleanup. */
+  async releaseIfExited(): Promise<boolean> {
+    if (this.connected) return false;
+    if (this.cleanup && !(await this.cleanup)) return false;
+    if (this.connected || this.operationWaiters.size > 0) return false;
+    const scope = this.waitScope;
+    await Effect.runPromise(Scope.close(scope, Exit.void));
+    return !this.connected && this.waitScope === scope;
+  }
   async closeIdle(): Promise<void> {
     if (!this.connected) {
       if (this.cleanup && !(await this.cleanup))
