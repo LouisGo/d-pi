@@ -12,6 +12,10 @@ import type {
   ConversationSnapshot,
   ConversationUpdate,
 } from "../contracts/public";
+import type {
+  ToolExecutionObservation,
+  ToolPayload,
+} from "../contracts/tool-observation";
 
 import { SubagentProjection } from "./subagent-projection";
 
@@ -21,6 +25,14 @@ const ReadingIdentitySchema = z.object({
   dPiIdentityUnknown: z.boolean().optional(),
 });
 const TextSchema = z.object({ type: z.literal("text"), text: z.string() });
+const DeltaSchema = z.object({
+  type: z.enum(["text_delta", "thinking_delta"]),
+  delta: z.string(),
+});
+const AssistantSnapshotSchema = z.object({
+  role: z.literal("assistant"),
+  content: z.union([z.string(), z.array(z.unknown())]),
+});
 const ThinkingSchema = z.object({
   type: z.literal("thinking"),
   thinking: z.string(),
@@ -44,21 +56,98 @@ function textOf(content: unknown): string {
     })
     .join("\n");
 }
+
+function toolPayload(input: unknown): ToolPayload {
+  let remaining = 8192;
+  let nodes = 128;
+  let truncated = false;
+  const visit = (value: unknown, depth: number): ToolPayload["value"] => {
+    if (--nodes < 0 || depth > 5 || remaining < 32) {
+      truncated = true;
+      remaining -= 4;
+      return null;
+    }
+    if (value === null || typeof value === "boolean") {
+      remaining -= 5;
+      return value;
+    }
+    if (typeof value === "number" && Number.isFinite(value)) {
+      remaining -= 32;
+      return value;
+    }
+    if (typeof value === "string") {
+      const limit = Math.min(1024, Math.floor((remaining - 2) / 6));
+      const text = value.slice(0, limit);
+      truncated ||= text.length !== value.length;
+      remaining -= draftByteLength(JSON.stringify(text));
+      return text;
+    }
+    if (Array.isArray(value)) {
+      const result: ToolPayload["value"][] = [];
+      remaining -= 2;
+      for (let i = 0; i < value.length; i++) {
+        if (i >= 32 || remaining < 16 || nodes <= 0) {
+          truncated = true;
+          break;
+        }
+        remaining--;
+        result.push(visit(value[i], depth + 1));
+      }
+      return result;
+    }
+    if (typeof value === "object" && value !== null) {
+      const result: Record<string, ToolPayload["value"]> = {};
+      remaining -= 2;
+      let count = 0;
+      for (const key in value) {
+        if (!Object.hasOwn(value, key)) continue;
+        // Binary image payloads are not a text/structured tool detail.
+        if (key === "data" && "type" in value && value.type === "image") {
+          truncated = true;
+          continue;
+        }
+        const cost = draftByteLength(JSON.stringify(key)) + 2;
+        if (++count > 32 || key.length > 120 || remaining - cost < 16 || nodes <= 0) {
+          truncated = true;
+          break;
+        }
+        remaining -= cost;
+        Object.defineProperty(result, key, {
+          value: visit(Reflect.get(value, key), depth + 1),
+          enumerable: true,
+        });
+      }
+      return result;
+    }
+    truncated = true;
+    remaining -= 4;
+    return null;
+  };
+  return { value: visit(input, 0), truncated };
+}
 export class ConversationProjection {
   private readonly subagents = new SubagentProjection(
     () => this.nextId++,
     (item) => this.put(item),
   );
-  private items: ConversationItem[] = [];
+  private items = new Map<number, ConversationItem>();
   private nextId = 1;
   private sizes = new Map<number, number>();
-  private bytes = 2;
+  private bytes = 1;
   private seq = 0;
   private gap = false;
   private active: number | null = null;
   private interrupted: number | null = null;
   private retryNotice: number | null = null;
   private tools = new Map<string, number>();
+  private toolOwners = new Map<number, string>();
+  private stream: {
+    id: number;
+    snapshot: unknown;
+    snapshotDelta: z.infer<typeof DeltaSchema> | undefined;
+    text: string[];
+    thinking: string[];
+  } | undefined;
   private pending = new Map<number, ConversationItem>();
   private timer: ReturnType<typeof setTimeout> | undefined;
   private unknownTypes = new Set<string>();
@@ -68,6 +157,8 @@ export class ConversationProjection {
     private readonly budget = 8 * 1024 * 1024,
   ) {}
   accept(frame: NativeFrame): void {
+    // Lifecycle and tool/subagent events are ordering barriers for token batches.
+    if (frame.type !== NativeFrameTypes.messageUpdate) this.flush();
     if (this.subagents.accept(frame)) return;
     if (
       isNativeFrameType(
@@ -91,7 +182,7 @@ export class ConversationProjection {
       const id = existing ?? this.nextId++;
       const text = textOf(message.content);
       const thinking = role === "assistant" ? thinkingOf(message.content) : "";
-      const prior = this.items.find((item) => item.id === existing);
+      const prior = existing == null ? undefined : this.items.get(existing);
       const timestamp =
         nativeMessageTime(message.timestamp) ?? prior?.timestamp;
       const continuationOf = prior?.continuationOf ?? this.interrupted;
@@ -138,6 +229,18 @@ export class ConversationProjection {
         ...(role === "assistant" && continuationOf !== null
           ? { continuationOf }
           : {}),
+        ...(prior?.tool
+          ? {
+              tool: {
+                ...prior.tool,
+                lifecycle: state === "failed" || state === "aborted"
+                  ? "failed" : "completed",
+                observed: prior.tool.observed.includes("message-end")
+                  ? prior.tool.observed
+                  : [...prior.tool.observed, "message-end"],
+              },
+            }
+          : {}),
         label:
           role === "tool"
             ? (prior?.label ?? {
@@ -162,48 +265,27 @@ export class ConversationProjection {
       }
       return;
     }
-    if (isNativeFrameType(frame, NativeFrameTypes.messageUpdate)) {
-      const delta = z
-        .object({
-          type: z.enum(["text_delta", "thinking_delta"]),
-          delta: z.string(),
-        })
-        .safeParse(frame.assistantMessageEvent);
-      if (!delta.success) return;
+    if (frame.type === NativeFrameTypes.messageUpdate) {
+      const delta = DeltaSchema.safeParse(frame.assistantMessageEvent);
+      if (!delta.success && frame.message === undefined) return;
       const id = this.active ?? this.nextId++;
       this.active = id;
-      const item = this.items.find((item) => item.id === id);
-      // The fixed full RPC stream carries the current message on each update.
-      // A populated start can already include its first delta. Treat that full
-      // snapshot as authoritative, never concatenate both representations.
-      const snapshot = z
-        .object({
-          role: z.literal("assistant"),
-          content: z.union([z.string(), z.array(z.unknown())]),
-        })
-        .safeParse(frame.message);
-      this.put({
-        id,
-        role: "assistant",
-        label: { kind: "literal", text: "OMP" },
-        state: "streaming",
-        ...(item?.timestamp !== undefined ? { timestamp: item.timestamp } : {}),
-        text: snapshot.success
-          ? textOf(snapshot.data.content)
-          : (item?.text ?? "") +
-            (delta.data.type === "text_delta" ? delta.data.delta : ""),
-        thinking: snapshot.success
-          ? thinkingOf(snapshot.data.content)
-          : (item?.thinking ?? "") +
-            (delta.data.type === "thinking_delta" ? delta.data.delta : ""),
-        ...(item?.nativeRecordId
-          ? { nativeRecordId: item.nativeRecordId }
-          : {}),
-        ...(item?.restored !== undefined ? { restored: item.restored } : {}),
-        ...(item?.continuationOf !== undefined
-          ? { continuationOf: item.continuationOf }
-          : {}),
-      });
+      this.stream ??= {
+        id, snapshot: undefined, snapshotDelta: undefined, text: [], thinking: [],
+      };
+      // Keep only the latest authoritative message. Parse/extract it at flush,
+      // then append only delta-only frames that followed that snapshot.
+      if (frame.message !== undefined) {
+        this.stream.snapshot = frame.message;
+        this.stream.snapshotDelta = delta.success ? delta.data : undefined;
+        this.stream.text = [];
+        this.stream.thinking = [];
+      } else if (delta.success && delta.data.type === "text_delta") {
+        this.stream.text.push(delta.data.delta);
+      } else if (delta.success) {
+        this.stream.thinking.push(delta.data.delta);
+      }
+      if (!this.timer) this.timer = setTimeout(() => this.flush(), 32);
       return;
     }
     if (isNativeFrameType(frame, NativeFrameTypes.promptResult)) {
@@ -256,35 +338,54 @@ export class ConversationProjection {
       this.flush();
       return;
     }
-    if (
-      isNativeFrameType(
-        frame,
-        NativeFrameTypes.toolExecutionStart,
-        NativeFrameTypes.toolExecutionEnd,
-      )
-    ) {
-      this.flush();
-      const id = this.tools.get(frame.toolCallId) ?? this.nextId++;
-      this.tools.set(frame.toolCallId, id);
-      const completed = isNativeFrameType(
-        frame,
-        NativeFrameTypes.toolExecutionEnd,
-      )
-        ? frame
-        : null;
-      const result = completed
-        ? z.object({ content: z.unknown() }).safeParse(completed.result)
-        : null;
+    if (isNativeFrameType(frame,
+      NativeFrameTypes.toolExecutionStart,
+      NativeFrameTypes.toolExecutionUpdate,
+      NativeFrameTypes.toolExecutionEnd,
+    )) {
+      const identity = z.object({
+        toolCallId: z.string().min(1).max(512),
+        toolName: z.string(),
+      }).safeParse(frame);
+      if (!identity.success) {
+        this.gap = true;
+        return;
+      }
+      const { toolCallId, toolName } = identity.data;
+      const id = this.tools.get(toolCallId) ?? this.nextId++;
+      this.tools.set(toolCallId, id);
+      this.toolOwners.set(id, toolCallId);
+      const prior = this.items.get(id);
+      const stage = frame.type === NativeFrameTypes.toolExecutionStart
+        ? "start" : frame.type === NativeFrameTypes.toolExecutionUpdate ? "update" : "end";
+      const args = stage !== "end" && frame.args !== undefined
+        ? toolPayload(frame.args) : prior?.tool?.arguments;
+      const progress = stage === "update"
+        ? toolPayload(frame.partialResult) : prior?.tool?.progress;
+      const result = stage === "end"
+        ? toolPayload(frame.result) : prior?.tool?.result;
+      const observed: ToolExecutionObservation["observed"] = [...(prior?.tool?.observed ?? [])];
+      if (!observed.includes(stage)) observed.push(stage);
+      const truncated = Boolean(args?.truncated || progress?.truncated || result?.truncated);
+      const payload = stage === "end" ? frame.result
+        : stage === "update" ? frame.partialResult : undefined;
+      const content = z.object({ content: z.unknown() }).safeParse(payload);
+      const failed = stage === "end" && frame.isError === true;
+      const tool: ToolExecutionObservation = {
+        toolCallId, name: toolName.slice(0, 120),
+        lifecycle: stage === "end" ? failed ? "failed" : "completed" : "running",
+        observed,
+        coverage: !observed.includes("start") || truncated ? "partial" : "observed",
+        truncated,
+        ...(args ? { arguments: args } : {}),
+        ...(progress ? { progress } : {}),
+        ...(result ? { result } : {}),
+      };
       this.put({
-        id,
-        role: "tool",
-        label: { kind: "literal", text: frame.toolName.slice(0, 120) },
-        state: completed
-          ? completed.isError
-            ? "failed"
-            : "complete"
-          : "streaming",
-        text: result?.success ? textOf(result.data.content) : "",
+        ...prior, id, role: "tool", tool,
+        label: { kind: "literal", text: tool.name },
+        state: stage === "end" ? failed ? "failed" : "complete" : "streaming",
+        text: content.success ? textOf(content.data.content) : prior?.text ?? "",
       });
       this.flush();
       return;
@@ -301,7 +402,6 @@ export class ConversationProjection {
         NativeFrameTypes.agentStart,
         NativeFrameTypes.turnStart,
         NativeFrameTypes.turnEnd,
-        NativeFrameTypes.toolExecutionUpdate,
         NativeFrameTypes.promptResult,
         NativeFrameTypes.availableCommandsUpdate,
         NativeFrameTypes.sessionInfoUpdate,
@@ -340,61 +440,100 @@ export class ConversationProjection {
       this.flush();
     }
   }
+  private evict(id: number): void {
+    this.items.delete(id);
+    this.pending.delete(id);
+    this.bytes -= this.sizes.get(id) ?? 0;
+    this.sizes.delete(id);
+    this.subagents.evict(id);
+    const owner = this.toolOwners.get(id);
+    if (owner !== undefined) this.tools.delete(owner);
+    this.toolOwners.delete(id);
+  }
   private put(item: ConversationItem): void {
     if (this.budget < 1024) throw Error("Projection budget too small");
-    let size = draftByteLength(JSON.stringify(item)) + 1;
-    if (size + 2 > this.budget) {
-      const bytes = new TextEncoder().encode(item.text);
-      const thinkingBytes = new TextEncoder().encode(item.thinking ?? "");
-      const total = bytes.length + thinkingBytes.length;
-      let limit = Math.min(total, this.budget - 512);
-      do {
-        const textLimit = total
-          ? Math.floor((limit * bytes.length) / total)
-          : 0;
-        item = {
-          ...item,
-          text: new TextDecoder().decode(bytes.subarray(0, textLimit)),
-          ...(item.thinking !== undefined
-            ? {
-                thinking: new TextDecoder().decode(
-                  thinkingBytes.subarray(0, limit - textLimit),
-                ),
-              }
-            : {}),
-          truncated: true,
-        };
-        size = draftByteLength(JSON.stringify(item)) + 1;
-        limit = Math.floor(limit / 2);
-      } while (size + 2 > this.budget && limit > 0);
+    const sizeOf = (value: ConversationItem) =>
+      draftByteLength(JSON.stringify(value)) + 1;
+    let size = sizeOf(item);
+    if (size + 1 > this.budget) {
       this.gap = true;
+      item = { ...item, truncated: true };
+      // Budget metadata as well as visible text. Preserve identities; never
+      // shorten them into a different native record or tool call.
+      if (item.tool) {
+        item.tool = { ...item.tool, coverage: "partial", truncated: true };
+        delete item.tool.arguments;
+        delete item.tool.progress;
+        delete item.tool.result;
+      }
+      if (item.subagent) item.subagent = {
+        ...item.subagent, task: "", description: "", currentTool: "", model: "",
+        coverage: "partial", reason: "truncated",
+      };
+      if (item.detail) item.detail = item.detail.slice(0, 120);
+      const text = item.text;
+      const thinking = item.thinking ?? "";
+      const total = text.length + thinking.length;
+      const candidate = (limit: number): ConversationItem => {
+        const textLimit = total ? Math.floor(limit * text.length / total) : 0;
+        return {
+          ...item,
+          text: text.slice(0, textLimit),
+          ...(item.thinking !== undefined
+            ? { thinking: thinking.slice(0, limit - textLimit) } : {}),
+        };
+      };
+      let low = 0;
+      let high = total;
+      while (low < high) {
+        const middle = Math.ceil((low + high) / 2);
+        if (sizeOf(candidate(middle)) + 1 <= this.budget) low = middle;
+        else high = middle - 1;
+      }
+      item = candidate(low);
+      size = sizeOf(item);
+      if (size + 1 > this.budget) {
+        this.evict(item.id);
+        return;
+      }
     }
-    const index = this.items.findIndex((value) => value.id === item.id);
-
     this.bytes += size - (this.sizes.get(item.id) ?? 0);
     this.sizes.set(item.id, size);
-    if (index < 0) this.items.push(item);
-    else this.items[index] = item;
-    while (
-      this.items.length > 1 &&
-      (this.bytes > this.budget || this.items.length > 1000)
-    ) {
-      const dropped = this.items.shift();
-      if (dropped) {
-        this.pending.delete(dropped.id);
-        this.bytes -= this.sizes.get(dropped.id) ?? 0;
-        this.sizes.delete(dropped.id);
-      }
+    this.items.set(item.id, item);
+    while (this.bytes > this.budget || this.items.size > 1000) {
+      const id = this.items.keys().next().value;
+      if (id === undefined) break;
+      this.evict(id);
       this.gap = true;
     }
-    const retained = new Set(this.items.map((value) => value.id));
-    this.subagents.retain(retained);
-    for (const [key, id] of this.tools)
-      if (!retained.has(id)) this.tools.delete(key);
-    this.pending.set(item.id, item);
+    if (this.items.has(item.id)) this.pending.set(item.id, item);
     if (!this.timer) this.timer = setTimeout(() => this.flush(), 32);
   }
+  private materializeStream(): void {
+    const stream = this.stream;
+    if (!stream) return;
+    this.stream = undefined;
+    const prior = this.items.get(stream.id);
+    const snapshot = AssistantSnapshotSchema.safeParse(stream.snapshot);
+    if (!snapshot.success && stream.snapshotDelta) {
+      if (stream.snapshotDelta.type === "text_delta")
+        stream.text.unshift(stream.snapshotDelta.delta);
+      else stream.thinking.unshift(stream.snapshotDelta.delta);
+    }
+    this.put({
+      ...prior,
+      id: stream.id,
+      role: "assistant",
+      label: { kind: "literal", text: "OMP" },
+      state: "streaming",
+      text: (snapshot.success ? textOf(snapshot.data.content) : prior?.text ?? "") +
+        stream.text.join(""),
+      thinking: (snapshot.success ? thinkingOf(snapshot.data.content) : prior?.thinking ?? "") +
+        stream.thinking.join(""),
+    });
+  }
   flush(): void {
+    this.materializeStream();
     clearTimeout(this.timer);
     this.timer = undefined;
     for (const item of this.pending.values())
@@ -403,7 +542,7 @@ export class ConversationProjection {
         connectionGeneration: this.connectionGeneration,
         seq: ++this.seq,
         item,
-        droppedBefore: this.items[0]?.id ?? 0,
+        droppedBefore: this.items.keys().next().value ?? 0,
         gap: this.gap,
       });
     this.pending.clear();
@@ -414,12 +553,13 @@ export class ConversationProjection {
       kind: "snapshot",
       connectionGeneration: this.connectionGeneration,
       seq: this.seq,
-      items: this.items.map((item) => ({ ...item })),
+      items: Array.from(this.items.values(), (item) => ({ ...item })),
       gap: this.gap,
     };
   }
   dispose(): void {
     clearTimeout(this.timer);
+    this.stream = undefined;
     this.pending.clear();
   }
 }

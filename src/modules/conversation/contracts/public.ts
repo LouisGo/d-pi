@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { UiMessageSchema } from "../../../shared/messages/contracts";
 import { MessageTimestampSchema } from "./message-time";
+import { ToolExecutionObservationSchema } from "./tool-observation";
+
+export { ToolExecutionObservationSchema } from "./tool-observation";
+export type { ToolExecutionObservation } from "./tool-observation";
 
 export * from "./history";
 export const ConversationLabelSchema = z.discriminatedUnion("kind", [
@@ -54,6 +58,7 @@ export const ConversationItemSchema = z.strictObject({
   notice: UiMessageSchema.optional(),
   truncated: z.boolean().optional(),
   subagent: SubagentObservationSchema.optional(),
+  tool: ToolExecutionObservationSchema.optional(),
   subagentNotice: z
     .enum(["observation-unavailable", "observation-limit"])
     .optional(),

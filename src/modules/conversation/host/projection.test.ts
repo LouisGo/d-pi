@@ -1,5 +1,155 @@
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
 import { ConversationProjection } from "./projection";
+import { ConversationSnapshotSchema } from "../contracts/public";
+
+it("defers superseded full snapshots until a lifecycle barrier and preserves delta ordering", () => {
+  const emitted: string[] = [];
+  const p = new ConversationProjection(crypto.randomUUID(), (event) => {
+    emitted.push(event.item.text);
+  });
+  p.accept({ type: "message_start", message: { role: "assistant", content: [] } });
+  let reads = 0;
+  for (const text of ["a", "ab", "abc"]) {
+    p.accept({
+      type: "message_update",
+      assistantMessageEvent: { type: "text_delta", delta: text.slice(-1) },
+      message: {
+        role: "assistant",
+        get content() {
+          reads++;
+          return [{ type: "text", text }];
+        },
+      },
+    });
+  }
+  expect(reads).toBe(0);
+  p.accept({
+    type: "message_update",
+    assistantMessageEvent: { type: "text_delta", delta: "d" },
+  });
+  p.accept({ type: "turn_end" });
+  expect(reads).toBe(1);
+  expect(emitted.at(-1)).toBe("abcd");
+  expect(p.snapshot()).toMatchObject({ seq: 1, items: [{ text: "abcd" }] });
+  p.dispose();
+});
+
+it("projects tool progress and preserves its real identity through native result append", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {});
+  p.accept({
+    type: "tool_execution_start", toolCallId: "tool-real", toolName: "read",
+    args: { path: "src/example.ts" },
+  });
+  const id = p.snapshot().items[0]?.id;
+  p.accept({
+    type: "tool_execution_update", toolCallId: "tool-real", toolName: "read",
+    partialResult: { content: [{ type: "text", text: "working" }], details: { lines: 2 } },
+  });
+  expect(p.snapshot().items[0]).toMatchObject({
+    id, text: "working",
+    tool: {
+      toolCallId: "tool-real", name: "read", lifecycle: "running",
+      observed: ["start", "update"], coverage: "observed",
+      arguments: { value: { path: "src/example.ts" }, truncated: false },
+      progress: { value: { content: [{ type: "text", text: "working" }], details: { lines: 2 } } },
+    },
+  });
+  p.accept({
+    type: "tool_execution_end", toolCallId: "tool-real", toolName: "read",
+    isError: false, result: { content: [{ type: "text", text: "done" }] },
+  });
+  p.accept({
+    type: "message_end",
+    message: { role: "toolResult", toolCallId: "tool-real", content: "done", dPiRecordId: "native-tool" },
+  });
+  expect(p.snapshot().items).toMatchObject([{
+    id, nativeRecordId: "native-tool",
+    tool: { lifecycle: "completed", observed: ["start", "update", "end", "message-end"] },
+  }]);
+  p.dispose();
+});
+
+it.each(["agent_end", "turn_end", "turn_start", "session_settled", "agent_start"])(
+  "flushes authoritative snapshots and trailing deltas before %s",
+  (type) => {
+    const texts: string[] = [];
+    const p = new ConversationProjection(crypto.randomUUID(), (event) => texts.push(event.item.text));
+    p.accept({ type: "message_start", message: { role: "assistant", content: "old" } });
+    p.accept({
+      type: "message_update", message: { role: "assistant", content: "full" },
+      assistantMessageEvent: { type: "text_delta", delta: "ignored" },
+    });
+    p.accept({ type: "message_update", assistantMessageEvent: { type: "text_delta", delta: "+delta" } });
+    p.accept({ type });
+    expect(texts).toEqual(["full+delta"]);
+    p.dispose();
+  },
+);
+
+it("flushes a token batch on the timer and leaves final authoritative text exact", () => {
+  vi.useFakeTimers();
+  const texts: string[] = [];
+  const p = new ConversationProjection(crypto.randomUUID(), (event) => texts.push(event.item.text));
+  try {
+    p.accept({ type: "message_start", message: { role: "assistant", content: "" } });
+    p.accept({ type: "message_update", assistantMessageEvent: { type: "text_delta", delta: "partial" } });
+    vi.advanceTimersByTime(32);
+    expect(texts).toEqual(["partial"]);
+    p.accept({ type: "message_update", assistantMessageEvent: { type: "text_delta", delta: " stale" } });
+    p.accept({ type: "message_end", message: { role: "assistant", content: "final" } });
+    expect(texts).toEqual(["partial", "partial stale", "final"]);
+    expect(p.snapshot()).toMatchObject({ seq: 3, items: [{ text: "final", state: "complete" }] });
+  } finally {
+    p.dispose();
+    vi.useRealTimers();
+  }
+});
+
+it("bounds unknown tool structures, excludes binary data and marks missing lifecycle explicitly", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {});
+  p.accept({
+    type: "tool_execution_update", toolCallId: "orphan", toolName: "future",
+    partialResult: {
+      content: [{ type: "image", data: "secret-binary".repeat(10000), mimeType: "image/png" }],
+      details: { unknown: Array.from({ length: 1000 }, () => ({ text: "x".repeat(10000) })) },
+    },
+  });
+  const snapshot = p.snapshot();
+  expect(ConversationSnapshotSchema.safeParse(snapshot).success).toBe(true);
+  expect(snapshot.items[0]?.tool).toMatchObject({
+    toolCallId: "orphan", observed: ["update"], coverage: "partial", truncated: true,
+    progress: { truncated: true },
+  });
+  expect(JSON.stringify(snapshot.items[0]?.tool?.progress)).not.toContain("secret-binary");
+  expect(new TextEncoder().encode(JSON.stringify(snapshot.items[0]?.tool?.progress?.value)).length).toBeLessThanOrEqual(8192);
+  p.dispose();
+});
+
+it("budgets metadata exactly and removes only actually evicted tool mappings", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {}, 1024);
+  p.accept({ type: "tool_execution_start", toolCallId: "old-tool", toolName: "read", args: { text: "x".repeat(10000) } });
+  const oldId = p.snapshot().items[0]?.id;
+  for (let n = 0; n < 8; n++)
+    p.accept({ type: "message_end", message: { role: "user", content: "x".repeat(300) } });
+  p.accept({ type: "tool_execution_end", toolCallId: "old-tool", toolName: "read", result: { content: [] } });
+  const snapshot = p.snapshot();
+  expect(snapshot.items.at(-1)?.id).not.toBe(oldId);
+  expect(snapshot.items.at(-1)?.tool).toMatchObject({ coverage: "partial", observed: ["end"] });
+  expect(new TextEncoder().encode(JSON.stringify(snapshot.items)).length).toBeLessThanOrEqual(1024);
+  expect(snapshot.gap).toBe(true);
+  p.dispose();
+});
+
+it("retains exactly 1000 indexed records and assigns fresh identities after eviction", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {});
+  for (let n = 0; n < 1001; n++)
+    p.accept({ type: "message_end", message: { role: "user", content: "" } });
+  const snapshot = p.snapshot();
+  expect(snapshot.items).toHaveLength(1000);
+  expect(snapshot.items[0]?.id).toBe(2);
+  expect(snapshot.gap).toBe(true);
+  p.dispose();
+});
 
 it("keeps native message time through streamed updates without substituting the local clock", () => {
   const p = new ConversationProjection(crypto.randomUUID(), () => {});

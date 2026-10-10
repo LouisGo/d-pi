@@ -33,6 +33,7 @@ const ownerKey = (value: {
   ]);
 export class SubagentProjection {
   private runs = new Map<string, Run>();
+  private owners = new Map<number, string>();
   private unavailable = false;
   private limited = false;
   constructor(
@@ -52,15 +53,21 @@ export class SubagentProjection {
           : undefined,
       };
     this.runs.set(key, run);
+    this.owners.set(run.item.id, key);
     while (this.runs.size > 1000) {
       const first = this.runs.keys().next().value;
-      if (first) this.runs.delete(first);
+      if (first) {
+        const removed = this.runs.get(first);
+        if (removed) this.owners.delete(removed.item.id);
+        this.runs.delete(first);
+      }
     }
     this.put(run.item);
   }
-  retain(ids: ReadonlySet<number>): void {
-    for (const [key, run] of this.runs)
-      if (!ids.has(run.item.id)) this.runs.delete(key);
+  evict(id: number): void {
+    const key = this.owners.get(id);
+    if (key !== undefined) this.runs.delete(key);
+    this.owners.delete(id);
   }
   private seed(value: {
     id: string;
