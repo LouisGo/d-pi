@@ -1,8 +1,7 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef } from "react";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
-import { useShallow } from "zustand/react/shallow";
 import type {
   ConversationItem,
   HistoryBridge,
@@ -11,6 +10,7 @@ import type {
 import {
   type ConversationModel,
   type ReadingPositions,
+  refreshSavedConversation,
   savedConversationQuery,
 } from "../../../modules/conversation/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
@@ -44,12 +44,8 @@ export function SavedConversation({
 }) {
   const { t } = useI18n();
   // Only membership/identity changes repaint the timeline; deltas belong to rows.
-  const identities = useStore(
-    model.stateStore,
-    useShallow((state) =>
-      state.itemIds.map((id) => state.itemsById.get(id)?.nativeRecordId ?? id),
-    ),
-  );
+  const identities = useStore(model.stateStore, (state) => state.nativeIdentities);
+  const client = useQueryClient();
   const live = model.stateStore.getState();
   const saved = useInfiniteQuery({
     ...savedConversationQuery(bridge, threadId),
@@ -62,7 +58,8 @@ export function SavedConversation({
     (state) => state.view?.connectionGeneration,
   );
   const gap = useStore(model.stateStore, (state) => state.view?.gap ?? false);
-  const { refetch } = saved;
+  const refresh = useRef<AbortController | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
   const lastLive = useRef({ generation, identities });
   useEffect(() => {
     if (!active || !generation) return;
@@ -77,14 +74,26 @@ export function SavedConversation({
       !unbound
     )
       return;
+    const controller = new AbortController();
+    refresh.current?.abort();
+    refresh.current = controller;
+    setRefreshing(true);
     const timer = setTimeout(() => {
-      void refetch();
+      void refreshSavedConversation(client, bridge, threadId, controller.signal)
+        .finally(() => {
+          if (refresh.current === controller) setRefreshing(false);
+        });
     }, 150);
-    return () => clearTimeout(timer);
-  }, [active, generation, identities, refetch]);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+      if (refresh.current === controller) setRefreshing(false);
+    };
+  }, [active, generation, identities, client, bridge, threadId]);
   const source = JSON.stringify(["conversation", threadId]);
   const sentinel = useRef<HTMLDivElement>(null);
-  const { hasNextPage, isFetching, fetchNextPage } = saved;
+  const { hasNextPage, fetchNextPage } = saved;
+  const isFetching = saved.isFetching || refreshing;
   useEffect(() => {
     const node = sentinel.current;
     if (active && gap && hasNextPage && !isFetching) {

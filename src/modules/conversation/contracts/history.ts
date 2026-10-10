@@ -5,6 +5,8 @@ export const HistoryCursorSchema = z.strictObject({
   source: z.string(),
   offset: z.number().int().nonnegative(),
   endOffset: z.number().int().nonnegative().optional(),
+  /** Extend a verified frozen snapshot from offset to the current EOF. */
+  append: z.literal(true).optional(),
   prefixHash: z
     .string()
     .regex(/^[a-f0-9]{64}$/)
@@ -61,6 +63,8 @@ export const HistoryPageSchema = z.discriminatedUnion("kind", [
     kind: z.literal("page"),
     entries: z.array(HistoryEntrySchema),
     next: HistoryCursorSchema.nullable(),
+    /** Last committed newline, including when next is null or the tail is partial. */
+    continuation: HistoryCursorSchema.optional(),
     source: z.string(),
     coverage: z.literal("append-order"),
     incompleteTail: z.boolean(),

@@ -95,12 +95,12 @@ export async function readNativeHistory(
       // native writer appends records or atomically replaces the file; appends
       // must not invalidate an older page, replacements must. Never use busy
       // RPC history reads or a growing EOF as this snapshot's boundary.
-      const endOffset = cursor?.endOffset ?? info.size;
+      let endOffset = cursor?.endOffset ?? info.size;
       if (endOffset > info.size)
         return { kind: "unavailable", reason: "changed" };
       const identity = `${info.dev}:${info.ino}:${info.birthtimeMs}`;
-      const prefix = Buffer.alloc(Math.min(65536, endOffset));
-      const prefixRead = await file.read(prefix, 0, prefix.length, 0);
+      let prefix = Buffer.alloc(Math.min(65536, endOffset));
+      let prefixRead = await file.read(prefix, 0, prefix.length, 0);
       const lines = prefix
         .subarray(0, prefixRead.bytesRead)
         .toString("utf8")
@@ -140,10 +140,10 @@ export async function readNativeHistory(
       }
       if (header.data.id !== binding.sessionId)
         return { kind: "unavailable", reason: "changed" };
-      const prefixHash = createHash("sha256")
+      let prefixHash = createHash("sha256")
         .update(prefix.subarray(0, prefixRead.bytesRead))
         .digest("hex");
-      const source = createHash("sha256")
+      let source = createHash("sha256")
         .update(
           `${identity}:${binding.configContextId}:${header.data.id}:${endOffset}:${prefixHash}`,
         )
@@ -156,6 +156,25 @@ export async function readNativeHistory(
           cursor.prefixHash !== prefixHash)
       )
         return { kind: "unavailable", reason: "changed" };
+      if (cursor?.append) {
+        // Verify the old frozen prefix before extending it. A short prefix hash
+        // changes on append; older page/image cursors must keep their old hash.
+        if (imageRequest || cursor.endOffset === undefined)
+          return { kind: "unavailable", reason: "changed" };
+        endOffset = info.size;
+        if (prefix.length !== Math.min(65536, endOffset)) {
+          prefix = Buffer.alloc(Math.min(65536, endOffset));
+          prefixRead = await file.read(prefix, 0, prefix.length, 0);
+          prefixHash = createHash("sha256")
+            .update(prefix.subarray(0, prefixRead.bytesRead))
+            .digest("hex");
+        }
+        source = createHash("sha256")
+          .update(
+            `${identity}:${binding.configContextId}:${header.data.id}:${endOffset}:${prefixHash}`,
+          )
+          .digest("hex");
+      }
       const offset = cursor?.offset ?? 0;
       let buffer = Buffer.alloc(Math.min(PAGE_BYTES, endOffset - offset));
       signal?.throwIfAborted();
@@ -333,6 +352,13 @@ export async function readNativeHistory(
         kind: "page",
         entries,
         source,
+        continuation: {
+          threadId: binding.threadId,
+          source,
+          offset: nextOffset,
+          endOffset,
+          prefixHash,
+        },
         coverage: "append-order",
         incompleteTail: atEnd && complete.length !== bytes.length,
         omitted,

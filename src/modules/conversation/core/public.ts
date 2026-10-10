@@ -4,6 +4,7 @@ export {
   nativeImageQuery,
   projectHistoryCatalogQuery,
   projectHistoryPageQuery,
+  refreshSavedConversation,
   savedConversationQuery,
 } from "./history-queries";
 export { ConversationModel, type ConversationState } from "./model";
