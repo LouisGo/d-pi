@@ -89,7 +89,6 @@
   --tab-icon-size: 1rem;
   --control-icon-size: 1rem;
   --menu-min-width: 14rem;
-  --context-menu-width: 12rem;
   --small-icon-size: 0.875rem;
   --checkbox-size: 1rem;
   --checkbox-mark-width: 0.3rem;
@@ -133,7 +132,7 @@
   --region-gap: 0.25rem;
   --separator-size: 0.5px;
   --sidebar-row-height: calc(var(--control-height) + var(--spacing));
-  --sidebar-indent: calc(var(--spacing) * 6);
+  --sidebar-indent: calc(var(--small-icon-size) + var(--layout-gap) / 2);
   --sidebar-width: 17.5rem;
   --sidebar-min: 13.75rem;
   --sidebar-max: 26.25rem;

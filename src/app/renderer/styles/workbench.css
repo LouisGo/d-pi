@@ -322,7 +322,7 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-control);
     font-size: var(--text-small);
-    box-shadow: var(--shadow-overlay);
+    box-shadow: var(--shadow-raised);
   }
   [data-slot="tooltip-positioner"] {
     pointer-events: none;

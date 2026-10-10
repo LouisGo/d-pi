@@ -1,0 +1,60 @@
+@layer components {
+  .ui-navigation-row {
+    --navigation-actions-space: calc(var(--control-height) * 2);
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    border-radius: var(--radius-control);
+    color: var(--foreground);
+    transition: background-color var(--motion-control) var(--ease-out);
+  }
+  .ui-navigation-row[data-action-slots="1"] {
+    --navigation-actions-space: var(--control-height);
+  }
+  .ui-navigation-row:is(:hover, [data-active="true"]) {
+    background: var(--muted-hover);
+  }
+  .ui-navigation-row[data-current="true"] {
+    color: var(--accent-foreground);
+    background: var(--accent);
+  }
+  .ui-navigation-row > .ui-button-navigation {
+    color: inherit;
+    background: transparent;
+  }
+  .ui-navigation-row-label {
+    flex: 1;
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ui-navigation-row:is(:hover, :focus-within, [data-active="true"])
+    .ui-navigation-row-label {
+    mask-image: linear-gradient(
+      to right,
+      #000 calc(100% - var(--navigation-actions-space) - var(--layout-gap)),
+      transparent calc(100% - var(--navigation-actions-space))
+    );
+  }
+  .ui-navigation-row-actions {
+    position: absolute;
+    inset-inline-end: 0;
+    display: flex;
+    align-items: center;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .ui-navigation-row:is(:hover, :focus-within, [data-active="true"])
+    > .ui-navigation-row-actions {
+    visibility: visible;
+    pointer-events: auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-navigation-row {
+    transition: none;
+  }
+}

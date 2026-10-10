@@ -3,7 +3,12 @@ import { memo, useState } from "react";
 import { useStore } from "zustand";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import type { ThreadContext } from "../../../modules/threads/contracts/public";
-import { Button, HoverCardTrigger } from "../../../modules/ui/renderer/public";
+import {
+  Button,
+  HoverCardTrigger,
+  NavigationRow,
+  NavigationRowLabel,
+} from "../../../modules/ui/renderer/public";
 import { ChatIcon } from "../components/icons/common";
 import {
   SidebarCompleteIcon,
@@ -64,7 +69,7 @@ export const SidebarThreadRow = memo(function SidebarThreadRow({
       }}
     >
       {pinned && <ChatIcon size={14} />}
-      <span className="sidebar-title">{label}</span>
+      <NavigationRowLabel>{label}</NavigationRowLabel>
     </Button>
   );
   return (
@@ -80,11 +85,51 @@ export const SidebarThreadRow = memo(function SidebarThreadRow({
         preview?.block(open);
       }}
       trigger={
-        <div
-          className="sidebar-row"
-          data-selected={selected || undefined}
+        <NavigationRow
+          current={selected}
+          active={menuOpen}
           data-pinned-thread={pinned || undefined}
-          data-menu-open={menuOpen || undefined}
+          actions={
+            <>
+              <IconButton
+                variant="ghost"
+                appearance="plain"
+                label={t(pinned ? "app.sidebar.unpin" : "app.sidebar.pin")}
+                pending={disabled}
+                onClick={() =>
+                  void model.commands.execute({
+                    kind: "sidebar",
+                    change: {
+                      kind: "pin",
+                      item: { kind: "thread", id: thread.threadId },
+                      value: !pinned,
+                    },
+                  })
+                }
+              >
+                <SidebarPinIcon />
+              </IconButton>
+              <IconButton
+                variant="success"
+                appearance="plain"
+                label={t(
+                  thread.completed
+                    ? "app.sidebar.reopen"
+                    : "app.sidebar.complete",
+                )}
+                pending={disabled || navigationDisabled}
+                onClick={() =>
+                  void model.commands.execute({
+                    kind: "mutate",
+                    threadId: thread.threadId,
+                    mutation: { kind: "complete", value: !thread.completed },
+                  })
+                }
+              >
+                <SidebarCompleteIcon />
+              </IconButton>
+            </>
+          }
         >
           {preview ? (
             <HoverCardTrigger
@@ -95,46 +140,7 @@ export const SidebarThreadRow = memo(function SidebarThreadRow({
           ) : (
             trigger
           )}
-          <div className="sidebar-row-actions">
-            <IconButton
-              variant="ghost"
-              appearance="plain"
-              label={t(pinned ? "app.sidebar.unpin" : "app.sidebar.pin")}
-              pending={disabled}
-              onClick={() =>
-                void model.commands.execute({
-                  kind: "sidebar",
-                  change: {
-                    kind: "pin",
-                    item: { kind: "thread", id: thread.threadId },
-                    value: !pinned,
-                  },
-                })
-              }
-            >
-              <SidebarPinIcon />
-            </IconButton>
-            <IconButton
-              variant="success"
-              appearance="plain"
-              label={t(
-                thread.completed
-                  ? "app.sidebar.reopen"
-                  : "app.sidebar.complete",
-              )}
-              pending={disabled || navigationDisabled}
-              onClick={() =>
-                void model.commands.execute({
-                  kind: "mutate",
-                  threadId: thread.threadId,
-                  mutation: { kind: "complete", value: !thread.completed },
-                })
-              }
-            >
-              <SidebarCompleteIcon />
-            </IconButton>
-          </div>
-        </div>
+        </NavigationRow>
       }
     />
   );

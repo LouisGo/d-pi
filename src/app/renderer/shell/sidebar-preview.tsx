@@ -55,24 +55,31 @@ export function SidebarPreview({
         {(payload) =>
           payload ? (
             <div className="sidebar-preview-card">
-              <p className="sidebar-preview-title">{payload.label}</p>
-              <div className="sidebar-preview-project">
-                <FolderIcon size={14} />
-                <span>
-                  {payload.directory.split(/[\\/]/).filter(Boolean).at(-1)}
-                </span>
+              <div className="sidebar-preview-heading">
+                {!payload.thread && <FolderIcon size={14} />}
+                <p className="sidebar-preview-title">{payload.label}</p>
               </div>
-              <p className="sidebar-preview-path">{payload.directory}</p>
-              {payload.thread ? (
-                <ThreadAttention
-                  model={model}
-                  threadId={payload.thread.threadId}
-                />
-              ) : payload.count !== undefined ? (
-                <p className="muted">
-                  {t("app.sidebar.threadCount", { count: payload.count })}
-                </p>
-              ) : null}
+              <div className="sidebar-preview-meta">
+                {payload.thread ? (
+                  <div className="sidebar-preview-project">
+                    <FolderIcon size={14} />
+                    <span>
+                      {payload.directory.split(/[\\/]/).filter(Boolean).at(-1)}
+                    </span>
+                  </div>
+                ) : payload.count !== undefined ? (
+                  <p>
+                    {t("app.sidebar.threadCount", { count: payload.count })}
+                  </p>
+                ) : null}
+                <p className="sidebar-preview-path">{payload.directory}</p>
+                {payload.thread && (
+                  <ThreadAttention
+                    model={model}
+                    threadId={payload.thread.threadId}
+                  />
+                )}
+              </div>
             </div>
           ) : null
         }

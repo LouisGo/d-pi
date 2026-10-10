@@ -36,10 +36,7 @@
     width: 100%;
     min-height: var(--sidebar-row-height);
     padding-inline-start: var(--control-padding);
-    padding-inline-end: calc(
-      var(--sidebar-actions-space, 0px) +
-      var(--control-padding)
-    );
+    padding-inline-end: var(--control-padding);
     justify-content: flex-start;
     text-align: start;
     font-weight: 400;

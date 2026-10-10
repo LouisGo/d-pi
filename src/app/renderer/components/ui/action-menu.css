@@ -31,13 +31,14 @@
       color var(--motion-control) var(--ease-out);
   }
   .ui-action-menu[data-slot="context-menu"] {
-    width: min(var(--context-menu-width), var(--available-width));
+    width: max-content;
     min-width: 0;
   }
   [data-slot="context-menu"] .ui-action-menu-item {
     grid-template-columns: var(--small-icon-size) minmax(0, 1fr);
-    font-size: var(--text-small);
+    font-size: var(--text-body);
     padding-block: calc(var(--layout-gap) / 2);
+    padding-inline-end: var(--panel-padding);
     min-height: var(--control-height);
   }
   .ui-action-menu-item[data-highlighted] {

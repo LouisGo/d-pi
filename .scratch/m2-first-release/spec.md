@@ -492,3 +492,11 @@ schema 16 独立管理标题覆盖、完成、父关联和删除/分叉意图；
 2026-10-10 再次反馈：折叠/展开/置顶持久化等待与切换统一接入共享 Button.pending，替代全区 native disabled 的瞬时变暗；项目/分区折叠保留内部节点并使用 hidden，不重建整组 DnD/菜单/会话行。静态不可用与命令等待分离，Main 确认、串行写入和重复激活拦截保持。共享 plain appearance 取消侧栏快捷图标的背景，仅语义变色，沿用按下 scale；危险菜单高亮红色、完成绿色不再由 sidebar 局部 CSS 管理。全局 TooltipProvider 提速到 120ms，IconButton 默认 top/2px；文字提示关闭等待为 0、不可悬停且锚点隐藏/退场立即不可见，避免图标消失后悬留；项目预览采用共享 HoverCard 默认时序。
 
 本轮 10 文件 38 项回归通过，新增红灯验证 pending 阻止重复鼠标/键盘动作且保持焦点、真实 SidebarModel 的项目/分区折叠回执前后控件/同级节点稳定；共享与独立 Tooltip 的 220ms 内出现/top 和 pointer leave 关闭验证通过。根/Renderer TypeScript、Biome、设计/交互/i18n lint 与 Main/preload/Renderer build 通过。隔离 Chromium 确认项目折叠等待时按钮 native disabled:false、opacity:1，浅色危险项实际红色高亮；键盘提示实际 top/2px、快捷完成按钮背景透明且语义绿色，离开图标后无打开提示。键盘焦点按原合同保留 outline，普通鼠标仍用共享入口抑制。未逐帧测量或重开真实 Electron，不把有限 DOM/视觉证据当全部场景认可。临时入口、服务、标签清理；源码 WIP、Dev 试用交付，无 commit/push，用户体验认可 pending。
+
+2026-10-10 用户要求先提交再 polish：此前侧栏、原生会话动作与有界退出已提交 main `7a3b609`，未 push。后续样式整理复用共享 NavigationRow / NavigationRowLabel，统一整行选中/悬浮/菜单状态与无背景图标动作；长标题只在操作覆盖区淡出，不重新计算宽度或截断位置。项目/子会话按图标与间距推导对齐，项目名增加字重、分组保留更清楚的间隔；预览区分标题/项目/路径，项目卡不重复项目名，长路径单行截断。菜单恢复 body 字阶，Tooltip 阴影使用较低浮层角色。
+
+本轮 7 文件 25 项回归通过；根/Renderer 类型、Biome、设计/交互/i18n lint 与 Main/preload/Renderer build 通过。隔离 Chromium 使用正式组件与合成数据，确认窄侧栏无水平溢出，浅/深色菜单 192px / 13px，普通鼠标菜单 outline:none；菜单前后各行标题宽度相同，隐藏动作不出现在无障碍树，键盘仍可经主按钮到达动作。浅色危险项实测红色高亮。未重开真实 Electron、未验证物理长按拖拽或逐帧闪烁，不作为用户认可。临时预览入口、服务和标签清理；本轮 polish 留作未提交 Dev 改动。
+
+2026-10-10 右键菜单宽度追加反馈：移除固定的 `--context-menu-width:12rem`，共享 ContextMenu 改用 `width:max-content`、`min-width:0`，继续复用 available-width 与窗口内边距上限。真实隔离组件测量：同一中文会话菜单由 192px 收至 108px，英文实际文案自动扩至约 174.5px，均无内部水平溢出；受限浏览器视口实际 240px 时仍在窗口内（left:5px、right:175.5px），最长文案受可用空间约束。共享菜单回归、设计/交互 lint 和 Biome 通过；纯 CSS 修正，未重建原生运行时或启动真实 Electron。临时预览清理，本轮保持未提交。
+
+2026-10-10 最终间距反馈：共享 ContextMenu 项目的尾侧内边距改用 panel-padding（默认 16px，较原 control-padding 增加 6px），平衡左侧图标列；保持 max-content 与窗口可用空间上限。设计/交互 lint 与 Biome 通过。用户已授权将本轮及此前未提交 polish 一并 commit 并 push 到 origin/main；实际提交与远端状态以 Git 核实结果为准，用户整体体验认可仍 pending。

@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "59eaedfea8b665ed87599b90f956059345e343b2f780bab510cba6ff0154ef67",
+  "inputsHash": "1ad8b8cb8ecafb6f7af6b95e63eb65cdc6ea39cb8f48aaccc2379ba691f7417b",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 600,
-    "scannedFiles": 600,
+    "sourceFiles": 601,
+    "scannedFiles": 601,
     "unscanned": []
   },
   "modules": [
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 270,
-      "lines": 50779,
+      "lines": 50798,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -422,8 +422,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 27,
-      "lines": 3930,
+      "files": 28,
+      "lines": 3978,
       "publicEntries": [
         {
           "path": "src/modules/ui/renderer/public.ts",
@@ -35355,6 +35355,24 @@
       "resolution": "external"
     },
     {
+      "from": "src/modules/ui/renderer/navigation-row.tsx",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "clsx",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/ui/renderer/navigation-row.tsx",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
       "from": "src/modules/ui/renderer/option-action.test.ts",
       "sourceModule": "ui",
       "sourceEnvironment": "renderer",
@@ -35684,6 +35702,18 @@
       "kind": "export",
       "resolution": "module",
       "to": "src/modules/ui/renderer/loading-indicator.tsx",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/ui/renderer/public.ts",
+      "sourceModule": "ui",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./navigation-row",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/navigation-row.tsx",
       "targetModule": "ui",
       "targetEnvironment": "renderer"
     },

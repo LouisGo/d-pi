@@ -2,7 +2,12 @@ import { useId, useState } from "react";
 import { useStore } from "zustand";
 import type { SidebarPreferences } from "../../../modules/preferences/contracts/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import { Button, HoverCardTrigger } from "../../../modules/ui/renderer/public";
+import {
+  Button,
+  HoverCardTrigger,
+  NavigationRow,
+  NavigationRowLabel,
+} from "../../../modules/ui/renderer/public";
 import { FolderIcon } from "../components/icons/common";
 import {
   NewChatIcon,
@@ -79,7 +84,7 @@ export function SidebarProjectGroup({
           <SidebarChevronIcon />
         </span>
       </span>
-      <span className="sidebar-title">{label}</span>
+      <NavigationRowLabel>{label}</NavigationRowLabel>
     </Button>
   );
   return (
@@ -99,10 +104,48 @@ export function SidebarProjectGroup({
           preview?.block(open);
         }}
         trigger={
-          <div
-            className="sidebar-row"
-            data-selected={(collapsed && selected) || undefined}
-            data-menu-open={menuOpen || undefined}
+          <NavigationRow
+            current={collapsed && selected}
+            active={menuOpen}
+            actions={
+              <>
+                <IconButton
+                  variant="ghost"
+                  appearance="plain"
+                  label={t(pinned ? "app.sidebar.unpin" : "app.sidebar.pin")}
+                  pending={disabled}
+                  onClick={() =>
+                    void model.commands.execute({
+                      kind: "sidebar",
+                      change: {
+                        kind: "pin",
+                        item: { kind: "project", id },
+                        value: !pinned,
+                      },
+                    })
+                  }
+                >
+                  <SidebarPinIcon />
+                </IconButton>
+                <IconButton
+                  variant="ghost"
+                  appearance="plain"
+                  label={t("app.sidebar.newInProject", { name: label })}
+                  disabled={!group.sourceThreadId}
+                  pending={navigationDisabled}
+                  onClick={() =>
+                    void model.commands.execute({
+                      kind: "new",
+                      ...(group.sourceThreadId
+                        ? { threadId: group.sourceThreadId }
+                        : {}),
+                    })
+                  }
+                >
+                  <NewChatIcon />
+                </IconButton>
+              </>
+            }
           >
             {preview ? (
               <HoverCardTrigger
@@ -117,44 +160,7 @@ export function SidebarProjectGroup({
             ) : (
               trigger
             )}
-            <div className="sidebar-row-actions">
-              <IconButton
-                variant="ghost"
-                appearance="plain"
-                label={t(pinned ? "app.sidebar.unpin" : "app.sidebar.pin")}
-                pending={disabled}
-                onClick={() =>
-                  void model.commands.execute({
-                    kind: "sidebar",
-                    change: {
-                      kind: "pin",
-                      item: { kind: "project", id },
-                      value: !pinned,
-                    },
-                  })
-                }
-              >
-                <SidebarPinIcon />
-              </IconButton>
-              <IconButton
-                variant="ghost"
-                appearance="plain"
-                label={t("app.sidebar.newInProject", { name: label })}
-                disabled={!group.sourceThreadId}
-                pending={navigationDisabled}
-                onClick={() =>
-                  void model.commands.execute({
-                    kind: "new",
-                    ...(group.sourceThreadId
-                      ? { threadId: group.sourceThreadId }
-                      : {}),
-                  })
-                }
-              >
-                <NewChatIcon />
-              </IconButton>
-            </div>
-          </div>
+          </NavigationRow>
         }
       />
       <div

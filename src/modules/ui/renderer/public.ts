@@ -56,6 +56,11 @@ export {
   LoadingIndicator,
   type LoadingIndicatorProps,
 } from "./loading-indicator";
+export {
+  NavigationRow,
+  NavigationRowLabel,
+  type NavigationRowProps,
+} from "./navigation-row";
 export { OptionAction, type OptionActionProps } from "./option-action";
 export { Popover, type PopoverProps } from "./popover";
 export {
