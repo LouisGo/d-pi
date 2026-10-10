@@ -131,6 +131,7 @@ export function ComposerTag({
           {...props}
           variant="context"
           data-composer-tag-tone={tone}
+          data-file-icon={leading?.name ?? props["data-file-icon"]}
           aria-label={
             props["aria-label"] ??
             [label, detail, description].filter(Boolean).join(" · ")
@@ -243,6 +244,7 @@ export function composerTagMarkup(
         class: "composer-context-token",
         role: "button",
         "data-composer-tag-tone": content.tone ?? "neutral",
+        ...(leading?.name ? { "data-file-icon": leading.name } : {}),
         "aria-label": [label, detail, content.description]
           .filter(Boolean)
           .join(" · "),
