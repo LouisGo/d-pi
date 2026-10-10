@@ -255,8 +255,9 @@ function importsOf(path, config) {
       continue;
     }
     if (
-      current.kind === SyntaxKind.Identifier &&
-      current.text === "require" &&
+      (current.kind === SyntaxKind.RequireKeyword ||
+        (current.kind === SyntaxKind.Identifier &&
+          current.text === "require")) &&
       tokens[index + 1]?.kind === SyntaxKind.OpenParenToken
     ) {
       const specifier = stringToken(tokens[index + 2]);
