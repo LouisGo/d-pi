@@ -135,7 +135,16 @@
 - 八文件105/105通过，包括51运行时集成、真实Workbench两条生产组合与历史集成（现有React act提示保留）。Core/Main/Preload类型、design/i18n通过；Renderer仍只有既有composer-tag.tsx:134基线。构建Main实际Worker在Node24.21.0/Electron44.4.5完成page/tail/backward/append、工具实际祖先参数、原生图像及CLI发现/读取，8次退出active=0。此smoke没有GUI窗口，不冒称完整Electron性能trace。
 - WB03完整artifact/子会话读取、Viewer/native warm/可见性预算及生产工作台trace，WB02 SourceTarget和WB04完整交互仍未完成；继续现有goal，不推送或发布。
 
-固定 `d548e3d..1e1e795` review发现P2：共享2个Worker满额时图片Query禁用重试，第三张可见图会停在不可用。已用正式MessageMedia+Query反例复现仅显示2/3张；对类型化retryable busy最多3次250/500/1000ms退避，每次使用新operation身份，持续占用后提供显式重新检查。生产三图与持续busy→停止自动尝试→手动恢复两条回归通过；读取取消和退出名额合同保持。该组合替代IPC准入/资源延时，未宣称实际并发Worker的GUI观测；Worker限额由既有runner/构建验证证明。相关query/saved阅读44项通过，新媒体2/2通过（总矩阵有重叠不相加）；必要Core/设计/i18n/架构通过，Renderer仍仅既有基线。其余固定范围无新增明确高价值问题；独立闭合继续核实。
+固定 `d548e3d..1e1e795` review发现P2：共享2个Worker满额时图片Query禁用重试，第三张可见图会停在不可用。已用正式MessageMedia+Query反例复现仅显示2/3张；对类型化retryable busy最多3次250/500/1000ms退避，每次使用新operation身份，持续占用后提供显式重新检查。生产三图与持续busy→停止自动尝试→手动恢复两条回归通过；读取取消和退出名额合同保持。该组合替代IPC准入/资源延时，未宣称实际并发Worker的GUI观测；Worker限额由既有runner/构建验证证明。相关query/saved阅读43项通过，新媒体2/2通过（总矩阵有重叠不相加）；必要Core/设计/i18n/架构通过，Renderer仍仅既有基线。其余固定范围无新增明确高价值问题；独立闭合继续核实。
+
+### WB03 milestone：原生保存输出与独立 artifact 来源（2026-10-11）
+
+- 固定 `1e1e795..6b86e11` 独立复核确认可见图片busy恢复问题闭合，无新增可行动高价值问题；没有代跑测试。
+- 核实固定OMP18.8.9 `session/artifacts.ts`、`session-manager.ts`、`internal-urls/artifact-protocol.ts` 和 `tools/output-meta.ts`：保存文件位于原生会话同名目录，numeric ID与sanitized工具名构成文件名；structured metadata明确记录totalBytes、elidedBytes和保存失败。仅文本里的artifact URL不授予读取。参考本地T3 `attachmentPaths.ts` 的来源/路径约束原则；本实现依原生会话实际绑定验证，不复用其App附件路径或OMP全局跨会话ID fallback。
+- Main沿捕获Thread/原生绑定发起同一operation，受监督Worker先验证原生result和冻结前缀，再只读声明artifact。最多2048目录项、单文件16MiB，拒绝目录/文件符号链接、重名ID、文件替换或非法UTF-8；macOS可信父目录alias先canonicalize，artifact目录自身仍禁止跳转。结束后复核原生冻结来源，取消等待Worker实际exit再释放。未保存字节、byte数量不符、参数缺失/截断或非文本部分保留partial，不把预览或head/tail样本称完整输出。
+- 原生record、live工具和artifact为不同来源；artifact带parent recordRevision及内容SHA-256，冻结引用保留实际版本。普通预览仍限制256KiB，只有经过验证的artifact允许16MiB；选区引用仍64KiB、8 Surface限额和原工具返回锚点沿用。Inspector提供“读取已保存输出”，重开已有来源复用，关闭仅取消读取。
+- 8个相关文件61/61通过，包含真实Main绑定/文件读取、10MiB正文、同大小变更拒绝、17MiB超限、elision/error/短文件/符号链接/重名、普通预览schema额度和正式Router/Host/Inspector/Tiptap三条组合（artifact→固定→B引用→Undo/Redo→返回A成员）。组合仅替代IPC与几何，仍有既有React act提示。Core/Main/Host/Preload类型通过；Renderer只有既有composer-tag.tsx:134基线。
+- 构建Main Worker在Node24.21.0与Electron44.4.5实际读取10MiB artifact并返回独立版本，同时完成尾页/前页/追加、工具参数、图像和CLI历史，9次exit且active=0。该smoke无GUI窗口，不冒称完整Workbench trace、输入延迟或用户验收；`pnpm build`、快速门禁、design/i18n与40项架构测试通过；构建保留既有大chunk警告。WB02 SourceTarget/变化汇总、WB03 Viewer/native warm/可见性/子会话与生产trace、WB04完整交互仍待完成，goal保持active，不推送或发布。
 
 WB01 合同细化：resources/contracts 是无反向依赖的来源叶子；sourceRef 仅 provenance，不授予文件或执行权限。Host 原始工具输出 reader 通过现有 MessagePort 订阅，与 timeline 摘要分离。窗口最多8 Surface，共享 reader；每工具输出256KiB、参数32KiB，Host 总缓存2MiB/64项，预算或缺失生命周期标 partial。关闭释放读取 lease，不发送 abort。FrozenContext 使用独立长度封套和原生来源，范围为冻结版本的 UTF-16 偏移，选区最多64KiB；唯一 Thread 草稿用 threadId 标识，revision+sequence 防竞争。当前挂载 editor 单笔 undo transaction，未挂载语义写入并保留缓存 undo。返回捕获导航 ticket，后续导航/关闭使其失效。待完成切片后追加实际命令、结果、提交、review 与未覆盖范围。
 

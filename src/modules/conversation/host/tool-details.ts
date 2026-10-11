@@ -4,7 +4,7 @@ import type {
   ToolDetail,
   ToolDetailReply,
 } from "../../resources/contracts/public";
-import { toolOutputCoverage } from "../core/public";
+import { decodeToolArtifact, toolOutputCoverage } from "../core/public";
 
 export type ToolScope = {
   threadId: string;
@@ -163,6 +163,9 @@ export class ToolDetails {
       record ??
       (type === "tool_execution_update" ? value.partialResult : value.result);
     if (payload !== undefined && payload !== null) {
+      const artifact = decodeToolArtifact(payload);
+      if (artifact) entry.artifact = artifact;
+      else if (type === "tool_execution_end" || record) delete entry.artifact;
       const coverage = toolOutputCoverage(payload);
       entry.truncated ||= coverage.truncated;
       entry.partial ||= coverage.partial;

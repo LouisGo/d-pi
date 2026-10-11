@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "b5559c30d0589def083546fca052910bbd63860001227c11b816788a487c7752",
+  "inputsHash": "222b97cfa8b4a88b5dccab787310417a57a5a46345d5d1924a44e934a893dbd8",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 639,
-    "scannedFiles": 639,
+    "sourceFiles": 643,
+    "scannedFiles": 643,
     "unscanned": []
   },
   "modules": [
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 285,
-      "lines": 55749,
+      "lines": 55991,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -110,7 +110,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 23,
-      "lines": 3871,
+      "lines": 3875,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -310,8 +310,8 @@
         "main"
       ],
       "materialized": true,
-      "files": 41,
-      "lines": 10512,
+      "files": 45,
+      "lines": 11055,
       "publicEntries": [
         {
           "path": "src/modules/conversation/contracts/public.ts",
@@ -444,7 +444,7 @@
       ],
       "materialized": true,
       "files": 1,
-      "lines": 113,
+      "lines": 150,
       "publicEntries": [
         {
           "path": "src/modules/resources/contracts/public.ts",
@@ -927,6 +927,12 @@
       "module": "conversation",
       "environment": "core",
       "dependency": "shared",
+      "testOnly": false
+    },
+    {
+      "module": "conversation",
+      "environment": "core",
+      "dependency": "resources",
       "testOnly": false
     },
     {
@@ -2118,6 +2124,20 @@
       "environment": "core",
       "dependency": "shared",
       "targetEnvironment": "shared",
+      "testOnly": false
+    },
+    {
+      "module": "conversation",
+      "environment": "core",
+      "dependency": "resources",
+      "targetEnvironment": "contracts",
+      "testOnly": true
+    },
+    {
+      "module": "conversation",
+      "environment": "core",
+      "dependency": "resources",
+      "targetEnvironment": "contracts",
       "testOnly": false
     },
     {
@@ -29756,6 +29776,18 @@
       "sourceModule": "conversation",
       "sourceEnvironment": "core",
       "test": false,
+      "specifier": "./tool-artifact",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/conversation/core/tool-artifact.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/conversation/core/public.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "core",
+      "test": false,
       "specifier": "./tool-payload",
       "kind": "export",
       "resolution": "module",
@@ -29888,6 +29920,60 @@
       "to": "src/modules/conversation/core/model.ts",
       "targetModule": "conversation",
       "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/conversation/core/tool-artifact.test.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/core/tool-artifact.test.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "../../resources/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/resources/contracts/public.ts",
+      "targetModule": "resources",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/conversation/core/tool-artifact.test.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "./tool-artifact",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/core/tool-artifact.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/conversation/core/tool-artifact.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/core/tool-artifact.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "../../resources/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/resources/contracts/public.ts",
+      "targetModule": "resources",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/modules/conversation/core/tool-payload.test.ts",
@@ -30550,6 +30636,123 @@
       "targetEnvironment": "main"
     },
     {
+      "from": "src/modules/conversation/main/native-artifact.test.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/main/native-artifact.test.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/main/native-artifact.test.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/main/native-artifact.test.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/main/native-artifact.test.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/main/native-artifact.test.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./native-history",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/main/native-history.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/conversation/main/native-artifact.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/main/native-artifact.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/main/native-artifact.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:fs/promises",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/main/native-artifact.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/main/native-artifact.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../resources/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/resources/contracts/public.ts",
+      "targetModule": "resources",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/conversation/main/native-artifact.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../threads/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/threads/contracts/public.ts",
+      "targetModule": "threads",
+      "targetEnvironment": "contracts"
+    },
+    {
       "from": "src/modules/conversation/main/native-history.test.ts",
       "sourceModule": "conversation",
       "sourceEnvironment": "main",
@@ -30722,6 +30925,18 @@
       "to": "src/modules/conversation/core/public.ts",
       "targetModule": "conversation",
       "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/conversation/main/native-history.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "./native-artifact",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/main/native-artifact.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "main"
     },
     {
       "from": "src/modules/conversation/main/native-history.ts",
@@ -38286,6 +38501,15 @@
       "sourceEnvironment": "renderer",
       "test": false,
       "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/resources/contracts/public.ts",
+      "sourceModule": "resources",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "ts-pattern",
       "kind": "import",
       "resolution": "external"
     },

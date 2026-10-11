@@ -101,7 +101,7 @@ export function useToolWorkspace(model: AppModel): WorkspaceHost | undefined {
   return {
     tabs: surfaces.map((surface) => ({
       id: surface.id,
-      title: `${surface.pinned ? t("workbench.tool.pinned") + " · " : ""}${surface.target.title}`,
+      title: `${surface.pinned ? t("workbench.tool.pinned") + " · " : ""}${surface.target.artifactKey ? t("workbench.tool.artifact.title") + " · " : ""}${surface.target.title}`,
       content: <ToolInspector key={surface.id} model={model} id={surface.id} />,
     })),
     selected,
@@ -169,6 +169,7 @@ function ToolInspectorBody({
     });
   };
   const [copyFailed, setCopyFailed] = useState(false);
+  const [artifactLimit, setArtifactLimit] = useState(false);
   const detail = surface.selection?.detail ?? surface.detail;
   const destination = thread?.context.title || thread?.context.threadId;
   const copied =
@@ -248,6 +249,29 @@ function ToolInspectorBody({
           </p>
           {(detail.coverage === "partial" || detail.truncated) && (
             <p role="status">{t("workbench.tool.partial")}</p>
+          )}
+          {detail.source.kind === "native-artifact" && (
+            <p role="status">
+              {t("workbench.tool.artifact.title")} · {detail.source.artifactKey}
+            </p>
+          )}
+          {detail.artifact && detail.source.kind !== "native-artifact" && (
+            <Button
+              variant="secondary"
+              disabled={
+                detail.source.kind === "live-tool" && !detail.nativeRecordId
+              }
+              onClick={() =>
+                setArtifactLimit(
+                  model.workbench.openArtifact(surface.id) === null,
+                )
+              }
+            >
+              {t("workbench.tool.artifact.open")}
+            </Button>
+          )}
+          {artifactLimit && (
+            <p role="alert">{t("workbench.tool.surfaceLimit")}</p>
           )}
           {detail.argumentsText && (
             <pre className="tool-inspector-arguments" data-selectable>

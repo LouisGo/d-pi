@@ -335,7 +335,7 @@ export function SavedConversation({
             row.liveId === undefined
               ? undefined
               : model.stateStore.getState().itemsById.get(row.liveId);
-          if (ref.kind === "native-record")
+          if (ref.kind !== "live-tool")
             return (
               row.entry?.id === ref.recordId ||
               item?.nativeRecordId === ref.recordId

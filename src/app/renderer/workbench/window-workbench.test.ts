@@ -5,6 +5,131 @@ import type { ToolDetailReply } from "../../../modules/resources/contracts/publi
 import { WindowWorkbench } from "./window-workbench";
 
 afterEach(() => vi.useRealTimers());
+it("opens an artifact as a separate source, freezes its version and returns to the original tool member", async () => {
+  const threadId = crypto.randomUUID();
+  const source = {
+    kind: "native-record" as const,
+    threadId,
+    nativeSessionKey: "native",
+    recordId: "record",
+    revision: "record-version",
+  };
+  const requestTool = vi.fn(async (command) => ({
+    kind: "completed" as const,
+    operationId: command.operationId,
+    traceId: command.traceId,
+    reply: {
+      kind: "tool-detail" as const,
+      readerId: command.readerId,
+      detail: {
+        source: command.artifactKey
+          ? {
+              kind: "native-artifact" as const,
+              threadId,
+              nativeSessionKey: "native",
+              recordId: "record",
+              recordRevision: "record-version",
+              artifactKey: "0",
+              revision: "a".repeat(64),
+            }
+          : source,
+        contentRevision: command.artifactKey
+          ? "a".repeat(64)
+          : "record-version",
+        nativeRecordId: "record",
+        toolName: "bash",
+        argumentsText: "{}",
+        text: command.artifactKey ? "full artifact output" : "preview",
+        lifecycle: "completed" as const,
+        coverage: command.artifactKey
+          ? ("observed" as const)
+          : ("partial" as const),
+        truncated: !command.artifactKey,
+        artifact: {
+          key: "0",
+          coverage: "complete" as const,
+          expectedBytes: 20,
+        },
+      },
+    },
+  }));
+  const insert = vi.fn(() => ({ kind: "inserted" as const }));
+  const work = new WindowWorkbench({
+    history: {
+      requestTool,
+      cancelRead: async (identity) => ({ kind: "acknowledged", ...identity }),
+      tool: vi.fn(),
+      read: vi.fn(),
+      projectList: vi.fn(),
+      projectRead: vi.fn(),
+    },
+    insert,
+    select: async () => true,
+  });
+  const first = work.open({
+    source,
+    title: "bash",
+    threadTitle: "A",
+    rowId: "record",
+    cursor: { threadId, source: "record-version", offset: 1 },
+  });
+  if (!first) throw Error("missing preview");
+  await vi.waitFor(() =>
+    expect(work.stateStore.getState().surfaces[0]?.detail?.text).toBe(
+      "preview",
+    ),
+  );
+  work.pin(first);
+  const full = work.openArtifact(first);
+  if (!full) throw Error("missing artifact");
+  await vi.waitFor(() =>
+    expect(
+      work.stateStore.getState().surfaces.find((s) => s.id === full)?.detail
+        ?.text,
+    ).toBe("full artifact output"),
+  );
+  const detail = work.stateStore
+    .getState()
+    .surfaces.find((s) => s.id === full)?.detail;
+  if (!detail) throw Error("missing detail");
+  work.selectRange(full, detail, 0, 4);
+  const controller = new DraftController(
+    DraftSchema.parse({
+      schemaVersion: 1,
+      threadId,
+      workingDirectoryId: crypto.randomUUID(),
+      directory: "/fixture",
+      title: "B",
+      revision: 1,
+      text: "",
+    }),
+    async () => {
+      throw Error("unexpected save");
+    },
+    () => {
+      throw Error("unexpected transport");
+    },
+  );
+  work.reference(full, { key: "destination", title: "B", controller });
+  expect(insert.mock.calls[0]?.[2].context).toMatchObject({
+    source: {
+      kind: "native-artifact",
+      artifactKey: "0",
+      revision: "a".repeat(64),
+    },
+    text: "full",
+  });
+  const locate = vi.fn(() => true);
+  work.registerRows(threadId, "native", () => "record");
+  work.registerAnchor(threadId, locate);
+  await work.returnToSource(full);
+  expect(locate).toHaveBeenCalledWith("record");
+  expect(
+    work.stateStore.getState().surfaces.find((s) => s.id === first)?.detail
+      ?.text,
+  ).toBe("preview");
+  work.dispose();
+});
 it("cancels the native detail read when the last surface closes without cancelling execution", async () => {
   const source = {
     kind: "native-record" as const,

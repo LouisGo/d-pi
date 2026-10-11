@@ -195,16 +195,27 @@ export function registerHistoryIpc(context: ProjectReadContext): void {
           source.threadId !== threadId ||
           source.nativeSessionKey !== binding.sessionId ||
           !bindingCurrent() ||
-          (source.kind === "native-record" &&
-            (source.revision !== cursor?.source ||
+          (source.kind !== "live-tool" &&
+            ((source.kind === "native-artifact"
+              ? source.recordRevision
+              : source.revision) !== cursor?.source ||
               cursor?.threadId !== threadId))
         )
           return unavailable("identity-changed");
         const recordId =
-          source.kind === "native-record" ? source.recordId : request.recordId;
+          source.kind !== "live-tool" ? source.recordId : request.recordId;
         if (!recordId) return unavailable("missing");
         const reply = await context.historyReader.tool(
-          { ...task, source, cursor, recordId, readerId: request.readerId },
+          {
+            ...task,
+            source,
+            cursor,
+            recordId,
+            readerId: request.readerId,
+            ...(request.artifactKey
+              ? { artifactKey: request.artifactKey }
+              : {}),
+          },
           signal,
         );
         return bindingCurrent() ? reply : unavailable("identity-changed");

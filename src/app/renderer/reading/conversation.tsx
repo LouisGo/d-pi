@@ -79,7 +79,7 @@ export function Conversation({
       const state = model.stateStore.getState();
       const id = state.itemIds.find((id) => {
         const item = state.itemsById.get(id);
-        return source.kind === "native-record"
+        return source.kind !== "live-tool"
           ? item?.nativeRecordId === source.recordId
           : source.connectionGeneration === state.view?.connectionGeneration &&
               item?.tool?.toolCallId === source.toolCallId;

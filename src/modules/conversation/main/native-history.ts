@@ -19,11 +19,13 @@ import type {
 import { nativeMessageTime } from "../contracts/message-time";
 import type { ToolExecutionObservation } from "../contracts/tool-observation";
 import {
+  decodeToolArtifact,
   decodeToolSemantic,
   projectToolPayload,
   type ToolPayloadByteCounter,
   toolOutputCoverage,
 } from "../core/public";
+import { readNativeArtifact } from "./native-artifact";
 import {
   NativeImagePartSchema,
   nativeImageDigest,
@@ -131,6 +133,9 @@ type ToolRead = {
   parents: Map<string, string | null>;
   calls: Map<string, Map<string, Call>>;
   detail: Omit<ToolDetail, "source" | "contentRevision"> | null;
+  argumentsComplete: boolean;
+  argumentsTruncated: boolean;
+  resultHasNonText: boolean;
 };
 function boundedUtf8(
   text: string,
@@ -153,16 +158,22 @@ export async function readNativeTool(
   recordId: string,
   readerId: string,
   projectDirectory?: string,
+  artifactKey?: string,
 ): Promise<ToolDetailReply> {
   const unavailable = (
     reason: "missing" | "identity-changed" | "limit",
   ): ToolDetailReply => ({ kind: "tool-unavailable", readerId, reason });
+  if (source.kind === "native-artifact" && artifactKey !== source.artifactKey)
+    return unavailable("identity-changed");
   const request: ToolRead = {
     recordId,
     ...(source.kind === "live-tool" ? { toolCallId: source.toolCallId } : {}),
     parents: new Map(),
     calls: new Map(),
     detail: null,
+    argumentsComplete: false,
+    argumentsTruncated: false,
+    resultHasNonText: false,
   };
   let next: HistoryCursor | null = cursor ? { ...cursor, offset: 0 } : null;
   for (let pageNumber = 0; pageNumber < 16; pageNumber++) {
@@ -179,9 +190,69 @@ export async function readNativeTool(
       return unavailable(
         page.reason === "unsupported" ? "limit" : "identity-changed",
       );
-    if (source.kind === "native-record" && page.source !== source.revision)
+    if (
+      source.kind !== "live-tool" &&
+      page.source !==
+        (source.kind === "native-artifact"
+          ? source.recordRevision
+          : source.revision)
+    )
       return unavailable("identity-changed");
-    if (request.detail)
+    if (request.detail) {
+      if (artifactKey) {
+        const reference = request.detail.artifact;
+        if (!reference || reference.key !== artifactKey)
+          return unavailable("missing");
+        const artifact = await readNativeArtifact(binding, reference);
+        if (artifact.kind === "unavailable")
+          return unavailable(artifact.reason);
+        if (
+          source.kind === "native-artifact" &&
+          artifact.revision !== source.revision
+        )
+          return unavailable("identity-changed");
+        const committed = page.continuation;
+        if (!committed) return unavailable("identity-changed");
+        const verified = await readNativeHistory(
+          root,
+          binding,
+          { ...committed, offset: committed.endOffset ?? committed.offset },
+          undefined,
+          projectDirectory,
+        );
+        if (verified.kind !== "page" || verified.source !== page.source)
+          return unavailable("identity-changed");
+        return {
+          kind: "tool-detail",
+          readerId,
+          detail: {
+            ...request.detail,
+            source: {
+              kind: "native-artifact",
+              threadId: binding.threadId,
+              nativeSessionKey: binding.sessionId,
+              recordId,
+              recordRevision: page.source,
+              artifactKey,
+              revision: artifact.revision,
+            },
+            contentRevision: artifact.revision,
+            nativeRecordId: recordId,
+            text: artifact.text,
+            artifact: {
+              ...reference,
+              coverage: artifact.complete ? "complete" : "partial",
+            },
+            coverage:
+              artifact.complete &&
+              request.argumentsComplete &&
+              !request.resultHasNonText
+                ? "observed"
+                : "partial",
+            truncated: !artifact.complete || request.argumentsTruncated,
+          },
+        };
+      }
       return {
         kind: "tool-detail",
         readerId,
@@ -192,6 +263,7 @@ export async function readNativeTool(
           nativeRecordId: recordId,
         },
       };
+    }
     if (!page.next) return unavailable("missing");
     next = page.next;
     if (next.offset >= 16 * PAGE_BYTES) return unavailable("limit");
@@ -541,10 +613,15 @@ export async function readNativeHistory(
               !matchedCall ||
               nonText ||
               nativeCoverage.partial;
+            const artifact = decodeToolArtifact({ details: message.details });
+            toolRequest.argumentsComplete = !!matchedCall && !args.truncated;
+            toolRequest.argumentsTruncated = args.truncated;
+            toolRequest.resultHasNonText = !!nonText;
             toolRequest.detail = {
               toolName: message.toolName,
               argumentsText: args.text,
               text: output.text,
+              ...(artifact ? { artifact } : {}),
               lifecycle:
                 message.isError === true
                   ? "failed"

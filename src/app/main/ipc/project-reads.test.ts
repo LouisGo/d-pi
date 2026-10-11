@@ -805,6 +805,9 @@ it("historical tool leases survive Thread selection, retain raw output and ances
   mkdirSync(join(root, threadId), { recursive: true });
   const sessionFile = join(root, threadId, "tool.jsonl");
   const text = "full output\n".repeat(4000);
+  const artifactText = "saved output\n".repeat(40000);
+  mkdirSync(join(root, threadId, "tool"));
+  writeFileSync(join(root, threadId, "tool", "0.bash.log"), artifactText);
   writeFileSync(
     sessionFile,
     [
@@ -836,7 +839,14 @@ it("historical tool leases survive Thread selection, retain raw output and ances
           isError: false,
           content: [{ type: "text", text }],
           details: {
-            meta: { truncation: { direction: "tail", truncatedBy: "bytes" } },
+            meta: {
+              truncation: {
+                direction: "tail",
+                truncatedBy: "bytes",
+                artifactId: "0",
+                totalBytes: artifactText.length,
+              },
+            },
           },
         },
       },
@@ -878,6 +888,26 @@ it("historical tool leases survive Thread selection, retain raw output and ances
       coverage: "partial",
     },
   });
+  expect(
+    await f.request("history:tool", { ...request, artifactKey: "0" }),
+  ).toMatchObject({
+    kind: "tool-detail",
+    detail: {
+      text: artifactText,
+      coverage: "observed",
+      truncated: false,
+      source: {
+        kind: "native-artifact",
+        recordId: "result",
+        recordRevision: page.source,
+        artifactKey: "0",
+        revision: createHash("sha256").update(artifactText).digest("hex"),
+      },
+    },
+  });
+  expect(
+    await f.request("history:tool", { ...request, artifactKey: "1" }),
+  ).toMatchObject({ kind: "tool-unavailable", reason: "missing" });
   const liveRequest = {
     ...request,
     cursor: null,

@@ -136,6 +136,10 @@ export const HistoryToolRequestSchema = z.strictObject({
   recordId: z.string().min(1).max(512).optional(),
   readerId: z.uuid(),
   traceId: z.uuid(),
+  artifactKey: z
+    .string()
+    .regex(/^\d{1,20}$/)
+    .optional(),
 });
 export type HistoryToolRequest = z.infer<typeof HistoryToolRequestSchema>;
 export const HistoryToolResponseSchema = readResponseSchema(

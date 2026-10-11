@@ -51,6 +51,8 @@ export const ui = {
   "workbench.tool.unavailable": "详情不可用，请从来源卡重新打开。",
   "workbench.tool.output": "命令输出，选中文字可冻结引用",
   "workbench.tool.saved": "已关联原生记录",
+  "workbench.tool.artifact.open": "读取已保存输出",
+  "workbench.tool.artifact.title": "已保存输出",
   "workbench.tool.liveOnly": "实时来源，尚未确认原生记录",
   "workbench.tool.partial": "证据不完整或输出已截断，所示内容不代表完整结果。",
   "workbench.tool.frozen": "选区已冻结在版本 {revision}",

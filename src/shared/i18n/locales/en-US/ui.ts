@@ -58,6 +58,8 @@ export const ui = {
     "Details are unavailable. Reopen from the source card to retry.",
   "workbench.tool.output": "Command output — select text to freeze a reference",
   "workbench.tool.saved": "Native record linked",
+  "workbench.tool.artifact.open": "Read saved output",
+  "workbench.tool.artifact.title": "Saved output",
   "workbench.tool.liveOnly": "Live source; native record not confirmed",
   "workbench.tool.partial":
     "Partial evidence or truncated output; shown content is not the complete result.",

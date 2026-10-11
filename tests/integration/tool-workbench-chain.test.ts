@@ -20,9 +20,13 @@ import { parseDraftBlocks } from "../../src/modules/input/core/public";
 import { I18nProvider } from "../../src/modules/preferences/renderer/public";
 import type { NativeFrame } from "../../src/platform/omp/protocol/public";
 
-it.each([false, true])(
-  "runs the production card → live inspector → pin → B editor reference → A virtual source chain (grouped: %s)",
-  async (grouped) => {
+it.each([
+  { grouped: false, artifact: false },
+  { grouped: true, artifact: false },
+  { grouped: true, artifact: true },
+])(
+  "runs the production card → inspector → pin → B editor reference → A virtual source chain (%j)",
+  async ({ grouped, artifact }) => {
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
     // Substitute only native IPC and physical geometry. All application/router,
     // Host projection/raw reader, preload broker, inspector and Tiptap are real.
@@ -133,11 +137,52 @@ it.each([false, true])(
         });
       },
     } as unknown as IpcRenderer);
+    const raw = "first output\n".repeat(4000);
+    const artifactText = "first saved output\n".repeat(40000);
     const bridge: DesktopBridge = {
       conversation,
       history: {
         projectList: vi.fn(),
         projectRead: vi.fn(),
+        tool: vi.fn(),
+        cancelRead: vi.fn(),
+        requestTool: async (command) => ({
+          operationId: command.operationId,
+          traceId: command.traceId,
+          kind: "completed",
+          reply: {
+            kind: "tool-detail",
+            readerId: command.readerId,
+            detail: {
+              source: command.artifactKey
+                ? {
+                    kind: "native-artifact",
+                    threadId: first.threadId,
+                    nativeSessionKey: "native-A",
+                    recordId: "native-result",
+                    recordRevision: "native-version",
+                    artifactKey: "0",
+                    revision: "a".repeat(64),
+                  }
+                : command.source,
+              contentRevision: command.artifactKey
+                ? "a".repeat(64)
+                : "native-version",
+              nativeRecordId: "native-result",
+              toolName: "bash",
+              argumentsText: "{}",
+              text: command.artifactKey ? artifactText : raw,
+              lifecycle: "completed",
+              coverage: command.artifactKey ? "observed" : "partial",
+              truncated: !command.artifactKey,
+              artifact: {
+                key: "0",
+                coverage: "complete",
+                expectedBytes: artifactText.length,
+              },
+            },
+          },
+        }),
         read: async (threadId) => ({
           kind: "page",
           entries:
@@ -240,7 +285,6 @@ it.each([false, true])(
         state.threadSelection.thread.reading?.connect(first.threadId);
       });
       await settle();
-      const raw = "first output\n".repeat(4000);
       await act(() => {
         if (grouped) {
           host.accept({
@@ -323,11 +367,37 @@ it.each([false, true])(
       ).toBeLessThanOrEqual(2048);
       await act(() => open?.click());
       await settle();
-      const surface = model.workbench.stateStore.getState().surfaces[0]!;
+      if (artifact) {
+        await act(() =>
+          host.accept({
+            type: "tool_execution_end",
+            dPiRecordId: "native-result",
+            toolCallId: "bash-1",
+            toolName: "bash",
+            isError: false,
+            result: {
+              content: [{ type: "text", text: raw }],
+              details: {
+                meta: {
+                  truncation: {
+                    artifactId: "0",
+                    totalBytes: artifactText.length,
+                  },
+                },
+              },
+            },
+          } as NativeFrame),
+        );
+        await settle();
+        await act(() => button("Read saved output").click());
+        await settle();
+      }
+      const surface = model.workbench.stateStore.getState().surfaces.at(-1)!;
+      const expectedText = artifact ? artifactText : raw;
       const output = container.querySelector<HTMLTextAreaElement>(
         ".tool-inspector-output",
       )!;
-      expect(output.value).toBe(raw);
+      expect(output.value).toBe(expectedText);
       expect(output.value.length).toBeGreaterThan(32768);
       await act(() => button("Pin").click());
       // Native onSelect is produced by keyboard selection; do not directly call
@@ -381,7 +451,7 @@ it.each([false, true])(
       expect(
         container.querySelector<HTMLTextAreaElement>(".tool-inspector-output")
           ?.value,
-      ).toBe(raw);
+      ).toBe(expectedText);
       await act(() => button("Reference selected text").click());
       const b = model.controller!;
       const context = parseDraftBlocks(b.getTextSnapshot()).find(
@@ -392,7 +462,14 @@ it.each([false, true])(
         value: {
           text: "first",
           contentRevision: surface.detail?.contentRevision,
-          source: { threadId: first.threadId, toolCallId: "bash-1" },
+          source: artifact
+            ? {
+                kind: "native-artifact",
+                threadId: first.threadId,
+                recordId: "native-result",
+                revision: "a".repeat(64),
+              }
+            : { threadId: first.threadId, toolCallId: "bash-1" },
         },
       });
       expect(drafts.get(first.threadId)?.text).toBe("A original");

@@ -99,6 +99,10 @@ async function run() {
       appended.entries.map((entry) => entry.id),
       ["new"],
     );
+    const artifactText = "0123456789".repeat(1024 * 1024);
+    const artifacts = sessionFile.slice(0, -6);
+    mkdirSync(artifacts);
+    writeFileSync(join(artifacts, "0.bash.log"), artifactText);
     const nativeRows = [
       {
         type: "message",
@@ -125,6 +129,11 @@ async function run() {
           toolCallId: "tool-1",
           toolName: "bash",
           isError: false,
+          details: {
+            meta: {
+              truncation: { artifactId: "0", totalBytes: artifactText.length },
+            },
+          },
           content: [{ type: "text", text: "raw output" }],
         },
       },
@@ -172,6 +181,27 @@ async function run() {
       JSON.parse(tool.detail.argumentsText).command,
       "printf output",
     );
+    const fullArtifact = await task({
+      kind: "tool",
+      root,
+      binding,
+      source: {
+        kind: "native-record",
+        threadId,
+        nativeSessionKey: "session",
+        recordId: "result",
+        revision: mediaPage.source,
+      },
+      cursor: toolRecord.toolCursor,
+      recordId: "result",
+      readerId: randomUUID(),
+      artifactKey: "0",
+    });
+    assert.equal(fullArtifact.kind, "tool-detail");
+    assert.equal(fullArtifact.detail.source.kind, "native-artifact");
+    assert.equal(fullArtifact.detail.text.length, 10 * 1024 * 1024);
+    assert.equal(fullArtifact.detail.text, artifactText);
+    assert.equal(fullArtifact.detail.coverage, "observed");
     const image = await task({
       kind: "image",
       root,
@@ -219,7 +249,7 @@ async function run() {
     assert.equal(projectPage.kind, "page");
     assert.equal(projectPage.entries[0].text, "CLI history");
     assert.equal(active, 0);
-    assert.equal(exits, 8);
+    assert.equal(exits, 9);
     console.log(
       JSON.stringify({
         runtime: {
@@ -230,6 +260,7 @@ async function run() {
         previousRecords: previous.entries.length,
         appendRecords: appended.entries.length,
         heartbeatTicks: beats,
+        artifactBytes: fullArtifact.detail.text.length,
         active,
         exits,
       }),

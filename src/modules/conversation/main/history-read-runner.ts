@@ -47,6 +47,10 @@ const HistoryToolTaskSchema = HistoryReadTaskSchema.omit({
   source: SourceRefSchema,
   recordId: z.string().min(1).max(512),
   readerId: z.uuid(),
+  artifactKey: z
+    .string()
+    .regex(/^\d{1,20}$/)
+    .optional(),
 });
 const HistoryImageTaskSchema = HistoryReadTaskSchema.omit({
   range: true,
@@ -294,6 +298,7 @@ export async function runNativeHistoryWorker(
         task.recordId,
         task.readerId,
         task.projectDirectory,
+        task.artifactKey,
       ),
     )
     .with({ kind: "image" }, (task) =>

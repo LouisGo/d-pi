@@ -321,7 +321,9 @@
           "shared",
           "resources"
         ],
-        "core": ["shared"],
+        "core": ["shared",
+          "resources"
+        ],
         "host": [
           "platform",
           "shared",

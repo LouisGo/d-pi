@@ -25,6 +25,8 @@ export interface ToolTarget {
   threadTitle: string;
   rowId: string;
   cursor?: HistoryCursor;
+  artifactKey?: string;
+  nativeRecordId?: string;
 }
 export interface ToolSurface {
   id: string;
@@ -54,6 +56,27 @@ type Reader = {
   abortNative: () => void;
 };
 const keyOf = sourceKey;
+const targetKey = (target: ToolTarget) =>
+  JSON.stringify([keyOf(target.source), target.artifactKey ?? null]);
+function matchesDetail(target: ToolTarget, detail: ToolDetail): boolean {
+  if (!target.artifactKey) return keyOf(target.source) === keyOf(detail.source);
+  const source = detail.source;
+  return (
+    source.kind === "native-artifact" &&
+    source.threadId === target.source.threadId &&
+    source.nativeSessionKey === target.source.nativeSessionKey &&
+    source.artifactKey === target.artifactKey &&
+    source.recordId ===
+      (target.source.kind === "live-tool"
+        ? target.nativeRecordId
+        : target.source.recordId) &&
+    (target.source.kind === "live-tool" ||
+      source.recordRevision ===
+        (target.source.kind === "native-artifact"
+          ? target.source.recordRevision
+          : target.source.revision))
+  );
+}
 
 /** Window-only composition. Tool execution, native persistence and draft bodies have other owners. */
 export class WindowWorkbench {
@@ -115,7 +138,7 @@ export class WindowWorkbench {
     const same = this.store
       .getState()
       .surfaces.find(
-        (surface) => keyOf(surface.target.source) === keyOf(target.source),
+        (surface) => targetKey(surface.target) === targetKey(target),
       );
     if (same) {
       this.select(same.id);
@@ -143,7 +166,7 @@ export class WindowWorkbench {
       selected: id,
       revealToken: state.revealToken + 1,
     }));
-    const key = keyOf(target.source);
+    const key = targetKey(target);
     let reader = this.readers.get(key);
     if (reader) {
       reader.users.add(id);
@@ -179,6 +202,7 @@ export class WindowWorkbench {
           cursor,
           readerId: id,
           ...(recordId ? { recordId } : {}),
+          ...(target.artifactKey ? { artifactKey: target.artifactKey } : {}),
         };
         return requestReadOperation(
           { request: () => request(command), cancel },
@@ -191,7 +215,7 @@ export class WindowWorkbench {
     };
     const receive = (reply: ToolDetailReply) => {
       if (this.disposed || this.readers.get(key) !== current) return;
-      if (reply.kind === "tool-detail" && keyOf(reply.detail.source) !== key)
+      if (reply.kind === "tool-detail" && !matchesDetail(target, reply.detail))
         return;
       if (current.durable) return;
       current.detail =
@@ -218,6 +242,7 @@ export class WindowWorkbench {
       if (
         reply.kind === "tool-detail" &&
         target.source.kind === "live-tool" &&
+        !target.artifactKey &&
         reply.detail.nativeRecordId &&
         this.ports.history?.tool &&
         current.handoff !== reply.detail.nativeRecordId
@@ -235,7 +260,7 @@ export class WindowWorkbench {
             receive(persisted);
             if (
               persisted.kind === "tool-detail" &&
-              keyOf(persisted.detail.source) === key
+              matchesDetail(target, persisted.detail)
             ) {
               current.durable = true;
               current.release();
@@ -253,6 +278,7 @@ export class WindowWorkbench {
     };
     if (
       target.source.kind === "live-tool" &&
+      !target.artifactKey &&
       this.ports.conversation?.watchTool
     ) {
       const release = this.ports.conversation.watchTool(target.source, accept);
@@ -261,16 +287,18 @@ export class WindowWorkbench {
         release();
       };
     } else if (
-      target.source.kind === "native-record" &&
-      target.cursor &&
+      (target.source.kind !== "live-tool" || target.artifactKey) &&
+      (target.cursor || target.nativeRecordId) &&
       this.ports.history?.tool
     ) {
-      void readNative(target.cursor).then(accept, () =>
-        accept({
-          kind: "tool-unavailable",
-          readerId: id,
-          reason: "transport",
-        }),
+      void readNative(target.cursor ?? null, target.nativeRecordId).then(
+        accept,
+        () =>
+          accept({
+            kind: "tool-unavailable",
+            readerId: id,
+            reason: "transport",
+          }),
       );
       current.release = () => clearTimeout(timeout);
     } else {
@@ -278,6 +306,27 @@ export class WindowWorkbench {
       receive({ kind: "tool-unavailable", readerId: id, reason: "missing" });
     }
     return id;
+  }
+  openArtifact(id: string): string | null {
+    const surface = this.store
+      .getState()
+      .surfaces.find((surface) => surface.id === id);
+    const detail = surface?.detail;
+    if (
+      !surface ||
+      !detail?.artifact ||
+      detail.source.kind === "native-artifact" ||
+      (detail.source.kind === "live-tool" && !detail.nativeRecordId)
+    )
+      return null;
+    if (surface.selection) this.pin(id);
+    return this.open({
+      ...surface.target,
+      artifactKey: detail.artifact.key,
+      ...(detail.nativeRecordId
+        ? { nativeRecordId: detail.nativeRecordId }
+        : {}),
+    });
   }
   select(id: string): void {
     this.cancelReturn();
@@ -296,7 +345,7 @@ export class WindowWorkbench {
       .getState()
       .surfaces.find((item) => item.id === id);
     if (!surface) return;
-    const key = keyOf(surface.target.source),
+    const key = targetKey(surface.target),
       reader = this.readers.get(key);
     reader?.users.delete(id);
     if (!reader?.users.size) {
@@ -326,7 +375,7 @@ export class WindowWorkbench {
       .surfaces.find((item) => item.id === id);
     if (
       !surface ||
-      keyOf(surface.target.source) !== keyOf(detail.source) ||
+      !matchesDetail(surface.target, detail) ||
       start < 0 ||
       end > detail.text.length ||
       end <= start

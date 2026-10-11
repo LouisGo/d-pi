@@ -123,6 +123,9 @@ export function createProjectReadBridge(
           cursor,
           readerId,
           ...(recordId ? { recordId } : {}),
+          ...(source.kind === "native-artifact"
+            ? { artifactKey: source.artifactKey }
+            : {}),
         };
         return requestReadOperation(
           { request: () => requestTool(command), cancel: cancelHistory },

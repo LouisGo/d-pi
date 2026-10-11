@@ -28,6 +28,7 @@ export {
   readingSourceKey,
   resolveReadingAnchor,
 } from "./reading-position";
+export { decodeToolArtifact } from "./tool-artifact";
 export {
   projectToolPayload,
   type ToolOutputCoverage,
