@@ -1,0 +1,13 @@
+✔ SDK preparation replaces old links, resolves the declared packages and is repeatable (578.1435ms)
+✔ SDK preparation keeps a closed target runtime graph without maps, types, foreign binaries or incidental store packages (533.083458ms)
+✔ resource validation excludes preparation until Main exits, across HOME and TMPDIR contexts (1297.150417ms)
+✔ empty resources prepare successfully; a failed copy preserves the previous complete resources (425.461125ms)
+✔ changed upstream source or active resource users cannot replace a complete SDK root (660.831458ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3546.241375

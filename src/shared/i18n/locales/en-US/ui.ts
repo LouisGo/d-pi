@@ -355,6 +355,8 @@ export const ui = {
     "Attachment undo protection expired. Retry to restore it; your draft is preserved.",
   "attachment.reason.document-conversion-unavailable":
     "Document conversion is unavailable. Please retry.",
+  "attachment.reason.document-conversion-outdated":
+    "This spreadsheet uses an older conversion. Retry to convert it again before sending.",
   "attachment.reason.document-conversion-failed":
     "Document conversion failed. Check the file or attach it again.",
   "attachment.pdfConversionNotice":
@@ -399,6 +401,10 @@ export const ui = {
     "The attachment is damaged. Reattach the original.",
   "attachment.reason.unsupported-format":
     "This file format isn't supported yet.",
+  "attachment.reason.archive-unsupported":
+    "ZIP archives cannot be attached yet. Extract the files and attach the ones you need.",
+  "attachment.reason.pdf-ocr-required":
+    "This PDF has no extractable text and needs OCR. Attach a searchable PDF or images of the pages.",
   "attachment.reason.invalid-encoding":
     "Convert this file to UTF-8 text, then attach it again.",
   "attachment.reason.image-too-large":

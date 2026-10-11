@@ -1,0 +1,108 @@
+diff --git a/examples/extensions/with-deps/package-lock.json b/examples/extensions/with-deps/package-lock.json
+deleted file mode 100644
+index a8b996080f64534b51f42f04b1187e909737ce6a..0000000000000000000000000000000000000000
+diff --git a/src/markit/converters/xlsx.ts b/src/markit/converters/xlsx.ts
+index b3287cc0d53a2a7ac61374d7953be21d276439ea..550edfe0b943f5dbac3bf8729a0ae0371d04eed8 100644
+--- a/src/markit/converters/xlsx.ts
++++ b/src/markit/converters/xlsx.ts
+@@ -18,6 +18,7 @@ interface StringItem {
+ 	r?: RichTextRun | RichTextRun[];
+ }
+ interface Cell {
++	"@_r"?: string;
+ 	"@_t"?: string;
+ 	v?: string | number;
+ 	is?: StringItem;
+@@ -30,7 +31,7 @@ interface WorksheetDoc {
+ }
+ interface Sheet {
+ 	"@_name": string;
+-	"@_r:id": string;
++	"@_id": string;
+ }
+ interface WorkbookDoc {
+ 	workbook?: { sheets?: { sheet?: Sheet | Sheet[] } };
+@@ -65,17 +66,17 @@ export class XlsxConverter implements Converter {
+ 		});
+ 		// Parse shared strings
+ 		const ssXml = await zip.readText("xl/sharedStrings.xml");
+-		const ss = ssXml ? (parser.parse(ssXml) as SharedStringsDoc) : null;
++		const ss = ssXml ? (localNames(parser.parse(ssXml)) as SharedStringsDoc) : null;
+ 		const siList = ss?.sst?.si;
+ 		const shared = toArray(siList);
+ 		// Parse workbook for sheet names
+ 		const wbXml = await zip.readText("xl/workbook.xml");
+ 		if (!wbXml) throw new Error("Invalid XLSX: missing workbook.xml");
+-		const wb = parser.parse(wbXml) as WorkbookDoc;
++		const wb = localNames(parser.parse(wbXml)) as WorkbookDoc;
+ 		const sheets = toArray(wb.workbook?.sheets?.sheet);
+ 		// Parse workbook rels to map rIds to sheet files
+ 		const relsXml = await zip.readText("xl/_rels/workbook.xml.rels");
+-		const rels = relsXml ? (parser.parse(relsXml) as RelationshipsDoc) : null;
++		const rels = relsXml ? (localNames(parser.parse(relsXml)) as RelationshipsDoc) : null;
+ 		const relList = toArray(rels?.Relationships?.Relationship);
+ 		const relMap = new Map<string, string>();
+ 		for (const r of relList) {
+@@ -84,13 +85,13 @@ export class XlsxConverter implements Converter {
+ 		const sections: string[] = [];
+ 		for (const sheet of sheets) {
+ 			const sheetName = sheet["@_name"];
+-			const rId = sheet["@_r:id"];
++			const rId = sheet["@_id"];
+ 			const target = relMap.get(rId);
+ 			if (!target) continue;
+ 			const sheetPath = target.startsWith("/") ? target.slice(1) : `xl/${target}`;
+ 			const sheetXml = await zip.readText(sheetPath);
+ 			if (!sheetXml) continue;
+-			const parsed = parser.parse(sheetXml) as WorksheetDoc;
++			const parsed = localNames(parser.parse(sheetXml)) as WorksheetDoc;
+ 			const rows = toArray(parsed.worksheet?.sheetData?.row);
+ 			if (rows.length === 0) continue;
+ 			// Extract all rows as string arrays
+@@ -98,8 +99,15 @@ export class XlsxConverter implements Converter {
+ 			for (const row of rows) {
+ 				const cells = toArray(row.c);
+ 				const values: string[] = [];
++				const occupied = new Set<number>();
++				let nextColumn = 0;
+ 				for (const cell of cells) {
+-					values.push(this.getCellValue(cell, shared));
++					const column = cell["@_r"] ? columnIndex(cell["@_r"]) : nextColumn;
++					if (occupied.has(column)) throw new Error("Invalid XLSX: duplicate cell coordinate");
++					occupied.add(column);
++					while (values.length <= column) values.push("");
++					values[column] = this.getCellValue(cell, shared);
++					nextColumn = column + 1;
+ 				}
+ 				tableRows.push(values);
+ 			}
+@@ -175,3 +183,29 @@ function toArray<T>(val: T | T[] | undefined): T[] {
+ 	if (!val) return [];
+ 	return Array.isArray(val) ? val : [val];
+ }
++
++// Normalize parsed XML names, never rewrite user XML bytes or text values.
++// OOXML accepts arbitrary namespace prefixes; attributes use their local name.
++function localNames(value: unknown): unknown {
++	if (Array.isArray(value)) return value.map(localNames);
++	if (!value || typeof value !== "object") return value;
++	const result: Record<string, unknown> = Object.create(null);
++	for (const [key, child] of Object.entries(value)) {
++		if (key === "@_xmlns" || key.startsWith("@_xmlns:")) continue;
++		const name = key.includes(":") ? `${key.startsWith("@_") ? "@_" : ""}${key.slice(key.lastIndexOf(":") + 1)}` : key;
++		if (Object.hasOwn(result, name)) throw new Error("Invalid XLSX: ambiguous XML name");
++		result[name] = localNames(child);
++	}
++	return result;
++}
++
++function columnIndex(address: string): number {
++	const match = /^([A-Z]+)[1-9][0-9]*$/.exec(address);
++	if (!match) throw new Error("Invalid XLSX: cell coordinate");
++	let column = 0;
++	for (const letter of match[1]) {
++		column = column * 26 + letter.charCodeAt(0) - 64;
++		if (column > 16384) throw new Error("Invalid XLSX: column out of range");
++	}
++	return column - 1;
++}

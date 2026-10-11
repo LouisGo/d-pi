@@ -59,8 +59,18 @@ function fixture(t) {
     );
     write(`${target}/index.js`, "export const fixture = true;\n");
     write(`${target}/src/index.ts`, "export const fixture = true;\n");
-    if (name === "pi-coding-agent")
+    if (name === "pi-coding-agent") {
       write(`${target}/src/sdk.ts`, officialSource);
+      write(
+        `${target}/src/markit/converters/xlsx.ts`,
+        readFileSync(
+          resolve(
+            import.meta.dirname,
+            "../../node_modules/@oh-my-pi/pi-coding-agent/src/markit/converters/xlsx.ts",
+          ),
+        ),
+      );
+    }
     mkdirSync(join(root, "node_modules/@oh-my-pi"), { recursive: true });
     symlinkSync(
       `../.pnpm/${name}@18.8.7/node_modules/@oh-my-pi/${name}`,

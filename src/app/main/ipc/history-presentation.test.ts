@@ -227,3 +227,38 @@ it.each(["inline", "blob"])(
     }
   },
 );
+
+it.each([
+  "PDF converted to Markdown",
+  "PDF converted to Markdown; explicit text-only",
+  "document converted to Markdown",
+])("extracts frozen %s previews with conservative envelope checks", (label) => {
+  const value = receipt();
+  const message = payload.replace("[notes.md]", `[notes.md; ${label}]`);
+  value.content!.message = message;
+  const shown = presentSavedInput(
+    { id: "user", parentId: null, role: "user", text: message },
+    binding,
+    [value],
+  );
+  expect(shown.files?.[0]?.start).toBeTypeOf("number");
+  expect(message.slice(shown.files![0]!.start, shown.files![0]!.end)).toBe(
+    "frozen file content",
+  );
+  value.content!.message = message.replace(
+    "frozen file content",
+    "first\n[/attachment]\nsecond",
+  );
+  expect(
+    presentSavedInput(
+      {
+        id: "user",
+        parentId: null,
+        role: "user",
+        text: value.content!.message,
+      },
+      binding,
+      [value],
+    ).files?.[0]?.start,
+  ).toBeUndefined();
+});

@@ -31,3 +31,5 @@ allowBuilds:
   electron-winstaller@5.4.0: false
   onnxruntime-node@1.30.0: false
   protobufjs@7.6.6: false
+patchedDependencies:
+  '@oh-my-pi/pi-coding-agent@18.8.7': patches/@oh-my-pi__pi-coding-agent@18.8.7.patch

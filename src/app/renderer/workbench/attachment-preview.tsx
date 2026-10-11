@@ -118,7 +118,9 @@ export function AttachmentPreviewDialog({
       )}
       {onAction && (
         <div className="flex flex-wrap gap-2">
-          {item.status === "failed" && (
+          {(item.status === "failed" ||
+            (content.kind === "unavailable" &&
+              content.reason === "document-conversion-outdated")) && (
             <Button
               variant="ghost"
               disabled={disabled}

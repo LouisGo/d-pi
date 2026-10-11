@@ -1,0 +1,70 @@
+{
+  "platform": "darwin",
+  "arch": "arm64",
+  "source": "1e73213 + reviewed WIP",
+  "isolatedRoot": "/private/var/folders/0_/wqjm38lj5j5frqmvd7c4m5yh0000gn/T/dpi-attachment-e2e-3a6nyb",
+  "guiSend": true,
+  "checks": [
+    "real Main → utility Host → native bootstrap → registered permit → SDK ready",
+    "real preload/Main import and previews: PDF, sparse XLSX, prefixed XLSX, TXT",
+    "GUI Send → real fixed SDK → localhost receives PDF/XLSX/TXT full prepared text exactly once",
+    "native history-backed sent chips open exact frozen PDF/XLSX/TXT content in actual GUI",
+    "fresh project @ PDF/XLSX previews through real read-only Main converter",
+    "real scan OCR evidence and accurate ZIP rejection retained",
+    "clipboard write → real isolated Main app.quit shutdown exits normally with code 0 and no destroyed-object exception"
+  ],
+  "screenshots": [
+    "sent-sparse-two-sheet-xlsx.png",
+    "sent-text-pdf.png",
+    "attachment-errors.png"
+  ],
+  "tokens": [
+    {
+      "text": "text.pdf2 KB",
+      "label": "预览 text.pdf"
+    },
+    {
+      "text": "sparse-two-sheet.xlsx2 KB",
+      "label": "预览 sparse-two-sheet.xlsx"
+    },
+    {
+      "text": "control.txt135 B",
+      "label": "预览 control.txt"
+    },
+    {
+      "text": "workbook-prefixed.xlsx6 KB",
+      "label": "预览 workbook-prefixed.xlsx"
+    }
+  ],
+  "providerRequests": 1,
+  "success": true,
+  "evidenceKind": "macOS isolated source build; base HEAD plus dirty WIP; not a packaged clean candidate",
+  "shutdown": "Real isolated Main app.quit invoked through its inspector after verifying userData; exit code 0; failed test imports explicitly cancelled first. Native menu action was not verified.",
+  "sourceHashes": {
+    "runtime/document-content.mjs": "6a68457493d0344d4a7a679259fceca683a748b78c5bacf8ffa976279bebeef2",
+    "runtime/pdf-content.mjs": "88d42d0e540db9d9c2489c1365f65a765a1948621b43076b77b31e4089d160f3",
+    "scripts/runtime/prepare-sdk.mjs": "e6db1d5db3b16b9870874b26f46530187406c632afc11e6a21ca3a6aad6ad235",
+    "src/app/main/ipc/history-presentation.test.ts": "3ab1411f417e1f736a59a6a42006a8ae01c5d5f037a655176da63dcd53085a50",
+    "src/app/main/ipc/history-presentation.ts": "4ba11d3f8d3ee4d59fa8414bff568077d0c7947ec007e57f0928dbda00e7b4ef",
+    "src/app/main/lifecycle/window.test.ts": "5de8829e154cc9d79dad04c2bf7c7af402da670c7c995006c145b344e8f2e57e",
+    "src/app/main/lifecycle/window.ts": "c4df6a7a94c0a149d858f5516518bcafc9d9472c8562f9d64a42dceba72565ec",
+    "src/app/main/wiring/pdf-content.ts": "174ce96de29c5e8c6cafaf45070fe7a8361288c5ff90458a8e7c671924f033f7",
+    "src/app/renderer/workbench/attachment-controls.test.ts": "f6bcba8d4fea49397467ce652b04a1c1dc9cb2f30e968a640a3ba73e442016c3",
+    "src/app/renderer/workbench/attachment-preview.tsx": "50d83be5ed8b2b1d6e7c80c364208c58db4c346de9305205b69d700a04325a1d",
+    "src/modules/input/contracts/attachment.ts": "1aae2bcd191c074f35644032e738c72ac8d38db4630b06bebe48291d89268046",
+    "src/modules/input/core/public.ts": "774bea9ec37db88e60e795e18ef09f7fdcb6e1724e13e7893a09f07e529b7b59",
+    "src/modules/input/main/attachments/attachment-store.test.ts": "c6f9c4629b4467c43c96fe3c2c7cf90f870833f42752ca4a76fe6c7084f4ac63",
+    "src/modules/input/main/attachments/attachment-store.ts": "6692f15659d9d809c079d8a2a79ed5eadcb04780099cccc9ff9769d30eb362fe",
+    "src/modules/input/main/attachments/representation.test.ts": "0b72641be5c883cdf516686cc8e276dd9e4f2ff81a5fbe357e56962b86ba0b1a",
+    "src/modules/input/main/attachments/representation.ts": "c003e25da810d5ba37602acb21f68227db86b79b372edb57faa03c26acaf7f7f",
+    "src/platform/omp/resources/sdk-resource.ts": "7f66d8494dbc4f41f9846979348fce373eb7762048504468ceb55102ce245c0f",
+    "src/shared/i18n/locales/en-US/ui.ts": "ae594851d7f93633a29966e20679f0820337d464495ba888d771624dd7a7a271",
+    "src/shared/i18n/locales/zh-CN/ui.ts": "142cc10b915a9a1ebdf91ceed82e93c1c91cc35471c4f3968fc4ccb4478c8dfa",
+    "src/shared/messages/contracts.ts": "8f2cc6cf10b403db834d165612208a05dc1a56a80a76e87613bfdaadf30252f0",
+    "tests/integration/native-document-input.integration.test.ts": "e1953ccef8155f8c0fb9a77be1c11aab3f7810e5073816da327bc3541dbdeeac",
+    "tests/tooling/sdk-preparation.test.mjs": "7df1b14457063dcca26314f08ee699f2b5264f3f98ff37581ce1534ec570d422",
+    "src/modules/input/core/attachments/text-envelope.ts": "d9f0dad33ac7e8fee2202567b24e1ec9a77f1e95df80dadfea61416d275c4e80",
+    "patches/@oh-my-pi__pi-coding-agent@18.8.7.patch": "28944cc074fbaa7212ccac8c9a496266d51ef8a8dbf3f16cebc55cb5f1d4ef53"
+  },
+  "inputReportSha256": "cf070d4e3027743a29ed5a816a3a83d796b590aa3d301ab8771fe3364d39542a"
+}

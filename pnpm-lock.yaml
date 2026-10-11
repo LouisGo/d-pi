@@ -187,6 +187,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  '@oh-my-pi/pi-coding-agent@18.8.7': 28944cc074fbaa7212ccac8c9a496266d51ef8a8dbf3f16cebc55cb5f1d4ef53
+
 importers:
 
   .:
@@ -284,7 +287,7 @@ importers:
         version: 3.5.20
       '@oh-my-pi/pi-coding-agent':
         specifier: 18.8.7
-        version: 18.8.7(@types/node@24.19.0)
+        version: 18.8.7(patch_hash=28944cc074fbaa7212ccac8c9a496266d51ef8a8dbf3f16cebc55cb5f1d4ef53)(@types/node@24.19.0)
       '@oh-my-pi/pi-utils':
         specifier: 18.8.7
         version: 18.8.7
@@ -5097,7 +5100,7 @@ snapshots:
       '@oh-my-pi/omptype': 18.8.7
       '@oh-my-pi/pi-utils': 18.8.7
 
-  '@oh-my-pi/pi-coding-agent@18.8.7(@types/node@24.19.0)':
+  '@oh-my-pi/pi-coding-agent@18.8.7(patch_hash=28944cc074fbaa7212ccac8c9a496266d51ef8a8dbf3f16cebc55cb5f1d4ef53)(@types/node@24.19.0)':
     dependencies:
       '@babel/parser': 7.29.9
       '@oh-my-pi/omp-stats': 18.8.7

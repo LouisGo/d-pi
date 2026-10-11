@@ -44,7 +44,7 @@ describe("private immutable input preparation", () => {
   it("prepares XLSX through the fixed native document converter and retains its derived content for preview and clipboard", async () => {
     const convertDocument = vi.fn(async () => ({
       text: "## Sheet1\n| Name | Count |\n| --- | --- |\n| Alice | 7 |",
-      converterVersion: "omp18.8.7-markit-xlsx",
+      converterVersion: "omp18.8.7-markit-xlsx-coordinates-v1",
     }));
     const s = store({ convertDocument });
     const item = await s.importBytes(thread, {
@@ -698,4 +698,196 @@ it("retains the compressed resource across repeated @ preparation and refreshes 
     expect(changed.content.sources[0]?.inputDigest).not.toBe(
       first.content.sources[0]?.inputDigest,
     );
+});
+
+it("retains OCR evidence for empty scan PDFs and never accepts empty text-only content", async () => {
+  const s = store({
+    readReference: async () => ({
+      bytes: bytes("%PDF-1.7"),
+      version: "scan",
+      projectPath: directory,
+    }),
+    convertPdf: async () => ({
+      text: "",
+      pageCount: 1,
+      pagesNeedingOcr: [1],
+      converterVersion: "scan-fixture",
+    }),
+  });
+  const item = await s.importBytes(thread, {
+    name: "scan.pdf",
+    mimeType: "",
+    source: "file",
+    bytes: bytes("%PDF-1.7"),
+  });
+  expect(item).toMatchObject({
+    status: "failed",
+    reason: "pdf-ocr-required",
+    coverageGaps: ["ocr-pages:1"],
+    converterVersion: "scan-fixture",
+  });
+  expect(await s.setTextOnly(thread, item.id, true)).toMatchObject({
+    status: "failed",
+    reason: "pdf-ocr-required",
+  });
+  expect(await s.prepare(thread, item.token)).toMatchObject({
+    ok: false,
+    reason: "pdf-ocr-required",
+  });
+  const ref = await s.addReference(thread, "scan.pdf");
+  expect(await s.preview(thread, ref.id)).toMatchObject({
+    kind: "unavailable",
+    reason: "pdf-ocr-required",
+  });
+  expect(await s.prepare(thread, ref.token)).toMatchObject({
+    ok: false,
+    reason: "pdf-ocr-required",
+  });
+  expect(
+    (await s.list(thread)).find((value) => value.id === ref.id),
+  ).toMatchObject({
+    coverageGaps: ["ocr-pages:1"],
+    converterVersion: "scan-fixture",
+  });
+  await s.close();
+});
+it.each(["pdf", "xlsx"])(
+  "previews fresh project %s with read-only conversion and rechecks ownership after conversion",
+  async (extension) => {
+    let current = true;
+    let invalidate = false;
+    const convert = async () => {
+      if (invalidate) current = false;
+      return {
+        text: "fresh converted body",
+        converterVersion: "fixture",
+        pageCount: 1,
+        pagesNeedingOcr: [],
+      };
+    };
+    const s = store({
+      readReference: async () => ({
+        bytes:
+          extension === "pdf"
+            ? bytes("%PDF-1.7")
+            : new Uint8Array([80, 75, 3, 4]),
+        version: "v1",
+        projectPath: directory,
+        current: () => current,
+      }),
+      convertPdf: convert,
+      convertDocument: async () => {
+        const result = await convert();
+        return { text: result.text, converterVersion: result.converterVersion };
+      },
+    });
+    const ref = await s.addReference(thread, `fresh.${extension}`);
+    const before = (await s.list(thread)).find((item) => item.id === ref.id);
+    expect(await s.preview(thread, ref.id)).toMatchObject({
+      kind: "text",
+      text: "fresh converted body",
+    });
+    expect((await s.list(thread)).find((item) => item.id === ref.id)).toEqual(
+      before,
+    );
+    invalidate = true;
+    expect(await s.preview(thread, ref.id)).toEqual({
+      kind: "unavailable",
+      reason: "reference-denied",
+    });
+    await s.close();
+  },
+);
+
+it.each([
+  "transport-too-large",
+  "invalid-encoding",
+  "pdf-conversion-unavailable",
+])("keeps typed PDF conversion failure %s", async (reason) => {
+  const s = store({
+    convertPdf: async () => {
+      throw Error(reason);
+    },
+  });
+  const item = await s.importBytes(thread, {
+    name: "input.pdf",
+    mimeType: "",
+    source: "file",
+    bytes: bytes("%PDF-1.7"),
+  });
+  expect(item.reason).toBe(reason);
+  await s.close();
+});
+
+it("repairs restored legacy XLSX originals without rewriting copied frozen content", async () => {
+  const legacy = store({
+    convertDocument: async () => ({
+      text: "| Alpha | 123 | 7 |  |",
+      converterVersion: "omp18.8.7-markit-xlsx",
+    }),
+  });
+  const item = await legacy.importBytes(thread, {
+    name: "sparse.xlsx",
+    mimeType: "",
+    source: "file",
+    bytes: new Uint8Array([80, 75, 3, 4]),
+  });
+  const frozen = await legacy.prepare(thread, item.token);
+  const copiedId = randomUUID();
+  const payload = JSON.parse(
+    String(
+      database.connection
+        .prepare("SELECT payload FROM input_attachment WHERE id=?")
+        .get(item.id)?.payload,
+    ),
+  );
+  payload.attachment = {
+    ...payload.attachment,
+    id: copiedId,
+    threadId: otherThread,
+    token: attachmentToken(copiedId),
+    source: "paste",
+  };
+  database.connection
+    .prepare("INSERT INTO input_attachment VALUES(?,?,?)")
+    .run(copiedId, otherThread, JSON.stringify(payload));
+  const copy = { text: attachmentToken(copiedId), items: [{ id: copiedId }] };
+  await legacy.close();
+  const convertDocument = vi.fn(async () => ({
+    text: "| Alpha |  | 123 | 7 |",
+    converterVersion: "omp18.8.7-markit-xlsx-coordinates-v1",
+  }));
+  const restored = store({ convertDocument });
+  expect(await restored.preview(thread, item.id)).toMatchObject({
+    kind: "text",
+    text: "| Alpha |  | 123 | 7 |",
+  });
+  const prepared = await restored.prepare(thread, item.token);
+  expect(prepared).toMatchObject({
+    ok: true,
+    content: { message: expect.stringContaining("| Alpha |  | 123 | 7 |") },
+  });
+  expect(convertDocument).toHaveBeenCalledOnce();
+  expect(frozen).toMatchObject({
+    ok: true,
+    content: { message: expect.stringContaining("| Alpha | 123 | 7 |  |") },
+  });
+  expect(await restored.prepare(otherThread, copy.text)).toMatchObject({
+    ok: false,
+    reason: "document-conversion-outdated",
+  });
+  expect(await restored.preview(otherThread, copy.items[0].id)).toEqual({
+    kind: "unavailable",
+    reason: "document-conversion-outdated",
+  });
+  expect(convertDocument).toHaveBeenCalledOnce();
+  const copied = (await restored.list(otherThread)).find(
+    (value) => value.id === copy.items[0]!.id,
+  );
+  expect(copied?.converterVersion).toBe("omp18.8.7-markit-xlsx");
+  expect(await restored.retry(otherThread, copy.items[0].id)).toMatchObject({
+    status: "ready",
+    converterVersion: "omp18.8.7-markit-xlsx-coordinates-v1",
+  });
+  await restored.close();
 });

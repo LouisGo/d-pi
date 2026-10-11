@@ -1,6 +1,9 @@
 import type { HistoryEntry } from "../../../modules/conversation/contracts/public";
 import type { SubmissionReceipt } from "../../../modules/execution/contracts/public";
-import { readDraftAttachmentTokens } from "../../../modules/input/core/public";
+import {
+  attachmentTextHeaders,
+  readDraftAttachmentTokens,
+} from "../../../modules/input/core/public";
 import type { NativeSessionBinding } from "../../../modules/threads/contracts/public";
 
 /** Presentation equivalence only; never infers a receipt/native identity or execution outcome. */
@@ -48,12 +51,7 @@ export function presentSavedInput(
       fileSources.length;
     const files = fileSources.map((source) => {
       const name = source.path ?? source.name;
-      const headers = [
-        `\n[${name}]\n`,
-        `\n[${name}; directory listing]\n`,
-        `\n[${name}; PDF text]\n`,
-        `\n[${name}; PDF text; explicit text-only]\n`,
-      ];
+      const headers = attachmentTextHeaders(name);
       const matching = headers.filter((header) => entry.text.includes(header));
       const header = matching.length === 1 ? matching[0] : undefined;
       const at = header ? entry.text.indexOf(header) : -1;

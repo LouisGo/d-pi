@@ -15,6 +15,7 @@ it("permits clipboard writes only from the current application main frame and de
   const setRequest = vi.fn<(handler: RequestHandler) => void>();
   const setCheck = vi.fn<(handler: CheckHandler) => void>();
   const contents = {
+    isDestroyed: () => false,
     getURL: () => "file:///app/renderer/index.html",
     setWindowOpenHandler: vi.fn(),
     on: vi.fn(),
@@ -23,7 +24,10 @@ it("permits clipboard writes only from the current application main frame and de
       setPermissionCheckHandler: setCheck,
     },
   };
-  const current = { webContents: contents } as unknown as BrowserWindow;
+  const current = {
+    webContents: contents,
+    isDestroyed: () => false,
+  } as unknown as BrowserWindow;
   secureWindow(current);
   const request = setRequest.mock.calls[0]?.[0];
   expect(request).toBeDefined();
@@ -80,5 +84,89 @@ it("permits clipboard writes only from the current application main frame and de
       ...details,
       requestingUrl: "https://external.example",
     }),
+  ).toBe(false);
+});
+
+it("denies late clipboard callbacks after destruction and preserves the newer shared-session owner", () => {
+  let request: RequestHandler | undefined;
+  let check: CheckHandler | undefined;
+  const session = {
+    setPermissionRequestHandler: (handler: RequestHandler) => {
+      request = handler;
+    },
+    setPermissionCheckHandler: (handler: CheckHandler) => {
+      check = handler;
+    },
+  };
+  function fixture() {
+    let destroyed = false;
+    const listeners = new Map<string, () => void>();
+    const contents = {
+      session,
+      isDestroyed: () => destroyed,
+      getURL: () => {
+        if (destroyed) throw Error("Object has been destroyed");
+        return "file:///app/index.html";
+      },
+      setWindowOpenHandler: vi.fn(),
+      on: (name: string, callback: () => void) => listeners.set(name, callback),
+    };
+    const current = {
+      isDestroyed: () => destroyed,
+      get webContents() {
+        if (destroyed) throw Error("Object has been destroyed");
+        return contents;
+      },
+    } as unknown as BrowserWindow;
+    secureWindow(current);
+    return {
+      contents,
+      destroy: () => {
+        destroyed = true;
+        listeners.get("destroyed")?.();
+      },
+    };
+  }
+  const first = fixture();
+  const oldCheck = check!;
+  const oldRequest = request!;
+  const details = {
+    isMainFrame: true,
+    requestingUrl: "file:///app/index.html",
+  };
+  const second = fixture();
+  first.destroy();
+  expect(
+    oldCheck(
+      first.contents as unknown as BrowserWindow["webContents"],
+      "clipboard-sanitized-write",
+      "file://",
+      details,
+    ),
+  ).toBe(false);
+  const result = vi.fn();
+  oldRequest(
+    first.contents as unknown as BrowserWindow["webContents"],
+    "clipboard-sanitized-write",
+    result,
+    details,
+  );
+  expect(result).toHaveBeenCalledWith(false);
+  expect(
+    check!(
+      second.contents as unknown as BrowserWindow["webContents"],
+      "clipboard-sanitized-write",
+      "file://",
+      details,
+    ),
+  ).toBe(true);
+  second.destroy();
+  expect(
+    check!(
+      second.contents as unknown as BrowserWindow["webContents"],
+      "clipboard-sanitized-write",
+      "file://",
+      details,
+    ),
   ).toBe(false);
 });

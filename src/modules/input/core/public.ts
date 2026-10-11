@@ -7,6 +7,10 @@ export {
 } from "./attachments/attachment-model";
 export { EditorHistoryModel } from "./attachments/editor-history-model";
 export {
+  attachmentTextHeader,
+  attachmentTextHeaders,
+} from "./attachments/text-envelope";
+export {
   attachmentToken,
   readAttachmentTokens,
   readDraftAttachmentTokens,

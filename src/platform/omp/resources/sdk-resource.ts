@@ -33,6 +33,9 @@ const ManifestSchema = z.object({
     "native-subagent-configuration.mjs": z.string(),
     "pdf-content.mjs": z.string(),
     "document-content.mjs": z.string().optional(),
+    "node_modules/@oh-my-pi/pi-coding-agent/src/markit/converters/xlsx.ts": z
+      .string()
+      .optional(),
   }),
 });
 export async function managedSdkRuntime(
