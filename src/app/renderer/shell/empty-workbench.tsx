@@ -11,7 +11,6 @@ export function EmptyWorkbench({ model }: { model: AppModel }) {
       title={t("app.empty.title")}
       description={t("app.empty.description")}
       action={<ChooseProjectButton model={model} />}
-      note={t("app.empty.note")}
     />
   );
 }

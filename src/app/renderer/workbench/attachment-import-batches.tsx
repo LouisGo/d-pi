@@ -1,8 +1,9 @@
 import type { Editor } from "@tiptap/core";
+import { useEffect, useState } from "react";
 import { useStore } from "zustand";
 import type { AttachmentImports } from "../../../modules/input/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
-import { Button } from "../../../modules/ui/renderer/public";
+import { Button, LoadingIndicator } from "../../../modules/ui/renderer/public";
 
 export function AttachmentImportBatches({
   imports,
@@ -41,16 +42,26 @@ export function AttachmentImportBatches({
         const jobs = batch.jobs.filter(
           (job) =>
             job.adoption !== "settled" &&
-            (job.adoption === "pending" ||
-              job.reason ||
-              job.phase === "cancelling" ||
-              job.phase === "cancelled"),
+            (job.reason ||
+              job.phase === "failed" ||
+              (job.phase === "ready" && job.adoption === "pending")),
         );
-        if (!jobs.length) return null;
+
         const cancellable = jobs.some((job) => job.adoption === "pending");
         const pending = batch.jobs.some((job) =>
           ["queued", "reading", "preparing", "cancelling"].includes(job.phase),
         );
+        if (!jobs.length)
+          return (
+            <PendingImportFeedback
+              key={batch.id}
+              pending={pending}
+              identity={batch.id}
+              onCancel={() => {
+                if (isCurrent()) imports.cancel(batch.id, true);
+              }}
+            />
+          );
         const ready = batch.jobs.some(
           (job) => job.phase === "ready" && job.adoption === "pending",
         );
@@ -61,6 +72,13 @@ export function AttachmentImportBatches({
             className="composer-import-notice"
             aria-label={t("attachment.import.batch")}
           >
+            <PendingImportFeedback
+              pending={pending}
+              identity={batch.id}
+              onCancel={() => {
+                if (isCurrent()) imports.cancel(batch.id, true);
+              }}
+            />
             <ol className="composer-import-jobs">
               {jobs.map((job) => (
                 <li key={job.id} className="composer-import-job">
@@ -73,13 +91,6 @@ export function AttachmentImportBatches({
                         ? t("attachment.import.settlementFailed")
                         : t(`attachment.import.${job.phase}`)}
                     </span>
-                    {job.phase === "reading" && (
-                      <progress
-                        aria-label={t("attachment.import.reading")}
-                        value={job.loaded}
-                        max={Math.max(1, job.total)}
-                      />
-                    )}
                     {job.phase === "failed" &&
                       job.reason !== "source-too-large" && (
                         <Button
@@ -209,5 +220,37 @@ export function AttachmentImportBatches({
         );
       })}
     </>
+  );
+}
+
+function PendingImportFeedback({
+  pending,
+  identity,
+  onCancel,
+}: {
+  pending: boolean;
+  identity: string;
+  onCancel: () => void;
+}) {
+  const { t } = useI18n();
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    setVisible(false);
+    if (!pending) return;
+    const timer = setTimeout(() => setVisible(true), 600);
+    return () => clearTimeout(timer);
+  }, [pending, identity]);
+  if (!pending || !visible) return null;
+  return (
+    <div className="flex items-center gap-2">
+      <LoadingIndicator
+        pending
+        label={t("attachment.import.batch")}
+        identity={identity}
+      />
+      <Button variant="ghost" onClick={onCancel}>
+        {t("attachment.import.cancelAction")}
+      </Button>
+    </div>
   );
 }

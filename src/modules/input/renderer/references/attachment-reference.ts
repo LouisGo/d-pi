@@ -58,26 +58,22 @@ export const AttachmentReference = Node.create({
     const status =
       node.attrs.status === "failed"
         ? "failed"
-        : node.attrs.status === "preparing"
-          ? "preparing"
-          : Array.isArray(node.attrs.coverageGaps) &&
-              node.attrs.coverageGaps.length
-            ? "partial"
-            : null;
+        : Array.isArray(node.attrs.coverageGaps) &&
+            node.attrs.coverageGaps.length
+          ? "partial"
+          : null;
     const notice =
       status === "failed"
         ? reason.success
           ? t(`attachment.reason.${reason.data}`)
           : t("attachment.failed")
-        : status === "preparing"
-          ? t("attachment.preparing")
-          : status === "partial"
-            ? t(
-                node.attrs.textOnly
-                  ? "attachment.textOnlyNotice"
-                  : "attachment.coverageGap",
-              )
-            : null;
+        : status === "partial"
+          ? t(
+              node.attrs.textOnly
+                ? "attachment.textOnlyNotice"
+                : "attachment.coverageGap",
+            )
+          : null;
     const consent =
       node.attrs.textOnly &&
       Array.isArray(node.attrs.coverageGaps) &&
@@ -112,11 +108,9 @@ export const AttachmentReference = Node.create({
                 kind: status,
                 label: notice,
                 paths: [
-                  status === "preparing"
-                    ? "M12 3a9 9 0 1 1-9 9M12 6v6l4 2"
-                    : status === "failed"
-                      ? "M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM12 7v6m0 4h.01"
-                      : "M12 3 2 21h20ZM12 9v5m0 4h.01",
+                  status === "failed"
+                    ? "M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM12 7v6m0 4h.01"
+                    : "M12 3 2 21h20ZM12 9v5m0 4h.01",
                 ],
               },
             }

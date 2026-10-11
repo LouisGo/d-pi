@@ -11,7 +11,6 @@
     .trace,
     .failure,
     .thread-identity,
-    .directory-info > span,
     .file-meta:not(:has(> .ui-disclosure)),
     .file-meta > .ui-disclosure > :not(summary),
     .file-result > [role="status"],

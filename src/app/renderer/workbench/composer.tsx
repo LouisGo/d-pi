@@ -47,6 +47,7 @@ import {
   ComposerChevronIcon,
   ComposerModelIcon,
 } from "../components/icons/composer";
+import type { ActionMenuEntry } from "../components/ui/action-menu";
 import type { AppModel } from "../wiring/model";
 import type { ThreadModel } from "../wiring/thread-model";
 import {
@@ -65,6 +66,7 @@ export function Composer({
   onAttachmentApplied,
   onChooseModel,
   onOpenPermissions,
+  moreActions,
   hidden = false,
 }: {
   thread: ThreadModel;
@@ -77,6 +79,7 @@ export function Composer({
   onAttachmentApplied?: (id: string) => void;
   onChooseModel?: (() => void) | undefined;
   onOpenPermissions?: (() => void) | undefined;
+  moreActions?: readonly ActionMenuEntry[];
   hidden?: boolean;
 }) {
   const { controller, submission, runtime } = thread;
@@ -480,6 +483,7 @@ export function Composer({
       </div>
       <div className="composer-footer">
         <ComposerToolbar
+          moreActions={moreActions ?? []}
           model={
             runtime ? (
               model.configuration ? (

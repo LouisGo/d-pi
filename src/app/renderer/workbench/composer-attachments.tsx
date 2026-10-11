@@ -31,11 +31,7 @@ export function AttachmentStrip({
         {items.map((item) => {
           const notice = item.reason
             ? t(`attachment.reason.${item.reason}`)
-            : item.status === "preparing"
-              ? t("attachment.preparing")
-              : item.imageTransformation
-                ? t("attachment.imageCompressed")
-                : null;
+            : null;
           return (
             <li key={item.id} className="attachment-tile">
               <Button

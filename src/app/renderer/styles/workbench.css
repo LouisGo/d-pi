@@ -264,8 +264,6 @@
   .thread-workspace {
     container-type: inline-size;
   }
-  .thread-setup,
-  .reading-navigation,
   .composer {
     width: 100%;
     max-width: var(--content-width);

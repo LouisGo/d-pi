@@ -56,11 +56,4 @@
     overflow: auto;
     overscroll-behavior: contain;
   }
-  .thread-tools-content .thread-setup {
-    max-height: none;
-    overflow: visible;
-  }
-  .thread-tools-content > * + * {
-    margin-top: var(--layout-gap);
-  }
 }

@@ -311,3 +311,10 @@ it("keeps authoritative PDF MIME presentation even when the source filename ends
     "pdf",
   );
 });
+
+it("keeps a preparing file as a plain reference while preserving the real state", () => {
+  const { item, element } = fixture("file", false, { status: "preparing" });
+  expect(element?.querySelector("[data-composer-tag-status]")).toBeNull();
+  expect(element?.getAttribute("aria-label")).not.toContain("Preparing");
+  expect(item.status).toBe("preparing");
+});

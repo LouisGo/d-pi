@@ -155,3 +155,30 @@ it("describes expanded keyboard behavior while retaining the collapsed send-key 
     value.labels.enterNewlineShortcut,
   );
 });
+
+it("keeps secondary reading navigation in the existing more menu", async () => {
+  const openHistory = vi.fn();
+  await act(() =>
+    root.render(
+      createElement(ComposerToolbar, {
+        ...props(),
+        moreActions: [
+          {
+            kind: "action",
+            id: "history",
+            label: "History",
+            onSelect: openHistory,
+          },
+        ],
+      }),
+    ),
+  );
+  expect(document.body.textContent).not.toContain("History");
+  await act(() => button("More composer actions").click());
+  const entry = [
+    ...document.querySelectorAll<HTMLElement>("[role=menuitem]"),
+  ].find((node) => node.textContent?.includes("History"));
+  expect(entry).toBeDefined();
+  await act(() => entry?.click());
+  expect(openHistory).toHaveBeenCalledOnce();
+});

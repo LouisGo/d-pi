@@ -5,7 +5,7 @@ import {
   ComposerExpandIcon,
   MoreActionsIcon,
 } from "../components/icons/composer";
-import { ActionMenu } from "../components/ui/action-menu";
+import { ActionMenu, type ActionMenuEntry } from "../components/ui/action-menu";
 import { IconButton } from "../components/ui/icon-button";
 
 export type ComposerToolbarLabels = {
@@ -21,6 +21,7 @@ export type ComposerToolbarLabels = {
 };
 export type ComposerToolbarProps = {
   model: ReactNode;
+  moreActions?: readonly ActionMenuEntry[];
   access?: ReactNode;
   primaryAction?: ReactNode;
   expanded: boolean;
@@ -35,6 +36,7 @@ export type ComposerToolbarProps = {
 };
 export function ComposerToolbar({
   model,
+  moreActions = [],
   access,
   primaryAction,
   expanded,
@@ -98,6 +100,10 @@ export function ComposerToolbar({
           label={labels.more}
           icon={<MoreActionsIcon size={18} />}
           items={[
+            ...moreActions,
+            ...(moreActions.length
+              ? [{ kind: "separator" as const, id: "thread-actions" }]
+              : []),
             {
               kind: "action",
               id: "reference",

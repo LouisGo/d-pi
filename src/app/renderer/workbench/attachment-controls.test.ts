@@ -1265,7 +1265,12 @@ it("offers storage checking and explicit unreferenced cleanup, locates broken or
     '[data-attachment-storage-action="check"]',
   );
   expect(check).not.toBeNull();
-  expect(check?.closest("section")?.textContent).toContain("saved.txt");
+  const maintenance = check?.closest("details");
+  expect(maintenance?.open).toBe(false);
+  expect(document.body.querySelector("[role=dialog]")?.textContent).toContain(
+    "saved.txt",
+  );
+  await act(() => maintenance?.querySelector("summary")?.click());
   await act(async () => {
     check?.click();
     await new Promise((resolve) => setTimeout(resolve, 20));

@@ -71,11 +71,7 @@ export function GeneralSettings({ model }: { model: AppModel }) {
   return (
     <>
       <SettingsGroup title={t("settings.application")}>
-        <SettingRow
-          label={t("app.toolbar.language")}
-          htmlFor={languageId}
-          description={t("settings.languageDescription")}
-        >
+        <SettingRow label={t("app.toolbar.language")} htmlFor={languageId}>
           <Select
             id={languageId}
             value={preference}

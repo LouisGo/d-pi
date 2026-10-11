@@ -9,7 +9,6 @@ import {
   useSyncExternalStore,
 } from "react";
 import { useStore } from "zustand";
-import { FolderIcon } from "@/components/icons/common";
 import type { FrozenSelection } from "../../../modules/files/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import { Button, LoadingIndicator } from "../../../modules/ui/renderer/public";
@@ -26,7 +25,6 @@ import type { ThreadSelectionState } from "../wiring/model";
 import { locateAttention } from "./attention-location";
 import { Composer } from "./composer";
 import { FilePanel } from "./file-panel";
-import { ModelControls } from "./model-controls";
 import { RuntimeInspection, RuntimePanel } from "./runtime-panel";
 import { SubagentControls } from "./subagent-controls";
 import type { WorkbenchProps } from "./types";
@@ -131,6 +129,7 @@ export function ThreadWorkbench({
     >
       <ThreadContent
         {...props}
+        workspace={workspace}
         readingFocus={readingFocus}
         onReadingFocusChange={setReadingFocus}
         onReceiptAnchorChange={onReceiptAnchorChange}
@@ -146,11 +145,13 @@ const ThreadContent = memo(function ThreadContent({
   editor,
   readingView,
   onReadingViewChange,
+  workspace,
   readingFocus,
   onReadingFocusChange,
   onReceiptAnchorChange,
   onReadingTakeover,
 }: ThreadWorkbenchProps & {
+  workspace: RefObject<HTMLElement | null>;
   readingFocus: boolean;
   onReadingFocusChange: (value: boolean) => void;
   onReadingTakeover: () => void;
@@ -182,31 +183,35 @@ const ThreadContent = memo(function ThreadContent({
       [thread],
     ),
   );
-  const toolsTrigger = useRef<HTMLButtonElement>(null);
-  const toolsReturnFocus = useRef<HTMLElement | null>(null);
-  const [toolsOpen, setToolsOpen] = useState(false);
-  const [choosingModel, setChoosingModel] = useState(false);
-  const [choosingHistory, setChoosingHistory] = useState(false);
-  const historyTrigger = useRef<HTMLButtonElement>(null);
-  const modelDisclosure = useRef<HTMLDetailsElement>(null);
-  const chooseModel = useCallback(() => {
-    toolsReturnFocus.current =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : toolsTrigger.current;
-    setChoosingHistory(false);
-    setChoosingModel(true);
-    setToolsOpen(true);
-  }, []);
-  const openPermissions = useCallback(() => {
-    toolsReturnFocus.current =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : toolsTrigger.current;
-    setChoosingHistory(false);
-    setChoosingModel(false);
-    setToolsOpen(true);
-  }, []);
+  const { openProviders } = useContext(ConversationVisibilityContext);
+  const returnFocus = useRef<HTMLElement | null>(null);
+  const [dialog, setDialog] = useState<"permissions" | "subagents" | null>(
+    null,
+  );
+  const restoreComposerFocus = useRef(false);
+  const menuTrigger = () =>
+    workspace.current?.querySelector<HTMLButtonElement>(
+      '[data-slot="composer-toolbar-actions"] button[aria-haspopup="menu"]',
+    ) ?? null;
+  useLayoutEffect(() => {
+    if (readingView === "conversation" && restoreComposerFocus.current) {
+      restoreComposerFocus.current = false;
+      menuTrigger()?.focus({ preventScroll: true });
+    }
+  }, [readingView]);
+  const openDialog = (kind: "permissions" | "subagents") => {
+    returnFocus.current =
+      kind === "subagents"
+        ? menuTrigger()
+        : document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : null;
+    setDialog(kind);
+  };
+  const returnToConversation = useCallback(() => {
+    restoreComposerFocus.current = true;
+    onReadingViewChange("conversation");
+  }, [onReadingViewChange]);
   const [selectionAttachment, setSelectionAttachment] = useState<{
     id: string;
     threadId: string;
@@ -228,93 +233,44 @@ const ThreadContent = memo(function ThreadContent({
   );
   return (
     <>
-      <div className="thread-toolbar">
-        <Button
-          ref={toolsTrigger}
-          variant="ghost"
-          data-thread-tools-trigger=""
-          onClick={(event) => {
-            toolsReturnFocus.current = event.currentTarget;
-            setChoosingHistory(false);
-            setChoosingModel(false);
-            setToolsOpen(true);
-          }}
-        >
-          {t("app.reading.tools")}
-        </Button>
-        <Modal
-          open={toolsOpen}
-          onClose={() => setToolsOpen(false)}
-          title={t("app.reading.tools")}
-          closeLabel={t("app.layout.close")}
-          returnFocus={toolsReturnFocus}
-          initialFocus={() => {
-            if (choosingHistory) return historyTrigger.current;
-            const details = modelDisclosure.current;
-            if (!choosingModel || !details) return null;
-            details.open = true;
-            return details.querySelector<HTMLElement>("[data-slot=select]");
-          }}
-        >
-          <div className="thread-tools-content">
-            <div className="thread-setup">
-              <div className="directory-info" title={thread.context.directory}>
-                <FolderIcon />
-                <h1>
-                  {thread.context.directory.split("/").filter(Boolean).at(-1)}
-                </h1>
-                <span className="muted">{thread.context.directory}</span>
-              </div>
-              {model.configuration && (
-                <ModelControls
-                  thread={thread}
-                  bridge={model.configuration}
-                  disclosureRef={modelDisclosure}
-                />
-              )}
-              {model.configuration && (
-                <SubagentControls
-                  key={thread.context.threadId}
-                  thread={thread}
-                  bridge={model.configuration}
-                />
-              )}
-            </div>
-            {thread.runtime && (
-              <RuntimeInspection
-                model={thread.runtime}
-                origin={thread.context.origin}
-              />
-            )}
-            <ReadingNavigation
-              readingView={readingView}
-              historyButtonRef={historyTrigger}
-              onReadingViewChange={(view) => {
-                // The originating live/history control may become hidden when
-                // changing views. Return to the stable toolbar trigger.
-                toolsReturnFocus.current = toolsTrigger.current;
-                onReadingViewChange(view);
-                setToolsOpen(false);
-              }}
-            />
-            <Button
-              variant="ghost"
-              aria-pressed={readingFocus}
-              onClick={() => {
-                onReadingFocusChange(!readingFocus);
-                setToolsOpen(false);
-              }}
-            >
-              {t("app.reading.focus")}
-            </Button>
-          </div>
-        </Modal>
-        {readingFocus && (
-          <Button variant="ghost" onClick={() => onReadingFocusChange(false)}>
-            {t("app.reading.restoreControls")}
-          </Button>
+      <Modal
+        open={dialog !== null}
+        onClose={() => setDialog(null)}
+        title={t(
+          dialog === "subagents"
+            ? "subagents.heading"
+            : "composer.projectAccess",
         )}
-      </div>
+        closeLabel={t("app.layout.close")}
+        returnFocus={returnFocus}
+      >
+        {dialog === "permissions" && thread.runtime && (
+          <RuntimeInspection
+            model={thread.runtime}
+            origin={thread.context.origin}
+          />
+        )}
+        {dialog === "subagents" && model.configuration && (
+          <SubagentControls
+            key={thread.context.threadId}
+            thread={thread}
+            bridge={model.configuration}
+          />
+        )}
+      </Modal>
+      {(readingView !== "conversation" || readingFocus) && (
+        <div className="thread-toolbar">
+          <Button
+            variant="ghost"
+            onClick={() => {
+              onReadingFocusChange(false);
+              returnToConversation();
+            }}
+          >
+            {t("ui.history.returnLive")}
+          </Button>
+        </div>
+      )}
       <div
         className="thread-reading"
         data-attention-target="result"
@@ -405,10 +361,7 @@ const ThreadContent = memo(function ThreadContent({
               positions={thread.readingSources}
               active={readingView === "history"}
               threadId={thread.context.threadId}
-              onReturnLive={() => {
-                onReadingViewChange("conversation");
-                toolsTrigger.current?.focus({ preventScroll: true });
-              }}
+              onReturnLive={returnToConversation}
             />
           )}
         </ReadingPane>
@@ -418,8 +371,38 @@ const ThreadContent = memo(function ThreadContent({
         model={model}
         selectionAttachment={selectionAttachment}
         onAttachmentApplied={onAttachmentApplied}
-        onChooseModel={chooseModel}
-        onOpenPermissions={openPermissions}
+        onChooseModel={openProviders}
+        onOpenPermissions={() => openDialog("permissions")}
+        moreActions={[
+          {
+            kind: "action",
+            id: "files",
+            label: t("ui.files.section"),
+            onSelect: () => onReadingViewChange("files"),
+          },
+          {
+            kind: "action",
+            id: "history",
+            label: t("app.reading.history"),
+            onSelect: () => onReadingViewChange("history"),
+          },
+          {
+            kind: "action",
+            id: "submissions",
+            label: t("app.reading.submissions"),
+            onSelect: () => onReadingViewChange("submissions"),
+          },
+          ...(model.configuration
+            ? [
+                {
+                  kind: "action" as const,
+                  id: "subagents",
+                  label: t("subagents.heading"),
+                  onSelect: () => openDialog("subagents"),
+                },
+              ]
+            : []),
+        ]}
         hidden={readingFocus}
       />
     </>
@@ -432,54 +415,5 @@ function DirectoryUnavailable() {
     <p className="failure" role="alert">
       {t("app.draft.directoryUnavailable")}
     </p>
-  );
-}
-
-function ReadingNavigation({
-  readingView,
-  onReadingViewChange,
-  historyButtonRef,
-}: Pick<ThreadWorkbenchProps, "readingView" | "onReadingViewChange"> & {
-  historyButtonRef: RefObject<HTMLButtonElement | null>;
-}) {
-  const { t } = useI18n();
-  return (
-    <nav
-      className="reading-navigation"
-      aria-label={t("app.reading.navigation")}
-    >
-      <div className="reading-tabs">
-        <Button
-          variant="navigation"
-          aria-pressed={readingView === "conversation"}
-          onClick={() => onReadingViewChange("conversation")}
-        >
-          {t("ui.conversation.heading")}
-        </Button>
-        <Button
-          variant="navigation"
-          aria-pressed={readingView === "files"}
-          onClick={() => onReadingViewChange("files")}
-        >
-          {t("ui.files.section")}
-        </Button>
-        <Button
-          variant="navigation"
-          aria-pressed={readingView === "submissions"}
-          onClick={() => onReadingViewChange("submissions")}
-        >
-          {t("app.reading.submissions")}
-        </Button>
-        <Button
-          variant="navigation"
-          ref={historyButtonRef}
-          data-reading-view="history"
-          aria-pressed={readingView === "history"}
-          onClick={() => onReadingViewChange("history")}
-        >
-          {t("app.reading.history")}
-        </Button>
-      </div>
-    </nav>
   );
 }

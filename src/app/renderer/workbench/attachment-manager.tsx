@@ -61,121 +61,30 @@ export function AttachmentManager({
       closeLabel={t("attachment.closeManager")}
     >
       <div className="grid gap-4">
-        <section>
-          <h3>{t("attachment.storage")}</h3>
-          <div className="grid gap-2 py-2">
-            <p className="muted">{t("attachment.storagePolicy")}</p>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="ghost"
-                data-attachment-storage-action="check"
-                disabled={sourceFrozen || pending > 0 || importing > 0}
-                onClick={() => void run({ kind: "check-storage" })}
-              >
-                {t("attachment.checkStorage")}
-              </Button>
-              <Button
-                variant="ghost"
-                data-attachment-storage-action="clean"
-                disabled={sourceFrozen || pending > 0 || importing > 0}
-                onClick={() => void run({ kind: "clean-storage" })}
-              >
-                {t("attachment.cleanStorage")}
-              </Button>
-            </div>
-            {storageReport && (
-              <div
-                data-attachment-storage-report=""
-                className="grid gap-2"
-                role="status"
-                aria-live="polite"
-              >
-                <p>
-                  {t("attachment.storageSummary", {
-                    checked: storageReport.checkedObjects,
-                    retained: storageReport.retainedObjects,
-                    unused: storageReport.unreferencedObjects,
-                    remaining: storageReport.remainingObjects,
-                  })}
-                </p>
-                <p>
-                  {t("attachment.storageDeleted", {
-                    count: storageReport.deletedObjects,
-                    bytes: storageReport.deletedBytes,
-                  })}
-                </p>
-                {storageReport.issues.length > 0 && (
-                  <>
-                    <ul className="grid max-h-40 gap-1 overflow-auto">
-                      {storageReport.issues.map((issue) => (
-                        <li
-                          key={`${issue.attachmentId}:${issue.object}:${issue.digest ?? ""}`}
-                          className="break-all"
-                        >
-                          <strong>{issue.name}</strong> ·{" "}
-                          {t(
-                            issue.object === "original"
-                              ? "attachment.storageOriginal"
-                              : "attachment.storageDerived",
-                          )}
-                          : {t(`attachment.reason.${issue.reason}`)}
-                        </li>
-                      ))}
-                    </ul>
-                    <p>{t("attachment.storageReattach")}</p>
-                    <Button
-                      variant="ghost"
-                      disabled={
-                        sourceFrozen ||
-                        pending > 0 ||
-                        importing > 0 ||
-                        !editorAvailable ||
-                        !!failed
-                      }
-                      onClick={() => void run({ kind: "choose-import" }, true)}
-                    >
-                      {t("attachment.add")}
-                    </Button>
-                  </>
-                )}
-                {(storageReport.manifestScanIncomplete ||
-                  storageReport.referenceScanIncomplete) && (
-                  <p>{t("attachment.storageReferencePending")}</p>
-                )}
-                {storageReport.discoveryPending && (
-                  <p>{t("attachment.storageDiscoveryPending")}</p>
-                )}
-                {storageReport.issuesTruncated && (
-                  <p>{t("attachment.storageIssuesTruncated")}</p>
-                )}
-              </div>
-            )}
-            {!!unused.length && (
-              <Disclosure>
-                <DisclosureTrigger>{t("attachment.library")}</DisclosureTrigger>
-                <div className="grid max-h-40 gap-2 overflow-auto">
-                  {unused.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center justify-between gap-2"
-                    >
-                      <span className="break-all">{item.name}</span>
-                      <Button
-                        variant="ghost"
-                        disabled={sourceFrozen}
-                        onClick={() => insert(item)}
-                      >
-                        {t("attachment.insert")}
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </Disclosure>
-            )}
-          </div>
-        </section>
-        {active.length > 0 && (
+        {!!unused.length && (
           <Disclosure>
+            <DisclosureTrigger>{t("attachment.library")}</DisclosureTrigger>
+            <div className="grid max-h-40 gap-2 overflow-auto">
+              {unused.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between gap-2"
+                >
+                  <span className="break-all">{item.name}</span>
+                  <Button
+                    variant="ghost"
+                    disabled={sourceFrozen}
+                    onClick={() => insert(item)}
+                  >
+                    {t("attachment.insert")}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </Disclosure>
+        )}
+        {active.length > 0 && (
+          <Disclosure open>
             <DisclosureTrigger>{t("attachment.details")}</DisclosureTrigger>
             <ol
               className="grid max-h-40 gap-2 overflow-auto"
@@ -349,6 +258,97 @@ export function AttachmentManager({
             </ol>
           </Disclosure>
         )}
+        <Disclosure>
+          <DisclosureTrigger>{t("attachment.storage")}</DisclosureTrigger>
+          <div className="grid gap-2 py-2">
+            <p className="muted">{t("attachment.storagePolicy")}</p>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="ghost"
+                data-attachment-storage-action="check"
+                disabled={sourceFrozen || pending > 0 || importing > 0}
+                onClick={() => void run({ kind: "check-storage" })}
+              >
+                {t("attachment.checkStorage")}
+              </Button>
+              <Button
+                variant="ghost"
+                data-attachment-storage-action="clean"
+                disabled={sourceFrozen || pending > 0 || importing > 0}
+                onClick={() => void run({ kind: "clean-storage" })}
+              >
+                {t("attachment.cleanStorage")}
+              </Button>
+            </div>
+            {storageReport && (
+              <div
+                data-attachment-storage-report=""
+                className="grid gap-2"
+                role="status"
+                aria-live="polite"
+              >
+                <p>
+                  {t("attachment.storageSummary", {
+                    checked: storageReport.checkedObjects,
+                    retained: storageReport.retainedObjects,
+                    unused: storageReport.unreferencedObjects,
+                    remaining: storageReport.remainingObjects,
+                  })}
+                </p>
+                <p>
+                  {t("attachment.storageDeleted", {
+                    count: storageReport.deletedObjects,
+                    bytes: storageReport.deletedBytes,
+                  })}
+                </p>
+                {storageReport.issues.length > 0 && (
+                  <>
+                    <ul className="grid max-h-40 gap-1 overflow-auto">
+                      {storageReport.issues.map((issue) => (
+                        <li
+                          key={`${issue.attachmentId}:${issue.object}:${issue.digest ?? ""}`}
+                          className="break-all"
+                        >
+                          <strong>{issue.name}</strong> ·{" "}
+                          {t(
+                            issue.object === "original"
+                              ? "attachment.storageOriginal"
+                              : "attachment.storageDerived",
+                          )}
+                          : {t(`attachment.reason.${issue.reason}`)}
+                        </li>
+                      ))}
+                    </ul>
+                    <p>{t("attachment.storageReattach")}</p>
+                    <Button
+                      variant="ghost"
+                      disabled={
+                        sourceFrozen ||
+                        pending > 0 ||
+                        importing > 0 ||
+                        !editorAvailable ||
+                        !!failed
+                      }
+                      onClick={() => void run({ kind: "choose-import" }, true)}
+                    >
+                      {t("attachment.add")}
+                    </Button>
+                  </>
+                )}
+                {(storageReport.manifestScanIncomplete ||
+                  storageReport.referenceScanIncomplete) && (
+                  <p>{t("attachment.storageReferencePending")}</p>
+                )}
+                {storageReport.discoveryPending && (
+                  <p>{t("attachment.storageDiscoveryPending")}</p>
+                )}
+                {storageReport.issuesTruncated && (
+                  <p>{t("attachment.storageIssuesTruncated")}</p>
+                )}
+              </div>
+            )}
+          </div>
+        </Disclosure>
       </div>
     </Modal>
   );

@@ -523,11 +523,6 @@ export function AttachmentControls({
   }
   return (
     <div className="composer-context">
-      {(pending > 0 || (!resolutionReady && list.isFetching)) && (
-        <p className="muted" role="status">
-          {t("attachment.preparing")}
-        </p>
-      )}
       <AttachmentStrip
         items={active.filter(
           (item): item is Attachment => !!item && isDetachedImage(item),

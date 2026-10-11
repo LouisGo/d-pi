@@ -479,8 +479,10 @@ it("translates controls with one locale repaint while preserving Thread resource
   const previousResources = resources.map((read) => read());
   await act(() => fixture.changeLanguage());
   expect(
-    document.querySelector(".thread-tools-content .reading-navigation")
-      ?.textContent,
+    views.composer.mock.calls
+      .at(-1)?.[0]
+      .moreActions.map((item: { label: string }) => item.label)
+      .join(" "),
   ).toContain("历史记录");
   // Locale affects each view's chrome. It may repaint once, but cannot replace
   // the owning Thread or re-run its business requests and subscriptions.
@@ -597,8 +599,7 @@ it("updates the owning Thread resources when the working directory identity chan
   const { thread } = state.threadSelection;
   expect(thread.controller).not.toBe(previous);
   expect(
-    document.querySelector(".thread-tools-content .directory-info")
-      ?.textContent,
+    views.composer.mock.calls.at(-1)?.[0].thread.context.directory,
   ).toContain("/fixture/second");
   expect(views.composer.mock.calls.at(-1)?.[0]).toMatchObject({ thread });
   expect(views.files.mock.calls.at(-1)?.[0]).toMatchObject({
@@ -700,9 +701,11 @@ it("freezes the shell for a real pending project choice without dimming each con
 it("still updates localized workbench text when the language context changes", async () => {
   const fixture = await setup();
   expect(
-    document.querySelector(".thread-tools-content .reading-navigation")
-      ?.textContent,
-  ).toContain(i18n.t("ui.conversation.heading"));
+    views.composer.mock.calls
+      .at(-1)?.[0]
+      .moreActions.map((item: { label: string }) => item.label)
+      .join(" "),
+  ).toContain(i18n.t("app.reading.history"));
   await act(() => fixture.button(i18n.t("app.layout.settings")).click());
   const general = Array.from(
     document.querySelectorAll<HTMLButtonElement>(".settings-navigation button"),
@@ -721,9 +724,11 @@ it("still updates localized workbench text when the language context changes", a
   if (!chinese) throw Error("missing Chinese option");
   await act(async () => chinese.click());
   expect(
-    document.querySelector(".thread-tools-content .reading-navigation")
-      ?.textContent,
-  ).toContain(createI18n("zh-CN").t("ui.conversation.heading"));
+    views.composer.mock.calls
+      .at(-1)?.[0]
+      .moreActions.map((item: { label: string }) => item.label)
+      .join(" "),
+  ).toContain(createI18n("zh-CN").t("app.reading.history"));
 });
 
 it("applies a preference receipt to the current App after Thread navigation without cancelling either operation", async () => {

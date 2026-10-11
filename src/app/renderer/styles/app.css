@@ -232,12 +232,6 @@
     min-height: 0;
     min-width: 0;
   }
-  .thread-setup {
-    flex-shrink: 1;
-    min-height: 0;
-    max-height: var(--thread-setup-max-height);
-    overflow-y: auto;
-  }
   .thread-reading {
     flex: 1;
     min-height: 0;
@@ -247,26 +241,6 @@
     height: 100%;
     overflow: auto;
     overscroll-behavior: contain;
-  }
-  .reading-navigation {
-    display: flex;
-    overflow: hidden;
-    flex-wrap: nowrap;
-    flex-shrink: 0;
-    gap: calc(var(--layout-gap) / 4);
-    padding-block: calc(var(--layout-gap) / 4);
-    border-bottom: 1px solid var(--border);
-  }
-  .reading-tabs {
-    display: flex;
-    min-width: 0;
-    flex: 1;
-    overflow-x: auto;
-    gap: calc(var(--layout-gap) / 4);
-  }
-  .reading-focus {
-    margin-inline-start: auto;
-    flex-shrink: 0;
   }
   .composer[hidden],
   .workbench:has(.thread-workspace[data-reading-focus="true"])
@@ -380,31 +354,6 @@
   .draft-intro p {
     margin-top: var(--layout-gap);
   }
-  .directory-info {
-    display: flex;
-    align-items: center;
-    gap: calc(var(--layout-gap) / 2);
-    overflow-wrap: anywhere;
-    flex-wrap: wrap;
-    margin-bottom: calc(var(--layout-gap) / 2);
-    font-size: var(--text-small);
-  }
-  .directory-info h1 {
-    font-size: var(--text-title);
-    font-weight: 600;
-    letter-spacing: var(--tracking-heading);
-  }
-  .directory-info span {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .directory-info svg {
-    flex-shrink: 0;
-  }
-
   .composer-readiness {
     display: flex;
     align-items: center;

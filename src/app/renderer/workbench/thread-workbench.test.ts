@@ -14,7 +14,23 @@ import { ThreadWorkbench } from "./thread-workbench";
 
 const trace = "test-trace";
 vi.mock("./composer", () => ({
-  Composer: () => createElement("div", { "data-composer": true }),
+  Composer: ({
+    moreActions,
+  }: {
+    moreActions: { id: string; label: string; onSelect: () => void }[];
+  }) =>
+    createElement(
+      "div",
+      { "data-composer": true, "data-slot": "composer-toolbar-actions" },
+      createElement("button", { "aria-haspopup": "menu" }, "More"),
+      moreActions.map((item) =>
+        createElement(
+          "button",
+          { key: item.id, onClick: item.onSelect },
+          item.label,
+        ),
+      ),
+    ),
 }));
 vi.mock("./file-panel", () => ({ FilePanel: () => null }));
 vi.mock("../reading/submissions", () => ({
@@ -193,19 +209,14 @@ it("lets a newer outer reading gesture cancel a queued attention location before
   }
 });
 
-it("opens the existing Thread tools at native history from a live coverage gap and returns to the same live pane", async () => {
+it("keeps history accessible from composer actions without a floating tools trigger", async () => {
   const f = setup(false);
   f.props.readingView = "conversation";
   try {
     await f.render();
-    const gapEntry = [...f.host.querySelectorAll("button")].find(
-      (button) => button.textContent === "Thread details",
-    );
-    expect(gapEntry).toBeDefined();
-    await act(() => gapEntry?.click());
-    await f.flush();
+    expect(f.host.querySelector("[data-thread-tools-trigger]")).toBeNull();
     const history = [
-      ...document.querySelectorAll<HTMLButtonElement>("[role=dialog] button"),
+      ...f.host.querySelectorAll<HTMLButtonElement>("button"),
     ].find((button) => button.textContent === "History");
     expect(history).toBeDefined();
     await act(() => history?.click());
@@ -219,6 +230,9 @@ it("opens the existing Thread tools at native history from a live coverage gap a
     expect(f.props.onReadingViewChange).toHaveBeenLastCalledWith(
       "conversation",
     );
+    f.props.readingView = "conversation";
+    await f.render();
+    expect(document.activeElement?.textContent).toBe("More");
   } finally {
     await f.cleanup();
   }
