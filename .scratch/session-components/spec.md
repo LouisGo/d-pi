@@ -117,6 +117,14 @@
 
 固定 `dad51e6..61790ab` review发现组标题焦点/锚点未映射成员record的P2，已用生产缓存回收反例复现（旧成员页被淘汰）。保护集合先展开真实group member keys，再映射record；焦点与组标题锚点两条回归及saved阅读27/27通过。后续独立覆盖继续核实；其余范围/cache/轻状态未发现明确高价值问题。
 
+### WB03 milestone：历史页操作与受监督 Worker（2026-10-11）
+
+- 固定 `61790ab..c8372ad` 独立 review 确认组标题焦点/锚点保护问题闭合，没有新增可行动高价值问题；只覆盖该提交范围，未代跑测试。
+- 历史页复用 Main 的读取 operation，传递同一 operationId/traceId；Preload 校验回包身份，Query 取消向所属 sender 的 Main 取消桥传播。切 Thread 后原 owner 仍可取消旧读取，其他 sender 无法取消。ACK 或 Worker payload 都不释放名额，实际退出后才完成；晚到结果不进入已取消 Query。
+- Main 拥有 trusted root、绑定、sender 和请求前后 Thread 身份复核；原生文件路径/header/冻结前缀及读取后文件复核沿用 conversation/main 只读适配器，在单次 Worker 内运行，不把 Renderer 路径当权限。Worker 默认最多2个、无无界等待队列，关闭/取消等待 exit；Node `trackUnmanagedFds` 负责退出时描述符清理。JS heap 限额128/32MiB与现有32MiB原生记录限额分开，未声称 ArrayBuffer/RSS 被 heap 限额约束。参考同级 T3 `claudeHistoryWorker.ts` 的独立入口和 import 无启动副作用原则，不迁入其 SDK fork 或执行行为。
+- `pnpm build` 已实际产出独立 history-worker.js。`node` 与 `pnpm exec electron validation/m2/history-worker.cjs` 使用真实构建 Worker，约3.6MiB/400条原生记录取得115条尾页、115条冻结前页及1条追加，均3次退出、active=0；运行版本 Node24.21.0/Electron44.4.5。Main heartbeat可继续执行，但此 smoke 不等于完整 Workbench 延迟/FPS 或 GUI/provider验收。
+- 本段四文件31/31及快速门禁通过，运行时集成51/51通过；既有保存图像 fixture 已对齐原合同要求的 index/name，未改变展示生产行为。Core/Main/Preload类型与架构测试通过。工具详情、图像、CLI目录读取、完整artifact和其余WB03/WB04仍待接入与验收，goal保持active。
+
 按行为逐段 TDD：独立回答/双击/重连/重挂载，详情更新与final，跨Thread草稿/Undo/来源定位/lease释放与晚到导航。只跑相关类型、行为、边界和文档门禁；必要的真实 SDK/生产链路验收有界执行，不重复 provider/系统 IME 或包矩阵。
 
 WB01 合同细化：resources/contracts 是无反向依赖的来源叶子；sourceRef 仅 provenance，不授予文件或执行权限。Host 原始工具输出 reader 通过现有 MessagePort 订阅，与 timeline 摘要分离。窗口最多8 Surface，共享 reader；每工具输出256KiB、参数32KiB，Host 总缓存2MiB/64项，预算或缺失生命周期标 partial。关闭释放读取 lease，不发送 abort。FrozenContext 使用独立长度封套和原生来源，范围为冻结版本的 UTF-16 偏移，选区最多64KiB；唯一 Thread 草稿用 threadId 标识，revision+sequence 防竞争。当前挂载 editor 单笔 undo transaction，未挂载语义写入并保留缓存 undo。返回捕获导航 ticket，后续导航/关闭使其失效。待完成切片后追加实际命令、结果、提交、review 与未覆盖范围。

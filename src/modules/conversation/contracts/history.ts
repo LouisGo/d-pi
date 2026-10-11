@@ -1,5 +1,11 @@
 import { z } from "zod";
 import {
+  type ReadCancelReply,
+  type ReadIdentity,
+  type ReadResponse,
+  readResponseSchema,
+} from "../../../shared/read-operation";
+import {
   type SourceRef,
   SourceRefSchema,
   type ToolDetailReply,
@@ -113,10 +119,14 @@ export const HistoryPageSchema = z.discriminatedUnion("kind", [
 ]);
 export type HistoryPage = z.infer<typeof HistoryPageSchema>;
 export const HistoryRequestSchema = z.strictObject({
+  operationId: z.uuid(),
+  traceId: z.uuid(),
   threadId: z.uuid(),
   cursor: HistoryCursorSchema.nullable(),
   range: z.literal("tail").optional(),
 });
+export type HistoryRequest = z.infer<typeof HistoryRequestSchema>;
+export const HistoryResponseSchema = readResponseSchema(HistoryPageSchema);
 export const HistoryToolRequestSchema = z.strictObject({
   threadId: z.uuid(),
   source: SourceRefSchema,
@@ -126,6 +136,8 @@ export const HistoryToolRequestSchema = z.strictObject({
   traceId: z.uuid(),
 });
 export interface HistoryBridge {
+  requestRead?(request: HistoryRequest): Promise<ReadResponse<HistoryPage>>;
+  cancelRead?(identity: ReadIdentity): Promise<ReadCancelReply>;
   tool?(
     source: SourceRef,
     cursor: HistoryCursor | null,

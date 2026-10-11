@@ -13,6 +13,52 @@ import {
   savedConversationQuery,
 } from "./history-queries";
 
+it("cancels the actual history operation when query ownership ends and rejects a late reply", async () => {
+  const client = new QueryClient();
+  const requestRead = vi.fn<NonNullable<HistoryBridge["requestRead"]>>();
+  let finish: (
+    reply: Awaited<ReturnType<NonNullable<HistoryBridge["requestRead"]>>>,
+  ) => void = () => {};
+  requestRead.mockImplementation(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  const cancelRead = vi.fn<NonNullable<HistoryBridge["cancelRead"]>>(
+    async (identity) => ({ kind: "acknowledged", ...identity }),
+  );
+  const bridge: HistoryBridge = {
+    requestRead,
+    cancelRead,
+    read: vi.fn(),
+    projectRead: vi.fn(),
+    projectList: vi.fn(),
+  };
+  const options = savedConversationQuery(bridge, crypto.randomUUID());
+  const pending = client
+    .fetchInfiniteQuery(options)
+    .catch((error: unknown) => error);
+  await vi.waitFor(() => expect(requestRead).toHaveBeenCalledOnce());
+  const request = requestRead.mock.calls[0]?.[0];
+  if (!request) throw Error("missing operation");
+  expect(request.range).toBe("tail");
+  await client.cancelQueries({ queryKey: options.queryKey });
+  expect(cancelRead).toHaveBeenCalledWith({
+    operationId: request.operationId,
+    traceId: request.traceId,
+  });
+  finish({
+    kind: "completed",
+    operationId: request.operationId,
+    traceId: request.traceId,
+    reply: { kind: "unavailable", reason: "missing" },
+  });
+  expect(isCancelledError(await pending)).toBe(true);
+  expect(client.getQueryData(options.queryKey)).toBeUndefined();
+  client.clear();
+});
+
 it("retains a necessary selected range, exposes its evicted tail cursor, and releases it after selection ends", async () => {
   const client = new QueryClient();
   const threadId = crypto.randomUUID();

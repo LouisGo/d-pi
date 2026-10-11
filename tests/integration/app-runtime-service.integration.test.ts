@@ -18,6 +18,7 @@ import {
   registerHistoryIpc,
 } from "../../src/app/main/ipc/project-reads";
 import { AppStorage } from "../../src/app/main/wiring/app-storage";
+import { runNativeHistoryWorker } from "../../src/modules/conversation/main/public";
 import {
   HostTransportCommandSchema,
   RuntimeCommandSchema,
@@ -1940,7 +1941,7 @@ it("uses the Runtime canonical file reference for frozen TXT+PNG presentation af
       parentId: null,
       role: "user",
       text: message,
-      images: [{ mimeType: "image/png", digest, byteLength: 5 }],
+      images: [{ index: 0, mimeType: "image/png", digest, name: "shot.png" }],
     };
     const shown = presentSavedInput(entry, restored, candidates);
     expect(shown.displayText).toBe("Question");
@@ -1974,6 +1975,7 @@ it("uses the Runtime canonical file reference for frozen TXT+PNG presentation af
       ipcMain: { handle },
       sourceValid: (input) => input === event,
       reads: new ProjectReadOperations(),
+      historyReader: { read: (task) => runNativeHistoryWorker(task) },
       getStore: () => reopened,
       getDiagnostics: () => undefined,
       nativeSessionsPath: () => join(f.root, "native-sessions"),
@@ -1982,10 +1984,15 @@ it("uses the Runtime canonical file reference for frozen TXT+PNG presentation af
     const read = handle.mock.calls.find(
       ([channel]) => channel === "history:read",
     )![1];
-    const page = await read(event, {
+    const response = await read(event, {
+      operationId: crypto.randomUUID(),
+      traceId: crypto.randomUUID(),
       threadId: f.draft.threadId,
       cursor: null,
     });
+    if (response.kind !== "completed")
+      throw Error("history read did not complete");
+    const page = response.reply;
     expect(page.kind).toBe("page");
     expect(page.entries[0]).toMatchObject({
       displayText: "Question",

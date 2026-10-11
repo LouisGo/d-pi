@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import {
   app,
   BrowserWindow,
@@ -10,6 +11,7 @@ import {
 } from "electron";
 import { z } from "zod";
 import { createProjectGitReader } from "../../../modules/changes/main/public";
+import { HistoryReadRunner } from "../../../modules/conversation/main/public";
 import { RuntimeFailureSchema } from "../../../modules/execution/contracts/public";
 import {
   Diagnostics,
@@ -60,6 +62,9 @@ export function startDesktopApplication(mainDirectory: string): void {
   let window: BrowserWindow | null = null;
   let sourceGeneration = 0;
   const reads = new ProjectReadOperations();
+  const historyReader = new HistoryReadRunner(
+    pathToFileURL(join(mainDirectory, "history-worker.js")),
+  );
   const gitReader = createProjectGitReader();
   let localeSnapshot: LocaleSnapshot = {
     preference: "system",
@@ -424,6 +429,7 @@ export function startDesktopApplication(mainDirectory: string): void {
       >();
       const projectReadContext = {
         reads,
+        historyReader,
         gitReader,
         ...ipcSourceContext,
         getStore: () => services.store,
@@ -556,6 +562,7 @@ export function startDesktopApplication(mainDirectory: string): void {
           stopped,
           services.closeThreadCommands(),
           reads.close(),
+          historyReader.close(),
           gitReader.close(),
           services.attachments?.close(),
         ]);

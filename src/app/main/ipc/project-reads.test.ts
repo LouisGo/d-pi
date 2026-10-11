@@ -4,8 +4,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { IpcMain, IpcMainInvokeEvent } from "electron";
 import { afterEach, expect, it, vi } from "vitest";
+import { runNativeHistoryWorker } from "../../../modules/conversation/main/public";
 import { AttachmentStore } from "../../../modules/input/main/public";
 import type { DiagnosticEvent } from "../../../platform/main/diagnostics/public";
+import { requestReadOperation } from "../../../shared/read-operation";
 import { AppStorage } from "../wiring/app-storage";
 import type { ProjectReadContext } from "./context";
 import {
@@ -53,6 +55,7 @@ function setup() {
     ipcMain: { handle },
     sourceValid: () => true,
     reads: new ProjectReadOperations(),
+    historyReader: { read: (task) => runNativeHistoryWorker(task) },
     gitReader: {
       list: reads.listGit,
       diff: reads.readGit,
@@ -82,16 +85,83 @@ function setup() {
     request: (channel: string, raw: unknown, senderId = 1) => {
       const handler = handle.mock.calls.find(([name]) => name === channel)?.[1];
       if (!handler) throw Error("Missing handler");
-      return handler(
-        {
-          sender: { id: senderId },
-          senderFrame: { processId: 11, routingId: 22 },
-        } as IpcMainInvokeEvent,
-        raw,
-      );
+      const event = {
+        sender: { id: senderId },
+        senderFrame: { processId: 11, routingId: 22 },
+      } as IpcMainInvokeEvent;
+      if (channel === "history:read") {
+        if (typeof raw !== "object" || raw === null)
+          throw Error("Expected history request DTO");
+        const identity = {
+          operationId: crypto.randomUUID(),
+          traceId: crypto.randomUUID(),
+        };
+        return requestReadOperation(
+          {
+            request: () => handler(event, { ...identity, ...raw }),
+            cancel: async () => ({ kind: "acknowledged", ...identity }),
+          },
+          identity,
+        );
+      }
+      return handler(event, raw);
     },
   };
 }
+
+it("shares history operation limits and keeps cancellation ownership and finalization distinct", async () => {
+  const f = setup();
+  f.store.threads.bindNativeSession({
+    threadId: f.thread.threadId,
+    configContextId: "fixture",
+    sessionId: "session",
+    sessionFile: "/fixture/session.jsonl",
+  });
+  let finish: (reply: { kind: "unavailable"; reason: "missing" }) => void =
+    () => {};
+  let signal: AbortSignal | undefined;
+  const read = vi.fn<NonNullable<typeof f.context.historyReader>["read"]>(
+    (task, inputSignal) => {
+      expect(task.traceId).toBe(identity.traceId);
+      signal = inputSignal;
+      return new Promise((resolve) => {
+        finish = resolve;
+      });
+    },
+  );
+  f.context.historyReader = { read };
+  const identity = {
+    operationId: crypto.randomUUID(),
+    traceId: crypto.randomUUID(),
+  };
+  const handler = vi
+    .mocked(f.context.ipcMain.handle)
+    .mock.calls.find(([channel]) => channel === "history:read")?.[1];
+  if (!handler) throw Error("missing history handler");
+  const event = {
+    sender: { id: 1 },
+    senderFrame: { processId: 11, routingId: 22 },
+  } as IpcMainInvokeEvent;
+  const pending = handler(event, {
+    ...identity,
+    threadId: f.thread.threadId,
+    cursor: null,
+    range: "tail",
+  });
+  await vi.waitFor(() => expect(read).toHaveBeenCalledOnce());
+  await f.request("history:cancel", identity, 2);
+  expect(signal?.aborted).toBe(false);
+  f.store.threads.create("/other");
+  await f.request("history:cancel", identity, 1);
+  expect(signal?.aborted).toBe(true);
+  expect(f.context.reads.size).toBe(1);
+  finish({ kind: "unavailable", reason: "missing" });
+  await expect(pending).resolves.toMatchObject({
+    kind: "cancelled",
+    ...identity,
+  });
+  expect(f.context.reads.size).toBe(0);
+});
 
 it.each(["files", "git"] as const)(
   "records %s received while I/O is pending and a bounded terminal after it settles",

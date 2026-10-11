@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "66e36e5b4c93e5129d770c58dbfee4d0ff1b3e0a6f3c27496f89110d186e75c1",
+  "inputsHash": "392a1a17f242753ffcaab7c9ee9dc19bcdbf4ed300c5a4396c6a0696966cffd7",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 635,
-    "scannedFiles": 635,
+    "sourceFiles": 638,
+    "scannedFiles": 638,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 283,
-      "lines": 54987,
+      "files": 284,
+      "lines": 55263,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -28,6 +28,10 @@
         },
         {
           "path": "src/app/main/index.ts",
+          "exists": true
+        },
+        {
+          "path": "src/app/main/history-worker.ts",
           "exists": true
         },
         {
@@ -306,8 +310,8 @@
         "main"
       ],
       "materialized": true,
-      "files": 39,
-      "lines": 9771,
+      "files": 41,
+      "lines": 10162,
       "publicEntries": [
         {
           "path": "src/modules/conversation/contracts/public.ts",
@@ -921,6 +925,12 @@
     },
     {
       "module": "conversation",
+      "environment": "core",
+      "dependency": "shared",
+      "testOnly": false
+    },
+    {
+      "module": "conversation",
       "environment": "host",
       "dependency": "platform",
       "testOnly": false
@@ -947,6 +957,12 @@
       "module": "conversation",
       "environment": "main",
       "dependency": "resources",
+      "testOnly": false
+    },
+    {
+      "module": "conversation",
+      "environment": "main",
+      "dependency": "shared",
       "testOnly": false
     },
     {
@@ -1190,6 +1206,13 @@
     {
       "module": "app",
       "environment": "main",
+      "dependency": "conversation",
+      "targetEnvironment": "main",
+      "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "main",
       "dependency": "input",
       "targetEnvironment": "core",
       "testOnly": true
@@ -1304,13 +1327,6 @@
       "environment": "main",
       "dependency": "changes",
       "targetEnvironment": "contracts",
-      "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "main",
-      "dependency": "conversation",
-      "targetEnvironment": "main",
       "testOnly": false
     },
     {
@@ -2072,13 +2088,20 @@
     {
       "module": "conversation",
       "environment": "contracts",
+      "dependency": "shared",
+      "targetEnvironment": "shared",
+      "testOnly": false
+    },
+    {
+      "module": "conversation",
+      "environment": "contracts",
       "dependency": "resources",
       "targetEnvironment": "contracts",
       "testOnly": false
     },
     {
       "module": "conversation",
-      "environment": "contracts",
+      "environment": "core",
       "dependency": "shared",
       "targetEnvironment": "shared",
       "testOnly": false
@@ -2121,14 +2144,21 @@
     {
       "module": "conversation",
       "environment": "main",
-      "dependency": "resources",
-      "targetEnvironment": "contracts",
+      "dependency": "shared",
+      "targetEnvironment": "shared",
       "testOnly": false
     },
     {
       "module": "conversation",
       "environment": "main",
       "dependency": "threads",
+      "targetEnvironment": "contracts",
+      "testOnly": false
+    },
+    {
+      "module": "conversation",
+      "environment": "main",
+      "dependency": "resources",
       "targetEnvironment": "contracts",
       "testOnly": false
     },
@@ -2826,6 +2856,27 @@
       "to": "src/modules/execution/host/public.ts",
       "targetModule": "execution",
       "targetEnvironment": "host"
+    },
+    {
+      "from": "src/app/main/history-worker.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:worker_threads",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/history-worker.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../modules/conversation/main/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/main/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "main"
     },
     {
       "from": "src/app/main/index.test.ts",
@@ -3542,6 +3593,18 @@
       "resolution": "module",
       "to": "src/modules/changes/main/public.ts",
       "targetModule": "changes",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/ipc/context.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../modules/conversation/main/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/main/public.ts",
+      "targetModule": "conversation",
       "targetEnvironment": "main"
     },
     {
@@ -4326,6 +4389,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "main",
       "test": true,
+      "specifier": "../../../modules/conversation/main/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/main/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/ipc/project-reads.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
       "specifier": "../../../modules/input/main/public",
       "kind": "import",
       "resolution": "module",
@@ -4344,6 +4419,18 @@
       "to": "src/platform/main/diagnostics/public.ts",
       "targetModule": "platform",
       "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/ipc/project-reads.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../../shared/read-operation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/read-operation.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
     },
     {
       "from": "src/app/main/ipc/project-reads.test.ts",
@@ -4542,6 +4629,15 @@
       "sourceModule": "app",
       "sourceEnvironment": "main",
       "test": false,
+      "specifier": "node:url",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/lifecycle/application.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
       "specifier": "electron",
       "kind": "import",
       "resolution": "external"
@@ -4565,6 +4661,18 @@
       "resolution": "module",
       "to": "src/modules/changes/main/public.ts",
       "targetModule": "changes",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/lifecycle/application.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../modules/conversation/main/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/main/public.ts",
+      "targetModule": "conversation",
       "targetEnvironment": "main"
     },
     {
@@ -28926,6 +29034,18 @@
       "sourceModule": "conversation",
       "sourceEnvironment": "contracts",
       "test": false,
+      "specifier": "../../../shared/read-operation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/read-operation.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/modules/conversation/contracts/history.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "contracts",
+      "test": false,
       "specifier": "../../resources/contracts/public",
       "kind": "import",
       "resolution": "module",
@@ -29328,6 +29448,30 @@
       "specifier": "@tanstack/react-query",
       "kind": "import",
       "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/core/history-queries.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "../../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/modules/conversation/core/history-queries.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "../../../shared/read-operation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/read-operation.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
     },
     {
       "from": "src/modules/conversation/core/history-queries.ts",
@@ -30170,6 +30314,102 @@
       "targetEnvironment": "core"
     },
     {
+      "from": "src/modules/conversation/main/history-read-runner.test.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:events",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/main/history-read-runner.test.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/main/history-read-runner.test.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./history-read-runner",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/main/history-read-runner.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/conversation/main/history-read-runner.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:worker_threads",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/main/history-read-runner.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/main/history-read-runner.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../shared/read-operation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/read-operation.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/modules/conversation/main/history-read-runner.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../threads/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/threads/contracts/public.ts",
+      "targetModule": "threads",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/conversation/main/history-read-runner.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../contracts/history",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/contracts/history.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/conversation/main/history-read-runner.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "./native-history",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/main/native-history.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "main"
+    },
+    {
       "from": "src/modules/conversation/main/native-history.test.ts",
       "sourceModule": "conversation",
       "sourceEnvironment": "main",
@@ -30583,6 +30823,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/conversation/main/native-history.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/conversation/main/public.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "./history-read-runner",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/conversation/main/history-read-runner.ts",
       "targetModule": "conversation",
       "targetEnvironment": "main"
     },

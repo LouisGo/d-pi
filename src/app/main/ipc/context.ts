@@ -5,6 +5,7 @@ import type {
   MessageChannelMain,
 } from "electron";
 import type { ProjectGitReader } from "../../../modules/changes/main/public";
+import type { HistoryReadRunner } from "../../../modules/conversation/main/public";
 import type { RuntimeFailure } from "../../../modules/execution/contracts/public";
 import type { RuntimeService } from "../../../modules/execution/main/public";
 import type { Diagnostics } from "../../../platform/main/diagnostics/public";
@@ -39,6 +40,7 @@ export type SubmissionContext = IpcSourceContext & {
 export type ProjectReadContext = Omit<IpcSourceContext, "ipcMain"> & {
   ipcMain: Pick<IpcMain, "handle">;
   reads: ProjectReadOperations;
+  historyReader: Pick<HistoryReadRunner, "read">;
   gitReader: ProjectGitReader;
   getStore: () => AppStorage | undefined;
   getDiagnostics: () =>

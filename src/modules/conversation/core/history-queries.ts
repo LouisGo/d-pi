@@ -4,11 +4,54 @@ import {
   type QueryClient,
   queryOptions,
 } from "@tanstack/react-query";
+import { createId } from "../../../shared/identity";
+import {
+  type ReadAbortSignal,
+  requestReadOperation,
+  throwIfReadCancelled,
+} from "../../../shared/read-operation";
 import type {
   HistoryBridge,
   HistoryCursor,
   HistoryPage,
 } from "../contracts/public";
+
+async function readHistoryPage(
+  bridge: HistoryBridge,
+  threadId: string,
+  cursor: HistoryCursor | null,
+  range?: "tail",
+  signal?: ReadAbortSignal,
+): Promise<HistoryPage> {
+  throwIfReadCancelled(signal);
+  const request = bridge.requestRead?.bind(bridge);
+  const cancel = bridge.cancelRead?.bind(bridge);
+  if (!request || !cancel) {
+    const page = range
+      ? await bridge.read(threadId, cursor, range)
+      : await bridge.read(threadId, cursor);
+    throwIfReadCancelled(signal);
+    return page;
+  }
+  const identity = {
+    operationId: createId(),
+    traceId: createId(),
+  };
+  return requestReadOperation(
+    {
+      request: () =>
+        request({
+          ...identity,
+          threadId,
+          cursor,
+          ...(range ? { range } : {}),
+        }),
+      cancel,
+    },
+    identity,
+    signal,
+  );
+}
 
 export interface BoundHistoryAttempt {
   readonly id: string;
@@ -125,8 +168,13 @@ export function boundHistoryPageQuery(
     queryFn: async ({ signal }) => {
       if (!attempt) return null;
       signal.throwIfAborted();
-      const page = await bridge.read(threadId, attempt.cursor);
-      // This is local attempt cancellation; the existing native I/O is not abortable.
+      const page = await readHistoryPage(
+        bridge,
+        threadId,
+        attempt.cursor,
+        undefined,
+        signal,
+      );
       signal.throwIfAborted();
       return page;
     },
@@ -176,9 +224,13 @@ export function savedConversationQuery(
     structuralSharing: (old, value) => retainHistoryRange(old, value, policy),
     queryFn: async ({ pageParam, signal }) => {
       signal.throwIfAborted();
-      const page = pageParam
-        ? await bridge.read(threadId, pageParam)
-        : await bridge.read(threadId, null, "tail");
+      const page = await readHistoryPage(
+        bridge,
+        threadId,
+        pageParam,
+        pageParam ? undefined : "tail",
+        signal,
+      );
       signal.throwIfAborted();
       return page;
     },
@@ -196,7 +248,7 @@ export async function refreshSavedConversation(
   client: QueryClient,
   bridge: HistoryBridge,
   threadId: string,
-  signal?: { readonly aborted: boolean },
+  signal?: ReadAbortSignal,
 ): Promise<Extract<HistoryPage, { kind: "unavailable" }> | undefined> {
   let versions = refreshVersions.get(client);
   if (!versions) {
@@ -218,14 +270,19 @@ export async function refreshSavedConversation(
       cached?.pages.findLastIndex((page) => page.kind === "page") ?? -1;
     const last = cached?.pages[lastIndex];
     const cursor = last?.kind === "page" ? last.continuation : undefined;
-    let page = cursor
-      ? await bridge.read(threadId, { ...cursor, append: true })
-      : await bridge.read(threadId, null, "tail");
+    let page = await readHistoryPage(
+      bridge,
+      threadId,
+      cursor ? { ...cursor, append: true } : null,
+      cursor ? undefined : "tail",
+      signal,
+    );
     if (signal?.aborted || versions.get(threadId) !== version) return undefined;
     // A replaced/truncated source is a clean reset, never joined to old entries.
     const reset =
       !cursor || (page.kind === "unavailable" && page.reason === "changed");
-    if (cursor && reset) page = await bridge.read(threadId, null, "tail");
+    if (cursor && reset)
+      page = await readHistoryPage(bridge, threadId, null, "tail", signal);
     if (
       signal?.aborted ||
       versions.get(threadId) !== version ||
@@ -285,6 +342,9 @@ export async function refreshSavedConversation(
       pageParams: [...pageParams, cursor ?? null],
     });
     return undefined;
+  } catch (cause) {
+    if (signal?.aborted) return undefined;
+    throw cause;
   } finally {
     if (versions.get(threadId) === version) versions.delete(threadId);
   }

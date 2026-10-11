@@ -8,6 +8,7 @@ import {
   HistoryImageRequestSchema,
   HistoryPageSchema,
   HistoryRequestSchema,
+  HistoryResponseSchema,
   HistoryToolRequestSchema,
   ProjectHistoryCatalogSchema,
   ProjectHistoryRequestSchema,
@@ -23,13 +24,14 @@ import {
   type ReadIdentity,
   ReadOperationError,
   type ReadResponse,
+  requestReadOperation,
 } from "../../../shared/read-operation";
 import type { DesktopBridge } from "../../contracts/desktop-bridge";
 export function createProjectReadBridge(
   ipcRenderer: IpcRenderer,
 ): Pick<DesktopBridge, "history" | "files" | "git"> {
   async function cancel(
-    channel: "files:cancel" | "git:cancel",
+    channel: "files:cancel" | "git:cancel" | "history:cancel",
     command: ReadIdentity,
   ) {
     const value = ReadCancellationSchema.parse(command);
@@ -44,8 +46,20 @@ export function createProjectReadBridge(
       throw new ReadOperationError("invalid-reply");
     return response.data;
   }
+  async function requestHistory(
+    command: ReturnType<typeof HistoryRequestSchema.parse>,
+  ) {
+    const value = HistoryRequestSchema.parse(command);
+    const response = HistoryResponseSchema.safeParse(
+      await ipcRenderer.invoke("history:read", value),
+    );
+    if (!response.success) throw new ReadOperationError("invalid-reply");
+    return correlated(value, response.data);
+  }
   return {
     history: {
+      requestRead: requestHistory,
+      cancelRead: (identity) => cancel("history:cancel", identity),
       async tool(source, cursor, readerId, recordId) {
         const reply = ToolDetailReplySchema.parse(
           await ipcRenderer.invoke(
@@ -105,15 +119,22 @@ export function createProjectReadBridge(
         );
       },
       async read(threadId, cursor, range) {
-        return HistoryPageSchema.parse(
-          await ipcRenderer.invoke(
-            "history:read",
-            HistoryRequestSchema.parse({
-              threadId,
-              cursor,
-              ...(range ? { range } : {}),
-            }),
-          ),
+        const identity = {
+          operationId: crypto.randomUUID(),
+          traceId: crypto.randomUUID(),
+        };
+        return requestReadOperation(
+          {
+            request: () =>
+              requestHistory({
+                ...identity,
+                threadId,
+                cursor,
+                ...(range ? { range } : {}),
+              }),
+            cancel: (identity) => cancel("history:cancel", identity),
+          },
+          identity,
         );
       },
     },

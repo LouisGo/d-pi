@@ -121,3 +121,9 @@ ConversationProjection 只供有界卡片。Host 在摘要前观察原始生命�
 WB01 复核补充：历史详情 lease 按捕获的 Thread/原生绑定和 sender 校验，切 Thread 不撤销已固定的只读来源。详情按可信冻结前缀恢复实际工具调用参数，输出独立于卡片投影；恢复扫描最多16页/16MiB，超过预算明确不可用。完成记录可通过真实 nativeRecordId 转接持久读取；转接失败保留最后已观察版本并标明不可用，不能清空后冒称内容不存在。导航在草稿保存之后、派发切换之前再次核对 ticket；新 Surface 意图使旧返回失效。
 返回来源的窗口协调器拥有读取预算：只在同原生身份的成员缺失时请求下一页，最多16页；Query/Reader仍拥有正文，视图只绑定读取适配器。新导航/关闭失效 ticket，迟到页可进入只读缓存但不定位/聚焦旧来源。
 详情coverage同时继承固定OMP 18.8.9的 `details.meta.truncation`、`limits`、`artifactError`及非文本内容；小于App字节预算也不能把OMP已截断的正文标为完整。当前只读观察正文，完整artifact资源读取归WB03，不能替换原生执行结果。
+
+## WB03 有界历史范围与读取 Worker（2026-10-11）
+
+保存会话默认读取已提交尾部的有限范围，previous 游标向前读取同一冻结快照；gap只表示覆盖缺口，不触发自动全历史扫描。单会话正文默认8MiB/16页，窗口历史LRU增加32MiB计量门限；计量为字符串/scalar payload，不等于RSS。必要选区、焦点和锚点保护真实组成员，单长记录与受保护连续范围允许超过普通预算。轻disclosure状态随Thread保留，普通展开不再永久保留离屏DOM。
+
+历史页复用Main读取operation的身份、限额和取消；Main核对sender、Thread和原生绑定，trusted filesystem task交给独立构建的Worker，仍用conversation/main原生只读校验。默认最多2个Worker且不排无界队列，取消与关闭等待实际exit才释放名额；Query取消传播到Main，晚回包不接管旧来源。Worker内执行路径/header/冻结前缀与读取后文件复核，Main返回前再次复核Thread绑定。此段取代此前“未引入Worker”的当时实现描述；原生JSONL事实来源与OMP所有权不变。工具详情/图像/项目目录仍待纳入该Worker链路；完整artifact、Viewer与native warm预算尚未完成。

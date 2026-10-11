@@ -13,7 +13,6 @@ import {
 } from "../../../modules/conversation/contracts/public";
 import {
   listProjectNativeHistory,
-  readNativeHistory,
   readNativeImage,
   readNativeTool,
   readProjectNativeHistory,
@@ -155,6 +154,7 @@ export function registerHistoryIpc(context: ProjectReadContext): void {
       | ReturnType<typeof HistoryRequestSchema.parse>
       | ReturnType<typeof HistoryImageRequestSchema.parse>
       | ReturnType<typeof HistoryToolRequestSchema.parse>,
+    signal?: AbortSignal,
   ) => {
     const { threadId, cursor } = request;
     const toolRead = "readerId" in request;
@@ -231,15 +231,18 @@ export function registerHistoryIpc(context: ProjectReadContext): void {
           ? image
           : ({ kind: "unavailable", reason: "changed" } as const);
       }
-      const page = await readNativeHistory(
-        root,
-        binding,
-        cursor,
-        undefined,
-        directory,
-        undefined,
-        undefined,
-        request.range,
+      signal?.throwIfAborted();
+      const page = await context.historyReader.read(
+        {
+          operationId: request.operationId,
+          traceId: request.traceId,
+          root,
+          binding,
+          cursor,
+          ...(directory ? { projectDirectory: directory } : {}),
+          ...(request.range ? { range: request.range } : {}),
+        },
+        signal,
       );
       if (!bindingCurrent())
         return { kind: "unavailable", reason: "changed" } as const;
@@ -266,7 +269,7 @@ export function registerHistoryIpc(context: ProjectReadContext): void {
       };
     };
     if (binding.origin !== "cli") return read(context.nativeSessionsPath());
-    const root = await context.indexedNativeSessionsPath?.(randomUUID());
+    const root = await context.indexedNativeSessionsPath?.(request.traceId);
     if (!bindingCurrent()) return { kind: "unavailable", reason: "changed" };
     if (!root || !binding.historyRoot)
       return { kind: "unavailable", reason: "denied" };
@@ -297,9 +300,21 @@ export function registerHistoryIpc(context: ProjectReadContext): void {
           reason: "identity-changed",
         };
   });
-  context.ipcMain.handle("history:read", (event, raw: unknown) =>
-    boundRead(event, HistoryRequestSchema.parse(raw)),
-  );
+  context.ipcMain.handle("history:read", (event, raw: unknown) => {
+    const request = HistoryRequestSchema.parse(raw);
+    return context.reads.run(event, request, (signal) =>
+      recordRead(context, { ...request, operation: "history:read" }, () =>
+        boundRead(event, request, signal),
+      ),
+    );
+  });
+  context.ipcMain.handle("history:cancel", (event, raw: unknown) => {
+    const identity = ReadCancellationSchema.parse(raw);
+    if (!context.sourceValid(event))
+      throw new ReadOperationError("invalid-source");
+    context.reads.cancel(event, identity);
+    return { kind: "acknowledged", ...identity };
+  });
   context.ipcMain.handle("history:image", (event, raw: unknown) => {
     const request = HistoryImageRequestSchema.parse(raw);
     return recordRead(

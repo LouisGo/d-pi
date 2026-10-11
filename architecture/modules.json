@@ -50,6 +50,7 @@
       "public": [
         "contracts/desktop-bridge.ts",
         "main/index.ts",
+        "main/history-worker.ts",
         "host/index.ts",
         "preload/index.ts",
         "renderer/main.tsx"
@@ -320,7 +321,7 @@
           "shared",
           "resources"
         ],
-        "core": [],
+        "core": ["shared"],
         "host": [
           "platform",
           "shared",
@@ -328,7 +329,8 @@
         ],
         "main": [
           "threads",
-          "resources"
+          "resources",
+          "shared"
         ]
       },
       "materialized": true

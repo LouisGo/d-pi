@@ -1,4 +1,9 @@
 export {
+  HistoryReadRunner,
+  type HistoryReadTask,
+  runNativeHistoryWorker,
+} from "./history-read-runner";
+export {
   readNativeHistory,
   readNativeImage,
   readNativeTool,
