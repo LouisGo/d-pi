@@ -21,6 +21,10 @@ import {
 import { runtimePhaseLabel } from "../components/runtime-phase";
 import { type FollowUpResult, NativeInteraction } from "./native-interaction";
 import { QueueControls } from "./queue-controls";
+import {
+  RecoveryActionPanel,
+  runtimeNeedsRecovery,
+} from "./recovery-action-panel";
 
 const emptySubmissionStore = createStore<SubmissionView>()(() => ({
   sending: false as const,
@@ -37,12 +41,16 @@ export function RuntimePanel({
   onFollowUp,
   inspection = true,
   origin,
+  onReviewAnswers,
+  onReviewOperations,
 }: {
   model: RuntimeModel;
   inspection?: boolean;
   origin?: "cli" | undefined;
   submission?: SubmissionModel | null;
   onFollowUp: ((text: string) => Promise<FollowUpResult>) | undefined;
+  onReviewAnswers?: (() => void) | undefined;
+  onReviewOperations?: (() => void) | undefined;
 }) {
   const { t } = useI18n();
   const state = useStore(model.stateStore, (value) => value.view);
@@ -68,9 +76,14 @@ export function RuntimePanel({
         item.status === "unknown" ||
         (item.status === "written" && item.defaultAnswered),
     );
-  if (!inspection && !actionable) return null;
+  const unknownSubmission = Array.from(receiptsById.values()).some(
+    (receipt) => receipt.state === "unknown" || receipt.outcome === "unknown",
+  );
+  const recovery = runtimeNeedsRecovery(state) || unknownSubmission;
+  if (!inspection && !actionable && !recovery) return null;
   if (
     !inspection &&
+    !recovery &&
     state.phase !== "ready" &&
     !state.control &&
     !state.interactions
@@ -84,6 +97,16 @@ export function RuntimePanel({
       aria-label={t("ui.runtime.sectionLabel")}
     >
       {inspection ? <RuntimeInspection model={model} origin={origin} /> : null}
+      {!inspection && recovery && (
+        <RecoveryActionPanel
+          key={state.threadId}
+          model={model}
+          state={state}
+          unknownSubmission={unknownSubmission}
+          onReviewAnswers={onReviewAnswers}
+          onReviewOperations={onReviewOperations}
+        />
+      )}
       {inspection &&
         state.control &&
         (state.busy ||
@@ -172,42 +195,43 @@ export function RuntimePanel({
                 }
               />
             ))}
-          {state.interactions.items.some(
-            (item) =>
-              item.status !== "pending" &&
-              item.status !== "unknown" &&
-              !(item.status === "written" && item.defaultAnswered),
-          ) && (
-            <Disclosure hidden={!inspection}>
-              <DisclosureTrigger>
-                {t("ui.runtime.interactionRecords")}
-              </DisclosureTrigger>
-              <div className="native-interactions">
-                {state.interactions.items
-                  .filter(
-                    (item) =>
-                      item.status !== "pending" &&
-                      item.status !== "unknown" &&
-                      !(item.status === "written" && item.defaultAnswered),
-                  )
-                  .map((item) => (
-                    <NativeInteraction
-                      key={item.id}
-                      item={item}
-                      trusted={state.trusted}
-                      model={model}
-                      onFollowUp={undefined}
-                      onContinueFollowUp={undefined}
-                      receiptsById={
-                        emptySubmissionStore.getState().receiptsById
-                      }
-                      followUpIds={[]}
-                      available={false}
-                    />
-                  ))}
-              </div>
-            </Disclosure>
-          )}
+          {inspection &&
+            state.interactions.items.some(
+              (item) =>
+                item.status !== "pending" &&
+                item.status !== "unknown" &&
+                !(item.status === "written" && item.defaultAnswered),
+            ) && (
+              <Disclosure>
+                <DisclosureTrigger>
+                  {t("ui.runtime.interactionRecords")}
+                </DisclosureTrigger>
+                <div className="native-interactions">
+                  {state.interactions.items
+                    .filter(
+                      (item) =>
+                        item.status !== "pending" &&
+                        item.status !== "unknown" &&
+                        !(item.status === "written" && item.defaultAnswered),
+                    )
+                    .map((item) => (
+                      <NativeInteraction
+                        key={item.id}
+                        item={item}
+                        trusted={state.trusted}
+                        model={model}
+                        onFollowUp={undefined}
+                        onContinueFollowUp={undefined}
+                        receiptsById={
+                          emptySubmissionStore.getState().receiptsById
+                        }
+                        followUpIds={[]}
+                        available={false}
+                      />
+                    ))}
+                </div>
+              </Disclosure>
+            )}
         </section>
       )}
     </section>

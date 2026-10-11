@@ -12,6 +12,87 @@ import { ThreadIdSchema } from "../../../shared/identity";
 import { ConversationVisibilityContext } from "../shell/layout/conversation-visibility";
 import { AnswerHistory } from "./answer-history";
 
+it("reveals history on an explicit recovery action and does not reclaim focus when the window returns", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const scroll = vi
+    .spyOn(HTMLElement.prototype, "scrollIntoView")
+    .mockImplementation(() => {});
+  const client = new QueryClient();
+  const threadId = ThreadIdSchema.parse(crypto.randomUUID());
+  const bridge = {
+    request: vi.fn(
+      async (): Promise<AnswerHistoryPage> => ({
+        threadId,
+        source: "app-observed",
+        entries: [],
+        cursor: null,
+      }),
+    ),
+  };
+  let visible = true,
+    revealRequest = 0;
+  const host = document.createElement("div");
+  document.body.append(host);
+  const root = createRoot(host);
+  const render = () =>
+    root.render(
+      createElement(QueryClientProvider, {
+        client,
+        children: createElement(I18nProvider, {
+          initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" },
+          children: createElement(ConversationVisibilityContext, {
+            value: { visible, reveal: () => {} },
+            children: createElement(AnswerHistory, {
+              bridge,
+              threadId,
+              revealRequest,
+            }),
+          }),
+        }),
+      }),
+    );
+  const other = document.createElement("button");
+  document.body.append(other);
+  try {
+    await act(render);
+    expect(bridge.request).not.toHaveBeenCalled();
+    revealRequest++;
+    await act(render);
+    expect(host.querySelector<HTMLDetailsElement>("details")?.open).toBe(true);
+    expect(document.activeElement).toBe(host.querySelector(".answer-history"));
+    expect(scroll).toHaveBeenCalledOnce();
+    await act(async () => {
+      await vi.waitFor(() => expect(bridge.request).toHaveBeenCalledOnce());
+    });
+    visible = false;
+    await act(render);
+    other.focus();
+    visible = true;
+    await act(render);
+    expect(document.activeElement).toBe(other);
+    expect(scroll).toHaveBeenCalledOnce();
+    await act(() => {
+      const detail = host.querySelector<HTMLDetailsElement>("details")!;
+      detail.open = false;
+      detail.dispatchEvent(new Event("toggle"));
+    });
+    await act(render);
+    expect(host.querySelector<HTMLDetailsElement>("details")?.open).toBe(false);
+    revealRequest++;
+    await act(render);
+    expect(host.querySelector<HTMLDetailsElement>("details")?.open).toBe(true);
+    expect(scroll).toHaveBeenCalledTimes(2);
+    expect(document.activeElement).toBe(host.querySelector(".answer-history"));
+  } finally {
+    await act(() => root.unmount());
+    client.clear();
+    host.remove();
+    other.remove();
+    scroll.mockRestore();
+    vi.unstubAllGlobals();
+  }
+});
+
 it("samples history only when opened, replaces bounded pages and retains a failed refresh's previous observations", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const client = new QueryClient();

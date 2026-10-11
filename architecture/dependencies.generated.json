@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "998d139cf6f2fde0e6a8fcd325631e35e33204b9b7609ab367a57ccda1e06069",
+  "inputsHash": "46627852793e6ee9f9e92a2cff189068a6ea15bd4816664237c0950297e22e53",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 675,
-    "scannedFiles": 675,
+    "sourceFiles": 676,
+    "scannedFiles": 676,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 303,
-      "lines": 60494,
+      "files": 304,
+      "lines": 61007,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -118,7 +118,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 23,
-      "lines": 3968,
+      "lines": 3995,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -22226,6 +22226,75 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/app/renderer/workbench/recovery-action-panel.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/recovery-action-panel.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/recovery-action-panel.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/execution/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/renderer/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/recovery-action-panel.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/recovery-action-panel.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/ui/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/recovery-action-panel.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../components/runtime-phase",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/runtime-phase.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/app/renderer/workbench/reference-suggestions.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -22520,6 +22589,18 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/app/renderer/workbench/runtime-panel.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./recovery-action-panel",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/recovery-action-panel.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/app/renderer/workbench/runtime-presentation.test.ts",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -22543,6 +22624,15 @@
       "sourceEnvironment": "renderer",
       "test": true,
       "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/runtime-presentation.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "zustand/vanilla",
       "kind": "import",
       "resolution": "external"
     },

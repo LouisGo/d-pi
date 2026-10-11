@@ -295,3 +295,11 @@ AnswerHistory通过execution只读Query公开面接App持久事实：离线可�
 - 两个请求先后选择 Dock 时，旧实现会保留两个 Dock 表单，Core 反例已实际失败。现一次 store 更新将上一 pending owner 安全交回 Timeline并更新编辑版本，新选择独占 Dock；草稿、题间位置、deadline与发送事实不变，旧 handle 拒绝改写。
 - 自动交回的旧卡不取焦点，只让本次显式选择的新 editor 聚焦。Thread-owned 选择跨 Dock 卸载/重挂保持，不自动切到刚到达的新请求；其他请求仍是可切换摘要，通知 dismiss 和原生回答继续分开。
 - 两文件33/33，包括生产Timeline/Dock双呈现、A→B→卸载/重挂→A、原文草稿、唯一Dock输入和新选择焦点；Renderer类型、design通过。没有新增实机证据或完整工作包验收。
+
+### WB04 会话内恢复动作（2026-10-11，继续实施）
+
+C26 的恢复面板从 Main 的 RuntimeView、操作事实和发送收据派生：断连/失败、原生恢复原因、证据缺口、未知请求/回答/队列操作及未知发送直接可见，保留原输入和阅读。检查和手动重连沿用 RuntimeModel→Main，不新增恢复调度、自动重发或推断原生确认。T3 本地 UsageLimitRecoveryBanner 的事实驱动动作组织作为参考，未复制其限额自动恢复策略。原生占用等原因沿用 Main 已类型化的本地化消息。
+
+“核对回答记录”显式展开同 Thread 的有界 AnswerHistory 并一次定位；随后隐藏/恢复仍释放正文且不夺回焦点。“查看发送记录”进入既有收据视图，原未知结果保持。未开启 inspection 时，不再挂载 CSS 隐藏的旧完成回答正文。来源读取失败沿用既有 Directory/Reading 失败呈现，本段不伪称 RuntimeView 能解释全部 reader 错误。
+
+验证：恢复缺口四类、未知队列及未知发送均先复现失败；三个受影响文件15/15通过，含无需自动启动/回答、busy/未授权不能重连、显式历史展开与再次返回不抢焦点。Renderer 类型、design/i18n通过。没有新增实机/provider/系统IME或完整生产性能证据；Activation 的精确目标与 ready/DOM ACK 仍待实施，完整 WB02–WB04 继续。

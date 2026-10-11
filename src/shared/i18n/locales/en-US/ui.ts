@@ -947,6 +947,20 @@ export const ui = {
   "ui.runtime.interactionsLabel": "Questions",
   "ui.runtime.unsupportedInteraction":
     "Some questions can't be shown. They weren't answered automatically.",
+  "ui.recovery.title": "Check and recover",
+  "ui.recovery.unknown":
+    "An operation or request has an unknown outcome. Nothing is resent automatically.",
+  "ui.recovery.keepInput":
+    "Your input and readable history remain. Check earlier results before sending again.",
+  "ui.recovery.reconnect": "Reconnect",
+  "ui.recovery.answers": "Review answer records",
+  "ui.recovery.messages": "Review sent messages",
+  "ui.recovery.facts": "Connection and operation details",
+  "ui.recovery.thread": "Thread",
+  "ui.recovery.trace": "Trace ID",
+  "ui.recovery.connection": "Connection generation",
+  "ui.recovery.native": "Native session",
+  "ui.recovery.operationUnknown": "Operation outcome unknown",
   "ui.runtime.interactionRecords": "Answer records",
   "ui.runtime.allow": "Allow execution",
   "ui.runtime.start": "Connect Thread",

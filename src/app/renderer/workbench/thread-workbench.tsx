@@ -166,6 +166,10 @@ const ThreadContent = memo(function ThreadContent({
   const { thread, directoryAvailable } = threadSelection;
   const { visible } = useContext(ConversationVisibilityContext);
   const { submission } = thread;
+  const [answerHistoryReveal, setAnswerHistoryReveal] = useState({
+    threadId: thread.context.threadId,
+    request: 0,
+  });
   const releaseSourceAnchor = useRef<(() => void) | null>(null);
   const onSourceAnchorChange = useCallback(
     (adapter: ReturnType<typeof attachReadingAnchor> | null) => {
@@ -326,6 +330,11 @@ const ThreadContent = memo(function ThreadContent({
           <AnswerHistory
             bridge={model.answerHistory}
             threadId={thread.context.threadId}
+            revealRequest={
+              answerHistoryReveal.threadId === thread.context.threadId
+                ? answerHistoryReveal.request
+                : 0
+            }
           />
         )}
         {thread.runtime && (
@@ -334,6 +343,21 @@ const ThreadContent = memo(function ThreadContent({
             model={thread.runtime}
             submission={thread.submission}
             inspection={false}
+            onReviewAnswers={
+              model.answerHistory
+                ? () =>
+                    setAnswerHistoryReveal((previous) => ({
+                      threadId: thread.context.threadId,
+                      request:
+                        previous.threadId === thread.context.threadId
+                          ? previous.request + 1
+                          : 1,
+                    }))
+                : undefined
+            }
+            onReviewOperations={
+              submission ? () => onReadingViewChange("submissions") : undefined
+            }
             // Post-default user answers become a new steering instruction
             // (2026-09-28 decision), not a follow-up.
             onFollowUp={

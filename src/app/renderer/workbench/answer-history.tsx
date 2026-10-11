@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useContext, useState } from "react";
+import { useContext, useLayoutEffect, useRef, useState } from "react";
 import { match } from "ts-pattern";
 import type {
   Answer,
@@ -218,9 +218,11 @@ function HistoryPage({
 function HistorySession({
   bridge,
   threadId,
+  revealRequest = 0,
 }: {
   bridge: AnswerHistoryBridge;
   threadId: ThreadId;
+  revealRequest?: number;
 }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
@@ -230,9 +232,30 @@ function HistorySession({
   );
   const { visible } = useContext(ConversationVisibilityContext);
   const documentVisible = useDocumentVisible();
+  const section = useRef<HTMLElement | null>(null);
+  const revealed = useRef(0);
+  useLayoutEffect(() => {
+    if (revealRequest > 0) setOpen(true);
+  }, [revealRequest]);
+  useLayoutEffect(() => {
+    if (
+      !open ||
+      !revealRequest ||
+      revealed.current === revealRequest ||
+      !visible ||
+      !documentVisible
+    )
+      return;
+    revealed.current = revealRequest;
+    section.current?.scrollIntoView({ block: "nearest" });
+    section.current?.focus();
+  }, [open, revealRequest, visible, documentVisible]);
   return (
-    <section className="answer-history">
-      <Disclosure onToggle={(event) => setOpen(event.currentTarget.open)}>
+    <section ref={section} className="answer-history" tabIndex={-1}>
+      <Disclosure
+        open={open}
+        onToggle={(event) => setOpen(event.currentTarget.open)}
+      >
         <DisclosureTrigger>
           {t("ui.runtime.interactionRecords")}
         </DisclosureTrigger>
@@ -264,12 +287,14 @@ function HistorySession({
 export function AnswerHistory(props: {
   bridge: AnswerHistoryBridge;
   threadId: ThreadId;
+  revealRequest?: number;
 }) {
   return (
     <HistorySession
       key={props.threadId}
       bridge={props.bridge}
       threadId={props.threadId}
+      revealRequest={props.revealRequest ?? 0}
     />
   );
 }
