@@ -76,12 +76,12 @@ async function fixture(t, duplicate = false) {
   }
   write(
     `${sdk}/node_modules/.pnpm/agent/node_modules/@oh-my-pi/pi-coding-agent/package.json`,
-    JSON.stringify({ name: "@oh-my-pi/pi-coding-agent", version: "18.8.7" }),
+    JSON.stringify({ name: "@oh-my-pi/pi-coding-agent", version: "18.8.9" }),
   );
   write(
     `${sdk}/manifest.json`,
     JSON.stringify({
-      sdkVersion: "18.8.7",
+      sdkVersion: "18.8.9",
       bunVersion: "1.3.14",
       platform: "darwin-arm64",
       hashes,

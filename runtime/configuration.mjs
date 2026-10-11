@@ -1,4 +1,4 @@
-// Short-lived desktop adapter over unchanged OMP 18.8.7 config/auth modules.
+// Short-lived desktop adapter over unchanged OMP 18.8.9 config/auth modules.
 
 import { randomUUID } from "node:crypto";
 import {

@@ -28,7 +28,7 @@ const result =
 if (!result.markdown.trim()) throw Error("document-conversion-failed");
 const output = JSON.stringify({
   text: result.markdown,
-  converterVersion: `omp18.8.7-${extension === ".ipynb" ? "notebookToEditableText" : `markit-${extension.slice(1)}`}`,
+  converterVersion: `omp18.8.9-${extension === ".ipynb" ? "notebookToEditableText" : `markit-${extension.slice(1)}`}`,
 });
 if (Buffer.byteLength(output) > 1048576) throw Error("transport-too-large");
 process.stdout.write(output);

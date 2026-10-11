@@ -1,0 +1,106 @@
+{
+  "lockHash": "3186205a8eec53ea8b40813bf00f87c2d644f0624ce5722d48a66dff1038ed02",
+  "sdkSource": {
+    "file": "node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts",
+    "sha256": "4b9f9aa2a62deacfbe36fa0ea0e262b2c4d753fb724de0dea8a0e379bf60f8c8"
+  },
+  "sdkVersion": "18.8.9",
+  "bunVersion": "1.3.14",
+  "platform": "darwin-arm64",
+  "packaging": {
+    "policyVersion": 1,
+    "budgetBytes": 681574400,
+    "packages": 112,
+    "omitted": [],
+    "removed": {
+      "type-declaration": {
+        "files": 5098,
+        "bytes": 40817867
+      },
+      "cli-bundle": {
+        "files": 1,
+        "bytes": 29383427
+      },
+      "source-map": {
+        "files": 5230,
+        "bytes": 58805457
+      },
+      "foreign-native": {
+        "files": 14,
+        "bytes": 211561176
+      },
+      "duplicate-native": {
+        "files": 1,
+        "bytes": 44589928
+      }
+    },
+    "runtimeAdditions": [
+      {
+        "package": "@huggingface/transformers@4.3.0",
+        "dependency": "onnxruntime-common"
+      }
+    ],
+    "size": {
+      "bytes": 500304785,
+      "files": 10990,
+      "links": 238,
+      "top": {
+        "BUN-LICENSE.md": 5376,
+        "bun": 63096576,
+        "configuration-readonly.mjs": 22666,
+        "configuration.mjs": 19457,
+        "document-content.mjs": 1219,
+        "gate.js": 937,
+        "host.mjs": 11794,
+        "image-compression.mjs": 4018,
+        "image-input.mjs": 5316,
+        "managed-session.mjs": 2719,
+        "model-selection.mjs": 9176,
+        "native-queue.mjs": 10936,
+        "native-subagent-configuration.mjs": 4059,
+        "node_modules": 437098538,
+        "pdf-content.mjs": 804,
+        "reading-session.mjs": 5527,
+        "thread-history.mjs": 5667
+      }
+    }
+  },
+  "packageSize": {
+    "platform": "darwin-arm64",
+    "sdk": {
+      "bytes": 500307936,
+      "files": 10991,
+      "links": 238,
+      "top": {
+        "BUN-LICENSE.md": 5376,
+        "bun": 63096576,
+        "configuration-readonly.mjs": 22666,
+        "configuration.mjs": 19457,
+        "document-content.mjs": 1219,
+        "gate.js": 937,
+        "host.mjs": 11794,
+        "image-compression.mjs": 4018,
+        "image-input.mjs": 5316,
+        "managed-session.mjs": 2719,
+        "manifest.json": 3151,
+        "model-selection.mjs": 9176,
+        "native-queue.mjs": 10936,
+        "native-subagent-configuration.mjs": 4059,
+        "node_modules": 437098538,
+        "pdf-content.mjs": 804,
+        "reading-session.mjs": 5527,
+        "thread-history.mjs": 5667
+      }
+    },
+    "app": {
+      "bytes": 818643882,
+      "files": 11248,
+      "links": 252,
+      "top": {
+        "Contents": 818643882
+      }
+    },
+    "budgetBytes": 1048576000,
+    "asarFiles": 331
+  }
+}

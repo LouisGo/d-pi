@@ -5892,7 +5892,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ## Official OMP SDK and prior CLI evidence
 
-Official oh-my-pi SDK v18.8.7, installed through pnpm-lock.yaml and shipped with its original dependencies and license files. The former 18.4.6 prelude import correction is retired: src/sdk.ts is copied unchanged and its reviewed SHA-256 is recorded in sdk/manifest.json. The S2 CLI resource remains historical evidence; the current SDK runs through an App-owned adapter and pinned Bun 1.3.14. Upstream OMP license:
+Official oh-my-pi SDK v18.8.9, installed through pnpm-lock.yaml and shipped with its original dependencies and license files. The former 18.4.6 prelude import correction is retired: src/sdk.ts is copied unchanged and its reviewed SHA-256 is recorded in sdk/manifest.json. The S2 CLI resource remains historical evidence; the current SDK runs through an App-owned adapter and pinned Bun 1.3.14. Upstream OMP license:
 
 ```text
 MIT License

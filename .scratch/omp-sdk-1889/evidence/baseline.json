@@ -1,0 +1,24 @@
+{
+  "base": "1e73213ea81966e1979c58cad1b0342f34487381",
+  "source": "git archive clean base; direct tsc and isolated Vitest without pnpm installation",
+  "typecheck": [
+    "src/app/main/ipc/project-reads.test.ts(573,5): error TS2322: Type '`${string}-${string}-${string}-${string}-${string}`' is not assignable to type 'string & $brand<\"SubmissionId\">'.",
+    "  Type '`${string}-${string}-${string}-${string}-${string}`' is not assignable to type '$brand<\"SubmissionId\">'.",
+    "src/modules/ui/renderer/composer-tag.tsx(134,44): error TS7053: Element implicitly has an 'any' type because expression of type '\"data-file-icon\"' can't be used to index type '{ key?: Key | null | undefined; ref?: Ref<HTMLButtonElement> | undefined; dangerouslySetInnerHTML?: { __html: string | TrustedHTML; } | undefined; ... 285 more ...; pending?: boolean; }'.",
+    "  Property 'data-file-icon' does not exist on type '{ key?: Key | null | undefined; ref?: Ref<HTMLButtonElement> | undefined; dangerouslySetInnerHTML?: { __html: string | TrustedHTML; } | undefined; ... 285 more ...; pending?: boolean; }'."
+  ],
+  "behaviorFailures": [
+    "FAIL  tests/integration/app-runtime-service.integration.test.ts > uses the Runtime canonical file reference for frozen TXT+PNG presentation after storage restart",
+    "FAIL  tests/integration/attachment-migration.integration.test.ts > migrates attachment manifests after receipt recovery and reopens without losing them",
+    "FAIL  src/app/renderer/shell/appearance-subscriptions.test.ts > places Thread creation and project opening in the sidebar and settings in a modal over mounted work",
+    "FAIL  src/app/renderer/shell/appearance-subscriptions.test.ts > does not execute sidebar Thread rows for theme or shortcut save busy updates",
+    "FAIL  src/app/renderer/shell/appearance-subscriptions.test.ts > Main attention samples update only the relevant badge and notice, preserving editor and reading resources",
+    "FAIL  src/app/renderer/shell/i18n-renderer.test.ts > renderer locale > updates visible app copy when the locale changes",
+    "FAIL  src/app/renderer/workbench/thread-workbench.test.ts > opens the existing Thread tools at native history from a live coverage gap and returns to the same live pane",
+    "FAIL  src/app/main/wiring/native-session-index.test.ts > automatically restores CLI sessions into stable project Threads without changing native content or execution trust",
+    "FAIL  src/app/main/wiring/submission-storage.test.ts > persistent submission handoff > recovers interrupted receipts before all v4–v14 backups and returns a ready store",
+    "FAIL  src/app/main/wiring/submission-storage.test.ts > backfills the presentation index from schema 13 without changing frozen receipts"
+  ],
+  "sourceBoundaries": "raw color outside token source: src/modules/ui/renderer/context-token.css",
+  "structure": "dependencies.generated.json stale on clean base and upgrade"
+}

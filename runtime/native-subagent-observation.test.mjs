@@ -355,7 +355,7 @@ test("fixed SDK RPC observes two same-name tasks, final transcript and terminal 
       process.env.OBSERVATION_EVIDENCE_PATH,
       JSON.stringify(
         {
-          sdkVersion: "18.8.7",
+          sdkVersion: "18.8.9",
           config: { task: { batch: true } },
           supplierCalls: requests.length,
           parentStopCancelsBoth: true,

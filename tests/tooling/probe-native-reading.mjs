@@ -9,6 +9,7 @@ import {
   realpath,
   rm,
   symlink,
+  writeFile,
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -38,7 +39,39 @@ const { RpcFrameDecoder } = await import(join(sdk, "modes/rpc/rpc-frame.ts"));
 let child;
 let session;
 try {
+  await writeFile(
+    join(agentDir, "models.yml"),
+    JSON.stringify({
+      providers: {
+        fixture: {
+          baseUrl: "http://127.0.0.1:1/v1",
+          apiKey: "fixture",
+          api: "openai-completions",
+          models: [
+            {
+              id: "fixture",
+              name: "fixture",
+              reasoning: false,
+              input: ["text"],
+              contextWindow: 128000,
+              maxTokens: 1024,
+              cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+            },
+          ],
+        },
+      },
+    }),
+  );
+  await writeFile(
+    join(agentDir, "config.yml"),
+    JSON.stringify({
+      autolearn: { enabled: false },
+      compaction: { enabled: false },
+      modelRoles: { default: "fixture/fixture", smol: "fixture/fixture" },
+    }),
+  );
   const manager = SessionManager.create(cwd, sessions);
+  manager.appendModelChange("fixture/fixture");
   const expected = [];
   // OMP itself truncates each unsigned string at 500K characters on disk.
   // Use one multi-block native message (>2MiB) with valid persisted blocks.
@@ -271,7 +304,7 @@ try {
   const saved = history.entries.find(
     (entry) => entry.tool?.toolCallId === tool.toolCallId,
   );
-  assert(saved, "real 18.8.7 JSONL tool result must retain native identity");
+  assert(saved, "real 18.8.9 JSONL tool result must retain native identity");
   assert.equal(saved.tool.coverage, "partial");
   assert.equal(saved.tool.arguments.value.path, "fixture.kt");
   assert.equal(saved.tool.result.value.details.lines, 1);
@@ -301,7 +334,7 @@ try {
   );
   console.log(
     JSON.stringify({
-      officialSdk: "18.8.7",
+      officialSdk: "18.8.9",
       records: messages.length,
       pages,
       bodyBytes: Buffer.byteLength(big),

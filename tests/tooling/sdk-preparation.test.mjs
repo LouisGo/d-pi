@@ -37,20 +37,20 @@ function fixture(t) {
     "package.json",
     JSON.stringify({
       devDependencies: {
-        "@oh-my-pi/pi-coding-agent": "18.8.7",
-        "@oh-my-pi/pi-utils": "18.8.7",
+        "@oh-my-pi/pi-coding-agent": "18.8.9",
+        "@oh-my-pi/pi-utils": "18.8.9",
         bun: "1.3.14",
       },
     }),
   );
   write("pnpm-lock.yaml", "fixture-lock\n");
   for (const name of ["pi-coding-agent", "pi-utils"]) {
-    const target = `node_modules/.pnpm/${name}@18.8.7/node_modules/@oh-my-pi/${name}`;
+    const target = `node_modules/.pnpm/${name}@18.8.9/node_modules/@oh-my-pi/${name}`;
     write(
       `${target}/package.json`,
       JSON.stringify({
         name: `@oh-my-pi/${name}`,
-        version: "18.8.7",
+        version: "18.8.9",
         exports: {
           ".": { import: "./src/index.ts" },
           "./*": { import: "./src/*.ts" },
@@ -63,7 +63,7 @@ function fixture(t) {
       write(`${target}/src/sdk.ts`, officialSource);
     mkdirSync(join(root, "node_modules/@oh-my-pi"), { recursive: true });
     symlinkSync(
-      `../.pnpm/${name}@18.8.7/node_modules/@oh-my-pi/${name}`,
+      `../.pnpm/${name}@18.8.9/node_modules/@oh-my-pi/${name}`,
       join(root, "node_modules/@oh-my-pi", name),
     );
   }
@@ -125,8 +125,8 @@ test("SDK preparation replaces old links, resolves the declared packages and is 
   );
   const first = prepare(root);
   assert.equal(first.status, 0, first.stderr);
-  assert.equal(version(root), "18.8.7");
-  assert.equal(version(root, "pi-utils"), "18.8.7");
+  assert.equal(version(root), "18.8.9");
+  assert.equal(version(root, "pi-utils"), "18.8.9");
   assert.equal(
     readFileSync(
       join(root, "node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts"),
@@ -156,7 +156,7 @@ test("SDK preparation replaces old links, resolves the declared packages and is 
   assert.equal(JSON.parse(manifest).sdkImportFix, undefined);
   assert.equal(
     JSON.parse(manifest).sdkSource.sha256,
-    "d693c1b71e70f61c38c2cf564c608750401179509e8c6c414d1e124baa96e69a",
+    "4b9f9aa2a62deacfbe36fa0ea0e262b2c4d753fb724de0dea8a0e379bf60f8c8",
   );
   const second = prepare(root);
   assert.equal(second.status, 0, second.stderr);
@@ -168,7 +168,7 @@ test("SDK preparation replaces old links, resolves the declared packages and is 
 
 test("SDK preparation keeps a closed target runtime graph without maps, types, foreign binaries or incidental store packages", (t) => {
   const { root, write } = fixture(t);
-  const agent = "node_modules/.pnpm/pi-coding-agent@18.8.7/node_modules";
+  const agent = "node_modules/.pnpm/pi-coding-agent@18.8.9/node_modules";
   const metadataPath = join(
     root,
     agent,
@@ -228,7 +228,7 @@ test("SDK preparation keeps a closed target runtime graph without maps, types, f
   assert.equal(result.status, 0, result.stderr);
   const preparedAgent = join(
     root,
-    "resources/sdk/node_modules/.pnpm/pi-coding-agent@18.8.7/node_modules",
+    "resources/sdk/node_modules/.pnpm/pi-coding-agent@18.8.9/node_modules",
   );
   const preparedOnnx = join(preparedAgent, "onnxruntime-node");
   assert.equal(
@@ -412,7 +412,7 @@ test("empty resources prepare successfully; a failed copy preserves the previous
     readFileSync(join(root, "resources/sdk/host.mjs"), "utf8"),
     "fixture host.mjs",
   );
-  assert.equal(version(root), "18.8.7");
+  assert.equal(version(root), "18.8.9");
 });
 
 test("changed upstream source or active resource users cannot replace a complete SDK root", async (t) => {

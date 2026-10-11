@@ -44,7 +44,7 @@ describe("private immutable input preparation", () => {
   it("prepares XLSX through the fixed native document converter and retains its derived content for preview and clipboard", async () => {
     const convertDocument = vi.fn(async () => ({
       text: "## Sheet1\n| Name | Count |\n| --- | --- |\n| Alice | 7 |",
-      converterVersion: "omp18.8.7-markit-xlsx",
+      converterVersion: "omp18.8.9-markit-xlsx",
     }));
     const s = store({ convertDocument });
     const item = await s.importBytes(thread, {

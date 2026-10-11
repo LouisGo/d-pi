@@ -16,7 +16,7 @@ try {
       "utf8",
     ),
   );
-  assert.equal(packageMetadata.version, "18.8.7");
+  assert.equal(packageMetadata.version, "18.8.9");
   await writeFile(
     join(sandbox.config, "models.yml"),
     JSON.stringify({
@@ -292,7 +292,7 @@ try {
   await preservesHistoryOnRejectedSelection();
   console.log(
     JSON.stringify({
-      sdkVersion: "18.8.7",
+      sdkVersion: "18.8.9",
       emptySessionColdRestart: true,
       sameSessionId: true,
       sameSessionFile: true,

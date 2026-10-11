@@ -1,0 +1,59 @@
+{
+  "sdkVersion": "18.8.9",
+  "adapterCases": [
+    "openai-responses: blank done and item",
+    "openai-responses: blank done and full item",
+    "openai-responses: full done ignores late delta",
+    "openai-responses: explicit empty object wins",
+    "openai-responses: explicit null wins",
+    "openai-codex-responses: blank done and item",
+    "openai-codex-responses: blank done and full item",
+    "openai-codex-responses: full done ignores late delta",
+    "openai-codex-responses: explicit empty object wins",
+    "openai-codex-responses: explicit null wins"
+  ],
+  "thresholds": [
+    {
+      "entry": "default",
+      "tokens": 850000
+    },
+    {
+      "entry": 400000,
+      "tokens": 340000
+    },
+    {
+      "entry": "f400000",
+      "tokens": 400000
+    },
+    {
+      "entry": "80%",
+      "tokens": 800000
+    }
+  ],
+  "extendedWindows": [
+    {
+      "entry": "default",
+      "window": 128000
+    },
+    {
+      "entry": 128000,
+      "window": 128000
+    },
+    {
+      "entry": 200000,
+      "window": 512000
+    },
+    {
+      "entry": "f128000",
+      "window": 512000
+    },
+    {
+      "entry": "80%",
+      "window": 128000
+    }
+  ],
+  "oversizedFixed": 167117,
+  "forkOutcomeUnknown": true,
+  "parentUnchanged": true,
+  "realSupplierRequests": 0
+}

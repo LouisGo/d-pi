@@ -475,7 +475,7 @@ async function runValidation() {
     assert.equal(requests.length, 1, "cold resume must not replay a request");
     assert.ok(readFileSync(original.session_file, "utf8").startsWith(journal));
     checks.push(
-      "macOS arm64 packaged Main/Host cold resume preserves same Thread/native file-ID, readable real 18.8.7 JSONL and unsent draft without replay",
+      "macOS arm64 packaged Main/Host cold resume preserves same Thread/native file-ID, readable real 18.8.9 JSONL and unsent draft without replay",
     );
     const modelsPath = join(isolated.config, "models.yml");
     const config = JSON.parse(readFileSync(modelsPath, "utf8"));

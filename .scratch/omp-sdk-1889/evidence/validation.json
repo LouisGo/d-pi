@@ -1,0 +1,77 @@
+{
+  "base": "1e73213ea81966e1979c58cad1b0342f34487381",
+  "sdkVersion": "18.8.9",
+  "bunVersion": "1.3.14",
+  "fullTests": {
+    "command": "pnpm test --maxWorkers=2",
+    "exitCode": 1,
+    "files": {
+      "passed": 244,
+      "failed": 7,
+      "skipped": 1
+    },
+    "tests": {
+      "passed": 1626,
+      "failed": 10,
+      "skipped": 2
+    },
+    "failures": [
+      "FAIL  tests/integration/app-runtime-service.integration.test.ts > uses the Runtime canonical file reference for frozen TXT+PNG presentation after storage restart",
+      "FAIL  tests/integration/attachment-migration.integration.test.ts > migrates attachment manifests after receipt recovery and reopens without losing them",
+      "FAIL  src/app/main/wiring/native-session-index.test.ts > automatically restores CLI sessions into stable project Threads without changing native content or execution trust",
+      "FAIL  src/app/main/wiring/submission-storage.test.ts > persistent submission handoff > recovers interrupted receipts before all v4–v14 backups and returns a ready store",
+      "FAIL  src/app/main/wiring/submission-storage.test.ts > backfills the presentation index from schema 13 without changing frozen receipts",
+      "FAIL  src/app/renderer/shell/appearance-subscriptions.test.ts > places Thread creation and project opening in the sidebar and settings in a modal over mounted work",
+      "FAIL  src/app/renderer/shell/appearance-subscriptions.test.ts > does not execute sidebar Thread rows for theme or shortcut save busy updates",
+      "FAIL  src/app/renderer/shell/appearance-subscriptions.test.ts > Main attention samples update only the relevant badge and notice, preserving editor and reading resources",
+      "FAIL  src/app/renderer/shell/i18n-renderer.test.ts > renderer locale > updates visible app copy when the locale changes",
+      "FAIL  src/app/renderer/workbench/thread-workbench.test.ts > opens the existing Thread tools at native history from a live coverage gap and returns to the same live pane"
+    ],
+    "sameFailuresAsCleanBase": true
+  },
+  "tooling": {
+    "passed": 144,
+    "failed": 0
+  },
+  "architectureTests": {
+    "passed": 40,
+    "failed": 0
+  },
+  "validateSdk": {
+    "passed": true,
+    "realSupplierRequests": 0
+  },
+  "environment": {
+    "fixedDependencies": 51,
+    "issues": 0
+  },
+  "review": {
+    "result": "no actionable blocking findings",
+    "snapshotProductionHashesUnchanged": true,
+    "reexecutedTests": false
+  },
+  "fullCheckPassed": false,
+  "baselineLimitations": "baseline.json",
+  "logs": [
+    {
+      "path": "/tmp/dpi-omp1889-verified-tests.log",
+      "sha256": "d2d5d50e762143ab2be4a10b2c087f99b1a5b9eae6afc8d8473f71fc0cc5fd5e"
+    },
+    {
+      "path": "/tmp/dpi-omp1889-final-tooling.log",
+      "sha256": "44499d094fb60c915cf2c1488a1bdd0155d2e878cfcef34a8860884e62c2dee7"
+    },
+    {
+      "path": "/tmp/dpi-omp1889-final-sdk.log",
+      "sha256": "7aaed4671aeb54e9a7012aa538d6734839a0e21a20553123b91f5a7d102d8953"
+    },
+    {
+      "path": "/tmp/dpi-omp1889-environment.log",
+      "sha256": "6c2172fae6dcfa090431bae0a0bbe519358fe33447d6bdb3c3473a5e7e170020"
+    },
+    {
+      "path": "/tmp/dpi-omp1889-architecture-tests.log",
+      "sha256": "a76b64fda81d420bc287c9f634941514a17551971aa287b45660bb454a4acb71"
+    }
+  ]
+}

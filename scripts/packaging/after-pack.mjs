@@ -26,13 +26,13 @@ export async function auditPackagedApp(appPath, target) {
   if (manifest.packaging?.policyVersion !== 1)
     throw Error("SDK packaging policy is stale; run pnpm runtime:sdk");
   if (
-    manifest.sdkVersion !== "18.8.7" ||
+    manifest.sdkVersion !== "18.8.9" ||
     manifest.bunVersion !== "1.3.14" ||
     manifest.sdkImportFix !== undefined ||
     manifest.sdkSource?.file !==
       "node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts" ||
     manifest.sdkSource?.sha256 !==
-      "d693c1b71e70f61c38c2cf564c608750401179509e8c6c414d1e124baa96e69a"
+      "4b9f9aa2a62deacfbe36fa0ea0e262b2c4d753fb724de0dea8a0e379bf60f8c8"
   )
     throw Error("Packaged official SDK source identity mismatch");
   for (const [name, expected] of Object.entries({
