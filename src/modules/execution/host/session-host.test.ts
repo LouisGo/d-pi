@@ -15,6 +15,10 @@ const native = vi.hoisted(() => ({
   writes: [] as string[],
   close: vi.fn(),
   controlRequest: vi.fn(),
+  askDialog: vi.fn(async (_payload?: unknown) => ({
+    success: true,
+    data: { enabled: true },
+  })),
   messagesPage: vi.fn(),
   readingPage: vi.fn(),
   options: [] as NativeSessionOptions[],
@@ -36,6 +40,7 @@ vi.mock("./native/native-session", () => ({
       native.writes.push(frame);
     }
     async request(command: string, payload?: unknown) {
+      if (command === "set_ask_dialog") return native.askDialog(payload);
       if (command === "get_messages_page") return native.messagesPage(payload);
       if (command === "d_pi_reading_page") return native.readingPage(payload);
       if (command === "d_pi_subagent_state")
@@ -73,6 +78,9 @@ afterEach(() => {
   native.writes.length = 0;
   native.close.mockReset();
   native.controlRequest.mockReset();
+  native.askDialog
+    .mockReset()
+    .mockResolvedValue({ success: true, data: { enabled: true } });
   native.messagesPage.mockReset();
   native.readingPage.mockReset();
   native.options.length = 0;
@@ -2064,3 +2072,104 @@ it.each(["live", "cancelled", "denied"] as const)(
     }
   },
 );
+
+it("enables native rich ask before publishing SDK ready and waits for the exact acknowledgement", async () => {
+  const messages: HostMessage[] = [];
+  let acknowledge: (reply: {
+    success: boolean;
+    data: { enabled: boolean };
+  }) => void = () => {};
+  native.askDialog.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        acknowledge = resolve;
+      }),
+  );
+  native.controlRequest.mockResolvedValue({
+    success: true,
+    data: {
+      paused: false,
+      stopping: false,
+      pendingAsync: false,
+      admitted: false,
+      streaming: false,
+      compacting: false,
+      queued: 0,
+      background: 0,
+      queue: [],
+    },
+  });
+  const host = createSessionHost((message) => messages.push(message), vi.fn());
+  const startup = host.handle({
+    kind: "start",
+    threadId: ThreadIdSchema.parse(crypto.randomUUID()),
+    traceId: crypto.randomUUID(),
+    processInstanceId: crypto.randomUUID(),
+    connectionGeneration: crypto.randomUUID(),
+    configContextId: "fixture",
+    binary: "/fixture/bun",
+    sdkEntry: "/fixture/host.mjs",
+    identity: { directory: "/project", device: "1", inode: "2" },
+    environment: {},
+    sessionDirectory: "/sessions",
+  });
+  try {
+    await vi.waitFor(() =>
+      expect(native.askDialog).toHaveBeenCalledExactlyOnceWith({
+        enabled: true,
+      }),
+    );
+    expect(messages.some((message) => message.kind === "ready")).toBe(false);
+    acknowledge({ success: true, data: { enabled: true } });
+    await startup;
+    expect(messages.filter((message) => message.kind === "ready")).toHaveLength(
+      1,
+    );
+    expect(native.writes).toHaveLength(0);
+  } finally {
+    acknowledge({ success: true, data: { enabled: true } });
+    await startup;
+    native.observers[0]?.({ kind: "exited" });
+  }
+});
+
+it("refuses SDK readiness when rich ask acknowledgement does not confirm enabled", async () => {
+  const messages: HostMessage[] = [];
+  const exit = vi.fn();
+  native.askDialog.mockResolvedValueOnce({
+    success: true,
+    data: { enabled: false },
+  });
+  native.controlRequest.mockResolvedValue({
+    success: true,
+    data: {
+      paused: false,
+      stopping: false,
+      pendingAsync: false,
+      admitted: false,
+      streaming: false,
+      compacting: false,
+      queued: 0,
+      background: 0,
+      queue: [],
+    },
+  });
+  const host = createSessionHost((message) => messages.push(message), exit);
+  await host.handle({
+    kind: "start",
+    threadId: ThreadIdSchema.parse(crypto.randomUUID()),
+    traceId: crypto.randomUUID(),
+    processInstanceId: crypto.randomUUID(),
+    connectionGeneration: crypto.randomUUID(),
+    configContextId: "fixture",
+    binary: "/fixture/bun",
+    sdkEntry: "/fixture/host.mjs",
+    identity: { directory: "/project", device: "1", inode: "2" },
+    environment: {},
+    sessionDirectory: "/sessions",
+  });
+  expect(messages.some((message) => message.kind === "ready")).toBe(false);
+  expect(messages.some((message) => message.kind === "failed")).toBe(true);
+  expect(exit).toHaveBeenCalledWith(1);
+  expect(native.writes).toHaveLength(0);
+});

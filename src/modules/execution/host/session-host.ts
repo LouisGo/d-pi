@@ -723,6 +723,17 @@ export function createSessionHost(
       await native.start();
       if (value.sdkEntry) {
         const instance = native;
+        // OMP defaults rich ask off for RPC consumers. Enable the reviewed wire
+        // before exposing ready; a missing/negative receipt cannot silently fall
+        // back to the old single-question UI.
+        const richAsk = await tasks.run((signal) =>
+          instance.request("set_ask_dialog", { enabled: true }, { signal }),
+        );
+        nativeData(
+          z.object({ enabled: z.literal(true) }),
+          richAsk,
+          "set_ask_dialog",
+        );
         subagentObservation = new NativeSubagentObservation(
           (type, payload) =>
             tasks.run((signal) => instance.request(type, payload, { signal })),

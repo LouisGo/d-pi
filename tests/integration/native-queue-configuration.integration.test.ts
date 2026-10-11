@@ -51,6 +51,8 @@ vi.mock("../../src/modules/execution/host/native/native-session", () => ({
       throw Error("No input submission belongs to this fixture");
     }
     async request(command: string, payload?: unknown) {
+      if (command === "set_ask_dialog")
+        return { success: true, data: { enabled: true } };
       boundary.requests.push(command);
       if (command === "d_pi_queue" || command === "d_pi_subagent_config")
         return boundary.operation(command, payload);

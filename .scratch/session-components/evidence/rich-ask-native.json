@@ -1,0 +1,26 @@
+{
+  "commit": "91afca1ad2b34e12ca26fb1b7cc945943437573f",
+  "sourceDirty": true,
+  "electron": "44.4.5",
+  "omp": "18.8.9",
+  "hostEntrySha256": "031476747966b8a716ef3dcc158399e0f07c73734b6f6a4ca754d1aceda68d72",
+  "sdkHostSha256": "93b5b6607b4c6502739061620a46b13e1c55bba0e305e9fd9f35e77f0765302c",
+  "scenarios": [
+    "parallel independent native rich requests",
+    "raw option and stored custom versus native normalized custom",
+    "explicit empty multi",
+    "native whole-form timeout defaults",
+    "direct extension RPC zero expires immediately",
+    "no wire deadline then explicit cancel",
+    "same native file and ID reconnect with opt-in again"
+  ],
+  "historyEntries": 10,
+  "modelRequests": 0,
+  "limitations": [
+    "isolated Electron Main and official extension; no GUI, real provider or system IME",
+    "no-deadline RPC observed for 300ms; AskTool settings translation is separate"
+  ],
+  "fixtureEntry": "validation/m2/rich-ask-native.ts",
+  "fixtureSourceSha256": "0cc75daa494775d77a801f19edceeff38ff8082d7e1fafb56e41edb650a60165",
+  "processExitCode": 0
+}

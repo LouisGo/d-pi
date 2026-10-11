@@ -17,8 +17,8 @@
 | WB00 | 当前运行基线 | complete | 18.8.9 实际依赖；A/B 回答独立结果；同目标单次发送；草稿跨卸载；代次隔离；written 与原生结束分开；stop 独立 | 下方 WB00 证据；已与WB01合装，待用户试用 |
 | WB01 | WB00 | complete | 命令卡→实时详情→pin→切 B→明确 B 草稿引用→回 A 原成员；有界摘要、final 对账、coverage、关闭释放、旧导航不抢占；键盘入口 | Source/Surface/reader/FrozenContext 与命令卡/Inspector 已装配；主矩阵143项与最后受影响31项通过；独立review已闭合；下方Dev源码试用交接 |
 | WB02 | WB01 | implementing | 活动组、常用 read/search/edit、轮次、变化摘要真实 | 裁剪前语义与生产专用Body已接，活动结构/来源导航仍待完成 |
-| WB03 | WB00；联调 WB01/02 | planned | demand/范围读取/字节缓存/Worker/Viewer/native warm 有界 | 本轮已授权，随WB02交错落实资源策略 |
-| WB04 | WB00、WB01 | planned | 多题/权限/超时/unknown/回答历史完整 | 本轮已授权，后续原生ask/approval与持久历史 |
+| WB03 | WB00；联调 WB01/02 | implementing | demand/范围读取/字节缓存/Worker/Viewer/native warm 有界 | 本轮已授权，随WB02交错落实资源策略 |
+| WB04 | WB00、WB01 | implementing | 多题/权限/超时/unknown/回答历史完整 | 本轮已授权，后续原生ask/approval与持久历史 |
 | WB05 | WB01、WB03、WB04 请求事实 | planned | 任务→子代理→Job→使用量/策略/资源 | 后续真实 owner scope 合同 |
 | WB06 | WB01、WB02、WB04 | planned | Plan 到安排执行；Diff/消息反馈；精确分叉 | 后续原生能力与反馈协调 |
 | WB07 | WB01、WB02、WB03 | planned | 搜索定位与专业 Body 复用来源/详情/资源 | 后续专业结果合同 |
@@ -279,3 +279,13 @@ AnswerHistory通过execution只读Query公开面接App持久事实：离线可�
 - 固定 `69c7dbe..a617606` 独立综合 review 确认两项 P2。已先以实际反例复现：普通问题转至 Dock 后默认回答，Timeline 补充输入被旧 pending owner 拦住；打开历史后 shell/document 隐藏，正文与 Query observer 仍驻留。
 - 默认回答后的 steer 编辑使用独立入口，保留半成品与原回答冻结值，继续校验来源/编辑 handle；pending 编辑入口拒绝终态及已发送操作，迟到 Dock 回调不能覆盖补充。正式 follow-up 发送也校验捕获 handle。隐藏历史只保留轻量页码/展开 ID，释放正文与查询；回来按同页重采样，保留展开位置，不把旧样本当当前事实。
 - 三个受影响测试文件 33/33 通过，包含 Timeline/Dock 同时挂载→默认回答→中文改写→旧回调拒绝→实际 steer 回调参数，以及 shell/window 隐藏后的 gc、无额外读取、恢复原页与详情。Renderer 类型、design、fast 门禁通过；结构报告已刷新。日志 `/tmp/d-pi-rich-review-red.log` 与 `green2.log`。没有新增实机/provider/系统 IME 证据，完整 WB02–WB04 继续推进。
+
+
+### WB04 原生富问答启用与真实 Main 链路（2026-10-11）
+
+- 固定 `a617606..91afca1` 独立复核已闭合前述两项 P2，无新增可达高价值问题。
+- Host 在正式 managed SDK 启动中发送 `set_ask_dialog {enabled:true}`，等待固定 OMP18.8.9 的肯定 receipt 才发布 ready；否定/缺失响应按类型化 protocol failure 拒绝就绪。命令等待仍由原 HostScope 拥有，恢复每一新代次重新启用。原生所有权和旧单题 default 策略保持分离。
+- 真实源码澄清 timeout 单位/层级：`AskTool` 把配置 `ask.timeout=0` 或 plan mode 转成无到期时间；扩展直接向 RPC dialog 传 `timeout:0` 则立即到期。Host 忠实处理收到的 wire，不把 RPC 的 0 改成无限，也不向无 deadline 的 rich ask 添加旧 120 秒策略。原方案“ask.timeout=0 禁用”指 AskTool 设置，不能泛化到 ExtensionUIDialogOptions。
+- 新隔离验证 `validation/m2/rich-ask-native.ts` 使用未修改的 managed SDK18.8.9、正式 Electron44.4.5 Main/Host/RuntimeService/SQLite 和官方扩展 UI；两个并行 rich 请求各自回答，原始带空白标签/空多选/自填记录真实落盘，App 留原文、OMP native parser 按其规则 trim 自填，整组 timeout 选择每题推荐项且无 App 回答意图，直接 RPC zero 立即结束，无 wire deadline 可取消，同一 native file/ID 冷恢复后再次富问答。模型请求为零，两个 native scope 清理确认后进程返回0。证据 `.scratch/session-components/evidence/rich-ask-native.json`；这是 dirty 工程检查点，未冒称固定候选、真实 provider、GUI 或系统 IME。AskTool 设置→工具执行的实测仍待补，300ms 无 deadline 观察不替代长时验收。
+- Host/交互/native transport 三文件82/82；Main/Host/队列及生命周期六文件首先133通过/4失败，固定修改前 Host 同样复现4项，根因是旧夹具仅等待一个 microtask 或 Host关闭、未等 Main group/lease 清理。补事实等待后两文件29/29通过（与133重叠）；生产清理逻辑未改变。Core/Host类型通过，fast通过。首次 native fixture漏 dispatch 与后续误把 RPC zero 当设置0均修正，没有把失败当成功证据。
+- WB03/WB04表格状态同步为 implementing；完整原方案验收仍在进行，尤其权限可靠关联、单当前Dock表单、Recovery/Activation与生产性能组合，不推送、不发布。

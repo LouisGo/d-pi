@@ -47,9 +47,9 @@ vi.mock("../../src/platform/node/processes/public", () => ({
   }),
   terminateManagedGroup: adapters.terminate,
 }));
-const cleanup: (() => void)[] = [];
-afterEach(() => {
-  for (const close of cleanup.splice(0)) close();
+const cleanup: (() => Promise<void>)[] = [];
+afterEach(async () => {
+  for (const close of cleanup.splice(0)) await close();
   adapters.terminate.mockReset().mockResolvedValue(true);
 });
 const idle = {
@@ -106,13 +106,15 @@ async function running(diagnosticFailure = false) {
         return;
       }
       const data =
-        command.type === "get_state"
-          ? state()
-          : command.type === "d_pi_state"
-            ? control
-            : command.type === "d_pi_subagent_state"
-              ? { agents: [] }
-              : { protocolVersion: 2 };
+        command.type === "set_ask_dialog"
+          ? { enabled: command.enabled === true }
+          : command.type === "get_state"
+            ? state()
+            : command.type === "d_pi_state"
+              ? control
+              : command.type === "d_pi_subagent_state"
+                ? { agents: [] }
+                : { protocolVersion: 2 };
       queueMicrotask(() =>
         frames({
           type: "response",
@@ -146,9 +148,13 @@ async function running(diagnosticFailure = false) {
   });
   const process = new EventEmitter();
   let scopeId = "";
+  let hostExited = false;
   const host = createSessionHost(
     (message) => process.emit("message", { scopeId, message }),
-    () => process.emit("exit"),
+    () => {
+      hostExited = true;
+      process.emit("exit");
+    },
   );
   adapters.fork.mockReturnValue(
     Object.assign(process, {
@@ -177,10 +183,16 @@ async function running(diagnosticFailure = false) {
     if (child.exitCode !== null) return;
     child.exitCode = 0;
     child.emit("close", 0, null);
-    await new Promise<void>((resolve) => queueMicrotask(resolve));
+    // Physical child close precedes Host Effect scope release, then Main's
+    // independent group/lease cleanup. A single microtask proves neither.
+    await vi.waitFor(() => expect(hostExited).toBe(true));
+    await Promise.all(
+      adapters.terminate.mock.results.map((result) => result.value),
+    );
+    await new Promise<void>((resolve) => setImmediate(resolve));
   };
-  cleanup.push(() => {
-    nativeExit();
+  cleanup.push(async () => {
+    await nativeExit();
     process.emit("exit");
     store.close();
     rmSync(root, { recursive: true, force: true });

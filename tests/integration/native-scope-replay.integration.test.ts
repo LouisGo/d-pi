@@ -176,19 +176,21 @@ class ReplayNative {
             this.holdState = false;
           else {
             const data =
-              command.type === "get_state"
-                ? this.state()
-                : command.type === "d_pi_state"
-                  ? this.control
-                  : command.type === "d_pi_subagent_state"
-                    ? { agents: [] }
-                    : command.type === "negotiate_protocol"
-                      ? { protocolVersion: 2 }
-                      : command.type === "set_subagent_subscription"
-                        ? { level: "events" }
-                        : command.type === "get_subagents"
-                          ? { subagents: [] }
-                          : null;
+              command.type === "set_ask_dialog"
+                ? { enabled: command.enabled === true }
+                : command.type === "get_state"
+                  ? this.state()
+                  : command.type === "d_pi_state"
+                    ? this.control
+                    : command.type === "d_pi_subagent_state"
+                      ? { agents: [] }
+                      : command.type === "negotiate_protocol"
+                        ? { protocolVersion: 2 }
+                        : command.type === "set_subagent_subscription"
+                          ? { level: "events" }
+                          : command.type === "get_subagents"
+                            ? { subagents: [] }
+                            : null;
             if (data === null) {
               this.unexpected.push(command.type);
               done(Error(`Unscripted native command ${command.type}`));
@@ -508,6 +510,7 @@ it("ACK then protocol loss preserves SQLite receipt, newer draft and readable pr
     a.native.step("child-close", () => a.native.exit()),
   );
   await a.closed;
+  await vi.waitFor(() => expect(a.runtime.nativeResidency().kind).toBe("cold"));
   // Confirmed physical close releases execution ownership for explicit resume;
   // the missing request result remains unknown and must never be replayed.
   expect(a.runtime.hasActiveWork()).toBe(false);

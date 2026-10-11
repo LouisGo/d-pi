@@ -9,6 +9,7 @@ export const NativeFailureOperationSchema = z.enum([
   "write",
   "negotiate_protocol",
   "get_state",
+  "set_ask_dialog",
   "get_messages_page",
   "d_pi_reading_page",
   "d_pi_state",
