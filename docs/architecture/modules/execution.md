@@ -96,6 +96,8 @@ WB03 warm/cold 增量（2026-10-11）：Main RuntimeSupervisor 独立维护原�
 
 已授予关闭许可后超时，Runtime保留shutdown-unconfirmed，并拒绝等待中和后来进入的新命令；Main的两个冷却名额继续计入该物理实例，直到同实例真实清理为cold。逻辑请求结束不释放物理名额；后续明确start仍走原身份/lease恢复检查。
 
+Host已拒绝的reading-demand等占用按保护原因观察，不计入可回收idle容量；容量候选与TTL到期候选按最近尝试公平轮换，防止长期读者垄断两个probe名额。保护不形成永久排除，TTL到期仍按真实需求复查。
+
 Main registry 只移除已确认退出且可从存储重建的 RuntimeService；不因 Renderer 的 8 个 Thread 缓存淘汰而停止原生进程，不中断后台 Agent。释放前后重验 registry 所有权、实际进程清理、在途命令、执行/交互/队列、未决收据与不可重建的选择意图；unknown 或身份不明拒绝回收。真正退出与页面卸载仍是两个生命周期。
 
 持久 evidence 失败不能在物理清理清空内存后变成“可回收”：未确认缺口保留到同活 Host 重送并实际入库，退出后的缺口仍阻止丢弃该实例。重建实例的 RuntimeView revision 使用 Main 生命周期单调发布时钟；同一 Main 内保留的 Renderer/attention 镜像不会拒绝新实例的低 revision。跨 Thread 可有跳号，revision 不表示 OMP 执行序号或持久事实。

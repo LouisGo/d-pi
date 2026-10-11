@@ -1650,7 +1650,9 @@ export class RuntimeService {
       }
       recordCooldown(
         result.kind === "cooled" ? "completed" : "failed",
-        result.kind === "cooled" ? "warm-to-cold" : result.reason,
+        result.kind === "cooled"
+          ? "cooldown-warm-to-cold"
+          : `cooldown-${result.reason}`,
       );
       if (
         result.kind === "cooled" &&

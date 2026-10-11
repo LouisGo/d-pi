@@ -41,6 +41,7 @@ export const DiagnosticOperationSchema = z.enum([
   "runtime:native-exit",
   "runtime:utility-exit",
   "runtime:evidence",
+  "runtime:cooldown",
   "configuration:snapshot",
   "configuration:snapshot:adapter",
   "configuration:save-key",

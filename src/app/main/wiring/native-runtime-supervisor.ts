@@ -132,12 +132,20 @@ export class NativeRuntimeSupervisor {
       .sort(
         (a, b) => (a.record.idleSince ?? now) - (b.record.idleSince ?? now),
       );
-    const excess = Math.max(0, warm.length - this.budget.maxWarm);
-    const candidates = warm.filter(
-      (item, index) =>
-        index < excess ||
-        now - (item.record.idleSince ?? now) >= this.budget.idleMs,
+    const idle = warm.filter((item) => !item.record.retained);
+    const excess = Math.max(0, idle.length - this.budget.maxWarm);
+    const overBudget = new Set(
+      idle.slice(0, excess).map((item) => item.record),
     );
+    const candidates = warm
+      .filter(
+        (item) =>
+          overBudget.has(item.record) ||
+          now - (item.record.idleSince ?? now) >= this.budget.idleMs,
+      )
+      // Pending physical work still owns the two slots. Among eligible probes,
+      // serve previously unattempted/least recently attempted instances first.
+      .sort((a, b) => a.record.retryAt - b.record.retryAt);
     await Promise.allSettled(
       candidates.map(async ({ threadId, record }) => {
         if (

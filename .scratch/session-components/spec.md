@@ -204,6 +204,10 @@ WB01 合同细化：resources/contracts 是无反向依赖的来源叶子；sour
 
 物理finalization补充：实际失败反例确认许可后超时仍可能保持连接，同时等待中的命令会继续准入。现将该实例保留为shutdown-unconfirmed，等待后再次检查并拒绝新执行/提交；原收据不写入。两个冷却slot直到同物理实例确认cold才释放，不能以逻辑超时替代资源完成。Runtime60、全收据索引4、Supervisor6共70/70通过；覆盖已许可关闭超时、等待命令拒绝和清理后slot接续，仍不冒称真实Electron/native结果。
 
+真实native补充：`validation/m2/native-warm.ts`通过独立Electron构建复用正式Runtime/Host，并行保留3个OMP18.8.9实际会话；真实MessagePort阅读需求与当前选择保留原生占用，后台cold后lease可重新取得且owner为空，显式start恢复同sessionFile/ID与模型，最终4次native退出并验证PID不存在。模型调用0次。共享SDK正由另一Electron持有，验证使用保持相对symlink且经正式完整哈希检查的隔离资源快照，未修改或停止原实例；该轮源为e115f19c+WIP诊断接线，记录dirty及验证bundle/hash，不冒称clean候选或GUI/完整工作台性能trace。诊断实际Writer会将未登记操作/原因归unknown，失败反例后补入runtime:cooldown与有界cooldown原因白名单，26项诊断回归通过。
+
+固定acb2da7..e115f19c独立review发现P2：两个最老reading-demand实例每轮占满两个probe slot，后面的idle实例会被饿死；同类已知保护亦被误计入可回收容量。以6实例/2持久读者真实失败反例修正：容量按尚未拒绝的idle计算，已符合回收条件者按最近尝试顺序公平轮换，TTL后仍复查原读者，物理未确认slot规则不变。待固定修正范围复核，WB03子会话读取与生产trace、WB04继续当前goal。
+
 驻留收据核实：`submissions.list()`原有100条展示上限不能用于证明全部结清。旧prepared后追加101个rejected的真实SQLite反例先复现nativeResidency误报warm，现由partial index的hasUnsettled存在性查询覆盖全部收据；共享的modelSelection、releaseEligible与cooldownReason都采用同一判定，不加载正文。原生Runtime完整59/59，加索引/未知或损坏状态/实际EXPLAIN QUERY PLAN四项为63/63；索引派生现有receipt、不改变事实或展示分页，读取失败仍拒绝。后续验证与review覆盖该增量。
 
 ### WB00 milestone（2026-10-11）

@@ -41,6 +41,9 @@ it("flood remains bounded and persisted lines retain correlation", async () => {
 it.each([
   { operation: "attachments:history-update" },
   { operation: "attachments:clipboard-import", code: "clipboard-expired" },
+  { operation: "runtime:cooldown", code: "cooldown-warm-to-cold" },
+  { operation: "runtime:cooldown", code: "cooldown-unconfirmed" },
+  { operation: "runtime:cooldown", code: "cooldown-reading-demand" },
 ])(
   "preserves the owned $operation identity at the raw persistence boundary",
   async (owned) => {

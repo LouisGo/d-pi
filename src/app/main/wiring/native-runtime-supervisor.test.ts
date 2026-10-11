@@ -199,3 +199,57 @@ it("holds timed-out cooldown slots until the same physical runtime is confirmed 
   expect(supervisor.snapshot().cooldownSlots).toBe(2);
   supervisor.close();
 });
+
+it("does not let persistent readers starve idle capacity or expire unrelated warm instances early", async () => {
+  let now = 0;
+  let reading = true;
+  const states: NativeResidency[] = Array.from({ length: 6 }, () => ({
+    kind: "warm",
+  }));
+  const runtimes = states.map((_, index) => ({
+    nativeResidency: () => states[index] ?? { kind: "cold" as const },
+    coolIfIdle: vi.fn(async () => {
+      if (index < 2 && reading)
+        return { kind: "retained" as const, reason: "reading-demand" as const };
+      states[index] = { kind: "cold" };
+      return { kind: "cooled" as const };
+    }),
+  }));
+  const supervisor = new NativeRuntimeSupervisor(
+    new Map(runtimes.map((runtime, index) => [String(index), runtime])),
+    () => null,
+    { maxWarm: 2, idleMs: 60_000 },
+    () => now,
+  );
+  await supervisor.sweep();
+  now = 1000;
+  await supervisor.sweep();
+  expect(supervisor.snapshot()).toMatchObject({
+    warm: 2,
+    protected: 2,
+    cold: 2,
+  });
+  now = 2000;
+  await supervisor.sweep();
+  expect(supervisor.snapshot()).toMatchObject({
+    warm: 2,
+    protected: 2,
+    cold: 2,
+  });
+  now = 60_000;
+  await supervisor.sweep();
+  expect(supervisor.snapshot()).toMatchObject({
+    warm: 0,
+    protected: 2,
+    cold: 4,
+  });
+  reading = false;
+  now = 61_000;
+  await supervisor.sweep();
+  expect(supervisor.snapshot()).toMatchObject({
+    warm: 0,
+    protected: 0,
+    cold: 6,
+  });
+  supervisor.close();
+});
