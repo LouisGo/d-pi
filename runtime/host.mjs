@@ -6,6 +6,10 @@ import { resolveProfileEnv, setProfile } from "@oh-my-pi/pi-utils";
 // Match official CLI bootstrap before SDK imports snapshot configuration paths.
 setProfile(resolveProfileEnv(process.env.OMP_PROFILE, process.env.PI_PROFILE));
 const { createAgentSession } = await import("@oh-my-pi/pi-coding-agent/sdk");
+// OMP 18.8.9 AskTool validates its reserved fallback label before selecting
+// the rich RPC path. Match official non-TUI bootstrap; no watcher is started.
+const { ensureTheme } = await import("@oh-my-pi/pi-coding-agent");
+await ensureTheme();
 const { SessionManager } = await import(
   "@oh-my-pi/pi-coding-agent/session/session-manager"
 );
@@ -45,6 +49,9 @@ const { session, setToolUIContext, subagentEventBus } = await (async () => {
   try {
     created = await createAgentSession({
       sessionManager: manager,
+      // RPC can render synchronous native dialogs. Register AskTool without
+      // enabling the SDK's terminal-only startup and warmup behavior.
+      interactivePrompts: true,
       // An explicit user choice must reach the factory before saved-model
       // restoration. The native resolver discovers it; applyModelSelection below
       // still enforces the exact available desktop model and thinking capability.

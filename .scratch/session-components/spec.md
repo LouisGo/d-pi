@@ -319,3 +319,16 @@ Activation 独立复核（固定 `5a520bf..d17e3d5`）确认三项 P2，并逐�
 
 
 固定 `d17e3d5..d601843` 复核闭合协议失败与收据读取两项，另发现导航取消早于 Main applied 的 P2：取消原生目录选择器也丢掉旧意图。已将 changeThread 取消移至 applied 回执，并捕获目标对象防晚到结果取消新意图；cancelled/failed/unknown 保留，unknown 经显式权威核对确定切到新 Thread 后再结束。先前测试首轮有一条用了错误公开方法名（chooseProject），修正为实际 choose 后，在固定旧 model 反例三项真实失败（`/tmp/d-pi-activation-applied-red2.log`）；三文件38/38与Renderer类型已通过，新增权威核对回归继续检查。窗口卸载不取消的边界保持，待固定复核。
+
+
+### WB04 实际 AskTool 设置与原生启动合同（2026-10-11，继续实施）
+
+固定 `d601843..83bdd56` 独立复核已闭合导航取消时机 P2，确认晚到 applied 不取消后来目标；正式三文件最终39/39，不包含后续 native WIP。窗口卸载保留 Main 队列。
+
+扩展 UI 成功不能证明内置 AskTool 可用。固定 OMP SDK 的 `interactivePrompts` 默认 false；实际 adapter 创建入口缺少该选项。增加官方 `interactivePrompts:true` 后，真实工具执行进一步暴露 `undefined ... theme.status`：OMP18.8.9 AskTool在 rich 分支之前校验 fallback 的 reserved label，官方 CLI bootstrap 会先 ensureTheme。adapter现在调用公开 ensureTheme（默认不启 watcher），保留 hasUI 默认 false 和既有原生所有权；不改 SDK 源码，不把 TUI 搬进 Renderer。
+
+扩展正式 Main/Host/native/SQLite fixture，通过隔离 loopback 的常规模型 tool_call 实际执行 AskTool；配置 `ask.timeout=0`，真实 rich request 无 wire timeout、expiresAt=null，未答 121001.96ms 后仍 pending，App answer history无默认代答。随后选择／明确空多选整组写入，同一 native file 的真实 toolResult.isError=false，两个 loopback模型请求；实际 idle/cold 和 scope 清理完成，Electron进程返回0。保留前述扩展并发/到期/重连场景。证据 [ask-tool-native.json](evidence/ask-tool-native.json) 记录真实83bdd56 dirty检查点、Host/SDK adapter哈希与121秒观察；不冒称GUI、真实provider、系统IME或30分钟完整性能验收。正式 prepare-sdk 在隔离cwd重建资源，原生112包477.1MiB，未修改官方SDK或停止用户Dev；本地正式资源更新单独核实。
+
+初轮实际请求未出现；开启参数后的两轮已取得原生 theme.status 失败响应，修正官方初始化后 `/tmp/d-pi-native-ask-tool-run4.log` 通过。Main/Host类型通过，SDK准备回归与固定复核继续。权限可靠关联、完整原方案组合/性能验收继续保持开放。
+
+原生启动收尾：SDK准备5/5、Main/Host类型和fast通过；源码adapter与证据的SDK host SHA一致。本地 `pnpm runtime:sdk` 被运行中Dev的共享资源guard拒绝（database is locked），没有改写在用SDK或停止Dev。当前项目resources/sdk仍旧版本adapter；仅隔离正式prepare生成的新资源验证通过。需要用户正常关闭在用实例后再准备/启动Dev，不能宣称现有窗口已接入此原生改动。

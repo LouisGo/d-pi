@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "b116c7c4ea5b619287624c3aef29c35c45c91a67fd7e2eb10afa4ec02bb47bb4",
+  "inputsHash": "27d7bc886352ae5b3435221558abe7259c628e649e12e5aa1be44a89ddf91bc2",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 678,
@@ -386,7 +386,7 @@
       "defaultEnvironment": "omp",
       "materialized": true,
       "files": 17,
-      "lines": 3999,
+      "lines": 4003,
       "publicEntries": [
         {
           "path": "runtime/host.mjs",
@@ -37484,6 +37484,15 @@
       "sourceEnvironment": "omp",
       "test": false,
       "specifier": "@oh-my-pi/pi-coding-agent/sdk",
+      "kind": "dynamic-import",
+      "resolution": "external"
+    },
+    {
+      "from": "runtime/host.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "@oh-my-pi/pi-coding-agent",
       "kind": "dynamic-import",
       "resolution": "external"
     },

@@ -42,12 +42,16 @@ async function until(check: () => boolean, label: string) {
 async function run() {
   const resources = join(root, "resources");
   mkdirSync(resources);
-  cpSync(resolve("resources/sdk"), join(resources, "sdk"), {
-    recursive: true,
-    mode: constants.COPYFILE_FICLONE,
-    dereference: false,
-    verbatimSymlinks: true,
-  });
+  cpSync(
+    resolve(process.env.D_PI_RICH_ASK_SDK ?? "resources/sdk"),
+    join(resources, "sdk"),
+    {
+      recursive: true,
+      mode: constants.COPYFILE_FICLONE,
+      dereference: false,
+      verbatimSymlinks: true,
+    },
+  );
   const sdkManifest = JSON.parse(
     readFileSync(join(resources, "sdk/manifest.json"), "utf8"),
   );
@@ -66,10 +70,93 @@ async function run() {
     resultFile = join(config, "ask-results.json");
   cpSync(resolve("validation/m2/rich-ask-extension.mjs"), extension);
   let modelRequests = 0;
-  const server = createServer((_request, response) => {
+  let nativeToolMode = false;
+  let nativeToolRequests = 0;
+  const nativeToolCallId = "d-pi-native-ask-tool-call";
+  const server = createServer(async (request, response) => {
     modelRequests++;
-    response.writeHead(500);
-    response.end("No model calls expected");
+    if (!nativeToolMode) {
+      response.writeHead(500);
+      response.end("No model calls expected during extension scenarios");
+      return;
+    }
+    let body = "";
+    for await (const chunk of request) body += chunk.toString();
+    const payload = JSON.parse(body);
+    nativeToolRequests++;
+    const frame = (delta: unknown, finish: string | null = null) => ({
+      id: "native-ask-tool-fixture",
+      object: "chat.completion.chunk",
+      created: 1,
+      model: payload.model,
+      choices: [{ index: 0, delta, finish_reason: finish }],
+    });
+    response.writeHead(200, { "Content-Type": "text/event-stream" });
+    if (nativeToolRequests === 1) {
+      response.write(
+        `data: ${JSON.stringify(
+          frame({
+            role: "assistant",
+            tool_calls: [
+              {
+                index: 0,
+                id: nativeToolCallId,
+                type: "function",
+                function: {
+                  name: "ask",
+                  arguments: JSON.stringify({
+                    questions: [
+                      {
+                        id: "setting-zero",
+                        question: "实际 AskTool 的禁用到期设置",
+                        header: "原生工具",
+                        options: [
+                          { label: "确认 A", preview: "# 保留预览" },
+                          { label: "推荐 B" },
+                        ],
+                        recommended: 1,
+                      },
+                      {
+                        id: "setting-multi",
+                        question: "实际工具的明确空多选",
+                        options: [{ label: "C" }, { label: "D" }],
+                        multi: true,
+                      },
+                    ],
+                  }),
+                },
+              },
+            ],
+          }),
+        )}\n\n`,
+      );
+      response.write(`data: ${JSON.stringify(frame({}, "tool_calls"))}\n\n`);
+    } else {
+      assert.equal(
+        nativeToolRequests,
+        2,
+        "Unexpected additional loopback model call",
+      );
+      console.log(
+        JSON.stringify({
+          nativeToolResponse: payload.messages.filter(
+            (message: { role: string }) => message.role === "tool",
+          ),
+        }),
+      );
+      assert(
+        payload.messages.some(
+          (message: { role: string; tool_call_id?: string }) =>
+            message.role === "tool" &&
+            message.tool_call_id === nativeToolCallId,
+        ),
+      );
+      response.write(
+        `data: ${JSON.stringify(frame({ role: "assistant", content: "NATIVE_ASK_TOOL_DONE" }))}\n\n`,
+      );
+      response.write(`data: ${JSON.stringify(frame({}, "stop"))}\n\n`);
+    }
+    response.end("data: [DONE]\n\n");
   });
   await new Promise<void>((done) => server.listen(0, "127.0.0.1", done));
   const address = server.address();
@@ -102,6 +189,7 @@ async function run() {
     JSON.stringify({
       extensions: [extension],
       autolearn: { enabled: false },
+      ask: { timeout: 0, notify: "off" },
       modelRoles: { default: "fixture/fixture", smol: "fixture/fixture" },
     }),
   );
@@ -283,6 +371,75 @@ async function run() {
     await answer(restored, { kind: "cancel" });
     await complete();
     assert.equal(modelRequests, 0);
+    nativeToolMode = true;
+    const prepared = await runtime.submit({
+      kind: "prepare",
+      threadId,
+      submissionId: SubmissionIdSchema.parse(randomUUID()),
+      traceId: randomUUID(),
+      revision: 0,
+      text: "D_PI_ACTUAL_NATIVE_ASK_TOOL",
+      origin: "free",
+    });
+    assert.equal(prepared.kind, "receipt");
+    if (prepared.kind !== "receipt")
+      throw Error("Native tool preparation failed");
+    await runtime.submit({
+      kind: "dispatch",
+      threadId,
+      submissionId: prepared.receipt.submissionId,
+    });
+    await until(
+      () =>
+        pending().some(
+          (item) =>
+            item.method === "ask" && item.questions[0]?.id === "setting-zero",
+        ),
+      "actual AskTool rich dialog",
+    );
+    const actualAsk = pending()[0]!;
+    assert.equal(actualAsk.method, "ask");
+    assert.equal(actualAsk.expiresAt, null);
+    assert.equal(actualAsk.timeout, undefined);
+    const waitStarted = performance.now();
+    console.log(
+      "Actual AskTool ask.timeout=0: holding unanswered past the old 120-second App fallback",
+    );
+    await pause(121_000);
+    const noDeadlineObservedMs = performance.now() - waitStarted;
+    assert(pending().some((item) => item.id === actualAsk.id));
+    assert(
+      !store.answerHistory
+        .page(threadId)
+        .entries.some(
+          (entry) =>
+            entry.kind === "answer" &&
+            entry.requestKey.requestId === actualAsk.id,
+        ),
+    );
+    await answer(actualAsk, {
+      kind: "ask",
+      answers: [
+        { id: "setting-zero", selectedOptions: ["确认 A"] },
+        { id: "setting-multi", selectedOptions: [] },
+      ],
+    });
+    await until(() => !runtime.hasActiveWork(), "actual tool turn settlement");
+    const nativeEntries = readFileSync(binding.sessionFile, "utf8")
+      .split("\n")
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    const nativeResult = nativeEntries.find(
+      (entry) =>
+        entry.type === "message" &&
+        entry.message?.role === "toolResult" &&
+        entry.message.toolCallId === nativeToolCallId,
+    );
+    assert(
+      nativeResult && !nativeResult.message.isError,
+      "Actual AskTool result must persist in the same native file",
+    );
+    assert.equal(nativeToolRequests, 2);
     passed = true;
     console.log(
       JSON.stringify(
@@ -307,13 +464,17 @@ async function run() {
             "native whole-form timeout defaults",
             "direct extension RPC zero expires immediately",
             "no wire deadline then explicit cancel",
+            "actual AskTool ask.timeout=0 through normal native tool execution; unanswered for over 120 seconds then grouped answer",
             "same native file and ID reconnect with opt-in again",
           ],
           historyEntries: store.answerHistory.page(threadId).entries.length,
           modelRequests,
+          nativeToolRequests,
+          noDeadlineObservedMs,
+          actualAskToolResult: nativeResult.message,
           limitations: [
             "isolated Electron Main and official extension; no GUI, real provider or system IME",
-            "no-deadline RPC observed for 300ms; AskTool settings translation is separate",
+            "extension no-deadline RPC observed for 300ms; actual AskTool observed for over 120 seconds",
           ],
         },
         null,

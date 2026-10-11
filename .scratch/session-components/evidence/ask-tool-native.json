@@ -1,0 +1,75 @@
+{
+  "commit": "83bdd56b353c672636526474236b261c8c095beb",
+  "sourceDirty": true,
+  "electron": "44.4.5",
+  "omp": "18.8.9",
+  "hostEntrySha256": "031476747966b8a716ef3dcc158399e0f07c73734b6f6a4ca754d1aceda68d72",
+  "sdkHostSha256": "a605b859c1547b9fee4e7b83050143756c1c1d046bcaa96c1362a5902b1e17e9",
+  "scenarios": [
+    "parallel independent native rich requests",
+    "raw option and stored custom versus native normalized custom",
+    "explicit empty multi",
+    "native whole-form timeout defaults",
+    "direct extension RPC zero expires immediately",
+    "no wire deadline then explicit cancel",
+    "actual AskTool ask.timeout=0 through normal native tool execution; unanswered for over 120 seconds then grouped answer",
+    "same native file and ID reconnect with opt-in again"
+  ],
+  "historyEntries": 12,
+  "modelRequests": 2,
+  "nativeToolRequests": 2,
+  "noDeadlineObservedMs": 121001.963792,
+  "actualAskToolResult": {
+    "role": "toolResult",
+    "toolCallId": "d-pi-native-ask-tool-call",
+    "toolName": "ask",
+    "content": [
+      {
+        "type": "text",
+        "text": "User answers:\nsetting-zero: 确认 A\nsetting-multi: []"
+      }
+    ],
+    "details": {
+      "results": [
+        {
+          "id": "setting-zero",
+          "question": "实际 AskTool 的禁用到期设置",
+          "options": [
+            "确认 A",
+            "推荐 B"
+          ],
+          "multi": false,
+          "selectedOptions": [
+            "确认 A"
+          ]
+        },
+        {
+          "id": "setting-multi",
+          "question": "实际工具的明确空多选",
+          "options": [
+            "C",
+            "D"
+          ],
+          "multi": true,
+          "selectedOptions": []
+        }
+      ]
+    },
+    "isError": false,
+    "timestamp": 1791719915475
+  },
+  "limitations": [
+    "isolated Electron Main and official extension; no GUI, real provider or system IME",
+    "extension no-deadline RPC observed for 300ms; actual AskTool observed for over 120 seconds"
+  ],
+  "scope": {
+    "formalMainHostNative": true,
+    "nativeSdkPatched": false,
+    "loopbackModel": true,
+    "realProvider": false,
+    "gui": false,
+    "systemIme": false,
+    "processExit": 0,
+    "finalNativeCold": true
+  }
+}
