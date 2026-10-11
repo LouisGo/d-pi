@@ -93,6 +93,7 @@ export function RuntimePanel({
     <section
       className="runtime-panel"
       data-attention-target="runtime"
+      data-runtime-trace={state.traceId}
       tabIndex={-1}
       aria-label={t("ui.runtime.sectionLabel")}
     >

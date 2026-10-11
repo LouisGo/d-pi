@@ -1,8 +1,75 @@
 // @vitest-environment happy-dom
 import { expect, it, vi } from "vitest";
+import { interactionDraftIdentity } from "../../../modules/execution/contracts/public";
 import { ThreadIdSchema } from "../../../shared/identity";
 import type { AttentionEntry } from "../../contracts/attention";
-import { locateAttention } from "./attention-location";
+import { locateActivation, locateAttention } from "./attention-location";
+
+it("locates the exact native request and its current editor without retargeting an ended source", () => {
+  const host = document.createElement("section");
+  host.dataset.activationThread = entry.threadId;
+  host.tabIndex = -1;
+  document.body.append(host);
+  host.scrollIntoView = vi.fn();
+  const key = {
+    threadId: entry.threadId,
+    nativeSessionKey: 'native " 中文',
+    connectionGeneration: crypto.randomUUID(),
+    requestId: 'same [id] " 中文',
+  };
+  const create = (identity: string, owner: boolean) => {
+    const node = document.createElement("article");
+    node.dataset.interactionRequestKey = identity;
+    node.dataset.editorOwner = String(owner);
+    node.tabIndex = -1;
+    node.scrollIntoView = vi.fn();
+    host.append(node);
+    return node;
+  };
+  const newGeneration = create(
+    interactionDraftIdentity(
+      key.threadId,
+      { ...key, connectionGeneration: crypto.randomUUID() },
+      key.requestId,
+    ),
+    true,
+  );
+  const otherSession = create(
+    interactionDraftIdentity(
+      key.threadId,
+      { ...key, nativeSessionKey: "other" },
+      key.requestId,
+    ),
+    true,
+  );
+  const summary = create(
+    interactionDraftIdentity(key.threadId, key, key.requestId),
+    false,
+  );
+  const editor = create(
+    interactionDraftIdentity(key.threadId, key, key.requestId),
+    true,
+  );
+  const intent: AttentionEntry = {
+    ...entry,
+    kind: "needs-answer",
+    sourceTarget: { kind: "request", requestKey: key },
+  };
+  try {
+    expect(locateActivation(host, intent)).toBe("located");
+    expect(document.activeElement).toBe(editor);
+    expect(newGeneration.scrollIntoView).not.toHaveBeenCalled();
+    expect(otherSession.scrollIntoView).not.toHaveBeenCalled();
+    expect(summary.scrollIntoView).not.toHaveBeenCalled();
+    editor.remove();
+    summary.remove();
+    expect(locateActivation(host, intent)).toBe("target-unavailable");
+    expect(document.activeElement).toBe(host);
+    expect(newGeneration.scrollIntoView).not.toHaveBeenCalled();
+  } finally {
+    host.remove();
+  }
+});
 
 const entry: AttentionEntry = {
   threadId: ThreadIdSchema.parse(crypto.randomUUID()),

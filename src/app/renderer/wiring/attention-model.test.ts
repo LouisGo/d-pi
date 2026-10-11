@@ -6,6 +6,121 @@ import type {
 } from "../../contracts/attention";
 import { AttentionModel } from "./attention-model";
 
+it("retries a failed readiness registration only on explicit refresh", async () => {
+  const snapshot = sample();
+  let fail = true;
+  const request = vi.fn<AttentionBridge["request"]>(async (command) => {
+    if (command.kind === "activation-ready" && fail) {
+      fail = false;
+      throw Error("registration failed");
+    }
+    return { kind: "snapshot", traceId: command.traceId, snapshot };
+  });
+  const model = new AttentionModel({ request, subscribe: () => () => {} });
+  await model.start();
+  await model.activationReady(true);
+  expect(model.stateStore.getState().failed).toBe(true);
+  expect(request).toHaveBeenCalledTimes(2);
+  await model.refresh();
+  expect(request.mock.calls.map(([command]) => command.kind)).toEqual([
+    "snapshot",
+    "activation-ready",
+    "snapshot",
+    "activation-ready",
+  ]);
+  expect(model.stateStore.getState().failed).toBe(false);
+  model.dispose();
+});
+
+it("retains a failed DOM acknowledgement for explicit refresh without redoing navigation or any business operation", async () => {
+  const entry = {
+      ...sample().entries[0]!,
+      sourceTarget: { kind: "thread" as const },
+    },
+    id = crypto.randomUUID();
+  let snapshot: AttentionSnapshot = {
+    ...sample(),
+    entries: [entry],
+    openRequest: {
+      id,
+      threadId: entry.threadId,
+      eventId: entry.eventId,
+      target: entry,
+    },
+  };
+  let fail = true;
+  const request = vi.fn<AttentionBridge["request"]>(async (command) => {
+    if (command.kind === "opened") {
+      if (fail) {
+        fail = false;
+        throw Error("lost ACK transport");
+      }
+      snapshot = { ...snapshot, revision: 3, openRequest: null };
+    }
+    return { kind: "snapshot", traceId: command.traceId, snapshot };
+  });
+  const model = new AttentionModel({ request, subscribe: () => () => {} });
+  await model.start();
+  await model.activationReady(true);
+  model.locate(entry, id);
+  model.completeLocation(model.locationStore.getState().target!, "located");
+  await vi.waitFor(() => expect(model.stateStore.getState().failed).toBe(true));
+  expect(model.locationStore.getState().target).toBeNull();
+  await model.refresh();
+  expect(
+    request.mock.calls.filter(([command]) => command.kind === "opened"),
+  ).toHaveLength(2);
+  expect(model.stateStore.getState().snapshot?.openRequest).toBeNull();
+  expect(model.locationStore.getState().completed?.outcome).toBe("located");
+  model.dispose();
+});
+
+it("waits for current DOM completion, rejects obsolete targets and emits one activation ACK with its renderer identity", async () => {
+  const first = sample();
+  const request = vi.fn<AttentionBridge["request"]>(async (command) => ({
+    kind: "snapshot",
+    traceId: command.traceId,
+    snapshot: first,
+  }));
+  const model = new AttentionModel({ request, subscribe: () => () => {} });
+  await model.start();
+  await model.activationReady(true);
+  const a = first.entries[0]!,
+    b = { ...a, eventId: crypto.randomUUID() };
+  model.locate(a, crypto.randomUUID());
+  const old = model.locationStore.getState().target!;
+  model.locate(b, crypto.randomUUID());
+  const current = model.locationStore.getState().target!;
+  model.completeLocation(old, "located");
+  expect(
+    request.mock.calls.filter(([command]) => command.kind === "opened"),
+  ).toHaveLength(1);
+  model.completeLocation(current, "target-unavailable");
+  model.completeLocation(current, "located");
+  await Promise.resolve();
+  const ready = request.mock.calls.find(
+    ([command]) => command.kind === "activation-ready",
+  )![0];
+  expect(
+    request.mock.calls
+      .filter(([command]) => command.kind === "opened")
+      .slice(-1),
+  ).toEqual([
+    [
+      expect.objectContaining({
+        id: current.activationId,
+        outcome: "target-unavailable",
+        rendererId: "rendererId" in ready ? ready.rendererId : null,
+      }),
+    ],
+  ]);
+  expect(model.locationStore.getState().target).toBeNull();
+  expect(model.locationStore.getState().completed?.outcome).toBe(
+    "target-unavailable",
+  );
+  model.dispose();
+});
+
 const threadId = ThreadIdSchema.parse(crypto.randomUUID());
 const instanceId = crypto.randomUUID();
 function sample(revision = 1): AttentionSnapshot {

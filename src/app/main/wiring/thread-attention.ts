@@ -6,10 +6,13 @@ import type {
 import type { NotificationPreferences } from "../../../modules/preferences/contracts/public";
 import type { ThreadId } from "../../../shared/identity";
 import type {
+  ActivationOutcome,
+  ActivationSourceTarget,
   AttentionEntry,
   AttentionSnapshot,
 } from "../../contracts/attention";
 import type { SystemNotifications } from "../lifecycle/system-notifications";
+import { ActivationBroker } from "./activation-broker";
 
 type Context = {
   getActiveThread: () => ThreadId | null;
@@ -26,6 +29,7 @@ type Context = {
 type RuntimeCursor = {
   revision: number;
   generation: string | undefined;
+  nativeSessionKey: string | undefined;
   pending: string[];
   phase: RuntimeView["phase"];
   traceId: string;
@@ -51,7 +55,7 @@ export class ThreadAttention {
   };
   private system: AttentionSnapshot["system"] = "disabled";
   private coverageGap = false;
-  private openRequest: AttentionSnapshot["openRequest"] = null;
+  private readonly activations = new ActivationBroker();
   private foreground = false;
   private visibleThread: ThreadId | null = null;
   private disposed = false;
@@ -67,11 +71,11 @@ export class ThreadAttention {
     return {
       instanceId: this.instanceId,
       revision: this.revision,
-      entries: [...this.entries.values()].map((entry) => ({ ...entry })),
+      entries: structuredClone([...this.entries.values()]),
       preferences: { ...this.preferences },
       system: this.system,
       coverageGap: this.coverageGap,
-      openRequest: this.openRequest ? { ...this.openRequest } : null,
+      openRequest: this.activations.current(),
     };
   }
   subscribe(listener: (snapshot: AttentionSnapshot) => void): () => void {
@@ -131,6 +135,7 @@ export class ThreadAttention {
   }
   clearVisible(): void {
     this.visibleThread = null;
+    this.activations.clearRenderer();
   }
   visible(threadId: ThreadId | null): void {
     if (this.disposed) return;
@@ -167,16 +172,22 @@ export class ThreadAttention {
     }
     return true;
   }
-  opened(id: string): void {
-    if (this.openRequest?.id !== id || this.disposed) return;
-    this.openRequest = null;
+  activationReady(renderer: string, ready: boolean): void {
+    if (this.disposed) return;
+    this.activations.ready(renderer, ready);
     this.publish();
+  }
+  opened(id: string, renderer: string, _outcome: ActivationOutcome): boolean {
+    if (this.disposed || !this.activations.complete(id, renderer)) return false;
+    this.publish();
+    return true;
   }
   observeRuntime(view: RuntimeView): void {
     if (this.disposed) return;
     const prior = this.runtime.get(view.threadId);
     if (prior && view.revision <= prior.revision) return;
     const generation = view.connectionGeneration;
+    const nativeSessionKey = view.interactions?.nativeSessionKey;
     const pending =
       view.interactions && view.interactions.connectionGeneration === generation
         ? view.interactions.items
@@ -186,6 +197,7 @@ export class ThreadAttention {
     this.runtime.set(view.threadId, {
       revision: view.revision,
       generation,
+      nativeSessionKey,
       pending,
       phase: view.phase,
       traceId: view.traceId,
@@ -194,9 +206,28 @@ export class ThreadAttention {
     if (
       pending.length &&
       (generation !== prior?.generation ||
+        nativeSessionKey !== prior?.nativeSessionKey ||
         pending.some((id) => !prior?.pending.includes(id)))
     )
-      this.add(view.threadId, view.traceId, "needs-answer", true);
+      this.add(
+        view.threadId,
+        view.traceId,
+        "needs-answer",
+        true,
+        generation && nativeSessionKey
+          ? {
+              kind: "request",
+              requestKey: {
+                threadId: view.threadId,
+                connectionGeneration: generation,
+                nativeSessionKey,
+                requestId:
+                  pending.find((id) => !prior?.pending.includes(id)) ??
+                  pending[0]!,
+              },
+            }
+          : { kind: "thread" },
+      );
     else if (
       !pending.length &&
       this.entries.get(view.threadId)?.kind === "needs-answer"
@@ -208,7 +239,10 @@ export class ThreadAttention {
         prior.traceId !== view.traceId ||
         prior.generation !== generation)
     )
-      this.add(view.threadId, view.traceId, view.phase);
+      this.add(view.threadId, view.traceId, view.phase, false, {
+        kind: "runtime",
+        traceId: view.traceId,
+      });
   }
   observeReceipt(receipt: SubmissionReceipt): void {
     if (this.disposed) return;
@@ -276,6 +310,8 @@ export class ThreadAttention {
       receipt.threadId,
       receipt.traceId,
       outcome === "aborted" ? "interrupted" : outcome,
+      false,
+      { kind: "receipt", traceId: receipt.traceId },
     );
   }
   private bound<T>(map: Map<string, T>): void {
@@ -304,6 +340,7 @@ export class ThreadAttention {
     traceId: AttentionEntry["traceId"],
     kind: AttentionEntry["kind"],
     renew = false,
+    sourceTarget: ActivationSourceTarget = { kind: "thread" },
   ): void {
     const prior = this.entries.get(threadId);
     if (!renew && prior?.kind === kind && prior.traceId === traceId) return;
@@ -315,6 +352,7 @@ export class ThreadAttention {
       kind,
       eventId: randomUUID(),
       unread: !this.isVisible(threadId),
+      sourceTarget,
     };
     this.entries.delete(threadId);
     this.entries.set(threadId, entry);
@@ -341,12 +379,7 @@ export class ThreadAttention {
         {
           click: () => {
             if (this.disposed) return;
-            const latest = this.entries.get(threadId);
-            this.openRequest = {
-              id: randomUUID(),
-              threadId,
-              eventId: latest?.eventId ?? entry.eventId,
-            };
+            if (!this.activations.enqueue(entry)) this.coverageGap = true;
             this.publish();
             try {
               this.context.openWindow();
@@ -356,7 +389,8 @@ export class ThreadAttention {
           },
           failed: () => this.nativeFailure(entry),
           closed: () => {
-            this.releases.delete(threadId);
+            if (this.entries.get(threadId)?.eventId === entry.eventId)
+              this.releases.delete(threadId);
           },
         },
       );
@@ -376,7 +410,7 @@ export class ThreadAttention {
     this.receipts.clear();
     this.receiptOrder.clear();
     this.latestSubmission.clear();
-    this.openRequest = null;
+    this.activations.dispose();
     this.visibleThread = null;
   }
 }

@@ -1,0 +1,195 @@
+{
+  "kind": "isolated-renderer-fixture",
+  "nativeOrProvider": false,
+  "systemIme": false,
+  "electron": "44.4.5",
+  "states": [
+    {
+      "theme": "light",
+      "geometry": {
+        "width": 1000,
+        "scroll": 1000,
+        "preview": {
+          "x": 79,
+          "y": 97.6796875,
+          "width": 382,
+          "height": 216.796875,
+          "top": 97.6796875,
+          "right": 461,
+          "bottom": 314.4765625,
+          "left": 79
+        },
+        "cards": [
+          {
+            "x": 62,
+            "y": -279.3046875,
+            "width": 416,
+            "height": 658.78125,
+            "top": -279.3046875,
+            "right": 478,
+            "bottom": 379.4765625,
+            "left": 62
+          },
+          {
+            "x": 62,
+            "y": 389.4765625,
+            "width": 416,
+            "height": 345.59375,
+            "top": 389.4765625,
+            "right": 478,
+            "bottom": 735.0703125,
+            "left": 62
+          },
+          {
+            "x": 16,
+            "y": 666.015625,
+            "width": 968,
+            "height": 87.9921875,
+            "top": 666.015625,
+            "right": 984,
+            "bottom": 754.0078125,
+            "left": 16
+          },
+          {
+            "x": 16,
+            "y": 764.0078125,
+            "width": 968,
+            "height": 87.9921875,
+            "top": 764.0078125,
+            "right": 984,
+            "bottom": 852,
+            "left": 16
+          }
+        ]
+      }
+    },
+    {
+      "theme": "dark",
+      "geometry": {
+        "width": 1000,
+        "scroll": 1000,
+        "preview": {
+          "x": 79,
+          "y": 97.6796875,
+          "width": 382,
+          "height": 216.796875,
+          "top": 97.6796875,
+          "right": 461,
+          "bottom": 314.4765625,
+          "left": 79
+        },
+        "cards": [
+          {
+            "x": 62,
+            "y": -279.3046875,
+            "width": 416,
+            "height": 658.78125,
+            "top": -279.3046875,
+            "right": 478,
+            "bottom": 379.4765625,
+            "left": 62
+          },
+          {
+            "x": 62,
+            "y": 389.4765625,
+            "width": 416,
+            "height": 345.59375,
+            "top": 389.4765625,
+            "right": 478,
+            "bottom": 735.0703125,
+            "left": 62
+          },
+          {
+            "x": 16,
+            "y": 666.015625,
+            "width": 968,
+            "height": 87.9921875,
+            "top": 666.015625,
+            "right": 984,
+            "bottom": 754.0078125,
+            "left": 16
+          },
+          {
+            "x": 16,
+            "y": 764.0078125,
+            "width": 968,
+            "height": 87.9921875,
+            "top": 764.0078125,
+            "right": 984,
+            "bottom": 852,
+            "left": 16
+          }
+        ]
+      }
+    }
+  ],
+  "sourceCheckpoint": {
+    "commit": "5a520bf41506d921330e905f7d4cbfe73ef34be9",
+    "dirty": true,
+    "files": {
+      "src/app/renderer/workbench/attention-location.ts": "0b7e9273ac912e3381c8d0ce60ab3dfeefda319ace7e0c502f9945b4cdbdfb68",
+      "src/app/renderer/workbench/native-interaction.tsx": "20d4652e9e1e5c05511743256061a524746ff190f197ec0ce3266589e82222aa",
+      "src/app/renderer/workbench/decision-dock.tsx": "f7c7d38a763556c0d2856a730605ca6178a40a1f94563bc970f524318f3bbe2a",
+      "src/modules/execution/renderer/runtime/runtime-model.ts": "18489cc77f50feb93ad2c6f76356a1de780f09577c222baf9888b70ec59d38b2",
+      "validation/m2/rich-interactions.tsx": "07a30f01665d6a071570b44a4c40df52258976199b5f8f08172f555bb290f458",
+      "validation/m2/rich-interactions.mjs": "bba73854682a21b4327bb00215f7b5b6f63b436deb5bbd26f06c32df8a6590d3"
+    }
+  },
+  "activation": {
+    "exact": {
+      "outcome": "located",
+      "surface": "dock",
+      "owner": "true"
+    },
+    "oldGeneration": {
+      "outcome": "target-unavailable",
+      "surface": null,
+      "owner": null
+    },
+    "otherSession": {
+      "outcome": "target-unavailable",
+      "surface": null,
+      "owner": null
+    },
+    "again": {
+      "outcome": "located",
+      "surface": "dock",
+      "owner": "true"
+    },
+    "draft": "  中文组合草稿  ",
+    "writes": 0
+  },
+  "pointer": {
+    "outline": "none",
+    "visible": true
+  },
+  "keyboard": {
+    "outline": "solid",
+    "visible": true
+  },
+  "writes": [
+    {
+      "id": "A",
+      "answer": {
+        "kind": "ask",
+        "answers": [
+          {
+            "id": "mode",
+            "selectedOptions": [
+              "保留现有配置"
+            ]
+          },
+          {
+            "id": "features",
+            "selectedOptions": [
+              "读取历史"
+            ],
+            "customInput": "  中文组合草稿  "
+          }
+        ]
+      }
+    }
+  ],
+  "singleEditor": true,
+  "concurrentRequestUnaffected": true
+}

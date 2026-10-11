@@ -292,15 +292,21 @@ it("system and completion preferences require explicit opt-in, supported is not 
     ui.request.mock.calls.filter(([command]) => command.kind === "seen"),
   ).toHaveLength(0);
 });
-it("native click before ready can be retried, stale event opens current state without answering", async () => {
+it("native click remains pending until retry and an actual location acknowledgement", async () => {
   const ui = await mount();
   ui.setComposing(true);
   const id = crypto.randomUUID();
+  const target = {
+    ...ui.snapshot().entries[0]!,
+    eventId: crypto.randomUUID(),
+    sourceTarget: { kind: "thread" as const },
+  };
   await ui.emit({
     openRequest: {
       id,
       threadId: ui.second.threadId,
-      eventId: crypto.randomUUID(),
+      eventId: target.eventId,
+      target,
     },
   });
   await act(async () => {
@@ -310,14 +316,22 @@ it("native click before ready can be retried, stale event opens current state wi
     ui.request.mock.calls.some(
       ([command]) => command.kind === "opened" && command.id === id,
     ),
-  ).toBe(true);
+  ).toBe(false);
   expect(ui.host.querySelector("[data-attention-retry]")).not.toBeNull();
   ui.setComposing(false);
   await ui.click("[data-attention-retry]");
   expect(ui.host.textContent).toContain("提醒已过期");
   expect(ui.model.attention.locationStore.getState().target?.eventId).toBe(
-    ui.snapshot().entries[0]?.eventId,
+    target.eventId,
   );
+  const located = ui.model.attention.locationStore.getState().target!;
+  expect(
+    ui.request.mock.calls.some(([command]) => command.kind === "opened"),
+  ).toBe(false);
+  await act(() => ui.model.attention.completeLocation(located, "located"));
+  expect(
+    ui.request.mock.calls.filter(([command]) => command.kind === "opened"),
+  ).toHaveLength(1);
 });
 it("only an actually focused current Thread can be seen; a list row or background notification cannot", async () => {
   const ui = await mount();
@@ -342,11 +356,18 @@ it("retains a native open arriving during another navigation as an explicit retr
   );
   await act(async () => button?.click());
   const id = crypto.randomUUID();
+  const target = {
+    ...ui.snapshot().entries[0]!,
+    threadId: ui.first.threadId,
+    eventId: crypto.randomUUID(),
+    sourceTarget: { kind: "thread" as const },
+  };
   await ui.emit({
     openRequest: {
       id,
       threadId: ui.first.threadId,
-      eventId: crypto.randomUUID(),
+      eventId: target.eventId,
+      target,
     },
   });
   await act(async () => {
@@ -357,7 +378,7 @@ it("retains a native open arriving during another navigation as an explicit retr
     ui.request.mock.calls.some(
       ([command]) => command.kind === "opened" && command.id === id,
     ),
-  ).toBe(true);
+  ).toBe(false);
   expect(ui.host.querySelector("[data-attention-retry]")).not.toBeNull();
   await ui.click("[data-attention-retry]");
   expect(ui.model.getSnapshot()).toMatchObject({
@@ -378,7 +399,59 @@ it("failed Thread opens the current submission results pane", async () => {
   });
 });
 
-it("a changed event during navigation selects the current result view rather than the obsolete failure", async () => {
+it.each(["completed", "interrupted"] as const)(
+  "opens the exact receipt view for a %s source",
+  async (kind) => {
+    const ui = await mount();
+    const entry = {
+      ...ui.snapshot().entries[0]!,
+      kind,
+      sourceTarget: { kind: "receipt" as const, traceId: crypto.randomUUID() },
+    };
+    await ui.emit({
+      entries: [entry],
+      preferences: { system: false, completion: true },
+    });
+    await ui.click(`[data-attention-open='${ui.second.threadId}']`);
+    expect(ui.router.state.location.search).toMatchObject({
+      view: "submissions",
+    });
+    expect(
+      ui.model.attention.locationStore.getState().target?.sourceTarget,
+    ).toEqual(entry.sourceTarget);
+  },
+);
+
+it("explicitly cancels a blocked activation without confirming a location or answering", async () => {
+  const ui = await mount();
+  ui.setComposing(true);
+  const target = {
+      ...ui.snapshot().entries[0]!,
+      sourceTarget: { kind: "thread" as const },
+    },
+    id = crypto.randomUUID();
+  await ui.emit({
+    openRequest: {
+      id,
+      threadId: target.threadId,
+      eventId: target.eventId,
+      target,
+    },
+  });
+  await vi.waitFor(() =>
+    expect(ui.host.querySelector("[data-attention-retry]")).not.toBeNull(),
+  );
+  const cancel = [
+    ...ui.host.querySelectorAll<HTMLButtonElement>("button"),
+  ].find((node) => node.textContent === "取消定位")!;
+  await act(() => cancel.click());
+  expect(
+    ui.request.mock.calls.filter(([command]) => command.kind === "opened"),
+  ).toEqual([[expect.objectContaining({ id, outcome: "cancelled" })]]);
+  expect(ui.model.attention.locationStore.getState().target).toBeNull();
+});
+
+it("a changed event during navigation preserves the frozen failure source", async () => {
   const ui = await mount();
   await ui.emit({
     entries: ui
@@ -402,10 +475,10 @@ it("a changed event during navigation selects the current result view rather tha
     await new Promise((resolve) => setTimeout(resolve, 20));
   });
   expect(ui.router.state.location.search).toMatchObject({
-    view: "conversation",
+    view: "submissions",
   });
   expect(ui.model.attention.locationStore.getState().target?.kind).toBe(
-    "completed",
+    "failed",
   );
   expect(ui.host.textContent).toContain("提醒已过期");
 });
@@ -495,6 +568,7 @@ it("accepted notification intent reveals the same current conversation before lo
       id: crypto.randomUUID(),
       threadId: entry.threadId,
       eventId: entry.eventId,
+      target: { ...entry, sourceTarget: { kind: "thread" } },
     },
   });
   await vi.waitFor(() => expect(ui.reveal).toHaveBeenCalledOnce());

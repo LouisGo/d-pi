@@ -1,7 +1,9 @@
 import { randomUUID } from "node:crypto";
 import type { IpcMainInvokeEvent } from "electron";
 import { expect, it, vi } from "vitest";
+import { RuntimeViewSchema } from "../../../modules/execution/contracts/public";
 import { ThreadIdSchema } from "../../../shared/identity";
+import type { NotificationCallbacks } from "../lifecycle/system-notifications";
 import { ThreadAttention } from "../wiring/thread-attention";
 import { registerAttentionIpc } from "./attention";
 
@@ -11,6 +13,7 @@ function setup() {
     | ((event: IpcMainInvokeEvent, raw: unknown) => Promise<unknown>)
     | undefined;
   let generation = 1;
+  let notification: NotificationCallbacks | undefined;
   const savePreferences = vi.fn(),
     record = vi.fn(),
     sourceValid = vi.fn(() => true);
@@ -18,7 +21,13 @@ function setup() {
     getActiveThread: () => threadId,
     readPreferences: () => ({ system: false, completion: false }),
     savePreferences,
-    systemNotifications: { supported: () => true, show: () => () => {} },
+    systemNotifications: {
+      supported: () => true,
+      show: (_text, value) => {
+        notification = value;
+        return () => {};
+      },
+    },
     getText: () => ({ title: "d-pi", body: "Thread" }),
     openWindow: vi.fn(),
   });
@@ -46,8 +55,71 @@ function setup() {
     record,
     sourceValid,
     advance: () => generation++,
+    click: () => notification?.click(),
   };
 }
+it("fences activation completion by the registered renderer and actual IPC generation", async () => {
+  const f = setup(),
+    rendererId = randomUUID();
+  f.attention.setPreferences({ system: true, completion: false });
+  f.attention.observeRuntime(
+    RuntimeViewSchema.parse({
+      threadId,
+      traceId: randomUUID(),
+      revision: 1,
+      phase: "failed",
+      trusted: true,
+      busy: false,
+      model: null,
+      configuration: { code: "runtime.configDefault" },
+      message: { code: "runtime.disconnected" },
+    }),
+  );
+  f.click();
+  expect(f.attention.snapshot().openRequest).toBeNull();
+  await f.request({
+    kind: "activation-ready",
+    rendererId,
+    ready: true,
+    traceId: randomUUID(),
+  });
+  const id = f.attention.snapshot().openRequest!.id;
+  f.advance();
+  expect(
+    await f.request({
+      kind: "opened",
+      id,
+      rendererId,
+      outcome: "located",
+      traceId: randomUUID(),
+    }),
+  ).toMatchObject({ kind: "failed", code: "invalid-request" });
+  expect(f.attention.snapshot().openRequest?.id).toBe(id);
+  f.attention.clearVisible();
+  await f.request({
+    kind: "activation-ready",
+    rendererId,
+    ready: true,
+    traceId: randomUUID(),
+  });
+  expect(
+    await f.request({
+      kind: "opened",
+      id,
+      rendererId,
+      outcome: "target-unavailable",
+      traceId: randomUUID(),
+    }),
+  ).toMatchObject({ kind: "snapshot", snapshot: { openRequest: null } });
+  expect(f.record).toHaveBeenLastCalledWith(
+    expect.objectContaining({
+      operation: "attention:opened",
+      stage: "completed",
+      code: "target-unavailable",
+    }),
+  );
+  f.attention.dispose();
+});
 it("rejects source before parsing and fences a reload before preferences commit", async () => {
   const f = setup();
   f.sourceValid.mockReturnValue(false);

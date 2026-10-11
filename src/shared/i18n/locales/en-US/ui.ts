@@ -948,6 +948,9 @@ export const ui = {
   "ui.runtime.unsupportedInteraction":
     "Some questions can't be shown. They weren't answered automatically.",
   "ui.recovery.title": "Check and recover",
+  "attention.cancelOpen": "Cancel navigation",
+  "attention.targetUnavailable":
+    "The original target is unavailable. Its Thread is open; you can review the answer records.",
   "ui.recovery.unknown":
     "An operation or request has an unknown outcome. Nothing is resent automatically.",
   "ui.recovery.keepInput":

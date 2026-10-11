@@ -56,6 +56,57 @@ function fixture() {
   });
   return { attention, show, openWindow };
 }
+it("captures the actual native RequestKey and keeps queued clicks distinct from newer same-ID requests", () => {
+  const callbacks: NotificationCallbacks[] = [];
+  const attention = new ThreadAttention({
+    getActiveThread: () => threadId,
+    readPreferences: () => ({ system: true, completion: false }),
+    savePreferences: vi.fn(),
+    systemNotifications: {
+      supported: () => true,
+      show: (_text, value) => {
+        callbacks.push(value);
+        return vi.fn();
+      },
+    },
+    getText: () => ({ title: "d-pi", body: "Thread" }),
+    openWindow: vi.fn(),
+  });
+  const first = view();
+  first.interactions!.nativeSessionKey = "native original 中文";
+  attention.observeRuntime(first);
+  const second = {
+    ...view(2),
+    interactions: {
+      ...first.interactions!,
+      nativeSessionKey: "native replacement 中文",
+    },
+  };
+  attention.observeRuntime(second);
+  callbacks[0]!.click();
+  callbacks[1]!.click();
+  expect(attention.snapshot().openRequest).toBeNull();
+  attention.activationReady("renderer", true);
+  const queued = attention.snapshot().openRequest!;
+  expect(queued.target.sourceTarget).toEqual({
+    kind: "request",
+    requestKey: {
+      threadId,
+      nativeSessionKey: "native original 中文",
+      connectionGeneration: generation,
+      requestId: first.interactions!.items[0]!.id,
+    },
+  });
+  expect(attention.opened(queued.id, "obsolete renderer", "located")).toBe(
+    false,
+  );
+  expect(attention.snapshot().openRequest).toEqual(queued);
+  attention.opened(queued.id, "renderer", "target-unavailable");
+  expect(attention.snapshot().openRequest!.target.sourceTarget).toMatchObject({
+    requestKey: { nativeSessionKey: "native replacement 中文" },
+  });
+  attention.dispose();
+});
 it("keeps a deduplicated background question without stealing focus and ignores late revisions", () => {
   const { attention, show, openWindow } = fixture();
   attention.observeRuntime(view());
@@ -183,7 +234,7 @@ it("promotes a completed receipt to an observed late failure and keeps failure o
   expect(attention.snapshot().entries[0]).toEqual(current);
   expect(show).toHaveBeenCalledTimes(1);
 });
-it("only trusted foreground context clears unread; stale native click targets latest event and awaits matching opened", () => {
+it("only trusted foreground context clears unread; stale native click retains the original event and awaits matching opened", () => {
   let callbacks: NotificationCallbacks | undefined;
   const show = vi.fn((_text: unknown, value: NotificationCallbacks) => {
     callbacks = value;
@@ -200,6 +251,7 @@ it("only trusted foreground context clears unread; stale native click targets la
   });
   attention.observeRuntime(view());
   const first = attention.snapshot().entries[0]!;
+  const staleCallbacks = callbacks;
   expect(show).toHaveBeenCalledTimes(1);
   expect(attention.seen(threadId, first.eventId)).toBe(false);
   attention.observeRuntime({
@@ -208,13 +260,14 @@ it("only trusted foreground context clears unread; stale native click targets la
     interactions: undefined,
   });
   const latest = attention.snapshot().entries[0]!;
-  callbacks?.click();
+  staleCallbacks?.click();
   expect(openWindow).toHaveBeenCalledTimes(1);
+  attention.activationReady("renderer-A", true);
   const request = attention.snapshot().openRequest!;
-  expect(request.eventId).toBe(latest.eventId);
-  attention.opened(randomUUID());
+  expect(request.eventId).toBe(first.eventId);
+  attention.opened(randomUUID(), "renderer-A", "located");
   expect(attention.snapshot().openRequest).toEqual(request);
-  attention.opened(request.id);
+  attention.opened(request.id, "renderer-A", "located");
   expect(attention.snapshot().openRequest).toBeNull();
   attention.visible(threadId);
   expect(attention.snapshot().entries[0]?.unread).toBe(true);
@@ -414,6 +467,7 @@ it("an already queued click after a question expires opens current Thread state 
   expect(attention.snapshot().entries).toEqual([]);
   callback?.click();
   expect(openWindow).toHaveBeenCalledTimes(1);
+  attention.activationReady("renderer-A", true);
   expect(attention.snapshot().openRequest?.threadId).toBe(threadId);
   expect(attention.snapshot().entries).toEqual([]);
 });

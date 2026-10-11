@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "46627852793e6ee9f9e92a2cff189068a6ea15bd4816664237c0950297e22e53",
+  "inputsHash": "1e89bf021f118c14fd6d26944246437a5938e107ad5b921a874a3ee911e20a64",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 676,
-    "scannedFiles": 676,
+    "sourceFiles": 678,
+    "scannedFiles": 678,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 304,
-      "lines": 61007,
+      "files": 306,
+      "lines": 61898,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -118,7 +118,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 23,
-      "lines": 3995,
+      "lines": 4001,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -1135,6 +1135,13 @@
     {
       "module": "app",
       "environment": "contracts",
+      "dependency": "execution",
+      "targetEnvironment": "contracts",
+      "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "contracts",
       "dependency": "preferences",
       "targetEnvironment": "contracts",
       "testOnly": false
@@ -1164,13 +1171,6 @@
       "module": "app",
       "environment": "contracts",
       "dependency": "conversation",
-      "targetEnvironment": "contracts",
-      "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "contracts",
-      "dependency": "execution",
       "targetEnvironment": "contracts",
       "testOnly": false
     },
@@ -1254,6 +1254,13 @@
     {
       "module": "app",
       "environment": "main",
+      "dependency": "execution",
+      "targetEnvironment": "contracts",
+      "testOnly": true
+    },
+    {
+      "module": "app",
+      "environment": "main",
       "dependency": "shared",
       "targetEnvironment": "shared",
       "testOnly": true
@@ -1292,13 +1299,6 @@
       "dependency": "execution",
       "targetEnvironment": "main",
       "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "main",
-      "dependency": "execution",
-      "targetEnvironment": "contracts",
-      "testOnly": true
     },
     {
       "module": "app",
@@ -2539,6 +2539,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "contracts",
       "test": false,
+      "specifier": "../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/contracts/attention.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "contracts",
+      "test": false,
       "specifier": "../../modules/preferences/contracts/public",
       "kind": "import",
       "resolution": "module",
@@ -3622,12 +3634,36 @@
       "sourceModule": "app",
       "sourceEnvironment": "main",
       "test": true,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/main/ipc/attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
       "specifier": "../../../shared/identity",
       "kind": "import",
       "resolution": "module",
       "to": "src/shared/identity.ts",
       "targetModule": "shared",
       "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/app/main/ipc/attention.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../lifecycle/system-notifications",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/lifecycle/system-notifications.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
     },
     {
       "from": "src/app/main/ipc/attention.test.ts",
@@ -5446,6 +5482,81 @@
       "to": "src/platform/main/diagnostics/public.ts",
       "targetModule": "platform",
       "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/activation-broker.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/activation-broker.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/activation-broker.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/app/main/wiring/activation-broker.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../contracts/attention",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/attention.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/main/wiring/activation-broker.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./activation-broker",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/activation-broker.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/activation-broker.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/activation-broker.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../contracts/attention",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/contracts/attention.ts",
+      "targetModule": "app",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/app/main/wiring/app-storage-init.test.ts",
@@ -7460,6 +7571,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/main/lifecycle/system-notifications.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/thread-attention.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "./activation-broker",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/activation-broker.ts",
       "targetModule": "app",
       "targetEnvironment": "main"
     },
@@ -19941,6 +20064,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": true,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/attention-location.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
       "specifier": "../../../shared/identity",
       "kind": "import",
       "resolution": "module",
@@ -19971,6 +20106,18 @@
       "to": "src/app/renderer/workbench/attention-location.ts",
       "targetModule": "app",
       "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/attention-location.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/app/renderer/workbench/attention-location.ts",
@@ -23389,6 +23536,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/workbench/types.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/thread-workbench.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./window-visibility",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/window-visibility.ts",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },

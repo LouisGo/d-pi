@@ -10,7 +10,10 @@ import {
   SettingsGroup,
   Switch,
 } from "../../../modules/ui/renderer/public";
-import type { AttentionEntry } from "../../contracts/attention";
+import type {
+  ActivationIntent,
+  AttentionEntry,
+} from "../../contracts/attention";
 import type { AppModel } from "../wiring/model";
 
 import { ConversationVisibilityContext } from "./layout/conversation-visibility";
@@ -22,6 +25,16 @@ function kindKey(kind: AttentionEntry["kind"]) {
     .with("completed", () => "attention.completed" as const)
     .with("interrupted", () => "attention.interrupted" as const)
     .exhaustive();
+}
+function attentionReadingView(entry: AttentionEntry | undefined) {
+  if (entry?.sourceTarget)
+    return entry.sourceTarget.kind === "receipt" ||
+      entry.sourceTarget.kind === "result"
+      ? ("submissions" as const)
+      : ("conversation" as const);
+  return entry?.kind === "failed"
+    ? ("submissions" as const)
+    : ("conversation" as const);
 }
 export function ThreadAttention({
   model,
@@ -85,12 +98,22 @@ function AttentionContent({ model }: { model: AppModel }) {
   const currentEntry = useStore(model.attention.stateStore, (state) =>
     current ? state.byThread.get(current) : undefined,
   );
-  const [pending, setPending] = useState<{
-    threadId: ThreadContext["threadId"];
-    eventId: string;
-  } | null>(null);
+  const [pending, setPending] = useState<
+    | (Pick<ActivationIntent, "threadId" | "eventId"> & {
+        target?: AttentionEntry | undefined;
+        id?: string;
+      })
+    | null
+  >(null);
   const [stale, setStale] = useState(false);
+  const targetUnavailable = useStore(
+    model.attention.locationStore,
+    (state) =>
+      state.completed?.threadId === current &&
+      state.completed.outcome === "target-unavailable",
+  );
   const opening = useRef(false);
+  const openEpoch = useRef(0);
   const handledOpen = useRef<string | null>(null);
   const mounted = useRef(true);
   useEffect(() => {
@@ -100,28 +123,33 @@ function AttentionContent({ model }: { model: AppModel }) {
     };
   }, []);
   const open = useCallback(
-    async (intent: {
-      threadId: ThreadContext["threadId"];
-      eventId: string;
-    }) => {
+    async (
+      intent: Pick<ActivationIntent, "threadId" | "eventId"> & {
+        target?: AttentionEntry | undefined;
+        id?: string;
+      },
+    ) => {
       if (opening.current) {
         setPending(intent);
         return;
       }
       opening.current = true;
+      const epoch = openEpoch.current;
       try {
-        const currentEntry = model.attention.stateStore
+        const sampled = model.attention.stateStore
           .getState()
           .byThread.get(intent.threadId);
+        const frozen =
+          intent.target ??
+          (sampled?.eventId === intent.eventId ? sampled : undefined);
         await navigate({
           to: "/threads/$threadId",
           params: { threadId: intent.threadId },
           search: {
-            view:
-              currentEntry?.kind === "failed" ? "submissions" : "conversation",
+            view: attentionReadingView(frozen),
           },
         });
-        if (!mounted.current) return;
+        if (!mounted.current || epoch !== openEpoch.current) return;
         const state = model.getSnapshot();
         if (
           state.kind !== "ready" ||
@@ -139,7 +167,7 @@ function AttentionContent({ model }: { model: AppModel }) {
         const entry = model.attention.stateStore
           .getState()
           .byThread.get(intent.threadId);
-        const view = entry?.kind === "failed" ? "submissions" : "conversation";
+        const view = attentionReadingView(frozen);
         if (router.state.location.search.view !== view) {
           await navigate({
             to: "/threads/$threadId",
@@ -147,24 +175,39 @@ function AttentionContent({ model }: { model: AppModel }) {
             search: { view },
             replace: true,
           });
-          if (!mounted.current) return;
+          if (!mounted.current || epoch !== openEpoch.current) return;
         }
         reveal();
         setStale(!entry || entry.eventId !== intent.eventId);
-        // A historical notification is only a navigation intent. Locate the current
-        // interaction/result, never answer the event carried by a stale click.
-        if (entry) model.attention.locate(entry);
+        if (frozen) model.attention.locate(frozen, intent.id);
       } finally {
         opening.current = false;
       }
     },
     [model, navigate, router, reveal],
   );
+  const activationReady = useStore(
+    model.stateStore,
+    (state) => state.kind === "ready",
+  );
+  useEffect(() => {
+    if (!activationReady || !snapshot) return;
+    let subscribed = true;
+    queueMicrotask(() => {
+      if (subscribed) void model.attention.activationReady(true);
+    });
+    return () => {
+      subscribed = false;
+      void model.attention.activationReady(false);
+    };
+  }, [activationReady, snapshot?.instanceId, model]);
   useEffect(() => {
     const request = snapshot?.openRequest;
     if (!request || handledOpen.current === request.id) return;
     handledOpen.current = request.id;
-    void open(request).finally(() => void model.attention.opened(request.id));
+    void open(request).catch(() => {
+      if (mounted.current) setPending(request);
+    });
   }, [snapshot?.openRequest, model, open]);
   useEffect(() => {
     const foreground = () =>
@@ -210,6 +253,7 @@ function AttentionContent({ model }: { model: AppModel }) {
     !failed &&
     !snapshot?.coverageGap &&
     !pending &&
+    !targetUnavailable &&
     !stale
   )
     return null;
@@ -245,7 +289,7 @@ function AttentionContent({ model }: { model: AppModel }) {
           <Button
             variant="ghost"
             data-attention-open={entry.threadId}
-            onClick={() => void open(entry)}
+            onClick={() => void open({ ...entry, target: entry })}
           >
             {t("attention.open")}
           </Button>
@@ -261,9 +305,23 @@ function AttentionContent({ model }: { model: AppModel }) {
           >
             {t("attention.retryOpen")}
           </Button>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              openEpoch.current++;
+              if (pending.id)
+                void model.attention.opened(pending.id, "cancelled");
+              setPending(null);
+            }}
+          >
+            {t("attention.cancelOpen")}
+          </Button>
         </p>
       )}
       {stale && <p role="status">{t("attention.stale")}</p>}
+      {targetUnavailable && (
+        <p role="status">{t("attention.targetUnavailable")}</p>
+      )}
     </section>
   );
 }

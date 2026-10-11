@@ -2,6 +2,7 @@ import { createStore, type StoreApi } from "zustand/vanilla";
 import type { NotificationPreferences } from "../../../modules/preferences/contracts/public";
 import type { ThreadContext } from "../../../modules/threads/contracts/public";
 import type {
+  ActivationOutcome,
   AttentionBridge,
   AttentionCommand,
   AttentionEntry,
@@ -14,6 +15,7 @@ type AttentionState = {
   failed: boolean;
   saving: boolean;
 };
+export type AttentionLocation = AttentionEntry & { activationId?: string };
 /** Main owns all facts. This client mirrors the latest sample; it has no event derivation or retries. */
 export class AttentionModel {
   private readonly store = createStore<AttentionState>(() => ({
@@ -26,14 +28,30 @@ export class AttentionModel {
     StoreApi<AttentionState>,
     "getState" | "getInitialState" | "subscribe"
   > = this.store;
-  private readonly location = createStore<{ target: AttentionEntry | null }>(
-    () => ({ target: null }),
-  );
+  private readonly location = createStore<{
+    target: AttentionLocation | null;
+    completed: {
+      threadId: AttentionEntry["threadId"];
+      outcome: ActivationOutcome;
+    } | null;
+  }>(() => ({ target: null, completed: null }));
   readonly locationStore: Pick<
-    StoreApi<{ target: AttentionEntry | null }>,
+    StoreApi<{
+      target: AttentionLocation | null;
+      completed: {
+        threadId: AttentionEntry["threadId"];
+        outcome: ActivationOutcome;
+      } | null;
+    }>,
     "getState" | "getInitialState" | "subscribe"
   > = this.location;
   private disposed = false;
+  private readonly rendererId = crypto.randomUUID();
+  private readiness = Promise.resolve(true);
+  private rendererReady = false;
+  private desiredReady: boolean | null = null;
+  private pendingCompletion: { id: string; outcome: ActivationOutcome } | null =
+    null;
   private started = false;
   private stop: (() => void) | null = null;
   private streamRevision = 0;
@@ -86,12 +104,12 @@ export class AttentionModel {
     }
     this.store.setState({ snapshot, byThread, failed: false });
   }
-  private async command(command: AttentionCommand): Promise<void> {
-    if (this.disposed || !this.bridge) return;
+  private async command(command: AttentionCommand): Promise<boolean> {
+    if (this.disposed || !this.bridge) return false;
     const streamRevision = this.streamRevision;
     try {
       const reply = await this.bridge.request(command);
-      if (this.disposed) return;
+      if (this.disposed) return false;
       if (reply.kind === "failed") this.store.setState({ failed: true });
       else if (
         streamRevision === this.streamRevision ||
@@ -99,12 +117,28 @@ export class AttentionModel {
           this.stateStore.getState().snapshot?.instanceId
       )
         this.accept(reply.snapshot);
+      return reply.kind === "snapshot";
     } catch {
       if (!this.disposed) this.store.setState({ failed: true });
+      return false;
     }
   }
-  refresh() {
-    return this.command({ kind: "snapshot", traceId: crypto.randomUUID() });
+  async refresh() {
+    if (
+      !(await this.command({ kind: "snapshot", traceId: crypto.randomUUID() }))
+    )
+      return;
+    if (
+      this.desiredReady !== null &&
+      this.desiredReady !== this.rendererReady
+    ) {
+      if (!(await this.activationReady(this.desiredReady))) return;
+    }
+    const completion = this.pendingCompletion;
+    if (!completion || !this.rendererReady) return;
+    if (this.stateStore.getState().snapshot?.openRequest?.id === completion.id)
+      await this.opened(completion.id, completion.outcome);
+    else this.pendingCompletion = null;
   }
   visible(threadId: ThreadContext["threadId"] | null, force = false) {
     if (!force && threadId === this.visibleThread) return Promise.resolve();
@@ -123,8 +157,31 @@ export class AttentionModel {
       eventId: entry.eventId,
     });
   }
-  opened(id: string) {
-    return this.command({ kind: "opened", traceId: crypto.randomUUID(), id });
+  activationReady(ready: boolean) {
+    this.desiredReady = ready;
+    this.readiness = this.readiness.then(async () => {
+      const accepted = await this.command({
+        kind: "activation-ready",
+        traceId: crypto.randomUUID(),
+        rendererId: this.rendererId,
+        ready,
+      });
+      if (accepted) this.rendererReady = ready;
+      return accepted;
+    });
+    return this.readiness;
+  }
+  async opened(id: string, outcome: ActivationOutcome = "located") {
+    this.pendingCompletion = { id, outcome };
+    const accepted = await this.command({
+      kind: "opened",
+      traceId: crypto.randomUUID(),
+      id,
+      rendererId: this.rendererId,
+      outcome,
+    });
+    if (accepted && this.pendingCompletion?.id === id)
+      this.pendingCompletion = null;
   }
   async preferences(value: NotificationPreferences) {
     if (this.stateStore.getState().saving || this.disposed) return;
@@ -139,8 +196,24 @@ export class AttentionModel {
       if (!this.disposed) this.store.setState({ saving: false });
     }
   }
-  locate(entry: AttentionEntry) {
-    if (!this.disposed) this.location.setState({ target: { ...entry } });
+  locate(entry: AttentionEntry, activationId?: string) {
+    if (!this.disposed) {
+      const previous = this.location.getState().target;
+      if (previous?.activationId && previous.activationId !== activationId)
+        this.completeLocation(previous, "cancelled");
+      this.location.setState({
+        target: { ...entry, ...(activationId ? { activationId } : {}) },
+        completed: null,
+      });
+    }
+  }
+  completeLocation(target: AttentionLocation, outcome: ActivationOutcome) {
+    if (this.disposed || this.location.getState().target !== target) return;
+    this.location.setState({
+      target: null,
+      completed: { threadId: target.threadId, outcome },
+    });
+    if (target.activationId) void this.opened(target.activationId, outcome);
   }
   dispose() {
     if (this.disposed) return;

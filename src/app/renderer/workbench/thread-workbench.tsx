@@ -23,13 +23,14 @@ import type { ReadingView } from "../routing/search";
 import { ConversationVisibilityContext } from "../shell/layout/conversation-visibility";
 import type { ThreadSelectionState } from "../wiring/model";
 import { AnswerHistory } from "./answer-history";
-import { locateAttention } from "./attention-location";
+import { locateActivation } from "./attention-location";
 import { Composer } from "./composer";
 import { DecisionDock } from "./decision-dock";
 import { FilePanel } from "./file-panel";
 import { RuntimeInspection, RuntimePanel } from "./runtime-panel";
 import { SubagentControls } from "./subagent-controls";
 import type { WorkbenchProps } from "./types";
+import { useDocumentVisible } from "./window-visibility";
 
 type ThreadWorkbenchProps = WorkbenchProps & {
   transitioning?: boolean;
@@ -43,6 +44,7 @@ export function ThreadWorkbench({
   ...props
 }: ThreadWorkbenchProps) {
   const { visible } = useContext(ConversationVisibilityContext);
+  const documentVisible = useDocumentVisible();
   const [readingFocus, setReadingFocus] = useState(false);
   const workspace = useRef<HTMLElement>(null);
   const target = useStore(props.model.attention.locationStore, (state) =>
@@ -53,26 +55,40 @@ export function ThreadWorkbench({
   const runtime = props.threadSelection.thread.runtime;
   const subscribeReady = useCallback(
     (listener: () => void) =>
-      runtime?.subscribeTo((state) => state.view !== null, listener) ??
-      (() => {}),
+      runtime?.subscribeTo(
+        (state) => state.view !== null && state.view.phase !== "starting",
+        listener,
+      ) ?? (() => {}),
     [runtime],
   );
   const getReady = useCallback(
-    () => !runtime || runtime.getSnapshot() !== null,
+    () =>
+      !runtime ||
+      (runtime.getSnapshot() !== null &&
+        runtime.getSnapshot()?.phase !== "starting"),
     [runtime],
   );
   const runtimeReady = useSyncExternalStore(subscribeReady, getReady);
   const located = useRef<typeof target>(null);
   const attentionFrame = useRef<number | null>(null);
   const scheduledTarget = useRef<typeof target>(null);
+  const locatingActivation = useRef(false);
   const onReadingTakeover = useCallback(() => {
+    if (locatingActivation.current) return;
     if (!props.model.workbench.locatingSource)
       props.model.workbench.cancelReturn();
+    const currentTarget = props.model.attention.locationStore.getState().target;
+    if (
+      currentTarget?.threadId ===
+        props.threadSelection.thread.context.threadId &&
+      currentTarget.activationId
+    )
+      props.model.attention.completeLocation(currentTarget, "cancelled");
     if (attentionFrame.current === null) return;
     cancelAnimationFrame(attentionFrame.current);
     attentionFrame.current = null;
     located.current = scheduledTarget.current;
-  }, [props.model]);
+  }, [props.model, props.threadSelection.thread.context.threadId]);
   const receiptAnchor = useRef<ReturnType<typeof attachReadingAnchor> | null>(
     null,
   );
@@ -85,6 +101,7 @@ export function ThreadWorkbench({
   useLayoutEffect(() => {
     if (
       !visible ||
+      !documentVisible ||
       !target ||
       located.current === target ||
       transitioning ||
@@ -92,7 +109,9 @@ export function ThreadWorkbench({
     )
       return;
     setReadingFocus(
-      target.kind === "failed" &&
+      (target.kind === "failed" ||
+        target.sourceTarget?.kind === "receipt" ||
+        target.sourceTarget?.kind === "result") &&
         props.readingView === "submissions" &&
         !!workspace.current?.querySelector(
           `[data-attention-receipt-trace="${target.traceId}"]`,
@@ -102,19 +121,33 @@ export function ThreadWorkbench({
       attentionFrame.current = null;
       const location = workspace.current;
       if (!location) return;
-      const locate = () => locateAttention(location, target);
+      let outcome: ReturnType<typeof locateActivation> = null;
+      const locate = () => {
+        outcome = locateActivation(location, target);
+        return outcome !== null;
+      };
       const receiptInPane =
-        target.kind === "failed" &&
+        (target.kind === "failed" ||
+          target.sourceTarget?.kind === "receipt" ||
+          target.sourceTarget?.kind === "result") &&
         props.readingView === "submissions" &&
         location.querySelector(
           `[data-attention-receipt-trace="${target.traceId}"]`,
         );
-      if (
-        receiptInPane && receiptAnchor.current
-          ? receiptAnchor.current.position(locate)
-          : locate()
-      )
-        located.current = target;
+      locatingActivation.current = true;
+      try {
+        if (
+          receiptInPane && receiptAnchor.current
+            ? receiptAnchor.current.position(locate)
+            : locate()
+        ) {
+          located.current = target;
+          if (outcome && (target.activationId || target.sourceTarget))
+            props.model.attention.completeLocation(target, outcome);
+        }
+      } finally {
+        locatingActivation.current = false;
+      }
     });
     attentionFrame.current = frame;
     scheduledTarget.current = target;
@@ -122,11 +155,20 @@ export function ThreadWorkbench({
       cancelAnimationFrame(frame);
       if (attentionFrame.current === frame) attentionFrame.current = null;
     };
-  }, [target, props.readingView, transitioning, runtimeReady, visible]);
+  }, [
+    target,
+    props.readingView,
+    transitioning,
+    runtimeReady,
+    visible,
+    documentVisible,
+  ]);
   return (
     <section
       ref={workspace}
       className="thread-workspace"
+      data-activation-thread={props.threadSelection.thread.context.threadId}
+      tabIndex={-1}
       inert={transitioning}
       aria-busy={transitioning}
       data-reading-focus={readingFocus}

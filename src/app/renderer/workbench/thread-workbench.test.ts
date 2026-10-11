@@ -96,6 +96,7 @@ function setup(target: boolean) {
     unread: true,
   };
   const locationStore = createStore(() => ({ target: target ? entry : null }));
+  const completeLocation = vi.fn();
   const positions = new ReadingPositions();
   const reading = new ConversationModel({
     connect: (_thread, listener) => {
@@ -123,7 +124,11 @@ function setup(target: boolean) {
     select: async () => true,
   });
   const props = {
-    model: { attention: { locationStore }, history: {}, workbench },
+    model: {
+      attention: { locationStore, completeLocation },
+      history: {},
+      workbench,
+    },
     editor: {},
     threadSelection: {
       kind: "thread",
@@ -166,8 +171,59 @@ function setup(target: boolean) {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
   };
-  return { host, props, render, flush, cleanup };
+  return {
+    host,
+    props,
+    render,
+    flush,
+    cleanup,
+    locationStore,
+    completeLocation,
+  };
 }
+
+it("acknowledges an activation only after a visible exact receipt has actually received focus", async () => {
+  const f = setup(false);
+  let visible = false;
+  const visibility = vi
+    .spyOn(document, "visibilityState", "get")
+    .mockImplementation(() => (visible ? "visible" : "hidden"));
+  f.completeLocation.mockImplementation(() =>
+    expect(document.activeElement).toBe(
+      f.host.querySelector('[data-attention-receipt-trace="test-trace"]'),
+    ),
+  );
+  try {
+    await f.render();
+    const target = {
+      threadId: f.props.threadSelection.thread.context.threadId,
+      eventId: crypto.randomUUID(),
+      traceId: trace,
+      kind: "failed" as const,
+      unread: true,
+      sourceTarget: { kind: "receipt" as const, traceId: trace },
+      activationId: crypto.randomUUID(),
+    };
+    await act(() => f.locationStore.setState({ target }));
+    await f.flush();
+    expect(f.completeLocation).not.toHaveBeenCalled();
+    await act(() => {
+      visible = true;
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    await f.flush();
+    expect(f.completeLocation).toHaveBeenCalledExactlyOnceWith(
+      target,
+      "located",
+    );
+    await f.render();
+    await f.flush();
+    expect(f.completeLocation).toHaveBeenCalledOnce();
+  } finally {
+    visibility.mockRestore();
+    await f.cleanup();
+  }
+});
 
 it("keeps an explicitly located failure receipt after its disclosure schedules content restoration", async () => {
   const f = setup(true);

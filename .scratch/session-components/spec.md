@@ -303,3 +303,13 @@ C26 的恢复面板从 Main 的 RuntimeView、操作事实和发送收据派生�
 “核对回答记录”显式展开同 Thread 的有界 AnswerHistory 并一次定位；随后隐藏/恢复仍释放正文且不夺回焦点。“查看发送记录”进入既有收据视图，原未知结果保持。未开启 inspection 时，不再挂载 CSS 隐藏的旧完成回答正文。来源读取失败沿用既有 Directory/Reading 失败呈现，本段不伪称 RuntimeView 能解释全部 reader 错误。
 
 验证：恢复缺口四类、未知队列及未知发送均先复现失败；三个受影响文件15/15通过，含无需自动启动/回答、busy/未授权不能重连、显式历史展开与再次返回不抢焦点。Renderer 类型、design/i18n通过。没有新增实机/provider/系统IME或完整生产性能证据；Activation 的精确目标与 ready/DOM ACK 仍待实施，完整 WB02–WB04 继续。
+
+### WB04 精确通知目标、ready gate 与 DOM 完成（2026-10-11，继续实施）
+
+参考同级 T3 DesktopAppActivationBroker 与 DesktopAppActivationCoordinator 的队列/ready/完成反馈组织，沿用 d-pi Main attention 所有权及严格 IPC 来源围栏。新增 App ActivationBroker：最多32个冻结意图、重复点击合并、FIFO单当前目标、等待 Renderer 注册；关窗/重载/崩溃清除 ready，但保留排队导航直到新窗口定位或用户显式取消，不具有任何执行/回答重试权限。溢出保留先前队列并标明 coverage gap。持久草稿/读取 lease 的原协调没有替换。
+
+Main 通知冻结当时事件与 SourceTarget（真实 RequestKey、发送收据 trace、运行时 trace 或明确 Thread）；来源尚不可得时只指向 Thread，不造原生 ID。Renderer 不改指向最新请求，等待桥接、Thread、runtime 与可见 DOM；请求按完整 Thread/nativeSessionKey/generation/requestId 和当前 editor owner 匹配，原目标不可用时只定位所属 Thread 并明示。已完成/中断的收据按真实 source 打开发送记录。只有实际焦点定位、明确目标不可用或用户取消才 ACK，Main 再核对 activation ID/Renderer注册/实际IPC来源代次；仅关通知不操作原生请求。程序 position 与用户阅读接管分离；隐藏期间不确认，显式取消与新导航替换可结束旧导航意图。ready 或完成 ACK 传输失败保留状态，用户显式刷新可重试 App 导航协议，不重发业务。
+
+9个目标文件73/73通过：冻结旧通知、同 ID 来源变更、32队列/合并、窗口替换与旧 Renderer/旧 IPC generation ACK 拒绝、真实 DOM focus 后确认、隐藏与显式取消、ACK/ready传输失败恢复及原生表单组合。Renderer/Main/Preload类型与 design/i18n通过。navigation-continuity 的旧4项失败以未改ThreadWorkbench再次复现，仍对应本spec既有 a900272 基线记录，未冒称整套导航绿色。隔离 Electron44.4.5 实测实际正式 NativeInteraction/Dock：精确RequestKey定位当前Dock；旧generation/另一nativeSessionKey不定位新题；原始中文草稿保持、回答写入0；随后整组回答正常。证据 [activation-renderer.json](evidence/activation-renderer.json) 带真实 HEAD/dirty=true 和参与源码 SHA，限定 Renderer fixture，不是完整 App/native/provider/系统IME验收。后续工具/外部打开的 SourceNavigation 唤醒组合仍需其真实入口证据，不能凭本通知链路冒称已覆盖。
+
+固定998e12d..5a520bf的Dock/Recovery独立综合复核无新增可达高价值问题。本轮完整 WB02–WB04 仍继续，权限可靠关联、原生 AskTool 与生产性能验收待完成，不推送、不发布。

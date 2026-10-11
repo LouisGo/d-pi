@@ -1,11 +1,13 @@
 import { createRoot } from "react-dom/client";
 import { QueryProvider } from "../../src/app/renderer/wiring/query-client";
 import { AnswerHistory } from "../../src/app/renderer/workbench/answer-history";
+import { locateActivation } from "../../src/app/renderer/workbench/attention-location";
 import { DecisionDock } from "../../src/app/renderer/workbench/decision-dock";
 import { RuntimePanel } from "../../src/app/renderer/workbench/runtime-panel";
 import type {
   Answer,
   Interaction,
+  RequestKey,
   RuntimeView,
 } from "../../src/modules/execution/contracts/public";
 import { RuntimeModel } from "../../src/modules/execution/renderer/public";
@@ -119,6 +121,19 @@ await model.bind(threadId);
 installControlFocusVisibility(document);
 const probe = {
   model,
+  locateRequest(requestKey: RequestKey) {
+    return locateActivation(
+      document.querySelector<HTMLElement>(".thread-workspace")!,
+      {
+        threadId,
+        eventId: crypto.randomUUID(),
+        traceId: current.traceId,
+        kind: "needs-answer",
+        unread: false,
+        sourceTarget: { kind: "request", requestKey },
+      },
+    );
+  },
   writes,
   disconnect() {
     current = {
@@ -135,7 +150,12 @@ createRoot(document.getElementById("root")!).render(
     <I18nProvider
       initialSnapshot={{ preference: "zh-CN", resolvedLocale: "zh-CN" }}
     >
-      <main className="thread-workspace" style={{ height: "100vh" }}>
+      <main
+        className="thread-workspace"
+        data-activation-thread={threadId}
+        tabIndex={-1}
+        style={{ height: "100vh" }}
+      >
         <div
           className="thread-reading"
           style={{ padding: "var(--panel-padding)" }}

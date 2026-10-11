@@ -78,6 +78,15 @@ export function registerAttentionIpc(context: AttentionContext): void {
           return fail("source-changed");
         if (!attention) return fail("storage-unavailable");
         if (
+          command.kind === "opened" &&
+          !attention.opened(
+            command.id,
+            `${generation}:${command.rendererId}`,
+            command.outcome,
+          )
+        )
+          return fail("invalid-request");
+        if (
           (command.kind === "visible" && command.threadId !== null) ||
           command.kind === "seen"
         ) {
@@ -90,6 +99,12 @@ export function registerAttentionIpc(context: AttentionContext): void {
             return fail("invalid-request");
         }
         match(command)
+          .with({ kind: "activation-ready" }, (value) =>
+            attention.activationReady(
+              `${generation}:${value.rendererId}`,
+              value.ready,
+            ),
+          )
           .with({ kind: "snapshot" }, () => {})
           .with({ kind: "preferences" }, (value) =>
             attention.setPreferences(value.value),
@@ -100,9 +115,12 @@ export function registerAttentionIpc(context: AttentionContext): void {
           .with({ kind: "seen" }, (value) =>
             attention.seen(value.threadId, value.eventId),
           )
-          .with({ kind: "opened" }, (value) => attention.opened(value.id))
+          .with({ kind: "opened" }, () => {})
           .exhaustive();
-        record("completed");
+        record(
+          "completed",
+          command.kind === "opened" ? command.outcome : undefined,
+        );
         return { kind: "snapshot", traceId, snapshot: attention.snapshot() };
       } catch {
         return fail("storage-unavailable");

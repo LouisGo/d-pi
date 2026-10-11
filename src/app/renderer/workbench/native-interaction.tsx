@@ -154,6 +154,13 @@ export function NativeInteraction({
   return (
     <article
       ref={editor}
+      tabIndex={-1}
+      data-interaction-request-key={
+        model.getSnapshot()?.interactions?.nativeSessionKey
+          ? editorHandle?.identity
+          : undefined
+      }
+      data-editor-owner={ownsEditor}
       data-editor-surface={surface}
       className="native-interaction"
       data-selectable

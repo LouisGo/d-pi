@@ -849,6 +849,9 @@ export const ui = {
   "ui.runtime.interactionsLabel": "待答问题",
   "ui.runtime.unsupportedInteraction": "有问题暂无法显示，未自动回答。",
   "ui.recovery.title": "检查与恢复",
+  "attention.cancelOpen": "取消定位",
+  "attention.targetUnavailable":
+    "原目标已不可用，已打开所属 Thread，可核对回答记录。",
   "ui.recovery.unknown": "有操作或请求的结果未知，不会自动重新发送。",
   "ui.recovery.keepInput":
     "输入和可读历史会保留。再次发送前，请先核对之前的结果。",

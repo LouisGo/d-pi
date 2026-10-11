@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
+import { createHash } from "node:crypto";
 import { once } from "node:events";
-import { mkdirSync, realpathSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { createServer } from "node:net";
 import { join, resolve } from "node:path";
 import tailwindcss from "@tailwindcss/vite";
@@ -91,6 +92,28 @@ const facts = {
   systemIme: false,
   electron: "44.4.5",
   states: [],
+  sourceCheckpoint: {
+    commit: execFileSync("git", ["rev-parse", "HEAD"], {
+      encoding: "utf8",
+    }).trim(),
+    dirty:
+      execFileSync("git", ["status", "--porcelain"], {
+        encoding: "utf8",
+      }).trim().length > 0,
+    files: Object.fromEntries(
+      [
+        "src/app/renderer/workbench/attention-location.ts",
+        "src/app/renderer/workbench/native-interaction.tsx",
+        "src/app/renderer/workbench/decision-dock.tsx",
+        "src/modules/execution/renderer/runtime/runtime-model.ts",
+        "validation/m2/rich-interactions.tsx",
+        "validation/m2/rich-interactions.mjs",
+      ].map((path) => [
+        path,
+        createHash("sha256").update(readFileSync(path)).digest("hex"),
+      ]),
+    ),
+  },
 };
 async function click(selector) {
   await call("Page.bringToFront");
@@ -230,6 +253,24 @@ try {
   );
   assert.equal(keyboard.visible, true);
   assert.equal(keyboard.outline, "solid");
+  facts.activation = await evaluate(`(()=>{
+    const probe=window.richInteractionProbe, view=probe.model.getSnapshot();
+    const key={threadId:view.threadId,nativeSessionKey:view.interactions.nativeSessionKey,connectionGeneration:view.interactions.connectionGeneration,requestId:'A'};
+    const sample=k=>{const outcome=probe.locateRequest(k);return {outcome,surface:document.activeElement.dataset.editorSurface??null,owner:document.activeElement.dataset.editorOwner??null};};
+    return {exact:sample(key),oldGeneration:sample({...key,connectionGeneration:crypto.randomUUID()}),otherSession:sample({...key,nativeSessionKey:'different native 中文'}),again:sample(key),draft:probe.model.interactionDraft('A').ask.answers.features.customInput,writes:probe.writes.length};
+  })()`);
+  assert.deepEqual(facts.activation.exact, {
+    outcome: "located",
+    surface: "dock",
+    owner: "true",
+  });
+  assert.deepEqual(facts.activation.again, facts.activation.exact);
+  assert.equal(facts.activation.oldGeneration.outcome, "target-unavailable");
+  assert.equal(facts.activation.otherSession.outcome, "target-unavailable");
+  assert.equal(facts.activation.oldGeneration.surface, null);
+  assert.equal(facts.activation.otherSession.surface, null);
+  assert.equal(facts.activation.draft, "  中文组合草稿  ");
+  assert.equal(facts.activation.writes, 0);
   await button("检查全部回答", "dock");
   await wait(() =>
     evaluate(
