@@ -84,6 +84,54 @@ it.each([
     }
   },
 );
+it.each(["parent", "child", "both"])(
+  "reads the fixed OMP first-line title slot in %s files without changing source identity",
+  async (kind) => {
+    const f = await fixture();
+    const title = `${JSON.stringify({ type: "title", v: 1, title: "Native title", updatedAt: "2026-10-11T00:00:00Z", pad: "" })}\n`;
+    try {
+      if (kind !== "child")
+        await writeFile(
+          f.task.parentSessionFile,
+          `${title}${header("parent-id")}\n`,
+        );
+      await writeFile(
+        f.task.owner.sessionFile,
+        `${kind !== "parent" ? title : ""}${header("child-id", f.task.parentSessionFile)}\n${message([{ type: "text", text: "Native title slot result" }])}\n`,
+      );
+      expect(await runNativeSubagentWorker(f.task)).toMatchObject({
+        status: "available",
+        text: "Native title slot result",
+        childSessionId: "child-id",
+        truncated: false,
+      });
+    } finally {
+      await f.close();
+    }
+  },
+);
+it.each(["two-titles", "message-before-header"])(
+  "rejects %s rather than finding an arbitrary later session header",
+  async (kind) => {
+    const f = await fixture();
+    try {
+      const prefix =
+        kind === "two-titles"
+          ? `${JSON.stringify({ type: "title" })}\n${JSON.stringify({ type: "title" })}\n`
+          : `${message([{ type: "text", text: "unowned" }])}\n`;
+      await writeFile(
+        f.task.owner.sessionFile,
+        `${prefix}${header("child-id", f.task.parentSessionFile)}\n${message([{ type: "text", text: "unowned result" }])}\n`,
+      );
+      expect(await runNativeSubagentWorker(f.task)).toMatchObject({
+        status: "unavailable",
+        reason: "transcript-unavailable",
+      });
+    } finally {
+      await f.close();
+    }
+  },
+);
 it.each(["foreign-parent", "foreign-path", "symlink", "parent-id"])(
   "rejects %s instead of attributing another transcript",
   async (kind) => {

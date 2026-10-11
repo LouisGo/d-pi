@@ -338,3 +338,9 @@ Activation 独立复核（固定 `5a520bf..d17e3d5`）确认三项 P2，并逐�
 固定 `83bdd56..6410561` 原生启动独立复核无新增可达高价值问题。整组回答沿用既有256KiB UTF-8 wire预算：原先逐题有效后才被IPC拒绝，现Core构建结果明确区分未完成、可发送与超额；GUI说明整组过长并保留草稿，拒绝冻结或派发，缩短自填／减少选择后可正常发送。不截断原文，不新增原生默认或重试策略。
 
 实际超额中文回答反例先失败；三个目标文件39/39通过，含合法单题累积超额、仅选项累积超额、草稿保留、缩短后单次整组发送。Core/Renderer类型、design/i18n通过。原生链路无需因本地额度检查重复运行；没有新增GUI/provider/系统IME或完整性能证据。完整WB02–WB04继续。
+
+### WB03 实际原生子任务与 Worker 读取（2026-10-11，继续实施）
+
+复用仓库subagent-lifecycle loopback supplier，并核对固定OMP task executor/session-loader与本地T3 usageTranscriptReader的记录边界。正式Main提交常规模型tool_call→OMP task/yield→Host原生生命周期→受监督Worker，实测暴露旧读取器把首行当session header；真实18.8.9父/子文件首行是可选title slot，结果被错误标transcript-unavailable。保留失败文件并核对真实header后，以父、子、两者都有title的三项反例先失败，再只接受一条title前导及紧随session header；不搜索任意后续身份。原路径、parentSession、文件身份、容量与取消后物理exit门禁保留。
+
+两文件17/17、Host类型通过，包含重复title/先message后header拒绝。隔离Electron44.4.5正式链路取得两个真实子任务的transcript结果与父toolResult.isError=false；再启动另一Thread两个真实子任务，Main stop后两者原生aborted且Worker仍读取实际终态文件，没有额外模型turn。总11次loopback模型请求（包括原生标题请求），两scope实际cold后进程返回0。证据 [subagent-native.json](evidence/subagent-native.json) 记录10cf25f dirty检查点与Host/Worker/参与源码SHA；不冒称GUI、真实provider、系统IME或完整生产性能trace。首次无报告的exit0不计通过；run2/3的transcript失败和修正后run4正常/run5停止组合分别保留日志。完整WB02–WB04继续。

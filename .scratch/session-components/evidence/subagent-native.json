@@ -1,0 +1,94 @@
+{
+  "evidence": "actual-omp-subagent-transcript",
+  "head": "10cf25ff740a82b5a7fbb730c97ee9adef161e20",
+  "dirty": true,
+  "electron": "44.4.5",
+  "modelRequests": 11,
+  "conversationEvents": 47,
+  "sdkHostSha256": "a605b859c1547b9fee4e7b83050143756c1c1d046bcaa96c1362a5902b1e17e9",
+  "hostEntrySha256": "73e2502483d0cc5ee0e9e6b56bfcabf4971db840f5b651d5c0248856ab2b06fe",
+  "workerSha256": "6adc6bee43f7adaf99281093b3725536fd9a7cbab3f968e543fc81a13fcc5de7",
+  "children": [
+    {
+      "text": "M2_SUBAGENT_RESULT_FIRST",
+      "source": {
+        "nativeId": "first-task",
+        "parentToolCallId": "m2-lifecycle-task",
+        "status": "completed",
+        "task": "Complete assignment thoroughly:\n\nM2_SUBAGENT_CHILD_FIRST. Reply with the fixture result only.",
+        "description": "Validate first child",
+        "currentTool": "",
+        "model": "fixture/fixture",
+        "resultSource": "transcript",
+        "coverage": "observed"
+      }
+    },
+    {
+      "text": "M2_SUBAGENT_RESULT_SECOND",
+      "source": {
+        "nativeId": "second-task",
+        "parentToolCallId": "m2-lifecycle-task",
+        "status": "completed",
+        "task": "Complete assignment thoroughly:\n\nM2_SUBAGENT_CHILD_SECOND. Reply with the fixture result only.",
+        "description": "Validate second child",
+        "currentTool": "",
+        "model": "fixture/fixture",
+        "resultSource": "transcript",
+        "coverage": "observed"
+      }
+    }
+  ],
+  "cancellation": {
+    "requestsBeforeStop": 11,
+    "afterStop": 11,
+    "children": [
+      {
+        "text": "Finished FIRST.",
+        "source": {
+          "nativeId": "first-task",
+          "parentToolCallId": "m2-lifecycle-task",
+          "status": "aborted",
+          "task": "Complete assignment thoroughly:\n\nM2_SUBAGENT_CHILD_FIRST. Reply with the fixture result only.",
+          "description": "Validate first child",
+          "currentTool": "",
+          "model": "fixture/fixture",
+          "resultSource": "transcript",
+          "coverage": "observed"
+        }
+      },
+      {
+        "text": "Finished SECOND.",
+        "source": {
+          "nativeId": "second-task",
+          "parentToolCallId": "m2-lifecycle-task",
+          "status": "aborted",
+          "task": "Complete assignment thoroughly:\n\nM2_SUBAGENT_CHILD_SECOND. Reply with the fixture result only.",
+          "description": "Validate second child",
+          "currentTool": "",
+          "model": "fixture/fixture",
+          "resultSource": "transcript",
+          "coverage": "observed"
+        }
+      }
+    ]
+  },
+  "limitations": [
+    "loopback Main/Host/native/Worker; no GUI, real provider, IME or full performance trace"
+  ],
+  "scope": {
+    "formalMainHostNativeWorker": true,
+    "loopbackProvider": true,
+    "sdkPatched": false,
+    "gui": false,
+    "systemIme": false,
+    "fullPerformanceTrace": false
+  },
+  "processExit": 0,
+  "finalNativeCold": true,
+  "sourceSha256": {
+    "src/modules/execution/host/native/subagent-read.ts": "00b592090ee8867a025beb33002d8698a097a318d2380ad42e60f2d86ac9379f",
+    "src/modules/execution/host/native/subagent-observation.ts": "42902fb7148689dda8deb97260818089719230721f9a3ffcb37cd325f10782f3",
+    "src/app/host/index.ts": "ce9dea750f291a4b3279c4ab71447316eb23aadcf2260d4d6264eede4c87af65",
+    "validation/m2/subagent-native.ts": "f2ed7a2a8d4cb3a7db60faa4eda0bf365c4cff2e5c2894a3f216efcb4d3e8f91"
+  }
+}

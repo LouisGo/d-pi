@@ -48,14 +48,23 @@ const messageSchema = z.object({
   type: z.literal("message"),
   message: z.object({ role: z.literal("assistant"), content: z.unknown() }),
 });
+const titleTypeSchema = z.object({ type: z.literal("title") });
+function parseHeader(lines: string[]) {
+  const first: unknown = JSON.parse(lines[0] ?? "");
+  // OMP's physical title slot is optional and precedes the session header.
+  // Permit that single preamble only, never search later records for an identity.
+  return headerSchema.parse(
+    titleTypeSchema.safeParse(first).success
+      ? JSON.parse(lines[1] ?? "")
+      : first,
+  );
+}
 async function header(file: FileHandle) {
   const bytes = Buffer.alloc(65536);
   const { bytesRead } = await file.read(bytes, 0, bytes.length, 0);
-  const end = bytes.subarray(0, bytesRead).indexOf(10);
+  const end = bytes.subarray(0, bytesRead).lastIndexOf(10);
   if (end < 0) throw Error("Missing complete native header");
-  return headerSchema.parse(
-    JSON.parse(bytes.subarray(0, end).toString("utf8")),
-  );
+  return parseHeader(bytes.subarray(0, end).toString("utf8").split("\n", 2));
 }
 function sameFile(a: Stats, b: Stats) {
   return (
@@ -135,7 +144,7 @@ export async function runNativeSubagentWorker(
     if (end < 0) return unavailable("transcript-empty");
     const lines = bytes.subarray(0, end).toString("utf8").split("\n");
     if (lines.length > 1000) return unavailable("transcript-too-large");
-    const childHeader = headerSchema.parse(JSON.parse(lines[0] ?? ""));
+    const childHeader = parseHeader(lines);
     if (childHeader.parentSession !== task.parentSessionFile)
       return unavailable("transcript-unavailable");
     let text = "";
