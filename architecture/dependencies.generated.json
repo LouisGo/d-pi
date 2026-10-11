@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "08ce92bf134b443b3c94e7c2ba041683660ecba8ca12b32cb977d71e2b098b00",
+  "inputsHash": "7ec8521962a3b2b3aa27fa034ee9c4079f742fe4e7b21740f3502da8dff2f9d8",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 661,
@@ -352,7 +352,7 @@
       ],
       "materialized": true,
       "files": 62,
-      "lines": 15863,
+      "lines": 16125,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -32301,6 +32301,18 @@
       "targetEnvironment": "contracts"
     },
     {
+      "from": "src/modules/execution/contracts/interactions.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "contracts",
+      "test": true,
+      "specifier": "./interactions",
+      "kind": "dynamic-import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/interactions.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
       "from": "src/modules/execution/contracts/interactions.ts",
       "sourceModule": "execution",
       "sourceEnvironment": "contracts",
@@ -33730,6 +33742,15 @@
       "to": "src/modules/execution/host/native/subagent-read.ts",
       "targetModule": "execution",
       "targetEnvironment": "host"
+    },
+    {
+      "from": "src/modules/execution/host/native/subagent-read.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": true,
+      "specifier": "node:fs/promises",
+      "kind": "dynamic-import",
+      "resolution": "external"
     },
     {
       "from": "src/modules/execution/host/native/subagent-read.ts",

@@ -219,6 +219,8 @@ WB01 合同细化：resources/contracts 是无反向依赖的来源叶子；sour
 
 验证：原owner复用失败反例与Worker截断投影失败反例转绿；7项读取身份/边界、4项观察取消/关闭/复用、9项投影，以及Host41和App7共68项目标回归通过；Host类型及架构边界通过。独立构建validation/m2/subagent-read.ts在Node24.21.0与Electron44.4.5各spawn5次真实Worker，peakActive=2、final active=0，包含已有两名额时第三读取拒绝、取消保留名额至exit、随后可读与UTF-8截断。文件是官方协议fixture，尚不是新正式Host到实际OMP子任务的组合实测，不冒称完整WB03或GUI/IME/工作台trace；后续继续WB04。平台监督抽取固定355003a..d1bb825独立复核未发现可行动高价值问题。正式生产构建、Main/Host类型、40项架构测试与快速门禁通过；验证wrapper再指定正式out/main/subagent-worker.js入口，在Node/Electron同样5次spawn、peak2、final0。最新独立native-warm构建实跑保留3个真实OMP会话、同身份冷恢复、真实lease释放与4次native退出，模型请求0；仍限Main链路，不代表GUI或新子任务的实际OMP组合。
 
+独立93fc09d复核发现P2：初次canonical校验后、parent读取await期间，artifact目录替换为外部symlink可被O_NOFOLLOW的叶子限制漏过。真实rename/symlink文件反例确认旧实现返回foreign完整结果后，现先捕获目录及child身份，打开后核对文件identity，所有解码完成后再核canonical路径、目录inode、父/子真实文件identity。变化明确unavailable；读取8/8及Host类型通过，独立构建Node/Electron Worker名额/取消/UTF-8回归再次通过，待增量复核。
+
 ### WB00 milestone（2026-10-11）
 
 - 先写 InteractionOperation/InteractionDraft 与执行模块合同。红灯确认同题双击两次派发、Host respond 缺失；实现后对应反例转绿。Thread-owned RuntimeModel 保留表单、冻结回答、操作结果和后续收据关联；Main 等待精确 Host 结果，授权 await 后再次校验代次，Host 单次 write 兜底。普通 interaction 状态和 answer operation 改名 written，收据 ACK 不变。

@@ -1,10 +1,31 @@
 import { randomUUID } from "node:crypto";
-import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
+import {
+  mkdir,
+  mkdtemp,
+  realpath,
+  rename,
+  rm,
+  symlink,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
 import { runNativeSubagentWorker } from "./subagent-read";
 
+const hooks = vi.hoisted(() => ({
+  beforeOpen: undefined as ((path: unknown) => Promise<void>) | undefined,
+}));
+vi.mock("node:fs/promises", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("node:fs/promises")>();
+  return {
+    ...actual,
+    open: async (...args: Parameters<typeof actual.open>) => {
+      await hooks.beforeOpen?.(args[0]);
+      return actual.open(...args);
+    },
+  };
+});
 const header = (id: string, parentSession?: string) =>
   JSON.stringify({ type: "session", id, parentSession });
 const message = (content: unknown) =>
@@ -110,6 +131,40 @@ it("bounds source bytes and UTF-8 output before crossing the worker boundary", a
       reason: "transcript-too-large",
     });
   } finally {
+    await f.close();
+  }
+});
+
+it("rejects an artifact directory replaced after canonical validation but before opening its child", async () => {
+  const f = await fixture();
+  try {
+    const dir = join(f.root, "parent"),
+      foreign = join(f.root, "foreign");
+    await mkdir(foreign);
+    const body = (text: string) =>
+      `${header("child-id", f.task.parentSessionFile)}\n${message([{ type: "text", text }])}\n`;
+    await writeFile(f.task.owner.sessionFile, body("owned"));
+    await writeFile(
+      join(foreign, "child.jsonl"),
+      body("FOREIGN_DIRECTORY_RESULT"),
+    );
+    const canonicalParent = await realpath(f.task.parentSessionFile);
+    let replaced = false;
+    hooks.beforeOpen = async (path) => {
+      if (path !== canonicalParent) return;
+      hooks.beforeOpen = undefined;
+      await rename(dir, join(f.root, "previous"));
+      await symlink(foreign, dir);
+      replaced = true;
+    };
+    const result = await runNativeSubagentWorker(f.task);
+    expect(replaced).toBe(true);
+    expect(result).toMatchObject({
+      status: "unavailable",
+      reason: "transcript-unavailable",
+    });
+  } finally {
+    hooks.beforeOpen = undefined;
     await f.close();
   }
 });

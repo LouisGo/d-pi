@@ -1,6 +1,6 @@
 import { constants, type Stats } from "node:fs";
 import { type FileHandle, open, realpath, stat } from "node:fs/promises";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { z } from "zod";
 import { WorkerReadOwner } from "../../../../platform/node/reads/public";
 import { nativeSubagentResultText } from "../../../../platform/omp/protocol/public";
@@ -102,6 +102,11 @@ export async function runNativeSubagentWorker(
       (await realpath(task.owner.sessionFile)) !== expected
     )
       return unavailable("transcript-unavailable");
+    const artifactDirectory = dirname(expected);
+    const directoryBefore = await stat(artifactDirectory);
+    const sourceBefore = await stat(expected);
+    if (!directoryBefore.isDirectory() || !sourceBefore.isFile())
+      return unavailable("transcript-unavailable");
     parent = await open(parentPath, constants.O_RDONLY | constants.O_NOFOLLOW);
     const parentBefore = await parent.stat();
     if (
@@ -111,7 +116,8 @@ export async function runNativeSubagentWorker(
       return unavailable("transcript-unavailable");
     child = await open(expected, constants.O_RDONLY | constants.O_NOFOLLOW);
     const before = await child.stat();
-    if (!before.isFile()) return unavailable("transcript-unavailable");
+    if (!before.isFile() || !sameFile(sourceBefore, before))
+      return unavailable("transcript-unavailable");
     if (before.size > 1048576) return unavailable("transcript-too-large");
     const bytes = Buffer.alloc(before.size);
     let offset = 0;
@@ -125,15 +131,6 @@ export async function runNativeSubagentWorker(
       if (!read.bytesRead) return unavailable("transcript-unavailable");
       offset += read.bytesRead;
     }
-    // Terminal reads are a stable snapshot; replacement, rewrite, append or a
-    // changed parent identity is unavailable rather than guessed complete.
-    if (
-      !sameFile(before, await child.stat()) ||
-      !sameFile(before, await stat(expected)) ||
-      !sameParent(parentBefore, await stat(parentPath)) ||
-      (await header(parent)).id !== task.parentSessionId
-    )
-      return unavailable("transcript-unavailable");
     const end = bytes.lastIndexOf(10);
     if (end < 0) return unavailable("transcript-empty");
     const lines = bytes.subarray(0, end).toString("utf8").split("\n");
@@ -149,6 +146,17 @@ export async function runNativeSubagentWorker(
       const result = nativeSubagentResultText(entry.data.message.content);
       if (result) text = result;
     }
+    // O_NOFOLLOW covers only the leaf. Freeze the validated directory/file
+    // identity and recheck canonical containment after all parsing as well.
+    if (
+      (await realpath(task.owner.sessionFile)) !== expected ||
+      !sameParent(directoryBefore, await stat(artifactDirectory)) ||
+      !sameFile(before, await child.stat()) ||
+      !sameFile(before, await stat(expected)) ||
+      !sameParent(parentBefore, await stat(parentPath)) ||
+      (await header(parent)).id !== task.parentSessionId
+    )
+      return unavailable("transcript-unavailable");
     if (!text) return unavailable("transcript-empty");
     const output = Buffer.from(text, "utf8");
     let limit = Math.min(output.length, 65536);
